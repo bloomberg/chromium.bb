@@ -12,10 +12,10 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/app/strings/grit/content_strings.h"
 #include "content/public/common/content_client.h"
 #include "content/renderer/render_frame_impl.h"
 #include "crypto/sha2.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -197,9 +197,9 @@ AXImageAnnotator::ImageInfo::ImageInfo(const blink::WebAXObject& image)
 
 AXImageAnnotator::ImageInfo::~ImageInfo() = default;
 
-image_annotation::mojom::ImageProcessorPtr
+mojo::PendingRemote<image_annotation::mojom::ImageProcessor>
 AXImageAnnotator::ImageInfo::GetImageProcessor() {
-  return image_processor_.GetPtr();
+  return image_processor_.GetPendingRemote();
 }
 
 bool AXImageAnnotator::ImageInfo::HasAnnotation() const {

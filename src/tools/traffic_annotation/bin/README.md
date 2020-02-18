@@ -10,7 +10,7 @@ in this folder, otherwise run:
 ```bash
 git new-branch roll_traffic_annotation_tools
 python tools/clang/scripts/build.py --bootstrap \
-    --without-android --extra-tools traffic_annotation_extractor
+    --without-android --without-fuchsia --extra-tools traffic_annotation_extractor
 cp third_party/llvm-build/Release+Asserts/bin/traffic_annotation_extractor \
     tools/traffic_annotation/bin/linux64/
 
@@ -74,5 +74,5 @@ and land the resulting CL.
 The following two lines will be updated by the above script, and the modified
 README should be committed along with the updated .sha1 checksums.
 
-CLANG_REVISION = '8288453f6aac05080b751b680455349e09d49825'
-LASTCHANGE=1f619bc51ddddccc493776c0d2d3596d1c758a28-refs/heads/master@{#691147}
+CLANG_REVISION = '64a362e7216a43e3ad44e50a89265e72aeb14294'
+LASTCHANGE=79120883ec3483cea3995017488dff0310def70c-refs/heads/master@{#704087}

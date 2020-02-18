@@ -14,17 +14,18 @@
 -- limitations under the License.
 --
 
-CREATE VIEW ion_timeline AS
+CREATE VIEW IF NOT EXISTS ion_timeline AS
 SELECT
   ts,
   LEAD(ts, 1, (SELECT end_ts FROM trace_bounds))
-    OVER(PARTITION BY counter_id ORDER BY ts) - ts AS dur,
+    OVER(PARTITION BY track_id ORDER BY ts) - ts AS dur,
   SUBSTR(name, 9) AS heap_name,
   value
-FROM counter_definitions JOIN counter_values USING(counter_id)
-WHERE name LIKE 'mem.ion.%' AND ref_type IS NULL;
+FROM counter JOIN counter_track
+  ON counter.track_id = counter_track.id
+WHERE name LIKE 'mem.ion.%';
 
-CREATE VIEW ion_buffers AS
+CREATE VIEW IF NOT EXISTS ion_buffers AS
 SELECT
   heap_name,
   SUM(value * dur) / SUM(dur) AS avg_size,
@@ -33,7 +34,7 @@ SELECT
 FROM ion_timeline
 GROUP BY 1;
 
-CREATE VIEW android_ion_output AS
+CREATE VIEW IF NOT EXISTS android_ion_output AS
 SELECT AndroidIonMetric(
   'buffer', RepeatedField(
     AndroidIonMetric_Buffer(

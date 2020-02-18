@@ -44,8 +44,6 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
-#include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
-#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
@@ -64,7 +62,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/webrtc/api/async_resolver_factory.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
 #include "third_party/webrtc/p2p/base/port_allocator.h"
 
@@ -82,7 +79,7 @@ class DefaultInterfaceProvider : public InterfaceProvider {
   // InterfaceProvider implementation:
   void GetInterface(const char* interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override {
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         mojo::GenericPendingReceiver(interface_name,
                                      std::move(interface_pipe)));
   }
@@ -223,11 +220,11 @@ void Platform::InitializeCommon(Platform* platform,
   Thread::SetMainThread(std::move(main_thread));
 
   ProcessHeap::Init();
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      BlinkGCMemoryDumpProvider::Instance(), "BlinkGC",
-      base::ThreadTaskRunnerHandle::Get());
 
-  ThreadState::AttachMainThread();
+  ThreadState* thread_state = ThreadState::AttachMainThread();
+  new BlinkGCMemoryDumpProvider(
+      thread_state, base::ThreadTaskRunnerHandle::Get(),
+      BlinkGCMemoryDumpProvider::HeapType::kBlinkMainThread);
 
   MemoryPressureListenerRegistry::Initialize();
 
@@ -295,8 +292,7 @@ InterfaceProvider* Platform::GetInterfaceProvider() {
   return &provider;
 }
 
-ThreadSafeBrowserInterfaceBrokerProxy*
-Platform::GetBrowserInterfaceBrokerProxy() {
+ThreadSafeBrowserInterfaceBrokerProxy* Platform::GetBrowserInterfaceBroker() {
   DEFINE_STATIC_LOCAL(DefaultBrowserInterfaceBrokerProxy, proxy, ());
   return &proxy;
 }
@@ -331,40 +327,8 @@ Platform::CreateSharedOffscreenGraphicsContext3DProvider() {
 }
 
 std::unique_ptr<WebGraphicsContext3DProvider>
-Platform::CreateWebGPUGraphicsContext3DProvider(const WebURL& top_document_url,
-                                                GraphicsInfo*) {
-  return nullptr;
-}
-
-std::unique_ptr<WebRTCPeerConnectionHandler>
-Platform::CreateRTCPeerConnectionHandler(
-    WebRTCPeerConnectionHandlerClient*,
-    scoped_refptr<base::SingleThreadTaskRunner>) {
-  return nullptr;
-}
-
-std::unique_ptr<cricket::PortAllocator> Platform::CreateWebRtcPortAllocator(
-    WebLocalFrame* frame) {
-  return nullptr;
-}
-
-std::unique_ptr<webrtc::AsyncResolverFactory>
-Platform::CreateWebRtcAsyncResolverFactory() {
-  return nullptr;
-}
-
-std::unique_ptr<WebRTCCertificateGenerator>
-Platform::CreateRTCCertificateGenerator() {
-  return nullptr;
-}
-
-std::unique_ptr<webrtc::RtpCapabilities> Platform::GetRtpSenderCapabilities(
-    const WebString& kind) {
-  return nullptr;
-}
-
-std::unique_ptr<webrtc::RtpCapabilities> Platform::GetRtpReceiverCapabilities(
-    const WebString& kind) {
+Platform::CreateWebGPUGraphicsContext3DProvider(
+    const WebURL& top_document_url) {
   return nullptr;
 }
 

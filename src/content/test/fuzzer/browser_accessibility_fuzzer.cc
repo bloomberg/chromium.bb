@@ -4,10 +4,17 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 
+#include "base/at_exit.h"
+#include "base/command_line.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
 #include "content/browser/accessibility/test_browser_accessibility_delegate.h"
+
+struct Env {
+  Env() { base::CommandLine::Init(0, nullptr); }
+  base::AtExitManager at_exit;
+};
 
 namespace content {
 
@@ -61,6 +68,7 @@ void AddStates(FuzzedDataProvider& fdp, ui::AXNodeData* node) {
 // the fuzz input. Once the tree is constructed, fuzz by calling some
 // functions that walk the tree in various ways to ensure they don't crash.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static Env env;
   FuzzedDataProvider fdp(data, size);
 
   // The tree structure is always the same, only the data changes.
@@ -76,6 +84,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   ui::AXTreeID parent_tree_id = ui::AXTreeID::CreateNewAXTreeID();
   ui::AXTreeID child_tree_id = ui::AXTreeID::CreateNewAXTreeID();
+
+  const int num_nodes = 10;
 
   ui::AXTreeUpdate tree;
   tree.root_id = 1;
@@ -103,17 +113,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   tree.nodes[3].child_ids = {9, 10};
   AddStates(fdp, &tree.nodes[3]);
 
-  for (int i = 4; i < 10; i++) {
+  for (int i = 4; i < num_nodes; i++) {
     tree.nodes[i].id = i + 1;
     tree.nodes[i].role = GetInterestingRole(fdp);
     AddStates(fdp, &tree.nodes[i]);
   }
 
-  for (int i = 0; i < 10; i++)
+  for (int i = 0; i < num_nodes; i++)
     tree.nodes[i].SetName(fdp.ConsumeRandomLengthString(5));
 
   // Optionally, embed the child tree in the parent tree.
-  int embedder_node = fdp.ConsumeIntegralInRange(0, 10);
+  int embedder_node = fdp.ConsumeIntegralInRange(0, num_nodes);
   if (embedder_node > 0)
     tree.nodes[embedder_node - 1].AddStringAttribute(
         ax::mojom::StringAttribute::kChildTreeId, child_tree_id.ToString());
@@ -160,7 +170,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                           : OneShotAccessibilityTreeSearch::BACKWARDS);
   search.SetImmediateDescendantsOnly(fdp.ConsumeBool());
   search.SetCanWrapToLastElement(fdp.ConsumeBool());
-  search.SetVisibleOnly(fdp.ConsumeBool());
+  search.SetOnscreenOnly(fdp.ConsumeBool());
   if (fdp.ConsumeBool())
     search.AddPredicate(AccessibilityButtonPredicate);
   if (fdp.ConsumeBool())
@@ -172,6 +182,24 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // This is just to ensure that none of the above code gets optimized away.
   CHECK_NE(0U, results.size());
+
+  // Add a node, possibly clearing old children.
+  int node_id = num_nodes + 1;
+  int parent = fdp.ConsumeIntegralInRange(0, num_nodes);
+
+  ui::AXTreeUpdate update;
+  update.nodes.resize(2);
+  update.nodes[0].id = parent;
+  update.nodes[0].child_ids = {node_id};
+  update.nodes[1].id = node_id;
+  update.nodes[1].role = GetInterestingRole(fdp);
+  AddStates(fdp, &update.nodes[1]);
+
+  AXEventNotificationDetails notification;
+  notification.updates.resize(1);
+  notification.updates[0] = update;
+
+  CHECK(manager->OnAccessibilityEvents(notification));
 
   return 0;
 }

@@ -100,6 +100,10 @@ class QUIC_EXPORT_PRIVATE MaxAckHeightTracker {
     max_ack_height_filter_.Reset(new_height, new_time);
   }
 
+  uint64_t num_ack_aggregation_epochs() const {
+    return num_ack_aggregation_epochs_;
+  }
+
  private:
   // Tracks the maximum number of bytes acked faster than the estimated
   // bandwidth.
@@ -113,6 +117,9 @@ class QUIC_EXPORT_PRIVATE MaxAckHeightTracker {
   // The time this aggregation started and the number of bytes acked during it.
   QuicTime aggregation_epoch_start_time_ = QuicTime::Zero();
   QuicByteCount aggregation_epoch_bytes_ = 0;
+  // The number of ack aggregation epochs ever started, including the ongoing
+  // one. Stats only.
+  uint64_t num_ack_aggregation_epochs_ = 0;
 };
 
 // An interface common to any class that can provide bandwidth samples from the
@@ -273,6 +280,10 @@ class QUIC_EXPORT_PRIVATE BandwidthSampler : public BandwidthSamplerInterface {
 
   QuicByteCount max_ack_height() const { return max_ack_height_tracker_.Get(); }
 
+  uint64_t num_ack_aggregation_epochs() const {
+    return max_ack_height_tracker_.num_ack_aggregation_epochs();
+  }
+
   void SetMaxAckHeightTrackerWindowLength(QuicRoundTripCount length) {
     max_ack_height_tracker_.SetFilterWindowLength(length);
   }
@@ -282,10 +293,6 @@ class QUIC_EXPORT_PRIVATE BandwidthSampler : public BandwidthSamplerInterface {
     max_ack_height_tracker_.Reset(new_height, new_time);
   }
 
-  bool quic_track_ack_height_in_bandwidth_sampler() const {
-    return quic_track_ack_height_in_bandwidth_sampler_;
-  }
-
  private:
   friend class test::BandwidthSamplerPeer;
 
@@ -293,7 +300,7 @@ class QUIC_EXPORT_PRIVATE BandwidthSampler : public BandwidthSamplerInterface {
   // and the state of the connection at the moment the packet was sent,
   // specifically the information about the most recently acknowledged packet at
   // that moment.
-  struct ConnectionStateOnSentPacket {
+  struct QUIC_EXPORT_PRIVATE ConnectionStateOnSentPacket {
     // Time at which the packet is sent.
     QuicTime sent_time;
 
@@ -399,9 +406,6 @@ class QUIC_EXPORT_PRIVATE BandwidthSampler : public BandwidthSamplerInterface {
 
   MaxAckHeightTracker max_ack_height_tracker_;
   QuicByteCount total_bytes_acked_after_last_ack_event_;
-
-  // Latched value of --quic_track_ack_height_in_bandwidth_sampler2.
-  const bool quic_track_ack_height_in_bandwidth_sampler_;
 };
 
 }  // namespace quic

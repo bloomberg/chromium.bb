@@ -6,7 +6,8 @@
 
 namespace cups_proxy {
 
-std::vector<chromeos::Printer> FakeCupsProxyServiceDelegate::GetPrinters() {
+std::vector<chromeos::Printer> FakeCupsProxyServiceDelegate::GetPrinters(
+    chromeos::PrinterClass printer_class) {
   return {};
 }
 
@@ -19,6 +20,9 @@ bool FakeCupsProxyServiceDelegate::IsPrinterInstalled(
     const chromeos::Printer& printer) {
   return false;
 }
+
+void FakeCupsProxyServiceDelegate::PrinterInstalled(
+    const chromeos::Printer& printer) {}
 
 scoped_refptr<base::SingleThreadTaskRunner>
 FakeCupsProxyServiceDelegate::GetIOTaskRunner() {

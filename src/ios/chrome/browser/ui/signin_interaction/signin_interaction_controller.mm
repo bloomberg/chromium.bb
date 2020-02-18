@@ -10,8 +10,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -31,7 +31,7 @@
 @interface SigninInteractionController ()<
     ChromeIdentityInteractionManagerDelegate,
     ChromeSigninViewControllerDelegate> {
-  ios::ChromeBrowserState* browserState_;
+  Browser* browser_;
   signin_metrics::AccessPoint accessPoint_;
   signin_metrics::PromoAction promoAction_;
   BOOL isCancelling_;
@@ -57,16 +57,16 @@
 @synthesize dispatcher = dispatcher_;
 @synthesize presenter = presenter_;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                presentationProvider:(id<SigninInteractionPresenting>)presenter
-                         accessPoint:(signin_metrics::AccessPoint)accessPoint
-                         promoAction:(signin_metrics::PromoAction)promoAction
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
+- (instancetype)initWithBrowser:(Browser*)browser
+           presentationProvider:(id<SigninInteractionPresenting>)presenter
+                    accessPoint:(signin_metrics::AccessPoint)accessPoint
+                    promoAction:(signin_metrics::PromoAction)promoAction
+                     dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super init];
   if (self) {
-    DCHECK(browserState);
+    DCHECK(browser);
     DCHECK(presenter);
-    browserState_ = browserState;
+    browser_ = browser;
     presenter_ = presenter;
     accessPoint_ = accessPoint;
     promoAction_ = promoAction;
@@ -103,42 +103,16 @@
                     (SigninInteractionControllerCompletionCallback)completion {
   signin_metrics::LogSigninAccessPointStarted(accessPoint_, promoAction_);
   completionCallback_ = [completion copy];
-  ios::ChromeIdentityService* identityService =
-      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    [self showSigninViewControllerWithIdentity:identity identityAdded:NO];
-  } else if (identity) {
-    DCHECK(identityService->IsValidIdentity(identity));
-    DCHECK(!signinViewController_);
-    [self showSigninViewControllerWithIdentity:identity identityAdded:NO];
-  } else if (identityService->HasIdentities()) {
-    DCHECK(!signinViewController_);
-    [self showSigninViewControllerWithIdentity:nil identityAdded:NO];
-  } else {
-    identityInteractionManager_ =
-        identityService->CreateChromeIdentityInteractionManager(browserState_,
-                                                                self);
-    if (!identityInteractionManager_) {
-      // Abort sign-in if the ChromeIdentityInteractionManager returned is
-      // nil (this can happen when the iOS internal provider is not used).
-      [self runCompletionCallbackWithSigninResult:SigninResultCanceled];
-      return;
-    }
-
-    __weak SigninInteractionController* weakSelf = self;
-    [identityInteractionManager_
-        addAccountWithCompletion:^(ChromeIdentity* identity, NSError* error) {
-          [weakSelf handleIdentityAdded:identity error:error shouldSignIn:YES];
-        }];
-  }
+  [self showSigninViewControllerWithIdentity:identity identityAdded:NO];
 }
 
 - (void)reAuthenticateWithCompletion:
     (SigninInteractionControllerCompletionCallback)completion {
   signin_metrics::LogSigninAccessPointStarted(accessPoint_, promoAction_);
   completionCallback_ = [completion copy];
+  ios::ChromeBrowserState* browserState = browser_->GetBrowserState();
   CoreAccountInfo accountInfo =
-      IdentityManagerFactory::GetForBrowserState(browserState_)
+      IdentityManagerFactory::GetForBrowserState(browserState)
           ->GetPrimaryAccountInfo();
   std::string emailToReauthenticate = accountInfo.email;
   std::string idToReauthenticate = accountInfo.gaia;
@@ -150,9 +124,9 @@
     //
     // Simply use the the last signed-in user email in this case and go though
     // the entire sign-in flow as sync needs to be configured.
-    emailToReauthenticate = browserState_->GetPrefs()->GetString(
-        prefs::kGoogleServicesLastUsername);
-    idToReauthenticate = browserState_->GetPrefs()->GetString(
+    emailToReauthenticate =
+        browserState->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
+    idToReauthenticate = browserState->GetPrefs()->GetString(
         prefs::kGoogleServicesLastAccountId);
   }
   DCHECK(!emailToReauthenticate.empty());
@@ -160,7 +134,7 @@
   identityInteractionManager_ =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
-          ->CreateChromeIdentityInteractionManager(browserState_, self);
+          ->CreateChromeIdentityInteractionManager(browserState, self);
   __weak SigninInteractionController* weakSelf = self;
   [identityInteractionManager_
       reauthenticateUserWithID:base::SysUTF8ToNSString(idToReauthenticate)
@@ -175,10 +149,10 @@
 - (void)addAccountWithCompletion:
     (SigninInteractionControllerCompletionCallback)completion {
   completionCallback_ = [completion copy];
-  identityInteractionManager_ =
-      ios::GetChromeBrowserProvider()
-          ->GetChromeIdentityService()
-          ->CreateChromeIdentityInteractionManager(browserState_, self);
+  identityInteractionManager_ = ios::GetChromeBrowserProvider()
+                                    ->GetChromeIdentityService()
+                                    ->CreateChromeIdentityInteractionManager(
+                                        browser_->GetBrowserState(), self);
   __weak SigninInteractionController* weakSelf = self;
   [identityInteractionManager_
       addAccountWithCompletion:^(ChromeIdentity* identity, NSError* error) {
@@ -260,11 +234,11 @@
 - (void)showSigninViewControllerWithIdentity:(ChromeIdentity*)signInIdentity
                                identityAdded:(BOOL)identityAdded {
   signinViewController_ =
-      [[ChromeSigninViewController alloc] initWithBrowserState:browserState_
-                                                   accessPoint:accessPoint_
-                                                   promoAction:promoAction_
-                                                signInIdentity:signInIdentity
-                                                    dispatcher:self.dispatcher];
+      [[ChromeSigninViewController alloc] initWithBrowser:browser_
+                                              accessPoint:accessPoint_
+                                              promoAction:promoAction_
+                                           signInIdentity:signInIdentity
+                                               dispatcher:self.dispatcher];
   signinViewController_.delegate = self;
   signInIdentity_ = signInIdentity;
   identityAdded_ = identityAdded;

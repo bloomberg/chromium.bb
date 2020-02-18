@@ -30,11 +30,6 @@ See the
 [Tast quickstart guide](https://chromium.googlesource.com/chromiumos/platform/tast/+/HEAD/docs/quickstart.md)
 for more information about the Tast framework.
 
-__Note:__ Tast tests are currently being migrated from the
-_video_decode_accelerator_unittest_ to the new _video_decode_accelerator_tests_
-binary. Check the [documentation](vdatest_usage.md) for more info about the old
-video decode accelerator tests.
-
 ## Running manually
 To run the video decoder tests manually the _video_decode_accelerator_tests_
 target needs to be built and deployed to the device being tested. Running
@@ -66,13 +61,19 @@ Multiple command line arguments can be given to the command:
      -v                  enable verbose mode, e.g. -v=2.
     --vmodule            enable verbose mode for the specified module,
                          e.g. --vmodule=*media/gpu*=2.
+
     --disable_validator  disable frame validation.
-    --output_frames      write all decoded video frames to the
-                         "<testname>" folder.
-    --output_folder      overwrite the default output folder used when
-                         "--output_frames" is specified.
     --use_vd             use the new VD-based video decoders, instead of
                          the default VDA-based video decoders.
+
+    --output_frames      write the selected video frames to disk, possible
+                         values are "all|corrupt".
+    --output_format      set the format of frames saved to disk, supported
+                         formats are "png" (default) and "yuv".
+    --output_limit       limit the number of frames saved to disk.
+    --output_folder      set the folder used to store frames, defaults to
+                         "<testname>"
+
     --gtest_help         display the gtest help and exit.
     --help               display this help and exit.
 

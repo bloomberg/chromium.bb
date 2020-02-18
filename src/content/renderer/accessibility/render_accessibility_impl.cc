@@ -309,20 +309,6 @@ void RenderAccessibilityImpl::HandleAccessibilityFindInPageTermination() {
   Send(new AccessibilityHostMsg_FindInPageTermination(routing_id()));
 }
 
-void RenderAccessibilityImpl::AccessibilityFocusedElementChanged(
-    const WebElement& element) {
-  const WebDocument& document = GetMainDocument();
-  if (document.IsNull())
-    return;
-
-  if (element.IsNull()) {
-    // When focus is cleared, implicitly focus the document.
-    // TODO(dmazzoni): Make Blink send this notification instead.
-    HandleAXEvent(WebAXObject::FromWebDocument(document),
-                  ax::mojom::Event::kBlur);
-  }
-}
-
 void RenderAccessibilityImpl::HandleAXEvent(const WebAXObject& obj,
                                             ax::mojom::Event event,
                                             ax::mojom::EventFrom event_from,
@@ -774,9 +760,9 @@ void RenderAccessibilityImpl::OnPerformAction(
       target->Increment();
       break;
     case ax::mojom::Action::kScrollToMakeVisible:
-      target->ScrollToMakeVisibleWithSubFocus(data.target_rect,
-                                              data.horizontal_scroll_alignment,
-                                              data.vertical_scroll_alignment);
+      target->ScrollToMakeVisibleWithSubFocus(
+          data.target_rect, data.horizontal_scroll_alignment,
+          data.vertical_scroll_alignment, data.scroll_behavior);
       break;
     case ax::mojom::Action::kScrollToPoint:
       target->ScrollToGlobalPoint(data.target_point);
@@ -1127,7 +1113,7 @@ void RenderAccessibilityImpl::Scroll(const ui::AXActionTarget* target,
 void RenderAccessibilityImpl::RecordImageMetrics(AXContentTreeUpdate* update) {
   if (!render_frame_->accessibility_mode().has_mode(ui::AXMode::kScreenReader))
     return;
-  float scale_factor = render_frame_->GetRenderView()->GetDeviceScaleFactor();
+  float scale_factor = render_frame_->GetDeviceScaleFactor();
   for (size_t i = 0; i < update->nodes.size(); ++i) {
     ui::AXNodeData& node_data = update->nodes[i];
     if (node_data.role != ax::mojom::Role::kImage)
@@ -1139,7 +1125,7 @@ void RenderAccessibilityImpl::RecordImageMetrics(AXContentTreeUpdate* update) {
       continue;
     // We log the min size in a histogram with a max of 10000, so set a ceiling
     // of 10000 on min_size.
-    int min_size = std::min(std::min(width, height), 10000);
+    int min_size = std::min({width, height, 10000});
     int max_size = std::max(width, height);
     // The ratio is always the smaller divided by the larger so as not to go
     // over 100%.

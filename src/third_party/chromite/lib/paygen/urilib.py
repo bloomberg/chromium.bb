@@ -9,7 +9,8 @@ from __future__ import print_function
 
 import re
 import sys
-import urllib
+
+from six.moves import urllib
 
 from chromite.lib import gs
 from chromite.lib.paygen import filelib
@@ -112,13 +113,13 @@ def GetUriType(uri):
   return TYPE_LOCAL
 
 
-class URLopener(urllib.FancyURLopener):
+class URLopener(urllib.request.FancyURLopener):
   """URLopener that will actually complain when download fails."""
   # The urllib.urlretrieve function, which seems like a good fit for this,
   # does not give access to error code.
 
   def http_error_default(self, *args, **kwargs):
-    urllib.URLopener.http_error_default(self, *args, **kwargs)
+    urllib.request.URLopener.http_error_default(self, *args, **kwargs)
 
 
 def URLRetrieve(src_url, dest_path):

@@ -36,9 +36,6 @@
 class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
  public:
   explicit FakeProfileOAuth2TokenService(PrefService* user_prefs);
-  FakeProfileOAuth2TokenService(
-      PrefService* user_prefs,
-      std::unique_ptr<ProfileOAuth2TokenServiceDelegate> delegate);
   ~FakeProfileOAuth2TokenService() override;
 
   // Gets a list of active requests (can be used by tests to validate that the
@@ -80,6 +77,8 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   void IssueErrorForAllPendingRequests(const GoogleServiceAuthError& error);
 
   void set_auto_post_fetch_response_on_message_loop(bool auto_post_response);
+
+  bool IsFakeProfileOAuth2TokenServiceForTesting() const override;
 
  private:
   FakeOAuth2AccessTokenManager* GetFakeAccessTokenManager();

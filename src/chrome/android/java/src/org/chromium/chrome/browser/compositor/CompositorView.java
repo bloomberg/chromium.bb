@@ -13,7 +13,6 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -32,7 +31,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.AndroidResourceType;
@@ -143,7 +142,7 @@ public class CompositorView
         // Cover the black surface before it has valid content.  Set this placeholder view to
         // visible, but don't yet make SurfaceView visible, in order to delay
         // surfaceCreate/surfaceChanged calls until the native library is loaded.
-        setBackgroundColor(ColorUtils.getPrimaryBackgroundColor(getResources(), false));
+        setBackgroundColor(ChromeColors.getPrimaryBackgroundColor(getResources(), false));
         super.setVisibility(View.VISIBLE);
 
         // Request the opaque surface.  We might need the translucent one, but
@@ -230,9 +229,10 @@ public class CompositorView
         // But with SurfaceControl, switching to a new SurfaceView evicts that content when
         // destroying the GLSurface in the GPU process. So we need to explicitly preserve them in
         // the GPU process during this transition.
-        if (switchToSurfaceView)
+        if (switchToSurfaceView) {
             CompositorViewJni.get().cacheBackBufferForCurrentSurface(
                     mNativeCompositorView, CompositorView.this);
+        }
 
         // Trigger the creation of a new SurfaceView. CompositorSurfaceManager will handle caching
         // the old one during the transition.
@@ -258,9 +258,12 @@ public class CompositorView
      */
     public void shutDown() {
         mCompositorSurfaceManager.shutDown();
-        if (mScreenStateReceiver != null) mScreenStateReceiver.shutDown();
-        if (mNativeCompositorView != 0)
+        if (mScreenStateReceiver != null) {
+            mScreenStateReceiver.shutDown();
+        }
+        if (mNativeCompositorView != 0) {
             CompositorViewJni.get().destroy(mNativeCompositorView, CompositorView.this);
+        }
         mNativeCompositorView = 0;
     }
 
@@ -319,11 +322,6 @@ public class CompositorView
         onWindowVisibilityChangedInternal(getWindowVisibility());
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent e) {
-        return super.onTouchEvent(e);
-    }
-
     /**
      * Enables/disables overlay video mode. Affects alpha blending on this view.
      * @param enabled Whether to enter or leave overlay video mode.
@@ -340,7 +338,21 @@ public class CompositorView
         // We do know that if we do get one, then it will be for the surface that we just requested.
     }
 
+    /**
+     * Enables/disables immersive AR overlay mode, a variant of overlay video mode.
+     * @param enabled Whether to enter or leave overlay immersive ar mode.
+     */
+    public void setOverlayImmersiveArMode(boolean enabled) {
+        setOverlayVideoMode(enabled);
+        CompositorViewJni.get().setOverlayImmersiveArMode(
+                mNativeCompositorView, CompositorView.this, enabled);
+    }
+
     private int getSurfacePixelFormat() {
+        if (mOverlayVideoEnabled || mAlwaysTranslucent) {
+            return PixelFormat.TRANSLUCENT;
+        }
+
         if (mIsSurfaceControlEnabled) {
             // In SurfaceControl mode, we can always use a translucent format since there is no
             // buffer associated to the SurfaceView, and the buffers passed to the SurfaceControl
@@ -352,8 +364,7 @@ public class CompositorView
             return canUseSurfaceControl() ? PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE;
         }
 
-        return (mOverlayVideoEnabled || mAlwaysTranslucent) ? PixelFormat.TRANSLUCENT
-                                                            : PixelFormat.OPAQUE;
+        return PixelFormat.OPAQUE;
     }
 
     private boolean canUseSurfaceControl() {
@@ -362,10 +373,13 @@ public class CompositorView
 
     @Override
     public void surfaceRedrawNeededAsync(Runnable drawingFinished) {
-        if (mDrawingFinishedCallbacks == null) mDrawingFinishedCallbacks = new ArrayList<>();
+        if (mDrawingFinishedCallbacks == null) {
+            mDrawingFinishedCallbacks = new ArrayList<>();
+        }
         mDrawingFinishedCallbacks.add(drawingFinished);
-        if (mNativeCompositorView != 0)
+        if (mNativeCompositorView != 0) {
             CompositorViewJni.get().setNeedsComposite(mNativeCompositorView, CompositorView.this);
+        }
     }
 
     @Override
@@ -433,8 +447,9 @@ public class CompositorView
      * Request compositor view to render a frame.
      */
     public void requestRender() {
-        if (mNativeCompositorView != 0)
+        if (mNativeCompositorView != 0) {
             CompositorViewJni.get().setNeedsComposite(mNativeCompositorView, CompositorView.this);
+        }
     }
 
     @CalledByNative
@@ -593,7 +608,7 @@ public class CompositorView
         mCompositorSurfaceManager.setVisibility(getVisibility());
     }
 
-    @NativeMethods
+   @NativeMethods
     interface Natives {
         long init(CompositorView caller, boolean lowMemDevice, WindowAndroid windowAndroid,
                 LayerTitleCache layerTitleCache, TabContentManager tabContentManager);
@@ -609,6 +624,8 @@ public class CompositorView
         void setNeedsComposite(long nativeCompositorView, CompositorView caller);
         void setLayoutBounds(long nativeCompositorView, CompositorView caller);
         void setOverlayVideoMode(long nativeCompositorView, CompositorView caller, boolean enabled);
+        void setOverlayImmersiveArMode(
+                long nativeCompositorView, CompositorView caller, boolean enabled);
         void setSceneLayer(long nativeCompositorView, CompositorView caller, SceneLayer sceneLayer);
         void setCompositorWindow(
                 long nativeCompositorView, CompositorView caller, WindowAndroid window);

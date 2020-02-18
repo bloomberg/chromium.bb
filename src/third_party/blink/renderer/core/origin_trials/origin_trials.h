@@ -15,12 +15,20 @@
 
 namespace blink {
 
+enum class OriginTrialType { kDefault = 0, kDeprecation, kIntervention };
+
 // A namespace with dynamic tests for experimental features which can be
 // enabled by the origin trials framework via origin trial tokens.
 namespace origin_trials {
 
 // Return true if there is a feature with the passed |trial_name|.
 CORE_EXPORT bool IsTrialValid(const String& trial_name);
+
+// Return true if |trial_name| can be enabled in an insecure context.
+CORE_EXPORT bool IsTrialEnabledForInsecureContext(const String& trial_name);
+
+// Returns the trial type of the given |feature|.
+CORE_EXPORT OriginTrialType GetTrialType(OriginTrialFeature feature);
 
 // Return origin trials features that are enabled by the passed |trial_name|.
 // The trial name MUST be valid (call IsTrialValid() before calling this

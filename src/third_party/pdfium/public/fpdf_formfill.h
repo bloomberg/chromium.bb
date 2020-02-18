@@ -353,38 +353,23 @@ typedef struct _FPDF_SYSTEMTIME {
 } FPDF_SYSTEMTIME;
 
 #ifdef PDF_ENABLE_XFA
-// XFA
-/**
- * @name Pageview  event flags
- */
-/*@{*/
-/** @brief After a new pageview is added. */
-#define FXFA_PAGEVIEWEVENT_POSTADDED 1
-/** @brief After a pageview is removed. */
-#define FXFA_PAGEVIEWEVENT_POSTREMOVED 3
-/*@}*/
 
-// menu
-/**
- * @name Macro Definitions for Right Context Menu Features Of XFA Fields
- */
-/*@{*/
+// Pageview event flags
+#define FXFA_PAGEVIEWEVENT_POSTADDED 1    // After a new pageview is added.
+#define FXFA_PAGEVIEWEVENT_POSTREMOVED 3  // After a pageview is removed.
+
+// Definitions for Right Context Menu Features Of XFA Fields
 #define FXFA_MENU_COPY 1
 #define FXFA_MENU_CUT 2
 #define FXFA_MENU_SELECTALL 4
 #define FXFA_MENU_UNDO 8
 #define FXFA_MENU_REDO 16
 #define FXFA_MENU_PASTE 32
-/*@}*/
 
-// file type
-/**
- * @name Macro Definitions for File Type.
- */
-/*@{*/
+// Definitions for File Type.
 #define FXFA_SAVEAS_XML 1
 #define FXFA_SAVEAS_XDP 2
-/*@}*/
+
 #endif  // PDF_ENABLE_XFA
 
 typedef struct _FPDF_FORMFILLINFO {
@@ -1308,6 +1293,18 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnLButtonDown(FPDF_FORMHANDLE hHandle,
                                                        double page_y);
 
 /**
+ * Function: FORM_OnRButtonDown
+ *          Same as above, execpt for the right mouse button.
+ * Comments:
+ *          At the present time, has no effect except in XFA builds, but is
+ *          included for the sake of symmetry.
+ */
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnRButtonDown(FPDF_FORMHANDLE hHandle,
+                                                       FPDF_PAGE page,
+                                                       int modifier,
+                                                       double page_x,
+                                                       double page_y);
+/**
  * Function: FORM_OnLButtonUp
  *          You can call this member function when the user releases the left
  *          mouse button.
@@ -1323,6 +1320,19 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnLButtonDown(FPDF_FORMHANDLE hHandle,
  *          TRUE indicates success; otherwise false.
  **/
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnLButtonUp(FPDF_FORMHANDLE hHandle,
+                                                     FPDF_PAGE page,
+                                                     int modifier,
+                                                     double page_x,
+                                                     double page_y);
+
+/**
+ * Function: FORM_OnRButtonUp
+ *          Same as above, execpt for the right mouse button.
+ * Comments:
+ *          At the present time, has no effect except in XFA builds, but is
+ *          included for the sake of symmetry.
+ */
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnRButtonUp(FPDF_FORMHANDLE hHandle,
                                                      FPDF_PAGE page,
                                                      int modifier,
                                                      double page_x,
@@ -1351,19 +1361,6 @@ FORM_OnLButtonDoubleClick(FPDF_FORMHANDLE hHandle,
                           int modifier,
                           double page_x,
                           double page_y);
-
-#ifdef PDF_ENABLE_XFA
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnRButtonDown(FPDF_FORMHANDLE hHandle,
-                                                       FPDF_PAGE page,
-                                                       int modifier,
-                                                       double page_x,
-                                                       double page_y);
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FORM_OnRButtonUp(FPDF_FORMHANDLE hHandle,
-                                                     FPDF_PAGE page,
-                                                     int modifier,
-                                                     double page_x,
-                                                     double page_y);
-#endif  // PDF_ENABLE_XFA
 
 /**
  * Function: FORM_OnKeyDown
@@ -1825,19 +1822,17 @@ FORM_SetIndexSelected(FPDF_FORMHANDLE hHandle,
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FORM_IsIndexSelected(FPDF_FORMHANDLE hHandle, FPDF_PAGE page, int index);
 
-#ifdef PDF_ENABLE_XFA
 /**
  * Function: FPDF_LoadXFA
- *          If the document consists of XFA fields, there should call this
- *method to load XFA fields.
+ *          If the document consists of XFA fields, call this method to
+ *          attempt to load XFA fields.
  * Parameters:
- *          document        -   Handle to document. Returned by
- *FPDF_LoadDocument function.
+ *          document     -   Handle to document from FPDF_LoadDocument().
  * Return Value:
- *          TRUE indicates success,otherwise FALSE.
+ *          TRUE upon success, otherwise FALSE. If XFA support is not built
+ *          into PDFium, performs no action and always returns FALSE.
  **/
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_LoadXFA(FPDF_DOCUMENT document);
-#endif  // PDF_ENABLE_XFA
 
 #ifdef __cplusplus
 }

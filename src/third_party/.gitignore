@@ -5,6 +5,7 @@
 /accessibility_test_framework/lib/
 /adobe/flash/binaries
 /adobe/flash/symbols
+/aemu-linux-x64
 /amd/
 /android_build_tools/aapt2/aapt2
 /android_build_tools/aapt2/lib64/*.so
@@ -39,7 +40,7 @@
 /arcore-android-sdk/test-apks/arcore/*.apk
 /asan
 /auto/src
-/bazel/desugar/Desugar.jar
+/bazel/desugar/*.jar
 /bison
 /boringssl/src
 /bouncycastle/lib/
@@ -66,13 +67,14 @@
 /dav1d/libdav1d
 /dawn
 /depot_tools
-/devtools-node-modules
+/devtools-frontend/src
 /directxsdk
 /dom_distiller_js/dist
 /elfutils/src
 /emoji-segmenter/src
 /errorprone/lib
 /espresso/lib/
+/expat/src
 /eyesfree/src
 /feed/src
 /ffmpeg
@@ -82,6 +84,7 @@
 /freetype/src
 /fuchsia-sdk/images
 /fuchsia-sdk/sdk
+/fuchsia-sdk-arm64
 /gestures/gestures
 /gles2_conform
 /glfw/src
@@ -92,7 +95,6 @@
 /google_appengine_cloudstorage
 /google_toolbox_for_mac/src
 /googlemac
-/googletest/src
 /grpc/src
 /gson/lib/
 /gvr-android-sdk/common_library.aar
@@ -116,7 +118,8 @@
 /javax_inject/lib/
 /jacoco/lib/
 /javalang/src/
-/jsoncpp/source
+/jdk/current
+/jdk/extras
 /jsr-305/src
 /junit/src
 /khronos_glcts
@@ -129,6 +132,7 @@
 /libevdev/src
 /libexif/sources
 /libFuzzer/src
+/libgifcodec
 /libprotobuf-mutator/src
 /libipp/libipp
 /libjingle/source
@@ -138,6 +142,7 @@
 /libsrtp
 /libsync/src
 /libupnp
+/libunwindstack
 /libvpx/source/libvpx
 /libwebm/source
 /libyuv
@@ -191,6 +196,7 @@
 /python_26
 /pywebsocket/src
 /pywebsocket/src
+/qemu-linux-arm64
 /qemu-linux-x64
 /qemu-mac-x64
 /quic_trace/src
@@ -238,10 +244,10 @@
 /win_toolchain/.timestamps
 /win_toolchain/files
 /wix
+/wuffs/src
 /xdg-utils
 /xstream/lib/
 /xulrunner-sdk
 /yasm/binaries
 /yasm/generate_files.xml
-/yasm/source/patched-yasm
 /yasm/yasm.xml

@@ -28,8 +28,6 @@ class WidgetDialogExample : public DialogDelegateView {
   WidgetDialogExample();
   ~WidgetDialogExample() override;
   base::string16 GetWindowTitle() const override;
-  std::unique_ptr<View> CreateExtraView() override;
-  std::unique_ptr<View> CreateFootnoteView() override;
 };
 
 class ModalDialogExample : public WidgetDialogExample {
@@ -47,6 +45,9 @@ WidgetDialogExample::WidgetDialogExample() {
   SetBackground(CreateSolidBackground(SK_ColorGRAY));
   SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical, gfx::Insets(10), 10));
+  SetExtraView(MdTextButton::CreateSecondaryUiButton(
+      nullptr, ASCIIToUTF16("Extra button!")));
+  SetFootnoteView(std::make_unique<Label>(ASCIIToUTF16("Footnote label!")));
   AddChildView(new Label(ASCIIToUTF16("Dialog contents label!")));
 }
 
@@ -54,16 +55,6 @@ WidgetDialogExample::~WidgetDialogExample() = default;
 
 base::string16 WidgetDialogExample::GetWindowTitle() const {
   return ASCIIToUTF16("Dialog Widget Example");
-}
-
-std::unique_ptr<View> WidgetDialogExample::CreateExtraView() {
-  auto view = MdTextButton::CreateSecondaryUiButton(
-      nullptr, ASCIIToUTF16("Extra button!"));
-  return view;
-}
-
-std::unique_ptr<View> WidgetDialogExample::CreateFootnoteView() {
-  return std::make_unique<Label>(ASCIIToUTF16("Footnote label!"));
 }
 
 }  // namespace

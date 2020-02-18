@@ -6,8 +6,10 @@
 #define V8_V8_PROFILER_H_
 
 #include <limits.h>
+#include <memory>
 #include <unordered_set>
 #include <vector>
+
 #include "v8.h"  // NOLINT(build/include)
 
 /**
@@ -141,11 +143,6 @@ class V8_EXPORT CpuProfileNode {
     * Returns the count of samples where the function was currently executing.
     */
   unsigned GetHitCount() const;
-
-  /** Returns function entry UID. */
-  V8_DEPRECATE_SOON(
-      "Use GetScriptId, GetLineNumber, and GetColumnNumber instead.",
-      unsigned GetCallUid() const);
 
   /** Returns id of the node. The id is unique within the tree */
   unsigned GetNodeId() const;
@@ -369,20 +366,6 @@ class V8_EXPORT CpuProfiler {
    * If the title given is empty, finishes the last profile started.
    */
   CpuProfile* StopProfiling(Local<String> title);
-
-  /**
-   * Force collection of a sample. Must be called on the VM thread.
-   * Recording the forced sample does not contribute to the aggregated
-   * profile statistics.
-   */
-  V8_DEPRECATED("Use static CollectSample(Isolate*) instead.",
-                void CollectSample());
-
-  /**
-   * Tells the profiler whether the embedder is idle.
-   */
-  V8_DEPRECATED("Use Isolate::SetIdle(bool) instead.",
-                void SetIdle(bool is_idle));
 
   /**
    * Generate more detailed source positions to code objects. This results in
@@ -989,7 +972,8 @@ struct HeapStatsUpdate {
   V(LazyCompile)            \
   V(RegExp)                 \
   V(Script)                 \
-  V(Stub)
+  V(Stub)                   \
+  V(Relocation)
 
 /**
  * Note that this enum may be extended in the future. Please include a default
@@ -1022,10 +1006,12 @@ class V8_EXPORT CodeEvent {
   const char* GetComment();
 
   static const char* GetCodeEventTypeName(CodeEventType code_event_type);
+
+  uintptr_t GetPreviousCodeStartAddress();
 };
 
 /**
- * Interface to listen to code creation events.
+ * Interface to listen to code creation and code relocation events.
  */
 class V8_EXPORT CodeEventHandler {
  public:
@@ -1037,9 +1023,26 @@ class V8_EXPORT CodeEventHandler {
   explicit CodeEventHandler(Isolate* isolate);
   virtual ~CodeEventHandler();
 
+  /**
+   * Handle is called every time a code object is created or moved. Information
+   * about each code event will be available through the `code_event`
+   * parameter.
+   *
+   * When the CodeEventType is kRelocationType, the code for this CodeEvent has
+   * moved from `GetPreviousCodeStartAddress()` to `GetCodeStartAddress()`.
+   */
   virtual void Handle(CodeEvent* code_event) = 0;
 
+  /**
+   * Call `Enable()` to starts listening to code creation and code relocation
+   * events. These events will be handled by `Handle()`.
+   */
   void Enable();
+
+  /**
+   * Call `Disable()` to stop listening to code creation and code relocation
+   * events.
+   */
   void Disable();
 
  private:

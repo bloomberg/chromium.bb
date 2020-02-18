@@ -14,6 +14,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,10 +36,15 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,25 +72,28 @@ class DnsLookupClient : public network::mojom::ResolveHostClient {
  public:
   using Callback = base::OnceCallback<void(base::Value*)>;
 
-  DnsLookupClient(network::mojom::ResolveHostClientRequest request,
-                  Callback callback)
-      : binding_(this, std::move(request)), callback_(std::move(callback)) {
-    binding_.set_connection_error_handler(
+  DnsLookupClient(
+      mojo::PendingReceiver<network::mojom::ResolveHostClient> receiver,
+      Callback callback)
+      : receiver_(this, std::move(receiver)), callback_(std::move(callback)) {
+    receiver_.set_disconnect_handler(
         base::BindOnce(&DnsLookupClient::OnComplete, base::Unretained(this),
-                       net::ERR_FAILED, base::nullopt));
+                       net::ERR_NAME_NOT_RESOLVED,
+                       net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
   }
   ~DnsLookupClient() override {}
 
   // network::mojom::ResolveHostClient:
   void OnComplete(
       int32_t error,
+      const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override {
     std::string result;
     if (error == net::OK) {
       CHECK(resolved_addresses->size() == 1);
       result = resolved_addresses.value()[0].ToStringWithoutPort();
     } else {
-      result = net::ErrorToString(error);
+      result = net::ErrorToString(resolve_error_info.error);
     }
     base::Value value(result);
     std::move(callback_).Run(&value);
@@ -95,7 +104,7 @@ class DnsLookupClient : public network::mojom::ResolveHostClient {
   }
 
  private:
-  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+  mojo::Receiver<network::mojom::ResolveHostClient> receiver_;
   Callback callback_;
 };
 
@@ -214,15 +223,16 @@ void NetInternalsTest::MessageHandler::DnsLookup(
   auto resolve_host_parameters = network::mojom::ResolveHostParameters::New();
   if (local)
     resolve_host_parameters->source = net::HostResolverSource::LOCAL_ONLY;
-  network::mojom::ResolveHostClientPtr client_ptr;
+  mojo::PendingRemote<network::mojom::ResolveHostClient> client;
   // DnsLookupClient owns itself.
-  new DnsLookupClient(mojo::MakeRequest(&client_ptr),
+  new DnsLookupClient(client.InitWithNewPipeAndPassReceiver(),
                       base::BindOnce(&MessageHandler::RunJavascriptCallback,
                                      weak_factory_.GetWeakPtr()));
   content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
       ->GetNetworkContext()
       ->ResolveHost(net::HostPortPair(hostname, 80),
-                    std::move(resolve_host_parameters), std::move(client_ptr));
+                    net::NetworkIsolationKey::CreateTransient(),
+                    std::move(resolve_host_parameters), std::move(client));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

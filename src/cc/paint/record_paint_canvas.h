@@ -31,6 +31,10 @@ class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
 
   SkImageInfo imageInfo() const override;
 
+  void* accessTopLayerPixels(SkImageInfo* info,
+                             size_t* rowBytes,
+                             SkIPoint* origin = nullptr) override;
+
   void flush() override;
 
   int save() override;
@@ -98,7 +102,6 @@ class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
   void drawPicture(sk_sp<const PaintRecord> record) override;
 
   bool isClipEmpty() const override;
-  bool isClipRect() const override;
   const SkMatrix& getTotalMatrix() const override;
 
   void Annotate(AnnotationType type,

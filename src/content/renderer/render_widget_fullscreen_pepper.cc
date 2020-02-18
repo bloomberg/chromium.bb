@@ -275,17 +275,17 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     int32_t routing_id,
     RenderWidget::ShowCallback show_callback,
     CompositorDependencies* compositor_deps,
+    const ScreenInfo& screen_info,
     PepperPluginInstanceImpl* plugin,
     const blink::WebURL& local_main_frame_url,
-    const ScreenInfo& screen_info,
-    mojom::WidgetRequest widget_request) {
+    mojo::PendingReceiver<mojom::Widget> widget_receiver) {
   DCHECK_NE(MSG_ROUTING_NONE, routing_id);
   DCHECK(show_callback);
-  RenderWidgetFullscreenPepper* widget =
-      new RenderWidgetFullscreenPepper(routing_id, compositor_deps, plugin,
-                                       screen_info, std::move(widget_request));
-  widget->Init(std::move(show_callback),
-               new PepperWidget(widget, local_main_frame_url));
+  RenderWidgetFullscreenPepper* widget = new RenderWidgetFullscreenPepper(
+      routing_id, compositor_deps, plugin, std::move(widget_receiver));
+  widget->InitForPepperFullscreen(
+      std::move(show_callback), new PepperWidget(widget, local_main_frame_url),
+      screen_info);
   return widget;
 }
 
@@ -293,21 +293,17 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
     PepperPluginInstanceImpl* plugin,
-    const ScreenInfo& screen_info,
-    mojom::WidgetRequest widget_request)
+    mojo::PendingReceiver<mojom::Widget> widget_receiver)
     : RenderWidget(routing_id,
                    compositor_deps,
-                   screen_info,
-                   blink::kWebDisplayModeUndefined,
-                   false,
-                   false,
-                   false,
-                   std::move(widget_request)),
+                   /*display_mode=*/blink::mojom::DisplayMode::kUndefined,
+                   /*is_undead=*/false,
+                   /*hidden=*/false,
+                   /*never_visible=*/false,
+                   std::move(widget_receiver)),
       plugin_(plugin),
-      layer_(nullptr),
-      mouse_lock_dispatcher_(new FullscreenMouseLockDispatcher(this)) {
-  pepper_fullscreen_ = true;
-}
+      mouse_lock_dispatcher_(
+          std::make_unique<FullscreenMouseLockDispatcher>(this)) {}
 
 RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {
 }
@@ -351,7 +347,7 @@ void RenderWidgetFullscreenPepper::SetLayer(cc::Layer* layer) {
   UpdateLayerBounds();
   layer_->SetIsDrawable(true);
   layer_->SetHitTestable(true);
-  layer_tree_view()->SetNonBlinkManagedRootLayer(layer_);
+  layer_tree_host()->SetNonBlinkManagedRootLayer(layer_);
 }
 
 bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {
@@ -384,9 +380,7 @@ void RenderWidgetFullscreenPepper::Close(std::unique_ptr<RenderWidget> widget) {
   RenderWidget::Close(std::move(widget));
 }
 
-void RenderWidgetFullscreenPepper::OnSynchronizeVisualProperties(
-    const VisualProperties& visual_properties) {
-  RenderWidget::OnSynchronizeVisualProperties(visual_properties);
+void RenderWidgetFullscreenPepper::AfterUpdateVisualProperties() {
   UpdateLayerBounds();
 }
 

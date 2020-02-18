@@ -147,6 +147,12 @@ declare_args() {
       (perfetto_build_standalone && is_clang &&
        (is_linux || (is_android && android_api_level >= 26)))
 
+  # Build the perf event profiler (traced_perf).
+  # TODO(b/144281346): under development.
+  enable_perfetto_traced_perf =
+      perfetto_build_with_android ||
+      (perfetto_build_standalone && (is_linux || is_android))
+
   # The Trace Processor: offline analytical engine to process traces and compute
   # metrics using a SQL engine.
   enable_perfetto_trace_processor =
@@ -154,16 +160,14 @@ declare_args() {
       is_perfetto_build_generator
 
   # Enables base::Watchdog. Is supported only on Linux-based platforms.
+  # gn/BUILD.gn further restricts this to OS_LINUX || OS_ANDROID when generating
+  # the perfetto_build_flags.h header.
   enable_perfetto_watchdog =
-      perfetto_build_with_android ||
-      (perfetto_build_standalone && (is_linux || is_android) && !is_wasm)
+      perfetto_build_with_android || perfetto_build_standalone
 
   # Misc host executable under tools/.
   enable_perfetto_tools =
       perfetto_build_standalone || perfetto_build_with_android
-
-  # Allows to build the UI (TypeScript/ HTML / WASM)
-  enable_perfetto_ui = perfetto_build_standalone
 
   enable_perfetto_unittests = perfetto_build_standalone ||
                               build_with_chromium || perfetto_build_with_android
@@ -194,20 +198,79 @@ declare_args() {
 }
 
 declare_args() {
-  enable_perfetto_trace_processor_sqlite = enable_perfetto_trace_processor
+  # Enables the SQL query layer of trace processor.
+  enable_perfetto_trace_processor_sqlite =
+      enable_perfetto_trace_processor && !(build_with_chromium && is_android)
 
   # Enables the optional SQLite percentile module.
   enable_perfetto_trace_processor_percentile =
       enable_perfetto_trace_processor && perfetto_build_standalone
 
-  # Enables JSON support in the trace processor.
-  enable_perfetto_trace_processor_json =
-      enable_perfetto_trace_processor && !perfetto_build_with_android
-
   # Enables the REPL interactive prompt in the trace processor.
   enable_perfetto_trace_processor_linenoise =
       perfetto_build_standalone && enable_perfetto_trace_processor &&
       (is_linux || is_android || is_mac)
+
+  # Enables ftrace support in the trace processor.
+  enable_perfetto_trace_processor_ftrace =
+      enable_perfetto_trace_processor && !(build_with_chromium && is_android)
+
+  # Enables parsing support for system probes in trace processor.
+  enable_perfetto_trace_processor_system_probes =
+      enable_perfetto_trace_processor && !(build_with_chromium && is_android)
+
+  # Enables parsing support for android system probes in trace processor.
+  enable_perfetto_trace_processor_android_probes =
+      enable_perfetto_trace_processor && !(build_with_chromium && is_android)
+
+  # Enables parsing support for heap graphs in trace processor.
+  enable_perfetto_trace_processor_heap_graphs =
+      enable_perfetto_trace_processor && !(build_with_chromium && is_android)
+
+  # Enables graphics event support in the trace processor.
+  enable_perfetto_trace_processor_graphics =
+      enable_perfetto_trace_processor && !(build_with_chromium && is_android)
+
+  # Enables JSON support in the trace processor. Required for JSON trace import
+  # and export. Importer support can also be disabled using
+  # |enable_perfetto_trace_processor_json_import|.
+  enable_perfetto_trace_processor_json =
+      enable_perfetto_trace_processor && !perfetto_build_with_android
+
+  # Enables Fuchsia trace format support in trace processor.
+  enable_perfetto_trace_processor_fuchsia =
+      enable_perfetto_trace_processor && !(build_with_chromium && is_android)
+
+  # Enables httpd RPC support in the trace processor.
+  # Further per-OS conditionals are applied in gn/BUILD.gn.
+  enable_perfetto_trace_processor_httpd =
+      enable_perfetto_trace_processor && perfetto_build_standalone
+}
+
+declare_args() {
+  # Enables importer support for JSON traces in the trace processor.
+  enable_perfetto_trace_processor_json_import =
+      enable_perfetto_trace_processor_json &&
+      !(build_with_chromium && is_android)
+
+  # Enables syscall support in trace processor. Required for ftrace, system
+  # probes, and android probes support.
+  enable_perfetto_trace_processor_syscalls =
+      enable_perfetto_trace_processor_ftrace ||
+      enable_perfetto_trace_processor_system_probes ||
+      enable_perfetto_trace_processor_android_probes
+
+  # Enables metrics support in the trace processor, which require SQL support.
+  enable_perfetto_trace_processor_metrics =
+      enable_perfetto_trace_processor_sqlite
+
+  # Enables the trace_to_text tool.
+  enable_perfetto_tools_trace_to_text =
+      enable_perfetto_tools && enable_perfetto_trace_processor_sqlite
+
+  # Allows to build the UI (TypeScript/ HTML / WASM)
+  enable_perfetto_ui =
+      perfetto_build_standalone && enable_perfetto_trace_processor_sqlite
 }
 
 # +---------------------------------------------------------------------------+
@@ -245,3 +308,16 @@ assert(enable_perfetto_watchdog || !perfetto_build_with_android)
 
 assert(perfetto_force_dlog == "" || perfetto_force_dlog == "on" ||
        perfetto_force_dlog == "off")
+
+# Metrics, the UI, and trace to text require SQLite support in trace processor.
+assert(!enable_perfetto_trace_processor_metrics ||
+       enable_perfetto_trace_processor_sqlite)
+assert(!enable_perfetto_tools_trace_to_text ||
+       enable_perfetto_trace_processor_sqlite)
+assert(!enable_perfetto_ui || enable_perfetto_trace_processor_sqlite)
+
+# Syscall support is required for ftrace, system probes, and android probes.
+assert(enable_perfetto_trace_processor_syscalls ||
+       (!enable_perfetto_trace_processor_ftrace &&
+        !enable_perfetto_trace_processor_system_probes &&
+        !enable_perfetto_trace_processor_android_probes))

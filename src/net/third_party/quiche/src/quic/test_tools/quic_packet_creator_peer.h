@@ -31,6 +31,7 @@ class QuicPacketCreatorPeer {
   static QuicVariableLengthIntegerLength GetLengthLength(
       QuicPacketCreator* creator);
   static void SetPacketNumber(QuicPacketCreator* creator, uint64_t s);
+  static void SetPacketNumber(QuicPacketCreator* creator, QuicPacketNumber num);
   static void ClearPacketNumber(QuicPacketCreator* creator);
   static void FillPacketHeader(QuicPacketCreator* creator,
                                QuicPacketHeader* header);
@@ -57,7 +58,6 @@ class QuicPacketCreatorPeer {
 
   static EncryptionLevel GetEncryptionLevel(QuicPacketCreator* creator);
   static QuicFramer* framer(QuicPacketCreator* creator);
-  static void EnableGetPacketHeaderSizeBugFix(QuicPacketCreator* creator);
 };
 
 }  // namespace test

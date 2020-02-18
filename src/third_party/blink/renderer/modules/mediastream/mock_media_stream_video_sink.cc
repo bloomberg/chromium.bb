@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_sink.h"
+#include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
 
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -24,6 +24,12 @@ MockMediaStreamVideoSink::GetDeliverFrameCB() {
                          weak_factory_.GetWeakPtr()));
 }
 
+EncodedVideoFrameCB MockMediaStreamVideoSink::GetDeliverEncodedVideoFrameCB() {
+  return media::BindToCurrentLoop(
+      WTF::BindRepeating(&MockMediaStreamVideoSink::DeliverEncodedVideoFrame,
+                         weak_factory_.GetWeakPtr()));
+}
+
 void MockMediaStreamVideoSink::DeliverVideoFrame(
     scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks estimated_capture_time) {
@@ -32,6 +38,12 @@ void MockMediaStreamVideoSink::DeliverVideoFrame(
   frame_size_ = frame->natural_size();
   last_frame_ = std::move(frame);
   OnVideoFrame();
+}
+
+void MockMediaStreamVideoSink::DeliverEncodedVideoFrame(
+    scoped_refptr<EncodedVideoFrame> frame,
+    base::TimeTicks estimated_capture_time) {
+  OnEncodedVideoFrame();
 }
 
 void MockMediaStreamVideoSink::OnReadyStateChanged(

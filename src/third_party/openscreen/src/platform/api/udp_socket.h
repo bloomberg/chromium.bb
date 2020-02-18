@@ -5,15 +5,16 @@
 #ifndef PLATFORM_API_UDP_SOCKET_H_
 #define PLATFORM_API_UDP_SOCKET_H_
 
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <mutex>
 
 #include "platform/api/network_interface.h"
-#include "platform/api/udp_read_callback.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
-#include "platform/base/macros.h"
+#include "platform/base/udp_packet.h"
 
 namespace openscreen {
 namespace platform {
@@ -29,17 +30,8 @@ using UdpSocketUniquePtr = std::unique_ptr<UdpSocket>;
 // Usage: The socket is created and opened by calling the Create() method. This
 // returns a unique pointer that auto-closes/destroys the socket when it goes
 // out-of-scope.
-//
-// Platform implementation note: There must only be one platform-specific
-// implementation of UdpSocket linked into the library/application. For that
-// reason, none of the methods here are declared virtual (i.e., the overhead is
-// pure waste). However, UdpSocket can be subclassed to include all extra
-// private state, such as OS-specific handles. See UdpSocketPosix for a
-// reference implementation.
 class UdpSocket {
  public:
-  virtual ~UdpSocket();
-
   // Client for the UdpSocket class.
   class Client {
    public:
@@ -79,13 +71,15 @@ class UdpSocket {
 
   // Creates a new, scoped UdpSocket within the IPv4 or IPv6 family.
   // |local_endpoint| may be zero (see comments for Bind()). This method must be
-  // defined in the platform-level implementation. All client_ methods called
-  // will be queued on the provided task_runner. For this reason, the provided
-  // task_runner and client must exist for the duration of the created socket's
+  // defined in the platform-level implementation. All |client| methods called
+  // will be queued on the provided |task_runner|. For this reason, the provided
+  // TaskRunner and Client must exist for the duration of the created socket's
   // lifetime.
   static ErrorOr<UdpSocketUniquePtr> Create(TaskRunner* task_runner,
                                             Client* client,
                                             const IPEndpoint& local_endpoint);
+
+  virtual ~UdpSocket();
 
   // Returns true if |socket| belongs to the IPv4/IPv6 address family.
   virtual bool IsIPv4() const = 0;
@@ -99,59 +93,30 @@ class UdpSocket {
   // Binds to the address specified in the constructor. If the local endpoint's
   // address is zero, the operating system will bind to all interfaces. If the
   // local endpoint's port is zero, the operating system will automatically find
-  // a free local port and bind to it. Future calls to local_endpoint() will
+  // a free local port and bind to it. Future calls to GetLocalEndpoint() will
   // reflect the resolved port.
-  virtual Error Bind() = 0;
+  virtual void Bind() = 0;
 
   // Sets the device to use for outgoing multicast packets on the socket.
-  virtual Error SetMulticastOutboundInterface(
-      NetworkInterfaceIndex ifindex) = 0;
+  virtual void SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) = 0;
 
   // Joins to the multicast group at the given address, using the specified
   // interface.
-  virtual Error JoinMulticastGroup(const IPAddress& address,
-                                   NetworkInterfaceIndex ifindex) = 0;
+  virtual void JoinMulticastGroup(const IPAddress& address,
+                                  NetworkInterfaceIndex ifindex) = 0;
 
-  // Sends a message and returns the number of bytes sent, on success.
-  // Error::Code::kAgain might be returned to indicate the operation would
+  // Sends a message. If the message is not sent, Client::OnSendError() will be
+  // called to indicate this. Error::Code::kAgain indicates the operation would
   // block, which can be expected during normal operation.
-  virtual Error SendMessage(const void* data,
-                            size_t length,
-                            const IPEndpoint& dest) = 0;
+  virtual void SendMessage(const void* data,
+                           size_t length,
+                           const IPEndpoint& dest) = 0;
 
   // Sets the DSCP value to use for all messages sent from this socket.
-  virtual Error SetDscp(DscpMode state) = 0;
-
-  // Sets the callback that should be called upon deletion of this socket. This
-  // allows other objects to observe the socket's destructor and act when it is
-  // called.
-  void SetDeletionCallback(std::function<void(UdpSocket*)> callback);
+  virtual void SetDscp(DscpMode state) = 0;
 
  protected:
-  // Creates a new UdpSocket. The provided client and task_runner must exist for
-  // the duration of this socket's lifetime.
-  UdpSocket(TaskRunner* task_runner, Client* client);
-
-  // Methods to take care of posting UdpSocket::Client callbacks for client_ to
-  // task_runner_.
-  void OnError(Error error);
-  void OnSendError(Error error);
-  void OnRead(ErrorOr<UdpPacket> read_data);
-
- private:
-  // This callback allows other objects to observe the socket's destructor and
-  // act when it is called.
-  std::function<void(UdpSocket*)> deletion_callback_;
-
-  // Client to use for callbacks.
-  // NOTE: client_ can be nullptr if the user does not want any callbacks (for
-  // example, in the send-only case).
-  Client* const client_;
-
-  // Task runner to use for queuing client_ callbacks.
-  TaskRunner* const task_runner_;
-
-  OSP_DISALLOW_COPY_AND_ASSIGN(UdpSocket);
+  UdpSocket();
 };
 
 }  // namespace platform

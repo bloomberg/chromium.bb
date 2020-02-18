@@ -14,7 +14,6 @@ import os
 
 from chromite.lib import results_lib
 from chromite.lib import constants
-from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
@@ -29,10 +28,6 @@ ARCHIVE_ROOT = 'gs://chromeos-image-archive/%(target)s'
 METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT,
                                  'R%(milestone)s**//metadata.json')
 LATEST_URL = os.path.join(ARCHIVE_ROOT, 'LATEST-master')
-
-
-GerritPatchTuple = clactions.GerritPatchTuple
-GerritChangeTuple = clactions.GerritChangeTuple
 
 
 class _DummyLock(object):
@@ -255,24 +250,6 @@ class CBuildbotMetadata(object):
       return json.dumps(self.GetValue(key))
     else:
       return json.dumps(self.GetDict(), indent=2, sort_keys=True)
-
-  def RecordCLAction(self, change, action, timestamp=None, reason=''):
-    """Record an action that was taken on a CL, to the metadata.
-
-    Args:
-      change: A GerritPatch object for the change acted on.
-      action: The action taken, should be one of constants.CL_ACTIONS
-      timestamp: An integer timestamp such as int(time.time()) at which
-                 the action was taken. Default: Now.
-      reason: Description of the reason the action was taken. Default: ''
-
-    Returns:
-      self
-    """
-    cl_action = clactions.CLAction.FromGerritPatchAndAction(change, action,
-                                                            reason, timestamp)
-    self._cl_action_list.append(cl_action.AsMetadataEntry())
-    return self
 
   @staticmethod
   def GetReportMetadataDict(builder_run, get_statuses_from_slaves,

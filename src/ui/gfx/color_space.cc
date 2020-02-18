@@ -66,14 +66,29 @@ ColorSpace::ColorSpace(const SkColorSpace& sk_color_space)
                  TransferID::INVALID,
                  MatrixID::RGB,
                  RangeID::FULL) {
+  // Special case the HDR transfer functions since they're not numerical
+  auto transfer_eq = [](skcms_TransferFunction x, skcms_TransferFunction y) {
+    return x.g == y.g && x.a == y.a && x.b == y.b && x.c == y.c && x.d == y.d &&
+           x.e == y.e && x.f == y.f;
+  };
+
   skcms_TransferFunction fn;
-  skcms_Matrix3x3 to_XYZD50;
-  if (!sk_color_space.isNumericalTransferFn(&fn) ||
-      !sk_color_space.toXYZD50(&to_XYZD50)) {
+  if (sk_color_space.isNumericalTransferFn(&fn)) {
+    SetCustomTransferFunction(fn);
+  } else if (transfer_eq(fn, SkNamedTransferFn::kHLG)) {
+    transfer_ = TransferID::ARIB_STD_B67;
+  } else if (transfer_eq(fn, SkNamedTransferFn::kPQ)) {
+    transfer_ = TransferID::SMPTEST2084;
+  } else {
     // Construct an invalid result: Unable to extract necessary parameters
     return;
   }
-  SetCustomTransferFunction(fn);
+
+  skcms_Matrix3x3 to_XYZD50;
+  if (!sk_color_space.toXYZD50(&to_XYZD50)) {
+    // Construct an invalid result: Unable to extract necessary parameters
+    return;
+  }
   SetCustomPrimaries(to_XYZD50);
 }
 
@@ -90,6 +105,15 @@ ColorSpace ColorSpace::CreateCustom(const skcms_Matrix3x3& to_XYZD50,
                     ColorSpace::RangeID::FULL);
   result.SetCustomPrimaries(to_XYZD50);
   result.SetCustomTransferFunction(fn);
+  return result;
+}
+
+// static
+ColorSpace ColorSpace::CreateCustom(const skcms_Matrix3x3& to_XYZD50,
+                                    TransferID transfer) {
+  ColorSpace result(ColorSpace::PrimaryID::CUSTOM, transfer,
+                    ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
+  result.SetCustomPrimaries(to_XYZD50);
   return result;
 }
 
@@ -451,6 +475,12 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
     case TransferID::LINEAR_HDR:
       transfer_fn = SkNamedTransferFn::kLinear;
       break;
+    case TransferID::ARIB_STD_B67:
+      transfer_fn = SkNamedTransferFn::kHLG;
+      break;
+    case TransferID::SMPTEST2084:
+      transfer_fn = SkNamedTransferFn::kPQ;
+      break;
     default:
       if (!GetTransferFunction(&transfer_fn)) {
         DLOG(ERROR) << "Failed to transfer function for SkColorSpace";
@@ -482,6 +512,22 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
     DLOG(ERROR) << "SkColorSpace::MakeRGB failed.";
 
   return sk_color_space;
+}
+
+ColorSpace::PrimaryID ColorSpace::GetPrimaryID() const {
+  return primaries_;
+}
+
+ColorSpace::TransferID ColorSpace::GetTransferID() const {
+  return transfer_;
+}
+
+ColorSpace::MatrixID ColorSpace::GetMatrixID() const {
+  return matrix_;
+}
+
+ColorSpace::RangeID ColorSpace::GetRangeID() const {
+  return range_;
 }
 
 // static
@@ -871,6 +917,26 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
     case RangeID::LIMITED:
       break;
   }
+
+  // Note: The values below assume an 8-bit range and aren't entirely correct
+  // for higher bit depths. They are close enough though (with a relative error
+  // of ~2.9% for 10-bit and ~3.7% for 12-bit) that it's not worth adding a
+  // |bit_depth| field to gfx::ColorSpace yet.
+  //
+  // The limited ranges are [64,940] and [256, 3760] for 10 and 12 bit content
+  // respectively. So the final values end up being:
+  //
+  //   16 /  255 = 0.06274509803921569
+  //   64 / 1023 = 0.06256109481915934
+  //  256 / 4095 = 0.06251526251526252
+  //
+  //  235 /  255 = 0.9215686274509803
+  //  940 / 1023 = 0.9188660801564027
+  // 3760 / 4095 = 0.9181929181929182
+  //
+  // Relative error (same for min/max):
+  //   10 bit: abs(16/235 - 64/1023)/(64/1023)   = 0.0029411764705882222
+  //   12 bit: abs(16/235 - 256/4095)/(256/4095) = 0.003676470588235281
   switch (matrix_) {
     case MatrixID::RGB:
     case MatrixID::GBR:
@@ -896,6 +962,7 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
 
 bool ColorSpace::ToSkYUVColorSpace(SkYUVColorSpace* out) const {
   if (range_ == RangeID::FULL) {
+    // TODO(dalecurtis): This is probably not right for BT.2020.
     *out = kJPEG_SkYUVColorSpace;
     return true;
   }
@@ -908,6 +975,10 @@ bool ColorSpace::ToSkYUVColorSpace(SkYUVColorSpace* out) const {
     case MatrixID::SMPTE170M:
     case MatrixID::SMPTE240M:
       *out = kRec601_SkYUVColorSpace;
+      return true;
+
+    case MatrixID::BT2020_NCL:
+      *out = kBT2020_SkYUVColorSpace;
       return true;
 
     default:

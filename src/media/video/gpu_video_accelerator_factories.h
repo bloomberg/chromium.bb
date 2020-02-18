@@ -27,7 +27,6 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-class SharedMemory;
 }  // namespace base
 
 namespace gfx {
@@ -69,6 +68,12 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
     BGRA,             // One 8:8:8:8 BGRA (Usually Mac)
   };
 
+  enum class Supported {
+    kFalse = 0,
+    kTrue,
+    kUnknown,
+  };
+
   // Return whether GPU encoding/decoding is enabled.
   virtual bool IsGpuVideoAcceleratorEnabled() = 0;
 
@@ -78,11 +83,13 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // Returns the |route_id| of the command buffer, or 0 if there is none.
   virtual int32_t GetCommandBufferRouteId() = 0;
 
-  // Return true if |config| is potentially supported by a decoder created with
-  // CreateVideoDecoder() using |implementation|.
+  // Returns Supported::kTrue if |config| is supported by a decoder created with
+  // CreateVideoDecoder() using |implementation|. Returns Supported::kMaybe if
+  // it's not known at this time whether |config| is supported or not. Returns
+  // Supported::kFalse if |config| is not supported.
   //
   // May be called on any thread.
-  virtual bool IsDecoderConfigSupported(
+  virtual Supported IsDecoderConfigSupported(
       VideoDecoderImplementation implementation,
       const VideoDecoderConfig& config) = 0;
 
@@ -124,10 +131,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // GpuMemoryBuffers. May return null if
   // ShouldUseGpuMemoryBuffersForVideoFrames return false.
   virtual gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() = 0;
-
-  // Allocate & return a shared memory segment.
-  virtual std::unique_ptr<base::SharedMemory> CreateSharedMemory(
-      size_t size) = 0;
 
   // Allocate & return an unsafe shared memory region
   virtual base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(

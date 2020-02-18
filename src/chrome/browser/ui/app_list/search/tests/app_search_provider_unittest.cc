@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
-#include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
@@ -107,7 +106,12 @@ class AppSearchProviderTest : public AppListTestBase {
  public:
   AppSearchProviderTest() {
     // Disable System Web Apps so the Settings Internal App is still installed.
-    scoped_feature_list_.InitAndDisableFeature(features::kSystemWebApps);
+    // TODO(crbug.com/990684): disable FuzzyAppSearch because we flipped the
+    // flag to be enabled by default, need to enable it after it is fully
+    // launched.
+    scoped_feature_list_.InitWithFeatures(
+        {},
+        {features::kSystemWebApps, app_list_features::kEnableFuzzyAppSearch});
   }
   ~AppSearchProviderTest() override {}
 
@@ -753,11 +757,6 @@ TEST_F(AppSearchProviderTest, CrostiniApp) {
 }
 
 TEST_F(AppSearchProviderTest, AppServiceIconCache) {
-  // Skip this App Service specific test if the App Service is disabled.
-  if (!base::FeatureList::IsEnabled(features::kAppServiceAsh)) {
-    return;
-  }
-
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
   ASSERT_NE(proxy, nullptr);
@@ -795,6 +794,17 @@ TEST_F(AppSearchProviderTest, AppServiceIconCache) {
   EXPECT_EQ(4, stub_icon_loader.NumLoadIconFromIconKeyCalls());
 
   proxy->OverrideInnerIconLoaderForTesting(old_icon_loader);
+}
+
+TEST_F(AppSearchProviderTest, FuzzyAppSearchTest) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(app_list_features::kEnableFuzzyAppSearch);
+  CreateSearch();
+  EXPECT_EQ("Packaged App 1,Packaged App 2", RunQuery("pa"));
+  std::string result = RunQuery("packahe");
+  EXPECT_TRUE(result == "Packaged App 1,Packaged App 2" ||
+              result == "Packaged App 2,Packaged App 1");
+  EXPECT_EQ(kKeyboardShortcutHelperInternalName, RunQuery("Helper"));
 }
 
 enum class TestExtensionInstallType {
@@ -930,7 +940,7 @@ TEST_P(AppSearchProviderWithExtensionInstallType, OemResultsOnFirstBoot) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AppSearchProviderWithExtensionInstallType,
     ::testing::ValuesIn({TestExtensionInstallType::CONTROLLED_BY_POLICY,
                          TestExtensionInstallType::CHROME_COMPONENT,
@@ -1021,7 +1031,7 @@ TEST_P(AppSearchProviderWithArcAppInstallType,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AppSearchProviderWithArcAppInstallType,
     ::testing::ValuesIn({TestArcAppInstallType::CONTROLLED_BY_POLICY,
                          TestArcAppInstallType::INSTALLED_BY_DEFAULT}));

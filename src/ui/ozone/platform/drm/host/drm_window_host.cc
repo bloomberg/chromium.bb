@@ -65,13 +65,15 @@ gfx::Rect DrmWindowHost::GetCursorConfinedBounds() const {
                                            : cursor_confined_bounds_;
 }
 
-void DrmWindowHost::Show() {
-}
+void DrmWindowHost::Show(bool inactive) {}
 
-void DrmWindowHost::Hide() {
-}
+void DrmWindowHost::Hide() {}
 
-void DrmWindowHost::Close() {
+void DrmWindowHost::Close() {}
+
+bool DrmWindowHost::IsVisible() const {
+  NOTREACHED();
+  return true;
 }
 
 void DrmWindowHost::PrepareForShutdown() {}
@@ -86,8 +88,7 @@ gfx::Rect DrmWindowHost::GetBounds() {
   return bounds_;
 }
 
-void DrmWindowHost::SetTitle(const base::string16& title) {
-}
+void DrmWindowHost::SetTitle(const base::string16& title) {}
 
 void DrmWindowHost::SetCapture() {
   window_manager_->GrabEvents(widget_);
@@ -101,17 +102,13 @@ bool DrmWindowHost::HasCapture() const {
   return widget_ == window_manager_->event_grabber();
 }
 
-void DrmWindowHost::ToggleFullscreen() {
-}
+void DrmWindowHost::ToggleFullscreen() {}
 
-void DrmWindowHost::Maximize() {
-}
+void DrmWindowHost::Maximize() {}
 
-void DrmWindowHost::Minimize() {
-}
+void DrmWindowHost::Minimize() {}
 
-void DrmWindowHost::Restore() {
-}
+void DrmWindowHost::Restore() {}
 
 PlatformWindowState DrmWindowHost::GetPlatformWindowState() const {
   return PlatformWindowState::kUnknown;
@@ -126,6 +123,10 @@ void DrmWindowHost::Deactivate() {
 }
 
 void DrmWindowHost::SetUseNativeFrame(bool use_native_frame) {}
+
+bool DrmWindowHost::ShouldUseNativeFrame() const {
+  return false;
+}
 
 void DrmWindowHost::SetCursor(PlatformCursor cursor) {
   cursor_->SetCursor(widget_, cursor);
@@ -150,6 +151,19 @@ void DrmWindowHost::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
 gfx::Rect DrmWindowHost::GetRestoredBoundsInPixels() const {
   NOTREACHED();
   return gfx::Rect();
+}
+
+void DrmWindowHost::SetWindowIcons(const gfx::ImageSkia& window_icon,
+                                   const gfx::ImageSkia& app_icon) {
+  NOTREACHED();
+}
+
+void DrmWindowHost::SizeConstraintsChanged() {
+  NOTREACHED();
+}
+
+void DrmWindowHost::OnMouseEnter() {
+  delegate_->OnMouseEnter();
 }
 
 bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& event) {
@@ -198,6 +212,14 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& event) {
   if (event->IsLocatedEvent()) {
     // Make the event location relative to this window's origin.
     LocatedEvent* located_event = event->AsLocatedEvent();
+
+    if (event->IsMouseEvent()) {
+      DrmWindowHost* window_on_mouse =
+          window_manager_->GetWindowAt(located_event->location());
+      if (window_on_mouse)
+        window_manager_->MouseOnWindow(window_on_mouse);
+    }
+
     gfx::PointF location = located_event->location_f();
     location -= gfx::Vector2dF(bounds_.OffsetFromOrigin());
     located_event->set_location_f(location);

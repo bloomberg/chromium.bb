@@ -34,11 +34,9 @@ class ChrootCommand(command.CliCommand):
 
     chroot_args = ['--log-level', self.options.log_level]
 
-    result = cros_build_lib.RunCommand(cmd, print_cmd=False, error_code_ok=True,
-                                       cwd=constants.SOURCE_ROOT,
-                                       mute_output=False,
-                                       enter_chroot=True,
-                                       chroot_args=chroot_args)
+    result = cros_build_lib.run(cmd, print_cmd=False, error_code_ok=True,
+                                cwd=constants.SOURCE_ROOT, mute_output=False,
+                                enter_chroot=True, chroot_args=chroot_args)
     return result.returncode
 
   @classmethod

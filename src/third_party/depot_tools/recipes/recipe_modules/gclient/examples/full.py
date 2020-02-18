@@ -4,6 +4,7 @@
 
 DEPS = [
   'gclient',
+  'recipe_engine/buildbucket',
   'recipe_engine/context',
   'recipe_engine/path',
   'recipe_engine/properties',
@@ -58,7 +59,7 @@ def RunSteps(api):
   soln = src_cfg.solutions.add()
   soln.name = 'src'
   soln.url = 'https://chromium.googlesource.com/chromium/src.git'
-  soln.revision = api.properties.get('revision')
+  soln.revision = api.buildbucket.gitiles_commit.id
   soln.custom_vars = {'string_var': 'string_val', 'true_var': True}
   src_cfg.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
   api.gclient.c = src_cfg
@@ -90,6 +91,6 @@ def GenTests(api):
 
   yield api.test('buildbot') + api.properties(path_config='buildbot')
 
-  yield api.test('revision') + api.properties(revision='abc')
+  yield api.test('revision') + api.buildbucket.ci_build(revision='abc')
 
-  yield api.test('tryserver') + api.properties.tryserver()
+  yield api.test('tryserver') + api.buildbucket.try_build()

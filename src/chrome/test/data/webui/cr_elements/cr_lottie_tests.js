@@ -60,6 +60,7 @@ cr.define('cr_lottie_test', function() {
     PolymerTest.clearBody();
     crLottieElement = document.createElement('cr-lottie');
     crLottieElement.animationUrl = SAMPLE_LOTTIE;
+    crLottieElement.autoplay = true;
 
     container = document.createElement('div');
     container.style.width = '300px';
@@ -106,6 +107,44 @@ cr.define('cr_lottie_test', function() {
     container.style.width = newWidth + 'px';
     container.style.height = newHeight + 'px';
     await waitForResizeEvent;
+  });
+
+  test('TestPlayPause', async () => {
+    const waitForInitializeEvent =
+        test_util.eventToPromise('cr-lottie-initialized', crLottieElement);
+    await waitForInitializeEvent;
+
+    const waitForPlayingEvent =
+        test_util.eventToPromise('cr-lottie-playing', crLottieElement);
+    await waitForPlayingEvent;
+
+    const waitForPauseEvent =
+        test_util.eventToPromise('cr-lottie-paused', crLottieElement);
+    crLottieElement.setPlay(false);
+    await waitForPauseEvent;
+
+    const waitForPlayingEventAgain =
+        test_util.eventToPromise('cr-lottie-playing', crLottieElement);
+    crLottieElement.setPlay(true);
+    await waitForPlayingEventAgain;
+  });
+
+  test('TestPlayBeforeInit', async () => {
+    assertTrue(crLottieElement.autoplay);
+
+    crLottieElement.setPlay(false);
+    assertFalse(crLottieElement.autoplay);
+
+    crLottieElement.setPlay(true);
+    assertTrue(crLottieElement.autoplay);
+
+    const waitForInitializeEvent =
+        test_util.eventToPromise('cr-lottie-initialized', crLottieElement);
+    await waitForInitializeEvent;
+
+    const waitForPlayingEvent =
+        test_util.eventToPromise('cr-lottie-playing', crLottieElement);
+    await waitForPlayingEvent;
   });
 
   test('TestRenderFrame', async () => {

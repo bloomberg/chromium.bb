@@ -24,7 +24,6 @@
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
@@ -45,6 +44,7 @@ class ServiceWorkerDiskCache;
 class ServiceWorkerResponseMetadataWriter;
 class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
+class ServiceWorkerVersion;
 struct ServiceWorkerRegistrationInfo;
 
 namespace service_worker_storage_unittest {
@@ -64,8 +64,7 @@ FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest,
 // an owner of this class. When a storage operation fails, this is marked as
 // disabled and all subsequent requests are aborted until the context core is
 // restarted.
-class CONTENT_EXPORT ServiceWorkerStorage
-    : public ServiceWorkerVersion::Observer {
+class CONTENT_EXPORT ServiceWorkerStorage {
  public:
   using ResourceList = std::vector<ServiceWorkerDatabase::ResourceRecord>;
   using StatusCallback =
@@ -90,32 +89,32 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status)>;
 
-  ~ServiceWorkerStorage() override;
+  ~ServiceWorkerStorage();
 
   static std::unique_ptr<ServiceWorkerStorage> Create(
       const base::FilePath& user_data_directory,
-      const base::WeakPtr<ServiceWorkerContextCore>& context,
+      ServiceWorkerContextCore* context,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy);
 
   // Used for DeleteAndStartOver. Creates new storage based on |old_storage|.
   static std::unique_ptr<ServiceWorkerStorage> Create(
-      const base::WeakPtr<ServiceWorkerContextCore>& context,
+      ServiceWorkerContextCore* context,
       ServiceWorkerStorage* old_storage);
 
-  // Finds registration for |document_url| or |scope| or |registration_id|.
+  // Finds registration for |client_url| or |scope| or |registration_id|.
   // The Find methods will find stored and initially installing registrations.
   // Returns blink::ServiceWorkerStatusCode::kOk with non-null
   // registration if registration is found, or returns
   // blink::ServiceWorkerStatusCode::kErrorNotFound if no
   // matching registration is found.  The FindRegistrationForScope method is
   // guaranteed to return asynchronously. However, the methods to find
-  // for |document_url| or |registration_id| may complete immediately
+  // for |client_url| or |registration_id| may complete immediately
   // (the callback may be called prior to the method returning) or
   // asynchronously.
-  void FindRegistrationForDocument(const GURL& document_url,
-                                   FindRegistrationCallback callback);
+  void FindRegistrationForClientUrl(const GURL& client_url,
+                                    FindRegistrationCallback callback);
   void FindRegistrationForScope(const GURL& scope,
                                 FindRegistrationCallback callback);
   void FindRegistrationForId(int64_t registration_id,
@@ -373,7 +372,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   ServiceWorkerStorage(
       const base::FilePath& user_data_directory,
-      base::WeakPtr<ServiceWorkerContextCore> context,
+      ServiceWorkerContextCore* context,
       scoped_refptr<base::SequencedTaskRunner> database_task_runner,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy);
@@ -384,8 +383,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void LazyInitialize(base::OnceClosure callback);
   void DidReadInitialData(std::unique_ptr<InitialData> data,
                           ServiceWorkerDatabase::Status status);
-  void DidFindRegistrationForDocument(
-      const GURL& document_url,
+  void DidFindRegistrationForClientUrl(
+      const GURL& client_url,
       FindRegistrationCallback callback,
       int64_t callback_id,
       const ServiceWorkerDatabase::RegistrationData& data,
@@ -451,8 +450,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
   scoped_refptr<ServiceWorkerRegistration> GetOrCreateRegistration(
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources);
-  ServiceWorkerRegistration* FindInstallingRegistrationForDocument(
-      const GURL& document_url);
+  ServiceWorkerRegistration* FindInstallingRegistrationForClientUrl(
+      const GURL& client_url);
   ServiceWorkerRegistration* FindInstallingRegistrationForScope(
       const GURL& scope);
   ServiceWorkerRegistration* FindInstallingRegistrationForId(
@@ -500,10 +499,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const ServiceWorkerDatabase::RegistrationData& registration,
       const ResourceList& resources,
       WriteRegistrationCallback callback);
-  static void FindForDocumentInDB(
+  static void FindForClientUrlInDB(
       ServiceWorkerDatabase* database,
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
-      const GURL& document_url,
+      const GURL& client_url,
       FindInDBCallback callback);
   static void FindForScopeInDB(
       ServiceWorkerDatabase* database,
@@ -602,8 +601,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   base::FilePath user_data_directory_;
 
-  // The context should be valid while the storage is alive.
-  base::WeakPtr<ServiceWorkerContextCore> context_;
+  // The ServiceWorkerContextCore object must outlive this.
+  ServiceWorkerContextCore* const context_;
 
   // |database_| is only accessed using |database_task_runner_|.
   std::unique_ptr<ServiceWorkerDatabase> database_;

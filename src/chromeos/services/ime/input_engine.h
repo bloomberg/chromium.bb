@@ -43,8 +43,6 @@ class InputEngine : public mojom::InputChannel {
                            const std::vector<uint8_t>& extra);
 
   // mojom::InputChannel overrides:
-  void ProcessText(const std::string& message,
-                   ProcessTextCallback callback) override;
   void ProcessMessage(const std::vector<uint8_t>& message,
                       ProcessMessageCallback callback) override;
   void ProcessKeypressForRulebased(
@@ -60,11 +58,11 @@ class InputEngine : public mojom::InputChannel {
   // Returns whether the given ime_spec is supported by rulebased engine.
   bool IsImeSupportedByRulebased(const std::string& ime_spec);
 
-  std::string Process(const std::string& message,
-                      const InputEngineContext* context);
-
   mojo::ReceiverSet<mojom::InputChannel, std::unique_ptr<InputEngineContext>>
       channel_receivers_;
+
+  // Whether the AltRight key is held down or not. Only used for rule-based.
+  bool isAltRightDown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(InputEngine);
 };

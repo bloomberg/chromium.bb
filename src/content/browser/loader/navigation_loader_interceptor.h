@@ -10,20 +10,25 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
+
+namespace blink {
+class ThrottlingURLLoader;
+}  // namespace blink
 
 namespace content {
 
 class BrowserContext;
 struct ResourceRequest;
 struct SubresourceLoaderParams;
-class ThrottlingURLLoader;
 
 // NavigationLoaderInterceptor is given a chance to create a URLLoader and
 // intercept a navigation request before the request is handed off to the
@@ -37,7 +42,7 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   virtual ~NavigationLoaderInterceptor() = default;
 
   using LoaderCallback =
-      base::OnceCallback<void(SingleRequestURLLoaderFactory::RequestHandler)>;
+      base::OnceCallback<void(scoped_refptr<network::SharedURLLoaderFactory>)>;
   using FallbackCallback =
       base::OnceCallback<void(bool /* reset_subresource_loader_params */)>;
 
@@ -93,9 +98,9 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   // |response_body| passed.  |request| is the latest request whose request URL
   // may include URL fragment.  An example of where this is used is AppCache,
   // where the handler returns fallback content for the response passed in.
-  // The URLLoader interface pointer is returned in the |loader| parameter.
-  // The interface request for the URLLoaderClient is returned in the
-  // |client_request| parameter.
+  // The URLLoader remote is returned in the |loader| parameter.
+  // The mojo::PendingReceiver for the URLLoaderClient is returned in the
+  // |client_receiver| parameter.
   // The |url_loader| points to the ThrottlingURLLoader that currently controls
   // the request. It can be optionally consumed to get the current
   // URLLoaderClient and URLLoader so that the implementation can rebind them to
@@ -107,14 +112,24 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   // flag was introduced to skip service worker after signed exchange redirect.
   // Remove this flag when we support service worker and signed exchange
   // integration. See crbug.com/894755#c1. Nullptr is not allowed.
+  // |will_return_unsafe_redirect| is set to true when this interceptor will
+  // return an unsafe redirect response and will handle the redirected request,
+  // therefore regular safety check should be exempted for the redirect.
+  // Nullptr is not allowed.
   virtual bool MaybeCreateLoaderForResponse(
       const network::ResourceRequest& request,
-      const network::ResourceResponseHead& response_head,
+      network::mojom::URLResponseHeadPtr* response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
-      network::mojom::URLLoaderPtr* loader,
-      network::mojom::URLLoaderClientRequest* client_request,
-      ThrottlingURLLoader* url_loader,
-      bool* skip_other_interceptors);
+      mojo::PendingRemote<network::mojom::URLLoader>* loader,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
+      blink::ThrottlingURLLoader* url_loader,
+      bool* skip_other_interceptors,
+      bool* will_return_unsafe_redirect);
+
+  // Called when MaybeCreateLoader() has called the LoaderCallback with a valid
+  // RequestHandler. Returns true when this interceptor will return an unsafe
+  // redirect response and will handle the redirected request.
+  virtual bool ShouldBypassRedirectChecks();
 };
 
 }  // namespace content

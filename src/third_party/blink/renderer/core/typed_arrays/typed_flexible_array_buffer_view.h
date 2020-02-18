@@ -7,16 +7,17 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/typed_array.h"
 #include "third_party/blink/renderer/core/typed_arrays/flexible_array_buffer_view.h"
 
 namespace blink {
 
-template <typename WTFTypedArray>
+template <typename TypedArray>
 class TypedFlexibleArrayBufferView final : public FlexibleArrayBufferView {
   STACK_ALLOCATED();
 
  public:
-  using ValueType = typename WTFTypedArray::ValueType;
+  using ValueType = typename TypedArray::ValueType;
 
   TypedFlexibleArrayBufferView() : FlexibleArrayBufferView() {}
 
@@ -34,9 +35,11 @@ class TypedFlexibleArrayBufferView final : public FlexibleArrayBufferView {
 };
 
 using FlexibleFloat32ArrayView =
-    TypedFlexibleArrayBufferView<WTF::Float32Array>;
-using FlexibleInt32ArrayView = TypedFlexibleArrayBufferView<WTF::Int32Array>;
-using FlexibleUint32ArrayView = TypedFlexibleArrayBufferView<WTF::Uint32Array>;
+    TypedFlexibleArrayBufferView<TypedArray<float>>;
+using FlexibleInt32ArrayView =
+    TypedFlexibleArrayBufferView<TypedArray<int32_t>>;
+using FlexibleUint32ArrayView =
+    TypedFlexibleArrayBufferView<TypedArray<uint32_t>>;
 
 }  // namespace blink
 

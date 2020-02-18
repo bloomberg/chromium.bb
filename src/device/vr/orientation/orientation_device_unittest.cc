@@ -16,6 +16,8 @@
 #include "device/vr/orientation/orientation_session.h"
 #include "device/vr/test/fake_orientation_provider.h"
 #include "device/vr/test/fake_sensor_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
@@ -79,10 +81,10 @@ class VROrientationDeviceTest : public testing::Test {
   ~VROrientationDeviceTest() override = default;
   void SetUp() override {
     fake_sensor_provider_ = std::make_unique<FakeSensorProvider>(
-        mojo::MakeRequest(&sensor_provider_ptr_));
+        sensor_provider_.BindNewPipeAndPassReceiver());
 
     fake_sensor_ = std::make_unique<FakeOrientationSensor>(
-        mojo::MakeRequest(&sensor_ptr_));
+        sensor_.InitWithNewPipeAndPassReceiver());
 
     shared_buffer_handle_ = mojo::SharedBufferHandle::Create(
         sizeof(SensorReadingSharedBuffer) *
@@ -108,13 +110,8 @@ class VROrientationDeviceTest : public testing::Test {
   void InitializeDevice(mojom::SensorInitParamsPtr params) {
     base::RunLoop loop;
 
-    device_ = std::make_unique<VROrientationDevice>(
-        &sensor_provider_ptr_, base::BindOnce(
-                                   [](base::OnceClosure quit_closure) {
-                                     // The callback was called.
-                                     std::move(quit_closure).Run();
-                                   },
-                                   loop.QuitClosure()));
+    device_ = std::make_unique<VROrientationDevice>(sensor_provider_.get(),
+                                                    loop.QuitClosure());
 
     // Complete the creation of device_ by letting the GetSensor function go
     // through.
@@ -166,11 +163,11 @@ class VROrientationDeviceTest : public testing::Test {
   }
 
   std::unique_ptr<VROrientationSession> MakeDisplay() {
-    mojom::XRFrameDataProviderPtr data_provider;
-    mojom::XRSessionControllerPtr controller;
+    mojo::PendingRemote<mojom::XRFrameDataProvider> data_provider;
+    mojo::PendingRemote<mojom::XRSessionController> controller;
     return std::make_unique<VROrientationSession>(
-        device_.get(), mojo::MakeRequest(&data_provider),
-        mojo::MakeRequest(&controller));
+        device_.get(), data_provider.InitWithNewPipeAndPassReceiver(),
+        controller.InitWithNewPipeAndPassReceiver());
   }
 
   void TryGetFrameData(VROrientationSession* display, bool expect_null) {
@@ -190,11 +187,11 @@ class VROrientationDeviceTest : public testing::Test {
 
   mojom::SensorInitParamsPtr FakeInitParams() {
     auto init_params = mojom::SensorInitParams::New();
-    init_params->sensor = std::move(sensor_ptr_);
+    init_params->sensor = std::move(sensor_);
     init_params->default_configuration = PlatformSensorConfiguration(
         SensorTraits<kOrientationSensorType>::kDefaultFrequency);
 
-    init_params->client_request = mojo::MakeRequest(&sensor_client_ptr_);
+    init_params->client_receiver = sensor_client_.BindNewPipeAndPassReceiver();
 
     init_params->memory = shared_buffer_handle_->Clone(
         mojo::SharedBufferHandle::AccessMode::READ_ONLY);
@@ -229,14 +226,14 @@ class VROrientationDeviceTest : public testing::Test {
 
   std::unique_ptr<VROrientationDevice> device_;
   std::unique_ptr<FakeSensorProvider> fake_sensor_provider_;
-  mojom::SensorProviderPtr sensor_provider_ptr_;
+  mojo::Remote<mojom::SensorProvider> sensor_provider_;
 
   // Fake Sensor Init params objects
   std::unique_ptr<FakeOrientationSensor> fake_sensor_;
-  mojom::SensorPtrInfo sensor_ptr_;
+  mojo::PendingRemote<mojom::Sensor> sensor_;
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
   mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
-  mojom::SensorClientPtr sensor_client_ptr_;
+  mojo::Remote<mojom::SensorClient> sensor_client_;
 
   std::unique_ptr<FakeScreen> fake_screen_;
   std::unique_ptr<ScopedScreenOverride> scoped_screen_override_;
@@ -248,8 +245,8 @@ TEST_F(VROrientationDeviceTest, InitializationTest) {
   // Check that without running anything, the device will return not available,
   // without crashing.
 
-  device_ = std::make_unique<VROrientationDevice>(&sensor_provider_ptr_,
-                                                  base::BindOnce([]() {}));
+  device_ = std::make_unique<VROrientationDevice>(sensor_provider_.get(),
+                                                  base::DoNothing());
   task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(device_->IsAvailable());

@@ -17,6 +17,7 @@
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/unguessable_token.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -52,6 +53,10 @@ class FrameSchedulerDelegateForTesting : public FrameScheduler::Delegate {
 
   void UpdateTaskTime(base::TimeDelta task_time) override {
     update_task_time_calls_++;
+  }
+
+  const base::UnguessableToken& GetAgentClusterId() const override {
+    return base::UnguessableToken::Null();
   }
 
   MOCK_METHOD1(UpdateActiveSchedulerTrackedFeatures, void(uint64_t));
@@ -464,6 +469,30 @@ TEST_F(FrameSchedulerImplTest, PauseAndResume) {
   EXPECT_EQ(1, counter);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(5, counter);
+}
+
+TEST_F(FrameSchedulerImplTest, PauseAndResumeForCooperativeScheduling) {
+  EXPECT_TRUE(LoadingTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(ThrottleableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(DeferrableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(PausableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(UnpausableTaskQueue()->IsQueueEnabled());
+
+  frame_scheduler_->SetPreemptedForCooperativeScheduling(
+      FrameOrWorkerScheduler::Preempted(true));
+  EXPECT_FALSE(LoadingTaskQueue()->IsQueueEnabled());
+  EXPECT_FALSE(ThrottleableTaskQueue()->IsQueueEnabled());
+  EXPECT_FALSE(DeferrableTaskQueue()->IsQueueEnabled());
+  EXPECT_FALSE(PausableTaskQueue()->IsQueueEnabled());
+  EXPECT_FALSE(UnpausableTaskQueue()->IsQueueEnabled());
+
+  frame_scheduler_->SetPreemptedForCooperativeScheduling(
+      FrameOrWorkerScheduler::Preempted(false));
+  EXPECT_TRUE(LoadingTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(ThrottleableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(DeferrableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(PausableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(UnpausableTaskQueue()->IsQueueEnabled());
 }
 
 TEST_F(FrameSchedulerImplTest, FreezeForegroundOnlyTasks) {
@@ -1750,7 +1779,7 @@ TEST_F(FrameSchedulerImplTest, TaskTypeToTaskQueueMapping) {
   EXPECT_EQ(GetTaskQueue(TaskType::kWebSocket), DeferrableTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kDatabaseAccess), PausableTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kPostedMessage), PausableTaskQueue());
-  EXPECT_EQ(GetTaskQueue(TaskType::kInternalIPC), UnpausableTaskQueue());
+  EXPECT_EQ(GetTaskQueue(TaskType::kWebLocks), UnpausableTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kNetworking), LoadingTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kNetworkingControl),
             LoadingControlTaskQueue());
@@ -1788,41 +1817,47 @@ TEST_F(ThrottleableAndFreezableTaskTypesTest, QueueTraitsFromFieldTrialParams) {
 
   // Check that the overrides work.
   auto task_queue = GetTaskQueue(TaskType::kPostedMessage);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeThrottled(true)
-                                              .SetCanBeFrozen(true)
-                                              .SetCanBePaused(true)
-                                              .SetShouldUseVirtualTime(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeThrottled(true)
+                .SetCanBeFrozen(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kMediaElementEvent);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeFrozen(true)
-                                              .SetCanBePaused(true)
-                                              .SetShouldUseVirtualTime(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeFrozen(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kDatabaseAccess);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBePaused(true)
-                                              .SetShouldUseVirtualTime(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kDOMManipulation);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeFrozen(true)
-                                              .SetCanBeDeferred(true)
-                                              .SetCanBePaused(true)
-                                              .SetShouldUseVirtualTime(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeFrozen(true)
+                .SetCanBeDeferred(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   // Test some task types that were not configured through field trial
   // parameters.
-  task_queue = GetTaskQueue(TaskType::kInternalIPC);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetShouldUseVirtualTime(true));
+  task_queue = GetTaskQueue(TaskType::kWebLocks);
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kMiscPlatformAPI);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeDeferred(true)
-                                              .SetCanBePaused(true)
-                                              .SetShouldUseVirtualTime(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeDeferred(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 }
 
 
@@ -1868,7 +1903,7 @@ TEST_F(FreezableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
 
   // Test some task types that were not configured through field trial
   // parameters.
-  task_queue = GetTaskQueue(TaskType::kInternalIPC);
+  task_queue = GetTaskQueue(TaskType::kWebLocks);
   EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits());
 
   task_queue = GetTaskQueue(TaskType::kMiscPlatformAPI);
@@ -1897,38 +1932,44 @@ TEST_F(ThrottleableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
 
   // Check that the overrides work.
   auto task_queue = GetTaskQueue(TaskType::kPostedMessage);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeThrottled(true)
-                                              .SetCanBePaused(true)
-                                              .SetShouldUseVirtualTime(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeThrottled(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kMediaElementEvent);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBePaused(true)
-                                              .SetShouldUseVirtualTime(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kDatabaseAccess);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBePaused(true)
-                                              .SetShouldUseVirtualTime(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kDOMManipulation);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeDeferred(true)
-                                              .SetCanBePaused(true)
-                                              .SetShouldUseVirtualTime(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeDeferred(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 
   // Test some task types that were not configured through field trial
   // parameters.
-  task_queue = GetTaskQueue(TaskType::kInternalIPC);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                          .SetShouldUseVirtualTime(true));
+  task_queue = GetTaskQueue(TaskType::kWebLocks);
+  EXPECT_EQ(
+      task_queue->GetQueueTraits(),
+      MainThreadTaskQueue::QueueTraits().SetCanRunWhenVirtualTimePaused(false));
 
   task_queue = GetTaskQueue(TaskType::kMiscPlatformAPI);
-  EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
-                                              .SetCanBeDeferred(true)
-                                              .SetCanBePaused(true)
-                                              .SetShouldUseVirtualTime(true));
+  EXPECT_EQ(task_queue->GetQueueTraits(),
+            MainThreadTaskQueue::QueueTraits()
+                .SetCanBeDeferred(true)
+                .SetCanBePaused(true)
+                .SetCanRunWhenVirtualTimePaused(false));
 }
 
 class FrameSchedulerImplDatabaseAccessWithoutHighPriority
@@ -2259,6 +2300,7 @@ class WebSchedulingTaskQueueTest : public FrameSchedulerImplTest {
       std::unique_ptr<WebSchedulingTaskQueue> task_queue =
           frame_scheduler_->CreateWebSchedulingTaskQueue(priority);
       web_scheduling_task_runners_.push_back(task_queue->GetTaskRunner());
+      task_queues_.push_back(std::move(task_queue));
     }
   }
 
@@ -2312,6 +2354,8 @@ class WebSchedulingTaskQueueTest : public FrameSchedulerImplTest {
 
   Vector<scoped_refptr<base::SingleThreadTaskRunner>>
       web_scheduling_task_runners_;
+
+  Vector<std::unique_ptr<WebSchedulingTaskQueue>> task_queues_;
 };
 
 TEST_F(WebSchedulingTaskQueueTest, TasksRunInPriorityOrder) {
@@ -2322,6 +2366,18 @@ TEST_F(WebSchedulingTaskQueueTest, TasksRunInPriorityOrder) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre("I1", "I2", "H1", "H2", "D1",
                                               "D2", "L1", "L2", "E1", "E2"));
+}
+
+TEST_F(WebSchedulingTaskQueueTest, DynamicTaskPriorityOrder) {
+  Vector<String> run_order;
+
+  PostWebSchedulingTestTasks(&run_order, "E1 E2 D1 D2 I1 I2");
+  task_queues_[static_cast<int>(WebSchedulingPriority::kImmediatePriority)]
+      ->SetPriority(WebSchedulingPriority::kLowPriority);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("D1", "D2", "I1", "I2", "E1", "E2"));
 }
 
 }  // namespace frame_scheduler_impl_unittest

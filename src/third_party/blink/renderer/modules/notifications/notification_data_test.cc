@@ -9,12 +9,12 @@
 #include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
+#include "third_party/blink/renderer/modules/notifications/notification_action.h"
 #include "third_party/blink/renderer/modules/notifications/notification_options.h"
 #include "third_party/blink/renderer/modules/notifications/timestamp_trigger.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -38,7 +38,7 @@ const bool kNotificationRenotify = true;
 const bool kNotificationSilent = false;
 const bool kNotificationRequireInteraction = true;
 
-const mojom::blink::NotificationActionType kWebNotificationActionType =
+const mojom::blink::NotificationActionType kBlinkNotificationActionType =
     mojom::blink::NotificationActionType::TEXT;
 const char kNotificationActionType[] = "text";
 const char kNotificationActionAction[] = "my_action";
@@ -157,7 +157,7 @@ TEST_F(NotificationDataTest, ReflectProperties) {
             notification_data->require_interaction);
   EXPECT_EQ(actions.size(), notification_data->actions->size());
   for (const auto& action : notification_data->actions.value()) {
-    EXPECT_EQ(kWebNotificationActionType, action->type);
+    EXPECT_EQ(kBlinkNotificationActionType, action->type);
     EXPECT_EQ(kNotificationActionAction, action->action);
     EXPECT_EQ(kNotificationActionTitle, action->title);
     EXPECT_EQ(kNotificationActionPlaceholder, action->placeholder);

@@ -28,6 +28,11 @@ namespace {
 //      from the current average, or some such.
 constexpr float kSampleWeightFactor = 0.5;
 
+// Observations windows have a default value of 2 hours, 95% of backgrounded
+// tabs don't use any of these features in this time window.
+static constexpr base::TimeDelta kObservationWindowLength =
+    base::TimeDelta::FromHours(2);
+
 base::TimeDelta GetTickDeltaSinceEpoch() {
   return NowTicks() - base::TimeTicks::UnixEpoch();
 }
@@ -39,8 +44,7 @@ std::vector<SiteDataFeatureProto*> GetAllFeaturesFromProto(
   std::vector<SiteDataFeatureProto*> ret(
       {proto->mutable_updates_favicon_in_background(),
        proto->mutable_updates_title_in_background(),
-       proto->mutable_uses_audio_in_background(),
-       proto->mutable_uses_notifications_in_background()});
+       proto->mutable_uses_audio_in_background()});
 
   return ret;
 }
@@ -57,9 +61,6 @@ const char* FeatureTypeToFeatureName(
     case LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
         kAudioUsage:
       return "AudioUsageInBackground";
-    case LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::
-        kNotificationUsageUsage:
-      return "NotificationsUsageInBackground";
   }
 }
 
@@ -114,31 +115,17 @@ void LocalSiteCharacteristicsDataImpl::NotifyLoadedSiteForegrounded() {
 
 performance_manager::SiteFeatureUsage
 LocalSiteCharacteristicsDataImpl::UpdatesFaviconInBackground() const {
-  return GetFeatureUsage(
-      site_characteristics_.updates_favicon_in_background(),
-      GetSiteCharacteristicsDatabaseParams().favicon_update_observation_window);
+  return GetFeatureUsage(site_characteristics_.updates_favicon_in_background());
 }
 
 performance_manager::SiteFeatureUsage
 LocalSiteCharacteristicsDataImpl::UpdatesTitleInBackground() const {
-  return GetFeatureUsage(
-      site_characteristics_.updates_title_in_background(),
-      GetSiteCharacteristicsDatabaseParams().title_update_observation_window);
+  return GetFeatureUsage(site_characteristics_.updates_title_in_background());
 }
 
 performance_manager::SiteFeatureUsage
 LocalSiteCharacteristicsDataImpl::UsesAudioInBackground() const {
-  return GetFeatureUsage(
-      site_characteristics_.uses_audio_in_background(),
-      GetSiteCharacteristicsDatabaseParams().audio_usage_observation_window);
-}
-
-performance_manager::SiteFeatureUsage
-LocalSiteCharacteristicsDataImpl::UsesNotificationsInBackground() const {
-  return GetFeatureUsage(
-      site_characteristics_.uses_notifications_in_background(),
-      GetSiteCharacteristicsDatabaseParams()
-          .notifications_usage_observation_window);
+  return GetFeatureUsage(site_characteristics_.uses_audio_in_background());
 }
 
 bool LocalSiteCharacteristicsDataImpl::DataLoaded() const {
@@ -171,12 +158,6 @@ void LocalSiteCharacteristicsDataImpl::NotifyUsesAudioInBackground() {
                      TrackedBackgroundFeatures::kAudioUsage);
 }
 
-void LocalSiteCharacteristicsDataImpl::NotifyUsesNotificationsInBackground() {
-  NotifyFeatureUsage(
-      site_characteristics_.mutable_uses_notifications_in_background(),
-      TrackedBackgroundFeatures::kNotificationUsageUsage);
-}
-
 void LocalSiteCharacteristicsDataImpl::NotifyLoadTimePerformanceMeasurement(
     base::TimeDelta load_duration,
     base::TimeDelta cpu_usage_estimate,
@@ -189,14 +170,8 @@ void LocalSiteCharacteristicsDataImpl::NotifyLoadTimePerformanceMeasurement(
 }
 
 void LocalSiteCharacteristicsDataImpl::ExpireAllObservationWindowsForTesting() {
-  auto params = GetSiteCharacteristicsDatabaseParams();
-  base::TimeDelta longest_observation_window =
-      std::max({params.favicon_update_observation_window,
-                params.title_update_observation_window,
-                params.audio_usage_observation_window,
-                params.notifications_usage_observation_window});
   for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
-    IncrementFeatureObservationDuration(iter, longest_observation_window);
+    IncrementFeatureObservationDuration(iter, kObservationWindowLength);
 }
 
 void LocalSiteCharacteristicsDataImpl::RegisterFeatureUsageCallbackForTesting(
@@ -314,8 +289,7 @@ void LocalSiteCharacteristicsDataImpl::
 
 performance_manager::SiteFeatureUsage
 LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
-    const SiteDataFeatureProto& feature_proto,
-    const base::TimeDelta min_obs_time) const {
+    const SiteDataFeatureProto& feature_proto) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   UMA_HISTOGRAM_BOOLEAN(
@@ -328,7 +302,7 @@ LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
   if (feature_proto.has_use_timestamp())
     return performance_manager::SiteFeatureUsage::kSiteFeatureInUse;
 
-  if (FeatureObservationDuration(feature_proto) >= min_obs_time)
+  if (FeatureObservationDuration(feature_proto) >= kObservationWindowLength)
     return performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse;
 
   return performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown;

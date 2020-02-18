@@ -14,6 +14,7 @@
 
 #include "tests/unittests/wire/WireTest.h"
 
+#include "dawn/dawn_proc.h"
 #include "dawn_wire/WireClient.h"
 #include "dawn_wire/WireServer.h"
 #include "utils/TerribleCommandBuffer.h"
@@ -37,7 +38,7 @@ server::MemoryTransferService* WireTest::GetServerMemoryTransferService() {
 
 void WireTest::SetUp() {
     DawnProcTable mockProcs;
-    DawnDevice mockDevice;
+    WGPUDevice mockDevice;
     api.GetProcTableAndDevice(&mockProcs, &mockDevice);
 
     // This SetCallback call cannot be ignored because it is done as soon as we start the server
@@ -65,13 +66,13 @@ void WireTest::SetUp() {
 
     device = mWireClient->GetDevice();
     DawnProcTable clientProcs = mWireClient->GetProcs();
-    dawnSetProcs(&clientProcs);
+    dawnProcSetProcs(&clientProcs);
 
     apiDevice = mockDevice;
 }
 
 void WireTest::TearDown() {
-    dawnSetProcs(nullptr);
+    dawnProcSetProcs(nullptr);
 
     // Derived classes should call the base TearDown() first. The client must
     // be reset before any mocks are deleted.

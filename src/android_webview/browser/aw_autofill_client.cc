@@ -4,16 +4,19 @@
 
 #include "android_webview/browser/aw_autofill_client.h"
 
+#include <utility>
+
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_form_database_service.h"
-#include "android_webview/native_jni/AwAutofillClient_jni.h"
+#include "android_webview/browser_jni_headers/AwAutofillClient_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -123,7 +126,7 @@ void AwAutofillClient::ShowLocalCardMigrationDialog(
 }
 
 void AwAutofillClient::ConfirmMigrateLocalCardToCloud(
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const autofill::LegalMessageLines& legal_message_lines,
     const std::string& user_email,
     const std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
     LocalCardMigrationCallback start_migrating_cards_callback) {
@@ -135,11 +138,6 @@ void AwAutofillClient::ShowLocalCardMigrationResults(
     const base::string16& tip_message,
     const std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
     MigrationDeleteCardCallback delete_local_card_callback) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::ShowWebauthnOfferDialog(
-    WebauthnOfferDialogCallback callback) {
   NOTIMPLEMENTED();
 }
 
@@ -172,7 +170,7 @@ void AwAutofillClient::ConfirmExpirationDateFixFlow(
 
 void AwAutofillClient::ConfirmSaveCreditCardToCloud(
     const autofill::CreditCard& card,
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const autofill::LegalMessageLines& legal_message_lines,
     SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
   NOTIMPLEMENTED();
@@ -258,9 +256,9 @@ bool AwAutofillClient::IsContextSecure() {
     return false;
 
   ssl_status = navigation_entry->GetSSL();
-  // Note: The implementation below is a copy of the one in
-  // ChromeAutofillClient::IsContextSecure, and should be kept in sync
-  // until crbug.com/505388 gets implemented.
+  // Note: As of crbug.com/701018, Chrome relies on SecurityStateTabHelper to
+  // determine whether the page is secure, but WebView has no equivalent class.
+
   return navigation_entry->GetURL().SchemeIsCryptographic() &&
          ssl_status.certificate &&
          !net::IsCertStatusError(ssl_status.cert_status) &&

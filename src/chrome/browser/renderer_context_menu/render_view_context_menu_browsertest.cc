@@ -22,6 +22,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/browsertest_util.h"
@@ -34,7 +35,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
@@ -71,14 +71,15 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/web/web_context_menu_data.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/models/menu_model.h"
 
@@ -106,7 +107,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
       const GURL& unfiltered_url,
       const GURL& url) {
     return CreateContextMenu(unfiltered_url, url, base::string16(),
-                             blink::WebContextMenuData::kMediaTypeNone,
+                             blink::ContextMenuDataMediaType::kNone,
                              ui::MENU_SOURCE_NONE);
   }
 
@@ -116,13 +117,13 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
                                               const GURL& url) {
     return CreateContextMenuInWebContents(
         web_contents, unfiltered_url, url, base::string16(),
-        blink::WebContextMenuData::kMediaTypeNone, ui::MENU_SOURCE_NONE);
+        blink::ContextMenuDataMediaType::kNone, ui::MENU_SOURCE_NONE);
   }
 
   std::unique_ptr<TestRenderViewContextMenu> CreateContextMenuMediaTypeImage(
       const GURL& url) {
     return CreateContextMenu(GURL(), url, base::string16(),
-                             blink::WebContextMenuData::kMediaTypeImage,
+                             blink::ContextMenuDataMediaType::kImage,
                              ui::MENU_SOURCE_NONE);
   }
 
@@ -130,7 +131,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
       const GURL& unfiltered_url,
       const GURL& url,
       const base::string16& link_text,
-      blink::WebContextMenuData::MediaType media_type,
+      blink::ContextMenuDataMediaType media_type,
       ui::MenuSourceType source_type) {
     return CreateContextMenuInWebContents(
         browser()->tab_strip_model()->GetActiveWebContents(), unfiltered_url,
@@ -142,7 +143,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
       const GURL& unfiltered_url,
       const GURL& url,
       const base::string16& link_text,
-      blink::WebContextMenuData::MediaType media_type,
+      blink::ContextMenuDataMediaType media_type,
       ui::MenuSourceType source_type) {
     content::ContextMenuParams params;
     params.media_type = media_type;
@@ -247,7 +248,7 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
     content::ContextMenuParams params;
     params.page_url = page_url;
     params.frame_url = frame->GetLastCommittedURL();
-    params.media_type = blink::WebContextMenuData::kMediaTypePlugin;
+    params.media_type = blink::ContextMenuDataMediaType::kPlugin;
     TestRenderViewContextMenu menu(frame, params);
     menu.Init();
 
@@ -283,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 
   std::unique_ptr<TestRenderViewContextMenu> menu3 = CreateContextMenu(
       GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16(""), blink::WebContextMenuData::kMediaTypeNone,
+      base::ASCIIToUTF16(""), blink::ContextMenuDataMediaType::kNone,
       ui::MENU_SOURCE_TOUCH);
 
   EXPECT_TRUE(menu3->IsCommandIdVisible(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -476,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenEntryAbsentForFilteredURLs) {
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, ContextMenuForCanvas) {
   content::ContextMenuParams params;
-  params.media_type = blink::WebContextMenuData::kMediaTypeCanvas;
+  params.media_type = blink::ContextMenuDataMediaType::kCanvas;
 
   TestRenderViewContextMenu menu(
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
@@ -549,7 +550,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextMouse) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
       GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::kMediaTypeNone,
+      base::ASCIIToUTF16("Google"), blink::ContextMenuDataMediaType::kNone,
       ui::MENU_SOURCE_MOUSE);
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -558,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextMouse) {
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchNoText) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
       GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16(""), blink::WebContextMenuData::kMediaTypeNone,
+      base::ASCIIToUTF16(""), blink::ContextMenuDataMediaType::kNone,
       ui::MENU_SOURCE_TOUCH);
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -567,7 +568,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchNoText) {
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextOnly) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
       GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::kMediaTypeNone,
+      base::ASCIIToUTF16("Google"), blink::ContextMenuDataMediaType::kNone,
       ui::MENU_SOURCE_TOUCH);
 
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -576,7 +577,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextOnly) {
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextImage) {
   std::unique_ptr<TestRenderViewContextMenu> menu = CreateContextMenu(
       GURL("http://www.google.com/"), GURL("http://www.google.com/"),
-      base::ASCIIToUTF16("Google"), blink::WebContextMenuData::kMediaTypeImage,
+      base::ASCIIToUTF16("Google"), blink::ContextMenuDataMediaType::kImage,
       ui::MENU_SOURCE_TOUCH);
 
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
@@ -1052,7 +1053,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   RightClickImage();
   waiter.WaitForMenuOpenAndClose();
 
-  chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame;
+  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> chrome_render_frame;
   browser()
       ->tab_strip_model()
       ->GetActiveWebContents()
@@ -1103,7 +1104,7 @@ IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
   content::ContextMenuParams params;
   params.page_url = page_url;
   params.frame_url = frame->GetLastCommittedURL();
-  params.media_type = blink::WebContextMenuData::kMediaTypePlugin;
+  params.media_type = blink::ContextMenuDataMediaType::kPlugin;
   TestRenderViewContextMenu menu(frame, params);
   menu.Init();
 
@@ -1145,8 +1146,6 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
   void SetupAndLoadImagePage(const std::string& page_path,
                              const std::string& image_path) {
     image_path_ = image_path;
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kLoadBrokenImagesFromContextMenu);
 
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &LoadImageBrowserTest::HandleRequest, base::Unretained(this)));
@@ -1171,7 +1170,7 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
     menu_observer.WaitForMenuOpenAndClose();
 
     ASSERT_EQ(menu_observer.params().media_type,
-              blink::WebContextMenuData::kMediaTypeImage);
+              blink::ContextMenuDataMediaType::kImage);
     ASSERT_EQ(menu_observer.params().src_url.path(), image_path_);
     ASSERT_FALSE(menu_observer.params().has_image_contents);
 
@@ -1198,7 +1197,6 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
 
   std::string image_path_;
   size_t request_attempts_ = 0u;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImage) {
@@ -1215,7 +1213,7 @@ IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImageWithMap) {
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        ContextMenuForVideoNotInPictureInPicture) {
   content::ContextMenuParams params;
-  params.media_type = blink::WebContextMenuData::kMediaTypeVideo;
+  params.media_type = blink::ContextMenuDataMediaType::kVideo;
   params.media_flags |= blink::WebContextMenuData::kMediaCanPictureInPicture;
 
   TestRenderViewContextMenu menu(
@@ -1230,7 +1228,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        ContextMenuForVideoInPictureInPicture) {
   content::ContextMenuParams params;
-  params.media_type = blink::WebContextMenuData::kMediaTypeVideo;
+  params.media_type = blink::ContextMenuDataMediaType::kVideo;
   params.media_flags |= blink::WebContextMenuData::kMediaCanPictureInPicture;
   params.media_flags |= blink::WebContextMenuData::kMediaPictureInPicture;
 
@@ -1252,7 +1250,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, BrowserlessWebContentsCrash) {
   CreateContextMenuInWebContents(
       web_contents.get(), GURL("http://www.google.com/"),
       GURL("http://www.google.com/"), base::ASCIIToUTF16("Google"),
-      blink::WebContextMenuData::kMediaTypeNone, ui::MENU_SOURCE_MOUSE);
+      blink::ContextMenuDataMediaType::kNone, ui::MENU_SOURCE_MOUSE);
 }
 
 }  // namespace

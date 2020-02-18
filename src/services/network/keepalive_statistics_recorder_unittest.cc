@@ -15,19 +15,19 @@ TEST(KeepaliveStatisticsRecorderTest, InitialState) {
 
   EXPECT_EQ(0, r.num_inflight_requests());
   EXPECT_EQ(0, r.peak_inflight_requests());
-  EXPECT_TRUE(r.per_process_records().empty());
+  EXPECT_TRUE(r.per_top_level_frame_records().empty());
 }
 
 TEST(KeepaliveStatisticsRecorderTest, Register) {
   KeepaliveStatisticsRecorder r;
-  constexpr int process_id = 4;
-  r.Register(process_id);
+  const base::UnguessableToken token = base::UnguessableToken::Create();
+  r.Register(token);
   EXPECT_EQ(0, r.num_inflight_requests());
   EXPECT_EQ(0, r.peak_inflight_requests());
 
-  const auto& map = r.per_process_records();
+  const auto& map = r.per_top_level_frame_records();
   EXPECT_EQ(1u, map.size());
-  auto it = map.find(process_id);
+  auto it = map.find(token);
   ASSERT_NE(it, map.end());
   EXPECT_EQ(1, it->second.num_registrations);
   EXPECT_EQ(0, it->second.num_inflight_requests);
@@ -36,33 +36,33 @@ TEST(KeepaliveStatisticsRecorderTest, Register) {
 
 TEST(KeepaliveStatisticsRecorderTest, Unregister) {
   KeepaliveStatisticsRecorder r;
-  constexpr int process_id = 4;
-  r.Register(process_id);
-  EXPECT_FALSE(r.per_process_records().empty());
-  r.Unregister(process_id);
-  EXPECT_TRUE(r.per_process_records().empty());
+  const base::UnguessableToken token = base::UnguessableToken::Create();
+  r.Register(token);
+  EXPECT_FALSE(r.per_top_level_frame_records().empty());
+  r.Unregister(token);
+  EXPECT_TRUE(r.per_top_level_frame_records().empty());
 }
 
 TEST(KeepaliveStatisticsRecorderTest, MultipleRegistration) {
   KeepaliveStatisticsRecorder r;
-  constexpr int process1 = 4;
-  constexpr int process2 = 7;
-  constexpr int process3 = 8;
+  const base::UnguessableToken token1 = base::UnguessableToken::Create();
+  const base::UnguessableToken token2 = base::UnguessableToken::Create();
+  const base::UnguessableToken token3 = base::UnguessableToken::Create();
 
-  r.Register(process1);
-  r.Register(process2);
-  r.Register(process3);
-  r.Register(process1);
-  r.Register(process2);
+  r.Register(token1);
+  r.Register(token2);
+  r.Register(token3);
+  r.Register(token1);
+  r.Register(token2);
 
-  r.Unregister(process1);
-  r.Unregister(process3);
+  r.Unregister(token1);
+  r.Unregister(token3);
 
-  const auto& map = r.per_process_records();
+  const auto& map = r.per_top_level_frame_records();
   EXPECT_EQ(2u, map.size());
-  auto it1 = map.find(process1);
-  auto it2 = map.find(process2);
-  auto it3 = map.find(process3);
+  auto it1 = map.find(token1);
+  auto it2 = map.find(token2);
+  auto it3 = map.find(token3);
 
   EXPECT_NE(it1, map.end());
   EXPECT_EQ(1, it1->second.num_registrations);
@@ -77,32 +77,34 @@ TEST(KeepaliveStatisticsRecorderTest, MultipleRegistration) {
 
 TEST(KeepaliveStatisticsRecorderTest, IssueOneRequest) {
   KeepaliveStatisticsRecorder r;
-  constexpr int process = 4;
+  const base::UnguessableToken token = base::UnguessableToken::Create();
 
-  r.Register(process);
-  r.OnLoadStarted(process);
+  r.Register(token);
+  r.OnLoadStarted(token, 12);
   {
-    const auto& map = r.per_process_records();
+    const auto& map = r.per_top_level_frame_records();
     EXPECT_EQ(1u, map.size());
-    auto it = map.find(process);
+    auto it = map.find(token);
     ASSERT_NE(it, map.end());
     EXPECT_EQ(1, it->second.num_registrations);
     EXPECT_EQ(1, it->second.num_inflight_requests);
     EXPECT_EQ(1, it->second.peak_inflight_requests);
+    EXPECT_EQ(12, it->second.total_request_size);
 
     EXPECT_EQ(1, r.num_inflight_requests());
     EXPECT_EQ(1, r.peak_inflight_requests());
   }
 
-  r.OnLoadFinished(process);
+  r.OnLoadFinished(token, 12);
   {
-    const auto& map = r.per_process_records();
+    const auto& map = r.per_top_level_frame_records();
     EXPECT_EQ(1u, map.size());
-    auto it = map.find(process);
+    auto it = map.find(token);
     ASSERT_NE(it, map.end());
     EXPECT_EQ(1, it->second.num_registrations);
     EXPECT_EQ(0, it->second.num_inflight_requests);
     EXPECT_EQ(1, it->second.peak_inflight_requests);
+    EXPECT_EQ(0, it->second.total_request_size);
 
     EXPECT_EQ(0, r.num_inflight_requests());
     EXPECT_EQ(1, r.peak_inflight_requests());
@@ -111,47 +113,49 @@ TEST(KeepaliveStatisticsRecorderTest, IssueOneRequest) {
 
 TEST(KeepaliveStatisticsRecorderTest, IssueRequests) {
   KeepaliveStatisticsRecorder r;
-  constexpr int process1 = 2;
-  constexpr int process2 = 3;
-  constexpr int no_process = 0;
+  const base::UnguessableToken token1 = base::UnguessableToken::Create();
+  const base::UnguessableToken token2 = base::UnguessableToken::Create();
+  const base::UnguessableToken token3 = base::UnguessableToken::Create();
 
-  r.Register(process1);
-  r.Register(process1);
-  r.Register(process1);
-  r.Register(process2);
-  r.Register(process2);
+  r.Register(token1);
+  r.Register(token1);
+  r.Register(token1);
+  r.Register(token2);
+  r.Register(token2);
 
-  r.OnLoadStarted(process1);
-  r.OnLoadStarted(process1);
-  r.OnLoadStarted(process2);
-  r.OnLoadStarted(process2);
-  r.OnLoadStarted(process2);
-  r.OnLoadStarted(process2);
-  r.OnLoadStarted(no_process);
-  r.OnLoadFinished(process2);
-  r.OnLoadFinished(process2);
-  r.OnLoadFinished(process2);
-  r.OnLoadStarted(process2);
-  r.OnLoadStarted(no_process);
-  r.OnLoadStarted(no_process);
-  r.OnLoadStarted(no_process);
-  r.OnLoadStarted(no_process);
-  r.OnLoadStarted(no_process);
-  r.OnLoadFinished(no_process);
+  r.OnLoadStarted(token1, 13);
+  r.OnLoadStarted(token1, 5);
+  r.OnLoadStarted(token2, 8);
+  r.OnLoadStarted(token2, 4);
+  r.OnLoadStarted(token2, 82);
+  r.OnLoadStarted(token2, 3);
+  r.OnLoadStarted(token3, 1);
+  r.OnLoadFinished(token2, 4);
+  r.OnLoadFinished(token2, 8);
+  r.OnLoadFinished(token2, 82);
+  r.OnLoadStarted(token2, 13);
+  r.OnLoadStarted(token3, 4);
+  r.OnLoadStarted(token3, 5);
+  r.OnLoadStarted(token3, 6);
+  r.OnLoadStarted(token3, 7);
+  r.OnLoadStarted(token3, 8);
+  r.OnLoadFinished(token3, 6);
 
-  const auto& map = r.per_process_records();
+  const auto& map = r.per_top_level_frame_records();
   EXPECT_EQ(2u, map.size());
-  auto it1 = map.find(process1);
-  auto it2 = map.find(process2);
+  auto it1 = map.find(token1);
+  auto it2 = map.find(token2);
   ASSERT_NE(it1, map.end());
   EXPECT_EQ(3, it1->second.num_registrations);
   EXPECT_EQ(2, it1->second.num_inflight_requests);
   EXPECT_EQ(2, it1->second.peak_inflight_requests);
+  EXPECT_EQ(18, it1->second.total_request_size);
 
   ASSERT_NE(it2, map.end());
   EXPECT_EQ(2, it2->second.num_registrations);
   EXPECT_EQ(2, it2->second.num_inflight_requests);
   EXPECT_EQ(4, it2->second.peak_inflight_requests);
+  EXPECT_EQ(16, it2->second.total_request_size);
 
   EXPECT_EQ(9, r.num_inflight_requests());
   EXPECT_EQ(10, r.peak_inflight_requests());
@@ -159,25 +163,26 @@ TEST(KeepaliveStatisticsRecorderTest, IssueRequests) {
 
 TEST(KeepaliveStatisticsRecorderTest, ProcessReuse) {
   KeepaliveStatisticsRecorder r;
-  constexpr int process = 2;
+  const base::UnguessableToken token = base::UnguessableToken::Create();
 
-  r.Register(process);
-  r.OnLoadStarted(process);
-  r.OnLoadStarted(process);
-  r.OnLoadStarted(process);
-  r.OnLoadFinished(process);
-  r.OnLoadFinished(process);
-  r.OnLoadFinished(process);
-  r.Unregister(process);
+  r.Register(token);
+  r.OnLoadStarted(token, 1);
+  r.OnLoadStarted(token, 2);
+  r.OnLoadStarted(token, 3);
+  r.OnLoadFinished(token, 2);
+  r.OnLoadFinished(token, 3);
+  r.OnLoadFinished(token, 1);
+  r.Unregister(token);
 
-  r.Register(process);
-  const auto& map = r.per_process_records();
+  r.Register(token);
+  const auto& map = r.per_top_level_frame_records();
   EXPECT_EQ(1u, map.size());
-  auto it = map.find(process);
+  auto it = map.find(token);
   ASSERT_NE(it, map.end());
   EXPECT_EQ(1, it->second.num_registrations);
   EXPECT_EQ(0, it->second.num_inflight_requests);
   EXPECT_EQ(0, it->second.peak_inflight_requests);
+  EXPECT_EQ(0, it->second.total_request_size);
 }
 
 }  // namespace

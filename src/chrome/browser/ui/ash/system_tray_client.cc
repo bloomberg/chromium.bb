@@ -244,7 +244,7 @@ void SystemTrayClient::ShowChromeSlow() {
 
 void SystemTrayClient::ShowIMESettings() {
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
-  ShowSettingsSubPageForActiveUser(chrome::kLanguageOptionsSubPage);
+  ShowSettingsSubPageForActiveUser(chrome::kLanguageSubPage);
 }
 
 void SystemTrayClient::ShowConnectedDevicesSettings() {
@@ -300,8 +300,10 @@ void SystemTrayClient::ShowEnterpriseInfo() {
     return;
   }
 
-  // Otherwise show enterprise special settings subpage.
-  chrome::ShowManagementPageForProfile(ProfileManager::GetActiveUserProfile());
+  // Otherwise show enterprise management info page.
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetActiveUserProfile());
+  chrome::ShowEnterpriseManagementPageInTabbedBrowser(displayer.browser());
 }
 
 void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {

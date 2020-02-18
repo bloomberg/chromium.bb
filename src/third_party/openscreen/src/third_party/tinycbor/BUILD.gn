@@ -16,7 +16,5 @@ source_set("tinycbor") {
     "src/src/utf8_p.h",
   ]
 
-  configs += [ "../../build:allow_build_from_embedder" ]
-
   defines = [ "WITHOUT_OPEN_MEMSTREAM" ]
 }

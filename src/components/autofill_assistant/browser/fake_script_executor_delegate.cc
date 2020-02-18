@@ -58,6 +58,10 @@ std::string FakeScriptExecutorDelegate::GetAccountEmailAddress() {
   return std::string();
 }
 
+std::string FakeScriptExecutorDelegate::GetLocale() {
+  return "en-US";
+}
+
 void FakeScriptExecutorDelegate::EnterState(AutofillAssistantState state) {
   state_ = state;
 }
@@ -103,10 +107,19 @@ void FakeScriptExecutorDelegate::SetUserActions(
 }
 
 void FakeScriptExecutorDelegate::SetCollectUserDataOptions(
-    std::unique_ptr<CollectUserDataOptions> options,
-    std::unique_ptr<UserData> information) {
-  payment_request_options_ = std::move(options);
-  payment_request_info_ = std::move(information);
+    CollectUserDataOptions* options) {
+  payment_request_options_ = options;
+}
+
+void FakeScriptExecutorDelegate::WriteUserData(
+    base::OnceCallback<void(UserData*, UserData::FieldChange*)>
+        write_callback) {
+  if (payment_request_options_ == nullptr || payment_request_info_ == nullptr) {
+    return;
+  }
+
+  UserData::FieldChange field_change = UserData::FieldChange::NONE;
+  std::move(write_callback).Run(payment_request_info_.get(), &field_change);
 }
 
 void FakeScriptExecutorDelegate::SetViewportMode(ViewportMode mode) {
@@ -148,7 +161,8 @@ void FakeScriptExecutorDelegate::RemoveListener(Listener* listener) {
 
 bool FakeScriptExecutorDelegate::SetForm(
     std::unique_ptr<FormProto> form,
-    base::RepeatingCallback<void(const FormProto::Result*)> callback) {
+    base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+    base::OnceCallback<void(const ClientStatus&)> cancel_callback) {
   return true;
 }
 }  // namespace autofill_assistant

@@ -12,6 +12,7 @@ const NameMapElement<HostExitCodes> kHostExitCodeStrings[] = {
     {kSuccessExitCode, "SUCCESS_EXIT"},
     {kInitializationFailed, "INITIALIZATION_FAILED"},
     {kInvalidCommandLineExitCode, "INVALID_COMMAND_LINE"},
+    {kNoPermissionExitCode, "NO_PERMISSION"},
     {kInvalidHostConfigurationExitCode, "INVALID_HOST_CONFIGURATION"},
     {kInvalidHostIdExitCode, "INVALID_HOST_ID"},
     {kInvalidOauthCredentialsExitCode, "INVALID_OAUTH_CREDENTIALS"},
@@ -23,6 +24,11 @@ const NameMapElement<HostExitCodes> kHostExitCodeStrings[] = {
 
 const char* ExitCodeToString(HostExitCodes exit_code) {
   return ValueToName(kHostExitCodeStrings, exit_code);
+}
+
+const char* ExitCodeToStringUnchecked(int exit_code) {
+  return ValueToNameUnchecked(kHostExitCodeStrings,
+                              static_cast<HostExitCodes>(exit_code));
 }
 
 }  // namespace remoting

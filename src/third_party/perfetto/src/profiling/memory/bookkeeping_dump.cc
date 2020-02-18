@@ -45,6 +45,8 @@ void WriteFixedInternings(TraceWriter* trace_writer) {
   interned_string = interned_data->add_function_names();
   interned_string->set_iid(0);
   interned_string->set_str(kEmptyString, 0);
+
+  packet->set_incremental_state_cleared(true);
 }
 
 void DumpState::WriteMap(const Interned<Mapping> map) {
@@ -84,38 +86,47 @@ void DumpState::WriteFrame(Interned<Frame> frame) {
 }
 
 void DumpState::WriteBuildIDString(const Interned<std::string>& str) {
-  bool inserted;
-  std::tie(std::ignore, inserted) =
-      intern_state_->dumped_strings_.emplace(str.id());
-  if (inserted) {
+  auto it_and_inserted = intern_state_->dumped_strings_.emplace(str.id(), 0);
+  auto it = it_and_inserted.first;
+  // This is for the rare case that the same string is used as two different
+  // types (e.g. a function name that matches a path segment). In that case
+  // we need to emit the string as all of its types.
+  if ((it->second & kDumpedBuildID) == 0) {
     auto interned_string = GetCurrentInternedData()->add_build_ids();
     interned_string->set_iid(str.id());
     interned_string->set_str(reinterpret_cast<const uint8_t*>(str->c_str()),
                              str->size());
+    it->second |= kDumpedBuildID;
   }
 }
 
 void DumpState::WriteMappingPathString(const Interned<std::string>& str) {
-  bool inserted;
-  std::tie(std::ignore, inserted) =
-      intern_state_->dumped_strings_.emplace(str.id());
-  if (inserted) {
+  auto it_and_inserted = intern_state_->dumped_strings_.emplace(str.id(), 0);
+  auto it = it_and_inserted.first;
+  // This is for the rare case that the same string is used as two different
+  // types (e.g. a function name that matches a path segment). In that case
+  // we need to emit the string as all of its types.
+  if ((it->second & kDumpedMappingPath) == 0) {
     auto interned_string = GetCurrentInternedData()->add_mapping_paths();
     interned_string->set_iid(str.id());
     interned_string->set_str(reinterpret_cast<const uint8_t*>(str->c_str()),
                              str->size());
+    it->second |= kDumpedMappingPath;
   }
 }
 
 void DumpState::WriteFunctionNameString(const Interned<std::string>& str) {
-  bool inserted;
-  std::tie(std::ignore, inserted) =
-      intern_state_->dumped_strings_.emplace(str.id());
-  if (inserted) {
+  auto it_and_inserted = intern_state_->dumped_strings_.emplace(str.id(), 0);
+  auto it = it_and_inserted.first;
+  // This is for the rare case that the same string is used as two different
+  // types (e.g. a function name that matches a path segment). In that case
+  // we need to emit the string as all of its types.
+  if ((it->second & kDumpedFunctionName) == 0) {
     auto interned_string = GetCurrentInternedData()->add_function_names();
     interned_string->set_iid(str.id());
     interned_string->set_str(reinterpret_cast<const uint8_t*>(str->c_str()),
                              str->size());
+    it->second |= kDumpedFunctionName;
   }
 }
 
@@ -169,7 +180,7 @@ void DumpState::DumpCallstacks(GlobalCallstackTrie* callsites) {
   MakeProfilePacket();
 }
 
-void DumpState::AddIdleBytes(uintptr_t callstack_id, uint64_t bytes) {
+void DumpState::AddIdleBytes(uint64_t callstack_id, uint64_t bytes) {
   current_process_idle_allocs_[callstack_id] += bytes;
 }
 

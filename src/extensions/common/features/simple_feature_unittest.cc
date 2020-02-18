@@ -22,6 +22,7 @@
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -548,6 +549,8 @@ TEST_F(SimpleFeatureTest, Location) {
                                   Manifest::COMPONENT));
   EXPECT_TRUE(
       LocationIsAvailable(SimpleFeature::POLICY_LOCATION, Manifest::COMPONENT));
+  EXPECT_TRUE(LocationIsAvailable(SimpleFeature::UNPACKED_LOCATION,
+                                  Manifest::COMPONENT));
 
   // Only component extensions can access the "component" location.
   EXPECT_FALSE(LocationIsAvailable(SimpleFeature::COMPONENT_LOCATION,
@@ -583,6 +586,15 @@ TEST_F(SimpleFeatureTest, Location) {
   // location.
   EXPECT_TRUE(LocationIsAvailable(SimpleFeature::EXTERNAL_COMPONENT_LOCATION,
                                   Manifest::EXTERNAL_COMPONENT));
+
+  // Only unpacked and command line extensions can access the "unpacked"
+  // location.
+  EXPECT_TRUE(LocationIsAvailable(SimpleFeature::UNPACKED_LOCATION,
+                                  Manifest::UNPACKED));
+  EXPECT_TRUE(LocationIsAvailable(SimpleFeature::UNPACKED_LOCATION,
+                                  Manifest::COMMAND_LINE));
+  EXPECT_FALSE(LocationIsAvailable(SimpleFeature::UNPACKED_LOCATION,
+                                   Manifest::INTERNAL));
 }
 
 TEST_F(SimpleFeatureTest, Platform) {
@@ -991,8 +1003,7 @@ TEST(SimpleFeatureUnitTest, TestExperimentalExtensionApisSwitch) {
 }
 
 TEST(SimpleFeatureUnitTest, DisallowForServiceWorkers) {
-  // Service Worker features are only available on the trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+  ScopedWorkerBasedExtensionsChannel worker_channel_override;
 
   SimpleFeature feature;
   feature.set_name("somefeature");

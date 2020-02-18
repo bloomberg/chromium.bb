@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_NAVIGATOR_PARAMS_H_
 #define CHROME_BROWSER_UI_BROWSER_NAVIGATOR_PARAMS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -99,9 +100,6 @@ struct NavigateParams {
   // Any redirect URLs that occurred for this navigation before |url|.
   // Usually empty.
   std::vector<GURL> redirect_chain;
-
-  // Indicates whether this navigation will be sent using POST.
-  bool uses_post = false;
 
   // The post data when the navigation uses POST.
   scoped_refptr<network::ResourceRequestBody> post_data;

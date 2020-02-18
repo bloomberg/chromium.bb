@@ -36,10 +36,12 @@ void TestLoginScreenModel::SetChallengeResponseAuthEnabledForUser(
 void TestLoginScreenModel::UpdateWarningMessage(const base::string16& message) {
 }
 void TestLoginScreenModel::SetSystemInfo(
-    bool show_if_hidden,
+    bool show,
+    bool enforced,
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
-    const std::string& bluetooth_name) {}
+    const std::string& bluetooth_name,
+    bool adb_sideloading_enabled) {}
 void TestLoginScreenModel::SetPublicSessionDisplayName(
     const AccountId& account_id,
     const std::string& display_name) {}

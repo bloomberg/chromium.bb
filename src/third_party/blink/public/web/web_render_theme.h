@@ -47,6 +47,10 @@ BLINK_EXPORT void SetSelectionColors(unsigned active_background_color,
                                      unsigned inactive_background_color,
                                      unsigned inactive_foreground_color);
 
+BLINK_EXPORT void SystemColorsChanged();
+
+BLINK_EXPORT void ColorSchemeChanged();
+
 }  // namespace blink
 
 #endif

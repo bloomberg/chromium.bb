@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
@@ -41,9 +42,11 @@ const char kTargetServiceKey[] = "S";
 const char kSessionIdKey[] = "I";
 
 // Used in GCM messages triggered by a BatchNofityGroupDevices request. The
-// value corresponding to this key is the feature_type field forwarded from the
-// BatchNotifyGroupDevicesRequest.
-const char kFeatureTypeKey[] = "F";
+// value corresponding to this key is the base64url-encoded, SHA-256 8-byte hash
+// of the feature_type field forwarded from the BatchNotifyGroupDevicesRequest.
+// CryptAuth chooses this hashing scheme to accommodate the limited bandwidth of
+// GCM messages.
+const char kFeatureTypeHashKey[] = "F";
 
 // Only used in GCM messages sent by CryptAuth v2 DeviceSync. The value
 // corresponding to this key specifies the relevant DeviceSync group. Currently,
@@ -116,19 +119,19 @@ base::Optional<std::string> StringValueFromMessage(
 // if the value does not correspond to one of the CryptAuthFeatureType enums.
 base::Optional<CryptAuthFeatureType> FeatureTypeFromMessage(
     const gcm::IncomingMessage& message) {
-  base::Optional<std::string> feature_type_string =
-      StringValueFromMessage(kFeatureTypeKey, message);
+  base::Optional<std::string> feature_type_hash =
+      StringValueFromMessage(kFeatureTypeHashKey, message);
 
-  if (!feature_type_string)
+  if (!feature_type_hash)
     return base::nullopt;
 
   base::Optional<CryptAuthFeatureType> feature_type =
-      CryptAuthFeatureTypeFromString(*feature_type_string);
+      CryptAuthFeatureTypeFromGcmHash(*feature_type_hash);
 
   if (!feature_type) {
     // TODO(https://crbug.com/956592): Add metrics.
-    PA_LOG(WARNING) << "GCM message contains unknown feature type: "
-                    << *feature_type_string;
+    PA_LOG(WARNING) << "GCM message contains unknown feature type hash: "
+                    << *feature_type_hash;
   }
 
   return feature_type;
@@ -144,6 +147,17 @@ bool IsDeviceSyncGroupNameValid(const gcm::IncomingMessage& message) {
          *group_name ==
              CryptAuthKeyBundle::KeyBundleNameEnumToString(
                  CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether);
+}
+
+void RecordGCMRegistrationMetrics(gcm::GCMClient::Result result,
+                                  base::TimeDelta execution_time) {
+  base::UmaHistogramCustomTimes(
+      "CryptAuth.Gcm.Registration.AttemptTimeWithRetries", execution_time,
+      base::TimeDelta::FromSeconds(1) /* min */,
+      base::TimeDelta::FromMinutes(10) /* max */, 100 /* buckets */);
+
+  base::UmaHistogramExactLinear("CryptAuth.Gcm.Registration.Result", result,
+                                gcm::GCMClient::Result::LAST_RESULT + 1);
 }
 
 }  // namespace
@@ -204,6 +218,7 @@ void CryptAuthGCMManagerImpl::RegisterWithGCM() {
 
   PA_LOG(VERBOSE) << "Beginning GCM registration...";
   registration_in_progress_ = true;
+  gcm_registration_start_timestamp_ = base::TimeTicks::Now();
 
   std::vector<std::string> sender_ids(1, kCryptAuthGcmSenderId);
   gcm_driver_->Register(
@@ -293,8 +308,11 @@ void CryptAuthGCMManagerImpl::OnRegistrationCompleted(
     const std::string& registration_id,
     gcm::GCMClient::Result result) {
   registration_in_progress_ = false;
+  RecordGCMRegistrationMetrics(
+      result, base::TimeTicks::Now() -
+                  gcm_registration_start_timestamp_ /* execution_time */);
+
   if (result != gcm::GCMClient::SUCCESS) {
-    // TODO(https://crbug.com/956592): Add metrics.
     PA_LOG(WARNING) << "GCM registration failed with result="
                     << static_cast<int>(result);
     for (auto& observer : observers_)

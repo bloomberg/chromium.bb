@@ -17,7 +17,7 @@ import android.widget.LinearLayout;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 
 /**
  * This class provides a vertical expander widget, which allows to toggle between a collapsed and an
@@ -28,6 +28,13 @@ import org.chromium.chrome.browser.widget.TintedDrawable;
  * parameters for disambiguation, otherwise the child won't be added at all!
  */
 public class AssistantVerticalExpander extends LinearLayout {
+    /** Controls whether the chevron should be visible. */
+    enum ChevronStyle {
+        AUTO, /** visible if the expander has an expanded view, else invisible. */
+        ALWAYS,
+        NEVER
+    }
+
     private final ViewGroup mTitleContainer;
     private final ViewGroup mCollapsedContainer;
     private final ViewGroup mExpandedContainer;
@@ -39,6 +46,7 @@ public class AssistantVerticalExpander extends LinearLayout {
     private View mExpandedView;
     private boolean mExpanded;
     private boolean mFixed;
+    private ChevronStyle mChevronStyle = ChevronStyle.AUTO;
 
     public AssistantVerticalExpander(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -130,6 +138,13 @@ public class AssistantVerticalExpander extends LinearLayout {
         }
     }
 
+    public void setChevronStyle(ChevronStyle style) {
+        if (style != mChevronStyle) {
+            mChevronStyle = style;
+            update();
+        }
+    }
+
     public boolean isExpanded() {
         return mExpanded;
     }
@@ -171,8 +186,8 @@ public class AssistantVerticalExpander extends LinearLayout {
     }
 
     private View createChevron() {
-        TintedDrawable chevron = TintedDrawable.constructTintedDrawable(getContext(),
-                R.drawable.ic_expand_more_black_24dp, R.color.payments_section_chevron);
+        TintedDrawable chevron = TintedDrawable.constructTintedDrawable(
+                getContext(), R.drawable.ic_expand_more_black_24dp, R.color.default_icon_color);
 
         ImageView view = new ImageView(getContext());
         view.setImageDrawable(chevron);
@@ -185,7 +200,18 @@ public class AssistantVerticalExpander extends LinearLayout {
     }
 
     private void update() {
-        mChevronButton.setVisibility(!mFixed && mExpandedView != null ? View.VISIBLE : View.GONE);
+        switch (mChevronStyle) {
+            case AUTO:
+                mChevronButton.setVisibility(
+                        !mFixed && mExpandedView != null ? View.VISIBLE : View.GONE);
+                break;
+            case ALWAYS:
+                mChevronButton.setVisibility(View.VISIBLE);
+                break;
+            case NEVER:
+                mChevronButton.setVisibility(View.GONE);
+                break;
+        }
 
         if (mExpandedView != null) {
             mExpandedView.setVisibility(mExpanded ? VISIBLE : GONE);

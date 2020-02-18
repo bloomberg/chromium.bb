@@ -28,19 +28,19 @@ namespace dawn_native {
 
     MaybeError ValidateFenceDescriptor(const FenceDescriptor* descriptor);
 
-    class FenceBase : public ObjectBase {
+    class Fence final : public ObjectBase {
       public:
-        FenceBase(QueueBase* queue, const FenceDescriptor* descriptor);
-        ~FenceBase();
+        Fence(QueueBase* queue, const FenceDescriptor* descriptor);
+        ~Fence();
 
-        static FenceBase* MakeError(DeviceBase* device);
+        static Fence* MakeError(DeviceBase* device);
 
         uint64_t GetSignaledValue() const;
         const QueueBase* GetQueue() const;
 
         // Dawn API
         uint64_t GetCompletedValue() const;
-        void OnCompletion(uint64_t value, dawn::FenceOnCompletionCallback callback, void* userdata);
+        void OnCompletion(uint64_t value, wgpu::FenceOnCompletionCallback callback, void* userdata);
 
       protected:
         friend class QueueBase;
@@ -49,12 +49,12 @@ namespace dawn_native {
         void SetCompletedValue(uint64_t completedValue);
 
       private:
-        FenceBase(DeviceBase* device, ObjectBase::ErrorTag tag);
+        Fence(DeviceBase* device, ObjectBase::ErrorTag tag);
 
         MaybeError ValidateOnCompletion(uint64_t value) const;
 
         struct OnCompletionData {
-            dawn::FenceOnCompletionCallback completionCallback = nullptr;
+            wgpu::FenceOnCompletionCallback completionCallback = nullptr;
             void* userdata = nullptr;
         };
 

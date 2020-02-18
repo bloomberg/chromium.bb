@@ -10,9 +10,7 @@
 
 namespace payments {
 
-PaymentRequestTestController::PaymentRequestTestController(
-    PaymentRequestTestObserver* observer)
-    : observer_(observer) {}
+PaymentRequestTestController::PaymentRequestTestController() {}
 
 PaymentRequestTestController::~PaymentRequestTestController() = default;
 
@@ -33,17 +31,26 @@ void PaymentRequestTestController::SetUpOnMainThread() {
       base::BindRepeating(
           &PaymentRequestTestController::OnHasEnrolledInstrumentReturned,
           base::Unretained(this)),
+      base::BindRepeating(&PaymentRequestTestController::OnShowAppsReady,
+                          base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnNotSupportedError,
                           base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnConnectionTerminated,
                           base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnAbortCalled,
+                          base::Unretained(this)),
+      base::BindRepeating(&PaymentRequestTestController::OnCompleteCalled,
                           base::Unretained(this)));
 
   SetUseDelegateOnPaymentRequestForTesting(
       /*use_delegate_for_test=*/true, is_incognito_, valid_ssl_,
       /*is_browser_window_active=*/true, can_make_payment_pref_,
       /*skip_ui_for_basic_card=*/false);
+}
+
+void PaymentRequestTestController::SetObserver(
+    PaymentRequestTestObserver* observer) {
+  observer_ = observer;
 }
 
 void PaymentRequestTestController::SetIncognito(bool is_incognito) {
@@ -72,31 +79,47 @@ void PaymentRequestTestController::SetCanMakePaymentEnabledPref(
 }
 
 void PaymentRequestTestController::OnCanMakePaymentCalled() {
-  observer_->OnCanMakePaymentCalled();
+  if (observer_)
+    observer_->OnCanMakePaymentCalled();
 }
 
 void PaymentRequestTestController::OnCanMakePaymentReturned() {
-  observer_->OnCanMakePaymentReturned();
+  if (observer_)
+    observer_->OnCanMakePaymentReturned();
 }
 
 void PaymentRequestTestController::OnHasEnrolledInstrumentCalled() {
-  observer_->OnHasEnrolledInstrumentCalled();
+  if (observer_)
+    observer_->OnHasEnrolledInstrumentCalled();
 }
 
 void PaymentRequestTestController::OnHasEnrolledInstrumentReturned() {
-  observer_->OnHasEnrolledInstrumentReturned();
+  if (observer_)
+    observer_->OnHasEnrolledInstrumentReturned();
 }
 
+void PaymentRequestTestController::OnShowAppsReady() {
+  if (observer_)
+    observer_->OnShowAppsReady();
+}
 void PaymentRequestTestController::OnNotSupportedError() {
-  observer_->OnNotSupportedError();
+  if (observer_)
+    observer_->OnNotSupportedError();
 }
 
 void PaymentRequestTestController::OnConnectionTerminated() {
-  observer_->OnConnectionTerminated();
+  if (observer_)
+    observer_->OnConnectionTerminated();
 }
 
 void PaymentRequestTestController::OnAbortCalled() {
-  observer_->OnAbortCalled();
+  if (observer_)
+    observer_->OnAbortCalled();
+}
+
+void PaymentRequestTestController::OnCompleteCalled() {
+  if (observer_)
+    observer_->OnCompleteCalled();
 }
 
 }  // namespace payments

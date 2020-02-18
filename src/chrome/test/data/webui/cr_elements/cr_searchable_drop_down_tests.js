@@ -24,9 +24,15 @@ suite('cr-searchable-drop-down', function() {
    *  the drop down.
    */
   function search(searchTerm) {
-    let input = dropDown.shadowRoot.querySelector('cr-input');
+    const input = dropDown.shadowRoot.querySelector('cr-input');
     input.value = searchTerm;
     input.fire('input');
+    Polymer.dom.flush();
+  }
+
+  function blur() {
+    const input = dropDown.shadowRoot.querySelector('cr-input');
+    input.fire('blur');
     Polymer.dom.flush();
   }
 
@@ -44,6 +50,15 @@ suite('cr-searchable-drop-down', function() {
 
   function tab() {
     MockInteractions.keyDownOn(searchInput, 'Tab', [], 'Tab');
+  }
+
+  function pointerDown(element) {
+    element.dispatchEvent(new PointerEvent('pointerdown', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      buttons: 1,
+    }));
   }
 
   function getSelectedElement() {
@@ -66,7 +81,7 @@ suite('cr-searchable-drop-down', function() {
   test('correct list items', function() {
     setItems(['one', 'two', 'three']);
 
-    let itemList = getList();
+    const itemList = getList();
 
     assertEquals(3, itemList.length);
     assertEquals('one', itemList[0].textContent.trim());
@@ -146,7 +161,7 @@ suite('cr-searchable-drop-down', function() {
     assertTrue(dropDown.$$('iron-dropdown').opened);
     assertNotEquals('dog', dropDown.value);
 
-    MockInteractions.downAndUp(outsideElement, null, null);
+    pointerDown(outsideElement);
     assertNotEquals('dog', dropDown.value);
     assertFalse(dropDown.$$('iron-dropdown').opened);
   });
@@ -191,6 +206,26 @@ suite('cr-searchable-drop-down', function() {
     enter();
     assertEquals('mouse', dropDown.value);
     assertFalse(dropDown.$$('iron-dropdown').opened);
+  });
+
+  test('enter re-opens dropdown after selection', function() {
+    setItems(['dog', 'cat', 'mouse']);
+
+    dropDown.$.search.focus();
+    assertTrue(dropDown.$$('iron-dropdown').opened);
+
+    assertEquals(null, getSelectedElement());
+
+    down();
+    assertEquals('dog', getSelectedElement().textContent.trim());
+
+    enter();
+    assertEquals('dog', dropDown.value);
+    assertFalse(dropDown.$$('iron-dropdown').opened);
+
+    enter();
+    assertTrue(dropDown.$$('iron-dropdown').opened);
+    assertEquals(null, getSelectedElement());
   });
 
   test('focus and up selects last item', function() {
@@ -274,9 +309,9 @@ suite('cr-searchable-drop-down', function() {
   });
 
   // The show-loading attribute should determine whether or not the loading
-  // progress bar is shown.
-  test('progress bar is shown and hidden', function() {
-    const progress = dropDown.$.loading;
+  // spinner and message are shown.
+  test('loading spinner is shown and hidden', function() {
+    const progress = dropDown.shadowRoot.querySelector('#loading-box');
     assertTrue(progress.hidden);
 
     dropDown.showLoading = true;
@@ -296,5 +331,35 @@ suite('cr-searchable-drop-down', function() {
 
     dropDown.readonly = false;
     assertFalse(input.readonly);
+  });
+
+  // When a user types in the dropdown but does not choose a valid option, the
+  // dropdown should revert to the previously selected option on loss of focus.
+  test('value resets on loss of focus', function() {
+    setItems(['dog', 'cat', 'mouse']);
+
+    getList()[0].click();
+    assertEquals('dog', searchInput.value);
+
+    // Make sure the search box value changes back to dog
+    search('ta');
+    blur();
+    assertEquals('dog', searchInput.value);
+  });
+
+  // When a user types in the dropdown but does not choose a valid option, the
+  // dropdown should keep the same text on loss of focus. (Only when
+  // isupdateValueOnInput is set to true).
+  test('value remains on loss of focus', function() {
+    dropDown.updateValueOnInput = true;
+    setItems(['dog', 'cat', 'mouse']);
+
+    getList()[0].click();
+    assertEquals('dog', searchInput.value);
+
+    // Make sure the search box value keeps the same text
+    search('ta');
+    blur();
+    assertEquals('ta', searchInput.value);
   });
 });

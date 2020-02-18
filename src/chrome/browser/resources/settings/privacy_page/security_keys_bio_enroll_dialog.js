@@ -2,14 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
-
 /**
  * @fileoverview 'settings-security-keys-bio-enroll-dialog' is a dialog for
  * listing, adding, renaming, and deleting biometric enrollments stored on a
  * security key.
  */
+
+cr.define('settings', function() {
+  /** @enum {string} */
+  const BioEnrollDialogPage = {
+    INITIAL: 'initial',
+    PIN_PROMPT: 'pinPrompt',
+    ENROLLMENTS: 'enrollments',
+    ENROLL: 'enroll',
+    CHOOSE_NAME: 'chooseName',
+    ERROR: 'error',
+  };
+
+  return {
+    BioEnrollDialogPage: BioEnrollDialogPage,
+  };
+});
+
+(function() {
+'use strict';
+
+const BioEnrollDialogPage = settings.BioEnrollDialogPage;
+
 Polymer({
   is: 'settings-security-keys-bio-enroll-dialog',
 
@@ -20,21 +39,27 @@ Polymer({
 
   properties: {
     /** @private */
-    addButtonVisible_: Boolean,
+    cancelButtonDisabled_: Boolean,
 
     /** @private */
     cancelButtonVisible_: Boolean,
+
+    /** @private */
+    confirmButtonDisabled_: Boolean,
+
+    /** @private */
+    confirmButtonVisible_: Boolean,
 
     /** @private */
     deleteInProgress_: Boolean,
 
     /**
      * The ID of the element currently shown in the dialog.
-     * @private
+     * @private {!settings.BioEnrollDialogPage}
      */
     dialogPage_: {
       type: String,
-      value: 'initial',
+      value: BioEnrollDialogPage.INITIAL,
       observer: 'dialogPageChanged_',
     },
 
@@ -48,31 +73,36 @@ Polymer({
     enrollments_: Array,
 
     /** @private */
-    okButtonVisible_: Boolean,
+    progressArcLabel_: String,
+
+    /** @private */
+    recentEnrollmentName_: String,
   },
 
   /** @private {?settings.SecurityKeysBioEnrollProxyImpl} */
   browserProxy_: null,
 
-  /** @private */
-  maxSamples_: Number,
+  /** @private {number} */
+  maxSamples_: -1,
+
+  /** @private {string} */
+  recentEnrollmentId_: '',
 
   /** @override */
   attached: function() {
+    Polymer.RenderStatus.afterNextRender(this, function() {
+      Polymer.IronA11yAnnouncer.requestAvailability();
+    });
+
     this.$.dialog.showModal();
     this.addWebUIListener(
         'security-keys-bio-enroll-error', this.onError_.bind(this));
     this.addWebUIListener(
         'security-keys-bio-enroll-status', this.onEnrolling_.bind(this));
     this.browserProxy_ = settings.SecurityKeysBioEnrollProxyImpl.getInstance();
-    this.browserProxy_.startBioEnroll().then(
-        this.collectPIN_.bind(this), () => {});
-  },
-
-  /** @private */
-  collectPIN_: function() {
-    this.dialogPage_ = 'pinPrompt';
-    this.$.pin.focus();
+    this.browserProxy_.startBioEnroll().then(() => {
+      this.dialogPage_ = BioEnrollDialogPage.PIN_PROMPT;
+    });
   },
 
   /**
@@ -81,23 +111,26 @@ Polymer({
    */
   onError_: function(error) {
     this.errorMsg_ = error;
-    this.dialogPage_ = 'error';
+    this.dialogPage_ = BioEnrollDialogPage.ERROR;
   },
 
   /** @private */
   submitPIN_: function() {
-    if (!this.$.pin.validate()) {
-      return;
-    }
-    this.browserProxy_.providePIN(this.$.pin.value).then((retries) => {
-      if (retries != null) {
-        this.$.pin.showIncorrectPINError(retries);
-        return;
-      }
+    // Disable the confirm button to prevent concurrent submissions.
+    this.confirmButtonDisabled_ = true;
 
-      this.browserProxy_.enumerateEnrollments().then(
-          this.onEnrollments_.bind(this));
-    }, () => {});
+    this.$.pin.trySubmit(pin => this.browserProxy_.providePIN(pin))
+        .then(
+            () => {
+              // Leave confirm button disabled while enumerating fingerprints.
+              // It will be re-enabled by dialogPageChanged_() where
+              // appropriate.
+              this.showEnrollmentsPage_();
+            },
+            () => {
+              // Wrong PIN.
+              this.confirmButtonDisabled_ = false;
+            });
   },
 
   /**
@@ -107,40 +140,47 @@ Polymer({
   onEnrollments_: function(enrollments) {
     this.enrollments_ = enrollments;
     this.$.enrollmentList.fire('iron-resize');
-    this.dialogPage_ = 'enrollments';
+    this.dialogPage_ = BioEnrollDialogPage.ENROLLMENTS;
   },
 
   /** @private */
   dialogPageChanged_: function() {
     switch (this.dialogPage_) {
-      case 'initial':
-        this.addButtonVisible_ = false;
+      case BioEnrollDialogPage.INITIAL:
         this.cancelButtonVisible_ = true;
-        this.okButtonVisible_ = false;
+        this.cancelButtonDisabled_ = false;
+        this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = false;
         break;
-      case 'pinPrompt':
-        this.addButtonVisible_ = false;
+      case BioEnrollDialogPage.PIN_PROMPT:
         this.cancelButtonVisible_ = true;
-        this.okButtonVisible_ = true;
+        this.cancelButtonDisabled_ = false;
+        this.confirmButtonVisible_ = true;
+        this.confirmButtonDisabled_ = false;
         this.doneButtonVisible_ = false;
+        this.$.pin.focus();
         break;
-      case 'enrollments':
-        this.addButtonVisible_ = true;
+      case BioEnrollDialogPage.ENROLLMENTS:
         this.cancelButtonVisible_ = false;
-        this.okButtonVisible_ = false;
+        this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = true;
         break;
-      case 'enroll':
-        this.addButtonVisible_ = false;
+      case BioEnrollDialogPage.ENROLL:
         this.cancelButtonVisible_ = true;
-        this.okButtonVisible_ = false;
+        this.cancelButtonDisabled_ = false;
+        this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = false;
         break;
-      case 'error':
-        this.addButtonVisible_ = false;
+      case BioEnrollDialogPage.CHOOSE_NAME:
         this.cancelButtonVisible_ = false;
-        this.okButtonVisible_ = false;
+        this.confirmButtonVisible_ = true;
+        this.confirmButtonDisabled_ = !this.recentEnrollmentName_.length;
+        this.doneButtonVisible_ = false;
+        this.$.enrollmentName.focus();
+        break;
+      case BioEnrollDialogPage.ERROR:
+        this.cancelButtonVisible_ = false;
+        this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = true;
         break;
       default:
@@ -151,16 +191,21 @@ Polymer({
 
   /** @private */
   addButtonClick_: function() {
-    assert(this.dialogPage_ == 'enrollments');
+    assert(this.dialogPage_ == BioEnrollDialogPage.ENROLLMENTS);
 
     this.maxSamples_ = -1;  // Reset maxSamples_ before enrolling starts.
     this.$.arc.reset();
-    this.cancelButtonVisible_ = true;
-    this.okButtonVisible_ = false;
+    this.progressArcLabel_ =
+        this.i18n('securityKeysBioEnrollmentEnrollingLabel');
 
-    this.dialogPage_ = 'enroll';
-    this.browserProxy_.startEnrolling().then(
-        this.onEnrolling_.bind(this), () => {});
+    this.recentEnrollmentId_ = '';
+    this.recentEnrollmentName_ = '';
+
+    this.dialogPage_ = BioEnrollDialogPage.ENROLL;
+
+    this.browserProxy_.startEnrolling().then(response => {
+      this.onEnrolling_(response);
+    });
   },
 
   /**
@@ -168,6 +213,11 @@ Polymer({
    * @param {!EnrollmentStatus} response
    */
   onEnrolling_: function(response) {
+    if (response.code == Ctap2Status.ERR_KEEPALIVE_CANCEL) {
+      this.showEnrollmentsPage_();
+      return;
+    }
+
     if (this.maxSamples_ == -1 && response.status != null) {
       if (response.status == 0) {
         // If the first sample is valid, remaining is one less than max samples
@@ -186,21 +236,33 @@ Polymer({
         100 - (100 * response.remaining / this.maxSamples_),
         response.remaining == 0);
     if (response.remaining == 0) {
+      assert(response.enrollment);
+      this.recentEnrollmentId_ = response.enrollment.id;
+      this.recentEnrollmentName_ = response.enrollment.name;
       this.cancelButtonVisible_ = false;
-      this.okButtonVisible_ = true;
+      this.confirmButtonVisible_ = true;
+      this.confirmButtonDisabled_ = false;
+      this.progressArcLabel_ =
+          this.i18n('securityKeysBioEnrollmentEnrollingCompleteLabel');
+      this.$.confirmButton.focus();
+      // Make screen-readers announce enrollment completion.
+      this.fire('iron-announce', {text: this.progressArcLabel_});
     }
     this.fire('bio-enroll-dialog-ready-for-testing');
   },
 
   /** @private */
-  okButtonClick_: function() {
+  confirmButtonClick_: function() {
     switch (this.dialogPage_) {
-      case 'pinPrompt':
+      case BioEnrollDialogPage.PIN_PROMPT:
         this.submitPIN_();
         break;
-      case 'enroll':
-        this.browserProxy_.enumerateEnrollments().then(
-            this.onEnrollments_.bind(this), () => {});
+      case BioEnrollDialogPage.ENROLL:
+        assert(!!this.recentEnrollmentId_.length);
+        this.dialogPage_ = BioEnrollDialogPage.CHOOSE_NAME;
+        break;
+      case BioEnrollDialogPage.CHOOSE_NAME:
+        this.renameNewEnrollment_();
         break;
       default:
         assertNotReached();
@@ -208,21 +270,37 @@ Polymer({
   },
 
   /** @private */
-  cancel_: function() {
-    if (this.dialogPage_ == 'enroll') {
-      this.browserProxy_.cancelEnrollment().then(
-          this.cancelEnroll_.bind(this), () => {});
-    } else {
-      this.done_();
-    }
+  renameNewEnrollment_: function() {
+    assert(this.dialogPage_ == BioEnrollDialogPage.CHOOSE_NAME);
+    // Disable the confirm button to prevent concurrent submissions. It will be
+    // re-enabled by dialogPageChanged_() where appropriate.
+    this.confirmButtonDisabled_ = true;
+    this.browserProxy_
+        .renameEnrollment(this.recentEnrollmentId_, this.recentEnrollmentName_)
+        .then(enrollments => {
+          this.onEnrollments_(enrollments);
+        });
   },
 
   /** @private */
-  cancelEnroll_: function() {
-    // Cancelling from the enrolling screen redirects to the enrollments
-    // list, so request another enumeration to display.
-    this.browserProxy_.enumerateEnrollments().then(
-        this.onEnrollments_.bind(this), () => {});
+  showEnrollmentsPage_: function() {
+    this.browserProxy_.enumerateEnrollments().then(enrollments => {
+      this.onEnrollments_(enrollments);
+    });
+  },
+
+  /** @private */
+  cancel_: function() {
+    if (this.dialogPage_ == BioEnrollDialogPage.ENROLL) {
+      // Cancel an ongoing enrollment.  Will cause the pending
+      // enumerateEnrollments() promise to be resolved and proceed to the
+      // enrollments page.
+      this.cancelButtonDisabled_ = true;
+      this.browserProxy_.cancelEnrollment();
+    } else {
+      // On any other screen, simply close the dialog.
+      this.done_();
+    }
   },
 
   /** @private */
@@ -247,15 +325,6 @@ Polymer({
 
   /**
    * @private
-   * @param {?Array} list
-   * @return {boolean} true if the list exists and has items.
-   */
-  hasSome_: function(list) {
-    return !!(list && list.length);
-  },
-
-  /**
-   * @private
    * @param {!DomRepeatEvent} event
    */
   deleteEnrollment_: function(event) {
@@ -268,6 +337,36 @@ Polymer({
       this.deleteInProgress_ = false;
       this.onEnrollments_(enrollments);
     });
-  }
+  },
+
+  /** @private */
+  onEnrollmentNameInput_: function() {
+    this.confirmButtonDisabled_ = !this.recentEnrollmentName_.length;
+  },
+
+  /**
+   * @private
+   * @param {!settings.BioEnrollDialogPage} dialogPage
+   * @return {string} The title string for the current dialog page.
+   */
+  dialogTitle_: function(dialogPage) {
+    if (dialogPage == BioEnrollDialogPage.ENROLL ||
+        dialogPage == BioEnrollDialogPage.CHOOSE_NAME) {
+      return this.i18n('securityKeysBioEnrollmentAddTitle');
+    }
+    return this.i18n('securityKeysBioEnrollmentDialogTitle');
+  },
+
+  /**
+   * @private
+   * @param {?Array} enrollments
+   * @return {string} The header label for the enrollments page.
+   */
+  enrollmentsHeader_: function(enrollments) {
+    return this.i18n(
+        enrollments && enrollments.length ?
+            'securityKeysBioEnrollmentEnrollmentsLabel' :
+            'securityKeysBioEnrollmentNoEnrollmentsLabel');
+  },
 });
 })();

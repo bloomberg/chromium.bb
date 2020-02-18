@@ -4,10 +4,42 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import android.os.SystemClock;
+
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 
 /** Interface to communicate with the start surface. */
 public interface StartSurface {
+    /**
+     * Called to initialize this interface.
+     * It should be called before showing.
+     * It should not be called in the critical startup process since it will do expensive work.
+     * It might be called many times.
+     */
+    void initialize();
+
+    /**
+     * An observer that is notified when the start surface internal state, excluding
+     * the states notified in {@link OverviewModeObserver}, is changed.
+     */
+    interface StateObserver {
+        /**
+         * Called when the internal state is changed.
+         * @param overviewModeState the {@link OverviewModeState}.
+         * @param shouldShowTabSwitcherToolbar Whether or not should show the Tab switcher toolbar.
+         */
+        void onStateChanged(
+                @OverviewModeState int overviewModeState, boolean shouldShowTabSwitcherToolbar);
+    }
+
+    /**
+     * Set the given {@link StateObserver}.
+     * Note that this will override the previous observer.
+     * @param observer The given observer.
+     */
+    void setStateChangeObserver(StateObserver observer);
+
     /**
      * Defines an interface to pass out tab selecting event.
      */
@@ -76,10 +108,22 @@ public interface StartSurface {
         void showOverview(boolean animate);
 
         /**
+         * Sets the state {@link OverviewModeState}.
+         * @param state the {@link OverviewModeState} to show.
+         */
+        void setOverviewState(@OverviewModeState int state);
+
+        /**
          * Called by the TabSwitcherLayout when the system back button is pressed.
          * @return Whether or not the TabSwitcher consumed the event.
          */
         boolean onBackPressed();
+
+        /**
+         * Enable recording the first meaningful paint event of StartSurface.
+         * @param activityCreateTimeMs {@link SystemClock#elapsedRealtime} at activity creation.
+         */
+        void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs);
     }
 
     /**
@@ -92,4 +136,9 @@ public interface StartSurface {
      * @return TabListDelegate implementation that can be used to access the Tab List.
      */
     TabSwitcher.TabListDelegate getTabListDelegate();
+
+    /**
+     * @return TabDialogDelegation implementation that can be used to access the Tab Dialog.
+     */
+    TabSwitcher.TabDialogDelegation getTabDialogDelegate();
 }

@@ -88,12 +88,8 @@ ACCESSORS(WasmModuleObject, managed_native_module, Managed<wasm::NativeModule>,
           kNativeModuleOffset)
 ACCESSORS(WasmModuleObject, export_wrappers, FixedArray, kExportWrappersOffset)
 ACCESSORS(WasmModuleObject, script, Script, kScriptOffset)
-ACCESSORS(WasmModuleObject, weak_instance_list, WeakArrayList,
-          kWeakInstanceListOffset)
 OPTIONAL_ACCESSORS(WasmModuleObject, asm_js_offset_table, ByteArray,
                    kAsmJsOffsetTableOffset)
-OPTIONAL_ACCESSORS(WasmModuleObject, breakpoint_infos, FixedArray,
-                   kBreakPointInfosOffset)
 wasm::NativeModule* WasmModuleObject::native_module() const {
   return managed_native_module().raw();
 }
@@ -102,12 +98,8 @@ WasmModuleObject::shared_native_module() const {
   return managed_native_module().get();
 }
 const wasm::WasmModule* WasmModuleObject::module() const {
-  // TODO(clemensh): Remove this helper (inline in callers).
+  // TODO(clemensb): Remove this helper (inline in callers).
   return native_module()->module();
-}
-void WasmModuleObject::reset_breakpoint_infos() {
-  WRITE_FIELD(*this, kBreakPointInfosOffset,
-              GetReadOnlyRoots().undefined_value());
 }
 bool WasmModuleObject::is_asm_js() {
   bool asm_js = is_asmjs_module(module());
@@ -118,6 +110,7 @@ bool WasmModuleObject::is_asm_js() {
 
 // WasmTableObject
 ACCESSORS(WasmTableObject, entries, FixedArray, kEntriesOffset)
+SMI_ACCESSORS(WasmTableObject, current_length, kCurrentLengthOffset)
 ACCESSORS(WasmTableObject, maximum_length, Object, kMaximumLengthOffset)
 ACCESSORS(WasmTableObject, dispatch_tables, FixedArray, kDispatchTablesOffset)
 SMI_ACCESSORS(WasmTableObject, raw_type, kRawTypeOffset)
@@ -194,7 +187,7 @@ void WasmGlobalObject::SetAnyRef(Handle<Object> value) {
 bool WasmGlobalObject::SetFuncRef(Isolate* isolate, Handle<Object> value) {
   DCHECK_EQ(type(), wasm::kWasmFuncRef);
   if (!value->IsNull(isolate) &&
-      !WasmExportedFunction::IsWasmExportedFunction(*value) &&
+      !WasmExternalFunction::IsWasmExternalFunction(*value) &&
       !WasmCapiFunction::IsWasmCapiFunction(*value)) {
     return false;
   }
@@ -230,8 +223,6 @@ PRIMITIVE_ACCESSORS(WasmInstanceObject, data_segment_starts, Address*,
                     kDataSegmentStartsOffset)
 PRIMITIVE_ACCESSORS(WasmInstanceObject, data_segment_sizes, uint32_t*,
                     kDataSegmentSizesOffset)
-PRIMITIVE_ACCESSORS(WasmInstanceObject, dropped_data_segments, byte*,
-                    kDroppedDataSegmentsOffset)
 PRIMITIVE_ACCESSORS(WasmInstanceObject, dropped_elem_segments, byte*,
                     kDroppedElemSegmentsOffset)
 
@@ -309,6 +300,10 @@ ACCESSORS(WasmExceptionObject, serialized_signature, PodArray<wasm::ValueType>,
           kSerializedSignatureOffset)
 ACCESSORS(WasmExceptionObject, exception_tag, HeapObject, kExceptionTagOffset)
 
+// WasmExceptionPackage
+OBJECT_CONSTRUCTORS_IMPL(WasmExceptionPackage, JSReceiver)
+CAST_ACCESSOR(WasmExceptionPackage)
+
 // WasmExportedFunction
 WasmExportedFunction::WasmExportedFunction(Address ptr) : JSFunction(ptr) {
   SLOW_DCHECK(IsWasmExportedFunction(*this));
@@ -382,6 +377,8 @@ ACCESSORS(WasmIndirectFunctionTable, refs, FixedArray, kRefsOffset)
 // WasmDebugInfo
 ACCESSORS(WasmDebugInfo, wasm_instance, WasmInstanceObject, kInstanceOffset)
 ACCESSORS(WasmDebugInfo, interpreter_handle, Object, kInterpreterHandleOffset)
+ACCESSORS(WasmDebugInfo, interpreter_reference_stack, Cell,
+          kInterpreterReferenceStackOffset)
 OPTIONAL_ACCESSORS(WasmDebugInfo, locals_names, FixedArray, kLocalsNamesOffset)
 OPTIONAL_ACCESSORS(WasmDebugInfo, c_wasm_entries, FixedArray,
                    kCWasmEntriesOffset)
@@ -392,8 +389,6 @@ OPTIONAL_ACCESSORS(WasmDebugInfo, c_wasm_entry_map, Managed<wasm::SignatureMap>,
 #undef READ_PRIMITIVE_FIELD
 #undef WRITE_PRIMITIVE_FIELD
 #undef PRIMITIVE_ACCESSORS
-
-uint32_t WasmTableObject::current_length() { return entries().length(); }
 
 wasm::ValueType WasmTableObject::type() {
   return static_cast<wasm::ValueType>(raw_type());

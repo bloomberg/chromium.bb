@@ -18,9 +18,9 @@ void NoopNotificationScheduleService::Schedule(
 void NoopNotificationScheduleService::DeleteNotifications(
     SchedulerClientType type) {}
 
-void NoopNotificationScheduleService::GetImpressionDetail(
+void NoopNotificationScheduleService::GetClientOverview(
     SchedulerClientType,
-    ImpressionDetail::ImpressionDetailCallback callback) {}
+    ClientOverview::ClientOverviewCallback callback) {}
 
 NotificationBackgroundTaskScheduler::Handler*
 NoopNotificationScheduleService::GetBackgroundTaskSchedulerHandler() {
@@ -32,10 +32,9 @@ UserActionHandler* NoopNotificationScheduleService::GetUserActionHandler() {
 }
 
 void NoopNotificationScheduleService::OnStartTask(
-    SchedulerTaskTime task_time,
     TaskFinishedCallback callback) {}
 
-void NoopNotificationScheduleService::OnStopTask(SchedulerTaskTime task_time) {}
+void NoopNotificationScheduleService::OnStopTask() {}
 
 void NoopNotificationScheduleService::OnUserAction(
     const UserActionData& action_data) {}

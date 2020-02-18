@@ -9,59 +9,87 @@ import("osp/build/config/services.gni")
 # source_sets).
 group("gn_all") {
   deps = [
-    "cast/common:mdns",
-    "cast/common/certificate/proto",
+    "cast/common:certificate",
+    "cast/common:channel",
+    "cast/sender:channel",
+    "cast/streaming:receiver",
+    "cast/streaming:sender",
+    "discovery:dnssd",
+    "discovery:mdns",
     "osp",
     "osp/msgs",
     "platform",
     "third_party/abseil",
-    "third_party/protobuf:protoc",
+    "third_party/boringssl",
+    "third_party/jsoncpp",
     "third_party/tinycbor",
-    "third_party/zlib",
-    "tools/cddl",
     "util",
   ]
 
+  if (current_toolchain == host_toolchain) {
+    deps += [ "tools/cddl" ]
+  }
+
   if (use_mdns_responder) {
-    deps += [ "osp/impl/discovery/mdns:embedder_demo" ]
+    deps += [ "osp/impl/discovery/mdns:mdns_demo" ]
   }
 
   if (use_chromium_quic) {
     deps += [
       "third_party/chromium_quic",
-      "third_party/chromium_quic:demo_client",
-      "third_party/chromium_quic:demo_server",
+      "third_party/chromium_quic:quic_demo_client",
+      "third_party/chromium_quic:quic_demo_server",
+    ]
+  }
+
+  if (use_chromium_quic && use_mdns_responder) {
+    deps += [ "osp:osp_demo" ]
+  }
+
+  if (!build_with_chromium) {
+    deps += [
+      "third_party/protobuf:protoc",
+      "third_party/zlib",
+    ]
+
+    # TODO(crbug.com/openscreen/86): Build for Mac too once the mac buildbot
+    # compiler is upgraded.
+    if (!is_mac) {
+      deps += [ "cast/standalone_receiver:cast_receiver" ]
+    }
+  }
+}
+
+source_set("openscreen_unittests_all") {
+  testonly = true
+  public_deps = [
+    "cast/common:unittests",
+    "cast/sender:unittests",
+    "cast/streaming:unittests",
+    "discovery:unittests",
+    "osp:unittests",
+    "osp/msgs:unittests",
+    "platform:unittests",
+    "third_party/abseil",
+    "third_party/googletest:gtest_main",
+    "util:unittests",
+  ]
+
+  if (use_mdns_responder) {
+    public_deps += [
+      "osp/impl/discovery/mdns:unittests",
+
+      # Currently this target only includes mDNS tests.
+      "osp/impl/testing:unittests",
     ]
   }
 }
 
-executable("openscreen_unittests") {
-  testonly = true
-  deps = [
-    "cast/common:mdns_unittests",
-    "cast/common/certificate:unittests",
-    "osp:osp_unittests",
-    "osp/impl/discovery/mdns:mdns_unittests",
-    "osp/msgs:unittests",
-    "platform:platform_unittests",
-    "streaming/cast:cast_unittests",
-    "third_party/abseil",
-    "third_party/googletest:gtest_main",
-    "util:util_unittests",
-  ]
-}
-
-if (use_chromium_quic && use_mdns_responder) {
-  executable("demo") {
-    sources = [
-      "osp/demo/demo.cc",
-    ]
-
+if (!build_with_chromium) {
+  executable("openscreen_unittests") {
+    testonly = true
     deps = [
-      "//osp:osp_with_chromium_quic",
-      "//osp/impl/discovery/mdns",
-      "//platform",
-      "//util",
+      ":openscreen_unittests_all",
     ]
   }
 }

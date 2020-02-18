@@ -21,10 +21,11 @@
 #include "base/strings/stringprintf.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_frame_sink.h"
-#include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -106,6 +107,8 @@ Window::Window(WindowDelegate* delegate, client::WindowType type)
       delegate_(delegate),
       event_targeting_policy_(
           aura::EventTargetingPolicy::kTargetAndDescendants),
+      restore_event_targeting_policy_(
+          aura::EventTargetingPolicy::kTargetAndDescendants),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as the workspace code).
@@ -118,7 +121,6 @@ Window::~Window() {
 
   if (layer()->owner() == this)
     layer()->CompleteAllAnimations();
-  layer()->SuppressPaint();
 
   // Let the delegate know we're in the processing of destroying.
   if (delegate_)
@@ -568,6 +570,14 @@ bool Window::HasObserver(const WindowObserver* observer) const {
 }
 
 void Window::SetEventTargetingPolicy(EventTargetingPolicy policy) {
+  // If the event targeting is blocked on the window, do not allow change event
+  // targeting policy until all event targeting blockers are removed from the
+  // window.
+  if (event_targeting_blocker_count_ > 0) {
+    restore_event_targeting_policy_ = policy;
+    return;
+  }
+
 #if DCHECK_IS_ON()
   const bool old_window_accepts_events =
       (event_targeting_policy_ == EventTargetingPolicy::kTargetOnly) ||
@@ -731,10 +741,6 @@ std::unique_ptr<ScopedKeyboardHook> Window::CaptureSystemKeyEvents(
     return nullptr;
 
   return host->CaptureSystemKeyEvents(std::move(dom_codes));
-}
-
-void Window::SuppressPaint() {
-  layer()->SuppressPaint();
 }
 
 // {Set,Get,Clear}Property are implemented in class_property.h.
@@ -1153,29 +1159,21 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
 
   // For creating a async frame sink which connects to the viz display
   // compositor.
-  viz::mojom::CompositorFrameSinkPtrInfo sink_info;
-  viz::mojom::CompositorFrameSinkRequest sink_request =
-      mojo::MakeRequest(&sink_info);
-  viz::mojom::CompositorFrameSinkClientPtr client;
-  viz::mojom::CompositorFrameSinkClientRequest client_request =
-      mojo::MakeRequest(&client);
+  mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink_remote;
+  mojo::PendingReceiver<viz::mojom::CompositorFrameSink> sink_receiver =
+      sink_remote.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient> client_remote;
+  mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient> client_receiver =
+      client_remote.InitWithNewPipeAndPassReceiver();
   host_frame_sink_manager->CreateCompositorFrameSink(
-      frame_sink_id_, std::move(sink_request), std::move(client));
+      frame_sink_id_, std::move(sink_receiver), std::move(client_remote));
 
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
   params.gpu_memory_buffer_manager =
       Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager();
-  params.pipes.compositor_frame_sink_info = std::move(sink_info);
-  params.pipes.client_request = std::move(client_request);
+  params.pipes.compositor_frame_sink_remote = std::move(sink_remote);
+  params.pipes.client_receiver = std::move(client_receiver);
   params.client_name = kExo;
-  bool root_accepts_events =
-      (event_targeting_policy_ == EventTargetingPolicy::kTargetOnly) ||
-      (event_targeting_policy_ == EventTargetingPolicy::kTargetAndDescendants);
-  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
-    params.hit_test_data_provider =
-        std::make_unique<viz::HitTestDataProviderDrawQuad>(
-            true /* should_ask_for_child_region */, root_accepts_events);
-  }
   auto frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           nullptr /* context_provider */, nullptr /* worker_context_provider */,

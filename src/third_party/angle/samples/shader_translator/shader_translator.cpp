@@ -146,6 +146,16 @@ int main(int argc, char *argv[])
                                     resources.FragmentPrecisionHigh = 1;
                                 }
                                 break;
+                            case 'd':
+                                if (argv[0][4] == 'c')
+                                {
+                                    spec = SH_GL_COMPATIBILITY_SPEC;
+                                }
+                                else
+                                {
+                                    spec = SH_GL_CORE_SPEC;
+                                }
+                                break;
                             default:
                                 failCode = EFailUsage;
                         }
@@ -169,6 +179,10 @@ int main(int argc, char *argv[])
                                 {
                                     failCode = EFailUsage;
                                 }
+                                compileOptions |= SH_INITIALIZE_UNINITIALIZED_LOCALS;
+                                break;
+                            case 'v':
+                                output = SH_GLSL_VULKAN_OUTPUT;
                                 compileOptions |= SH_INITIALIZE_UNINITIALIZED_LOCALS;
                                 break;
                             case 'h':
@@ -378,10 +392,13 @@ void usage()
         "       -s=w     : use WebGL 1.0 spec\n"
         "       -s=wn    : use WebGL 1.0 spec with no highp support in fragment shaders\n"
         "       -s=w2    : use WebGL 2.0 spec\n"
+        "       -s=d     : use Desktop Core spec (in development)\n"
+        "       -s=dc    : use Desktop Compatibility spec (in development)\n"
         "       -b=e     : output GLSL ES code (this is by default)\n"
         "       -b=g     : output GLSL code (compatibility profile)\n"
         "       -b=g[NUM]: output GLSL code (NUM can be 130, 140, 150, 330, 400, 410, 420, 430, "
         "440, 450)\n"
+        "       -b=v     : output Vulkan GLSL code\n"
         "       -b=h9    : output HLSL9 code\n"
         "       -b=h11   : output HLSL11 code\n"
         "       -x=i     : enable GL_OES_EGL_image_external\n"
@@ -662,11 +679,11 @@ void PrintVariable(const std::string &prefix, size_t index, const sh::ShaderVari
 
 static void PrintActiveVariables(ShHandle compiler)
 {
-    const std::vector<sh::Uniform> *uniforms       = sh::GetUniforms(compiler);
-    const std::vector<sh::Varying> *inputVaryings  = sh::GetInputVaryings(compiler);
-    const std::vector<sh::Varying> *outputVaryings = sh::GetOutputVaryings(compiler);
-    const std::vector<sh::Attribute> *attributes   = sh::GetAttributes(compiler);
-    const std::vector<sh::OutputVariable> *outputs = sh::GetOutputVariables(compiler);
+    const std::vector<sh::ShaderVariable> *uniforms       = sh::GetUniforms(compiler);
+    const std::vector<sh::ShaderVariable> *inputVaryings  = sh::GetInputVaryings(compiler);
+    const std::vector<sh::ShaderVariable> *outputVaryings = sh::GetOutputVaryings(compiler);
+    const std::vector<sh::ShaderVariable> *attributes     = sh::GetAttributes(compiler);
+    const std::vector<sh::ShaderVariable> *outputs        = sh::GetOutputVariables(compiler);
     for (size_t varCategory = 0; varCategory < 5; ++varCategory)
     {
         size_t numVars = 0;

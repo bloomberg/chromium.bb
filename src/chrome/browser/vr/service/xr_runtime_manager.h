@@ -24,6 +24,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace device {
 class VRDeviceProvider;
@@ -75,7 +76,18 @@ class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   bool HasRuntime(device::mojom::XRDeviceId id);
   BrowserXRRuntime* GetRuntimeForOptions(
       device::mojom::XRSessionOptions* options);
-  BrowserXRRuntime* GetImmersiveRuntime();
+
+  // Gets the system default immersive-vr runtime if available.
+  BrowserXRRuntime* GetImmersiveVrRuntime();
+
+  // Gets the system default immersive-ar runtime if available.
+  BrowserXRRuntime* GetImmersiveArRuntime();
+
+  // Gets the runtime matching a currently-active immersive session, if any.
+  // This is either the VR or AR runtime, or null if there's no matching
+  // runtime or if there's no active immersive session.
+  BrowserXRRuntime* GetCurrentlyPresentingImmersiveRuntime();
+
   device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo(
       VRServiceImpl* service);
 
@@ -117,7 +129,7 @@ class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
 
   void AddRuntime(device::mojom::XRDeviceId id,
                   device::mojom::VRDisplayInfoPtr info,
-                  device::mojom::XRRuntimePtr runtime);
+                  mojo::PendingRemote<device::mojom::XRRuntime> runtime);
   void RemoveRuntime(device::mojom::XRDeviceId id);
 
   ProviderList providers_;

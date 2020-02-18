@@ -7,7 +7,9 @@
 #include <memory>
 #include <unordered_map>
 
+#include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -33,7 +35,8 @@ TestPaymentsClient::~TestPaymentsClient() {}
 
 void TestPaymentsClient::GetUnmaskDetails(GetUnmaskDetailsCallback callback,
                                           const std::string& app_locale) {
-  std::move(callback).Run(AutofillClient::SUCCESS, unmask_details_);
+  if (should_return_unmask_details_)
+    std::move(callback).Run(AutofillClient::SUCCESS, unmask_details_);
 }
 
 void TestPaymentsClient::GetUploadDetails(
@@ -56,7 +59,7 @@ void TestPaymentsClient::GetUploadDetails(
       app_locale == "en-US" ? AutofillClient::SUCCESS
                             : AutofillClient::PERMANENT_FAILURE,
       base::ASCIIToUTF16("this is a context token"),
-      std::unique_ptr<base::Value>(nullptr), supported_card_bin_ranges_);
+      TestPaymentsClient::LegalMessage(), supported_card_bin_ranges_);
 }
 
 void TestPaymentsClient::UploadCard(
@@ -76,13 +79,20 @@ void TestPaymentsClient::MigrateCards(
                           "this is display text");
 }
 
+void TestPaymentsClient::ShouldReturnUnmaskDetailsImmediately(
+    bool should_return_unmask_details) {
+  should_return_unmask_details_ = should_return_unmask_details;
+}
+
 void TestPaymentsClient::AllowFidoRegistration(bool offer_fido_opt_in) {
+  should_return_unmask_details_ = true;
   unmask_details_.offer_fido_opt_in = offer_fido_opt_in;
 }
 
 void TestPaymentsClient::AddFidoEligibleCard(std::string server_id,
                                              std::string credential_id,
                                              std::string relying_party_id) {
+  should_return_unmask_details_ = true;
   unmask_details_.offer_fido_opt_in = false;
   unmask_details_.unmask_auth_method = AutofillClient::UnmaskAuthMethod::FIDO;
   unmask_details_.fido_eligible_card_ids.insert(server_id);
@@ -112,14 +122,12 @@ void TestPaymentsClient::AddFidoEligibleCard(std::string server_id,
                   base::Value(base::Value::Type::LIST));
   key_info
       .FindKeyOfType("authenticator_transport_support", base::Value::Type::LIST)
-      ->GetList()
-      .push_back(base::Value("INTERNAL"));
+      ->Append("INTERNAL");
   unmask_details_.fido_request_options.SetKey(
       "key_info", base::Value(base::Value::Type::LIST));
   unmask_details_.fido_request_options
       .FindKeyOfType("key_info", base::Value::Type::LIST)
-      ->GetList()
-      .push_back(std::move(key_info));
+      ->Append(std::move(key_info));
 }
 
 void TestPaymentsClient::SetServerIdForCardUpload(std::string server_id) {
@@ -134,6 +142,41 @@ void TestPaymentsClient::SetSaveResultForCardsMigration(
 void TestPaymentsClient::SetSupportedBINRanges(
     std::vector<std::pair<int, int>> bin_ranges) {
   supported_card_bin_ranges_ = bin_ranges;
+}
+
+void TestPaymentsClient::SetUseInvalidLegalMessageInGetUploadDetails(
+    bool use_invalid_legal_message) {
+  use_invalid_legal_message_ = use_invalid_legal_message;
+}
+
+std::unique_ptr<base::Value> TestPaymentsClient::LegalMessage() {
+  if (use_invalid_legal_message_) {
+    // Legal message is invalid because it's missing the url.
+    return std::unique_ptr<base::Value>(
+        base::JSONReader::ReadDeprecated("{"
+                                         "  \"line\" : [ {"
+                                         "     \"template\": \"Panda {0}.\","
+                                         "     \"template_parameter\": [ {"
+                                         "        \"display_text\": \"bear\""
+                                         "     } ]"
+                                         "  } ]"
+                                         "}"));
+    return std::unique_ptr<base::Value>(base::JSONReader::ReadDeprecated("{}"));
+  } else {
+    return std::unique_ptr<base::Value>(base::JSONReader::ReadDeprecated(
+        "{"
+        "  \"line\" : [ {"
+        "     \"template\": \"The legal documents are: {0} and {1}.\","
+        "     \"template_parameter\" : [ {"
+        "        \"display_text\" : \"Terms of Service\","
+        "        \"url\": \"http://www.example.com/tos\""
+        "     }, {"
+        "        \"display_text\" : \"Privacy Policy\","
+        "        \"url\": \"http://www.example.com/pp\""
+        "     } ]"
+        "  } ]"
+        "}"));
+  }
 }
 
 }  // namespace payments

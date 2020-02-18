@@ -867,6 +867,11 @@ void SpdyStream::QueueNextDataFrame() {
         &SpdyStream::OnWriteBufferConsumed, GetWeakPtr(), payload_size));
   }
 
+  if (session_->GreasedFramesEnabled() && delegate_ &&
+      delegate_->CanGreaseFrameType()) {
+    session_->EnqueueGreasedFrame(GetWeakPtr());
+  }
+
   session_->EnqueueStreamWrite(
       GetWeakPtr(), spdy::SpdyFrameType::DATA,
       std::make_unique<SimpleBufferProducer>(std::move(data_buffer)));

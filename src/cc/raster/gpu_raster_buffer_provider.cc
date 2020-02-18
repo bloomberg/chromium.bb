@@ -31,7 +31,6 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "third_party/skia/include/core/SkMultiPictureDraw.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -128,8 +127,7 @@ static void RasterizeSourceOOP(
     const gfx::Rect& playback_rect,
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
-    viz::RasterContextProvider* context_provider,
-    int msaa_sample_count) {
+    viz::RasterContextProvider* context_provider) {
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
   if (mailbox->IsZero()) {
     DCHECK(!sync_token.HasData());
@@ -146,9 +144,9 @@ static void RasterizeSourceOOP(
     ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
 
-  ri->BeginRasterCHROMIUM(raster_source->background_color(), msaa_sample_count,
-                          playback_settings.use_lcd_text, color_space,
-                          mailbox->name);
+  ri->BeginRasterCHROMIUM(
+      raster_source->background_color(), playback_settings.msaa_sample_count,
+      playback_settings.use_lcd_text, color_space, mailbox->name);
   float recording_to_raster_scale =
       transform.scale() / raster_source->recording_scale_factor();
   gfx::Size content_size = raster_source->GetContentSize(transform.scale());
@@ -183,7 +181,6 @@ static void RasterizeSource(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     viz::RasterContextProvider* context_provider,
-    int msaa_sample_count,
     bool unpremultiply_and_dither,
     const gfx::Size& max_tile_size) {
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
@@ -203,7 +200,9 @@ static void RasterizeSource(
     // valid by the time the consume command executes.
     ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
-  GLuint texture_id = ri->CreateAndConsumeForGpuRaster(mailbox->name);
+  GLuint texture_id = ri->CreateAndConsumeForGpuRaster(*mailbox);
+  ri->BeginSharedImageAccessDirectCHROMIUM(
+      texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   {
     ScopedGrContextAccess gr_context_access(context_provider);
     base::Optional<viz::ClientResourceProvider::ScopedSkSurface> scoped_surface;
@@ -215,13 +214,13 @@ static void RasterizeSource(
       scoped_surface.emplace(context_provider->GrContext(), sk_color_space,
                              texture_id, texture_target, resource_size,
                              resource_format, playback_settings.use_lcd_text,
-                             msaa_sample_count);
+                             playback_settings.msaa_sample_count);
       surface = scoped_surface->surface();
     } else {
       scoped_dither_surface.emplace(
           context_provider, sk_color_space, playback_rect, raster_full_rect,
           max_tile_size, texture_id, resource_size,
-          playback_settings.use_lcd_text, msaa_sample_count);
+          playback_settings.use_lcd_text, playback_settings.msaa_sample_count);
       surface = scoped_dither_surface->surface();
     }
 
@@ -243,7 +242,7 @@ static void RasterizeSource(
                                     playback_rect, transform,
                                     playback_settings);
   }
-
+  ri->EndSharedImageAccessDirectCHROMIUM(texture_id);
   ri->DeleteGpuRasterTexture(texture_id);
 }
 
@@ -285,13 +284,21 @@ GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     GpuRasterBufferProvider* client,
     const ResourcePool::InUsePoolResource& in_use_resource,
     GpuRasterBacking* backing,
-    bool resource_has_previous_content)
+    bool resource_has_previous_content,
+    bool depends_on_at_raster_decodes,
+    bool depends_on_hardware_accelerated_jpeg_candidates,
+    bool depends_on_hardware_accelerated_webp_candidates)
     : client_(client),
       backing_(backing),
       resource_size_(in_use_resource.size()),
       resource_format_(in_use_resource.format()),
       color_space_(in_use_resource.color_space()),
       resource_has_previous_content_(resource_has_previous_content),
+      depends_on_at_raster_decodes_(depends_on_at_raster_decodes),
+      depends_on_hardware_accelerated_jpeg_candidates_(
+          depends_on_hardware_accelerated_jpeg_candidates),
+      depends_on_hardware_accelerated_webp_candidates_(
+          depends_on_hardware_accelerated_webp_candidates),
       before_raster_sync_token_(backing->returned_sync_token),
       texture_target_(backing->texture_target),
       texture_is_overlay_candidate_(backing->overlay_candidate),
@@ -339,14 +346,15 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
       before_raster_sync_token_, resource_size_, resource_format_, color_space_,
       resource_has_previous_content_, raster_source, raster_full_rect,
       raster_dirty_rect, new_content_id, transform, playback_settings, url,
-      creation_time_);
+      creation_time_, depends_on_at_raster_decodes_,
+      depends_on_hardware_accelerated_jpeg_candidates_,
+      depends_on_hardware_accelerated_webp_candidates_);
 }
 
 GpuRasterBufferProvider::GpuRasterBufferProvider(
     viz::ContextProvider* compositor_context_provider,
     viz::RasterContextProvider* worker_context_provider,
     bool use_gpu_memory_buffer_resources,
-    int gpu_rasterization_msaa_sample_count,
     viz::ResourceFormat tile_format,
     const gfx::Size& max_tile_size,
     bool unpremultiply_and_dither_low_bit_depth_tiles,
@@ -355,7 +363,6 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
-      msaa_sample_count_(gpu_rasterization_msaa_sample_count),
       tile_format_(tile_format),
       max_tile_size_(max_tile_size),
       unpremultiply_and_dither_low_bit_depth_tiles_(
@@ -373,7 +380,10 @@ GpuRasterBufferProvider::~GpuRasterBufferProvider() {
 std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
     const ResourcePool::InUsePoolResource& resource,
     uint64_t resource_content_id,
-    uint64_t previous_content_id) {
+    uint64_t previous_content_id,
+    bool depends_on_at_raster_decodes,
+    bool depends_on_hardware_accelerated_jpeg_candidates,
+    bool depends_on_hardware_accelerated_webp_candidates) {
   if (!resource.gpu_backing()) {
     auto backing = std::make_unique<GpuRasterBacking>();
     backing->worker_context_provider = worker_context_provider_;
@@ -386,8 +396,11 @@ std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
       static_cast<GpuRasterBacking*>(resource.gpu_backing());
   bool resource_has_previous_content =
       resource_content_id && resource_content_id == previous_content_id;
-  return std::make_unique<RasterBufferImpl>(this, resource, backing,
-                                            resource_has_previous_content);
+  return std::make_unique<RasterBufferImpl>(
+      this, resource, backing, resource_has_previous_content,
+      depends_on_at_raster_decodes,
+      depends_on_hardware_accelerated_jpeg_candidates,
+      depends_on_hardware_accelerated_webp_candidates);
 }
 
 void GpuRasterBufferProvider::Flush() {
@@ -402,13 +415,6 @@ bool GpuRasterBufferProvider::IsResourcePremultiplied() const {
   return !ShouldUnpremultiplyAndDitherResource(GetResourceFormat());
 }
 
-bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
-  // Partial raster doesn't support MSAA, as the MSAA resolve is unaware of clip
-  // rects.
-  // TODO(crbug.com/629683): See if we can work around this limitation.
-  return msaa_sample_count_ == 0;
-}
-
 bool GpuRasterBufferProvider::IsResourceReadyToDraw(
     const ResourcePool::InUsePoolResource& resource) const {
   const gpu::SyncToken& sync_token = resource.gpu_backing()->mailbox_sync_token;
@@ -419,6 +425,10 @@ bool GpuRasterBufferProvider::IsResourceReadyToDraw(
   // IsSyncTokenSignaled is thread-safe, no need for worker context lock.
   return worker_context_provider_->ContextSupport()->IsSyncTokenSignaled(
       sync_token);
+}
+
+bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
+  return true;
 }
 
 uint64_t GpuRasterBufferProvider::SetReadyToDrawCallback(
@@ -467,14 +477,21 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     const GURL& url,
-    base::TimeTicks raster_buffer_creation_time) {
+    base::TimeTicks raster_buffer_creation_time,
+    bool depends_on_at_raster_decodes,
+    bool depends_on_hardware_accelerated_jpeg_candidates,
+    bool depends_on_hardware_accelerated_webp_candidates) {
   PendingRasterQuery query;
+  query.depends_on_hardware_accelerated_jpeg_candidates =
+      depends_on_hardware_accelerated_jpeg_candidates;
+  query.depends_on_hardware_accelerated_webp_candidates =
+      depends_on_hardware_accelerated_webp_candidates;
   gpu::SyncToken raster_finished_token = PlaybackOnWorkerThreadInternal(
       mailbox, texture_target, texture_is_overlay_candidate, sync_token,
       resource_size, resource_format, color_space,
       resource_has_previous_content, raster_source, raster_full_rect,
       raster_dirty_rect, new_content_id, transform, playback_settings, url,
-      &query);
+      depends_on_at_raster_decodes, &query);
 
   if (query.raster_duration_query_id) {
     if (query.raster_start_query_id)
@@ -508,6 +525,7 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     const GURL& url,
+    bool depends_on_at_raster_decodes,
     PendingRasterQuery* query) {
   viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
       worker_context_provider_, url.possibly_invalid_spec().c_str());
@@ -545,8 +563,11 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
     // enabled because we will use this timestamp to measure raster scheduling
     // delay and we only need to collect that data to assess the impact of
     // hardware acceleration of image decodes which work only in Chrome OS with
-    // OOP-R.
-    if (enable_oop_rasterization_) {
+    // OOP-R. Furthermore, we don't count raster work that depends on at-raster
+    // image decodes. This is because we want the delay to always include
+    // image decoding and uploading time, and at-raster decodes should be
+    // relatively rare.
+    if (enable_oop_rasterization_ && !depends_on_at_raster_decodes) {
       ri->GenQueriesEXT(1, &query->raster_start_query_id);
       DCHECK_GT(query->raster_start_query_id, 0u);
       ri->QueryCounterEXT(query->raster_start_query_id,
@@ -566,19 +587,17 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
     if (measure_raster_metric)
       timer.emplace();
     if (enable_oop_rasterization_) {
-      RasterizeSourceOOP(raster_source, resource_has_previous_content, mailbox,
-                         sync_token, texture_target,
-                         texture_is_overlay_candidate, resource_size,
-                         resource_format, color_space, raster_full_rect,
-                         playback_rect, transform, playback_settings,
-                         worker_context_provider_, msaa_sample_count_);
+      RasterizeSourceOOP(
+          raster_source, resource_has_previous_content, mailbox, sync_token,
+          texture_target, texture_is_overlay_candidate, resource_size,
+          resource_format, color_space, raster_full_rect, playback_rect,
+          transform, playback_settings, worker_context_provider_);
     } else {
       RasterizeSource(raster_source, resource_has_previous_content, mailbox,
                       sync_token, texture_target, texture_is_overlay_candidate,
                       resource_size, resource_format, color_space,
                       raster_full_rect, playback_rect, transform,
                       playback_settings, worker_context_provider_,
-                      msaa_sample_count_,
                       ShouldUnpremultiplyAndDitherResource(resource_format),
                       max_tile_size_);
     }
@@ -671,9 +690,26 @@ bool GpuRasterBufferProvider::CheckRasterFinishedQueries() {
       // negative scheduling delay.
       DCHECK_GE(raster_scheduling_delay.InMicroseconds(), 0u);
       UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
-          base::StringPrintf("Renderer4.%s.RasterTaskSchedulingDelay.All",
-                             client_name),
+          base::StringPrintf(
+              "Renderer4.%s.RasterTaskSchedulingDelayNoAtRasterDecodes.All",
+              client_name),
           raster_scheduling_delay);
+      if (it->depends_on_hardware_accelerated_jpeg_candidates) {
+        UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
+            base::StringPrintf(
+                "Renderer4.%s.RasterTaskSchedulingDelayNoAtRasterDecodes."
+                "TilesWithJpegHwDecodeCandidates",
+                client_name),
+            raster_scheduling_delay);
+      }
+      if (it->depends_on_hardware_accelerated_webp_candidates) {
+        UMA_HISTOGRAM_RASTER_TIME_CUSTOM_MICROSECONDS(
+            base::StringPrintf(
+                "Renderer4.%s.RasterTaskSchedulingDelayNoAtRasterDecodes."
+                "TilesWithWebPHwDecodeCandidates",
+                client_name),
+            raster_scheduling_delay);
+      }
     }
 
     if (enable_oop_rasterization_) {

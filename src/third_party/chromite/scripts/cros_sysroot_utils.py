@@ -70,7 +70,7 @@ def main(argv):
     raise commandline.ChrootRequiredError(argv)
 
   if os.geteuid() != 0:
-    cros_build_lib.SudoRunCommand(sys.argv, print_cmd=False)
+    cros_build_lib.sudo_run(sys.argv, print_cmd=False)
     return
 
   output = sys.stdout

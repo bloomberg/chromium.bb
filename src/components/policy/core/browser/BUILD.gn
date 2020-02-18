@@ -5,8 +5,6 @@
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 
-assert(!is_ios, "Policy should not be referenced on iOS")
-
 group("browser") {
   if (is_component_build) {
     public_deps = [
@@ -55,7 +53,6 @@ jumbo_source_set("internal") {
   ]
   deps = [
     "//base/third_party/dynamic_annotations",
-    "//components/bookmarks/managed",
     "//components/google/core/common",
     "//components/keyed_service/core",
     "//components/pref_registry",
@@ -64,6 +61,7 @@ jumbo_source_set("internal") {
     "//components/url_formatter",
     "//components/url_matcher",
     "//net",
+    "//services/network/public/cpp",
     "//third_party/re2",
     "//ui/base",
     "//url",

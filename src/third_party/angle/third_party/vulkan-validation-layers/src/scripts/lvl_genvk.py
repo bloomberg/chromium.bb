@@ -111,11 +111,15 @@ def makeGenOpts(args):
     # Defaults for generating re-inclusion protection wrappers (or not)
     protectFeature = protect
 
+    # An API style convention object
+    conventions = VulkanConventions()
+
     # ValidationLayer Generators
     # Options for thread safety header code-generation
     genOpts['thread_safety.h'] = [
           ThreadOutputGenerator,
           ThreadGeneratorOptions(
+            conventions       = conventions,
             filename          = 'thread_safety.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -139,6 +143,7 @@ def makeGenOpts(args):
     genOpts['thread_safety.cpp'] = [
           ThreadOutputGenerator,
           ThreadGeneratorOptions(
+            conventions       = conventions,
             filename          = 'thread_safety.cpp',
             directory         = directory,
             apiname           = 'vulkan',
@@ -162,6 +167,7 @@ def makeGenOpts(args):
     genOpts['parameter_validation.cpp'] = [
           ParameterValidationOutputGenerator,
           ParameterValidationGeneratorOptions(
+            conventions       = conventions,
             filename          = 'parameter_validation.cpp',
             directory         = directory,
             apiname           = 'vulkan',
@@ -185,6 +191,7 @@ def makeGenOpts(args):
     genOpts['parameter_validation.h'] = [
           ParameterValidationOutputGenerator,
           ParameterValidationGeneratorOptions(
+            conventions       = conventions,
             filename          = 'parameter_validation.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -208,6 +215,7 @@ def makeGenOpts(args):
     genOpts['object_tracker.cpp'] = [
           ObjectTrackerOutputGenerator,
           ObjectTrackerGeneratorOptions(
+            conventions       = conventions,
             filename          = 'object_tracker.cpp',
             directory         = directory,
             apiname           = 'vulkan',
@@ -232,6 +240,7 @@ def makeGenOpts(args):
     genOpts['object_tracker.h'] = [
           ObjectTrackerOutputGenerator,
           ObjectTrackerGeneratorOptions(
+            conventions       = conventions,
             filename          = 'object_tracker.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -256,6 +265,7 @@ def makeGenOpts(args):
     genOpts['vk_dispatch_table_helper.h'] = [
           DispatchTableHelperOutputGenerator,
           DispatchTableHelperOutputGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_dispatch_table_helper.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -274,10 +284,59 @@ def makeGenOpts(args):
             expandEnumerants = False)
         ]
 
+    # lvt_file generator options for lvt_function_pointers.h
+    genOpts['lvt_function_pointers.h'] = [
+          LvtFileOutputGenerator,
+          LvtFileOutputGeneratorOptions(
+            conventions       = conventions,
+            filename          = 'lvt_function_pointers.h',
+            directory         = directory,
+            apiname           = 'vulkan',
+            profile           = None,
+            versions          = featuresPat,
+            emitversions      = featuresPat,
+            defaultExtensions = 'vulkan',
+            addExtensions     = addExtensionsPat,
+            removeExtensions  = removeExtensionsPat,
+            emitExtensions    = emitExtensionsPat,
+            prefixText        = prefixStrings + vkPrefixStrings,
+            apicall           = 'VKAPI_ATTR ',
+            apientry          = 'VKAPI_CALL ',
+            apientryp         = 'VKAPI_PTR *',
+            alignFuncParam    = 48,
+            expandEnumerants = False,
+            lvt_file_type  = 'function_pointer_header')
+        ]
+
+    # lvt_file generator options for lvt_function_pointers.cpp
+    genOpts['lvt_function_pointers.cpp'] = [
+          LvtFileOutputGenerator,
+          LvtFileOutputGeneratorOptions(
+            conventions       = conventions,
+            filename          = 'lvt_function_pointers.cpp',
+            directory         = directory,
+            apiname           = 'vulkan',
+            profile           = None,
+            versions          = featuresPat,
+            emitversions      = featuresPat,
+            defaultExtensions = 'vulkan',
+            addExtensions     = addExtensionsPat,
+            removeExtensions  = removeExtensionsPat,
+            emitExtensions    = emitExtensionsPat,
+            prefixText        = prefixStrings + vkPrefixStrings,
+            apicall           = 'VKAPI_ATTR ',
+            apientry          = 'VKAPI_CALL ',
+            apientryp         = 'VKAPI_PTR *',
+            alignFuncParam    = 48,
+            expandEnumerants = False,
+            lvt_file_type  = 'function_pointer_source')
+        ]
+
     # Options for Layer dispatch table generator
     genOpts['vk_layer_dispatch_table.h'] = [
           LayerDispatchTableOutputGenerator,
           LayerDispatchTableGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_layer_dispatch_table.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -300,6 +359,7 @@ def makeGenOpts(args):
     genOpts['vk_enum_string_helper.h'] = [
           HelperFileOutputGenerator,
           HelperFileOutputGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_enum_string_helper.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -323,6 +383,7 @@ def makeGenOpts(args):
     genOpts['vk_safe_struct.h'] = [
           HelperFileOutputGenerator,
           HelperFileOutputGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_safe_struct.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -346,6 +407,7 @@ def makeGenOpts(args):
     genOpts['vk_safe_struct.cpp'] = [
           HelperFileOutputGenerator,
           HelperFileOutputGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_safe_struct.cpp',
             directory         = directory,
             apiname           = 'vulkan',
@@ -369,6 +431,7 @@ def makeGenOpts(args):
     genOpts['vk_object_types.h'] = [
           HelperFileOutputGenerator,
           HelperFileOutputGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_object_types.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -392,6 +455,7 @@ def makeGenOpts(args):
     genOpts['vk_extension_helper.h'] = [
           HelperFileOutputGenerator,
           HelperFileOutputGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_extension_helper.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -415,6 +479,7 @@ def makeGenOpts(args):
     genOpts['vk_typemap_helper.h'] = [
           HelperFileOutputGenerator,
           HelperFileOutputGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_typemap_helper.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -440,6 +505,7 @@ def makeGenOpts(args):
     genOpts['chassis.h'] = [
           LayerChassisOutputGenerator,
           LayerChassisGeneratorOptions(
+            conventions       = conventions,
             filename          = 'chassis.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -463,6 +529,7 @@ def makeGenOpts(args):
     genOpts['chassis.cpp'] = [
           LayerChassisOutputGenerator,
           LayerChassisGeneratorOptions(
+            conventions       = conventions,
             filename          = 'chassis.cpp',
             directory         = directory,
             apiname           = 'vulkan',
@@ -486,6 +553,7 @@ def makeGenOpts(args):
     genOpts['layer_chassis_dispatch.cpp'] = [
           LayerChassisDispatchOutputGenerator,
           LayerChassisDispatchGeneratorOptions(
+            conventions       = conventions,
             filename          = 'layer_chassis_dispatch.cpp',
             directory         = directory,
             apiname           = 'vulkan',
@@ -509,6 +577,7 @@ def makeGenOpts(args):
     genOpts['layer_chassis_dispatch.h'] = [
           LayerChassisDispatchOutputGenerator,
           LayerChassisDispatchGeneratorOptions(
+            conventions       = conventions,
             filename          = 'layer_chassis_dispatch.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -526,6 +595,54 @@ def makeGenOpts(args):
             apientryp         = 'VKAPI_PTR *',
             alignFuncParam    = 48,
             expandEnumerants = False)
+        ]
+
+    # generator for command_counter.h
+    genOpts['command_counter_helper.h'] = [
+          CommandCounterOutputGenerator,
+          CommandCounterOutputGeneratorOptions(
+            conventions       = conventions,
+            filename          = 'command_counter_helper.h',
+            directory         = directory,
+            apiname           = 'vulkan',
+            profile           = None,
+            versions          = featuresPat,
+            emitversions      = featuresPat,
+            defaultExtensions = 'vulkan',
+            addExtensions     = addExtensionsPat,
+            removeExtensions  = removeExtensionsPat,
+            emitExtensions    = emitExtensionsPat,
+            prefixText        = prefixStrings + vkPrefixStrings,
+            apicall           = 'VKAPI_ATTR ',
+            apientry          = 'VKAPI_CALL ',
+            apientryp         = 'VKAPI_PTR *',
+            alignFuncParam    = 48,
+            expandEnumerants = False,
+            lvt_file_type  = 'function_pointer_header')
+        ]
+
+    # generator for command_counter.cpp
+    genOpts['command_counter_helper.cpp'] = [
+          CommandCounterOutputGenerator,
+          CommandCounterOutputGeneratorOptions(
+            conventions       = conventions,
+            filename          = 'command_counter_helper.cpp',
+            directory         = directory,
+            apiname           = 'vulkan',
+            profile           = None,
+            versions          = featuresPat,
+            emitversions      = featuresPat,
+            defaultExtensions = 'vulkan',
+            addExtensions     = addExtensionsPat,
+            removeExtensions  = removeExtensionsPat,
+            emitExtensions    = emitExtensionsPat,
+            prefixText        = prefixStrings + vkPrefixStrings,
+            apicall           = 'VKAPI_ATTR ',
+            apientry          = 'VKAPI_CALL ',
+            apientryp         = 'VKAPI_PTR *',
+            alignFuncParam    = 48,
+            expandEnumerants = False,
+            lvt_file_type  = 'function_pointer_source')
         ]
 
 
@@ -630,6 +747,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # default scripts path to be same as registry
+    if not args.scripts:
+        args.scripts = os.path.dirname(args.registry)
+
     scripts_directory_path = os.path.dirname(os.path.abspath(__file__))
     registry_headers_path = os.path.join(scripts_directory_path, args.scripts)
     sys.path.insert(0, registry_headers_path)
@@ -647,6 +768,12 @@ if __name__ == '__main__':
     from layer_dispatch_table_generator import LayerDispatchTableOutputGenerator, LayerDispatchTableGeneratorOptions
     from layer_chassis_generator import LayerChassisOutputGenerator, LayerChassisGeneratorOptions
     from layer_chassis_dispatch_generator import LayerChassisDispatchOutputGenerator, LayerChassisDispatchGeneratorOptions
+    from lvt_file_generator import LvtFileOutputGenerator, LvtFileOutputGeneratorOptions
+    from command_counter_generator import CommandCounterOutputGenerator, CommandCounterOutputGeneratorOptions
+
+    # Temporary workaround for vkconventions python2 compatibility
+    import abc; abc.ABC = abc.ABCMeta('ABC', (object,), {})
+    from vkconventions import VulkanConventions
 
     # This splits arguments which are space-separated lists
     args.feature = [name for arg in args.feature for name in arg.split()]

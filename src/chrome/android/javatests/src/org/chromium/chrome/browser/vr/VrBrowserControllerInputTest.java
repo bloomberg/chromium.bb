@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryPage;
@@ -58,7 +59,7 @@ public class VrBrowserControllerInputTest {
     private VrBrowserTestFramework mVrBrowserTestFramework;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Ensure that all frame updates are delivered to the browser so we can monitor for
         // scroll changes.
         WebContentsUtils.reportAllFrameSubmissions(mVrTestRule.getWebContents(), true);
@@ -322,7 +323,7 @@ public class VrBrowserControllerInputTest {
      */
     @Test
     @MediumTest
-    public void testControllerClicksRegisterOnWebpage() throws InterruptedException {
+    public void testControllerClicksRegisterOnWebpage() {
         mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile(
                                     "test_controller_clicks_register_on_webpage"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -340,7 +341,7 @@ public class VrBrowserControllerInputTest {
      */
     @Test
     @MediumTest
-    public void testControllerClicksRegisterOnIframe() throws InterruptedException {
+    public void testControllerClicksRegisterOnIframe() {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_iframe_clicks_outer"));
         NativeUiUtils.clickElement(UserFriendlyElementName.CONTENT_QUAD, new PointF());
@@ -357,6 +358,7 @@ public class VrBrowserControllerInputTest {
      * Verifies that swiping up/down on the Daydream controller's touchpad
      * scrolls a native page while in the VR browser.
      */
+    @DisabledTest(message = "crbug.com/1005835")
     @Test
     @MediumTest
     public void testControllerScrollingNative() throws InterruptedException {
@@ -368,15 +370,14 @@ public class VrBrowserControllerInputTest {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
-                PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_webvr_page"),
-                PAGE_LOAD_TIMEOUT_S);
-        mVrTestRule.loadUrl(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_webvr_autopresent"),
-                PAGE_LOAD_TIMEOUT_S);
         mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_webxr_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_webxr_input"),
+                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_webxr_consent"),
                 PAGE_LOAD_TIMEOUT_S);
         mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_gamepad_button"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -409,7 +410,7 @@ public class VrBrowserControllerInputTest {
      */
     @Test
     @MediumTest
-    public void testAppButtonExitsFullscreen() throws InterruptedException, TimeoutException {
+    public void testAppButtonExitsFullscreen() throws TimeoutException {
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
                 PAGE_LOAD_TIMEOUT_S);
@@ -427,7 +428,7 @@ public class VrBrowserControllerInputTest {
                     try {
                         return !DOMUtils.isFullscreen(
                                 mVrBrowserTestFramework.getCurrentWebContents());
-                    } catch (InterruptedException | TimeoutException e) {
+                    } catch (TimeoutException e) {
                         return false;
                     }
                 },
@@ -442,7 +443,7 @@ public class VrBrowserControllerInputTest {
      */
     @Test
     @MediumTest
-    public void testDragRefresh() throws InterruptedException, TimeoutException {
+    public void testDragRefresh() {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
                 PAGE_LOAD_TIMEOUT_S);

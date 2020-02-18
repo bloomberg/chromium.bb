@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NDEF_RECORD_H_
 
 #include "services/device/public/mojom/nfc.mojom-blink-forward.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -15,42 +14,60 @@
 
 namespace blink {
 
-class DOMArrayBuffer;
+class DOMDataView;
 class ExceptionState;
+class ExecutionContext;
+class NDEFMessage;
 class NDEFRecordInit;
-class ScriptState;
 
 class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NDEFRecord* Create(const NDEFRecordInit*, ExceptionState&);
+  static NDEFRecord* Create(const ExecutionContext*,
+                            const NDEFRecordInit*,
+                            ExceptionState&);
 
   // Construct a "text" record from a string.
-  explicit NDEFRecord(const String&);
+  explicit NDEFRecord(const ExecutionContext*, const String&);
 
-  // Construct a "opaque" record from an array buffer.
-  explicit NDEFRecord(DOMArrayBuffer*);
+  // Construct a "mime" record from the raw payload bytes.
+  explicit NDEFRecord(WTF::Vector<uint8_t> /* payload_data */,
+                      const String& /* media_type */);
 
-  NDEFRecord(const String&, const String&, WTF::Vector<uint8_t>);
-  explicit NDEFRecord(const device::mojom::blink::NDEFRecordPtr&);
+  NDEFRecord(const String& /* record_type */, WTF::Vector<uint8_t> /* data */);
+  NDEFRecord(const String& /* record_type */,
+             const String& /* encoding */,
+             const String& /* lang */,
+             WTF::Vector<uint8_t> /* data */);
+  explicit NDEFRecord(const device::mojom::blink::NDEFRecord&);
 
   const String& recordType() const;
   const String& mediaType() const;
-  String toText() const;
-  DOMArrayBuffer* toArrayBuffer() const;
-  ScriptValue toJSON(ScriptState*, ExceptionState&) const;
+  const String& id() const;
+  const String& encoding() const;
+  const String& lang() const;
+  DOMDataView* data() const;
+  base::Optional<HeapVector<Member<NDEFRecord>>> toRecords(
+      ExceptionState& exception_state) const;
 
-  const WTF::Vector<uint8_t>& data() const;
+  const WTF::Vector<uint8_t>& payloadData() const;
+  const NDEFMessage* payload_message() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
   String record_type_;
   String media_type_;
+  String id_;
+  String encoding_;
+  String lang_;
   // Holds the NDEFRecord.[[PayloadData]] bytes defined at
   // https://w3c.github.io/web-nfc/#the-ndefrecord-interface.
-  WTF::Vector<uint8_t> data_;
+  WTF::Vector<uint8_t> payload_data_;
+  // |payload_data_| parsed as an NDEFMessage. This field will be set for some
+  // "smart-poster" and external type records.
+  Member<NDEFMessage> payload_message_;
 };
 
 }  // namespace blink

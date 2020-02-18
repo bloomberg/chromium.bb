@@ -14,6 +14,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "mojo/core/embedder/embedder.h"
@@ -47,11 +48,11 @@ struct Env {
     appcache_service = base::MakeRefCounted<ChromeAppCacheService>(
         /*proxy=*/nullptr, /*partition=*/nullptr);
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&ChromeAppCacheService::Initialize,
-                                  appcache_service, base::FilePath(),
-                                  /*browser_context=*/nullptr,
-                                  /*special_storage_policy=*/nullptr));
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&ChromeAppCacheService::Initialize, appcache_service,
+                       base::FilePath(), &test_browser_context,
+                       /*special_storage_policy=*/nullptr));
     task_environment.RunUntilIdle();
   }
 
@@ -59,6 +60,7 @@ struct Env {
   scoped_refptr<ChromeAppCacheService> appcache_service;
   std::unique_ptr<TestContentClient> test_content_client;
   std::unique_ptr<TestContentBrowserClient> test_content_browser_client;
+  TestBrowserContext test_browser_context;
 
   // used by ICU integration.
   base::AtExitManager at_exit_manager;
@@ -100,7 +102,7 @@ void DoRequest(network::TestURLLoaderFactory* factory,
   network::URLLoaderCompletionStatus status;
   status.error_code = net::OK;
 
-  network::ResourceResponseHead response;
+  auto response = network::mojom::URLResponseHead::New();
 
   std::string headers = "HTTP/1.1 ";
   headers += std::to_string(code);
@@ -114,7 +116,7 @@ void DoRequest(network::TestURLLoaderFactory* factory,
   }
   HeadersToRaw(&headers);
 
-  response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(headers);
+  response->headers = base::MakeRefCounted<net::HttpResponseHeaders>(headers);
 
   // To simplify the fuzzer, we respond to all requests with a manifest.
   // When we're performing a manifest fetch, this data will affect the
@@ -124,7 +126,7 @@ void DoRequest(network::TestURLLoaderFactory* factory,
   content += "\n# ";
 
   factory->SimulateResponseForPendingRequest(
-      GURL(GetUrl(url)), status, response, content,
+      GURL(GetUrl(url)), status, std::move(response), content,
       network::TestURLLoaderFactory::kUrlMatchPrefix);
 }
 
@@ -155,6 +157,7 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
           host_id_token = base::UnguessableToken::Create();
         mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend;
         ignore_result(frontend.InitWithNewPipeAndPassReceiver());
+        registered_hosts[host_id].reset();
         host->RegisterHost(
             registered_hosts[host_id].BindNewPipeAndPassReceiver(),
             std::move(frontend), host_id_token);

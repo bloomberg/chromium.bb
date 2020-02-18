@@ -15,6 +15,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
@@ -129,7 +130,7 @@ class SupervisedUserURLFilterTest : public MixinBasedInProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    logged_in_user_mixin_.SetUpOnMainThreadHelper(host_resolver(), this);
+    logged_in_user_mixin_.LogInUser();
 
     supervised_user_service_ =
         SupervisedUserServiceFactory::GetForProfile(browser()->profile());
@@ -157,7 +158,7 @@ class SupervisedUserURLFilterTest : public MixinBasedInProcessBrowserTest {
 
   chromeos::LoggedInUserMixin logged_in_user_mixin_{
       &mixin_host_, chromeos::LoggedInUserMixin::LogInType::kChild,
-      embedded_test_server()};
+      embedded_test_server(), this};
 };
 
 // Tests the filter mode in which all sites are blocked by default.

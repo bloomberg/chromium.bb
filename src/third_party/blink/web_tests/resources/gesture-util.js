@@ -63,6 +63,8 @@ function conditionHolds(condition, error_message = 'Condition is not true anymor
   });
 }
 
+// TODO: Frames are animated every 1ms for testing. It may be better to have the
+// timeout based on time rather than frame count.
 function waitForAnimationEnd(getValue, max_frame, max_unchanged_frame) {
   const MAX_FRAME = max_frame;
   const MAX_UNCHANGED_FRAME = max_unchanged_frame;
@@ -239,14 +241,14 @@ function mouseUpAt(xPosition, yPosition) {
 }
 
 // Simulate a mouse click on point.
-function mouseClickOn(x, y, button = 0 /* left */) {
+function mouseClickOn(x, y, button = 0 /* left */, keys = '') {
   return new Promise((resolve, reject) => {
     if (window.chrome && chrome.gpuBenchmarking) {
       let pointerActions = [{
         source: 'mouse',
         actions: [
           { 'name': 'pointerMove', 'x': x, 'y': y },
-          { 'name': 'pointerDown', 'x': x, 'y': y, 'button': button },
+          { 'name': 'pointerDown', 'x': x, 'y': y, 'button': button, 'keys': keys  },
           { 'name': 'pointerUp', 'button': button },
         ]
       }];
@@ -385,6 +387,13 @@ function elementCenter(element) {
     x: rect.x + rect.width / 2,
     y: rect.y + rect.height / 2
   };
+}
+
+// Waits for 'time' ms before resolving the promise.
+function waitForMs(time) {
+  return new Promise((resolve) => {
+    window.setTimeout(function() { resolve(); }, time);
+  });
 }
 
 // Requests an animation frame.

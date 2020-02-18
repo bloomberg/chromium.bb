@@ -8,13 +8,16 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <memory>
+
 #include "absl/algorithm/container.h"
-#include "absl/memory/memory.h"
+#include "api/task_queue/task_queue_base.h"
 #include "api/test/simulated_network.h"
 #include "api/test/video/function_video_encoder_factory.h"
 #include "call/fake_network_pipe.h"
 #include "call/simulated_network.h"
 #include "modules/video_coding/codecs/vp8/include/vp8.h"
+#include "rtc_base/task_queue_for_test.h"
 #include "system_wrappers/include/sleep.h"
 #include "test/call_test.h"
 #include "test/field_trial.h"
@@ -136,16 +139,15 @@ TEST_F(RetransmissionEndToEndTest, ReceivesNackAndRetransmitsAudio) {
     size_t GetNumVideoStreams() const override { return 0; }
     size_t GetNumAudioStreams() const override { return 1; }
 
-    test::PacketTransport* CreateReceiveTransport(
-        test::DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue)
-        override {
-      test::PacketTransport* receive_transport = new test::PacketTransport(
+    std::unique_ptr<test::PacketTransport> CreateReceiveTransport(
+        TaskQueueBase* task_queue) override {
+      auto receive_transport = std::make_unique<test::PacketTransport>(
           task_queue, nullptr, this, test::PacketTransport::kReceiver,
           payload_type_map_,
-          absl::make_unique<FakeNetworkPipe>(
-              Clock::GetRealTimeClock(), absl::make_unique<SimulatedNetwork>(
+          std::make_unique<FakeNetworkPipe>(
+              Clock::GetRealTimeClock(), std::make_unique<SimulatedNetwork>(
                                              BuiltInNetworkBehaviorConfig())));
-      receive_transport_ = receive_transport;
+      receive_transport_ = receive_transport.get();
       return receive_transport;
     }
 
@@ -201,8 +203,7 @@ TEST_F(RetransmissionEndToEndTest,
        StopSendingKeyframeRequestsForInactiveStream) {
   class KeyframeRequestObserver : public test::EndToEndTest {
    public:
-    explicit KeyframeRequestObserver(
-        test::DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue)
+    explicit KeyframeRequestObserver(TaskQueueBase* task_queue)
         : clock_(Clock::GetRealTimeClock()), task_queue_(task_queue) {}
 
     void OnVideoStreamsCreated(
@@ -224,7 +225,7 @@ TEST_F(RetransmissionEndToEndTest,
         SleepMs(100);
       }
       ASSERT_TRUE(frame_decoded);
-      task_queue_->SendTask([this]() { send_stream_->Stop(); });
+      SendTask(RTC_FROM_HERE, task_queue_, [this]() { send_stream_->Stop(); });
       SleepMs(10000);
       ASSERT_EQ(
           1U, receive_stream_->GetStats().rtcp_packet_type_counts.pli_packets);
@@ -234,8 +235,8 @@ TEST_F(RetransmissionEndToEndTest,
     Clock* clock_;
     VideoSendStream* send_stream_;
     VideoReceiveStream* receive_stream_;
-    test::DEPRECATED_SingleThreadedTaskQueueForTesting* const task_queue_;
-  } test(&task_queue_);
+    TaskQueueBase* const task_queue_;
+  } test(task_queue());
 
   RunBaseTest(&test);
 }

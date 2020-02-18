@@ -36,7 +36,7 @@
    * @param {string} name File name.
    */
   async function openQuickView(appId, name) {
-    let caller = getCaller();
+    const caller = getCaller();
 
     function checkQuickViewElementsDisplayBlock(elements) {
       const haveElements = Array.isArray(elements) && elements.length !== 0;
@@ -98,13 +98,13 @@
 
     /**
      * <files-metadata-box> field rendering is async. The field name has been
-     * rendered when the 'metadata' attribute indicates that.
+     * rendered when its 'metadata' attribute indicates that.
      */
     switch (name) {
       case 'Size':
         filesMetadataBox += '[metadata~="size"]';
         break;
-      case 'Modified time':
+      case 'Date modified':
       case 'Type':
         filesMetadataBox += '[metadata~="mime"]';
         break;
@@ -117,7 +117,7 @@
      * The <files-metadata-box> element resides in the #quick-view shadow DOM
      * as a child of the #dialog element.
      */
-    let quickViewQuery = ['#quick-view', '#dialog[open] ' + filesMetadataBox];
+    const quickViewQuery = ['#quick-view', '#dialog[open] ' + filesMetadataBox];
 
     /**
      * The <files-metadata-entry key="name"> element resides in the shadow DOM
@@ -144,6 +144,26 @@
 
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.hello.nameText);
+
+    // Check the open button is shown.
+    await remoteCall.waitForElement(
+        appId, ['#quick-view', '#open-button:not([hidden])']);
+  };
+
+  /**
+   * Tests opening Quick View on a local downloads file in an open file dialog.
+   */
+  testcase.openQuickViewDialog = async () => {
+    // Open Files app on Downloads containing ENTRIES.hello.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.hello], [], {type: 'open-file'});
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.hello.nameText);
+
+    // Check the open button is not shown as we're in an open file dialog.
+    await remoteCall.waitForElement(
+        appId, ['#quick-view', '#open-button[hidden]']);
   };
 
   /**
@@ -460,52 +480,6 @@
   };
 
   /**
-   * Tests opening Quick View on a text document to verify that the background
-   * color of the <webview> root (html) element is solid white.
-   */
-  testcase.openQuickViewBackgroundColorText = async () => {
-    const caller = getCaller();
-
-    /**
-     * The text <webview> resides in the #quick-view shadow DOM, as a child of
-     * the #dialog element.
-     */
-    const webView = ['#quick-view', '#dialog[open] webview.text-content'];
-
-    // Open Files app on Downloads containing ENTRIES.tallText.
-    const appId = await setupAndWaitUntilReady(
-        RootPath.DOWNLOADS, [ENTRIES.tallText], []);
-
-    // Open the file in Quick View.
-    await openQuickView(appId, ENTRIES.tallText.nameText);
-
-    // Wait for the Quick View <webview> to load and display its content.
-    function checkWebViewTextLoaded(elements) {
-      let haveElements = Array.isArray(elements) && elements.length === 1;
-      if (haveElements) {
-        haveElements = elements[0].styles.display.includes('block');
-      }
-      if (!haveElements || !elements[0].attributes.src) {
-        return pending(caller, 'Waiting for <webview> to load.');
-      }
-      return;
-    }
-    await repeatUntil(async () => {
-      return checkWebViewTextLoaded(await remoteCall.callRemoteTestUtil(
-          'deepQueryAllElements', appId, [webView, ['display']]));
-    });
-
-    // Get the <webview> root (html) element backgroundColor style.
-    const getBackgroundStyle =
-        'window.getComputedStyle(document.documentElement).backgroundColor';
-    const backgroundColor = await remoteCall.callRemoteTestUtil(
-        'deepExecuteScriptInWebView', appId, [webView, getBackgroundStyle]);
-
-    // Check: the <webview> root backgroundColor should be solid white.
-    chrome.test.assertEq('rgb(255, 255, 255)', backgroundColor[0]);
-  };
-
-  /**
    * Tests opening Quick View containing a PDF document.
    */
   testcase.openQuickViewPdf = async () => {
@@ -542,7 +516,7 @@
 
     // Get the <webview> embed type attribute.
     function checkPdfEmbedType(type) {
-      let haveElements = Array.isArray(type) && type.length === 1;
+      const haveElements = Array.isArray(type) && type.length === 1;
       if (!haveElements || !type[0].toString().includes('pdf')) {
         return pending(caller, 'Waiting for plugin <embed> type.');
       }
@@ -556,6 +530,49 @@
 
     // Check: the <webview> embed type should be PDF mime type.
     chrome.test.assertEq('application/pdf', type);
+  };
+
+  /**
+   * Tests that Quick View does not display a PDF file preview when that is
+   * disabled by system settings (preferences).
+   */
+  testcase.openQuickViewPdfPreviewsDisabled = async () => {
+    const caller = getCaller();
+
+    /**
+     * The #innerContentPanel resides in the #quick-view shadow DOM as a child
+     * of the #dialog element, and contains the file preview result.
+     */
+    const contentPanel = ['#quick-view', '#dialog[open] #innerContentPanel'];
+
+    // Disable PDF previews.
+    await sendTestMessage({name: 'setPdfPreviewEnabled', enabled: false});
+
+    // Open Files app on Downloads containing ENTRIES.tallPdf.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.tallPdf], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.tallPdf.nameText);
+
+    // Wait for the innerContentPanel to load and display its content.
+    function checkInnerContentPanel(elements) {
+      const haveElements = Array.isArray(elements) && elements.length === 1;
+      if (!haveElements || elements[0].styles.display !== 'flex') {
+        return pending(caller, 'Waiting for inner content panel to load.');
+      }
+      // Check: the PDF preview should not be shown.
+      chrome.test.assertEq('No preview available', elements[0].text);
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkInnerContentPanel(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [contentPanel, ['display']]));
+    });
+
+    // Check: the correct file mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('application/pdf', mimeType);
   };
 
   /**
@@ -801,8 +818,8 @@
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('image/jpeg', mimeType);
 
-    // Check: the correct modified time should be displayed.
-    const time = await getQuickViewMetadataBoxField(appId, 'Modified time');
+    // Check: the correct file modified time should be displayed.
+    const time = await getQuickViewMetadataBoxField(appId, 'Date modified');
     chrome.test.assertEq('Jan 18, 2038, 1:02 AM', time);
 
     // Check: the correct image EXIF metadata should be displayed.
@@ -908,6 +925,14 @@
 
     // Check: the <webview> body backgroundColor should be transparent black.
     chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+
+    // Close Quick View.
+    await closeQuickView(appId);
+
+    // Check quickview video <files-safe-media> has no "src", so it stops
+    // playing the video. crbug.com/970192
+    const noSrcFilesSafeMedia = ['#quick-view', '#videoSafeMedia[src=""]'];
+    await remoteCall.waitForElement(appId, noSrcFilesSafeMedia);
   };
 
   /**
@@ -1053,7 +1078,6 @@
     const infoShown = ['#quick-view', '#contentPanel[metadata-box-active]'];
     const infoHidden =
         ['#quick-view', '#contentPanel:not([metadata-box-active])'];
-
 
     // Open Files app on Downloads containing ENTRIES.hello.
     const appId =

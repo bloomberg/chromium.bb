@@ -12,6 +12,7 @@ GEN('#include "ash/public/cpp/ash_features.h"');
 GEN('#include "chromeos/constants/chromeos_switches.h"');
 GEN('#endif  // defined(OS_CHROMEOS)');
 
+GEN('#include "build/branding_buildflags.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
@@ -41,8 +42,6 @@ CrSettingsBrowserTest.prototype = {
   /** @override */
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);
-    // We aren't loading the main document.
-    this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
 
     settings.ensureLazyLoaded();
   },
@@ -239,7 +238,7 @@ TEST_F('CrSettingsAboutPageTest', 'AboutPage', function() {
   mocha.run();
 });
 
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('CrSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
   settings_about_page.registerOfficialBuildTests();
   mocha.run();
@@ -264,17 +263,16 @@ CrSettingsAutofillPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../fake_chrome_event.js',
     '../test_browser_proxy.js',
-    'autofill_page_test.js',
     'ensure_lazy_loaded.js',
     'fake_settings_private.js',
     'passwords_and_autofill_fake_data.js',
     'test_open_window_proxy.js',
     'test_password_manager_proxy.js',
+    'autofill_page_test.js',
   ]),
 };
 
-// TODO(https://crbug.com/979553) Disabled due to failures .
-TEST_F('CrSettingsAutofillPageTest', 'DISABLED_All', function() {
+TEST_F('CrSettingsAutofillPageTest', 'All', function() {
   mocha.run();
 });
 
@@ -362,8 +360,7 @@ CrSettingsPasswordsSectionTest.prototype = {
   ]),
 };
 
-// TODO(https://crbug.com/979553) Disabled due to failures .
-TEST_F('CrSettingsPasswordsSectionTest', 'DISABLED_All', function() {
+TEST_F('CrSettingsPasswordsSectionTest', 'All', function() {
   mocha.run();
 });
 
@@ -392,7 +389,7 @@ CrSettingsPasswordsSectionTest_Cros.prototype = {
   ]),
 };
 
-// TODO(https://crbug.com/979553) Disabled due to failures .
+
 TEST_F('CrSettingsPasswordsSectionTest_Cros', 'DISABLED_All', function() {
   mocha.run();
 });
@@ -590,8 +587,7 @@ CrSettingsPeoplePageAccountManagerTest.prototype = {
 
   /** @override */
   featureList: {
-    enabled: ['chromeos::features::kAccountManager'],
-    disabled: ['chromeos::features::kSplitSettings']
+    disabled: ['chromeos::features::kSplitSettings'],
   },
 
   /** @override */
@@ -891,7 +887,7 @@ TEST_F('CrSettingsAppearanceFontsPageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)');
+GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 
 /**
  * @constructor
@@ -941,7 +937,7 @@ TEST_F('CrSettingsIncompatibleApplicationsPageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#endif  // defined(OS_WIN) and defined(GOOGLE_CHROME_BUILD)');
+GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 
 /**
  * @constructor
@@ -1097,6 +1093,7 @@ CrSettingsCertificateManagerTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_util.js',
     '../test_browser_proxy.js',
+    'ensure_lazy_loaded.js',
     'certificate_manager_test.js',
   ]),
 };
@@ -1124,9 +1121,12 @@ CrSettingsPersonalizationOptionsTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '//ui/webui/resources/js/promise_resolver.js',
+    'sync_test_util.js',
     'test_util.js',
+    '../test_util.js',
     '../test_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
+    'test_sync_browser_proxy.js',
     'personalization_options_test.js',
   ]),
 };
@@ -1135,7 +1135,13 @@ TEST_F('CrSettingsPersonalizationOptionsTest', 'AllBuilds', function() {
   mocha.grep('PersonalizationOptionsTests_AllBuilds').run();
 });
 
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
+TEST_F(
+    'CrSettingsPersonalizationOptionsTest', 'PrivacySettingsRedesignTests',
+    function() {
+      mocha.grep('PrivacySettingsRedesignTests').run();
+    });
+
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('CrSettingsPersonalizationOptionsTest', 'OfficialBuild', function() {
   mocha.grep('PersonalizationOptionsTests_OfficialBuild').run();
 });
@@ -1165,14 +1171,73 @@ CrSettingsPrivacyPageTest.prototype = {
     'privacy_page_test.js',
   ]),
 };
-// Disabling on Mac due to flakiness.
-// https://crbug.com/877109
-GEN('#if defined(OS_MACOSX)');
-GEN('#define MAYBE_All2 DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All2 All');
+
+TEST_F('CrSettingsPrivacyPageTest', 'ClearBrowsingDataTests', function() {
+  settings_privacy_page.registerClearBrowsingDataTests();
+  mocha.run();
+});
+
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
+  settings_privacy_page.registerPrivacyPageTests();
+  mocha.run();
+});
+
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageSoundTests', function() {
+  settings_privacy_page.registerPrivacyPageSoundTests();
+  mocha.run();
+});
+
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacySettingsRedesignTests', function() {
+  settings_privacy_page.registerPrivacySettingsRedesignTests();
+  mocha.run();
+});
+
+TEST_F('CrSettingsPrivacyPageTest', 'UMALoggingTests', function() {
+  settings_privacy_page.registerUMALoggingTests();
+  mocha.run();
+});
+
+GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
+TEST_F('CrSettingsPrivacyPageTest', 'CertificateManagerTests', function() {
+  settings_privacy_page.registerNativeCertificateManagerTests();
+  mocha.run();
+});
 GEN('#endif');
-TEST_F('CrSettingsPrivacyPageTest', 'MAYBE_All2', function() {
+
+GEN('#if !defined(OS_CHROMEOS)');
+TEST_F('CrSettingsPrivacyPageTest', 'ClearBrowsingDataTestsDice', function() {
+  settings_privacy_page.registerClearBrowsingDataTestsDice();
+  mocha.run();
+});
+GEN('#endif');
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/privacy_page/
+ *        passwords-leak-detection-toggle.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPasswordsLeakDetectionToggleTest() {}
+
+CrSettingsPasswordsLeakDetectionToggleTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://settings/privacy_page/passwords_leak_detection_toggle.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'sync_test_util.js',
+    '../test_browser_proxy.js',
+    'test_privacy_page_browser_proxy.js',
+    'test_sync_browser_proxy.js',
+    'passwords_leak_detection_toggle_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPasswordsLeakDetectionToggleTest', 'All', function() {
   mocha.run();
 });
 
@@ -1186,7 +1251,8 @@ CrSettingsSiteDataDetailsTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload:
+      'chrome://settings/site_settings/site_data_details_subpage.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1263,7 +1329,8 @@ CrSettingsCategoryDefaultSettingTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload:
+      'chrome://settings/site_settings/category_default_setting.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1288,13 +1355,15 @@ CrSettingsCategorySettingExceptionsTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload:
+      'chrome://settings/site_settings/category_setting_exceptions.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
     'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
+    'ensure_lazy_loaded.js',
     'category_setting_exceptions_tests.js',
   ]),
 };
@@ -1313,7 +1382,7 @@ CrSettingsSiteEntryTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload: 'chrome://settings/site_settings/site_entry.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1371,14 +1440,15 @@ CrSettingsSiteDetailsTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
     'test_util.js',
+    'ensure_lazy_loaded.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_details_tests.js',
   ]),
 };
 
-// Disabling on Windows debug due to flaky timeout on Win7 Tests (dbg)(1) bot.
-// https://crbug.com/825304
-GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+// Disabling on debug due to flaky timeout on Win7 Tests (dbg)(1) bot.
+// https://crbug.com/825304 - later for other platforms in crbug.com/1021219.
+GEN('#if !defined(NDEBUG)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
@@ -1398,7 +1468,7 @@ CrSettingsSiteDetailsPermissionTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload: 'chrome://settings/site_settings/site_details_permission.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1423,7 +1493,7 @@ CrSettingsSiteListTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+  browsePreload: 'chrome://settings/site_settings/site_list.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -1467,6 +1537,7 @@ CrSettingsSiteListEntryTest.prototype = {
     '../test_browser_proxy.js',
     '../test_util.js',
     'test_util.js',
+    'ensure_lazy_loaded.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_list_entry_tests.js',
   ]),
@@ -1494,6 +1565,7 @@ CrSettingsZoomLevelsTest.prototype = {
     '../test_util.js',
     'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
+    'ensure_lazy_loaded.js',
     'zoom_levels_tests.js',
   ]),
 };
@@ -1519,6 +1591,7 @@ CrSettingsProtocolHandlersTest.prototype = {
     '../test_browser_proxy.js',
     'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
+    'ensure_lazy_loaded.js',
     'protocol_handlers_tests.js',
   ]),
 };
@@ -1562,7 +1635,7 @@ function CrSettingsSiteDataTest() {}
 CrSettingsSiteDataTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
-  browsePreload: 'chrome://settings/site_settings/site_data.html',
+  browsePreload: 'chrome://settings/siteData',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_util.js',
@@ -1848,7 +1921,7 @@ TEST_F('CrSettingsLanguagesPageTest', 'Spellcheck', function() {
   mocha.grep(assert(languages_page_tests.TestNames.Spellcheck)).run();
 });
 
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('CrSettingsLanguagesPageTest', 'SpellcheckOfficialBuild', function() {
   mocha.grep(assert(languages_page_tests.TestNames.SpellcheckOfficialBuild))
       .run();
@@ -2074,7 +2147,7 @@ TEST_F('CrControlledRadioButtonTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)');
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)');
 
 function CrSettingsMetricsReportingTest() {}
 
@@ -2096,7 +2169,7 @@ TEST_F('CrSettingsMetricsReportingTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#endif  // defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)');
+GEN('#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)');
 
 GEN('#if defined(OS_CHROMEOS)');
 
@@ -2277,7 +2350,14 @@ CrSettingsCrostiniPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsCrostiniPageTest', 'All', function() {
+// Disabling on debug due to timeout.  https://crbug.com/1020318
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_Crostini_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_Crostini_All All');
+GEN('#endif');
+
+TEST_F('CrSettingsCrostiniPageTest', 'MAYBE_Crostini_All', function() {
   mocha.run();
 });
 
@@ -2497,6 +2577,8 @@ CrSettingsAddUsersTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTestCrOS.prototype.extraLibraries.concat([
+    '../fake_chrome_event.js',
+    'chromeos/fake_users_private.js',
     'chromeos/add_users_tests.js',
   ]),
 };
@@ -2531,7 +2613,13 @@ var CrSettingsSplitSettingsFlagTest = class extends CrSettingsBrowserTest {
   }
 };
 
-TEST_F('CrSettingsSplitSettingsFlagTest', 'All', function() {
+// Test is consistently failing. http://crbug.com/1008916
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_All3 DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All3 All');
+GEN('#endif');
+TEST_F('CrSettingsSplitSettingsFlagTest', 'MAYBE_All3', function() {
   mocha.run();
 });
 

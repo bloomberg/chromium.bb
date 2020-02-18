@@ -331,11 +331,10 @@ void LayoutView::UpdateLayout() {
   // to date DSF when layout happens, we plumb this through to the FontCache, so
   // that we can correctly retrieve RenderStyleForStrike from out of
   // process. crbug.com/845468
-  FontCache::SetDeviceScaleFactor(GetFrameView()
-                                      ->GetFrame()
-                                      .GetChromeClient()
-                                      .GetScreenInfo()
-                                      .device_scale_factor);
+  LocalFrame& frame = GetFrameView()->GetFrame();
+  ChromeClient& chrome_client = frame.GetChromeClient();
+  FontCache::SetDeviceScaleFactor(
+      chrome_client.GetScreenInfo(frame).device_scale_factor);
 #endif
 
   LayoutBlockFlow::UpdateLayout();
@@ -379,7 +378,9 @@ void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
       parent_doc_layout_object->MapLocalToAncestor(ancestor, transform_state,
                                                    mode);
     } else {
-      GetFrameView()->ApplyTransformForTopFrameSpace(transform_state);
+      DCHECK(!ancestor);
+      if (mode & kApplyRemoteRootFrameOffset)
+        GetFrameView()->MapLocalToRemoteRootFrame(transform_state);
     }
   }
 }
@@ -426,6 +427,12 @@ void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
 
       transform_state.Move(
           parent_doc_layout_object->PhysicalContentBoxOffset());
+    } else {
+      DCHECK(!ancestor);
+      // Note that MapLocalToAncestorRootFrame is correct here because
+      // transform_state will be set to kUnapplyInverseTransformDirection.
+      if (mode & kApplyRemoteRootFrameOffset)
+        GetFrameView()->MapLocalToRemoteRootFrame(transform_state);
     }
   } else {
     DCHECK(this == ancestor || !ancestor);
@@ -463,12 +470,11 @@ void LayoutView::SetShouldDoFullPaintInvalidationForViewAndAllDescendants() {
 void LayoutView::InvalidatePaintForViewAndCompositedLayers() {
   SetSubtreeShouldDoFullPaintInvalidation();
 
-  // The only way we know how to hit these ASSERTS below this point is via the
-  // Chromium OS login screen.
-  DisableCompositingQueryAsserts disabler;
-
-  if (Compositor()->InCompositingMode())
-    Compositor()->FullyInvalidatePaint();
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    DisableCompositingQueryAsserts disabler;
+    if (Compositor()->InCompositingMode())
+      Compositor()->FullyInvalidatePaint();
+  }
 }
 
 bool LayoutView::MapToVisualRectInAncestorSpace(
@@ -522,7 +528,7 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
   if (!owner) {
     PhysicalRect rect = PhysicalRect::EnclosingRect(
         transform_state.LastPlanarQuad().BoundingBox());
-    bool retval = GetFrameView()->MapToVisualRectInTopFrameSpace(rect);
+    bool retval = GetFrameView()->MapToVisualRectInRemoteRootFrame(rect);
     transform_state.SetQuad(FloatQuad(FloatRect(rect)));
     return retval;
   }
@@ -562,6 +568,10 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
 PhysicalOffset LayoutView::OffsetForFixedPosition() const {
   return HasOverflowClip() ? PhysicalOffset(ScrolledContentOffset())
                            : PhysicalOffset();
+}
+
+PhysicalOffset LayoutView::PixelSnappedOffsetForFixedPosition() const {
+  return PhysicalOffset(FlooredIntPoint(OffsetForFixedPosition()));
 }
 
 void LayoutView::AbsoluteQuads(Vector<FloatQuad>& quads,
@@ -648,8 +658,9 @@ void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
       RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
   }
 
-  if (document.Printing()) {
-    // When printing, frame-level scrollbars are never displayed.
+  if (document.IsCapturingLayout()) {
+    // When capturing layout (e.g. printing), frame-level scrollbars are never
+    // displayed.
     // TODO(szager): Figure out the right behavior when printing an overflowing
     // iframe.  https://bugs.chromium.org/p/chromium/issues/detail?id=777528
     RETURN_SCROLLBAR_MODE(ScrollbarMode::kAlwaysOff);
@@ -717,10 +728,8 @@ void LayoutView::MayUpdateHoverWhenContentUnderMouseChanged(
       MouseEventManager::UpdateHoverReason::kScrollOffsetChanged);
 }
 
-IntRect LayoutView::DocumentRect() const {
-  PhysicalRect overflow_rect = FlipForWritingMode(LayoutOverflowRect());
-  // TODO(crbug.com/650768): The pixel snapping looks incorrect.
-  return PixelSnappedIntRect(overflow_rect);
+PhysicalRect LayoutView::DocumentRect() const {
+  return FlipForWritingMode(LayoutOverflowRect());
 }
 
 IntSize LayoutView::GetLayoutSize(
@@ -898,6 +907,11 @@ void LayoutView::UpdateCounters() {
 
     ToLayoutCounter(layout_object)->UpdateCounter();
   }
+}
+
+bool LayoutView::HasTickmarks() const {
+  return !tickmarks_override_.IsEmpty() ||
+         GetDocument().Markers().PossiblyHasTextMatchMarkers();
 }
 
 Vector<IntRect> LayoutView::GetTickmarks() const {

@@ -19,8 +19,12 @@
 #include <string>
 #include <vector>
 
-namespace dawn {
+namespace wgpu {
     enum class ErrorType : uint32_t;
+}
+
+namespace dawn {
+    using ErrorType = wgpu::ErrorType;
 }
 
 namespace dawn_native {
@@ -40,7 +44,7 @@ namespace dawn_native {
         void AppendBacktrace(const char* file, const char* function, int line);
 
         InternalErrorType GetInternalType() const;
-        dawn::ErrorType GetType() const;
+        wgpu::ErrorType GetType() const;
         const std::string& GetMessage() const;
         const std::vector<BacktraceRecord>& GetBacktrace() const;
 

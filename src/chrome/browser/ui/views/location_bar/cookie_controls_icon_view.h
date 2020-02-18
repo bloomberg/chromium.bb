@@ -21,12 +21,13 @@ class CookieControlsIconView : public PageActionIconView,
   ~CookieControlsIconView() override;
 
   // CookieControlsUI:
-  void OnStatusChanged(CookieControlsController::Status status) override;
+  void OnStatusChanged(CookieControlsController::Status status,
+                       int blocked_cookies) override;
   void OnBlockedCookiesCountChanged(int blocked_cookies) override;
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
-  bool Update() override;
+  void UpdateImpl() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
  protected:

@@ -29,7 +29,8 @@
 #include "ui/gl/init/gl_factory.h"
 
 #if BUILDFLAG(USE_DAWN)
-#include <dawn/dawncpp.h>
+#include <dawn/dawn_proc.h>
+#include <dawn/webgpu_cpp.h>
 #include <dawn_native/DawnNative.h>
 #endif  // BUILDFLAG(USE_DAWN)
 
@@ -265,9 +266,9 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
       });
   ASSERT_NE(adapter_it, adapters.end());
 
-  dawn::Device device = dawn::Device::Acquire(adapter_it->CreateDevice());
+  wgpu::Device device = wgpu::Device::Acquire(adapter_it->CreateDevice());
   DawnProcTable procs = dawn_native::GetProcs();
-  dawnSetProcs(&procs);
+  dawnProcSetProcs(&procs);
 
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
@@ -290,30 +291,27 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
 
   // Clear the shared image to green using Dawn.
   {
-    dawn::Texture texture = dawn::Texture::Acquire(
-        dawn_representation->BeginAccess(DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT));
+    wgpu::Texture texture = wgpu::Texture::Acquire(
+        dawn_representation->BeginAccess(WGPUTextureUsage_OutputAttachment));
 
-    dawn::RenderPassColorAttachmentDescriptor color_desc;
+    wgpu::RenderPassColorAttachmentDescriptor color_desc;
     color_desc.attachment = texture.CreateView();
     color_desc.resolveTarget = nullptr;
-    color_desc.loadOp = dawn::LoadOp::Clear;
-    color_desc.storeOp = dawn::StoreOp::Store;
+    color_desc.loadOp = wgpu::LoadOp::Clear;
+    color_desc.storeOp = wgpu::StoreOp::Store;
     color_desc.clearColor = {0, 255, 0, 255};
 
-    dawn::RenderPassColorAttachmentDescriptor* color_attachments_ptr =
-        &color_desc;
-
-    dawn::RenderPassDescriptor renderPassDesc;
+    wgpu::RenderPassDescriptor renderPassDesc;
     renderPassDesc.colorAttachmentCount = 1;
-    renderPassDesc.colorAttachments = &color_attachments_ptr;
+    renderPassDesc.colorAttachments = &color_desc;
     renderPassDesc.depthStencilAttachment = nullptr;
 
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
-    dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
     pass.EndPass();
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
 
-    dawn::Queue queue = device.CreateQueue();
+    wgpu::Queue queue = device.CreateQueue();
     queue.Submit(1, &commands);
   }
 
@@ -357,8 +355,8 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
   EXPECT_EQ(dst_pixels[3], 255);
 
   // Shut down Dawn
-  device = dawn::Device();
-  dawnSetProcs(nullptr);
+  device = wgpu::Device();
+  dawnProcSetProcs(nullptr);
 
   skia_representation.reset();
   factory_ref.reset();

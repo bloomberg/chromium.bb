@@ -41,8 +41,6 @@
 #include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/memory/memory_pressure_monitor.h"
-#include "chrome/browser/memory/swap_thrashing_monitor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
@@ -77,6 +75,7 @@
 #include "components/crash/content/app/crash_export_thunks.h"
 #include "components/crash/content/app/dump_hung_process_with_ptype.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/os_crypt/os_crypt.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -512,6 +511,13 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
   // setup.exe.  In Chrome, these strings are in the locale files.
   SetupInstallerUtilStrings();
 
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+
+  // Initialize the OSCrypt.
+  bool os_crypt_init = OSCrypt::Init(local_state);
+  DCHECK(os_crypt_init);
+
   ChromeBrowserMainParts::PreMainMessageLoopStart();
   if (!parameters().ui_task) {
     // Make sure that we know how to handle exceptions from the message loop.
@@ -563,8 +569,7 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
   // What truly controls if the blocking is enabled is the presence of the
   // module blacklist cache file. This means that to disable the feature, the
   // cache must be deleted and the browser relaunched.
-  if (base::IsMachineExternallyManaged() ||
-      !ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
+  if (!ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
       !ModuleBlacklistCacheUpdater::IsBlockingEnabled())
     ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
         base::CreateTaskRunner(
@@ -610,17 +615,6 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
                         base::BindOnce(&DetectFaultTolerantHeap),
                         base::TimeDelta::FromMinutes(1));
-
-  // Start the swap thrashing monitor if it's enabled.
-  //
-  // TODO(sebmarchand): Delay the initialization of this monitor once we start
-  // using this feature by default, this is currently enabled at startup to make
-  // it easier to experiment with this monitor.
-  if (base::FeatureList::IsEnabled(features::kSwapThrashingMonitor))
-    memory::SwapThrashingMonitor::Initialize();
-
-  if (base::FeatureList::IsEnabled(features::kNewMemoryPressureMonitor))
-    memory_pressure_monitor_ = memory::MemoryPressureMonitor::Create();
 }
 
 // static

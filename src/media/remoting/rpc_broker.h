@@ -39,7 +39,7 @@ namespace remoting {
 class RpcBroker {
  public:
   using SendMessageCallback =
-      base::Callback<void(std::unique_ptr<std::vector<uint8_t>>)>;
+      base::RepeatingCallback<void(std::unique_ptr<std::vector<uint8_t>>)>;
   explicit RpcBroker(const SendMessageCallback& send_message_cb);
   ~RpcBroker();
 
@@ -47,7 +47,7 @@ class RpcBroker {
   int GetUniqueHandle();
 
   using ReceiveMessageCallback =
-      base::Callback<void(std::unique_ptr<pb::RpcMessage>)>;
+      base::RepeatingCallback<void(std::unique_ptr<pb::RpcMessage>)>;
   // Register a component to receive messages via the given
   // ReceiveMessageCallback. |handle| is a unique handle value provided by a
   // prior call to GetUniqueHandle() and is used to reference the component in

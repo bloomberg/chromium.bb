@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_command_line.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -149,7 +150,11 @@ class ChromeAssistantUtilTest : public testing::Test {
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
 
-    profile_ = profile_manager_->CreateTestingProfile(kTestProfileName);
+    profile_ = profile_manager_->CreateTestingProfile(
+        kTestProfileName, /*prefs=*/{}, base::UTF8ToUTF16(kTestProfileName),
+        /*avatar_id=*/0, /*supervised_user_id=*/{},
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactories());
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_);
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(

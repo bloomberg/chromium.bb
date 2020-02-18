@@ -52,7 +52,7 @@ def get_directory_commits(directory, start_date=None, end_date=None):
   start_date = start_date and start_date.strftime(DATE_FORMAT)
   end_date = end_date and end_date.strftime(DATE_FORMAT)
 
-  output = git.Log(directory, pretty='format:"%h|%cd|%s"', after=start_date,
+  output = git.Log(directory, format='format:"%h|%cd|%s"', after=start_date,
                    until=end_date, reverse=True, date='unix', paths=[directory])
   if not output:
     return []

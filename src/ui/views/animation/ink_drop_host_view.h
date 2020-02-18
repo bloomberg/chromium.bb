@@ -132,9 +132,19 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // them.
   void AnimateInkDrop(InkDropState state, const ui::LocatedEvent* event);
 
+  // Provides public access to |ink_drop_| so that factory methods can configure
+  // the inkdrop. Implements lazy initialization of |ink_drop_| so as to avoid
+  // virtual method calls during construction since subclasses should be able to
+  // call SetInkDropMode() during construction.
+  //
+  // WARNING: please don't override this; this is only virtual for the
+  // InstallableInkDrop refactor. TODO(crbug.com/931964): make non-virtual when
+  // this isn't necessary anymore.
+  virtual InkDrop* GetInkDrop();
+
  protected:
   // Size used for the default SquareInkDropRipple.
-  static constexpr int kDefaultInkDropSize = 24;
+  static constexpr gfx::Size kDefaultInkDropSize = gfx::Size(24, 24);
 
   // Called after a new InkDrop instance is created.
   virtual void OnInkDropCreated() {}
@@ -151,8 +161,7 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // directly.
   std::unique_ptr<InkDropRipple> CreateDefaultInkDropRipple(
       const gfx::Point& center_point,
-      const gfx::Size& size = gfx::Size(kDefaultInkDropSize,
-                                        kDefaultInkDropSize)) const;
+      const gfx::Size& size = kDefaultInkDropSize) const;
 
   // Creates a SquareInkDropRipple centered on |center_point|.
   std::unique_ptr<InkDropRipple> CreateSquareInkDropRipple(
@@ -163,8 +172,7 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // directly.
   std::unique_ptr<InkDropHighlight> CreateDefaultInkDropHighlight(
       const gfx::PointF& center_point,
-      const gfx::Size& size = gfx::Size(kDefaultInkDropSize,
-                                        kDefaultInkDropSize)) const;
+      const gfx::Size& size = kDefaultInkDropSize) const;
 
   // Creates a InkDropHighlight centered on |center_point|.
   std::unique_ptr<InkDropHighlight> CreateSquareInkDropHighlight(
@@ -173,15 +181,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
   // Returns true if an ink drop instance has been created.
   bool HasInkDrop() const;
-
-  // Provides access to |ink_drop_|. Implements lazy initialization of
-  // |ink_drop_| so as to avoid virtual method calls during construction since
-  // subclasses should be able to call SetInkDropMode() during construction.
-  //
-  // WARNING: please don't override this; this is only virtual for the
-  // InstallableInkDrop refactor. TODO(crbug.com/931964): make non-virtual when
-  // this isn't necessary anymore.
-  virtual InkDrop* GetInkDrop();
 
   // Returns the point of the |last_ripple_triggering_event_| if it was a
   // LocatedEvent, otherwise the center point of the local bounds is returned.

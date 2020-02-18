@@ -14,20 +14,22 @@
 
 import {Engine} from '../common/engine';
 import {CurrentSearchResults, SearchSummary} from '../common/search_data';
-import {TimeSpan, toNs} from '../common/time';
+import {TimeSpan} from '../common/time';
 
 import {Controller} from './controller';
-import {App, globals} from './globals';
+import {App} from './globals';
 
 export interface SearchControllerArgs {
   engine: Engine;
   app: App;
 }
 
+
 export class SearchController extends Controller<'main'> {
   private engine: Engine;
   private app: App;
   private previousSpan: TimeSpan;
+  private previousResolution: number;
   private previousSearch: string;
   private updateInProgress: boolean;
   private setupInProgress: boolean;
@@ -40,6 +42,7 @@ export class SearchController extends Controller<'main'> {
     this.previousSearch = '';
     this.updateInProgress = false;
     this.setupInProgress = true;
+    this.previousResolution = 1;
     this.setup().finally(() => {
       this.setupInProgress = false;
       this.run();
@@ -49,13 +52,10 @@ export class SearchController extends Controller<'main'> {
   private async setup() {
     await this.query(`create virtual table search_summary_window
       using window;`);
-    await this.query(`create virtual table search_summary_span
-      using span_join(sched PARTITIONED cpu, search_summary_window);`);
-
-    await this.query(`create virtual table search_result_window
-      using window;`);
-    await this.query(`create virtual table search_result_span
-      using span_join(sched PARTITIONED cpu, search_result_window);`);
+    await this.query(`create virtual table search_summary_sched_span using
+      span_join(sched PARTITIONED cpu, search_summary_window);`);
+    await this.query(`create virtual table search_summary_slice_span using
+      span_join(slice PARTITIONED ref_type  ref, search_summary_window);`);
   }
 
   run() {
@@ -65,16 +65,22 @@ export class SearchController extends Controller<'main'> {
 
     const visibleState = this.app.state.frontendLocalState.visibleState;
     const omniboxState = this.app.state.frontendLocalState.omniboxState;
-    if (visibleState === undefined || omniboxState === undefined) {
+    if (visibleState === undefined || omniboxState === undefined ||
+        omniboxState.mode === 'COMMAND') {
       return;
     }
     const newSpan = new TimeSpan(visibleState.startSec, visibleState.endSec);
     const newSearch = omniboxState.omnibox;
-    if (this.previousSpan.equals(newSpan) &&
+    const newResolution = visibleState.resolution;
+    if (this.previousSpan.contains(newSpan) &&
+        this.previousResolution === newResolution &&
         newSearch === this.previousSearch) {
       return;
     }
-    this.previousSpan = newSpan;
+    this.previousSpan = new TimeSpan(
+        Math.max(newSpan.start - newSpan.duration, 0),
+        newSpan.end + newSpan.duration);
+    this.previousResolution = newResolution;
     this.previousSearch = newSearch;
     if (newSearch === '' || newSearch.length < 4) {
       this.app.publish('Search', {
@@ -86,6 +92,8 @@ export class SearchController extends Controller<'main'> {
         sliceIds: new Float64Array(0),
         tsStarts: new Float64Array(0),
         utids: new Float64Array(0),
+        refTypes: [],
+        trackIds: [],
         totalResults: 0,
       });
       return;
@@ -93,10 +101,9 @@ export class SearchController extends Controller<'main'> {
 
     const startNs = Math.round(newSpan.start * 1e9);
     const endNs = Math.round(newSpan.end * 1e9);
-    const resolution = visibleState.resolution;
     this.updateInProgress = true;
     const computeSummary =
-        this.update(newSearch, startNs, endNs, resolution).then(summary => {
+        this.update(newSearch, startNs, endNs, newResolution).then(summary => {
           this.app.publish('Search', summary);
         });
 
@@ -136,15 +143,26 @@ export class SearchController extends Controller<'main'> {
 
     const utids = [...rawUtidResult.columns[0].longValues!];
 
+    const maxCpu = Math.max(...await this.engine.getCpus());
+
     const rawResult = await this.query(`
         select
-        (quantum_ts * ${quantumNs} + ${startNs})/1e9 as tsStart,
-        ((quantum_ts+1) * ${quantumNs} + ${startNs})/1e9 as tsEnd,
-        min(count(*), 255) as count
-        from search_summary_span
-        where utid in (${utids.join(',')})
-        group by quantum_ts
-        order by quantum_ts;`);
+          (quantum_ts * ${quantumNs} + ${startNs})/1e9 as tsStart,
+          ((quantum_ts+1) * ${quantumNs} + ${startNs})/1e9 as tsEnd,
+          min(count(*), 255) as count
+          from (
+              select
+              quantum_ts
+              from search_summary_sched_span
+              where utid in (${utids.join(',')}) and cpu <= ${maxCpu}
+            union all
+              select
+              quantum_ts
+              from search_summary_slice_span
+              where name like '%${search}%'
+          )
+          group by quantum_ts
+          order by quantum_ts;`);
 
     const numRows = +rawResult.numRecords;
     const summary = {
@@ -163,24 +181,47 @@ export class SearchController extends Controller<'main'> {
   }
 
   private async specificSearch(search: string) {
+    // TODO(hjd): we should avoid recomputing this every time. This will be
+    // easier once the track table has entries for all the tracks.
+    const cpuToTrackId = new Map();
+    const engineTrackIdToTrackId = new Map();
+    for (const track of Object.values(this.app.state.tracks)) {
+      if (track.kind === 'CpuSliceTrack') {
+        cpuToTrackId.set((track.config as {cpu: number}).cpu, track.id);
+        continue;
+      }
+      if (track.kind === 'ChromeSliceTrack' ||
+          track.kind === 'AsyncSliceTrack') {
+        engineTrackIdToTrackId.set(
+            (track.config as {trackId: number}).trackId, track.id);
+        continue;
+      }
+    }
+
     const rawUtidResult = await this.query(`select utid from thread join process
     using(upid) where thread.name like "%${search}%" or process.name like "%${
         search}%"`);
-
     const utids = [...rawUtidResult.columns[0].longValues!];
 
-    await this.query(`update search_result_window set
-    window_start=${toNs(globals.state.traceTime.startSec)},
-    window_dur=${
-        toNs(
-            globals.state.traceTime.endSec - globals.state.traceTime.startSec)},
-    quantum=0
-    where rowid = 0;`);
-
     const rawResult = await this.query(`
-    select row_id, ts, utid
-    from search_result_span
-    where utid in (${utids.join(',')}) order by ts`);
+    select
+      row_id as slice_id,
+      ts,
+      'cpu' as source,
+      cpu as ref,
+      utid
+    from sched where utid in (${utids.join(',')})
+    union
+    select
+      slice_id,
+      ts,
+      'track' as source,
+      track_id as ref,
+      0 as utid
+      from slice
+      inner join track on slice.track_id = track.id
+      and slice.name like '%${search}%'
+    order by ts`);
 
     const numRows = +rawResult.numRecords;
 
@@ -188,14 +229,32 @@ export class SearchController extends Controller<'main'> {
       sliceIds: new Float64Array(numRows),
       tsStarts: new Float64Array(numRows),
       utids: new Float64Array(numRows),
+      trackIds: [],
+      refTypes: [],
       totalResults: +numRows,
     };
 
     const columns = rawResult.columns;
     for (let row = 0; row < numRows; row++) {
+      const source = columns[2].stringValues![row];
+      const ref = +columns[3].longValues![row];
+      let trackId = undefined;
+      if (source === 'cpu') {
+        trackId = cpuToTrackId.get(ref);
+      } else if (source === 'track') {
+        trackId = engineTrackIdToTrackId.get(ref);
+      }
+
+      if (trackId === undefined) {
+        searchResults.totalResults--;
+        continue;
+      }
+
+      searchResults.trackIds.push(trackId);
+      searchResults.refTypes.push(source);
       searchResults.sliceIds[row] = +columns[0].longValues![row];
       searchResults.tsStarts[row] = +columns[1].longValues![row];
-      searchResults.utids[row] = +columns[2].longValues![row];
+      searchResults.utids[row] = +columns[4].longValues![row];
     }
     return searchResults;
   }

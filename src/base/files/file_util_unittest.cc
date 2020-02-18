@@ -60,7 +60,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
@@ -114,13 +113,13 @@ typedef struct _REPARSE_DATA_BUFFER {
 // Sets a reparse point. |source| will now point to |target|. Returns true if
 // the call succeeds, false otherwise.
 bool SetReparsePoint(HANDLE source, const FilePath& target_path) {
-  string16 kPathPrefix = FILE_PATH_LITERAL("\\??\\");
-  string16 target_str;
+  std::wstring kPathPrefix = FILE_PATH_LITERAL("\\??\\");
+  std::wstring target_str;
   // The juction will not work if the target path does not start with \??\ .
   if (kPathPrefix != target_path.value().substr(0, kPathPrefix.size()))
     target_str += kPathPrefix;
   target_str += target_path.value();
-  const wchar_t* target = as_wcstr(target_str);
+  const wchar_t* target = target_str.c_str();
   USHORT size_target = static_cast<USHORT>(wcslen(target)) * sizeof(target[0]);
   char buffer[2000] = {0};
   DWORD returned;
@@ -159,15 +158,13 @@ bool DeleteReparsePoint(HANDLE source) {
 // Method that wraps the win32 GetShortPathName API. Returns an empty path on
 // error.
 FilePath MakeShortFilePath(const FilePath& input) {
-  DWORD path_short_len =
-      ::GetShortPathName(as_wcstr(input.value()), nullptr, 0);
+  DWORD path_short_len = ::GetShortPathName(input.value().c_str(), nullptr, 0);
   if (path_short_len == 0UL)
     return FilePath();
 
-  string16 path_short_str;
+  std::wstring path_short_str;
   path_short_len = ::GetShortPathName(
-      as_wcstr(input.value()),
-      as_writable_wcstr(WriteInto(&path_short_str, path_short_len)),
+      input.value().c_str(), WriteInto(&path_short_str, path_short_len),
       path_short_len);
   if (path_short_len == 0UL)
     return FilePath();
@@ -181,7 +178,7 @@ class ReparsePoint {
   // Creates a reparse point from |source| (an empty directory) to |target|.
   ReparsePoint(const FilePath& source, const FilePath& target) {
     dir_.Set(
-        ::CreateFile(as_wcstr(source.value()), GENERIC_READ | GENERIC_WRITE,
+        ::CreateFile(source.value().c_str(), GENERIC_READ | GENERIC_WRITE,
                      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                      NULL, OPEN_EXISTING,
                      FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
@@ -228,11 +225,11 @@ void ChangePosixFilePermissions(const FilePath& path,
 void SetReadOnly(const FilePath& path, bool read_only) {
 #if defined(OS_WIN)
   // On Windows, it involves setting/removing the 'readonly' bit.
-  DWORD attrs = GetFileAttributes(as_wcstr(path.value()));
+  DWORD attrs = GetFileAttributes(path.value().c_str());
   ASSERT_NE(INVALID_FILE_ATTRIBUTES, attrs);
   ASSERT_TRUE(SetFileAttributes(
-      as_wcstr(path.value()), read_only ? (attrs | FILE_ATTRIBUTE_READONLY)
-                                        : (attrs & ~FILE_ATTRIBUTE_READONLY)));
+      path.value().c_str(), read_only ? (attrs | FILE_ATTRIBUTE_READONLY)
+                                      : (attrs & ~FILE_ATTRIBUTE_READONLY)));
 
   DWORD expected =
       read_only
@@ -240,9 +237,12 @@ void SetReadOnly(const FilePath& path, bool read_only) {
              FILE_ATTRIBUTE_READONLY)
           : (attrs & (FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_DIRECTORY));
 
-  // Ignore FILE_ATTRIBUTE_NOT_CONTENT_INDEXED if present.
-  attrs = GetFileAttributes(as_wcstr(path.value())) &
-          ~FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
+  // Ignore FILE_ATTRIBUTE_NOT_CONTENT_INDEXED and FILE_ATTRIBUTE_COMPRESSED
+  // if present. These flags are set by the operating system, depending on
+  // local configurations, such as compressing the file system. Not filtering
+  // out these flags could cause tests to fail even though they should pass.
+  attrs = GetFileAttributes(path.value().c_str()) &
+          ~(FILE_ATTRIBUTE_NOT_CONTENT_INDEXED | FILE_ATTRIBUTE_COMPRESSED);
   ASSERT_EQ(expected, attrs);
 #else
   // On all other platforms, it involves removing/setting the write bit.
@@ -254,7 +254,7 @@ void SetReadOnly(const FilePath& path, bool read_only) {
 
 bool IsReadOnly(const FilePath& path) {
 #if defined(OS_WIN)
-  DWORD attrs = GetFileAttributes(as_wcstr(path.value()));
+  DWORD attrs = GetFileAttributes(path.value().c_str());
   EXPECT_NE(INVALID_FILE_ATTRIBUTES, attrs);
   return attrs & FILE_ATTRIBUTE_READONLY;
 #else
@@ -318,7 +318,7 @@ void CreateTextFile(const FilePath& filename,
                     const std::wstring& contents) {
   std::wofstream file;
 #if defined(OS_WIN)
-  file.open(as_wcstr(filename.value()));
+  file.open(filename.value().c_str());
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   file.open(filename.value());
 #endif  // OS_WIN
@@ -332,7 +332,7 @@ std::wstring ReadTextFile(const FilePath& filename) {
   wchar_t contents[64];
   std::wifstream file;
 #if defined(OS_WIN)
-  file.open(as_wcstr(filename.value()));
+  file.open(filename.value().c_str());
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   file.open(filename.value());
 #endif  // OS_WIN
@@ -472,9 +472,9 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
   FilePath base_a = temp_dir_.GetPath().Append(FPL("base_a"));
 #if defined(OS_WIN)
   // TEMP can have a lower case drive letter.
-  string16 temp_base_a = base_a.value();
+  std::wstring temp_base_a = base_a.value();
   ASSERT_FALSE(temp_base_a.empty());
-  *temp_base_a.begin() = ToUpperASCII(*temp_base_a.begin());
+  temp_base_a[0] = ToUpperASCII(char16{temp_base_a[0]});
   base_a = FilePath(temp_base_a);
 #endif
   ASSERT_TRUE(CreateDirectory(base_a));
@@ -587,17 +587,17 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
 
 TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   // Get a drive letter.
-  string16 real_drive_letter =
-      ToUpperASCII(temp_dir_.GetPath().value().substr(0, 2));
+  std::wstring real_drive_letter = AsWString(
+      ToUpperASCII(AsStringPiece16(temp_dir_.GetPath().value().substr(0, 2))));
   if (!isalpha(real_drive_letter[0]) || ':' != real_drive_letter[1]) {
     LOG(ERROR) << "Can't get a drive letter to test with.";
     return;
   }
 
   // Get the NT style path to that drive.
-  char16 device_path[MAX_PATH] = {'\0'};
-  ASSERT_TRUE(::QueryDosDevice(as_wcstr(real_drive_letter),
-                               as_writable_wcstr(device_path), MAX_PATH));
+  wchar_t device_path[MAX_PATH] = {'\0'};
+  ASSERT_TRUE(
+      ::QueryDosDevice(real_drive_letter.c_str(), device_path, MAX_PATH));
   FilePath actual_device_path(device_path);
   FilePath win32_path;
 
@@ -1015,7 +1015,7 @@ TEST_F(FileUtilTest, ChangeDirectoryPermissionsAndEnumerate) {
   EXPECT_EQ(1, c2.size());
 
   // Delete the file.
-  EXPECT_TRUE(DeleteFile(subdir_path, true));
+  EXPECT_TRUE(DeleteFileRecursively(subdir_path));
   EXPECT_FALSE(PathExists(subdir_path));
 }
 
@@ -1395,7 +1395,7 @@ TEST_F(FileUtilTest, DeleteNonExistent) {
 
   EXPECT_TRUE(DeleteFile(non_existent, false));
   ASSERT_FALSE(PathExists(non_existent));
-  EXPECT_TRUE(DeleteFile(non_existent, true));
+  EXPECT_TRUE(DeleteFileRecursively(non_existent));
   ASSERT_FALSE(PathExists(non_existent));
 }
 
@@ -1406,7 +1406,7 @@ TEST_F(FileUtilTest, DeleteNonExistentWithNonExistentParent) {
 
   EXPECT_TRUE(DeleteFile(non_existent, false));
   ASSERT_FALSE(PathExists(non_existent));
-  EXPECT_TRUE(DeleteFile(non_existent, true));
+  EXPECT_TRUE(DeleteFileRecursively(non_existent));
   ASSERT_FALSE(PathExists(non_existent));
 }
 
@@ -1426,7 +1426,7 @@ TEST_F(FileUtilTest, DeleteFile) {
   ASSERT_TRUE(PathExists(file_name));
 
   // Make sure it's deleted
-  EXPECT_TRUE(DeleteFile(file_name, true));
+  EXPECT_TRUE(DeleteFileRecursively(file_name));
   EXPECT_FALSE(PathExists(file_name));
 }
 
@@ -1482,7 +1482,7 @@ TEST_F(FileUtilTest, DeleteWildCard) {
   EXPECT_TRUE(PathExists(subdir_path));
 
   // Delete recursively and make sure all contents are deleted
-  EXPECT_TRUE(DeleteFile(directory_contents, true));
+  EXPECT_TRUE(DeleteFileRecursively(directory_contents));
   EXPECT_FALSE(PathExists(file_name));
   EXPECT_FALSE(PathExists(subdir_path));
 }
@@ -1504,7 +1504,7 @@ TEST_F(FileUtilTest, DeleteNonExistantWildCard) {
   EXPECT_TRUE(PathExists(subdir_path));
 
   // Delete recursively and check nothing got deleted
-  EXPECT_TRUE(DeleteFile(directory_contents, true));
+  EXPECT_TRUE(DeleteFileRecursively(directory_contents));
   EXPECT_TRUE(PathExists(subdir_path));
 }
 #endif
@@ -1560,11 +1560,11 @@ TEST_F(FileUtilTest, DeleteDirRecursive) {
   ASSERT_TRUE(PathExists(subdir_path2));
 
   // Delete recursively and check that the empty dir got deleted
-  EXPECT_TRUE(DeleteFile(subdir_path2, true));
+  EXPECT_TRUE(DeleteFileRecursively(subdir_path2));
   EXPECT_FALSE(PathExists(subdir_path2));
 
   // Delete recursively and check that everything got deleted
-  EXPECT_TRUE(DeleteFile(test_subdir, true));
+  EXPECT_TRUE(DeleteFileRecursively(test_subdir));
   EXPECT_FALSE(PathExists(file_name));
   EXPECT_FALSE(PathExists(subdir_path1));
   EXPECT_FALSE(PathExists(test_subdir));
@@ -1609,7 +1609,7 @@ TEST_F(FileUtilTest, DeleteDirRecursiveWithOpenFile) {
 
   // Delete recursively and check that at least the second file got deleted.
   // This ensures that un-deletable files don't impact those that can be.
-  DeleteFile(test_subdir, true);
+  DeleteFileRecursively(test_subdir);
   EXPECT_FALSE(PathExists(file_name2));
 
 #if defined(OS_LINUX)
@@ -2750,7 +2750,7 @@ TEST_F(FileUtilTest, CreateDirectoryTest) {
   EXPECT_TRUE(PathExists(test_path));
   EXPECT_FALSE(CreateDirectory(test_path));
 
-  EXPECT_TRUE(DeleteFile(test_root, true));
+  EXPECT_TRUE(DeleteFileRecursively(test_root));
   EXPECT_FALSE(PathExists(test_root));
   EXPECT_FALSE(PathExists(test_path));
 
@@ -2797,7 +2797,7 @@ TEST_F(FileUtilTest, DetectDirectoryTest) {
   EXPECT_FALSE(DirectoryExists(test_path));
   EXPECT_TRUE(DeleteFile(test_path, false));
 
-  EXPECT_TRUE(DeleteFile(test_root, true));
+  EXPECT_TRUE(DeleteFileRecursively(test_root));
 }
 
 TEST_F(FileUtilTest, FileEnumeratorTest) {
@@ -2954,13 +2954,13 @@ TEST_F(FileUtilTest, AppendToFile) {
 
   // Create a fresh, empty copy of this directory.
   if (PathExists(data_dir)) {
-    ASSERT_TRUE(DeleteFile(data_dir, true));
+    ASSERT_TRUE(DeleteFileRecursively(data_dir));
   }
   ASSERT_TRUE(CreateDirectory(data_dir));
 
   // Create a fresh, empty copy of this directory.
   if (PathExists(data_dir)) {
-    ASSERT_TRUE(DeleteFile(data_dir, true));
+    ASSERT_TRUE(DeleteFileRecursively(data_dir));
   }
   ASSERT_TRUE(CreateDirectory(data_dir));
   FilePath foobar(data_dir.Append(FILE_PATH_LITERAL("foobar.txt")));
@@ -3266,7 +3266,7 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
   EXPECT_TRUE(StringToUint(switch_string, &switch_uint));
   win::ScopedHandle sync_event(win::Uint32ToHandle(switch_uint));
 
-  HANDLE ph = CreateNamedPipe(as_wcstr(pipe_path.value()), PIPE_ACCESS_OUTBOUND,
+  HANDLE ph = CreateNamedPipe(pipe_path.value().c_str(), PIPE_ACCESS_OUTBOUND,
                               PIPE_WAIT, 1, 0, 0, 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
@@ -3293,7 +3293,7 @@ MULTIPROCESS_TEST_MAIN(MoreThanBufferSizeChildMain) {
   EXPECT_TRUE(StringToUint(switch_string, &switch_uint));
   win::ScopedHandle sync_event(win::Uint32ToHandle(switch_uint));
 
-  HANDLE ph = CreateNamedPipe(as_wcstr(pipe_path.value()), PIPE_ACCESS_OUTBOUND,
+  HANDLE ph = CreateNamedPipe(pipe_path.value().c_str(), PIPE_ACCESS_OUTBOUND,
                               PIPE_WAIT, 1, data.size(), data.size(), 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
@@ -3470,7 +3470,7 @@ TEST_F(FileUtilTest, TouchFile) {
 
   // Create a fresh, empty copy of this directory.
   if (PathExists(data_dir)) {
-    ASSERT_TRUE(DeleteFile(data_dir, true));
+    ASSERT_TRUE(DeleteFileRecursively(data_dir));
   }
   ASSERT_TRUE(CreateDirectory(data_dir));
 
@@ -3579,8 +3579,8 @@ class VerifyPathControlledByUserTest : public FileUtilTest {
     CreateTextFile(text_file_, L"This text file has some text in it.");
 
     // Get the user and group files are created with from |base_dir_|.
-    struct stat stat_buf;
-    ASSERT_EQ(0, stat(base_dir_.value().c_str(), &stat_buf));
+    stat_wrapper_t stat_buf;
+    ASSERT_EQ(0, File::Stat(base_dir_.value().c_str(), &stat_buf));
     uid_ = stat_buf.st_uid;
     ok_gids_.insert(stat_buf.st_gid);
     bad_gids_.insert(stat_buf.st_gid + 1);

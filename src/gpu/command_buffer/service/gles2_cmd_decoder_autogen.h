@@ -4730,6 +4730,18 @@ error::Error GLES2DecoderImpl::HandleDispatchComputeIndirect(
   return error::kUnknownCommand;
 }
 
+error::Error GLES2DecoderImpl::HandleDrawArraysIndirect(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  return error::kUnknownCommand;
+}
+
+error::Error GLES2DecoderImpl::HandleDrawElementsIndirect(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  return error::kUnknownCommand;
+}
+
 error::Error GLES2DecoderImpl::HandleGetProgramInterfaceiv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -5350,6 +5362,17 @@ error::Error GLES2DecoderImpl::HandlePathStencilFuncCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleContextVisibilityHintCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::ContextVisibilityHintCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::ContextVisibilityHintCHROMIUM*>(
+          cmd_data);
+  GLboolean visibility = static_cast<GLboolean>(c.visibility);
+  DoContextVisibilityHintCHROMIUM(visibility);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleCoverageModulationCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -5381,17 +5404,6 @@ error::Error GLES2DecoderImpl::HandleBlendBarrierKHR(
   }
 
   api()->glBlendBarrierKHRFn();
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleApplyScreenSpaceAntialiasingCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  if (!features().chromium_screen_space_antialiasing) {
-    return error::kUnknownCommand;
-  }
-
-  DoApplyScreenSpaceAntialiasingCHROMIUM();
   return error::kNoError;
 }
 

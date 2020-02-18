@@ -12,7 +12,8 @@ namespace views {
 class Textfield;
 }
 
-namespace app_list {
+namespace ash {
+class AppListView;
 
 // Returns true if the key event is an unhandled left or right arrow (unmodified
 // by ctrl, shift, or alt)
@@ -46,6 +47,11 @@ APP_LIST_EXPORT bool ProcessLeftRightKeyTraversalForTextfield(
     views::Textfield* textfield,
     const ui::KeyEvent& key_event);
 
-}  // namespace app_list
+// Updates the activation for |app_list_view|. Intended to be a callback
+// function for when the view's bounds are finished animating.
+APP_LIST_EXPORT void UpdateActivationForAppListView(AppListView* app_list_view,
+                                                    bool is_tablet_mode);
+
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_UTIL_H_

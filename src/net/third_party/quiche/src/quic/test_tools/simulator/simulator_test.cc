@@ -4,9 +4,10 @@
 
 #include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/alarm_factory.h"
@@ -123,7 +124,7 @@ class LinkSaturator : public Endpoint {
 
   void Act() override {
     if (tx_port_->TimeUntilAvailable().IsZero()) {
-      auto packet = QuicMakeUnique<Packet>();
+      auto packet = std::make_unique<Packet>();
       packet->source = name_;
       packet->destination = destination_;
       packet->tx_timestamp = clock_->Now();
@@ -255,7 +256,7 @@ TEST_F(SimulatorTest, Queue) {
   EXPECT_EQ(0u, queue.packets_queued());
   EXPECT_EQ(0u, acceptor.packets()->size());
 
-  auto first_packet = QuicMakeUnique<Packet>();
+  auto first_packet = std::make_unique<Packet>();
   first_packet->size = 600;
   queue.AcceptPacket(std::move(first_packet));
   EXPECT_EQ(600u, queue.bytes_queued());
@@ -263,14 +264,14 @@ TEST_F(SimulatorTest, Queue) {
   EXPECT_EQ(0u, acceptor.packets()->size());
 
   // The second packet does not fit and is dropped.
-  auto second_packet = QuicMakeUnique<Packet>();
+  auto second_packet = std::make_unique<Packet>();
   second_packet->size = 500;
   queue.AcceptPacket(std::move(second_packet));
   EXPECT_EQ(600u, queue.bytes_queued());
   EXPECT_EQ(1u, queue.packets_queued());
   EXPECT_EQ(0u, acceptor.packets()->size());
 
-  auto third_packet = QuicMakeUnique<Packet>();
+  auto third_packet = std::make_unique<Packet>();
   third_packet->size = 400;
   queue.AcceptPacket(std::move(third_packet));
   EXPECT_EQ(1000u, queue.bytes_queued());

@@ -10,9 +10,10 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/optional.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/common/web_package/http_structured_header.h"
+#include "third_party/blink/public/common/http/structured_header.h"
 
 namespace blink {
 
@@ -41,13 +42,19 @@ class BLINK_COMMON_EXPORT SignedExchangeRequestMatcher {
       const std::string& variants,
       const std::vector<std::string>& variant_keys_list) const;
 
+  // Returns the index of best matching variant key within the all possible
+  // key for |variants|, in lexicographic (row-major) order.
+  base::Optional<size_t> FindBestMatchingIndex(
+      const std::string& variants) const;
+
  private:
   net::HttpRequestHeaders request_headers_;
 
   static bool MatchRequest(const net::HttpRequestHeaders& request_headers,
                            const HeaderMap& response_headers);
   static std::vector<std::vector<std::string>> CacheBehavior(
-      const http_structured_header::ListOfLists& variants,
+      const std::vector<std::pair<std::string, std::vector<std::string>>>&
+          variants,
       const net::HttpRequestHeaders& request_headers);
 
   static std::vector<std::string>::const_iterator FindBestMatchingVariantKey(
@@ -55,10 +62,16 @@ class BLINK_COMMON_EXPORT SignedExchangeRequestMatcher {
       const std::string& variants,
       const std::vector<std::string>& variant_key_list);
 
+  static base::Optional<size_t> FindBestMatchingIndex(
+      const net::HttpRequestHeaders& request_headers,
+      const std::string& variants);
+
   FRIEND_TEST_ALL_PREFIXES(SignedExchangeRequestMatcherTest, MatchRequest);
   FRIEND_TEST_ALL_PREFIXES(SignedExchangeRequestMatcherTest, CacheBehavior);
   FRIEND_TEST_ALL_PREFIXES(SignedExchangeRequestMatcherTest,
                            FindBestMatchingVariantKey);
+  FRIEND_TEST_ALL_PREFIXES(SignedExchangeRequestMatcherTest,
+                           FindBestMatchingIndex);
 };
 
 }  // namespace blink

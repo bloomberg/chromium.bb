@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/cbor/diagnostic_writer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/fido_authenticator.h"
@@ -151,6 +152,16 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     return false;
   }
 
+  // No extensions are supported when getting assertions therefore no extensions
+  // are permitted in the response.
+  const base::Optional<cbor::Value>& extensions =
+      response.auth_data().extensions();
+  if (extensions) {
+    FIDO_LOG(ERROR) << "assertion response invalid due to extensions block: "
+                    << cbor::DiagnosticWriter::Write(*extensions);
+    return false;
+  }
+
   return true;
 }
 
@@ -213,6 +224,7 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     FidoDiscoveryFactory* fido_discovery_factory,
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapGetAssertionRequest request,
+    bool allow_skipping_pin_touch,
     CompletionCallback completion_callback)
     : FidoRequestHandlerBase(
           connector,
@@ -221,7 +233,8 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
               supported_transports,
               GetTransportsAllowedByRP(request))),
       completion_callback_(std::move(completion_callback)),
-      request_(std::move(request)) {
+      request_(std::move(request)),
+      allow_skipping_pin_touch_(allow_skipping_pin_touch) {
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kGetAssertion;
   transport_availability_info().has_empty_allow_list =
@@ -251,6 +264,11 @@ void GetAssertionRequestHandler::DispatchRequest(
 
   switch (authenticator->WillNeedPINToGetAssertion(request_, observer())) {
     case FidoAuthenticator::GetAssertionPINDisposition::kUsePIN:
+      // Skip asking for touch if this is the only available authenticator.
+      if (active_authenticators().size() == 1 && allow_skipping_pin_touch_) {
+        HandleTouch(authenticator);
+        return;
+      }
       // A PIN will be needed. Just request a touch to let the user select
       // this authenticator if they wish.
       FIDO_LOG(DEBUG) << "Asking for touch from "
@@ -266,7 +284,7 @@ void GetAssertionRequestHandler::DispatchRequest(
                       << " cannot satisfy assertion request. Requesting "
                          "touch in order to handle error case.";
       authenticator->GetTouch(base::BindOnce(
-          &GetAssertionRequestHandler::HandleInapplicableAuthenticator,
+          &GetAssertionRequestHandler::HandleAuthenticatorMissingUV,
           weak_factory_.GetWeakPtr(), authenticator));
       return;
 
@@ -303,6 +321,9 @@ void GetAssertionRequestHandler::AuthenticatorAdded(
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
 #if defined(OS_MACOSX)
+  // Indicate to the UI whether a GetAssertion call to Touch ID would succeed
+  // or not. This needs to happen before the base AuthenticatorAdded()
+  // implementation runs |notify_observer_callback_| for this callback.
   if (authenticator->IsTouchIdAuthenticator()) {
     transport_availability_info().has_recognized_mac_touch_id_credential =
         static_cast<fido::mac::TouchIdAuthenticator*>(authenticator)
@@ -495,13 +516,13 @@ void GetAssertionRequestHandler::HandleTouch(FidoAuthenticator* authenticator) {
                      weak_factory_.GetWeakPtr()));
 }
 
-void GetAssertionRequestHandler::HandleInapplicableAuthenticator(
+void GetAssertionRequestHandler::HandleAuthenticatorMissingUV(
     FidoAuthenticator* authenticator) {
   // User touched an authenticator that cannot handle this request.
   state_ = State::kFinished;
   CancelActiveAuthenticators(authenticator->GetId());
   std::move(completion_callback_)
-      .Run(GetAssertionStatus::kUserConsentButCredentialNotRecognized,
+      .Run(GetAssertionStatus::kAuthenticatorMissingUserVerification,
            base::nullopt, nullptr);
 }
 
@@ -537,7 +558,6 @@ void GetAssertionRequestHandler::OnHavePIN(std::string pin) {
   if (authenticator_ == nullptr) {
     // Authenticator was detached. The request will already have been canceled
     // but this callback may have been waiting in a queue.
-    DCHECK(!completion_callback_);
     return;
   }
 

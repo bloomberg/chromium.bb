@@ -734,16 +734,93 @@ TEST_F(StyledLabelTest, ViewsCenteredWithLinkAndCustomView) {
 
   styled()->SetBounds(0, 0, 1000, 500);
   styled()->Layout();
-  int height = styled()->GetPreferredSize().height();
+  const int height = styled()->GetPreferredSize().height();
+  for (const auto* child : styled()->children())
+    EXPECT_EQ(height / 2, child->bounds().CenterPoint().y());
+}
 
-  ASSERT_EQ(3u, styled()->children().size());
-  const auto is_centered = [this, height](size_t index) {
-    const auto* child = styled()->children()[index];
-    return child->bounds().y() == ((height - child->bounds().height()) / 2);
-  };
-  EXPECT_TRUE(is_centered(0));
-  EXPECT_TRUE(is_centered(1));
-  EXPECT_TRUE(is_centered(2));
+TEST_F(StyledLabelTest, ViewsCenteredForEvenAndOddSizes) {
+  constexpr int kViewWidth = 30;
+  for (int height : {60, 61}) {
+    InitStyledLabel("abc");
+
+    const int view_heights[] = {height, height / 2, height / 2 + 1};
+    for (uint32_t i = 0; i < 3; ++i) {
+      auto view = std::make_unique<StaticSizedView>(
+          gfx::Size(kViewWidth, view_heights[i]));
+      view->set_owned_by_client();
+      StyledLabel::RangeStyleInfo style_info;
+      style_info.custom_view = view.get();
+      styled()->AddStyleRange(gfx::Range(i, i + 1), style_info);
+      styled()->AddCustomView(std::move(view));
+    }
+
+    styled()->SetBounds(0, 0, kViewWidth * 3, height);
+    styled()->Layout();
+
+    for (const auto* child : styled()->children())
+      EXPECT_EQ(height / 2, child->bounds().CenterPoint().y());
+  }
+}
+
+TEST_F(StyledLabelTest, CacheSizeWithAlignment) {
+  const std::string text("text");
+  InitStyledLabel(text);
+  styled()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  styled()->SetBounds(0, 0, 1000, 1000);
+  styled()->Layout();
+  ASSERT_EQ(1u, styled()->children().size());
+  const View* child = styled()->children().front();
+  EXPECT_EQ(1000, child->bounds().right());
+
+  styled()->SetSize({800, 1000});
+  styled()->Layout();
+  ASSERT_EQ(1u, styled()->children().size());
+  const View* new_child = styled()->children().front();
+  EXPECT_EQ(child, new_child);
+  EXPECT_EQ(800, new_child->bounds().right());
+}
+
+// Verifies that calling SizeToFit() on a label which requires less width still
+// causes it to take the whole requested width.
+TEST_F(StyledLabelTest, SizeToFit) {
+  const std::string text("text");
+  InitStyledLabel(text);
+  styled()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  styled()->SizeToFit(1000);
+  styled()->Layout();
+  ASSERT_EQ(1u, styled()->children().size());
+  EXPECT_EQ(1000, styled()->children().front()->bounds().right());
+}
+
+// Verifies that a non-empty label has a preferred size by default.
+TEST_F(StyledLabelTest, PreferredSizeNonEmpty) {
+  const std::string text("text");
+  InitStyledLabel(text);
+  EXPECT_FALSE(styled()->GetPreferredSize().IsEmpty());
+}
+
+// Verifies that GetPreferredSize() respects the existing wrapping.
+TEST_F(StyledLabelTest, PreferredSizeRespectsWrapping) {
+  const std::string text("Long text that can be split across lines");
+  InitStyledLabel(text);
+  gfx::Size size = styled()->GetPreferredSize();
+  size.set_width(size.width() / 2);
+  size.set_height(styled()->GetHeightForWidth(size.width()));
+  styled()->SetSize(size);
+  styled()->Layout();
+  const gfx::Size new_size = styled()->GetPreferredSize();
+  EXPECT_LE(new_size.width(), size.width());
+  EXPECT_EQ(new_size.height(), size.height());
+}
+
+// Verifies that calling a const method does not change the preferred size.
+TEST_F(StyledLabelTest, PreferredSizeAcrossConstCall) {
+  const std::string text("Long text that can be split across lines");
+  InitStyledLabel(text);
+  const gfx::Size size = styled()->GetPreferredSize();
+  styled()->GetHeightForWidth(size.width() / 2);
+  EXPECT_EQ(size, styled()->GetPreferredSize());
 }
 
 }  // namespace views

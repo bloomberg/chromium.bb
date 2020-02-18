@@ -24,7 +24,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/blink/public/web/web_fullscreen_options.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
@@ -126,8 +126,8 @@ bool g_window_has_focus = false;
 
 class TestRenderWidgetHostView : public RenderWidgetHostViewAura {
  public:
-  TestRenderWidgetHostView(RenderWidgetHost* host, bool is_guest_view_hack)
-      : RenderWidgetHostViewAura(host, is_guest_view_hack) {}
+  TestRenderWidgetHostView(RenderWidgetHost* host)
+      : RenderWidgetHostViewAura(host) {}
   ~TestRenderWidgetHostView() override {}
 
   bool HasFocus() override { return g_window_has_focus; }
@@ -149,7 +149,7 @@ class FakeKeyboardLockWebContentsDelegate : public WebContentsDelegate {
   void EnterFullscreenModeForTab(
       WebContents* web_contents,
       const GURL& origin,
-      const blink::WebFullscreenOptions& options) override;
+      const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(const WebContents* web_contents) override;
   void RequestKeyboardLock(WebContents* web_contents,
@@ -166,7 +166,7 @@ class FakeKeyboardLockWebContentsDelegate : public WebContentsDelegate {
 void FakeKeyboardLockWebContentsDelegate::EnterFullscreenModeForTab(
     WebContents* web_contents,
     const GURL& origin,
-    const blink::WebFullscreenOptions& options) {
+    const blink::mojom::FullscreenOptions& options) {
   is_fullscreen_ = true;
   if (keyboard_lock_requested_)
     web_contents->GotResponseToKeyboardLockRequest(/*allowed=*/true);
@@ -207,9 +207,8 @@ void SetWindowFocusForKeyboardLockBrowserTests(bool is_focused) {
 
 void InstallCreateHooksForKeyboardLockBrowserTests() {
   WebContentsViewAura::InstallCreateHookForTests(
-      [](RenderWidgetHost* host,
-         bool is_guest_view_hack) -> RenderWidgetHostViewAura* {
-        return new TestRenderWidgetHostView(host, is_guest_view_hack);
+      [](RenderWidgetHost* host) -> RenderWidgetHostViewAura* {
+        return new TestRenderWidgetHostView(host);
       });
 }
 
@@ -348,7 +347,7 @@ void KeyboardLockBrowserTest::CancelKeyboardLock(
 
 void KeyboardLockBrowserTest::EnterFullscreen(const base::Location& from_here,
                                               const GURL& gurl) {
-  web_contents()->EnterFullscreenMode(gurl, blink::WebFullscreenOptions());
+  web_contents()->EnterFullscreenMode(gurl, blink::mojom::FullscreenOptions());
 
   ASSERT_TRUE(web_contents()->IsFullscreenForCurrentTab())
       << "Location: " << from_here.ToString();

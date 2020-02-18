@@ -11,7 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/task/post_task.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
@@ -63,16 +62,6 @@ void SpeechRecognitionDispatcherHost::Start(
     blink::mojom::StartSpeechRecognitionRequestParamsPtr params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Check that the origin specified by the renderer process is one
-  // that it is allowed to access.
-  if (!params->origin.opaque() &&
-      !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
-          render_process_id_, params->origin.GetURL())) {
-    LOG(ERROR) << "SRDH::OnStartRequest, disallowed origin: "
-               << params->origin.Serialize();
-    return;
-  }
-
   base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&SpeechRecognitionDispatcherHost::StartRequestOnUI,
@@ -91,14 +80,14 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
   int embedder_render_process_id = 0;
   int embedder_render_frame_id = MSG_ROUTING_NONE;
 
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(WebContentsImpl::FromRenderFrameHostID(
-          render_process_id, render_frame_id));
-  if (!web_contents) {
-    // The render frame id is renderer-provided. If it's invalid, don't crash.
+  RenderFrameHostImpl* rfh =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  if (!rfh) {
     DLOG(ERROR) << "SRDH::OnStartRequest, invalid frame";
     return;
   }
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh));
 
   // If the speech API request was from an inner WebContents or a guest, save
   // the context of the outer WebContents or the embedder since we will use it
@@ -143,7 +132,7 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
           &SpeechRecognitionDispatcherHost::StartSessionOnIO,
           speech_recognition_dispatcher_host, std::move(params),
           embedder_render_process_id, embedder_render_frame_id,
-          filter_profanities,
+          rfh->GetLastCommittedOrigin(), filter_profanities,
           storage_partition->GetURLLoaderFactoryForBrowserProcessIOThread(),
           GetContentClient()->browser()->GetAcceptLangs(browser_context)));
 }
@@ -152,14 +141,15 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
     blink::mojom::StartSpeechRecognitionRequestParamsPtr params,
     int embedder_render_process_id,
     int embedder_render_frame_id,
+    const url::Origin& origin,
     bool filter_profanities,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        shared_url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_shared_url_loader_factory,
     const std::string& accept_language) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   SpeechRecognitionSessionContext context;
-  context.security_origin = params->origin;
+  context.security_origin = origin;
   context.render_process_id = render_process_id_;
   context.render_frame_id = render_frame_id_;
   context.embedder_render_process_id = embedder_render_process_id;
@@ -172,10 +162,10 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
   config.language = params->language;
   config.accept_language = accept_language;
   config.max_hypotheses = params->max_hypotheses;
-  config.origin = params->origin;
+  config.origin = origin;
   config.initial_context = context;
   config.shared_url_loader_factory = network::SharedURLLoaderFactory::Create(
-      std::move(shared_url_loader_factory_info));
+      std::move(pending_shared_url_loader_factory));
   config.filter_profanities = filter_profanities;
   config.continuous = params->continuous;
   config.interim_results = params->interim_results;
@@ -190,8 +180,8 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
       SpeechRecognitionManager::GetInstance()->CreateSession(config);
   DCHECK_NE(session_id, SpeechRecognitionManager::kSessionIDInvalid);
   session->SetSessionId(session_id);
-  mojo::MakeStrongBinding(std::move(session),
-                          std::move(params->session_request));
+  mojo::MakeSelfOwnedReceiver(std::move(session),
+                              std::move(params->session_receiver));
 
   SpeechRecognitionManager::GetInstance()->StartSession(session_id);
 }
@@ -199,11 +189,11 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
 // ---------------------- SpeechRecognizerSession -----------------------------
 
 SpeechRecognitionSession::SpeechRecognitionSession(
-    blink::mojom::SpeechRecognitionSessionClientPtrInfo client_ptr_info)
+    mojo::PendingRemote<blink::mojom::SpeechRecognitionSessionClient> client)
     : session_id_(SpeechRecognitionManager::kSessionIDInvalid),
-      client_(std::move(client_ptr_info)),
+      client_(std::move(client)),
       stopped_(false) {
-  client_.set_connection_error_handler(
+  client_.set_disconnect_handler(
       base::BindOnce(&SpeechRecognitionSession::ConnectionErrorHandler,
                      base::Unretained(this)));
 }

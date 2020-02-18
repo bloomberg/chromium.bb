@@ -74,11 +74,14 @@ def GetSharedLibraryDependenciesLinux(binary):
   return result
 
 
-def GetSharedLibraryDependenciesAndroid(binary):
-  """Return absolute paths to all shared library dependencies of the binary.
+def _GetSharedLibraryDependenciesAndroidOrChromeOS(binary):
+  """GetSharedLibraryDependencies* suitable for Android or ChromeOS.
 
-  This implementation assumes that we're running on a Linux system, but
-  compiled for Android."""
+  Both assume that the host is Linux-based, but the binary being symbolized is
+  being run on a device with potentially different architectures. Unlike ldd,
+  readelf plays nice with mixed host/device architectures (e.g. x86-64 host,
+  arm64 device), so use that.
+  """
   readelf = subprocess.check_output(['readelf', '-d', binary])
   lib_re = re.compile('Shared library: \[(.+)\]$')
   result = []
@@ -90,6 +93,14 @@ def GetSharedLibraryDependenciesAndroid(binary):
       if os.access(lib, os.X_OK):
         result.append(lib)
   return result
+
+
+def GetSharedLibraryDependenciesAndroid(binary):
+  """Return absolute paths to all shared library dependencies of the binary.
+
+  This implementation assumes that we're running on a Linux system, but
+  compiled for Android."""
+  return _GetSharedLibraryDependenciesAndroidOrChromeOS(binary)
 
 
 def GetDeveloperDirMac():
@@ -135,10 +146,22 @@ def GetSharedLibraryDependenciesMac(binary, exe_path):
   #    string, causing "@loader_path/foo" to incorrectly expand to "/foo".
   loader_path = os.path.dirname(os.path.realpath(binary))
   env = os.environ.copy()
-  developer_dir = GetDeveloperDirMac()
-  if developer_dir:
-    env['DEVELOPER_DIR'] = developer_dir
-  otool = subprocess.check_output(['otool', '-l', binary], env=env).splitlines()
+
+  SRC_ROOT_PATH = os.path.join(os.path.dirname(__file__), '../../../..')
+  hermetic_otool_path = os.path.join(
+      SRC_ROOT_PATH, 'build', 'mac_files', 'xcode_binaries', 'Contents',
+      'Developer', 'Toolchains', 'XcodeDefault.xctoolchain', 'usr', 'bin',
+      'otool')
+  if os.path.exists(hermetic_otool_path):
+    otool_path = hermetic_otool_path
+  else:
+    developer_dir = GetDeveloperDirMac()
+    if developer_dir:
+      env['DEVELOPER_DIR'] = developer_dir
+    otool_path = 'otool'
+
+  otool = subprocess.check_output(
+      [otool_path, '-l', binary], env=env).splitlines()
   rpaths = []
   dylib_id = None
   for idx, line in enumerate(otool):
@@ -157,7 +180,8 @@ def GetSharedLibraryDependenciesMac(binary, exe_path):
   # contains all the rpaths it needs on its own, without relying on rpaths of
   # the loading executables.
 
-  otool = subprocess.check_output(['otool', '-L', binary], env=env).splitlines()
+  otool = subprocess.check_output(
+      [otool_path, '-L', binary], env=env).splitlines()
   lib_re = re.compile('\t(.*) \(compatibility .*\)$')
   deps = []
   for line in otool:
@@ -179,6 +203,14 @@ def GetSharedLibraryDependenciesMac(binary, exe_path):
   return deps
 
 
+def GetSharedLibraryDependenciesChromeOS(binary):
+  """Return absolute paths to all shared library dependencies of the binary.
+
+  This implementation assumes that we're running on a Linux system, but
+  compiled for ChromeOS."""
+  return _GetSharedLibraryDependenciesAndroidOrChromeOS(binary)
+
+
 def GetSharedLibraryDependencies(options, binary, exe_path):
   """Return absolute paths to all shared library dependencies of the binary."""
   deps = []
@@ -188,6 +220,8 @@ def GetSharedLibraryDependencies(options, binary, exe_path):
     deps = GetSharedLibraryDependenciesAndroid(binary)
   elif options.platform == 'darwin':
     deps = GetSharedLibraryDependenciesMac(binary, exe_path)
+  elif options.platform == 'chromeos':
+    deps = GetSharedLibraryDependenciesChromeOS(binary)
   else:
     print "Platform not supported."
     sys.exit(1)
@@ -211,7 +245,8 @@ def GetTransitiveDependencies(options):
     deps = set(GetSharedLibraryDependencies(options, binary, exe_path))
     deps.add(binary)
     return list(deps)
-  elif options.platform == 'darwin' or options.platform == 'android':
+  elif (options.platform == 'darwin' or options.platform == 'android' or
+        options.platform == 'chromeos'):
     binaries = set([binary])
     queue = [binary]
     while queue:

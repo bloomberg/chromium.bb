@@ -37,6 +37,13 @@ ARCHIVE_TEST_SUITES = 'test_suites'
 CPE_WARNINGS_FILE_TEMPLATE = 'cpe-warnings-chromeos-%s.txt'
 CPE_RESULT_FILE_TEMPLATE = 'cpe-chromeos-%s.txt'
 
+# The individual image archives for ArchiveImages.
+IMAGE_TARS = {
+    constants.TEST_IMAGE_BIN: constants.TEST_IMAGE_TAR,
+    constants.TEST_GUEST_VM_DIR: constants.TEST_GUEST_VM_TAR,
+    constants.BASE_GUEST_VM_DIR: constants.BASE_GUEST_VM_TAR
+}
+
 TAST_BUNDLE_NAME = 'tast_bundles.tar.bz2'
 TAST_COMPRESSOR = cros_build_lib.COMP_BZIP2
 
@@ -282,12 +289,36 @@ def ArchiveChromeEbuildEnv(sysroot, output_dir):
     # Convert from bzip2 to tar format.
     bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
     tempdir_tar_path = os.path.join(tempdir, constants.CHROME_ENV_FILE)
-    cros_build_lib.RunCommand([bzip2, '-d', env_bzip, '-c'],
-                              log_stdout_to_file=tempdir_tar_path)
+    cros_build_lib.run([bzip2, '-d', env_bzip, '-c'],
+                       log_stdout_to_file=tempdir_tar_path)
 
     cros_build_lib.CreateTarball(result_path, tempdir)
 
   return result_path
+
+
+def ArchiveImages(image_dir, output_dir):
+  """Create a .tar.xz archive for each image that has been created.
+
+  Args:
+    image_dir (str): The directory where the images are located.
+    output_dir (str): The location where the archives should be created.
+
+  Returns:
+    list[str]: The list of created file names.
+  """
+  files = os.listdir(image_dir)
+
+  archives = []
+  # Filter down to the ones that exist first.
+  images = {img: tar for img, tar in IMAGE_TARS.items() if img in files}
+  for img, tar in images.items():
+    target = os.path.join(output_dir, tar)
+    cros_build_lib.CreateTarball(target, image_dir, inputs=(img,),
+                                 print_cmd=False)
+    archives.append(tar)
+
+  return archives
 
 
 def BundleImageZip(output_dir, image_dir):
@@ -301,9 +332,8 @@ def BundleImageZip(output_dir, image_dir):
 
   filename = 'image.zip'
   zipfile = os.path.join(output_dir, filename)
-  cros_build_lib.RunCommand(['zip', zipfile, '-r', '.'],
-                            cwd=image_dir,
-                            capture_output=True)
+  cros_build_lib.run(['zip', zipfile, '-r', '.'],
+                     cwd=image_dir, capture_output=True)
   return filename
 
 
@@ -323,18 +353,17 @@ def CreateChromeRoot(chroot, build_target, output_dir):
     CrosGenerateSysrootError: When cros_generate_sysroot does not complete
       successfully.
   """
-  chroot_args = chroot.GetEnterArgs()
+  chroot_args = chroot.get_enter_args()
 
   extra_env = {'USE': 'chrome_internal'}
-  base_dir = os.path.join(chroot.path, 'tmp')
-  with osutils.TempDir(base_dir=base_dir) as tempdir:
+  with chroot.tempdir() as tempdir:
     in_chroot_path = os.path.relpath(tempdir, chroot.path)
     cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
            build_target.name, '--deps-only', '--package', constants.CHROME_CP]
 
     try:
-      cros_build_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env,
-                                chroot_args=chroot_args)
+      cros_build_lib.run(cmd, enter_chroot=True, extra_env=extra_env,
+                         chroot_args=chroot_args)
     except cros_build_lib.RunCommandError as e:
       raise CrosGenerateSysrootError(
           'Error encountered when running cros_generate_sysroot: %s' % e, e)
@@ -427,21 +456,25 @@ def GenerateQuickProvisionPayloads(target_image_path, archive_dir):
   payloads = []
   with osutils.TempDir() as temp_dir:
     # These partitions are mainly used by quick_provision.
+    kernel_part = 'kernel.bin'
+    rootfs_part = 'rootfs.bin'
     partition_lib.ExtractKernel(
-        target_image_path, os.path.join(temp_dir, 'full_dev_part_KERN.bin'))
+        target_image_path, os.path.join(temp_dir, kernel_part))
     partition_lib.ExtractRoot(target_image_path,
-                              os.path.join(temp_dir, 'full_dev_part_ROOT.bin'),
+                              os.path.join(temp_dir, rootfs_part),
                               truncate=False)
-    for partition in ('KERN', 'ROOT'):
-      source = os.path.join(temp_dir, 'full_dev_part_%s.bin' % partition)
-      dest = os.path.join(archive_dir, 'full_dev_part_%s.bin.gz' % partition)
+    for partition, payload in {
+        kernel_part: constants.QUICK_PROVISION_PAYLOAD_KERNEL,
+        rootfs_part: constants.QUICK_PROVISION_PAYLOAD_ROOTFS}.items():
+      source = os.path.join(temp_dir, partition)
+      dest = os.path.join(archive_dir, payload)
       cros_build_lib.CompressFile(source, dest)
       payloads.append(dest)
 
   return payloads
 
 
-def BundleAFDOGenerationArtifacts(is_orderfile, chroot,
+def BundleAFDOGenerationArtifacts(is_orderfile, chroot, chrome_root,
                                   build_target, output_dir):
   """Generate artifacts for toolchain-related AFDO artifacts.
 
@@ -449,6 +482,7 @@ def BundleAFDOGenerationArtifacts(is_orderfile, chroot,
     is_orderfile (boolean): The generation is for orderfile (True) or
     for AFDO (False).
     chroot (chroot_lib.Chroot): The chroot in which the sysroot should be built.
+    chrome_root (str): Path to Chrome root.
     build_target (build_target_util.BuildTarget): The build target.
     output_dir (str): The location outside the chroot where the files should be
       stored.
@@ -456,12 +490,13 @@ def BundleAFDOGenerationArtifacts(is_orderfile, chroot,
   Returns:
     list[str]: The list of tarballs of artifacts.
   """
-  chroot_args = chroot.GetEnterArgs()
+  chroot_args = chroot.get_enter_args()
   with chroot.tempdir() as tempdir:
     if is_orderfile:
       generate_orderfile = toolchain_util.GenerateChromeOrderfile(
           board=build_target.name,
           output_dir=tempdir,
+          chrome_root=chrome_root,
           chroot_path=chroot.path,
           chroot_args=chroot_args)
 
@@ -564,7 +599,7 @@ def GenerateCpeReport(chroot, sysroot, output_dir):
   ]
 
   logging.info('Beginning CPE Export.')
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       cmd,
       capture_output=True,
       enter_chroot=True,
@@ -581,7 +616,7 @@ def GenerateCpeReport(chroot, sysroot, output_dir):
   warnings_path = os.path.join(output_dir,
                                CPE_WARNINGS_FILE_TEMPLATE % build_target)
 
-  osutils.WriteFile(report_path, result.output)
-  osutils.WriteFile(warnings_path, result.error)
+  osutils.WriteFile(report_path, result.stdout, mode='wb')
+  osutils.WriteFile(warnings_path, result.stderr, mode='wb')
 
   return CpeResult(report=report_path, warnings=warnings_path)

@@ -60,8 +60,8 @@ class DebugSymbolsTest(cros_test_lib.TempDirTestCase):
                       PACKAGES_CONTENT)
 
     index = binpkg.GrabLocalPackageIndex(self.tempdir)
-    self.assertEquals(index.packages[0]['CPV'], 'chromeos-base/shill-0.0.1-r1')
-    self.assertEquals(index.packages[0].get('DEBUG_SYMBOLS'), 'yes')
+    self.assertEqual(index.packages[0]['CPV'], 'chromeos-base/shill-0.0.1-r1')
+    self.assertEqual(index.packages[0].get('DEBUG_SYMBOLS'), 'yes')
     self.assertFalse('DEBUG_SYMBOLS' in index.packages[1])
 
 
@@ -100,4 +100,4 @@ class PackageIndexTest(cros_test_lib.TempDirTestCase):
       read_index.Read(f)
 
     self.assertDictEqual(pkg_index.header, read_index.header)
-    self.assertItemsEqual(pkg_index.packages, read_index.packages)
+    self.assertCountEqual(pkg_index.packages, read_index.packages)

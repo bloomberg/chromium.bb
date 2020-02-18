@@ -13,10 +13,8 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
 #include "ipc/ipc_channel.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -38,11 +36,6 @@ void OnDecodeImageDone(
     fail_callback.Run(request_id);
 }
 
-void BindToBrowserConnector(service_manager::mojom::ConnectorRequest request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::GetSystemConnector()->BindConnectorRequest(std::move(request));
-}
-
 void RunDecodeCallbackOnTaskRunner(
     data_decoder::mojom::ImageDecoder::DecodeImageCallback callback,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -59,15 +52,8 @@ void DecodeImage(
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  service_manager::mojom::ConnectorRequest connector_request;
-  std::unique_ptr<service_manager::Connector> connector =
-      service_manager::Connector::Create(&connector_request);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&BindToBrowserConnector, std::move(connector_request)));
-
-  data_decoder::DecodeImage(
-      connector.get(), image_data, codec, shrink_to_fit, kMaxImageSizeInBytes,
+  data_decoder::DecodeImageIsolated(
+      image_data, codec, shrink_to_fit, kMaxImageSizeInBytes,
       desired_image_frame_size,
       base::BindOnce(&RunDecodeCallbackOnTaskRunner, std::move(callback),
                      std::move(callback_task_runner)));

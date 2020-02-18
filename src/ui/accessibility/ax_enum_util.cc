@@ -275,8 +275,6 @@ const char* ToString(ax::mojom::Role role) {
       return "alert";
     case ax::mojom::Role::kAnchor:
       return "anchor";
-    case ax::mojom::Role::kAnnotation:
-      return "annotation";
     case ax::mojom::Role::kApplication:
       return "application";
     case ax::mojom::Role::kArticle:
@@ -301,6 +299,8 @@ const char* ToString(ax::mojom::Role role) {
       return "checkBox";
     case ax::mojom::Role::kClient:
       return "client";
+    case ax::mojom::Role::kCode:
+      return "code";
     case ax::mojom::Role::kColorWell:
       return "colorWell";
     case ax::mojom::Role::kColumnHeader:
@@ -311,6 +311,10 @@ const char* ToString(ax::mojom::Role role) {
       return "comboBoxGrouping";
     case ax::mojom::Role::kComboBoxMenuButton:
       return "comboBoxMenuButton";
+    case ax::mojom::Role::kComment:
+      return "comment";
+    case ax::mojom::Role::kCommentSection:
+      return "commentSection";
     case ax::mojom::Role::kComplementary:
       return "complementary";
     case ax::mojom::Role::kContentDeletion:
@@ -423,6 +427,8 @@ const char* ToString(ax::mojom::Role role) {
       return "document";
     case ax::mojom::Role::kEmbeddedObject:
       return "embeddedObject";
+    case ax::mojom::Role::kEmphasis:
+      return "emphasis";
     case ax::mojom::Role::kFeed:
       return "feed";
     case ax::mojom::Role::kFigcaption:
@@ -431,6 +437,8 @@ const char* ToString(ax::mojom::Role role) {
       return "figure";
     case ax::mojom::Role::kFooter:
       return "footer";
+    case ax::mojom::Role::kFooterAsNonLandmark:
+      return "footerAsNonLandmark";
     case ax::mojom::Role::kForm:
       return "form";
     case ax::mojom::Role::kGenericContainer:
@@ -445,6 +453,10 @@ const char* ToString(ax::mojom::Role role) {
       return "grid";
     case ax::mojom::Role::kGroup:
       return "group";
+    case ax::mojom::Role::kHeader:
+      return "header";
+    case ax::mojom::Role::kHeaderAsNonLandmark:
+      return "headerAsNonLandmark";
     case ax::mojom::Role::kHeading:
       return "heading";
     case ax::mojom::Role::kIframe:
@@ -541,14 +553,26 @@ const char* ToString(ax::mojom::Role role) {
       return "radioGroup";
     case ax::mojom::Role::kRegion:
       return "region";
+    case ax::mojom::Role::kRevision:
+      return "revision";
     case ax::mojom::Role::kRootWebArea:
       return "rootWebArea";
-    case ax::mojom::Role::kRowHeader:
-      return "rowHeader";
     case ax::mojom::Role::kRow:
       return "row";
+    case ax::mojom::Role::kRowGroup:
+      return "rowGroup";
+    case ax::mojom::Role::kRowHeader:
+      return "rowHeader";
     case ax::mojom::Role::kRuby:
       return "ruby";
+    case ax::mojom::Role::kRubyAnnotation:
+      return "rubyAnnotation";
+    case ax::mojom::Role::kSection:
+      return "section";
+    case ax::mojom::Role::kStrong:
+      return "strong";
+    case ax::mojom::Role::kSuggestion:
+      return "suggestion";
     case ax::mojom::Role::kSvgRoot:
       return "svgRoot";
     case ax::mojom::Role::kScrollBar:
@@ -633,8 +657,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kAlert;
   if (0 == strcmp(role, "anchor"))
     return ax::mojom::Role::kAnchor;
-  if (0 == strcmp(role, "annotation"))
-    return ax::mojom::Role::kAnnotation;
   if (0 == strcmp(role, "application"))
     return ax::mojom::Role::kApplication;
   if (0 == strcmp(role, "article"))
@@ -659,6 +681,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kCheckBox;
   if (0 == strcmp(role, "client"))
     return ax::mojom::Role::kClient;
+  if (0 == strcmp(role, "code"))
+    return ax::mojom::Role::kCode;
   if (0 == strcmp(role, "colorWell"))
     return ax::mojom::Role::kColorWell;
   if (0 == strcmp(role, "columnHeader"))
@@ -669,6 +693,10 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kComboBoxGrouping;
   if (0 == strcmp(role, "comboBoxMenuButton"))
     return ax::mojom::Role::kComboBoxMenuButton;
+  if (0 == strcmp(role, "comment"))
+    return ax::mojom::Role::kComment;
+  if (0 == strcmp(role, "commentSection"))
+    return ax::mojom::Role::kCommentSection;
   if (0 == strcmp(role, "complementary"))
     return ax::mojom::Role::kComplementary;
   if (0 == strcmp(role, "contentDeletion"))
@@ -781,6 +809,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kDocument;
   if (0 == strcmp(role, "embeddedObject"))
     return ax::mojom::Role::kEmbeddedObject;
+  if (0 == strcmp(role, "emphasis"))
+    return ax::mojom::Role::kEmphasis;
   if (0 == strcmp(role, "feed"))
     return ax::mojom::Role::kFeed;
   if (0 == strcmp(role, "figcaption"))
@@ -789,6 +819,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kFigure;
   if (0 == strcmp(role, "footer"))
     return ax::mojom::Role::kFooter;
+  if (0 == strcmp(role, "footerAsNonLandmark"))
+    return ax::mojom::Role::kFooterAsNonLandmark;
   if (0 == strcmp(role, "form"))
     return ax::mojom::Role::kForm;
   if (0 == strcmp(role, "genericContainer"))
@@ -805,6 +837,10 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kGroup;
   if (0 == strcmp(role, "heading"))
     return ax::mojom::Role::kHeading;
+  if (0 == strcmp(role, "header"))
+    return ax::mojom::Role::kHeader;
+  if (0 == strcmp(role, "headerAsNonLandmark"))
+    return ax::mojom::Role::kHeaderAsNonLandmark;
   if (0 == strcmp(role, "iframe"))
     return ax::mojom::Role::kIframe;
   if (0 == strcmp(role, "iframePresentational"))
@@ -899,16 +935,22 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kRadioGroup;
   if (0 == strcmp(role, "region"))
     return ax::mojom::Role::kRegion;
+  if (0 == strcmp(role, "revision"))
+    return ax::mojom::Role::kRevision;
   if (0 == strcmp(role, "rootWebArea"))
     return ax::mojom::Role::kRootWebArea;
-  if (0 == strcmp(role, "rowHeader"))
-    return ax::mojom::Role::kRowHeader;
   if (0 == strcmp(role, "row"))
     return ax::mojom::Role::kRow;
+  if (0 == strcmp(role, "rowGroup"))
+    return ax::mojom::Role::kRowGroup;
+  if (0 == strcmp(role, "rowHeader"))
+    return ax::mojom::Role::kRowHeader;
   if (0 == strcmp(role, "ruby"))
     return ax::mojom::Role::kRuby;
-  if (0 == strcmp(role, "svgRoot"))
-    return ax::mojom::Role::kSvgRoot;
+  if (0 == strcmp(role, "rubyAnnotation"))
+    return ax::mojom::Role::kRubyAnnotation;
+  if (0 == strcmp(role, "section"))
+    return ax::mojom::Role::kSection;
   if (0 == strcmp(role, "scrollBar"))
     return ax::mojom::Role::kScrollBar;
   if (0 == strcmp(role, "scrollView"))
@@ -929,8 +971,14 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kStaticText;
   if (0 == strcmp(role, "status"))
     return ax::mojom::Role::kStatus;
+  if (0 == strcmp(role, "suggestion"))
+    return ax::mojom::Role::kSuggestion;
+  if (0 == strcmp(role, "svgRoot"))
+    return ax::mojom::Role::kSvgRoot;
   if (0 == strcmp(role, "switch"))
     return ax::mojom::Role::kSwitch;
+  if (0 == strcmp(role, "strong"))
+    return ax::mojom::Role::kStrong;
   if (0 == strcmp(role, "tabList"))
     return ax::mojom::Role::kTabList;
   if (0 == strcmp(role, "tabPanel"))
@@ -1977,65 +2025,12 @@ const char* ToString(ax::mojom::MarkerType marker_type) {
       return "spelling";
     case ax::mojom::MarkerType::kGrammar:
       return "grammar";
-    case ax::mojom::MarkerType::kSpellingGrammar:
-      return "spellingGrammar";
     case ax::mojom::MarkerType::kTextMatch:
       return "textMatch";
-    case ax::mojom::MarkerType::kSpellingTextMatch:
-      return "spellingTextMatch";
-    case ax::mojom::MarkerType::kGrammarTextMatch:
-      return "grammarTextMatch";
-    case ax::mojom::MarkerType::kSpellingGrammarTextMatch:
-      return "spellingGrammarTextMatch";
     case ax::mojom::MarkerType::kActiveSuggestion:
       return "activeSuggestion";
-    case ax::mojom::MarkerType::kSpellingActiveSuggestion:
-      return "spellingActiveSuggestion";
-    case ax::mojom::MarkerType::kGrammarActiveSuggestion:
-      return "grammarActiveSuggestion";
-    case ax::mojom::MarkerType::kSpellingGrammarActiveSuggestion:
-      return "spellingGrammarActiveSuggestion";
-    case ax::mojom::MarkerType::kTextMatchActiveSuggestion:
-      return "textMatchActiveSuggestion";
-    case ax::mojom::MarkerType::kSpellingTextMatchActiveSuggestion:
-      return "spellingTextMatchActiveSuggestion";
-    case ax::mojom::MarkerType::kGrammarTextMatchActiveSuggestion:
-      return "grammarTextMatchActiveSuggestion";
-    case ax::mojom::MarkerType::kSpellingGrammarTextMatchActiveSuggestion:
-      return "spellingGrammarTextMatchActiveSuggestion";
     case ax::mojom::MarkerType::kSuggestion:
       return "suggestion";
-    case ax::mojom::MarkerType::kSpellingSuggestion:
-      return "spellingSuggestion";
-    case ax::mojom::MarkerType::kGrammarSuggestion:
-      return "grammarSuggestion";
-    case ax::mojom::MarkerType::kSpellingGrammarSuggestion:
-      return "spellingGrammarSuggestion";
-    case ax::mojom::MarkerType::kTextMatchSuggestion:
-      return "textMatchSuggestion";
-    case ax::mojom::MarkerType::kSpellingTextMatchSuggestion:
-      return "spellingTextMatchSuggestion";
-    case ax::mojom::MarkerType::kGrammarTextMatchSuggestion:
-      return "grammarTextMatchSuggestion";
-    case ax::mojom::MarkerType::kSpellingGrammarTextMatchSuggestion:
-      return "spellingGrammarTextMatchSuggestion";
-    case ax::mojom::MarkerType::kActiveSuggestionSuggestion:
-      return "activeSuggestionSuggestion";
-    case ax::mojom::MarkerType::kSpellingActiveSuggestionSuggestion:
-      return "spellingActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::kGrammarActiveSuggestionSuggestion:
-      return "grammarActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::kSpellingGrammarActiveSuggestionSuggestion:
-      return "spellingGrammarActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::kTextMatchActiveSuggestionSuggestion:
-      return "textMatchActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::kSpellingTextMatchActiveSuggestionSuggestion:
-      return "spellingTextMatchActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::kGrammarTextMatchActiveSuggestionSuggestion:
-      return "grammarTextMatchActiveSuggestionSuggestion";
-    case ax::mojom::MarkerType::
-        kSpellingGrammarTextMatchActiveSuggestionSuggestion:
-      return "spellingGrammarTextMatchActiveSuggestionSuggestion";
   }
 
   return "";
@@ -2048,66 +2043,12 @@ ax::mojom::MarkerType ParseMarkerType(const char* marker_type) {
     return ax::mojom::MarkerType::kSpelling;
   if (0 == strcmp(marker_type, "grammar"))
     return ax::mojom::MarkerType::kGrammar;
-  if (0 == strcmp(marker_type, "spellingGrammar"))
-    return ax::mojom::MarkerType::kSpellingGrammar;
   if (0 == strcmp(marker_type, "textMatch"))
     return ax::mojom::MarkerType::kTextMatch;
-  if (0 == strcmp(marker_type, "spellingTextMatch"))
-    return ax::mojom::MarkerType::kSpellingTextMatch;
-  if (0 == strcmp(marker_type, "grammarTextMatch"))
-    return ax::mojom::MarkerType::kGrammarTextMatch;
-  if (0 == strcmp(marker_type, "spellingGrammarTextMatch"))
-    return ax::mojom::MarkerType::kSpellingGrammarTextMatch;
   if (0 == strcmp(marker_type, "activeSuggestion"))
     return ax::mojom::MarkerType::kActiveSuggestion;
-  if (0 == strcmp(marker_type, "spellingActiveSuggestion"))
-    return ax::mojom::MarkerType::kSpellingActiveSuggestion;
-  if (0 == strcmp(marker_type, "grammarActiveSuggestion"))
-    return ax::mojom::MarkerType::kGrammarActiveSuggestion;
-  if (0 == strcmp(marker_type, "spellingGrammarActiveSuggestion"))
-    return ax::mojom::MarkerType::kSpellingGrammarActiveSuggestion;
-  if (0 == strcmp(marker_type, "textMatchActiveSuggestion"))
-    return ax::mojom::MarkerType::kTextMatchActiveSuggestion;
-  if (0 == strcmp(marker_type, "spellingTextMatchActiveSuggestion"))
-    return ax::mojom::MarkerType::kSpellingTextMatchActiveSuggestion;
-  if (0 == strcmp(marker_type, "grammarTextMatchActiveSuggestion"))
-    return ax::mojom::MarkerType::kGrammarTextMatchActiveSuggestion;
-  if (0 == strcmp(marker_type, "spellingGrammarTextMatchActiveSuggestion"))
-    return ax::mojom::MarkerType::kSpellingGrammarTextMatchActiveSuggestion;
   if (0 == strcmp(marker_type, "suggestion"))
     return ax::mojom::MarkerType::kSuggestion;
-  if (0 == strcmp(marker_type, "spellingSuggestion"))
-    return ax::mojom::MarkerType::kSpellingSuggestion;
-  if (0 == strcmp(marker_type, "grammarSuggestion"))
-    return ax::mojom::MarkerType::kGrammarSuggestion;
-  if (0 == strcmp(marker_type, "spellingGrammarSuggestion"))
-    return ax::mojom::MarkerType::kSpellingGrammarSuggestion;
-  if (0 == strcmp(marker_type, "textMatchSuggestion"))
-    return ax::mojom::MarkerType::kTextMatchSuggestion;
-  if (0 == strcmp(marker_type, "spellingTextMatchSuggestion"))
-    return ax::mojom::MarkerType::kSpellingTextMatchSuggestion;
-  if (0 == strcmp(marker_type, "grammarTextMatchSuggestion"))
-    return ax::mojom::MarkerType::kGrammarTextMatchSuggestion;
-  if (0 == strcmp(marker_type, "spellingGrammarTextMatchSuggestion"))
-    return ax::mojom::MarkerType::kSpellingGrammarTextMatchSuggestion;
-  if (0 == strcmp(marker_type, "activeSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "spellingActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kSpellingActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "grammarActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kGrammarActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "spellingGrammarActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kSpellingGrammarActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "textMatchActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kTextMatchActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "spellingTextMatchActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kSpellingTextMatchActiveSuggestionSuggestion;
-  if (0 == strcmp(marker_type, "grammarTextMatchActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::kGrammarTextMatchActiveSuggestionSuggestion;
-  if (0 ==
-      strcmp(marker_type, "spellingGrammarTextMatchActiveSuggestionSuggestion"))
-    return ax::mojom::MarkerType::
-        kSpellingGrammarTextMatchActiveSuggestionSuggestion;
   return ax::mojom::MarkerType::kNone;
 }
 
@@ -2491,6 +2432,8 @@ const char* ToString(ax::mojom::DescriptionFrom description_from) {
       return "contents";
     case ax::mojom::DescriptionFrom::kRelatedElement:
       return "relatedElement";
+    case ax::mojom::DescriptionFrom::kTitle:
+      return "title";
   }
 
   return "";
@@ -2507,6 +2450,8 @@ ax::mojom::DescriptionFrom ParseDescriptionFrom(const char* description_from) {
     return ax::mojom::DescriptionFrom::kContents;
   if (0 == strcmp(description_from, "relatedElement"))
     return ax::mojom::DescriptionFrom::kRelatedElement;
+  if (0 == strcmp(description_from, "title"))
+    return ax::mojom::DescriptionFrom::kTitle;
   return ax::mojom::DescriptionFrom::kNone;
 }
 

@@ -11,8 +11,8 @@ static_library("ukm") {
   sources = [
     "app_source_url_recorder.cc",
     "app_source_url_recorder.h",
-    "unsent_log_store_metrics_impl.cc",
-    "unsent_log_store_metrics_impl.h",
+    "scheme_constants.cc",
+    "scheme_constants.h",
     "ukm_pref_names.cc",
     "ukm_pref_names.h",
     "ukm_recorder_impl.cc",
@@ -23,6 +23,8 @@ static_library("ukm") {
     "ukm_rotation_scheduler.h",
     "ukm_service.cc",
     "ukm_service.h",
+    "unsent_log_store_metrics_impl.cc",
+    "unsent_log_store_metrics_impl.h",
   ]
 
   public_deps = [
@@ -47,8 +49,8 @@ static_library("observers") {
   sources = [
     "observers/history_delete_observer.cc",
     "observers/history_delete_observer.h",
-    "observers/sync_disable_observer.cc",
-    "observers/sync_disable_observer.h",
+    "observers/ukm_consent_state_observer.cc",
+    "observers/ukm_consent_state_observer.h",
   ]
 
   deps = [
@@ -86,7 +88,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "app_source_url_recorder_test.cc",
-    "observers/sync_disable_observer_unittest.cc",
+    "observers/ukm_consent_state_observer_unittest.cc",
     "ukm_recorder_impl_unittest.cc",
     "ukm_service_unittest.cc",
   ]
@@ -102,7 +104,6 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/sync:test_support",
     "//components/sync_preferences:test_support",
-    "//components/unified_consent:test_support",
     "//components/variations",
     "//net:test_support",
     "//services/metrics/public/cpp:ukm_builders",

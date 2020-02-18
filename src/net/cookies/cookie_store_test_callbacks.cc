@@ -5,7 +5,6 @@
 #include "net/cookies/cookie_store_test_callbacks.h"
 
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -77,6 +76,23 @@ GetAllCookiesCallback::~GetAllCookiesCallback() = default;
 
 void GetAllCookiesCallback::Run(const CookieList& cookies) {
   cookies_ = cookies;
+  CallbackEpilogue();
+}
+
+GetAllCookiesWithAccessSemanticsCallback::
+    GetAllCookiesWithAccessSemanticsCallback() = default;
+GetAllCookiesWithAccessSemanticsCallback::
+    GetAllCookiesWithAccessSemanticsCallback(base::Thread* run_in_thread)
+    : CookieCallback(run_in_thread) {}
+
+GetAllCookiesWithAccessSemanticsCallback::
+    ~GetAllCookiesWithAccessSemanticsCallback() = default;
+
+void GetAllCookiesWithAccessSemanticsCallback::Run(
+    const CookieList& cookies,
+    const std::vector<CookieAccessSemantics>& access_semantics_list) {
+  cookies_ = cookies;
+  access_semantics_list_ = access_semantics_list;
   CallbackEpilogue();
 }
 

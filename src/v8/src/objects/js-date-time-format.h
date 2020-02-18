@@ -12,6 +12,7 @@
 #include <set>
 #include <string>
 
+#include "src/base/bit-field.h"
 #include "src/execution/isolate.h"
 #include "src/objects/intl-objects.h"
 #include "src/objects/managed.h"
@@ -34,7 +35,7 @@ class JSDateTimeFormat : public JSObject {
  public:
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSDateTimeFormat> New(
       Isolate* isolate, Handle<Map> map, Handle<Object> locales,
-      Handle<Object> options);
+      Handle<Object> options, const char* service);
 
   V8_WARN_UNUSED_RESULT static MaybeHandle<JSObject> ResolvedOptions(
       Isolate* isolate, Handle<JSDateTimeFormat> date_time_format);
@@ -82,7 +83,8 @@ class JSDateTimeFormat : public JSObject {
 
   V8_WARN_UNUSED_RESULT static MaybeHandle<String> ToLocaleDateTime(
       Isolate* isolate, Handle<Object> date, Handle<Object> locales,
-      Handle<Object> options, RequiredOption required, DefaultsOption defaults);
+      Handle<Object> options, RequiredOption required, DefaultsOption defaults,
+      const char* method);
 
   V8_EXPORT_PRIVATE static const std::set<std::string>& GetAvailableLocales();
 
@@ -94,7 +96,7 @@ class JSDateTimeFormat : public JSObject {
 
 // Layout description.
   DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
-                                TORQUE_GENERATED_JSDATE_TIME_FORMAT_FIELDS)
+                                TORQUE_GENERATED_JS_DATE_TIME_FORMAT_FIELDS)
 
   inline void set_hour_cycle(Intl::HourCycle hour_cycle);
   inline Intl::HourCycle hour_cycle() const;
@@ -132,6 +134,7 @@ class JSDateTimeFormat : public JSObject {
   STATIC_ASSERT(DateTimeStyle::kMedium <= TimeStyleBits::kMax);
   STATIC_ASSERT(DateTimeStyle::kShort <= TimeStyleBits::kMax);
 
+  DECL_ACCESSORS(locale, String)
   DECL_ACCESSORS(icu_locale, Managed<icu::Locale>)
   DECL_ACCESSORS(icu_simple_date_format, Managed<icu::SimpleDateFormat>)
   DECL_ACCESSORS(icu_date_interval_format, Managed<icu::DateIntervalFormat>)

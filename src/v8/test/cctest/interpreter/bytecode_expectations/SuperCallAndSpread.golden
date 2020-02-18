@@ -21,10 +21,10 @@ frame size: 5
 parameter count: 1
 bytecode array length: 19
 bytecodes: [
+  /*   93 E> */ B(StackCheck),
                 B(CreateRestParameter),
                 B(Star), R(2),
                 B(Mov), R(closure), R(1),
-  /*   93 E> */ B(StackCheck),
   /*   93 S> */ B(Ldar), R(1),
                 B(GetSuperConstructor), R(4),
                 B(Ldar), R(0),
@@ -53,10 +53,10 @@ frame size: 9
 parameter count: 1
 bytecode array length: 40
 bytecodes: [
+  /*  128 E> */ B(StackCheck),
                 B(CreateRestParameter),
                 B(Star), R(3),
                 B(Mov), R(closure), R(1),
-  /*  128 E> */ B(StackCheck),
                 B(Mov), R(3), R(2),
   /*  140 S> */ B(Ldar), R(closure),
                 B(GetSuperConstructor), R(5),
@@ -91,14 +91,14 @@ snippet: "
     test = new B(1, 2, 3).constructor;
   })();
 "
-frame size: 12
+frame size: 11
 parameter count: 1
-bytecode array length: 124
+bytecode array length: 112
 bytecodes: [
+  /*  128 E> */ B(StackCheck),
                 B(CreateRestParameter),
                 B(Star), R(3),
                 B(Mov), R(closure), R(1),
-  /*  128 E> */ B(StackCheck),
                 B(Mov), R(3), R(2),
   /*  140 S> */ B(Ldar), R(closure),
                 B(GetSuperConstructor), R(5),
@@ -111,15 +111,11 @@ bytecodes: [
                 B(Ldar), R(6),
                 B(Inc), U8(3),
   /*  152 S> */ B(Star), R(6),
-                B(GetIterator), R(3), U8(4),
-                B(Star), R(11),
-                B(CallProperty0), R(11), R(3), U8(6),
-                B(Mov), R(1), R(4),
-                B(JumpIfJSReceiver), U8(7),
-                B(CallRuntime), U16(Runtime::kThrowSymbolIteratorInvalid), R(0), U8(0),
+                B(GetIterator), R(3), U8(4), U8(6),
                 B(Star), R(9),
                 B(LdaNamedProperty), R(9), U8(0), U8(8),
                 B(Star), R(8),
+                B(Mov), R(1), R(4),
                 B(CallProperty0), R(8), R(9), U8(14),
                 B(Star), R(10),
                 B(JumpIfJSReceiver), U8(7),

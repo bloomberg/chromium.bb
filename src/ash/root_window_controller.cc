@@ -39,7 +39,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shelf/shelf_window_targeter.h"
 #include "ash/shell.h"
-#include "ash/shell_state.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_background_view.h"
@@ -57,7 +56,11 @@
 #include "ash/wm/lock_action_handler_layout_manager.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/overlay_layout_manager.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/root_window_layout_manager.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
@@ -72,6 +75,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -106,8 +110,7 @@ bool IsInShelfContainer(aura::Window* container) {
   if (!container)
     return false;
   int id = container->id();
-  if (id == ash::kShellWindowId_StatusContainer ||
-      id == ash::kShellWindowId_ShelfControlContainer ||
+  if (id == ash::kShellWindowId_ShelfControlContainer ||
       id == ash::kShellWindowId_ShelfContainer ||
       id == ash::kShellWindowId_ShelfBubbleContainer) {
     return true;
@@ -347,8 +350,8 @@ class RootWindowTargeter : public aura::WindowTargeter {
 
   gfx::Point FitPointToBounds(const gfx::Point p, const gfx::Rect& bounds) {
     return gfx::Point(
-        std::min(std::max(bounds.x(), p.x()), bounds.right() - 1),
-        std::min(std::max(bounds.y(), p.y()), bounds.bottom() - 1));
+        base::ClampToRange(p.x(), bounds.x(), bounds.right() - 1),
+        base::ClampToRange(p.y(), bounds.y(), bounds.bottom() - 1));
   }
 
   ui::EventType last_mouse_event_type_ = ui::ET_UNKNOWN;
@@ -420,14 +423,18 @@ RootWindowController::~RootWindowController() {
                                             this));
 }
 
-void RootWindowController::CreateForPrimaryDisplay(AshWindowTreeHost* host) {
+RootWindowController* RootWindowController::CreateForPrimaryDisplay(
+    AshWindowTreeHost* host) {
   RootWindowController* controller = new RootWindowController(host, nullptr);
   controller->Init(RootWindowType::PRIMARY);
+  return controller;
 }
 
-void RootWindowController::CreateForSecondaryDisplay(AshWindowTreeHost* host) {
+RootWindowController* RootWindowController::CreateForSecondaryDisplay(
+    AshWindowTreeHost* host) {
   RootWindowController* controller = new RootWindowController(host, nullptr);
   controller->Init(RootWindowType::SECONDARY);
+  return controller;
 }
 
 // static
@@ -574,9 +581,6 @@ void RootWindowController::Shutdown() {
       std::make_unique<aura::NullWindowTargeter>());
 
   touch_exploration_manager_.reset();
-
-  ResetRootForNewWindowsIfNecessary();
-
   wallpaper_widget_controller_.reset();
 
   CloseChildWindows();
@@ -614,6 +618,10 @@ void RootWindowController::CloseChildWindows() {
   // Notify the keyboard controller before closing child windows and shutting
   // down associated layout managers.
   Shell::Get()->keyboard_controller()->OnRootWindowClosing(root);
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  if (overview_controller && overview_controller->InOverviewSession())
+    overview_controller->overview_session()->OnRootWindowClosing(root);
 
   shelf_->ShutdownShelfWidget();
 
@@ -657,11 +665,13 @@ void RootWindowController::CloseChildWindows() {
 }
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
-  // Suspend unnecessary updates of the shelf visibility.
-  shelf_->SetSuspendVisibilityUpdate(true);
+  // Suspend unnecessary updates of the shelf visibility indefinitely since it
+  // is going away.
+  if (GetShelfLayoutManager())
+    GetShelfLayoutManager()->SuspendVisibilityUpdateForShutdown();
 
-  // Clear the workspace controller to avoid a lot of unnessary operations when
-  // window are removed.
+  // Clear the workspace controller to avoid a lot of unnecessary operations
+  // when window are removed.
   // TODO(afakhry): Should we also clear the WorkspaceLayoutManagers of the pip,
   // always-on-top, and other containers?
   aura::Window* root = GetRootWindow();
@@ -779,6 +789,15 @@ RootWindowController::RootWindowController(
 
 void RootWindowController::Init(RootWindowType root_window_type) {
   aura::Window* root_window = GetRootWindow();
+  // If the |ash::features::kMultiDisplayOverviewAndSplitView| feature flag is
+  // enabled, create |split_view_controller_| for every display. Otherwise,
+  // create |split_view_controller_| for the primary display only.
+  display::Screen* screen = display::Screen::GetScreen();
+  if (AreMultiDisplayOverviewAndSplitViewEnabled() ||
+      screen->GetDisplayNearestWindow(root_window).id() ==
+          screen->GetPrimaryDisplay().id()) {
+    split_view_controller_ = std::make_unique<SplitViewController>(root_window);
+  }
   Shell* shell = Shell::Get();
   shell->InitRootWindow(root_window);
   auto old_targeter =
@@ -876,16 +895,15 @@ void RootWindowController::InitLayoutManagers() {
   // Make it easier to resize windows that partially overlap the shelf. Must
   // occur after the ShelfLayoutManager is constructed by ShelfWidget.
   aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
-  shelf_container->SetEventTargeter(
-      std::make_unique<ShelfWindowTargeter>(shelf_container, shelf_.get()));
+  shelf_container->SetEventTargeter(std::make_unique<ShelfWindowTargeter>(
+      shelf_container, shelf_.get(),
+      true /*extend_touch_area_for_auto_hidden_shelf*/));
   aura::Window* shelf_control_container =
       GetContainer(kShellWindowId_ShelfControlContainer);
   shelf_control_container->SetEventTargeter(
-      std::make_unique<ShelfWindowTargeter>(shelf_control_container,
-                                            shelf_.get()));
-  aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
-  status_container->SetEventTargeter(
-      std::make_unique<ShelfWindowTargeter>(status_container, shelf_.get()));
+      std::make_unique<ShelfWindowTargeter>(
+          shelf_control_container, shelf_.get(),
+          false /*extend_touch_area_for_auto_hidden_shelf*/));
 }
 
 void RootWindowController::CreateContainers() {
@@ -1030,11 +1048,11 @@ void RootWindowController::CreateContainers() {
   lock_modal_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   window_util::SetChildrenUseExtendedHitRegionForWindow(lock_modal_container);
 
-  aura::Window* status_container =
-      CreateContainer(kShellWindowId_StatusContainer, "StatusContainer",
-                      lock_screen_related_containers);
-  status_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
-  status_container->SetProperty(kLockedToRootKey, true);
+  aura::Window* overview_focus_container =
+      CreateContainer(kShellWindowId_OverviewFocusContainer,
+                      "OverviewFocusContainer", lock_screen_related_containers);
+  overview_focus_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
+  overview_focus_container->SetProperty(kLockedToRootKey, true);
 
   aura::Window* shelf_control_container =
       CreateContainer(kShellWindowId_ShelfControlContainer,
@@ -1147,21 +1165,6 @@ void RootWindowController::CreateSystemWallpaper(
     color = kChromeOsBootColor;
   system_wallpaper_.reset(
       new SystemWallpaperController(GetRootWindow(), color));
-}
-
-void RootWindowController::ResetRootForNewWindowsIfNecessary() {
-  // Change the target root window before closing child windows. If any child
-  // being removed triggers a relayout of the shelf it will try to build a
-  // window list adding windows from the target root window's containers which
-  // may have already gone away.
-  aura::Window* root = GetRootWindow();
-  if (Shell::GetRootWindowForNewWindows() == root) {
-    // The root window for new windows is being destroyed. Switch to the primary
-    // root window if possible.
-    aura::Window* primary_root = Shell::GetPrimaryRootWindow();
-    Shell::Get()->shell_state()->SetRootWindowForNewWindows(
-        primary_root == root ? nullptr : primary_root);
-  }
 }
 
 AccessibilityPanelLayoutManager*

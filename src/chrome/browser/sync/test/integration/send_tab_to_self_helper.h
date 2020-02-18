@@ -33,8 +33,7 @@ class SendTabToSelfUrlChecker
   ~SendTabToSelfUrlChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
@@ -65,8 +64,7 @@ class SendTabToSelfUrlOpenedChecker
   ~SendTabToSelfUrlOpenedChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
@@ -100,8 +98,7 @@ class SendTabToSelfModelEqualityChecker
   ~SendTabToSelfModelEqualityChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
@@ -130,8 +127,7 @@ class SendTabToSelfActiveChecker
   ~SendTabToSelfActiveChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;
@@ -156,8 +152,7 @@ class SendTabToSelfMultiDeviceActiveChecker
   ~SendTabToSelfMultiDeviceActiveChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // DeviceInfoTracker::Observer implementation.
   void OnDeviceInfoChange() override;
@@ -165,6 +160,26 @@ class SendTabToSelfMultiDeviceActiveChecker
  private:
   syncer::DeviceInfoTracker* const tracker_;
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfMultiDeviceActiveChecker);
+};
+
+// Class that allows waiting until device has send_tab_to_self disabled.
+class SendTabToSelfDeviceDisabledChecker
+    : public StatusChangeChecker,
+      public syncer::DeviceInfoTracker::Observer {
+ public:
+  SendTabToSelfDeviceDisabledChecker(syncer::DeviceInfoTracker* tracker,
+                                     const std::string& device_guid);
+  ~SendTabToSelfDeviceDisabledChecker() override;
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied(std::ostream* os) override;
+
+  // DeviceInfoTracker::Observer implementation.
+  void OnDeviceInfoChange() override;
+
+ private:
+  syncer::DeviceInfoTracker* const tracker_;
+  std::string device_guid_;
 };
 
 class SendTabToSelfUrlDeletedChecker
@@ -179,8 +194,7 @@ class SendTabToSelfUrlDeletedChecker
   ~SendTabToSelfUrlDeletedChecker() override;
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;

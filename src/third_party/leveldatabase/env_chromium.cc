@@ -213,8 +213,9 @@ class ChromiumSequentialFile : public leveldb::SequentialFile {
       : filename_(fname), file_(std::move(f)), uma_logger_(uma_logger) {}
   virtual ~ChromiumSequentialFile() {}
 
+  // Note: This method is relatively hot during leveldb database
+  // compaction. Please avoid making them slower.
   Status Read(size_t n, Slice* result, char* scratch) override {
-    TRACE_EVENT1("leveldb", "ChromiumSequentialFile::Read", "size", n);
     int bytes_read = file_.ReadAtCurrentPosNoBestEffort(scratch, n);
     if (bytes_read == -1) {
       base::File::Error error = base::File::GetLastFileError();
@@ -306,12 +307,12 @@ class ChromiumEvictableRandomAccessFile : public leveldb::RandomAccessFile {
     file_cache_->Erase(cache_key_);
   }
 
+  // Note: This method is relatively hot during leveldb database
+  // compaction. Please avoid making them slower.
   Status Read(uint64_t offset,
               size_t n,
               Slice* result,
               char* scratch) const override {
-    TRACE_EVENT2("leveldb", "ChromiumEvictableRandomAccessFile::Read", "offset",
-                 offset, "size", n);
     leveldb::Cache::Handle* handle = file_cache_->Lookup(cache_key_);
     if (!handle) {
       int flags = base::File::FLAG_READ | base::File::FLAG_OPEN;
@@ -351,12 +352,12 @@ class ChromiumRandomAccessFile : public leveldb::RandomAccessFile {
 
   virtual ~ChromiumRandomAccessFile() {}
 
+  // Note: This method is relatively hot during leveldb database
+  // compaction. Please avoid making them slower.
   Status Read(uint64_t offset,
               size_t n,
               Slice* result,
               char* scratch) const override {
-    TRACE_EVENT2("leveldb", "ChromiumRandomAccessFile::Read", "offset", offset,
-                 "size", n);
     return ReadFromFileToScratch(offset, n, result, scratch, &file_, filepath_,
                                  uma_logger_);
   }
@@ -1301,8 +1302,14 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
   TrackedDBImpl(DBTracker* tracker,
                 const std::string name,
                 leveldb::DB* db,
-                const leveldb::Cache* block_cache)
-      : tracker_(tracker), name_(name), db_(db) {
+                const leveldb::Cache* block_cache,
+                DatabaseErrorReportingCallback on_get_error,
+                DatabaseErrorReportingCallback on_write_error)
+      : tracker_(tracker),
+        name_(name),
+        db_(db),
+        on_get_error_(std::move(on_get_error)),
+        on_write_error_(std::move(on_write_error)) {
     if (leveldb_chrome::GetSharedWebBlockCache() ==
         leveldb_chrome::GetSharedBrowserBlockCache()) {
       shared_read_cache_use_ = SharedReadCacheUse_Unified;
@@ -1343,13 +1350,23 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
 
   leveldb::Status Write(const leveldb::WriteOptions& options,
                         leveldb::WriteBatch* updates) override {
-    return db_->Write(options, updates);
+    leveldb::Status status = db_->Write(options, updates);
+    if (LIKELY(status.ok()))
+      return status;
+    if (on_write_error_)
+      on_write_error_.Run(status);
+    return status;
   }
 
   leveldb::Status Get(const leveldb::ReadOptions& options,
                       const leveldb::Slice& key,
                       std::string* value) override {
-    return db_->Get(options, key, value);
+    leveldb::Status status = db_->Get(options, key, value);
+    if (LIKELY(status.ok() || status.IsNotFound()))
+      return status;
+    if (on_get_error_)
+      on_get_error_.Run(status);
+    return status;
   }
 
   const leveldb::Snapshot* GetSnapshot() override { return db_->GetSnapshot(); }
@@ -1383,6 +1400,8 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
   std::string name_;
   std::unique_ptr<leveldb::DB> db_;
   SharedReadCacheUse shared_read_cache_use_;
+  const DatabaseErrorReportingCallback on_get_error_;
+  const DatabaseErrorReportingCallback on_write_error_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackedDBImpl);
 };
@@ -1562,7 +1581,7 @@ bool DBTracker::IsTrackedDB(const leveldb::DB* db) const {
   return false;
 }
 
-leveldb::Status DBTracker::OpenDatabase(const leveldb::Options& options,
+leveldb::Status DBTracker::OpenDatabase(const leveldb_env::Options& options,
                                         const std::string& name,
                                         TrackedDB** dbptr) {
   leveldb::DB* db = nullptr;
@@ -1572,7 +1591,9 @@ leveldb::Status DBTracker::OpenDatabase(const leveldb::Options& options,
   CHECK((status.ok() && db) || (!status.ok() && !db));
   if (status.ok()) {
     // TrackedDBImpl ctor adds the instance to the tracker.
-    *dbptr = new TrackedDBImpl(GetInstance(), name, db, options.block_cache);
+    *dbptr = new TrackedDBImpl(GetInstance(), name, db, options.block_cache,
+                               std::move(options.on_get_error),
+                               std::move(options.on_write_error));
   }
   return status;
 }
@@ -1696,6 +1717,11 @@ base::StringPiece MakeStringPiece(const leveldb::Slice& s) {
 
 leveldb::Slice MakeSlice(const base::StringPiece& s) {
   return leveldb::Slice(s.begin(), s.size());
+}
+
+leveldb::Slice MakeSlice(base::span<const uint8_t> s) {
+  return MakeSlice(
+      base::StringPiece(reinterpret_cast<const char*>(s.data()), s.size()));
 }
 
 }  // namespace leveldb_env

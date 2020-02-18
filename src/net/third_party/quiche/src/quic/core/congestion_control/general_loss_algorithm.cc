@@ -19,10 +19,9 @@ namespace {
 // triggers when a nack has been receieved for the packet.
 static const size_t kMinLossDelayMs = 5;
 
-// Default fraction of an RTT the algorithm waits before determining a packet is
-// lost due to early retransmission by time based loss detection.
-static const int kDefaultLossDelayShift = 2;
-// Default fraction of an RTT when doing adaptive loss detection.
+// Default fraction (1/8) of an RTT when doing IETF loss detection.
+static const int kDefaultIetfLossDelayShift = 3;
+// Default fraction (1/16) of an RTT when doing adaptive loss detection.
 static const int kDefaultAdaptiveLossDelayShift = 4;
 
 }  // namespace
@@ -31,6 +30,9 @@ GeneralLossAlgorithm::GeneralLossAlgorithm() : GeneralLossAlgorithm(kNack) {}
 
 GeneralLossAlgorithm::GeneralLossAlgorithm(LossDetectionType loss_type)
     : loss_detection_timeout_(QuicTime::Zero()),
+      reordering_threshold_(kNumberOfNacksBeforeRetransmission),
+      use_adaptive_reordering_threshold_(false),
+      use_adaptive_time_threshold_(false),
       least_in_flight_(1),
       packet_number_space_(NUM_PACKET_NUMBER_SPACES) {
   SetLossDetectionType(loss_type);
@@ -38,15 +40,13 @@ GeneralLossAlgorithm::GeneralLossAlgorithm(LossDetectionType loss_type)
 
 void GeneralLossAlgorithm::SetLossDetectionType(LossDetectionType loss_type) {
   loss_detection_timeout_ = QuicTime::Zero();
-  largest_sent_on_spurious_retransmit_.Clear();
   loss_type_ = loss_type;
-  reordering_shift_ = loss_type == kAdaptiveTime
-                          ? kDefaultAdaptiveLossDelayShift
-                          : kDefaultLossDelayShift;
-  if (GetQuicReloadableFlag(quic_eighth_rtt_loss_detection) &&
-      loss_type == kTime) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_eighth_rtt_loss_detection);
-    reordering_shift_ = 3;
+  if (loss_type == kAdaptiveTime) {
+    reordering_shift_ = kDefaultAdaptiveLossDelayShift;
+  } else if (loss_type == kIetfLossDetection) {
+    reordering_shift_ = kDefaultIetfLossDelayShift;
+  } else {
+    reordering_shift_ = kDefaultLossDelayShift;
   }
   largest_previously_acked_.Clear();
 }
@@ -86,9 +86,14 @@ void GeneralLossAlgorithm::DetectLosses(
   }
   QuicTime::Delta max_rtt =
       std::max(rtt_stats.previous_srtt(), rtt_stats.latest_rtt());
-  QuicTime::Delta loss_delay =
-      std::max(QuicTime::Delta::FromMilliseconds(kMinLossDelayMs),
-               max_rtt + (max_rtt >> reordering_shift_));
+  if (loss_type_ == kIetfLossDetection) {
+    max_rtt = std::max(QuicTime::Delta::FromMilliseconds(1), max_rtt);
+  }
+  QuicTime::Delta loss_delay = max_rtt + (max_rtt >> reordering_shift_);
+  if (loss_type_ != kIetfLossDetection) {
+    loss_delay = std::max(QuicTime::Delta::FromMilliseconds(kMinLossDelayMs),
+                          loss_delay);
+  }
   QuicPacketNumber packet_number = unacked_packets.GetLeastUnacked();
   auto it = unacked_packets.begin();
   if (least_in_flight_.IsInitialized() && least_in_flight_ >= packet_number) {
@@ -116,10 +121,9 @@ void GeneralLossAlgorithm::DetectLosses(
       continue;
     }
 
-    if (loss_type_ == kNack) {
-      // FACK based loss detection.
-      if (largest_newly_acked - packet_number >=
-          kNumberOfNacksBeforeRetransmission) {
+    if (loss_type_ == kNack || loss_type_ == kIetfLossDetection) {
+      // Packet threshold loss detection.
+      if (largest_newly_acked - packet_number >= reordering_threshold_) {
         packets_lost->push_back(LostPacket(packet_number, it->bytes_sent));
         continue;
       }
@@ -136,17 +140,14 @@ void GeneralLossAlgorithm::DetectLosses(
       }
     }
 
-    // Only early retransmit(RFC5827) when the last packet gets acked and
-    // there are retransmittable packets in flight.
-    // This also implements a timer-protected variant of FACK.
-    QuicPacketNumber largest_sent_retransmittable_packet;
-    // Use largest_sent_retransmittable_packet of corresponding packet number
-    // space for timer based loss detection.
-    largest_sent_retransmittable_packet =
+    // Time threshold loss detection. Also implements early retransmit(RFC5827)
+    // when time threshold is not used and the last packet gets acked.
+    QuicPacketNumber largest_sent_retransmittable_packet =
         unacked_packets.GetLargestSentRetransmittableOfPacketNumberSpace(
             packet_number_space_);
     if (largest_sent_retransmittable_packet <= largest_newly_acked ||
-        loss_type_ == kTime || loss_type_ == kAdaptiveTime) {
+        loss_type_ == kTime || loss_type_ == kAdaptiveTime ||
+        loss_type_ == kIetfLossDetection) {
       QuicTime when_lost = it->sent_time + loss_delay;
       if (time < when_lost) {
         loss_detection_timeout_ = when_lost;
@@ -161,8 +162,10 @@ void GeneralLossAlgorithm::DetectLosses(
     }
 
     // NACK-based loss detection allows for a max reordering window of 1 RTT.
-    if (it->sent_time + rtt_stats.smoothed_rtt() <
-        unacked_packets.GetTransmissionInfo(largest_newly_acked).sent_time) {
+    if (loss_type_ != kIetfLossDetection &&
+        it->sent_time + rtt_stats.smoothed_rtt() <
+            unacked_packets.GetTransmissionInfo(largest_newly_acked)
+                .sent_time) {
       packets_lost->push_back(LostPacket(packet_number, it->bytes_sent));
       continue;
     }
@@ -182,42 +185,34 @@ QuicTime GeneralLossAlgorithm::GetLossTimeout() const {
   return loss_detection_timeout_;
 }
 
-void GeneralLossAlgorithm::SpuriousRetransmitDetected(
+void GeneralLossAlgorithm::SpuriousLossDetected(
     const QuicUnackedPacketMap& unacked_packets,
-    QuicTime time,
     const RttStats& rtt_stats,
-    QuicPacketNumber spurious_retransmission) {
-  if (loss_type_ != kAdaptiveTime || reordering_shift_ == 0) {
-    return;
-  }
-  // Calculate the extra time needed so this wouldn't have been declared lost.
-  // Extra time needed is based on how long it's been since the spurious
-  // retransmission was sent, because the SRTT and latest RTT may have changed.
-  QuicTime::Delta extra_time_needed =
-      time -
-      unacked_packets.GetTransmissionInfo(spurious_retransmission).sent_time;
-  // Increase the reordering fraction until enough time would be allowed.
-  QuicTime::Delta max_rtt =
-      std::max(rtt_stats.previous_srtt(), rtt_stats.latest_rtt());
-  if (GetQuicReloadableFlag(quic_fix_adaptive_time_loss)) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_fix_adaptive_time_loss);
-    while ((max_rtt >> reordering_shift_) <= extra_time_needed &&
+    QuicTime ack_receive_time,
+    QuicPacketNumber packet_number,
+    QuicPacketNumber previous_largest_acked) {
+  if ((loss_type_ == kAdaptiveTime || use_adaptive_time_threshold_) &&
+      reordering_shift_ > 0) {
+    // Increase reordering fraction such that the packet would not have been
+    // declared lost.
+    QuicTime::Delta time_needed =
+        ack_receive_time -
+        unacked_packets.GetTransmissionInfo(packet_number).sent_time;
+    QuicTime::Delta max_rtt =
+        std::max(rtt_stats.previous_srtt(), rtt_stats.latest_rtt());
+    while (max_rtt + (max_rtt >> reordering_shift_) < time_needed &&
            reordering_shift_ > 0) {
       --reordering_shift_;
     }
-    return;
   }
 
-  if (largest_sent_on_spurious_retransmit_.IsInitialized() &&
-      spurious_retransmission <= largest_sent_on_spurious_retransmit_) {
-    return;
+  if (use_adaptive_reordering_threshold_) {
+    DCHECK_LT(packet_number, previous_largest_acked);
+    // Increase reordering_threshold_ such that packet_number would not have
+    // been declared lost.
+    reordering_threshold_ = std::max(
+        reordering_threshold_, previous_largest_acked - packet_number + 1);
   }
-  largest_sent_on_spurious_retransmit_ = unacked_packets.largest_sent_packet();
-  QuicTime::Delta proposed_extra_time(QuicTime::Delta::Zero());
-  do {
-    proposed_extra_time = max_rtt >> reordering_shift_;
-    --reordering_shift_;
-  } while (proposed_extra_time < extra_time_needed && reordering_shift_ > 0);
 }
 
 void GeneralLossAlgorithm::SetPacketNumberSpace(

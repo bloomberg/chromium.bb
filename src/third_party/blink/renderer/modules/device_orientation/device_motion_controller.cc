@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_controller.h"
 
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -61,9 +62,6 @@ void DeviceMotionController::DidAddEventListener(
   UseCounter::Count(GetDocument(), WebFeature::kDeviceMotionSecureOrigin);
 
   if (!has_event_listener_) {
-    Platform::Current()->RecordRapporURL("DeviceSensors.DeviceMotion",
-                                         WebURL(GetDocument().Url()));
-
     if (!IsSameSecurityOriginAsMainFrame()) {
       Platform::Current()->RecordRapporURL(
           "DeviceSensors.DeviceMotionCrossOrigin", WebURL(GetDocument().Url()));

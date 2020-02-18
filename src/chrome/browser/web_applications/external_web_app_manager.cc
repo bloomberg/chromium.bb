@@ -171,11 +171,11 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
       continue;
     }
     std::string launch_container_str = value->GetString();
-    auto launch_container = LaunchContainer::kTab;
+    auto user_display_mode = DisplayMode::kBrowser;
     if (launch_container_str == kLaunchContainerTab) {
-      launch_container = LaunchContainer::kTab;
+      user_display_mode = DisplayMode::kBrowser;
     } else if (launch_container_str == kLaunchContainerWindow) {
-      launch_container = LaunchContainer::kWindow;
+      user_display_mode = DisplayMode::kStandalone;
     } else {
       LOG(ERROR) << file.value() << " had an invalid " << kLaunchContainer;
       continue;
@@ -189,7 +189,7 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
                    << kUninstallAndReplace;
         continue;
       }
-      const std::vector<base::Value>& uninstall_and_replace_values =
+      base::Value::ConstListView uninstall_and_replace_values =
           value->GetList();
 
       bool had_error = false;
@@ -207,7 +207,7 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
     }
 
     ExternalInstallOptions install_options(
-        std::move(app_url), launch_container,
+        std::move(app_url), user_display_mode,
         ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = create_shortcuts;
     install_options.add_to_desktop = create_shortcuts;

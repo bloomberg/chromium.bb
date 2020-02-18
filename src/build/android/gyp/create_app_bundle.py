@@ -25,11 +25,11 @@ import bundletool
 # Location of language-based assets in bundle modules.
 _LOCALES_SUBDIR = 'assets/locales/'
 
-# The fallback language should always have its .pak files included in
+# The fallback locale should always have its .pak file included in
 # the base apk, i.e. not use language-based asset targetting. This ensures
 # that Chrome won't crash on startup if its bundle is installed on a device
 # with an unsupported system locale (e.g. fur-rIT).
-_FALLBACK_LANGUAGE = 'en'
+_FALLBACK_LOCALE = 'en-US'
 
 # List of split dimensions recognized by this tool.
 _ALL_SPLIT_DIMENSIONS = [ 'ABI', 'SCREEN_DENSITY', 'LANGUAGE' ]
@@ -190,6 +190,9 @@ def _GenerateBundleConfigJson(uncompressed_assets, compress_shared_libraries,
   # Whether other .so files are compressed is controlled by
   # "uncompressNativeLibraries".
   uncompressed_globs = ['lib/*/crazy.*']
+  # Locale-specific pak files stored in bundle splits need not be compressed.
+  uncompressed_globs.extend(
+      ['assets/locales#lang_*/*.pak', 'assets/fallback-locales/*.pak'])
   uncompressed_globs.extend('assets/' + x for x in uncompressed_assets)
   # NOTE: Use '**' instead of '*' to work through directories!
   uncompressed_globs.extend('**.' + ext for ext in _UNCOMPRESSED_FILE_EXTS)
@@ -242,8 +245,8 @@ def _RewriteLanguageAssetPath(src_path):
   else:
     android_language = android_locale
 
-  if android_language == _FALLBACK_LANGUAGE:
-    # Fallback language .pak files must be placed in a different directory
+  if locale == _FALLBACK_LOCALE:
+    # Fallback locale .pak files must be placed in a different directory
     # to ensure they are always stored in the base module.
     result_path = 'assets/fallback-locales/%s.pak' % locale
   else:
@@ -411,12 +414,17 @@ def main(args):
     with open(tmp_bundle_config, 'w') as f:
       f.write(bundle_config)
 
-    cmd_args = ['java', '-jar', bundletool.BUNDLETOOL_JAR_PATH, 'build-bundle']
-    cmd_args += ['--modules=%s' % ','.join(module_zips)]
-    cmd_args += ['--output=%s' % tmp_unsigned_bundle]
-    cmd_args += ['--config=%s' % tmp_bundle_config]
+    cmd_args = [
+        build_utils.JAVA_PATH, '-jar', bundletool.BUNDLETOOL_JAR_PATH,
+        'build-bundle', '--modules=' + ','.join(module_zips),
+        '--output=' + tmp_unsigned_bundle, '--config=' + tmp_bundle_config
+    ]
 
-    build_utils.CheckOutput(cmd_args, print_stdout=True, print_stderr=True)
+    build_utils.CheckOutput(
+        cmd_args,
+        print_stdout=True,
+        print_stderr=True,
+        stderr_filter=build_utils.FilterReflectiveAccessJavaWarnings)
 
     if options.keystore_path:
       # NOTE: As stated by the public documentation, apksigner cannot be used

@@ -9,11 +9,12 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/page_transition_types.h"
-#include "weblayer/browser/browser_controller_impl.h"
+#include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation_observer.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
+#include "base/trace_event/trace_event.h"
 #include "weblayer/browser/java/jni/NavigationControllerImpl_jni.h"
 #endif
 
@@ -23,10 +24,8 @@ using base::android::AttachCurrentThread;
 
 namespace weblayer {
 
-NavigationControllerImpl::NavigationControllerImpl(
-    BrowserControllerImpl* browser_controller)
-    : WebContentsObserver(browser_controller->web_contents()),
-      browser_controller_(browser_controller) {}
+NavigationControllerImpl::NavigationControllerImpl(TabImpl* tab)
+    : WebContentsObserver(tab->web_contents()) {}
 
 NavigationControllerImpl::~NavigationControllerImpl() = default;
 
@@ -67,44 +66,46 @@ void NavigationControllerImpl::Navigate(const GURL& url) {
   content::NavigationController::LoadURLParams params(url);
   params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  browser_controller_->web_contents()->GetController().LoadURLWithParams(
-      params);
+  web_contents()->GetController().LoadURLWithParams(params);
   // So that if the user had entered the UI in a bar it stops flashing the
   // caret.
-  browser_controller_->web_contents()->Focus();
+  web_contents()->Focus();
 }
 
 void NavigationControllerImpl::GoBack() {
-  browser_controller_->web_contents()->GetController().GoBack();
+  web_contents()->GetController().GoBack();
 }
 
 void NavigationControllerImpl::GoForward() {
-  browser_controller_->web_contents()->GetController().GoForward();
+  web_contents()->GetController().GoForward();
+}
+
+bool NavigationControllerImpl::CanGoBack() {
+  return web_contents()->GetController().CanGoBack();
+}
+
+bool NavigationControllerImpl::CanGoForward() {
+  return web_contents()->GetController().CanGoForward();
 }
 
 void NavigationControllerImpl::Reload() {
-  browser_controller_->web_contents()->GetController().Reload(
-      content::ReloadType::NORMAL, false);
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
 }
 
 void NavigationControllerImpl::Stop() {
-  browser_controller_->web_contents()->Stop();
+  web_contents()->Stop();
 }
 
 int NavigationControllerImpl::GetNavigationListSize() {
-  return browser_controller_->web_contents()->GetController().GetEntryCount();
+  return web_contents()->GetController().GetEntryCount();
 }
 
 int NavigationControllerImpl::GetNavigationListCurrentIndex() {
-  return browser_controller_->web_contents()
-      ->GetController()
-      .GetCurrentEntryIndex();
+  return web_contents()->GetController().GetCurrentEntryIndex();
 }
 
 GURL NavigationControllerImpl::GetNavigationEntryDisplayURL(int index) {
-  auto* entry =
-      browser_controller_->web_contents()->GetController().GetEntryAtIndex(
-          index);
+  auto* entry = web_contents()->GetController().GetEntryAtIndex(index);
   if (!entry)
     return GURL();
   return entry->GetVirtualURL();
@@ -121,8 +122,13 @@ void NavigationControllerImpl::DidStartNavigation(
 #if defined(OS_ANDROID)
   if (java_controller_) {
     JNIEnv* env = AttachCurrentThread();
-    Java_NavigationControllerImpl_createNavigation(
-        env, java_controller_, reinterpret_cast<jlong>(navigation));
+    {
+      TRACE_EVENT0("weblayer",
+                   "Java_NavigationControllerImpl_createNavigation");
+      Java_NavigationControllerImpl_createNavigation(
+          env, java_controller_, reinterpret_cast<jlong>(navigation));
+    }
+    TRACE_EVENT0("weblayer", "Java_NavigationControllerImpl_navigationStarted");
     Java_NavigationControllerImpl_navigationStarted(
         env, java_controller_, navigation->java_navigation());
   }
@@ -140,6 +146,8 @@ void NavigationControllerImpl::DidRedirectNavigation(
   auto* navigation = navigation_map_[navigation_handle].get();
 #if defined(OS_ANDROID)
   if (java_controller_) {
+    TRACE_EVENT0("weblayer",
+                 "Java_NavigationControllerImpl_navigationRedirected");
     Java_NavigationControllerImpl_navigationRedirected(
         AttachCurrentThread(), java_controller_, navigation->java_navigation());
   }
@@ -157,12 +165,14 @@ void NavigationControllerImpl::ReadyToCommitNavigation(
   auto* navigation = navigation_map_[navigation_handle].get();
 #if defined(OS_ANDROID)
   if (java_controller_) {
-    Java_NavigationControllerImpl_navigationCommitted(
+    TRACE_EVENT0("weblayer",
+                 "Java_NavigationControllerImpl_readyToCommitNavigation");
+    Java_NavigationControllerImpl_readyToCommitNavigation(
         AttachCurrentThread(), java_controller_, navigation->java_navigation());
   }
 #endif
   for (auto& observer : observers_)
-    observer.NavigationCommitted(navigation);
+    observer.ReadyToCommitNavigation(navigation);
 }
 
 void NavigationControllerImpl::DidFinishNavigation(
@@ -176,6 +186,8 @@ void NavigationControllerImpl::DidFinishNavigation(
       !navigation_handle->IsErrorPage()) {
 #if defined(OS_ANDROID)
     if (java_controller_) {
+      TRACE_EVENT0("weblayer",
+                   "Java_NavigationControllerImpl_navigationCompleted");
       Java_NavigationControllerImpl_navigationCompleted(
           AttachCurrentThread(), java_controller_,
           navigation->java_navigation());
@@ -186,6 +198,8 @@ void NavigationControllerImpl::DidFinishNavigation(
   } else {
 #if defined(OS_ANDROID)
     if (java_controller_) {
+      TRACE_EVENT0("weblayer",
+                   "Java_NavigationControllerImpl_navigationFailed");
       Java_NavigationControllerImpl_navigationFailed(
           AttachCurrentThread(), java_controller_,
           navigation->java_navigation());
@@ -198,13 +212,59 @@ void NavigationControllerImpl::DidFinishNavigation(
   navigation_map_.erase(navigation_map_.find(navigation_handle));
 }
 
+void NavigationControllerImpl::DidStartLoading() {
+  NotifyLoadStateChanged();
+}
+
+void NavigationControllerImpl::DidStopLoading() {
+  NotifyLoadStateChanged();
+}
+
+void NavigationControllerImpl::LoadProgressChanged(double progress) {
 #if defined(OS_ANDROID)
-static jlong JNI_NavigationControllerImpl_GetNavigationController(
-    JNIEnv* env,
-    jlong browserController) {
+  if (java_controller_) {
+    TRACE_EVENT0("weblayer",
+                 "Java_NavigationControllerImpl_loadProgressChanged");
+    Java_NavigationControllerImpl_loadProgressChanged(
+        AttachCurrentThread(), java_controller_, progress);
+  }
+#endif
+  for (auto& observer : observers_)
+    observer.LoadProgressChanged(progress);
+}
+
+void NavigationControllerImpl::DidFirstVisuallyNonEmptyPaint() {
+#if defined(OS_ANDROID)
+  TRACE_EVENT0("weblayer",
+               "Java_NavigationControllerImpl_onFirstContentfulPaint");
+  Java_NavigationControllerImpl_onFirstContentfulPaint(AttachCurrentThread(),
+                                                       java_controller_);
+#endif
+
+  for (auto& observer : observers_)
+    observer.OnFirstContentfulPaint();
+}
+
+void NavigationControllerImpl::NotifyLoadStateChanged() {
+#if defined(OS_ANDROID)
+  if (java_controller_) {
+    TRACE_EVENT0("weblayer", "Java_NavigationControllerImpl_loadStateChanged");
+    Java_NavigationControllerImpl_loadStateChanged(
+        AttachCurrentThread(), java_controller_, web_contents()->IsLoading(),
+        web_contents()->IsLoadingToDifferentDocument());
+  }
+#endif
+  for (auto& observer : observers_) {
+    observer.LoadStateChanged(web_contents()->IsLoading(),
+                              web_contents()->IsLoadingToDifferentDocument());
+  }
+}
+
+#if defined(OS_ANDROID)
+static jlong JNI_NavigationControllerImpl_GetNavigationController(JNIEnv* env,
+                                                                  jlong tab) {
   return reinterpret_cast<jlong>(
-      reinterpret_cast<BrowserController*>(browserController)
-          ->GetNavigationController());
+      reinterpret_cast<Tab*>(tab)->GetNavigationController());
 }
 #endif
 

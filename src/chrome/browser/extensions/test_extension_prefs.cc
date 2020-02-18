@@ -138,11 +138,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtension(
     const std::string& name) {
-  base::DictionaryValue dictionary;
-  dictionary.SetString(manifest_keys::kName, name);
-  dictionary.SetString(manifest_keys::kVersion, "0.1");
-  dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
-  return AddExtensionWithManifest(dictionary, Manifest::INTERNAL);
+  return AddExtensionWithLocation(name, Manifest::INTERNAL);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddApp(const std::string& name) {
@@ -153,6 +149,16 @@ scoped_refptr<Extension> TestExtensionPrefs::AddApp(const std::string& name) {
   dictionary.SetString(manifest_keys::kLaunchWebURL, "http://example.com");
   return AddExtensionWithManifest(dictionary, Manifest::INTERNAL);
 
+}
+
+scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithLocation(
+    const std::string& name,
+    Manifest::Location location) {
+  base::DictionaryValue dictionary;
+  dictionary.SetString(manifest_keys::kName, name);
+  dictionary.SetString(manifest_keys::kVersion, "0.1");
+  dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
+  return AddExtensionWithManifest(dictionary, location);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifest(
@@ -173,7 +179,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
       path, location, manifest, extra_flags, &errors);
   EXPECT_TRUE(extension.get()) << errors;
   if (!extension.get())
-    return NULL;
+    return nullptr;
 
   EXPECT_TRUE(crx_file::id_util::IdIsValid(extension->id()));
   prefs()->OnExtensionInstalled(extension.get(),
@@ -200,7 +206,7 @@ std::unique_ptr<PrefService> TestExtensionPrefs::CreateIncognitoPrefService()
     const {
   return CreateIncognitoPrefServiceSyncable(
       pref_service_.get(),
-      new ExtensionPrefStore(extension_pref_value_map_.get(), true), nullptr);
+      new ExtensionPrefStore(extension_pref_value_map_.get(), true));
 }
 
 void TestExtensionPrefs::set_extensions_disabled(bool extensions_disabled) {

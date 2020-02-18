@@ -25,8 +25,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge.AboutVersionStrings;
+import org.chromium.chrome.browser.settings.about.AboutSettingsBridge;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 
 /**
@@ -44,7 +43,7 @@ public class DataReductionPromoUtilsTest {
     private Context mContext;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Using an AdvancedMockContext allows us to use a fresh in-memory SharedPreference.
         mContext = new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
                                                    .getTargetContext()
@@ -62,7 +61,7 @@ public class DataReductionPromoUtilsTest {
             "force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled"})
     @Feature({"DataReduction"})
     public void
-    testCanShowPromos() throws Throwable {
+    testCanShowPromos() {
         if (DataReductionProxySettings.getInstance().isDataReductionProxyManaged()) return;
         Assert.assertFalse(DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
 
@@ -87,10 +86,7 @@ public class DataReductionPromoUtilsTest {
     @SmallTest
     @UiThreadTest
     @Feature({"DataReduction"})
-    public void testFreOrSecondRunPromoDisplayed() throws Throwable {
-        AboutVersionStrings versionStrings =
-                PrefServiceBridge.getInstance().getAboutVersionStrings();
-
+    public void testFreOrSecondRunPromoDisplayed() {
         // The first run experience or second run promo should not have been shown yet.
         Assert.assertFalse(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
 
@@ -99,7 +95,7 @@ public class DataReductionPromoUtilsTest {
         Assert.assertTrue(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
         Assert.assertFalse(DataReductionPromoUtils.getDisplayedInfoBarPromo());
         Assert.assertFalse(DataReductionPromoUtils.getOptedOutOnFrePromo());
-        Assert.assertEquals(versionStrings.getApplicationVersion(),
+        Assert.assertEquals(AboutSettingsBridge.getApplicationVersion(),
                 DataReductionPromoUtils.getDisplayedFreOrSecondRunPromoVersion());
     }
 
@@ -110,7 +106,7 @@ public class DataReductionPromoUtilsTest {
     @SmallTest
     @UiThreadTest
     @Feature({"DataReduction"})
-    public void testFrePromoOptOut() throws Throwable {
+    public void testFrePromoOptOut() {
         // Save that the user opted out of the first run experience.
         DataReductionPromoUtils.saveFrePromoOptOut(true);
         Assert.assertTrue(DataReductionPromoUtils.getOptedOutOnFrePromo());
@@ -128,10 +124,7 @@ public class DataReductionPromoUtilsTest {
     @SmallTest
     @UiThreadTest
     @Feature({"DataReduction"})
-    public void testInfoBarPromoDisplayed() throws Throwable {
-        AboutVersionStrings versionStrings =
-                PrefServiceBridge.getInstance().getAboutVersionStrings();
-
+    public void testInfoBarPromoDisplayed() {
         // The infobar should not have been shown yet.
         Assert.assertFalse(DataReductionPromoUtils.getDisplayedInfoBarPromo());
 
@@ -140,7 +133,7 @@ public class DataReductionPromoUtilsTest {
         Assert.assertFalse(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
         Assert.assertTrue(DataReductionPromoUtils.getDisplayedInfoBarPromo());
         Assert.assertFalse(DataReductionPromoUtils.getOptedOutOnFrePromo());
-        Assert.assertEquals(versionStrings.getApplicationVersion(),
+        Assert.assertEquals(AboutSettingsBridge.getApplicationVersion(),
                 ContextUtils.getAppSharedPreferences().getString(
                         SHARED_PREF_DISPLAYED_INFOBAR_PROMO_VERSION, ""));
     }

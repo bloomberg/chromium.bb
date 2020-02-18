@@ -5,6 +5,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 
 #include <string>
+#include <utility>
 
 #include "third_party/boringssl/src/include/openssl/tls1.h"
 #include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_12_decrypter.h"
@@ -17,17 +18,26 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_hkdf.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 
 namespace quic {
 
 // static
-std::unique_ptr<QuicDecrypter> QuicDecrypter::Create(QuicTag algorithm) {
+std::unique_ptr<QuicDecrypter> QuicDecrypter::Create(
+    const ParsedQuicVersion& version,
+    QuicTag algorithm) {
   switch (algorithm) {
     case kAESG:
-      return QuicMakeUnique<Aes128Gcm12Decrypter>();
+      if (version.UsesInitialObfuscators()) {
+        return std::make_unique<Aes128GcmDecrypter>();
+      } else {
+        return std::make_unique<Aes128Gcm12Decrypter>();
+      }
     case kCC20:
-      return QuicMakeUnique<ChaCha20Poly1305Decrypter>();
+      if (version.UsesInitialObfuscators()) {
+        return std::make_unique<ChaCha20Poly1305TlsDecrypter>();
+      } else {
+        return std::make_unique<ChaCha20Poly1305Decrypter>();
+      }
     default:
       QUIC_LOG(FATAL) << "Unsupported algorithm: " << algorithm;
       return nullptr;
@@ -39,11 +49,11 @@ std::unique_ptr<QuicDecrypter> QuicDecrypter::CreateFromCipherSuite(
     uint32_t cipher_suite) {
   switch (cipher_suite) {
     case TLS1_CK_AES_128_GCM_SHA256:
-      return QuicMakeUnique<Aes128GcmDecrypter>();
+      return std::make_unique<Aes128GcmDecrypter>();
     case TLS1_CK_AES_256_GCM_SHA384:
-      return QuicMakeUnique<Aes256GcmDecrypter>();
+      return std::make_unique<Aes256GcmDecrypter>();
     case TLS1_CK_CHACHA20_POLY1305_SHA256:
-      return QuicMakeUnique<ChaCha20Poly1305TlsDecrypter>();
+      return std::make_unique<ChaCha20Poly1305TlsDecrypter>();
     default:
       QUIC_BUG << "TLS cipher suite is unknown to QUIC";
       return nullptr;

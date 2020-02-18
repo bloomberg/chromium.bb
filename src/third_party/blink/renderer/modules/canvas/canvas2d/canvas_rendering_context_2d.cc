@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/hit_region.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/path_2d.h"
@@ -74,7 +75,6 @@
 #include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 
 namespace blink {
 
@@ -317,7 +317,7 @@ CanvasPixelFormat CanvasRenderingContext2D::PixelFormat() const {
 }
 
 void CanvasRenderingContext2D::Reset() {
-  // This is a multiple inherritance bootstrap
+  // This is a multiple inheritance bootstrap
   BaseRenderingContext2D::Reset();
 }
 
@@ -618,6 +618,9 @@ void CanvasRenderingContext2D::PruneLocalFontCache(size_t target_size) {
 
 void CanvasRenderingContext2D::StyleDidChange(const ComputedStyle* old_style,
                                               const ComputedStyle& new_style) {
+  // Only the visibility flag is considered here. display:none is
+  // handled via creation and destruction of the LayoutObject.
+  SetIsBeingDisplayed(new_style.Visibility() == EVisibility::kVisible);
   if (old_style && old_style->GetFont() == new_style.GetFont())
     return;
   PruneLocalFontCache(0);
@@ -665,10 +668,17 @@ bool CanvasRenderingContext2D::CanCreateCanvas2dResourceProvider() const {
 }
 
 scoped_refptr<StaticBitmapImage> blink::CanvasRenderingContext2D::GetImage(
-    AccelerationHint hint) const {
+    AccelerationHint hint) {
   if (!IsPaintable())
     return nullptr;
   return canvas()->GetCanvas2DLayerBridge()->NewImageSnapshot(hint);
+}
+
+void CanvasRenderingContext2D::FinalizeFrame() {
+  TRACE_EVENT0("blink", "CanvasRenderingContext2D::FinalizeFrame");
+  if (IsPaintable())
+    canvas()->GetCanvas2DLayerBridge()->FinalizeFrame();
+  usage_counters_.num_frames_since_reset++;
 }
 
 bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
@@ -926,11 +936,16 @@ const Font& CanvasRenderingContext2D::AccessFont() {
   return GetState().GetFont();
 }
 
-void CanvasRenderingContext2D::SetIsHidden(bool hidden) {
+void CanvasRenderingContext2D::SetIsInHiddenPage(bool hidden) {
   if (IsPaintable())
-    canvas()->GetCanvas2DLayerBridge()->SetIsHidden(hidden);
+    canvas()->GetCanvas2DLayerBridge()->SetIsInHiddenPage(hidden);
   if (hidden)
     PruneLocalFontCache(0);
+}
+
+void CanvasRenderingContext2D::SetIsBeingDisplayed(bool displayed) {
+  if (IsPaintable())
+    canvas()->GetCanvas2DLayerBridge()->SetIsBeingDisplayed(displayed);
 }
 
 bool CanvasRenderingContext2D::IsTransformInvertible() const {
@@ -954,7 +969,7 @@ CanvasRenderingContext2D::getContextAttributes() const {
     settings->setColorSpace(ColorSpaceAsString());
     settings->setPixelFormat(PixelFormatAsString());
   }
-  settings->setDesynchronized(canvas()->LowLatencyEnabled());
+  settings->setDesynchronized(Host()->LowLatencyEnabled());
   return settings;
 }
 

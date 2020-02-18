@@ -11,8 +11,8 @@
 #include "modules/audio_processing/test/aec_dump_based_simulator.h"
 
 #include <iostream>
+#include <memory>
 
-#include "absl/memory/memory.h"
 #include "modules/audio_processing/echo_cancellation_impl.h"
 #include "modules/audio_processing/echo_control_mobile_impl.h"
 #include "modules/audio_processing/test/protobuf_utils.h"
@@ -376,8 +376,7 @@ void AecDumpBasedSimulator::HandleMessage(
 
     if (msg.has_agc_enabled() || settings_.use_agc) {
       bool enable = settings_.use_agc ? *settings_.use_agc : msg.agc_enabled();
-      RTC_CHECK_EQ(AudioProcessing::kNoError,
-                   ap_->gain_control()->Enable(enable));
+      apm_config.gain_controller1.enabled = enable;
       if (settings_.use_verbose_logging) {
         std::cout << " agc_enabled: " << (enable ? "true" : "false")
                   << std::endl;
@@ -386,9 +385,9 @@ void AecDumpBasedSimulator::HandleMessage(
 
     if (msg.has_agc_mode() || settings_.agc_mode) {
       int mode = settings_.agc_mode ? *settings_.agc_mode : msg.agc_mode();
-      RTC_CHECK_EQ(AudioProcessing::kNoError,
-                   ap_->gain_control()->set_mode(
-                       static_cast<webrtc::GainControl::Mode>(mode)));
+      apm_config.gain_controller1.mode =
+          static_cast<webrtc::AudioProcessing::Config::GainController1::Mode>(
+              mode);
       if (settings_.use_verbose_logging) {
         std::cout << " agc_mode: " << mode << std::endl;
       }
@@ -397,8 +396,7 @@ void AecDumpBasedSimulator::HandleMessage(
     if (msg.has_agc_limiter_enabled() || settings_.use_agc_limiter) {
       bool enable = settings_.use_agc_limiter ? *settings_.use_agc_limiter
                                               : msg.agc_limiter_enabled();
-      RTC_CHECK_EQ(AudioProcessing::kNoError,
-                   ap_->gain_control()->enable_limiter(enable));
+      apm_config.gain_controller1.enable_limiter = enable;
       if (settings_.use_verbose_logging) {
         std::cout << " agc_limiter_enabled: " << (enable ? "true" : "false")
                   << std::endl;
@@ -599,6 +597,11 @@ void AecDumpBasedSimulator::HandleMessage(
     ap_->SetRuntimeSetting(
         AudioProcessing::RuntimeSetting::CreatePlayoutVolumeChange(
             msg.playout_volume_change()));
+  } else if (msg.has_playout_audio_device_change()) {
+    ap_->SetRuntimeSetting(
+        AudioProcessing::RuntimeSetting::CreatePlayoutAudioDeviceChange(
+            {msg.playout_audio_device_change().id(),
+             msg.playout_audio_device_change().max_volume()}));
   }
 }
 
@@ -609,7 +612,7 @@ void AecDumpBasedSimulator::MaybeOpenCallOrderFile() {
                                            "_" +
                                            std::to_string(output_reset_counter_)
                                      : *settings_.call_order_output_filename;
-    call_order_output_file_ = absl::make_unique<std::ofstream>(filename);
+    call_order_output_file_ = std::make_unique<std::ofstream>(filename);
   }
 }
 

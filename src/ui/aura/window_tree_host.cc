@@ -38,6 +38,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/icc_profile.h"
+#include "ui/gfx/switches.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if defined(OS_WIN)
@@ -81,7 +82,9 @@ class ScopedLocalSurfaceIdValidator {
 
 #if defined(OS_WIN)
 bool IsNativeWindowOcclusionEnabled() {
-  return base::FeatureList::IsEnabled(features::kCalculateNativeWinOcclusion);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kHeadless) &&
+         base::FeatureList::IsEnabled(features::kCalculateNativeWinOcclusion);
 }
 #endif  // OS_WIN
 
@@ -157,6 +160,14 @@ gfx::Transform WindowTreeHost::GetInverseRootTransform() const {
   return invert;
 }
 
+void WindowTreeHost::SetDisplayTransformHint(gfx::OverlayTransform transform) {
+  if (compositor()->display_transform_hint() == transform)
+    return;
+
+  compositor()->SetDisplayTransformHint(transform);
+  UpdateCompositorScaleAndSize(GetBoundsInPixels().size());
+}
+
 gfx::Transform WindowTreeHost::GetRootTransformForLocalEventCoordinates()
     const {
   return GetRootTransform();
@@ -179,6 +190,23 @@ void WindowTreeHost::UpdateRootWindowSizeInPixels() {
   gfx::Rect transformed_bounds_in_pixels =
       GetTransformedRootWindowBoundsInPixels(GetBoundsInPixels().size());
   window()->SetBounds(transformed_bounds_in_pixels);
+}
+
+void WindowTreeHost::UpdateCompositorScaleAndSize(
+    const gfx::Size& new_size_in_pixels) {
+  gfx::Rect new_bounds(new_size_in_pixels);
+  if (compositor_->display_transform_hint() ==
+          gfx::OVERLAY_TRANSFORM_ROTATE_90 ||
+      compositor_->display_transform_hint() ==
+          gfx::OVERLAY_TRANSFORM_ROTATE_270) {
+    new_bounds.Transpose();
+  }
+
+  // Allocate a new LocalSurfaceId for the new size or scale factor.
+  window_->AllocateLocalSurfaceId();
+  ScopedLocalSurfaceIdValidator lsi_validator(window());
+  compositor_->SetScaleAndSize(device_scale_factor_, new_bounds.size(),
+                               window_->GetLocalSurfaceIdAllocation());
 }
 
 void WindowTreeHost::ConvertDIPToScreenInPixels(gfx::Point* point) const {
@@ -263,6 +291,11 @@ ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
   // If dispatch to IME is already disabled we shouldn't reach here.
   DCHECK(!dispatcher_->should_skip_ime());
   dispatcher_->set_skip_ime(true);
+
+  // InputMethod::DispatchKeyEvent() is called in PRE_DISPATCH phase, so event
+  // target is reset here to avoid issues in subsequent processing phases.
+  ui::Event::DispatcherApi(event).set_target(nullptr);
+
   // We should bypass event rewriters here as they've been tried before.
   ui::EventDispatchDetails dispatch_details =
       event_sink()->OnEventFromSource(event);
@@ -385,12 +418,10 @@ void WindowTreeHost::DestroyDispatcher() {
   //window()->RemoveOrDestroyChildren();
 }
 
-void WindowTreeHost::CreateCompositor(
-    const viz::FrameSinkId& frame_sink_id,
-    bool force_software_compositor,
-    ui::ExternalBeginFrameClient* external_begin_frame_client,
-    bool are_events_in_pixels,
-    const char* trace_environment_name) {
+void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
+                                      bool force_software_compositor,
+                                      bool use_external_begin_frame_control,
+                                      const char* trace_environment_name) {
   Env* env = Env::GetInstance();
   ui::ContextFactory* context_factory = env->context_factory();
   DCHECK(context_factory);
@@ -402,7 +433,7 @@ void WindowTreeHost::CreateCompositor(
           : context_factory_private->AllocateFrameSinkId(),
       context_factory, context_factory_private,
       base::ThreadTaskRunnerHandle::Get(), ui::IsPixelCanvasRecordingEnabled(),
-      external_begin_frame_client, force_software_compositor,
+      use_external_begin_frame_control, force_software_compositor,
       trace_environment_name);
 #if defined(OS_CHROMEOS)
   compositor_->AddObserver(this);
@@ -411,8 +442,7 @@ void WindowTreeHost::CreateCompositor(
     window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);
     window()->SetName("RootWindow");
-    dispatcher_ =
-        std::make_unique<WindowEventDispatcher>(this, are_events_in_pixels);
+    dispatcher_ = std::make_unique<WindowEventDispatcher>(this);
   }
 }
 
@@ -450,16 +480,17 @@ void WindowTreeHost::OnHostResizedInPixels(
   // these two.
   if (!compositor_)
     return;
+
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window());
   device_scale_factor_ = display.device_scale_factor();
   UpdateRootWindowSizeInPixels();
 
-  // Allocate a new LocalSurfaceId for the new state.
-  window_->AllocateLocalSurfaceId();
-  ScopedLocalSurfaceIdValidator lsi_validator(window());
-  compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,
-                               window_->GetLocalSurfaceIdAllocation());
+  // Passing |new_size_in_pixels| to set compositor size. It could be different
+  // from GetBoundsInPixels() on Windows to contain extra space for window
+  // transition animations and should be used to set compositor size instead of
+  // GetBoundsInPixels() in such case.
+  UpdateCompositorScaleAndSize(new_size_in_pixels);
 
   for (WindowTreeHostObserver& observer : observers_)
     observer.OnHostResized(this);
@@ -510,10 +541,8 @@ void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
 
 gfx::Rect WindowTreeHost::GetTransformedRootWindowBoundsInPixels(
     const gfx::Size& size_in_pixels) const {
-  gfx::Rect bounds(size_in_pixels);
-  gfx::RectF new_bounds =
-      gfx::ScaleRect(gfx::RectF(bounds), 1.0f / device_scale_factor_);
-  window()->layer()->transform().TransformRect(&new_bounds);
+  gfx::RectF new_bounds = gfx::RectF(gfx::Rect(size_in_pixels));
+  GetInverseRootTransform().TransformRect(&new_bounds);
   return gfx::ToEnclosingRect(new_bounds);
 }
 

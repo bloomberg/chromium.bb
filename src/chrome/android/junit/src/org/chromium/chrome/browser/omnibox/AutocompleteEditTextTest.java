@@ -53,7 +53,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class AutocompleteEditTextTest {
-    private static final String TAG = "cr_AutocompleteTest";
+    private static final String TAG = "AutocompleteTest";
 
     private static final boolean DEBUG = false;
 
@@ -171,7 +171,7 @@ public class AutocompleteEditTextTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         if (DEBUG) Log.i(TAG, "setUp started.");
         MockitoAnnotations.initMocks(this);
         mContext = RuntimeEnvironment.application;

@@ -4,12 +4,12 @@
 
 #include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
 
-#include <dwrite.h>
 #include <shlobj.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -30,7 +30,7 @@
 #include "content/browser/renderer_host/dwrite_font_uma_logging_win.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
@@ -42,9 +42,6 @@
 namespace mswr = Microsoft::WRL;
 
 namespace content {
-
-using namespace dwrite_font_uma_logging;
-using namespace dwrite_font_file_util;
 
 namespace {
 
@@ -123,10 +120,9 @@ DWriteFontProxyImpl::~DWriteFontProxyImpl() = default;
 
 // static
 void DWriteFontProxyImpl::Create(
-    blink::mojom::DWriteFontProxyRequest request,
-    const service_manager::BindSourceInfo& source_info) {
-  mojo::MakeStrongBinding(std::make_unique<DWriteFontProxyImpl>(),
-                          std::move(request));
+    mojo::PendingReceiver<blink::mojom::DWriteFontProxy> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<DWriteFontProxyImpl>(),
+                              std::move(receiver));
 }
 
 void DWriteFontProxyImpl::SetWindowsFontsPathForTesting(base::string16 path) {
@@ -477,10 +473,10 @@ void DWriteFontProxyImpl::MatchUniqueFont(
 
   base::string16 font_file_pathname;
   uint32_t ttc_index;
-  bool result = FontFilePathAndTtcIndex(first_font_face.Get(),
-                                        font_file_pathname, ttc_index);
-  if (!result)
+  if (FAILED(FontFilePathAndTtcIndex(first_font_face.Get(), font_file_pathname,
+                                     ttc_index))) {
     return;
+  }
 
   base::FilePath path(base::UTF16ToWide(font_file_pathname));
   std::move(callback).Run(path, ttc_index);
@@ -508,20 +504,27 @@ void DWriteFontProxyImpl::GetUniqueNameLookupTable(
       base::SequencedTaskRunnerHandle::Get(), std::move(callback));
 }
 
-void DWriteFontProxyImpl::FallbackFamilyNameForCodepoint(
+void DWriteFontProxyImpl::FallbackFamilyAndStyleForCodepoint(
     const std::string& base_family_name,
     const std::string& locale_name,
     uint32_t codepoint,
-    FallbackFamilyNameForCodepointCallback callback) {
+    FallbackFamilyAndStyleForCodepointCallback callback) {
   InitializeDirectWrite();
-  callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
-                                                         std::string());
+  callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(callback),
+      blink::mojom::FallbackFamilyAndStyle::New("",
+                                                /* weight */ 0,
+                                                /* width */ 0,
+                                                /* slant */ 0));
 
-  if (!codepoint)
+  if (!codepoint || !collection_ || !factory_)
     return;
 
   sk_sp<SkFontMgr> font_mgr(
       SkFontMgr_New_DirectWrite(factory_.Get(), collection_.Get()));
+
+  if (!font_mgr)
+    return;
 
   const char* bcp47_locales[] = {locale_name.c_str()};
   int num_locales = locale_name.empty() ? 0 : 1;
@@ -536,7 +539,13 @@ void DWriteFontProxyImpl::FallbackFamilyNameForCodepoint(
 
   SkString family_name;
   typeface->getFamilyName(&family_name);
-  std::move(callback).Run(family_name.c_str());
+
+  SkFontStyle font_style = typeface->fontStyle();
+
+  auto result_fallback_and_style = blink::mojom::FallbackFamilyAndStyle::New(
+      family_name.c_str(), font_style.weight(), font_style.width(),
+      font_style.slant());
+  std::move(callback).Run(std::move(result_fallback_and_style));
 }
 
 void DWriteFontProxyImpl::InitializeDirectWrite() {

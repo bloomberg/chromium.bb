@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/dawncpp.h"
 #include "tests/DawnTest.h"
 
-#include "utils/DawnHelpers.h"
+#include "utils/WGPUHelpers.h"
 
 #include <array>
 #include <initializer_list>
@@ -45,52 +44,44 @@ class ComputeIndirectTests : public DawnTest {
 
 void ComputeIndirectTests::BasicTest(std::initializer_list<uint32_t> bufferList,
                                      uint64_t indirectOffset) {
-    dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-        device, {
-                    {0, dawn::ShaderStage::Compute, dawn::BindingType::UniformBuffer},
-                    {1, dawn::ShaderStage::Compute, dawn::BindingType::StorageBuffer},
-                });
-
     // Set up shader and pipeline
-    dawn::ShaderModule module =
+    wgpu::ShaderModule module =
         utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, shaderSource);
-    dawn::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
-    dawn::ComputePipelineDescriptor csDesc;
-    csDesc.layout = pl;
+    wgpu::ComputePipelineDescriptor csDesc;
     csDesc.computeStage.module = module;
     csDesc.computeStage.entryPoint = "main";
-    dawn::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
+    wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
 
     // Set up dst storage buffer to contain dispatch x, y, z
-    dawn::Buffer dst = utils::CreateBufferFromData<uint32_t>(
+    wgpu::Buffer dst = utils::CreateBufferFromData<uint32_t>(
         device,
-        dawn::BufferUsage::Storage | dawn::BufferUsage::CopySrc | dawn::BufferUsage::CopyDst,
+        wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst,
         {0, 0, 0});
 
     std::vector<uint32_t> indirectBufferData = bufferList;
 
-    dawn::Buffer indirectBuffer =
-        utils::CreateBufferFromData<uint32_t>(device, dawn::BufferUsage::Indirect, bufferList);
+    wgpu::Buffer indirectBuffer =
+        utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Indirect, bufferList);
 
-    dawn::Buffer expectedBuffer =
+    wgpu::Buffer expectedBuffer =
         utils::CreateBufferFromData(device, &indirectBufferData[indirectOffset / sizeof(uint32_t)],
-                                    3 * sizeof(uint32_t), dawn::BufferUsage::Uniform);
+                                    3 * sizeof(uint32_t), wgpu::BufferUsage::Uniform);
 
     // Set up bind group and issue dispatch
-    dawn::BindGroup bindGroup =
-        utils::MakeBindGroup(device, bgl,
+    wgpu::BindGroup bindGroup =
+        utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
                              {
                                  {0, expectedBuffer, 0, 3 * sizeof(uint32_t)},
                                  {1, dst, 0, 3 * sizeof(uint32_t)},
                              });
 
-    dawn::CommandBuffer commands;
+    wgpu::CommandBuffer commands;
     {
-        dawn::CommandEncoder encoder = device.CreateCommandEncoder();
-        dawn::ComputePassEncoder pass = encoder.BeginComputePass();
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
-        pass.SetBindGroup(0, bindGroup, 0, nullptr);
+        pass.SetBindGroup(0, bindGroup);
         pass.DispatchIndirect(indirectBuffer, indirectOffset);
         pass.EndPass();
 
@@ -105,21 +96,11 @@ void ComputeIndirectTests::BasicTest(std::initializer_list<uint32_t> bufferList,
 
 // Test basic indirect
 TEST_P(ComputeIndirectTests, Basic) {
-    // TODO(hao.x.li@intel.com): Test failing on Metal with validation layer on, which blocks
-    // end2end tests run with validation layer in bots. Suppress this while we're fixing.
-    // See https://bugs.chromium.org/p/dawn/issues/detail?id=139
-    DAWN_SKIP_TEST_IF(IsMetal() && IsBackendValidationEnabled());
-
     BasicTest({2, 3, 4}, 0);
 }
 
 // Test indirect with buffer offset
 TEST_P(ComputeIndirectTests, IndirectOffset) {
-    // TODO(hao.x.li@intel.com): Test failing on Metal with validation layer on, which blocks
-    // end2end tests run with validation layer in bots. Suppress this while we're fixing.
-    // See https://bugs.chromium.org/p/dawn/issues/detail?id=139
-    DAWN_SKIP_TEST_IF(IsMetal() && IsBackendValidationEnabled());
-
     BasicTest({0, 0, 0, 2, 3, 4}, 3 * sizeof(uint32_t));
 }
 

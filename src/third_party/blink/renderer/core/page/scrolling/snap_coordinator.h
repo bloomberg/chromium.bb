@@ -17,12 +17,14 @@ namespace blink {
 class LayoutBox;
 
 // Snap Coordinator keeps track of snap containers and all of their associated
-// snap areas. It also contains the logic to generate the list of valid snap
-// positions for a given snap container.
+// snap areas.
 //
 // Snap container:
-//   An scroll container that has 'scroll-snap-type' value other
+//   A scroll container that has 'scroll-snap-type' value other
 //   than 'none'.
+//   However, we maintain a snap container entry for a scrollable area even if
+//   its snap type is 'none'. This is because while the scroller does not snap,
+//   it still captures the snap areas in its subtree.
 // Snap area:
 //   A snap container's descendant that contributes snap positions. An element
 //   only contributes snap positions to its nearest ancestor (on the element’s
@@ -30,18 +32,17 @@ class LayoutBox;
 //
 // For more information see spec: https://drafts.csswg.org/css-snappoints/
 class CORE_EXPORT SnapCoordinator final
-    : public GarbageCollectedFinalized<SnapCoordinator> {
+    : public GarbageCollected<SnapCoordinator> {
  public:
   explicit SnapCoordinator();
   ~SnapCoordinator();
   void Trace(blink::Visitor* visitor) {}
 
-  void SnapContainerDidChange(LayoutBox&, bool is_removed);
-  void SnapAreaDidChange(LayoutBox&, cc::ScrollSnapAlign);
+  void AddSnapContainer(LayoutBox& snap_container);
+  void RemoveSnapContainer(LayoutBox& snap_container);
 
-  // Returns the SnapContainerData if the snap container has one.
-  base::Optional<cc::SnapContainerData> GetSnapContainerData(
-      const LayoutBox& snap_container) const;
+  void SnapContainerDidChange(LayoutBox&);
+  void SnapAreaDidChange(LayoutBox&, cc::ScrollSnapAlign);
 
   // Calculate the SnapAreaData for the specific snap area in its snap
   // container.
@@ -51,29 +52,12 @@ class CORE_EXPORT SnapCoordinator final
   // Called by LocalFrameView::PerformPostLayoutTasks(), so that the snap data
   // are updated whenever a layout happens.
   void UpdateAllSnapContainerData();
+  void UpdateSnapContainerData(LayoutBox&);
 
-  // SnapAtCurrentPosition(), SnapForEndPosition(), SnapForDirection(), and
-  // SnapForEndAndDirection() return true if snapping was performed, and false
-  // otherwise. Note that this does not necessarily mean that any scrolling was
-  // performed as a result e.g., if we are already at the snap point.
-  //
-  // SnapAtCurrentPosition() calls SnapForEndPosition() with the current
-  // scroll position.
-  bool SnapAtCurrentPosition(const LayoutBox& snap_container,
-                             bool scrolled_x,
-                             bool scrolled_y) const;
-  bool SnapForEndPosition(const LayoutBox& snap_container,
-                          const FloatPoint& end_position,
-                          bool scrolled_x,
-                          bool scrolled_y) const;
-  bool SnapForDirection(const LayoutBox& snap_container,
-                        const ScrollOffset& delta) const;
-  bool SnapForEndAndDirection(const LayoutBox& snap_container,
-                              const ScrollOffset& delta) const;
-
-  base::Optional<FloatPoint> GetSnapPosition(
-      const LayoutBox& snap_container,
-      const cc::SnapSelectionStrategy& strategy) const;
+  // Resnaps all snap containers to their current snap target, or to the
+  // closest snap point if there is no target (e.g. on the initial layout or if
+  // the previous snapped target was removed).
+  void ReSnapAllContainers();
 
 #ifndef NDEBUG
   void ShowSnapAreaMap();
@@ -84,13 +68,12 @@ class CORE_EXPORT SnapCoordinator final
  private:
   friend class SnapCoordinatorTest;
 
-  // Returns true if a snap point was found.
-  bool PerformSnapping(const LayoutBox& snap_container,
-                       const cc::SnapSelectionStrategy& strategy) const;
+  HashSet<LayoutBox*> snap_containers_;
 
-  void UpdateSnapContainerData(LayoutBox&);
+  // Used for reporting to UMA when snapping on the initial layout affects the
+  // initial scroll position.
+  bool did_first_resnap_all_containers_{false};
 
-  HashMap<LayoutBox*, cc::SnapContainerData> snap_container_map_;
   DISALLOW_COPY_AND_ASSIGN(SnapCoordinator);
 };
 

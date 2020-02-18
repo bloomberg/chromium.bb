@@ -122,6 +122,8 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
 
   void ForceResetTouchActionForTest();
 
+  bool IsFlingActiveForTest();
+
  private:
   friend class InputRouterImplTest;
   friend class InputRouterImplTestBase;
@@ -156,6 +158,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       const MouseWheelEventWithLatencyInfo& wheel_event) override;
   void SendGeneratedGestureScrollEvents(
       const GestureEventWithLatencyInfo& gesture_event) override;
+  gfx::Size GetRootWidgetViewportSize() override;
 
   // MouseWheelEventQueueClient
   void SendMouseWheelEventImmediately(

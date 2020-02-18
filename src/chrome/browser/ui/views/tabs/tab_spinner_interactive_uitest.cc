@@ -6,6 +6,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/perf/performance_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -43,14 +44,9 @@ class TabSpinnerTest : public UIPerformanceTest {
 
  private:
   std::vector<std::string> GetUMAHistogramNames() const override {
-    // Report each step in the Pipeline Reporter. Note that the UMA mean
-    // will only be printed if the following command line flag is provided:
-    // --perf-test-print-uma-means. Each measurement is in microseconds.
-    return {"SingleThreadedCompositorLatency.TotalLatency",
-            "SingleThreadedCompositorLatency.SendBeginMainFrameToCommit",
-            "SingleThreadedCompositorLatency.Commit",
-            "SingleThreadedCompositorLatency.Activation",
-            "SingleThreadedCompositorLatency.EndCommitToActivation"};
+    // This used to report the different stages from the pipline, but they have
+    // been removed for the UI compositor. Details in crbug.com/1005226
+    return {};
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -59,13 +55,8 @@ class TabSpinnerTest : public UIPerformanceTest {
   DISALLOW_COPY_AND_ASSIGN(TabSpinnerTest);
 };
 
-// TODO(974349) This test is timing out on ChromeOS and Mac.
-#if (defined(OS_CHROMEOS) || defined(OS_MACOSX)) && !defined(NDEBUG)
-#define MAYBE_LoadTabsOneByOne DISABLED_LoadTabsOneByOne
-#else
-#define MAYBE_LoadTabsOneByOne LoadTabsOneByOne
-#endif
-IN_PROC_BROWSER_TEST_F(TabSpinnerTest, MAYBE_LoadTabsOneByOne) {
+// TODO(crbug.com/974349) This test is timing out on all platforms
+IN_PROC_BROWSER_TEST_F(TabSpinnerTest, DISABLED_LoadTabsOneByOne) {
   IgnorePriorHistogramSamples();
 
   // Navigate to a custom page that takes 10 seconds to load. Wait for the

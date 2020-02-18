@@ -95,10 +95,22 @@ void NavigableContents::DidSuppressNavigation(const GURL& url,
     observer.DidSuppressNavigation(url, disposition, from_user_gesture);
 }
 
+void NavigableContents::UpdateCanGoBack(bool can_go_back) {
+  for (auto& observer : observers_)
+    observer.UpdateCanGoBack(can_go_back);
+}
+
 void NavigableContents::UpdateContentAXTree(const ui::AXTreeID& id) {
   content_ax_tree_id_ = id;
   if (view_)
     view_->NotifyAccessibilityTreeChange();
+}
+
+void NavigableContents::FocusedNodeChanged(
+    bool is_editable_node,
+    const gfx::Rect& node_bounds_in_screen) {
+  for (auto& observer : observers_)
+    observer.FocusedNodeChanged(is_editable_node, node_bounds_in_screen);
 }
 
 void NavigableContents::OnEmbedTokenReceived(

@@ -15,7 +15,7 @@
 #include "base/timer/timer.h"
 #include "ui/views/view.h"
 
-namespace app_list {
+namespace ash {
 namespace test {
 class SearchResultListViewTest;
 }
@@ -31,7 +31,9 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
                        AppListViewDelegate* view_delegate);
   ~SearchResultListView() override;
 
-  void SearchResultActivated(SearchResultView* view, int event_flags);
+  void SearchResultActivated(SearchResultView* view,
+                             int event_flags,
+                             bool by_button_press);
 
   void SearchResultActionActivated(SearchResultView* view,
                                    size_t action_index,
@@ -92,6 +94,6 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
   DISALLOW_COPY_AND_ASSIGN(SearchResultListView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_LIST_VIEW_H_

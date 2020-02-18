@@ -57,10 +57,10 @@ struct UserMediaRequestInfo {
 // UserMediaProcessor must be created, called and destroyed on the main
 // render thread. There should be only one UserMediaProcessor per frame.
 class MODULES_EXPORT UserMediaProcessor
-    : public GarbageCollectedFinalized<UserMediaProcessor> {
+    : public GarbageCollected<UserMediaProcessor> {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
-      const blink::mojom::blink::MediaDevicesDispatcherHostPtr&()>;
+      blink::mojom::blink::MediaDevicesDispatcherHost*()>;
   // |web_frame| must outlive this instance.
   UserMediaProcessor(LocalFrame* frame,
                      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
@@ -126,8 +126,7 @@ class MODULES_EXPORT UserMediaProcessor
           source_ready);
   virtual std::unique_ptr<blink::MediaStreamVideoSource> CreateVideoSource(
       const blink::MediaStreamDevice& device,
-      const blink::WebPlatformMediaStreamSource::SourceStoppedCallback&
-          stop_callback);
+      blink::WebPlatformMediaStreamSource::SourceStoppedCallback stop_callback);
 
   // Intended to be used only for testing.
   const blink::AudioCaptureSettings& AudioCaptureSettingsForTesting() const;
@@ -248,8 +247,7 @@ class MODULES_EXPORT UserMediaProcessor
 
   blink::mojom::blink::MediaStreamDispatcherHost*
   GetMediaStreamDispatcherHost();
-  const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
-  GetMediaDevicesDispatcher();
+  blink::mojom::blink::MediaDevicesDispatcherHost* GetMediaDevicesDispatcher();
 
   void SetupAudioInput();
   void SelectAudioDeviceSettings(
@@ -290,13 +288,12 @@ class MODULES_EXPORT UserMediaProcessor
   mojo::Remote<blink::mojom::blink::MediaStreamDispatcherHost> dispatcher_host_;
 
   // UserMedia requests are processed sequentially. |current_request_info_|
-  // contains the request currently being processed, if any, and
-  // |pending_request_infos_| is a list of queued requests.
+  // contains the request currently being processed.
   Member<RequestInfo> current_request_info_;
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
   base::OnceClosure request_completed_cb_;
 
-  WeakMember<LocalFrame> frame_;
+  Member<LocalFrame> frame_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   THREAD_CHECKER(thread_checker_);

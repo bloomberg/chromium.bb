@@ -125,7 +125,7 @@ void RunAndCheckShrinker(
     const std::vector<uint32_t>& expected_binary_out,
     uint32_t expected_transformations_out_size, uint32_t step_limit) {
   // Run the shrinker.
-  Shrinker shrinker(target_env, step_limit);
+  Shrinker shrinker(target_env, step_limit, false);
   shrinker.SetMessageConsumer(kSilentConsumer);
 
   std::vector<uint32_t> binary_out;
@@ -154,22 +154,21 @@ void RunAndCheckShrinker(
 void RunFuzzerAndShrinker(const std::string& shader,
                           const protobufs::FactSequence& initial_facts,
                           uint32_t seed) {
-  const auto env = SPV_ENV_UNIVERSAL_1_3;
+  const auto env = SPV_ENV_UNIVERSAL_1_5;
 
   std::vector<uint32_t> binary_in;
   SpirvTools t(env);
+  t.SetMessageConsumer(kConsoleMessageConsumer);
   ASSERT_TRUE(t.Assemble(shader, &binary_in, kFuzzAssembleOption));
   ASSERT_TRUE(t.Validate(binary_in));
 
   // Run the fuzzer and check that it successfully yields a valid binary.
   std::vector<uint32_t> fuzzer_binary_out;
   protobufs::TransformationSequence fuzzer_transformation_sequence_out;
-  spvtools::FuzzerOptions fuzzer_options;
-  spvFuzzerOptionsSetRandomSeed(fuzzer_options, seed);
-  Fuzzer fuzzer(env);
+  Fuzzer fuzzer(env, seed, true);
   fuzzer.SetMessageConsumer(kSilentConsumer);
   auto fuzzer_result_status =
-      fuzzer.Run(binary_in, initial_facts, fuzzer_options, &fuzzer_binary_out,
+      fuzzer.Run(binary_in, initial_facts, &fuzzer_binary_out,
                  &fuzzer_transformation_sequence_out);
   ASSERT_EQ(Fuzzer::FuzzerResultStatus::kComplete, fuzzer_result_status);
   ASSERT_TRUE(t.Validate(fuzzer_binary_out));
@@ -433,7 +432,7 @@ TEST(FuzzerShrinkerTest, Miscellaneous2) {
                OpCapability Shader
           %1 = OpExtInstImport "GLSL.std.450"
                OpMemoryModel Logical GLSL450
-               OpEntryPoint Fragment %4 "main" %16 %139
+               OpEntryPoint Fragment %4 "main" %16 %139 %25 %68
                OpExecutionMode %4 OriginUpperLeft
                OpSource ESSL 310
                OpName %4 "main"
@@ -529,8 +528,8 @@ TEST(FuzzerShrinkerTest, Miscellaneous2) {
          %86 = OpLabel
         %184 = OpPhi %26 %27 %78 %126 %89
          %92 = OpSLessThan %8 %184 %56
-               OpLoopMerge %88 %89 None
-               OpBranchConditional %92 %87 %88
+               OpLoopMerge %1000 %89 None
+               OpBranchConditional %92 %87 %1000
          %87 = OpLabel
          %95 = OpIAdd %26 %183 %74
          %96 = OpSLessThan %8 %184 %95
@@ -572,6 +571,8 @@ TEST(FuzzerShrinkerTest, Miscellaneous2) {
          %89 = OpLabel
         %126 = OpIAdd %26 %184 %74
                OpBranch %86
+       %1000 = OpLabel
+               OpBranch %88
          %88 = OpLabel
         %128 = OpIAdd %26 %183 %74
                OpBranch %77
@@ -731,7 +732,7 @@ TEST(FuzzerShrinkerTest, Miscellaneous3) {
                OpCapability Shader
           %1 = OpExtInstImport "GLSL.std.450"
                OpMemoryModel Logical GLSL450
-               OpEntryPoint Fragment %4 "main" %68 %100
+               OpEntryPoint Fragment %4 "main" %68 %100 %24
                OpExecutionMode %4 OriginUpperLeft
                OpSource ESSL 310
                OpName %4 "main"
@@ -830,7 +831,6 @@ TEST(FuzzerShrinkerTest, Miscellaneous3) {
          %37 = OpSDiv %6 %302 %35
          %38 = OpIMul %6 %35 %37
          %40 = OpIEqual %17 %38 %302
-               OpSelectionMerge %42 None
                OpBranchConditional %40 %41 %42
          %41 = OpLabel
          %50 = OpConvertSToF %20 %302
@@ -858,7 +858,6 @@ TEST(FuzzerShrinkerTest, Miscellaneous3) {
                OpBranch %59
          %75 = OpLabel
          %78 = OpSGreaterThan %17 %304 %9
-               OpSelectionMerge %80 None
                OpBranchConditional %78 %79 %80
          %79 = OpLabel
          %83 = OpISub %6 %304 %54

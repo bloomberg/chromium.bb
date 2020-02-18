@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_info.h"
@@ -28,7 +30,7 @@ namespace blink {
 namespace {
 
 class NullImageResourceInfo final
-    : public GarbageCollectedFinalized<NullImageResourceInfo>,
+    : public GarbageCollected<NullImageResourceInfo>,
       public ImageResourceInfo {
   USING_GARBAGE_COLLECTED_MIXIN(NullImageResourceInfo);
 
@@ -146,15 +148,21 @@ void ImageResourceContent::Trace(blink::Visitor* visitor) {
   ImageObserver::Trace(visitor);
 }
 
-void ImageResourceContent::MarkObserverFinished(
+void ImageResourceContent::HandleObserverFinished(
     ImageResourceObserver* observer) {
-  ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(this);
-
-  auto it = observers_.find(observer);
-  if (it == observers_.end())
+  if (info_->SchedulingReloadOrShouldReloadBrokenPlaceholder())
     return;
-  observers_.erase(it);
-  finished_observers_.insert(observer);
+  {
+    ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(
+        this);
+    auto it = observers_.find(observer);
+    if (it != observers_.end()) {
+      observers_.erase(it);
+      finished_observers_.insert(observer);
+    }
+  }
+  observer->ImageNotifyFinished(this);
+  UpdateImageAnimationPolicy();
 }
 
 void ImageResourceContent::AddObserver(ImageResourceObserver* observer) {
@@ -175,11 +183,8 @@ void ImageResourceContent::AddObserver(ImageResourceObserver* observer) {
     observer->ImageChanged(this, CanDeferInvalidation::kNo);
   }
 
-  if (IsLoaded() && observers_.Contains(observer) &&
-      !info_->SchedulingReloadOrShouldReloadBrokenPlaceholder()) {
-    MarkObserverFinished(observer);
-    observer->ImageNotifyFinished(this);
-  }
+  if (IsLoaded() && observers_.Contains(observer))
+    HandleObserverFinished(observer);
 }
 
 void ImageResourceContent::RemoveObserver(ImageResourceObserver* observer) {
@@ -294,10 +299,8 @@ void ImageResourceContent::NotifyObservers(
       if (observers_.Contains(observer)) {
         observer->ImageChanged(this, defer);
         if (notifying_finish_option == kShouldNotifyFinish &&
-            observers_.Contains(observer) &&
-            !info_->SchedulingReloadOrShouldReloadBrokenPlaceholder()) {
-          MarkObserverFinished(observer);
-          observer->ImageNotifyFinished(this);
+            observers_.Contains(observer)) {
+          HandleObserverFinished(observer);
         }
       }
     }

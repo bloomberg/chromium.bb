@@ -10,10 +10,10 @@
 #include <string>
 
 #include "base/base_export.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_tracing.h"
 #include "base/files/platform_file.h"
-#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -128,14 +128,14 @@ class BASE_EXPORT File {
 #endif
 
     // The size of the file in bytes.  Undefined when is_directory is true.
-    int64_t size;
+    int64_t size = 0;
 
     // True if the file corresponds to a directory.
-    bool is_directory;
+    bool is_directory = false;
 
     // True if the file corresponds to a symbolic link.  For Windows currently
     // not supported and thus always false.
-    bool is_symbolic_link;
+    bool is_symbolic_link = false;
 
     // The last modified time of a file.
     Time last_modified;
@@ -154,11 +154,13 @@ class BASE_EXPORT File {
   File(const FilePath& path, uint32_t flags);
 
   // Takes ownership of |platform_file| and sets async to false.
+  explicit File(ScopedPlatformFile platform_file);
   explicit File(PlatformFile platform_file);
 
   // Takes ownership of |platform_file| and sets async to the given value.
   // This constructor exists because on Windows you can't check if platform_file
   // is async or not.
+  File(ScopedPlatformFile platform_file, bool async);
   File(PlatformFile platform_file, bool async);
 
   // Creates an object with a specific error_details code.
@@ -200,6 +202,14 @@ class BASE_EXPORT File {
   // defined by |whence|. Returns the resultant current position in the file
   // (relative to the start) or -1 in case of error.
   int64_t Seek(Whence whence, int64_t offset);
+
+  // Simplified versions of Read() and friends (see below) that check the int
+  // return value and just return a boolean. They return true if and only if
+  // the function read in / wrote out exactly |size| bytes of data.
+  bool ReadAndCheck(int64_t offset, span<uint8_t> data);
+  bool ReadAtCurrentPosAndCheck(span<uint8_t> data);
+  bool WriteAndCheck(int64_t offset, span<const uint8_t> data);
+  bool WriteAtCurrentPosAndCheck(span<const uint8_t> data);
 
   // Reads the given number of bytes (or until EOF is reached) starting with the
   // given offset. Returns the number of bytes read, or -1 on error. Note that
@@ -355,6 +365,13 @@ class BASE_EXPORT File {
   // Converts an error value to a human-readable form. Used for logging.
   static std::string ErrorToString(Error error);
 
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+  // Wrapper for stat() or stat64().
+  static int Stat(const char* path, stat_wrapper_t* sb);
+  static int Fstat(int fd, stat_wrapper_t* sb);
+  static int Lstat(const char* path, stat_wrapper_t* sb);
+#endif
+
  private:
   friend class FileTracing::ScopedTrace;
 
@@ -373,9 +390,9 @@ class BASE_EXPORT File {
   // Object tied to the lifetime of |this| that enables/disables tracing.
   FileTracing::ScopedEnabler trace_enabler_;
 
-  Error error_details_;
-  bool created_;
-  bool async_;
+  Error error_details_ = FILE_ERROR_FAILED;
+  bool created_ = false;
+  bool async_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(File);
 };

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 
 namespace blink {
 
@@ -14,17 +15,21 @@ SharedWorkerContentSettingsProxy::SharedWorkerContentSettingsProxy(
     : host_info_(std::move(host_info)) {}
 SharedWorkerContentSettingsProxy::~SharedWorkerContentSettingsProxy() = default;
 
-bool SharedWorkerContentSettingsProxy::AllowIndexedDB(
-    const WebSecurityOrigin& origin) {
+bool SharedWorkerContentSettingsProxy::AllowIndexedDB() {
   bool result = false;
   GetService()->AllowIndexedDB(&result);
   return result;
 }
 
-bool SharedWorkerContentSettingsProxy::AllowCacheStorage(
-    const WebSecurityOrigin&) {
+bool SharedWorkerContentSettingsProxy::AllowCacheStorage() {
   bool result = false;
   GetService()->AllowCacheStorage(&result);
+  return result;
+}
+
+bool SharedWorkerContentSettingsProxy::AllowWebLocks() {
+  bool result = false;
+  GetService()->AllowWebLocks(&result);
   return result;
 }
 

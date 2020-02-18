@@ -7,9 +7,9 @@
 
 #include "base/optional.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
-#include "services/network/public/mojom/cors.mojom-blink.h"
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "services/network/public/mojom/cors.mojom-blink-forward.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_http_header_set.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -85,6 +85,7 @@ PLATFORM_EXPORT network::mojom::FetchResponseType CalculateResponseTainting(
     const KURL& url,
     network::mojom::RequestMode request_mode,
     const SecurityOrigin* origin,
+    const SecurityOrigin* isolated_world_origin,
     CorsFlag cors_flag);
 
 PLATFORM_EXPORT bool CalculateCredentialsFlag(
@@ -119,7 +120,8 @@ PLATFORM_EXPORT bool IsOkStatus(int status);
 // This function will be removed when out-of-renderer CORS is enabled.
 PLATFORM_EXPORT bool CalculateCorsFlag(
     const KURL& url,
-    const SecurityOrigin* origin,
+    const SecurityOrigin* initiator_origin,
+    const SecurityOrigin* isolated_world_origin,
     network::mojom::RequestMode request_mode);
 
 PLATFORM_EXPORT WebHTTPHeaderSet

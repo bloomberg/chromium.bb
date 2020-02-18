@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -182,9 +183,9 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
     on_tapped_ = on_tapped;
 
     hover_notifier_ = std::make_unique<HoverNotifier>(
-        this,
-        base::Bind(&LoginPasswordView::EasyUnlockIcon::OnHoverStateChanged,
-                   base::Unretained(this)));
+        this, base::BindRepeating(
+                  &LoginPasswordView::EasyUnlockIcon::OnHoverStateChanged,
+                  base::Unretained(this)));
   }
 
   void SetEasyUnlockIcon(EasyUnlockIconId icon_id,

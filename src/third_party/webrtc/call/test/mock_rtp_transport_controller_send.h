@@ -16,9 +16,9 @@
 #include <string>
 #include <vector>
 
-#include "api/bitrate_constraints.h"
 #include "api/crypto/crypto_options.h"
 #include "api/crypto/frame_encryptor_interface.h"
+#include "api/transport/bitrate_settings.h"
 #include "call/rtp_transport_controller_send_interface.h"
 #include "modules/pacing/packet_router.h"
 #include "rtc_base/network/sent_packet.h"
@@ -49,11 +49,10 @@ class MockRtpTransportControllerSend
                NetworkStateEstimateObserver*());
   MOCK_METHOD0(transport_feedback_observer, TransportFeedbackObserver*());
   MOCK_METHOD0(packet_sender, RtpPacketSender*());
-  MOCK_METHOD3(SetAllocatedSendBitrateLimits, void(int, int, int));
+  MOCK_METHOD1(SetAllocatedSendBitrateLimits, void(BitrateAllocationLimits));
   MOCK_METHOD1(SetPacingFactor, void(float));
   MOCK_METHOD1(SetQueueTimeLimit, void(int));
-  MOCK_METHOD1(RegisterPacketFeedbackObserver, void(PacketFeedbackObserver*));
-  MOCK_METHOD1(DeRegisterPacketFeedbackObserver, void(PacketFeedbackObserver*));
+  MOCK_METHOD0(GetStreamFeedbackProvider, StreamFeedbackProvider*());
   MOCK_METHOD1(RegisterTargetTransferRateObserver,
                void(TargetTransferRateObserver*));
   MOCK_METHOD2(OnNetworkRouteChanged,

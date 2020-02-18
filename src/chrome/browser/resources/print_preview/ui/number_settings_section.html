@@ -1,61 +1,48 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
+<style include="print-preview-shared">
+  :host {
+    /* Width = 3 digits + space + cr-input-padding-end/start */
+    --cr-input-width: calc(4em + 16px);
+  }
 
-<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
-<link rel="import" href="input_behavior.html">
-<link rel="import" href="print_preview_shared_css.html">
-<link rel="import" href="print_preview_vars_css.html">
-<link rel="import" href="settings_section.html">
+  #sectionTitle {
+    align-self: baseline;
+  }
 
-<dom-module id="print-preview-number-settings-section">
-  <template>
-    <style include="print-preview-shared">
-      :host {
-        /* Width = 3 digits + space + cr-input-padding-end/start */
-        --cr-input-width: calc(4em + 16px);
-      }
+  cr-input {
+    margin-inline-end: 16px;
+    min-height: var(--print-preview-row-height);
+    overflow: hidden;
+  }
 
-      #sectionTitle {
-        align-self: baseline;
-      }
+  .input-wrapper {
+    align-items: center;
+    display: flex;
+  }
 
-      cr-input {
-        margin-inline-end: 16px;
-        min-height: var(--print-preview-row-height);
-        overflow: hidden;
-      }
+  :host([input-valid]) cr-input {
+    --cr-input-error-display: none;
+  }
 
-      .input-wrapper {
-        align-items: center;
-        display: flex;
-      }
-
-      :host([input-valid]) cr-input {
-        --cr-input-error-display: none;
-      }
-
-      span[slot=suffix] {
-        max-width: calc(100% - 5em);
-        min-height: var(--print-preview-row-height);
-        overflow: hidden;
-        word-wrap: break-word;
-      }
-    </style>
-    <print-preview-settings-section>
-      <span slot="title" id="sectionTitle">[[inputLabel]]</span>
-      <div slot="controls" id="controls">
-        <span class="input-wrapper">
-          <cr-input id="userValue" type="number"
-              max="[[maxValue]]" min="[[minValue]]" data-timeout-delay="250"
-              disabled$="[[getDisabled_(disabled)]]" on-keydown="onKeydown_"
-              on-blur="onBlur_" aria-label="[[inputAriaLabel]]"
-              error-message="[[hintMessage]]" auto-validate>
-            <span slot="suffix">
-              <slot name="opt-inside-content"></slot>
-            </span>
-          </cr-input>
+  span[slot=suffix] {
+    max-width: calc(100% - 5em);
+    min-height: var(--print-preview-row-height);
+    overflow: hidden;
+    word-wrap: break-word;
+  }
+</style>
+<print-preview-settings-section>
+  <span slot="title" id="sectionTitle">[[inputLabel]]</span>
+  <div slot="controls" id="controls">
+    <span class="input-wrapper">
+      <cr-input id="userValue" type="number"
+          max="[[maxValue]]" min="[[minValue]]" data-timeout-delay="250"
+          disabled$="[[getDisabled_(disabled)]]" on-keydown="onKeydown_"
+          on-blur="onBlur_" aria-label="[[inputAriaLabel]]"
+          error-message="[[hintMessage]]" auto-validate>
+        <span slot="suffix">
+          <slot name="opt-inside-content"></slot>
         </span>
-      </div>
-    </print-preview-settings-section>
-  </template>
-  <script src="number_settings_section.js"></script>
-</dom-module>
+      </cr-input>
+    </span>
+  </div>
+</print-preview-settings-section>

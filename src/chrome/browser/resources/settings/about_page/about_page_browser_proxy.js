@@ -27,20 +27,19 @@ let ChannelInfo;
 
 /**
  * @typedef {{
- *   arcVersion: string,
- *   osFirmware: string,
- *   osVersion: string,
- * }}
- */
-let VersionInfo;
-
-/**
- * @typedef {{
  *   version: (string|undefined),
  *   size: (string|undefined),
  * }}
  */
 let AboutPageUpdateInfo;
+
+/**
+ * @typedef {{
+ *   hasEndOfLife: (boolean|undefined),
+ *   eolMessageWithMonthAndYear: (string|undefined),
+ * }}
+ */
+let EndOfLifeInfo;
 
 /**
  * Enumeration of all possible browser channels.
@@ -200,18 +199,15 @@ cr.define('settings', function() {
     /** @return {!Promise<!ChannelInfo>} */
     getChannelInfo() {}
 
-    /** @return {!Promise<!VersionInfo>} */
-    getVersionInfo() {}
-
     /** @return {!Promise<?RegulatoryInfo>} */
     getRegulatoryInfo() {}
 
     /**
      * Checks if the device has reached end-of-life status and will no longer
      * receive updates.
-     * @return {!Promise<boolean>}
+     * @return {!Promise<!EndOfLifeInfo>}
      */
-    getHasEndOfLife() {}
+    getEndOfLifeInfo() {}
 
     /**
      * Request TPM firmware update status from the browser. It results in one or
@@ -309,18 +305,13 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    getVersionInfo() {
-      return cr.sendWithPromise('getVersionInfo');
-    }
-
-    /** @override */
     getRegulatoryInfo() {
       return cr.sendWithPromise('getRegulatoryInfo');
     }
 
     /** @override */
-    getHasEndOfLife() {
-      return cr.sendWithPromise('getHasEndOfLife');
+    getEndOfLifeInfo() {
+      return cr.sendWithPromise('getEndOfLifeInfo');
     }
 
     /** @override */

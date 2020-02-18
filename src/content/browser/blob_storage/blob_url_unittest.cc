@@ -18,6 +18,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -34,9 +36,9 @@
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_store_impl.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/file_system_operation_context.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/fake_blob_data_handle.h"
 #include "storage/browser/test/mock_blob_registry_delegate.h"
@@ -201,14 +203,16 @@ class BlobURLTest : public testing::Test {
     url_store.Register(std::move(blob_remote), url, loop.QuitClosure());
     loop.Run();
 
-    network::mojom::URLLoaderFactoryPtr url_loader_factory;
-    url_store.ResolveAsURLLoaderFactory(url, MakeRequest(&url_loader_factory));
+    mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory;
+    url_store.ResolveAsURLLoaderFactory(
+        url, url_loader_factory.BindNewPipeAndPassReceiver());
 
-    network::mojom::URLLoaderPtr url_loader;
+    mojo::PendingRemote<network::mojom::URLLoader> url_loader;
     network::TestURLLoaderClient url_loader_client;
     url_loader_factory->CreateLoaderAndStart(
-        MakeRequest(&url_loader), 0, 0, network::mojom::kURLLoadOptionNone,
-        request, url_loader_client.CreateInterfacePtr(),
+        url_loader.InitWithNewPipeAndPassReceiver(), 0, 0,
+        network::mojom::kURLLoadOptionNone, request,
+        url_loader_client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     url_loader_client.RunUntilComplete();
 
@@ -216,7 +220,9 @@ class BlobURLTest : public testing::Test {
       EXPECT_TRUE(mojo::BlockingCopyToString(
           url_loader_client.response_body_release(), &response_));
     }
-    response_headers_ = url_loader_client.response_head().headers;
+    response_headers_ = url_loader_client.response_head()
+                            ? url_loader_client.response_head()->headers
+                            : nullptr;
     response_metadata_ = url_loader_client.cached_metadata();
     response_error_code_ = url_loader_client.completion_status().error_code;
 
@@ -229,8 +235,9 @@ class BlobURLTest : public testing::Test {
   }
 
   void BuildComplicatedData(std::string* expected_result) {
-    blob_data_->AppendData(kTestData1 + 1, 2);
-    *expected_result = std::string(kTestData1 + 1, 2);
+    auto str1 = std::string(kTestData1 + 1, 2);
+    blob_data_->AppendData(str1);
+    *expected_result = str1;
 
     blob_data_->AppendFile(temp_file1_, 2, 3, temp_file_modification_time1_);
     *expected_result += std::string(kTestFileData1 + 2, 3);
@@ -245,8 +252,9 @@ class BlobURLTest : public testing::Test {
                                      file_system_context_);
     *expected_result += std::string(kTestFileSystemFileData1 + 3, 4);
 
-    blob_data_->AppendData(kTestData2 + 4, 5);
-    *expected_result += std::string(kTestData2 + 4, 5);
+    auto str2 = std::string(kTestData2 + 4, 5);
+    blob_data_->AppendData(str2);
+    *expected_result += str2;
 
     blob_data_->AppendFile(temp_file2_, 5, 6, temp_file_modification_time2_);
     *expected_result += std::string(kTestFileData2 + 5, 6);

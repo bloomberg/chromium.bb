@@ -50,8 +50,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 LayoutImage::LayoutImage(Element* element)
     : LayoutReplaced(element, LayoutSize()),
       did_increment_visually_non_empty_pixel_count_(false),
@@ -107,9 +105,10 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image,
   if (new_image != image_resource_->ImagePtr())
     return;
 
-  if (IsGeneratedContent() && IsHTMLImageElement(GetNode()) &&
+  auto* html_image_element = DynamicTo<HTMLImageElement>(GetNode());
+  if (IsGeneratedContent() && html_image_element &&
       image_resource_->ErrorOccurred()) {
-    ToHTMLImageElement(GetNode())->EnsureFallbackForGeneratedContent();
+    html_image_element->EnsureFallbackForGeneratedContent();
     return;
   }
 
@@ -142,7 +141,7 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image,
 }
 
 void LayoutImage::UpdateIntrinsicSizeIfNeeded(const LayoutSize& new_size) {
-  if (image_resource_->ErrorOccurred() || !image_resource_->HasImage())
+  if (image_resource_->ErrorOccurred())
     return;
   SetIntrinsicSize(new_size);
 }
@@ -286,8 +285,9 @@ LayoutUnit LayoutImage::MinimumReplacedHeight() const {
 }
 
 HTMLMapElement* LayoutImage::ImageMap() const {
-  HTMLImageElement* i = ToHTMLImageElementOrNull(GetNode());
-  return i ? i->GetTreeScope().GetImageMap(i->FastGetAttribute(kUsemapAttr))
+  auto* i = DynamicTo<HTMLImageElement>(GetNode());
+  return i ? i->GetTreeScope().GetImageMap(
+                 i->FastGetAttribute(html_names::kUsemapAttr))
            : nullptr;
 }
 
@@ -307,7 +307,7 @@ bool LayoutImage::NodeAtPoint(HitTestResult& result,
 }
 
 IntSize LayoutImage::GetOverriddenIntrinsicSize() const {
-  if (auto* image_element = ToHTMLImageElementOrNull(GetNode())) {
+  if (auto* image_element = DynamicTo<HTMLImageElement>(GetNode())) {
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
       return image_element->GetOverriddenIntrinsicSize();
   }
@@ -347,7 +347,7 @@ bool LayoutImage::OverrideIntrinsicSizingInfo(
 
 void LayoutImage::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  DCHECK(!ShouldApplySizeContainment() && !DisplayLockInducesSizeContainment());
+  DCHECK(!ShouldApplySizeContainment());
   if (!OverrideIntrinsicSizingInfo(intrinsic_sizing_info)) {
     if (SVGImage* svg_image = EmbeddedSVGImage()) {
       svg_image->GetIntrinsicSizingInfo(intrinsic_sizing_info);
@@ -420,7 +420,7 @@ SVGImage* LayoutImage::EmbeddedSVGImage() const {
 void LayoutImage::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   Node* node = GetNode();
-  if (auto* image_element = ToHTMLImageElementOrNull(node)) {
+  if (auto* image_element = DynamicTo<HTMLImageElement>(node)) {
     media_element_parser_helpers::ReportUnsizedMediaViolation(
         this, image_element->IsDefaultIntrinsicSize());
   }

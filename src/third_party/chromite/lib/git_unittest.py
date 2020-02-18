@@ -7,11 +7,14 @@
 
 from __future__ import print_function
 
+import errno
 import functools
 import os
 
 import mock
 
+from chromite.cbuildbot import repository
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
@@ -53,7 +56,7 @@ class NormalizeRefTest(cros_test_lib.TestCase):
       result = functor(test_input)
       msg = ('Expected %s to translate %r to %r, but got %r.' %
              (functor.__name__, test_input, test_output, result))
-      self.assertEquals(test_output, result, msg)
+      self.assertEqual(test_output, result, msg)
 
   def testNormalizeRef(self):
     """Test git.NormalizeRef function."""
@@ -168,8 +171,8 @@ class GitWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['remote', 'add', 'origin', url])
     self.assertCommandContains(['fetch', '--depth=1'])
     self.assertCommandContains(['pull', 'origin', 'master'])
-    self.assertEquals(osutils.ReadFile(sparse_checkout),
-                      'dir1/file1\ndir2/file2')
+    self.assertEqual(osutils.ReadFile(sparse_checkout),
+                     'dir1/file1\ndir2/file2')
 
   def testFindGitTopLevel(self):
     git.FindGitTopLevel(self.fake_path)
@@ -309,12 +312,12 @@ class LogTest(cros_test_lib.RunCommandTestCase):
     self.assertCommandContains(['git', 'log'], cwd='git/repo/path')
 
   def testAllArgs(self):
-    git.Log('git/repo/path', pretty='format:"%cd"',
+    git.Log('git/repo/path', format='format:"%cd"',
             after='1996-01-01', until='1997-01-01', reverse=True,
             date='unix', paths=['my/path'])
     self.assertCommandContains(
         [
-            'git', 'log', '--pretty=format:"%cd"', '--after=1996-01-01',
+            'git', 'log', '--format=format:"%cd"', '--after=1996-01-01',
             '--until=1997-01-01', '--reverse', '--date=unix',
             '--', 'my/path',
         ], cwd='git/repo/path')
@@ -378,6 +381,13 @@ class RawDiffTest(cros_test_lib.MockTestCase):
          'chromium-source-40.0.2197.2_rc-r1.ebuild')
     ])
 
+  def testEmptyDiff(self):
+    """Verify an empty diff doesn't crash."""
+    result = cros_build_lib.CommandResult(output='\n')
+    self.PatchObject(git, 'RunGit', return_value=result)
+    entries = git.RawDiff('foo', 'bar')
+    self.assertEqual([], entries)
+
 
 class GitPushTest(cros_test_lib.RunCommandTestCase):
   """Tests for git.GitPush function."""
@@ -436,7 +446,7 @@ class GitPushTest(cros_test_lib.RunCommandTestCase):
     git.GitPush('git_path', 'HEAD', git.RemoteRef('origin', 'master'))
     self.assertCommandCalled(['git', 'push', 'origin', 'HEAD:master'],
                              capture_output=True, print_cmd=False,
-                             cwd='git_path')
+                             cwd='git_path', encoding='utf-8')
 
   def testGitPushComplix(self):
     """Test GitPush with some arguments."""
@@ -445,7 +455,7 @@ class GitPushTest(cros_test_lib.RunCommandTestCase):
     self.assertCommandCalled(['git', 'push', 'origin', 'HEAD:master',
                               '--force', '--dry-run'],
                              capture_output=True, print_cmd=False,
-                             cwd='git_path')
+                             cwd='git_path', encoding='utf-8')
 
   def testNonFFPush(self):
     """Non fast-forward push error propagates to the caller."""
@@ -481,3 +491,159 @@ class GitIntegrationTest(patch_unittest.GitRepoPatchTestCase):
     git.CreateBranch(git1, 'peach', track=True)
     self.CommitFile(git1, 'peach', 'Keep me.')
     self.assertTrue(git.DoesCommitExistInRepo(git1, 'peach'))
+
+
+class ManifestCheckoutTest(cros_test_lib.TempDirTestCase):
+  """Tests for ManifestCheckout functionality."""
+
+  def setUp(self):
+    self.manifest_dir = os.path.join(self.tempdir, '.repo', 'manifests')
+
+    # Initialize a repo instance here.
+    local_repo = os.path.join(constants.SOURCE_ROOT, '.repo/repo/.git')
+
+    # TODO(evanhernandez): This is a hack. Find a way to simplify this test.
+    # We used to use the current checkout's manifests.git, but that caused
+    # problems in production environemnts.
+    remote_manifests = os.path.join(self.tempdir, 'remote', 'manifests.git')
+    osutils.SafeMakedirs(remote_manifests)
+    git.Init(remote_manifests)
+    default_manifest = os.path.join(remote_manifests, 'default.xml')
+    osutils.WriteFile(
+        default_manifest,
+        '<?xml version="1.0" encoding="UTF-8"?><manifest></manifest>')
+    git.AddPath(default_manifest)
+    git.Commit(remote_manifests, 'dummy commit', allow_empty=True)
+    git.CreateBranch(remote_manifests, 'default')
+    git.CreateBranch(remote_manifests, 'release-R23-2913.B')
+    git.CreateBranch(remote_manifests, 'release-R23-2913.B-suffix')
+    git.CreateBranch(remote_manifests, 'firmware-link-')
+
+    # Create a copy of our existing manifests.git, but rewrite it so it
+    # looks like a remote manifests.git.  This is to avoid hitting the
+    # network, and speeds things up in general.
+    local_manifests = 'file://%s' % remote_manifests
+    temp_manifests = os.path.join(self.tempdir, 'manifests.git')
+    git.RunGit(self.tempdir, ['clone', '-n', '--bare', local_manifests])
+    git.RunGit(temp_manifests,
+               ['fetch', '-f', '-u', local_manifests,
+                'refs/remotes/origin/*:refs/heads/*'])
+    git.RunGit(temp_manifests, ['branch', '-D', 'default'])
+    repo = repository.RepoRepository(
+        temp_manifests, self.tempdir,
+        repo_url='file://%s' % local_repo, repo_branch='default')
+    repo.Initialize()
+
+    self.active_manifest = os.path.realpath(
+        os.path.join(self.tempdir, '.repo', 'manifest.xml'))
+
+  def testManifestInheritance(self):
+    osutils.WriteFile(self.active_manifest, """
+        <manifest>
+          <include name="include-target.xml" />
+          <include name="empty.xml" />
+          <project name="monkeys" path="baz" remote="foon" revision="master" />
+        </manifest>""")
+    # First, verify it properly explodes if the include can't be found.
+    self.assertRaises(EnvironmentError,
+                      git.ManifestCheckout, self.tempdir)
+
+    # Next, verify it can read an empty manifest; this is to ensure
+    # that we can point Manifest at the empty manifest without exploding,
+    # same for ManifestCheckout; this sort of thing is primarily useful
+    # to ensure no step of an include assumes everything is yet assembled.
+    empty_path = os.path.join(self.manifest_dir, 'empty.xml')
+    osutils.WriteFile(empty_path, '<manifest/>')
+    git.Manifest(empty_path)
+    git.ManifestCheckout(self.tempdir, manifest_path=empty_path)
+
+    # Next, verify include works.
+    osutils.WriteFile(
+        os.path.join(self.manifest_dir, 'include-target.xml'),
+        """
+        <manifest>
+          <remote name="foon" fetch="http://localhost" />
+        </manifest>""")
+    manifest = git.ManifestCheckout(self.tempdir)
+    self.assertEqual(list(manifest.checkouts_by_name), ['monkeys'])
+    self.assertEqual(list(manifest.remotes), ['foon'])
+
+  def testGetManifestsBranch(self):
+    # pylint: disable=protected-access
+    func = git.ManifestCheckout._GetManifestsBranch
+    manifest = self.manifest_dir
+    repo_root = self.tempdir
+
+    # pylint: disable=unused-argument
+    def reconfig(merge='master', origin='origin'):
+      if merge is not None:
+        merge = 'refs/heads/%s' % merge
+      for key in ('merge', 'origin'):
+        val = locals()[key]
+        key = 'branch.default.%s' % key
+        if val is None:
+          git.RunGit(manifest, ['config', '--unset', key], error_code_ok=True)
+        else:
+          git.RunGit(manifest, ['config', key, val])
+
+    # First, verify our assumptions about a fresh repo init are correct.
+    self.assertEqual('default', git.GetCurrentBranch(manifest))
+    self.assertEqual('master', func(repo_root))
+
+    # Ensure we can handle a missing origin; this can occur jumping between
+    # branches, and can be worked around.
+    reconfig(origin=None)
+    self.assertEqual('default', git.GetCurrentBranch(manifest))
+    self.assertEqual('master', func(repo_root))
+
+    def assertExcept(message, **kwargs):
+      reconfig(**kwargs)
+      self.assertRaises2(OSError, func, repo_root, ex_msg=message,
+                         check_attrs={'errno': errno.ENOENT})
+
+    # No merge target means the configuration isn't usable, period.
+    assertExcept('git tracking configuration for that branch is broken',
+                 merge=None)
+
+    # Ensure we detect if we're on the wrong branch, even if it has
+    # tracking setup.
+    git.RunGit(manifest, ['checkout', '-t', 'origin/master', '-b', 'test'])
+    assertExcept("It should be checked out to 'default'")
+
+    # Ensure we handle detached HEAD w/ an appropriate exception.
+    git.RunGit(manifest, ['checkout', '--detach', 'test'])
+    assertExcept("It should be checked out to 'default'")
+
+    # Finally, ensure that if the default branch is non-existant, we still throw
+    # a usable exception.
+    git.RunGit(manifest, ['branch', '-d', 'default'])
+    assertExcept("It should be checked out to 'default'")
+
+  def testGitMatchBranchName(self):
+    git_repo = os.path.join(self.tempdir, '.repo', 'manifests')
+
+    branches = git.MatchBranchName(git_repo, 'default', namespace='')
+    self.assertEqual(branches, ['refs/heads/default'])
+
+    branches = git.MatchBranchName(git_repo, 'default', namespace='refs/heads/')
+    self.assertEqual(branches, ['default'])
+
+    branches = git.MatchBranchName(git_repo, 'origin/f.*link',
+                                   namespace='refs/remotes/')
+    self.assertTrue('firmware-link-' in branches[0])
+
+    branches = git.MatchBranchName(git_repo, 'r23')
+    self.assertEqual(branches,
+                     ['refs/remotes/origin/release-R23-2913.B',
+                      'refs/remotes/origin/release-R23-2913.B-suffix'])
+
+    branches = git.MatchBranchName(git_repo, 'release-R23-2913.B')
+    self.assertEqual(branches, ['refs/remotes/origin/release-R23-2913.B'])
+
+    branches = git.MatchBranchName(git_repo, 'release-R23-2913.B',
+                                   namespace='refs/remotes/origin/')
+    self.assertEqual(branches, ['release-R23-2913.B'])
+
+    branches = git.MatchBranchName(git_repo, 'release-R23-2913.B',
+                                   namespace='refs/remotes/')
+    self.assertEqual(branches, ['origin/release-R23-2913.B'])

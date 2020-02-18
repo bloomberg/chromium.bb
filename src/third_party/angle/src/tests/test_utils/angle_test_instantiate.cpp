@@ -14,15 +14,21 @@
 
 #include "angle_gl.h"
 #include "common/platform.h"
+#include "common/system_utils.h"
 #include "gpu_info_util/SystemInfo.h"
 #include "test_utils/angle_test_configs.h"
 #include "util/EGLWindow.h"
 #include "util/OSWindow.h"
-#include "util/system_utils.h"
+#include "util/test_utils.h"
 
 #if defined(ANGLE_PLATFORM_WINDOWS)
+#    include <VersionHelpers.h>
 #    include "util/windows/WGLWindow.h"
 #endif  // defined(ANGLE_PLATFORM_WINDOWS)
+
+#if defined(ANGLE_PLATFORM_APPLE)
+#    include "test_utils/angle_test_instantiate_apple.h"
+#endif
 
 namespace angle
 {
@@ -177,6 +183,15 @@ bool IsWindows()
 #endif
 }
 
+bool IsWindows7()
+{
+#if defined(ANGLE_PLATFORM_WINDOWS)
+    return ::IsWindows7OrGreater() && !::IsWindows8OrGreater();
+#else
+    return false;
+#endif
+}
+
 bool IsFuchsia()
 {
 #if defined(ANGLE_PLATFORM_FUCHSIA)
@@ -209,6 +224,11 @@ bool IsPixelXL()
 bool IsPixel2()
 {
     return IsAndroidDevice("Pixel 2");
+}
+
+bool IsPixel2XL()
+{
+    return IsAndroidDevice("Pixel 2 XL");
 }
 
 bool IsNVIDIAShield()
@@ -284,6 +304,7 @@ bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters 
         }
     }
 
+#if defined(ANGLE_PLATFORM_APPLE)
     if (IsOSX())
     {
         // We do not support non-ANGLE bindings on OSX.
@@ -292,15 +313,31 @@ bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters 
             return false;
         }
 
-        // OSX does not support ES 3.1 features.
-        if (param.majorVersion == 3 && param.minorVersion > 0)
+        switch (param.getRenderer())
         {
-            return false;
+            case EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE:
+                // ES 3.1+ back-end is not supported properly.
+                if (param.majorVersion == 3 && param.minorVersion > 0)
+                {
+                    return false;
+                }
+                return true;
+            case EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE:
+                if (!IsMetalRendererAvailable() || IsIntel(vendorID))
+                {
+                    // TODO(hqle): Intel metal tests seem to have problems. Disable for now.
+                    // http://anglebug.com/4133
+                    return false;
+                }
+                return true;
+            case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
+                // OSX does not support native vulkan
+                return param.getDeviceType() == EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE;
+            default:
+                return false;
         }
-
-        // Currently we only support the OpenGL back-end on OSX.
-        return (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE);
     }
+#endif  // #if defined(ANGLE_PLATFORM_APPLE)
 
     if (IsFuchsia())
     {
@@ -370,6 +407,11 @@ bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters 
         {
             case EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE:
             case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
+                // Swiftshader's vulkan frontend doesn't build on Android.
+                if (param.getDeviceType() == EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE)
+                {
+                    return false;
+                }
                 return true;
             default:
                 return false;
@@ -437,6 +479,22 @@ bool IsPlatformAvailable(const PlatformParameters &param)
 
         case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
 #if !defined(ANGLE_ENABLE_VULKAN)
+            return false;
+#elif defined(ANGLE_IS_32_BIT_CPU)
+            // http://anglebug.com/4092
+            //  Currently hitting crashes in SwS w/ 32-bit Windows so skipping for now
+            if (IsWindows() && (param.eglParameters.deviceType ==
+                                EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE))
+            {
+                return false;
+            }
+            break;
+#else
+            break;
+#endif
+
+        case EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE:
+#if !defined(ANGLE_ENABLE_METAL)
             return false;
 #else
             break;

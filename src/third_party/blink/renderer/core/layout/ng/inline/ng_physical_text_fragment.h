@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGPhysicalTextFragment_h
-#define NGPhysicalTextFragment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_PHYSICAL_TEXT_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_PHYSICAL_TEXT_FRAGMENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_end_effect.h"
@@ -23,25 +23,6 @@ class NGPhysicalTextFragment;
 struct PhysicalRect;
 
 enum class AdjustMidCluster;
-
-// In CSS Writing Modes Levle 4, line orientation for layout and line
-// orientation for paint are not always the same.
-//
-// Specifically, 'sideways-lr' typesets as if lines are horizontal flow, but
-// rotates counterclockwise.
-enum class NGLineOrientation {
-  // Lines are horizontal.
-  kHorizontal,
-  // Lines are vertical, rotated clockwise. Inside of the line, it may be
-  // typeset using vertical characteristics, horizontal characteristics, or
-  // mixed. Lines flow left to right, or right to left.
-  kClockWiseVertical,
-  // Lines are vertical, rotated counterclockwise. Inside of the line is typeset
-  // as if horizontal flow. Lines flow left to right.
-  kCounterClockWiseVertical
-
-  // When adding new values, ensure NGPhysicalTextFragment has enough bits.
-};
 
 class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
  public:
@@ -80,8 +61,12 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return StyleVariant() == NGStyleVariant::kEllipsis;
   }
 
-  unsigned Length() const { return end_offset_ - start_offset_; }
-  StringView Text() const { return StringView(text_, start_offset_, Length()); }
+  bool IsSymbolMarker() const { return TextType() == kSymbolMarker; }
+
+  unsigned TextLength() const { return end_offset_ - start_offset_; }
+  StringView Text() const {
+    return StringView(text_, start_offset_, TextLength());
+  }
   const String& TextContent() const { return text_; }
 
   // ShapeResult may be nullptr if |IsFlowControl()|.
@@ -91,11 +76,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
 
-  NGLineOrientation LineOrientation() const {
-    return static_cast<NGLineOrientation>(line_orientation_);
-  }
+  WritingMode GetWritingMode() const { return Style().GetWritingMode(); }
   bool IsHorizontal() const {
-    return LineOrientation() == NGLineOrientation::kHorizontal;
+    return IsHorizontalWritingMode(GetWritingMode());
   }
 
   // Compute the inline position from text offset, in logical coordinate
@@ -178,4 +161,4 @@ struct DowncastTraits<NGPhysicalTextFragment> {
 
 }  // namespace blink
 
-#endif  // NGPhysicalTextFragment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_PHYSICAL_TEXT_FRAGMENT_H_

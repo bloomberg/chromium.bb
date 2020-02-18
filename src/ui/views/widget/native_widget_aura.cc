@@ -35,6 +35,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
+#include "ui/views/buildflags.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/drop_helper.h"
@@ -54,19 +55,18 @@
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/window_move_client.h"
 
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
+#endif
+
 #if defined(OS_WIN)
-#include "base/win/scoped_gdi_object.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
 
-#if defined(USE_X11)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) && defined(OS_LINUX)
 #include "ui/views/linux_ui/linux_ui.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
-#endif
-
-#if !defined(OS_CHROMEOS)
-#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #endif
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(views::internal::NativeWidgetPrivate*)
@@ -128,9 +128,9 @@ void NativeWidgetAura::AssignIconToAuraWindow(aura::Window* window,
 void NativeWidgetAura::SetShadowElevationFromInitParams(
     aura::Window* window,
     const Widget::InitParams& params) {
-  if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_NONE) {
+  if (params.shadow_type == Widget::InitParams::ShadowType::kNone) {
     wm::SetShadowElevation(window, wm::kShadowElevationNone);
-  } else if (params.shadow_type == Widget::InitParams::SHADOW_TYPE_DROP &&
+  } else if (params.shadow_type == Widget::InitParams::ShadowType::kDrop &&
              params.shadow_elevation) {
     wm::SetShadowElevation(window, *params.shadow_elevation);
   }
@@ -172,10 +172,10 @@ void NativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
   window_->SetProperty(aura::client::kShowStateKey, params.show_state);
   if (params.type == Widget::InitParams::TYPE_BUBBLE)
     wm::SetHideOnDeactivate(window_, true);
-  window_->SetTransparent(
-      params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW);
+  window_->SetTransparent(params.opacity ==
+                          Widget::InitParams::WindowOpacity::kTranslucent);
 
-  // Check for SHADOW_TYPE_NONE before aura::Window::Init() to ensure observers
+  // Check for ShadowType::kNone before aura::Window::Init() to ensure observers
   // do not add useless shadow layers by deriving one from the window type.
   SetShadowElevationFromInitParams(window_, params);
 
@@ -536,7 +536,6 @@ void NativeWidgetAura::Close() {
   DCHECK(window_ ||
          ownership_ == Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
   if (window_) {
-    window_->SuppressPaint();
     Hide();
     window_->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_NONE);
   }
@@ -1066,7 +1065,7 @@ void NativeWidgetAura::SetInitialFocus(ui::WindowShowState show_state) {
 // Widget, public:
 
 namespace {
-#if defined(OS_WIN) || defined(USE_X11)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
 void CloseWindow(aura::Window* window) {
   if (window) {
     Widget* widget = Widget::GetWidgetForNativeView(window);
@@ -1096,13 +1095,13 @@ void Widget::CloseAllSecondaryWidgets() {
   EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, 0);
 #endif
 
-#if defined(USE_X11)
-  DesktopWindowTreeHostX11::CleanUpWindowList(CloseWindow);
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) && defined(OS_LINUX)
+  DesktopWindowTreeHostLinux::CleanUpWindowList(CloseWindow);
 #endif
 }
 
 const ui::NativeTheme* Widget::GetNativeTheme() const {
-#if defined(USE_X11)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) && defined(OS_LINUX)
   const LinuxUI* linux_ui = LinuxUI::instance();
   if (linux_ui) {
     ui::NativeTheme* native_theme =

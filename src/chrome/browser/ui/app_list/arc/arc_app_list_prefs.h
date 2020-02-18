@@ -23,8 +23,8 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/session/connection_observer.h"
@@ -217,6 +217,9 @@ class ArcAppListPrefs : public KeyedService,
     virtual void OnInstallationFinished(const std::string& package_name,
                                         bool success) {}
 
+    // Notifies that ArcAppListPrefs is destroyed.
+    virtual void OnArcAppListPrefsDestroyed() {}
+
    protected:
     virtual ~Observer() {}
   };
@@ -348,6 +351,9 @@ class ArcAppListPrefs : public KeyedService,
   // 3. is not scheduled to install by sync
   // 4. Is not currently installing.
   bool IsUnknownPackage(const std::string& package_name) const;
+
+  // Returns true if the package is a default package, even it's uninstalled.
+  bool IsDefaultPackage(const std::string& package_name) const;
 
  private:
   friend class ChromeLauncherControllerTest;

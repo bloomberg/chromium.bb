@@ -76,7 +76,6 @@ void IncompatibleApplicationsHandler::HandleRequestIncompatibleApplicationsList(
           IncompatibleApplicationsUpdater::GetCachedApplications();
 
   base::Value application_list(base::Value::Type::LIST);
-  application_list.GetList().reserve(incompatible_applications.size());
 
   for (const auto& application : incompatible_applications) {
     // Set up a registry watcher for each problem application.
@@ -106,7 +105,7 @@ void IncompatibleApplicationsHandler::HandleRequestIncompatibleApplicationsList(
                 base::Value(application.blacklist_action->message_type()));
     dict.SetKey("url",
                 base::Value(application.blacklist_action->message_url()));
-    application_list.GetList().push_back(std::move(dict));
+    application_list.Append(std::move(dict));
   }
 
   UMA_HISTOGRAM_COUNTS_100("IncompatibleApplicationsPage.NumApplications",

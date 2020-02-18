@@ -137,7 +137,7 @@ def _UnpackGenerateBreakpad(elf_file, *args, **kwargs):
   # ignored. We'll notice them when dump_syms fails later (which it will on
   # packed binaries.).
   unpack_cmd = [RELOCATION_PACKER_BIN, '-u', elf_file]
-  unpack_result = cros_build_lib.RunCommand(
+  unpack_result = cros_build_lib.run(
       unpack_cmd, redirect_stdout=True, error_code_ok=True)
 
   # If we unpacked, extract the offset, and remember it.

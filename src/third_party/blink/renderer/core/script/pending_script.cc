@@ -59,6 +59,7 @@ PendingScript::PendingScript(ScriptElementBase* element,
       starting_position_(starting_position),
       virtual_time_pauser_(CreateWebScopedVirtualTimePauser(element)),
       client_(nullptr),
+      original_element_document_(&element->GetDocument()),
       original_context_document_(element->GetDocument().ContextDocument()),
       created_during_document_write_(
           element->GetDocument().IsInDocumentWrite()) {}
@@ -140,16 +141,22 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
   }
 
   if (OriginalContextDocument() != context_document) {
-    if (GetScriptType() == mojom::ScriptType::kModule) {
-      // Do not execute module scripts if they are moved between documents.
-      Dispose();
-      return;
-    }
+    // Do not execute scripts if they are moved between context documents.
+    Dispose();
+    return;
+  }
 
-    // TODO(hiroshige): Also do not execute classic scripts.
-    // https://crbug.com/721914
+  if (original_element_document_ != &element_->GetDocument()) {
+    // Do not execute scripts if they are moved between element documents (under
+    // the same context Document).
+
+    // We continue counting for a while to confirm that such cases are really
+    // rare on stable channel. https://crbug.com/721914
     UseCounter::Count(context_document,
-                      WebFeature::kEvaluateScriptMovedBetweenDocuments);
+                      WebFeature::kEvaluateScriptMovedBetweenElementDocuments);
+
+    Dispose();
+    return;
   }
 
   Script* script = GetSource(document_url);
@@ -291,6 +298,7 @@ void PendingScript::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(client_);
   visitor->Trace(original_context_document_);
+  visitor->Trace(original_element_document_);
 }
 
 bool PendingScript::IsControlledByScriptRunner() const {

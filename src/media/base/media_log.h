@@ -11,6 +11,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -19,6 +20,7 @@
 #include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log_event.h"
+#include "media/base/media_log_properties.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/pipeline_status.h"
 #include "url/gurl.h"
@@ -60,11 +62,6 @@ class MEDIA_EXPORT MediaLog {
   static MediaLogEvent::Type MediaLogLevelToEventType(MediaLogLevel level);
   static std::string EventTypeToString(MediaLogEvent::Type type);
 
-  // Returns a string version of the status, unique to each PipelineStatus, and
-  // not including any ':'. This makes it suitable for usage in
-  // MediaError.message as the UA-specific-error-code.
-  static std::string PipelineStatusToString(PipelineStatus status);
-
   static std::string BufferingStateToString(
       BufferingState state,
       BufferingStateChangeReason reason = BUFFERING_CHANGE_REASON_UNKNOWN);
@@ -84,6 +81,10 @@ class MEDIA_EXPORT MediaLog {
   // do something.
   void AddEvent(std::unique_ptr<MediaLogEvent> event);
 
+  // Notify the media log that the player is destroyed. Some implementations
+  // will want to change event handling based on this.
+  void OnWebMediaPlayerDestroyed();
+
   // Returns a string usable as the contents of a MediaError.message.
   // This method returns an incomplete message if it is called before the
   // pertinent events for the error have been added to the log.
@@ -91,12 +92,6 @@ class MEDIA_EXPORT MediaLog {
   // RenderMediaLog for where this method is meaningful.
   // Inheritors should override GetErrorMessageLocked().
   std::string GetErrorMessage();
-
-  // Records the domain and registry of the current frame security origin to a
-  // Rappor privacy-preserving metric. See:
-  //   https://www.chromium.org/developers/design-documents/rappor
-  // Inheritors should override RecordRapportWithSecurityOriginLocked().
-  void RecordRapporWithSecurityOrigin(const std::string& metric);
 
   // Helper methods to create events and their parameters.
   std::unique_ptr<MediaLogEvent> CreateEvent(MediaLogEvent::Type type);
@@ -128,10 +123,12 @@ class MEDIA_EXPORT MediaLog {
   // Report a log message at the specified log level.
   void AddLogEvent(MediaLogLevel level, const std::string& message);
 
-  // Report a property change without an accompanying event.
-  void SetStringProperty(const std::string& key, const std::string& value);
-  void SetDoubleProperty(const std::string& key, double value);
-  void SetBooleanProperty(const std::string& key, bool value);
+  // Only way to access the MediaLogEvent::PROPERTY_CHANGE event type,
+  // so that parameter types can be checked from media_log_properties.h.
+  template <MediaLogProperty P, typename T>
+  void SetProperty(const T& value) {
+    AddEvent(CreatePropertyEvent<P, T>(value));
+  }
 
   // Getter for |id_|. Used by MojoMediaLogService to construct MediaLogEvents
   // to log into this MediaLog. Also used in trace events to associate each
@@ -154,8 +151,17 @@ class MEDIA_EXPORT MediaLog {
   //
   // Please see the documentation for the corresponding public methods.
   virtual void AddEventLocked(std::unique_ptr<MediaLogEvent> event);
+  virtual void OnWebMediaPlayerDestroyedLocked();
   virtual std::string GetErrorMessageLocked();
-  virtual void RecordRapporWithSecurityOriginLocked(const std::string& metric);
+
+  // MockMediaLog also needs to call this method.
+  template <MediaLogProperty P, typename T>
+  std::unique_ptr<MediaLogEvent> CreatePropertyEvent(const T& value) {
+    auto event = CreateEvent(MediaLogEvent::PROPERTY_CHANGE);
+    event->params.SetKey(MediaLogPropertyKeyToString(P),
+                         MediaLogPropertyTypeSupport<P, T>::Convert(value));
+    return event;
+  }
 
   // Notify all child logs that they should stop working.  This should be called
   // to guarantee that no further calls into AddEvent should be allowed.

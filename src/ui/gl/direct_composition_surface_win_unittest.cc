@@ -44,6 +44,7 @@ class TestPlatformDelegate : public ui::PlatformWindowDelegate {
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {}
   void OnAcceleratedWidgetDestroyed() override {}
   void OnActivationChanged(bool active) override {}
+  void OnMouseEnter() override {}
 };
 
 void RunPendingTasks(scoped_refptr<base::TaskRunner> task_runner) {
@@ -108,7 +109,7 @@ class DirectCompositionSurfaceTest : public testing::Test {
  protected:
   void SetUp() override {
     // Without this, the following check always fails.
-    gl::init::InitializeGLNoExtensionsOneOff();
+    gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true);
     if (!QueryDirectCompositionDevice(QueryD3D11DeviceObjectFromANGLE())) {
       LOG(WARNING)
           << "GL implementation not using DirectComposition, skipping test.";
@@ -1133,7 +1134,7 @@ TEST_F(DirectCompositionPixelTest, SwapChainImage) {
   ASSERT_TRUE(front_buffer_texture);
 
   auto front_buffer_image = base::MakeRefCounted<GLImageD3D>(
-      swap_chain_size, gfx::BufferFormat::BGRA_8888, front_buffer_texture,
+      swap_chain_size, GL_BGRA_EXT, GL_UNSIGNED_BYTE, front_buffer_texture,
       swap_chain);
   ASSERT_TRUE(front_buffer_image->Initialize());
 

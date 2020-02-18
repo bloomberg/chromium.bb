@@ -64,7 +64,7 @@ class QuicStreamSendBufferTest : public QuicTest {
   void WriteAllData() {
     // Write all data.
     char buf[4000];
-    QuicDataWriter writer(4000, buf, HOST_BYTE_ORDER);
+    QuicDataWriter writer(4000, buf, quiche::HOST_BYTE_ORDER);
     send_buffer_.WriteStreamData(0, 3840u, &writer);
 
     send_buffer_.OnStreamDataConsumed(3840u);
@@ -78,7 +78,7 @@ class QuicStreamSendBufferTest : public QuicTest {
 
 TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   char buf[4000];
-  QuicDataWriter writer(4000, buf, HOST_BYTE_ORDER);
+  QuicDataWriter writer(4000, buf, quiche::HOST_BYTE_ORDER);
   std::string copy1(1024, 'a');
   std::string copy2 =
       std::string(512, 'a') + std::string(256, 'b') + std::string(256, 'c');
@@ -95,7 +95,7 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   EXPECT_EQ(copy4, QuicStringPiece(buf + 3072, 768));
 
   // Test data piece across boundries.
-  QuicDataWriter writer2(4000, buf, HOST_BYTE_ORDER);
+  QuicDataWriter writer2(4000, buf, quiche::HOST_BYTE_ORDER);
   std::string copy5 =
       std::string(536, 'a') + std::string(256, 'b') + std::string(232, 'c');
   ASSERT_TRUE(send_buffer_.WriteStreamData(1000, 1024, &writer2));
@@ -105,7 +105,7 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   EXPECT_EQ(copy6, QuicStringPiece(buf + 1024, 1024));
 
   // Invalid data copy.
-  QuicDataWriter writer3(4000, buf, HOST_BYTE_ORDER);
+  QuicDataWriter writer3(4000, buf, quiche::HOST_BYTE_ORDER);
   EXPECT_FALSE(send_buffer_.WriteStreamData(3000, 1024, &writer3));
   EXPECT_QUIC_BUG(send_buffer_.WriteStreamData(0, 4000, &writer3),
                   "Writer fails to write.");
@@ -113,6 +113,41 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   send_buffer_.OnStreamDataConsumed(3840);
   EXPECT_EQ(3840u, send_buffer_.stream_bytes_written());
   EXPECT_EQ(3840u, send_buffer_.stream_bytes_outstanding());
+}
+
+// Regression test for b/143491027.
+TEST_F(QuicStreamSendBufferTest,
+       WriteStreamDataContainsBothRetransmissionAndNewData) {
+  std::string copy1(1024, 'a');
+  std::string copy2 =
+      std::string(512, 'a') + std::string(256, 'b') + std::string(256, 'c');
+  std::string copy3 = std::string(1024, 'c') + std::string(100, 'd');
+  char buf[6000];
+  QuicDataWriter writer(6000, buf, quiche::HOST_BYTE_ORDER);
+  // Write more than one slice.
+  EXPECT_EQ(0, QuicStreamSendBufferPeer::write_index(&send_buffer_));
+  ASSERT_TRUE(send_buffer_.WriteStreamData(0, 1024, &writer));
+  EXPECT_EQ(copy1, QuicStringPiece(buf, 1024));
+  EXPECT_EQ(1, QuicStreamSendBufferPeer::write_index(&send_buffer_));
+
+  // Retransmit the first frame and also send new data.
+  ASSERT_TRUE(send_buffer_.WriteStreamData(0, 2048, &writer));
+  EXPECT_EQ(copy1 + copy2, QuicStringPiece(buf + 1024, 2048));
+
+  // Write new data.
+  if (!GetQuicRestartFlag(quic_coalesce_stream_frames_2)) {
+    EXPECT_EQ(1, QuicStreamSendBufferPeer::write_index(&send_buffer_));
+    EXPECT_QUIC_DEBUG_DEATH(send_buffer_.WriteStreamData(2048, 50, &writer),
+                            "Tried to write data out of sequence.");
+  } else {
+    EXPECT_EQ(2, QuicStreamSendBufferPeer::write_index(&send_buffer_));
+    ASSERT_TRUE(send_buffer_.WriteStreamData(2048, 50, &writer));
+    EXPECT_EQ(std::string(50, 'c'), QuicStringPiece(buf + 1024 + 2048, 50));
+    EXPECT_EQ(2, QuicStreamSendBufferPeer::write_index(&send_buffer_));
+    ASSERT_TRUE(send_buffer_.WriteStreamData(2048, 1124, &writer));
+    EXPECT_EQ(copy3, QuicStringPiece(buf + 1024 + 2048 + 50, 1124));
+    EXPECT_EQ(3, QuicStreamSendBufferPeer::write_index(&send_buffer_));
+  }
 }
 
 TEST_F(QuicStreamSendBufferTest, RemoveStreamFrame) {
@@ -255,7 +290,7 @@ TEST_F(QuicStreamSendBufferTest, PendingRetransmission) {
 
 TEST_F(QuicStreamSendBufferTest, CurrentWriteIndex) {
   char buf[4000];
-  QuicDataWriter writer(4000, buf, HOST_BYTE_ORDER);
+  QuicDataWriter writer(4000, buf, quiche::HOST_BYTE_ORDER);
   // With data buffered, index points to the 1st slice of data.
   EXPECT_EQ(0u,
             QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_)->offset);

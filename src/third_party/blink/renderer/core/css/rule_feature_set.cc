@@ -89,6 +89,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoNthLastChild:
     case CSSSelector::kPseudoNthLastOfType:
     case CSSSelector::kPseudoPart:
+    case CSSSelector::kPseudoState:
     case CSSSelector::kPseudoLink:
     case CSSSelector::kPseudoVisited:
     case CSSSelector::kPseudoAny:
@@ -119,6 +120,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoTarget:
     case CSSSelector::kPseudoBefore:
     case CSSSelector::kPseudoAfter:
+    case CSSSelector::kPseudoMarker:
     case CSSSelector::kPseudoBackdrop:
     case CSSSelector::kPseudoLang:
     case CSSSelector::kPseudoNot:
@@ -164,10 +166,12 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoSpatialNavigationInterest:
     case CSSSelector::kPseudoIsHtml:
     case CSSSelector::kPseudoListBox:
+    case CSSSelector::kPseudoMultiSelectFocus:
     case CSSSelector::kPseudoHostHasAppearance:
     case CSSSelector::kPseudoSlotted:
     case CSSSelector::kPseudoVideoPersistent:
     case CSSSelector::kPseudoVideoPersistentAncestor:
+    case CSSSelector::kPseudoXrImmersiveDomOverlay:
       return true;
     case CSSSelector::kPseudoIs:
     case CSSSelector::kPseudoWhere:
@@ -533,6 +537,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoRequired:
       case CSSSelector::kPseudoReadOnly:
       case CSSSelector::kPseudoReadWrite:
+      case CSSSelector::kPseudoState:
       case CSSSelector::kPseudoValid:
       case CSSSelector::kPseudoInvalid:
       case CSSSelector::kPseudoIndeterminate:
@@ -548,7 +553,9 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoDefined:
       case CSSSelector::kPseudoVideoPersistent:
       case CSSSelector::kPseudoVideoPersistentAncestor:
+      case CSSSelector::kPseudoXrImmersiveDomOverlay:
       case CSSSelector::kPseudoSpatialNavigationInterest:
+      case CSSSelector::kPseudoMultiSelectFocus:
         return &EnsurePseudoInvalidationSet(selector.GetPseudoType(), type,
                                             position);
       case CSSSelector::kPseudoFirstOfType:

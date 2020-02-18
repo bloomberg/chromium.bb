@@ -14,7 +14,7 @@
 #include "media/learning/mojo/mojo_learning_task_controller_service.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -39,13 +39,15 @@ MediaMetricsProvider::MediaMetricsProvider(
     ukm::SourceId source_id,
     learning::FeatureValue origin,
     VideoDecodePerfHistory::SaveCallback save_cb,
-    GetLearningSessionCallback learning_session_cb)
+    GetLearningSessionCallback learning_session_cb,
+    RecordAggregateWatchTimeCallback record_playback_cb)
     : player_id_(g_player_id++),
       is_top_frame_(is_top_frame == FrameStatus::kTopFrame),
       source_id_(source_id),
       origin_(origin),
       save_cb_(std::move(save_cb)),
       learning_session_cb_(learning_session_cb),
+      record_playback_cb_(std::move(record_playback_cb)),
       uma_info_(is_incognito == BrowsingMode::kIncognito) {}
 
 MediaMetricsProvider::~MediaMetricsProvider() {
@@ -76,24 +78,6 @@ MediaMetricsProvider::~MediaMetricsProvider() {
     builder.SetTimeToPlayReady(time_to_play_ready_.InMilliseconds());
 
   builder.Record(ukm_recorder);
-
-  // Buffered bytes are reported from a different source for EME/MSE.
-  std::string suffix;
-  if (uma_info_.is_eme)
-    suffix = "EME";
-  else if (is_mse_)
-    suffix = "MSE";
-  else
-    suffix = "SRC";
-  base::UmaHistogramMemoryKB("Media.BytesReceived." + suffix,
-                             total_bytes_received_ >> 10);
-  if (is_ad_media_) {
-    base::UmaHistogramMemoryKB("Ads.Media.BytesReceived",
-                               total_bytes_received_ >> 10);
-    base::UmaHistogramMemoryKB("Ads.Media.BytesReceived." + suffix,
-                               total_bytes_received_ >> 10);
-  }
-
   ReportPipelineUMA();
 }
 
@@ -120,7 +104,7 @@ std::string MediaMetricsProvider::GetUMANameForAVStream(
   }
 #endif
 
-  if (player_info.video_pipeline_info.is_decrypting_demuxer_stream) {
+  if (player_info.video_pipeline_info.has_decrypting_demuxer_stream) {
     uma_name += "DDS.";
   }
 
@@ -185,12 +169,14 @@ void MediaMetricsProvider::Create(
     GetOriginCallback get_origin_cb,
     VideoDecodePerfHistory::SaveCallback save_cb,
     GetLearningSessionCallback learning_session_cb,
-    mojom::MediaMetricsProviderRequest request) {
-  mojo::MakeStrongBinding(
+    GetRecordAggregateWatchTimeCallback get_record_playback_cb,
+    mojo::PendingReceiver<mojom::MediaMetricsProvider> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<MediaMetricsProvider>(
           is_incognito, is_top_frame, get_source_id_cb.Run(),
-          get_origin_cb.Run(), std::move(save_cb), learning_session_cb),
-      std::move(request));
+          get_origin_cb.Run(), std::move(save_cb), learning_session_cb,
+          std::move(get_record_playback_cb).Run()),
+      std::move(receiver));
 }
 
 void MediaMetricsProvider::SetHasPlayed() {
@@ -213,7 +199,8 @@ void MediaMetricsProvider::SetHaveEnough() {
 
 void MediaMetricsProvider::SetVideoPipelineInfo(
     const PipelineDecoderInfo& info) {
-  if (!uma_info_.video_pipeline_info.decoder_name.empty())
+  auto old_name = uma_info_.video_pipeline_info.decoder_name;
+  if (!old_name.empty() && old_name != info.decoder_name)
     uma_info_.video_decoder_changed = true;
   uma_info_.video_pipeline_info = info;
 }
@@ -238,11 +225,6 @@ void MediaMetricsProvider::Initialize(bool is_mse,
 void MediaMetricsProvider::OnError(PipelineStatus status) {
   DCHECK(initialized_);
   uma_info_.last_pipeline_status = status;
-}
-
-void MediaMetricsProvider::SetIsAdMedia() {
-  // This may be called before Initialize().
-  is_ad_media_ = true;
 }
 
 void MediaMetricsProvider::SetIsEME() {
@@ -277,20 +259,21 @@ void MediaMetricsProvider::SetContainerName(
 
 void MediaMetricsProvider::AcquireWatchTimeRecorder(
     mojom::PlaybackPropertiesPtr properties,
-    mojom::WatchTimeRecorderRequest request) {
+    mojo::PendingReceiver<mojom::WatchTimeRecorder> receiver) {
   if (!initialized_) {
     mojo::ReportBadMessage(kInvalidInitialize);
     return;
   }
 
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<WatchTimeRecorder>(std::move(properties), source_id_,
-                                          is_top_frame_, player_id_),
-      std::move(request));
+                                          is_top_frame_, player_id_,
+                                          record_playback_cb_),
+      std::move(receiver));
 }
 
 void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
-    mojom::VideoDecodeStatsRecorderRequest request) {
+    mojo::PendingReceiver<mojom::VideoDecodeStatsRecorder> receiver) {
   if (!initialized_) {
     mojo::ReportBadMessage(kInvalidInitialize);
     return;
@@ -301,15 +284,16 @@ void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
     return;
   }
 
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<VideoDecodeStatsRecorder>(save_cb_, source_id_, origin_,
                                                  is_top_frame_, player_id_),
-      std::move(request));
+      std::move(receiver));
 }
 
 void MediaMetricsProvider::AcquireLearningTaskController(
     const std::string& taskName,
-    media::learning::mojom::LearningTaskControllerRequest request) {
+    mojo::PendingReceiver<media::learning::mojom::LearningTaskController>
+        receiver) {
   learning::LearningSession* session = learning_session_cb_.Run();
   if (!session) {
     DVLOG(3) << __func__ << " Ignoring request, unable to get LearningSession.";
@@ -324,14 +308,10 @@ void MediaMetricsProvider::AcquireLearningTaskController(
     return;
   }
 
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<learning::MojoLearningTaskControllerService>(
           controller->GetLearningTask(), std::move(controller)),
-      std::move(request));
-}
-
-void MediaMetricsProvider::AddBytesReceived(uint64_t bytes_received) {
-  total_bytes_received_ += bytes_received;
+      std::move(receiver));
 }
 
 }  // namespace media

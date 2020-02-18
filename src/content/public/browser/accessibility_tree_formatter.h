@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -23,10 +25,11 @@ namespace base {
 class CommandLine;
 }
 
-namespace content {
+namespace ui {
+class AXPlatformNodeDelegate;
+}
 
-class BrowserAccessibility;
-class BrowserAccessibilityManager;
+namespace content {
 
 class AccessibilityTestExpectationsLocator {
  public:
@@ -108,30 +111,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatter
   static bool MatchesNodeFilters(const std::vector<NodeFilter>& node_filters,
                                  const base::DictionaryValue& dict);
 
-  // Populates the given DictionaryValue with the accessibility tree.
-  // The dictionary contains a key/value pair for each attribute of the node,
-  // plus a "children" attribute containing a list of all child nodes.
-  // {
-  //   "AXName": "node",  /* actual attributes will vary by platform */
-  //   "position": {  /* some attributes may be dictionaries */
-  //     "x": 0,
-  //     "y": 0
-  //   },
-  //   /* ... more attributes of |node| */
-  //   "children": [ {  /* list of children created recursively */
-  //     "AXName": "child node 1",
-  //     /* ... more attributes */
-  //     "children": [ ]
-  //   }, {
-  //     "AXName": "child name 2",
-  //     /* ... more attributes */
-  //     "children": [ ]
-  //   } ]
-  // }
-  // Build an accessibility tree for the current Chrome app.
-  virtual std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
-      BrowserAccessibility* root) = 0;
-
   // Build an accessibility tree for any process with a window.
   virtual std::unique_ptr<base::DictionaryValue>
   BuildAccessibilityTreeForProcess(base::ProcessId pid) = 0;
@@ -151,14 +130,14 @@ class CONTENT_EXPORT AccessibilityTreeFormatter
       const base::DictionaryValue& dict) = 0;
 
   // Dumps a BrowserAccessibility tree into a string.
-  virtual void FormatAccessibilityTree(BrowserAccessibility* root,
-                                       base::string16* contents) = 0;
   virtual void FormatAccessibilityTree(const base::DictionaryValue& tree_node,
                                        base::string16* contents) = 0;
 
-  static base::string16 DumpAccessibilityTreeFromManager(
-      BrowserAccessibilityManager* ax_mgr,
-      bool internal);
+  // Test version of FormatAccessibilityTree().
+  // |root| must be non-null and must be in web content.
+  virtual void FormatAccessibilityTreeForTesting(
+      ui::AXPlatformNodeDelegate* root,
+      base::string16* contents) = 0;
 
   // Set regular expression filters that apply to each property of every node
   // before it's output.
@@ -195,4 +174,4 @@ class CONTENT_EXPORT AccessibilityTreeFormatter
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_H_
+#endif  // CONTENT_PUBLIC_BROWSER_ACCESSIBILITY_TREE_FORMATTER_H_

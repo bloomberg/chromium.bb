@@ -14,6 +14,10 @@
 class InfoBarService;
 class PermissionPromptAndroid;
 
+namespace content {
+class WebContents;
+}
+
 // An InfoBar that displays a permission request.
 //
 // TODO(crbug.com/986737): This class is only used for displaying notification
@@ -51,7 +55,8 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
   // Returns true if we should show the permission request as a mini-infobar.
-  static bool ShouldShowMiniInfobar(ContentSettingsType type);
+  static bool ShouldShowMiniInfobar(content::WebContents* web_contents,
+                                    ContentSettingsType type);
 
  private:
   GroupedPermissionInfoBarDelegate(
@@ -68,6 +73,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   base::WeakPtr<PermissionPromptAndroid> permission_prompt_;
   InfoBarService* infobar_service_;
+  bool details_expanded_;
 
   DISALLOW_COPY_AND_ASSIGN(GroupedPermissionInfoBarDelegate);
 };

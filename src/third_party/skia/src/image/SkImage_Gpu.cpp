@@ -30,12 +30,11 @@
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrDrawingManager.h"
 #include "src/gpu/GrGpu.h"
+#include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrImageTextureMaker.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrResourceProviderPriv.h"
 #include "src/gpu/GrSemaphore.h"
 #include "src/gpu/GrSurfacePriv.h"
 #include "src/gpu/GrTextureAdjuster.h"
@@ -44,7 +43,6 @@
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrTextureProxyPriv.h"
 #include "src/gpu/SkGr.h"
-#include "src/gpu/effects/GrYUVtoRGBEffect.h"
 #include "src/gpu/gl/GrGLTexture.h"
 #include "src/image/SkImage_Gpu.h"
 
@@ -58,7 +56,7 @@ static SkColorType proxy_color_type(GrTextureProxy* proxy) {
 
 SkImage_Gpu::SkImage_Gpu(sk_sp<GrContext> context, uint32_t uniqueID, SkAlphaType at,
                          sk_sp<GrTextureProxy> proxy, sk_sp<SkColorSpace> colorSpace)
-        : INHERITED(std::move(context), proxy->worstCaseWidth(), proxy->worstCaseHeight(), uniqueID,
+        : INHERITED(std::move(context), proxy->backingStoreDimensions(), uniqueID,
                     proxy_color_type(proxy.get()), at, colorSpace)
         , fProxy(std::move(proxy)) {}
 
@@ -95,7 +93,7 @@ sk_sp<SkImage> SkImage_Gpu::onMakeColorTypeAndColorSpace(GrRecordingContext* con
 
     GrPaint paint;
     paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
-    paint.addColorTextureProcessor(std::move(proxy), SkMatrix::I());
+    paint.addColorTextureProcessor(std::move(proxy), this->alphaType(), SkMatrix::I());
     if (xform) {
         paint.addColorFragmentProcessor(std::move(xform));
     }
@@ -230,7 +228,7 @@ sk_sp<SkImage> SkImage_Gpu::ConvertYUVATexturesToRGB(GrContext* ctx, SkYUVColorS
     // MDB: this call is okay bc we know 'renderTargetContext' was exact
     return sk_make_sp<SkImage_Gpu>(sk_ref_sp(ctx), kNeedNewImageUniqueID, at,
                                    renderTargetContext->asTextureProxyRef(),
-                                   renderTargetContext->colorSpaceInfo().refColorSpace());
+                                   renderTargetContext->colorInfo().refColorSpace());
 }
 
 sk_sp<SkImage> SkImage::MakeFromYUVATexturesCopy(GrContext* ctx,
@@ -384,9 +382,8 @@ sk_sp<SkImage> SkImage::makeTextureImage(GrContext* context, GrMipMapped mipMapp
         if (GrMipMapped::kNo == mipMapped || proxy->mipMapped() == mipMapped) {
             return sk_ref_sp(const_cast<SkImage*>(this));
         }
-        GrTextureAdjuster adjuster(context, std::move(proxy),
-                                   SkColorTypeToGrColorType(this->colorType()), this->alphaType(),
-                                   this->uniqueID(), this->colorSpace());
+        GrTextureAdjuster adjuster(context, std::move(proxy), this->imageInfo().colorInfo(),
+                                   this->uniqueID());
         return create_image_from_producer(context, &adjuster, this->alphaType(),
                                           this->uniqueID(), mipMapped);
     }
@@ -513,7 +510,7 @@ sk_sp<SkImage> SkImage::MakeCrossContextFromPixmap(GrContext* context,
     context->priv().flushSurface(proxy.get());
     GrGpu* gpu = context->priv().getGpu();
 
-    sk_sp<GrSemaphore> sema = gpu->prepareTextureForCrossContextUsage(texture.get());
+    std::unique_ptr<GrSemaphore> sema = gpu->prepareTextureForCrossContextUsage(texture.get());
 
     auto gen = GrBackendTextureImageGenerator::Make(std::move(texture), proxy->origin(),
                                                     std::move(sema), pixmap->colorType(),
@@ -649,11 +646,10 @@ bool SkImage::MakeBackendTextureFromSkImage(GrContext* ctx,
 
     // Flush any pending IO on the texture.
     ctx->priv().flushSurface(as_IB(image)->peekProxy());
-    SkASSERT(!texture->surfacePriv().hasPendingIO());
 
     // We must make a copy of the image if the image is not unique, if the GrTexture owned by the
     // image is not unique, or if the texture wraps an external object.
-    if (!image->unique() || !texture->surfacePriv().hasUniqueRef() ||
+    if (!image->unique() || !texture->unique() ||
         texture->resourcePriv().refsWrappedObjects()) {
         // onMakeSubset will always copy the image.
         image = as_IB(image)->onMakeSubset(ctx, image->bounds());
@@ -668,11 +664,10 @@ bool SkImage::MakeBackendTextureFromSkImage(GrContext* ctx,
 
         // Flush to ensure that the copy is completed before we return the texture.
         ctx->priv().flushSurface(as_IB(image)->peekProxy());
-        SkASSERT(!texture->surfacePriv().hasPendingIO());
     }
 
     SkASSERT(!texture->resourcePriv().refsWrappedObjects());
-    SkASSERT(texture->surfacePriv().hasUniqueRef());
+    SkASSERT(texture->unique());
     SkASSERT(image->unique());
 
     // Take a reference to the GrTexture and release the image.

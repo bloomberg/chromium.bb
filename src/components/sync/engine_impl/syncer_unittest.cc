@@ -39,13 +39,12 @@
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
-#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/nigori_util.h"
-#include "components/sync/syncable/syncable_delete_journal.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
@@ -256,8 +255,7 @@ class SyncerTest : public testing::Test,
 
   void SetUp() override {
     test_user_share_.SetUp();
-    mock_server_ = std::make_unique<MockConnectionManager>(
-        directory(), &cancelation_signal_);
+    mock_server_ = std::make_unique<MockConnectionManager>(directory());
     debug_info_getter_ = std::make_unique<MockDebugInfoGetter>();
     workers_.push_back(
         scoped_refptr<ModelSafeWorker>(new FakeModelWorker(GROUP_PASSIVE)));
@@ -279,7 +277,6 @@ class SyncerTest : public testing::Test,
     context_ = std::make_unique<SyncCycleContext>(
         mock_server_.get(), directory(), extensions_activity_.get(), listeners,
         debug_info_getter_.get(), model_type_registry_.get(),
-        true,  // enable keystore encryption
         "fake_invalidator_client_id", mock_server_->store_birthday(),
         "fake_bag_of_chips",
         /*poll_interval=*/base::TimeDelta::FromMinutes(30));
@@ -505,7 +502,7 @@ class SyncerTest : public testing::Test,
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
   }
 
-  Cryptographer* GetCryptographer(syncable::BaseTransaction* trans) {
+  DirectoryCryptographer* GetCryptographer(syncable::BaseTransaction* trans) {
     return test_user_share_.GetCryptographer(trans);
   }
 
@@ -519,7 +516,7 @@ class SyncerTest : public testing::Test,
     ASSERT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   // Some ids to aid tests. Only the root one's value is specific. The rest
   // are named for test clarity.
@@ -659,7 +656,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
     // Mark bookmarks as encrypted and set the cryptographer to have pending
     // keys.
     syncable::WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-    Cryptographer other_cryptographer;
+    DirectoryCryptographer other_cryptographer;
     other_cryptographer.AddKey(other_params);
     sync_pb::EntitySpecifics specifics;
     sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
@@ -1014,7 +1011,7 @@ TEST_F(SyncerTest, GetCommitIds_VerifyDeletionCommitOrderMaxEntries) {
 
 TEST_F(SyncerTest, EncryptionAwareConflicts) {
   KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
-  Cryptographer other_cryptographer;
+  DirectoryCryptographer other_cryptographer;
   other_cryptographer.AddKey(key_params);
   sync_pb::EntitySpecifics bookmark, encrypted_bookmark, modified_bookmark;
   bookmark.mutable_bookmark()->set_title("title");
@@ -1320,50 +1317,6 @@ TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
     syncable::ReadTransaction rt(FROM_HERE, directory());
     Entry entry(&rt, GET_BY_ID, parent_id_);
     ASSERT_FALSE(entry.good());
-  }
-}
-
-TEST_F(SyncerTest, TestPurgeWithJournal) {
-  {
-    directory()->SetDownloadProgress(BOOKMARKS,
-                                     syncable::BuildProgress(BOOKMARKS));
-    syncable::WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-    MutableEntry parent(&wtrans, syncable::CREATE, BOOKMARKS, wtrans.root_id(),
-                        "Pete");
-    ASSERT_TRUE(parent.good());
-    parent.PutIsDir(true);
-    parent.PutSpecifics(DefaultBookmarkSpecifics());
-    parent.PutBaseVersion(1);
-    parent.PutId(parent_id_);
-    MutableEntry child(&wtrans, syncable::CREATE, BOOKMARKS, parent_id_,
-                       "Pete");
-    ASSERT_TRUE(child.good());
-    child.PutId(child_id_);
-    child.PutBaseVersion(1);
-    WriteTestDataToEntry(&wtrans, &child);
-
-    MutableEntry parent2(&wtrans, syncable::CREATE, PREFERENCES,
-                         wtrans.root_id(), "Tim");
-    ASSERT_TRUE(parent2.good());
-    parent2.PutIsDir(true);
-    parent2.PutSpecifics(DefaultPreferencesSpecifics());
-    parent2.PutBaseVersion(1);
-    parent2.PutId(TestIdFactory::MakeServer("Tim"));
-  }
-
-  directory()->PurgeEntriesWithTypeIn(ModelTypeSet(PREFERENCES, BOOKMARKS),
-                                      ModelTypeSet(BOOKMARKS), ModelTypeSet());
-  {
-    // Verify bookmark nodes are saved in delete journal but not preference
-    // node.
-    syncable::ReadTransaction rt(FROM_HERE, directory());
-    syncable::DeleteJournal* delete_journal = directory()->delete_journal();
-    EXPECT_EQ(2u, delete_journal->GetDeleteJournalSize(&rt));
-    syncable::EntryKernelSet journal_entries;
-    directory()->delete_journal()->GetDeleteJournals(&rt, BOOKMARKS,
-                                                     &journal_entries);
-    EXPECT_EQ(parent_id_, (*journal_entries.begin())->ref(syncable::ID));
-    EXPECT_EQ(child_id_, (*journal_entries.rbegin())->ref(syncable::ID));
   }
 }
 
@@ -2421,7 +2374,10 @@ TEST_F(EntryCreatedInNewFolderTest, EntryCreatedInNewFolderMidSync) {
   mock_server_->SetMidCommitCallback(base::Bind(
       &EntryCreatedInNewFolderTest::CreateFolderInBob, base::Unretained(this)));
   EXPECT_TRUE(SyncShareNudge());
-  // We loop until no unsynced handles remain, so we will commit both ids.
+
+  mock_server_->SetMidCommitCallback(base::DoNothing());
+  EXPECT_TRUE(SyncShareNudge());
+
   EXPECT_EQ(2u, mock_server_->committed_ids().size());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -5149,11 +5105,14 @@ TEST_F(SyncerBookmarksTest, CreateThenDeleteDuringCommit) {
   ExpectUnsyncedCreation();
 
   // In the middle of the initial creation commit, perform a deletion.
-  // This should trigger performing two consecutive commit cycles, resulting
-  // in the bookmark being both deleted and synced.
   mock_server_->SetMidCommitCallback(
       base::Bind(&SyncerBookmarksTest::Delete, base::Unretained(this)));
 
+  // Commits creation.
+  EXPECT_TRUE(SyncShareNudge());
+
+  // Commits deletion.
+  mock_server_->SetMidCommitCallback(base::DoNothing());
   EXPECT_TRUE(SyncShareNudge());
   ExpectSyncedAndDeleted();
 }
@@ -5168,6 +5127,11 @@ TEST_F(SyncerBookmarksTest, CreateThenUpdateAndDeleteDuringCommit) {
   mock_server_->SetMidCommitCallback(base::Bind(
       &SyncerBookmarksTest::UpdateAndDelete, base::Unretained(this)));
 
+  // Commits creation.
+  EXPECT_TRUE(SyncShareNudge());
+
+  // Commits update and deletion.
+  mock_server_->SetMidCommitCallback(base::DoNothing());
   EXPECT_TRUE(SyncShareNudge());
   ExpectSyncedAndDeleted();
 }
@@ -5344,14 +5308,18 @@ TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {
   ExpectUnsyncedDeletion();
   mock_server_->SetMidCommitCallback(
       base::Bind(&SyncerUndeletionTest::Undelete, base::Unretained(this)));
+
+  // Commits deletion.
+  EXPECT_TRUE(SyncShareNudge());
+  sync_pb::SyncEntity deletion_update =
+      *mock_server_->AddUpdateFromLastCommit();
+
+  // Commits undeletion.
+  mock_server_->SetMidCommitCallback(base::DoNothing());
   EXPECT_TRUE(SyncShareNudge());
 
-  // We will continue to commit until all nodes are synced, so we expect
-  // that both the delete and following undelete were committed.  We haven't
-  // downloaded any updates, though, so the SERVER fields will be the same
-  // as they were at the start of the cycle.
   EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
-  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(2, mock_server_->GetAndClearNumGetUpdatesRequests());
 
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -5370,10 +5338,9 @@ TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {
   // the server.  The undeletion should prevail again and be committed.
   // None of this should trigger any conflict detection -- it is perfectly
   // normal to recieve updates from our own commits.
-  mock_server_->SetMidCommitCallback(base::Closure());
-  sync_pb::SyncEntity* update = mock_server_->AddUpdateFromLastCommit();
-  update->set_originator_cache_guid(local_cache_guid());
-  update->set_originator_client_item_id(local_id_.GetServerId());
+  deletion_update.set_originator_cache_guid(local_cache_guid());
+  deletion_update.set_originator_client_item_id(local_id_.GetServerId());
+  *mock_server_->AddUpdateFromLastCommit() = deletion_update;
 
   EXPECT_TRUE(SyncShareNudge());
   EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());

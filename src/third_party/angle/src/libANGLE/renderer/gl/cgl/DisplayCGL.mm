@@ -6,20 +6,25 @@
 
 // DisplayCGL.mm: CGL implementation of egl::Display
 
-#include "libANGLE/renderer/gl/cgl/DisplayCGL.h"
+#include "common/platform.h"
 
-#import <Cocoa/Cocoa.h>
-#include <EGL/eglext.h>
-#include <dlfcn.h>
+#ifdef ANGLE_PLATFORM_MACOS
 
-#include "common/debug.h"
-#include "gpu_info_util/SystemInfo.h"
-#include "libANGLE/Display.h"
-#include "libANGLE/renderer/gl/cgl/ContextCGL.h"
-#include "libANGLE/renderer/gl/cgl/IOSurfaceSurfaceCGL.h"
-#include "libANGLE/renderer/gl/cgl/PbufferSurfaceCGL.h"
-#include "libANGLE/renderer/gl/cgl/RendererCGL.h"
-#include "libANGLE/renderer/gl/cgl/WindowSurfaceCGL.h"
+#    include "libANGLE/renderer/gl/cgl/DisplayCGL.h"
+
+#    import <Cocoa/Cocoa.h>
+#    include <EGL/eglext.h>
+#    include <dlfcn.h>
+
+#    include "common/debug.h"
+#    include "gpu_info_util/SystemInfo.h"
+#    include "libANGLE/Display.h"
+#    include "libANGLE/renderer/gl/cgl/ContextCGL.h"
+#    include "libANGLE/renderer/gl/cgl/DeviceCGL.h"
+#    include "libANGLE/renderer/gl/cgl/IOSurfaceSurfaceCGL.h"
+#    include "libANGLE/renderer/gl/cgl/PbufferSurfaceCGL.h"
+#    include "libANGLE/renderer/gl/cgl/RendererCGL.h"
+#    include "libANGLE/renderer/gl/cgl/WindowSurfaceCGL.h"
 
 namespace
 {
@@ -207,8 +212,7 @@ ContextImpl *DisplayCGL::createContext(const gl::State &state,
 
 DeviceImpl *DisplayCGL::createDevice()
 {
-    UNIMPLEMENTED();
-    return nullptr;
+    return new DeviceCGL();
 }
 
 egl::ConfigSet DisplayCGL::generateConfigs()
@@ -321,10 +325,16 @@ CGLContextObj DisplayCGL::getCGLContext() const
     return mContext;
 }
 
+CGLPixelFormatObj DisplayCGL::getCGLPixelFormat() const
+{
+    return mPixelFormat;
+}
+
 void DisplayCGL::generateExtensions(egl::DisplayExtensions *outExtensions) const
 {
     outExtensions->iosurfaceClientBuffer = true;
     outExtensions->surfacelessContext    = true;
+    outExtensions->deviceQuery           = true;
 
     // Contexts are virtualized so textures can be shared globally
     outExtensions->displayTextureShareGroup = true;
@@ -437,3 +447,5 @@ void DisplayCGL::populateFeatureList(angle::FeatureList *features)
     mRenderer->getFeatures().populateFeatureList(features);
 }
 }
+
+#endif  // ANGLE_PLATFORM_MACOS

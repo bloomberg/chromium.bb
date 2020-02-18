@@ -16,7 +16,6 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/semaphore_handle.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -25,7 +24,7 @@ namespace gpu {
 
 class VulkanCommandPool;
 
-class ExternalVkImageBacking : public SharedImageBacking {
+class ExternalVkImageBacking final : public SharedImageBacking {
  public:
   static std::unique_ptr<ExternalVkImageBacking> Create(
       SharedContextState* context_state,
@@ -36,8 +35,7 @@ class ExternalVkImageBacking : public SharedImageBacking {
       const gfx::ColorSpace& color_space,
       uint32_t usage,
       base::span<const uint8_t> pixel_data,
-      bool using_gmb = false,
-      base::Optional<VulkanYCbCrInfo> ycbcr_info = base::nullopt);
+      bool using_gmb = false);
 
   static std::unique_ptr<ExternalVkImageBacking> CreateFromGMB(
       SharedContextState* context_state,
@@ -53,6 +51,10 @@ class ExternalVkImageBacking : public SharedImageBacking {
 
   SharedContextState* context_state() const { return context_state_; }
   const GrBackendTexture& backend_texture() const { return backend_texture_; }
+  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
+      const {
+    return texture_passthrough_;
+  }
   VulkanImplementation* vulkan_implementation() const {
     return context_state()->vk_context_provider()->GetVulkanImplementation();
   }
@@ -105,7 +107,7 @@ class ExternalVkImageBacking : public SharedImageBacking {
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
-      DawnDevice dawnDevice) override;
+      WGPUDevice dawnDevice) override;
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override;
@@ -129,8 +131,8 @@ class ExternalVkImageBacking : public SharedImageBacking {
                          size_t memory_size,
                          VkFormat vk_format,
                          VulkanCommandPool* command_pool,
-                         base::Optional<VulkanYCbCrInfo> ycbcr_info,
-                         base::Optional<DawnTextureFormat> dawn_format,
+                         const GrVkYcbcrConversionInfo& ycbcr_info,
+                         base::Optional<WGPUTextureFormat> wgpu_format,
                          base::Optional<uint32_t> memory_type_index);
 
 #ifdef OS_LINUX
@@ -143,12 +145,15 @@ class ExternalVkImageBacking : public SharedImageBacking {
       base::WritableSharedMemoryMapping shared_memory_mapping,
       size_t stride,
       size_t memory_offset);
+  // Returns texture_service_id for ProduceGLTexture and GLTexturePassthrough.
+  GLuint ProduceGLTextureInternal();
 
   using FillBufferCallback = base::OnceCallback<void(void* buffer)>;
   bool WritePixels(size_t data_size,
                    size_t stride,
                    FillBufferCallback callback);
-  void CopyPixelsFromGLTexture();
+  void CopyPixelsFromGLTextureToVkImage();
+  void CopyPixelsFromShmToGLTexture();
 
   SharedContextState* const context_state_;
   GrBackendTexture backend_texture_;
@@ -161,6 +166,7 @@ class ExternalVkImageBacking : public SharedImageBacking {
   bool is_write_in_progress_ = false;
   uint32_t reads_in_progress_ = 0;
   gles2::Texture* texture_ = nullptr;
+  scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 
   // GMB related stuff.
   base::WritableSharedMemoryMapping shared_memory_mapping_;
@@ -174,7 +180,7 @@ class ExternalVkImageBacking : public SharedImageBacking {
   };
   uint32_t latest_content_ = 0;
 
-  base::Optional<DawnTextureFormat> dawn_format_;
+  base::Optional<WGPUTextureFormat> wgpu_format_;
   base::Optional<uint32_t> memory_type_index_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageBacking);

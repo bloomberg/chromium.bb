@@ -29,6 +29,8 @@ std::string ToDatabaseKey(SchedulerClientType type) {
       return std::string();
     case SchedulerClientType::kWebUI:
       return "WebUI";
+    case SchedulerClientType::kChromeUpdate:
+      return "ChromeUpdate";
   }
 }
 
@@ -43,15 +45,11 @@ ImpressionHistoryTrackerImpl::ImpressionHistoryTrackerImpl(
       config_(config),
       registered_clients_(std::move(registered_clients)),
       initialized_(false),
-      delegate_(nullptr),
       clock_(clock) {}
 
 ImpressionHistoryTrackerImpl::~ImpressionHistoryTrackerImpl() = default;
 
-void ImpressionHistoryTrackerImpl::Init(Delegate* delegate,
-                                        InitCallback callback) {
-  DCHECK(!delegate_ && delegate && !initialized_);
-  delegate_ = delegate;
+void ImpressionHistoryTrackerImpl::Init(InitCallback callback) {
   store_->InitAndLoad(
       base::BindOnce(&ImpressionHistoryTrackerImpl::OnStoreInitialized,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -61,7 +59,8 @@ void ImpressionHistoryTrackerImpl::AddImpression(
     SchedulerClientType type,
     const std::string& guid,
     const Impression::ImpressionResultMap& impression_mapping,
-    const Impression::CustomData& custom_data) {
+    const Impression::CustomData& custom_data,
+    const base::Optional<base::TimeDelta>& custom_suppression_duration) {
   DCHECK(initialized_);
   auto it = client_states_.find(type);
   if (it == client_states_.end())
@@ -70,20 +69,19 @@ void ImpressionHistoryTrackerImpl::AddImpression(
   Impression impression(type, guid, clock_->Now());
   impression.impression_mapping = impression_mapping;
   impression.custom_data = custom_data;
+  impression.custom_suppression_duration = custom_suppression_duration;
   it->second->impressions.emplace_back(std::move(impression));
 
   impression_map_.emplace(guid, &it->second->impressions.back());
   SetNeedsUpdate(type, true /*needs_update*/);
   MaybeUpdateDb(type);
-  NotifyImpressionUpdate();
 }
 
 void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory() {
   DCHECK(initialized_);
   for (auto& client_state : client_states_)
     AnalyzeImpressionHistory(client_state.second.get());
-  if (MaybeUpdateAllDb())
-    NotifyImpressionUpdate();
+  MaybeUpdateAllDb();
 }
 
 void ImpressionHistoryTrackerImpl::GetClientStates(
@@ -373,7 +371,10 @@ void ImpressionHistoryTrackerImpl::ApplyNegativeImpression(
 
   // Suppress the notification, the user will not see this type of notification
   // for a while.
-  SuppressionInfo supression_info(clock_->Now(), config_.suppression_duration);
+  SuppressionInfo supression_info(
+      clock_->Now(), impression->custom_suppression_duration.has_value()
+                         ? impression->custom_suppression_duration.value()
+                         : config_.suppression_duration);
   client_state->suppression_info = std::move(supression_info);
   client_state->current_max_daily_show = 0;
   stats::LogImpressionEvent(stats::ImpressionEvent::kNewSuppression);
@@ -438,11 +439,6 @@ bool ImpressionHistoryTrackerImpl::NeedsUpdate(SchedulerClientType type) const {
   return it == need_update_db_.end() ? false : it->second;
 }
 
-void ImpressionHistoryTrackerImpl::NotifyImpressionUpdate() {
-  if (delegate_)
-    delegate_->OnImpressionUpdated();
-}
-
 Impression* ImpressionHistoryTrackerImpl::FindImpressionNeedsUpdate(
     const std::string& notification_guid) {
   auto it = impression_map_.find(notification_guid);
@@ -472,8 +468,8 @@ void ImpressionHistoryTrackerImpl::OnClickInternal(
   SetNeedsUpdate(impression->type, true);
   UpdateThrottling(client_state, impression);
 
-  if (update_db && MaybeUpdateDb(client_state->type))
-    NotifyImpressionUpdate();
+  if (update_db)
+    MaybeUpdateDb(client_state->type);
 }
 
 void ImpressionHistoryTrackerImpl::OnButtonClickInternal(
@@ -504,8 +500,8 @@ void ImpressionHistoryTrackerImpl::OnButtonClickInternal(
   SetNeedsUpdate(impression->type, true);
   UpdateThrottling(client_state, impression);
 
-  if (update_db && MaybeUpdateDb(client_state->type))
-    NotifyImpressionUpdate();
+  if (update_db)
+    MaybeUpdateDb(client_state->type);
 }
 
 void ImpressionHistoryTrackerImpl::OnDismissInternal(
@@ -525,8 +521,7 @@ void ImpressionHistoryTrackerImpl::OnDismissInternal(
 
   // Check consecutive dismisses.
   AnalyzeImpressionHistory(client_state);
-  if (MaybeUpdateDb(impression->type))
-    NotifyImpressionUpdate();
+  MaybeUpdateDb(impression->type);
 }
 
 }  // namespace notifications

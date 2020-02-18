@@ -22,38 +22,37 @@
 
 namespace dawn_native {
 
-    ComputePassEncoderBase::ComputePassEncoderBase(DeviceBase* device,
-                                                   CommandEncoderBase* commandEncoder,
-                                                   EncodingContext* encodingContext)
+    ComputePassEncoder::ComputePassEncoder(DeviceBase* device,
+                                           CommandEncoder* commandEncoder,
+                                           EncodingContext* encodingContext)
         : ProgrammablePassEncoder(device, encodingContext), mCommandEncoder(commandEncoder) {
     }
 
-    ComputePassEncoderBase::ComputePassEncoderBase(DeviceBase* device,
-                                                   CommandEncoderBase* commandEncoder,
-                                                   EncodingContext* encodingContext,
-                                                   ErrorTag errorTag)
+    ComputePassEncoder::ComputePassEncoder(DeviceBase* device,
+                                           CommandEncoder* commandEncoder,
+                                           EncodingContext* encodingContext,
+                                           ErrorTag errorTag)
         : ProgrammablePassEncoder(device, encodingContext, errorTag),
           mCommandEncoder(commandEncoder) {
     }
 
-    ComputePassEncoderBase* ComputePassEncoderBase::MakeError(DeviceBase* device,
-                                                              CommandEncoderBase* commandEncoder,
-                                                              EncodingContext* encodingContext) {
-        return new ComputePassEncoderBase(device, commandEncoder, encodingContext,
-                                          ObjectBase::kError);
+    ComputePassEncoder* ComputePassEncoder::MakeError(DeviceBase* device,
+                                                      CommandEncoder* commandEncoder,
+                                                      EncodingContext* encodingContext) {
+        return new ComputePassEncoder(device, commandEncoder, encodingContext, ObjectBase::kError);
     }
 
-    void ComputePassEncoderBase::EndPass() {
+    void ComputePassEncoder::EndPass() {
         if (mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
                 allocator->Allocate<EndComputePassCmd>(Command::EndComputePass);
 
                 return {};
             })) {
-            mEncodingContext->ExitPass(this);
+            mEncodingContext->ExitPass(this, mUsageTracker.AcquireResourceUsage());
         }
     }
 
-    void ComputePassEncoderBase::Dispatch(uint32_t x, uint32_t y, uint32_t z) {
+    void ComputePassEncoder::Dispatch(uint32_t x, uint32_t y, uint32_t z) {
         mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             DispatchCmd* dispatch = allocator->Allocate<DispatchCmd>(Command::Dispatch);
             dispatch->x = x;
@@ -64,8 +63,7 @@ namespace dawn_native {
         });
     }
 
-    void ComputePassEncoderBase::DispatchIndirect(BufferBase* indirectBuffer,
-                                                  uint64_t indirectOffset) {
+    void ComputePassEncoder::DispatchIndirect(BufferBase* indirectBuffer, uint64_t indirectOffset) {
         mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             DAWN_TRY(GetDevice()->ValidateObject(indirectBuffer));
 
@@ -79,11 +77,13 @@ namespace dawn_native {
             dispatch->indirectBuffer = indirectBuffer;
             dispatch->indirectOffset = indirectOffset;
 
+            mUsageTracker.BufferUsedAs(indirectBuffer, wgpu::BufferUsage::Indirect);
+
             return {};
         });
     }
 
-    void ComputePassEncoderBase::SetPipeline(ComputePipelineBase* pipeline) {
+    void ComputePassEncoder::SetPipeline(ComputePipelineBase* pipeline) {
         mEncodingContext->TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
             DAWN_TRY(GetDevice()->ValidateObject(pipeline));
 

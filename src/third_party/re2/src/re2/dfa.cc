@@ -39,10 +39,10 @@
 #include "util/logging.h"
 #include "util/mix.h"
 #include "util/mutex.h"
-#include "util/pod_array.h"
-#include "util/sparse_set.h"
 #include "util/strutil.h"
+#include "re2/pod_array.h"
 #include "re2/prog.h"
+#include "re2/sparse_set.h"
 #include "re2/stringpiece.h"
 
 // Silence "zero-sized array in struct/union" warning for DFA::State::next_.
@@ -442,7 +442,7 @@ DFA::DFA(Prog* prog, Prog::MatchKind kind, int64_t max_mem)
     q1_(NULL),
     mem_budget_(max_mem) {
   if (ExtraDebug)
-    fprintf(stderr, "\nkind %d\n%s\n", (int)kind_, prog_->DumpUnanchored().c_str());
+    fprintf(stderr, "\nkind %d\n%s\n", kind_, prog_->DumpUnanchored().c_str());
   int nmark = 0;
   if (kind_ == Prog::kLongestMatch)
     nmark = prog_->size();
@@ -989,8 +989,8 @@ void DFA::RunWorkqOnByte(Workq* oldq, Workq* newq,
   }
 
   if (ExtraDebug)
-    fprintf(stderr, "%s on %d[%#x] -> %s [%d]\n", DumpWorkq(oldq).c_str(),
-            c, flag, DumpWorkq(newq).c_str(), *ismatch);
+    fprintf(stderr, "%s on %d[%#x] -> %s [%d]\n",
+            DumpWorkq(oldq).c_str(), c, flag, DumpWorkq(newq).c_str(), *ismatch);
 }
 
 // Processes input byte c in state, returning new state.
@@ -1138,8 +1138,8 @@ DFA::RWLocker::RWLocker(Mutex* mu) : mu_(mu), writing_(false) {
   mu_->ReaderLock();
 }
 
-// This function is marked as NO_THREAD_SAFETY_ANALYSIS because the annotations
-// does not support lock upgrade.
+// This function is marked as NO_THREAD_SAFETY_ANALYSIS because
+// the annotations don't support lock upgrade.
 void DFA::RWLocker::LockForWriting() NO_THREAD_SAFETY_ANALYSIS {
   if (!writing_) {
     mu_->ReaderUnlock();
@@ -1328,10 +1328,11 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params,
                                    bool want_earliest_match,
                                    bool run_forward) {
   State* start = params->start;
-  const uint8_t* bp = BytePtr(params->text.begin());  // start of text
-  const uint8_t* p = bp;                              // text scanning point
-  const uint8_t* ep = BytePtr(params->text.end());    // end of text
-  const uint8_t* resetp = NULL;                       // p at last cache reset
+  const uint8_t* bp = BytePtr(params->text.data());  // start of text
+  const uint8_t* p = bp;                             // text scanning point
+  const uint8_t* ep = BytePtr(params->text.data() +
+                              params->text.size());  // end of text
+  const uint8_t* resetp = NULL;                      // p at last cache reset
   if (!run_forward) {
     using std::swap;
     swap(p, ep);
@@ -1366,8 +1367,7 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params,
 
   while (p != ep) {
     if (ExtraDebug)
-      fprintf(stderr, "@%td: %s\n",
-              p - bp, DumpState(s).c_str());
+      fprintf(stderr, "@%td: %s\n", p - bp, DumpState(s).c_str());
 
     if (have_first_byte && s == start) {
       // In start state, only way out is to find first_byte,
@@ -1475,8 +1475,7 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params,
       else
         lastmatch = p + 1;
       if (ExtraDebug)
-        fprintf(stderr, "match @%td! [%s]\n",
-                lastmatch - bp, DumpState(s).c_str());
+        fprintf(stderr, "match @%td! [%s]\n", lastmatch - bp, DumpState(s).c_str());
       if (params->matches != NULL && kind_ == Prog::kManyMatch) {
         for (int i = s->ninst_ - 1; i >= 0; i--) {
           int id = s->inst_[i];
@@ -1779,8 +1778,7 @@ bool DFA::Search(const StringPiece& text,
   if (ExtraDebug) {
     fprintf(stderr, "\nprogram:\n%s\n", prog_->DumpUnanchored().c_str());
     fprintf(stderr, "text %s anchored=%d earliest=%d fwd=%d kind %d\n",
-            std::string(text).c_str(), anchored, want_earliest_match,
-            run_forward, kind_);
+            std::string(text).c_str(), anchored, want_earliest_match, run_forward, kind_);
   }
 
   RWLocker l(&cache_mutex_);
@@ -1798,9 +1796,9 @@ bool DFA::Search(const StringPiece& text,
     return false;
   if (params.start == FullMatchState) {
     if (run_forward == want_earliest_match)
-      *epp = text.begin();
+      *epp = text.data();
     else
-      *epp = text.end();
+      *epp = text.data() + text.size();
     return true;
   }
   if (ExtraDebug)
@@ -1863,7 +1861,7 @@ bool Prog::SearchDFA(const StringPiece& text, const StringPiece& const_context,
   *failed = false;
 
   StringPiece context = const_context;
-  if (context.begin() == NULL)
+  if (context.data() == NULL)
     context = text;
   bool carat = anchor_start();
   bool dollar = anchor_end();
@@ -1910,7 +1908,7 @@ bool Prog::SearchDFA(const StringPiece& text, const StringPiece& const_context,
     return false;
   if (!matched)
     return false;
-  if (endmatch && ep != (reversed_ ? text.begin() : text.end()))
+  if (endmatch && ep != (reversed_ ? text.data() : text.data() + text.size()))
     return false;
 
   // If caller cares, record the boundary of the match.
@@ -1918,10 +1916,11 @@ bool Prog::SearchDFA(const StringPiece& text, const StringPiece& const_context,
   // as the beginning.
   if (match0) {
     if (reversed_)
-      *match0 = StringPiece(ep, static_cast<size_t>(text.end() - ep));
+      *match0 =
+          StringPiece(ep, static_cast<size_t>(text.data() + text.size() - ep));
     else
       *match0 =
-          StringPiece(text.begin(), static_cast<size_t>(ep - text.begin()));
+          StringPiece(text.data(), static_cast<size_t>(ep - text.data()));
   }
   return true;
 }

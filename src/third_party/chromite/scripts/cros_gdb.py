@@ -142,8 +142,8 @@ To install the debug symbols for all available packages, run:
               '+' + 'sysroot_chromeos-base_chromeos-chrome.tar.xz'
     sysroot = os.path.join(self.sdk_path, sysroot)
     if not os.path.isdir(sysroot):
-      raise GdbMissingSysrootError('Cannot find sysroot for %s at.'
-                                   ' %s' % self.board, sysroot)
+      raise GdbMissingSysrootError('Cannot find sysroot for %s at %s'
+                                   % (self.board, sysroot))
     return sysroot
 
   def GetSimpleChromeBinary(self):
@@ -222,17 +222,16 @@ To install the debug symbols for all available packages, run:
     # exists.  If not, tell user and give them the option of quitting & getting
     # the debug info.
     if sysroot_inf_cmd:
-      stripped_info = cros_build_lib.RunCommand(['file', sysroot_inf_cmd],
-                                                capture_output=True).output
+      stripped_info = cros_build_lib.run(['file', sysroot_inf_cmd],
+                                         capture_output=True).output
       if ' not stripped' not in stripped_info:
         debug_file = os.path.join(self.sysroot, 'usr/lib/debug',
                                   self.inf_cmd.lstrip('/'))
         debug_file += '.debug'
         if not os.path.exists(debug_file):
           equery = 'equery-%s' % self.board
-          package = cros_build_lib.RunCommand([equery, '-q', 'b',
-                                               self.inf_cmd],
-                                              capture_output=True).output
+          package = cros_build_lib.run([equery, '-q', 'b', self.inf_cmd],
+                                       capture_output=True).output
           # pylint: disable=logging-not-lazy
           logging.info(self._MISSING_DEBUG_INFO_MSG % {
               'board': self.board,
@@ -401,7 +400,7 @@ To install the debug symbols for all available packages, run:
   def GetCrossGdb(self):
     """Find the appropriate cross-version of gdb for the board."""
     toolchains = toolchain.GetToolchainsForBoard(self.board)
-    tc = toolchain.FilterToolchains(toolchains, 'default', True).keys()
+    tc = list(toolchain.FilterToolchains(toolchains, 'default', True))
     cross_gdb = tc[0] + '-gdb'
     if not osutils.Which(cross_gdb):
       raise GdbMissingDebuggerError('Cannot find %s; do you need to run '
@@ -485,7 +484,7 @@ To install the debug symbols for all available packages, run:
         gdb_args = ['-d', gdb_cmd, '--'] + gdb_args
         gdb_cmd = 'cgdb'
 
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           [gdb_cmd] + gdb_args,
           ignore_sigint=True,
           print_cmd=True,

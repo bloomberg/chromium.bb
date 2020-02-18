@@ -94,7 +94,10 @@
       The protocol is sent over a UNIX domain stream socket, where the endpoint
       usually is named <systemitem class="service">wayland-0</systemitem>
       (although it can be changed via <emphasis>WAYLAND_DISPLAY</emphasis>
-      in the environment).
+      in the environment). Beginning in Wayland 1.15, implementations can
+      optionally support server socket endpoints located at arbitrary
+      locations in the filesystem by setting <emphasis>WAYLAND_DISPLAY</emphasis>
+      to the absolute path at which the server endpoint listens.
     </para>
     <para>
       Every message is structured as 32-bit words; values are represented in the
@@ -476,7 +479,7 @@
     </para>
     <para>
       MIME is defined in RFC's 2045-2049. A
-      <ulink url="ftp://ftp.isi.edu/in-notes/iana/assignments/media-types/">
+      <ulink url="https://www.iana.org/assignments/media-types/media-types.xhtml">
       registry of MIME types</ulink> is maintained by the Internet Assigned
       Numbers Authority (IANA).
     </para>

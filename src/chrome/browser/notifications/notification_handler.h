@@ -35,7 +35,8 @@ class NotificationHandler {
     PERMISSION_REQUEST = 5,  // A permission request that is presented to the
                              // user via a notification.
     SHARING = 6,
-    MAX = SHARING,
+    ANNOUNCEMENT = 7,
+    MAX = ANNOUNCEMENT,
   };
 
   virtual ~NotificationHandler();

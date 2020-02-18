@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('settings');
+
 /**
  * @typedef {{
  *   enabled: boolean,
@@ -32,6 +34,7 @@ Polymer({
   is: 'settings-privacy-page',
 
   behaviors: [
+    PrefsBehavior,
     settings.RouteObserverBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
@@ -57,6 +60,26 @@ Polymer({
      * @type {!PrivacyPageVisibility}
      */
     pageVisibility: Object,
+
+    /** @private */
+    passwordsLeakDetectionEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('passwordsLeakDetectionEnabled');
+      },
+    },
+
+    /** @private {chrome.settingsPrivate.PrefObject} */
+    safeBrowsingReportingPref_: {
+      type: Object,
+      value: function() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */ ({
+          key: '',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: false,
+        });
+      },
+    },
 
     /** @private */
     isGuest_: {
@@ -92,6 +115,25 @@ Polymer({
       value: function() {
         return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
       }
+    },
+
+    /** @private */
+    privacySettingsRedesignEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+      },
+    },
+
+    /**
+     * Whether the more settings list is opened.
+     * @private
+     */
+    moreOpened_: {
+      type: Boolean,
+      value: function() {
+        return !loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+      },
     },
 
     /** @private */
@@ -136,10 +178,10 @@ Polymer({
     },
 
     /** @private */
-    enableBluetoothScanningContentSetting_: {
+    enableInsecureContentContentSetting_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('enableBluetoothScanningContentSetting');
+        return loadTimeData.getBoolean('enableInsecureContentContentSetting');
       }
     },
 
@@ -150,6 +192,13 @@ Polymer({
         return loadTimeData.getBoolean(
             'enableNativeFileSystemWriteContentSetting');
       }
+    },
+
+    /** @private */
+    enableQuietNotificationPromptsSetting_: {
+      type: Boolean,
+      value: () =>
+          loadTimeData.getBoolean('enableQuietNotificationPromptsSetting'),
     },
 
     /** @private {!Map<string, string>} */
@@ -183,20 +232,6 @@ Polymer({
       },
     },
 
-    /**
-     * This flag is used to conditionally show a set of sync UIs to the
-     * profiles that have been migrated to have a unified consent flow.
-     * TODO(tangltom): In the future when all profiles are completely migrated,
-     * this should be removed, and UIs hidden behind it should become default.
-     * @private
-     */
-    unifiedConsentEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('unifiedConsentEnabled');
-      },
-    },
-
     // <if expr="not chromeos">
     /** @private */
     showRestart_: Boolean,
@@ -207,7 +242,14 @@ Polymer({
 
     /** @private */
     searchFilter_: String,
+
+    /** @private */
+    siteDataFilter_: String,
   },
+
+  observers: [
+    'onSafeBrowsingReportingPrefChange_(prefs.safebrowsing.*)',
+  ],
 
   /** @override */
   ready: function() {
@@ -229,6 +271,39 @@ Polymer({
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
         'sync-status-changed', this.handleSyncStatus_.bind(this));
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  getDisabledExtendedSafeBrowsing_: function() {
+    return !this.getPref('safebrowsing.enabled').value;
+  },
+
+  /** @private */
+  onSafeBrowsingReportingToggleChange_: function() {
+    this.setPrefValue(
+        'safebrowsing.scout_reporting_enabled',
+        this.$$('#safeBrowsingReportingToggle').checked);
+  },
+
+  /** @private */
+  onSafeBrowsingReportingPrefChange_: function() {
+    if (this.prefs == undefined) {
+      return;
+    }
+    const safeBrowsingScoutPref =
+        this.getPref('safebrowsing.scout_reporting_enabled');
+    const prefValue = !!this.getPref('safebrowsing.enabled').value &&
+        !!safeBrowsingScoutPref.value;
+    this.safeBrowsingReportingPref_ = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: prefValue,
+      enforcement: safeBrowsingScoutPref.enforcement,
+      controlledBy: safeBrowsingScoutPref.controlledBy,
+    };
   },
 
   /**
@@ -276,12 +351,25 @@ Polymer({
   },
 
   /**
+   * Records changes made to the "can a website check if you have saved payment
+   * methods" setting for logging, the logic of actually changing the setting
+   * is taken care of by the webUI pref.
+   * @private
+   */
+  onCanMakePaymentChange_: function() {
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD);
+  },
+
+  /**
    * Handles the change event for the do-not-track toggle. Shows a
    * confirmation dialog when enabling the setting.
    * @param {!Event} event
    * @private
    */
   onDoNotTrackChange_: function(event) {
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK);
     const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
     if (!target.checked) {
       // Always allow disabling the pref.
@@ -342,6 +430,18 @@ Polymer({
     // <if expr="is_win or is_macosx">
     this.browserProxy_.showManageSSLCertificates();
     // </if>
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES);
+  },
+
+  /**
+   * Records changes made to the network prediction setting for logging, the
+   * logic of actually changing the setting is taken care of by the webUI pref.
+   * @private
+   */
+  onNetworkPredictionChange_: function() {
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_NETWORK_PREDICTION);
   },
 
   /** @private */
@@ -349,6 +449,8 @@ Polymer({
     // Navigate to sync page, and remove (privacy related) search text to
     // avoid the sync page from being hidden.
     settings.navigateTo(settings.routes.SYNC, null, true);
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_SYNC_AND_GOOGLE_SERVICES);
   },
 
   /**
@@ -371,11 +473,15 @@ Polymer({
   /** @private */
   onSiteSettingsTap_: function() {
     settings.navigateTo(settings.routes.SITE_SETTINGS);
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS);
   },
 
   /** @private */
   onClearBrowsingDataTap_: function() {
     settings.navigateTo(settings.routes.CLEAR_BROWSER_DATA);
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_CLEAR_BROWSING_DATA);
   },
 
   /** @private */
@@ -387,6 +493,8 @@ Polymer({
   /** @private */
   onSecurityKeysTap_: function() {
     settings.navigateTo(settings.routes.SECURITY_KEYS);
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_SECURITY_KEYS);
   },
 
   /** @private */
@@ -403,15 +511,17 @@ Polymer({
 
   /** @private */
   onSigninAllowedChange_: function() {
-    if (this.syncStatus.signedIn && !this.$.signinAllowedToggle.checked) {
+    const toggle = this.$$('#signinAllowedToggle');
+    if (this.syncStatus.signedIn && !toggle.checked) {
       // Switch the toggle back on and show the signout dialog.
-      this.$.signinAllowedToggle.checked = true;
+      toggle.checked = true;
       this.showSignoutDialog_ = true;
     } else {
-      /** @type {!SettingsToggleButtonElement} */ (this.$.signinAllowedToggle)
-          .sendPrefChange();
+      toggle.sendPrefChange();
       this.showRestart_ = true;
     }
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_CHROME_SIGN_IN);
   },
 
   /** @private */
@@ -419,9 +529,9 @@ Polymer({
     if (/** @type {!SettingsSignoutDialogElement} */ (
             this.$$('settings-signout-dialog'))
             .wasConfirmed()) {
-      this.$.signinAllowedToggle.checked = false;
-      /** @type {!SettingsToggleButtonElement} */ (this.$.signinAllowedToggle)
-          .sendPrefChange();
+      const toggle = this.$$('#signinAllowedToggle');
+      toggle.checked = false;
+      toggle.sendPrefChange();
       this.showRestart_ = true;
     }
     this.showSignoutDialog_ = false;
@@ -434,6 +544,22 @@ Polymer({
   onRestartTap_: function(e) {
     e.stopPropagation();
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getIronCollapseCssClass_: function() {
+    return this.privacySettingsRedesignEnabled_ ? 'iron-collapse-indented' : '';
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getTopBarCssClass_: function() {
+    return this.privacySettingsRedesignEnabled_ ? 'settings-box first' : '';
   },
 });
 })();

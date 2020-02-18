@@ -6,12 +6,12 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "net/http/http_response_headers.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 
 namespace internal {
 
@@ -121,12 +121,23 @@ const char kHistogramNoServiceWorkerLoadSearch[] =
     "PageLoad.Clients.NoServiceWorker2.DocumentTiming."
     "NavigationToLoadEventFired.search";
 
+const char kHistogramServiceWorkerFirstContentfulPaintDocs[] =
+    "PageLoad.Clients.ServiceWorker2.PaintTiming."
+    "NavigationToFirstContentfulPaint.docs";
+const char kHistogramNoServiceWorkerFirstContentfulPaintDocs[] =
+    "PageLoad.Clients.NoServiceWorker2.PaintTiming."
+    "NavigationToFirstContentfulPaint.docs";
+
 }  // namespace internal
 
 namespace {
 
 bool IsInboxSite(const GURL& url) {
   return url.host_piece() == "inbox.google.com";
+}
+
+bool IsDocsSite(const GURL& url) {
+  return url.host_piece() == "docs.google.com";
 }
 
 bool IsForwardBackLoad(ui::PageTransition transition) {
@@ -166,18 +177,24 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!IsServiceWorkerControlled()) {
     if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-            timing.paint_timing->first_contentful_paint, GetDelegate()) ||
-        !page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl())) {
+            timing.paint_timing->first_contentful_paint, GetDelegate())) {
       return;
     }
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramNoServiceWorkerFirstContentfulPaintSearch,
-        timing.paint_timing->first_contentful_paint.value());
-    PAGE_LOAD_HISTOGRAM(
-        internal::
-            kHistogramNoServiceWorkerParseStartToFirstContentfulPaintSearch,
-        timing.paint_timing->first_contentful_paint.value() -
-            timing.parse_timing->parse_start.value());
+
+    if (page_load_metrics::IsGoogleSearchResultUrl(GetDelegate().GetUrl())) {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramNoServiceWorkerFirstContentfulPaintSearch,
+          timing.paint_timing->first_contentful_paint.value());
+      PAGE_LOAD_HISTOGRAM(
+          internal::
+              kHistogramNoServiceWorkerParseStartToFirstContentfulPaintSearch,
+          timing.paint_timing->first_contentful_paint.value() -
+              timing.parse_timing->parse_start.value());
+    } else if (IsDocsSite(GetDelegate().GetUrl())) {
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramNoServiceWorkerFirstContentfulPaintDocs,
+          timing.paint_timing->first_contentful_paint.value());
+    }
     return;
   }
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
@@ -223,6 +240,10 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
         internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintSearch,
         timing.paint_timing->first_contentful_paint.value() -
             timing.parse_timing->parse_start.value());
+  } else if (IsDocsSite(GetDelegate().GetUrl())) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerFirstContentfulPaintDocs,
+        timing.paint_timing->first_contentful_paint.value());
   }
 }
 
@@ -400,6 +421,6 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadingBehaviorObserved(
 
 bool ServiceWorkerPageLoadMetricsObserver::IsServiceWorkerControlled() {
   return (GetDelegate().GetMainFrameMetadata().behavior_flags &
-          blink::WebLoadingBehaviorFlag::
-              kWebLoadingBehaviorServiceWorkerControlled) != 0;
+          blink::LoadingBehaviorFlag::
+              kLoadingBehaviorServiceWorkerControlled) != 0;
 }

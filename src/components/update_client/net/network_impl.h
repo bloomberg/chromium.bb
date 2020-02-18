@@ -12,10 +12,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/update_client/net/network_chromium.h"
 #include "components/update_client/network.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace network {
-struct ResourceResponseHead;
 class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
@@ -24,8 +25,9 @@ namespace update_client {
 
 class NetworkFetcherImpl : public NetworkFetcher {
  public:
-  explicit NetworkFetcherImpl(scoped_refptr<network::SharedURLLoaderFactory>
-                                  shared_url_network_factory);
+  explicit NetworkFetcherImpl(
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory,
+      SendCookiesPredicate cookie_predicate);
   ~NetworkFetcherImpl() override;
 
   // NetworkFetcher overrides.
@@ -47,7 +49,7 @@ class NetworkFetcherImpl : public NetworkFetcher {
   void OnResponseStartedCallback(
       ResponseStartedCallback response_started_callback,
       const GURL& final_url,
-      const network::ResourceResponseHead& response_head);
+      const network::mojom::URLResponseHead& response_head);
 
   void OnProgressCallback(ProgressCallback response_started_callback,
                           uint64_t current);
@@ -56,6 +58,7 @@ class NetworkFetcherImpl : public NetworkFetcher {
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory_;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
+  SendCookiesPredicate cookie_predicate_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkFetcherImpl);
 };

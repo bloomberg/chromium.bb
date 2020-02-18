@@ -48,11 +48,6 @@ declare_args() {
   msan_track_origins = 2
 
   # Use dynamic libraries instrumented by one of the sanitizers instead of the
-  # standard system libraries. Set this flag to download prebuilt binaries from
-  # GCS.
-  use_prebuilt_instrumented_libraries = false
-
-  # Use dynamic libraries instrumented by one of the sanitizers instead of the
   # standard system libraries. Set this flag to build the libraries from source.
   use_locally_built_instrumented_libraries = false
 
@@ -142,10 +137,15 @@ if (current_toolchain != default_toolchain) {
   use_cfi_diag = false
   use_cfi_recover = false
   use_libfuzzer = false
-  use_prebuilt_instrumented_libraries = false
   use_locally_built_instrumented_libraries = false
   use_sanitizer_coverage = false
 }
+
+# Use dynamic libraries instrumented by one of the sanitizers instead of the
+# standard system libraries. We have instrumented system libraries for msan,
+# which requires them to prevent false positives.
+# TODO(thakis): Maybe remove this variable.
+use_prebuilt_instrumented_libraries = is_msan
 
 # Whether we are doing a fuzzer build. Normally this should be checked instead
 # of checking "use_libfuzzer || use_afl" because often developers forget to
@@ -193,9 +193,6 @@ if (use_libfuzzer && is_linux) {
     # We do leak checking with libFuzzer on Linux. Set is_lsan for code that
     # relies on LEAK_SANITIZER define to avoid false positives.
     is_lsan = true
-  }
-  if (is_msan) {
-    use_prebuilt_instrumented_libraries = true
   }
 }
 

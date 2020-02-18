@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_ENTERPRISE_CERT_STORE_ARC_CERT_INSTALLER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
@@ -29,7 +31,7 @@ namespace arc {
 // ARC remote commands.
 class ArcCertInstaller : public policy::RemoteCommandsQueue::Observer {
  public:
-  ArcCertInstaller(content::BrowserContext* context);
+  explicit ArcCertInstaller(content::BrowserContext* context);
 
   // This constructor should be used only for testing.
   ArcCertInstaller(Profile* profile,
@@ -39,9 +41,13 @@ class ArcCertInstaller : public policy::RemoteCommandsQueue::Observer {
   using InstallArcCertsCallback = base::OnceCallback<void(bool result)>;
 
   // Install missing certificates via ARC remote commands.
+  //
+  // Return set of the names of certificates required being installed on ARC.
   // Return false via |callback| in case of any error, and true otherwise.
-  void InstallArcCerts(const std::vector<net::ScopedCERTCertificate>& certs,
-                       InstallArcCertsCallback callback);
+  // Made virtual for override in test.
+  virtual std::set<std::string> InstallArcCerts(
+      const std::vector<net::ScopedCERTCertificate>& certs,
+      InstallArcCertsCallback callback);
 
  private:
   // Install ARC certificate if not installed yet.
@@ -63,9 +69,6 @@ class ArcCertInstaller : public policy::RemoteCommandsQueue::Observer {
   // False if the installation failed.
   // The |pending_status_| is returned via |callback_|.
   bool pending_status_ = true;
-
-  // Names of certificates required to be installed on ARC.
-  std::set<std::string> required_cert_names_;
 
   // Names of certificates installed or pending to be installed on ARC.
   std::set<std::string> known_cert_names_;

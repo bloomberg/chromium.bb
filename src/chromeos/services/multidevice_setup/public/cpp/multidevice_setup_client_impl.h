@@ -16,11 +16,9 @@
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 
@@ -37,7 +35,7 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
     static void SetInstanceForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<MultiDeviceSetupClient> BuildInstance(
-        service_manager::Connector* connector);
+        mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup);
 
    private:
     static Factory* test_factory_;
@@ -79,20 +77,25 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
  private:
   friend class MultiDeviceSetupClientImplTest;
 
-  explicit MultiDeviceSetupClientImpl(service_manager::Connector* connector);
+  explicit MultiDeviceSetupClientImpl(
+      mojo::PendingRemote<mojom::MultiDeviceSetup> remote_setup);
 
   void OnGetEligibleHostDevicesCompleted(
       GetEligibleHostDevicesCallback callback,
       const multidevice::RemoteDeviceList& eligible_host_devices);
 
-  mojom::HostStatusObserverPtr GenerateHostStatusObserverInterfacePtr();
-  mojom::FeatureStateObserverPtr GenerateFeatureStatesObserverInterfacePtr();
+  mojo::PendingRemote<mojom::HostStatusObserver>
+  GenerateHostStatusObserverRemote();
+  mojo::PendingRemote<mojom::FeatureStateObserver>
+  GenerateFeatureStatesObserverRemote();
 
   void FlushForTesting();
 
-  mojom::MultiDeviceSetupPtr multidevice_setup_ptr_;
-  mojo::Binding<mojom::HostStatusObserver> host_status_observer_binding_;
-  mojo::Binding<mojom::FeatureStateObserver> feature_state_observer_binding_;
+  mojo::Remote<mojom::MultiDeviceSetup> multidevice_setup_remote_;
+  mojo::Receiver<mojom::HostStatusObserver> host_status_observer_receiver_{
+      this};
+  mojo::Receiver<mojom::FeatureStateObserver> feature_state_observer_receiver_{
+      this};
   std::unique_ptr<multidevice::RemoteDeviceCache> remote_device_cache_;
 
   HostStatusWithDevice host_status_with_device_;

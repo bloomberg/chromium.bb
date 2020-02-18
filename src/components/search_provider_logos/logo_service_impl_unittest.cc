@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
@@ -40,8 +41,7 @@
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/http/http_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -461,18 +461,18 @@ void LogoServiceImplTest::SetServerResponseWhenFingerprint(
   GURL url_with_fp = AppendFingerprintParamToDoodleURL(
       AppendPreliminaryParamsToDoodleURL(false, DoodleURL()), fingerprint);
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string headers(base::StringPrintf(
       "HTTP/1.1 %d %s\nContent-type: text/html\n\n",
       static_cast<int>(response_code), GetHttpReasonPhrase(response_code)));
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head.mime_type = "text/html";
+  head->mime_type = "text/html";
   network::URLLoaderCompletionStatus status;
   status.error_code = error_code;
   status.decoded_body_length = response_when_fingerprint.size();
 
-  test_url_loader_factory_.AddResponse(url_with_fp, head,
+  test_url_loader_factory_.AddResponse(url_with_fp, std::move(head),
                                        response_when_fingerprint, status);
 }
 
@@ -960,6 +960,8 @@ TEST_F(LogoServiceImplTest, DeleteExpiredCachedLogo) {
 TEST_F(LogoServiceImplTest, ClearLogoOnSignOut) {
   // Sign in and setup a logo response.
   signin_helper_.SignIn();
+  // |SetCachedLogo(nullptr)| task might not have run.
+  task_environment_.RunUntilIdle();
   Logo logo = GetSampleLogo(DoodleURL(), test_clock_.Now());
   SetServerResponse(ServerResponse(logo));
 

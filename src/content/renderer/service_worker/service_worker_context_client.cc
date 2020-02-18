@@ -37,6 +37,7 @@
 #include "content/renderer/service_worker/navigation_preload_request.h"
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -106,11 +107,12 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     blink::mojom::EmbeddedWorkerStartTimingPtr start_timing,
     mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
         preference_watcher_receiver,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
-    mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_loaders,
+    mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
         subresource_loader_updater,
     const GURL& script_url_to_skip_throttling,
-    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
+    int32_t service_worker_route_id)
     : service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
@@ -125,7 +127,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       pending_subresource_loader_updater_(
           std::move(subresource_loader_updater)),
       owner_(owner),
-      start_timing_(std::move(start_timing)) {
+      start_timing_(std::move(start_timing)),
+      service_worker_route_id_(service_worker_route_id) {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(owner_);
   DCHECK(subresource_loaders);
@@ -139,19 +142,18 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     // service.
     // Note that the default factory is the network service factory. It's set
     // on the start worker sequence.
-    network_service_connection_error_handler_holder_.Bind(
+    network_service_disconnect_handler_holder_.Bind(
         std::move(subresource_loaders->pending_default_factory()));
-    network_service_connection_error_handler_holder_->Clone(
+    network_service_disconnect_handler_holder_->Clone(
         subresource_loaders->pending_default_factory()
             .InitWithNewPipeAndPassReceiver());
-    network_service_connection_error_handler_holder_
-        .set_connection_error_handler(base::BindOnce(
-            &ServiceWorkerContextClient::StopWorkerOnInitiatorThread,
-            base::Unretained(this)));
+    network_service_disconnect_handler_holder_.set_disconnect_handler(
+        base::BindOnce(&ServiceWorkerContextClient::StopWorkerOnInitiatorThread,
+                       base::Unretained(this)));
   }
 
   loader_factories_ = base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
-      std::make_unique<ChildURLLoaderFactoryBundleInfo>(
+      std::make_unique<ChildPendingURLLoaderFactoryBundle>(
           std::move(subresource_loaders)));
 
   service_worker_provider_info_ = std::move(provider_info);
@@ -171,10 +173,18 @@ ServiceWorkerContextClient::~ServiceWorkerContextClient() {
 
 void ServiceWorkerContextClient::StartWorkerContextOnInitiatorThread(
     std::unique_ptr<blink::WebEmbeddedWorker> worker,
-    const blink::WebEmbeddedWorkerStartData& start_data) {
+    std::unique_ptr<blink::WebEmbeddedWorkerStartData> start_data,
+    std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManagerParams>
+        installed_scripts_manager_params,
+    mojo::ScopedMessagePipeHandle content_settings_handle,
+    mojo::ScopedMessagePipeHandle cache_storage,
+    mojo::ScopedMessagePipeHandle browser_interface_broker) {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   worker_ = std::move(worker);
-  worker_->StartWorkerContext(start_data, initiator_thread_task_runner_);
+  worker_->StartWorkerContext(
+      std::move(start_data), std::move(installed_scripts_manager_params),
+      std::move(content_settings_handle), std::move(cache_storage),
+      std::move(browser_interface_broker), initiator_thread_task_runner_);
 }
 
 blink::WebEmbeddedWorker& ServiceWorkerContextClient::worker() {
@@ -194,28 +204,10 @@ void ServiceWorkerContextClient::WorkerReadyForInspectionOnInitiatorThread(
                                        std::move(receiver));
 }
 
-void ServiceWorkerContextClient::WorkerContextFailedToStartOnInitiatorThread() {
-  DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(!proxy_);
-
-  instance_host_->OnStopped();
-
-  TRACE_EVENT_NESTABLE_ASYNC_END1(
-      "ServiceWorker", "ServiceWorkerContextClient", this, "Status",
-      "WorkerContextFailedToStartOnInitiatorThread");
-
-  owner_->WorkerContextDestroyed();
-}
-
-void ServiceWorkerContextClient::FailedToLoadClassicScript() {
+void ServiceWorkerContextClient::FailedToFetchClassicScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "LOAD_SCRIPT", this,
-                                  "Status", "FailedToLoadClassicScript");
-  // Cleanly send an OnStopped() message instead of just breaking the
-  // Mojo connection on termination, for consistency with the other
-  // startup failure paths.
-  instance_host_->OnStopped();
-
+                                  "Status", "FailedToFetchClassicScript");
   // The caller is responsible for terminating the thread which
   // eventually destroys |this|.
 }
@@ -224,11 +216,6 @@ void ServiceWorkerContextClient::FailedToFetchModuleScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "LOAD_SCRIPT", this,
                                   "Status", "FailedToFetchModuleScript");
-  // Cleanly send an OnStopped() message instead of just breaking the
-  // Mojo connection on termination, for consistency with the other
-  // startup failure paths.
-  instance_host_->OnStopped();
-
   // The caller is responsible for terminating the thread which
   // eventually destroys |this|.
 }
@@ -258,6 +245,11 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 
   DCHECK(controller_receiver_.is_valid());
   proxy_->BindControllerServiceWorker(controller_receiver_.PassPipe());
+
+  GetContentClient()
+      ->renderer()
+      ->DidInitializeServiceWorkerContextOnWorkerThread(
+          proxy_, service_worker_scope_, script_url_);
 }
 
 void ServiceWorkerContextClient::WillEvaluateScript(
@@ -381,20 +373,20 @@ ServiceWorkerContextClient::CreateWorkerFetchContextOnInitiatorThread() {
 
   // TODO(bashi): Consider changing ServiceWorkerFetchContextImpl to take
   // URLLoaderFactoryInfo.
-  auto script_loader_factory_info =
-      std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(std::move(
-          service_worker_provider_info_->script_loader_factory_ptr_info));
+  auto pending_script_loader_factory =
+      std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(std::move(
+          service_worker_provider_info_->script_loader_factory_remote));
 
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
       *renderer_preferences_, script_url_, loader_factories_->PassInterface(),
-      std::move(script_loader_factory_info), script_url_to_skip_throttling_,
+      std::move(pending_script_loader_factory), script_url_to_skip_throttling_,
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()
           ->renderer()
           ->CreateWebSocketHandshakeThrottleProvider(),
       std::move(preference_watcher_receiver_),
-      std::move(pending_subresource_loader_updater_));
+      std::move(pending_subresource_loader_updater_), service_worker_route_id_);
 }
 
 void ServiceWorkerContextClient::OnNavigationPreloadResponse(
@@ -490,11 +482,11 @@ void ServiceWorkerContextClient::SetupNavigationPreload(
   auto preload_request = std::make_unique<NavigationPreloadRequest>(
       this, fetch_event_id, GURL(url),
       blink::mojom::FetchEventPreloadHandle::New(
-          network::mojom::URLLoaderPtrInfo(
+          mojo::PendingRemote<network::mojom::URLLoader>(
               std::move(preload_handle->url_loader),
               network::mojom::URLLoader::Version_),
-          network::mojom::URLLoaderClientRequest(
-              std::move(preload_handle->url_loader_client_request))));
+          mojo::PendingReceiver<network::mojom::URLLoaderClient>(
+              std::move(preload_handle->url_loader_client_receiver))));
   context_->preload_requests.AddWithID(std::move(preload_request),
                                        fetch_event_id);
 }

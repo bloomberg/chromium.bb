@@ -25,17 +25,20 @@ class ColorSpace;
 
 namespace blink {
 
-enum CanvasColorSpace {
-  kSRGBCanvasColorSpace,
-  kLinearRGBCanvasColorSpace,
-  kRec2020CanvasColorSpace,
-  kP3CanvasColorSpace,
+enum class CanvasColorSpace {
+  kSRGB,
+  kLinearRGB,
+  kRec2020,
+  kP3,
 };
 
-enum CanvasPixelFormat {
-  kRGBA8CanvasPixelFormat,
-  kF16CanvasPixelFormat,
+enum class CanvasPixelFormat {
+  kRGBA8,
+  kF16,
 };
+
+// todo(crbug/1021986) remove force_rgba in canvasColorParams
+enum class CanvasForceRGBA { kForced, kNotForced };
 
 class PLATFORM_EXPORT CanvasColorParams {
   DISALLOW_NEW();
@@ -43,13 +46,16 @@ class PLATFORM_EXPORT CanvasColorParams {
  public:
   // The default constructor will create an output-blended 8-bit surface.
   CanvasColorParams();
-  CanvasColorParams(CanvasColorSpace, CanvasPixelFormat, OpacityMode);
-  CanvasColorParams(const CanvasColorParams& params, bool force_rgba);
+  CanvasColorParams(CanvasColorSpace,
+                    CanvasPixelFormat,
+                    OpacityMode,
+                    CanvasForceRGBA);
   explicit CanvasColorParams(const SkImageInfo&);
 
   CanvasColorSpace ColorSpace() const { return color_space_; }
   CanvasPixelFormat PixelFormat() const { return pixel_format_; }
   OpacityMode GetOpacityMode() const { return opacity_mode_; }
+  CanvasForceRGBA GetForceRGBA() const { return force_rgba_; }
 
   void SetCanvasColorSpace(CanvasColorSpace c) { color_space_ = c; }
   void SetCanvasPixelFormat(CanvasPixelFormat f) { pixel_format_ = f; }
@@ -92,10 +98,10 @@ class PLATFORM_EXPORT CanvasColorParams {
   CanvasColorParams(const sk_sp<SkColorSpace> color_space,
                     SkColorType color_type);
 
-  CanvasColorSpace color_space_ = kSRGBCanvasColorSpace;
-  CanvasPixelFormat pixel_format_ = kRGBA8CanvasPixelFormat;
+  CanvasColorSpace color_space_ = CanvasColorSpace::kSRGB;
+  CanvasPixelFormat pixel_format_ = CanvasPixelFormat::kRGBA8;
   OpacityMode opacity_mode_ = kNonOpaque;
-  bool force_rgba_ = false;
+  CanvasForceRGBA force_rgba_ = CanvasForceRGBA::kNotForced;
 };
 
 }  // namespace blink

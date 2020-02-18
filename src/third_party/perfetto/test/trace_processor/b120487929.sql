@@ -1,24 +1,41 @@
+--
+-- Copyright 2019 The Android Open Source Project
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     https://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+--
 create view freq_view as
   select
     ts,
-    lead(ts) OVER (PARTITION BY name, ref ORDER BY ts) - ts as dur,
-    ref as cpu,
+    lead(ts) OVER (PARTITION BY track_id ORDER BY ts) - ts as dur,
+    cpu,
     name as freq_name,
     value as freq_value
-  from counters
-  where name = 'cpufreq'
-    and ref_type = 'cpu';
+  from counter
+  inner join cpu_counter_track
+    on counter.track_id = cpu_counter_track.id
+  where name = 'cpufreq';
 
 create view idle_view
   as select
     ts,
-    lead(ts) OVER (PARTITION BY name, ref ORDER BY ts) - ts as dur,
-    ref as cpu,
+    lead(ts) OVER (PARTITION BY track_id ORDER BY ts) - ts as dur,
+    cpu,
     name as idle_name,
     value as idle_value
-  from counters
-  where name = 'cpuidle'
-    and ref_type = 'cpu';
+  from counter
+  inner join cpu_counter_track
+    on counter.track_id = cpu_counter_track.id
+  where name = 'cpuidle';
 
 create virtual table freq_idle
   using span_join(freq_view PARTITIONED cpu, idle_view PARTITIONED cpu)

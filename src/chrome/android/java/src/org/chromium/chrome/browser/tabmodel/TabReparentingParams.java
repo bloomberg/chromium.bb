@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.content.ComponentName;
 import android.content.Intent;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 
@@ -69,6 +71,6 @@ public class TabReparentingParams implements AsyncTabParams {
 
     @Override
     public void destroy() {
-        if (mTabToReparent != null) mTabToReparent.destroy();
+        if (mTabToReparent != null) ((TabImpl) mTabToReparent).destroy();
     }
 }

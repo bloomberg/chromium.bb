@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
@@ -37,8 +38,8 @@ std::unique_ptr<KeyedService> TestWebAppProvider::BuildDefault(
 // static
 TestWebAppProvider* TestWebAppProvider::Get(Profile* profile) {
   CHECK(profile->AsTestingProfile());
-  auto* test_provider = static_cast<web_app::TestWebAppProvider*>(
-      web_app::WebAppProvider::Get(profile));
+  auto* test_provider =
+      static_cast<TestWebAppProvider*>(WebAppProvider::Get(profile));
   CHECK(!test_provider->started_);
 
   // Disconnect so that clients are forced to call Start() before accessing any
@@ -100,6 +101,12 @@ void TestWebAppProvider::SetWebAppPolicyManager(
     std::unique_ptr<WebAppPolicyManager> web_app_policy_manager) {
   CheckNotStarted();
   web_app_policy_manager_ = std::move(web_app_policy_manager);
+}
+
+void TestWebAppProvider::SetShortcutManager(
+    std::unique_ptr<AppShortcutManager> shortcut_manager) {
+  CheckNotStarted();
+  shortcut_manager_ = std::move(shortcut_manager);
 }
 
 void TestWebAppProvider::CheckNotStarted() const {

@@ -24,7 +24,7 @@
 #include "chrome/browser/media_galleries/chromeos/mtp_device_task_helper.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "content/public/browser/browser_thread.h"
-#include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/file_system/async_file_util.h"
 
 struct SnapshotRequestInfo;
 
@@ -134,14 +134,13 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   void AddWatcher(const GURL& origin,
                   const base::FilePath& file_path,
                   const bool recursive,
-                  const storage::WatcherManager::StatusCallback& callback,
-                  const storage::WatcherManager::NotificationCallback&
+                  storage::WatcherManager::StatusCallback callback,
+                  storage::WatcherManager::NotificationCallback
                       notification_callback) override;
-  void RemoveWatcher(
-      const GURL& origin,
-      const base::FilePath& file_path,
-      const bool recursive,
-      const storage::WatcherManager::StatusCallback& callback) override;
+  void RemoveWatcher(const GURL& origin,
+                     const base::FilePath& file_path,
+                     const bool recursive,
+                     storage::WatcherManager::StatusCallback callback) override;
   void CancelPendingTasksAndDeleteDelegate() override;
 
   // The internal methods correspond to the similarly named methods above.

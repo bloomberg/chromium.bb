@@ -8,12 +8,14 @@
 #include "base/callback.h"
 #include "base/optional.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/ip_endpoint.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 
 namespace media_router {
+
 class AsyncPacketSender {
  public:
   virtual ~AsyncPacketSender() {}
@@ -36,7 +38,7 @@ class NetworkServiceAsyncPacketSender : public AsyncPacketSender {
                     base::OnceCallback<void(int32_t)> callback) override;
 
  private:
-  network::mojom::UDPSocketPtr socket_;
+  mojo::Remote<network::mojom::UDPSocket> socket_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceAsyncPacketSender);
 };

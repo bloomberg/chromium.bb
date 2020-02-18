@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVTOOLS_WINDOW_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVTOOLS_WINDOW_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "chrome/browser/devtools/devtools_contents_resizing_strategy.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
@@ -121,6 +124,11 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   static std::unique_ptr<content::NavigationThrottle>
   MaybeCreateNavigationThrottle(content::NavigationHandle* handle);
+
+  // Updates the WebContents inspected by the DevToolsWindow by reattaching
+  // the binding to |new_web_contents|. Called when swapping an outer
+  // WebContents with its inner WebContents.
+  void UpdateInspectedWebContents(content::WebContents* new_web_contents);
 
   // Sets closure to be called after load is done. If already loaded, calls
   // closure immediately.
@@ -405,9 +413,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   // from the inspected webcontents, see InterceptPageBeforeUnload for details.
   bool intercepted_page_beforeunload_;
   base::Closure load_completed_callback_;
-  base::Closure close_callback_;
+  base::OnceClosure close_callback_;
   bool ready_for_test_;
-  base::Closure ready_for_test_callback_;
+  base::OnceClosure ready_for_test_callback_;
 
   base::TimeTicks inspect_element_start_time_;
   std::unique_ptr<DevToolsEventForwarder> event_forwarder_;

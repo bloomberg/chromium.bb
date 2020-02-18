@@ -5,12 +5,19 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_SCHEDULER_WEB_SCHEDULER_TRACKED_FEATURE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_SCHEDULER_WEB_SCHEDULER_TRACKED_FEATURE_H_
 
+#include <stdint.h>
+
+#include "third_party/blink/public/common/common_export.h"
+
 namespace blink {
 namespace scheduler {
 
 // A list of features which influence scheduling behaviour (throttling /
 // freezing / back-forward cache) and which might be sent to the browser process
 // for metrics-related purposes.
+//
+// Please keep in sync with WebSchedulerTrackedFeature in
+// tools/metrics/histograms/enums.xml. These values should not be renumbered.
 enum class WebSchedulerTrackedFeature {
   kWebSocket = 0,
   kWebRTC = 1,
@@ -52,7 +59,7 @@ enum class WebSchedulerTrackedFeature {
   kRequestedMIDIPermission = 21,
   kRequestedAudioCapturePermission = 22,
   kRequestedVideoCapturePermission = 23,
-  kRequestedSensorsPermission = 24,
+  kRequestedBackForwardCacheBlockedSensors = 24,
   // This covers all background-related permissions, including background sync,
   // background fetch and others.
   kRequestedBackgroundWorkPermission = 26,
@@ -65,13 +72,26 @@ enum class WebSchedulerTrackedFeature {
   kWebVR = 30,
   kWebXR = 31,
 
+  kSharedWorker = 32,
+
+  kWebLocks = 33,
+
   // NB: This enum is used in a bitmask, so kMaxValue must be less than 64.
-  kMaxValue = kWebXR
+  kMaxValue = kWebLocks
 };
 
 static_assert(static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue) < 64,
               "This enum is used in a bitmask, so the values should fit into a"
               "64-bit integer");
+
+BLINK_COMMON_EXPORT const char* FeatureToString(
+    WebSchedulerTrackedFeature feature);
+
+// Converts a WebSchedulerTrackedFeature to a bit for use in a bitmask.
+BLINK_COMMON_EXPORT constexpr uint64_t FeatureToBit(
+    WebSchedulerTrackedFeature feature) {
+  return 1ull << static_cast<uint32_t>(feature);
+}
 
 }  // namespace scheduler
 }  // namespace blink

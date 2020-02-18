@@ -91,10 +91,6 @@ class CONTENT_EXPORT NavigatorDelegate {
   // different process between the load start and commit.
   virtual bool ShouldTransferNavigation(bool is_main_frame_navigation);
 
-  // Returns whether URLs for aborted browser-initiated navigations should be
-  // preserved in the omnibox.  Defaults to false.
-  virtual bool ShouldPreserveAbortedURLs();
-
   // Returns the overriden user agent string if it's set.
   virtual const std::string& GetUserAgentOverride() = 0;
 
@@ -128,12 +124,8 @@ class CONTENT_EXPORT NavigatorDelegate {
   // embedder and |nullptr| is returned.
   virtual std::unique_ptr<NavigationUIData> GetNavigationUIData(
       NavigationHandle* navigation_handle);
-
-  // Whether the delegate is displaying an interstitial page over the current
-  // page.
-  virtual bool ShowingInterstitialPage() = 0;
 };
 
-}  // namspace content
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_FRAME_HOST_NAVIGATOR_DELEGATE_H_

@@ -2,6 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+(function() {
+
+/**
+ * Input types supported by cr-input.
+ * @type {!Set<string>}
+ */
+const SUPPORTED_INPUT_TYPES = new Set([
+  'number',
+  'password',
+  'search',
+  'text',
+  'url',
+]);
+
 /**
  * @fileoverview 'cr-input' is a component similar to native input.
  *
@@ -17,7 +31,7 @@
  *   readonly
  *   required
  *   tabindex
- *   type (only 'text', 'password', 'number', and 'search' supported)
+ *   type (see |SUPPORTED_INPUT_TYPES| above)
  *   value
  *
  * Additional attributes that you can use with cr-input:
@@ -38,7 +52,10 @@ Polymer({
   is: 'cr-input',
 
   properties: {
-    ariaLabel: String,
+    ariaLabel: {
+      type: String,
+      value: '',
+    },
 
     autofocus: {
       type: Boolean,
@@ -58,6 +75,7 @@ Polymer({
     errorMessage: {
       type: String,
       value: '',
+      observer: 'errorMessageChanged_',
     },
 
     /**
@@ -74,6 +92,7 @@ Polymer({
     invalid: {
       type: Boolean,
       value: false,
+      notify: true,
       reflectToAttribute: true,
     },
 
@@ -109,6 +128,7 @@ Polymer({
 
     placeholder: {
       type: String,
+      value: null,
       observer: 'placeholderChanged_',
     },
 
@@ -131,7 +151,8 @@ Polymer({
 
     type: {
       type: String,
-      value: 'text',  // Only 'text', 'password', 'search' are supported.
+      value: 'text',
+      observer: 'onTypeChanged_',
     },
 
     value: {
@@ -156,11 +177,6 @@ Polymer({
 
   /** @override */
   attached: function() {
-    const ariaLabel = this.ariaLabel || this.label || this.placeholder;
-    if (ariaLabel) {
-      this.inputElement.setAttribute('aria-label', ariaLabel);
-    }
-
     // Run this for the first time in attached instead of in disabledChanged_
     // since this.tabindex might not be set yet then.
     if (this.disabled) {
@@ -168,9 +184,33 @@ Polymer({
     }
   },
 
+  /** @private */
+  onTypeChanged_: function() {
+    // Check that the 'type' is one of the supported types.
+    assert(SUPPORTED_INPUT_TYPES.has(this.type));
+  },
+
   /** @return {!HTMLInputElement} */
   get inputElement() {
     return /** @type {!HTMLInputElement} */ (this.$.input);
+  },
+
+  /**
+   * Returns the aria label to be used with the input element.
+   * @return {string}
+   * @private
+   */
+  getAriaLabel_: function(ariaLabel, label, placeholder) {
+    return ariaLabel || label || placeholder;
+  },
+
+  /**
+   * Returns 'true' or 'false' as a string for the aria-invalid attribute.
+   * @return {string}
+   * @private
+   */
+  getAriaInvalid_: function(invalid) {
+    return invalid ? 'true' : 'false';
   },
 
   /** @private */
@@ -184,6 +224,15 @@ Polymer({
     if (previous !== undefined) {
       this.reconcileTabindex_();
     }
+  },
+
+  /**
+   * Uses IronA11yAnnouncer to notify screen readers that an error is set.
+   * @private
+   */
+  errorMessageChanged_: function() {
+    Polymer.IronA11yAnnouncer.requestAvailability();
+    this.fire('iron-announce', {text: this.errorMessage});
   },
 
   /**
@@ -217,7 +266,7 @@ Polymer({
 
   /** @private */
   onFocus_: function() {
-    if (!this.focusInput_()) {
+    if (!this.focusInput()) {
       return;
     }
     // Always select the <input> element on focus. TODO(stevenjb/scottchen):
@@ -227,10 +276,12 @@ Polymer({
   },
 
   /**
+   * Focuses the input element.
+   * TODO(crbug.com/882612): Replace this with focus() after resolving the text
+   * selection issue described in onFocus_().
    * @return {boolean} Whether the <input> element was focused.
-   * @private
    */
-  focusInput_: function() {
+  focusInput: function() {
     if (this.shadowRoot.activeElement == this.inputElement) {
       return false;
     }
@@ -338,7 +389,7 @@ Polymer({
    * @param {number=} end
    */
   select: function(start, end) {
-    this.focusInput_();
+    this.focusInput();
     if (start !== undefined && end !== undefined) {
       this.inputElement.setSelectionRange(start, end);
     } else {
@@ -354,3 +405,4 @@ Polymer({
     return !this.invalid;
   },
 });
+})();

@@ -27,8 +27,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.thinwebview.CompositorView;
 import org.chromium.chrome.browser.thinwebview.CompositorViewFactory;
+import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
@@ -87,7 +89,7 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
 
         @Override
         public void onDestroyed(Tab tab) {
-            if (tab.isClosing() || !isInitiatorTabAlive()) {
+            if (((TabImpl) tab).isClosing() || !isInitiatorTabAlive()) {
                 mStatus = Status.DESTROYED;
                 if (mActivity != null) mActivity.finish();
             }
@@ -109,7 +111,8 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
 
-        mCompositorView = CompositorViewFactory.create(this, getWindowAndroid());
+        mCompositorView = CompositorViewFactory.create(
+                this, getWindowAndroid(), new ThinWebViewConstraints());
         addContentView(mCompositorView.getView(),
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -118,6 +121,8 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                if (sNativeOverlayWindowAndroid == 0) return;
+
                 PictureInPictureActivityJni.get().onViewSizeChanged(
                         sNativeOverlayWindowAndroid, right - left, bottom - top);
             }
@@ -167,7 +172,7 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     @Override
     public void onStop() {
         super.onStop();
-        mCompositorView.destroy();
+        if (mCompositorView != null) mCompositorView.destroy();
     }
 
     @Override
@@ -254,12 +259,13 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
         Intent intent = new Intent(context, PictureInPictureActivity.class);
 
         // Dissociate OverlayWindowAndroid if there is one already.
-        if (sNativeOverlayWindowAndroid != 0)
+        if (sNativeOverlayWindowAndroid != 0) {
             PictureInPictureActivityJni.get().destroy(sNativeOverlayWindowAndroid);
+        }
 
         sNativeOverlayWindowAndroid = nativeOverlayWindowAndroid;
         sInitiatorTab = (Tab) initiatorTab;
-        sInitiatorTabTaskID = sInitiatorTab.getActivity().getTaskId();
+        sInitiatorTabTaskID = ((TabImpl) sInitiatorTab).getActivity().getTaskId();
 
         sTabObserver = new InitiatorTabObserver();
         sInitiatorTab.addObserver(sTabObserver);

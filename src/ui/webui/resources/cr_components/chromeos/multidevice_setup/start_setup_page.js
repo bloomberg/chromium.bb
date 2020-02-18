@@ -21,7 +21,7 @@ Polymer({
     /**
      * Array of objects representing all potential MultiDevice hosts.
      *
-     * @type {!Array<!chromeos.multidevice.mojom.RemoteDevice>}
+     * @type {!Array<!chromeos.multideviceSetup.mojom.HostDevice>}
      */
     devices: {
       type: Array,
@@ -86,7 +86,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chromeos.multidevice.mojom.RemoteDevice>} devices
+   * @param {!Array<!chromeos.multideviceSetup.mojom.HostDevice>} devices
    * @return {string} Label for devices selection content.
    * @private
    */
@@ -102,7 +102,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chromeos.multidevice.mojom.RemoteDevice>} devices
+   * @param {!Array<!chromeos.multideviceSetup.mojom.HostDevice>} devices
    * @return {boolean} True if there are more than one potential host devices.
    * @private
    */
@@ -111,7 +111,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chromeos.multidevice.mojom.RemoteDevice>} devices
+   * @param {!Array<!chromeos.multideviceSetup.mojom.HostDevice>} devices
    * @return {boolean} True if there is exactly one potential host device.
    * @private
    */
@@ -120,19 +120,45 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chromeos.multidevice.mojom.RemoteDevice>} devices
+   * @param {!Array<!chromeos.multideviceSetup.mojom.HostDevice>} devices
    * @return {string} Name of the first device in device list if there are any.
    *     Returns an empty string otherwise.
    * @private
    */
   getFirstDeviceNameInList_: function(devices) {
-    return devices[0] ? this.devices[0].deviceName : '';
+    return devices[0] ? this.devices[0].remoteDevice.deviceName : '';
+  },
+
+  /**
+   * @param {!chromeos.deviceSync.mojom.ConnectivityStatus} connectivityStatus
+   * @return {string} The classes to bind to the device name option.
+   * @private
+   */
+  getDeviceOptionClass_: function(connectivityStatus) {
+    return connectivityStatus ==
+            chromeos.deviceSync.mojom.ConnectivityStatus.kOffline ?
+        'offline-device-name' :
+        '';
+  },
+
+  /**
+   * @param {!chromeos.multideviceSetup.mojom.HostDevice} device
+   * @return {string} Name of the device, with connectivity status information.
+   * @private
+   */
+  getDeviceNameWithConnectivityStatus_: function(device) {
+    return device.connectivityStatus ==
+            chromeos.deviceSync.mojom.ConnectivityStatus.kOffline ?
+        this.i18n(
+            'startSetupPageOfflineDeviceOption',
+            device.remoteDevice.deviceName) :
+        device.remoteDevice.deviceName;
   },
 
   /** @private */
   devicesChanged_: function() {
     if (this.devices.length > 0) {
-      this.selectedDeviceId = this.devices[0].deviceId;
+      this.selectedDeviceId = this.devices[0].remoteDevice.deviceId;
     }
   },
 

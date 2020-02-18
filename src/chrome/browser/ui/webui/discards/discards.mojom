@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojom;
+module discards.mojom;
 
 import "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom";
+import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "url/mojom/url.mojom";
 
 // Identical to content::Visibility.
 enum LifecycleUnitVisibility {
@@ -54,7 +56,6 @@ struct SiteCharacteristicsDatabaseValue {
   SiteCharacteristicsFeature updates_favicon_in_background;
   SiteCharacteristicsFeature updates_title_in_background;
   SiteCharacteristicsFeature uses_audio_in_background;
-  SiteCharacteristicsFeature uses_notifications_in_background;
 
   // Load time performance measurement estimates. This maintains a decaying
   // average of the resource usage of a page until shortly after it becomes
@@ -91,9 +92,9 @@ struct TabDiscardsInfo {
   // The visibility of the LifecycleUnit.
   LifecycleUnitVisibility visibility;
   // The loading state of the LifecycleUnit.
-  LifecycleUnitLoadingState loading_state;
+  mojom.LifecycleUnitLoadingState loading_state;
   // The state of the LifecycleUnit.
-  LifecycleUnitState state;
+  mojom.LifecycleUnitState state;
   // Whether the tab can be frozen.
   bool can_freeze;
   // List of human-readable reasons why a tab can't be frozen.
@@ -106,7 +107,7 @@ struct TabDiscardsInfo {
   // session.
   int32 discard_count;
   // If the tab is currently discarded, the discard reason.
-  LifecycleUnitDiscardReason discard_reason;
+  mojom.LifecycleUnitDiscardReason discard_reason;
   // The rank of the tab in the "importance to user" list. The tab with 1 is the
   // most important, the tab with N is the least important.
   int32 utility_rank;
@@ -135,7 +136,7 @@ struct TabDiscardsInfo {
 // Interface for providing information about discards. Lives in the browser
 // process and is invoked in the renderer process via Javascript code running in
 // the chrome://discards WebUI.
-interface DiscardsDetailsProvider {
+interface DetailsProvider {
   // Returns an array of TabDiscardsInfo containing discard information about
   // each tab currently open in the browser, across all profiles.
   GetTabDiscardsInfo() => (array<TabDiscardsInfo> infos);
@@ -176,4 +177,89 @@ interface DiscardsDetailsProvider {
   // eligible for discard. Invokes a callback when the discard is complete, or
   // if the decision was made not to discard.
   Discard(bool urgent) => ();
+};
+
+// Represents the momentary state of a Page node.
+struct PageInfo {
+  int64 id;
+
+  url.mojom.Url main_frame_url;
+
+  // TODO(siggi): Estimate data.
+};
+
+// Represents the momentary state of a Frame node.
+struct FrameInfo {
+  int64 id;
+
+  url.mojom.Url url;
+  int64 page_id;
+  int64 parent_frame_id;
+  int64 process_id;
+};
+
+// Represents the momentary state of a Process node.
+struct ProcessInfo {
+  int64 id;
+
+  mojo_base.mojom.ProcessId pid;
+  mojo_base.mojom.TimeDelta cumulative_cpu_usage;
+  uint64 private_footprint_kb;
+};
+
+// Represents the momentary state of a Worker node.
+struct WorkerInfo {
+  int64 id;
+
+  url.mojom.Url url;
+  int64 process_id;
+
+  array<int64> client_frame_ids;
+  array<int64> client_worker_ids;
+  array<int64> child_worker_ids;
+};
+
+// Used to transport favicon data.
+struct FavIconInfo {
+  int64 node_id;
+
+  // Contains the base64-encoded icon data, suitable for inclusion in a
+  // data URL.
+  string icon_data;
+};
+
+// Implement to receive a stream of notifications when performance manager
+// graph nodes are created, changed or deleted.
+interface GraphChangeStream {
+  // The |frame| was created.
+  FrameCreated(FrameInfo frame);
+  // The |page| was created.
+  PageCreated(PageInfo pages);
+  // The |process| was created.
+  ProcessCreated(ProcessInfo process);
+  // The |worker| was created.
+  WorkerCreated(WorkerInfo worker);
+
+  // The |frame| changed.
+  FrameChanged(FrameInfo frame);
+  // The |page| changed.
+  PageChanged(PageInfo page);
+  // The |process| changed.
+  ProcessChanged(ProcessInfo process);
+  // The |worker| was changed.
+  WorkerChanged(WorkerInfo worker);
+
+  // A |favicon| became available, whether because the associated page changed
+  // its favicon, or because an initial lookup completed.
+  FavIconDataAvailable(FavIconInfo favicon);
+
+  // The node with |node_id| was deleted.
+  NodeDeleted(int64 node_id);
+};
+
+// This interface allows subscribing to a stream of events that track the state
+// of the performance manager graph.
+interface GraphDump {
+  // Subscribes |change_subscriber| to a graph change stream.
+  SubscribeToChanges(pending_remote<GraphChangeStream> change_subscriber);
 };

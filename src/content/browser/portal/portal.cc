@@ -22,27 +22,22 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
 
-namespace {
-using PortalTokenMap = std::
-    unordered_map<base::UnguessableToken, Portal*, base::UnguessableTokenHash>;
-base::LazyInstance<PortalTokenMap>::Leaky g_portal_token_map =
-    LAZY_INSTANCE_INITIALIZER;
-}  // namespace
-
 Portal::Portal(RenderFrameHostImpl* owner_render_frame_host)
     : WebContentsObserver(
           WebContents::FromRenderFrameHost(owner_render_frame_host)),
       owner_render_frame_host_(owner_render_frame_host),
-      portal_token_(base::UnguessableToken::Create()),
-      portal_host_receiver_(this) {
-  auto pair = g_portal_token_map.Get().emplace(portal_token_, this);
-  DCHECK(pair.second);
+      portal_token_(base::UnguessableToken::Create()) {
+}
+
+Portal::Portal(RenderFrameHostImpl* owner_render_frame_host,
+               std::unique_ptr<WebContents> existing_web_contents)
+    : Portal(owner_render_frame_host) {
+  SetPortalContents(std::move(existing_web_contents));
 }
 
 Portal::~Portal() {
@@ -54,8 +49,7 @@ Portal::~Portal() {
       portal_contents_impl_->GetOuterDelegateFrameTreeNodeId());
   if (outer_node)
     outer_node->RemoveObserver(this);
-
-  g_portal_token_map.Get().erase(portal_token_);
+  portal_contents_impl_->set_portal(nullptr);
 }
 
 // static
@@ -66,36 +60,17 @@ bool Portal::IsEnabled() {
 }
 
 // static
-Portal* Portal::FromToken(const base::UnguessableToken& portal_token) {
-  PortalTokenMap& portals = g_portal_token_map.Get();
-  auto it = portals.find(portal_token);
-  return it == portals.end() ? nullptr : it->second;
-}
-
-// static
-Portal* Portal::Create(
-    RenderFrameHostImpl* owner_render_frame_host,
-    mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
-    mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client) {
-  auto portal_ptr = base::WrapUnique(new Portal(owner_render_frame_host));
-  Portal* portal = portal_ptr.get();
-  portal->binding_ = mojo::MakeStrongAssociatedBinding<blink::mojom::Portal>(
-      std::move(portal_ptr), std::move(receiver));
-  portal->client_.Bind(std::move(client));
-  return portal;
-}
-
-// static
-std::unique_ptr<Portal> Portal::CreateForTesting(
-    RenderFrameHostImpl* owner_render_frame_host) {
-  return base::WrapUnique(new Portal(owner_render_frame_host));
-}
-
-// static
 void Portal::BindPortalHostReceiver(
     RenderFrameHostImpl* frame,
     mojo::PendingAssociatedReceiver<blink::mojom::PortalHost>
         pending_receiver) {
+  if (!IsEnabled()) {
+    mojo::ReportBadMessage(
+        "blink.mojom.PortalHost can only be used if the Portals feature is "
+        "enabled.");
+    return;
+  }
+
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(frame));
 
@@ -119,12 +94,30 @@ void Portal::BindPortalHostReceiver(
   receiver.Bind(std::move(pending_receiver));
 }
 
+void Portal::Bind(
+    mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
+    mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client) {
+  DCHECK(!receiver_.is_bound());
+  DCHECK(!client_.is_bound());
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&Portal::DestroySelf, base::Unretained(this)));
+  client_.Bind(std::move(client));
+}
+
+void Portal::DestroySelf() {
+  // Deletes |this|.
+  owner_render_frame_host_->DestroyPortal(this);
+}
+
 RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   WebContentsImpl* outer_contents_impl = static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(owner_render_frame_host_));
 
-  service_manager::mojom::InterfaceProviderPtr interface_provider;
-  auto interface_provider_request(mojo::MakeRequest(&interface_provider));
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider;
+  auto interface_provider_receiver(
+      interface_provider.InitWithNewPipeAndPassReceiver());
 
   // Create a FrameTreeNode in the outer WebContents to host the portal, in
   // response to the creation of a portal in the renderer process.
@@ -132,11 +125,7 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
       owner_render_frame_host_->frame_tree_node(),
       owner_render_frame_host_->GetProcess()->GetID(),
       owner_render_frame_host_->GetProcess()->GetNextRoutingID(),
-      std::move(interface_provider_request),
-      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
-          .InitWithNewPipeAndPassReceiver(),
-      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
-          .InitWithNewPipeAndPassReceiver(),
+      std::move(interface_provider_receiver),
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
           .InitWithNewPipeAndPassReceiver(),
       blink::WebTreeScopeType::kDocument, "", "", true,
@@ -157,7 +146,8 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   DCHECK_EQ(portal_contents_impl_->GetDelegate(), this);
 
   outer_contents_impl->AttachInnerWebContents(std::move(portal_contents_),
-                                              outer_node->current_frame_host());
+                                              outer_node->current_frame_host(),
+                                              false /* is_full_page */);
 
   FrameTreeNode* frame_tree_node =
       portal_contents_impl_->GetMainFrame()->frame_tree_node();
@@ -174,10 +164,12 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   return proxy_host;
 }
 
-void Portal::Navigate(const GURL& url, blink::mojom::ReferrerPtr referrer) {
+void Portal::Navigate(const GURL& url,
+                      blink::mojom::ReferrerPtr referrer,
+                      NavigateCallback callback) {
   if (!url.SchemeIsHTTPOrHTTPS()) {
     mojo::ReportBadMessage("Portal::Navigate tried to use non-HTTP protocol.");
-    binding_->Close();  // Also deletes |this|.
+    DestroySelf();  // Also deletes |this|.
     return;
   }
 
@@ -192,11 +184,24 @@ void Portal::Navigate(const GURL& url, blink::mojom::ReferrerPtr referrer) {
   // https://github.com/WICG/portals/issues/150
   NavigationDownloadPolicy download_policy;
 
+  // Navigations in portals do not affect the host's session history. Upon
+  // activation, only the portal's last committed entry is merged with the
+  // host's session history. Hence, a portal maintaining multiple session
+  // history entries is not useful and would introduce unnecessary complexity.
+  // We therefore have portal navigations done with replacement, so that we only
+  // have one entry at a time.
+  // TODO(mcnee): A portal can still self-navigate without replacement. Fix this
+  // so that we can enforce this as an invariant.
+  constexpr bool should_replace_entry = true;
+
   portal_root->navigator()->NavigateFromFrameProxy(
       portal_frame, url, owner_render_frame_host_->GetLastCommittedOrigin(),
       owner_render_frame_host_->GetSiteInstance(),
-      mojo::ConvertTo<Referrer>(referrer), ui::PAGE_TRANSITION_LINK, false,
-      download_policy, "GET", nullptr, "", nullptr, false);
+      mojo::ConvertTo<Referrer>(referrer), ui::PAGE_TRANSITION_LINK,
+      should_replace_entry, download_policy, "GET", nullptr, "", nullptr,
+      false);
+
+  std::move(callback).Run();
 }
 
 namespace {
@@ -207,6 +212,61 @@ void FlushTouchEventQueues(RenderWidgetHostImpl* host) {
   while (RenderWidgetHost* child_widget = child_widgets->GetNextHost())
     FlushTouchEventQueues(static_cast<RenderWidgetHostImpl*>(child_widget));
 }
+
+// Copies |predecessor_contents|'s navigation entries to
+// |activated_contents|. |activated_contents| will have its last committed entry
+// combined with the entries in |predecessor_contents|. |predecessor_contents|
+// will only keep its last committed entry.
+// TODO(914108): This currently only covers the basic cases for history
+// traversal across portal activations. The design is still being discussed.
+void TakeHistoryForActivation(WebContentsImpl* activated_contents,
+                              WebContentsImpl* predecessor_contents) {
+  NavigationControllerImpl& activated_controller =
+      activated_contents->GetController();
+  NavigationControllerImpl& predecessor_controller =
+      predecessor_contents->GetController();
+
+  // Activation would have discarded any pending entry in the host contents.
+  DCHECK(!predecessor_controller.GetPendingEntry());
+
+  // TODO(mcnee): Don't allow activation of an empty contents (see
+  // https://crbug.com/942198).
+  if (!activated_controller.GetLastCommittedEntry()) {
+    DLOG(WARNING) << "An empty portal WebContents was activated.";
+    return;
+  }
+
+  // If the predecessor has no committed entries (e.g. by using window.open()
+  // and then activating a portal from about:blank), there's nothing to do here.
+  // TODO(mcnee): This should also be disallowed.
+  if (!predecessor_controller.GetLastCommittedEntry()) {
+    return;
+  }
+
+  // TODO(mcnee): Determine how to deal with a transient entry.
+  if (predecessor_controller.GetTransientEntry() ||
+      activated_controller.GetTransientEntry()) {
+    return;
+  }
+
+  // TODO(mcnee): Once we enforce that a portal contents does not build up its
+  // own history, make this DCHECK that we only have a single committed entry,
+  // possibly with a new pending entry.
+  if (activated_controller.GetPendingEntryIndex() != -1) {
+    return;
+  }
+  DCHECK(activated_controller.CanPruneAllButLastCommitted());
+
+  // TODO(mcnee): Allow for portal activations to replace history entries and to
+  // traverse existing history entries.
+  activated_controller.CopyStateFromAndPrune(&predecessor_controller,
+                                             false /* replace_entry */);
+
+  // The predecessor may be adopted as a portal, so it should now only have a
+  // single committed entry.
+  DCHECK(predecessor_controller.CanPruneAllButLastCommitted());
+  predecessor_controller.PruneAllButLastCommitted();
+}
 }  // namespace
 
 void Portal::Activate(blink::TransferableMessage data,
@@ -216,9 +276,35 @@ void Portal::Activate(blink::TransferableMessage data,
 
   if (outer_contents->portal()) {
     mojo::ReportBadMessage("Portal::Activate called on nested portal");
-    binding_->Close();  // Also deletes |this|.
+    DestroySelf();  // Also deletes |this|.
     return;
   }
+
+  DCHECK(owner_render_frame_host_->IsCurrent())
+      << "The binding should have been closed when the portal's outer "
+         "FrameTreeNode was deleted due to swap out.";
+
+  // If a navigation in the main frame is occurring, stop it if possible and
+  // reject the activation if it's too late. There are a few cases here:
+  // - a different RenderFrameHost has been assigned to the FrameTreeNode
+  // - the same RenderFrameHost is being used, but it is committing a navigation
+  // - the FrameTreeNode holds a navigation request that can't turn back but has
+  //   not yet been handed off to a RenderFrameHost
+  FrameTreeNode* outer_root_node = owner_render_frame_host_->frame_tree_node();
+  NavigationRequest* outer_navigation = outer_root_node->navigation_request();
+
+  // WILL_PROCESS_RESPONSE is slightly early: it happens
+  // immediately before READY_TO_COMMIT (unless it's deferred), but
+  // WILL_PROCESS_RESPONSE is easier to hook for tests using a
+  // NavigationThrottle.
+  if (owner_render_frame_host_->HasPendingCommitNavigation() ||
+      (outer_navigation &&
+       outer_navigation->state() >= NavigationRequest::WILL_PROCESS_RESPONSE)) {
+    std::move(callback).Run(blink::mojom::PortalActivateResult::
+                                kRejectedDueToPredecessorNavigation);
+    return;
+  }
+  outer_root_node->StopLoading();
 
   WebContentsDelegate* delegate = outer_contents->GetDelegate();
   bool is_loading = portal_contents_impl_->IsLoading();
@@ -246,42 +332,45 @@ void Portal::Activate(blink::TransferableMessage data,
 
   auto* outer_contents_main_frame_view = static_cast<RenderWidgetHostViewBase*>(
       outer_contents->GetMainFrame()->GetView());
+  auto* portal_contents_main_frame_view =
+      static_cast<RenderWidgetHostViewBase*>(
+          portal_contents_impl_->GetMainFrame()->GetView());
+
+  std::vector<std::unique_ptr<ui::TouchEvent>> touch_events;
+
   if (outer_contents_main_frame_view) {
     // Take fallback contents from previous WebContents so that the activation
     // is smooth without flashes.
-    auto* portal_contents_main_frame_view =
-        static_cast<RenderWidgetHostViewBase*>(
-            portal_contents_impl_->GetMainFrame()->GetView());
     portal_contents_main_frame_view->TakeFallbackContentFrom(
         outer_contents_main_frame_view);
-
-    outer_contents_main_frame_view->CancelActiveTouches();
+    touch_events =
+        outer_contents_main_frame_view->ExtractAndCancelActiveTouches();
     FlushTouchEventQueues(outer_contents_main_frame_view->host());
-
-    outer_contents_main_frame_view->Destroy();
   }
+
+  TakeHistoryForActivation(static_cast<WebContentsImpl*>(portal_contents.get()),
+                           outer_contents);
 
   std::unique_ptr<WebContents> predecessor_web_contents =
       delegate->SwapWebContents(outer_contents, std::move(portal_contents),
                                 true, is_loading);
   CHECK_EQ(predecessor_web_contents.get(), outer_contents);
 
+  if (outer_contents_main_frame_view) {
+    portal_contents_main_frame_view->TransferTouches(touch_events);
+    // Takes ownership of SyntheticGestureController from the predecessor's
+    // RenderWidgetHost. This allows the controller to continue sending events
+    // to the new RenderWidgetHostView.
+    portal_contents_main_frame_view->host()->TakeSyntheticGestureController(
+        outer_contents_main_frame_view->host());
+    outer_contents_main_frame_view->Destroy();
+  }
+
   portal_contents_impl_->set_portal(nullptr);
 
-  mojo::PendingAssociatedRemote<blink::mojom::Portal> pending_portal;
-  auto portal_receiver = pending_portal.InitWithNewEndpointAndPassReceiver();
-
-  mojo::PendingAssociatedRemote<blink::mojom::PortalClient> pending_client;
-  auto client_receiver = pending_client.InitWithNewEndpointAndPassReceiver();
-
-  Portal* portal =
-      Create(portal_contents_impl_->GetMainFrame(), std::move(portal_receiver),
-             std::move(pending_client));
-  portal->SetPortalContents(std::move(predecessor_web_contents));
-
   portal_contents_impl_->GetMainFrame()->OnPortalActivated(
-      portal->portal_token_, std::move(pending_portal),
-      std::move(client_receiver), std::move(data), std::move(callback));
+      std::move(predecessor_web_contents), std::move(data),
+      std::move(callback));
 
   devtools_instrumentation::PortalActivated(outer_contents->GetMainFrame());
 }
@@ -313,18 +402,19 @@ void Portal::OnFrameTreeNodeDestroyed(FrameTreeNode* frame_tree_node) {
   // in the outer WebContents (not the FrameTreeNode of the document containing
   // it). If that outer FrameTreeNode goes away, this Portal should stop
   // accepting new messages and go away as well.
-  binding_->Close();  // Also deletes |this|.
+  DestroySelf();  // Deletes |this|.
 }
 
 void Portal::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
-  // When the portal is in an orphaned state, the RenderFrameDeleted callback is
-  // used to tie the portal's lifetime to its owner.
+  // Even though this object is owned (via unique_ptr by the RenderFrameHost),
+  // explicitly observing RenderFrameDeleted is necessary because it happens
+  // earlier than the destructor, notably before Mojo teardown.
   if (render_frame_host == owner_render_frame_host_)
-    binding_->Close();  // Also deletes |this|.
+    DestroySelf();  // Deletes |this|.
 }
 
 void Portal::WebContentsDestroyed() {
-  binding_->Close();  // Also deletes |this|.
+  DestroySelf();  // Deletes |this|.
 }
 
 void Portal::LoadingStateChanged(WebContents* source,
@@ -347,16 +437,6 @@ base::UnguessableToken Portal::GetDevToolsFrameToken() const {
 
 WebContentsImpl* Portal::GetPortalContents() {
   return portal_contents_impl_;
-}
-
-void Portal::SetBindingForTesting(
-    mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding) {
-  binding_ = binding;
-}
-
-void Portal::SetClientForTesting(
-    mojo::AssociatedRemote<blink::mojom::PortalClient> client) {
-  client_ = std::move(client);
 }
 
 void Portal::SetPortalContents(std::unique_ptr<WebContents> web_contents) {

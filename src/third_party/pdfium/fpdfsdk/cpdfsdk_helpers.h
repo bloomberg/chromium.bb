@@ -233,7 +233,7 @@ bool GetQuadPointsAtIndex(const CPDF_Array* array,
                           FS_QUADPOINTSF* quad_points);
 
 CFX_FloatRect CFXFloatRectFromFSRECTF(const FS_RECTF& rect);
-void FSRECTFFromCFXFloatRect(const CFX_FloatRect& rect, FS_RECTF* out_rect);
+FS_RECTF FSRECTFFromCFXFloatRect(const CFX_FloatRect& rect);
 
 CFX_Matrix CFXMatrixFromFSMatrix(const FS_MATRIX& matrix);
 
@@ -261,8 +261,8 @@ void SetPDFSandboxPolicy(FPDF_DWORD policy, FPDF_BOOL enable);
 FPDF_BOOL IsPDFSandboxPolicyEnabled(FPDF_DWORD policy);
 
 // TODO(dsinclair): Where should this live?
-void RenderPageWithContext(CPDF_PageRenderContext* pContext,
-                           FPDF_PAGE page,
+void RenderPageWithContext(CPDF_Page* pPage,
+                           CPDF_PageRenderContext* pContext,
                            int start_x,
                            int start_y,
                            int size_x,

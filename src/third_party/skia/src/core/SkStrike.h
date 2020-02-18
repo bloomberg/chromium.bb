@@ -17,7 +17,7 @@
 #include "src/core/SkGlyph.h"
 #include "src/core/SkGlyphRunPainter.h"
 #include "src/core/SkScalerContext.h"
-#include "src/core/SkStrikeInterface.h"
+#include "src/core/SkStrikeForGPU.h"
 #include <memory>
 
 /** \class SkGlyphCache
@@ -33,17 +33,11 @@
     The Find*Exclusive() method returns SkExclusiveStrikePtr, which releases exclusive ownership
     when they go out of scope.
 */
-class SkStrike final : public SkStrikeInterface {
+class SkStrike final : public SkStrikeForGPU {
 public:
     SkStrike(const SkDescriptor& desc,
              std::unique_ptr<SkScalerContext> scaler,
              const SkFontMetrics&);
-
-    // Return a glyph. Create it if it doesn't exist, and initialize the glyph with metrics and
-    // advances using a scaler.
-    SkGlyph* glyph(SkPackedGlyphID packedID);
-    SkGlyph* glyph(SkGlyphID glyphID);
-    SkGlyph* glyph(SkGlyphID, SkPoint);
 
     // Return a glyph.  Create it if it doesn't exist, and initialize with the prototype.
     SkGlyph* glyphFromPrototype(const SkGlyphPrototype& p, void* image = nullptr);
@@ -51,23 +45,14 @@ public:
     // Return a glyph or nullptr if it does not exits in the strike.
     SkGlyph* glyphOrNull(SkPackedGlyphID id) const;
 
-    const void* prepareImage(SkGlyph* glyph);
-
     // Lookup (or create if needed) the toGlyph using toID. If that glyph is not initialized with
     // an image, then use the information in from to initialize the width, height top, left,
     // format and image of the toGlyph. This is mainly used preserving the glyph if it was
     // created by a search of desperation.
     SkGlyph* mergeGlyphAndImage(SkPackedGlyphID toID, const SkGlyph& from);
 
-    // If the path has never been set, then use the scaler context to add the glyph.
-    const SkPath* preparePath(SkGlyph*);
-
     // If the path has never been set, then add a path to glyph.
     const SkPath* preparePath(SkGlyph* glyph, const SkPath* path);
-
-    /** Returns the number of glyphs for this strike.
-    */
-    unsigned getGlyphCount() const;
 
     /** Return the number of glyphs currently cached. */
     int countCachedGlyphs() const;
@@ -78,9 +63,6 @@ public:
     void findIntercepts(const SkScalar bounds[2], SkScalar scale, SkScalar xPos,
                         SkGlyph* , SkScalar* array, int* count);
 
-    /** Fallback glyphs used during font remoting if the original glyph can't be found.
-     */
-    bool belongsToCache(const SkGlyph* glyph) const;
     /** Find any glyph in this cache with the given ID, regardless of subpixel positioning.
      *  If set and present, skip over the glyph with vetoID.
      */
@@ -93,19 +75,8 @@ public:
         return fFontMetrics;
     }
 
-    SkMask::Format getMaskFormat() const {
-        return fScalerContext->getMaskFormat();
-    }
-
-    bool isSubpixel() const {
-        return fIsSubpixel;
-    }
-
-    SkVector rounding() const override;
-
-    SkIPoint subpixelMask() const override {
-        return SkIPoint::Make((!fIsSubpixel || fAxisAlignment == kY_SkAxisAlignment) ? 0 : ~0,
-                              (!fIsSubpixel || fAxisAlignment == kX_SkAxisAlignment) ? 0 : ~0);
+    const SkGlyphPositionRoundingSpec& roundingSpec() const override {
+        return fRoundingSpec;
     }
 
     const SkDescriptor& getDescriptor() const override;
@@ -119,11 +90,18 @@ public:
     SkSpan<const SkGlyph*> prepareImages(SkSpan<const SkPackedGlyphID> glyphIDs,
                                          const SkGlyph* results[]);
 
-    SkSpan<const SkGlyphPos> prepareForDrawingRemoveEmpty(const SkPackedGlyphID packedGlyphIDs[],
-                                                          const SkPoint positions[],
-                                                          size_t n,
-                                                          int maxDimension,
-                                                          SkGlyphPos results[]) override;
+    void prepareForDrawingMasksCPU(SkDrawableGlyphBuffer* drawables);
+
+    void prepareForDrawingPathsCPU(SkDrawableGlyphBuffer* drawables);
+
+    void prepareForMaskDrawing(
+            SkDrawableGlyphBuffer* drawables, SkSourceGlyphBuffer* rejects) override;
+
+    void prepareForSDFTDrawing(
+            SkDrawableGlyphBuffer* drawables, SkSourceGlyphBuffer* rejects) override;
+
+    void prepareForPathDrawing(
+            SkDrawableGlyphBuffer* drawables, SkSourceGlyphBuffer* rejects) override;
 
     void onAboutToExitScope() override;
 
@@ -173,11 +151,22 @@ private:
 
     SkGlyph* makeGlyph(SkPackedGlyphID);
 
+    template <typename Fn>
+    void commonFilterLoop(SkDrawableGlyphBuffer* drawables, Fn&& fn);
+
+    // Return a glyph. Create it if it doesn't exist, and initialize the glyph with metrics and
+    // advances using a scaler.
+    SkGlyph* glyph(SkPackedGlyphID packedID);
+
+    const void* prepareImage(SkGlyph* glyph);
+
+    // If the path has never been set, then use the scaler context to add the glyph.
+    const SkPath* preparePath(SkGlyph*);
+
     enum PathDetail {
         kMetricsOnly,
         kMetricsAndPath
     };
-
     // internalPrepare will only be called with a mutex already held.
     SkSpan<const SkGlyph*> internalPrepare(
             SkSpan<const SkGlyphID> glyphIDs,
@@ -186,7 +175,7 @@ private:
 
     const SkAutoDescriptor                 fDesc;
     const std::unique_ptr<SkScalerContext> fScalerContext;
-    SkFontMetrics                          fFontMetrics;
+    const SkFontMetrics                    fFontMetrics;
 
     // Map from a combined GlyphID and sub-pixel position to a SkGlyph*.
     // The actual glyph is stored in the fAlloc. This structure provides an
@@ -203,8 +192,7 @@ private:
     // Tracks (approx) how much ram is tied-up in this strike.
     size_t                  fMemoryUsed;
 
-    const bool              fIsSubpixel;
-    const SkAxisAlignment   fAxisAlignment;
+    const SkGlyphPositionRoundingSpec fRoundingSpec;
 };
 
 #endif  // SkStrike_DEFINED

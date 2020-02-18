@@ -7,24 +7,34 @@
 #include <tuple>
 
 #include "base/logging.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 
 SharedWorkerInstance::SharedWorkerInstance(
+    int64_t id,
     const GURL& url,
     const std::string& name,
     const url::Origin& constructor_origin,
     const std::string& content_security_policy,
-    blink::mojom::ContentSecurityPolicyType security_policy_type,
+    network::mojom::ContentSecurityPolicyType security_policy_type,
     network::mojom::IPAddressSpace creation_address_space,
     blink::mojom::SharedWorkerCreationContextType creation_context_type)
-    : url_(url),
+    : id_(id),
+      url_(url),
       name_(name),
       constructor_origin_(constructor_origin),
       content_security_policy_(content_security_policy),
       content_security_policy_type_(security_policy_type),
       creation_address_space_(creation_address_space),
-      creation_context_type_(creation_context_type) {}
+      creation_context_type_(creation_context_type) {
+  // Ensure the same-origin policy is enforced correctly.
+  DCHECK(url.SchemeIs(url::kDataScheme) ||
+         GetContentClient()->browser()->DoesSchemeAllowCrossOriginSharedWorker(
+             constructor_origin.scheme()) ||
+         url::Origin::Create(url).IsSameOriginWith(constructor_origin));
+}
 
 SharedWorkerInstance::SharedWorkerInstance(const SharedWorkerInstance& other) =
     default;
@@ -44,19 +54,15 @@ bool SharedWorkerInstance::Matches(
     const GURL& url,
     const std::string& name,
     const url::Origin& constructor_origin) const {
-  // |url| and |constructor_origin| should be in the same origin, or |url|
-  // should be a data: URL.
-  DCHECK(url::Origin::Create(url).IsSameOriginWith(constructor_origin) ||
-         url.SchemeIs(url::kDataScheme));
-
   // Step 11.2: "If there exists a SharedWorkerGlobalScope object whose closing
   // flag is false, constructor origin is same origin with outside settings's
   // origin, constructor url equals urlRecord, and name equals the value of
   // options's name member, then set worker global scope to that
   // SharedWorkerGlobalScope object."
   if (!constructor_origin_.IsSameOriginWith(constructor_origin) ||
-      url_ != url || name_ != name)
+      url_ != url || name_ != name) {
     return false;
+  }
 
   // TODO(https://crbug.com/794098): file:// URLs should be treated as opaque
   // origins, but not in url::Origin. Therefore, we manually check it here.
@@ -66,17 +72,9 @@ bool SharedWorkerInstance::Matches(
   return true;
 }
 
-bool SharedWorkerInstance::Matches(const SharedWorkerInstance& other) const {
-  return Matches(other.url(), other.name(), other.constructor_origin());
-}
-
 bool operator<(const SharedWorkerInstance& lhs,
                const SharedWorkerInstance& rhs) {
-  if (lhs.Matches(rhs))
-    return false;
-
-  return std::tie(lhs.url(), lhs.name(), lhs.constructor_origin()) <
-         std::tie(rhs.url(), rhs.name(), rhs.constructor_origin());
+  return lhs.id_ < rhs.id_;
 }
 
 }  // namespace content

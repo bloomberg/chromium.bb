@@ -34,10 +34,14 @@ class SourceRangeAstVisitor final
   friend class AstTraversalVisitor<SourceRangeAstVisitor>;
 
   void VisitBlock(Block* stmt);
+  void VisitSwitchStatement(SwitchStatement* stmt);
   void VisitFunctionLiteral(FunctionLiteral* expr);
   bool VisitNode(AstNode* node);
+  void VisitTryCatchStatement(TryCatchStatement* stmt);
 
+  void MaybeRemoveContinuationRange(Statement* last_statement);
   void MaybeRemoveLastContinuationRange(ZonePtrList<Statement>* stmts);
+  void MaybeRemoveContinuationRangeOfAsyncReturn(TryCatchStatement* stmt);
 
   SourceRangeMap* source_range_map_ = nullptr;
   std::unordered_set<int> continuation_positions_;

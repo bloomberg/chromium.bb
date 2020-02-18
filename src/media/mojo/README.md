@@ -73,21 +73,27 @@ Note that you must set `enable_mojo_media` first.
 `CreateCdm()` etc. It is used to request media player mojo interfaces.
 
 In the render process, each `RenderFrameImpl` has a
-`media::mojom::InterfaceFactoryPtr` which is used to request all media player
-mojo interfaces for that frame from the browser process. In the browser process,
-each `RenderFrameHostImpl` owns a `MediaInterfaceProxy`, which implements
-`media::mojom::InterfaceFactory`.
+`mojo::PendingRemote<media::mojom::InterfaceFactory>` which is used to request
+ all media player mojo interfaces for that frame from the browser process. In
+the browser process, each `RenderFrameHostImpl` owns a `MediaInterfaceProxy`,
+which implements `media::mojom::InterfaceFactory`.
 
 `MediaInterfaceProxy` is a central hub for handling media player mojo interface
 requests. By default it will forward all the requests to the
 [`MediaService`](#MediaService). But it also has the flexibility to handle some
-special or more complicated use cases. For example, on desktop platforms, when
-library CDM is enabled, the `media::mojom::ContentDecryptionModule` request will
-be forwarded to the [`CdmService`](#CdmService) running in its own CDM (utility)
-process. For another example, on Android, the `media::mojom::Renderer` request
-is handled in the `RenderFrameHostImpl` context directly by creating
-`MediaPlayerRenderer` in the browser process, even though the `MediaService` is
-configured to run in the GPU process.
+special or more complicated use cases. For example:
+* On desktop platforms, when library CDM is enabled, the
+  `media::mojom::ContentDecryptionModule` request will be forwarded to the
+  [`CdmService`](#CdmService) running in its own CDM (utility) process.
+* On Android, the `media::mojom::Renderer` request is handled in the
+  `RenderFrameHostImpl` context directly by creating `MediaPlayerRenderer` in
+  the browser process, even though the `MediaService` is configured to run in
+  the GPU process.
+* On Chromecast, the `media::mojom::Renderer` and
+  `media::mojom::ContentDecryptionModule` requests are handled by
+  [`MediaRendererService`](#MediaRendererService) which runs in the browser
+  process. The `media::mojom::VideoDecoder` request is handled by the default
+  `MediaService` which runs in the GPU process.
 
 Note that `media::mojom::InterfaceFactory` interface is reused in the
 communication between `MediaInterfaceProxy` and `MediaService` (see
@@ -244,6 +250,19 @@ also has additional support on library CDM, e.g. loading the library CDM etc.
 Note that `CdmService` only supports `media::mojom::CDM` and does NOT support
 other media player mojo interfaces.
 
+### MediaRendererService
+
+`MediaRendererService` supports `media::mojom::Renderer` and
+`media::mojom::CDM`. It's hosted in a different process than the default
+`MediaService`. It's registered in `ServiceManagerContext` using
+'kMediaRendererServiceName`. This allows to run `media::mojom::VideoDecoder` and
+`media::mojom::Renderer` in two different processes. Currently Chromecast use
+this to support `CastRenderer` `CDM` in browser process and GPU accelerated
+video decoder in GPU process. The main goals are:
+1. Allow two pages to hold their own video pipeline simultaneously, because
+   `CastRenderer` only support one video pipeline at a time.
+2. Support GPU accelerated video decoder for RTC path.
+
 ### Mojo CDM and Mojo Decryptor
 
 Mojo CDM is special among all media player mojo interfaces because it is needed
@@ -326,6 +345,26 @@ currently supported services:
 * `CdmFileIO`: for the CDM to store persistent data
 * `ProvisionFetcher`: for Android MediaDrm device provisioning
 * `CdmProxy`: (in progress)
+
+### Security
+
+In most cases, the client side runs in the renderer process which is the least
+trusted. Also always assume the client side code may be compromised, e.g. making
+calls in random order or passing in garbage parameters.
+
+Due to the [Flexible Process Model](#Flexible-Process-Model), it's sometimes
+hard to know in which process the service side runs. As a rule of thumb, assume
+all service side code may run in a privileged process (e.g. browser process),
+including the common supporting code like `MojoVideoDecoderService`, as well as
+the concrete [Media Component](#Media-Components), e.g. MediaCodecVideoDecoder
+on Android.  To know exactly which [Media Component](#Media-Components) runs in
+which process in production, see [Adoption](#Adoption) below.
+
+Also note that all the [Secure Auxiliary Services](#Secure-Auxiliary-Services)
+are running in a more privileged process than the process where the media
+components that use them run in. For example, all of the existing services run
+in the browser process except for the `CdmProxy`, which runs in the GPU process.
+They must defend against compromised media components.
 
 ### Adoption
 

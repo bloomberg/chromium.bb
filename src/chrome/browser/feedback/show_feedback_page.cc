@@ -37,6 +37,7 @@ bool IsFromUserInteraction(FeedbackSource source) {
     case kFeedbackSourceAsh:
     case kFeedbackSourceAssistant:
     case kFeedbackSourceBrowserCommand:
+    case kFeedbackSourceDesktopTabGroups:
     case kFeedbackSourceMdSettingsAboutPage:
     case kFeedbackSourceOldSettingsAboutPage:
       return true;
@@ -47,7 +48,7 @@ bool IsFromUserInteraction(FeedbackSource source) {
 #endif
 }  // namespace
 
-void ShowFeedbackPage(Browser* browser,
+void ShowFeedbackPage(const Browser* browser,
                       FeedbackSource source,
                       const std::string& description_template,
                       const std::string& description_placeholder_text,
@@ -60,6 +61,18 @@ void ShowFeedbackPage(Browser* browser,
   }
 
   Profile* profile = GetFeedbackProfile(browser);
+  ShowFeedbackPage(page_url, profile, source, description_template,
+                   description_placeholder_text, category_tag,
+                   extra_diagnostics);
+}
+
+void ShowFeedbackPage(const GURL& page_url,
+                      Profile* profile,
+                      FeedbackSource source,
+                      const std::string& description_template,
+                      const std::string& description_placeholder_text,
+                      const std::string& category_tag,
+                      const std::string& extra_diagnostics) {
   if (!profile) {
     LOG(ERROR) << "Cannot invoke feedback: No profile found!";
     return;

@@ -146,6 +146,13 @@ bool IsNotUsernameField(const ProcessedField& field) {
   return field.server_hints_not_username;
 }
 
+// Checks if the Finch experiment for offering password generation for
+// server-predicted clear-text fields is enabled.
+bool IsPasswordGenerationForClearTextFieldsEnabled() {
+  return base::FeatureList::IsEnabled(
+      password_manager::features::KEnablePasswordGenerationForClearTextFields);
+}
+
 // Returns true iff |field_type| is one of password types.
 bool IsPasswordPrediction(const CredentialFieldType field_type) {
   switch (field_type) {
@@ -284,7 +291,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
   // First username is stored in |result->username|.
   const FormFieldData* second_username = nullptr;
 
-  for (const PasswordFieldPrediction& prediction : predictions) {
+  for (const PasswordFieldPrediction& prediction : predictions.fields) {
     ProcessedField* processed_field = nullptr;
 
     CredentialFieldType field_type = DeriveFromServerFieldType(prediction.type);
@@ -343,6 +350,10 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
         if (!result->new_password) {
           processed_field = FindField(processed_fields, prediction);
           if (processed_field) {
+            if (!IsPasswordGenerationForClearTextFieldsEnabled() &&
+                !processed_field->is_password) {
+              continue;
+            }
             result->new_password = processed_field->field;
             processed_field->is_predicted_as_password = true;
           }
@@ -351,6 +362,10 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
       case CredentialFieldType::kConfirmationPassword:
         processed_field = FindField(processed_fields, prediction);
         if (processed_field) {
+          if (!IsPasswordGenerationForClearTextFieldsEnabled() &&
+              !processed_field->is_password) {
+            continue;
+          }
           result->confirmation_password = processed_field->field;
           processed_field->is_predicted_as_password = true;
         }
@@ -385,7 +400,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
 
   // For the use of basic heuristics, also mark CVC fields and NOT_PASSWORD
   // fields as such.
-  for (const PasswordFieldPrediction& prediction : predictions) {
+  for (const PasswordFieldPrediction& prediction : predictions.fields) {
     ProcessedField* current_field = FindField(processed_fields, prediction);
     if (!current_field)
       continue;
@@ -898,11 +913,15 @@ const FormFieldData* FindUsernameInPredictions(
 bool GetMayUsePrefilledPlaceholder(
     const base::Optional<FormPredictions>& form_predictions,
     const SignificantFields& significant_fields) {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kEnableOverwritingPlaceholderUsernames))
+    return false;
+
   if (!form_predictions || !significant_fields.username)
     return false;
 
   uint32_t username_id = significant_fields.username->unique_renderer_id;
-  for (const PasswordFieldPrediction& prediction : *form_predictions) {
+  for (const PasswordFieldPrediction& prediction : form_predictions->fields) {
     if (prediction.renderer_id == username_id)
       return prediction.may_use_prefilled_placeholder;
   }

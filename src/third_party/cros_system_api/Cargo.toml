@@ -1,0 +1,13 @@
+[package]
+name = "system_api"
+version = "0.24.52"
+authors = ["The Chromium OS Authors"]
+edition = "2018"
+exclude = ["*"]
+include = ["Cargo.toml", "build.rs", "src/*", "src/bindings/*"]
+
+[build-dependencies]
+chromeos_dbus_bindings = { path = "../chromeos-dbus-bindings"} # provided by ebuild
+
+[dependencies]
+dbus = "0.6"

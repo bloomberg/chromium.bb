@@ -10,6 +10,15 @@ let invalidNumberingSystem = [
   "finance",
   "native",
   "traditio",
+  "abc-defghi",
+];
+
+let illFormedNumberingSystem = [
+  "",
+  "i",
+  "ij",
+  "abcdefghi",
+  "abc-ab",
 ];
 
 // https://tc39.github.io/ecma402/#table-numbering-system-digits
@@ -43,20 +52,29 @@ let locales = [
   "ar",
 ];
 
-
 invalidNumberingSystem.forEach(function(numberingSystem) {
+  locales.forEach(function(base) {
+     var df;
+     assertDoesNotThrow(
+         () => df = new Intl.DateTimeFormat([base], {numberingSystem}));
+     assertEquals(
+         (new Intl.DateTimeFormat([base])).resolvedOptions().numberingSystem,
+         df.resolvedOptions().numberingSystem);
+  });
+});
+
+illFormedNumberingSystem.forEach(function(numberingSystem) {
   assertThrows(
       () => new Intl.DateTimeFormat(["en"], {numberingSystem}),
       RangeError);
-}
-);
+});
 
 let value = new Date();
 validNumberingSystem.forEach(function(numberingSystem) {
   locales.forEach(function(base) {
     let l = base + "-u-nu-" + numberingSystem;
     let dtf = new Intl.DateTimeFormat([base], {numberingSystem});
-    assertEquals(l, dtf.resolvedOptions().locale);
+    assertEquals(base, dtf.resolvedOptions().locale);
     assertEquals(numberingSystem, dtf.resolvedOptions().numberingSystem);
 
     // Test the formatting result is the same as passing in via u-nu-

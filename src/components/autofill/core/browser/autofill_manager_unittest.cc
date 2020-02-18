@@ -58,6 +58,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -561,6 +562,13 @@ class AutofillManagerTest : public testing::Test {
         autofill_manager_->credit_card_access_manager_->cvc_authenticator_
             ->full_card_request_.get();
     DCHECK(full_card_request);
+
+    // Mock user response.
+    payments::FullCardRequest::UserProvidedUnmaskDetails details;
+    details.cvc = base::ASCIIToUTF16("123");
+    full_card_request->OnUnmaskPromptAccepted(details);
+
+    // Mock payments response.
     payments::PaymentsClient::UnmaskResponseDetails response;
     full_card_request->OnDidGetRealPan(result,
                                        response.with_real_pan(real_pan));
@@ -1323,7 +1331,8 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_AutofillDisabledByUser) {
   FormsSeen(forms);
 
   // Disable Autofill.
-  autofill_manager_->SetAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
 
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
@@ -2148,6 +2157,52 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_ForPhonePrefixOrSuffix) {
 
   // Test that we sent the right suffix values to the external delegate.
   CheckSuggestions(kDefaultPageID, Suggestion("9377", "1800FLOWERS", "", 1));
+}
+
+// Tests that we return email profile suggestions values
+// when the email field with username autocomplete attribute exist.
+TEST_F(AutofillManagerTest,
+       GetProfileSuggestions_ForEmailFieldWithUserNameAutocomplete) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  struct {
+    const char* const label;
+    const char* const name;
+    size_t max_length;
+    const char* const autocomplete_attribute;
+  } test_fields[] = {{"First Name", "firstname", 30, "given-name"},
+                     {"Last Name", "lastname", 30, "family-name"},
+                     {"Email", "email", 30, "username"},
+                     {"Password", "password", 30, "new-password"}};
+
+  FormFieldData field;
+  for (const auto& test_field : test_fields) {
+    const char* const field_type =
+        strcmp(test_field.name, "password") == 0 ? "password" : "text";
+    test::CreateTestFormField(test_field.label, test_field.name, "", field_type,
+                              &field);
+    field.max_length = test_field.max_length;
+    field.autocomplete_attribute = test_field.autocomplete_attribute;
+    form.fields.push_back(field);
+  }
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  personal_data_.ClearProfiles();
+  AutofillProfile profile;
+  profile.set_guid("00000000-0000-0000-0000-000000000103");
+  profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("Natty Bumppo"));
+  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("test@example.com"));
+  personal_data_.AddProfile(profile);
+
+  GetAutofillSuggestions(form, form.fields[2]);
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("test@example.com", "Natty Bumppo", "", 1));
 }
 
 // Test that we correctly fill an address form.
@@ -4172,7 +4227,8 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -4219,7 +4275,8 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4244,7 +4301,8 @@ TEST_F(AutofillManagerTest,
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4313,7 +4371,8 @@ TEST_F(AutofillManagerTest,
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4340,7 +4399,8 @@ TEST_F(AutofillManagerTest,
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   // Set up our form data.
@@ -4389,7 +4449,8 @@ TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
                               autocomplete_history_manager_.get()));
-  autofill_manager_->SetAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
   EXPECT_CALL(*(autocomplete_history_manager_.get()),
@@ -5816,8 +5877,8 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndUnfocus_Upload) {
   form.fields[1].value = ASCIIToUTF16("Presley");
   form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
   // Simulate editing a field.
-  autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
-                                          gfx::RectF(), base::TimeTicks::Now());
+  autofill_manager_->OnTextFieldDidChange(
+      form, form.fields.front(), gfx::RectF(), AutofillTickClock::NowTicks());
 
   // Simulate lost of focus on the form.
   autofill_manager_->OnFocusNoLongerOnForm();
@@ -5866,8 +5927,8 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndNavigation_Upload) {
   form.fields[1].value = ASCIIToUTF16("Presley");
   form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
   // Simulate editing a field.
-  autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
-                                          gfx::RectF(), base::TimeTicks::Now());
+  autofill_manager_->OnTextFieldDidChange(
+      form, form.fields.front(), gfx::RectF(), AutofillTickClock::NowTicks());
 
   // Simulate a navigation so that the pending form is uploaded.
   autofill_manager_->Reset();
@@ -5915,7 +5976,8 @@ TEST_F(AutofillManagerTest, OnDidFillAutofillFormDataAndUnfocus_Upload) {
   form.fields[0].value = ASCIIToUTF16("Elvis");
   form.fields[1].value = ASCIIToUTF16("Presley");
   form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
-  autofill_manager_->OnDidFillAutofillFormData(form, base::TimeTicks::Now());
+  autofill_manager_->OnDidFillAutofillFormData(form,
+                                               AutofillTickClock::NowTicks());
 
   // Simulate lost of focus on the form.
   autofill_manager_->OnFocusNoLongerOnForm();
@@ -6108,7 +6170,7 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
 }
 
 TEST_F(AutofillManagerTest, ProfileDisabledDoesNotFillFormData) {
-  autofill_manager_->SetProfileEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -6126,7 +6188,7 @@ TEST_F(AutofillManagerTest, ProfileDisabledDoesNotFillFormData) {
 }
 
 TEST_F(AutofillManagerTest, ProfileDisabledDoesNotSuggest) {
-  autofill_manager_->SetProfileEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -6143,7 +6205,7 @@ TEST_F(AutofillManagerTest, ProfileDisabledDoesNotSuggest) {
 }
 
 TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotFillFormData) {
-  autofill_manager_->SetCreditCardEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -6161,7 +6223,7 @@ TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotFillFormData) {
 }
 
 TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotSuggest) {
-  autofill_manager_->SetCreditCardEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
 
   // Set up our form data.
   FormData form;
@@ -6703,7 +6765,8 @@ TEST_F(AutofillManagerTest, ShouldUploadForm) {
   }
 
   // Autofill disabled.
-  autofill_manager_->SetAutofillEnabled(false);
+  autofill_manager_->SetAutofillProfileEnabled(false);
+  autofill_manager_->SetAutofillCreditCardEnabled(false);
   EXPECT_FALSE(autofill_manager_->ShouldUploadForm(FormStructure(form)));
 }
 
@@ -7670,6 +7733,58 @@ TEST_F(AutofillManagerTest,
                                     HasSubstr("Autofill.FormEvents.Address"))));
 }
 
+// Test that we import data when the field type is determined by the value and
+// without any heuristics on the attributes.
+TEST_F(AutofillManagerTest, ImportDataWhenValueDetected) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kAutofillSaveAndFillVPA);
+
+  FormData form;
+  form.url = GURL("https://wwww.foo.com");
+
+  FormFieldData field;
+  test::CreateTestFormField("VPA:", "vpa", "", "text", &field);
+  form.fields.push_back(field);
+
+  FormsSeen({form});
+  autofill_manager_->SetExpectedSubmittedFieldTypes({{UPI_VPA}});
+  autofill_manager_->SetExpectedObservedSubmission(true);
+  autofill_manager_->SetCallParentUploadFormData(true);
+  form.submission_event =
+      mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+
+  form.fields[0].value = ASCIIToUTF16("user@indianbank");
+  FormSubmitted(form);
+
+  EXPECT_EQ(1, personal_data_.num_times_save_vpa_called());
+}
+
+// Test that we do not import VPA data when in incognito.
+TEST_F(AutofillManagerTest, DontImportVPAWhenIncognito) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kAutofillSaveAndFillVPA);
+  autofill_driver_->SetIsIncognito(true);
+
+  FormData form;
+  form.url = GURL("https://wwww.foo.com");
+
+  FormFieldData field;
+  test::CreateTestFormField("VPA:", "vpa", "", "text", &field);
+  form.fields.push_back(field);
+
+  FormsSeen({form});
+  autofill_manager_->SetExpectedSubmittedFieldTypes({{UPI_VPA}});
+  autofill_manager_->SetExpectedObservedSubmission(true);
+  autofill_manager_->SetCallParentUploadFormData(true);
+  form.submission_event =
+      mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+
+  form.fields[0].value = ASCIIToUTF16("user@indianbank");
+  FormSubmitted(form);
+
+  EXPECT_EQ(0, personal_data_.num_times_save_vpa_called());
+}
+
 // Test param indicates if there is an active screen reader.
 class OnFocusOnFormFieldTest : public AutofillManagerTest,
                                public testing::WithParamInterface<bool> {
@@ -7858,18 +7973,20 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(All, OnFocusOnFormFieldTest, testing::Bool());
 
 #if defined(OS_IOS) || defined(OS_ANDROID)
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SuggestionMatchingTest,
                          testing::Values(std::make_tuple(0, ""),
                                          std::make_tuple(1, "show-all"),
                                          std::make_tuple(1, "show-one")));
 #else
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SuggestionMatchingTest,
                          testing::Values(std::make_tuple(0, ""),
                                          std::make_tuple(1, "")));
 #endif  // defined(OS_IOS) || defined(OS_ANDROID)
 
-INSTANTIATE_TEST_SUITE_P(, CreditCardSuggestionMatchingTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         CreditCardSuggestionMatchingTest,
+                         testing::Bool());
 
 }  // namespace autofill

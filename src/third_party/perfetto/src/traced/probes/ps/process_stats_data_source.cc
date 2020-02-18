@@ -101,7 +101,7 @@ ProcessStatsDataSource::ProcessStatsDataSource(
   dump_all_procs_on_start_ = cfg.scan_all_processes_on_start();
   enable_on_demand_dumps_ = true;
   for (auto quirk = cfg.quirks(); quirk; ++quirk) {
-    if (quirk->as_int32() == ProcessStatsConfig::DISABLE_ON_DEMAND)
+    if (*quirk == ProcessStatsConfig::DISABLE_ON_DEMAND)
       enable_on_demand_dumps_ = false;
   }
 
@@ -170,10 +170,15 @@ void ProcessStatsDataSource::WriteAllProcesses() {
   FinalizeCurPacket();
 }
 
-void ProcessStatsDataSource::OnPids(const std::vector<int32_t>& pids) {
-  PERFETTO_METATRACE_SCOPED(TAG_PROC_POLLERS, PS_ON_PIDS);
+void ProcessStatsDataSource::OnPids(const base::FlatSet<int32_t>& pids) {
   if (!enable_on_demand_dumps_)
     return;
+  WriteProcessTree(pids);
+}
+
+void ProcessStatsDataSource::WriteProcessTree(
+    const base::FlatSet<int32_t>& pids) {
+  PERFETTO_METATRACE_SCOPED(TAG_PROC_POLLERS, PS_ON_PIDS);
   PERFETTO_DCHECK(!cur_ps_tree_);
   int pids_scanned = 0;
   for (int32_t pid : pids) {
@@ -186,17 +191,13 @@ void ProcessStatsDataSource::OnPids(const std::vector<int32_t>& pids) {
   PERFETTO_METATRACE_COUNTER(TAG_PROC_POLLERS, PS_PIDS_SCANNED, pids_scanned);
 }
 
-void ProcessStatsDataSource::OnRenamePids(const std::vector<int32_t>& pids) {
+void ProcessStatsDataSource::OnRenamePids(const base::FlatSet<int32_t>& pids) {
   PERFETTO_METATRACE_SCOPED(TAG_PROC_POLLERS, PS_ON_RENAME_PIDS);
   if (!enable_on_demand_dumps_)
     return;
   PERFETTO_DCHECK(!cur_ps_tree_);
-  for (int32_t pid : pids) {
-    auto pid_it = seen_pids_.find(pid);
-    if (pid_it == seen_pids_.end())
-      continue;
-    seen_pids_.erase(pid_it);
-  }
+  for (int32_t pid : pids)
+    seen_pids_.erase(pid);
 }
 
 void ProcessStatsDataSource::Flush(FlushRequestID,
@@ -235,6 +236,8 @@ void ProcessStatsDataSource::WriteProcess(int32_t pid,
   auto* proc = GetOrCreatePsTree()->add_processes();
   proc->set_pid(pid);
   proc->set_ppid(ToInt(ReadProcStatusEntry(proc_status, "PPid:")));
+  // Uid will have multiple entries, only return first (real uid).
+  proc->set_uid(ToInt(ReadProcStatusEntry(proc_status, "Uid:")));
 
   std::string cmdline = ReadProcPidFile(pid, "cmdline");
   if (!cmdline.empty()) {
@@ -245,7 +248,7 @@ void ProcessStatsDataSource::WriteProcess(int32_t pid,
     // Nothing in cmdline so use the thread name instead (which is == "comm").
     proc->add_cmdline(ReadProcStatusEntry(proc_status, "Name:").c_str());
   }
-  seen_pids_.emplace(pid);
+  seen_pids_.insert(pid);
 }
 
 void ProcessStatsDataSource::WriteThread(int32_t tid,
@@ -256,7 +259,7 @@ void ProcessStatsDataSource::WriteThread(int32_t tid,
   thread->set_tgid(tgid);
   if (optional_name)
     thread->set_name(optional_name);
-  seen_pids_.emplace(tid);
+  seen_pids_.insert(tid);
 }
 
 base::ScopedDir ProcessStatsDataSource::OpenProcDir() {
@@ -374,7 +377,7 @@ void ProcessStatsDataSource::WriteAllProcessStats() {
   base::ScopedDir proc_dir = OpenProcDir();
   if (!proc_dir)
     return;
-  std::vector<int32_t> pids;
+  base::FlatSet<int32_t> pids;
   while (int32_t pid = ReadNextNumericDir(*proc_dir)) {
     cur_ps_stats_process_ = nullptr;
 
@@ -406,13 +409,13 @@ void ProcessStatsDataSource::WriteAllProcessStats() {
       }
     }
 
-    pids.push_back(pid);
+    pids.insert(pid);
   }
   FinalizeCurPacket();
 
   // Ensure that we write once long-term process info (e.g., name) for new pids
   // that we haven't seen before.
-  OnPids(pids);
+  WriteProcessTree(pids);
 }
 
 // Returns true if the stats for the given |pid| have been written, false it

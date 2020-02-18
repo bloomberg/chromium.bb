@@ -214,9 +214,7 @@ TEST_F(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 3));  // e
   active_data_.push_back(
-      AggregatedHitTestRegion(c_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
                               c_bounds_in_e, transform_e_to_c, 2));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
@@ -297,9 +295,7 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneath) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 4));  // e
   active_data_.push_back(
-      AggregatedHitTestRegion(c_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
                               c_bounds_in_e, transform_e_to_c, 2));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
@@ -373,9 +369,7 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneathTransform) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 4));  // e
   active_data_.push_back(
-      AggregatedHitTestRegion(c_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
                               c_bounds_in_e, transform_e_to_c, 2));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
@@ -461,9 +455,7 @@ TEST_F(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 6));  // e
   active_data_.push_back(
-      AggregatedHitTestRegion(c1_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c1_id, HitTestRegionFlags::kHitTestChildSurface,
                               c1_bounds_in_e, transform_e_to_c1, 2));  // c1
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
@@ -474,9 +466,7 @@ TEST_F(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       b_bounds_in_c1, transform_c1_to_b, 0));  // b
   active_data_.push_back(
-      AggregatedHitTestRegion(c2_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c2_id, HitTestRegionFlags::kHitTestChildSurface,
                               c2_bounds_in_e, transform_e_to_c2, 2));  // c2
   active_data_.push_back(AggregatedHitTestRegion(
       g_id,
@@ -578,9 +568,7 @@ TEST_F(HitTestQueryTest,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 6));  // e
   active_data_.push_back(
-      AggregatedHitTestRegion(c1_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c1_id, HitTestRegionFlags::kHitTestChildSurface,
                               c1_bounds_in_e, transform_e_to_c1, 2));  // c1
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
@@ -591,9 +579,7 @@ TEST_F(HitTestQueryTest,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       b_bounds_in_c1, transform_c1_to_b, 0));  // b
   active_data_.push_back(
-      AggregatedHitTestRegion(c2_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c2_id, HitTestRegionFlags::kHitTestChildSurface,
                               c2_bounds_in_e, transform_e_to_c2, 2));  // c2
   active_data_.push_back(AggregatedHitTestRegion(
       g_id,
@@ -682,9 +668,7 @@ TEST_F(HitTestQueryTest, MultipleLayerChild) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 5));  // e
   active_data_.push_back(
-      AggregatedHitTestRegion(c1_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c1_id, HitTestRegionFlags::kHitTestChildSurface,
                               c1_bounds_in_e, transform_e_to_c1, 3));  // c1
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
@@ -778,24 +762,16 @@ TEST_F(HitTestQueryTest, MultipleLayerTransparentChild) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 5));  // e
   active_data_.push_back(
-      AggregatedHitTestRegion(c1_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c1_id, HitTestRegionFlags::kHitTestChildSurface,
                               c1_bounds_in_e, transform_e_to_c1, 3));  // c1
   active_data_.push_back(
-      AggregatedHitTestRegion(a_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(a_id, HitTestRegionFlags::kHitTestChildSurface,
                               a_bounds_in_c1, transform_c1_to_a, 2));  // a
   active_data_.push_back(
-      AggregatedHitTestRegion(b_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(b_id, HitTestRegionFlags::kHitTestChildSurface,
                               b_bounds_in_a, transform_a_to_b, 1));  // b
   active_data_.push_back(
-      AggregatedHitTestRegion(g_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(g_id, HitTestRegionFlags::kHitTestChildSurface,
                               g_bounds_in_b, transform_b_to_g, 0));  // g
   active_data_.push_back(AggregatedHitTestRegion(
       c2_id,
@@ -852,10 +828,8 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 3));  // e
   active_data_.push_back(AggregatedHitTestRegion(
-      c_id,
-      HitTestRegionFlags::kHitTestChildSurface |
-          HitTestRegionFlags::kHitTestIgnore,
-      c_bounds_in_e, transform_e_to_c, INT32_MIN));  // c
+      c_id, HitTestRegionFlags::kHitTestChildSurface, c_bounds_in_e,
+      transform_e_to_c, INT32_MIN));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -890,9 +864,7 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, INT32_MAX));  // e
   active_data_.push_back(
-      AggregatedHitTestRegion(c_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
                               c_bounds_in_e, transform_e_to_c, 2));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
@@ -916,9 +888,7 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 3));  // e
   active_data_.push_back(
-      AggregatedHitTestRegion(c_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
                               c_bounds_in_e, transform_e_to_c, 3));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
@@ -1186,9 +1156,7 @@ TEST_F(HitTestQueryTest, GetTransformToTarget) {
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
       e_bounds_in_e, transform_e_to_e, 4));  // e
   active_data_.push_back(
-      AggregatedHitTestRegion(c_id,
-                              HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore,
+      AggregatedHitTestRegion(c_id, HitTestRegionFlags::kHitTestChildSurface,
                               c_bounds_in_e, transform_e_to_c, 2));  // c
   active_data_.push_back(AggregatedHitTestRegion(
       a_id,
@@ -1269,7 +1237,6 @@ TEST_F(HitTestQueryTest, TransparentOverlayRegions) {
   active_data_.push_back(
       AggregatedHitTestRegion(c1_id,
                               HitTestRegionFlags::kHitTestChildSurface |
-                                  HitTestRegionFlags::kHitTestIgnore |
                                   HitTestRegionFlags::kHitTestMouse,
                               c1_bounds_in_e, transform_e_to_c1, 1));  // c1
   active_data_.push_back(AggregatedHitTestRegion(

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/observer_list_types.h"
+#include "base/optional.h"
 
 namespace content {
 class WebContents;
@@ -39,11 +40,17 @@ class DistillabilityObserver : public base::CheckedObserver {
   virtual void OnResult(const DistillabilityResult& result) = 0;
 };
 
-// Set the delegate to receive the result of whether the page is distillable.
+// Add/remove objects to the list of observers to notify when the distillability
+// service returns a result.
 //
-// |web_contents| must be non-null.
+// |web_contents| and |observer| must both be non-null.
 void AddObserver(content::WebContents* web_contents,
                  DistillabilityObserver* observer);
+void RemoveObserver(content::WebContents* web_contents,
+                    DistillabilityObserver* observer);
+
+base::Optional<DistillabilityResult> GetLatestResult(
+    content::WebContents* web_contents);
 
 }  // namespace dom_distiller
 

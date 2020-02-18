@@ -43,6 +43,7 @@ specific_include_rules = {
   ".*\.h": [
     "+rtc_base/checks.h",
     "+rtc_base/system/rtc_export.h",
+    "+rtc_base/system/rtc_export_template.h",
     "+rtc_base/units/unit_base.h",
     "+rtc_base/deprecation.h",
   ],
@@ -113,6 +114,11 @@ specific_include_rules = {
   "media_transport_interface\.h": [
     "+rtc_base/copy_on_write_buffer.h",  # As used by datachannelinterface.h
     "+rtc_base/network_route.h",
+  ],
+
+  "packet_socket_factory\.h": [
+    "+rtc_base/proxy_info.h",
+    "+rtc_base/async_packet_socket.h",
   ],
 
   "peer_connection_factory_proxy\.h": [

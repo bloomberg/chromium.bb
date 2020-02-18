@@ -6,11 +6,13 @@
 
 namespace {
 
-openscreen::NetworkServiceManager* g_network_service_manager_instance = nullptr;
+openscreen::osp::NetworkServiceManager* g_network_service_manager_instance =
+    nullptr;
 
 }  //  namespace
 
 namespace openscreen {
+namespace osp {
 
 // static
 NetworkServiceManager* NetworkServiceManager::Create(
@@ -72,4 +74,5 @@ NetworkServiceManager::NetworkServiceManager(
 
 NetworkServiceManager::~NetworkServiceManager() = default;
 
+}  // namespace osp
 }  // namespace openscreen

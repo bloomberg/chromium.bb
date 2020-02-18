@@ -9,6 +9,9 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
@@ -18,6 +21,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -89,7 +93,11 @@ void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == ash::LAUNCH_NEW) {
     delegate()->ExecuteLaunchCommand(event_flags);
   } else if (command_id == ash::UNINSTALL) {
-    arc::ShowArcAppUninstallDialog(profile(), app_id());
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile());
+    DCHECK(proxy);
+    proxy->Uninstall(app_id(),
+                     controller() ? controller()->GetAppListWindow() : nullptr);
   } else if (command_id == ash::SHOW_APP_INFO) {
     ShowPackageInfo();
   } else if (command_id >= ash::LAUNCH_APP_SHORTCUT_FIRST &&
@@ -136,6 +144,9 @@ void ArcAppContextMenu::ShowPackageInfo() {
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings) &&
       base::FeatureList::IsEnabled(features::kAppManagement)) {
     chrome::ShowAppManagementPage(profile(), app_id());
+    base::UmaHistogramEnumeration(
+        kAppManagementEntryPointsHistogramName,
+        AppManagementEntryPoint::kAppListContextMenuAppInfoArc);
     return;
   }
   if (arc::ShowPackageInfo(app_info->package_name,

@@ -46,14 +46,16 @@
         <template is="dom-if" if="[[allowDisableAcceleration_]]">
           <settings-toggle-button id="mouseAcceleration"
               pref="{{prefs.settings.mouse.acceleration}}"
-              label="$i18n{pointerAccelerationLabel}">
+              label="$i18n{mouseAccelerationLabel}">
           </settings-toggle-button>
         </template>
         <div class="settings-box">
-          <div class="start" id="mouseSpeedLabel">$i18n{mouseSpeed}</div>
+          <div class="start" id="mouseSpeedLabel" aria-hidden="true">
+            $i18n{mouseSpeed}
+          </div>
           <settings-slider pref="{{prefs.settings.mouse.sensitivity2}}"
               ticks="[[sensitivityValues_]]"
-              aria-labelledby="mouseSpeedLabel"
+              label-aria="$i18n{mouseSpeed}"
               label-min="$i18n{pointerSlow}"
               label-max="$i18n{pointerFast}">
           </settings-slider>
@@ -75,15 +77,17 @@
         <template is="dom-if" if="[[allowDisableAcceleration_]]">
           <settings-toggle-button id="touchpadAcceleration"
               pref="{{prefs.settings.touchpad.acceleration}}"
-              label="$i18n{pointerAccelerationLabel}">
+              label="$i18n{touchpadAccelerationLabel}">
           </settings-toggle-button>
         </template>
         <div class="settings-box">
-          <div class="start" id="touchpadSpeedLabel">$i18n{touchpadSpeed}</div>
+          <div class="start" id="touchpadSpeedLabel" aria-hidden="true">
+            $i18n{touchpadSpeed}
+          </div>
             <settings-slider id="touchpadSensitivity"
                 pref="{{prefs.settings.touchpad.sensitivity2}}"
                 ticks="[[sensitivityValues_]]"
-                aria-labelledby="touchpadSpeedLabel"
+                label-aria="$i18n{touchpadSpeed}"
                 label-min="$i18n{pointerSlow}"
                 label-max="$i18n{pointerFast}">
             </settings-slider>

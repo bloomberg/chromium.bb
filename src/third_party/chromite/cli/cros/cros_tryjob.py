@@ -125,7 +125,7 @@ def CbuildbotArgs(options):
       args.append('--buildbot')
 
   else:
-    raise Exception('Unknown options.where: %s', options.where)
+    raise Exception('Unknown options.where: %s' % (options.where,))
 
 
   if options.branch:
@@ -186,8 +186,8 @@ def RunLocal(options):
   cmd = [launcher] + args + options.build_configs
 
   # Run the tryjob.
-  result = cros_build_lib.RunCommand(cmd, debug_level=logging.CRITICAL,
-                                     error_code_ok=True, cwd=options.buildroot)
+  result = cros_build_lib.run(cmd, debug_level=logging.CRITICAL,
+                              error_code_ok=True, cwd=options.buildroot)
   return result.returncode
 
 
@@ -213,8 +213,8 @@ def RunCbuildbot(options):
   cmd = [cbuildbot] + args + options.build_configs
 
   # Run the tryjob.
-  result = cros_build_lib.RunCommand(cmd, debug_level=logging.CRITICAL,
-                                     error_code_ok=True, cwd=options.buildroot)
+  result = cros_build_lib.run(cmd, debug_level=logging.CRITICAL,
+                              error_code_ok=True, cwd=options.buildroot)
   return result.returncode
 
 
@@ -662,4 +662,4 @@ List Examples:
     elif self.options.where == CBUILDBOT:
       return RunCbuildbot(self.options)
     else:
-      raise Exception('Unknown options.where: %s', self.options.where)
+      raise Exception('Unknown options.where: %s' % (self.options.where,))

@@ -42,7 +42,7 @@ class ImageWriterFakeImageBurnerClient
 
   void BurnImage(const std::string& from_path,
                  const std::string& to_path,
-                 const ErrorCallback& error_callback) override {
+                 ErrorCallback error_callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(burn_progress_update_handler_, to_path, 0, 100));
@@ -314,7 +314,7 @@ bool ImageWriterTestUtils::FillFile(const base::FilePath& file,
 }
 
 ImageWriterUnitTestBase::ImageWriterUnitTestBase()
-    : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {}
+    : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 ImageWriterUnitTestBase::~ImageWriterUnitTestBase() {
 }
 

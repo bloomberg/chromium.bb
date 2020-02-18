@@ -14,6 +14,7 @@
 
 #include "Reactor.hpp"
 #include "Debug.hpp"
+#include "EmulatedReactor.hpp"
 
 #include "Optimizer.hpp"
 #include "ExecutableMemory.hpp"
@@ -53,6 +54,11 @@
 #include <limits>
 #include <iostream>
 
+namespace rr
+{
+	class ELFMemoryStreamer;
+}
+
 namespace
 {
 	// Default configuration settings. Must be accessed under mutex lock.
@@ -71,7 +77,7 @@ namespace
 	Ice::Cfg *function = nullptr;
 	Ice::CfgNode *basicBlock = nullptr;
 	Ice::CfgLocalAllocatorScope *allocator = nullptr;
-	rr::Routine *routine = nullptr;
+	rr::ELFMemoryStreamer *routine = nullptr;
 
 	std::mutex codegenMutex;
 
@@ -93,8 +99,9 @@ namespace
 	{
 		switch (level)
 		{
-			case rr::Optimization::Level::None:       return Ice::Opt_0;
-			case rr::Optimization::Level::Less:       return Ice::Opt_1;
+			// Note that Opt_0 and Opt_1 are not implemented by Subzero
+			case rr::Optimization::Level::None:       return Ice::Opt_m1;
+			case rr::Optimization::Level::Less:       return Ice::Opt_m1;
 			case rr::Optimization::Level::Default:    return Ice::Opt_2;
 			case rr::Optimization::Level::Aggressive: return Ice::Opt_2;
 			default: UNREACHABLE("Unknown Optimization Level %d", int(level));
@@ -154,13 +161,20 @@ namespace
 	const bool CPUID::SSE4_1 = CPUID::detectSSE4_1();
 	const bool emulateIntrinsics = false;
 	const bool emulateMismatchedBitCast = CPUID::ARM;
+
+	constexpr bool subzeroDumpEnabled = false;
+	constexpr bool subzeroEmitTextAsm = false;
+
+#if !ALLOW_DUMP
+	static_assert(!subzeroDumpEnabled, "Compile Subzero with ALLOW_DUMP=1 for subzeroDumpEnabled");
+	static_assert(!subzeroEmitTextAsm, "Compile Subzero with ALLOW_DUMP=1 for subzeroEmitTextAsm");
+#endif
 }
 
 namespace rr
 {
 	const Capabilities Caps =
 	{
-		false, // CallSupported
 		false, // CoroutinesSupported
 	};
 
@@ -315,9 +329,9 @@ namespace rr
 			case R_386_32:
 				*patchSite = (int32_t)((intptr_t)symbolValue + *patchSite);
 				break;
-		//	case R_386_PC32:
-		//		*patchSite = (int32_t)((intptr_t)symbolValue + *patchSite - (intptr_t)patchSite);
-		//		break;
+			case R_386_PC32:
+				*patchSite = (int32_t)((intptr_t)symbolValue + *patchSite - (intptr_t)patchSite);
+				break;
 			default:
 				ASSERT(false && "Unsupported relocation type");
 				return nullptr;
@@ -477,7 +491,7 @@ namespace rr
 		ELFMemoryStreamer &operator=(const ELFMemoryStreamer &) = delete;
 
 	public:
-		ELFMemoryStreamer() : Routine(), entry(nullptr)
+		ELFMemoryStreamer() : Routine()
 		{
 			position = 0;
 			buffer.reserve(0x1000);
@@ -521,32 +535,49 @@ namespace rr
 
 		void seek(uint64_t Off) override { position = Off; }
 
-		const void *getEntry(int index) override
+		const void* finalizeEntryBegin()
 		{
-			ASSERT(index == 0); // Subzero does not support multiple entry points per routine yet.
-			if(!entry)
-			{
-				position = std::numeric_limits<std::size_t>::max();   // Can't stream more data after this
+			position = std::numeric_limits<std::size_t>::max();   // Can't stream more data after this
 
-				size_t codeSize = 0;
-				entry = loadImage(&buffer[0], codeSize);
+			size_t codeSize = 0;
+			const void *entry = loadImage(&buffer[0], codeSize);
 
-				#if defined(_WIN32)
-					VirtualProtect(&buffer[0], buffer.size(), PAGE_EXECUTE_READ, &oldProtection);
-					FlushInstructionCache(GetCurrentProcess(), NULL, 0);
-				#else
-					mprotect(&buffer[0], buffer.size(), PROT_READ | PROT_EXEC);
-					__builtin___clear_cache((char*)entry, (char*)entry + codeSize);
-				#endif
-			}
-
+#if defined(_WIN32)
+			VirtualProtect(&buffer[0], buffer.size(), PAGE_EXECUTE_READ, &oldProtection);
+			FlushInstructionCache(GetCurrentProcess(), NULL, 0);
+#else
+			mprotect(&buffer[0], buffer.size(), PROT_READ | PROT_EXEC);
+			__builtin___clear_cache((char*)entry, (char*)entry + codeSize);
+#endif
 			return entry;
 		}
 
+		void setEntry(int index, const void* func)
+		{
+			ASSERT(func);
+			funcs[index] = func;
+		}
+
+		const void *getEntry(int index) const override
+		{
+			ASSERT(funcs[index]);
+			return funcs[index];
+		}
+
+		const void* addConstantData(const void* data, size_t size)
+		{
+			auto buf = std::unique_ptr<uint8_t[]>(new uint8_t[size]);
+			memcpy(buf.get(), data, size);
+			auto ptr = buf.get();
+			constantData.emplace_back(std::move(buf));
+			return ptr;
+		}
+
 	private:
-		void *entry;
+		std::array<const void*, Nucleus::CoroutineEntryCount> funcs = {};
 		std::vector<uint8_t, ExecutableAllocator<uint8_t>> buffer;
 		std::size_t position;
+		std::vector<std::unique_ptr<uint8_t[]>> constantData;
 
 		#if defined(_WIN32)
 		DWORD oldProtection;
@@ -573,11 +604,17 @@ namespace rr
 		Flags.setOutFileType(Ice::FT_Elf);
 		Flags.setOptLevel(toIce(getDefaultConfig().getOptimization().getLevel()));
 		Flags.setApplicationBinaryInterface(Ice::ABI_Platform);
-		Flags.setVerbose(false ? Ice::IceV_Most : Ice::IceV_None);
+		Flags.setVerbose(subzeroDumpEnabled ? Ice::IceV_Most : Ice::IceV_None);
 		Flags.setDisableHybridAssembly(true);
 
 		static llvm::raw_os_ostream cout(std::cout);
 		static llvm::raw_os_ostream cerr(std::cerr);
+
+		if (subzeroEmitTextAsm)
+		{
+			// Decorate text asm with liveness info
+			Flags.setDecorateAsm(true);
+		}
 
 		if(false)   // Write out to a file
 		{
@@ -629,6 +666,12 @@ namespace rr
 
 	std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */)
 	{
+		if (subzeroDumpEnabled)
+		{
+			// Output dump strings immediately, rather than once buffer is full. Useful for debugging.
+			context->getStrDump().SetUnbuffered();
+		}
+
 		if(basicBlock->getInsts().empty() || basicBlock->getInsts().back().getKind() != Ice::Inst::Ret)
 		{
 			createRetVoid();
@@ -637,6 +680,9 @@ namespace rr
 		::function->setFunctionName(Ice::GlobalString::createWithString(::context, name));
 
 		rr::optimize(::function);
+
+		::function->computeInOutEdges();
+		ASSERT(!::function->hasError());
 
 		::function->translate();
 		ASSERT(!::function->hasError());
@@ -649,6 +695,12 @@ namespace rr
 		}
 
 		::context->emitFileHeader();
+
+		if (subzeroEmitTextAsm)
+		{
+			::function->emit();
+		}
+
 		::function->emitIAS();
 		auto assembler = ::function->releaseAssembler();
 		auto objectWriter = ::context->getObjectWriter();
@@ -659,6 +711,9 @@ namespace rr
 		::context->lowerJumpTables();
 		objectWriter->setUndefinedSyms(::context->getConstantExternSyms());
 		objectWriter->writeNonUserSections();
+
+		const void* entryBegin = ::routine->finalizeEntryBegin();
+		::routine->setEntry(Nucleus::CoroutineEntryBegin, entryBegin);
 
 		Routine *handoffRoutine = ::routine;
 		::routine = nullptr;
@@ -672,7 +727,7 @@ namespace rr
 		int typeSize = Ice::typeWidthInBytes(type);
 		int totalSize = typeSize * (arraySize ? arraySize : 1);
 
-		auto bytes = Ice::ConstantInteger32::create(::context, type, totalSize);
+		auto bytes = Ice::ConstantInteger32::create(::context, Ice::IceType_i32, totalSize);
 		auto address = ::function->makeVariable(T(getPointerType(t)));
 		auto alloca = Ice::InstAlloca::create(::function, address, bytes, typeSize);
 		::function->getEntryNode()->getInsts().push_front(alloca);
@@ -3487,12 +3542,25 @@ namespace rr
 
 	RValue<Pointer<Byte>> ConstantPointer(void const * ptr)
 	{
-		return RValue<Pointer<Byte>>(V(::context->getConstantInt64(reinterpret_cast<intptr_t>(ptr))));
+		if (sizeof(void*) == 8)
+		{
+			return RValue<Pointer<Byte>>(V(::context->getConstantInt64(reinterpret_cast<intptr_t>(ptr))));
+		}
+		else
+		{
+			return RValue<Pointer<Byte>>(V(::context->getConstantInt32(reinterpret_cast<intptr_t>(ptr))));
+		}
+	}
+
+	RValue<Pointer<Byte>> ConstantData(void const * data, size_t size)
+	{
+		// TODO: Try to use Ice::VariableDeclaration::DataInitializer and
+		// getConstantSym instead of tagging data on the routine.
+		return ConstantPointer(::routine->addConstantData(data, size));
 	}
 
 	Value* Call(RValue<Pointer<Byte>> fptr, Type* retTy, std::initializer_list<Value*> args, std::initializer_list<Type*> argTys)
 	{
-		// FIXME: This does not currently work on Windows.
 		Ice::Variable *ret = nullptr;
 		if (retTy != nullptr)
 		{
@@ -3515,44 +3583,230 @@ namespace rr
 		::basicBlock->appendInst(trap);
 	}
 
-	// Below are functions currently unimplemented for the Subzero backend.
-	// They are stubbed to satisfy the linker.
 	void Nucleus::createFence(std::memory_order memoryOrder) { UNIMPLEMENTED("Subzero createFence()"); }
 	Value *Nucleus::createMaskedLoad(Value *ptr, Type *elTy, Value *mask, unsigned int alignment, bool zeroMaskedLanes) { UNIMPLEMENTED("Subzero createMaskedLoad()"); return nullptr; }
 	void Nucleus::createMaskedStore(Value *ptr, Value *val, Value *mask, unsigned int alignment) { UNIMPLEMENTED("Subzero createMaskedStore()"); }
-	Value *Nucleus::createGather(Value *base, Type *elTy, Value *offsets, Value *mask, unsigned int alignment, bool zeroMaskedLanes) { UNIMPLEMENTED("Subzero createGather()"); return nullptr; }
-	void Nucleus::createScatter(Value *base, Value *val, Value *offsets, Value *mask, unsigned int alignment) { UNIMPLEMENTED("Subzero createScatter()"); }
-	RValue<Float> Exp2(RValue<Float> x) { UNIMPLEMENTED("Subzero Exp2()"); return Float(0); }
-	RValue<Float> Log2(RValue<Float> x) { UNIMPLEMENTED("Subzero Log2()"); return Float(0); }
-	RValue<Float4> Sin(RValue<Float4> x) { UNIMPLEMENTED("Subzero Sin()"); return Float4(0); }
-	RValue<Float4> Cos(RValue<Float4> x) { UNIMPLEMENTED("Subzero Cos()"); return Float4(0); }
-	RValue<Float4> Tan(RValue<Float4> x) { UNIMPLEMENTED("Subzero Tan()"); return Float4(0); }
-	RValue<Float4> Asin(RValue<Float4> x) { UNIMPLEMENTED("Subzero Asin()"); return Float4(0); }
-	RValue<Float4> Acos(RValue<Float4> x) { UNIMPLEMENTED("Subzero Acos()"); return Float4(0); }
-	RValue<Float4> Atan(RValue<Float4> x) { UNIMPLEMENTED("Subzero Atan()"); return Float4(0); }
-	RValue<Float4> Sinh(RValue<Float4> x) { UNIMPLEMENTED("Subzero Sinh()"); return Float4(0); }
-	RValue<Float4> Cosh(RValue<Float4> x) { UNIMPLEMENTED("Subzero Cosh()"); return Float4(0); }
-	RValue<Float4> Tanh(RValue<Float4> x) { UNIMPLEMENTED("Subzero Tanh()"); return Float4(0); }
-	RValue<Float4> Asinh(RValue<Float4> x) { UNIMPLEMENTED("Subzero Asinh()"); return Float4(0); }
-	RValue<Float4> Acosh(RValue<Float4> x) { UNIMPLEMENTED("Subzero Acosh()"); return Float4(0); }
-	RValue<Float4> Atanh(RValue<Float4> x) { UNIMPLEMENTED("Subzero Atanh()"); return Float4(0); }
-	RValue<Float4> Atan2(RValue<Float4> x, RValue<Float4> y) { UNIMPLEMENTED("Subzero Atan2()"); return Float4(0); }
-	RValue<Float4> Pow(RValue<Float4> x, RValue<Float4> y) { UNIMPLEMENTED("Subzero Pow()"); return Float4(0); }
-	RValue<Float4> Exp(RValue<Float4> x) { UNIMPLEMENTED("Subzero Exp()"); return Float4(0); }
-	RValue<Float4> Log(RValue<Float4> x) { UNIMPLEMENTED("Subzero Log()"); return Float4(0); }
-	RValue<Float4> Exp2(RValue<Float4> x) { UNIMPLEMENTED("Subzero Exp2()"); return Float4(0); }
-	RValue<Float4> Log2(RValue<Float4> x) { UNIMPLEMENTED("Subzero Log2()"); return Float4(0); }
-	RValue<UInt> Ctlz(RValue<UInt> x, bool isZeroUndef) { UNIMPLEMENTED("Subzero Ctlz()"); return UInt(0); }
-	RValue<UInt4> Ctlz(RValue<UInt4> x, bool isZeroUndef) { UNIMPLEMENTED("Subzero Ctlz()"); return UInt4(0); }
-	RValue<UInt> Cttz(RValue<UInt> x, bool isZeroUndef) { UNIMPLEMENTED("Subzero Cttz()"); return UInt(0); }
-	RValue<UInt4> Cttz(RValue<UInt4> x, bool isZeroUndef) { UNIMPLEMENTED("Subzero Cttz()"); return UInt4(0); }
+
+	RValue<Float4> Gather(RValue<Pointer<Float>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes /* = false */)
+	{
+		return emulated::Gather(base, offsets, mask, alignment, zeroMaskedLanes);
+	}
+
+	RValue<Int4> Gather(RValue<Pointer<Int>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes /* = false */)
+	{
+		return emulated::Gather(base, offsets, mask, alignment, zeroMaskedLanes);
+	}
+
+	void Scatter(RValue<Pointer<Float>> base, RValue<Float4> val, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment)
+	{
+		return emulated::Scatter(base, val, offsets, mask, alignment);
+	}
+
+	void Scatter(RValue<Pointer<Int>> base, RValue<Int4> val, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment)
+	{
+		return emulated::Scatter(base, val, offsets, mask, alignment);
+	}
+
+	RValue<Float> Exp2(RValue<Float> x)
+	{
+		return emulated::Exp2(x);
+	}
+
+	RValue<Float> Log2(RValue<Float> x)
+	{
+		return emulated::Log2(x);
+	}
+
+	RValue<Float4> Sin(RValue<Float4> x)
+	{
+		return emulated::Sin(x);
+	}
+
+	RValue<Float4> Cos(RValue<Float4> x)
+	{
+		return emulated::Cos(x);
+	}
+
+	RValue<Float4> Tan(RValue<Float4> x)
+	{
+		return emulated::Tan(x);
+	}
+
+	RValue<Float4> Asin(RValue<Float4> x)
+	{
+		return emulated::Asin(x);
+	}
+
+	RValue<Float4> Acos(RValue<Float4> x)
+	{
+		return emulated::Acos(x);
+	}
+
+	RValue<Float4> Atan(RValue<Float4> x)
+	{
+		return emulated::Atan(x);
+	}
+
+	RValue<Float4> Sinh(RValue<Float4> x)
+	{
+		return emulated::Sinh(x);
+	}
+
+	RValue<Float4> Cosh(RValue<Float4> x)
+	{
+		return emulated::Cosh(x);
+	}
+
+	RValue<Float4> Tanh(RValue<Float4> x)
+	{
+		return emulated::Tanh(x);
+	}
+
+	RValue<Float4> Asinh(RValue<Float4> x)
+	{
+		return emulated::Asinh(x);
+	}
+
+	RValue<Float4> Acosh(RValue<Float4> x)
+	{
+		return emulated::Acosh(x);
+	}
+
+	RValue<Float4> Atanh(RValue<Float4> x)
+	{
+		return emulated::Atanh(x);
+	}
+
+	RValue<Float4> Atan2(RValue<Float4> x, RValue<Float4> y)
+	{
+		return emulated::Atan2(x, y);
+	}
+
+	RValue<Float4> Pow(RValue<Float4> x, RValue<Float4> y)
+	{
+		return emulated::Pow(x, y);
+	}
+
+	RValue<Float4> Exp(RValue<Float4> x)
+	{
+		return emulated::Exp(x);
+	}
+
+	RValue<Float4> Log(RValue<Float4> x)
+	{
+		return emulated::Log(x);
+	}
+
+	RValue<Float4> Exp2(RValue<Float4> x)
+	{
+		return emulated::Exp2(x);
+	}
+
+	RValue<Float4> Log2(RValue<Float4> x)
+	{
+		return emulated::Log2(x);
+	}
+
+	RValue<UInt> Ctlz(RValue<UInt> x, bool isZeroUndef)
+	{
+		if (emulateIntrinsics)
+		{
+			UNIMPLEMENTED("Subzero Ctlz()"); return UInt(0);
+		}
+		else
+		{
+			Ice::Variable* result = ::function->makeVariable(Ice::IceType_i32);
+			const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Ctlz, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
+			auto target = ::context->getConstantUndef(Ice::IceType_i32);
+			auto ctlz = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+			ctlz->addArg(x.value);
+			::basicBlock->appendInst(ctlz);
+
+			return RValue<UInt>(V(result));
+		}
+	}
+
+	RValue<UInt4> Ctlz(RValue<UInt4> x, bool isZeroUndef)
+	{
+		if (emulateIntrinsics)
+		{
+			UNIMPLEMENTED("Subzero Ctlz()"); return UInt4(0);
+		}
+		else
+		{
+			// TODO: implement vectorized version in Subzero
+			UInt4 result;
+			result = Insert(result, Ctlz(Extract(x, 0), isZeroUndef), 0);
+			result = Insert(result, Ctlz(Extract(x, 1), isZeroUndef), 1);
+			result = Insert(result, Ctlz(Extract(x, 2), isZeroUndef), 2);
+			result = Insert(result, Ctlz(Extract(x, 3), isZeroUndef), 3);
+			return result;
+		}
+	}
+
+	RValue<UInt> Cttz(RValue<UInt> x, bool isZeroUndef)
+	{
+		if (emulateIntrinsics)
+		{
+			UNIMPLEMENTED("Subzero Cttz()"); return UInt(0);
+		}
+		else
+		{
+			Ice::Variable* result = ::function->makeVariable(Ice::IceType_i32);
+			const Ice::Intrinsics::IntrinsicInfo intrinsic = { Ice::Intrinsics::Cttz, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F };
+			auto target = ::context->getConstantUndef(Ice::IceType_i32);
+			auto ctlz = Ice::InstIntrinsicCall::create(::function, 1, result, target, intrinsic);
+			ctlz->addArg(x.value);
+			::basicBlock->appendInst(ctlz);
+
+			return RValue<UInt>(V(result));
+		}
+	}
+
+	RValue<UInt4> Cttz(RValue<UInt4> x, bool isZeroUndef)
+	{
+		if (emulateIntrinsics)
+		{
+			UNIMPLEMENTED("Subzero Cttz()"); return UInt4(0);
+		}
+		else
+		{
+			// TODO: implement vectorized version in Subzero
+			UInt4 result;
+			result = Insert(result, Cttz(Extract(x, 0), isZeroUndef), 0);
+			result = Insert(result, Cttz(Extract(x, 1), isZeroUndef), 1);
+			result = Insert(result, Cttz(Extract(x, 2), isZeroUndef), 2);
+			result = Insert(result, Cttz(Extract(x, 3), isZeroUndef), 3);
+			return result;
+		}
+	}
 
 	void EmitDebugLocation() {}
 	void EmitDebugVariable(Value* value) {}
 	void FlushDebug() {}
 
-	void Nucleus::createCoroutine(Type *YieldType, std::vector<Type*> &Params) { UNIMPLEMENTED("createCoroutine"); }
-	std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */) { UNIMPLEMENTED("acquireCoroutine"); return nullptr; }
+	void Nucleus::createCoroutine(Type *YieldType, std::vector<Type*> &Params)
+	{
+		// Subzero currently only supports coroutines as functions (i.e. that do not yield)
+		createFunction(YieldType, Params);
+	}
+
+	static bool coroutineEntryAwaitStub(Nucleus::CoroutineHandle, void* yieldValue) { return false; }
+	static void coroutineEntryDestroyStub(Nucleus::CoroutineHandle) {}
+
+	std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */)
+	{
+		// acquireRoutine sets the CoroutineEntryBegin entry
+		auto coroutineEntry = acquireRoutine(name, cfgEdit);
+
+		// For now, set the await and destroy entries to stubs, until we add proper coroutine support to the Subzero backend
+		auto routine = std::static_pointer_cast<ELFMemoryStreamer>(coroutineEntry);
+		routine->setEntry(Nucleus::CoroutineEntryAwait, reinterpret_cast<const void*>(&coroutineEntryAwaitStub));
+		routine->setEntry(Nucleus::CoroutineEntryDestroy, reinterpret_cast<const void*>(&coroutineEntryDestroyStub));
+
+		return coroutineEntry;
+	}
+
 	void Nucleus::yield(Value* val) { UNIMPLEMENTED("Yield"); }
 
 }

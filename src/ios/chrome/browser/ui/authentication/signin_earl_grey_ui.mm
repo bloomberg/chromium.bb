@@ -4,88 +4,79 @@
 
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 
-#import <EarlGrey/EarlGrey.h>
-
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_cell.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
-#import "ios/chrome/browser/ui/util/transparent_link_button.h"
+#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
+#import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller_egtest_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// Returns a matcher to test whether the element is a scroll view with a content
-// smaller than the scroll view bounds.
-id<GREYMatcher> ContentViewSmallerThanScrollView() {
-  MatchesBlock matches = ^BOOL(UIView* view) {
-    UIScrollView* scrollView = base::mac::ObjCCast<UIScrollView>(view);
-    return scrollView &&
-           scrollView.contentSize.height < scrollView.bounds.size.height;
-  };
-  DescribeToBlock describe = ^void(id<GREYDescription> description) {
-    [description appendText:
-                     @"Not a scroll view or the scroll view content is bigger "
-                     @"than the scroll view bounds"];
-  };
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
-}
-
-}  // namespace
-
 using chrome_test_util::AccountConsistencyConfirmationOkButton;
-using chrome_test_util::AccountConsistencySetupSigninButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
+using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
+using chrome_test_util::SignOutAccountsButton;
 using chrome_test_util::UnifiedConsentAddAccountButton;
 
 @implementation SigninEarlGreyUI
 
-+ (void)signinWithIdentity:(ChromeIdentity*)identity {
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
++ (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
+  [self signinWithFakeIdentity:fakeIdentity isManagedAccount:NO];
+}
 
++ (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity
+              isManagedAccount:(BOOL)isManagedAccount {
+  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
-  [self selectIdentityWithEmail:identity.userEmail];
+  [self selectIdentityWithEmail:fakeIdentity.userEmail];
   [self confirmSigninConfirmationDialog];
+  if (isManagedAccount) {
+    [self confirmSigninWithManagedAccount];
+  }
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  [SigninEarlGreyUtils checkSignedInWithFakeIdentity:fakeIdentity];
 }
 
 + (void)selectIdentityWithEmail:(NSString*)userEmail {
   // Assumes that the identity chooser is visible.
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(userEmail),
-                                          grey_kindOfClass(
-                                              [IdentityChooserCell class]),
-                                          grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:[SigninEarlGreyUtilsAppInterface
+                                   identityCellMatcherForEmail:userEmail]]
       performAction:grey_tap()];
 }
 
 + (void)tapSettingsLink {
-  id<GREYMatcher> settingsLinkMatcher =
-      grey_allOf(grey_kindOfClass([TransparentLinkButton class]),
-                 grey_sufficientlyVisible(), nil);
-  [[[EarlGrey selectElementWithMatcher:settingsLinkMatcher]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
-      onElementWithMatcher:grey_accessibilityID(
-                               kUnifiedConsentScrollViewIdentifier)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kAdvancedSigninSettingsLinkIdentifier)]
       performAction:grey_tap()];
+}
+
++ (void)confirmSigninWithManagedAccount {
+  // Synchronization off due to an infinite spinner, in the user consent view,
+  // under the managed consent dialog. This spinner is started by the sign-in
+  // process.
+  ScopedSynchronizationDisabler disabler;
+  id<GREYMatcher> acceptButton = [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON];
+  WaitForMatcher(acceptButton);
+  [[EarlGrey selectElementWithMatcher:acceptButton] performAction:grey_tap()];
 }
 
 + (void)confirmSigninConfirmationDialog {
@@ -105,7 +96,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
       grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
   NSError* error = nil;
   [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
-      assertWithMatcher:ContentViewSmallerThanScrollView()
+      assertWithMatcher:chrome_test_util::ContentViewSmallerThanScrollView()
                   error:&error];
   if (error) {
     // If the consent is bigger than the scroll view, the primary button should
@@ -127,7 +118,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   NSError* error = nil;
   [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
-      assertWithMatcher:ContentViewSmallerThanScrollView()
+      assertWithMatcher:chrome_test_util::ContentViewSmallerThanScrollView()
                   error:&error];
   if (error) {
     // If the consent is bigger than the scroll view, the primary button should
@@ -196,6 +187,27 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
       selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
+}
+
++ (void)signOutWithManagedAccount:(BOOL)isManagedAccount {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
+  [ChromeEarlGreyUI tapAccountsMenuButton:SignOutAccountsButton()];
+  int confirmationLabelID = 0;
+  if (isManagedAccount) {
+    confirmationLabelID = IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT_UNITY;
+  } else {
+    confirmationLabelID = IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE;
+  }
+  id<GREYMatcher> confirmationButtonMatcher = [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:confirmationLabelID];
+  [[EarlGrey selectElementWithMatcher:confirmationButtonMatcher]
+      performAction:grey_tap()];
+  // Wait until the user is signed out.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+  [SigninEarlGreyUtils checkSignedOut];
 }
 
 @end

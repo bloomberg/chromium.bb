@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -48,8 +49,7 @@ class NotificationSchedulerTest : public testing::Test {
         client_(nullptr),
         task_coordinator_(nullptr),
         display_agent_(nullptr),
-        display_decider_(nullptr),
-        notification_manager_delegate_(nullptr) {}
+        display_decider_(nullptr) {}
   ~NotificationSchedulerTest() override = default;
 
   void SetUp() override {
@@ -86,17 +86,14 @@ class NotificationSchedulerTest : public testing::Test {
 
  protected:
   void Init() {
-    EXPECT_CALL(*impression_tracker(), Init(_, _))
-        .WillOnce(Invoke([&](ImpressionHistoryTracker::Delegate* delegate,
-                             ImpressionHistoryTracker::InitCallback callback) {
+    EXPECT_CALL(*impression_tracker(), Init(_))
+        .WillOnce(Invoke([&](ImpressionHistoryTracker::InitCallback callback) {
           std::move(callback).Run(true);
         }));
 
-    EXPECT_CALL(*notification_manager(), Init(_, _))
+    EXPECT_CALL(*notification_manager(), Init(_))
         .WillOnce(
-            Invoke([&](ScheduledNotificationManager::Delegate* delegate,
-                       ScheduledNotificationManager::InitCallback callback) {
-              notification_manager_delegate_ = delegate;
+            Invoke([&](ScheduledNotificationManager::InitCallback callback) {
               std::move(callback).Run(true);
             }));
 
@@ -108,6 +105,17 @@ class NotificationSchedulerTest : public testing::Test {
         .WillOnce(InvokeWithoutArgs([&]() { run_loop.Quit(); }));
 
     run_loop.Run();
+  }
+
+  // Starts the background task and wait for task finished callback to invoke.
+  void OnStartTask() {
+    base::RunLoop loop;
+    auto task_finish_callback =
+        base::BindOnce([](base::RepeatingClosure quit_closure,
+                          bool needs_reschedule) { quit_closure.Run(); },
+                       loop.QuitClosure());
+    scheduler()->OnStartTask(std::move(task_finish_callback));
+    loop.Run();
   }
 
   NotificationScheduler* scheduler() { return notification_scheduler_.get(); }
@@ -130,10 +138,6 @@ class NotificationSchedulerTest : public testing::Test {
 
   test::MockDisplayDecider* display_decider() { return display_decider_; }
 
-  ScheduledNotificationManager::Delegate* notification_manager_delegate() {
-    return notification_manager_delegate_;
-  }
-
  private:
   base::test::TaskEnvironment task_environment_;
   NotificationSchedulerClientRegistrar* registrar_;
@@ -143,8 +147,6 @@ class NotificationSchedulerTest : public testing::Test {
   test::MockBackgroundTaskCoordinator* task_coordinator_;
   test::MockDisplayAgent* display_agent_;
   test::MockDisplayDecider* display_decider_;
-
-  ScheduledNotificationManager::Delegate* notification_manager_delegate_;
 
   std::unique_ptr<NotificationScheduler> notification_scheduler_;
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerTest);
@@ -157,14 +159,13 @@ TEST_F(NotificationSchedulerTest, InitSuccess) {
 
 // Tests the case when impression tracker failed to initialize.
 TEST_F(NotificationSchedulerTest, InitImpressionTrackerFailed) {
-  EXPECT_CALL(*impression_tracker(), Init(_, _))
-      .WillOnce(Invoke([](ImpressionHistoryTracker::Delegate* delegate,
-                          ImpressionHistoryTracker::InitCallback callback) {
+  EXPECT_CALL(*impression_tracker(), Init(_))
+      .WillOnce(Invoke([](ImpressionHistoryTracker::InitCallback callback) {
         // Impression tracker failed to load.
         std::move(callback).Run(false);
       }));
 
-  EXPECT_CALL(*notification_manager(), Init(_, _)).Times(0);
+  EXPECT_CALL(*notification_manager(), Init(_)).Times(0);
 
   base::RunLoop run_loop;
   scheduler()->Init(
@@ -178,15 +179,13 @@ TEST_F(NotificationSchedulerTest, InitImpressionTrackerFailed) {
 
 // Tests the case when scheduled notification manager failed to initialize.
 TEST_F(NotificationSchedulerTest, InitScheduledNotificationManagerFailed) {
-  EXPECT_CALL(*impression_tracker(), Init(_, _))
-      .WillOnce(Invoke([](ImpressionHistoryTracker::Delegate* delegate,
-                          ImpressionHistoryTracker::InitCallback callback) {
+  EXPECT_CALL(*impression_tracker(), Init(_))
+      .WillOnce(Invoke([](ImpressionHistoryTracker::InitCallback callback) {
         std::move(callback).Run(true);
       }));
 
-  EXPECT_CALL(*notification_manager(), Init(_, _))
-      .WillOnce(Invoke([](ScheduledNotificationManager::Delegate* delegate,
-                          ScheduledNotificationManager::InitCallback callback) {
+  EXPECT_CALL(*notification_manager(), Init(_))
+      .WillOnce(Invoke([](ScheduledNotificationManager::InitCallback callback) {
         // Scheduled notification manager failed to load.
         std::move(callback).Run(false);
       }));
@@ -242,14 +241,18 @@ TEST_F(NotificationSchedulerTest, DeleteAllNotifications) {
   scheduler()->DeleteAllNotifications(SchedulerClientType::kTest1);
 }
 
-// Test to get impression details.
-TEST_F(NotificationSchedulerTest, GetImpressionDetail) {
+// Test to get client overview.
+TEST_F(NotificationSchedulerTest, GetClientOverview) {
   Init();
-
   EXPECT_CALL(*impression_tracker(),
-              GetImpressionDetail(SchedulerClientType::kTest1, _));
-  scheduler()->GetImpressionDetail(SchedulerClientType::kTest1,
-                                   base::DoNothing());
+              GetImpressionDetail(SchedulerClientType::kTest1, _))
+      .WillOnce(Invoke([](SchedulerClientType type,
+                          ImpressionDetail::ImpressionDetailCallback callback) {
+        std::move(callback).Run(ImpressionDetail());
+      }));
+  EXPECT_CALL(*notification_manager(), GetNotifications(_, _));
+  scheduler()->GetClientOverview(SchedulerClientType::kTest1,
+                                 base::DoNothing());
 }
 
 // Test to verify user actions are propagated through correctly.
@@ -260,6 +263,7 @@ TEST_F(NotificationSchedulerTest, OnUserAction) {
   UserActionData action_data(SchedulerClientType::kTest1,
                              UserActionType::kButtonClick, kGuid);
   EXPECT_CALL(*impression_tracker(), OnUserAction(action_data));
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _)).Times(1);
   EXPECT_CALL(*client(), OnUserAction(_)).WillOnce(InvokeWithoutArgs([&]() {
     loop.Quit();
   }));
@@ -278,10 +282,10 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNothing) {
       .WillOnce(SetArgPointee<2>(result));
 
   EXPECT_CALL(*display_agent(), ShowNotification(_, _)).Times(0);
-  EXPECT_CALL(*notification_manager(), DisplayNotification(_)).Times(0);
+  EXPECT_CALL(*notification_manager(), DisplayNotification(_, _)).Times(0);
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
 
-  scheduler()->OnStartTask(SchedulerTaskTime::kMorning, base::DoNothing());
+  OnStartTask();
 }
 
 MATCHER_P(NotifcationDataEq, title, "Verify notification data.") {
@@ -298,7 +302,6 @@ MATCHER_P2(SystemDataEq, type, guid, "Verify system data.") {
 // Test to simulate a background task flow with some notifications shown.
 TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
   Init();
-  base::RunLoop loop;
 
   // Mock the notification to show.
   auto entry =
@@ -310,10 +313,15 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
   DisplayDecider::Results result({kGuid});
   EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _))
       .WillOnce(SetArgPointee<2>(result));
-  EXPECT_CALL(*notification_manager(), DisplayNotification(_))
-      .WillOnce(InvokeWithoutArgs([&]() {
-        notification_manager_delegate()->DisplayNotification(std::move(entry));
-      }));
+
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
+  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _, _));
+  EXPECT_CALL(*notification_manager(), DisplayNotification(_, _))
+      .WillOnce(
+          Invoke([&](const std::string& guid,
+                     ScheduledNotificationManager::DisplayCallback callback) {
+            std::move(callback).Run(std::move(entry));
+          }));
 
   EXPECT_CALL(*client(), BeforeShowNotification(_, _))
       .WillOnce(Invoke(
@@ -322,19 +330,64 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
             // The client updates the notification data here.
             notification_data->title = base::UTF8ToUTF16(kTitle);
             std::move(callback).Run(std::move(notification_data));
-            loop.Quit();
           }));
 
+  OnStartTask();
+}
+
+// Verifies if the entry is failed to load, the background task flow can still
+// be finished.
+TEST_F(NotificationSchedulerTest, BackgroundTaskStartNoEntry) {
+  Init();
+
+  DisplayDecider::Results result({kGuid});
+  EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _))
+      .WillOnce(SetArgPointee<2>(result));
+
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
-  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _));
-  scheduler()->OnStartTask(SchedulerTaskTime::kMorning, base::DoNothing());
-  loop.Run();
+  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*display_agent(), ShowNotification(_, _)).Times(0);
+  EXPECT_CALL(*client(), BeforeShowNotification(_, _)).Times(0);
+  EXPECT_CALL(*notification_manager(), DisplayNotification(_, _))
+      .WillOnce(
+          Invoke([&](const std::string& guid,
+                     ScheduledNotificationManager::DisplayCallback callback) {
+            std::move(callback).Run(nullptr /*entry*/);
+          }));
+
+  OnStartTask();
+}
+
+// Verifies if the client is not found during display flow, the background task
+// flow can still be finished.
+TEST_F(NotificationSchedulerTest, BackgroundTaskStartNoClient) {
+  Init();
+
+  // Creates entry without corresponding client.
+  auto entry_no_client =
+      std::make_unique<NotificationEntry>(SchedulerClientType::kTest2, kGuid);
+
+  DisplayDecider::Results result({kGuid});
+  EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _))
+      .WillOnce(SetArgPointee<2>(result));
+
+  EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
+  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*display_agent(), ShowNotification(_, _)).Times(0);
+  EXPECT_CALL(*client(), BeforeShowNotification(_, _)).Times(0);
+  EXPECT_CALL(*notification_manager(), DisplayNotification(_, _))
+      .WillOnce(
+          Invoke([&](const std::string& guid,
+                     ScheduledNotificationManager::DisplayCallback callback) {
+            std::move(callback).Run(std::move(entry_no_client));
+          }));
+
+  OnStartTask();
 }
 
 // Verifies the case that the client dropped the notification data.
 TEST_F(NotificationSchedulerTest, ClientDropNotification) {
   Init();
-  base::RunLoop loop;
 
   // Mock the notification to show.
   auto entry =
@@ -342,10 +395,12 @@ TEST_F(NotificationSchedulerTest, ClientDropNotification) {
   DisplayDecider::Results result({kGuid});
   EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _))
       .WillOnce(SetArgPointee<2>(result));
-  EXPECT_CALL(*notification_manager(), DisplayNotification(_))
-      .WillOnce(InvokeWithoutArgs([&]() {
-        notification_manager_delegate()->DisplayNotification(std::move(entry));
-      }));
+  EXPECT_CALL(*notification_manager(), DisplayNotification(_, _))
+      .WillOnce(
+          Invoke([&](const std::string& guid,
+                     ScheduledNotificationManager::DisplayCallback callback) {
+            std::move(callback).Run(std::move(entry));
+          }));
 
   // The client drops the notification data before showing the notification.
   EXPECT_CALL(*client(), BeforeShowNotification(_, _))
@@ -353,22 +408,20 @@ TEST_F(NotificationSchedulerTest, ClientDropNotification) {
           [&](std::unique_ptr<NotificationData> notification_data,
               NotificationSchedulerClient::NotificationDataCallback callback) {
             std::move(callback).Run(nullptr);
-            loop.Quit();
           }));
 
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
-  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _)).Times(0);
+  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*display_agent(), ShowNotification(_, _)).Times(0);
 
-  scheduler()->OnStartTask(SchedulerTaskTime::kMorning, base::DoNothing());
-  loop.Run();
+  OnStartTask();
 }
 
 // Test to simulate a background task stopped by the OS.
 TEST_F(NotificationSchedulerTest, BackgroundTaskStop) {
   Init();
   EXPECT_CALL(*task_coordinator(), ScheduleBackgroundTask(_, _));
-  scheduler()->OnStopTask(SchedulerTaskTime::kMorning);
+  scheduler()->OnStopTask();
 }
 
 }  // namespace

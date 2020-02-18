@@ -39,6 +39,14 @@ constexpr int kXembedInfoFlags = kXembedFlagMap;
 
 const int16_t kInitialWindowPos = std::numeric_limits<int16_t>::min();
 
+class StatusIconWidget : public views::Widget {
+ public:
+  // xfce4-indicator-plugin requires a min size hint to be set on the window
+  // (and it must be at least 2x2), otherwise it will not allocate any space to
+  // the status icon window.
+  gfx::Size GetMinimumSize() const override { return gfx::Size(2, 2); }
+};
+
 }  // namespace
 
 StatusIconLinuxX11::StatusIconLinuxX11() : Button(this) {}
@@ -68,7 +76,7 @@ void StatusIconLinuxX11::OnSetDelegate() {
     return;
   }
 
-  widget_ = std::make_unique<views::Widget>();
+  widget_ = std::make_unique<StatusIconWidget>();
 
   auto native_widget =
       std::make_unique<views::DesktopNativeWidgetAura>(widget_.get());
@@ -89,7 +97,7 @@ void StatusIconLinuxX11::OnSetDelegate() {
 
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_CONTROL;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.remove_standard_frame = true;
   params.bounds =

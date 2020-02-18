@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/tab_model/android_live_tab_context.h"
 
+#include <memory>
+
 #include "base/token.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,6 +69,14 @@ base::Optional<base::Token> AndroidLiveTabContext::GetTabGroupForTab(
   return base::Optional<base::Token>();
 }
 
+AndroidLiveTabContext::TabGroupMetadata
+AndroidLiveTabContext::GetTabGroupMetadata(base::Token group) const {
+  // Since we never return a group from GetTabGroupForTab(), this should never
+  // be called.
+  NOTREACHED();
+  return TabGroupMetadata();
+}
+
 const gfx::Rect AndroidLiveTabContext::GetRestoredBounds() const {
   // Not applicable to android.
   return gfx::Rect();
@@ -88,6 +98,7 @@ sessions::LiveTab* AndroidLiveTabContext::AddRestoredTab(
     int selected_navigation,
     const std::string& extension_app_id,
     base::Optional<base::Token> group,
+    const TabGroupMetadata* group_metadata,
     bool select,
     bool pin,
     bool from_last_session,
@@ -130,6 +141,17 @@ sessions::LiveTab* AndroidLiveTabContext::ReplaceRestoredTab(
 // Currently does nothing.
 void AndroidLiveTabContext::CloseTab() {
   NOTIMPLEMENTED();
+}
+
+void AndroidLiveTabContext::SetTabGroupMetadata(
+    base::Token group,
+    TabGroupMetadata group_metadata) {
+  // Not supported on Android.
+
+  // TODO(crbug.com/1003128): ensure this never gets called (or remove
+  // NOTREACHED) if we implement restoring groups for foreign session
+  // windows.
+  NOTREACHED();
 }
 
 // static.

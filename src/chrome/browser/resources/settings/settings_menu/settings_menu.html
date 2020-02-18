@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
@@ -17,7 +18,7 @@
 
 <dom-module id="settings-menu">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared cr-icons">
       :host {
         box-sizing: border-box;
         display: block;
@@ -89,7 +90,7 @@
       }
 
       #advancedButton > iron-icon,
-      #extensionsLink > iron-icon {
+      #extensionsLink > .cr-icon {
         @apply --cr-icon-height-width;
         margin-inline-end: 14px;  /* 16px - 2px from margin for outline. */
       }
@@ -135,6 +136,11 @@
         <iron-icon icon="settings:assignment"></iron-icon>
         $i18n{autofillPageTitle}
       </a>
+      <a href="/privacy" hidden="[[shouldHidePrivacy_(
+          privacySettingsRedesignEnabled_, pageVisibility.privacy)]]">
+        <iron-icon icon="cr:security"></iron-icon>
+        $i18n{privacyPageTitle}
+      </a>
       <a id="appearance" href="/appearance"
         hidden="[[!pageVisibility.appearance]]">
         <iron-icon icon="settings:palette"></iron-icon>
@@ -176,7 +182,8 @@
         <iron-icon icon="settings:power-settings-new"></iron-icon>
         $i18n{onStartup}
       </a>
-      <cr-button id="advancedButton" aria-active-attribute="aria-expanded"
+      <cr-button id="advancedButton"
+          aria-expanded$="[[boolToString_(advancedOpened)]]"
           on-click="onAdvancedButtonToggle_"
           hidden="[[!pageVisibility.advancedSettings]]">
         <span>$i18n{advancedPageTitle}</span>
@@ -192,7 +199,7 @@
             $i18n{dateTimePageTitle}
           </a>
 </if>
-          <a href="/privacy">
+          <a href="/privacy" hidden="[[privacySettingsRedesignEnabled_]]">
             <iron-icon icon="cr:security"></iron-icon>
             $i18n{privacyPageTitle}
           </a>
@@ -230,7 +237,7 @@
           on-click="onExtensionsLinkClick_"
           title="$i18n{extensionsLinkTooltip}">
         <span>$i18n{extensionsPageTitle}</span>
-        <iron-icon class="cr-icon icon-external" actionable></iron-icon>
+        <div class="cr-icon icon-external"></div>
       </a>
       <a id="about-menu" href="/help">$i18n{aboutPageTitle}</a>
     </iron-selector>

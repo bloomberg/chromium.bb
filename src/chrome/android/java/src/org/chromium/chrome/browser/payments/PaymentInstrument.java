@@ -5,15 +5,18 @@
 package org.chromium.chrome.browser.payments;
 
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
-import org.chromium.payments.mojom.PaymentMethodChangeResponse;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentOptions;
+import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
+import org.chromium.payments.mojom.PaymentShippingOption;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +34,9 @@ public abstract class PaymentInstrument extends EditableOption {
      */
     protected boolean mHaveRequestedAutofillData;
 
+    /** Whether the instrument should be invoked for a microtransaction. */
+    protected boolean mIsMicrotransaction;
+
     /**
      * The interface for the requester of instrument details.
      */
@@ -47,8 +53,10 @@ public abstract class PaymentInstrument extends EditableOption {
          *
          * @param methodName         Method name. For example, "visa".
          * @param stringifiedDetails JSON-serialized object. For example, {"card": "123"}.
+         * @param payerData          Payer's shipping address and contact information.
          */
-        void onInstrumentDetailsReady(String methodName, String stringifiedDetails);
+        void onInstrumentDetailsReady(
+                String methodName, String stringifiedDetails, PayerData payerData);
 
         /**
          * Called if unable to retrieve instrument details.
@@ -135,6 +143,34 @@ public abstract class PaymentInstrument extends EditableOption {
         return getInstrumentMethodNames().contains(method);
     }
 
+    /**
+     * @return Whether the instrument can collect and return shipping address.
+     */
+    public boolean handlesShippingAddress() {
+        return false;
+    }
+
+    /**
+     * @return Whether the instrument can collect and return payer's name.
+     */
+    public boolean handlesPayerName() {
+        return false;
+    }
+
+    /**
+     * @return Whether the instrument can collect and return payer's email.
+     */
+    public boolean handlesPayerEmail() {
+        return false;
+    }
+
+    /**
+     * @return Whether the instrument can collect and return payer's phone.
+     */
+    public boolean handlesPayerPhone() {
+        return false;
+    }
+
     /** @return The country code (or null if none) associated with this payment instrument. */
     @Nullable
     public String getCountryCode() {
@@ -184,29 +220,37 @@ public abstract class PaymentInstrument extends EditableOption {
      * @param total            The total amount.
      * @param displayItems     The shopping cart items.
      * @param modifiers        The relevant payment details modifiers.
+     * @param paymentOptions   The payment options of the PaymentRequest.
+     * @param shippingOptions  The shipping options of the PaymentRequest.
      * @param callback         The object that will receive the instrument details.
      */
-    public abstract void invokePaymentApp(String id, String merchantName, String origin,
-            String iframeOrigin, @Nullable byte[][] certificateChain,
-            Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
-            List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
-            InstrumentDetailsCallback callback);
+    public void invokePaymentApp(String id, String merchantName, String origin, String iframeOrigin,
+            @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
+            PaymentItem total, List<PaymentItem> displayItems,
+            Map<String, PaymentDetailsModifier> modifiers, PaymentOptions paymentOptions,
+            List<PaymentShippingOption> shippingOptions, InstrumentDetailsCallback callback) {}
 
     /**
-     * Update the payment information in response to payment method change event.
+     * Update the payment information in response to payment method, shipping address, or shipping
+     * option change events.
      *
-     * @param response The merchant's response to the payment method change event.
+     * @param response The merchant's response to the payment method, shipping address, or shipping
+     *         option change events.
      */
-    public void updateWith(PaymentMethodChangeResponse response) {}
-
-    /** Called when the merchant ignored the payment method change event. */
-    public void noUpdatedPaymentDetails() {}
+    public void updateWith(PaymentRequestDetailsUpdate response) {}
 
     /**
-     * @return True after changePaymentMethodFromInvokedApp(), before update updateWith() or
-     * noUpdatedPaymentDetails().
+     * Called when the merchant ignored the payment method, shipping address or shipping option
+     * change event.
      */
-    public boolean isChangingPaymentMethod() {
+    public void onPaymentDetailsNotUpdated() {}
+
+    /**
+     * @return True after changePaymentMethodFromInvokedApp(), changeShippingOptionFromInvokedApp(),
+     *         or changeShippingAddressFromInvokedApp() and before update updateWith() or
+     *         onPaymentDetailsNotUpdated().
+     */
+    public boolean isWaitingForPaymentDetailsUpdate() {
         return false;
     }
 
@@ -230,4 +274,20 @@ public abstract class PaymentInstrument extends EditableOption {
      * connections.
      */
     public abstract void dismissInstrument();
+
+    /** @return Whether the payment instrument is ready for a microtransaction (no UI flow.) */
+    public boolean isReadyForMicrotransaction() {
+        return false;
+    }
+
+    /** @return Account balance for microtransaction flow. */
+    @Nullable
+    public String accountBalance() {
+        return null;
+    }
+
+    /** Switch the instrument into the microtransaction mode. */
+    public void setMicrontransactionMode() {
+        mIsMicrotransaction = true;
+    }
 }

@@ -19,6 +19,7 @@ class WebContents;
 
 namespace web_app {
 
+enum class ExternalInstallSource;
 enum class InstallResultCode;
 class AppRegistrar;
 class WebAppUiManager;
@@ -31,8 +32,6 @@ class InstallFinalizer {
   using InstallFinalizedCallback =
       base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
   using UninstallWebAppCallback = base::OnceCallback<void(bool uninstalled)>;
-  using CreateOsShortcutsCallback =
-      base::OnceCallback<void(bool shortcuts_created)>;
 
   struct FinalizeOptions {
     WebappInstallSource install_source = WebappInstallSource::COUNT;
@@ -44,20 +43,39 @@ class InstallFinalizer {
                                const FinalizeOptions& options,
                                InstallFinalizedCallback callback) = 0;
 
+  // For the new USS-based system only. Generate missing sync placeholder data
+  // and icons using |sync_data| fields.
+  virtual void FinalizeFallbackInstallAfterSync(
+      const AppId& app_id,
+      InstallFinalizedCallback callback) = 0;
+  // Delete app data from disk (icon .png files). |app_id| must be unregistered.
+  virtual void FinalizeUninstallAfterSync(const AppId& app_id,
+                                          UninstallWebAppCallback callback) = 0;
+
+  // Write the new WebApp data to disk and update the app.
+  virtual void FinalizeUpdate(const WebApplicationInfo& web_app_info,
+                              InstallFinalizedCallback callback) = 0;
+
   // Removes the external app for |app_url| from disk and registrar. Fails if
   // there is no installed external app for |app_url|.
-  virtual void UninstallExternalWebApp(const GURL& app_url,
-                                       UninstallWebAppCallback) = 0;
+  virtual void UninstallExternalWebApp(
+      const GURL& app_url,
+      ExternalInstallSource external_install_source,
+      UninstallWebAppCallback) = 0;
 
-  // Removes the web app with |app_id| from disk, registrar and all sync'd
-  // devices.
-  virtual void UninstallWebApp(const AppId& app_id,
-                               UninstallWebAppCallback) = 0;
+  virtual bool CanUserUninstallFromSync(const AppId& app_id) const = 0;
+  virtual void UninstallWebAppFromSyncByUser(const AppId& app_id,
+                                             UninstallWebAppCallback) = 0;
 
-  virtual bool CanCreateOsShortcuts() const = 0;
-  virtual void CreateOsShortcuts(const AppId& app_id,
-                                 bool add_to_desktop,
-                                 CreateOsShortcutsCallback callback) = 0;
+  virtual bool CanUserUninstallExternalApp(const AppId& app_id) const = 0;
+  // If external app is synced, uninstalls it from sync and from all devices.
+  virtual void UninstallExternalAppByUser(const AppId& app_id,
+                                          UninstallWebAppCallback callback) = 0;
+  // Returns true if the app with |app_id| was previously uninstalled by the
+  // user. For example, if a user uninstalls a default app ('default apps' are
+  // considered external apps), then this will return true.
+  virtual bool WasExternalAppUninstalledByUser(const AppId& app_id) const = 0;
+
   // |virtual| for testing.
   virtual bool CanAddAppToQuickLaunchBar() const;
   virtual void AddAppToQuickLaunchBar(const AppId& app_id);
@@ -71,17 +89,7 @@ class InstallFinalizer {
   virtual bool CanRevealAppShim() const = 0;
   virtual void RevealAppShim(const AppId& app_id) = 0;
 
-  virtual bool CanSkipAppUpdateForSync(
-      const AppId& app_id,
-      const WebApplicationInfo& web_app_info) const = 0;
-
-  virtual bool CanUserUninstallFromSync(const AppId& app_id) const = 0;
-
-  // TODO(loyso): This method should be protected and subclasses should call it
-  // (upcasting their final registrar type). Subclassing WebAppProvider will fix
-  // this.
-  virtual void SetSubsystems(AppRegistrar* registrar,
-                             WebAppUiManager* ui_manager);
+  void SetSubsystems(AppRegistrar* registrar, WebAppUiManager* ui_manager);
 
   virtual ~InstallFinalizer() = default;
 

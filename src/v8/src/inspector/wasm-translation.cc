@@ -67,15 +67,20 @@ class WasmTranslation::TranslatorImpl {
           column(column) {}
   };
 
-  TranslatorImpl(v8::Isolate* isolate, v8::Local<v8::debug::WasmScript> script)
+  TranslatorImpl(v8::Isolate* isolate, WasmTranslation* translation,
+                 v8::Local<v8::debug::WasmScript> script)
       : script_(isolate, script) {
     script_.AnnotateStrongRetainer(kGlobalScriptHandleLabel);
+
+    ForEachFunction(script, [this, translation](String16& script_id,
+                                                int func_idx) {
+      translation->AddFakeScript(GetFakeScriptId(script_id, func_idx), this);
+    });
   }
 
-  void Init(v8::Isolate* isolate, WasmTranslation* translation,
-            V8DebuggerAgentImpl* agent) {
-    // Register fake scripts for each function in this wasm module/script.
-    v8::Local<v8::debug::WasmScript> script = script_.Get(isolate);
+  template <typename Callback>
+  void ForEachFunction(v8::Local<v8::debug::WasmScript> script,
+                       Callback callback) {
     int num_functions = script->NumFunctions();
     int num_imported_functions = script->NumImportedFunctions();
     DCHECK_LE(0, num_imported_functions);
@@ -84,14 +89,30 @@ class WasmTranslation::TranslatorImpl {
     String16 script_id = String16::fromInteger(script->Id());
     for (int func_idx = num_imported_functions; func_idx < num_functions;
          ++func_idx) {
-      AddFakeScript(isolate, script_id, func_idx, translation, agent);
+      callback(script_id, func_idx);
     }
   }
 
+  void ReportFakeScripts(v8::Isolate* isolate, WasmTranslation* translation,
+                         V8DebuggerAgentImpl* agent) {
+    ForEachFunction(
+        script_.Get(isolate), [=](String16& script_id, int func_idx) {
+          ReportFakeScript(isolate, script_id, func_idx, translation, agent);
+        });
+  }
+
   void Translate(TransLocation* loc) {
-    const OffsetTable& offset_table = GetOffsetTable(loc);
+    v8::Isolate* isolate = loc->translation->isolate_;
+    int func_index = GetFunctionIndexFromLocation(loc);
+    DCHECK_GE(func_index, 0);
+    const OffsetTable& offset_table = GetOffsetTable(isolate, func_index);
     DCHECK(!offset_table.empty());
-    uint32_t byte_offset = static_cast<uint32_t>(loc->column);
+    std::pair<int, int> func_range =
+        script_.Get(isolate)->GetFunctionRange(func_index);
+    DCHECK_LE(func_range.first, loc->column);
+    DCHECK_LT(loc->column, func_range.second);
+    uint32_t byte_offset =
+        static_cast<uint32_t>(loc->column - func_range.first);
 
     // Binary search for the given offset.
     unsigned left = 0;                                            // inclusive
@@ -130,25 +151,25 @@ class WasmTranslation::TranslatorImpl {
     // Binary search for the given line and column.
     auto element = std::lower_bound(reverse_table.begin(), reverse_table.end(),
                                     *loc, LessThan);
+    std::pair<int, int> func_range =
+        script_.Get(isolate)->GetFunctionRange(func_index);
+    DCHECK_LE(func_range.first, func_range.second);
 
-    int found_byte_offset = 0;
+    int found_byte_offset = func_range.first;
     // We want an entry on the same line if possible.
     if (element == reverse_table.end()) {
       // We did not find an element, so this points after the function.
-      std::pair<int, int> func_range =
-          script_.Get(isolate)->GetFunctionRange(func_index);
-      DCHECK_LE(func_range.first, func_range.second);
-      found_byte_offset = func_range.second - func_range.first;
+      found_byte_offset = func_range.second;
     } else if (element->line == loc->line || element == reverse_table.begin()) {
-      found_byte_offset = element->byte_offset;
+      found_byte_offset = element->byte_offset + func_range.first;
     } else {
       auto prev = element - 1;
       DCHECK(prev->line == loc->line);
-      found_byte_offset = prev->byte_offset;
+      found_byte_offset = prev->byte_offset + func_range.first;
     }
 
     loc->script_id = String16::fromInteger(script_.Get(isolate)->Id());
-    loc->line = func_index;
+    loc->line = 0;
     loc->column = found_byte_offset;
   }
 
@@ -184,6 +205,7 @@ class WasmTranslation::TranslatorImpl {
   }
 
  private:
+  friend class WasmTranslation;
   String16 GetFakeScriptUrl(v8::Isolate* isolate, int func_index) {
     v8::Local<v8::debug::WasmScript> script = script_.Get(isolate);
     String16 script_name =
@@ -209,12 +231,13 @@ class WasmTranslation::TranslatorImpl {
     return String16::concat(script_id, '-', String16::fromInteger(func_index));
   }
   String16 GetFakeScriptId(const TransLocation* loc) {
-    return GetFakeScriptId(loc->script_id, loc->line);
+    return GetFakeScriptId(loc->script_id, GetFunctionIndexFromLocation(loc));
   }
 
-  void AddFakeScript(v8::Isolate* isolate, const String16& underlyingScriptId,
-                     int func_idx, WasmTranslation* translation,
-                     V8DebuggerAgentImpl* agent) {
+  void ReportFakeScript(v8::Isolate* isolate,
+                        const String16& underlyingScriptId, int func_idx,
+                        WasmTranslation* translation,
+                        V8DebuggerAgentImpl* agent) {
     String16 fake_script_id = GetFakeScriptId(underlyingScriptId, func_idx);
     String16 fake_script_url = GetFakeScriptUrl(isolate, func_idx);
 
@@ -223,7 +246,6 @@ class WasmTranslation::TranslatorImpl {
                                      fake_script_id, std::move(fake_script_url),
                                      func_idx);
 
-    translation->AddFakeScript(fake_script->scriptId(), this);
     agent->didParseSource(std::move(fake_script), true);
   }
 
@@ -236,10 +258,15 @@ class WasmTranslation::TranslatorImpl {
     return func_index;
   }
 
-  const OffsetTable& GetOffsetTable(const TransLocation* loc) {
-    int func_index = loc->line;
-    return GetSourceInformation(loc->translation->isolate_, func_index)
-        .offset_table;
+  int GetFunctionIndexFromLocation(const TransLocation* loc) {
+    DCHECK_EQ(0, loc->line);
+    v8::Isolate* isolate = loc->translation->isolate_;
+    v8::Local<v8::debug::WasmScript> script = script_.Get(isolate);
+    return script->GetContainingFunction(loc->column);
+  }
+
+  const OffsetTable& GetOffsetTable(v8::Isolate* isolate, int func_index) {
+    return GetSourceInformation(isolate, func_index).offset_table;
   }
 
   const OffsetTable& GetReverseTable(v8::Isolate* isolate, int func_index) {
@@ -254,6 +281,9 @@ class WasmTranslation::TranslatorImpl {
   // We assume to only disassemble a subset of the functions, so store them in a
   // map instead of an array.
   std::unordered_map<int, WasmSourceInformation> source_informations_;
+
+  // Disallow copies, because our pointer is registered in translation.
+  DISALLOW_COPY_AND_ASSIGN(TranslatorImpl);
 };
 
 constexpr char WasmTranslation::TranslatorImpl::kGlobalScriptHandleLabel[];
@@ -264,15 +294,11 @@ WasmTranslation::~WasmTranslation() { Clear(); }
 
 void WasmTranslation::AddScript(v8::Local<v8::debug::WasmScript> script,
                                 V8DebuggerAgentImpl* agent) {
-  std::unique_ptr<TranslatorImpl> impl;
-  impl.reset(new TranslatorImpl(isolate_, script));
-  DCHECK(impl);
-  auto inserted =
-      wasm_translators_.insert(std::make_pair(script->Id(), std::move(impl)));
-  // Check that no mapping for this script id existed before.
-  DCHECK(inserted.second);
-  // impl has been moved, use the returned iterator to call Init.
-  inserted.first->second->Init(isolate_, this, agent);
+  auto& impl = wasm_translators_[script->Id()];
+  if (impl == nullptr) {
+    impl = std::make_unique<TranslatorImpl>(isolate_, this, script);
+  }
+  impl->ReportFakeScripts(isolate_, this, agent);
 }
 
 void WasmTranslation::Clear() {
@@ -370,6 +396,17 @@ bool WasmTranslation::TranslateProtocolLocationToWasmScriptLocation(
   *column_number = trans_loc.column;
 
   return true;
+}
+
+// Find the end byte offset for a fake script.
+int WasmTranslation::GetEndOffset(const String16& script_id) {
+  auto it = fake_scripts_.find(script_id);
+  DCHECK_NE(fake_scripts_.end(), it);
+  TranslatorImpl* translator = it->second;
+  int func_index = translator->GetFunctionIndexFromFakeScriptId(script_id);
+  std::pair<int, int> func_range =
+      translator->script_.Get(isolate_)->GetFunctionRange(func_index);
+  return func_range.second;
 }
 
 void WasmTranslation::AddFakeScript(const String16& scriptId,

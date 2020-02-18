@@ -26,6 +26,7 @@
 #include <unordered_map>
 
 #include "perfetto/base/task_runner.h"
+#include "perfetto/ext/base/flat_set.h"
 #include "perfetto/ext/base/weak_ptr.h"
 #include "perfetto/ext/traced/data_source_types.h"
 #include "perfetto/ext/tracing/core/basic_types.h"
@@ -68,8 +69,7 @@ class InodeFileDataSource : public ProbesDataSource,
   base::WeakPtr<InodeFileDataSource> GetWeakPtr() const;
 
   // Called when Inodes are seen in the FtraceEventBundle
-  // TODO(fmayer): Change  to std::pair<BlockDeviceID, Inode>.
-  void OnInodes(const std::vector<std::pair<Inode, BlockDeviceID>>& inodes);
+  void OnInodes(const base::FlatSet<InodeBlockPair>& inodes);
 
   // Search in /system partition and add inodes to InodeFileMap proto if found
   void AddInodesFromStaticMap(BlockDeviceID block_device_id,
@@ -99,7 +99,7 @@ class InodeFileDataSource : public ProbesDataSource,
   bool OnInodeFound(BlockDeviceID block_device_id,
                     Inode inode_number,
                     const std::string& path,
-                    protos::pbzero::InodeFileMap_Entry_Type type) override;
+                    InodeFileMap_Entry_Type type) override;
   void OnInodeScanDone() override;
 
   void AddRootsForBlockDevice(BlockDeviceID block_device_id,

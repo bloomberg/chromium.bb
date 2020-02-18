@@ -52,9 +52,18 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 // The NavigationManagerImpl associated with the web state.
 @property(nonatomic, readonly) NavigationManagerImpl* navigationManagerImpl;
 
+// Set to YES when [self close] is called.
+@property(nonatomic, assign) BOOL beingDestroyed;
+
 @end
 
 @implementation CRWWebViewNavigationObserver
+
+#pragma mark - Public
+
+- (void)close {
+  self.beingDestroyed = YES;
+}
 
 #pragma mark - Property
 
@@ -103,6 +112,7 @@ using web::wk_navigation_util::IsPlaceholderUrl;
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
+  DCHECK(!self.beingDestroyed);
   NSString* dispatcherSelectorName = self.WKWebViewObservers[keyPath];
   DCHECK(dispatcherSelectorName);
   if (dispatcherSelectorName) {
@@ -129,6 +139,10 @@ using web::wk_navigation_util::IsPlaceholderUrl;
 
 // Called when WKWebView loading state has been changed.
 - (void)webViewLoadingStateDidChange {
+  if (web::features::UseWKWebViewLoading()) {
+    self.webStateImpl->SetIsLoading(self.webView.loading);
+  }
+
   if (self.webView.loading)
     return;
 
@@ -265,8 +279,10 @@ using web::wk_navigation_util::IsPlaceholderUrl;
       if (!web::IsSafeBrowsingWarningDisplayedInWebView(self.webView))
         return;
 
+      if (!web::features::UseWKWebViewLoading()) {
+        self.webStateImpl->SetIsLoading(false);
+      }
       self.navigationManagerImpl->DiscardNonCommittedItems();
-      self.webStateImpl->SetIsLoading(false);
       self.navigationHandler.pendingNavigationInfo = nil;
       if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
         // Right after a history navigation that gets cancelled by a tap on

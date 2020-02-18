@@ -56,6 +56,7 @@ using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using chromeos::network_config::mojom::NetworkType;
 using chromeos::network_config::mojom::VpnProvider;
 using chromeos::network_config::mojom::VpnProviderPtr;
+using chromeos::network_config::mojom::VPNStatePropertiesPtr;
 using chromeos::network_config::mojom::VpnType;
 
 namespace ash {
@@ -77,10 +78,10 @@ bool VpnProviderMatchesNetwork(const VpnProvider* provider,
   if (network->type != NetworkType::kVPN)
     return false;
 
-  if (network->vpn->type == VpnType::kArc ||
-      network->vpn->type == VpnType::kExtension) {
-    return network->vpn->type == provider->type &&
-           network->vpn->provider_id == provider->provider_id;
+  const VPNStatePropertiesPtr& vpn = network->type_state->get_vpn();
+  if (vpn->type == VpnType::kArc || vpn->type == VpnType::kExtension) {
+    return vpn->type == provider->type &&
+           vpn->provider_id == provider->provider_id;
   }
 
   // Internal provider types all match the default internal provider.
@@ -262,6 +263,8 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
     if (IsVpnConfigAllowed()) {
       disconnect_button_ = TrayPopupUtils::CreateTrayPopupButton(
           this, l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECT));
+      disconnect_button_->SetAccessibleName(l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECT_BUTTON_A11Y_LABEL, label));
       AddRightView(disconnect_button_);
     }
     tri_view()->SetContainerBorder(
@@ -269,8 +272,21 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
         views::CreateEmptyBorder(
             0, kTrayPopupButtonEndMargin - kTrayPopupLabelHorizontalPadding, 0,
             kTrayPopupButtonEndMargin));
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_OPEN_WITH_CONNECTION_STATUS,
+        label,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED)));
   } else if (vpn->connection_state == ConnectionStateType::kConnecting) {
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_OPEN_WITH_CONNECTION_STATUS,
+        label,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING)));
     owner_->SetupConnectingScrollListItem(this);
+  } else {
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_CONNECT, label));
   }
 
   Layout();
@@ -280,11 +296,11 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
 
 VPNListView::VPNListView(DetailedViewDelegate* delegate, LoginStatus login)
     : NetworkStateListDetailedView(delegate, LIST_TYPE_VPN, login) {
-  Shell::Get()->vpn_list()->AddObserver(this);
+  model()->vpn_list()->AddObserver(this);
 }
 
 VPNListView::~VPNListView() {
-  Shell::Get()->vpn_list()->RemoveObserver(this);
+  model()->vpn_list()->RemoveObserver(this);
 }
 
 void VPNListView::UpdateNetworkList() {
@@ -371,8 +387,7 @@ void VPNListView::OnVpnProvidersChanged() {
 }
 
 void VPNListView::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kVpnConfigAllowed, true,
-                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kVpnConfigAllowed, true);
 }
 
 const char* VPNListView::GetClassName() const {
@@ -433,13 +448,13 @@ void VPNListView::AddProvidersAndNetworks(const NetworkStateList& networks) {
   // profile.
   std::vector<VpnProviderPtr> extension_providers;
   for (const VpnProviderPtr& provider :
-       Shell::Get()->vpn_list()->extension_vpn_providers()) {
+       model()->vpn_list()->extension_vpn_providers()) {
     extension_providers.push_back(provider->Clone());
   }
   // Copy the list of Arc VPN providers installed in the primary user's profile.
   std::vector<VpnProviderPtr> arc_providers;
   for (const VpnProviderPtr& provider :
-       Shell::Get()->vpn_list()->arc_vpn_providers()) {
+       model()->vpn_list()->arc_vpn_providers()) {
     arc_providers.push_back(provider->Clone());
   }
 
@@ -451,7 +466,7 @@ void VPNListView::AddProvidersAndNetworks(const NetworkStateList& networks) {
   for (const auto& network : networks) {
     if (network->connection_state == ConnectionStateType::kNotConnected)
       break;
-    if (network->vpn->type != VpnType::kArc)
+    if (network->type_state->get_vpn()->type != VpnType::kArc)
       continue;
 
     // If no matched provider found for this network. Show it unnested.

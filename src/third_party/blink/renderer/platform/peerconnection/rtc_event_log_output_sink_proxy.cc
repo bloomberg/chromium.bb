@@ -5,15 +5,9 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
 
 #include "base/logging.h"
-#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink.h"
-#include "third_party/blink/public/platform/modules/peerconnection/rtc_event_log_output_sink_proxy_util.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
 
 namespace blink {
-
-std::unique_ptr<webrtc::RtcEventLogOutput> CreateRtcEventLogOutputSinkProxy(
-    RtcEventLogOutputSink* sink) {
-  return std::make_unique<RtcEventLogOutputSinkProxy>(sink);
-}
 
 RtcEventLogOutputSinkProxy::RtcEventLogOutputSinkProxy(
     RtcEventLogOutputSink* sink)

@@ -59,6 +59,9 @@ ConnectionInfoPopupAndroid::ConnectionInfoPopupAndroid(
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
 
+  // When |web_contents| is not from a Tab, |web_contents| does not have a
+  // |TabSpecificContentSettings| and need to create one; otherwise, noop.
+  TabSpecificContentSettings::CreateForWebContents(web_contents);
   presenter_ = std::make_unique<PageInfo>(
       this, Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
@@ -99,8 +102,8 @@ void ConnectionInfoPopupAndroid::SetIdentityInfo(
       headline = identity_info.site_identity;
     }
 
-    ScopedJavaLocalRef<jstring> description =
-        ConvertUTF8ToJavaString(env, identity_info.identity_status_description);
+    ScopedJavaLocalRef<jstring> description = ConvertUTF8ToJavaString(
+        env, identity_info.identity_status_description_android);
     base::string16 certificate_label;
 
     // Only show the certificate viewer link if the connection actually used a

@@ -38,11 +38,7 @@ class Value;
 
 using String = WTF::String;
 using StringBuilder = WTF::StringBuilder;
-
-struct ProtocolMessage {
-  String json;
-  WebVector<uint8_t> binary;
-};
+using ProtocolMessage = WebVector<uint8_t>;
 
 class CORE_EXPORT StringUtil {
   STATIC_ONLY(StringUtil);
@@ -83,8 +79,6 @@ class CORE_EXPORT StringUtil {
     return builder.ToString();
   }
   static std::unique_ptr<protocol::Value> parseJSON(const String&);
-  static ProtocolMessage jsonToMessage(const String& message);
-  static ProtocolMessage binaryToMessage(WebVector<uint8_t> message);
 
   static String fromUTF8(const uint8_t* data, size_t length) {
     return String::FromUTF8(reinterpret_cast<const char*>(data), length);
@@ -119,8 +113,8 @@ class CORE_EXPORT Binary {
 
   Binary() = default;
 
-  const uint8_t* data() const { return impl_->data(); }
-  size_t size() const { return impl_->size(); }
+  const uint8_t* data() const { return impl_ ? impl_->data() : nullptr; }
+  size_t size() const { return impl_ ? impl_->size() : 0; }
 
   String toBase64() const;
   static Binary fromBase64(const String& base64, bool* success);

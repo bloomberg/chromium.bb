@@ -14,8 +14,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/user_script_listener.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/kiosk/kiosk_delegate.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace base {
 class CommandLine;
@@ -71,11 +74,11 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       int* resource_id) const override;
   void LoadResourceFromResourceBundle(
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderRequest loader,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
       const base::FilePath& resource_relative_path,
       int resource_id,
       const std::string& content_security_policy,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       bool send_cors_header) override;
   bool AllowCrossRendererResourceLoad(const GURL& url,
                                       content::ResourceType resource_type,
@@ -104,6 +107,11 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
                                        content::RenderFrameHost*>* registry,
                                    content::RenderFrameHost* render_frame_host,
                                    const Extension* extension) const override;
+  void RegisterBrowserInterfaceBindersForFrame(
+      service_manager::BinderMapWithContext<content::RenderFrameHost*>*
+          binder_map,
+      content::RenderFrameHost* render_frame_host,
+      const Extension* extension) const override;
   std::unique_ptr<RuntimeAPIDelegate> CreateRuntimeAPIDelegate(
       content::BrowserContext* context) const override;
   const ComponentExtensionResourceManager*
@@ -143,6 +151,10 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   network::mojom::NetworkContext* GetSystemNetworkContext() override;
   UserScriptListener* GetUserScriptListener() override;
   std::string GetUserAgent() const override;
+  bool ShouldSchemeBypassNavigationChecks(
+      const std::string& scheme) const override;
+  bool ShouldForceWebRequestExtraHeaders(
+      content::BrowserContext* context) const override;
 
   static void set_did_chrome_update_for_testing(bool did_update);
 
@@ -161,7 +173,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
 
   std::unique_ptr<KioskDelegate> kiosk_delegate_;
 
-  std::unique_ptr<UserScriptListener> user_script_listener_;
+  UserScriptListener user_script_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsBrowserClient);
 };

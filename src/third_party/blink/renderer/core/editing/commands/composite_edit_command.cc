@@ -85,8 +85,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 CompositeEditCommand::CompositeEditCommand(Document& document)
     : EditCommand(document) {
   const VisibleSelection& visible_selection =
@@ -267,15 +265,15 @@ void CompositeEditCommand::InsertParagraphSeparator(
 
 bool CompositeEditCommand::IsRemovableBlock(const Node* node) {
   DCHECK(node);
-  if (!IsHTMLDivElement(*node))
+  const auto* element = DynamicTo<HTMLDivElement>(node);
+  if (!element)
     return false;
 
-  const HTMLDivElement& element = ToHTMLDivElement(*node);
-  ContainerNode* parent_node = element.parentNode();
+  ContainerNode* parent_node = element->parentNode();
   if (parent_node && parent_node->firstChild() != parent_node->lastChild())
     return false;
 
-  if (!element.hasAttributes())
+  if (!element->hasAttributes())
     return true;
 
   return false;
@@ -366,9 +364,9 @@ void CompositeEditCommand::AppendNode(Node* node,
   // |cloneParagraphUnderNewElement()| attempt to clone non-well-formed HTML,
   // produced by JavaScript.
   auto* parent_element = DynamicTo<Element>(parent);
-  ABORT_EDITING_COMMAND_IF(
-      !CanHaveChildrenForEditing(parent) &&
-      !(parent_element && parent_element->TagQName() == kObjectTag));
+  ABORT_EDITING_COMMAND_IF(!CanHaveChildrenForEditing(parent) &&
+                           !(parent_element && parent_element->TagQName() ==
+                                                   html_names::kObjectTag));
   ABORT_EDITING_COMMAND_IF(!HasEditableStyle(*parent) &&
                            parent->InActiveDocument());
   ApplyCommandToComposite(MakeGarbageCollected<AppendNodeCommand>(parent, node),
@@ -645,7 +643,8 @@ bool CompositeEditCommand::DeleteSelection(
     return true;
 
   ApplyCommandToComposite(
-      DeleteSelectionCommand::Create(GetDocument(), options), editing_state);
+      MakeGarbageCollected<DeleteSelectionCommand>(GetDocument(), options),
+      editing_state);
   if (editing_state->IsAborted())
     return false;
 
@@ -1500,10 +1499,11 @@ void CompositeEditCommand::MoveParagraphs(
                 GetDocument(),
                 CreateMarkup(start.ParentAnchoredEquivalent(),
                              end.ParentAnchoredEquivalent(),
-                             kDoNotAnnotateForInterchange,
-                             ConvertBlocksToInlines::kConvert,
-                             kDoNotResolveURLs, constraining_ancestor),
-                "")
+                             CreateMarkupOptions::Builder()
+                                 .SetShouldConvertBlocksToInlines(true)
+                                 .SetConstrainingAncestor(constraining_ancestor)
+                                 .Build()),
+                "", kDisallowScriptingAndPluginContent)
           : nullptr;
 
   // A non-empty paragraph's style is moved when we copy and move it.  We don't
@@ -1661,7 +1661,8 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
   // FIXME: Can't we do something better when the immediate parent wasn't a list
   // node?
   if (!list_node ||
-      (!IsHTMLUListElement(*list_node) && !IsHTMLOListElement(*list_node)) ||
+      (!IsA<HTMLUListElement>(*list_node) &&
+       !IsA<HTMLOListElement>(*list_node)) ||
       !HasEditableStyle(*list_node) ||
       list_node == RootEditableElement(*empty_list_item))
     return false;
@@ -1695,8 +1696,8 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
       }
       // If listNode does NOT appear at the end of the outer list item, then
       // behave as if in a regular paragraph.
-    } else if (IsHTMLOListElement(*block_enclosing_list) ||
-               IsHTMLUListElement(*block_enclosing_list)) {
+    } else if (IsA<HTMLOListElement>(*block_enclosing_list) ||
+               IsA<HTMLUListElement>(*block_enclosing_list)) {
       new_block = MakeGarbageCollected<HTMLLIElement>(GetDocument());
     }
   }
@@ -1772,9 +1773,8 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
   GetDocument().UpdateStyleAndLayout();
 
   VisiblePosition caret = EndingVisibleSelection().VisibleStart();
-  HTMLQuoteElement* highest_blockquote =
-      ToHTMLQuoteElement(HighestEnclosingNodeOfType(
-          caret.DeepEquivalent(), &IsMailHTMLBlockquoteElement));
+  auto* highest_blockquote = To<HTMLQuoteElement>(HighestEnclosingNodeOfType(
+      caret.DeepEquivalent(), &IsMailHTMLBlockquoteElement));
   if (!highest_blockquote)
     return false;
 

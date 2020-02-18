@@ -361,7 +361,7 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
       media_task_runner_, worker_task_runner_, gpu_factories_));
   video_frame_provider_ = renderer_factory_->GetVideoRenderer(
       web_stream_,
-      ConvertToBaseCallback(frame_deliverer_->GetRepaintCallback()),
+      ConvertToBaseRepeatingCallback(frame_deliverer_->GetRepaintCallback()),
       io_task_runner_, main_render_task_runner_);
 
   if (internal_frame_->web_frame()) {
@@ -519,7 +519,8 @@ void WebMediaPlayerMS::ReloadVideo() {
       SetNetworkState(kNetworkStateLoading);
       video_frame_provider_ = renderer_factory_->GetVideoRenderer(
           web_stream_,
-          ConvertToBaseCallback(frame_deliverer_->GetRepaintCallback()),
+          ConvertToBaseRepeatingCallback(
+              frame_deliverer_->GetRepaintCallback()),
           io_task_runner_, main_render_task_runner_);
       DCHECK(video_frame_provider_);
       video_frame_provider_->Start();
@@ -668,6 +669,13 @@ void WebMediaPlayerMS::SetVolume(double volume) {
   if (audio_renderer_.get())
     audio_renderer_->SetVolume(volume_ * volume_multiplier_);
   delegate_->DidPlayerMutedStatusChange(delegate_id_, volume == 0.0);
+}
+
+void WebMediaPlayerMS::SetLatencyHint(double seconds) {
+  // WebRTC latency has separate latency APIs, focused more on network jitter
+  // and implemented inside the WebRTC stack.
+  // https://webrtc.org/experiments/rtp-hdrext/playout-delay/
+  // https://henbos.github.io/webrtc-timing/#dom-rtcrtpreceiver-playoutdelayhint
 }
 
 void WebMediaPlayerMS::OnRequestPictureInPicture() {
@@ -1102,12 +1110,8 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
   OnRotationChanged(video_rotation);
   OnOpacityChanged(is_opaque);
 
-  if (surface_layer_mode_ == WebMediaPlayer::SurfaceLayerMode::kAlways ||
-      (surface_layer_mode_ == WebMediaPlayer::SurfaceLayerMode::kOnDemand &&
-       client_->DisplayType() ==
-           WebMediaPlayer::DisplayType::kPictureInPicture)) {
+  if (surface_layer_mode_ == WebMediaPlayer::SurfaceLayerMode::kAlways)
     ActivateSurfaceLayerForVideo();
-  }
 
   SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
   SetReadyState(WebMediaPlayer::kReadyStateHaveEnoughData);

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_UTILS_H_
 #define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_UTILS_H_
 
+#include <memory>
+
 #include "components/download/database/download_db_entry.h"
 #include "components/download/database/in_progress/download_entry.h"
 #include "components/download/public/common/download_export.h"
@@ -75,7 +77,7 @@ CreateDownloadDBEntryFromItem(const DownloadItemImpl& item);
 
 // Helper function to convert DownloadDBEntry to DownloadEntry.
 // TODO(qinmin): remove this function after DownloadEntry is deprecated.
-COMPONENTS_DOWNLOAD_EXPORT base::Optional<DownloadEntry>
+COMPONENTS_DOWNLOAD_EXPORT std::unique_ptr<DownloadEntry>
 CreateDownloadEntryFromDownloadDBEntry(base::Optional<DownloadDBEntry> entry);
 
 COMPONENTS_DOWNLOAD_EXPORT uint64_t GetUniqueDownloadId();
@@ -98,10 +100,10 @@ COMPONENTS_DOWNLOAD_EXPORT bool IsDownloadDone(
 COMPONENTS_DOWNLOAD_EXPORT bool DeleteDownloadedFile(
     const base::FilePath& path);
 
-// Rename downloaded file from |oldpath| to newname.
-COMPONENTS_DOWNLOAD_EXPORT download::DownloadItem::DownloadRenameResult
+// Rename downloaded file |from_path| to a new |display_name|.
+COMPONENTS_DOWNLOAD_EXPORT DownloadItem::DownloadRenameResult
 RenameDownloadedFile(const base::FilePath& from_path,
-                     const base::FilePath& to_path);
+                     const base::FilePath& display_name);
 
 // Finch parameter key value for number of bytes used for content validation
 // during resumption.
@@ -110,6 +112,13 @@ constexpr char kDownloadContentValidationLengthFinchKey[] =
 
 // Get the number of bytes to validate from finch configuration.
 int64_t GetDownloadValidationLengthConfig();
+
+// Finch parameter key value for the time to delete expired downloads in days.
+constexpr char kExpiredDownloadDeleteTimeFinchKey[] =
+    "expired_download_delete_days";
+
+// Returns the time to delete expired downloads.
+COMPONENTS_DOWNLOAD_EXPORT base::TimeDelta GetExpiredDownloadDeleteTime();
 
 }  // namespace download
 

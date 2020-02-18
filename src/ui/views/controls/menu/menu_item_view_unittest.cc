@@ -23,11 +23,13 @@
 
 namespace views {
 
-TEST(MenuItemViewUnitTest, AddAndRemoveChildren) {
+using MenuItemViewUnitTest = ViewsTestBase;
+
+TEST_F(MenuItemViewUnitTest, AddAndRemoveChildren) {
   views::TestMenuItemView root_menu;
   root_menu.set_owned_by_client();
 
-  auto* item = root_menu.AppendMenuItemWithLabel(0, base::string16());
+  auto* item = root_menu.AppendMenuItem(0);
 
   views::SubmenuView* submenu = root_menu.GetSubmenu();
   ASSERT_TRUE(submenu);
@@ -55,17 +57,16 @@ class SquareView : public views::View {
 
 }  // namespace
 
-TEST(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
+TEST_F(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
   views::TestMenuItemView root_menu;
   root_menu.set_owned_by_client();
 
   // Append a normal MenuItemView.
   views::MenuItemView* label_view =
-      root_menu.AppendMenuItemWithLabel(1, base::ASCIIToUTF16("item 1"));
+      root_menu.AppendMenuItem(1, base::ASCIIToUTF16("item 1"));
 
   // Append a second MenuItemView that has a child SquareView.
-  views::MenuItemView* flexible_view =
-      root_menu.AppendMenuItemWithLabel(2, base::string16());
+  views::MenuItemView* flexible_view = root_menu.AppendMenuItem(2);
   flexible_view->AddChildView(new SquareView());
   // Set margins to 0 so that we know width should match height.
   flexible_view->SetMargins(0, 0);
@@ -94,12 +95,12 @@ TEST(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
 
 // Tests that the top-level menu item with hidden children should contain the
 // "(empty)" menu item to display.
-TEST(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
+TEST_F(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
   views::TestMenuItemView root_menu;
   views::MenuItemView* item1 =
-      root_menu.AppendMenuItemWithLabel(1, base::ASCIIToUTF16("item 1"));
+      root_menu.AppendMenuItem(1, base::ASCIIToUTF16("item 1"));
   views::MenuItemView* item2 =
-      root_menu.AppendMenuItemWithLabel(2, base::ASCIIToUTF16("item 2"));
+      root_menu.AppendMenuItem(2, base::ASCIIToUTF16("item 2"));
 
   // Set menu items to hidden.
   item1->SetVisible(false);
@@ -125,14 +126,14 @@ TEST(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
 
 // Tests that submenu with hidden children should contain the "(empty)" menu
 // item to display.
-TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
+TEST_F(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
   views::TestMenuItemView root_menu;
   MenuItemView* submenu_item =
       root_menu.AppendSubMenu(1, base::ASCIIToUTF16("My Submenu"));
-  MenuItemView* child1 = submenu_item->AppendMenuItemWithLabel(
-      1, base::ASCIIToUTF16("submenu item 1"));
-  MenuItemView* child2 = submenu_item->AppendMenuItemWithLabel(
-      2, base::ASCIIToUTF16("submenu item 2"));
+  MenuItemView* child1 =
+      submenu_item->AppendMenuItem(1, base::ASCIIToUTF16("submenu item 1"));
+  MenuItemView* child2 =
+      submenu_item->AppendMenuItem(2, base::ASCIIToUTF16("submenu item 2"));
 
   // Set submenu children to hidden.
   child1->SetVisible(false);
@@ -161,12 +162,12 @@ TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
             empty_item->title());
 }
 
-TEST(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
+TEST_F(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
   views::TestMenuItemView root_menu;
   views::MenuItemView* item1 =
-      root_menu.AppendMenuItemWithLabel(1, base::ASCIIToUTF16("&Item 1"));
+      root_menu.AppendMenuItem(1, base::ASCIIToUTF16("&Item 1"));
   views::MenuItemView* item2 =
-      root_menu.AppendMenuItemWithLabel(2, base::ASCIIToUTF16("I&tem 2"));
+      root_menu.AppendMenuItem(2, base::ASCIIToUTF16("I&tem 2"));
 
   root_menu.set_has_mnemonics(true);
 
@@ -179,10 +180,9 @@ TEST(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
   }
 }
 
-class MenuItemViewLayoutTest : public ::testing::Test {
+class MenuItemViewLayoutTest : public ViewsTestBase {
  public:
-  MenuItemViewLayoutTest()
-      : test_item_(root_menu_.AppendMenuItemWithLabel(1, base::string16())) {}
+  MenuItemViewLayoutTest() : test_item_(root_menu_.AppendMenuItem(1)) {}
   ~MenuItemViewLayoutTest() override = default;
 
  protected:

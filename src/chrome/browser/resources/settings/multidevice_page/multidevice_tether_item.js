@@ -15,7 +15,7 @@ Polymer({
   is: 'settings-multidevice-tether-item',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     MultiDeviceFeatureBehavior,
   ],
 
@@ -165,6 +165,6 @@ Polymer({
    * @private
    */
   getTetherNetworkUrlSearchParams_: function() {
-    return new URLSearchParams('type=' + CrOnc.Type.TETHER);
+    return new URLSearchParams('type=Tether');
   },
 });

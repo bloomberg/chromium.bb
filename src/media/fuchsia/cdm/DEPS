@@ -1,4 +1,5 @@
 include_rules = [
   "+fuchsia/base",
-  "+services/service_manager/public",
+  "+mojo/public",
+  "+third_party/blink/public/common",
 ]

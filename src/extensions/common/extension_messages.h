@@ -9,6 +9,9 @@
 
 #include <stdint.h>
 
+#include <map>
+#include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -38,6 +41,7 @@
 #include "extensions/common/view_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #define IPC_MESSAGE_START ExtensionMsgStart
 
@@ -171,10 +175,6 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   // When to inject the code.
   IPC_STRUCT_MEMBER(extensions::UserScript::RunLocation, run_at)
 
-  // Whether to execute code in the main world (as opposed to an isolated
-  // world).
-  IPC_STRUCT_MEMBER(bool, in_main_world)
-
   // Whether the request is coming from a <webview>.
   IPC_STRUCT_MEMBER(bool, is_web_view)
 
@@ -234,6 +234,9 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExternalConnectionInfo)
 
   // The URL of the frame that initiated the request.
   IPC_STRUCT_MEMBER(GURL, source_url)
+
+  // The origin of the object that initiated the request.
+  IPC_STRUCT_MEMBER(base::Optional<url::Origin>, source_origin)
 
   // The process ID of the webview that initiated the request.
   IPC_STRUCT_MEMBER(int, guest_process_id)
@@ -914,11 +917,6 @@ IPC_MESSAGE_ROUTED0(ExtensionHostMsg_IncrementLazyKeepaliveCount)
 // alive.
 IPC_MESSAGE_ROUTED0(ExtensionHostMsg_DecrementLazyKeepaliveCount)
 
-// Fetches a globally unique ID (for the lifetime of the browser) from the
-// browser process.
-IPC_SYNC_MESSAGE_CONTROL0_1(ExtensionHostMsg_GenerateUniqueID,
-                            int /* unique_id */)
-
 // Notify the browser that an app window is ready and can resume resource
 // requests.
 IPC_MESSAGE_ROUTED0(ExtensionHostMsg_AppWindowReady)
@@ -1030,8 +1028,10 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_DecrementServiceWorkerActivity,
 
 // Tells the browser that an event with |event_id| was successfully dispatched
 // to the worker with version |service_worker_version_id|.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_EventAckWorker,
+IPC_MESSAGE_CONTROL4(ExtensionHostMsg_EventAckWorker,
+                     std::string /* extension_id */,
                      int64_t /* service_worker_version_id */,
+                     int /* worker_thread_id */,
                      int /* event_id */)
 
 // Tells the browser that an extension service worker context was initialized,

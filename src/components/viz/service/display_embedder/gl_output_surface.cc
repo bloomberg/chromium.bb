@@ -34,17 +34,23 @@ GLOutputSurface::GLOutputSurface(
           context_provider->ContextCapabilities().chromium_gpu_fence &&
           context_provider->ContextCapabilities()
               .use_gpu_fences_for_overlay_planes) {
-  capabilities_.flipped_output_surface =
-      context_provider->ContextCapabilities().flips_vertically;
-  capabilities_.supports_stencil =
-      context_provider->ContextCapabilities().num_stencil_bits > 0;
+  const auto& context_capabilities = context_provider->ContextCapabilities();
+  capabilities_.flipped_output_surface = context_capabilities.flips_vertically;
+  capabilities_.supports_stencil = context_capabilities.num_stencil_bits > 0;
   // Since one of the buffers is used by the surface for presentation, there can
   // be at most |num_surface_buffers - 1| pending buffers that the compositor
   // can use.
   capabilities_.max_frames_pending =
-      context_provider->ContextCapabilities().num_surface_buffers - 1;
-  capabilities_.supports_gpu_vsync =
-      context_provider->ContextCapabilities().gpu_vsync;
+      context_capabilities.num_surface_buffers - 1;
+  capabilities_.supports_gpu_vsync = context_capabilities.gpu_vsync;
+  capabilities_.supports_dc_layers = context_capabilities.dc_layers;
+  capabilities_.supports_dc_video_overlays =
+      context_capabilities.use_dc_overlays_for_video;
+  capabilities_.supports_surfaceless = context_capabilities.surfaceless;
+  capabilities_.android_surface_control_feature_enabled =
+      context_provider->GetGpuFeatureInfo()
+          .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
+      gpu::kGpuFeatureStatusEnabled;
 }
 
 GLOutputSurface::~GLOutputSurface() {
@@ -72,8 +78,7 @@ void GLOutputSurface::BindFramebuffer() {
 }
 
 void GLOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
-  if (!context_provider_->ContextCapabilities().dc_layers)
-    return;
+  DCHECK(capabilities_.supports_dc_layers);
 
   if (set_draw_rectangle_for_frame_)
     return;
@@ -111,7 +116,8 @@ void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   gfx::Size swap_size = ApplyDisplayInverse(gfx::Rect(size_)).size();
   auto swap_callback = base::BindOnce(
       &GLOutputSurface::OnGpuSwapBuffersCompleted,
-      weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info), swap_size);
+      weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info),
+      frame.top_controls_visible_height_changed, swap_size);
   gpu::ContextSupport::PresentationCallback presentation_callback;
   presentation_callback = base::BindOnce(&GLOutputSurface::OnPresentation,
                                          weak_ptr_factory_.GetWeakPtr());
@@ -170,6 +176,7 @@ void GLOutputSurface::HandlePartialSwap(
 
 void GLOutputSurface::OnGpuSwapBuffersCompleted(
     std::vector<ui::LatencyInfo> latency_info,
+    bool top_controls_visible_height_changed,
     const gfx::Size& pixel_size,
     const gpu::SwapBuffersCompleteParams& params) {
   if (!params.texture_in_use_responses.empty())
@@ -179,8 +186,8 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
   DidReceiveSwapBuffersAck(params.swap_response);
 
   UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
-  latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
-  client_->DidFinishLatencyInfo(latency_info);
+  latency_tracker_.OnGpuSwapBuffersCompleted(
+      latency_info, top_controls_visible_height_changed);
 
   if (needs_swap_size_notifications_)
     client_->DidSwapWithSize(pixel_size);
@@ -230,7 +237,7 @@ gfx::OverlayTransform GLOutputSurface::GetDisplayTransform() {
 
 gfx::Rect GLOutputSurface::ApplyDisplayInverse(const gfx::Rect& input) {
   gfx::Transform display_inverse = gfx::OverlayTransformToTransform(
-      gfx::InvertOverlayTransform(GetDisplayTransform()), size_);
+      gfx::InvertOverlayTransform(GetDisplayTransform()), gfx::SizeF(size_));
   return cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
       display_inverse, input);
 }

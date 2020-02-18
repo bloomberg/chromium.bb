@@ -29,9 +29,9 @@ std::string VectorToString(const std::vector<T>& vec) {
   return result.str();
 }
 
-std::vector<VideoFrameLayout::Plane> PlanesFromStrides(
+std::vector<ColorPlaneLayout> PlanesFromStrides(
     const std::vector<int32_t> strides) {
-  std::vector<VideoFrameLayout::Plane> planes(strides.size());
+  std::vector<ColorPlaneLayout> planes(strides.size());
   for (size_t i = 0; i < strides.size(); i++) {
     planes[i].stride = strides[i];
   }
@@ -43,15 +43,17 @@ std::vector<VideoFrameLayout::Plane> PlanesFromStrides(
 // static
 size_t VideoFrameLayout::NumPlanes(VideoPixelFormat format) {
   switch (format) {
-    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_BGRA:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB24:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_XR30:
+    case PIXEL_FORMAT_XB30:
       return 1;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
@@ -102,7 +104,7 @@ base::Optional<VideoFrameLayout> VideoFrameLayout::CreateWithStrides(
 base::Optional<VideoFrameLayout> VideoFrameLayout::CreateWithPlanes(
     VideoPixelFormat format,
     const gfx::Size& coded_size,
-    std::vector<Plane> planes,
+    std::vector<ColorPlaneLayout> planes,
     size_t buffer_addr_align,
     uint64_t modifier) {
   // NOTE: Even if format is UNKNOWN, it is valid if coded_sizes is not Empty().
@@ -118,7 +120,7 @@ base::Optional<VideoFrameLayout> VideoFrameLayout::CreateWithPlanes(
 base::Optional<VideoFrameLayout> VideoFrameLayout::CreateMultiPlanar(
     VideoPixelFormat format,
     const gfx::Size& coded_size,
-    std::vector<Plane> planes,
+    std::vector<ColorPlaneLayout> planes,
     size_t buffer_addr_align,
     uint64_t modifier) {
   // NOTE: Even if format is UNKNOWN, it is valid if coded_sizes is not Empty().
@@ -133,7 +135,7 @@ base::Optional<VideoFrameLayout> VideoFrameLayout::CreateMultiPlanar(
 
 VideoFrameLayout::VideoFrameLayout(VideoPixelFormat format,
                                    const gfx::Size& coded_size,
-                                   std::vector<Plane> planes,
+                                   std::vector<ColorPlaneLayout> planes,
                                    bool is_multi_planar,
                                    size_t buffer_addr_align,
                                    uint64_t modifier)
@@ -149,23 +151,6 @@ VideoFrameLayout::VideoFrameLayout(const VideoFrameLayout&) = default;
 VideoFrameLayout::VideoFrameLayout(VideoFrameLayout&&) = default;
 VideoFrameLayout& VideoFrameLayout::operator=(const VideoFrameLayout&) =
     default;
-
-std::ostream& operator<<(std::ostream& ostream,
-                         const VideoFrameLayout::Plane& plane) {
-  ostream << "(" << plane.stride << ", " << plane.offset << ", " << plane.size
-          << ")";
-  return ostream;
-}
-
-bool VideoFrameLayout::Plane::operator==(
-    const VideoFrameLayout::Plane& rhs) const {
-  return stride == rhs.stride && offset == rhs.offset && size == rhs.size;
-}
-
-bool VideoFrameLayout::Plane::operator!=(
-    const VideoFrameLayout::Plane& rhs) const {
-  return !(*this == rhs);
-}
 
 bool VideoFrameLayout::operator==(const VideoFrameLayout& rhs) const {
   return format_ == rhs.format_ && coded_size_ == rhs.coded_size_ &&

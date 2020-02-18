@@ -21,7 +21,7 @@ RemotingSender::RemotingSender(
     media::cast::CastTransport* transport,
     const media::cast::FrameSenderConfig& config,
     mojo::ScopedDataPipeConsumerHandle pipe,
-    media::mojom::RemotingDataStreamSenderRequest request,
+    mojo::PendingReceiver<media::mojom::RemotingDataStreamSender> stream_sender,
     base::OnceClosure error_callback)
     : FrameSender(cast_environment,
                   transport,
@@ -30,11 +30,11 @@ RemotingSender::RemotingSender(
       clock_(cast_environment->Clock()),
       error_callback_(std::move(error_callback)),
       data_pipe_reader_(new media::MojoDataPipeReader(std::move(pipe))),
-      binding_(this, std::move(request)),
+      stream_sender_(this, std::move(stream_sender)),
       input_queue_discards_remaining_(0),
       is_reading_(false),
       flow_restart_pending_(true) {
-  binding_.set_connection_error_handler(base::BindOnce(
+  stream_sender_.set_disconnect_handler(base::BindOnce(
       &RemotingSender::OnRemotingDataStreamError, base::Unretained(this)));
 }
 
@@ -54,11 +54,11 @@ void RemotingSender::SendFrame(uint32_t frame_size) {
 void RemotingSender::CancelInFlightData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-// TODO(miu): The following code is something we want to do as an
+// TODO(crbug.com/647423): The following code is something we want to do as an
 // optimization. However, as-is, it's not quite correct. We can only cancel
 // frames where no packets have actually hit the network yet. Said another
 // way, we can only cancel frames the receiver has definitely not seen any
-// part of (including kickstarting!). http://crbug.com/647423
+// part of (including kickstarting!).
 #if 0
   if (latest_acked_frame_id_ < last_sent_frame_id_) {
     std::vector<media::cast::FrameId> frames_to_cancel;
@@ -207,7 +207,7 @@ void RemotingSender::OnInputTaskComplete() {
 
 void RemotingSender::OnRemotingDataStreamError() {
   data_pipe_reader_.reset();
-  binding_.Close();
+  stream_sender_.reset();
   if (!error_callback_.is_null())
     std::move(error_callback_).Run();
 }

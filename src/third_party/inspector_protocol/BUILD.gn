@@ -2,22 +2,74 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("encoding") {
+import("//build/config/jumbo.gni")
+
+jumbo_component("crdtp") {
   sources = [
-    "encoding/encoding.cc",
-    "encoding/encoding.h",
+    "crdtp/cbor.cc",
+    "crdtp/cbor.h",
+    "crdtp/export.h",
+    "crdtp/glue.h",
+    "crdtp/json.cc",
+    "crdtp/json.h",
+    "crdtp/parser_handler.h",
+    "crdtp/serializable.cc",
+    "crdtp/serializable.h",
+    "crdtp/span.h",
+    "crdtp/status.cc",
+    "crdtp/status.h",
+  ]
+
+  defines = [ "CRDTP_IMPLEMENTATION" ]
+
+  if (!is_debug) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
+  deps = [
+    ":crdtp_platform",
   ]
 }
 
-static_library("bindings") {
+# A small adapter library which only :crdtp may depend on.
+source_set("crdtp_platform") {
+  visibility = [ ":crdtp" ]
   sources = [
-    "bindings/bindings.cc",
-    "bindings/bindings.h",
+    "crdtp/chromium/json_platform_chromium.cc",
+    "crdtp/json_platform.h",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
-# encoding/encoding_test.cc:
-# There's no target for this file here, instead it is included
-# in //content/test:content_unittest
-# via //content/browser/devtools:inspector_protocol_encoding_test.
+# These tests are linked into //content/test:content_unittests.
+source_set("crdtp_test") {
+  testonly = true
+  sources = [
+    "crdtp/cbor_test.cc",
+    "crdtp/glue_test.cc",
+    "crdtp/json_test.cc",
+    "crdtp/serializable_test.cc",
+    "crdtp/span_test.cc",
+    "crdtp/status_test.cc",
+  ]
+  deps = [
+    ":crdtp_test_platform",
+  ]
+}
 
+# A small adapter library which only :crdtp_test may depend on.
+source_set("crdtp_test_platform") {
+  testonly = true
+  sources = [
+    "crdtp/test_platform.cc",
+    "crdtp/test_platform.h",
+  ]
+  public_deps = [
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/inspector_protocol:crdtp",
+  ]
+}

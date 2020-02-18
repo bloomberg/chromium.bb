@@ -306,9 +306,9 @@ void Widget::Init(InitParams params) {
   params.child |= (params.type == InitParams::TYPE_CONTROL);
   is_top_level_ = !params.child;
 
-  if (params.opacity == views::Widget::InitParams::INFER_OPACITY &&
+  if (params.opacity == views::Widget::InitParams::WindowOpacity::kInferred &&
       params.type != views::Widget::InitParams::TYPE_WINDOW) {
-    params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
   }
 
   {
@@ -327,8 +327,8 @@ void Widget::Init(InitParams params) {
   }
   DCHECK(widget_delegate_);
 
-  if (params.opacity == views::Widget::InitParams::INFER_OPACITY)
-    params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+  if (params.opacity == views::Widget::InitParams::WindowOpacity::kInferred)
+    params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
 
   bool can_activate = params.CanActivate();
   params.activatable =
@@ -399,6 +399,9 @@ void Widget::Init(InitParams params) {
 #endif
   native_widget_initialized_ = true;
   native_widget_->OnWidgetInitDone();
+
+  if (delegate)
+    delegate->OnWidgetInitialized();
 }
 
 void Widget::ShowEmojiPanel() {
@@ -595,7 +598,9 @@ void Widget::CloseWithReason(ClosedReason closed_reason) {
     // invoking Close again.
     return;
   }
-
+  if (block_close_) {
+    return;
+  }
   if (non_client_view_ && !non_client_view_->CanClose())
     return;
 

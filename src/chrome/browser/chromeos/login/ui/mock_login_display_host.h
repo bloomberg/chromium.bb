@@ -51,9 +51,9 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD3(StartAppLaunch, void(const std::string&, bool, bool));
   MOCK_METHOD0(StartDemoAppLaunch, void(void));
   MOCK_METHOD1(StartArcKiosk, void(const AccountId&));
+  MOCK_METHOD1(StartWebKiosk, void(const AccountId&));
   MOCK_METHOD2(ShowGaiaDialog, void(bool, const AccountId&));
   MOCK_METHOD0(HideOobeDialog, void());
-  MOCK_METHOD2(UpdateOobeDialogSize, void(int, int));
   MOCK_METHOD1(UpdateOobeDialogState, void(ash::OobeDialogState state));
   MOCK_METHOD0(GetUsers, const user_manager::UserList(void));
 
@@ -74,6 +74,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(OnCancelPasswordChangedFlow, void());
   MOCK_METHOD0(HandleDisplayCaptivePortal, void());
   MOCK_METHOD0(UpdateAddUserButtonStatus, void());
+  MOCK_METHOD0(RequestSystemInfoUpdate, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);

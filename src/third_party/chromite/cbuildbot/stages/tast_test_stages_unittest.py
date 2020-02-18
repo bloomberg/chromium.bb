@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
@@ -93,11 +94,11 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._mock_create_test_root.return_value = \
         TastVMTestStageTest.RESULTS_CHROOT_PATH
 
-    self._mock_run_command = self.PatchObject(cros_build_lib, 'RunCommand',
+    self._mock_run_command = self.PatchObject(cros_build_lib, 'run',
                                               autospec=True)
     self._mock_run_command.side_effect = self._FakeRunCommand
 
-    # Mock out functions that make calls to cros_build_lib.RunCommand that we
+    # Mock out functions that make calls to cros_build_lib.run that we
     # don't want to see.
     self.PatchObject(osutils, 'RmDir', autospec=True)
     self.PatchObject(cgroups, 'SimpleContainChildren', autospec=True)
@@ -133,7 +134,7 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     return self._stage
 
   def _FakeRunCommand(self, cmd, **kwargs):
-    """Fake implemenation of cros_build_lib.RunCommand."""
+    """Fake implemenation of cros_build_lib.run."""
     # pylint: disable=unused-argument
     # Just check positional args and tricky flags. Checking all args is an
     # exercise in verifying that we're capable of typing the same thing twice.
@@ -237,7 +238,7 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._VerifyStageResult(results_lib.Results.SUCCESS, None)
 
     self._mock_create_test_root.assert_called_once_with(self.build_root)
-    self.assertEquals(self._mock_run_command.call_count, 1)
+    self.assertEqual(self._mock_run_command.call_count, 1)
     self._VerifyArtifacts()
 
   def testNonZeroExitCode(self):
@@ -251,7 +252,7 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                             tast_test_stages.FAILURE_EXIT_CODE % 1)
 
     self._mock_create_test_root.assert_called_once_with(self.build_root)
-    self.assertEquals(self._mock_run_command.call_count, 1)
+    self.assertEqual(self._mock_run_command.call_count, 1)
     self._VerifyArtifacts()
 
   def testFailedTest(self):
@@ -267,7 +268,7 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                             tast_test_stages.FAILURE_TESTS_FAILED % 2)
 
     self._mock_create_test_root.assert_called_once_with(self.build_root)
-    self.assertEquals(self._mock_run_command.call_count, 1)
+    self.assertEqual(self._mock_run_command.call_count, 1)
     self._VerifyArtifacts()
 
   def testInformationalTest(self):
@@ -304,10 +305,14 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._test_results_data = 'bogus'
 
     self.assertRaises(failures_lib.TestFailure, self.RunStage)
+    # Python versions change the error message.
+    if sys.version_info.major < 3:
+      msg = 'No JSON object could be decoded'
+    else:
+      msg = 'Expecting value: line 1 column 1 (char 0)'
     self._VerifyStageResult(failures_lib.TestFailure,
                             tast_test_stages.FAILURE_BAD_RESULTS %
-                            (self._GetResultsFilePath(),
-                             'No JSON object could be decoded'))
+                            (self._GetResultsFilePath(), msg))
 
   def testFailedArchive(self):
     """Tests that archive failures raise InfrastructureFailure."""

@@ -10,11 +10,13 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "ios/web/public/web_state.h"
 #include "ios/web_view/internal/app/application_context.h"
+#import "ios/web_view/internal/autofill/web_view_autofill_log_router_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -55,7 +57,15 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
               ->GetApplicationLocale())),
       strike_database_(strike_database),
       autofill_web_data_service_(autofill_web_data_service),
-      sync_service_(sync_service) {}
+      sync_service_(sync_service),
+      // TODO(crbug.com/928595): Replace the closure with a callback to the
+      // renderer that indicates if log messages should be sent from the
+      // renderer.
+      log_manager_(LogManager::Create(
+          autofill::WebViewAutofillLogRouterFactory::GetForBrowserState(
+              ios_web_view::WebViewBrowserState::FromBrowserState(
+                  web_state->GetBrowserState())),
+          base::Closure())) {}
 
 WebViewAutofillClientIOS::~WebViewAutofillClientIOS() {
   HideAutofillPopup();
@@ -138,7 +148,7 @@ void WebViewAutofillClientIOS::ShowLocalCardMigrationDialog(
 }
 
 void WebViewAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const LegalMessageLines& legal_message_lines,
     const std::string& user_email,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     LocalCardMigrationCallback start_migrating_cards_callback) {
@@ -153,17 +163,10 @@ void WebViewAutofillClientIOS::ShowLocalCardMigrationResults(
   NOTIMPLEMENTED();
 }
 
-void WebViewAutofillClientIOS::ShowWebauthnOfferDialog(
-    WebauthnOfferDialogCallback callback) {
-  NOTIMPLEMENTED();
-}
-
 void WebViewAutofillClientIOS::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {
-  // Since there is no confirmation needed to save an Autofill Profile,
-  // running |callback| will proceed with saving |profile|.
-  std::move(callback).Run();
+  [bridge_ confirmSaveAutofillProfile:profile callback:std::move(callback)];
 }
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
@@ -176,14 +179,26 @@ void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
                                callback:std::move(callback)];
 }
 
+void WebViewAutofillClientIOS::ConfirmAccountNameFixFlow(
+    base::OnceCallback<void(const base::string16&)> callback) {
+  NOTIMPLEMENTED();
+}
+
+void WebViewAutofillClientIOS::ConfirmExpirationDateFixFlow(
+    const CreditCard& card,
+    base::OnceCallback<void(const base::string16&, const base::string16&)>
+        callback) {
+  NOTIMPLEMENTED();
+}
+
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const LegalMessageLines& legal_message_lines,
     SaveCreditCardOptions options,
     UploadSaveCardPromptCallback callback) {
   DCHECK(options.show_prompt);
   [bridge_ confirmSaveCreditCardToCloud:card
-                           legalMessage:std::move(legal_message)
+                      legalMessageLines:legal_message_lines
                   saveCreditCardOptions:options
                                callback:std::move(callback)];
 }
@@ -258,6 +273,10 @@ void WebViewAutofillClientIOS::ExecuteCommand(int id) {
 void WebViewAutofillClientIOS::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
   [bridge_ loadRiskData:std::move(callback)];
+}
+
+LogManager* WebViewAutofillClientIOS::GetLogManager() const {
+  return log_manager_.get();
 }
 
 }  // namespace autofill

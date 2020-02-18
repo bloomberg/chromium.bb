@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "ui/views/controls/button/button.h"
 
-namespace app_list {
+namespace ash {
 
 class SearchResult;
 class SearchResultActionsView;
@@ -39,6 +39,12 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   // Returns whether the selected result action was changed.
   bool SelectNextResultAction(bool reverse_tab_order);
 
+  // If the search result is currently selected, sends the appropriate
+  // kSelection view accessibility event. For example, if a result action is
+  // selected, the notification will be sent for the selected action button
+  // view.
+  void NotifyA11yResultSelected();
+
   SearchResult* result() const { return result_; }
   void SetResult(SearchResult* result);
 
@@ -62,6 +68,20 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   int index_in_container() const { return index_in_container_.value(); }
 
   void set_index_in_container(size_t index) { index_in_container_ = index; }
+
+  void set_result_display_start_time(base::TimeTicks start_time) {
+    result_display_start_time_ = start_time;
+  }
+
+  base::TimeTicks result_display_start_time() const {
+    return result_display_start_time_;
+  }
+
+  void set_is_default_result(bool is_default) {
+    is_default_result_ = is_default;
+  }
+
+  bool is_default_result() const { return is_default_result_; }
 
   // views::Button:
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
@@ -103,11 +123,17 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   // The index of this view within a |SearchResultContainerView| that holds it.
   base::Optional<int> index_in_container_;
 
+  // The starting time when |result_| is being displayed.
+  base::TimeTicks result_display_start_time_;
+
+  // True if |result_| is selected as the default result which can be
+  // activated by user by pressing ENTER key.
+  bool is_default_result_ = false;
   SearchResult* result_ = nullptr;  // Owned by SearchModel::SearchResults.
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultBaseView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_RESULT_BASE_VIEW_H_

@@ -12,6 +12,10 @@
 #include "chrome/grit/bluetooth_internals_resources_map.h"
 #include "content/public/browser/web_ui_data_source.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/bluetooth/debug_logs_manager_factory.h"
+#endif
+
 BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
   // Set up the chrome://bluetooth-internals source.
@@ -43,7 +47,12 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
 BluetoothInternalsUI::~BluetoothInternalsUI() {}
 
 void BluetoothInternalsUI::BindBluetoothInternalsHandler(
-    mojom::BluetoothInternalsHandlerRequest request) {
+    mojo::PendingReceiver<mojom::BluetoothInternalsHandler> receiver) {
   page_handler_ =
-      std::make_unique<BluetoothInternalsHandler>(std::move(request));
+      std::make_unique<BluetoothInternalsHandler>(std::move(receiver));
+#if defined(OS_CHROMEOS)
+  page_handler_->set_debug_logs_manager(
+      chromeos::bluetooth::DebugLogsManagerFactory::GetForProfile(
+          Profile::FromWebUI(web_ui())));
+#endif
 }

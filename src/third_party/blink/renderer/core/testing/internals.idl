@@ -51,7 +51,7 @@
     ShadowRoot shadowRoot(Element host);
 
     void setBrowserControlsState(float top_height, float bottom_height, boolean shrinksLayout);
-    void setBrowserControlsShownRatio(float ratio);
+    void setBrowserControlsShownRatio(float top_ratio, float bottom_ratio);
 
     Node effectiveRootScroller(Document document);
 
@@ -190,18 +190,12 @@
     readonly attribute InternalRuntimeFlags runtimeFlags;
     readonly attribute unsigned long workerThreadCount;
 
-    // Flags for layerTreeAsText.
-    // The values of these constants must be kept in sync with the values of LayerTreeFlags in GraphicsLayerClient.h.
-    const unsigned short LAYER_TREE_INCLUDES_DEBUG_INFO = 1;
+    // Flag for layerTreeAsText.
+    // The value must be kept in sync with the value of LayerTreeFlags in layers_as_json.h.
+    // Other flags in LayerTreeFlags are not supported in internals API.
     const unsigned short LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS = 2;
-    const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 4;
-    const unsigned short LAYER_TREE_INCLUDES_ROOT_LAYER = 8;
-    const unsigned short LAYER_TREE_INCLUDES_COMPOSITING_REASONS = 32;
-    const unsigned short LAYER_TREE_INCLUDES_PAINT_RECORDS = 64;
-    const unsigned short OUTPUT_AS_LAYER_TREE = 0x4000;
 
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
-    [RaisesException] DOMString elementLayerTreeAsText(Element element, optional unsigned short flags);
 
     [RaisesException] boolean scrollsWithRespectTo(Element element1, Element element2);
 
@@ -303,8 +297,6 @@
 
     [RaisesException] void forceCompositingUpdate(Document document);
 
-    void setZoomFactor(float factor);
-
     [RaisesException] void setShouldRevealPassword(Element element, boolean reveal);
 
     [CallWith=ScriptState] Promise<any> createResolvedPromise(any value);
@@ -401,11 +393,6 @@
     // be reported as raster under-invalidations.
     void simulateRasterUnderInvalidations(boolean enable);
 
-    // Bypass the threshold of 'script-compile' of long-task attribution in
-    // PerformanceMonitor for testing. "PerformanceObserver should be observing
-    // 'longtask' while calling BypassLongCompileThresholdOnce.
-    [RaisesException] void BypassLongCompileThresholdOnce();
-
     // The number of calls to update the blink lifecycle (see:
     // LocalFrameView::UpdateLifecyclePhasesInternal).
     unsigned long LifecycleUpdateCount();
@@ -447,4 +434,7 @@
     // The returned string is composed of the process ID and the memory address
     // of the Agent object.
     DOMString getDocumentAgentId(Document document);
+
+    void useMockOverlayScrollbars();
+    readonly attribute boolean overlayScrollbarsEnabled;
 };

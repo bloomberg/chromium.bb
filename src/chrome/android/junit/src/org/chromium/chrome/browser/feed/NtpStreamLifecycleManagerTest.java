@@ -21,8 +21,6 @@ import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_USER;
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.client.stream.Stream;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,10 +34,11 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabImpl;
 
 /**
  * Unit tests for {@link StreamLifecycleManager}.
@@ -50,7 +49,7 @@ public class NtpStreamLifecycleManagerTest {
     @Mock
     private Activity mActivity;
     @Mock
-    private Tab mTab;
+    private TabImpl mTab;
     @Mock
     private Stream mStream;
     @Mock
@@ -59,7 +58,7 @@ public class NtpStreamLifecycleManagerTest {
     private NtpStreamLifecycleManager mNtpStreamLifecycleManager;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         // Initialize a test instance for PrefServiceBridge.
@@ -81,18 +80,18 @@ public class NtpStreamLifecycleManagerTest {
     @SmallTest
     public void testShow() {
         // Verify that onShow is not called before activity started.
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(0)).onShow();
 
         // Verify that onShow is not called when Tab is hidden.
-        when(mTab.isHidden()).thenReturn(true);
+        when((mTab).isHidden()).thenReturn(true);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         verify(mStream, times(0)).onShow();
 
         // Verify that onShow is called when Tab is shown and activity is started.
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(1)).onShow();
 
@@ -107,7 +106,7 @@ public class NtpStreamLifecycleManagerTest {
         // Verify that onShow is not called when articles are set hidden by the user.
         when(mPrefServiceBridge.getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)).thenReturn(false);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(0)).onShow();
@@ -120,19 +119,13 @@ public class NtpStreamLifecycleManagerTest {
         // Verify that onHide is called after tab is hidden.
         mNtpStreamLifecycleManager.getTabObserverForTesting().onHidden(mTab, CHANGED_TABS);
         verify(mStream, times(1)).onHide();
-
-        // Verify that onShow is called when articles are set hidden by the user within the same
-        // session.
-        when(mPrefServiceBridge.getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)).thenReturn(false);
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
-        verify(mStream, times(2)).onShow();
     }
 
     @Test
     @SmallTest
     public void testActivate() {
         // Verify that stream is not active before activity resumed.
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         verify(mStream, times(1)).onShow();
@@ -164,7 +157,7 @@ public class NtpStreamLifecycleManagerTest {
     public void testActivateAfterCreateAndHideAfterActivate() {
         // Activate the stream from created state.
         InOrder inOrder = Mockito.inOrder(mStream);
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
         inOrder.verify(mStream).onShow();
@@ -190,7 +183,7 @@ public class NtpStreamLifecycleManagerTest {
         verify(mStream, times(0)).onInactive();
 
         // Show the stream.
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         verify(mStream, times(1)).onShow();
 
@@ -228,7 +221,7 @@ public class NtpStreamLifecycleManagerTest {
     @SmallTest
     public void testHideFromActivityStopped() {
         // Activate the Stream.
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
         verify(mStream, times(1)).onShow();
@@ -255,7 +248,7 @@ public class NtpStreamLifecycleManagerTest {
     @SmallTest
     public void testHideFromTabHiddenAfterShow() {
         // Show the stream.
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         verify(mStream, times(1)).onShow();
 
@@ -301,7 +294,7 @@ public class NtpStreamLifecycleManagerTest {
     @SmallTest
     public void testDestroyAfterActivate() {
         InOrder inOrder = Mockito.inOrder(mStream);
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
 
         // Activate the Stream.
@@ -325,7 +318,7 @@ public class NtpStreamLifecycleManagerTest {
     @SmallTest
     public void testFullActivityLifecycle() {
         InOrder inOrder = Mockito.inOrder(mStream);
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
 
         // On activity start and resume (simulates app become foreground).
@@ -378,14 +371,14 @@ public class NtpStreamLifecycleManagerTest {
         InOrder inOrder = Mockito.inOrder(mStream);
 
         // On new tab page created.
-        when(mTab.isHidden()).thenReturn(true);
+        when((mTab).isHidden()).thenReturn(true);
         when(mTab.isUserInteractable()).thenReturn(false);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.RESUMED);
         verify(mStream, times(0)).onShow();
 
         // On tab shown.
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         inOrder.verify(mStream).onShow();
         verify(mStream, times(1)).onShow();
@@ -409,7 +402,7 @@ public class NtpStreamLifecycleManagerTest {
         verify(mStream, times(2)).onActive();
 
         // On tab un-interactable and hidden (simulates user switch to another tab).
-        when(mTab.isHidden()).thenReturn(true);
+        when((mTab).isHidden()).thenReturn(true);
         when(mTab.isUserInteractable()).thenReturn(false);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onHidden(mTab, CHANGED_TABS);
@@ -419,7 +412,7 @@ public class NtpStreamLifecycleManagerTest {
         verify(mStream, times(1)).onHide();
 
         // On tab shown (simulates user switch back to this tab).
-        when(mTab.isHidden()).thenReturn(false);
+        when((mTab).isHidden()).thenReturn(false);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_USER);
         inOrder.verify(mStream).onShow();
         verify(mStream, times(2)).onShow();

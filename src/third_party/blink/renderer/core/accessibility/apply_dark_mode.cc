@@ -39,16 +39,23 @@ bool HasLightBackground(const LayoutView& root) {
          kBrightnessThreshold;
 }
 
-DarkMode GetMode(const Settings& frame_settings) {
+bool IsDarkModeEnabled(const Settings& frame_settings) {
+  static bool isDarkModeEnabledByFeatureFlag =
+      features::kForceDarkInversionMethodParam.Get() !=
+      ForceDarkInversionMethod::kUseBlinkSettings;
+  return isDarkModeEnabledByFeatureFlag || frame_settings.GetDarkModeEnabled();
+}
+
+DarkModeInversionAlgorithm GetMode(const Settings& frame_settings) {
   switch (features::kForceDarkInversionMethodParam.Get()) {
     case ForceDarkInversionMethod::kUseBlinkSettings:
-      return frame_settings.GetDarkMode();
+      return frame_settings.GetDarkModeInversionAlgorithm();
     case ForceDarkInversionMethod::kCielabBased:
-      return DarkMode::kInvertLightnessLAB;
+      return DarkModeInversionAlgorithm::kInvertLightnessLAB;
     case ForceDarkInversionMethod::kHslBased:
-      return DarkMode::kInvertLightness;
+      return DarkModeInversionAlgorithm::kInvertLightness;
     case ForceDarkInversionMethod::kRgbBased:
-      return DarkMode::kInvertBrightness;
+      return DarkModeInversionAlgorithm::kInvertBrightness;
   }
 }
 
@@ -80,39 +87,37 @@ int GetBackgroundBrightnessThreshold(const Settings& frame_settings) {
              : frame_settings.GetDarkModeBackgroundBrightnessThreshold();
 }
 
+DarkModeSettings GetEnabledSettings(const Settings& frame_settings) {
+  DarkModeSettings settings;
+  settings.mode = GetMode(frame_settings);
+  settings.image_policy = GetImagePolicy(frame_settings);
+  settings.text_brightness_threshold =
+      GetTextBrightnessThreshold(frame_settings);
+  settings.background_brightness_threshold =
+      GetBackgroundBrightnessThreshold(frame_settings);
+
+  settings.grayscale = frame_settings.GetDarkModeGrayscale();
+  settings.contrast = frame_settings.GetDarkModeContrast();
+  settings.image_grayscale_percent = frame_settings.GetDarkModeImageGrayscale();
+  return settings;
+}
+
+DarkModeSettings GetDisabledSettings() {
+  DarkModeSettings settings;
+  settings.mode = DarkModeInversionAlgorithm::kOff;
+  return settings;
+}
+
 }  // namespace
 
 DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
                                        const LayoutView& root) {
-  DarkModeSettings dark_mode_settings;
-
-  if (!ShouldApplyDarkModeFilterToPage(frame_settings.GetDarkModePagePolicy(),
-                                       root)) {
-    // In theory it should be sufficient to set mode to
-    // kOff (or to just return the default struct) without also setting
-    // image_policy. However, this causes images to be inverted unexpectedly in
-    // some cases (such as when toggling between the site's light and dark theme
-    // on arstechnica.com).
-    //
-    // TODO(gilmanmh): Investigate unexpected image inversion behavior when
-    // image_policy not set to kFilterNone.
-    dark_mode_settings.mode = DarkMode::kOff;
-    dark_mode_settings.image_policy = DarkModeImagePolicy::kFilterNone;
-    return dark_mode_settings;
+  if (IsDarkModeEnabled(frame_settings) &&
+      ShouldApplyDarkModeFilterToPage(frame_settings.GetDarkModePagePolicy(),
+                                      root)) {
+    return GetEnabledSettings(frame_settings);
   }
-
-  dark_mode_settings.mode = GetMode(frame_settings);
-  dark_mode_settings.image_policy = GetImagePolicy(frame_settings);
-  dark_mode_settings.text_brightness_threshold =
-      GetTextBrightnessThreshold(frame_settings);
-  dark_mode_settings.background_brightness_threshold =
-      GetBackgroundBrightnessThreshold(frame_settings);
-
-  dark_mode_settings.grayscale = frame_settings.GetDarkModeGrayscale();
-  dark_mode_settings.contrast = frame_settings.GetDarkModeContrast();
-  dark_mode_settings.image_grayscale_percent =
-      frame_settings.GetDarkModeImageGrayscale();
-  return dark_mode_settings;
+  return GetDisabledSettings();
 }
 
 bool ShouldApplyDarkModeFilterToPage(DarkModePagePolicy policy,

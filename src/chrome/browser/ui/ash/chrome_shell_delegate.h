@@ -18,6 +18,14 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   std::unique_ptr<ash::ScreenshotDelegate> CreateScreenshotDelegate() override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   void OpenKeyboardShortcutHelpPage() const override;
+  bool CanGoBack(gfx::NativeWindow window) const override;
+  void BindNavigableContentsFactory(
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
+      override;
+  void BindMultiDeviceSetup(
+      mojo::PendingReceiver<
+          chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver)
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);

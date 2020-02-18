@@ -13,7 +13,11 @@ namespace sync_pb {
 class WifiConfigurationSpecificsData;
 }
 
+namespace chromeos {
+
 namespace sync_wifi {
+
+class NetworkIdentifier;
 
 // Applies updates to synced networks to the local networking stack.
 class SyncedNetworkUpdater {
@@ -22,7 +26,7 @@ class SyncedNetworkUpdater {
 
   virtual void AddOrUpdateNetwork(
       const sync_pb::WifiConfigurationSpecificsData& specifics) = 0;
-  virtual void RemoveNetwork(const std::string& ssid) = 0;
+  virtual void RemoveNetwork(const NetworkIdentifier& id) = 0;
 
  protected:
   SyncedNetworkUpdater() = default;
@@ -32,5 +36,7 @@ class SyncedNetworkUpdater {
 };
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_SYNC_WIFI_SYNCED_NETWORK_UPDATER_H_

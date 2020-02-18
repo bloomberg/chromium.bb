@@ -145,7 +145,7 @@ class FakeVideoDecoderTest
   }
 
   void ReadOneFrame() {
-    last_decoded_frame_ = NULL;
+    last_decoded_frame_.reset();
     do {
       Decode();
     } while (!last_decoded_frame_.get() && pending_decode_requests_ == 0);
@@ -222,7 +222,7 @@ class FakeVideoDecoderTest
     DCHECK(!is_reset_pending_);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   VideoDecoderConfig current_config_;
 
   std::unique_ptr<FakeVideoDecoder> decoder_;

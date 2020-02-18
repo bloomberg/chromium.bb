@@ -4,6 +4,7 @@
 
 #include "net/third_party/quiche/src/quic/test_tools/quic_packet_creator_peer.h"
 
+#include "net/third_party/quiche/src/quic/core/frames/quic_frame.h"
 #include "net/third_party/quiche/src/quic/core/quic_packet_creator.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 
@@ -63,6 +64,11 @@ void QuicPacketCreatorPeer::SetPacketNumber(QuicPacketCreator* creator,
   creator->packet_.packet_number = QuicPacketNumber(s);
 }
 
+void QuicPacketCreatorPeer::SetPacketNumber(QuicPacketCreator* creator,
+                                            QuicPacketNumber num) {
+  creator->packet_.packet_number = num;
+}
+
 // static
 void QuicPacketCreatorPeer::ClearPacketNumber(QuicPacketCreator* creator) {
   creator->packet_.packet_number.Clear();
@@ -102,14 +108,13 @@ SerializedPacket QuicPacketCreatorPeer::SerializeAllFrames(
   DCHECK(creator->queued_frames_.empty());
   DCHECK(!frames.empty());
   for (const QuicFrame& frame : frames) {
-    bool success = creator->AddFrame(frame, false, NOT_RETRANSMISSION);
+    bool success = creator->AddFrame(frame, NOT_RETRANSMISSION);
     DCHECK(success);
   }
   creator->SerializePacket(buffer, buffer_len);
-  SerializedPacket packet = creator->packet_;
+  SerializedPacket packet = std::move(creator->packet_);
   // The caller takes ownership of the QuicEncryptedPacket.
   creator->packet_.encrypted_buffer = nullptr;
-  DCHECK(packet.retransmittable_frames.empty());
   return packet;
 }
 
@@ -137,12 +142,6 @@ EncryptionLevel QuicPacketCreatorPeer::GetEncryptionLevel(
 // static
 QuicFramer* QuicPacketCreatorPeer::framer(QuicPacketCreator* creator) {
   return creator->framer_;
-}
-
-// static
-void QuicPacketCreatorPeer::EnableGetPacketHeaderSizeBugFix(
-    QuicPacketCreator* creator) {
-  creator->fix_get_packet_header_size_ = true;
 }
 
 }  // namespace test

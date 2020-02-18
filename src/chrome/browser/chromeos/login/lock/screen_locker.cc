@@ -15,7 +15,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/single_thread_task_runner.h"
@@ -177,7 +177,7 @@ ScreenLocker::Delegate::~Delegate() = default;
 // ScreenLocker, public:
 
 ScreenLocker::ScreenLocker(const user_manager::UserList& users)
-    : users_(users), fingerprint_observer_binding_(this) {
+    : users_(users) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
 
@@ -187,12 +187,11 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
                       bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV));
   manager->Initialize(SOUND_UNLOCK,
                       bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               &fp_service_);
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName, fp_service_.BindNewPipeAndPassReceiver());
 
-  device::mojom::FingerprintObserverPtr observer;
-  fingerprint_observer_binding_.Bind(mojo::MakeRequest(&observer));
-  fp_service_->AddFingerprintObserver(std::move(observer));
+  fp_service_->AddFingerprintObserver(
+      fingerprint_observer_receiver_.BindNewPipeAndPassRemote());
 
   GetLoginScreenCertProviderService()->pin_dialog_manager()->AddPinDialogHost(
       &security_token_pin_dialog_host_ash_impl_);
@@ -597,7 +596,8 @@ void ScreenLocker::HandleShowLockScreenRequest() {
     // screen while remaining secure in the case the user walks away during
     // the sign-in steps. See crbug.com/112225 and crbug.com/110933.
     VLOG(1) << "The user session cannot be locked, logging out";
-    SessionTerminationManager::Get()->StopSession();
+    SessionTerminationManager::Get()->StopSession(
+        login_manager::SessionStopReason::FAILED_TO_LOCK);
   }
 }
 
@@ -787,13 +787,13 @@ void ScreenLocker::OnAuthScanDone(
   VLOG(1) << "Receive fingerprint auth scan result. scan_result="
           << scan_result;
   unlock_attempt_type_ = AUTH_FINGERPRINT;
-  user_manager::User* active_user =
-      user_manager::UserManager::Get()->GetActiveUser();
+  const user_manager::User* primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-      quick_unlock::QuickUnlockFactory::GetForUser(active_user);
+      quick_unlock::QuickUnlockFactory::GetForUser(primary_user);
   if (!quick_unlock_storage ||
       !quick_unlock_storage->IsFingerprintAuthenticationAvailable() ||
-      base::Contains(users_with_disabled_auth_, active_user->GetAccountId())) {
+      base::Contains(users_with_disabled_auth_, primary_user->GetAccountId())) {
     return;
   }
 
@@ -803,19 +803,19 @@ void ScreenLocker::OnAuthScanDone(
   if (scan_result != device::mojom::ScanResult::SUCCESS) {
     LOG(ERROR) << "Fingerprint unlock failed because scan_result="
                << scan_result;
-    OnFingerprintAuthFailure(*active_user);
+    OnFingerprintAuthFailure(*primary_user);
     return;
   }
 
-  UserContext user_context(*active_user);
-  if (!base::Contains(matches, active_user->username_hash())) {
-    LOG(ERROR) << "Fingerprint unlock failed because it does not match active"
+  UserContext user_context(*primary_user);
+  if (!base::Contains(matches, primary_user->username_hash())) {
+    LOG(ERROR) << "Fingerprint unlock failed because it does not match primary"
                << " user's record";
-    OnFingerprintAuthFailure(*active_user);
+    OnFingerprintAuthFailure(*primary_user);
     return;
   }
   ash::LoginScreen::Get()->GetModel()->NotifyFingerprintAuthResult(
-      active_user->GetAccountId(), true /*success*/);
+      primary_user->GetAccountId(), true /*success*/);
   VLOG(1) << "Fingerprint unlock is successful.";
   LoginScreenClient::Get()->auth_recorder()->RecordFingerprintAuthSuccess(
       true /*success*/,

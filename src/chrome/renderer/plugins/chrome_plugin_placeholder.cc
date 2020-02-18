@@ -20,7 +20,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
-#include "chrome/renderer/content_settings_observer.h"
+#include "chrome/renderer/content_settings_agent_impl.h"
 #include "chrome/renderer/custom_menu_commands.h"
 #include "chrome/renderer/plugins/plugin_preroller.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
@@ -31,8 +31,10 @@
 #include "content/public/renderer/render_thread.h"
 #include "gin/object_template_builder.h"
 #include "ipc/ipc_sync_channel.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
@@ -67,8 +69,7 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
     : plugins::LoadablePluginPlaceholder(render_frame, params, html_data),
       status_(chrome::mojom::PluginStatus::kAllowed),
       title_(title),
-      context_menu_request_id_(0),
-      plugin_renderer_binding_(this) {
+      context_menu_request_id_(0) {
   RenderThread::Get()->AddObserver(this);
 }
 
@@ -78,10 +79,9 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
     render_frame()->CancelContextMenu(context_menu_request_id_);
 }
 
-chrome::mojom::PluginRendererPtr ChromePluginPlaceholder::BindPluginRenderer() {
-  chrome::mojom::PluginRendererPtr plugin_renderer;
-  plugin_renderer_binding_.Bind(mojo::MakeRequest(&plugin_renderer));
-  return plugin_renderer;
+mojo::PendingRemote<chrome::mojom::PluginRenderer>
+ChromePluginPlaceholder::BindPluginRenderer() {
+  return plugin_renderer_receiver_.BindNewPipeAndPassRemote();
 }
 
 // TODO(bauerb): Move this method to NonLoadablePluginPlaceholder?
@@ -131,7 +131,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     values.SetString("baseurl", power_saver_info.base_url.spec());
 
     if (!power_saver_info.custom_poster_size.IsEmpty()) {
-      float zoom_factor = blink::WebView::ZoomLevelToZoomFactor(
+      float zoom_factor = blink::PageZoomLevelToZoomFactor(
           render_frame->GetWebFrame()->View()->ZoomLevel());
       int width =
           roundf(power_saver_info.custom_poster_size.width() / zoom_factor);
@@ -187,8 +187,9 @@ bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ChromePluginPlaceholder::ShowPermissionBubbleCallback() {
-  chrome::mojom::PluginHostAssociatedPtr plugin_host;
-  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&plugin_host);
+  mojo::AssociatedRemote<chrome::mojom::PluginHost> plugin_host;
+  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+      plugin_host.BindNewEndpointAndPassReceiver());
   plugin_host->ShowFlashPermissionBubble();
 }
 
@@ -357,8 +358,8 @@ void ChromePluginPlaceholder::OnBlockedContent(
 
   if (status ==
       content::RenderFrame::PeripheralContentStatus::CONTENT_STATUS_TINY) {
-    ContentSettingsObserver::Get(render_frame())
-        ->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, title_);
+    ContentSettingsAgentImpl::Get(render_frame())
+        ->DidBlockContentType(ContentSettingsType::PLUGINS);
   }
 
   std::string message = base::StringPrintf(

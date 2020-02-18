@@ -25,6 +25,7 @@
 
 #include "perfetto/base/logging.h"
 #include "perfetto/ext/base/utils.h"
+#include "perfetto/ext/base/watchdog.h"
 #include "perfetto/ext/base/weak_ptr.h"
 #include "perfetto/ext/traced/traced.h"
 #include "perfetto/ext/tracing/core/trace_packet.h"
@@ -34,7 +35,6 @@
 #include "perfetto/tracing/core/trace_config.h"
 #include "src/traced/probes/android_log/android_log_data_source.h"
 #include "src/traced/probes/filesystem/inode_file_data_source.h"
-#include "src/traced/probes/ftrace/ftrace_config.h"
 #include "src/traced/probes/ftrace/ftrace_data_source.h"
 #include "src/traced/probes/metatrace/metatrace_data_source.h"
 #include "src/traced/probes/packages_list/packages_list_data_source.h"
@@ -43,6 +43,7 @@
 #include "src/traced/probes/ps/process_stats_data_source.h"
 #include "src/traced/probes/sys_stats/sys_stats_data_source.h"
 
+#include "protos/perfetto/config/ftrace/ftrace_config.gen.h"
 #include "protos/perfetto/trace/filesystem/inode_file_map.pbzero.h"
 #include "protos/perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
 #include "protos/perfetto/trace/ftrace/ftrace_stats.pbzero.h"
@@ -252,7 +253,7 @@ std::unique_ptr<ProbesDataSource> ProbesProducer::CreateFtraceDataSource(
   PERFETTO_LOG("Ftrace setup (target_buf=%" PRIu32 ")", config.target_buffer());
   const BufferID buffer_id = static_cast<BufferID>(config.target_buffer());
   FtraceConfig ftrace_config;
-  ftrace_config.ParseRawProto(config.ftrace_config_raw());
+  ftrace_config.ParseFromString(config.ftrace_config_raw());
   std::unique_ptr<FtraceDataSource> data_source(new FtraceDataSource(
       ftrace_->GetWeakPtr(), session_id, std::move(ftrace_config),
       endpoint_->CreateTraceWriter(buffer_id)));
@@ -262,7 +263,7 @@ std::unique_ptr<ProbesDataSource> ProbesProducer::CreateFtraceDataSource(
         "already in use)");
     return nullptr;
   }
-  return std::move(data_source);
+  return std::unique_ptr<ProbesDataSource>(std::move(data_source));
 }
 
 std::unique_ptr<ProbesDataSource> ProbesProducer::CreateInodeFileDataSource(
@@ -359,7 +360,14 @@ void ProbesProducer::StopDataSource(DataSourceInstanceID id) {
   watchdogs_.erase(id);
 }
 
-void ProbesProducer::OnTracingSetup() {}
+void ProbesProducer::OnTracingSetup() {
+  // shared_memory() can be null in test environments when running in-process.
+  if (endpoint_->shared_memory()) {
+    base::Watchdog::GetInstance()->SetMemoryLimit(
+        endpoint_->shared_memory()->size() + base::kWatchdogDefaultMemorySlack,
+        base::kWatchdogDefaultMemoryWindow);
+  }
+}
 
 void ProbesProducer::Flush(FlushRequestID flush_request_id,
                            const DataSourceInstanceID* data_source_ids,

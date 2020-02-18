@@ -14,39 +14,56 @@
 
 import {dingus} from 'dingusjs';
 
-import {AdbStream, MockAdb, MockAdbStream} from './adb_interfaces';
-import {AdbRecordController} from './adb_record_controller';
+import {stringToUint8Array} from '../base/string_utils';
+import {perfetto} from '../gen/protos';
 
-const mainCallback = jest.fn();
+import {AdbStream, MockAdb, MockAdbStream} from './adb_interfaces';
+import {AdbConsumerPort} from './adb_shell_controller';
+import {Consumer} from './record_controller_interfaces';
+
+function generateMockConsumer(): Consumer {
+  return {
+    onConsumerPortResponse: jest.fn(),
+    onError: jest.fn(),
+    onStatus: jest.fn()
+  };
+}
+const mainCallback = generateMockConsumer();
 const adbMock = new MockAdb();
-const adbController = new AdbRecordController(adbMock, mainCallback);
+const adbController = new AdbConsumerPort(adbMock, mainCallback);
 const mockIntArray = new Uint8Array();
 
-test('handleCommand', () => {
+const enableTracingRequest = new perfetto.protos.EnableTracingRequest();
+enableTracingRequest.traceConfig = new perfetto.protos.TraceConfig();
+const enableTracingRequestProto =
+    perfetto.protos.EnableTracingRequest.encode(enableTracingRequest).finish();
+
+
+test('handleCommand', async () => {
   adbController.findDevice = () => {
     return Promise.resolve(dingus<USBDevice>());
   };
 
   const enableTracing = jest.fn();
   adbController.enableTracing = enableTracing;
-  adbController.handleCommand('EnableTracing', mockIntArray);
+  await adbController.invoke('EnableTracing', mockIntArray);
   expect(enableTracing).toHaveBeenCalledTimes(1);
 
   const readBuffers = jest.fn();
   adbController.readBuffers = readBuffers;
-  adbController.handleCommand('ReadBuffers', mockIntArray);
+  adbController.invoke('ReadBuffers', mockIntArray);
   expect(readBuffers).toHaveBeenCalledTimes(1);
 
   const sendErrorMessage = jest.fn();
   adbController.sendErrorMessage = sendErrorMessage;
-  adbController.handleCommand('unknown', mockIntArray);
+  adbController.invoke('unknown', mockIntArray);
   expect(sendErrorMessage).toBeCalledWith('Method not recognized: unknown');
 });
 
 test('enableTracing', async () => {
-  const mainCallback = jest.fn();
+  const mainCallback = generateMockConsumer();
   const adbMock = new MockAdb();
-  const adbController = new AdbRecordController(adbMock, mainCallback);
+  const adbController = new AdbConsumerPort(adbMock, mainCallback);
 
   adbController.sendErrorMessage =
       jest.fn().mockImplementation(s => console.error(s));
@@ -71,16 +88,12 @@ test('enableTracing', async () => {
 
   adbController.generateStartTracingCommand = (_) => 'CMD';
 
-  await adbController.enableTracing(mockIntArray);
+  await adbController.enableTracing(enableTracingRequestProto);
   expect(adbShell).toBeCalledWith('CMD');
-  expect(findDevice).toHaveBeenCalledTimes(1);
-  expect(connectToDevice).toHaveBeenCalledTimes(1);
-  // Two messages: RecordControllerStatus asking for allow the debug, and
-  // another status to clear that message.
-  expect(sendMessage).toHaveBeenCalledTimes(2);
+  expect(sendMessage).toHaveBeenCalledTimes(0);
 
 
-  stream.onData('starting tracing Wrote 123 bytes', mockIntArray);
+  stream.onData(stringToUint8Array('starting tracing Wrote 123 bytes'));
   stream.onClose();
 
   expect(adbController.sendErrorMessage).toHaveBeenCalledTimes(0);

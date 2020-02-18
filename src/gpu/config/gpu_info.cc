@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_util.h"
 
 namespace {
 
@@ -13,6 +14,10 @@ void EnumerateGPUDevice(const gpu::GPUInfo::GPUDevice& device,
   enumerator->BeginGPUDevice();
   enumerator->AddInt("vendorId", device.vendor_id);
   enumerator->AddInt("deviceId", device.device_id);
+#if defined(OS_WIN)
+  enumerator->AddInt("subSysId", device.sub_sys_id);
+  enumerator->AddInt("revision", device.revision);
+#endif  // OS_WIN
   enumerator->AddBool("active", device.active);
   enumerator->AddString("vendorString", device.vendor_string);
   enumerator->AddString("deviceString", device.device_string);
@@ -41,6 +46,8 @@ void EnumerateVideoEncodeAcceleratorSupportedProfile(
     gpu::GPUInfo::Enumerator* enumerator) {
   enumerator->BeginVideoEncodeAcceleratorSupportedProfile();
   enumerator->AddInt("profile", profile.profile);
+  enumerator->AddInt("minResolutionWidth", profile.min_resolution.width());
+  enumerator->AddInt("minResolutionHeight", profile.min_resolution.height());
   enumerator->AddInt("maxResolutionWidth", profile.max_resolution.width());
   enumerator->AddInt("maxResolutionHeight", profile.max_resolution.height());
   enumerator->AddInt("maxFramerateNumerator", profile.max_framerate_numerator);
@@ -102,9 +109,10 @@ void EnumerateDx12VulkanVersionInfo(const gpu::Dx12VulkanVersionInfo& info,
   enumerator->BeginDx12VulkanVersionInfo();
   enumerator->AddBool("supportsDx12", info.supports_dx12);
   enumerator->AddBool("supportsVulkan", info.supports_vulkan);
-  enumerator->AddInt("dx12FeatureLevel",
-                     static_cast<int>(info.d3d12_feature_level));
-  enumerator->AddInt("vulkanVersion", static_cast<int>(info.vulkan_version));
+  enumerator->AddString("dx12FeatureLevel",
+                        gpu::D3DFeatureLevelToString(info.d3d12_feature_level));
+  enumerator->AddString("vulkanVersion",
+                        gpu::VulkanVersionToString(info.vulkan_version));
   enumerator->EndDx12VulkanVersionInfo();
 }
 #endif
@@ -153,11 +161,7 @@ operator=(const ImageDecodeAcceleratorSupportedProfile& other) = default;
 ImageDecodeAcceleratorSupportedProfile& ImageDecodeAcceleratorSupportedProfile::
 operator=(ImageDecodeAcceleratorSupportedProfile&& other) = default;
 
-GPUInfo::GPUDevice::GPUDevice()
-    : vendor_id(0),
-      device_id(0),
-      active(false),
-      cuda_compute_capability_major(0) {}
+GPUInfo::GPUDevice::GPUDevice() = default;
 
 GPUInfo::GPUDevice::GPUDevice(const GPUInfo::GPUDevice& other) = default;
 
@@ -184,7 +188,8 @@ GPUInfo::GPUInfo()
       system_visual(0),
       rgba_visual(0),
 #endif
-      oop_rasterization_supported(false) {
+      oop_rasterization_supported(false),
+      subpixel_font_rendering(true) {
 }
 
 GPUInfo::GPUInfo(const GPUInfo& other) = default;
@@ -260,6 +265,11 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
 #endif
 
     bool oop_rasterization_supported;
+    bool subpixel_font_rendering;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+    base::Optional<VulkanInfo> vulkan_info;
+#endif
   };
 
   // If this assert fails then most likely something below needs to be updated.
@@ -329,6 +339,13 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt64("rgbaVisual", rgba_visual);
 #endif
   enumerator->AddBool("oopRasterizationSupported", oop_rasterization_supported);
+  enumerator->AddBool("subpixelFontRendering", subpixel_font_rendering);
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (vulkan_info) {
+    auto blob = vulkan_info->Serialize();
+    enumerator->AddBinary("vulkanInfo", base::span<const uint8_t>(blob));
+  }
+#endif
   enumerator->EndAuxAttributes();
 }
 

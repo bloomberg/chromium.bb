@@ -126,13 +126,6 @@
 #   },
 
 {
-  'amd_8870m': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '1002:6821',
-      },
-    },
-  },
   'android_q': {
     'swarming': {
       'dimensions': {
@@ -174,6 +167,13 @@
   'code-coverage': {
     'isolate_coverage_data': True,
   },
+  'docker': {
+    'swarming': {
+      'dimensions': {
+        'inside_docker': '1',
+      },
+    },
+  },
   'flounder': {
     # Nexus 9
     'swarming': {
@@ -193,6 +193,13 @@
       },
     },
   },
+  'fuchsia_aemu': {
+    '$mixin_append': {
+      'args': [
+        '--device=aemu',
+      ],
+    },
+  },
   'gpu_pool': {
     'swarming': {
       'dimensions': {
@@ -206,6 +213,13 @@
       'dimensions': {
         'device_type': 'hammerhead',
         'os': 'Android',
+      },
+    },
+  },
+  'host_mac_10.14': {
+    'swarming': {
+      'dimensions': {
+        'host os': 'Mac-10.14.6',
       },
     },
   },
@@ -364,21 +378,7 @@
   'mac_10.14': {
     'swarming': {
       'dimensions': {
-        'os': 'Mac-10.14.4',
-      },
-      'optional_dimensions': {
-        # Wait 5 minutes for 10.14.3, then 5 for .5, then fall back to 10.14.4
-        # The format for optional dimensions is: expiration: [{key, value}, ..].
-        300: [
-          {
-            'os': 'Mac-10.14.3',
-          },
-        ],
-        600: [
-          {
-            'os': 'Mac-10.14.5',
-          },
-        ],
+        'os': 'Mac-10.14.6',
       },
     },
   },
@@ -410,7 +410,6 @@
       'dimensions': {
         'gpu': '8086:0a2e',
         'os': 'Mac-10.13.6',
-        'pool': 'Chrome-GPU',
       },
     },
   },
@@ -460,7 +459,7 @@
       'dimensions': {
         'gpu': '10de:0fe9',
         'hidpi': '1',
-        'os': 'Mac-10.13.6',
+        'os': 'Mac-10.14.6',
         'pool': 'Chrome-GPU',
       },
     },
@@ -470,6 +469,29 @@
       'dimensions': {
         'device_os': 'MMB29Q',
       },
+    },
+  },
+  'marshmallow-x86-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-config=../../tools/android/avd/proto/generic_android23.textpb',
+      ],
+    },
+    'swarming': {
+      'dimensions': {
+        'device_os': None,
+        'device_type': None,
+      },
+      'named_caches': [
+        {
+          'name': 'avd_generic_android23',
+          'path': '.android',
+        },
+        {
+          'name': 'system_images_android_23_google_apis_x86',
+          'path': '.emulator_sdk',
+        },
+      ]
     },
   },
   'marshmallow_generic': {
@@ -493,13 +515,6 @@
       },
     },
   },
-  'nvidia_750m_mac_edition': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '10de:0fe9',
-      },
-    },
-  },
   'oreo_fleet': {
     'swarming': {
       'dimensions': {
@@ -508,42 +523,27 @@
       },
     },
   },
-  'pie': {
-    'swarming': {
-      'dimensions': {
-        'device_os': 'P',
-      },
-    },
-  },
   'pie-x86-emulator': {
     '$mixin_append': {
       'args': [
-        '--avd-name=20190716T160000Z_android_28_google_apis_x86',
-        '--emulator-home=../../.android',
+        '--avd-config=../../tools/android/avd/proto/generic_android28.textpb',
       ],
     },
     'swarming': {
-      'cipd_packages': [
-        {
-          'cipd_package': 'chromium/third_party/android_sdk/public/avds/android-28/google_apis/x86',
-          'location': '.android',
-          'revision': 'J5MFTg7OhekLKsOX7bmkVTSCDzohydCvXrn4sJzy0xsC',
-        },
-        {
-          'cipd_package': 'chromium/third_party/android_sdk/public/emulator',
-          'location': 'third_party/android_sdk/public',
-          'revision': 'xhyuoquVvBTcJelgRjMKZeoBVSQRjB7pLVJPt5C9saIC',
-        },
-        {
-          'cipd_package': 'chromium/third_party/android_sdk/public/system-images/android-28/google_apis/x86',
-          'location': 'third_party/android_sdk/public',
-          'revision': 'LDa0XkTjgGYx7Amzg5qjIRgCfc4F_pq7rKMJVdACYx8C',
-        },
-      ],
       'dimensions': {
         'device_os': None,
         'device_type': None,
       },
+      'named_caches': [
+        {
+          'name': 'avd_generic_android28',
+          'path': '.android',
+        },
+        {
+          'name': 'system_images_android_28_google_apis_x86',
+          'path': '.emulator_sdk',
+        },
+      ]
     },
   },
   'pie_fleet': {
@@ -601,10 +601,9 @@
     },
   },
   'win10_intel_hd_630_experimental': {
-    # Currently same as stable version.
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-26.20.100.6912',
+        'gpu': '8086:5912-26.20.100.7323',
         'os': 'Windows-10',
         'pool': 'Chrome-GPU',
       },
@@ -707,6 +706,20 @@
     'swarming': {
       'dimensions': {
         'cpu': 'x86-64',
+      },
+    },
+  },
+  'xcode_11b53': {
+    'swarming': {
+      'dimensions': {
+        'xcode_build_version': '11b53',
+      },
+    },
+  },
+  'xcode_parallelization': {
+    'swarming': {
+      'dimensions': {
+        'xcode_parallelization': 'true',
       },
     },
   },

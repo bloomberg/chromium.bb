@@ -10,7 +10,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
@@ -115,11 +114,9 @@ TEST_F(QuicCryptoClientConfigTest, CachedState_ServerDesignatedConnectionId) {
 TEST_F(QuicCryptoClientConfigTest, CachedState_ServerIdConsumedBeforeSet) {
   QuicCryptoClientConfig::CachedState state;
   EXPECT_FALSE(state.has_server_designated_connection_id());
-#if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
-  EXPECT_DEBUG_DEATH(state.GetNextServerDesignatedConnectionId(),
-                     "Attempting to consume a connection id "
-                     "that was never designated.");
-#endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
+  EXPECT_QUIC_DEBUG_DEATH(state.GetNextServerDesignatedConnectionId(),
+                          "Attempting to consume a connection id "
+                          "that was never designated.");
 }
 
 TEST_F(QuicCryptoClientConfigTest, CachedState_ServerNonce) {
@@ -156,11 +153,9 @@ TEST_F(QuicCryptoClientConfigTest, CachedState_ServerNonce) {
 TEST_F(QuicCryptoClientConfigTest, CachedState_ServerNonceConsumedBeforeSet) {
   QuicCryptoClientConfig::CachedState state;
   EXPECT_FALSE(state.has_server_nonce());
-#if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
-  EXPECT_DEBUG_DEATH(state.GetNextServerNonce(),
-                     "Attempting to consume a server nonce "
-                     "that was never designated.");
-#endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
+  EXPECT_QUIC_DEBUG_DEATH(state.GetNextServerNonce(),
+                          "Attempting to consume a server nonce "
+                          "that was never designated.");
 }
 
 TEST_F(QuicCryptoClientConfigTest, CachedState_InitializeFrom) {
@@ -315,8 +310,8 @@ TEST_F(QuicCryptoClientConfigTest, FillClientHello) {
   MockRandom rand;
   CryptoHandshakeMessage chlo;
   QuicServerId server_id("www.google.com", 443, false);
-  config.FillClientHello(server_id, kConnectionId, QuicVersionMax(), &state,
-                         QuicWallTime::Zero(), &rand,
+  config.FillClientHello(server_id, kConnectionId, QuicVersionMax(),
+                         QuicVersionMax(), &state, QuicWallTime::Zero(), &rand,
                          params, &chlo, &error_details);
 
   // Verify that the version label has been set correctly in the CHLO.
@@ -336,8 +331,8 @@ TEST_F(QuicCryptoClientConfigTest, FillClientHelloNoPadding) {
   MockRandom rand;
   CryptoHandshakeMessage chlo;
   QuicServerId server_id("www.google.com", 443, false);
-  config.FillClientHello(server_id, kConnectionId, QuicVersionMax(), &state,
-                         QuicWallTime::Zero(), &rand,
+  config.FillClientHello(server_id, kConnectionId, QuicVersionMax(),
+                         QuicVersionMax(), &state, QuicWallTime::Zero(), &rand,
                          params, &chlo, &error_details);
 
   // Verify that the version label has been set correctly in the CHLO.

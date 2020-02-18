@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/background_sync/background_sync_metrics.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -38,11 +39,15 @@ class GURL;
 
 class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
                                      public SiteEngagementObserver,
-                                     public KeyedService {
+                                     public KeyedService,
+                                     public content_settings::Observer {
  public:
   static const char kFieldTrialName[];
   static const char kDisabledParameterName[];
+  static const char kKeepBrowserAwakeParameterName[];
+  static const char kSkipPermissionsCheckParameterName[];
   static const char kMaxAttemptsParameterName[];
+  static const char kRelyOnAndroidNetworkDetection[];
   static const char kMaxAttemptsWithNotificationPermissionParameterName[];
   static const char kInitialRetryParameterName[];
   static const char kRetryDelayFactorParameterName[];
@@ -52,9 +57,8 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
 
   static const int kEngagementLevelNonePenalty = 0;
   static const int kEngagementLevelHighOrMaxPenalty = 1;
-  static const int kEngagementLevelMediumPenalty = 2;
-  static const int kEngagementLevelLowPenalty = 3;
-  static const int kEngagementLevelMinimalPenalty = 4;
+  static const int kEngagementLevelLowOrMediumPenalty = 2;
+  static const int kEngagementLevelMinimalPenalty = 3;
 
 #if !defined(OS_ANDROID)
   class BackgroundSyncEventKeepAliveImpl : public BackgroundSyncEventKeepAlive {
@@ -90,8 +94,10 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
       blink::ServiceWorkerStatusCode status_code,
       int num_attempts,
       int max_attempts) override;
-  void ScheduleBrowserWakeUp(
-      blink::mojom::BackgroundSyncType sync_type) override;
+  void ScheduleBrowserWakeUpWithDelay(
+      blink::mojom::BackgroundSyncType sync_type,
+      base::TimeDelta delay) override;
+  void CancelBrowserWakeup(blink::mojom::BackgroundSyncType sync_type) override;
 
   base::TimeDelta GetNextEventDelay(
       const content::BackgroundSyncRegistration& registration,
@@ -102,6 +108,10 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   CreateBackgroundSyncEventKeepAlive() override;
   void NoteSuspendedPeriodicSyncOrigins(
       std::set<url::Origin> suspended_origins) override;
+  void NoteRegisteredPeriodicSyncOrigins(
+      std::set<url::Origin> registered_origins) override;
+  void AddToTrackedOrigins(const url::Origin& origin) override;
+  void RemoveFromTrackedOrigins(const url::Origin& origin) override;
 
   // SiteEngagementObserver overrides.
   void OnEngagementEvent(
@@ -109,6 +119,16 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
       const GURL& url,
       double score,
       SiteEngagementService::EngagementType engagement_type) override;
+
+  // content_settings::Observer overrides.
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               const std::string& resource_identifier) override;
+
+  bool IsOriginTracked(const url::Origin& origin) {
+    return periodic_sync_origins_.find(origin) != periodic_sync_origins_.end();
+  }
 
  private:
   // Gets the site engagement penalty for |url|, which is inversely proportional
@@ -131,6 +151,11 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
       base::TimeDelta time_till_next_scheduled_event_for_origin,
       base::TimeDelta min_gap_for_origin);
 
+  bool IsContentSettingBlocked(const url::Origin& origin);
+
+  // KeyedService implementation.
+  void Shutdown() override;
+
   Profile* profile_;  // This object is owned by profile_.
 
   // Same lifetime as |profile_|.
@@ -139,6 +164,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   BackgroundSyncMetrics background_sync_metrics_;
 
   std::set<url::Origin> suspended_periodic_sync_origins_;
+  std::set<url::Origin> periodic_sync_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncControllerImpl);
 };

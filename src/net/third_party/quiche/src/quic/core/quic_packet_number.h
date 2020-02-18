@@ -21,10 +21,20 @@ namespace quic {
 class QUIC_EXPORT_PRIVATE QuicPacketNumber {
  public:
   // Construct an uninitialized packet number.
-  QuicPacketNumber();
+  constexpr QuicPacketNumber() : packet_number_(UninitializedPacketNumber()) {}
+
   // Construct a packet number from uint64_t. |packet_number| cannot equal the
   // sentinel value.
-  explicit QuicPacketNumber(uint64_t packet_number);
+  explicit constexpr QuicPacketNumber(uint64_t packet_number)
+      : packet_number_(packet_number) {
+    DCHECK_NE(UninitializedPacketNumber(), packet_number)
+        << "Use default constructor for uninitialized packet number";
+  }
+
+  // The sentinel value representing an uninitialized packet number.
+  static constexpr uint64_t UninitializedPacketNumber() {
+    return std::numeric_limits<uint64_t>::max();
+  }
 
   // Packet number becomes uninitialized after calling this function.
   void Clear();
@@ -79,13 +89,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketNumber {
   // REQUIRES: lhs >= rhs.
   friend inline uint64_t operator-(QuicPacketNumber lhs, QuicPacketNumber rhs);
 
-  // The sentinel value representing an uninitialized packet number.
-  static uint64_t UninitializedPacketNumber();
-
   uint64_t packet_number_;
 };
 
-class QuicPacketNumberHash {
+class QUIC_EXPORT_PRIVATE QuicPacketNumberHash {
  public:
   uint64_t operator()(QuicPacketNumber packet_number) const noexcept {
     return packet_number.Hash();

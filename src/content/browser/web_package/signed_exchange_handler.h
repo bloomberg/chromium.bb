@@ -20,6 +20,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/log/net_log_with_source.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -36,7 +37,6 @@ struct OCSPVerifyResult;
 }  // namespace net
 
 namespace network {
-struct ResourceResponseHead;
 namespace mojom {
 class NetworkContext;
 }
@@ -75,7 +75,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
       SignedExchangeLoadResult result,
       net::Error error,
       const GURL& request_url,
-      const network::ResourceResponseHead& resource_response,
+      network::mojom::URLResponseHeadPtr resource_response,
       std::unique_ptr<net::SourceStream> payload_stream)>;
 
   static void SetNetworkContextForTesting(
@@ -97,7 +97,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
       std::unique_ptr<blink::SignedExchangeRequestMatcher> request_matcher,
       std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
       SignedExchangeReporter* reporter,
-      base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
+      int frame_tree_node_id);
   virtual ~SignedExchangeHandler();
 
   int64_t GetExchangeHeaderLength() const { return exchange_header_length_; }
@@ -177,7 +177,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   // This is owned by SignedExchangeLoader which is the owner of |this|.
   SignedExchangeReporter* reporter_;
 
-  base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
+  const int frame_tree_node_id_;
 
   base::TimeTicks cert_fetch_start_time_;
 

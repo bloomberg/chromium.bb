@@ -12,14 +12,16 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/display/fake/fake_display_delegate.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/x11/x11_event_source_default.h"
-#include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/x11_connection.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/x11_clipboard_ozone.h"
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 #include "ui/ozone/platform/x11/x11_screen_ozone.h"
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
-#include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
 #include "ui/ozone/platform/x11/x11_window_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
@@ -31,7 +33,7 @@
 #if defined(OS_CHROMEOS)
 #include "ui/base/ime/chromeos/input_method_chromeos.h"
 #else
-#include "ui/base/ime/input_method_minimal.h"
+#include "ui/base/ime/linux/input_method_auralinux.h"
 #endif
 
 namespace ui {
@@ -84,7 +86,7 @@ class OzonePlatformX11 : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
     std::unique_ptr<X11WindowOzone> window =
-        std::make_unique<X11WindowOzone>(delegate, window_manager_.get());
+        std::make_unique<X11WindowOzone>(delegate);
     window->Initialize(std::move(properties));
     window->SetTitle(base::ASCIIToUTF16("Ozone X11"));
     return std::move(window);
@@ -96,8 +98,7 @@ class OzonePlatformX11 : public OzonePlatform {
   }
 
   std::unique_ptr<PlatformScreen> CreateScreen() override {
-    DCHECK(window_manager_);
-    auto screen = std::make_unique<X11ScreenOzone>(window_manager_.get());
+    auto screen = std::make_unique<X11ScreenOzone>();
     screen->Init();
     return screen;
   }
@@ -111,9 +112,7 @@ class OzonePlatformX11 : public OzonePlatform {
 #if defined(OS_CHROMEOS)
     return std::make_unique<InputMethodChromeOS>(delegate);
 #else
-    // TODO(spang): Fix InputMethodAuraLinux which requires another level
-    // of initization.
-    return std::make_unique<InputMethodMinimal>(delegate);
+    return std::make_unique<InputMethodAuraLinux>(delegate);
 #endif
   }
 
@@ -124,12 +123,16 @@ class OzonePlatformX11 : public OzonePlatform {
   void InitializeUI(const InitParams& params) override {
     InitializeCommon(params);
     CreatePlatformEventSource();
-    window_manager_ = std::make_unique<X11WindowManagerOzone>();
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
     clipboard_ = std::make_unique<X11ClipboardOzone>();
     cursor_factory_ozone_ = std::make_unique<X11CursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
+
+    // TODO(spang): Support XKB.
+    keyboard_layout_engine_ = std::make_unique<StubKeyboardLayoutEngine>();
+    KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+        keyboard_layout_engine_.get());
 
     TouchFactory::SetTouchDeviceListFromCommandLine();
   }
@@ -153,7 +156,8 @@ class OzonePlatformX11 : public OzonePlatform {
 
     // Always initialize in multi-thread mode, since this is used only during
     // development.
-    XInitThreads();
+    // TODO(crbug.com/1024477): Initialize Xlib threads only when required
+    gfx::InitializeThreadedX11();
 
     // If XOpenDisplay() failed there is nothing we can do. Crash here instead
     // of crashing later. If you are crashing here, make sure there is an X
@@ -177,7 +181,7 @@ class OzonePlatformX11 : public OzonePlatform {
   bool common_initialized_ = false;
 
   // Objects in the UI process.
-  std::unique_ptr<X11WindowManagerOzone> window_manager_;
+  std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<X11ClipboardOzone> clipboard_;

@@ -58,9 +58,8 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
 
   ContentSetting GetContentSettingMatchingUrlWithEmptyPath(const GURL& url) {
     ContentSettingsForOneType host_settings;
-    GetSettingsMap()->GetSettingsForOneType(
-        ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS, std::string(),
-        &host_settings);
+    GetSettingsMap()->GetSettingsForOneType(ContentSettingsType::ADS,
+                                            std::string(), &host_settings);
     GURL url_with_empty_path = url.GetWithEmptyPath();
     for (const auto& it : host_settings) {
       // Need GURL conversion to get rid of unnecessary default ports.
@@ -73,8 +72,6 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
   base::SimpleTestClock* test_clock() { return test_clock_; }
 
  private:
-  base::ScopedTempDir scoped_dir_;
-
   content::BrowserTaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
   TestingProfile testing_profile_;
@@ -165,7 +162,7 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
 
   // Set the setting to the default, should not populate the metadata.
   GetSettingsMap()->SetContentSettingDefaultScope(
-      url, GURL(), CONTENT_SETTINGS_TYPE_ADS, std::string(),
+      url, GURL(), ContentSettingsType::ADS, std::string(),
       CONTENT_SETTING_DEFAULT);
 
   EXPECT_FALSE(settings_manager()->GetSiteMetadata(url));
@@ -197,7 +194,7 @@ TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
 
   // Deleting a URL from history while there are still other urls for the
   // same origin should not delete the setting.
-  history_service->DeleteURL(url1);
+  history_service->DeleteURLs({url1});
   history::BlockUntilHistoryProcessesPendingRequests(history_service);
   EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url1));
   EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url2));
@@ -205,7 +202,7 @@ TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
   // Deleting all URLs of an origin from history should clear the setting for
   // this URL. Note that since there is another URL in the history this won't
   // clear all items.
-  history_service->DeleteURL(url2);
+  history_service->DeleteURLs({url2});
   history::BlockUntilHistoryProcessesPendingRequests(history_service);
 
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url1));

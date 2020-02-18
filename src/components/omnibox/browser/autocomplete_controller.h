@@ -59,8 +59,10 @@ class AutocompleteController : public AutocompleteProviderListener,
 
   // |provider_types| is a bitmap containing AutocompleteProvider::Type values
   // that will (potentially, depending on platform, flags, etc.) be
-  // instantiated. |template_url_service| is used to create URLs from the
-  // autocomplete results.
+  // instantiated. |provider_client| is passed to all those providers, and
+  // is used to get access to the template URL service. |delegate| is a
+  // proxy for UI elements which need to be notified when the results get
+  // updated.
   AutocompleteController(
       std::unique_ptr<AutocompleteProviderClient> provider_client,
       AutocompleteControllerDelegate* delegate,
@@ -136,6 +138,7 @@ class AutocompleteController : public AutocompleteProviderListener,
   KeywordProvider* keyword_provider() const { return keyword_provider_; }
   SearchProvider* search_provider() const { return search_provider_; }
 
+  const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
   bool done() const { return done_; }
   const Providers& providers() const { return providers_; }
@@ -160,6 +163,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsUIATest, AccessibleOmnibox);
 #endif  // OS_WIN
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, SetSelectedLine);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest,
+                           SetSelectedLineWithNoDefaultMatches);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, TestFocusFixing);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, PopupPositionChanging);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,
@@ -280,7 +285,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   bool done_;
 
   // Are we in Start()? This is used to avoid updating |result_| and sending
-  // notifications until Start() has been invoked on all providers.
+  // notifications until Start() has been invoked on all providers. When this
+  // boolean is true, we are definitely within the synchronous pass.
   bool in_start_;
 
   // Indicate whether it is the first query since startup.

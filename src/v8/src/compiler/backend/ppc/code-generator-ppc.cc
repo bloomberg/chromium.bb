@@ -129,7 +129,8 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
  public:
   OutOfLineRecordWrite(CodeGenerator* gen, Register object, Register offset,
                        Register value, Register scratch0, Register scratch1,
-                       RecordWriteMode mode, StubCallMode stub_mode)
+                       RecordWriteMode mode, StubCallMode stub_mode,
+                       UnwindingInfoWriter* unwinding_info_writer)
       : OutOfLineCode(gen),
         object_(object),
         offset_(offset),
@@ -140,11 +141,13 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
         mode_(mode),
         stub_mode_(stub_mode),
         must_save_lr_(!gen->frame_access_state()->has_frame()),
+        unwinding_info_writer_(unwinding_info_writer),
         zone_(gen->zone()) {}
 
   OutOfLineRecordWrite(CodeGenerator* gen, Register object, int32_t offset,
                        Register value, Register scratch0, Register scratch1,
-                       RecordWriteMode mode, StubCallMode stub_mode)
+                       RecordWriteMode mode, StubCallMode stub_mode,
+                       UnwindingInfoWriter* unwinding_info_writer)
       : OutOfLineCode(gen),
         object_(object),
         offset_(no_reg),
@@ -155,6 +158,7 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
         mode_(mode),
         stub_mode_(stub_mode),
         must_save_lr_(!gen->frame_access_state()->has_frame()),
+        unwinding_info_writer_(unwinding_info_writer),
         zone_(gen->zone()) {}
 
   void Generate() final {
@@ -180,12 +184,13 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
       // We need to save and restore lr if the frame was elided.
       __ mflr(scratch0_);
       __ Push(scratch0_);
+      unwinding_info_writer_->MarkLinkRegisterOnTopOfStack(__ pc_offset());
     }
     if (mode_ == RecordWriteMode::kValueIsEphemeronKey) {
       __ CallEphemeronKeyBarrier(object_, scratch1_, save_fp_mode);
     } else if (stub_mode_ == StubCallMode::kCallWasmRuntimeStub) {
       __ CallRecordWriteStub(object_, scratch1_, remembered_set_action,
-                             save_fp_mode, wasm::WasmCode::kWasmRecordWrite);
+                             save_fp_mode, wasm::WasmCode::kRecordWrite);
     } else {
       __ CallRecordWriteStub(object_, scratch1_, remembered_set_action,
                              save_fp_mode);
@@ -194,6 +199,7 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
       // We need to save and restore lr if the frame was elided.
       __ Pop(scratch0_);
       __ mtlr(scratch0_);
+      unwinding_info_writer_->MarkPopLinkRegisterFromTopOfStack(__ pc_offset());
     }
   }
 
@@ -207,6 +213,7 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
   RecordWriteMode const mode_;
   StubCallMode stub_mode_;
   bool must_save_lr_;
+  UnwindingInfoWriter* const unwinding_info_writer_;
   Zone* zone_;
 };
 
@@ -263,9 +270,8 @@ Condition FlagsConditionToCondition(FlagsCondition condition, ArchOpcode op) {
   UNREACHABLE();
 }
 
-void EmitWordLoadPoisoningIfNeeded(
-    CodeGenerator* codegen, Instruction* instr,
-    PPCOperandConverter& i) {  // NOLINT(runtime/references)
+void EmitWordLoadPoisoningIfNeeded(CodeGenerator* codegen, Instruction* instr,
+                                   PPCOperandConverter const& i) {
   const MemoryAccessMode access_mode =
       static_cast<MemoryAccessMode>(MiscField::decode(instr->opcode()));
   if (access_mode == kMemoryAccessPoisoned) {
@@ -676,6 +682,7 @@ void EmitWordLoadPoisoningIfNeeded(
 
 void CodeGenerator::AssembleDeconstructFrame() {
   __ LeaveFrame(StackFrame::MANUAL);
+  unwinding_info_writer_.MarkFrameDeconstructed(__ pc_offset());
 }
 
 void CodeGenerator::AssemblePrepareTailCall() {
@@ -705,9 +712,7 @@ void CodeGenerator::AssemblePopArgumentsAdaptorFrame(Register args_reg,
            MemOperand(fp, ArgumentsAdaptorFrameConstants::kLengthOffset));
   __ SmiUntag(caller_args_count_reg);
 
-  ParameterCount callee_args_count(args_reg);
-  __ PrepareForTailCall(callee_args_count, caller_args_count_reg, scratch2,
-                        scratch3);
+  __ PrepareForTailCall(args_reg, caller_args_count_reg, scratch2, scratch3);
   __ bind(&done);
 }
 
@@ -1020,11 +1025,25 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
 #endif
       break;
     case kArchCallCFunction: {
-      int const num_parameters = MiscField::decode(instr->opcode());
+      int misc_field = MiscField::decode(instr->opcode());
+      int num_parameters = misc_field;
+      bool has_function_descriptor = false;
       Label start_call;
       bool isWasmCapiFunction =
           linkage()->GetIncomingDescriptor()->IsWasmCapiFunction();
-      constexpr int offset = 9 * kInstrSize;
+      int offset = 9 * kInstrSize;
+#if defined(_AIX)
+      // AIX/PPC64BE Linux uses a function descriptor
+      int kNumParametersMask = kHasFunctionDescriptorBitMask - 1;
+      num_parameters = kNumParametersMask & misc_field;
+      has_function_descriptor =
+          (misc_field & kHasFunctionDescriptorBitMask) != 0;
+      // AIX may emit 2 extra Load instructions under CallCFunctionHelper
+      // due to having function descriptor.
+      if (has_function_descriptor) {
+        offset = 11 * kInstrSize;
+      }
+#endif
       if (isWasmCapiFunction) {
         __ mflr(r0);
         __ bind(&start_call);
@@ -1036,16 +1055,17 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       }
       if (instr->InputAt(0)->IsImmediate()) {
         ExternalReference ref = i.InputExternalReference(0);
-        __ CallCFunction(ref, num_parameters);
+        __ CallCFunction(ref, num_parameters, has_function_descriptor);
       } else {
         Register func = i.InputRegister(0);
-        __ CallCFunction(func, num_parameters);
+        __ CallCFunction(func, num_parameters, has_function_descriptor);
       }
       // TODO(miladfar): In the above block, kScratchReg must be populated with
       // the strictly-correct PC, which is the return address at this spot. The
-      // offset is set to 36 (9 * kInstrSize) right now, which is counted from
-      // where we are binding to the label and ends at this spot. If failed,
-      // replace it with the correct offset suggested. More info on f5ab7d3.
+      // offset is set to 36 (9 * kInstrSize) on pLinux and 44 on AIX, which is
+      // counted from where we are binding to the label and ends at this spot.
+      // If failed, replace it with the correct offset suggested. More info on
+      // f5ab7d3.
       if (isWasmCapiFunction)
         CHECK_EQ(offset, __ SizeOfCodeGeneratedSince(&start_call));
 
@@ -1127,11 +1147,32 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       }
       break;
     case kArchStackPointerGreaterThan: {
+      // Potentially apply an offset to the current stack pointer before the
+      // comparison to consider the size difference of an optimized frame versus
+      // the contained unoptimized frames.
+
+      Register lhs_register = sp;
+      uint32_t offset;
+
+      if (ShouldApplyOffsetToStackCheck(instr, &offset)) {
+        lhs_register = i.TempRegister(0);
+        if (is_int16(offset)) {
+          __ subi(lhs_register, sp, Operand(offset));
+        } else {
+          __ mov(kScratchReg, Operand(offset));
+          __ sub(lhs_register, sp, kScratchReg);
+        }
+      }
+
       constexpr size_t kValueIndex = 0;
       DCHECK(instr->InputAt(kValueIndex)->IsRegister());
-      __ cmpl(sp, i.InputRegister(kValueIndex), cr0);
+      __ cmpl(lhs_register, i.InputRegister(kValueIndex), cr0);
       break;
     }
+    case kArchStackCheckOffset:
+      __ LoadSmiLiteral(i.OutputRegister(),
+                        Smi::FromInt(GetStackCheckOffset()));
+      break;
     case kArchTruncateDoubleToI:
       __ TruncateDoubleToI(isolate(), zone(), i.OutputRegister(),
                            i.InputDoubleRegister(0), DetermineStubCallMode());
@@ -1150,16 +1191,16 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
           AddressingModeField::decode(instr->opcode());
       if (addressing_mode == kMode_MRI) {
         int32_t offset = i.InputInt32(1);
-        ool = new (zone())
-            OutOfLineRecordWrite(this, object, offset, value, scratch0,
-                                 scratch1, mode, DetermineStubCallMode());
+        ool = new (zone()) OutOfLineRecordWrite(
+            this, object, offset, value, scratch0, scratch1, mode,
+            DetermineStubCallMode(), &unwinding_info_writer_);
         __ StoreP(value, MemOperand(object, offset));
       } else {
         DCHECK_EQ(kMode_MRR, addressing_mode);
         Register offset(i.InputRegister(1));
-        ool = new (zone())
-            OutOfLineRecordWrite(this, object, offset, value, scratch0,
-                                 scratch1, mode, DetermineStubCallMode());
+        ool = new (zone()) OutOfLineRecordWrite(
+            this, object, offset, value, scratch0, scratch1, mode,
+            DetermineStubCallMode(), &unwinding_info_writer_);
         __ StorePX(value, MemOperand(object, offset));
       }
       __ CheckPageFlag(object, scratch0,
@@ -2375,6 +2416,7 @@ void CodeGenerator::AssembleConstructFrame() {
         }
       }
     }
+    unwinding_info_writer_.MarkFrameConstructed(__ pc_offset());
   }
 
   int required_slots =
@@ -2485,6 +2527,7 @@ void CodeGenerator::AssembleReturn(InstructionOperand* pop) {
     __ MultiPopDoubles(double_saves);
   }
   PPCOperandConverter g(this, nullptr);
+  unwinding_info_writer_.MarkBlockWillExit();
 
   if (call_descriptor->IsCFunctionCall()) {
     AssembleDeconstructFrame();

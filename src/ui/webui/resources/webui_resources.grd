@@ -14,9 +14,11 @@ without changes to the corresponding grd file. -->
   <release seq="1">
     <includes>
       <if expr="chromeos">
-        <include name="IDR_WEBUI_I18N_TEMPLATE_JS" file="js/i18n_template.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_WEBUI_I18N_TEMPLATE_JS" file="js/i18n_template.js"
+                 flattenhtml="true" type="BINDATA" compress="gzip" />
       </if>
-      <include name="IDR_WEBUI_JSTEMPLATE_JS" file="js/jstemplate_compiled.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_WEBUI_JSTEMPLATE_JS" file="js/jstemplate_compiled.js"
+               flattenhtml="true" type="BINDATA" compress="gzip"/>
       <!-- Roboto Font. Roboto-Regular and Roboto-Light is already available on
            Android, and Roboto-Medium is not used on Android. All 6 weights of
            Roboto are available on Chrome OS.-->
@@ -86,8 +88,32 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_JS_ASSERT_M_JS"
                file="${root_gen_dir}/ui/webui/resources/js/assert.m.js"
                use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_CR_EVENT_TARGET_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/cr/event_target.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_CR_UI_DRAG_WRAPPER_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/cr/ui/drag_wrapper.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_CR_UI_FOCUS_GRID_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/cr/ui/focus_grid.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_WEBUI_JS_CR_UI_FOCUS_OUTLINE_MANAGER_M_JS"
                file="${root_gen_dir}/ui/webui/resources/js/cr/ui/focus_outline_manager.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_CR_UI_FOCUS_ROW_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/cr/ui/focus_row.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_CR_UI_FOCUS_WITHOUT_INK_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/cr/ui/focus_without_ink.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_CR_UI_KEYBOARD_SHORTCUT_LIST_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/cr/ui/keyboard_shortcut_list.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_CR_UI_STORE_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/cr/ui/store.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_CR_UI_STORE_CLIENT_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/cr/ui/store_client.m.js"
                use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_WEBUI_JS_EVENT_TRACKER_M_JS"
                file="${root_gen_dir}/ui/webui/resources/js/event_tracker.m.js"
@@ -115,6 +141,7 @@ without changes to the corresponding grd file. -->
       </if>
 
       <if expr="not is_android and not is_ios">
+        <part file="cr_components/cr_components_resources_v3.grdp" />
         <part file="cr_elements_resources_v3.grdp" />
         <part file="cr_polymer_resources_v3.grdp" />
       </if>
@@ -156,9 +183,11 @@ without changes to the corresponding grd file. -->
                  file="css/menu_button.css" type="chrome_html" compress="gzip"
                  flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_TEXT_DEFAULTS"
-                 file="css/text_defaults.css" type="chrome_html" />
+                 file="css/text_defaults.css" type="chrome_html"
+                 compress="gzip" />
       <structure name="IDR_WEBUI_CSS_TEXT_DEFAULTS_MD"
-                 file="css/text_defaults_md.css" type="chrome_html" />
+                 file="css/text_defaults_md.css" type="chrome_html"
+                 compress="gzip" />
       <structure name="IDR_WEBUI_CSS_OVERLAY"
                  file="css/overlay.css" type="chrome_html" compress="gzip"
                  flattenhtml="true" />
@@ -190,8 +219,11 @@ without changes to the corresponding grd file. -->
                  compress="gzip" />
 
       <if expr="chromeos">
-        <structure name="IDR_WEBUI_HTML_CHROMEOS_ONC_MOJO"
-                   file="html/chromeos/onc_mojo.html" type="chrome_html"
+        <structure name="IDR_WEBUI_CSS_CROS_COLORS"
+                   file="css/cros_colors.css" type="chrome_html"
+                   compress="gzip" />
+        <structure name="IDR_WEBUI_CSS_CROS_PALETTE"
+                   file="css/cros_palette.css" type="chrome_html"
                    compress="gzip" />
       </if>
 
@@ -226,6 +258,9 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_CR_UI_FOCUS_ROW"
                  file="html/cr/ui/focus_row.html" type="chrome_html"
                  compress="gzip" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_KEYBOARD_SHORTCUT_LIST"
+                 file="html/cr/ui/keyboard_shortcut_list.html"
+                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_HTML_CR_UI_LIST"
                  file="html/cr/ui/list.html"
                  type="chrome_html" compress="gzip" />
@@ -250,12 +285,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_CR_UI_OVERLAY"
                  file="html/cr/ui/overlay.html" type="chrome_html"
                  compress="gzip" />
-      <structure name="IDR_WEBUI_HTML_CR_UI_PAGE_MANAGER_PAGE"
-                 file="html/cr/ui/page_manager/page.html" type="chrome_html"
-                 compress="gzip" />
-      <structure name="IDR_WEBUI_HTML_CR_UI_PAGE_MANAGER_PAGE_MANAGER"
-                 file="html/cr/ui/page_manager/page_manager.html"
-                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_HTML_CR_UI_POSITION_UTIL"
                  file="html/cr/ui/position_util.html" type="chrome_html"
                  compress="gzip" />
@@ -279,6 +308,9 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_PARSE_HTML_SUBSET"
                  file="html/parse_html_subset.html" type="chrome_html"
                  compress="gzip" />
+      <structure name="IDR_WEBUI_HTML_TEST_LOADER"
+                 file="html/test_loader.html" type="chrome_html"
+                 compress="gzip"/>
       <structure name="IDR_WEBUI_HTML_UTIL"
                  file="html/util.html" type="chrome_html" compress="gzip" />
 
@@ -289,12 +321,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_PROMISE_RESOLVER"
                  file="js/promise_resolver.js" type="chrome_html"
                  compress="gzip" />
-
-      <if expr="chromeos">
-        <structure name="IDR_WEBUI_JS_CHROMEOS_ONC_MOJO"
-                   file="js/chromeos/onc_mojo.js" type="chrome_html"
-                   compress="gzip" />
-      </if>
 
       <structure name="IDR_WEBUI_JS_CR"
                  file="js/cr.js" type="chrome_html" compress="gzip" />
@@ -344,6 +370,9 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_CR_UI_FOCUS_ROW"
                  file="js/cr/ui/focus_row.js" type="chrome_html"
                  compress="gzip" />
+      <structure name="IDR_WEBUI_JS_CR_UI_KEYBOARD_SHORTCUT_LIST"
+                 file="js/cr/ui/keyboard_shortcut_list.js" type="chrome_html"
+                 compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_LIST"
                  file="js/cr/ui/list.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_LIST_ITEM"
@@ -366,17 +395,8 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_CR_UI_MENU_ITEM"
                  file="js/cr/ui/menu_item.js" type="chrome_html"
                  compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_NODE_UTILS"
-                 file="js/cr/ui/node_utils.js" type="chrome_html"
-                 compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_OVERLAY"
                  file="js/cr/ui/overlay.js" type="chrome_html"
-                 compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_PAGE_MANAGER_PAGE"
-                 file="js/cr/ui/page_manager/page.js" type="chrome_html"
-                 compress="gzip" flattenhtml="true" />
-      <structure name="IDR_WEBUI_JS_CR_UI_PAGE_MANAGER_PAGE_MANAGER"
-                 file="js/cr/ui/page_manager/page_manager.js" type="chrome_html"
                  compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_POSITION_UTIL"
                  file="js/cr/ui/position_util.js" type="chrome_html"
@@ -411,10 +431,14 @@ without changes to the corresponding grd file. -->
                  file="js/i18n_template_no_process.js"
                  type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_LOAD_TIME_DATA"
-                 file="js/load_time_data.js" type="chrome_html" />
+                 file="js/load_time_data.js" type="chrome_html"
+                 compress="gzip" />
       <structure name="IDR_WEBUI_JS_PARSE_HTML_SUBSET"
                  file="js/parse_html_subset.js" type="chrome_html"
                  compress="gzip" />
+      <structure name="IDR_WEBUI_JS_TEST_LOADER"
+                 file="js/test_loader.js" type="chrome_html"
+                 compress="gzip"/>
       <structure name="IDR_WEBUI_JS_UTIL"
                  file="js/util.js" type="chrome_html" compress="gzip"
                  flattenhtml="true" />

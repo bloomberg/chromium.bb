@@ -245,15 +245,7 @@ bool BluetoothDeviceWinrt::IsGattConnected() const {
   if (!ble_device_)
     return false;
 
-  BluetoothConnectionStatus status;
-  HRESULT hr = ble_device_->get_ConnectionStatus(&status);
-  if (FAILED(hr)) {
-    BLUETOOTH_LOG(DEBUG) << "Getting ConnectionStatus failed: "
-                         << logging::SystemErrorCodeToString(hr);
-    return false;
-  }
-
-  return status == BluetoothConnectionStatus_Connected;
+  return connection_status_;
 }
 
 bool BluetoothDeviceWinrt::IsConnectable() const {
@@ -293,18 +285,18 @@ void BluetoothDeviceWinrt::SetConnectionLatency(
 }
 
 void BluetoothDeviceWinrt::Connect(PairingDelegate* pairing_delegate,
-                                   const base::Closure& callback,
-                                   const ConnectErrorCallback& error_callback) {
+                                   base::OnceClosure callback,
+                                   ConnectErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
 
 void BluetoothDeviceWinrt::Pair(PairingDelegate* pairing_delegate,
-                                const base::Closure& callback,
-                                const ConnectErrorCallback& error_callback) {
+                                base::OnceClosure callback,
+                                ConnectErrorCallback error_callback) {
   BLUETOOTH_LOG(DEBUG) << "BluetoothDeviceWinrt::Pair()";
   if (pairing_) {
     BLUETOOTH_LOG(DEBUG) << "Another Pair Operation is already in progress.";
-    PostTask(error_callback, ERROR_INPROGRESS);
+    PostTask(std::move(error_callback), ERROR_INPROGRESS);
     return;
   }
 
@@ -312,7 +304,7 @@ void BluetoothDeviceWinrt::Pair(PairingDelegate* pairing_delegate,
       GetDeviceInformationPairing(ble_device_);
   if (!pairing) {
     BLUETOOTH_LOG(DEBUG) << "Failed to get DeviceInformationPairing.";
-    PostTask(error_callback, ERROR_UNKNOWN);
+    PostTask(std::move(error_callback), ERROR_UNKNOWN);
     return;
   }
 
@@ -321,7 +313,7 @@ void BluetoothDeviceWinrt::Pair(PairingDelegate* pairing_delegate,
   if (FAILED(hr)) {
     BLUETOOTH_LOG(DEBUG) << "Obtaining IDeviceInformationPairing2 failed: "
                          << logging::SystemErrorCodeToString(hr);
-    PostTask(error_callback, ERROR_UNKNOWN);
+    PostTask(std::move(error_callback), ERROR_UNKNOWN);
     return;
   }
 
@@ -330,29 +322,29 @@ void BluetoothDeviceWinrt::Pair(PairingDelegate* pairing_delegate,
   if (FAILED(hr)) {
     BLUETOOTH_LOG(DEBUG) << "DeviceInformationPairing::get_Custom() failed: "
                          << logging::SystemErrorCodeToString(hr);
-    PostTask(error_callback, ERROR_UNKNOWN);
+    PostTask(std::move(error_callback), ERROR_UNKNOWN);
     return;
   }
 
   // Wrap success and error callback, so that they clean up the pairing object
   // once they are run.
-  auto wrapped_callback = base::BindOnce(
+  base::OnceClosure wrapped_callback = base::BindOnce(
       [](base::WeakPtr<BluetoothDeviceWinrt> device,
          base::OnceClosure callback) {
         if (device)
           device->pairing_.reset();
         std::move(callback).Run();
       },
-      weak_ptr_factory_.GetWeakPtr(), callback);
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
 
-  auto wrapped_error_callback = base::BindOnce(
+  ConnectErrorCallback wrapped_error_callback = base::BindOnce(
       [](base::WeakPtr<BluetoothDeviceWinrt> device,
          ConnectErrorCallback error_callback, ConnectErrorCode error_code) {
         if (device)
           device->pairing_.reset();
         std::move(error_callback).Run(error_code);
       },
-      weak_ptr_factory_.GetWeakPtr(), error_callback);
+      weak_ptr_factory_.GetWeakPtr(), std::move(error_callback));
 
   pairing_ = std::make_unique<BluetoothPairingWinrt>(
       this, pairing_delegate, std::move(custom), std::move(wrapped_callback),
@@ -508,7 +500,7 @@ void BluetoothDeviceWinrt::OnFromBluetoothAddress(
   ClearEventRegistrations();
 
   ble_device_ = std::move(ble_device);
-
+  ble_device_->get_ConnectionStatus(&connection_status_);
   connection_changed_token_ = AddTypedEventHandler(
       ble_device_.Get(), &IBluetoothLEDevice::add_ConnectionStatusChanged,
       base::BindRepeating(&BluetoothDeviceWinrt::OnConnectionStatusChanged,
@@ -543,6 +535,14 @@ void BluetoothDeviceWinrt::OnFromBluetoothAddress(
 void BluetoothDeviceWinrt::OnConnectionStatusChanged(
     IBluetoothLEDevice* ble_device,
     IInspectable* object) {
+  BluetoothConnectionStatus new_status;
+  ble_device->get_ConnectionStatus(&new_status);
+  // Windows sometimes returns a status changed event with a status that has
+  // not changed.
+  if (new_status == connection_status_)
+    return;
+
+  connection_status_ = new_status;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (IsGattConnected()) {
     DidConnectGatt();

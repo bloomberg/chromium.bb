@@ -15,6 +15,11 @@ var cca = cca || {};
 cca.mojo = cca.mojo || {};
 
 /**
+ * import {Resolution} from '../type.js';
+ */
+var Resolution = Resolution || {};
+
+/**
  * Operates video capture device through CrOS Camera App Mojo interface.
  */
 cca.mojo.DeviceOperator = class {
@@ -64,8 +69,7 @@ cca.mojo.DeviceOperator = class {
    * Gets supported photo resolutions for specific camera.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!Array<!Array<number>>>} Promise of supported
-   *     resolutions. Each photo resolution is represented as [width, height].
+   * @return {!Promise<!ResolutionList>} Promise of supported resolutions.
    * @throws {Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
    */
@@ -84,7 +88,7 @@ cca.mojo.DeviceOperator = class {
     // The data of |streamConfigs| looks like:
     // streamConfigs: [FORMAT_1, WIDTH_1, HEIGHT_1, TYPE_1,
     //                 FORMAT_2, WIDTH_2, HEIGHT_2, TYPE_2, ...]
-    if (streamConfigs.length % numElementPerEntry != 0) {
+    if (streamConfigs.length % numElementPerEntry !== 0) {
       throw new Error('Unexpected length of stream configurations');
     }
 
@@ -93,7 +97,7 @@ cca.mojo.DeviceOperator = class {
       const [format, width, height, type] =
           streamConfigs.slice(i, i + numElementPerEntry);
       if (format === formatBlob && type === typeOutputStream) {
-        supportedResolutions.push([width, height]);
+        supportedResolutions.push(new Resolution(width, height));
       }
     }
     return supportedResolutions;
@@ -103,9 +107,8 @@ cca.mojo.DeviceOperator = class {
    * Gets supported video configurations for specific camera.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!Array<!Array<number>>>} Promise of supported video
-   *     configurations. Each configuration is represented as [width, height,
-   *     maxFps].
+   * @return {!Promise<!Array<VideoConfig>>} Promise of supported video
+   *     configurations.
    * @throws {Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
    */
@@ -126,7 +129,7 @@ cca.mojo.DeviceOperator = class {
     // minFrameDurationCOnfigs: [FORMAT_1, WIDTH_1, HEIGHT_1, DURATION_1,
     //                           FORMAT_2, WIDTH_2, HEIGHT_2, DURATION_2,
     //                           ...]
-    if (minFrameDurationConfigs.length % numElementPerEntry != 0) {
+    if (minFrameDurationConfigs.length % numElementPerEntry !== 0) {
       throw new Error('Unexpected length of frame durations configs');
     }
 
@@ -137,7 +140,7 @@ cca.mojo.DeviceOperator = class {
           minFrameDurationConfigs.slice(i, i + numElementPerEntry);
       if (format === formatYuv) {
         const maxFps = Math.round(oneSecondInNs / minDuration);
-        supportedConfigs.push([width, height, maxFps]);
+        supportedConfigs.push({width, height, maxFps});
       }
     }
     return supportedConfigs;
@@ -160,7 +163,7 @@ cca.mojo.DeviceOperator = class {
    * Gets supported fps ranges for specific camera.
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
-   * @return {!Promise<!Array<Array<number>>>} Promise of supported fps ranges.
+   * @return {!Promise<!FpsRangeList>} Promise of supported fps ranges.
    *     Each range is represented as [min, max].
    * @throws {Error} Thrown when fail to parse the metadata or the device
    *     operation is not supported.
@@ -178,15 +181,15 @@ cca.mojo.DeviceOperator = class {
     // The data of |availableFpsRanges| looks like:
     // availableFpsRanges: [RANGE_1_MIN, RANGE_1_MAX,
     //                      RANGE_2_MIN, RANGE_2_MAX, ...]
-    if (availableFpsRanges.length % numElementPerEntry != 0) {
+    if (availableFpsRanges.length % numElementPerEntry !== 0) {
       throw new Error('Unexpected length of available fps range configs');
     }
 
-    const supportedFpsRanges = [];
+    const /** !FpsRangeList */ supportedFpsRanges = [];
     for (let i = 0; i < availableFpsRanges.length; i += numElementPerEntry) {
-      const [rangeMin, rangeMax] =
+      const [minFps, maxFps] =
           availableFpsRanges.slice(i, i + numElementPerEntry);
-      supportedFpsRanges.push([rangeMin, rangeMax]);
+      supportedFpsRanges.push({minFps, maxFps});
     }
     return supportedFpsRanges;
   }
@@ -327,6 +330,42 @@ cca.mojo.DeviceOperator = class {
   }
 
   /**
+   * Adds observer to observe shutter event.
+   *
+   * The shutter event is defined as CAMERA3_MSG_SHUTTER in
+   * media/capture/video/chromeos/mojom/camera3.mojom which will be sent from
+   * underlying camera HAL after sensor finishes frame capturing.
+   *
+   * @param {string} deviceId The id for target camera device.
+   * @param {!function()} callback Callback to trigger on shutter done.
+   * @return {!Promise<number>} Id for the added observer.
+   * @throws {Error} if fails to construct device connection.
+   */
+  async addShutterObserver(deviceId, callback) {
+    const observerCallbackRouter =
+        new cros.mojom.CameraEventObserverCallbackRouter();
+    observerCallbackRouter.onShutterDone.addListener(callback);
+
+    const device = await this.getDevice_(deviceId);
+    const {id} = await device.addCameraEventObserver(
+        observerCallbackRouter.$.bindNewPipeAndPassRemote());
+    return id;
+  }
+
+  /**
+   * Removes a shutter observer from Camera App Device.
+   * @param {string} deviceId The id of target camera device.
+   * @param {!number} observerId The id of the observer to be removed.
+   * @return {!Promise<boolean>} True when the observer is successfully removed.
+   * @throws {Error} if fails to construct device connection.
+   */
+  async removeShutterObserver(deviceId, observerId) {
+    const device = await this.getDevice_(deviceId);
+    const {isSuccess} = await device.removeCameraEventObserver(observerId);
+    return isSuccess;
+  }
+
+  /**
    * Sets reprocess option which is normally an effect to the video capture
    * device before taking picture.
    * @param {string} deviceId The renderer-facing device id of the target camera
@@ -367,7 +406,7 @@ cca.mojo.DeviceOperator = class {
    * @return {!Promise<boolean>} True if the DeviceOperator is supported.
    */
   static async isSupported() {
-    return await this.getInstance() != null;
+    return await this.getInstance() !== null;
   }
 };
 

@@ -50,7 +50,7 @@ MAX_SIZE = 16384
 _OS_ERROR_REPORTING_INHIBITED = False
 
 
-if subprocess.mswindows:
+if sys.platform == 'win32':
   import ctypes
   import msvcrt  # pylint: disable=F0401
   from ctypes import wintypes
@@ -497,7 +497,7 @@ class Popen(subprocess.Popen):
 
     self.detached = kwargs.pop('detached', False)
     if self.detached:
-      if subprocess.mswindows:
+      if sys.platform == 'win32':
         prev = kwargs.get('creationflags', 0)
         kwargs['creationflags'] = prev | CREATE_NEW_PROCESS_GROUP
       else:
@@ -509,7 +509,7 @@ class Popen(subprocess.Popen):
         kwargs['preexec_fn'] = new_preexec_fn_1
 
     if kwargs.pop('lower_priority', False):
-      if subprocess.mswindows:
+      if sys.platform == 'win32':
         # TODO(maruel): If already in this class, it should use
         # IDLE_PRIORITY_CLASS.
         prev = kwargs.get('creationflags', 0)
@@ -525,10 +525,10 @@ class Popen(subprocess.Popen):
     self.containment = kwargs.pop('containment', None) or Containment()
     if self.containment.containment_type != Containment.NONE:
       if self.containment.containment_type == Containment.JOB_OBJECT:
-        if not subprocess.mswindows:
+        if sys.platform != 'win32':
           raise NotImplementedError(
               'containment is not implemented on this platform')
-      if subprocess.mswindows:
+      if sys.platform == 'win32':
         # May throw an WindowsError.
         # pylint: disable=undefined-variable
         self._job = _JobObject(self.containment)
@@ -542,7 +542,7 @@ class Popen(subprocess.Popen):
     self.start = time.time()
     try:
       with self.popen_lock:
-        if subprocess.mswindows:
+        if sys.platform == 'win32':
           # We need the thread handle, save it.
           old = subprocess._subprocess.CreateProcess
           class FakeHandle(object):
@@ -558,14 +558,14 @@ class Popen(subprocess.Popen):
         try:
           super(Popen, self).__init__(args, **kwargs)
         finally:
-          if subprocess.mswindows:
+          if sys.platform == 'win32':
             subprocess._subprocess.CreateProcess = old
     except:
       self._cleanup()
       raise
 
     self.args = args
-    if self.detached and not subprocess.mswindows:
+    if self.detached and sys.platform != 'win32':
       try:
         self.gid = os.getpgid(self.pid)
       except OSError:
@@ -670,7 +670,7 @@ class Popen(subprocess.Popen):
     if timeout is None:
       super(Popen, self).wait()
     elif self.returncode is None:
-      if subprocess.mswindows:
+      if sys.platform == 'win32':
         WAIT_TIMEOUT = 258
         result = subprocess._subprocess.WaitForSingleObject(
             self._handle, int(timeout * 1000))
@@ -848,7 +848,7 @@ class Popen(subprocess.Popen):
     On Posix, always send SIGTERM.
     """
     try:
-      if subprocess.mswindows and self.detached:
+      if sys.platform == 'win32' and self.detached:
         return self.send_signal(signal.CTRL_BREAK_EVENT)
       super(Popen, self).terminate()
     except OSError:

@@ -15,17 +15,17 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "libassistant/shared/internal_api/http_connection.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace network {
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 namespace chromeos {
@@ -38,8 +38,8 @@ class ChromiumHttpConnection
       public network::SimpleURLLoaderStreamConsumer,
       public base::RefCountedThreadSafe<ChromiumHttpConnection> {
  public:
-  ChromiumHttpConnection(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                             url_loader_factory_info,
+  ChromiumHttpConnection(std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                             pending_url_loader_factory,
                          Delegate* delegate);
 
   // assistant_client::HttpConnection implementation:
@@ -89,15 +89,17 @@ class ChromiumHttpConnection
   void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
   // Callback invoked when the response of the http connection has started.
-  void OnResponseStarted(const GURL& final_url,
-                         const network::ResourceResponseHead& response_header);
+  void OnResponseStarted(
+      const GURL& final_url,
+      const network::mojom::URLResponseHead& response_header);
 
   Delegate* const delegate_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   State state_ = State::NEW;
   bool has_last_chunk_ = false;
   uint64_t upload_body_size_ = 0;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+      pending_url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
   // The portion of the body not yet uploaded when doing chunked uploads.
   std::string upload_body_;
@@ -107,7 +109,7 @@ class ChromiumHttpConnection
   std::unique_ptr<mojo::SimpleWatcher> upload_pipe_watcher_;
   // If non-null, invoked once the size of the upload is known.
   network::mojom::ChunkedDataPipeGetter::GetSizeCallback get_size_callback_;
-  mojo::BindingSet<network::mojom::ChunkedDataPipeGetter> binding_set_;
+  mojo::ReceiverSet<network::mojom::ChunkedDataPipeGetter> receiver_set_;
 
   // Parameters to be set before Start() call.
   GURL url_;
@@ -132,8 +134,8 @@ class ChromiumHttpConnectionFactory
     : public assistant_client::HttpConnectionFactory {
  public:
   explicit ChromiumHttpConnectionFactory(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info);
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory);
   ~ChromiumHttpConnectionFactory() override;
 
   // assistant_client::HttpConnectionFactory implementation:

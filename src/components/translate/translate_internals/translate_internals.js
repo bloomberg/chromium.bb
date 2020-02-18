@@ -554,7 +554,7 @@ cr.define('cr.translateInternals', function() {
       button.addEventListener('click', clearCallback, false);
     } else {
       // Used for tooltip when the button is unclickable.
-      button.title = 'No pref values to clear.'
+      button.title = 'No pref values to clear.';
     }
 
     elt.appendChild(button);
@@ -625,7 +625,8 @@ cr.define('cr.translateInternals', function() {
  * The entry point of the UI.
  */
 function main() {
-  cr.doc.addEventListener('DOMContentLoaded', cr.translateInternals.initialize);
+  document.addEventListener(
+      'DOMContentLoaded', cr.translateInternals.initialize);
 }
 
 main();

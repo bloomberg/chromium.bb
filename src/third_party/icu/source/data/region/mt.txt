@@ -299,5 +299,5 @@ mt{
         CZ{"Ir-Repubblika Ċeka"}
         TL{"Timor tal-Lvant"}
     }
-    Version{"2.1.49.82"}
+    Version{"36"}
 }

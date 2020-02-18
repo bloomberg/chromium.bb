@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -15,6 +16,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "third_party/blink/public/platform/web_input_event.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 
 using blink::WebInputEvent;
@@ -198,7 +200,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
     blink::WebMouseWheelEvent wheel_event =
         SyntheticWebMouseWheelEventBuilder::Build(
             10, 10, fling_velocity.x() / 1000, fling_velocity.y() / 1000, 0,
-            true);
+            ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
     wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
     const gfx::PointF position_in_widget(1, 1);
     const gfx::PointF position_in_root =
@@ -501,6 +503,61 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   EXPECT_TRUE(
       router->forced_last_fling_start_target_to_stop_flinging_for_test());
 }
+
+// Check that fling controller does not generate fling curve when view is
+// destroyed.
+IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
+                       NoFlingWhenViewIsDestroyed) {
+  LoadURL(kBrowserFlingDataURL);
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  GetWidgetHost()->GetView()->Destroy();
+  SimulateTouchscreenFling(GetWidgetHost());
+
+  // As the view is destroyed, there shouldn't be any active fling.
+  EXPECT_FALSE(static_cast<InputRouterImpl*>(GetWidgetHost()->input_router())
+                   ->IsFlingActiveForTest());
+
+  EXPECT_EQ(
+      0, EvalJs(root->current_frame_host(), "window.scrollY").ExtractDouble());
+}
 #endif  // !defined(OS_MACOSX)
+
+class PhysicsBasedFlingCurveBrowserTest : public BrowserSideFlingBrowserTest {
+ public:
+  PhysicsBasedFlingCurveBrowserTest() {}
+  ~PhysicsBasedFlingCurveBrowserTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kExperimentalFlingAnimation}, {});
+    IsolateAllSitesForTesting(command_line);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(PhysicsBasedFlingCurveBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(PhysicsBasedFlingCurveBrowserTest,
+                       TargetScrollOffsetForFlingAnimation) {
+  LoadPageWithOOPIF();
+
+  // Higher value of fling velocity will make sure that the scroll distance
+  // calculated exceeds the upper bound.
+  gfx::Vector2d fling_velocity(0, -6000.0);
+
+  // Simulate fling on OOPIF
+  SimulateTouchscreenFling(child_view_->host(), nullptr, fling_velocity);
+
+  // If the viewport size required for fling curve generation
+  // (PhysicsBasedFlingCurveBrowser) is based on RenderWidget, test will time
+  // out as upper bound calculated will be 3 * size of iframe window(3 * 100)
+  // and thus it will not scroll beyond it. Viewport size should be based on
+  // root RenderWidgetHost.
+  WaitForFrameScroll(GetChildNode(), 400);
+}
 
 }  // namespace content

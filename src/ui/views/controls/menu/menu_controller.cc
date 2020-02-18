@@ -101,13 +101,12 @@ bool AcceleratorShouldCancelMenu(const ui::Accelerator& accelerator) {
 }
 #endif
 
-// When showing context menu on mouse down, the user might accidentally select
-// the menu item on the subsequent mouse up. To prevent this, we add the
-// following delay before the user is able to select an item.
-int menu_selection_hold_time_ms = kMinimumMsPressedToActivate;
-
-// Period of the scroll timer (in milliseconds).
-constexpr int kScrollTimerMS = 30;
+// The amount of time the mouse should be down before a mouse release is
+// considered intentional. This is to prevent spurious mouse releases from
+// activating controls, especially when some UI element is revealed under the
+// source of the activation (ex. menus showing underneath menu buttons).
+base::TimeDelta menu_selection_hold_time =
+    base::TimeDelta::FromMilliseconds(200);
 
 // Amount of time from when the drop exits the menu and the menu is hidden.
 constexpr int kCloseOnExitTime = 1200;
@@ -359,8 +358,7 @@ class MenuController::MenuScrollTask {
     is_scrolling_up_ = new_is_up;
 
     if (!scrolling_timer_.IsRunning()) {
-      scrolling_timer_.Start(FROM_HERE,
-                             TimeDelta::FromMilliseconds(kScrollTimerMS), this,
+      scrolling_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(30), this,
                              &MenuScrollTask::Run);
     }
   }
@@ -772,7 +770,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     }
     // If a mouse release was received quickly after showing.
     base::TimeDelta time_shown = base::TimeTicks::Now() - menu_start_time_;
-    if (time_shown.InMilliseconds() < menu_selection_hold_time_ms) {
+    if (time_shown < menu_selection_hold_time) {
       // And it wasn't far from the mouse press location.
       gfx::Point screen_loc(event.location());
       View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
@@ -793,7 +791,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
         part.menu->GetDelegate()->IsTriggerableEvent(part.menu, event)) {
       base::TimeDelta shown_time = base::TimeTicks::Now() - menu_start_time_;
       if (!state_.context_menu || !View::ShouldShowContextMenuOnMousePress() ||
-          shown_time.InMilliseconds() > menu_selection_hold_time_ms) {
+          shown_time > menu_selection_hold_time) {
         Accept(part.menu, event.flags());
       }
       return;
@@ -1280,7 +1278,7 @@ void MenuController::ClearStateForTest() {
 
 // static
 void MenuController::TurnOffMenuSelectionHoldForTest() {
-  menu_selection_hold_time_ms = -1;
+  menu_selection_hold_time = base::TimeDelta();
 }
 
 void MenuController::OnMenuItemDestroying(MenuItemView* menu_item) {
@@ -1446,7 +1444,7 @@ void MenuController::StartDrag(SubmenuView* source,
 
   float raster_scale = ScaleFactorForDragFromWidget(source->GetWidget());
   gfx::Canvas canvas(item->size(), raster_scale, false /* opaque */);
-  item->PaintButton(&canvas, MenuItemView::PB_FOR_DRAG);
+  item->PaintButton(&canvas, MenuItemView::PaintButtonMode::kForDrag);
   gfx::ImageSkia image(gfx::ImageSkiaRep(canvas.GetBitmap(), raster_scale));
 
   std::unique_ptr<OSExchangeData> data(std::make_unique<OSExchangeData>());
@@ -2409,44 +2407,61 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
         y = anchor_bounds.bottom() - border_and_shadow_insets.top() +
             menu_config.touchable_anchor_offset;
       }
-    } else if (state_.anchor == MenuAnchorPosition::kBubbleLeft) {
-      // Align the right of the menu with the left of the anchor, and the top of
-      // the menu with the top of the anchor.
-      x = anchor_bounds.x() - menu_size.width() +
-          border_and_shadow_insets.right() -
-          menu_config.touchable_anchor_offset;
-      y = anchor_bounds.y() - border_and_shadow_insets.top();
-      // Align the left of the menu with the right of the anchor.
-      if (x < monitor_bounds.x()) {
-        x = anchor_bounds.right() - border_and_shadow_insets.left() +
-            menu_config.touchable_anchor_offset;
-      }
-      // Prefer aligning the bottom of the menu to the bottom of the anchor.
-      if (y + menu_size.height() > monitor_bounds.bottom()) {
-        y = anchor_bounds.bottom() - menu_size.height() +
-            border_and_shadow_insets.bottom();
-        // For some very tall menus, this may still be off screen.
-        if (y < monitor_bounds.y())
-          y = monitor_bounds.y();
-      }
-    } else if (state_.anchor == MenuAnchorPosition::kBubbleRight) {
-      // Align the left of the menu with the right of the anchor, and the top of
-      // the menu with the top of the anchor.
-      x = anchor_bounds.right() - border_and_shadow_insets.left() +
-          menu_config.touchable_anchor_offset;
-      y = anchor_bounds.y() - border_and_shadow_insets.top();
-      if (x + menu_size.width() > monitor_bounds.right()) {
-        // Align the right of the menu with the left of the anchor.
+    } else if (state_.anchor == MenuAnchorPosition::kBubbleLeft ||
+               state_.anchor == MenuAnchorPosition::kBubbleRight) {
+      if (state_.anchor == MenuAnchorPosition::kBubbleLeft) {
+        // Align the right of the menu with the left of the anchor, and the top
+        // of the menu with the top of the anchor.
         x = anchor_bounds.x() - menu_size.width() +
             border_and_shadow_insets.right() -
             menu_config.touchable_anchor_offset;
+        // Align the left of the menu with the right of the anchor.
+        if (x < monitor_bounds.x()) {
+          x = anchor_bounds.right() - border_and_shadow_insets.left() +
+              menu_config.touchable_anchor_offset;
+        }
+      } else {
+        // Align the left of the menu with the right of the anchor, and the top
+        // of the menu with the top of the anchor.
+        x = anchor_bounds.right() - border_and_shadow_insets.left() +
+            menu_config.touchable_anchor_offset;
+        if (x + menu_size.width() > monitor_bounds.right()) {
+          // Align the right of the menu with the left of the anchor.
+          x = anchor_bounds.x() - menu_size.width() +
+              border_and_shadow_insets.right() -
+              menu_config.touchable_anchor_offset;
+        }
       }
-      if (y + menu_size.height() > monitor_bounds.bottom()) {
-        // Align the bottom of the menu with the bottom of the anchor.
-        y = anchor_bounds.bottom() - menu_size.height() +
-            border_and_shadow_insets.bottom();
+
+      const int y_below = anchor_bounds.y() - border_and_shadow_insets.top();
+      const int y_above = anchor_bounds.bottom() - menu_size.height() +
+                          border_and_shadow_insets.bottom();
+      if (y_below + menu_size.height() <= monitor_bounds.bottom()) {
+        // Show below the anchor. Align the top of the menu with the top of the
+        // anchor.
+        y = y_below;
+      } else if (y_above >= monitor_bounds.y()) {
+        // No room below, but there is room above. Show above the anchor. Align
+        // the bottom of the menu with the bottom of the anchor.
+        y = y_above;
+      } else {
+        // No room above or below. Show as low as possible. Align the bottom of
+        // the menu with the bottom of the screen.
+        y = monitor_bounds.bottom() - menu_size.height();
       }
     }
+    // The above adjustments may have shifted a large menu off the screen.
+    // Clamp the menu origin to the valid range.
+    const int x_min = monitor_bounds.x() - border_and_shadow_insets.left();
+    const int x_max = monitor_bounds.right() - menu_size.width() +
+                      border_and_shadow_insets.right();
+    const int y_min = monitor_bounds.y() - border_and_shadow_insets.top();
+    const int y_max = monitor_bounds.bottom() - menu_size.height() +
+                      border_and_shadow_insets.bottom();
+    DCHECK_LE(x_min, x_max);
+    DCHECK_LE(y_min, y_max);
+    x = base::ClampToRange(x, x_min, x_max);
+    y = base::ClampToRange(y, y_min, y_max);
   } else {
     if (!use_touchable_layout_) {
       NOTIMPLEMENTED()
@@ -2459,22 +2474,36 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
     // the parent menu item and not to the right.
     const bool layout_is_rtl = base::i18n::IsRTL();
     const bool create_on_right = prefer_leading != layout_is_rtl;
+
+    const int width_with_right_inset =
+        menu_config.touchable_menu_width + border_and_shadow_insets.right();
+    const int x_max = monitor_bounds.right() - width_with_right_inset;
+    const int x_left = item_bounds.x() - width_with_right_inset;
+    const int x_right = item_bounds.right() - border_and_shadow_insets.left();
     if (create_on_right) {
-      x = item_bounds.right() - border_and_shadow_insets.left();
-      if (monitor_bounds.width() != 0 && (x + menu_config.touchable_menu_width -
-                                              border_and_shadow_insets.right() >
-                                          monitor_bounds.right())) {
+      x = x_right;
+      if (monitor_bounds.width() == 0 || x_right <= x_max) {
+        // Enough room on the right, show normally.
+        x = x_right;
+      } else if (x_left >= monitor_bounds.x()) {
+        // Enough room on the left, show there.
         *is_leading = prefer_leading;
-        x = item_bounds.x() - menu_config.touchable_menu_width -
-            border_and_shadow_insets.right();
+        x = x_left;
+      } else {
+        // No room on either side. Flush the menu to the right edge.
+        x = x_max;
       }
     } else {
-      x = item_bounds.x() - menu_config.touchable_menu_width -
-          border_and_shadow_insets.right();
-      if (monitor_bounds.width() != 0 && x < monitor_bounds.x()) {
+      if (monitor_bounds.width() == 0 || x_left >= monitor_bounds.x()) {
+        // Enough room on the left, show normally.
+        x = x_left;
+      } else if (x_right <= x_max) {
+        // Enough room on the right, show there.
         *is_leading = !prefer_leading;
-        x = item_bounds.x() + menu_config.touchable_menu_width -
-            border_and_shadow_insets.left();
+        x = x_right;
+      } else {
+        // No room on either side. Flush the menu to the left edge.
+        x = monitor_bounds.x();
       }
     }
     y = item_bounds.y() - border_and_shadow_insets.top() -
@@ -2885,7 +2914,7 @@ void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
                                event.changed_button_flags());
   // Reset the active mouse view before sending mouse released. That way if it
   // calls back to us, we aren't in a weird state.
-  active_mouse_view_tracker_->Clear();
+  active_mouse_view_tracker_->SetView(nullptr);
   active_mouse_view->OnMouseReleased(release_event);
 }
 
@@ -2896,7 +2925,7 @@ void MenuController::SendMouseCaptureLostToActiveView() {
 
   // Reset the active mouse view before sending mouse capture lost. That way if
   // it calls back to us, we aren't in a weird state.
-  active_mouse_view_tracker_->Clear();
+  active_mouse_view_tracker_->SetView(nullptr);
   active_mouse_view->OnMouseCaptureLost();
 }
 
@@ -3096,8 +3125,7 @@ void MenuController::RegisterAlertedItem(MenuItemView* item) {
   // Start animation if necessary. We stop the animation once no alerted
   // items are showing.
   if (!alert_animation_.is_animating()) {
-    alert_animation_.SetThrobDuration(
-        kAlertAnimationThrobDuration.InMilliseconds());
+    alert_animation_.SetThrobDuration(kAlertAnimationThrobDuration);
     alert_animation_.StartThrobbing(-1);
   }
 }

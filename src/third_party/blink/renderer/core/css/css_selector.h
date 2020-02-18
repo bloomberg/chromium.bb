@@ -160,6 +160,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoNthLastChild,
     kPseudoNthLastOfType,
     kPseudoPart,
+    kPseudoState,
     kPseudoLink,
     kPseudoVisited,
     kPseudoAny,
@@ -192,6 +193,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoTarget,
     kPseudoBefore,
     kPseudoAfter,
+    kPseudoMarker,
     kPseudoBackdrop,
     kPseudoLang,
     kPseudoNot,
@@ -246,10 +248,12 @@ class CORE_EXPORT CSSSelector {
     kPseudoSpatialNavigationInterest,
     kPseudoIsHtml,
     kPseudoListBox,
+    kPseudoMultiSelectFocus,
     kPseudoHostHasAppearance,
     kPseudoSlotted,
     kPseudoVideoPersistent,
     kPseudoVideoPersistentAncestor,
+    kPseudoXrImmersiveDomOverlay,
   };
 
   enum AttributeMatchType {

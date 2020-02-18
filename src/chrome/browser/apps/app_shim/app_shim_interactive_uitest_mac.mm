@@ -29,6 +29,7 @@
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -119,8 +120,10 @@ class WindowedAppShimLaunchObserver : public apps::ExtensionAppShimHandler {
       run_loop_->Quit();
   }
   void OnShimFocus(AppShimHost* host,
-                   apps::AppShimFocusType focus_type,
+                   chrome::mojom::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override {}
+  void OnShimSelectedProfile(AppShimHost* host,
+                             const base::FilePath& profile_path) override {}
 
  private:
   std::string app_mode_id_;
@@ -603,7 +606,7 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_RebuildShim) {
 
   // Copy 32 bit shim to where it's expected to be.
   // CopyDirectory doesn't seem to work when copying and renaming in one go.
-  ASSERT_TRUE(base::DeleteFile(shim_path, true));
+  ASSERT_TRUE(base::DeleteFileRecursively(shim_path));
   ASSERT_TRUE(base::PathExists(shim_path.DirName()));
   ASSERT_TRUE(base::CopyDirectory(shim_path_32, shim_path.DirName(), true));
   ASSERT_TRUE(base::Move(shim_path.DirName().Append(shim_path_32.BaseName()),

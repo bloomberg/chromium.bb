@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/policy/bluetooth_policy_handler.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_dock_mac_address_source_handler.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
@@ -43,6 +44,7 @@
 #include "chrome/browser/chromeos/policy/scheduled_update_checker/device_scheduled_update_checker.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
+#include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -232,6 +234,11 @@ void BrowserPolicyConnectorChromeOS::Init(
       std::make_unique<MinimumVersionPolicyHandler>(
           chromeos::CrosSettings::Get());
 
+  device_dock_mac_address_source_handler_ =
+      std::make_unique<DeviceDockMacAddressHandler>(
+          chromeos::CrosSettings::Get(),
+          chromeos::NetworkHandler::Get()->network_device_handler());
+
   device_wifi_allowed_handler_ =
       std::make_unique<DeviceWiFiAllowedHandler>(chromeos::CrosSettings::Get());
 
@@ -245,14 +252,19 @@ void BrowserPolicyConnectorChromeOS::Init(
           chromeos::NetworkHandler::Get()->network_state_handler(),
           content::ServiceManagerConnection::GetForProcess()->GetConnector());
 
-  device_cloud_external_data_policy_handlers_.emplace_back(
+  chromeos::BulkPrintersCalculatorFactory* calculator_factory =
+      chromeos::BulkPrintersCalculatorFactory::Get();
+  DCHECK(calculator_factory)
+      << "Policy connector initialized before the bulk printers factory";
+  device_cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::DeviceNativePrintersExternalDataHandler>(
-          GetPolicyService()));
-  device_cloud_external_data_policy_handlers_.emplace_back(
+          GetPolicyService(), calculator_factory->GetForDevice()));
+
+  device_cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::DeviceWallpaperImageExternalDataHandler>(
           local_state, GetPolicyService()));
   if (base::FeatureList::IsEnabled(::features::kWilcoDtc)) {
-    device_cloud_external_data_policy_handlers_.emplace_back(
+    device_cloud_external_data_policy_handlers_.push_back(
         std::make_unique<
             policy::DeviceWilcoDtcConfigurationExternalDataHandler>(
             GetPolicyService()));
@@ -391,9 +403,9 @@ MarketSegment BrowserPolicyConnectorChromeOS::GetEnterpriseMarketSegment()
   return MarketSegment::UNKNOWN;
 }
 
-void BrowserPolicyConnectorChromeOS::SetUserPolicyDelegate(
-    ConfigurationPolicyProvider* user_policy_provider) {
-  global_user_cloud_policy_provider_->SetDelegate(user_policy_provider);
+ProxyPolicyProvider*
+BrowserPolicyConnectorChromeOS::GetGlobalUserCloudPolicyProvider() {
+  return global_user_cloud_policy_provider_;
 }
 
 void BrowserPolicyConnectorChromeOS::SetDeviceCloudPolicyInitializerForTesting(

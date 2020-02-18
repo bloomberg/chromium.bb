@@ -9,7 +9,8 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "libassistant/shared/public/platform_net.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 namespace assistant {
@@ -35,12 +36,14 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) NetworkProviderImpl
   void OnNetworkStateListChanged() override {}
   void OnDeviceStateListChanged() override {}
   void OnVpnProvidersChanged() override {}
+  void OnNetworkCertificatesChanged() override {}
 
  private:
   ConnectionStatus connection_status_;
-  mojo::Binding<network_config::mojom::CrosNetworkConfigObserver> binding_{
+  mojo::Receiver<network_config::mojom::CrosNetworkConfigObserver> receiver_{
       this};
-  network_config::mojom::CrosNetworkConfigPtr cros_network_config_ptr_;
+  mojo::Remote<network_config::mojom::CrosNetworkConfig>
+      cros_network_config_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkProviderImpl);
 };

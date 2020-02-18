@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_client.h"
@@ -88,7 +87,8 @@ bool IsLegacyServiceId(const std::string& account_id) {
 }
 
 CoreAccountId RemoveAccountIdPrefix(const std::string& prefixed_account_id) {
-  return CoreAccountId(prefixed_account_id.substr(kAccountIdPrefixLength));
+  return CoreAccountId::FromString(
+      prefixed_account_id.substr(kAccountIdPrefixLength));
 }
 
 signin::LoadCredentialsState LoadCredentialsStateFromTokenResult(
@@ -117,10 +117,7 @@ signin::LoadCredentialsState LoadCredentialsStateFromTokenResult(
 // TODO(droger): Remove this code once Dice is fully enabled.
 bool ShouldMigrateToDice(signin::AccountConsistencyMethod account_consistency,
                          PrefService* prefs) {
-  return (account_consistency != signin::AccountConsistencyMethod::kMirror) &&
-         signin::DiceMethodGreaterOrEqual(
-             account_consistency,
-             signin::AccountConsistencyMethod::kDiceMigration) &&
+  return account_consistency == signin::AccountConsistencyMethod::kDice &&
          !prefs->GetBoolean(prefs::kTokenServiceDiceCompatible);
 }
 
@@ -242,7 +239,6 @@ MutableProfileOAuth2TokenServiceDelegate::
         scoped_refptr<TokenWebData> token_web_data,
         signin::AccountConsistencyMethod account_consistency,
         bool revoke_all_tokens_on_load,
-        bool can_revoke_credentials,
         FixRequestErrorCallback fix_request_error_callback)
     : web_data_service_request_(0),
       backoff_entry_(&backoff_policy_),
@@ -253,12 +249,12 @@ MutableProfileOAuth2TokenServiceDelegate::
       token_web_data_(token_web_data),
       account_consistency_(account_consistency),
       revoke_all_tokens_on_load_(revoke_all_tokens_on_load),
-      can_revoke_credentials_(can_revoke_credentials),
       fix_request_error_callback_(fix_request_error_callback) {
   VLOG(1) << "MutablePO2TS::MutablePO2TS";
   DCHECK(client);
   DCHECK(account_tracker_service_);
   DCHECK(network_connection_tracker_);
+  DCHECK_NE(signin::AccountConsistencyMethod::kMirror, account_consistency_);
   // It's okay to fill the backoff policy after being used in construction.
   backoff_policy_.num_errors_to_ignore = 0;
   backoff_policy_.initial_delay_ms = 1000;
@@ -413,18 +409,6 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
   set_load_credentials_state(
       signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS);
 
-#if defined(OS_CHROMEOS)
-  // TODO(sinhak): Remove this ifdef block after Account Manager is switched on.
-  // ChromeOS OOBE loads credentials without a primary account and expects this
-  // to be a no-op. See http://crbug.com/891818
-  if (primary_account_id.empty()) {
-    set_load_credentials_state(
-        signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
-    FinishLoadingCredentials();
-    return;
-  }
-#endif
-
   if (!primary_account_id.empty())
     ValidateAccountId(primary_account_id);
   DCHECK(loading_primary_account_id_.empty());
@@ -446,9 +430,9 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
   // If |account_id| is an email address, then canonicalize it. This is needed
   // to support legacy account IDs, and will not be needed after switching to
   // gaia IDs.
-  if (primary_account_id.id.find('@') != std::string::npos) {
-    loading_primary_account_id_ =
-        CoreAccountId(gaia::CanonicalizeEmail(primary_account_id.id));
+  if (primary_account_id.ToString().find('@') != std::string::npos) {
+    loading_primary_account_id_ = CoreAccountId::FromEmail(
+        gaia::CanonicalizeEmail(primary_account_id.ToString()));
   } else {
     loading_primary_account_id_ = primary_account_id;
   }
@@ -544,7 +528,8 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
           case AccountTrackerService::MIGRATION_IN_PROGRESS: {
             // Migrate to gaia-ids.
             AccountInfo account_info =
-                account_tracker_service_->FindAccountInfoByEmail(account_id.id);
+                account_tracker_service_->FindAccountInfoByEmail(
+                    account_id.ToString());
             // |account_info| can be empty if |account_id| was already migrated.
             // This could happen if the chrome was closed in the middle of the
             // account id migration.
@@ -564,24 +549,24 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
             // If the account_id is an email address, then canonicalize it. This
             // is to support legacy account_ids, and will not be needed after
             // switching to gaia-ids.
-            if (account_id.id.find('@') != std::string::npos) {
+            if (account_id.ToString().find('@') != std::string::npos) {
               // If the canonical account id is not the same as the loaded
               // account id, make sure not to overwrite a refresh token from
               // a canonical version.  If no canonical version was loaded, then
               // re-persist this refresh token with the canonical account id.
-              CoreAccountId canon_account_id =
-                  CoreAccountId(gaia::CanonicalizeEmail(account_id.id));
+              CoreAccountId canon_account_id = CoreAccountId::FromEmail(
+                  gaia::CanonicalizeEmail(account_id.ToString()));
               if (canon_account_id != account_id) {
                 ClearPersistedCredentials(account_id);
                 if (db_tokens.count(
-                        ApplyAccountIdPrefix(canon_account_id.id)) == 0)
+                        ApplyAccountIdPrefix(canon_account_id.ToString())) == 0)
                   PersistCredentials(canon_account_id, refresh_token);
               }
               account_id = canon_account_id;
             }
             break;
           case AccountTrackerService::MIGRATION_DONE:
-            DCHECK_EQ(std::string::npos, account_id.id.find('@'));
+            DCHECK_EQ(std::string::npos, account_id.ToString().find('@'));
             break;
           case AccountTrackerService::NUM_MIGRATION_STATES:
             NOTREACHED();
@@ -590,12 +575,8 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
 
         // Only load secondary accounts when account consistency is enabled.
         bool load_account =
-            (account_id == loading_primary_account_id_) ||
-            (account_consistency_ ==
-             signin::AccountConsistencyMethod::kMirror) ||
-            signin::DiceMethodGreaterOrEqual(
-                account_consistency_,
-                signin::AccountConsistencyMethod::kDiceMigration);
+            account_id == loading_primary_account_id_ ||
+            account_consistency_ == signin::AccountConsistencyMethod::kDice;
         LoadTokenFromDBStatus load_token_status =
             load_account
                 ? LoadTokenFromDBStatus::TOKEN_LOADED
@@ -729,14 +710,12 @@ void MutableProfileOAuth2TokenServiceDelegate::PersistCredentials(
   DCHECK(!refresh_token.empty());
   if (token_web_data_) {
     VLOG(1) << "MutablePO2TS::PersistCredentials for account_id=" << account_id;
-    token_web_data_->SetTokenForService(ApplyAccountIdPrefix(account_id.id),
-                                        refresh_token);
+    token_web_data_->SetTokenForService(
+        ApplyAccountIdPrefix(account_id.ToString()), refresh_token);
   }
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
-  if (!can_revoke_credentials_)
-    return;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   VLOG(1) << "MutablePO2TS::RevokeAllCredentials";
@@ -779,7 +758,8 @@ void MutableProfileOAuth2TokenServiceDelegate::ClearPersistedCredentials(
   if (token_web_data_) {
     VLOG(1) << "MutablePO2TS::ClearPersistedCredentials for account_id="
             << account_id;
-    token_web_data_->RemoveTokenForService(ApplyAccountIdPrefix(account_id.id));
+    token_web_data_->RemoveTokenForService(
+        ApplyAccountIdPrefix(account_id.ToString()));
   }
 }
 
@@ -850,10 +830,8 @@ void MutableProfileOAuth2TokenServiceDelegate::AddAccountStatus(
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::FinishLoadingCredentials() {
-#if !defined(OS_CHROMEOS)
   if (account_consistency_ == signin::AccountConsistencyMethod::kDice)
     DCHECK(client_->GetPrefs()->GetBoolean(prefs::kTokenServiceDiceCompatible));
-#endif
   FireRefreshTokensLoaded();
 }
 

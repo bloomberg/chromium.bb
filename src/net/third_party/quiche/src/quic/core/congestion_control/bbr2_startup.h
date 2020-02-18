@@ -16,9 +16,12 @@ namespace quic {
 class Bbr2Sender;
 class QUIC_EXPORT_PRIVATE Bbr2StartupMode final : public Bbr2ModeBase {
  public:
-  Bbr2StartupMode(const Bbr2Sender* sender, Bbr2NetworkModel* model);
+  Bbr2StartupMode(const Bbr2Sender* sender,
+                  Bbr2NetworkModel* model,
+                  QuicTime now);
 
   void Enter(const Bbr2CongestionEvent& congestion_event) override;
+  void Leave(const Bbr2CongestionEvent& congestion_event) override;
 
   Bbr2Mode OnCongestionEvent(
       QuicByteCount prior_in_flight,
@@ -35,7 +38,7 @@ class QUIC_EXPORT_PRIVATE Bbr2StartupMode final : public Bbr2ModeBase {
 
   bool FullBandwidthReached() const { return full_bandwidth_reached_; }
 
-  struct DebugState {
+  struct QUIC_EXPORT_PRIVATE DebugState {
     bool full_bandwidth_reached;
     QuicBandwidth full_bandwidth_baseline = QuicBandwidth::Zero();
     QuicRoundTripCount round_trips_without_bandwidth_growth;

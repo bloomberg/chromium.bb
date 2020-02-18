@@ -48,7 +48,7 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
     // Networking stubs may have asynchronous initialization.
     base::RunLoop().RunUntilIdle();
 
-    model_ = std::make_unique<UnifiedSystemTrayModel>();
+    model_ = std::make_unique<UnifiedSystemTrayModel>(nullptr);
     controller_ = std::make_unique<UnifiedSystemTrayController>(model());
   }
 
@@ -123,6 +123,8 @@ TEST_F(UnifiedSystemTrayControllerTest, ToggleExpanded) {
   const int collapsed_height = view()->GetPreferredSize().height();
   EXPECT_LT(collapsed_height, expanded_height);
   EXPECT_FALSE(model()->IsExpandedOnOpen());
+
+  EXPECT_EQ(expanded_height, view()->GetExpandedSystemTrayHeight());
 }
 
 TEST_F(UnifiedSystemTrayControllerTest, EnsureExpanded_UserChooserShown) {

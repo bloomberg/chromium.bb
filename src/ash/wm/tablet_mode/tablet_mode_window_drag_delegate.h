@@ -18,7 +18,6 @@
 
 namespace ash {
 
-enum class IndicatorState;
 class SplitViewDragIndicators;
 class PresentationTimeRecorder;
 
@@ -72,9 +71,6 @@ class TabletModeWindowDragDelegate {
   // Return the location of |event| in screen coordinates.
   gfx::Point GetEventLocationInScreen(const ui::GestureEvent* event) const;
 
-  // Returns the IndicatorState according to |location_in_screen|.
-  IndicatorState GetIndicatorState(const gfx::Point& location_in_screen) const;
-
   aura::Window* dragged_window() { return dragged_window_; }
 
   SplitViewDragIndicators* split_view_drag_indicators_for_testing() {
@@ -86,15 +82,15 @@ class TabletModeWindowDragDelegate {
   }
 
  protected:
-  // These four methods are used by its child class to do its special handling
+  // These five methods are used by its child class to do its special handling
   // before/during/after dragging.
-  virtual void PrepareWindowDrag(const gfx::Point& location_in_screen) = 0;
-  virtual void UpdateWindowDrag(const gfx::Point& location_in_screen) = 0;
+  virtual void PrepareWindowDrag(const gfx::Point& location_in_screen) {}
+  virtual void UpdateWindowDrag(const gfx::Point& location_in_screen) {}
   virtual void EndingWindowDrag(ToplevelWindowEventHandler::DragResult result,
-                                const gfx::Point& location_in_screen) = 0;
-  virtual void EndedWindowDrag(const gfx::Point& location_in_screen) = 0;
+                                const gfx::Point& location_in_screen) {}
+  virtual void EndedWindowDrag(const gfx::Point& location_in_screen) {}
   // Calls when a fling event starts.
-  virtual void StartFling(const ui::GestureEvent* event) = 0;
+  virtual void StartFling(const ui::GestureEvent* event) {}
 
   // Returns true if we should open overview behind the dragged window when drag
   // starts.
@@ -132,7 +128,7 @@ class TabletModeWindowDragDelegate {
   aura::Window* dragged_window_ = nullptr;  // not owned.
 
   // The backdrop should be disabled during dragging and resumed after dragging.
-  BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAuto;
+  BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAutoOpaque;
 
   // The dragged window should have the active window shadow elevation during
   // dragging.

@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.MULTI_PROCESS;
 
-import android.os.Build;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -16,7 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.components.heap_profiling.HeapProfilingTestShim;
 
 /**
@@ -29,16 +28,15 @@ public class HeapProfilingTest {
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
     @Before
-    public void setUp() throws Exception {}
+    public void setUp() {}
 
     @Test
     @MediumTest
-    @DisableIf
-            .Build(sdk_is_less_than = Build.VERSION_CODES.N)
-            @CommandLineFlags.Add({"memlog=browser",
-                    "memlog-stack-mode=native-include-thread-names", "memlog-sampling-rate=1"})
-            public void
-            testModeBrowser() throws Exception {
+    @DisabledTest(message = "http://crbug.com/968043")
+    @CommandLineFlags.Add({"memlog=browser", "memlog-stack-mode=native-include-thread-names",
+            "memlog-sampling-rate=1"})
+    public void
+    testModeBrowser() {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(
                 shim.runTestForMode("browser", false, "native-include-thread-names", false, false));
@@ -46,21 +44,21 @@ public class HeapProfilingTest {
 
     @Test
     @MediumTest
-    public void testModeBrowserDynamicPseudo() throws Exception {
+    public void testModeBrowserDynamicPseudo() {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", false, false));
     }
 
     @Test
     @MediumTest
-    public void testModeBrowserDynamicPseudoSampleEverything() throws Exception {
+    public void testModeBrowserDynamicPseudoSampleEverything() {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", true, true));
     }
 
     @Test
     @MediumTest
-    public void testModeBrowserDynamicPseudoSamplePartial() throws Exception {
+    public void testModeBrowserDynamicPseudoSamplePartial() {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", true, false));
     }

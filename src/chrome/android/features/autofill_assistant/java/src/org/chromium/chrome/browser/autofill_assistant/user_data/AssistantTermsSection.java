@@ -5,13 +5,15 @@
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
@@ -32,13 +34,10 @@ public class AssistantTermsSection {
     private final AssistantChoiceList mTermsList;
     private final TextView mTermsAgree;
     @Nullable
-    private final TextView mTermsRequiresReview;
-    private final TextView mThirdPartyPrivacyNotice;
+    private final TextView mTermsRequireReview;
+    private final TextView mPrivacyNotice;
     @Nullable
     private Delegate mDelegate;
-
-    private String mOrigin = "";
-    private String mAcceptTermsText = "";
 
     AssistantTermsSection(Context context, ViewGroup parent, boolean showAsSingleCheckbox) {
         mView = LayoutInflater.from(context).inflate(
@@ -54,7 +53,7 @@ public class AssistantTermsSection {
         mTermsAgree = new TextView(context);
         ApiCompatibilityUtils.setTextAppearance(mTermsAgree, R.style.TextAppearance_BlackCaption);
         mTermsAgree.setGravity(Gravity.CENTER_VERTICAL);
-        mTermsList.addItem(mTermsAgree, /*hasEditButton=*/false, selected -> {
+        mTermsList.addItem(mTermsAgree, /* hasEditButton= */ false, selected -> {
             if (selected) {
                 if (mDelegate != null) {
                     mDelegate.onStateChanged(AssistantTermsAndConditionsState.ACCEPTED);
@@ -62,46 +61,25 @@ public class AssistantTermsSection {
             } else if (showAsSingleCheckbox && mDelegate != null) {
                 mDelegate.onStateChanged(AssistantTermsAndConditionsState.NOT_SELECTED);
             }
-        }, /* itemEditedListener=*/null);
+        }, /* itemEditedListener= */ null);
 
         if (showAsSingleCheckbox) {
-            mTermsRequiresReview = null;
+            mTermsRequireReview = null;
         } else {
-            mTermsRequiresReview = new TextView(context);
+            mTermsRequireReview = new TextView(context);
             ApiCompatibilityUtils.setTextAppearance(
-                    mTermsRequiresReview, R.style.TextAppearance_BlackCaption);
-            mTermsRequiresReview.setGravity(Gravity.CENTER_VERTICAL);
-            mTermsRequiresReview.setTag(
+                    mTermsRequireReview, R.style.TextAppearance_BlackCaption);
+            mTermsRequireReview.setGravity(Gravity.CENTER_VERTICAL);
+            mTermsRequireReview.setTag(
                     AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW);
-            mTermsList.addItem(mTermsRequiresReview, /*hasEditButton=*/false, selected -> {
+            mTermsList.addItem(mTermsRequireReview, /* hasEditButton= */ false, selected -> {
                 if (selected && mDelegate != null) {
                     mDelegate.onStateChanged(AssistantTermsAndConditionsState.REQUIRES_REVIEW);
                 }
-            }, /* itemEditedListener=*/null);
+            }, /* itemEditedListener= */ null);
         }
 
-        mThirdPartyPrivacyNotice =
-                mView.findViewById(R.id.payment_request_3rd_party_privacy_notice);
-    }
-
-    public void setOrigin(String origin) {
-        mOrigin = origin;
-
-        setAcceptTermsText();
-        Context context = mView.getContext();
-        if (mTermsRequiresReview != null) {
-            AssistantTextUtils.applyVisualAppearanceTags(mTermsRequiresReview,
-                    context.getString(R.string.autofill_assistant_3rd_party_terms_review, origin),
-                    /* linkCallback= */ null);
-        }
-        AssistantTextUtils.applyVisualAppearanceTags(mThirdPartyPrivacyNotice,
-                context.getString(R.string.autofill_assistant_3rd_party_privacy_notice, origin),
-                /* linkCallback= */ null);
-    }
-
-    private void setAcceptTermsText() {
-        AssistantTextUtils.applyVisualAppearanceTags(mTermsAgree,
-                String.format(mAcceptTermsText, mOrigin), this::onTermsAndConditionsLinkClicked);
+        mPrivacyNotice = mView.findViewById(R.id.collect_data_privacy_notice);
     }
 
     private void onTermsAndConditionsLinkClicked(int link) {
@@ -119,8 +97,8 @@ public class AssistantTermsSection {
                 mTermsList.setCheckedItem(mTermsAgree);
                 break;
             case AssistantTermsAndConditionsState.REQUIRES_REVIEW:
-                if (mTermsRequiresReview != null) {
-                    mTermsList.setCheckedItem(mTermsRequiresReview);
+                if (mTermsRequireReview != null) {
+                    mTermsList.setCheckedItem(mTermsRequireReview);
                 }
                 break;
         }
@@ -136,13 +114,26 @@ public class AssistantTermsSection {
     }
 
     void setAcceptTermsAndConditionsText(String text) {
-        if (text.isEmpty()) {
+        if (TextUtils.isEmpty(text)) {
             mTermsList.setVisibility(View.GONE);
         } else {
             mTermsList.setVisibility(View.VISIBLE);
-            mAcceptTermsText = text;
-            setAcceptTermsText();
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    mTermsAgree, text, this::onTermsAndConditionsLinkClicked);
         }
+    }
+
+    void setTermsRequireReviewText(String text) {
+        if (mTermsRequireReview != null) {
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    mTermsRequireReview, text, /* linkCallback= */ null);
+        }
+    }
+
+    void setPrivacyNoticeText(String text) {
+        AssistantTextUtils.applyVisualAppearanceTags(
+                mPrivacyNotice, text, /* linkCallback= */ null);
+        mPrivacyNotice.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
     }
 
     View getView() {

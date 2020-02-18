@@ -162,6 +162,7 @@ RTPVideoHeader RtpPayloadParams::GetRtpVideoHeader(
     PopulateRtpWithCodecSpecifics(*codec_specific_info, image.SpatialIndex(),
                                   &rtp_video_header);
   }
+  rtp_video_header.frame_type = image._frameType,
   rtp_video_header.rotation = image.rotation_;
   rtp_video_header.content_type = image.content_type_;
   rtp_video_header.playout_delay = image.playout_delay_;
@@ -266,7 +267,8 @@ void RtpPayloadParams::SetGeneric(const CodecSpecificInfo* codec_specific_info,
       }
       return;
     case VideoCodecType::kVideoCodecVP9:
-      // TODO(philipel): Implement VP9 to new generic descriptor.
+    case VideoCodecType::kVideoCodecAV1:
+      // TODO(philipel): Implement VP9 and AV1 to generic descriptor.
       return;
     case VideoCodecType::kVideoCodecH264:
       if (codec_specific_info) {

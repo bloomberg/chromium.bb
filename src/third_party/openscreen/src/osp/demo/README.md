@@ -10,7 +10,7 @@ The same executable is run for the controller and receiver; only the command
 line options affect the behavior.  The command line options are:
 
 ``` bash
-    $ demo [-v] [friendly_name]
+    $ osp_demo [-v] [friendly_name]
 ```
 
  - `-v` enables verbose logging.

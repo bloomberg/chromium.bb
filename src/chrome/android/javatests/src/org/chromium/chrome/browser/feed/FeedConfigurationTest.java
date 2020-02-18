@@ -6,9 +6,6 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.host.config.Configuration;
-import com.google.android.libraries.feed.api.host.config.Configuration.ConfigKey;
-
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,6 +14,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
+import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -42,6 +41,8 @@ public class FeedConfigurationTest {
                 FeedConfiguration.getConsumeSyntheticTokens());
         Assert.assertEquals(FeedConfiguration.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT,
                 FeedConfiguration.getConsumeSyntheticTokensWhileRestoring());
+        Assert.assertEquals(FeedConfiguration.DEFAULT_ACTION_TTL_SECONDS_DEFAULT,
+                FeedConfiguration.getDefaultActionTtlSeconds());
         Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_ENDPOINT_DEFAULT,
                 FeedConfiguration.getFeedActionServerEndpoint());
         Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST_DEFAULT,
@@ -133,6 +134,16 @@ public class FeedConfigurationTest {
     public void
     testConsumeSyntheticTokensWhileRestoring() {
         Assert.assertTrue(FeedConfiguration.getConsumeSyntheticTokensWhileRestoring());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:default_action_ttl_seconds/42"})
+    public void
+    testDefaultActionTTLSeconds() {
+        Assert.assertEquals(42, FeedConfiguration.getDefaultActionTtlSeconds());
     }
 
     @Test
@@ -393,14 +404,16 @@ public class FeedConfigurationTest {
     @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
     public void testCreateConfiguration() {
         Configuration configuration = FeedConfiguration.createConfiguration();
-        Assert.assertTrue(
-                configuration.getValueOrDefault(ConfigKey.ABANDON_RESTORE_BELOW_FOLD, false));
+        Assert.assertFalse(
+                configuration.getValueOrDefault(ConfigKey.ABANDON_RESTORE_BELOW_FOLD, true));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, true));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.CONSUME_SYNTHETIC_TOKENS, true));
-        Assert.assertFalse(configuration.getValueOrDefault(
-                ConfigKey.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING, true));
+        Assert.assertTrue(configuration.getValueOrDefault(
+                ConfigKey.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING, false));
+        Assert.assertEquals((long) FeedConfiguration.DEFAULT_ACTION_TTL_SECONDS_DEFAULT,
+                configuration.getValueOrDefault(ConfigKey.DEFAULT_ACTION_TTL_SECONDS, 0));
         Assert.assertEquals(FeedConfiguration.FEED_ACTION_SERVER_ENDPOINT_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.FEED_ACTION_SERVER_ENDPOINT, ""));
         Assert.assertEquals(
@@ -420,31 +433,31 @@ public class FeedConfigurationTest {
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT,
                 configuration.getValueOrDefault(
                         ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED, false));
-        Assert.assertFalse(configuration.getValueOrDefault(ConfigKey.FEED_UI_ENABLED, true));
+        Assert.assertTrue(configuration.getValueOrDefault(ConfigKey.FEED_UI_ENABLED, false));
         Assert.assertEquals((long) FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.INITIAL_NON_CACHED_PAGE_SIZE, 0));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.LIMIT_PAGE_UPDATES_IN_HEAD, true));
         Assert.assertEquals((long) FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT,
                 configuration.getValueOrDefault(
-                        ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS, 0l));
+                        ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS, 0L));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.MANAGE_INTERESTS_ENABLED, true));
         Assert.assertEquals((long) FeedConfiguration.MAXIMUM_GC_ATTEMPTS_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.MAXIMUM_GC_ATTEMPTS, 0l));
+                configuration.getValueOrDefault(ConfigKey.MAXIMUM_GC_ATTEMPTS, 0L));
         Assert.assertEquals((long) FeedConfiguration.NON_CACHED_MIN_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.NON_CACHED_MIN_PAGE_SIZE, 0));
         Assert.assertEquals((long) FeedConfiguration.NON_CACHED_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.NON_CACHED_PAGE_SIZE, 0));
         Assert.assertEquals((long) FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0l));
-        Assert.assertFalse(configuration.getValueOrDefault(ConfigKey.SNIPPETS_ENABLED, true));
+                configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0L));
+        Assert.assertTrue(configuration.getValueOrDefault(ConfigKey.SNIPPETS_ENABLED, false));
         Assert.assertEquals((long) FeedConfiguration.SPINNER_DELAY_MS_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.SPINNER_DELAY_MS, 0l));
+                configuration.getValueOrDefault(ConfigKey.SPINNER_DELAY_MS, 0L));
         Assert.assertEquals((long) FeedConfiguration.SPINNER_MINIMUM_SHOW_TIME_MS_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.SPINNER_MINIMUM_SHOW_TIME_MS, 0l));
+                configuration.getValueOrDefault(ConfigKey.SPINNER_MINIMUM_SHOW_TIME_MS, 0L));
         Assert.assertEquals((long) FeedConfiguration.STORAGE_MISS_THRESHOLD_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.STORAGE_MISS_THRESHOLD, 0l));
+                configuration.getValueOrDefault(ConfigKey.STORAGE_MISS_THRESHOLD, 0L));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION, true));
         Assert.assertFalse(

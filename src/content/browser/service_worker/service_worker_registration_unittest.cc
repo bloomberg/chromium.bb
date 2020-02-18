@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -25,6 +26,7 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/fake_service_worker.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -35,8 +37,11 @@
 #include "content/browser/service_worker/test_service_worker_observer.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/url_loader_interceptor.h"
+#include "content/test/fake_network.h"
 #include "content/test/test_content_browser_client.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -46,6 +51,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -54,26 +60,8 @@ namespace {
 // From service_worker_registration.cc.
 constexpr base::TimeDelta kMaxLameDuckTime = base::TimeDelta::FromMinutes(5);
 
-// TODO(falken): Make this a common helper function.
-void StartWorker(ServiceWorkerVersion* version,
-                 ServiceWorkerMetrics::EventType purpose) {
-  base::RunLoop loop;
-  blink::ServiceWorkerStatusCode code;
-  version->StartWorker(
-      purpose,
-      base::BindOnce(
-          [](base::OnceClosure done, blink::ServiceWorkerStatusCode* out_code,
-             blink::ServiceWorkerStatusCode result_code) {
-            *out_code = result_code;
-            std::move(done).Run();
-          },
-          loop.QuitClosure(), &code));
-  loop.Run();
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, code);
-}
-
 int CreateInflightRequest(ServiceWorkerVersion* version) {
-  StartWorker(version, ServiceWorkerMetrics::EventType::PUSH);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, StartServiceWorker(version));
   return version->StartRequest(ServiceWorkerMetrics::EventType::PUSH,
                                base::DoNothing());
 }
@@ -91,7 +79,8 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   bool AllowServiceWorkerOnIO(
       const GURL& scope,
-      const GURL& first_party,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       content::ResourceContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
@@ -100,7 +89,8 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
 
   bool AllowServiceWorkerOnUI(
       const GURL& scope,
-      const GURL& first_party,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       content::BrowserContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
@@ -334,7 +324,8 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
                                   context()->AsWeakPtr(), &remote_endpoint);
   auto registration_object_host =
       std::make_unique<ServiceWorkerRegistrationObjectHost>(
-          context()->AsWeakPtr(), provider_host.get(), registration);
+          context()->AsWeakPtr(), provider_host->container_host(),
+          registration);
   // To enable the caller end point
   // |registration_object_host->remote_registration_| to make calls safely with
   // no need to pass |object_info_->receiver| through a message pipe endpoint.
@@ -439,9 +430,9 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
         context()->AsWeakPtr(), &remote_endpoint_);
     DCHECK(remote_endpoint_.client_receiver()->is_valid());
     DCHECK(remote_endpoint_.host_remote()->is_bound());
-    host_->UpdateUrls(kUrl, kUrl);
-    host_->SetControllerRegistration(registration_,
-                                     false /* notify_controllerchange */);
+    host_->container_host()->UpdateUrls(kUrl, kUrl, url::Origin::Create(kUrl));
+    host_->container_host()->SetControllerRegistration(
+        registration_, false /* notify_controllerchange */);
 
     // Setup the Mojo implementation fakes for the renderer-side service worker.
     // These will be bound once the service worker starts.
@@ -480,7 +471,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
         helper_->AddNewPendingServiceWorker<FakeServiceWorker>(helper_.get());
 
     // Start the worker.
-    StartWorker(version_2.get(), ServiceWorkerMetrics::EventType::INSTALL);
+    ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,
+              StartServiceWorker(version_2.get()));
     version_2->SetStatus(ServiceWorkerVersion::INSTALLED);
 
     // Set it to activate when ready. The original version should still be
@@ -508,12 +500,12 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
   int inflight_request_id() const { return inflight_request_id_; }
 
   void AddControllee() {
-    controllee()->SetControllerRegistration(
+    controllee()->container_host()->SetControllerRegistration(
         registration(), false /* notify_controllerchange */);
   }
 
   void RemoveControllee() {
-    controllee()->SetControllerRegistration(
+    controllee()->container_host()->SetControllerRegistration(
         nullptr, false /* notify_controllerchange */);
   }
 
@@ -821,15 +813,17 @@ class ServiceWorkerRegistrationObjectHostTest
       std::string* out_error_msg) {
     blink::mojom::ServiceWorkerErrorType out_error =
         blink::mojom::ServiceWorkerErrorType::kUnknown;
-    registration_host->Update(base::BindLambdaForTesting(
-        [&out_error, &out_error_msg](
-            blink::mojom::ServiceWorkerErrorType error,
-            const base::Optional<std::string>& error_msg) {
-          out_error = error;
-          if (out_error_msg) {
-            *out_error_msg = error_msg ? *error_msg : "";
-          }
-        }));
+    registration_host->Update(
+        blink::mojom::FetchClientSettingsObject::New(),
+        base::BindLambdaForTesting(
+            [&out_error, &out_error_msg](
+                blink::mojom::ServiceWorkerErrorType error,
+                const base::Optional<std::string>& error_msg) {
+              out_error = error;
+              if (out_error_msg) {
+                *out_error_msg = error_msg ? *error_msg : "";
+              }
+            }));
     base::RunLoop().RunUntilIdle();
     return out_error;
   }
@@ -944,7 +938,8 @@ class ServiceWorkerRegistrationObjectHostTest
     base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
         context()->AsWeakPtr(), &remote_endpoint);
-    host->UpdateUrls(document_url, document_url);
+    host->container_host()->UpdateUrls(document_url, document_url,
+                                       url::Origin::Create(document_url));
     if (out_host)
       *out_host = host;
     return remote_endpoint;
@@ -981,6 +976,11 @@ class ServiceWorkerRegistrationObjectHostTest
 class ServiceWorkerRegistrationObjectHostUpdateTest
     : public ServiceWorkerRegistrationObjectHostTest,
       public testing::WithParamInterface<bool> {
+ public:
+  ServiceWorkerRegistrationObjectHostUpdateTest()
+      : interceptor_(base::BindRepeating(&FakeNetwork::HandleRequest,
+                                         base::Unretained(&fake_network_))) {}
+
  protected:
   void SetUp() override {
     if (IsImportedScriptUpdateCheckEnabled()) {
@@ -996,6 +996,8 @@ class ServiceWorkerRegistrationObjectHostUpdateTest
   static bool IsImportedScriptUpdateCheckEnabled() { return GetParam(); }
 
  private:
+  FakeNetwork fake_network_;
+  URLLoaderInterceptor interceptor_;
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -1057,7 +1059,8 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
 
   ASSERT_TRUE(bad_messages_.empty());
   GURL url("https://does.not.exist/");
-  provider_host->UpdateUrls(url, url);
+  provider_host->container_host()->UpdateUrls(url, url,
+                                              url::Origin::Create(url));
   CallUpdate(registration_host.get(), /*out_error_msg=*/nullptr);
   EXPECT_EQ(1u, bad_messages_.size());
 }
@@ -1165,8 +1168,9 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoint);
-  host->UpdateUrls(kScope, kScope);
-  version->AddControllee(host.get());
+  host->container_host()->UpdateUrls(kScope, kScope,
+                                     url::Origin::Create(kScope));
+  version->AddControllee(host->container_host());
 
   // Initially set |self_update_delay| to zero.
   registration->set_self_update_delay(base::TimeDelta());
@@ -1229,8 +1233,9 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest,
   registration_host.Bind(std::move(info->host_remote));
 
   ASSERT_TRUE(bad_messages_.empty());
-  provider_host->UpdateUrls(GURL("https://does.not.exist/"),
-                            GURL("https://does.not.exist/"));
+  provider_host->container_host()->UpdateUrls(
+      GURL("https://does.not.exist/"), GURL("https://does.not.exist/"),
+      url::Origin::Create(GURL("https://does.not.exist/")));
   CallUnregister(registration_host.get());
   EXPECT_EQ(1u, bad_messages_.size());
 }

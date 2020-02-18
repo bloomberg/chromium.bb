@@ -17,12 +17,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -35,12 +36,12 @@ class PrefService;
 namespace base {
 class SequencedTaskRunner;
 class TimeDelta;
-}
+}  // namespace base
 
 namespace net {
 class HttpRequestHeaders;
 class ProxyList;
-}
+}  // namespace net
 
 namespace data_reduction_proxy {
 
@@ -73,7 +74,6 @@ class DataReductionProxyService
       PrefService* prefs,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<DataStore> store,
-      std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
       network::NetworkQualityTracker* network_quality_tracker,
       network::NetworkConnectionTracker* network_connection_tracker,
       data_use_measurement::DataUseMeasurement* data_use_measurement,
@@ -126,15 +126,6 @@ class DataReductionProxyService
   void DeleteHistoricalDataUsage();
   void DeleteBrowsingHistory(const base::Time& start, const base::Time& end);
 
-  // Sets the reporting fraction in the pingback client. Virtual for testing.
-  virtual void SetPingbackReportingFraction(float pingback_reporting_fraction);
-
-  // Sets |pingback_client_| to be used for testing purposes.
-  void SetPingbackClientForTesting(
-      DataReductionProxyPingbackClient* pingback_client) {
-    pingback_client_.reset(pingback_client);
-  }
-
   void SetSettingsForTesting(DataReductionProxySettings* settings) {
     settings_ = settings;
   }
@@ -168,21 +159,19 @@ class DataReductionProxyService
                         const net::ProxyList& bad_proxies,
                         MarkProxiesAsBadCallback callback) override;
   void AddThrottleConfigObserver(
-      mojom::DataReductionProxyThrottleConfigObserverPtr observer) override;
-  void Clone(mojom::DataReductionProxyRequest request) override;
+      mojo::PendingRemote<mojom::DataReductionProxyThrottleConfigObserver>
+          observer) override;
+  void Clone(
+      mojo::PendingReceiver<mojom::DataReductionProxy> receiver) override;
 
   // Accessor methods.
   DataReductionProxyCompressionStats* compression_stats() const {
     return compression_stats_.get();
   }
 
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info()
-      const {
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
+  pending_url_loader_factory() const {
     return url_loader_factory_->Clone();
-  }
-
-  DataReductionProxyPingbackClient* pingback_client() const {
-    return pingback_client_.get();
   }
 
   DataReductionProxyConfigurator* configurator() const {
@@ -270,8 +259,6 @@ class DataReductionProxyService
   // Tracks compression statistics to be displayed to the user.
   std::unique_ptr<DataReductionProxyCompressionStats> compression_stats_;
 
-  std::unique_ptr<DataReductionProxyPingbackClient> pingback_client_;
-
   DataReductionProxySettings* settings_;
 
   // A prefs service for storing data.
@@ -326,9 +313,9 @@ class DataReductionProxyService
   mojo::RemoteSet<network::mojom::CustomProxyConfigClient>
       proxy_config_clients_;
 
-  mojo::BindingSet<mojom::DataReductionProxy> drp_bindings_;
+  mojo::ReceiverSet<mojom::DataReductionProxy> drp_receivers_;
 
-  mojo::InterfacePtrSet<mojom::DataReductionProxyThrottleConfigObserver>
+  mojo::RemoteSet<mojom::DataReductionProxyThrottleConfigObserver>
       drp_throttle_config_observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);

@@ -65,7 +65,7 @@ MessagePort::~MessagePort() {
 
 void MessagePort::postMessage(ScriptState* script_state,
                               const ScriptValue& message,
-                              Vector<ScriptValue>& transfer,
+                              HeapVector<ScriptValue>& transfer,
                               ExceptionState& exception_state) {
   PostMessageOptions* options = PostMessageOptions::Create();
   if (!transfer.IsEmpty())
@@ -107,6 +107,9 @@ void MessagePort::postMessage(ScriptState* script_state,
     return;
   msg.user_activation = PostMessageHelper::CreateUserActivationSnapshot(
       GetExecutionContext(), options);
+
+  msg.sender_origin =
+      GetExecutionContext()->GetSecurityOrigin()->IsolatedCopy();
 
   ThreadDebugger* debugger = ThreadDebugger::From(script_state->GetIsolate());
   if (debugger)
@@ -291,23 +294,7 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
       return true;
   }
 
-  Event* evt;
-  if (!message.locked_agent_cluster_id ||
-      GetExecutionContext()->IsSameAgentCluster(
-          *message.locked_agent_cluster_id)) {
-    MessagePortArray* ports = MessagePort::EntanglePorts(
-        *GetExecutionContext(), std::move(message.ports));
-    UserActivation* user_activation = nullptr;
-    if (message.user_activation) {
-      user_activation = MakeGarbageCollected<UserActivation>(
-          message.user_activation->has_been_active,
-          message.user_activation->was_active);
-    }
-    evt = MessageEvent::Create(ports, std::move(message.message),
-                               user_activation);
-  } else {
-    evt = MessageEvent::CreateError();
-  }
+  Event* evt = CreateMessageEvent(message);
 
   v8::Isolate* isolate = GetExecutionContext()->GetIsolate();
   ThreadDebugger* debugger = ThreadDebugger::From(isolate);
@@ -317,6 +304,48 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
   if (debugger)
     debugger->ExternalAsyncTaskFinished(message.sender_stack_trace_id);
   return true;
+}
+
+Event* MessagePort::CreateMessageEvent(BlinkTransferableMessage& message) {
+  ExecutionContext* context = GetExecutionContext();
+  // Dispatch a messageerror event when the target is a remote origin that is
+  // not allowed to access the message's data.
+  if (message.message->IsOriginCheckRequired()) {
+    const SecurityOrigin* target_origin = context->GetSecurityOrigin();
+    if (!message.sender_origin ||
+        !message.sender_origin->IsSameOriginWith(target_origin)) {
+      return MessageEvent::CreateError();
+    }
+  }
+
+  if (message.locked_agent_cluster_id) {
+    if (!context->IsSameAgentCluster(*message.locked_agent_cluster_id)) {
+      UseCounter::Count(
+          context,
+          WebFeature::kMessageEventSharedArrayBufferDifferentAgentCluster);
+      return MessageEvent::CreateError();
+    }
+    const SecurityOrigin* target_origin = context->GetSecurityOrigin();
+    if (!message.sender_origin ||
+        !message.sender_origin->IsSameOriginWith(target_origin)) {
+      UseCounter::Count(
+          context, WebFeature::kMessageEventSharedArrayBufferSameAgentCluster);
+    } else {
+      UseCounter::Count(context,
+                        WebFeature::kMessageEventSharedArrayBufferSameOrigin);
+    }
+  }
+
+  MessagePortArray* ports = MessagePort::EntanglePorts(
+      *GetExecutionContext(), std::move(message.ports));
+  UserActivation* user_activation = nullptr;
+  if (message.user_activation) {
+    user_activation = MakeGarbageCollected<UserActivation>(
+        message.user_activation->has_been_active,
+        message.user_activation->was_active);
+  }
+  return MessageEvent::Create(ports, std::move(message.message),
+                              user_activation);
 }
 
 void MessagePort::ResetMessageCount() {

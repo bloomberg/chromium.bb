@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <memory>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quiche/src/quic/core/congestion_control/send_algorithm_interface.h"
@@ -14,7 +15,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
@@ -677,20 +677,29 @@ TEST_F(TcpCubicSenderBytesTest, BandwidthResumption) {
   const QuicBandwidth kBandwidthEstimate =
       QuicBandwidth::FromBytesPerSecond(kNumberOfPackets * kDefaultTCPMSS);
   const QuicTime::Delta kRttEstimate = QuicTime::Delta::FromSeconds(1);
-  sender_->AdjustNetworkParameters(kBandwidthEstimate, kRttEstimate, false);
+
+  SendAlgorithmInterface::NetworkParams network_param;
+  network_param.bandwidth = kBandwidthEstimate;
+  network_param.rtt = kRttEstimate;
+  sender_->AdjustNetworkParameters(network_param);
   EXPECT_EQ(kNumberOfPackets * kDefaultTCPMSS, sender_->GetCongestionWindow());
 
   // Resume with an illegal value of 0 and verify the server ignores it.
-  sender_->AdjustNetworkParameters(QuicBandwidth::Zero(), kRttEstimate, false);
+  SendAlgorithmInterface::NetworkParams network_param_no_bandwidth;
+  network_param_no_bandwidth.bandwidth = QuicBandwidth::Zero();
+  network_param_no_bandwidth.rtt = kRttEstimate;
+  sender_->AdjustNetworkParameters(network_param_no_bandwidth);
   EXPECT_EQ(kNumberOfPackets * kDefaultTCPMSS, sender_->GetCongestionWindow());
 
   // Resumed CWND is limited to be in a sensible range.
   const QuicBandwidth kUnreasonableBandwidth =
-      QuicBandwidth::FromBytesPerSecond((kMaxCongestionWindowPackets + 1) *
+      QuicBandwidth::FromBytesPerSecond((kMaxResumptionCongestionWindow + 1) *
                                         kDefaultTCPMSS);
-  sender_->AdjustNetworkParameters(kUnreasonableBandwidth,
-                                   QuicTime::Delta::FromSeconds(1), false);
-  EXPECT_EQ(kMaxCongestionWindowPackets * kDefaultTCPMSS,
+  SendAlgorithmInterface::NetworkParams network_param_large_bandwidth;
+  network_param_large_bandwidth.bandwidth = kUnreasonableBandwidth;
+  network_param_large_bandwidth.rtt = QuicTime::Delta::FromSeconds(1);
+  sender_->AdjustNetworkParameters(network_param_large_bandwidth);
+  EXPECT_EQ(kMaxResumptionCongestionWindow * kDefaultTCPMSS,
             sender_->GetCongestionWindow());
 }
 
@@ -781,20 +790,22 @@ TEST_F(TcpCubicSenderBytesTest, DefaultMaxCwnd) {
 
   AckedPacketVector acked_packets;
   LostPacketVector missing_packets;
-  for (uint64_t i = 1; i < kDefaultMaxCongestionWindowPackets; ++i) {
+  QuicPacketCount max_congestion_window =
+      GetQuicFlag(FLAGS_quic_max_congestion_window);
+  for (uint64_t i = 1; i < max_congestion_window; ++i) {
     acked_packets.clear();
     acked_packets.push_back(
         AckedPacket(QuicPacketNumber(i), 1350, QuicTime::Zero()));
     sender->OnCongestionEvent(true, sender->GetCongestionWindow(), clock_.Now(),
                               acked_packets, missing_packets);
   }
-  EXPECT_EQ(kDefaultMaxCongestionWindowPackets,
+  EXPECT_EQ(max_congestion_window,
             sender->GetCongestionWindow() / kDefaultTCPMSS);
 }
 
 TEST_F(TcpCubicSenderBytesTest, LimitCwndIncreaseInCongestionAvoidance) {
   // Enable Cubic.
-  sender_ = QuicMakeUnique<TcpCubicSenderBytesPeer>(&clock_, false);
+  sender_ = std::make_unique<TcpCubicSenderBytesPeer>(&clock_, false);
 
   int num_sent = SendAvailableSendWindow();
 

@@ -32,6 +32,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
@@ -1045,6 +1046,11 @@ void WallpaperControllerImpl::ConfirmPreviewWallpaper() {
   }
   std::move(confirm_preview_wallpaper_callback_).Run();
   reload_preview_wallpaper_callback_.Reset();
+
+  // Ensure dimming is applied after confirming the preview wallpaper.
+  if (ShouldApplyDimming())
+    RepaintWallpaper();
+
   for (auto& observer : observers_)
     observer.OnWallpaperPreviewEnded();
 }

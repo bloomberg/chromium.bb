@@ -5,6 +5,9 @@
 #ifndef V8_OBJECTS_SHARED_FUNCTION_INFO_H_
 #define V8_OBJECTS_SHARED_FUNCTION_INFO_H_
 
+#include <memory>
+
+#include "src/base/bit-field.h"
 #include "src/codegen/bailout-reason.h"
 #include "src/objects/compressed-slots.h"
 #include "src/objects/function-kind.h"
@@ -21,10 +24,6 @@
 #include "src/objects/object-macros.h"
 
 namespace v8 {
-
-namespace tracing {
-class TracedValue;
-}
 
 namespace internal {
 
@@ -55,11 +54,9 @@ class WasmJSFunctionData;
 // +-------------------------------+
 // | Inner PreparseData N          |
 // +-------------------------------+
-class PreparseData : public HeapObject {
+class PreparseData
+    : public TorqueGeneratedPreparseData<PreparseData, HeapObject> {
  public:
-  DECL_INT_ACCESSORS(data_length)
-  DECL_INT_ACCESSORS(children_length)
-
   inline int inner_start_offset() const;
   inline ObjectSlot inner_data_start() const;
 
@@ -74,12 +71,9 @@ class PreparseData : public HeapObject {
   // Clear uninitialized padding space.
   inline void clear_padding();
 
-  DECL_CAST(PreparseData)
   DECL_PRINTER(PreparseData)
   DECL_VERIFIER(PreparseData)
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize,
-                                TORQUE_GENERATED_PREPARSE_DATA_FIELDS)
   static const int kDataStartOffset = kSize;
 
   class BodyDescriptor;
@@ -92,7 +86,7 @@ class PreparseData : public HeapObject {
     return InnerOffset(data_length) + children_length * kTaggedSize;
   }
 
-  OBJECT_CONSTRUCTORS(PreparseData, HeapObject);
+  TQ_OBJECT_CONSTRUCTORS(PreparseData)
 
  private:
   inline Object get_child_raw(int index) const;
@@ -100,101 +94,58 @@ class PreparseData : public HeapObject {
 
 // Abstract class representing extra data for an uncompiled function, which is
 // not stored in the SharedFunctionInfo.
-class UncompiledData : public HeapObject {
+class UncompiledData
+    : public TorqueGeneratedUncompiledData<UncompiledData, HeapObject> {
  public:
-  DECL_ACCESSORS(inferred_name, String)
-  DECL_INT32_ACCESSORS(start_position)
-  DECL_INT32_ACCESSORS(end_position)
-
-  DECL_CAST(UncompiledData)
-
-  inline static void Initialize(
-      UncompiledData data, String inferred_name, int start_position,
-      int end_position,
+  inline void Init(
+      String inferred_name, int start_position, int end_position,
       std::function<void(HeapObject object, ObjectSlot slot, HeapObject target)>
           gc_notify_updated_slot =
               [](HeapObject object, ObjectSlot slot, HeapObject target) {});
 
-  // Layout description.
-#define UNCOMPILED_DATA_FIELDS(V)                                         \
-  V(kStartOfStrongFieldsOffset, 0)                                        \
-  V(kInferredNameOffset, kTaggedSize)                                     \
-  V(kEndOfStrongFieldsOffset, 0)                                          \
-  /* Raw data fields. */                                                  \
-  V(kStartPositionOffset, kInt32Size)                                     \
-  V(kEndPositionOffset, kInt32Size)                                       \
-  V(kOptionalPaddingOffset, POINTER_SIZE_PADDING(kOptionalPaddingOffset)) \
-  /* Header size. */                                                      \
-  V(kSize, 0)
+  using BodyDescriptor =
+      FixedBodyDescriptor<kStartOfStrongFieldsOffset, kEndOfStrongFieldsOffset,
+                          kHeaderSize>;
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize, UNCOMPILED_DATA_FIELDS)
-#undef UNCOMPILED_DATA_FIELDS
-
-  using BodyDescriptor = FixedBodyDescriptor<kStartOfStrongFieldsOffset,
-                                             kEndOfStrongFieldsOffset, kSize>;
-
-  // Clear uninitialized padding space.
-  inline void clear_padding();
-
-  OBJECT_CONSTRUCTORS(UncompiledData, HeapObject);
+  TQ_OBJECT_CONSTRUCTORS(UncompiledData)
 };
 
 // Class representing data for an uncompiled function that does not have any
 // data from the pre-parser, either because it's a leaf function or because the
 // pre-parser bailed out.
-class UncompiledDataWithoutPreparseData : public UncompiledData {
+class UncompiledDataWithoutPreparseData
+    : public TorqueGeneratedUncompiledDataWithoutPreparseData<
+          UncompiledDataWithoutPreparseData, UncompiledData> {
  public:
-  DECL_CAST(UncompiledDataWithoutPreparseData)
   DECL_PRINTER(UncompiledDataWithoutPreparseData)
-  DECL_VERIFIER(UncompiledDataWithoutPreparseData)
-
-  static const int kSize = UncompiledData::kSize;
 
   // No extra fields compared to UncompiledData.
   using BodyDescriptor = UncompiledData::BodyDescriptor;
 
-  OBJECT_CONSTRUCTORS(UncompiledDataWithoutPreparseData, UncompiledData);
+  TQ_OBJECT_CONSTRUCTORS(UncompiledDataWithoutPreparseData)
 };
 
 // Class representing data for an uncompiled function that has pre-parsed scope
 // data.
-class UncompiledDataWithPreparseData : public UncompiledData {
+class UncompiledDataWithPreparseData
+    : public TorqueGeneratedUncompiledDataWithPreparseData<
+          UncompiledDataWithPreparseData, UncompiledData> {
  public:
-  DECL_ACCESSORS(preparse_data, PreparseData)
-
-  DECL_CAST(UncompiledDataWithPreparseData)
   DECL_PRINTER(UncompiledDataWithPreparseData)
-  DECL_VERIFIER(UncompiledDataWithPreparseData)
 
-  inline static void Initialize(
-      UncompiledDataWithPreparseData data, String inferred_name,
-      int start_position, int end_position, PreparseData scope_data,
+  inline void Init(
+      String inferred_name, int start_position, int end_position,
+      PreparseData scope_data,
       std::function<void(HeapObject object, ObjectSlot slot, HeapObject target)>
           gc_notify_updated_slot =
               [](HeapObject object, ObjectSlot slot, HeapObject target) {});
-
-  // Layout description.
-
-#define UNCOMPILED_DATA_WITH_PREPARSE_DATA_FIELDS(V) \
-  V(kStartOfStrongFieldsOffset, 0)                   \
-  V(kPreparseDataOffset, kTaggedSize)                \
-  V(kEndOfStrongFieldsOffset, 0)                     \
-  /* Total size. */                                  \
-  V(kSize, 0)
-
-  DEFINE_FIELD_OFFSET_CONSTANTS(UncompiledData::kSize,
-                                UNCOMPILED_DATA_WITH_PREPARSE_DATA_FIELDS)
-#undef UNCOMPILED_DATA_WITH_PREPARSE_DATA_FIELDS
-
-  // Make sure the size is aligned
-  STATIC_ASSERT(IsAligned(kSize, kTaggedSize));
 
   using BodyDescriptor = SubclassBodyDescriptor<
       UncompiledData::BodyDescriptor,
       FixedBodyDescriptor<kStartOfStrongFieldsOffset, kEndOfStrongFieldsOffset,
                           kSize>>;
 
-  OBJECT_CONSTRUCTORS(UncompiledDataWithPreparseData, UncompiledData);
+  TQ_OBJECT_CONSTRUCTORS(UncompiledDataWithPreparseData)
 };
 
 class InterpreterData : public Struct {
@@ -218,8 +169,15 @@ class SharedFunctionInfo : public HeapObject {
  public:
   NEVER_READ_ONLY_SPACE
 
-  V8_EXPORT_PRIVATE static constexpr Object const kNoSharedNameSentinel =
-      Smi::kZero;
+  // This initializes the SharedFunctionInfo after allocation. It must
+  // initialize all fields, and leave the SharedFunctionInfo in a state where
+  // it is safe for the GC to visit it.
+  //
+  // Important: This function MUST not allocate.
+  void Init(ReadOnlyRoots roots, int unique_id);
+
+  V8_EXPORT_PRIVATE static constexpr Smi const kNoSharedNameSentinel =
+      Smi::zero();
 
   // [name]: Returns shared name if it exists or an empty string otherwise.
   inline String Name() const;
@@ -242,7 +200,7 @@ class SharedFunctionInfo : public HeapObject {
   // Set up the link between shared function info and the script. The shared
   // function info is added to the list on the script.
   V8_EXPORT_PRIVATE static void SetScript(
-      Handle<SharedFunctionInfo> shared, Handle<Object> script_object,
+      Handle<SharedFunctionInfo> shared, Handle<HeapObject> script_object,
       int function_literal_id, bool reset_preparsed_scope_data = true);
 
   // Layout description of the optimized code map.
@@ -408,10 +366,13 @@ class SharedFunctionInfo : public HeapObject {
   // [script_or_debug_info]: One of:
   //  - Script from which the function originates.
   //  - a DebugInfo which holds the actual script [HasDebugInfo()].
-  DECL_ACCESSORS(script_or_debug_info, Object)
+  DECL_ACCESSORS(script_or_debug_info, HeapObject)
 
-  inline Object script() const;
-  inline void set_script(Object script);
+  inline HeapObject script() const;
+  inline void set_script(HeapObject script);
+
+  // True if the underlying script was parsed and compiled in REPL mode.
+  inline bool is_repl_mode() const;
 
   // The function is subject to debugging if a debug info is attached.
   inline bool HasDebugInfo() const;
@@ -490,6 +451,10 @@ class SharedFunctionInfo : public HeapObject {
   // Indicates that the function has been reported for binary code coverage.
   DECL_BOOLEAN_ACCESSORS(has_reported_binary_coverage)
 
+  // Indicates that the private name lookups inside the function skips the
+  // closest outer class scope.
+  DECL_BOOLEAN_ACCESSORS(private_name_lookup_skips_outer_class)
+
   inline FunctionKind kind() const;
 
   // Defines the index in a native context of closure's map instantiated using
@@ -531,10 +496,10 @@ class SharedFunctionInfo : public HeapObject {
   // - internal break points
   // - coverage and type profile
   // - error stack trace
-  inline bool IsSubjectToDebugging();
+  inline bool IsSubjectToDebugging() const;
 
   // Whether this function is defined in user-provided JavaScript code.
-  inline bool IsUserJavaScript();
+  inline bool IsUserJavaScript() const;
 
   // True if one can flush compiled code from this function, in such a way that
   // it can later be re-compiled.
@@ -558,8 +523,19 @@ class SharedFunctionInfo : public HeapObject {
   // Hence it takes the mode as an argument.
   inline bool ShouldFlushBytecode(BytecodeFlushMode mode);
 
-  // Check whether or not this function is inlineable.
-  bool IsInlineable();
+  enum Inlineability {
+    kIsInlineable,
+    // Different reasons for not being inlineable:
+    kHasNoScript,
+    kNeedsBinaryCoverage,
+    kHasOptimizationDisabled,
+    kIsBuiltin,
+    kIsNotUserCode,
+    kHasNoBytecode,
+    kExceedsBytecodeLimit,
+    kMayContainBreakPoints,
+  };
+  Inlineability GetInlineability() const;
 
   // Source size of this function.
   int SourceSize();
@@ -586,7 +562,7 @@ class SharedFunctionInfo : public HeapObject {
   static void EnsureSourcePositionsAvailable(
       Isolate* isolate, Handle<SharedFunctionInfo> shared_info);
 
-  bool AreSourcePositionsAvailable() const;
+  V8_EXPORT_PRIVATE bool AreSourcePositionsAvailable() const;
 
   // Hash based on function literal id and script id.
   V8_EXPORT_PRIVATE uint32_t Hash();
@@ -607,22 +583,6 @@ class SharedFunctionInfo : public HeapObject {
   void PrintSourceCode(std::ostream& os);
 #endif
 
-  // Returns the SharedFunctionInfo in a format tracing can support.
-  std::unique_ptr<v8::tracing::TracedValue> ToTracedValue(
-      FunctionLiteral* literal);
-
-  // The tracing scope for SharedFunctionInfo objects.
-  static const char* kTraceScope;
-
-  // Returns the unique TraceID for this SharedFunctionInfo (within the
-  // kTraceScope, works only for functions that have a Script and start/end
-  // position).
-  uint64_t TraceID(FunctionLiteral* literal = nullptr) const;
-
-  // Returns the unique trace ID reference for this SharedFunctionInfo
-  // (based on the |TraceID()| above).
-  std::unique_ptr<v8::tracing::TracedValue> TraceIDRef() const;
-
   // Iterate over all shared function infos in a given script.
   class ScriptIterator {
    public:
@@ -638,21 +598,6 @@ class SharedFunctionInfo : public HeapObject {
     Handle<WeakFixedArray> shared_function_infos_;
     int index_;
     DISALLOW_COPY_AND_ASSIGN(ScriptIterator);
-  };
-
-  // Iterate over all shared function infos on the heap.
-  class GlobalIterator {
-   public:
-    V8_EXPORT_PRIVATE explicit GlobalIterator(Isolate* isolate);
-    V8_EXPORT_PRIVATE SharedFunctionInfo Next();
-
-   private:
-    Isolate* isolate_;
-    Script::Iterator script_iterator_;
-    WeakArrayList::Iterator noscript_sfi_iterator_;
-    SharedFunctionInfo::ScriptIterator sfi_iterator_;
-    DISALLOW_HEAP_ALLOCATION(no_gc_)
-    DISALLOW_COPY_AND_ASSIGN(GlobalIterator);
   };
 
   DECL_CAST(SharedFunctionInfo)
@@ -691,7 +636,8 @@ class SharedFunctionInfo : public HeapObject {
   V(HasReportedBinaryCoverageBit, bool, 1, _)                \
   V(IsTopLevelBit, bool, 1, _)                               \
   V(IsOneshotIIFEOrPropertiesAreFinalBit, bool, 1, _)        \
-  V(IsSafeToSkipArgumentsAdaptorBit, bool, 1, _)
+  V(IsSafeToSkipArgumentsAdaptorBit, bool, 1, _)             \
+  V(PrivateNameLookupSkipsOuterClassBit, bool, 1, _)
   DEFINE_BIT_FIELDS(FLAGS_BIT_FIELDS)
 #undef FLAGS_BIT_FIELDS
 

@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 
-namespace app_list {
+namespace ash {
 
 SearchBoxModel::SearchBoxModel() = default;
 
@@ -39,15 +39,6 @@ void SearchBoxModel::UpdateAccessibleName() {
 
   for (auto& observer : observers_)
     observer.HintTextChanged();
-}
-
-void SearchBoxModel::SetSelectionModel(const gfx::SelectionModel& sel) {
-  if (selection_model_ == sel)
-    return;
-
-  selection_model_ = sel;
-  for (auto& observer : observers_)
-    observer.SelectionModelChanged();
 }
 
 void SearchBoxModel::SetTabletMode(bool is_tablet_mode) {
@@ -99,4 +90,4 @@ void SearchBoxModel::RemoveObserver(SearchBoxModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-}  // namespace app_list
+}  // namespace ash

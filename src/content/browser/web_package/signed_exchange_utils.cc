@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/download_utils_impl.h"
@@ -21,7 +22,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace content {
 namespace signed_exchange_utils {
@@ -60,7 +61,7 @@ bool IsSignedExchangeReportingForDistributorsEnabled() {
 
 bool ShouldHandleAsSignedHTTPExchange(
     const GURL& request_url,
-    const network::ResourceResponseHead& head) {
+    const network::mojom::URLResponseHead& head) {
   // Currently we don't support the signed exchange which is returned from a
   // service worker.
   // TODO(crbug/803774): Decide whether we should support it or not.
@@ -202,13 +203,12 @@ SignedExchangeLoadResult GetLoadResultFromSignatureVerifierResult(
 net::RedirectInfo CreateRedirectInfo(
     const GURL& new_url,
     const network::ResourceRequest& outer_request,
-    const network::ResourceResponseHead& outer_response,
+    const network::mojom::URLResponseHead& outer_response,
     bool is_fallback_redirect) {
   // https://wicg.github.io/webpackage/loading.html#mp-http-fetch
   // Step 3. Set actualResponse's status to 303. [spec text]
   return net::RedirectInfo::ComputeRedirectInfo(
       "GET", outer_request.url, outer_request.site_for_cookies,
-      outer_request.top_frame_origin,
       outer_request.update_first_party_url_on_redirect
           ? net::URLRequest::FirstPartyURLPolicy::
                 UPDATE_FIRST_PARTY_URL_ON_REDIRECT
@@ -220,11 +220,11 @@ net::RedirectInfo CreateRedirectInfo(
       is_fallback_redirect);
 }
 
-network::ResourceResponseHead CreateRedirectResponseHead(
-    const network::ResourceResponseHead& outer_response,
+network::mojom::URLResponseHeadPtr CreateRedirectResponseHead(
+    const network::mojom::URLResponseHead& outer_response,
     bool is_fallback_redirect) {
-  network::ResourceResponseHead response_head;
-  response_head.encoded_data_length = 0;
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->encoded_data_length = 0;
   std::string buf;
   std::string link_header;
   if (!is_fallback_redirect &&
@@ -239,14 +239,14 @@ network::ResourceResponseHead CreateRedirectResponseHead(
         "link: %s\r\n",
         303, "See Other", link_header.c_str());
   }
-  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(buf));
-  response_head.encoded_data_length = 0;
-  response_head.request_start = outer_response.request_start;
-  response_head.response_start = outer_response.response_start;
-  response_head.request_time = outer_response.request_time;
-  response_head.response_time = outer_response.response_time;
-  response_head.load_timing = outer_response.load_timing;
+  response_head->encoded_data_length = 0;
+  response_head->request_start = outer_response.request_start;
+  response_head->response_start = outer_response.response_start;
+  response_head->request_time = outer_response.request_time;
+  response_head->response_time = outer_response.response_time;
+  response_head->load_timing = outer_response.load_timing;
   return response_head;
 }
 

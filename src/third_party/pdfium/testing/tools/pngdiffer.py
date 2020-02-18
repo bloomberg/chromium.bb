@@ -11,14 +11,16 @@ import sys
 
 import common
 
+
 class PNGDiffer():
-  def __init__(self, finder):
+
+  def __init__(self, finder, reverse_byte_order):
     self.pdfium_diff_path = finder.ExecutablePath('pdfium_diff')
     self.os_name = finder.os_name
+    self.reverse_byte_order = reverse_byte_order
 
   def CheckMissingTools(self, regenerate_expected):
-    if (regenerate_expected and
-        self.os_name == 'linux' and
+    if (regenerate_expected and self.os_name == 'linux' and
         not distutils.spawn.find_executable('optipng')):
       return 'Please install "optipng" to regenerate expected images.'
     return None
@@ -55,22 +57,28 @@ class PNGDiffer():
         if page == 0:
           print "WARNING: no expected results files for " + input_filename
         if os.path.exists(actual_path):
-          print ('FAILURE: Missing expected result for 0-based page %d of %s'
-                 % (page, input_filename))
+          print('FAILURE: Missing expected result for 0-based page %d of %s' %
+                (page, input_filename))
           return True
         break
       print "Checking " + actual_path
       sys.stdout.flush()
       if os.path.exists(expected_path):
-        error = common.RunCommand(
-            [self.pdfium_diff_path, expected_path, actual_path])
+        cmd = [self.pdfium_diff_path]
+        if self.reverse_byte_order:
+          cmd.append('--reverse-byte-order')
+        cmd.extend([expected_path, actual_path])
+        error = common.RunCommand(cmd)
       else:
-        error = 1;
+        error = 1
       if error:
         # When failed, we check against platform based results.
         if os.path.exists(platform_expected_path):
-          error = common.RunCommand(
-              [self.pdfium_diff_path, platform_expected_path, actual_path])
+          cmd = [self.pdfium_diff_path]
+          if self.reverse_byte_order:
+            cmd.append('--reverse-byte-order')
+          cmd.extend([platform_expected_path, actual_path])
+          error = common.RunCommand(cmd)
         if error:
           print "FAILURE: " + input_filename + "; " + str(error)
           return True
@@ -115,8 +123,8 @@ class PathTemplates(object):
     input_root, _ = os.path.splitext(input_filename)
     self.actual_path_template = os.path.join(working_dir,
                                              input_root + ACTUAL_TEMPLATE)
-    self.expected_path = os.path.join(
-        source_dir, input_root + EXPECTED_TEMPLATE)
+    self.expected_path = os.path.join(source_dir,
+                                      input_root + EXPECTED_TEMPLATE)
     self.platform_expected_path = os.path.join(
         source_dir, input_root + PLATFORM_EXPECTED_TEMPLATE)
 

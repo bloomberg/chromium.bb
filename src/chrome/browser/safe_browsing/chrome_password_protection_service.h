@@ -55,7 +55,7 @@ using StringProvider = base::RepeatingCallback<std::string()>;
 using password_manager::metrics_util::PasswordType;
 using url::Origin;
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
 // Shows the platform-specific password reuse modal dialog.
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
@@ -69,7 +69,6 @@ void ShowPasswordReuseModalWarningDialog(
 std::unique_ptr<PasswordProtectionNavigationThrottle>
 MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle);
 
-// TODO(xinghuilu@): Rearrange this file to reduce number of #ifs
 // ChromePasswordProtectionService extends PasswordProtectionService by adding
 // access to SafeBrowsingNaivigationObserverManager and Profile.
 class ChromePasswordProtectionService : public PasswordProtectionService {
@@ -102,7 +101,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   static ChromePasswordProtectionService* GetPasswordProtectionService(
       Profile* profile);
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   static bool ShouldShowChangePasswordSettingUI(Profile* profile);
 
   // Called by SecurityStateTabHelper to determine if page info bubble should
@@ -150,7 +149,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Check if Gaia password hash has changed. If it is changed, it will call
   // |OnGaiaPasswordChanged|. |username| is used to get the appropriate account
   // to check if the account is a Gmail account as no reporting is done for
-  // those accounts.
+  // those accounts. This method is only called if there was already an existing
+  // password hash in the hash password manager reused password.
   void CheckGaiaPasswordChangeForAllSignedInUsers(const std::string& username);
 
   // Called when user's GAIA password changed. |username| is used to get
@@ -158,45 +158,26 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // specifies whether the account is syncing or not syncing (content area).
   void OnGaiaPasswordChanged(const std::string& username,
                              bool is_other_gaia_password);
-#endif
 
-  // If user has clicked through any Safe Browsing interstitial on this given
-  // |web_contents|.
-  bool UserClickedThroughSBInterstitial(
-      content::WebContents* web_contents) override;
-
-  // If |prefs::kPasswordProtectionWarningTrigger| is not managed by enterprise
-  // policy, this function should always return PHISHING_REUSE. Otherwise,
-  // returns the specified pref value adjusted for the given username's account
-  // type.
-  PasswordProtectionTrigger GetPasswordProtectionWarningTriggerPref(
-      ReusedPasswordAccountType password_type) const override;
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Gets the enterprise change password URL if specified in policy,
   // otherwise gets the default GAIA change password URL.
   GURL GetEnterpriseChangePasswordURL() const;
 
   // Gets the GAIA change password URL based on |account_info_|.
   GURL GetDefaultChangePasswordURL() const;
-#endif
 
-  // If |url| matches Safe Browsing whitelist domains, password protection
-  // change password URL, or password protection login URLs in the enterprise
-  // policy.
-  bool IsURLWhitelistedForPasswordEntry(const GURL& url,
-                                        RequestOutcome* reason) const override;
-
-  // Gets the type of sync account associated with current profile or
-  // |NOT_SIGNED_IN|.
-  LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
-  GetSyncAccountType() const override;
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Gets the detailed warning text that should show in the modal warning dialog
-  // and page info bubble.
+  // and page info bubble. |placeholder_offsets| are the start points/indices of
+  // the placeholders that are passed into the resource string. It is only set
+  // for saved passwords.
   base::string16 GetWarningDetailText(
-      ReusedPasswordAccountType password_type) const;
+      ReusedPasswordAccountType password_type,
+      std::vector<size_t>* placeholder_offsets) const;
+
+  // Get placeholders for the warning detail text for saved password reuse
+  // warnings.
+  std::vector<base::string16> GetPlaceholdersForSavedPasswordWarningText()
+      const;
 
   // If password protection trigger is configured via enterprise policy, gets
   // the name of the organization that owns the enterprise policy. Otherwise,
@@ -224,12 +205,39 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       content::WebContents* web_contents) const;
 #endif
 
-// TODO(crbug.com/995926): Enable caching on Android
-// Note: Before enable verdict cache manager on Android,
-// add CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION to Android
-// Otherwise, it will fail on /components/ content_settings/core/browser/
-// content_settings_default_provider.cc/GetRuleIterator
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+  // If user has clicked through any Safe Browsing interstitial on this given
+  // |web_contents|.
+  bool UserClickedThroughSBInterstitial(
+      content::WebContents* web_contents) override;
+
+  // If |prefs::kPasswordProtectionWarningTrigger| is not managed by enterprise
+  // policy, this function should always return PHISHING_REUSE. Otherwise,
+  // returns the specified pref value adjusted for the given username's account
+  // type.
+  PasswordProtectionTrigger GetPasswordProtectionWarningTriggerPref(
+      ReusedPasswordAccountType password_type) const override;
+
+  // If |url| matches Safe Browsing whitelist domains, password protection
+  // change password URL, or password protection login URLs in the enterprise
+  // policy.
+  bool IsURLWhitelistedForPasswordEntry(const GURL& url,
+                                        RequestOutcome* reason) const override;
+
+  // Persist the phished saved password credential in the "compromised
+  // credentials" table. Calls the password store to add a row for each domain
+  // where the phished saved password is used on.
+  void PersistPhishedSavedPasswordCredential(
+      const std::string& username,
+      const std::vector<std::string>& matching_domains) override;
+
+  // Returns the profile PasswordStore associated with this instance.
+  password_manager::PasswordStore* GetProfilePasswordStore() const;
+
+  // Gets the type of sync account associated with current profile or
+  // |NOT_SIGNED_IN|.
+  LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
+  GetSyncAccountType() const override;
+
   // Stores |verdict| in the cache based on its |trigger_type|, |url|,
   // reused |password_type|, |verdict| and |receive_time|.
   void CacheVerdict(const GURL& url,
@@ -249,8 +257,16 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       LoginReputationClientRequest::TriggerType trigger_type,
       ReusedPasswordAccountType password_type,
       LoginReputationClientResponse* out_response) override;
-#endif
 
+  // Sanitize referrer chain by only keeping origin information of all URLs.
+  void SanitizeReferrerChain(ReferrerChain* referrer_chain) override;
+
+  bool CanSendSamplePing() override;
+#if defined(UNIT_TEST)
+  void set_bypass_probability_for_tests(bool bypass_probability_for_tests) {
+    bypass_probability_for_tests_ = bypass_probability_for_tests;
+  }
+#endif
   // Gets |account_info_| based on |profile_|.
   AccountInfo GetAccountInfo() const override;
 
@@ -301,7 +317,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   bool IsUnderAdvancedProtection() override;
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) override;
 
@@ -310,19 +326,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       RequestOutcome outcome,
       PasswordType password_type,
       const LoginReputationClientResponse* response) override;
-#endif
-  // Updates security state for the current |web_contents| based on
-  // |threat_type| and reused |password_type|, such that page info bubble will
-  // show appropriate status when user clicks on the security chip.
-  void UpdateSecurityState(SBThreatType threat_type,
-                           ReusedPasswordAccountType password_type,
-                           content::WebContents* web_contents) override;
 
-  void RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
-      bool all_history,
-      const history::URLRows& deleted_rows) override;
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   void HandleUserActionOnModalWarning(
       content::WebContents* web_contents,
       ReusedPasswordAccountType password_type,
@@ -341,22 +345,32 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   void HandleResetPasswordOnInterstitial(content::WebContents* web_contents,
                                          WarningAction action);
-#endif
-  // Returns base-10 string representation of the uint64t hash.
-  std::string GetSyncPasswordHashFromPrefs();
 
-  void SetGaiaPasswordHashForTesting(const std::string& new_password_hash) {
-    sync_password_hash_ = new_password_hash;
-  }
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Determines if we should show chrome://reset-password interstitial based on
   // previous request outcome, the reused |password_type| and the
   // |main_frame_url|.
   bool CanShowInterstitial(RequestOutcome reason,
                            ReusedPasswordAccountType password_type,
                            const GURL& main_frame_url) override;
+
+  // Updates security state for the current |web_contents| based on
+  // |threat_type| and reused |password_type|, such that page info bubble will
+  // show appropriate status when user clicks on the security chip.
+  void UpdateSecurityState(SBThreatType threat_type,
+                           ReusedPasswordAccountType password_type,
+                           content::WebContents* web_contents) override;
 #endif
+
+  void RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
+      bool all_history,
+      const history::URLRows& deleted_rows) override;
+  // Returns base-10 string representation of the uint64t hash.
+
+  std::string GetSyncPasswordHashFromPrefs();
+
+  void SetGaiaPasswordHashForTesting(const std::string& new_password_hash) {
+    sync_password_hash_ = new_password_hash;
+  }
 
   // Unit tests
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
@@ -401,6 +415,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                            VerifyPasswordCaptureEventRecorded);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyPasswordReuseDetectedSecurityEventRecorded);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyPersistPhishedSavedPasswordCredential);
   // Browser tests
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
                            VerifyCheckGaiaPasswordChange);
@@ -440,14 +456,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       int64_t navigation_id,
       sync_pb::GaiaPasswordReuse::PasswordReuseDialogInteraction::
           InteractionResult interaction_result);
-#endif
 
-  // Log that we captured the password, either due to log-in or by timer.
-  // This also sets the reoccuring timer.
-  void MaybeLogPasswordCapture(bool did_log_in);
-  void SetLogPasswordCaptureTimer(const base::TimeDelta& delay);
+  void OnModalWarningShownForSavedPassword(
+      content::WebContents* web_contents,
+      ReusedPasswordAccountType password_type,
+      const std::string& verdict_token);
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   void OnModalWarningShownForGaiaPassword(
       content::WebContents* web_contents,
       ReusedPasswordAccountType password_type,
@@ -457,6 +471,30 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       content::WebContents* web_contents,
       ReusedPasswordAccountType password_type,
       const std::string& verdict_token);
+
+  // If enterprise admin turns off password protection, removes all captured
+  // enterprise password hashes.
+  void OnWarningTriggerChanged();
+
+  // Gets the warning text for saved password reuse warnings.
+  // |placeholder_offsets| are the start points/indices of the placeholders that
+  // are passed into the resource string.
+  base::string16 GetWarningDetailTextForSavedPasswords(
+      std::vector<size_t>* placeholder_offsets) const;
+
+  // Informs PasswordReuseDetector that enterprise password URLs (login URL or
+  // change password URL) have been changed.
+  void OnEnterprisePasswordUrlChanged();
+
+  // Log that we captured the password, either due to log-in or by timer.
+  // This also sets the reoccuring timer.
+  void MaybeLogPasswordCapture(bool did_log_in);
+  void SetLogPasswordCaptureTimer(const base::TimeDelta& delay);
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  // Get the content area size of current browsing window.
+  gfx::Size GetCurrentContentAreaSize() const override;
 #endif
 
   // Constructor used for tests only.
@@ -468,21 +506,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Code shared by both ctors.
   void Init();
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  // If enterprise admin turns off password protection, removes all captured
-  // enterprise password hashes.
-  void OnWarningTriggerChanged();
-
-  // Informs PasswordReuseDetector that enterprise password URLs (login URL or
-  // change password URL) have been changed.
-  void OnEnterprisePasswordUrlChanged();
-#endif
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  // Get the content area size of current browsing window.
-  gfx::Size GetCurrentContentAreaSize() const override;
-#endif
 
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   TriggerManager* trigger_manager_;
@@ -508,6 +531,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Schedules the next time to log the PasswordCaptured event.
   base::OneShotTimer log_password_capture_timer_;
+
+  // Bypasses the check for probability when sending sample pings.
+  bool bypass_probability_for_tests_ = false;
+
+  // Can be set for testing.
+  base::Clock* clock_;
 
   // Used to inject a different password hash, for testing. It's done as a
   // member callback rather than a virtual function because it's needed in the

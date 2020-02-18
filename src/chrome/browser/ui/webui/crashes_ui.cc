@@ -20,21 +20,28 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/crash/core/browser/crashes_ui_util.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "components/crash/content/app/crashpad.h"
 #endif
 
 using content::WebContents;
@@ -168,19 +175,32 @@ void CrashesDOMHandler::UpdateUI() {
   system_crash_reporter = true;
 #endif
 
-  bool upload_list = crash_reporting_enabled;
-  bool support_manual_uploads = false;
-
+  bool using_crashpad = false;
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
-  // Maunal uploads currently are supported only for Crashpad-using platforms
-  // and Android, and only if crash uploads are not disabled by policy.
-  support_manual_uploads =
-      crash_reporting_enabled || !IsMetricsReportingPolicyManaged();
-
-  // Show crash reports regardless of |crash_reporting_enabled| so that users
-  // can manually upload those reports.
-  upload_list = true;
+  using_crashpad = true;
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // ChromeOS uses crash_sender instead of Crashpad for uploads even when
+  // Crashpad is enabled for dump generation.
+  using_crashpad = crash_reporter::IsCrashpadEnabled();
 #endif
+
+  bool is_internal = false;
+  auto* identity_manager =
+      IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  if (identity_manager) {
+    is_internal = gaia::IsGoogleInternalAccountEmail(
+        identity_manager->GetPrimaryAccountInfo().email);
+  }
+
+  // Manual uploads currently are supported only for Crashpad-using platforms
+  // and only if crash uploads are not disabled by policy.
+  bool support_manual_uploads =
+      using_crashpad &&
+      (crash_reporting_enabled || !IsMetricsReportingPolicyManaged());
+
+  // Show crash reports regardless of |crash_reporting_enabled| when using
+  // Crashpad so that users can manually upload those reports.
+  bool upload_list = using_crashpad || crash_reporting_enabled;
 
   base::ListValue crash_list;
   if (upload_list)
@@ -192,6 +212,7 @@ void CrashesDOMHandler::UpdateUI() {
   base::Value version(version_info::GetVersionNumber());
   base::Value os_string(base::SysInfo::OperatingSystemName() + " " +
                         base::SysInfo::OperatingSystemVersion());
+  base::Value is_google_account(is_internal);
 
   std::vector<const base::Value*> args;
   args.push_back(&enabled);
@@ -200,6 +221,7 @@ void CrashesDOMHandler::UpdateUI() {
   args.push_back(&crash_list);
   args.push_back(&version);
   args.push_back(&os_string);
+  args.push_back(&is_google_account);
   web_ui()->CallJavascriptFunctionUnsafe(
       crash_reporter::kCrashesUIUpdateCrashList, args);
 }
@@ -238,7 +260,7 @@ CrashesUI::CrashesUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
 // static
 base::RefCountedMemory* CrashesUI::GetFaviconResourceBytes(
-      ui::ScaleFactor scale_factor) {
+    ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_CRASH_SAD_FAVICON, scale_factor);
 }

@@ -40,9 +40,9 @@ namespace trace_processor {
 //
 // Then we would invoke the macro as follows:
 // #define PERFETTO_TP_EVENT_TABLE_DEF(NAME, PARENT, C)
-//   NAME(EventTable)
+//   NAME(EventTable, "event")
 //   PERFETTO_TP_ROOT_TABLE(PARENT, C)
-//   C(int64_t, ts)
+//   C(int64_t, ts, Column::kSorted)
 //   C(uint32_t, arg_set_id)
 // PERFETTO_TP_TABLE(PERFETTO_TP_EVENT_TABLE_DEF);
 //
@@ -57,7 +57,7 @@ namespace trace_processor {
 //
 // Then, we would invoke the macro as follows:
 // #define PERFETTO_TP_SLICE_TABLE_DEF(NAME, PARENT, C)
-//   NAME(ChildTable)
+//   NAME(SliceTable, "slice")
 //   PARENT(PERFETTO_TP_EVENT_TABLE_DEF, C)
 //   C(int64_t, dur)
 //   C(uint8_t, depth)
@@ -77,19 +77,23 @@ namespace trace_processor {
 //
 // This macro takes one argument: the full definition of the table; the
 // definition is a function macro taking three arguments:
-// 1. NAME, a function macro taking one argument: the name of the new class
-//    being defined.
+// 1. NAME, a function macro taking two argument: the name of the new class
+//    being defined and the name of the table when exposed to SQLite.
 // 2. PARENT, a function macro taking two arguments: a) the definition of
 //    the parent table if this table
 //    is a root table b) C, the third parameter of the macro definition (see
 //    below). For root tables, PARENT and C are passsed to
 //    PERFETTO_TP_ROOT_TABLE instead of PARENT called directly.
-// 3. C, a function macro taking two parameters: a) the type of a column
-//    b) the name of a column. This macro should be invoked as many times as
-//    there are columns in the table with the information about them.
-#define PERFETTO_TP_TABLE(DEF)      \
-  PERFETTO_TP_TABLE_INTERNAL(       \
-      PERFETTO_TP_TABLE_CLASS(DEF), \
+// 3. C, a function macro taking two or three parameters:
+//      a) the type of a column
+//      b) the name of a column
+//      c) (optional) the flags of the column (see Column::Flag
+//         for details).
+//    This macro should be invoked as many times as there are columns in the
+//    table with the information about them.
+#define PERFETTO_TP_TABLE(DEF)                                   \
+  PERFETTO_TP_TABLE_INTERNAL(                                    \
+      PERFETTO_TP_TABLE_NAME(DEF), PERFETTO_TP_TABLE_CLASS(DEF), \
       PERFETTO_TP_TABLE_CLASS(PERFETTO_TP_PARENT_DEF(DEF)), DEF)
 
 }  // namespace trace_processor

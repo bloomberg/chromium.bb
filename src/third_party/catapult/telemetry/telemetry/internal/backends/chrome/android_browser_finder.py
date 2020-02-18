@@ -7,6 +7,7 @@
 import contextlib
 import logging
 import os
+import posixpath
 import shutil
 import subprocess
 
@@ -93,23 +94,25 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
     # At this point the local_apk, if any, must exist.
     assert self._local_apk is None or os.path.exists(self._local_apk)
 
-    if self._local_apk and apk_helper.ToHelper(self._local_apk).is_bundle:
-      self._modules_to_install = set(finder_options.modules_to_install)
+    if finder_options.modules_to_install:
+      self._modules_to_install = set(['base'] +
+                                     finder_options.modules_to_install)
 
-    self._embedder_apk = None
+    self._support_apk_list = []
     if self._backend_settings.requires_embedder:
       if finder_options.webview_embedder_apk:
-        self._embedder_apk = finder_options.webview_embedder_apk
+        self._support_apk_list = finder_options.webview_embedder_apk
       else:
-        self._embedder_apk = self._backend_settings.FindEmbedderApk(
+        self._support_apk_list = self._backend_settings.FindSupportApks(
             self._local_apk, finder_options.chrome_root)
     elif finder_options.webview_embedder_apk:
       logging.warning(
           'No embedder needed for %s, ignoring --webview-embedder-apk option',
           self._backend_settings.browser_type)
 
-    # At this point the embedder_apk, if any, must exist.
-    assert self._embedder_apk is None or os.path.exists(self._embedder_apk)
+    # At this point the apks in _support_apk_list, if any, must exist.
+    for apk in self._support_apk_list:
+      assert os.path.exists(apk)
 
   def __repr__(self):
     return 'PossibleAndroidBrowser(browser_type=%s)' % self.browser_type
@@ -205,6 +208,10 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
     self._platform_backend.StopApplication(self._backend_settings.package)
     self._SetupProfile()
 
+    # Remove any old crash dumps
+    self._platform_backend.device.RemovePath(
+        self._platform_backend.GetDumpLocation(), recursive=True, force=True)
+
   def _TearDownEnvironment(self):
     self._RestoreCommandLineFlags()
 
@@ -261,6 +268,13 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
     # --ignore-certificate-errors-spki-list to work.
     startup_args.append('--user-data-dir=' + self.profile_directory)
 
+    # Needed so that non-browser-process crashes avoid automatic dump upload
+    # and subsequent deletion. The extra "Crashpad" is necessary because
+    # crashpad_stackwalker.py is hard-coded to look for a "Crashpad" directory
+    # in the dump directory that it is provided.
+    startup_args.append('--breakpad-dump-location=' + posixpath.join(
+        self._platform_backend.GetDumpLocation(), 'Crashpad'))
+
     return startup_args
 
   def SupportsOptions(self, browser_options):
@@ -271,7 +285,7 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
   def IsAvailable(self):
     """Returns True if the browser is or can be installed on the platform."""
     has_local_apks = self._local_apk and (
-        not self._backend_settings.requires_embedder or self._embedder_apk)
+        not self._backend_settings.requires_embedder or self._support_apk_list)
     return has_local_apks or self.platform.CanLaunchApplication(
         self.settings.package)
 
@@ -283,9 +297,9 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
       self.platform.InstallApplication(
           self._local_apk, modules=self._modules_to_install)
 
-    if self._embedder_apk:
-      logging.warn('Installing %s on device if needed.', self._embedder_apk)
-      self.platform.InstallApplication(self._embedder_apk)
+    for apk in self._support_apk_list:
+      logging.warn('Installing %s on device if needed.', apk)
+      self.platform.InstallApplication(apk)
 
     if (self._backend_settings.GetApkName(
         self._platform_backend.device) == 'Monochrome.apk'):
@@ -298,6 +312,8 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
       tags.append('android-webview')
     else:
       tags.append('android-not-webview')
+    if 'weblayer' in self.browser_type:
+      tags.append('android-weblayer')
     return tags
 
 
@@ -315,15 +331,36 @@ def CanFindAvailableBrowsers():
 def _CanPossiblyHandlePath(apk_path):
   if not apk_path:
     return False
-  _, ext = os.path.splitext(apk_path)
-  if ext.lower() == '.apk':
+  try:
+    apk_helper.ToHelper(apk_path)
     return True
-  return apk_helper.ToHelper(apk_path).is_bundle
+  except apk_helper.ApkHelperError:
+    return False
 
 
 def FindAllBrowserTypes():
   browser_types = [b.browser_type for b in ANDROID_BACKEND_SETTINGS]
   return browser_types + ['exact', 'reference']
+
+
+def _GetReferenceAndroidBrowser(android_platform, finder_options):
+  # Add the reference build if found.
+  os_version = dependency_util.GetChromeApkOsVersion(
+      android_platform.GetOSVersionName())
+  arch = android_platform.GetArchName()
+  try:
+    reference_build = binary_manager.FetchPath(
+        'chrome_stable', arch, 'android', os_version)
+  except (binary_manager.NoPathFoundError,
+          binary_manager.CloudStorageError):
+    reference_build = None
+  if reference_build and os.path.exists(reference_build):
+    return PossibleAndroidBrowser(
+        'reference',
+        finder_options,
+        android_platform,
+        android_browser_backend_settings.ANDROID_CHROME,
+        reference_build)
 
 
 def _FindAllPossibleBrowsers(finder_options, android_platform):
@@ -332,11 +369,10 @@ def _FindAllPossibleBrowsers(finder_options, android_platform):
     return []
   possible_browsers = []
 
-  if finder_options.webview_embedder_apk and not os.path.exists(
-      finder_options.webview_embedder_apk):
-    raise exceptions.PathMissingError(
-        'Unable to find apk specified by --webview-embedder-apk=%s' %
-        finder_options.browser_executable)
+  for apk in finder_options.webview_embedder_apk:
+    if not os.path.exists(apk):
+      raise exceptions.PathMissingError(
+          'Unable to find apk specified by --webview-embedder-apk=%s' % apk)
 
   # Add the exact APK if given.
   if _CanPossiblyHandlePath(finder_options.browser_executable):
@@ -361,33 +397,19 @@ def _FindAllPossibleBrowsers(finder_options, android_platform):
         backend_settings,
         finder_options.browser_executable))
 
-  # Add the reference build if found.
-  os_version = dependency_util.GetChromeApkOsVersion(
-      android_platform.GetOSVersionName())
-  arch = android_platform.GetArchName()
-  try:
-    reference_build = binary_manager.FetchPath(
-        'chrome_stable', arch, 'android', os_version)
-  except (binary_manager.NoPathFoundError,
-          binary_manager.CloudStorageError):
-    reference_build = None
-
-  if reference_build and os.path.exists(reference_build):
-    # TODO(aiolos): how do we stably map the android chrome_stable apk to the
-    # correct backend settings?
-    possible_browsers.append(PossibleAndroidBrowser(
-        'reference',
-        finder_options,
-        android_platform,
-        android_browser_backend_settings.ANDROID_CHROME,
-        reference_build))
+  if finder_options.IsBrowserTypeRelevant('reference'):
+    reference_browser = _GetReferenceAndroidBrowser(
+        android_platform, finder_options)
+    if reference_browser:
+      possible_browsers.append(reference_browser)
 
   # Add any other known available browsers.
   for settings in ANDROID_BACKEND_SETTINGS:
-    p_browser = PossibleAndroidBrowser(
-        settings.browser_type, finder_options, android_platform, settings)
-    if p_browser.IsAvailable():
-      possible_browsers.append(p_browser)
+    if finder_options.IsBrowserTypeRelevant(settings.browser_type):
+      p_browser = PossibleAndroidBrowser(
+          settings.browser_type, finder_options, android_platform, settings)
+      if p_browser.IsAvailable():
+        possible_browsers.append(p_browser)
   return possible_browsers
 
 

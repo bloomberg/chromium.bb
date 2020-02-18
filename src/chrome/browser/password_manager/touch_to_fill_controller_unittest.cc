@@ -4,163 +4,181 @@
 
 #include "chrome/browser/password_manager/touch_to_fill_controller.h"
 
+#include <memory>
+#include <tuple>
+
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/autofill/mock_manual_filling_controller.h"
-#include "components/autofill/core/common/autofill_features.h"
+#include "base/test/task_environment.h"
+#include "base/util/type_safety/pass_key.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
-using password_manager::CredentialPair;
+namespace {
+
+using ShowVirtualKeyboard =
+    password_manager::PasswordManagerDriver::ShowVirtualKeyboard;
+using password_manager::UiCredential;
+using ::testing::_;
+using ::testing::ElementsAreArray;
+using ::testing::Eq;
+using ::testing::ReturnRefOfCopy;
+using ::testing::WithArg;
+using IsOriginSecure = TouchToFillView::IsOriginSecure;
+
+using IsPublicSuffixMatch = UiCredential::IsPublicSuffixMatch;
+using IsAffiliationBasedMatch = UiCredential::IsAffiliationBasedMatch;
+
+constexpr char kExampleCom[] = "https://example.com/";
 
 struct MockPasswordManagerDriver : password_manager::StubPasswordManagerDriver {
   MOCK_METHOD2(FillSuggestion,
                void(const base::string16&, const base::string16&));
+  MOCK_METHOD1(TouchToFillClosed, void(ShowVirtualKeyboard));
+  MOCK_CONST_METHOD0(GetLastCommittedURL, const GURL&());
 };
+
+struct MockTouchToFillView : TouchToFillView {
+  MOCK_METHOD3(Show,
+               void(const GURL&,
+                    IsOriginSecure,
+                    base::span<const UiCredential>));
+  MOCK_METHOD1(OnCredentialSelected, void(const UiCredential&));
+  MOCK_METHOD0(OnDismiss, void());
+};
+
+UiCredential MakeUiCredential(
+    base::StringPiece username,
+    base::StringPiece password,
+    base::StringPiece origin = kExampleCom,
+    IsPublicSuffixMatch is_public_suffix_match = IsPublicSuffixMatch(false),
+    IsAffiliationBasedMatch is_affiliation_based_match =
+        IsAffiliationBasedMatch(false)) {
+  return UiCredential(base::UTF8ToUTF16(username), base::UTF8ToUTF16(password),
+                      url::Origin::Create(GURL(origin)), is_public_suffix_match,
+                      is_affiliation_based_match);
+}
+
+}  // namespace
 
 class TouchToFillControllerTest : public testing::Test {
  protected:
-  MockManualFillingController& manual_filling_controller() {
-    return mock_manual_filling_controller_;
+  using UkmBuilder = ukm::builders::TouchToFill_Shown;
+
+  TouchToFillControllerTest() {
+    auto mock_view = std::make_unique<MockTouchToFillView>();
+    mock_view_ = mock_view.get();
+    touch_to_fill_controller_.set_view(std::move(mock_view));
+
+    ON_CALL(driver_, GetLastCommittedURL())
+        .WillByDefault(ReturnRefOfCopy(GURL(kExampleCom)));
   }
 
   MockPasswordManagerDriver& driver() { return driver_; }
+
+  MockTouchToFillView& view() { return *mock_view_; }
+
+  ukm::TestAutoSetUkmRecorder& test_recorder() { return test_recorder_; }
 
   TouchToFillController& touch_to_fill_controller() {
     return touch_to_fill_controller_;
   }
 
  private:
-  testing::StrictMock<MockManualFillingController>
-      mock_manual_filling_controller_;
+  base::test::TaskEnvironment task_environment_;
+  MockTouchToFillView* mock_view_ = nullptr;
   MockPasswordManagerDriver driver_;
+  ukm::TestAutoSetUkmRecorder test_recorder_;
   TouchToFillController touch_to_fill_controller_{
-      mock_manual_filling_controller_.AsWeakPtr(),
       util::PassKey<TouchToFillControllerTest>()};
 };
 
-TEST_F(TouchToFillControllerTest, Show_Empty) {
-  EXPECT_CALL(manual_filling_controller(),
-              RefreshSuggestions(autofill::AccessorySheetData::Builder(
-                                     autofill::AccessoryTabType::TOUCH_TO_FILL,
-                                     base::ASCIIToUTF16("Touch to Fill"))
-                                     .Build()));
-  touch_to_fill_controller().Show({}, driver().AsWeakPtr());
-}
-
 TEST_F(TouchToFillControllerTest, Show_And_Fill) {
-  CredentialPair alice(
-      base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
-      GURL("https://example.com"), /*is_public_suffix_match=*/false);
+  UiCredential credentials[] = {MakeUiCredential("alice", "p4ssw0rd")};
 
-  EXPECT_CALL(
-      manual_filling_controller(),
-      RefreshSuggestions(
-          autofill::AccessorySheetData::Builder(
-              autofill::AccessoryTabType::TOUCH_TO_FILL,
-              base::ASCIIToUTF16("Touch to Fill"))
-              .AddUserInfo()
-              .AppendField(base::ASCIIToUTF16("alice"),
-                           base::ASCIIToUTF16("alice"), "0",
-                           /*is_obfuscated=*/false, /*is_selectable=*/true)
-              .AppendField(base::ASCIIToUTF16("p4ssw0rd"),
-                           base::ASCIIToUTF16("p4ssw0rd"), "0",
-                           /*is_obfuscated=*/true, /*is_selectable=*/false)
-              .Build()));
-  touch_to_fill_controller().Show(std::vector<CredentialPair>{alice},
-                                  driver().AsWeakPtr());
-
-  // Test that OnFillingTriggered() with the right id results in the appropriate
-  // call to FillSuggestion() and UpdateSourceAvailability().
-  EXPECT_CALL(driver(), FillSuggestion(base::ASCIIToUTF16("alice"),
-                                       base::ASCIIToUTF16("p4ssw0rd")));
-  EXPECT_CALL(manual_filling_controller(),
-              UpdateSourceAvailability(
-                  ManualFillingController::FillingSource::TOUCH_TO_FILL,
-                  /*has_suggestions=*/false));
+  EXPECT_CALL(view(), Show(Eq(GURL(kExampleCom)), IsOriginSecure(true),
+                           ElementsAreArray(credentials)));
+  touch_to_fill_controller().Show(credentials, driver().AsWeakPtr());
 
   // Test that we correctly log the absence of an Android credential.
   base::HistogramTester tester;
-  touch_to_fill_controller().OnFillingTriggered(autofill::UserInfo::Field(
-      base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("alice"), "0",
-      /*is_obfuscated=*/false, /*is_selectable=*/true));
+  EXPECT_CALL(driver(), FillSuggestion(base::ASCIIToUTF16("alice"),
+                                       base::ASCIIToUTF16("p4ssw0rd")));
+  EXPECT_CALL(driver(), TouchToFillClosed(ShowVirtualKeyboard(false)));
+  touch_to_fill_controller().OnCredentialSelected(credentials[0]);
   tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",
                             false, 1);
+
+  auto entries = test_recorder().GetEntriesByName(UkmBuilder::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  test_recorder().ExpectEntryMetric(
+      entries[0], UkmBuilder::kUserActionName,
+      static_cast<int64_t>(
+          TouchToFillController::UserAction::kSelectedCredential));
 }
 
-TEST_F(TouchToFillControllerTest, Show_PSL_Credential) {
-  // Test that showing a PSL credentials results in the origin being passed to
-  // the manual filling controller.
-  CredentialPair alice(
-      base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
-      GURL("https://sub.example.com/"), /*is_public_suffix_match=*/true);
+TEST_F(TouchToFillControllerTest, Show_Insecure_Origin) {
+  EXPECT_CALL(driver(), GetLastCommittedURL())
+      .WillOnce(ReturnRefOfCopy(GURL("http://example.com")));
 
-  EXPECT_CALL(
-      manual_filling_controller(),
-      RefreshSuggestions(
-          autofill::AccessorySheetData::Builder(
-              autofill::AccessoryTabType::TOUCH_TO_FILL,
-              base::ASCIIToUTF16("Touch to Fill"))
-              .AddUserInfo("https://sub.example.com/")
-              .AppendField(base::ASCIIToUTF16("alice"),
-                           base::ASCIIToUTF16("alice"), "0",
-                           /*is_obfuscated=*/false, /*is_selectable=*/true)
-              .AppendField(base::ASCIIToUTF16("p4ssw0rd"),
-                           base::ASCIIToUTF16("p4ssw0rd"), "0",
-                           /*is_obfuscated=*/true, /*is_selectable=*/false)
-              .Build()));
-  touch_to_fill_controller().Show(std::vector<CredentialPair>{alice},
-                                  driver().AsWeakPtr());
+  UiCredential credentials[] = {MakeUiCredential("alice", "p4ssw0rd")};
+
+  EXPECT_CALL(view(),
+              Show(Eq(GURL("http://example.com")), IsOriginSecure(false),
+                   ElementsAreArray(credentials)));
+  touch_to_fill_controller().Show(credentials, driver().AsWeakPtr());
 }
 
 TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
   // Test multiple credentials with one of them being an Android credential.
-  CredentialPair alice(
-      base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
-      GURL("https://example.com"), /*is_public_suffix_match=*/false);
+  UiCredential credentials[] = {
+      MakeUiCredential("alice", "p4ssw0rd"),
+      MakeUiCredential("bob", "s3cr3t", base::StringPiece(),
+                       IsPublicSuffixMatch(false),
+                       IsAffiliationBasedMatch(true)),
+  };
 
-  CredentialPair bob(base::ASCIIToUTF16("bob"), base::ASCIIToUTF16("s3cr3t"),
-                     GURL("android://hash@com.example.my"),
-                     /*is_public_suffix_match=*/false);
-
-  EXPECT_CALL(
-      manual_filling_controller(),
-      RefreshSuggestions(
-          autofill::AccessorySheetData::Builder(
-              autofill::AccessoryTabType::TOUCH_TO_FILL,
-              base::ASCIIToUTF16("Touch to Fill"))
-              .AddUserInfo()
-              .AppendField(base::ASCIIToUTF16("alice"),
-                           base::ASCIIToUTF16("alice"), "0",
-                           /*is_obfuscated=*/false, /*is_selectable=*/true)
-              .AppendField(base::ASCIIToUTF16("p4ssw0rd"),
-                           base::ASCIIToUTF16("p4ssw0rd"), "0",
-                           /*is_obfuscated=*/true, /*is_selectable=*/false)
-              .AddUserInfo()
-              .AppendField(base::ASCIIToUTF16("bob"), base::ASCIIToUTF16("bob"),
-                           "1", /*is_obfuscated=*/false, /*is_selectable=*/true)
-              .AppendField(base::ASCIIToUTF16("s3cr3t"),
-                           base::ASCIIToUTF16("s3cr3t"), "1",
-                           /*is_obfuscated=*/true, /*is_selectable=*/false)
-              .Build()));
-  touch_to_fill_controller().Show(std::vector<CredentialPair>{alice, bob},
-                                  driver().AsWeakPtr());
-
-  EXPECT_CALL(driver(), FillSuggestion(base::ASCIIToUTF16("bob"),
-                                       base::ASCIIToUTF16("s3cr3t")));
-  EXPECT_CALL(manual_filling_controller(),
-              UpdateSourceAvailability(
-                  ManualFillingController::FillingSource::TOUCH_TO_FILL,
-                  /*has_suggestions=*/false));
+  EXPECT_CALL(view(), Show(Eq(GURL(kExampleCom)), IsOriginSecure(true),
+                           ElementsAreArray(credentials)));
+  touch_to_fill_controller().Show(credentials, driver().AsWeakPtr());
 
   // Test that we correctly log the presence of an Android credential.
   base::HistogramTester tester;
-  touch_to_fill_controller().OnFillingTriggered(autofill::UserInfo::Field(
-      base::ASCIIToUTF16("bob"), base::ASCIIToUTF16("bob"), "1",
-      /*is_obfuscated=*/false, /*is_selectable=*/true));
+  EXPECT_CALL(driver(), FillSuggestion(base::ASCIIToUTF16("bob"),
+                                       base::ASCIIToUTF16("s3cr3t")));
+  EXPECT_CALL(driver(), TouchToFillClosed(ShowVirtualKeyboard(false)));
+  touch_to_fill_controller().OnCredentialSelected(credentials[1]);
   tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",
                             true, 1);
+
+  auto entries = test_recorder().GetEntriesByName(UkmBuilder::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  test_recorder().ExpectEntryMetric(
+      entries[0], UkmBuilder::kUserActionName,
+      static_cast<int64_t>(
+          TouchToFillController::UserAction::kSelectedCredential));
+}
+
+TEST_F(TouchToFillControllerTest, Dismiss) {
+  UiCredential credentials[] = {MakeUiCredential("alice", "p4ssw0rd")};
+
+  EXPECT_CALL(view(), Show(Eq(GURL(kExampleCom)), IsOriginSecure(true),
+                           ElementsAreArray(credentials)));
+  touch_to_fill_controller().Show(credentials, driver().AsWeakPtr());
+
+  EXPECT_CALL(driver(), TouchToFillClosed(ShowVirtualKeyboard(true)));
+  touch_to_fill_controller().OnDismiss();
+
+  auto entries = test_recorder().GetEntriesByName(UkmBuilder::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  test_recorder().ExpectEntryMetric(
+      entries[0], UkmBuilder::kUserActionName,
+      static_cast<int64_t>(TouchToFillController::UserAction::kDismissed));
 }

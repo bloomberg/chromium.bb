@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browsing_data/counters/browsing_data_counter_utils.h"
 
-#include "build/buildflag.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -14,12 +13,6 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
-#include "components/unified_consent/feature.h"
-#include "components/unified_consent/scoped_unified_consent.h"
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT) || defined(OS_CHROMEOS)
-#include "chrome/browser/signin/scoped_account_consistency.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -28,63 +21,28 @@
 
 namespace browsing_data_counter_utils {
 
-class BrowsingDataCounterUtilsBrowserTest
-    : public SyncTest,
-      public testing::WithParamInterface<bool> {
+class BrowsingDataCounterUtilsBrowserTest : public SyncTest {
  public:
-  BrowsingDataCounterUtilsBrowserTest()
-      : SyncTest(SINGLE_CLIENT),
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-        scoped_dice_(GetParam()
-                         ? std::make_unique<ScopedAccountConsistencyDice>()
-                         : nullptr),
-#elif defined(OS_CHROMEOS)
-        scoped_mirror_(std::make_unique<ScopedAccountConsistencyMirror>()),
-#endif
-        scoped_unified_consent_(
-            GetParam()
-                ? unified_consent::UnifiedConsentFeatureState::kEnabled
-                : unified_consent::UnifiedConsentFeatureState::kDisabled) {
-  }
+  BrowsingDataCounterUtilsBrowserTest() : SyncTest(SINGLE_CLIENT) {}
   ~BrowsingDataCounterUtilsBrowserTest() override = default;
 
  private:
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // ScopedAccountConsistencyDice is required for unified consent to be enabled.
-  const std::unique_ptr<ScopedAccountConsistencyDice> scoped_dice_;
-#elif defined(OS_CHROMEOS)
-  // Need to manually turn on mirror for now.
-  const std::unique_ptr<ScopedAccountConsistencyMirror> scoped_mirror_;
-#endif
-  const unified_consent::ScopedUnifiedConsent scoped_unified_consent_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataCounterUtilsBrowserTest);
 };
 
-// Instantiate test for unified consent disabled & enabled.
-INSTANTIATE_TEST_SUITE_P(,
-                         BrowsingDataCounterUtilsBrowserTest,
-                         ::testing::Bool());
-
-IN_PROC_BROWSER_TEST_P(BrowsingDataCounterUtilsBrowserTest,
+IN_PROC_BROWSER_TEST_F(BrowsingDataCounterUtilsBrowserTest,
                        ShouldShowCookieException) {
   Profile* profile = browser()->profile();
 
   syncer::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile);
 
-  sync_service->OverrideNetworkResourcesForTest(
-      std::make_unique<fake_server::FakeServerNetworkResources>(
+  sync_service->OverrideNetworkForTest(
+      fake_server::CreateFakeServerHttpPostProviderFactory(
           GetFakeServer()->AsWeakPtr()));
 
   std::string username;
-#if defined(OS_CHROMEOS)
-  // In browser tests, the profile may already by authenticated with stub
-  // account |user_manager::kStubUserEmail|.
-  CoreAccountInfo info =
-      IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountInfo();
-  username = info.email;
-#endif
+
   if (username.empty())
     username = "user@gmail.com";
 
@@ -93,10 +51,6 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataCounterUtilsBrowserTest,
           profile, username, "unused" /* password */,
           ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
 
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, the profile is always authenticated.
-  EXPECT_TRUE(ShouldShowCookieException(profile));
-#else
   // By default, a fresh profile is not signed in, nor syncing, so no cookie
   // exception should be shown.
   EXPECT_FALSE(ShouldShowCookieException(profile));
@@ -104,6 +58,10 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataCounterUtilsBrowserTest,
   // Sign the profile in.
   EXPECT_TRUE(harness->SignInPrimaryAccount());
 
+#if defined(OS_CHROMEOS)
+  // On Chrome OS sync in turned on by default.
+  EXPECT_TRUE(ShouldShowCookieException(profile));
+#else
   // Sign-in alone shouldn't lead to a cookie exception.
   EXPECT_FALSE(ShouldShowCookieException(profile));
 #endif

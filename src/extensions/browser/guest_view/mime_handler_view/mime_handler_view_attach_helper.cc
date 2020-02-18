@@ -17,11 +17,11 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_embedder.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -93,8 +93,6 @@ bool MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
     std::string* payload,
     uint32_t* data_pipe_size,
     base::OnceClosure resume_load) {
-  if (!content::MimeHandlerViewMode::UsesCrossProcessFrame())
-    return false;
   auto color = GetBackgroundColorStringForMimeType(resource_url, mime_type);
   std::string token = base::UnguessableToken::Create().ToString();
   auto html_str = base::StringPrintf(
@@ -161,7 +159,8 @@ void MimeHandlerViewAttachHelper::ResumeAttachOrDestroy(
   if (!guest_view)
     return;
   if (!plugin_rfh) {
-    mojom::MimeHandlerViewContainerManagerAssociatedPtr container_manager;
+    mojo::AssociatedRemote<mojom::MimeHandlerViewContainerManager>
+        container_manager;
     guest_view->GetEmbedderFrame()
         ->GetRemoteAssociatedInterfaces()
         ->GetInterface(&container_manager);

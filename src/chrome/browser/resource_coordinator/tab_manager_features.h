@@ -15,8 +15,6 @@ namespace features {
 
 extern const base::Feature kCustomizedTabLoadTimeout;
 extern const base::Feature kProactiveTabFreezeAndDiscard;
-extern const base::Feature kSessionRestorePrioritizesBackgroundUseCases;
-extern const base::Feature kSiteCharacteristicsDatabase;
 extern const base::Feature kStaggeredBackgroundTabOpening;
 extern const base::Feature kStaggeredBackgroundTabOpeningExperiment;
 extern const base::Feature kTabRanker;
@@ -32,9 +30,14 @@ extern const char kProactiveTabFreezeAndDiscardFeatureName[];
 // ProactiveTabFreezeAndDiscard feature.
 extern const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[];
 
-// The name of the |DisableHeuristicsProtections| parameter of the
+// The name of the |ShouldPeriodicallyUnfreeze| parameter of the
 // ProactiveTabFreezeAndDiscard feature.
-extern const char kProactiveTabFreezeAndDiscard_DisableHeuristicsParam[];
+extern const char
+    kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam[];
+
+// The name of the |FreezingProtectMediaOnly| parameter of the
+// ProactiveTabFreezeAndDiscard feature.
+extern const char kProactiveTabFreezeAndDiscard_FreezingProtectMediaOnlyParam[];
 
 // Parameters used by the proactive tab discarding feature.
 //
@@ -83,12 +86,8 @@ struct ProactiveTabFreezeAndDiscardParams {
       &features::kProactiveTabFreezeAndDiscard,
       kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam, false};
   static constexpr base::FeatureParam<bool> kShouldPeriodicallyUnfreeze{
-      &features::kProactiveTabFreezeAndDiscard, "ShouldPeriodicallyUnfreeze",
-      false};
-  static constexpr base::FeatureParam<bool>
-      kShouldProtectTabsSharingBrowsingInstance{
-          &features::kProactiveTabFreezeAndDiscard,
-          "ShouldProtectTabsSharingBrowsingInstance", true};
+      &features::kProactiveTabFreezeAndDiscard,
+      kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam, false};
   // 50% of people cap out at 4 tabs, so for them proactive discarding won't
   // even be invoked. See Tabs.MaxTabsInADay.
   // TODO(chrisha): This should eventually be informed by the number of tabs
@@ -120,17 +119,16 @@ struct ProactiveTabFreezeAndDiscardParams {
       10 * base::Time::kSecondsPerMinute};
   static constexpr base::FeatureParam<int> kFreezeTimeout{
       &features::kProactiveTabFreezeAndDiscard, "FreezeTimeout",
-      10 * base::Time::kSecondsPerMinute};
+      5 * base::Time::kSecondsPerMinute};
   static constexpr base::FeatureParam<int> kUnfreezeTimeout{
       &features::kProactiveTabFreezeAndDiscard, "UnfreezeTimeout",
       15 * base::Time::kSecondsPerMinute};
   static constexpr base::FeatureParam<int> kRefreezeTimeout{
-      &features::kProactiveTabFreezeAndDiscard, "RefreezeTimeout",
-      10 * base::Time::kSecondsPerMinute};
+      &features::kProactiveTabFreezeAndDiscard, "RefreezeTimeout", 10};
 
-  static constexpr base::FeatureParam<bool> kDisableHeuristicsProtections{
+  static constexpr base::FeatureParam<bool> kFreezingProtectMediaOnly{
       &features::kProactiveTabFreezeAndDiscard,
-      kProactiveTabFreezeAndDiscard_DisableHeuristicsParam, false};
+      kProactiveTabFreezeAndDiscard_FreezingProtectMediaOnlyParam, false};
 
   // Whether tabs should be proactively discarded. When the
   // |kProactiveTabFreezeAndDiscard| feature is enabled and this is false, only
@@ -138,9 +136,6 @@ struct ProactiveTabFreezeAndDiscardParams {
   bool should_proactively_discard;
   // Whether frozen tabs should periodically be unfrozen to update their state.
   bool should_periodically_unfreeze;
-  // Whether tabs should be protected from freezing/discarding if they share
-  // their BrowsingInstance with another tab.
-  bool should_protect_tabs_sharing_browsing_instance;
   // Tab count (inclusive) beyond which the state transitions to MODERATE.
   // Intended to cover the majority of simple workflows and be small enough that
   // it is very unlikely that memory pressure will be encountered with this many
@@ -169,73 +164,8 @@ struct ProactiveTabFreezeAndDiscardParams {
   base::TimeDelta unfreeze_timeout;
   // Amount of time that a tab stays unfrozen before being frozen again.
   base::TimeDelta refreeze_timeout;
-  // Disable all the heuristics protections when doing a freezing or discarding
-  // intervention.
-  bool disable_heuristics_protections;
-};
-
-// Parameters used by the site characteristics database.
-//
-// The site characteristics database tracks tab usage of a some features, a tab,
-// a feature is considered as unused if it hasn't been used for a sufficiently
-// long period of time while the tab was backgrounded. There's currently 4
-// features we're interested in:
-//
-// - Favicon update
-// - Title update
-// - Audio usage
-// - Notifications usage
-struct SiteCharacteristicsDatabaseParams {
-  SiteCharacteristicsDatabaseParams();
-  SiteCharacteristicsDatabaseParams(
-      const SiteCharacteristicsDatabaseParams& rhs);
-
-  // Static definition of the different parameters that can be used by this
-  // feature.
-
-  // Observations windows have a default value of 2 hours, 95% of backgrounded
-  // tabs don't use any of these features in this time window.
-  static constexpr base::FeatureParam<int> kFaviconUpdateObservationWindow{
-      &features::kSiteCharacteristicsDatabase, "FaviconUpdateObservationWindow",
-      2 * base::Time::kSecondsPerHour};
-  static constexpr base::FeatureParam<int> kTitleUpdateObservationWindow{
-      &features::kSiteCharacteristicsDatabase, "TitleUpdateObservationWindow",
-      2 * base::Time::kSecondsPerHour};
-  static constexpr base::FeatureParam<int> kAudioUsageObservationWindow{
-      &features::kSiteCharacteristicsDatabase, "AudioUsageObservationWindow",
-      2 * base::Time::kSecondsPerHour};
-  static constexpr base::FeatureParam<int> kNotificationsUsageObservationWindow{
-      &features::kSiteCharacteristicsDatabase,
-      "NotificationsUsageObservationWindow", 2 * base::Time::kSecondsPerHour};
-  static constexpr base::FeatureParam<int> kTitleOrFaviconChangeGracePeriod{
-      &features::kSiteCharacteristicsDatabase,
-      "TitleOrFaviconChangeGracePeriod", 20 /* 20 seconds */};
-  static constexpr base::FeatureParam<int> kAudioUsageGracePeriod{
-      &features::kSiteCharacteristicsDatabase, "AudioUsageGracePeriod",
-      10 /* 10 seconds */};
-
-  // Minimum observation window before considering that this website doesn't
-  // update its favicon while in background.
-  base::TimeDelta favicon_update_observation_window;
-  // Minimum observation window before considering that this website doesn't
-  // update its title while in background.
-  base::TimeDelta title_update_observation_window;
-  // Minimum observation window before considering that this website doesn't
-  // use audio while in background.
-  base::TimeDelta audio_usage_observation_window;
-  // Minimum observation window before considering that this website doesn't
-  // use notifications while in background.
-  base::TimeDelta notifications_usage_observation_window;
-  // The period of time after loading during which we ignore title/favicon
-  // change events. It's possible for some site that are loaded in background to
-  // use some of these features without this being an attempt to communicate
-  // with the user (e.g. the tab is just really finishing to load).
-  base::TimeDelta title_or_favicon_change_grace_period;
-  // The period of time during which we ignore audio usage gets ignored after a
-  // tab gets backgrounded. It's necessary because there might be a delay
-  // between a media request gets initiated and the time the audio actually
-  // starts.
-  base::TimeDelta audio_usage_grace_period;
+  // Only media tabs are protected from freezing.
+  bool freezing_protect_media_only;
 };
 
 // Gets parameters for the proactive tab discarding feature. This does no
@@ -253,16 +183,6 @@ ProactiveTabFreezeAndDiscardParams*
 GetMutableStaticProactiveTabFreezeAndDiscardParamsForTesting();
 
 base::TimeDelta GetTabLoadTimeout(const base::TimeDelta& default_timeout);
-
-// Gets parameters for the site characteristics database feature. This does no
-// parameter validation, and sets the default values if the feature is not
-// enabled.
-SiteCharacteristicsDatabaseParams GetSiteCharacteristicsDatabaseParams();
-
-// Return a static SiteCharacteristicsDatabaseParams object that can be used by
-// all the classes that need one.
-const SiteCharacteristicsDatabaseParams&
-GetStaticSiteCharacteristicsDatabaseParams();
 
 // Gets number of oldest tab that should be scored by TabRanker.
 int GetNumOldestTabsToScoreWithTabRanker();

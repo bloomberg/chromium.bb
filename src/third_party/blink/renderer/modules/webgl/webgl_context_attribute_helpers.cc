@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_context_attribute_helpers.h"
 
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "ui/gl/gpu_preference.h"
 
 namespace blink {
 
@@ -30,7 +31,9 @@ Platform::ContextAttributes ToPlatformContextAttributes(
     Platform::ContextType context_type,
     bool support_own_offscreen_surface) {
   Platform::ContextAttributes result;
-  result.prefer_low_power_gpu = attrs.power_preference == "low-power";
+  result.prefer_low_power_gpu =
+      (PowerPreferenceToGpuPreference(attrs.power_preference) ==
+       gl::GpuPreference::kLowPower);
   result.fail_if_major_performance_caveat =
       attrs.fail_if_major_performance_caveat;
   result.context_type = context_type;
@@ -43,6 +46,13 @@ Platform::ContextAttributes ToPlatformContextAttributes(
     result.support_antialias = attrs.antialias;
   }
   return result;
+}
+
+gl::GpuPreference PowerPreferenceToGpuPreference(String power_preference) {
+  // This code determines the handling of the "default" power preference.
+  if (power_preference == "high-performance")
+    return gl::GpuPreference::kHighPerformance;
+  return gl::GpuPreference::kLowPower;
 }
 
 }  // namespace blink

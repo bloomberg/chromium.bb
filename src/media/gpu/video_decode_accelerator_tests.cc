@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
+
 #include "base/command_line.h"
+#include "base/files/file_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_frame_validator.h"
@@ -24,8 +28,10 @@ namespace {
 constexpr const char* usage_msg =
     "usage: video_decode_accelerator_tests\n"
     "           [-v=<level>] [--vmodule=<config>] [--disable_validator]\n"
-    "           [--output_frames] [output_folder] [--use_vd] [--gtest_help]\n"
-    "           [--help] [<video path>] [<video metadata path>]\n";
+    "           [--output_frames=(all|corrupt)] [--output_format=(png|yuv)]\n"
+    "           [--output_limit=<number>] [--output_folder=<folder>]\n"
+    "           [--use_vd] [--gtest_help] [--help]\n"
+    "           [<video path>] [<video metadata path>]\n";
 
 // Video decoder tests help message.
 constexpr const char* help_msg =
@@ -38,14 +44,17 @@ constexpr const char* help_msg =
     "\nThe following arguments are supported:\n"
     "   -v                  enable verbose mode, e.g. -v=2.\n"
     "  --vmodule            enable verbose mode for the specified module,\n"
-    "                       e.g. --vmodule=*media/gpu*=2.\n"
+    "                       e.g. --vmodule=*media/gpu*=2.\n\n"
     "  --disable_validator  disable frame validation.\n"
-    "  --output_frames      write all decoded video frames to the\n"
-    "                       \"<testname>\" folder.\n"
-    "  --output_folder      overwrite the default output folder used when\n"
-    "                       \"--output_frames\" is specified.\n"
     "  --use_vd             use the new VD-based video decoders, instead of\n"
-    "                       the default VDA-based video decoders.\n"
+    "                       the default VDA-based video decoders.\n\n"
+    "  --output_frames      write the selected video frames to disk, possible\n"
+    "                       values are \"all|corrupt\".\n"
+    "  --output_format      set the format of frames saved to disk, supported\n"
+    "                       formats are \"png\" (default) and \"yuv\".\n"
+    "  --output_limit       limit the number of frames saved to disk.\n"
+    "  --output_folder      set the folder used to store frames, defaults to\n"
+    "                       \"<testname>\".\n\n"
     "  --gtest_help         display the gtest help and exit.\n"
     "  --help               display this help and exit.\n";
 
@@ -66,35 +75,46 @@ class VideoDecoderTest : public ::testing::Test {
     if (!g_env->ImportSupported())
       config.allocation_mode = AllocationMode::kAllocate;
 
-    // Use the video frame validator to validate decoded video frames if import
-    // mode is supported and enabled.
-    if (g_env->IsValidatorEnabled() &&
+    base::FilePath output_folder = base::FilePath(g_env->OutputFolder())
+                                       .Append(g_env->GetTestOutputFilePath());
+
+    // Write all video frames to the '<testname>' folder if the frame output
+    // mode is 'all'. Only supported if import mode is supported and enabled.
+    if (g_env->GetFrameOutputMode() == FrameOutputMode::kAll &&
         config.allocation_mode == AllocationMode::kImport) {
-      frame_processors.push_back(
-          media::test::VideoFrameValidator::Create(video->FrameChecksums()));
+      frame_processors.push_back(VideoFrameFileWriter::Create(
+          output_folder, g_env->GetFrameOutputFormat(),
+          g_env->GetFrameOutputLimit()));
+      VLOG(0) << "Writing video frames to: " << output_folder;
     }
 
-    // Write decoded video frames to the '<testname>' folder if import mode is
-    // supported and enabled.
-    if (g_env->IsFramesOutputEnabled() &&
+    // Use the video frame validator to validate decoded video frames if
+    // enabled. If the frame output mode is 'corrupt', a frame writer will be
+    // attached to forward corrupted frames to. Only supported if import mode
+    // is supported and enabled.
+    if (g_env->IsValidatorEnabled() &&
         config.allocation_mode == AllocationMode::kImport) {
-      base::FilePath output_folder =
-          base::FilePath(g_env->OutputFolder())
-              .Append(base::FilePath(g_env->GetTestName()));
-      frame_processors.push_back(VideoFrameFileWriter::Create(output_folder));
-      VLOG(0) << "Writing video frames to: " << output_folder;
+      std::unique_ptr<VideoFrameFileWriter> frame_writer;
+      if (g_env->GetFrameOutputMode() == FrameOutputMode::kCorrupt) {
+        frame_writer = VideoFrameFileWriter::Create(
+            output_folder, g_env->GetFrameOutputFormat(),
+            g_env->GetFrameOutputLimit());
+      }
+      frame_processors.push_back(media::test::VideoFrameValidator::Create(
+          video->FrameChecksums(), PIXEL_FORMAT_I420, std::move(frame_writer)));
     }
 
     // Use the new VD-based video decoders if requested.
     config.use_vd = g_env->UseVD();
 
-    auto video_player = VideoPlayer::Create(config, std::move(frame_renderer),
-                                            std::move(frame_processors));
+    auto video_player = VideoPlayer::Create(
+        config, g_env->GetGpuMemoryBufferFactory(), std::move(frame_renderer),
+        std::move(frame_processors));
     LOG_ASSERT(video_player);
     LOG_ASSERT(video_player->Initialize(video));
 
     // Increase event timeout when outputting video frames.
-    if (g_env->IsFramesOutputEnabled()) {
+    if (g_env->GetFrameOutputMode() != FrameOutputMode::kNone) {
       video_player->SetEventWaitTimeout(std::max(
           kDefaultEventWaitTimeout, g_env->Video()->GetDuration() * 10));
     }
@@ -279,10 +299,8 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
     GTEST_SKIP();
   }
 
-  base::FilePath output_folder =
-      base::FilePath(g_env->OutputFolder())
-          .Append(base::FilePath(g_env->GetTestName()));
-
+  base::FilePath output_folder = base::FilePath(g_env->OutputFolder())
+                                     .Append(g_env->GetTestOutputFilePath());
   VideoDecoderClientConfig config;
   config.allocation_mode = AllocationMode::kAllocate;
   auto tvp = CreateVideoPlayer(
@@ -364,7 +382,8 @@ TEST_F(VideoDecoderTest, Reinitialize) {
 TEST_F(VideoDecoderTest, DestroyBeforeInitialize) {
   VideoDecoderClientConfig config = VideoDecoderClientConfig();
   config.use_vd = g_env->UseVD();
-  auto tvp = VideoPlayer::Create(config, FrameRendererDummy::Create());
+  auto tvp = VideoPlayer::Create(config, g_env->GetGpuMemoryBufferFactory(),
+                                 FrameRendererDummy::Create());
   EXPECT_NE(tvp, nullptr);
 }
 
@@ -394,7 +413,7 @@ int main(int argc, char** argv) {
 
   // Parse command line arguments.
   bool enable_validator = true;
-  bool output_frames = false;
+  media::test::FrameOutputConfig frame_output_config;
   base::FilePath::StringType output_folder = base::FilePath::kCurrentDirectory;
   bool use_vd = false;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
@@ -408,7 +427,34 @@ int main(int argc, char** argv) {
     if (it->first == "disable_validator") {
       enable_validator = false;
     } else if (it->first == "output_frames") {
-      output_frames = true;
+      if (it->second == "all") {
+        frame_output_config.output_mode = media::test::FrameOutputMode::kAll;
+      } else if (it->second == "corrupt") {
+        frame_output_config.output_mode =
+            media::test::FrameOutputMode::kCorrupt;
+      } else {
+        std::cout << "unknown frame output mode \"" << it->second
+                  << "\", possible values are \"all|corrupt\"\n";
+        return EXIT_FAILURE;
+      }
+    } else if (it->first == "output_format") {
+      if (it->second == "png") {
+        frame_output_config.output_format =
+            media::test::VideoFrameFileWriter::OutputFormat::kPNG;
+      } else if (it->second == "yuv") {
+        frame_output_config.output_format =
+            media::test::VideoFrameFileWriter::OutputFormat::kYUV;
+      } else {
+        std::cout << "unknown frame output format \"" << it->second
+                  << "\", possible values are \"png|yuv\"\n";
+        return EXIT_FAILURE;
+      }
+    } else if (it->first == "output_limit") {
+      if (!base::StringToUint64(it->second,
+                                &frame_output_config.output_limit)) {
+        std::cout << "invalid number \"" << it->second << "\n";
+        return EXIT_FAILURE;
+      }
     } else if (it->first == "output_folder") {
       output_folder = it->second;
     } else if (it->first == "use_vd") {
@@ -425,8 +471,8 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
-          video_path, video_metadata_path, enable_validator, output_frames,
-          base::FilePath(output_folder), use_vd);
+          video_path, video_metadata_path, enable_validator, use_vd,
+          base::FilePath(output_folder), frame_output_config);
   if (!test_environment)
     return EXIT_FAILURE;
 

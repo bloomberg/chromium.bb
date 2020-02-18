@@ -20,20 +20,17 @@
 #include "dawn_native/vulkan/AdapterVk.h"
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
-#include "dawn_native/vulkan/MemoryAllocator.h"
+#include "dawn_native/vulkan/ResourceMemoryAllocatorVk.h"
 #include "dawn_native/vulkan/TextureVk.h"
-#include "utils/DawnHelpers.h"
 #include "utils/SystemUtils.h"
-
-// TODO(crbug.com/966500): Intel is disabled until upgrade is finished
+#include "utils/WGPUHelpers.h"
 
 namespace {
 
     class VulkanImageWrappingTestBase : public DawnTest {
       public:
-        void SetUp() override {
-            DawnTest::SetUp();
-            if (UsesWire() || IsIntel()) {
+        void TestSetUp() override {
+            if (UsesWire()) {
                 return;
             }
 
@@ -90,7 +87,8 @@ namespace {
             externalInfo.pNext = nullptr;
             externalInfo.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
 
-            int bestType = deviceVk->GetMemoryAllocator()->FindBestTypeIndex(requirements, false);
+            int bestType = deviceVk->GetResourceMemoryAllocatorForTesting()->FindBestTypeIndex(
+                requirements, false);
             VkMemoryAllocateInfo allocateInfo;
             allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocateInfo.pNext = &externalInfo;
@@ -150,8 +148,8 @@ namespace {
         }
 
         // Wraps a vulkan image from external memory
-        dawn::Texture WrapVulkanImage(dawn::Device device,
-                                      const dawn::TextureDescriptor* textureDescriptor,
+        wgpu::Texture WrapVulkanImage(wgpu::Device device,
+                                      const wgpu::TextureDescriptor* textureDescriptor,
                                       int memoryFd,
                                       VkDeviceSize allocationSize,
                                       uint32_t memoryTypeIndex,
@@ -160,15 +158,14 @@ namespace {
                                       bool expectValid = true) {
             dawn_native::vulkan::ExternalImageDescriptorOpaqueFD descriptor;
             descriptor.cTextureDescriptor =
-                reinterpret_cast<const DawnTextureDescriptor*>(textureDescriptor);
+                reinterpret_cast<const WGPUTextureDescriptor*>(textureDescriptor);
             descriptor.isCleared = isCleared;
             descriptor.allocationSize = allocationSize;
             descriptor.memoryTypeIndex = memoryTypeIndex;
             descriptor.memoryFD = memoryFd;
             descriptor.waitFDs = waitFDs;
 
-            DawnTexture texture =
-                dawn_native::vulkan::WrapVulkanImageOpaqueFD(device.Get(), &descriptor);
+            WGPUTexture texture = dawn_native::vulkan::WrapVulkanImage(device.Get(), &descriptor);
 
             if (expectValid) {
                 EXPECT_NE(texture, nullptr) << "Failed to wrap image, are external memory / "
@@ -177,13 +174,13 @@ namespace {
                 EXPECT_EQ(texture, nullptr);
             }
 
-            return dawn::Texture::Acquire(texture);
+            return wgpu::Texture::Acquire(texture);
         }
 
         // Exports the signal from a wrapped texture and ignores it
         // We have to export the signal before destroying the wrapped texture else it's an assertion
         // failure
-        void IgnoreSignalSemaphore(dawn::Device device, dawn::Texture wrappedTexture) {
+        void IgnoreSignalSemaphore(wgpu::Device device, wgpu::Texture wrappedTexture) {
             int fd = dawn_native::vulkan::ExportSignalSemaphoreOpaqueFD(device.Get(),
                                                                         wrappedTexture.Get());
             ASSERT_NE(fd, -1);
@@ -198,27 +195,27 @@ namespace {
 
 class VulkanImageWrappingValidationTests : public VulkanImageWrappingTestBase {
   public:
-    void SetUp() override {
-        VulkanImageWrappingTestBase::SetUp();
-        if (UsesWire() || IsIntel()) {
+    void TestSetUp() override {
+        VulkanImageWrappingTestBase::TestSetUp();
+        if (UsesWire()) {
             return;
         }
 
         CreateBindExportImage(deviceVk, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, &defaultImage,
                               &defaultAllocation, &defaultAllocationSize, &defaultMemoryTypeIndex,
                               &defaultFd);
-        defaultDescriptor.dimension = dawn::TextureDimension::e2D;
-        defaultDescriptor.format = dawn::TextureFormat::RGBA8Unorm;
+        defaultDescriptor.dimension = wgpu::TextureDimension::e2D;
+        defaultDescriptor.format = wgpu::TextureFormat::RGBA8Unorm;
         defaultDescriptor.size = {1, 1, 1};
         defaultDescriptor.sampleCount = 1;
         defaultDescriptor.arrayLayerCount = 1;
         defaultDescriptor.mipLevelCount = 1;
-        defaultDescriptor.usage = dawn::TextureUsage::OutputAttachment |
-                                  dawn::TextureUsage::CopySrc | dawn::TextureUsage::CopyDst;
+        defaultDescriptor.usage = wgpu::TextureUsage::OutputAttachment |
+                                  wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
     }
 
     void TearDown() override {
-        if (UsesWire() || IsIntel()) {
+        if (UsesWire()) {
             VulkanImageWrappingTestBase::TearDown();
             return;
         }
@@ -229,7 +226,7 @@ class VulkanImageWrappingValidationTests : public VulkanImageWrappingTestBase {
     }
 
   protected:
-    dawn::TextureDescriptor defaultDescriptor;
+    wgpu::TextureDescriptor defaultDescriptor;
     VkImage defaultImage;
     VkDeviceMemory defaultAllocation;
     VkDeviceSize defaultAllocationSize;
@@ -239,8 +236,8 @@ class VulkanImageWrappingValidationTests : public VulkanImageWrappingTestBase {
 
 // Test no error occurs if the import is valid
 TEST_P(VulkanImageWrappingValidationTests, SuccessfulImport) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
-    dawn::Texture texture =
+    DAWN_SKIP_TEST_IF(UsesWire());
+    wgpu::Texture texture =
         WrapVulkanImage(device, &defaultDescriptor, defaultFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {}, true, true);
     EXPECT_NE(texture.Get(), nullptr);
@@ -249,8 +246,8 @@ TEST_P(VulkanImageWrappingValidationTests, SuccessfulImport) {
 
 // Test an error occurs if the texture descriptor is missing
 TEST_P(VulkanImageWrappingValidationTests, MissingTextureDescriptor) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
-    ASSERT_DEVICE_ERROR(dawn::Texture texture =
+    DAWN_SKIP_TEST_IF(UsesWire());
+    ASSERT_DEVICE_ERROR(wgpu::Texture texture =
                             WrapVulkanImage(device, nullptr, defaultFd, defaultAllocationSize,
                                             defaultMemoryTypeIndex, {}, true, false));
     EXPECT_EQ(texture.Get(), nullptr);
@@ -258,10 +255,10 @@ TEST_P(VulkanImageWrappingValidationTests, MissingTextureDescriptor) {
 
 // Test an error occurs if the texture descriptor is invalid
 TEST_P(VulkanImageWrappingValidationTests, InvalidTextureDescriptor) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
     defaultDescriptor.nextInChain = this;
 
-    ASSERT_DEVICE_ERROR(dawn::Texture texture = WrapVulkanImage(
+    ASSERT_DEVICE_ERROR(wgpu::Texture texture = WrapVulkanImage(
                             device, &defaultDescriptor, defaultFd, defaultAllocationSize,
                             defaultMemoryTypeIndex, {}, true, false));
     EXPECT_EQ(texture.Get(), nullptr);
@@ -269,10 +266,10 @@ TEST_P(VulkanImageWrappingValidationTests, InvalidTextureDescriptor) {
 
 // Test an error occurs if the descriptor dimension isn't 2D
 TEST_P(VulkanImageWrappingValidationTests, InvalidTextureDimension) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
-    defaultDescriptor.dimension = dawn::TextureDimension::e1D;
+    DAWN_SKIP_TEST_IF(UsesWire());
+    defaultDescriptor.dimension = wgpu::TextureDimension::e1D;
 
-    ASSERT_DEVICE_ERROR(dawn::Texture texture = WrapVulkanImage(
+    ASSERT_DEVICE_ERROR(wgpu::Texture texture = WrapVulkanImage(
                             device, &defaultDescriptor, defaultFd, defaultAllocationSize,
                             defaultMemoryTypeIndex, {}, true, false));
     EXPECT_EQ(texture.Get(), nullptr);
@@ -280,10 +277,10 @@ TEST_P(VulkanImageWrappingValidationTests, InvalidTextureDimension) {
 
 // Test an error occurs if the descriptor mip level count isn't 1
 TEST_P(VulkanImageWrappingValidationTests, InvalidMipLevelCount) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
     defaultDescriptor.mipLevelCount = 2;
 
-    ASSERT_DEVICE_ERROR(dawn::Texture texture = WrapVulkanImage(
+    ASSERT_DEVICE_ERROR(wgpu::Texture texture = WrapVulkanImage(
                             device, &defaultDescriptor, defaultFd, defaultAllocationSize,
                             defaultMemoryTypeIndex, {}, true, false));
     EXPECT_EQ(texture.Get(), nullptr);
@@ -291,10 +288,10 @@ TEST_P(VulkanImageWrappingValidationTests, InvalidMipLevelCount) {
 
 // Test an error occurs if the descriptor array layer count isn't 1
 TEST_P(VulkanImageWrappingValidationTests, InvalidArrayLayerCount) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
     defaultDescriptor.arrayLayerCount = 2;
 
-    ASSERT_DEVICE_ERROR(dawn::Texture texture = WrapVulkanImage(
+    ASSERT_DEVICE_ERROR(wgpu::Texture texture = WrapVulkanImage(
                             device, &defaultDescriptor, defaultFd, defaultAllocationSize,
                             defaultMemoryTypeIndex, {}, true, false));
     EXPECT_EQ(texture.Get(), nullptr);
@@ -302,10 +299,10 @@ TEST_P(VulkanImageWrappingValidationTests, InvalidArrayLayerCount) {
 
 // Test an error occurs if the descriptor sample count isn't 1
 TEST_P(VulkanImageWrappingValidationTests, InvalidSampleCount) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
     defaultDescriptor.sampleCount = 4;
 
-    ASSERT_DEVICE_ERROR(dawn::Texture texture = WrapVulkanImage(
+    ASSERT_DEVICE_ERROR(wgpu::Texture texture = WrapVulkanImage(
                             device, &defaultDescriptor, defaultFd, defaultAllocationSize,
                             defaultMemoryTypeIndex, {}, true, false));
     EXPECT_EQ(texture.Get(), nullptr);
@@ -313,8 +310,8 @@ TEST_P(VulkanImageWrappingValidationTests, InvalidSampleCount) {
 
 // Test an error occurs if we try to export the signal semaphore twice
 TEST_P(VulkanImageWrappingValidationTests, DoubleSignalSemaphoreExport) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
-    dawn::Texture texture =
+    DAWN_SKIP_TEST_IF(UsesWire());
+    wgpu::Texture texture =
         WrapVulkanImage(device, &defaultDescriptor, defaultFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {}, true, true);
     ASSERT_NE(texture.Get(), nullptr);
@@ -326,8 +323,8 @@ TEST_P(VulkanImageWrappingValidationTests, DoubleSignalSemaphoreExport) {
 
 // Test an error occurs if we try to export the signal semaphore from a normal texture
 TEST_P(VulkanImageWrappingValidationTests, NormalTextureSignalSemaphoreExport) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
-    dawn::Texture texture = device.CreateTexture(&defaultDescriptor);
+    DAWN_SKIP_TEST_IF(UsesWire());
+    wgpu::Texture texture = device.CreateTexture(&defaultDescriptor);
     ASSERT_NE(texture.Get(), nullptr);
     ASSERT_DEVICE_ERROR(
         int fd = dawn_native::vulkan::ExportSignalSemaphoreOpaqueFD(device.Get(), texture.Get()));
@@ -336,8 +333,8 @@ TEST_P(VulkanImageWrappingValidationTests, NormalTextureSignalSemaphoreExport) {
 
 // Test an error occurs if we try to export the signal semaphore from a destroyed texture
 TEST_P(VulkanImageWrappingValidationTests, DestroyedTextureSignalSemaphoreExport) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
-    dawn::Texture texture = device.CreateTexture(&defaultDescriptor);
+    DAWN_SKIP_TEST_IF(UsesWire());
+    wgpu::Texture texture = device.CreateTexture(&defaultDescriptor);
     ASSERT_NE(texture.Get(), nullptr);
     texture.Destroy();
     ASSERT_DEVICE_ERROR(
@@ -349,9 +346,9 @@ TEST_P(VulkanImageWrappingValidationTests, DestroyedTextureSignalSemaphoreExport
 // These tests are skipped if the harness is using the wire.
 class VulkanImageWrappingUsageTests : public VulkanImageWrappingTestBase {
   public:
-    void SetUp() override {
-        VulkanImageWrappingTestBase::SetUp();
-        if (UsesWire() || IsIntel()) {
+    void TestSetUp() override {
+        VulkanImageWrappingTestBase::TestSetUp();
+        if (UsesWire()) {
             return;
         }
 
@@ -362,23 +359,23 @@ class VulkanImageWrappingUsageTests : public VulkanImageWrappingTestBase {
 
         secondDeviceVk = reinterpret_cast<dawn_native::vulkan::Device*>(
             backendAdapter->CreateDevice(&deviceDescriptor));
-        secondDevice = dawn::Device::Acquire(reinterpret_cast<DawnDevice>(secondDeviceVk));
+        secondDevice = wgpu::Device::Acquire(reinterpret_cast<WGPUDevice>(secondDeviceVk));
 
         CreateBindExportImage(deviceVk, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, &defaultImage,
                               &defaultAllocation, &defaultAllocationSize, &defaultMemoryTypeIndex,
                               &defaultFd);
-        defaultDescriptor.dimension = dawn::TextureDimension::e2D;
-        defaultDescriptor.format = dawn::TextureFormat::RGBA8Unorm;
+        defaultDescriptor.dimension = wgpu::TextureDimension::e2D;
+        defaultDescriptor.format = wgpu::TextureFormat::RGBA8Unorm;
         defaultDescriptor.size = {1, 1, 1};
         defaultDescriptor.sampleCount = 1;
         defaultDescriptor.arrayLayerCount = 1;
         defaultDescriptor.mipLevelCount = 1;
-        defaultDescriptor.usage = dawn::TextureUsage::OutputAttachment |
-                                  dawn::TextureUsage::CopySrc | dawn::TextureUsage::CopyDst;
+        defaultDescriptor.usage = wgpu::TextureUsage::OutputAttachment |
+                                  wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
     }
 
     void TearDown() override {
-        if (UsesWire() || IsIntel()) {
+        if (UsesWire()) {
             VulkanImageWrappingTestBase::TearDown();
             return;
         }
@@ -389,13 +386,13 @@ class VulkanImageWrappingUsageTests : public VulkanImageWrappingTestBase {
     }
 
   protected:
-    dawn::Device secondDevice;
+    wgpu::Device secondDevice;
     dawn_native::vulkan::Device* secondDeviceVk;
 
     dawn_native::vulkan::Adapter* backendAdapter;
     dawn_native::DeviceDescriptor deviceDescriptor;
 
-    dawn::TextureDescriptor defaultDescriptor;
+    wgpu::TextureDescriptor defaultDescriptor;
     VkImage defaultImage;
     VkDeviceMemory defaultAllocation;
     VkDeviceSize defaultAllocationSize;
@@ -403,45 +400,45 @@ class VulkanImageWrappingUsageTests : public VulkanImageWrappingTestBase {
     int defaultFd;
 
     // Clear a texture on a given device
-    void ClearImage(dawn::Device device, dawn::Texture wrappedTexture, dawn::Color clearColor) {
-        dawn::TextureView wrappedView = wrappedTexture.CreateView();
+    void ClearImage(wgpu::Device device, wgpu::Texture wrappedTexture, wgpu::Color clearColor) {
+        wgpu::TextureView wrappedView = wrappedTexture.CreateView();
 
         // Submit a clear operation
         utils::ComboRenderPassDescriptor renderPassDescriptor({wrappedView}, {});
-        renderPassDescriptor.cColorAttachmentsInfoPtr[0]->clearColor = clearColor;
+        renderPassDescriptor.cColorAttachments[0].clearColor = clearColor;
 
-        dawn::CommandEncoder encoder = device.CreateCommandEncoder();
-        dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDescriptor);
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDescriptor);
         pass.EndPass();
 
-        dawn::CommandBuffer commands = encoder.Finish();
+        wgpu::CommandBuffer commands = encoder.Finish();
 
-        dawn::Queue queue = device.CreateQueue();
+        wgpu::Queue queue = device.CreateQueue();
         queue.Submit(1, &commands);
     }
 
     // Submits a 1x1x1 copy from source to destination
-    void SimpleCopyTextureToTexture(dawn::Device device,
-                                    dawn::Queue queue,
-                                    dawn::Texture source,
-                                    dawn::Texture destination) {
-        dawn::TextureCopyView copySrc;
+    void SimpleCopyTextureToTexture(wgpu::Device device,
+                                    wgpu::Queue queue,
+                                    wgpu::Texture source,
+                                    wgpu::Texture destination) {
+        wgpu::TextureCopyView copySrc;
         copySrc.texture = source;
         copySrc.mipLevel = 0;
         copySrc.arrayLayer = 0;
         copySrc.origin = {0, 0, 0};
 
-        dawn::TextureCopyView copyDst;
+        wgpu::TextureCopyView copyDst;
         copyDst.texture = destination;
         copyDst.mipLevel = 0;
         copyDst.arrayLayer = 0;
         copyDst.origin = {0, 0, 0};
 
-        dawn::Extent3D copySize = {1, 1, 1};
+        wgpu::Extent3D copySize = {1, 1, 1};
 
-        dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         encoder.CopyTextureToTexture(&copySrc, &copyDst, &copySize);
-        dawn::CommandBuffer commands = encoder.Finish();
+        wgpu::CommandBuffer commands = encoder.Finish();
 
         queue.Submit(1, &commands);
     }
@@ -450,10 +447,10 @@ class VulkanImageWrappingUsageTests : public VulkanImageWrappingTestBase {
 // Clear an image in |secondDevice|
 // Verify clear color is visible in |device|
 TEST_P(VulkanImageWrappingUsageTests, ClearImageAcrossDevices) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
 
     // Import the image on |secondDevice|
-    dawn::Texture wrappedTexture =
+    wgpu::Texture wrappedTexture =
         WrapVulkanImage(secondDevice, &defaultDescriptor, defaultFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {});
 
@@ -465,7 +462,7 @@ TEST_P(VulkanImageWrappingUsageTests, ClearImageAcrossDevices) {
 
     // Import the image to |device|, making sure we wait on signalFd
     int memoryFd = GetMemoryFd(deviceVk, defaultAllocation);
-    dawn::Texture nextWrappedTexture =
+    wgpu::Texture nextWrappedTexture =
         WrapVulkanImage(device, &defaultDescriptor, memoryFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {signalFd});
 
@@ -481,15 +478,15 @@ TEST_P(VulkanImageWrappingUsageTests, ClearImageAcrossDevices) {
 // Verify the very first import into |device| also sees the change, since it should
 // alias the same memory
 TEST_P(VulkanImageWrappingUsageTests, ClearImageAcrossDevicesAliased) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
     // Import the image on |device
-    dawn::Texture wrappedTextureAlias = WrapVulkanImage(
+    wgpu::Texture wrappedTextureAlias = WrapVulkanImage(
         device, &defaultDescriptor, defaultFd, defaultAllocationSize, defaultMemoryTypeIndex, {});
 
     int memoryFd = GetMemoryFd(deviceVk, defaultAllocation);
 
     // Import the image on |secondDevice|
-    dawn::Texture wrappedTexture =
+    wgpu::Texture wrappedTexture =
         WrapVulkanImage(secondDevice, &defaultDescriptor, defaultFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {});
 
@@ -501,7 +498,7 @@ TEST_P(VulkanImageWrappingUsageTests, ClearImageAcrossDevicesAliased) {
 
     // Import the image to |device|, making sure we wait on signalFd
     memoryFd = GetMemoryFd(deviceVk, defaultAllocation);
-    dawn::Texture nextWrappedTexture =
+    wgpu::Texture nextWrappedTexture =
         WrapVulkanImage(device, &defaultDescriptor, memoryFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {signalFd});
 
@@ -518,10 +515,10 @@ TEST_P(VulkanImageWrappingUsageTests, ClearImageAcrossDevicesAliased) {
 // Clear an image in |secondDevice|
 // Verify clear color is not visible in |device| if we import the texture as not cleared
 TEST_P(VulkanImageWrappingUsageTests, UnclearedTextureIsCleared) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
 
     // Import the image on |secondDevice|
-    dawn::Texture wrappedTexture =
+    wgpu::Texture wrappedTexture =
         WrapVulkanImage(secondDevice, &defaultDescriptor, defaultFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {});
 
@@ -533,7 +530,7 @@ TEST_P(VulkanImageWrappingUsageTests, UnclearedTextureIsCleared) {
 
     // Import the image to |device|, making sure we wait on signalFd
     int memoryFd = GetMemoryFd(deviceVk, defaultAllocation);
-    dawn::Texture nextWrappedTexture =
+    wgpu::Texture nextWrappedTexture =
         WrapVulkanImage(device, &defaultDescriptor, memoryFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {signalFd}, false);
 
@@ -547,10 +544,10 @@ TEST_P(VulkanImageWrappingUsageTests, UnclearedTextureIsCleared) {
 // Issue a copy of the imported texture inside |device| to |copyDstTexture|
 // Verify the clear color from |secondDevice| is visible in |copyDstTexture|
 TEST_P(VulkanImageWrappingUsageTests, CopyTextureToTextureSrcSync) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
 
     // Import the image on |secondDevice|
-    dawn::Texture wrappedTexture =
+    wgpu::Texture wrappedTexture =
         WrapVulkanImage(secondDevice, &defaultDescriptor, defaultFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {});
 
@@ -562,12 +559,12 @@ TEST_P(VulkanImageWrappingUsageTests, CopyTextureToTextureSrcSync) {
 
     // Import the image to |device|, making sure we wait on |signalFd|
     int memoryFd = GetMemoryFd(deviceVk, defaultAllocation);
-    dawn::Texture deviceWrappedTexture =
+    wgpu::Texture deviceWrappedTexture =
         WrapVulkanImage(device, &defaultDescriptor, memoryFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {signalFd});
 
     // Create a second texture on |device|
-    dawn::Texture copyDstTexture = device.CreateTexture(&defaultDescriptor);
+    wgpu::Texture copyDstTexture = device.CreateTexture(&defaultDescriptor);
 
     // Copy |deviceWrappedTexture| into |copyDstTexture|
     SimpleCopyTextureToTexture(device, queue, deviceWrappedTexture, copyDstTexture);
@@ -587,10 +584,10 @@ TEST_P(VulkanImageWrappingUsageTests, CopyTextureToTextureSrcSync) {
 // If texture destination isn't synchronized, |secondDevice| could copy color B
 // into the texture first, then |device| writes color A
 TEST_P(VulkanImageWrappingUsageTests, CopyTextureToTextureDstSync) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
 
     // Import the image on |device|
-    dawn::Texture wrappedTexture = WrapVulkanImage(
+    wgpu::Texture wrappedTexture = WrapVulkanImage(
         device, &defaultDescriptor, defaultFd, defaultAllocationSize, defaultMemoryTypeIndex, {});
 
     // Clear |wrappedTexture| on |device|
@@ -601,16 +598,16 @@ TEST_P(VulkanImageWrappingUsageTests, CopyTextureToTextureDstSync) {
 
     // Import the image to |secondDevice|, making sure we wait on |signalFd|
     int memoryFd = GetMemoryFd(deviceVk, defaultAllocation);
-    dawn::Texture secondDeviceWrappedTexture =
+    wgpu::Texture secondDeviceWrappedTexture =
         WrapVulkanImage(secondDevice, &defaultDescriptor, memoryFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {signalFd});
 
     // Create a texture with color B on |secondDevice|
-    dawn::Texture copySrcTexture = secondDevice.CreateTexture(&defaultDescriptor);
+    wgpu::Texture copySrcTexture = secondDevice.CreateTexture(&defaultDescriptor);
     ClearImage(secondDevice, copySrcTexture, {1 / 255.0f, 2 / 255.0f, 3 / 255.0f, 4 / 255.0f});
 
     // Copy color B on |secondDevice|
-    dawn::Queue secondDeviceQueue = secondDevice.CreateQueue();
+    wgpu::Queue secondDeviceQueue = secondDevice.CreateQueue();
     SimpleCopyTextureToTexture(secondDevice, secondDeviceQueue, copySrcTexture,
                                secondDeviceWrappedTexture);
 
@@ -619,7 +616,7 @@ TEST_P(VulkanImageWrappingUsageTests, CopyTextureToTextureDstSync) {
                                                                   secondDeviceWrappedTexture.Get());
     memoryFd = GetMemoryFd(deviceVk, defaultAllocation);
 
-    dawn::Texture nextWrappedTexture =
+    wgpu::Texture nextWrappedTexture =
         WrapVulkanImage(device, &defaultDescriptor, memoryFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {signalFd});
 
@@ -633,10 +630,10 @@ TEST_P(VulkanImageWrappingUsageTests, CopyTextureToTextureDstSync) {
 // Issue a copy of the imported texture inside |device| to |copyDstBuffer|
 // Verify the clear color from |secondDevice| is visible in |copyDstBuffer|
 TEST_P(VulkanImageWrappingUsageTests, CopyTextureToBufferSrcSync) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
 
     // Import the image on |secondDevice|
-    dawn::Texture wrappedTexture =
+    wgpu::Texture wrappedTexture =
         WrapVulkanImage(secondDevice, &defaultDescriptor, defaultFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {});
 
@@ -648,34 +645,34 @@ TEST_P(VulkanImageWrappingUsageTests, CopyTextureToBufferSrcSync) {
 
     // Import the image to |device|, making sure we wait on |signalFd|
     int memoryFd = GetMemoryFd(deviceVk, defaultAllocation);
-    dawn::Texture deviceWrappedTexture =
+    wgpu::Texture deviceWrappedTexture =
         WrapVulkanImage(device, &defaultDescriptor, memoryFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {signalFd});
 
     // Create a destination buffer on |device|
-    dawn::BufferDescriptor bufferDesc;
+    wgpu::BufferDescriptor bufferDesc;
     bufferDesc.size = 4;
-    bufferDesc.usage = dawn::BufferUsage::CopyDst | dawn::BufferUsage::CopySrc;
-    dawn::Buffer copyDstBuffer = device.CreateBuffer(&bufferDesc);
+    bufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::CopySrc;
+    wgpu::Buffer copyDstBuffer = device.CreateBuffer(&bufferDesc);
 
     // Copy |deviceWrappedTexture| into |copyDstBuffer|
-    dawn::TextureCopyView copySrc;
+    wgpu::TextureCopyView copySrc;
     copySrc.texture = deviceWrappedTexture;
     copySrc.mipLevel = 0;
     copySrc.arrayLayer = 0;
     copySrc.origin = {0, 0, 0};
 
-    dawn::BufferCopyView copyDst;
+    wgpu::BufferCopyView copyDst;
     copyDst.buffer = copyDstBuffer;
     copyDst.offset = 0;
     copyDst.rowPitch = 256;
     copyDst.imageHeight = 0;
 
-    dawn::Extent3D copySize = {1, 1, 1};
+    wgpu::Extent3D copySize = {1, 1, 1};
 
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     encoder.CopyTextureToBuffer(&copySrc, &copyDst, &copySize);
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     // Verify |copyDstBuffer| sees changes from |secondDevice|
@@ -694,10 +691,10 @@ TEST_P(VulkanImageWrappingUsageTests, CopyTextureToBufferSrcSync) {
 // If texture destination isn't synchronized, |secondDevice| could copy color B
 // into the texture first, then |device| writes color A
 TEST_P(VulkanImageWrappingUsageTests, CopyBufferToTextureDstSync) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
 
     // Import the image on |device|
-    dawn::Texture wrappedTexture = WrapVulkanImage(
+    wgpu::Texture wrappedTexture = WrapVulkanImage(
         device, &defaultDescriptor, defaultFd, defaultAllocationSize, defaultMemoryTypeIndex, {});
 
     // Clear |wrappedTexture| on |device|
@@ -708,35 +705,35 @@ TEST_P(VulkanImageWrappingUsageTests, CopyBufferToTextureDstSync) {
 
     // Import the image to |secondDevice|, making sure we wait on |signalFd|
     int memoryFd = GetMemoryFd(deviceVk, defaultAllocation);
-    dawn::Texture secondDeviceWrappedTexture =
+    wgpu::Texture secondDeviceWrappedTexture =
         WrapVulkanImage(secondDevice, &defaultDescriptor, memoryFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {signalFd});
 
     // Copy color B on |secondDevice|
-    dawn::Queue secondDeviceQueue = secondDevice.CreateQueue();
+    wgpu::Queue secondDeviceQueue = secondDevice.CreateQueue();
 
     // Create a buffer on |secondDevice|
-    dawn::Buffer copySrcBuffer =
-        utils::CreateBufferFromData(secondDevice, dawn::BufferUsage::CopySrc, {0x04030201});
+    wgpu::Buffer copySrcBuffer =
+        utils::CreateBufferFromData(secondDevice, wgpu::BufferUsage::CopySrc, {0x04030201});
 
     // Copy |copySrcBuffer| into |secondDeviceWrappedTexture|
-    dawn::BufferCopyView copySrc;
+    wgpu::BufferCopyView copySrc;
     copySrc.buffer = copySrcBuffer;
     copySrc.offset = 0;
     copySrc.rowPitch = 256;
     copySrc.imageHeight = 0;
 
-    dawn::TextureCopyView copyDst;
+    wgpu::TextureCopyView copyDst;
     copyDst.texture = secondDeviceWrappedTexture;
     copyDst.mipLevel = 0;
     copyDst.arrayLayer = 0;
     copyDst.origin = {0, 0, 0};
 
-    dawn::Extent3D copySize = {1, 1, 1};
+    wgpu::Extent3D copySize = {1, 1, 1};
 
-    dawn::CommandEncoder encoder = secondDevice.CreateCommandEncoder();
+    wgpu::CommandEncoder encoder = secondDevice.CreateCommandEncoder();
     encoder.CopyBufferToTexture(&copySrc, &copyDst, &copySize);
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
     secondDeviceQueue.Submit(1, &commands);
 
     // Re-import back into |device|, waiting on |secondDevice|'s signal
@@ -744,7 +741,7 @@ TEST_P(VulkanImageWrappingUsageTests, CopyBufferToTextureDstSync) {
                                                                   secondDeviceWrappedTexture.Get());
     memoryFd = GetMemoryFd(deviceVk, defaultAllocation);
 
-    dawn::Texture nextWrappedTexture =
+    wgpu::Texture nextWrappedTexture =
         WrapVulkanImage(device, &defaultDescriptor, memoryFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {signalFd});
 
@@ -759,10 +756,10 @@ TEST_P(VulkanImageWrappingUsageTests, CopyBufferToTextureDstSync) {
 // Issue second copy to |secondCopyDstTexture|
 // Verify the clear color from |secondDevice| is visible in both copies
 TEST_P(VulkanImageWrappingUsageTests, DoubleTextureUsage) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
 
     // Import the image on |secondDevice|
-    dawn::Texture wrappedTexture =
+    wgpu::Texture wrappedTexture =
         WrapVulkanImage(secondDevice, &defaultDescriptor, defaultFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {});
 
@@ -774,15 +771,15 @@ TEST_P(VulkanImageWrappingUsageTests, DoubleTextureUsage) {
 
     // Import the image to |device|, making sure we wait on |signalFd|
     int memoryFd = GetMemoryFd(deviceVk, defaultAllocation);
-    dawn::Texture deviceWrappedTexture =
+    wgpu::Texture deviceWrappedTexture =
         WrapVulkanImage(device, &defaultDescriptor, memoryFd, defaultAllocationSize,
                         defaultMemoryTypeIndex, {signalFd});
 
     // Create a second texture on |device|
-    dawn::Texture copyDstTexture = device.CreateTexture(&defaultDescriptor);
+    wgpu::Texture copyDstTexture = device.CreateTexture(&defaultDescriptor);
 
     // Create a third texture on |device|
-    dawn::Texture secondCopyDstTexture = device.CreateTexture(&defaultDescriptor);
+    wgpu::Texture secondCopyDstTexture = device.CreateTexture(&defaultDescriptor);
 
     // Copy |deviceWrappedTexture| into |copyDstTexture|
     SimpleCopyTextureToTexture(device, queue, deviceWrappedTexture, copyDstTexture);
@@ -808,7 +805,7 @@ TEST_P(VulkanImageWrappingUsageTests, DoubleTextureUsage) {
 // Copy C->D on device 1 (wait on C from previous op)
 // Verify D has same color as A
 TEST_P(VulkanImageWrappingUsageTests, ChainTextureCopy) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel());
+    DAWN_SKIP_TEST_IF(UsesWire());
 
     // Close |defaultFd| since this test doesn't import it anywhere
     close(defaultFd);
@@ -818,11 +815,11 @@ TEST_P(VulkanImageWrappingUsageTests, ChainTextureCopy) {
     // Create device 3
     dawn_native::vulkan::Device* thirdDeviceVk = reinterpret_cast<dawn_native::vulkan::Device*>(
         backendAdapter->CreateDevice(&deviceDescriptor));
-    dawn::Device thirdDevice = dawn::Device::Acquire(reinterpret_cast<DawnDevice>(thirdDeviceVk));
+    wgpu::Device thirdDevice = wgpu::Device::Acquire(reinterpret_cast<WGPUDevice>(thirdDeviceVk));
 
     // Make queue for device 2 and 3
-    dawn::Queue secondDeviceQueue = secondDevice.CreateQueue();
-    dawn::Queue thirdDeviceQueue = thirdDevice.CreateQueue();
+    wgpu::Queue secondDeviceQueue = secondDevice.CreateQueue();
+    wgpu::Queue thirdDeviceQueue = thirdDevice.CreateQueue();
 
     // Allocate memory for A, B, C
     VkImage imageA;
@@ -850,10 +847,10 @@ TEST_P(VulkanImageWrappingUsageTests, ChainTextureCopy) {
                           &allocationSizeC, &memoryTypeIndexC, &memoryFdC);
 
     // Import TexA, TexB on device 3
-    dawn::Texture wrappedTexADevice3 = WrapVulkanImage(thirdDevice, &defaultDescriptor, memoryFdA,
+    wgpu::Texture wrappedTexADevice3 = WrapVulkanImage(thirdDevice, &defaultDescriptor, memoryFdA,
                                                        allocationSizeA, memoryTypeIndexA, {});
 
-    dawn::Texture wrappedTexBDevice3 = WrapVulkanImage(thirdDevice, &defaultDescriptor, memoryFdB,
+    wgpu::Texture wrappedTexBDevice3 = WrapVulkanImage(thirdDevice, &defaultDescriptor, memoryFdB,
                                                        allocationSizeB, memoryTypeIndexB, {});
 
     // Clear TexA
@@ -869,11 +866,11 @@ TEST_P(VulkanImageWrappingUsageTests, ChainTextureCopy) {
 
     // Import TexB, TexC on device 2
     memoryFdB = GetMemoryFd(secondDeviceVk, allocationB);
-    dawn::Texture wrappedTexBDevice2 =
+    wgpu::Texture wrappedTexBDevice2 =
         WrapVulkanImage(secondDevice, &defaultDescriptor, memoryFdB, allocationSizeB,
                         memoryTypeIndexB, {signalFdTexBDevice3});
 
-    dawn::Texture wrappedTexCDevice2 = WrapVulkanImage(secondDevice, &defaultDescriptor, memoryFdC,
+    wgpu::Texture wrappedTexCDevice2 = WrapVulkanImage(secondDevice, &defaultDescriptor, memoryFdC,
                                                        allocationSizeC, memoryTypeIndexC, {});
 
     // Copy B->C on device 2
@@ -886,12 +883,12 @@ TEST_P(VulkanImageWrappingUsageTests, ChainTextureCopy) {
 
     // Import TexC on device 1
     memoryFdC = GetMemoryFd(deviceVk, allocationC);
-    dawn::Texture wrappedTexCDevice1 =
+    wgpu::Texture wrappedTexCDevice1 =
         WrapVulkanImage(device, &defaultDescriptor, memoryFdC, allocationSizeC, memoryTypeIndexC,
                         {signalFdTexCDevice2});
 
     // Create TexD on device 1
-    dawn::Texture texD = device.CreateTexture(&defaultDescriptor);
+    wgpu::Texture texD = device.CreateTexture(&defaultDescriptor);
 
     // Copy C->D on device 1
     SimpleCopyTextureToTexture(device, queue, wrappedTexCDevice1, texD);
@@ -912,28 +909,28 @@ TEST_P(VulkanImageWrappingUsageTests, ChainTextureCopy) {
 // Tests a larger image is preserved when importing
 // TODO(http://crbug.com/dawn/206): This fails on AMD
 TEST_P(VulkanImageWrappingUsageTests, LargerImage) {
-    DAWN_SKIP_TEST_IF(UsesWire() || IsIntel() || IsAMD());
+    DAWN_SKIP_TEST_IF(UsesWire() || IsAMD());
 
     close(defaultFd);
 
-    dawn::TextureDescriptor descriptor;
-    descriptor.dimension = dawn::TextureDimension::e2D;
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = 640;
     descriptor.size.height = 480;
     descriptor.size.depth = 1;
     descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
-    descriptor.format = dawn::TextureFormat::BGRA8Unorm;
+    descriptor.format = wgpu::TextureFormat::BGRA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = dawn::TextureUsage::CopyDst | dawn::TextureUsage::CopySrc;
+    descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc;
 
     // Fill memory with textures to trigger layout issues on AMD
-    std::vector<dawn::Texture> textures;
+    std::vector<wgpu::Texture> textures;
     for (int i = 0; i < 20; i++) {
         textures.push_back(device.CreateTexture(&descriptor));
     }
 
-    dawn::Queue secondDeviceQueue = secondDevice.CreateQueue();
+    wgpu::Queue secondDeviceQueue = secondDevice.CreateQueue();
 
     // Make an image on |secondDevice|
     VkImage imageA;
@@ -945,7 +942,7 @@ TEST_P(VulkanImageWrappingUsageTests, LargerImage) {
                           &allocationSizeA, &memoryTypeIndexA, &memoryFdA);
 
     // Import the image on |secondDevice|
-    dawn::Texture wrappedTexture = WrapVulkanImage(secondDevice, &descriptor, memoryFdA,
+    wgpu::Texture wrappedTexture = WrapVulkanImage(secondDevice, &descriptor, memoryFdA,
                                                    allocationSizeA, memoryTypeIndexA, {});
 
     // Draw a non-trivial picture
@@ -968,16 +965,16 @@ TEST_P(VulkanImageWrappingUsageTests, LargerImage) {
 
     // Write the picture
     {
-        dawn::Buffer copySrcBuffer =
-            utils::CreateBufferFromData(secondDevice, data, size, dawn::BufferUsage::CopySrc);
-        dawn::BufferCopyView copySrc = utils::CreateBufferCopyView(copySrcBuffer, 0, rowPitch, 0);
-        dawn::TextureCopyView copyDst =
+        wgpu::Buffer copySrcBuffer =
+            utils::CreateBufferFromData(secondDevice, data, size, wgpu::BufferUsage::CopySrc);
+        wgpu::BufferCopyView copySrc = utils::CreateBufferCopyView(copySrcBuffer, 0, rowPitch, 0);
+        wgpu::TextureCopyView copyDst =
             utils::CreateTextureCopyView(wrappedTexture, 0, 0, {0, 0, 0});
-        dawn::Extent3D copySize = {width, height, 1};
+        wgpu::Extent3D copySize = {width, height, 1};
 
-        dawn::CommandEncoder encoder = secondDevice.CreateCommandEncoder();
+        wgpu::CommandEncoder encoder = secondDevice.CreateCommandEncoder();
         encoder.CopyBufferToTexture(&copySrc, &copyDst, &copySize);
-        dawn::CommandBuffer commands = encoder.Finish();
+        wgpu::CommandBuffer commands = encoder.Finish();
         secondDeviceQueue.Submit(1, &commands);
     }
 
@@ -986,24 +983,24 @@ TEST_P(VulkanImageWrappingUsageTests, LargerImage) {
     int memoryFd = GetMemoryFd(secondDeviceVk, allocationA);
 
     // Import the image on |device|
-    dawn::Texture nextWrappedTexture = WrapVulkanImage(
+    wgpu::Texture nextWrappedTexture = WrapVulkanImage(
         device, &descriptor, memoryFd, allocationSizeA, memoryTypeIndexA, {signalFd});
 
     // Copy the image into a buffer for comparison
-    dawn::BufferDescriptor copyDesc;
+    wgpu::BufferDescriptor copyDesc;
     copyDesc.size = size;
-    copyDesc.usage = dawn::BufferUsage::CopySrc | dawn::BufferUsage::CopyDst;
-    dawn::Buffer copyDstBuffer = device.CreateBuffer(&copyDesc);
+    copyDesc.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
+    wgpu::Buffer copyDstBuffer = device.CreateBuffer(&copyDesc);
     {
-        dawn::TextureCopyView copySrc =
+        wgpu::TextureCopyView copySrc =
             utils::CreateTextureCopyView(nextWrappedTexture, 0, 0, {0, 0, 0});
-        dawn::BufferCopyView copyDst = utils::CreateBufferCopyView(copyDstBuffer, 0, rowPitch, 0);
+        wgpu::BufferCopyView copyDst = utils::CreateBufferCopyView(copyDstBuffer, 0, rowPitch, 0);
 
-        dawn::Extent3D copySize = {width, height, 1};
+        wgpu::Extent3D copySize = {width, height, 1};
 
-        dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         encoder.CopyTextureToBuffer(&copySrc, &copyDst, &copySize);
-        dawn::CommandBuffer commands = encoder.Finish();
+        wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
     }
 

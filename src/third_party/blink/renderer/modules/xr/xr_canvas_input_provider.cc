@@ -27,11 +27,16 @@ class XRCanvasInputEventListener : public NativeEventListener {
     if (!input_provider_->ShouldProcessEvents())
       return;
 
+    PointerEvent* pointer_event = ToPointerEvent(event);
+    DCHECK(pointer_event);
+    if (!pointer_event->isPrimary())
+      return;
+
     if (event->type() == event_type_names::kPointerdown) {
-      input_provider_->OnPointerDown(ToPointerEvent(event));
+      input_provider_->OnPointerDown(pointer_event);
     } else if (event->type() == event_type_names::kPointerup ||
                event->type() == event_type_names::kPointercancel) {
-      input_provider_->OnPointerUp(ToPointerEvent(event));
+      input_provider_->OnPointerUp(pointer_event);
     }
   }
 
@@ -55,8 +60,7 @@ XRCanvasInputProvider::XRCanvasInputProvider(XRSession* session,
   canvas->addEventListener(event_type_names::kPointercancel, listener_);
 }
 
-XRCanvasInputProvider::~XRCanvasInputProvider() {
-}
+XRCanvasInputProvider::~XRCanvasInputProvider() {}
 
 void XRCanvasInputProvider::Stop() {
   if (!listener_) {
@@ -111,11 +115,12 @@ void XRCanvasInputProvider::UpdateInputSource(PointerEvent* event) {
   // projection matrix to get a 3D point in space, which is then returned in
   // matrix form so we can use it as an XRInputSource's pointerMatrix.
   XRViewData& view = session_->views()[0];
-  TransformationMatrix pointer_transform_matrix = view.UnprojectPointer(
+  TransformationMatrix viewer_from_pointer = view.UnprojectPointer(
       element_x, element_y, canvas_->OffsetWidth(), canvas_->OffsetHeight());
 
-  // Update the input source's pointer matrix.
-  input_source_->SetPointerTransformMatrix(&pointer_transform_matrix);
+  // Update the pointer pose in input space. For screen tapping, input
+  // space is equivalent to viewer space.
+  input_source_->SetInputFromPointer(&viewer_from_pointer);
 }
 
 void XRCanvasInputProvider::ClearInputSource() {

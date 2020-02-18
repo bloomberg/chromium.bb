@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// eslint-disable-next-line no-var
 var chrome = chrome || {};
 
 /**
@@ -17,30 +18,33 @@ chrome.signin = chrome.signin || {};
 // Merge both if possible.
 // Accepts a DOM node and sets its highlighted attribute oldVal != newVal
 function highlightIfChanged(node, oldVal, newVal) {
-  var oldStr = oldVal.toString();
-  var newStr = newVal.toString();
+  const oldStr = oldVal.toString();
+  const newStr = newVal.toString();
   if (oldStr != '' && oldStr != newStr) {
     // Note the addListener function does not end up creating duplicate
     // listeners.  There can be only one listener per event at a time.
     // Reference: https://developer.mozilla.org/en/DOM/element.addEventListener
-    node.addEventListener('webkitAnimationEnd',
-                          function() { this.removeAttribute('highlighted'); },
-                          false);
+    node.addEventListener('webkitAnimationEnd', function() {
+      this.removeAttribute('highlighted');
+    }, false);
     node.setAttribute('highlighted', '');
   }
 }
 
 // Wraps highlightIfChanged for multiple conditions.
 function highlightIfAnyChanged(node, oldToNewValList) {
-  for (var i = 0; i < oldToNewValList.length; i++)
+  for (let i = 0; i < oldToNewValList.length; i++) {
     highlightIfChanged(node, oldToNewValList[i][0], oldToNewValList[i][1]);
+  }
 }
 
 function setClassFromValue(value) {
-  if (value == 0)
+  if (value == 0) {
     return 'zero';
-  if (value == 'Successful')
+  }
+  if (value == 'Successful') {
     return 'ok';
+  }
 
   return '';
 }
@@ -63,7 +67,7 @@ Event.prototype.addListener = function(listener) {
 
 // Remove a listener from the list.
 Event.prototype.removeListener = function(listener) {
-  var i = this.findListener_(listener);
+  const i = this.findListener_(listener);
   if (i == -1) {
     return;
   }
@@ -83,7 +87,7 @@ Event.prototype.hasListeners = function() {
 
 // Returns the index of the given listener, or -1 if not found.
 Event.prototype.findListener_ = function(listener) {
-  for (var i = 0; i < this.listeners_.length; i++) {
+  for (let i = 0; i < this.listeners_.length; i++) {
     if (this.listeners_[i] == listener) {
       return i;
     }
@@ -94,8 +98,8 @@ Event.prototype.findListener_ = function(listener) {
 // Fires the event.  Called by the actual event callback.  Any
 // exceptions thrown by a listener are caught and logged.
 Event.prototype.fire = function() {
-  var args = Array.prototype.slice.call(arguments);
-  for (var i = 0; i < this.listeners_.length; i++) {
+  const args = Array.prototype.slice.call(arguments);
+  for (let i = 0; i < this.listeners_.length; i++) {
     try {
       this.listeners_[i].apply(null, args);
     } catch (e) {
@@ -117,22 +121,22 @@ chrome.signin.events = {
  ]
 };
 
-for (var eventType in chrome.signin.events) {
-  var events = chrome.signin.events[eventType];
-  for (var i = 0; i < events.length; ++i) {
-    var event = events[i];
+for (const eventType in chrome.signin.events) {
+  const events = chrome.signin.events[eventType];
+  for (let i = 0; i < events.length; ++i) {
+    const event = events[i];
     chrome.signin[event] = new Event();
   }
 }
 
 // Creates functions that call into SigninInternalsUI.
 function makeSigninFunction(name) {
-  var callbacks = [];
+  const callbacks = [];
 
   // Calls the function, assuming the last argument is a callback to be
   // called with the return value.
-  var fn = function() {
-    var args = Array.prototype.slice.call(arguments);
+  const fn = function() {
+    const args = Array.prototype.slice.call(arguments);
     callbacks.push(args.pop());
     chrome.send(name, args);
   };
@@ -140,10 +144,10 @@ function makeSigninFunction(name) {
   // Handle a reply, assuming that messages are processed in FIFO order.
   // Called by SigninInternalsUI::HandleJsReply().
   fn.handleReply = function() {
-    var args = Array.prototype.slice.call(arguments);
+    const args = Array.prototype.slice.call(arguments);
     // Remove the callback before we call it since the callback may
     // throw.
-    var callback = callbacks.shift();
+    const callback = callbacks.shift();
     callback.apply(null, args);
   };
 
@@ -151,13 +155,13 @@ function makeSigninFunction(name) {
 }
 
 // The list of js functions that call into SigninInternalsUI
-var signinFunctions = [
+const signinFunctions = [
   // Signin Summary Info
   'getSigninInfo'
 ];
 
-for (var i = 0; i < signinFunctions.length; ++i) {
-  var signinFunction = signinFunctions[i];
+for (let i = 0; i < signinFunctions.length; ++i) {
+  const signinFunction = signinFunctions[i];
   chrome.signin[signinFunction] = makeSigninFunction(signinFunction);
 }
 

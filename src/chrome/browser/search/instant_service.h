@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "chrome/browser/search/search_provider_observer.h"
 #include "components/history/core/browser/history_types.h"
@@ -38,11 +39,10 @@
 
 class InstantIOContext;
 class InstantServiceObserver;
-class NtpBackgroundService;
 class Profile;
 struct CollectionImage;
 struct InstantMostVisitedInfo;
-struct ThemeBackgroundInfo;
+struct NtpTheme;
 
 namespace content {
 class RenderProcessHost;
@@ -122,7 +122,7 @@ class InstantService : public KeyedService,
   bool ToggleShortcutsVisibility(bool do_notify);
 
   // Invoked to update theme information for the NTP.
-  void UpdateThemeInfo();
+  void UpdateNtpTheme();
 
   // Invoked when a background pref update is received via sync, triggering
   // an update of theme info.
@@ -148,8 +148,8 @@ class InstantService : public KeyedService,
   // Invoked when a user selected the "Upload an image" option on the NTP.
   void SelectLocalBackgroundImage(const base::FilePath& path);
 
-  // Getter for |theme_info_| that will also initialize it if necessary.
-  ThemeBackgroundInfo* GetInitializedThemeInfo();
+  // Getter for |theme_| that will also initialize it if necessary.
+  NtpTheme* GetInitializedNtpTheme();
 
   // Used for testing.
   void SetNativeThemeForTesting(ui::NativeTheme* theme);
@@ -164,7 +164,10 @@ class InstantService : public KeyedService,
   // Used for testing.
   void SetNextCollectionImageForTesting(const CollectionImage& image) const;
 
-  // Check if a custom background has been set by the user.
+  // Returns whether having a custom background is disabled by policy.
+  bool IsCustomBackgroundDisabledByPolicy();
+
+  // Returns whether a custom background has been set by the user.
   bool IsCustomBackgroundSet();
 
   // Returns whether the user has customized their shortcuts. Will always be
@@ -202,7 +205,7 @@ class InstantService : public KeyedService,
                            DoesToggleMostVisitedOrCustomLinks);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, DoesToggleShortcutsVisibility);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, IsCustomLinksEnabled);
-  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, TestNoThemeInfo);
+  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, TestNoNtpTheme);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, TestUpdateCustomBackgroundColor);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest,
                            LocalImageDoesNotUpdateCustomBackgroundColor);
@@ -239,22 +242,22 @@ class InstantService : public KeyedService,
   void OnIconMadeAvailable(const GURL& site_url) override;
 
   void NotifyAboutMostVisitedInfo();
-  void NotifyAboutThemeInfo();
+  void NotifyAboutNtpTheme();
 
   // Returns true if this is a Google NTP and the user has chosen to show custom
   // links.
   bool IsCustomLinksEnabled();
 
-  void BuildThemeInfo();
+  void BuildNtpTheme();
 
-  void ApplyOrResetCustomBackgroundThemeInfo();
+  void ApplyOrResetCustomBackgroundNtpTheme();
 
-  void ApplyCustomBackgroundThemeInfo();
+  void ApplyCustomBackgroundNtpTheme();
 
   // Marked virtual for mocking in tests.
-  virtual void ResetCustomBackgroundThemeInfo();
+  virtual void ResetCustomBackgroundNtpTheme();
 
-  void FallbackToDefaultThemeInfo();
+  void FallbackToDefaultNtpTheme();
 
   void RemoveLocalBackgroundImageCopy();
 
@@ -282,6 +285,10 @@ class InstantService : public KeyedService,
   // Requests a new background image if it hasn't been updated in >24 hours.
   void RefreshBackgroundIfNeeded();
 
+  // Sets NTP elements theme info that are overridden when custom
+  // background is used.
+  void SetNtpElementsNtpTheme();
+
   Profile* const profile_;
 
   // The process ids associated with Instant processes.
@@ -292,7 +299,7 @@ class InstantService : public KeyedService,
   std::unique_ptr<InstantMostVisitedInfo> most_visited_info_;
 
   // Theme-related data for NTP overlay to adopt themes.
-  std::unique_ptr<ThemeBackgroundInfo> theme_info_;
+  std::unique_ptr<NtpTheme> theme_;
 
   base::ObserverList<InstantServiceObserver>::Unchecked observers_;
 
@@ -310,10 +317,11 @@ class InstantService : public KeyedService,
 
   PrefService* pref_service_;
 
-  ScopedObserver<ui::NativeTheme, InstantService> theme_observer_;
+  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> theme_observer_{
+      this};
 
   ScopedObserver<NtpBackgroundService, NtpBackgroundServiceObserver>
-      background_service_observer_;
+      background_service_observer_{this};
 
   ui::NativeTheme* native_theme_;
 

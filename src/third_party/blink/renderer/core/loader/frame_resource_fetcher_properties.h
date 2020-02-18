@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -41,10 +42,12 @@ class CORE_EXPORT FrameResourceFetcherProperties final
   bool ShouldBlockLoadingSubResource() const override;
   bool IsSubframeDeprioritizationEnabled() const override;
   scheduler::FrameStatus GetFrameStatus() const override;
+  const KURL& WebBundlePhysicalUrl() const override;
 
  private:
   const Member<FrameOrImportedDocument> frame_or_imported_document_;
   Member<const FetchClientSettingsObject> fetch_client_settings_object_;
+  const KURL web_bundle_physical_url_;
 };
 
 }  // namespace blink

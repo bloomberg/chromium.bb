@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 #include "third_party/blink/renderer/core/css/media_values_initial_viewport.h"
@@ -186,6 +187,18 @@ MediaQueryEvaluatorTestCase g_forcedcolors_none_cases[] = {
     {nullptr, 0}  // Do not remove the terminator line.
 };
 
+MediaQueryEvaluatorTestCase g_navigationcontrols_back_button_cases[] = {
+    {"(navigation-controls: back-button)", 1},
+    {"(navigation-controls: none)", 0},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_navigationcontrols_none_cases[] = {
+    {"(navigation-controls: back-button)", 0},
+    {"(navigation-controls: none)", 1},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
 void TestMQEvaluator(MediaQueryEvaluatorTestCase* test_cases,
                      const MediaQueryEvaluator& media_query_evaluator,
                      CSSParserMode mode) {
@@ -224,7 +237,7 @@ TEST(MediaQueryEvaluatorTest, Cached) {
   data.three_d_enabled = true;
   data.media_type = media_type_names::kScreen;
   data.strict_mode = true;
-  data.display_mode = kWebDisplayModeBrowser;
+  data.display_mode = blink::mojom::DisplayMode::kBrowser;
   data.display_shape = kDisplayShapeRect;
   data.immersive_mode = false;
 

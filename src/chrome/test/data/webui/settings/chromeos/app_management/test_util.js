@@ -31,7 +31,7 @@ function setupFakeHandler() {
  * @return {app_management.TestStore}
  */
 function replaceStore() {
-  let store = new app_management.TestStore();
+  const store = new app_management.TestStore();
   store.setReducersEnabled(true);
   store.replaceSingleton();
   return store;
@@ -86,7 +86,7 @@ function getPermissionItemByType(view, permissionType) {
  */
 function getPermissionToggleByType(view, permissionType) {
   return getPermissionItemByType(view, permissionType)
-      .root.querySelector('app-management-permission-toggle');
+      .$$('app-management-toggle-row');
 }
 
 /**
@@ -95,6 +95,23 @@ function getPermissionToggleByType(view, permissionType) {
  * @return {Element}
  */
 function getPermissionCrToggleByType(view, permissionType) {
-  return getPermissionToggleByType(view, permissionType)
-      .root.querySelector('cr-toggle');
+  return getPermissionToggleByType(view, permissionType).$$('cr-toggle');
+}
+
+/**
+ * @param {Element} element
+ * @return {boolean}
+ */
+function isHiddenByDomIf(element) {
+  // Happens when the dom-if is false and the element is not rendered.
+  if (!element) {
+    return true;
+  }
+  // Happens when the dom-if was showing the element and has hidden the element
+  // after a state change
+  if (element.style.display === 'none') {
+    return true;
+  }
+  // The element is rendered and display != 'none'
+  return false;
 }

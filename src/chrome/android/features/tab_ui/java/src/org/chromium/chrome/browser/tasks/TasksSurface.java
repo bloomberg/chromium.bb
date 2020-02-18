@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -15,6 +16,14 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
  *  {@link TasksSurfaceCoordinator}.
  */
 public interface TasksSurface {
+    /**
+     * Called to initialize this interface.
+     * It should be called before showing.
+     * It should not be called in the critical startup process since it will do expensive work.
+     * It might be called many times.
+     */
+    void initialize();
+
     /**
      * Set the listener to get the {@link Layout#onTabSelecting} event from the Grid Tab Switcher.
      * @param listener The {@link TabSwitcher.OnTabSelectingListener} to use.
@@ -32,8 +41,14 @@ public interface TasksSurface {
     TabSwitcher.TabListDelegate getTabListDelegate();
 
     /**
-     * Get the container {@link ViewGroup} of the surface.
-     * @return The surface's container {@link ViewGroup}.
+     * Get the view container {@link ViewGroup} of the tasks surface body.
+     * @return The tasks surface body view container {@link ViewGroup}.
      */
-    ViewGroup getContainerView();
+    ViewGroup getBodyViewContainer();
+
+    /**
+     * Get the view {@link View} of the surface.
+     * @return The surface's container {@link View}.
+     */
+    View getView();
 }

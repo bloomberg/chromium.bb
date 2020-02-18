@@ -15,8 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_manager.h"
-#include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/web_application_info.h"
@@ -51,14 +49,14 @@ void WebAppDataRetriever::GetWebApplicationInfo(
     return;
   }
 
-  chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame;
+  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> chrome_render_frame;
   web_contents->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
       &chrome_render_frame);
 
   // Set the error handler so that we can run |get_web_app_info_callback_| if
   // the WebContents or the RenderFrameHost are destroyed and the connection
   // to ChromeRenderFrame is lost.
-  chrome_render_frame.set_connection_error_handler(
+  chrome_render_frame.set_disconnect_handler(
       base::BindOnce(&WebAppDataRetriever::CallCallbackOnError,
                      weak_ptr_factory_.GetWeakPtr()));
   // Bind the InterfacePtr into the callback so that it's kept alive
@@ -101,7 +99,7 @@ void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
 void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
                                    const std::vector<GURL>& icon_urls,
                                    bool skip_page_favicons,
-                                   WebappInstallSource install_source,
+                                   WebAppIconDownloader::Histogram histogram,
                                    GetIconsCallback callback) {
   Observe(web_contents);
 
@@ -109,14 +107,9 @@ void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
   CHECK(!get_icons_callback_);
   get_icons_callback_ = std::move(callback);
 
-  const char* https_status_code_class_histogram_name =
-      install_source == WebappInstallSource::SYNC
-          ? "WebApp.Icon.HttpStatusCodeClassOnSync"
-          : "WebApp.Icon.HttpStatusCodeClassOnCreate";
-
   // TODO(loyso): Refactor WebAppIconDownloader: crbug.com/907296.
   icon_downloader_ = std::make_unique<WebAppIconDownloader>(
-      web_contents, icon_urls, https_status_code_class_histogram_name,
+      web_contents, icon_urls, histogram,
       base::BindOnce(&WebAppDataRetriever::OnIconsDownloaded,
                      weak_ptr_factory_.GetWeakPtr()));
 
@@ -135,7 +128,8 @@ void WebAppDataRetriever::RenderProcessGone(base::TerminationStatus status) {
 }
 
 void WebAppDataRetriever::OnGetWebApplicationInfo(
-    chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+    mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+        chrome_render_frame,
     int last_committed_nav_entry_unique_id,
     const WebApplicationInfo& web_app_info) {
   if (ShouldStopRetrieval())
@@ -174,27 +168,20 @@ void WebAppDataRetriever::OnDidPerformInstallableCheck(
   DCHECK(data.manifest_url.is_valid() || data.manifest->IsEmpty());
 
   const bool is_installable = data.errors.empty();
+  DCHECK(!is_installable || data.valid_manifest);
+  DCHECK(!data.valid_manifest || !data.manifest->IsEmpty());
 
   std::move(check_installability_callback_)
       .Run(*data.manifest, data.valid_manifest, is_installable);
 }
 
-void WebAppDataRetriever::OnIconsDownloaded(bool success,
-                                            const IconsMap& icons_map) {
+void WebAppDataRetriever::OnIconsDownloaded(bool success, IconsMap icons_map) {
   if (ShouldStopRetrieval())
     return;
 
   Observe(nullptr);
-
-  // |icons_map| is owned by |icon_downloader_|. Take a copy before destroying
-  // the downloader. Return empty |result_map| if the web contents has navigated
-  // away during the icon download.
-  IconsMap result_map;
-  if (success)
-    result_map = icons_map;
   icon_downloader_.reset();
-
-  std::move(get_icons_callback_).Run(std::move(result_map));
+  std::move(get_icons_callback_).Run(std::move(icons_map));
 }
 
 void WebAppDataRetriever::CallCallbackOnError() {
@@ -206,7 +193,7 @@ void WebAppDataRetriever::CallCallbackOnError() {
     std::move(get_web_app_info_callback_).Run(nullptr);
   } else if (check_installability_callback_) {
     std::move(check_installability_callback_)
-        .Run(blink::Manifest{}, /*valid_manifest_for_web_app=*/false,
+        .Run(base::nullopt, /*valid_manifest_for_web_app=*/false,
              /*is_installable=*/false);
   } else if (get_icons_callback_) {
     std::move(get_icons_callback_).Run(IconsMap{});

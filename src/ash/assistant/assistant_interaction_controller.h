@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace ash {
 
@@ -44,9 +44,12 @@ class AssistantInteractionController
       chromeos::assistant::mojom::AssistantInteractionResolution;
   using AssistantInteractionType =
       chromeos::assistant::mojom::AssistantInteractionType;
+  using AssistantQuerySource = chromeos::assistant::mojom::AssistantQuerySource;
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
       chromeos::assistant::mojom::AssistantSuggestionPtr;
+  using AssistantSuggestionType =
+      chromeos::assistant::mojom::AssistantSuggestionType;
 
   explicit AssistantInteractionController(
       AssistantController* assistant_controller);
@@ -98,6 +101,8 @@ class AssistantInteractionController
       std::vector<AssistantSuggestionPtr> response) override;
   void OnTextResponse(const std::string& response) override;
   void OnOpenUrlResponse(const GURL& url, bool in_background) override;
+  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
+                         OnOpenAppResponseCallback callback) override;
   void OnSpeechRecognitionStarted() override;
   void OnSpeechRecognitionIntermediateResult(
       const std::string& high_confidence_text,
@@ -138,8 +143,8 @@ class AssistantInteractionController
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
 
-  mojo::Binding<chromeos::assistant::mojom::AssistantInteractionSubscriber>
-      assistant_interaction_subscriber_binding_;
+  mojo::Receiver<chromeos::assistant::mojom::AssistantInteractionSubscriber>
+      assistant_interaction_subscriber_receiver_{this};
 
   AssistantInteractionModel model_;
 

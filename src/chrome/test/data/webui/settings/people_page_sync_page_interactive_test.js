@@ -8,15 +8,14 @@ suite('sync-page-test', function() {
   setup(function() {
     PolymerTest.clearBody();
 
+    settings.SyncBrowserProxyImpl.instance_ = new TestSyncBrowserProxy();
     settings.navigateTo(settings.routes.SYNC);
     syncPage = document.createElement('settings-sync-page');
     document.body.appendChild(syncPage);
+    Polymer.dom.flush();
   });
 
   test('autofocus passphrase input', function() {
-    syncPage.unifiedConsentEnabled = true;
-    Polymer.dom.flush();
-
     cr.webUIListenerCallback('sync-prefs-changed', {passphraseRequired: false});
     Polymer.dom.flush();
     // Passphrase input is not available when no passphrase is required.

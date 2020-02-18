@@ -19,19 +19,11 @@ const char ManagePasswordsIconViews::kClassName[] = "ManagePasswordsIconViews";
 ManagePasswordsIconViews::ManagePasswordsIconViews(
     CommandUpdater* updater,
     PageActionIconView::Delegate* delegate)
-    : PageActionIconView(updater, IDC_MANAGE_PASSWORDS_FOR_PAGE, delegate),
-      state_(password_manager::ui::INACTIVE_STATE) {
+    : PageActionIconView(updater, IDC_MANAGE_PASSWORDS_FOR_PAGE, delegate) {
   DCHECK(delegate);
-#if defined(OS_MACOSX)
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-#else
-  SetFocusBehavior(FocusBehavior::ALWAYS);
-#endif
-
-  UpdateUiForState();
 }
 
-ManagePasswordsIconViews::~ManagePasswordsIconViews() {}
+ManagePasswordsIconViews::~ManagePasswordsIconViews() = default;
 
 void ManagePasswordsIconViews::SetState(password_manager::ui::State state) {
   if (state_ == state)
@@ -60,14 +52,12 @@ views::BubbleDialogDelegateView* ManagePasswordsIconViews::GetBubble() const {
   return PasswordBubbleViewBase::manage_password_bubble();
 }
 
-bool ManagePasswordsIconViews::Update() {
+void ManagePasswordsIconViews::UpdateImpl() {
   if (!GetWebContents())
-    return false;
+    return;
 
-  const bool was_visible = GetVisible();
   ManagePasswordsUIController::FromWebContents(GetWebContents())
       ->UpdateIconAndBubbleState(this);
-  return was_visible != GetVisible();
 }
 
 void ManagePasswordsIconViews::OnExecuting(

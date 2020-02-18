@@ -6,11 +6,12 @@ package org.chromium.chrome.browser.omnibox.geo;
 
 import android.content.Context;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 
 /**
  * VisibleNetworksTracker keeps track of the visible networks.

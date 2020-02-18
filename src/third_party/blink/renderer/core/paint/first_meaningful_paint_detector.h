@@ -26,7 +26,7 @@ class PaintTiming;
 // seconds), and computes the layout-based First Meaningful Paint.
 // See https://goo.gl/vpaxv6 and http://goo.gl/TEiMi4 for more details.
 class CORE_EXPORT FirstMeaningfulPaintDetector
-    : public GarbageCollectedFinalized<FirstMeaningfulPaintDetector> {
+    : public GarbageCollected<FirstMeaningfulPaintDetector> {
  public:
   static FirstMeaningfulPaintDetector& From(Document&);
 
@@ -34,8 +34,8 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   virtual ~FirstMeaningfulPaintDetector() = default;
 
   void MarkNextPaintAsMeaningfulIfNeeded(const LayoutObjectCounter&,
-                                         int contents_height_before_layout,
-                                         int contents_height_after_layout,
+                                         double contents_height_before_layout,
+                                         double contents_height_after_layout,
                                          int visible_height);
   void NotifyInputEvent();
   void NotifyPaint();

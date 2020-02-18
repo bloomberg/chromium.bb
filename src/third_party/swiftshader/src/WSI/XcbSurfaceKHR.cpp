@@ -72,7 +72,7 @@ private:
 				return std::unique_ptr<LibXcbExports>(new LibXcbExports(RTLD_DEFAULT));
 			}
 
-			if (auto lib = loadLibrary("libXcb.so"))
+			if (auto lib = loadLibrary("libxcb.so.1"))
 			{
 				return std::unique_ptr<LibXcbExports>(new LibXcbExports(lib));
 			}
@@ -139,13 +139,22 @@ void XcbSurfaceKHR::detachImage(PresentImage* image)
 	}
 }
 
-void XcbSurfaceKHR::present(PresentImage* image)
+VkResult XcbSurfaceKHR::present(PresentImage* image)
 {
 	auto it = graphicsContexts.find(image);
 	if(it != graphicsContexts.end())
 	{
-		// TODO: Convert image if not RGB888.
+		auto geom = libXcb->xcb_get_geometry_reply(connection, libXcb->xcb_get_geometry(connection, window), nullptr);
+		VkExtent2D windowExtent = {static_cast<uint32_t>(geom->width), static_cast<uint32_t>(geom->height)};
+		free(geom);
 		VkExtent3D extent = image->getImage()->getMipLevelExtent(VK_IMAGE_ASPECT_COLOR_BIT, 0);
+
+		if (windowExtent.width != extent.width || windowExtent.height != extent.height)
+		{
+			return VK_ERROR_OUT_OF_DATE_KHR;
+		}
+
+		// TODO: Convert image if not RGB888.
 		int stride = image->getImage()->rowPitchBytes(VK_IMAGE_ASPECT_COLOR_BIT, 0);
 		auto buffer = reinterpret_cast<uint8_t*>(image->getImageMemory()->getOffsetPointer(0));
 		size_t bufferSize = extent.height * stride;
@@ -167,6 +176,8 @@ void XcbSurfaceKHR::present(PresentImage* image)
 
 		libXcb->xcb_flush(connection);
 	}
+
+	return VK_SUCCESS;
 }
 
 }

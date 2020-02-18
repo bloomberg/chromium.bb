@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGLineBoxFragmentBuilder_h
-#define NGLineBoxFragmentBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BOX_FRAGMENT_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BOX_FRAGMENT_BUILDER_H_
 
 #include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
@@ -195,7 +195,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
    public:
     ChildList() = default;
-    void operator=(ChildList&& other) noexcept {
+    void operator=(ChildList&& other) {
       children_ = std::move(other.children_);
     }
 
@@ -253,10 +253,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   // Add all items in ChildList. Skips null Child if any.
   void AddChildren(ChildList&);
 
-  // Add only out-of-flow items in ChildList. TODO(kojii): When |NGFragmentItem|
-  // is on, all objects should go to |NGFragmentItems| but OOF still uses
-  // fragments to propagate while in transition.
-  void AddOutOfFlowChildren(ChildList&);
+  // Propagate data in |ChildList| without adding them to this builder. When
+  // adding children as fragment items, they appear in the container, but there
+  // are some data that should be propagated through line box fragments.
+  void PropagateChildrenData(ChildList&);
 
   // Creates the fragment. Can only be called once.
   scoped_refptr<const NGLayoutResult> ToLineBoxFragment();
@@ -278,4 +278,4 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
     blink::NGLineBoxFragmentBuilder::Child)
 
-#endif  // NGLineBoxFragmentBuilder
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BOX_FRAGMENT_BUILDER_H_

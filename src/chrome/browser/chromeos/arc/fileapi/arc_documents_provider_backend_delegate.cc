@@ -10,8 +10,8 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_file_stream_reader.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_file_stream_writer.h"
 #include "content/public/browser/browser_thread.h"
-#include "storage/browser/fileapi/file_stream_reader.h"
-#include "storage/browser/fileapi/file_stream_writer.h"
+#include "storage/browser/file_system/file_stream_reader.h"
+#include "storage/browser/file_system/file_stream_writer.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -61,10 +61,10 @@ storage::WatcherManager* ArcDocumentsProviderBackendDelegate::GetWatcherManager(
 
 void ArcDocumentsProviderBackendDelegate::GetRedirectURLForContents(
     const storage::FileSystemURL& url,
-    const storage::URLCallback& callback) {
+    storage::URLCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Never called by chromeos::FileSystemBackend.
-  callback.Run(GURL());
+  std::move(callback).Run(GURL());
 }
 
 }  // namespace arc

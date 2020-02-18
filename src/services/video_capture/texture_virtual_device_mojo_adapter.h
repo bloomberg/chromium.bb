@@ -8,9 +8,11 @@
 #include "base/sequence_checker.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
-#include "services/video_capture/public/mojom/receiver.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "services/video_capture/public/mojom/virtual_device.mojom.h"
 
 namespace video_capture {
@@ -29,13 +31,13 @@ class TextureVirtualDeviceMojoAdapter : public mojom::TextureVirtualDevice,
       media::mojom::MailboxBufferHandleSetPtr mailbox_handles) override;
   void OnFrameReadyInBuffer(
       int32_t buffer_id,
-      mojom::ScopedAccessPermissionPtr access_permission,
+      mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission,
       media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int buffer_id) override;
 
   // mojom::Device implementation.
   void Start(const media::VideoCaptureParams& requested_settings,
-             mojom::ReceiverPtr receiver) override;
+             mojo::PendingRemote<mojom::VideoFrameHandler> handler) override;
   void MaybeSuspend() override;
   void Resume() override;
   void GetPhotoState(GetPhotoStateCallback callback) override;
@@ -49,7 +51,7 @@ class TextureVirtualDeviceMojoAdapter : public mojom::TextureVirtualDevice,
   void OnReceiverConnectionErrorOrClose();
 
   base::OnceClosure optional_receiver_disconnected_callback_;
-  mojom::ReceiverPtr receiver_;
+  mojo::Remote<mojom::VideoFrameHandler> video_frame_handler_;
   std::unordered_map<int32_t, media::mojom::MailboxBufferHandleSetPtr>
       known_buffer_handles_;
   SEQUENCE_CHECKER(sequence_checker_);

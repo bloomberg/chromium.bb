@@ -20,14 +20,15 @@
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager_observer.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/safe_browsing_service_interface.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -36,7 +37,6 @@
 
 class PrefChangeRegistrar;
 class PrefService;
-class Profile;
 
 namespace content {
 class DownloadManager;
@@ -46,8 +46,8 @@ namespace network {
 namespace mojom {
 class NetworkContext;
 }
+class PendingSharedURLLoaderFactory;
 class SharedURLLoaderFactory;
-class SharedURLLoaderFactoryInfo;
 }  // namespace network
 
 namespace prefs {
@@ -79,7 +79,8 @@ class TriggerManager;
 // alive until SafeBrowsingService is destroyed, however, they are disabled
 // permanently when Shutdown method is called.
 class SafeBrowsingService : public SafeBrowsingServiceInterface,
-                            public content::NotificationObserver {
+                            public ProfileManagerObserver,
+                            public ProfileObserver {
  public:
   static base::FilePath GetCookieFilePathForTesting();
 
@@ -219,8 +220,8 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // Called to initialize objects that are used on the io_thread.  This may be
   // called multiple times during the life of the SafeBrowsingService.
-  void StartOnIOThread(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory);
+  void StartOnIOThread(std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                           url_loader_factory);
 
   // Called to stop or shutdown operations on the io_thread. This may be called
   // multiple times to stop during the life of the SafeBrowsingService. If
@@ -238,16 +239,15 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // shutdown and cannot be restarted.
   void Stop(bool shutdown);
 
-  // content::NotificationObserver override
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // ProfileManagerObserver:
+  void OnProfileAdded(Profile* profile) override;
 
-  // Starts following the safe browsing preference on |pref_service|.
-  void AddPrefService(PrefService* pref_service);
+  // ProfileObserver:
+  void OnOffTheRecordProfileCreated(Profile* off_the_record) override;
+  void OnProfileWillBeDestroyed(Profile* profile) override;
 
-  // Stop following the safe browsing preference on |pref_service|.
-  void RemovePrefService(PrefService* pref_service);
+  // Creates services for |profile|, which may be normal or off the record.
+  void CreateServicesForProfile(Profile* profile);
 
   // Checks if any profile is currently using the safe browsing service, and
   // starts or stops the service accordingly.
@@ -289,9 +289,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // Accessed on UI thread.
   std::map<PrefService*, std::unique_ptr<PrefChangeRegistrar>> prefs_map_;
 
-  // Used to track creation and destruction of profiles on the UI thread.
-  content::NotificationRegistrar profiles_registrar_;
-
   // Callbacks when SafeBrowsing state might have changed.
   // Should only be accessed on the UI thread.
   base::CallbackList<void(void)> state_callback_list_;
@@ -304,6 +301,8 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // events.
   scoped_refptr<SafeBrowsingNavigationObserverManager>
       navigation_observer_manager_;
+
+  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
 
   std::unique_ptr<TriggerManager> trigger_manager_;
 

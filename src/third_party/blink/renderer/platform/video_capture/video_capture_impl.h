@@ -14,9 +14,19 @@
 #include "media/base/video_frame.h"
 #include "media/capture/mojom/video_capture.mojom-blink.h"
 #include "media/capture/video_capture_types.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+
+namespace gpu {
+class GpuMemoryBufferSupport;
+}  // namespace gpu
+
+namespace media {
+class GpuVideoAcceleratorFactories;
+}  // namespace media
 
 namespace blink {
 
@@ -71,6 +81,8 @@ class PLATFORM_EXPORT VideoCaptureImpl
       media::mojom::blink::VideoCaptureHost* service) {
     video_capture_host_for_testing_ = service;
   }
+  void SetGpuMemoryBufferSupportForTesting(
+      std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support);
 
   // media::mojom::VideoCaptureObserver implementation.
   void OnStateChanged(media::mojom::VideoCaptureState state) override;
@@ -94,6 +106,12 @@ class PLATFORM_EXPORT VideoCaptureImpl
 
   using BufferFinishedCallback =
       base::OnceCallback<void(double consumer_resource_utilization)>;
+
+  void OnVideoFrameReady(int32_t buffer_id,
+                         base::TimeTicks reference_time,
+                         media::mojom::blink::VideoFrameInfoPtr info,
+                         scoped_refptr<media::VideoFrame> frame,
+                         scoped_refptr<BufferContext> buffer_context);
 
   void OnAllClientsFinishedConsumingFrame(
       int buffer_id,
@@ -130,14 +148,16 @@ class PLATFORM_EXPORT VideoCaptureImpl
   const base::UnguessableToken device_id_;
   const base::UnguessableToken session_id_;
 
-  // |video_capture_host_| is an IO-thread InterfacePtr to a remote service
-  // implementation and is created by binding |video_capture_host_info_|,
+  // |video_capture_host_| is an IO-thread mojo::Remote to a remote service
+  // implementation and is created by binding |pending_video_capture_host_|,
   // unless a |video_capture_host_for_testing_| has been injected.
-  media::mojom::blink::VideoCaptureHostPtrInfo video_capture_host_info_;
-  media::mojom::blink::VideoCaptureHostPtr video_capture_host_;
+  mojo::PendingRemote<media::mojom::blink::VideoCaptureHost>
+      pending_video_capture_host_;
+  mojo::Remote<media::mojom::blink::VideoCaptureHost> video_capture_host_;
   media::mojom::blink::VideoCaptureHost* video_capture_host_for_testing_;
 
-  mojo::Binding<media::mojom::blink::VideoCaptureObserver> observer_binding_;
+  mojo::Receiver<media::mojom::blink::VideoCaptureObserver> observer_receiver_{
+      this};
 
   // Buffers available for sending to the client.
   using ClientBufferMap = std::map<int32_t, scoped_refptr<BufferContext>>;
@@ -153,6 +173,12 @@ class PLATFORM_EXPORT VideoCaptureImpl
   base::TimeTicks first_frame_ref_time_;
 
   VideoCaptureState state_;
+
+  // Methods of |gpu_factories_| need to run on |media_task_runner_|.
+  media::GpuVideoAcceleratorFactories* gpu_factories_;
+  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+
+  std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;
 
   THREAD_CHECKER(io_thread_checker_);
 

@@ -34,9 +34,9 @@ ClipboardHostImpl::ClipboardHostImpl(
 void ClipboardHostImpl::Create(
     mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver) {
   // Clipboard implementations do interesting things, like run nested message
-  // loops. Since StrongBinding<T> synchronously destroys on failure, that can
-  // result in some unfortunate use-after-frees after the nested message loops
-  // exit.
+  // loops. Use manual memory management instead of SelfOwnedReceiver<T> which
+  // synchronously destroys on failure and can result in some unfortunate
+  // use-after-frees after the nested message loops exit.
   auto* host = new ClipboardHostImpl(std::move(receiver));
   host->receiver_.set_disconnect_handler(base::BindOnce(
       [](ClipboardHostImpl* host) {
@@ -163,6 +163,32 @@ void ClipboardHostImpl::WriteCustomData(
   ui::WriteCustomDataToPickle(data, &pickle);
   clipboard_writer_->WritePickledData(
       pickle, ui::ClipboardFormatType::GetWebCustomDataType());
+}
+
+void ClipboardHostImpl::WriteRawData(const base::string16& format,
+                                     mojo_base::BigBuffer data) {
+  // Windows / X11 clipboards enter an unrecoverable state after registering
+  // some amount of unique formats, and there's no way to un-register these
+  // formats. For these clipboards, use a conservative limit to avoid
+  // registering too many formats, as:
+  // (1) Other native applications may also register clipboard formats.
+  // (2) |registered_formats| only persists over one Chrome Clipboard session.
+  // (3) Chrome also registers other clipboard formats.
+  //
+  // The limit is based on Windows, which has the smallest limit, at 0x4000.
+  // Windows represents clipboard formats using values in 0xC000 - 0xFFFF.
+  // Therefore, Windows supports at most 0x4000 registered formats. Reference:
+  // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclipboardformata
+  static constexpr int kMaxWindowsClipboardFormats = 0x4000;
+  static constexpr int kMaxRegisteredFormats = kMaxWindowsClipboardFormats / 4;
+  static base::NoDestructor<std::set<base::string16>> registered_formats;
+  if (!base::Contains(*registered_formats, format)) {
+    if (registered_formats->size() >= kMaxRegisteredFormats)
+      return;
+    registered_formats->emplace(format);
+  }
+
+  clipboard_writer_->WriteData(format, std::move(data));
 }
 
 void ClipboardHostImpl::WriteBookmark(const std::string& url,

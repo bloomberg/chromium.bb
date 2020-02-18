@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
@@ -40,6 +41,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   // called from for testing.
   static const AXNode* GetNodeFromLastDefaultAction();
 
+  // Set a global scale factor for testing.
+  static std::unique_ptr<base::AutoReset<float>> SetScaleFactor(float value);
+
   ~TestAXNodeWrapper() override;
 
   AXPlatformNode* ax_platform_node() const { return platform_node_; }
@@ -55,6 +59,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   const AXTree::Selection GetUnignoredSelection() const override;
   AXNodePosition::AXPositionInstance CreateTextPositionAt(
       int offset) const override;
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
@@ -77,6 +82,8 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   gfx::NativeViewAccessible GetFocus() override;
   bool IsMinimized() const override;
   AXPlatformNode* GetFromNodeID(int32_t id) override;
+  AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
+                                         int32_t id) override;
   int GetIndexInParent() override;
   bool IsTable() const override;
   base::Optional<int> GetTableRowCount() const override;
@@ -113,6 +120,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   base::string16 GetStyleNameAttributeAsLocalizedString() const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   const ui::AXUniqueId& GetUniqueId() const override;
+  bool HasVisibleCaretOrSelection() const override;
   std::set<AXPlatformNode*> GetReverseRelations(
       ax::mojom::IntAttribute attr) override;
   std::set<AXPlatformNode*> GetReverseRelations(
@@ -148,6 +156,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   // relative to its container node specified in AXRelativeBounds).
   gfx::RectF GetInlineTextRect(const int start_offset,
                                const int end_offset) const;
+
+  // Determine the offscreen status of a particular element given its bounds..
+  AXOffscreenResult DetermineOffscreenResult(gfx::RectF bounds) const;
 
   AXTree* tree_;
   AXNode* node_;

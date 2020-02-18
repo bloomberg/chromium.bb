@@ -42,7 +42,7 @@ DecryptingRenderer::~DecryptingRenderer() {}
 // Encrypted  Other         InitializeRenderer()
 void DecryptingRenderer::Initialize(MediaResource* media_resource,
                                     RendererClient* client,
-                                    const PipelineStatusCB& init_cb) {
+                                    PipelineStatusCallback init_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(media_resource);
   DCHECK(client);
@@ -73,12 +73,12 @@ void DecryptingRenderer::Initialize(MediaResource* media_resource,
 }
 
 void DecryptingRenderer::SetCdm(CdmContext* cdm_context,
-                                const CdmAttachedCB& cdm_attached_cb) {
+                                CdmAttachedCB cdm_attached_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (cdm_context_) {
     DVLOG(1) << "Switching CDM not supported.";
-    cdm_attached_cb.Run(false);
+    std::move(cdm_attached_cb).Run(false);
     return;
   }
 
@@ -93,11 +93,11 @@ void DecryptingRenderer::SetCdm(CdmContext* cdm_context,
     // scenario we want to initialize the DecryptingMediaResource here.
     if (waiting_for_cdm_)
       CreateAndInitializeDecryptingMediaResource();
-    cdm_attached_cb.Run(true);
+    std::move(cdm_attached_cb).Run(true);
     return;
   }
 
-  renderer_->SetCdm(cdm_context_, cdm_attached_cb);
+  renderer_->SetCdm(cdm_context_, std::move(cdm_attached_cb));
 
   // We only want to initialize the renderer if we were waiting for the
   // CdmContext, otherwise it will already have been initialized.
@@ -105,8 +105,13 @@ void DecryptingRenderer::SetCdm(CdmContext* cdm_context,
     InitializeRenderer(true);
 }
 
-void DecryptingRenderer::Flush(const base::Closure& flush_cb) {
-  renderer_->Flush(flush_cb);
+void DecryptingRenderer::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  renderer_->SetLatencyHint(latency_hint);
+}
+
+void DecryptingRenderer::Flush(base::OnceClosure flush_cb) {
+  renderer_->Flush(std::move(flush_cb));
 }
 
 void DecryptingRenderer::StartPlayingFrom(base::TimeDelta time) {

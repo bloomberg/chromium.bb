@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
@@ -48,8 +49,7 @@ LabelButton::LabelButton(ButtonListener* listener,
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
 
-  constexpr int kHoverAnimationDurationMs = 170;
-  SetAnimationDuration(kHoverAnimationDurationMs);
+  SetAnimationDuration(base::TimeDelta::FromMilliseconds(170));
   SetTextInternal(text);
 }
 
@@ -66,12 +66,22 @@ void LabelButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
   UpdateImage();
 }
 
-base::string16 LabelButton::GetText() const {
+const base::string16& LabelButton::GetText() const {
   return label_->GetText();
 }
 
 void LabelButton::SetText(const base::string16& text) {
   SetTextInternal(text);
+}
+
+void LabelButton::ShrinkDownThenClearText() {
+  if (GetText().empty())
+    return;
+  // First, we recalculate preferred size for the new mode (without the label).
+  shrinking_down_label_ = true;
+  PreferredSizeChanged();
+  // Second, we clear the label right away if the button is already small.
+  ClearTextIfShrunkDown();
 }
 
 void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
@@ -178,16 +188,26 @@ void LabelButton::SetBorder(std::unique_ptr<Border> border) {
   ResetCachedPreferredSize();
 }
 
+void LabelButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ClearTextIfShrunkDown();
+  Button::OnBoundsChanged(previous_bounds);
+}
+
 gfx::Size LabelButton::CalculatePreferredSize() const {
   // Cache the computed size, as recomputing it is an expensive operation.
   if (!cached_preferred_size_) {
-    const gfx::Size preferred_label_size = label_->GetPreferredSize();
     gfx::Size size = GetUnclampedSizeWithoutLabel();
-    size.Enlarge(preferred_label_size.width(), 0);
 
-    // Increase the height of the label (with insets) if larger.
-    size.set_height(std::max(
-        preferred_label_size.height() + GetInsets().height(), size.height()));
+    // Disregard label in the preferred size if the button is shrinking down to
+    // show no label soon.
+    if (!shrinking_down_label_) {
+      const gfx::Size preferred_label_size = label_->GetPreferredSize();
+      size.Enlarge(preferred_label_size.width(), 0);
+
+      // Increase the height of the label (with insets) if larger.
+      size.set_height(std::max(
+          preferred_label_size.height() + GetInsets().height(), size.height()));
+    }
 
     size.SetToMax(GetMinSize());
 
@@ -202,6 +222,24 @@ gfx::Size LabelButton::CalculatePreferredSize() const {
   }
 
   return cached_preferred_size_.value();
+}
+
+gfx::Size LabelButton::GetMinimumSize() const {
+  if (label_->GetElideBehavior() == gfx::ElideBehavior::NO_ELIDE)
+    return GetPreferredSize();
+
+  gfx::Size size = image_->GetPreferredSize();
+  const gfx::Insets insets(GetInsets());
+  size.Enlarge(insets.width(), insets.height());
+
+  size.SetToMax(GetMinSize());
+  const gfx::Size max_size = GetMaxSize();
+  if (max_size.width() > 0)
+    size.set_width(std::min(max_size.width(), size.width()));
+  if (max_size.height() > 0)
+    size.set_height(std::min(max_size.height(), size.height()));
+
+  return size;
 }
 
 int LabelButton::GetHeightForWidth(int width) const {
@@ -225,21 +263,19 @@ int LabelButton::GetHeightForWidth(int width) const {
 }
 
 void LabelButton::Layout() {
-  ink_drop_container_->SetBoundsRect(GetLocalBounds());
+  gfx::Rect child_area = GetLocalBounds();
 
-  // By default, GetChildAreaBounds() ignores the top and bottom border, but we
-  // want the image to respect it.
-  gfx::Rect child_area(GetChildAreaBounds());
+  ink_drop_container_->SetBoundsRect(child_area);
   // The space that the label can use. Its actual bounds may be smaller if the
   // label is short.
-  gfx::Rect label_area(child_area);
+  gfx::Rect label_area = child_area;
 
   gfx::Insets insets = GetInsets();
   child_area.Inset(insets);
   // Labels can paint over the vertical component of the border insets.
   label_area.Inset(insets.left(), 0, insets.right(), 0);
 
-  gfx::Size image_size(image_->GetPreferredSize());
+  gfx::Size image_size = image_->GetPreferredSize();
   image_size.SetToMin(child_area.size());
 
   const auto horizontal_alignment = GetHorizontalAlignment();
@@ -255,7 +291,7 @@ void LabelButton::Layout() {
       std::min(label_area.width(), label_->GetPreferredSize().width()),
       label_area.height());
 
-  gfx::Point image_origin(child_area.origin());
+  gfx::Point image_origin = child_area.origin();
   if (label_->GetMultiLine()) {
     // Right now this code currently only works for CheckBox and RadioButton
     // descendants that have multi-line enabled for their label.
@@ -371,10 +407,6 @@ void LabelButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
   image()->DestroyLayer();
 }
 
-gfx::Rect LabelButton::GetChildAreaBounds() {
-  return GetLocalBounds();
-}
-
 void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.checked = false;
   params->button.indeterminate = false;
@@ -395,18 +427,8 @@ void LabelButton::ResetColorsFromNativeTheme() {
       theme->GetSystemColor(ui::NativeTheme::kColorId_LabelDisabledColor),
   };
 
-  // Use hardcoded colors for inverted color scheme support.
-  if (color_utils::IsInvertedColorScheme()) {
-    colors[STATE_NORMAL] = colors[STATE_HOVERED] = colors[STATE_PRESSED] =
-        SK_ColorWHITE;
-    label_->SetBackgroundColor(SK_ColorBLACK);
-    label_->SetBackground(CreateSolidBackground(SK_ColorBLACK));
-    label_->SetAutoColorReadabilityEnabled(true);
-    label_->SetShadows(gfx::ShadowValues());
-  } else {
-    label_->SetBackground(nullptr);
-    label_->SetAutoColorReadabilityEnabled(false);
-  }
+  label_->SetBackground(nullptr);
+  label_->SetAutoColorReadabilityEnabled(false);
 
   for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state) {
     if (!explicitly_set_colors_[state]) {
@@ -475,9 +497,28 @@ void LabelButton::StateChanged(ButtonState old_state) {
 void LabelButton::SetTextInternal(const base::string16& text) {
   SetAccessibleName(text);
   label_->SetText(text);
+
+  // Setting text cancels ShrinkDownThenClearText().
+  if (shrinking_down_label_) {
+    shrinking_down_label_ = false;
+    PreferredSizeChanged();
+  }
+
   // TODO(pkasting): Remove this and forward callback subscriptions to the
   // underlying label property when Label is converted to properties.
   OnPropertyChanged(label_, kPropertyEffectsNone);
+}
+
+void LabelButton::ClearTextIfShrunkDown() {
+  if (!cached_preferred_size_)
+    CalculatePreferredSize();
+  if (shrinking_down_label_ && width() <= cached_preferred_size_->width() &&
+      height() <= cached_preferred_size_->height()) {
+    // Once the button shrinks down to its preferred size (that disregards the
+    // current text), we finish the operation by clearing the text.
+    shrinking_down_label_ = false;
+    SetTextInternal(base::string16());
+  }
 }
 
 void LabelButton::ResetCachedPreferredSize() {
@@ -491,7 +532,7 @@ gfx::Size LabelButton::GetUnclampedSizeWithoutLabel() const {
   size.Enlarge(insets.width(), insets.height());
 
   // Accommodate for spacing between image and text if both are present.
-  if (!GetText().empty() && image_size.width() > 0)
+  if (image_size.width() > 0 && !GetText().empty() && !shrinking_down_label_)
     size.Enlarge(GetImageLabelSpacing(), 0);
 
   // Make the size at least as large as the minimum size needed by the border.

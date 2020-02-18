@@ -161,12 +161,9 @@ base::Optional<base::TimeDelta> CalculateStartTime(
     base::TimeDelta current_time,
     double playback_rate,
     AnimationTimeline& timeline) {
-  bool is_null;
-  double time_ms = timeline.currentTime(is_null);
-  DCHECK(!is_null);
-
-  auto timeline_time = base::TimeDelta::FromMillisecondsD(time_ms);
-  return timeline_time - (current_time / playback_rate);
+  base::Optional<double> timeline_current_time_ms = timeline.CurrentTime();
+  return base::TimeDelta::FromMillisecondsD(timeline_current_time_ms.value()) -
+         (current_time / playback_rate);
 }
 }  // namespace
 
@@ -376,7 +373,7 @@ void WorkletAnimation::cancel() {
   // value in the next frame. See https://crbug.com/883312.
   if (IsActive(play_state_)) {
     for (auto& effect : effects_)
-      effect->UpdateInheritedTime(NullValue(), kTimingUpdateOnDemand);
+      effect->UpdateInheritedTime(base::nullopt, kTimingUpdateOnDemand);
   }
   SetPlayState(Animation::kIdle);
   SetCurrentTime(base::nullopt);
@@ -457,7 +454,9 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
   DCHECK_EQ(effects_.size(), local_times_.size());
   for (wtf_size_t i = 0; i < effects_.size(); ++i) {
     effects_[i]->UpdateInheritedTime(
-        local_times_[i] ? local_times_[i]->InSecondsF() : NullValue(), reason);
+        local_times_[i] ? base::Optional<double>(local_times_[i]->InSecondsF())
+                        : base::nullopt,
+        reason);
   }
 }
 
@@ -570,6 +569,13 @@ bool WorkletAnimation::CanStartOnCompositor() {
 
   if (!CheckElementComposited(target))
     return false;
+
+  // If the scroll source is not composited, fall back to main thread.
+  if (timeline_->IsScrollTimeline() &&
+      !CheckElementComposited(
+          *ToScrollTimeline(timeline_)->ResolvedScrollSource())) {
+    return false;
+  }
 
   return true;
 }
@@ -704,8 +710,7 @@ bool WorkletAnimation::IsCurrentTimeInitialized() const {
 // zero (i.e., scroll origin) and the current time corresponding to the current
 // scroll position adjusted by the playback rate.
 //
-// Changing scroll-linked animation start_time initialization is under
-// consideration here: https://github.com/w3c/csswg-drafts/issues/2075.
+// More information at AnimationTimeline::InitialStartTimeForAnimations
 //
 // TODO(https://crbug.com/986925): The playback rate should be taken into
 // consideration when calculating the initial current time.
@@ -715,16 +720,17 @@ base::Optional<base::TimeDelta> WorkletAnimation::InitialCurrentTime() const {
       !IsTimelineActive())
     return base::nullopt;
 
-  if (timeline_->IsScrollTimeline()) {
-    bool is_null;
-    double timeline_time_ms = timeline_->currentTime(is_null);
-    if (is_null)
-      return base::nullopt;
+  base::Optional<base::TimeDelta> starting_time =
+      timeline_->InitialStartTimeForAnimations();
+  base::Optional<double> current_time = timeline_->CurrentTime();
 
-    return base::TimeDelta::FromMillisecondsD(timeline_time_ms) *
-           playback_rate_;
+  if (!starting_time || !current_time) {
+    return base::nullopt;
   }
-  return base::TimeDelta();
+
+  return (base::TimeDelta::FromMillisecondsD(current_time.value()) -
+          starting_time.value()) *
+         playback_rate_;
 }
 
 void WorkletAnimation::UpdateCurrentTimeIfNeeded() {
@@ -791,34 +797,10 @@ base::Optional<base::TimeDelta> WorkletAnimation::CurrentTimeInternal() const {
   return (timeline_time - start_time_.value()) * playback_rate_;
 }
 
-bool WorkletAnimation::NeedsPeek(base::TimeDelta current_time) {
-  bool local_time_is_set = false;
-  for (auto& time : local_times_) {
-    if (time) {
-      local_time_is_set = true;
-      break;
-    }
-  }
-
-  // If any of the local times has been set, a previous peek must have
-  // completed. Request a new peek only if the input time changes.
-  if (local_time_is_set)
-    return last_peek_request_time_ != current_time;
-
-  return true;
-}
-
 void WorkletAnimation::UpdateInputState(
     AnimationWorkletDispatcherInput* input_state) {
   base::Optional<base::TimeDelta> current_time = CurrentTime();
   if (!running_on_main_thread_) {
-    if (!current_time)
-      return;
-    base::TimeDelta current_time_value = current_time.value();
-    if (!NeedsPeek(current_time_value))
-      return;
-    last_peek_request_time_ = current_time_value;
-    input_state->Peek(id_);
     return;
   }
   bool was_active = IsActive(last_play_state_);
@@ -853,12 +835,18 @@ void WorkletAnimation::SetOutputState(
     const AnimationWorkletOutput::AnimationState& state) {
   DCHECK(state.worklet_animation_id == id_);
   // The local times for composited effects, i.e. not running on main, are
-  // peeked and set via the main thread. If an animator is not ready upon
-  // peeking state.local_times will be empty.
-  DCHECK(local_times_.size() == state.local_times.size() ||
-         !running_on_main_thread_);
+  // updated via posting animation events from the compositor thread to the main
+  // thread (see WorkletAnimation::NotifyLocalTimeUpdated).
+  DCHECK(local_times_.size() == state.local_times.size() &&
+         running_on_main_thread_);
   for (wtf_size_t i = 0; i < state.local_times.size(); ++i)
     local_times_[i] = state.local_times[i];
+}
+
+void WorkletAnimation::NotifyLocalTimeUpdated(
+    base::Optional<base::TimeDelta> local_time) {
+  DCHECK(!running_on_main_thread_);
+  local_times_[0] = local_time;
 }
 
 void WorkletAnimation::Dispose() {

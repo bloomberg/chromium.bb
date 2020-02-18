@@ -47,6 +47,8 @@ void DetectIEProfiles(std::vector<importer::SourceProfile>* profiles) {
 }
 
 void DetectEdgeProfiles(std::vector<importer::SourceProfile>* profiles) {
+  if (!importer::EdgeImporterCanImport())
+    return;
   importer::SourceProfile edge;
   edge.importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_EDGE);
   edge.importer_type = importer::TYPE_EDGE;
@@ -57,10 +59,13 @@ void DetectEdgeProfiles(std::vector<importer::SourceProfile>* profiles) {
 
 void DetectBuiltinWindowsProfiles(
     std::vector<importer::SourceProfile>* profiles) {
-  // Make the assumption on Windows 10 that Edge exists and is probably default.
-  if (importer::EdgeImporterCanImport())
+  if (shell_integration::IsIEDefaultBrowser()) {
+    DetectIEProfiles(profiles);
     DetectEdgeProfiles(profiles);
-  DetectIEProfiles(profiles);
+  } else {
+    DetectEdgeProfiles(profiles);
+    DetectIEProfiles(profiles);
+  }
 }
 
 #endif  // defined(OS_WIN)
@@ -89,8 +94,13 @@ void DetectFirefoxProfiles(const std::string locale,
                            std::vector<importer::SourceProfile>* profiles) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-
-  base::FilePath profile_path = GetFirefoxProfilePath();
+#if defined(OS_WIN)
+  const std::string firefox_install_id =
+      shell_integration::GetFirefoxProgIdSuffix();
+#else
+  const std::string firefox_install_id;
+#endif  // defined(OS_WIN)
+  base::FilePath profile_path = GetFirefoxProfilePath(firefox_install_id);
   if (profile_path.empty())
     return;
 

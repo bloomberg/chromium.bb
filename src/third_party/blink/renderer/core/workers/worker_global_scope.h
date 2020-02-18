@@ -28,31 +28,23 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
-
-namespace service_manager {
-class InterfaceProvider;
-}
 
 namespace blink {
 
@@ -60,6 +52,7 @@ class ConsoleMessage;
 class ExceptionState;
 class FetchClientSettingsObjectSnapshot;
 class FontFaceSet;
+class InstalledScriptsManager;
 class OffscreenFontSelector;
 class WorkerResourceTimingNotifier;
 class StringOrTrustedScriptURL;
@@ -123,12 +116,10 @@ class CORE_EXPORT WorkerGlobalScope
   HttpsState GetHttpsState() const override { return https_state_; }
   scheduler::WorkerScheduler* GetScheduler() final;
 
-  DOMTimerCoordinator* Timers() final { return &timers_; }
   SecurityContext& GetSecurityContext() final { return *this; }
   const SecurityContext& GetSecurityContext() const final { return *this; }
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
   bool IsSecureContext(String& error_message) const override;
-  service_manager::InterfaceProvider* GetInterfaceProvider() final;
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
 
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
@@ -191,6 +182,10 @@ class CORE_EXPORT WorkerGlobalScope
 
   void Trace(blink::Visitor*) override;
 
+  virtual InstalledScriptsManager* GetInstalledScriptsManager() {
+    return nullptr;
+  }
+
   // TODO(fserb): This can be removed once we WorkerGlobalScope implements
   // FontFaceSource on the IDL.
   FontFaceSet* fonts();
@@ -198,17 +193,8 @@ class CORE_EXPORT WorkerGlobalScope
   // https://html.spec.whatwg.org/C/#windoworworkerglobalscope-mixin
   void queueMicrotask(V8VoidFunction*);
 
-  int requestAnimationFrame(V8FrameRequestCallback* callback, ExceptionState&);
-  void cancelAnimationFrame(int id);
-
-  WorkerAnimationFrameProvider* GetAnimationFrameProvider() {
-    return animation_frame_provider_;
-  }
-
   TrustedTypePolicyFactory* GetTrustedTypes() const override;
-  TrustedTypePolicyFactory* trustedTypesWorkers() const {
-    return GetTrustedTypes();
-  }
+  TrustedTypePolicyFactory* trustedTypes() const { return GetTrustedTypes(); }
 
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
@@ -218,6 +204,12 @@ class CORE_EXPORT WorkerGlobalScope
   // ExecutionContext
   void ExceptionThrown(ErrorEvent*) override;
   void RemoveURLFromMemoryCache(const KURL&) final;
+
+  virtual bool FetchClassicImportedScript(
+      const KURL& script_url,
+      KURL* out_response_url,
+      String* out_source_code,
+      std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data);
 
   // Notifies that the top-level worker script is ready to evaluate.
   // Worker top-level script is evaluated after it is fetched and
@@ -236,12 +228,6 @@ class CORE_EXPORT WorkerGlobalScope
 
   // Used for importScripts().
   void ImportScriptsInternal(const Vector<String>& urls, ExceptionState&);
-  bool FetchClassicImportedScript(
-      const KURL& script_url,
-      KURL* out_response_url,
-      String* out_source_code,
-      std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data);
-
   // ExecutionContext
   EventTarget* ErrorEventTarget() final { return this; }
 
@@ -258,33 +244,29 @@ class CORE_EXPORT WorkerGlobalScope
 
   bool closing_ = false;
 
-  DOMTimerCoordinator timers_;
-
   const base::TimeTicks time_origin_;
 
   HeapHashMap<int, Member<ErrorEvent>> pending_error_events_;
   int last_pending_error_event_id_ = 0;
 
   Member<OffscreenFontSelector> font_selector_;
-  Member<WorkerAnimationFrameProvider> animation_frame_provider_;
-
-  service_manager::InterfaceProvider interface_provider_;
 
   blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
 
-  // State transition about worker-toplevel script evaluation.
+  // State transition about worker top-level script evaluation.
   enum class ScriptEvalState {
-    // Initial state: ReadyToRunWorkerScript() is not yet called.
-    // Worker top-level script fetch might or might not completed, and even when
-    // the fetch completes in this state, script evaluation will be deferred to
-    // when ReadyToRunWorkerScript() is called later.
+    // Initial state: ReadyToRunWorkerScript() was not yet called.
+    // Worker top-level script fetch might or might not be completed, and even
+    // when the fetch completes in this state, script evaluation will be
+    // deferred to when ReadyToRunWorkerScript() is called later.
     kPauseAfterFetch,
-    // ReadyToRunWorkerScript() is already called.
+    // ReadyToRunWorkerScript() was already called.
     kReadyToEvaluate,
-    // The worker top-level script is evaluated.
+    // The worker top-level script was evaluated.
     kEvaluated,
   };
   ScriptEvalState script_eval_state_;
+
   Member<Script> worker_script_;
   base::Optional<v8_inspector::V8StackTraceId> stack_id_;
 

@@ -23,7 +23,7 @@
 #include "components/drive/file_errors.h"
 #include "extensions/browser/extension_function.h"
 #include "services/device/public/mojom/mtp_storage_info.mojom.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 
 namespace storage {
 class FileSystemContext;
@@ -43,7 +43,13 @@ namespace drive {
 namespace util {
 class FileStreamMd5Digester;
 }  // namespace util
-struct HashAndFilePath;
+
+// File path and its MD5 hash obtained from drive.
+struct HashAndFilePath {
+  std::string hash;
+  base::FilePath path;
+};
+
 }  // namespace drive
 
 namespace extensions {
@@ -328,7 +334,6 @@ class FileManagerPrivateInternalComputeChecksumFunction
 };
 
 // Implements the chrome.fileManagerPrivate.searchFilesByHashes method.
-// TODO(b/883628): Write some tests maybe?
 class FileManagerPrivateSearchFilesByHashesFunction
     : public LoggedExtensionFunction {
  public:
@@ -378,26 +383,6 @@ class FileManagerPrivateSearchFilesFunction : public LoggedExtensionFunction {
       const std::vector<std::pair<base::FilePath, bool>>& results);
 
   const ChromeExtensionFunctionDetails chrome_details_;
-};
-
-// Implements the chrome.fileManagerPrivate.setEntryTag method.
-class FileManagerPrivateInternalSetEntryTagFunction
-    : public LoggedExtensionFunction {
- public:
-  FileManagerPrivateInternalSetEntryTagFunction();
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.setEntryTag",
-                             FILEMANAGERPRIVATEINTERNAL_SETENTRYTAG)
- protected:
-  ~FileManagerPrivateInternalSetEntryTagFunction() override = default;
-
- private:
-  const ChromeExtensionFunctionDetails chrome_details_;
-
-  // Called when setting a tag is completed with either a success or an error.
-  void OnSetEntryPropertyCompleted(drive::FileError result);
-
-  ExtensionFunction::ResponseAction Run() override;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateInternalSetEntryTagFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.getDirectorySize method.

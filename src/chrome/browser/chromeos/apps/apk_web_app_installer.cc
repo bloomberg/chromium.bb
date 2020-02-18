@@ -17,9 +17,8 @@
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -45,8 +44,7 @@ void ApkWebAppInstaller::Install(Profile* profile,
   // CompleteInstallation().
   auto* installer =
       new ApkWebAppInstaller(profile, std::move(callback), weak_owner);
-  installer->Start(content::GetSystemConnector(), std::move(web_app_info),
-                   icon_png_data);
+  installer->Start(std::move(web_app_info), icon_png_data);
 }
 
 ApkWebAppInstaller::ApkWebAppInstaller(Profile* profile,
@@ -58,13 +56,12 @@ ApkWebAppInstaller::ApkWebAppInstaller(Profile* profile,
 
 ApkWebAppInstaller::~ApkWebAppInstaller() = default;
 
-void ApkWebAppInstaller::Start(service_manager::Connector* connector,
-                               arc::mojom::WebAppInfoPtr web_app_info,
+void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
                                const std::vector<uint8_t>& icon_png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!weak_owner_.get()) {
     CompleteInstallation(web_app::AppId(),
-                         web_app::InstallResultCode::kFailedUnknownReason);
+                         web_app::InstallResultCode::kApkWebAppInstallFailed);
     return;
   }
 
@@ -73,7 +70,7 @@ void ApkWebAppInstaller::Start(service_manager::Connector* connector,
   if (web_app_info.is_null() || icon_png_data.empty()) {
     LOG(ERROR) << "Insufficient data to install a web app";
     CompleteInstallation(web_app::AppId(),
-                         web_app::InstallResultCode::kFailedUnknownReason);
+                         web_app::InstallResultCode::kApkWebAppInstallFailed);
     return;
   }
 
@@ -92,18 +89,13 @@ void ApkWebAppInstaller::Start(service_manager::Connector* connector,
     web_app_info_->theme_color =
         static_cast<SkColor>(web_app_info->theme_color);
   }
+  web_app_info_->display_mode = blink::mojom::DisplayMode::kStandalone;
   web_app_info_->open_as_window = true;
-
-  // Set up the connection to the service manager to decode the raw PNG icon
-  // bytes into SkBitmaps.
-  service_manager::mojom::ConnectorRequest connector_request;
-  connector_ = service_manager::Connector::Create(&connector_request);
-  connector->BindConnectorRequest(std::move(connector_request));
 
   // Decode the image in a sandboxed process off the main thread.
   // base::Unretained is safe because this object owns itself.
-  data_decoder::DecodeImage(
-      connector_.get(), icon_png_data, data_decoder::mojom::ImageCodec::DEFAULT,
+  data_decoder::DecodeImageIsolated(
+      icon_png_data, data_decoder::mojom::ImageCodec::DEFAULT,
       /*shrink_to_fit=*/false, data_decoder::kDefaultMaxSizeInBytes,
       /*desired_image_frame_size=*/gfx::Size(),
       base::BindOnce(&ApkWebAppInstaller::OnImageDecoded,
@@ -143,12 +135,8 @@ void ApkWebAppInstaller::OnWebAppCreated(const GURL& app_url,
 void ApkWebAppInstaller::OnImageDecoded(const SkBitmap& decoded_image) {
   DCHECK(web_app_info_);
 
-  WebApplicationInfo::IconInfo icon_info;
-  icon_info.data = decoded_image;
-  icon_info.width = decoded_image.width();
-  icon_info.height = decoded_image.height();
-
-  web_app_info_->icons.push_back(icon_info);
+  if (decoded_image.width() == decoded_image.height())
+    web_app_info_->icon_bitmaps[decoded_image.width()] = decoded_image;
 
   if (!weak_owner_.get()) {
     // Assume |profile_| is no longer valid - destroy this object and

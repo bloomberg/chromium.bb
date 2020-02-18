@@ -30,6 +30,8 @@
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "components/sync/model/sync_change.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/management_policy.h"
 #endif
@@ -46,10 +48,6 @@ class SupervisedUserWhitelistService;
 namespace base {
 class FilePath;
 class Version;
-}
-
-namespace extensions {
-class ExtensionRegistry;
 }
 
 namespace user_prefs {
@@ -108,24 +106,6 @@ class SupervisedUserService : public KeyedService,
   // Adds an access request for the given URL.
   void AddURLAccessRequest(const GURL& url, SuccessCallback callback);
 
-  // Adds an install request for the given WebStore item (App/Extension).
-  void AddExtensionInstallRequest(const std::string& extension_id,
-                                  const base::Version& version,
-                                  SuccessCallback callback);
-
-  // Same as above, but without a callback, just logging errors on failure.
-  void AddExtensionInstallRequest(const std::string& extension_id,
-                                  const base::Version& version);
-
-  // Adds an update request for the given WebStore item (App/Extension).
-  void AddExtensionUpdateRequest(const std::string& extension_id,
-                                 const base::Version& version,
-                                 SuccessCallback callback);
-
-  // Same as above, but without a callback, just logging errors on failure.
-  void AddExtensionUpdateRequest(const std::string& extension_id,
-                                 const base::Version& version);
-
   // Get the string used to identify an extension install or update request.
   // Public for testing.
   static std::string GetExtensionRequestId(const std::string& extension_id,
@@ -156,6 +136,8 @@ class SupervisedUserService : public KeyedService,
   // Returns a message saying that extensions can only be modified by the
   // custodian.
   base::string16 GetExtensionsLockedMessage() const;
+
+  bool IsSupervisedUserIframeFilterEnabled() const;
 
 #if !defined(OS_ANDROID)
   // Initializes this profile for syncing, using the provided |refresh_token| to
@@ -193,6 +175,25 @@ class SupervisedUserService : public KeyedService,
   }
 #endif  // !defined(OS_ANDROID)
 
+  void SetPrimaryPermissionCreatorForTest(
+      std::unique_ptr<PermissionRequestCreator> permission_creator);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Updates the map of approved extensions.
+  // If |type| is SyncChangeType::ADD, then add custodian approval for enabling
+  // the extension by adding the approved version to the map of approved
+  // extensions. If |type| is SyncChangeType::DELETE, then remove the extension
+  // from the map of approved extensions.
+  void UpdateApprovedExtensions(const std::string& extension_id,
+                                const std::string& version,
+                                syncer::SyncChange::SyncChangeType type);
+
+  bool GetSupervisedUserExtensionsMayRequestPermissionsPref() const;
+
+  void SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(
+      bool enabled);
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
  private:
   friend class SupervisedUserServiceExtensionTestBase;
   friend class SupervisedUserServiceFactory;
@@ -223,8 +224,6 @@ class SupervisedUserService : public KeyedService,
                    base::string16* error) const override;
   bool UserMayModifySettings(const extensions::Extension* extension,
                              base::string16* error) const override;
-  bool MustRemainInstalled(const extensions::Extension* extension,
-                           base::string16* error) const override;
   bool MustRemainDisabled(const extensions::Extension* extension,
                           extensions::disable_reason::DisableReason* reason,
                           base::string16* error) const override;
@@ -236,17 +235,17 @@ class SupervisedUserService : public KeyedService,
 
   // An extension can be in one of the following states:
   //
-  // FORCED: if it is installed by the custodian.
-  // REQUIRE_APPROVAL: if it is installed by the supervised user and
-  //    hasn't been approved by the custodian yet.
+  // BLOCKED: if kSupervisedUserExtensionsMayRequestPermissions is false and the
+  // child user is attempting to install a new extension or an existing
+  // extension is asking for additional permissions.
   // ALLOWED: Components, Themes, Default extensions ..etc
   //    are generally allowed.  Extensions that have been approved by the
   //    custodian are also allowed.
-  // BLOCKED: if it is not ALLOWED or FORCED
-  //    and supervised users initiated installs are disabled.
-  enum class ExtensionState { FORCED, BLOCKED, ALLOWED, REQUIRE_APPROVAL };
+  // REQUIRE_APPROVAL: if it is installed by the child user and
+  //    hasn't been approved by the custodian yet.
+  enum class ExtensionState { BLOCKED, ALLOWED, REQUIRE_APPROVAL };
 
-  // Returns the state of an extension whether being FORCED, BLOCKED, ALLOWED or
+  // Returns the state of an extension whether being BLOCKED, ALLOWED or
   // REQUIRE_APPROVAL from the Supervised User service's point of view.
   ExtensionState GetExtensionState(
       const extensions::Extension& extension) const;
@@ -255,13 +254,9 @@ class SupervisedUserService : public KeyedService,
   void SetExtensionsActive();
 
   // Enables/Disables extensions upon change in approved version of the
-  // extension_id.
+  // extension_id. This function is idempotent.
   void ChangeExtensionStateIfNecessary(const std::string& extension_id);
-
-  // Updates the map of approved extensions when the corresponding preference
-  // is changed.
-  void UpdateApprovedExtensions();
-#endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   SupervisedUserSettingsService* GetSettingsService();
 
@@ -355,7 +350,7 @@ class SupervisedUserService : public KeyedService,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      registry_observer_;
+      registry_observer_{this};
 #endif
 
   base::ObserverList<SupervisedUserServiceObserver>::Unchecked observer_list_;

@@ -8,13 +8,15 @@ namespace skia {
 namespace textlayout {
 
 bool FontCollection::FamilyKey::operator==(const FontCollection::FamilyKey& other) const {
-    return fFontFamily == other.fFontFamily && fLocale == other.fLocale &&
-           fFontStyle == other.fFontStyle;
+    return fFamilyNames == other.fFamilyNames && fFontStyle == other.fFontStyle;
 }
 
 size_t FontCollection::FamilyKey::Hasher::operator()(const FontCollection::FamilyKey& key) const {
-    return std::hash<std::string>()(key.fFontFamily.c_str()) ^
-           std::hash<std::string>()(key.fLocale.c_str()) ^
+    size_t hash = 0;
+    for (const SkString& family : key.fFamilyNames) {
+        hash ^= std::hash<std::string>()(family.c_str());
+    }
+    return hash ^
            std::hash<uint32_t>()(key.fFontStyle.weight()) ^
            std::hash<uint32_t>()(key.fFontStyle.slant());
 }
@@ -65,47 +67,36 @@ std::vector<sk_sp<SkFontMgr>> FontCollection::getFontManagerOrder() const {
     return order;
 }
 
-sk_sp<SkTypeface> FontCollection::matchTypeface(const char familyName[], SkFontStyle fontStyle, const SkString& locale) {
+std::vector<sk_sp<SkTypeface>> FontCollection::findTypefaces(const std::vector<SkString>& familyNames, SkFontStyle fontStyle) {
     // Look inside the font collections cache first
-    FamilyKey familyKey(familyName, locale.c_str(), fontStyle);
+    FamilyKey familyKey(familyNames, fontStyle);
     auto found = fTypefaces.find(familyKey);
     if (found) {
         return *found;
     }
 
-    sk_sp<SkTypeface> typeface = nullptr;
-    for (const auto& manager : this->getFontManagerOrder()) {
-        SkFontStyleSet* set = manager->matchFamily(familyName);
-        if (nullptr == set || set->count() == 0) {
-            continue;
-        }
-
-        for (int i = 0; i < set->count(); ++i) {
-            set->createTypeface(i);
-        }
-
-        sk_sp<SkTypeface> match(set->matchStyle(fontStyle));
+    std::vector<sk_sp<SkTypeface>> typefaces;
+    for (const SkString& familyName : familyNames) {
+        sk_sp<SkTypeface> match = matchTypeface(familyName, fontStyle);
         if (match) {
-            typeface = std::move(match);
-            break;
+            typefaces.emplace_back(std::move(match));
         }
     }
 
-    fTypefaces.set(familyKey, typeface);
-    return typeface;
+    if (typefaces.empty()) {
+        sk_sp<SkTypeface> match = matchTypeface(fDefaultFamilyName, fontStyle);
+        if (match) {
+            typefaces.emplace_back(std::move(match));
+        }
+    }
+
+    fTypefaces.set(familyKey, typefaces);
+    return typefaces;
 }
 
-sk_sp<SkTypeface> FontCollection::matchDefaultTypeface(SkFontStyle fontStyle, const SkString& locale) {
-    // Look inside the font collections cache first
-    FamilyKey familyKey(fDefaultFamilyName.c_str(), locale.c_str(), fontStyle);
-    auto found = fTypefaces.find(familyKey);
-    if (found) {
-        return *found;
-    }
-
-    sk_sp<SkTypeface> typeface = nullptr;
+sk_sp<SkTypeface> FontCollection::matchTypeface(const SkString& familyName, SkFontStyle fontStyle) {
     for (const auto& manager : this->getFontManagerOrder()) {
-        SkFontStyleSet* set = manager->matchFamily(fDefaultFamilyName.c_str());
+        SkFontStyleSet* set = manager->matchFamily(familyName.c_str());
         if (nullptr == set || set->count() == 0) {
             continue;
         }
@@ -116,13 +107,11 @@ sk_sp<SkTypeface> FontCollection::matchDefaultTypeface(SkFontStyle fontStyle, co
 
         sk_sp<SkTypeface> match(set->matchStyle(fontStyle));
         if (match) {
-            typeface = std::move(match);
-            break;
+            return match;
         }
     }
 
-    fTypefaces.set(familyKey, typeface);
-    return typeface;
+    return nullptr;
 }
 
 // Find ANY font in available font managers that resolves the unicode codepoint
@@ -152,6 +141,7 @@ sk_sp<SkTypeface> FontCollection::defaultFallback() {
 
 
 void FontCollection::disableFontFallback() { fEnableFontFallback = false; }
+void FontCollection::enableFontFallback() { fEnableFontFallback = true; }
 
 }  // namespace textlayout
 }  // namespace skia

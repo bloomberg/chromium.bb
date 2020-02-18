@@ -15,9 +15,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -31,12 +31,13 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/resources/grit/webui_resources.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -51,6 +52,11 @@ constexpr char kInDevModeKey[] = "inDevMode";
 constexpr char kShowActivityLogKey[] = "showActivityLog";
 constexpr char kLoadTimeClassesKey[] = "loadTimeClasses";
 
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+constexpr char kGeneratedPath[] =
+    "@out_folder@/gen/chrome/browser/resources/extensions/";
+#endif
+
 std::string GetLoadTimeClasses(bool in_dev_mode) {
   return in_dev_mode ? "in-dev-mode" : std::string();
 }
@@ -59,9 +65,17 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
                                                    bool in_dev_mode) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
-  source->UseStringsJs();
+#if BUILDFLAG(OPTIMIZE_WEBUI)
+  webui::SetupBundledWebUIDataSource(source, "extensions.js",
+                                     IDR_EXTENSIONS_EXTENSIONS_ROLLUP_JS,
+                                     IDR_EXTENSIONS_EXTENSIONS_HTML);
+#else
+  webui::SetupWebUIDataSource(
+      source, base::make_span(kExtensionsResources, kExtensionsResourcesSize),
+      kGeneratedPath, IDR_EXTENSIONS_EXTENSIONS_HTML);
+#endif
 
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
     // Add common strings.
     {"add", IDS_ADD},
     {"back", IDS_ACCNAME_BACK},
@@ -69,9 +83,12 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
     {"close", IDS_CLOSE},
     {"clear", IDS_CLEAR},
     {"confirm", IDS_CONFIRM},
+    {"controlledSettingChildRestriction",
+     IDS_CONTROLLED_SETTING_CHILD_RESTRICTION},
     {"controlledSettingPolicy", IDS_CONTROLLED_SETTING_POLICY},
     {"done", IDS_DONE},
     {"learnMore", IDS_LEARN_MORE},
+    {"menu", IDS_MENU},
     {"noSearchResults", IDS_SEARCH_NO_RESULTS},
     {"ok", IDS_OK},
     {"save", IDS_SAVE},
@@ -251,8 +268,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
      IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_TITLE},
 #endif
   };
-  AddLocalizedStringsBulk(source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(source, kLocalizedStrings);
 
   source->AddString("errorLinesNotShownSingular",
                     l10n_util::GetPluralStringFUTF16(
@@ -293,21 +309,6 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
                          ::switches::kEnableExtensionActivityLogging));
   source->AddString(kLoadTimeClassesKey, GetLoadTimeClasses(in_dev_mode));
 
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("crisper.js", IDR_EXTENSIONS_CRISPER_JS);
-  source->SetDefaultResource(IDR_EXTENSIONS_VULCANIZED_HTML);
-#else
-  // Add all MD Extensions resources.
-  for (size_t i = 0; i < kExtensionsResourcesSize; ++i) {
-    source->AddResourcePath(kExtensionsResources[i].name,
-                            kExtensionsResources[i].value);
-  }
-  // Add the subpage loader, to load subpages in non-optimized builds.
-  source->AddResourcePath("subpage_loader.html", IDR_WEBUI_HTML_SUBPAGE_LOADER);
-  source->AddResourcePath("subpage_loader.js", IDR_WEBUI_JS_SUBPAGE_LOADER);
-  source->SetDefaultResource(IDR_EXTENSIONS_EXTENSIONS_HTML);
-#endif
-
   return source;
 }
 
@@ -340,6 +341,17 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
 
   content::WebUIDataSource::Add(profile, source);
+
+  // Stores a boolean in ExtensionPrefs so we can make sure that the user is
+  // redirected to the extensions page upon startup once. We're using
+  // GetVisibleURL() because the load hasn't committed and this check isn't used
+  // for a security decision, however a stronger check will be implemented if we
+  // decide to invest more in this experiment.
+  if (web_ui->GetWebContents()->GetVisibleURL().query_piece().starts_with(
+          "checkup")) {
+    ExtensionPrefs::Get(profile)->SetUserHasSeenExtensionsCheckupOnStartup(
+        true);
+  }
 }
 
 ExtensionsUI::~ExtensionsUI() {}

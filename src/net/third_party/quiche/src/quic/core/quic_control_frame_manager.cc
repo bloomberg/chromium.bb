@@ -26,13 +26,7 @@ QuicControlFrameManager::QuicControlFrameManager(QuicSession* session)
     : last_control_frame_id_(kInvalidControlFrameId),
       least_unacked_(1),
       least_unsent_(1),
-      session_(session),
-      add_upper_limit_(GetQuicReloadableFlag(
-          quic_add_upper_limit_of_buffered_control_frames)) {
-  if (add_upper_limit_) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_add_upper_limit_of_buffered_control_frames);
-  }
-}
+      session_(session) {}
 
 QuicControlFrameManager::~QuicControlFrameManager() {
   while (!control_frames_.empty()) {
@@ -44,7 +38,7 @@ QuicControlFrameManager::~QuicControlFrameManager() {
 void QuicControlFrameManager::WriteOrBufferQuicFrame(QuicFrame frame) {
   const bool had_buffered_frames = HasBufferedFrames();
   control_frames_.emplace_back(frame);
-  if (add_upper_limit_ && control_frames_.size() > kMaxNumControlFrames) {
+  if (control_frames_.size() > kMaxNumControlFrames) {
     session_->connection()->CloseConnection(
         QUIC_TOO_MANY_BUFFERED_CONTROL_FRAMES,
         QuicStrCat("More than ", kMaxNumControlFrames,
@@ -124,7 +118,7 @@ void QuicControlFrameManager::WritePing() {
   }
   control_frames_.emplace_back(
       QuicFrame(QuicPingFrame(++last_control_frame_id_)));
-  if (add_upper_limit_ && control_frames_.size() > kMaxNumControlFrames) {
+  if (control_frames_.size() > kMaxNumControlFrames) {
     session_->connection()->CloseConnection(
         QUIC_TOO_MANY_BUFFERED_CONTROL_FRAMES,
         QuicStrCat("More than ", kMaxNumControlFrames,
@@ -280,9 +274,7 @@ bool QuicControlFrameManager::RetransmitControlFrame(const QuicFrame& frame) {
 
 void QuicControlFrameManager::WriteBufferedFrames() {
   while (HasBufferedFrames()) {
-    if (session_->session_decides_what_to_write()) {
-      session_->SetTransmissionType(NOT_RETRANSMISSION);
-    }
+    session_->SetTransmissionType(NOT_RETRANSMISSION);
     QuicFrame frame_to_send =
         control_frames_.at(least_unsent_ - least_unacked_);
     QuicFrame copy = CopyRetransmittableControlFrame(frame_to_send);

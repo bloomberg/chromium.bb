@@ -214,6 +214,11 @@ class FuzzerOptions {
     return options_;
   }
 
+  // See spvFuzzerOptionsEnableReplayValidation.
+  void enable_replay_validation() {
+    spvFuzzerOptionsEnableReplayValidation(options_);
+  }
+
   // See spvFuzzerOptionsSetRandomSeed.
   void set_random_seed(uint32_t seed) {
     spvFuzzerOptionsSetRandomSeed(options_, seed);
@@ -222,6 +227,11 @@ class FuzzerOptions {
   // See spvFuzzerOptionsSetShrinkerStepLimit.
   void set_shrinker_step_limit(uint32_t shrinker_step_limit) {
     spvFuzzerOptionsSetShrinkerStepLimit(options_, shrinker_step_limit);
+  }
+
+  // See spvFuzzerOptionsEnableFuzzerPassValidation.
+  void enable_fuzzer_pass_validation() {
+    spvFuzzerOptionsEnableFuzzerPassValidation(options_);
   }
 
  private:

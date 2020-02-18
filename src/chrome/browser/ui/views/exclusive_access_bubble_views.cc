@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/subtle_notification_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -145,7 +146,7 @@ void ExclusiveAccessBubbleViews::HideImmediately() {
 
   RunHideCallbackIfNeeded(ExclusiveAccessBubbleHideReason::kInterrupted);
 
-  animation_->SetSlideDuration(kQuickSlideOutDurationMs);
+  animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
   animation_->Hide();
 }
 
@@ -263,14 +264,14 @@ void ExclusiveAccessBubbleViews::Hide() {
   DCHECK(!IsHideTimeoutRunning());
   RunHideCallbackIfNeeded(ExclusiveAccessBubbleHideReason::kTimeout);
 
-  animation_->SetSlideDuration(kSlideOutDurationMs);
+  animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(700));
   animation_->Hide();
 }
 
 void ExclusiveAccessBubbleViews::Show() {
   if (animation_->IsShowing())
     return;
-  animation_->SetSlideDuration(kSlideInDurationMs);
+  animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(350));
   animation_->Show();
 }
 

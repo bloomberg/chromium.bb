@@ -153,7 +153,7 @@ InterfaceEndpointClient::InterfaceEndpointClient(
     : expect_sync_requests_(expect_sync_requests),
       handle_(std::move(handle)),
       incoming_receiver_(receiver),
-      filters_(&thunk_),
+      dispatcher_(&thunk_),
       task_runner_(std::move(runner)),
       control_message_handler_(this, interface_version),
       interface_name_(interface_name) {
@@ -162,10 +162,10 @@ InterfaceEndpointClient::InterfaceEndpointClient(
   // TODO(yzshen): the way to use validator (or message filter in general)
   // directly is a little awkward.
   if (payload_validator)
-    filters_.Append(std::move(payload_validator));
+    dispatcher_.SetValidator(std::move(payload_validator));
 
   if (handle_.pending_association()) {
-    handle_.SetAssociationEventHandler(base::Bind(
+    handle_.SetAssociationEventHandler(base::BindOnce(
         &InterfaceEndpointClient::OnAssociationEvent, base::Unretained(this)));
   } else {
     InitControllerIfNecessary();
@@ -202,9 +202,8 @@ ScopedInterfaceEndpointHandle InterfaceEndpointClient::PassHandle() {
   return std::move(handle_);
 }
 
-void InterfaceEndpointClient::AddFilter(
-    std::unique_ptr<MessageReceiver> filter) {
-  filters_.Append(std::move(filter));
+void InterfaceEndpointClient::SetFilter(std::unique_ptr<MessageFilter> filter) {
+  dispatcher_.SetFilter(std::move(filter));
 }
 
 void InterfaceEndpointClient::RaiseError() {
@@ -320,7 +319,7 @@ bool InterfaceEndpointClient::SendMessageWithResponder(
   if (!is_control_message && idle_handler_)
     ++num_unacked_messages_;
 
-  if (!is_sync) {
+  if (!is_sync || force_outgoing_messages_async_) {
     async_responders_[request_id] = std::move(responder);
     return true;
   }
@@ -354,7 +353,7 @@ bool InterfaceEndpointClient::SendMessageWithResponder(
 
 bool InterfaceEndpointClient::HandleIncomingMessage(Message* message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return filters_.Accept(message);
+  return dispatcher_.Accept(message);
 }
 
 void InterfaceEndpointClient::NotifyError(
@@ -386,8 +385,8 @@ void InterfaceEndpointClient::NotifyError(
 }
 
 void InterfaceEndpointClient::QueryVersion(
-    const base::Callback<void(uint32_t)>& callback) {
-  control_message_proxy_.QueryVersion(callback);
+    base::OnceCallback<void(uint32_t)> callback) {
+  control_message_proxy_.QueryVersion(std::move(callback));
 }
 
 void InterfaceEndpointClient::RequireVersion(uint32_t version) {
@@ -532,7 +531,8 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
   } else if (message->has_flag(Message::kFlagIsResponse)) {
     uint64_t request_id = message->request_id();
 
-    if (message->has_flag(Message::kFlagIsSync)) {
+    if (message->has_flag(Message::kFlagIsSync) &&
+        !force_outgoing_messages_async_) {
       auto it = sync_responses_.find(request_id);
       if (it == sync_responses_.end())
         return false;

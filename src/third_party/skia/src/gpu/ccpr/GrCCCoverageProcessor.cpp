@@ -10,6 +10,7 @@
 #include "src/core/SkMakeUnique.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsRenderPass.h"
+#include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/ccpr/GrCCConicShader.h"
 #include "src/gpu/ccpr/GrCCCubicShader.h"
 #include "src/gpu/ccpr/GrCCQuadraticShader.h"
@@ -201,5 +202,18 @@ void GrCCCoverageProcessor::draw(
     GrPipeline::DynamicStateArrays dynamicStateArrays;
     dynamicStateArrays.fScissorRects = scissorRects;
     GrOpsRenderPass* renderPass = flushState->opsRenderPass();
-    renderPass->draw(*this, pipeline, nullptr, &dynamicStateArrays, meshes, meshCount, drawBounds);
+
+    GrPrimitiveType primitiveType = this->primType();
+
+    GrProgramInfo programInfo(flushState->proxy()->numSamples(),
+                              flushState->proxy()->numStencilSamples(),
+                              flushState->proxy()->backendFormat(),
+                              flushState->view()->origin(),
+                              &pipeline,
+                              this,
+                              nullptr,
+                              &dynamicStateArrays, 0, primitiveType);
+
+
+    renderPass->draw(programInfo, meshes, meshCount, drawBounds);
 }

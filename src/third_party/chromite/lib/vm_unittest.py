@@ -37,6 +37,12 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     self._vm.image_path = self.TempFilePath('chromiumos_qemu_image.bin')
     osutils.Touch(self._vm.image_path)
 
+    self.nested_kvm_file = self.TempFilePath('kvm_intel_nested')
+    osutils.WriteFile(self.nested_kvm_file, 'N')
+    # Make the glob match the path we just created for nested_kvm_file.
+    self._vm.NESTED_KVM_GLOB = os.path.join(
+        os.path.dirname(self.nested_kvm_file), 'kvm_*_nested')
+
     # Satisfy QEMU version check.
     version_str = ('QEMU emulator version 2.6.0, Copyright (c) '
                    '2003-2008 Fabrice Bellard')
@@ -95,6 +101,14 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     ])
     self.assertCommandContains(['-enable-kvm'])
 
+  def testStartWithVMX(self):
+    """Verify vmx is enabled if the host supports nested virtualizaton."""
+    osutils.WriteFile(self.nested_kvm_file, '1')
+    self._vm.Start()
+    self.assertCommandContains([
+        '-cpu', 'SandyBridge,-invpcid,-tsc-deadline,check,vmx=on',
+    ])
+
   def testStop(self):
     pid = '12345'
     self.assertEqual(self._vm.pidfile, self.TempVMPath('kvm.pid'))
@@ -117,15 +131,15 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
   def testSDKVMImagePath(self):
     """Verify vm.VM picks up the downloaded VM in the SDK."""
     self._vm.image_path = None
-    cache_dir = cros_test_lib.FakeSDKCache(
+    vm_image_dir = cros_test_lib.FakeSDKCache(
         self._vm.cache_dir).CreateCacheReference(self._vm.board,
                                                  constants.VM_IMAGE_TAR)
-    vm_cache_path = os.path.join(cache_dir, constants.VM_IMAGE_BIN)
-    osutils.Touch(vm_cache_path, makedirs=True)
+    vm_image_path = os.path.join(vm_image_dir, constants.VM_IMAGE_BIN)
+    osutils.Touch(vm_image_path, makedirs=True)
     self._vm.Start()
     expected_vm_image_path = os.path.join(
         self._vm.cache_dir,
-        'chrome-sdk/tarballs/%s+12225.0.0+chromiumos_qemu_image.tar.xz/'
+        'chrome-sdk/symlinks/%s+12225.0.0+chromiumos_qemu_image.tar.xz/'
         'chromiumos_qemu_image.bin' % self._vm.board)
     self.assertTrue(self.FindPathInArgs(self.rc.call_args_list,
                                         expected_vm_image_path))
@@ -205,9 +219,9 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
         self._vm.qemu_img_path, 'create', '-f', 'qcow2', '-o',
         'backing_file=%s' % initial_img_path, os.path.join(self._vm.vm_dir,
                                                            'qcow2.img')])
-    self.assertEquals(self._vm.image_path,
-                      os.path.join(self._vm.vm_dir, 'qcow2.img'))
-    self.assertEquals(self._vm.image_format, 'qcow2')
+    self.assertEqual(self._vm.image_path,
+                     os.path.join(self._vm.vm_dir, 'qcow2.img'))
+    self.assertEqual(self._vm.image_format, 'qcow2')
 
   @mock.patch('os.path.isfile', return_value=False)
   @mock.patch('chromite.lib.osutils.Which', return_value=None)
@@ -267,7 +281,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
                    '2003-2008 Fabrice Bellard')
     self.rc.AddCmdResult(partial_mock.In('--version'), output=version_str)
     self._vm._SetQemuPath()
-    self.assertEquals('2.8.0', self._vm.QemuVersion())
+    self.assertEqual('2.8.0', self._vm.QemuVersion())
     self.assertCommandContains([self._vm.qemu_path, '--version'])
 
   def testCheckQemuError(self):
@@ -372,7 +386,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     sock.close()
     with cros_test_lib.LoggingCapturer(log_level=logging.INFO) as logger:
       self._vm._WaitForSSHPort()
-    self.assertEquals(logger.messages, '')
+    self.assertEqual(logger.messages, '')
 
   @mock.patch('chromite.lib.remote_access.RemoteDevice.GetRunningPids',
               return_value=[])

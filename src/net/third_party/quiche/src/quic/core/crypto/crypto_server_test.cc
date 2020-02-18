@@ -7,6 +7,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "third_party/boringssl/src/include/openssl/sha.h"
@@ -21,9 +22,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_socket_address_coder.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
@@ -33,6 +32,7 @@
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_crypto_server_config_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
 
 namespace quic {
 namespace test {
@@ -68,6 +68,13 @@ struct TestParams {
   // Versions supported by client and server.
   ParsedQuicVersionVector supported_versions;
 };
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const TestParams& p) {
+  std::string rv = ParsedQuicVersionVectorToString(p.supported_versions);
+  std::replace(rv.begin(), rv.end(), ',', '_');
+  return rv;
+}
 
 // Constructs various test permutations.
 std::vector<TestParams> GetTestParams() {
@@ -118,7 +125,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
         config_.GenerateConfig(rand_, &clock_, config_options_);
     primary_config.set_primary_time(clock_.WallNow().ToUNIXSeconds());
     std::unique_ptr<CryptoHandshakeMessage> msg(
-        config_.AddConfig(std::move(primary_config), clock_.WallNow()));
+        config_.AddConfig(primary_config, clock_.WallNow()));
 
     QuicStringPiece orbit;
     CHECK(msg->GetStringPiece(kORBT, &orbit));
@@ -218,7 +225,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
     config_.ValidateClientHello(
         message, client_address_.host(), server_address,
         supported_versions_.front().transport_version, &clock_, signed_config_,
-        QuicMakeUnique<ValidateCallback>(this, true, "", &called));
+        std::make_unique<ValidateCallback>(this, true, "", &called));
     EXPECT_TRUE(called);
   }
 
@@ -236,7 +243,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
     config_.ValidateClientHello(
         message, client_address_.host(), server_address,
         supported_versions_.front().transport_version, &clock_, signed_config_,
-        QuicMakeUnique<ValidateCallback>(this, false, error_substr, called));
+        std::make_unique<ValidateCallback>(this, false, error_substr, called));
   }
 
   class ProcessCallback : public ProcessClientHelloResultCallback {
@@ -297,8 +304,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
         supported_versions_.front(), supported_versions_, &clock_, rand_,
         &compressed_certs_cache_, params_, signed_config_,
         /*total_framing_overhead=*/50, chlo_packet_size_,
-        QuicMakeUnique<ProcessCallback>(result, should_succeed, error_substr,
-                                        &called, &out_));
+        std::make_unique<ProcessCallback>(result, should_succeed, error_substr,
+                                          &called, &out_));
     EXPECT_TRUE(called);
   }
 
@@ -363,7 +370,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
 
 INSTANTIATE_TEST_SUITE_P(CryptoServerTests,
                          CryptoServerTest,
-                         ::testing::ValuesIn(GetTestParams()));
+                         ::testing::ValuesIn(GetTestParams()),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(CryptoServerTest, BadSNI) {
   // clang-format off

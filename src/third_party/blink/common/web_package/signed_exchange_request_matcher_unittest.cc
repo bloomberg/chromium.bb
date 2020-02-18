@@ -17,110 +17,117 @@ TEST(SignedExchangeRequestMatcherTest, CacheBehavior) {
   const struct TestCase {
     const char* name;
     std::map<std::string, std::string> req_headers;
-    http_structured_header::ListOfLists variants;
+    std::vector<std::pair<std::string, std::vector<std::string>>> variants;
     std::vector<std::vector<std::string>> expected;
   } cases[] = {
       // Accept
       {"vanilla content-type",
        {{"accept", "text/html"}},
-       {{"Accept", "text/html"}},
+       {{"Accept", {"text/html"}}},
        {{"text/html"}}},
       {"client supports two content-types",
        {{"accept", "text/html, image/jpeg"}},
-       {{"Accept", "text/html"}},
+       {{"Accept", {"text/html"}}},
        {{"text/html"}}},
       {"format miss",
        {{"accept", "image/jpeg"}},
-       {{"Accept", "text/html"}},
+       {{"Accept", {"text/html"}}},
        {{"text/html"}}},
-      {"no format preference", {}, {{"Accept", "text/html"}}, {{"text/html"}}},
-      {"no available format", {{"accept", "text/html"}}, {{"Accept"}}, {{}}},
+      {"no format preference",
+       {},
+       {{"Accept", {"text/html"}}},
+       {{"text/html"}}},
+      {"no available format",
+       {{"accept", "text/html"}},
+       {{"Accept", {}}},
+       {{}}},
       {"accept all types",
        {{"accept", "*/*"}},
-       {{"Accept", "text/html", "image/jpeg"}},
+       {{"Accept", {"text/html", "image/jpeg"}}},
        {{"text/html", "image/jpeg"}}},
       {"accept all subtypes",
        {{"accept", "image/*"}},
-       {{"Accept", "text/html", "image/jpeg"}},
+       {{"Accept", {"text/html", "image/jpeg"}}},
        {{"image/jpeg"}}},
       {"type params match",
        {{"accept", "text/html;param=bar"}},
-       {{"Accept", "text/html;param=foo", "text/html;param=bar"}},
+       {{"Accept", {"text/html;param=foo", "text/html;param=bar"}}},
        {{"text/html;param=bar"}}},
       {"type with q value",
        {{"accept", "text/html;q=0.8;param=foo"}},
-       {{"Accept", "image/jpeg", "text/html;param=foo"}},
+       {{"Accept", {"image/jpeg", "text/html;param=foo"}}},
        {{"text/html;param=foo"}}},
       {"type with zero q value",
        {{"accept", "text/html;q=0.0, image/jpeg"}},
-       {{"Accept", "text/html", "image/jpeg"}},
+       {{"Accept", {"text/html", "image/jpeg"}}},
        {{"image/jpeg"}}},
       {"type with invalid q value",
        {{"accept", "text/html;q=999, image/jpeg"}},
-       {{"Accept", "text/html", "image/jpeg"}},
+       {{"Accept", {"text/html", "image/jpeg"}}},
        {{"text/html", "image/jpeg"}}},
       // Accept-Encoding
       {"vanilla encoding",
        {{"accept-encoding", "gzip"}},
-       {{"Accept-Encoding", "gzip"}},
+       {{"Accept-Encoding", {"gzip"}}},
        {{"gzip", "identity"}}},
       {"client supports two encodings",
        {{"accept-encoding", "gzip, br"}},
-       {{"Accept-Encoding", "gzip"}},
+       {{"Accept-Encoding", {"gzip"}}},
        {{"gzip", "identity"}}},
       {"two stored, two preferences",
        {{"accept-encoding", "gzip, br"}},
-       {{"Accept-Encoding", "gzip", "br"}},
+       {{"Accept-Encoding", {"gzip", "br"}}},
        {{"gzip", "br", "identity"}}},
       {"no encoding preference",
        {},
-       {{"Accept-Encoding", "gzip"}},
+       {{"Accept-Encoding", {"gzip"}}},
        {{"identity"}}},
       // Accept-Language
       {"vanilla language",
        {{"accept-language", "en"}},
-       {{"Accept-Language", "en"}},
+       {{"Accept-Language", {"en"}}},
        {{"en"}}},
       {"multiple languages",
        {{"accept-language", "en, JA"}},
-       {{"Accept-Language", "en", "fr", "ja"}},
+       {{"Accept-Language", {"en", "fr", "ja"}}},
        {{"en", "ja"}}},
       {"no language preference",
        {},
-       {{"Accept-Language", "en", "ja"}},
+       {{"Accept-Language", {"en", "ja"}}},
        {{"en"}}},
       {"no available language",
        {{"accept-language", "en"}},
-       {{"Accept-Language"}},
+       {{"Accept-Language", {}}},
        {{}}},
       {"accept all languages",
        {{"accept-language", "*"}},
-       {{"Accept-Language", "en", "ja"}},
+       {{"Accept-Language", {"en", "ja"}}},
        {{"en", "ja"}}},
       {"language subtag",
        {{"accept-language", "en"}},
-       {{"Accept-Language", "en-US", "enq"}},
+       {{"Accept-Language", {"en-US", "enq"}}},
        {{"en-US"}}},
       {"language with q values",
        {{"accept-language", "ja, en;q=0.8"}},
-       {{"Accept-Language", "fr", "en", "ja"}},
+       {{"Accept-Language", {"fr", "en", "ja"}}},
        {{"ja", "en"}}},
       {"language with zero q value",
        {{"accept-language", "ja, en;q=0"}},
-       {{"Accept-Language", "fr", "en"}},
+       {{"Accept-Language", {"fr", "en"}}},
        {{"fr"}}},
       // Multiple axis
       {"format and language matches",
        {{"accept", "text/html"}, {"accept-language", "en"}},
-       {{"Accept", "text/html"}, {"Accept-Language", "en", "fr"}},
+       {{"Accept", {"text/html"}}, {"Accept-Language", {"en", "fr"}}},
        {{"text/html"}, {"en"}}},
       {"accept anything",
        {{"accept", "*/*"}, {"accept-language", "*"}},
-       {{"Accept", "text/html", "image/jpeg"}, {"Accept-Language", "en", "fr"}},
+       {{"Accept", {"text/html", "image/jpeg"}},
+        {"Accept-Language", {"en", "fr"}}},
        {{"text/html", "image/jpeg"}, {"en", "fr"}}},
       {"unknown field name",
        {{"accept-language", "en"}, {"unknown", "foo"}},
-       {{"Accept-Language", "en"}, {"Unknown", "foo"}},
+       {{"Accept-Language", {"en"}}, {"Unknown", {"foo"}}},
        {{"en"}}},
   };
   for (const auto& c : cases) {
@@ -301,4 +308,49 @@ TEST(SignedExchangeRequestMatcherTest, FindBestMatchingVariantKey) {
     }
   }
 }
+
+TEST(SignedExchangeRequestMatcherTest, FindBestMatchingIndex) {
+  const struct TestCase {
+    const char* name;
+    std::string variants;
+    std::map<std::string, std::string> req_headers;
+    base::Optional<size_t> expected_result;
+  } cases[] = {
+      {"matching value",
+       "Accept;image/png;image/jpg",
+       {{"accept", "image/webp,image/jpg"}},
+       1 /* image/jpg */},
+      {"default value",
+       "Accept;image/xx;image/yy",
+       {{"accept", "image/webp,image/jpg"}},
+       0 /* image/xx */},
+      {"content type and language",
+       "Accept;image/png;image/jpg, Accept-Language;en;fr;ja",
+       {{"accept", "image/jpg"}, {"accept-language", "fr"}},
+       4 /* image/jpg, fr */},
+      {"language and content type",
+       "Accept-Language;en;fr;ja, Accept;image/png;image/jpg",
+       {{"accept", "image/jpg"}, {"accept-language", "fr"}},
+       3 /* fr, image/jpg */},
+      {"ill-formed variants",
+       "Accept",
+       {{"accept", "image/webp,image/jpg"}},
+       base::nullopt},
+      {"unknown field name",
+       "Unknown;foo;bar",
+       {{"Unknown", "foo"}},
+       base::nullopt},
+  };
+
+  for (const auto& c : cases) {
+    net::HttpRequestHeaders request_headers;
+    for (auto it = c.req_headers.begin(); it != c.req_headers.end(); ++it)
+      request_headers.SetHeader(it->first, it->second);
+    base::Optional<size_t> result =
+        SignedExchangeRequestMatcher::FindBestMatchingIndex(request_headers,
+                                                            c.variants);
+    EXPECT_EQ(c.expected_result, result) << c.name;
+  }
+}
+
 }  // namespace blink

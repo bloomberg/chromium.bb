@@ -10,11 +10,12 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.LocaleList;
-import android.support.annotation.IntDef;
 import android.view.textclassifier.TextClassification;
 import android.view.textclassifier.TextClassificationManager;
 import android.view.textclassifier.TextClassifier;
 import android.view.textclassifier.TextSelection;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.task.AsyncTask;
 import org.chromium.content_public.browser.SelectionClient;
@@ -72,8 +73,16 @@ public class SmartSelectionProvider {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.O)
     public void setTextClassifier(TextClassifier textClassifier) {
         mTextClassifier = textClassifier;
+
+        Context context = mWindowAndroid.getContext().get();
+        if (context == null) {
+            return;
+        }
+        ((TextClassificationManager) context.getSystemService(Context.TEXT_CLASSIFICATION_SERVICE))
+                .setTextClassifier(textClassifier);
     }
 
     // TODO(wnwen): Remove this suppression once the constant is added to lint.

@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
 import android.view.ContextThemeWrapper;
 import android.view.InflateException;
 import android.view.LayoutInflater;
@@ -17,18 +16,21 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.util.UrlConstants;
-import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
@@ -269,7 +271,7 @@ public class WarmupManager {
      */
     public static void startPreconnectPredictorInitialization(Profile profile) {
         ThreadUtils.assertOnUiThread();
-        nativeStartPreconnectPredictorInitialization(profile);
+        WarmupManagerJni.get().startPreconnectPredictorInitialization(profile);
     }
 
     /** Asynchronously preconnects to a given URL if the data reduction proxy is not in use.
@@ -300,7 +302,7 @@ public class WarmupManager {
             // one will win.
             mPendingPreconnectWithProfile.put(url, profile);
         } else {
-            nativePreconnectUrlAndSubresources(profile, url);
+            WarmupManagerJni.get().preconnectUrlAndSubresources(profile, url);
         }
     }
 
@@ -322,7 +324,7 @@ public class WarmupManager {
             // Spare WebContents should not be used with spare RenderProcessHosts, but if one
             // has been created, destroy it in order not to consume too many processes.
             destroySpareWebContents();
-            nativeWarmupSpareRenderer(profile);
+            WarmupManagerJni.get().warmupSpareRenderer(profile);
         }
     }
 
@@ -400,7 +402,10 @@ public class WarmupManager {
                 WEBCONTENTS_STATUS_HISTOGRAM, status, WebContentsStatus.NUM_ENTRIES);
     }
 
-    private static native void nativeStartPreconnectPredictorInitialization(Profile profile);
-    private static native void nativePreconnectUrlAndSubresources(Profile profile, String url);
-    private static native void nativeWarmupSpareRenderer(Profile profile);
+    @NativeMethods
+    interface Natives {
+        void startPreconnectPredictorInitialization(Profile profile);
+        void preconnectUrlAndSubresources(Profile profile, String url);
+        void warmupSpareRenderer(Profile profile);
+    }
 }

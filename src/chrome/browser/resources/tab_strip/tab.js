@@ -2,12 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {getFavicon, getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
+import './strings.m.js';
 
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {getFavicon} from 'chrome://resources/js/icon.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {isRTL} from 'chrome://resources/js/util.m.js';
+
+import {AlertIndicatorsElement} from './alert_indicators.js';
 import {CustomElement} from './custom_element.js';
-import {TabsApiProxy} from './tabs_api_proxy.js';
+import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
+import {tabStripOptions} from './tab_strip_options.js';
+import {TabSwiper} from './tab_swiper.js';
+import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
 
-export const DEFAULT_ANIMATION_DURATION = 125;
+const DEFAULT_ANIMATION_DURATION = 125;
+
+/**
+ * @param {!TabData} tab
+ * @return {string}
+ */
+function getAccessibleTitle(tab) {
+  const tabTitle = tab.title;
+
+  if (tab.crashed) {
+    return loadTimeData.getStringF('tabCrashed', tabTitle);
+  }
+
+  if (tab.networkState === TabNetworkState.ERROR) {
+    return loadTimeData.getStringF('tabNetworkError', tabTitle);
+  }
+
+  return tabTitle;
+}
+
+/**
+ * TODO(crbug.com/1025390): padding-inline-end cannot be animated yet.
+ * @return {string}
+ */
+function getPaddingInlineEndProperty() {
+  return isRTL() ? 'paddingLeft' : 'paddingRight';
+}
 
 export class TabElement extends CustomElement {
   static get template() {
@@ -17,9 +52,22 @@ export class TabElement extends CustomElement {
   constructor() {
     super();
 
+    this.alertIndicatorsEl_ = /** @type {!AlertIndicatorsElement} */
+        (this.shadowRoot.querySelector('tabstrip-alert-indicators'));
+    // Normally, custom elements will get upgraded automatically once added to
+    // the DOM, but TabElement may need to update properties on
+    // AlertIndicatorElement before this happens, so upgrade it manually.
+    customElements.upgrade(this.alertIndicatorsEl_);
+
     /** @private {!HTMLElement} */
     this.closeButtonEl_ =
         /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#close'));
+    this.closeButtonEl_.setAttribute(
+        'aria-label', loadTimeData.getString('closeTab'));
+
+    /** @private {!HTMLElement} */
+    this.tabEl_ =
+        /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#tab'));
 
     /** @private {!HTMLElement} */
     this.faviconEl_ =
@@ -34,51 +82,108 @@ export class TabElement extends CustomElement {
     this.thumbnail_ =
         /** @type {!Image} */ (this.shadowRoot.querySelector('#thumbnailImg'));
 
-    /** @private {!Tab} */
+    /** @private {!TabData} */
     this.tab_;
 
     /** @private {!TabsApiProxy} */
     this.tabsApi_ = TabsApiProxy.getInstance();
 
+    /** @private {!TabStripEmbedderProxy} */
+    this.embedderApi_ = TabStripEmbedderProxy.getInstance();
+
     /** @private {!HTMLElement} */
     this.titleTextEl_ = /** @type {!HTMLElement} */ (
         this.shadowRoot.querySelector('#titleText'));
 
-    this.addEventListener('click', this.onClick_.bind(this));
-    this.closeButtonEl_.addEventListener('click', this.onClose_.bind(this));
+    this.tabEl_.addEventListener('click', () => this.onClick_());
+    this.tabEl_.addEventListener('contextmenu', e => this.onContextMenu_(e));
+    this.tabEl_.addEventListener(
+        'keydown', e => this.onKeyDown_(/** @type {!KeyboardEvent} */ (e)));
+    this.closeButtonEl_.addEventListener('click', e => this.onClose_(e));
+    this.addEventListener('swipe', () => this.onSwipe_());
+
+    /** @private @const {!TabSwiper} */
+    this.tabSwiper_ = new TabSwiper(this);
+
+    /** @private {!Function} */
+    this.onTabActivating_ = (tabId) => {};
   }
 
-  /** @return {!Tab} */
+  /** @return {!TabData} */
   get tab() {
     return this.tab_;
   }
 
-  /** @param {!Tab} tab */
+  /** @param {!TabData} tab */
   set tab(tab) {
+    assert(this.tab_ !== tab);
     this.toggleAttribute('active', tab.active);
+    this.tabEl_.setAttribute('aria-selected', tab.active.toString());
+    this.toggleAttribute('hide-icon_', !tab.showIcon);
+    this.toggleAttribute(
+        'waiting_',
+        !tab.shouldHideThrobber &&
+            tab.networkState === TabNetworkState.WAITING);
+    this.toggleAttribute(
+        'loading_',
+        !tab.shouldHideThrobber &&
+            tab.networkState === TabNetworkState.LOADING);
     this.toggleAttribute('pinned', tab.pinned);
+    this.toggleAttribute('blocked_', tab.blocked);
+    this.setAttribute('draggable', true);
+    this.toggleAttribute('crashed_', tab.crashed);
 
-    if (!this.tab_ || this.tab_.title !== tab.title) {
+    if (tab.title) {
       this.titleTextEl_.textContent = tab.title;
+    } else if (
+        !tab.shouldHideThrobber &&
+        (tab.networkState === TabNetworkState.WAITING ||
+         tab.networkState === TabNetworkState.LOADING)) {
+      this.titleTextEl_.textContent = loadTimeData.getString('loadingTab');
+    } else {
+      this.titleTextEl_.textContent = loadTimeData.getString('defaultTabTitle');
     }
+    this.titleTextEl_.setAttribute('aria-label', getAccessibleTitle(tab));
 
-    if (tab.favIconUrl &&
-        (!this.tab_ || this.tab_.favIconUrl !== tab.favIconUrl)) {
-      this.faviconEl_.style.backgroundImage = getFavicon(tab.favIconUrl);
-    } else if (!this.tab_ || this.tab_.url !== tab.url) {
-      this.faviconEl_.style.backgroundImage =
-          getFaviconForPageURL(tab.url, false);
+    if (tab.networkState === TabNetworkState.WAITING ||
+        (tab.networkState === TabNetworkState.LOADING &&
+         tab.isDefaultFavicon)) {
+      this.faviconEl_.style.backgroundImage = 'none';
+    } else if (tab.favIconUrl) {
+      this.faviconEl_.style.backgroundImage = `url(${tab.favIconUrl})`;
+    } else {
+      this.faviconEl_.style.backgroundImage = getFavicon('');
     }
 
     // Expose the ID to an attribute to allow easy querySelector use
     this.setAttribute('data-tab-id', tab.id);
 
-    if (!this.tab_ || this.tab_.id !== tab.id) {
-      // Request thumbnail updates
-      chrome.send('addTrackedTab', [tab.id]);
+    this.alertIndicatorsEl_.updateAlertStates(tab.alertStates)
+        .then((alertIndicatorsCount) => {
+          this.toggleAttribute('has-alert-states_', alertIndicatorsCount > 0);
+        });
+
+    if (!this.tab_ || (this.tab_.pinned !== tab.pinned && !tab.pinned)) {
+      this.tabSwiper_.startObserving();
+    } else if (this.tab_.pinned !== tab.pinned && tab.pinned) {
+      this.tabSwiper_.stopObserving();
     }
 
     this.tab_ = Object.freeze(tab);
+  }
+
+  /** @param {!Function} callback */
+  set onTabActivating(callback) {
+    this.onTabActivating_ = callback;
+  }
+
+  focus() {
+    this.tabEl_.focus();
+  }
+
+  /** @return {!HTMLElement} */
+  getDragImage() {
+    return this.tabEl_;
   }
 
   /**
@@ -90,11 +195,33 @@ export class TabElement extends CustomElement {
 
   /** @private */
   onClick_() {
+    if (!this.tab_ || this.tabSwiper_.wasSwiping()) {
+      return;
+    }
+
+    const tabId = this.tab_.id;
+    this.onTabActivating_(tabId);
+    this.tabsApi_.activateTab(tabId);
+
+    if (tabStripOptions.autoCloseEnabled) {
+      this.embedderApi_.closeContainer();
+    }
+  }
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onContextMenu_(event) {
+    event.preventDefault();
+
     if (!this.tab_) {
       return;
     }
 
-    this.tabsApi_.activateTab(this.tab_.id);
+    this.embedderApi_.showTabContextMenu(
+        this.tab_.id, event.clientX, event.clientY);
+    event.stopPropagation();
   }
 
   /**
@@ -110,21 +237,62 @@ export class TabElement extends CustomElement {
     this.tabsApi_.closeTab(this.tab_.id);
   }
 
+  /** @private */
+  onSwipe_() {
+    // Prevent slideOut animation from playing.
+    this.remove();
+    this.tabsApi_.closeTab(this.tab_.id);
+  }
+
+  /**
+   * @param {!KeyboardEvent} event
+   * @private
+   */
+  onKeyDown_(event) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      this.onClick_();
+    }
+  }
+
+  /**
+   * @param {boolean} dragging
+   */
+  setDragging(dragging) {
+    this.toggleAttribute('dragging_', dragging);
+  }
+
   /**
    * @return {!Promise}
    */
   slideIn() {
+    const paddingInlineEnd = getPaddingInlineEndProperty();
+
+    // If this TabElement is the last tab, there needs to be enough space for
+    // the view to scroll to it. Therefore, immediately take up all the space
+    // it needs to and only animate the scale.
+    const isLastChild = this.nextElementSibling === null;
+
+    const startState = {
+      maxWidth: isLastChild ? 'var(--tabstrip-tab-width)' : 0,
+      transform: `scale(0)`,
+    };
+    startState[paddingInlineEnd] =
+        isLastChild ? 'var(--tabstrip-tab-spacing)' : 0;
+
+    const finishState = {
+      maxWidth: `var(--tabstrip-tab-width)`,
+      transform: `scale(1)`,
+    };
+    finishState[paddingInlineEnd] = 'var(--tabstrip-tab-spacing)';
+
     return new Promise(resolve => {
-      const animation = this.animate(
-          [
-            {maxWidth: 0, opacity: 0},
-            {maxWidth: '280px', opacity: 1},
-          ],
-          {
-            duration: DEFAULT_ANIMATION_DURATION,
-            fill: 'forwards',
-          });
-      animation.onfinish = resolve;
+      const animation = this.animate([startState, finishState], {
+        duration: 300,
+        easing: 'cubic-bezier(.4, 0, 0, 1)',
+      });
+      animation.onfinish = () => {
+        resolve();
+      };
     });
   }
 
@@ -132,19 +300,70 @@ export class TabElement extends CustomElement {
    * @return {!Promise}
    */
   slideOut() {
+    if (!this.embedderApi_.isVisible() || this.tab_.pinned) {
+      // There is no point in animating if the tab strip is hidden.
+      this.remove();
+      return Promise.resolve();
+    }
+
     return new Promise(resolve => {
-      const animation = this.animate(
-          [
-            {maxWidth: '280px', opacity: 1},
-            {maxWidth: 0, opacity: 0},
-          ],
-          {
-            duration: DEFAULT_ANIMATION_DURATION,
-            fill: 'forwards',
-          });
-      animation.onfinish = () => {
+      const finishCallback = () => {
         this.remove();
         resolve();
+      };
+
+      const translateAnimation = this.animate(
+          {
+            transform: ['translateY(0)', 'translateY(-100%)'],
+          },
+          {
+            duration: 150,
+            easing: 'cubic-bezier(.4, 0, 1, 1)',
+            fill: 'forwards',
+          });
+      const opacityAnimation = this.animate(
+          {
+            opacity: [1, 0],
+          },
+          {
+            delay: 97.5,
+            duration: 50,
+            fill: 'forwards',
+          });
+
+      const widthAnimationKeyframes = {
+        maxWidth: ['var(--tabstrip-tab-width)', 0],
+      };
+      widthAnimationKeyframes[getPaddingInlineEndProperty()] =
+          ['var(--tabstrip-tab-spacing)', 0];
+      const widthAnimation = this.animate(widthAnimationKeyframes, {
+        delay: 97.5,
+        duration: 300,
+        easing: 'cubic-bezier(.4, 0, 0, 1)',
+        fill: 'forwards',
+      });
+
+      const visibilityChangeListener = () => {
+        if (!this.embedderApi_.isVisible()) {
+          // If a tab strip becomes hidden during the animation, the onfinish
+          // event will not get fired until the tab strip becomes visible again.
+          // Therefore, when the tab strip becomes hidden, immediately call the
+          // finish callback.
+          translateAnimation.cancel();
+          opacityAnimation.cancel();
+          widthAnimation.cancel();
+          finishCallback();
+        }
+      };
+
+      document.addEventListener(
+          'visibilitychange', visibilityChangeListener, {once: true});
+      // The onfinish handler is put on the width animation, as it will end
+      // last.
+      widthAnimation.onfinish = () => {
+        document.removeEventListener(
+            'visibilitychange', visibilityChangeListener);
+        finishCallback();
       };
     });
   }

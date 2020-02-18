@@ -53,8 +53,9 @@ void SVGGraphicsElement::Trace(blink::Visitor* visitor) {
 }
 
 static bool IsViewportElement(const Element& element) {
-  return (IsSVGSVGElement(element) || IsSVGSymbolElement(element) ||
-          IsSVGForeignObjectElement(element) || IsSVGImageElement(element));
+  return (IsA<SVGSVGElement>(element) || IsA<SVGSymbolElement>(element) ||
+          IsA<SVGForeignObjectElement>(element) ||
+          IsA<SVGImageElement>(element));
 }
 
 AffineTransform SVGGraphicsElement::ComputeCTM(

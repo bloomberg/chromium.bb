@@ -50,6 +50,8 @@ struct GCMNetworkChannelDiagnostic {
 
 // GCMNetworkChannel is an implementation of SyncNetworkChannel that routes
 // messages through GCMService.
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class INVALIDATION_EXPORT GCMNetworkChannel
     : public SyncNetworkChannel,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {
@@ -67,7 +69,7 @@ class INVALIDATION_EXPORT GCMNetworkChannel
       invalidation::MessageCallback* incoming_receiver) override;
 
   // SyncNetworkChannel implementation.
-  void UpdateCredentials(const std::string& email,
+  void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& token) override;
   int GetInvalidationClientType() override;
   void RequestDetailedStatus(

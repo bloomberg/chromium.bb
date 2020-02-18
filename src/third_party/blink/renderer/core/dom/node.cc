@@ -26,6 +26,8 @@
 
 #include "third_party/blink/renderer/core/dom/node.h"
 
+#include <algorithm>
+
 #include "third_party/blink/renderer/bindings/core/v8/node_or_string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -49,11 +51,13 @@
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_node_data.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/get_root_node_options.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -87,6 +91,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
@@ -101,7 +106,6 @@
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_customization_callbacks.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state_callback.h"
@@ -116,6 +120,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -159,8 +164,6 @@ void AppendUnsafe(StringBuilder& builder, const String& off_thread_string) {
 }
 
 }  // namespace
-
-using namespace html_names;
 
 struct SameSizeAsNode : EventTarget {
   uint32_t node_flags_;
@@ -374,10 +377,6 @@ Node* Node::ToNode() {
   return this;
 }
 
-int Node::tabIndex() const {
-  return 0;
-}
-
 String Node::nodeValue() const {
   return String();
 }
@@ -546,12 +545,38 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
   ScrollableArea* scrollable_area =
       box_to_scroll->EnclosingBox()->GetScrollableArea();
 
-  if (!scrollable_area)
+  // TODO(bokan): This is a hack to fix https://crbug.com/977954. If we have a
+  // non-default root scroller, scrolling from one of its siblings or a fixed
+  // element will chain up to the root node without passing through the root
+  // scroller. This should scroll the visual viewport (so we can still pan
+  // while zoomed) but not by using the RootFrameViewport, which would cause
+  // scrolling in the root scroller element. Implementing this on the main
+  // thread is awkward since we assume only Nodes are scrollable but the
+  // VisualViewport isn't a Node. See LTHI::ApplyScroll for the equivalent
+  // behavior in CC.
+  bool also_scroll_visual_viewport = GetDocument().GetFrame() &&
+                                     GetDocument().GetFrame()->IsMainFrame() &&
+                                     box_to_scroll->IsLayoutView();
+  DCHECK(!also_scroll_visual_viewport ||
+         !box_to_scroll->IsGlobalRootScroller());
+
+  if (!scrollable_area) {
+    // The LayoutView should always create a ScrollableArea.
+    DCHECK(!also_scroll_visual_viewport);
     return;
+  }
 
   ScrollResult result = scrollable_area->UserScroll(
       ScrollGranularity(static_cast<int>(scroll_state.deltaGranularity())),
       delta, ScrollableArea::ScrollCallback());
+
+  // Also try scrolling the visual viewport if we're at the end of the scroll
+  // chain.
+  if (!result.DidScroll() && also_scroll_visual_viewport) {
+    result = GetDocument().GetPage()->GetVisualViewport().UserScroll(
+        ScrollGranularity(static_cast<int>(scroll_state.deltaGranularity())),
+        delta, ScrollableArea::ScrollCallback());
+  }
 
   if (!result.DidScroll())
     return;
@@ -594,26 +619,24 @@ void Node::CallDistributeScroll(ScrollState& scroll_state) {
     NativeDistributeScroll(scroll_state);
     return;
   }
-  if (callback->NativeScrollBehavior() !=
-      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+  if (callback->GetNativeScrollBehavior() !=
+      NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
-  if (callback->NativeScrollBehavior() !=
-      WebNativeScrollBehavior::kDisableNativeScroll)
+  if (callback->GetNativeScrollBehavior() !=
+      NativeScrollBehavior::kDisableNativeScroll)
     NativeDistributeScroll(scroll_state);
-  if (callback->NativeScrollBehavior() ==
-      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+  if (callback->GetNativeScrollBehavior() ==
+      NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
 }
 
 void Node::CallApplyScroll(ScrollState& scroll_state) {
   TRACE_EVENT0("input", "Node::CallApplyScroll");
-  // Hits ASSERTs when trying to determine whether we need to scroll on main
-  // or CC. http://crbug.com/625676.
-  DisableCompositingQueryAsserts disabler;
 
   if (!GetDocument().GetPage()) {
     // We should always have a Page if we're scrolling. See
     // crbug.com/689074 for details.
+    NOTREACHED();
     return;
   }
 
@@ -642,14 +665,14 @@ void Node::CallApplyScroll(ScrollState& scroll_state) {
     NativeApplyScroll(scroll_state);
     return;
   }
-  if (callback->NativeScrollBehavior() !=
-      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+  if (callback->GetNativeScrollBehavior() !=
+      NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
-  if (callback->NativeScrollBehavior() !=
-      WebNativeScrollBehavior::kDisableNativeScroll)
+  if (callback->GetNativeScrollBehavior() !=
+      NativeScrollBehavior::kDisableNativeScroll)
     NativeApplyScroll(scroll_state);
-  if (callback->NativeScrollBehavior() ==
-      WebNativeScrollBehavior::kPerformAfterNativeScroll)
+  if (callback->GetNativeScrollBehavior() ==
+      NativeScrollBehavior::kPerformAfterNativeScroll)
     callback->Invoke(&scroll_state);
 }
 
@@ -824,7 +847,7 @@ static Node* ConvertNodesIntoNode(
     Document& document,
     ExceptionState& exception_state) {
   bool needs_check =
-      IsHTMLScriptElement(parent) && document.IsTrustedTypesEnabledForDoc();
+      IsA<HTMLScriptElement>(parent) && document.IsTrustedTypesEnabledForDoc();
 
   if (nodes.size() == 1)
     return NodeOrStringToNode(nodes[0], document, needs_check, exception_state);
@@ -1206,19 +1229,70 @@ void Node::MarkAncestorsWithChildNeedsDistributionRecalc() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
+#if DCHECK_IS_ON()
+namespace {
+class AllowDirtyShadowV0TraversalScope {
+  STACK_ALLOCATED();
+
+ public:
+  explicit AllowDirtyShadowV0TraversalScope(Document& document)
+      : document_(&document),
+        old_value_(document.AllowDirtyShadowV0Traversal()) {
+    document.SetAllowDirtyShadowV0Traversal(true);
+  }
+  ~AllowDirtyShadowV0TraversalScope() {
+    document_->SetAllowDirtyShadowV0Traversal(old_value_);
+  }
+
+ private:
+  Member<Document> document_;
+  bool old_value_;
+};
+}  // namespace
+#define ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(document) \
+  AllowDirtyShadowV0TraversalScope traversal_scope(document)
+#else  // DCHECK_IS_ON()
+#define ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(document)
+#endif  // DCHECK_IS_ON()
+
+bool Node::ShouldSkipMarkingStyleDirty() const {
+  if (GetComputedStyle())
+    return false;
+
+  ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(GetDocument());
+
+  // If we don't have a computed style, and our parent element does not have a
+  // computed style it's not necessary to mark this node for style recalc.
+  if (auto* parent = GetStyleRecalcParent()) {
+    while (parent && !parent->CanParticipateInFlatTree())
+      parent = parent->GetStyleRecalcParent();
+    return !parent || !parent->GetComputedStyle();
+  }
+  if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
+    return false;
+  // If this is the root element, and it does not have a computed style, we
+  // still need to mark it for style recalc since it may change from
+  // display:none. Otherwise, the node is not in the flat tree, and we can
+  // skip marking it dirty.
+  auto* root_element = GetDocument().documentElement();
+  return root_element && root_element != this;
+}
+
 void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
-  ContainerNode* ancestor = ParentOrShadowHostNode();
-  bool parent_dirty = ancestor && ancestor->NeedsStyleRecalc();
+  ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(GetDocument());
+  ContainerNode* style_parent = GetStyleRecalcParent();
+  bool parent_dirty = style_parent && style_parent->IsDirtyForStyleRecalc();
+  ContainerNode* ancestor = style_parent;
   for (; ancestor && !ancestor->ChildNeedsStyleRecalc();
-       ancestor = ancestor->ParentOrShadowHostNode()) {
+       ancestor = ancestor->GetStyleRecalcParent()) {
     if (!ancestor->isConnected())
       return;
     ancestor->SetChildNeedsStyleRecalc();
-    if (ancestor->NeedsStyleRecalc())
+    if (ancestor->IsDirtyForStyleRecalc())
       break;
     // If we reach a locked ancestor, we should abort since the ancestor marking
     // will be done when the lock is committed.
-    if (RuntimeEnabledFeatures::DisplayLockingEnabled()) {
+    if (RuntimeEnabledFeatures::DisplayLockingEnabled(GetExecutionContext())) {
       auto* ancestor_element = DynamicTo<Element>(ancestor);
       if (ancestor_element && ancestor_element->StyleRecalcBlockedByDisplayLock(
                                   DisplayLockLifecycleTarget::kChildren)) {
@@ -1232,15 +1306,32 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   // early return here is a performance optimization.
   if (parent_dirty)
     return;
-
+  // If we are outside the flat tree and FlatTreeStyleRecalc is enabled, we
+  // should not update the recalc root because we should not traverse those
+  // nodes from StyleEngine::RecalcStyle().
+  if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
+    if (const ComputedStyle* current_style = GetComputedStyle()) {
+      if (current_style->IsEnsuredOutsideFlatTree())
+        return;
+    } else {
+      while (style_parent && !style_parent->CanParticipateInFlatTree())
+        style_parent = style_parent->GetStyleRecalcParent();
+      if (style_parent) {
+        if (const auto* parent_style = style_parent->GetComputedStyle()) {
+          if (parent_style->IsEnsuredOutsideFlatTree())
+            return;
+        }
+      }
+    }
+  }
   // If we're in a locked subtree, then we should not update the style recalc
   // roots. These would be updated when we commit the lock. If we have locked
   // display locks somewhere in the document, we iterate up the ancestor chain
   // to check if we're in one such subtree.
-  if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+  if (RuntimeEnabledFeatures::DisplayLockingEnabled(GetExecutionContext()) &&
       GetDocument().LockedDisplayLockCount() > 0) {
     for (auto* ancestor_copy = ancestor; ancestor_copy;
-         ancestor_copy = ancestor_copy->ParentOrShadowHostNode()) {
+         ancestor_copy = ancestor_copy->GetStyleRecalcParent()) {
       auto* ancestor_copy_element = DynamicTo<Element>(ancestor_copy);
       if (ancestor_copy_element &&
           ancestor_copy_element->StyleRecalcBlockedByDisplayLock(
@@ -1254,12 +1345,13 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
-Element* Node::GetReattachParent() const {
+Element* Node::FlatTreeParentForChildDirty() const {
   if (IsPseudoElement())
     return ParentOrShadowHostElement();
   if (IsChildOfV1ShadowHost()) {
-    if (HTMLSlotElement* slot = AssignedSlot())
-      return slot;
+    if (auto* data = GetFlatTreeNodeData())
+      return data->AssignedSlot();
+    return nullptr;
   }
   if (IsInV0ShadowTree() || IsChildOfV0ShadowHost()) {
     if (ShadowRootWhereNodeCanBeDistributedForV0(*this)) {
@@ -1270,6 +1362,12 @@ Element* Node::GetReattachParent() const {
     }
   }
   return ParentOrShadowHostElement();
+}
+
+ContainerNode* Node::GetStyleRecalcParent() const {
+  if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
+    return FlatTreeParentForChildDirty();
+  return ParentOrShadowHostNode();
 }
 
 void Node::MarkAncestorsWithChildNeedsReattachLayoutTree() {
@@ -1306,11 +1404,13 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   // RescheduleSiblingInvalidationsAsDescendants() for WholeSubtreeInvalid(). We
   // should instead mark the shadow host for subtree recalc when we traverse the
   // flat tree (and skip non-slotted host children).
-  DCHECK(IsElementNode() || IsTextNode() || IsShadowRoot());
+  DCHECK(IsElementNode() || IsTextNode() ||
+         (IsShadowRoot() &&
+          !RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()));
 
   if (!InActiveDocument())
     return;
-  if (!IsContainerNode() && !IsTextNode())
+  if (ShouldSkipMarkingStyleDirty())
     return;
 
   TRACE_EVENT_INSTANT1(
@@ -1379,7 +1479,7 @@ bool Node::IsInert() const {
       element = FlatTreeTraversal::ParentElement(*this);
 
     while (element) {
-      if (element->hasAttribute(html_names::kInertAttr))
+      if (element->FastHasAttribute(html_names::kInertAttr))
         return true;
       element = FlatTreeTraversal::ParentElement(*element);
     }
@@ -1418,9 +1518,18 @@ void Node::ClearFlatTreeNodeData() {
     data->Clear();
 }
 
+void Node::ClearFlatTreeNodeDataIfHostChanged(const ContainerNode& parent) {
+  if (FlatTreeNodeData* data = GetFlatTreeNodeData()) {
+    if (data->AssignedSlot() &&
+        data->AssignedSlot()->OwnerShadowHost() != &parent) {
+      data->Clear();
+    }
+  }
+}
+
 bool Node::IsDescendantOf(const Node* other) const {
   // Return true if other is an ancestor of this, otherwise false
-  if (!other || !other->hasChildren() || isConnected() != other->isConnected())
+  if (!other || isConnected() != other->isConnected())
     return false;
   if (other->GetTreeScope() != GetTreeScope())
     return false;
@@ -1553,6 +1662,16 @@ void Node::DetachLayoutTree(bool performing_reattach) {
   if (GetLayoutObject())
     GetLayoutObject()->DestroyAndCleanupAnonymousWrappers();
   SetLayoutObject(nullptr);
+  if (!performing_reattach) {
+    // We are clearing the ComputedStyle for elements, which means we should not
+    // need to recalc style. Also, this way we can detect if we need to remove
+    // this Node as a StyleRecalcRoot if this detach is because the node is
+    // removed from the flat tree. That is necessary because we are not allowed
+    // to have a style recalc root outside the flat tree when traversing the
+    // flat tree for style recalc (see StyleRecalcRoot::RemovedFromFlatTree()).
+    ClearNeedsStyleRecalc();
+    ClearChildNeedsStyleRecalc();
+  }
 }
 
 const ComputedStyle* Node::VirtualEnsureComputedStyle(
@@ -1565,12 +1684,21 @@ const ComputedStyle* Node::VirtualEnsureComputedStyle(
 
 void Node::SetForceReattachLayoutTree() {
   DCHECK(!GetDocument().GetStyleEngine().InRebuildLayoutTree());
+  DCHECK(IsElementNode() || IsTextNode());
   if (GetForceReattachLayoutTree())
     return;
   if (!InActiveDocument())
     return;
-  if (!IsContainerNode() && !IsTextNode())
-    return;
+  if (IsElementNode()) {
+    if (!GetComputedStyle()) {
+      DCHECK(!GetLayoutObject());
+      return;
+    }
+  } else {
+    DCHECK(IsTextNode());
+    if (!GetLayoutObject() && ShouldSkipMarkingStyleDirty())
+      return;
+  }
   SetFlag(kForceReattachLayoutTree);
   if (!NeedsStyleRecalc()) {
     // Make sure we traverse down to this node during style recalc.
@@ -1612,8 +1740,8 @@ bool Node::CanStartSelection() const {
 // inline style, or other things that this apparently guards against.
 bool Node::IsStyledElement() const {
   auto* this_element = DynamicTo<Element>(this);
-  return IsHTMLElement() || IsSVGElement() ||
-         (this_element &&
+  return IsHTMLElement() || IsSVGElement() || IsMathMLElement() ||
+         (!RuntimeEnabledFeatures::MathMLCoreEnabled() && this_element &&
           this_element->namespaceURI() == mathml_names::kNamespaceURI);
 }
 
@@ -2417,7 +2545,7 @@ Element* Node::EnclosingLinkEventParentOrSelf() const {
     // For imagemaps, the enclosing link node is the associated area element not
     // the image itself.  So we don't let images be the enclosingLinkNode, even
     // though isLink sometimes returns true for them.
-    if (node->IsLink() && !IsHTMLImageElement(*node)) {
+    if (node->IsLink() && !IsA<HTMLImageElement>(*node)) {
       // Casting to Element is safe because only HTMLAnchorElement,
       // HTMLImageElement and SVGAElement can return true for isLink().
       return To<Element>(const_cast<Node*>(node));
@@ -2629,8 +2757,8 @@ void Node::RegisterMutationObserver(
   }
 
   if (!registration) {
-    registration = MutationObserverRegistration::Create(observer, this, options,
-                                                        attribute_filter);
+    registration = MakeGarbageCollected<MutationObserverRegistration>(
+        observer, this, options, attribute_filter);
     EnsureRareData().EnsureMutationObserverData().AddRegistration(registration);
   }
 
@@ -2747,6 +2875,8 @@ DispatchEventResult Node::DispatchDOMActivateEvent(int detail,
                     GetDocument().domWindow(), detail);
   event.SetUnderlyingEvent(&underlying_event);
   event.SetComposed(underlying_event.composed());
+  if (!isConnected())
+    event.SetCopyEventPathFromUnderlyingEvent();
   DispatchScopedEvent(event);
 
   // TODO(dtapuska): Dispatching scoped events shouldn't check the return
@@ -2757,8 +2887,10 @@ DispatchEventResult Node::DispatchDOMActivateEvent(int detail,
 void Node::DispatchSimulatedClick(Event* underlying_event,
                                   SimulatedClickMouseEventOptions event_options,
                                   SimulatedClickCreationScope scope) {
-  if (auto* element = IsElementNode() ? ToElement(this) : parentElement())
-    element->ActivateDisplayLockIfNeeded();
+  if (auto* element = IsElementNode() ? ToElement(this) : parentElement()) {
+    element->ActivateDisplayLockIfNeeded(
+        DisplayLockActivationReason::kSimulatedClick);
+  }
   EventDispatcher::DispatchSimulatedClick(*this, underlying_event,
                                           event_options, scope);
 }
@@ -2833,33 +2965,11 @@ void Node::DefaultEventHandler(Event& event) {
           frame->GetEventHandler().StartMiddleClickAutoscroll(layout_object);
       }
     }
-  } else if (event_type == event_type_names::kMouseup && event.IsMouseEvent()) {
-    auto& mouse_event = ToMouseEvent(event);
-    if (mouse_event.button() ==
-        static_cast<int16_t>(WebPointerProperties::Button::kBack)) {
-      if (LocalFrame* frame = GetDocument().GetFrame()) {
-        if (frame->Client()->NavigateBackForward(-1, false))
-          event.SetDefaultHandled();
-      }
-    } else if (mouse_event.button() ==
-               static_cast<int16_t>(WebPointerProperties::Button::kForward)) {
-      if (LocalFrame* frame = GetDocument().GetFrame()) {
-        if (frame->Client()->NavigateBackForward(1, false))
-          event.SetDefaultHandled();
-      }
-    }
   }
 }
 
-void Node::WillCallDefaultEventHandler(const Event& event) {
-  if (!event.IsKeyboardEvent())
-    return;
-
-  if (!IsFocused() || GetDocument().LastFocusType() != kWebFocusTypeMouse)
-    return;
-
-  if (event.type() != event_type_names::kKeydown ||
-      GetDocument().HadKeyboardEvent())
+void Node::UpdateHadKeyboardEvent(const Event& event) {
+  if (GetDocument().HadKeyboardEvent())
     return;
 
   GetDocument().SetHadKeyboardEvent(true);
@@ -2973,7 +3083,7 @@ HTMLSlotElement* Node::assignedSlotForBinding() {
 }
 
 void Node::SetFocused(bool flag, WebFocusType focus_type) {
-  if (!flag || focus_type == kWebFocusTypeMouse)
+  if (focus_type == kWebFocusTypeMouse)
     GetDocument().SetHadKeyboardEvent(false);
   GetDocument().UserActionElements().SetFocused(this, flag);
 }
@@ -3109,7 +3219,7 @@ void Node::CheckSlotChange(SlotChangeType slot_change_type) {
       slot->DidSlotChange(slot_change_type);
   } else if (IsInV1ShadowTree()) {
     // Checking for fallback content if the node is in a v1 shadow tree.
-    if (auto* parent_slot = ToHTMLSlotElementOrNull(parentElement())) {
+    if (auto* parent_slot = DynamicTo<HTMLSlotElement>(parentElement())) {
       DCHECK(parent_slot->SupportsAssignment());
       // The parent_slot's assigned nodes might not be calculated because they
       // are lazy evaluated later at UpdateDistribution() so we have to check it
@@ -3126,7 +3236,7 @@ bool Node::IsEffectiveRootScroller() const {
 }
 
 WebPluginContainerImpl* Node::GetWebPluginContainer() const {
-  if (!IsHTMLObjectElement(this) && !IsHTMLEmbedElement(this)) {
+  if (!IsA<HTMLObjectElement>(this) && !IsA<HTMLEmbedElement>(this)) {
     return nullptr;
   }
 
@@ -3155,6 +3265,8 @@ bool Node::HasMediaControlAncestor() const {
 }
 
 void Node::FlatTreeParentChanged() {
+  if (!isConnected())
+    return;
   // TODO(futhark): Replace with DCHECK(IsSlotable()) when Shadow DOM V0 support
   // is removed.
   if (!IsElementNode() && !IsTextNode()) {
@@ -3164,6 +3276,14 @@ void Node::FlatTreeParentChanged() {
   // The node changed the flat tree position by being slotted to a new slot or
   // slotted for the first time. We need to recalc style since the inheritance
   // parent may have changed.
+  if (NeedsStyleRecalc() &&
+      RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
+    // For flat tree style recalc, the ancestor chain may have changed. We need
+    // make sure that the child-dirty flags are updated, but the
+    // SetNeedsStyleRecalc() call below will skip
+    // MarkAncestorsWithChildNeedsStyleRecalc() if the node was already dirty.
+    MarkAncestorsWithChildNeedsStyleRecalc();
+  }
   SetNeedsStyleRecalc(kLocalStyleChange,
                       StyleChangeReasonForTracing::Create(
                           style_change_reason::kFlatTreeChange));
@@ -3172,11 +3292,19 @@ void Node::FlatTreeParentChanged() {
   SetForceReattachLayoutTree();
 }
 
+void Node::RemovedFromFlatTree() {
+  // This node was previously part of the flat tree, but due to slot re-
+  // assignment it no longer is. We need to detach the layout tree and notify
+  // the StyleEngine in case the StyleRecalcRoot is removed from the flat tree.
+  DetachLayoutTree();
+  GetDocument().GetStyleEngine().RemovedFromFlatTree(*this);
+}
+
 Node* Node::TrustedTypesCheckForScriptNode(
     Node* child,
     ExceptionState& exception_state) const {
   DCHECK(child);
-  bool needs_check = IsHTMLScriptElement(this) && child->IsTextNode() &&
+  bool needs_check = IsA<HTMLScriptElement>(this) && child->IsTextNode() &&
                      GetDocument().IsTrustedTypesEnabledForDoc();
   if (!needs_check)
     return child;
@@ -3195,7 +3323,6 @@ void Node::Trace(Visitor* visitor) {
   // trace only one of them.
   if (HasRareData())
     visitor->Trace(RareData());
-  visitor->Trace(GetEventTargetData());
   visitor->Trace(tree_scope_);
   EventTarget::Trace(visitor);
 }

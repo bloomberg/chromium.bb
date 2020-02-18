@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace chromeos {
@@ -18,14 +19,15 @@ namespace smb_dialog {
 namespace {
 
 smb_client::SmbService* GetSmbService(Profile* profile) {
-  smb_client::SmbService* const service = smb_client::SmbService::Get(profile);
+  smb_client::SmbService* const service =
+      smb_client::SmbServiceFactory::Get(profile);
   return service;
 }
 
 base::Value BuildShareList(const std::vector<smb_client::SmbUrl>& shares) {
   base::Value shares_list(base::Value::Type::LIST);
   for (const auto& share : shares) {
-    shares_list.GetList().push_back(base::Value(share.GetWindowsUNCString()));
+    shares_list.Append(base::Value(share.GetWindowsUNCString()));
   }
   return shares_list;
 }

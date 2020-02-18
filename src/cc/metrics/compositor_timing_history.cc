@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.pbzero.h"
 
 namespace cc {
 
@@ -48,12 +49,14 @@ class CompositorTimingHistory::UMAReporter {
   virtual void AddDrawDuration(base::TimeDelta duration) = 0;
   virtual void AddSubmitToAckLatency(base::TimeDelta duration) = 0;
 
-  // crbug.com/758439: the following 3 functions are used to report timing in
+  // crbug.com/758439: the following functions are used to report timing in
   // certain conditions targeting blink / compositor animations.
   // Only the renderer would get the meaningful data.
   virtual void AddDrawIntervalWithCompositedAnimations(
       base::TimeDelta duration) = 0;
   virtual void AddDrawIntervalWithMainThreadAnimations(
+      base::TimeDelta duration) = 0;
+  virtual void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta duration) = 0;
 
   // Synchronization measurements
@@ -329,6 +332,13 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Renderer.DrawIntervalWithMainThreadAnimations", interval);
   }
 
+  void AddDrawIntervalWithCustomPropertyAnimations(
+      base::TimeDelta interval) override {
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
+        "Scheduling.Renderer.DrawIntervalWithCustomPropertyAnimations",
+        interval);
+  }
+
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
         "Scheduling.Renderer.BeginImplFrameLatency", delta);
@@ -432,6 +442,9 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddDrawIntervalWithMainThreadAnimations(
       base::TimeDelta interval) override {}
 
+  void AddDrawIntervalWithCustomPropertyAnimations(
+      base::TimeDelta interval) override {}
+
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
         "Scheduling.Browser.BeginImplFrameLatency", delta);
@@ -507,6 +520,8 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
       base::TimeDelta inverval) override {}
   void AddDrawIntervalWithMainThreadAnimations(
       base::TimeDelta inverval) override {}
+  void AddDrawIntervalWithCustomPropertyAnimations(
+      base::TimeDelta inverval) override {}
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {}
   void AddBeginMainFrameQueueDurationCriticalDuration(
       base::TimeDelta duration) override {}
@@ -579,25 +594,21 @@ CompositorTimingHistory::CreateUMAReporter(UMACategory category) {
   return base::WrapUnique<CompositorTimingHistory::UMAReporter>(nullptr);
 }
 
-void CompositorTimingHistory::AsValueInto(
-    base::trace_event::TracedValue* state) const {
-  state->SetDouble(
-      "begin_main_frame_queue_critical_estimate_ms",
-      BeginMainFrameQueueDurationCriticalEstimate().InMillisecondsF());
-  state->SetDouble(
-      "begin_main_frame_queue_not_critical_estimate_ms",
-      BeginMainFrameQueueDurationNotCriticalEstimate().InMillisecondsF());
-  state->SetDouble(
-      "begin_main_frame_start_to_ready_to_commit_estimate_ms",
-      BeginMainFrameStartToReadyToCommitDurationEstimate().InMillisecondsF());
-  state->SetDouble("commit_to_ready_to_activate_estimate_ms",
-                   CommitToReadyToActivateDurationEstimate().InMillisecondsF());
-  state->SetDouble("prepare_tiles_estimate_ms",
-                   PrepareTilesDurationEstimate().InMillisecondsF());
-  state->SetDouble("activate_estimate_ms",
-                   ActivateDurationEstimate().InMillisecondsF());
-  state->SetDouble("draw_estimate_ms",
-                   DrawDurationEstimate().InMillisecondsF());
+void CompositorTimingHistory::AsProtozeroInto(
+    perfetto::protos::pbzero::CompositorTimingHistory* state) const {
+  state->set_begin_main_frame_queue_critical_estimate_delta_us(
+      BeginMainFrameQueueDurationCriticalEstimate().InMicroseconds());
+  state->set_begin_main_frame_queue_not_critical_estimate_delta_us(
+      BeginMainFrameQueueDurationNotCriticalEstimate().InMicroseconds());
+  state->set_begin_main_frame_start_to_ready_to_commit_estimate_delta_us(
+      BeginMainFrameStartToReadyToCommitDurationEstimate().InMicroseconds());
+  state->set_commit_to_ready_to_activate_estimate_delta_us(
+      CommitToReadyToActivateDurationEstimate().InMicroseconds());
+  state->set_prepare_tiles_estimate_delta_us(
+      PrepareTilesDurationEstimate().InMicroseconds());
+  state->set_activate_estimate_delta_us(
+      ActivateDurationEstimate().InMicroseconds());
+  state->set_draw_estimate_delta_us(DrawDurationEstimate().InMicroseconds());
 }
 
 base::TimeTicks CompositorTimingHistory::Now() const {
@@ -721,6 +732,8 @@ void CompositorTimingHistory::WillBeginImplFrame(
 void CompositorTimingHistory::WillFinishImplFrame(bool needs_redraw) {
   if (!needs_redraw)
     SetCompositorDrawingContinuously(false);
+
+  compositor_frame_reporting_controller_->OnFinishImplFrame();
 }
 
 void CompositorTimingHistory::BeginImplFrameNotExpectedSoon() {
@@ -760,8 +773,10 @@ void CompositorTimingHistory::BeginMainFrameAborted() {
   begin_main_frame_frame_time_ = base::TimeTicks();
 }
 
-void CompositorTimingHistory::NotifyReadyToCommit() {
+void CompositorTimingHistory::NotifyReadyToCommit(
+    std::unique_ptr<BeginMainFrameMetrics> details) {
   DCHECK_NE(begin_main_frame_start_time_, base::TimeTicks());
+  compositor_frame_reporting_controller_->SetBlinkBreakdown(std::move(details));
   begin_main_frame_start_to_ready_to_commit_duration_history_.InsertSample(
       Now() - begin_main_frame_start_time_);
 }
@@ -964,7 +979,8 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
                                       size_t composited_animations_count,
                                       size_t main_thread_animations_count,
                                       bool current_frame_had_raf,
-                                      bool next_frame_has_pending_raf) {
+                                      bool next_frame_has_pending_raf,
+                                      bool has_custom_property_animations) {
   DCHECK_NE(base::TimeTicks(), draw_start_time_);
   base::TimeTicks draw_end_time = Now();
   base::TimeDelta draw_duration = draw_end_time - draw_start_time_;
@@ -989,8 +1005,13 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
     if (composited_animations_count > 0 &&
         previous_frame_had_composited_animations_)
       uma_reporter_->AddDrawIntervalWithCompositedAnimations(draw_interval);
+    if (has_custom_property_animations &&
+        previous_frame_had_custom_property_animations_)
+      uma_reporter_->AddDrawIntervalWithCustomPropertyAnimations(draw_interval);
   }
   previous_frame_had_composited_animations_ = composited_animations_count > 0;
+  previous_frame_had_custom_property_animations_ =
+      has_custom_property_animations;
   draw_end_time_prev_ = draw_end_time;
 
   if (used_new_active_tree) {
@@ -1049,10 +1070,6 @@ void CompositorTimingHistory::DidSubmitCompositorFrame(uint32_t frame_token) {
   submit_start_time_ = Now();
 }
 
-void CompositorTimingHistory::DidNotProduceFrame() {
-  compositor_frame_reporting_controller_->DidNotProduceFrame();
-}
-
 void CompositorTimingHistory::DidReceiveCompositorFrameAck() {
   DCHECK_NE(base::TimeTicks(), submit_start_time_);
   base::TimeDelta submit_to_ack_duration = Now() - submit_start_time_;
@@ -1062,9 +1079,9 @@ void CompositorTimingHistory::DidReceiveCompositorFrameAck() {
 
 void CompositorTimingHistory::DidPresentCompositorFrame(
     uint32_t frame_token,
-    base::TimeTicks presentation_time) {
-  compositor_frame_reporting_controller_->DidPresentCompositorFrame(
-      frame_token, presentation_time);
+    const viz::FrameTimingDetails& details) {
+  compositor_frame_reporting_controller_->DidPresentCompositorFrame(frame_token,
+                                                                    details);
 }
 
 void CompositorTimingHistory::SetTreePriority(TreePriority priority) {

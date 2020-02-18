@@ -99,6 +99,7 @@ import testserver_base
 
 import device_management_backend_pb2 as dm
 import cloud_policy_pb2 as cp
+import policy_common_definitions_pb2 as cd
 
 # Policy for extensions is not supported on Android.
 try:
@@ -206,6 +207,15 @@ LICENSE_TYPES = {
 }
 
 INVALID_ENROLLMENT_TOKEN = 'invalid_enrollment_token'
+
+POLICY_COMMON_DEFINITIONS_TYPES = [
+  'StringList',
+  'PolicyOptions',
+  'BooleanPolicyProto',
+  'IntegerPolicyProto',
+  'StringPolicyProto',
+  'StringListPolicyProto'
+]
 
 class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Decodes and handles device management requests from clients.
@@ -987,6 +997,17 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.SetProtobufMessageField(settings, field_descriptor,
                                    field_value)
 
+  def GetMessageDefinitionSource(self, message_type):
+    """Retrieve either policy_common_defintions, or chrome_device_policy
+    proto file, which contains the definition of the message.
+
+    Args:
+      message_type: name of the message definition type.
+    """
+    if message_type in POLICY_COMMON_DEFINITIONS_TYPES:
+      return 'cd'
+    return 'dp'
+
   def GatherDevicePolicySettings(self, settings, policies):
     """Copies all the policies from a dictionary into a protobuf of type
     CloudDeviceSettingsProto.
@@ -997,14 +1018,20 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """
     for group in settings.DESCRIPTOR.fields:
       # Create protobuf message for group.
-      group_message = eval('dp.' + group.message_type.name + '()')
+      group_message = eval(self.GetMessageDefinitionSource(
+          group.message_type.name) + '.' + group.message_type.name + '()')
       # Indicates if at least one field was set in |group_message|.
       got_fields = False
       # Iterate over fields of the message and feed them from the
       # policy config file.
       for field in group_message.DESCRIPTOR.fields:
         field_value = None
-        if field.name in policies:
+        full_name = '{}.{}'.format(group.name, field.name)
+        if full_name in policies:
+          got_fields = True
+          field_value = policies[full_name]
+          self.SetProtobufMessageField(group_message, field, field_value)
+        elif field.name in policies:
           got_fields = True
           field_value = policies[field.name]
           self.SetProtobufMessageField(group_message, field, field_value)
@@ -1026,16 +1053,16 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
       # Look for this policy's value in the mandatory or recommended dicts.
       if field.name in policies.get('mandatory', {}):
-        mode = cp.PolicyOptions.MANDATORY
+        mode = cd.PolicyOptions.MANDATORY
         value = policies['mandatory'][field.name]
       elif field.name in policies.get('recommended', {}):
-        mode = cp.PolicyOptions.RECOMMENDED
+        mode = cd.PolicyOptions.RECOMMENDED
         value = policies['recommended'][field.name]
       else:
         continue
 
       # Create protobuf message for this policy.
-      policy_message = eval('cp.' + field.message_type.name + '()')
+      policy_message = eval('cd.' + field.message_type.name + '()')
       policy_message.policy_options.mode = mode
       field_descriptor = policy_message.DESCRIPTOR.fields_by_name['value']
       self.SetProtobufMessageField(policy_message, field_descriptor, value)
@@ -1164,7 +1191,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     policy_data.settings_entity_id = msg.settings_entity_id
     policy_data.service_account_identity = policy.get(
         'service_account_identity',
-        'policy_testserver.py-service_account_identity')
+        'policy_testserver.py-service_account_identity@gmail.com')
     invalidation_source = policy.get('invalidation_source')
     if invalidation_source is not None:
       policy_data.invalidation_source = invalidation_source

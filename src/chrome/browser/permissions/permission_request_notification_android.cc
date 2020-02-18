@@ -9,9 +9,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_handler.h"
-#include "chrome/browser/permissions/permission_features.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_request_notification_handler.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
+#include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -55,20 +57,22 @@ PermissionRequestNotificationAndroid::Create(
 
 // static
 bool PermissionRequestNotificationAndroid::ShouldShowAsNotification(
+    content::WebContents* web_contents,
     ContentSettingsType type) {
-  QuietNotificationsPromptConfig::UIFlavor ui_flavor =
-      QuietNotificationsPromptConfig::UIFlavorToUse();
-  return (ui_flavor ==
-              QuietNotificationsPromptConfig::UIFlavor::QUIET_NOTIFICATION ||
-          ui_flavor == QuietNotificationsPromptConfig::UIFlavor::
-                           HEADS_UP_NOTIFICATION) &&
-         type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+  return false;
 }
 
 // static
 std::string PermissionRequestNotificationAndroid::NotificationIdForOrigin(
     const std::string& origin) {
   return kNotificationIdPrefix + origin;
+}
+
+// static
+PermissionPrompt::TabSwitchingBehavior
+PermissionRequestNotificationAndroid::GetTabSwitchingBehavior() {
+    return PermissionPrompt::TabSwitchingBehavior::
+        kDestroyPromptButKeepRequestPending;
 }
 
 void PermissionRequestNotificationAndroid::Close() {

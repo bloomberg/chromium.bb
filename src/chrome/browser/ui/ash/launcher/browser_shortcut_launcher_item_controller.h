@@ -9,8 +9,6 @@
 
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 
 namespace ash {
@@ -21,7 +19,7 @@ namespace content {
 class WebContents;
 }
 
-class LauncherContextMenu;
+class ShelfContextMenu;
 
 // Shelf item delegate for a browser shortcut; only one such item should exist.
 // This item shows an application menu that lists open browser windows or tabs.
@@ -71,10 +69,7 @@ class BrowserShortcutLauncherItemController : public ash::ShelfItemDelegate,
   // The cached browser windows and tab indices shown in an application menu.
   std::vector<std::pair<Browser*, size_t>> app_menu_items_;
 
-  // Observer for browser windows adding and closing events.
-  ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
-
-  std::unique_ptr<LauncherContextMenu> context_menu_;
+  std::unique_ptr<ShelfContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserShortcutLauncherItemController);
 };

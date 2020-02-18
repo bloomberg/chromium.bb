@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/side_swipe/card_side_swipe_view.h"
@@ -31,7 +32,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -522,15 +523,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     CGRect frame = [[swipeDelegate_ sideSwipeContentView] frame];
 
     // Add horizontal stack view controller.
-    // TODO(crbug.com/904992): Do not use SnapshotGeneratorDelegate from
-    // SideSwipeController.
-    CGFloat headerHeight = 0;
-    if (self.activeWebState) {
-      headerHeight =
-          [self.snapshotDelegate snapshotGenerator:nil
-                     snapshotEdgeInsetsForWebState:self.activeWebState]
-              .top;
-    }
+    CGFloat headerHeight =
+        FullscreenControllerFactory::GetForBrowserState(browserState_)
+            ->GetMaxViewportInsets()
+            .top;
 
     if (tabSideSwipeView_) {
       [tabSideSwipeView_ setFrame:frame];

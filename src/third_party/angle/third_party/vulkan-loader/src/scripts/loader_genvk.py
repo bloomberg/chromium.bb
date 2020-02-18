@@ -111,11 +111,15 @@ def makeGenOpts(args):
     # Defaults for generating re-inclusion protection wrappers (or not)
     protectFeature = protect
 
+    # An API style conventions object
+    conventions = VulkanConventions()
+
     # Loader Generators
     # Options for dispatch table helper generator
     genOpts['vk_dispatch_table_helper.h'] = [
           DispatchTableHelperOutputGenerator,
           DispatchTableHelperOutputGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_dispatch_table_helper.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -138,6 +142,7 @@ def makeGenOpts(args):
     genOpts['vk_layer_dispatch_table.h'] = [
           LoaderExtensionOutputGenerator,
           LoaderExtensionGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_layer_dispatch_table.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -160,6 +165,7 @@ def makeGenOpts(args):
     genOpts['vk_loader_extensions.h'] = [
           LoaderExtensionOutputGenerator,
           LoaderExtensionGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_loader_extensions.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -182,6 +188,7 @@ def makeGenOpts(args):
     genOpts['vk_loader_extensions.c'] = [
           LoaderExtensionOutputGenerator,
           LoaderExtensionGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_loader_extensions.c',
             directory         = directory,
             apiname           = 'vulkan',
@@ -200,79 +207,11 @@ def makeGenOpts(args):
             expandEnumerants = False)
         ]
 
-    # Helper file generator options for vk_enum_string_helper.h
-    genOpts['vk_enum_string_helper.h'] = [
-          HelperFileOutputGenerator,
-          HelperFileOutputGeneratorOptions(
-            filename          = 'vk_enum_string_helper.h',
-            directory         = directory,
-            apiname           = 'vulkan',
-            profile           = None,
-            versions          = featuresPat,
-            emitversions      = featuresPat,
-            defaultExtensions = 'vulkan',
-            addExtensions     = addExtensionsPat,
-            removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat,
-            prefixText        = prefixStrings + vkPrefixStrings,
-            apicall           = 'VKAPI_ATTR ',
-            apientry          = 'VKAPI_CALL ',
-            apientryp         = 'VKAPI_PTR *',
-            alignFuncParam    = 48,
-            expandEnumerants  = False,
-            helper_file_type  = 'enum_string_header')
-        ]
-
-    # Helper file generator options for vk_safe_struct.h
-    genOpts['vk_safe_struct.h'] = [
-          HelperFileOutputGenerator,
-          HelperFileOutputGeneratorOptions(
-            filename          = 'vk_safe_struct.h',
-            directory         = directory,
-            apiname           = 'vulkan',
-            profile           = None,
-            versions          = featuresPat,
-            emitversions      = featuresPat,
-            defaultExtensions = 'vulkan',
-            addExtensions     = addExtensionsPat,
-            removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat,
-            prefixText        = prefixStrings + vkPrefixStrings,
-            apicall           = 'VKAPI_ATTR ',
-            apientry          = 'VKAPI_CALL ',
-            apientryp         = 'VKAPI_PTR *',
-            alignFuncParam    = 48,
-            expandEnumerants  = False,
-            helper_file_type  = 'safe_struct_header')
-        ]
-
-    # Helper file generator options for vk_safe_struct.cpp
-    genOpts['vk_safe_struct.cpp'] = [
-          HelperFileOutputGenerator,
-          HelperFileOutputGeneratorOptions(
-            filename          = 'vk_safe_struct.cpp',
-            directory         = directory,
-            apiname           = 'vulkan',
-            profile           = None,
-            versions          = featuresPat,
-            emitversions      = featuresPat,
-            defaultExtensions = 'vulkan',
-            addExtensions     = addExtensionsPat,
-            removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat,
-            prefixText        = prefixStrings + vkPrefixStrings,
-            apicall           = 'VKAPI_ATTR ',
-            apientry          = 'VKAPI_CALL ',
-            apientryp         = 'VKAPI_PTR *',
-            alignFuncParam    = 48,
-            expandEnumerants  = False,
-            helper_file_type  = 'safe_struct_source')
-        ]
-
     # Helper file generator options for vk_object_types.h
     genOpts['vk_object_types.h'] = [
           HelperFileOutputGenerator,
           HelperFileOutputGeneratorOptions(
+            conventions       = conventions,
             filename          = 'vk_object_types.h',
             directory         = directory,
             apiname           = 'vulkan',
@@ -290,53 +229,6 @@ def makeGenOpts(args):
             alignFuncParam    = 48,
             expandEnumerants  = False,
             helper_file_type  = 'object_types_header')
-        ]
-
-    # Helper file generator options for extension_helper.h
-    genOpts['vk_extension_helper.h'] = [
-          HelperFileOutputGenerator,
-          HelperFileOutputGeneratorOptions(
-            filename          = 'vk_extension_helper.h',
-            directory         = directory,
-            apiname           = 'vulkan',
-            profile           = None,
-            versions          = featuresPat,
-            emitversions      = featuresPat,
-            defaultExtensions = 'vulkan',
-            addExtensions     = addExtensionsPat,
-            removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat,
-            prefixText        = prefixStrings + vkPrefixStrings,
-            apicall           = 'VKAPI_ATTR ',
-            apientry          = 'VKAPI_CALL ',
-            apientryp         = 'VKAPI_PTR *',
-            alignFuncParam    = 48,
-            expandEnumerants  = False,
-            helper_file_type  = 'extension_helper_header')
-        ]
-
-    # Helper file generator options for typemap_helper.h
-    genOpts['vk_typemap_helper.h'] = [
-          HelperFileOutputGenerator,
-          HelperFileOutputGeneratorOptions(
-            filename          = 'vk_typemap_helper.h',
-            directory         = directory,
-            apiname           = 'vulkan',
-            profile           = None,
-            versions          = featuresPat,
-            emitversions      = featuresPat,
-            defaultExtensions = 'vulkan',
-            addExtensions     = addExtensionsPat,
-            removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat,
-            prefixText        = prefixStrings + vkPrefixStrings,
-            protectFeature    = False,
-            apicall           = 'VKAPI_ATTR ',
-            apientry          = 'VKAPI_CALL ',
-            apientryp         = 'VKAPI_PTR *',
-            alignFuncParam    = 48,
-            expandEnumerants  = False,
-            helper_file_type  = 'typemap_helper_header')
         ]
 
 # Generate a target based on the options in the matching genOpts{} object.
@@ -440,6 +332,11 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # default scripts path to be same as registry
+    if not args.scripts:
+        args.scripts = os.path.dirname(args.registry)
+        print(args.scripts)
+
     scripts_dir = os.path.dirname(os.path.abspath(__file__))
     registry_dir = os.path.join(scripts_dir, args.scripts)
     sys.path.insert(0, registry_dir)
@@ -452,6 +349,9 @@ if __name__ == '__main__':
     from dispatch_table_helper_generator import DispatchTableHelperOutputGenerator, DispatchTableHelperOutputGeneratorOptions
     from helper_file_generator import HelperFileOutputGenerator, HelperFileOutputGeneratorOptions
     from loader_extension_generator import LoaderExtensionOutputGenerator, LoaderExtensionGeneratorOptions
+    # Temporary workaround for vkconventions python2 compatibility
+    import abc; abc.ABC = abc.ABCMeta('ABC', (object,), {})
+    from vkconventions import VulkanConventions
 
     # This splits arguments which are space-separated lists
     args.feature = [name for arg in args.feature for name in arg.split()]

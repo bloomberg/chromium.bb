@@ -10,7 +10,7 @@
 #include "components/drive/file_system_core_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_task_environment.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -35,8 +35,8 @@ class ExternalFileURLUtilTest : public testing::Test {
     return storage::FileSystemURL::CreateForTest(
         url::Origin::Create(GURL("chrome-extension://xxx")),
         storage::kFileSystemTypeExternal,
-        base::FilePath("drive-test-user-hash").Append(path), "",
-        storage::kFileSystemTypeDrive, base::FilePath(), "",
+        base::FilePath("arc-documents-provider").Append(path), "",
+        storage::kFileSystemTypeArcDocumentsProvider, base::FilePath(), "",
         storage::FileSystemMountOption());
   }
 

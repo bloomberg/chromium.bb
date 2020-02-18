@@ -17,8 +17,10 @@
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/values.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -27,6 +29,7 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/sessions/core/session_id.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
@@ -34,10 +37,6 @@
 namespace content {
 class WebContents;
 class NavigationHandle;
-}
-
-namespace history {
-class HistoryService;
 }
 
 namespace policy {
@@ -124,24 +123,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       PasswordType password_type,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists);
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   // Records a Chrome Sync event that sync password reuse was detected.
   virtual void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) = 0;
-#endif
 
-  scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
-
-  // Safe Browsing backend cannot get a reliable reputation of a URL if
-  // (1) URL is not valid
-  // (2) URL doesn't have http or https scheme
-  // (3) It maps to a local host.
-  // (4) Its hostname is an IP Address in an IANA-reserved range.
-  // (5) Its hostname is a not-yet-assigned by ICANN gTLD.
-  // (6) Its hostname is a dotless domain.
-  static bool CanGetReputationOfURL(const GURL& url);
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // If we want to show password reuse modal warning.
   bool ShouldShowModalWarning(
       LoginReputationClientRequest::TriggerType trigger_type,
@@ -160,11 +148,33 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Shows chrome://reset-password interstitial.
   virtual void ShowInterstitial(content::WebContents* web_contens,
                                 ReusedPasswordAccountType password_type) = 0;
-#endif
+
+  // Triggers the safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
+  virtual void MaybeReportPasswordReuseDetected(
+      content::WebContents* web_contents,
+      const std::string& username,
+      PasswordType password_type,
+      bool is_phishing_url) = 0;
+
+  // Called when a protected password change is detected. Must be called on
+  // UI thread.
+  virtual void ReportPasswordChanged() = 0;
 
   virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
                                    ReusedPasswordAccountType password_type,
                                    content::WebContents* web_contents) = 0;
+#endif
+
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
+
+  // Safe Browsing backend cannot get a reliable reputation of a URL if
+  // (1) URL is not valid
+  // (2) URL doesn't have http or https scheme
+  // (3) It maps to a local host.
+  // (4) Its hostname is an IP Address in an IANA-reserved range.
+  // (5) Its hostname is a not-yet-assigned by ICANN gTLD.
+  // (6) Its hostname is a dotless domain.
+  static bool CanGetReputationOfURL(const GURL& url);
 
   // If user has clicked through any Safe Browsing interstitial on this given
   // |web_contents|.
@@ -191,18 +201,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const GURL& url,
       RequestOutcome* reason) const = 0;
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  // Triggers the safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
-  virtual void MaybeReportPasswordReuseDetected(
-      content::WebContents* web_contents,
+  // Persist the phished saved password credential in the "compromised
+  // credentials" table. Calls the password store to add a row for each domain
+  // where the phished saved password is used on.
+  virtual void PersistPhishedSavedPasswordCredential(
       const std::string& username,
-      PasswordType password_type,
-      bool is_phishing_url) = 0;
+      const std::vector<std::string>& matching_domains) = 0;
 
-  // Called when a protected password change is detected. Must be called on
-  // UI thread.
-  virtual void ReportPasswordChanged() = 0;
-#endif
   // Converts from password::metrics_util::PasswordType to
   // LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType.
   static ReusedPasswordType GetPasswordProtectionReusedPasswordType(
@@ -250,6 +255,16 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   }
 #endif
 
+  const std::vector<std::string>& saved_passwords_matching_domains() const {
+    return saved_passwords_matching_domains_;
+  }
+#if defined(UNIT_TEST)
+  void set_saved_passwords_matching_domains(
+      const std::vector<std::string>& matching_domains) {
+    saved_passwords_matching_domains_ = matching_domains;
+  }
+#endif
+
   virtual AccountInfo GetAccountInfo() const = 0;
 
  protected:
@@ -271,6 +286,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       PasswordProtectionRequest* request,
       RequestOutcome outcome,
       std::unique_ptr<LoginReputationClientResponse> response);
+
+  // Called by a PasswordProtectionRequest instance to check if a sample ping
+  // can be sent to Safe Browsing.
+  virtual bool CanSendSamplePing() = 0;
+
+  // Sanitize referrer chain by only keeping origin information of all URLs.
+  virtual void SanitizeReferrerChain(ReferrerChain* referrer_chain) = 0;
 
   // Cancels all requests in |requests_|, empties it, and releases references to
   // the requests.
@@ -341,12 +363,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual bool IsUnderAdvancedProtection() = 0;
 #endif
 
-  // Gets the type of sync account associated with current profile or
-  // |NOT_SIGNED_IN|.
-  virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
-  GetSyncAccountType() const = 0;
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   // Records a Chrome Sync event for the result of the URL reputation lookup
   // if the user enters their sync password on a website.
   virtual void MaybeLogPasswordReuseLookupEvent(
@@ -354,11 +371,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       RequestOutcome,
       PasswordType password_type,
       const LoginReputationClientResponse*) = 0;
-#endif
 
-  void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   void RemoveWarningRequestsByWebContents(content::WebContents* web_contents);
 
   bool IsModalWarningShowingInWebContents(content::WebContents* web_contents);
@@ -370,6 +383,17 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                                    ReusedPasswordAccountType password_type,
                                    const GURL& main_frame_url) = 0;
 #endif
+
+  void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
+
+  // Gets the type of sync account associated with current profile or
+  // |NOT_SIGNED_IN|.
+  virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
+  GetSyncAccountType() const = 0;
+
+  const std::list<std::string>& common_spoofed_domains() const {
+    return common_spoofed_domains_;
+  }
 
  private:
   friend class PasswordProtectionServiceTest;
@@ -417,7 +441,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // |provider|.
   virtual void GetPhishingDetector(
       service_manager::InterfaceProvider* provider,
-      mojom::PhishingDetectorPtr* phishing_detector);
+      mojo::Remote<mojom::PhishingDetector>* phishing_detector);
 #endif
 
   // The username of the account which password has been reused on. It is only
@@ -428,6 +452,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // interstitial.
   ReusedPasswordAccountType
       reused_password_account_type_for_last_shown_warning_;
+
+  std::vector<std::string> saved_passwords_matching_domains_;
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
@@ -443,8 +469,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Set of PasswordProtectionRequests that are triggering modal warnings.
   std::set<scoped_refptr<PasswordProtectionRequest>> warning_requests_;
 
+  // List of most commonly spoofed domains to default to on the password warning
+  // dialog.
+  std::list<std::string> common_spoofed_domains_;
+
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
+      history_service_observer_{this};
 
   // Weakptr can only cancel task if it is posted to the same thread. Therefore,
   // we need CancelableTaskTracker to cancel tasks posted to IO thread.

@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "services/device/public/mojom/wake_lock.mojom-blink.h"
+#include "services/device/public/mojom/wake_lock.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
@@ -22,7 +22,9 @@
 
 namespace blink {
 
+class DOMException;
 class Document;
+class WakeLockSentinel;
 
 // Mock WakeLock implementation that tracks whether it's bound or acquired, and
 // provides a few helper methods to synchronously wait for RequestWakeLock()
@@ -141,7 +143,7 @@ class MockPermissionService final : public mojom::blink::PermissionService {
 //   MockWakeLockService mock_service;
 //   WakeLockTestingContext context(&mock_service);
 //   mojo::Remote<mojom::blink::WakeLockService> service;
-//   context.GetDocument()->GetInterfaceProvider()->GetInterface(
+//   context.GetDocument()->GetBrowserInterfaceBroker().GetInterface(
 //       service.BindNewPipeAndPassReceiver());
 //   service->GetWakeLock(...);  // Will call mock_service.GetWakeLock().
 // }
@@ -150,6 +152,7 @@ class WakeLockTestingContext final {
 
  public:
   WakeLockTestingContext(MockWakeLockService* mock_wake_lock_service);
+  ~WakeLockTestingContext();
 
   Document* GetDocument();
   LocalFrame* Frame();
@@ -174,15 +177,16 @@ class ScriptPromiseUtils final {
   static v8::Promise::PromiseState GetPromiseState(
       const ScriptPromise& promise);
 
-  // Shorthand for getting a String out of a ScriptPromise. This assumes the
-  // promise has been resolved with a string. If anything wrong happens during
-  // the conversion, an empty string is returned.
-  static String GetPromiseResolutionAsString(const ScriptPromise&);
-
   // Shorthand for getting a DOMException* out of a ScriptPromise. This assumes
   // the promise has been resolved with a DOMException. If the conversion fails,
   // nullptr is returned.
   static DOMException* GetPromiseResolutionAsDOMException(const ScriptPromise&);
+
+  // Shorthand for getting a WakeLockSentinel* out of a ScriptPromise. This
+  // assumes the promise has been resolved with a WakeLockSentinel. If the
+  // conversion fails, nullptr is returned.
+  static WakeLockSentinel* GetPromiseResolutionAsWakeLockSentinel(
+      const ScriptPromise&);
 };
 
 }  // namespace blink

@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/modules/websockets/mock_websocket_channel.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -53,7 +54,7 @@ class DOMWebSocketWithMockChannel final : public DOMWebSocket {
 
   explicit DOMWebSocketWithMockChannel(ExecutionContext* context)
       : DOMWebSocket(context),
-        channel_(MockWebSocketChannel::Create()),
+        channel_(MakeGarbageCollected<MockWebSocketChannel>()),
         has_created_channel_(false) {}
 
   MockWebSocketChannel* Channel() { return channel_.Get(); }
@@ -234,26 +235,6 @@ TEST(DOMWebSocketTest, insecureRequestsDoNotUpgrade) {
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
   EXPECT_EQ(KURL("ws://example.com/endpoint"), websocket_scope.Socket().url());
-}
-
-TEST(DOMWebSocketTest, mixedContentAutoUpgrade) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kMixedContentAutoupgrade);
-  V8TestingScope scope(KURL("https://example.com"));
-  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
-  {
-    InSequence s;
-    EXPECT_CALL(websocket_scope.Channel(),
-                Connect(KURL("wss://example.com/endpoint"), String()))
-        .WillOnce(Return(true));
-  }
-  scope.GetDocument().SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
-  websocket_scope.Socket().Connect("ws://example.com/endpoint",
-                                   Vector<String>(), scope.GetExceptionState());
-
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
-  EXPECT_EQ(KURL("wss://example.com/endpoint"), websocket_scope.Socket().url());
 }
 
 TEST(DOMWebSocketTest, channelConnectSuccess) {

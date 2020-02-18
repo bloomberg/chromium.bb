@@ -24,6 +24,7 @@ if (skia_enable_skottie) {
     configs += [ "../../:skia_private" ]
     deps = [
       "../..:skia",
+      "../skresources",
       "../sksg",
       "../skshaper",
     ]
@@ -110,6 +111,10 @@ if (skia_enable_skottie) {
           "../..:flags",
           "../..:skia",
         ]
+        if (skia_use_ffmpeg) {
+          defines = [ "HAVE_VIDEO_ENCODER" ]
+          deps += [ "../..:video_decoder" ]
+        }
 
         public_deps = [
           ":skottie",

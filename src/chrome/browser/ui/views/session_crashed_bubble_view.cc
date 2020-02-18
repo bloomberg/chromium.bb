@@ -118,30 +118,29 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
 };
 
 // static
-bool SessionCrashedBubble::Show(Browser* browser) {
+void SessionCrashedBubble::ShowIfNotOffTheRecordProfile(Browser* browser) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (browser->profile()->IsOffTheRecord())
-    return true;
+    return;
 
-  // Observes browser removal event and will be deallocated in ShowForReal.
-  std::unique_ptr<SessionCrashedBubbleView::BrowserRemovalObserver>
-      browser_observer(
-          new SessionCrashedBubbleView::BrowserRemovalObserver(browser));
+  // Observes possible browser removal before Show is called.
+  auto browser_observer =
+      std::make_unique<SessionCrashedBubbleView::BrowserRemovalObserver>(
+          browser);
 
   if (DoesSupportConsentCheck()) {
     base::PostTaskAndReplyWithResult(
         GoogleUpdateSettings::CollectStatsConsentTaskRunner(), FROM_HERE,
         base::Bind(&GoogleUpdateSettings::GetCollectStatsConsent),
-        base::Bind(&SessionCrashedBubbleView::ShowForReal,
+        base::Bind(&SessionCrashedBubbleView::Show,
                    base::Passed(&browser_observer)));
   } else {
-    SessionCrashedBubbleView::ShowForReal(std::move(browser_observer), false);
+    SessionCrashedBubbleView::Show(std::move(browser_observer), false);
   }
-  return true;
 }
 
 // static
-void SessionCrashedBubbleView::ShowForReal(
+void SessionCrashedBubbleView::Show(
     std::unique_ptr<BrowserRemovalObserver> browser_observer,
     bool uma_opted_in_already) {
   // Determine whether or not the UMA opt-in option should be offered. It is
@@ -178,6 +177,12 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
       uma_option_(NULL),
       offer_uma_optin_(offer_uma_optin),
       ignored_(true) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_STARTUP_PAGES_BUTTON));
   set_close_on_deactivate(false);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SESSION_CRASHED);
 
@@ -313,15 +318,6 @@ int SessionCrashedBubbleView::GetDialogButtons() const {
     buttons |= ui::DIALOG_BUTTON_CANCEL;
   }
   return buttons;
-}
-
-base::string16 SessionCrashedBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON);
-  DCHECK_EQ(ui::DIALOG_BUTTON_CANCEL, button);
-  return l10n_util::GetStringUTF16(
-      IDS_SESSION_CRASHED_VIEW_STARTUP_PAGES_BUTTON);
 }
 
 void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,

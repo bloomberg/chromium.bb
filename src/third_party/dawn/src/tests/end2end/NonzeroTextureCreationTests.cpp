@@ -15,12 +15,12 @@
 #include "tests/DawnTest.h"
 
 #include "utils/ComboRenderPipelineDescriptor.h"
-#include "utils/DawnHelpers.h"
+#include "utils/WGPUHelpers.h"
 
 class NonzeroTextureCreationTests : public DawnTest {
   protected:
-    void SetUp() override {
-        DawnTest::SetUp();
+    void TestSetUp() override {
+        DawnTest::TestSetUp();
     }
 
     constexpr static uint32_t kSize = 128;
@@ -28,17 +28,17 @@ class NonzeroTextureCreationTests : public DawnTest {
 
 // Test that texture clears to 1's because toggle is enabled.
 TEST_P(NonzeroTextureCreationTests, TextureCreationClearsOneBits) {
-    dawn::TextureDescriptor descriptor;
-    descriptor.dimension = dawn::TextureDimension::e2D;
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = kSize;
     descriptor.size.height = kSize;
     descriptor.size.depth = 1;
     descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
-    descriptor.format = dawn::TextureFormat::RGBA8Unorm;
+    descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
-    dawn::Texture texture = device.CreateTexture(&descriptor);
+    descriptor.usage = wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
+    wgpu::Texture texture = device.CreateTexture(&descriptor);
 
     RGBA8 filledWithOnes(255, 255, 255, 255);
     EXPECT_PIXEL_RGBA8_EQ(filledWithOnes, texture, 0, 0);
@@ -48,17 +48,17 @@ TEST_P(NonzeroTextureCreationTests, TextureCreationClearsOneBits) {
 TEST_P(NonzeroTextureCreationTests, MipMapClears) {
     constexpr uint32_t mipLevels = 4;
 
-    dawn::TextureDescriptor descriptor;
-    descriptor.dimension = dawn::TextureDimension::e2D;
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = kSize;
     descriptor.size.height = kSize;
     descriptor.size.depth = 1;
     descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
-    descriptor.format = dawn::TextureFormat::RGBA8Unorm;
+    descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = mipLevels;
-    descriptor.usage = dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
-    dawn::Texture texture = device.CreateTexture(&descriptor);
+    descriptor.usage = wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
+    wgpu::Texture texture = device.CreateTexture(&descriptor);
 
     std::vector<RGBA8> expected;
     RGBA8 filledWithOnes(255, 255, 255, 255);
@@ -73,17 +73,17 @@ TEST_P(NonzeroTextureCreationTests, MipMapClears) {
 TEST_P(NonzeroTextureCreationTests, ArrayLayerClears) {
     constexpr uint32_t arrayLayers = 4;
 
-    dawn::TextureDescriptor descriptor;
-    descriptor.dimension = dawn::TextureDimension::e2D;
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = kSize;
     descriptor.size.height = kSize;
     descriptor.size.depth = 1;
     descriptor.arrayLayerCount = arrayLayers;
     descriptor.sampleCount = 1;
-    descriptor.format = dawn::TextureFormat::RGBA8Unorm;
+    descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
-    dawn::Texture texture = device.CreateTexture(&descriptor);
+    descriptor.usage = wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
+    wgpu::Texture texture = device.CreateTexture(&descriptor);
 
     std::vector<RGBA8> expected;
     RGBA8 filledWithOnes(255, 255, 255, 255);
@@ -96,37 +96,73 @@ TEST_P(NonzeroTextureCreationTests, ArrayLayerClears) {
 
 // Test that nonrenderable texture formats clear to 1's because toggle is enabled
 TEST_P(NonzeroTextureCreationTests, NonrenderableTextureFormat) {
-    // skip test for other backends since they are not implemented yet
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-    dawn::TextureDescriptor descriptor;
-    descriptor.dimension = dawn::TextureDimension::e2D;
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = kSize;
     descriptor.size.height = kSize;
     descriptor.size.depth = 1;
     descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
-    descriptor.format = dawn::TextureFormat::RGBA8Snorm;
+    descriptor.format = wgpu::TextureFormat::RGBA8Snorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = dawn::TextureUsage::CopySrc;
-    dawn::Texture texture = device.CreateTexture(&descriptor);
+    descriptor.usage = wgpu::TextureUsage::CopySrc;
+    wgpu::Texture texture = device.CreateTexture(&descriptor);
 
     // Set buffer with dirty data so we know it is cleared by the lazy cleared texture copy
     uint32_t bufferSize = 4 * kSize * kSize;
     std::vector<uint8_t> data(bufferSize, 100);
-    dawn::Buffer bufferDst = utils::CreateBufferFromData(
-        device, data.data(), static_cast<uint32_t>(data.size()), dawn::BufferUsage::CopySrc);
+    wgpu::Buffer bufferDst = utils::CreateBufferFromData(
+        device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
 
-    dawn::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(bufferDst, 0, 0, 0);
-    dawn::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, 0, {0, 0, 0});
-    dawn::Extent3D copySize = {kSize, kSize, 1};
+    wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(bufferDst, 0, 0, 0);
+    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, 0, {0, 0, 0});
+    wgpu::Extent3D copySize = {kSize, kSize, 1};
 
-    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &copySize);
-    dawn::CommandBuffer commands = encoder.Finish();
+    wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     std::vector<uint32_t> expected(bufferSize, 1);
     EXPECT_BUFFER_U32_RANGE_EQ(expected.data(), bufferDst, 0, 8);
+}
+
+// Test that textures with more than 1 array layers and nonrenderable texture formats clear to 1's
+// because toggle is enabled
+TEST_P(NonzeroTextureCreationTests, NonRenderableTextureClearWithMultiArrayLayers) {
+    // TODO(natlee@microsoft.com): skip for now on opengl because TextureClear nonrenderable
+    // textures does not create large enough buffers for array layers greater than 1.
+    DAWN_SKIP_TEST_IF(IsOpenGL());
+
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e2D;
+    descriptor.size.width = kSize;
+    descriptor.size.height = kSize;
+    descriptor.size.depth = 1;
+    descriptor.arrayLayerCount = 2;
+    descriptor.sampleCount = 1;
+    descriptor.format = wgpu::TextureFormat::RGBA8Snorm;
+    descriptor.mipLevelCount = 1;
+    descriptor.usage = wgpu::TextureUsage::CopySrc;
+    wgpu::Texture texture = device.CreateTexture(&descriptor);
+
+    // Set buffer with dirty data so we know it is cleared by the lazy cleared texture copy
+    uint32_t bufferSize = 4 * kSize * kSize;
+    std::vector<uint8_t> data(bufferSize, 100);
+    wgpu::Buffer bufferDst = utils::CreateBufferFromData(
+        device, data.data(), static_cast<uint32_t>(data.size()), wgpu::BufferUsage::CopySrc);
+
+    wgpu::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(bufferDst, 0, 0, 0);
+    wgpu::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, 1, {0, 0, 0});
+    wgpu::Extent3D copySize = {kSize, kSize, 1};
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.CopyTextureToBuffer(&textureCopyView, &bufferCopyView, &copySize);
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    std::vector<uint32_t> expectedWithZeros(bufferSize, 1);
+    EXPECT_BUFFER_U32_RANGE_EQ(expectedWithZeros.data(), bufferDst, 0, 8);
 }
 
 DAWN_INSTANTIATE_TEST(NonzeroTextureCreationTests,

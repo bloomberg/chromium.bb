@@ -23,12 +23,11 @@ struct NetworkTrafficAnnotationTag;
 
 // An URLDataSource implementation that handles devtools://devtools/
 // requests. Three types of requests could be handled based on the URL path:
-// 1. /bundled/: bundled DevTools frontend is served.
-//    when built with debug_devtools=true, the path can be provided via
-//    --custom-devtools-frontend.
+// 1. /bundled/: bundled DevTools frontend is served. The path can be provided
+//    via --custom-devtools-frontend as file:// URL.
 // 2. /remote/: remote DevTools frontend is served from App Engine.
 // 3. /custom/: custom DevTools frontend is served from the server as specified
-//    by the --custom-devtools-frontend flag.
+//    via --custom-devtools-frontend as http:// URL.
 class DevToolsDataSource : public content::URLDataSource {
  public:
   using GotDataCallback = content::URLDataSource::GotDataCallback;
@@ -40,9 +39,9 @@ class DevToolsDataSource : public content::URLDataSource {
   // content::URLDataSource implementation.
   std::string GetSource() override;
 
-  void StartDataRequest(const std::string& path,
+  void StartDataRequest(const GURL& url,
                         const content::WebContents::Getter& wc_getter,
-                        const GotDataCallback& callback) override;
+                        GotDataCallback callback) override;
 
  private:
   friend class DevToolsUIDataSourceTest;
@@ -60,25 +59,23 @@ class DevToolsDataSource : public content::URLDataSource {
 
   // Serves bundled DevTools frontend from ResourceBundle.
   void StartBundledDataRequest(const std::string& path,
-                               const GotDataCallback& callback);
+                               GotDataCallback callback);
 
   // Serves remote DevTools frontend from hard-coded App Engine domain.
-  void StartRemoteDataRequest(const GURL& url, const GotDataCallback& callback);
+  void StartRemoteDataRequest(const GURL& url, GotDataCallback callback);
 
   // Serves remote DevTools frontend from any endpoint, passed through
   // command-line flag.
-  void StartCustomDataRequest(const GURL& url, const GotDataCallback& callback);
+  void StartCustomDataRequest(const GURL& url, GotDataCallback callback);
 
   virtual void StartNetworkRequest(
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       int load_flags,
-      const GotDataCallback& callback);
+      GotDataCallback callback);
 
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-  void StartFileRequestForDebugDevtools(const std::string& path,
-                                        const GotDataCallback& callback);
-#endif
+  virtual void StartFileRequest(const std::string& path,
+                                GotDataCallback callback);
 
   struct PendingRequest {
     PendingRequest();

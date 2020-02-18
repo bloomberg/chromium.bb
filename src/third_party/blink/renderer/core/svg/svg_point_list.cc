@@ -20,7 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_point_list.h"
 
-#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -93,7 +93,7 @@ void SVGPointList::Add(SVGPropertyBase* other, SVGElement* context_element) {
 }
 
 void SVGPointList::CalculateAnimatedValue(
-    SVGAnimationElement* animation_element,
+    const SVGAnimateElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from_value,
@@ -110,8 +110,9 @@ void SVGPointList::CalculateAnimatedValue(
   uint32_t to_at_end_of_duration_list_size =
       to_at_end_of_duration_list->length();
 
-  if (!AdjustFromToListValues(from_list, to_list, percentage,
-                              animation_element->GetAnimationMode()))
+  const bool is_to_animation =
+      animation_element.GetAnimationMode() == kToAnimation;
+  if (!AdjustFromToListValues(from_list, to_list, percentage, is_to_animation))
     return;
 
   for (uint32_t i = 0; i < to_point_list_size; ++i) {
@@ -126,10 +127,10 @@ void SVGPointList::CalculateAnimatedValue(
     if (i < to_at_end_of_duration_list_size)
       effective_to_at_end = to_at_end_of_duration_list->at(i)->Value();
 
-    animation_element->AnimateAdditiveNumber(
+    animation_element.AnimateAdditiveNumber(
         percentage, repeat_count, effective_from.X(), effective_to.X(),
         effective_to_at_end.X(), animated_x);
-    animation_element->AnimateAdditiveNumber(
+    animation_element.AnimateAdditiveNumber(
         percentage, repeat_count, effective_from.Y(), effective_to.Y(),
         effective_to_at_end.Y(), animated_y);
     at(i)->SetValue(FloatPoint(animated_x, animated_y));

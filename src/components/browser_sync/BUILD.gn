@@ -35,14 +35,16 @@ static_library("browser_sync") {
     "//components/version_info",
     "//components/version_info:generate_version_info",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants" ]
+  }
 }
 
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "profile_sync_service_bookmark_unittest.cc",
-  ]
+  sources = []
 
   deps = [
     ":browser_sync",

@@ -13,7 +13,8 @@ import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -58,7 +59,7 @@ public class WebApkServiceClient {
     public static final String CHANNEL_ID_WEBAPKS = "default_channel_id";
 
     private static final String CATEGORY_WEBAPK_API = "android.intent.category.WEBAPK_API";
-    private static final String TAG = "cr_WebApk";
+    private static final String TAG = "WebApk";
 
     private static WebApkServiceClient sInstance;
 

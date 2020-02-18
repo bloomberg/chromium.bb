@@ -176,7 +176,13 @@ ChromeUpdateClientConfig::GetNetworkFetcherFactory() {
     network_fetcher_factory_ =
         base::MakeRefCounted<update_client::NetworkFetcherChromiumFactory>(
             content::BrowserContext::GetDefaultStoragePartition(context_)
-                ->GetURLLoaderFactoryForBrowserProcess());
+                ->GetURLLoaderFactoryForBrowserProcess(),
+            // Only extension updates that require authentication are served
+            // from chrome.google.com, so send cookies if and only if that is
+            // the download domain.
+            base::BindRepeating([](const GURL& url) {
+              return url.DomainIs("chrome.google.com");
+            }));
   }
   return network_fetcher_factory_;
 }
@@ -230,22 +236,9 @@ bool ChromeUpdateClientConfig::IsPerUserInstall() const {
   return component_updater::IsPerUserInstall();
 }
 
-std::vector<uint8_t> ChromeUpdateClientConfig::GetRunActionKeyHash() const {
-  return impl_.GetRunActionKeyHash();
-}
-
-std::string ChromeUpdateClientConfig::GetAppGuid() const {
-  return impl_.GetAppGuid();
-}
-
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 ChromeUpdateClientConfig::GetProtocolHandlerFactory() const {
   return impl_.GetProtocolHandlerFactory();
-}
-
-update_client::RecoveryCRXElevator
-ChromeUpdateClientConfig::GetRecoveryCRXElevator() const {
-  return impl_.GetRecoveryCRXElevator();
 }
 
 ChromeUpdateClientConfig::~ChromeUpdateClientConfig() {}

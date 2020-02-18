@@ -9,25 +9,33 @@
 Polymer({
   is: 'settings-cups-nearby-printers',
 
-  behaviors: [WebUIListenerBehavior],
+  // ListPropertyUpdateBehavior is used in CupsPrintersEntryListBehavior.
+  behaviors: [
+      CupsPrintersEntryListBehavior,
+      ListPropertyUpdateBehavior,
+      WebUIListenerBehavior,
+  ],
 
   properties: {
     /**
-     * @type {!Array<!PrinterListEntry>}
-     * @private
-     */
-    nearbyPrinters_: {
-      type: Array,
-      value: () => [],
-    },
-
-    /**
-     * Search term for filtering |nearbyPrinters_|.
+     * Search term for filtering |nearbyPrinters|.
      * @type {string}
      */
     searchTerm: {
       type: String,
       value: '',
+    },
+
+    /** @type {?CupsPrinterInfo} */
+    activePrinter: {
+      type: Object,
+      notify: true,
+    },
+
+    printersCount: {
+      type: Number,
+      computed: 'getFilteredPrintersLength_(filteredPrinters_.*)',
+      notify: true,
     },
 
     /**
@@ -39,48 +47,47 @@ Polymer({
       value: -1,
     },
 
-    /** @type {?CupsPrinterInfo} */
-    activePrinter: {
-      type: Object,
-      notify: true,
+    /**
+     * List of printers filtered through a search term.
+     * @type {!Array<!PrinterListEntry>}
+     * @private
+     */
+    filteredPrinters_: {
+      type: Array,
+      value: () => [],
     },
   },
 
   listeners: {
     'add-automatic-printer': 'onAddAutomaticPrinter_',
+    'query-discovered-printer': 'onQueryDiscoveredPrinter_',
   },
 
-  /** @override */
-  attached: function() {
-    settings.CupsPrintersBrowserProxyImpl.getInstance()
-        .startDiscoveringPrinters();
-    this.addWebUIListener(
-        'on-nearby-printers-changed', this.onNearbyPrintersChanged_.bind(this));
-  },
+  observers: [
+    'onSearchOrPrintersChanged_(nearbyPrinters.*, searchTerm)'
+  ],
 
   /**
-   * @param {!Array<!CupsPrinterInfo>} automaticPrinters
-   * @param {!Array<!CupsPrinterInfo>} discoveredPrinters
+   * Redoes the search whenever |searchTerm| or |nearbyPrinters| changes.
    * @private
    */
-  onNearbyPrintersChanged_: function(automaticPrinters, discoveredPrinters) {
-    if (!automaticPrinters && !discoveredPrinters) {
+  onSearchOrPrintersChanged_: function() {
+    if (!this.nearbyPrinters) {
       return;
     }
+    // Filter printers through |searchTerm|. If |searchTerm| is empty,
+    // |filteredPrinters_| is just |nearbyPrinters|.
+    const updatedPrinters = this.searchTerm ?
+        this.nearbyPrinters.filter(
+            item => settings.printing.matchesSearchTerm(
+                item.printerInfo,this.searchTerm)) :
+        this.nearbyPrinters.slice();
 
-    const printers = /** @type{!Array<!PrinterListEntry>} */ ([]);
+    updatedPrinters.sort(settings.printing.sortPrinters);
 
-    for (const printer of automaticPrinters) {
-      printers.push({printerInfo: printer,
-                     printerType: PrinterType.AUTOMATIC});
-    }
-
-    for (const printer of discoveredPrinters) {
-      printers.push({printerInfo: printer,
-                     printerType: PrinterType.DISCOVERED});
-    }
-
-    this.nearbyPrinters_ = printers;
+    this.updateList(
+        'filteredPrinters_', printer => printer.printerInfo.printerId,
+        updatedPrinters);
   },
 
   /**
@@ -100,18 +107,38 @@ Polymer({
   },
 
   /**
+   * @param {!CustomEvent<{item: !PrinterListEntry}>} e
+   * @private
+   */
+  onQueryDiscoveredPrinter_: function(e) {
+    const item = e.detail.item;
+    this.setActivePrinter_(item);
+
+    // This is a workaround to ensure type safety on the params of the casted
+    // function. We do this because the closure compiler does not work well with
+    // rejected js promises.
+    const queryDiscoveredPrinterFailed = /** @type {!Function}) */(
+        this.onQueryDiscoveredPrinterFailed_.bind(this));
+    settings.CupsPrintersBrowserProxyImpl.getInstance()
+        .addDiscoveredPrinter(item.printerInfo.printerId)
+        .then(
+            this.onQueryDiscoveredPrinterSucceeded_.bind(this,
+                item.printerInfo.printerName),
+            queryDiscoveredPrinterFailed);
+  },
+
+  /**
    * Retrieves the index of |item| in |nearbyPrinters_| and sets that printer as
    * the active printer.
    * @param {!PrinterListEntry} item
    * @private
    */
   setActivePrinter_: function(item) {
-    this.activePrinterListEntryIndex_ =
-        this.nearbyPrinters_.findIndex(
-            printer => printer.printerInfo == item.printerInfo);
+    this.activePrinterListEntryIndex_ = this.nearbyPrinters.findIndex(
+        printer => printer.printerInfo.printerId == item.printerInfo.printerId);
 
     this.activePrinter =
-        this.get(['nearbyPrinters_', this.activePrinterListEntryIndex_])
+        this.get(['nearbyPrinters', this.activePrinterListEntryIndex_])
         .printerInfo;
   },
 
@@ -140,10 +167,40 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Returns true if noPrinterMessage should be visible.
+   * Handler for queryDiscoveredPrinter success.
+   * @param {string} printerName
+   * @param {!PrinterSetupResult} result
    * @private
    */
-  shouldShowNoNearbyPrinterMessage_: function() {
-    return !this.searchTerm && !this.nearbyPrinters_.length;
-  }
+  onQueryDiscoveredPrinterSucceeded_: function(printerName, result) {
+    this.fire(
+        'show-cups-printer-toast',
+        {resultCode: result, printerName: printerName});
+  },
+
+  /**
+   * Handler for queryDiscoveredPrinter failure.
+   * @param {!CupsPrinterInfo} printer
+   * @private
+   */
+  onQueryDiscoveredPrinterFailed_: function(printer) {
+    this.fire('open-manufacturer-model-dialog-for-specified-printer',
+        {item: /** @type {CupsPrinterInfo} */(printer)});
+  },
+
+  /**
+   * @return {boolean} Returns true if the no search message should be visible.
+   * @private
+   */
+  showNoSearchResultsMessage_: function() {
+    return !!this.searchTerm && !this.filteredPrinters_.length;
+  },
+
+  /**
+   * @private
+   * @return {number} Length of |filteredPrinters_|.
+   */
+  getFilteredPrintersLength_: function() {
+    return this.filteredPrinters_.length;
+  },
 });

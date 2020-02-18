@@ -36,6 +36,16 @@ CSPSourceList::CSPSourceList(bool allow_self,
       allow_response_redirects(allow_response_redirects),
       sources(sources) {}
 
+CSPSourceList::CSPSourceList(network::mojom::CSPSourceListPtr csp_source_list)
+    : allow_self(csp_source_list->allow_self),
+      allow_star(csp_source_list->allow_star),
+      // TODO(arthursonzogni): Add the allow_response_redirect to the network
+      // CSPSourceList struct.
+      allow_response_redirects(true) {
+  for (auto& source : csp_source_list->sources)
+    sources.push_back(CSPSource(std::move(source)));
+}
+
 CSPSourceList::CSPSourceList(const CSPSourceList&) = default;
 CSPSourceList::~CSPSourceList() = default;
 

@@ -5,13 +5,13 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/location.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -78,9 +77,8 @@ class TextFragmentAnchorTest : public SimTest {
 
 // Basic test case, ensure we scroll the matching text into view.
 TEST_F(TextFragmentAnchorTest, BasicSmokeTest) {
-  SimRequest request("https://example.com/test.html#targetText=test",
-                     "text/html");
-  LoadURL("https://example.com/test.html#targetText=test");
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -108,9 +106,9 @@ TEST_F(TextFragmentAnchorTest, BasicSmokeTest) {
 // Make sure a non-matching string doesn't cause scroll and the fragment is
 // removed when completed.
 TEST_F(TextFragmentAnchorTest, NonMatchingString) {
-  SimRequest request("https://example.com/test.html#targetText=unicorn",
+  SimRequest request("https://example.com/test.html#:~:text=unicorn",
                      "text/html");
-  LoadURL("https://example.com/test.html#targetText=unicorn");
+  LoadURL("https://example.com/test.html#:~:text=unicorn");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -137,46 +135,10 @@ TEST_F(TextFragmentAnchorTest, NonMatchingString) {
   EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
 }
 
-// If the targetText=... string matches an id, we should scroll using id
-// fragment semantics rather than doing a textual match.
-TEST_F(TextFragmentAnchorTest, IdFragmentTakesPrecedence) {
-  SimRequest request("https://example.com/test.html#targetText=test",
-                     "text/html");
-  LoadURL("https://example.com/test.html#targetText=test");
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      body {
-        height: 2200px;
-      }
-      p {
-        position: absolute;
-        top: 1000px;
-      }
-      div {
-        position: absolute;
-        top: 2000px;
-      }
-    </style>
-    <p id="text">This is a test page</p>
-    <div id="targetText=test">Some text</div>
-  )HTML");
-  Compositor().BeginFrame();
-
-  RunAsyncMatchingTasks();
-
-  Element& div = *GetDocument().getElementById("targetText=test");
-
-  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)))
-      << "Should have scrolled <div> into view but didn't, scroll offset: "
-      << LayoutViewport()->GetScrollOffset().ToString();
-}
-
 // Ensure multiple matches will scroll the first into view.
 TEST_F(TextFragmentAnchorTest, MultipleMatches) {
-  SimRequest request("https://example.com/test.html#targetText=test",
-                     "text/html");
-  LoadURL("https://example.com/test.html#targetText=test");
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -211,9 +173,8 @@ TEST_F(TextFragmentAnchorTest, MultipleMatches) {
 
 // Ensure matching works inside nested blocks.
 TEST_F(TextFragmentAnchorTest, NestedBlocks) {
-  SimRequest request("https://example.com/test.html#targetText=test",
-                     "text/html");
-  LoadURL("https://example.com/test.html#targetText=test");
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -241,13 +202,12 @@ TEST_F(TextFragmentAnchorTest, NestedBlocks) {
       << LayoutViewport()->GetScrollOffset().ToString();
 }
 
-// Ensure multiple targetTexts are highlighted and the first is scrolled into
+// Ensure multiple texts are highlighted and the first is scrolled into
 // view.
 TEST_F(TextFragmentAnchorTest, MultipleTextFragments) {
-  SimRequest request(
-      "https://example.com/test.html#targetText=test&targetText=more",
-      "text/html");
-  LoadURL("https://example.com/test.html#targetText=test&targetText=more");
+  SimRequest request("https://example.com/test.html#:~:text=test&text=more",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test&text=more");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -279,12 +239,11 @@ TEST_F(TextFragmentAnchorTest, MultipleTextFragments) {
   EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
 }
 
-// Ensure we scroll the second targetText into view if the first isn't found.
+// Ensure we scroll the second text into view if the first isn't found.
 TEST_F(TextFragmentAnchorTest, FirstTextFragmentNotFound) {
-  SimRequest request(
-      "https://example.com/test.html#targetText=test&targetText=more",
-      "text/html");
-  LoadURL("https://example.com/test.html#targetText=test&targetText=more");
+  SimRequest request("https://example.com/test.html#:~:text=test&text=more",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test&text=more");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -316,13 +275,12 @@ TEST_F(TextFragmentAnchorTest, FirstTextFragmentNotFound) {
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 }
 
-// Ensure we still scroll the first targetText into view if the second isn't
+// Ensure we still scroll the first text into view if the second isn't
 // found.
 TEST_F(TextFragmentAnchorTest, OnlyFirstTextFragmentFound) {
-  SimRequest request(
-      "https://example.com/test.html#targetText=test&targetText=more",
-      "text/html");
-  LoadURL("https://example.com/test.html#targetText=test&targetText=more");
+  SimRequest request("https://example.com/test.html#:~:text=test&text=more",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test&text=more");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -354,11 +312,11 @@ TEST_F(TextFragmentAnchorTest, OnlyFirstTextFragmentFound) {
 TEST_F(TextFragmentAnchorTest, MultipleNonMatchingStrings) {
   SimRequest request(
       "https://example.com/"
-      "test.html#targetText=unicorn&targetText=cookie&targetText=cat",
+      "test.html#:~:text=unicorn&text=cookie&text=cat",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=unicorn&targetText=cookie&targetText=cat");
+      "test.html#:~:text=unicorn&text=cookie&text=cat");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -387,9 +345,9 @@ TEST_F(TextFragmentAnchorTest, MultipleNonMatchingStrings) {
 
 // Test matching a text range within the same element
 TEST_F(TextFragmentAnchorTest, SameElementTextRange) {
-  SimRequest request("https://example.com/test.html#targetText=This,page",
+  SimRequest request("https://example.com/test.html#:~:text=This,page",
                      "text/html");
-  LoadURL("https://example.com/test.html#targetText=This,page");
+  LoadURL("https://example.com/test.html#:~:text=This,page");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -412,7 +370,7 @@ TEST_F(TextFragmentAnchorTest, SameElementTextRange) {
   // Expect marker on "This is a test page".
   auto* text = To<Text>(GetDocument().getElementById("text")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
@@ -420,9 +378,9 @@ TEST_F(TextFragmentAnchorTest, SameElementTextRange) {
 
 // Test matching a text range across two neighboring elements
 TEST_F(TextFragmentAnchorTest, NeighboringElementTextRange) {
-  SimRequest request("https://example.com/test.html#targetText=test,paragraph",
+  SimRequest request("https://example.com/test.html#:~:text=test,paragraph",
                      "text/html");
-  LoadURL("https://example.com/test.html#targetText=test,paragraph");
+  LoadURL("https://example.com/test.html#:~:text=test,paragraph");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -446,7 +404,7 @@ TEST_F(TextFragmentAnchorTest, NeighboringElementTextRange) {
   // Expect marker on "test page"
   auto* text1 = To<Text>(GetDocument().getElementById("text1")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text1, DocumentMarker::MarkerTypes::TextMatch());
+      *text1, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
@@ -454,7 +412,7 @@ TEST_F(TextFragmentAnchorTest, NeighboringElementTextRange) {
   // Expect marker on "with another paragraph"
   auto* text2 = To<Text>(GetDocument().getElementById("text2")->firstChild());
   markers = GetDocument().Markers().MarkersFor(
-      *text2, DocumentMarker::MarkerTypes::TextMatch());
+      *text2, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(22u, markers.at(0)->EndOffset());
@@ -462,9 +420,9 @@ TEST_F(TextFragmentAnchorTest, NeighboringElementTextRange) {
 
 // Test matching a text range from an element to a deeper nested element
 TEST_F(TextFragmentAnchorTest, DifferentDepthElementTextRange) {
-  SimRequest request("https://example.com/test.html#targetText=test,paragraph",
+  SimRequest request("https://example.com/test.html#:~:text=test,paragraph",
                      "text/html");
-  LoadURL("https://example.com/test.html#targetText=test,paragraph");
+  LoadURL("https://example.com/test.html#:~:text=test,paragraph");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -490,7 +448,7 @@ TEST_F(TextFragmentAnchorTest, DifferentDepthElementTextRange) {
   // Expect marker on "test page"
   auto* text1 = To<Text>(GetDocument().getElementById("text1")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text1, DocumentMarker::MarkerTypes::TextMatch());
+      *text1, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
@@ -498,7 +456,7 @@ TEST_F(TextFragmentAnchorTest, DifferentDepthElementTextRange) {
   // Expect marker on "with another paragraph"
   auto* text2 = To<Text>(GetDocument().getElementById("text2")->firstChild());
   markers = GetDocument().Markers().MarkersFor(
-      *text2, DocumentMarker::MarkerTypes::TextMatch());
+      *text2, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(22u, markers.at(0)->EndOffset());
@@ -506,9 +464,9 @@ TEST_F(TextFragmentAnchorTest, DifferentDepthElementTextRange) {
 
 // Ensure that we don't match anything if endText is not found.
 TEST_F(TextFragmentAnchorTest, TextRangeEndTextNotFound) {
-  SimRequest request("https://example.com/test.html#targetText=test,cat",
+  SimRequest request("https://example.com/test.html#:~:text=test,cat",
                      "text/html");
-  LoadURL("https://example.com/test.html#targetText=test,cat");
+  LoadURL("https://example.com/test.html#:~:text=test,cat");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -534,11 +492,11 @@ TEST_F(TextFragmentAnchorTest, TextRangeEndTextNotFound) {
 TEST_F(TextFragmentAnchorTest, MultipleTextRanges) {
   SimRequest request(
       "https://example.com/"
-      "test.html#targetText=test,with&targetText=paragraph,text",
+      "test.html#:~:text=test,with&text=paragraph,text",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=test,with&targetText=paragraph,text");
+      "test.html#:~:text=test,with&text=paragraph,text");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -564,7 +522,7 @@ TEST_F(TextFragmentAnchorTest, MultipleTextRanges) {
   // Expect marker on "test page"
   auto* text1 = To<Text>(GetDocument().getElementById("text1")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text1, DocumentMarker::MarkerTypes::TextMatch());
+      *text1, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
@@ -572,7 +530,7 @@ TEST_F(TextFragmentAnchorTest, MultipleTextRanges) {
   // Expect markers on "with" and "paragraph of text"
   auto* text2 = To<Text>(GetDocument().getElementById("text2")->firstChild());
   markers = GetDocument().Markers().MarkersFor(
-      *text2, DocumentMarker::MarkerTypes::TextMatch());
+      *text2, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(2u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(4u, markers.at(0)->EndOffset());
@@ -582,9 +540,9 @@ TEST_F(TextFragmentAnchorTest, MultipleTextRanges) {
 
 // Ensure we scroll to the beginning of a text range larger than the viewport.
 TEST_F(TextFragmentAnchorTest, DistantElementTextRange) {
-  SimRequest request("https://example.com/test.html#targetText=test,paragraph",
+  SimRequest request("https://example.com/test.html#:~:text=test,paragraph",
                      "text/html");
-  LoadURL("https://example.com/test.html#targetText=test,paragraph");
+  LoadURL("https://example.com/test.html#:~:text=test,paragraph");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -609,9 +567,8 @@ TEST_F(TextFragmentAnchorTest, DistantElementTextRange) {
 // Test a text range with both context terms in the same element.
 TEST_F(TextFragmentAnchorTest, TextRangeWithContext) {
   SimRequest request(
-      "https://example.com/test.html#targetText=This-,is,test,-page",
-      "text/html");
-  LoadURL("https://example.com/test.html#targetText=This-,is,test,-page");
+      "https://example.com/test.html#:~:text=This-,is,test,-page", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=This-,is,test,-page");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <p id="text">This is a test page</p>
@@ -625,7 +582,7 @@ TEST_F(TextFragmentAnchorTest, TextRangeWithContext) {
   // Expect marker on "is a test".
   auto* text = To<Text>(GetDocument().getElementById("text")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(5u, markers.at(0)->StartOffset());
   EXPECT_EQ(14u, markers.at(0)->EndOffset());
@@ -634,9 +591,9 @@ TEST_F(TextFragmentAnchorTest, TextRangeWithContext) {
 // Ensure that we do not match a text range if the prefix is not found.
 TEST_F(TextFragmentAnchorTest, PrefixNotFound) {
   SimRequest request(
-      "https://example.com/test.html#targetText=prefix-,is,test,-page",
+      "https://example.com/test.html#:~:text=prefix-,is,test,-page",
       "text/html");
-  LoadURL("https://example.com/test.html#targetText=prefix-,is,test,-page");
+  LoadURL("https://example.com/test.html#:~:text=prefix-,is,test,-page");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <p id="text">This is a test page</p>
@@ -651,9 +608,9 @@ TEST_F(TextFragmentAnchorTest, PrefixNotFound) {
 // Ensure that we do not match a text range if the suffix is not found.
 TEST_F(TextFragmentAnchorTest, SuffixNotFound) {
   SimRequest request(
-      "https://example.com/test.html#targetText=This-,is,test,-suffix",
+      "https://example.com/test.html#:~:text=This-,is,test,-suffix",
       "text/html");
-  LoadURL("https://example.com/test.html#targetText=This-,is,test,-suffix");
+  LoadURL("https://example.com/test.html#:~:text=This-,is,test,-suffix");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <p id="text">This is a test page</p>
@@ -668,11 +625,11 @@ TEST_F(TextFragmentAnchorTest, SuffixNotFound) {
 // Test a text range with context terms in different elements
 TEST_F(TextFragmentAnchorTest, TextRangeWithCrossElementContext) {
   SimRequest request(
-      "https://example.com/test.html#targetText=Header%202-,A,text,-Footer%201",
+      "https://example.com/test.html#:~:text=Header%202-,A,text,-Footer%201",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=Header%202-,A,text,-Footer%201");
+      "test.html#:~:text=Header%202-,A,text,-Footer%201");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <h1>Header 1</h1>
@@ -694,7 +651,7 @@ TEST_F(TextFragmentAnchorTest, TextRangeWithCrossElementContext) {
   // Expect marker on the expected "A string of text".
   auto* text = To<Text>(GetDocument().getElementById("expected")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(16u, markers.at(0)->EndOffset());
@@ -704,11 +661,11 @@ TEST_F(TextFragmentAnchorTest, TextRangeWithCrossElementContext) {
 TEST_F(TextFragmentAnchorTest, CrossElementAndWhitespaceContext) {
   SimRequest request(
       "https://example.com/"
-      "test.html#targetText=List%202-,Cat,-Good%20cat",
+      "test.html#:~:text=List%202-,Cat,-Good%20cat",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=List%202-,Cat,-Good%20cat");
+      "test.html#:~:text=List%202-,Cat,-Good%20cat");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <h1> List 1 </h1>
@@ -736,7 +693,7 @@ TEST_F(TextFragmentAnchorTest, CrossElementAndWhitespaceContext) {
   // Expect marker on the expected "cat".
   auto* text = To<Text>(GetDocument().getElementById("expected")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(3u, markers.at(0)->EndOffset());
@@ -746,11 +703,11 @@ TEST_F(TextFragmentAnchorTest, CrossElementAndWhitespaceContext) {
 TEST_F(TextFragmentAnchorTest, CrossEmptySiblingAndParentElementContext) {
   SimRequest request(
       "https://example.com/"
-      "test.html#targetText=prefix-,match,-suffix",
+      "test.html#:~:text=prefix-,match,-suffix",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=prefix-,match,-suffix");
+      "test.html#:~:text=prefix-,match,-suffix");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <div>
@@ -772,7 +729,7 @@ TEST_F(TextFragmentAnchorTest, CrossEmptySiblingAndParentElementContext) {
   // Expect marker on "match".
   auto* text = To<Text>(GetDocument().getElementById("expected")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(5u, markers.at(0)->EndOffset());
@@ -781,9 +738,9 @@ TEST_F(TextFragmentAnchorTest, CrossEmptySiblingAndParentElementContext) {
 // Ensure we scroll to text when its prefix and suffix are out of view.
 TEST_F(TextFragmentAnchorTest, DistantElementContext) {
   SimRequest request(
-      "https://example.com/test.html#targetText=Prefix-,Cats,-Suffix",
+      "https://example.com/test.html#:~:text=Prefix-,Cats,-Suffix",
       "text/html");
-  LoadURL("https://example.com/test.html#targetText=Prefix-,Cats,-Suffix");
+  LoadURL("https://example.com/test.html#:~:text=Prefix-,Cats,-Suffix");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -811,11 +768,11 @@ TEST_F(TextFragmentAnchorTest, DistantElementContext) {
 TEST_F(TextFragmentAnchorTest, OneContextTerm) {
   SimRequest request(
       "https://example.com/"
-      "test.html#targetText=test-,page&targetText=page,-with%20real%20content",
+      "test.html#:~:text=test-,page&text=page,-with%20real%20content",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=test-,page&targetText=page,-with%20real%20content");
+      "test.html#:~:text=test-,page&text=page,-with%20real%20content");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <p id="text1">This is a test page</p>
@@ -828,7 +785,7 @@ TEST_F(TextFragmentAnchorTest, OneContextTerm) {
   // Expect marker on the first "page"
   auto* text1 = To<Text>(GetDocument().getElementById("text1")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text1, DocumentMarker::MarkerTypes::TextMatch());
+      *text1, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(15u, markers.at(0)->StartOffset());
   EXPECT_EQ(19u, markers.at(0)->EndOffset());
@@ -836,7 +793,7 @@ TEST_F(TextFragmentAnchorTest, OneContextTerm) {
   // Expect marker on the second "page"
   auto* text2 = To<Text>(GetDocument().getElementById("text2")->firstChild());
   markers = GetDocument().Markers().MarkersFor(
-      *text2, DocumentMarker::MarkerTypes::TextMatch());
+      *text2, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(6u, markers.at(0)->StartOffset());
   EXPECT_EQ(10u, markers.at(0)->EndOffset());
@@ -844,10 +801,9 @@ TEST_F(TextFragmentAnchorTest, OneContextTerm) {
 
 // Test that a user scroll cancels the scroll into view.
 TEST_F(TextFragmentAnchorTest, ScrollCancelled) {
-  SimRequest request("https://example.com/test.html#targetText=test",
-                     "text/html");
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
   SimSubresourceRequest css_request("https://example.com/test.css", "text/css");
-  LoadURL("https://example.com/test.html#targetText=test");
+  LoadURL("https://example.com/test.html#:~:text=test");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -883,7 +839,7 @@ TEST_F(TextFragmentAnchorTest, ScrollCancelled) {
   // Expect marker on "test"
   auto* text = To<Text>(p.firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(14u, markers.at(0)->EndOffset());
@@ -893,12 +849,12 @@ TEST_F(TextFragmentAnchorTest, ScrollCancelled) {
 // disabled in iframes by design, for security reasons.
 TEST_F(TextFragmentAnchorTest, DisabledInIframes) {
   SimRequest main_request("https://example.com/test.html", "text/html");
-  SimRequest child_request("https://example.com/child.html#targetText=test",
+  SimRequest child_request("https://example.com/child.html#:~:text=test",
                            "text/html");
   LoadURL("https://example.com/test.html");
   main_request.Complete(R"HTML(
     <!DOCTYPE html>
-    <iframe id="iframe" src="child.html#targetText=test"></iframe>
+    <iframe id="iframe" src="child.html#:~:text=test"></iframe>
   )HTML");
 
   child_request.Complete(R"HTML(
@@ -927,7 +883,7 @@ TEST_F(TextFragmentAnchorTest, DisabledInIframes) {
 // Similarly to the iframe case, we also want to prevent activating a text
 // fragment anchor inside a window.opened window.
 TEST_F(TextFragmentAnchorTest, DisabledInWindowOpen) {
-  String destination = "https://example.com/child.html#targetText=test";
+  String destination = "https://example.com/child.html#:~:text=test";
 
   SimRequest main_request("https://example.com/test.html", "text/html");
   SimRequest child_request(destination, "text/html");
@@ -942,10 +898,9 @@ TEST_F(TextFragmentAnchorTest, DisabledInWindowOpen) {
   ScriptState* script_state =
       ToScriptStateForMainWorld(main_window->GetFrame());
   ScriptState::Scope entered_context_scope(script_state);
-  auto url = USVStringOrTrustedURL::FromTrustedURL(
-      MakeGarbageCollected<TrustedURL>(destination));
-  LocalDOMWindow* child_window = To<LocalDOMWindow>(main_window->open(
-      script_state->GetIsolate(), url, "frame1", "", ASSERT_NO_EXCEPTION));
+  LocalDOMWindow* child_window = To<LocalDOMWindow>(
+      main_window->open(script_state->GetIsolate(), destination, "frame1", "",
+                        ASSERT_NO_EXCEPTION));
   ASSERT_TRUE(child_window);
 
   RunPendingTasks();
@@ -994,7 +949,7 @@ TEST_F(TextFragmentAnchorTest, DisabledInSamePageNavigation) {
       ToScriptStateForMainWorld(GetDocument().GetFrame());
   ScriptState::Scope entered_context_scope(script_state);
   GetDocument().GetFrame()->DomWindow()->location()->setHash(
-      script_state->GetIsolate(), "targetText=test", ASSERT_NO_EXCEPTION);
+      script_state->GetIsolate(), "text=test", ASSERT_NO_EXCEPTION);
   RunAsyncMatchingTasks();
 
   EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
@@ -1002,9 +957,8 @@ TEST_F(TextFragmentAnchorTest, DisabledInSamePageNavigation) {
 
 // Ensure matching is case insensitive.
 TEST_F(TextFragmentAnchorTest, CaseInsensitive) {
-  SimRequest request("https://example.com/test.html#targetText=Test",
-                     "text/html");
-  LoadURL("https://example.com/test.html#targetText=Test");
+  SimRequest request("https://example.com/test.html#:~:text=Test", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=Test");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1032,10 +986,10 @@ TEST_F(TextFragmentAnchorTest, CaseInsensitive) {
 
 // Test that the fragment anchor stays centered in view throughout loading.
 TEST_F(TextFragmentAnchorTest, TargetStaysInView) {
-  SimRequest main_request("https://example.com/test.html#targetText=test",
+  SimRequest main_request("https://example.com/test.html#:~:text=test",
                           "text/html");
   SimRequest image_request("https://example.com/image.svg", "image/svg+xml");
-  LoadURL("https://example.com/test.html#targetText=test");
+  LoadURL("https://example.com/test.html#:~:text=test");
   main_request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1076,10 +1030,9 @@ TEST_F(TextFragmentAnchorTest, TargetStaysInView) {
 // Test that overlapping text ranges results in only the first one highlighted
 TEST_F(TextFragmentAnchorTest, OverlappingTextRanges) {
   SimRequest request(
-      "https://example.com/test.html#targetText=This,test&targetText=is,page",
+      "https://example.com/test.html#:~:text=This,test&text=is,page",
       "text/html");
-  LoadURL(
-      "https://example.com/test.html#targetText=This,test&targetText=is,page");
+  LoadURL("https://example.com/test.html#:~:text=This,test&text=is,page");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1102,116 +1055,17 @@ TEST_F(TextFragmentAnchorTest, OverlappingTextRanges) {
   // Expect marker on "This is a test".
   auto* text = To<Text>(GetDocument().getElementById("text")->firstChild());
   DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
-      *text, DocumentMarker::MarkerTypes::TextMatch());
+      *text, DocumentMarker::MarkerTypes::TextFragment());
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers.at(0)->StartOffset());
   EXPECT_EQ(14u, markers.at(0)->EndOffset());
 }
 
-// Test that the ##targetText fragment syntax works properly and is stripped
-// from the URL.
-TEST_F(TextFragmentAnchorTest, DoubleHashSyntax) {
-  SimRequest request("https://example.com/test.html##targetText=test",
-                     "text/html");
-  LoadURL("https://example.com/test.html##targetText=test");
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      body {
-        height: 1200px;
-      }
-      p {
-        position: absolute;
-        top: 1000px;
-      }
-    </style>
-    <p id="text">This is a test page</p>
-  )HTML");
-  Compositor().BeginFrame();
-
-  RunAsyncMatchingTasks();
-
-  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
-
-  EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html");
-}
-
-// Test that the ##targetText fragment directive is scrolled into view and is
-// stripped from the URL when there's also a valid element fragment.
-TEST_F(TextFragmentAnchorTest, DoubleHashWithElementFragment) {
-  SimRequest request("https://example.com/test.html#element##targetText=test",
-                     "text/html");
-  LoadURL("https://example.com/test.html#element##targetText=test");
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      body {
-        height: 2200px;
-      }
-      #text {
-        position: absolute;
-        top: 1000px;
-      }
-      #element {
-        position: absolute;
-        top: 2000px;
-      }
-    </style>
-    <p id="text">This is a test page</p>
-    <div id="element">Some text</div>
-  )HTML");
-  Compositor().BeginFrame();
-
-  RunAsyncMatchingTasks();
-
-  EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html#element");
-
-  Element& p = *GetDocument().getElementById("text");
-
-  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
-      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
-      << LayoutViewport()->GetScrollOffset().ToString();
-}
-
-// A double-hash should be interpreted as a fragment directive and should be
-// stripped from the URL, even if it is not a targetText.
-TEST_F(TextFragmentAnchorTest, IdFragmentWithDoubleHash) {
-  SimRequest request("https://example.com/test.html#element##id", "text/html");
-  LoadURL("https://example.com/test.html#element##id");
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      body {
-        height: 2200px;
-      }
-      p {
-        position: absolute;
-        top: 1000px;
-      }
-      div {
-        position: absolute;
-        top: 2000px;
-      }
-    </style>
-    <p id="element">This is a test page</p>
-    <div id="element##id">Some text</div>
-  )HTML");
-  Compositor().BeginFrame();
-
-  RunAsyncMatchingTasks();
-
-  Element& div = *GetDocument().getElementById("element");
-
-  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)))
-      << "Should have scrolled <div> into view but didn't, scroll offset: "
-      << LayoutViewport()->GetScrollOffset().ToString();
-}
-
 // Test matching a space to &nbsp character.
 TEST_F(TextFragmentAnchorTest, SpaceMatchesNbsp) {
-  SimRequest request("https://example.com/test.html#targetText=test%20page",
+  SimRequest request("https://example.com/test.html#:~:text=test%20page",
                      "text/html");
-  LoadURL("https://example.com/test.html#targetText=test%20page");
+  LoadURL("https://example.com/test.html#:~:text=test%20page");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1240,9 +1094,9 @@ TEST_F(TextFragmentAnchorTest, SpaceMatchesNbsp) {
 
 // Test matching text with a CSS text transform.
 TEST_F(TextFragmentAnchorTest, CSSTextTransform) {
-  SimRequest request("https://example.com/test.html#targetText=test%20page",
+  SimRequest request("https://example.com/test.html#:~:text=test%20page",
                      "text/html");
-  LoadURL("https://example.com/test.html#targetText=test%20page");
+  LoadURL("https://example.com/test.html#:~:text=test%20page");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1272,9 +1126,9 @@ TEST_F(TextFragmentAnchorTest, CSSTextTransform) {
 
 // Test that we scroll the element fragment into view if we don't find a match.
 TEST_F(TextFragmentAnchorTest, NoMatchFoundFallsBackToElementFragment) {
-  SimRequest request("https://example.com/test.html#element##targetText=cats",
+  SimRequest request("https://example.com/test.html#element:~:text=cats",
                      "text/html");
-  LoadURL("https://example.com/test.html#element##targetText=cats");
+  LoadURL("https://example.com/test.html#element:~:text=cats");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1309,15 +1163,111 @@ TEST_F(TextFragmentAnchorTest, NoMatchFoundFallsBackToElementFragment) {
       << LayoutViewport()->GetScrollOffset().ToString();
 }
 
+// Test that we don't match partial words at the beginning or end of the text.
+TEST_F(TextFragmentAnchorTest, CheckForWordBoundary) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#:~:text=This%20is%20a%20te&tagetText=st%20page",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#:~:text=This%20is%20a%20te&tagetText=st%20page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
+  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
+}
+
+// Test that we don't match partial words with context
+TEST_F(TextFragmentAnchorTest, CheckForWordBoundaryWithContext) {
+  SimRequest request("https://example.com/test.html#:~:text=est-,page",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:text=est-,page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
+  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
+}
+
+// Test that we correctly match a whole word when it appears as a partial word
+// earlier in the page.
+TEST_F(TextFragmentAnchorTest, CheckForWordBoundaryWithPartialWord) {
+  SimRequest request("https://example.com/test.html#:~:text=tes,age",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:text=tes,age");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      #first {
+        position: absolute;
+        top: 1000px;
+      }
+      #second {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="first">This is a test page</p>
+    <p id="second">This is a tes age</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  Element& p = *GetDocument().getElementById("second");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "Should have scrolled <p> into view but didn't, scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  // Expect marker on only "tes age"
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *To<Text>(p.firstChild()), DocumentMarker::MarkerTypes::TextFragment());
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(10u, markers.at(0)->StartOffset());
+  EXPECT_EQ(17u, markers.at(0)->EndOffset());
+}
+
 // Test dismissing the text highlight with a click
 TEST_F(TextFragmentAnchorTest, DismissTextHighlightWithClick) {
   SimRequest request(
       "https://example.com/"
-      "test.html#targetText=test%20page&targetText=more%20text",
+      "test.html#:~:text=test%20page&text=more%20text",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=test%20page&targetText=more%20text");
+      "test.html#:~:text=test%20page&text=more%20text");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1353,11 +1303,11 @@ TEST_F(TextFragmentAnchorTest, DismissTextHighlightWithClick) {
 TEST_F(TextFragmentAnchorTest, DismissTextHighlightWithTap) {
   SimRequest request(
       "https://example.com/"
-      "test.html#targetText=test%20page&targetText=more%20text",
+      "test.html#:~:text=test%20page&text=more%20text",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=test%20page&targetText=more%20text");
+      "test.html#:~:text=test%20page&text=more%20text");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1391,10 +1341,9 @@ TEST_F(TextFragmentAnchorTest, DismissTextHighlightWithTap) {
 
 // Test that we don't dismiss a text highlight before it's scrolled into view
 TEST_F(TextFragmentAnchorTest, DismissTextHighlightOutOfView) {
-  SimRequest request("https://example.com/test.html#targetText=test",
-                     "text/html");
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
   SimSubresourceRequest css_request("https://example.com/test.css", "text/css");
-  LoadURL("https://example.com/test.html#targetText=test");
+  LoadURL("https://example.com/test.html#:~:text=test");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1434,11 +1383,11 @@ TEST_F(TextFragmentAnchorTest, DismissTextHighlightOutOfView) {
 TEST_F(TextFragmentAnchorTest, DismissTextHighlightInView) {
   SimRequest request(
       "https://example.com/"
-      "test.html#targetText=test%20page&targetText=more%20text",
+      "test.html#:~:text=test%20page&text=more%20text",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=test%20page&targetText=more%20text");
+      "test.html#:~:text=test%20page&text=more%20text");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1469,9 +1418,8 @@ TEST_F(TextFragmentAnchorTest, DismissTextHighlightInView) {
 // Test that the fragment directive delimiter :~: works properly and is stripped
 // from the URL.
 TEST_F(TextFragmentAnchorTest, FragmentDirectiveDelimiter) {
-  SimRequest request("https://example.com/test.html#:~:targetText=test",
-                     "text/html");
-  LoadURL("https://example.com/test.html#:~:targetText=test");
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1497,9 +1445,9 @@ TEST_F(TextFragmentAnchorTest, FragmentDirectiveDelimiter) {
 // Test that a :~: fragment directive is scrolled into view and is stripped from
 // the URL when there's also a valid element fragment.
 TEST_F(TextFragmentAnchorTest, FragmentDirectiveDelimiterWithElementFragment) {
-  SimRequest request("https://example.com/test.html#element:~:targetText=test",
+  SimRequest request("https://example.com/test.html#element:~:text=test",
                      "text/html");
-  LoadURL("https://example.com/test.html#element:~:targetText=test");
+  LoadURL("https://example.com/test.html#element:~:text=test");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1532,7 +1480,7 @@ TEST_F(TextFragmentAnchorTest, FragmentDirectiveDelimiterWithElementFragment) {
 }
 
 // Test that a fragment directive is stripped from the URL even if it is not a
-// targetText.
+// text directive.
 TEST_F(TextFragmentAnchorTest, IdFragmentWithFragmentDirective) {
   SimRequest request("https://example.com/test.html#element:~:id", "text/html");
   LoadURL("https://example.com/test.html#element:~:id");
@@ -1563,6 +1511,76 @@ TEST_F(TextFragmentAnchorTest, IdFragmentWithFragmentDirective) {
   EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)))
       << "Should have scrolled <div> into view but didn't, scroll offset: "
       << LayoutViewport()->GetScrollOffset().ToString();
+}
+
+// Ensure we can match <text> inside of a <svg> element.
+TEST_F(TextFragmentAnchorTest, TextDirectiveInSvg) {
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      svg {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <svg><text id="text" x="0" y="15">This is a test page</text></svg>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& text = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(text)))
+      << "<text> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+// Ensure we restore the text highlight on page reload
+TEST_F(TextFragmentAnchorTest, HighlightOnReload) {
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test");
+  const String& html = R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML";
+  request.Complete(html);
+
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  // Tap to dismiss the highlight.
+  SimulateClick(10, 10);
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Reload the page and expect the highlight to be restored.
+  SimRequest reload_request("https://example.com/test.html#:~:text=test",
+                            "text/html");
+  MainFrame().StartReload(WebFrameLoadType::kReload);
+  reload_request.Complete(html);
+
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 }
 
 }  // namespace

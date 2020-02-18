@@ -28,6 +28,9 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/video_decode_accelerator.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 
 namespace media {
 namespace {
@@ -69,22 +72,22 @@ class MojoVideoFrameHandleReleaser
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
   MojoVideoFrameHandleReleaser(
-      mojom::VideoFrameHandleReleaserPtrInfo
-          video_frame_handle_releaser_ptr_info,
+      mojo::PendingRemote<mojom::VideoFrameHandleReleaser>
+          video_frame_handle_releaser_remote,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     // Connection errors are not handled because we wouldn't do anything
     // differently. ("If a tree falls in a forest...")
     video_frame_handle_releaser_ =
-        mojom::ThreadSafeVideoFrameHandleReleaserPtr::Create(
-            std::move(video_frame_handle_releaser_ptr_info),
+        mojo::SharedRemote<mojom::VideoFrameHandleReleaser>(
+            std::move(video_frame_handle_releaser_remote),
             std::move(task_runner));
   }
 
   void ReleaseVideoFrame(const base::UnguessableToken& release_token,
                          const gpu::SyncToken& release_sync_token) {
     DVLOG(3) << __func__ << "(" << release_token << ")";
-    (*video_frame_handle_releaser_)
-        ->ReleaseVideoFrame(release_token, release_sync_token);
+    video_frame_handle_releaser_->ReleaseVideoFrame(release_token,
+                                                    release_sync_token);
   }
 
   // Create a ReleaseMailboxCB that calls Release(). Since the callback holds a
@@ -101,7 +104,7 @@ class MojoVideoFrameHandleReleaser
   friend class base::RefCountedThreadSafe<MojoVideoFrameHandleReleaser>;
   ~MojoVideoFrameHandleReleaser() {}
 
-  scoped_refptr<mojom::ThreadSafeVideoFrameHandleReleaserPtr>
+  mojo::SharedRemote<mojom::VideoFrameHandleReleaser>
       video_frame_handle_releaser_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoVideoFrameHandleReleaser);
@@ -111,19 +114,18 @@ MojoVideoDecoder::MojoVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     GpuVideoAcceleratorFactories* gpu_factories,
     MediaLog* media_log,
-    mojom::VideoDecoderPtr remote_decoder,
+    mojo::PendingRemote<mojom::VideoDecoder> pending_remote_decoder,
     VideoDecoderImplementation implementation,
     const RequestOverlayInfoCB& request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space)
     : task_runner_(task_runner),
-      remote_decoder_info_(remote_decoder.PassInterface()),
+      pending_remote_decoder_(std::move(pending_remote_decoder)),
       gpu_factories_(gpu_factories),
       timestamps_(128),
       writer_capacity_(
           GetDefaultDecoderBufferConverterCapacity(DemuxerStream::VIDEO)),
-      client_binding_(this),
       media_log_service_(media_log),
-      media_log_binding_(&media_log_service_),
+      media_log_receiver_(&media_log_service_),
       request_overlay_info_cb_(request_overlay_info_cb),
       target_color_space_(target_color_space),
       video_decoder_implementation_(implementation) {
@@ -157,8 +159,9 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
   InitCB bound_init_cb = base::BindOnce(
       &ReportMojoVideoDecoderInitializeStatusToUMAAndRunCB, std::move(init_cb));
   // Fail immediately if we know that the remote side cannot support |config|.
-  if (gpu_factories_ && !gpu_factories_->IsDecoderConfigSupported(
-                            video_decoder_implementation_, config)) {
+  if (gpu_factories_ && gpu_factories_->IsDecoderConfigSupported(
+                            video_decoder_implementation_, config) ==
+                            GpuVideoAcceleratorFactories::Supported::kFalse) {
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(std::move(bound_init_cb), false));
     return;
@@ -338,29 +341,23 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!remote_decoder_bound_);
 
-  remote_decoder_.Bind(std::move(remote_decoder_info_));
+  remote_decoder_.Bind(std::move(pending_remote_decoder_));
   remote_decoder_bound_ = true;
 
-  remote_decoder_.set_connection_error_handler(
+  remote_decoder_.set_disconnect_handler(
       base::Bind(&MojoVideoDecoder::Stop, base::Unretained(this)));
 
-  // Create |client| interface (bound to |this|).
-  mojom::VideoDecoderClientAssociatedPtrInfo client_ptr_info;
-  client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
-
-  // Create |media_log| interface (bound to |media_log_service_|).
-  mojom::MediaLogAssociatedPtrInfo media_log_ptr_info;
-  media_log_binding_.Bind(mojo::MakeRequest(&media_log_ptr_info));
-
-  // Create |video_frame_handle_releaser| interface request, and bind
+  // Create |video_frame_handle_releaser| interface receiver, and bind
   // |mojo_video_frame_handle_releaser_| to it.
-  mojom::VideoFrameHandleReleaserRequest video_frame_handle_releaser_request;
-  mojom::VideoFrameHandleReleaserPtrInfo video_frame_handle_releaser_ptr_info;
-  video_frame_handle_releaser_request =
-      mojo::MakeRequest(&video_frame_handle_releaser_ptr_info);
+  mojo::PendingRemote<mojom::VideoFrameHandleReleaser>
+      video_frame_handle_releaser_pending_remote;
+  mojo::PendingReceiver<mojom::VideoFrameHandleReleaser>
+      video_frame_handle_releaser_receiver =
+          video_frame_handle_releaser_pending_remote
+              .InitWithNewPipeAndPassReceiver();
   mojo_video_frame_handle_releaser_ =
       base::MakeRefCounted<MojoVideoFrameHandleReleaser>(
-          std::move(video_frame_handle_releaser_ptr_info), task_runner_);
+          std::move(video_frame_handle_releaser_pending_remote), task_runner_);
 
   mojo::ScopedDataPipeConsumerHandle remote_consumer_handle;
   mojo_decoder_buffer_writer_ = MojoDecoderBufferWriter::Create(
@@ -378,8 +375,9 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   }
 
   remote_decoder_->Construct(
-      std::move(client_ptr_info), std::move(media_log_ptr_info),
-      std::move(video_frame_handle_releaser_request),
+      client_receiver_.BindNewEndpointAndPassRemote(),
+      media_log_receiver_.BindNewEndpointAndPassRemote(),
+      std::move(video_frame_handle_releaser_receiver),
       std::move(remote_consumer_handle), std::move(command_buffer_id),
       video_decoder_implementation_, target_color_space_);
 }

@@ -5,9 +5,9 @@
 #ifndef CONTENT_CHILD_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
 #define CONTENT_CHILD_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
 
-#include <map>
-
 #include <stdint.h>
+
+#include <map>
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
@@ -15,9 +15,9 @@
 #include "components/services/font/public/cpp/font_loader.h"
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/font_fallback_linux.h"
 
 namespace blink {
-struct OutOfProcessFont;
 struct WebFontRenderStyle;
 }
 
@@ -31,22 +31,23 @@ class WebSandboxSupportLinux : public blink::WebSandboxSupport {
   explicit WebSandboxSupportLinux(sk_sp<font_service::FontLoader> font_loader);
   ~WebSandboxSupportLinux() override;
 
-  // Returns a font family which provides glyphs for the Unicode code point
-  // specified by |character|, a UTF-32 character. |preferred_locale| contains
-  // the preferred locale identifier for |character|. The instance has an empty
-  // font name if the request could not be satisfied.
-  void GetFallbackFontForCharacter(blink::WebUChar32 character,
-                                   const char* preferred_locale,
-                                   blink::OutOfProcessFont* font) override;
+  // |fallback_font| will be filled with a font family which provides glyphs for
+  // the Unicode code point specified by |character|, a UTF-32 character.
+  // |preferred_locale| contains the preferred locale identifier for
+  // |character|. Returns false if the request could not be satisfied.
+  bool GetFallbackFontForCharacter(
+      blink::WebUChar32 character,
+      const char* preferred_locale,
+      gfx::FallbackFontData* fallback_font) override;
 
   // Matches a font uniquely by postscript name or full font name.  Used in
   // Blink for @font-face { src: local(arg) } matching.  Provide full font name
-  // or postscript name as argument font_unique_name in UTF-8. fallback_font
-  // contains a filename and fontconfig interface id if a match was found. The
-  // filename is empty and the interface id is zero if no match is found.
-  void MatchFontByPostscriptNameOrFullFontName(
+  // or postscript name as argument font_unique_name in UTF-8. |fallback_font|
+  // contains a filename and fontconfig interface id if a match was found.
+  // Returns false, otherwise.
+  bool MatchFontByPostscriptNameOrFullFontName(
       const char* font_unique_name,
-      blink::OutOfProcessFont* font) override;
+      gfx::FallbackFontData* fallback_font) override;
 
   // Returns rendering settings for a provided font family, size, and style.
   // |size_and_style| stores the bold setting in its least-significant bit, the
@@ -64,7 +65,7 @@ class WebSandboxSupportLinux : public blink::WebSandboxSupport {
   // cached. The cache is protected by this lock.
   base::Lock lock_;
   // Maps unicode chars to their fallback fonts.
-  std::map<int32_t, blink::OutOfProcessFont> unicode_font_families_
+  std::map<int32_t, gfx::FallbackFontData> unicode_font_families_
       GUARDED_BY(lock_);
 
   sk_sp<font_service::FontLoader> font_loader_;

@@ -28,6 +28,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_client_info.h"
@@ -42,9 +43,9 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
@@ -59,6 +60,7 @@ class HttpResponseInfo;
 
 namespace content {
 
+class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerInstalledScriptsSender;
 class ServiceWorkerProviderHost;
@@ -167,12 +169,19 @@ class CONTENT_EXPORT ServiceWorkerVersion
     // OnControlleeAdded/Removed are called asynchronously. It is possible the
     // provider host identified by |client_uuid| was already destroyed when they
     // are called.
+    // Note regarding BackForwardCache integration:
+    // OnControlleeRemoved is called when a controllee enters back-forward
+    // cache, and OnControlleeAdded is called when a controllee is restored from
+    // back-forward cache.
     virtual void OnControlleeAdded(ServiceWorkerVersion* version,
                                    const std::string& client_uuid,
                                    const ServiceWorkerClientInfo& client_info) {
     }
     virtual void OnControlleeRemoved(ServiceWorkerVersion* version,
                                      const std::string& client_uuid) {}
+    // Called when all controllees are removed.
+    // Note regarding BackForwardCache integration:
+    // Clients in back-forward cache don't count as controllees.
     virtual void OnNoControllees(ServiceWorkerVersion* version) {}
     virtual void OnNoWork(ServiceWorkerVersion* version) {}
     virtual void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
@@ -311,7 +320,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Provides a mechanism to external clients to keep the worker running.
   // |request_uuid| is a GUID for clients to identify the request.
   // Returns true if the request was successfully scheduled to starrt.
-  bool StartExternalRequest(const std::string& request_uuid);
+  ServiceWorkerExternalRequestResult StartExternalRequest(
+      const std::string& request_uuid);
 
   // Informs ServiceWorkerVersion that an event has finished being dispatched.
   // Returns false if no inflight requests with the provided id exist, for
@@ -322,9 +332,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool FinishRequest(int request_id, bool was_handled);
 
   // Finishes an external request that was started by StartExternalRequest().
-  // Returns false if there was an error finishing the request: e.g. the request
-  // was not found or the worker already terminated.
-  bool FinishExternalRequest(const std::string& request_uuid);
+  ServiceWorkerExternalRequestResult FinishExternalRequest(
+      const std::string& request_uuid);
 
   // Creates a callback that is to be used for marking simple events dispatched
   // through blink::mojom::ServiceWorker as finished for the |request_id|.
@@ -354,14 +363,36 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   // Adds and removes the specified host as a controllee of this service worker.
-  void AddControllee(ServiceWorkerProviderHost* provider_host);
+  void AddControllee(ServiceWorkerContainerHost* container_host);
   void RemoveControllee(const std::string& client_uuid);
 
-  // Returns if it has controllee.
+  // Called when a controllee goes into back-forward cache.
+  void MoveControlleeToBackForwardCacheMap(const std::string& client_uuid);
+  // Called when a back-forward cached controllee is restored.
+  void RestoreControlleeFromBackForwardCacheMap(const std::string& client_uuid);
+  // Called when a back-forward cached controllee is evicted or destroyed.
+  void RemoveControlleeFromBackForwardCacheMap(const std::string& client_uuid);
+  // Called when a controllee is destroyed. Remove controllee from whichever
+  // map it belongs to, or do nothing when it is already removed.
+  void OnControlleeDestroyed(const std::string& client_uuid);
+
+  // Returns true if this version has a controllee.
+  // Note regarding BackForwardCache:
+  // Clients in back-forward cache don't count as controllees.
   bool HasControllee() const { return !controllee_map_.empty(); }
-  std::map<std::string, ServiceWorkerProviderHost*> controllee_map() {
+  std::map<std::string, ServiceWorkerContainerHost*> controllee_map() {
     return controllee_map_;
   }
+
+  // BackForwardCache:
+  // Evicts all the controllees from back-forward cache. The controllees in
+  // |bfcached_controllee_map_| will be removed asynchronously as a result of
+  // eviction.
+  void EvictBackForwardCachedControllees(
+      BackForwardCacheMetrics::NotRestoredReason reason);
+  void EvictBackForwardCachedControllee(
+      ServiceWorkerContainerHost* controllee,
+      BackForwardCacheMetrics::NotRestoredReason reason);
 
   // The provider host hosting this version. Only valid while the version is
   // running.
@@ -413,6 +444,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
   void SetToPauseAfterDownload(base::OnceClosure callback);
   void SetToNotPauseAfterDownload();
+
+  void set_outside_fetch_client_settings_object(
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object) {
+    DCHECK(!outside_fetch_client_settings_object_);
+    outside_fetch_client_settings_object_ =
+        std::move(outside_fetch_client_settings_object);
+  }
 
   // For use by EmbeddedWorkerInstance. Called when the main script loaded.
   // This is only called for new (non-installed) workers. It's used for resuming
@@ -895,7 +934,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // running.
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
 
-  std::map<std::string, ServiceWorkerProviderHost*> controllee_map_;
+  // |controllee_map_| and |bfcached_controllee_map_| should not share the same
+  // controllee.
+  std::map<std::string, ServiceWorkerContainerHost*> controllee_map_;
+  std::map<std::string, ServiceWorkerContainerHost*> bfcached_controllee_map_;
+
   // Will be null while shutting down.
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::ObserverList<Observer>::Unchecked observers_;
@@ -983,6 +1026,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // InitializeGlobalScope() is called.
   mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerHost>
       service_worker_host_;
+
+  blink::mojom::FetchClientSettingsObjectPtr
+      outside_fetch_client_settings_object_;
 
   // TODO(crbug.com/951571): Remove once the bug is debugged.
   // This is set when this service worker becomes redundant.

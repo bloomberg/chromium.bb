@@ -83,14 +83,14 @@ static VkPhysicalDeviceLimits SetLimits(VkPhysicalDeviceLimits *limits) {
     limits->maxPerStageDescriptorSampledImages = 16;
     limits->maxPerStageDescriptorStorageImages = 4;
     limits->maxPerStageDescriptorInputAttachments = 4;
-    limits->maxPerStageResources = 128^2;
-    limits->maxDescriptorSetSamplers = 96^8;
-    limits->maxDescriptorSetUniformBuffers = 72^8;
+    limits->maxPerStageResources = 128;
+    limits->maxDescriptorSetSamplers = 96;
+    limits->maxDescriptorSetUniformBuffers = 72;
     limits->maxDescriptorSetUniformBuffersDynamic = 8;
-    limits->maxDescriptorSetStorageBuffers = 24^8;
+    limits->maxDescriptorSetStorageBuffers = 24;
     limits->maxDescriptorSetStorageBuffersDynamic = 4;
-    limits->maxDescriptorSetSampledImages = 96^8;
-    limits->maxDescriptorSetStorageImages = 24^8;
+    limits->maxDescriptorSetSampledImages = 96;
+    limits->maxDescriptorSetStorageImages = 24;
     limits->maxDescriptorSetInputAttachments = 4;
     limits->maxVertexInputAttributes = 16;
     limits->maxVertexInputBindings = 16;
@@ -125,8 +125,8 @@ static VkPhysicalDeviceLimits SetLimits(VkPhysicalDeviceLimits *limits) {
     limits->subPixelPrecisionBits = 4;
     limits->subTexelPrecisionBits = 4;
     limits->mipmapPrecisionBits = 4;
-    limits->maxDrawIndexedIndexValue = (2^32) - 1;
-    limits->maxDrawIndirectCount = (2^16) - 1;
+    limits->maxDrawIndexedIndexValue = UINT32_MAX;
+    limits->maxDrawIndirectCount = UINT16_MAX;
     limits->maxSamplerLodBias = 2.0f;
     limits->maxSamplerAnisotropy = 16;
     limits->maxViewports = 16;
@@ -795,6 +795,13 @@ CUSTOM_C_INTERCEPTS = {
         VkPhysicalDevicePushDescriptorPropertiesKHR* write_props = (VkPhysicalDevicePushDescriptorPropertiesKHR*)push_descriptor_props;
         write_props->maxPushDescriptors = 256;
     }
+
+    const auto *depth_stencil_resolve_props = lvl_find_in_chain<VkPhysicalDeviceDepthStencilResolvePropertiesKHR>(pProperties->pNext);
+    if (depth_stencil_resolve_props) {
+        VkPhysicalDeviceDepthStencilResolvePropertiesKHR* write_props = (VkPhysicalDeviceDepthStencilResolvePropertiesKHR*)depth_stencil_resolve_props;
+        write_props->supportedDepthResolveModes = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT_KHR;
+        write_props->supportedStencilResolveModes = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT_KHR;
+    }
 ''',
 'vkGetPhysicalDeviceExternalSemaphoreProperties':'''
     // Hard code support for all handle types and features
@@ -934,6 +941,7 @@ CUSTOM_C_INTERCEPTS = {
 #     separate line, align parameter names at the specified column
 class MockICDGeneratorOptions(GeneratorOptions):
     def __init__(self,
+                 conventions = None,
                  filename = None,
                  directory = '.',
                  apiname = None,
@@ -959,7 +967,7 @@ class MockICDGeneratorOptions(GeneratorOptions):
                  alignFuncParam = 0,
                  expandEnumerants = True,
                  helper_file_type = ''):
-        GeneratorOptions.__init__(self, filename, directory, apiname, profile,
+        GeneratorOptions.__init__(self, conventions, filename, directory, apiname, profile,
                                   versions, emitversions, defaultExtensions,
                                   addExtensions, removeExtensions, emitExtensions, sortProcedure)
         self.prefixText      = prefixText
@@ -1016,7 +1024,7 @@ class MockICDOutputGenerator(OutputGenerator):
     def paramIsPointer(self, param):
         ispointer = False
         for elem in param:
-            if ((elem.tag is not 'type') and (elem.tail is not None)) and '*' in elem.tail:
+            if ((elem.tag != 'type') and (elem.tail is not None)) and '*' in elem.tail:
                 ispointer = True
         return ispointer
 
@@ -1044,7 +1052,7 @@ class MockICDOutputGenerator(OutputGenerator):
         self.header = False
         if (genOpts.protectFile and self.genOpts.filename and 'h' == self.genOpts.filename[-1]):
             self.header = True
-            headerSym = '__' + re.sub('\.h', '_h_', os.path.basename(self.genOpts.filename))
+            headerSym = '__' + re.sub(r'\.h', '_h_', os.path.basename(self.genOpts.filename))
             write('#ifndef', headerSym, file=self.outFile)
             write('#define', headerSym, '1', file=self.outFile)
             self.newline()

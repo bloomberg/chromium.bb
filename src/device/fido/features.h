@@ -16,21 +16,17 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthUseNativeWinApi;
 #endif  // defined(OS_WIN)
 
-// Enable support for resident keys.
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const base::Feature kWebAuthResidentKeys;
-
 // Enable biometric enrollment in the security keys settings UI.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthBiometricEnrollment;
 
-// Enable credential management in the security keys settings UI.
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const base::Feature kWebAuthCredentialManagement;
-
 // Enable using a phone as a generic security key.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthPhoneSupport;
+
+// Enable WebAuthn calls in cross-origin iframes if allowed by Feature Policy.
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const base::Feature kWebAuthFeaturePolicy;
 
 }  // namespace device
 

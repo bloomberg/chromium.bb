@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol BadgeItem;
+
 // Protocol for commands that will be handled by the BrowserCoordinator.
 // TODO(crbug.com/906662) : Rename this protocol to one that is more descriptive
 // and representative of the contents.
@@ -14,6 +16,9 @@
 
 // Prints the currently active tab.
 - (void)printTab;
+
+// Shows the downloads folder.
+- (void)showDownloadsFolder;
 
 // Shows the Reading List UI.
 - (void)showReadingList;
@@ -23,6 +28,9 @@
 
 // Shows the AddCreditCard UI.
 - (void)showAddCreditCard;
+
+// Displays the Badge popup menu showing |badgeItems|.
+- (void)displayPopupMenuWithBadgeItems:(NSArray<id<BadgeItem>>*)badgeItems;
 
 @end
 

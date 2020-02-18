@@ -26,9 +26,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/account_manager/account_migration_runner.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/tpm/install_attributes.h"
+#include "components/signin/core/browser/active_directory_account_reconcilor_delegate.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #endif
@@ -168,15 +170,22 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
             IdentityManagerFactory::GetForProfile(profile));
       }
 
-      // TODO(sinhak): Remove the if-condition (and use
-      // |MirrorAccountReconcilorDelegate|) when all Chrome OS users have been
-      // migrated to Account Manager.
-      if (chromeos::features::IsAccountManagerEnabled()) {
-        return std::make_unique<ChromeOSAccountReconcilorDelegate>(
-            IdentityManagerFactory::GetForProfile(profile),
-            chromeos::AccountManagerMigratorFactory::GetForBrowserContext(
-                profile));
+      // Only for Active Directory accounts on Chrome OS.
+      // TODO(https://crbug.com/993317): Remove the check for
+      // |IsAccountManagerAvailable| after fixing https://crbug.com/1008349 and
+      // https://crbug.com/993317.
+      if (chromeos::IsAccountManagerAvailable(profile) &&
+          chromeos::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
+        return std::make_unique<
+            signin::ActiveDirectoryAccountReconcilorDelegate>();
       }
+
+      // TODO(sinhak): Use |MirrorAccountReconcilorDelegate|) when all Chrome OS
+      // users have been migrated to Account Manager.
+      return std::make_unique<ChromeOSAccountReconcilorDelegate>(
+          IdentityManagerFactory::GetForProfile(profile),
+          chromeos::AccountManagerMigratorFactory::GetForBrowserContext(
+              profile));
 #elif defined(OS_ANDROID)
       if (base::FeatureList::IsEnabled(signin::kMiceFeature))
         return std::make_unique<signin::MiceAccountReconcilorDelegate>();
@@ -187,14 +196,11 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
     case signin::AccountConsistencyMethod::kDisabled:
       return std::make_unique<signin::AccountReconcilorDelegate>();
 
-    case signin::AccountConsistencyMethod::kDiceMigration:
     case signin::AccountConsistencyMethod::kDice:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       return std::make_unique<signin::DiceAccountReconcilorDelegate>(
           ChromeSigninClientFactory::GetForProfile(profile),
-          account_consistency,
-          account_consistency == signin::AccountConsistencyMethod::kDice &&
-              AccountConsistencyModeManager::IsDiceMigrationCompleted(profile));
+          AccountConsistencyModeManager::IsDiceMigrationCompleted(profile));
 #else
       NOTREACHED();
       return nullptr;

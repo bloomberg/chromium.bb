@@ -8,6 +8,7 @@
 #include "components/download/internal/common/resource_downloader.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/input_stream.h"
@@ -68,11 +69,9 @@ void CreateUrlDownloadHandler(
 }  // namespace
 
 DownloadWorker::DownloadWorker(DownloadWorker::Delegate* delegate,
-                               int64_t offset,
-                               int64_t length)
+                               int64_t offset)
     : delegate_(delegate),
       offset_(offset),
-      length_(length),
       is_paused_(false),
       is_canceled_(false),
       url_download_handler_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {
@@ -115,7 +114,7 @@ void DownloadWorker::OnUrlDownloadStarted(
     URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
         url_loader_factory_provider,
     UrlDownloadHandler* downloader,
-    const DownloadUrlParameters::OnStartedCallback& callback) {
+    DownloadUrlParameters::OnStartedCallback callback) {
   // |callback| is not used in subsequent requests.
   DCHECK(callback.is_null());
 
@@ -127,12 +126,16 @@ void DownloadWorker::OnUrlDownloadStarted(
     return;
   }
 
-  // TODO(xingliu): Add metric for error handling.
+  if (offset_ != create_info->offset)
+    create_info->result = DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
+
   if (create_info->result != DOWNLOAD_INTERRUPT_REASON_NONE) {
+    RecordParallelRequestCreationFailure(create_info->result);
     VLOG(kWorkerVerboseLevel)
         << "Parallel download sub-request failed. reason = "
         << create_info->result;
     input_stream.reset(new CompletedInputStream(create_info->result));
+    url_download_handler_.reset();
   }
 
   // Pause the stream if user paused, still push the stream reader to the sink.

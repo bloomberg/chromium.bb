@@ -1,9 +1,10 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startBlank(
       'Tests that tasks order is not changed when worker is resumed.');
-  dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true,
+  await dp.Target.setAutoAttach({autoAttach: true, waitForDebuggerOnStart: true,
                            flatten: true});
 
+  const attachedPromise = dp.Target.onceAttachedToTarget();
   await session.evaluate(`
       const workerScript = \`
         self.count = 0;
@@ -22,17 +23,17 @@
       worker.postMessage(1);
     `);
 
-  const event = await dp.Target.onceAttachedToTarget();
+  const event = await attachedPromise;
   const childSession = session.createChild(event.params.sessionId);
   testRunner.log('Worker created');
 
   await childSession.protocol.Debugger.enable();
 
-  childSession.protocol.Runtime.runIfWaitingForDebugger();
+  await childSession.protocol.Runtime.runIfWaitingForDebugger();
   await childSession.protocol.Debugger.oncePaused();
 
   await session.evaluate(`worker.postMessage(2)`);
-  childSession.protocol.Debugger.resume();
+  await childSession.protocol.Debugger.resume();
   await childSession.protocol.Debugger.oncePaused();
   const value = await childSession.evaluate('self.count');
   testRunner.log(`count must be 1: ${value}`);

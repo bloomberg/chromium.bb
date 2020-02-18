@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/audio/audio_features.h"
+#include "base/feature_list.h"
 
 namespace features {
 
@@ -21,6 +22,13 @@ const base::Feature kAudioServiceOutOfProcessKillAtHang{
 // hang is detected.
 const base::Feature kDumpOnAudioServiceHang{"DumpOnAudioServiceHang",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID)
+// Enables loading and using AAudio instead of OpenSLES on compatible devices,
+// for audio output streams.
+const base::Feature kUseAAudioDriver{"UseAAudioDriver",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if defined(OS_CHROMEOS)
 const base::Feature kCrOSSystemAEC{"CrOSSystemAEC",

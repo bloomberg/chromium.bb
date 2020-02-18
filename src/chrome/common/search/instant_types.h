@@ -44,13 +44,32 @@ enum ThemeBackgroundImageTiling {
   THEME_BKGRND_IMAGE_LAST = THEME_BKGRND_IMAGE_REPEAT,
 };
 
-// Theme background settings for the NTP.
-struct ThemeBackgroundInfo {
-  ThemeBackgroundInfo();
-  ThemeBackgroundInfo(const ThemeBackgroundInfo& other);
-  ~ThemeBackgroundInfo();
+struct SearchBoxTheme {
+  SearchBoxTheme();
+  SearchBoxTheme(const SearchBoxTheme& other);
+  ~SearchBoxTheme();
 
-  bool operator==(const ThemeBackgroundInfo& rhs) const;
+  bool operator==(const SearchBoxTheme& rhs) const;
+
+  SkColor bg = gfx::kPlaceholderColor;
+  SkColor icon = gfx::kPlaceholderColor;
+  SkColor placeholder = gfx::kPlaceholderColor;
+  SkColor results_bg = gfx::kPlaceholderColor;
+  SkColor results_bg_hovered = gfx::kPlaceholderColor;
+  SkColor results_bg_selected = gfx::kPlaceholderColor;
+  SkColor results_dim = gfx::kPlaceholderColor;
+  SkColor results_text = gfx::kPlaceholderColor;
+  SkColor results_url = gfx::kPlaceholderColor;
+  SkColor text = gfx::kPlaceholderColor;
+};
+
+// Theme settings for the NTP.
+struct NtpTheme {
+  NtpTheme();
+  NtpTheme(const NtpTheme& other);
+  ~NtpTheme();
+
+  bool operator==(const NtpTheme& rhs) const;
 
   // True if the default theme is selected.
   bool using_default_theme = true;
@@ -58,6 +77,9 @@ struct ThemeBackgroundInfo {
   // True if the system theme uses a light-on-dark color scheme instead of
   // dark-on-light.
   bool using_dark_colors = false;
+
+  // True if having a custom background is disabled by policy.
+  bool custom_background_disabled_by_policy = false;
 
   // Url of the custom background selected by the user.
   GURL custom_background_url;
@@ -127,6 +149,14 @@ struct ThemeBackgroundInfo {
   // The picked custom color for Chrome Colors. Valid only if Chrome Colors is
   // set.
   SkColor color_picked = gfx::kPlaceholderColor;
+
+  // Color used for alternative Google logo on NTP.
+  SkColor logo_color = gfx::kPlaceholderColor;
+
+  // Color for NTP shortcut backgrounds.
+  SkColor shortcut_color = gfx::kPlaceholderColor;
+
+  SearchBoxTheme search_box;
 };
 
 struct InstantMostVisitedItem {

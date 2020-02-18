@@ -70,6 +70,12 @@ void ServiceWorkerInstalledScriptsSender::StartSendingScript(
   DCHECK(!reader_);
   DCHECK(current_sending_url_.is_empty());
   state_ = State::kSendingScripts;
+
+  if (!owner_->context()) {
+    Abort(ServiceWorkerInstalledScriptReader::FinishedReason::kNoContextError);
+    return;
+  }
+
   current_sending_url_ = script_url;
 
   std::unique_ptr<ServiceWorkerResponseReader> response_reader =
@@ -82,32 +88,45 @@ void ServiceWorkerInstalledScriptsSender::StartSendingScript(
 }
 
 void ServiceWorkerInstalledScriptsSender::OnStarted(
-    std::string encoding,
-    base::flat_map<std::string, std::string> headers,
+    scoped_refptr<HttpResponseInfoIOBuffer> http_info,
     mojo::ScopedDataPipeConsumerHandle body_handle,
-    uint64_t body_size,
-    mojo::ScopedDataPipeConsumerHandle meta_data_handle,
-    uint64_t meta_data_size) {
+    mojo::ScopedDataPipeConsumerHandle meta_data_handle) {
+  DCHECK(http_info);
   DCHECK(reader_);
   DCHECK_EQ(State::kSendingScripts, state_);
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2("ServiceWorker", "OnStarted", this,
-                                      "body_size", body_size, "meta_data_size",
-                                      meta_data_size);
+  uint64_t meta_data_size = http_info->http_info->metadata
+                                ? http_info->http_info->metadata->size()
+                                : 0;
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
+      "ServiceWorker", "OnStarted", this, "body_size",
+      http_info->response_data_size, "meta_data_size", meta_data_size);
+
+  // Create a map of response headers.
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      http_info->http_info->headers;
+  DCHECK(headers);
+  base::flat_map<std::string, std::string> header_strings;
+  size_t iter = 0;
+  std::string key;
+  std::string value;
+  // This logic is copied from blink::ResourceResponse::AddHttpHeaderField.
+  while (headers->EnumerateHeaderLines(&iter, &key, &value)) {
+    if (header_strings.find(key) == header_strings.end()) {
+      header_strings[key] = value;
+    } else {
+      header_strings[key] += ", " + value;
+    }
+  }
+
   auto script_info = blink::mojom::ServiceWorkerScriptInfo::New();
   script_info->script_url = current_sending_url_;
-  script_info->headers = std::move(headers);
-  script_info->encoding = std::move(encoding);
+  script_info->headers = std::move(header_strings);
+  headers->GetCharset(&script_info->encoding);
   script_info->body = std::move(body_handle);
-  script_info->body_size = body_size;
+  script_info->body_size = http_info->response_data_size;
   script_info->meta_data = std::move(meta_data_handle);
   script_info->meta_data_size = meta_data_size;
   manager_->TransferInstalledScript(std::move(script_info));
-}
-
-void ServiceWorkerInstalledScriptsSender::OnHttpInfoRead(
-    scoped_refptr<HttpResponseInfoIOBuffer> http_info) {
-  DCHECK(reader_);
-  DCHECK_EQ(State::kSendingScripts, state_);
   if (IsSendingMainScript())
     owner_->SetMainScriptHttpResponseInfo(*http_info->http_info);
 }
@@ -192,6 +211,7 @@ void ServiceWorkerInstalledScriptsSender::Abort(
     case ServiceWorkerInstalledScriptReader::FinishedReason::kConnectionError:
     case ServiceWorkerInstalledScriptReader::FinishedReason::
         kMetaDataSenderError:
+    case ServiceWorkerInstalledScriptReader::FinishedReason::kNoContextError:
       // Break the Mojo connection with the renderer. This usually causes the
       // service worker to stop, and the error handler of EmbeddedWorkerInstance
       // is invoked soon.

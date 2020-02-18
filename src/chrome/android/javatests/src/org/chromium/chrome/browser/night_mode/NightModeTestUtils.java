@@ -8,9 +8,10 @@ import android.support.v7.app.AppCompatDelegate;
 
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.preferences.themes.ThemePreferences;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.settings.themes.ThemePreferences;
 import org.chromium.chrome.test.ui.DummyUiActivity;
 
 import java.util.Arrays;
@@ -64,7 +65,7 @@ public class NightModeTestUtils {
      * @param nightModeEnabled Whether night mode should be enabled.
      */
     public static void setUpNightModeForChromeActivity(boolean nightModeEnabled) {
-        ChromePreferenceManager.getInstance().writeInt(ChromePreferenceManager.UI_THEME_SETTING_KEY,
+        SharedPreferencesManager.getInstance().writeInt(ChromePreferenceKeys.UI_THEME_SETTING_KEY,
                 nightModeEnabled ? ThemePreferences.ThemeSetting.DARK
                                  : ThemePreferences.ThemeSetting.LIGHT);
     }
@@ -77,7 +78,6 @@ public class NightModeTestUtils {
         FeatureUtilities.setNightModeAvailableForTesting(null);
         NightModeUtils.setNightModeSupportedForTesting(null);
         GlobalNightModeStateProviderHolder.resetInstanceForTesting();
-        ChromePreferenceManager.getInstance().removeKey(
-                ChromePreferenceManager.UI_THEME_SETTING_KEY);
+        SharedPreferencesManager.getInstance().removeKey(ChromePreferenceKeys.UI_THEME_SETTING_KEY);
     }
 }

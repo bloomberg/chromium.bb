@@ -19,6 +19,7 @@ scanned_src_files_Client = 				\
 
 scanned_src_files_Server = 				\
 	$(scanned_src_files_shared)			\
+	$(top_srcdir)/src/event-loop.c		\
 	$(top_srcdir)/src/wayland-server.c	\
 	$(top_srcdir)/src/wayland-server.h	\
 	$(top_srcdir)/src/wayland-server-core.h	\

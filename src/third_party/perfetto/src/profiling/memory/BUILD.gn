@@ -93,6 +93,7 @@ source_set("wire_protocol") {
 source_set("proc_utils") {
   deps = [
     "../../../gn:default_deps",
+    "../../../include/perfetto/profiling:normalize",
     "../../base",
   ]
   sources = [
@@ -152,6 +153,7 @@ source_set("daemon") {
   ]
   public_deps = [
     "../../../gn:libunwindstack",
+    "../../../protos/perfetto/config/profiling:cpp",
     "../../../protos/perfetto/trace:zero",
     "../../../protos/perfetto/trace/interned_data:zero",
     "../../../protos/perfetto/trace/profiling:zero",
@@ -161,11 +163,11 @@ source_set("daemon") {
     "bookkeeping.h",
     "bookkeeping_dump.cc",
     "bookkeeping_dump.h",
-    "heapprofd_config.cc",
-    "heapprofd_config.h",
     "heapprofd_producer.cc",
     "heapprofd_producer.h",
     "interner.h",
+    "java_hprof_producer.cc",
+    "java_hprof_producer.h",
     "page_idle_checker.cc",
     "page_idle_checker.h",
     "system_property.cc",
@@ -208,6 +210,7 @@ perfetto_unittest_source_set("unittests") {
     "../../../gn:default_deps",
     "../../../gn:gtest_and_gmock",
     "../../../gn:libunwindstack",
+    "../../../include/perfetto/profiling:normalize",
     "../../base",
     "../../base:test_support",
     "../../tracing",

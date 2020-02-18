@@ -18,8 +18,10 @@ import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -53,11 +55,14 @@ public class TabListSceneLayer extends SceneLayer {
      * @param fullscreenManager The fullscreen manager for browser controls information.
      * @param backgroundResourceId The resource ID for background. {@link #INVALID_RESOURCE_ID} if
      *                             none. Only used in GridTabSwitcher.
+     * @param backgroundAlpha The alpha of the background. Only used in GridTabSwitcher.
+     * @param backgroundTopOffset The top offset of the background. Only used in GridTabSwitcher.
+     *
      */
     public void pushLayers(Context context, RectF viewport, RectF contentViewport, Layout layout,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
             ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager,
-            int backgroundResourceId, float backgroundAlpha) {
+            int backgroundResourceId, float backgroundAlpha, int backgroundTopOffset) {
         if (mNativePtr == 0) return;
 
         Resources res = context.getResources();
@@ -74,8 +79,8 @@ public class TabListSceneLayer extends SceneLayer {
                 tabContentManager, resourceManager);
 
         if (backgroundResourceId != INVALID_RESOURCE_ID) {
-            TabListSceneLayerJni.get().putBackgroundLayer(
-                    mNativePtr, TabListSceneLayer.this, backgroundResourceId, backgroundAlpha);
+            TabListSceneLayerJni.get().putBackgroundLayer(mNativePtr, TabListSceneLayer.this,
+                    backgroundResourceId, backgroundAlpha, backgroundTopOffset);
         }
 
         boolean isHTSEnabled =
@@ -93,7 +98,7 @@ public class TabListSceneLayer extends SceneLayer {
             int urlBarBackgroundId = R.drawable.modern_location_bar;
             boolean useIncognitoColors = t.isIncognito() && !isHTSEnabled;
 
-            int defaultThemeColor = ColorUtils.getDefaultThemeColor(res, useIncognitoColors);
+            int defaultThemeColor = ChromeColors.getDefaultThemeColor(res, useIncognitoColors);
 
             // In the modern design, the text box is always drawn opaque in the compositor.
             float textBoxAlpha = 1.f;
@@ -145,9 +150,10 @@ public class TabListSceneLayer extends SceneLayer {
     protected int getTabListBackgroundColor(Context context) {
         int colorId = R.color.modern_primary_color;
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
+                || FeatureUtilities.isGridTabSwitcherEnabled()) {
             if (mTabModelSelector != null && mTabModelSelector.isIncognitoSelected()) {
-                colorId = R.color.incognito_modern_primary_color;
+                colorId = R.color.dark_primary_color;
             } else {
                 colorId = R.color.modern_primary_color;
             }
@@ -210,6 +216,6 @@ public class TabListSceneLayer extends SceneLayer {
                 float sideBorderScale, boolean insetVerticalBorder);
 
         void putBackgroundLayer(long nativeTabListSceneLayer, TabListSceneLayer caller,
-                int resourceId, float alpha);
+                int resourceId, float alpha, int topOffset);
     }
 }

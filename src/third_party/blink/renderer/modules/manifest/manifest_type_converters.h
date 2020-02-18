@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MANIFEST_MANIFEST_TYPE_CONVERTERS_H_
 
 #include "third_party/blink/public/common/manifest/manifest.h"
-#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -50,6 +50,13 @@ struct TypeConverter<blink::Manifest::FileFilter,
                      blink::mojom::blink::ManifestFileFilterPtr> {
   static blink::Manifest::FileFilter Convert(
       const blink::mojom::blink::ManifestFileFilterPtr& input);
+};
+
+template <>
+struct TypeConverter<blink::Manifest::FileHandler,
+                     blink::mojom::blink::ManifestFileHandlerPtr> {
+  static blink::Manifest::FileHandler Convert(
+      const blink::mojom::blink::ManifestFileHandlerPtr& input);
 };
 
 template <>

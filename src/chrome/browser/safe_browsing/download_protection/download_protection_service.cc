@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -151,9 +153,9 @@ void DownloadProtectionService::ParseManualBlacklistFlag() {
       safe_browsing::switches::kSbManualDownloadBlacklist);
   for (const std::string& hash_hex : base::SplitString(
            flag_val, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-    std::vector<uint8_t> bytes;
-    if (base::HexStringToBytes(hash_hex, &bytes) && bytes.size() == 32) {
-      manual_blacklist_hashes_.insert(std::string(bytes.begin(), bytes.end()));
+    std::string bytes;
+    if (base::HexStringToString(hash_hex, &bytes) && bytes.size() == 32) {
+      manual_blacklist_hashes_.insert(std::move(bytes));
     } else {
       LOG(FATAL) << "Bad sha256 hex value '" << hash_hex << "' found in --"
                  << safe_browsing::switches::kSbManualDownloadBlacklist;
@@ -168,7 +170,7 @@ bool DownloadProtectionService::IsHashManuallyBlacklisted(
 
 void DownloadProtectionService::CheckClientDownload(
     download::DownloadItem* item,
-    CheckDownloadCallback callback) {
+    CheckDownloadRepeatingCallback callback) {
   if (item->GetDangerType() ==
       download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY) {
     std::move(callback).Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
@@ -525,7 +527,8 @@ void DownloadProtectionService::OnDangerousDownloadOpened(
   extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
       ->OnDangerousDownloadOpened(
           item->GetURL(), item->GetTargetFilePath().AsUTF8Unsafe(),
-          base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()));
+          base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
+          item->GetMimeType(), item->GetTotalBytes());
 }
 
 bool DownloadProtectionService::MaybeBeginFeedbackForDownload(
@@ -545,7 +548,7 @@ void DownloadProtectionService::UploadForDeepScanning(
     Profile* profile,
     std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  sb_service_->GetBinaryUploadService(profile)->UploadForDeepScanning(
+  sb_service_->GetBinaryUploadService(profile)->MaybeUploadForDeepScanning(
       std::move(request));
 }
 

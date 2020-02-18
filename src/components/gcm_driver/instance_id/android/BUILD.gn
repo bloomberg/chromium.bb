@@ -11,6 +11,7 @@ generate_jni("jni_headers") {
 }
 
 generate_jni("test_support_jni_headers") {
+  testonly = true
   sources = [
     "javatests/src/org/chromium/components/gcm_driver/instance_id/FakeInstanceIDWithSubtype.java",
   ]
@@ -20,8 +21,10 @@ android_library("instance_id_driver_java") {
   deps = [
     "$google_play_services_package:google_play_services_iid_java",
     "//base:base_java",
+    "//base:jni_java",
     "//components/gcm_driver/android:gcm_driver_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   srcjar_deps =
       [ "//components/gcm_driver/instance_id:instance_id_java_enums_srcjar" ]

@@ -24,6 +24,7 @@
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/webrtc_event_logger.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_debug_recording_session.h"
@@ -252,7 +253,7 @@ void WebRTCInternals::OnUpdatePeerConnection(
 
 void WebRTCInternals::OnAddStandardStats(base::ProcessId pid,
                                          int lid,
-                                         const base::ListValue& value) {
+                                         base::Value value) {
   if (!observers_.might_have_observers())
     return;
 
@@ -260,14 +261,14 @@ void WebRTCInternals::OnAddStandardStats(base::ProcessId pid,
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetInteger("lid", lid);
 
-  dict->SetKey("reports", value.Clone());
+  dict->SetKey("reports", std::move(value));
 
   SendUpdate("addStandardStats", std::move(dict));
 }
 
 void WebRTCInternals::OnAddLegacyStats(base::ProcessId pid,
                                        int lid,
-                                       const base::ListValue& value) {
+                                       base::Value value) {
   if (!observers_.might_have_observers())
     return;
 
@@ -275,7 +276,7 @@ void WebRTCInternals::OnAddLegacyStats(base::ProcessId pid,
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetInteger("lid", lid);
 
-  dict->SetKey("reports", value.Clone());
+  dict->SetKey("reports", std::move(value));
 
   SendUpdate("addLegacyStats", std::move(dict));
 }

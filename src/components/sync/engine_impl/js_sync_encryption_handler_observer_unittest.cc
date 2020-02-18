@@ -17,7 +17,7 @@
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/js/js_test_util.h"
-#include "components/sync/nigori/cryptographer.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -36,7 +36,7 @@ class JsSyncEncryptionHandlerObserverTest : public testing::Test {
  private:
   // This must be destroyed after the member variables below in order
   // for WeakHandles to be destroyed properly.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
  protected:
   StrictMock<MockJsEventHandler> mock_js_event_handler_;
@@ -63,9 +63,6 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseRequired) {
   base::DictionaryValue reason_encryption_details;
   base::DictionaryValue reason_decryption_details;
 
-  reason_passphrase_not_required_details.SetString(
-      "reason",
-      PassphraseRequiredReasonToString(REASON_PASSPHRASE_NOT_REQUIRED));
   reason_encryption_details.SetString(
       "reason", PassphraseRequiredReasonToString(REASON_ENCRYPTION));
   reason_decryption_details.SetString(
@@ -73,18 +70,11 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseRequired) {
 
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onPassphraseRequired",
-                            HasDetailsAsDictionary(
-                                reason_passphrase_not_required_details)));
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onPassphraseRequired",
                             HasDetailsAsDictionary(reason_encryption_details)));
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onPassphraseRequired",
                             HasDetailsAsDictionary(reason_decryption_details)));
 
-  js_sync_encryption_handler_observer_.OnPassphraseRequired(
-      REASON_PASSPHRASE_NOT_REQUIRED, KeyDerivationParams::CreateForPbkdf2(),
-      sync_pb::EncryptedData());
   js_sync_encryption_handler_observer_.OnPassphraseRequired(
       REASON_ENCRYPTION, KeyDerivationParams::CreateForPbkdf2(),
       sync_pb::EncryptedData());
@@ -136,7 +126,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnCryptographerStateChanged) {
   base::DictionaryValue expected_details;
   bool expected_ready = false;
   bool expected_pending = false;
-  expected_details.SetBoolean("ready", expected_ready);
+  expected_details.SetBoolean("canEncrypt", expected_ready);
   expected_details.SetBoolean("hasPendingKeys", expected_pending);
   ModelTypeSet encrypted_types;
 
@@ -144,9 +134,9 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnCryptographerStateChanged) {
               HandleJsEvent("onCryptographerStateChanged",
                             HasDetailsAsDictionary(expected_details)));
 
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
   js_sync_encryption_handler_observer_.OnCryptographerStateChanged(
-      &cryptographer);
+      &cryptographer, /*has_pending_keys=*/false);
   PumpLoop();
 }
 
@@ -155,14 +145,14 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseTypeChanged) {
 
   base::DictionaryValue passphrase_type_details;
   passphrase_type_details.SetString("passphraseType",
-                                    "PassphraseType::IMPLICIT_PASSPHRASE");
+                                    "PassphraseType::kImplicitPassphrase");
   passphrase_type_details.SetInteger("explicitPassphraseTime", 10);
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onPassphraseTypeChanged",
                             HasDetailsAsDictionary(passphrase_type_details)));
 
   js_sync_encryption_handler_observer_.OnPassphraseTypeChanged(
-      PassphraseType::IMPLICIT_PASSPHRASE, ProtoTimeToTime(10));
+      PassphraseType::kImplicitPassphrase, ProtoTimeToTime(10));
   PumpLoop();
 }
 

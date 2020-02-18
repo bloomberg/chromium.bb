@@ -15,7 +15,7 @@
 #ifndef DAWNWIRE_WIRECMD_AUTOGEN_H_
 #define DAWNWIRE_WIRECMD_AUTOGEN_H_
 
-#include <dawn/dawn.h>
+#include <dawn/webgpu.h>
 
 namespace dawn_wire {
 
@@ -24,6 +24,19 @@ namespace dawn_wire {
     struct ObjectHandle {
       ObjectId id;
       ObjectSerial serial;
+
+      ObjectHandle();
+      ObjectHandle(ObjectId id, ObjectSerial serial);
+      ObjectHandle(const volatile ObjectHandle& rhs);
+
+      // MSVC has a bug where it thinks the volatile copy assignment is a duplicate.
+      // Workaround this by forwarding to a different function AssignFrom.
+      template <typename T>
+      ObjectHandle& operator=(const T& rhs) {
+          return AssignFrom(rhs);
+      }
+      ObjectHandle& AssignFrom(const ObjectHandle& rhs);
+      ObjectHandle& AssignFrom(const volatile ObjectHandle& rhs);
     };
 
     enum class DeserializeResult {
@@ -99,7 +112,7 @@ namespace dawn_wire {
         //* Deserialize returns:
         //*  - Success if everything went well (yay!)
         //*  - FatalError is something bad happened (buffer too small for example)
-        DeserializeResult Deserialize(const char** buffer, size_t* size, DeserializeAllocator* allocator
+        DeserializeResult Deserialize(const volatile char** buffer, size_t* size, DeserializeAllocator* allocator
             {%- if command.has_dawn_object -%}
                 , const ObjectIdResolver& resolver
             {%- endif -%}

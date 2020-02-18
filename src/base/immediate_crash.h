@@ -99,22 +99,18 @@
 
 #elif defined(ARCH_CPU_ARM64)
 
-#define TRAP_SEQUENCE1_() __asm volatile("brk #0\n")
+// Windows ARM64 uses "BRK #F000" as its breakpoint instruction, and
+// __debugbreak() generates that in both VC++ and clang.
+#define TRAP_SEQUENCE1_() __debugbreak()
 // Intentionally empty: __builtin_unreachable() is always part of the sequence
-// (see IMMEDIATE_CRASH below) and already emits a ud2 on Win64
+// (see IMMEDIATE_CRASH below) and already emits a ud2 on Win64,
+// https://crbug.com/958373
 #define TRAP_SEQUENCE2_() __asm volatile("")
 
 #else
 
 #define TRAP_SEQUENCE1_() asm volatile("int3")
-
-#if defined(ARCH_CPU_64_BITS)
-// Intentionally empty: __builtin_unreachable() is always part of the sequence
-// (see IMMEDIATE_CRASH below) and already emits a ud2 on Win64
-#define TRAP_SEQUENCE2_() asm volatile("")
-#else
 #define TRAP_SEQUENCE2_() asm volatile("ud2")
-#endif  // defined(ARCH_CPU_64_bits)
 
 #endif  // __clang__
 

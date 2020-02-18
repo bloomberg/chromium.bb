@@ -20,10 +20,10 @@ g.test('b2b', async t => {
     size: 4,
     usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
   });
-  const encoder = t.device.createCommandEncoder({});
+  const encoder = t.device.createCommandEncoder();
   encoder.copyBufferToBuffer(src, 0, dst, 0, 4);
-  t.device.getQueue().submit([encoder.finish()]);
-  await t.expectContents(dst, data);
+  t.device.defaultQueue.submit([encoder.finish()]);
+  t.expectContents(dst, data);
 });
 g.test('b2t2b', async t => {
   const data = new Uint32Array([0x01020304]);
@@ -46,7 +46,7 @@ g.test('b2t2b', async t => {
     format: 'rgba8uint',
     usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST
   });
-  const encoder = t.device.createCommandEncoder({});
+  const encoder = t.device.createCommandEncoder();
   encoder.copyBufferToTexture({
     buffer: src,
     rowPitch: 256,
@@ -81,8 +81,8 @@ g.test('b2t2b', async t => {
     height: 1,
     depth: 1
   });
-  t.device.getQueue().submit([encoder.finish()]);
-  await t.expectContents(dst, data);
+  t.device.defaultQueue.submit([encoder.finish()]);
+  t.expectContents(dst, data);
 });
 g.test('b2t2t2b', async t => {
   const data = new Uint32Array([0x01020304]);
@@ -107,7 +107,7 @@ g.test('b2t2t2b', async t => {
   };
   const mid1 = t.device.createTexture(midDesc);
   const mid2 = t.device.createTexture(midDesc);
-  const encoder = t.device.createCommandEncoder({});
+  const encoder = t.device.createCommandEncoder();
   encoder.copyBufferToTexture({
     buffer: src,
     rowPitch: 256,
@@ -163,7 +163,7 @@ g.test('b2t2t2b', async t => {
     height: 1,
     depth: 1
   });
-  t.device.getQueue().submit([encoder.finish()]);
-  await t.expectContents(dst, data);
+  t.device.defaultQueue.submit([encoder.finish()]);
+  t.expectContents(dst, data);
 });
 //# sourceMappingURL=copies.spec.js.map

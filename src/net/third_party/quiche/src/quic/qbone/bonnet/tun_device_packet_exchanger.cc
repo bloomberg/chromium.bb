@@ -4,7 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/qbone/bonnet/tun_device_packet_exchanger.h"
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 
 namespace quic {
@@ -14,7 +15,8 @@ TunDevicePacketExchanger::TunDevicePacketExchanger(
     size_t mtu,
     KernelInterface* kernel,
     QbonePacketExchanger::Visitor* visitor,
-    size_t max_pending_packets, StatsInterface* stats)
+    size_t max_pending_packets,
+    StatsInterface* stats)
     : QbonePacketExchanger(visitor, max_pending_packets),
       fd_(fd),
       mtu_(mtu),
@@ -59,7 +61,7 @@ std::unique_ptr<QuicData> TunDevicePacketExchanger::ReadPacket(bool* blocked,
   }
   // Reading on a TUN device returns a packet at a time. If the packet is longer
   // than the buffer, it's truncated.
-  auto read_buffer = QuicMakeUnique<char[]>(mtu_);
+  auto read_buffer = std::make_unique<char[]>(mtu_);
   int result = kernel_->read(fd_, read_buffer.get(), mtu_);
   // Note that 0 means end of file, but we're talking about a TUN device - there
   // is no end of file. Therefore 0 also indicates error.
@@ -72,11 +74,16 @@ std::unique_ptr<QuicData> TunDevicePacketExchanger::ReadPacket(bool* blocked,
     return nullptr;
   }
   stats_->OnPacketRead();
-  return QuicMakeUnique<QuicData>(read_buffer.release(), result, true);
+  return std::make_unique<QuicData>(read_buffer.release(), result, true);
 }
 
 int TunDevicePacketExchanger::file_descriptor() const {
   return fd_;
+}
+
+const TunDevicePacketExchanger::StatsInterface*
+TunDevicePacketExchanger::stats_interface() const {
+  return stats_;
 }
 
 }  // namespace quic

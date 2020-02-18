@@ -148,7 +148,7 @@ TEST_F(QuicFramesTest, ConnectionCloseFrameToString) {
   // underlying frame.
   EXPECT_EQ(
       "{ Close type: GOOGLE_QUIC_CONNECTION_CLOSE, error_code: 25, "
-      "extracted_error_code: QUIC_IETF_GQUIC_ERROR_MISSING, "
+      "extracted_error_code: QUIC_NO_ERROR, "
       "error_details: 'No recent "
       "network activity.'"
       "}\n",
@@ -204,9 +204,9 @@ TEST_F(QuicFramesTest, WindowUpdateFrameToString) {
   EXPECT_EQ(3u, GetControlFrameId(frame));
   std::ostringstream stream;
   window_update.stream_id = 1;
-  window_update.byte_offset = 2;
+  window_update.max_data = 2;
   stream << window_update;
-  EXPECT_EQ("{ control_frame_id: 3, stream_id: 1, byte_offset: 2 }\n",
+  EXPECT_EQ("{ control_frame_id: 3, stream_id: 1, max_data: 2 }\n",
             stream.str());
   EXPECT_TRUE(IsControlFrame(frame.type));
 }
@@ -376,30 +376,27 @@ TEST_F(QuicFramesTest, AddInterval) {
   EXPECT_EQ(QuicPacketNumber(1u), ack_frame1.packets.Min());
   EXPECT_EQ(QuicPacketNumber(99u), ack_frame1.packets.Max());
 
-  std::vector<QuicInterval<QuicPacketNumber>> expected_intervals;
-  expected_intervals.emplace_back(QuicInterval<QuicPacketNumber>(
-      QuicPacketNumber(1), QuicPacketNumber(10)));
-  expected_intervals.emplace_back(QuicInterval<QuicPacketNumber>(
-      QuicPacketNumber(50), QuicPacketNumber(100)));
+  std::vector<QuicInterval<QuicPacketNumber>> expected_intervals{
+      {QuicPacketNumber(1), QuicPacketNumber(10)},
+      {QuicPacketNumber(50), QuicPacketNumber(100)},
+  };
 
   const std::vector<QuicInterval<QuicPacketNumber>> actual_intervals(
       ack_frame1.packets.begin(), ack_frame1.packets.end());
 
   EXPECT_EQ(expected_intervals, actual_intervals);
 
-  // Ensure adding a range within the existing ranges fails.
-  EXPECT_QUIC_BUG(
-      ack_frame1.packets.AddRange(QuicPacketNumber(20), QuicPacketNumber(30)),
-      "");
+  // Add a range in the middle.
+  ack_frame1.packets.AddRange(QuicPacketNumber(20), QuicPacketNumber(30));
 
   const std::vector<QuicInterval<QuicPacketNumber>> actual_intervals2(
       ack_frame1.packets.begin(), ack_frame1.packets.end());
 
-  std::vector<QuicInterval<QuicPacketNumber>> expected_intervals2;
-  expected_intervals2.emplace_back(QuicInterval<QuicPacketNumber>(
-      QuicPacketNumber(1), QuicPacketNumber(10)));
-  expected_intervals2.emplace_back(QuicInterval<QuicPacketNumber>(
-      QuicPacketNumber(50), QuicPacketNumber(100)));
+  std::vector<QuicInterval<QuicPacketNumber>> expected_intervals2{
+      {QuicPacketNumber(1), QuicPacketNumber(10)},
+      {QuicPacketNumber(20), QuicPacketNumber(30)},
+      {QuicPacketNumber(50), QuicPacketNumber(100)},
+  };
 
   EXPECT_EQ(expected_intervals2.size(), ack_frame1.packets.NumIntervals());
   EXPECT_EQ(expected_intervals2, actual_intervals2);
@@ -415,17 +412,13 @@ TEST_F(QuicFramesTest, AddInterval) {
   const std::vector<QuicInterval<QuicPacketNumber>> actual_intervals8(
       ack_frame2.packets.begin(), ack_frame2.packets.end());
 
-  std::vector<QuicInterval<QuicPacketNumber>> expected_intervals8;
-  expected_intervals8.emplace_back(QuicInterval<QuicPacketNumber>(
-      QuicPacketNumber(10), QuicPacketNumber(15)));
-  expected_intervals8.emplace_back(QuicInterval<QuicPacketNumber>(
-      QuicPacketNumber(20), QuicPacketNumber(25)));
-  expected_intervals8.emplace_back(QuicInterval<QuicPacketNumber>(
-      QuicPacketNumber(40), QuicPacketNumber(45)));
-  expected_intervals8.emplace_back(QuicInterval<QuicPacketNumber>(
-      QuicPacketNumber(60), QuicPacketNumber(65)));
-  expected_intervals8.emplace_back(QuicInterval<QuicPacketNumber>(
-      QuicPacketNumber(80), QuicPacketNumber(85)));
+  std::vector<QuicInterval<QuicPacketNumber>> expected_intervals8{
+      {QuicPacketNumber(10), QuicPacketNumber(15)},
+      {QuicPacketNumber(20), QuicPacketNumber(25)},
+      {QuicPacketNumber(40), QuicPacketNumber(45)},
+      {QuicPacketNumber(60), QuicPacketNumber(65)},
+      {QuicPacketNumber(80), QuicPacketNumber(85)},
+  };
 
   EXPECT_EQ(expected_intervals8, actual_intervals8);
 }
@@ -479,6 +472,104 @@ TEST_F(QuicFramesTest, RemoveSmallestInterval) {
   EXPECT_EQ(1u, ack_frame1.packets.NumIntervals());
   EXPECT_EQ(QuicPacketNumber(91u), ack_frame1.packets.Min());
   EXPECT_EQ(QuicPacketNumber(99u), ack_frame1.packets.Max());
+}
+
+TEST_F(QuicFramesTest, CopyQuicFrames) {
+  QuicFrames frames;
+  SimpleBufferAllocator allocator;
+  QuicMemSliceStorage storage(nullptr, 0, nullptr, 0);
+  QuicMessageFrame* message_frame =
+      new QuicMessageFrame(1, MakeSpan(&allocator, "message", &storage));
+  // Construct a frame list.
+  for (uint8_t i = 0; i < NUM_FRAME_TYPES; ++i) {
+    switch (i) {
+      case PADDING_FRAME:
+        frames.push_back(QuicFrame(QuicPaddingFrame(-1)));
+        break;
+      case RST_STREAM_FRAME:
+        frames.push_back(QuicFrame(new QuicRstStreamFrame()));
+        break;
+      case CONNECTION_CLOSE_FRAME:
+        frames.push_back(QuicFrame(new QuicConnectionCloseFrame()));
+        break;
+      case GOAWAY_FRAME:
+        frames.push_back(QuicFrame(new QuicGoAwayFrame()));
+        break;
+      case WINDOW_UPDATE_FRAME:
+        frames.push_back(QuicFrame(new QuicWindowUpdateFrame()));
+        break;
+      case BLOCKED_FRAME:
+        frames.push_back(QuicFrame(new QuicBlockedFrame()));
+        break;
+      case STOP_WAITING_FRAME:
+        frames.push_back(QuicFrame(QuicStopWaitingFrame()));
+        break;
+      case PING_FRAME:
+        frames.push_back(QuicFrame(QuicPingFrame()));
+        break;
+      case CRYPTO_FRAME:
+        frames.push_back(QuicFrame(new QuicCryptoFrame()));
+        break;
+      case STREAM_FRAME:
+        frames.push_back(QuicFrame(QuicStreamFrame()));
+        break;
+      case ACK_FRAME:
+        frames.push_back(QuicFrame(new QuicAckFrame()));
+        break;
+      case MTU_DISCOVERY_FRAME:
+        frames.push_back(QuicFrame(QuicMtuDiscoveryFrame()));
+        break;
+      case NEW_CONNECTION_ID_FRAME:
+        frames.push_back(QuicFrame(new QuicNewConnectionIdFrame()));
+        break;
+      case MAX_STREAMS_FRAME:
+        frames.push_back(QuicFrame(QuicMaxStreamsFrame()));
+        break;
+      case STREAMS_BLOCKED_FRAME:
+        frames.push_back(QuicFrame(QuicStreamsBlockedFrame()));
+        break;
+      case PATH_RESPONSE_FRAME:
+        frames.push_back(QuicFrame(new QuicPathResponseFrame()));
+        break;
+      case PATH_CHALLENGE_FRAME:
+        frames.push_back(QuicFrame(new QuicPathChallengeFrame()));
+        break;
+      case STOP_SENDING_FRAME:
+        frames.push_back(QuicFrame(new QuicStopSendingFrame()));
+        break;
+      case MESSAGE_FRAME:
+        frames.push_back(QuicFrame(message_frame));
+        break;
+      case NEW_TOKEN_FRAME:
+        frames.push_back(QuicFrame(new QuicNewTokenFrame()));
+        break;
+      case RETIRE_CONNECTION_ID_FRAME:
+        frames.push_back(QuicFrame(new QuicRetireConnectionIdFrame()));
+        break;
+      default:
+        ASSERT_TRUE(false)
+            << "Please fix CopyQuicFrames if a new frame type is added.";
+        break;
+    }
+  }
+
+  QuicFrames copy = CopyQuicFrames(&allocator, frames);
+  ASSERT_EQ(NUM_FRAME_TYPES, copy.size());
+  for (uint8_t i = 0; i < NUM_FRAME_TYPES; ++i) {
+    EXPECT_EQ(i, copy[i].type);
+    if (i != MESSAGE_FRAME) {
+      continue;
+    }
+    // Verify message frame is correctly copied.
+    EXPECT_EQ(1u, copy[i].message_frame->message_id);
+    EXPECT_EQ(nullptr, copy[i].message_frame->data);
+    EXPECT_EQ(7u, copy[i].message_frame->message_length);
+    ASSERT_EQ(1u, copy[i].message_frame->message_data.size());
+    EXPECT_EQ(0, memcmp(copy[i].message_frame->message_data[0].data(),
+                        frames[i].message_frame->message_data[0].data(), 7));
+  }
+  DeleteFrames(&frames);
+  DeleteFrames(&copy);
 }
 
 class PacketNumberQueueTest : public QuicTest {};

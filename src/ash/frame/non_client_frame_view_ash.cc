@@ -14,7 +14,6 @@
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
-#include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -22,9 +21,9 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -35,7 +34,6 @@
 #include "ui/views/view.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameViewAsh*)
 
@@ -44,9 +42,6 @@ namespace ash {
 DEFINE_UI_CLASS_PROPERTY_KEY(NonClientFrameViewAsh*,
                              kNonClientFrameViewAshKey,
                              nullptr)
-
-///////////////////////////////////////////////////////////////////////////////
-// NonClientFrameViewAshWindowStateDelegate
 
 // This helper enables and disables immersive mode in response to state such as
 // tablet mode and fullscreen changing. For legacy reasons, it's only
@@ -145,9 +140,6 @@ class NonClientFrameViewAshImmersiveHelper : public WindowStateObserver,
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAshImmersiveHelper);
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// NonClientFrameViewAsh::OverlayView
-
 // View which takes up the entire widget and contains the HeaderView. HeaderView
 // is a child of OverlayView to avoid creating a larger texture than necessary
 // when painting the HeaderView to its own layer.
@@ -156,8 +148,6 @@ class NonClientFrameViewAsh::OverlayView : public views::View,
  public:
   explicit OverlayView(HeaderView* header_view);
   ~OverlayView() override;
-
-  void SetHeaderHeight(base::Optional<int> height);
 
   // views::View:
   void Layout() override;
@@ -170,8 +160,6 @@ class NonClientFrameViewAsh::OverlayView : public views::View,
 
   HeaderView* header_view_;
 
-  base::Optional<int> header_height_;
-
   DISALLOW_COPY_AND_ASSIGN(OverlayView);
 };
 
@@ -183,28 +171,13 @@ NonClientFrameViewAsh::OverlayView::OverlayView(HeaderView* header_view)
 
 NonClientFrameViewAsh::OverlayView::~OverlayView() = default;
 
-void NonClientFrameViewAsh::OverlayView::SetHeaderHeight(
-    base::Optional<int> height) {
-  if (header_height_ == height)
-    return;
-
-  header_height_ = height;
-  Layout();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// NonClientFrameViewAsh::OverlayView, views::View overrides:
-
 void NonClientFrameViewAsh::OverlayView::Layout() {
   // Layout |header_view_| because layout affects the result of
   // GetPreferredOnScreenHeight().
   header_view_->Layout();
 
-  int onscreen_height = header_height_
-                            ? *header_height_
-                            : header_view_->GetPreferredOnScreenHeight();
-  int height =
-      header_height_ ? *header_height_ : header_view_->GetPreferredHeight();
+  int onscreen_height = header_view_->GetPreferredOnScreenHeight();
+  int height = header_view_->GetPreferredHeight();
   if (onscreen_height == 0 || !GetVisible()) {
     header_view_->SetVisible(false);
     // Make sure the correct width is set even when immersive is enabled, but
@@ -216,9 +189,6 @@ void NonClientFrameViewAsh::OverlayView::Layout() {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// NonClientFrameViewAsh::OverlayView, views::ViewTargeterDelegate overrides:
-
 bool NonClientFrameViewAsh::OverlayView::DoesIntersectRect(
     const views::View* target,
     const gfx::Rect& rect) const {
@@ -228,9 +198,6 @@ bool NonClientFrameViewAsh::OverlayView::DoesIntersectRect(
   return header_view_->HitTestRect(rect);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NonClientFrameViewAsh, public:
-
 // static
 const char NonClientFrameViewAsh::kViewClassName[] = "NonClientFrameViewAsh";
 
@@ -238,10 +205,17 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
     : frame_(frame),
       header_view_(new HeaderView(frame)),
       overlay_view_(new OverlayView(header_view_)) {
+  header_view_->set_immersive_mode_changed_callback(base::BindRepeating(
+      &NonClientFrameViewAsh::InvalidateLayout, weak_factory_.GetWeakPtr()));
+
   aura::Window* frame_window = frame->GetNativeWindow();
   window_util::InstallResizeHandleWindowTargeterForWindow(frame_window);
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
+  // TODO(pkasting): Consider having something like NonClientViewAsh, which
+  // would avoid the need to expose an "overlay view" concept on the
+  // cross-platform class, and might allow for simpler creation/ownership/
+  // plumbing.
   frame->non_client_view()->SetOverlayView(overlay_view_);
 
   // A delegate may be set which takes over the responsibilities of the
@@ -257,9 +231,14 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
   }
 
   frame_window->SetProperty(kNonClientFrameViewAshKey, this);
+  frame_window->AddObserver(this);
 }
 
-NonClientFrameViewAsh::~NonClientFrameViewAsh() = default;
+NonClientFrameViewAsh::~NonClientFrameViewAsh() {
+  aura::Window* frame_window = frame_->GetNativeWindow();
+  if (frame_window && frame_window->HasObserver(this))
+    frame_window->RemoveObserver(this);
+}
 
 // static
 NonClientFrameViewAsh* NonClientFrameViewAsh::Get(aura::Window* window) {
@@ -284,10 +263,6 @@ void NonClientFrameViewAsh::SetCaptionButtonModel(
   header_view_->UpdateCaptionButtons();
 }
 
-void NonClientFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
-  overlay_view_->SetHeaderHeight(height);
-}
-
 HeaderView* NonClientFrameViewAsh::GetHeaderView() {
   return header_view_;
 }
@@ -298,9 +273,6 @@ gfx::Rect NonClientFrameViewAsh::GetClientBoundsForWindowBounds(
   client_bounds.Inset(0, NonClientTopBorderHeight(), 0, 0);
   return client_bounds;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// NonClientFrameViewAsh, views::NonClientFrameView overrides:
 
 gfx::Rect NonClientFrameViewAsh::GetBoundsForClientView() const {
   gfx::Rect client_bounds = bounds();
@@ -344,9 +316,6 @@ void NonClientFrameViewAsh::PaintAsActiveChanged(bool active) {
   frame_->non_client_view()->Layout();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NonClientFrameViewAsh, views::View overrides:
-
 gfx::Size NonClientFrameViewAsh::CalculatePreferredSize() const {
   gfx::Size pref = frame_->client_view()->GetPreferredSize();
   gfx::Rect bounds(0, 0, pref.width(), pref.height());
@@ -373,16 +342,9 @@ gfx::Size NonClientFrameViewAsh::GetMinimumSize() const {
     return gfx::Size();
 
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
-  gfx::Size min_size(
+  return gfx::Size(
       std::max(header_view_->GetMinimumWidth(), min_client_view_size.width()),
       NonClientTopBorderHeight() + min_client_view_size.height());
-
-  aura::Window* frame_window = frame_->GetNativeWindow();
-  const gfx::Size* min_window_size =
-      frame_window->GetProperty(aura::client::kMinimumSize);
-  if (min_window_size)
-    min_size.SetToMax(*min_window_size);
-  return min_size;
 }
 
 gfx::Size NonClientFrameViewAsh::GetMaximumSize() const {
@@ -403,6 +365,20 @@ void NonClientFrameViewAsh::SetVisible(bool visible) {
   views::View::SetVisible(visible);
   // We need to re-layout so that client view will occupy entire window.
   InvalidateLayout();
+}
+
+void NonClientFrameViewAsh::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
+  if (window->transparent())
+    window->SetOpaqueRegionsForOcclusion({gfx::Rect(new_bounds.size())});
+}
+
+void NonClientFrameViewAsh::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(window, frame_->GetNativeWindow());
+  window->RemoveObserver(this);
 }
 
 void NonClientFrameViewAsh::SetShouldPaintHeader(bool paint) {
@@ -431,9 +407,6 @@ void NonClientFrameViewAsh::OnDidSchedulePaint(const gfx::Rect& r) {
     header_view_->SchedulePaintInRect(gfx::ToEnclosingRect(to_paint));
   }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// NonClientFrameViewAsh, private:
 
 // views::NonClientFrameView:
 bool NonClientFrameViewAsh::DoesIntersectRect(const views::View* target,

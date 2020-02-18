@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -16,6 +18,8 @@
 #include "components/viz/demo/service/demo_service.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -134,23 +138,25 @@ class DemoWindow : public ui::PlatformWindowDelegate {
     // actual process of setting up the viz host and the service.
     // First, set up the mojo message-pipes that the host and the service will
     // use to communicate with each other.
-    viz::mojom::FrameSinkManagerPtr frame_sink_manager;
-    viz::mojom::FrameSinkManagerRequest frame_sink_manager_request =
-        mojo::MakeRequest(&frame_sink_manager);
-    viz::mojom::FrameSinkManagerClientPtr frame_sink_manager_client;
-    viz::mojom::FrameSinkManagerClientRequest
-        frame_sink_manager_client_request =
-            mojo::MakeRequest(&frame_sink_manager_client);
+    mojo::PendingRemote<viz::mojom::FrameSinkManager> frame_sink_manager;
+    mojo::PendingReceiver<viz::mojom::FrameSinkManager>
+        frame_sink_manager_receiver =
+            frame_sink_manager.InitWithNewPipeAndPassReceiver();
+    mojo::PendingRemote<viz::mojom::FrameSinkManagerClient>
+        frame_sink_manager_client;
+    mojo::PendingReceiver<viz::mojom::FrameSinkManagerClient>
+        frame_sink_manager_client_receiver =
+            frame_sink_manager_client.InitWithNewPipeAndPassReceiver();
 
     // Next, create the host and the service, and pass them the right ends of
     // the message-pipes.
     host_ = std::make_unique<demo::DemoHost>(
         widget_, platform_window_->GetBounds().size(),
-        std::move(frame_sink_manager_client_request),
+        std::move(frame_sink_manager_client_receiver),
         std::move(frame_sink_manager));
 
     service_ = std::make_unique<demo::DemoService>(
-        std::move(frame_sink_manager_request),
+        std::move(frame_sink_manager_receiver),
         std::move(frame_sink_manager_client));
   }
 
@@ -173,6 +179,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   void OnLostCapture() override {}
   void OnAcceleratedWidgetDestroyed() override {}
   void OnActivationChanged(bool active) override {}
+  void OnMouseEnter() override {}
 
   std::unique_ptr<demo::DemoHost> host_;
   std::unique_ptr<demo::DemoService> service_;

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
@@ -24,7 +25,9 @@ FocusElementAction::~FocusElementAction() {}
 
 void FocusElementAction::InternalProcessAction(ProcessActionCallback callback) {
   const FocusElementProto& focus_element = proto_.focus_element();
-  if (!focus_element.title().empty()) {
+  if (focus_element.has_title()) {
+    // TODO(crbug.com/806868): Deprecate and remove message from this action and
+    // use tell instead.
     delegate_->SetStatusMessage(focus_element.title());
   }
   Selector selector = Selector(focus_element.element()).MustBeVisible();
@@ -61,9 +64,9 @@ void FocusElementAction::InternalProcessAction(ProcessActionCallback callback) {
 void FocusElementAction::OnWaitForElement(ProcessActionCallback callback,
                                           const Selector& selector,
                                           const TopPadding& top_padding,
-                                          bool element_found) {
-  if (!element_found) {
-    UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
+                                          const ClientStatus& element_status) {
+  if (!element_status.ok()) {
+    UpdateProcessedAction(element_status.proto_status());
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }

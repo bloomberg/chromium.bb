@@ -15,9 +15,10 @@ import time
 
 from googleapiclient import discovery
 import google.protobuf.internal.well_known_types as types
+from oauth2client.client import GoogleCredentials
+
 from infra_libs import ts_mon
 import inotify_simple  # pylint: disable=import-error
-from oauth2client.client import GoogleCredentials
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as log
@@ -286,19 +287,21 @@ def _WatchAndSendSpans(project_id, client):
     all_batches = itertools.chain([preexisting_lines], new_batches)
 
     # Ignore lines that don't parse.
-    batches = itertools.ifilter(None, (
+    batches = [
         _MapIgnoringErrors(
             json.loads,
             batch,
             exception_type=ValueError)
-        for batch in all_batches))
+        for batch in all_batches]
+    # Filter out non-blank entries.
+    batches = [x for x in batches if x]
 
     batches = _RecordDurationMetric(batches)
 
     # Rebatch the lines.
     _BatchAndSendSpans(project_id, client, batches)
 
-#-- Code for talking to the trace API. -----------------------------------------
+# -- Code for talking to the trace API. ----------------------------------------
 def _MakeCreds(creds_path):
   """Creates a GoogleCredentials object with the trace.append scope.
 

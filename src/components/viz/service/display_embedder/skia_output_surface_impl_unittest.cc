@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_utils.h"
@@ -18,6 +19,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
+#include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/test_gpu_service_holder.h"
@@ -27,6 +29,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_implementation.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/tests/native_window.h"
@@ -75,6 +78,7 @@ class SkiaOutputSurfaceImplTest : public testing::TestWithParam<bool> {
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   base::WaitableEvent wait_;
   const bool on_screen_;
+  gl::DisableNullDrawGLBindings enable_pixel_output_;
 };
 
 void SkiaOutputSurfaceImplTest::BlockMainThread() {
@@ -173,16 +177,6 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
   gpu::SyncToken sync_token =
       output_surface_->SubmitPaint(std::move(on_finished));
   EXPECT_TRUE(sync_token.HasData());
-  base::OnceClosure closure =
-      base::BindOnce(&SkiaOutputSurfaceImplTest::CheckSyncTokenOnGpuThread,
-                     base::Unretained(this), sync_token);
-
-  std::vector<gpu::SyncToken> resource_sync_tokens;
-  resource_sync_tokens.push_back(sync_token);
-  output_surface_->ScheduleGpuTaskForTesting(std::move(closure),
-                                             std::move(resource_sync_tokens));
-  BlockMainThread();
-  EXPECT_TRUE(on_finished_called);
 
   // Copy the output
   const gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
@@ -197,21 +191,43 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
   geometry.result_bounds = kSurfaceRect;
   geometry.result_selection = output_rect;
   geometry.sampling_bounds = kSurfaceRect;
+  geometry.readback_offset = gfx::Vector2d(0, 0);
 
-  if (gpu_service_holder_->is_vulkan_enabled()) {
-    // No flipping because Skia handles all co-ordinate transformation on the
-    // software readback path currently implemented for Vulkan.
-    geometry.readback_offset = geometry.readback_offset = gfx::Vector2d(0, 0);
-  } else {
-    // GLRendererCopier may need a vertical flip depending on output surface
-    // characteristics.
-    geometry.readback_offset =
-        output_surface_->capabilities().flipped_output_surface
-            ? geometry.readback_offset = gfx::Vector2d(0, 0)
-            : geometry.readback_offset = gfx::Vector2d(0, 90);
-  }
   output_surface_->CopyOutput(0, geometry, color_space, std::move(request));
   BlockMainThread();
+
+  // SubmitPaint draw is deferred until CopyOutput.
+  base::OnceClosure closure =
+      base::BindOnce(&SkiaOutputSurfaceImplTest::CheckSyncTokenOnGpuThread,
+                     base::Unretained(this), sync_token);
+
+  output_surface_->ScheduleGpuTaskForTesting(std::move(closure), {sync_token});
+  BlockMainThread();
+  EXPECT_TRUE(on_finished_called);
+}
+
+// Draws two frames and calls Reshape() between the two frames changing the
+// color space. Verifies draw after color space change is successful.
+TEST_P(SkiaOutputSurfaceImplTest, SupportsColorSpaceChange) {
+  for (auto& color_space : {gfx::ColorSpace(), gfx::ColorSpace::CreateSRGB()}) {
+    output_surface_->Reshape(kSurfaceRect.size(), 1, color_space,
+                             /*has_alpha=*/false, /*use_stencil=*/false);
+
+    // Draw something, it's not important what.
+    SkCanvas* root_canvas = output_surface_->BeginPaintCurrentFrame();
+    SkPaint paint;
+    paint.setColor(SK_ColorRED);
+    root_canvas->drawRect(SkRect::MakeWH(10, 10), paint);
+
+    base::RunLoop run_loop;
+    output_surface_->SubmitPaint(run_loop.QuitClosure());
+
+    OutputSurfaceFrame frame;
+    frame.size = kSurfaceRect.size();
+    output_surface_->SkiaSwapBuffers(std::move(frame));
+
+    run_loop.Run();
+  }
 }
 
 }  // namespace viz

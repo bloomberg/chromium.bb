@@ -29,6 +29,7 @@
 #include <utility>
 
 #include "base/numerics/safe_conversions.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_info.h"
@@ -67,7 +68,7 @@ constexpr auto kFlushDelay = base::TimeDelta::FromSeconds(1);
 }  // namespace
 
 class ImageResource::ImageResourceInfoImpl final
-    : public GarbageCollectedFinalized<ImageResourceInfoImpl>,
+    : public GarbageCollected<ImageResourceInfoImpl>,
       public ImageResourceInfo {
   USING_GARBAGE_COLLECTED_MIXIN(ImageResourceInfoImpl);
 
@@ -557,36 +558,16 @@ void ImageResource::ReloadIfLoFiOrPlaceholderImage(
   DCHECK(!is_scheduling_reload_);
   is_scheduling_reload_ = true;
 
-  if (GetResourceRequest().GetPreviewsState() & WebURLRequest::kClientLoFiOn) {
-    SetCachePolicyBypassingCache();
-  }
-
   // The reloaded image should not use any previews transformations.
   WebURLRequest::PreviewsState previews_state_for_reload =
       WebURLRequest::kPreviewsNoTransform;
-  WebURLRequest::PreviewsState old_previews_state =
-      GetResourceRequest().GetPreviewsState();
 
-  if (policy == kReloadIfNeeded && (GetResourceRequest().GetPreviewsState() &
-                                    WebURLRequest::kClientLoFiOn)) {
-    // If the image attempted to use Client LoFi, but encountered a decoding
-    // error and is being automatically reloaded, then also set the appropriate
-    // PreviewsState bit for that. This allows the embedder to count the
-    // bandwidth used for this reload against the data savings of the initial
-    // response.
-    previews_state_for_reload |= WebURLRequest::kClientLoFiAutoReload;
-  }
   SetPreviewsState(previews_state_for_reload);
 
   if (placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder)
     ClearRangeRequestHeader();
 
-  if (old_previews_state & WebURLRequest::kClientLoFiOn &&
-      policy != kReloadAlways) {
-    placeholder_option_ = PlaceholderOption::kShowAndDoNotReloadPlaceholder;
-  } else {
     placeholder_option_ = PlaceholderOption::kDoNotReloadPlaceholder;
-  }
 
   if (IsLoading()) {
     Loader()->Cancel();

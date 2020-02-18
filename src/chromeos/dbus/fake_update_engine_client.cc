@@ -9,13 +9,7 @@
 
 namespace chromeos {
 
-FakeUpdateEngineClient::FakeUpdateEngineClient()
-    : update_check_result_(UpdateEngineClient::UPDATE_RESULT_SUCCESS),
-      can_rollback_stub_result_(false),
-      reboot_after_update_call_count_(0),
-      request_update_check_call_count_(0),
-      rollback_call_count_(0),
-      can_rollback_call_count_(0) {}
+FakeUpdateEngineClient::FakeUpdateEngineClient() {}
 
 FakeUpdateEngineClient::~FakeUpdateEngineClient() = default;
 
@@ -34,37 +28,35 @@ bool FakeUpdateEngineClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
-void FakeUpdateEngineClient::RequestUpdateCheck(
-    const UpdateCheckCallback& callback) {
+void FakeUpdateEngineClient::RequestUpdateCheck(UpdateCheckCallback callback) {
   request_update_check_call_count_++;
-  callback.Run(update_check_result_);
+  std::move(callback).Run(update_check_result_);
 }
 
 void FakeUpdateEngineClient::Rollback() {
   rollback_call_count_++;
 }
 
-void FakeUpdateEngineClient::CanRollbackCheck(
-    const RollbackCheckCallback& callback) {
+void FakeUpdateEngineClient::CanRollbackCheck(RollbackCheckCallback callback) {
   can_rollback_call_count_++;
-  callback.Run(can_rollback_stub_result_);
+  std::move(callback).Run(can_rollback_stub_result_);
 }
 
 void FakeUpdateEngineClient::RebootAfterUpdate() {
   reboot_after_update_call_count_++;
 }
 
-UpdateEngineClient::Status FakeUpdateEngineClient::GetLastStatus() {
+update_engine::StatusResult FakeUpdateEngineClient::GetLastStatus() {
   if (status_queue_.empty())
     return default_status_;
 
-  UpdateEngineClient::Status last_status = status_queue_.front();
+  update_engine::StatusResult last_status = status_queue_.front();
   status_queue_.pop();
   return last_status;
 }
 
 void FakeUpdateEngineClient::NotifyObserversThatStatusChanged(
-    const UpdateEngineClient::Status& status) {
+    const update_engine::StatusResult& status) {
   for (auto& observer : observers_)
     observer.UpdateStatusChanged(status);
 }
@@ -80,34 +72,35 @@ void FakeUpdateEngineClient::SetChannel(const std::string& target_channel,
 }
 
 void FakeUpdateEngineClient::GetChannel(bool get_current_channel,
-                                        const GetChannelCallback& callback) {
+                                        GetChannelCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, std::string()));
+      FROM_HERE, base::BindOnce(std::move(callback), std::string()));
 }
 
-void FakeUpdateEngineClient::GetEolStatus(GetEolStatusCallback callback) {
+void FakeUpdateEngineClient::GetEolInfo(GetEolInfoCallback callback) {
+  UpdateEngineClient::EolInfo eol_info;
+  eol_info.eol_date = eol_date_;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::BindOnce(std::move(callback),
-                                    update_engine::EndOfLifeStatus::kSupported),
-                     base::nullopt /* number_of_milestones */));
+      FROM_HERE, base::BindOnce(std::move(callback), eol_info));
 }
 
 void FakeUpdateEngineClient::SetUpdateOverCellularPermission(
     bool allowed,
-    const base::Closure& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::OnceClosure callback) {
+  update_over_cellular_permission_count_++;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void FakeUpdateEngineClient::SetUpdateOverCellularOneTimePermission(
     const std::string& target_version,
     int64_t target_size,
-    const UpdateOverCellularOneTimePermissionCallback& callback) {
-  callback.Run(true);
+    UpdateOverCellularOneTimePermissionCallback callback) {
+  update_over_cellular_one_time_permission_count_++;
+  std::move(callback).Run(true);
 }
 
 void FakeUpdateEngineClient::set_default_status(
-    const UpdateEngineClient::Status& status) {
+    const update_engine::StatusResult& status) {
   default_status_ = status;
 }
 

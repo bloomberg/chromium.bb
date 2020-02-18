@@ -207,17 +207,26 @@ struct Cookie {
          const std::string& value,
          const std::string& domain,
          const std::string& path,
+         const std::string& samesite,
          double expiry,
          bool http_only,
          bool secure,
          bool session)
-      : name(name), value(value), domain(domain), path(path), expiry(expiry),
-        http_only(http_only), secure(secure), session(session) {}
+      : name(name),
+        value(value),
+        domain(domain),
+        path(path),
+        samesite(samesite),
+        expiry(expiry),
+        http_only(http_only),
+        secure(secure),
+        session(session) {}
 
   std::string name;
   std::string value;
   std::string domain;
   std::string path;
+  std::string samesite;
   double expiry;
   bool http_only;
   bool secure;
@@ -237,6 +246,8 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryFrom(
     dict->SetDouble("expiry", cookie.expiry);
   dict->SetBoolean("httpOnly", cookie.http_only);
   dict->SetBoolean("secure", cookie.secure);
+  if (!cookie.samesite.empty())
+    dict->SetString("sameSite", cookie.samesite);
   return dict;
 }
 
@@ -264,6 +275,8 @@ Status GetVisibleCookies(WebView* web_view,
     cookie_dict->GetString("domain", &domain);
     std::string path;
     cookie_dict->GetString("path", &path);
+    std::string samesite = "";
+    GetOptionalString(cookie_dict, "sameSite", &samesite);
     double expiry = 0;
     cookie_dict->GetDouble("expires", &expiry);
     if (expiry > 1e12)
@@ -275,8 +288,8 @@ Status GetVisibleCookies(WebView* web_view,
     bool secure = false;
     cookie_dict->GetBoolean("secure", &secure);
 
-    cookies_tmp.push_back(
-        Cookie(name, value, domain, path, expiry, http_only, secure, session));
+    cookies_tmp.push_back(Cookie(name, value, domain, path, samesite, expiry,
+                                 http_only, secure, session));
   }
   cookies->swap(cookies_tmp);
   return Status(kOk);
@@ -368,12 +381,13 @@ Status WindowViewportSize(Session* session,
 
 Status ProcessPauseAction(const base::DictionaryValue* action_item,
                           base::DictionaryValue* action) {
-  if (action_item->HasKey("duration")) {
-    int duration;
-    if (!action_item->GetInteger("duration", &duration) || duration < 0)
-      return Status(kInvalidArgument, "'duration' must be a non-negative int");
+  int duration = 0;
+  bool has_value = false;
+  if (!GetOptionalInt(action_item, "duration", &duration, &has_value) ||
+      duration < 0)
+    return Status(kInvalidArgument, "'duration' must be a non-negative int");
+  if (has_value)
     action->SetInteger("duration", duration);
-  }
   return Status(kOk);
 }
 
@@ -512,6 +526,8 @@ Status ExecuteWindowCommand(const WindowCommand& command,
     return nav_status;
   if (status.code() == kUnexpectedAlertOpen)
     return Status(kOk);
+  if (status.code() == kUnexpectedAlertOpen_Keep)
+    return Status(kUnexpectedAlertOpen, status.message());
   return status;
 }
 
@@ -729,8 +745,7 @@ Status ExecuteGetPageSource(Session* session,
                             std::unique_ptr<base::Value>* value,
                             Timeout* timeout) {
   const char kGetPageSource[] =
-      " () => document.documentElement"
-      " ? document.documentElement.outerHTML : ''";
+      " () => (document.documentElement || {}).outerHTML || ''";
 
   base::ListValue args;
   return web_view->CallFunction(
@@ -1286,10 +1301,34 @@ Status ExecutePerformActions(Session* session,
   }
 
   for (size_t i = 0; i < longest_action_list_size; i++) {
+    // Find the last pointer action, and it has to be sent synchronously by
+    // default.
+    size_t last_action_index = 0;
+    size_t last_touch_index = 0;
+    for (size_t j = 0; j < actions_list.size(); j++) {
+      if (actions_list[j].size() > i) {
+        const base::DictionaryValue* action = actions_list[j][i].get();
+        std::string type;
+        std::string action_type;
+        action->GetString("type", &type);
+        action->GetString("subtype", &action_type);
+        if (type != "none" && action_type != "pause")
+          last_action_index = j;
+
+        if (type == "pointer") {
+          std::string pointer_type;
+          action->GetString("pointerType", &pointer_type);
+          if (pointer_type == "touch")
+            last_touch_index = j;
+        }
+      }
+    }
+
     // Implements "compute the tick duration" algorithm from W3C spec
     // (https://w3c.github.io/webdriver/#dfn-computing-the-tick-duration).
     // This is the duration for actions in one tick.
     int tick_duration = 0;
+    std::list<TouchEvent> dispatch_touch_events;
     for (size_t j = 0; j < actions_list.size(); j++) {
       if (actions_list[j].size() > i) {
         const base::DictionaryValue* action = actions_list[j][i].get();
@@ -1333,33 +1372,40 @@ Status ExecutePerformActions(Session* session,
         if (action_type == "pause") {
           GetOptionalInt(action, "duration", &duration);
           tick_duration = std::max(tick_duration, duration);
-        } else {
-          bool async_dispatch_event = false;
-          GetOptionalBool(action, "asyncDispatch", &async_dispatch_event);
+        }
+
+        if (type != "none") {
+          bool async_dispatch_event = true;
+          if (j == last_action_index) {
+            async_dispatch_event = false;
+            GetOptionalBool(action, "asyncDispatch", &async_dispatch_event);
+          }
 
           if (type == "key") {
-            std::list<KeyEvent> dispatch_key_events;
-            KeyEventBuilder builder;
-            Status status = ConvertKeyActionToKeyEvent(action, input_state,
-                                                       action_type == "keyDown",
-                                                       &dispatch_key_events);
-            if (status.IsError())
-              return status;
-
-            if (dispatch_key_events.size() > 0) {
-              const KeyEvent& event = dispatch_key_events.front();
-              if (action_type == "keyDown") {
-                session->input_cancel_list.emplace_back(
-                    action_input_states[j], nullptr, nullptr, &event);
-                session->sticky_modifiers |= KeyToKeyModifiers(event.key);
-              } else if (action_type == "keyUp") {
-                session->sticky_modifiers &= ~KeyToKeyModifiers(event.key);
-              }
-
-              Status status = web_view->DispatchKeyEvents(dispatch_key_events,
-                                                          async_dispatch_event);
+            if (action_type != "pause") {
+              std::list<KeyEvent> dispatch_key_events;
+              KeyEventBuilder builder;
+              Status status = ConvertKeyActionToKeyEvent(
+                  action, input_state, action_type == "keyDown",
+                  &dispatch_key_events);
               if (status.IsError())
                 return status;
+
+              if (dispatch_key_events.size() > 0) {
+                const KeyEvent& event = dispatch_key_events.front();
+                if (action_type == "keyDown") {
+                  session->input_cancel_list.emplace_back(
+                      action_input_states[j], nullptr, nullptr, &event);
+                  session->sticky_modifiers |= KeyToKeyModifiers(event.key);
+                } else if (action_type == "keyUp") {
+                  session->sticky_modifiers &= ~KeyToKeyModifiers(event.key);
+                }
+
+                Status status = web_view->DispatchKeyEvents(
+                    dispatch_key_events, async_dispatch_event);
+                if (status.IsError())
+                  return status;
+              }
             }
           } else if (type == "pointer") {
             std::string pointer_type;
@@ -1405,54 +1451,57 @@ Status ExecutePerformActions(Session* session,
             }
 
             if (pointer_type == "mouse" || pointer_type == "pen") {
-              std::list<MouseEvent> dispatch_mouse_events;
-              int click_count = 0;
-              if (action_type == "pointerDown" || action_type == "pointerUp") {
-                std::string button;
-                action->GetString("button", &button);
-                button_type[id] = button;
-                click_count = 1;
-              } else if (buttons[id] == 0) {
-                button_type[id].clear();
+              if (action_type != "pause") {
+                std::list<MouseEvent> dispatch_mouse_events;
+                int click_count = 0;
+                if (action_type == "pointerDown" ||
+                    action_type == "pointerUp") {
+                  std::string button;
+                  action->GetString("button", &button);
+                  button_type[id] = button;
+                  click_count = 1;
+                } else if (buttons[id] == 0) {
+                  button_type[id].clear();
+                }
+                MouseEvent event(StringToMouseEventType(action_type),
+                                 StringToMouseButton(button_type[id]),
+                                 action_locations[id].x(),
+                                 action_locations[id].y(), 0, buttons[id],
+                                 click_count);
+                event.pointer_type = StringToPointerType(pointer_type);
+                event.modifiers = session->sticky_modifiers;
+                if (event.type == kPressedMouseEventType) {
+                  base::TimeTicks timestamp = base::TimeTicks::Now();
+                  bool is_repeated_click = IsRepeatedClickEvent(
+                      event.x, event.y, session->mouse_position.x,
+                      session->mouse_position.y, session->click_count,
+                      timestamp, session->mouse_click_timestamp);
+                  event.click_count = is_repeated_click ? 2 : 1;
+                  buttons[id] |= StringToModifierMouseButton(button_type[id]);
+                  session->mouse_position = WebPoint(event.x, event.y);
+                  session->click_count = event.click_count;
+                  session->mouse_click_timestamp = timestamp;
+                  session->input_cancel_list.emplace_back(
+                      action_input_states[j], &event, nullptr, nullptr);
+                  action_input_states[j]->SetInteger(
+                      "pressed",
+                      action_input_states[j]->FindKey("pressed")->GetInt() |
+                          (1 << event.button));
+                } else if (event.type == kReleasedMouseEventType) {
+                  event.click_count = session->click_count;
+                  buttons[id] &= ~StringToModifierMouseButton(button_type[id]);
+                  action_input_states[j]->SetInteger(
+                      "pressed",
+                      action_input_states[j]->FindKey("pressed")->GetInt() &
+                          ~(1 << event.button));
+                }
+                dispatch_mouse_events.push_back(event);
+                Status status = web_view->DispatchMouseEvents(
+                    dispatch_mouse_events, session->GetCurrentFrameId(),
+                    async_dispatch_event);
+                if (status.IsError())
+                  return status;
               }
-              MouseEvent event(StringToMouseEventType(action_type),
-                               StringToMouseButton(button_type[id]),
-                               action_locations[id].x(),
-                               action_locations[id].y(), 0, buttons[id],
-                               click_count);
-              event.pointer_type = StringToPointerType(pointer_type);
-              event.modifiers = session->sticky_modifiers;
-              if (event.type == kPressedMouseEventType) {
-                base::TimeTicks timestamp = base::TimeTicks::Now();
-                bool is_repeated_click = IsRepeatedClickEvent(
-                    event.x, event.y, session->mouse_position.x,
-                    session->mouse_position.y, session->click_count, timestamp,
-                    session->mouse_click_timestamp);
-                event.click_count = is_repeated_click ? 2 : 1;
-                buttons[id] |= StringToModifierMouseButton(button_type[id]);
-                session->mouse_position = WebPoint(event.x, event.y);
-                session->click_count = event.click_count;
-                session->mouse_click_timestamp = timestamp;
-                session->input_cancel_list.emplace_back(
-                    action_input_states[j], &event, nullptr, nullptr);
-                action_input_states[j]->SetInteger(
-                    "pressed",
-                    action_input_states[j]->FindKey("pressed")->GetInt() |
-                        (1 << event.button));
-              } else if (event.type == kReleasedMouseEventType) {
-                event.click_count = session->click_count;
-                buttons[id] &= ~StringToModifierMouseButton(button_type[id]);
-                action_input_states[j]->SetInteger(
-                    "pressed",
-                    action_input_states[j]->FindKey("pressed")->GetInt() &
-                        ~(1 << event.button));
-              }
-              dispatch_mouse_events.push_back(event);
-              Status status = web_view->DispatchMouseEvents(
-                  dispatch_mouse_events, session->GetCurrentFrameId(),
-                  async_dispatch_event);
-              if (status.IsError())
-                return status;
             } else if (pointer_type == "touch") {
               if (action_type == "pointerDown")
                 has_touch_start[id] = true;
@@ -1467,8 +1516,14 @@ Status ExecutePerformActions(Session* session,
                 action_input_states[j]->SetInteger("pressed", 0);
               }
               if (has_touch_start[id]) {
-                Status status =
-                    web_view->DispatchTouchEvent(event, async_dispatch_event);
+                if (event.type == kPause)
+                  event.type = kTouchMove;
+                event.id = dispatch_touch_events.size();
+                dispatch_touch_events.push_back(event);
+              }
+              if (j == last_touch_index) {
+                Status status = web_view->DispatchTouchEventWithMultiPoints(
+                    dispatch_touch_events, async_dispatch_event);
                 if (status.IsError())
                   return status;
               }
@@ -1479,12 +1534,12 @@ Status ExecutePerformActions(Session* session,
             action_input_states[j]->SetInteger("y", action_locations[id].y());
           }
         }
-
-        if (tick_duration > 0) {
-          base::PlatformThread::Sleep(
-              base::TimeDelta::FromMilliseconds(tick_duration));
-        }
       }
+    }
+
+    if (tick_duration > 0) {
+      base::PlatformThread::Sleep(
+          base::TimeDelta::FromMilliseconds(tick_duration));
     }
   }
 
@@ -1742,7 +1797,14 @@ Status ExecuteScreenshot(Session* session,
   std::string screenshot;
   status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
   if (status.IsError()) {
-    LOG(WARNING) << "screenshot failed, retrying";
+    if (status.code() == kUnexpectedAlertOpen) {
+      LOG(WARNING) << status.message() << ", cancelling screenshot";
+      // we can't take screenshot in this state
+      // but we must return kUnexpectedAlertOpen_Keep instead
+      // see https://crbug.com/chromedriver/2117
+      return Status(kUnexpectedAlertOpen_Keep);
+    }
+    LOG(WARNING) << "screenshot failed, retrying " << status.message();
     status = web_view->CaptureScreenshot(&screenshot, base::DictionaryValue());
   }
   if (status.IsError())
@@ -1826,6 +1888,12 @@ Status ExecuteAddCookie(Session* session,
   std::string path("/");
   if (!GetOptionalString(cookie, "path", &path))
     return Status(kInvalidArgument, "invalid 'path'");
+  std::string samesite("");
+  if (!GetOptionalString(cookie, "sameSite", &samesite))
+    return Status(kInvalidArgument, "invalid 'sameSite'");
+  if (!samesite.empty() && samesite != "Strict" && samesite != "Lax" &&
+      samesite != "None")
+    return Status(kInvalidArgument, "invalid 'sameSite'");
   bool secure = false;
   if (!GetOptionalBool(cookie, "secure", &secure))
     return Status(kInvalidArgument, "invalid 'secure'");
@@ -1852,8 +1920,8 @@ Status ExecuteAddCookie(Session* session,
       expiry = (base::Time::Now() - base::Time::UnixEpoch()).InSeconds() +
                kDefaultCookieExpiryTime;
   }
-  return web_view->AddCookie(name, url, cookie_value, domain, path,
-      secure, httpOnly, expiry);
+  return web_view->AddCookie(name, url, cookie_value, domain, path, samesite,
+                             secure, httpOnly, expiry);
 }
 
 Status ExecuteDeleteCookie(Session* session,

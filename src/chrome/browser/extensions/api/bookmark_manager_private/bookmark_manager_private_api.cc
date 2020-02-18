@@ -55,6 +55,7 @@ namespace extensions {
 
 namespace bookmark_keys = bookmark_api_constants;
 namespace bookmark_manager_private = api::bookmark_manager_private;
+namespace CanPaste = api::bookmark_manager_private::CanPaste;
 namespace Copy = api::bookmark_manager_private::Copy;
 namespace Cut = api::bookmark_manager_private::Cut;
 namespace Drop = api::bookmark_manager_private::Drop;
@@ -159,6 +160,14 @@ bookmark_manager_private::BookmarkNodeData CreateApiBookmarkNodeData(
       node_data.elements.push_back(CreateApiNodeDataElement(data.elements[i]));
   }
   return node_data;
+}
+
+bool HasPermanentNodes(const std::vector<const BookmarkNode*>& list) {
+  for (const BookmarkNode* node : list) {
+    if (node->is_permanent_node())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -315,6 +324,10 @@ bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut,
     error_ = bookmark_keys::kModifyManagedError;
     return false;
   }
+  if (cut && HasPermanentNodes(nodes)) {
+    error_ = bookmark_keys::kModifySpecialError;
+    return false;
+  }
   bookmarks::CopyToClipboard(model, nodes, cut);
   return true;
 }
@@ -366,6 +379,28 @@ bool BookmarkManagerPrivatePasteFunction::RunOnReady() {
                                : size_t{highest_index};
 
   bookmarks::PasteFromClipboard(model, parent_node, insertion_index);
+  return true;
+}
+
+bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
+  std::unique_ptr<CanPaste::Params> params(CanPaste::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
+  if (!prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled)) {
+    SetResult(std::make_unique<base::Value>(false));
+    return true;
+  }
+
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(GetProfile());
+  const BookmarkNode* parent_node = GetNodeFromString(model, params->parent_id);
+  if (!parent_node) {
+    error_ = bookmark_keys::kNoParentError;
+    return false;
+  }
+  bool can_paste = bookmarks::CanPasteFromClipboard(model, parent_node);
+  SetResult(std::make_unique<base::Value>(can_paste));
   return true;
 }
 

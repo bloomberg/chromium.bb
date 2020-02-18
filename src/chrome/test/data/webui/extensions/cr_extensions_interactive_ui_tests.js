@@ -8,6 +8,7 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
+GEN('#include "services/network/public/cpp/features.h"');
 
 /**
  * Test fixture for interactive Polymer Extensions elements.
@@ -23,14 +24,14 @@ const CrExtensionsInteractiveUITest = class extends PolymerInteractiveUITest {
   /** @override */
   get extraLibraries() {
     return [
-      ...super.extraLibraries,
-      '../test_util.js',
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
     ];
   }
 
   /** @override */
-  get loaderFile() {
-    return 'subpage_loader.html';
+  get featureList() {
+    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 };
 
@@ -40,20 +41,7 @@ const CrExtensionsInteractiveUITest = class extends PolymerInteractiveUITest {
 var CrExtensionsOptionsPageTest = class extends CrExtensionsInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://extensions/?id=ibbpngabdmdpednkhonkkobdeccpkiff';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'extension_options_dialog_test.js',
-    ]);
-  }
-
-  /** @override */
-  get customElementName() {
-    // Wait for the manager since this test is loading the main page.
-    return 'extensions-manager';
+    return 'chrome://extensions/test_loader.html?module=extensions/extension_options_dialog_test.js';
   }
 
   /** @override */

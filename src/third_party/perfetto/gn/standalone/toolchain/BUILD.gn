@@ -12,92 +12,117 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//gn/perfetto.gni")
 import("//gn/standalone/android.gni")
 import("//gn/standalone/wasm.gni")
 import("llvm.gni")
 
-# Note: is_android is true also on mac when building with target_os = "android".
+# This file is evaluated once, within the context of the default toolchain,
+# which is the target toolchain.
+# Note: This means that is_android=true even on a mac when cross-compiling for
+# Android.
+assert(current_os == target_os && current_cpu == target_cpu,
+       "Assumptions on current_xxx in this file have been violated")
 
 declare_args() {
-  if (is_clang) {
-    gcc_prefix = ""
-  } else if (current_cpu == host_cpu && current_os == host_os) {
-    gcc_prefix = ""
-  } else if (current_os == "linux" && current_cpu == "arm64") {
-    gcc_prefix = "aarch64-linux-gnu-"
-  } else if (current_os == "linux" && current_cpu == "x64") {
-    gcc_prefix = "x86_64-linux-gnu-"
-  } else if (current_os == "linux" && current_cpu == "x86") {
-    gcc_prefix = "x86-linux-gnu-"
-  } else if (current_os == "android" && current_cpu == "arm64") {
-    gcc_prefix = "aarch64-linux-android-"
-  } else if (current_os == "android" && current_cpu == "arm") {
-    gcc_prefix = "arm-linux-androideabi-"
-  } else if (current_os == "android" && current_cpu == "x86") {
-    gcc_prefix = "i686-linux-android-"
-  } else if (current_os == "android" && current_cpu == "x86_64") {
-    gcc_prefix = "x86_64-linux-android-"
-  } else {
-    assert(0, "Unsupported cross-compilation for ${current_os}-${current_cpu}")
-  }
+  cc_wrapper = ""
 }
 
+# First of all determine the host toolchain. The user can override this by:
+# 1. setting ar/cc/cxx vars in args.gn.
+# 2. setting is_system_compiler=true in args.gn and the env vars AR/CC/CXX.
+#    This is used by OSSFuzz.
 declare_args() {
-  if (is_clang) {
-    if (is_system_compiler) {
-      cc = "\$CC "
-      cxx = "\$CXX "
-    } else if (is_linux) {
+  sysroot = ""
+  ar = "ar"
+  if (is_linux_host) {
+    linker = "gold"
+  } else {
+    linker = ""
+  }
+
+  if (is_system_compiler) {
+    ar = "\$AR"
+    cc = "\$CC"
+    cxx = "\$CXX"
+  } else if (is_clang) {
+    if (is_linux_host) {
       cc = linux_clang_bin
       cxx = linux_clangxx_bin
+      linker = linux_clang_linker
     } else {
       cc = "clang"
       cxx = "clang++"
+      linker = ""
     }
+  } else {  # GCC
+    cc = "gcc"
+    cxx = "g++"
+  }
+}
+
+# Then determine the target toolchain.
+
+declare_args() {
+  target_sysroot = sysroot
+  if (!is_cross_compiling) {
+    target_triplet = ""
+  } else if (target_os == "mac" && target_cpu == "x64") {
+    target_triplet = "x86_64-apple-darwin"
+  } else if (target_os == "mac" && target_cpu == "x86") {
+    target_triplet = "i686-apple-darwin"
+  } else if (target_os == "linux" && target_cpu == "arm64") {
+    target_triplet = "aarch64-linux-gnu"
+  } else if (target_os == "linux" && target_cpu == "x64") {
+    target_triplet = "x86_64-linux-gnu"
+  } else if (target_os == "linux" && target_cpu == "x86") {
+    target_triplet = "i686-linux-gnu"
+  } else if (target_os == "android" && target_cpu == "arm64") {
+    target_triplet = "aarch64-linux-android"
+  } else if (target_os == "android" && target_cpu == "arm") {
+    target_triplet = "arm-linux-androideabi"
+  } else if (target_os == "android" && target_cpu == "x86") {
+    target_triplet = "i686-linux-android"
+  } else if (target_os == "android" && target_cpu == "x64") {
+    target_triplet = "x86_64-linux-android"
   } else {
-    cc = "${gcc_prefix}gcc"
-    cxx = "${gcc_prefix}g++"
+    assert(false,
+           "Unsupported cross-compilation for ${target_os}-${target_cpu}")
   }
 }
 
 declare_args() {
-  host_ar = ar
-  if (is_linux_host && is_clang) {
-    host_cc = linux_clang_bin
-    host_cxx = linux_clangxx_bin
-    host_linker = linux_clang_linker
-  } else {
-    host_cc = cc
-    host_cxx = cxx
-    if (is_linux_host) {
-      host_linker = "gold"
-    } else {
-      host_linker = ""
-    }
-  }
-
-  if (is_android) {
-    target_ar = "$android_toolchain_root/bin/$android_abi_target-ar"
-    target_cc = "$android_llvm_dir/bin/clang"
-    target_cxx = "$android_llvm_dir/bin/clang++"
-    target_linker = "gold"
-  } else {
+  if (!is_cross_compiling || is_perfetto_build_generator) {
     target_ar = ar
     target_cc = cc
     target_cxx = cxx
-    if (is_linux && is_clang) {
-      target_linker = linux_clang_linker
-    } else if (is_linux) {
+    target_linker = linker
+  } else {
+    target_ar = "ar"
+    if (is_linux || is_android) {
       target_linker = "gold"
     } else {
       target_linker = ""
     }
+    if (is_android) {
+      target_ar = "$android_toolchain_root/bin/$android_abi_target-ar"
+      target_cc = "$android_llvm_dir/bin/clang"
+      target_cxx = "$android_llvm_dir/bin/clang++"
+    } else {
+      assert(target_triplet != "",
+             "target_triplet must be non-empty when cross-compiling")
+      if (is_clang) {
+        target_cc = "${linux_clang_bin} --target=${target_triplet}"
+        target_cxx = "${linux_clangxx_bin} --target=${target_triplet}"
+        target_linker = "${linux_clang_linker} --target=${target_triplet}"
+      } else {  # GCC
+        target_ar = "${target_triplet}-ar"
+        target_cc = "${target_triplet}-gcc"
+        target_cxx = "${target_triplet}-g++"
+      }
+    }
   }
-  cc_wrapper = ""
 }
-
-python = "python"
-stamp = "touch"
 
 template("gcc_like_toolchain") {
   toolchain(target_name) {
@@ -107,9 +132,14 @@ template("gcc_like_toolchain") {
     lib_switch = "-l"
     lib_dir_switch = "-L"
     ld_arg = ""
-    if (invoker.linker != "") {
+    if (defined(invoker.linker) && invoker.linker != "") {
       _invoker_linker = invoker.linker
       ld_arg = "-fuse-ld=$_invoker_linker"
+    }
+    if (defined(invoker.sysroot) && invoker.sysroot != "") {
+      _invoker_sysroot = invoker.sysroot
+      cc = "$cc --sysroot=$_invoker_sysroot"
+      cxx = "$cxx --sysroot=$_invoker_sysroot"
     }
 
     tool("cc") {
@@ -149,7 +179,7 @@ template("gcc_like_toolchain") {
         command = "rm -f {{output}} && libtool -static {{arflags}} -o {{output}} -filelist $rspfile"
       } else {
         rspfile_content = "{{inputs}}"
-        command = "$ar rcsD {{output}} @$rspfile"
+        command = "rm -f {{output}} && $ar rcsD {{output}} @$rspfile"
       }
       outputs = [
         "{{root_out_dir}}/{{target_output_name}}{{output_extension}}",
@@ -208,15 +238,17 @@ gcc_like_toolchain("gcc_like") {
   cc = target_cc
   cxx = target_cxx
   linker = target_linker
+  sysroot = target_sysroot
 }
 
 gcc_like_toolchain("gcc_like_host") {
   cpu = host_cpu
   os = host_os
-  ar = host_ar
-  cc = host_cc
-  cxx = host_cxx
-  linker = host_linker
+  ar = ar
+  cc = cc
+  cxx = cxx
+  linker = linker
+  sysroot = sysroot
 }
 
 gcc_like_toolchain("wasm") {
@@ -226,5 +258,4 @@ gcc_like_toolchain("wasm") {
   ar = "$emsdk_dir/emscripten/emar --em-config $em_config"
   cc = "$emsdk_dir/emscripten/emcc --em-config $em_config"
   cxx = "$emsdk_dir/emscripten/em++ --em-config $em_config"
-  linker = ""
 }

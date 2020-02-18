@@ -42,12 +42,13 @@
 namespace blink {
 
 class Editor;
+class EditContext;
 class LocalFrame;
 class Range;
 enum class TypingContinuation;
 
 class CORE_EXPORT InputMethodController final
-    : public GarbageCollectedFinalized<InputMethodController>,
+    : public GarbageCollected<InputMethodController>,
       public DocumentShutdownObserver {
   USING_GARBAGE_COLLECTED_MIXIN(InputMethodController);
 
@@ -113,6 +114,12 @@ class CORE_EXPORT InputMethodController final
   // Call this when we will change focus.
   void WillChangeFocus();
 
+  // Returns the |EditContext| that is currently active
+  EditContext* GetActiveEditContext() const { return active_edit_context_; }
+  void SetActiveEditContext(EditContext* edit_context) {
+    active_edit_context_ = edit_context;
+  }
+
  private:
   friend class InputMethodControllerTest;
 
@@ -121,6 +128,7 @@ class CORE_EXPORT InputMethodController final
 
   Member<LocalFrame> frame_;
   Member<Range> composition_range_;
+  Member<EditContext> active_edit_context_;
   bool has_composition_;
 
   Editor& GetEditor() const;

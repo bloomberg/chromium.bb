@@ -251,11 +251,8 @@ CFX_FloatRect CFXFloatRectFromFSRECTF(const FS_RECTF& rect) {
   return CFX_FloatRect(rect.left, rect.bottom, rect.right, rect.top);
 }
 
-void FSRECTFFromCFXFloatRect(const CFX_FloatRect& rect, FS_RECTF* out_rect) {
-  out_rect->left = rect.left;
-  out_rect->top = rect.top;
-  out_rect->right = rect.right;
-  out_rect->bottom = rect.bottom;
+FS_RECTF FSRECTFFromCFXFloatRect(const CFX_FloatRect& rect) {
+  return {rect.left, rect.top, rect.right, rect.bottom};
 }
 
 CFX_Matrix CFXMatrixFromFSMatrix(const FS_MATRIX& matrix) {
@@ -289,10 +286,11 @@ unsigned long DecodeStreamMaybeCopyAndReturnLength(const CPDF_Stream* stream,
 void SetPDFSandboxPolicy(FPDF_DWORD policy, FPDF_BOOL enable) {
   switch (policy) {
     case FPDF_POLICY_MACHINETIME_ACCESS: {
+      uint32_t mask = 1 << policy;
       if (enable)
-        g_sandbox_policy |= 0x01;
+        g_sandbox_policy |= mask;
       else
-        g_sandbox_policy &= 0xFFFFFFFE;
+        g_sandbox_policy &= ~mask;
     } break;
     default:
       break;
@@ -301,8 +299,10 @@ void SetPDFSandboxPolicy(FPDF_DWORD policy, FPDF_BOOL enable) {
 
 FPDF_BOOL IsPDFSandboxPolicyEnabled(FPDF_DWORD policy) {
   switch (policy) {
-    case FPDF_POLICY_MACHINETIME_ACCESS:
-      return !!(g_sandbox_policy & 0x01);
+    case FPDF_POLICY_MACHINETIME_ACCESS: {
+      uint32_t mask = 1 << policy;
+      return !!(g_sandbox_policy & mask);
+    }
     default:
       return false;
   }

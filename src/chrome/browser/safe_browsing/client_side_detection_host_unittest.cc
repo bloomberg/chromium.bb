@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -25,6 +26,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/safe_browsing/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -39,6 +41,8 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ipc/ipc_test_sink.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,7 +122,7 @@ ACTION(QuitUIMessageLoop) {
 
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
-  MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
+  MockClientSideDetectionService() : ClientSideDetectionService(nullptr) {}
   ~MockClientSideDetectionService() override {}
 
   MOCK_METHOD3(SendClientReportPhishingRequest,
@@ -205,9 +209,9 @@ class FakePhishingDetector : public mojom::PhishingDetector {
 
   ~FakePhishingDetector() override = default;
 
-  void BindRequest(mojo::ScopedMessagePipeHandle handle) {
-    bindings_.AddBinding(this,
-                         mojom::PhishingDetectorRequest(std::move(handle)));
+  void BindReceiver(mojo::ScopedMessagePipeHandle handle) {
+    receivers_.Add(this, mojo::PendingReceiver<mojom::PhishingDetector>(
+                             std::move(handle)));
   }
 
   // mojom::PhishingDetector
@@ -221,7 +225,8 @@ class FakePhishingDetector : public mojom::PhishingDetector {
     // ClientPhishingRequest.
     ClientPhishingRequest request;
     request.set_client_score(0.8);
-    std::move(callback).Run(request.SerializeAsString());
+    std::move(callback).Run(mojom::PhishingDetectorResult::SUCCESS,
+                            request.SerializeAsString());
 
     return;
   }
@@ -241,7 +246,7 @@ class FakePhishingDetector : public mojom::PhishingDetector {
   }
 
  private:
-  mojo::BindingSet<mojom::PhishingDetector> bindings_;
+  mojo::ReceiverSet<mojom::PhishingDetector> receivers_;
   bool phishing_detection_started_ = false;
   GURL url_;
 
@@ -263,7 +268,7 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
 
     test_api.SetBinderForName(
         mojom::PhishingDetector::Name_,
-        base::BindRepeating(&FakePhishingDetector::BindRequest,
+        base::BindRepeating(&FakePhishingDetector::BindReceiver,
                             base::Unretained(&fake_phishing_detector_)));
   }
 
@@ -300,17 +305,21 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
   void TearDown() override {
     // Delete the host object on the UI thread and release the
     // SafeBrowsingService.
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
-                              csd_host_.release());
-    database_manager_ = NULL;
-    ui_manager_ = NULL;
+    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, csd_host_.release());
+    database_manager_.reset();
+    ui_manager_.reset();
     base::RunLoop().RunUntilIdle();
 
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void PhishingDetectionDone(const std::string& verdict_str) {
-    csd_host_->PhishingDetectionDone(verdict_str);
+    csd_host_->PhishingDetectionDone(mojom::PhishingDetectorResult::SUCCESS,
+                                     verdict_str);
+  }
+
+  void PhishingDetectionError(mojom::PhishingDetectorResult error) {
+    csd_host_->PhishingDetectionDone(error, "");
   }
 
   void DidStopLoading() { csd_host_->DidStopLoading(); }
@@ -1313,4 +1322,54 @@ TEST_F(ClientSideDetectionHostTest,
 
   EXPECT_EQ(0u, GetBrowseInfo()->ips.size());
 }
+
+TEST_F(ClientSideDetectionHostTest, RecordsPhishingDetectorResults) {
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(web_contents(),
+                                                  csd_host_.get());
+  SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
+
+  {
+    ClientPhishingRequest verdict;
+    verdict.set_url("http://not-phishing.com/");
+    verdict.set_client_score(0.1f);
+    verdict.set_is_phishing(false);
+
+    base::HistogramTester histogram_tester;
+
+    EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _)).Times(0);
+    PhishingDetectionDone(verdict.SerializeAsString());
+    EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
+
+    histogram_tester.ExpectUniqueSample(
+        "SBClientPhishing.PhishingDetectorResult",
+        mojom::PhishingDetectorResult::SUCCESS, 1);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+
+    EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _)).Times(0);
+    PhishingDetectionError(mojom::PhishingDetectorResult::CLASSIFIER_NOT_READY);
+    EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
+
+    histogram_tester.ExpectUniqueSample(
+        "SBClientPhishing.PhishingDetectorResult",
+        mojom::PhishingDetectorResult::CLASSIFIER_NOT_READY, 1);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+
+    EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _)).Times(0);
+    PhishingDetectionError(
+        mojom::PhishingDetectorResult::FORWARD_BACK_TRANSITION);
+    EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
+
+    histogram_tester.ExpectUniqueSample(
+        "SBClientPhishing.PhishingDetectorResult",
+        mojom::PhishingDetectorResult::FORWARD_BACK_TRANSITION, 1);
+  }
+}
+
 }  // namespace safe_browsing

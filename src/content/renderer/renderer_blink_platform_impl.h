@@ -74,7 +74,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual bool sandboxEnabled();
   uint64_t VisitedLinkHash(const char* canonicalURL, size_t length) override;
   bool IsLinkVisited(uint64_t linkHash) override;
-  blink::WebPrescientNetworking* PrescientNetworking() override;
   blink::WebString UserAgent() override;
   blink::UserAgentMetadata UserAgentMetadata() override;
   void CacheMetadata(blink::mojom::CodeCacheType cache_type,
@@ -126,25 +125,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const media::AudioSourceParameters& params) override;
   viz::ContextProvider* SharedMainThreadContextProvider() override;
   bool RTCSmoothnessAlgorithmEnabled() override;
-  std::unique_ptr<blink::WebRTCPeerConnectionHandler>
-  CreateRTCPeerConnectionHandler(
-      blink::WebRTCPeerConnectionHandlerClient* client,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  std::unique_ptr<blink::WebRTCCertificateGenerator>
-  CreateRTCCertificateGenerator() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() override;
-  rtc::Thread* GetWebRtcWorkerThreadRtcThread() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingTaskRunner()
-      override;
-  std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
-      blink::WebLocalFrame* frame) override;
-  std::unique_ptr<webrtc::AsyncResolverFactory>
-  CreateWebRtcAsyncResolverFactory() override;
-  std::unique_ptr<webrtc::RtpCapabilities> GetRtpSenderCapabilities(
-      const blink::WebString& kind) override;
-  std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
-      const blink::WebString& kind) override;
-  void UpdateWebRTCAPICount(blink::WebRTCAPIName api_name) override;
   base::Optional<double> GetWebRtcMaxCaptureFrameRate() override;
   scoped_refptr<media::AudioRendererSink> NewAudioRendererSink(
       blink::WebAudioDeviceSourceType source_type,
@@ -152,13 +132,28 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const media::AudioSinkParameters& params) override;
   media::AudioLatency::LatencyType GetAudioSourceLatencyType(
       blink::WebAudioDeviceSourceType source_type) override;
-  blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() override;
   base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() override;
+  bool ShouldEnforceWebRTCRoutingPreferences() override;
+  bool UsesFakeCodecForPeerConnection() override;
+  bool IsWebRtcEncryptionEnabled() override;
+  bool IsWebRtcStunOriginEnabled() override;
+  base::Optional<std::string> WebRtcStunProbeTrialParameter() override;
+  media::MediaPermission* GetWebRTCMediaPermission(
+      blink::WebLocalFrame* web_frame) override;
+  void GetWebRTCRendererPreferences(blink::WebLocalFrame* web_frame,
+                                    blink::WebString* ip_handling_policy,
+                                    uint16_t* udp_min_port,
+                                    uint16_t* udp_max_port,
+                                    bool* allow_mdns_obfuscation) override;
   base::Optional<int> GetAgcStartupMinimumVolume() override;
-  void TrackGetUserMedia(
-      const blink::WebUserMediaRequest& web_request) override;
   bool IsWebRtcHWH264DecodingEnabled(
       webrtc::VideoCodecType video_coded_type) override;
+  bool IsWebRtcHWEncodingEnabled() override;
+  bool IsWebRtcHWDecodingEnabled() override;
+  bool IsWebRtcSrtpAesGcmEnabled() override;
+  bool IsWebRtcSrtpEncryptedHeadersEnabled() override;
+  bool AllowsLoopbackInPeerConnection() override;
+
   blink::WebVideoCaptureImplManager* GetVideoCaptureImplManager() override;
 
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
@@ -170,8 +165,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   CreateSharedOffscreenGraphicsContext3DProvider() override;
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
   CreateWebGPUGraphicsContext3DProvider(
-      const blink::WebURL& top_document_web_url,
-      blink::Platform::GraphicsInfo* gl_info) override;
+      const blink::WebURL& top_document_web_url) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   blink::WebString ConvertIDNToUnicode(const blink::WebString& host) override;
   void SetDisplayThreadPriority(base::PlatformThreadId thread_id) override;
@@ -179,13 +173,11 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void RecordRappor(const char* metric,
                     const blink::WebString& sample) override;
   void RecordRapporURL(const char* metric, const blink::WebURL& url) override;
-  blink::WebTransmissionEncodingInfoHandler* TransmissionEncodingInfoHandler()
-      override;
 
   std::unique_ptr<blink::WebDedicatedWorkerHostFactoryClient>
   CreateDedicatedWorkerHostFactoryClient(
       blink::WebDedicatedWorker*,
-      service_manager::InterfaceProvider*) override;
+      const blink::BrowserInterfaceBrokerProxy&) override;
   void DidStartWorkerThread() override;
   void WillStopWorkerThread() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;
@@ -211,7 +203,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<ChildURLLoaderFactoryBundle>
   CreateDefaultURLLoaderFactoryBundle();
 
-  network::mojom::URLLoaderFactoryPtr CreateNetworkURLLoaderFactory();
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+  CreateNetworkURLLoaderFactory();
 
   // Tells this platform that the renderer is locked to a site (i.e., a scheme
   // plus eTLD+1, such as https://google.com), or to a more specific origin.
@@ -248,9 +241,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host_remote_;
   mojo::SharedRemote<blink::mojom::CodeCacheHost> code_cache_host_;
-
-  std::unique_ptr<blink::WebTransmissionEncodingInfoHandler>
-      web_transmission_encoding_info_handler_;
 
 #if defined(OS_LINUX)
   sk_sp<font_service::FontLoader> font_loader_;

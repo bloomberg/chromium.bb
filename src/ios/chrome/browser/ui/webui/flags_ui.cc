@@ -44,7 +44,9 @@ web::WebUIIOSDataSource* CreateFlagsUIHTMLSource() {
   source->UseStringsJs();
   FlagsUI::AddFlagsIOSStrings(source);
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
+  source->AddResourcePath(flags_ui::kFlagsCSS, IDR_FLAGS_UI_FLAGS_CSS);
   source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
+  source->UseStringsJs();
   return source;
 }
 
@@ -217,6 +219,7 @@ void FlagsUI::AddFlagsIOSStrings(web::WebUIIOSDataSource* source) {
   source->AddLocalizedString("enabled", IDS_FLAGS_UI_ENABLED_FEATURE);
   source->AddLocalizedString("experiment-enabled",
                              IDS_FLAGS_UI_EXPERIMENT_ENABLED);
+  source->AddLocalizedString("heading", IDS_FLAGS_UI_TITLE);
   source->AddLocalizedString("no-results", IDS_FLAGS_UI_NO_RESULTS);
   source->AddLocalizedString("not-available-platform",
                              IDS_FLAGS_UI_NOT_AVAILABLE_ON_PLATFORM);
@@ -231,4 +234,8 @@ void FlagsUI::AddFlagsIOSStrings(web::WebUIIOSDataSource* source) {
                              IDS_FLAGS_UI_SEARCH_PLACEHOLDER);
   source->AddLocalizedString("title", IDS_FLAGS_UI_TITLE);
   source->AddLocalizedString("unavailable", IDS_FLAGS_UI_UNAVAILABLE_FEATURE);
+  source->AddLocalizedString("searchResultsSingular",
+                             IDS_FLAGS_UI_SEARCH_RESULTS_SINGULAR);
+  source->AddLocalizedString("searchResultsPlural",
+                             IDS_FLAGS_UI_SEARCH_RESULTS_PLURAL);
 }

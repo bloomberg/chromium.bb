@@ -53,7 +53,7 @@ class ScriptLoader;
 //
 // An HTMLParserScriptRunner is owned by its host, an HTMLDocumentParser.
 class HTMLParserScriptRunner final
-    : public GarbageCollectedFinalized<HTMLParserScriptRunner>,
+    : public GarbageCollected<HTMLParserScriptRunner>,
       public PendingScriptClient,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLParserScriptRunner);
@@ -158,6 +158,11 @@ class HTMLParserScriptRunner final
   // Scripts that were deferred by the web developer. This is an ordered list.
   // https://html.spec.whatwg.org/C/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
   HeapDeque<Member<PendingScript>> scripts_to_execute_after_parsing_;
+
+  // Whether this class has suspended async script execution. This will happen
+  // when |force_deferred_scripts_| is not empty in order to let the force
+  // deferred scripts execute before any async scripts.
+  bool suspended_async_script_execution_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLParserScriptRunner);
 };

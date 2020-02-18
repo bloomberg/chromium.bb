@@ -5,6 +5,7 @@
 #include "chromeos/dbus/dbus_clients_browser.h"
 
 #include "base/logging.h"
+#include "chromeos/dbus/anomaly_detector_client.h"
 #include "chromeos/dbus/arc_appfuse_provider_client.h"
 #include "chromeos/dbus/arc_keymaster_client.h"
 #include "chromeos/dbus/arc_midis_client.h"
@@ -16,8 +17,10 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
+#include "chromeos/dbus/fake_anomaly_detector_client.h"
 #include "chromeos/dbus/fake_arc_appfuse_provider_client.h"
 #include "chromeos/dbus/fake_arc_keymaster_client.h"
 #include "chromeos/dbus/fake_arc_midis_client.h"
@@ -27,7 +30,6 @@
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
-#include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
 #include "chromeos/dbus/fake_gnubby_client.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
@@ -39,7 +41,6 @@
 #include "chromeos/dbus/fake_smb_provider_client.h"
 #include "chromeos/dbus/fake_virtual_file_provider_client.h"
 #include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
-#include "chromeos/dbus/fake_wilco_dtc_supportd_client.h"
 #include "chromeos/dbus/gnubby_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
@@ -51,7 +52,6 @@
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/dbus/virtual_file_provider_client.h"
 #include "chromeos/dbus/vm_plugin_dispatcher_client.h"
-#include "chromeos/dbus/wilco_dtc_supportd_client.h"
 
 namespace chromeos {
 
@@ -75,6 +75,8 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
       use_real_clients ? REAL_DBUS_CLIENT_IMPLEMENTATION
                        : FAKE_DBUS_CLIENT_IMPLEMENTATION;
 
+  anomaly_detector_client_ =
+      CREATE_DBUS_CLIENT(AnomalyDetectorClient, use_real_clients);
   arc_appfuse_provider_client_ =
       CREATE_DBUS_CLIENT(ArcAppfuseProviderClient, use_real_clients);
   arc_keymaster_client_ =
@@ -110,8 +112,6 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
       CREATE_DBUS_CLIENT(VirtualFileProviderClient, use_real_clients);
   vm_plugin_dispatcher_client_ =
       CREATE_DBUS_CLIENT(VmPluginDispatcherClient, use_real_clients);
-  wilco_dtc_supportd_client_ =
-      CREATE_DBUS_CLIENT(WilcoDtcSupportdClient, use_real_clients);
 }
 
 DBusClientsBrowser::~DBusClientsBrowser() = default;
@@ -119,6 +119,7 @@ DBusClientsBrowser::~DBusClientsBrowser() = default;
 void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   DCHECK(DBusThreadManager::IsInitialized());
 
+  anomaly_detector_client_->Init(system_bus);
   arc_appfuse_provider_client_->Init(system_bus);
   arc_keymaster_client_->Init(system_bus);
   arc_midis_client_->Init(system_bus);
@@ -141,7 +142,6 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   update_engine_client_->Init(system_bus);
   virtual_file_provider_client_->Init(system_bus);
   vm_plugin_dispatcher_client_->Init(system_bus);
-  wilco_dtc_supportd_client_->Init(system_bus);
 }
 
 }  // namespace chromeos

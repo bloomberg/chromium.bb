@@ -12,7 +12,6 @@
 #include "url/gurl.h"
 
 enum class WebappInstallSource;
-struct InstallableData;
 struct WebApplicationInfo;
 class SkBitmap;
 
@@ -36,16 +35,15 @@ enum class ForInstallableSite {
 };
 
 // Update the given WebApplicationInfo with information from the manifest.
+// Will sanitise the manifest fields to be suitable for installation to prevent
+// sites from using arbitrarily large amounts of disk space.
 void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
                                   WebApplicationInfo* web_app_info,
                                   ForInstallableSite installable_site);
 
-// Form a list of icons to download: Remove icons with invalid urls. If |data|
-// is specified and contains a valid primary icon, we skip downloading any
-// matching icon in |web_app_info|.
+// Form a list of icons to download: Remove icons with invalid urls.
 std::vector<GURL> GetValidIconUrlsToDownload(
-    const WebApplicationInfo& web_app_info,
-    const InstallableData* data);
+    const WebApplicationInfo& web_app_info);
 
 // A map of icon urls to the bitmaps provided by that url.
 using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
@@ -54,11 +52,12 @@ using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
 // by resizing larger icons down to smaller sizes, and generating icons for
 // sizes where resizing is not possible. |icons_map| is optional.
 //
-// Sync: It is important that the linked app information in any web app that
-// gets created from sync matches the linked app information that came from
-// sync. If there are any changes, they will be synced back to other devices
-// and could potentially create a never ending sync cycle. If |is_for_sync| is
-// true then icon links won't be changed.
+// Historically, |is_for_sync| is a hack for the old |ExtensionSyncService|
+// system to avoid sync wars. It is important that the linked app information in
+// any web app that gets created from sync matches the linked app information
+// that came from sync. If there are any changes, they will be synced back to
+// other devices and could potentially create a never ending sync cycle. If
+// |is_for_sync| is true then icon links won't be changed.
 void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
                                          const IconsMap* icons_map,
                                          bool is_for_sync);

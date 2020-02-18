@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/task_environment.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
@@ -47,18 +46,18 @@ class TiclInvalidationServiceTestDelegate {
         identity_test_env_.identity_manager());
     DCHECK(identity_provider_);
     invalidation_service_ = std::make_unique<TiclInvalidationService>(
-        "TestUserAgent", identity_provider_.get(),
-        gcm_driver_.get(),
+        "TestUserAgent", identity_provider_.get(), gcm_driver_.get(),
         base::RepeatingCallback<void(
             base::WeakPtr<TiclInvalidationService>,
-            network::mojom::ProxyResolvingSocketFactoryRequest)>(),
+            mojo::PendingReceiver<
+                network::mojom::ProxyResolvingSocketFactory>)>(),
         nullptr, nullptr, network::TestNetworkConnectionTracker::GetInstance());
   }
 
   void InitializeInvalidationService() {
     fake_invalidator_ = new syncer::FakeInvalidator();
     invalidation_service_->InitForTest(
-        base::WrapUnique(new syncer::FakeInvalidationStateTracker),
+        std::make_unique<syncer::FakeInvalidationStateTracker>(),
         fake_invalidator_);
   }
 

@@ -20,6 +20,8 @@ source_set("x11") {
     "gl_surface_glx_ozone.h",
     "ozone_platform_x11.cc",
     "ozone_platform_x11.h",
+    "x11_canvas_surface.cc",
+    "x11_canvas_surface.h",
     "x11_clipboard_ozone.cc",
     "x11_clipboard_ozone.h",
     "x11_cursor_factory_ozone.cc",
@@ -30,8 +32,6 @@ source_set("x11") {
     "x11_screen_ozone.h",
     "x11_surface_factory.cc",
     "x11_surface_factory.h",
-    "x11_window_manager_ozone.cc",
-    "x11_window_manager_ozone.h",
     "x11_window_ozone.cc",
     "x11_window_ozone.h",
   ]
@@ -47,7 +47,8 @@ source_set("x11") {
     "//ui/display/fake",
     "//ui/events",
     "//ui/events/devices",
-    "//ui/events/ozone:events_ozone",
+    "//ui/events/ozone",
+    "//ui/events/ozone/layout",
     "//ui/events/platform",
     "//ui/events/platform/x11",
     "//ui/events/x",
@@ -64,6 +65,8 @@ source_set("x11") {
 
   if (is_chromeos) {
     deps += [ "//ui/base/ime/chromeos" ]
+  } else {
+    deps += [ "//ui/base/ime/linux" ]
   }
 
   if (enable_vulkan) {

@@ -82,10 +82,13 @@ class RasterInterface : public InterfaceBase {
       bool needs_mips) = 0;
 
   // Raster via GrContext.
-  virtual GLuint CreateAndConsumeForGpuRaster(const GLbyte* mailbox) = 0;
+  virtual GLuint CreateAndConsumeForGpuRaster(const gpu::Mailbox& mailbox) = 0;
   virtual void DeleteGpuRasterTexture(GLuint texture) = 0;
   virtual void BeginGpuRaster() = 0;
   virtual void EndGpuRaster() = 0;
+  virtual void BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
+                                                    GLenum mode) = 0;
+  virtual void EndSharedImageAccessDirectCHROMIUM(GLuint texture) = 0;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

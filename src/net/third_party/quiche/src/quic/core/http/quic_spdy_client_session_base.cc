@@ -39,15 +39,6 @@ void QuicSpdyClientSessionBase::OnConfigNegotiated() {
   QuicSpdySession::OnConfigNegotiated();
 }
 
-void QuicSpdyClientSessionBase::OnCryptoHandshakeEvent(
-    CryptoHandshakeEvent event) {
-  QuicSpdySession::OnCryptoHandshakeEvent(event);
-  if (event == HANDSHAKE_CONFIRMED && max_allowed_push_id() > 0 &&
-      VersionHasIetfQuicFrames(connection()->transport_version())) {
-    SendMaxPushId(max_allowed_push_id());
-  }
-}
-
 void QuicSpdyClientSessionBase::OnInitialHeadersComplete(
     QuicStreamId stream_id,
     const SpdyHeaderBlock& response_headers) {
@@ -75,9 +66,9 @@ void QuicSpdyClientSessionBase::OnPromiseHeaderList(
     return;
   }
   if (promised_stream_id !=
-          QuicUtils::GetInvalidStreamId(connection()->transport_version()) &&
+          QuicUtils::GetInvalidStreamId(transport_version()) &&
       largest_promised_stream_id_ !=
-          QuicUtils::GetInvalidStreamId(connection()->transport_version()) &&
+          QuicUtils::GetInvalidStreamId(transport_version()) &&
       promised_stream_id <= largest_promised_stream_id_) {
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID,
@@ -93,7 +84,7 @@ void QuicSpdyClientSessionBase::OnPromiseHeaderList(
     return;
   }
 
-  if (VersionHasIetfQuicFrames(connection()->transport_version()) &&
+  if (VersionUsesHttp3(transport_version()) &&
       promised_stream_id > max_allowed_push_id()) {
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID,
@@ -199,7 +190,7 @@ void QuicSpdyClientSessionBase::DeletePromised(
   // ToDo: Consider implementing logic to send a new MAX_PUSH_ID frame to allow
   // another stream to be promised.
   promised_by_id_.erase(promised->id());
-  if (!VersionUsesQpack(connection()->transport_version())) {
+  if (!VersionUsesHttp3(transport_version())) {
     headers_stream()->MaybeReleaseSequencerBuffer();
   }
 }
@@ -210,6 +201,7 @@ void QuicSpdyClientSessionBase::OnPushStreamTimedOut(
 void QuicSpdyClientSessionBase::ResetPromised(
     QuicStreamId id,
     QuicRstStreamErrorCode error_code) {
+  DCHECK(QuicUtils::IsServerInitiatedStreamId(transport_version(), id));
   SendRstStream(id, error_code, 0);
   if (!IsOpenStream(id)) {
     MaybeIncreaseLargestPeerStreamId(id);
@@ -219,7 +211,7 @@ void QuicSpdyClientSessionBase::ResetPromised(
 void QuicSpdyClientSessionBase::CloseStreamInner(QuicStreamId stream_id,
                                                  bool locally_reset) {
   QuicSpdySession::CloseStreamInner(stream_id, locally_reset);
-  if (!VersionUsesQpack(connection()->transport_version())) {
+  if (!VersionUsesHttp3(transport_version())) {
     headers_stream()->MaybeReleaseSequencerBuffer();
   }
 }

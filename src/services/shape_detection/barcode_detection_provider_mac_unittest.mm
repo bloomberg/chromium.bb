@@ -14,7 +14,8 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision.h"
 #include "services/shape_detection/barcode_detection_provider_mac.h"
@@ -124,7 +125,7 @@ class BarcodeDetectionProviderMacTest
   MOCK_METHOD0(OnEnumerateSupportedFormats, void(void));
 
   std::unique_ptr<mojom::BarcodeDetectionProvider> provider_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   void* vision_framework_ = nullptr;
   bool is_vision_available_ = false;
 };
@@ -233,19 +234,17 @@ TEST_F(BarcodeDetectionProviderMacTest, HintFormats) {
   vision_framework_ =
       dlopen("/System/Library/Frameworks/Vision.framework/Vision", RTLD_LAZY);
 
-  mojom::BarcodeDetectionProviderPtr provider_ptr;
-  auto provider_request = mojo::MakeRequest(&provider_ptr);
-  mojo::MakeStrongBinding(CreateBarcodeProviderMac(CreateVisionAPI()),
-                          std::move(provider_request));
+  mojo::Remote<mojom::BarcodeDetectionProvider> provider_remote;
+  mojo::MakeSelfOwnedReceiver(CreateBarcodeProviderMac(CreateVisionAPI()),
+                              provider_remote.BindNewPipeAndPassReceiver());
 
-  mojom::BarcodeDetectionPtr impl;
-  auto impl_request = mojo::MakeRequest(&impl);
   auto options = mojom::BarcodeDetectorOptions::New();
   options->formats = {mojom::BarcodeFormat::UNKNOWN};
 
   mojo::test::BadMessageObserver observer;
-  provider_ptr->CreateBarcodeDetection(std::move(impl_request),
-                                       std::move(options));
+  mojo::Remote<mojom::BarcodeDetection> impl;
+  provider_remote->CreateBarcodeDetection(impl.BindNewPipeAndPassReceiver(),
+                                          std::move(options));
 
   EXPECT_EQ("Formats hint contains UNKNOWN BarcodeFormat.",
             observer.WaitForBadMessage());

@@ -14,13 +14,11 @@
 #include <memory>
 #include <set>
 
-#include "absl/memory/memory.h"
 #include "api/test/simulated_network.h"
 #include "api/units/time_delta.h"
 #include "call/simulated_network.h"
 #include "rtc_base/event.h"
 #include "rtc_base/gunit.h"
-#include "rtc_base/logging.h"
 #include "system_wrappers/include/sleep.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
@@ -32,6 +30,7 @@ namespace {
 
 constexpr int kNetworkPacketWaitTimeoutMs = 100;
 constexpr int kStatsWaitTimeoutMs = 1000;
+constexpr int kOverheadIpv4Udp = 20 + 8;
 
 class SocketReader : public sigslot::has_slots<> {
  public:
@@ -150,7 +149,7 @@ class NetworkEmulationManagerThreeNodesRoutingTest : public ::testing::Test {
 EmulatedNetworkNode* CreateEmulatedNodeWithDefaultBuiltInConfig(
     NetworkEmulationManager* emulation) {
   return emulation->CreateEmulatedNode(
-      absl::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
+      std::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
 }
 
 }  // namespace
@@ -187,9 +186,9 @@ TEST(NetworkEmulationManagerTest, Run) {
   NetworkEmulationManagerImpl network_manager;
 
   EmulatedNetworkNode* alice_node = network_manager.CreateEmulatedNode(
-      absl::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
+      std::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
   EmulatedNetworkNode* bob_node = network_manager.CreateEmulatedNode(
-      absl::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
+      std::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
   EmulatedEndpoint* alice_endpoint =
       network_manager.CreateEndpoint(EmulatedEndpointConfig());
   EmulatedEndpoint* bob_endpoint =
@@ -237,7 +236,7 @@ TEST(NetworkEmulationManagerTest, Run) {
     delete s2;
   }
 
-  int64_t single_packet_size = data.size();
+  const int64_t single_packet_size = data.size() + kOverheadIpv4Udp;
   std::atomic<int> received_stats_count{0};
   nt1->GetStats([&](EmulatedNetworkStats st) {
     EXPECT_EQ(st.packets_sent, 2000l);
@@ -264,9 +263,9 @@ TEST(NetworkEmulationManagerTest, ThroughputStats) {
   NetworkEmulationManagerImpl network_manager;
 
   EmulatedNetworkNode* alice_node = network_manager.CreateEmulatedNode(
-      absl::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
+      std::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
   EmulatedNetworkNode* bob_node = network_manager.CreateEmulatedNode(
-      absl::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
+      std::make_unique<SimulatedNetwork>(BuiltInNetworkBehaviorConfig()));
   EmulatedEndpoint* alice_endpoint =
       network_manager.CreateEndpoint(EmulatedEndpointConfig());
   EmulatedEndpoint* bob_endpoint =
@@ -279,8 +278,9 @@ TEST(NetworkEmulationManagerTest, ThroughputStats) {
   EmulatedNetworkManagerInterface* nt2 =
       network_manager.CreateEmulatedNetworkManagerInterface({bob_endpoint});
 
-  int64_t single_packet_size = 100;
-  rtc::CopyOnWriteBuffer data(single_packet_size);
+  constexpr int64_t kUdpPayloadSize = 100;
+  constexpr int64_t kSinglePacketSize = kUdpPayloadSize + kOverheadIpv4Udp;
+  rtc::CopyOnWriteBuffer data(kUdpPayloadSize);
   auto* s1 = nt1->network_thread()->socketserver()->CreateAsyncSocket(
       AF_INET, SOCK_DGRAM);
   auto* s2 = nt2->network_thread()->socketserver()->CreateAsyncSocket(
@@ -298,22 +298,26 @@ TEST(NetworkEmulationManagerTest, ThroughputStats) {
   s1->Connect(s2->GetLocalAddress());
   s2->Connect(s1->GetLocalAddress());
 
-  // Send 10 packets for 1
+  // Send 11 packets, totalizing 1 second between the first and the last.
+  const int kNumPacketsSent = 11;
+  const int kDelayMs = 100;
   rtc::Event wait;
-  for (uint64_t i = 0; i < 11; i++) {
+  for (int i = 0; i < kNumPacketsSent; i++) {
     nt1->network_thread()->PostTask(
         RTC_FROM_HERE, [&]() { s1->Send(data.data(), data.size()); });
     nt2->network_thread()->PostTask(
         RTC_FROM_HERE, [&]() { s2->Send(data.data(), data.size()); });
-    wait.Wait(100);
+    wait.Wait(kDelayMs);
   }
 
   std::atomic<int> received_stats_count{0};
   nt1->GetStats([&](EmulatedNetworkStats st) {
-    EXPECT_EQ(st.packets_sent, 11l);
-    EXPECT_EQ(st.bytes_sent.bytes(), single_packet_size * 11l);
+    EXPECT_EQ(st.packets_sent, kNumPacketsSent);
+    EXPECT_EQ(st.bytes_sent.bytes(), kSinglePacketSize * kNumPacketsSent);
+
+    const double tolerance = 0.95;  // Accept 5% tolerance for timing.
     EXPECT_GE(st.last_packet_sent_time - st.first_packet_sent_time,
-              TimeDelta::seconds(1));
+              TimeDelta::ms((kNumPacketsSent - 1) * kDelayMs * tolerance));
     EXPECT_GT(st.AverageSendRate().bps(), 0);
     received_stats_count++;
   });

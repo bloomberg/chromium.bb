@@ -7,8 +7,10 @@ import("//build_overrides/build.gni")
 if (build_with_chromium) {
   source_set("abseil") {
     public_deps = [
+      "//third_party/abseil-cpp/absl/hash",
       "//third_party/abseil-cpp/absl/strings",
       "//third_party/abseil-cpp/absl/types:optional",
+      "//third_party/abseil-cpp/absl/types:variant",
     ]
   }
 } else {
@@ -70,6 +72,8 @@ if (build_with_chromium) {
       "src/absl/strings/str_cat.cc",
       "src/absl/strings/str_cat.h",
       "src/absl/strings/str_join.h",
+      "src/absl/strings/str_split.cc",
+      "src/absl/strings/str_split.h",
       "src/absl/strings/string_view.cc",
       "src/absl/strings/string_view.h",
       "src/absl/strings/substitute.cc",
@@ -78,7 +82,6 @@ if (build_with_chromium) {
       "src/absl/types/bad_optional_access.h",
       "src/absl/types/bad_variant_access.cc",
       "src/absl/types/bad_variant_access.h",
-      "src/absl/types/optional.cc",
       "src/absl/types/optional.h",
       "src/absl/types/span.h",
       "src/absl/types/variant.h",
@@ -86,7 +89,6 @@ if (build_with_chromium) {
 
     configs -= [ "//build/config:symbol_visibility_hidden" ]
     configs += [ "//build/config:symbol_visibility_default" ]
-    configs -= [ "//build:default_include_dirs" ]
 
     configs += [ ":private_abseil_config" ]
     public_configs = [ ":abseil_config" ]

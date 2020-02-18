@@ -4,6 +4,7 @@
 
 #include "net/http/http_auth_handler_negotiate.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -15,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_auth_mechanism.h"
 #include "net/http/http_request_info.h"
 #include "net/http/mock_allow_http_auth_preferences.h"
 #include "net/log/net_log_with_source.h"
@@ -51,14 +53,18 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
                                      public WithTaskEnvironment {
  public:
   void SetUp() override {
+#if defined(OS_WIN)
+    auth_library_ = new MockAuthLibrary(const_cast<wchar_t*>(NEGOSSP_NAME));
+#else
     auth_library_ = new MockAuthLibrary();
+#endif
     resolver_.reset(new MockHostResolver());
     resolver_->rules_map()[HostResolverSource::ANY]->AddIPLiteralRule(
         "alias", "10.0.0.2", "canonical.example.com");
 
     http_auth_preferences_.reset(new MockAllowHttpAuthPreferences());
-    factory_.reset(new HttpAuthHandlerNegotiate::Factory(
-        net::HttpAuthHandlerFactory::NegotiateAuthSystemFactory()));
+    factory_.reset(
+        new HttpAuthHandlerNegotiate::Factory(HttpAuthMechanismFactory()));
     factory_->set_http_auth_preferences(http_auth_preferences_.get());
 #if defined(OS_ANDROID)
     http_auth_preferences_->set_auth_android_negotiate_account_type(
@@ -78,8 +84,8 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
     security_package_.reset(new SecPkgInfoW);
     memset(security_package_.get(), 0x0, sizeof(SecPkgInfoW));
     security_package_->cbMaxToken = 1337;
-    mock_library->ExpectQuerySecurityPackageInfo(
-        L"Negotiate", SEC_E_OK, security_package_.get());
+    mock_library->ExpectQuerySecurityPackageInfo(SEC_E_OK,
+                                                 security_package_.get());
 #else
     // Copied from an actual transaction!
     static const char kAuthResponse[] =
@@ -383,8 +389,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, NoKerberosCredentials) {
 TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
   MockAllowHttpAuthPreferences http_auth_preferences;
   std::unique_ptr<HttpAuthHandlerNegotiate::Factory> negotiate_factory(
-      new HttpAuthHandlerNegotiate::Factory(
-          net::HttpAuthHandlerFactory::NegotiateAuthSystemFactory()));
+      new HttpAuthHandlerNegotiate::Factory(HttpAuthMechanismFactory()));
   negotiate_factory->set_http_auth_preferences(&http_auth_preferences);
   negotiate_factory->set_library(
       std::make_unique<GSSAPISharedLibrary>("/this/library/does/not/exist"));
@@ -420,12 +425,12 @@ TEST_F(HttpAuthHandlerNegotiateTest, AllowGssapiLibraryLoad) {
 
 #endif  // defined(OS_POSIX)
 
-class TestAuthSystem : public HttpNegotiateAuthSystem {
+class TestAuthSystem : public HttpAuthMechanism {
  public:
   TestAuthSystem() = default;
   ~TestAuthSystem() override = default;
 
-  // HttpNegotiateAuthSystem implementation:
+  // HttpAuthMechanism implementation:
   bool Init(const NetLogWithSource&) override { return true; }
   bool NeedsIdentity() const override { return true; }
   bool AllowsExplicitCredentials() const override { return true; }
@@ -449,16 +454,17 @@ class TestAuthSystem : public HttpNegotiateAuthSystem {
 };
 
 TEST_F(HttpAuthHandlerNegotiateTest, OverrideAuthSystem) {
-  auto negotiate_factory = std::make_unique<HttpAuthHandlerNegotiate::Factory>(
-      base::BindRepeating([](const HttpAuthPreferences*)
-                              -> std::unique_ptr<HttpNegotiateAuthSystem> {
-        return std::make_unique<TestAuthSystem>();
-      }));
+  auto negotiate_factory =
+      std::make_unique<HttpAuthHandlerNegotiate::Factory>(base::BindRepeating(
+          [](const HttpAuthPreferences*) -> std::unique_ptr<HttpAuthMechanism> {
+            return std::make_unique<TestAuthSystem>();
+          }));
   negotiate_factory->set_http_auth_preferences(http_auth_preferences());
-#if !defined(OS_ANDROID)
-  auto auth_library = std::make_unique<MockAuthLibrary>();
-  SetupMocks(auth_library.get());
-  negotiate_factory->set_library(std::move(auth_library));
+#if defined(OS_WIN)
+  negotiate_factory->set_library(
+      std::make_unique<MockAuthLibrary>(NEGOSSP_NAME));
+#elif !defined(OS_ANDROID)
+  negotiate_factory->set_library(std::make_unique<MockAuthLibrary>());
 #endif
 
   GURL gurl("http://www.example.com");

@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.send_tab_to_self;
 
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 
 import java.util.HashSet;
 import java.util.Set;

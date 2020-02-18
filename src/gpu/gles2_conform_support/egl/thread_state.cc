@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/common/thread_local.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_util.h"
@@ -23,6 +22,7 @@
 #include "gpu/gles2_conform_support/egl/test_support.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/gl/init/gl_factory.h"
 
 // Thread local key for ThreadState instance. Accessed when holding g_egl_lock
@@ -79,7 +79,7 @@ egl::ThreadState* ThreadState::Get() {
       // Need to call both Init and InitFromArgv, since Windows does not use
       // argc, argv in CommandLine::Init(argc, argv).
       command_line->InitFromArgv(argv);
-      gl::init::InitializeGLNoExtensionsOneOff();
+      gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true);
       gpu::GpuFeatureInfo gpu_feature_info;
       if (!command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
         gpu::GPUInfo gpu_info;

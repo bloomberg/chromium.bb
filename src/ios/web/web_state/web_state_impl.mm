@@ -36,12 +36,12 @@
 #import "ios/web/public/ui/context_menu_params.h"
 #import "ios/web/public/ui/java_script_dialog_presenter.h"
 #import "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/web_state_delegate.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#import "ios/web/public/web_state_delegate.h"
+#include "ios/web/public/web_state_observer.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #import "ios/web/security/web_interstitial_impl.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
-#include "ios/web/web_state/global_web_state_event_tracker.h"
+#import "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
@@ -677,6 +677,7 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
   if (item) {
     if ([[web_controller_ nativeContentHolder].nativeController
             respondsToSelector:@selector(virtualURL)] ||
+        wk_navigation_util::IsPlaceholderUrl(item->GetURL()) ||
         item->error_retry_state_machine().state() ==
             ErrorRetryState::kReadyToDisplayError) {
       // For native content, or when webView.URL is a placeholder URL,
@@ -794,8 +795,8 @@ void WebStateImpl::ClearTransientContent() {
   if (interstitial_) {
     // |visible_item| can be null if non-committed entries where discarded.
     NavigationItem* visible_item = navigation_manager_->GetVisibleItem();
-    const SSLStatus* old_status =
-        visible_item ? &(visible_item->GetSSL()) : nullptr;
+    const SSLStatus old_status =
+        visible_item ? visible_item->GetSSL() : SSLStatus();
     // Store the currently displayed interstitial in a local variable and reset
     // |interstitial_| early.  This is to prevent an infinite loop, as
     // |DontProceed()| internally calls |ClearTransientContent()|.
@@ -806,7 +807,7 @@ void WebStateImpl::ClearTransientContent() {
     // deletion.
 
     const web::NavigationItem* new_item = navigation_manager_->GetVisibleItem();
-    if (!new_item || !old_status || !new_item->GetSSL().Equals(*old_status)) {
+    if (!new_item || !visible_item || !new_item->GetSSL().Equals(old_status)) {
       // Visible SSL state has actually changed after interstitial dismissal.
       DidChangeVisibleSecurityState();
     }

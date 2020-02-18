@@ -7,9 +7,10 @@ from __future__ import division
 from __future__ import absolute_import
 
 import json
-import unittest
-
+import logging
 import mock
+import sys
+import unittest
 
 from dashboard.pinpoint.models.quest import read_value
 from tracing.value import histogram_set
@@ -29,6 +30,16 @@ _BASE_ARGUMENTS_GRAPH_JSON = {
 
 class ReadHistogramsJsonValueQuestTest(unittest.TestCase):
 
+  def setUp(self):
+    # Intercept the logging messages, so that we can see them when we have test
+    # output in failures.
+    self.logger = logging.getLogger()
+    self.logger.level = logging.DEBUG
+    self.stream_handler = logging.StreamHandler(sys.stdout)
+    self.logger.addHandler(self.stream_handler)
+    self.addCleanup(self.logger.removeHandler, self.stream_handler)
+    super(ReadHistogramsJsonValueQuestTest, self).setUp()
+
   def testMinimumArguments(self):
     quest = read_value.ReadHistogramsJsonValue.FromDict(
         _BASE_ARGUMENTS_HISTOGRAMS)
@@ -39,7 +50,7 @@ class ReadHistogramsJsonValueQuestTest(unittest.TestCase):
   def testAllArguments(self):
     arguments = dict(_BASE_ARGUMENTS_HISTOGRAMS)
     arguments['chart'] = 'timeToFirst'
-    arguments['tir_label'] = 'pcv1-cold'
+    arguments['grouping_label'] = 'pcv1-cold'
     arguments['trace'] = 'trace_name'
     arguments['statistic'] = 'avg'
     quest = read_value.ReadHistogramsJsonValue.FromDict(arguments)
@@ -47,6 +58,28 @@ class ReadHistogramsJsonValueQuestTest(unittest.TestCase):
     expected = read_value.ReadHistogramsJsonValue(
         'speedometer/perf_results.json', 'timeToFirst',
         'pcv1-cold', 'trace_name', 'avg')
+    self.assertEqual(quest, expected)
+
+  def testArgumentsWithStoryInsteadOfTrace(self):
+    arguments = dict(_BASE_ARGUMENTS_HISTOGRAMS)
+    arguments['chart'] = 'timeToFirst'
+    arguments['grouping_label'] = 'pcv1-cold'
+    arguments['story'] = 'trace_name'
+    arguments['statistic'] = 'avg'
+    quest = read_value.ReadHistogramsJsonValue.FromDict(arguments)
+
+    expected = read_value.ReadHistogramsJsonValue(
+        'speedometer/perf_results.json', 'timeToFirst',
+        'pcv1-cold', 'trace_name', 'avg')
+    self.assertEqual(quest, expected)
+
+  def testArgumentsWithNoChart(self):
+    arguments = dict(_BASE_ARGUMENTS_HISTOGRAMS)
+    arguments['story'] = 'trace_name'
+    quest = read_value.ReadHistogramsJsonValue.FromDict(arguments)
+    expected = read_value.ReadHistogramsJsonValue(
+        'speedometer/perf_results.json', None,
+        None, 'trace_name', None)
     self.assertEqual(quest, expected)
 
   def testWindows(self):
@@ -60,6 +93,16 @@ class ReadHistogramsJsonValueQuestTest(unittest.TestCase):
 
 
 class ReadGraphJsonValueQuestTest(unittest.TestCase):
+
+  def setUp(self):
+    # Intercept the logging messages, so that we can see them when we have test
+    # output in failures.
+    self.logger = logging.getLogger()
+    self.logger.level = logging.DEBUG
+    self.stream_handler = logging.StreamHandler(sys.stdout)
+    self.logger.addHandler(self.stream_handler)
+    self.addCleanup(self.logger.removeHandler, self.stream_handler)
+    super(ReadGraphJsonValueQuestTest, self).setUp()
 
   def testMinimumArguments(self):
     quest = read_value.ReadGraphJsonValue.FromDict(_BASE_ARGUMENTS_GRAPH_JSON)
@@ -87,9 +130,17 @@ class ReadGraphJsonValueQuestTest(unittest.TestCase):
 class _ReadValueExecutionTest(unittest.TestCase):
 
   def setUp(self):
+    # Intercept the logging messages, so that we can see them when we have test
+    # output in failures.
+    self.logger = logging.getLogger()
+    self.logger.level = logging.DEBUG
+    self.stream_handler = logging.StreamHandler(sys.stdout)
+    self.logger.addHandler(self.stream_handler)
+    self.addCleanup(self.logger.removeHandler, self.stream_handler)
     patcher = mock.patch('dashboard.services.isolate.Retrieve')
     self._retrieve = patcher.start()
     self.addCleanup(patcher.stop)
+    super(_ReadValueExecutionTest, self).setUp()
 
   def SetOutputFileContents(self, contents):
     self._retrieve.side_effect = (
@@ -106,7 +157,7 @@ class _ReadValueExecutionTest(unittest.TestCase):
 
   def assertReadValueSuccess(self, execution):
     self.assertTrue(execution.completed)
-    self.assertFalse(execution.failed)
+    self.assertFalse(execution.failed, 'Exception: %s' % (execution.exception,))
     self.assertEqual(execution.result_arguments, {})
 
   def assertRetrievedOutputJson(self):
@@ -127,14 +178,14 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     histograms = histogram_set.HistogramSet([hist])
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORY_TAGS.name,
-        generic_set.GenericSet(['group:tir_label']))
+        generic_set.GenericSet(['group:label']))
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORIES.name,
         generic_set.GenericSet(['story']))
     self.SetOutputFileContents(histograms.AsDicts())
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist.name, 'tir_label', 'story')
+        'chartjson-output.json', hist.name, 'label', 'story')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 
@@ -150,14 +201,60 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     histograms = histogram_set.HistogramSet([hist])
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORY_TAGS.name,
-        generic_set.GenericSet(['group:tir_label']))
+        generic_set.GenericSet(['group:label']))
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORIES.name,
         generic_set.GenericSet(['http://story']))
     self.SetOutputFileContents(histograms.AsDicts())
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist.name, 'tir_label', 'http://story')
+        'chartjson-output.json', hist.name, 'label', 'http://story')
+    execution = quest.Start(None, 'server', 'output hash')
+    execution.Poll()
+
+    self.assertReadValueSuccess(execution)
+    self.assertEqual(execution.result_values, (0, 1, 2))
+    self.assertRetrievedOutputJson()
+
+  def testReadHistogramsJsonValueHistogramNameNeedsEscape(self):
+    hist = histogram_module.Histogram('hist:name:has:colons', 'count')
+    hist.AddSample(0)
+    hist.AddSample(1)
+    hist.AddSample(2)
+    histograms = histogram_set.HistogramSet([hist])
+    histograms.AddSharedDiagnosticToAllHistograms(
+        reserved_infos.STORY_TAGS.name,
+        generic_set.GenericSet(['group:label']))
+    histograms.AddSharedDiagnosticToAllHistograms(
+        reserved_infos.STORIES.name,
+        generic_set.GenericSet(['story:has:colons:too']))
+    self.SetOutputFileContents(histograms.AsDicts())
+
+    quest = read_value.ReadHistogramsJsonValue(
+        'chartjson-output.json', hist.name, 'label', 'story:has:colons:too')
+    execution = quest.Start(None, 'server', 'output hash')
+    execution.Poll()
+
+    self.assertReadValueSuccess(execution)
+    self.assertEqual(execution.result_values, (0, 1, 2))
+    self.assertRetrievedOutputJson()
+
+  def testReadHistogramsJsonValueGroupingLabelOptional(self):
+    hist = histogram_module.Histogram('hist:name:has:colons', 'count')
+    hist.AddSample(0)
+    hist.AddSample(1)
+    hist.AddSample(2)
+    histograms = histogram_set.HistogramSet([hist])
+    histograms.AddSharedDiagnosticToAllHistograms(
+        reserved_infos.STORY_TAGS.name,
+        generic_set.GenericSet(['group:label']))
+    histograms.AddSharedDiagnosticToAllHistograms(
+        reserved_infos.STORIES.name,
+        generic_set.GenericSet(['story:has:colons:too']))
+    self.SetOutputFileContents(histograms.AsDicts())
+
+    quest = read_value.ReadHistogramsJsonValue(
+        'chartjson-output.json', hist.name, None, 'story:has:colons:too')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 
@@ -173,15 +270,14 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     histograms = histogram_set.HistogramSet([hist])
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORY_TAGS.name,
-        generic_set.GenericSet(['group:tir_label']))
+        generic_set.GenericSet(['group:label']))
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORIES.name,
         generic_set.GenericSet(['story']))
     self.SetOutputFileContents(histograms.AsDicts())
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist.name,
-        'tir_label', 'story', statistic='avg')
+        'chartjson-output.json', hist.name, 'label', 'story', statistic='avg')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 
@@ -194,15 +290,14 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     histograms = histogram_set.HistogramSet([hist])
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORY_TAGS.name,
-        generic_set.GenericSet(['group:tir_label']))
+        generic_set.GenericSet(['group:label']))
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORIES.name,
         generic_set.GenericSet(['story']))
     self.SetOutputFileContents(histograms.AsDicts())
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist.name,
-        'tir_label', 'story', statistic='avg')
+        'chartjson-output.json', hist.name, 'label', 'story', statistic='avg')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 
@@ -224,14 +319,14 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     histograms = histogram_set.HistogramSet([hist, hist2, hist3])
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORY_TAGS.name,
-        generic_set.GenericSet(['group:tir_label']))
+        generic_set.GenericSet(['group:label']))
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORIES.name,
         generic_set.GenericSet(['story']))
     self.SetOutputFileContents(histograms.AsDicts())
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist.name, 'tir_label', 'story')
+        'chartjson-output.json', hist.name, 'label', 'story')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 
@@ -324,7 +419,7 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
         execution.AsDict())
     self.assertRetrievedOutputJson()
 
-  def testReadHistogramsJsonValueWithNoTirLabel(self):
+  def testReadHistogramsJsonValueWithNoGroupingLabel(self):
     hist = histogram_module.Histogram('hist', 'count')
     hist.AddSample(0)
     hist.AddSample(1)
@@ -332,12 +427,12 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     histograms = histogram_set.HistogramSet([hist])
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORY_TAGS.name,
-        generic_set.GenericSet(['group:tir_label']))
+        generic_set.GenericSet(['group:label']))
 
     self.SetOutputFileContents(histograms.AsDicts())
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist_name=hist.name, tir_label='tir_label')
+        'chartjson-output.json', hist_name=hist.name, grouping_label='label')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 
@@ -358,7 +453,7 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     self.SetOutputFileContents(histograms.AsDicts())
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist_name=hist.name, story='story')
+        'chartjson-output.json', hist_name=hist.name, trace_or_story='story')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 
@@ -366,7 +461,7 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     self.assertEqual(execution.result_values, (0, 1, 2))
     self.assertRetrievedOutputJson()
 
-  def testReadHistogramsJsonValueSummaryTIRLabel(self):
+  def testReadHistogramsJsonValueSummaryGroupingLabel(self):
     samples = []
     hists = []
     for i in range(10):
@@ -382,12 +477,13 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     histograms = histogram_set.HistogramSet(hists)
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORY_TAGS.name,
-        generic_set.GenericSet(['group:tir_label']))
+        generic_set.GenericSet(['group:label']))
 
     self.SetOutputFileContents(histograms.AsDicts())
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist_name=hists[0].name, tir_label='tir_label')
+        'chartjson-output.json', hist_name=hists[0].name,
+        grouping_label='label')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 
@@ -406,7 +502,7 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
       hist.diagnostics[reserved_infos.STORIES.name] = (
           generic_set.GenericSet(['story%d' % i]))
       hist.diagnostics[reserved_infos.STORY_TAGS.name] = (
-          generic_set.GenericSet(['group:tir_label1']))
+          generic_set.GenericSet(['group:label1']))
       hists.append(hist)
       samples.extend(hist.sample_values)
 
@@ -418,14 +514,14 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
       hist.diagnostics[reserved_infos.STORIES.name] = (
           generic_set.GenericSet(['another_story%d' % i]))
       hist.diagnostics[reserved_infos.STORY_TAGS.name] = (
-          generic_set.GenericSet(['group:tir_label2']))
+          generic_set.GenericSet(['group:label2']))
       hists.append(hist)
       samples.extend(hist.sample_values)
 
     histograms = histogram_set.HistogramSet(hists)
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORY_TAGS.name,
-        generic_set.GenericSet(['group:tir_label']))
+        generic_set.GenericSet(['group:label']))
 
     self.SetOutputFileContents(histograms.AsDicts())
 
@@ -449,14 +545,14 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
       hist.diagnostics[reserved_infos.STORIES.name] = (
           generic_set.GenericSet(['story%d' % i]))
       hist.diagnostics[reserved_infos.STORY_TAGS.name] = (
-          generic_set.GenericSet(['group:tir_label1']))
+          generic_set.GenericSet(['group:label1']))
       hists.append(hist)
       samples.extend(hist.sample_values)
 
     histograms = histogram_set.HistogramSet(hists)
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.STORY_TAGS.name,
-        generic_set.GenericSet(['group:tir_label']))
+        generic_set.GenericSet(['group:label']))
 
     self.SetOutputFileContents(histograms.AsDicts())
 
@@ -472,7 +568,7 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     self._retrieve.return_value = '{"files": {}}'
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist_name='metric', tir_label='test')
+        'chartjson-output.json', hist_name='metric', grouping_label='test')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 
@@ -482,7 +578,7 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     self.SetOutputFileContents([])
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist_name='metric', tir_label='test')
+        'chartjson-output.json', hist_name='metric', grouping_label='test')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 
@@ -512,13 +608,13 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
 
     self.assertReadValueError(execution, 'ReadValueNotFound')
 
-  def testReadHistogramsJsonValueTirLabelWithNoValues(self):
+  def testReadHistogramsJsonValueGroupingLabelWithNoValues(self):
     hist = histogram_module.Histogram('hist', 'count')
     histograms = histogram_set.HistogramSet([hist])
     self.SetOutputFileContents(histograms.AsDicts())
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist_name='chart', tir_label='tir_label')
+        'chartjson-output.json', hist_name='chart', grouping_label='label')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 
@@ -530,7 +626,7 @@ class ReadHistogramsJsonValueTest(_ReadValueExecutionTest):
     self.SetOutputFileContents(histograms.AsDicts())
 
     quest = read_value.ReadHistogramsJsonValue(
-        'chartjson-output.json', hist_name='chart', story='story')
+        'chartjson-output.json', hist_name='chart', trace_or_story='story')
     execution = quest.Start(None, 'server', 'output hash')
     execution.Poll()
 

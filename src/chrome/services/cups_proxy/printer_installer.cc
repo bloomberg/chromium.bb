@@ -20,9 +20,8 @@
 
 namespace cups_proxy {
 
-PrinterInstaller::PrinterInstaller(
-    base::WeakPtr<CupsProxyServiceDelegate> delegate)
-    : delegate_(std::move(delegate)) {}
+PrinterInstaller::PrinterInstaller(CupsProxyServiceDelegate* const delegate)
+    : delegate_(delegate) {}
 
 PrinterInstaller::~PrinterInstaller() = default;
 
@@ -45,15 +44,21 @@ void PrinterInstaller::InstallPrinter(std::string printer_id,
 
   // Install printer.
   delegate_->SetupPrinter(
-      *printer, base::BindOnce(&PrinterInstaller::OnInstallPrinter,
-                               weak_factory_.GetWeakPtr(), std::move(cb)));
+      *printer,
+      base::BindOnce(&PrinterInstaller::OnInstallPrinter,
+                     weak_factory_.GetWeakPtr(), std::move(cb), *printer));
 }
 
 // TODO(crbug.com/945409): Test whether we need to call
 // CupsPrintersManager::PrinterInstalled here.
 void PrinterInstaller::OnInstallPrinter(InstallPrinterCallback cb,
+                                        const chromeos::Printer& printer,
                                         bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (success) {
+    delegate_->PrinterInstalled(printer);
+  }
 
   Finish(std::move(cb),
          success ? InstallPrinterResult::kSuccess

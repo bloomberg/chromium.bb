@@ -17,6 +17,7 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/clients/mojo_decryptor.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "media/mojo/mojom/decryptor.mojom.h"
@@ -41,7 +42,7 @@ void MojoCdm::Create(
     const std::string& key_system,
     const url::Origin& security_origin,
     const CdmConfig& cdm_config,
-    mojom::ContentDecryptionModulePtr remote_cdm,
+    mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
     mojom::InterfaceFactory* interface_factory,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -60,7 +61,7 @@ void MojoCdm::Create(
                           std::move(promise));
 }
 
-MojoCdm::MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
+MojoCdm::MojoCdm(mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
                  mojom::InterfaceFactory* interface_factory,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
@@ -68,7 +69,6 @@ MojoCdm::MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
                  const SessionExpirationUpdateCB& session_expiration_update_cb)
     : remote_cdm_(std::move(remote_cdm)),
       interface_factory_(interface_factory),
-      client_binding_(this),
       cdm_id_(CdmContext::kInvalidCdmId),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
@@ -80,9 +80,7 @@ MojoCdm::MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
   DCHECK(session_keys_change_cb_);
   DCHECK(session_expiration_update_cb_);
 
-  mojom::ContentDecryptionModuleClientAssociatedPtrInfo client_ptr_info;
-  client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
-  remote_cdm_->SetClient(std::move(client_ptr_info));
+  remote_cdm_->SetClient(client_receiver_.BindNewEndpointAndPassRemote());
 }
 
 MojoCdm::~MojoCdm() {
@@ -116,7 +114,7 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // If connection error has happened, fail immediately.
-  if (remote_cdm_.encountered_error()) {
+  if (!remote_cdm_.is_connected()) {
     LOG(ERROR) << "Remote CDM encountered error.";
     promise->reject(CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "Mojo CDM creation failed.");
@@ -127,7 +125,7 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
   RecordConnectionError(false);
 
   // Otherwise, set an error handler to catch the connection error.
-  remote_cdm_.set_connection_error_with_reason_handler(
+  remote_cdm_.set_disconnect_with_reason_handler(
       base::Bind(&MojoCdm::OnConnectionError, base::Unretained(this)));
 
   pending_init_promise_ = std::move(promise);
@@ -305,23 +303,25 @@ Decryptor* MojoCdm::GetDecryptor() {
   if (decryptor_)
     return decryptor_.get();
 
-  mojom::DecryptorPtr decryptor_ptr;
+  mojo::PendingRemote<mojom::Decryptor> decryptor_remote;
 
   // Can be called on a different thread.
   if (decryptor_ptr_info_.is_valid()) {
     DVLOG(1) << __func__ << ": Using Decryptor exposed by the CDM directly";
-    decryptor_ptr.Bind(std::move(decryptor_ptr_info_));
+    decryptor_remote = std::move(decryptor_ptr_info_);
   } else if (interface_factory_ && cdm_id_ != CdmContext::kInvalidCdmId) {
+#if BUILDFLAG(ENABLE_CDM_PROXY)
     // TODO(xhwang): Pass back info on whether Decryptor is supported by the
     // remote CDM.
     DVLOG(1) << __func__ << ": Using Decryptor associated with CDM ID "
              << cdm_id_ << ", typically hosted by CdmProxy in MediaService";
-    interface_factory_->CreateDecryptor(cdm_id_,
-                                        mojo::MakeRequest(&decryptor_ptr));
+    interface_factory_->CreateDecryptor(
+        cdm_id_, decryptor_remote.InitWithNewPipeAndPassReceiver());
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
   }
 
-  if (decryptor_ptr)
-    decryptor_.reset(new MojoDecryptor(std::move(decryptor_ptr)));
+  if (decryptor_remote)
+    decryptor_.reset(new MojoDecryptor(std::move(decryptor_remote)));
 
   return decryptor_.get();
 }

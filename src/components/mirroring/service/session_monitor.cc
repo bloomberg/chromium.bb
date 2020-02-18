@@ -112,7 +112,7 @@ SessionMonitor::SessionMonitor(
     int max_retention_bytes,
     const net::IPAddress& receiver_address,
     base::Value session_tags,
-    network::mojom::URLLoaderFactoryPtr loader_factory)
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> loader_factory)
     : max_retention_bytes_(max_retention_bytes),
       receiver_address_(receiver_address),
       session_tags_(std::move(session_tags)),
@@ -348,8 +348,8 @@ std::string SessionMonitor::GetEventLogsAndReset(
 
   result.resize(media::cast::kMaxSerializedBytes);
   int output_bytes;
-  // TODO(xjz): media::cast::SerializeEvents() shouldn't require the caller to
-  // pre-allocate the memory. It should return a string result.
+  // TODO(crbug.com/1015471): media::cast::SerializeEvents() shouldn't require
+  // the caller to pre-allocate the memory. It should return a string result.
   if (media::cast::SerializeEvents(metadata, frame_events, packet_events,
                                    true /* compress */,
                                    media::cast::kMaxSerializedBytes,

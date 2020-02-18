@@ -15,7 +15,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
-#include "ui/accelerated_widget_mac/availability_macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/mac/io_surface.h"
@@ -161,6 +160,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                  const gfx::RectF& contents_rect,
                  const gfx::Rect& rect,
                  unsigned background_color,
+                 bool triggers_hdr,
                  unsigned edge_aa_mask,
                  float opacity,
                  unsigned filter);
@@ -182,6 +182,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     gfx::RectF contents_rect;
     gfx::RectF rect;
     unsigned background_color = 0;
+    const bool triggers_hdr;
     // Note that the CoreAnimation edge antialiasing mask is not the same as
     // the edge antialiasing mask passed to the constructor.
     CAEdgeAntialiasingMask ca_edge_aa_mask = 0;
@@ -191,7 +192,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
 
     // If this layer's contents can be represented as an
     // AVSampleBufferDisplayLayer, then |ca_layer| will point to |av_layer|.
-    base::scoped_nsobject<AVSampleBufferDisplayLayer109> av_layer;
+    base::scoped_nsobject<AVSampleBufferDisplayLayer> av_layer;
     bool use_av_layer = false;
 
    private:

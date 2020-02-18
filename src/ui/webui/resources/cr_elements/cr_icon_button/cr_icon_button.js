@@ -22,9 +22,28 @@
  *   </template>
  * </dom-module>
  *
+ * In general when an icon is specified using a class, the expectation is the
+ * class will set an image to the --cr-icon-image variable.
+ *
  * Example of using an iron-icon:
  * <link rel="import" href="chrome://resources/cr_elements/icons.html">
  * <cr-icon-button iron-icon="cr:icon-key"></cr-icon-button>
+ *
+ * The color of the icon can be overridden using CSS variables. When using
+ * iron-icon both the fill and stroke can be overridden the variables:
+ * --cr-icon-button-fill-color
+ * --cr-icon-button-fill-color-focus
+ * --cr-icon-button-stroke-color
+ * --cr-icon-button-stroke-color-focus
+ *
+ * When not using iron-icon (ie. specifying --cr-icon-image), the icons support
+ * one color and the 'stroke' variables are ignored.
+ *
+ * The '-focus' variables are used for opaque ripple support. This is enabled
+ * when the 'a11y-enhanced' attribute on <html> is present.
+ *
+ * When using iron-icon's, more than one icon can be specified by setting
+ * the |ironIcon| property to a comma-delimited list of keys.
  */
 Polymer({
   is: 'cr-icon-button',
@@ -44,6 +63,14 @@ Polymer({
     ironIcon: {
       type: String,
       observer: 'onIronIconChanged_',
+      reflectToAttribute: true,
+    },
+
+    /** @private */
+    rippleShowing_: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
     },
   },
 
@@ -56,6 +83,7 @@ Polymer({
   listeners: {
     blur: 'hideRipple_',
     click: 'onClick_',
+    down: 'showRipple_',
     focus: 'showRipple_',
     keydown: 'onKeyDown_',
     keyup: 'onKeyUp_',
@@ -67,6 +95,7 @@ Polymer({
   hideRipple_: function() {
     if (this.hasRipple()) {
       this.getRipple().clear();
+      this.rippleShowing_ = false;
     }
   },
 
@@ -74,6 +103,7 @@ Polymer({
   showRipple_: function() {
     if (!this.noink && !this.disabled) {
       this.getRipple().showAndHoldDown();
+      this.rippleShowing_ = true;
     }
   },
 

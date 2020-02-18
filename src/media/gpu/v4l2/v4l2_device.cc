@@ -4,6 +4,11 @@
 
 #include "media/gpu/v4l2/v4l2_device.h"
 
+#include <fcntl.h>
+#include <poll.h>
+#include <linux/media.h>
+#include <sys/ioctl.h>
+
 #include <algorithm>
 #include <set>
 
@@ -16,16 +21,22 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/video_types.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
 #include "media/gpu/v4l2/v4l2_decode_surface.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 #if defined(ARCH_CPU_ARMEL)
 #include "media/gpu/v4l2/tegra_v4l2_device.h"
 #endif
+
+#define REQUEST_DEVICE "/dev/media-dec0"
 
 namespace media {
 
@@ -267,6 +278,9 @@ class V4L2BufferRefBase {
   void* GetPlaneMapping(const size_t plane);
 
   scoped_refptr<VideoFrame> GetVideoFrame();
+  // Checks that the number of passed FDs is adequate for the current format
+  // and buffer configuration. Only useful for DMABUF buffers.
+  bool CheckNumFDsForFormat(const size_t num_fds) const;
 
   // Data from the buffer, that users can query and/or write.
   struct v4l2_buffer v4l2_buffer_;
@@ -346,6 +360,40 @@ scoped_refptr<VideoFrame> V4L2BufferRefBase::GetVideoFrame() {
   DCHECK_LE(BufferId(), queue_->buffers_.size());
 
   return queue_->buffers_[BufferId()]->GetVideoFrame();
+}
+
+bool V4L2BufferRefBase::CheckNumFDsForFormat(const size_t num_fds) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!queue_)
+    return false;
+
+  // We have not used SetFormat(), assume this is ok.
+  // Hopefully we standardize SetFormat() in the future.
+  if (!queue_->current_format_)
+    return true;
+
+  const size_t required_fds = queue_->current_format_->fmt.pix_mp.num_planes;
+  // Sanity check.
+  DCHECK_EQ(v4l2_buffer_.length, required_fds);
+  if (num_fds < required_fds) {
+    VLOGF(1) << "Insufficient number of FDs given for the current format. "
+             << num_fds << " provided, " << required_fds << " required.";
+    return false;
+  }
+
+  const auto* planes = v4l2_buffer_.m.planes;
+  for (size_t i = v4l2_buffer_.length - 1; i >= num_fds; --i) {
+    // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
+    // Otherwise, if offset == 0, return error as it is likely pointing to
+    // a new plane.
+    if (planes[i].data_offset == 0) {
+      VLOGF(1) << "Additional dmabuf fds point to a new buffer.";
+      return false;
+    }
+  }
+
+  return true;
 }
 
 V4L2WritableBufferRef::V4L2WritableBufferRef() {
@@ -471,14 +519,35 @@ bool V4L2WritableBufferRef::QueueDMABuf(
     return false;
   }
 
-  size_t num_planes = self.PlanesCount();
-  // TODO(hiroh): Strengthen this check with v4l2 pixel format.
-  if (fds.size() < num_planes) {
-    VLOGF(1) << "The given number of fds is less than required one";
+  if (!self.buffer_data_->CheckNumFDsForFormat(fds.size()))
     return false;
-  }
+
+  size_t num_planes = self.PlanesCount();
   for (size_t i = 0; i < num_planes; i++)
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = fds[i].get();
+
+  return std::move(self).DoQueue();
+}
+
+bool V4L2WritableBufferRef::QueueDMABuf(
+    const std::vector<gfx::NativePixmapPlane>& planes) && {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsValid());
+
+  // Move ourselves so our data gets freed no matter when we return
+  V4L2WritableBufferRef self(std::move(*this));
+
+  if (self.Memory() != V4L2_MEMORY_DMABUF) {
+    VLOGF(1) << "Called on invalid buffer type!";
+    return false;
+  }
+
+  if (!self.buffer_data_->CheckNumFDsForFormat(planes.size()))
+    return false;
+
+  size_t num_planes = self.PlanesCount();
+  for (size_t i = 0; i < num_planes; i++)
+    self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = planes[i].fd.get();
 
   return std::move(self).DoQueue();
 }
@@ -702,6 +771,14 @@ class V4L2BufferRefFactory {
   }
 };
 
+// Helper macros that print the queue type with logs.
+#define VPQLOGF(level) \
+  VPLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+#define VQLOGF(level) \
+  VLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+#define DVQLOGF(level) \
+  DVLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+
 V4L2Queue::V4L2Queue(scoped_refptr<V4L2Device> dev,
                      enum v4l2_buf_type type,
                      base::OnceClosure destroy_cb)
@@ -716,7 +793,7 @@ V4L2Queue::~V4L2Queue() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (is_streaming_) {
-    VLOGF(1) << "Queue is still streaming, trying to stop it...";
+    VQLOGF(1) << "Queue is still streaming, trying to stop it...";
     Streamoff();
   }
 
@@ -724,11 +801,32 @@ V4L2Queue::~V4L2Queue() {
   DCHECK(!free_buffers_);
 
   if (!buffers_.empty()) {
-    VLOGF(1) << "Buffers are still allocated, trying to deallocate them...";
+    VQLOGF(1) << "Buffers are still allocated, trying to deallocate them...";
     DeallocateBuffers();
   }
 
   std::move(destroy_cb_).Run();
+}
+
+base::Optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
+                                                        const gfx::Size& size,
+                                                        size_t buffer_size) {
+  struct v4l2_format format = {};
+  format.type = type_;
+  format.fmt.pix_mp.pixelformat = fourcc;
+  format.fmt.pix_mp.width = size.width();
+  format.fmt.pix_mp.height = size.height();
+  format.fmt.pix_mp.num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(fourcc);
+  format.fmt.pix_mp.plane_fmt[0].sizeimage = buffer_size;
+  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
+      format.fmt.pix_mp.pixelformat != fourcc) {
+    VPQLOGF(2) << "Failed to set format on queue " << type_
+               << ". format_fourcc=0x" << std::hex << fourcc;
+    return base::nullopt;
+  }
+
+  current_format_ = format;
+  return current_format_;
 }
 
 size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
@@ -737,17 +835,18 @@ size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
   DCHECK_EQ(queued_buffers_.size(), 0u);
 
   if (IsStreaming()) {
-    VLOGF(1) << "Cannot allocate buffers while streaming.";
+    VQLOGF(1) << "Cannot allocate buffers while streaming.";
     return 0;
   }
 
   if (buffers_.size() != 0) {
-    VLOGF(1) << "Cannot allocate new buffers while others are still allocated.";
+    VQLOGF(1)
+        << "Cannot allocate new buffers while others are still allocated.";
     return 0;
   }
 
   if (count == 0) {
-    VLOGF(1) << "Attempting to allocate 0 buffers.";
+    VQLOGF(1) << "Attempting to allocate 0 buffers.";
     return 0;
   }
 
@@ -758,7 +857,7 @@ size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
   struct v4l2_format format = {.type = type_};
   int ret = device_->Ioctl(VIDIOC_G_FMT, &format);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_G_FMT failed: ";
+    VPQLOGF(1) << "VIDIOC_G_FMT failed";
     return 0;
   }
   planes_count_ = format.fmt.pix_mp.num_planes;
@@ -768,14 +867,14 @@ size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
   reqbufs.count = count;
   reqbufs.type = type_;
   reqbufs.memory = memory;
-  DVLOGF(3) << "queue " << type_ << ": requesting " << count << " buffers.";
+  DVQLOGF(3) << "Requesting " << count << " buffers.";
 
   ret = device_->Ioctl(VIDIOC_REQBUFS, &reqbufs);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_REQBUFS failed: ";
+    VPQLOGF(1) << "VIDIOC_REQBUFS failed";
     return 0;
   }
-  DVLOGF(3) << "queue " << type_ << ": got " << reqbufs.count << " buffers.";
+  DVQLOGF(3) << "queue " << type_ << ": got " << reqbufs.count << " buffers.";
 
   memory_ = memory;
 
@@ -806,7 +905,7 @@ bool V4L2Queue::DeallocateBuffers() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (IsStreaming()) {
-    VLOGF(1) << "Cannot deallocate buffers while streaming.";
+    VQLOGF(1) << "Cannot deallocate buffers while streaming.";
     return false;
   }
 
@@ -825,7 +924,7 @@ bool V4L2Queue::DeallocateBuffers() {
 
   int ret = device_->Ioctl(VIDIOC_REQBUFS, &reqbufs);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_REQBUFS failed: ";
+    VPQLOGF(1) << "VIDIOC_REQBUFS failed";
     return false;
   }
 
@@ -870,12 +969,14 @@ bool V4L2Queue::QueueBuffer(struct v4l2_buffer* v4l2_buffer) {
 
   int ret = device_->Ioctl(VIDIOC_QBUF, v4l2_buffer);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_QBUF failed: ";
+    VPQLOGF(1) << "VIDIOC_QBUF failed";
     return false;
   }
 
   auto inserted = queued_buffers_.emplace(v4l2_buffer->index);
   DCHECK_EQ(inserted.second, true);
+
+  device_->SchedulePoll();
 
   return true;
 }
@@ -888,7 +989,7 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
     return std::make_pair(true, nullptr);
 
   if (!IsStreaming()) {
-    VLOGF(1) << "Attempting to dequeue a buffer while not streaming.";
+    VQLOGF(1) << "Attempting to dequeue a buffer while not streaming.";
     return std::make_pair(true, nullptr);
   }
 
@@ -911,7 +1012,7 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
         // This is not an error but won't provide a buffer either.
         return std::make_pair(true, nullptr);
       default:
-        VPLOGF(1) << "VIDIOC_DQBUF failed: ";
+        VPQLOGF(1) << "VIDIOC_DQBUF failed";
         return std::make_pair(false, nullptr);
     }
   }
@@ -919,6 +1020,9 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
   auto it = queued_buffers_.find(v4l2_buffer.index);
   DCHECK(it != queued_buffers_.end());
   queued_buffers_.erase(*it);
+
+  if (QueuedBuffersCount() > 0)
+    device_->SchedulePoll();
 
   DCHECK(free_buffers_);
   return std::make_pair(true,
@@ -941,7 +1045,7 @@ bool V4L2Queue::Streamon() {
   int arg = static_cast<int>(type_);
   int ret = device_->Ioctl(VIDIOC_STREAMON, &arg);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_STREAMON failed: ";
+    VPQLOGF(1) << "VIDIOC_STREAMON failed";
     return false;
   }
 
@@ -960,7 +1064,7 @@ bool V4L2Queue::Streamoff() {
   int arg = static_cast<int>(type_);
   int ret = device_->Ioctl(VIDIOC_STREAMOFF, &arg);
   if (ret) {
-    VPLOGF(1) << "VIDIOC_STREAMOFF failed: ";
+    VPQLOGF(1) << "VIDIOC_STREAMOFF failed";
     return false;
   }
 
@@ -994,6 +1098,10 @@ size_t V4L2Queue::QueuedBuffersCount() const {
   return queued_buffers_.size();
 }
 
+#undef VDQLOGF
+#undef VPQLOGF
+#undef VQLOGF
+
 // This class is used to expose V4L2Queue's constructor to this module. This is
 // to ensure that nobody else can create instances of it.
 class V4L2QueueFactory {
@@ -1005,11 +1113,15 @@ class V4L2QueueFactory {
   }
 };
 
-V4L2Device::V4L2Device() {}
+V4L2Device::V4L2Device() {
+  DETACH_FROM_SEQUENCE(client_sequence_checker_);
+}
 
 V4L2Device::~V4L2Device() {}
 
 scoped_refptr<V4L2Queue> V4L2Device::GetQueue(enum v4l2_buf_type type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
   switch (type) {
     // Supported queue types.
     case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
@@ -1034,6 +1146,8 @@ scoped_refptr<V4L2Queue> V4L2Device::GetQueue(enum v4l2_buf_type type) {
 }
 
 void V4L2Device::OnQueueDestroyed(v4l2_buf_type buf_type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
   auto it = queues_.find(buf_type);
   DCHECK(it != queues_.end());
   queues_.erase(it);
@@ -1057,72 +1171,6 @@ scoped_refptr<V4L2Device> V4L2Device::Create() {
 
   VLOGF(1) << "Failed to create a V4L2Device";
   return nullptr;
-}
-
-// static
-VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
-  switch (pix_fmt) {
-    case V4L2_PIX_FMT_NV12:
-    case V4L2_PIX_FMT_NV12M:
-      return PIXEL_FORMAT_NV12;
-
-    // V4L2_PIX_FMT_MT21C is only used for MT8173 hardware video decoder output
-    // and should be converted by MT8173 image processor for compositor to
-    // render. Since it is an intermediate format for video decoder,
-    // VideoPixelFormat shall not have its mapping. However, we need to create a
-    // VideoFrameLayout for the format to process the intermediate frame. Hence
-    // we map V4L2_PIX_FMT_MT21C to PIXEL_FORMAT_NV12 as their layout are the
-    // same.
-    case V4L2_PIX_FMT_MT21C:
-    // V4L2_PIX_FMT_MM21 is used for MT8183 hardware video decoder. It is
-    // similar to V4L2_PIX_FMT_MT21C but is not compressed ; thus it can also
-    // be mapped to PIXEL_FORMAT_NV12.
-    case V4L2_PIX_FMT_MM21:
-      return PIXEL_FORMAT_NV12;
-
-    case V4L2_PIX_FMT_YUV420:
-    case V4L2_PIX_FMT_YUV420M:
-      return PIXEL_FORMAT_I420;
-
-    case V4L2_PIX_FMT_YVU420:
-    case V4L2_PIX_FMT_YVU420M:
-      return PIXEL_FORMAT_YV12;
-
-    case V4L2_PIX_FMT_YUV422M:
-      return PIXEL_FORMAT_I422;
-
-    case V4L2_PIX_FMT_RGB32:
-      return PIXEL_FORMAT_ARGB;
-
-    default:
-      DVLOGF(1) << "Add more cases as needed";
-      return PIXEL_FORMAT_UNKNOWN;
-  }
-}
-
-// static
-uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(const VideoPixelFormat format,
-                                                  bool single_planar) {
-  switch (format) {
-    case PIXEL_FORMAT_NV12:
-      return single_planar ? V4L2_PIX_FMT_NV12 : V4L2_PIX_FMT_NV12M;
-    case PIXEL_FORMAT_I420:
-      return single_planar ? V4L2_PIX_FMT_YUV420 : V4L2_PIX_FMT_YUV420M;
-    case PIXEL_FORMAT_YV12:
-      return single_planar ? V4L2_PIX_FMT_YVU420 : V4L2_PIX_FMT_YVU420M;
-    default:
-      LOG(ERROR) << "Add more cases as needed, format: "
-                 << VideoPixelFormatToString(format)
-                 << ", single_planar: " << single_planar;
-      return 0;
-  }
-}
-
-// static
-uint32_t V4L2Device::VideoFrameLayoutToV4L2PixFmt(
-    const VideoFrameLayout& layout) {
-  return VideoPixelFormatToV4L2PixFmt(layout.format(),
-                                      !layout.is_multi_planar());
 }
 
 // static
@@ -1150,85 +1198,125 @@ uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
 }
 
 // static
-VideoCodecProfile V4L2Device::V4L2VP9ProfileToVideoCodecProfile(
-    uint32_t profile) {
-  switch (profile) {
-    case V4L2_MPEG_VIDEO_VP9_PROFILE_0:
-      return VP9PROFILE_PROFILE0;
-    case V4L2_MPEG_VIDEO_VP9_PROFILE_1:
-      return VP9PROFILE_PROFILE1;
-    case V4L2_MPEG_VIDEO_VP9_PROFILE_2:
-      return VP9PROFILE_PROFILE2;
-    case V4L2_MPEG_VIDEO_VP9_PROFILE_3:
-      return VP9PROFILE_PROFILE3;
+VideoCodecProfile V4L2Device::V4L2ProfileToVideoCodecProfile(VideoCodec codec,
+                                                             uint32_t profile) {
+  switch (codec) {
+    case kCodecH264:
+      switch (profile) {
+        case V4L2_MPEG_VIDEO_H264_PROFILE_BASELINE:
+        case V4L2_MPEG_VIDEO_H264_PROFILE_CONSTRAINED_BASELINE:
+          return H264PROFILE_BASELINE;
+        case V4L2_MPEG_VIDEO_H264_PROFILE_MAIN:
+          return H264PROFILE_MAIN;
+        case V4L2_MPEG_VIDEO_H264_PROFILE_EXTENDED:
+          return H264PROFILE_EXTENDED;
+        case V4L2_MPEG_VIDEO_H264_PROFILE_HIGH:
+          return H264PROFILE_HIGH;
+      }
+      break;
+    case kCodecVP8:
+      switch (profile) {
+        case V4L2_MPEG_VIDEO_VP8_PROFILE_0:
+        case V4L2_MPEG_VIDEO_VP8_PROFILE_1:
+        case V4L2_MPEG_VIDEO_VP8_PROFILE_2:
+        case V4L2_MPEG_VIDEO_VP8_PROFILE_3:
+          return VP8PROFILE_ANY;
+      }
+      break;
+    case kCodecVP9:
+      switch (profile) {
+        case V4L2_MPEG_VIDEO_VP9_PROFILE_0:
+          return VP9PROFILE_PROFILE0;
+        case V4L2_MPEG_VIDEO_VP9_PROFILE_1:
+          return VP9PROFILE_PROFILE1;
+        case V4L2_MPEG_VIDEO_VP9_PROFILE_2:
+          return VP9PROFILE_PROFILE2;
+        case V4L2_MPEG_VIDEO_VP9_PROFILE_3:
+          return VP9PROFILE_PROFILE3;
+      }
+      break;
     default:
-      VLOGF(2) << "Not a VP9 profile: " << profile;
-      return VIDEO_CODEC_PROFILE_UNKNOWN;
+      VLOGF(2) << "Unknown codec: " << codec;
   }
+  VLOGF(2) << "Unknown profile: " << profile;
+  return VIDEO_CODEC_PROFILE_UNKNOWN;
 }
 
-// static
 std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
     uint32_t pix_fmt,
     bool is_encoder) {
-  VideoCodecProfile min_profile, max_profile;
-  std::vector<VideoCodecProfile> profiles;
+  auto get_supported_profiles = [this](
+                                    VideoCodec codec,
+                                    std::vector<VideoCodecProfile>* profiles) {
+    uint32_t query_id = 0;
+    switch (codec) {
+      case kCodecH264:
+        query_id = V4L2_CID_MPEG_VIDEO_H264_PROFILE;
+        break;
+      case kCodecVP8:
+        query_id = V4L2_CID_MPEG_VIDEO_VP8_PROFILE;
+        break;
+      case kCodecVP9:
+        query_id = V4L2_CID_MPEG_VIDEO_VP9_PROFILE;
+        break;
+      default:
+        return false;
+    }
 
+    v4l2_queryctrl query_ctrl = {};
+    query_ctrl.id = query_id;
+    if (Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) != 0) {
+      return false;
+    }
+    v4l2_querymenu query_menu = {};
+    query_menu.id = query_ctrl.id;
+    for (query_menu.index = query_ctrl.minimum;
+         static_cast<int>(query_menu.index) <= query_ctrl.maximum;
+         query_menu.index++) {
+      if (Ioctl(VIDIOC_QUERYMENU, &query_menu) == 0) {
+        const VideoCodecProfile profile =
+            V4L2Device::V4L2ProfileToVideoCodecProfile(codec, query_menu.index);
+        if (profile != VIDEO_CODEC_PROFILE_UNKNOWN)
+          profiles->push_back(profile);
+      }
+    }
+    return true;
+  };
+
+  std::vector<VideoCodecProfile> profiles;
   switch (pix_fmt) {
     case V4L2_PIX_FMT_H264:
     case V4L2_PIX_FMT_H264_SLICE:
-      if (is_encoder) {
-        // TODO(posciak): need to query the device for supported H.264 profiles,
-        // for now choose Main as a sensible default.
-        min_profile = H264PROFILE_MAIN;
-        max_profile = H264PROFILE_MAIN;
-      } else {
-        min_profile = H264PROFILE_MIN;
-        max_profile = H264PROFILE_MAX;
+      if (!get_supported_profiles(kCodecH264, &profiles)) {
+        DLOG(WARNING) << "Driver doesn't support QUERY H264 profiles, "
+                      << "use default values, Base, Main, High";
+        profiles = {
+            H264PROFILE_BASELINE,
+            H264PROFILE_MAIN,
+            H264PROFILE_HIGH,
+        };
       }
       break;
-
     case V4L2_PIX_FMT_VP8:
     case V4L2_PIX_FMT_VP8_FRAME:
-      min_profile = VP8PROFILE_MIN;
-      max_profile = VP8PROFILE_MAX;
+      profiles = {VP8PROFILE_ANY};
       break;
-
     case V4L2_PIX_FMT_VP9:
-    case V4L2_PIX_FMT_VP9_FRAME: {
-      v4l2_queryctrl query_ctrl = {};
-      query_ctrl.id = V4L2_CID_MPEG_VIDEO_VP9_PROFILE;
-      if (Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0) {
-        v4l2_querymenu query_menu = {};
-        query_menu.id = query_ctrl.id;
-        for (query_menu.index = query_ctrl.minimum;
-             static_cast<int>(query_menu.index) <= query_ctrl.maximum;
-             query_menu.index++) {
-          if (Ioctl(VIDIOC_QUERYMENU, &query_menu) == 0) {
-            const VideoCodecProfile profile =
-                V4L2VP9ProfileToVideoCodecProfile(query_menu.index);
-            if (profile != VIDEO_CODEC_PROFILE_UNKNOWN)
-              profiles.push_back(profile);
-          }
-        }
-        return profiles;
-      } else {
-        // TODO(keiichiw): need a fallback here?
-        VLOGF(2) << "V4L2_CID_MPEG_VIDEO_VP9_PROFILE is not supported.";
-        min_profile = VP9PROFILE_PROFILE0;
-        max_profile = VP9PROFILE_PROFILE0;
+    case V4L2_PIX_FMT_VP9_FRAME:
+      if (!get_supported_profiles(kCodecVP9, &profiles)) {
+        DLOG(WARNING) << "Driver doesn't support QUERY VP9 profiles, "
+                      << "use default values, Profile0";
+        profiles = {VP9PROFILE_PROFILE0};
       }
       break;
-    }
-
     default:
       VLOGF(1) << "Unhandled pixelformat " << FourccToString(pix_fmt);
-      return profiles;
+      return {};
   }
 
-  for (int profile = min_profile; profile <= max_profile; ++profile)
-    profiles.push_back(static_cast<VideoCodecProfile>(profile));
-
+  // Erase duplicated profiles.
+  std::sort(profiles.begin(), profiles.end());
+  profiles.erase(std::unique(profiles.begin(), profiles.end()), profiles.end());
   return profiles;
 }
 
@@ -1329,7 +1417,8 @@ int32_t V4L2Device::H264LevelIdcToV4L2H264Level(uint8_t level_idc) {
 }
 
 // static
-gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(struct v4l2_format format) {
+gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(
+    const struct v4l2_format& format) {
   gfx::Size coded_size;
   gfx::Size visible_size;
   VideoPixelFormat frame_format = PIXEL_FORMAT_UNKNOWN;
@@ -1347,15 +1436,15 @@ gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(struct v4l2_format format) {
     }
     visible_size.SetSize(base::checked_cast<int>(format.fmt.pix_mp.width),
                          base::checked_cast<int>(format.fmt.pix_mp.height));
-    frame_format =
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(format.fmt.pix_mp.pixelformat);
+    frame_format = Fourcc::FromV4L2PixFmt(format.fmt.pix_mp.pixelformat)
+                       .ToVideoPixelFormat();
   } else {
     bytesperline = base::checked_cast<int>(format.fmt.pix.bytesperline);
     sizeimage = base::checked_cast<int>(format.fmt.pix.sizeimage);
     visible_size.SetSize(base::checked_cast<int>(format.fmt.pix.width),
                          base::checked_cast<int>(format.fmt.pix.height));
     frame_format =
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(format.fmt.pix.pixelformat);
+        Fourcc::FromV4L2PixFmt(format.fmt.pix.pixelformat).ToVideoPixelFormat();
   }
 
   // V4L2 does not provide per-plane bytesperline (bpl) when different
@@ -1402,7 +1491,7 @@ gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(struct v4l2_format format) {
 }
 
 // static
-std::string V4L2Device::V4L2MemoryToString(const v4l2_memory memory) {
+const char* V4L2Device::V4L2MemoryToString(const v4l2_memory memory) {
   switch (memory) {
     case V4L2_MEMORY_MMAP:
       return "V4L2_MEMORY_MMAP";
@@ -1412,6 +1501,23 @@ std::string V4L2Device::V4L2MemoryToString(const v4l2_memory memory) {
       return "V4L2_MEMORY_DMABUF";
     case V4L2_MEMORY_OVERLAY:
       return "V4L2_MEMORY_OVERLAY";
+    default:
+      return "UNKNOWN";
+  }
+}
+
+// static
+const char* V4L2Device::V4L2BufferTypeToString(
+    const enum v4l2_buf_type buf_type) {
+  switch (buf_type) {
+    case V4L2_BUF_TYPE_VIDEO_OUTPUT:
+      return "OUTPUT";
+    case V4L2_BUF_TYPE_VIDEO_CAPTURE:
+      return "CAPTURE";
+    case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
+      return "OUTPUT_MPLANE";
+    case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
+      return "CAPTURE_MPLANE";
     default:
       return "UNKNOWN";
   }
@@ -1497,7 +1603,7 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
   const v4l2_pix_format_mplane& pix_mp = format.fmt.pix_mp;
   const uint32_t& pix_fmt = pix_mp.pixelformat;
   const VideoPixelFormat video_format =
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(pix_fmt);
+      Fourcc::FromV4L2PixFmt(pix_fmt).ToVideoPixelFormat();
   if (video_format == PIXEL_FORMAT_UNKNOWN) {
     VLOGF(1) << "Failed to convert pixel format to VideoPixelFormat: "
              << FourccToString(pix_fmt);
@@ -1518,7 +1624,7 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
     return base::nullopt;
   }
   // Reserve capacity in advance to prevent unnecessary vector reallocation.
-  std::vector<VideoFrameLayout::Plane> planes;
+  std::vector<ColorPlaneLayout> planes;
   planes.reserve(num_color_planes);
   for (size_t i = 0; i < num_buffers; ++i) {
     const v4l2_plane_pix_format& plane_format = pix_mp.plane_fmt[i];
@@ -1582,19 +1688,10 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
 }
 
 // static
-bool V4L2Device::IsMultiPlanarV4L2PixFmt(uint32_t pix_fmt) {
-  constexpr uint32_t kMultiV4L2PixFmts[] = {
-      V4L2_PIX_FMT_NV12M,   V4L2_PIX_FMT_MT21C,   V4L2_PIX_FMT_MM21,
-      V4L2_PIX_FMT_YUV420M, V4L2_PIX_FMT_YVU420M, V4L2_PIX_FMT_YUV422M,
-  };
-  return std::find(std::cbegin(kMultiV4L2PixFmts), std::cend(kMultiV4L2PixFmts),
-                   pix_fmt) != std::cend(kMultiV4L2PixFmts);
-}
-
-// static
 size_t V4L2Device::GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt) {
-  if (IsMultiPlanarV4L2PixFmt(pix_fmt)) {
-    return VideoFrame::NumPlanes(V4L2PixFmtToVideoPixelFormat(pix_fmt));
+  Fourcc fourcc = Fourcc::FromV4L2PixFmt(pix_fmt);
+  if (fourcc.IsMultiPlanar()) {
+    return VideoFrame::NumPlanes(fourcc.ToVideoPixelFormat());
   }
   return 1u;
 }
@@ -1725,6 +1822,337 @@ V4L2Device::EnumerateSupportedEncodeProfiles() {
   }
 
   return profiles;
+}
+
+bool V4L2Device::StartPolling(V4L2DevicePoller::EventCallback event_callback,
+                              base::RepeatingClosure error_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  if (!device_poller_) {
+    device_poller_ =
+        std::make_unique<V4L2DevicePoller>(this, "V4L2DeviceThreadPoller");
+  }
+
+  bool ret = device_poller_->StartPolling(std::move(event_callback),
+                                          std::move(error_callback));
+
+  if (!ret)
+    device_poller_ = nullptr;
+
+  return ret;
+}
+
+bool V4L2Device::StopPolling() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  return !device_poller_ || device_poller_->StopPolling();
+}
+
+void V4L2Device::SchedulePoll() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  if (!device_poller_ || !device_poller_->IsPolling())
+    return;
+
+  device_poller_->SchedulePoll();
+}
+
+V4L2RequestsQueue* V4L2Device::GetRequestsQueue() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  if (requests_queue_creation_called_)
+    return requests_queue_.get();
+
+  requests_queue_creation_called_ = true;
+  int media_fd = open(REQUEST_DEVICE, O_RDWR, 0);
+  if (media_fd < 0) {
+    VPLOGF(1) << "Failed to open media device.";
+    return nullptr;
+  }
+
+  // Not using std::make_unique because constructor is private.
+  std::unique_ptr<V4L2RequestsQueue> requests_queue(new V4L2RequestsQueue(
+      base::ScopedFD(media_fd)));
+  requests_queue_ = std::move(requests_queue);
+
+  return requests_queue_.get();
+}
+
+class V4L2Request {
+ public:
+  // Sets the passed controls to the request.
+  bool SetCtrls(struct v4l2_ext_controls* ctrls);
+  // Sets the passed buffer to the request.
+  bool SetQueueBuffer(struct v4l2_buffer* buffer);
+  // Submits the request to the driver.
+  bool Submit();
+  // Indicates if the request has completed.
+  bool IsCompleted();
+  // Waits for the request to complete for a determined timeout. Returns false
+  // if the request is not ready or other error. Default timeout is 500ms.
+  bool WaitForCompletion(int poll_timeout_ms = 500);
+  // Resets the request.
+  bool Reset();
+
+ private:
+  V4L2RequestsQueue* request_queue_;
+  int ref_counter_ = 0;
+  base::ScopedFD request_fd_;
+
+  friend class V4L2RequestsQueue;
+  V4L2Request(base::ScopedFD&& request_fd, V4L2RequestsQueue* request_queue) :
+   request_queue_(request_queue), request_fd_(std::move(request_fd)) {}
+
+  friend class V4L2RequestRefBase;
+  // Increases the number of request references.
+  void IncRefCounter();
+  // Decreases the number of request references.
+  // When the counters reaches zero, the request is returned to the queue.
+  int DecRefCounter();
+
+  SEQUENCE_CHECKER(sequence_checker_);
+  DISALLOW_COPY_AND_ASSIGN(V4L2Request);
+};
+
+void V4L2Request::IncRefCounter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  ref_counter_++;
+}
+
+int V4L2Request::DecRefCounter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  ref_counter_--;
+
+  if (ref_counter_< 1)
+    request_queue_->ReturnRequest(this);
+
+  return ref_counter_;
+}
+
+bool V4L2Request::SetCtrls(struct v4l2_ext_controls* ctrls) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(ctrls, nullptr);
+
+  if (!request_fd_.is_valid()) {
+    VPLOGF(1) << "Invalid request";
+    return false;
+  }
+
+  ctrls->which = V4L2_CTRL_WHICH_REQUEST_VAL;
+  ctrls->request_fd = request_fd_.get();
+
+  return true;
+}
+
+bool V4L2Request::SetQueueBuffer(struct v4l2_buffer* buffer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(buffer, nullptr);
+
+  if (!request_fd_.is_valid()) {
+    VPLOGF(1) << "Invalid request";
+    return false;
+  }
+
+  buffer->flags |= V4L2_BUF_FLAG_REQUEST_FD;
+  buffer->request_fd = request_fd_.get();
+
+  return true;
+}
+
+bool V4L2Request::Submit() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!request_fd_.is_valid()) {
+    VPLOGF(1) << "No valid request file descriptor to submit request.";
+    return false;
+  }
+
+  return HANDLE_EINTR(ioctl(request_fd_.get(), MEDIA_REQUEST_IOC_QUEUE)) == 0;
+}
+
+bool V4L2Request::IsCompleted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return WaitForCompletion(0);
+}
+
+bool V4L2Request::WaitForCompletion(int poll_timeout_ms) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!request_fd_.is_valid()) {
+    VPLOGF(1) << "Invalid request";
+    return false;
+  }
+
+  struct pollfd poll_fd = {request_fd_.get(), POLLPRI, 0};
+
+  // Poll the request to ensure its previous task is done
+  if (poll(&poll_fd, 1, poll_timeout_ms) != 1) {
+    VPLOGF(1) << "Failed to poll request.";
+    return false;
+  }
+
+  return true;
+}
+
+bool V4L2Request::Reset() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!request_fd_.is_valid()) {
+    VPLOGF(1) << "Invalid request";
+    return false;
+  }
+
+  // Reinit the request to make sure we can use it for a new submission.
+  if (HANDLE_EINTR(ioctl(request_fd_.get(), MEDIA_REQUEST_IOC_REINIT)) < 0) {
+    VPLOGF(1) << "Failed to reinit request.";
+    return false;
+  }
+
+  return true;
+}
+
+V4L2RequestRefBase::V4L2RequestRefBase(V4L2RequestRefBase&& req_base) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  request_ = req_base.request_;
+  req_base.request_ = nullptr;
+}
+
+V4L2RequestRefBase::V4L2RequestRefBase(V4L2Request* request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (request) {
+    request_ = request;
+    request_->IncRefCounter();
+  }
+}
+
+V4L2RequestRefBase::~V4L2RequestRefBase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (IsValid())
+    request_->DecRefCounter();
+}
+
+bool V4L2RequestRef::SetCtrls(struct v4l2_ext_controls* ctrls) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return request_->SetCtrls(ctrls);
+}
+
+bool V4L2RequestRef::SetQueueBuffer(struct v4l2_buffer* buffer) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return request_->SetQueueBuffer(buffer);
+}
+
+V4L2SubmittedRequestRef V4L2RequestRef::Submit() && {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(request_, nullptr);
+
+  V4L2RequestRef self(std::move(*this));
+
+  if (!self.request_->Submit())
+    return V4L2SubmittedRequestRef(nullptr);
+
+  return V4L2SubmittedRequestRef(self.request_);
+}
+
+bool V4L2SubmittedRequestRef::IsCompleted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(request_, nullptr);
+
+  return request_->IsCompleted();
+}
+
+V4L2RequestsQueue::V4L2RequestsQueue(base::ScopedFD&& media_fd) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  media_fd_ = std::move(media_fd);
+}
+
+V4L2RequestsQueue::~V4L2RequestsQueue() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  requests_.clear();
+  media_fd_.reset();
+}
+
+base::Optional<base::ScopedFD> V4L2RequestsQueue::CreateRequestFD() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  int request_fd;
+  int ret = HANDLE_EINTR(
+        ioctl(media_fd_.get(), MEDIA_IOC_REQUEST_ALLOC, &request_fd));
+  if (ret < 0) {
+    VPLOGF(1) << "Failed to create request.";
+    return base::nullopt;
+  }
+
+  return base::ScopedFD(request_fd);
+}
+
+bool V4L2RequestsQueue::AllocateRequests(size_t nb_requests) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Only positive number of requests are valid.
+  if (nb_requests < 1) {
+    VLOGF(1) << "Failed to create requests. Request number must be 1 or more";
+    return false;
+  }
+
+  // Returns if requests have been already allocated.
+  if (!free_requests_.empty()) {
+    VLOGF(1) << "Requests already allocated";
+    return false;
+  }
+
+  // Creates the number of requested requests.
+  for (size_t i = 0; i < nb_requests; i++) {
+    auto request_fd = CreateRequestFD();
+    if (request_fd.has_value()) {
+      // Not using std::make_unique because constructor is private.
+      std::unique_ptr<V4L2Request> request(
+          new V4L2Request(std::move(request_fd.value()), this));
+      free_requests_.push(request.get());
+      requests_.push_back(std::move(request));
+    } else {
+      requests_.clear();
+      VPLOGF(1) << "Failed to created number of requested requests.";
+      return false;
+    }
+  }
+
+  return true;
+}
+
+V4L2RequestRef V4L2RequestsQueue::GetFreeRequest() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Gets a request in the front of the queue and checked is free to be used.
+  // If no request is available, still returns a request reference but the
+  // request will null which will make it marked invalid.
+  V4L2Request* request_ptr = nullptr;
+  if (!free_requests_.empty()) {
+    request_ptr = free_requests_.front();
+    if (request_ptr->WaitForCompletion() && request_ptr->Reset())
+      free_requests_.pop();
+    else
+      request_ptr = nullptr;
+  }
+
+  return V4L2RequestRef(request_ptr);
+}
+
+void V4L2RequestsQueue::ReturnRequest(V4L2Request* request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(request);
+
+  if (request)
+    free_requests_.push(request);
 }
 
 }  //  namespace media

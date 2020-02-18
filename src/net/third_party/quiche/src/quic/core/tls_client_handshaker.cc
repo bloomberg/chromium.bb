@@ -33,6 +33,8 @@ void TlsClientHandshaker::ProofVerifierCallbackImpl::Run(
   parent_->verify_result_ = ok ? ssl_verify_ok : ssl_verify_invalid;
   parent_->state_ = STATE_HANDSHAKE_RUNNING;
   parent_->proof_verify_callback_ = nullptr;
+  parent_->proof_handler_->OnProofVerifyDetailsAvailable(
+      *parent_->verify_details_);
   parent_->AdvanceHandshake();
 }
 
@@ -41,30 +43,26 @@ void TlsClientHandshaker::ProofVerifierCallbackImpl::Cancel() {
 }
 
 TlsClientHandshaker::TlsClientHandshaker(
+    const QuicServerId& server_id,
     QuicCryptoStream* stream,
     QuicSession* session,
-    const QuicServerId& server_id,
-    ProofVerifier* proof_verifier,
-    SSL_CTX* ssl_ctx,
     std::unique_ptr<ProofVerifyContext> verify_context,
-    const std::string& user_agent_id)
-    : TlsHandshaker(stream, session, ssl_ctx),
+    QuicCryptoClientConfig* crypto_config,
+    QuicCryptoClientStream::ProofHandler* proof_handler)
+    : TlsHandshaker(stream, session, crypto_config->ssl_ctx()),
       server_id_(server_id),
-      proof_verifier_(proof_verifier),
+      proof_verifier_(crypto_config->proof_verifier()),
       verify_context_(std::move(verify_context)),
-      user_agent_id_(user_agent_id),
+      proof_handler_(proof_handler),
+      session_cache_(crypto_config->session_cache()),
+      user_agent_id_(crypto_config->user_agent_id()),
       crypto_negotiated_params_(new QuicCryptoNegotiatedParameters),
-      tls_connection_(ssl_ctx, this) {}
+      tls_connection_(crypto_config->ssl_ctx(), this) {}
 
 TlsClientHandshaker::~TlsClientHandshaker() {
   if (proof_verify_callback_) {
     proof_verify_callback_->Cancel();
   }
-}
-
-// static
-bssl::UniquePtr<SSL_CTX> TlsClientHandshaker::CreateSslCtx() {
-  return TlsClientConnection::CreateSslCtx();
 }
 
 bool TlsClientHandshaker::CryptoConnect() {
@@ -86,6 +84,15 @@ bool TlsClientHandshaker::CryptoConnect() {
     CloseConnection(QUIC_HANDSHAKE_FAILED,
                     "Client failed to set Transport Parameters");
     return false;
+  }
+
+  // Set a session to resume, if there is one.
+  if (session_cache_) {
+    std::unique_ptr<QuicResumptionState> cached_state =
+        session_cache_->Lookup(server_id_, SSL_get_SSL_CTX(ssl()));
+    if (cached_state) {
+      SSL_set_session(ssl(), cached_state->tls_session.get());
+    }
   }
 
   // Start the handshake.
@@ -198,6 +205,11 @@ int TlsClientHandshaker::num_sent_client_hellos() const {
   return 0;
 }
 
+bool TlsClientHandshaker::IsResumption() const {
+  QUIC_BUG_IF(!handshake_confirmed_);
+  return SSL_session_reused(ssl()) == 1;
+}
+
 int TlsClientHandshaker::num_scup_messages_received() const {
   // SCUP messages aren't sent or received when using the TLS handshake.
   return 0;
@@ -241,7 +253,10 @@ void TlsClientHandshaker::AdvanceHandshake() {
     return;
   }
   if (state_ == STATE_HANDSHAKE_COMPLETE) {
-    // TODO(nharper): Handle post-handshake messages.
+    int rv = SSL_process_quic_post_handshake(ssl());
+    if (rv != 1) {
+      CloseConnection(QUIC_HANDSHAKE_FAILED, "Unexpected post-handshake data");
+    }
     return;
   }
 
@@ -318,13 +333,21 @@ void TlsClientHandshaker::FinishHandshake() {
   QUIC_DLOG(INFO) << "Client: server selected ALPN: '" << received_alpn_string
                   << "'";
 
-  session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
-  session()->NeuterUnencryptedData();
   encryption_established_ = true;
   handshake_confirmed_ = true;
-  session()->OnCryptoHandshakeEvent(QuicSession::ENCRYPTION_ESTABLISHED);
-  session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
-  session()->connection()->OnHandshakeComplete();
+  delegate()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+
+  // Fill crypto_negotiated_params_:
+  const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl());
+  if (cipher) {
+    crypto_negotiated_params_->cipher_suite = SSL_CIPHER_get_value(cipher);
+  }
+  crypto_negotiated_params_->key_exchange_group = SSL_get_curve_id(ssl());
+  crypto_negotiated_params_->peer_signature_algorithm =
+      SSL_get_peer_signature_algorithm(ssl());
+  // TODO(fayang): Replace this with DiscardOldKeys(ENCRYPTION_HANDSHAKE) when
+  // handshake key discarding settles down.
+  delegate()->NeuterHandshakeData();
 }
 
 enum ssl_verify_result_t TlsClientHandshaker::VerifyCert(uint8_t* out_alert) {
@@ -366,6 +389,7 @@ enum ssl_verify_result_t TlsClientHandshaker::VerifyCert(uint8_t* out_alert) {
       std::unique_ptr<ProofVerifierCallback>(proof_verify_callback));
   switch (verify_result) {
     case QUIC_SUCCESS:
+      proof_handler_->OnProofVerifyDetailsAvailable(*verify_details_);
       return ssl_verify_ok;
     case QUIC_PENDING:
       proof_verify_callback_ = proof_verify_callback;
@@ -377,6 +401,27 @@ enum ssl_verify_result_t TlsClientHandshaker::VerifyCert(uint8_t* out_alert) {
                      << cert_verify_error_details_;
       return ssl_verify_invalid;
   }
+}
+
+void TlsClientHandshaker::InsertSession(bssl::UniquePtr<SSL_SESSION> session) {
+  if (session_cache_ == nullptr) {
+    QUIC_DVLOG(1) << "No session cache, not inserting a session";
+    return;
+  }
+  auto cache_state = std::make_unique<QuicResumptionState>();
+  cache_state->tls_session = std::move(session);
+  session_cache_->Insert(server_id_, std::move(cache_state));
+}
+
+void TlsClientHandshaker::WriteMessage(EncryptionLevel level,
+                                       QuicStringPiece data) {
+  if (level == ENCRYPTION_HANDSHAKE &&
+      state_ < STATE_ENCRYPTION_HANDSHAKE_DATA_SENT) {
+    state_ = STATE_ENCRYPTION_HANDSHAKE_DATA_SENT;
+    delegate()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
+    delegate()->DiscardOldDecryptionKey(ENCRYPTION_INITIAL);
+  }
+  TlsHandshaker::WriteMessage(level, data);
 }
 
 }  // namespace quic

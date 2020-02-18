@@ -57,7 +57,7 @@ SkTArray<GrXPFactoryTestFactory*, true>* GrXPFactoryTestFactory::GetFactories() 
  * manually adjusted.
  */
 #if SK_ALLOW_STATIC_GLOBAL_INITIALIZERS
-static const int kFPFactoryCount = 36;
+static const int kFPFactoryCount = 37;
 static const int kGPFactoryCount = 14;
 static const int kXPFactoryCount = 4;
 #else
@@ -116,8 +116,8 @@ public:
 #endif
 
     GrMemoryPool* pool() const {
-        static GrMemoryPool gPool(4096, 4096);
-        return &gPool;
+        static GrMemoryPool* gPool = new GrMemoryPool(4096, 4096);
+        return gPool;
     }
 };
 }

@@ -6,10 +6,8 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/test_send_tab_to_self_model.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "testing/gtest_mac.h"
@@ -81,60 +79,25 @@ TEST_F(SendTabToSelfUtilTest, HasValidTargetDevice) {
   EXPECT_TRUE(HasValidTargetDevice(browser_state()));
 }
 
-TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled) {
-  task_environment_.RunUntilIdle();
-  scoped_feature_list_.InitWithFeatures(
-      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
-
-  EXPECT_TRUE(IsSendingEnabled());
-  EXPECT_TRUE(IsReceivingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, AreFlagsDisabled) {
-  task_environment_.RunUntilIdle();
-  scoped_feature_list_.InitWithFeatures(
-      {}, {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI});
-
-  EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_FALSE(IsReceivingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, IsReceivingEnabled) {
-  task_environment_.RunUntilIdle();
-  scoped_feature_list_.InitWithFeatures({switches::kSyncSendTabToSelf},
-                                        {kSendTabToSelfShowSendingUI});
-
-  EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_TRUE(IsReceivingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, IsOnlySendingEnabled) {
-  task_environment_.RunUntilIdle();
-  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI},
-                                        {switches::kSyncSendTabToSelf});
-
-  EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_FALSE(IsReceivingEnabled());
-}
-
 TEST_F(SendTabToSelfUtilTest, NotHTTPOrHTTPS) {
   GURL url = GURL("192.168.0.0");
-  EXPECT_FALSE(IsContentRequirementsMet(url, browser_state()));
+  EXPECT_FALSE(AreContentRequirementsMet(url, browser_state()));
 }
 
 TEST_F(SendTabToSelfUtilTest, WebUIPage) {
   GURL url = GURL("chrome://flags");
-  EXPECT_FALSE(IsContentRequirementsMet(url, browser_state()));
+  EXPECT_FALSE(AreContentRequirementsMet(url, browser_state()));
 }
 
 TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
   GURL url = GURL("https://www.google.com");
-  EXPECT_FALSE(IsContentRequirementsMet(url, OffTheRecordChromeBrowserState()));
+  EXPECT_FALSE(
+      AreContentRequirementsMet(url, OffTheRecordChromeBrowserState()));
 }
 
 TEST_F(SendTabToSelfUtilTest, ValidUrl) {
   GURL url = GURL("https://www.google.com");
-  EXPECT_TRUE(IsContentRequirementsMet(url, browser_state()));
+  EXPECT_TRUE(AreContentRequirementsMet(url, browser_state()));
 }
 
 // TODO(crbug.com/961897) Add test for CreateNewEntry.

@@ -13,15 +13,22 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "gpu/config/dx_diag_node.h"
 #include "gpu/gpu_export.h"
+#include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(USE_X11)
 typedef unsigned long VisualID;
+#endif
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/config/vulkan_info.h"
 #endif
 
 namespace gpu {
@@ -114,6 +121,7 @@ struct GPU_EXPORT VideoDecodeAcceleratorCapabilities {
 // Specification of an encoding profile supported by a hardware encoder.
 struct GPU_EXPORT VideoEncodeAcceleratorSupportedProfile {
   VideoCodecProfile profile;
+  gfx::Size min_resolution;
   gfx::Size max_resolution;
   uint32_t max_framerate_numerator;
   uint32_t max_framerate_denominator;
@@ -194,15 +202,24 @@ struct GPU_EXPORT GPUInfo {
     GPUDevice& operator=(GPUDevice&& other) noexcept;
 
     // The DWORD (uint32_t) representing the graphics card vendor id.
-    uint32_t vendor_id;
+    uint32_t vendor_id = 0u;
 
     // The DWORD (uint32_t) representing the graphics card device id.
     // Device ids are unique to vendor, not to one another.
-    uint32_t device_id;
+    uint32_t device_id = 0u;
+
+#if defined(OS_WIN)
+    // The graphics card subsystem id.
+    // The lower 16 bits represents the subsystem vendor id.
+    uint32_t sub_sys_id = 0u;
+
+    // The graphics card revision number.
+    uint32_t revision = 0u;
+#endif  // OS_WIN
 
     // Whether this GPU is the currently used one.
     // Currently this field is only supported and meaningful on OS X.
-    bool active;
+    bool active = false;
 
     // The strings that describe the GPU.
     // In Linux these strings are obtained through libpci.
@@ -216,7 +233,7 @@ struct GPU_EXPORT GPUInfo {
 
     // NVIDIA CUDA compute capability, major version. 0 if undetermined. Can be
     // used to determine the hardware generation that the GPU belongs to.
-    int cuda_compute_capability_major;
+    int cuda_compute_capability_major = 0;
   };
 
   GPUInfo();
@@ -345,6 +362,12 @@ struct GPU_EXPORT GPUInfo {
 
   bool oop_rasterization_supported;
 
+  bool subpixel_font_rendering;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  base::Optional<VulkanInfo> vulkan_info;
+#endif
+
   // Note: when adding new members, please remember to update EnumerateFields
   // in gpu_info.cc.
 
@@ -364,6 +387,8 @@ struct GPU_EXPORT GPUInfo {
     virtual void AddBool(const char* name, bool value) = 0;
     virtual void AddTimeDeltaInSecondsF(const char* name,
                                         const base::TimeDelta& value) = 0;
+    virtual void AddBinary(const char* name,
+                           const base::span<const uint8_t>& blob) = 0;
 
     // Markers indicating that a GPUDevice is being described.
     virtual void BeginGPUDevice() = 0;

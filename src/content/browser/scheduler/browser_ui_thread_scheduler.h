@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/containers/flat_map.h"
-#include "base/message_loop/message_loop.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "content/browser/scheduler/browser_task_queues.h"
 #include "content/common/content_export.h"
@@ -41,6 +40,10 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
 
   scoped_refptr<Handle> GetHandle() const { return handle_; }
 
+  // Must be called on the UI thread.
+  const scoped_refptr<base::SequencedTaskRunner>& GetTaskRunnerForCurrentTask()
+      const;
+
  private:
   friend class BrowserTaskExecutor;
 
@@ -56,6 +59,7 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
   std::unique_ptr<base::sequence_manager::SequenceManager>
       owned_sequence_manager_;
 
+  base::sequence_manager::SequenceManager* sequence_manager_ = nullptr;
   BrowserTaskQueues task_queues_;
   scoped_refptr<Handle> handle_;
 

@@ -20,19 +20,13 @@
 namespace autofill {
 namespace features {
 
-const char kAutofillSaveCreditCardUsesImprovedMessagingParamName[] =
-    "AutofillSaveCreditCardUsesImprovedMessaging";
+// Features
 
-const char kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreCard[] =
-    "Store Card";
-const char
-    kAutofillSaveCreditCardUsesImprovedMessagingParamValueStoreBillingDetails
-        [] = "Store Billing Details";
-const char kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard[] =
-    "Add Card";
-const char
-    kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard[] =
-        "Confirm & Save Card";
+// Controls whether or not Autofill client will populate form with CPAN and
+// dCVV, rather than FPAN.
+const base::Feature kAutofillAlwaysReturnCloudTokenizedCard{
+    "AutofillAlwaysReturnCloudTokenizedCard",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -48,16 +42,6 @@ const base::Feature kAutofillCreditCardAuthentication{
 const base::Feature kAutofillCreditCardUploadFeedback{
     "AutofillCreditCardUploadFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillDoNotMigrateUnsupportedLocalCards{
-    "AutofillDoNotMigrateUnsupportedLocalCards",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether the credit card downstream keyboard accessory shows
-// the Google Pay logo animation on iOS.
-const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS{
-    "AutofillDownstreamUseGooglePayBrandingOniOS",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, enable local card migration flow for user who has signed in but
 // has not turned on sync.
 const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{
@@ -69,15 +53,10 @@ const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{
 const base::Feature kAutofillEnableToolbarStatusChip{
     "AutofillEnableToolbarStatusChip", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, autofill can import credit cards from dynamic change form.
-const base::Feature kAutofillImportDynamicForms{
-    "AutofillImportDynamicForms", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether offering to migrate cards will consider data from the
-// Autofill strike database (new version).
-const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2{
-    "AutofillLocalCardMigrationUsesStrikeSystemV2",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+// When enabled, the option of using cloud token virtual card will be offered
+// when all requirements are met.
+const base::Feature kAutofillEnableVirtualCard{
+    "AutofillEnableVirtualCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, will remove the option to save unmasked server cards as
 // FULL_SERVER_CARDs upon successful unmask.
@@ -89,22 +68,14 @@ const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess{
 const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
     "AutofillNoLocalSaveOnUploadSuccess", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, local and upload credit card save dialogs will add a
-// [No thanks] cancel button option. This is intended to bring the
-// AutofillSaveCardImprovedUserConsent functionality to Chrome OS, Android, and
-// iOS without bringing the extended title string change with it.
-const base::Feature kAutofillSaveCardShowNoThanks{
-    "AutofillSaveCardShowNoThanks", base::FEATURE_DISABLED_BY_DEFAULT};
+// When enabled, the Save Card infobar will be dismissed by a user initiated
+// navigation other than one caused by submitted form.
+const base::Feature kAutofillSaveCardDismissOnNavigation{
+    "AutofillSaveCardDismissOnNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls what title and bubble label for the credit card upload bubble are
-// shown to users.
-const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging{
-    "AutofillSaveCreditCardUsesImprovedMessaging",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether to show updated UI for the card unmask prompt.
-const base::Feature kAutofillUpdatedCardUnmaskPromptUi{
-    "AutofillUpdatedCardUnmaskPromptUi", base::FEATURE_DISABLED_BY_DEFAULT};
+// When enabled, the Save Card infobar supports editing before submitting.
+const base::Feature kAutofillSaveCardInfobarEditSupport{
+    "AutofillSaveCardInfobarEditSupport", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because it's a country-specific whitelist. There are

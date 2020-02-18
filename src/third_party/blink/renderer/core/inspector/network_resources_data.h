@@ -48,7 +48,7 @@ class Resource;
 class ResourceResponse;
 class TextResourceDecoder;
 
-class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
+class XHRReplayData final : public GarbageCollected<XHRReplayData> {
  public:
   static XHRReplayData* Create(ExecutionContext*,
                                const AtomicString& method,
@@ -92,9 +92,9 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
 };
 
 class NetworkResourcesData final
-    : public GarbageCollectedFinalized<NetworkResourcesData> {
+    : public GarbageCollected<NetworkResourcesData> {
  public:
-  class ResourceData final : public GarbageCollectedFinalized<ResourceData> {
+  class ResourceData final : public GarbageCollected<ResourceData> {
     friend class NetworkResourcesData;
 
    public:
@@ -182,7 +182,7 @@ class NetworkResourcesData final
     uint64_t DataLength() const;
     void AppendData(const char* data, size_t data_length);
     size_t DecodeDataToContent();
-    void ClearWeakMembers(Visitor*);
+    void ProcessCustomWeakness(const WeakCallbackInfo&);
 
     Member<NetworkResourcesData> network_resources_data_;
     String request_id_;
@@ -203,7 +203,7 @@ class NetworkResourcesData final
     int64_t pending_encoded_data_length_;
 
     scoped_refptr<SharedBuffer> buffer_;
-    WeakMember<const Resource> cached_resource_;
+    UntracedMember<const Resource> cached_resource_;
     scoped_refptr<BlobDataHandle> downloaded_file_blob_;
     Vector<AtomicString> certificate_;
     scoped_refptr<EncodedFormData> post_data_;

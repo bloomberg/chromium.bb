@@ -283,12 +283,23 @@ void UnifiedMessageListView::ClearAllWithAnimation() {
     StartAnimation();
 }
 
-int UnifiedMessageListView::CountNotificationsAboveY(int y_offset) const {
-  const auto it = std::find_if(children().cbegin(), children().cend(),
-                               [y_offset](const views::View* v) {
-                                 return v->bounds().bottom() > y_offset;
-                               });
-  return std::distance(children().cbegin(), it);
+std::vector<Notification*> UnifiedMessageListView::GetNotificationsAboveY(
+    int y_offset) const {
+  std::vector<Notification*> notifications;
+  for (views::View* view : children()) {
+    int bottom_limit =
+        features::IsUnifiedMessageCenterRefactorEnabled()
+            ? view->bounds().y() + kNotificationIconStackThreshold
+            : view->bounds().bottom();
+    if (bottom_limit <= y_offset) {
+      Notification* notification =
+          MessageCenter::Get()->FindVisibleNotificationById(
+              AsMVC(view)->GetNotificationId());
+      if (notification)
+        notifications.insert(notifications.begin(), notification);
+    }
+  }
+  return notifications;
 }
 
 int UnifiedMessageListView::GetTotalNotificationCount() const {
@@ -486,8 +497,9 @@ MessageView* UnifiedMessageListView::CreateMessageView(
   return view;
 }
 
-int UnifiedMessageListView::GetStackedNotificationCount() const {
-  return message_center_view_->GetStackedNotificationCount();
+std::vector<message_center::Notification*>
+UnifiedMessageListView::GetStackedNotifications() const {
+  return message_center_view_->GetStackedNotifications();
 }
 
 // static
@@ -623,7 +635,7 @@ void UnifiedMessageListView::UpdateClearAllAnimation() {
     view->set_is_removed();
 
   if (state_ == State::CLEAR_ALL_STACKED) {
-    if (view && GetStackedNotificationCount() > 0) {
+    if (view && GetStackedNotifications().size() > 0) {
       DeleteRemovedNotifications();
       UpdateBounds();
       start_height_ = ideal_height_;

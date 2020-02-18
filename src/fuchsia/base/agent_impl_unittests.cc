@@ -4,6 +4,8 @@
 
 #include "fuchsia/base/agent_impl.h"
 
+#include <lib/sys/cpp/component_context.h>
+
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
 #include "base/logging.h"
@@ -62,6 +64,10 @@ class KeepAliveComponentState : public AccumulatorComponentState {
       : AccumulatorComponentState(component) {
     AddKeepAliveBinding(&service_binding_);
   }
+
+  void DisconnectClientsAndTeardown() {
+    AgentImpl::ComponentStateBase::DisconnectClientsAndTeardown();
+  }
 };
 
 class AgentImplTest : public ::testing::Test {
@@ -72,8 +78,8 @@ class AgentImplTest : public ::testing::Test {
         fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_WRITABLE,
         directory.NewRequest().TakeChannel());
 
-    services_client_ = std::make_unique<base::fuchsia::ServiceDirectoryClient>(
-        std::move(directory));
+    services_client_ =
+        std::make_unique<sys::ServiceDirectory>(std::move(directory));
   }
 
   fuchsia::modular::AgentPtr CreateAgentAndConnect() {
@@ -82,8 +88,12 @@ class AgentImplTest : public ::testing::Test {
         &services_, base::BindRepeating(&AgentImplTest::OnComponentConnect,
                                         base::Unretained(this)));
     fuchsia::modular::AgentPtr agent;
-    services_client_->ConnectToService(agent.NewRequest());
+    services_client_->Connect(agent.NewRequest());
     return agent;
+  }
+
+  void TeardownKeepAliveComponentState() {
+    std::move(disconnect_clients_and_teardown_).Run();
   }
 
  protected:
@@ -95,18 +105,26 @@ class AgentImplTest : public ::testing::Test {
                component_id == kAccumulatorComponentId2) {
       return std::make_unique<AccumulatorComponentState>(component_id);
     } else if (component_id == kKeepAliveComponentId) {
-      return std::make_unique<KeepAliveComponentState>(component_id);
+      auto component_state =
+          std::make_unique<KeepAliveComponentState>(component_id);
+      disconnect_clients_and_teardown_ =
+          base::BindOnce(&KeepAliveComponentState::DisconnectClientsAndTeardown,
+                         base::Unretained(component_state.get()));
+      return component_state;
     }
     return nullptr;
   }
 
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   sys::OutgoingDirectory services_;
-  std::unique_ptr<base::fuchsia::ServiceDirectoryClient> services_client_;
+  std::unique_ptr<sys::ServiceDirectory> services_client_;
 
   std::unique_ptr<AgentImpl> agent_impl_;
+
+  // Set only if a keep-alive component was connected, to allow the test to
+  // forcibly teardown the ComponentState for it.
+  base::OnceClosure disconnect_clients_and_teardown_;
 
   DISALLOW_COPY_AND_ASSIGN(AgentImplTest);
 };
@@ -132,7 +150,7 @@ TEST_F(AgentImplTest, PublishAndUnpublish) {
 
   // Verify that the Agent service is no longer available.
   cr_fuchsia::ResultReceiver<zx_status_t> client_disconnect_status2;
-  services_client_->ConnectToService(agent.NewRequest());
+  services_client_->Connect(agent.NewRequest());
   agent.set_error_handler(cr_fuchsia::CallbackToFitFunction(
       client_disconnect_status2.GetReceiveCallback()));
 
@@ -252,7 +270,7 @@ TEST_F(AgentImplTest, SameComponentIdSameService) {
   test_interface2.set_error_handler(nullptr);
 }
 
-// Verify that connections to a service registered to kee-alive the
+// Verify that connections to a service registered to keep-alive the
 // ComponentStateBase keeps it alive after the ServiceProvider is dropped.
 TEST_F(AgentImplTest, KeepAliveBinding) {
   fuchsia::modular::AgentPtr agent = CreateAgentAndConnect();
@@ -300,6 +318,38 @@ TEST_F(AgentImplTest, KeepAliveBinding) {
 
   // Spin the MessageLoop to let the AgentImpl see that TestInterface is gone.
   base::RunLoop().RunUntilIdle();
+}
+
+// Verify that connections to a service registered to keep-alive the
+// ComponentStateBase is disconnected by DisconnectClientsAndTeardown.
+TEST_F(AgentImplTest, DisconnectClientsAndTeardown) {
+  fuchsia::modular::AgentPtr agent = CreateAgentAndConnect();
+
+  {
+    // Connect to the Agent and request the TestInterface.
+    fuchsia::sys::ServiceProviderPtr component_services;
+    agent->Connect(kKeepAliveComponentId, component_services.NewRequest());
+    base::fuchsia::testfidl::TestInterfacePtr test_interface;
+    component_services->ConnectToService(
+        base::fuchsia::testfidl::TestInterface::Name_,
+        test_interface.NewRequest().TakeChannel());
+
+    // The TestInterface pointer should remain valid until we call
+    // DisconnectClientsAndTeardown().
+    test_interface.set_error_handler(
+        [](zx_status_t status) { ZX_LOG_IF(ERROR, status != ZX_OK, status); });
+
+    // After disconnecting ServiceProvider, TestInterface should remain valid.
+    component_services.Unbind();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(test_interface);
+
+    // After invoking DisconnectClientsAndTeardown(), TestInterface should
+    // be disconnected.
+    TeardownKeepAliveComponentState();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(test_interface);
+  }
 }
 
 }  // namespace cr_fuchsia

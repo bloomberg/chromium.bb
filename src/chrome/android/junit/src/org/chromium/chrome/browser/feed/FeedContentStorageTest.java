@@ -13,11 +13,6 @@ import static org.mockito.Mockito.verify;
 
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.host.storage.CommitResult;
-import com.google.android.libraries.feed.api.host.storage.ContentMutation;
-import com.google.android.libraries.feed.common.Result;
-import com.google.android.libraries.feed.common.functional.Consumer;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +25,11 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Consumer;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
+import org.chromium.chrome.browser.feed.library.api.host.storage.ContentMutation;
+import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.nio.charset.Charset;
@@ -154,7 +153,7 @@ public class FeedContentStorageTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         mContentStorage = new FeedContentStorage(mBridge);
     }

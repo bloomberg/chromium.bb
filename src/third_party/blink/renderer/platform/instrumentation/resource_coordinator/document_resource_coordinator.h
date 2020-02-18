@@ -8,15 +8,14 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom-blink.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
-namespace service_manager {
-class InterfaceProvider;
-}  // namespace service_manager
-
 namespace blink {
+
+class BrowserInterfaceBrokerProxy;
 
 class PLATFORM_EXPORT DocumentResourceCoordinator final {
   USING_FAST_MALLOC(DocumentResourceCoordinator);
@@ -24,22 +23,23 @@ class PLATFORM_EXPORT DocumentResourceCoordinator final {
  public:
   // Returns nullptr if instrumentation is not enabled.
   static std::unique_ptr<DocumentResourceCoordinator> MaybeCreate(
-      service_manager::InterfaceProvider*);
+      const BrowserInterfaceBrokerProxy&);
   ~DocumentResourceCoordinator();
 
   void SetNetworkAlmostIdle();
-  void SetLifecycleState(resource_coordinator::mojom::LifecycleState);
+  void SetLifecycleState(performance_manager::mojom::LifecycleState);
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
   void SetOriginTrialFreezePolicy(
-      resource_coordinator::mojom::InterventionPolicy policy);
+      performance_manager::mojom::InterventionPolicy policy);
   // A one way switch that marks a frame as being an adframe.
   void SetIsAdFrame();
   void OnNonPersistentNotificationCreated();
 
  private:
-  explicit DocumentResourceCoordinator(service_manager::InterfaceProvider*);
+  explicit DocumentResourceCoordinator(const BrowserInterfaceBrokerProxy&);
 
-  resource_coordinator::mojom::blink::DocumentCoordinationUnitPtr service_;
+  mojo::Remote<performance_manager::mojom::blink::DocumentCoordinationUnit>
+      service_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentResourceCoordinator);
 };

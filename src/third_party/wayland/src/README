@@ -24,12 +24,12 @@ clients.
 Building the wayland libraries is fairly simple, aside from libffi,
 they don't have many dependencies:
 
-    $ git clone git://anongit.freedesktop.org/wayland/wayland
+    $ git clone https://gitlab.freedesktop.org/wayland/wayland
     $ cd wayland
     $ ./autogen.sh --prefix=PREFIX
     $ make
     $ make install
 
 where PREFIX is where you want to install the libraries.  See
-http://wayland.freedesktop.org for more complete build instructions
+https://wayland.freedesktop.org for more complete build instructions
 for wayland, weston, xwayland and various toolkits.

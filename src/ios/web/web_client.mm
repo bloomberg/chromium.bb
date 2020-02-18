@@ -44,6 +44,15 @@ bool WebClient::IsAppSpecificURL(const GURL& url) const {
   return false;
 }
 
+bool WebClient::ShouldBlockUrlDuringRestore(const GURL& url,
+                                            WebState* web_state) const {
+  return false;
+}
+
+void WebClient::AddSerializableData(
+    web::SerializableUserDataManager* user_data_manager,
+    web::WebState* web_state) {}
+
 base::string16 WebClient::GetPluginNotSupportedText() const {
   return base::string16();
 }
@@ -82,6 +91,7 @@ void WebClient::AllowCertificateError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     bool overridable,
+    int64_t navigation_id,
     const base::Callback<void(bool)>& callback) {
   callback.Run(false);
 }
@@ -95,6 +105,8 @@ void WebClient::PrepareErrorPage(WebState* web_state,
                                  NSError* error,
                                  bool is_post,
                                  bool is_off_the_record,
+                                 const base::Optional<net::SSLInfo>& info,
+                                 int64_t navigation_id,
                                  base::OnceCallback<void(NSString*)> callback) {
   DCHECK(error);
   std::move(callback).Run(error.localizedDescription);
@@ -102,6 +114,10 @@ void WebClient::PrepareErrorPage(WebState* web_state,
 
 UIView* WebClient::GetWindowedContainer() {
   return nullptr;
+}
+
+bool WebClient::ForceMobileVersionByDefault(const GURL&) {
+  return false;
 }
 
 }  // namespace web

@@ -35,9 +35,15 @@
 namespace media {
 
 class AudioBus;
+class MultiChannelResampler;
 
 class MEDIA_EXPORT AudioRendererAlgorithm {
  public:
+  // Upper and lower bounds at which we prefer to use a resampler rather than
+  // WSOLA, to prevent audio artifacts.
+  static constexpr double kUpperResampleThreshold = 1.06;
+  static constexpr double kLowerResampleThreshold = 0.95;
+
   AudioRendererAlgorithm();
   AudioRendererAlgorithm(AudioRendererAlgorithmParameters params);
   ~AudioRendererAlgorithm();
@@ -85,6 +91,9 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // Increase the capacity of |audio_buffer_| if possible.
   void IncreaseQueueCapacity();
+
+  // Sets a flag to bypass underflow detection, to read out all remaining data.
+  void MarkEndOfStream();
 
   // Returns an estimate of the amount of memory (in bytes) used for frames.
   int64_t GetMemoryUsage() const;
@@ -145,6 +154,16 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // mask has been specified.
   void CreateSearchWrappers();
 
+  // Uses |resampler_| to speed up or slowdown audio, by using a resampling
+  // ratio of |playback_rate|.
+  int ResampleAndFill(AudioBus* dest,
+                      int dest_offset,
+                      int requested_frames,
+                      double playback_rate);
+
+  // Called by |resampler_| to get more audio data.
+  void OnResamplerRead(int frame_delay, AudioBus* audio_bus);
+
   // Parameters.
   AudioRendererAlgorithmParameters audio_renderer_algorithm_params_;
 
@@ -197,6 +216,13 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // them and can be copied to output if FillBuffer() is called. It also
   // specifies the index where the next WSOLA window has to overlap-and-add.
   int num_complete_frames_;
+
+  bool reached_end_of_stream_ = false;
+
+  // Used to replace WSOLA algorithm at playback speeds close to 1.0. This is to
+  // prevent noticeable audio artifacts introduced by WSOLA, at the expense of
+  // changing the pitch of the audio.
+  std::unique_ptr<MultiChannelResampler> resampler_;
 
   // This stores a part of the output that is created but couldn't be rendered.
   // Output is generated frame-by-frame which at some point might exceed the

@@ -260,9 +260,8 @@ void FrameSelection::DidSetSelectionDeprecated(
     // |setFocusedNodeIfNeeded()| dispatches sync events "FocusOut" and
     // "FocusIn", |frame_| may associate to another document.
     if (!IsAvailable() || GetDocument() != current_document) {
-      // Once we get test case to reach here, we should change this
-      // if-statement to |DCHECK()|.
-      NOTREACHED();
+      // editing/selection/move-selection-detached-frame-crash.html reaches
+      // here. See http://crbug.com/1015710.
       return;
     }
   }
@@ -337,9 +336,6 @@ void FrameSelection::NodeWillBeRemoved(Node& node) {
 }
 
 void FrameSelection::DidChangeFocus() {
-  // Hits in
-  // virtual/gpu/compositedscrolling/scrollbars/scrollbar-miss-mousemove-disabled.html
-  DisableCompositingQueryAsserts disabler;
   UpdateAppearance();
 }
 
@@ -525,7 +521,7 @@ bool FrameSelection::ShouldPaintCaret(const LayoutBlock& block) const {
   DCHECK(!result ||
          (ComputeVisibleSelectionInDOMTree().IsCaret() &&
           (IsEditablePosition(ComputeVisibleSelectionInDOMTree().Start()) ||
-           frame_->GetSettings()->GetCaretBrowsingEnabled())));
+           frame_->IsCaretBrowsingEnabled())));
   return result;
 }
 
@@ -547,23 +543,7 @@ bool FrameSelection::ComputeAbsoluteBounds(IntRect& anchor,
     return false;
   }
 
-  DocumentLifecycle::DisallowTransitionScope disallow_transition(
-      frame_->GetDocument()->Lifecycle());
-
-  if (ComputeVisibleSelectionInDOMTree().IsCaret()) {
-    anchor = focus = AbsoluteCaretBounds();
-  } else {
-    const EphemeralRange selected_range =
-        ComputeVisibleSelectionInDOMTree().ToNormalizedEphemeralRange();
-    if (selected_range.IsNull())
-      return false;
-    anchor = FirstRectForRange(EphemeralRange(selected_range.StartPosition()));
-    focus = FirstRectForRange(EphemeralRange(selected_range.EndPosition()));
-  }
-
-  if (!ComputeVisibleSelectionInDOMTree().IsBaseFirst())
-    std::swap(anchor, focus);
-  return true;
+  return selection_editor_->ComputeAbsoluteBounds(anchor, focus);
 }
 
 void FrameSelection::PaintCaret(GraphicsContext& context,
@@ -694,7 +674,7 @@ static Node* NonBoundaryShadowTreeRootNode(const Position& position) {
 
 void FrameSelection::SelectAll(SetSelectionBy set_selection_by) {
   if (auto* select_element =
-          ToHTMLSelectElementOrNull(GetDocument().FocusedElement())) {
+          DynamicTo<HTMLSelectElement>(GetDocument().FocusedElement())) {
     if (select_element->CanSelectAll()) {
       select_element->SelectAll();
       return;
@@ -923,9 +903,17 @@ void FrameSelection::SetFocusedNodeIfNeeded() {
 }
 
 static EphemeralRangeInFlatTree ComputeRangeForSerialization(
-    const SelectionInDOMTree& selection) {
-  const EphemeralRangeInFlatTree& range =
-      ConvertToSelectionInFlatTree(selection).ComputeRange();
+    const SelectionInDOMTree& selection_in_dom_tree) {
+  const SelectionInFlatTree& selection =
+      ConvertToSelectionInFlatTree(selection_in_dom_tree);
+  // TODO(crbug.com/1019152): Once we know the root cause of having
+  // seleciton with |base.IsNull() != extent.IsNull()|, we should get rid of
+  // this if-statement.
+  if (selection.Base().IsNull() || selection.Extent().IsNull()) {
+    DCHECK(selection.IsNone());
+    return EphemeralRangeInFlatTree();
+  }
+  const EphemeralRangeInFlatTree& range = selection.ComputeRange();
   const PositionInFlatTree& start =
       CreateVisiblePosition(range.StartPosition()).DeepEquivalent();
   const PositionInFlatTree& end =
@@ -947,9 +935,11 @@ static String ExtractSelectedText(const FrameSelection& selection,
 String FrameSelection::SelectedHTMLForClipboard() const {
   const EphemeralRangeInFlatTree& range =
       ComputeRangeForSerialization(GetSelectionInDOMTree());
-  return CreateMarkup(
-      range.StartPosition(), range.EndPosition(), kAnnotateForInterchange,
-      ConvertBlocksToInlines::kNotConvert, kResolveNonLocalURLs);
+  return CreateMarkup(range.StartPosition(), range.EndPosition(),
+                      CreateMarkupOptions::Builder()
+                          .SetShouldAnnotateForInterchange(true)
+                          .SetShouldResolveURLs(kResolveNonLocalURLs)
+                          .Build());
 }
 
 String FrameSelection::SelectedText(
@@ -1246,8 +1236,8 @@ void FrameSelection::ClearDocumentCachedRange() {
 }
 
 LayoutSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
-    const NGPaintFragment& text_fragment) const {
-  return layout_selection_->ComputeSelectionStatus(text_fragment);
+    const NGInlineCursor& cursor) const {
+  return layout_selection_->ComputeSelectionStatus(cursor);
 }
 
 bool FrameSelection::IsDirectional() const {

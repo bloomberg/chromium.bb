@@ -22,8 +22,10 @@ include_rules = [
   "+components/crash/core/common/crash_keys.h",
   "+components/mirroring/mojom",
   "+components/mirroring/service",
+  "+components/paint_preview/buildflags",
   "+components/payments/content/utility",
   "+components/safe_browsing/buildflags.h",
+  "+components/services/paint_preview_compositor",
   "+components/services/patch",
   "+components/services/pdf_compositor",
   "+components/services/quarantine",
@@ -40,6 +42,5 @@ include_rules = [
   "+services/network/url_request_context_builder_mojo.h",
   "+services/proxy_resolver",
   "+skia/ext",
-  "+third_party/libxml",
   "+third_party/zlib/google",
 ]

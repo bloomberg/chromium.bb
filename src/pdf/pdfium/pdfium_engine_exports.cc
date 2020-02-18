@@ -14,6 +14,7 @@
 #include "printing/nup_parameters.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
+#include "third_party/pdfium/public/fpdf_catalog.h"
 #include "third_party/pdfium/public/fpdf_ppo.h"
 #include "third_party/pdfium/public/fpdfview.h"
 #include "ui/gfx/geometry/rect.h"
@@ -160,6 +161,16 @@ PDFEngineExports* PDFEngineExports::Get() {
 PDFiumEngineExports::PDFiumEngineExports() {}
 
 PDFiumEngineExports::~PDFiumEngineExports() {}
+
+#if defined(OS_CHROMEOS)
+std::vector<uint8_t> PDFiumEngineExports::CreateFlattenedPdf(
+    base::span<const uint8_t> input_buffer) {
+  ScopedFPDFDocument doc = LoadPdfData(input_buffer);
+  if (!doc)
+    return std::vector<uint8_t>();
+  return PDFiumPrint::CreateFlattenedPdf(std::move(doc));
+}
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
 bool PDFiumEngineExports::RenderPDFPageToDC(
@@ -340,6 +351,15 @@ bool PDFiumEngineExports::GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
     }
   }
   return true;
+}
+
+base::Optional<bool> PDFiumEngineExports::IsPDFDocTagged(
+    base::span<const uint8_t> pdf_buffer) {
+  ScopedFPDFDocument doc = LoadPdfData(pdf_buffer);
+  if (!doc)
+    return base::nullopt;
+
+  return FPDFCatalog_IsTagged(doc.get());
 }
 
 bool PDFiumEngineExports::GetPDFPageSizeByIndex(

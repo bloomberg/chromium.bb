@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chrome_browser_main_linux.h"
 
-#include <fontconfig/fontconfig.h>
-
 #include <memory>
 #include <string>
 #include <utility>
@@ -18,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/content/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -41,15 +40,6 @@ ChromeBrowserMainPartsLinux::ChromeBrowserMainPartsLinux(
     : ChromeBrowserMainPartsPosix(parameters, startup_data) {}
 
 ChromeBrowserMainPartsLinux::~ChromeBrowserMainPartsLinux() {
-}
-
-void ChromeBrowserMainPartsLinux::ToolkitInitialized() {
-  // Explicitly initialize Fontconfig early on to prevent races later due to
-  // implicit initialization in response to threads' first calls to Fontconfig:
-  // http://crbug.com/404311
-  FcInit();
-
-  ChromeBrowserMainPartsPosix::ToolkitInitialized();
 }
 
 void ChromeBrowserMainPartsLinux::PreProfileInit() {
@@ -91,8 +81,10 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 void ChromeBrowserMainPartsLinux::PostProfileInit() {
   ChromeBrowserMainPartsPosix::PostProfileInit();
 
-  g_browser_process->metrics_service()->RecordBreakpadRegistration(
-      breakpad::IsCrashReporterEnabled());
+  bool enabled = (crash_reporter::IsCrashpadEnabled() &&
+                  crash_reporter::GetUploadsEnabled()) ||
+                 breakpad::IsCrashReporterEnabled();
+  g_browser_process->metrics_service()->RecordBreakpadRegistration(enabled);
 }
 
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopStart() {

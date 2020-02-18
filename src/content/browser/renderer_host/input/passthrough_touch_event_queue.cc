@@ -156,8 +156,7 @@ void PassthroughTouchEventQueue::ProcessTouchAck(
 void PassthroughTouchEventQueue::OnGestureScrollEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (gesture_event.event.GetType() ==
-          blink::WebInputEvent::kGestureScrollUpdate &&
-      gesture_event.event.resending_plugin_id == -1) {
+      blink::WebInputEvent::kGestureScrollUpdate) {
     send_touch_events_async_ = true;
   }
 }
@@ -166,8 +165,7 @@ void PassthroughTouchEventQueue::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
   // Turn events sent during gesture scrolls to be async.
-  if (event.event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
-      event.event.resending_plugin_id == -1) {
+  if (event.event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
     send_touch_events_async_ = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
   }
 }
@@ -207,6 +205,9 @@ bool PassthroughTouchEventQueue::Empty() const {
 }
 
 void PassthroughTouchEventQueue::FlushQueue() {
+  // Don't allow acks to be processed in AckCompletedEvents as that can
+  // interfere with gesture event dispatch ordering.
+  base::AutoReset<bool> process_acks(&processing_acks_, true);
   drop_remaining_touches_in_sequence_ = true;
   client_->FlushDeferredGestureQueue();
   while (!outstanding_touches_.empty()) {

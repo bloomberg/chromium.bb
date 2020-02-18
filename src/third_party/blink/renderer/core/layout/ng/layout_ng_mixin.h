@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutNGMixin_h
-#define LayoutNGMixin_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LAYOUT_NG_MIXIN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LAYOUT_NG_MIXIN_H_
 
 #include <type_traits>
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_progress.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 
@@ -37,6 +38,7 @@ class LayoutNGMixin : public Base {
 extern template class CORE_EXTERN_TEMPLATE_EXPORT LayoutNGMixin<LayoutBlock>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGMixin<LayoutBlockFlow>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT LayoutNGMixin<LayoutProgress>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     LayoutNGMixin<LayoutTableCaption>;
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
@@ -44,4 +46,4 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT
 
 }  // namespace blink
 
-#endif  // LayoutNGMixin_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LAYOUT_NG_MIXIN_H_

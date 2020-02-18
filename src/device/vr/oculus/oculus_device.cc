@@ -15,7 +15,9 @@
 #include "build/build_config.h"
 #include "device/vr/oculus/oculus_render_loop.h"
 #include "device/vr/oculus/oculus_type_converters.h"
+#include "device/vr/util/stage_utils.h"
 #include "device/vr/util/transform_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/libovr/src/Include/OVR_CAPI.h"
 #include "third_party/libovr/src/Include/OVR_CAPI_D3D.h"
 #include "ui/gfx/geometry/angle_conversions.h"
@@ -60,13 +62,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id,
                                             ovrSession session) {
   mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
   display_info->id = id;
-  display_info->display_name = std::string("Oculus");
-  display_info->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info->capabilities->has_position = true;
-  display_info->capabilities->has_external_display = true;
-  display_info->capabilities->can_present = true;
-  display_info->webvr_default_framebuffer_scale = 1.0;
-  display_info->webxr_default_framebuffer_scale = 1.0;
 
   ovrHmdDesc hmdDesc = ovr_GetHmdDesc(session);
   display_info->left_eye = GetEyeDetails(session, hmdDesc, ovrEye_Left);
@@ -84,8 +79,8 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id,
 
   ovrVector3f boundary_size;
   ovr_GetBoundaryDimensions(session, ovrBoundary_PlayArea, &boundary_size);
-  display_info->stage_parameters->size_x = boundary_size.x;
-  display_info->stage_parameters->size_z = boundary_size.z;
+  display_info->stage_parameters->bounds =
+      vr_utils::GetStageBoundsFromSize(boundary_size.x, boundary_size.z);
 
   return display_info;
 }
@@ -95,9 +90,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id,
 OculusDevice::OculusDevice()
     : VRDeviceBase(mojom::XRDeviceId::OCULUS_DEVICE_ID),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      exclusive_controller_binding_(this),
-      gamepad_provider_factory_binding_(this),
-      compositor_host_binding_(this),
       weak_ptr_factory_(this) {
   render_loop_ = std::make_unique<OculusRenderLoop>();
 }
@@ -112,16 +104,9 @@ bool OculusDevice::IsApiAvailable() {
   return result.IsOculusServiceRunning;
 }
 
-mojom::IsolatedXRGamepadProviderFactoryPtr OculusDevice::BindGamepadFactory() {
-  mojom::IsolatedXRGamepadProviderFactoryPtr ret;
-  gamepad_provider_factory_binding_.Bind(mojo::MakeRequest(&ret));
-  return ret;
-}
-
-mojom::XRCompositorHostPtr OculusDevice::BindCompositorHost() {
-  mojom::XRCompositorHostPtr ret;
-  compositor_host_binding_.Bind(mojo::MakeRequest(&ret));
-  return ret;
+mojo::PendingRemote<mojom::XRCompositorHost>
+OculusDevice::BindCompositorHost() {
+  return compositor_host_receiver_.BindNewPipeAndPassRemote();
 }
 
 OculusDevice::~OculusDevice() {
@@ -137,7 +122,7 @@ void OculusDevice::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
   if (!EnsureValidDisplayInfo()) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(callback).Run(nullptr, mojo::NullRemote());
     return;
   }
 
@@ -149,25 +134,16 @@ void OculusDevice::RequestSession(
     render_loop_->Start();
 
     if (!render_loop_->IsRunning()) {
-      std::move(callback).Run(nullptr, nullptr);
+      std::move(callback).Run(nullptr, mojo::NullRemote());
       StartOvrSession();
       return;
     }
 
-    // If we have a pending gamepad provider request when starting the render
-    // loop, post the request over to the render loop to be bound.
-    if (provider_request_) {
-      render_loop_->task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
-                                    base::Unretained(render_loop_.get()),
-                                    std::move(provider_request_)));
-    }
-
-    if (overlay_request_) {
+    if (overlay_receiver_) {
       render_loop_->task_runner()->PostTask(
           FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestOverlay,
                                     base::Unretained(render_loop_.get()),
-                                    std::move(overlay_request_)));
+                                    std::move(overlay_receiver_)));
     }
   }
 
@@ -182,14 +158,10 @@ void OculusDevice::RequestSession(
       FROM_HERE,
       base::BindOnce(&XRCompositorCommon::RequestSession,
                      base::Unretained(render_loop_.get()),
-                     std::move(on_presentation_ended), std::move(options),
-                     std::move(on_request_present_result)));
+                     std::move(on_presentation_ended),
+                     base::DoNothing::Repeatedly<mojom::XRVisibilityState>(),
+                     std::move(options), std::move(on_request_present_result)));
   outstanding_session_requests_count_++;
-}
-
-void OculusDevice::EnsureInitialized(EnsureInitializedCallback callback) {
-  EnsureValidDisplayInfo();
-  std::move(callback).Run();
 }
 
 bool OculusDevice::EnsureValidDisplayInfo() {
@@ -213,7 +185,7 @@ void OculusDevice::OnRequestSessionResult(
     mojom::XRSessionPtr session) {
   outstanding_session_requests_count_--;
   if (!result) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(callback).Run(nullptr, mojo::NullRemote());
 
     // Start magic window again.
     if (outstanding_session_requests_count_ == 0)
@@ -223,18 +195,17 @@ void OculusDevice::OnRequestSessionResult(
 
   OnStartPresenting();
 
-  mojom::XRSessionControllerPtr session_controller;
-  exclusive_controller_binding_.Bind(mojo::MakeRequest(&session_controller));
+  session->display_info = display_info_.Clone();
+
+  std::move(callback).Run(
+      std::move(session),
+      exclusive_controller_receiver_.BindNewPipeAndPassRemote());
 
   // Unretained is safe because the error handler won't be called after the
   // binding has been destroyed.
-  exclusive_controller_binding_.set_connection_error_handler(
+  exclusive_controller_receiver_.set_disconnect_handler(
       base::BindOnce(&OculusDevice::OnPresentingControllerMojoConnectionError,
                      base::Unretained(this)));
-
-  session->display_info = display_info_.Clone();
-
-  std::move(callback).Run(std::move(session), std::move(session_controller));
 }
 
 bool OculusDevice::IsAvailable() {
@@ -253,7 +224,7 @@ void OculusDevice::OnPresentingControllerMojoConnectionError() {
       FROM_HERE, base::BindOnce(&XRCompositorCommon::ExitPresent,
                                 base::Unretained(render_loop_.get())));
   OnExitPresent();
-  exclusive_controller_binding_.Close();
+  exclusive_controller_receiver_.reset();
 }
 
 void OculusDevice::OnPresentationEnded() {
@@ -288,31 +259,15 @@ void OculusDevice::StopOvrSession() {
   }
 }
 
-void OculusDevice::GetIsolatedXRGamepadProvider(
-    mojom::IsolatedXRGamepadProviderRequest provider_request) {
-  // We bind the provider_request on the render loop thread, so gamepad data is
-  // updated at the rendering rate.
-  // If we haven't started the render loop yet, postpone binding the request
-  // until we do.
-  if (render_loop_->IsRunning()) {
-    render_loop_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestGamepadProvider,
-                                  base::Unretained(render_loop_.get()),
-                                  std::move(provider_request)));
-  } else {
-    provider_request_ = std::move(provider_request);
-  }
-}
-
 void OculusDevice::CreateImmersiveOverlay(
-    mojom::ImmersiveOverlayRequest overlay_request) {
+    mojo::PendingReceiver<mojom::ImmersiveOverlay> overlay_receiver) {
   if (render_loop_->IsRunning()) {
     render_loop_->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestOverlay,
                                   base::Unretained(render_loop_.get()),
-                                  std::move(overlay_request)));
+                                  std::move(overlay_receiver)));
   } else {
-    overlay_request_ = std::move(overlay_request);
+    overlay_receiver_ = std::move(overlay_receiver);
   }
 }
 

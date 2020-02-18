@@ -22,7 +22,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -31,16 +30,15 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.TestNetworkClient;
+import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ReducedModeNativeTestRule;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.components.download.NetworkStatusListenerAndroid;
@@ -71,7 +69,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * are run both in full browser mode and in reduced mode.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
 @RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PrefetchFeedFlowTest {
@@ -147,7 +144,7 @@ public class PrefetchFeedFlowTest {
         }
     }
 
-    private void forceLoadSnippets() throws Throwable {
+    private void forceLoadSnippets() {
         if (mUseReducedMode) {
             // NTP suggestions require a connection.
             TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -161,7 +158,7 @@ public class PrefetchFeedFlowTest {
             // NTP suggestions require a connection and an accepted EULA.
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 NetworkChangeNotifier.forceConnectivityState(true);
-                PrefServiceBridge.getInstance().setEulaAccepted();
+                FirstRunUtils.setEulaAccepted();
             });
 
             // Loading the NTP triggers loading suggestions.
@@ -266,7 +263,7 @@ public class PrefetchFeedFlowTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         FakeInstanceIDWithSubtype.clearDataAndSetEnabled(false);
         mServer.shutdown();
     }
@@ -275,7 +272,7 @@ public class PrefetchFeedFlowTest {
         return OfflineContentAggregatorFactory.get();
     }
 
-    private OfflineItem findItemByUrl(String url) throws InterruptedException, TimeoutException {
+    private OfflineItem findItemByUrl(String url) throws TimeoutException {
         for (OfflineItem item : OfflineTestUtil.getOfflineItems()) {
             if (item.pageUrl.equals(url)) {
                 return item;
@@ -284,8 +281,7 @@ public class PrefetchFeedFlowTest {
         return null;
     }
 
-    private OfflinePageItem findPageByUrl(String url)
-            throws InterruptedException, TimeoutException {
+    private OfflinePageItem findPageByUrl(String url) throws TimeoutException {
         for (OfflinePageItem page : OfflineTestUtil.getAllPages()) {
             if (page.getUrl().equals(url)) {
                 return page;
@@ -294,7 +290,7 @@ public class PrefetchFeedFlowTest {
         return null;
     }
 
-    private Bitmap findVisuals(ContentId id) throws InterruptedException, TimeoutException {
+    private Bitmap findVisuals(ContentId id) throws TimeoutException {
         final CallbackHelper finished = new CallbackHelper();
         final AtomicReference<Bitmap> result = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -435,7 +431,7 @@ public class PrefetchFeedFlowTest {
     /**
      * Check that a server-enabled check can enable prefetching.
      */
-    public void doTestPrefetchBecomesEnabledByServer() throws Throwable {
+    public void doTestPrefetchBecomesEnabledByServer() {
         OfflineTestUtil.setPrefetchingEnabledByServer(false);
 
         Assert.assertFalse(isEnabledByServer());
@@ -450,7 +446,7 @@ public class PrefetchFeedFlowTest {
      * Check that prefetching remains disabled by the server after receiving a forbidden
      * response.
      */
-    public void doTestPrefetchRemainsDisabledByServer() throws Throwable {
+    public void doTestPrefetchRemainsDisabledByServer() {
         OfflineTestUtil.setPrefetchingEnabledByServer(false);
         mOPS.setForbidGeneratePageBundle(true);
 

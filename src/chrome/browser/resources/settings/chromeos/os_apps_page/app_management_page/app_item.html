@@ -12,7 +12,7 @@
       :host {
         align-items: center;
         border-bottom: var(--card-separator);
-        color: var(--primary-text-color);
+        color: var(--cros-default-text-color);
         cursor: pointer;
         display: flex;
         flex-direction: row;
@@ -34,8 +34,8 @@
       }
     </style>
     <img id="app-icon" src="[[iconUrlFromId_(app)]]"
-        alt="[[app.title]] app icon.">
-    <div id="app-title">[[app.title]]</div>
+        alt="[[app.title]] app icon." aria-hidden="true">
+    <div id="app-title" aria-hidden="true">[[app.title]]</div>
     <slot name="right-content"></slot>
   </template>
  <script src="app_item.js"></script>

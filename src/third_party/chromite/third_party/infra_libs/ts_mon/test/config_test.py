@@ -6,7 +6,6 @@ import argparse
 import json
 import os
 import requests
-import tempfile
 import unittest
 
 import mock

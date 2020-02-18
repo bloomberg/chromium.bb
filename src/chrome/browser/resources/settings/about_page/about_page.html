@@ -95,7 +95,8 @@
             <img id="product-logo" on-click="onProductLogoTap_"
                 srcset="chrome://theme/current-channel-logo@1x 1x,
                         chrome://theme/current-channel-logo@2x 2x"
-                alt="$i18n{aboutProductLogoAlt}">
+                alt="$i18n{aboutProductLogoAlt}"
+                role="presentation">
             <h1 class="product-title">$i18n{aboutProductTitle}</h1>
           </div>
           <div class="settings-box two-line">
@@ -245,11 +246,13 @@
           <cr-link-row class="hr" id="detailed-build-info-trigger"
               on-click="onDetailedBuildInfoTap_"
               label="$i18n{aboutDetailedBuildInfo}"
+              role-description="$i18n{subpageArrowRoleDescription}"
               hidden$="[[!showOsSettings_]]">
           </cr-link-row>
 </if>
           <cr-link-row class="hr" on-click="onManagementPageTap_"
               start-icon="cr:domain" label="$i18n{managementPage}"
+              role-description="$i18n{subpageArrowRoleDescription}"
               hidden$="[[!isManaged_]]"></cr-link-row>
         </div>
 <if expr="chromeos">

@@ -10,9 +10,10 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_wake_lock_sentinel.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -247,16 +248,24 @@ void MockPermissionService::AddPermissionObserver(
 
 WakeLockTestingContext::WakeLockTestingContext(
     MockWakeLockService* mock_wake_lock_service) {
-  service_manager::InterfaceProvider::TestApi test_api(
-      GetDocument()->GetInterfaceProvider());
-  test_api.SetBinderForName(
+  GetDocument()->GetBrowserInterfaceBroker().SetBinderForTesting(
       mojom::blink::WakeLockService::Name_,
       WTF::BindRepeating(&MockWakeLockService::BindRequest,
                          WTF::Unretained(mock_wake_lock_service)));
-  test_api.SetBinderForName(
+  GetDocument()->GetBrowserInterfaceBroker().SetBinderForTesting(
       mojom::blink::PermissionService::Name_,
       WTF::BindRepeating(&MockPermissionService::BindRequest,
                          WTF::Unretained(&permission_service_)));
+}
+
+WakeLockTestingContext::~WakeLockTestingContext() {
+  // Remove the testing binder to avoid crashes between tests caused by
+  // our mocks rebinding an already-bound Binding.
+  // See https://crbug.com/1010116 for more information.
+  GetDocument()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      mojom::blink::WakeLockService::Name_, {});
+  GetDocument()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      mojom::blink::PermissionService::Name_, {});
 }
 
 Document* WakeLockTestingContext::GetDocument() {
@@ -309,25 +318,16 @@ v8::Promise::PromiseState ScriptPromiseUtils::GetPromiseState(
 }
 
 // static
-String ScriptPromiseUtils::GetPromiseResolutionAsString(
-    const ScriptPromise& promise) {
-  auto v8_promise = promise.V8Value().As<v8::Promise>();
-  if (v8_promise->State() == v8::Promise::kPending) {
-    return g_empty_string;
-  }
-  ScriptValue promise_result(promise.GetScriptValue().GetScriptState(),
-                             v8_promise->Result());
-  String value;
-  if (!promise_result.ToString(value)) {
-    return g_empty_string;
-  }
-  return value;
-}
-
-// static
 DOMException* ScriptPromiseUtils::GetPromiseResolutionAsDOMException(
     const ScriptPromise& promise) {
   return V8DOMException::ToImplWithTypeCheck(
+      promise.GetIsolate(), promise.V8Value().As<v8::Promise>()->Result());
+}
+
+// static
+WakeLockSentinel* ScriptPromiseUtils::GetPromiseResolutionAsWakeLockSentinel(
+    const ScriptPromise& promise) {
+  return V8WakeLockSentinel::ToImplWithTypeCheck(
       promise.GetIsolate(), promise.V8Value().As<v8::Promise>()->Result());
 }
 

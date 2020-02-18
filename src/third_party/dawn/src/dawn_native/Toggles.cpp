@@ -57,6 +57,11 @@ namespace dawn_native {
                "Clears resource to zero on first usage. This initializes the resource "
                "so that no dirty bits from recycled memory is present in the new resource.",
                "https://bugs.chromium.org/p/dawn/issues/detail?id=145"}},
+             {Toggle::TurnOffVsync,
+              {"turn_off_vsync",
+               "Turn off vsync when rendering. In order to do performance test or run perf tests, "
+               "turn off vsync so that the fps can exeed 60.",
+               "https://bugs.chromium.org/p/dawn/issues/detail?id=237"}},
              {Toggle::UseTemporaryBufferInCompressedTextureToTextureCopy,
               {"use_temporary_buffer_in_texture_to_texture_copy",
                "Split texture-to-texture copy into two copies: copy from source texture into a "
@@ -65,7 +70,27 @@ namespace dawn_native {
                "workaround is enabled by default on all Vulkan drivers to solve an issue in the "
                "Vulkan SPEC about the texture-to-texture copies with compressed formats. See #1005 "
                "(https://github.com/KhronosGroup/Vulkan-Docs/issues/1005) for more details.",
-               "https://bugs.chromium.org/p/dawn/issues/detail?id=42"}}}};
+               "https://bugs.chromium.org/p/dawn/issues/detail?id=42"}},
+             {Toggle::UseD3D12ResourceHeapTier2,
+              {"use_d3d12_resource_heap_tier2",
+               "Enable support for resource heap tier 2. Resource heap tier 2 allows mixing of "
+               "texture and buffers in the same heap. This allows better heap re-use and reduces "
+               "fragmentation."}},
+             {Toggle::UseD3D12RenderPass,
+              {"use_d3d12_render_pass",
+               "Use the D3D12 render pass API introduced in Windows build 1809 by default. On "
+               "versions of Windows prior to build 1809, or when this toggle is turned off, Dawn "
+               "will emulate a render pass."}},
+             {Toggle::SkipValidation,
+              {"skip_validation", "Skip expensive validation of Dawn commands."}},
+             {Toggle::UseSpvc,
+              {"use_spvc",
+               "Enable use of spvc for shader compilation, instead of accessing spirv_cross "
+               "directly."}},
+             {Toggle::UseSpvcIRGen,
+              {"use_spvc_ir_gen",
+               "Enable usage of spvc's internal parsing and IR generation code, instead of "
+               "spirv_cross's."}}}};
 
     }  // anonymous namespace
 

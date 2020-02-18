@@ -43,9 +43,6 @@ extern const base::Feature kTranslateRecentTarget;
 // Enable or disable the Translate popup altogether.
 extern const base::Feature kTranslateUI;
 
-// Enable the "Translate" item in the overflow menu on Mobile.
-extern const base::Feature kTranslateMobileManualTrigger;
-
 // Minimum number of times the user must accept a translation before we show
 // a shortcut to the "Always Translate" functionality.
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -176,7 +173,7 @@ class TranslatePrefs {
   std::string GetCountry() const;
 
   // Resets the blocked languages list, the sites blacklist, the languages
-  // whitelist, and the accepted/denied counts.
+  // whitelist, the accepted/denied counts, and whether Translate is enabled.
   void ResetToDefaults();
 
   bool IsBlockedLanguage(const std::string& original_language) const;

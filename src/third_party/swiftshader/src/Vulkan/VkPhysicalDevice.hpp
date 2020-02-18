@@ -43,6 +43,8 @@ public:
 	void getFeatures(VkPhysicalDeviceMultiviewFeatures* features) const;
 	void getFeatures(VkPhysicalDeviceProtectedMemoryFeatures* features) const;
 	void getFeatures(VkPhysicalDeviceShaderDrawParameterFeatures* features) const;
+	void getFeatures(VkPhysicalDeviceLineRasterizationFeaturesEXT* features) const;
+	void getFeatures(VkPhysicalDeviceProvokingVertexFeaturesEXT* features) const;
 	bool hasFeatures(const VkPhysicalDeviceFeatures& requestedFeatures) const;
 
 	const VkPhysicalDeviceProperties& getProperties() const;
@@ -60,6 +62,9 @@ public:
 	void getProperties(const VkPhysicalDeviceExternalBufferInfo* pExternalBufferInfo, VkExternalBufferProperties* pExternalBufferProperties) const;
 	void getProperties(const VkPhysicalDeviceExternalFenceInfo* pExternalFenceInfo, VkExternalFenceProperties* pExternalFenceProperties) const;
 	void getProperties(const VkPhysicalDeviceExternalSemaphoreInfo* pExternalSemaphoreInfo, VkExternalSemaphoreProperties* pExternalSemaphoreProperties) const;
+	void getProperties(VkPhysicalDeviceDriverPropertiesKHR* properties) const;
+	void getProperties(VkPhysicalDeviceLineRasterizationPropertiesEXT* properties) const;
+	void getProperties(VkPhysicalDeviceProvokingVertexPropertiesEXT* properties) const;
 
 	void getFormatProperties(Format format, VkFormatProperties* pFormatProperties) const;
 	void getImageFormatProperties(Format format, VkImageType type, VkImageTiling tiling,
@@ -68,6 +73,8 @@ public:
 	uint32_t getQueueFamilyPropertyCount() const;
 	void getQueueFamilyProperties(uint32_t pQueueFamilyPropertyCount,
 	                              VkQueueFamilyProperties* pQueueFamilyProperties) const;
+	void getQueueFamilyProperties(uint32_t pQueueFamilyPropertyCount,
+	                              VkQueueFamilyProperties2* pQueueFamilyProperties) const;
 	const VkPhysicalDeviceMemoryProperties& getMemoryProperties() const;
 
 private:

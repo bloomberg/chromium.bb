@@ -24,6 +24,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/buildflags.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/layout/fill_layout.h"
@@ -55,7 +56,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -173,7 +174,7 @@ class EventCountHandler : public ui::EventHandler {
 TEST_F(WidgetTest, WidgetInitParams) {
   // Widgets are not transparent by default.
   Widget::InitParams init1;
-  EXPECT_EQ(Widget::InitParams::INFER_OPACITY, init1.opacity);
+  EXPECT_EQ(Widget::InitParams::WindowOpacity::kInferred, init1.opacity);
 }
 
 // Tests that the internal name is propagated through widget initialization to
@@ -1138,14 +1139,7 @@ TEST_F(DesktopWidgetTest, MinimumSizeConstraints) {
   EXPECT_EQ(minimum_size, widget->GetClientAreaBoundsInScreen().size());
 
   widget->SetSize(smaller_size);
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // TODO(tapted): Desktop Linux ignores size constraints for SetSize. Fix it.
-  const bool use_small_size = true;
-#else
-  const bool use_small_size = false;
-#endif
-  EXPECT_EQ(use_small_size ? smaller_size : minimum_size,
-            widget->GetClientAreaBoundsInScreen().size());
+  EXPECT_EQ(minimum_size, widget->GetClientAreaBoundsInScreen().size());
 }
 
 // Tests that SetBounds() and GetWindowBoundsInScreen() is symmetric when the
@@ -2275,7 +2269,7 @@ TEST_F(DesktopWidgetTest, CloseDestroys) {
       new CloseDestroysWidget(&destroyed, run_loop.QuitClosure());
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_MENU);
-  params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+  params.opacity = Widget::InitParams::WindowOpacity::kOpaque;
   widget->Init(std::move(params));
   widget->Show();
   widget->Hide();
@@ -2324,7 +2318,7 @@ TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
 // Test Widget::CloseAllSecondaryWidgets works as expected across platforms.
 // ChromeOS doesn't implement or need CloseAllSecondaryWidgets() since
 // everything is under a single root window.
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
 TEST_F(DesktopWidgetTest, CloseAllSecondaryWidgets) {
   Widget* widget1 = CreateTopLevelNativeWidget();
   Widget* widget2 = CreateTopLevelNativeWidget();
@@ -3937,7 +3931,7 @@ class WidgetShadowTest : public WidgetTest {
   }
 
   void TearDown() override {
-#if defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !BUILDFLAG(ENABLE_DESKTOP_AURA)
     shadow_controller_.reset();
     focus_controller_.reset();
 #endif
@@ -3947,7 +3941,7 @@ class WidgetShadowTest : public WidgetTest {
   Widget::InitParams CreateParams(Widget::InitParams::Type type) override {
     Widget::InitParams params =
         WidgetTest::CreateParams(override_type_.value_or(type));
-    params.shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
+    params.shadow_type = Widget::InitParams::ShadowType::kDrop;
     params.shadow_elevation = 10;
     params.name = name_;
     params.child = force_child_;
@@ -3960,7 +3954,7 @@ class WidgetShadowTest : public WidgetTest {
   bool force_child_ = false;
 
  private:
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
   void InitControllers() {}
 #else
   class TestFocusRules : public wm::BaseFocusRules {
@@ -3984,7 +3978,7 @@ class WidgetShadowTest : public WidgetTest {
 
   std::unique_ptr<wm::FocusController> focus_controller_;
   std::unique_ptr<wm::ShadowController> shadow_controller_;
-#endif  // OS_CHROMEOS
+#endif  // !BUILDFLAG(ENABLE_DESKTOP_AURA) && !defined(OS_MACOSX)
 
   DISALLOW_COPY_AND_ASSIGN(WidgetShadowTest);
 };
@@ -4000,7 +3994,7 @@ class WidgetShadowTest : public WidgetTest {
 // activation. Test that shadows are added to non-root windows even if not
 // activated.
 TEST_F(WidgetShadowTest, MAYBE_ShadowsInRootWindow) {
-#if defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !BUILDFLAG(ENABLE_DESKTOP_AURA)
   // On ChromeOS, top-levels have shadows.
   bool top_level_window_should_have_shadow = true;
 #else
@@ -4168,7 +4162,7 @@ TEST_F(DesktopWidgetTest, WindowModalOwnerDestroyedEnabledTest) {
 
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
 
 namespace {
 
@@ -4222,9 +4216,9 @@ class CompositingWidgetTest : public DesktopWidgetTest {
       // transparent titlebars which is what ShouldWindowContentsBeTransparent()
       // is currently used for. Asking for transparency should get it. Note that
       // TestViewsDelegate::use_transparent_windows_ determines the result of
-      // INFER_OPACITY: assume it is false.
+      // kInferOpacity: assume it is false.
       bool should_be_transparent =
-          opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
+          opacity == Widget::InitParams::WindowOpacity::kTranslucent;
 #else
       bool should_be_transparent = widget.ShouldWindowContentsBeTransparent();
 #endif
@@ -4254,18 +4248,18 @@ class CompositingWidgetTest : public DesktopWidgetTest {
 
 // Test opacity when compositing is enabled.
 TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetInferOpacity) {
-  CheckAllWidgetsForOpacity(Widget::InitParams::INFER_OPACITY);
+  CheckAllWidgetsForOpacity(Widget::InitParams::WindowOpacity::kInferred);
 }
 
 TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetOpaque) {
-  CheckAllWidgetsForOpacity(Widget::InitParams::OPAQUE_WINDOW);
+  CheckAllWidgetsForOpacity(Widget::InitParams::WindowOpacity::kOpaque);
 }
 
 TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetTranslucent) {
-  CheckAllWidgetsForOpacity(Widget::InitParams::TRANSLUCENT_WINDOW);
+  CheckAllWidgetsForOpacity(Widget::InitParams::WindowOpacity::kTranslucent);
 }
 
-#endif  // !defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
 
 }  // namespace test
 }  // namespace views

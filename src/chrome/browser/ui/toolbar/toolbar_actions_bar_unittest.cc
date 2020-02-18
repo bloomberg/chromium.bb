@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -143,7 +144,10 @@ class ToolbarActionErrorTestObserver
 }  // namespace
 
 ToolbarActionsBarUnitTest::ToolbarActionsBarUnitTest()
-    : toolbar_model_(nullptr) {}
+    : toolbar_model_(nullptr) {
+  // The ToolbarActionsBar is not used when kExtensionsToolbarMenu is enabled.
+  feature_list_.InitAndDisableFeature(features::kExtensionsToolbarMenu);
+}
 
 ToolbarActionsBarUnitTest::~ToolbarActionsBarUnitTest() {}
 
@@ -172,7 +176,7 @@ void ToolbarActionsBarUnitTest::SetUp() {
   browser_action_test_util_ = BrowserActionTestUtil::Create(browser(), false);
 
   overflow_browser_action_test_util_ =
-      browser_action_test_util_->CreateOverflowBar();
+      browser_action_test_util_->CreateOverflowBar(browser());
 }
 
 void ToolbarActionsBarUnitTest::TearDown() {
@@ -235,9 +239,7 @@ testing::AssertionResult ToolbarActionsBarUnitTest::VerifyToolbarOrder(
           "overflow bar error:\n" << overflow_bar_error;
 }
 
-// Note: First argument is optional and intentionally left blank.
-// (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ToolbarActionsBarUnitTest,
                          testing::Values(false, true));
 

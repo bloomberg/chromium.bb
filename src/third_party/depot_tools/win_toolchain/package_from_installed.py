@@ -9,7 +9,7 @@ into a .zip file.
 It assumes default install locations for tools, on the C: drive.
 
 1. Start from a fresh Windows VM image.
-2. Download the VS 2017 installer. Run the installer with these parameters:
+2. Download the VS installer. Run the installer with these parameters:
     --add Microsoft.VisualStudio.Workload.NativeDesktop
     --add Microsoft.VisualStudio.Component.VC.ATLMFC
     --add Microsoft.VisualStudio.Component.VC.Tools.ARM64
@@ -23,7 +23,7 @@ frameworks-> Visual C++ MFC for ARM64 (which also brings in ATL for ARM64).
 3. Use Add or Remove Programs to find the Windows SDK installed with VS
 and modify it to include the debuggers.
 4. Run this script, which will build a <sha1>.zip, something like this:
-  python package_from_installed.py 2017 -w 10.0.17763.0
+  python package_from_installed.py 2017|2019 -w 10.0.17763.0|<SDK version>
 
 Express is not yet supported by this script, but patches welcome (it's not too
 useful as the resulting zip can't be redistributed, and most will presumably
@@ -50,24 +50,20 @@ import get_toolchain_if_necessary
 VS_VERSION = None
 WIN_VERSION = None
 VC_TOOLS = None
+SUPPORTED_VS_VERSIONS = ['2017', '2019']
 
 
 def GetVSPath():
-  if VS_VERSION == '2015':
-    return r'C:\Program Files (x86)\Microsoft Visual Studio 14.0'
-  elif VS_VERSION == '2017':
-    # Use vswhere to find the VS 2017 installation. This will find prerelease
-    # versions because -prerelease is specified. This assumes that only one
-    # version is installed.
-    command = (r'C:\Program Files (x86)\Microsoft Visual Studio\Installer'
-               r'\vswhere.exe -prerelease')
-    marker = 'installationPath: '
-    for line in subprocess.check_output(command).splitlines():
-      if line.startswith(marker):
-        return line[len(marker):]
-    raise Exception('VS 2017 path not found in vswhere output')
-  else:
-    raise ValueError(VS_VERSION)
+  # Use vswhere to find the VS installation. This will find prerelease
+  # versions because -prerelease is specified. This assumes that only one
+  # version is installed.
+  command = (r'C:\Program Files (x86)\Microsoft Visual Studio\Installer'
+             r'\vswhere.exe -prerelease')
+  marker = 'installationPath: '
+  for line in subprocess.check_output(command).splitlines():
+    if line.startswith(marker):
+      return line[len(marker):]
+  raise Exception('VS %s path not found in vswhere output' % (VS_VERSION))
 
 
 def ExpandWildcards(root, sub_dir):
@@ -83,6 +79,12 @@ def BuildRepackageFileList(src_dir):
   # Strip off a trailing slash if present
   if src_dir.endswith('\\'):
     src_dir = src_dir[:-1]
+
+  # Ensure .\win_sdk\Debuggers exists and fail to repackage if it doesn't.
+  debuggers_path = os.path.join(src_dir, 'win_sdk', 'Debuggers')
+  if not os.path.exists(debuggers_path):
+    raise Exception('Repacking failed. Missing %s.' % (debuggers_path))
+
   result = []
   for root, _, files in os.walk(src_dir):
     for f in files:
@@ -119,42 +121,27 @@ def BuildFileList(override_dir, include_arm):
         VC_TOOLS + '/lib',
     ]
 
-  if VS_VERSION == '2015':
+  paths += [
+      ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC*.CRT', 'sys32'),
+      ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC*.CRT', 'win_sdk/bin/x86'),
+      ('VC/redist/MSVC/14.*.*/debug_nonredist/x86/Microsoft.VC*.DebugCRT',
+       'sys32'),
+      ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'sys64'),
+      ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'VC/bin/amd64_x86'),
+      ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'VC/bin/amd64'),
+      ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'win_sdk/bin/x64'),
+      ('VC/redist/MSVC/14.*.*/debug_nonredist/x64/Microsoft.VC*.DebugCRT',
+       'sys64'),
+  ]
+  if include_arm:
     paths += [
-        ('VC/redist/x86/Microsoft.VC140.CRT', 'sys32'),
-        ('VC/redist/x86/Microsoft.VC140.CRT', 'win_sdk/bin/x86'),
-        ('VC/redist/x86/Microsoft.VC140.MFC', 'sys32'),
-        ('VC/redist/debug_nonredist/x86/Microsoft.VC140.DebugCRT', 'sys32'),
-        ('VC/redist/debug_nonredist/x86/Microsoft.VC140.DebugMFC', 'sys32'),
-        ('VC/redist/x64/Microsoft.VC140.CRT', 'sys64'),
-        ('VC/redist/x64/Microsoft.VC140.CRT', 'VC/bin/amd64_x86'),
-        ('VC/redist/x64/Microsoft.VC140.CRT', 'VC/bin/amd64'),
-        ('VC/redist/x64/Microsoft.VC140.CRT', 'win_sdk/bin/x64'),
-        ('VC/redist/x64/Microsoft.VC140.MFC', 'sys64'),
-        ('VC/redist/debug_nonredist/x64/Microsoft.VC140.DebugCRT', 'sys64'),
-        ('VC/redist/debug_nonredist/x64/Microsoft.VC140.DebugMFC', 'sys64'),
-    ]
-  elif VS_VERSION == '2017':
-    paths += [
-        ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC*.CRT', 'sys32'),
-        ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC*.CRT', 'win_sdk/bin/x86'),
-        ('VC/redist/MSVC/14.*.*/debug_nonredist/x86/Microsoft.VC*.DebugCRT', 'sys32'),
-        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'sys64'),
-        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'VC/bin/amd64_x86'),
-        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'VC/bin/amd64'),
-        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'win_sdk/bin/x64'),
-        ('VC/redist/MSVC/14.*.*/debug_nonredist/x64/Microsoft.VC*.DebugCRT', 'sys64'),
-    ]
-    if include_arm:
-      paths += [
         ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'sysarm64'),
         ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'VC/bin/amd64_arm64'),
         ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'VC/bin/arm64'),
         ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'win_sdk/bin/arm64'),
-        ('VC/redist/MSVC/14.*.*/debug_nonredist/arm64/Microsoft.VC*.DebugCRT', 'sysarm64'),
-      ]
-  else:
-    raise ValueError('VS_VERSION %s' % VS_VERSION)
+        ('VC/redist/MSVC/14.*.*/debug_nonredist/arm64/Microsoft.VC*.DebugCRT',
+         'sysarm64'),
+    ]
 
   vs_path = GetVSPath()
 
@@ -185,6 +172,10 @@ def BuildFileList(override_dir, include_arm):
           result.append((final_from, dest))
 
   sdk_path = r'C:\Program Files (x86)\Windows Kits\10'
+  debuggers_path = os.path.join(sdk_path, 'Debuggers')
+  if not os.path.exists(debuggers_path):
+    raise Exception('Packaging failed. Missing %s.' % (debuggers_path))
+
   for root, _, files in os.walk(sdk_path):
     for f in files:
       combined = os.path.normpath(os.path.join(root, f))
@@ -297,102 +288,79 @@ def GenerateSetEnvCmd(target_dir):
     ('INCLUDE', include_dirs),
   ])
   # x86. Always use amd64_x86 cross, not x86 on x86.
-  if VS_VERSION == '2017':
-    env['VCToolsInstallDir'] = [['..', '..'] + vc_tools_parts[:]]
-    # Yuck: This one ends in a slash as well.
-    env['VCToolsInstallDir'][0][-1] += '\\'
-    env_x86 = collections.OrderedDict([
-      ('PATH', [
-        ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
-        ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x86'],
-        ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],  # Needed for mspdb1x0.dll.
-      ]),
+  env['VCToolsInstallDir'] = [['..', '..'] + vc_tools_parts[:]]
+  # Yuck: This one ends in a slash as well.
+  env['VCToolsInstallDir'][0][-1] += '\\'
+  env_x86 = collections.OrderedDict([
+      (
+          'PATH',
+          [
+              ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
+              ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x86'],
+              ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'
+                                              ],  # Needed for mspdb1x0.dll.
+          ]),
       ('LIB', [
-        ['..', '..'] + vc_tools_parts + ['lib', 'x86'],
-        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x86'],
-        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x86'],
-        ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'x86'],
+          ['..', '..'] + vc_tools_parts + ['lib', 'x86'],
+          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x86'],
+          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x86'],
+          ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'x86'],
       ]),
-    ])
-  else:
-    env_x86 = collections.OrderedDict([
-      ('PATH', [
-        ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x86'],
-        ['..', '..', 'VC', 'bin', 'amd64_x86'],
-        ['..', '..', 'VC', 'bin', 'amd64'],  # Needed for mspdb1x0.dll.
-      ]),
-      ('LIB', [
-        ['..', '..', 'VC', 'lib'],
-        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x86'],
-        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x86'],
-        ['..', '..', 'VC', 'atlmfc', 'lib'],
-      ]),
-    ])
+  ])
+
   # x64.
-  if VS_VERSION == '2017':
-    env_x64 = collections.OrderedDict([
+  env_x64 = collections.OrderedDict([
       ('PATH', [
-        ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
-        ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],
+          ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
+          ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],
       ]),
       ('LIB', [
-        ['..', '..'] + vc_tools_parts + ['lib', 'x64'],
-        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x64'],
-        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x64'],
-        ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'x64'],
+          ['..', '..'] + vc_tools_parts + ['lib', 'x64'],
+          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x64'],
+          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x64'],
+          ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'x64'],
       ]),
-    ])
-  else:
-    env_x64 = collections.OrderedDict([
+  ])
+
+  # arm64.
+  env_arm64 = collections.OrderedDict([
       ('PATH', [
-        ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
-        ['..', '..', 'VC', 'bin', 'amd64'],
+          ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
+          ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'arm64'],
+          ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],
       ]),
       ('LIB', [
-        ['..', '..', 'VC', 'lib', 'amd64'],
-        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'x64'],
-        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'x64'],
-        ['..', '..', 'VC', 'atlmfc', 'lib', 'amd64'],
+          ['..', '..'] + vc_tools_parts + ['lib', 'arm64'],
+          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'arm64'],
+          ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'arm64'],
+          ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'arm64'],
       ]),
-    ])
-  if VS_VERSION == '2017':
-    env_arm64 = collections.OrderedDict([
-      ('PATH', [
-        ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
-        ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'arm64'],
-        ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],
-      ]),
-      ('LIB', [
-        ['..', '..'] + vc_tools_parts + ['lib', 'arm64'],
-        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'arm64'],
-        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'arm64'],
-        ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'arm64'],
-      ]),
-    ])
+  ])
+
   def BatDirs(dirs):
     return ';'.join(['%~dp0' + os.path.join(*d) for d in dirs])
   set_env_prefix = os.path.join(target_dir, r'win_sdk\bin\SetEnv')
   with open(set_env_prefix + '.cmd', 'w') as f:
     f.write('@echo off\n'
             ':: Generated by win_toolchain\\package_from_installed.py.\n')
-    for var, dirs in env.iteritems():
+    for var, dirs in env.items():
       f.write('set %s=%s\n' % (var, BatDirs(dirs)))
     f.write('if "%1"=="/x64" goto x64\n')
     f.write('if "%1"=="/arm64" goto arm64\n')
 
-    for var, dirs in env_x86.iteritems():
+    for var, dirs in env_x86.items():
       f.write('set %s=%s%s\n' % (
           var, BatDirs(dirs), ';%PATH%' if var == 'PATH' else ''))
     f.write('goto :EOF\n')
 
     f.write(':x64\n')
-    for var, dirs in env_x64.iteritems():
+    for var, dirs in env_x64.items():
       f.write('set %s=%s%s\n' % (
           var, BatDirs(dirs), ';%PATH%' if var == 'PATH' else ''))
     f.write('goto :EOF\n')
 
     f.write(':arm64\n')
-    for var, dirs in env_arm64.iteritems():
+    for var, dirs in env_arm64.items():
       f.write('set %s=%s%s\n' % (
           var, BatDirs(dirs), ';%PATH%' if var == 'PATH' else ''))
     f.write('goto :EOF\n')
@@ -452,7 +420,7 @@ def RenameToSha1(output):
 
 
 def main():
-  usage = 'usage: %prog [options] 2015|2017'
+  usage = 'usage: %prog [options] 2017|2019'
   parser = optparse.OptionParser(usage)
   parser.add_option('-w', '--winver', action='store', type='string',
                     dest='winver', default='10.0.14393.0',
@@ -474,8 +442,8 @@ def main():
   if options.repackage_dir:
     files = BuildRepackageFileList(options.repackage_dir)
   else:
-    if len(args) != 1 or args[0] not in ('2015', '2017'):
-      print('Must specify 2015 or 2017')
+    if len(args) != 1 or args[0] not in SUPPORTED_VS_VERSIONS:
+      print('Must specify 2017 or 2019')
       parser.print_help();
       return 1
 
@@ -491,13 +459,10 @@ def main():
     global WIN_VERSION
     WIN_VERSION = options.winver
     global VC_TOOLS
-    if VS_VERSION == '2017':
-      vs_path = GetVSPath()
-      temp_tools_path = ExpandWildcards(vs_path, 'VC/Tools/MSVC/14.*.*')
-      # Strip off the leading vs_path characters and switch back to / separators.
-      VC_TOOLS = temp_tools_path[len(vs_path) + 1:].replace('\\', '/')
-    else:
-      VC_TOOLS = 'VC'
+    vs_path = GetVSPath()
+    temp_tools_path = ExpandWildcards(vs_path, 'VC/Tools/MSVC/14.*.*')
+    # Strip off the leading vs_path characters and switch back to / separators.
+    VC_TOOLS = temp_tools_path[len(vs_path) + 1:].replace('\\', '/')
 
     print('Building file list for VS %s Windows %s...' % (VS_VERSION, WIN_VERSION))
     files = BuildFileList(options.override_dir, options.arm)

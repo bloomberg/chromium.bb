@@ -43,8 +43,9 @@ std::unique_ptr<Client> Client::CreateInstance(const char* socket_name,
 
 ClientImpl::ClientImpl(const char* socket_name, base::TaskRunner* task_runner)
     : task_runner_(task_runner), weak_ptr_factory_(this) {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-  sock_ = base::UnixSocket::Connect(socket_name, this, task_runner);
+  sock_ = base::UnixSocket::Connect(socket_name, this, task_runner,
+                                    base::SockFamily::kUnix,
+                                    base::SockType::kStream);
 }
 
 ClientImpl::~ClientImpl() {
@@ -72,7 +73,7 @@ void ClientImpl::BindService(base::WeakPtr<ServiceProxy> service_proxy) {
     return service_proxy->OnConnect(false /* success */);
   }
   QueuedRequest qr;
-  qr.type = Frame::kMsgBindService;
+  qr.type = Frame::kMsgBindServiceFieldNumber;
   qr.request_id = request_id;
   qr.service_proxy = service_proxy;
   queued_requests_.emplace(request_id, std::move(qr));
@@ -89,7 +90,6 @@ RequestID ClientImpl::BeginInvoke(ServiceID service_id,
                                   bool drop_reply,
                                   base::WeakPtr<ServiceProxy> service_proxy,
                                   int fd) {
-  std::string args_proto;
   RequestID request_id = ++last_request_id_;
   Frame frame;
   frame.set_request_id(request_id);
@@ -97,16 +97,15 @@ RequestID ClientImpl::BeginInvoke(ServiceID service_id,
   req->set_service_id(service_id);
   req->set_method_id(remote_method_id);
   req->set_drop_reply(drop_reply);
-  bool did_serialize = method_args.SerializeToString(&args_proto);
-  req->set_args_proto(args_proto);
-  if (!did_serialize || !SendFrame(frame, fd)) {
+  req->set_args_proto(method_args.SerializeAsString());
+  if (!SendFrame(frame, fd)) {
     PERFETTO_DLOG("BeginInvoke() failed while sending the frame");
     return 0;
   }
   if (drop_reply)
     return 0;
   QueuedRequest qr;
-  qr.type = Frame::kMsgInvokeMethod;
+  qr.type = Frame::kMsgInvokeMethodFieldNumber;
   qr.request_id = request_id;
   qr.method_name = method_name;
   qr.service_proxy = std::move(service_proxy);
@@ -186,23 +185,23 @@ void ClientImpl::OnFrameReceived(const Frame& frame) {
   QueuedRequest req = std::move(queued_requests_it->second);
   queued_requests_.erase(queued_requests_it);
 
-  if (req.type == Frame::kMsgBindService &&
-      frame.msg_case() == Frame::kMsgBindServiceReply) {
+  if (req.type == Frame::kMsgBindServiceFieldNumber &&
+      frame.has_msg_bind_service_reply()) {
     return OnBindServiceReply(std::move(req), frame.msg_bind_service_reply());
   }
-  if (req.type == Frame::kMsgInvokeMethod &&
-      frame.msg_case() == Frame::kMsgInvokeMethodReply) {
+  if (req.type == Frame::kMsgInvokeMethodFieldNumber &&
+      frame.has_msg_invoke_method_reply()) {
     return OnInvokeMethodReply(std::move(req), frame.msg_invoke_method_reply());
   }
-  if (frame.msg_case() == Frame::kMsgRequestError) {
+  if (frame.has_msg_request_error()) {
     PERFETTO_DLOG("Host error: %s", frame.msg_request_error().error().c_str());
     return;
   }
 
   PERFETTO_DLOG(
-      "OnFrameReceived() request msg_type=%d, received msg_type=%d in reply to "
+      "OnFrameReceived() request type=%d, received unknown frame in reply to "
       "request_id=%" PRIu64,
-      req.type, frame.msg_case(), static_cast<uint64_t>(frame.request_id()));
+      req.type, static_cast<uint64_t>(frame.request_id()));
 }
 
 void ClientImpl::OnBindServiceReply(QueuedRequest req,

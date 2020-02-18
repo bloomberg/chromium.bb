@@ -28,12 +28,13 @@
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_theme_font_provider.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -44,10 +45,6 @@ static const float kDefaultCancelButtonSize = 9;
 static const float kMinCancelButtonSize = 5;
 static const float kMaxCancelButtonSize = 21;
 
-static bool UseMockTheme() {
-  return WebTestSupport::IsMockThemeEnabledForTest();
-}
-
 LayoutThemeDefault::LayoutThemeDefault()
     : LayoutTheme(),
       caret_blink_interval_(LayoutTheme::CaretBlinkInterval()),
@@ -56,13 +53,6 @@ LayoutThemeDefault::LayoutThemeDefault()
 LayoutThemeDefault::~LayoutThemeDefault() = default;
 
 bool LayoutThemeDefault::ThemeDrawsFocusRing(const ComputedStyle& style) const {
-  if (UseMockTheme()) {
-    // Don't use focus rings for buttons when mocking controls.
-    return style.EffectiveAppearance() == kButtonPart ||
-           style.EffectiveAppearance() == kPushButtonPart ||
-           style.EffectiveAppearance() == kSquareButtonPart;
-  }
-
   // This causes Blink to draw the focus rings for us.
   return false;
 }
@@ -70,19 +60,26 @@ bool LayoutThemeDefault::ThemeDrawsFocusRing(const ComputedStyle& style) const {
 Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id,
                                       WebColorScheme color_scheme) const {
   constexpr Color kDefaultButtonGrayColor(0xffdddddd);
+  constexpr Color kDefaultButtonGrayColorDark(0xff444444);
   constexpr Color kDefaultMenuColor(0xfff7f7f7);
+  constexpr Color kDefaultMenuColorDark(0xff404040);
 
   if (css_value_id == CSSValueID::kButtonface) {
-    if (UseMockTheme()) {
-      if (color_scheme == WebColorScheme::kLight)
-        return Color(0xc0, 0xc0, 0xc0);
-      else
-        return Color(0x80, 0x80, 0x80);
+    switch (color_scheme) {
+      case WebColorScheme::kLight:
+        return kDefaultButtonGrayColor;
+      case WebColorScheme::kDark:
+        return kDefaultButtonGrayColorDark;
     }
-    return kDefaultButtonGrayColor;
   }
-  if (css_value_id == CSSValueID::kMenu)
-    return kDefaultMenuColor;
+  if (css_value_id == CSSValueID::kMenu) {
+    switch (color_scheme) {
+      case WebColorScheme::kLight:
+        return kDefaultMenuColor;
+      case WebColorScheme::kDark:
+        return kDefaultMenuColorDark;
+    }
+  }
   return LayoutTheme::SystemColor(css_value_id, color_scheme);
 }
 
@@ -116,56 +113,58 @@ String LayoutThemeDefault::ExtraQuirksStyleSheet() {
   return UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_WIN_QUIRKS_CSS);
 }
 
-Color LayoutThemeDefault::ActiveListBoxSelectionBackgroundColor() const {
+Color LayoutThemeDefault::ActiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return Color(0x28, 0x28, 0x28);
 }
 
-Color LayoutThemeDefault::ActiveListBoxSelectionForegroundColor() const {
-  return Color::kBlack;
+Color LayoutThemeDefault::ActiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return color_scheme == WebColorScheme::kDark ? Color::kWhite : Color::kBlack;
 }
 
-Color LayoutThemeDefault::InactiveListBoxSelectionBackgroundColor() const {
+Color LayoutThemeDefault::InactiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return Color(0xc8, 0xc8, 0xc8);
 }
 
-Color LayoutThemeDefault::InactiveListBoxSelectionForegroundColor() const {
+Color LayoutThemeDefault::InactiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   return Color(0x32, 0x32, 0x32);
 }
 
-Color LayoutThemeDefault::PlatformActiveSelectionBackgroundColor() const {
-  if (UseMockTheme())
-    return Color(0x00, 0x00, 0xff);  // Royal blue.
+Color LayoutThemeDefault::PlatformActiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return active_selection_background_color_;
 }
 
-Color LayoutThemeDefault::PlatformInactiveSelectionBackgroundColor() const {
-  if (UseMockTheme())
-    return Color(0x99, 0x99, 0x99);  // Medium gray.
+Color LayoutThemeDefault::PlatformInactiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return inactive_selection_background_color_;
 }
 
-Color LayoutThemeDefault::PlatformActiveSelectionForegroundColor() const {
-  if (UseMockTheme())
-    return Color(0xff, 0xff, 0xcc);  // Pale yellow.
+Color LayoutThemeDefault::PlatformActiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   return active_selection_foreground_color_;
 }
 
-Color LayoutThemeDefault::PlatformInactiveSelectionForegroundColor() const {
-  if (UseMockTheme())
-    return Color::kWhite;
+Color LayoutThemeDefault::PlatformInactiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   return inactive_selection_foreground_color_;
 }
 
 IntSize LayoutThemeDefault::SliderTickSize() const {
-  if (UseMockTheme())
-    return IntSize(1, 3);
-  return IntSize(1, 6);
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+    return IntSize(1, 4);
+  else
+    return IntSize(1, 6);
 }
 
 int LayoutThemeDefault::SliderTickOffsetFromTrackCenter() const {
-  if (UseMockTheme())
-    return 11;
-  return -16;
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+    return 7;
+  else
+    return -16;
 }
 
 void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
@@ -175,8 +174,7 @@ void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
   IntSize size = Platform::Current()->ThemeEngine()->GetSize(
       WebThemeEngine::kPartSliderThumb);
 
-  // FIXME: Mock theme doesn't handle zoomed sliders.
-  float zoom_level = UseMockTheme() ? 1 : style.EffectiveZoom();
+  float zoom_level = style.EffectiveZoom();
   if (style.EffectiveAppearance() == kSliderThumbHorizontalPart) {
     style.SetWidth(Length::Fixed(size.Width() * zoom_level));
     style.SetHeight(Length::Fixed(size.Height() * zoom_level));
@@ -237,18 +235,6 @@ void LayoutThemeDefault::AdjustInnerSpinButtonStyle(
 
 bool LayoutThemeDefault::ShouldOpenPickerWithF4Key() const {
   return true;
-}
-
-bool LayoutThemeDefault::ShouldUseFallbackTheme(
-    const ComputedStyle& style) const {
-  if (UseMockTheme()) {
-    // The mock theme can't handle zoomed controls, so we fall back to the
-    // "fallback" theme.
-    ControlPart part = style.EffectiveAppearance();
-    if (part == kCheckboxPart || part == kRadioPart)
-      return style.EffectiveZoom() != 1;
-  }
-  return LayoutTheme::ShouldUseFallbackTheme(style);
 }
 
 bool LayoutThemeDefault::SupportsHover(const ComputedStyle& style) const {
@@ -327,12 +313,12 @@ int LayoutThemeDefault::PopupInternalPaddingStart(
 }
 
 int LayoutThemeDefault::PopupInternalPaddingEnd(
-    const ChromeClient* client,
+    LocalFrame* frame,
     const ComputedStyle& style) const {
   if (!style.HasEffectiveAppearance())
     return 0;
   return 1 * style.EffectiveZoom() +
-         ClampedMenuListArrowPaddingSize(client, style);
+         ClampedMenuListArrowPaddingSize(frame, style);
 }
 
 int LayoutThemeDefault::PopupInternalPaddingTop(
@@ -354,15 +340,15 @@ int LayoutThemeDefault::MenuListArrowWidthInDIP() const {
 }
 
 float LayoutThemeDefault::ClampedMenuListArrowPaddingSize(
-    const ChromeClient* client,
+    LocalFrame* frame,
     const ComputedStyle& style) const {
   if (cached_menu_list_arrow_padding_size_ > 0 &&
       style.EffectiveZoom() == cached_menu_list_arrow_zoom_level_)
     return cached_menu_list_arrow_padding_size_;
   cached_menu_list_arrow_zoom_level_ = style.EffectiveZoom();
   int original_size = MenuListArrowWidthInDIP();
-  int scaled_size =
-      client ? client->WindowToViewportScalar(original_size) : original_size;
+  int scaled_size = frame->GetPage()->GetChromeClient().WindowToViewportScalar(
+      frame, original_size);
   // The result should not be samller than the scrollbar thickness in order to
   // secure space for scrollbar in popup.
   float device_scale = 1.0f * scaled_size / original_size;

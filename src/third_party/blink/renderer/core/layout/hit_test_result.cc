@@ -46,8 +46,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HitTestResult::HitTestResult()
     : hit_test_request_(HitTestRequest::kReadOnly | HitTestRequest::kActive),
       cacheable_(true),
@@ -166,7 +164,7 @@ void HitTestResult::SetToShadowHostIfInRestrictedShadowRoot() {
   // case so that a toolip title in the shadow tree works.
   while (containing_shadow_root &&
          (containing_shadow_root->IsUserAgent() ||
-          IsSVGUseElement(containing_shadow_root->host()))) {
+          IsA<SVGUseElement>(containing_shadow_root->host()))) {
     shadow_host = &containing_shadow_root->host();
     containing_shadow_root = shadow_host->ContainingShadowRoot();
     SetInnerNode(node->OwnerShadowHost());
@@ -178,10 +176,11 @@ void HitTestResult::SetToShadowHostIfInRestrictedShadowRoot() {
 
 HTMLAreaElement* HitTestResult::ImageAreaForImage() const {
   DCHECK(inner_node_);
-  HTMLImageElement* image_element = ToHTMLImageElementOrNull(inner_node_.Get());
+  auto* image_element = DynamicTo<HTMLImageElement>(inner_node_.Get());
   if (!image_element && inner_node_->IsInShadowTree()) {
     if (inner_node_->ContainingShadowRoot()->IsUserAgent()) {
-      image_element = ToHTMLImageElementOrNull(inner_node_->OwnerShadowHost());
+      image_element =
+          DynamicTo<HTMLImageElement>(inner_node_->OwnerShadowHost());
     }
   }
 
@@ -190,7 +189,7 @@ HTMLAreaElement* HitTestResult::ImageAreaForImage() const {
     return nullptr;
 
   HTMLMapElement* map = image_element->GetTreeScope().GetImageMap(
-      image_element->FastGetAttribute(kUsemapAttr));
+      image_element->FastGetAttribute(html_names::kUsemapAttr));
   if (!map)
     return nullptr;
 
@@ -292,10 +291,10 @@ const AtomicString& HitTestResult::AltDisplayString() const {
   if (!inner_node_or_image_map_image)
     return g_null_atom;
 
-  if (auto* image = ToHTMLImageElementOrNull(*inner_node_or_image_map_image))
-    return image->getAttribute(kAltAttr);
+  if (auto* image = DynamicTo<HTMLImageElement>(*inner_node_or_image_map_image))
+    return image->FastGetAttribute(html_names::kAltAttr);
 
-  if (auto* input = ToHTMLInputElementOrNull(*inner_node_or_image_map_image))
+  if (auto* input = DynamicTo<HTMLInputElement>(*inner_node_or_image_map_image))
     return input->Alt();
 
   return g_null_atom;
@@ -336,16 +335,17 @@ KURL HitTestResult::AbsoluteImageURL() const {
   // even if they don't have a LayoutImage (e.g. because the image didn't load
   // and we are using an alt container). For other elements we don't create alt
   // containers so ensure they contain a loaded image.
-  if (IsHTMLImageElement(*inner_node_or_image_map_image) ||
-      (IsHTMLInputElement(*inner_node_or_image_map_image) &&
-       ToHTMLInputElement(inner_node_or_image_map_image)->type() ==
-           input_type_names::kImage))
+  auto* html_input_element =
+      DynamicTo<HTMLInputElement>(inner_node_or_image_map_image);
+  if (IsA<HTMLImageElement>(*inner_node_or_image_map_image) ||
+      (html_input_element &&
+       html_input_element->type() == input_type_names::kImage))
     url_string = To<Element>(*inner_node_or_image_map_image).ImageSourceURL();
   else if ((inner_node_or_image_map_image->GetLayoutObject() &&
             inner_node_or_image_map_image->GetLayoutObject()->IsImage()) &&
-           (IsHTMLEmbedElement(*inner_node_or_image_map_image) ||
-            IsHTMLObjectElement(*inner_node_or_image_map_image) ||
-            IsSVGImageElement(*inner_node_or_image_map_image)))
+           (IsA<HTMLEmbedElement>(*inner_node_or_image_map_image) ||
+            IsA<HTMLObjectElement>(*inner_node_or_image_map_image) ||
+            IsA<SVGImageElement>(*inner_node_or_image_map_image)))
     url_string = To<Element>(*inner_node_or_image_map_image).ImageSourceURL();
   if (url_string.IsEmpty())
     return KURL();
@@ -408,10 +408,10 @@ bool HitTestResult::IsContentEditable() const {
   if (!inner_node_)
     return false;
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*inner_node_))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*inner_node_))
     return !textarea->IsDisabledOrReadOnly();
 
-  if (auto* input = ToHTMLInputElementOrNull(*inner_node_))
+  if (auto* input = DynamicTo<HTMLInputElement>(*inner_node_))
     return !input->IsDisabledOrReadOnly() && input->IsTextField();
 
   return HasEditableStyle(*inner_node_);

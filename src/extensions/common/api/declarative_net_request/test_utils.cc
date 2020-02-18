@@ -66,6 +66,7 @@ TestRuleCondition& TestRuleCondition::operator=(const TestRuleCondition&) =
 std::unique_ptr<base::DictionaryValue> TestRuleCondition::ToValue() const {
   auto dict = std::make_unique<base::DictionaryValue>();
   SetValue(dict.get(), kUrlFilterKey, url_filter);
+  SetValue(dict.get(), kRegexFilterKey, regex_filter);
   SetValue(dict.get(), kIsUrlFilterCaseSensitiveKey,
            is_url_filter_case_sensitive);
   SetValue(dict.get(), kDomainsKey, domains);
@@ -136,6 +137,7 @@ std::unique_ptr<base::DictionaryValue> TestRuleRedirect::ToValue() const {
   SetValue(dict.get(), kExtensionPathKey, extension_path);
   SetValue(dict.get(), kTransformKey, transform);
   SetValue(dict.get(), kRedirectUrlKey, url);
+  SetValue(dict.get(), kRegexSubstitutionKey, regex_substitution);
   return dict;
 }
 
@@ -184,6 +186,9 @@ std::unique_ptr<base::DictionaryValue> CreateManifest(
     bool has_background_script) {
   std::vector<std::string> permissions = hosts;
   permissions.push_back(kAPIPermission);
+  permissions.push_back(kFeedbackAPIPermission);
+  permissions.push_back("webRequest");
+  permissions.push_back("webRequestBlocking");
 
   std::vector<std::string> background_scripts;
   if (has_background_script)

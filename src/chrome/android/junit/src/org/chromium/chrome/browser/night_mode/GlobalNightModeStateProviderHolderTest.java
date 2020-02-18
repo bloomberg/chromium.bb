@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.night_mode;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.UI_THEME_SETTING_KEY;
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING_KEY;
 
 import org.junit.After;
 import org.junit.Test;
@@ -15,9 +15,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.preferences.themes.ThemePreferences;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.settings.themes.ThemePreferences;
 
 /**
  * Unit tests for {@link GlobalNightModeStateProviderHolder}.
@@ -26,10 +26,10 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 @Config(manifest = Config.NONE)
 public class GlobalNightModeStateProviderHolderTest {
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         FeatureUtilities.setNightModeAvailableForTesting(null);
         GlobalNightModeStateProviderHolder.resetInstanceForTesting();
-        ChromePreferenceManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
+        SharedPreferencesManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
     }
 
     @Test
@@ -40,7 +40,7 @@ public class GlobalNightModeStateProviderHolderTest {
         assertFalse(GlobalNightModeStateProviderHolder.getInstance().isInNightMode());
 
         // Verify that night mode cannot be enabled.
-        ChromePreferenceManager.getInstance().writeInt(
+        SharedPreferencesManager.getInstance().writeInt(
                 UI_THEME_SETTING_KEY, ThemePreferences.ThemeSetting.DARK);
         assertFalse(GlobalNightModeStateProviderHolder.getInstance().isInNightMode());
     }

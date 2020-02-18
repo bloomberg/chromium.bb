@@ -7,7 +7,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdint.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 #include "base/logging.h"
@@ -29,19 +28,6 @@ static_assert(File::FROM_BEGIN == SEEK_SET && File::FROM_CURRENT == SEEK_CUR &&
               "whence mapping must match the system headers");
 
 namespace {
-
-#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL) || \
-  defined(OS_FUCHSIA) || (defined(OS_ANDROID) && __ANDROID_API__ < 21)
-int CallFstat(int fd, stat_wrapper_t *sb) {
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  return fstat(fd, sb);
-}
-#else
-int CallFstat(int fd, stat_wrapper_t *sb) {
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  return fstat64(fd, sb);
-}
-#endif
 
 // NaCl doesn't provide the following system calls, so either simulate them or
 // wrap them in order to minimize the number of #ifdef's in this file.
@@ -130,6 +116,13 @@ void File::Info::FromStat(const stat_wrapper_t& stat_info) {
   is_symbolic_link = S_ISLNK(stat_info.st_mode);
   size = stat_info.st_size;
 
+  // Get last modification time, last access time, and creation time from
+  // |stat_info|.
+  // Note: st_ctime is actually last status change time when the inode was last
+  // updated, which happens on any metadata change. It is not the file's
+  // creation time. However, other than on Mac & iOS where the actual file
+  // creation time is included as st_birthtime, the rest of POSIX platforms have
+  // no portable way to get the creation time.
 #if defined(OS_LINUX) || defined(OS_FUCHSIA)
   time_t last_modified_sec = stat_info.st_mtim.tv_sec;
   int64_t last_modified_nsec = stat_info.st_mtim.tv_nsec;
@@ -144,7 +137,14 @@ void File::Info::FromStat(const stat_wrapper_t& stat_info) {
   int64_t last_accessed_nsec = stat_info.st_atime_nsec;
   time_t creation_time_sec = stat_info.st_ctime;
   int64_t creation_time_nsec = stat_info.st_ctime_nsec;
-#elif defined(OS_MACOSX) || defined(OS_IOS) || defined(OS_BSD)
+#elif defined(OS_MACOSX) || defined(OS_IOS)
+  time_t last_modified_sec = stat_info.st_mtimespec.tv_sec;
+  int64_t last_modified_nsec = stat_info.st_mtimespec.tv_nsec;
+  time_t last_accessed_sec = stat_info.st_atimespec.tv_sec;
+  int64_t last_accessed_nsec = stat_info.st_atimespec.tv_nsec;
+  time_t creation_time_sec = stat_info.st_birthtimespec.tv_sec;
+  int64_t creation_time_nsec = stat_info.st_birthtimespec.tv_nsec;
+#elif defined(OS_BSD)
   time_t last_modified_sec = stat_info.st_mtimespec.tv_sec;
   int64_t last_modified_nsec = stat_info.st_mtimespec.tv_nsec;
   time_t last_accessed_sec = stat_info.st_atimespec.tv_sec;
@@ -347,7 +347,7 @@ int64_t File::GetLength() {
   SCOPED_FILE_TRACE("GetLength");
 
   stat_wrapper_t file_info;
-  if (CallFstat(file_.get(), &file_info))
+  if (Fstat(file_.get(), &file_info))
     return -1;
 
   return file_info.st_size;
@@ -380,7 +380,7 @@ bool File::GetInfo(Info* info) {
   SCOPED_FILE_TRACE("GetInfo");
 
   stat_wrapper_t file_info;
-  if (CallFstat(file_.get(), &file_info))
+  if (Fstat(file_.get(), &file_info))
     return false;
 
   info->FromStat(file_info);
@@ -405,11 +405,11 @@ File File::Duplicate() const {
 
   SCOPED_FILE_TRACE("Duplicate");
 
-  PlatformFile other_fd = HANDLE_EINTR(dup(GetPlatformFile()));
-  if (other_fd == -1)
+  ScopedPlatformFile other_fd(HANDLE_EINTR(dup(GetPlatformFile())));
+  if (!other_fd.is_valid())
     return File(File::GetLastFileError());
 
-  return File(other_fd, async());
+  return File(std::move(other_fd), async());
 }
 
 // Static.
@@ -580,5 +580,34 @@ void File::SetPlatformFile(PlatformFile file) {
 File::Error File::GetLastFileError() {
   return base::File::OSErrorToFileError(errno);
 }
+
+#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL) || \
+    defined(OS_FUCHSIA) || (defined(OS_ANDROID) && __ANDROID_API__ < 21)
+int File::Stat(const char* path, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return stat(path, sb);
+}
+int File::Fstat(int fd, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return fstat(fd, sb);
+}
+int File::Lstat(const char* path, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return lstat(path, sb);
+}
+#else
+int File::Stat(const char* path, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return stat64(path, sb);
+}
+int File::Fstat(int fd, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return fstat64(fd, sb);
+}
+int File::Lstat(const char* path, stat_wrapper_t* sb) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  return lstat64(path, sb);
+}
+#endif
 
 }  // namespace base

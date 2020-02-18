@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">悪い</translation>
 <translation id="1152528166145813711">選択してください…</translation>
 <translation id="1199593201721843963">リモート接続を無効にする</translation>
+<translation id="1201402288615127009">次へ</translation>
 <translation id="1291443878853470558">Chromoting を使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
 <translation id="1297009705180977556"><ph name="HOSTNAME" /> への接続中にエラーが発生しました</translation>
 <translation id="1324095856329524885">（お使いのパソコンはこの機能に未対応です）</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome リモート デスクトップがウェブに対応しました。高速で無料の<ph name="LINK_BEGIN" />ウェブアプリ<ph name="LINK_END" />をお試しください。複数モニターへの対応など、機能がさらに追加されました。</translation>
 <translation id="1643640058022401035">このページを閉じると、Chromoting セッションが終了します。</translation>
 <translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
+<translation id="1697532407822776718">設定が完了しました。</translation>
 <translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
 <translation id="174018511426417793">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
 <translation id="1742469581923031760">接続しています...</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">ホスト プロセス</translation>
 <translation id="20876857123010370">トラックパッド モード</translation>
 <translation id="2089514346391228378">このパソコンのリモート接続が有効になりました。</translation>
+<translation id="2198363917176605566"><ph name="PRODUCT_NAME" />を使用するには、「画面の録画」権限を付与して、この Mac の画面コンテンツをリモートマシンに送信できるようにする必要があります。
+
+この権限を付与するには、下の [<ph name="BUTTON_NAME" />] をクリックして [画面の録画] 設定パネルを開き、[<ph name="SERVICE_SCRIPT_NAME" />] の横にあるチェックボックスをオンにします。
+
+[<ph name="SERVICE_SCRIPT_NAME" />] のチェックボックスがすでにオンになっている場合は、いったんオフにしてもう一度オンにしてください。</translation>
 <translation id="2208514473086078157">ポリシー設定により、Chrome リモート デスクトップのホストとしてこのパソコンを共有することはできません。詳しくはシステム管理者にお問い合わせください。</translation>
 <translation id="2220529011494928058">問題を報告</translation>
 <translation id="2221097377466213233">右 Ctrl キーを Win キー（Mac の場合は ⌘）として使用</translation>
@@ -48,17 +55,16 @@
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" /> のセッションでしばらく操作がありませんでした。セッションを間もなく切断します。</translation>
 <translation id="2317666076142640974">今回の新しい <ph name="LINK_BEGIN" />Chrome リモート デスクトップ ウェブアプリ<ph name="LINK_END" />の使用感について、ご意見やご感想をお聞かせください。</translation>
 <translation id="2320166752086256636">キーボードを非表示</translation>
-<translation id="2332192922827071008">設定を開く</translation>
 <translation id="2353140552984634198">Chromoting を使用して、このパソコンに安全にアクセスできます。</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2366718077645204424">ホストにアクセスできません。お使いのネットワークの設定が原因であることが考えられます。</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />最終オンライン: <ph name="RELATIVE_TIMESTAMP" />。</translation>
 <translation id="2405928220797050937">このアプリのサポートは終了しました。最新の機能とセキュリティ アップデートを反映した <ph name="LINK_BEGIN" />Chrome リモート デスクトップ ウェブアプリ<ph name="LINK_END" />をご利用ください。</translation>
 <translation id="2499160551253595098">Chrome リモート デスクトップの改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
+<translation id="2504109125669302160"><ph name="PRODUCT_NAME" />に「アクセシビリティ」権限を付与する</translation>
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> に接続されました</translation>
 <translation id="2512228156274966424">注: すべてのキーボード ショートカットを使用できるようにするには、Chrome リモート デスクトップを [ウィンドウとして開く] に設定してください。</translation>
 <translation id="2540992418118313681">このパソコンの閲覧と制御の権限を別のユーザーと共有しますか？</translation>
-<translation id="254771646005658629">リモート ユーザーがこの Mac を管理できるようにする</translation>
 <translation id="2579271889603567289">ホストがクラッシュしたか、ホストを起動できませんでした。</translation>
 <translation id="2599300881200251572">このサービスにより、Chrome リモート デスクトップ クライアントからの着信接続が有効になります。</translation>
 <translation id="2647232381348739934">Chromoting サービス</translation>
@@ -136,6 +142,8 @@
 <translation id="4405930547258349619">コア ライブラリ</translation>
 <translation id="4430435636878359009">このパソコンへのリモート接続を無効にする</translation>
 <translation id="4430915108080446161">アクセス コードを生成しています...</translation>
+<translation id="443560535555262820">[アクセシビリティ] 設定を開く</translation>
+<translation id="4450893287417543264">次回から表示しない</translation>
 <translation id="4472575034687746823">利用を開始</translation>
 <translation id="4481276415609939789">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chromoting をインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
 <translation id="4513946894732546136">フィードバック</translation>
@@ -173,6 +181,7 @@
 <translation id="518094545883702183">この情報は、報告していただいた問題を診断する目的にのみ使用され、調査担当者のみに利用可能となります。この情報が 30 日間を過ぎて保持されることはありません。</translation>
 <translation id="5204575267916639804">よくある質問</translation>
 <translation id="5222676887888702881">ログアウト</translation>
+<translation id="5234764350956374838">閉じる</translation>
 <translation id="5254120496627797685">このページを閉じると、Chrome リモート デスクトップ セッションが終了します。</translation>
 <translation id="5308380583665731573">接続</translation>
 <translation id="5327248766486351172">名前</translation>
@@ -183,11 +192,6 @@
 <translation id="5419185025274123272">アプリケーションをリセットできませんでした。バグレポートの送信は可能です。</translation>
 <translation id="5419418238395129586">前回のインターネット接続日: <ph name="DATE" /></translation>
 <translation id="544077782045763683">ホストはシャットダウンしました。</translation>
-<translation id="5463789431147491241">この Mac で <ph name="PRODUCT_NAME" /> を使用するには、次の手順を行ってください。
-
-下の [<ph name="BUTTON_NAME" />] を選択します。[セキュリティとプライバシー] の設定で、[<ph name="SERVICE_SCRIPT_NAME" />] の横のチェックボックスをオンにします。
-
-[<ph name="SERVICE_SCRIPT_NAME" />] がすでにオンになっている場合は、一度オフにしてからオンにします。</translation>
 <translation id="5510035215749041527">切断</translation>
 <translation id="5593560073513909978">このサービスは一時的に利用できなくなっています。しばらくしてからもう一度お試しください。</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -218,12 +222,18 @@
 <translation id="6198252989419008588">PIN を変更</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" />（最新ではありません）</translation>
 <translation id="6221358653751391898">Chrome にログインしていません。ログインしてもう一度お試しください。</translation>
+<translation id="6223301979382383752">[画面の録画] 設定を開く</translation>
 <translation id="6227369581881558336">Chrome リモート デスクトップがウェブに対応し、ファイル転送などの新しい機能が追加されました。<ph name="LINK_BEGIN" />ウェブアプリ<ph name="LINK_END" />をご確認ください。</translation>
 <translation id="6284412385303060032">コンソールのログイン画面で実行されるホストは、カーテンモードをサポートするために終了されました（ユーザー固有のセッションで実行されるホストに切り替えられました）。</translation>
 <translation id="629730747756840877">アカウント</translation>
 <translation id="6304318647555713317">クライアント</translation>
 <translation id="6381670701864002291">その他の問題。</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
+<translation id="6411861157501911556"><ph name="PRODUCT_NAME" />を使用するには、「アクセシビリティ」権限を付与して、リモートマシンからの入力をこの Mac に反映できるようにする必要があります。
+
+この権限を付与するには、下の [<ph name="BUTTON_NAME" />] をクリックして [アクセシビリティ] 設定パネルを開き、[<ph name="SERVICE_SCRIPT_NAME" />] の横にあるチェックボックスをオンにします。
+
+[<ph name="SERVICE_SCRIPT_NAME" />] のチェックボックスがすでにオンになっている場合は、いったんオフにしてからもう一度オンにしてください。</translation>
 <translation id="6441316101718669559">このプラットフォームでデスクトップの統合はサポートされていません。アプリケーションは引き続き使用できますが、ユーザー エクスペリエンスは低下します。</translation>
 <translation id="652218476070540101">このパソコン用の PIN を更新しています...</translation>
 <translation id="6527303717912515753">共有</translation>
@@ -304,6 +314,7 @@
 <translation id="837021510621780684">このパソコンからの接続</translation>
 <translation id="8383794970363966105">Chromoting を使用するには、お使いのデバイスに Google アカウントを追加する必要があります。</translation>
 <translation id="8386846956409881180">ホストの設定で無効な OAuth 認証情報が指定されています。</translation>
+<translation id="8397385476380433240"><ph name="PRODUCT_NAME" />に権限を付与する</translation>
 <translation id="8406498562923498210">Chrome リモート デスクトップ環境で開始するセッションを選択してください（一部のセッション タイプは、Chrome リモート デスクトップとローカルのコンソールで同時に実行できない場合があります）。</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8445362773033888690">Google Playストアで見る</translation>
@@ -330,6 +341,7 @@
 <translation id="9149580767411232853">リモート デスクトップ全体が見える状態を維持します</translation>
 <translation id="9149992051684092333">デスクトップの共有を開始するには、共有するユーザーに以下のアクセス コードをお知らせください。</translation>
 <translation id="916856682307586697">デフォルトの XSession を起動</translation>
+<translation id="9187628920394877737"><ph name="PRODUCT_NAME" />に「画面の録画」権限を付与する</translation>
 <translation id="9188433529406846933">承認</translation>
 <translation id="9213184081240281106">ホストの設定が無効です。</translation>
 <translation id="951991426597076286">同意しない</translation>

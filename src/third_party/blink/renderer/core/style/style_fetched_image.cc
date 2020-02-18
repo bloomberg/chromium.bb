@@ -108,6 +108,9 @@ FloatSize StyleFetchedImage::ImageSize(
     float multiplier,
     const LayoutSize& default_object_size) const {
   Image* image = image_->GetImage();
+  if (image_->HasDevicePixelRatioHeaderValue()) {
+    multiplier /= image_->DevicePixelRatioHeaderValue();
+  }
   if (image->IsSVGImage()) {
     return ImageSizeForSVGImage(ToSVGImage(image), multiplier,
                                 default_object_size);
@@ -139,14 +142,11 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
 
     if (document_ && image.IsSVGImage())
       ToSVGImage(image).UpdateUseCounters(*document_);
-
-    image_->UpdateImageAnimationPolicy();
   }
 
-  if (document_ && RuntimeEnabledFeatures::ElementTimingEnabled(document_)) {
-    if (LocalDOMWindow* window = document_->domWindow()) {
+  if (document_) {
+    if (LocalDOMWindow* window = document_->domWindow())
       ImageElementTiming::From(*window).NotifyBackgroundImageFinished(this);
-    }
   }
 
   // Oilpan: do not prolong the Document's lifetime.

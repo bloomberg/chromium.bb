@@ -720,10 +720,10 @@ print(json.dumps(pkg_info))
 
     num_updates = 0
     listed_installs = []
-    for cpv, _, listed, update in installs.values():
+    for cpv, _, listed, isupdate in installs.values():
       if listed:
         listed_installs.append(cpv)
-      if update:
+      if isupdate:
         num_updates += 1
 
     logging.info('Processed %d package(s), %d will be installed, %d are '
@@ -861,7 +861,7 @@ def _GetPackagesByCPV(cpvs, strip, sysroot):
   packages_dir = None
   if strip:
     try:
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           ['strip_package', '--sysroot', sysroot] +
           [cpv.cpf for cpv in cpvs])
       packages_dir = _STRIPPED_PACKAGES_DIR
@@ -1092,6 +1092,8 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
   lsb_release = None
   sysroot = None
   try:
+    # Somewhat confusing to clobber, but here we are.
+    # pylint: disable=redefined-argument-from-local
     with remote_access.ChromiumOSDeviceHandler(
         hostname, port=port, username=username, private_key=ssh_private_key,
         base_dir=_DEVICE_BASE_DIR, ping=ping) as device:

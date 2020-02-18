@@ -24,8 +24,7 @@ namespace dawn_native { namespace metal {
         : PipelineLayoutBase(device, descriptor) {
         // Each stage has its own numbering namespace in CompilerMSL.
         for (auto stage : IterateStages(kAllStages)) {
-            // Buffer number 0 is reserved for push constants
-            uint32_t bufferIndex = 1;
+            uint32_t bufferIndex = 0;
             uint32_t samplerIndex = 0;
             uint32_t textureIndex = 0;
 
@@ -40,21 +39,21 @@ namespace dawn_native { namespace metal {
                     }
 
                     switch (groupInfo.types[binding]) {
-                        case dawn::BindingType::UniformBuffer:
-                        case dawn::BindingType::StorageBuffer:
+                        case wgpu::BindingType::UniformBuffer:
+                        case wgpu::BindingType::StorageBuffer:
                             mIndexInfo[stage][group][binding] = bufferIndex;
                             bufferIndex++;
                             break;
-                        case dawn::BindingType::Sampler:
+                        case wgpu::BindingType::Sampler:
                             mIndexInfo[stage][group][binding] = samplerIndex;
                             samplerIndex++;
                             break;
-                        case dawn::BindingType::SampledTexture:
+                        case wgpu::BindingType::SampledTexture:
                             mIndexInfo[stage][group][binding] = textureIndex;
                             textureIndex++;
                             break;
-                        case dawn::BindingType::StorageTexture:
-                        case dawn::BindingType::ReadonlyStorageBuffer:
+                        case wgpu::BindingType::StorageTexture:
+                        case wgpu::BindingType::ReadonlyStorageBuffer:
                             UNREACHABLE();
                             break;
                     }

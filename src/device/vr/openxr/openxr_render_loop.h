@@ -8,15 +8,17 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "device/vr/windows/compositor_base.h"
+#include "third_party/openxr/src/include/openxr/openxr.h"
 
 struct XrView;
 
 namespace device {
 
 class OpenXrApiWrapper;
-class OpenXrGamepadHelper;
+class OpenXRInputHelper;
 
 class OpenXrRenderLoop : public XRCompositorCommon {
  public:
@@ -24,12 +26,9 @@ class OpenXrRenderLoop : public XRCompositorCommon {
                        on_display_info_changed);
   ~OpenXrRenderLoop() override;
 
-  gfx::Size GetViewSize() const;
-
  private:
   // XRDeviceAbstraction:
   mojom::XRFrameDataPtr GetNextFrameData() override;
-  mojom::XRGamepadDataPtr GetNextGamepadData() override;
   bool StartRuntime() override;
   void StopRuntime() override;
   void OnSessionStart() override;
@@ -37,20 +36,23 @@ class OpenXrRenderLoop : public XRCompositorCommon {
   bool HasSessionEnded() override;
   bool SubmitCompositedFrame() override;
 
-  bool UpdateDisplayInfo();
+  void InitializeDisplayInfo();
   bool UpdateEyeParameters();
-  bool UpdateEye(const XrView& view,
-                 const gfx::Point3F& center,
+  bool UpdateEye(const XrView& view_head,
                  const gfx::Size& view_size,
                  mojom::VREyeParametersPtr* eye) const;
   bool UpdateStageParameters();
 
   std::unique_ptr<OpenXrApiWrapper> openxr_;
-  std::unique_ptr<OpenXrGamepadHelper> gamepad_helper_;
+  std::unique_ptr<OpenXRInputHelper> input_helper_;
+  XrExtent2Df current_stage_bounds_;
 
   base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
       on_display_info_changed_;
   mojom::VRDisplayInfoPtr current_display_info_;
+
+  // This must be the last member
+  base::WeakPtrFactory<OpenXrRenderLoop> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OpenXrRenderLoop);
 };

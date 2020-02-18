@@ -52,8 +52,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 ElementStyleResources::ElementStyleResources(Element& element,
                                              float device_scale_factor,
                                              PseudoElement* pseudo_element)
@@ -108,7 +106,7 @@ StyleImage* ElementStyleResources::CachedOrPendingFromValue(
 
 SVGResource* ElementStyleResources::GetSVGResourceFromValue(
     TreeScope& tree_scope,
-    const CSSURIValue& value,
+    const cssvalue::CSSURIValue& value,
     AllowExternal allow_external) const {
   if (value.IsLocal(element_->GetDocument())) {
     SVGTreeScopeResources& tree_scope_resources =
@@ -314,7 +312,8 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
               mask_layer->GetImage()->IsPendingImage()) {
             mask_layer->SetImage(LoadPendingImage(
                 style, To<StylePendingImage>(mask_layer->GetImage()),
-                FetchParameters::kAllowPlaceholder));
+                FetchParameters::kAllowPlaceholder,
+                kCrossOriginAttributeAnonymous));
           }
         }
         break;

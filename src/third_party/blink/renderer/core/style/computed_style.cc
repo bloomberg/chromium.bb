@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
+#include "third_party/blink/renderer/core/style/style_generated_image.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
 #include "third_party/blink/renderer/core/style/style_non_inherited_variables.h"
@@ -120,11 +121,11 @@ struct SameSizeAsComputedStyle : public SameSizeAsComputedStyleBase,
 ASSERT_SIZE(ComputedStyle, SameSizeAsComputedStyle);
 
 scoped_refptr<ComputedStyle> ComputedStyle::Create() {
-  return base::AdoptRef(new ComputedStyle(InitialStyle()));
+  return base::AdoptRef(new ComputedStyle(PassKey(), InitialStyle()));
 }
 
 scoped_refptr<ComputedStyle> ComputedStyle::CreateInitialStyle() {
-  return base::AdoptRef(new ComputedStyle());
+  return base::AdoptRef(new ComputedStyle(PassKey()));
 }
 
 ComputedStyle& ComputedStyle::MutableInitialStyle() {
@@ -160,7 +161,7 @@ ComputedStyle::CreateInheritedDisplayContentsStyleIfNeeded(
 }
 
 scoped_refptr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
-  return base::AdoptRef(new ComputedStyle(other));
+  return base::AdoptRef(new ComputedStyle(PassKey(), other));
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
@@ -173,23 +174,28 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
       RefCounted<ComputedStyle>(),
       svg_style_(o.svg_style_) {}
 
-static bool PseudoStylesEqual(const ComputedStyle& old_style,
-                              const ComputedStyle& new_style) {
-  if (!old_style.HasAnyPublicPseudoStyles() &&
-      !new_style.HasAnyPublicPseudoStyles())
+ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key) : ComputedStyle() {}
+
+ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key, const ComputedStyle& o)
+    : ComputedStyle(o) {}
+
+static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
+                                     const ComputedStyle& new_style) {
+  if (!old_style.HasAnyPseudoElementStyles() &&
+      !new_style.HasAnyPseudoElementStyles())
     return true;
   for (PseudoId pseudo_id = kFirstPublicPseudoId;
        pseudo_id < kFirstInternalPseudoId;
        pseudo_id = static_cast<PseudoId>(pseudo_id + 1)) {
-    if (!old_style.HasPseudoStyle(pseudo_id) &&
-        !new_style.HasPseudoStyle(pseudo_id))
+    if (!old_style.HasPseudoElementStyle(pseudo_id) &&
+        !new_style.HasPseudoElementStyle(pseudo_id))
       continue;
     const ComputedStyle* new_pseudo_style =
-        new_style.GetCachedPseudoStyle(pseudo_id);
+        new_style.GetCachedPseudoElementStyle(pseudo_id);
     if (!new_pseudo_style)
       return false;
     const ComputedStyle* old_pseudo_style =
-        old_style.GetCachedPseudoStyle(pseudo_id);
+        old_style.GetCachedPseudoElementStyle(pseudo_id);
     if (old_pseudo_style && *old_pseudo_style != *new_pseudo_style)
       return false;
   }
@@ -204,8 +210,8 @@ bool ComputedStyle::NeedsReattachLayoutTree(const ComputedStyle* old_style,
     return true;
   if (old_style->Display() != new_style->Display())
     return true;
-  if (old_style->HasPseudoStyle(kPseudoIdFirstLetter) !=
-      new_style->HasPseudoStyle(kPseudoIdFirstLetter))
+  if (old_style->HasPseudoElementStyle(kPseudoIdFirstLetter) !=
+      new_style->HasPseudoElementStyle(kPseudoIdFirstLetter))
     return true;
   if (!old_style->ContentDataEquivalent(*new_style))
     return true;
@@ -215,8 +221,7 @@ bool ComputedStyle::NeedsReattachLayoutTree(const ComputedStyle* old_style,
   // so that if line-clamping changes then the LayoutObject needs to be
   // recreated.
   if (RuntimeEnabledFeatures::WebkitBoxLayoutUsesFlexLayoutEnabled() &&
-      (new_style->Display() == EDisplay::kWebkitBox ||
-       new_style->Display() == EDisplay::kWebkitInlineBox) &&
+      (new_style->IsDeprecatedWebkitBox()) &&
       (old_style->HasLineClamp() != new_style->HasLineClamp() &&
        new_style->BoxOrient() == EBoxOrient::kVertical)) {
     return true;
@@ -232,8 +237,8 @@ bool ComputedStyle::NeedsReattachLayoutTree(const ComputedStyle* old_style,
 
   // LayoutNG needs an anonymous inline wrapper if ::first-line is applied.
   // Also see |LayoutBlockFlow::NeedsAnonymousInlineWrapper()|.
-  if (new_style->HasPseudoStyle(kPseudoIdFirstLine) &&
-      !old_style->HasPseudoStyle(kPseudoIdFirstLine))
+  if (new_style->HasPseudoElementStyle(kPseudoIdFirstLine) &&
+      !old_style->HasPseudoElementStyle(kPseudoIdFirstLine))
     return true;
 
   return false;
@@ -256,8 +261,9 @@ ComputedStyle::Difference ComputedStyle::ComputeDifference(
   // See external/wpt/css/css-pseudo/first-line-change-inline-color*.html.
   auto inherited_first_line_style_diff = Difference::kEqual;
   if (const ComputedStyle* cached_inherited_first_line_style =
-          old_style->GetCachedPseudoStyle(kPseudoIdFirstLineInherited)) {
-    DCHECK(!new_style->GetCachedPseudoStyle(kPseudoIdFirstLineInherited));
+          old_style->GetCachedPseudoElementStyle(kPseudoIdFirstLineInherited)) {
+    DCHECK(
+        !new_style->GetCachedPseudoElementStyle(kPseudoIdFirstLineInherited));
     inherited_first_line_style_diff =
         ComputeDifferenceIgnoringInheritedFirstLineStyle(
             *cached_inherited_first_line_style, *new_style);
@@ -288,13 +294,13 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
     return Difference::kIndependentInherited;
   if (non_inherited_equal) {
     DCHECK(old_style == new_style);
-    if (PseudoStylesEqual(old_style, new_style))
+    if (PseudoElementStylesEqual(old_style, new_style))
       return Difference::kEqual;
-    return Difference::kPseudoStyle;
+    return Difference::kPseudoElementStyle;
   }
-  if (new_style.HasAnyPublicPseudoStyles() ||
-      old_style.HasAnyPublicPseudoStyles())
-    return Difference::kPseudoStyle;
+  if (new_style.HasAnyPseudoElementStyles() ||
+      old_style.HasAnyPseudoElementStyles())
+    return Difference::kPseudoElementStyle;
   return Difference::kNonInherited;
 }
 
@@ -474,14 +480,15 @@ bool ComputedStyle::operator==(const ComputedStyle& o) const {
   return InheritedEqual(o) && NonInheritedEqual(o);
 }
 
-const ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
-  if (!cached_pseudo_styles_ || !cached_pseudo_styles_->size())
+const ComputedStyle* ComputedStyle::GetCachedPseudoElementStyle(
+    PseudoId pid) const {
+  if (!cached_pseudo_element_styles_ || !cached_pseudo_element_styles_->size())
     return nullptr;
 
   if (StyleType() != kPseudoIdNone)
     return nullptr;
 
-  for (const auto& pseudo_style : *cached_pseudo_styles_) {
+  for (const auto& pseudo_style : *cached_pseudo_element_styles_) {
     if (pseudo_style->StyleType() == pid)
       return pseudo_style.get();
   }
@@ -489,17 +496,17 @@ const ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
   return nullptr;
 }
 
-const ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
+const ComputedStyle* ComputedStyle::AddCachedPseudoElementStyle(
     scoped_refptr<const ComputedStyle> pseudo) const {
   DCHECK(pseudo);
   DCHECK_GT(pseudo->StyleType(), kPseudoIdNone);
 
   const ComputedStyle* result = pseudo.get();
 
-  if (!cached_pseudo_styles_)
-    cached_pseudo_styles_ = std::make_unique<PseudoStyleCache>();
+  if (!cached_pseudo_element_styles_)
+    cached_pseudo_element_styles_ = std::make_unique<PseudoElementStyleCache>();
 
-  cached_pseudo_styles_->push_back(std::move(pseudo));
+  cached_pseudo_element_styles_->push_back(std::move(pseudo));
 
   return result;
 }
@@ -604,7 +611,7 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   if (DiffNeedsPaintInvalidationSubtree(other))
     diff.SetNeedsPaintInvalidationSubtree();
   else
-    AdjustDiffForNeedsPaintInvalidationObject(other, diff);
+    AdjustDiffForNeedsPaintInvalidationObject(other, diff, document);
 
   if (DiffNeedsVisualRectUpdate(other))
     diff.SetNeedsVisualRectUpdate();
@@ -768,7 +775,8 @@ bool ComputedStyle::DiffNeedsPaintInvalidationSubtree(
 
 void ComputedStyle::AdjustDiffForNeedsPaintInvalidationObject(
     const ComputedStyle& other,
-    StyleDifference& diff) const {
+    StyleDifference& diff,
+    const Document& document) const {
   if (ComputedStyleBase::DiffNeedsPaintInvalidationObject(*this, other) ||
       !BorderVisuallyEqual(other) || !RadiiEqual(other))
     diff.SetNeedsPaintInvalidationObject();
@@ -781,7 +789,8 @@ void ComputedStyle::AdjustDiffForNeedsPaintInvalidationObject(
   if (PaintImagesInternal()) {
     for (const auto& image : *PaintImagesInternal()) {
       DCHECK(image);
-      if (DiffNeedsPaintInvalidationObjectForPaintImage(*image, other)) {
+      if (DiffNeedsPaintInvalidationObjectForPaintImage(*image, other,
+                                                        document)) {
         diff.SetNeedsPaintInvalidationObject();
         return;
       }
@@ -810,7 +819,8 @@ void ComputedStyle::AdjustDiffForBackgroundVisuallyEqual(
 
 bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
     const StyleImage& image,
-    const ComputedStyle& other) const {
+    const ComputedStyle& other,
+    const Document& document) const {
   // https://crbug.com/835589: early exit when paint target is associated with
   // a link.
   if (InsideLink() != EInsideLink::kNotInsideLink)
@@ -821,14 +831,15 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
   // NOTE: If the invalidation properties vectors are null, we are invalid as
   // we haven't yet been painted (and can't provide the invalidation
   // properties yet).
-  if (!value->NativeInvalidationProperties() ||
-      !value->CustomInvalidationProperties())
+  if (!value->NativeInvalidationProperties(document) ||
+      !value->CustomInvalidationProperties(document))
     return true;
 
-  if (!PropertiesEqual(*value->NativeInvalidationProperties(), other))
+  if (!PropertiesEqual(*value->NativeInvalidationProperties(document), other))
     return true;
 
-  if (!CustomPropertiesEqual(*value->CustomInvalidationProperties(), other))
+  if (!CustomPropertiesEqual(*value->CustomInvalidationProperties(document),
+                             other))
     return true;
 
   return false;
@@ -940,6 +951,23 @@ void ComputedStyle::AddPaintImage(StyleImage* image) {
     SetPaintImagesInternal(std::make_unique<PaintImages>());
   }
   MutablePaintImagesInternal()->push_back(image);
+}
+
+bool ComputedStyle::HasCSSPaintImagesUsingCustomProperty(
+    const AtomicString& custom_property_name,
+    const Document& document) const {
+  if (PaintImagesInternal()) {
+    for (const auto& image : *PaintImagesInternal()) {
+      DCHECK(image);
+      // IsPaintImage is true for CSS Paint images only, please refer to the
+      // constructor of StyleGeneratedImage.
+      if (image->IsPaintImage()) {
+        return To<StyleGeneratedImage>(image.Get())
+            ->IsUsingCustomProperty(custom_property_name, document);
+      }
+    }
+  }
+  return false;
 }
 
 void ComputedStyle::AddCursor(StyleImage* image,
@@ -1289,6 +1317,9 @@ Color ComputedStyle::GetColor() const {
 }
 void ComputedStyle::SetColor(const Color& v) {
   SetIsColorInternalText(false);
+  SetColorInternal(v);
+}
+void ComputedStyle::ResolveInternalTextColor(const Color& v) {
   SetColorInternal(v);
 }
 
@@ -1932,6 +1963,17 @@ void ComputedStyle::SetLetterSpacing(float letter_spacing) {
   FontSelector* current_font_selector = GetFont().GetFontSelector();
   FontDescription desc(GetFontDescription());
   desc.SetLetterSpacing(letter_spacing);
+  SetFontDescription(desc);
+  GetFont().Update(current_font_selector);
+}
+
+void ComputedStyle::SetFontVariantNumericSpacing(
+    FontVariantNumeric::NumericSpacing numeric_spacing) {
+  FontSelector* current_font_selector = GetFont().GetFontSelector();
+  FontDescription desc(GetFontDescription());
+  FontVariantNumeric variant_numeric = desc.VariantNumeric();
+  variant_numeric.SetNumericSpacing(numeric_spacing);
+  desc.SetVariantNumeric(variant_numeric);
   SetFontDescription(desc);
   GetFont().Update(current_font_selector);
 }

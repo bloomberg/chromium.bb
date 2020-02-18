@@ -228,7 +228,7 @@ TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {
 
   // Emulate being logged in, then start to download a profile so a
   // ProfileDownloader gets created.
-  identity_test_env()->MakePrimaryAccountAvailable("Logged In");
+  identity_test_env()->MakePrimaryAccountAvailable("logged_in@gmail.com");
 
   downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
 }
@@ -265,16 +265,6 @@ class MockPermissionRequestCreator : public PermissionRequestCreator {
     ASSERT_TRUE(enabled_);
     requested_urls_.push_back(url_requested);
     callbacks_.push_back(std::move(callback));
-  }
-
-  void CreateExtensionInstallRequest(const std::string& extension_id,
-                                     SuccessCallback callback) override {
-    FAIL();
-  }
-
-  void CreateExtensionUpdateRequest(const std::string& id,
-                                    SuccessCallback callback) override {
-    FAIL();
   }
 
   bool enabled_;
@@ -419,19 +409,24 @@ class SupervisedUserServiceExtensionTestBase
     return extension;
   }
 
-  scoped_refptr<const extensions::Extension> MakeExtension(bool by_custodian) {
+  scoped_refptr<const extensions::Extension> MakeExtension() {
     scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder("Extension").Build();
-    extensions::util::SetWasInstalledByCustodian(extension->id(),
-                                                 profile_.get(), by_custodian);
-
     return extension;
+  }
+
+  void InitSupervisedUserInitiatedExtensionInstallFeature(bool enabled) {
+    if (enabled) {
+      scoped_feature_list_.InitAndEnableFeature(
+          supervised_users::kSupervisedUserInitiatedExtensionInstall);
+    }
   }
 
   bool is_supervised_;
   extensions::ScopedCurrentChannel channel_;
   SiteListObserver site_list_observer_;
   SupervisedUserURLFilterObserver url_filter_observer_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class SupervisedUserServiceExtensionTestUnsupervised
@@ -450,6 +445,8 @@ class SupervisedUserServiceExtensionTest
 
 TEST_F(SupervisedUserServiceExtensionTest,
        ExtensionManagementPolicyProviderWithoutSUInitiatedInstalls) {
+  InitSupervisedUserInitiatedExtensionInstallFeature(true);
+
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   ASSERT_TRUE(profile_->IsSupervised());
@@ -470,30 +467,24 @@ TEST_F(SupervisedUserServiceExtensionTest,
   }
 
   // Now check a different kind of extension; the supervised user should not be
-  // able to load it.
+  // able to load it. It should also not need to remain installed.
   {
-    scoped_refptr<const extensions::Extension> extension = MakeExtension(false);
-
-    base::string16 error;
-    EXPECT_FALSE(supervised_user_service->UserMayLoad(extension.get(), &error));
-    EXPECT_FALSE(error.empty());
-  }
-
-  {
-    // Check that a custodian-installed extension may be loaded, but not
-    // uninstalled.
-    scoped_refptr<const extensions::Extension> extension = MakeExtension(true);
+    scoped_refptr<const extensions::Extension> extension = MakeExtension();
 
     base::string16 error_1;
-    EXPECT_TRUE(
+    EXPECT_FALSE(
         supervised_user_service->UserMayLoad(extension.get(), &error_1));
-    EXPECT_TRUE(error_1.empty());
+    EXPECT_FALSE(error_1.empty());
 
     base::string16 error_2;
-    EXPECT_TRUE(
-        supervised_user_service->MustRemainInstalled(extension.get(),
-                                                     &error_2));
+    EXPECT_FALSE(
+        supervised_user_service->UserMayInstall(extension.get(), &error_2));
     EXPECT_FALSE(error_2.empty());
+
+    base::string16 error_3;
+    EXPECT_FALSE(supervised_user_service->MustRemainInstalled(extension.get(),
+                                                              &error_3));
+    EXPECT_TRUE(error_3.empty());
   }
 
 #if DCHECK_IS_ON()
@@ -501,25 +492,24 @@ TEST_F(SupervisedUserServiceExtensionTest,
 #endif
 }
 
-// TODO(crbug.com/910597): Flaky due to use of ScopedFeatureList.
 TEST_F(SupervisedUserServiceExtensionTest,
-       DISABLED_ExtensionManagementPolicyProviderWithSUInitiatedInstalls) {
-  // Enable supervised user initiated installs.
-  // TODO(crbug.com/846380): ScopedFeatureList must be initialized before the
-  // BrowserTaskEnvironment in ExtensionServiceTestBase to avoid races between
-  // threads.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      supervised_users::kSupervisedUserInitiatedExtensionInstall);
+       ExtensionManagementPolicyProviderWithSUInitiatedInstalls) {
+  // Enable child users to initiate extension installs by simulating the
+  // toggling of "Permissions for sites and apps" to enabled.
+  InitSupervisedUserInitiatedExtensionInstallFeature(true);
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
+  supervised_user_service
+      ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(true);
+  ASSERT_TRUE(supervised_user_service
+                  ->GetSupervisedUserExtensionsMayRequestPermissionsPref());
   ASSERT_TRUE(profile_->IsSupervised());
 
   // The supervised user should be able to load and uninstall the extensions
   // they install.
   {
-    scoped_refptr<const extensions::Extension> extension = MakeExtension(false);
+    scoped_refptr<const extensions::Extension> extension = MakeExtension();
 
     base::string16 error;
     EXPECT_TRUE(supervised_user_service->UserMayLoad(extension.get(), &error));
@@ -541,38 +531,14 @@ TEST_F(SupervisedUserServiceExtensionTest,
     EXPECT_FALSE(error_3.empty());
 
     base::string16 error_4;
-    EXPECT_TRUE(supervised_user_service->UserMayModifySettings(extension.get(),
-                                                               &error_4));
-    EXPECT_TRUE(error_4.empty());
-  }
-
-  {
-    // A custodian-installed extension may be loaded, but not uninstalled.
-    scoped_refptr<const extensions::Extension> extension = MakeExtension(true);
-
-    base::string16 error_1;
-    EXPECT_TRUE(
-        supervised_user_service->UserMayLoad(extension.get(), &error_1));
-    EXPECT_TRUE(error_1.empty());
-
-    base::string16 error_2;
-    EXPECT_TRUE(supervised_user_service->MustRemainInstalled(extension.get(),
-                                                             &error_2));
-    EXPECT_FALSE(error_2.empty());
-
-    base::string16 error_3;
-    extensions::disable_reason::DisableReason reason =
-        extensions::disable_reason::DISABLE_NONE;
-    EXPECT_FALSE(supervised_user_service->MustRemainDisabled(extension.get(),
-                                                             &reason,
-                                                             &error_3));
-    EXPECT_EQ(extensions::disable_reason::DISABLE_NONE, reason);
-    EXPECT_TRUE(error_3.empty());
-
-    base::string16 error_4;
     EXPECT_FALSE(supervised_user_service->UserMayModifySettings(extension.get(),
-                                                             &error_4));
+                                                                &error_4));
     EXPECT_FALSE(error_4.empty());
+
+    base::string16 error_5;
+    EXPECT_TRUE(
+        supervised_user_service->UserMayInstall(extension.get(), &error_5));
+    EXPECT_TRUE(error_5.empty());
   }
 
 #if DCHECK_IS_ON()
@@ -581,6 +547,8 @@ TEST_F(SupervisedUserServiceExtensionTest,
 }
 
 TEST_F(SupervisedUserServiceExtensionTest, NoContentPacks) {
+  InitSupervisedUserInitiatedExtensionInstallFeature(true);
+
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   SupervisedUserURLFilter* url_filter = supervised_user_service->GetURLFilter();
@@ -595,6 +563,8 @@ TEST_F(SupervisedUserServiceExtensionTest, NoContentPacks) {
 }
 
 TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
+  InitSupervisedUserInitiatedExtensionInstallFeature(true);
+
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   SupervisedUserURLFilter* url_filter = supervised_user_service->GetURLFilter();

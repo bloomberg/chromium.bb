@@ -43,6 +43,7 @@
 <translation id="2441202986792279177">വിന്‍ഡോകൾക്ക് ഇടയിൽ വേഗത്തിൽ മാറുക</translation>
 <translation id="2454251766545114447">സൂം ഔട്ട് ഡിസ്‌പ്ലേ ചെയ്യുക</translation>
 <translation id="2478303094958140141">ChromeVox (സംഭാഷണ ഫീഡ്‌ബാക്ക്) ഓണാക്കുക അല്ലെങ്കിൽ  ഓഫാക്കുക</translation>
+<translation id="2480851840841871861">Google അസിസ്റ്റന്റ് തുറക്കുക</translation>
 <translation id="2488661730534396940">ഇടതുവശത്ത് ഡെസ്‌ക് സജീവമാക്കുക</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">വെബ് പേജ് താഴേയ്‌ക്ക് സ്‌ക്രോൾ ചെയ്യുക</translation>
@@ -75,7 +76,7 @@
 <translation id="3622741593887335780">സൂം ഇൻ ചെയ്യുക (ഡോക്ക് ചെയ്യുമ്പോൾ അല്ലെങ്കിൽ പൂർണ്ണസ്‌ക്രീൻ മാഗ്നിഫയറുകൾ പ്രവർത്തനക്ഷമമായിരിക്കുമ്പോൾ)</translation>
 <translation id="3649256019230929621">വിൻഡോ ചെറുതാക്കുക</translation>
 <translation id="3655154169297074232">ടാബുകളും വിൻഡോകളും</translation>
-<translation id="3668361878347172356">നിങ്ങൾ ഒടുവിൽ ചെയ്ത പ്രവൃത്തി വീണ്ടും ചെയ്യുക</translation>
+<translation id="3668361878347172356">നിങ്ങളുടെ അവസാനത്തെ പ്രവൃത്തി വീണ്ടും ചെയ്യുക</translation>
 <translation id="3710784500737332588">സഹായ കേന്ദ്രം തുറക്കുക</translation>
 <translation id="3720939646656082033">പുതിയൊരു ടാബിൽ ലിങ്ക് തുറക്കുകയും പുതിയ ടാബിലേക്ക് മാറുകയും ചെയ്യുക</translation>
 <translation id="3725795051337497754">നിലവിലെ ടാബ് അവസാനിപ്പിക്കുക</translation>
@@ -97,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> അല്ലെങ്കിൽ <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">അവലോകന മോഡ്</translation>
 <translation id="4382340674111381977">മുമ്പത്തെ പേജിലേക്ക് തിരികെ പോവുക</translation>
+<translation id="4458670250301149821">ആപ്പ് ഗ്രിഡിൽ ഫോൾഡറിന് ഉള്ളിലേക്കോ പുറത്തേക്കോ ഒരു ആപ്പ് ഐക്കൺ നീക്കുക</translation>
 <translation id="4472417192667361414">സിസ്‌റ്റം, ഡിസ്‌പ്ലേ ക്രമീകരണം</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, ശേഷം <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> അല്ലെങ്കിൽ <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">കീബോഡ് കുറുക്കുവഴി സഹായി കാണുക</translation>
 <translation id="4628718545549558538">സ്‌റ്റാറ്റസ് ഏരിയ തുറക്കുക (നിങ്ങളുടെ അക്കൗണ്ട് ചിത്രം ദൃശ്യമാകുന്ന സ്ഥലം)</translation>
 <translation id="4642092649622328492">ഭാഗിക സ്‌ക്രീൻഷോട്ട് എടുക്കുക</translation>
@@ -110,7 +113,7 @@
 <translation id="5042305953558921026">ചുരുക്കവിവരണ മോഡ് കീ</translation>
 <translation id="5104462712192763270">നിങ്ങളുടെ നിലവിലെ പേജ് സംരക്ഷിക്കുക</translation>
 <translation id="5121628974188116412">പേജിന്റെ താഴേയ്ക്ക് പോവുക</translation>
-<translation id="5222676887888702881">പുറത്തുകടക്കുക</translation>
+<translation id="5222676887888702881">സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="5236674127086649162">കാഷെ ചെയ്‌ത ഉള്ളടക്കം ഉപയോഗിക്കാതെ നിങ്ങളുടെ നിലവിലെ പേജ് വീണ്ടും ലോഡ് ചെയ്യുക</translation>
 <translation id="526651782186312376">വരിയുടെ തുടക്കം വരെയുള്ള ടെക്‌സ്‌റ്റ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="5316716239522500219">മോണിറ്ററുകൾ മിറർ ചെയ്യുക</translation>
@@ -123,7 +126,7 @@
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> അല്ലെങ്കിൽ <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">ടാബിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="5757474750054631686">കീബോഡ് മങ്ങിക്കുക (ബാക്ക്‌ലൈറ്റ് കീബോഡുകൾക്ക് മാത്രം)</translation>
-<translation id="587531134027443617">മുൻ വാക്ക് ഇല്ലാതാക്കുക</translation>
+<translation id="587531134027443617">മുമ്പത്തെ വാക്ക് ഇല്ലാതാക്കുക</translation>
 <translation id="5899919361772749550">ഡെവലപ്പര്‍ ടൂളുകളുടെ കൺസോൾ കാണിക്കുക അല്ലെങ്കിൽ അദൃശ്യമാക്കുക</translation>
 <translation id="5921745308587794300">വിൻഡോ തിരിക്കുക</translation>
 <translation id="6022924867608035986">തിരയൽ ബോക്‌സ് ടെക്‌സ്‌റ്റ് മായ്‌ക്കുക</translation>
@@ -158,17 +161,18 @@
 <translation id="6941333068993625698">ഫീഡ്‌ബാക്ക് സമർപ്പിക്കുക</translation>
 <translation id="6981982820502123353">ഉപയോഗസഹായി</translation>
 <translation id="7020813747703216897">പൊരുത്തമുള്ള ഫലങ്ങളൊന്നും കണ്ടെത്തിയില്ല</translation>
-<translation id="7025325401470358758">അടുത്ത പാൻ</translation>
+<translation id="7025325401470358758">അടുത്ത പെയിൻ</translation>
 <translation id="7076878155205969899">ശബ്‌ദം മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="7077383985738259936">ബുക്ക്‌മാര്‍‌ക്ക് ബാറിൽ ഫോക്കസ് ചെയ്യുക അല്ലെങ്കിൽ അത് ഹൈലൈറ്റ് ചെയ്യുക (കാണിച്ചിട്ടുണ്ടെങ്കിൽ)</translation>
 <translation id="7237562915163138771">വിലാസ ബാറിൽ ഒരു വെബ് വിലാസം ടൈപ്പ് ചെയ്യുക, തുടർന്ന് <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> അമർത്തുക</translation>
-<translation id="7254764037241667478">സ്ലീപ്പ് മോഡിലേക്ക് ഉപകരണത്തെ മാറ്റുക (തൽക്കാലം അവസാനിപ്പിക്കുക)</translation>
+<translation id="7254764037241667478">ഉറക്ക മോഡിലേക്ക് ഉപകരണത്തെ മാറ്റുക (തൽക്കാലം അവസാനിപ്പിക്കുക)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> അല്ലെങ്കിൽ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">ലഭ്യമായ അടുത്ത ഇൻപുട്ട് രീതിയിലേക്ക് മാറുക</translation>
 <translation id="743754632698445141">ഒരു ആപ്പ് അൺപിൻ ചെയ്യുക</translation>
 <translation id="7439718573248533901">അടുത്ത അക്ഷരം ഇല്ലാതാക്കുക (ഫോർവേഡ് ഡിലീറ്റ്)</translation>
 <translation id="7500368597227394048">ഹൈഫൻ</translation>
 <translation id="7611271430932669992">പോപ്-അപ്പുകളിലേക്കും ഡയലോഗുകളിലേക്കും ഫോക്കസ് നീക്കുക</translation>
+<translation id="7635348532214572995">ആപ്പ് ഗ്രിഡിന് ചുറ്റും ആപ്പ് ഐക്കൺ നീക്കുക</translation>
 <translation id="766326951329901120">ക്ലിപ്‌ബോർഡിൽ നിന്നുള്ള ഉള്ളടക്കം സാധാരണ വാചകമായി ഒട്ടിക്കുക</translation>
 <translation id="7703010453515335249">ഇടത് ബ്രാക്കറ്റ്</translation>
 <translation id="7724603315864178912">മുറിക്കുക</translation>
@@ -183,14 +187,14 @@
 <translation id="8241665785394195545">വലത് ബ്രാക്കറ്റ്</translation>
 <translation id="8264941229485248811">ഡെവലപ്പര്‍ ടൂൾസ് ഇൻസ്‌പെക്‌ടർ കാണിക്കുക അല്ലെങ്കിൽ അദൃശ്യമാക്കുക</translation>
 <translation id="836869401750819675">ഡൗൺലോഡുകളുടെ പേജ് തുറക്കുക</translation>
-<translation id="8388247778047144397">ടാബ് സ്‌ട്രിപ്പിലെ ശൂന്യമായ ഏരിയയിലേക്ക് ലിങ്ക് വലിച്ചിടുക</translation>
+<translation id="8388247778047144397">തുറന്ന് വെച്ചിട്ടുള്ള ടാബുകളിലെ ശൂന്യമായ സ്ഥലത്തേക്ക് ലിങ്ക് വലിച്ചിടുക</translation>
 <translation id="8389638407792712197">പുതിയ വിൻഡോ തുറക്കുക</translation>
 <translation id="8429696719963529183">F കീകൾ ഉപയോഗിക്കുക (F1 മുതൽ F12 വരെ)</translation>
 <translation id="8537650670971624753">തിരയൽ മോഡിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
 <translation id="85690795166292698">പുതിയ ടാബിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="8609384513243082612">പുതിയ ടാബ് തുറക്കുക</translation>
 <translation id="8644639153978066712">'ഫയലുകൾ' ആപ്പിലെ അദൃശ്യമായ ഫയലുകൾ പ്രദർശിപ്പിക്കുക</translation>
-<translation id="8717459106217102612">മുൻ വാക്കോ അക്ഷരമോ തിരഞ്ഞെടുക്കുക</translation>
+<translation id="8717459106217102612">മുമ്പത്തെ വാക്കോ അക്ഷരമോ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8727232706774971183">നിങ്ങളുടെ അറിയിപ്പുകൾ കാണുക</translation>
 <translation id="8855885154700222542">പൂർണ്ണ സ്‌ക്രീൻ കീ</translation>
 <translation id="8881584919399569791">സജീവമായ വിൻഡോ ഇടതുവശത്തെ ഡെസ്‌ക്കിലേക്ക് നീക്കുക</translation>
@@ -203,6 +207,7 @@
 <translation id="9041599225465145264">ക്ലിപ്‌ബോർഡിൽ നിന്നുള്ള ഉള്ളടക്കം ഒട്ടിക്കുക</translation>
 <translation id="9052808072970550123">അടുത്ത ഉപയോക്താവിലേക്ക് മാറുക</translation>
 <translation id="906458777597946297">വിൻഡോ വലുതാക്കുക</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, ശേഷം <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> അല്ലെങ്കിൽ <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">വരിയുടെ തുടക്കത്തിലേക്ക് പോകുക</translation>
 <translation id="9106898733795143799">പേജും വെബ് ബ്രൗസറും</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> എന്നതിനായി തിരയൽ ഫലമൊന്നുമില്ല</translation>

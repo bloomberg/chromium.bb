@@ -38,7 +38,7 @@ bool FCMSyncNetworkChannel::DeliverIncomingMessage(
     const std::string& payload,
     const std::string& private_topic,
     const std::string& public_topic,
-    const std::string& version) {
+    int64_t version) {
   if (!incoming_receiver_) {
     DLOG(ERROR) << "No receiver for incoming notification";
     return false;
@@ -57,12 +57,5 @@ bool FCMSyncNetworkChannel::DeliverToken(const std::string& token) {
   token_receiver_.Run(token_);
   return true;
 }
-
-int FCMSyncNetworkChannel::GetReceivedMessagesCount() const {
-  return received_messages_count_;
-}
-
-void FCMSyncNetworkChannel::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> callback) {}
 
 }  // namespace syncer

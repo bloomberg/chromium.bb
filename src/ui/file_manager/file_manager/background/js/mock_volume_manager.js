@@ -12,9 +12,11 @@ class MockVolumeManager {
     /** @const {!VolumeInfoList} */
     this.volumeInfoList = new VolumeInfoListImpl();
 
-    /** @type {!VolumeManagerCommon.DriveConnectionState} */
+    /** @type {!chrome.fileManagerPrivate.DriveConnectionState} */
     this.driveConnectionState = {
-      type: VolumeManagerCommon.DriveConnectionType.ONLINE
+      type: /** @type {!chrome.fileManagerPrivate.DriveConnectionStateType} */ (
+          'ONLINE'),
+      hasCellularNetworkAccess: false,
     };
 
     // Create Drive.   Drive attempts to resolve FilesSystemURLs for '/root',
@@ -148,7 +150,7 @@ class MockVolumeManager {
   }
 
   /**
-   * @return {!VolumeManagerCommon.DriveConnectionState} Current drive
+   * @return {!chrome.fileManagerPrivate.DriveConnectionState} Current drive
    *     connection state.
    */
   getDriveConnectionState() {
@@ -225,7 +227,6 @@ MockVolumeManager.prototype.getVolumeInfo =
 /** @override */
 MockVolumeManager.prototype.getDefaultDisplayRoot =
     VolumeManagerImpl.prototype.getDefaultDisplayRoot;
-
 
 /** @override */
 MockVolumeManager.prototype.findByDevicePath =

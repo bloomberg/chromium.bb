@@ -33,6 +33,8 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/resource_load_info.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -223,11 +225,6 @@ void CastWebContentsImpl::EnableBackgroundVideoPlayback(bool enabled) {
     media_blocker_->EnableBackgroundVideoPlayback(enabled);
 }
 
-void CastWebContentsImpl::SetDelegate(CastWebContents::Delegate* delegate) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  delegate_ = delegate;
-}
-
 void CastWebContentsImpl::AllowWebAndMojoWebUiBindings() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
@@ -365,23 +362,25 @@ void CastWebContentsImpl::RenderFrameCreated(
         render_frame_host->GetRemoteAssociatedInterfaces());
   }
 
-  chromecast::shell::mojom::FeatureManagerPtr feature_manager_ptr;
-  render_frame_host->GetRemoteInterfaces()->GetInterface(&feature_manager_ptr);
-  feature_manager_ptr->ConfigureFeatures(GetRendererFeatures());
+  mojo::Remote<chromecast::shell::mojom::FeatureManager> feature_manager_remote;
+  render_frame_host->GetRemoteInterfaces()->GetInterface(
+      feature_manager_remote.BindNewPipeAndPassReceiver());
+  feature_manager_remote->ConfigureFeatures(GetRendererFeatures());
 
-  chromecast::shell::mojom::MediaPlaybackOptionsAssociatedPtr
+  mojo::AssociatedRemote<chromecast::shell::mojom::MediaPlaybackOptions>
       media_playback_options;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &media_playback_options);
   media_playback_options->SetUseCmaRenderer(use_cma_renderer_);
 
   // Send queryable values
-  chromecast::shell::mojom::QueryableDataStorePtr queryable_data_store_ptr;
+  mojo::Remote<chromecast::shell::mojom::QueryableDataStore>
+      queryable_data_store_remote;
   render_frame_host->GetRemoteInterfaces()->GetInterface(
-      &queryable_data_store_ptr);
+      queryable_data_store_remote.BindNewPipeAndPassReceiver());
   for (const auto& value : QueryableData::GetValues()) {
     // base::Value is not copyable.
-    queryable_data_store_ptr->Set(value.first, value.second.Clone());
+    queryable_data_store_remote->Set(value.first, value.second.Clone());
   }
 }
 
@@ -407,6 +406,12 @@ void CastWebContentsImpl::OnInterfaceRequestFromFrame(
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (!delegate_) {
+    // Don't let the page bind any more interfaces at this point, since the
+    // owning client has been torn down. This is a cheap trick so that all of
+    // the interfaces don't have to provide binder callbacks with WeakPtr.
+    return;
+  }
   if (binder_registry_.TryBindInterface(interface_name, interface_pipe)) {
     return;
   }
@@ -478,7 +483,7 @@ void CastWebContentsImpl::ReadyToCommitNavigation(
       navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage())
     return;
 
-  chromecast::shell::mojom::OnLoadScriptInjectorAssociatedPtr
+  mojo::AssociatedRemote<chromecast::shell::mojom::OnLoadScriptInjector>
       before_load_script_injector;
   navigation_handle->GetRenderFrameHost()
       ->GetRemoteAssociatedInterfaces()
@@ -654,8 +659,6 @@ void CastWebContentsImpl::UpdatePageState() {
 }
 
 void CastWebContentsImpl::NotifyPageState() {
-  if (!delegate_)
-    return;
   // Don't notify if the page state didn't change.
   if (last_state_ == page_state_)
     return;
@@ -710,11 +713,12 @@ void CastWebContentsImpl::InnerWebContentsCreated(
     content::WebContents* inner_web_contents) {
   if (!handle_inner_contents_ || !delegate_)
     return;
-  auto result = inner_contents_.insert(std::make_unique<CastWebContentsImpl>(
-      inner_web_contents,
-      InitParams{nullptr, enabled_for_dev_, false /* use_cma_renderer */,
-                 false /* is_root_window */, false /* handle_inner_contents */,
-                 false /* use_media_blocker */, view_background_color_}));
+  InitParams params;
+  params.delegate = delegate_;
+  params.enabled_for_dev = enabled_for_dev_;
+  params.background_color = view_background_color_;
+  auto result = inner_contents_.insert(
+      std::make_unique<CastWebContentsImpl>(inner_web_contents, params));
   delegate_->InnerContentsCreated(result.first->get(), this);
 }
 

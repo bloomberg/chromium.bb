@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">पेंगुइन</translation>
 <translation id="183183971458492120">जानकारी लोड हो रही है...</translation>
 <translation id="1838709767668011582">Google साइट</translation>
-<translation id="1839704667838141620">इस फ़ाइल को शेयर करने का तरीका बदलें</translation>
 <translation id="1844692022597038441">यह फा़इल ऑफ़लाइन उपलब्ध नहीं है.</translation>
 <translation id="184633654410729720">थाई कीबोर्ड (केडमानी)</translation>
 <translation id="1847880352285315359">सेव कर लिया गया है</translation>
-<translation id="1864676585353837027">इन फ़ाइलों को शेयर करने का तरीका बदलें</translation>
 <translation id="1864756863218646478">फ़ाइल नहीं मिल सकी.</translation>
 <translation id="1921986354447415460">तुर्की-F कीबोर्ड</translation>
 <translation id="1931134289871235022">स्लोवाक</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">नई सेवा इंस्टॉल करें</translation>
 <translation id="1947424002851288782">जर्मन कीबोर्ड</translation>
 <translation id="1972984168337863910">फ़ाइल के लिए सुझाव पैनल को बड़ा करें</translation>
-<translation id="197560921582345123">बदलाव कर सकते हैं</translation>
 <translation id="1984603991036629094">आर्मेनियाई फ़ोनेटिक कीबोर्ड</translation>
 <translation id="2001796770603320721">डिस्क में प्रबंधित करें</translation>
 <translation id="2009067268969781306">किसी डिस्क को फ़ॉर्मैट करने से उस पर सेव किया गया पूरा डेटा मिट जाएगा. यह कार्रवाई वापस नहीं ली जा सकती.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">फ़ोल्डर को अनपिन करें</translation>
 <translation id="3678559383040232393">माल्‍टीज़ कीबोर्ड</translation>
 <translation id="3685122418104378273">मोबाइल डेटा का उपयोग करते समय, Google डिस्‍क समन्‍वयन डिफ़ॉल्‍ट रूप से अक्षम रहता है.</translation>
+<translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> रद्द करें.</translation>
 <translation id="3726463242007121105">यह डिवाइस नहीं खोला जा सकता क्‍योंकि इसका फ़ाइल सिस्‍टम समर्थित नहीं है.</translation>
 <translation id="3741243925913727067">अपने मीडिया डिवाइस की फ़ोटो और वीडियो का Google डिस्‍क पर बैक अप लें.</translation>
 <translation id="3749289110408117711">फ़ाइल नाम</translation>
@@ -286,7 +284,6 @@
 <translation id="4522570452068850558">विवरण</translation>
 <translation id="4552678318981539154">ज़्यादा मेमोरी खरीदें</translation>
 <translation id="4559767610552730302">बोके</translation>
-<translation id="4568854179928172494">बदलाव करने का समय</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> फ़ाइल</translation>
 <translation id="457386861538956877">ज़्यादा...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> को चुनी गई चीज़ों के साथ जोड़ा गया.</translation>
@@ -467,6 +464,7 @@
 <translation id="6339145975392024142">यू.एस. अंतर्राष्ट्रीय (पीसी)</translation>
 <translation id="6346310558342052870">एक्सेस पर रोक लगी है</translation>
 <translation id="6353618411602605519">क्रोएशियाई कीबोर्ड</translation>
+<translation id="6356685157277930264">फ़ाइलों के सुझाव वाली विंडो</translation>
 <translation id="6358884629796491903">ड्रैगन</translation>
 <translation id="637062427944097960">यह फ़ाइल किसी अलग डेस्कटॉप पर खुली है. उसे देखने के लिए <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) पर जाएं.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> आइटम</translation>
@@ -566,6 +564,7 @@
 <translation id="7589661784326793847">बस एक सेकंड प्रतीक्षा करें</translation>
 <translation id="7603724359189955920">ग्रिड</translation>
 <translation id="7627790789328695202">ओह, <ph name="FILE_NAME" /> पहले से मौजूद है. उसका नाम बदलें और फिर से प्रयास करें.</translation>
+<translation id="7628656427739290098"><ph name="PERCENT" />% पूरा हाे गया.</translation>
 <translation id="7649070708921625228">सहायता</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> आइटम ले जाए रहे हैं...</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
@@ -592,7 +591,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> टीबी</translation>
 <translation id="7839804798877833423">इन फ़ाइलों को लाने में मोबाइल डेटा का करीब <ph name="FILE_SIZE" /> उपयोग होगा.</translation>
 <translation id="7846076177841592234">चुना गया हटाएं</translation>
-<translation id="7850851215703745691">इन डिस्क फ़ाइलों को अभी तक शेयर नहीं किया गया है</translation>
 <translation id="7853966320808728790">फ़्रेंच बेपो</translation>
 <translation id="7864662577698025113">नई सेवा जोड़ें</translation>
 <translation id="7873831373602885875"><ph name="FOLDER_NAME" /> में सेव नहीं किया जा सकता. सभी बदलाव डाउनलोड फ़ोल्डर के <ph name="DOWNLOADS_FOLDER" /> में सेव किए जाएंगे.</translation>
@@ -608,7 +606,6 @@
 <translation id="7969525169268594403">स्लोवेनियाई</translation>
 <translation id="7982283708762922719">ऊंचाई</translation>
 <translation id="7987485481246785146">सोरानी कुर्दिश अरबी-आधारित कीबोर्ड</translation>
-<translation id="799923393800005025">देख सकते हैं</translation>
 <translation id="8008366997883261463">श्वान</translation>
 <translation id="8028993641010258682">आकार</translation>
 <translation id="8031722894461705849">स्‍लोवाक कीबोर्ड</translation>
@@ -670,8 +667,6 @@
 <translation id="8600173386174225982">फ़ाइल की सूची अब थंबनेल की तरह दिखाई जा रही है.</translation>
 <translation id="8601932370724196034">Crostini इमेज फ़ाइल</translation>
 <translation id="8669949407341943408">चल रहे...</translation>
-<translation id="8671210955687109937">टिप्पणी कर सकते हैं</translation>
-<translation id="8686213429977032554">यह डिस्क अभी तक शेयर नहीं की गई है</translation>
 <translation id="8698464937041809063">Google ड्रॉइंग</translation>
 <translation id="8714406895390098252">साइकिल</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> को चुना गया.</translation>

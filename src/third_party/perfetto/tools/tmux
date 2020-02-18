@@ -24,7 +24,7 @@ fi
 function get_gn_value() {
   local out=$1
   local key=$2
-  gn args "$out" --list --short | sed -n -e "s/$key = \"\(.*\)\"/\1/p"
+  gn args "$out" --list=$key --short | awk '{print $3}' | tr -d '"'
 }
 
 function is_monolithic() {
@@ -39,28 +39,12 @@ function is_android() {
   test "$value" == "android"
 }
 
-function is_gn_target_and_host_value_equal() {
-  local out=$1
-  local key=$2
-  local host
-  local target
-  host=$(get_gn_value "$out" "host_$key")
-  target=$(get_gn_value "$out" "target_$key")
-  [ -z "$target" ] && target="$host"
-  test "$target" == "$host"
-}
-
-function is_cross_compilation() {
-  local out=$1
-  if is_gn_target_and_host_value_equal "$out" cpu &&
-    is_gn_target_and_host_value_equal "$out" os; then
-    false
-  else
-    true
-  fi
+function is_ssh_target() {
+  [[ -n "$SSH_TARGET" ]]
 }
 
 function is_mac() {
+  # shellcheck disable=2251
   ! test -d /proc
   return $?
 }
@@ -85,9 +69,9 @@ function reset_tracing() {
     echo 0 > /sys/kernel/debug/tracing/tracing_on
     '
 
-    if is_cross_compilation "$OUT"; then
+    if is_ssh_target; then
       # shellcheck disable=SC2029
-      ssh "$TARGET" "sh -c '$script'"
+      ssh -t "$SSH_TARGET" "sh -c '$script'"
     else
       sh -c "$script"
     fi
@@ -106,9 +90,9 @@ function push() {
     fi
     echo adb push $maybe_sync "$1" "$DIR"
     adb push $maybe_sync "$1" "$DIR"
-  elif is_cross_compilation "$OUT"; then
-    echo scp "$1" "$TARGET:$DIR"
-    scp "$1" "$TARGET:$DIR"
+  elif is_ssh_target; then
+    echo scp "$1" "$SSH_TARGET:$DIR"
+    scp "$1" "$SSH_TARGET:$DIR"
   else
     echo cp "$1" "$DIR"
     cp "$1" "$DIR"
@@ -119,9 +103,9 @@ function pull() {
   if is_android "$OUT"; then
     echo adb pull "$DIR/$1" "$2"
     adb pull "$DIR/$1" "$2"
-  elif is_cross_compilation "$OUT"; then
-    echo scp "$TARGET:$DIR/$1" "$2"
-    scp "$TARGET:$DIR/$1" "$2"
+  elif is_ssh_target; then
+    echo scp "$SSH_TARGET:$DIR/$1" "$2"
+    scp "$SSH_TARGET:$DIR/$1" "$2"
   else
     echo mv "$DIR/$1" "$2"
     mv "$DIR/$1" "$2"
@@ -131,17 +115,20 @@ function pull() {
 BACKGROUND=0
 SKIP_CONVERTERS=0
 TMUX_LAYOUT="even-vertical"
+CPU_MASK=""
 
-while getopts "bl:nt:c:C:" o; do
+while getopts "bl:nt:c:C:z:s:" o; do
   case "$o" in
     b) BACKGROUND=1 ;;
     l) TMUX_LAYOUT=${OPTARG} ;;
     n) SKIP_CONVERTERS=1 ;;
-    t) TARGET=${OPTARG} ;;
+    t) SSH_TARGET=${OPTARG} ;;
     c) CONFIG=${OPTARG} ;;
     C) OUT=${OPTARG} ;;
+    z) CPU_MASK=${OPTARG} ;;
+    s) SCRIPT=${OPTARG} ;;
     *)
-      echo "Invalid option $o"
+      echo >&2 "Invalid option $o"
       exit
       ;;
   esac
@@ -151,38 +138,45 @@ done
 shift $((OPTIND - 1))
 OUT="${OUT:-$1}"
 
-# Warn about invalid output directories
+# Provide useful usage information
 if [ -z "$OUT" ]; then
   echo "Usage: $0 [OPTION]... [OUTPUT]"
   echo ""
   echo "Options:"
   echo "  -b          run in the background"
-  echo "  -l          tmux pane layout"
+  echo "  -l LAYOUT   tmux pane layout"
   echo "  -n          skip post-trace convertors"
   echo "  -t TARGET   SSH device target"
   echo "  -c CONFIG   trace configuration file"
   echo "  -C OUTPUT   output directory"
+  echo "  -z MASK     constrain binaries to given cpu mask (taskset syntax)"
+  echo "  -s SCRIPT   a script to put into a tmux pane"
   echo ""
   echo "Environment variables:"
-  echo "  TARGET      SSH device target"
+  echo "  SSH_TARGET  SSH device target"
   echo "  CONFIG      trace configuration file"
-  echo "  OUTPUT      output directory"
+  echo "  OUT         output directory"
   exit 1
 fi
 
 # Warn about invalid output directories
 if [ ! -f "$OUT/args.gn" ]; then
-  echo "OUT=$OUT doesn't look like an output directory."
-  echo "Please specify a directory by doing:"
-  echo "  export OUT=out/xxx $0"
+  echo >&2 "OUT=$OUT doesn't look like an output directory."
+  echo >&2 "Please specify a directory by doing:"
+  echo >&2 "  export OUT=out/xxx $0"
   exit 1
 fi
 
-# If we are cross-compiling we need to know the SSH target
-if is_cross_compilation "$OUT" && ! ssh -q "$TARGET" exit; then
-  echo "TARGET=$TARGET doesn't look like a valid SSH target."
-  echo "Please specify a SSH cross-compilation target by doing:"
-  echo "  export TARGET=<user>@<host> $0"
+# Check SSH target is valid
+if is_ssh_target && ! ssh -q "$SSH_TARGET" exit; then
+  echo >&2 "SSH_TARGET=$SSH_TARGET doesn't look like a valid SSH target."
+  echo >&2 "Please specify a SSH cross-compilation target by doing:"
+  echo >&2 "  export SSH_TARGET=<user>@<host> $0"
+  exit 1
+fi
+
+if ! builtin type -P tmux &>/dev/null; then
+  echo >&2 "tmux not found"
   exit 1
 fi
 
@@ -192,15 +186,16 @@ CONFIG="${CONFIG:-:test}"
 
 if is_android "$OUT"; then
   DIR=/data/local/tmp
-elif is_cross_compilation "$OUT"; then
-  DIR=$(ssh "$TARGET" mktemp -d $TMPDIR/perfetto.XXXXXX)
+elif is_ssh_target; then
+  DIR=$(ssh "$SSH_TARGET" mktemp -d $TMPDIR/perfetto.XXXXXX)
 elif is_mac; then
   DIR=$(mktemp -d $TMPDIR/perfetto.XXXXXX)
 else
   DIR=$(mktemp -p $TMPDIR -d perfetto.XXXXXX)
 fi
 
-tools/ninja -C "$OUT" traced traced_probes perfetto trace_to_text test/configs
+"$CUR_DIR/ninja" -C "$OUT" \
+  traced traced_probes perfetto trace_to_text test/configs
 
 push "$OUT/traced"
 push "$OUT/traced_probes"
@@ -224,7 +219,7 @@ if [[ "$CONFIG" == *.protobuf ]]; then
   CONFIG_DEVICE_PATH="$CONFIG"
   CONFIG_PATH=$OUT/$CONFIG
   if [[ ! -f $CONFIG_PATH ]]; then
-    echo "Config \"$CONFIG_PATH\" not known."
+    echo >&2 "Config \"$CONFIG_PATH\" not known."
     exit 1
   fi
   push "$CONFIG_PATH"
@@ -235,7 +230,7 @@ elif [[ "$CONFIG" != ":test" ]]; then
   if [[ ! -f $CONFIG_PATH ]]; then
     CONFIG_PATH=$CONFIG
     if [[ ! -f $CONFIG_PATH ]]; then
-      echo "Config \"$CONFIG\" not known."
+      echo >&2 "Config \"$CONFIG\" not known."
       exit 1
     fi
   fi
@@ -243,7 +238,15 @@ elif [[ "$CONFIG" != ":test" ]]; then
   push "$CONFIG_PATH"
 fi
 
+if [[ -f "$SCRIPT" ]]; then
+  push "$SCRIPT"
+fi
+
 POSTFIX=""
+
+if [[ -n "$CPU_MASK" ]]; then
+  PREFIX="$PREFIX taskset $CPU_MASK"
+fi
 
 if [[ BACKGROUND -eq 1 ]]; then
   PREFIX="$PREFIX nohup"
@@ -267,6 +270,10 @@ fi
 tmux split-window -v
 tmux split-window -v
 
+if [[ -n "$SCRIPT" ]]; then
+  tmux split-window -v
+fi
+
 tmux select-layout "${TMUX_LAYOUT}"
 
 tmux select-pane -t 0
@@ -287,34 +294,61 @@ if is_android "$OUT"; then
   tmux send-keys "adb shell" C-m
 fi
 
+if [[ -n "$SCRIPT" ]]; then
+  tmux select-pane -t 3
+  tmux send-keys "clear" C-m
+  if is_android "$OUT"; then
+    tmux send-keys "adb shell" C-m
+  fi
+fi
+
 sleep 2
 
 tmux select-pane -t 1
-if is_cross_compilation "$OUT"; then
-  tmux send-keys "ssh $TARGET" Enter
+if is_ssh_target; then
+  tmux send-keys "ssh $SSH_TARGET" Enter
 fi
 tmux_ensure_bash
 tmux send-keys "PS1='[traced]$ '" Enter
 tmux send-keys "cd $DIR" Enter
-tmux send-keys "$PREFIX ./traced 2>&1 | tee traced.log $POSTFIX" Enter
+tmux send-keys "clear" C-m
+tmux send-keys "$PREFIX ./traced $POSTFIX" Enter
 
 tmux select-pane -t 0
-if is_cross_compilation "$OUT"; then
-  tmux send-keys "ssh $TARGET" Enter
+if is_ssh_target; then
+  tmux send-keys "ssh $SSH_TARGET" Enter
 fi
 tmux_ensure_bash
 tmux send-keys "PS1='[traced_probes]$ '" Enter
 tmux send-keys "cd $DIR" Enter
-tmux send-keys "$PREFIX ./traced_probes 2>&1 | tee traced_probes.log $POSTFIX" Enter
+tmux send-keys "clear" C-m
+tmux send-keys "$PREFIX ./traced_probes $POSTFIX" Enter
 
 tmux select-pane -t 2
-if is_cross_compilation "$OUT"; then
-  tmux send-keys "ssh $TARGET" Enter
+if is_ssh_target; then
+  tmux send-keys "ssh $SSH_TARGET" Enter
 fi
 tmux_ensure_bash
 tmux send-keys "PS1='[consumer]$ '" Enter
 tmux send-keys "cd $DIR" Enter
-tmux send-keys "$PREFIX ./perfetto $CMD_OPTS -c $CONFIG_DEVICE_PATH -o trace 2>&1 | tee perfetto.log $POSTFIX"
+tmux send-keys "clear" C-m
+tmux send-keys "$PREFIX ./perfetto $CMD_OPTS -c $CONFIG_DEVICE_PATH -o trace $POSTFIX"
+
+if [[ -n "$SCRIPT" ]]; then
+  tmux select-pane -t 3
+  if is_ssh_target; then
+    tmux send-keys "ssh $SSH_TARGET" Enter
+  fi
+  tmux_ensure_bash
+  tmux send-keys "PS1='[script]$ '" Enter
+  tmux send-keys "cd $DIR" Enter
+  tmux send-keys "clear" C-m
+  if [[ -f "$SCRIPT" ]]; then
+    tmux send-keys "./$(basename "$SCRIPT")"
+  else
+    tmux send-keys "$SCRIPT"
+  fi
+fi
 
 # Select consumer pane.
 tmux select-pane -t 2

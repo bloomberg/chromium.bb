@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "build/buildflag.h"
@@ -28,9 +29,9 @@
 #include "net/url_request/url_request_status.h"
 #include "services/network/test/test_url_loader_factory.h"
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#endif  // BUILDFLAG(ENABLE_APP_LIST)
+#endif  // defined(OS_CHROMEOS)
 
 // The E2E tests are designed to run against real backend servers. To identify
 // those tests we use *E2ETest* test name filter and run disabled tests.
@@ -49,7 +50,6 @@
 #define E2E_ENABLED(test_name) MACRO_CONCAT(test_name, E2ETest)
 
 class ProfileSyncServiceHarness;
-class P2PSyncRefresher;
 
 namespace arc {
 class SyncArcPackageHelper;
@@ -113,7 +113,7 @@ class SyncTest : public InProcessBrowserTest {
     void ValidateToken(const std::string& authorized_entity,
                        const std::string& scope,
                        const std::string& token,
-                       const ValidateTokenCallback& callback) override {}
+                       ValidateTokenCallback callback) override {}
 
     void DeleteToken(const std::string& authorized_entity,
                      const std::string& scope,
@@ -213,6 +213,12 @@ class SyncTest : public InProcessBrowserTest {
   // Initializes sync clients and profiles if required and syncs each of them.
   virtual bool SetupSync() WARN_UNUSED_RESULT;
 
+  // This is similar to click the reset button on chrome.google.com/sync.
+  // Only takes effect when running with external servers.
+  // Please call this before setting anything. This method will clear all
+  // local profiles, browsers, etc.
+  void ResetSyncForPrimaryAccount();
+
   // Like SetupSync() but does not wait for the clients to be ready to sync.
   void SetupSyncNoWaitingForCompletion();
 
@@ -283,17 +289,13 @@ class SyncTest : public InProcessBrowserTest {
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context);
 
-  virtual void BeforeSetupClient(int index);
+  // Invoked immediately before creating profile |index| under |profile_path|.
+  virtual void BeforeSetupClient(int index, const base::FilePath& profile_path);
 
   // Implementations of the EnableNotifications() and DisableNotifications()
   // functions defined above.
   void DisableNotificationsImpl();
   void EnableNotificationsImpl();
-
-  // If non-empty, |contents| will be written to the Preferences file of the
-  // profile at |index| before that Profile object is created.
-  void SetPreexistingPreferencesFileContents(int index,
-                                             const std::string& contents);
 
   // Helper to ProfileManager::CreateProfileAsync that creates a new profile
   // used for UI Signin. Blocks until profile is created.
@@ -354,9 +356,8 @@ class SyncTest : public InProcessBrowserTest {
       instance_id::InstanceIDDriver* instance_id_driver,
       content::BrowserContext* context);
 
-  // Helper to Profile::CreateProfile that handles path creation, setting up
-  // preexisting pref files, and registering the created profile  as a testing
-  // profile.
+  // Helper to Profile::CreateProfile that handles path creation. It creates
+  // a profile then registers it as a testing profile.
   Profile* MakeTestProfile(base::FilePath profile_path, int index);
 
   // Helper method used to create a Gaia account at runtime.
@@ -405,6 +406,8 @@ class SyncTest : public InProcessBrowserTest {
 
   // Internal routine for setting up sync.
   void SetupSyncInternal(SetupSyncMode setup_mode);
+
+  void ClearProfiles();
 
   // GAIA account used by the test case.
   std::string username_;
@@ -465,10 +468,6 @@ class SyncTest : public InProcessBrowserTest {
   // Mapping from client indexes to decryption passphrases to use for them.
   std::map<int, std::string> client_decryption_passphrases_;
 
-  // A set of objects to listen for commit activity and broadcast refresh
-  // notifications of this activity to its peer sync clients.
-  std::vector<std::unique_ptr<P2PSyncRefresher>> sync_refreshers_;
-
   // Owns the FakeServerInvalidationSender for each profile.
   std::vector<std::unique_ptr<fake_server::FakeServerInvalidationSender>>
       fake_server_invalidation_observers_;
@@ -498,20 +497,19 @@ class SyncTest : public InProcessBrowserTest {
   // profile or not.
   bool use_verifier_;
 
+  // Indicates whether to use a new user data dir.
+  // Only used for external server tests with two clients.
+  bool use_new_user_data_dir_ = false;
+
   // Indicates the need to create Gaia user account at runtime. This can only
   // be set if tests are run against external servers with support for user
   // creation via http requests.
   bool create_gaia_account_at_runtime_;
 
-  // The contents to be written to a profile's Preferences file before the
-  // Profile object is created. If empty, no preexisting file will be written.
-  // The map key corresponds to the profile's index.
-  std::map<int, std::string> preexisting_preferences_file_contents_;
-
   // Disable extension install verification.
   extensions::ScopedInstallVerifierBypassForTest ignore_install_verification_;
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
   // A factory-like callback to create a model updater for testing, which will
   // take the place of the real updater in AppListSyncableService for testing.
   std::unique_ptr<

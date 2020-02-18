@@ -15,34 +15,35 @@
  */
 
 #include <ctype.h>
+
+#include <map>
 #include <set>
 #include <stack>
 #include <string>
 
 #include "src/perfetto_cmd/pbtxt_to_pb.h"
 
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-
 #include "perfetto/base/logging.h"
 #include "perfetto/ext/base/file_utils.h"
+#include "perfetto/ext/base/optional.h"
+#include "perfetto/ext/base/string_utils.h"
 #include "perfetto/ext/base/string_view.h"
 #include "perfetto/ext/base/utils.h"
 #include "perfetto/protozero/message.h"
 #include "perfetto/protozero/message_handle.h"
 #include "perfetto/protozero/scattered_heap_buffer.h"
-#include "protos/perfetto/common/descriptor.pb.h"
 #include "src/perfetto_cmd/perfetto_config.descriptor.h"
+
+#include "protos/perfetto/common/descriptor.gen.h"
 
 namespace perfetto {
 constexpr char kConfigProtoName[] = ".perfetto.protos.TraceConfig";
 
-using protos::DescriptorProto;
-using protos::EnumDescriptorProto;
-using protos::EnumValueDescriptorProto;
-using protos::FieldDescriptorProto;
-using protos::FileDescriptorSet;
-using ::google::protobuf::io::ZeroCopyInputStream;
-using ::google::protobuf::io::ArrayInputStream;
+using protos::gen::DescriptorProto;
+using protos::gen::EnumDescriptorProto;
+using protos::gen::EnumValueDescriptorProto;
+using protos::gen::FieldDescriptorProto;
+using protos::gen::FileDescriptorSet;
 
 namespace {
 
@@ -308,9 +309,18 @@ class ParserDelegate {
         enum_value_number = enum_value.number();
         break;
       }
-      PERFETTO_CHECK(found_value);
+      if (!found_value) {
+        AddError(value,
+                 "Unexpected value '$v' for enum field $k in "
+                 "proto $n",
+                 std::map<std::string, std::string>{
+                     {"$v", value.ToStdString()},
+                     {"$k", key.ToStdString()},
+                     {"$n", descriptor_name()},
+                 });
+        return;
+      }
       msg()->AppendVarInt<int32_t>(field_id, enum_value_number);
-    } else {
     }
   }
 
@@ -376,8 +386,8 @@ class ParserDelegate {
   template <typename T>
   void FixedFloatField(const FieldDescriptorProto* field, Token t) {
     uint32_t field_id = static_cast<uint32_t>(field->number());
-    double n = std::stod(t.ToStdString());
-    msg()->AppendFixed<T>(field_id, static_cast<T>(n));
+    base::Optional<double> opt_n = base::StringToDouble(t.ToStdString());
+    msg()->AppendFixed<T>(field_id, static_cast<T>(opt_n.value_or(0l)));
   }
 
   template <typename T>
@@ -558,7 +568,8 @@ void Parse(const std::string& input, ParserDelegate* delegate) {
 
       case kReadingNumericValue:
         if (isspace(c) || c == ';' || last_character) {
-          size_t size = i - value.offset + (last_character ? 1 : 0);
+          bool keep_last = last_character && !(isspace(c) || c == ';');
+          size_t size = i - value.offset + (keep_last ? 1 : 0);
           value.txt = base::StringView(input.data() + value.offset, size);
           saw_semicolon_for_this_value = c == ';';
           state = kWaitingForKey;
@@ -588,7 +599,9 @@ void Parse(const std::string& input, ParserDelegate* delegate) {
 
       case kReadingIdentifierValue:
         if (isspace(c) || c == ';' || c == '#' || last_character) {
-          size_t size = i - value.offset + (last_character ? 1 : 0);
+          bool keep_last =
+              last_character && !(isspace(c) || c == ';' || c == '#');
+          size_t size = i - value.offset + (keep_last ? 1 : 0);
           value.txt = base::StringView(input.data() + value.offset, size);
           comment_till_eol = c == '#';
           saw_semicolon_for_this_value = c == ';';

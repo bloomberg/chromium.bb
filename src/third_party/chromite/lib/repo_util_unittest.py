@@ -97,12 +97,12 @@ class RepositoryTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def testInitializeExistingRepoDir(self):
     """Test Repository.Initialize fails in existing repo dir."""
-    with self.assertRaisesRegexp(repo_util.Error, 'cannot init in existing'):
+    with self.assertRaisesRegex(repo_util.Error, 'cannot init in existing'):
       repo_util.Repository.Initialize(self.repo_root, self.MANIFEST_URL)
 
   def testInitializeExistingRepoSubdir(self):
     """Test Repository.Initialize fails in existing repo subdir."""
-    with self.assertRaisesRegexp(repo_util.Error, 'cannot init in existing'):
+    with self.assertRaisesRegex(repo_util.Error, 'cannot init in existing'):
       repo_util.Repository.Initialize(self.repo_root_subdir, self.MANIFEST_URL)
 
   def testInitializeFailCleanup(self):
@@ -153,6 +153,7 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
     kwargs.setdefault('cwd', self.root)
     kwargs.setdefault('capture_output', False)
     kwargs.setdefault('debug_level', logging.DEBUG)
+    kwargs.setdefault('encoding', 'utf-8')
     self.assertCommandCalled([RepoCmdPath(self.root)] + repo_args, **kwargs)
 
   def AddRepoResult(self, repo_args, **kwargs):

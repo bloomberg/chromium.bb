@@ -73,6 +73,7 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_FAILED_TO_READ_PCR = 38;
   CRYPTOHOME_ERROR_PCR_ALREADY_EXTENDED = 39;
   CRYPTOHOME_ERROR_FAILED_TO_EXTEND_PCR = 40;
+  CRYPTOHOME_ERROR_TPM_UPDATE_REQUIRED = 41;
 }
 
 // This is used by MountRequest to store details about the mount to create
@@ -421,6 +422,12 @@ message GetAccountDiskUsageReply {
   // Negative values are reserved, see HomeDir::ComputeSize() for more
   // information.
   int64 size = 2;
+}
+
+// The data that comes with LowDiskSpace signal.
+message LowDiskSpace {
+  // The amount of remaining free disk space.
+  uint64 disk_free_bytes = 1;
 }
 
 // ------------------------- ArcQuota Interface -------------------------

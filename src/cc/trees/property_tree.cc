@@ -12,12 +12,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
 #include "base/trace_event/traced_value.h"
-#include "cc/layers/layer_impl.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
+#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -26,8 +25,7 @@
 namespace cc {
 
 template <typename T>
-PropertyTree<T>::PropertyTree()
-    : needs_update_(false) {
+PropertyTree<T>::PropertyTree() : needs_update_(false) {
   nodes_.push_back(T());
   back()->id = kRootNodeId;
   back()->parent_id = kInvalidNodeId;
@@ -130,47 +128,6 @@ void TransformTree::set_needs_update(bool needs_update) {
   if (needs_update && !PropertyTree<TransformNode>::needs_update())
     property_trees()->UpdateTransformTreeUpdateNumber();
   PropertyTree<TransformNode>::set_needs_update(needs_update);
-}
-
-bool TransformTree::ComputeTranslation(int source_id,
-                                       int dest_id,
-                                       gfx::Transform* transform) const {
-  transform->MakeIdentity();
-  if (source_id == dest_id)
-    return true;
-
-  const TransformNode* dest = Node(dest_id);
-  if (!dest->ancestors_are_invertible)
-    return false;
-  if (source_id != kInvalidNodeId)
-    transform->ConcatTransform(ToScreen(source_id));
-  if (dest_id != kInvalidNodeId) {
-    if (dest->local.IsFlat() && (dest->node_and_ancestors_are_flat ||
-                                 dest->flattens_inherited_transform)) {
-      // In this case, flattenning will not affect the result, so we can use the
-      // FromScreen transform of the dest node.
-      transform->ConcatTransform(FromScreen(dest_id));
-    } else {
-      // In this case, some node between source and destination flattens
-      // inherited transform. Consider the tree R->A->B->C->D, where D is the
-      // source, A is the destination and C flattens inherited transform. The
-      // expected result is D * C * flattened(B). D's ToScreen will be D * C *
-      // flattened(B * A * R), but as the source to destination transform is
-      // at most translation, C and B cannot be non-flat and so flattened(B * A
-      // * R) = B * flattened(A * R). So, to get the expected result we have to
-      // multiply D's ToScreen transform with flattened(A * R)^{-1}, which is
-      // the inverse of flattened ToScreen of destination.
-      gfx::Transform to_screen = ToScreen(dest_id);
-      to_screen.FlattenTo2d();
-      gfx::Transform from_screen;
-      bool success = to_screen.GetInverse(&from_screen);
-      if (!success)
-        return false;
-      transform->ConcatTransform(from_screen);
-    }
-  }
-
-  return true;
 }
 
 TransformNode* TransformTree::FindNodeFromElementId(ElementId id) {
@@ -708,7 +665,6 @@ int EffectTree::Insert(const EffectNode& tree_node, int parent_id) {
 
 void EffectTree::clear() {
   PropertyTree<EffectNode>::clear();
-  mask_layer_ids_.clear();
   render_surfaces_.clear();
   render_surfaces_.push_back(nullptr);
 
@@ -1024,10 +980,6 @@ int EffectTree::LowestCommonAncestorWithRenderSurface(int id_1,
   return id_1;
 }
 
-void EffectTree::AddMaskLayerId(int id) {
-  mask_layer_ids_.push_back(id);
-}
-
 bool EffectTree::ContributesToDrawnSurface(int id) {
   // All drawn nodes contribute to drawn surface.
   // Exception : Nodes that are hidden and are drawn only for the sake of
@@ -1138,7 +1090,7 @@ bool EffectTree::HitTestMayBeAffectedByMask(int effect_id) const {
   for (; effect_node->id != kContentsRootNodeId;
        effect_node = Node(effect_node->parent_id)) {
     if (!effect_node->rounded_corner_bounds.IsEmpty() ||
-        effect_node->has_masking_child || effect_node->is_masked)
+        effect_node->has_masking_child)
       return true;
   }
   return false;
@@ -1176,7 +1128,6 @@ bool ClipTree::operator==(const ClipTree& other) const {
 EffectTree& EffectTree::operator=(const EffectTree& from) {
   PropertyTree::operator=(from);
   render_surfaces_.resize(size());
-  mask_layer_ids_ = from.mask_layer_ids_;
   // copy_requests_ are omitted here, since these need to be moved rather
   // than copied or assigned.
 
@@ -1184,8 +1135,7 @@ EffectTree& EffectTree::operator=(const EffectTree& from) {
 }
 
 bool EffectTree::operator==(const EffectTree& other) const {
-  return PropertyTree::operator==(other) &&
-         mask_layer_ids_ == other.mask_layer_ids_;
+  return PropertyTree::operator==(other);
 }
 
 ScrollTree::ScrollTree()
@@ -1197,11 +1147,12 @@ ScrollTree::~ScrollTree() = default;
 ScrollTree& ScrollTree::operator=(const ScrollTree& from) {
   PropertyTree::operator=(from);
   currently_scrolling_node_id_ = kInvalidNodeId;
-  // Maps for ScrollOffsets/SyncedScrollOffsets are intentionally ommitted here
+  // Maps for ScrollOffsets/SyncedScrollOffsets are intentionally omitted here
   // since we can not directly copy them. Pushing of these updates from main
   // currently depends on Layer properties for scroll offset animation changes
   // (setting clobber_active_value for scroll offset animations interrupted on
   // the main thread) being pushed to impl first.
+  // |callbacks_| is omitted because it's for the main thread only.
   return *this;
 }
 
@@ -1209,6 +1160,8 @@ bool ScrollTree::operator==(const ScrollTree& other) const {
   if (scroll_offset_map_ != other.scroll_offset_map_)
     return false;
   if (synced_scroll_offset_map_ != other.synced_scroll_offset_map_)
+    return false;
+  if (callbacks_.get() != other.callbacks_.get())
     return false;
 
   bool is_currently_scrolling_node_equal =
@@ -1222,6 +1175,7 @@ void ScrollTree::CopyCompleteTreeState(const ScrollTree& other) {
   currently_scrolling_node_id_ = other.currently_scrolling_node_id_;
   scroll_offset_map_ = other.scroll_offset_map_;
   synced_scroll_offset_map_ = other.synced_scroll_offset_map_;
+  callbacks_ = other.callbacks_;
 }
 #endif
 
@@ -1251,7 +1205,9 @@ void ScrollTree::clear() {
 
 #if DCHECK_IS_ON()
   ScrollTree tree;
-  if (!property_trees()->is_main_thread) {
+  if (property_trees()->is_main_thread) {
+    tree.callbacks_ = callbacks_;
+  } else {
     DCHECK(scroll_offset_map_.empty());
     tree.currently_scrolling_node_id_ = currently_scrolling_node_id_;
     tree.synced_scroll_offset_map_ = synced_scroll_offset_map_;
@@ -1466,6 +1422,7 @@ void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
                                      ElementId inner_viewport_scroll_element_id,
                                      bool use_fractional_deltas) {
   DCHECK(!property_trees()->is_main_thread);
+  TRACE_EVENT0("cc", "ScrollTree::CollectScrollDeltas");
   for (auto map_entry : synced_scroll_offset_map_) {
     gfx::ScrollOffset scroll_delta =
         PullDeltaForMainThread(map_entry.second.get(), use_fractional_deltas);
@@ -1473,15 +1430,25 @@ void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
     ElementId id = map_entry.first;
 
     if (!scroll_delta.IsZero()) {
+      TRACE_EVENT_INSTANT2("cc", "CollectScrollDeltas",
+                           TRACE_EVENT_SCOPE_THREAD, "x", scroll_delta.x(), "y",
+                           scroll_delta.y());
+      // The snap targets will change on cc only if the node was scrolled, so it
+      // is safe to update the snap targets only when the scroll delta is not
+      // zero.
+      ScrollNode* scroll_node = FindNodeFromElementId(id);
+      base::Optional<TargetSnapAreaElementIds> snap_target_ids;
+      if (scroll_node && scroll_node->snap_container_data) {
+        snap_target_ids = scroll_node->snap_container_data.value()
+                              .GetTargetSnapAreaElementIds();
+      }
+      ScrollAndScaleSet::ScrollUpdateInfo update(id, scroll_delta,
+                                                 snap_target_ids);
       if (id == inner_viewport_scroll_element_id) {
         // Inner (visual) viewport is stored separately.
-        scroll_info->inner_viewport_scroll.element_id = id;
-        scroll_info->inner_viewport_scroll.scroll_delta = scroll_delta;
+        scroll_info->inner_viewport_scroll = std::move(update);
       } else {
-        LayerTreeHostCommon::ScrollUpdateInfo scroll;
-        scroll.element_id = id;
-        scroll.scroll_delta = scroll_delta;
-        scroll_info->scrolls.push_back(scroll);
+        scroll_info->scrolls.push_back(std::move(update));
       }
     }
   }
@@ -1633,23 +1600,6 @@ const gfx::ScrollOffset ScrollTree::GetScrollOffsetDeltaForTesting(
     return gfx::ScrollOffset();
 }
 
-void ScrollTree::DistributeScroll(ScrollNode* scroll_node,
-                                  ScrollState* scroll_state) {
-  DCHECK(scroll_node && scroll_state);
-  if (scroll_state->FullyConsumed())
-    return;
-  scroll_state->DistributeToScrollChainDescendant();
-
-  // If we're currently scrolling a node other than this one, prevent the scroll
-  // from propagating to this node.
-  if (scroll_state->delta_consumed_for_scroll_sequence() &&
-      scroll_state->current_native_scrolling_node()->id != scroll_node->id) {
-    return;
-  }
-
-  scroll_state->layer_tree_impl()->ApplyScroll(scroll_node, scroll_state);
-}
-
 gfx::Vector2dF ScrollTree::ScrollBy(ScrollNode* scroll_node,
                                     const gfx::Vector2dF& scroll,
                                     LayerTreeImpl* layer_tree_impl) {
@@ -1676,6 +1626,27 @@ gfx::ScrollOffset ScrollTree::ClampScrollOffsetToLimits(
   offset.SetToMin(MaxScrollOffset(scroll_node.id));
   offset.SetToMax(gfx::ScrollOffset());
   return offset;
+}
+
+void ScrollTree::SetScrollCallbacks(base::WeakPtr<ScrollCallbacks> callbacks) {
+  DCHECK(property_trees()->is_main_thread);
+  callbacks_ = std::move(callbacks);
+}
+
+void ScrollTree::NotifyDidScroll(
+    ElementId scroll_element_id,
+    const gfx::ScrollOffset& scroll_offset,
+    const base::Optional<TargetSnapAreaElementIds>& snap_target_ids) {
+  DCHECK(property_trees()->is_main_thread);
+  if (callbacks_)
+    callbacks_->DidScroll(scroll_element_id, scroll_offset, snap_target_ids);
+}
+
+void ScrollTree::NotifyDidChangeScrollbarsHidden(ElementId scroll_element_id,
+                                                 bool hidden) {
+  DCHECK(property_trees()->is_main_thread);
+  if (callbacks_)
+    callbacks_->DidChangeScrollbarsHidden(scroll_element_id, hidden);
 }
 
 PropertyTreesCachedData::PropertyTreesCachedData()
@@ -1735,8 +1706,6 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
       from.inner_viewport_container_bounds_delta();
   outer_viewport_container_bounds_delta_ =
       from.outer_viewport_container_bounds_delta();
-  inner_viewport_scroll_bounds_delta_ =
-      from.inner_viewport_scroll_bounds_delta();
   transform_tree.SetPropertyTrees(this);
   effect_tree.SetPropertyTrees(this);
   clip_tree.SetPropertyTrees(this);
@@ -1908,11 +1877,6 @@ void PropertyTrees::AnimationScalesChanged(ElementId element_id,
     transform_node->starting_animation_scale = starting_scale;
     UpdateTransformTreeUpdateNumber();
   }
-}
-
-void PropertyTrees::SetInnerViewportScrollBoundsDelta(
-    gfx::Vector2dF bounds_delta) {
-  inner_viewport_scroll_bounds_delta_ = bounds_delta;
 }
 
 void PropertyTrees::UpdateChangeTracking() {

@@ -4,14 +4,15 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.metrics.UkmRecorder;
 import org.chromium.chrome.browser.tab.Tab;
 
 import java.lang.annotation.Retention;
@@ -60,7 +61,7 @@ public class TrustedWebActivityUmaRecorder {
     public void recordTwaOpened(@Nullable Tab tab) {
         RecordUserAction.record("BrowserServices.TwaOpened");
         if (tab != null) {
-            new UkmRecorder.Bridge().recordTwaOpened(tab);
+            new UkmRecorder.Bridge().recordEvent(tab.getWebContents(), "TrustedWebActivity.Open");
         }
     }
 

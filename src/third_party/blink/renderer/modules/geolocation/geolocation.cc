@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/modules/geolocation/geolocation.h"
 
 #include "services/device/public/mojom/geoposition.mojom-blink.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/modules/geolocation/coordinates.h"
+#include "third_party/blink/renderer/modules/geolocation/geolocation_coordinates.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_error.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -55,7 +55,7 @@ const char kFeaturePolicyConsoleWarning[] =
 
 Geoposition* CreateGeoposition(
     const device::mojom::blink::Geoposition& position) {
-  auto* coordinates = MakeGarbageCollected<Coordinates>(
+  auto* coordinates = MakeGarbageCollected<GeolocationCoordinates>(
       position.latitude, position.longitude,
       // Lowest point on land is at approximately -400 meters.
       position.altitude > -10000., position.altitude, position.accuracy,
@@ -67,23 +67,24 @@ Geoposition* CreateGeoposition(
       ConvertSecondsToDOMTimeStamp(position.timestamp.ToDoubleT()));
 }
 
-PositionError* CreatePositionError(
+GeolocationPositionError* CreatePositionError(
     device::mojom::blink::Geoposition::ErrorCode mojom_error_code,
     const String& error) {
-  PositionError::ErrorCode error_code = PositionError::kPositionUnavailable;
+  GeolocationPositionError::ErrorCode error_code =
+      GeolocationPositionError::kPositionUnavailable;
   switch (mojom_error_code) {
     case device::mojom::blink::Geoposition::ErrorCode::PERMISSION_DENIED:
-      error_code = PositionError::kPermissionDenied;
+      error_code = GeolocationPositionError::kPermissionDenied;
       break;
     case device::mojom::blink::Geoposition::ErrorCode::POSITION_UNAVAILABLE:
-      error_code = PositionError::kPositionUnavailable;
+      error_code = GeolocationPositionError::kPositionUnavailable;
       break;
     case device::mojom::blink::Geoposition::ErrorCode::NONE:
     case device::mojom::blink::Geoposition::ErrorCode::TIMEOUT:
       NOTREACHED();
       break;
   }
-  return MakeGarbageCollected<PositionError>(error_code, error);
+  return MakeGarbageCollected<GeolocationPositionError>(error_code, error);
 }
 
 static void ReportGeolocationViolation(Document* doc) {
@@ -100,8 +101,7 @@ static void ReportGeolocationViolation(Document* doc) {
 }  // namespace
 
 Geolocation* Geolocation::Create(ExecutionContext* context) {
-  Geolocation* geolocation = MakeGarbageCollected<Geolocation>(context);
-  return geolocation;
+  return MakeGarbageCollected<Geolocation>(context);
 }
 
 Geolocation::Geolocation(ExecutionContext* context)
@@ -138,6 +138,8 @@ void Geolocation::ContextDestroyed(ExecutionContext*) {
   StopUpdating();
 
   last_position_ = nullptr;
+  geolocation_.reset();
+  geolocation_service_.reset();
 }
 
 void Geolocation::RecordOriginTypeAccess() const {
@@ -221,8 +223,8 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
   String error_message;
   if (!GetFrame()->GetSettings()->GetAllowGeolocationOnInsecureOrigins() &&
       !GetExecutionContext()->IsSecureContext(error_message)) {
-    notifier->SetFatalError(MakeGarbageCollected<PositionError>(
-        PositionError::kPermissionDenied, error_message));
+    notifier->SetFatalError(MakeGarbageCollected<GeolocationPositionError>(
+        GeolocationPositionError::kPermissionDenied, error_message));
     return;
   }
 
@@ -231,8 +233,9 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
           ReportOptions::kReportOnFailure, kFeaturePolicyConsoleWarning)) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kGeolocationDisabledByFeaturePolicy);
-    notifier->SetFatalError(MakeGarbageCollected<PositionError>(
-        PositionError::kPermissionDenied, kFeaturePolicyErrorMessage));
+    notifier->SetFatalError(MakeGarbageCollected<GeolocationPositionError>(
+        GeolocationPositionError::kPermissionDenied,
+        kFeaturePolicyErrorMessage));
     return;
   }
 
@@ -326,7 +329,7 @@ void Geolocation::StopTimers() {
   }
 }
 
-void Geolocation::HandleError(PositionError* error) {
+void Geolocation::HandleError(GeolocationPositionError* error) {
   DCHECK(error);
 
   DCHECK(one_shots_being_invoked_.IsEmpty());
@@ -448,6 +451,7 @@ void Geolocation::UpdateGeolocationConnection(GeoNotifier* notifier) {
   if (!GetExecutionContext() || !GetPage() || !GetPage()->IsPageVisible() ||
       !updating_) {
     geolocation_.reset();
+    geolocation_service_.reset();
     disconnected_geolocation_ = true;
     return;
   }
@@ -460,17 +464,15 @@ void Geolocation::UpdateGeolocationConnection(GeoNotifier* notifier) {
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  InterfaceInvalidator* invalidator =
-      GetExecutionContext()->GetInterfaceInvalidator();
-  GetFrame()->GetInterfaceProvider().GetInterface(&geolocation_service_,
-                                                  invalidator, task_runner);
+  GetFrame()->GetBrowserInterfaceBroker().GetInterface(
+      geolocation_service_.BindNewPipeAndPassReceiver(task_runner));
   geolocation_service_->CreateGeolocation(
-      MakeRequest(&geolocation_, invalidator, std::move(task_runner)),
+      geolocation_.BindNewPipeAndPassReceiver(std::move(task_runner)),
       LocalFrame::HasTransientUserActivation(GetFrame()),
       WTF::Bind(&Geolocation::OnGeolocationPermissionStatusUpdated,
                 WrapWeakPersistent(this), WrapWeakPersistent(notifier)));
 
-  geolocation_.set_connection_error_handler(WTF::Bind(
+  geolocation_.set_disconnect_handler(WTF::Bind(
       &Geolocation::OnGeolocationConnectionError, WrapWeakPersistent(this)));
   if (enable_high_accuracy_)
     geolocation_->SetHighAccuracy(true);
@@ -509,8 +511,9 @@ void Geolocation::OnGeolocationConnectionError() {
   StopUpdating();
   // The only reason that we would fail to get a ConnectionError is if we lack
   // sufficient permission.
-  auto* error = MakeGarbageCollected<PositionError>(
-      PositionError::kPermissionDenied, kPermissionDeniedErrorMessage);
+  auto* error = MakeGarbageCollected<GeolocationPositionError>(
+      GeolocationPositionError::kPermissionDenied,
+      kPermissionDeniedErrorMessage);
   error->SetIsFatal(true);
   HandleError(error);
 }

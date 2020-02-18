@@ -45,7 +45,6 @@ interface MediaMetricsProvider {
   // Setters for various one-time lazily generated metrics or properties.
   SetHasPlayed();
   SetHaveEnough();
-  SetIsAdMedia();
   SetIsEME();
   SetTimeToMetadata(mojo_base.mojom.TimeDelta elapsed);
   SetTimeToFirstFrame(mojo_base.mojom.TimeDelta elapsed);
@@ -57,17 +56,16 @@ interface MediaMetricsProvider {
   // Creates a WatchTimeRecorder instance using |properties|. If any of those
   // properties changes, a new recorder should be requested.
   AcquireWatchTimeRecorder(PlaybackProperties properties,
-                           WatchTimeRecorder& recorder);
+                           pending_receiver<WatchTimeRecorder> recorder);
 
   // Creates a VideoDecodeStatsRecorder instance.
-  AcquireVideoDecodeStatsRecorder(VideoDecodeStatsRecorder& recorder);
+  AcquireVideoDecodeStatsRecorder(
+      pending_receiver<VideoDecodeStatsRecorder> recorder);
 
   // Returns a LearningTaskController for the given |taskName|.
   AcquireLearningTaskController(
-    string taskName, media.learning.mojom.LearningTaskController& controller);
-
-  // Reports that bytes have been received by the media player.
-  AddBytesReceived(uint64 bytes_received);
+    string taskName,
+    pending_receiver<media.learning.mojom.LearningTaskController> controller);
 
   // Can be called multiple times to set properties about a playback.
   SetHasAudio(AudioCodec codec);

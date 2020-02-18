@@ -22,6 +22,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ipc/ipc_message_macros.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/gurl.h"
@@ -63,7 +64,7 @@ void NetErrorTabHelper::RenderFrameCreated(
   if (render_frame_host->GetParent())
     return;
 
-  chrome::mojom::NetworkDiagnosticsClientAssociatedPtr client;
+  mojo::AssociatedRemote<chrome::mojom::NetworkDiagnosticsClient> client;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
   client->SetCanShowNetworkDiagnosticsDialog(
       CanShowNetworkDiagnosticsDialog(web_contents()));
@@ -133,8 +134,8 @@ bool NetErrorTabHelper::OnMessageReceived(
 
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
     : WebContentsObserver(contents),
-      network_diagnostics_bindings_(contents, this),
-      network_easter_egg_bindings_(contents, this),
+      network_diagnostics_receivers_(contents, this),
+      network_easter_egg_receivers_(contents, this),
       is_error_page_(false),
       dns_error_active_(false),
       dns_error_page_committed_(false),
@@ -247,7 +248,7 @@ void NetErrorTabHelper::SendInfo() {
   DVLOG(1) << "Sending status " << DnsProbeStatusToString(dns_probe_status_);
   content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
 
-  chrome::mojom::NetworkDiagnosticsClientAssociatedPtr client;
+  mojo::AssociatedRemote<chrome::mojom::NetworkDiagnosticsClient> client;
   rfh->GetRemoteAssociatedInterfaces()->GetInterface(&client);
   client->DNSProbeStatus(dns_probe_status_);
 
@@ -272,8 +273,8 @@ void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
   if (!CanShowNetworkDiagnosticsDialog(web_contents()))
     return;
 
-  if (network_diagnostics_bindings_.GetCurrentTargetFrame()
-          != web_contents()->GetMainFrame()) {
+  if (network_diagnostics_receivers_.GetCurrentTargetFrame() !=
+      web_contents()->GetMainFrame()) {
     return;
   }
 

@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
+#include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
@@ -119,6 +120,7 @@
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/browser/printing/print_view_manager_common.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -239,11 +241,15 @@ WebContents* GetTabAndRevertIfNecessaryHelper(Browser* browser,
       WebContents* raw_new_tab = new_tab.get();
       if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
         new_tab->WasHidden();
+      const int index =
+          browser->tab_strip_model()->GetIndexOfWebContents(current_tab);
+      const auto group = browser->tab_strip_model()->GetTabGroupForTab(index);
       browser->tab_strip_model()->AddWebContents(
           std::move(new_tab), -1, ui::PAGE_TRANSITION_LINK,
           (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB)
               ? TabStripModel::ADD_ACTIVE
-              : TabStripModel::ADD_NONE);
+              : TabStripModel::ADD_NONE,
+          group);
       return raw_new_tab;
     }
     case WindowOpenDisposition::NEW_WINDOW: {
@@ -594,7 +600,7 @@ void NewWindow(Browser* browser) {
         browser->profile(), extension, WindowOpenDisposition::NEW_WINDOW,
         extensions::AppLaunchSource::kSourceKeyboard);
     OpenApplicationWindow(
-        app_launch_params,
+        browser->profile(), app_launch_params,
         extensions::AppLaunchInfo::GetLaunchWebURL(extension));
     return;
   }
@@ -716,6 +722,24 @@ bool CanDuplicateTab(const Browser* browser) {
   return CanDuplicateTabAt(browser, browser->tab_strip_model()->active_index());
 }
 
+bool CanDuplicateKeyboardFocusedTab(const Browser* browser) {
+  if (!HasKeyboardFocusedTab(browser))
+    return false;
+  return CanDuplicateTabAt(browser, *GetKeyboardFocusedTabIndex(browser));
+}
+
+bool CanCloseTabsToRight(const Browser* browser) {
+  return browser->tab_strip_model()->IsContextMenuCommandEnabled(
+      browser->tab_strip_model()->active_index(),
+      TabStripModel::CommandCloseTabsToRight);
+}
+
+bool CanCloseOtherTabs(const Browser* browser) {
+  return browser->tab_strip_model()->IsContextMenuCommandEnabled(
+      browser->tab_strip_model()->active_index(),
+      TabStripModel::CommandCloseOtherTabs);
+}
+
 WebContents* DuplicateTabAt(Browser* browser, int index) {
   WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(index);
   CHECK(contents);
@@ -726,17 +750,17 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
   if (browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
-    const int index =
-        browser->tab_strip_model()->GetIndexOfWebContents(contents);
-    pinned = browser->tab_strip_model()->IsTabPinned(index);
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    const int index = tab_strip_model->GetIndexOfWebContents(contents);
+    pinned = tab_strip_model->IsTabPinned(index);
     int add_types = TabStripModel::ADD_ACTIVE |
                     TabStripModel::ADD_INHERIT_OPENER |
                     (pinned ? TabStripModel::ADD_PINNED : 0);
-    const auto old_group = browser->tab_strip_model()->GetTabGroupForTab(index);
-    browser->tab_strip_model()->InsertWebContentsAt(
-        index + 1, std::move(contents_dupe), add_types, old_group);
+    const auto old_group = tab_strip_model->GetTabGroupForTab(index);
+    tab_strip_model->InsertWebContentsAt(index + 1, std::move(contents_dupe),
+                                         add_types, old_group);
   } else {
-    Browser* new_browser = NULL;
+    Browser* new_browser = nullptr;
     if (browser->deprecated_is_app()) {
       new_browser = new Browser(Browser::CreateParams::CreateForApp(
           browser->app_name(), browser->is_trusted_source(), gfx::Rect(),
@@ -790,6 +814,32 @@ void MuteSite(Browser* browser) {
       TabStripModel::ContextMenuCommand::CommandToggleSiteMuted);
 }
 
+void MuteSiteForKeyboardFocusedTab(Browser* browser) {
+  if (!HasKeyboardFocusedTab(browser))
+    return;
+  browser->tab_strip_model()->ExecuteContextMenuCommand(
+      *GetKeyboardFocusedTabIndex(browser),
+      TabStripModel::ContextMenuCommand::CommandToggleSiteMuted);
+}
+
+void PinKeyboardFocusedTab(Browser* browser) {
+  if (!HasKeyboardFocusedTab(browser))
+    return;
+  browser->tab_strip_model()->ExecuteContextMenuCommand(
+      *GetKeyboardFocusedTabIndex(browser),
+      TabStripModel::ContextMenuCommand::CommandTogglePinned);
+}
+
+void DuplicateKeyboardFocusedTab(Browser* browser) {
+  if (HasKeyboardFocusedTab(browser)) {
+    DuplicateTabAt(browser, *GetKeyboardFocusedTabIndex(browser));
+  }
+}
+
+bool HasKeyboardFocusedTab(const Browser* browser) {
+  return GetKeyboardFocusedTabIndex(browser).has_value();
+}
+
 void ConvertPopupToTabbedBrowser(Browser* browser) {
   base::RecordAction(UserMetricsAction("ShowAsTab"));
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -798,6 +848,18 @@ void ConvertPopupToTabbedBrowser(Browser* browser) {
   Browser* b = new Browser(Browser::CreateParams(browser->profile(), true));
   b->tab_strip_model()->AppendWebContents(std::move(contents), true);
   b->window()->Show();
+}
+
+void CloseTabsToRight(Browser* browser) {
+  browser->tab_strip_model()->ExecuteContextMenuCommand(
+      browser->tab_strip_model()->active_index(),
+      TabStripModel::CommandCloseTabsToRight);
+}
+
+void CloseOtherTabs(Browser* browser) {
+  browser->tab_strip_model()->ExecuteContextMenuCommand(
+      browser->tab_strip_model()->active_index(),
+      TabStripModel::CommandCloseOtherTabs);
 }
 
 void Exit() {
@@ -840,13 +902,16 @@ void BookmarkCurrentTabIgnoringExtensionOverrides(Browser* browser) {
     // weird situations where the bubble is deleted as soon as it is shown.
     browser->window()->ShowBookmarkBubble(url, was_bookmarked_by_user);
   }
+
+  if (!was_bookmarked_by_user && is_bookmarked_by_user)
+    RecordBookmarksAdded(browser->profile());
 }
 
 void BookmarkCurrentTabAllowingExtensionOverrides(Browser* browser) {
   DCHECK(!chrome::ShouldRemoveBookmarkThisTabUI(browser->profile()));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  const extensions::Extension* extension = NULL;
+  const extensions::Extension* extension = nullptr;
   extensions::Command command;
   if (GetBookmarkOverrideCommand(browser->profile(), &extension, &command)) {
     switch (command.type()) {
@@ -873,6 +938,10 @@ bool CanBookmarkCurrentTab(const Browser* browser) {
 
 void BookmarkAllTabs(Browser* browser) {
   base::RecordAction(UserMetricsAction("BookmarkAllTabs"));
+  RecordBookmarkAllTabsWithTabsCount(browser->profile(),
+                                     browser->tab_strip_model()->count());
+  // We record the profile that invoked this option.
+  RecordBookmarksAdded(browser->profile());
   chrome::ShowBookmarkAllTabsDialog(browser);
 }
 
@@ -897,6 +966,29 @@ void MigrateLocalCards(Browser* browser) {
       autofill::ManageMigrationUiController::FromWebContents(web_contents);
   // Show migration-related Ui when the user clicks the credit card icon.
   controller->OnUserClickedCreditCardIcon();
+}
+
+void MaybeShowSaveLocalCardSignInPromo(Browser* browser) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents);
+  autofill::SaveCardBubbleControllerImpl* controller =
+      autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
+
+  // The sign in promo will only be shown when 1) The user is signed out or 2)
+  // The user is signed in through DICe, but did not turn on syncing. Otherwise
+  // early returns.
+  controller->MaybeShowBubbleForSignInPromo();
+}
+
+void CloseSaveLocalCardSignInPromo(Browser* browser) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  autofill::SaveCardBubbleControllerImpl* controller =
+      autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
+
+  if (controller)
+    controller->HideBubbleForSignInPromo();
 }
 
 void Translate(Browser* browser) {
@@ -971,7 +1063,7 @@ void Print(Browser* browser) {
 #if BUILDFLAG(ENABLE_PRINTING)
   auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
   printing::StartPrint(
-      web_contents,
+      web_contents, mojo::NullAssociatedRemote() /* print_renderer */,
       browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled),
       false /* has_selection? */);
 #endif
@@ -1211,7 +1303,7 @@ void ToggleDistilledView(Browser* browser) {
 
 bool CanRequestTabletSite(WebContents* current_tab) {
   return current_tab &&
-         current_tab->GetController().GetLastCommittedEntry() != NULL;
+         current_tab->GetController().GetLastCommittedEntry() != nullptr;
 }
 
 bool IsRequestingTabletSite(Browser* browser) {
@@ -1322,5 +1414,11 @@ bool CanCreateBookmarkApp(const Browser* browser) {
   return web_app::CanCreateWebApp(browser);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if !defined(TOOLKIT_VIEWS)
+base::Optional<int> GetKeyboardFocusedTabIndex(const Browser* browser) {
+  return base::nullopt;
+}
+#endif
 
 }  // namespace chrome

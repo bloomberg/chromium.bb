@@ -15,7 +15,7 @@
 
 namespace syncer {
 
-class Cryptographer;
+class DirectoryCryptographer;
 class KeystoreKeysHandler;
 class SyncEncryptionHandler;
 class TestDirectorySetterUpper;
@@ -67,7 +67,8 @@ class TestUserShare {
   // Save and reload Directory to clear out temporary data in memory.
   bool Reload();
 
-  Cryptographer* GetCryptographer(const syncable::BaseTransaction* trans);
+  DirectoryCryptographer* GetCryptographer(
+      const syncable::BaseTransaction* trans);
 
   // Non-null iff called between a call to SetUp() and TearDown().
   UserShare* user_share();
@@ -89,8 +90,6 @@ class TestUserShare {
 
   // A helper function to pretend to download this type's root node.
   static bool CreateRoot(ModelType model_type, UserShare* service);
-
-  size_t GetDeleteJournalSize() const;
 
  private:
   std::unique_ptr<TestDirectorySetterUpper> dir_maker_;

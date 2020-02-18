@@ -226,7 +226,6 @@ Layer::~Layer() {
 
   if (content_layer_)
     content_layer_->ClearClient();
-  cc_layer_->SetLayerClient(nullptr);
   cc_layer_->RemoveFromParent();
   if (transfer_release_callback_)
     transfer_release_callback_->Run(gpu::SyncToken(), false);
@@ -651,7 +650,7 @@ void Layer::SetAcceptEvents(bool accept_events) {
   if (accept_events_ == accept_events)
     return;
   accept_events_ = accept_events;
-  cc_layer_->SetHitTestable(visible_ && accept_events_);
+  cc_layer_->SetHitTestable(IsHitTestableForCC());
 }
 
 bool Layer::GetTargetVisibility() const {
@@ -666,10 +665,6 @@ bool Layer::IsDrawn() const {
   while (layer && layer->visible_)
     layer = layer->parent_;
   return layer == nullptr;
-}
-
-bool Layer::ShouldDraw() const {
-  return type_ != LAYER_NOT_DRAWN && GetCombinedOpacity() > 0.0f;
 }
 
 void Layer::SetRoundedCornerRadius(const gfx::RoundedCornersF& corner_radii) {
@@ -749,7 +744,8 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   if (cc_layer_->parent()) {
     cc_layer_->parent()->ReplaceChild(cc_layer_, new_layer);
   }
-  cc_layer_->SetLayerClient(nullptr);
+  cc_layer_->ClearDebugInfo();
+
   new_layer->SetOpacity(cc_layer_->opacity());
   new_layer->SetTransform(cc_layer_->transform());
   new_layer->SetPosition(cc_layer_->position());
@@ -776,14 +772,14 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
     DCHECK(child->cc_layer_);
     cc_layer_->AddChild(child->cc_layer_);
   }
-  cc_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
   cc_layer_->SetTransformOrigin(gfx::Point3F());
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
-  cc_layer_->SetHitTestable(visible_ && accept_events_);
+  cc_layer_->SetHitTestable(IsHitTestableForCC());
   cc_layer_->SetHideLayerAndSubtree(!visible_);
   cc_layer_->SetBackdropFilterQuality(backdrop_filter_quality_);
   cc_layer_->SetElementId(cc::ElementId(cc_layer_->id()));
+  cc_layer_->EnsureDebugInfo().name = name_;
 
   SetLayerFilters();
   SetLayerBackgroundFilters();
@@ -1212,7 +1208,7 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
 void Layer::SetDidScrollCallback(
     base::RepeatingCallback<void(const gfx::ScrollOffset&,
                                  const cc::ElementId&)> callback) {
-  cc_layer_->set_did_scroll_callback(std::move(callback));
+  cc_layer_->SetDidScrollCallback(std::move(callback));
 }
 
 void Layer::SetScrollable(const gfx::Size& container_bounds) {
@@ -1288,15 +1284,6 @@ bool Layer::PrepareTransferableResource(
   *release_callback = std::move(transfer_release_callback_);
   return true;
 }
-
-std::unique_ptr<base::trace_event::TracedValue> Layer::TakeDebugInfo(
-    const cc::Layer* layer) {
-  auto value = std::make_unique<base::trace_event::TracedValue>();
-  value->SetString("layer_name", name_);
-  return value;
-}
-
-void Layer::DidChangeScrollbarsHiddenIfOverlay(bool) {}
 
 void Layer::CollectAnimators(
     std::vector<scoped_refptr<LayerAnimator>>* animators) {
@@ -1420,7 +1407,7 @@ void Layer::SetVisibilityFromAnimation(bool visible,
 
   visible_ = visible;
   cc_layer_->SetHideLayerAndSubtree(!visible_);
-  cc_layer_->SetHitTestable(visible_ && accept_events_);
+  cc_layer_->SetHitTestable(IsHitTestableForCC());
 }
 
 void Layer::SetBrightnessFromAnimation(float brightness,
@@ -1548,10 +1535,7 @@ void Layer::CreateCcLayer() {
   cc_layer_->SetContentsOpaque(true);
   cc_layer_->SetSafeOpaqueBackgroundColor(SK_ColorWHITE);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
-  // TODO(sunxd): Allow ui::Layers to set if they accept events or not. See
-  // https://crbug.com/924294.
-  cc_layer_->SetHitTestable(type_ != LAYER_NOT_DRAWN);
-  cc_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
+  cc_layer_->SetHitTestable(IsHitTestableForCC());
   cc_layer_->SetElementId(cc::ElementId(cc_layer_->id()));
   RecomputePosition();
 }

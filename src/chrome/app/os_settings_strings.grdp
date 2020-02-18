@@ -2,12 +2,26 @@
 <!-- Settings-specific strings (included from generated_resources.grd). -->
 <grit-part>
 <if expr="chromeos">
+  <!-- About (OS Settings) -->
+  <message name="IDS_OS_SETTINGS_ABOUT_PAGE_BUILD_DETAILS" desc="Label of the row button that clicks into Build details">
+    Build Details
+  </message>
+
   <!-- People (OS settings) -->
   <message name="IDS_OS_SETTINGS_PROFILE_LABEL" desc="Label underneath the profile's real name, listing the email address and optionally the number of additional accounts">
     {COUNT, plural,
      =0 {<ph name="EMAIL">$1<ex>alice@example.com</ex></ph>}
      =1 {<ph name="EMAIL">$1<ex>alice@example.com</ex></ph>, +1 more account}
      other {<ph name="EMAIL">$1<ex>alice@example.com</ex></ph>, +<ph name="EXTRA_ACCOUNTS">$2<ex>2</ex></ph> more accounts}}
+  </message>
+  <message name="IDS_OS_SETTINGS_SYNC_OS_APPS_CHECKBOX_LABEL" desc="Label for the checkbox which enables syncing of apps from the Google Play Store across devices.">
+    Play Store apps
+  </message>
+  <message name="IDS_OS_SETTINGS_SYNC_PRINTERS_CHECKBOX_LABEL" desc="Label for the checkbox which enables syncing of printers across devices.">
+    Printers
+  </message>
+  <message name="IDS_OS_SETTINGS_SYNC_OS_SETTINGS_CHECKBOX_LABEL" desc="Label for the checkbox which enables syncing of OS settings across devices.">
+    Settings
   </message>
 
   <!-- Languages and Inputs (OS settings) -->
@@ -39,7 +53,7 @@
     Preferred search engine
   </message>
   <message name="IDS_OS_SETTINGS_SEARCH_ENGINE_TOOLTIP" desc="Tooltip in OS settings explaining that search engine is used in both the Chrome browser and the Chrome OS app launcher.">
-    Used by Chrome browser and <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> launcher
+    Used by Chrome browser and <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> Launcher
   </message>
 
   <!-- Files Page (OS settings) -->

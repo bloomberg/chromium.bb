@@ -18,6 +18,7 @@
 #include "ash/wm/overview/overview_delegate.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
@@ -97,7 +98,7 @@ class OverviewHighlightController::HighlightWidget : public views::Widget {
     views::Widget::InitParams params;
     params.type = views::Widget::InitParams::TYPE_POPUP;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
     params.layer_type = ui::LAYER_NOT_DRAWN;
     params.accept_events = false;
     params.parent =
@@ -267,6 +268,7 @@ void OverviewHighlightController::OnViewDestroyingOrDisabling(
   DCHECK_GE(current_index, 0);
   deleted_index_ = base::make_optional(current_index);
   highlight_widget_.reset();
+  highlighted_view_->OnViewUnhighlighted();
   highlighted_view_ = nullptr;
 }
 
@@ -306,7 +308,7 @@ OverviewItem* OverviewHighlightController::GetHighlightedItem() const {
 
   for (auto& grid : overview_session_->grid_list()) {
     for (auto& item : grid->window_list()) {
-      if (highlighted_view_->GetView() == item->caption_container_view())
+      if (highlighted_view_->GetView() == item->overview_item_view())
         return item.get();
     }
   }
@@ -369,7 +371,7 @@ OverviewHighlightController::GetTraversableViews() const {
     }
 
     for (auto& item : grid->window_list())
-      traversable_views.push_back(item->caption_container_view());
+      traversable_views.push_back(item->overview_item_view());
   }
   return traversable_views;
 }
@@ -383,7 +385,7 @@ void OverviewHighlightController::UpdateFocusWidget(
   OverviewHighlightableView* previous_view = highlighted_view_;
   highlighted_view_ = view_to_be_highlighted;
 
-  // Perform accessiblity related tasks.
+  // Perform accessibility related tasks.
   highlighted_view_->GetView()->NotifyAccessibilityEvent(
       ax::mojom::Event::kSelection, true);
   // Note that both magnifiers are mutually exclusive. The overview "focus"

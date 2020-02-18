@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "components/reading_list/features/reading_list_buildflags.h"
 #include "components/sync/base/enum_set.h"
 
 namespace base {
@@ -92,13 +91,9 @@ enum ModelType {
   APP_SETTINGS,
   // An extension setting from the extension settings API.
   EXTENSION_SETTINGS,
-  // Deprecated.
-  DEPRECATED_APP_NOTIFICATIONS,
   // History delete directives, used to propagate history deletions (e.g. based
   // on a time range).
   HISTORY_DELETE_DIRECTIVES,
-  DEPRECATED_SYNCED_NOTIFICATIONS,
-  DEPRECATED_SYNCED_NOTIFICATION_APP_INFO,
   // Custom spelling dictionary entries.
   DICTIONARY,
   // Favicon images, including both the image URL and the actual pixels.
@@ -114,12 +109,8 @@ enum ModelType {
   PRIORITY_PREFERENCES,
   // Supervised user settings. Cannot be encrypted.
   SUPERVISED_USER_SETTINGS,
-  DEPRECATED_SUPERVISED_USERS,
-  DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS,
-  DEPRECATED_ARTICLES,
   // App List items, used by the ChromeOS app launcher.
   APP_LIST,
-  DEPRECATED_WIFI_CREDENTIALS,
   // Supervised user whitelists. Each item contains a CRX ID (like an extension
   // ID) and a name.
   SUPERVISED_USER_WHITELISTS,
@@ -131,8 +122,6 @@ enum ModelType {
   READING_LIST,
   // Commit only user events.
   USER_EVENTS,
-  // Shares in project Mountain.
-  MOUNTAIN_SHARES,
   // Commit only user consents.
   USER_CONSENTS,
   // Tabs sent between devices.
@@ -143,6 +132,10 @@ enum ModelType {
   WIFI_CONFIGURATIONS,
   // A web app object.
   WEB_APPS,
+  // OS-specific preferences (a.k.a. "OS settings"). Chrome OS only.
+  OS_PREFERENCES,
+  // Synced before other user types. Never encrypted. Chrome OS only.
+  OS_PRIORITY_PREFERENCES,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
@@ -176,6 +169,68 @@ inline ModelType ModelTypeFromInt(int i) {
   return static_cast<ModelType>(i);
 }
 
+// A version of the ModelType enum for use in histograms. ModelType does not
+// have stable values (e.g. new ones may be inserted in the middle), so it can't
+// be recorded directly.
+// Instead of using entries from this enum directly, you'll usually want to get
+// them via ModelTypeHistogramValue(model_type).
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. When you add a new entry or when you
+// deprecate an existing one, also update SyncModelTypes in enums.xml and
+// SyncModelType and SyncModelTypeByMacro suffixes in histograms.xml.
+// TODO(crbug.com/1019744): Remove the SyncModelTypeByMacro suffixes.
+enum class ModelTypeForHistograms {
+  kUnspecified = 0,
+  kTopLevelFolder = 1,
+  kBookmarks = 2,
+  kPreferences = 3,
+  kPasswords = 4,
+  kAutofillProfile = 5,
+  kAutofill = 6,
+  kThemes = 7,
+  kTypedUrls = 8,
+  kExtensions = 9,
+  kSearchEngines = 10,
+  kSessions = 11,
+  kApps = 12,
+  kAppSettings = 13,
+  kExtensionSettings = 14,
+  // kDeprecatedAppNotifications = 15,
+  kHistoryDeleteDirectices = 16,
+  kNigori = 17,
+  kDeviceInfo = 18,
+  kDeprecatedExperiments = 19,
+  // kDeprecatedSyncedNotifications = 20,
+  kPriorityPreferences = 21,
+  kDictionary = 22,
+  kFaviconImages = 23,
+  kFaviconTracking = 24,
+  kProxyTabs = 25,
+  kSupervisedUserSettings = 26,
+  // kDeprecatedSupervisedUsers = 27,
+  // kDeprecatedArticles = 28,
+  kAppList = 29,
+  // kDeprecatedSupervisedUserSharedSettings = 30,
+  // kDeprecatedSyncedNotificationAppInfo = 31,
+  // kDeprecatedWifiCredentials = 32,
+  kSupervisedUserWhitelists = 33,
+  kAutofillWalletData = 34,
+  kAutofillWalletMetadata = 35,
+  kArcPackage = 36,
+  kPrinters = 37,
+  kReadingList = 38,
+  kUserEvents = 39,
+  // kDeprecatedMountainShares = 40,
+  kUserConsents = 41,
+  kSendTabToSelf = 42,
+  kSecurityEvents = 43,
+  kWifiConfigurations = 44,
+  kWebApps = 45,
+  kOsPreferences = 46,
+  kOsPriorityPreferences = 47,
+  kMaxValue = kOsPriorityPreferences
+};
+
 // Used to mark the type of EntitySpecifics that has no actual data.
 void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics);
 
@@ -198,16 +253,12 @@ constexpr ModelTypeSet ProtocolTypes() {
       BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL_PROFILE, AUTOFILL,
       AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA, THEMES, TYPED_URLS,
       EXTENSIONS, SEARCH_ENGINES, SESSIONS, APPS, APP_SETTINGS,
-      EXTENSION_SETTINGS, DEPRECATED_APP_NOTIFICATIONS,
-      HISTORY_DELETE_DIRECTIVES, DEPRECATED_SYNCED_NOTIFICATIONS,
-      DEPRECATED_SYNCED_NOTIFICATION_APP_INFO, DICTIONARY, FAVICON_IMAGES,
+      EXTENSION_SETTINGS, HISTORY_DELETE_DIRECTIVES, DICTIONARY, FAVICON_IMAGES,
       FAVICON_TRACKING, DEVICE_INFO, PRIORITY_PREFERENCES,
-      SUPERVISED_USER_SETTINGS, DEPRECATED_SUPERVISED_USERS,
-      DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, DEPRECATED_ARTICLES, APP_LIST,
-      DEPRECATED_WIFI_CREDENTIALS, SUPERVISED_USER_WHITELISTS, ARC_PACKAGE,
-      PRINTERS, READING_LIST, USER_EVENTS, NIGORI, DEPRECATED_EXPERIMENTS,
-      MOUNTAIN_SHARES, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS,
-      WEB_APPS, WIFI_CONFIGURATIONS);
+      SUPERVISED_USER_SETTINGS, APP_LIST, SUPERVISED_USER_WHITELISTS,
+      ARC_PACKAGE, PRINTERS, READING_LIST, USER_EVENTS, NIGORI,
+      DEPRECATED_EXPERIMENTS, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS,
+      WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES, OS_PRIORITY_PREFERENCES);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -223,11 +274,20 @@ constexpr ModelTypeSet AlwaysPreferredUserTypes() {
                       SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS);
 }
 
+// User types which are always encrypted.
+constexpr ModelTypeSet AlwaysEncryptedUserTypes() {
+  // If you add a new model type here that is conceptually different from a
+  // password, make sure you audit UI code that refers to these types as
+  // passwords, e.g. consumers of IsEncryptEverythingEnabled().
+  return ModelTypeSet(PASSWORDS, WIFI_CONFIGURATIONS);
+}
+
 // This is the subset of UserTypes() that have priority over other types.  These
 // types are synced before other user types and are never encrypted.
 constexpr ModelTypeSet PriorityUserTypes() {
   return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES,
-                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS);
+                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,
+                      OS_PRIORITY_PREFERENCES);
 }
 
 // Proxy types are placeholder types for handling implicitly enabling real
@@ -263,7 +323,8 @@ constexpr ModelTypeSet CommitOnlyTypes() {
   return ModelTypeSet(USER_EVENTS, USER_CONSENTS, SECURITY_EVENTS);
 }
 
-// This is the subset of UserTypes() that can be encrypted.
+// User types that can be encrypted, which is a subset of UserTypes() and a
+// superset of AlwaysEncryptedUserTypes();
 ModelTypeSet EncryptableUserTypes();
 
 // Determine a model type from the field number of its associated
@@ -292,8 +353,6 @@ ModelType GetModelTypeFromSpecificsFieldNumber(int field_number);
 // a model type.
 int GetSpecificsFieldNumberFromModelType(ModelType model_type);
 
-FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in);
-
 // TODO(sync): The functions below badly need some cleanup.
 
 // Returns a string with application lifetime that represents the name of
@@ -308,7 +367,7 @@ const char* ModelTypeToHistogramSuffix(ModelType model_type);
 // The mapping from ModelType to integer is defined here. It defines a
 // completely different order than the ModelType enum itself. The mapping should
 // match the SyncModelTypes mapping from integer to labels defined in enums.xml.
-int ModelTypeToHistogramInt(ModelType model_type);
+ModelTypeForHistograms ModelTypeHistogramValue(ModelType model_type);
 
 // Returns for every model_type a positive unique integer that is stable over
 // time and thus can be used when persisting data.
@@ -329,6 +388,7 @@ std::ostream& operator<<(std::ostream& out, ModelTypeSet model_type_set);
 // Returns the set of comma-separated model types from |model_type_string|.
 ModelTypeSet ModelTypeSetFromString(const std::string& model_type_string);
 
+// Generates a base::ListValue from |model_types|.
 std::unique_ptr<base::ListValue> ModelTypeSetToValue(ModelTypeSet model_types);
 
 // Returns a string corresponding to the syncable tag for this datatype.

@@ -90,6 +90,11 @@ class ManagePasswordsBubbleModel {
   // clicked.
   void OnSkipSignInClicked();
 
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+  // Called by the view when the account store checkbox is toggled.
+  void OnToggleAccountStore(bool is_checked);
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
+
   password_manager::ui::State state() const { return state_; }
 
   const base::string16& title() const { return title_; }
@@ -100,7 +105,6 @@ class ManagePasswordsBubbleModel {
   const std::vector<autofill::PasswordForm>& local_credentials() const {
     return local_credentials_;
   }
-  const base::string16& manage_link() const { return manage_link_; }
   const base::string16& save_confirmation_text() const {
     return save_confirmation_text_;
   }
@@ -139,6 +143,9 @@ class ManagePasswordsBubbleModel {
   // Returns the value for the username field when the bubble is opened.
   const base::string16& GetCurrentUsername() const;
 
+  // Returns the ID of the picture to show above the title.
+  int GetTopIllustration(bool dark_mode) const;
+
   // Returns true and updates the internal state iff the Save bubble should
   // switch to show a promotion after the password was saved. Otherwise,
   // returns false and leaves the current state.
@@ -153,6 +160,11 @@ class ManagePasswordsBubbleModel {
   // re-authentication is successful.
   bool RevealPasswords();
 
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+  // Returns true iff the password account store is used.
+  bool IsUsingAccountStore();
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
+
  private:
   class InteractionKeeper;
   // Updates |title_| for the PENDING_PASSWORD_STATE.
@@ -166,7 +178,6 @@ class ManagePasswordsBubbleModel {
   base::string16 title_;
   autofill::PasswordForm pending_password_;
   std::vector<autofill::PasswordForm> local_credentials_;
-  base::string16 manage_link_;
   base::string16 save_confirmation_text_;
   gfx::Range save_confirmation_link_range_;
 

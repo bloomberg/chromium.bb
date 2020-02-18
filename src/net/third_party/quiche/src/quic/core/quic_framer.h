@@ -288,7 +288,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                       QuicStreamId stream_id,
                                       QuicStreamOffset offset,
                                       bool last_frame_in_packet,
-                                      QuicPacketLength data_length);
+                                      size_t data_length);
   // Returns the overhead of framing a CRYPTO frame with the specific offset and
   // data length provided, but not counting the size of the data payload.
   static size_t GetMinCryptoFrameSize(QuicStreamOffset offset,
@@ -380,21 +380,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       uint64_t retry_token_length,
       QuicVariableLengthIntegerLength length_length);
 
-  // Lightweight parsing of |packet| and populates |format|, |version_flag|,
-  // |version_label|, |destination_connection_id|, |source_connection_id| and
-  // |detailed_error|. Please note, |expected_destination_connection_id_length|
-  // is only used to determine IETF short header packet's destination
-  // connection ID length.
-  static QuicErrorCode ProcessPacketDispatcher(
-      const QuicEncryptedPacket& packet,
-      uint8_t expected_destination_connection_id_length,
-      PacketHeaderFormat* format,
-      bool* version_flag,
-      QuicVersionLabel* version_label,
-      QuicConnectionId* destination_connection_id,
-      QuicConnectionId* source_connection_id,
-      std::string* detailed_error);
-
   // Parses the unencryoted fields in a QUIC header using |reader| as input,
   // stores the result in the other parameters.
   // |expected_destination_connection_id_length| is only used for short headers.
@@ -422,6 +407,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       const QuicEncryptedPacket& packet,
       uint8_t expected_destination_connection_id_length,
       PacketHeaderFormat* format,
+      QuicLongHeaderType* long_packet_type,
       bool* version_present,
       bool* has_length_prefix,
       QuicVersionLabel* version_label,
@@ -440,33 +426,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                          char* buffer,
                          size_t packet_length,
                          EncryptionLevel level);
-
-  // Serializes a probing packet, which is a padded PING packet. Returns the
-  // length of the packet. Returns 0 if it fails to serialize.
-  size_t BuildConnectivityProbingPacket(const QuicPacketHeader& header,
-                                        char* buffer,
-                                        size_t packet_length,
-                                        EncryptionLevel level);
-
-  // Serialize a probing packet that uses IETF QUIC's PATH CHALLENGE frame. Also
-  // fills the packet with padding.
-  size_t BuildPaddedPathChallengePacket(const QuicPacketHeader& header,
-                                        char* buffer,
-                                        size_t packet_length,
-                                        QuicPathFrameBuffer* payload,
-                                        QuicRandom* randomizer,
-                                        EncryptionLevel level);
-
-  // Serialize a probing response packet that uses IETF QUIC's PATH RESPONSE
-  // frame. Also fills the packet with padding if |is_padded| is
-  // true. |payloads| is always emptied, even if the packet can not be
-  // successfully built.
-  size_t BuildPathResponsePacket(const QuicPacketHeader& header,
-                                 char* buffer,
-                                 size_t packet_length,
-                                 const QuicDeque<QuicPathFrameBuffer>& payloads,
-                                 const bool is_padded,
-                                 EncryptionLevel level);
 
   // Returns a new public reset packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildPublicResetPacket(
@@ -548,6 +507,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Changes the encrypter used for level |level| to |encrypter|.
   void SetEncrypter(EncryptionLevel level,
                     std::unique_ptr<QuicEncrypter> encrypter);
+
+  // Sets the encrypter and decrypter for the ENCRYPTION_INITIAL level.
+  void SetInitialObfuscators(QuicConnectionId connection_id);
 
   // Encrypts a payload in |buffer|.  |ad_len| is the length of the associated
   // data. |total_len| is the length of the associated data plus plaintext.
@@ -679,7 +641,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   typedef std::map<QuicPacketNumber, uint8_t> NackRangeMap;
 
-  struct AckFrameInfo {
+  struct QUIC_EXPORT_PRIVATE AckFrameInfo {
     AckFrameInfo();
     AckFrameInfo(const AckFrameInfo& other);
     ~AckFrameInfo();

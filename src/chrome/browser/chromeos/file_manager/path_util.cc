@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/download/download_dir_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -34,7 +35,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
-#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "url/gurl.h"
@@ -200,14 +201,13 @@ bool MigrateToDriveFs(Profile* profile,
   const auto* user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   auto* integration_service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile);
-  if (!base::FeatureList::IsEnabled(chromeos::features::kDriveFs) ||
-      !integration_service || !integration_service->is_enabled() || !user ||
+  if (!integration_service || !integration_service->is_enabled() || !user ||
       !user->GetAccountId().HasAccountIdKey()) {
     return false;
   }
   *new_path = integration_service->GetMountPointPath();
-  return drive::util::GetDriveMountPointPath(profile).AppendRelativePath(
-      old_path, new_path);
+  return drive::util::GetDriveGrandRootPath().AppendRelativePath(
+      drive::util::ExtractDrivePath(old_path), new_path);
 }
 
 std::string GetDownloadsMountPointName(Profile* profile) {
@@ -272,8 +272,7 @@ bool ConvertFileSystemURLToPathInsideCrostini(
   std::string mount_point_name_drive;
   auto* integration_service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile);
-  if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs) &&
-      integration_service) {
+  if (integration_service) {
     mount_point_name_drive =
         integration_service->GetMountPointPath().BaseName().value();
   }
@@ -375,11 +374,8 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
 
   bool force_external = false;
   // Force external URL for DriveFS and Crostini.
-  drive::DriveIntegrationService* integration_service = nullptr;
-  if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
-    integration_service =
-        drive::util::GetIntegrationServiceByProfile(primary_profile);
-  }
+  drive::DriveIntegrationService* integration_service =
+      drive::util::GetIntegrationServiceByProfile(primary_profile);
   if ((integration_service &&
        integration_service->GetMountPointPath().AppendRelativePath(
            path, &relative_path)) ||
@@ -499,36 +495,15 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
                                .Append(l10n_util::GetStringUTF8(
                                    IDS_FILE_BROWSER_DRIVE_MY_DRIVE_LABEL))
                                .value())) {
-  } else if (drive_integration_service &&
-             ReplacePrefix(&result,
-                           drive_integration_service->GetMountPointPath()
-                               .Append(kDriveFsDirTeamDrives)
-                               .value(),
-                           base::FilePath(kDisplayNameGoogleDrive)
-                               .Append(l10n_util::GetStringUTF8(
-                                   IDS_FILE_BROWSER_DRIVE_SHARED_DRIVES_LABEL))
-                               .value())) {
-  } else if (drive_integration_service &&
-             ReplacePrefix(&result,
-                           drive_integration_service->GetMountPointPath()
-                               .Append(kDriveFsDirComputers)
-                               .value(),
-                           base::FilePath(kDisplayNameGoogleDrive)
-                               .Append(l10n_util::GetStringUTF8(
-                                   IDS_FILE_BROWSER_DRIVE_COMPUTERS_LABEL))
-                               .value())) {
-  } else if (drive_integration_service &&
-             ReplacePrefix(&result,
-                           drive::util::GetDriveMountPointPath(profile)
-                               .Append(kDriveFsDirRoot)
-                               .value(),
+  } else if (ReplacePrefix(&result,
+                           download_dir_util::kDriveNamePolicyVariableName,
                            base::FilePath(kDisplayNameGoogleDrive)
                                .Append(l10n_util::GetStringUTF8(
                                    IDS_FILE_BROWSER_DRIVE_MY_DRIVE_LABEL))
                                .value())) {
   } else if (drive_integration_service &&
              ReplacePrefix(&result,
-                           drive::util::GetDriveMountPointPath(profile)
+                           drive_integration_service->GetMountPointPath()
                                .Append(kDriveFsDirTeamDrives)
                                .value(),
                            base::FilePath(kDisplayNameGoogleDrive)
@@ -537,7 +512,7 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
                                .value())) {
   } else if (drive_integration_service &&
              ReplacePrefix(&result,
-                           drive::util::GetDriveMountPointPath(profile)
+                           drive_integration_service->GetMountPointPath()
                                .Append(kDriveFsDirComputers)
                                .value(),
                            base::FilePath(kDisplayNameGoogleDrive)

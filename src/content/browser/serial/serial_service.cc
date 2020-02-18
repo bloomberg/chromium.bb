@@ -9,12 +9,15 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/serial_chooser.h"
 #include "content/public/browser/serial_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 namespace content {
@@ -40,7 +43,13 @@ SerialService::SerialService(RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host) {
   DCHECK(render_frame_host_->IsFeatureEnabled(
       blink::mojom::FeaturePolicyFeature::kSerial));
-  watchers_.set_connection_error_handler(base::BindRepeating(
+  // Serial API is not supported for back-forward cache for now because we
+  // don't have support for closing/freezing ports when the frame is added to
+  // the back-forward cache, so we mark frames that use this API as disabled
+  // for back-forward cache.
+  BackForwardCache::DisableForRenderFrameHost(render_frame_host, "Serial");
+
+  watchers_.set_disconnect_handler(base::BindRepeating(
       &SerialService::OnWatcherConnectionError, base::Unretained(this)));
 }
 
@@ -50,8 +59,9 @@ SerialService::~SerialService() {
     DecrementActiveFrameCount();
 }
 
-void SerialService::Bind(blink::mojom::SerialServiceRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void SerialService::Bind(
+    mojo::PendingReceiver<blink::mojom::SerialService> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void SerialService::GetPorts(GetPortsCallback callback) {
@@ -100,8 +110,8 @@ void SerialService::GetPort(
     web_contents_impl->IncrementSerialActiveFrameCount();
   }
 
-  device::mojom::SerialPortConnectionWatcherPtr watcher;
-  watchers_.AddBinding(this, mojo::MakeRequest(&watcher));
+  mojo::PendingRemote<device::mojom::SerialPortConnectionWatcher> watcher;
+  watchers_.Add(this, watcher.InitWithNewPipeAndPassReceiver());
   delegate->GetPortManager(render_frame_host_)
       ->GetPort(token, std::move(receiver), std::move(watcher));
 }

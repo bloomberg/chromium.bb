@@ -22,7 +22,6 @@
 #include "media/media_buildflags.h"
 
 namespace media {
-class EncryptionScheme;
 class H264Parser;
 struct H264SPS;
 }
@@ -48,7 +47,7 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
   EsParserH264(const NewVideoConfigCB& new_video_config_cb,
                const EmitBufferCB& emit_buffer_cb,
-               bool use_hls_sample_aes,
+               EncryptionScheme init_encryption_scheme,
                const GetDecryptConfigCB& get_decrypt_config_cb);
 #endif
   ~EsParserH264() override;
@@ -77,8 +76,7 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
 
   // Update the video decoder config based on an H264 SPS.
   // Return true if successful.
-  bool UpdateVideoDecoderConfig(const H264SPS* sps,
-                                const EncryptionScheme& scheme);
+  bool UpdateVideoDecoderConfig(const H264SPS* sps, EncryptionScheme scheme);
 
   EsAdapterVideo es_adapter_;
 
@@ -89,9 +87,8 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
   int64_t current_access_unit_pos_;
   int64_t next_access_unit_pos_;
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-  bool use_hls_sample_aes_;
+  const EncryptionScheme init_encryption_scheme_;
   // Callback to obtain the current decrypt_config.
-  // Only called if use_hls_sample_aes_ is true.
   GetDecryptConfigCB get_decrypt_config_cb_;
   Ranges<int> protected_blocks_;
 #endif

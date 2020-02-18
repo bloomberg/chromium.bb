@@ -20,7 +20,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.LibraryLoaderConfig;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.memory.MemoryPressureUma;
@@ -83,7 +82,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         mCpuFeatures = connectionBundle.getLong(ContentChildProcessConstants.EXTRA_CPU_FEATURES);
         assert mCpuCount > 0;
 
-        if (LibraryLoaderConfig.useChromiumLinker()
+        if (LibraryLoader.getInstance().useChromiumLinker()
                 && !LibraryLoader.getInstance().isLoadedByZygote()) {
             Bundle sharedRelros = connectionBundle.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
             if (sharedRelros != null) getLinker().provideSharedRelros(sharedRelros);
@@ -99,16 +98,17 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     }
 
     @Override
-    public boolean loadNativeLibrary(Context hostContext) {
+    public void loadNativeLibrary(Context hostContext) {
         if (LibraryLoader.getInstance().isLoadedByZygote()) {
-            return initializeLibrary();
+            initializeLibrary();
+            return;
         }
 
         JNIUtils.enableSelectiveJniRegistration();
 
         Linker linker = null;
         boolean requestedSharedRelro = false;
-        if (LibraryLoaderConfig.useChromiumLinker()) {
+        if (LibraryLoader.getInstance().useChromiumLinker()) {
             assert mLinkerParams != null;
             linker = getLinker();
             if (mLinkerParams.mWaitForSharedRelro) {
@@ -118,51 +118,31 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
                 linker.disableSharedRelros();
             }
         }
-        boolean isLoaded = false;
         try {
             LibraryLoader.getInstance().loadNowOverrideApplicationContext(hostContext);
-            isLoaded = true;
         } catch (ProcessInitException e) {
             if (requestedSharedRelro) {
                 Log.w(TAG,
                         "Failed to load native library with shared RELRO, "
                                 + "retrying without");
-            } else {
-                Log.e(TAG, "Failed to load native library", e);
-            }
-        }
-        if (!isLoaded && requestedSharedRelro) {
-            linker.disableSharedRelros();
-            try {
+                linker.disableSharedRelros();
                 LibraryLoader.getInstance().loadNowOverrideApplicationContext(hostContext);
-                isLoaded = true;
-            } catch (ProcessInitException e) {
-                Log.e(TAG, "Failed to load native library on retry", e);
+            } else {
+                throw e;
             }
-        }
-        if (!isLoaded) {
-            return false;
         }
         LibraryLoader.getInstance().registerRendererProcessHistogram();
-
-        return initializeLibrary();
+        initializeLibrary();
     }
 
-    private boolean initializeLibrary() {
-        try {
-            LibraryLoader.getInstance().initialize(mLibraryProcessType);
-        } catch (ProcessInitException e) {
-            Log.w(TAG, "startup failed: %s", e);
-            return false;
-        }
+    private void initializeLibrary() {
+        LibraryLoader.getInstance().initialize(mLibraryProcessType);
 
         // Now that the library is loaded, get the FD map,
         // TODO(jcivelli): can this be done in onBeforeMain? We would have to mode onBeforeMain
         // so it's called before FDs are registered.
         ContentChildProcessServiceDelegateJni.get().retrieveFileDescriptorsIdsToKeys(
                 ContentChildProcessServiceDelegate.this);
-
-        return true;
     }
 
     @Override
@@ -186,7 +166,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
     // Return a Linker instance. If testing, the Linker needs special setup.
     private Linker getLinker() {
-        if (LibraryLoaderConfig.areTestsEnabled()) {
+        if (LibraryLoader.getInstance().areTestsEnabled()) {
             // For testing, set the Linker implementation and the test runner
             // class name to match those used by the parent.
             assert mLinkerParams != null;

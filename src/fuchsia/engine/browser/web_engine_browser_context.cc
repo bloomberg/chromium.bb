@@ -17,9 +17,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
-#include "fuchsia/engine/browser/web_engine_net_log.h"
+#include "fuchsia/engine/browser/web_engine_net_log_observer.h"
 #include "fuchsia/engine/browser/web_engine_permission_manager.h"
-#include "fuchsia/engine/common.h"
 #include "services/network/public/cpp/network_switches.h"
 
 class WebEngineBrowserContext::ResourceContext
@@ -32,22 +31,23 @@ class WebEngineBrowserContext::ResourceContext
   DISALLOW_COPY_AND_ASSIGN(ResourceContext);
 };
 
-std::unique_ptr<WebEngineNetLog> CreateNetLog() {
-  std::unique_ptr<WebEngineNetLog> result;
+std::unique_ptr<WebEngineNetLogObserver> CreateNetLogObserver() {
+  std::unique_ptr<WebEngineNetLogObserver> result;
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(network::switches::kLogNetLog)) {
     base::FilePath log_path =
         command_line->GetSwitchValuePath(network::switches::kLogNetLog);
-    result = std::make_unique<WebEngineNetLog>(log_path);
+    result = std::make_unique<WebEngineNetLogObserver>(log_path);
   }
 
   return result;
 }
 
 WebEngineBrowserContext::WebEngineBrowserContext(bool force_incognito)
-    : net_log_(CreateNetLog()), resource_context_(new ResourceContext()) {
+    : net_log_observer_(CreateNetLogObserver()),
+      resource_context_(new ResourceContext()) {
   if (!force_incognito) {
     base::PathService::Get(base::DIR_APP_DATA, &data_dir_path_);
     if (!base::PathExists(data_dir_path_)) {
@@ -66,8 +66,8 @@ WebEngineBrowserContext::~WebEngineBrowserContext() {
   NotifyWillBeDestroyed(this);
 
   if (resource_context_) {
-    content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                       std::move(resource_context_));
+    base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
+                     std::move(resource_context_));
   }
 
   ShutdownStoragePartitions();
@@ -108,6 +108,11 @@ WebEngineBrowserContext::GetSpecialStoragePolicy() {
 
 content::PushMessagingService*
 WebEngineBrowserContext::GetPushMessagingService() {
+  return nullptr;
+}
+
+content::StorageNotificationService*
+WebEngineBrowserContext::GetStorageNotificationService() {
   return nullptr;
 }
 

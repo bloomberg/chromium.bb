@@ -17,6 +17,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -112,6 +113,11 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   // Histogram to log context in which parent access code was used.
   static constexpr char kUMAParentAccessCodeUsage[] =
       "Supervision.ParentAccessCode.Usage";
+
+  // Returns color used for dialog and UI elements specific for child user.
+  // |using_blur| should be true if the UI element is using background blur
+  // (color transparency depends on it).
+  static SkColor GetChildUserDialogColor(bool using_blur);
 
   // Creates parent access view that will validate the parent access code for a
   // specific child, when |account_id| is set, or to any child signed in the

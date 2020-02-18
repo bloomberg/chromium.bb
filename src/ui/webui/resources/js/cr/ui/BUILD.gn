@@ -8,7 +8,7 @@ import("../../../tools/js_modulizer.gni")
 group("closure_compile") {
   deps = [
     ":ui_resources",
-    "page_manager:closure_compile",
+    ":ui_resources_modules",
   ]
 }
 
@@ -25,6 +25,7 @@ js_type_check("ui_resources") {
     ":focus_row",
     ":focus_row_behavior",
     ":focus_without_ink",
+    ":keyboard_shortcut_list",
     ":list",
     ":list_item",
     ":list_selection_controller",
@@ -33,7 +34,6 @@ js_type_check("ui_resources") {
     ":menu",
     ":menu_button",
     ":menu_item",
-    ":node_utils",
     ":overlay",
     ":position_util",
     ":splitter",
@@ -65,6 +65,7 @@ js_library("bubble") {
 
 js_library("command") {
   deps = [
+    ":keyboard_shortcut_list",
     "..:ui",
     "../..:cr",
   ]
@@ -89,7 +90,6 @@ js_library("dialogs") {
 
 js_library("drag_wrapper") {
   deps = [
-    "../..:assert",
     "../..:cr",
   ]
 }
@@ -99,7 +99,6 @@ js_library("focus_grid") {
     ":focus_row",
     "../..:assert",
     "../..:cr",
-    "../..:event_tracker",
   ]
 }
 
@@ -141,6 +140,12 @@ js_library("focus_without_ink") {
 js_library("grid") {
   deps = [
     ":list",
+  ]
+}
+
+js_library("keyboard_shortcut_list") {
+  deps = [
+    "../..:cr",
   ]
 }
 
@@ -210,12 +215,6 @@ js_library("menu") {
   ]
 }
 
-js_library("node_utils") {
-  deps = [
-    "../..:cr",
-  ]
-}
-
 js_library("overlay") {
   deps = [
     "../..:cr",
@@ -266,12 +265,126 @@ js_library("tree") {
 }
 
 js_modulizer("modulize") {
-  input_files = [ "focus_outline_manager.js" ]
+  input_files = [
+    "drag_wrapper.js",
+    "focus_grid.js",
+    "focus_outline_manager.js",
+    "focus_row.js",
+    "focus_row_behavior.js",
+    "focus_without_ink.js",
+    "keyboard_shortcut_list.js",
+    "store.js",
+    "store_client.js",
+  ]
+  namespace_rewrites = [
+    "cr.ui.Action|Action",
+    "cr.ui.DeferredAction|DeferredAction",
+    "cr.ui.DragWrapperDelegate|DragWrapperDelegate",
+    "cr.ui.FocusRowDelegate|FocusRowDelegate",
+    "cr.ui.FocusRow|FocusRow",
+    "cr.ui.focusWithoutInk|focusWithoutInk",
+    "cr.ui.StoreObserver|StoreObserver",
+    "cr.ui.VirtualFocusRow|VirtualFocusRow",
+  ]
+}
+
+js_type_check("ui_resources_modules") {
+  is_polymer3 = true
+  deps = [
+    ":drag_wrapper.m",
+    ":focus_grid.m",
+    ":focus_outline_manager.m",
+    ":focus_row.m",
+    ":focus_row_behavior.m",
+    ":focus_without_ink.m",
+    ":keyboard_shortcut_list.m",
+    ":store.m",
+    ":store_client.m",
+  ]
+}
+
+js_library("drag_wrapper.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/drag_wrapper.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("focus_grid.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_grid.m.js",
+  ]
+  deps = [
+    ":focus_row.m",
+    "../..:assert.m",
+  ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("focus_outline_manager.m") {
   sources = [
     "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_outline_manager.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("focus_row.m") {
+  deps = [
+    "../..:assert.m",
+    "../..:event_tracker.m",
+    "../..:util.m",
+  ]
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_row.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("focus_row_behavior.m") {
+  deps = [
+    ":focus_row.m",
+    ":focus_without_ink.m",
+    "../..:assert.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_row_behavior.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("focus_without_ink.m") {
+  deps = [
+    "../..:assert.m",
+    "../..:cr.m",
+  ]
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_without_ink.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("keyboard_shortcut_list.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/keyboard_shortcut_list.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("store.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/store.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("store_client.m") {
+  deps = [
+    ":store.m",
+    "../..:assert.m",
+  ]
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/store_client.m.js",
   ]
   extra_deps = [ ":modulize" ]
 }

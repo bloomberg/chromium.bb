@@ -46,7 +46,7 @@
   * [Vulkan Installable Client Driver interface with the loader](#vulkan-installable-client-driver-interface-with-the-loader)
     * [ICD Discovery](#icd-discovery)
     * [ICD Manifest File Format](#icd-manifest-file-format)
-    * [ICD Vulkan Entry Point Discovery](#icd-vulkan-entry point-discovery)
+    * [ICD Vulkan Entry Point Discovery](#icd-vulkan-entry-point-discovery)
     * [ICD API Version](#icd-api-version)
     * [ICD Unknown Physical Device Extensions](#icd-unknown-physical-device-extensions)
     * [ICD Dispatchable Object Creation](#icd-dispatchable-object-creation)
@@ -698,12 +698,9 @@ target-specific extensions:
 | Windowing System | Extensions available |
 |----------------|--------------------|
 | Windows  | VK_KHR_win32_surface |
-| Linux (Default) |  VK_KHR_xcb_surface and VK_KHR_xlib_surface |
 | Linux (Wayland) | VK_KHR_wayland_surface |
+| Linux (X11) |  VK_KHR_xcb_surface and VK_KHR_xlib_surface |
 | macOS (MoltenVK) | VK_MVK_macos_surface |
-
-**NOTE:** Wayland is not fully supported at this time.  Wayland
-support is present, but should be considered Beta quality.
 
 It is important to understand that while the loader may support the various
 entry points for these extensions, there is a handshake required to actually
@@ -870,7 +867,10 @@ values in the following Windows registry keys:
 
 For each value in these keys which has DWORD data set to 0, the loader opens
 the JSON manifest file specified by the name of the value. Each name must be a
-full pathname to the manifest file.
+full pathname to the manifest file. Additionally, the `HKEY_CURRENT_USER` locations
+will only be searched if an application does not have administrative privileges.
+This is done to ensure that an application with administrative privileges does not
+run layers that did not need administrator access to install.
 
 Additionally, the loader will scan through registry keys specific to Display
 Adapters and all Software Components associated with these adapters for the
@@ -946,6 +946,9 @@ will be ignored for suid programs.
 installed from locally-built sources.
  4. The "/usr/share/vulkan/\*\_layer.d" directories are for layers that are
 installed from Linux-distribution-provided packages.
+5. The locations in `$HOME` will only be searched if an application does not have
+root access. This is done to ensure that an application with root access does not
+run layers that did not need root access to install.
 
 As on Windows, if VK\_LAYER\_PATH is defined, then the
 loader will instead look at the paths defined by that variable instead of using
@@ -970,10 +973,13 @@ On macOS, the Vulkan loader will scan the files in the following directories:
     $HOME/.local/share/vulkan/implicit_layer.d
 
 1. &lt;bundle&gt; is the directory containing a bundled application.  It is scanned first.
-1. The "/usr/local/\*" directories can be configured to be other directories at
+2. The "/usr/local/\*" directories can be configured to be other directories at
 build time.
-1. $HOME is the current home directory of the application's user id; this path
+3. $HOME is the current home directory of the application's user id; this path
 will be ignored for suid programs.
+4. The locations in `$HOME` will only be searched if an application does not have
+root access. This is done to ensure that an application with root access does not
+run layers that did not need root access to install.
 
 As on Windows, if VK\_LAYER\_PATH is defined, then the
 loader will instead look at the paths defined by that variable instead of using
@@ -1247,9 +1253,9 @@ appropriate type to call into the next entity.
   * This can be implemented in various ways but
 for clarity, will be referred to as a dispatch table.
 - A layer can use the `VkLayerDispatchTable` structure as a device dispatch
-table (see include/vulkan/vk_layer.h).
+table (see include/vulkan/vk_dispatch_table_helper.h).
 - A layer can use the `VkLayerInstanceDispatchTable` structure as a instance
-dispatch table (see include/vulkan/vk_layer.h).
+dispatch table (see include/vulkan/vk_dispatch_table_helper.h).
 - A Layer's `vkGetInstanceProcAddr` function uses the next entity's
 `vkGetInstanceProcAddr` to call down the chain for unknown (i.e.
 non-intercepted) functions.
@@ -2352,14 +2358,16 @@ of the `VkApplicationInfo` struct where `apiVersion` is 1.0 to any 1.0 drivers
 in order to prevent an error. To determine if this must be done, the loader
 will perform the following steps:
 
-1. Load the ICD's dynamic library
-2. Call the ICD's `vkGetInstanceProcAddr` command to get a pointer to
+1. Check the ICD's JSON manifest file for the "api_version" field.
+2. If the JSON version is greater greater than or equal to 1.1, Load the ICD's dynamic library
+3. Call the ICD's `vkGetInstanceProcAddr` command to get a pointer to
 `vkEnumerateInstanceVersion`
-3. If the pointer to `vkEnumerateInstanceVersion` is not `NULL`, it will be
+4. If the pointer to `vkEnumerateInstanceVersion` is not `NULL`, it will be
 called to get the ICD's supported API version
 
 The ICD will be treated as a 1.0 ICD if any of the following conditions are met:
 
+- The JSON manifest's "api_version" field is less that version 1.1
 - The function pointer to `vkEnumerateInstanceVersion` is `NULL`
 - The version returned by `vkEnumerateInstanceVersion` is less than 1.1
 - `vkEnumerateInstanceVersion` returns anything other than `VK_SUCCESS`
@@ -2506,7 +2514,7 @@ If the loader handles the management of the `VkSurfaceKHR` objects:
     functions without involving the ICDs.
     * Where XXX stands for the Windowing System name:
       * Wayland
-      * Xcb
+      * XCB
       * Xlib
       * Windows
       * Android
@@ -2518,7 +2526,7 @@ If the loader handles the management of the `VkSurfaceKHR` objects:
     `VkIcdSurfaceXXX` structure.
  4. The first field of all the `VkIcdSurfaceXXX` structures is a
 `VkIcdSurfaceBase` enumerant that indicates whether the
-    surface object is Win32, Xcb, Xlib, or Wayland.
+    surface object is Win32, XCB, Xlib, or Wayland.
 
 The ICD may choose to handle `VkSurfaceKHR` object creation instead.  If an ICD
 desires to handle creating and destroying it must do the following:

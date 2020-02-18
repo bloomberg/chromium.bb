@@ -31,7 +31,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/mock_autofill_webdata_backend.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
@@ -143,6 +143,10 @@ std::string AutofillWalletSpecificsAsDebugString(
     case sync_pb::AutofillWalletSpecifics_WalletInfoType::
         AutofillWalletSpecifics_WalletInfoType_CUSTOMER_DATA:
       return "CustomerData";
+    case sync_pb::AutofillWalletSpecifics_WalletInfoType::
+        AutofillWalletSpecifics_WalletInfoType_CREDIT_CARD_CLOUD_TOKEN_DATA:
+      // TODO(crbug.com/1020740): Implement for this type.
+      return "CloudTokenData";
     case sync_pb::AutofillWalletSpecifics_WalletInfoType::
         AutofillWalletSpecifics_WalletInfoType_UNKNOWN:
       return "Unknown";
@@ -269,7 +273,7 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
       const AutofillWalletSpecifics& specifics) {
     auto data = std::make_unique<EntityData>();
     *data->specifics.mutable_autofill_wallet() = specifics;
-    data->client_tag_hash = syncer::GenerateSyncableHash(
+    data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
         syncer::AUTOFILL_WALLET_DATA, bridge()->GetClientTag(*data));
     return data;
   }
@@ -307,7 +311,7 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
  private:
   autofill::TestAutofillClock test_clock_;
   ScopedTempDir temp_dir_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   NiceMock<MockAutofillWebDataBackend> backend_;
   AutofillTable table_;
   WebDatabase db_;

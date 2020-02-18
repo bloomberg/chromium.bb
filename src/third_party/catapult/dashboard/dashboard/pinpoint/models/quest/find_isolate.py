@@ -58,12 +58,7 @@ class FindIsolate(quest.Quest):
                                  change, self._previous_builds, self.build_tags)
 
   def PropagateJob(self, job):
-    self._build_tags = collections.OrderedDict([
-        ('pinpoint_job_id', job.job_id),
-        ('pinpoint_user', job.user),
-        ('pinpoint_url', job.url),
-    ])
-
+    self._build_tags = BuildTagsFromJob(job)
   @classmethod
   def FromDict(cls, arguments):
     for arg in ('builder', 'target', 'bucket'):
@@ -212,13 +207,13 @@ class _FindIsolateExecution(execution.Execution):
     else:
       logging.debug('Requesting a build')
       # Request a build!
-      buildbucket_info = _RequestBuild(self._builder_name, self._change,
-                                       self.bucket, self.build_tags)
+      buildbucket_info = RequestBuild(self._builder_name, self._change,
+                                      self.bucket, self.build_tags)
       self._build = buildbucket_info['build']['id']
       self._previous_builds[self._change] = self._build
 
 
-def _RequestBuild(builder_name, change, bucket, build_tags):
+def RequestBuild(builder_name, change, bucket, build_tags, task=None):
   base_as_dict = change.base_commit.AsDict()
   review_url = base_as_dict.get('review_url')
   if not review_url:
@@ -267,18 +262,32 @@ def _RequestBuild(builder_name, change, bucket, build_tags):
     # information to the attempts to build.
     pubsub_callback = {
         # TODO(dberris): Consolidate constants in environment vars?
-        'topic': 'projects/chromeperf/topics/pinpoint-swarming-updates',
-        'auth_token': 'UNUSED',
-        'user_data': json.dumps({
-            'job_id': build_tags.get('pinpoint_job_id'),
-            'task': {
-                'type': 'build',
-                'id': build_tags.get('pinpoint_task_id'),
-            }
-        })
+        'topic':
+            'projects/chromeperf/topics/pinpoint-swarming-updates',
+        'auth_token':
+            'UNUSED',
+        'user_data':
+            json.dumps({
+                'job_id': build_tags.get('pinpoint_job_id'),
+                'task': {
+                    'type':
+                        'build',
+                    'id':
+                        build_tags.get('pinpoint_task_id')
+                        if not task else task.id,
+                }
+            })
     }
     logging.debug('pubsub_callback: %s', pubsub_callback)
 
   # TODO: Look up Buildbucket bucket from builder_name.
   return buildbucket_service.Put(bucket, builder_tags, parameters,
                                  pubsub_callback)
+
+
+def BuildTagsFromJob(job):
+  return collections.OrderedDict([
+      ('pinpoint_job_id', job.job_id),
+      ('pinpoint_user', job.user),
+      ('pinpoint_url', job.url),
+  ])

@@ -92,11 +92,14 @@ TEST(fpdf, CApiTest) {
 class FPDFViewEmbedderTest : public EmbedderTest {
  protected:
   void TestRenderPageBitmapWithMatrix(FPDF_PAGE page,
-                                      const int bitmap_width,
-                                      const int bitmap_height,
+                                      int bitmap_width,
+                                      int bitmap_height,
                                       const FS_MATRIX& matrix,
                                       const FS_RECTF& rect,
                                       const char* expected_md5);
+  void TestRenderPageBitmapWithFlags(FPDF_PAGE page,
+                                     int flags,
+                                     const char* expected_md5);
 };
 
 // Test for conversion of a point in device coordinates to page coordinates
@@ -263,6 +266,19 @@ TEST_F(FPDFViewEmbedderTest, PageCoordinatesToDeviceCoordinates) {
   UnloadPage(page);
 }
 
+TEST_F(FPDFViewEmbedderTest, MultipleInitDestroy) {
+  FPDF_InitLibrary();  // Redundant given call in SetUp(), but safe.
+  FPDF_InitLibrary();  // Doubly-redundant even, but safe.
+
+  EXPECT_TRUE(OpenDocument("about_blank.pdf"));
+  CloseDocument();
+  CloseDocument();  // Redundant given above, but safe.
+  CloseDocument();  // Doubly-redundant even, but safe.
+
+  FPDF_DestroyLibrary();  // Doubly-redundant even, but safe.
+  FPDF_DestroyLibrary();  // Redundant given call in TearDown(), but safe.
+}
+
 TEST_F(FPDFViewEmbedderTest, Document) {
   EXPECT_TRUE(OpenDocument("about_blank.pdf"));
   EXPECT_EQ(1, GetPageCount());
@@ -282,16 +298,14 @@ TEST_F(FPDFViewEmbedderTest, LoadNonexistentDocument) {
   EXPECT_EQ(static_cast<int>(FPDF_GetLastError()), FPDF_ERR_FILE);
 }
 
-// See bug 465.
+// See https://crbug.com/pdfium/465
 TEST_F(FPDFViewEmbedderTest, EmptyDocument) {
   EXPECT_TRUE(CreateEmptyDocument());
-
   {
     int version = 42;
     EXPECT_FALSE(FPDF_GetFileVersion(document(), &version));
     EXPECT_EQ(0, version);
   }
-
   {
 #ifdef PDF_ENABLE_XFA
     const unsigned long kExpected = static_cast<uint32_t>(-1);
@@ -300,11 +314,8 @@ TEST_F(FPDFViewEmbedderTest, EmptyDocument) {
 #endif  // PDF_ENABLE_XFA
     EXPECT_EQ(kExpected, FPDF_GetDocPermissions(document()));
   }
-
   EXPECT_EQ(-1, FPDF_GetSecurityHandlerRevision(document()));
-
   EXPECT_EQ(0, FPDF_GetPageCount(document()));
-
   EXPECT_TRUE(FPDF_VIEWERREF_GetPrintScaling(document()));
   EXPECT_EQ(1, FPDF_VIEWERREF_GetNumCopies(document()));
   EXPECT_EQ(DuplexUndefined, FPDF_VIEWERREF_GetDuplex(document()));
@@ -312,8 +323,40 @@ TEST_F(FPDFViewEmbedderTest, EmptyDocument) {
   char buf[100];
   EXPECT_EQ(0U, FPDF_VIEWERREF_GetName(document(), "foo", nullptr, 0));
   EXPECT_EQ(0U, FPDF_VIEWERREF_GetName(document(), "foo", buf, sizeof(buf)));
-
   EXPECT_EQ(0u, FPDF_CountNamedDests(document()));
+}
+
+TEST_F(FPDFViewEmbedderTest, SandboxDocument) {
+  uint16_t buf[200];
+  unsigned long len;
+
+  ASSERT_TRUE(CreateEmptyDocument());
+  len = FPDF_GetMetaText(document(), "CreationDate", buf, sizeof(buf));
+  EXPECT_GT(len, 2u);  // Not just "double NUL" end-of-string indicator.
+  EXPECT_NE(0u, buf[0]);
+  CloseDocument();
+
+  FPDF_SetSandBoxPolicy(FPDF_POLICY_MACHINETIME_ACCESS, false);
+  ASSERT_TRUE(CreateEmptyDocument());
+  len = FPDF_GetMetaText(document(), "CreationDate", buf, sizeof(buf));
+  EXPECT_EQ(2u, len);  // Only a "double NUL" end-of-string indicator.
+  EXPECT_EQ(0u, buf[0]);
+  CloseDocument();
+
+  constexpr unsigned long kNoSuchPolicy = 102;
+  FPDF_SetSandBoxPolicy(kNoSuchPolicy, true);
+  ASSERT_TRUE(CreateEmptyDocument());
+  len = FPDF_GetMetaText(document(), "CreationDate", buf, sizeof(buf));
+  EXPECT_EQ(2u, len);  // Only a "double NUL" end-of-string indicator.
+  EXPECT_EQ(0u, buf[0]);
+  CloseDocument();
+
+  FPDF_SetSandBoxPolicy(FPDF_POLICY_MACHINETIME_ACCESS, true);
+  ASSERT_TRUE(CreateEmptyDocument());
+  len = FPDF_GetMetaText(document(), "CreationDate", buf, sizeof(buf));
+  EXPECT_GT(len, 2u);  // Not just "double NUL" end-of-string indicator.
+  EXPECT_NE(0u, buf[0]);
+  CloseDocument();
 }
 
 TEST_F(FPDFViewEmbedderTest, LinearizedDocument) {
@@ -361,7 +404,7 @@ TEST_F(FPDFViewEmbedderTest, LoadCustomDocumentWithShortLivedFileAccess) {
 TEST_F(FPDFViewEmbedderTest, Page) {
   EXPECT_TRUE(OpenDocument("about_blank.pdf"));
   FPDF_PAGE page = LoadPage(0);
-  EXPECT_NE(nullptr, page);
+  EXPECT_TRUE(page);
 
   EXPECT_EQ(612.0, FPDF_GetPageWidth(page));
   EXPECT_EQ(792.0, FPDF_GetPageHeight(page));
@@ -373,8 +416,14 @@ TEST_F(FPDFViewEmbedderTest, Page) {
   EXPECT_EQ(612.0, rect.right);
   EXPECT_EQ(792.0, rect.top);
 
+  // Null arguments return errors rather than crashing,
+  EXPECT_EQ(0.0, FPDF_GetPageWidth(nullptr));
+  EXPECT_EQ(0.0, FPDF_GetPageHeight(nullptr));
+  EXPECT_FALSE(FPDF_GetPageBoundingBox(nullptr, &rect));
+  EXPECT_FALSE(FPDF_GetPageBoundingBox(page, nullptr));
+
   UnloadPage(page);
-  EXPECT_EQ(nullptr, LoadPage(1));
+  EXPECT_FALSE(LoadPage(1));
 }
 
 TEST_F(FPDFViewEmbedderTest, ViewerRefDummy) {
@@ -670,19 +719,40 @@ TEST_F(FPDFViewEmbedderTest, Hang_1055) {
 
 void FPDFViewEmbedderTest::TestRenderPageBitmapWithMatrix(
     FPDF_PAGE page,
-    const int bitmap_width,
-    const int bitmap_height,
+    int bitmap_width,
+    int bitmap_height,
     const FS_MATRIX& matrix,
     const FS_RECTF& rect,
     const char* expected_md5) {
-  FPDF_BITMAP bitmap = FPDFBitmap_Create(bitmap_width, bitmap_height, 0);
-  FPDFBitmap_FillRect(bitmap, 0, 0, bitmap_width, bitmap_height, 0xFFFFFFFF);
-  FPDF_RenderPageBitmapWithMatrix(bitmap, page, &matrix, &rect, 0);
-  CompareBitmap(bitmap, bitmap_width, bitmap_height, expected_md5);
-  FPDFBitmap_Destroy(bitmap);
+  ScopedFPDFBitmap bitmap(FPDFBitmap_Create(bitmap_width, bitmap_height, 0));
+  FPDFBitmap_FillRect(bitmap.get(), 0, 0, bitmap_width, bitmap_height,
+                      0xFFFFFFFF);
+  FPDF_RenderPageBitmapWithMatrix(bitmap.get(), page, &matrix, &rect, 0);
+  CompareBitmap(bitmap.get(), bitmap_width, bitmap_height, expected_md5);
 }
 
-TEST_F(FPDFViewEmbedderTest, FPDF_RenderPageBitmapWithMatrix) {
+void FPDFViewEmbedderTest::TestRenderPageBitmapWithFlags(
+    FPDF_PAGE page,
+    int flags,
+    const char* expected_md5) {
+  int bitmap_width = static_cast<int>(FPDF_GetPageWidth(page));
+  int bitmap_height = static_cast<int>(FPDF_GetPageHeight(page));
+  ScopedFPDFBitmap bitmap(FPDFBitmap_Create(bitmap_width, bitmap_height, 0));
+  FPDFBitmap_FillRect(bitmap.get(), 0, 0, bitmap_width, bitmap_height,
+                      0xFFFFFFFF);
+  FPDF_RenderPageBitmap(bitmap.get(), page, 0, 0, bitmap_width, bitmap_height,
+                        0, flags);
+  CompareBitmap(bitmap.get(), bitmap_width, bitmap_height, expected_md5);
+}
+
+// TODO(crbug.com/pdfium/11): Fix this test and enable.
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#define MAYBE_FPDF_RenderPageBitmapWithMatrix \
+  DISABLED_FPDF_RenderPageBitmapWithMatrix
+#else
+#define MAYBE_FPDF_RenderPageBitmapWithMatrix FPDF_RenderPageBitmapWithMatrix
+#endif
+TEST_F(FPDFViewEmbedderTest, MAYBE_FPDF_RenderPageBitmapWithMatrix) {
   const char kOriginalMD5[] = "0a90de37f52127619c3dfb642b5fa2fe";
   const char kClippedMD5[] = "a84cab93c102b9b9290fba3047ba702c";
   const char kTopLeftQuarterMD5[] = "f11a11137c8834389e31cf555a4a6979";
@@ -955,6 +1025,60 @@ TEST_F(FPDFViewEmbedderTest, LoadDocumentWithEmptyXRefConsistently) {
     EXPECT_TRUE(FPDF_DocumentHasValidCrossReferenceTable(doc.get()));
   }
 }
+
+TEST_F(FPDFViewEmbedderTest, RenderManyRectanglesWithFlags) {
+  static const char kNormalMD5[] = "b0170c575b65ecb93ebafada0ff0f038";
+  static const char kGrayscaleMD5[] = "7b553f1052069a9c61237a05db0955d6";
+  static const char kNoSmoothpathMD5[] = "ff6e5c509d1f6984bcdfd18b26a4203a";
+
+  ASSERT_TRUE(OpenDocument("many_rectangles.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  TestRenderPageBitmapWithFlags(page, 0, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_ANNOT, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_LCD_TEXT, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_NO_NATIVETEXT, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_GRAYSCALE, kGrayscaleMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_RENDER_LIMITEDIMAGECACHE,
+                                kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_RENDER_FORCEHALFTONE, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_PRINTING, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_RENDER_NO_SMOOTHTEXT, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_RENDER_NO_SMOOTHIMAGE, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_RENDER_NO_SMOOTHPATH,
+                                kNoSmoothpathMD5);
+
+  UnloadPage(page);
+}
+
+#if defined(OS_LINUX)
+TEST_F(FPDFViewEmbedderTest, RenderHelloWorldWithFlags) {
+  static const char kNormalMD5[] = "2baa4c0e1758deba1b9c908e1fbd04ed";
+  static const char kLcdTextMD5[] = "825e881f39e48254e64e2808987a6b8c";
+  static const char kNoSmoothtextMD5[] = "3d01e234120b783a3fffb27273ea1ea8";
+
+  ASSERT_TRUE(OpenDocument("hello_world.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  TestRenderPageBitmapWithFlags(page, 0, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_ANNOT, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_LCD_TEXT, kLcdTextMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_NO_NATIVETEXT, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_GRAYSCALE, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_RENDER_LIMITEDIMAGECACHE,
+                                kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_RENDER_FORCEHALFTONE, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_PRINTING, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_RENDER_NO_SMOOTHTEXT,
+                                kNoSmoothtextMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_RENDER_NO_SMOOTHIMAGE, kNormalMD5);
+  TestRenderPageBitmapWithFlags(page, FPDF_RENDER_NO_SMOOTHPATH, kNormalMD5);
+
+  UnloadPage(page);
+}
+#endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)
 TEST_F(FPDFViewEmbedderTest, FPDFRenderPageEmf) {

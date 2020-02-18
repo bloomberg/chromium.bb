@@ -5,6 +5,7 @@
 #include "ui/views/controls/button/button.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/class_property.h"
 #include "ui/events/event.h"
@@ -39,9 +40,6 @@ namespace views {
 namespace {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsButtonProperty, false)
-
-// How long the hover animation takes if uninterrupted.
-constexpr int kHoverFadeDurationMs = 150;
 
 }  // namespace
 
@@ -227,7 +225,7 @@ void Button::StopThrobbing() {
   }
 }
 
-void Button::SetAnimationDuration(int duration) {
+void Button::SetAnimationDuration(base::TimeDelta duration) {
   hover_animation_.SetSlideDuration(duration);
 }
 
@@ -239,8 +237,14 @@ void Button::SetInstallFocusRingOnFocus(bool install) {
 }
 
 void Button::SetHotTracked(bool is_hot_tracked) {
-  if (state_ != STATE_DISABLED)
+  if (state_ != STATE_DISABLED) {
     SetState(is_hot_tracked ? STATE_HOVERED : STATE_NORMAL);
+    if (show_ink_drop_when_hot_tracked_) {
+      AnimateInkDrop(is_hot_tracked ? views::InkDropState::ACTIVATED
+                                    : views::InkDropState::HIDDEN,
+                     nullptr);
+    }
+  }
 
   if (is_hot_tracked)
     NotifyAccessibilityEvent(ax::mojom::Event::kHover, true);
@@ -276,13 +280,39 @@ Button::KeyClickAction Button::GetKeyClickActionForEvent(
     return PlatformStyle::kKeyClickActionOnSpace;
   if (event.key_code() == ui::VKEY_RETURN &&
       PlatformStyle::kReturnClicksFocusedControl)
-    return CLICK_ON_KEY_PRESS;
-  return CLICK_NONE;
+    return KeyClickAction::kOnKeyPress;
+  return KeyClickAction::kNone;
 }
 
 void Button::SetButtonController(
     std::unique_ptr<ButtonController> button_controller) {
   button_controller_ = std::move(button_controller);
+}
+
+gfx::Point Button::GetMenuPosition() const {
+  gfx::Rect lb = GetLocalBounds();
+
+  // Offset of the associated menu position.
+  constexpr gfx::Vector2d kMenuOffset{-2, -4};
+
+  // The position of the menu depends on whether or not the locale is
+  // right-to-left.
+  gfx::Point menu_position(lb.right(), lb.bottom());
+  if (base::i18n::IsRTL())
+    menu_position.set_x(lb.x());
+
+  View::ConvertPointToScreen(this, &menu_position);
+  if (base::i18n::IsRTL())
+    menu_position.Offset(-kMenuOffset.x(), kMenuOffset.y());
+  else
+    menu_position += kMenuOffset;
+
+  DCHECK(GetWidget());
+  const int max_x_coordinate =
+      GetWidget()->GetWorkAreaBoundsInScreen().right() - 1;
+  if (max_x_coordinate && max_x_coordinate <= menu_position.x())
+    menu_position.set_x(max_x_coordinate - 1);
+  return menu_position;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -298,7 +328,7 @@ bool Button::OnMouseDragged(const ui::MouseEvent& event) {
     const bool should_show_pending =
         should_enter_pushed &&
         button_controller_->notify_action() ==
-            ButtonController::NotifyAction::NOTIFY_ON_RELEASE &&
+            ButtonController::NotifyAction::kOnRelease &&
         !InDrag();
     if (HitTestPoint(event.location())) {
       SetState(should_enter_pushed ? STATE_PRESSED : STATE_HOVERED);
@@ -366,7 +396,7 @@ bool Button::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   // If this button is focused and the user presses space or enter, don't let
   // that be treated as an accelerator if there is a key click action
   // corresponding to it.
-  return GetKeyClickActionForEvent(event) != KeyClickAction::CLICK_NONE;
+  return GetKeyClickActionForEvent(event) != KeyClickAction::kNone;
 }
 
 base::string16 Button::GetTooltipText(const gfx::Point& p) const {
@@ -499,7 +529,7 @@ Button::Button(ButtonListener* listener)
       ink_drop_base_color_(gfx::kPlaceholderColor) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetProperty(kIsButtonProperty, true);
-  hover_animation_.SetSlideDuration(kHoverFadeDurationMs);
+  hover_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
   SetInstallFocusRingOnFocus(PlatformStyle::kPreferFocusRings);
   button_controller_ = std::make_unique<ButtonController>(
       this, std::make_unique<DefaultButtonControllerDelegate>(this));

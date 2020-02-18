@@ -145,6 +145,7 @@ egl::Error CreateRendererD3D(egl::Display *display, RendererD3D **outRenderer)
 
         // Failed to create the renderer, try the next
         SafeDelete(renderer);
+        ERR() << "Failed to create D3D renderer: " << result.getMessage();
     }
 
     return egl::EglNotInitialized() << "No available renderers.";
@@ -287,7 +288,7 @@ bool DisplayD3D::isValidNativeWindow(EGLNativeWindowType window) const
     return mRenderer->isValidNativeWindow(window);
 }
 
-egl::Error DisplayD3D::validateClientBuffer(const egl::Config *configuration,
+egl::Error DisplayD3D::validateClientBuffer(const egl::Config *config,
                                             EGLenum buftype,
                                             EGLClientBuffer clientBuffer,
                                             const egl::AttributeMap &attribs) const
@@ -295,16 +296,16 @@ egl::Error DisplayD3D::validateClientBuffer(const egl::Config *configuration,
     switch (buftype)
     {
         case EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE:
-            return mRenderer->validateShareHandle(configuration, static_cast<HANDLE>(clientBuffer),
+            return mRenderer->validateShareHandle(config, static_cast<HANDLE>(clientBuffer),
                                                   attribs);
 
         case EGL_D3D_TEXTURE_ANGLE:
-            return mRenderer->getD3DTextureInfo(configuration,
-                                                static_cast<IUnknown *>(clientBuffer), nullptr,
-                                                nullptr, nullptr, nullptr);
+            return mRenderer->getD3DTextureInfo(config, static_cast<IUnknown *>(clientBuffer),
+                                                attribs, nullptr, nullptr, nullptr, nullptr,
+                                                nullptr);
 
         default:
-            return DisplayImpl::validateClientBuffer(configuration, buftype, clientBuffer, attribs);
+            return DisplayImpl::validateClientBuffer(config, buftype, clientBuffer, attribs);
     }
 }
 
@@ -318,7 +319,8 @@ egl::Error DisplayD3D::validateImageClientBuffer(const gl::Context *context,
         case EGL_D3D11_TEXTURE_ANGLE:
         {
             return mRenderer->getD3DTextureInfo(nullptr, static_cast<IUnknown *>(clientBuffer),
-                                                nullptr, nullptr, nullptr, nullptr);
+                                                attribs, nullptr, nullptr, nullptr, nullptr,
+                                                nullptr);
         }
 
         default:

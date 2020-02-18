@@ -42,16 +42,16 @@ bool DisplayVkAndroid::isValidNativeWindow(EGLNativeWindowType window) const
 }
 
 SurfaceImpl *DisplayVkAndroid::createWindowSurfaceVk(const egl::SurfaceState &state,
-                                                     EGLNativeWindowType window,
-                                                     EGLint width,
-                                                     EGLint height)
+                                                     EGLNativeWindowType window)
 {
-    return new WindowSurfaceVkAndroid(state, window, width, height);
+    return new WindowSurfaceVkAndroid(state, window);
 }
 
 egl::ConfigSet DisplayVkAndroid::generateConfigs()
 {
-    constexpr GLenum kColorFormats[] = {GL_RGBA8, GL_RGB8, GL_RGB565, GL_RGB10_A2, GL_RGBA16F};
+    // TODO (Issue 4062): Add conditional support for GL_RGB10_A2 and GL_RGBA16F when the
+    // Android Vulkan loader adds conditional support for them.
+    constexpr GLenum kColorFormats[] = {GL_RGBA8, GL_RGB8, GL_RGB565};
     return egl_vk::GenerateConfigs(kColorFormats, egl_vk::kConfigDepthStencilFormats, this);
 }
 
@@ -99,4 +99,13 @@ const char *DisplayVkAndroid::getWSIExtension() const
     return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
 }
 
+bool IsVulkanAndroidDisplayAvailable()
+{
+    return true;
+}
+
+DisplayImpl *CreateVulkanAndroidDisplay(const egl::DisplayState &state)
+{
+    return new DisplayVkAndroid(state);
+}
 }  // namespace rx

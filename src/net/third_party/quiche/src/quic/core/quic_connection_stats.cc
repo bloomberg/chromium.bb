@@ -6,54 +6,6 @@
 
 namespace quic {
 
-QuicConnectionStats::QuicConnectionStats()
-    : bytes_sent(0),
-      packets_sent(0),
-      stream_bytes_sent(0),
-      packets_discarded(0),
-      bytes_received(0),
-      packets_received(0),
-      packets_processed(0),
-      stream_bytes_received(0),
-      bytes_retransmitted(0),
-      packets_retransmitted(0),
-      bytes_spuriously_retransmitted(0),
-      packets_spuriously_retransmitted(0),
-      packets_lost(0),
-      slowstart_count(0),
-      slowstart_num_rtts(0),
-      slowstart_packets_sent(0),
-      slowstart_bytes_sent(0),
-      slowstart_packets_lost(0),
-      slowstart_bytes_lost(0),
-      slowstart_duration(QuicTime::Delta::Zero()),
-      slowstart_start_time(QuicTime::Zero()),
-      packets_dropped(0),
-      undecryptable_packets_received(0),
-      crypto_retransmit_count(0),
-      loss_timeout_count(0),
-      tlp_count(0),
-      rto_count(0),
-      pto_count(0),
-      min_rtt_us(0),
-      srtt_us(0),
-      max_packet_size(0),
-      max_received_packet_size(0),
-      estimated_bandwidth(QuicBandwidth::Zero()),
-      packets_reordered(0),
-      max_sequence_reordering(0),
-      max_time_reordering_us(0),
-      tcp_loss_events(0),
-      connection_creation_time(QuicTime::Zero()),
-      blocked_frames_received(0),
-      blocked_frames_sent(0),
-      num_connectivity_probing_received(0) {}
-
-QuicConnectionStats::QuicConnectionStats(const QuicConnectionStats& other) =
-    default;
-
-QuicConnectionStats::~QuicConnectionStats() {}
-
 std::ostream& operator<<(std::ostream& os, const QuicConnectionStats& s) {
   os << "{ bytes_sent: " << s.bytes_sent;
   os << " packets_sent: " << s.packets_sent;
@@ -73,7 +25,8 @@ std::ostream& operator<<(std::ostream& os, const QuicConnectionStats& s) {
   os << " slowstart_packets_lost: " << s.slowstart_packets_lost;
   os << " slowstart_bytes_lost: " << s.slowstart_bytes_lost;
   os << " packets_dropped: " << s.packets_dropped;
-  os << " undecryptable_packets_received: " << s.undecryptable_packets_received;
+  os << " undecryptable_packets_received_before_handshake_complete: "
+     << s.undecryptable_packets_received_before_handshake_complete;
   os << " crypto_retransmit_count: " << s.crypto_retransmit_count;
   os << " loss_timeout_count: " << s.loss_timeout_count;
   os << " tlp_count: " << s.tlp_count;
@@ -93,7 +46,14 @@ std::ostream& operator<<(std::ostream& os, const QuicConnectionStats& s) {
   os << " blocked_frames_received: " << s.blocked_frames_received;
   os << " blocked_frames_sent: " << s.blocked_frames_sent;
   os << " num_connectivity_probing_received: "
-     << s.num_connectivity_probing_received << " }";
+     << s.num_connectivity_probing_received;
+  os << " retry_packet_processed: "
+     << (s.retry_packet_processed ? "yes" : "no");
+  os << " num_coalesced_packets_received: " << s.num_coalesced_packets_received;
+  os << " num_coalesced_packets_processed: "
+     << s.num_coalesced_packets_processed;
+  os << " num_ack_aggregation_epochs: " << s.num_ack_aggregation_epochs;
+  os << " }";
 
   return os;
 }

@@ -102,9 +102,6 @@ struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
       case gfx::mojom::BufferFormat::P010:
         *out = gfx::BufferFormat::P010;
         return true;
-      // TODO(crbug.com/988538): remove
-      case gfx::mojom::BufferFormat::UYVY_422:
-        return false;
     }
     NOTREACHED();
     return false;
@@ -129,6 +126,9 @@ struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
         return gfx::mojom::BufferUsage::SCANOUT_VDA_WRITE;
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
         return gfx::mojom::BufferUsage::GPU_READ_CPU_READ_WRITE;
+      case gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE:
+        return gfx::mojom::BufferUsage::
+            SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE;
     }
     NOTREACHED();
     return gfx::mojom::BufferUsage::kMinValue;
@@ -156,6 +156,9 @@ struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
         return true;
       case gfx::mojom::BufferUsage::GPU_READ_CPU_READ_WRITE:
         *out = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
+        return true;
+      case gfx::mojom::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE:
+        *out = gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE;
         return true;
     }
     NOTREACHED();

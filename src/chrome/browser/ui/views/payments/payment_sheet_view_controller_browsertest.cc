@@ -5,11 +5,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
@@ -83,9 +86,31 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
 class PaymentSheetViewControllerContactDetailsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentSheetViewControllerContactDetailsTest() {}
+  PaymentSheetViewControllerContactDetailsTest()
+      : kylepay_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  // Starts the test sever for kylepay.
+  void SetUpOnMainThread() override {
+    PaymentRequestBrowserTestBase::SetUpOnMainThread();
+
+    host_resolver()->AddRule("kylepay.com", "127.0.0.1");
+    EXPECT_TRUE(kylepay_server_.InitializeAndListen());
+    kylepay_server_.ServeFilesFromSourceDirectory(
+        "components/test/data/payments/kylepay.com");
+    kylepay_server_.StartAcceptingConnections();
+  }
+
+  void InstallKylePayForBasicCard() {
+    ui_test_utils::NavigateToURL(browser(),
+                                 kylepay_server_.GetURL("kylepay.com", "/"));
+    EXPECT_EQ("success", content::EvalJs(GetActiveWebContents(),
+                                         "install('basic-card');"));
+  }
 
  private:
+  // https://kylepay.com hosts a payment app which supports delegations.
+  net::EmbeddedTestServer kylepay_server_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetViewControllerContactDetailsTest);
 };
 
@@ -150,6 +175,166 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
   AddAutofillProfile(profile);
 
   InvokePaymentRequestUI();
+  EXPECT_FALSE(IsPayButtonEnabled());
+}
+
+// Payment sheet view skips showing shipping section when the selected
+// instrument supports shipping delegation, the pay button is enabled with blank
+// autofill data.
+IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
+                       ShippingDelegation) {
+  // Install a payment handler which supports shipping delegation.
+  NavigateTo("/payment_handler.html");
+  std::string expected = "success";
+  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
+  EXPECT_EQ(expected,
+            content::EvalJs(GetActiveWebContents(),
+                            "enableDelegations(['shippingAddress'])"));
+
+  // Install KylePay which also supports shipping delegation to force showing
+  // payment sheet.
+  InstallKylePayForBasicCard();
+
+  // Invoke a payment request with basic-card and methodName =
+  // window.location.origin + '/pay' supportedMethods (see payment_handler.js).
+  NavigateTo("/payment_handler.html");
+  ResetEventWaiterForDialogOpened();
+  EXPECT_EQ(
+      expected,
+      content::EvalJs(GetActiveWebContents(),
+                      "paymentRequestWithOptions({requestShipping: true})"));
+  WaitForObservedEvent();
+
+  // Verify that no autofill profile exists.
+  EXPECT_TRUE(GetDataManager()->GetProfiles().empty());
+
+  // Shipping address and shipping option sections are not shown in the payment
+  // sheet view since handling shipping address is delegated to the selected
+  // payment handler (payment_handler.js).
+  EXPECT_EQ(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON)));
+  EXPECT_EQ(nullptr, dialog_view()->GetViewByID(static_cast<int>(
+                         DialogViewID::PAYMENT_SHEET_SHIPPING_OPTION_SECTION)));
+
+  // Payment button should be enabled with blank autofill profiles since the
+  // payment handler supports shipping delegation.
+  EXPECT_TRUE(IsPayButtonEnabled());
+}
+
+// Payment sheet view skips showing contact section when the selected instrument
+// supports contact delegation.
+IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
+                       ContactDelegation) {
+  // Install a payment handler which supports contact delegation.
+  NavigateTo("/payment_handler.html");
+  std::string expected = "success";
+  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
+  EXPECT_EQ(
+      expected,
+      content::EvalJs(
+          GetActiveWebContents(),
+          "enableDelegations(['payerName', 'payerPhone', 'payerEmail'])"));
+
+  // Install KylePay which also supports contact delegation to force showing
+  // payment sheet.
+  InstallKylePayForBasicCard();
+
+  // Invoke a payment request with basic-card and methodName =
+  // window.location.origin + '/pay' supportedMethods (see payment_handler.js).
+  NavigateTo("/payment_handler.html");
+  ResetEventWaiterForDialogOpened();
+  EXPECT_EQ(
+      expected,
+      content::EvalJs(GetActiveWebContents(),
+                      "paymentRequestWithOptions({requestPayerName: true, "
+                      "requestPayerPhone: true, requestPayerEmail: true})"));
+  WaitForObservedEvent();
+
+  // Verify that no autofill profile exists.
+  EXPECT_TRUE(GetDataManager()->GetProfiles().empty());
+
+  // Contact info section is not shown in the payment sheet view since handling
+  // required contact information is delegated to the selected payment handler
+  // (payment_handler.js).
+  EXPECT_EQ(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION_BUTTON)));
+
+  // Payment button should be enabled with blank autofill profiles since the
+  // payment handler supports contact delegation.
+  EXPECT_TRUE(IsPayButtonEnabled());
+}
+
+// Payment sheet view shows shipping section when the selected instrument
+// supports contact delegation only.
+IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
+                       ContactOnlyDelegationShippingRequested) {
+  // Install a payment handler which supports contact delegation.
+  NavigateTo("/payment_handler.html");
+  std::string expected = "success";
+  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
+  EXPECT_EQ(
+      expected,
+      content::EvalJs(
+          GetActiveWebContents(),
+          "enableDelegations(['payerName', 'payerPhone', 'payerEmail'])"));
+  // Invoke a payment request with basic-card and methodName =
+  // window.location.origin + '/pay' supportedMethods (see payment_handler.js).
+  ResetEventWaiterForDialogOpened();
+  EXPECT_EQ(
+      expected,
+      content::EvalJs(GetActiveWebContents(),
+                      "paymentRequestWithOptions({requestShipping: true})"));
+  WaitForObservedEvent();
+
+  // Verify that no autofill profile exists.
+  EXPECT_TRUE(GetDataManager()->GetProfiles().empty());
+
+  // Shipping section is still shown since the selected payment instrument does
+  // not support delegation of shipping address.
+  EXPECT_NE(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_SHIPPING_ADDRESS_SECTION_BUTTON)));
+
+  // Payment button should be disabled since the browser should collect shipping
+  // address.
+  EXPECT_FALSE(IsPayButtonEnabled());
+}
+
+// Payment sheet view shows contact section when the selected instrument does
+// not support delegation of all required contact details.
+IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
+                       PartialContactDelegation) {
+  // Install a payment handler which supports delegation of all required contact
+  // information except payer's email.
+  NavigateTo("/payment_handler.html");
+  std::string expected = "success";
+  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
+  EXPECT_EQ(expected,
+            content::EvalJs(GetActiveWebContents(),
+                            "enableDelegations(['payerName', 'payerPhone'])"));
+  // Invoke a payment request with basic-card and methodName =
+  // window.location.origin + '/pay' supportedMethods (see payment_handler.js).
+  ResetEventWaiterForDialogOpened();
+  EXPECT_EQ(
+      expected,
+      content::EvalJs(GetActiveWebContents(),
+                      "paymentRequestWithOptions({requestPayerName: true, "
+                      "requestPayerPhone: true, requestPayerEmail: true})"));
+  WaitForObservedEvent();
+
+  // Verify that no autofill profile exists.
+  EXPECT_TRUE(GetDataManager()->GetProfiles().empty());
+
+  // Contact info section is still shown since the selected payment instrument
+  // does not support delegation of all required contact info.
+  EXPECT_NE(nullptr,
+            dialog_view()->GetViewByID(static_cast<int>(
+                DialogViewID::PAYMENT_SHEET_CONTACT_INFO_SECTION_BUTTON)));
+
+  // Payment button should be disabled since the browser should collect payer's
+  // email.
   EXPECT_FALSE(IsPayButtonEnabled());
 }
 

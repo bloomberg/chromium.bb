@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/frame/fragment_directive.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -42,7 +43,6 @@ class Document;
 class ExceptionState;
 class KURL;
 class LocalDOMWindow;
-class USVStringOrTrustedURL;
 
 // This class corresponds to the Location interface. Location is the only
 // interface besides Window that is accessible cross-origin and must handle
@@ -57,11 +57,11 @@ class CORE_EXPORT Location final : public ScriptWrappable {
 
   DOMWindow* DomWindow() const { return dom_window_.Get(); }
 
-  void setHref(v8::Isolate*, const USVStringOrTrustedURL&, ExceptionState&);
-  void href(USVStringOrTrustedURL&) const;
+  void setHref(v8::Isolate*, const String&, ExceptionState&);
+  String href() const;
 
-  void assign(v8::Isolate*, const USVStringOrTrustedURL&, ExceptionState&);
-  void replace(v8::Isolate*, const USVStringOrTrustedURL&, ExceptionState&);
+  void assign(v8::Isolate*, const String&, ExceptionState&);
+  void replace(v8::Isolate*, const String&, ExceptionState&);
   void reload();
 
   void setProtocol(v8::Isolate*, const String&, ExceptionState&);
@@ -81,6 +81,8 @@ class CORE_EXPORT Location final : public ScriptWrappable {
   String origin() const;
 
   DOMStringList* ancestorOrigins() const;
+
+  FragmentDirective* fragmentDirective() const;
 
   // Just return the |this| object the way the normal valueOf function on the
   // Object prototype would.  The valueOf function is only added to make sure
@@ -112,6 +114,8 @@ class CORE_EXPORT Location final : public ScriptWrappable {
   const KURL& Url() const;
 
   const Member<DOMWindow> dom_window_;
+
+  Member<FragmentDirective> fragment_directive_;
 };
 
 }  // namespace blink

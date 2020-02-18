@@ -27,8 +27,10 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/font_util.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/init/gl_factory.h"
+#include "ui/views/buildflags.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
@@ -38,13 +40,12 @@
 #include "ui/wm/core/wm_state.h"
 #endif
 
-#if !defined(OS_CHROMEOS) && defined(USE_AURA)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
-#include "ui/gfx/win/direct_write.h"
 #endif
 
 #if defined(USE_X11)
@@ -110,9 +111,7 @@ int main(int argc, char** argv) {
   base::PowerMonitor::Initialize(
       std::make_unique<base::PowerMonitorDeviceSource>());
 
-#if defined(OS_WIN)
-  gfx::win::InitializeDirectWrite();
-#endif
+  gfx::InitializeFonts();
 
 #if defined(USE_AURA)
   std::unique_ptr<aura::Env> env = aura::Env::CreateInstance();
@@ -127,7 +126,7 @@ int main(int argc, char** argv) {
 #if defined(USE_AURA)
     wm::WMState wm_state;
 #endif
-#if !defined(OS_CHROMEOS) && defined(USE_AURA)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
     std::unique_ptr<display::Screen> desktop_screen(
         views::CreateDesktopScreen());
     display::Screen::SetScreenInstance(desktop_screen.get());

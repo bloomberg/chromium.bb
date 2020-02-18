@@ -14,7 +14,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_creator.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/verifier_formats.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,8 +47,7 @@ ExtensionServiceTestWithInstall::ExtensionServiceTestWithInstall()
       expected_extensions_count_(0),
       override_external_install_prompt_(
           FeatureSwitch::prompt_for_external_extensions(),
-          false),
-      registry_observer_(this) {}
+          false) {}
 
 ExtensionServiceTestWithInstall::~ExtensionServiceTestWithInstall() {}
 
@@ -344,7 +342,7 @@ void ExtensionServiceTestWithInstall::UninstallExtension(
   EXPECT_EQ(extension_id, unloaded_id_);
 
   // The extension should not be in the service anymore.
-  EXPECT_FALSE(service()->GetInstalledExtension(extension_id));
+  EXPECT_FALSE(registry()->GetInstalledExtension(extension_id));
   EXPECT_FALSE(prefs->GetInstalledExtensionInfo(extension_id));
   content::RunAllTasksUntilIdle();
 
@@ -354,7 +352,7 @@ void ExtensionServiceTestWithInstall::UninstallExtension(
 
 void ExtensionServiceTestWithInstall::TerminateExtension(
     const std::string& id) {
-  if (!service()->GetInstalledExtension(id)) {
+  if (!registry()->GetInstalledExtension(id)) {
     ADD_FAILURE();
     return;
   }

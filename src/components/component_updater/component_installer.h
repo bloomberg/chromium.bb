@@ -103,7 +103,7 @@ class ComponentInstallerPolicy {
   // rules when issuing an update response.
   // Valid values for the name part of an attribute match
   // ^[-_a-zA-Z0-9]{1,256}$ and valid values the value part of an attribute
-  // match ^[-.,;+_=a-zA-Z0-9]{0,256}$ .
+  // match ^[-.,;+_=$a-zA-Z0-9]{0,256}$ .
   virtual update_client::InstallerAttributes GetInstallerAttributes() const = 0;
 };
 
@@ -111,8 +111,9 @@ class ComponentInstallerPolicy {
 // controlled by an instance of ComponentInstallerPolicy, at construction time.
 class ComponentInstaller final : public update_client::CrxInstaller {
  public:
-  explicit ComponentInstaller(
-      std::unique_ptr<ComponentInstallerPolicy> installer_policy);
+  ComponentInstaller(
+      std::unique_ptr<ComponentInstallerPolicy> installer_policy,
+      scoped_refptr<update_client::ActionHandler> action_handler = nullptr);
 
   // Registers the component for update checks and installs.
   // The passed |callback| will be called once the initial check for installed
@@ -168,17 +169,18 @@ class ComponentInstaller final : public update_client::CrxInstaller {
   void ComponentReady(std::unique_ptr<base::DictionaryValue> manifest);
   void UninstallOnTaskRunner();
 
+  THREAD_CHECKER(thread_checker_);
+
   base::FilePath current_install_dir_;
   base::Version current_version_;
   std::string current_fingerprint_;
 
   std::unique_ptr<ComponentInstallerPolicy> installer_policy_;
+  scoped_refptr<update_client::ActionHandler> action_handler_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Posts responses back to the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-
-  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ComponentInstaller);
 };

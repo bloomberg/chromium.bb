@@ -19,7 +19,9 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -30,10 +32,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
 #include "url/url_canon.h"
 
@@ -329,6 +333,11 @@ constexpr size_t kPlaceholderAvatarIndex = 26;
 constexpr size_t kPlaceholderAvatarIndex = 0;
 #endif
 
+gfx::ImageSkia GetGuestAvatar(int size) {
+  return gfx::CreateVectorIcon(kUserAccountAvatarIcon, size,
+                               gfx::kGoogleGrey500);
+}
+
 gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
                               bool is_rectangle,
                               int width,
@@ -370,7 +379,7 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
   if (!is_gaia_image && image.Height() <= kAvatarIconSize)
     return image;
 
-  int size = std::min(kAvatarIconSize, std::min(dst_width, dst_height));
+  int size = std::min({kAvatarIconSize, dst_width, dst_height});
   gfx::Size dst_size(dst_width, dst_height);
 
   // Source for a sized icon drawn at the bottom center of the canvas,
@@ -383,6 +392,24 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
 
   return gfx::Image(gfx::ImageSkia(std::move(source), dst_size));
 }
+
+#if defined(OS_MACOSX)
+gfx::Image GetAvatarIconForNSMenu(const base::FilePath& profile_path) {
+  // Always use the low-res, small default avatars in the menu.
+  gfx::Image icon;
+  AvatarMenu::GetImageForMenuButton(profile_path, &icon);
+
+  // The image might be too large and need to be resized, e.g. if this is a
+  // signed-in user using the GAIA profile photo.
+  constexpr int kMenuAvatarIconSize = 38;
+  if (icon.Width() > kMenuAvatarIconSize ||
+      icon.Height() > kMenuAvatarIconSize) {
+    icon = profiles::GetSizedAvatarIcon(
+        icon, /*is_rectangle=*/true, kMenuAvatarIconSize, kMenuAvatarIconSize);
+  }
+  return icon;
+}
+#endif
 
 SkBitmap GetAvatarIconAsSquare(const SkBitmap& source_bitmap,
                                int scale_factor) {

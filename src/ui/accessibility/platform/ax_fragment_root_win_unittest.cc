@@ -5,10 +5,12 @@
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win_unittest.h"
+#include "ui/accessibility/platform/test_ax_node_wrapper.h"
 
 #include <UIAutomationClient.h>
 #include <UIAutomationCoreApi.h>
 
+#include "base/auto_reset.h"
 #include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,22 +35,6 @@ TEST_F(AXFragmentRootTest, TestUIAGetFragmentRoot) {
   EXPECT_HRESULT_SUCCEEDED(
       fragment_provider->get_FragmentRoot(&actual_fragment_root));
   EXPECT_EQ(expected_fragment_root.Get(), actual_fragment_root.Get());
-}
-
-TEST_F(AXFragmentRootTest, TestUIAGetRuntimeId) {
-  AXNodeData root;
-  Init(root);
-  InitFragmentRoot();
-
-  ComPtr<IRawElementProviderFragmentRoot> fragment_root_provider =
-      GetFragmentRoot();
-  ComPtr<IRawElementProviderFragment> fragment_provider;
-  fragment_root_provider.As(&fragment_provider);
-
-  base::win::ScopedSafearray runtime_id;
-  EXPECT_HRESULT_SUCCEEDED(
-      fragment_provider->GetRuntimeId(runtime_id.Receive()));
-  EXPECT_EQ(runtime_id.Get(), nullptr);
 }
 
 TEST_F(AXFragmentRootTest, TestUIAElementProviderFromPoint) {
@@ -93,6 +79,13 @@ TEST_F(AXFragmentRootTest, TestUIAElementProviderFromPoint) {
   EXPECT_HRESULT_SUCCEEDED(fragment_root_prov->ElementProviderFromPoint(
       47, 67, &provider_from_point));
   EXPECT_EQ(root_provider.Get(), provider_from_point.Get());
+
+  // This is on node 1 with scale factor of 1.5.
+  std::unique_ptr<base::AutoReset<float>> scale_factor_reset =
+      TestAXNodeWrapper::SetScaleFactor(1.5);
+  EXPECT_HRESULT_SUCCEEDED(fragment_root_prov->ElementProviderFromPoint(
+      60, 60, &provider_from_point));
+  EXPECT_EQ(element1_provider.Get(), provider_from_point.Get());
 }
 
 TEST_F(AXFragmentRootTest, TestUIAGetFocus) {
@@ -252,6 +245,183 @@ TEST_F(AXFragmentRootTest, TestGetPropertyValue) {
   EXPECT_HRESULT_SUCCEEDED(root_provider->GetPropertyValue(
       UIA_ControlTypePropertyId, result.Receive()));
   EXPECT_EQ(result.type(), VT_EMPTY);
+}
+
+TEST_F(AXFragmentRootTest, TestUIAMultipleFragmentRoots) {
+  // Consider the following platform-neutral tree:
+  //
+  //         N1
+  //   _____/ \_____
+  //  /             \
+  // N2---N3---N4---N5
+  //     / \       / \
+  //   N6---N7   N8---N9
+  //
+  // N3 and N5 are nodes for which we need a fragment root. This will correspond
+  // to the following tree in UIA:
+  //
+  //         U1
+  //   _____/ \_____
+  //  /             \
+  // U2---R3---U4---R5
+  //      |         |
+  //      U3        U5
+  //     / \       / \
+  //   U6---U7   U8---U9
+
+  ui::AXNodeData top_fragment_root_n1;
+  top_fragment_root_n1.id = 1;
+
+  ui::AXNodeData sibling_n2;
+  sibling_n2.id = 2;
+
+  ui::AXNodeData child_fragment_root_n3;
+  child_fragment_root_n3.id = 3;
+
+  ui::AXNodeData sibling_n6;
+  sibling_n6.id = 6;
+  ui::AXNodeData sibling_n7;
+  sibling_n7.id = 7;
+
+  child_fragment_root_n3.child_ids = {6, 7};
+
+  ui::AXNodeData sibling_n4;
+  sibling_n4.id = 4;
+
+  ui::AXNodeData child_fragment_root_n5;
+  child_fragment_root_n5.id = 5;
+
+  ui::AXNodeData sibling_n8;
+  sibling_n8.id = 8;
+  ui::AXNodeData sibling_n9;
+  sibling_n9.id = 9;
+
+  child_fragment_root_n5.child_ids = {8, 9};
+  top_fragment_root_n1.child_ids = {2, 3, 4, 5};
+
+  ui::AXTreeUpdate update;
+  update.has_tree_data = true;
+  update.root_id = top_fragment_root_n1.id;
+  update.nodes = {top_fragment_root_n1,
+                  sibling_n2,
+                  child_fragment_root_n3,
+                  sibling_n6,
+                  sibling_n7,
+                  sibling_n4,
+                  child_fragment_root_n5,
+                  sibling_n8,
+                  sibling_n9};
+  update.tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+
+  Init(update);
+  InitFragmentRoot();
+
+  AXNode* root_node = GetRootNode();
+
+  // Set up other fragment roots
+  AXNode* child_fragment_root_n3_node = root_node->children()[1];
+  std::unique_ptr<TestFragmentRootDelegate> n3_fragment_root_delegate =
+      std::make_unique<TestFragmentRootDelegate>();
+  std::unique_ptr<AXFragmentRootWin> n3_fragment_root(InitNodeAsFragmentRoot(
+      child_fragment_root_n3_node, n3_fragment_root_delegate.get()));
+
+  AXNode* child_fragment_root_n5_node = root_node->children()[3];
+  std::unique_ptr<TestFragmentRootDelegate> n5_fragment_root_delegate =
+      std::make_unique<TestFragmentRootDelegate>();
+  std::unique_ptr<AXFragmentRootWin> n5_fragment_root(InitNodeAsFragmentRoot(
+      child_fragment_root_n5_node, n5_fragment_root_delegate.get()));
+
+  // Test navigation from root fragment
+  ComPtr<IRawElementProviderFragmentRoot> root_fragment_root =
+      GetFragmentRoot();
+  ComPtr<IRawElementProviderFragment> root_fragment;
+  root_fragment_root.As(&root_fragment);
+
+  ComPtr<IRawElementProviderFragment> test_fragment;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_fragment->Navigate(NavigateDirection_Parent, &test_fragment));
+  EXPECT_EQ(nullptr, test_fragment.Get());
+
+  EXPECT_HRESULT_SUCCEEDED(
+      root_fragment->Navigate(NavigateDirection_NextSibling, &test_fragment));
+  EXPECT_EQ(nullptr, test_fragment.Get());
+
+  EXPECT_HRESULT_SUCCEEDED(root_fragment->Navigate(
+      NavigateDirection_PreviousSibling, &test_fragment));
+  EXPECT_EQ(nullptr, test_fragment.Get());
+
+  EXPECT_HRESULT_SUCCEEDED(
+      root_fragment->Navigate(NavigateDirection_FirstChild, &test_fragment));
+  ComPtr<IUnknown> root_child_unknown = test_fragment_root_delegate_->child_;
+  ComPtr<IRawElementProviderFragment> root_child_fragment;
+  root_child_unknown.As(&root_child_fragment);
+  EXPECT_EQ(root_child_fragment.Get(), test_fragment.Get());
+
+  EXPECT_HRESULT_SUCCEEDED(
+      root_fragment->Navigate(NavigateDirection_LastChild, &test_fragment));
+  EXPECT_EQ(root_child_fragment.Get(), test_fragment.Get());
+
+  // Test navigation from first child root (R3)
+  ComPtr<IRawElementProviderFragmentRoot> n3_fragment_root_provider;
+  n3_fragment_root->GetNativeViewAccessible()->QueryInterface(
+      IID_PPV_ARGS(&n3_fragment_root_provider));
+
+  ComPtr<IRawElementProviderFragment> n3_fragment;
+  n3_fragment_root_provider.As(&n3_fragment);
+  EXPECT_HRESULT_SUCCEEDED(
+      n3_fragment->Navigate(NavigateDirection_Parent, &test_fragment));
+  EXPECT_EQ(root_child_fragment.Get(), test_fragment.Get());
+
+  AXNode* sibling_n2_node = root_node->children()[0];
+  EXPECT_HRESULT_SUCCEEDED(
+      n3_fragment->Navigate(NavigateDirection_PreviousSibling, &test_fragment));
+  EXPECT_EQ(IRawElementProviderFragmentFromNode(sibling_n2_node).Get(),
+            test_fragment.Get());
+
+  AXNode* sibling_n4_node = root_node->children()[2];
+  EXPECT_HRESULT_SUCCEEDED(
+      n3_fragment->Navigate(NavigateDirection_NextSibling, &test_fragment));
+  EXPECT_EQ(IRawElementProviderFragmentFromNode(sibling_n4_node).Get(),
+            test_fragment.Get());
+
+  EXPECT_HRESULT_SUCCEEDED(
+      n3_fragment->Navigate(NavigateDirection_FirstChild, &test_fragment));
+  EXPECT_EQ(
+      IRawElementProviderFragmentFromNode(child_fragment_root_n3_node).Get(),
+      test_fragment.Get());
+  EXPECT_HRESULT_SUCCEEDED(
+      n3_fragment->Navigate(NavigateDirection_LastChild, &test_fragment));
+  EXPECT_EQ(
+      IRawElementProviderFragmentFromNode(child_fragment_root_n3_node).Get(),
+      test_fragment.Get());
+
+  // Test navigation from second child root (R5)
+  ComPtr<IRawElementProviderFragmentRoot> n5_fragment_root_provider;
+  n5_fragment_root->GetNativeViewAccessible()->QueryInterface(
+      IID_PPV_ARGS(&n5_fragment_root_provider));
+
+  ComPtr<IRawElementProviderFragment> n5_fragment;
+  n5_fragment_root_provider.As(&n5_fragment);
+  EXPECT_HRESULT_SUCCEEDED(
+      n5_fragment->Navigate(NavigateDirection_Parent, &test_fragment));
+  EXPECT_EQ(root_child_fragment.Get(), test_fragment.Get());
+  EXPECT_HRESULT_SUCCEEDED(
+      n5_fragment->Navigate(NavigateDirection_NextSibling, &test_fragment));
+  EXPECT_EQ(nullptr, test_fragment.Get());
+  EXPECT_HRESULT_SUCCEEDED(
+      n5_fragment->Navigate(NavigateDirection_PreviousSibling, &test_fragment));
+  EXPECT_EQ(IRawElementProviderFragmentFromNode(sibling_n4_node).Get(),
+            test_fragment.Get());
+  EXPECT_HRESULT_SUCCEEDED(
+      n5_fragment->Navigate(NavigateDirection_FirstChild, &test_fragment));
+  EXPECT_EQ(
+      IRawElementProviderFragmentFromNode(child_fragment_root_n5_node).Get(),
+      test_fragment.Get());
+  EXPECT_HRESULT_SUCCEEDED(
+      n5_fragment->Navigate(NavigateDirection_LastChild, &test_fragment));
+  EXPECT_EQ(
+      IRawElementProviderFragmentFromNode(child_fragment_root_n5_node).Get(),
+      test_fragment.Get());
 }
 
 }  // namespace ui

@@ -23,7 +23,7 @@ class TextRecord;
 // TextElementTiming is responsible for tracking the paint timings for groups of
 // text nodes associated with elements of a given window.
 class CORE_EXPORT TextElementTiming final
-    : public GarbageCollectedFinalized<TextElementTiming>,
+    : public GarbageCollected<TextElementTiming>,
       public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(TextElementTiming);
 
@@ -37,7 +37,7 @@ class CORE_EXPORT TextElementTiming final
   static inline bool NeededForElementTiming(Node& node) {
     auto* element = DynamicTo<Element>(node);
     return !node.IsInShadowTree() && element &&
-           !element->FastGetAttribute(html_names::kElementtimingAttr).IsEmpty();
+           element->FastHasAttribute(html_names::kElementtimingAttr);
   }
 
   static FloatRect ComputeIntersectionRect(
@@ -46,9 +46,11 @@ class CORE_EXPORT TextElementTiming final
       const PropertyTreeState&,
       const LocalFrameView*);
 
+  bool CanReportElements() const;
+
   // Called when the swap promise queued by TextPaintTimingDetector has been
   // resolved. Dispatches PerformanceElementTiming entries to WindowPerformance.
-  void OnTextObjectsPainted(const Deque<base::WeakPtr<TextRecord>>&);
+  void OnTextObjectPainted(const TextRecord&);
 
   void Trace(blink::Visitor* visitor) override;
 

@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 
 namespace openscreen {
+namespace osp {
 namespace {
 
 using ::testing::ElementsAre;
@@ -43,23 +44,21 @@ uint8_t data[] = {
 }  // namespace
 
 TEST(MdnsResponderAdapterImplTest, ExampleData) {
-  const mdns::DomainName openscreen_service{
-      {11, '_', 'o', 'p', 'e', 'n', 's', 'c', 'r', 'e', 'e', 'n',
-       4,  '_', 'u', 'd', 'p', 5,   'l', 'o', 'c', 'a', 'l', 0}};
+  const DomainName openscreen_service{{11,  '_', 'o', 'p', 'e', 'n', 's', 'c',
+                                       'r', 'e', 'e', 'n', 4,   '_', 'u', 'd',
+                                       'p', 5,   'l', 'o', 'c', 'a', 'l', 0}};
   const IPEndpoint mdns_endpoint{{224, 0, 0, 251}, 5353};
 
-  platform::UdpPacket packet;
+  platform::UdpPacket packet(std::begin(data), std::end(data));
   packet.set_source({{192, 168, 0, 2}, 6556});
   packet.set_destination(mdns_endpoint);
-  packet.reserve(sizeof(data));
-  std::copy(std::begin(data), std::end(data), back_inserter(packet));
   packet.set_socket(nullptr);
 
-  auto mdns_adapter = std::unique_ptr<mdns::MdnsResponderAdapter>(
-      new mdns::MdnsResponderAdapterImpl);
+  auto mdns_adapter =
+      std::unique_ptr<MdnsResponderAdapter>(new MdnsResponderAdapterImpl);
   mdns_adapter->Init();
   mdns_adapter->StartPtrQuery(0, openscreen_service);
-  mdns_adapter->OnRead(std::move(packet), nullptr);
+  mdns_adapter->OnRead(nullptr, std::move(packet));
   mdns_adapter->RunTasks();
 
   auto ptr = mdns_adapter->TakePtrResponses();
@@ -91,4 +90,5 @@ TEST(MdnsResponderAdapterImplTest, ExampleData) {
   mdns_adapter->Close();
 }
 
+}  // namespace osp
 }  // namespace openscreen

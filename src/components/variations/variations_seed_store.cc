@@ -311,15 +311,14 @@ base::Time VariationsSeedStore::GetLastFetchTime() const {
   return local_state_->GetTime(prefs::kVariationsLastFetchTime);
 }
 
-void VariationsSeedStore::RecordLastFetchTime() {
-  base::Time now = base::Time::Now();
-  local_state_->SetTime(prefs::kVariationsLastFetchTime, now);
+void VariationsSeedStore::RecordLastFetchTime(base::Time fetch_time) {
+  local_state_->SetTime(prefs::kVariationsLastFetchTime, fetch_time);
 
   // If the latest and safe seeds are identical, update the fetch time for the
   // safe seed as well.
   if (local_state_->GetString(prefs::kVariationsCompressedSeed) ==
       kIdenticalToSafeSeedSentinel) {
-    local_state_->SetTime(prefs::kVariationsSafeSeedFetchTime, now);
+    local_state_->SetTime(prefs::kVariationsSafeSeedFetchTime, fetch_time);
   }
 }
 
@@ -419,13 +418,13 @@ void VariationsSeedStore::ImportInitialSeed(
     return;
   }
 
-  base::Time date;
-  if (!base::Time::FromUTCString(initial_seed->date.c_str(), &date)) {
+  if (initial_seed->date == 0) {
     RecordFirstRunSeedImportResult(
         FirstRunSeedImportResult::FAIL_INVALID_RESPONSE_DATE);
-    LOG(WARNING) << "Invalid response date: " << date;
+    LOG(WARNING) << "Missing response date";
     return;
   }
+  base::Time date = base::Time::FromJavaTime(initial_seed->date);
 
   if (!StoreSeedData(initial_seed->data, initial_seed->signature,
                      initial_seed->country, date, false,

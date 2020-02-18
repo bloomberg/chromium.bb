@@ -11,7 +11,7 @@
 #include "ash/app_list/views/search_result_suggestion_chip_view.h"
 #include "base/macros.h"
 
-namespace app_list {
+namespace ash {
 
 class ContentsView;
 
@@ -38,14 +38,14 @@ class SuggestionChipContainerView : public SearchResultContainerView {
   void OnTabletModeChanged(bool started);
 
  private:
-
   ContentsView* contents_view_ = nullptr;  // Not owned
+  views::BoxLayout* layout_manager_ = nullptr;  // Not owned
 
   std::vector<SearchResultSuggestionChipView*> suggestion_chip_views_;  // Owned
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionChipContainerView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SUGGESTION_CHIP_CONTAINER_VIEW_H_

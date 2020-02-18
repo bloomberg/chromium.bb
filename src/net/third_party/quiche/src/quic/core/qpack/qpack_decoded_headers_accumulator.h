@@ -20,32 +20,30 @@ class QpackDecoder;
 
 // A class that creates and owns a QpackProgressiveDecoder instance, accumulates
 // decoded headers in a QuicHeaderList, and keeps track of uncompressed and
-// compressed size so that it can be passed to QuicHeaderList::EndHeaderBlock().
+// compressed size so that it can be passed to
+// QuicHeaderList::OnHeaderBlockEnd().
 class QUIC_EXPORT_PRIVATE QpackDecodedHeadersAccumulator
     : public QpackProgressiveDecoder::HeadersHandlerInterface {
  public:
-  // Return value for EndHeaderBlock().
-  enum class Status {
-    // Headers have been successfully decoded.
-    kSuccess,
-    // An error has occurred.
-    kError,
-    // Decoding is blocked.
-    kBlocked
-  };
-
-  // Visitor interface used for blocked decoding.  Exactly one visitor method
-  // will be called if EndHeaderBlock() returned kBlocked.  No visitor method
-  // will be called if EndHeaderBlock() returned any other value.
-  class Visitor {
+  // Visitor interface to signal success or error.
+  // Exactly one method will be called.
+  // Methods may be called synchronously from Decode() and EndHeaderBlock(),
+  // or asynchronously.
+  // Method implementations are allowed to destroy |this|.
+  class QUIC_EXPORT_PRIVATE Visitor {
    public:
     virtual ~Visitor() = default;
 
-    // Called when headers are successfully decoded.
+    // Called when headers are successfully decoded.  If header list size
+    // exceeds the limit specified via |max_header_list_size| in
+    // QpackDecodedHeadersAccumulator constructor, then |headers| will be empty,
+    // but will still have the correct compressed and uncompressed size
+    // information.  However, header_list_size_limit_exceeded() is recommended
+    // instead of headers.empty() to check whether header size exceeds limit.
     virtual void OnHeadersDecoded(QuicHeaderList headers) = 0;
 
     // Called when an error has occurred.
-    virtual void OnHeaderDecodingError() = 0;
+    virtual void OnHeaderDecodingError(QuicStringPiece error_message) = 0;
   };
 
   QpackDecodedHeadersAccumulator(QuicStreamId id,
@@ -60,42 +58,48 @@ class QUIC_EXPORT_PRIVATE QpackDecodedHeadersAccumulator
   void OnDecodingCompleted() override;
   void OnDecodingErrorDetected(QuicStringPiece error_message) override;
 
-  // Decode payload data.  Returns true on success, false on error.
+  // Decode payload data.
   // Must not be called if an error has been detected.
   // Must not be called after EndHeaderBlock().
-  bool Decode(QuicStringPiece data);
+  void Decode(QuicStringPiece data);
 
   // Signal end of HEADERS frame.
   // Must not be called if an error has been detected.
   // Must not be called more that once.
-  // Returns kSuccess if headers can be readily decoded.
-  // Returns kError if an error occurred.
-  // Returns kBlocked if headers cannot be decoded at the moment, in which case
-  // exactly one Visitor method will be called as soon as sufficient data
-  // is received on the QPACK decoder stream.
-  Status EndHeaderBlock();
+  void EndHeaderBlock();
 
-  // Returns accumulated header list.
-  const QuicHeaderList& quic_header_list() const;
-
-  // Returns error message.
-  // Must not be called unless an error has been detected.
-  // TODO(b/124216424): Add accessor for error code, return HTTP_EXCESSIVE_LOAD
-  // or HTTP_QPACK_DECOMPRESSION_FAILED.
-  QuicStringPiece error_message() const;
+  // Returns true if the uncompressed size of the header list, including an
+  // overhead for each header field, exceeds |max_header_list_size| passed in
+  // the constructor.
+  bool header_list_size_limit_exceeded() const {
+    return header_list_size_limit_exceeded_;
+  }
 
  private:
   std::unique_ptr<QpackProgressiveDecoder> decoder_;
   Visitor* visitor_;
+  // Maximum header list size including overhead.
+  size_t max_header_list_size_;
+  // Uncompressed header list size including overhead, for enforcing the limit.
+  size_t uncompressed_header_bytes_including_overhead_;
   QuicHeaderList quic_header_list_;
-  size_t uncompressed_header_bytes_;
+  // Uncompressed header list size with overhead,
+  // for passing in to QuicHeaderList::OnHeaderBlockEnd().
+  size_t uncompressed_header_bytes_without_overhead_;
+  // Compressed header list size
+  // for passing in to QuicHeaderList::OnHeaderBlockEnd().
   size_t compressed_header_bytes_;
-  // Set to true when OnDecodingCompleted() is called.
+
+  // True if the header size limit has been exceeded.
+  // Input data is still fed to QpackProgressiveDecoder.
+  bool header_list_size_limit_exceeded_;
+
+  // The following two members are only used for DCHECKs.
+
+  // True if headers have been completedly and successfully decoded.
   bool headers_decoded_;
-  // Set to true when EndHeaderBlock() returns kBlocked.
-  bool blocked_;
+  // True if an error has been detected during decoding.
   bool error_detected_;
-  std::string error_message_;
 };
 
 }  // namespace quic

@@ -50,12 +50,6 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // to |out|.
   static void SerializeUint128Short(QuicUint128 v, uint8_t* out);
 
-  // Returns the level of encryption as a char*
-  static const char* EncryptionLevelToString(EncryptionLevel level);
-
-  // Returns TransmissionType as a char*
-  static const char* TransmissionTypeToString(TransmissionType type);
-
   // Returns AddressChangeType as a string.
   static std::string AddressChangeTypeToString(AddressChangeType type);
 
@@ -138,6 +132,12 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // Returns true if |id| is considered as server initiated stream ID.
   static bool IsServerInitiatedStreamId(QuicTransportVersion version,
                                         QuicStreamId id);
+
+  // Returns true if the stream ID represents a stream initiated by the
+  // provided perspective.
+  static bool IsOutgoingStreamId(ParsedQuicVersion version,
+                                 QuicStreamId id,
+                                 Perspective perspective);
 
   // Returns true if |id| is considered as bidirectional stream ID. Only used in
   // v99.

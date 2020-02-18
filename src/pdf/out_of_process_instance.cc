@@ -14,6 +14,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -23,6 +24,7 @@
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "pdf/accessibility.h"
+#include "pdf/document_layout.h"
 #include "pdf/pdf.h"
 #include "pdf/pdf_features.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
@@ -78,6 +80,7 @@ constexpr char kJSStopScrollingType[] = "stopScrolling";
 constexpr char kJSDocumentDimensionsType[] = "documentDimensions";
 constexpr char kJSDocumentWidth[] = "width";
 constexpr char kJSDocumentHeight[] = "height";
+constexpr char kJSLayoutOptions[] = "layoutOptions";
 constexpr char kJSPageDimensions[] = "pageDimensions";
 constexpr char kJSPageX[] = "x";
 constexpr char kJSPageY[] = "y";
@@ -136,6 +139,12 @@ constexpr char kJSScrollByType[] = "scrollBy";
 constexpr char kJSNavigateType[] = "navigate";
 constexpr char kJSNavigateUrl[] = "url";
 constexpr char kJSNavigateWindowOpenDisposition[] = "disposition";
+// Navigate to the given destination (Plugin -> Page)
+constexpr char kJSNavigateToDestinationType[] = "navigateToDestination";
+constexpr char kJSNavigateToDestinationPage[] = "page";
+constexpr char kJSNavigateToDestinationXOffset[] = "x";
+constexpr char kJSNavigateToDestinationYOffset[] = "y";
+constexpr char kJSNavigateToDestinationZoom[] = "zoom";
 // Open the email editor with the given parameters (Plugin -> Page)
 constexpr char kJSEmailType[] = "email";
 constexpr char kJSEmailTo[] = "to";
@@ -554,6 +563,15 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   std::string type = dict.Get(kType).AsString();
 
   if (type == kJSViewportType) {
+    pp::Var layout_options_var = dict.Get(kJSLayoutOptions);
+    if (!layout_options_var.is_undefined()) {
+      DocumentLayout::Options layout_options;
+      layout_options.FromVar(layout_options_var);
+      // TODO(crbug.com/1013800): Eliminate need to get document size from here.
+      document_size_ = engine_->ApplyDocumentLayout(layout_options);
+      OnGeometryChanged(zoom_, device_scale_);
+    }
+
     if (!(dict.Get(pp::Var(kJSXOffset)).is_number() &&
           dict.Get(pp::Var(kJSYOffset)).is_number() &&
           dict.Get(pp::Var(kJSZoom)).is_number() &&
@@ -961,18 +979,17 @@ void OutOfProcessInstance::LoadAccessibility() {
 
 void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
   PP_PrivateAccessibilityPageInfo page_info;
-  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<pp::PDF::PrivateAccessibilityTextRunInfo> text_runs;
   std::vector<PP_PrivateAccessibilityCharInfo> chars;
-  std::vector<PP_PrivateAccessibilityLinkInfo> links;
-  std::vector<PP_PrivateAccessibilityImageInfo> images;
+  pp::PDF::PrivateAccessibilityPageObjects page_objects;
+
   if (!GetAccessibilityInfo(engine_.get(), page_index, &page_info, &text_runs,
-                            &chars, &links, &images)) {
+                            &chars, &page_objects)) {
     return;
   }
 
-  pp::PDF::SetAccessibilityPageInfo(GetPluginInstance(), &page_info,
-                                    text_runs.data(), chars.data(),
-                                    links.data(), images.data());
+  pp::PDF::SetAccessibilityPageInfo(GetPluginInstance(), &page_info, text_runs,
+                                    chars, page_objects);
 
   // Schedule loading the next page.
   pp::CompletionCallback callback = callback_factory_.NewCallback(
@@ -984,10 +1001,14 @@ void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
 void OutOfProcessInstance::SendAccessibilityViewportInfo() {
   PP_PrivateAccessibilityViewportInfo viewport_info;
   viewport_info.scroll.x = 0;
-  viewport_info.scroll.y =
-      -top_toolbar_height_in_viewport_coords_ * device_scale_;
-  viewport_info.offset = available_area_.point();
-  viewport_info.zoom = zoom_ * device_scale_;
+  viewport_info.scroll.y = -top_toolbar_height_in_viewport_coords_;
+  viewport_info.offset.x =
+      available_area_.point().x() / (device_scale_ * zoom_);
+  viewport_info.offset.y =
+      available_area_.point().y() / (device_scale_ * zoom_);
+
+  viewport_info.zoom = zoom_;
+  viewport_info.scale = device_scale_;
 
   engine_->GetSelection(&viewport_info.selection_start_page_index,
                         &viewport_info.selection_start_char_index,
@@ -1284,20 +1305,19 @@ void OutOfProcessInstance::FillRect(const pp::Rect& rect, uint32_t color) {
   }
 }
 
-void OutOfProcessInstance::DocumentSizeUpdated(const pp::Size& size) {
-  document_size_ = size;
-
+void OutOfProcessInstance::ProposeDocumentLayout(const DocumentLayout& layout) {
   pp::VarDictionary dimensions;
   dimensions.Set(kType, kJSDocumentDimensionsType);
-  dimensions.Set(kJSDocumentWidth, pp::Var(document_size_.width()));
-  dimensions.Set(kJSDocumentHeight, pp::Var(document_size_.height()));
+  dimensions.Set(kJSDocumentWidth, pp::Var(layout.size().width()));
+  dimensions.Set(kJSDocumentHeight, pp::Var(layout.size().height()));
+  dimensions.Set(kJSLayoutOptions, layout.options().ToVar());
   pp::VarArray page_dimensions_array;
-  size_t num_pages = engine_->GetNumberOfPages();
+  size_t num_pages = layout.page_count();
   if (page_is_processed_.size() < num_pages)
     page_is_processed_.resize(num_pages);
 
   for (size_t i = 0; i < num_pages; ++i) {
-    pp::Rect page_rect = engine_->GetPageRect(i);
+    pp::Rect page_rect = layout.page_rect(i);
     pp::VarDictionary page_dimensions;
     page_dimensions.Set(kJSPageX, pp::Var(page_rect.x()));
     page_dimensions.Set(kJSPageY, pp::Var(page_rect.y()));
@@ -1307,8 +1327,6 @@ void OutOfProcessInstance::DocumentSizeUpdated(const pp::Size& size) {
   }
   dimensions.Set(kJSPageDimensions, page_dimensions_array);
   PostMessage(dimensions);
-
-  OnGeometryChanged(zoom_, device_scale_);
 }
 
 void OutOfProcessInstance::Invalidate(const pp::Rect& rect) {
@@ -1366,6 +1384,22 @@ void OutOfProcessInstance::NavigateTo(const std::string& url,
   message.Set(kJSNavigateUrl, url);
   message.Set(kJSNavigateWindowOpenDisposition,
               pp::Var(static_cast<int32_t>(disposition)));
+  PostMessage(message);
+}
+
+void OutOfProcessInstance::NavigateToDestination(int page,
+                                                 const float* x,
+                                                 const float* y,
+                                                 const float* zoom) {
+  pp::VarDictionary message;
+  message.Set(kType, kJSNavigateToDestinationType);
+  message.Set(kJSNavigateToDestinationPage, pp::Var(page));
+  if (x)
+    message.Set(kJSNavigateToDestinationXOffset, pp::Var(*x));
+  if (y)
+    message.Set(kJSNavigateToDestinationYOffset, pp::Var(*y));
+  if (zoom)
+    message.Set(kJSNavigateToDestinationZoom, pp::Var(*zoom));
   PostMessage(message);
 }
 
@@ -2014,11 +2048,14 @@ void OutOfProcessInstance::UserMetricsRecordAction(const std::string& action) {
 
 pp::FloatPoint OutOfProcessInstance::BoundScrollOffsetToDocument(
     const pp::FloatPoint& scroll_offset) {
-  float max_x = document_size_.width() * zoom_ - plugin_dip_size_.width();
-  float x = std::max(std::min(scroll_offset.x(), max_x), 0.0f);
+  float max_x = std::max(
+      document_size_.width() * float{zoom_} - plugin_dip_size_.width(), 0.0f);
+  float x = base::ClampToRange(scroll_offset.x(), 0.0f, max_x);
   float min_y = -top_toolbar_height_in_viewport_coords_;
-  float max_y = document_size_.height() * zoom_ - plugin_dip_size_.height();
-  float y = std::max(std::min(scroll_offset.y(), max_y), min_y);
+  float max_y = std::max(
+      document_size_.height() * float{zoom_} - plugin_dip_size_.height(),
+      min_y);
+  float y = base::ClampToRange(scroll_offset.y(), min_y, max_y);
   return pp::FloatPoint(x, y);
 }
 

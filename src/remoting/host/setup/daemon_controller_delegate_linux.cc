@@ -165,6 +165,12 @@ DaemonControllerDelegateLinux::GetConfig() {
   return result;
 }
 
+void DaemonControllerDelegateLinux::CheckPermission(
+    bool it2me,
+    DaemonController::BoolCallback callback) {
+  std::move(callback).Run(true);
+}
+
 void DaemonControllerDelegateLinux::SetConfigAndStart(
     std::unique_ptr<base::DictionaryValue> config,
     bool consent,

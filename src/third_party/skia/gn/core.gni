@@ -203,6 +203,7 @@ skia_core_sources = [
   "$_src/core/SkGaussFilter.h",
   "$_src/core/SkFlattenable.cpp",
   "$_src/core/SkFont.cpp",
+  "$_src/core/SkFont_serial.cpp",
   "$_src/core/SkFontLCDConfig.cpp",
   "$_src/core/SkFontMgr.cpp",
   "$_src/core/SkFontDescriptor.cpp",
@@ -215,6 +216,8 @@ skia_core_sources = [
   "$_src/core/SkGlobalInitialization_core.cpp",
   "$_src/core/SkGlyph.h",
   "$_src/core/SkGlyph.cpp",
+  "$_src/core/SkGlyphBuffer.h",
+  "$_src/core/SkGlyphBuffer.cpp",
   "$_src/core/SkGlyphRun.cpp",
   "$_src/core/SkGlyphRun.h",
   "$_src/core/SkGlyphRunPainter.cpp",
@@ -228,15 +231,18 @@ skia_core_sources = [
   "$_src/core/SkImageFilter_Base.h",
   "$_src/core/SkImageFilterCache.cpp",
   "$_src/core/SkImageFilterCache.h",
+  "$_src/core/SkImageFilterTypes.cpp",
   "$_src/core/SkImageFilterTypes.h",
   "$_src/core/SkImageInfo.cpp",
   "$_src/core/SkImageGenerator.cpp",
+  "$_src/core/SkEnumerate.h",
   "$_src/core/SkLineClipper.cpp",
   "$_src/core/SkLocalMatrixImageFilter.cpp",
   "$_src/core/SkLocalMatrixImageFilter.h",
   "$_src/core/SkMD5.cpp",
   "$_src/core/SkMD5.h",
   "$_src/core/SkMakeUnique.h",
+  "$_src/core/SkMalloc.cpp",
   "$_src/core/SkMallocPixelRef.cpp",
   "$_src/core/SkMask.cpp",
   "$_src/core/SkMask.h",
@@ -347,7 +353,8 @@ skia_core_sources = [
   "$_src/core/SkStrike.h",
   "$_src/core/SkStrikeCache.cpp",
   "$_src/core/SkStrikeCache.h",
-  "$_src/core/SkStrikeInterface.h",
+  "$_src/core/SkStrikeForGPU.h",
+  "$_src/core/SkStrikeForGPU.cpp",
   "$_src/core/SkStrikeSpec.cpp",
   "$_src/core/SkStrikeSpec.h",
   "$_src/core/SkString.cpp",
@@ -366,6 +373,8 @@ skia_core_sources = [
   "$_src/core/SkTDynamicHash.h",
   "$_src/core/SkTextBlob.cpp",
   "$_src/core/SkTextBlobPriv.h",
+  "$_src/core/SkTextBlobTrace.cpp",
+  "$_src/core/SkTextBlobTrace.h",
   "$_src/core/SkTextFormatParams.h",
   "$_src/core/SkTime.cpp",
   "$_src/core/SkTInternalLList.h",
@@ -405,6 +414,7 @@ skia_core_sources = [
   "$_src/core/SkYUVPlanesCache.h",
   "$_src/core/SkYUVASizeInfo.cpp",
   "$_src/core/SkYUVMath.cpp",
+  "$_src/core/SkZip.h",
 
   "$_src/image/SkImage.cpp",
 
@@ -449,6 +459,7 @@ skia_core_sources = [
 
   # private
   "$_include/private/SkChecksum.h",
+  "$_include/private/SkColorData.h",
   "$_include/private/SkDeferredDisplayList.h",
   "$_include/private/SkFixed.h",
   "$_include/private/SkFloatBits.h",
@@ -539,17 +550,14 @@ skia_pathops_sources = [
 ]
 
 skia_skpicture_public = [
-  "$_include/core/SkMultiPictureDraw.h",
   "$_include/core/SkPicture.h",
   "$_include/core/SkPictureRecorder.h",
 ]
 
 skia_skpicture_sources = [
-  "$_include/core/SkMultiPictureDraw.h",
   "$_include/core/SkPicture.h",
   "$_include/core/SkPictureRecorder.h",
   "$_src/core/SkBigPicture.cpp",
-  "$_src/core/SkMultiPictureDraw.cpp",
   "$_src/core/SkPicture.cpp",
   "$_src/core/SkPictureCommon.h",
   "$_src/core/SkPictureData.cpp",

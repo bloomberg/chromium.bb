@@ -13,10 +13,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_termination_info.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_service.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
 #include <sys/wait.h>
@@ -73,7 +73,8 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
 #endif
     EXPECT_TRUE(host->Start());
 
-    BindInterface(host, &service_);
+    host->GetChildProcess()->BindReceiver(
+        service_.BindNewPipeAndPassReceiver());
     if (crash) {
       service_->DoCrashImmediately(
           base::BindOnce(&UtilityProcessHostBrowserTest::OnSomethingOnIOThread,
@@ -98,7 +99,7 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(done_closure_));
   }
 
-  mojom::TestServicePtr service_;
+  mojo::Remote<mojom::TestService> service_;
   base::OnceClosure done_closure_;
 
   // Access on UI thread.
@@ -157,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest,
 
 // Disabled because currently this causes a WER dialog to appear.
 IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest,
-                       LaunchElevatedProcessAndCrash_DISABLED) {
+                       DISABLED_LaunchElevatedProcessAndCrash) {
   RunUtilityProcess(true, true);
 }
 #endif

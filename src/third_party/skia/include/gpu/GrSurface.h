@@ -21,19 +21,24 @@ class GrTexture;
 class GrSurface : public GrGpuResource {
 public:
     /**
+     * Retrieves the dimensions of the surface.
+     */
+    SkISize dimensions() const { return fDimensions; }
+
+    /**
      * Retrieves the width of the surface.
      */
-    int width() const { return fWidth; }
+    int width() const { return fDimensions.width(); }
 
     /**
      * Retrieves the height of the surface.
      */
-    int height() const { return fHeight; }
+    int height() const { return fDimensions.height(); }
 
     /**
      * Helper that gets the width and height of the surface as a bounding rectangle.
      */
-    SkRect getBoundsRect() const { return SkRect::MakeIWH(this->width(), this->height()); }
+    SkRect getBoundsRect() const { return SkRect::Make(this->dimensions()); }
 
     /**
      * Retrieves the pixel config specified when the surface was created.
@@ -75,10 +80,8 @@ public:
     inline GrSurfacePriv surfacePriv();
     inline const GrSurfacePriv surfacePriv() const;
 
-    static size_t WorstCaseSize(const GrSurfaceDesc& desc, GrRenderable renderable,
-                                int renderTargetSampleCnt, bool binSize = false);
-    static size_t ComputeSize(GrPixelConfig config, int width, int height, int colorSamplesPerPixel,
-                              GrMipMapped, bool binSize = false);
+    static size_t ComputeSize(const GrCaps&, const GrBackendFormat&, SkISize dimensions,
+                              int colorSamplesPerPixel, GrMipMapped, bool binSize = false);
 
     /**
      * The pixel values of this surface cannot be modified (e.g. doesn't support write pixels or
@@ -114,19 +117,13 @@ protected:
         fSurfaceFlags |= GrInternalSurfaceFlags::kReadOnly;
     }
 
-    // Methods made available via GrSurfacePriv
-    bool hasPendingRead() const;
-    bool hasPendingWrite() const;
-    bool hasPendingIO() const;
-
     // Provides access to methods that should be public within Skia code.
     friend class GrSurfacePriv;
 
-    GrSurface(GrGpu* gpu, const SkISize& size, GrPixelConfig config, GrProtected isProtected)
+    GrSurface(GrGpu* gpu, const SkISize& dimensions, GrPixelConfig config, GrProtected isProtected)
             : INHERITED(gpu)
             , fConfig(config)
-            , fWidth(size.width())
-            , fHeight(size.height())
+            , fDimensions(dimensions)
             , fSurfaceFlags(GrInternalSurfaceFlags::kNone)
             , fIsProtected(isProtected) {}
 
@@ -152,8 +149,7 @@ private:
     }
 
     GrPixelConfig              fConfig;
-    int                        fWidth;
-    int                        fHeight;
+    SkISize                    fDimensions;
     GrInternalSurfaceFlags     fSurfaceFlags;
     GrProtected                fIsProtected;
     sk_sp<GrRefCntedCallback>  fReleaseHelper;

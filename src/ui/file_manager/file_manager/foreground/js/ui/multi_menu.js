@@ -119,7 +119,7 @@ cr.define('cr.ui', () => {
     }
     set menu(menu) {
       if (typeof menu == 'string' && menu[0] == '#') {
-        menu = assert(this.ownerDocument.getElementById(menu.slice(1)));
+        menu = assert(this.ownerDocument.body.querySelector(menu));
         cr.ui.decorate(menu, cr.ui.Menu);
       }
 
@@ -177,12 +177,8 @@ cr.define('cr.ui', () => {
       // allows the menu height to grow crbug/934207
       style.maxHeight =
           (viewportHeight - itemRect.top - this.menuEndGap_) + 'px';
-      if ((itemRect.top + childRect.height + this.menuEndGap_) >
-          viewportHeight) {
-        style.overflowY = 'scroll';
-      } else {
-        style.overflowY = 'auto';
-      }
+      // Let the browser deal with scroll bar generation.
+      style.overflowY = 'auto';
     }
 
     /**
@@ -325,9 +321,13 @@ cr.define('cr.ui', () => {
             } else if (e.button == 0) {  // Only show the menu when using left
                                          // mouse button.
               this.showMenu(false, {x: e.screenX, y: e.screenY});
-
-              // Prevent the button from stealing focus on mousedown.
-              e.preventDefault();
+              // Prevent the button from stealing focus on mousedown unless
+              // focus is on another button or cr-input element.
+              if (!(document.hasFocus() &&
+                    (document.activeElement.tagName === 'BUTTON' ||
+                     document.activeElement.tagName === 'CR-INPUT'))) {
+                e.preventDefault();
+              }
             }
           }
 

@@ -38,7 +38,7 @@ class InProgressDownloadManager;
 }
 
 namespace visitedlink {
-class VisitedLinkMaster;
+class VisitedLinkWriter;
 }
 
 namespace android_webview {
@@ -70,7 +70,7 @@ class AwBrowserContext : public content::BrowserContext,
   // Get the list of authentication schemes to support.
   static std::vector<std::string> GetAuthSchemes();
 
-  // These methods map to Add methods in visitedlink::VisitedLinkMaster.
+  // These methods map to Add methods in visitedlink::VisitedLinkWriter.
   void AddVisitedURLs(const std::vector<GURL>& urls);
 
   AwQuotaManagerBridge* GetQuotaManagerBridge();
@@ -91,6 +91,7 @@ class AwBrowserContext : public content::BrowserContext,
   content::BrowserPluginGuestManager* GetGuestManager() override;
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
   content::PushMessagingService* GetPushMessagingService() override;
+  content::StorageNotificationService* GetStorageNotificationService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
   content::PermissionControllerDelegate* GetPermissionControllerDelegate()
       override;
@@ -128,7 +129,7 @@ class AwBrowserContext : public content::BrowserContext,
   std::unique_ptr<autofill::AutocompleteHistoryManager>
       autocomplete_history_manager_;
 
-  std::unique_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
+  std::unique_ptr<visitedlink::VisitedLinkWriter> visitedlink_writer_;
   std::unique_ptr<content::ResourceContext> resource_context_;
 
   std::unique_ptr<PrefService> user_pref_service_;

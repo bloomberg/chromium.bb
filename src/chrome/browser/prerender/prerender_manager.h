@@ -25,8 +25,6 @@
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -75,8 +73,7 @@ class PrerenderManagerObserver {
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of web pages. All methods must be called on the UI thread unless
 // indicated otherwise.
-class PrerenderManager : public content::NotificationObserver,
-                         public content::RenderProcessHostObserver,
+class PrerenderManager : public content::RenderProcessHostObserver,
                          public KeyedService,
                          public MediaCaptureDevicesDispatcher::Observer {
  public:
@@ -100,6 +97,22 @@ class PrerenderManager : public content::NotificationObserver,
     CLEAR_PRERENDER_HISTORY = 0x1 << 1,
     CLEAR_MAX = 0x1 << 2
   };
+
+  // If |url| matches a valid prerendered page in one of the contents,
+  // try to swap it and merge browsing histories.
+  //
+  // Returns true if a prerendered page is swapped in. When this happens, the
+  // PrerenderManager has already swapped out |contents_being_navigated| with
+  // |replaced_contents| in the WebContents container [e.g. TabStripModel on
+  // desktop]. |loaded| is set to true if the page finished loading.
+  //
+  // Returns false if nothing is swapped.
+  //
+  // |loaded| cannot be null.
+  static bool MaybeUsePrerenderedPage(Profile* profile,
+                                      content::WebContents* web_contents,
+                                      const GURL& url,
+                                      bool* loaded);
 
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
@@ -279,11 +292,6 @@ class PrerenderManager : public content::NotificationObserver,
   // Record a final status of a prerendered page in a histogram.
   void RecordFinalStatus(Origin origin, FinalStatus final_status) const;
 
-  // content::NotificationObserver
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // MediaCaptureDevicesDispatcher::Observer
   void OnCreatingAudioStream(int render_process_id,
                              int render_frame_id) override;
@@ -401,7 +409,7 @@ class PrerenderManager : public content::NotificationObserver,
     // counting the ones that have called PrerenderData::OnHandleCanceled(). For
     // pending prerenders, this will always be 1, since the PrerenderManager
     // only merges handles of running prerenders.
-    int handle_count_;
+    int handle_count_ = 0;
 
     // The time when OnHandleNavigatedAway was called.
     base::TimeTicks abandon_time_;
@@ -595,18 +603,16 @@ class PrerenderManager : public content::NotificationObserver,
   std::vector<std::unique_ptr<OnCloseWebContentsDeleter>>
       on_close_web_contents_deleters_;
 
-  std::unique_ptr<PrerenderHistory> prerender_history_;
+  const std::unique_ptr<PrerenderHistory> prerender_history_;
 
-  std::unique_ptr<PrerenderHistograms> histograms_;
-
-  content::NotificationRegistrar notification_registrar_;
+  const std::unique_ptr<PrerenderHistograms> histograms_;
 
   // The number of bytes transferred over the network for the profile this
   // PrerenderManager is attached to.
-  int64_t profile_network_bytes_;
+  int64_t profile_network_bytes_ = 0;
 
   // The value of profile_network_bytes_ that was last recorded.
-  int64_t last_recorded_profile_network_bytes_;
+  int64_t last_recorded_profile_network_bytes_ = 0;
 
   // Set of process hosts being prerendered.
   using PrerenderProcessSet = std::set<content::RenderProcessHost*>;
@@ -614,7 +620,7 @@ class PrerenderManager : public content::NotificationObserver,
 
   const base::TickClock* tick_clock_;
 
-  bool page_load_metric_observer_disabled_;
+  bool page_load_metric_observer_disabled_ = false;
 
   std::vector<std::unique_ptr<PrerenderManagerObserver>> observers_;
 

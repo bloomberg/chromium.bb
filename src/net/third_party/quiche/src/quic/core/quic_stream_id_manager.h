@@ -17,8 +17,6 @@ class QuicSessionPeer;
 class QuicStreamIdManagerPeer;
 }  // namespace test
 
-class QuicSession;
-
 // Amount to increment a stream ID value to get the next stream ID in
 // the stream ID space.
 const QuicStreamId kV99StreamIdIncrement = 4;
@@ -31,8 +29,36 @@ const int kMaxStreamsWindowDivisor = 2;
 // This class manages the stream ids for Version 99/IETF QUIC.
 class QUIC_EXPORT_PRIVATE QuicStreamIdManager {
  public:
-  QuicStreamIdManager(QuicSession* session,
+  class QUIC_EXPORT_PRIVATE DelegateInterface {
+   public:
+    virtual ~DelegateInterface() = default;
+
+    // Called when new outgoing streams are available to be opened. This occurs
+    // when an extant, open, stream is moved to draining or closed.
+    // |unidirectional| indicates whether unidirectional or bidirectional
+    // streams are now available. If both become available at the same time then
+    // there will be two calls to this method, one with unidirectional==true,
+    // the other with it ==false.
+    virtual void OnCanCreateNewOutgoingStream(bool unidirectional) = 0;
+
+    // Closes the connection when an error is encountered.
+    virtual void OnError(QuicErrorCode error_code,
+                         std::string error_details) = 0;
+
+    // Send a MAX_STREAMS frame.
+    virtual void SendMaxStreams(QuicStreamCount stream_count,
+                                bool unidirectional) = 0;
+
+    // Send a STREAMS_BLOCKED frame.
+    virtual void SendStreamsBlocked(QuicStreamCount stream_count,
+                                    bool unidirectional) = 0;
+  };
+
+  QuicStreamIdManager(DelegateInterface* delegate,
                       bool unidirectional,
+                      Perspective perspective,
+                      QuicTransportVersion transport_version,
+                      QuicStreamCount num_expected_static_streams,
                       QuicStreamCount max_allowed_outgoing_streams,
                       QuicStreamCount max_allowed_incoming_streams);
 
@@ -127,6 +153,10 @@ class QUIC_EXPORT_PRIVATE QuicStreamIdManager {
     largest_peer_created_stream_id_ = largest_peer_created_stream_id;
   }
 
+  QuicStreamId largest_peer_created_stream_id() const {
+    return largest_peer_created_stream_id_;
+  }
+
   // These are the limits for outgoing and incoming streams,
   // respectively. For incoming there are two limits, what has
   // been advertised to the peer and what is actually available.
@@ -149,6 +179,10 @@ class QUIC_EXPORT_PRIVATE QuicStreamIdManager {
 
   QuicTransportVersion transport_version() const;
 
+  // Called when session has been configured. Causes the Stream ID manager to
+  // send out any pending MAX_STREAMS and STREAMS_BLOCKED frames.
+  void OnConfigNegotiated();
+
  private:
   friend class test::QuicSessionPeer;
   friend class test::QuicStreamIdManagerPeer;
@@ -167,11 +201,23 @@ class QUIC_EXPORT_PRIVATE QuicStreamIdManager {
 
   // Back reference to the session containing this Stream ID Manager.
   // needed to access various session methods, such as perspective()
-  QuicSession* session_;
+  DelegateInterface* delegate_;
 
   // Whether this stream id manager is for unidrectional (true) or bidirectional
   // (false) streams.
-  bool unidirectional_;
+  const bool unidirectional_;
+
+  // Is this manager a client or a server.
+  const Perspective perspective_;
+
+  // Transport version used for this manager.
+  const QuicTransportVersion transport_version_;
+
+  // Number of expected static streams.
+  const QuicStreamCount num_expected_static_streams_;
+
+  // True if the config has been negotiated_;
+  bool is_config_negotiated_;
 
   // This is the number of streams that this node can initiate.
   // This limit is:
@@ -226,6 +272,13 @@ class QUIC_EXPORT_PRIVATE QuicStreamIdManager {
   // max_streams_window_ is set to 1/2 of the initial number of incoming streams
   // that are allowed (as set in the constructor).
   QuicStreamId max_streams_window_;
+
+  // MAX_STREAMS and STREAMS_BLOCKED frames are not sent before the session has
+  // been configured. Instead, the relevant information is stored in
+  // |pending_max_streams_| and |pending_streams_blocked_| and sent when
+  // OnConfigNegotiated() is invoked.
+  bool pending_max_streams_;
+  QuicStreamId pending_streams_blocked_;
 };
 }  // namespace quic
 

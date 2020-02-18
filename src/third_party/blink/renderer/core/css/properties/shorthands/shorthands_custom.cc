@@ -1923,6 +1923,25 @@ const CSSValue* InsetInline::CSSValueFromComputedStyleInternal(
       insetInlineShorthand(), style, layout_object, allow_visited_style);
 }
 
+bool IntrinsicSize::ParseShorthand(
+    bool important,
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&,
+    HeapVector<CSSPropertyValue, 256>& properties) const {
+  return css_property_parser_helpers::ConsumeShorthandVia2Longhands(
+      intrinsicSizeShorthand(), important, context, range, properties);
+}
+
+const CSSValue* IntrinsicSize::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValuesForIntrinsicSizeShorthand(
+      intrinsicSizeShorthand(), style, layout_object, allow_visited_style);
+}
+
 bool ListStyle::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
@@ -2482,8 +2501,9 @@ bool PlaceContent::ParseShorthand(
   const CSSValue* justify_content_value = nullptr;
   if (range.AtEnd()) {
     if (is_baseline) {
-      justify_content_value = MakeGarbageCollected<CSSContentDistributionValue>(
-          CSSValueID::kInvalid, CSSValueID::kStart, CSSValueID::kInvalid);
+      justify_content_value =
+          MakeGarbageCollected<cssvalue::CSSContentDistributionValue>(
+              CSSValueID::kInvalid, CSSValueID::kStart, CSSValueID::kInvalid);
     } else {
       range = range_copy;
     }

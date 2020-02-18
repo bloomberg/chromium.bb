@@ -28,9 +28,6 @@ namespace blink {
 
 static constexpr base::TimeDelta kTimerDelay =
     base::TimeDelta::FromMilliseconds(500);
-static const float kRegionGranularitySteps = 60.0;
-// TODO: Vary by Finch experiment parameter.
-static const float kSweepLineRegionGranularity = 1.0;
 static const float kMovementThreshold = 3.0;  // CSS pixels.
 
 static FloatPoint LogicalStart(const FloatRect& rect,
@@ -51,15 +48,6 @@ static float GetMoveDistance(const FloatRect& old_rect,
   return std::max(fabs(location_delta.Width()), fabs(location_delta.Height()));
 }
 
-float LayoutShiftTracker::RegionGranularityScale(
-    const IntRect& viewport) const {
-  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
-    return kSweepLineRegionGranularity;
-
-  return kRegionGranularitySteps /
-         std::min(viewport.Height(), viewport.Width());
-}
-
 static bool EqualWithinMovementThreshold(const FloatPoint& a,
                                          const FloatPoint& b,
                                          const LayoutObject& object) {
@@ -69,10 +57,10 @@ static bool EqualWithinMovementThreshold(const FloatPoint& a,
          fabs(a.Y() - b.Y()) < threshold_physical_px;
 }
 
-static bool SmallerThanRegionGranularity(const FloatRect& rect,
-                                         float granularity_scale) {
-  return rect.Width() * granularity_scale < 0.5 ||
-         rect.Height() * granularity_scale < 0.5;
+static bool SmallerThanRegionGranularity(const FloatRect& rect) {
+  // The region uses integer coordinates, so the rects are snapped to
+  // pixel boundaries. Ignore rects smaller than half a pixel.
+  return rect.Width() < 0.5 || rect.Height() < 0.5;
 }
 
 static const PropertyTreeState PropertyTreeStateFor(
@@ -80,28 +68,22 @@ static const PropertyTreeState PropertyTreeStateFor(
   return object.FirstFragment().LocalBorderBoxProperties();
 }
 
-static void RegionToTracedValue(const Region& region,
-                                double granularity_scale,
+static void RegionToTracedValue(const LayoutShiftRegion& region,
                                 TracedValue& value) {
+  Region blink_region;
+  for (IntRect rect : region.GetRects())
+    blink_region.Unite(Region(rect));
+
   value.BeginArray("region_rects");
-  for (const IntRect& rect : region.Rects()) {
+  for (const IntRect& rect : blink_region.Rects()) {
     value.BeginArray();
-    value.PushInteger(clampTo<int>(roundf(rect.X() / granularity_scale)));
-    value.PushInteger(clampTo<int>(roundf(rect.Y() / granularity_scale)));
-    value.PushInteger(clampTo<int>(roundf(rect.Width() / granularity_scale)));
-    value.PushInteger(clampTo<int>(roundf(rect.Height() / granularity_scale)));
+    value.PushInteger(rect.X());
+    value.PushInteger(rect.Y());
+    value.PushInteger(rect.Width());
+    value.PushInteger(rect.Height());
     value.EndArray();
   }
   value.EndArray();
-}
-
-static void RegionToTracedValue(const LayoutShiftRegion& region,
-                                double granularity_scale,
-                                TracedValue& value) {
-  Region old_region;
-  for (IntRect rect : region.GetRects())
-    old_region.Unite(Region(rect));
-  RegionToTracedValue(old_region, granularity_scale, value);
 }
 
 #if DCHECK_IS_ON()
@@ -127,21 +109,19 @@ void LayoutShiftTracker::ObjectShifted(
     const LayoutObject& source,
     const PropertyTreeState& property_tree_state,
     FloatRect old_rect,
-    FloatRect new_rect) {
+    FloatRect new_rect,
+    FloatSize paint_offset_delta) {
   if (old_rect.IsEmpty() || new_rect.IsEmpty())
     return;
+
+  old_rect.Move(paint_offset_delta);
 
   if (EqualWithinMovementThreshold(LogicalStart(old_rect, source),
                                    LogicalStart(new_rect, source), source))
     return;
 
-  IntRect viewport =
-      IntRect(IntPoint(),
-              frame_view_->GetScrollableArea()->VisibleContentRect().Size());
-  float scale = RegionGranularityScale(viewport);
-
-  if (SmallerThanRegionGranularity(old_rect, scale) &&
-      SmallerThanRegionGranularity(new_rect, scale))
+  if (SmallerThanRegionGranularity(old_rect) &&
+      SmallerThanRegionGranularity(new_rect))
     return;
 
   // Ignore layout objects that move (in the coordinate space of the paint
@@ -189,6 +169,10 @@ void LayoutShiftTracker::ObjectShifted(
     clipped_new_rect.Intersect(clip_rect.Rect());
   }
 
+  IntRect viewport =
+      IntRect(IntPoint(),
+              frame_view_->GetScrollableArea()->VisibleContentRect().Size());
+
   IntRect visible_old_rect = RoundedIntRect(clipped_old_rect);
   visible_old_rect.Intersect(viewport);
   IntRect visible_new_rect = RoundedIntRect(clipped_new_rect);
@@ -214,43 +198,21 @@ void LayoutShiftTracker::ObjectShifted(
   }
 #endif
 
-  visible_old_rect.Scale(scale);
-  visible_new_rect.Scale(scale);
-
-  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled()) {
-    region_experimental_.AddRect(visible_old_rect);
-    region_experimental_.AddRect(visible_new_rect);
-  } else {
-    region_.Unite(Region(visible_old_rect));
-    region_.Unite(Region(visible_new_rect));
-  }
+  region_.AddRect(visible_old_rect);
+  region_.AddRect(visible_new_rect);
 }
 
 void LayoutShiftTracker::NotifyObjectPrePaint(
     const LayoutObject& object,
     const PropertyTreeState& property_tree_state,
     const IntRect& old_visual_rect,
-    const IntRect& new_visual_rect) {
+    const IntRect& new_visual_rect,
+    FloatSize paint_offset_delta) {
   if (!IsActive())
     return;
 
   ObjectShifted(object, property_tree_state, FloatRect(old_visual_rect),
-                FloatRect(new_visual_rect));
-}
-
-void LayoutShiftTracker::NotifyCompositedLayerMoved(
-    const LayoutObject& layout_object,
-    FloatRect old_layer_rect,
-    FloatRect new_layer_rect) {
-  if (!IsActive())
-    return;
-
-  // Make sure we can access a transform node.
-  if (!layout_object.FirstFragment().HasLocalBorderBoxProperties())
-    return;
-
-  ObjectShifted(layout_object, PropertyTreeStateFor(layout_object),
-                old_layer_rect, new_layer_rect);
+                FloatRect(new_visual_rect), paint_offset_delta);
 }
 
 double LayoutShiftTracker::SubframeWeightingFactor() const {
@@ -267,7 +229,8 @@ double LayoutShiftTracker::SubframeWeightingFactor() const {
   auto subframe_rect = PhysicalRect::EnclosingRect(subframe_cliprect.Rect());
 
   // Intersect with the portion of the local root that overlaps the main frame.
-  frame.LocalFrameRoot().View()->MapToVisualRectInTopFrameSpace(subframe_rect);
+  frame.LocalFrameRoot().View()->MapToVisualRectInRemoteRootFrame(
+      subframe_rect);
   IntSize subframe_visible_size = subframe_rect.PixelSnappedSize();
   IntSize main_frame_size = frame.GetPage()->GetVisualViewport().Size();
 
@@ -280,25 +243,15 @@ double LayoutShiftTracker::SubframeWeightingFactor() const {
 void LayoutShiftTracker::NotifyPrePaintFinished() {
   if (!IsActive())
     return;
-  bool use_sweep_line = RuntimeEnabledFeatures::JankTrackingSweepLineEnabled();
-  bool region_is_empty =
-      use_sweep_line ? region_experimental_.IsEmpty() : region_.IsEmpty();
-  if (region_is_empty)
+  if (region_.IsEmpty())
     return;
 
   IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
   if (viewport.IsEmpty())
     return;
 
-  double granularity_scale = RegionGranularityScale(viewport);
-  IntRect scaled_viewport = viewport;
-  scaled_viewport.Scale(granularity_scale);
-
-  double viewport_area =
-      double(scaled_viewport.Width()) * double(scaled_viewport.Height());
-  uint64_t region_area =
-      use_sweep_line ? region_experimental_.Area() : region_.Area();
-  double impact_fraction = region_area / viewport_area;
+  double viewport_area = double(viewport.Width()) * double(viewport.Height());
+  double impact_fraction = region_.Area() / viewport_area;
   DCHECK_GT(impact_fraction, 0);
 
   DCHECK_GT(frame_max_distance_, 0.0);
@@ -329,17 +282,10 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
     ReportShift(score_delta, weighted_score_delta);
   }
 
-  if (use_sweep_line) {
-    if (!region_experimental_.IsEmpty()) {
-      SetLayoutShiftRects(region_experimental_.GetRects(), 1, true);
-    }
-    region_experimental_.Reset();
-  } else {
-    if (!region_.IsEmpty()) {
-      SetLayoutShiftRects(region_.Rects(), granularity_scale, false);
-    }
-    region_ = Region();
-  }
+  if (!region_.IsEmpty())
+    SetLayoutShiftRects(region_.GetRects());
+  region_.Reset();
+
   frame_max_distance_ = 0.0;
   frame_scroll_delta_ = ScrollOffset();
 }
@@ -358,9 +304,7 @@ void LayoutShiftTracker::ReportShift(double score_delta,
     }
   }
 
-  if (RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
-          frame.GetDocument()) &&
-      frame.DomWindow()) {
+  if (frame.DomWindow()) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());
     if (performance) {
@@ -466,36 +410,13 @@ std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
   value->SetDouble("cumulative_score", score_);
   value->SetDouble("overall_max_distance", overall_max_distance_);
   value->SetDouble("frame_max_distance", frame_max_distance_);
-
-  float granularity_scale = RegionGranularityScale(
-      IntRect(IntPoint(),
-              frame_view_->GetScrollableArea()->VisibleContentRect().Size()));
-  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
-    RegionToTracedValue(region_experimental_, granularity_scale, *value);
-  else
-    RegionToTracedValue(region_, granularity_scale, *value);
-
+  RegionToTracedValue(region_, *value);
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   value->SetBoolean("had_recent_input", input_detected);
   return value;
 }
 
-WebVector<gfx::Rect> LayoutShiftTracker::ConvertIntRectsToGfxRects(
-    const Vector<IntRect>& int_rects,
-    double granularity_scale) {
-  WebVector<gfx::Rect> rects;
-  for (const IntRect& rect : int_rects) {
-    gfx::Rect r = gfx::Rect(
-        rect.X() / granularity_scale, rect.Y() / granularity_scale,
-        rect.Width() / granularity_scale, rect.Height() / granularity_scale);
-    rects.emplace_back(r);
-  }
-  return rects;
-}
-
-void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
-                                             double granularity_scale,
-                                             bool using_sweep_line) {
+void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects) {
   // Store the layout shift rects in the HUD layer.
   GraphicsLayer* root_graphics_layer =
       frame_view_->GetLayoutView()->Compositor()->RootGraphicsLayer();
@@ -510,15 +431,11 @@ void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects,
       return;
     if (cc_layer->layer_tree_host()->hud_layer()) {
       WebVector<gfx::Rect> rects;
-      if (using_sweep_line) {
-        Region old_region;
-        for (IntRect rect : int_rects)
-          old_region.Unite(Region(rect));
-        rects =
-            ConvertIntRectsToGfxRects(old_region.Rects(), granularity_scale);
-      } else {
-        rects = ConvertIntRectsToGfxRects(int_rects, granularity_scale);
-      }
+      Region blink_region;
+      for (IntRect rect : int_rects)
+        blink_region.Unite(Region(rect));
+      for (const IntRect& rect : blink_region.Rects())
+        rects.emplace_back(rect);
       cc_layer->layer_tree_host()->hud_layer()->SetLayoutShiftRects(
           rects.ReleaseVector());
       cc_layer->layer_tree_host()->hud_layer()->SetNeedsPushProperties();

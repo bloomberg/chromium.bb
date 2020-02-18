@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.metrics;
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Emits background task memory usage UMA metrics.
@@ -18,8 +21,12 @@ public class BackgroundTaskMemoryMetricsEmitter {
      *         "Memory.BackgroundTask.Browser.*" histograms will still be emitted, regardless.
      */
     public static void reportMemoryUsage(boolean isReducedMode, String taskTypeAffix) {
-        nativeReportMemoryUsage(isReducedMode, taskTypeAffix);
+        BackgroundTaskMemoryMetricsEmitterJni.get().reportMemoryUsage(isReducedMode, taskTypeAffix);
     }
 
-    private static native void nativeReportMemoryUsage(boolean isReducedMode, String taskTypeAffix);
+    @VisibleForTesting
+    @NativeMethods
+    public interface Natives {
+        void reportMemoryUsage(boolean isReducedMode, String taskTypeAffix);
+    }
 }

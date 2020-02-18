@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -68,7 +69,6 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
       is_mobile_layout_theme_enabled_(false),
       original_default_minimum_page_scale_factor_(0),
       original_default_maximum_page_scale_factor_(0),
-      use_solid_color_scrollbar_(false),
       embedder_text_autosizing_enabled_(
           web_view->GetPage()->GetSettings().TextAutosizingEnabled()),
       embedder_device_scale_adjustment_(
@@ -291,8 +291,8 @@ void DevToolsEmulator::EnableMobileEmulation() {
     return;
   emulate_mobile_enabled_ = true;
   is_overlay_scrollbars_enabled_ =
-      RuntimeEnabledFeatures::OverlayScrollbarsEnabled();
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(true);
+      ScrollbarThemeSettings::OverlayScrollbarsEnabled();
+  ScrollbarThemeSettings::SetOverlayScrollbarsEnabled(true);
   is_orientation_event_enabled_ =
       RuntimeEnabledFeatures::OrientationEventEnabled();
   RuntimeEnabledFeatures::SetOrientationEventEnabled(true);
@@ -301,9 +301,6 @@ void DevToolsEmulator::EnableMobileEmulation() {
   RuntimeEnabledFeatures::SetMobileLayoutThemeEnabled(true);
   ComputedStyle::InvalidateInitialStyle();
   web_view_->GetPage()->GetSettings().SetForceAndroidOverlayScrollbar(true);
-  use_solid_color_scrollbar_ =
-      web_view_->GetPage()->GetSettings().GetUseSolidColorScrollbars();
-  web_view_->GetPage()->GetSettings().SetUseSolidColorScrollbars(true);
   web_view_->GetPage()->GetSettings().SetViewportStyle(
       WebViewportStyle::kMobile);
   web_view_->GetPage()->GetSettings().SetViewportEnabled(true);
@@ -333,15 +330,13 @@ void DevToolsEmulator::EnableMobileEmulation() {
 void DevToolsEmulator::DisableMobileEmulation() {
   if (!emulate_mobile_enabled_)
     return;
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(
+  ScrollbarThemeSettings::SetOverlayScrollbarsEnabled(
       is_overlay_scrollbars_enabled_);
   RuntimeEnabledFeatures::SetOrientationEventEnabled(
       is_orientation_event_enabled_);
   RuntimeEnabledFeatures::SetMobileLayoutThemeEnabled(
       is_mobile_layout_theme_enabled_);
   ComputedStyle::InvalidateInitialStyle();
-  web_view_->GetPage()->GetSettings().SetUseSolidColorScrollbars(
-      use_solid_color_scrollbar_);
   web_view_->GetPage()->GetSettings().SetForceAndroidOverlayScrollbar(false);
   web_view_->GetPage()->GetSettings().SetViewportEnabled(false);
   web_view_->GetPage()->GetSettings().SetViewportMetaEnabled(false);
@@ -370,19 +365,8 @@ void DevToolsEmulator::DisableMobileEmulation() {
 TransformationMatrix DevToolsEmulator::ForceViewport(
     const WebFloatPoint& position,
     float scale) {
-  if (!viewport_override_) {
+  if (!viewport_override_)
     viewport_override_ = ViewportOverride();
-
-    GraphicsLayer* container_layer =
-        web_view_->GetPage()->GetVisualViewport().ContainerLayer();
-    // Disable clipping on the visual viewport layer, to ensure the whole area
-    // is painted.
-    if (container_layer) {
-      viewport_override_->original_visual_viewport_masking =
-          container_layer->MasksToBounds();
-      container_layer->SetMasksToBounds(false);
-    }
-  }
 
   viewport_override_->position = FloatPoint(position.x, position.y);
   viewport_override_->scale = scale;
@@ -393,17 +377,7 @@ TransformationMatrix DevToolsEmulator::ForceViewport(
 }
 
 TransformationMatrix DevToolsEmulator::ResetViewport() {
-  if (viewport_override_) {
-    GraphicsLayer* container_layer =
-        web_view_->GetPage()->GetVisualViewport().ContainerLayer();
-    if (container_layer) {
-      container_layer->SetMasksToBounds(
-          viewport_override_->original_visual_viewport_masking);
-    }
-
-    viewport_override_ = base::nullopt;
-  }
-
+  viewport_override_ = base::nullopt;
   return ComputeRootLayerTransform();
 }
 

@@ -35,10 +35,10 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/cors.mojom-blink.h"
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "services/network/public/mojom/cors.mojom-blink-forward.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
@@ -46,13 +46,13 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
 class EncodedFormData;
+struct Referrer;
 
 // A ResourceRequest is a "request" object for ResourceLoader. Conceptually
 // it is https://fetch.spec.whatwg.org/#concept-request, but it contains
@@ -82,7 +82,6 @@ class PLATFORM_EXPORT ResourceRequest final {
       const KURL& new_url,
       const AtomicString& new_method,
       const KURL& new_site_for_cookies,
-      scoped_refptr<const SecurityOrigin> new_top_frame_origin,
       const String& new_referrer,
       network::mojom::ReferrerPolicy new_referrer_policy,
       bool skip_service_worker) const;
@@ -124,6 +123,15 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
   void SetRequestorOrigin(scoped_refptr<const SecurityOrigin> origin) {
     requestor_origin_ = std::move(origin);
+  }
+
+  // The origin of the isolated world - set if this is a fetch/XHR initiated by
+  // an isolated world.
+  const scoped_refptr<const SecurityOrigin>& IsolatedWorldOrigin() const {
+    return isolated_world_origin_;
+  }
+  void SetIsolatedWorldOrigin(scoped_refptr<const SecurityOrigin> origin) {
+    isolated_world_origin_ = std::move(origin);
   }
 
   const AtomicString& HttpMethod() const;
@@ -358,13 +366,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
   bool IsAutomaticUpgrade() const { return is_automatic_upgrade_; }
 
-  bool ShouldAlsoUseFactoryBoundOriginForCors() const {
-    return should_also_use_factory_bound_origin_for_cors_;
-  }
-  void SetShouldAlsoUseFactoryBoundOriginForCors(bool value) {
-    should_also_use_factory_bound_origin_for_cors_ = value;
-  }
-
   void SetAllowStaleResponse(bool value) { allow_stale_response_ = value; }
   bool AllowsStaleResponse() const { return allow_stale_response_; }
 
@@ -408,6 +409,14 @@ class PLATFORM_EXPORT ResourceRequest final {
     return fetch_window_id_;
   }
 
+  void SetRecursivePrefetchToken(
+      const base::Optional<base::UnguessableToken>& token) {
+    recursive_prefetch_token_ = token;
+  }
+  const base::Optional<base::UnguessableToken>& RecursivePrefetchToken() const {
+    return recursive_prefetch_token_;
+  }
+
   void SetInspectorId(uint64_t inspector_id) { inspector_id_ = inspector_id; }
   uint64_t InspectorId() const { return inspector_id_; }
 
@@ -439,6 +448,10 @@ class PLATFORM_EXPORT ResourceRequest final {
         prefetch_maybe_for_top_level_navigation;
   }
 
+  // Whether either RequestorOrigin or IsolatedWorldOrigin can display the
+  // |url|,
+  bool CanDisplay(const KURL&) const;
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -458,6 +471,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   scoped_refptr<const SecurityOrigin> top_frame_origin_;
 
   scoped_refptr<const SecurityOrigin> requestor_origin_;
+  scoped_refptr<const SecurityOrigin> isolated_world_origin_;
 
   AtomicString http_method_;
   HTTPHeaderMap http_header_fields_;
@@ -485,9 +499,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   network::mojom::CredentialsMode credentials_mode_;
   network::mojom::RedirectMode redirect_mode_;
   String fetch_integrity_;
-  // TODO(domfarolino): Use AtomicString for referrer_string_ once
-  // off-main-thread fetch is fully implemented and ResourceRequest never gets
-  // transferred between threads. See https://crbug.com/706331.
   String referrer_string_;
   network::mojom::ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;
@@ -507,7 +518,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool is_revalidating_ = false;
 
   bool is_automatic_upgrade_ = false;
-  bool should_also_use_factory_bound_origin_for_cors_ = false;
 
   base::Optional<base::UnguessableToken> devtools_token_;
   base::Optional<String> devtools_id_;
@@ -530,6 +540,11 @@ class PLATFORM_EXPORT ResourceRequest final {
   // the request under the cross-origin's partition. Furthermore, its reuse from
   // the prefetch cache will be restricted to top-level-navigations.
   bool prefetch_maybe_for_top_level_navigation_ = false;
+
+  // This is used when fetching preload header requests from cross-origin
+  // prefetch responses. The browser process uses this token to ensure the
+  // request is cached correctly.
+  base::Optional<base::UnguessableToken> recursive_prefetch_token_;
 };
 
 }  // namespace blink

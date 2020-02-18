@@ -82,12 +82,6 @@ bool IsDOMWrapperClassId(uint16_t class_id) {
          class_id == WrapperTypeInfo::kCustomWrappableId;
 }
 
-size_t UsedHeapSize(v8::Isolate* isolate) {
-  v8::HeapStatistics heap_statistics;
-  isolate->GetHeapStatistics(&heap_statistics);
-  return heap_statistics.used_heap_size();
-}
-
 bool IsNestedInV8GC(ThreadState* thread_state, v8::GCType type) {
   return thread_state && (type == v8::kGCTypeMarkSweepCompact ||
                           type == v8::kGCTypeIncrementalMarking);
@@ -120,31 +114,15 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
   v8::HandleScope scope(isolate);
   switch (type) {
     case v8::kGCTypeScavenge:
-      TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MinorGC",
-                         "usedHeapSizeBefore", UsedHeapSize(isolate));
       if (ThreadState::Current())
         ThreadState::Current()->WillStartV8GC(BlinkGC::kV8MinorGC);
       break;
+    case v8::kGCTypeIncrementalMarking:
     case v8::kGCTypeMarkSweepCompact:
       if (ThreadState::Current())
         ThreadState::Current()->WillStartV8GC(BlinkGC::kV8MajorGC);
-
-      TRACE_EVENT_BEGIN2("devtools.timeline,v8", "MajorGC",
-                         "usedHeapSizeBefore", UsedHeapSize(isolate), "type",
-                         "atomic pause");
-      break;
-    case v8::kGCTypeIncrementalMarking:
-      if (ThreadState::Current())
-        ThreadState::Current()->WillStartV8GC(BlinkGC::kV8MajorGC);
-
-      TRACE_EVENT_BEGIN2("devtools.timeline,v8", "MajorGC",
-                         "usedHeapSizeBefore", UsedHeapSize(isolate), "type",
-                         "incremental marking");
       break;
     case v8::kGCTypeProcessWeakCallbacks:
-      TRACE_EVENT_BEGIN2("devtools.timeline,v8", "MajorGC",
-                         "usedHeapSizeBefore", UsedHeapSize(isolate), "type",
-                         "weak processing");
       break;
     default:
       NOTREACHED();
@@ -172,34 +150,6 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
           ? ThreadState::Current()->Heap().stats_collector()
           : nullptr);
   UpdateCollectedPhantomHandles(isolate);
-  switch (type) {
-    case v8::kGCTypeScavenge:
-      TRACE_EVENT_END1("devtools.timeline,v8", "MinorGC", "usedHeapSizeAfter",
-                       UsedHeapSize(isolate));
-      // Scavenger might have dropped nodes.
-      if (ThreadState::Current()) {
-        ThreadState::Current()->ScheduleV8FollowupGCIfNeeded(
-            BlinkGC::kV8MinorGC);
-      }
-      break;
-    case v8::kGCTypeMarkSweepCompact:
-      TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter",
-                       UsedHeapSize(isolate));
-      if (ThreadState::Current())
-        ThreadState::Current()->ScheduleV8FollowupGCIfNeeded(
-            BlinkGC::kV8MajorGC);
-      break;
-    case v8::kGCTypeIncrementalMarking:
-      TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter",
-                       UsedHeapSize(isolate));
-      break;
-    case v8::kGCTypeProcessWeakCallbacks:
-      TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter",
-                       UsedHeapSize(isolate));
-      break;
-    default:
-      NOTREACHED();
-  }
 
   ScriptForbiddenScope::Exit();
 
@@ -260,7 +210,11 @@ class DOMWrapperForwardingVisitor final
     VisitHandle(value, class_id);
   }
 
-  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
+  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>&) final {
+    CHECK(false) << "Blink does not use v8::TracedGlobal.";
+  }
+
+  void VisitTracedReference(const v8::TracedReference<v8::Value>& value) final {
     VisitHandle(&value, value.WrapperClassId());
   }
 

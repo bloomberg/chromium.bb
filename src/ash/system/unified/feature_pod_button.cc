@@ -11,15 +11,18 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -40,22 +43,24 @@ void ConfigureFeaturePodLabel(views::Label* label) {
 
 }  // namespace
 
-FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener)
-    : views::ImageButton(listener) {
+FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener,
+                                           bool is_togglable)
+    : views::ImageButton(listener), is_togglable_(is_togglable) {
   SetPreferredSize(kUnifiedFeaturePodIconSize);
   SetBorder(views::CreateEmptyBorder(kUnifiedFeaturePodIconPadding));
   SetImageHorizontalAlignment(ALIGN_CENTER);
   SetImageVerticalAlignment(ALIGN_MIDDLE);
   TrayPopupUtils::ConfigureTrayPopupButton(this);
-
-  auto path = std::make_unique<SkPath>();
-  path->addOval(gfx::RectToSkRect(gfx::Rect(kUnifiedFeaturePodIconSize)));
-  SetProperty(views::kHighlightPathKey, path.release());
+  views::InstallCircleHighlightPathGenerator(this);
+  GetViewAccessibility().OverrideIsLeaf(true);
 }
 
 FeaturePodIconButton::~FeaturePodIconButton() = default;
 
 void FeaturePodIconButton::SetToggled(bool toggled) {
+  if (!is_togglable_)
+    return;
+
   toggled_ = toggled;
   SchedulePaint();
 }
@@ -115,9 +120,13 @@ std::unique_ptr<views::InkDropMask> FeaturePodIconButton::CreateInkDropMask()
 void FeaturePodIconButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ImageButton::GetAccessibleNodeData(node_data);
   node_data->SetName(GetTooltipText(gfx::Point()));
-  node_data->role = ax::mojom::Role::kToggleButton;
-  node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
-                                      : ax::mojom::CheckedState::kFalse);
+  if (is_togglable_) {
+    node_data->role = ax::mojom::Role::kToggleButton;
+    node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
+                                        : ax::mojom::CheckedState::kFalse);
+  } else {
+    node_data->role = ax::mojom::Role::kButton;
+  }
 }
 
 const char* FeaturePodIconButton::GetClassName() const {
@@ -130,6 +139,7 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
       sub_label_(new views::Label),
       detailed_view_arrow_(new views::ImageView) {
   SetBorder(views::CreateEmptyBorder(kUnifiedFeaturePodHoverPadding));
+  GetViewAccessibility().OverrideIsLeaf(true);
 
   ConfigureFeaturePodLabel(label_);
   ConfigureFeaturePodLabel(sub_label_);
@@ -271,9 +281,10 @@ void FeaturePodLabelButton::LayoutInCenter(views::View* child, int y) {
       child_width, preferred_size.height());
 }
 
-FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
+FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller,
+                                   bool is_togglable)
     : controller_(controller),
-      icon_button_(new FeaturePodIconButton(this)),
+      icon_button_(new FeaturePodIconButton(this, is_togglable)),
       label_button_(new FeaturePodLabelButton(this)) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),

@@ -38,6 +38,7 @@
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/system_headers/linux_futex.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
+#include "sandbox/linux/system_headers/linux_time.h"
 #include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
@@ -243,7 +244,7 @@ BPF_TEST_C(BaselinePolicy, EPERM_getcwd, BaselinePolicy) {
   errno = 0;
   char buf[1024];
   char* cwd = getcwd(buf, sizeof(buf));
-  BPF_ASSERT_EQ(NULL, cwd);
+  BPF_ASSERT_EQ(nullptr, cwd);
   BPF_ASSERT_EQ(EPERM, errno);
 }
 
@@ -301,7 +302,7 @@ BPF_TEST_C(BaselinePolicy, FutexEINVAL, BaselinePolicy) {
   };
 
   for (int op : ops) {
-    BPF_ASSERT_EQ(-1, syscall(__NR_futex, NULL, op, 0, NULL, NULL, 0));
+    BPF_ASSERT_EQ(-1, syscall(__NR_futex, nullptr, op, 0, nullptr, nullptr, 0));
     BPF_ASSERT_EQ(EINVAL, errno);
   }
 }
@@ -310,7 +311,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
                  FutexWithRequeuePriorityInheritence,
                  DEATH_SEGV_MESSAGE(GetFutexErrorMessageContentForTests()),
                  BaselinePolicy) {
-  syscall(__NR_futex, NULL, FUTEX_CMP_REQUEUE_PI, 0, NULL, NULL, 0);
+  syscall(__NR_futex, nullptr, FUTEX_CMP_REQUEUE_PI, 0, nullptr, nullptr, 0);
   _exit(1);
 }
 
@@ -318,7 +319,8 @@ BPF_DEATH_TEST_C(BaselinePolicy,
                  FutexWithRequeuePriorityInheritencePrivate,
                  DEATH_SEGV_MESSAGE(GetFutexErrorMessageContentForTests()),
                  BaselinePolicy) {
-  syscall(__NR_futex, NULL, FUTEX_CMP_REQUEUE_PI_PRIVATE, 0, NULL, NULL, 0);
+  syscall(__NR_futex, nullptr, FUTEX_CMP_REQUEUE_PI_PRIVATE, 0, nullptr,
+          nullptr, 0);
   _exit(1);
 }
 
@@ -326,7 +328,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
                  FutexWithUnlockPIPrivate,
                  DEATH_SEGV_MESSAGE(GetFutexErrorMessageContentForTests()),
                  BaselinePolicy) {
-  syscall(__NR_futex, NULL, FUTEX_UNLOCK_PI_PRIVATE, 0, NULL, NULL, 0);
+  syscall(__NR_futex, nullptr, FUTEX_UNLOCK_PI_PRIVATE, 0, nullptr, nullptr, 0);
   _exit(1);
 }
 #endif  // defined(LIBC_GLIBC) && !defined(OS_CHROMEOS)
@@ -390,10 +392,21 @@ BPF_DEATH_TEST_C(BaselinePolicy,
 
 BPF_DEATH_TEST_C(BaselinePolicy,
                  ClockGettimeWithDisallowedClockCrashes,
-                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
                  BaselinePolicy) {
   struct timespec ts;
-  syscall(SYS_clock_gettime, CLOCK_MONOTONIC_RAW, &ts);
+  syscall(SYS_clock_gettime, (~0) | CLOCKFD, &ts);
+}
+
+BPF_DEATH_TEST_C(BaselinePolicy,
+                 ClockNanosleepWithDisallowedClockCrashes,
+                 DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
+                 BaselinePolicy) {
+  struct timespec ts;
+  struct timespec out_ts;
+  ts.tv_sec = 0;
+  ts.tv_nsec = 0;
+  syscall(SYS_clock_nanosleep, (~0) | CLOCKFD, 0, &ts, &out_ts);
 }
 
 #if !defined(GRND_RANDOM)
@@ -402,15 +415,15 @@ BPF_DEATH_TEST_C(BaselinePolicy,
 
 BPF_DEATH_TEST_C(BaselinePolicy,
                  GetRandomOfDevRandomCrashes,
-                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
                  BaselinePolicy) {
-  syscall(__NR_getrandom, NULL, 0, GRND_RANDOM);
+  syscall(__NR_getrandom, nullptr, 0, GRND_RANDOM);
 }
 
 #if !defined(__i386__)
 BPF_DEATH_TEST_C(BaselinePolicy,
                  GetSockOptWrongLevelSigsys,
-                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
                  BaselinePolicy) {
   int fds[2];
   PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
@@ -421,7 +434,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
 
 BPF_DEATH_TEST_C(BaselinePolicy,
                  GetSockOptWrongOptionSigsys,
-                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
                  BaselinePolicy) {
   int fds[2];
   PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
@@ -432,7 +445,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
 
 BPF_DEATH_TEST_C(BaselinePolicy,
                  SetSockOptWrongLevelSigsys,
-                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
                  BaselinePolicy) {
   int fds[2];
   PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
@@ -440,10 +453,9 @@ BPF_DEATH_TEST_C(BaselinePolicy,
   setsockopt(fds[0], IPPROTO_TCP, SO_PEEK_OFF, &id, sizeof(id));
 }
 
-
 BPF_DEATH_TEST_C(BaselinePolicy,
                  SetSockOptWrongOptionSigsys,
-                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
                  BaselinePolicy) {
   int fds[2];
   PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);

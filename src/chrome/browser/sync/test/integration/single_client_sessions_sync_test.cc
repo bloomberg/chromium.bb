@@ -6,7 +6,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
-#include "components/favicon/core/features.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_types.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -99,12 +97,9 @@ class IsHistoryURLSyncedChecker : public SingleClientStatusChangeChecker {
         fake_server_(fake_server) {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for URLs to be commited to the server";
     return fake_server_->GetCommittedHistoryURLs().count(url_) != 0;
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting for URLs to be commited to the server";
   }
 
  private:
@@ -124,7 +119,8 @@ class IsIconURLSyncedChecker : public SingleClientStatusChangeChecker {
         fake_server_(fake_server) {}
 
   // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for URLs to be commited to the server";
     std::vector<sync_pb::SyncEntity> sessions =
         fake_server_->GetSyncEntitiesByModelType(syncer::SESSIONS);
     for (const auto& entity : sessions) {
@@ -143,10 +139,6 @@ class IsIconURLSyncedChecker : public SingleClientStatusChangeChecker {
       }
     }
     return false;
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting for URLs to be commited to the server";
   }
 
  private:
@@ -194,7 +186,7 @@ class SingleClientSessionsSyncTest : public SyncTest {
   // Simulates receiving list of accounts in the cookie jar from ListAccounts
   // endpoint. Adds |account_ids| into signed in accounts, notifies
   // ProfileSyncService and waits for change to propagate to sync engine.
-  void UpdateCookieJarAccountsAndWait(std::vector<std::string> account_ids,
+  void UpdateCookieJarAccountsAndWait(std::vector<CoreAccountId> account_ids,
                                       bool expected_cookie_jar_mismatch) {
     std::vector<gaia::ListedAccount> accounts;
     for (const auto& account_id : account_ids) {
@@ -694,33 +686,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TabMovedToOtherWindow) {
       {{base_url.spec()}, {new_window_url.spec(), moved_tab_url.spec()}}));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, SourceTabIDSet) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(CheckInitialState(0));
-
-  GURL base_url = GURL(kURL1);
-  ASSERT_TRUE(OpenTab(0, base_url));
-
-  WaitForURLOnServer(base_url);
-
-  GURL new_tab_url = GURL(kURL2);
-  ASSERT_TRUE(OpenTabFromSourceIndex(
-      0, 0, new_tab_url, WindowOpenDisposition::NEW_FOREGROUND_TAB));
-  WaitForHierarchyOnServer(
-      SessionsHierarchy({{base_url.spec(), new_tab_url.spec()}}));
-
-  content::WebContents* original_tab_contents =
-      GetBrowser(0)->tab_strip_model()->GetWebContentsAt(0);
-  content::WebContents* new_tab_contents =
-      GetBrowser(0)->tab_strip_model()->GetWebContentsAt(1);
-
-  SessionID source_tab_id = SessionTabHelper::IdForTab(original_tab_contents);
-  sync_sessions::SyncSessionsRouterTabHelper* new_tab_helper =
-      sync_sessions::SyncSessionsRouterTabHelper::FromWebContents(
-          new_tab_contents);
-  EXPECT_EQ(new_tab_helper->source_tab_id(), source_tab_id);
-}
-
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -795,10 +760,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
                        ShouldNotifyLoadedIconUrl) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      favicon::kNotifySessionsOfMostRecentIconUrlChange);
-
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(CheckInitialState(0));
 

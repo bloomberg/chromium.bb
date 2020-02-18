@@ -42,7 +42,8 @@ class AnimationMockChromeClient : public RenderingTestChromeClient {
     MockSetToolTip(&frame, tooltip_text, dir);
   }
 
-  void ScheduleAnimation(const LocalFrameView*) override {
+  void ScheduleAnimation(const LocalFrameView*,
+                         base::TimeDelta = base::TimeDelta()) override {
     has_scheduled_animation_ = true;
   }
   bool has_scheduled_animation_;
@@ -185,10 +186,128 @@ TEST_F(LocalFrameViewTest, CanHaveScrollbarsIfScrollingAttrEqualsNoChanged) {
   EXPECT_TRUE(ChildDocument().View()->CanHaveScrollbars());
 }
 
+TEST_F(LocalFrameViewTest,
+       MainThreadScrollingForBackgroundFixedAttachmentWithCompositing) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .fixed-background {
+        background: linear-gradient(blue, red) fixed;
+      }
+    </style>
+    <div id="div" style="width: 5000px; height: 5000px"></div>
+  )HTML");
+
+  auto* frame_view = GetDocument().View();
+  EXPECT_EQ(0u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_FALSE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+
+  Element* body = GetDocument().body();
+  Element* html = GetDocument().documentElement();
+  Element* div = GetDocument().getElementById("div");
+
+  // Only body has fixed background. No main thread scrolling.
+  body->setAttribute(html_names::kClassAttr, "fixed-background");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(1u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_FALSE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+
+  // Both body and div have fixed background. Requires main thread scrolling.
+  div->setAttribute(html_names::kClassAttr, "fixed-background");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(2u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_TRUE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+
+  // Only div has fixed background. Requires main thread scrolling.
+  body->removeAttribute(html_names::kClassAttr);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(1u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_TRUE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+
+  // Only html has fixed background. No main thread scrolling.
+  div->removeAttribute(html_names::kClassAttr);
+  html->setAttribute(html_names::kClassAttr, "fixed-background");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(1u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_FALSE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+
+  // Both html and body have fixed background. Requires main thread scrolling.
+  body->setAttribute(html_names::kClassAttr, "fixed-background");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(2u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_TRUE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+}
+
+TEST_F(LocalFrameViewTest,
+       MainThreadScrollingForBackgroundFixedAttachmentWithoutCompositing) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .fixed-background {
+        background: linear-gradient(blue, red) fixed;
+      }
+    </style>
+    <div id="div" style="width: 5000px; height: 5000px"></div>
+  )HTML");
+
+  auto* frame_view = GetDocument().View();
+  EXPECT_EQ(0u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_FALSE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+
+  Element* body = GetDocument().body();
+  Element* html = GetDocument().documentElement();
+  Element* div = GetDocument().getElementById("div");
+
+  // When not prefer compositing, we use main thread scrolling when there is
+  // any object with fixed-attachment background.
+  body->setAttribute(html_names::kClassAttr, "fixed-background");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(1u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_TRUE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+
+  div->setAttribute(html_names::kClassAttr, "fixed-background");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(2u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_TRUE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+
+  body->removeAttribute(html_names::kClassAttr);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(1u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_TRUE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+
+  div->removeAttribute(html_names::kClassAttr);
+  html->setAttribute(html_names::kClassAttr, "fixed-background");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(1u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_TRUE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+
+  body->setAttribute(html_names::kClassAttr, "fixed-background");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(2u, frame_view->BackgroundAttachmentFixedObjects().size());
+  EXPECT_TRUE(
+      frame_view->RequiresMainThreadScrollingForBackgroundAttachmentFixed());
+}
+
 // Ensure the fragment navigation "scroll into view and focus" behavior doesn't
 // activate synchronously while rendering is blocked waiting on a stylesheet.
 // See https://crbug.com/851338.
 TEST_F(SimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
+  // Style-sheets are parser-blocking, not render-blocking when
+  // BlockHTMLParserOnStyleSheets is enabled.
+  ScopedBlockHTMLParserOnStyleSheetsForTest scope(false);
+
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimSubresourceRequest css_resource("https://example.com/sheet.css",
                                      "text/css");

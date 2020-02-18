@@ -24,7 +24,6 @@
 namespace blink {
 
 using mojom::blink::Blob;
-using mojom::blink::BlobPtr;
 using mojom::blink::BlobRegistry;
 using mojom::blink::DataElement;
 using mojom::blink::DataElementBlob;
@@ -72,9 +71,9 @@ struct ExpectedElement {
   static ExpectedElement Blob(const String& uuid,
                               uint64_t offset,
                               uint64_t length) {
-    return ExpectedElement{
-        DataElement::NewBlob(DataElementBlob::New(nullptr, offset, length)),
-        uuid};
+    return ExpectedElement{DataElement::NewBlob(DataElementBlob::New(
+                               mojo::NullRemote(), offset, length)),
+                           uuid};
   }
 };
 
@@ -167,13 +166,13 @@ class BlobDataHandleTest : public testing::Test {
         Vector<uint8_t> received_bytes;
         mojo::Remote<mojom::blink::BytesProvider> actual_data(
             std::move(actual->get_bytes()->data));
-        actual_data->RequestAsReply(base::BindOnce(
-            [](base::Closure quit_closure, Vector<uint8_t>* bytes_out,
+        actual_data->RequestAsReply(WTF::Bind(
+            [](base::RepeatingClosure quit_closure, Vector<uint8_t>* bytes_out,
                const Vector<uint8_t>& bytes) {
               *bytes_out = bytes;
               quit_closure.Run();
             },
-            loop.QuitClosure(), &received_bytes));
+            loop.QuitClosure(), WTF::Unretained(&received_bytes)));
         loop.Run();
         if (expected->get_bytes()->embedded_data)
           EXPECT_EQ(expected->get_bytes()->embedded_data, received_bytes);
@@ -203,9 +202,10 @@ class BlobDataHandleTest : public testing::Test {
 
         base::RunLoop loop;
         String received_uuid;
-        mojom::blink::BlobPtr blob(std::move(actual->get_blob()->blob));
+        mojo::Remote<mojom::blink::Blob> blob(
+            std::move(actual->get_blob()->blob));
         blob->GetInternalUUID(base::BindOnce(
-            [](base::Closure quit_closure, String* uuid_out,
+            [](base::RepeatingClosure quit_closure, String* uuid_out,
                const String& uuid) {
               *uuid_out = uuid;
               quit_closure.Run();
@@ -284,8 +284,8 @@ TEST_F(BlobDataHandleTest, CreateFromEmptyElements) {
   auto data = std::make_unique<BlobData>();
   data->AppendBytes(small_test_data_.data(), 0);
   data->AppendBlob(empty_blob_, 0, 0);
-  data->AppendFile("path", 0, 0, 0.0);
-  data->AppendFileSystemURL(NullURL(), 0, 0, 0.0);
+  data->AppendFile("path", 0, 0, base::Time::UnixEpoch());
+  data->AppendFileSystemURL(NullURL(), 0, 0, base::Time::UnixEpoch());
 
   TestCreateBlob(std::move(data), {});
 }
@@ -359,18 +359,17 @@ TEST_F(BlobDataHandleTest, CreateFromMergedSmallAndLargeBytes) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromFileAndFileSystemURL) {
-  double timestamp1 = base::Time::Now().ToDoubleT();
-  double timestamp2 = timestamp1 + 1;
+  base::Time timestamp1 = base::Time::Now();
+  base::Time timestamp2 = timestamp1 + base::TimeDelta::FromSeconds(1);
   KURL url(NullURL(), "http://example.com/");
   auto data = std::make_unique<BlobData>();
   data->AppendFile("path", 4, 32, timestamp1);
   data->AppendFileSystemURL(url, 15, 876, timestamp2);
 
   Vector<ExpectedElement> expected_elements;
-  expected_elements.push_back(ExpectedElement::File(
-      "path", 4, 32, base::Time::FromDoubleT(timestamp1)));
-  expected_elements.push_back(ExpectedElement::FileFilesystem(
-      url, 15, 876, base::Time::FromDoubleT(timestamp2)));
+  expected_elements.push_back(ExpectedElement::File("path", 4, 32, timestamp1));
+  expected_elements.push_back(
+      ExpectedElement::FileFilesystem(url, 15, 876, timestamp2));
 
   TestCreateBlob(std::move(data), std::move(expected_elements));
 }
@@ -385,11 +384,11 @@ TEST_F(BlobDataHandleTest, CreateFromFileWithUnknownSize) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromFilesystemFileWithUnknownSize) {
-  double timestamp = base::Time::Now().ToDoubleT();
+  base::Time timestamp = base::Time::Now();
   KURL url(NullURL(), "http://example.com/");
   Vector<ExpectedElement> expected_elements;
-  expected_elements.push_back(ExpectedElement::FileFilesystem(
-      url, 0, uint64_t(-1), base::Time::FromDoubleT(timestamp)));
+  expected_elements.push_back(
+      ExpectedElement::FileFilesystem(url, 0, uint64_t(-1), timestamp));
 
   TestCreateBlob(
       BlobData::CreateForFileSystemURLWithUnknownSize(url, timestamp),

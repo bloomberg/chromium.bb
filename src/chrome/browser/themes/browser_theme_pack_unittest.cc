@@ -19,10 +19,18 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/color/color_buildflags.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
+
+#if BUILDFLAG(USE_COLOR_PIPELINE)
+#include "chrome/browser/ui/color/chrome_color_id.h"
+#include "ui/color/color_mixer.h"
+#include "ui/color/color_provider.h"
+#include "ui/color/color_test_ids.h"
+#endif
 
 using extensions::Extension;
 using TP = ThemeProperties;
@@ -97,6 +105,13 @@ class BrowserThemePackTest : public ::testing::Test {
 
   const BrowserThemePack& theme_pack() const { return *theme_pack_; }
 
+  base::FilePath GetTemporaryPakFile(base::FilePath::StringPieceType name) {
+    if (dir_.IsValid() || dir_.CreateUniqueTempDir())
+      return dir_.GetPath().Append(name);
+    ADD_FAILURE() << "Couldn't create temp dir";
+    return base::FilePath();
+  }
+
  private:
   using ScopedSetSupportedScaleFactors =
       std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>;
@@ -114,6 +129,7 @@ class BrowserThemePackTest : public ::testing::Test {
 
   ScopedSetSupportedScaleFactors scoped_set_supported_scale_factors_;
 
+  base::ScopedTempDir dir_;
   content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<BrowserThemePack> theme_pack_;
 };
@@ -228,7 +244,7 @@ void BrowserThemePackTest::BuildFromUnpackedExtension(
   ASSERT_TRUE(valid_value.get());
   scoped_refptr<Extension> extension(
       Extension::Create(extension_path, extensions::Manifest::INVALID_LOCATION,
-                        *valid_value, Extension::REQUIRE_KEY, &error));
+                        *valid_value, Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get());
   ASSERT_EQ("", error);
   BrowserThemePack::BuildFromExtension(extension.get(), pack);
@@ -725,13 +741,64 @@ TEST_F(BrowserThemePackTest, TestNonExistantImages) {
   EXPECT_FALSE(LoadRawBitmapsTo(out_file_paths));
 }
 
+#if BUILDFLAG(USE_COLOR_PIPELINE)
+TEST_F(BrowserThemePackTest, TestCreateColorMixersOmniboxNoValues) {
+  // Tests to make sure that existing colors within the color provider are not
+  // overwritten or lost in the absence of any user provided theme values.
+  ui::ColorProvider provider;
+  provider.AddMixer().AddSet({ui::kColorSetTest0,
+                              {{kColorToolbar, SK_ColorRED},
+                               {kColorOmniboxText, SK_ColorGREEN},
+                               {kColorOmniboxBackground, SK_ColorBLUE}}});
+  theme_pack().AddCustomThemeColorMixers(&provider);
+  EXPECT_EQ(SK_ColorRED, provider.GetColor(kColorToolbar));
+  EXPECT_EQ(SK_ColorGREEN, provider.GetColor(kColorOmniboxText));
+  EXPECT_EQ(SK_ColorBLUE, provider.GetColor(kColorOmniboxBackground));
+}
+
+TEST_F(BrowserThemePackTest, TestCreateColorMixersOmniboxPartialValues) {
+  // Tests to make sure that only provided theme values are replicated into the
+  // color provider.
+  ui::ColorProvider provider;
+  provider.AddMixer().AddSet({ui::kColorSetTest0,
+                              {{kColorToolbar, SK_ColorRED},
+                               {kColorOmniboxText, SK_ColorGREEN},
+                               {kColorOmniboxBackground, SK_ColorBLUE}}});
+  std::string color_json = R"({ "toolbar": [0, 20, 40],
+                                "omnibox_text": [60, 80, 100] })";
+  LoadColorJSON(color_json);
+  theme_pack().AddCustomThemeColorMixers(&provider);
+  EXPECT_EQ(SkColorSetRGB(0, 20, 40), provider.GetColor(kColorToolbar));
+  EXPECT_EQ(SkColorSetRGB(60, 80, 100), provider.GetColor(kColorOmniboxText));
+  EXPECT_EQ(SK_ColorBLUE, provider.GetColor(kColorOmniboxBackground));
+}
+
+TEST_F(BrowserThemePackTest, TestCreateColorMixersOmniboxAllValues) {
+  // Tests to make sure that all available colors are properly loaded into the
+  // color provider.
+  ui::ColorProvider provider;
+  provider.AddMixer().AddSet({ui::kColorSetTest0,
+                              {{kColorToolbar, SK_ColorRED},
+                               {kColorOmniboxText, SK_ColorGREEN},
+                               {kColorOmniboxBackground, SK_ColorBLUE}}});
+  std::string color_json = R"({ "toolbar": [0, 20, 40],
+                                "omnibox_text": [60, 80, 100],
+                                "omnibox_background": [120, 140, 160] })";
+  LoadColorJSON(color_json);
+  theme_pack().AddCustomThemeColorMixers(&provider);
+  EXPECT_EQ(SkColorSetRGB(0, 20, 40), provider.GetColor(kColorToolbar));
+  EXPECT_EQ(SkColorSetRGB(60, 80, 100), provider.GetColor(kColorOmniboxText));
+  EXPECT_EQ(SkColorSetRGB(120, 140, 160),
+            provider.GetColor(kColorOmniboxBackground));
+}
+#endif
+
 // TODO(erg): This test should actually test more of the built resources from
 // the extension data, but for now, exists so valgrind can test some of the
 // tricky memory stuff that BrowserThemePack does.
 TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
-  base::ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath file = dir.GetPath().AppendASCII("data.pak");
+  base::FilePath file = GetTemporaryPakFile(FILE_PATH_LITERAL("data.pak"));
+  ASSERT_FALSE(file.empty());
 
   // Part 1: Build the pack from an extension.
   {
@@ -754,9 +821,9 @@ TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
 }
 
 TEST_F(BrowserThemePackTest, HiDpiThemeTest) {
-  base::ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath file = dir.GetPath().AppendASCII("theme_data.pak");
+  base::FilePath file =
+      GetTemporaryPakFile(FILE_PATH_LITERAL("theme_data.pak"));
+  ASSERT_FALSE(file.empty());
 
   // Part 1: Build the pack from an extension.
   {
@@ -1113,3 +1180,91 @@ TEST_F(BrowserThemePackTest, TestNtpTextCaclulation) {
 
   EXPECT_TRUE(pack_autogenerated->GetColor(TP::COLOR_NTP_TEXT, &ntp_text));
 }
+
+TEST_F(BrowserThemePackTest, TestLogoAndShortcutColors) {
+  // For themes with no background image and no background color, nothing should
+  // be specified.
+  scoped_refptr<BrowserThemePack> theme_minimal(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_minimal", theme_minimal.get());
+  SkColor color;
+  EXPECT_FALSE(theme_minimal->GetColor(TP::COLOR_NTP_LOGO, &color));
+  EXPECT_FALSE(theme_minimal->GetColor(TP::COLOR_NTP_SHORTCUT, &color));
+
+  // For themes with image logo and shortcut colors shouldn't be set.
+  scoped_refptr<BrowserThemePack> theme_with_image(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_ntp_background_image", theme_with_image.get());
+  EXPECT_FALSE(theme_with_image->GetColor(TP::COLOR_NTP_LOGO, &color));
+  EXPECT_FALSE(theme_with_image->GetColor(TP::COLOR_NTP_SHORTCUT, &color));
+
+  // // For themes with no image but with colorful logo, the logo color
+  // shouldn't
+  // // be specified but the shortcut color should be set.
+  scoped_refptr<BrowserThemePack> theme_colorful_logo(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_color_ntp_colorful_logo",
+                          theme_colorful_logo.get());
+  EXPECT_FALSE(theme_colorful_logo->GetColor(TP::COLOR_NTP_LOGO, &color));
+  EXPECT_TRUE(theme_colorful_logo->GetColor(TP::COLOR_NTP_SHORTCUT, &color));
+
+  // For themes with no image and with alternate logo, both logo and shortcut
+  // colors should be set.
+  scoped_refptr<BrowserThemePack> theme_alternate_logo(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
+  BuildTestExtensionTheme("theme_color_ntp_white_logo",
+                          theme_alternate_logo.get());
+  EXPECT_TRUE(theme_alternate_logo->GetColor(TP::COLOR_NTP_LOGO, &color));
+  EXPECT_NE(SK_ColorWHITE, color);
+  EXPECT_TRUE(theme_alternate_logo->GetColor(TP::COLOR_NTP_SHORTCUT, &color));
+
+  // For darker then midpoint themes the logo color should be white.
+  scoped_refptr<BrowserThemePack> dark_theme(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::AUTOGENERATED));
+  BrowserThemePack::BuildFromColor(SkColorSetRGB(120, 120, 120),
+                                   dark_theme.get());
+  EXPECT_TRUE(dark_theme->GetColor(TP::COLOR_NTP_LOGO, &color));
+  EXPECT_EQ(SK_ColorWHITE, color);
+
+  // For themes with white NTP background the shortcut color shouldn't be set.
+  // The Logo color shouldn't be set either because the colorful logo should be
+  // used on white background.
+  scoped_refptr<BrowserThemePack> white_theme(
+      new BrowserThemePack(CustomThemeSupplier::ThemeType::AUTOGENERATED));
+  BrowserThemePack::BuildFromColor(SK_ColorWHITE, white_theme.get());
+  ASSERT_TRUE(white_theme->GetColor(TP::COLOR_NTP_BACKGROUND, &color));
+  ASSERT_EQ(SK_ColorWHITE, color);
+  EXPECT_FALSE(white_theme->GetColor(TP::COLOR_NTP_LOGO, &color));
+  EXPECT_FALSE(white_theme->GetColor(TP::COLOR_NTP_SHORTCUT, &color));
+}
+
+namespace internal {
+
+// Defined in browser_theme_pack.cc
+SkColor GetContrastingColorForBackground(SkColor bg_color, float change);
+
+TEST(BrowserThemePackInternalTest, TestGetContrastingColor) {
+  const float change = 0.2f;
+
+  // White color for black background.
+  EXPECT_EQ(SK_ColorWHITE,
+            GetContrastingColorForBackground(SK_ColorBLACK, change));
+
+  // Lighter color for too dark colors.
+  SkColor dark_background = SkColorSetARGB(255, 50, 0, 50);
+  EXPECT_LT(color_utils::GetRelativeLuminance(dark_background),
+            color_utils::GetRelativeLuminance(
+                GetContrastingColorForBackground(dark_background, change)));
+
+  // Darker color for light backgrounds.
+  EXPECT_GT(color_utils::GetRelativeLuminance(SK_ColorWHITE),
+            color_utils::GetRelativeLuminance(
+                GetContrastingColorForBackground(SK_ColorWHITE, change)));
+
+  SkColor light_background = SkColorSetARGB(255, 100, 0, 100);
+  EXPECT_GT(color_utils::GetRelativeLuminance(light_background),
+            color_utils::GetRelativeLuminance(
+                GetContrastingColorForBackground(light_background, change)));
+}
+
+}  // namespace internal

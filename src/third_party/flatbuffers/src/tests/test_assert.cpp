@@ -4,6 +4,7 @@
 
 #ifdef _MSC_VER
 #  include <crtdbg.h>
+#  include <windows.h>
 #endif
 
 int testing_fails = 0;
@@ -30,7 +31,7 @@ void TestEqStr(const char *expval, const char *val, const char *exp,
 
 #if defined(FLATBUFFERS_MEMORY_LEAK_TRACKING) && defined(_MSC_VER) && \
     defined(_DEBUG)
-#define FLATBUFFERS_MEMORY_LEAK_TRACKING_MSVC
+#  define FLATBUFFERS_MEMORY_LEAK_TRACKING_MSVC
 #endif
 
 void InitTestEngine(TestFailEventListener listener) {
@@ -40,20 +41,9 @@ void InitTestEngine(TestFailEventListener listener) {
   setvbuf(stdout, NULL, _IONBF, 0);
   setvbuf(stderr, NULL, _IONBF, 0);
 
-  // clang-format off
+  flatbuffers::SetupDefaultCRTReportMode();
 
-  #ifdef _MSC_VER
-    // Send all reports to STDOUT.
-    // CrtDebug reports to _CRT_WARN channel.
-    _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
-    _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
-    // The assert from <assert.h> reports to _CRT_ERROR channel
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDOUT);
-    // Internal CRT assert channel?
-    _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
-    _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDOUT);
-  #endif
+  // clang-format off
 
   #if defined(FLATBUFFERS_MEMORY_LEAK_TRACKING_MSVC)
     // For more thorough checking:
@@ -68,12 +58,12 @@ void InitTestEngine(TestFailEventListener listener) {
 
 int CloseTestEngine(bool force_report) {
   if (!testing_fails || force_report) {
-  #if defined(FLATBUFFERS_MEMORY_LEAK_TRACKING_MSVC)
-      auto flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-      flags &= ~_CRTDBG_DELAY_FREE_MEM_DF;
-      flags |= _CRTDBG_LEAK_CHECK_DF;
-      _CrtSetDbgFlag(flags);
-  #endif
+#if defined(FLATBUFFERS_MEMORY_LEAK_TRACKING_MSVC)
+    auto flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+    flags &= ~_CRTDBG_DELAY_FREE_MEM_DF;
+    flags |= _CRTDBG_LEAK_CHECK_DF;
+    _CrtSetDbgFlag(flags);
+#endif
   }
   return (0 != testing_fails);
 }

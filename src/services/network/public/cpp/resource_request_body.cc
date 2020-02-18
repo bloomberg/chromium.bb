@@ -79,7 +79,7 @@ void ResourceRequestBody::AppendBlob(const std::string& uuid, uint64_t length) {
 }
 
 void ResourceRequestBody::AppendDataPipe(
-    mojom::DataPipeGetterPtr data_pipe_getter) {
+    mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter) {
   DCHECK(elements_.empty() ||
          elements_.front().type() != mojom::DataElementType::kChunkedDataPipe);
 
@@ -88,7 +88,8 @@ void ResourceRequestBody::AppendDataPipe(
 }
 
 void ResourceRequestBody::SetToChunkedDataPipe(
-    mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter) {
+    mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
+        chunked_data_pipe_getter) {
   DCHECK(elements_.empty());
 
   elements_.push_back(DataElement());

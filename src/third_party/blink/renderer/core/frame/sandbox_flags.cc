@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -53,7 +54,7 @@ const SandboxFlagFeaturePolicyPairs& SandboxFlagsWithFeaturePolicies() {
         {WebSandboxFlags::kPresentationController,
          mojom::FeaturePolicyFeature::kPresentation},
         {WebSandboxFlags::kDownloads,
-         mojom::FeaturePolicyFeature::kDownloadsWithoutUserActivation}}));
+         mojom::FeaturePolicyFeature::kDownloads}}));
   return array;
 }
 
@@ -108,9 +109,12 @@ WebSandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
     } else if (EqualIgnoringASCIICase(
                    sandbox_token, "allow-top-navigation-by-user-activation")) {
       flags = flags & ~WebSandboxFlags::kTopNavigationByUserActivation;
-    } else if (EqualIgnoringASCIICase(
-                   sandbox_token, "allow-downloads-without-user-activation")) {
+    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-downloads")) {
       flags = flags & ~WebSandboxFlags::kDownloads;
+    } else if (RuntimeEnabledFeatures::StorageAccessAPIEnabled() &&
+               EqualIgnoringASCIICase(
+                   sandbox_token, "allow-storage-access-by-user-activation")) {
+      flags = flags & ~WebSandboxFlags::kStorageAccessByUserActivation;
     } else {
       token_errors.Append(token_errors.IsEmpty() ? "'" : ", '");
       token_errors.Append(sandbox_token);

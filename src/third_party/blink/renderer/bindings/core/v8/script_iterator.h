@@ -14,13 +14,69 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 
+// This class provides a wrapper for iterating over any ES object that
+// implements the iterable and iterator protocols. Namely:
+// * The object or an object in its prototype chain has an @@iterator property
+//   that is a function that returns an iterator object.
+// * The iterator object has a next() method that returns an object with at
+//   least two properties:
+//   1. done: A boolean indicating whether iteration should stop. Can be
+//      omitted when false.
+//   2. value: Any object. Can be omitted when |done| is true.
+//
+// In general, this class should be preferred over using the
+// GetEsIteratorMethod() and GetEsIteratorWithMethod() functions directly.
+//
+// Usage:
+//   v8::Local<v8::Object> es_object = ...;
+//   auto script_iterator = ScriptIterator::FromIterable(
+//       isolate, es_object, exception_state,
+//       ScriptIterator::ConversionFailureMode::kDoNotThrowTypeError);
+//   if (exception_state.HadException())
+//     return;
+//   if (!script_iterator.IsNull()) {
+//     while (script_iterator.Next(execution_context, exception_state)) {
+//       // V8 may have thrown an exception.
+//       if (exception_state.HadException())
+//         return;
+//       v8::Local<v8::Value> value =
+//           script_iterator.GetValue().ToLocalChecked();
+//       // Do something with |value|.
+//     }
+//   }
+//   // If the very first call to Next() throws, the loop above will not be
+//   // entered, so we need to catch any exceptions here.
+//   if (exception_state.HadException())
+//     return;
 class CORE_EXPORT ScriptIterator {
   STACK_ALLOCATED();
 
  public:
-  ScriptIterator(std::nullptr_t) : isolate_(nullptr), done_(true) {}
+  // Creates a ScriptIterator out of an ES object that implements the iterable
+  // and iterator protocols.
+  // Both the return value and the ExceptionState should be checked:
+  // - The ExceptionState will contain an exception if V8 throws one, or if the
+  //   ES objects do not conform to the expected protocols. In this case, the
+  //   returned ScriptIterator will be null.
+  // - ScriptIterator can be null even if there is no exception. In this case,
+  //   it indicates that the given ES object does not have an @@iterator
+  //   property.
+  static ScriptIterator FromIterable(v8::Isolate*,
+                                     v8::Local<v8::Object>,
+                                     ExceptionState&);
 
-  ScriptIterator(v8::Local<v8::Object> iterator, v8::Isolate*);
+  // Constructs a ScriptIterator from an ES object that implements the iterator
+  // protocol: |iterator| is supposed to have a next() method that returns an
+  // object with two properties, "done" and "value".
+  ScriptIterator(v8::Isolate*, v8::Local<v8::Object> iterator);
+
+  ScriptIterator() = default;
+
+  ScriptIterator(ScriptIterator&&) noexcept = default;
+  ScriptIterator& operator=(ScriptIterator&&) noexcept = default;
+
+  ScriptIterator(const ScriptIterator&) = delete;
+  ScriptIterator& operator=(const ScriptIterator&) = delete;
 
   bool IsNull() const { return iterator_.IsEmpty(); }
 
@@ -32,12 +88,12 @@ class CORE_EXPORT ScriptIterator {
   v8::MaybeLocal<v8::Value> GetValue() { return value_; }
 
  private:
-  v8::Isolate* isolate_;
+  v8::Isolate* isolate_ = nullptr;
   v8::Local<v8::Object> iterator_;
   v8::Local<v8::String> next_key_;
   v8::Local<v8::String> done_key_;
   v8::Local<v8::String> value_key_;
-  bool done_;
+  bool done_ = true;
   v8::MaybeLocal<v8::Value> value_;
 };
 

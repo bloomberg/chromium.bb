@@ -189,7 +189,7 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
            '--results-dir=%s' % results_dir, '--test-timeout=%d' % timeout,
            '--tast'] + test_exprs
 
-    result = cros_build_lib.RunCommand(
+    result = cros_build_lib.run(
         cmd, error_code_ok=True, cwd=constants.CHROMITE_BIN_DIR,
         kill_timeout=TastVMTestStage.CLEANUP_TIMEOUT_SEC
     )

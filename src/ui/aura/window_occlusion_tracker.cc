@@ -137,8 +137,11 @@ SkIRect GetOpaqueBoundsInRootWindow(
   DCHECK_EQ(1u, window->opaque_regions_for_occlusion().size());
 
   // Don't let clients mark regions outside their window bounds as opaque.
+  // Note: opaque_regions_for_occlusion() are relative to the window, i.e. the
+  // top-left corner of the window is considered to be the point (0, 0).
   gfx::Rect opaque_region = window->opaque_regions_for_occlusion()[0];
-  opaque_region.Intersect(window->bounds());
+  opaque_region.Intersect(gfx::Rect(window->bounds().size()));
+
   return ComputeClippedAndTransformedBounds(
       opaque_region, transform_relative_to_root, clipped_bounds);
 }
@@ -485,8 +488,10 @@ void WindowOcclusionTracker::SetWindowAndDescendantsAreOccluded(
     Window* window,
     bool is_occluded,
     bool is_parent_visible) {
-  const bool is_visible = WindowIsForcedVisible(window) ||
-                          (is_parent_visible && window->layer()->visible());
+  const bool force_visible = WindowIsForcedVisible(window);
+  const bool is_visible =
+      force_visible || (is_parent_visible && window->layer()->visible());
+  is_occluded = is_occluded && !force_visible;
   SetOccluded(window, is_occluded, is_visible, SkRegion());
   for (Window* child_window : window->children())
     SetWindowAndDescendantsAreOccluded(child_window, is_occluded, is_visible);

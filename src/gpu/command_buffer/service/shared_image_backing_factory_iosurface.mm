@@ -88,32 +88,32 @@ void FlushIOSurfaceGLOperations() {
   api->glFlushFn();
 }
 
-base::Optional<DawnTextureFormat> GetDawnFormat(viz::ResourceFormat format) {
+base::Optional<WGPUTextureFormat> GetWGPUFormat(viz::ResourceFormat format) {
   switch (format) {
     case viz::RED_8:
     case viz::ALPHA_8:
     case viz::LUMINANCE_8:
-      return DAWN_TEXTURE_FORMAT_R8_UNORM;
+      return WGPUTextureFormat_R8Unorm;
     case viz::RG_88:
-      return DAWN_TEXTURE_FORMAT_RG8_UNORM;
+      return WGPUTextureFormat_RG8Unorm;
     case viz::RGBA_8888:
     case viz::BGRA_8888:
-      return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
+      return WGPUTextureFormat_BGRA8Unorm;
     default:
       return {};
   }
 }
 
-base::Optional<DawnTextureFormat> GetDawnFormat(gfx::BufferFormat format) {
+base::Optional<WGPUTextureFormat> GetWGPUFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
-      return DAWN_TEXTURE_FORMAT_R8_UNORM;
+      return WGPUTextureFormat_R8Unorm;
     case gfx::BufferFormat::RG_88:
-      return DAWN_TEXTURE_FORMAT_RG8_UNORM;
+      return WGPUTextureFormat_RG8Unorm;
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRX_8888:
-      return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
+      return WGPUTextureFormat_BGRA8Unorm;
     default:
       return {};
   }
@@ -275,13 +275,13 @@ class SharedImageRepresentationDawnIOSurface
       SharedImageManager* manager,
       SharedImageBacking* backing,
       MemoryTypeTracker* tracker,
-      DawnDevice device,
+      WGPUDevice device,
       base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-      DawnTextureFormat dawn_format)
+      WGPUTextureFormat wgpu_format)
       : SharedImageRepresentationDawn(manager, backing, tracker),
         io_surface_(std::move(io_surface)),
         device_(device),
-        dawn_format_(dawn_format),
+        wgpu_format_(wgpu_format),
         dawn_procs_(dawn_native::GetProcs()) {
     DCHECK(device_);
     DCHECK(io_surface_);
@@ -296,12 +296,12 @@ class SharedImageRepresentationDawnIOSurface
     dawn_procs_.deviceRelease(device_);
   }
 
-  DawnTexture BeginAccess(DawnTextureUsage usage) final {
-    DawnTextureDescriptor desc;
+  WGPUTexture BeginAccess(WGPUTextureUsage usage) final {
+    WGPUTextureDescriptor desc;
     desc.nextInChain = nullptr;
-    desc.format = dawn_format_;
+    desc.format = wgpu_format_;
     desc.usage = usage;
-    desc.dimension = DAWN_TEXTURE_DIMENSION_2D;
+    desc.dimension = WGPUTextureDimension_2D;
     desc.size = {size().width(), size().height(), 1};
     desc.arrayLayerCount = 1;
     desc.mipLevelCount = 1;
@@ -339,7 +339,7 @@ class SharedImageRepresentationDawnIOSurface
     dawn_procs_.textureDestroy(texture_);
 
     // macOS has a global GPU command queue so synchronization between APIs and
-    // devices is automatic. However on Metal, dawnQueueSubmit "commits" the
+    // devices is automatic. However on Metal, wgpuQueueSubmit "commits" the
     // Metal command buffers but they aren't "scheduled" in the global queue
     // immediately. (that work seems offloaded to a different thread?)
     // Wait for all the previous submitted commands to be scheduled to have
@@ -354,9 +354,9 @@ class SharedImageRepresentationDawnIOSurface
 
  private:
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
-  DawnDevice device_;
-  DawnTexture texture_ = nullptr;
-  DawnTextureFormat dawn_format_;
+  WGPUDevice device_;
+  WGPUTexture texture_ = nullptr;
+  WGPUTextureFormat wgpu_format_;
 
   // TODO(cwallez@chromium.org): Load procs only once when the factory is
   // created and pass a pointer to them around?
@@ -378,7 +378,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
                               const gfx::ColorSpace& color_space,
                               uint32_t usage,
                               base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-                              base::Optional<DawnTextureFormat> dawn_format,
+                              base::Optional<WGPUTextureFormat> dawn_format,
                               size_t estimated_size)
       : SharedImageBacking(mailbox,
                            format,
@@ -477,7 +477,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
-      DawnDevice device) override {
+      WGPUDevice device) override {
 #if BUILDFLAG(USE_DAWN)
     if (!dawn_format_) {
       LOG(ERROR) << "Format not supported for Dawn";
@@ -554,14 +554,14 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
                            gles2::Texture::BOUND);
     texture->SetImmutable(true, false);
 
-    DCHECK_EQ(image->GetInternalFormat(), gl_info.format);
+    DCHECK_EQ(image->GetInternalFormat(), gl_info.internal_format);
 
     api->glBindTextureFn(GL_TEXTURE_RECTANGLE, old_texture_binding);
     return texture;
   }
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
-  base::Optional<DawnTextureFormat> dawn_format_;
+  base::Optional<WGPUTextureFormat> dawn_format_;
   base::scoped_nsprotocol<id<MTLTexture>> mtl_texture_;
   bool is_cleared_ = false;
 
@@ -645,7 +645,7 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
 
   return std::make_unique<SharedImageBackingIOSurface>(
       mailbox, format, size, color_space, usage, std::move(io_surface),
-      GetDawnFormat(format), estimated_size);
+      GetWGPUFormat(format), estimated_size);
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -692,7 +692,7 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
 
   return std::make_unique<SharedImageBackingIOSurface>(
       mailbox, resource_format, size, color_space, usage, std::move(io_surface),
-      GetDawnFormat(format), estimated_size);
+      GetWGPUFormat(format), estimated_size);
 }
 
 bool SharedImageBackingFactoryIOSurface::CanImportGpuMemoryBuffer(

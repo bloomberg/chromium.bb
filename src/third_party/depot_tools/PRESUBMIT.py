@@ -68,7 +68,20 @@ def CommonChecks(input_api, output_api, tests_to_black_list, run_on_python3):
   tests_to_white_list = [r'.*test\.py$']
   if input_api.platform.startswith(('cygwin', 'win32')):
     print('Warning: skipping most unit tests on Windows')
-    tests_to_white_list = [r'.*cipd_bootstrap_test\.py$']
+    tests_to_black_list = [
+        r'.*auth_test\.py$',
+        r'.*gclient_smoketest\.py$',
+        r'.*git_cl_test\.py$',
+        r'.*git_common_test\.py$',
+        r'.*git_hyper_blame_test\.py$',
+        r'.*git_number_test\.py$',
+        r'.*git_rebase_update_test\.py$',
+        r'.*ninjalog_uploader_test\.py$',
+        r'.*recipes_test\.py$',
+        r'.*roll_dep_test\.py$',
+        r'.*scm_unittest\.py$',
+        r'.*subprocess2_test\.py$',
+    ]
 
   # TODO(maruel): Make sure at least one file is modified first.
   # TODO(maruel): If only tests are modified, only run them.

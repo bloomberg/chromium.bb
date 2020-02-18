@@ -7,6 +7,7 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//components/vector_icons/vector_icons.gni")
 import("//device/vr/buildflags/buildflags.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 if (is_android) {
@@ -46,10 +47,10 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "extension_app.icon",
     "find_in_page.icon",
     "http.icon",
-    "https_invalid.icon",
     "https_valid.icon",
     "https_valid_in_chip.icon",
     "keyword_search.icon",
+    "not_secure_warning.icon",
     "offline_pin.icon",
     "page.icon",
     "pedal.icon",
@@ -93,6 +94,8 @@ jumbo_static_library("browser") {
     "autocomplete_provider.h",
     "autocomplete_provider_client.cc",
     "autocomplete_provider_client.h",
+    "autocomplete_provider_debouncer.cc",
+    "autocomplete_provider_debouncer.h",
     "autocomplete_result.cc",
     "autocomplete_result.h",
     "autocomplete_scheme_classifier.h",
@@ -126,6 +129,8 @@ jumbo_static_library("browser") {
     "keyword_extensions_delegate.h",
     "keyword_provider.cc",
     "keyword_provider.h",
+    "local_history_zero_suggest_provider.cc",
+    "local_history_zero_suggest_provider.h",
     "location_bar_model.h",
     "location_bar_model_delegate.cc",
     "location_bar_model_delegate.h",
@@ -165,10 +170,10 @@ jumbo_static_library("browser") {
     "omnibox_pref_names.h",
     "omnibox_view.cc",
     "omnibox_view.h",
+    "on_device_head_model.cc",
+    "on_device_head_model.h",
     "on_device_head_provider.cc",
     "on_device_head_provider.h",
-    "on_device_head_serving.cc",
-    "on_device_head_serving.h",
     "on_device_model_update_listener.cc",
     "on_device_model_update_listener.h",
     "remote_suggestions_service.cc",
@@ -207,6 +212,7 @@ jumbo_static_library("browser") {
 
   public_deps = [
     "//base",
+    "//base:i18n",
     "//components/history/core/browser",
     "//components/omnibox/common",
     "//components/omnibox/resources:omnibox_resources",
@@ -217,7 +223,6 @@ jumbo_static_library("browser") {
   deps = [
     ":buildflags",
     ":in_memory_url_index_cache_proto",
-    "//base:i18n",
     "//components/bookmarks/browser",
     "//components/component_updater",
     "//components/favicon/core",
@@ -394,6 +399,7 @@ source_set("unit_tests") {
     "in_memory_url_index_types_unittest.cc",
     "in_memory_url_index_unittest.cc",
     "keyword_provider_unittest.cc",
+    "local_history_zero_suggest_provider_unittest.cc",
     "location_bar_model_impl_unittest.cc",
     "omnibox_controller_unittest.cc",
     "omnibox_edit_model_unittest.cc",
@@ -403,8 +409,8 @@ source_set("unit_tests") {
     "omnibox_pedal_unittest.cc",
     "omnibox_popup_model_unittest.cc",
     "omnibox_view_unittest.cc",
+    "on_device_head_model_unittest.cc",
     "on_device_head_provider_unittest.cc",
-    "on_device_head_serving_unittest.cc",
     "remote_suggestions_service_unittest.cc",
     "scored_history_match_unittest.cc",
     "search_suggestion_parser_unittest.cc",
@@ -432,6 +438,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/search",
     "//components/search_engines",
+    "//components/search_engines:test_support",
     "//components/sessions",
     "//components/signin/public/identity_manager:test_support",
     "//components/strings",
@@ -447,5 +454,42 @@ source_set("unit_tests") {
     "//ui/base:test_support",
     "//ui/gfx:test_support",
     "//url",
+  ]
+}
+
+fuzzer_test("autocomplete_input_fuzzer") {
+  sources = [
+    "autocomplete_input_fuzzer.cc",
+  ]
+  deps = [
+    ":browser",
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//third_party/metrics_proto:metrics_proto",
+  ]
+}
+
+fuzzer_test("omnibox_view_fuzzer") {
+  sources = [
+    "omnibox_view_fuzzer.cc",
+  ]
+  deps = [
+    ":browser",
+    "//base",
+  ]
+}
+
+fuzzer_test("search_suggestion_parser_fuzzer") {
+  sources = [
+    "search_suggestion_parser_fuzzer.cc",
+  ]
+  deps = [
+    ":browser",
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//third_party/icu:icui18n",
+    "//third_party/metrics_proto:metrics_proto",
   ]
 }

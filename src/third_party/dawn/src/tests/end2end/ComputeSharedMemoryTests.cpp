@@ -14,7 +14,7 @@
 
 #include "tests/DawnTest.h"
 
-#include "utils/DawnHelpers.h"
+#include "utils/WGPUHelpers.h"
 
 #include <array>
 
@@ -26,42 +26,36 @@ class ComputeSharedMemoryTests : public DawnTest {
 };
 
 void ComputeSharedMemoryTests::BasicTest(const char* shader) {
-    auto bgl = utils::MakeBindGroupLayout(
-        device, {
-                    {0, dawn::ShaderStage::Compute, dawn::BindingType::StorageBuffer},
-                });
-
     // Set up shader and pipeline
     auto module = utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, shader);
-    auto pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
-    dawn::ComputePipelineDescriptor csDesc;
-    csDesc.layout = pl;
+    wgpu::ComputePipelineDescriptor csDesc;
     csDesc.computeStage.module = module;
     csDesc.computeStage.entryPoint = "main";
-    dawn::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
+    wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
 
     // Set up dst storage buffer
-    dawn::BufferDescriptor dstDesc;
+    wgpu::BufferDescriptor dstDesc;
     dstDesc.size = sizeof(uint32_t);
     dstDesc.usage =
-        dawn::BufferUsage::Storage | dawn::BufferUsage::CopySrc | dawn::BufferUsage::CopyDst;
-    dawn::Buffer dst = device.CreateBuffer(&dstDesc);
+        wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
+    wgpu::Buffer dst = device.CreateBuffer(&dstDesc);
 
     const uint32_t zero = 0;
     dst.SetSubData(0, sizeof(zero), &zero);
 
     // Set up bind group and issue dispatch
-    dawn::BindGroup bindGroup = utils::MakeBindGroup(device, bgl, {
-        {0, dst, 0, sizeof(uint32_t)},
-    });
+    wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
+                                                     {
+                                                         {0, dst, 0, sizeof(uint32_t)},
+                                                     });
 
-    dawn::CommandBuffer commands;
+    wgpu::CommandBuffer commands;
     {
-        dawn::CommandEncoder encoder = device.CreateCommandEncoder();
-        dawn::ComputePassEncoder pass = encoder.BeginComputePass();
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
-        pass.SetBindGroup(0, bindGroup, 0, nullptr);
+        pass.SetBindGroup(0, bindGroup);
         pass.Dispatch(1, 1, 1);
         pass.EndPass();
 

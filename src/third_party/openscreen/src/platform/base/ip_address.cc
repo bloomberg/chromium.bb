@@ -4,11 +4,11 @@
 
 #include "platform/base/ip_address.h"
 
+#include <cassert>
 #include <cstring>
 #include <iomanip>
 
 #include "absl/types/optional.h"
-#include "platform/api/logging.h"
 
 namespace openscreen {
 
@@ -61,8 +61,9 @@ IPAddress::IPAddress(uint8_t b1,
       bytes_{{b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15,
               b16}} {}
 IPAddress::IPAddress(const IPAddress& o) noexcept = default;
-
+IPAddress::IPAddress(IPAddress&& o) noexcept = default;
 IPAddress& IPAddress::operator=(const IPAddress& o) noexcept = default;
+IPAddress& IPAddress::operator=(IPAddress&& o) noexcept = default;
 
 bool IPAddress::operator==(const IPAddress& o) const {
   if (version_ != o.version_)
@@ -91,12 +92,12 @@ IPAddress::operator bool() const {
 }
 
 void IPAddress::CopyToV4(uint8_t x[4]) const {
-  OSP_DCHECK(version_ == Version::kV4);
+  assert(version_ == Version::kV4);
   std::memcpy(x, bytes_.data(), 4);
 }
 
 void IPAddress::CopyToV6(uint8_t x[16]) const {
-  OSP_DCHECK(version_ == Version::kV6);
+  assert(version_ == Version::kV6);
   std::memcpy(x, bytes_.data(), 16);
 }
 

@@ -173,6 +173,7 @@ used when committed.
     Capture stack traces on layout test crashes without an attached debugger
 *   [Test Descriptions](testing/test_descriptions.md) - Unit test targets that can be
     built, with associated desciptions.
+*   [Fuzz Testing](../testing/libfuzzer/README.md) - Fuzz testing in Chromium.
 *   [IPC Fuzzer](testing/ipc_fuzzer.md) - Fuzz testing of Chromium IPC interfaces.
 *   [Running Chrome tests with AddressSanitizer (asan) and LeakSanitizer (lsan)](testing/linux_running_asan_tests.md) -
     Run Chrome tests with ASAN and LSAN builds to detect addressability issues and memory leaks.
@@ -274,6 +275,8 @@ used when committed.
     How to build Android app bundles for Chrome.
 *   [Dynamic Feature Modules (DFMs)](android_dynamic_feature_modules.md) - How
     to create dynamic feature modules.
+*   [Chrome for Android UI](ui/android/overview.md) - Resources and best practices for
+    developing UI
 
 ### Misc iOS-Specific Docs
 *   [Continuous Build and Test Infrastructure for Chromium for iOS](ios/infra.md)
@@ -300,12 +303,12 @@ used when committed.
 *   [Autoplay of HTMLMediaElements](media/autoplay.md) - How HTMLMediaElements
     are autoplayed.
 *   [Piranha Plant](piranha_plant.md) - Future architecture of MediaStreams
-*   [Video Decode/Encode Accelerator Tests](media/gpu/vdatest_usage.md) - How to
-    use the accelerated video decoder/encoder test programs.
+*   [Video Encode Accelerator Tests](media/gpu/veatest_usage.md) - How to
+    use the accelerated video encoder test program.
 *   [Video Decoder Tests](media/gpu/video_decoder_test_usage.md) - Running the
-    new video decoder tests.
+    video decoder tests.
 *   [Video Decoder Performance Tests](media/gpu/video_decoder_perf_test_usage.md) -
-    Running the new video decoder performance tests.
+    Running the video decoder performance tests.
 
 ### Accessibility
 *   [Accessibility Overview](accessibility/overview.md) - Overview of

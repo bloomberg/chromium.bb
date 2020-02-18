@@ -33,7 +33,7 @@
 
 #include <memory>
 
-#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -108,6 +108,8 @@ class MODULES_EXPORT ServiceWorkerContainer final
 
   void setOnmessage(EventListener* listener);
   EventListener* onmessage();
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror)
 
   // Returns the ServiceWorkerRegistration object described by the given info.
   // Creates a new object if needed, or else returns the existing one.

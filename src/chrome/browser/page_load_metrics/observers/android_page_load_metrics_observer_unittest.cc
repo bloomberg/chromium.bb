@@ -5,8 +5,8 @@
 #include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
 
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
-#include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
@@ -194,13 +194,14 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadTimingInfo) {
   const base::TimeTicks kNow = base::TimeTicks::Now();
   load_timing_info->connect_timing.dns_start = kNow;
   page_load_metrics::ExtraRequestCompleteInfo info(
-      GURL("https://ignored.com"), net::IPEndPoint(), frame_tree_node_id,
-      false, /* cached */
+      url::Origin::Create(GURL("https://ignored.com")), net::IPEndPoint(),
+      frame_tree_node_id, false, /* cached */
       10 * 1024 /* size */, 0 /* original_network_content_length */,
       nullptr
       /* data_reduction_proxy_data */,
       content::ResourceType::kMainFrame, 0, std::move(load_timing_info));
-  SimulateLoadedResource(info, navigation_simulator->GetGlobalRequestID());
+  tester()->SimulateLoadedResource(info,
+                                   navigation_simulator->GetGlobalRequestID());
   EXPECT_EQ(kNow.since_origin().InMilliseconds(),
             observer()->reported_dns_start_ms());
 }
@@ -218,7 +219,7 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadEvents) {
       base::TimeDelta::FromMilliseconds(20);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.example.com"));
-  SimulateTimingUpdate(timing);
+  tester()->SimulateTimingUpdate(timing);
   EXPECT_EQ(30, observer()->reported_load_event_start_ms());
   EXPECT_EQ(GetNavigationStartMicroseconds(),
             observer()->reported_navigation_start_tick_load());

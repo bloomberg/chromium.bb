@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
@@ -40,18 +39,13 @@
       os-toolbar {
         @apply --layout-center;
         /* TODO(hsuregan): update for dark mode when needed. */
-        background-color: white;
-        color: var(--cr-secondary-text-color);
         min-height: 56px;
         z-index: 2;
-        --cr-toolbar-search-field-background: var(--google-grey-refresh-100);
-        --cr-toolbar-search-field-border-radius: 4px;
-        --cr-toolbar-search-field-input-color: var(--google-grey-refresh-700);
       }
 
       cr-drawer {
         --cr-separator-line: none;
-        --cr-drawer-header-color: var(--google-grey-refresh-700);
+        --cr-drawer-header-color: var(--cros-default-text-color-secondary);
         --cr-drawer-header-font-weight: 500;
         --cr-drawer-header-padding: 20px;
       }
@@ -124,8 +118,8 @@
         icon-title="$i18n{close}">
       <div class="drawer-content">
         <template is="dom-if" id="drawerTemplate">
-          <os-settings-menu show-apps="[[showApps_]]"
-              show-android-apps="[[showAndroidApps_]]"
+          <os-settings-menu
+              show-apps="[[showApps_]]"
               show-crostini="[[showCrostini_]]"
               show-plugin-vm="[[showPluginVm_]]"
               show-reset="[[showReset_]]"
@@ -140,7 +134,6 @@
       <div id="left">
         <os-settings-menu page-visibility="[[pageVisibility_]]"
             show-apps="[[showApps_]]"
-            show-android-apps="[[showAndroidApps_]]"
             show-crostini="[[showCrostini_]]"
             show-plugin-vm="[[showPluginVm_]]"
             show-reset="[[showReset_]]"
@@ -152,8 +145,9 @@
       <os-settings-main id="main" prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
-          show-apps="[[showApps_]]"
           show-android-apps="[[showAndroidApps_]]"
+          show-app-management="[[showAppManagement_]]"
+          show-apps="[[showApps_]]"
           show-crostini="[[showCrostini_]]"
           show-plugin-vm="[[showPluginVm_]]"
           show-reset="[[showReset_]]"

@@ -29,10 +29,10 @@
 #include "vcs_version.h"
 #include "cli_config.h"
 
-#include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <math.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -45,7 +45,7 @@
 #ifdef _WIN32
 # include <windows.h>
 #endif
-#if defined(HAVE_MACH_ABSOLUTE_TIME)
+#ifdef __APPLE__
 #include <mach/mach_time.h>
 #endif
 
@@ -68,7 +68,7 @@ static uint64_t get_time_nanos(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return 1000000000ULL * ts.tv_sec + ts.tv_nsec;
-#elif defined(HAVE_MACH_ABSOLUTE_TIME)
+#elif defined(__APPLE__)
     mach_timebase_info_data_t info;
     mach_timebase_info(&info);
     return mach_absolute_time() * info.numer / info.denom;
@@ -137,7 +137,7 @@ int main(const int argc, char *const *const argv) {
     Dav1dPicture p;
     Dav1dContext *c;
     Dav1dData data;
-    unsigned n_out = 0, total, fps[2];
+    unsigned n_out = 0, total, fps[2], timebase[2];
     uint64_t nspf, tfirst, elapsed;
     double i_fps;
     FILE *frametimes = NULL;
@@ -146,7 +146,7 @@ int main(const int argc, char *const *const argv) {
     if (strcmp(version, DAV1D_VERSION)) {
         fprintf(stderr, "Version mismatch (library: %s, executable: %s)\n",
                 version, DAV1D_VERSION);
-        return -1;
+        return EXIT_FAILURE;
     }
 
     init_demuxers();
@@ -155,14 +155,14 @@ int main(const int argc, char *const *const argv) {
 
     if ((res = input_open(&in, cli_settings.demuxer,
                           cli_settings.inputfile,
-                          fps, &total)) < 0)
+                          fps, &total, timebase)) < 0)
     {
-        return res;
+        return EXIT_FAILURE;
     }
     for (unsigned i = 0; i <= cli_settings.skip; i++) {
         if ((res = input_read(in, &data)) < 0) {
             input_close(in);
-            return res;
+            return EXIT_FAILURE;
         }
         if (i < cli_settings.skip) dav1d_data_unref(&data);
     }
@@ -177,7 +177,7 @@ int main(const int argc, char *const *const argv) {
         while (dav1d_parse_sequence_header(&seq, data.data, data.sz)) {
             if ((res = input_read(in, &data)) < 0) {
                 input_close(in);
-                return res;
+                return EXIT_FAILURE;
             }
             seq_skip++;
         }
@@ -192,7 +192,7 @@ int main(const int argc, char *const *const argv) {
         total = cli_settings.limit;
 
     if ((res = dav1d_open(&c, &lib_settings)))
-        return res;
+        return EXIT_FAILURE;
 
     if (cli_settings.frametimes)
         frametimes = fopen(cli_settings.frametimes, "w");
@@ -235,7 +235,7 @@ int main(const int argc, char *const *const argv) {
                                        &p.p, fps)) < 0)
                 {
                     if (frametimes) fclose(frametimes);
-                    return res;
+                    return EXIT_FAILURE;
                 }
             }
             if ((res = output_write(out, &p)) < 0)
@@ -272,7 +272,7 @@ int main(const int argc, char *const *const argv) {
                                        &p.p, fps)) < 0)
                 {
                     if (frametimes) fclose(frametimes);
-                    return res;
+                    return EXIT_FAILURE;
                 }
             }
             if ((res = output_write(out, &p)) < 0)
@@ -303,5 +303,5 @@ int main(const int argc, char *const *const argv) {
     }
     dav1d_close(&c);
 
-    return res;
+    return (res == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -9,14 +9,20 @@ from __future__ import print_function
 
 import contextlib
 import os
+import shutil
 
 import mock
 
+from chromite.api.gen.chromiumos import common_pb2
+from chromite.cbuildbot import commands
+from chromite.cbuildbot import goma_util
 from chromite.lib import build_target_util
 from chromite.lib import chroot_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
+from chromite.lib import image_lib
 from chromite.lib import moblab_vm
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -88,7 +94,7 @@ class BuildTargetUnitTestTest(cros_test_lib.RunCommandTempDirTestCase):
 
     self.assertFalse(result.success)
     self.assertEqual(expected_rc, result.return_code)
-    self.assertItemsEqual(cpvs, result.failed_cpvs)
+    self.assertCountEqual(cpvs, result.failed_cpvs)
 
 
 class BuildTargetUnitTestTarballTest(cros_test_lib.MockTestCase):
@@ -203,7 +209,7 @@ class PrepareMoblabVmImageCacheTest(MoblabVmTestCase):
 
     copied_payload_file = os.path.join(self.tempdir, expected_cache_dir,
                                        self.payload_file_name)
-    self.assertTrue(os.path.exists(copied_payload_file))
+    self.assertExists(copied_payload_file)
     self.assertEqual(osutils.ReadFile(copied_payload_file),
                      self.payload_file_content)
 
@@ -233,6 +239,95 @@ class RunMoblabVmTestTest(MoblabVmTestCase):
         'image_storage_server="%s"' % (self.builder,
                                        self.image_cache_dir + '/'),
     ], enter_chroot=True, chroot_args=self.chroot.get_enter_args())
+
+
+class SimpleChromeWorkflowTestTest(cros_test_lib.MockTempDirTestCase):
+  """Unit tests for SimpleChromeWorkflowTest."""
+
+  def setUp(self):
+    self.chrome_root = '/path/to/chrome/root'
+    self.sysroot_path = '/chroot/path/sysroot/path'
+    self.build_target = 'board'
+
+    self.goma_mock = self.PatchObject(goma_util, 'Goma')
+
+    self.chrome_sdk_run_mock = self.PatchObject(commands.ChromeSDK, 'Run')
+
+    # SimpleChromeTest workflow creates directories based on objects that are
+    # mocked for this test, so patch osutils.WriteFile
+    self.write_mock = self.PatchObject(osutils, 'WriteFile')
+
+    self.PatchObject(cros_build_lib, 'CmdToStr', return_value='CmdToStr value')
+    self.PatchObject(shutil, 'copy2')
+
+  def testSimpleChromeWorkflowTest(self):
+    goma_test_dir = os.path.join(self.tempdir, 'goma_test_dir')
+    goma_test_json_string = os.path.join(self.tempdir, 'goma_json_string.txt')
+    chromeos_goma_dir = os.path.join(self.tempdir, 'chromeos_goma_dir')
+    goma_config = common_pb2.GomaConfig(goma_dir=goma_test_dir,
+                                        goma_client_json=goma_test_json_string)
+    osutils.SafeMakedirs(goma_test_dir)
+    osutils.SafeMakedirs(chromeos_goma_dir)
+    osutils.Touch(goma_test_json_string)
+    goma = goma_util.Goma(
+        goma_config.goma_dir,
+        goma_config.goma_client_json,
+        stage_name='BuildApiTestSimpleChrome',
+        chromeos_goma_dir=chromeos_goma_dir)
+
+    mock_goma_log_dir = os.path.join(self.tempdir, 'goma_log_dir')
+    osutils.SafeMakedirs(mock_goma_log_dir)
+    goma.goma_log_dir = mock_goma_log_dir
+
+    # For this test, we avoid running test._VerifySDKEnvironment because use of
+    # other mocks prevent creating the SDK dir that _VerifySDKEnvironment checks
+    # for
+    self.PatchObject(test, '_VerifySDKEnvironment')
+
+    self.PatchObject(os.path, 'exists', return_value=True)
+
+
+    ninja_cmd = self.PatchObject(commands.ChromeSDK, 'GetNinjaCommand',
+                                 return_value='ninja command')
+
+    test.SimpleChromeWorkflowTest(self.sysroot_path, self.build_target,
+                                  self.chrome_root, goma)
+    # Verify ninja_cmd calls.
+    ninja_calls = [mock.call(), mock.call(debug=False)]
+    ninja_cmd.assert_has_calls(ninja_calls)
+
+    # Verify calls with args to chrome_sdk_run made by service/test.py.
+    gn_dir = os.path.join(self.chrome_root, 'buildtools/linux64/gn')
+    board_out_dir = os.path.join(self.chrome_root, 'out_board/Release')
+
+    self.chrome_sdk_run_mock.assert_any_call(['gclient', 'runhooks'])
+    self.chrome_sdk_run_mock.assert_any_call(['true'])
+    self.chrome_sdk_run_mock.assert_any_call(
+        ['bash', '-c', ('%s gen "%s" --args="$GN_ARGS"'
+                        % (gn_dir, board_out_dir))])
+    self.chrome_sdk_run_mock.assert_any_call(
+        ['env', '--null'], run_args=mock.ANY)
+    self.chrome_sdk_run_mock.assert_any_call('ninja command', run_args=mock.ANY)
+
+    # Create expected paths from constants so that the tests work inside or
+    # outside the SDK.
+    deploy_chrome_path = os.path.join(constants.SOURCE_ROOT,
+                                      constants.CHROMITE_BIN_SUBDIR,
+                                      'deploy_chrome')
+    image_dir_symlink = image_lib.GetLatestImageLink(self.build_target)
+    image_path = os.path.join(image_dir_symlink, constants.VM_IMAGE_BIN)
+
+    self.chrome_sdk_run_mock.assert_any_call(
+        [deploy_chrome_path, '--build-dir', board_out_dir, '--staging-only',
+         '--staging-dir', mock.ANY])
+    self.chrome_sdk_run_mock.assert_any_call(
+        ['cros_run_test', '--copy-on-write', '--deploy', '--board=board',
+         ('--image-path=%s' % (image_path)),
+         '--build-dir=out_board/Release'])
+
+    # Verify goma mock was started and stopped.
+    self.goma_mock.Start.assert_called_once()
+    self.goma_mock.Stop.assert_called_once()
 
 
 class ValidateMoblabVmTestTest(MoblabVmTestCase):

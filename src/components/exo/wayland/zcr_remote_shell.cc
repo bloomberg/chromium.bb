@@ -373,14 +373,24 @@ void remote_surface_move(wl_client* client, wl_resource* resource) {
 void remote_surface_set_window_type(wl_client* client,
                                     wl_resource* resource,
                                     uint32_t type) {
-  if (type == ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_SYSTEM_UI) {
-    auto* widget = GetUserDataAs<ShellSurfaceBase>(resource)->GetWidget();
-    if (widget) {
-      widget->GetNativeWindow()->SetProperty(ash::kHideInOverviewKey, true);
+  auto* widget = GetUserDataAs<ShellSurfaceBase>(resource)->GetWidget();
+  if (!widget)
+    return;
 
+  switch (type) {
+    case ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_NORMAL:
+      widget->GetNativeWindow()->SetProperty(ash::kHideInOverviewKey, false);
+      break;
+    case ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_SYSTEM_UI:
+      // TODO(takise): Consider removing this as this window type was added for
+      // the old assistant and is not longer used.
+      widget->GetNativeWindow()->SetProperty(ash::kHideInOverviewKey, true);
       wm::SetWindowVisibilityAnimationType(
           widget->GetNativeWindow(), wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-    }
+      break;
+    case ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_HIDDEN_IN_OVERVIEW:
+      widget->GetNativeWindow()->SetProperty(ash::kHideInOverviewKey, true);
+      break;
   }
 }
 
@@ -686,6 +696,13 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
   CreateBoundsChangedCallback(wl_resource* resource) {
     return base::BindRepeating(
         &WaylandRemoteShell::HandleRemoteSurfaceBoundsChangedCallback,
+        weak_ptr_factory_.GetWeakPtr(), base::Unretained(resource));
+  }
+
+  ClientControlledShellSurface::ChangeZoomLevelCallback
+  CreateChangeZoomLevelCallback(wl_resource* resource) {
+    return base::BindRepeating(
+        &WaylandRemoteShell::HandleRemoteSurfaceChangeZoomLevelCallback,
         weak_ptr_factory_.GetWeakPtr(), base::Unretained(resource));
   }
 
@@ -1019,6 +1036,23 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     wl_client_flush(wl_resource_get_client(resource));
   }
 
+  void HandleRemoteSurfaceChangeZoomLevelCallback(wl_resource* resource,
+                                                  ZoomChange change) {
+    int32_t value = 0;
+    switch (change) {
+      case ZoomChange::IN:
+        value = ZCR_REMOTE_SURFACE_V1_ZOOM_CHANGE_IN;
+        break;
+      case ZoomChange::OUT:
+        value = ZCR_REMOTE_SURFACE_V1_ZOOM_CHANGE_OUT;
+        break;
+      case ZoomChange::RESET:
+        value = ZCR_REMOTE_SURFACE_V1_ZOOM_CHANGE_RESET;
+        break;
+    }
+    zcr_remote_surface_v1_send_change_zoom_level(resource, value);
+  }
+
   void HandleRemoteSurfaceGeometryChangedCallback(wl_resource* resource,
                                                   const gfx::Rect& geometry) {
     LOG_IF(ERROR, pending_bounds_changes_.count(resource) > 0)
@@ -1138,6 +1172,11 @@ void remote_shell_get_remote_surface(wl_client* client,
   shell_surface->set_drag_finished_callback(
       base::BindRepeating(&HandleRemoteSurfaceDragFinishedCallback,
                           base::Unretained(remote_surface_resource)));
+
+  if (wl_resource_get_version(remote_surface_resource) >= 23) {
+    shell_surface->set_change_zoom_level_callback(
+        shell->CreateChangeZoomLevelCallback(remote_surface_resource));
+  }
 
   SetImplementation(remote_surface_resource, &remote_surface_implementation,
                     std::move(shell_surface));

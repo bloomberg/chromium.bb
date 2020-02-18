@@ -150,9 +150,6 @@ extern const char kGoogleAccountChooserURL[];
 // URL of the Google Password Manager.
 extern const char kGooglePasswordManagerURL[];
 
-// URL for Password Checkup.
-extern const char kPasswordCheckupURL[];
-
 // The URL for the "Learn more" page for the usage/crash reporting option in the
 // first run dialog.
 extern const char kLearnMoreReportingURL[];
@@ -192,8 +189,17 @@ extern const char kRemoveNonCWSExtensionURL[];
 // "Learn more" URL for resetting profile preferences.
 extern const char kResetProfileSettingsLearnMoreURL[];
 
+// "Learn more" URL for safety tip bubble.
+extern const char kSafetyTipHelpCenterURL[];
+
 // Help URL for the settings page's search feature.
 extern const char kSettingsSearchHelpURL[];
+
+// URL to use as the 'Learn More' link when the interstitial is caused by
+// a "ERR_CERT_SYMANTEC_LEGACY" error, -202 fragment is included so
+// chrome://connection-help expands the right section if the user can't reach
+// the help center.
+extern const char kSymantecSupportUrl[];
 
 // The URL for the Learn More page about Sync and Google services.
 extern const char kSyncAndGoogleServicesLearnMoreURL[];
@@ -227,6 +233,18 @@ extern const char kAccountManagerLearnMoreURL[];
 // The URL for the "learn more" link for Google Play Store (ARC) settings.
 extern const char kAndroidAppsLearnMoreURL[];
 
+// The URL for the "Learn more" link in the External storage preferences
+// settings.
+extern const char kArcExternalStorageLearnMoreURL[];
+
+// The path format to the localized offline ARC++ Privacy Policy.
+// Relative to |kChromeOSAssetPath|.
+extern const char kArcPrivacyPolicyPathFormat[];
+
+// The path format to the localized offline ARC++ Terms of Service.
+// Relative to |kChromeOSAssetPath|.
+extern const char kArcTermsPathFormat[];
+
 // Accessibility help link for Chrome.
 extern const char kChromeAccessibilityHelpURL[];
 
@@ -249,14 +267,6 @@ extern const char kEasyUnlockLearnMoreUrl[];
 
 // The path to the offline Chrome OS EULA.
 extern const char kEULAPathFormat[];
-
-// The path format to the localized offline ARC++ Terms of Service.
-// Relative to |kChromeOSAssetPath|.
-extern const char kArcTermsPathFormat[];
-
-// The path format to the localized offline ARC++ Privacy Policy.
-// Relative to |kChromeOSAssetPath|.
-extern const char kArcPrivacyPolicyPathFormat[];
 
 // The URL for EOL notification
 extern const char kEolNotificationURL[];

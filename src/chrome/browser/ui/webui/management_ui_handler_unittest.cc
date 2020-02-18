@@ -61,7 +61,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
 
   base::Value GetExtensionReportingInfo() {
     base::Value report_sources(base::Value::Type::LIST);
-    AddExtensionReportingInfo(&report_sources);
+    AddReportingInfo(&report_sources);
     return report_sources;
   }
 
@@ -207,6 +207,7 @@ TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedConsumerDomain) {
   TestingProfile::Builder builder;
   builder.SetProfileName("managed@gmail.com");
+  builder.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile = builder.Build();
 
   base::string16 extensions_installed;
@@ -238,6 +239,7 @@ TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateUnmanagedKnownDomain) {
   TestingProfile::Builder builder;
   builder.SetProfileName("managed@manager.com");
+  builder.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile = builder.Build();
 
   base::string16 extension_reporting_title;
@@ -304,7 +306,8 @@ TEST_F(ManagementUIHandlerTests,
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedKnownDomain) {
   TestingProfile::Builder builder;
-  builder.SetProfileName("managed@manager.com");
+  builder.SetProfileName("managed@gmail.com.manager.com.gmail.com");
+  builder.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile = builder.Build();
 
   base::string16 extension_reporting_title;
@@ -324,15 +327,17 @@ TEST_F(ManagementUIHandlerTests,
 
   EXPECT_EQ(data.DictSize(), 4u);
   EXPECT_EQ(extension_reporting_title,
-            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
-                                       base::UTF8ToUTF16("manager.com")));
+            l10n_util::GetStringFUTF16(
+                IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
+                base::UTF8ToUTF16("gmail.com.manager.com.gmail.com")));
   EXPECT_EQ(browser_management_notice,
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_BROWSER_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
   EXPECT_EQ(subtitle,
-            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
-                                       base::UTF8ToUTF16("manager.com")));
+            l10n_util::GetStringFUTF16(
+                IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                base::UTF8ToUTF16("gmail.com.manager.com.gmail.com")));
   EXPECT_TRUE(managed);
 }
 
@@ -343,6 +348,7 @@ TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedAccountKnownDomain) {
   TestingProfile::Builder builder;
   builder.SetProfileName("managed@manager.com");
+  builder.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile = builder.Build();
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
 
@@ -478,6 +484,7 @@ TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedDeviceAndAccountMultipleDomains) {
   TestingProfile::Builder builder;
   builder.SetProfileName("managed@manager.com");
+  builder.OverridePolicyConnectorIsManagedForTesting(true);
   auto profile = builder.Build();
   const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
 
@@ -565,6 +572,31 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_EQ(reporting_info.GetList().size(), expected_messages.size());
 }
 
+TEST_F(ManagementUIHandlerTests, CloudReportingPolicy) {
+  handler_.EnableCloudReportingExtension(false);
+
+  policy::PolicyMap chrome_policies;
+  const policy::PolicyNamespace chrome_policies_namespace =
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
+  EXPECT_CALL(policy_service_, GetPolicies(_))
+      .WillRepeatedly(ReturnRef(chrome_policies));
+  SetPolicyValue(policy::key::kCloudReportingEnabled, chrome_policies, true);
+
+  std::set<std::string> expected_messages = {
+      kManagementExtensionReportMachineName, kManagementExtensionReportUsername,
+      kManagementExtensionReportVersion,
+      kManagementExtensionReportExtensionsPlugin};
+
+  auto reporting_info = handler_.GetExtensionReportingInfo();
+  const auto& reporting_info_list = reporting_info.GetList();
+
+  for (const base::Value& info : reporting_info_list) {
+    const std::string* messageId = info.FindStringKey("messageId");
+    EXPECT_TRUE(expected_messages.find(*messageId) != expected_messages.end());
+  }
+  EXPECT_EQ(reporting_info.GetList().size(), expected_messages.size());
+}
+
 TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
   policy::PolicyMap on_prem_reporting_extension_beta_policies;
   policy::PolicyMap on_prem_reporting_extension_stable_policies;
@@ -603,6 +635,11 @@ TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
   EXPECT_CALL(policy_service_,
               GetPolicies(on_prem_reporting_extension_beta_policy_namespace))
       .WillOnce(ReturnRef(on_prem_reporting_extension_beta_policies));
+  policy::PolicyMap empty_policy_map;
+  EXPECT_CALL(policy_service_,
+              GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                                  std::string())))
+      .WillOnce(ReturnRef(empty_policy_map));
 
   handler_.EnableCloudReportingExtension(true);
 
@@ -664,9 +701,7 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   info.GetAsDictionary(&threat_protection_info);
   EXPECT_TRUE(threat_protection_info->FindListKey("info")->GetList().empty());
   EXPECT_EQ(
-      l10n_util::GetStringFUTF16(
-          IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION_BY,
-          base::UTF8ToUTF16("manager.com")),
+      l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
       base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
 
   // When policies are set to values that enable the feature, report it.
@@ -686,19 +721,19 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementDataLossPreventionName);
     value.SetStringKey("permission", kManagementDataLossPreventionPermissions);
-    expected_info.GetList().push_back(std::move(value));
+    expected_info.Append(std::move(value));
   }
   {
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementMalwareScanningName);
     value.SetStringKey("permission", kManagementMalwareScanningPermissions);
-    expected_info.GetList().push_back(std::move(value));
+    expected_info.Append(std::move(value));
   }
   {
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementEnterpriseReportingName);
     value.SetStringKey("permission", kManagementEnterpriseReportingPermissions);
-    expected_info.GetList().push_back(std::move(value));
+    expected_info.Append(std::move(value));
   }
 
   EXPECT_EQ(expected_info, *threat_protection_info->FindListKey("info"));

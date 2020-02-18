@@ -4,7 +4,7 @@ class MockBadgeService {
   constructor() {
     this.bindingSet_ = new mojo.BindingSet(blink.mojom.BadgeService);
     this.interceptor_ = new MojoInterfaceInterceptor(
-        blink.mojom.BadgeService.name);
+        blink.mojom.BadgeService.name, "context", true);
     this.interceptor_.oninterfacerequest =
         e => this.bindingSet_.addBinding(this, e.handle);
     this.interceptor_.start();
@@ -18,7 +18,7 @@ class MockBadgeService {
     });
   }
 
-  setBadge(scope, value) {
+  setBadge(value) {
     // Accessing number when the union is a flag will throw, so read the
     // value in a try catch.
     let number;
@@ -29,17 +29,17 @@ class MockBadgeService {
     }
 
     try {
-      const action = number === undefined ? 'flag' : 'number';
-      assert_equals(this.expectedAction, action);
+      const action = number === undefined ? 'flag' : 'number:' + number;
+      assert_equals(action, this.expectedAction);
       this.resolve_();
     } catch (error) {
-      this.reject_();
+      this.reject_(error);
     }
   }
 
-  clearBadge(scope) {
+  clearBadge() {
     try {
-      assert_equals(this.expectedAction, 'clear');
+      assert_equals('clear', this.expectedAction);
       this.resolve_();
     } catch (error) {
       this.reject_(error);
@@ -49,24 +49,16 @@ class MockBadgeService {
 
 let mockBadgeService = new MockBadgeService();
 
-function callAndObserveErrors(func, expectedErrorName) {
-  return new Promise((resolve, reject) => {
-    try {
-      func();
-    } catch (error) {
-      try {
-        assert_equals(error.name, expectedErrorName);
-        resolve();
-      } catch (reason) {
-        reject(reason);
-      }
-    }
-  });
-}
-
-function badge_test(func, expectedAction, expectError) {
-  promise_test(() => {
+function badge_test(func, expectedAction, expectedError) {
+  promise_test(async () => {
     let mockPromise = mockBadgeService.init_(expectedAction);
-    return Promise.race([callAndObserveErrors(func, expectError), mockPromise]);
+
+    try {
+      await func();
+    } catch (error) {
+      return assert_equals(error.name, expectedError);
+    }
+
+    await mockPromise;
   });
 }

@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
@@ -60,17 +61,18 @@ ResolverThread::~ResolverThread() = default;
 void ResolverThread::Run() {
   base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
 
-  net::NetLog net_log;
   net::HostResolver::ManagerOptions options;
   options.max_concurrent_resolves = 6;
   options.max_system_retry_attempts = 3u;
   std::unique_ptr<net::HostResolver> resolver =
-      net::HostResolver::CreateStandaloneResolver(&net_log, options);
+      net::HostResolver::CreateStandaloneResolver(NetLog::Get(), options);
 
   HostPortPair host_port_pair(host_, 80);
+  // No need to use a NetworkIsolationKey here, since this is an external tool
+  // not used by net/ consumers.
   std::unique_ptr<net::HostResolver::ResolveHostRequest> request =
-      resolver->CreateRequest(host_port_pair, NetLogWithSource(),
-                              base::nullopt);
+      resolver->CreateRequest(host_port_pair, NetworkIsolationKey(),
+                              NetLogWithSource(), base::nullopt);
 
   base::RunLoop run_loop;
   rv_ = request->Start(base::BindOnce(&ResolverThread::OnResolutionComplete,

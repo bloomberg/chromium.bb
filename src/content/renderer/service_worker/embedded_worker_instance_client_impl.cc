@@ -15,6 +15,7 @@
 #include "content/public/common/content_client.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
+#include "content/renderer/worker/fetch_client_settings_object_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -28,15 +29,24 @@ namespace content {
 
 // static
 void EmbeddedWorkerInstanceClientImpl::Create(
-    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver,
-    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+        receiver) {
   // This won't be leaked because the lifetime will be managed internally.
   // See the class documentation for detail.
-  // We can't use MakeStrongBinding because must give the worker thread
+  // We can't use MakeSelfOwnedReceiver because must give the worker thread
   // a chance to stop by calling TerminateWorkerContext() and waiting
   // before destructing.
   new EmbeddedWorkerInstanceClientImpl(std::move(receiver),
                                        std::move(initiator_thread_task_runner));
+}
+
+void EmbeddedWorkerInstanceClientImpl::CreateForRequest(
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+        receiver) {
+  EmbeddedWorkerInstanceClientImpl::Create(
+      std::move(initiator_thread_task_runner), std::move(receiver));
 }
 
 void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {
@@ -54,16 +64,14 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
   auto start_timing = blink::mojom::EmbeddedWorkerStartTiming::New();
   start_timing->start_worker_received_time = base::TimeTicks::Now();
-  auto start_data = BuildStartData(*params);
+  std::unique_ptr<blink::WebEmbeddedWorkerStartData> start_data =
+      BuildStartData(*params);
 
   DCHECK(!params->provider_info->cache_storage ||
          base::FeatureList::IsEnabled(
              blink::features::kEagerCacheStorageSetupForServiceWorkers));
   mojo::PendingRemote<blink::mojom::CacheStorage> cache_storage =
       std::move(params->provider_info->cache_storage);
-  service_manager::mojom::InterfaceProviderPtrInfo interface_provider =
-      std::move(params->provider_info->interface_provider);
-
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker =
           std::move(params->provider_info->browser_interface_broker);
@@ -75,10 +83,11 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(params->service_worker_receiver),
       std::move(params->controller_receiver), std::move(params->instance_host),
       std::move(params->provider_info), this, std::move(start_timing),
-      std::move(params->preference_watcher_request),
+      std::move(params->preference_watcher_receiver),
       std::move(params->subresource_loader_factories),
       std::move(params->subresource_loader_updater),
-      params->script_url_to_skip_throttling, initiator_thread_task_runner_);
+      params->script_url_to_skip_throttling, initiator_thread_task_runner_,
+      params->service_worker_route_id);
   // Record UMA to indicate StartWorker is received on renderer.
   StartWorkerHistogramEnum metric =
       params->is_installed ? StartWorkerHistogramEnum::RECEIVED_ON_INSTALLED
@@ -93,25 +102,20 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   // when the worker is not installed, or the worker is launched for checking
   // the update.
   if (params->installed_scripts_info) {
-    installed_scripts_manager_params = std::make_unique<
-        blink::WebServiceWorkerInstalledScriptsManagerParams>();
-    installed_scripts_manager_params->installed_scripts_urls =
-        std::move(params->installed_scripts_info->installed_urls);
-    installed_scripts_manager_params->manager_receiver =
-        params->installed_scripts_info->manager_receiver.PassPipe();
-    installed_scripts_manager_params->manager_host_remote =
-        params->installed_scripts_info->manager_host_remote.PassPipe();
-    DCHECK(installed_scripts_manager_params->manager_receiver.is_valid());
-    DCHECK(installed_scripts_manager_params->manager_host_remote.is_valid());
+    installed_scripts_manager_params =
+        std::make_unique<blink::WebServiceWorkerInstalledScriptsManagerParams>(
+            std::move(params->installed_scripts_info->installed_urls),
+            params->installed_scripts_info->manager_receiver.PassPipe(),
+            params->installed_scripts_info->manager_host_remote.PassPipe());
   }
 
-  auto worker = blink::WebEmbeddedWorker::Create(
-      service_worker_context_client_.get(),
-      std::move(installed_scripts_manager_params),
-      params->content_settings_proxy.PassHandle(), cache_storage.PassPipe(),
-      interface_provider.PassHandle(), browser_interface_broker.PassPipe());
+  auto worker =
+      blink::WebEmbeddedWorker::Create(service_worker_context_client_.get());
   service_worker_context_client_->StartWorkerContextOnInitiatorThread(
-      std::move(worker), start_data);
+      std::move(worker), std::move(start_data),
+      std::move(installed_scripts_manager_params),
+      params->content_settings_proxy.PassPipe(), cache_storage.PassPipe(),
+      browser_interface_broker.PassPipe());
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker() {
@@ -155,24 +159,22 @@ void EmbeddedWorkerInstanceClientImpl::OnError() {
   delete this;
 }
 
-blink::WebEmbeddedWorkerStartData
+std::unique_ptr<blink::WebEmbeddedWorkerStartData>
 EmbeddedWorkerInstanceClientImpl::BuildStartData(
     const blink::mojom::EmbeddedWorkerStartParams& params) {
   DCHECK(initiator_thread_task_runner_->BelongsToCurrentThread());
-  blink::WebEmbeddedWorkerStartData start_data;
-  start_data.script_url = params.script_url;
-  start_data.user_agent = blink::WebString::FromUTF8(params.user_agent);
-  start_data.script_type = params.script_type;
-  start_data.wait_for_debugger_mode =
+  auto start_data = std::make_unique<blink::WebEmbeddedWorkerStartData>(
+      FetchClientSettingsObjectFromMojomToWeb(
+          params.outside_fetch_client_settings_object));
+
+  start_data->script_url = params.script_url;
+  start_data->user_agent = blink::WebString::FromUTF8(params.user_agent);
+  start_data->script_type = params.script_type;
+  start_data->wait_for_debugger_mode =
       params.wait_for_debugger
           ? blink::WebEmbeddedWorkerStartData::kWaitForDebugger
           : blink::WebEmbeddedWorkerStartData::kDontWaitForDebugger;
-  start_data.devtools_worker_token = params.devtools_worker_token;
-  start_data.v8_cache_options =
-      static_cast<blink::WebSettings::V8CacheOptions>(params.v8_cache_options);
-  start_data.privacy_preferences = blink::PrivacyPreferences(
-      params.renderer_preferences->enable_do_not_track,
-      params.renderer_preferences->enable_referrers);
+  start_data->devtools_worker_token = params.devtools_worker_token;
 
   return start_data;
 }

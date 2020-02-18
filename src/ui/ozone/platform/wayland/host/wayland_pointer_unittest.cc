@@ -8,6 +8,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
@@ -334,9 +335,43 @@ TEST_P(WaylandPointerTest, SetBitmap) {
   Mock::VerifyAndClearExpectations(pointer_);
 }
 
-INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+TEST_P(WaylandPointerTest, SetBitmapOnPointerFocus) {
+  SkBitmap dummy_cursor;
+  SkImageInfo info =
+      SkImageInfo::Make(10, 10, SkColorType::kBGRA_8888_SkColorType,
+                        SkAlphaType::kPremul_SkAlphaType);
+  dummy_cursor.allocPixels(info, 10 * 4);
+
+  BitmapCursorFactoryOzone cursor_factory;
+  PlatformCursor cursor =
+      cursor_factory.CreateImageCursor(dummy_cursor, gfx::Point(5, 8), 1.0f);
+  scoped_refptr<BitmapCursorOzone> bitmap =
+      BitmapCursorFactoryOzone::GetBitmapCursor(cursor);
+
+  EXPECT_CALL(*pointer_, SetCursor(Ne(nullptr), 5, 8));
+  window_->SetCursor(cursor);
+  connection_->ScheduleFlush();
+
+  Sync();
+
+  Mock::VerifyAndClearExpectations(pointer_);
+
+  EXPECT_CALL(*pointer_, SetCursor(Ne(nullptr), 5, 8));
+  wl_pointer_send_enter(pointer_->resource(), 1, surface_->resource(),
+                        wl_fixed_from_int(50), wl_fixed_from_int(75));
+
+  Sync();
+
+  connection_->ScheduleFlush();
+
+  Sync();
+
+  Mock::VerifyAndClearExpectations(pointer_);
+}
+
+INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandPointerTest,
-                         ::testing::Values(kXdgShellV5));
+                         ::testing::Values(kXdgShellStable));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandPointerTest,
                          ::testing::Values(kXdgShellV6));

@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/webui/version_handler.h"
 #include "chrome/browser/ui/webui/version_ui.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/browser_resources.h"
+#include "chrome/grit/omnibox_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -51,7 +51,7 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui)
 OmniboxUI::~OmniboxUI() {}
 
 void OmniboxUI::BindOmniboxPageHandler(
-    mojom::OmniboxPageHandlerRequest request) {
-  omnibox_handler_.reset(
-      new OmniboxPageHandler(Profile::FromWebUI(web_ui()), std::move(request)));
+    mojo::PendingReceiver<mojom::OmniboxPageHandler> receiver) {
+  omnibox_handler_ = std::make_unique<OmniboxPageHandler>(
+      Profile::FromWebUI(web_ui()), std::move(receiver));
 }

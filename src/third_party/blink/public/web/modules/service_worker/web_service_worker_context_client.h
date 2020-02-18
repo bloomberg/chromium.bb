@@ -55,10 +55,10 @@ class WebString;
 // Used to pass the mojom struct blink.mojom.FetchEventPreloadHandle across the
 // boundary between //content and Blink.
 struct WebFetchEventPreloadHandle {
-  // For network::mojom::URLLoaderPtrInfo.
+  // For mojo::PendingRemote<network::mojom::URLLoader>.
   mojo::ScopedMessagePipeHandle url_loader;
-  // For network::mojom::URLLoaderClientRequest.
-  mojo::ScopedMessagePipeHandle url_loader_client_request;
+  // For mojo::PendingReceiver<network::mojom::URLLoaderClient>.
+  mojo::ScopedMessagePipeHandle url_loader_client_receiver;
 };
 
 // WebServiceWorkerContextClient is a "client" of a service worker execution
@@ -81,18 +81,12 @@ class WebServiceWorkerContextClient {
       mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
       mojo::ScopedMessagePipeHandle devtools_agent_host_request) {}
 
-  // Starting the worker failed. This could happen when loading the worker
-  // script failed, or the worker was asked to terminate before startup
-  // completed. Called on the initiator thread.
-  virtual void WorkerContextFailedToStartOnInitiatorThread() {}
-
-  // The worker started but it could not execute because loading the classic
-  // script failed on the worker thread. This is called only for installed
-  // scripts fetch or off-the-main-thread classic worker script fetch.
-  virtual void FailedToLoadClassicScript() {}
+  // The worker started but it could not execute because fetching the classic
+  // script failed on the worker thread.
+  virtual void FailedToFetchClassicScript() {}
 
   // The worker started but it could not execute because fetching module script
-  // failed.
+  // failed on the worker thread.
   virtual void FailedToFetchModuleScript() {}
 
   // The worker script was successfully loaded on the worker thread.

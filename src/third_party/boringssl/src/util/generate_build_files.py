@@ -272,6 +272,8 @@ class Bazel(object):
       self.PrintVariableSection(out, 'ssl_test_sources', files['ssl_test'])
       self.PrintVariableSection(out, 'crypto_test_data',
                                 files['crypto_test_data'])
+      self.PrintVariableSection(out, 'urandom_test_sources',
+                                files['urandom_test'])
 
 
 class Eureka(object):
@@ -638,8 +640,7 @@ def ExtractVariablesFromCMakeFile(cmakefile):
 def main(platforms):
   cmake = ExtractVariablesFromCMakeFile(os.path.join('src', 'sources.cmake'))
   crypto_c_files = (FindCFiles(os.path.join('src', 'crypto'), NoTestsNorFIPSFragments) +
-                    FindCFiles(os.path.join('src', 'third_party', 'fiat'), NoTestsNorFIPSFragments) +
-                    FindCFiles(os.path.join('src', 'third_party', 'sike'), NoTestsNorFIPSFragments))
+                    FindCFiles(os.path.join('src', 'third_party', 'fiat'), NoTestsNorFIPSFragments))
   fips_fragments = FindCFiles(os.path.join('src', 'crypto', 'fipsmodule'), OnlyFIPSFragments)
   ssl_source_files = FindCFiles(os.path.join('src', 'ssl'), NoTests)
   tool_c_files = FindCFiles(os.path.join('src', 'tool'), NoTests)
@@ -685,11 +686,21 @@ def main(platforms):
       'src/crypto/test/file_test_gtest.cc',
       'src/crypto/test/gtest_main.cc',
   ]
+  # urandom_test.cc is in a separate binary so that it can be test PRNG
+  # initialisation.
+  crypto_test_files = [
+      file for file in crypto_test_files
+      if not file.endswith('/urandom_test.cc')
+  ]
 
   ssl_test_files = FindCFiles(os.path.join('src', 'ssl'), OnlyTests)
   ssl_test_files += [
       'src/crypto/test/abi_test.cc',
       'src/crypto/test/gtest_main.cc',
+  ]
+
+  urandom_test_files = [
+      'src/crypto/fipsmodule/rand/urandom_test.cc',
   ]
 
   fuzz_c_files = FindCFiles(os.path.join('src', 'fuzz'), NoTests)
@@ -709,8 +720,7 @@ def main(platforms):
   ssl_internal_h_files = FindHeaderFiles(os.path.join('src', 'ssl'), NoTests)
   crypto_internal_h_files = (
       FindHeaderFiles(os.path.join('src', 'crypto'), NoTests) +
-      FindHeaderFiles(os.path.join('src', 'third_party', 'fiat'), NoTests) +
-      FindHeaderFiles(os.path.join('src', 'third_party', 'sike'), NoTests))
+      FindHeaderFiles(os.path.join('src', 'third_party', 'fiat'), NoTests))
 
   files = {
       'bcm_crypto': bcm_crypto_c_files,
@@ -729,6 +739,7 @@ def main(platforms):
       'tool_headers': tool_h_files,
       'test_support': test_support_c_files,
       'test_support_headers': test_support_h_files,
+      'urandom_test': sorted(urandom_test_files),
   }
 
   asm_outputs = sorted(WriteAsmFiles(ReadPerlAsmOperations()).iteritems())

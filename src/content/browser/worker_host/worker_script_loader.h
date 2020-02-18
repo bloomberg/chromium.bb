@@ -14,10 +14,17 @@
 #include "base/optional.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+
+namespace blink {
+class ThrottlingURLLoader;
+}  // namespace blink
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -27,7 +34,6 @@ namespace content {
 
 class AppCacheHost;
 class BrowserContext;
-class ThrottlingURLLoader;
 class NavigationLoaderInterceptor;
 class ResourceContext;
 class ServiceWorkerNavigationHandle;
@@ -65,7 +71,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle,
       base::WeakPtr<AppCacheHost> appcache_host,
       const BrowserContextGetter& browser_context_getter,
@@ -101,11 +107,12 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   // response, i.e. return a different response. For e.g. AppCache may have
   // fallback content.
   bool MaybeCreateLoaderForResponse(
-      const network::ResourceResponseHead& response_head,
+      network::mojom::URLResponseHeadPtr* response_head,
       mojo::ScopedDataPipeConsumerHandle* response_body,
-      network::mojom::URLLoaderPtr* response_url_loader,
-      network::mojom::URLLoaderClientRequest* response_client_request,
-      ThrottlingURLLoader* url_loader);
+      mojo::PendingRemote<network::mojom::URLLoader>* response_url_loader,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>*
+          response_client_receiver,
+      blink::ThrottlingURLLoader* url_loader);
 
   base::Optional<SubresourceLoaderParams> TakeSubresourceLoaderParams() {
     return std::move(subresource_loader_params_);
@@ -122,7 +129,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   void Start();
   void MaybeStartLoader(
       NavigationLoaderInterceptor* interceptor,
-      SingleRequestURLLoaderFactory::RequestHandler single_request_handler);
+      scoped_refptr<network::SharedURLLoaderFactory> single_request_factory);
   void LoadFromNetwork(bool reset_subresource_loader_params);
   void CommitCompleted(const network::URLLoaderCompletionStatus& status);
 
@@ -137,7 +144,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   const int32_t request_id_;
   const uint32_t options_;
   network::ResourceRequest resource_request_;
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
   base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle_;
   BrowserContextGetter browser_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;
@@ -146,8 +153,9 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   base::Optional<net::RedirectInfo> redirect_info_;
   int redirect_limit_ = net::URLRequest::kMaxRedirects;
 
-  network::mojom::URLLoaderPtr url_loader_;
-  mojo::Binding<network::mojom::URLLoaderClient> url_loader_client_binding_;
+  mojo::Remote<network::mojom::URLLoader> url_loader_;
+  mojo::Receiver<network::mojom::URLLoaderClient> url_loader_client_receiver_{
+      this};
   // The factory used to request the script. This is the same as
   // |default_loader_factory_| if a service worker or other interceptor didn't
   // elect to handle the request.

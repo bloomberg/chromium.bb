@@ -6,11 +6,8 @@
 
 #include <memory>
 #include <utility>
-
 #include "base/lazy_instance.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
+#include "base/strings/stringprintf.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/ime/ime_bridge.h"
 
@@ -19,13 +16,25 @@ namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
 namespace SetComposition = extensions::api::input_ime::SetComposition;
 namespace CommitText = extensions::api::input_ime::CommitText;
 namespace SendKeyEvents = extensions::api::input_ime::SendKeyEvents;
-using ui::IMEEngineHandlerInterface;
 using input_method::InputMethodEngineBase;
 
 namespace {
-const char kInputImeApiErrorEngineNotAvailable[] = "Engine is not available";
-const char kInputImeApiErrorSetKeyEventsFail[] = "Could not send key events";
+const char kErrorRouterNotAvailable[] = "The router is not available.";
+const char kErrorSetKeyEventsFail[] = "Could not send key events.";
+
+InputMethodEngineBase* GetEngineIfActive(Profile* profile,
+                                         const std::string& extension_id,
+                                         std::string* error) {
+  extensions::InputImeEventRouter* event_router =
+      extensions::GetInputImeEventRouter(profile);
+  CHECK(event_router) << kErrorRouterNotAvailable;
+  InputMethodEngineBase* engine =
+      event_router->GetEngineIfActive(extension_id, error);
+  return engine;
 }
+
+}  // namespace
+
 namespace ui {
 
 ImeObserver::ImeObserver(const std::string& extension_id, Profile* profile)
@@ -80,7 +89,7 @@ void ImeObserver::OnBlur(int context_id) {
 void ImeObserver::OnKeyEvent(
     const std::string& component_id,
     const InputMethodEngineBase::KeyboardEvent& event,
-    IMEEngineHandlerInterface::KeyEventDoneCallback key_data) {
+    IMEEngineHandlerInterface::KeyEventDoneCallback callback) {
   if (extension_id_.empty())
     return;
 
@@ -89,32 +98,37 @@ void ImeObserver::OnKeyEvent(
   if (!ShouldForwardKeyEvent()) {
     // Continue processing the key event so that the physical keyboard can
     // still work.
-    std::move(key_data).Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
-  extensions::InputImeEventRouter* event_router =
-      extensions::GetInputImeEventRouter(profile_);
-  if (!event_router || !event_router->GetEngineIfActive(extension_id_))
+  std::string error;
+  InputMethodEngineBase* engine =
+      GetEngineIfActive(profile_, extension_id_, &error);
+  if (!engine)
     return;
   const std::string request_id =
-      event_router->GetEngineIfActive(extension_id_)
-          ->AddRequest(component_id, std::move(key_data));
+      engine->AddPendingKeyEvent(component_id, std::move(callback));
 
   input_ime::KeyboardEvent key_data_value;
   key_data_value.type = input_ime::ParseKeyboardEventType(event.type);
-  key_data_value.request_id = request_id;
-  if (!event.extension_id.empty())
-      key_data_value.extension_id.reset(new std::string(event.extension_id));
+  // For legacy reasons, we still put a |requestID| into the keyData, even
+  // though there is already a |requestID| argument in OnKeyEvent.
+  key_data_value.request_id = std::make_unique<std::string>(request_id);
+  if (!event.extension_id.empty()) {
+    key_data_value.extension_id =
+        std::make_unique<std::string>(event.extension_id);
+  }
   key_data_value.key = event.key;
   key_data_value.code = event.code;
-  key_data_value.alt_key.reset(new bool(event.alt_key));
-  key_data_value.ctrl_key.reset(new bool(event.ctrl_key));
-  key_data_value.shift_key.reset(new bool(event.shift_key));
-  key_data_value.caps_lock.reset(new bool(event.caps_lock));
+  key_data_value.alt_key = std::make_unique<bool>(event.alt_key);
+  key_data_value.altgr_key = std::make_unique<bool>(event.altgr_key);
+  key_data_value.ctrl_key = std::make_unique<bool>(event.ctrl_key);
+  key_data_value.shift_key = std::make_unique<bool>(event.shift_key);
+  key_data_value.caps_lock = std::make_unique<bool>(event.caps_lock);
 
   std::unique_ptr<base::ListValue> args(
-      input_ime::OnKeyEvent::Create(component_id, key_data_value));
+      input_ime::OnKeyEvent::Create(component_id, key_data_value, request_id));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_KEY_EVENT,
                            input_ime::OnKeyEvent::kEventName, std::move(args));
@@ -148,10 +162,6 @@ void ImeObserver::OnDeactivated(const std::string& component_id) {
 // platforms, while with some changing on the current code on ChromeOS.
 void ImeObserver::OnCompositionBoundsChanged(
     const std::vector<gfx::Rect>& bounds) {}
-
-bool ImeObserver::IsInterestedInKeyEvent() const {
-  return ShouldForwardKeyEvent();
-}
 
 void ImeObserver::OnSurroundingTextChanged(const std::string& component_id,
                                            const std::string& text,
@@ -266,11 +276,8 @@ InputImeEventRouterFactory* InputImeEventRouterFactory::GetInstance() {
   return base::Singleton<InputImeEventRouterFactory>::get();
 }
 
-InputImeEventRouterFactory::InputImeEventRouterFactory() {
-}
-
-InputImeEventRouterFactory::~InputImeEventRouterFactory() {
-}
+InputImeEventRouterFactory::InputImeEventRouterFactory() = default;
+InputImeEventRouterFactory::~InputImeEventRouterFactory() = default;
 
 InputImeEventRouter* InputImeEventRouterFactory::GetRouter(Profile* profile) {
   if (!profile)
@@ -309,139 +316,130 @@ void InputImeEventRouterFactory::RemoveProfile(Profile* profile) {
 ExtensionFunction::ResponseAction InputImeKeyEventHandledFunction::Run() {
   std::unique_ptr<KeyEventHandled::Params> params(
       KeyEventHandled::Params::Create(*args_));
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
-  InputMethodEngineBase* engine =
-      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
-  if (engine) {
-    engine->KeyEventHandled(extension_id(), params->request_id,
-                            params->response);
-  }
+  std::string error;
+  InputMethodEngineBase* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(InformativeError(error, function_name())));
+
+  engine->KeyEventHandled(extension_id(), params->request_id, params->response);
   return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
-  InputMethodEngineBase* engine =
-      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
-  if (engine) {
-    std::unique_ptr<SetComposition::Params> parent_params(
-        SetComposition::Params::Create(*args_));
-    const SetComposition::Params::Parameters& params =
-        parent_params->parameters;
-    std::vector<InputMethodEngineBase::SegmentInfo> segments;
-    if (params.segments) {
-      for (const auto& segments_arg : *params.segments) {
-        EXTENSION_FUNCTION_VALIDATE(segments_arg.style !=
-                                    input_ime::UNDERLINE_STYLE_NONE);
-        InputMethodEngineBase::SegmentInfo segment_info;
-        segment_info.start = segments_arg.start;
-        segment_info.end = segments_arg.end;
-        if (segments_arg.style == input_ime::UNDERLINE_STYLE_UNDERLINE) {
-          segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
-        } else if (segments_arg.style ==
-                   input_ime::UNDERLINE_STYLE_DOUBLEUNDERLINE) {
-          segment_info.style =
-              InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
-        } else {
-          segment_info.style =
-              InputMethodEngineBase::SEGMENT_STYLE_NO_UNDERLINE;
-        }
-        segments.push_back(segment_info);
+  std::string error;
+  InputMethodEngineBase* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(InformativeError(error, function_name())));
+
+  std::unique_ptr<SetComposition::Params> parent_params(
+      SetComposition::Params::Create(*args_));
+  const SetComposition::Params::Parameters& params = parent_params->parameters;
+  std::vector<InputMethodEngineBase::SegmentInfo> segments;
+  if (params.segments) {
+    for (const auto& segments_arg : *params.segments) {
+      EXTENSION_FUNCTION_VALIDATE(segments_arg.style !=
+                                  input_ime::UNDERLINE_STYLE_NONE);
+      InputMethodEngineBase::SegmentInfo segment_info;
+      segment_info.start = segments_arg.start;
+      segment_info.end = segments_arg.end;
+      if (segments_arg.style == input_ime::UNDERLINE_STYLE_UNDERLINE) {
+        segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+      } else if (segments_arg.style ==
+                 input_ime::UNDERLINE_STYLE_DOUBLEUNDERLINE) {
+        segment_info.style =
+            InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
+      } else {
+        segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_NO_UNDERLINE;
       }
+      segments.push_back(segment_info);
     }
-    int selection_start =
-        params.selection_start ? *params.selection_start : params.cursor;
-    int selection_end =
-        params.selection_end ? *params.selection_end : params.cursor;
-    std::string error;
-    if (!engine->SetComposition(params.context_id, params.text.c_str(),
-                                selection_start, selection_end, params.cursor,
-                                segments, &error)) {
-      std::unique_ptr<base::ListValue> results =
-          std::make_unique<base::ListValue>();
-      results->Append(std::make_unique<base::Value>(false));
-      return RespondNow(ErrorWithArguments(std::move(results), error));
-    }
+  }
+  int selection_start =
+      params.selection_start ? *params.selection_start : params.cursor;
+  int selection_end =
+      params.selection_end ? *params.selection_end : params.cursor;
+  if (!engine->SetComposition(params.context_id, params.text.c_str(),
+                              selection_start, selection_end, params.cursor,
+                              segments, &error)) {
+    std::unique_ptr<base::ListValue> results =
+        std::make_unique<base::ListValue>();
+    results->Append(std::make_unique<base::Value>(false));
+    return RespondNow(ErrorWithArguments(
+        std::move(results), InformativeError(error, function_name())));
   }
   return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
-  InputMethodEngineBase* engine =
-      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
-  if (engine) {
-    std::unique_ptr<CommitText::Params> parent_params(
-        CommitText::Params::Create(*args_));
-    const CommitText::Params::Parameters& params = parent_params->parameters;
-    std::string error;
-    if (!engine->CommitText(params.context_id, params.text.c_str(), &error)) {
-      std::unique_ptr<base::ListValue> results =
-          std::make_unique<base::ListValue>();
-      results->Append(std::make_unique<base::Value>(false));
-      return RespondNow(ErrorWithArguments(std::move(results), error));
-    }
+  std::string error;
+  InputMethodEngineBase* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(InformativeError(error, function_name())));
+
+  std::unique_ptr<CommitText::Params> parent_params(
+      CommitText::Params::Create(*args_));
+  const CommitText::Params::Parameters& params = parent_params->parameters;
+  if (!engine->CommitText(params.context_id, params.text.c_str(), &error)) {
+    std::unique_ptr<base::ListValue> results =
+        std::make_unique<base::ListValue>();
+    results->Append(std::make_unique<base::Value>(false));
+    return RespondNow(ErrorWithArguments(
+        std::move(results), InformativeError(error, function_name())));
   }
   return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
-  InputMethodEngineBase* engine =
-      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
+  std::string error;
+  InputMethodEngineBase* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id(), &error);
   if (!engine)
-    return RespondNow(Error(kInputImeApiErrorEngineNotAvailable));
+    return RespondNow(Error(InformativeError(error, function_name())));
 
   std::unique_ptr<SendKeyEvents::Params> parent_params(
       SendKeyEvents::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(parent_params);
   const SendKeyEvents::Params::Parameters& params = parent_params->parameters;
-  std::vector<InputMethodEngineBase::KeyboardEvent> key_data_out;
 
+  std::vector<InputMethodEngineBase::KeyboardEvent> key_data_out;
+  key_data_out.reserve(params.key_data.size());
   for (const auto& key_event : params.key_data) {
-    key_data_out.push_back(InputMethodEngineBase::KeyboardEvent());
+    key_data_out.emplace_back();
     InputMethodEngineBase::KeyboardEvent& event = key_data_out.back();
     event.type = input_ime::ToString(key_event.type);
     event.key = key_event.key;
     event.code = key_event.code;
     event.key_code = key_event.key_code.get() ? *(key_event.key_code) : 0;
     event.alt_key = key_event.alt_key ? *(key_event.alt_key) : false;
+    event.altgr_key = key_event.altgr_key ? *(key_event.altgr_key) : false;
     event.ctrl_key = key_event.ctrl_key ? *(key_event.ctrl_key) : false;
     event.shift_key = key_event.shift_key ? *(key_event.shift_key) : false;
     event.caps_lock = key_event.caps_lock ? *(key_event.caps_lock) : false;
   }
   if (!engine->SendKeyEvents(params.context_id, key_data_out))
-    return RespondNow(Error(kInputImeApiErrorSetKeyEventsFail));
+    return RespondNow(
+        Error(InformativeError(kErrorSetKeyEventsFail, function_name())));
   return RespondNow(NoArguments());
 }
 
 InputImeAPI::InputImeAPI(content::BrowserContext* context)
-    : browser_context_(context), extension_registry_observer_(this) {
+    : browser_context_(context) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 
   EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, input_ime::OnFocus::kEventName);
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::NotificationService::AllSources());
-}
-
-void InputImeAPI::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
-  extensions::InputImeEventRouterFactory::GetInstance()->RemoveProfile(
-      content::Source<Profile>(source).ptr());
 }
 
 InputImeAPI::~InputImeAPI() = default;
 
 void InputImeAPI::Shutdown() {
+  extension_registry_observer_.RemoveAll();
+  InputImeEventRouterFactory::GetInstance()->RemoveProfile(
+      Profile::FromBrowserContext(browser_context_));
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
-  registrar_.RemoveAll();
   if (observer_ && ui::IMEBridge::Get()) {
     ui::IMEBridge::Get()->RemoveObserver(observer_.get());
   }
@@ -458,8 +456,12 @@ BrowserContextKeyedAPIFactory<InputImeAPI>* InputImeAPI::GetFactoryInstance() {
 InputImeEventRouter* GetInputImeEventRouter(Profile* profile) {
   if (!profile)
     return nullptr;
-  return extensions::InputImeEventRouterFactory::GetInstance()->GetRouter(
-      profile);
+  return InputImeEventRouterFactory::GetInstance()->GetRouter(profile);
+}
+
+std::string InformativeError(const std::string& error,
+                             const char* function_name) {
+  return base::StringPrintf("%s\nThrown by %s", error.c_str(), function_name);
 }
 
 }  // namespace extensions

@@ -14,11 +14,12 @@
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/login_types.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -31,13 +32,14 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/session_manager/session_manager_types.h"
-#include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/size.h"
@@ -90,8 +92,11 @@ constexpr int kAccessCodeBetweenInputFieldsGapDp = 4;
 constexpr int kArrowButtonSizeDp = 40;
 constexpr int kArrowSizeDp = 20;
 
+constexpr int kAlpha70Percent = 178;
+constexpr int kAlpha74Percent = 189;
+
 constexpr SkColor kTextColor = SK_ColorWHITE;
-constexpr SkColor kErrorColor = SkColorSetARGB(0xFF, 0xF2, 0x8B, 0x82);
+constexpr SkColor kErrorColor = gfx::kGoogleRed300;
 constexpr SkColor kArrowButtonColor = SkColorSetARGB(0x2B, 0xFF, 0xFF, 0xFF);
 
 bool IsTabletMode() {
@@ -231,7 +236,7 @@ class ParentAccessView::FocusableLabelButton : public views::LabelButton {
                        const base::string16& text)
       : views::LabelButton(listener, text) {
     SetInstallFocusRingOnFocus(true);
-    focus_ring()->SetColor(kShelfFocusBorderColor);
+    focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
   }
   ~FocusableLabelButton() override = default;
 
@@ -373,6 +378,10 @@ class ParentAccessView::AccessCodeInput : public views::View,
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override {
     if (key_event.type() != ui::ET_KEY_PRESSED)
+      return false;
+
+    // Default handling for events with Alt modifier like spoken feedback.
+    if (key_event.IsAltDown())
       return false;
 
     // AccessCodeInput class responds to limited subset of key press events.
@@ -543,6 +552,26 @@ constexpr char ParentAccessView::kUMAParentAccessCodeAction[];
 // static
 constexpr char ParentAccessView::kUMAParentAccessCodeUsage[];
 
+// static
+SkColor ParentAccessView::GetChildUserDialogColor(bool using_blur) {
+  SkColor color = AshColorProvider::Get()->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kOpaque,
+      AshColorProvider::AshColorMode::kDark);
+
+  SkColor extracted_color =
+      Shell::Get()->wallpaper_controller()->GetProminentColor(
+          color_utils::ColorProfile(color_utils::LumaRange::DARK,
+                                    color_utils::SaturationRange::MUTED));
+
+  if (extracted_color != kInvalidWallpaperColor &&
+      extracted_color != SK_ColorTRANSPARENT) {
+    color = color_utils::GetResultingPaintColor(
+        SkColorSetA(SK_ColorBLACK, kAlpha70Percent), extracted_color);
+  }
+
+  return using_blur ? SkColorSetA(color, kAlpha74Percent) : color;
+}
+
 ParentAccessView::ParentAccessView(const AccountId& account_id,
                                    const Callbacks& callbacks,
                                    ParentAccessRequestReason reason,
@@ -566,6 +595,9 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   SetPreferredSize(GetParentAccessViewSize());
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetRoundedCornerRadius(
+      gfx::RoundedCornersF(kParentAccessViewRoundedCornerRadiusDp));
+  layer()->SetBackgroundBlur(ShelfConfig::Get()->shelf_blur_radius());
 
   const int child_view_width =
       kParentAccessViewWidthDp - 2 * kParentAccessViewHorizontalInsetDp;
@@ -613,7 +645,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
     label->SetSubpixelRenderingEnabled(false);
     label->SetAutoColorReadabilityEnabled(false);
     label->SetEnabledColor(kTextColor);
-    label->SetFocusBehavior(FocusBehavior::ALWAYS);
+    label->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   };
 
   // Main view title.
@@ -722,22 +754,9 @@ ParentAccessView::~ParentAccessView() = default;
 void ParentAccessView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
-  SkColor color = gfx::kGoogleGrey900;
-  if (Shell::Get()->session_controller()->GetSessionState() !=
-      session_manager::SessionState::ACTIVE) {
-    SkColor extracted_color =
-        Shell::Get()->wallpaper_controller()->GetProminentColor(
-            color_utils::ColorProfile(color_utils::LumaRange::NORMAL,
-                                      color_utils::SaturationRange::MUTED));
-    if (extracted_color != kInvalidWallpaperColor &&
-        extracted_color != SK_ColorTRANSPARENT) {
-      color = extracted_color;
-    }
-  }
-
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(color);
+  flags.setColor(GetChildUserDialogColor(true));
   canvas->DrawRoundRect(GetContentsBounds(),
                         kParentAccessViewRoundedCornerRadiusDp, flags);
 }
@@ -843,6 +862,7 @@ void ParentAccessView::UpdateState(State state) {
       title_label_->SetEnabledColor(kErrorColor);
       title_label_->SetText(
           l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_ERROR));
+      title_label_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
       return;
     }
   }

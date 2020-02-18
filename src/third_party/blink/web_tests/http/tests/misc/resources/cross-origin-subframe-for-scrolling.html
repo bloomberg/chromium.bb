@@ -11,7 +11,6 @@ window.onload = (() => {
   	return;
   }
   internals.settings.setScrollAnimatorEnabled(true);
-  internals.settings.setMockScrollbarsEnabled(true);
 });
 
 function handleMessage(event) {
@@ -33,6 +32,10 @@ function handleMessage(event) {
 window.onscroll = (() => {
   if (port) {
     port.postMessage({scrolled: frame_id, scrollTop: document.documentElement.scrollTop}, "*");
+  } else{
+    // If parent is performing middle click autoscroll on iframe, send the
+    // scrollTop data back to parent.
+    parent.postMessage({scrolled: frame_id, scrollTop: document.documentElement.scrollTop}, "*");
   }
 });
 

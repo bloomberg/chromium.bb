@@ -85,7 +85,6 @@
   },
   "WebRTC Chromium Linux Builder": {
     "additional_compile_targets": [
-      "frame_analyzer",
       "jingle_unittests",
       "remoting_unittests"
     ]
@@ -192,7 +191,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -264,7 +264,6 @@
   },
   "WebRTC Chromium Mac Builder": {
     "additional_compile_targets": [
-      "frame_analyzer",
       "jingle_unittests",
       "remoting_unittests"
     ]
@@ -351,7 +350,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -403,7 +403,6 @@
   },
   "WebRTC Chromium Win Builder": {
     "additional_compile_targets": [
-      "frame_analyzer",
       "jingle_unittests",
       "remoting_unittests"
     ]
@@ -490,7 +489,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -622,7 +622,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],
@@ -754,7 +755,8 @@
         "args": [
           "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
           "--run-manual",
-          "--ui-test-action-max-timeout=120000"
+          "--ui-test-action-max-timeout=110000",
+          "--test-launcher-timeout=120000"
         ],
         "merge": {
           "args": [],

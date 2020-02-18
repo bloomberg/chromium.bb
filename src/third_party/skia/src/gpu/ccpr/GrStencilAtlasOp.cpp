@@ -10,6 +10,7 @@
 #include "include/private/GrRecordingContext.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsRenderPass.h"
+#include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/ccpr/GrCCPerFlushResources.h"
 #include "src/gpu/ccpr/GrSampleMaskProcessor.h"
@@ -20,7 +21,7 @@ namespace {
 
 class StencilResolveProcessor : public GrGeometryProcessor {
 public:
-    StencilResolveProcessor() : GrGeometryProcessor(kStencilResolveProcessor_ClassID) {
+    StencilResolveProcessor() : INHERITED(kStencilResolveProcessor_ClassID) {
         static constexpr Attribute kIBounds = {
                 "ibounds", kShort4_GrVertexAttribType, kShort4_GrSLType};
         this->setInstanceAttributes(&kIBounds, 1);
@@ -28,10 +29,12 @@ public:
     }
 
 private:
-    const char* name() const override { return "GrCCPathProcessor"; }
-    void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override {}
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override;
+    const char* name() const final { return "StencilResolveProcessor"; }
+    void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const final {}
+    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const final;
     class Impl;
+
+    typedef GrGeometryProcessor INHERITED;
 };
 
 // This processor draws pixel-aligned rectangles directly on top of every path in the atlas.
@@ -56,7 +59,7 @@ class StencilResolveProcessor::Impl : public GrGLSLGeometryProcessor {
     }
 
     void setData(const GrGLSLProgramDataManager&, const GrPrimitiveProcessor&,
-                 FPCoordTransformIter&&) override {}
+                 const CoordTransformRange&) override {}
 };
 
 GrGLSLPrimitiveProcessor* StencilResolveProcessor::createGLSLInstance(const GrShaderCaps&) const {
@@ -88,12 +91,26 @@ static constexpr GrUserStencilSettings kIncrDecrStencil(
         0xffff,                        0xffff>()
 );
 
-// Resolves stencil winding counts to A8 coverage and resets stencil values to zero.
+// Resolves stencil winding counts to A8 coverage. Leaves stencil values untouched.
+// NOTE: For the CCW face we intentionally use "1 == (stencil & 1)" because the contrapositive logic
+// (i.e. 0 != ...) causes bugs on Adreno Vulkan. http://skbug.com/9643
+static constexpr GrUserStencilSettings kResolveStencilCoverage(
+    GrUserStencilSettings::StaticInitSeparate<
+        0x0000,                           0x0001,
+        GrUserStencilTest::kNotEqual,     GrUserStencilTest::kEqual,
+        0xffff,                           0x0001,
+        GrUserStencilOp::kKeep,           GrUserStencilOp::kKeep,
+        GrUserStencilOp::kKeep,           GrUserStencilOp::kKeep,
+        0xffff,                           0xffff>()
+);
+
+// Same as above, but also resets stencil values to zero. This is better for non-tilers
+// where we prefer to not clear the stencil buffer at the beginning of every render pass.
 static constexpr GrUserStencilSettings kResolveStencilCoverageAndReset(
     GrUserStencilSettings::StaticInitSeparate<
         0x0000,                           0x0000,
         GrUserStencilTest::kNotEqual,     GrUserStencilTest::kNotEqual,
-        0xffff,                           0x1,
+        0xffff,                           0x0001,
         GrUserStencilOp::kZero,           GrUserStencilOp::kZero,
         GrUserStencilOp::kKeep,           GrUserStencilOp::kKeep,
         0xffff,                           0xffff>()
@@ -104,7 +121,7 @@ void GrStencilAtlasOp::onExecute(GrOpFlushState* flushState, const SkRect& chain
 
     GrPipeline pipeline(
             GrScissorTest::kEnabled, GrDisableColorXPFactory::MakeXferProcessor(),
-            flushState->drawOpArgs().fOutputSwizzle, GrPipeline::InputFlags::kHWAntialias,
+            flushState->drawOpArgs().outputSwizzle(), GrPipeline::InputFlags::kHWAntialias,
             &kIncrDecrStencil);
 
     GrSampleMaskProcessor sampleMaskProc;
@@ -119,17 +136,33 @@ void GrStencilAtlasOp::onExecute(GrOpFlushState* flushState, const SkRect& chain
     // not necessary, and will even cause artifacts if using mixed samples.
     constexpr auto noHWAA = GrPipeline::InputFlags::kNone;
 
-    GrPipeline resolvePipeline(
-            GrScissorTest::kEnabled, SkBlendMode::kSrc, flushState->drawOpArgs().fOutputSwizzle,
-            noHWAA, &kResolveStencilCoverageAndReset);
+    const auto* stencilResolveSettings = (flushState->caps().discardStencilValuesAfterRenderPass())
+            // The next draw will be the final op in the renderTargetContext. So if Ganesh is
+            // planning to discard the stencil values anyway, we don't actually need to reset them
+            // back to zero.
+            ? &kResolveStencilCoverage
+            : &kResolveStencilCoverageAndReset;
+
+    GrPipeline resolvePipeline(GrScissorTest::kEnabled, SkBlendMode::kSrc,
+                               flushState->drawOpArgs().outputSwizzle(), noHWAA,
+                               stencilResolveSettings);
     GrPipeline::FixedDynamicState scissorRectState(drawBoundsRect);
 
     GrMesh mesh(GrPrimitiveType::kTriangleStrip);
-    mesh.setInstanced(
-            fResources->refStencilResolveBuffer(),
-            fEndStencilResolveInstance - fBaseStencilResolveInstance, fBaseStencilResolveInstance,
-            4);
-    flushState->opsRenderPass()->draw(
-            StencilResolveProcessor(), resolvePipeline, &scissorRectState, nullptr, &mesh, 1,
-            SkRect::Make(drawBoundsRect));
+    mesh.setInstanced(fResources->refStencilResolveBuffer(),
+                      fEndStencilResolveInstance - fBaseStencilResolveInstance,
+                      fBaseStencilResolveInstance, 4);
+
+    StencilResolveProcessor primProc;
+
+    GrProgramInfo programInfo(flushState->proxy()->numSamples(),
+                              flushState->proxy()->numStencilSamples(),
+                              flushState->proxy()->backendFormat(),
+                              flushState->view()->origin(),
+                              &resolvePipeline,
+                              &primProc,
+                              &scissorRectState,
+                              nullptr, 0, GrPrimitiveType::kTriangleStrip);
+
+    flushState->opsRenderPass()->draw(programInfo, &mesh, 1, SkRect::Make(drawBoundsRect));
 }

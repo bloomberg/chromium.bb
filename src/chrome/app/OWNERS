@@ -6,7 +6,6 @@
 
 cpu@chromium.org
 grt@chromium.org
-jcivelli@chromium.org
 rockot@google.com
 
 per-file bookmarks_strings.grdp=*
@@ -18,6 +17,8 @@ per-file extensions_strings.grdp=*
 per-file os_settings_strings.grdp=*
 
 per-file app_management_strings.grdp=file://chrome/browser/ui/webui/app_management/OWNERS
+
+per-file web_time_limit_error_page_strings.grdp=file://chrome/browser/chromeos/child_accounts/OWNERS
 
 per-file global_media_controls_strings.grdp=file://chrome/browser/ui/global_media_controls/OWNERS
 
@@ -61,11 +62,3 @@ per-file chrome_content_browser_overlay_manifest.cc=set noparent
 per-file chrome_content_browser_overlay_manifest.cc=file://ipc/SECURITY_OWNERS
 per-file chrome_content_browser_overlay_manifest.h=set noparent
 per-file chrome_content_browser_overlay_manifest.h=file://ipc/SECURITY_OWNERS
-per-file chrome_content_gpu_overlay_manifest.cc=set noparent
-per-file chrome_content_gpu_overlay_manifest.cc=file://ipc/SECURITY_OWNERS
-per-file chrome_content_gpu_overlay_manifest.h=set noparent
-per-file chrome_content_gpu_overlay_manifest.h=file://ipc/SECURITY_OWNERS
-per-file chrome_content_renderer_overlay_manifest.cc=set noparent
-per-file chrome_content_renderer_overlay_manifest.cc=file://ipc/SECURITY_OWNERS
-per-file chrome_content_renderer_overlay_manifest.h=set noparent
-per-file chrome_content_renderer_overlay_manifest.h=file://ipc/SECURITY_OWNERS

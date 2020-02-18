@@ -30,8 +30,6 @@ Polymer({
 
     showApps: Boolean,
 
-    showAndroidApps: Boolean,
-
     showCrostini: Boolean,
 
     showReset: Boolean,
@@ -40,12 +38,12 @@ Polymer({
 
   /** @param {!settings.Route} newRoute */
   currentRouteChanged: function(newRoute) {
-    const currentPath = newRoute.path;
-
     // Focus the initially selected path.
     const anchors = this.root.querySelectorAll('a');
     for (let i = 0; i < anchors.length; ++i) {
-      if (anchors[i].getAttribute('href') == currentPath) {
+      const anchorRoute =
+          settings.router.getRouteForPath(anchors[i].getAttribute('href'));
+      if (anchorRoute && anchorRoute.contains(newRoute)) {
         this.setSelectedUrl_(anchors[i].href);
         return;
       }
@@ -86,12 +84,6 @@ Polymer({
    */
   onSelectorActivate_: function(event) {
     this.setSelectedUrl_(event.detail.selected);
-
-    const path = new URL(event.detail.selected).pathname;
-    const route = settings.getRouteForPath(path);
-    assert(route, 'os-settings-menu has an entry with an invalid route.');
-    settings.navigateTo(
-        route, /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   /**
@@ -107,5 +99,14 @@ Polymer({
   isAdvancedSubmenuOpenedForTest: function() {
     const submenu = /** @type {IronCollapseElement} */ (this.$.advancedSubmenu);
     return submenu.opened;
+  },
+
+  /**
+   * @param {boolean} bool
+   * @return {string}
+   * @private
+   */
+  boolToString_: function(bool) {
+    return bool.toString();
   },
 });

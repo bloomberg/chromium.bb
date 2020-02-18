@@ -28,32 +28,33 @@ CXFA_FFCheckButton::CXFA_FFCheckButton(CXFA_Node* pNode,
                                        CXFA_CheckButton* button)
     : CXFA_FFField(pNode), button_(button) {}
 
-CXFA_FFCheckButton::~CXFA_FFCheckButton() {}
+CXFA_FFCheckButton::~CXFA_FFCheckButton() = default;
 
 bool CXFA_FFCheckButton::LoadWidget() {
+  ASSERT(!IsLoaded());
   auto pNew = pdfium::MakeUnique<CFWL_CheckBox>(GetFWLApp());
   CFWL_CheckBox* pCheckBox = pNew.get();
-  m_pNormalWidget = std::move(pNew);
-  m_pNormalWidget->SetFFWidget(this);
+  SetNormalWidget(std::move(pNew));
+  pCheckBox->SetFFWidget(this);
 
-  CFWL_NoteDriver* pNoteDriver =
-      m_pNormalWidget->GetOwnerApp()->GetNoteDriver();
-  pNoteDriver->RegisterEventTarget(m_pNormalWidget.get(),
-                                   m_pNormalWidget.get());
-  m_pOldDelegate = m_pNormalWidget->GetDelegate();
-  m_pNormalWidget->SetDelegate(this);
+  CFWL_NoteDriver* pNoteDriver = pCheckBox->GetOwnerApp()->GetNoteDriver();
+  pNoteDriver->RegisterEventTarget(pCheckBox, pCheckBox);
+  m_pOldDelegate = pCheckBox->GetDelegate();
+  pCheckBox->SetDelegate(this);
   if (m_pNode->IsRadioButton())
     pCheckBox->ModifyStylesEx(FWL_STYLEEXT_CKB_RadioButton, 0xFFFFFFFF);
 
-  m_pNormalWidget->LockUpdate();
-  UpdateWidgetProperty();
-  SetFWLCheckState(m_pNode->GetCheckState());
-  m_pNormalWidget->UnlockUpdate();
+  {
+    CFWL_Widget::ScopedUpdateLock update_lock(pCheckBox);
+    UpdateWidgetProperty();
+    SetFWLCheckState(m_pNode->GetCheckState());
+  }
+
   return CXFA_FFField::LoadWidget();
 }
 
 void CXFA_FFCheckButton::UpdateWidgetProperty() {
-  auto* pCheckBox = static_cast<CFWL_CheckBox*>(m_pNormalWidget.get());
+  auto* pCheckBox = static_cast<CFWL_CheckBox*>(GetNormalWidget());
   if (!pCheckBox)
     return;
 
@@ -183,8 +184,8 @@ bool CXFA_FFCheckButton::PerformLayout() {
   m_rtUI.Normalize();
   LayoutCaption();
   SetFWLRect();
-  if (m_pNormalWidget)
-    m_pNormalWidget->Update();
+  if (GetNormalWidget())
+    GetNormalWidget()->Update();
 
   return true;
 }
@@ -241,24 +242,24 @@ void CXFA_FFCheckButton::RenderWidget(CXFA_Graphics* pGS,
                 button_->IsRound() ? kRoundShape : kSquareShape);
   CFX_Matrix mt(1, 0, 0, 1, m_rtCheckBox.left, m_rtCheckBox.top);
   mt.Concat(mtRotate);
-  GetApp()->GetFWLWidgetMgr()->OnDrawWidget(m_pNormalWidget.get(), pGS, mt);
+  GetApp()->GetFWLWidgetMgr()->OnDrawWidget(GetNormalWidget(), pGS, mt);
 }
 
 bool CXFA_FFCheckButton::OnLButtonUp(uint32_t dwFlags,
                                      const CFX_PointF& point) {
-  if (!m_pNormalWidget || !IsButtonDown())
+  if (!GetNormalWidget() || !IsButtonDown())
     return false;
 
   SetButtonDown(false);
   SendMessageToFWLWidget(pdfium::MakeUnique<CFWL_MessageMouse>(
-      m_pNormalWidget.get(), FWL_MouseCommand::LeftButtonUp, dwFlags,
+      GetNormalWidget(), FWL_MouseCommand::LeftButtonUp, dwFlags,
       FWLToClient(point)));
 
   return true;
 }
 
 XFA_CHECKSTATE CXFA_FFCheckButton::FWLState2XFAState() {
-  uint32_t dwState = m_pNormalWidget->GetStates();
+  uint32_t dwState = GetNormalWidget()->GetStates();
   if (dwState & FWL_STATE_CKB_Checked)
     return XFA_CHECKSTATE_On;
   if (dwState & FWL_STATE_CKB_Neutral)
@@ -279,20 +280,20 @@ bool CXFA_FFCheckButton::IsDataChanged() {
 
 void CXFA_FFCheckButton::SetFWLCheckState(XFA_CHECKSTATE eCheckState) {
   if (eCheckState == XFA_CHECKSTATE_Neutral)
-    m_pNormalWidget->SetStates(FWL_STATE_CKB_Neutral);
+    GetNormalWidget()->SetStates(FWL_STATE_CKB_Neutral);
   else if (eCheckState == XFA_CHECKSTATE_On)
-    m_pNormalWidget->SetStates(FWL_STATE_CKB_Checked);
+    GetNormalWidget()->SetStates(FWL_STATE_CKB_Checked);
   else
-    m_pNormalWidget->RemoveStates(FWL_STATE_CKB_Checked);
+    GetNormalWidget()->RemoveStates(FWL_STATE_CKB_Checked);
 }
 
 bool CXFA_FFCheckButton::UpdateFWLData() {
-  if (!m_pNormalWidget)
+  if (!GetNormalWidget())
     return false;
 
   XFA_CHECKSTATE eState = m_pNode->GetCheckState();
   SetFWLCheckState(eState);
-  m_pNormalWidget->Update();
+  GetNormalWidget()->Update();
   return true;
 }
 

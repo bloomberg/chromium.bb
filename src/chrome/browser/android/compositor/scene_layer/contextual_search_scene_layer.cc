@@ -115,7 +115,6 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jboolean search_caption_visible,
     jboolean search_bar_border_visible,
     jfloat search_bar_border_height,
-    jboolean search_bar_shadow_visible,
     jboolean quick_action_icon_visible,
     jboolean thumbnail_visible,
     jstring j_thumbnail_url,
@@ -129,7 +128,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jboolean progress_bar_visible,
     jfloat progress_bar_height,
     jfloat progress_bar_opacity,
-    jint progress_bar_completion,
+    jfloat progress_bar_completion,
     jfloat divider_line_visibility_percentage,
     jfloat divider_line_width,
     jfloat divider_line_height,
@@ -186,8 +185,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       search_text_layer_min_height, search_term_opacity,
       search_term_caption_spacing, search_caption_animation_percentage,
       search_caption_visible, search_bar_border_visible,
-      search_bar_border_height, search_bar_shadow_visible,
-      quick_action_icon_visible, thumbnail_visible,
+      search_bar_border_height, quick_action_icon_visible, thumbnail_visible,
       custom_image_visibility_percentage, bar_image_size, icon_color,
       drag_handlebar_color, arrow_icon_opacity, arrow_icon_rotation,
       close_icon_opacity, progress_bar_visible, progress_bar_height,
@@ -217,7 +215,7 @@ void ContextualSearchSceneLayer::FetchThumbnail(
   fetcher_->Init(
       std::string(),
       net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
-      net::LOAD_NORMAL);
+      network::mojom::CredentialsMode::kInclude);
   fetcher_->Start(loader_factory);
 }
 

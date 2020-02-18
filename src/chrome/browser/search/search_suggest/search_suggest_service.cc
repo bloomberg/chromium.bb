@@ -8,12 +8,15 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
 #include "chrome/common/pref_names.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -92,6 +95,20 @@ class SearchSuggestService::SigninObserver
   signin::IdentityManager* const identity_manager_;
   SigninStatusChangedCallback callback_;
 };
+
+// static
+bool SearchSuggestService::IsEnabled() {
+  return !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP) &&
+         !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox) &&
+         !(base::FeatureList::IsEnabled(omnibox::kOnFocusSuggestions) &&
+           (!OmniboxFieldTrial::GetZeroSuggestVariants(
+                 metrics::OmniboxEventProto::NTP_REALBOX)
+                 .empty() ||
+            !OmniboxFieldTrial::GetZeroSuggestVariants(
+                 metrics::OmniboxEventProto::
+                     INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS)
+                 .empty()));
+}
 
 SearchSuggestService::SearchSuggestService(
     Profile* profile,
@@ -297,7 +314,7 @@ void SearchSuggestService::BlocklistSearchSuggestionWithHash(
   base::Value* value = blocklist->FindKey(task_version_id);
   if (!value)
     value = blocklist->SetKey(task_version_id, base::ListValue());
-  value->GetList().emplace_back(base::Value(hash_string));
+  value->Append(base::Value(hash_string));
 
   search_suggest_data_ = base::nullopt;
   Refresh();

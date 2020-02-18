@@ -50,6 +50,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_error_event.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_task_runner.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -65,7 +67,6 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
-#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
@@ -77,7 +78,6 @@
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
 
@@ -264,7 +264,8 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
     // Try to get the stack & location from a wrapped exception object (e.g.
     // DOMException).
     DCHECK(exception->IsObject());
-    auto private_error = V8PrivateProperty::GetDOMExceptionError(isolate);
+    auto private_error = V8PrivateProperty::GetSymbol(
+        isolate, kPrivatePropertyDOMExceptionError);
     v8::Local<v8::Value> error;
     if (private_error.GetOrUndefined(exception.As<v8::Object>())
             .ToLocal(&error) &&
@@ -374,65 +375,73 @@ static bool ContentSecurityPolicyCodeGenerationCheck(
                             static_cast<size_t>(source_str.length()));
       memcpy(snippet, *source_str, len * sizeof(UChar));
       snippet[len] = 0;
-      return policy->AllowEval(
-          ScriptState::From(context), SecurityViolationReportingPolicy::kReport,
-          ContentSecurityPolicy::kWillThrowException, snippet);
+      return policy->AllowEval(SecurityViolationReportingPolicy::kReport,
+                               ContentSecurityPolicy::kWillThrowException,
+                               snippet);
     }
   }
   return false;
 }
 
-static v8::MaybeLocal<v8::String> TrustedTypesCodeGenerationCheck(
-    v8::Local<v8::Context> context,
-    v8::Local<v8::Value> source) {
-  ExceptionState exception_state(context->GetIsolate(),
-                                 ExceptionState::kExecutionContext, "eval", "");
+static std::pair<bool, v8::MaybeLocal<v8::String>>
+TrustedTypesCodeGenerationCheck(v8::Local<v8::Context> context,
+                                v8::Local<v8::Value> source) {
+  v8::Isolate* isolate = context->GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
+                                 "eval", "");
+
+  // If the input is not a string or TrustedScript, pass it through.
+  if (!source->IsString() && !V8TrustedScript::HasInstance(source, isolate)) {
+    return {true, v8::MaybeLocal<v8::String>()};
+  }
+
   StringOrTrustedScript string_or_trusted_script;
   V8StringOrTrustedScript::ToImpl(
       context->GetIsolate(), source, string_or_trusted_script,
       UnionTypeConversionMode::kNotNullable, exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    // The input was a string or TrustedScript but the conversion failed.
+    // Block, just in case.
+    return {false, v8::MaybeLocal<v8::String>()};
+  }
 
-  String modified_source = GetStringFromTrustedScript(
+  String stringified_source = GetStringFromTrustedScript(
       string_or_trusted_script, ToExecutionContext(context), exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
-    return v8::MaybeLocal<v8::String>();
+    return {false, v8::MaybeLocal<v8::String>()};
   }
 
-  return V8String(context->GetIsolate(), modified_source);
+  return {true, V8String(context->GetIsolate(), stringified_source)};
 }
 
-static v8::MaybeLocal<v8::String> CodeGenerationCheckCallbackInMainThread(
-    v8::Local<v8::Context> context,
-    v8::Local<v8::Value> source) {
-  // Without trusted types, we decide based on CSP.
-  if (!RequireTrustedTypesCheck(ToExecutionContext(context))) {
-    bool allowed_by_csp =
-        source->IsString() && ContentSecurityPolicyCodeGenerationCheck(
-                                  context, source.As<v8::String>());
-    return allowed_by_csp ? source.As<v8::String>()
-                          : v8::MaybeLocal<v8::String>();
+static v8::ModifyCodeGenerationFromStringsResult
+CodeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> context,
+                                        v8::Local<v8::Value> source) {
+  // With Trusted Types, we always run the TT check first because of reporting,
+  // and because a default policy might want to stringify or modify the original
+  // source. When TT enforcement is disabled, codegen is always allowed, and we
+  // just use the check to stringify any trusted type source.
+  bool codegen_allowed_by_tt = false;
+  v8::MaybeLocal<v8::String> stringified_source;
+  std::tie(codegen_allowed_by_tt, stringified_source) =
+      TrustedTypesCodeGenerationCheck(context, source);
+
+  if (!codegen_allowed_by_tt) {
+    return {false, v8::MaybeLocal<v8::String>()};
   }
 
-  // With Trusted Types, we pass when both CSP and TT allow the value.
-  // We will always run the TT check because of reporting, and because a
-  // default policy might want to modify the string.
-  v8::Local<v8::String> trusted_types_string;
-  if (TrustedTypesCodeGenerationCheck(context, source)
-          .ToLocal(&trusted_types_string) &&
-      ContentSecurityPolicyCodeGenerationCheck(context, trusted_types_string)) {
-    return trusted_types_string;
+  if (stringified_source.IsEmpty()) {
+    return {true, v8::MaybeLocal<v8::String>()};
   }
 
-  // TODO(ssanfilippo) returning an empty local covers two different messages:
-  //
-  //  * The source was not a string or TrustedScript.
-  //  * TT or CSP has rejected this source.
-  //
-  // We need to patch the V8 callback to differentiate these two. For now,
-  // rejected TSs are passed through. CSP reports are still sent as side-effect.
-  // See crbug.com/992424.
-  return v8::MaybeLocal<v8::String>();
+  if (!ContentSecurityPolicyCodeGenerationCheck(
+          context, stringified_source.ToLocalChecked())) {
+    return {false, v8::MaybeLocal<v8::String>()};
+  }
+
+  return {true, std::move(stringified_source)};
 }
 
 static bool WasmCodeGenerationCheckCallbackInMainThread(
@@ -450,12 +459,10 @@ static bool WasmCodeGenerationCheckCallbackInMainThread(
       // Wasm code generation is allowed if we have either the wasm-eval
       // directive or the unsafe-eval directive. However, we only recognize
       // wasm-eval for certain schemes
-      return policy->AllowWasmEval(ScriptState::From(context),
-                                   SecurityViolationReportingPolicy::kReport,
+      return policy->AllowWasmEval(SecurityViolationReportingPolicy::kReport,
                                    ContentSecurityPolicy::kWillThrowException,
                                    snippet) ||
-             policy->AllowEval(ScriptState::From(context),
-                               SecurityViolationReportingPolicy::kReport,
+             policy->AllowEval(SecurityViolationReportingPolicy::kReport,
                                ContentSecurityPolicy::kWillThrowException,
                                snippet);
     }
@@ -638,42 +645,24 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   // should respond by throwing a RangeError, per
   // http://www.ecma-international.org/ecma-262/6.0/#sec-createbytedatablock.
   void* Allocate(size_t size) override {
-    return WTF::ArrayBufferContents::AllocateMemoryOrNull(
-        size, WTF::ArrayBufferContents::kZeroInitialize);
+    return ArrayBufferContents::AllocateMemoryOrNull(
+        size, ArrayBufferContents::kZeroInitialize);
   }
 
   void* AllocateUninitialized(size_t size) override {
-    return WTF::ArrayBufferContents::AllocateMemoryOrNull(
-        size, WTF::ArrayBufferContents::kDontInitialize);
+    return ArrayBufferContents::AllocateMemoryOrNull(
+        size, ArrayBufferContents::kDontInitialize);
   }
 
   void Free(void* data, size_t size) override {
-    WTF::ArrayBufferContents::FreeMemory(data);
+    ArrayBufferContents::FreeMemory(data);
   }
 };
 
 }  // namespace
 
-static void AdjustAmountOfExternalAllocatedMemory(int64_t diff) {
-#if DCHECK_IS_ON()
-  static int64_t process_total = 0;
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
-  {
-    MutexLocker locker(mutex);
-
-    process_total += diff;
-    DCHECK_GE(process_total, 0)
-        << "total amount = " << process_total << ", diff = " << diff;
-  }
-#endif
-
-  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(diff);
-}
-
 void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   DCHECK(IsMainThread());
-
-  WTF::ArrayBufferContents::Initialize(AdjustAmountOfExternalAllocatedMemory);
 
   DEFINE_STATIC_LOCAL(ArrayBufferAllocator, array_buffer_allocator, ());
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,

@@ -22,7 +22,8 @@ import random
 import re
 import resource
 import sys
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.lib import cgroups
@@ -37,6 +38,8 @@ from chromite.lib import path_util
 from chromite.lib import process_util
 from chromite.lib import retry_util
 from chromite.lib import toolchain
+from chromite.utils import key_value_store
+
 
 cros_build_lib.STRICT_SUDO = True
 
@@ -94,30 +97,29 @@ def GetArchStageTarballs(version):
   ]
 
 
-def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
+def FetchRemoteTarballs(storage_dir, urls, desc):
   """Fetches a tarball given by url, and place it in |storage_dir|.
 
   Args:
     storage_dir: Path where to save the tarball.
     urls: List of URLs to try to download. Download will stop on first success.
     desc: A string describing what tarball we're downloading (for logging).
-    allow_none: Don't fail if none of the URLs worked.
 
   Returns:
-    Full path to the downloaded file, or None if |allow_none| and no URL worked.
+    Full path to the downloaded file.
 
   Raises:
-    ValueError: If |allow_none| is False and none of the URLs worked.
+    ValueError: None of the URLs worked.
   """
 
   # Note we track content length ourselves since certain versions of curl
   # fail if asked to resume a complete file.
   # https://sourceforge.net/tracker/?func=detail&atid=100976&aid=3482927&group_id=976
   logging.notice('Downloading %s tarball...', desc)
-  status_re = re.compile(r'^HTTP/[0-9]+(\.[0-9]+)? 200')
+  status_re = re.compile(br'^HTTP/[0-9]+(\.[0-9]+)? 200')
   # pylint: disable=undefined-loop-variable
   for url in urls:
-    parsed = urlparse.urlparse(url)
+    parsed = urllib.parse.urlparse(url)
     tarball_name = os.path.basename(parsed.path)
     if parsed.scheme in ('', 'file'):
       if os.path.exists(parsed.path):
@@ -135,15 +137,13 @@ def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
       # a proxy is involved and may have pushed down the actual header.
       if status_re.match(header):
         successful = True
-      elif header.lower().startswith('content-length:'):
-        content_length = int(header.split(':', 1)[-1].strip())
+      elif header.lower().startswith(b'content-length:'):
+        content_length = int(header.split(b':', 1)[-1].strip())
         if successful:
           break
     if successful:
       break
   else:
-    if allow_none:
-      return None
     raise ValueError('No valid URLs found!')
 
   tarball_dest = os.path.join(storage_dir, tarball_name)
@@ -200,7 +200,7 @@ def CreateChroot(chroot_path, sdk_tarball, cache_dir, nousepkg=False):
 
   logging.notice('Creating chroot. This may take a few minutes...')
   try:
-    cros_build_lib.RunCommand(cmd, print_cmd=False)
+    cros_build_lib.run(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
     raise SystemExit('Running %r failed!' % cmd)
 
@@ -210,7 +210,7 @@ def DeleteChroot(chroot_path):
   cmd = MAKE_CHROOT + ['--chroot', chroot_path, '--delete']
   try:
     logging.notice('Deleting chroot.')
-    cros_build_lib.RunCommand(cmd, print_cmd=False)
+    cros_build_lib.run(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
     raise SystemExit('Running %r failed!' % cmd)
 
@@ -240,13 +240,13 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
   if working_dir is not None:
     cmd.extend(['--working_dir', working_dir])
 
-  if len(additional_args) > 0:
+  if additional_args:
     cmd.append('--')
     cmd.extend(additional_args)
 
   # ThinLTO opens lots of files at the same time.
   resource.setrlimit(resource.RLIMIT_NOFILE, (32768, 32768))
-  ret = cros_build_lib.RunCommand(
+  ret = cros_build_lib.run(
       cmd, print_cmd=False, error_code_ok=True, mute_output=False)
   # If we were in interactive mode, ignore the exit code; it'll be whatever
   # they last ran w/in the chroot and won't matter to us one way or another.
@@ -300,7 +300,7 @@ def CreateChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   try:
     logging.notice('Creating snapshot %s from %s in VG %s.', snapshot_name,
                    chroot_lv, chroot_vg)
-    cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
+    cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
     return True
   except cros_build_lib.RunCommandError:
     raise SystemExit('Running %r failed!' % cmd)
@@ -333,7 +333,7 @@ def DeleteChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   cmd = ['lvremove', '-f', '%s/%s' % (chroot_vg, snapshot_name)]
   try:
     logging.notice('Deleting snapshot %s in VG %s.', snapshot_name, chroot_vg)
-    cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
+    cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
   except cros_build_lib.RunCommandError:
     raise SystemExit('Running %r failed!' % cmd)
 
@@ -373,17 +373,17 @@ def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   backup_chroot_name = 'chroot-bak-%d' % random.randint(0, 1000)
   cmd = ['lvrename', chroot_vg, chroot_lv, backup_chroot_name]
   try:
-    cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
+    cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
   except cros_build_lib.RunCommandError:
     raise SystemExit('Running %r failed!' % cmd)
 
   cmd = ['lvrename', chroot_vg, snapshot_name, chroot_lv]
   try:
-    cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
+    cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
   except cros_build_lib.RunCommandError:
     cmd = ['lvrename', chroot_vg, backup_chroot_name, chroot_lv]
     try:
-      cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
+      cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
     except cros_build_lib.RunCommandError:
       raise SystemExit('Failed to rename %s to chroot and failed to restore '
                        '%s back to chroot.  Failed command: %r' %
@@ -398,18 +398,18 @@ def RestoreChrootSnapshot(snapshot_name, chroot_vg, chroot_lv):
   # that don't have the flag should be auto-activated.
   chroot_lv_path = '%s/%s' % (chroot_vg, chroot_lv)
   cmd = ['lvchange', '-kn', chroot_lv_path]
-  cros_build_lib.RunCommand(
+  cros_build_lib.run(
       cmd, print_cmd=False, capture_output=True, error_code_ok=True)
 
   # Activate the LV in case the lvchange above was needed.  Activating an LV
   # that is already active shouldn't do anything, so this is safe to run even if
   # the -kn wasn't needed.
   cmd = ['lvchange', '-ay', chroot_lv_path]
-  cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
+  cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
 
   cmd = ['lvremove', '-f', '%s/%s' % (chroot_vg, backup_chroot_name)]
   try:
-    cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
+    cros_build_lib.run(cmd, print_cmd=False, capture_output=True)
   except cros_build_lib.RunCommandError:
     raise SystemExit('Failed to remove backup LV %s/%s.  Failed command: %r' %
                      (chroot_vg, backup_chroot_name, cmd))
@@ -438,7 +438,7 @@ def ListChrootSnapshots(chroot_vg, chroot_lv):
       '--separator', '\t', chroot_vg
   ]
   try:
-    result = cros_build_lib.RunCommand(
+    result = cros_build_lib.run(
         cmd, print_cmd=False, redirect_stdout=True)
   except cros_build_lib.RunCommandError:
     raise SystemExit('Running %r failed!' % cmd)
@@ -583,7 +583,7 @@ def _ProxySimSetup(options):
     )
     try:
       for cmd in commands:
-        cros_build_lib.RunCommand(cmd, print_cmd=False)
+        cros_build_lib.run(cmd, print_cmd=False)
     except cros_build_lib.RunCommandError:
       raise SystemExit('Running %r failed!' % (cmd,))
 
@@ -642,12 +642,12 @@ def _ProxySimSetup(options):
   cmd = None  # Make cros lint happy.
   try:
     for cmd in commands:
-      cros_build_lib.RunCommand(cmd, print_cmd=False)
+      cros_build_lib.run(cmd, print_cmd=False)
   except cros_build_lib.RunCommandError:
     # Clean up existing interfaces, if any.
     cmd_cleanup = ('ip', 'link', 'del', veth_host)
     try:
-      cros_build_lib.RunCommand(cmd_cleanup, print_cmd=False)
+      cros_build_lib.run(cmd_cleanup, print_cmd=False)
     except cros_build_lib.RunCommandError:
       logging.error('running %r failed', cmd_cleanup)
     raise SystemExit('Running %r failed!' % (cmd,))
@@ -846,7 +846,7 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
 
 
 def main(argv):
-  conf = cros_build_lib.LoadKeyValueFile(
+  conf = key_value_store.LoadFile(
       os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
       ignore_missing=True)
   sdk_latest_version = conf.get('SDK_LATEST_VERSION', '<unknown>')
@@ -1067,7 +1067,7 @@ snapshots will be unavailable).""" % ', '.join(missing_image_tools))
                      'fstrim.', img_path, extra_gbs)
       cmd = ['fstrim', options.chroot]
       try:
-        cros_build_lib.RunCommand(cmd, print_cmd=False)
+        cros_build_lib.run(cmd, print_cmd=False)
       except cros_build_lib.RunCommandError as e:
         logging.warning(
             'Running fstrim failed. Consider running fstrim on '

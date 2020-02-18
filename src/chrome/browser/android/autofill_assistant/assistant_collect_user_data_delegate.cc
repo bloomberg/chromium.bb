@@ -53,6 +53,11 @@ void AssistantCollectUserDataDelegate::OnContactInfoChanged(
     const base::android::JavaParamRef<jstring>& jpayer_name,
     const base::android::JavaParamRef<jstring>& jpayer_phone,
     const base::android::JavaParamRef<jstring>& jpayer_email) {
+  if (!jpayer_name && !jpayer_phone && !jpayer_email) {
+    ui_controller_->OnContactInfoChanged(nullptr);
+    return;
+  }
+
   std::string name = SafeConvertJavaStringToNative(env, jpayer_name);
   std::string phone = SafeConvertJavaStringToNative(env, jpayer_phone);
   std::string email = SafeConvertJavaStringToNative(env, jpayer_email);
@@ -94,17 +99,24 @@ void AssistantCollectUserDataDelegate::OnShippingAddressChanged(
 void AssistantCollectUserDataDelegate::OnCreditCardChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& jcard) {
-  if (!jcard) {
-    ui_controller_->OnCreditCardChanged(nullptr);
-    return;
+    const base::android::JavaParamRef<jobject>& jcard,
+    const base::android::JavaParamRef<jobject>& jbilling_profile) {
+  std::unique_ptr<autofill::CreditCard> card = nullptr;
+  if (jcard) {
+    card = std::make_unique<autofill::CreditCard>();
+    autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
+        jcard, env, card.get());
   }
 
-  auto card = std::make_unique<autofill::CreditCard>();
-  autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
-      jcard, env, card.get());
+  std::unique_ptr<autofill::AutofillProfile> billing_profile = nullptr;
+  if (jbilling_profile) {
+    billing_profile = std::make_unique<autofill::AutofillProfile>();
+    autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
+        jbilling_profile, env, billing_profile.get());
+  }
 
-  ui_controller_->OnCreditCardChanged(std::move(card));
+  ui_controller_->OnCreditCardChanged(std::move(card),
+                                      std::move(billing_profile));
 }
 
 void AssistantCollectUserDataDelegate::OnTermsAndConditionsChanged(
@@ -128,6 +140,41 @@ void AssistantCollectUserDataDelegate::OnLoginChoiceChanged(
     const base::android::JavaParamRef<jstring>& jidentifier) {
   std::string identifier = SafeConvertJavaStringToNative(env, jidentifier);
   ui_controller_->OnLoginChoiceChanged(identifier);
+}
+
+void AssistantCollectUserDataDelegate::OnDateTimeRangeStartChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint year,
+    jint month,
+    jint day,
+    jint hour,
+    jint minute,
+    jint second) {
+  ui_controller_->OnDateTimeRangeStartChanged(year, month, day, hour, minute,
+                                              second);
+}
+
+void AssistantCollectUserDataDelegate::OnDateTimeRangeEndChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint year,
+    jint month,
+    jint day,
+    jint hour,
+    jint minute,
+    jint second) {
+  ui_controller_->OnDateTimeRangeEndChanged(year, month, day, hour, minute,
+                                            second);
+}
+
+void AssistantCollectUserDataDelegate::OnKeyValueChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jstring>& jkey,
+    const base::android::JavaParamRef<jstring>& jvalue) {
+  ui_controller_->OnKeyValueChanged(SafeConvertJavaStringToNative(env, jkey),
+                                    SafeConvertJavaStringToNative(env, jvalue));
 }
 
 base::android::ScopedJavaGlobalRef<jobject>

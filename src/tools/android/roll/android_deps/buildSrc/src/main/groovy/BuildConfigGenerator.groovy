@@ -121,7 +121,12 @@ class BuildConfigGenerator extends DefaultTask {
                     new File("${absoluteDepDir}/LICENSE").write(
                             new File("${normalisedRepoPath}/${dependency.licensePath}").text)
                 } else if (!dependency.licenseUrl?.trim()?.isEmpty()) {
-                    downloadFile(dependency.licenseUrl, new File("${absoluteDepDir}/LICENSE"))
+                    File destFile = new File("${absoluteDepDir}/LICENSE")
+                    downloadFile(dependency.id, dependency.licenseUrl, destFile)
+                    if (destFile.text.contains("<html")) {
+                        throw new RuntimeException("Found HTML in LICENSE file. Please add an "
+                                + "override to ChromiumDepGraph.groovy for ${dependency.name}.")
+                    }
                 }
             }
         }
@@ -183,7 +188,13 @@ class BuildConfigGenerator extends DefaultTask {
                   jar_path = "${libPath}/${dependency.fileName}"
                   output_name = "${dependency.id}"
                 """.stripIndent())
-                if (dependency.supportsAndroid) sb.append("  supports_android = true\n")
+                if (dependency.supportsAndroid) {
+                  sb.append("  supports_android = true\n")
+                } else {
+                  // No point in enabling asserts third-party prebuilts.
+                  // Also required to break a dependency cycle for errorprone.
+                  sb.append("  enable_bytecode_rewriter = false\n")
+                }
             } else if (dependency.extension == 'aar') {
                 sb.append("""\
                 android_aar_prebuilt("${targetName}") {
@@ -221,15 +232,17 @@ class BuildConfigGenerator extends DefaultTask {
 
     public static boolean isPlayServicesTarget(String dependencyId) {
         // Firebase has historically been treated as a part of play services, so it counts here for
-        // backwards compatibility.
-        return Pattern.matches(".*google.*(play_services|firebase).*", dependencyId)
+        // backwards compatibility. Datatransport is new as of 2019 and is used by many play
+        // services libraries.
+        return Pattern.matches(".*google.*(play_services|firebase|datatransport).*", dependencyId)
     }
 
     private static void addSpecialTreatment(StringBuilder sb, String dependencyId) {
         if (isPlayServicesTarget(dependencyId)) {
             if (Pattern.matches(".*cast_framework.*", dependencyId)) {
                 sb.append('  # Removing all resources from cast framework as they are unused bloat.\n')
-                sb.append('  strip_resources = true\n')
+                sb.append('  # Can only safely remove them when R8 will strip the path that accesses them.\n')
+                sb.append('  strip_resources = !is_java_debug\n')
             } else {
                 sb.append('  # Removing drawables from GMS .aars as they are unused bloat.\n')
                 sb.append('  strip_drawables = true\n')
@@ -249,10 +262,26 @@ class BuildConfigGenerator extends DefaultTask {
                 // Target has AIDL, but we don't support it yet: http://crbug.com/644439
                 sb.append('  ignore_aidl = true\n')
                 break
+            case 'androidx_test_uiautomator_uiautomator':
+	        sb.append('  deps = [":androidx_test_runner_java"]\n')
+                break
+            case 'com_android_support_mediarouter_v7':
+                sb.append('  # https://crbug.com/1000382\n')
+                sb.append('  proguard_configs = ["support_mediarouter.flags"]\n')
+                break
+            case 'androidx_mediarouter_mediarouter':
+                sb.append('  # https://crbug.com/1000382\n')
+                sb.append('  proguard_configs = ["androidx_mediarouter.flags"]\n')
+                break
             case 'androidx_transition_transition':
                 // Not specified in the POM, compileOnly dependency not supposed to be used unless
                 // the library is present: b/70887421
                 sb.append('  deps += [":androidx_fragment_fragment_java"]\n')
+                break
+            case 'androidx_vectordrawable_vectordrawable':
+            case 'com_android_support_support_vector_drawable':
+                // Target has AIDL, but we don't support it yet: http://crbug.com/644439
+                sb.append('  create_srcjar = false\n')
                 break
             case 'android_arch_lifecycle_runtime':
             case 'android_arch_lifecycle_viewmodel':
@@ -271,10 +300,6 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # https://crbug.com/989505\n')
                 sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
                 break
-            case 'com_android_support_support_vector_drawable':
-                // Target has AIDL, but we don't support it yet: http://crbug.com/644439
-                sb.append('  create_srcjar = false\n')
-                break
             case 'com_android_support_transition':
                 // Not specified in the POM, compileOnly dependency not supposed to be used unless
                 // the library is present: b/70887421
@@ -288,9 +313,17 @@ class BuildConfigGenerator extends DefaultTask {
                 // Target .aar file contains .so libraries that need to be extracted,
                 // and android_aar_prebuilt template will fail if it's not set explictly.
                 sb.append('  extract_native_libraries = true\n')
-                // InstallActivity class is downloaded as a part of DFM & we need to inject
-                // a call to SplitCompat.install() into it.
-                sb.append('  split_compat_class_names = [ "com/google/ar/core/InstallActivity" ]\n')
+                break
+            case 'com_google_guava_guava':
+                // Need to exclude class and replace it with class library as
+                // com_google_guava_listenablefuture has support_androids=true.
+                sb.append('  deps += [":com_google_guava_listenablefuture_java"]\n')
+                sb.append('  jar_excluded_patterns = ["*/ListenableFuture.class"]\n')
+                break
+            case 'com_google_guava_listenablefuture':
+            case 'com_googlecode_java_diff_utils_diffutils':
+                // Needed to break dependency cycle for errorprone_plugin_java.
+                sb.append('  no_build_hooks = true\n')
                 break
             case 'androidx_test_rules':
                 // Target needs Android SDK deps which exist in third_party/android_sdk.
@@ -341,7 +374,8 @@ class BuildConfigGenerator extends DefaultTask {
             } else {
                 cipdPath += repoPath
             }
-            cipdPath += "/${depPath}"
+            // CIPD does not allow uppercase in names.
+            cipdPath += "/${depPath}".toLowerCase()
             sb.append("""\
             |
             |  'src/${repoPath}/${depPath}': {
@@ -426,10 +460,13 @@ class BuildConfigGenerator extends DefaultTask {
         } else {
             cipdPath += repoPath
         }
-        cipdPath += "/${DOWNLOAD_DIRECTORY_NAME}/${dependency.id}"
+        // CIPD does not allow uppercase in names.
+        cipdPath += "/${DOWNLOAD_DIRECTORY_NAME}/" + dependency.id.toLowerCase()
 
         // NOTE: the fetch_all.py script relies on the format of this file!
         // See fetch_all.py:GetCipdPackageInfo().
+        // NOTE: keep the copyright year 2018 until this generated code is
+        //       updated, avoiding annual churn of all cipd.yaml files.
         def str = """\
         # Copyright 2018 The Chromium Authors. All rights reserved.
         # Use of this source code is governed by a BSD-style license that can be
@@ -454,9 +491,37 @@ class BuildConfigGenerator extends DefaultTask {
         getLogger().warn(jsonDump(obj))
     }
 
-    static void downloadFile(String sourceUrl, File destinationFile) {
+    static HttpURLConnection connectAndFollowRedirects(String id, String sourceUrl) {
+        URL urlObj = new URL(sourceUrl)
+        HttpURLConnection connection
+        for (int i = 0; i < 10; ++i) {
+            // Several deps use this URL for their license, but it just points to license
+            // *template*. Generally the actual license can be found in the source code.
+            if (sourceUrl.contains("://opensource.org/licenses")) {
+                throw new RuntimeException("Found templated license URL for dependency "
+                    + id + ": " + sourceUrl
+                    + ". You will need to edit FALLBACK_PROPERTIES for this dep.")
+            }
+            connection = urlObj.openConnection()
+            switch (connection.getResponseCode()) {
+                case HttpURLConnection.HTTP_MOVED_PERM:
+                case HttpURLConnection.HTTP_MOVED_TEMP:
+                    String location = connection.getHeaderField("Location");
+                    urlObj = new URL(urlObj, location);
+                    continue
+                case HttpURLConnection.HTTP_OK:
+                    return connection
+                default:
+                    throw new RuntimeException(
+                        "Url had statusCode=" + connection.getResponseCode() + ": " + sourceUrl)
+            }
+        }
+        throw new RuntimeException("Url in redirect loop: " + sourceUrl)
+    }
+
+    static void downloadFile(String id, String sourceUrl, File destinationFile) {
         destinationFile.withOutputStream { out ->
-            out << new URL(sourceUrl).openStream()
+            out << connectAndFollowRedirects(id, sourceUrl).getInputStream()
         }
     }
 

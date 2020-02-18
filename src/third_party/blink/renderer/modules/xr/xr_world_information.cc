@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_world_information.h"
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
@@ -58,7 +59,7 @@ void XRWorldInformation::ProcessPlaneInformation(
 
   is_detected_planes_null_ = false;
 
-  HeapHashMap<int32_t, Member<XRPlane>> updated_planes;
+  HeapHashMap<uint64_t, Member<XRPlane>> updated_planes;
 
   // First, process all planes that had their information updated (new planes
   // are also processed here).

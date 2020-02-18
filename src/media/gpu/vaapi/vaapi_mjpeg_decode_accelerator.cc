@@ -28,11 +28,11 @@
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/base/format_utils.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
-#include "media/base/video_types.h"
-#include "media/gpu/format_utils.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
@@ -43,14 +43,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/linux/native_pixmap_dmabuf.h"
-#include "ui/gfx/native_pixmap.h"
 
 namespace media {
 
 namespace {
-
-constexpr uint32_t kInvalidVaFourcc = 0u;
 
 // UMA errors that the VaapiMjpegDecodeAccelerator class reports.
 enum VAJDAFailure {
@@ -105,34 +101,6 @@ static bool VerifyDataSize(const VAImage* image) {
   }
   return base::strict_cast<size_t>(image->data_size) >= min_size;
 }
-
-static uint32_t VideoPixelFormatToVAFourCC(VideoPixelFormat format) {
-  switch (format) {
-    case PIXEL_FORMAT_I420:
-      return VA_FOURCC_I420;
-    case PIXEL_FORMAT_YV12:
-      return VA_FOURCC_YV12;
-    case PIXEL_FORMAT_NV12:
-      return VA_FOURCC_NV12;
-    case PIXEL_FORMAT_NV21:
-      return VA_FOURCC_NV21;
-    case PIXEL_FORMAT_UYVY:
-      return VA_FOURCC_UYVY;
-    case PIXEL_FORMAT_YUY2:
-      return VA_FOURCC_YUY2;
-    case PIXEL_FORMAT_ARGB:
-      return VA_FOURCC_ARGB;
-    case PIXEL_FORMAT_XRGB:
-      return VA_FOURCC_XRGB;
-    case PIXEL_FORMAT_ABGR:
-      return VA_FOURCC_ABGR;
-    case PIXEL_FORMAT_XBGR:
-      return VA_FOURCC_XBGR;
-    default:
-      return kInvalidVaFourcc;
-  }
-}
-
 }  // namespace
 
 void VaapiMjpegDecodeAccelerator::NotifyError(int32_t task_id, Error error) {
@@ -192,6 +160,12 @@ bool VaapiMjpegDecodeAccelerator::Initialize(
       base::BindRepeating(&ReportToVAJDAVppFailureUMA, VAAPI_ERROR));
   if (!vpp_vaapi_wrapper_) {
     VLOGF(1) << "Failed initializing VAAPI for VPP";
+    return false;
+  }
+
+  // Size is irrelevant for a VPP context.
+  if (!vpp_vaapi_wrapper_->CreateContext(gfx::Size())) {
+    VLOGF(1) << "Failed to create context for VPP";
     return false;
   }
 
@@ -380,14 +354,8 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureVppOnTaskRunner(
   TRACE_EVENT1("jpeg", __func__, "input_buffer_id", input_buffer_id);
 
   // Bind a VA surface to |video_frame|.
-  scoped_refptr<gfx::NativePixmap> pixmap =
-      CreateNativePixmapDmaBuf(video_frame.get());
-  if (!pixmap) {
-    VLOGF(1) << "Cannot create native pixmap for output buffer";
-    return false;
-  }
   scoped_refptr<VASurface> output_surface =
-      vpp_vaapi_wrapper_->CreateVASurfaceForPixmap(pixmap);
+      vpp_vaapi_wrapper_->CreateVASurfaceForVideoFrame(video_frame.get());
   if (!output_surface) {
     VLOGF(1) << "Cannot create VA surface for output buffer";
     return false;
@@ -498,7 +466,7 @@ void VaapiMjpegDecodeAccelerator::DecodeImpl(
   // VPP to convert the decoded |surface| into it, if the formats and sizes are
   // supported.
   const uint32_t video_frame_va_fourcc =
-      VideoPixelFormatToVAFourCC(dst_frame->format());
+      Fourcc::FromVideoPixelFormat(dst_frame->format()).ToVAFourCC();
   if (video_frame_va_fourcc == kInvalidVaFourcc) {
     VLOGF(1) << "Unsupported video frame format: " << dst_frame->format();
     NotifyError(task_id, PLATFORM_FAILURE);

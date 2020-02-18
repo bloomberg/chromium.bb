@@ -141,6 +141,7 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\Release"
     <ClCompile Include="VkRenderPass.cpp" />
     <ClCompile Include="VkSampler.cpp" />
     <ClCompile Include="VkShaderModule.cpp" />
+    <ClCompile Include="VkStringify.cpp" />
     <ClCompile Include="..\Device\Blitter.cpp" />
     <ClCompile Include="..\Device\Clipper.cpp" />
     <ClCompile Include="..\Device\Color.cpp" />
@@ -164,8 +165,15 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\Release"
     <ClCompile Include="..\Pipeline\SetupRoutine.cpp" />
     <ClCompile Include="..\Pipeline\ShaderCore.cpp" />
     <ClCompile Include="..\Pipeline\SpirvShader.cpp" />
+    <ClCompile Include="..\Pipeline\SpirvShaderArithmetic.cpp" />
+    <ClCompile Include="..\Pipeline\SpirvShaderControlFlow.cpp" />
+    <ClCompile Include="..\Pipeline\SpirvShaderEnumNames.cpp" />
+    <ClCompile Include="..\Pipeline\SpirvShaderGLSLstd450.cpp" />
+    <ClCompile Include="..\Pipeline\SpirvShaderGroup.cpp" />
+    <ClCompile Include="..\Pipeline\SpirvShaderImage.cpp" />
+    <ClCompile Include="..\Pipeline\SpirvShaderMemory.cpp" />
     <ClCompile Include="..\Pipeline\SpirvShaderSampling.cpp" />
-    <ClCompile Include="..\Pipeline\SpirvShader_dbg.cpp" />
+    <ClCompile Include="..\Pipeline\SpirvShaderSpec.cpp" />
     <ClCompile Include="..\Pipeline\VertexProgram.cpp" />
     <ClCompile Include="..\Pipeline\VertexRoutine.cpp" />
     <ClCompile Include="..\System\Configurator.cpp" />
@@ -227,6 +235,7 @@ IF EXIST "$(SolutionDir)..\deqp\build\external\vulkancts\modules\vulkan\Release"
     <ClInclude Include="VkSampler.hpp" />
     <ClInclude Include="VkSemaphore.hpp" />
     <ClInclude Include="VkShaderModule.hpp" />
+    <ClInclude Include="VkStringify.hpp" />
     <ClInclude Include="VulkanPlatform.h" />
     <ClInclude Include="..\Device\Blitter.hpp" />
     <ClInclude Include="..\Device\Clipper.hpp" />

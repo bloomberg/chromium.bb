@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+
 #include "base/cancelable_callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
@@ -17,8 +18,12 @@
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/util/fps_meter.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/quaternion.h"
@@ -48,9 +53,9 @@ struct ArCoreHitTestRequest;
 class ArImageTransport;
 
 using ArCoreGlCreateSessionCallback = base::OnceCallback<void(
-    mojom::XRFrameDataProviderPtrInfo frame_data_provider_info,
+    mojo::PendingRemote<mojom::XRFrameDataProvider> frame_data_provider,
     mojom::VRDisplayInfoPtr display_info,
-    mojom::XRSessionControllerPtrInfo session_controller_info,
+    mojo::PendingRemote<mojom::XRSessionController> session_controller,
     mojom::XRPresentationConnectionPtr presentation_connection)>;
 
 // All of this class's methods must be called on the same valid GL thread with
@@ -83,10 +88,11 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                     GetFrameDataCallback callback) override;
 
   void GetEnvironmentIntegrationProvider(
-      mojom::XREnvironmentIntegrationProviderAssociatedRequest
+      mojo::PendingAssociatedReceiver<mojom::XREnvironmentIntegrationProvider>
           environment_provider) override;
   void SetInputSourceButtonListener(
-      device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) override;
+      mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>)
+      override;
 
   // XRPresentationProvider
   void SubmitFrameMissing(int16_t frame_index, const gpu::SyncToken&) override;
@@ -108,9 +114,36 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
       mojom::XRRayPtr,
       mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback) override;
 
+  void SubscribeToHitTest(
+      mojom::XRNativeOriginInformationPtr native_origin_information,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      mojom::XRRayPtr ray,
+      mojom::XREnvironmentIntegrationProvider::SubscribeToHitTestCallback
+          callback) override;
+  void SubscribeToHitTestForTransientInput(
+      const std::string& profile_name,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      mojom::XRRayPtr ray,
+      mojom::XREnvironmentIntegrationProvider::
+          SubscribeToHitTestForTransientInputCallback callback) override;
+
+  void UnsubscribeFromHitTest(uint64_t subscription_id) override;
+
+  void CreateAnchor(mojom::PosePtr anchor_pose,
+                    CreateAnchorCallback callback) override;
+  void CreatePlaneAnchor(mojom::PosePtr anchor_pose,
+                         uint64_t plane_id,
+                         CreatePlaneAnchorCallback callback) override;
+
+  void DetachAnchor(uint64_t anchor_id) override;
+
   // mojom::XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
 
+  void ProcessFrameFromMailbox(int16_t frame_index,
+                               const gpu::MailboxHolder& mailbox);
+  void ProcessFrameDrawnIntoTexture(int16_t frame_index,
+                                    const gpu::SyncToken& sync_token);
   void OnWebXrTokenSignaled(int16_t frame_index,
                             std::unique_ptr<gfx::GpuFence> gpu_fence);
 
@@ -128,7 +161,10 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
                     mojom::XRFrameDataProvider::GetFrameDataCallback callback);
 
   bool InitializeGl(gfx::AcceleratedWidget drawing_widget);
+  void OnArImageTransportReady(base::OnceCallback<void(bool)> callback);
   bool IsOnGlThread() const;
+  void CopyCameraImageToFramebuffer();
+  void OnTransportFrameAvailable(const gfx::Transform& uv_transform);
 
   base::OnceClosure session_shutdown_callback_;
 
@@ -161,12 +197,25 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   std::unique_ptr<vr::WebXrPresentationState> webxr_;
 
   // Default dummy values to ensure consistent behaviour.
+
+  // Transfer size is the size of the WebGL framebuffer, this may be
+  // smaller than the camera image if framebufferScaleFactor is < 1.0.
   gfx::Size transfer_size_ = gfx::Size(0, 0);
+
+  // The camera image size stays locked to the screen size even if
+  // framebufferScaleFactor changes.
+  gfx::Size camera_image_size_ = gfx::Size(0, 0);
   display::Display::Rotation display_rotation_ = display::Display::ROTATE_0;
   bool should_update_display_geometry_ = true;
 
+  // UV transform for drawing the camera texture, this is supplied by ARCore
+  // and can include 90 degree rotations or other nontrivial transforms.
   gfx::Transform uv_transform_;
-  gfx::Transform webxr_transform_;
+
+  // UV transform for drawing received WebGL content from a shared buffer's
+  // texture, this is simply an identity.
+  gfx::Transform shared_buffer_transform_;
+
   gfx::Transform projection_;
   gfx::Transform inverse_projection_;
   // The first run of ProduceFrame should set uv_transform_ and projection_
@@ -183,21 +232,25 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
 
   std::vector<std::unique_ptr<ArCoreHitTestRequest>> hit_test_requests_;
 
-  mojo::Binding<mojom::XRFrameDataProvider> frame_data_binding_;
-  mojo::Binding<mojom::XRSessionController> session_controller_binding_;
-  mojo::AssociatedBinding<mojom::XREnvironmentIntegrationProvider>
-      environment_binding_;
+  mojo::Receiver<mojom::XRFrameDataProvider> frame_data_receiver_{this};
+  mojo::Receiver<mojom::XRSessionController> session_controller_receiver_{this};
+  mojo::AssociatedReceiver<mojom::XREnvironmentIntegrationProvider>
+      environment_receiver_{this};
 
   void OnBindingDisconnect();
   void CloseBindingsIfOpen();
 
-  mojo::Binding<device::mojom::XRPresentationProvider> presentation_binding_;
-  device::mojom::XRPresentationClientPtr submit_client_;
+  mojo::Receiver<device::mojom::XRPresentationProvider> presentation_receiver_{
+      this};
+  mojo::Remote<device::mojom::XRPresentationClient> submit_client_;
 
   base::OnceClosure pending_getframedata_;
 
   mojom::VRDisplayInfoPtr display_info_;
   bool display_info_changed_ = false;
+
+  // Currently estimated floor height.
+  base::Optional<float> floor_height_estimate_;
 
   std::vector<device::mojom::XRInputSourceStatePtr> input_states_;
   gfx::PointF screen_last_touch_;

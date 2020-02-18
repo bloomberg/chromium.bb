@@ -47,9 +47,6 @@ struct CONTENT_EXPORT Referrer {
       const url::Origin& initiator,
       network::mojom::ReferrerPolicy policy);
 
-  static void SetReferrerForRequest(net::URLRequest* request,
-                                    const Referrer& referrer);
-
   static net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
       network::mojom::ReferrerPolicy referrer_policy);
 
@@ -57,6 +54,18 @@ struct CONTENT_EXPORT Referrer {
       net::URLRequest::ReferrerPolicy net_policy);
 
   static net::URLRequest::ReferrerPolicy GetDefaultReferrerPolicy();
+
+  // Configures retaining the pre-M80 default referrer
+  // policy of no-referrer-when-downgrade.
+  // TODO(crbug.com/1016541): After M82, remove when the corresponding
+  // enterprise policy has been deleted.
+  static void SetForceLegacyDefaultReferrerPolicy(bool force);
+  static bool ShouldForceLegacyDefaultReferrerPolicy();
+
+  // Validates |policy| to make sure it represents one of the valid
+  // net::mojom::ReferrerPolicy enum values and returns it.  The relatively safe
+  // |kNever| value is returned if |policy| is not a valid value.
+  static network::mojom::ReferrerPolicy ConvertToPolicy(int32_t policy);
 };
 
 }  // namespace content

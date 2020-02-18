@@ -102,6 +102,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // QUIC_STREAM_NO_ERROR.
   void OnStreamReset(const QuicRstStreamFrame& frame) override;
 
+  void Reset(QuicRstStreamErrorCode error) override;
+
   // Called by the sequencer when new data is available. Decodes the data and
   // calls OnBodyAvailable() to pass to the upper layer.
   void OnDataAvailable() override;
@@ -110,7 +112,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   virtual void OnBodyAvailable() = 0;
 
   // Writes the headers contained in |header_block| on the dedicated headers
-  // stream or on this stream, depending on VersionUsesQpack().
+  // stream or on this stream, depending on VersionUsesHttp3().  Returns the
+  // number of bytes sent, including data sent on the encoder stream when using
+  // QPACK.
   virtual size_t WriteHeaders(
       spdy::SpdyHeaderBlock header_block,
       bool fin,
@@ -120,8 +124,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   void WriteOrBufferBody(QuicStringPiece data, bool fin);
 
   // Writes the trailers contained in |trailer_block| on the dedicated headers
-  // stream or on this stream, depending on VersionUsesQpack().  Trailers will
-  // always have the FIN flag set.
+  // stream or on this stream, depending on VersionUsesHttp3().  Trailers will
+  // always have the FIN flag set.  Returns the number of bytes sent, including
+  // data sent on the encoder stream when using QPACK.
   virtual size_t WriteTrailers(
       spdy::SpdyHeaderBlock trailer_block,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
@@ -208,11 +213,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // will be available.
   bool IsClosed() { return sequencer()->IsClosed(); }
 
-  using QuicStream::CloseWriteSide;
-
   // QpackDecodedHeadersAccumulator::Visitor implementation.
   void OnHeadersDecoded(QuicHeaderList headers) override;
-  void OnHeaderDecodingError() override;
+  void OnHeaderDecodingError(QuicStringPiece error_message) override;
 
  protected:
   // Called when the received headers are too large. By default this will
@@ -256,17 +259,13 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   bool OnHeadersFrameStart(QuicByteCount header_length);
   bool OnHeadersFramePayload(QuicStringPiece payload);
   bool OnHeadersFrameEnd();
-  bool OnPushPromiseFrameStart(PushId push_id,
-                               QuicByteCount header_length,
-                               QuicByteCount push_id_length);
+  bool OnPushPromiseFrameStart(QuicByteCount header_length);
+  bool OnPushPromiseFramePushId(PushId push_id, QuicByteCount push_id_length);
   bool OnPushPromiseFramePayload(QuicStringPiece payload);
   bool OnPushPromiseFrameEnd();
   bool OnUnknownFrameStart(uint64_t frame_type, QuicByteCount header_length);
   bool OnUnknownFramePayload(QuicStringPiece payload);
   bool OnUnknownFrameEnd();
-
-  // Called internally when headers are decoded.
-  void ProcessDecodedHeaders(const QuicHeaderList& headers);
 
   // Given the interval marked by [|offset|, |offset| + |data_length|), return
   // the number of frame header bytes contained in it.
@@ -284,6 +283,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   bool blocked_on_decoding_headers_;
   // True if the headers have been completely decompressed.
   bool headers_decompressed_;
+  // True if uncompressed headers or trailers exceed maximum allowed size
+  // advertised to peer via SETTINGS_MAX_HEADER_LIST_SIZE.
+  bool header_list_size_limit_exceeded_;
   // Contains a copy of the decompressed header (name, value) pairs until they
   // are consumed via Readv.
   QuicHeaderList header_list_;
@@ -303,8 +305,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // The parsed trailers received from the peer.
   spdy::SpdyHeaderBlock received_trailers_;
 
-  // Http encoder for writing streams.
-  HttpEncoder encoder_;
   // Headers accumulator for decoding HEADERS frame payload.
   std::unique_ptr<QpackDecodedHeadersAccumulator>
       qpack_decoded_headers_accumulator_;

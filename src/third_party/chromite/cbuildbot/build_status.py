@@ -10,7 +10,6 @@ from __future__ import print_function
 import collections
 import datetime
 
-from chromite.cbuildbot import relevant_changes
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import build_requests
@@ -38,7 +37,7 @@ class SlaveStatus(object):
 
   def __init__(self, start_time, builders_array, master_build_identifier,
                buildstore, config=None, metadata=None, buildbucket_client=None,
-               version=None, pool=None, dry_run=True):
+               version=None, dry_run=True):
     """Initializes a SlaveStatus instance.
 
     Args:
@@ -52,8 +51,6 @@ class SlaveStatus(object):
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
       version: Current manifest version string. See the return type of
                VersionInfo.VersionString().
-      pool: An instance of ValidationPool.validation_pool used by sync stage
-            to apply changes.
       dry_run: Boolean indicating whether it's a dry run. Default to True.
     """
     self.start_time = start_time
@@ -66,7 +63,6 @@ class SlaveStatus(object):
     self.metadata = metadata
     self.buildbucket_client = buildbucket_client
     self.version = version
-    self.pool = pool
     self.dry_run = dry_run
 
     # A set of completed builds which will not be retried any more.
@@ -96,12 +92,6 @@ class SlaveStatus(object):
     # any decision logic.
     self._completed_build_history = collections.deque([], 2)
 
-    self.dependency_map = None
-
-    if self.pool is not None:
-      # Pre-compute dependency map for applied changes.
-      self.dependency_map = self.pool.GetDependMapForChanges(
-          self.pool.applied, self.pool.GetAppliedPatches())
     self.UpdateSlaveStatus()
 
   def _GetNewSlaveCIDBStatusInfo(self, all_cidb_status_dict, completed_builds):
@@ -155,7 +145,7 @@ class SlaveStatus(object):
       # It's possible that CQ-master has a list of important slaves configured
       # but doesn't schedule any slaves as no CLs were picked up in SyncStage.
       # These are set to include only important builds.
-      self.all_builders = scheduled_buildbucket_info_dict.keys()
+      self.all_builders = list(scheduled_buildbucket_info_dict)
       self.all_buildbucket_info_dict = (
           builder_status_lib.SlaveBuilderStatus.GetAllSlaveBuildbucketInfo(
               self.buildbucket_client, scheduled_buildbucket_info_dict,
@@ -227,7 +217,7 @@ class SlaveStatus(object):
                  if info.status is None)
     else:
       return (set(self._GetExpectedBuilders()) -
-              set(self.new_cidb_status_dict.keys()) -
+              set(self.new_cidb_status_dict) -
               self.completed_builds)
 
   def _GetScheduledBuilds(self):
@@ -585,48 +575,6 @@ class SlaveStatus(object):
                                       self.dry_run,
                                       self.config)
       return False, False, False
-
-    if self.pool is not None:
-      triage_relevant_changes = relevant_changes.TriageRelevantChanges(
-          self.master_build_identifier, self.buildstore,
-          self._GetExpectedBuilders(), self.config, self.metadata, self.version,
-          self.pool.build_root, self.pool.applied,
-          self.all_buildbucket_info_dict, self.all_cidb_status_dict,
-          self.completed_builds, self.dependency_map, self.buildbucket_client,
-          dry_run=self.dry_run)
-
-      should_self_destruct, should_self_destruct_with_success = (
-          triage_relevant_changes.ShouldSelfDestruct())
-      if should_self_destruct:
-        logging.warning('This build will self-destruct given the results of '
-                        'relevant change triages.')
-
-        if should_self_destruct_with_success:
-          logging.info('This build will self-destruct with success.')
-
-        self.metadata.UpdateWithDict({
-            constants.SELF_DESTRUCTED_BUILD: True,
-            constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD:
-            should_self_destruct_with_success})
-
-        fields = {
-            'build_config': self.config.name,
-            'self_destructed_with_success': should_self_destruct_with_success}
-        metrics.Counter(constants.MON_CQ_SELF_DESTRUCTION_COUNT).increment(
-            fields=fields)
-
-        # For every uncompleted build, the master build will insert an
-        # ignored_reason message into the buildMessageTable.
-        killed_child_builds = [self.all_cidb_status_dict[build].buildbucket_id
-                               for build in uncompleted_important_builds
-                               if build in self.all_cidb_status_dict]
-        self.buildstore.InsertBuildMessage(self.master_build_id,
-                                           message_value=killed_child_builds)
-        builder_status_lib.CancelBuilds(uncompleted_build_buildbucket_ids,
-                                        self.buildbucket_client,
-                                        self.dry_run,
-                                        self.config)
-        return False, False, True
 
     # We got here which means no problems, we should still wait.
     logging.info('Still waiting for the following builds to complete: %r',

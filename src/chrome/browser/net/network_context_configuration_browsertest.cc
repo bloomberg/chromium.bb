@@ -64,8 +64,10 @@
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
+#include "net/reporting/reporting_policy.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -200,11 +202,13 @@ class NetworkContextConfigurationBrowserTest
     kPersistent,
   };
 
-  NetworkContextConfigurationBrowserTest() {
+  NetworkContextConfigurationBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     // Have to get a port before setting up the command line, but can only set
     // up the connection listener after there's a main thread, so can't start
     // the test server here.
     EXPECT_TRUE(embedded_test_server()->InitializeAndListen());
+    EXPECT_TRUE(https_server()->InitializeAndListen());
   }
 
   // Returns a cacheable response (10 hours) that is some random text.
@@ -239,6 +243,8 @@ class NetworkContextConfigurationBrowserTest
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &NetworkContextConfigurationBrowserTest::HandleCacheRandom));
     embedded_test_server()->StartAcceptingConnections();
+    net::test_server::RegisterDefaultHandlers(https_server());
+    https_server()->StartAcceptingConnections();
 
     if (is_incognito())
       incognito_ = CreateIncognitoBrowser();
@@ -280,6 +286,8 @@ class NetworkContextConfigurationBrowserTest
             .ToString()
             .c_str());
   }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
 
   content::StoragePartition* GetStoragePartition() {
     return GetStoragePartitionForContextType(GetParam().network_context_type);
@@ -527,18 +535,30 @@ class NetworkContextConfigurationBrowserTest
     return false;
   }
 
+  // |server| should be |TYPE_HTTPS| if the cookie is third-party, because
+  // SameSite=None cookies must be Secure.
   void SetCookie(CookieType cookie_type,
-                 CookiePersistenceType cookie_expiration_type) {
+                 CookiePersistenceType cookie_expiration_type,
+                 net::EmbeddedTestServer* server) {
     std::unique_ptr<network::ResourceRequest> request =
         std::make_unique<network::ResourceRequest>();
     std::string cookie_line = "cookie";
     if (cookie_expiration_type == CookiePersistenceType::kPersistent)
       cookie_line += ";max-age=3600";
-    request->url = embedded_test_server()->GetURL("/set-cookie?" + cookie_line);
+    // Third party (i.e. SameSite=None) cookies must be secure.
+    if (cookie_type == CookieType::kThirdParty)
+      cookie_line += ";SameSite=None;Secure";
+    request->url = server->GetURL("/set-cookie?" + cookie_line);
     if (cookie_type == CookieType::kThirdParty)
       request->site_for_cookies = GURL("http://example.com");
     else
-      request->site_for_cookies = embedded_test_server()->base_url();
+      request->site_for_cookies = server->base_url();
+
+    url::Origin origin = url::Origin::Create(request->site_for_cookies);
+    request->trusted_params = network::ResourceRequest::TrustedParams();
+    request->trusted_params->network_isolation_key =
+        net::NetworkIsolationKey(origin, origin);
+
     content::SimpleURLLoaderTestHelper simple_loader_helper;
     std::unique_ptr<network::SimpleURLLoader> simple_loader =
         network::SimpleURLLoader::Create(std::move(request),
@@ -598,7 +618,7 @@ class NetworkContextConfigurationBrowserTest
     GetNetworkContextForContextType(network_context_type)
         ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
     cookie_manager->GetCookieList(
-        url, net::CookieOptions(),
+        url, net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(
             [](std::string* cookies_out, base::RunLoop* run_loop,
                const net::CookieStatusList& cookies,
@@ -733,6 +753,7 @@ class NetworkContextConfigurationBrowserTest
   Browser* incognito_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
 
+  net::EmbeddedTestServer https_server_;
   std::unique_ptr<net::test_server::ControllableHttpResponse>
       controllable_http_response_;
 
@@ -749,6 +770,11 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        SecureCookiesAllowedForChromeScheme) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
+  // TODO(crbug.com/1007320): This does not work under SameSiteByDefaultCookies,
+  // (and also does not work for SameSite cookies, in general). This is not
+  // easily fixable, so disable the test for now.
+  if (net::cookie_util::IsSameSiteByDefaultCookiesEnabled())
+    return;
   // Cookies are only allowed for chrome:// schemes requesting a secure origin,
   // so create an HTTPS server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
@@ -756,12 +782,17 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   ASSERT_TRUE(https_server.Start());
   if (GetPrefService()->FindPreference(prefs::kBlockThirdPartyCookies))
     GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent,
+            embedded_test_server());
 
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = https_server.GetURL("/echoheader?Cookie");
   request->site_for_cookies = GURL(chrome::kChromeUIPrintURL);
+  url::Origin origin = url::Origin::Create(request->site_for_cookies);
+  request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(origin, origin);
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
       network::SimpleURLLoader::Create(std::move(request),
@@ -804,7 +835,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   ASSERT_TRUE(test_server.Start());
 
   GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent,
+            embedded_test_server());
 
   extensions::TestExtensionDir extension_dir;
   extension_dir.WriteManifest(R"({
@@ -824,6 +856,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
       loader.LoadExtension(extension_dir.UnpackedPath());
   ASSERT_TRUE(extension);
 
+  // This request will show up as cross-site because the chrome-extension URL
+  // won't match the test_server domain (127.0.0.1), but because we set
+  // |attach_same_site_cookies| to true for extension-initiated requests, this
+  // will actually be able to get the cookie.
   GURL url = test_server.GetURL("/echocookieheader");
   std::string script = R"((url => {
     var xhr = new XMLHttpRequest();
@@ -873,9 +909,15 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
 
   // Make a request whose response should be cached.
   GURL request_url = embedded_test_server()->GetURL("/cachetime");
+  url::Origin request_origin =
+      url::Origin::Create(embedded_test_server()->base_url());
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = request_url;
+  request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(request_origin, request_origin);
+
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
       network::SimpleURLLoader::Create(std::move(request),
@@ -896,6 +938,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
   std::unique_ptr<network::ResourceRequest> request2 =
       std::make_unique<network::ResourceRequest>();
   request2->url = request_url;
+  request2->trusted_params = network::ResourceRequest::TrustedParams();
+  request2->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(request_origin, request_origin);
+
   content::SimpleURLLoaderTestHelper simple_loader_helper2;
   std::unique_ptr<network::SimpleURLLoader> simple_loader2 =
       network::SimpleURLLoader::Create(std::move(request2),
@@ -972,6 +1018,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
   // cache in the next test). The profile directory is preserved between the
   // PRE_DiskCache and DiskCache run, so can just keep a file there.
   GURL test_url = embedded_test_server()->GetURL(kCacheRandomPath);
+  url::Origin test_origin = url::Origin::Create(test_url);
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath save_url_file_path = browser()->profile()->GetPath().Append(
       FILE_PATH_LITERAL("url_for_test.txt"));
@@ -980,6 +1027,9 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = test_url;
+  request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(test_origin, test_origin);
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -1027,6 +1077,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
 
   GURL test_url = GURL(file_data.substr(0, newline_pos));
   ASSERT_TRUE(test_url.is_valid()) << test_url.possibly_invalid_spec();
+  url::Origin test_origin = url::Origin::Create(test_url);
 
   std::string original_response = file_data.substr(newline_pos + 1);
 
@@ -1034,6 +1085,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = test_url;
+  request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(test_origin, test_origin);
+
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   request->load_flags = net::LOAD_ONLY_FROM_CACHE;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -1381,7 +1436,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
     return;
   EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
 
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent,
+            embedded_test_server());
   EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
 }
 
@@ -1403,7 +1459,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
                        CookieIsolation) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent,
+            embedded_test_server());
   EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
 
   ForEachOtherContext(
@@ -1427,9 +1484,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
     return;
 
   GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
-  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession);
+  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession,
+            https_server());
 
-  EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
+  EXPECT_TRUE(GetCookies(https_server()->base_url()).empty());
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
@@ -1452,15 +1510,18 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
   // The kBlockThirdPartyCookies pref should carry over to the next session.
   EXPECT_TRUE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));
-  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession);
+  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession,
+            https_server());
 
-  EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
+  EXPECT_TRUE(GetCookies(https_server()->base_url()).empty());
 
   // Set pref to false, third party cookies should be allowed now.
   GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, false);
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
+  // Set a third-party cookie. It should actually get set this time.
+  SetCookie(CookieType::kThirdParty, CookiePersistenceType::kSession,
+            https_server());
 
-  EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
+  EXPECT_FALSE(GetCookies(https_server()->base_url()).empty());
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
@@ -1478,7 +1539,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   FlushNetworkInterface();
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession,
+            embedded_test_server());
 
   EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
 }
@@ -1495,7 +1557,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookieSettings) {
     return;
 
   // The content settings should carry over to the next session.
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession,
+            embedded_test_server());
 
   EXPECT_TRUE(GetCookies(embedded_test_server()->base_url()).empty());
 
@@ -1503,7 +1566,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookieSettings) {
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
   FlushNetworkInterface();
-  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kSession,
+            embedded_test_server());
 
   EXPECT_FALSE(GetCookies(embedded_test_server()->base_url()).empty());
 }
@@ -1949,11 +2013,213 @@ IN_PROC_BROWSER_TEST_P(
   RunMaxConnectionsPerProxyTest();
 }
 
+// Used to test that we persist Reporting clients and NEL policies to disk, but
+// only when appropriate.
+class NetworkContextConfigurationReportingAndNelBrowserTest
+    : public NetworkContextConfigurationBrowserTest {
+ public:
+  struct RequestState {
+    content::SimpleURLLoaderTestHelper helper;
+    std::unique_ptr<network::SimpleURLLoader> loader;
+  };
+
+  NetworkContextConfigurationReportingAndNelBrowserTest()
+      : https_server_(net::test_server::EmbeddedTestServer::TYPE_HTTPS) {
+    // Set up an SSL certificate so we can make requests to "https://localhost"
+    https_server_.SetSSLConfig(
+        net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+    // Only start the server if we actually need it in the test (i.e., we'll
+    // call StartAcceptingConnections somewhere in the test).
+    if (!IsRestartStateWithInProcessNetworkService() &&
+        AreReportingAndNelEnabled()) {
+      EXPECT_TRUE(https_server_.InitializeAndListen());
+    }
+
+    // Make report delivery happen instantly.
+    net::ReportingPolicy policy;
+    policy.delivery_interval = base::TimeDelta::FromSeconds(0);
+    net::ReportingPolicy::UsePolicyForTesting(policy);
+  }
+
+  std::unique_ptr<RequestState> NewSimpleRequest(const GURL& url) {
+    auto request_state = std::make_unique<RequestState>();
+    std::unique_ptr<network::ResourceRequest> request =
+        std::make_unique<network::ResourceRequest>();
+    request->url = url;
+    request_state->loader = network::SimpleURLLoader::Create(
+        std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
+    request_state->loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        loader_factory(), request_state->helper.GetCallback());
+    return request_state;
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kShortReportingDelay);
+    // This switch will cause traffic to *any* port to go to https_server_,
+    // regardless of which arbitrary port https_server_ decides to run on.
+    // NEL and Reporting policies are only valid for a single origin.
+    if (!IsRestartStateWithInProcessNetworkService() &&
+        AreReportingAndNelEnabled()) {
+      command_line->AppendSwitchASCII(switches::kTestingFixedHttpsPort,
+                                      base::StringPrintf("%u", port()));
+    }
+  }
+
+  net::EmbeddedTestServer* http_server() { return &https_server_; }
+  int port() const { return https_server_.port(); }
+
+  static GURL GetCollectorURL() { return GURL("https://localhost/upload"); }
+
+  static std::string GetReportToHeader() {
+    return "Report-To: {\"endpoints\":[{\"url\":\"" + GetCollectorURL().spec() +
+           "\"}],\"max_age\":86400}\r\n";
+  }
+
+  static std::string GetNELHeader() {
+    return "NEL: "
+           "{\"report_to\":\"default\",\"max_age\":86400,\"success_fraction\":"
+           "1.0}\r\n";
+  }
+
+  void RespondWithHeaders(net::test_server::ControllableHttpResponse* resp) {
+    resp->WaitForRequest();
+    resp->Send("HTTP/1.1 200 OK\r\n");
+    resp->Send(GetReportToHeader());
+    resp->Send(GetNELHeader());
+    resp->Send("\r\n");
+    resp->Done();
+  }
+
+  void RespondWithoutHeaders(net::test_server::ControllableHttpResponse* resp) {
+    resp->WaitForRequest();
+    resp->Send("HTTP/1.1 200 OK\r\n");
+    resp->Send("\r\n");
+    resp->Done();
+  }
+
+  bool AreReportingAndNelEnabled() const {
+    switch (GetParam().network_context_type) {
+      case NetworkContextType::kSystem:
+      case NetworkContextType::kSafeBrowsing:
+        return false;
+      case NetworkContextType::kProfile:
+      case NetworkContextType::kIncognitoProfile:
+      case NetworkContextType::kOnDiskApp:
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
+        return true;
+    }
+  }
+
+  bool ExpectPersistenceEnabled() const {
+    switch (GetParam().network_context_type) {
+      case NetworkContextType::kSystem:
+      case NetworkContextType::kSafeBrowsing:
+      case NetworkContextType::kIncognitoProfile:
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
+        return false;
+      case NetworkContextType::kProfile:
+      case NetworkContextType::kOnDiskApp:
+        return true;
+    }
+  }
+
+ private:
+  net::EmbeddedTestServer https_server_;
+};
+
+namespace {
+
+constexpr char kReportingEnabledURL[] = "https://localhost/page";
+constexpr char kCrossOriginReportingEnabledURL[] = "https://localhost:444/page";
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationReportingAndNelBrowserTest,
+                       PRE_PersistReportingAndNel) {
+  if (IsRestartStateWithInProcessNetworkService() ||
+      !AreReportingAndNelEnabled()) {
+    return;
+  }
+
+  net::test_server::ControllableHttpResponse original_response(http_server(),
+                                                               "/page");
+  net::test_server::ControllableHttpResponse upload_response(http_server(),
+                                                             "/upload");
+  http_server()->StartAcceptingConnections();
+
+  // Make a request to /page and respond with Report-To and NEL headers, which
+  // will turn on NEL for the localhost:443 origin.
+  std::unique_ptr<RequestState> request =
+      NewSimpleRequest(GURL(kReportingEnabledURL));
+  RespondWithHeaders(&original_response);
+  request->helper.WaitForCallback();
+
+  // Wait for a request to /upload, which should happen because the previous
+  // request precipitated a NEL report.
+  upload_response.WaitForRequest();
+  EXPECT_EQ(net::test_server::METHOD_POST,
+            upload_response.http_request()->method);
+}
+
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationReportingAndNelBrowserTest,
+                       PersistReportingAndNel) {
+  if (IsRestartStateWithInProcessNetworkService() ||
+      !AreReportingAndNelEnabled()) {
+    return;
+  }
+
+  net::test_server::ControllableHttpResponse original_response(http_server(),
+                                                               "/page");
+  net::test_server::ControllableHttpResponse cross_origin_response(
+      http_server(), "/page");
+  net::test_server::ControllableHttpResponse upload_response(http_server(),
+                                                             "/upload");
+  http_server()->StartAcceptingConnections();
+
+  // Make a request that will only precipitate a NEL report if we loaded a NEL
+  // policy from the store.
+  std::unique_ptr<RequestState> request =
+      NewSimpleRequest(GURL(kReportingEnabledURL));
+  RespondWithoutHeaders(&original_response);
+  request->helper.WaitForCallback();
+
+  // Make another request that will generate another upload to the same
+  // collector. If the previous request didn't generate a NEL report (e.g.,
+  // because persistence is disabled) then this'll be first upload to the NEL
+  // collector. Note that because this upload is to a different origin than the
+  // request, Reporting will make a CORS preflight request, which is what we
+  // look for.
+  std::unique_ptr<RequestState> cross_origin_request =
+      NewSimpleRequest(GURL(kCrossOriginReportingEnabledURL));
+  RespondWithHeaders(&cross_origin_response);
+  cross_origin_request->helper.WaitForCallback();
+
+  // Wait for a request to /upload, which should happen because the previous
+  // requests precipitated NEL reports.
+  //
+  // We assume that Reporting/NEL will send reports in the order we made the
+  // requests above, which seems to be the case today but may not necessarily
+  // true in general.
+  upload_response.WaitForRequest();
+  if (ExpectPersistenceEnabled()) {
+    // A NEL upload about https://localhost
+    EXPECT_EQ(net::test_server::METHOD_POST,
+              upload_response.http_request()->method);
+  } else {
+    // A CORS preflight request before a cross-origin NEL upload about
+    // https://localhost:444
+    EXPECT_EQ(net::test_server::METHOD_OPTIONS,
+              upload_response.http_request()->method);
+  }
+}
+
 // Instantiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
 // enabled, and "/2" if it's enabled and restarted.
-#define TEST_CASES(network_context_type)                               \
-      TestCase({NetworkServiceState::kEnabled, network_context_type}), \
+#define TEST_CASES(network_context_type)                           \
+  TestCase({NetworkServiceState::kEnabled, network_context_type}), \
       TestCase({NetworkServiceState::kRestarted, network_context_type})
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -2011,5 +2277,7 @@ INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationProxySettingsBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationManagedProxySettingsBrowserTest);
+INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
+    NetworkContextConfigurationReportingAndNelBrowserTest);
 
 }  // namespace

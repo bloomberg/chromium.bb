@@ -253,6 +253,18 @@ std::string ToString(const T &value)
 // EXT_texture_type_2_10_10_10_REV
 #define GL_RGB10_UNORM_ANGLEX 0x6AEE
 
+// These are dummy formats for OES_vertex_type_10_10_10_2
+#define GL_A2_RGB10_UNORM_ANGLEX 0x6AEF
+#define GL_A2_RGB10_SNORM_ANGLEX 0x6AF0
+#define GL_A2_RGB10_USCALED_ANGLEX 0x6AF1
+#define GL_A2_RGB10_SSCALED_ANGLEX 0x6AF2
+#define GL_X2_RGB10_UINT_ANGLEX 0x6AF3
+#define GL_X2_RGB10_SINT_ANGLEX 0x6AF4
+#define GL_X2_RGB10_USCALED_ANGLEX 0x6AF5
+#define GL_X2_RGB10_SSCALED_ANGLEX 0x6AF6
+#define GL_X2_RGB10_UNORM_ANGLEX 0x6AF7
+#define GL_X2_RGB10_SNORM_ANGLEX 0x6AF8
+
 #define ANGLE_CHECK_GL_ALLOC(context, result) \
     ANGLE_CHECK(context, result, "Failed to allocate host memory", GL_OUT_OF_MEMORY)
 
@@ -332,5 +344,11 @@ std::string ToString(const T &value)
 #else
 #    define ANGLE_MAYBE_UNUSED
 #endif  // __has_cpp_attribute(maybe_unused)
+
+#if __has_cpp_attribute(require_constant_initialization)
+#    define ANGLE_REQUIRE_CONSTANT_INIT [[require_constant_initialization]]
+#else
+#    define ANGLE_REQUIRE_CONSTANT_INIT
+#endif  // __has_cpp_attribute(require_constant_initialization)
 
 #endif  // COMMON_ANGLEUTILS_H_

@@ -1166,7 +1166,7 @@ void TurboAssembler::Ulw(Register rd, const MemOperand& rs) {
     DCHECK(kMipsLwrOffset <= 3 && kMipsLwlOffset <= 3);
     MemOperand source = rs;
     // Adjust offset for two accesses and check if offset + 3 fits into int16_t.
-    AdjustBaseAndOffset(source, OffsetAccessType::TWO_ACCESSES, 3);
+    AdjustBaseAndOffset(&source, OffsetAccessType::TWO_ACCESSES, 3);
     if (rd != source.rm()) {
       lwr(rd, MemOperand(source.rm(), source.offset() + kMipsLwrOffset));
       lwl(rd, MemOperand(source.rm(), source.offset() + kMipsLwlOffset));
@@ -1201,7 +1201,7 @@ void TurboAssembler::Usw(Register rd, const MemOperand& rs) {
     DCHECK(kMipsSwrOffset <= 3 && kMipsSwlOffset <= 3);
     MemOperand source = rs;
     // Adjust offset for two accesses and check if offset + 3 fits into int16_t.
-    AdjustBaseAndOffset(source, OffsetAccessType::TWO_ACCESSES, 3);
+    AdjustBaseAndOffset(&source, OffsetAccessType::TWO_ACCESSES, 3);
     swr(rd, MemOperand(source.rm(), source.offset() + kMipsSwrOffset));
     swl(rd, MemOperand(source.rm(), source.offset() + kMipsSwlOffset));
   }
@@ -1216,7 +1216,7 @@ void TurboAssembler::Ulh(Register rd, const MemOperand& rs) {
     DCHECK_EQ(kArchVariant, kMips64r2);
     MemOperand source = rs;
     // Adjust offset for two accesses and check if offset + 1 fits into int16_t.
-    AdjustBaseAndOffset(source, OffsetAccessType::TWO_ACCESSES, 1);
+    AdjustBaseAndOffset(&source, OffsetAccessType::TWO_ACCESSES, 1);
     UseScratchRegisterScope temps(this);
     Register scratch = temps.Acquire();
     if (source.rm() == scratch) {
@@ -1250,7 +1250,7 @@ void TurboAssembler::Ulhu(Register rd, const MemOperand& rs) {
     DCHECK_EQ(kArchVariant, kMips64r2);
     MemOperand source = rs;
     // Adjust offset for two accesses and check if offset + 1 fits into int16_t.
-    AdjustBaseAndOffset(source, OffsetAccessType::TWO_ACCESSES, 1);
+    AdjustBaseAndOffset(&source, OffsetAccessType::TWO_ACCESSES, 1);
     UseScratchRegisterScope temps(this);
     Register scratch = temps.Acquire();
     if (source.rm() == scratch) {
@@ -1286,7 +1286,7 @@ void TurboAssembler::Ush(Register rd, const MemOperand& rs, Register scratch) {
     DCHECK_EQ(kArchVariant, kMips64r2);
     MemOperand source = rs;
     // Adjust offset for two accesses and check if offset + 1 fits into int16_t.
-    AdjustBaseAndOffset(source, OffsetAccessType::TWO_ACCESSES, 1);
+    AdjustBaseAndOffset(&source, OffsetAccessType::TWO_ACCESSES, 1);
 
     if (scratch != rd) {
       mov(scratch, rd);
@@ -1314,7 +1314,7 @@ void TurboAssembler::Uld(Register rd, const MemOperand& rs) {
     DCHECK(kMipsLdrOffset <= 7 && kMipsLdlOffset <= 7);
     MemOperand source = rs;
     // Adjust offset for two accesses and check if offset + 7 fits into int16_t.
-    AdjustBaseAndOffset(source, OffsetAccessType::TWO_ACCESSES, 7);
+    AdjustBaseAndOffset(&source, OffsetAccessType::TWO_ACCESSES, 7);
     if (rd != source.rm()) {
       ldr(rd, MemOperand(source.rm(), source.offset() + kMipsLdrOffset));
       ldl(rd, MemOperand(source.rm(), source.offset() + kMipsLdlOffset));
@@ -1349,7 +1349,7 @@ void TurboAssembler::Usd(Register rd, const MemOperand& rs) {
     DCHECK(kMipsSdrOffset <= 7 && kMipsSdlOffset <= 7);
     MemOperand source = rs;
     // Adjust offset for two accesses and check if offset + 7 fits into int16_t.
-    AdjustBaseAndOffset(source, OffsetAccessType::TWO_ACCESSES, 7);
+    AdjustBaseAndOffset(&source, OffsetAccessType::TWO_ACCESSES, 7);
     sdr(rd, MemOperand(source.rm(), source.offset() + kMipsSdrOffset));
     sdl(rd, MemOperand(source.rm(), source.offset() + kMipsSdlOffset));
   }
@@ -1411,91 +1411,91 @@ void TurboAssembler::Usdc1(FPURegister fd, const MemOperand& rs,
 
 void TurboAssembler::Lb(Register rd, const MemOperand& rs) {
   MemOperand source = rs;
-  AdjustBaseAndOffset(source);
+  AdjustBaseAndOffset(&source);
   lb(rd, source);
 }
 
 void TurboAssembler::Lbu(Register rd, const MemOperand& rs) {
   MemOperand source = rs;
-  AdjustBaseAndOffset(source);
+  AdjustBaseAndOffset(&source);
   lbu(rd, source);
 }
 
 void TurboAssembler::Sb(Register rd, const MemOperand& rs) {
   MemOperand source = rs;
-  AdjustBaseAndOffset(source);
+  AdjustBaseAndOffset(&source);
   sb(rd, source);
 }
 
 void TurboAssembler::Lh(Register rd, const MemOperand& rs) {
   MemOperand source = rs;
-  AdjustBaseAndOffset(source);
+  AdjustBaseAndOffset(&source);
   lh(rd, source);
 }
 
 void TurboAssembler::Lhu(Register rd, const MemOperand& rs) {
   MemOperand source = rs;
-  AdjustBaseAndOffset(source);
+  AdjustBaseAndOffset(&source);
   lhu(rd, source);
 }
 
 void TurboAssembler::Sh(Register rd, const MemOperand& rs) {
   MemOperand source = rs;
-  AdjustBaseAndOffset(source);
+  AdjustBaseAndOffset(&source);
   sh(rd, source);
 }
 
 void TurboAssembler::Lw(Register rd, const MemOperand& rs) {
   MemOperand source = rs;
-  AdjustBaseAndOffset(source);
+  AdjustBaseAndOffset(&source);
   lw(rd, source);
 }
 
 void TurboAssembler::Lwu(Register rd, const MemOperand& rs) {
   MemOperand source = rs;
-  AdjustBaseAndOffset(source);
+  AdjustBaseAndOffset(&source);
   lwu(rd, source);
 }
 
 void TurboAssembler::Sw(Register rd, const MemOperand& rs) {
   MemOperand source = rs;
-  AdjustBaseAndOffset(source);
+  AdjustBaseAndOffset(&source);
   sw(rd, source);
 }
 
 void TurboAssembler::Ld(Register rd, const MemOperand& rs) {
   MemOperand source = rs;
-  AdjustBaseAndOffset(source);
+  AdjustBaseAndOffset(&source);
   ld(rd, source);
 }
 
 void TurboAssembler::Sd(Register rd, const MemOperand& rs) {
   MemOperand source = rs;
-  AdjustBaseAndOffset(source);
+  AdjustBaseAndOffset(&source);
   sd(rd, source);
 }
 
 void TurboAssembler::Lwc1(FPURegister fd, const MemOperand& src) {
   MemOperand tmp = src;
-  AdjustBaseAndOffset(tmp);
+  AdjustBaseAndOffset(&tmp);
   lwc1(fd, tmp);
 }
 
 void TurboAssembler::Swc1(FPURegister fs, const MemOperand& src) {
   MemOperand tmp = src;
-  AdjustBaseAndOffset(tmp);
+  AdjustBaseAndOffset(&tmp);
   swc1(fs, tmp);
 }
 
 void TurboAssembler::Ldc1(FPURegister fd, const MemOperand& src) {
   MemOperand tmp = src;
-  AdjustBaseAndOffset(tmp);
+  AdjustBaseAndOffset(&tmp);
   ldc1(fd, tmp);
 }
 
 void TurboAssembler::Sdc1(FPURegister fs, const MemOperand& src) {
   MemOperand tmp = src;
-  AdjustBaseAndOffset(tmp);
+  AdjustBaseAndOffset(&tmp);
   sdc1(fs, tmp);
 }
 
@@ -1556,21 +1556,23 @@ void TurboAssembler::Scd(Register rd, const MemOperand& rs) {
 }
 
 void TurboAssembler::li(Register dst, Handle<HeapObject> value, LiFlags mode) {
-  if (FLAG_embedded_builtins) {
-    if (root_array_available_ && options().isolate_independent_code) {
-      IndirectLoadConstant(dst, value);
-      return;
-    }
+  // TODO(jgruber,v8:8887): Also consider a root-relative load when generating
+  // non-isolate-independent code. In many cases it might be cheaper than
+  // embedding the relocatable value.
+  if (root_array_available_ && options().isolate_independent_code) {
+    IndirectLoadConstant(dst, value);
+    return;
   }
   li(dst, Operand(value), mode);
 }
 
 void TurboAssembler::li(Register dst, ExternalReference value, LiFlags mode) {
-  if (FLAG_embedded_builtins) {
-    if (root_array_available_ && options().isolate_independent_code) {
-      IndirectLoadExternalReference(dst, value);
-      return;
-    }
+  // TODO(jgruber,v8:8887): Also consider a root-relative load when generating
+  // non-isolate-independent code. In many cases it might be cheaper than
+  // embedding the relocatable value.
+  if (root_array_available_ && options().isolate_independent_code) {
+    IndirectLoadExternalReference(dst, value);
+    return;
   }
   li(dst, Operand(value), mode);
 }
@@ -2988,6 +2990,8 @@ void TurboAssembler::Movf(Register rd, Register rs, uint16_t cc) {
 
 void TurboAssembler::Clz(Register rd, Register rs) { clz(rd, rs); }
 
+void TurboAssembler::Dclz(Register rd, Register rs) { dclz(rd, rs); }
+
 void TurboAssembler::Ctz(Register rd, Register rs) {
   if (kArchVariant == kMips64r6) {
     // We don't have an instruction to count the number of trailing zeroes.
@@ -3362,18 +3366,18 @@ Register TurboAssembler::GetRtAsRegisterHelper(const Operand& rt,
   return r2;
 }
 
-bool TurboAssembler::CalculateOffset(Label* L, int32_t& offset,
+bool TurboAssembler::CalculateOffset(Label* L, int32_t* offset,
                                      OffsetSize bits) {
   if (!is_near(L, bits)) return false;
-  offset = GetOffset(offset, L, bits);
+  *offset = GetOffset(*offset, L, bits);
   return true;
 }
 
-bool TurboAssembler::CalculateOffset(Label* L, int32_t& offset, OffsetSize bits,
-                                     Register& scratch, const Operand& rt) {
+bool TurboAssembler::CalculateOffset(Label* L, int32_t* offset, OffsetSize bits,
+                                     Register* scratch, const Operand& rt) {
   if (!is_near(L, bits)) return false;
-  scratch = GetRtAsRegisterHelper(rt, scratch);
-  offset = GetOffset(offset, L, bits);
+  *scratch = GetRtAsRegisterHelper(rt, *scratch);
+  *offset = GetOffset(*offset, L, bits);
   return true;
 }
 
@@ -3392,23 +3396,23 @@ bool TurboAssembler::BranchShortHelperR6(int32_t offset, Label* L,
     BlockTrampolinePoolScope block_trampoline_pool(this);
     switch (cond) {
       case cc_always:
-        if (!CalculateOffset(L, offset, OffsetSize::kOffset26)) return false;
+        if (!CalculateOffset(L, &offset, OffsetSize::kOffset26)) return false;
         bc(offset);
         break;
       case eq:
         if (rt.is_reg() && rs.code() == rt.rm().code()) {
           // Pre R6 beq is used here to make the code patchable. Otherwise bc
           // should be used which has no condition field so is not patchable.
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           beq(rs, scratch, offset);
           nop();
         } else if (IsZero(rt)) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset21)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset21)) return false;
           beqzc(rs, offset);
         } else {
           // We don't want any other register but scratch clobbered.
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           beqc(rs, scratch, offset);
         }
@@ -3417,16 +3421,16 @@ bool TurboAssembler::BranchShortHelperR6(int32_t offset, Label* L,
         if (rt.is_reg() && rs.code() == rt.rm().code()) {
           // Pre R6 bne is used here to make the code patchable. Otherwise we
           // should not generate any instruction.
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           bne(rs, scratch, offset);
           nop();
         } else if (IsZero(rt)) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset21)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset21)) return false;
           bnezc(rs, offset);
         } else {
           // We don't want any other register but scratch clobbered.
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           bnec(rs, scratch, offset);
         }
@@ -3438,14 +3442,14 @@ bool TurboAssembler::BranchShortHelperR6(int32_t offset, Label* L,
         if (rt.is_reg() && rs.code() == rt.rm().code()) {
           break;  // No code needs to be emitted.
         } else if (rs == zero_reg) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           bltzc(scratch, offset);
         } else if (IsZero(rt)) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16)) return false;
           bgtzc(rs, offset);
         } else {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           DCHECK(rs != scratch);
           bltc(scratch, rs, offset);
@@ -3454,17 +3458,17 @@ bool TurboAssembler::BranchShortHelperR6(int32_t offset, Label* L,
       case greater_equal:
         // rs >= rt
         if (rt.is_reg() && rs.code() == rt.rm().code()) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset26)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset26)) return false;
           bc(offset);
         } else if (rs == zero_reg) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           blezc(scratch, offset);
         } else if (IsZero(rt)) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16)) return false;
           bgezc(rs, offset);
         } else {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           DCHECK(rs != scratch);
           bgec(rs, scratch, offset);
@@ -3475,14 +3479,14 @@ bool TurboAssembler::BranchShortHelperR6(int32_t offset, Label* L,
         if (rt.is_reg() && rs.code() == rt.rm().code()) {
           break;  // No code needs to be emitted.
         } else if (rs == zero_reg) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           bgtzc(scratch, offset);
         } else if (IsZero(rt)) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16)) return false;
           bltzc(rs, offset);
         } else {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           DCHECK(rs != scratch);
           bltc(rs, scratch, offset);
@@ -3491,17 +3495,17 @@ bool TurboAssembler::BranchShortHelperR6(int32_t offset, Label* L,
       case less_equal:
         // rs <= rt
         if (rt.is_reg() && rs.code() == rt.rm().code()) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset26)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset26)) return false;
           bc(offset);
         } else if (rs == zero_reg) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           bgezc(scratch, offset);
         } else if (IsZero(rt)) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16)) return false;
           blezc(rs, offset);
         } else {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           DCHECK(rs != scratch);
           bgec(scratch, rs, offset);
@@ -3514,14 +3518,14 @@ bool TurboAssembler::BranchShortHelperR6(int32_t offset, Label* L,
         if (rt.is_reg() && rs.code() == rt.rm().code()) {
           break;  // No code needs to be emitted.
         } else if (rs == zero_reg) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset21, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset21, &scratch, rt))
             return false;
           bnezc(scratch, offset);
         } else if (IsZero(rt)) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset21)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset21)) return false;
           bnezc(rs, offset);
         } else {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           DCHECK(rs != scratch);
           bltuc(scratch, rs, offset);
@@ -3530,17 +3534,17 @@ bool TurboAssembler::BranchShortHelperR6(int32_t offset, Label* L,
       case Ugreater_equal:
         // rs >= rt
         if (rt.is_reg() && rs.code() == rt.rm().code()) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset26)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset26)) return false;
           bc(offset);
         } else if (rs == zero_reg) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset21, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset21, &scratch, rt))
             return false;
           beqzc(scratch, offset);
         } else if (IsZero(rt)) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset26)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset26)) return false;
           bc(offset);
         } else {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           DCHECK(rs != scratch);
           bgeuc(rs, scratch, offset);
@@ -3551,13 +3555,13 @@ bool TurboAssembler::BranchShortHelperR6(int32_t offset, Label* L,
         if (rt.is_reg() && rs.code() == rt.rm().code()) {
           break;  // No code needs to be emitted.
         } else if (rs == zero_reg) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset21, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset21, &scratch, rt))
             return false;
           bnezc(scratch, offset);
         } else if (IsZero(rt)) {
           break;  // No code needs to be emitted.
         } else {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           DCHECK(rs != scratch);
           bltuc(rs, scratch, offset);
@@ -3566,17 +3570,17 @@ bool TurboAssembler::BranchShortHelperR6(int32_t offset, Label* L,
       case Uless_equal:
         // rs <= rt
         if (rt.is_reg() && rs.code() == rt.rm().code()) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset26)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset26)) return false;
           bc(offset);
         } else if (rs == zero_reg) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset26, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset26, &scratch, rt))
             return false;
           bc(offset);
         } else if (IsZero(rt)) {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset21)) return false;
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset21)) return false;
           beqzc(rs, offset);
         } else {
-          if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+          if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
             return false;
           DCHECK(rs != scratch);
           bgeuc(scratch, rs, offset);
@@ -3858,7 +3862,7 @@ bool TurboAssembler::BranchAndLinkShortHelperR6(int32_t offset, Label* L,
   DCHECK((cond == cc_always && is_int26(offset)) || is_int16(offset));
   switch (cond) {
     case cc_always:
-      if (!CalculateOffset(L, offset, OffsetSize::kOffset26)) return false;
+      if (!CalculateOffset(L, &offset, OffsetSize::kOffset26)) return false;
       balc(offset);
       break;
     case eq:
@@ -3880,11 +3884,11 @@ bool TurboAssembler::BranchAndLinkShortHelperR6(int32_t offset, Label* L,
       if (rs.code() == rt.rm().code()) {
         break;  // No code needs to be emitted.
       } else if (rs == zero_reg) {
-        if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+        if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
           return false;
         bltzalc(scratch, offset);
       } else if (IsZero(rt)) {
-        if (!CalculateOffset(L, offset, OffsetSize::kOffset16)) return false;
+        if (!CalculateOffset(L, &offset, OffsetSize::kOffset16)) return false;
         bgtzalc(rs, offset);
       } else {
         if (!is_near(L, bits)) return false;
@@ -3896,14 +3900,14 @@ bool TurboAssembler::BranchAndLinkShortHelperR6(int32_t offset, Label* L,
     case greater_equal:
       // rs >= rt
       if (rs.code() == rt.rm().code()) {
-        if (!CalculateOffset(L, offset, OffsetSize::kOffset26)) return false;
+        if (!CalculateOffset(L, &offset, OffsetSize::kOffset26)) return false;
         balc(offset);
       } else if (rs == zero_reg) {
-        if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+        if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
           return false;
         blezalc(scratch, offset);
       } else if (IsZero(rt)) {
-        if (!CalculateOffset(L, offset, OffsetSize::kOffset16)) return false;
+        if (!CalculateOffset(L, &offset, OffsetSize::kOffset16)) return false;
         bgezalc(rs, offset);
       } else {
         if (!is_near(L, bits)) return false;
@@ -3917,11 +3921,11 @@ bool TurboAssembler::BranchAndLinkShortHelperR6(int32_t offset, Label* L,
       if (rs.code() == rt.rm().code()) {
         break;  // No code needs to be emitted.
       } else if (rs == zero_reg) {
-        if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+        if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
           return false;
         bgtzalc(scratch, offset);
       } else if (IsZero(rt)) {
-        if (!CalculateOffset(L, offset, OffsetSize::kOffset16)) return false;
+        if (!CalculateOffset(L, &offset, OffsetSize::kOffset16)) return false;
         bltzalc(rs, offset);
       } else {
         if (!is_near(L, bits)) return false;
@@ -3933,14 +3937,14 @@ bool TurboAssembler::BranchAndLinkShortHelperR6(int32_t offset, Label* L,
     case less_equal:
       // rs <= r2
       if (rs.code() == rt.rm().code()) {
-        if (!CalculateOffset(L, offset, OffsetSize::kOffset26)) return false;
+        if (!CalculateOffset(L, &offset, OffsetSize::kOffset26)) return false;
         balc(offset);
       } else if (rs == zero_reg) {
-        if (!CalculateOffset(L, offset, OffsetSize::kOffset16, scratch, rt))
+        if (!CalculateOffset(L, &offset, OffsetSize::kOffset16, &scratch, rt))
           return false;
         bgezalc(scratch, offset);
       } else if (IsZero(rt)) {
-        if (!CalculateOffset(L, offset, OffsetSize::kOffset16)) return false;
+        if (!CalculateOffset(L, &offset, OffsetSize::kOffset16)) return false;
         blezalc(rs, offset);
       } else {
         if (!is_near(L, bits)) return false;
@@ -4176,36 +4180,34 @@ void TurboAssembler::Jump(Handle<Code> code, RelocInfo::Mode rmode,
                           Condition cond, Register rs, const Operand& rt,
                           BranchDelaySlot bd) {
   DCHECK(RelocInfo::IsCodeTarget(rmode));
-  if (FLAG_embedded_builtins) {
-    BlockTrampolinePoolScope block_trampoline_pool(this);
-    if (root_array_available_ && options().isolate_independent_code) {
-      IndirectLoadConstant(t9, code);
-      Daddu(t9, t9, Operand(Code::kHeaderSize - kHeapObjectTag));
+
+  BlockTrampolinePoolScope block_trampoline_pool(this);
+  if (root_array_available_ && options().isolate_independent_code) {
+    IndirectLoadConstant(t9, code);
+    Daddu(t9, t9, Operand(Code::kHeaderSize - kHeapObjectTag));
+    Jump(t9, cond, rs, rt, bd);
+    return;
+  } else if (options().inline_offheap_trampolines) {
+    int builtin_index = Builtins::kNoBuiltinId;
+    if (isolate()->builtins()->IsBuiltinHandle(code, &builtin_index) &&
+        Builtins::IsIsolateIndependent(builtin_index)) {
+      // Inline the trampoline.
+      RecordCommentForOffHeapTrampoline(builtin_index);
+      CHECK_NE(builtin_index, Builtins::kNoBuiltinId);
+      EmbeddedData d = EmbeddedData::FromBlob();
+      Address entry = d.InstructionStartOfBuiltin(builtin_index);
+      li(t9, Operand(entry, RelocInfo::OFF_HEAP_TARGET));
       Jump(t9, cond, rs, rt, bd);
       return;
-    } else if (options().inline_offheap_trampolines) {
-      int builtin_index = Builtins::kNoBuiltinId;
-      if (isolate()->builtins()->IsBuiltinHandle(code, &builtin_index) &&
-          Builtins::IsIsolateIndependent(builtin_index)) {
-        // Inline the trampoline.
-        RecordCommentForOffHeapTrampoline(builtin_index);
-        CHECK_NE(builtin_index, Builtins::kNoBuiltinId);
-        EmbeddedData d = EmbeddedData::FromBlob();
-        Address entry = d.InstructionStartOfBuiltin(builtin_index);
-        li(t9, Operand(entry, RelocInfo::OFF_HEAP_TARGET));
-        Jump(t9, cond, rs, rt, bd);
-        return;
-      }
     }
   }
+
   Jump(static_cast<intptr_t>(code.address()), rmode, cond, rs, rt, bd);
 }
 
 void TurboAssembler::Jump(const ExternalReference& reference) {
-  UseScratchRegisterScope temps(this);
-  Register scratch = temps.Acquire();
-  li(scratch, reference);
-  Jump(scratch);
+  li(t9, reference);
+  Jump(t9);
 }
 
 // Note: To call gcc-compiled C code on mips, you must call through t9.
@@ -4257,34 +4259,34 @@ void TurboAssembler::Call(Handle<Code> code, RelocInfo::Mode rmode,
                           Condition cond, Register rs, const Operand& rt,
                           BranchDelaySlot bd) {
   BlockTrampolinePoolScope block_trampoline_pool(this);
-  if (FLAG_embedded_builtins) {
-    if (root_array_available_ && options().isolate_independent_code) {
-      IndirectLoadConstant(t9, code);
-      Daddu(t9, t9, Operand(Code::kHeaderSize - kHeapObjectTag));
+
+  if (root_array_available_ && options().isolate_independent_code) {
+    IndirectLoadConstant(t9, code);
+    Daddu(t9, t9, Operand(Code::kHeaderSize - kHeapObjectTag));
+    Call(t9, cond, rs, rt, bd);
+    return;
+  } else if (options().inline_offheap_trampolines) {
+    int builtin_index = Builtins::kNoBuiltinId;
+    if (isolate()->builtins()->IsBuiltinHandle(code, &builtin_index) &&
+        Builtins::IsIsolateIndependent(builtin_index)) {
+      // Inline the trampoline.
+      RecordCommentForOffHeapTrampoline(builtin_index);
+      CHECK_NE(builtin_index, Builtins::kNoBuiltinId);
+      EmbeddedData d = EmbeddedData::FromBlob();
+      Address entry = d.InstructionStartOfBuiltin(builtin_index);
+      li(t9, Operand(entry, RelocInfo::OFF_HEAP_TARGET));
       Call(t9, cond, rs, rt, bd);
       return;
-    } else if (options().inline_offheap_trampolines) {
-      int builtin_index = Builtins::kNoBuiltinId;
-      if (isolate()->builtins()->IsBuiltinHandle(code, &builtin_index) &&
-          Builtins::IsIsolateIndependent(builtin_index)) {
-        // Inline the trampoline.
-        RecordCommentForOffHeapTrampoline(builtin_index);
-        CHECK_NE(builtin_index, Builtins::kNoBuiltinId);
-        EmbeddedData d = EmbeddedData::FromBlob();
-        Address entry = d.InstructionStartOfBuiltin(builtin_index);
-        li(t9, Operand(entry, RelocInfo::OFF_HEAP_TARGET));
-        Call(t9, cond, rs, rt, bd);
-        return;
-      }
     }
   }
+
   DCHECK(RelocInfo::IsCodeTarget(rmode));
+  DCHECK(code->IsExecutable());
   Call(code.address(), rmode, cond, rs, rt, bd);
 }
 
 void TurboAssembler::LoadEntryFromBuiltinIndex(Register builtin_index) {
   STATIC_ASSERT(kSystemPointerSize == 8);
-  STATIC_ASSERT(kSmiShiftSize == 31);
   STATIC_ASSERT(kSmiTagSize == 1);
   STATIC_ASSERT(kSmiTag == 0);
 
@@ -4584,35 +4586,21 @@ void TurboAssembler::MovToFloatParameters(DoubleRegister src1,
 // -----------------------------------------------------------------------------
 // JavaScript invokes.
 
-void TurboAssembler::PrepareForTailCall(const ParameterCount& callee_args_count,
-                                        Register caller_args_count_reg,
+void TurboAssembler::PrepareForTailCall(Register callee_args_count,
+                                        Register caller_args_count,
                                         Register scratch0, Register scratch1) {
-#if DEBUG
-  if (callee_args_count.is_reg()) {
-    DCHECK(!AreAliased(callee_args_count.reg(), caller_args_count_reg, scratch0,
-                       scratch1));
-  } else {
-    DCHECK(!AreAliased(caller_args_count_reg, scratch0, scratch1));
-  }
-#endif
-
   // Calculate the end of destination area where we will put the arguments
   // after we drop current frame. We add kPointerSize to count the receiver
   // argument which is not included into formal parameters count.
   Register dst_reg = scratch0;
-  Dlsa(dst_reg, fp, caller_args_count_reg, kPointerSizeLog2);
+  Dlsa(dst_reg, fp, caller_args_count, kPointerSizeLog2);
   Daddu(dst_reg, dst_reg,
         Operand(StandardFrameConstants::kCallerSPOffset + kPointerSize));
 
-  Register src_reg = caller_args_count_reg;
+  Register src_reg = caller_args_count;
   // Calculate the end of source area. +kPointerSize is for the receiver.
-  if (callee_args_count.is_reg()) {
-    Dlsa(src_reg, sp, callee_args_count.reg(), kPointerSizeLog2);
-    Daddu(src_reg, src_reg, Operand(kPointerSize));
-  } else {
-    Daddu(src_reg, sp,
-          Operand((callee_args_count.immediate() + 1) * kPointerSize));
-  }
+  Dlsa(src_reg, sp, callee_args_count, kPointerSizeLog2);
+  Daddu(src_reg, src_reg, Operand(kPointerSize));
 
   if (FLAG_debug_code) {
     Check(lo, AbortReason::kStackAccessBelowStackPointer, src_reg,
@@ -4644,68 +4632,40 @@ void TurboAssembler::PrepareForTailCall(const ParameterCount& callee_args_count,
   mov(sp, dst_reg);
 }
 
-void MacroAssembler::InvokePrologue(const ParameterCount& expected,
-                                    const ParameterCount& actual, Label* done,
-                                    bool* definitely_mismatches,
-                                    InvokeFlag flag) {
-  bool definitely_matches = false;
-  *definitely_mismatches = false;
+void MacroAssembler::InvokePrologue(Register expected_parameter_count,
+                                    Register actual_parameter_count,
+                                    Label* done, InvokeFlag flag) {
   Label regular_invoke;
 
-  // Check whether the expected and actual arguments count match. If not,
-  // setup registers according to contract with ArgumentsAdaptorTrampoline:
+  // Check whether the expected and actual arguments count match. The registers
+  // are set up according to contract with ArgumentsAdaptorTrampoline:
   //  a0: actual arguments count
   //  a1: function (passed through to callee)
   //  a2: expected arguments count
 
   // The code below is made a lot easier because the calling code already sets
-  // up actual and expected registers according to the contract if values are
-  // passed in registers.
-  DCHECK(actual.is_immediate() || actual.reg() == a0);
-  DCHECK(expected.is_immediate() || expected.reg() == a2);
+  // up actual and expected registers according to the contract.
 
-  if (expected.is_immediate()) {
-    DCHECK(actual.is_immediate());
-    li(a0, Operand(actual.immediate()));
-    if (expected.immediate() == actual.immediate()) {
-      definitely_matches = true;
-    } else {
-      const int sentinel = SharedFunctionInfo::kDontAdaptArgumentsSentinel;
-      if (expected.immediate() == sentinel) {
-        // Don't worry about adapting arguments for builtins that
-        // don't want that done. Skip adaption code by making it look
-        // like we have a match between expected and actual number of
-        // arguments.
-        definitely_matches = true;
-      } else {
-        *definitely_mismatches = true;
-        li(a2, Operand(expected.immediate()));
-      }
-    }
-  } else if (actual.is_immediate()) {
-    li(a0, Operand(actual.immediate()));
-    Branch(&regular_invoke, eq, expected.reg(), Operand(a0));
+  DCHECK_EQ(actual_parameter_count, a0);
+  DCHECK_EQ(expected_parameter_count, a2);
+
+  Branch(&regular_invoke, eq, expected_parameter_count,
+         Operand(actual_parameter_count));
+
+  Handle<Code> adaptor = BUILTIN_CODE(isolate(), ArgumentsAdaptorTrampoline);
+  if (flag == CALL_FUNCTION) {
+    Call(adaptor);
+    Branch(done);
   } else {
-    Branch(&regular_invoke, eq, expected.reg(), Operand(actual.reg()));
+    Jump(adaptor, RelocInfo::CODE_TARGET);
   }
 
-  if (!definitely_matches) {
-    Handle<Code> adaptor = BUILTIN_CODE(isolate(), ArgumentsAdaptorTrampoline);
-    if (flag == CALL_FUNCTION) {
-      Call(adaptor);
-      if (!*definitely_mismatches) {
-        Branch(done);
-      }
-    } else {
-      Jump(adaptor, RelocInfo::CODE_TARGET);
-    }
-    bind(&regular_invoke);
-  }
+  bind(&regular_invoke);
 }
 
 void MacroAssembler::CheckDebugHook(Register fun, Register new_target,
-                                    const ParameterCount& expected,
-                                    const ParameterCount& actual) {
+                                    Register expected_parameter_count,
+                                    Register actual_parameter_count) {
   Label skip_hook;
 
   li(t0, ExternalReference::debug_hook_on_function_call_address(isolate()));
@@ -4714,23 +4674,16 @@ void MacroAssembler::CheckDebugHook(Register fun, Register new_target,
 
   {
     // Load receiver to pass it later to DebugOnFunctionCall hook.
-    if (actual.is_reg()) {
-      mov(t0, actual.reg());
-    } else {
-      li(t0, actual.immediate());
-    }
-    Dlsa(t0, sp, t0, kPointerSizeLog2);
+    Dlsa(t0, sp, actual_parameter_count, kPointerSizeLog2);
     Ld(t0, MemOperand(t0));
     FrameScope frame(this,
                      has_frame() ? StackFrame::NONE : StackFrame::INTERNAL);
-    if (expected.is_reg()) {
-      SmiTag(expected.reg());
-      Push(expected.reg());
-    }
-    if (actual.is_reg()) {
-      SmiTag(actual.reg());
-      Push(actual.reg());
-    }
+    SmiTag(expected_parameter_count);
+    Push(expected_parameter_count);
+
+    SmiTag(actual_parameter_count);
+    Push(actual_parameter_count);
+
     if (new_target.is_valid()) {
       Push(new_target);
     }
@@ -4742,29 +4695,28 @@ void MacroAssembler::CheckDebugHook(Register fun, Register new_target,
     if (new_target.is_valid()) {
       Pop(new_target);
     }
-    if (actual.is_reg()) {
-      Pop(actual.reg());
-      SmiUntag(actual.reg());
-    }
-    if (expected.is_reg()) {
-      Pop(expected.reg());
-      SmiUntag(expected.reg());
-    }
+
+    Pop(actual_parameter_count);
+    SmiUntag(actual_parameter_count);
+
+    Pop(expected_parameter_count);
+    SmiUntag(expected_parameter_count);
   }
   bind(&skip_hook);
 }
 
 void MacroAssembler::InvokeFunctionCode(Register function, Register new_target,
-                                        const ParameterCount& expected,
-                                        const ParameterCount& actual,
+                                        Register expected_parameter_count,
+                                        Register actual_parameter_count,
                                         InvokeFlag flag) {
   // You can't call a function without a valid frame.
-  DCHECK(flag == JUMP_FUNCTION || has_frame());
-  DCHECK(function == a1);
+  DCHECK_IMPLIES(flag == CALL_FUNCTION, has_frame());
+  DCHECK_EQ(function, a1);
   DCHECK_IMPLIES(new_target.is_valid(), new_target == a3);
 
   // On function call, call into the debugger if necessary.
-  CheckDebugHook(function, new_target, expected, actual);
+  CheckDebugHook(function, new_target, expected_parameter_count,
+                 actual_parameter_count);
 
   // Clear the new.target register if not given.
   if (!new_target.is_valid()) {
@@ -4772,62 +4724,62 @@ void MacroAssembler::InvokeFunctionCode(Register function, Register new_target,
   }
 
   Label done;
-  bool definitely_mismatches = false;
-  InvokePrologue(expected, actual, &done, &definitely_mismatches, flag);
-  if (!definitely_mismatches) {
-    // We call indirectly through the code field in the function to
-    // allow recompilation to take effect without changing any of the
-    // call sites.
-    Register code = kJavaScriptCallCodeStartRegister;
-    Ld(code, FieldMemOperand(function, JSFunction::kCodeOffset));
-    if (flag == CALL_FUNCTION) {
-      Daddu(code, code, Operand(Code::kHeaderSize - kHeapObjectTag));
-      Call(code);
-    } else {
-      DCHECK(flag == JUMP_FUNCTION);
-      Daddu(code, code, Operand(Code::kHeaderSize - kHeapObjectTag));
-      Jump(code);
-    }
-    // Continue here if InvokePrologue does handle the invocation due to
-    // mismatched parameter counts.
-    bind(&done);
+  InvokePrologue(expected_parameter_count, actual_parameter_count, &done, flag);
+  // We call indirectly through the code field in the function to
+  // allow recompilation to take effect without changing any of the
+  // call sites.
+  Register code = kJavaScriptCallCodeStartRegister;
+  Ld(code, FieldMemOperand(function, JSFunction::kCodeOffset));
+  if (flag == CALL_FUNCTION) {
+    Daddu(code, code, Operand(Code::kHeaderSize - kHeapObjectTag));
+    Call(code);
+  } else {
+    DCHECK(flag == JUMP_FUNCTION);
+    Daddu(code, code, Operand(Code::kHeaderSize - kHeapObjectTag));
+    Jump(code);
   }
+
+  // Continue here if InvokePrologue does handle the invocation due to
+  // mismatched parameter counts.
+  bind(&done);
 }
 
-void MacroAssembler::InvokeFunction(Register function, Register new_target,
-                                    const ParameterCount& actual,
-                                    InvokeFlag flag) {
+void MacroAssembler::InvokeFunctionWithNewTarget(
+    Register function, Register new_target, Register actual_parameter_count,
+    InvokeFlag flag) {
   // You can't call a function without a valid frame.
-  DCHECK(flag == JUMP_FUNCTION || has_frame());
+  DCHECK_IMPLIES(flag == CALL_FUNCTION, has_frame());
 
   // Contract with called JS functions requires that function is passed in a1.
-  DCHECK(function == a1);
-  Register expected_reg = a2;
+  DCHECK_EQ(function, a1);
+  Register expected_parameter_count = a2;
   Register temp_reg = t0;
   Ld(temp_reg, FieldMemOperand(a1, JSFunction::kSharedFunctionInfoOffset));
   Ld(cp, FieldMemOperand(a1, JSFunction::kContextOffset));
   // The argument count is stored as uint16_t
-  Lhu(expected_reg,
+  Lhu(expected_parameter_count,
       FieldMemOperand(temp_reg,
                       SharedFunctionInfo::kFormalParameterCountOffset));
-  ParameterCount expected(expected_reg);
-  InvokeFunctionCode(a1, new_target, expected, actual, flag);
+
+  InvokeFunctionCode(a1, new_target, expected_parameter_count,
+                     actual_parameter_count, flag);
 }
 
 void MacroAssembler::InvokeFunction(Register function,
-                                    const ParameterCount& expected,
-                                    const ParameterCount& actual,
+                                    Register expected_parameter_count,
+                                    Register actual_parameter_count,
                                     InvokeFlag flag) {
   // You can't call a function without a valid frame.
-  DCHECK(flag == JUMP_FUNCTION || has_frame());
+  DCHECK_IMPLIES(flag == CALL_FUNCTION, has_frame());
 
   // Contract with called JS functions requires that function is passed in a1.
-  DCHECK(function == a1);
+  DCHECK_EQ(function, a1);
 
   // Get the function and setup the context.
   Ld(cp, FieldMemOperand(a1, JSFunction::kContextOffset));
 
-  InvokeFunctionCode(a1, no_reg, expected, actual, flag);
+  InvokeFunctionCode(a1, no_reg, expected_parameter_count,
+                     actual_parameter_count, flag);
 }
 
 // ---------------------------------------------------------------------------
@@ -4835,7 +4787,7 @@ void MacroAssembler::InvokeFunction(Register function,
 
 void MacroAssembler::GetObjectType(Register object, Register map,
                                    Register type_reg) {
-  Ld(map, FieldMemOperand(object, HeapObject::kMapOffset));
+  LoadMap(map, object);
   Lhu(type_reg, FieldMemOperand(map, Map::kInstanceTypeOffset));
 }
 
@@ -4931,20 +4883,6 @@ void TurboAssembler::MulOverflow(Register dst, Register left,
   xor_(overflow, overflow, scratch);
 }
 
-void TurboAssembler::CallRuntimeWithCEntry(Runtime::FunctionId fid,
-                                           Register centry) {
-  const Runtime::Function* f = Runtime::FunctionForId(fid);
-  // TODO(1236192): Most runtime routines don't need the number of
-  // arguments passed in because it is constant. At some point we
-  // should remove this need and make the runtime routine entry code
-  // smarter.
-  PrepareCEntryArgs(f->nargs);
-  PrepareCEntryFunction(ExternalReference::Create(f));
-  DCHECK(!AreAliased(centry, a0, a1));
-  Daddu(centry, centry, Operand(Code::kHeaderSize - kHeapObjectTag));
-  Call(centry);
-}
-
 void MacroAssembler::CallRuntime(const Runtime::Function* f, int num_arguments,
                                  SaveFPRegsMode save_doubles) {
   // All parameters are on the stack. v0 has the return value after call.
@@ -5026,6 +4964,8 @@ void MacroAssembler::DecrementCounter(StatsCounter* counter, int value,
 // -----------------------------------------------------------------------------
 // Debugging.
 
+void TurboAssembler::Trap() { stop(); }
+
 void TurboAssembler::Assert(Condition cc, AbortReason reason, Register rs,
                             Operand rt) {
   if (emit_debug_code()) Check(cc, reason, rs, rt);
@@ -5091,9 +5031,15 @@ void TurboAssembler::Abort(AbortReason reason) {
   }
 }
 
+void MacroAssembler::LoadMap(Register destination, Register object) {
+  Ld(destination, FieldMemOperand(object, HeapObject::kMapOffset));
+}
+
 void MacroAssembler::LoadNativeContextSlot(int index, Register dst) {
-  Ld(dst, NativeContextMemOperand());
-  Ld(dst, ContextMemOperand(dst, index));
+  LoadMap(dst, cp);
+  Ld(dst,
+     FieldMemOperand(dst, Map::kConstructorOrBackPointerOrNativeContextOffset));
+  Ld(dst, MemOperand(dst, Context::SlotOffset(index)));
 }
 
 void TurboAssembler::StubPrologue(StackFrame::Type type) {
@@ -5348,7 +5294,7 @@ void MacroAssembler::AssertConstructor(Register object) {
     Check(ne, AbortReason::kOperandIsASmiAndNotAConstructor, t8,
           Operand(zero_reg));
 
-    ld(t8, FieldMemOperand(object, HeapObject::kMapOffset));
+    LoadMap(t8, object);
     Lbu(t8, FieldMemOperand(t8, Map::kBitFieldOffset));
     And(t8, t8, Operand(Map::IsConstructorBit::kMask));
     Check(ne, AbortReason::kOperandIsNotAConstructor, t8, Operand(zero_reg));

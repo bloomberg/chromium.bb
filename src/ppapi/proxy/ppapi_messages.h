@@ -21,7 +21,6 @@
 #endif  // WIN32
 
 #include "base/files/file_path.h"
-#include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -153,6 +152,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(PP_HardwareAcceleration, PP_HARDWAREACCELERATION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_AudioProfile, PP_AUDIOPROFILE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_VideoProfile, PP_VIDEOPROFILE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PrivateDirection, PP_PRIVATEDIRECTION_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_TextRenderingMode, PP_TEXTRENDERINGMODE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PdfAccessibilityAction,
                           PP_PDF_ACCESSIBILITYACTION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PdfAccessibilityScrollAlignment,
@@ -235,6 +235,8 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(PP_PdfAccessibilityActionData)
   IPC_STRUCT_TRAITS_MEMBER(action)
   IPC_STRUCT_TRAITS_MEMBER(target_rect)
+  IPC_STRUCT_TRAITS_MEMBER(link_index)
+  IPC_STRUCT_TRAITS_MEMBER(page_index)
   IPC_STRUCT_TRAITS_MEMBER(horizontal_scroll_alignment)
   IPC_STRUCT_TRAITS_MEMBER(vertical_scroll_alignment)
 IPC_STRUCT_TRAITS_END()
@@ -254,6 +256,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityViewportInfo)
   IPC_STRUCT_TRAITS_MEMBER(zoom)
+  IPC_STRUCT_TRAITS_MEMBER(scale)
   IPC_STRUCT_TRAITS_MEMBER(scroll)
   IPC_STRUCT_TRAITS_MEMBER(offset)
   IPC_STRUCT_TRAITS_MEMBER(selection_start_page_index)
@@ -273,11 +276,22 @@ IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityCharInfo)
   IPC_STRUCT_TRAITS_MEMBER(char_width)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityTextRunInfo)
-  IPC_STRUCT_TRAITS_MEMBER(len)
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityTextStyleInfo)
+  IPC_STRUCT_TRAITS_MEMBER(font_name)
+  IPC_STRUCT_TRAITS_MEMBER(font_weight)
+  IPC_STRUCT_TRAITS_MEMBER(render_mode)
   IPC_STRUCT_TRAITS_MEMBER(font_size)
+  IPC_STRUCT_TRAITS_MEMBER(fill_color)
+  IPC_STRUCT_TRAITS_MEMBER(stroke_color)
+  IPC_STRUCT_TRAITS_MEMBER(is_italic)
+  IPC_STRUCT_TRAITS_MEMBER(is_bold)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityTextRunInfo)
+  IPC_STRUCT_TRAITS_MEMBER(len)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
   IPC_STRUCT_TRAITS_MEMBER(direction)
+  IPC_STRUCT_TRAITS_MEMBER(style)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityPageInfo)
@@ -285,8 +299,6 @@ IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityPageInfo)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
   IPC_STRUCT_TRAITS_MEMBER(text_run_count)
   IPC_STRUCT_TRAITS_MEMBER(char_count)
-  IPC_STRUCT_TRAITS_MEMBER(link_count)
-  IPC_STRUCT_TRAITS_MEMBER(image_count)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityLinkInfo)
@@ -301,6 +313,20 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityImageInfo)
   IPC_STRUCT_TRAITS_MEMBER(alt_text)
   IPC_STRUCT_TRAITS_MEMBER(text_run_index)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityHighlightInfo)
+  IPC_STRUCT_TRAITS_MEMBER(note_text)
+  IPC_STRUCT_TRAITS_MEMBER(index_in_page)
+  IPC_STRUCT_TRAITS_MEMBER(text_run_index)
+  IPC_STRUCT_TRAITS_MEMBER(text_run_count)
+  IPC_STRUCT_TRAITS_MEMBER(bounds)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityPageObjects)
+  IPC_STRUCT_TRAITS_MEMBER(links)
+  IPC_STRUCT_TRAITS_MEMBER(images)
+  IPC_STRUCT_TRAITS_MEMBER(highlights)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_URLComponent_Dev)
@@ -521,16 +547,6 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPB_AudioEncodeParameters)
   IPC_STRUCT_TRAITS_MEMBER(initial_bitrate)
   IPC_STRUCT_TRAITS_MEMBER(acceleration)
 IPC_STRUCT_TRAITS_END()
-
-#if !defined(OS_NACL) && !defined(NACL_WIN64)
-
-IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPPDecryptor_Buffer)
-  IPC_STRUCT_TRAITS_MEMBER(resource)
-  IPC_STRUCT_TRAITS_MEMBER(handle)
-  IPC_STRUCT_TRAITS_MEMBER(size)
-IPC_STRUCT_TRAITS_END()
-
-#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 // These are from the browser to the plugin.
 // Loads the given plugin.
@@ -2394,13 +2410,12 @@ IPC_MESSAGE_CONTROL1(
     PP_PrivateAccessibilityDocInfo /* doc_info */)
 
 // Send information about one page for accessibility support.
-IPC_MESSAGE_CONTROL5(
+IPC_MESSAGE_CONTROL4(
     PpapiHostMsg_PDF_SetAccessibilityPageInfo,
     PP_PrivateAccessibilityPageInfo /* page_info */,
-    std::vector<PP_PrivateAccessibilityTextRunInfo> /* text_runs */,
+    std::vector<ppapi::PdfAccessibilityTextRunInfo> /* text_runs */,
     std::vector<PP_PrivateAccessibilityCharInfo> /* chars */,
-    std::vector<ppapi::PdfAccessibilityLinkInfo> /* links */,
-    std::vector<ppapi::PdfAccessibilityImageInfo> /* images */)
+    ppapi::PdfAccessibilityPageObjects /* page_objects */)
 
 // Send information about the selection coordinates.
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_PDF_SelectionChanged,

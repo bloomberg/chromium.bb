@@ -48,7 +48,6 @@ class AuthenticatorRequestDialogModel {
     // The UX flow has not started yet, the dialog should still be hidden.
     kNotStarted,
 
-    kWelcomeScreen,
     kTransportSelection,
 
     // The request errored out before completing. Error will only be sent
@@ -176,8 +175,8 @@ class AuthenticatorRequestDialogModel {
     return ephemeral_state_.selected_authenticator_id_;
   }
 
-  // Starts the UX flow, by either showing the welcome screen, the transport
-  // selection screen, or the guided flow for them most likely transport.
+  // Starts the UX flow, by either showing the transport selection screen or
+  // the guided flow for them most likely transport.
   //
   // Valid action when at step: kNotStarted.
   void StartFlow(
@@ -193,13 +192,13 @@ class AuthenticatorRequestDialogModel {
   // transport selection screen if the transport could not be uniquely
   // identified.
   //
-  // Valid action when at step: kNotStarted, kWelcomeScreen.
+  // Valid action when at step: kNotStarted.
   void StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
 
   // Requests that the step-by-step wizard flow commence, guiding the user
   // through using the Secutity Key with the given |transport|.
   //
-  // Valid action when at step: kNotStarted, kWelcomeScreen,
+  // Valid action when at step: kNotStarted.
   // kTransportSelection, and steps where the other transports menu is shown,
   // namely, kUsbInsertAndActivate, kBleActivate, kCableActivate.
   void StartGuidedFlowForTransport(
@@ -210,15 +209,19 @@ class AuthenticatorRequestDialogModel {
   // UI instead.
   void HideDialogAndDispatchToNativeWindowsApi();
 
+  // StartPhonePairing triggers the display of a QR code for pairing a new
+  // phone.
+  void StartPhonePairing();
+
   // Ensures that the Bluetooth adapter is powered before proceeding to |step|.
   //  -- If the adapter is powered, advanced directly to |step|.
   //  -- If the adapter is not powered, but Chrome can turn it automatically,
   //     then advanced to the flow to turn on Bluetooth automatically.
   //  -- Otherwise advanced to the manual Bluetooth power on flow.
   //
-  // Valid action when at step: kNotStarted, kWelcomeScreen,
-  // kTransportSelection, and steps where the other transports menu is shown,
-  // namely, kUsbInsertAndActivate, kBleActivate, kCableActivate.
+  // Valid action when at step: kNotStarted, kTransportSelection, and steps
+  // where the other transports menu is shown, namely, kUsbInsertAndActivate,
+  // kBleActivate, kCableActivate.
   void EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step step);
 
   // Continues with the BLE/caBLE flow now that the Bluetooth adapter is
@@ -279,11 +282,6 @@ class AuthenticatorRequestDialogModel {
   //
   // Valid action at all steps.
   void Cancel();
-
-  // Backtracks in the flow as a result of the user clicking `Back` on the UI.
-  //
-  // Valid action at all steps.
-  void Back();
 
   // Called by the AuthenticatorRequestSheetModel subclasses when their state
   // changes, which will trigger notifying observers of OnSheetModelChanged.
@@ -383,6 +381,9 @@ class AuthenticatorRequestDialogModel {
   // |responses()|.
   void OnAccountSelected(size_t index);
 
+  // OnSuccess is called when a WebAuthn operation completes successfully.
+  void OnSuccess(AuthenticatorTransport transport);
+
   void SetSelectedAuthenticatorForTesting(AuthenticatorReference authenticator);
 
   ObservableAuthenticatorList& saved_authenticators() {
@@ -428,6 +429,7 @@ class AuthenticatorRequestDialogModel {
 
   void set_cable_transport_info(
       bool cable_extension_provided,
+      bool has_paired_phones,
       base::Optional<device::QRGeneratorKey> qr_generator_key);
 
   const std::string& relying_party_id() const { return relying_party_id_; }
@@ -515,7 +517,13 @@ class AuthenticatorRequestDialogModel {
   // cable_extension_provided_ indicates whether the request included a caBLE
   // extension.
   bool cable_extension_provided_ = false;
+  // have_paired_phones_ indicates whether this profile knows of any paired
+  // phones.
+  bool have_paired_phones_ = false;
   base::Optional<device::QRGeneratorKey> qr_generator_key_;
+  // did_cable_broadcast_ is true if a caBLE v1 extension was provided and
+  // BLE adverts were broadcast.
+  bool did_cable_broadcast_ = false;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
 

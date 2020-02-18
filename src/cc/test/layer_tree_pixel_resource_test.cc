@@ -18,9 +18,7 @@
 namespace cc {
 
 LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest(
-    PixelResourceTestCase test_case,
-    Layer::LayerMaskType mask_type)
-    : mask_type_(mask_type) {
+    PixelResourceTestCase test_case) {
   InitializeFromTestCase(test_case);
 }
 
@@ -43,6 +41,15 @@ const char* LayerTreeHostPixelResourceTest::GetRendererSuffix() const {
       return "skia_vk";
     case RENDERER_SOFTWARE:
       return "sw";
+  }
+}
+
+void LayerTreeHostPixelResourceTest::InitializeSettings(
+    LayerTreeSettings* settings) {
+  LayerTreePixelTest::InitializeSettings(settings);
+  if (raster_type() != GPU) {
+    settings->gpu_rasterization_disabled = true;
+    settings->gpu_rasterization_forced = false;
   }
 }
 
@@ -92,7 +99,7 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
       EXPECT_NE(RENDERER_SOFTWARE, renderer_type());
       bool enable_oopr = renderer_type() == RENDERER_SKIA_VK;
       return std::make_unique<GpuRasterBufferProvider>(
-          compositor_context_provider, worker_context_provider, false, 0,
+          compositor_context_provider, worker_context_provider, false,
           gpu_raster_format, gfx::Size(), true, enable_oopr);
     }
     case ZERO_COPY:
@@ -133,7 +140,6 @@ void LayerTreeHostPixelResourceTest::RunPixelResourceTestWithLayerList(
 }
 
 ParameterizedPixelResourceTest::ParameterizedPixelResourceTest()
-    : LayerTreeHostPixelResourceTest(::testing::get<0>(GetParam()),
-                                     ::testing::get<1>(GetParam())) {}
+    : LayerTreeHostPixelResourceTest(GetParam()) {}
 
 }  // namespace cc

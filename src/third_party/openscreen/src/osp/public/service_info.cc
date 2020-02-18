@@ -7,9 +7,10 @@
 #include <algorithm>
 #include <utility>
 
-#include "platform/api/logging.h"
+#include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 
 bool ServiceInfo::operator==(const ServiceInfo& other) const {
   return (service_id == other.service_id &&
@@ -43,4 +44,5 @@ bool ServiceInfo::Update(
   return changed;
 }
 
+}  // namespace osp
 }  // namespace openscreen

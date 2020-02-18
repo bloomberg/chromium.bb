@@ -11,6 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -93,7 +94,7 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
 
   void CancelNavigation();
 
-  bool ShouldDeferNavigationForArc(content::NavigationHandle* handle) override;
+  bool ShouldDeferNavigation(content::NavigationHandle* handle) override;
 
   // Passed as a callback to allow ARC-specific code to asynchronously inform
   // this object of the apps which can handle this URL, and optionally request
@@ -101,7 +102,7 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
   // been opened).
   void OnDeferredNavigationProcessed(
       apps::AppsNavigationAction action,
-      std::vector<apps::IntentPickerAppInfo> apps) override;
+      std::vector<apps::IntentPickerAppInfo> apps);
 
   PickerShowState GetPickerShowState(
       const std::vector<apps::IntentPickerAppInfo>& apps_for_picker,
@@ -121,6 +122,9 @@ class ChromeOsAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       const std::vector<apps::IntentPickerAppInfo>& apps_for_picker,
       content::WebContents* web_contents,
       const GURL& url);
+
+  // Whether or not we should launch preferred ARC apps.
+  bool ShouldLaunchPreferredApp(const GURL& url);
 
   // True if ARC is enabled, false otherwise.
   const bool arc_enabled_;

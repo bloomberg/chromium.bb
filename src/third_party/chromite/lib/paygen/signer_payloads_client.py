@@ -195,7 +195,7 @@ class SignerPayloadsClientGoogleStorage(object):
         osutils.WriteFile(os.path.join(tmp_dir, hash_name), h, mode='wb')
 
       cmd = ['tar', '-cjf', archive_file] + hash_names
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           cmd, redirect_stdout=True, redirect_stderr=True, cwd=tmp_dir)
     finally:
       # Cleanup.
@@ -225,7 +225,6 @@ input_files = %(input_files)s
 output_names = @BASENAME@.@KEYSET@.signed
 
 [general]
-archive = metadata-disable.instructions
 type = update_payload
 board = %(board)s
 
@@ -295,7 +294,7 @@ versionrev = %(version)s
       signature_uris: List of URIs to download.
 
     Returns:
-      List of signatures in strings.
+      List of signatures in bytes.
     """
 
     results = []
@@ -305,7 +304,7 @@ versionrev = %(version)s
         sig_file_name = sig_file.name
       try:
         self._ctx.Copy(uri, sig_file_name)
-        results.append(osutils.ReadFile(sig_file_name))
+        results.append(osutils.ReadFile(sig_file_name, mode='rb'))
       finally:
         # Cleanup the temp file, in case it's still there.
         if os.path.exists(sig_file_name):
@@ -317,20 +316,20 @@ versionrev = %(version)s
     """Take an arbitrary list of hash files, and get them signed.
 
     Args:
-      hashes: A list of hash values to be signed by the signer in string
-              format. They are all expected to be 32 bytes in length.
+      hashes: A list of hash values to be signed by the signer as bytes.
+              They are all expected to be 32 bytes in length.
       keysets: list of keysets to have the hashes signed with. The default
                is almost certainly what you want. These names must match
                valid keysets on the signer.
 
     Returns:
-      A dictionary keyed by hash with a list of signatures in string format.
+      A list of lists of signatures as bytes in the order of the |hashes|.
       The list of signatures will correspond to the list of keysets passed
       in.
 
       hashes, keysets=['update_signer', 'update_signer-v2'] ->
-
-      { hashes[0] : [sig_update_signer, sig_update_signer-v2], ... }
+        hashes[0]                                  hashes[1] ...
+      [ [sig_update_signer, sig_update_signer-v2], [...],    ... ]
 
       Returns None if the process failed.
 
@@ -416,20 +415,16 @@ class UnofficialSignerPayloadsClient(SignerPayloadsClientGoogleStorage):
                                                          work_dir)
 
   def ExtractPublicKey(self, public_key):
-    """Extracts the public key from the given private key.
+    """Extracts the public key from the private key.
 
     This is useful for verifying the payload signed by an unofficial key.
 
     Args:
-      public_key: The path to the public key which needs to be fullfiled.
-
-    Returns:
-      The path to the public key generated inside the work_dir.
+      public_key: The path to write the public key to.
     """
     cmd = ['openssl', 'rsa', '-in', self._private_key, '-pubout', '-out',
            public_key]
-    cros_build_lib.RunCommand(cmd, redirect_stdout=True,
-                              combine_stdout_stderr=True)
+    cros_build_lib.run(cmd, redirect_stdout=True, combine_stdout_stderr=True)
 
   def GetHashSignatures(self, hashes, keysets=('update_signer',)):
     """See SignerPayloadsClientGoogleStorage._GetHashsignatures().
@@ -462,12 +457,12 @@ class UnofficialSignerPayloadsClient(SignerPayloadsClientGoogleStorage):
           'src/platform/vboot_reference/scripts/image_signing/',
           'sign_official_build.sh'))
 
-      cros_build_lib.RunCommand([sign_script, 'update_payload',
-                                 path_util.ToChrootPath(hash_file),
-                                 path_util.ToChrootPath(self._work_dir),
-                                 path_util.ToChrootPath(signature_file)],
-                                enter_chroot=True)
+      cros_build_lib.run([sign_script, 'update_payload',
+                          path_util.ToChrootPath(hash_file),
+                          path_util.ToChrootPath(self._work_dir),
+                          path_util.ToChrootPath(signature_file)],
+                         enter_chroot=True)
 
-      signatures.append([osutils.ReadFile(signature_file)])
+      signatures.append([osutils.ReadFile(signature_file, mode='rb')])
 
     return signatures

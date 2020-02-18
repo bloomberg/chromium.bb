@@ -80,6 +80,7 @@ void VizCompositorThreadRunnerWebView::ScheduleOnVizAndBlock(
 void VizCompositorThreadRunnerWebView::PostTaskAndBlock(
     const base::Location& from_here,
     base::OnceClosure task) {
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent e;
   task_runner()->PostTask(from_here,
                           base::BindOnce(&RunAndSignal, std::move(task), &e));
@@ -116,8 +117,7 @@ void VizCompositorThreadRunnerWebView::BindFrameSinkManagerOnViz(
 
   frame_sink_manager_->BindAndSetClient(
       std::move(params->frame_sink_manager), viz_task_runner_,
-      viz::mojom::FrameSinkManagerClientPtr(
-          std::move(params->frame_sink_manager_client)));
+      std::move(params->frame_sink_manager_client));
 }
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)

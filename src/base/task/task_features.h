@@ -14,14 +14,13 @@ namespace base {
 struct Feature;
 
 extern const BASE_EXPORT Feature kAllTasksUserBlocking;
-extern const BASE_EXPORT Feature kMergeBlockingNonBlockingPools;
 
 // Under this feature, unused threads in ThreadGroup are only detached
 // if the total number of threads in the pool is above the initial capacity.
 extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
 
 // Under this feature, workers blocked with MayBlock are replaced immediately
-// instead of waiting for a threshold.
+// instead of waiting for a threshold in the foreground thread group.
 extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -40,6 +39,12 @@ extern const BASE_EXPORT Feature kUseNativeThreadPool;
 // Whether threads in the ThreadPool should be reclaimed after being idle for 5
 // minutes, instead of 30 seconds.
 extern const BASE_EXPORT Feature kUseFiveMinutesThreadReclaimTime;
+
+// Under this feature, the current default of inheriting priority when posting
+// from the ThreadPool is disabled.
+// Details @
+// https://docs.google.com/document/d/13PIBPuSPJbrgHAgyRbY22EWAfH2narnxpa_CgBmZbSY
+extern const BASE_EXPORT Feature kNoPriorityInheritanceFromThreadPool;
 
 }  // namespace base
 

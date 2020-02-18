@@ -30,7 +30,7 @@ load("test/mjsunit/wasm/exceptions-utils.js");
   builder.addFunction("throw_catch_null", kSig_i_i)
       .addBody([
         kExprTry, kWasmAnyRef,
-          kExprGetLocal, 0,
+          kExprLocalGet, 0,
           kExprI32Eqz,
           kExprIf, kWasmAnyRef,
             kExprRefNull,
@@ -63,7 +63,7 @@ load("test/mjsunit/wasm/exceptions-utils.js");
   let except = builder.addException(kSig_v_r);
   builder.addFunction("throw_param", kSig_v_r)
       .addBody([
-        kExprGetLocal, 0,
+        kExprLocalGet, 0,
         kExprThrow, except,
       ]).exportFunc();
   let instance = builder.instantiate();
@@ -83,7 +83,7 @@ load("test/mjsunit/wasm/exceptions-utils.js");
   builder.addFunction("throw_catch_param", kSig_r_r)
       .addBody([
         kExprTry, kWasmAnyRef,
-          kExprGetLocal, 0,
+          kExprLocalGet, 0,
           kExprThrow, except,
         kExprCatch,
           kExprBrOnExn, 0, except,
@@ -108,7 +108,7 @@ load("test/mjsunit/wasm/exceptions-utils.js");
       .addLocals({anyfunc_count: 1})
       .addBody([
         kExprTry, kWasmAnyFunc,
-          kExprGetLocal, 0,
+          kExprLocalGet, 0,
           kExprThrow, except,
         kExprCatch,
           kExprBrOnExn, 0, except,
@@ -128,7 +128,7 @@ load("test/mjsunit/wasm/exceptions-utils.js");
   builder.addFunction("throw_catch_param", kSig_e_e)
       .addBody([
         kExprTry, kWasmExnRef,
-          kExprGetLocal, 0,
+          kExprLocalGet, 0,
           kExprThrow, except,
         kExprCatch,
           kExprBrOnExn, 0, except,
@@ -142,4 +142,43 @@ load("test/mjsunit/wasm/exceptions-utils.js");
   assertEquals(1, instance.exports.throw_catch_param(1));
   assertEquals(2.3, instance.exports.throw_catch_param(2.3));
   assertEquals("str", instance.exports.throw_catch_param("str"));
+})();
+
+// Test storing and loading to/from an exception type table.
+(function TestTableExnRef() {
+  let kSig_e_i = makeSig([kWasmI32], [kWasmExnRef]);
+  let kSig_v_ie = makeSig([kWasmI32, kWasmExnRef], []);
+  let builder = new WasmModuleBuilder();
+  let table = builder.addTable(kWasmExnRef, 2).exportAs("table");
+  builder.addFunction("table_load", kSig_e_i)
+      .addBody([
+        kExprLocalGet, 0,
+        kExprTableGet, table.index
+      ]).exportFunc();
+  builder.addFunction("table_store", kSig_v_ie)
+      .addBody([
+        kExprLocalGet, 0,
+        kExprLocalGet, 1,
+        kExprTableSet, table.index
+      ]).exportFunc();
+  let instance = builder.instantiate();
+  let e0 = new Error("my encapsulated error");
+  let e1 = new Error("my other encapsulated error");
+
+  assertNull(instance.exports.table_load(0));
+  assertNull(instance.exports.table_load(1));
+  assertNull(instance.exports.table.get(0));
+  assertNull(instance.exports.table.get(1));
+
+  instance.exports.table_store(0, e0);
+  assertSame(e0, instance.exports.table_load(0));
+  assertNull(instance.exports.table_load(1));
+  assertSame(e0, instance.exports.table.get(0));
+  assertNull(instance.exports.table.get(1));
+
+  instance.exports.table.set(1, e1);
+  assertSame(e0, instance.exports.table_load(0));
+  assertSame(e1, instance.exports.table_load(1));
+  assertSame(e0, instance.exports.table.get(0));
+  assertSame(e1, instance.exports.table.get(1));
 })();

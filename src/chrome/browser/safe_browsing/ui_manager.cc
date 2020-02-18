@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread.h"
@@ -25,7 +24,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/ping_manager.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
@@ -108,10 +106,6 @@ void SafeBrowsingUIManager::ShowBlockingPageForResource(
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
-bool SafeBrowsingUIManager::SafeBrowsingInterstitialsAreCommittedNavigations() {
-  return base::FeatureList::IsEnabled(kCommittedSBInterstitials);
-}
-
 // static
 bool SafeBrowsingUIManager::ShouldSendHitReport(const HitReport& hit_report,
                                                 WebContents* web_contents) {
@@ -158,28 +152,6 @@ void SafeBrowsingUIManager::AddObserver(Observer* observer) {
 void SafeBrowsingUIManager::RemoveObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observer_list_.RemoveObserver(observer);
-}
-
-void SafeBrowsingUIManager::DisplayBlockingPage(
-    const UnsafeResource& resource) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BaseUIManager::DisplayBlockingPage(resource);
-  if (!resource.IsMainPageLoadBlocked() && !IsWhitelisted(resource) &&
-      SafeBrowsingInterstitialsAreCommittedNavigations()) {
-    content::WebContents* contents = resource.web_contents_getter.Run();
-    content::NavigationEntry* entry = resource.GetNavigationEntryForResource();
-    // entry can be null if we are on a brand new tab, and a resource is added
-    // via javascript without a navigation.
-    GURL blocked_url = entry ? entry->GetURL() : resource.url;
-    SafeBrowsingBlockingPage* blocking_page =
-        SafeBrowsingBlockingPage::CreateBlockingPage(this, contents,
-                                                     blocked_url, resource);
-    SafeBrowsingSubresourceTabHelper::CreateForWebContents(contents);
-    contents->GetController().LoadErrorPage(
-        contents->GetMainFrame(), blocked_url, blocking_page->GetHTMLContents(),
-        net::ERR_BLOCKED_BY_CLIENT);
-    delete blocking_page;
-  }
 }
 
 const std::string SafeBrowsingUIManager::app_locale() const {
@@ -235,6 +207,22 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
 GURL SafeBrowsingUIManager::GetMainFrameWhitelistUrlForResourceForTesting(
     const security_interstitials::UnsafeResource& resource) {
   return GetMainFrameWhitelistUrlForResource(resource);
+}
+
+BaseBlockingPage* SafeBrowsingUIManager::CreateBlockingPageForSubresource(
+    content::WebContents* contents,
+    const GURL& blocked_url,
+    const UnsafeResource& unsafe_resource) {
+  SafeBrowsingSubresourceTabHelper::CreateForWebContents(contents);
+  // This blocking page is only used to retrieve the HTML for the page, so we
+  // set |should_trigger_reporting| to false. Reports for subresources are
+  // triggered when creating the blocking page that gets associated in
+  // SafeBrowsingSubresourceTabHelper.
+  SafeBrowsingBlockingPage* blocking_page =
+      SafeBrowsingBlockingPage::CreateBlockingPage(
+          this, contents, blocked_url, unsafe_resource,
+          /*should_trigger_reporting=*/false);
+  return blocking_page;
 }
 
 }  // namespace safe_browsing

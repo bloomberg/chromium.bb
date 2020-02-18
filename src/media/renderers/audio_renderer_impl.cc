@@ -19,6 +19,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/audio/null_audio_sink.h"
@@ -96,12 +97,6 @@ AudioRendererImpl::~AudioRendererImpl() {
   // If Render() is in progress, this call will wait for Render() to finish.
   // After this call, the |sink_| will not call back into |this| anymore.
   sink_->Stop();
-
-  // Trying to track down AudioClock crash, http://crbug.com/674856. If the sink
-  // hasn't truly stopped above we will fail to acquire the lock. The sink must
-  // be stopped to avoid destroying the AudioClock while its still being used.
-  CHECK(lock_.Try());
-  lock_.Release();
 
   if (init_cb_)
     FinishInitialization(PIPELINE_ERROR_ABORT);
@@ -264,7 +259,7 @@ TimeSource* AudioRendererImpl::GetTimeSource() {
   return this;
 }
 
-void AudioRendererImpl::Flush(const base::Closure& callback) {
+void AudioRendererImpl::Flush(base::OnceClosure callback) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT_ASYNC_BEGIN0("media", "AudioRendererImpl::Flush", this);
@@ -278,7 +273,7 @@ void AudioRendererImpl::Flush(const base::Closure& callback) {
   DCHECK_EQ(state_, kPlaying);
   DCHECK(!flush_cb_);
 
-  flush_cb_ = callback;
+  flush_cb_ = std::move(callback);
   ChangeState_Locked(kFlushing);
 
   if (pending_read_)
@@ -322,7 +317,7 @@ void AudioRendererImpl::ResetDecoderDone() {
 
   // Changes in buffering state are always posted. Flush callback must only be
   // run after buffering state has been set back to nothing.
-  flush_cb_ = BindToCurrentLoop(flush_cb_);
+  flush_cb_ = BindToCurrentLoop(std::move(flush_cb_));
   FinishFlush();
 }
 
@@ -353,18 +348,6 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(state_ == kUninitialized || state_ == kFlushed);
   DCHECK(sink_.get());
   TRACE_EVENT_ASYNC_BEGIN0("media", "AudioRendererImpl::Initialize", this);
-
-  // Trying to track down AudioClock crash, http://crbug.com/674856.
-  // Initialize should never be called while Rendering is ongoing. This can lead
-  // to race conditions between media/audio-device threads.
-  CHECK(!sink_playing_);
-  // This lock is not required by Initialize, but failing to acquire the lock
-  // would indicate a race with the rendering thread, which should not be active
-  // at this time. This is just extra verification on the |sink_playing_| CHECK
-  // above. We hold |lock_| while setting |sink_playing_|, but release the lock
-  // when calling sink_->Pause() to avoid deadlocking with the AudioMixer.
-  CHECK(lock_.Try());
-  lock_.Release();
 
   // If we are re-initializing playback (e.g. switching media tracks), stop the
   // sink first.
@@ -406,11 +389,11 @@ void AudioRendererImpl::OnDeviceInfoReceived(
                             output_device_info.device_status(),
                             OUTPUT_DEVICE_STATUS_MAX + 1);
   if (output_device_info.device_status() != OUTPUT_DEVICE_STATUS_OK) {
-    sink_ = new NullAudioSink(task_runner_);
-    output_device_info = sink_->GetOutputDeviceInfo();
     MEDIA_LOG(ERROR, media_log_)
         << "Output device error, falling back to null sink. device_status="
         << output_device_info.device_status();
+    sink_ = new NullAudioSink(task_runner_);
+    output_device_info = sink_->GetOutputDeviceInfo();
   }
 
   current_decoder_config_ = stream->audio_decoder_config();
@@ -625,7 +608,7 @@ void AudioRendererImpl::OnAudioDecoderStreamInitialized(bool success) {
       (media_client ? media_client->GetAudioRendererAlgorithmParameters(
                           audio_parameters_)
                     : base::nullopt);
-  if (params) {
+  if (params && !client_->IsVideoStreamAvailable()) {
     algorithm_ = std::make_unique<AudioRendererAlgorithm>(params.value());
   } else {
     algorithm_ = std::make_unique<AudioRendererAlgorithm>();
@@ -651,7 +634,7 @@ void AudioRendererImpl::OnAudioDecoderStreamInitialized(bool success) {
 void AudioRendererImpl::FinishInitialization(PipelineStatus status) {
   DCHECK(init_cb_);
   TRACE_EVENT_ASYNC_END1("media", "AudioRendererImpl::Initialize", this,
-                         "status", MediaLog::PipelineStatusToString(status));
+                         "status", PipelineStatusToString(status));
   std::move(init_cb_).Run(status);
 }
 
@@ -822,6 +805,7 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
   lock_.AssertAcquired();
   if (buffer->end_of_stream()) {
     received_end_of_stream_ = true;
+    algorithm_->MarkEndOfStream();
   } else {
     if (buffer->IsBitstreamFormat() && state_ == kPlaying) {
       if (IsBeforeStartTime(*buffer))
@@ -985,6 +969,11 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
   DVLOG(4) << __func__ << " delay:" << delay
            << " prior_frames_skipped:" << prior_frames_skipped
            << " frames_requested:" << frames_requested;
+
+  // Since this information is coming from the OS or potentially a fake stream,
+  // it may end up with spurious values.
+  if (delay < base::TimeDelta())
+    delay = base::TimeDelta();
 
   int frames_written = 0;
   {
@@ -1165,8 +1154,8 @@ void AudioRendererImpl::HandleAbortedReadOrDecodeError(PipelineStatus status) {
         return;
       }
 
-      MEDIA_LOG(ERROR, media_log_) << "audio error during flushing, status: "
-                                   << MediaLog::PipelineStatusToString(status);
+      MEDIA_LOG(ERROR, media_log_)
+          << "audio error during flushing, status: " << status;
       client_->OnError(status);
       FinishFlush();
       return;
@@ -1175,8 +1164,7 @@ void AudioRendererImpl::HandleAbortedReadOrDecodeError(PipelineStatus status) {
     case kPlaying:
       if (status != PIPELINE_OK) {
         MEDIA_LOG(ERROR, media_log_)
-            << "audio error during playing, status: "
-            << MediaLog::PipelineStatusToString(status);
+            << "audio error during playing, status: " << status;
         client_->OnError(status);
       }
       return;

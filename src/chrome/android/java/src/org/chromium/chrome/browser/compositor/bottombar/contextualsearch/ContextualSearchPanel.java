@@ -9,9 +9,9 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ActivityState;
-import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -36,17 +35,12 @@ import org.chromium.ui.resources.ResourceManager;
  * Controls the Contextual Search Panel.
  */
 public class ContextualSearchPanel extends OverlayPanel {
-    /** The number of times to allow scrolling.  After this limit we'll close. */
-    private static final int SCROLL_COUNT_LIMIT = 3;
 
     /** Restricts the maximized panel height to the given fraction of a tab. */
     private static final float MAXIMIZED_HEIGHT_FRACTION = 0.95f;
 
     /** Used for logging state changes. */
     private final ContextualSearchPanelMetrics mPanelMetrics;
-
-    /** The height of the bar shadow, in pixels. */
-    private final float mBarShadowHeightPx;
 
     /** The distance of the divider from the end of the bar, in dp. */
     private final float mEndButtonWidthDp;
@@ -75,9 +69,6 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     private ScrimParams mScrimParams;
 
-    /** Number of times the panel has been scrolled already. */
-    private int mScrollCount;
-
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -93,10 +84,6 @@ public class ContextualSearchPanel extends OverlayPanel {
         mSceneLayer = createNewContextualSearchSceneLayer();
         mPanelMetrics = new ContextualSearchPanelMetrics();
 
-        mBarShadowHeightPx =
-                ApiCompatibilityUtils
-                        .getDrawable(mContext.getResources(), R.drawable.modern_toolbar_shadow)
-                        .getIntrinsicHeight();
         mEndButtonWidthDp = mContext.getResources().getDimensionPixelSize(
                                     R.dimen.contextual_search_padded_button_width)
                 * mPxToDp;
@@ -236,7 +223,6 @@ public class ContextualSearchPanel extends OverlayPanel {
         setProgressBarCompletion(0);
         setProgressBarVisible(false);
         getImageControl().hideCustomImage(false);
-        mScrollCount = 0;
 
         super.onClosed(reason);
 
@@ -462,28 +448,6 @@ public class ContextualSearchPanel extends OverlayPanel {
     @VisibleForTesting
     public boolean isBarBannerVisible() {
         return getBarBannerControl().isVisible();
-    }
-
-    /**
-     * Makes the panel not visible by either hiding it or closing it completely.
-     * Decides which method is most appropriate, and then makes it not visible based on that
-     * decision.
-     * @param reason The reason we want the panel to not be visible.
-     */
-    public void makePanelNotVisible(@StateChangeReason int reason) {
-        if (++mScrollCount >= SCROLL_COUNT_LIMIT) {
-            closePanel(StateChangeReason.BASE_PAGE_SCROLL, true);
-        } else if (isHideDuringScrollEnabled()) {
-            hidePanel(reason);
-        }
-    }
-
-    /** @return whether hiding during scrolling is enabled for the Longpress-Resolve feature. */
-    private boolean isHideDuringScrollEnabled() {
-        return ContextualSearchFieldTrial.LONGPRESS_RESOLVE_HIDE_ON_SCROLL.equals(
-                ChromeFeatureList.getFieldTrialParamByFeature(
-                        ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE,
-                        ContextualSearchFieldTrial.LONGPRESS_RESOLVE_PARAM_NAME));
     }
 
     /**
@@ -789,6 +753,7 @@ public class ContextualSearchPanel extends OverlayPanel {
             // Calculate the offset to center the selection on the available area.
             final float availableHeight = getTabHeight() - getExpandedHeight();
             offset = -selectionY + availableHeight / 2;
+            offset += getLayoutOffsetYDps();
         }
         return offset;
     }

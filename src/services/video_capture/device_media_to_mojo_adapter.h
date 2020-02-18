@@ -10,7 +10,9 @@
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
@@ -38,7 +40,8 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
 
   // mojom::Device implementation.
   void Start(const media::VideoCaptureParams& requested_settings,
-             mojom::ReceiverPtr receiver) override;
+             mojo::PendingRemote<mojom::VideoFrameHandler>
+                 handler_pending_remote) override;
   void MaybeSuspend() override;
   void Resume() override;
   void GetPhotoState(GetPhotoStateCallback callback) override;

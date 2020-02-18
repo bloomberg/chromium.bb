@@ -1,0 +1,75 @@
+// Copyright 2019 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+option optimize_for = LITE_RUNTIME;
+
+// This file defines messages for notifying the networking daemon about guest
+// lifetime (startup, teardown) events.
+package patchpanel;
+
+// Notification that the ARC++ container is starting up.
+// This is informational. The ARC boot and setup sequences do not require
+// any information or permission from networking to continue.
+message ArcStartupRequest {
+  // The PID of the ARC++ container.
+  // Required.
+  int32 pid = 1;
+}
+
+// This is an intentionally empty mesage. ARC++ startup does not require
+// any information from networking to proceed.
+message ArcStartupResponse {
+}
+
+// Notification that the ARC++ container is shutting down.
+message ArcShutdownRequest {
+  // The PID of the ARC++ container; must match the PID that was sent at
+  // startup.
+  // Required.
+  int32 pid = 1;
+}
+
+// This is an intentionally empty message. ARC++ startup does not require
+// any information from networking to proceed.
+message ArcShutdownResponse {
+}
+
+// Notification that the ARC VM is starting up.
+// Unlike in the container case, Concierge needs to know which TAP devices
+// it can use.
+message ArcVmStartupRequest {
+  // The content ID of the VM.
+  int32 cid = 1;
+}
+
+// Represents a network device (physical or virtual) managed by the networking
+// daemon.
+message Device {
+  // The name of the host device interface.
+  string ifname = 1;
+
+  // The assigned IPv4 address in network order.
+  uint32 ipv4_addr = 2;
+}
+
+// Information required by Concierge to continue the ARC VM startup process.
+message ArcVmStartupResponse {
+  // The list of TAP devices to be used in the VM.
+  repeated Device devices = 1;
+}
+
+// Notification that the ARC VM is shutting down.
+// This message should also be sent if the startup process fails so any
+// allocated resources are propely freed.
+message ArcVmShutdownRequest {
+  // The CID of the ARC VM; must match the PID that was sent at
+  // startup.
+  // Required.
+  int32 cid = 1;
+}
+
+// Intentionally empty response.
+message ArcVmShutdownResponse {
+}

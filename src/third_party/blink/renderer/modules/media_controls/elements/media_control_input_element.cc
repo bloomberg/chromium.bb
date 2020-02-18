@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
 
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
@@ -81,7 +82,7 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
       MakeGarbageCollected<HTMLDivElement>(GetDocument());
   overflow_menu_container_->ParserAppendChild(overflow_menu_text_);
   overflow_menu_container_->setAttribute(html_names::kAriaHiddenAttr, "true");
-  aria_label_ = button->getAttribute(html_names::kAriaLabelAttr) + " " +
+  aria_label_ = button->FastGetAttribute(html_names::kAriaLabelAttr) + " " +
                 button->GetOverflowMenuString();
   UpdateOverflowSubtitleElement(button->GetOverflowMenuSubtitleString());
   overflow_label_element_->ParserAppendChild(overflow_menu_container_);
@@ -186,10 +187,9 @@ MediaControlInputElement::MediaControlInputElement(
     : HTMLInputElement(media_controls.GetDocument(), CreateElementFlags()),
       MediaControlElementBase(media_controls, this) {}
 
-WebLocalizedString::Name MediaControlInputElement::GetOverflowStringName()
-    const {
+int MediaControlInputElement::GetOverflowStringId() const {
   NOTREACHED();
-  return WebLocalizedString::kAXAMPMFieldText;
+  return IDS_AX_AM_PM_FIELD_TEXT;
 }
 
 void MediaControlInputElement::UpdateShownState() {
@@ -256,7 +256,7 @@ bool MediaControlInputElement::IsMediaControlElement() const {
 }
 
 String MediaControlInputElement::GetOverflowMenuString() const {
-  return MediaElement().GetLocale().QueryString(GetOverflowStringName());
+  return MediaElement().GetLocale().QueryString(GetOverflowStringId());
 }
 
 String MediaControlInputElement::GetOverflowMenuSubtitleString() const {
@@ -293,7 +293,7 @@ WebSize MediaControlInputElement::GetSizeOrDefault() const {
 }
 
 bool MediaControlInputElement::IsDisabled() const {
-  return hasAttribute(html_names::kDisabledAttr);
+  return FastHasAttribute(html_names::kDisabledAttr);
 }
 
 void MediaControlInputElement::Trace(blink::Visitor* visitor) {

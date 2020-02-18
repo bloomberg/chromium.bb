@@ -287,8 +287,16 @@ void SetBuildInfoAnnotations(std::map<std::string, std::string>* annotations) {
 // adjacent to it.
 bool GetHandlerTrampoline(std::string* handler_trampoline,
                           std::string* handler_library) {
+  // The linker doesn't support loading executables passed on its command
+  // line until Q.
+  if (!base::android::BuildInfo::GetInstance()->is_at_least_q()) {
+    return false;
+  }
+
   Dl_info info;
-  if (dladdr(reinterpret_cast<void*>(&GetHandlerTrampoline), &info) == 0) {
+  if (dladdr(reinterpret_cast<void*>(&GetHandlerTrampoline), &info) == 0 ||
+      dlsym(dlopen(info.dli_fname, RTLD_NOLOAD | RTLD_LAZY),
+            "CrashpadHandlerMain") == nullptr) {
     return false;
   }
 
@@ -419,15 +427,6 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
   }
 
   (*process_annotations)["plat"] = std::string("Android");
-
-  if (crash_reporter_client->ShouldMonitorCrashHandlerExpensively()) {
-    arguments->push_back("--monitor-self");
-  }
-
-  // Set up --monitor-self-annotation even in the absence of --monitor-self
-  // so that minidumps produced by Crashpad's generate_dump tool will
-  // contain these annotations.
-  arguments->push_back("--monitor-self-annotation=ptype=crashpad-handler");
 }
 
 bool GetHandlerPath(base::FilePath* exe_dir, base::FilePath* handler_path) {
@@ -507,15 +506,8 @@ class HandlerStarter {
     }
 
     if (!base::PathExists(handler_path)) {
-      // The linker doesn't support loading executables passed on its command
-      // line until Q.
-      if (base::android::BuildInfo::GetInstance()->is_at_least_q()) {
-        bool found_library =
-            GetHandlerTrampoline(&handler_trampoline_, &handler_library_);
-        DCHECK(found_library);
-      } else {
-        use_java_handler_ = true;
-      }
+      use_java_handler_ =
+          !GetHandlerTrampoline(&handler_trampoline_, &handler_library_);
     }
 
     if (!dump_at_crash) {

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGBreakToken_h
-#define NGBreakToken_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BREAK_TOKEN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BREAK_TOKEN_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -58,6 +59,10 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
         box_, static_cast<NGLayoutInputNode::NGLayoutInputNodeType>(type_));
   }
 
+  NGBreakAppeal BreakAppeal() const {
+    return static_cast<NGBreakAppeal>(break_appeal_);
+  }
+
 #if DCHECK_IS_ON()
   virtual String ToString() const;
   void ShowBreakTokenTree() const;
@@ -73,7 +78,7 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
         flags_(0),
         is_break_before_(false),
         is_forced_break_(false),
-        has_last_resort_break_(false),
+        break_appeal_(kBreakAppealPerfect),
         has_seen_all_children_(false) {
     DCHECK_EQ(type, static_cast<NGBreakTokenType>(node.Type()));
   }
@@ -99,10 +104,10 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
 
   unsigned is_forced_break_ : 1;
 
-  // We're attempting to break at an undesirable place. Sometimes that's
-  // unavoidable, but we should only break here if we cannot find a better break
-  // point further up in the ancestry.
-  unsigned has_last_resort_break_ : 1;
+  // If the break is unforced, this is the appeal of the break. Higher is
+  // better. Violating breaking rules decreases appeal. Forced breaks always
+  // have perfect appeal.
+  unsigned break_appeal_ : 2;  // NGBreakAppeal
 
   // All children of this container have been "seen" at this point. This means
   // that all children have been fully laid out, or have break tokens. No more
@@ -114,4 +119,4 @@ typedef Vector<scoped_refptr<const NGBreakToken>> NGBreakTokenVector;
 
 }  // namespace blink
 
-#endif  // NGBreakToken_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BREAK_TOKEN_H_

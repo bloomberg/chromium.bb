@@ -1,6 +1,7 @@
 <link rel="import" href="../../html/polymer.html">
 
 <link rel="import" href="../../html/assert.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="../hidden_style_css.html">
 <link rel="import" href="../shared_style_css.html">
@@ -54,6 +55,7 @@
 
       #input::placeholder {
         color: var(--cr-input-placeholder-color);
+        letter-spacing: var(--cr-input-placeholder-letter-spacing);
       }
 
       :host([invalid]) #input {
@@ -103,6 +105,14 @@
       #input[type='search']::-webkit-search-cancel-button {
         -webkit-appearance: none;
       }
+
+      :host-context([dir=rtl]) #input[type=url] {
+        text-align: right;  /* csschecker-disable-line left-right */
+      }
+
+      #input[type=url] {
+        direction: ltr;
+      }
     </style>
     <div id="label" class="cr-form-field-label" hidden="[[!label]]"
         aria-hidden="true">
@@ -120,6 +130,8 @@
               readonly$="[[readonly]]" maxlength$="[[maxlength]]"
               pattern$="[[pattern]]" required="[[required]]"
               minlength$="[[minlength]]"
+              aria-label$="[[getAriaLabel_(ariaLabel, label, placeholder)]]"
+              aria-invalid$="[[getAriaInvalid_(invalid)]]"
               max="[[max]]" min="[[min]]" on-focus="onInputFocus_"
               on-blur="onInputBlur_" on-change="onInputChange_"
               on-keydown="onInputKeydown_" part="input">
@@ -128,7 +140,13 @@
       </div>
       <slot name="suffix"></slot>
     </div>
-    <div id="error">[[errorMessage]]</div>
+    <!--
+      Note: role="alert" is not working as expected because screen readers
+      expect live regions to be in the DOM at time of document loading.
+      cr-input will automatically fire iron-announce for the error message.
+      Also aria-hidden="true" to avoid noise for screen reader users.
+    -->
+    <div id="error" aria-hidden="true">[[errorMessage]]</div>
   </template>
   <script src="cr_input.js"></script>
 </dom-module>

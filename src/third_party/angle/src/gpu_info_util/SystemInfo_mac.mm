@@ -4,12 +4,16 @@
 // found in the LICENSE file.
 //
 
-// SystemInfo_mac.cpp: implementation of the Mac-specific parts of SystemInfo.h
+// SystemInfo_mac.mm: implementation of the Mac-specific parts of SystemInfo.h
 
-#include "gpu_info_util/SystemInfo_internal.h"
+#include "common/platform.h"
 
-#import <Cocoa/Cocoa.h>
-#import <IOKit/IOKitLib.h>
+#ifdef ANGLE_PLATFORM_MACOS
+
+#    include "gpu_info_util/SystemInfo_internal.h"
+
+#    import <Cocoa/Cocoa.h>
+#    import <IOKit/IOKitLib.h>
 
 namespace angle
 {
@@ -154,8 +158,8 @@ bool GetPCIDevices(std::vector<GPUDeviceInfo> *devices)
 
 void SetActiveGPUIndex(SystemInfo *info)
 {
-    VendorID activeVendor;
-    DeviceID activeDevice;
+    VendorID activeVendor = 0;
+    DeviceID activeDevice = 0;
 
     uint64_t gpuID = GetGpuIDFromDisplayID(kCGDirectMainDisplay);
 
@@ -239,3 +243,5 @@ bool GetSystemInfo(SystemInfo *info)
 }
 
 }  // namespace angle
+
+#endif  // ANGLE_PLATFORM_MACOS

@@ -11,9 +11,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search/instant_test_base.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -35,6 +38,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_switches.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -64,6 +68,10 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
 #include "url/url_constants.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "chrome/test/base/launchservices_utils_mac.h"
 #endif
 
 namespace content {
@@ -231,10 +239,68 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginNTPBrowserTest,
       contents->GetMainFrame()->GetProcess()->GetID()));
 }
 
+enum class SitePerProcessMemoryThreshold {
+  kNone,
+  k128MB,
+  k768MB,
+};
+
+enum class SitePerProcessMode {
+  kDisabled,
+  kEnabled,
+  kIsolatedOrigin,
+};
+
+struct SitePerProcessMemoryThresholdBrowserTestParams {
+  SitePerProcessMemoryThreshold threshold;
+  SitePerProcessMode mode;
+};
+
+const url::Origin& GetTrialOrigin() {
+  static base::NoDestructor<url::Origin> origin{
+      url::Origin::Create(GURL("http://foo.com/"))};
+  return *origin;
+}
+
 // Helper class to run tests on a simulated 512MB low-end device.
-class SitePerProcessMemoryThresholdBrowserTest : public InProcessBrowserTest {
+class SitePerProcessMemoryThresholdBrowserTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<
+          SitePerProcessMemoryThresholdBrowserTestParams> {
  public:
-  SitePerProcessMemoryThresholdBrowserTest() = default;
+  SitePerProcessMemoryThresholdBrowserTest() {
+    switch (GetParam().threshold) {
+      case SitePerProcessMemoryThreshold::kNone:
+        break;
+      case SitePerProcessMemoryThreshold::k128MB:
+        threshold_feature_.InitAndEnableFeatureWithParameters(
+            features::kSitePerProcessOnlyForHighMemoryClients,
+            {{features::kSitePerProcessOnlyForHighMemoryClientsParamName,
+              "128"}});
+        break;
+      case SitePerProcessMemoryThreshold::k768MB:
+        threshold_feature_.InitAndEnableFeatureWithParameters(
+            features::kSitePerProcessOnlyForHighMemoryClients,
+            {{features::kSitePerProcessOnlyForHighMemoryClientsParamName,
+              "768"}});
+        break;
+    }
+
+    switch (GetParam().mode) {
+      case SitePerProcessMode::kDisabled:
+        mode_feature_.InitAndDisableFeature(features::kSitePerProcess);
+        break;
+      case SitePerProcessMode::kEnabled:
+        mode_feature_.InitAndEnableFeature(features::kSitePerProcess);
+        break;
+      case SitePerProcessMode::kIsolatedOrigin:
+        mode_feature_.InitAndEnableFeatureWithParameters(
+            features::kIsolateOrigins,
+            {{features::kIsolateOriginsFieldTrialParamName,
+              GetTrialOrigin().Serialize()}});
+        break;
+    }
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
@@ -294,142 +360,83 @@ class SitePerProcessMemoryThresholdBrowserTest : public InProcessBrowserTest {
 #endif
 
  private:
+  base::test::ScopedFeatureList threshold_feature_;
+  base::test::ScopedFeatureList mode_feature_;
+
   DISALLOW_COPY_AND_ASSIGN(SitePerProcessMemoryThresholdBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
-                       SitePerProcessEnabled_HighThreshold) {
+using SitePerProcessMemoryThresholdBrowserTestNoIsolation =
+    SitePerProcessMemoryThresholdBrowserTest;
+IN_PROC_BROWSER_TEST_P(SitePerProcessMemoryThresholdBrowserTestNoIsolation,
+                       NoIsolation) {
   if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
     return;
 
-  // 512MB of physical memory that the test simulates is below the 768MB
-  // threshold.
-  base::test::ScopedFeatureList memory_feature;
-  memory_feature.InitAndEnableFeatureWithParameters(
-      features::kSitePerProcessOnlyForHighMemoryClients,
-      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
-
-  base::test::ScopedFeatureList site_per_process;
-  site_per_process.InitAndEnableFeature(features::kSitePerProcess);
-
-  // Despite enabled site-per-process trial, there should be no isolation
-  // because the device has too little memory.
+  // Isolation should be disabled given the set of parameters used to
+  // instantiate these tests.
   EXPECT_FALSE(
       content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
-                       SitePerProcessEnabled_LowThreshold) {
+using SitePerProcessMemoryThresholdBrowserTestIsolation =
+    SitePerProcessMemoryThresholdBrowserTest;
+IN_PROC_BROWSER_TEST_P(SitePerProcessMemoryThresholdBrowserTestIsolation,
+                       Isolation) {
   if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
     return;
 
-  // 512MB of physical memory that the test simulates is above the 128MB
-  // threshold.
-  base::test::ScopedFeatureList memory_feature;
-  memory_feature.InitAndEnableFeatureWithParameters(
-      features::kSitePerProcessOnlyForHighMemoryClients,
-      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
-
-  base::test::ScopedFeatureList site_per_process;
-  site_per_process.InitAndEnableFeature(features::kSitePerProcess);
-
-  // site-per-process trial is enabled, and the memory threshold is above the
-  // memory present on the device.
+  // Isolation should be enabled given the set of parameters used to
+  // instantiate these tests.
   EXPECT_TRUE(content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
-                       SitePerProcessEnabled_NoThreshold) {
-  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
-    return;
-
-  base::test::ScopedFeatureList site_per_process;
-  site_per_process.InitAndEnableFeature(features::kSitePerProcess);
-
+INSTANTIATE_TEST_SUITE_P(
+    NoIsolation,
+    SitePerProcessMemoryThresholdBrowserTestNoIsolation,
+    testing::Values(
 #if defined(OS_ANDROID)
-  // Expect false on Android because 512MB physical memory triggered by
-  // kEnableLowEndDeviceMode in SetUpCommandLine() is below the 1024MB Android
-  // specific memory limit which disbles site isolation for all sites.
-  EXPECT_FALSE(
-      content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
-#else
-  EXPECT_TRUE(content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
+        // Expect no isolation on Android because 512MB physical memory
+        // triggered by kEnableLowEndDeviceMode in SetUpCommandLine() is below
+        // the 1024MB Android specific memory limit which disables site
+        // isolation for all sites.
+        SitePerProcessMemoryThresholdBrowserTestParams{
+            SitePerProcessMemoryThreshold::kNone, SitePerProcessMode::kEnabled},
 #endif
-}
+        SitePerProcessMemoryThresholdBrowserTestParams{
+            SitePerProcessMemoryThreshold::k768MB,
+            SitePerProcessMode::kEnabled},
+        SitePerProcessMemoryThresholdBrowserTestParams{
+            SitePerProcessMemoryThreshold::kNone,
+            SitePerProcessMode::kDisabled},
+        SitePerProcessMemoryThresholdBrowserTestParams{
+            SitePerProcessMemoryThreshold::k128MB,
+            SitePerProcessMode::kDisabled},
+        SitePerProcessMemoryThresholdBrowserTestParams{
+            SitePerProcessMemoryThreshold::k768MB,
+            SitePerProcessMode::kDisabled}));
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
-                       SitePerProcessDisabled_HighThreshold) {
+INSTANTIATE_TEST_SUITE_P(Isolation,
+                         SitePerProcessMemoryThresholdBrowserTestIsolation,
+                         testing::Values(
+#if !defined(OS_ANDROID)
+                             // See the note above regarding why this
+                             // expectation is different on Android.
+                             SitePerProcessMemoryThresholdBrowserTestParams{
+                                 SitePerProcessMemoryThreshold::kNone,
+                                 SitePerProcessMode::kEnabled},
+#endif
+                             SitePerProcessMemoryThresholdBrowserTestParams{
+                                 SitePerProcessMemoryThreshold::k128MB,
+                                 SitePerProcessMode::kEnabled}));
+
+using SitePerProcessMemoryThresholdBrowserTestNoIsolatedOrigin =
+    SitePerProcessMemoryThresholdBrowserTest;
+IN_PROC_BROWSER_TEST_P(SitePerProcessMemoryThresholdBrowserTestNoIsolatedOrigin,
+                       TrialNoIsolatedOrigin) {
   if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
     return;
 
-  // 512MB of physical memory that the test simulates is below the 768MB
-  // threshold.
-  base::test::ScopedFeatureList memory_feature;
-  memory_feature.InitAndEnableFeatureWithParameters(
-      features::kSitePerProcessOnlyForHighMemoryClients,
-      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
-
-  base::test::ScopedFeatureList site_per_process;
-  site_per_process.InitAndDisableFeature(features::kSitePerProcess);
-
-  // site-per-process trial is disabled, so isolation should be disabled
-  // (i.e. the memory threshold should be ignored).
-  EXPECT_FALSE(
-      content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
-}
-
-IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
-                       SitePerProcessDisabled_LowThreshold) {
-  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
-    return;
-
-  // 512MB of physical memory that the test simulates is above the 128MB
-  // threshold.
-  base::test::ScopedFeatureList memory_feature;
-  memory_feature.InitAndEnableFeatureWithParameters(
-      features::kSitePerProcessOnlyForHighMemoryClients,
-      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
-
-  base::test::ScopedFeatureList site_per_process;
-  site_per_process.InitAndDisableFeature(features::kSitePerProcess);
-
-  // site-per-process trial is disabled, so isolation should be disabled
-  // (i.e. the memory threshold should be ignored).
-  EXPECT_FALSE(
-      content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
-}
-
-IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
-                       SitePerProcessDisabled_NoThreshold) {
-  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
-    return;
-
-  base::test::ScopedFeatureList site_per_process;
-  site_per_process.InitAndDisableFeature(features::kSitePerProcess);
-
-  // site-per-process trial is disabled, so isolation should be disabled
-  // (i.e. the memory threshold should be ignored).
-  EXPECT_FALSE(
-      content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
-}
-
-IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
-                       TrialIsolatedOrigins_HighThreshold) {
-  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
-    return;
-
-  // 512MB of physical memory that the test simulates is below the 768MB
-  // threshold.
-  base::test::ScopedFeatureList memory_feature;
-  memory_feature.InitAndEnableFeatureWithParameters(
-      features::kSitePerProcessOnlyForHighMemoryClients,
-      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
-
-  const url::Origin trial_origin = url::Origin::Create(GURL("http://foo.com/"));
-  base::test::ScopedFeatureList isolated_origins_feature;
-  isolated_origins_feature.InitAndEnableFeatureWithParameters(
-      features::kIsolateOrigins, {{features::kIsolateOriginsFieldTrialParamName,
-                                   trial_origin.Serialize()}});
   SiteIsolationPolicy::ApplyGlobalIsolatedOrigins();
 
   auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
@@ -443,26 +450,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
 
   // Verify that the trial origin is not present.
   EXPECT_THAT(isolated_origins,
-              ::testing::Not(::testing::Contains(trial_origin)));
+              ::testing::Not(::testing::Contains(GetTrialOrigin())));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
-                       TrialIsolatedOrigins_LowThreshold) {
+using SitePerProcessMemoryThresholdBrowserTestIsolatedOrigin =
+    SitePerProcessMemoryThresholdBrowserTest;
+IN_PROC_BROWSER_TEST_P(SitePerProcessMemoryThresholdBrowserTestIsolatedOrigin,
+                       TrialIsolatedOrigin) {
   if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
     return;
 
-  // 512MB of physical memory that the test simulates is above the 128MB
-  // threshold.
-  base::test::ScopedFeatureList memory_feature;
-  memory_feature.InitAndEnableFeatureWithParameters(
-      features::kSitePerProcessOnlyForHighMemoryClients,
-      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
-
-  const url::Origin trial_origin = url::Origin::Create(GURL("http://foo.com/"));
-  base::test::ScopedFeatureList isolated_origins_feature;
-  isolated_origins_feature.InitAndEnableFeatureWithParameters(
-      features::kIsolateOrigins, {{features::kIsolateOriginsFieldTrialParamName,
-                                   trial_origin.Serialize()}});
   SiteIsolationPolicy::ApplyGlobalIsolatedOrigins();
 
   auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
@@ -472,35 +469,352 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
               ::testing::IsSubsetOf(isolated_origins));
 
   // Verify that the trial origin is present.
-  EXPECT_THAT(isolated_origins, ::testing::Contains(trial_origin));
+  EXPECT_THAT(isolated_origins, ::testing::Contains(GetTrialOrigin()));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
-                       TrialIsolatedOrigins_NoThreshold) {
+INSTANTIATE_TEST_SUITE_P(
+    TrialNoIsolatedOrigin,
+    SitePerProcessMemoryThresholdBrowserTestNoIsolatedOrigin,
+    testing::Values(
+#if defined(OS_ANDROID)
+        // The 512MB the test simulates is below the global Android threshold of
+        // 1024MB, so the test origin should not be isolated.
+        SitePerProcessMemoryThresholdBrowserTestParams{
+            SitePerProcessMemoryThreshold::kNone,
+            SitePerProcessMode::kIsolatedOrigin},
+#endif
+        SitePerProcessMemoryThresholdBrowserTestParams{
+            SitePerProcessMemoryThreshold::k768MB,
+            SitePerProcessMode::kIsolatedOrigin}));
+
+INSTANTIATE_TEST_SUITE_P(TrialIsolatedOrigin,
+                         SitePerProcessMemoryThresholdBrowserTestIsolatedOrigin,
+                         testing::Values(
+#if defined(OS_ANDROID)
+                             // See the note above regarding why this
+                             // expectation is different on Android.
+                             SitePerProcessMemoryThresholdBrowserTestParams{
+                                 SitePerProcessMemoryThreshold::kNone,
+                                 SitePerProcessMode::kIsolatedOrigin},
+#endif
+                             SitePerProcessMemoryThresholdBrowserTestParams{
+                                 SitePerProcessMemoryThreshold::k128MB,
+                                 SitePerProcessMode::kIsolatedOrigin}));
+
+// Helper class to run tests with password-triggered site isolation initialized
+// via a regular field trial and *not* via a command-line override.  It
+// creates a new field trial (with 100% probability of being in the group), and
+// initializes the test class's ScopedFeatureList using it.  Two derived
+// classes below control are used to initialize the feature to either enabled
+// or disabled state.
+class PasswordSiteIsolationFieldTrialTest
+    : public SitePerProcessMemoryThresholdBrowserTest {
+ public:
+  explicit PasswordSiteIsolationFieldTrialTest(bool should_enable)
+      : field_trial_list_(std::make_unique<base::MockEntropyProvider>()) {
+    const std::string kTrialName = "PasswordSiteIsolation";
+    const std::string kGroupName = "FooGroup";  // unused
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(
+        features::kSiteIsolationForPasswordSites.name,
+        should_enable
+            ? base::FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE
+            : base::FeatureList::OverrideState::OVERRIDE_DISABLE_FEATURE,
+        trial.get());
+
+    feature_list_.InitWithFeatureList(std::move(feature_list));
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // This test creates and tests its own field trial group, so it needs to
+    // disable the field trial testing config, which might define an
+    // incompatible trial name/group.
+    command_line->AppendSwitch(
+        variations::switches::kDisableFieldTrialTestingConfig);
+    SitePerProcessMemoryThresholdBrowserTest::SetUpCommandLine(command_line);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+  base::FieldTrialList field_trial_list_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordSiteIsolationFieldTrialTest);
+};
+
+class EnabledPasswordSiteIsolationFieldTrialTest
+    : public PasswordSiteIsolationFieldTrialTest {
+ public:
+  EnabledPasswordSiteIsolationFieldTrialTest()
+      : PasswordSiteIsolationFieldTrialTest(true /* should_enable */) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnabledPasswordSiteIsolationFieldTrialTest);
+};
+
+class DisabledPasswordSiteIsolationFieldTrialTest
+    : public PasswordSiteIsolationFieldTrialTest {
+ public:
+  DisabledPasswordSiteIsolationFieldTrialTest()
+      : PasswordSiteIsolationFieldTrialTest(false /* should_enable */) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DisabledPasswordSiteIsolationFieldTrialTest);
+};
+
+IN_PROC_BROWSER_TEST_F(EnabledPasswordSiteIsolationFieldTrialTest,
+                       DISABLED_BelowThreshold) {
   if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
     return;
 
-  const url::Origin trial_origin = url::Origin::Create(GURL("http://foo.com/"));
-  base::test::ScopedFeatureList isolated_origins_feature;
-  isolated_origins_feature.InitAndEnableFeatureWithParameters(
-      features::kIsolateOrigins, {{features::kIsolateOriginsFieldTrialParamName,
-                                   trial_origin.Serialize()}});
-  SiteIsolationPolicy::ApplyGlobalIsolatedOrigins();
+  // If no memory threshold is defined, password site isolation should be
+  // enabled.
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
 
-  auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
-  std::vector<url::Origin> isolated_origins = cpsp->GetIsolatedOrigins();
-  EXPECT_EQ(kExpectedTrialOrigins + expected_embedder_origins_.size(),
-            isolated_origins.size());
-  EXPECT_THAT(expected_embedder_origins_,
-              ::testing::IsSubsetOf(isolated_origins));
+  // Define a memory threshold at 768MB.  Since this is above the 512MB of
+  // physical memory that this test simulates, password site isolation should
+  // now be disabled.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
 
-  if (kExpectedTrialOrigins > 0) {
-    // Verify that the trial origin is present.
-    EXPECT_THAT(isolated_origins, ::testing::Contains(trial_origin));
-  } else {
-    EXPECT_THAT(isolated_origins,
-                ::testing::Not(::testing::Contains(trial_origin)));
+  EXPECT_FALSE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  // Simulate enabling password site isolation from command line.  (Note that
+  // InitAndEnableFeature uses ScopedFeatureList::InitFromCommandLine
+  // internally, and that triggering the feature via chrome://flags follows the
+  // same override path as well.)
+  base::test::ScopedFeatureList password_site_isolation_feature;
+  password_site_isolation_feature.InitAndEnableFeature(
+      features::kSiteIsolationForPasswordSites);
+
+  // This should override the memory threshold and enable password site
+  // isolation.
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(EnabledPasswordSiteIsolationFieldTrialTest,
+                       DISABLED_AboveThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // If no memory threshold is defined, password site isolation should be
+  // enabled.
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  // Define a memory threshold at 128MB.  Since this is below the 512MB of
+  // physical memory that this test simulates, password site isolation should
+  // still be enabled.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
+
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  // Simulate disabling password site isolation from command line.  (Note that
+  // InitAndEnableFeature uses ScopedFeatureList::InitFromCommandLine
+  // internally, and that triggering the feature via chrome://flags follows the
+  // same override path as well.)  This should take precedence over the regular
+  // field trial behavior.
+  base::test::ScopedFeatureList password_site_isolation_feature;
+  password_site_isolation_feature.InitAndDisableFeature(
+      features::kSiteIsolationForPasswordSites);
+  EXPECT_FALSE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+}
+
+// This test verifies that when password-triggered site isolation is disabled
+// via field trials but force-enabled via command line, it takes effect even
+// when below the memory threshold.  See https://crbug.com/1009828.
+IN_PROC_BROWSER_TEST_F(DisabledPasswordSiteIsolationFieldTrialTest,
+                       DISABLED_CommandLineOverride_BelowThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // Password site isolation should be disabled at this point.
+  EXPECT_FALSE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  // Simulate enabling password site isolation from command line.  (Note that
+  // InitAndEnableFeature uses ScopedFeatureList::InitFromCommandLine
+  // internally, and that triggering the feature via chrome://flags follows the
+  // same override path as well.)
+  base::test::ScopedFeatureList password_site_isolation_feature;
+  password_site_isolation_feature.InitAndEnableFeature(
+      features::kSiteIsolationForPasswordSites);
+
+  // If no memory threshold is defined, password site isolation should be
+  // enabled.
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  // Define a memory threshold at 768MB.  This is above the 512MB of physical
+  // memory that this test simulates, but password site isolation should still
+  // be enabled, because the test has simulated the user manually overriding
+  // this feature via command line.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
+
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+}
+
+// Similar to the test above, but with device memory being above memory
+// threshold.
+IN_PROC_BROWSER_TEST_F(DisabledPasswordSiteIsolationFieldTrialTest,
+                       DISABLED_CommandLineOverride_AboveThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  EXPECT_FALSE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  base::test::ScopedFeatureList password_site_isolation_feature;
+  password_site_isolation_feature.InitAndEnableFeature(
+      features::kSiteIsolationForPasswordSites);
+
+  // If no memory threshold is defined, password site isolation should be
+  // enabled.
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
+
+  EXPECT_TRUE(::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled());
+}
+
+// Helper class to run tests with strict origin isolation initialized via
+// a regular field trial and *not* via a command-line override.  It creates a
+// new field trial (with 100% probability of being in the group), and
+// initializes the test class's ScopedFeatureList using it.  Two derived
+// classes below control are used to initialize the feature to either enabled
+// or disabled state.
+class StrictOriginIsolationFieldTrialTest
+    : public SitePerProcessMemoryThresholdBrowserTest {
+ public:
+  explicit StrictOriginIsolationFieldTrialTest(bool should_enable)
+      : field_trial_list_(std::make_unique<base::MockEntropyProvider>()) {
+    const std::string kTrialName = "StrictOriginIsolation";
+    const std::string kGroupName = "FooGroup";  // unused
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(
+        features::kStrictOriginIsolation.name,
+        should_enable
+            ? base::FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE
+            : base::FeatureList::OverrideState::OVERRIDE_DISABLE_FEATURE,
+        trial.get());
+
+    feature_list_.InitWithFeatureList(std::move(feature_list));
   }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // This test creates and tests its own field trial group, so it needs to
+    // disable the field trial testing config, which might define an
+    // incompatible trial name/group.
+    command_line->AppendSwitch(
+        variations::switches::kDisableFieldTrialTestingConfig);
+    SitePerProcessMemoryThresholdBrowserTest::SetUpCommandLine(command_line);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+  base::FieldTrialList field_trial_list_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StrictOriginIsolationFieldTrialTest);
+};
+
+class EnabledStrictOriginIsolationFieldTrialTest
+    : public StrictOriginIsolationFieldTrialTest {
+ public:
+  EnabledStrictOriginIsolationFieldTrialTest()
+      : StrictOriginIsolationFieldTrialTest(true /* should_enable */) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnabledStrictOriginIsolationFieldTrialTest);
+};
+
+class DisabledStrictOriginIsolationFieldTrialTest
+    : public StrictOriginIsolationFieldTrialTest {
+ public:
+  DisabledStrictOriginIsolationFieldTrialTest()
+      : StrictOriginIsolationFieldTrialTest(false /* should_enable */) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DisabledStrictOriginIsolationFieldTrialTest);
+};
+
+// Check that when strict origin isolation is enabled via a field trial, and
+// the device is above the memory threshold, disabling it via the command line
+// takes precedence.
+IN_PROC_BROWSER_TEST_F(EnabledStrictOriginIsolationFieldTrialTest,
+                       DISABLED_DisabledViaCommandLineOverride) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // If no memory threshold is defined, strict origin isolation should be
+  // enabled.
+  EXPECT_TRUE(SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
+
+  // Define a memory threshold at 128MB.  Since this is below the 512MB of
+  // physical memory that this test simulates, strict origin isolation should
+  // still be enabled.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
+  EXPECT_TRUE(SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
+
+  // Simulate disabling strict origin isolation from command line.  (Note that
+  // InitAndEnableFeature uses ScopedFeatureList::InitFromCommandLine
+  // internally, and that disabling the feature via chrome://flags follows the
+  // same override path as well.)
+  base::test::ScopedFeatureList strict_origin_isolation_feature;
+  strict_origin_isolation_feature.InitAndDisableFeature(
+      features::kStrictOriginIsolation);
+  EXPECT_FALSE(SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
+}
+
+// This test verifies that when strict origin isolation is disabled
+// via field trials but force-enabled via command line, it takes effect even
+// when below the memory threshold.  See https://crbug.com/1009828.
+IN_PROC_BROWSER_TEST_F(DisabledStrictOriginIsolationFieldTrialTest,
+                       DISABLED_EnabledViaCommandLineOverride_BelowThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // Strict origin isolation should be disabled at this point.
+  EXPECT_FALSE(content::SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
+
+  // Simulate enabling strict origin isolation from command line.  (Note that
+  // InitAndEnableFeature uses ScopedFeatureList::InitFromCommandLine
+  // internally, and that triggering the feature via chrome://flags follows the
+  // same override path as well.)
+  base::test::ScopedFeatureList strict_origin_isolation_feature;
+  strict_origin_isolation_feature.InitAndEnableFeature(
+      features::kStrictOriginIsolation);
+
+  // If no memory threshold is defined, strict origin isolation should be
+  // enabled.
+  EXPECT_TRUE(SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
+
+  // Define a memory threshold at 768MB.  This is above the 512MB of physical
+  // memory that this test simulates, but strict origin isolation should still
+  // be enabled, because the test has simulated the user manually overriding
+  // this feature via command line.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
+
+  EXPECT_TRUE(SiteIsolationPolicy::IsStrictOriginIsolationEnabled());
 }
 
 // Helper class to test window creation from NTP.
@@ -571,181 +885,6 @@ IN_PROC_BROWSER_TEST_F(OpenWindowFromNTPBrowserTest,
       opened_tab->GetMainFrame()->GetProcess()->GetID()));
 }
 
-class PrefersColorSchemeTest : public testing::WithParamInterface<bool>,
-                               public InProcessBrowserTest {
- protected:
-  PrefersColorSchemeTest() : theme_client_(&test_theme_) {}
-
-  ~PrefersColorSchemeTest() {
-    CHECK_EQ(&theme_client_, SetBrowserClientForTesting(original_client_));
-  }
-
-  const char* ExpectedColorScheme() const {
-    return GetParam() ? "dark" : "light";
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "MediaQueryPrefersColorScheme");
-  }
-
-  void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-    original_client_ = SetBrowserClientForTesting(&theme_client_);
-  }
-
- protected:
-  ui::TestNativeTheme test_theme_;
-
- private:
-  content::ContentBrowserClient* original_client_ = nullptr;
-
-  class ChromeContentBrowserClientWithWebTheme
-      : public ChromeContentBrowserClient {
-   public:
-    explicit ChromeContentBrowserClientWithWebTheme(
-        const ui::NativeTheme* theme)
-        : theme_(theme) {}
-
-   protected:
-    const ui::NativeTheme* GetWebTheme() const override { return theme_; }
-
-   private:
-    const ui::NativeTheme* const theme_;
-  };
-
-  ChromeContentBrowserClientWithWebTheme theme_client_;
-};
-
-IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, PrefersColorScheme) {
-  test_theme_.SetDarkMode(GetParam());
-  browser()
-      ->tab_strip_model()
-      ->GetActiveWebContents()
-      ->GetRenderViewHost()
-      ->OnWebkitPreferencesChanged();
-  ui_test_utils::NavigateToURL(
-      browser(),
-      ui_test_utils::GetTestUrl(
-          base::FilePath(base::FilePath::kCurrentDirectory),
-          base::FilePath(FILE_PATH_LITERAL("prefers-color-scheme.html"))));
-  base::string16 tab_title;
-  ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
-  EXPECT_EQ(base::ASCIIToUTF16(ExpectedColorScheme()), tab_title);
-}
-
-IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesChromeSchemes) {
-  test_theme_.SetDarkMode(true);
-
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatureState(features::kWebUIDarkMode, GetParam());
-
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
-
-  bool matches;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      base::StringPrintf("window.domAutomationController.send(window."
-                         "matchMedia('(prefers-color-scheme: %s)').matches)",
-                         ExpectedColorScheme()),
-      &matches));
-  EXPECT_TRUE(matches);
-}
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesPdfUI) {
-  test_theme_.SetDarkMode(true);
-
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatureState(features::kWebUIDarkMode, GetParam());
-
-  std::string pdf_extension_url(extensions::kExtensionScheme);
-  pdf_extension_url.append(url::kStandardSchemeSeparator);
-  pdf_extension_url.append(extension_misc::kPdfExtensionId);
-  GURL pdf_index = GURL(pdf_extension_url).Resolve("/index.html");
-  ui_test_utils::NavigateToURL(browser(), pdf_index);
-
-  bool matches;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      base::StringPrintf("window.domAutomationController.send(window."
-                         "matchMedia('(prefers-color-scheme: %s)').matches)",
-                         ExpectedColorScheme()),
-      &matches));
-  EXPECT_TRUE(matches);
-}
-#endif
-
-INSTANTIATE_TEST_SUITE_P(All, PrefersColorSchemeTest, testing::Bool());
-
-#if !defined(OS_MACOSX)
-class ForcedColorsTest : public testing::WithParamInterface<bool>,
-                         public InProcessBrowserTest {
- protected:
-  ForcedColorsTest() : theme_client_(&test_theme_) {}
-
-  ~ForcedColorsTest() {
-    CHECK_EQ(&theme_client_, SetBrowserClientForTesting(original_client_));
-  }
-
-  const char* ExpectedForcedColors() const {
-    return GetParam() ? "active" : "none";
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "ForcedColors");
-  }
-
-  void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-    original_client_ = SetBrowserClientForTesting(&theme_client_);
-  }
-
- protected:
-  ui::TestNativeTheme test_theme_;
-
- private:
-  content::ContentBrowserClient* original_client_ = nullptr;
-
-  class ChromeContentBrowserClientWithWebTheme
-      : public ChromeContentBrowserClient {
-   public:
-    explicit ChromeContentBrowserClientWithWebTheme(
-        const ui::NativeTheme* theme)
-        : theme_(theme) {}
-
-   protected:
-    const ui::NativeTheme* GetWebTheme() const override { return theme_; }
-
-   private:
-    const ui::NativeTheme* const theme_;
-  };
-
-  ChromeContentBrowserClientWithWebTheme theme_client_;
-};
-
-IN_PROC_BROWSER_TEST_P(ForcedColorsTest, ForcedColors) {
-  test_theme_.SetUsesHighContrastColors(GetParam());
-  browser()
-      ->tab_strip_model()
-      ->GetActiveWebContents()
-      ->GetRenderViewHost()
-      ->OnWebkitPreferencesChanged();
-  ui_test_utils::NavigateToURL(
-      browser(), ui_test_utils::GetTestUrl(
-                     base::FilePath(base::FilePath::kCurrentDirectory),
-                     base::FilePath(FILE_PATH_LITERAL("forced-colors.html"))));
-  base::string16 tab_title;
-  ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
-  EXPECT_EQ(base::ASCIIToUTF16(ExpectedForcedColors()), tab_title);
-}
-
-INSTANTIATE_TEST_SUITE_P(All, ForcedColorsTest, testing::Bool());
-#endif  // !defined(OS_MACOSX)
-
 class ProtocolHandlerTest : public InProcessBrowserTest {
  public:
   ProtocolHandlerTest() = default;
@@ -774,6 +913,9 @@ class ProtocolHandlerTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, CustomHandler) {
+#if defined(OS_MACOSX)
+  ASSERT_TRUE(test::RegisterAppWithLaunchServices());
+#endif
   AddProtocolHandler("news", "https://abc.xyz/?url=%s");
 
   ui_test_utils::NavigateToURL(browser(), GURL("news:something"));

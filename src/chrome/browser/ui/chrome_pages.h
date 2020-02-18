@@ -54,6 +54,7 @@ enum FeedbackSource {
   kFeedbackSourceSadTabPage,
   kFeedbackSourceSupervisedUserInterstitial,
   kFeedbackSourceAssistant,
+  kFeedbackSourceDesktopTabGroups,
 
   // Must be last.
   kFeedbackSourceCount,
@@ -68,7 +69,16 @@ void ShowExtensions(Browser* browser,
 
 // ShowFeedbackPage() uses |browser| to determine the URL of the current tab.
 // |browser| should be NULL if there are no currently open browser windows.
-void ShowFeedbackPage(Browser* browser,
+void ShowFeedbackPage(const Browser* browser,
+                      FeedbackSource source,
+                      const std::string& description_template,
+                      const std::string& description_placeholder_text,
+                      const std::string& category_tag,
+                      const std::string& extra_diagnostics);
+
+// Displays the Feedback ui.
+void ShowFeedbackPage(const GURL& page_url,
+                      Profile* profile,
                       FeedbackSource source,
                       const std::string& description_template,
                       const std::string& description_placeholder_text,
@@ -118,7 +128,8 @@ void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
 
 #if defined(OS_CHROMEOS)
-void ShowManagementPageForProfile(Profile* profile);
+// Shows the enterprise management info page in a browser tab.
+void ShowEnterpriseManagementPageInTabbedBrowser(Browser* browser);
 
 // Constructs an OS settings GURL for the specified |sub_page|.
 GURL GetOSSettingsUrl(const std::string& sub_page);

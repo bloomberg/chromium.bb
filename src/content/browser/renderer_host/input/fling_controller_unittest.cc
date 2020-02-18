@@ -67,6 +67,10 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
     last_sent_gesture_ = gesture_event.event;
   }
 
+  gfx::Size GetRootWidgetViewportSize() override {
+    return gfx::Size(1920, 1080);
+  }
+
   // FlingControllerSchedulerClient
   void ScheduleFlingProgress(
       base::WeakPtr<FlingController> fling_controller) override {
@@ -182,7 +186,7 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
   DISALLOW_COPY_AND_ASSIGN(FlingControllerTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, FlingControllerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, FlingControllerTest, testing::Bool());
 
 TEST_P(FlingControllerTest,
        ControllerSendsWheelEndOnTouchpadFlingWithZeroVelocity) {

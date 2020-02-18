@@ -7,11 +7,12 @@
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -53,6 +54,9 @@ StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
   DCHECK(shelf_);
   set_owned_by_client();  // Deleted by DeleteDelegate().
 
+  ShelfConfig::Get()->AddObserver(this);
+  shelf_->shelf_layout_manager()->AddObserver(this);
+
   // Allow the launcher to surrender the focus to another window upon
   // navigation completion by the user.
   set_allow_deactivate_on_esc(true);
@@ -60,7 +64,10 @@ StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
   layer()->SetFillsBoundsOpaquely(false);
 }
 
-StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() = default;
+StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() {
+  ShelfConfig::Get()->RemoveObserver(this);
+  shelf_->shelf_layout_manager()->RemoveObserver(this);
+}
 
 void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
     const FocusCycler* focus_cycler) {
@@ -123,6 +130,25 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
 
 void StatusAreaWidgetDelegate::DeleteDelegate() {
   delete this;
+}
+
+void StatusAreaWidgetDelegate::OnShelfConfigUpdated() {
+  UpdateLayout();
+}
+
+void StatusAreaWidgetDelegate::OnHotseatStateChanged(HotseatState old_state,
+                                                     HotseatState new_state) {
+  // Update the border of the last visible child so it has the right
+  // padding depending of the state of the shelf (See
+  // https://crbug.com/1025270). Don't layout as it will cause the whole
+  // transition to snap instead of animate (See https://crbug.com/1032770).
+  auto it = std::find_if(children().crbegin(), children().crend(),
+                         [](const View* v) { return v->GetVisible(); });
+  if (it == children().crend())
+    return;
+
+  View* last_visible_child = *it;
+  SetBorderOnChild(last_visible_child, /*is_child_on_edge=*/true);
 }
 
 void StatusAreaWidgetDelegate::UpdateLayout() {
@@ -194,7 +220,7 @@ void StatusAreaWidgetDelegate::UpdateWidgetSize() {
 void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
                                                 bool is_child_on_edge) {
   const int vertical_padding =
-      (ShelfConstants::shelf_size() - kTrayItemSize) / 2;
+      (ShelfConfig::Get()->shelf_size() - kTrayItemSize) / 2;
 
   // Edges for horizontal alignment (right-to-left, default).
   int top_edge = vertical_padding;
@@ -203,8 +229,13 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
   // Add some extra space so that borders don't overlap. This padding between
   // items also takes care of padding at the edge of the shelf.
   int right_edge = kPaddingBetweenWidgetsNewUi;
-  if (is_child_on_edge && chromeos::switches::ShouldShowShelfDenseClamshell())
-    right_edge = kPaddingBetweenWidgetAndRightScreenEdge;
+
+  if (is_child_on_edge && chromeos::switches::ShouldShowShelfHotseat()) {
+    right_edge =
+        shelf_->shelf_layout_manager()->hotseat_state() == HotseatState::kShown
+            ? kPaddingBetweenWidgetAndRightScreenEdge
+            : 0;
+  }
 
   // Swap edges if alignment is not horizontal (bottom-to-top).
   if (!shelf_->IsHorizontalAlignment()) {

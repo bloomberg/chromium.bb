@@ -7,6 +7,8 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 मिनट पहले}one{# मिनट पहले}other{# मिनट पहले}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 मिनट}one{# मिनट}other{# मिनट}}</translation>
 <translation id="1181037720776840403">हटाएं</translation>
+<translation id="1201402288615127009">अगला</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, Play स्टोर ऐप्लिकेशन</translation>
 <translation id="1243314992276662751">अपलोड करें</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> शेयर नहीं किया जा सका</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -17,7 +19,7 @@
 <translation id="1368832886055348810">बाएं से दाएं</translation>
 <translation id="1383876407941801731">खोजें</translation>
 <translation id="1398853756734560583">बड़ा करें</translation>
-<translation id="1409544243779336081">ऐप्लिकेशन का सुझाव</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, इंस्टॉल किए गए ऐप्लिकेशन</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> शेयर नहीं किया जा सकता</translation>
 <translation id="1498028757988366001">आपने पहले इसे खोजा है. अगर आप "<ph name="QUERY" />" को अपने इतिहास से मिटा देते हैं, तो यह सभी डिवाइस पर मौजूद आपके खाते से हटा दिया जाएगा.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनट और }one{# मिनट और }other{# मिनट और }}</translation>
@@ -29,8 +31,8 @@
 <translation id="1801827354178857021">अवधि</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 माह}one{# माह}other{# माह}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> एमबी/सेकंड</translation>
-<translation id="1812519734428420144">तारा रेटिंग <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 घंटा और }one{# घंटे और }other{# घंटे और }}</translation>
+<translation id="1830308660060964064"><ph name="ITEM_TITLE" /> को अनपिन किया गया</translation>
 <translation id="1842960171412779397">चुनें</translation>
 <translation id="1859234291848436338">लिखने के निर्देश</translation>
 <translation id="1860796786778352021">सूचना बंद करें</translation>
@@ -40,6 +42,7 @@
 <translation id="1938451708255335766">विंडो डिसप्ले की सघनता में बदलाव करने के लिए, ऐप्लिकेशन को रीस्टार्ट करें.</translation>
 <translation id="2006524834898217237">पक्का करें कि यह डिवाइस इंटरनेट से कनेक्ट है.</translation>
 <translation id="208586643495776849">कृपया दोबारा कोशिश करें</translation>
+<translation id="2090963878406559571"><ph name="ORIGIN" /> से अपने Android फ़ोन पर नंबर भेजने के लिए, सेटिंग में जाकर दोनों डिवाइस के लिए <ph name="TROUBLESHOOT_LINK" /> इस्तेमाल करें.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1d}one{#d}other{#d}}</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2161656808144014275">लेख संदेश</translation>
@@ -51,6 +54,7 @@
 <translation id="2289052229480071835">अपनी स्क्रीन पर स्पर्श लक्ष्य पर टैप करें.</translation>
 <translation id="2295140143284145483">सर्वे</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">आपके इंटरनेट कनेक्शन की जाँच की जा रही है</translation>
 <translation id="2388990488038464401">अपने फ़ोन से इस नंबर पर कॉल करना चाहते हैं?</translation>
 <translation id="24452542372838207">पूरी सूचना दिखाएं</translation>
 <translation id="2445449901874883781">ज़्यादा सघनता का इस्तेमाल करें</translation>
@@ -65,25 +69,27 @@
 <translation id="2666092431469916601">शीर्ष</translation>
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> से शेयर किया</translation>
 <translation id="2743387203779672305">क्लिपबोर्ड में कॉपी करें</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">फ़ोल्डर खोलें</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 वर्ष पहले}one{# वर्ष पहले}other{# वर्ष पहले}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 दिन में}one{# दिन में}other{# दिन में}}</translation>
 <translation id="2931838996092594335">क्लिक करें</translation>
+<translation id="2981684127883932071">सुझाव दिखाए जा रहे हैं</translation>
 <translation id="3036649622769666520">फ़ाइलें खोलें</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> एमबी</translation>
 <translation id="3068711042108640621">शेल्फ़ बाईं ओर है</translation>
 <translation id="3087734570205094154">नीचे</translation>
 <translation id="3126026824346185272">Ctrl</translation>
-<translation id="3157931365184549694">पुनर्स्थापित करें</translation>
+<translation id="3157931365184549694">वापस लाएं</translation>
 <translation id="3183922693828471536">यहां तक स्क्रोल करें</translation>
 <translation id="3234408098842461169">नीचे तीर</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 दिन}one{# दिन}other{# दिन}}</translation>
 <translation id="3295886253693811851">कॉल करने के लिए एक विकल्प चुनें</translation>
 <translation id="335581015389089642">बोली</translation>
 <translation id="3389286852084373014">टेक्स्ट बहुत बड़ा है</translation>
-<translation id="3443810440409579745">टैब मिला.</translation>
 <translation id="3479552764303398839">अभी नहीं</translation>
 <translation id="348799646910989694">शेल्फ़ के अपने आप छिपने की सुविधा चालू है</translation>
+<translation id="3554637740840164787"><ph name="ITEM_TITLE" /> को पिन किया गया</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 दिन शेष}one{# दिन शेष}other{# दिन शेष}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> फ़ाइल</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
@@ -105,20 +111,21 @@
 <translation id="4250229828105606438">स्क्रीनशॉट</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 माह पहले}one{# माह पहले}other{# माह पहले}}</translation>
 <translation id="4289300219472526559">बोलना प्रारंभ करें</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> को <ph name="FOLDER_NAME" /> में ले जाया गया</translation>
 <translation id="4316910396681052118">सभी ऐप्लिकेशन</translation>
 <translation id="4588090240171750605">दाएं स्क्रोल करें</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, <ph name="RATING_SCORE" /> स्टार रेटिंग</translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, ऐप्लिकेशन का सुझाव</translation>
 <translation id="4690510401873698237">शेल्फ़, स्क्रीन पर सबसे नीचे है</translation>
 <translation id="4724120544754982507">सूचना केंद्र, <ph name="UNREAD_NOTIFICATION_COUNT" /> नहीं पढ़ी गई सूचनाएं</translation>
 <translation id="4730374152663651037">अक्सर उपयोग किए गए</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 माह शेष}one{# माह शेष}other{# माह शेष}}</translation>
-<translation id="4841881773802181781">डालना</translation>
-<translation id="4881695831933465202">खोलें</translation>
 <translation id="4888938634149558681">कॉल करें</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 सेकंड}one{# सेकंड}other{# सेकंड}}</translation>
 <translation id="4971687151119236543">मीडिया पिछला ट्रैक</translation>
 <translation id="5046499563572181734">यहां टैप करें</translation>
 <translation id="5076340679995252485">&amp;चिपकाएं</translation>
-<translation id="5137751499640340777">Google Assistant शुरू करें</translation>
+<translation id="5198715732953550718">नया फ़ोल्डर बनाने के लिए <ph name="MOVED_APP_NAME" /> को <ph name="IN_PLACE_APP" /> में जोड़ा गया.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">प्रकटीकरण त्रिकोण</translation>
 <translation id="5278860589123563674">भेजा नहीं जा सका</translation>
@@ -132,6 +139,7 @@
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> सिस्टम</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">बायां तीर</translation>
+<translation id="5675363643668471212">शेल्फ़ आइटम</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 मिनट}one{# मिनट}other{# मिनट}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{आज चालू है}=1{1 दिन पहले चालू किया गया}one{# दिन पहले चालू किया गया}other{# दिन पहले चालू किया गया}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 दिन और }one{# दिन और }other{# दिन और }}</translation>
@@ -155,6 +163,7 @@
 <translation id="6394627529324717982">अल्पविराम</translation>
 <translation id="6397363302884558537">बोलना रोकें</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 सेकंड पहले}one{# सेकंड पहले}other{# सेकंड पहले}}</translation>
+<translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6430678249303439055">इस ऐप्लिकेशन से सभी सूचनाएं ब्लॉक करें</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 सेकंड पहले}one{# सेकंड पहले}other{# सेकंड पहले}}</translation>
 <translation id="6539092367496845964">कोई गड़बड़ी हुई. बाद में कोशिश करें.</translation>
@@ -165,7 +174,7 @@
 <translation id="6620110761915583480">फ़ाइल सेव करें</translation>
 <translation id="6656912866303152668">पक्का करें कि Chrome में <ph name="TARGET_DEVICE_NAME" /> सिंक करने की सुविधा चालू है. इसके बाद, फिर से भेजने की कोशिश करें.</translation>
 <translation id="6699343763173986273">मीडिया अगला ट्रैक</translation>
-<translation id="673773751041746814">मिटाना</translation>
+<translation id="6710213216561001401">पिछला</translation>
 <translation id="6779314412797872738">यहां से अपने फ़ोन पर नंबर भेजने के लिए, सेटिंग में जाकर दोनों डिवाइस के लिए <ph name="TROUBLESHOOT_LINK" /> इस्तेमाल करें.</translation>
 <translation id="6786750046913594791">फ़ोल्डर बंद करें</translation>
 <translation id="6808150112686056157">मीडिया रोकें</translation>
@@ -183,6 +192,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 मिनट शेष}one{# मिनट शेष}other{# मिनट शेष}}</translation>
 <translation id="7319740667687257810">लॉन्चर, आंशिक व्यू</translation>
+<translation id="7352651011704765696">कुछ गलत हुआ</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 मिनट पहले}one{# मिनट पहले}other{# मिनट पहले}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 मिनट शेष}one{# मिनट शेष}other{# मिनट शेष}}</translation>
@@ -192,21 +202,24 @@
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7781829728241885113">बीता कल</translation>
 <translation id="7814458197256864873">&amp;प्रतिलिपि बनाएं</translation>
+<translation id="7848989271541991537">पेज <ph name="PAGE_NUMBER" />, लाइन <ph name="ROW_NUMBER" />, कॉलम <ph name="COLUMN_NUMBER" /> पर जाएं.</translation>
 <translation id="7879499977785298635">ब्लॉक नहीं करें</translation>
 <translation id="7907591526440419938">फ़ाइल खोलें</translation>
 <translation id="7969046989155602842">निर्देश</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 से ज़्यादा न पढ़ी गई सूचना}one{# से ज़्यादा न पढ़ी गई सूचनाएं}other{# से ज़्यादा न पढ़ी गई सूचनाएं}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 मिनट में}one{# मिनट में}other{# मिनट में}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Google Assistant की बोलकर खोजने की सुविधा चालू करें</translation>
+<translation id="8090736967111090568"><ph name="ORIGIN" /> से नंबर</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 घंटा पहले}one{# घंटे पहले}other{# घंटे पहले}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 सेकंड शेष}one{# सेकंड शेष}other{# सेकंड शेष}}</translation>
+<translation id="8134065097954893699">इस पेज को फिर से लोड करें</translation>
 <translation id="8144660977431427332">आप जो चीज़ें खोजते हैं उनमें Google Assistant की मदद ली जाती है.<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, अपने आप पूरा</translation>
 <translation id="815598010540052116">नीचे स्क्रोल करें</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="8245914219290430011">टैब</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, ऐप्लिकेशन</translation>
 <translation id="8259556432390118667">हेक्स रंग मान</translation>
 <translation id="8328145009876646418">बायां सिरा</translation>
 <translation id="8331626408530291785">ऊपर स्क्रोल करें</translation>
@@ -231,12 +244,13 @@
 <translation id="8926951137623668982">शेल्फ़ को हमेशा के लिए छिपाकर रखा गया है</translation>
 <translation id="8996630695507351249">पक्का करें कि <ph name="TARGET_DEVICE_NAME" /> इंटरनेट से कनेक्ट है.</translation>
 <translation id="9002566407876343676">खोलें</translation>
-<translation id="9039076430527029379">पेज <ph name="PAGE_NUMBER" />, पंक्ति <ph name="ROW_NUMBER" />, कॉलम <ph name="COLUMN_NUMBER" /> पर जाएं.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 सेकंड}one{# सेकंड}other{# सेकंड}}</translation>
 <translation id="9059834730836941392">सूचना को छोटा करें</translation>
 <translation id="9150735707954472829">टैब</translation>
 <translation id="9161053988251441839">सुझाए गए ऐप्लिकेशन</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>
+<translation id="9178475906033259337"><ph name="QUERY" /> के लिए 1 नतीजा दिखाया जा रहा है</translation>
 <translation id="932327136139879170">होम बटन</translation>
 <translation id="944069440740578670">न पढ़ी गई सूचनाएं</translation>
+<translation id="974545358917229949"><ph name="QUERY" /> के लिए <ph name="RESULT_COUNT" /> नतीजे दिखाए जा रहे हैं</translation>
 </translationbundle>

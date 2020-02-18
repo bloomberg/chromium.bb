@@ -6,15 +6,38 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_experiments.h"
+#include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 namespace subresource_redirect {
+
+// static
+std::unique_ptr<SubresourceRedirectURLLoaderThrottle>
+SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
+    const blink::WebURLRequest& request,
+    content::ResourceType resource_type) {
+  if (base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
+      resource_type == content::ResourceType::kImage &&
+      (request.GetPreviewsState() &
+       blink::WebURLRequest::kSubresourceRedirectOn) &&
+      request.Url().ProtocolIs(url::kHttpsScheme)) {
+    // TODO(rajendrant): Verify that data saver is enabled as well, to not
+    // trigger the subresource redirect for incognito profiles.
+    return base::WrapUnique<SubresourceRedirectURLLoaderThrottle>(
+        new SubresourceRedirectURLLoaderThrottle());
+  }
+  return nullptr;
+}
 
 SubresourceRedirectURLLoaderThrottle::SubresourceRedirectURLLoaderThrottle() =
     default;
@@ -24,9 +47,11 @@ SubresourceRedirectURLLoaderThrottle::~SubresourceRedirectURLLoaderThrottle() =
 void SubresourceRedirectURLLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect));
   DCHECK_EQ(request->resource_type,
             static_cast<int>(content::ResourceType::kImage));
-
+  DCHECK(request->previews_state &
+         content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON);
   DCHECK(request->url.SchemeIs(url::kHttpsScheme));
 
   // Image subresources that have paths that do not end in one of the
@@ -41,7 +66,7 @@ void SubresourceRedirectURLLoaderThrottle::WillStartRequest(
 
 void SubresourceRedirectURLLoaderThrottle::WillRedirectRequest(
     net::RedirectInfo* redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,
     net::HttpRequestHeaders* modified_request_headers) {
@@ -53,15 +78,15 @@ void SubresourceRedirectURLLoaderThrottle::WillRedirectRequest(
 
 void SubresourceRedirectURLLoaderThrottle::BeforeWillProcessResponse(
     const GURL& response_url,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     bool* defer) {
   // If response was not from the compression server, don't restart it.
   if (!response_url.is_valid())
     return;
-  GURL compression_server = GetLitePageSubresourceDomainURL();
+  auto compression_server = GetSubresourceRedirectOrigin();
   if (!response_url.DomainIs(compression_server.host()))
     return;
-  if (response_url.EffectiveIntPort() != compression_server.EffectiveIntPort())
+  if (response_url.EffectiveIntPort() != compression_server.port())
     return;
   if (response_url.scheme() != compression_server.scheme())
     return;
@@ -87,15 +112,15 @@ void SubresourceRedirectURLLoaderThrottle::BeforeWillProcessResponse(
 
 void SubresourceRedirectURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
-    network::ResourceResponseHead* response_head,
+    network::mojom::URLResponseHead* response_head,
     bool* defer) {
   // If response was not from the compression server, don't record any metrics.
   if (!response_url.is_valid())
     return;
-  GURL compression_server = GetLitePageSubresourceDomainURL();
+  auto compression_server = GetSubresourceRedirectOrigin();
   if (!response_url.DomainIs(compression_server.host()))
     return;
-  if (response_url.EffectiveIntPort() != compression_server.EffectiveIntPort())
+  if (response_url.EffectiveIntPort() != compression_server.port())
     return;
   if (response_url.scheme() != compression_server.scheme())
     return;

@@ -21,6 +21,8 @@
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/remoting/rpc_broker.h"
 #include "media/remoting/triggers.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 
@@ -40,7 +42,7 @@ namespace remoting {
 // while RPC message should be sent on main thread using |main_task_runner|.
 class DemuxerStreamAdapter {
  public:
-  using ErrorCallback = base::Callback<void(StopTrigger)>;
+  using ErrorCallback = base::OnceCallback<void(StopTrigger)>;
 
   // |main_task_runner|: Task runner to post RPC message on main thread
   // |media_task_runner|: Task runner to run whole class on media thread.
@@ -49,8 +51,8 @@ class DemuxerStreamAdapter {
   // |rpc_broker|: Broker class to handle incoming and outgoing RPC message. It
   //               is used only on the main thread.
   // |rpc_handle|: Unique value that references this DemuxerStreamAdapter.
-  // |stream_sender_info|: Transfer of pipe binding on the media thread. It is
-  //                       to access mojo interface for sending data stream.
+  // |stream_sender_remote|: Transfer of pipe binding on the media thread. It is
+  //                         to access mojo remote for sending data stream.
   // |producer_handle|: handle to send data using mojo data pipe.
   // |error_callback|: Run if a fatal runtime error occurs and remoting should
   //                   be shut down.
@@ -61,9 +63,9 @@ class DemuxerStreamAdapter {
       DemuxerStream* demuxer_stream,
       const base::WeakPtr<RpcBroker>& rpc_broker,
       int rpc_handle,
-      mojom::RemotingDataStreamSenderPtrInfo stream_sender_info,
+      mojo::PendingRemote<mojom::RemotingDataStreamSender> stream_sender_remote,
       mojo::ScopedDataPipeProducerHandle producer_handle,
-      const ErrorCallback& error_callback);
+      ErrorCallback error_callback);
   ~DemuxerStreamAdapter();
 
   // Rpc handle for this class. This is used for sending/receiving RPC message
@@ -180,7 +182,7 @@ class DemuxerStreamAdapter {
   AudioDecoderConfig audio_config_;
   VideoDecoderConfig video_config_;
 
-  mojom::RemotingDataStreamSenderPtr stream_sender_;
+  mojo::Remote<mojom::RemotingDataStreamSender> stream_sender_;
   MojoDataPipeWriter data_pipe_writer_;
 
   // Tracks the number of bytes written to the pipe.

@@ -13,6 +13,7 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
@@ -116,6 +117,14 @@ Profile* Profile::FromWebUI(content::WebUI* web_ui) {
   return FromBrowserContext(web_ui->GetWebContents()->GetBrowserContext());
 }
 
+void Profile::AddObserver(ProfileObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Profile::RemoveObserver(ProfileObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 TestingProfile* Profile::AsTestingProfile() {
   return nullptr;
 }
@@ -192,7 +201,7 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // in user's profile for other platforms as well.
   registry->RegisterStringPref(
       language::prefs::kApplicationLocale, std::string(),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterStringPref(prefs::kApplicationLocaleBackup, std::string());
   registry->RegisterStringPref(prefs::kApplicationLocaleAccepted,
                                std::string());
@@ -265,6 +274,17 @@ bool Profile::IsSystemProfile() const {
   return is_system_profile_;
 }
 
+bool Profile::CanUseDiskWhenOffTheRecord() {
+#if defined(OS_CHROMEOS)
+  // Guest mode on ChromeOS uses an in-memory file system to store the profile
+  // in, so despite this being an off the record profile, it is still okay to
+  // store data on disk.
+  return IsGuestSession();
+#else
+  return false;
+#endif
+}
+
 bool Profile::ShouldRestoreOldSessionCookies() {
   return false;
 }
@@ -273,7 +293,7 @@ bool Profile::ShouldPersistSessionCookies() {
   return false;
 }
 
-network::mojom::NetworkContextPtr Profile::CreateNetworkContext(
+mojo::Remote<network::mojom::NetworkContext> Profile::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
   return ProfileNetworkContextServiceFactory::GetForContext(this)
@@ -318,6 +338,10 @@ void Profile::MaybeSendDestroyedNotification() {
     sent_destroyed_notification_ = true;
 
     NotifyWillBeDestroyed(this);
+
+    for (auto& observer : observers_)
+      observer.OnProfileWillBeDestroyed(this);
+
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_DESTROYED,
         content::Source<Profile>(this),
@@ -325,6 +349,7 @@ void Profile::MaybeSendDestroyedNotification() {
   }
 }
 
+// static
 PrefStore* Profile::CreateExtensionPrefStore(Profile* profile,
                                              bool incognito_pref_store) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -356,4 +381,11 @@ void Profile::Wipe() {
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::WIPE_PROFILE,
       ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES);
+}
+
+void Profile::NotifyOffTheRecordProfileCreated(Profile* off_the_record) {
+  DCHECK_EQ(off_the_record->GetOriginalProfile(), this);
+  DCHECK(off_the_record->IsOffTheRecord());
+  for (auto& observer : observers_)
+    observer.OnOffTheRecordProfileCreated(off_the_record);
 }

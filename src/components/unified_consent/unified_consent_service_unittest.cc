@@ -17,7 +17,6 @@
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
-#include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,11 +57,6 @@ class UnifiedConsentServiceTest : public testing::Test {
   }
 
   void CreateConsentService() {
-    if (!scoped_unified_consent_) {
-      SetUnifiedConsentFeatureState(
-          unified_consent::UnifiedConsentFeatureState::kEnabled);
-    }
-
     consent_service_ = std::make_unique<UnifiedConsentService>(
         &pref_service_, identity_test_environment_.identity_manager(),
         &sync_service_, std::vector<std::string>());
@@ -72,16 +66,6 @@ class UnifiedConsentServiceTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetUnifiedConsentFeatureState(
-      unified_consent::UnifiedConsentFeatureState feature_state) {
-    // First reset |scoped_unified_consent_| to nullptr in case it was set
-    // before and then initialize it with the new value. This makes sure that
-    // the old scoped object is deleted before the new one is created.
-    scoped_unified_consent_.reset();
-    scoped_unified_consent_.reset(
-        new unified_consent::ScopedUnifiedConsent(feature_state));
-  }
-
   unified_consent::MigrationState GetMigrationState() {
     int migration_state_int =
         pref_service_.GetInteger(prefs::kUnifiedConsentMigrationState);
@@ -89,12 +73,11 @@ class UnifiedConsentServiceTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   signin::IdentityTestEnvironment identity_test_environment_;
   TestSyncService sync_service_;
   std::unique_ptr<UnifiedConsentService> consent_service_;
-  std::unique_ptr<ScopedUnifiedConsent> scoped_unified_consent_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedConsentServiceTest);
 };
@@ -107,7 +90,7 @@ TEST_F(UnifiedConsentServiceTest, DefaultValuesWhenSignedOut) {
 
 TEST_F(UnifiedConsentServiceTest, EnableUrlKeyedAnonymizedDataCollection) {
   CreateConsentService();
-  identity_test_environment_.SetPrimaryAccount("testaccount");
+  identity_test_environment_.SetPrimaryAccount("testaccount@gmail.com");
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 
@@ -119,7 +102,7 @@ TEST_F(UnifiedConsentServiceTest, EnableUrlKeyedAnonymizedDataCollection) {
 
 TEST_F(UnifiedConsentServiceTest, Migration_UpdateSettings) {
   // Create user that syncs history and has no custom passphrase.
-  identity_test_environment_.SetPrimaryAccount("testaccount");
+  identity_test_environment_.SetPrimaryAccount("testaccount@gmail.com");
   sync_service_.GetUserSettings()->SetSelectedTypes(
       false, {syncer::UserSelectableType::kHistory});
   EXPECT_TRUE(sync_service_.IsSyncFeatureActive());
@@ -139,7 +122,7 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
   base::HistogramTester histogram_tester;
 
   CreateConsentService();
-  identity_test_environment_.SetPrimaryAccount("testaccount");
+  identity_test_environment_.SetPrimaryAccount("testaccount@gmail.com");
 
   // Precondition: Enable unified consent.
   consent_service_->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
@@ -162,28 +145,5 @@ TEST_F(UnifiedConsentServiceTest, Migration_NotSignedIn) {
   EXPECT_EQ(GetMigrationState(), unified_consent::MigrationState::kCompleted);
 }
 #endif  // !defined(OS_CHROMEOS)
-
-TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
-  identity_test_environment_.SetPrimaryAccount("testaccount");
-
-  // Migrate and opt into unified consent.
-  CreateConsentService();
-  consent_service_->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
-  // Check expectations after opt-in.
-  EXPECT_TRUE(pref_service_.GetBoolean(
-      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
-  EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
-
-  consent_service_->Shutdown();
-  consent_service_.reset();
-  SetUnifiedConsentFeatureState(UnifiedConsentFeatureState::kDisabled);
-
-  // Rollback
-  UnifiedConsentService::RollbackIfNeeded(&pref_service_, &sync_service_);
-
-  // Unified consent prefs should be cleared.
-  EXPECT_EQ(unified_consent::MigrationState::kNotInitialized,
-            GetMigrationState());
-}
 
 }  // namespace unified_consent

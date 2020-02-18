@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 
 #include <math.h>
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -49,7 +50,7 @@ LayoutMenuList::LayoutMenuList(Element* element)
       inner_block_height_(LayoutUnit()),
       options_width_(0),
       last_active_index_(-1) {
-  DCHECK(IsHTMLSelectElement(element));
+  DCHECK(IsA<HTMLSelectElement>(element));
 }
 
 LayoutMenuList::~LayoutMenuList() = default;
@@ -137,9 +138,8 @@ void LayoutMenuList::AdjustInnerStyle(ComputedStyle& inner_style) const {
 
   Length padding_start = Length::Fixed(
       LayoutTheme::GetTheme().PopupInternalPaddingStart(StyleRef()));
-  Length padding_end =
-      Length::Fixed(LayoutTheme::GetTheme().PopupInternalPaddingEnd(
-          GetFrameView()->GetChromeClient(), StyleRef()));
+  Length padding_end = Length::Fixed(
+      LayoutTheme::GetTheme().PopupInternalPaddingEnd(GetFrame(), StyleRef()));
   inner_style.SetPaddingLeft(StyleRef().Direction() == TextDirection::kLtr
                                  ? padding_start
                                  : padding_end);
@@ -163,7 +163,7 @@ void LayoutMenuList::AdjustInnerStyle(ComputedStyle& inner_style) const {
 }
 
 HTMLSelectElement* LayoutMenuList::SelectElement() const {
-  return ToHTMLSelectElement(GetNode());
+  return To<HTMLSelectElement>(GetNode());
 }
 
 void LayoutMenuList::AddChild(LayoutObject* new_child,
@@ -253,7 +253,7 @@ void LayoutMenuList::UpdateFromElement() {
       Locale& locale = select->GetLocale();
       String localized_number_string =
           locale.ConvertToLocalizedNumber(String::Number(selected_count));
-      text = locale.QueryString(WebLocalizedString::kSelectMenuListText,
+      text = locale.QueryString(IDS_FORM_SELECT_MENU_LIST_TEXT,
                                 localized_number_string);
       DCHECK(!option_style_);
     }

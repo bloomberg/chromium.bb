@@ -13,13 +13,15 @@ CupsPrintJob::CupsPrintJob(const Printer& printer,
                            const std::string& document_title,
                            int total_page_number,
                            ::printing::PrintJob::Source source,
-                           const std::string& source_id)
+                           const std::string& source_id,
+                           const printing::proto::PrintSettings& settings)
     : printer_(printer),
       job_id_(job_id),
       document_title_(document_title),
       total_page_number_(total_page_number),
       source_(source),
       source_id_(source_id),
+      settings_(settings),
       creation_time_(base::Time::Now()) {}
 
 CupsPrintJob::~CupsPrintJob() = default;
@@ -33,7 +35,7 @@ base::WeakPtr<CupsPrintJob> CupsPrintJob::GetWeakPtr() {
 }
 
 bool CupsPrintJob::IsExpired() const {
-  return error_code_ == ErrorCode::PRINTER_UNREACHABLE;
+  return error_code_ == PrinterErrorCode::PRINTER_UNREACHABLE;
 }
 
 // static
@@ -49,7 +51,7 @@ bool CupsPrintJob::IsJobFinished() const {
 }
 
 bool CupsPrintJob::PipelineDead() const {
-  return error_code_ == CupsPrintJob::ErrorCode::FILTER_FAILED;
+  return error_code_ == PrinterErrorCode::FILTER_FAILED;
 }
 
 }  // namespace chromeos

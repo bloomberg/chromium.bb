@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/shared_memory.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -18,9 +17,8 @@
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/service_manager/public/mojom/connector.mojom.h"
+#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 
 struct FrameHostMsg_CreateChildFrame_Params;
 struct FrameHostMsg_CreateChildFrame_Params_Reply;
@@ -73,10 +71,8 @@ class MockRenderThread : public RenderThread {
       ResourceDispatcherDelegate* delegate) override;
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
-  std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
-      size_t buffer_size) override;
   void RegisterExtension(std::unique_ptr<v8::Extension> extension) override;
-  int PostTaskToAllWebWorkers(const base::Closure& closure) override;
+  int PostTaskToAllWebWorkers(base::RepeatingClosure closure) override;
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
   base::WaitableEvent* GetShutdownEvent() override;
   int32_t GetClientId() override;
@@ -85,14 +81,14 @@ class MockRenderThread : public RenderThread {
       blink::scheduler::WebRendererProcessType type) override;
   blink::WebString GetUserAgent() override;
   const blink::UserAgentMetadata& GetUserAgentMetadata() override;
+  bool IsUseZoomForDSF() override;
 #if defined(OS_WIN)
   void PreCacheFont(const LOGFONT& log_font) override;
   void ReleaseCachedFonts() override;
 #endif
-  ServiceManagerConnection* GetServiceManagerConnection() override;
-  service_manager::Connector* GetConnector() override;
   void SetFieldTrialGroup(const std::string& trial_name,
                           const std::string& group_name) override;
+  void SetUseZoomForDSFEnabled(bool zoom_for_dsf);
 
   // Returns a new, unique routing ID that can be assigned to the next view,
   // widget, or frame.
@@ -114,19 +110,12 @@ class MockRenderThread : public RenderThread {
   // The Widget expects to be returned a valid route_id.
   void OnCreateWidget(int opener_id, int* route_id);
 
-  // Returns the request end of the InterfaceProvider interface whose client end
-  // was passed in to construct RenderFrame with |routing_id|; if any. The
-  // client end will be used by the RenderFrame to service interface requests
+  // Returns the receiver end of the InterfaceProvider interface whose client
+  // end was passed in to construct RenderFrame with |routing_id|; if any. The
+  // client end will be used by the RenderFrame to service interface receivers
   // originating from the initial empty document.
-  service_manager::mojom::InterfaceProviderRequest
+  mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
   TakeInitialInterfaceProviderRequestForFrame(int32_t routing_id);
-
-  // Returns the receiver end of the DocumentInterfaceBroker interface whose
-  // client end was passed in to construct RenderFrame with |routing_id|; if
-  // any. The client end will be used by the RenderFrame to service interface
-  // requests originating from the initial empty document.
-  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
-  TakeInitialDocumentInterfaceBrokerReceiverForFrame(int32_t routing_id);
 
   // Returns the receiver end of the BrowserInterfaceBroker interface whose
   // client end was passed in to construct RenderFrame with |routing_id|; if
@@ -135,13 +124,13 @@ class MockRenderThread : public RenderThread {
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
   TakeInitialBrowserInterfaceBrokerReceiverForFrame(int32_t routing_id);
 
-  // Called from the RenderViewTest harness to supply the request end of the
+  // Called from the RenderViewTest harness to supply the receiver end of the
   // InterfaceProvider interface connection that the harness used to service the
   // initial empty document in the RenderFrame with |routing_id|.
-  void PassInitialInterfaceProviderRequestForFrame(
+  void PassInitialInterfaceProviderReceiverForFrame(
       int32_t routing_id,
-      service_manager::mojom::InterfaceProviderRequest
-          interface_provider_request);
+      mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
+          interface_provider_receiver);
 
  protected:
   // This function operates as a regular IPC listener. Subclasses
@@ -153,22 +142,14 @@ class MockRenderThread : public RenderThread {
       const FrameHostMsg_CreateChildFrame_Params& params,
       FrameHostMsg_CreateChildFrame_Params_Reply* params_reply);
 
-#if defined(OS_WIN)
-  void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
-                          base::SharedMemoryHandle* browser_handle);
-#endif
-
   IPC::TestSink sink_;
 
   // Routing ID what will be assigned to the next view, widget, or frame.
   int32_t next_routing_id_;
 
-  std::map<int32_t, service_manager::mojom::InterfaceProviderRequest>
-      frame_routing_id_to_initial_interface_provider_requests_;
-
   std::map<int32_t,
-           mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>>
-      frame_routing_id_to_initial_document_broker_receivers_;
+           mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>>
+      frame_routing_id_to_initial_interface_provider_receivers_;
 
   std::map<int32_t, mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>>
       frame_routing_id_to_initial_browser_broker_receivers_;
@@ -182,10 +163,8 @@ class MockRenderThread : public RenderThread {
   // Observers to notify.
   base::ObserverList<RenderThreadObserver>::Unchecked observers_;
 
-  std::unique_ptr<service_manager::Connector> connector_;
-  service_manager::mojom::ConnectorRequest pending_connector_request_;
-
   std::unique_ptr<mojom::RenderMessageFilter> mock_render_message_filter_;
+  bool zoom_for_dsf_ = false;
 };
 
 }  // namespace content

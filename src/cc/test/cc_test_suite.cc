@@ -5,11 +5,10 @@
 #include "cc/test/cc_test_suite.h"
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "cc/base/histograms.h"
 #include "components/viz/test/paths.h"
-#include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/ipc/test_gpu_thread_holder.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
@@ -22,10 +21,10 @@ CCTestSuite::~CCTestSuite() = default;
 
 void CCTestSuite::Initialize() {
   base::TestSuite::Initialize();
-  message_loop_ = std::make_unique<base::MessageLoop>();
+  task_environment_ =
+      std::make_unique<base::test::SingleThreadTaskEnvironment>();
 
   gl::GLSurfaceTestSupport::InitializeOneOff();
-  viz::TestGpuServiceHolder::DestroyInstanceAfterEachTest();
 
   viz::Paths::RegisterPathProvider();
 
@@ -37,7 +36,7 @@ void CCTestSuite::Initialize() {
 }
 
 void CCTestSuite::Shutdown() {
-  message_loop_ = nullptr;
+  task_environment_ = nullptr;
 
   base::TestSuite::Shutdown();
 }

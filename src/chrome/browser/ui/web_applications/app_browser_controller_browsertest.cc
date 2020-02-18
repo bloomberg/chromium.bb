@@ -28,7 +28,9 @@ class AppBrowserControllerBrowserTest
     : public extensions::ExtensionBrowserTest {
  public:
   AppBrowserControllerBrowserTest() {
+#if defined(OS_CHROMEOS)
     scoped_feature_list_.InitWithFeatures({}, {features::kTerminalSystemApp});
+#endif
   }
 
   ~AppBrowserControllerBrowserTest() override {}
@@ -46,13 +48,12 @@ class AppBrowserControllerBrowserTest
 
     auto* provider = WebAppProvider::Get(profile());
     provider->system_web_app_manager().SetSystemAppsForTesting(
-        {{SystemAppType::TERMINAL, SystemAppInfo(app_url)}});
-    web_app::ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
-        .Insert(app_url, app_id,
-                web_app::ExternalInstallSource::kInternalDefault);
-    ASSERT_EQ(web_app::GetAppIdForSystemWebApp(browser()->profile(),
-                                               SystemAppType::TERMINAL),
-              app_id);
+        {{SystemAppType::TERMINAL, SystemAppInfo("Terminal", app_url)}});
+    ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
+        .Insert(app_url, app_id, ExternalInstallSource::kInternalDefault);
+    ASSERT_EQ(
+        GetAppIdForSystemWebApp(browser()->profile(), SystemAppType::TERMINAL),
+        app_id);
 
     const extensions::Extension* extension =
         extensions::ExtensionRegistry::Get(profile())->GetInstalledExtension(
@@ -103,7 +104,7 @@ class AppBrowserControllerBrowserTest
   DISALLOW_COPY_AND_ASSIGN(AppBrowserControllerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, SomeTest) {
+IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
   ASSERT_TRUE(embedded_test_server()->Start());
   InstallAndLaunchTerminalApp();
 

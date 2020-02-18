@@ -98,7 +98,7 @@ class CONTENT_EXPORT StoragePartition {
   GetURLLoaderFactoryForBrowserProcess() = 0;
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() = 0;
-  virtual std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+  virtual std::unique_ptr<network::PendingSharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcessIOThread() = 0;
   virtual network::mojom::CookieManager*
   GetCookieManagerForBrowserProcess() = 0;
@@ -110,6 +110,8 @@ class CONTENT_EXPORT StoragePartition {
   virtual void CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole role,
       const url::Origin& origin,
+      const GURL& site_for_cookies,
+      const url::Origin& top_frame_origin,
       bool is_service_worker,
       int process_id,
       int routing_id,
@@ -188,7 +190,8 @@ class CONTENT_EXPORT StoragePartition {
   // Can be passed empty/null where used, which means the origin will always
   // match.
   using OriginMatcherFunction =
-      base::Callback<bool(const url::Origin&, storage::SpecialStoragePolicy*)>;
+      base::RepeatingCallback<bool(const url::Origin&,
+                                   storage::SpecialStoragePolicy*)>;
 
   // Similar to ClearDataForOrigin().
   // Deletes all data out for the StoragePartition if |storage_origin| is empty.
@@ -223,7 +226,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual void ClearData(
       uint32_t remove_mask,
       uint32_t quota_storage_remove_mask,
-      const OriginMatcherFunction& origin_matcher,
+      OriginMatcherFunction origin_matcher,
       network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
       bool perform_storage_cleanup,
       const base::Time begin,

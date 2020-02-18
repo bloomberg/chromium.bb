@@ -10,6 +10,7 @@
 #include "src/gpu/GrRenderTargetPriv.h"
 #include "src/gpu/GrStencilAttachment.h"
 #include "src/gpu/GrTextureProxyPriv.h"
+#include "src/gpu/GrTextureResolveRenderTask.h"
 
 uint32_t GrRenderTask::CreateUniqueID() {
     static std::atomic<uint32_t> nextID{1};
@@ -20,16 +21,22 @@ uint32_t GrRenderTask::CreateUniqueID() {
     return id;
 }
 
-GrRenderTask::GrRenderTask(sk_sp<GrSurfaceProxy> target)
-        : fTarget(std::move(target))
+GrRenderTask::GrRenderTask()
+        : fUniqueID(CreateUniqueID())
+        , fFlags(0) {
+}
+
+GrRenderTask::GrRenderTask(GrSurfaceProxyView targetView)
+        : fTargetView(std::move(targetView))
         , fUniqueID(CreateUniqueID())
         , fFlags(0) {
 }
 
 GrRenderTask::~GrRenderTask() {
-    if (fTarget && this == fTarget->getLastRenderTask()) {
+    GrSurfaceProxy* proxy = fTargetView.proxy();
+    if (proxy && this == proxy->getLastRenderTask()) {
         // Ensure the target proxy doesn't keep hold of a dangling back pointer.
-        fTarget->setLastRenderTask(nullptr);
+        proxy->setLastRenderTask(nullptr);
     }
 }
 
@@ -50,15 +57,24 @@ void GrRenderTask::makeClosed(const GrCaps& caps) {
         return;
     }
 
-    if (ExpectedOutcome::kTargetDirty == this->onMakeClosed(caps)) {
-        if (fTarget->requiresManualMSAAResolve()) {
-            SkASSERT(fTarget->asRenderTargetProxy());
-            fTarget->asRenderTargetProxy()->markMSAADirty();
+    SkIRect targetUpdateBounds;
+    if (ExpectedOutcome::kTargetDirty == this->onMakeClosed(caps, &targetUpdateBounds)) {
+        GrSurfaceProxy* proxy = fTargetView.proxy();
+        SkASSERT(SkIRect::MakeSize(proxy->dimensions()).contains(targetUpdateBounds));
+        if (proxy->requiresManualMSAAResolve()) {
+            SkASSERT(fTargetView.asRenderTargetProxy());
+            fTargetView.asRenderTargetProxy()->markMSAADirty(targetUpdateBounds);
         }
-        GrTextureProxy* textureProxy = fTarget->asTextureProxy();
+        GrTextureProxy* textureProxy = fTargetView.asTextureProxy();
         if (textureProxy && GrMipMapped::kYes == textureProxy->mipMapped()) {
             textureProxy->markMipMapsDirty();
         }
+    }
+
+    if (fTextureResolveTask) {
+        this->addDependency(fTextureResolveTask);
+        fTextureResolveTask->makeClosed(caps);
+        fTextureResolveTask = nullptr;
     }
 
     this->setFlag(kClosed_Flag);
@@ -75,15 +91,23 @@ void GrRenderTask::prepare(GrOpFlushState* flushState) {
 // Add a GrRenderTask-based dependency
 void GrRenderTask::addDependency(GrRenderTask* dependedOn) {
     SkASSERT(!dependedOn->dependsOn(this));  // loops are bad
-
-    if (this->dependsOn(dependedOn)) {
-        return;  // don't add duplicate dependencies
-    }
+    SkASSERT(!this->dependsOn(dependedOn));  // caller should weed out duplicates
 
     fDependencies.push_back(dependedOn);
     dependedOn->addDependent(this);
 
     SkDEBUGCODE(this->validate());
+}
+
+void GrRenderTask::addDependenciesFromOtherTask(GrRenderTask* otherTask) {
+    SkASSERT(otherTask);
+    for (GrRenderTask* task : otherTask->fDependencies) {
+        // The task should not be adding a dependency to itself.
+        SkASSERT(task != this);
+        if (!this->dependsOn(task)) {
+            this->addDependency(task);
+        }
+    }
 }
 
 // Convert from a GrSurface-based dependency to a GrRenderTask one
@@ -107,6 +131,10 @@ void GrRenderTask::addDependency(GrSurfaceProxy* dependedOn, GrMipMapped mipMapp
     }
 
     if (dependedOnTask) {
+        if (this->dependsOn(dependedOnTask) || fTextureResolveTask == dependedOnTask) {
+            return;  // don't add duplicate dependencies
+        }
+
         // We are closing 'dependedOnTask' here bc the current contents of it are what 'this'
         // renderTask depends on. We need a break in 'dependedOnTask' so that the usage of
         // that state has a chance to execute.
@@ -137,18 +165,25 @@ void GrRenderTask::addDependency(GrSurfaceProxy* dependedOn, GrMipMapped mipMapp
 
     // Does this proxy have msaa to resolve and/or mipmaps to regenerate?
     if (GrSurfaceProxy::ResolveFlags::kNone != resolveFlags) {
-        // Create a renderTask that resolves the texture's mipmap data.
-        GrRenderTask* textureResolveTask = textureResolveManager.newTextureResolveRenderTask(
-                sk_ref_sp(dependedOn), resolveFlags, caps);
+        if (!fTextureResolveTask) {
+            fTextureResolveTask = textureResolveManager.newTextureResolveRenderTask(caps);
+        }
+        fTextureResolveTask->addProxy(
+                GrSurfaceProxyView(sk_ref_sp(dependedOn), dependedOn->origin(), GrSwizzle()),
+                resolveFlags, caps);
+
+        // addProxy() should have closed the texture proxy's previous task.
+        SkASSERT(!dependedOnTask || dependedOnTask->isClosed());
+        SkASSERT(dependedOn->getLastRenderTask() == fTextureResolveTask);
 
 #ifdef SK_DEBUG
-        // GrTextureResolveRenderTask::init should have called addDependency (in this instance,
-        // recursively) on the textureResolveTask.
+        // addProxy() should have called addDependency (in this instance, recursively) on
+        // fTextureResolveTask.
         if (dependedOnTask) {
-            SkASSERT(textureResolveTask->dependsOn(dependedOnTask));
+            SkASSERT(fTextureResolveTask->dependsOn(dependedOnTask));
         }
         if (textureProxy && textureProxy->texPriv().isDeferred()) {
-            SkASSERT(textureResolveTask->fDeferredProxies.back() == textureProxy);
+            SkASSERT(fTextureResolveTask->fDeferredProxies.back() == textureProxy);
         }
 
         // The GrTextureResolveRenderTask factory should have also marked the proxy clean, set the
@@ -159,13 +194,12 @@ void GrRenderTask::addDependency(GrSurfaceProxy* dependedOn, GrMipMapped mipMapp
         if (textureProxy) {
             SkASSERT(!textureProxy->mipMapsAreDirty());
         }
-        SkASSERT(dependedOn->getLastRenderTask() == textureResolveTask);
-        SkASSERT(textureResolveTask->isClosed());
+        SkASSERT(dependedOn->getLastRenderTask() == fTextureResolveTask);
 #endif
+        return;
+    }
 
-        // Fall through and add textureResolveTask as a dependency of "this".
-        dependedOnTask = textureResolveTask;
-    } else if (textureProxy && textureProxy->texPriv().isDeferred()) {
+    if (textureProxy && textureProxy->texPriv().isDeferred()) {
         fDeferredProxies.push_back(textureProxy);
     }
 
@@ -219,30 +253,16 @@ void GrRenderTask::closeThoseWhoDependOnMe(const GrCaps& caps) {
 
 bool GrRenderTask::isInstantiated() const {
     // Some renderTasks (e.g. GrTransferFromRenderTask) don't have a target.
-    if (!fTarget) {
+    GrSurfaceProxy* proxy = fTargetView.proxy();
+    if (!proxy) {
         return true;
     }
 
-    if (!fTarget->isInstantiated()) {
+    if (!proxy->isInstantiated()) {
         return false;
     }
 
-    int minStencilSampleCount = (fTarget->asRenderTargetProxy())
-            ? fTarget->asRenderTargetProxy()->numStencilSamples()
-            : 0;
-
-    if (minStencilSampleCount) {
-        GrRenderTarget* rt = fTarget->peekRenderTarget();
-        SkASSERT(rt);
-
-        GrStencilAttachment* stencil = rt->renderTargetPriv().getStencilAttachment();
-        if (!stencil) {
-            return false;
-        }
-        SkASSERT(stencil->numSamples() >= minStencilSampleCount);
-    }
-
-    GrSurface* surface = fTarget->peekSurface();
+    GrSurface* surface = proxy->peekSurface();
     if (surface->wasDestroyed()) {
         return false;
     }
@@ -253,10 +273,11 @@ bool GrRenderTask::isInstantiated() const {
 #ifdef SK_DEBUG
 void GrRenderTask::dump(bool printDependencies) const {
     SkDebugf("--------------------------------------------------------------\n");
+    GrSurfaceProxy* proxy = fTargetView.proxy();
     SkDebugf("renderTaskID: %d - proxyID: %d - surfaceID: %d\n", fUniqueID,
-             fTarget ? fTarget->uniqueID().asUInt() : -1,
-             fTarget && fTarget->peekSurface()
-                     ? fTarget->peekSurface()->uniqueID().asUInt()
+             proxy ? proxy->uniqueID().asUInt() : -1,
+             proxy && proxy->peekSurface()
+                     ? proxy->peekSurface()->uniqueID().asUInt()
                      : -1);
 
     if (printDependencies) {

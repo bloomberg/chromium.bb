@@ -9,10 +9,12 @@
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/browser/worker_host/worker_script_loader.h"
 #include "content/browser/worker_host/worker_script_loader_factory.h"
-#include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_request_id.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
@@ -68,8 +70,7 @@ WorkerScriptFetcher::WorkerScriptFetcher(
     CreateAndStartCallback callback)
     : script_loader_factory_(std::move(script_loader_factory)),
       resource_request_(std::move(resource_request)),
-      callback_(std::move(callback)),
-      response_url_loader_binding_(this) {
+      callback_(std::move(callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -94,7 +95,7 @@ void WorkerScriptFetcher::Start(
   // browser-initiated navigations and worker script fetch.
   int request_id = NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
 
-  url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+  url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory), std::move(throttles), routing_id,
       request_id, network::mojom::kURLLoadOptionNone, resource_request_.get(),
       this, kWorkerScriptLoadTrafficAnnotation,
@@ -104,7 +105,7 @@ void WorkerScriptFetcher::Start(
 void WorkerScriptFetcher::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  response_head_ = response_head;
+  response_head_ = std::move(response_head);
 }
 
 void WorkerScriptFetcher::OnStartLoadingResponseBody(
@@ -118,12 +119,13 @@ void WorkerScriptFetcher::OnStartLoadingResponseBody(
     // need to see if the request interceptors want to potentially create a new
     // loader for the response, e.g. AppCache's fallback.
     DCHECK(!response_url_loader_);
-    network::mojom::URLLoaderClientRequest response_client_request;
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>
+        response_client_receiver;
     if (script_loader->MaybeCreateLoaderForResponse(
-            response_head_, &response_body, &response_url_loader_,
-            &response_client_request, url_loader_.get())) {
+            &response_head_, &response_body, &response_url_loader_,
+            &response_client_receiver, url_loader_.get())) {
       DCHECK(response_url_loader_);
-      response_url_loader_binding_.Bind(std::move(response_client_request));
+      response_url_loader_receiver_.Bind(std::move(response_client_receiver));
       subresource_loader_params_ = script_loader->TakeSubresourceLoaderParams();
       url_loader_.reset();
       // OnReceiveResponse() will be called again.
@@ -149,18 +151,16 @@ void WorkerScriptFetcher::OnStartLoadingResponseBody(
     // a request interceptor created another loader |response_url_loader_| for
     // serving an alternative response.
     DCHECK(response_url_loader_);
-    DCHECK(response_url_loader_binding_.is_bound());
+    DCHECK(response_url_loader_receiver_.is_bound());
     main_script_load_params->url_loader_client_endpoints =
         network::mojom::URLLoaderClientEndpoints::New(
-            response_url_loader_.PassInterface(),
-            response_url_loader_binding_.Unbind());
+            std::move(response_url_loader_),
+            response_url_loader_receiver_.Unbind());
   }
 
-  for (size_t i = 0; i < redirect_infos_.size(); ++i) {
-    main_script_load_params->redirect_infos.emplace_back(redirect_infos_[i]);
-    main_script_load_params->redirect_response_heads.emplace_back(
-        redirect_response_heads_[i]);
-  }
+  main_script_load_params->redirect_infos = std::move(redirect_infos_);
+  main_script_load_params->redirect_response_heads =
+      std::move(redirect_response_heads_);
 
   std::move(callback_).Run(std::move(main_script_load_params),
                            std::move(subresource_loader_params_),
@@ -173,7 +173,7 @@ void WorkerScriptFetcher::OnReceiveRedirect(
     network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   redirect_infos_.push_back(redirect_info);
-  redirect_response_heads_.push_back(response_head);
+  redirect_response_heads_.push_back(std::move(response_head));
   url_loader_->FollowRedirect({}, /* removed_headers */
                               {} /* modified_headers */);
 }

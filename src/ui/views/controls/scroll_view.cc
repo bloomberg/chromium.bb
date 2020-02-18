@@ -18,7 +18,6 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/focus_ring.h"
-#include "ui/views/controls/separator.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
@@ -160,21 +159,19 @@ class ScrollView::Viewport : public View {
 };
 
 ScrollView::ScrollView()
-    : contents_viewport_(new Viewport(this)),
-      header_viewport_(new Viewport(this)),
-      horiz_sb_(PlatformStyle::CreateScrollBar(true).release()),
-      vert_sb_(PlatformStyle::CreateScrollBar(false).release()),
-      corner_view_(new ScrollCornerView()),
-      more_content_left_(std::make_unique<Separator>()),
-      more_content_top_(std::make_unique<Separator>()),
-      more_content_right_(std::make_unique<Separator>()),
-      more_content_bottom_(std::make_unique<Separator>()),
+    : horiz_sb_(PlatformStyle::CreateScrollBar(true)),
+      vert_sb_(PlatformStyle::CreateScrollBar(false)),
+      corner_view_(std::make_unique<ScrollCornerView>()),
       scroll_with_layers_enabled_(base::FeatureList::IsEnabled(
           ::features::kUiCompositorScrollWithLayers)) {
   set_notify_enter_exit_on_child(true);
 
-  AddChildView(contents_viewport_);
-  AddChildView(header_viewport_);
+  // Since |contents_viewport_| is accessed during the AddChildView call, make
+  // sure the field is initialized.
+  auto contents_viewport = std::make_unique<Viewport>(this);
+  contents_viewport_ = contents_viewport.get();
+  AddChildView(std::move(contents_viewport));
+  header_viewport_ = AddChildView(std::make_unique<Viewport>(this));
 
   // Don't add the scrollbars as children until we discover we need them
   // (ShowOrHideScrollBar).
@@ -211,13 +208,7 @@ ScrollView::ScrollView()
   });
 }
 
-ScrollView::~ScrollView() {
-  // The scrollbars may not have been added, delete them to ensure they get
-  // deleted.
-  delete horiz_sb_;
-  delete vert_sb_;
-  delete corner_view_;
-}
+ScrollView::~ScrollView() = default;
 
 // static
 std::unique_ptr<ScrollView> ScrollView::CreateScrollViewWithBorder() {
@@ -326,20 +317,22 @@ int ScrollView::GetScrollBarLayoutHeight() const {
                                                     : 0;
 }
 
-void ScrollView::SetHorizontalScrollBar(ScrollBar* horiz_sb) {
+ScrollBar* ScrollView::SetHorizontalScrollBar(
+    std::unique_ptr<ScrollBar> horiz_sb) {
   DCHECK(horiz_sb);
   horiz_sb->SetVisible(horiz_sb_->GetVisible());
-  delete horiz_sb_;
   horiz_sb->set_controller(this);
-  horiz_sb_ = horiz_sb;
+  horiz_sb_ = std::move(horiz_sb);
+  return horiz_sb_.get();
 }
 
-void ScrollView::SetVerticalScrollBar(ScrollBar* vert_sb) {
+ScrollBar* ScrollView::SetVerticalScrollBar(
+    std::unique_ptr<ScrollBar> vert_sb) {
   DCHECK(vert_sb);
   vert_sb->SetVisible(vert_sb_->GetVisible());
-  delete vert_sb_;
   vert_sb->set_controller(this);
-  vert_sb_ = vert_sb;
+  vert_sb_ = std::move(vert_sb);
+  return vert_sb_.get();
 }
 
 void ScrollView::SetHasFocusIndicator(bool has_focus_indicator) {
@@ -371,7 +364,7 @@ int ScrollView::GetHeightForWidth(int width) const {
   gfx::Insets insets = GetInsets();
   width = std::max(0, width - insets.width());
   int height = contents_->GetHeightForWidth(width) + insets.height();
-  return std::min(std::max(height, min_height_), max_height_);
+  return base::ClampToRange(height, min_height_, max_height_);
 }
 
 void ScrollView::Layout() {
@@ -466,9 +459,9 @@ void ScrollView::Layout() {
   bool corner_view_required =
       horiz_sb_required && vert_sb_required && !vert_sb_->OverlapsContent();
   // Take action.
-  SetControlVisibility(horiz_sb_, horiz_sb_required);
-  SetControlVisibility(vert_sb_, vert_sb_required);
-  SetControlVisibility(corner_view_, corner_view_required);
+  SetControlVisibility(horiz_sb_.get(), horiz_sb_required);
+  SetControlVisibility(vert_sb_.get(), vert_sb_required);
+  SetControlVisibility(corner_view_.get(), corner_view_required);
 
   // Default.
   if (!horiz_sb_required) {
@@ -648,13 +641,13 @@ void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
     return;
 
   gfx::ScrollOffset offset = CurrentOffset();
-  if (source == horiz_sb_ && horiz_sb_->GetVisible()) {
+  if (source == horiz_sb_.get() && horiz_sb_->GetVisible()) {
     position = AdjustPosition(offset.x(), position, contents_->width(),
                               contents_viewport_->width());
     if (offset.x() == position)
       return;
     offset.set_x(position);
-  } else if (source == vert_sb_ && vert_sb_->GetVisible()) {
+  } else if (source == vert_sb_.get() && vert_sb_->GetVisible()) {
     position = AdjustPosition(offset.y(), position, contents_->height(),
                               contents_viewport_->height());
     if (offset.y() == position)
@@ -670,19 +663,6 @@ void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
 int ScrollView::GetScrollIncrement(ScrollBar* source, bool is_page,
                                    bool is_positive) {
   bool is_horizontal = source->IsHorizontal();
-  int amount = 0;
-  if (contents_) {
-    if (is_page) {
-      amount = contents_->GetPageScrollIncrement(
-          this, is_horizontal, is_positive);
-    } else {
-      amount = contents_->GetLineScrollIncrement(
-          this, is_horizontal, is_positive);
-    }
-    if (amount > 0)
-      return amount;
-  }
-  // No view, or the view didn't return a valid amount.
   if (is_page) {
     return is_horizontal ? contents_viewport_->width() :
                            contents_viewport_->height();
@@ -733,9 +713,8 @@ void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
   const int contents_max_y =
       std::max(contents_viewport_->height(), contents_->height());
 
-  // Make sure x and y are within the bounds of [0,contents_max_*].
-  int x = std::max(0, std::min(contents_max_x, rect.x()));
-  int y = std::max(0, std::min(contents_max_y, rect.y()));
+  int x = base::ClampToRange(rect.x(), 0, contents_max_x);
+  int y = base::ClampToRange(rect.y(), 0, contents_max_y);
 
   // Figure out how far and down the rectangle will go taking width
   // and height into account.  This will be "clipped" by the viewport.

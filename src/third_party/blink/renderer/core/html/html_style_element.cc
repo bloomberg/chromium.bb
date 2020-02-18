@@ -34,11 +34,9 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLStyleElement::HTMLStyleElement(Document& document,
                                    const CreateElementFlags flags)
-    : HTMLElement(kStyleTag, document),
+    : HTMLElement(html_names::kStyleTag, document),
       StyleElement(&document, flags.IsCreatedByParser()),
       fired_load_(false),
       loaded_sheet_(false) {}
@@ -47,13 +45,13 @@ HTMLStyleElement::~HTMLStyleElement() = default;
 
 void HTMLStyleElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kTitleAttr && sheet_ && IsInDocumentTree()) {
+  if (params.name == html_names::kTitleAttr && sheet_ && IsInDocumentTree()) {
     sheet_->SetTitle(params.new_value);
-  } else if (params.name == kMediaAttr && isConnected() &&
+  } else if (params.name == html_names::kMediaAttr && isConnected() &&
              GetDocument().IsActive() && sheet_) {
     sheet_->SetMediaQueries(MediaQuerySet::Create(params.new_value));
     GetDocument().GetStyleEngine().MediaQueriesChangedInScope(GetTreeScope());
-  } else if (params.name == kTypeAttr) {
+  } else if (params.name == html_names::kTypeAttr) {
     HTMLElement::ParseAttribute(params);
     StyleElement::ChildrenChanged(*this);
   } else {
@@ -97,11 +95,11 @@ void HTMLStyleElement::ChildrenChanged(const ChildrenChange& change) {
 }
 
 const AtomicString& HTMLStyleElement::media() const {
-  return getAttribute(kMediaAttr);
+  return FastGetAttribute(html_names::kMediaAttr);
 }
 
 const AtomicString& HTMLStyleElement::type() const {
-  return getAttribute(kTypeAttr);
+  return FastGetAttribute(html_names::kTypeAttr);
 }
 
 void HTMLStyleElement::DispatchPendingEvent(
@@ -124,8 +122,14 @@ void HTMLStyleElement::NotifyLoadedSheetAndAllCriticalSubresources(
   if (fired_load_ && is_load_event)
     return;
   loaded_sheet_ = is_load_event;
+  // Per the spec this should post on the network task source.
+  // https://html.spec.whatwg.org/multipage/semantics.html#the-style-element
+  // This guarantees that the <style> will be applied before the next <script>
+  // is loaded. Note: this means that for the potential future efforts to
+  // prioritise individual network requests we should ensure that their priority
+  // is lower than of this task.
   GetDocument()
-      .GetTaskRunner(TaskType::kDOMManipulation)
+      .GetTaskRunner(TaskType::kNetworking)
       ->PostTask(
           FROM_HERE,
           WTF::Bind(&HTMLStyleElement::DispatchPendingEvent,

@@ -18,7 +18,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
-#include "components/sync/base/cancelation_signal.h"
+#include "base/threading/thread_restrictions.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_cache.h"
@@ -52,36 +53,20 @@ base::LazyInstance<scoped_refptr<base::SequencedTaskRunner>>::Leaky
 }  // namespace
 
 HttpBridgeFactory::HttpBridgeFactory(
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
-    const NetworkTimeUpdateCallback& network_time_update_callback,
-    CancelationSignal* cancelation_signal)
-    : network_time_update_callback_(network_time_update_callback),
-      cancelation_signal_(cancelation_signal) {
-  // Some tests pass null'ed out url_loader_factory_info instances.
-  if (url_loader_factory_info) {
+    const std::string& user_agent,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
+    const NetworkTimeUpdateCallback& network_time_update_callback)
+    : user_agent_(user_agent),
+      network_time_update_callback_(network_time_update_callback) {
+  // Some tests pass null'ed out pending_url_loader_factory instances.
+  if (pending_url_loader_factory) {
     url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-        std::move(url_loader_factory_info));
-  }
-  // This registration is happening on the Sync thread, while signalling occurs
-  // on the UI thread. We must handle the possibility signalling has already
-  // occurred.
-  if (cancelation_signal_->TryRegisterHandler(this)) {
-    registered_for_cancelation_ = true;
-  } else {
-    OnSignalReceived();
+        std::move(pending_url_loader_factory));
   }
 }
 
-HttpBridgeFactory::~HttpBridgeFactory() {
-  if (registered_for_cancelation_) {
-    cancelation_signal_->UnregisterHandler(this);
-  }
-}
-
-void HttpBridgeFactory::Init(const std::string& user_agent) {
-  user_agent_ = user_agent;
-}
+HttpBridgeFactory::~HttpBridgeFactory() = default;
 
 HttpPostProviderInterface* HttpBridgeFactory::Create() {
   DCHECK(url_loader_factory_);
@@ -96,16 +81,6 @@ void HttpBridgeFactory::Destroy(HttpPostProviderInterface* http) {
   static_cast<HttpBridge*>(http)->Release();
 }
 
-void HttpBridgeFactory::OnSignalReceived() {
-  // TODO(tonikitoo): Remove this method.
-  //
-  // Prior to the URLLoader conversion the sync code was holding on to a
-  // scoped_refptr of a URLRequestContextGetter it was changing the lifetime
-  // of net objects. With URLLoader, it's only holding on to mojo pipes
-  // that issue doesn't exist.
-  NOTIMPLEMENTED();
-}
-
 HttpBridge::URLFetchState::URLFetchState()
     : aborted(false),
       request_completed(false),
@@ -116,13 +91,13 @@ HttpBridge::URLFetchState::~URLFetchState() {}
 
 HttpBridge::HttpBridge(
     const std::string& user_agent,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-        url_loader_factory_info,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory>
+        pending_url_loader_factory,
     const NetworkTimeUpdateCallback& network_time_update_callback)
     : user_agent_(user_agent),
       http_post_completed_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED),
-      url_loader_factory_info_(std::move(url_loader_factory_info)),
+      pending_url_loader_factory_(std::move(pending_url_loader_factory)),
       network_task_runner_(g_io_capable_task_runner_for_tests.Get()
                                ? g_io_capable_task_runner_for_tests.Get()
                                : base::CreateSequencedTaskRunner(
@@ -199,7 +174,10 @@ bool HttpBridge::MakeSynchronousPost(int* net_error_code,
 
   // Block until network request completes or is aborted. See
   // OnURLFetchComplete and Abort.
-  http_post_completed_.Wait();
+  {
+    base::ScopedAllowBaseSyncPrimitives allow_wait;
+    http_post_completed_.Wait();
+  }
 
   base::AutoLock lock(fetch_state_lock_);
   DCHECK(fetch_state_.request_completed || fetch_state_.aborted);
@@ -227,12 +205,12 @@ void HttpBridge::MakeAsynchronousPost() {
 
   // Some tests inject |url_loader_factory_| created to operated on the
   // IO-capable thread currently running.
-  DCHECK((!url_loader_factory_ && url_loader_factory_info_) ||
-         (url_loader_factory_ && !url_loader_factory_info_));
+  DCHECK((!url_loader_factory_ && pending_url_loader_factory_) ||
+         (url_loader_factory_ && !pending_url_loader_factory_));
   if (!url_loader_factory_) {
-    DCHECK(url_loader_factory_info_);
+    DCHECK(pending_url_loader_factory_);
     url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-        std::move(url_loader_factory_info_));
+        std::move(pending_url_loader_factory_));
   }
 
   fetch_state_.start_time = base::Time::Now();
@@ -276,6 +254,10 @@ void HttpBridge::MakeAsynchronousPost() {
   resource_request->headers.SetHeader("Content-Encoding", "gzip");
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                       user_agent_);
+
+  variations::AppendVariationsHeader(
+      url_for_request_, variations::InIncognito::kNo,
+      variations::SignedIn::kYes, resource_request.get());
 
   fetch_state_.url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -324,9 +306,9 @@ const std::string HttpBridge::GetResponseHeaderValue(
 void HttpBridge::Abort() {
   base::AutoLock lock(fetch_state_lock_);
 
-  // Release |url_loader_factory_info_| as soon as possible so that
+  // Release |pending_url_loader_factory_| as soon as possible so that
   // no URLLoaderFactory instances proceed on the network task runner.
-  url_loader_factory_info_.reset();
+  pending_url_loader_factory_.reset();
 
   DCHECK(!fetch_state_.aborted);
   if (fetch_state_.aborted || fetch_state_.request_completed)

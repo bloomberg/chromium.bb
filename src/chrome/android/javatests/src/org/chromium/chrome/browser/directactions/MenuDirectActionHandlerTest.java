@@ -31,6 +31,8 @@ import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -62,7 +64,7 @@ public class MenuDirectActionHandlerTest {
     @Test
     @MediumTest
     @Feature({"DirectActions"})
-    public void testPerformDirectActionThroughActivity() throws Exception {
+    public void testPerformDirectActionThroughActivity() {
         mHandler.allowAllActions();
 
         List<Bundle> results = new ArrayList<>();
@@ -82,7 +84,7 @@ public class MenuDirectActionHandlerTest {
     @Test
     @SmallTest
     @Feature({"DirectActions"})
-    public void testReportAvailableActions() throws Exception {
+    public void testReportAvailableActions() {
         mHandler.allowAllActions();
 
         assertThat(getDirectActions(),
@@ -92,6 +94,8 @@ public class MenuDirectActionHandlerTest {
         // Tabs can't be closed for SingleTab Activities.
         if (mTabModelSelector instanceof SingleTabModelSelector) return;
         TestThreadUtils.runOnUiThreadBlocking(() -> { mTabModelSelector.closeAllTabs(); });
+        // Wait for any pending animations for tab closures to complete.
+        CriteriaHelper.pollUiThread(Criteria.equals(0, () -> mTabModelSelector.getTotalTabCount()));
         assertThat(getDirectActions(),
                 Matchers.containsInAnyOrder("downloads", "help", "new_tab", "preferences"));
     }
@@ -99,7 +103,7 @@ public class MenuDirectActionHandlerTest {
     @Test
     @MediumTest
     @Feature({"DirectActions"})
-    public void testRestrictAvailableActions() throws Exception {
+    public void testRestrictAvailableActions() {
         // By default, MenuDirectActionHandler supports no actions.
         assertThat(getDirectActions(), Matchers.empty());
 

@@ -14,11 +14,12 @@
 namespace browser_sync {
 
 AutofillProfileModelTypeController::AutofillProfileModelTypeController(
-    std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
+    std::unique_ptr<syncer::ModelTypeControllerDelegate>
+        delegate_for_full_sync_mode,
     PrefService* pref_service,
     syncer::SyncService* sync_service)
     : ModelTypeController(syncer::AUTOFILL_PROFILE,
-                          std::move(delegate_on_disk)),
+                          std::move(delegate_for_full_sync_mode)),
       pref_service_(pref_service),
       sync_service_(sync_service) {
   pref_registrar_.Init(pref_service_);
@@ -36,7 +37,7 @@ syncer::DataTypeController::PreconditionState
 AutofillProfileModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
   // Require the user-visible pref to be enabled to sync Autofill Profile data.
-  return autofill::prefs::IsProfileAutofillEnabled(pref_service_)
+  return autofill::prefs::IsAutofillProfileEnabled(pref_service_)
              ? PreconditionState::kPreconditionsMet
              : PreconditionState::kMustStopAndClearData;
 }

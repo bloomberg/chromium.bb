@@ -12,7 +12,6 @@ for those executables involved).
 
 from __future__ import print_function
 
-import httplib
 import itertools
 import json
 import os
@@ -21,30 +20,14 @@ import sys
 import textwrap
 import tempfile
 import time
-import urllib2
-import urlparse
 
 import requests
-
-from chromite.lib import constants
-
-# pylint: disable=ungrouped-imports
-third_party = os.path.join(constants.CHROMITE_DIR, 'third_party')
-while True:
-  try:
-    sys.path.remove(third_party)
-  except ValueError:
-    break
-sys.path.insert(0, os.path.join(third_party, 'upload_symbols'))
-del third_party
-
-# Has to be after sys.path manipulation above.
-# And our sys.path muckery confuses pylint.
-# pylint: disable=wrong-import-position
-import poster  # pylint: disable=import-error
+from six.moves import http_client as httplib
+from six.moves import urllib
 
 from chromite.lib import cache
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
@@ -57,14 +40,6 @@ from chromite.scripts import cros_generate_breakpad_symbols
 # We don't want to import the general keyring module as that will implicitly
 # try to import & connect to a dbus server.  That's a waste of time.
 sys.modules['keyring'] = None
-
-
-# We need this to run once per process. Do it at module import time as that
-# will let us avoid doing it inline at function call time (see UploadSymbolFile)
-# as that func might be called by the multiprocessing module which means we'll
-# do the opener logic multiple times overall. Plus, if you're importing this
-# module, it's a pretty good chance that you're going to need this.
-poster.streaminghttp.register_openers()
 
 
 # URLs used for uploading symbols.
@@ -158,7 +133,7 @@ def IsTarball(path):
 class SymbolFile(object):
   """This class represents the state of a symbol file during processing.
 
-  Properties:
+  Attributes:
     display_path: Name of symbol file that should be consistent between builds.
     file_name: Transient path of the symbol file.
     header: ReadSymsHeader output. Dict with assorted meta-data.
@@ -217,24 +192,24 @@ def FindSymbolFiles(tempdir, paths):
   tar_cache = cache.TarballCache(common_path)
 
   for p in paths:
-    o = urlparse.urlparse(p)
+    o = urllib.parse.urlparse(p)
     if o.scheme:
       # Support globs of filenames.
       ctx = gs.GSContext()
-      for p in ctx.LS(p):
-        logging.info('processing files inside %s', p)
-        o = urlparse.urlparse(p)
+      for gspath in ctx.LS(p):
+        logging.info('processing files inside %s', gspath)
+        o = urllib.parse.urlparse(gspath)
         key = ('%s%s' % (o.netloc, o.path)).split('/')
         # The common cache will not be LRU, removing the need to hold a read
         # lock on the cached gsutil.
         ref = tar_cache.Lookup(key)
         try:
-          ref.SetDefault(p)
+          ref.SetDefault(gspath)
         except cros_build_lib.RunCommandError as e:
-          logging.warning('ignoring %s\n%s', p, e)
+          logging.warning('ignoring %s\n%s', gspath, e)
           continue
-        for p in FindSymbolFiles(tempdir, [ref.path]):
-          yield p
+        for sym in FindSymbolFiles(tempdir, [ref.path]):
+          yield sym
 
     elif os.path.isdir(p):
       for root, _, files in os.walk(p):
@@ -250,8 +225,8 @@ def FindSymbolFiles(tempdir, paths):
       logging.info('processing files inside %s', p)
       tardir = tempfile.mkdtemp(dir=tempdir)
       cache.Untar(os.path.realpath(p), tardir)
-      for p in FindSymbolFiles(tardir, [tardir]):
-        yield p
+      for sym in FindSymbolFiles(tardir, [tardir]):
+        yield sym
 
     else:
       yield SymbolFile(display_path=p, file_name=p)
@@ -282,14 +257,14 @@ def AdjustSymbolFileSize(symbol, tempdir, file_limit):
   file_size = symbol.FileSize()
 
   if file_limit and symbol.FileSize() > file_limit:
-    with tempfile.NamedTemporaryFile(
-        prefix='upload_symbols', bufsize=0,
+    with cros_build_lib.UnbufferedNamedTemporaryFile(
+        prefix='upload_symbols',
         dir=tempdir, delete=False) as temp_sym_file:
 
-      temp_sym_file.writelines(
-          [x for x in open(symbol.file_name, 'rb').readlines()
-           if not x.startswith('STACK CFI')]
-      )
+      with open(symbol.file_name, 'rb') as fp:
+        temp_sym_file.writelines(
+            x for x in fp.readlines() if not x.startswith(b'STACK CFI')
+        )
 
       original_file_size = file_size
       symbol.file_name = temp_sym_file.name
@@ -348,7 +323,7 @@ def ExecRequest(operator, url, timeout, api_key, **kwargs):
                           timeout=timeout, **kwargs)
   # Make sure we don't leak secret keys by accident.
   if resp.status_code > 399:
-    resp.url = resp.url.replace(urllib2.quote(api_key), 'XX-HIDDEN-XX')
+    resp.url = resp.url.replace(urllib.parse.quote(api_key), 'XX-HIDDEN-XX')
     logging.warning('Url: %s, Status: %s, response: "%s", in: %s',
                     resp.url, resp.status_code, resp.text, resp.elapsed)
   elif resp.content:
@@ -383,9 +358,7 @@ def FindDuplicates(symbols, status_url, api_key, timeout=DEDUPE_TIMEOUT):
                            timeout,
                            api_key=api_key,
                            data=json.dumps(symbol_data))
-    except (requests.exceptions.HTTPError,
-            requests.exceptions.Timeout,
-            requests.exceptions.RequestException) as e:
+    except requests.exceptions.RequestException as e:
       logging.warning('could not identify duplicates: HTTP error: %s', e)
     for b in batch:
       b.status = SymbolFile.INITIAL
@@ -417,10 +390,11 @@ def UploadSymbolFile(upload_url, symbol, api_key):
                    {'debug_file': symbol.header.name,
                     'debug_id': symbol.header.id.replace('-', '')}
                   }
-    ExecRequest('put',
-                upload['uploadUrl'], timeout,
-                api_key=api_key,
-                data=open(symbol.file_name, 'r'))
+    with open(symbol.file_name, 'r') as fp:
+      ExecRequest('put',
+                  upload['uploadUrl'], timeout,
+                  api_key=api_key,
+                  data=fp)
     ExecRequest('post',
                 '%s/uploads/%s:complete' % (
                     upload_url, upload['uploadKey']),
@@ -457,7 +431,7 @@ def PerformSymbolsFileUpload(symbols, upload_url, api_key):
         # only consider the upload a failure if these retries fail.
         def ShouldRetryUpload(exception):
           if isinstance(exception, (requests.exceptions.RequestException,
-                                    urllib2.URLError,
+                                    IOError,
                                     httplib.HTTPException, socket.error)):
             logging.info('Request failed, retrying: %s', exception)
             return True
@@ -474,14 +448,12 @@ def PerformSymbolsFileUpload(symbols, upload_url, api_key):
           logging.info('upload of %10i bytes took %s', s.FileSize(),
                        timer.delta)
           s.status = SymbolFile.UPLOADED
-      except (requests.exceptions.HTTPError,
-              requests.exceptions.Timeout,
-              requests.exceptions.RequestException) as e:
+      except requests.exceptions.RequestException as e:
         logging.warning('could not upload: %s: HTTP error: %s',
                         s.display_name, e)
         s.status = SymbolFile.ERROR
         failures += 1
-      except (httplib.HTTPException, urllib2.URLError, socket.error) as e:
+      except (httplib.HTTPException, IOError, socket.error) as e:
         logging.warning('could not upload: %s: %s %s', s.display_name,
                         type(e).__name__, e)
         s.status = SymbolFile.ERROR

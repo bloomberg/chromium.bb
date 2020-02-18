@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/radio_input_type.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -60,8 +61,7 @@ bool RadioInputType::ValueMissing(const String&) const {
 }
 
 String RadioInputType::ValueMissingText() const {
-  return GetLocale().QueryString(
-      WebLocalizedString::kValidationValueMissingForRadio);
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_VALUE_MISSING_RADIO);
 }
 
 void RadioInputType::HandleClickEvent(MouseEvent& event) {
@@ -165,7 +165,8 @@ bool RadioInputType::IsKeyboardFocusable() const {
   // skip any other elements in the group.
   Element* current_focused_element =
       GetElement().GetDocument().FocusedElement();
-  if (auto* focused_input = ToHTMLInputElementOrNull(current_focused_element)) {
+  if (auto* focused_input =
+          DynamicTo<HTMLInputElement>(current_focused_element)) {
     if (focused_input->type() == input_type_names::kRadio &&
         focused_input->Form() == GetElement().Form() &&
         focused_input->GetName() == GetElement().GetName())

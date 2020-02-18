@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "gtest/gtest.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace {
@@ -74,37 +75,38 @@ const uint8_t kTestPrivateKeyInfo[] = {
 // Generate random private keys with two different sizes. Reimport, then
 // export them again. We should get back the same exact bytes.
 TEST(RSAPrivateKeyUnitTest, InitRandomTest) {
-  std::unique_ptr<RSAPrivateKey> keypair1(RSAPrivateKey::Create(1024));
-  std::unique_ptr<RSAPrivateKey> keypair2(RSAPrivateKey::Create(2048));
-  ASSERT_TRUE(keypair1.get());
-  ASSERT_TRUE(keypair2.get());
+  ErrorOr<RSAPrivateKey> keypair1(RSAPrivateKey::Create(1024));
+  ErrorOr<RSAPrivateKey> keypair2(RSAPrivateKey::Create(2048));
+  ASSERT_TRUE(keypair1.is_value());
+  ASSERT_TRUE(keypair2.is_value());
 
-  std::vector<uint8_t> privkey1;
-  std::vector<uint8_t> privkey2;
-  std::vector<uint8_t> pubkey1;
-  std::vector<uint8_t> pubkey2;
+  ErrorOr<std::vector<uint8_t>> privkey1 = keypair1.value().ExportPrivateKey();
+  ErrorOr<std::vector<uint8_t>> privkey2 = keypair2.value().ExportPrivateKey();
+  ErrorOr<std::vector<uint8_t>> pubkey1 = keypair1.value().ExportPublicKey();
+  ErrorOr<std::vector<uint8_t>> pubkey2 = keypair2.value().ExportPublicKey();
+  ASSERT_TRUE(privkey1.is_value());
+  ASSERT_TRUE(privkey2.is_value());
+  ASSERT_TRUE(pubkey1.is_value());
+  ASSERT_TRUE(pubkey2.is_value());
 
-  ASSERT_TRUE(keypair1->ExportPrivateKey(&privkey1));
-  ASSERT_TRUE(keypair2->ExportPrivateKey(&privkey2));
-  ASSERT_TRUE(keypair1->ExportPublicKey(&pubkey1));
-  ASSERT_TRUE(keypair2->ExportPublicKey(&pubkey2));
+  ErrorOr<RSAPrivateKey> keypair3(
+      RSAPrivateKey::CreateFromPrivateKeyInfo(privkey1.value()));
+  ErrorOr<RSAPrivateKey> keypair4(
+      RSAPrivateKey::CreateFromPrivateKeyInfo(privkey2.value()));
+  ASSERT_TRUE(keypair3.is_value());
+  ASSERT_TRUE(keypair4.is_value());
 
-  std::unique_ptr<RSAPrivateKey> keypair3(
-      RSAPrivateKey::CreateFromPrivateKeyInfo(privkey1));
-  std::unique_ptr<RSAPrivateKey> keypair4(
-      RSAPrivateKey::CreateFromPrivateKeyInfo(privkey2));
-  ASSERT_TRUE(keypair3.get());
-  ASSERT_TRUE(keypair4.get());
+  ErrorOr<std::vector<uint8_t>> privkey3 = keypair3.value().ExportPrivateKey();
+  ErrorOr<std::vector<uint8_t>> privkey4 = keypair4.value().ExportPrivateKey();
+  ASSERT_TRUE(privkey3.is_value());
+  ASSERT_TRUE(privkey4.is_value());
 
-  std::vector<uint8_t> privkey3;
-  std::vector<uint8_t> privkey4;
-  ASSERT_TRUE(keypair3->ExportPrivateKey(&privkey3));
-  ASSERT_TRUE(keypair4->ExportPrivateKey(&privkey4));
-
-  ASSERT_EQ(privkey1.size(), privkey3.size());
-  ASSERT_EQ(privkey2.size(), privkey4.size());
-  ASSERT_EQ(0, memcmp(&privkey1.front(), &privkey3.front(), privkey1.size()));
-  ASSERT_EQ(0, memcmp(&privkey2.front(), &privkey4.front(), privkey2.size()));
+  ASSERT_EQ(privkey1.value().size(), privkey3.value().size());
+  ASSERT_EQ(privkey2.value().size(), privkey4.value().size());
+  ASSERT_EQ(0, memcmp(&privkey1.value().front(), &privkey3.value().front(),
+                      privkey1.value().size()));
+  ASSERT_EQ(0, memcmp(&privkey2.value().front(), &privkey4.value().front(),
+                      privkey2.value().size()));
 }
 
 // Test Copy() method.
@@ -112,15 +114,16 @@ TEST(RSAPrivateKeyUnitTest, CopyTest) {
   std::vector<uint8_t> input(kTestPrivateKeyInfo,
                              kTestPrivateKeyInfo + sizeof(kTestPrivateKeyInfo));
 
-  std::unique_ptr<RSAPrivateKey> key(
-      RSAPrivateKey::CreateFromPrivateKeyInfo(input));
+  ErrorOr<RSAPrivateKey> key(RSAPrivateKey::CreateFromPrivateKeyInfo(input));
+  ASSERT_TRUE(key.is_value());
 
-  std::unique_ptr<RSAPrivateKey> key_copy(key->Copy());
-  ASSERT_TRUE(key_copy.get());
+  ErrorOr<RSAPrivateKey> key_copy(key.value().Copy());
+  ASSERT_TRUE(key_copy.is_value());
 
-  std::vector<uint8_t> privkey_copy;
-  ASSERT_TRUE(key_copy->ExportPrivateKey(&privkey_copy));
-  ASSERT_EQ(input, privkey_copy);
+  ErrorOr<std::vector<uint8_t>> privkey_copy =
+      key_copy.value().ExportPrivateKey();
+  ASSERT_TRUE(privkey_copy.is_value());
+  ASSERT_EQ(input, privkey_copy.value());
 }
 
 // Test that CreateFromPrivateKeyInfo fails if there is extra data after the RSA
@@ -130,11 +133,10 @@ TEST(RSAPrivateKeyUnitTest, ExtraData) {
                              kTestPrivateKeyInfo + sizeof(kTestPrivateKeyInfo));
   input.push_back(0);
 
-  std::unique_ptr<RSAPrivateKey> key(
-      RSAPrivateKey::CreateFromPrivateKeyInfo(input));
+  ErrorOr<RSAPrivateKey> key(RSAPrivateKey::CreateFromPrivateKeyInfo(input));
 
   // Import should fail.
-  EXPECT_FALSE(key);
+  EXPECT_TRUE(key.is_error());
 }
 
 TEST(RSAPrivateKeyUnitTest, NotRsaKey) {
@@ -153,15 +155,14 @@ TEST(RSAPrivateKeyUnitTest, NotRsaKey) {
       0x9C, 0x2C, 0x6A, 0x80, 0x6A, 0x47, 0xFD, 0x90, 0x76, 0x43, 0xA7, 0x2B,
       0x83, 0x55, 0x97, 0xEF, 0xC8, 0xC6};
 
-  std::vector<uint8_t> input(
+  const std::vector<uint8_t> input(
       kTestEcPrivateKeyInfo,
       kTestEcPrivateKeyInfo + sizeof(kTestEcPrivateKeyInfo));
 
-  std::unique_ptr<RSAPrivateKey> key(
-      RSAPrivateKey::CreateFromPrivateKeyInfo(input));
+  ErrorOr<RSAPrivateKey> key(RSAPrivateKey::CreateFromPrivateKeyInfo(input));
 
   // Import should fail as the given PKCS8 bytes were for an EC key not RSA key.
-  EXPECT_FALSE(key);
+  EXPECT_TRUE(key.is_error());
 }
 
 // Verify that generated public keys look good. This test data was generated
@@ -186,15 +187,14 @@ TEST(RSAPrivateKeyUnitTest, PublicKeyTest) {
   std::vector<uint8_t> input(kTestPrivateKeyInfo,
                              kTestPrivateKeyInfo + sizeof(kTestPrivateKeyInfo));
 
-  std::unique_ptr<RSAPrivateKey> key(
-      RSAPrivateKey::CreateFromPrivateKeyInfo(input));
-  ASSERT_TRUE(key.get());
+  ErrorOr<RSAPrivateKey> key(RSAPrivateKey::CreateFromPrivateKeyInfo(input));
+  ASSERT_TRUE(key.is_value());
 
-  std::vector<uint8_t> output;
-  ASSERT_TRUE(key->ExportPublicKey(&output));
+  ErrorOr<std::vector<uint8_t>> output = key.value().ExportPublicKey();
+  ASSERT_TRUE(output.is_value());
 
-  ASSERT_EQ(0,
-            memcmp(expected_public_key_info, &output.front(), output.size()));
+  ASSERT_EQ(0, memcmp(expected_public_key_info, &output.value().front(),
+                      output.value().size()));
 }
 
 // These two test keys each contain an integer that has 0x00 for its most
@@ -333,41 +333,45 @@ TEST(RSAPrivateKeyUnitTest, ShortIntegers) {
   memcpy(&input2.front(), short_integer_without_high_bit,
          sizeof(short_integer_without_high_bit));
 
-  std::unique_ptr<RSAPrivateKey> keypair1(
+  ErrorOr<RSAPrivateKey> keypair1(
       RSAPrivateKey::CreateFromPrivateKeyInfo(input1));
-  std::unique_ptr<RSAPrivateKey> keypair2(
+  ErrorOr<RSAPrivateKey> keypair2(
       RSAPrivateKey::CreateFromPrivateKeyInfo(input2));
-  ASSERT_TRUE(keypair1.get());
-  ASSERT_TRUE(keypair2.get());
+  ASSERT_TRUE(keypair1.is_value());
+  ASSERT_TRUE(keypair2.is_value());
 
-  std::vector<uint8_t> output1;
-  std::vector<uint8_t> output2;
-  ASSERT_TRUE(keypair1->ExportPrivateKey(&output1));
-  ASSERT_TRUE(keypair2->ExportPrivateKey(&output2));
+  ErrorOr<std::vector<uint8_t>> output1 = keypair1.value().ExportPrivateKey();
+  ErrorOr<std::vector<uint8_t>> output2 = keypair2.value().ExportPrivateKey();
+  ASSERT_TRUE(keypair1.is_value());
+  ASSERT_TRUE(keypair2.is_value());
 
-  ASSERT_EQ(input1.size(), output1.size());
-  ASSERT_EQ(input2.size(), output2.size());
-  ASSERT_EQ(0, memcmp(&output1.front(), &input1.front(), input1.size()));
-  ASSERT_EQ(0, memcmp(&output2.front(), &input2.front(), input2.size()));
+  ASSERT_EQ(input1.size(), output1.value().size());
+  ASSERT_EQ(input2.size(), output2.value().size());
+  ASSERT_EQ(0,
+            memcmp(&output1.value().front(), &input1.front(), input1.size()));
+  ASSERT_EQ(0,
+            memcmp(&output2.value().front(), &input2.front(), input2.size()));
 }
 
 TEST(RSAPrivateKeyUnitTest, CreateFromKeyTest) {
-  std::unique_ptr<RSAPrivateKey> key_pair(RSAPrivateKey::Create(512));
-  ASSERT_TRUE(key_pair.get());
+  ErrorOr<RSAPrivateKey> key_pair_or_error(RSAPrivateKey::Create(512));
+  ASSERT_TRUE(key_pair_or_error.is_value());
+  RSAPrivateKey key_pair = std::move(key_pair_or_error.value());
 
-  std::unique_ptr<RSAPrivateKey> key_copy(
-      RSAPrivateKey::CreateFromKey(key_pair->key()));
-  ASSERT_TRUE(key_copy.get());
+  ErrorOr<RSAPrivateKey> key_copy(RSAPrivateKey::CreateFromKey(key_pair.key()));
+  ASSERT_TRUE(key_copy.is_value());
 
-  std::vector<uint8_t> privkey;
-  std::vector<uint8_t> pubkey;
-  ASSERT_TRUE(key_pair->ExportPrivateKey(&privkey));
-  ASSERT_TRUE(key_pair->ExportPublicKey(&pubkey));
+  ErrorOr<std::vector<uint8_t>> privkey = key_pair.ExportPrivateKey();
+  ErrorOr<std::vector<uint8_t>> pubkey = key_pair.ExportPublicKey();
+  ASSERT_TRUE(privkey.is_value());
+  ASSERT_TRUE(pubkey.is_value());
 
-  std::vector<uint8_t> privkey_copy;
-  std::vector<uint8_t> pubkey_copy;
-  ASSERT_TRUE(key_copy->ExportPrivateKey(&privkey_copy));
-  ASSERT_TRUE(key_copy->ExportPublicKey(&pubkey_copy));
+  ErrorOr<std::vector<uint8_t>> privkey_copy =
+      key_copy.value().ExportPrivateKey();
+  ErrorOr<std::vector<uint8_t>> pubkey_copy =
+      key_copy.value().ExportPublicKey();
+  ASSERT_TRUE(privkey_copy.is_value());
+  ASSERT_TRUE(pubkey_copy.is_value());
 
   ASSERT_EQ(privkey, privkey_copy);
   ASSERT_EQ(pubkey, pubkey_copy);

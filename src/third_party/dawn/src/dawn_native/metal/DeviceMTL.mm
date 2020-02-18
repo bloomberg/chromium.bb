@@ -29,6 +29,7 @@
 #include "dawn_native/metal/StagingBufferMTL.h"
 #include "dawn_native/metal/SwapChainMTL.h"
 #include "dawn_native/metal/TextureMTL.h"
+#include "dawn_platform/DawnPlatform.h"
 #include "dawn_platform/tracing/TraceEvent.h"
 
 #include <type_traits>
@@ -76,10 +77,18 @@ namespace dawn_native { namespace metal {
     }
 
     void Device::InitTogglesFromDriver() {
-        // TODO(jiawei.shao@intel.com): check iOS feature sets
-        bool emulateStoreAndMSAAResolve =
-            ![mMtlDevice supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v2];
-        SetToggle(Toggle::EmulateStoreAndMSAAResolve, emulateStoreAndMSAAResolve);
+        {
+            bool haveStoreAndMSAAResolve = false;
+#if defined(DAWN_PLATFORM_MACOS)
+            haveStoreAndMSAAResolve =
+                [mMtlDevice supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v2];
+#elif defined(DAWN_PLATFORM_IOS)
+            haveStoreAndMSAAResolve =
+                [mMtlDevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v2];
+#endif
+            // On tvOS, we would need MTLFeatureSet_tvOS_GPUFamily2_v1.
+            SetToggle(Toggle::EmulateStoreAndMSAAResolve, !haveStoreAndMSAAResolve);
+        }
 
         // TODO(jiawei.shao@intel.com): tighten this workaround when the driver bug is fixed.
         SetToggle(Toggle::AlwaysResolveIntoZeroLevelAndLayer, true);
@@ -96,7 +105,7 @@ namespace dawn_native { namespace metal {
     ResultOrError<BufferBase*> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return new Buffer(this, descriptor);
     }
-    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoderBase* encoder,
+    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoder* encoder,
                                                    const CommandBufferDescriptor* descriptor) {
         return new CommandBuffer(encoder, descriptor);
     }
@@ -120,7 +129,7 @@ namespace dawn_native { namespace metal {
     }
     ResultOrError<ShaderModuleBase*> Device::CreateShaderModuleImpl(
         const ShaderModuleDescriptor* descriptor) {
-        return new ShaderModule(this, descriptor);
+        return ShaderModule::Create(this, descriptor);
     }
     ResultOrError<SwapChainBase*> Device::CreateSwapChainImpl(
         const SwapChainDescriptor* descriptor) {
@@ -148,10 +157,10 @@ namespace dawn_native { namespace metal {
         return mLastSubmittedSerial + 1;
     }
 
-    void Device::TickImpl() {
+    MaybeError Device::TickImpl() {
         Serial completedSerial = GetCompletedCommandSerial();
 
-        mDynamicUploader->Tick(completedSerial);
+        mDynamicUploader->Deallocate(completedSerial);
         mMapTracker->Tick(completedSerial);
 
         if (mPendingCommands != nil) {
@@ -162,15 +171,20 @@ namespace dawn_native { namespace metal {
             mCompletedSerial++;
             mLastSubmittedSerial++;
         }
+
+        return {};
     }
 
     id<MTLDevice> Device::GetMTLDevice() {
         return mMtlDevice;
     }
 
+    id<MTLCommandQueue> Device::GetMTLQueue() {
+        return mCommandQueue;
+    }
+
     id<MTLCommandBuffer> Device::GetPendingCommandBuffer() {
-        TRACE_EVENT0(GetPlatform(), TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
-                     "DeviceMTL::GetPendingCommandBuffer");
+        TRACE_EVENT0(GetPlatform(), General, "DeviceMTL::GetPendingCommandBuffer");
         if (mPendingCommands == nil) {
             mPendingCommands = [mCommandQueue commandBuffer];
             [mPendingCommands retain];
@@ -217,14 +231,14 @@ namespace dawn_native { namespace metal {
         // mLastSubmittedSerial so it is captured by value.
         Serial pendingSerial = mLastSubmittedSerial;
         [mPendingCommands addCompletedHandler:^(id<MTLCommandBuffer>) {
-            TRACE_EVENT_ASYNC_END0(GetPlatform(), TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
-                                   "DeviceMTL::SubmitPendingCommandBuffer", pendingSerial);
+            TRACE_EVENT_ASYNC_END0(GetPlatform(), GPUWork, "DeviceMTL::SubmitPendingCommandBuffer",
+                                   pendingSerial);
             ASSERT(pendingSerial > mCompletedSerial.load());
             this->mCompletedSerial = pendingSerial;
         }];
 
-        TRACE_EVENT_ASYNC_BEGIN0(GetPlatform(), TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
-                                 "DeviceMTL::SubmitPendingCommandBuffer", pendingSerial);
+        TRACE_EVENT_ASYNC_BEGIN0(GetPlatform(), GPUWork, "DeviceMTL::SubmitPendingCommandBuffer",
+                                 pendingSerial);
         [mPendingCommands commit];
         mPendingCommands = nil;
     }
@@ -236,6 +250,7 @@ namespace dawn_native { namespace metal {
     ResultOrError<std::unique_ptr<StagingBufferBase>> Device::CreateStagingBuffer(size_t size) {
         std::unique_ptr<StagingBufferBase> stagingBuffer =
             std::make_unique<StagingBuffer>(size, this);
+        DAWN_TRY(stagingBuffer->Initialize());
         return std::move(stagingBuffer);
     }
 

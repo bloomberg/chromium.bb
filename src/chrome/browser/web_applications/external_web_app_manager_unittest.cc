@@ -189,7 +189,7 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
   std::vector<ExternalInstallOptions> test_install_options_list;
   {
     ExternalInstallOptions install_options(
-        GURL("https://www.chromestatus.com/features"), LaunchContainer::kTab,
+        GURL("https://www.chromestatus.com/features"), DisplayMode::kBrowser,
         ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = true;
     install_options.add_to_desktop = true;
@@ -200,7 +200,7 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
   {
     ExternalInstallOptions install_options(
         GURL("https://events.google.com/io2016/?utm_source=web_app_manifest"),
-        LaunchContainer::kWindow, ExternalInstallSource::kExternalDefault);
+        DisplayMode::kStandalone, ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = false;
     install_options.add_to_desktop = false;
     install_options.add_to_quick_launch_bar = false;

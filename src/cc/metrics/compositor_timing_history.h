@@ -12,14 +12,20 @@
 #include "cc/tiles/tile_priority.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
-namespace base {
-namespace trace_event {
-class TracedValue;
-}  // namespace trace_event
-}  // namespace base
+namespace perfetto {
+namespace protos {
+namespace pbzero {
+class CompositorTimingHistory;
+}
+}  // namespace protos
+}  // namespace perfetto
+
+namespace viz {
+struct FrameTimingDetails;
+}
 
 namespace cc {
-
+struct BeginMainFrameMetrics;
 class CompositorFrameReportingController;
 class RenderingStatsInstrumentation;
 
@@ -43,7 +49,8 @@ class CC_EXPORT CompositorTimingHistory {
 
   CompositorTimingHistory& operator=(const CompositorTimingHistory&) = delete;
 
-  void AsValueInto(base::trace_event::TracedValue* state) const;
+  void AsProtozeroInto(
+      perfetto::protos::pbzero::CompositorTimingHistory* state) const;
 
   // The main thread responsiveness depends heavily on whether or not the
   // on_critical_path flag is set, so we record response times separately.
@@ -72,7 +79,7 @@ class CC_EXPORT CompositorTimingHistory {
                           base::TimeTicks main_frame_time);
   void BeginMainFrameStarted(base::TimeTicks main_thread_start_time);
   void BeginMainFrameAborted();
-  void NotifyReadyToCommit();
+  void NotifyReadyToCommit(std::unique_ptr<BeginMainFrameMetrics> details);
   void WillCommit();
   void DidCommit();
   void WillPrepareTiles();
@@ -87,12 +94,12 @@ class CC_EXPORT CompositorTimingHistory {
                size_t composited_animations_count,
                size_t main_thread_animations_count,
                bool current_frame_had_raf,
-               bool next_frame_has_pending_raf);
+               bool next_frame_has_pending_raf,
+               bool has_custom_property_animations);
   void DidSubmitCompositorFrame(uint32_t frame_token);
-  void DidNotProduceFrame();
   void DidReceiveCompositorFrameAck();
   void DidPresentCompositorFrame(uint32_t frame_token,
-                                 base::TimeTicks presentation_time);
+                                 const viz::FrameTimingDetails& details);
   void WillInvalidateOnImplSide();
   void SetTreePriority(TreePriority priority);
 
@@ -173,6 +180,7 @@ class CC_EXPORT CompositorTimingHistory {
   // Used only for reporting animation targeted UMA.
   bool previous_frame_had_composited_animations_ = false;
   bool previous_frame_had_main_thread_animations_ = false;
+  bool previous_frame_had_custom_property_animations_ = false;
   bool previous_frame_had_raf_ = false;
 
   TreePriority tree_priority_ = SAME_PRIORITY_FOR_BOTH_TREES;

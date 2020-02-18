@@ -64,6 +64,8 @@ bool CanAccessDocumentURL(int process_id, const GURL& document_url) {
          document_url.IsAboutSrcdoc() ||  // <iframe srcdoc= ...> case.
          document_url.IsAboutBlank() ||   // <iframe src="javascript:''"> case.
          document_url == GURL("data:,") ||  // CSP blocked_urls.
+         (document_url.SchemeIsBlob() &&    // <iframe src="blob:null/xx"> case.
+          url::Origin::Create(document_url).opaque()) ||
          security_policy->CanAccessDataForOrigin(process_id,
                                                  document_url) ||
          !security_policy->HasSecurityState(process_id);  // process shutdown.
@@ -177,7 +179,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   if (main_resource_blocked_)
     OnContentBlocked(blocked_manifest_url_);
 
-  // 6.9.6 The application cache selection algorithm.
+  // 7.9.5 The application cache selection algorithm.
   // The algorithm is started here and continues in FinishCacheSelection,
   // after cache or group loading is complete.
   // Note: Foreign entries are detected on the client side and
@@ -467,7 +469,7 @@ void AppCacheHost::FinishCacheSelection(
     mojo::ReportBadMessageCallback bad_message_callback) {
   DCHECK(!associated_cache());
 
-  // 6.9.6 The application cache selection algorithm
+  // 7.9.5 The application cache selection algorithm
   if (cache) {
     // If document was loaded from an application cache, Associate document
     // with the application cache from which it was loaded. Invoke the
@@ -623,14 +625,14 @@ void AppCacheHost::MaybePassSubresourceFactory() {
   if (subresource_url_factory_.get())
     return;
 
-  network::mojom::URLLoaderFactoryPtr factory_ptr = nullptr;
-
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(GetWeakPtr(),
-                                                        &factory_ptr);
+                                                        &factory_remote);
 
-  // We may not have bound |factory_ptr| if the storage partition has shut down.
-  if (factory_ptr)
-    frontend()->SetSubresourceFactory(std::move(factory_ptr));
+  // We may not have bound |factory_remote| if the storage partition has shut
+  // down.
+  if (factory_remote)
+    frontend()->SetSubresourceFactory(std::move(factory_remote));
 }
 
 void AppCacheHost::SetAppCacheSubresourceFactory(

@@ -4,22 +4,29 @@
 
 #include "chrome/browser/sharing/ack_message_handler.h"
 
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "base/memory/ptr_util.h"
+#include "chrome/browser/sharing/sharing_message_sender.h"
+#include "components/sync/protocol/sharing_message.pb.h"
 
-AckMessageHandler::AckMessageHandler() = default;
+AckMessageHandler::AckMessageHandler(
+    SharingMessageSender* sharing_message_sender)
+    : sharing_message_sender_(sharing_message_sender) {}
 
 AckMessageHandler::~AckMessageHandler() = default;
 
 void AckMessageHandler::OnMessage(
-    const chrome_browser_sharing::SharingMessage& message) {
-  for (AckMessageObserver& observer : observers_)
-    observer.OnAckReceived(message.ack_message().original_message_id());
-}
+    chrome_browser_sharing::SharingMessage message,
+    SharingMessageHandler::DoneCallback done_callback) {
+  DCHECK(message.has_ack_message());
+  chrome_browser_sharing::AckMessage* ack_message =
+      message.mutable_ack_message();
+  std::unique_ptr<chrome_browser_sharing::ResponseMessage> response;
+  if (ack_message->has_response_message())
+    response = base::WrapUnique(ack_message->release_response_message());
 
-void AckMessageHandler::AddObserver(AckMessageObserver* observer) {
-  observers_.AddObserver(observer);
-}
+  sharing_message_sender_->OnAckReceived(ack_message->original_message_type(),
+                                         ack_message->original_message_id(),
+                                         std::move(response));
 
-void AckMessageHandler::RemoveObserver(AckMessageObserver* observer) {
-  observers_.RemoveObserver(observer);
+  std::move(done_callback).Run(/*response=*/nullptr);
 }

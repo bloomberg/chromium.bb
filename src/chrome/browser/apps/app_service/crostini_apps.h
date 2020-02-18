@@ -15,8 +15,10 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 class PrefChangeRegistrar;
 class Profile;
@@ -30,14 +32,15 @@ class CrostiniApps : public KeyedService,
                      public apps::mojom::Publisher,
                      public crostini::CrostiniRegistryService::Observer {
  public:
-  CrostiniApps();
+  CrostiniApps(const mojo::Remote<apps::mojom::AppService>& app_service,
+               Profile* profile);
   ~CrostiniApps() override;
 
-  void Initialize(const apps::mojom::AppServicePtr& app_service,
-                  Profile* profile);
+  void FlushMojoCallsForTesting();
 
-  void ReInitializeForTesting(const apps::mojom::AppServicePtr& app_service,
-                              Profile* profile);
+  void ReInitializeForTesting(
+      const mojo::Remote<apps::mojom::AppService>& app_service,
+      Profile* profile);
 
  private:
   enum class PublishAppIDType {
@@ -46,8 +49,10 @@ class CrostiniApps : public KeyedService,
     kUpdate,
   };
 
+  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
+
   // apps::mojom::Publisher overrides.
-  void Connect(apps::mojom::SubscriberPtr subscriber,
+  void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
@@ -59,10 +64,22 @@ class CrostiniApps : public KeyedService,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id) override;
+  void LaunchAppWithIntent(const std::string& app_id,
+                           apps::mojom::IntentPtr intent,
+                           apps::mojom::LaunchSource launch_source,
+                           int64_t display_id) override;
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
-  void Uninstall(const std::string& app_id) override;
+  void PromptUninstall(const std::string& app_id) override;
+  void Uninstall(const std::string& app_id,
+                 bool clear_site_data,
+                 bool report_abuse) override;
+  void PauseApp(const std::string& app_id) override;
+  void UnpauseApps(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
+  void OnPreferredAppSet(const std::string& app_id,
+                         apps::mojom::IntentFilterPtr intent_filter,
+                         apps::mojom::IntentPtr intent) override;
 
   // CrostiniRegistryService::Observer overrides.
   void OnRegistryUpdated(
@@ -73,6 +90,9 @@ class CrostiniApps : public KeyedService,
   void OnAppIconUpdated(const std::string& app_id,
                         ui::ScaleFactor scale_factor) override;
 
+  // Registers and unregisters terminal with AppService.
+  // TODO(crbug.com/1028898): Move this code into System Apps
+  // once it can support hiding apps.
   void OnCrostiniEnabledChanged();
 
   void LoadIconFromVM(const std::string app_id,
@@ -91,8 +111,8 @@ class CrostiniApps : public KeyedService,
   void PublishAppID(const std::string& app_id, PublishAppIDType type);
   void Publish(apps::mojom::AppPtr app);
 
-  mojo::Binding<apps::mojom::Publisher> binding_;
-  mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
+  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
+  mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* profile_;
 

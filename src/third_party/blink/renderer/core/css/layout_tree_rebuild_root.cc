@@ -38,23 +38,22 @@ Element& LayoutTreeRebuildRoot::RootElement() const {
 ContainerNode* LayoutTreeRebuildRoot::Parent(const Node& node) const {
   return node.GetReattachParent();
 }
-
-bool LayoutTreeRebuildRoot::IsChildDirty(const ContainerNode& node) const {
-  return node.ChildNeedsReattachLayoutTree();
-}
 #endif  // DCHECK_IS_ON()
 
 bool LayoutTreeRebuildRoot::IsDirty(const Node& node) const {
   return node.NeedsReattachLayoutTree();
 }
 
-void LayoutTreeRebuildRoot::ClearChildDirtyForAncestors(
-    ContainerNode& parent) const {
-  for (ContainerNode* ancestor = &parent; ancestor;
-       ancestor = ancestor->GetReattachParent()) {
-    ancestor->ClearChildNeedsReattachLayoutTree();
+void LayoutTreeRebuildRoot::RootRemoved(ContainerNode& parent) {
+  Element* ancestor = DynamicTo<Element>(parent);
+  if (!ancestor)
+    ancestor = parent.ParentOrShadowHostElement();
+  for (; ancestor; ancestor = ancestor->GetReattachParent()) {
+    DCHECK(ancestor->ChildNeedsReattachLayoutTree());
     DCHECK(!ancestor->NeedsReattachLayoutTree());
+    ancestor->ClearChildNeedsReattachLayoutTree();
   }
+  Clear();
 }
 
 }  // namespace blink

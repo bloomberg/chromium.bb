@@ -6,7 +6,6 @@ package com.android.webview.chromium;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Looper;
@@ -46,7 +45,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
@@ -152,8 +150,6 @@ public class WebViewChromiumAwInit {
             try (ScopedSysTraceEvent e =
                             ScopedSysTraceEvent.scoped("WebViewChromiumAwInit.LibraryLoader")) {
                 LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBVIEW);
-            } catch (ProcessInitException e) {
-                throw new RuntimeException("Error initializing WebView library", e);
             }
 
             PathService.override(PathService.DIR_MODULE, "/system/lib/");
@@ -221,7 +217,7 @@ public class WebViewChromiumAwInit {
      * Set up resources on a background thread.
      * @param context The context.
      */
-    public void setUpResourcesOnBackgroundThread(PackageInfo webViewPackageInfo, Context context) {
+    public void setUpResourcesOnBackgroundThread(int packageId, Context context) {
         try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
                      "WebViewChromiumAwInit.setUpResourcesOnBackgroundThread")) {
             assert mSetUpResourcesThread == null : "This method shouldn't be called twice.";
@@ -231,7 +227,7 @@ public class WebViewChromiumAwInit {
                 @Override
                 public void run() {
                     // Run this in parallel as it takes some time.
-                    setUpResources(webViewPackageInfo, context);
+                    setUpResources(packageId, context);
                 }
             });
             mSetUpResourcesThread.start();
@@ -247,17 +243,10 @@ public class WebViewChromiumAwInit {
         }
     }
 
-    private void setUpResources(PackageInfo webViewPackageInfo, Context context) {
+    private void setUpResources(int packageId, Context context) {
         try (ScopedSysTraceEvent e =
                         ScopedSysTraceEvent.scoped("WebViewChromiumAwInit.setUpResources")) {
-            String packageName = webViewPackageInfo.packageName;
-            if (webViewPackageInfo.applicationInfo.metaData != null) {
-                packageName = webViewPackageInfo.applicationInfo.metaData.getString(
-                        "com.android.webview.WebViewDonorPackage", packageName);
-            }
-
-            R.onResourcesLoaded(mFactory.getWebViewDelegate().getPackageId(
-                    context.getResources(), packageName));
+            R.onResourcesLoaded(packageId);
 
             AwResource.setResources(context.getResources());
             AwResource.setConfigKeySystemUuidMapping(android.R.array.config_keySystemUuidMapping);

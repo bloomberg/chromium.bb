@@ -93,7 +93,7 @@ class PushMessagingServiceTest : public ::testing::Test {
     HostContentSettingsMap* host_content_settings_map =
         HostContentSettingsMapFactory::GetForProfile(&profile_);
     host_content_settings_map->SetDefaultContentSetting(
-        CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
+        ContentSettingsType::NOTIFICATIONS, CONTENT_SETTING_ALLOW);
 
     // Override the GCM Profile service so that we can send fake messages.
     gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
@@ -149,7 +149,6 @@ class PushMessagingServiceTest : public ::testing::Test {
 #if defined(OS_ANDROID)
   instance_id::InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting
       block_async_;
-  instance_id::ScopedUseFakeInstanceIDAndroid use_fake_;
 #endif  // OS_ANDROID
 };
 

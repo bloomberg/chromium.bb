@@ -58,6 +58,8 @@ const char* AutocompleteProvider::TypeToString(Type type) {
       return "Shortcuts";
     case TYPE_ZERO_SUGGEST:
       return "ZeroSuggest";
+    case TYPE_ZERO_SUGGEST_LOCAL_HISTORY:
+      return "LocalHistoryZeroSuggest";
     default:
       NOTREACHED() << "Unhandled AutocompleteProvider::Type " << type;
       return "Unknown";
@@ -126,6 +128,8 @@ metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
       return metrics::OmniboxEventProto::SHORTCUTS;
     case TYPE_ZERO_SUGGEST:
       return metrics::OmniboxEventProto::ZERO_SUGGEST;
+    case TYPE_ZERO_SUGGEST_LOCAL_HISTORY:
+      return metrics::OmniboxEventProto::ZERO_SUGGEST_LOCAL_HISTORY;
     default:
       NOTREACHED() << "Unhandled AutocompleteProvider::Type " << type_;
       return metrics::OmniboxEventProto::UNKNOWN_PROVIDER;
@@ -251,17 +255,24 @@ size_t AutocompleteProvider::TrimHttpPrefix(base::string16* url) {
 bool AutocompleteProvider::InExplicitExperimentalKeywordMode(
     const AutocompleteInput& input,
     const base::string16& keyword) {
+  return OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
+         input.prefer_keyword() &&
+         base::StartsWith(input.text(), keyword,
+                          base::CompareCase::SENSITIVE) &&
+         IsExplicitlyInKeywordMode(input, keyword);
+}
+
+// static
+bool AutocompleteProvider::IsExplicitlyInKeywordMode(
+    const AutocompleteInput& input,
+    const base::string16& keyword) {
   // It is important to this method that we determine if the user entered
   // keyword mode intentionally, as we use this routine to e.g. filter
   // all but keyword results. Currently we assume that the user entered
   // keyword mode intentionally with all entry methods except with a
   // space (and disregard entry method during a backspace). However, if the
   // user has typed a char past the space, we again assume keyword mode.
-  return OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
-         input.prefer_keyword() &&
-         base::StartsWith(input.text(), keyword,
-                          base::CompareCase::SENSITIVE) &&
-         (((input.keyword_mode_entry_method() !=
+  return (((input.keyword_mode_entry_method() !=
                 metrics::OmniboxEventProto::SPACE_AT_END &&
             input.keyword_mode_entry_method() !=
                 metrics::OmniboxEventProto::SPACE_IN_MIDDLE) &&

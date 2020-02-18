@@ -11,13 +11,12 @@
 #include "test/pc/e2e/analyzer/video/default_video_quality_analyzer.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
-#include "absl/memory/memory.h"
 #include "api/units/time_delta.h"
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "rtc_base/logging.h"
-#include "test/testsupport/perf_test.h"
 
 namespace webrtc {
 namespace webrtc_pc_e2e {
@@ -63,8 +62,10 @@ double RateCounter::GetEventsPerSecond() const {
          (event_last_time_ - event_first_time_).us() * kMicrosPerSecond;
 }
 
-DefaultVideoQualityAnalyzer::DefaultVideoQualityAnalyzer()
-    : clock_(Clock::GetRealTimeClock()) {}
+DefaultVideoQualityAnalyzer::DefaultVideoQualityAnalyzer(
+    bool heavy_metrics_computation_enabled)
+    : heavy_metrics_computation_enabled_(heavy_metrics_computation_enabled),
+      clock_(Clock::GetRealTimeClock()) {}
 DefaultVideoQualityAnalyzer::~DefaultVideoQualityAnalyzer() {
   Stop();
 }
@@ -73,7 +74,7 @@ void DefaultVideoQualityAnalyzer::Start(std::string test_case_name,
                                         int max_threads_count) {
   test_label_ = std::move(test_case_name);
   for (int i = 0; i < max_threads_count; i++) {
-    auto thread = absl::make_unique<rtc::PlatformThread>(
+    auto thread = std::make_unique<rtc::PlatformThread>(
         &DefaultVideoQualityAnalyzer::ProcessComparisonsThread, this,
         ("DefaultVideoQualityAnalyzerWorker-" + std::to_string(i)).data(),
         rtc::ThreadPriority::kNormalPriority);
@@ -158,7 +159,8 @@ void DefaultVideoQualityAnalyzer::OnFramePreEncode(
     const webrtc::VideoFrame& frame) {
   rtc::CritScope crit(&lock_);
   auto it = frame_stats_.find(frame.id());
-  RTC_DCHECK(it != frame_stats_.end());
+  RTC_DCHECK(it != frame_stats_.end())
+      << "Frame id=" << frame.id() << " not found";
   frame_counters_.pre_encoded++;
   stream_frame_counters_[it->second.stream_label].pre_encoded++;
   it->second.pre_encode_time = Now();
@@ -185,7 +187,7 @@ void DefaultVideoQualityAnalyzer::OnFrameDropped(
   // Here we do nothing, because we will see this drop on renderer side.
 }
 
-void DefaultVideoQualityAnalyzer::OnFrameReceived(
+void DefaultVideoQualityAnalyzer::OnFramePreDecode(
     uint16_t frame_id,
     const webrtc::EncodedImage& input_image) {
   rtc::CritScope crit(&lock_);
@@ -196,7 +198,17 @@ void DefaultVideoQualityAnalyzer::OnFrameReceived(
       << it->second.stream_label;
   frame_counters_.received++;
   stream_frame_counters_[it->second.stream_label].received++;
-  it->second.received_time = Now();
+  it->second.decode_start_time = Now();
+  // Determine the time of the last received packet of this video frame.
+  RTC_DCHECK(!input_image.PacketInfos().empty());
+  int64_t last_receive_time =
+      std::max_element(input_image.PacketInfos().cbegin(),
+                       input_image.PacketInfos().cend(),
+                       [](const RtpPacketInfo& a, const RtpPacketInfo& b) {
+                         return a.receive_time_ms() < b.receive_time_ms();
+                       })
+          ->receive_time_ms();
+  it->second.received_time = Timestamp::ms(last_receive_time);
 }
 
 void DefaultVideoQualityAnalyzer::OnFrameDecoded(
@@ -208,7 +220,7 @@ void DefaultVideoQualityAnalyzer::OnFrameDecoded(
   RTC_DCHECK(it != frame_stats_.end());
   frame_counters_.decoded++;
   stream_frame_counters_[it->second.stream_label].decoded++;
-  it->second.decoded_time = Now();
+  it->second.decode_end_time = Now();
 }
 
 void DefaultVideoQualityAnalyzer::OnFrameRendered(
@@ -497,7 +509,8 @@ void DefaultVideoQualityAnalyzer::ProcessComparison(
   // Perform expensive psnr and ssim calculations while not holding lock.
   double psnr = -1.0;
   double ssim = -1.0;
-  if (comparison.captured && !comparison.dropped) {
+  if (heavy_metrics_computation_enabled_ && comparison.captured &&
+      !comparison.dropped) {
     psnr = I420PSNR(&*comparison.captured, &*comparison.rendered);
     ssim = I420SSIM(&*comparison.captured, &*comparison.rendered);
   }
@@ -535,11 +548,13 @@ void DefaultVideoQualityAnalyzer::ProcessComparison(
         *comparison.frame_stats.rendered_frame_width *
         *comparison.frame_stats.rendered_frame_height);
     stats->transport_time_ms.AddSample(
-        (frame_stats.received_time - frame_stats.encoded_time).ms());
+        (frame_stats.decode_start_time - frame_stats.encoded_time).ms());
     stats->total_delay_incl_transport_ms.AddSample(
         (frame_stats.rendered_time - frame_stats.captured_time).ms());
     stats->decode_time_ms.AddSample(
-        (frame_stats.decoded_time - frame_stats.received_time).ms());
+        (frame_stats.decode_end_time - frame_stats.decode_start_time).ms());
+    stats->receive_to_render_time_ms.AddSample(
+        (frame_stats.rendered_time - frame_stats.received_time).ms());
 
     if (frame_stats.prev_frame_rendered_time.IsFinite()) {
       TimeDelta time_between_rendered_frames =
@@ -618,50 +633,64 @@ void DefaultVideoQualityAnalyzer::ReportResults(
     const std::string& test_case_name,
     const StreamStats& stats,
     const FrameCounters& frame_counters) {
-  ReportResult("psnr", test_case_name, stats.psnr, "dB");
-  ReportResult("ssim", test_case_name, stats.ssim, "unitless");
-  ReportResult("transport_time", test_case_name, stats.transport_time_ms, "ms");
+  using ::webrtc::test::ImproveDirection;
+
+  ReportResult("psnr", test_case_name, stats.psnr, "dB",
+               ImproveDirection::kBiggerIsBetter);
+  ReportResult("ssim", test_case_name, stats.ssim, "unitless",
+               ImproveDirection::kBiggerIsBetter);
+  ReportResult("transport_time", test_case_name, stats.transport_time_ms, "ms",
+               ImproveDirection::kSmallerIsBetter);
   ReportResult("total_delay_incl_transport", test_case_name,
-               stats.total_delay_incl_transport_ms, "ms");
+               stats.total_delay_incl_transport_ms, "ms",
+               ImproveDirection::kSmallerIsBetter);
   ReportResult("time_between_rendered_frames", test_case_name,
-               stats.time_between_rendered_frames_ms, "ms");
+               stats.time_between_rendered_frames_ms, "ms",
+               ImproveDirection::kSmallerIsBetter);
   test::PrintResult("encode_frame_rate", "", test_case_name,
                     stats.encode_frame_rate.IsEmpty()
                         ? 0
                         : stats.encode_frame_rate.GetEventsPerSecond(),
-                    "fps", /*important=*/false);
-  ReportResult("encode_time", test_case_name, stats.encode_time_ms, "ms");
+                    "fps", /*important=*/false,
+                    ImproveDirection::kBiggerIsBetter);
+  ReportResult("encode_time", test_case_name, stats.encode_time_ms, "ms",
+               ImproveDirection::kSmallerIsBetter);
   ReportResult("time_between_freezes", test_case_name,
-               stats.time_between_freezes_ms, "ms");
-  ReportResult("freeze_time_ms", test_case_name, stats.freeze_time_ms, "ms");
+               stats.time_between_freezes_ms, "ms",
+               ImproveDirection::kBiggerIsBetter);
+  ReportResult("freeze_time_ms", test_case_name, stats.freeze_time_ms, "ms",
+               ImproveDirection::kSmallerIsBetter);
   ReportResult("pixels_per_frame", test_case_name,
-               stats.resolution_of_rendered_frame, "count");
+               stats.resolution_of_rendered_frame, "count",
+               ImproveDirection::kBiggerIsBetter);
   test::PrintResult("min_psnr", "", test_case_name,
                     stats.psnr.IsEmpty() ? 0 : stats.psnr.GetMin(), "dB",
-                    /*important=*/false);
-  ReportResult("decode_time", test_case_name, stats.decode_time_ms, "ms");
+                    /*important=*/false, ImproveDirection::kBiggerIsBetter);
+  ReportResult("decode_time", test_case_name, stats.decode_time_ms, "ms",
+               ImproveDirection::kSmallerIsBetter);
+  ReportResult("receive_to_render_time", test_case_name,
+               stats.receive_to_render_time_ms, "ms",
+               ImproveDirection::kSmallerIsBetter);
   test::PrintResult("dropped_frames", "", test_case_name,
                     frame_counters.dropped, "count",
-                    /*important=*/false);
+                    /*important=*/false, ImproveDirection::kSmallerIsBetter);
   test::PrintResult("frames_in_flight", "", test_case_name,
                     frame_counters.captured - frame_counters.rendered -
                         frame_counters.dropped,
                     "count",
-                    /*important=*/false);
+                    /*important=*/false, ImproveDirection::kSmallerIsBetter);
   ReportResult("max_skipped", test_case_name, stats.skipped_between_rendered,
-               "count");
+               "count", ImproveDirection::kSmallerIsBetter);
 }
 
 void DefaultVideoQualityAnalyzer::ReportResult(
     const std::string& metric_name,
     const std::string& test_case_name,
     const SamplesStatsCounter& counter,
-    const std::string& unit) {
-  test::PrintResultMeanAndError(
-      metric_name, /*modifier=*/"", test_case_name,
-      counter.IsEmpty() ? 0 : counter.GetAverage(),
-      counter.IsEmpty() ? 0 : counter.GetStandardDeviation(), unit,
-      /*important=*/false);
+    const std::string& unit,
+    webrtc::test::ImproveDirection improve_direction) {
+  test::PrintResult(metric_name, /*modifier=*/"", test_case_name, counter, unit,
+                    /*important=*/false, improve_direction);
 }
 
 std::string DefaultVideoQualityAnalyzer::GetTestCaseName(

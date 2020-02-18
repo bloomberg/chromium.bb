@@ -26,6 +26,7 @@ test("services_unittests") {
     "//services/metrics/public/cpp:tests",
     "//services/network:tests",
     "//services/network/public/cpp:tests",
+    "//services/network/public/cpp/cert_verifier:tests",
     "//services/test:run_all_unittests",
   ]
 
@@ -42,7 +43,6 @@ test("services_unittests") {
       "//services/image_annotation/public/cpp:tests",
       "//services/media_session:tests",
       "//services/media_session/public/cpp:tests",
-      "//services/preferences:tests",
       "//services/proxy_resolver:tests",
       "//services/resource_coordinator:tests",
       "//services/shape_detection:tests",
@@ -125,7 +125,7 @@ if (is_android) {
       "//services/device/public/mojom:mojom_java",
       "//services/shape_detection:shape_detection_java",
       "//skia/public/mojom:mojom_java",
-      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
   }
 
@@ -150,6 +150,8 @@ if (is_android) {
       "//services/shape_detection:shape_detection_java",
       "//services/shape_detection/public/mojom:mojom_java",
       "//skia/public/mojom:mojom_java",
+      "//third_party/android_deps:androidx_test_monitor_java",
+      "//third_party/android_deps:androidx_test_runner_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/junit",
       "//ui/gfx/geometry/mojom:mojom_java",

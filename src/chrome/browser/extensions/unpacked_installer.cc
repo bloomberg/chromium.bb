@@ -69,7 +69,7 @@ void MaybeCleanupMetadataFolder(const base::FilePath& extension_path) {
 
   const base::FilePath& metadata_dir = extension_path.Append(kMetadataFolder);
   if (base::IsDirectoryEmpty(metadata_dir))
-    base::DeleteFile(metadata_dir, true /*recursive*/);
+    base::DeleteFileRecursively(metadata_dir);
 }
 
 }  // namespace
@@ -174,7 +174,7 @@ void UnpackedInstaller::StartInstallChecks() {
       for (i = imports.begin(); i != imports.end(); ++i) {
         base::Version version_required(i->minimum_version);
         const Extension* imported_module = registry->GetExtensionById(
-            i->extension_id, ExtensionRegistry::COMPATIBILITY);
+            i->extension_id, ExtensionRegistry::EVERYTHING);
         if (!imported_module) {
           ReportExtensionLoadError(kImportMissing);
           return;
@@ -303,8 +303,9 @@ bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
 void UnpackedInstaller::GetAbsolutePath() {
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
+  // Set priority explicitly to avoid unwanted task priority inheritance.
   base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&UnpackedInstaller::CheckExtensionFileAccess, this));
 }
 
@@ -326,13 +327,17 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
 void UnpackedInstaller::LoadWithFileAccess(int flags) {
   std::string error;
   if (!LoadExtension(Manifest::UNPACKED, flags, &error)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
+    // Set priority explicitly to avoid unwanted task priority inheritance.
+    base::PostTask(FROM_HERE,
+                   {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
                    base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError,
                                   this, error));
     return;
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
+  // Set priority explicitly to avoid unwanted task priority inheritance.
+  base::PostTask(FROM_HERE,
+                 {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
                  base::BindOnce(&UnpackedInstaller::StartInstallChecks, this));
 }
 

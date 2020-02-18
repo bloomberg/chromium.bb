@@ -25,14 +25,14 @@ SerialPortUnderlyingSink::SerialPortUnderlyingSink(
 
 ScriptPromise SerialPortUnderlyingSink::start(
     ScriptState* script_state,
-    WritableStreamDefaultControllerInterface* controller) {
+    WritableStreamDefaultController* controller) {
   return ScriptPromise::CastUndefined(script_state);
 }
 
 ScriptPromise SerialPortUnderlyingSink::write(
     ScriptState* script_state,
     ScriptValue chunk,
-    WritableStreamDefaultControllerInterface* controller) {
+    WritableStreamDefaultController* controller) {
   // There can only be one call to write() in progress at a time.
   DCHECK(buffer_source_.IsNull());
   DCHECK_EQ(0u, offset_);
@@ -69,11 +69,11 @@ ScriptPromise SerialPortUnderlyingSink::close(ScriptState* script_state) {
 
   watcher_.Cancel();
   data_pipe_.reset();
+  serial_port_->UnderlyingSinkClosed();
 
   if (pending_exception_) {
     DOMException* exception = pending_exception_;
     pending_exception_ = nullptr;
-    serial_port_->UnderlyingSinkClosed();
     return ScriptPromise::RejectWithDOMException(script_state, exception);
   }
 
@@ -102,6 +102,7 @@ void SerialPortUnderlyingSink::SignalErrorOnClose(DOMException* exception) {
   if (pending_write_) {
     pending_write_->Reject(exception);
     pending_write_ = nullptr;
+    serial_port_->UnderlyingSinkClosed();
   }
 }
 
@@ -137,11 +138,11 @@ void SerialPortUnderlyingSink::WriteData() {
   if (buffer_source_.IsArrayBuffer()) {
     DOMArrayBuffer* array = buffer_source_.GetAsArrayBuffer();
     data = static_cast<const uint8_t*>(array->Data());
-    length = array->ByteLength();
+    length = array->DeprecatedByteLengthAsUnsigned();
   } else {
     DOMArrayBufferView* view = buffer_source_.GetAsArrayBufferView().View();
     data = static_cast<const uint8_t*>(view->BaseAddress());
-    length = view->byteLength();
+    length = view->deprecatedByteLengthAsUnsigned();
   }
 
   DCHECK_LT(offset_, length);

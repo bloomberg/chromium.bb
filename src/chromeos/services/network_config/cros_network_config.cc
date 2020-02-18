@@ -20,13 +20,23 @@
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/onc/onc_constants.h"
+#include "components/user_manager/user_manager.h"
 #include "net/base/ip_address.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+using user_manager::UserManager;
 
 namespace chromeos {
 namespace network_config {
 
 namespace {
+
+// Error strings from networking_private_api.cc. TODO(1004434): Enumerate
+// these in mojo.
+const char kErrorAccessToSharedConfig[] = "Error.CannotChangeSharedConfig";
+const char kErrorInvalidONCConfiguration[] = "Error.InvalidONCConfiguration";
+const char kErrorNetworkUnavailable[] = "Error.NetworkUnavailable";
+const char kErrorNotReady[] = "Error.NotReady";
 
 std::string ShillToOnc(const std::string& shill_string,
                        const onc::StringTranslationEntry table[]) {
@@ -83,6 +93,27 @@ NetworkTypePattern MojoTypeToPattern(mojom::NetworkType type) {
   return NetworkTypePattern::Default();
 }
 
+std::string MojoNetworkTypeToOnc(mojom::NetworkType type) {
+  switch (type) {
+    case mojom::NetworkType::kAll:
+    case mojom::NetworkType::kMobile:
+    case mojom::NetworkType::kWireless:
+      break;  // Not supported
+    case mojom::NetworkType::kCellular:
+      return ::onc::network_type::kCellular;
+    case mojom::NetworkType::kEthernet:
+      return ::onc::network_type::kEthernet;
+    case mojom::NetworkType::kTether:
+      return ::onc::network_type::kTether;
+    case mojom::NetworkType::kVPN:
+      return ::onc::network_type::kVPN;
+    case mojom::NetworkType::kWiFi:
+      return ::onc::network_type::kWiFi;
+  }
+  NOTREACHED() << "Unsupported mojo to ONC type: " << type;
+  return std::string();
+}
+
 mojom::ConnectionStateType GetMojoConnectionStateType(
     const NetworkState* network) {
   if (network->IsConnectedState()) {
@@ -103,6 +134,23 @@ mojom::ConnectionStateType GetConnectionState(const NetworkState* network,
   // connection state to avoid any edge cases during device enable/disable.
   return technology_enabled ? GetMojoConnectionStateType(network)
                             : mojom::ConnectionStateType::kNotConnected;
+}
+
+std::string MojoSecurityTypeToOnc(mojom::SecurityType security_type) {
+  switch (security_type) {
+    case mojom::SecurityType::kNone:
+      return ::onc::wifi::kSecurityNone;
+    case mojom::SecurityType::kWep8021x:
+      return ::onc::wifi::kWEP_8021X;
+    case mojom::SecurityType::kWepPsk:
+      return ::onc::wifi::kWEP_PSK;
+    case mojom::SecurityType::kWpaEap:
+      return ::onc::wifi::kWPA_EAP;
+    case mojom::SecurityType::kWpaPsk:
+      return ::onc::wifi::kWPA_PSK;
+  }
+  NOTREACHED() << "Unsupported mojo to ONC type: " << security_type;
+  return std::string();
 }
 
 mojom::VpnType OncVpnTypeToMojo(const std::string& onc_vpn_type) {
@@ -258,7 +306,12 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
                                                 onc::kNetworkTechnologyTable);
       cellular->roaming = network->IndicateRoaming();
       cellular->signal_strength = network->signal_strength();
-      result->cellular = std::move(cellular);
+
+      const DeviceState* cellular_device =
+          network_state_handler->GetDeviceState(network->device_path());
+      cellular->sim_locked = cellular_device->IsSimLocked();
+      result->type_state =
+          mojom::NetworkTypeStateProperties::NewCellular(std::move(cellular));
       break;
     }
     case mojom::NetworkType::kEthernet: {
@@ -266,7 +319,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
       ethernet->authentication = network->type() == shill::kTypeEthernetEap
                                      ? mojom::AuthenticationType::k8021x
                                      : mojom::AuthenticationType::kNone;
-      result->ethernet = std::move(ethernet);
+      result->type_state =
+          mojom::NetworkTypeStateProperties::NewEthernet(std::move(ethernet));
       break;
     }
     case mojom::NetworkType::kTether: {
@@ -275,7 +329,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
       tether->carrier = network->tether_carrier();
       tether->has_connected_to_host = network->tether_has_connected_to_host();
       tether->signal_strength = network->signal_strength();
-      result->tether = std::move(tether);
+      result->type_state =
+          mojom::NetworkTypeStateProperties::NewTether(std::move(tether));
       break;
     }
     case mojom::NetworkType::kVPN: {
@@ -289,7 +344,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
         vpn->provider_name =
             GetVpnProviderName(vpn_providers, vpn_provider->id);
       }
-      result->vpn = std::move(vpn);
+      result->type_state =
+          mojom::NetworkTypeStateProperties::NewVpn(std::move(vpn));
       break;
     }
     case mojom::NetworkType::kWiFi: {
@@ -300,7 +356,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
       wifi->security = network->GetMojoSecurity();
       wifi->signal_strength = network->signal_strength();
       wifi->ssid = network->name();
-      result->wifi = std::move(wifi);
+      result->type_state =
+          mojom::NetworkTypeStateProperties::NewWifi(std::move(wifi));
       break;
     }
     case mojom::NetworkType::kAll:
@@ -446,6 +503,14 @@ void SetString(const char* key,
   dict->SetStringKey(key, *property);
 }
 
+void SetStringIfNotEmpty(const char* key,
+                         const base::Optional<std::string>& property,
+                         base::Value* dict) {
+  if (!property || property->empty())
+    return;
+  dict->SetStringKey(key, *property);
+}
+
 void SetStringList(const char* key,
                    const base::Optional<std::vector<std::string>>& property,
                    base::Value* dict) {
@@ -453,7 +518,7 @@ void SetStringList(const char* key,
     return;
   base::Value list(base::Value::Type::LIST);
   for (const std::string& s : *property)
-    list.GetList().push_back(base::Value(s));
+    list.Append(base::Value(s));
   dict->SetKey(key, std::move(list));
 }
 
@@ -906,14 +971,14 @@ mojom::ManagedCertificatePatternPtr GetManagedCertificatePattern(
 
 mojom::ManagedEAPPropertiesPtr GetManagedEAPProperties(const base::Value* dict,
                                                        const char* key) {
+  auto eap = mojom::ManagedEAPProperties::New();
   const base::Value* eap_dict = dict->FindKey(key);
   if (!eap_dict)
-    return nullptr;
+    return eap;
   if (!eap_dict->is_dict()) {
     NET_LOG(ERROR) << "Expected dictionary, found: " << *eap_dict;
-    return nullptr;
+    return eap;
   }
-  auto eap = mojom::ManagedEAPProperties::New();
   eap->anonymous_identity =
       GetManagedString(eap_dict, ::onc::eap::kAnonymousIdentity);
   eap->client_cert_pattern = GetManagedCertificatePattern(
@@ -927,6 +992,7 @@ mojom::ManagedEAPPropertiesPtr GetManagedEAPProperties(const base::Value* dict,
   eap->identity = GetManagedString(eap_dict, ::onc::eap::kIdentity);
   eap->inner = GetManagedString(eap_dict, ::onc::eap::kInner);
   eap->outer = GetManagedString(eap_dict, ::onc::eap::kOuter);
+  eap->password = GetManagedString(eap_dict, ::onc::eap::kPassword);
   eap->save_credentials =
       GetManagedBoolean(eap_dict, ::onc::eap::kSaveCredentials);
   eap->server_ca_pems =
@@ -944,14 +1010,14 @@ mojom::ManagedEAPPropertiesPtr GetManagedEAPProperties(const base::Value* dict,
 mojom::ManagedIPSecPropertiesPtr GetManagedIPSecProperties(
     const base::Value* dict,
     const char* key) {
+  auto ipsec = mojom::ManagedIPSecProperties::New();
   const base::Value* ipsec_dict = dict->FindKey(key);
   if (!ipsec_dict)
-    return nullptr;
+    return ipsec;
   if (!ipsec_dict->is_dict()) {
     NET_LOG(ERROR) << "Expected dictionary, found: " << *ipsec_dict;
-    return nullptr;
+    return ipsec;
   }
-  auto ipsec = mojom::ManagedIPSecProperties::New();
   ipsec->authentication_type =
       GetRequiredManagedString(ipsec_dict, ::onc::ipsec::kAuthenticationType);
   ipsec->client_cert_pattern = GetManagedCertificatePattern(
@@ -978,16 +1044,17 @@ mojom::ManagedIPSecPropertiesPtr GetManagedIPSecProperties(
 mojom::ManagedL2TPPropertiesPtr GetManagedL2TPProperties(
     const base::Value* dict,
     const char* key) {
+  auto l2tp = mojom::ManagedL2TPProperties::New();
   const base::Value* l2tp_dict = dict->FindKey(key);
   if (!l2tp_dict)
-    return nullptr;
+    return l2tp;
   if (!l2tp_dict->is_dict()) {
     NET_LOG(ERROR) << "Expected dictionary, found: " << *l2tp_dict;
-    return nullptr;
+    return l2tp;
   }
-  auto l2tp = mojom::ManagedL2TPProperties::New();
   l2tp->lcp_echo_disabled =
       GetManagedBoolean(l2tp_dict, ::onc::l2tp::kLcpEchoDisabled);
+  l2tp->password = GetManagedString(l2tp_dict, ::onc::l2tp::kPassword);
   l2tp->save_credentials =
       GetManagedBoolean(l2tp_dict, ::onc::l2tp::kSaveCredentials);
   l2tp->username = GetManagedString(l2tp_dict, ::onc::l2tp::kUsername);
@@ -997,14 +1064,14 @@ mojom::ManagedL2TPPropertiesPtr GetManagedL2TPProperties(
 mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
     const base::Value* dict,
     const char* key) {
+  auto openvpn = mojom::ManagedOpenVPNProperties::New();
   const base::Value* openvpn_dict = dict->FindKey(key);
   if (!openvpn_dict)
-    return nullptr;
+    return openvpn;
   if (!openvpn_dict->is_dict()) {
     NET_LOG(ERROR) << "Expected dictionary, found: " << *openvpn_dict;
-    return nullptr;
+    return openvpn;
   }
-  auto openvpn = mojom::ManagedOpenVPNProperties::New();
   openvpn->auth = GetManagedString(openvpn_dict, ::onc::openvpn::kAuth);
   openvpn->auth_retry =
       GetManagedString(openvpn_dict, ::onc::openvpn::kAuthRetry);
@@ -1030,6 +1097,7 @@ mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
       GetManagedString(openvpn_dict, ::onc::openvpn::kKeyDirection);
   openvpn->ns_cert_type =
       GetManagedString(openvpn_dict, ::onc::openvpn::kNsCertType);
+  openvpn->password = GetManagedString(openvpn_dict, ::onc::openvpn::kPassword);
   openvpn->port = GetManagedInt32(openvpn_dict, ::onc::openvpn::kPort);
   openvpn->proto = GetManagedString(openvpn_dict, ::onc::openvpn::kProto);
   openvpn->push_peer_info =
@@ -1162,7 +1230,9 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       const base::Value* cellular_dict =
           GetDictionary(properties, ::onc::network_config::kCellular);
       if (!cellular_dict) {
-        result->cellular = std::move(cellular);
+        result->type_properties =
+            mojom::NetworkTypeManagedProperties::NewCellular(
+                std::move(cellular));
         break;
       }
       cellular->auto_connect =
@@ -1172,7 +1242,7 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       cellular->apn_list =
           GetManagedApnList(cellular_dict->FindKey(::onc::cellular::kAPNList));
       cellular->allow_roaming =
-          GetBoolean(properties, ::onc::cellular::kAllowRoaming);
+          GetBoolean(cellular_dict, ::onc::cellular::kAllowRoaming);
       cellular->esn = GetString(cellular_dict, ::onc::cellular::kESN);
       cellular->family = GetString(cellular_dict, ::onc::cellular::kFamily);
       cellular->firmware_revision =
@@ -1217,22 +1287,22 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
           GetInt32(cellular_dict, ::onc::cellular::kSignalStrength);
       cellular->support_network_scan =
           GetBoolean(cellular_dict, ::onc::cellular::kSupportNetworkScan);
-      result->cellular = std::move(cellular);
+      result->type_properties =
+          mojom::NetworkTypeManagedProperties::NewCellular(std::move(cellular));
       break;
     }
     case mojom::NetworkType::kEthernet: {
       auto ethernet = mojom::ManagedEthernetProperties::New();
       const base::Value* ethernet_dict =
           GetDictionary(properties, ::onc::network_config::kEthernet);
-      if (!ethernet_dict) {
-        result->ethernet = std::move(ethernet);
-        break;
+      if (ethernet_dict) {
+        ethernet->authentication =
+            GetManagedString(ethernet_dict, ::onc::ethernet::kAuthentication);
+        ethernet->eap =
+            GetManagedEAPProperties(ethernet_dict, ::onc::ethernet::kEAP);
       }
-      ethernet->authentication =
-          GetManagedString(ethernet_dict, ::onc::ethernet::kAuthentication);
-      ethernet->eap =
-          GetManagedEAPProperties(ethernet_dict, ::onc::ethernet::kEAP);
-      result->ethernet = std::move(ethernet);
+      result->type_properties =
+          mojom::NetworkTypeManagedProperties::NewEthernet(std::move(ethernet));
       break;
     }
     case mojom::NetworkType::kTether: {
@@ -1243,7 +1313,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       tether->has_connected_to_host =
           network_state->tether_has_connected_to_host();
       tether->signal_strength = network_state->signal_strength();
-      result->tether = std::move(tether);
+      result->type_properties =
+          mojom::NetworkTypeManagedProperties::NewTether(std::move(tether));
       break;
     }
     case mojom::NetworkType::kVPN: {
@@ -1251,7 +1322,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       const base::Value* vpn_dict =
           GetDictionary(properties, ::onc::network_config::kVPN);
       if (!vpn_dict) {
-        result->vpn = std::move(vpn);
+        result->type_properties =
+            mojom::NetworkTypeManagedProperties::NewVpn(std::move(vpn));
         break;
       }
       mojom::ManagedStringPtr managed_type =
@@ -1299,7 +1371,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
           }
           break;
       }
-      result->vpn = std::move(vpn);
+      result->type_properties =
+          mojom::NetworkTypeManagedProperties::NewVpn(std::move(vpn));
       break;
     }
     case mojom::NetworkType::kWiFi: {
@@ -1309,7 +1382,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       const base::Value* wifi_dict =
           GetDictionary(properties, ::onc::network_config::kWiFi);
       if (!wifi_dict) {
-        result->wifi = std::move(wifi);
+        result->type_properties =
+            mojom::NetworkTypeManagedProperties::NewWifi(std::move(wifi));
         break;
       }
       wifi->allow_gateway_arp_polling =
@@ -1325,6 +1399,7 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       wifi->hex_ssid = GetManagedString(wifi_dict, ::onc::wifi::kHexSSID);
       wifi->hidden_ssid =
           GetManagedBoolean(wifi_dict, ::onc::wifi::kHiddenSSID);
+      wifi->passphrase = GetManagedString(wifi_dict, ::onc::wifi::kPassphrase);
       wifi->roam_threshold =
           GetManagedInt32(wifi_dict, ::onc::wifi::kRoamThreshold);
       wifi->ssid = GetRequiredManagedString(wifi_dict, ::onc::wifi::kSSID);
@@ -1332,7 +1407,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       wifi->signal_strength = GetInt32(wifi_dict, ::onc::wifi::kSignalStrength);
       wifi->tethering_state =
           GetString(wifi_dict, ::onc::wifi::kTetheringState);
-      result->wifi = std::move(wifi);
+      result->type_properties =
+          mojom::NetworkTypeManagedProperties::NewWifi(std::move(wifi));
       break;
     }
     case mojom::NetworkType::kAll:
@@ -1362,6 +1438,231 @@ bool NetworkTypeCanBeDisabled(mojom::NetworkType type) {
   return false;
 }
 
+base::Value GetEAPProperties(const mojom::EAPConfigProperties& eap) {
+  base::Value eap_dict(base::Value::Type::DICTIONARY);
+
+  SetString(::onc::eap::kAnonymousIdentity, eap.anonymous_identity, &eap_dict);
+  SetString(::onc::client_cert::kClientCertPKCS11Id, eap.client_cert_pkcs11_id,
+            &eap_dict);
+  SetString(::onc::client_cert::kClientCertType, eap.client_cert_type,
+            &eap_dict);
+  SetString(::onc::eap::kIdentity, eap.identity, &eap_dict);
+  SetString(::onc::eap::kInner, eap.inner, &eap_dict);
+  SetString(::onc::eap::kOuter, eap.outer, &eap_dict);
+  SetString(::onc::eap::kPassword, eap.password, &eap_dict);
+  eap_dict.SetBoolKey(::onc::eap::kSaveCredentials, eap.save_credentials);
+  SetStringList(::onc::eap::kServerCAPEMs, eap.server_ca_pems, &eap_dict);
+  SetString(::onc::eap::kSubjectMatch, eap.subject_match, &eap_dict);
+  eap_dict.SetBoolKey(::onc::eap::kUseSystemCAs, eap.use_system_cas);
+
+  return eap_dict;
+}
+
+std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
+    const mojom::ConfigProperties* properties) {
+  auto onc = std::make_unique<base::DictionaryValue>();
+
+  // Process |properties->network_type| and set |type|. Configurations have only
+  // one type dictionary.
+  mojom::NetworkType type = mojom::NetworkType::kAll;  // Invalid type
+  base::Value type_dict(base::Value::Type::DICTIONARY);
+
+  if (properties->type_config->is_cellular()) {
+    type = mojom::NetworkType::kCellular;
+    const mojom::CellularConfigProperties& cellular =
+        *properties->type_config->get_cellular();
+    if (cellular.apn) {
+      const mojom::ApnProperties& apn = *cellular.apn;
+      base::Value apn_dict(base::Value::Type::DICTIONARY);
+      apn_dict.SetStringKey(::onc::cellular_apn::kAccessPointName,
+                            apn.access_point_name);
+      SetString(::onc::cellular_apn::kAuthentication, apn.authentication,
+                &apn_dict);
+      SetString(::onc::cellular_apn::kLanguage, apn.language, &apn_dict);
+      SetString(::onc::cellular_apn::kLocalizedName, apn.localized_name,
+                &apn_dict);
+      SetString(::onc::cellular_apn::kName, apn.name, &apn_dict);
+      SetString(::onc::cellular_apn::kPassword, apn.password, &apn_dict);
+      SetString(::onc::cellular_apn::kUsername, apn.username, &apn_dict);
+      type_dict.SetKey(::onc::cellular::kAPN, std::move(apn_dict));
+    }
+  } else if (properties->type_config->is_ethernet()) {
+    type = mojom::NetworkType::kEthernet;
+    const mojom::EthernetConfigProperties& ethernet =
+        *properties->type_config->get_ethernet();
+    SetString(::onc::ethernet::kAuthentication, ethernet.authentication,
+              &type_dict);
+    if (ethernet.eap) {
+      type_dict.SetKey(::onc::ethernet::kEAP,
+                       GetEAPProperties(*ethernet.eap.get()));
+    }
+  } else if (properties->type_config->is_vpn()) {
+    type = mojom::NetworkType::kVPN;
+    const mojom::VPNConfigProperties& vpn = *properties->type_config->get_vpn();
+    SetString(::onc::vpn::kHost, vpn.host, &type_dict);
+    if (vpn.ip_sec) {
+      const mojom::IPSecConfigProperties& ip_sec = *vpn.ip_sec;
+      base::Value ip_sec_dict(base::Value::Type::DICTIONARY);
+      SetString(::onc::ipsec::kAuthenticationType, ip_sec.authentication_type,
+                &ip_sec_dict);
+      SetString(::onc::client_cert::kClientCertPKCS11Id,
+                ip_sec.client_cert_pkcs11_id, &ip_sec_dict);
+      SetString(::onc::client_cert::kClientCertType, ip_sec.client_cert_type,
+                &ip_sec_dict);
+      SetString(::onc::ipsec::kGroup, ip_sec.group, &ip_sec_dict);
+      ip_sec_dict.SetIntKey(::onc::ipsec::kIKEVersion, ip_sec.ike_version);
+      SetString(::onc::ipsec::kPSK, ip_sec.psk, &ip_sec_dict);
+      ip_sec_dict.SetBoolKey(::onc::l2tp::kSaveCredentials,
+                             ip_sec.save_credentials);
+      SetStringList(::onc::ipsec::kServerCAPEMs, ip_sec.server_ca_pems,
+                    &ip_sec_dict);
+      SetStringList(::onc::ipsec::kServerCARefs, ip_sec.server_ca_refs,
+                    &ip_sec_dict);
+      type_dict.SetKey(::onc::vpn::kIPsec, std::move(ip_sec_dict));
+    }
+    if (vpn.l2tp) {
+      const mojom::L2TPConfigProperties& l2tp = *vpn.l2tp;
+      base::Value l2tp_dict(base::Value::Type::DICTIONARY);
+      l2tp_dict.SetBoolKey(::onc::l2tp::kLcpEchoDisabled,
+                           l2tp.lcp_echo_disabled);
+      SetString(::onc::l2tp::kPassword, l2tp.password, &l2tp_dict);
+      l2tp_dict.SetBoolKey(::onc::l2tp::kSaveCredentials,
+                           l2tp.save_credentials);
+      SetString(::onc::l2tp::kUsername, l2tp.username, &l2tp_dict);
+      type_dict.SetKey(::onc::vpn::kL2TP, std::move(l2tp_dict));
+    }
+    if (vpn.open_vpn) {
+      const mojom::OpenVPNConfigProperties& open_vpn = *vpn.open_vpn;
+      base::Value open_vpn_dict(base::Value::Type::DICTIONARY);
+      SetString(::onc::client_cert::kClientCertPKCS11Id,
+                open_vpn.client_cert_pkcs11_id, &open_vpn_dict);
+      SetString(::onc::client_cert::kClientCertType, open_vpn.client_cert_type,
+                &open_vpn_dict);
+      SetStringList(::onc::openvpn::kExtraHosts, open_vpn.extra_hosts,
+                    &open_vpn_dict);
+      SetString(::onc::openvpn::kOTP, open_vpn.otp, &open_vpn_dict);
+      SetString(::onc::openvpn::kPassword, open_vpn.password, &open_vpn_dict);
+      open_vpn_dict.SetBoolKey(::onc::l2tp::kSaveCredentials,
+                               open_vpn.save_credentials);
+      SetStringList(::onc::openvpn::kServerCAPEMs, open_vpn.server_ca_pems,
+                    &open_vpn_dict);
+      SetStringList(::onc::openvpn::kServerCARefs, open_vpn.server_ca_refs,
+                    &open_vpn_dict);
+      SetString(::onc::vpn::kUsername, open_vpn.username, &open_vpn_dict);
+      SetString(::onc::openvpn::kUserAuthenticationType,
+                open_vpn.user_authentication_type, &open_vpn_dict);
+      type_dict.SetKey(::onc::vpn::kOpenVPN, std::move(open_vpn_dict));
+    }
+    SetString(::onc::vpn::kType, MojoVpnTypeToOnc(vpn.type), &type_dict);
+  } else if (properties->type_config->is_wifi()) {
+    type = mojom::NetworkType::kWiFi;
+    const mojom::WiFiConfigProperties& wifi =
+        *properties->type_config->get_wifi();
+    SetString(::onc::wifi::kPassphrase, wifi.passphrase, &type_dict);
+    SetStringIfNotEmpty(::onc::wifi::kSSID, wifi.ssid, &type_dict);
+    SetString(::onc::wifi::kPassphrase, wifi.passphrase, &type_dict);
+    SetString(::onc::wifi::kSecurity, MojoSecurityTypeToOnc(wifi.security),
+              &type_dict);
+    if (wifi.eap) {
+      type_dict.SetKey(::onc::wifi::kEAP, GetEAPProperties(*wifi.eap.get()));
+    }
+  }
+
+  std::string onc_type = MojoNetworkTypeToOnc(type);
+  if (onc_type.empty()) {
+    NET_LOG(ERROR) << "Invalid NetworkConfig properties";
+    return nullptr;
+  }
+  SetString(::onc::network_config::kType, onc_type, onc.get());
+
+  // Process other |properties| members. Order matches the mojo struct.
+
+  if (properties->ip_address_config_type) {
+    onc->SetStringKey(::onc::network_config::kIPAddressConfigType,
+                      *properties->ip_address_config_type);
+  }
+
+  SetString(::onc::network_config::kName, properties->name, onc.get());
+
+  SetString(::onc::network_config::kNameServersConfigType,
+            properties->name_servers_config_type, onc.get());
+
+  if (properties->priority) {
+    onc->SetIntKey(::onc::network_config::kPriority,
+                   properties->priority->value);
+  }
+
+  if (properties->proxy_settings) {
+    const mojom::ProxySettings& proxy = *properties->proxy_settings;
+    base::Value proxy_dict(base::Value::Type::DICTIONARY);
+    proxy_dict.SetStringKey(::onc::proxy::kType, proxy.type);
+    if (proxy.manual) {
+      const mojom::ManualProxySettings& manual = *proxy.manual;
+      base::Value manual_dict(base::Value::Type::DICTIONARY);
+      SetProxyLocation(::onc::proxy::kHttp, manual.http_proxy, &manual_dict);
+      SetProxyLocation(::onc::proxy::kHttps, manual.secure_http_proxy,
+                       &manual_dict);
+      SetProxyLocation(::onc::proxy::kFtp, manual.ftp_proxy, &manual_dict);
+      SetProxyLocation(::onc::proxy::kSocks, manual.socks, &manual_dict);
+      proxy_dict.SetKey(::onc::proxy::kManual, std::move(manual_dict));
+    }
+    SetStringList(::onc::proxy::kExcludeDomains, proxy.exclude_domains,
+                  &proxy_dict);
+    SetString(::onc::proxy::kPAC, proxy.pac, &proxy_dict);
+    onc->SetKey(::onc::network_config::kProxySettings, std::move(proxy_dict));
+  }
+
+  if (properties->static_ip_config) {
+    const mojom::IPConfigProperties& ip_config = *properties->static_ip_config;
+    base::Value ip_config_dict(base::Value::Type::DICTIONARY);
+    SetString(::onc::ipconfig::kGateway, ip_config.gateway, &ip_config_dict);
+    SetString(::onc::ipconfig::kIPAddress, ip_config.ip_address,
+              &ip_config_dict);
+    SetStringList(::onc::ipconfig::kNameServers, ip_config.name_servers,
+                  &ip_config_dict);
+    ip_config_dict.SetIntKey(::onc::ipconfig::kRoutingPrefix,
+                             ip_config.routing_prefix);
+    SetString(::onc::ipconfig::kType, ip_config.type, &ip_config_dict);
+    SetString(::onc::ipconfig::kWebProxyAutoDiscoveryUrl,
+              ip_config.web_proxy_auto_discovery_url, &ip_config_dict);
+    onc->SetKey(::onc::network_config::kStaticIPConfig,
+                std::move(ip_config_dict));
+  }
+
+  if (properties->auto_connect) {
+    NetworkTypePattern type_pattern = MojoTypeToPattern(type);
+    if (type_pattern.Equals(NetworkTypePattern::Cellular()) ||
+        type_pattern.Equals(NetworkTypePattern::VPN()) ||
+        type_pattern.Equals(NetworkTypePattern::WiFi())) {
+      // Note: All type dicts use the same kAutoConnect key.
+      type_dict.SetBoolKey(::onc::wifi::kAutoConnect,
+                           properties->auto_connect->value);
+    }
+  }
+
+  if (!type_dict.DictEmpty()) {
+    onc->SetKey(onc_type, std::move(type_dict));
+  }
+  return onc;
+}
+
+mojom::NetworkCertificatePtr GetMojoCert(
+    const NetworkCertificateHandler::Certificate& cert,
+    mojom::CertificateType type) {
+  auto result = mojom::NetworkCertificate::New();
+  result->type = type;
+  result->hash = cert.hash;
+  result->issued_by = cert.issued_by;
+  result->issued_to = cert.issued_to;
+  result->hardware_backed = cert.hardware_backed;
+  result->device_wide = cert.device_wide;
+  if (type == mojom::CertificateType::kServerCA)
+    result->pem_or_id = cert.pem;
+  if (type == mojom::CertificateType::kUserCert)
+    result->pem_or_id = cert.pkcs11_id;
+  return result;
+}
+
 }  // namespace
 
 CrosNetworkConfig::CrosNetworkConfig()
@@ -1369,35 +1670,47 @@ CrosNetworkConfig::CrosNetworkConfig()
           NetworkHandler::Get()->network_state_handler(),
           NetworkHandler::Get()->network_device_handler(),
           NetworkHandler::Get()->managed_network_configuration_handler(),
-          NetworkHandler::Get()->network_connection_handler()) {}
+          NetworkHandler::Get()->network_connection_handler(),
+          NetworkHandler::Get()->network_certificate_handler()) {}
 
 CrosNetworkConfig::CrosNetworkConfig(
     NetworkStateHandler* network_state_handler,
     NetworkDeviceHandler* network_device_handler,
     ManagedNetworkConfigurationHandler* network_configuration_handler,
-    NetworkConnectionHandler* network_connection_handler)
+    NetworkConnectionHandler* network_connection_handler,
+    NetworkCertificateHandler* network_certificate_handler)
     : network_state_handler_(network_state_handler),
       network_device_handler_(network_device_handler),
       network_configuration_handler_(network_configuration_handler),
-      network_connection_handler_(network_connection_handler) {
+      network_connection_handler_(network_connection_handler),
+      network_certificate_handler_(network_certificate_handler) {
   CHECK(network_state_handler);
 }
 
 CrosNetworkConfig::~CrosNetworkConfig() {
   if (network_state_handler_->HasObserver(this))
     network_state_handler_->RemoveObserver(this, FROM_HERE);
+  if (network_certificate_handler_ &&
+      network_certificate_handler_->HasObserver(this)) {
+    network_certificate_handler_->RemoveObserver(this);
+  }
 }
 
-void CrosNetworkConfig::BindRequest(mojom::CrosNetworkConfigRequest request) {
-  NET_LOG(EVENT) << "CrosNetworkConfig::BindRequest()";
-  bindings_.AddBinding(this, std::move(request));
+void CrosNetworkConfig::BindReceiver(
+    mojo::PendingReceiver<mojom::CrosNetworkConfig> receiver) {
+  NET_LOG(EVENT) << "CrosNetworkConfig::BindReceiver()";
+  receivers_.Add(this, std::move(receiver));
 }
 
 void CrosNetworkConfig::AddObserver(
-    mojom::CrosNetworkConfigObserverPtr observer) {
+    mojo::PendingRemote<mojom::CrosNetworkConfigObserver> observer) {
   if (!network_state_handler_->HasObserver(this))
     network_state_handler_->AddObserver(this, FROM_HERE);
-  observers_.AddPtr(std::move(observer));
+  if (network_certificate_handler_ &&
+      !network_certificate_handler_->HasObserver(this)) {
+    network_certificate_handler_->AddObserver(this);
+  }
+  observers_.Add(std::move(observer));
 }
 
 void CrosNetworkConfig::GetNetworkState(const std::string& guid,
@@ -1523,8 +1836,87 @@ void CrosNetworkConfig::GetManagedPropertiesSuccess(
     std::move(iter->second).Run(nullptr);
     return;
   }
-  std::move(iter->second)
-      .Run(ManagedPropertiesToMojo(network_state, vpn_providers_, &properties));
+  mojom::ManagedPropertiesPtr managed_properties =
+      ManagedPropertiesToMojo(network_state, vpn_providers_, &properties);
+
+  // For Ethernet networks with no authentication, check for a separate
+  // EthernetEAP configuration.
+  const NetworkState* eap_state = nullptr;
+  if (managed_properties->type == mojom::NetworkType::kEthernet) {
+    mojom::ManagedEthernetPropertiesPtr& ethernet =
+        managed_properties->type_properties->get_ethernet();
+    if (!ethernet->authentication || ethernet->authentication->active_value ==
+                                         ::onc::ethernet::kAuthenticationNone) {
+      eap_state = network_state_handler_->GetEAPForEthernet(
+          network_state->path(), /*connected_only=*/false);
+    }
+  }
+  if (!eap_state) {
+    // No EAP properties, return the managed properties as-is.
+    std::move(iter->second).Run(std::move(managed_properties));
+    get_managed_properties_callbacks_.erase(iter);
+    return;
+  }
+
+  // Request the EAP state. On success the EAP state will be applied to
+  // |managed_properties| and returned. On failure |managed_properties| will
+  // be returned as-is.
+  NET_LOG(DEBUG) << "Requesting EAP state for: " + service_path
+                 << " from: " << eap_state->path();
+  managed_properties_[callback_id] = std::move(managed_properties);
+  network_configuration_handler_->GetManagedProperties(
+      chromeos::LoginState::Get()->primary_user_hash(), eap_state->path(),
+      base::Bind(&CrosNetworkConfig::GetManagedPropertiesSuccessEap,
+                 weak_factory_.GetWeakPtr(), callback_id),
+      base::Bind(&CrosNetworkConfig::GetManagedPropertiesSuccessNoEap,
+                 weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void CrosNetworkConfig::GetManagedPropertiesSuccessEap(
+    int callback_id,
+    const std::string& service_path,
+    const base::DictionaryValue& eap_properties) {
+  auto iter = get_managed_properties_callbacks_.find(callback_id);
+  DCHECK(iter != get_managed_properties_callbacks_.end());
+
+  auto properties_iter = managed_properties_.find(callback_id);
+  DCHECK(properties_iter != managed_properties_.end());
+  mojom::ManagedPropertiesPtr managed_properties =
+      std::move(properties_iter->second);
+  managed_properties_.erase(properties_iter);
+
+  // Copy the EAP properties to |managed_properties_| before sending.
+  const base::Value* ethernet_dict =
+      GetDictionary(&eap_properties, ::onc::network_config::kEthernet);
+  if (ethernet_dict) {
+    auto ethernet = mojom::ManagedEthernetProperties::New();
+    ethernet->authentication =
+        GetManagedString(ethernet_dict, ::onc::ethernet::kAuthentication);
+    ethernet->eap =
+        GetManagedEAPProperties(ethernet_dict, ::onc::ethernet::kEAP);
+    managed_properties->type_properties =
+        mojom::NetworkTypeManagedProperties::NewEthernet(std::move(ethernet));
+  }
+
+  std::move(iter->second).Run(std::move(managed_properties));
+  get_managed_properties_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::GetManagedPropertiesSuccessNoEap(
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = get_managed_properties_callbacks_.find(callback_id);
+  DCHECK(iter != get_managed_properties_callbacks_.end());
+
+  auto properties_iter = managed_properties_.find(callback_id);
+  DCHECK(properties_iter != managed_properties_.end());
+  mojom::ManagedPropertiesPtr managed_properties =
+      std::move(properties_iter->second);
+  managed_properties_.erase(properties_iter);
+
+  // No EAP properties, send the unmodified managed_properties_.
+  std::move(iter->second).Run(std::move(managed_properties));
   get_managed_properties_callbacks_.erase(iter);
 }
 
@@ -1546,7 +1938,7 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
                                       SetPropertiesCallback callback) {
   if (!network_configuration_handler_) {
     NET_LOG(ERROR) << "SetProperties called with no handler";
-    std::move(callback).Run(false);
+    std::move(callback).Run(false, kErrorNotReady);
     return;
   }
   const NetworkState* network =
@@ -1554,108 +1946,59 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
   if (!network || network->profile_path().empty()) {
     NET_LOG(ERROR) << "SetProperties called with unconfigured network: "
                    << guid;
-    std::move(callback).Run(false);
+    std::move(callback).Run(false, kErrorNetworkUnavailable);
     return;
   }
 
-  base::DictionaryValue onc;
-  base::Value type_dict(base::Value::Type::DICTIONARY);
-  if (properties->auto_connect) {
-    auto type = NetworkTypePattern::Primitive(network->type());
-    if (type.Equals(NetworkTypePattern::Cellular()) ||
-        type.Equals(NetworkTypePattern::VPN()) ||
-        type.Equals(NetworkTypePattern::WiFi())) {
-      // Note: All type dicts use the same kAutoConnect key.
-      type_dict.SetBoolKey(::onc::wifi::kAutoConnect,
-                           properties->auto_connect->value);
+  // If EthernetEAP properties exist, and properties.ethernet.eap is provided,
+  // apply the configuration to the EthernetEAP service. Currently we only
+  // support configuration of EAP properties or other properties (e.g IP
+  // Config), not both.
+  if (network->type() == shill::kTypeEthernet &&
+      properties->type_config->is_ethernet() &&
+      properties->type_config->get_ethernet()->eap) {
+    const NetworkState* eap_state = network_state_handler_->GetEAPForEthernet(
+        network->path(), /*connected_only=*/false);
+    if (!eap_state) {
+      NET_LOG(ERROR)
+          << "SetProperties called with ethernet.eap but no EAP config: "
+          << guid;
+      std::move(callback).Run(false, kErrorNetworkUnavailable);
     }
+    network = eap_state;
   }
-  if (properties->cellular) {
-    if (properties->cellular->apn) {
-      const mojom::ApnProperties& apn = *properties->cellular->apn;
-      base::Value apn_dict(base::Value::Type::DICTIONARY);
-      apn_dict.SetStringKey(::onc::cellular_apn::kAccessPointName,
-                            apn.access_point_name);
-      SetString(::onc::cellular_apn::kAuthentication, apn.authentication,
-                &apn_dict);
-      SetString(::onc::cellular_apn::kLanguage, apn.language, &apn_dict);
-      SetString(::onc::cellular_apn::kLocalizedName, apn.localized_name,
-                &apn_dict);
-      SetString(::onc::cellular_apn::kName, apn.name, &apn_dict);
-      SetString(::onc::cellular_apn::kPassword, apn.password, &apn_dict);
-      SetString(::onc::cellular_apn::kUsername, apn.username, &apn_dict);
-      type_dict.SetKey(::onc::cellular::kAPN, std::move(apn_dict));
-    }
+
+  std::unique_ptr<base::DictionaryValue> onc =
+      GetOncFromConfigProperties(properties.get());
+  if (!onc) {
+    NET_LOG(ERROR) << "Bad ONC Configuration for " << guid;
+    std::move(callback).Run(false, kErrorInvalidONCConfiguration);
+    return;
   }
-  if (properties->ip_address_config_type) {
-    onc.SetStringKey(::onc::network_config::kIPAddressConfigType,
-                     *properties->ip_address_config_type);
-  }
-  SetString(::onc::network_config::kNameServersConfigType,
-            properties->name_servers_config_type, &onc);
-  if (properties->priority) {
-    onc.SetIntKey(::onc::network_config::kPriority,
-                  properties->priority->value);
-  }
-  if (properties->proxy_settings) {
-    const mojom::ProxySettings& proxy = *properties->proxy_settings;
-    base::Value proxy_dict(base::Value::Type::DICTIONARY);
-    proxy_dict.SetStringKey(::onc::proxy::kType, proxy.type);
-    if (proxy.manual) {
-      const mojom::ManualProxySettings& manual = *proxy.manual;
-      base::Value manual_dict(base::Value::Type::DICTIONARY);
-      SetProxyLocation(::onc::proxy::kHttp, manual.http_proxy, &manual_dict);
-      SetProxyLocation(::onc::proxy::kHttps, manual.secure_http_proxy,
-                       &manual_dict);
-      SetProxyLocation(::onc::proxy::kFtp, manual.ftp_proxy, &manual_dict);
-      SetProxyLocation(::onc::proxy::kSocks, manual.socks, &manual_dict);
-      proxy_dict.SetKey(::onc::proxy::kManual, std::move(manual_dict));
-    }
-    SetStringList(::onc::proxy::kExcludeDomains, proxy.exclude_domains,
-                  &proxy_dict);
-    SetString(::onc::proxy::kPAC, proxy.pac, &proxy_dict);
-    onc.SetKey(::onc::network_config::kProxySettings, std::move(proxy_dict));
-  }
-  if (properties->static_ip_config) {
-    const mojom::IPConfigProperties& ip_config = *properties->static_ip_config;
-    base::Value ip_config_dict(base::Value::Type::DICTIONARY);
-    SetString(::onc::ipconfig::kGateway, ip_config.gateway, &ip_config_dict);
-    SetString(::onc::ipconfig::kIPAddress, ip_config.ip_address,
-              &ip_config_dict);
-    SetStringList(::onc::ipconfig::kNameServers, ip_config.name_servers,
-                  &ip_config_dict);
-    ip_config_dict.SetIntKey(::onc::ipconfig::kRoutingPrefix,
-                             ip_config.routing_prefix);
-    SetString(::onc::ipconfig::kType, ip_config.type, &ip_config_dict);
-    SetString(::onc::ipconfig::kWebProxyAutoDiscoveryUrl,
-              ip_config.web_proxy_auto_discovery_url, &ip_config_dict);
-    onc.SetKey(::onc::network_config::kStaticIPConfig,
-               std::move(ip_config_dict));
-  }
-  if (properties->vpn) {
-    const mojom::VPNConfigProperties& vpn = *properties->vpn;
-    base::Value vpn_dict(base::Value::Type::DICTIONARY);
-    SetString(::onc::vpn::kType, MojoVpnTypeToOnc(vpn.type), &vpn_dict);
-    SetString(::onc::vpn::kHost, vpn.host, &vpn_dict);
-    if (vpn.open_vpn) {
-      const mojom::OpenVPNConfigProperties& open_vpn = *vpn.open_vpn;
-      base::Value open_vpn_dict(base::Value::Type::DICTIONARY);
-      SetStringList(::onc::openvpn::kExtraHosts, open_vpn.extra_hosts,
-                    &open_vpn_dict);
-      SetString(::onc::vpn::kUsername, open_vpn.username, &open_vpn_dict);
-      vpn_dict.SetKey(::onc::vpn::kOpenVPN, std::move(open_vpn_dict));
-    }
-    onc.SetKey(::onc::network_config::kVPN, std::move(vpn_dict));
-  }
-  if (!type_dict.DictEmpty()) {
-    std::string type = network_util::TranslateShillTypeToONC(network->type());
-    onc.SetKey(type, std::move(type_dict));
-  }
+
+  NET_LOG(DEBUG) << "Configuring properties for " << guid << ": " << *onc;
+
   int callback_id = callback_id_++;
   set_properties_callbacks_[callback_id] = std::move(callback);
 
+  // If the profile path is empty the network is not saved, so we need to call
+  // CreateConfiguration(). This can happen for EthernetEAP where a default
+  // service is generated by Shill but may not be saved.
+  if (network->profile_path().empty()) {
+    NET_LOG(USER) << "Configuring properties for " << guid
+                  << " (no profile entry set)";
+    std::string user_id_hash = LoginState::Get()->primary_user_hash();
+    network_configuration_handler_->CreateConfiguration(
+        user_id_hash, *onc,
+        base::Bind(&CrosNetworkConfig::SetPropertiesConfigureSuccess,
+                   weak_factory_.GetWeakPtr(), callback_id),
+        base::Bind(&CrosNetworkConfig::SetPropertiesFailure,
+                   weak_factory_.GetWeakPtr(), guid, callback_id));
+    return;
+  }
+
   network_configuration_handler_->SetProperties(
-      network->path(), onc,
+      network->path(), *onc,
       base::Bind(&CrosNetworkConfig::SetPropertiesSuccess,
                  weak_factory_.GetWeakPtr(), callback_id),
       base::Bind(&CrosNetworkConfig::SetPropertiesFailure,
@@ -1665,7 +2008,17 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
 void CrosNetworkConfig::SetPropertiesSuccess(int callback_id) {
   auto iter = set_properties_callbacks_.find(callback_id);
   DCHECK(iter != set_properties_callbacks_.end());
-  std::move(iter->second).Run(/*success=*/true);
+  std::move(iter->second).Run(/*success=*/true, /*message=*/"");
+  set_properties_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::SetPropertiesConfigureSuccess(
+    int callback_id,
+    const std::string& service_path,
+    const std::string& guid) {
+  auto iter = set_properties_callbacks_.find(callback_id);
+  DCHECK(iter != set_properties_callbacks_.end());
+  std::move(iter->second).Run(/*success=*/true, /*message=*/"");
   set_properties_callbacks_.erase(iter);
 }
 
@@ -1678,8 +2031,137 @@ void CrosNetworkConfig::SetPropertiesFailure(
   DCHECK(iter != set_properties_callbacks_.end());
   NET_LOG(ERROR) << "Failed to set network properties: " << guid
                  << " Error: " << error_name;
-  std::move(iter->second).Run(/*success=*/false);
+  std::move(iter->second).Run(/*success=*/false, error_name);
   set_properties_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::ConfigureNetwork(mojom::ConfigPropertiesPtr properties,
+                                         bool shared,
+                                         ConfigureNetworkCallback callback) {
+  if (!network_configuration_handler_) {
+    NET_LOG(ERROR) << "Configure called with no handler";
+    std::move(callback).Run(/*guid=*/base::nullopt, kErrorNotReady);
+    return;
+  }
+
+  if (!shared && UserManager::Get()->GetPrimaryUser() !=
+                     UserManager::Get()->GetActiveUser()) {
+    NET_LOG(ERROR)
+        << "Attempt to set unshared configuration from non primary user";
+    std::move(callback).Run(/*guid=*/base::nullopt, kErrorAccessToSharedConfig);
+  }
+
+  std::unique_ptr<base::DictionaryValue> onc =
+      GetOncFromConfigProperties(properties.get());
+  if (!onc) {
+    std::move(callback).Run(/*guid=*/base::nullopt,
+                            kErrorInvalidONCConfiguration);
+    return;
+  }
+
+  std::string user_id_hash =
+      shared ? "" : LoginState::Get()->primary_user_hash();
+
+  int callback_id = callback_id_++;
+  configure_network_callbacks_[callback_id] = std::move(callback);
+
+  network_configuration_handler_->CreateConfiguration(
+      user_id_hash, *onc,
+      base::Bind(&CrosNetworkConfig::ConfigureNetworkSuccess,
+                 weak_factory_.GetWeakPtr(), callback_id),
+      base::Bind(&CrosNetworkConfig::ConfigureNetworkFailure,
+                 weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void CrosNetworkConfig::ConfigureNetworkSuccess(int callback_id,
+                                                const std::string& service_path,
+                                                const std::string& guid) {
+  auto iter = configure_network_callbacks_.find(callback_id);
+  DCHECK(iter != configure_network_callbacks_.end());
+  std::move(iter->second).Run(guid, /*message=*/"");
+  configure_network_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::ConfigureNetworkFailure(
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = configure_network_callbacks_.find(callback_id);
+  DCHECK(iter != configure_network_callbacks_.end());
+  DCHECK(iter->second);
+  NET_LOG(ERROR) << "Failed to configure network. Error: " << error_name;
+  std::move(iter->second).Run(/*guid=*/base::nullopt, error_name);
+  configure_network_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::ForgetNetwork(const std::string& guid,
+                                      ForgetNetworkCallback callback) {
+  if (!network_configuration_handler_) {
+    NET_LOG(ERROR) << "ForgetNetwork called with no handler";
+    std::move(callback).Run(false);
+    return;
+  }
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(guid);
+  if (!network || network->profile_path().empty()) {
+    NET_LOG(ERROR) << "ForgetNetwork called with unconfigured network: "
+                   << guid;
+    std::move(callback).Run(false);
+    return;
+  }
+
+  bool allow_forget_shared_config = true;
+  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_UNKNOWN;
+  std::string user_id_hash = LoginState::Get()->primary_user_hash();
+  if (network_configuration_handler_->FindPolicyByGUID(user_id_hash, guid,
+                                                       &onc_source)) {
+    if (onc_source == ::onc::ONC_SOURCE_USER_POLICY) {
+      // Prevent a policy controlled configuration removal.
+      std::move(callback).Run(false);
+      return;
+    }
+    if (onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY)
+      allow_forget_shared_config = false;
+  }
+
+  int callback_id = callback_id_++;
+  forget_network_callbacks_[callback_id] = std::move(callback);
+
+  if (allow_forget_shared_config) {
+    network_configuration_handler_->RemoveConfiguration(
+        network->path(),
+        base::Bind(&CrosNetworkConfig::ForgetNetworkSuccess,
+                   weak_factory_.GetWeakPtr(), callback_id),
+        base::Bind(&CrosNetworkConfig::ForgetNetworkFailure,
+                   weak_factory_.GetWeakPtr(), guid, callback_id));
+  } else {
+    network_configuration_handler_->RemoveConfigurationFromCurrentProfile(
+        network->path(),
+        base::Bind(&CrosNetworkConfig::ForgetNetworkSuccess,
+                   weak_factory_.GetWeakPtr(), callback_id),
+        base::Bind(&CrosNetworkConfig::ForgetNetworkFailure,
+                   weak_factory_.GetWeakPtr(), guid, callback_id));
+  }
+}
+
+void CrosNetworkConfig::ForgetNetworkSuccess(int callback_id) {
+  auto iter = forget_network_callbacks_.find(callback_id);
+  DCHECK(iter != forget_network_callbacks_.end());
+  std::move(iter->second).Run(/*success=*/true);
+  forget_network_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::ForgetNetworkFailure(
+    const std::string& guid,
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = forget_network_callbacks_.find(callback_id);
+  DCHECK(iter != forget_network_callbacks_.end());
+  NET_LOG(ERROR) << "Failed to forget network: " << guid
+                 << " Error: " << error_name;
+  std::move(iter->second).Run(/*success=*/false);
+  forget_network_callbacks_.erase(iter);
 }
 
 void CrosNetworkConfig::SetNetworkTypeEnabledState(
@@ -1967,26 +2449,41 @@ void CrosNetworkConfig::StartDisconnectFailure(
 void CrosNetworkConfig::SetVpnProviders(
     std::vector<mojom::VpnProviderPtr> providers) {
   vpn_providers_ = std::move(providers);
-  observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
+  for (auto& observer : observers_)
     observer->OnVpnProvidersChanged();
-  });
 }
 
 void CrosNetworkConfig::GetVpnProviders(GetVpnProvidersCallback callback) {
   std::move(callback).Run(mojo::Clone(vpn_providers_));
 }
 
+void CrosNetworkConfig::GetNetworkCertificates(
+    GetNetworkCertificatesCallback callback) {
+  const std::vector<NetworkCertificateHandler::Certificate>&
+      handler_server_cas =
+          network_certificate_handler_->server_ca_certificates();
+  std::vector<mojom::NetworkCertificatePtr> server_cas;
+  for (const auto& cert : handler_server_cas)
+    server_cas.push_back(GetMojoCert(cert, mojom::CertificateType::kServerCA));
+
+  std::vector<mojom::NetworkCertificatePtr> user_certs;
+  const std::vector<NetworkCertificateHandler::Certificate>&
+      handler_user_certs = network_certificate_handler_->client_certificates();
+  for (const auto& cert : handler_user_certs)
+    user_certs.push_back(GetMojoCert(cert, mojom::CertificateType::kUserCert));
+
+  std::move(callback).Run(std::move(server_cas), std::move(user_certs));
+}
+
 // NetworkStateHandlerObserver
 void CrosNetworkConfig::NetworkListChanged() {
-  observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
+  for (auto& observer : observers_)
     observer->OnNetworkStateListChanged();
-  });
 }
 
 void CrosNetworkConfig::DeviceListChanged() {
-  observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
+  for (auto& observer : observers_)
     observer->OnDeviceStateListChanged();
-  });
 }
 
 void CrosNetworkConfig::ActiveNetworksChanged(
@@ -1998,9 +2495,8 @@ void CrosNetworkConfig::ActiveNetworksChanged(
     if (mojo_network)
       result.emplace_back(std::move(mojo_network));
   }
-  observers_.ForAllPtrs([&result](mojom::CrosNetworkConfigObserver* observer) {
+  for (auto& observer : observers_)
     observer->OnActiveNetworksChanged(mojo::Clone(result));
-  });
 }
 
 void CrosNetworkConfig::NetworkPropertiesUpdated(const NetworkState* network) {
@@ -2010,10 +2506,8 @@ void CrosNetworkConfig::NetworkPropertiesUpdated(const NetworkState* network) {
       NetworkStateToMojo(network_state_handler_, vpn_providers_, network);
   if (!mojo_network)
     return;
-  observers_.ForAllPtrs(
-      [&mojo_network](mojom::CrosNetworkConfigObserver* observer) {
-        observer->OnNetworkStateChanged(mojo_network.Clone());
-      });
+  for (auto& observer : observers_)
+    observer->OnNetworkStateChanged(mojo_network.Clone());
 }
 
 void CrosNetworkConfig::DevicePropertiesUpdated(const DeviceState* device) {
@@ -2024,6 +2518,11 @@ void CrosNetworkConfig::OnShuttingDown() {
   if (network_state_handler_->HasObserver(this))
     network_state_handler_->RemoveObserver(this, FROM_HERE);
   network_state_handler_ = nullptr;
+}
+
+void CrosNetworkConfig::OnCertificatesChanged() {
+  for (auto& observer : observers_)
+    observer->OnNetworkCertificatesChanged();
 }
 
 const std::string& CrosNetworkConfig::GetServicePathFromGuid(

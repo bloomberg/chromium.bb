@@ -2,9 +2,8 @@
 
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/cr/ui.html">
-<link rel="import" href="chrome://resources/html/cr/ui/command.html">
 <link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-scroll-target-behavior/iron-scroll-target-behavior.html">
@@ -64,6 +63,7 @@
     <history-toolbar id="toolbar"
         has-drawer="[[hasDrawer_]]"
         has-more-results="[[!queryResult_.info.finished]]"
+        pending-delete="[[pendingDelete_]]"
         query-info="[[queryResult_.info]]"
         querying="[[queryState_.querying]]"
         search-term="[[queryState_.searchTerm]]"
@@ -86,6 +86,7 @@
           items="{{items}}">
         <history-list id="history" query-state="[[queryState_]]"
             searched-term="[[queryResult_.info.term]]"
+            pending-delete="{{pendingDelete_}}"
             query-result="[[queryResult_]]"
             path="history">
         </history-list>

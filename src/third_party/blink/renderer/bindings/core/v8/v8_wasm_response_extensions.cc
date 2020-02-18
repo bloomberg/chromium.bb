@@ -159,7 +159,7 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
 // argument to BodyStreamBuffer::startLoading, however, it fulfills
 // a very small role. Consider refactoring to avoid it.
 class WasmDataLoaderClient final
-    : public GarbageCollectedFinalized<WasmDataLoaderClient>,
+    : public GarbageCollected<WasmDataLoaderClient>,
       public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(WasmDataLoaderClient);
 
@@ -234,31 +234,24 @@ RawResource* GetRawResource(ScriptState* script_state,
 class WasmStreamingClient : public v8::WasmStreaming::Client {
  public:
   WasmStreamingClient(const String& response_url,
-                      const base::Time& response_time,
-                      v8::Isolate* isolate,
-                      v8::Local<v8::Context> context)
+                      const base::Time& response_time)
       : response_url_(response_url.IsolatedCopy()),
-        response_time_(response_time),
-        context_(isolate, context) {
-    context_.SetWeak();
-  }
+        response_time_(response_time) {}
 
   void OnModuleCompiled(v8::CompiledWasmModule compiled_module) override {
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                          "v8.wasm.compiledModule", TRACE_EVENT_SCOPE_THREAD,
                          "url", response_url_.Utf8());
 
-    // Don't cache if Context has been destroyed.
-    if (context_.IsEmpty())
-      return;
-
-    // Our heuristic for whether it's worthwhile to cache is that the module
-    // was fully compiled and it is "large". Wire bytes size is likely to be
-    // highly correlated with compiled module size so we use it to avoid the
-    // cost of serializing when not caching.
     v8::MemorySpan<const uint8_t> wire_bytes =
         compiled_module.GetWireBytesRef();
-    const size_t kWireBytesSizeThresholdBytes = 1UL << 17;  // 128 KB.
+    // Our heuristic for whether it's worthwhile to cache is that the module
+    // was fully compiled and the size is such that loading from the cache will
+    // improve startup time. Use wire bytes size since it should be correlated
+    // with module size.
+    // TODO(bbudge) This is set very low to compare performance of caching with
+    // baseline compilation. Adjust this test once we know which sizes benefit.
+    const size_t kWireBytesSizeThresholdBytes = 1UL << 10;  // 1 KB.
     if (wire_bytes.size() < kWireBytesSizeThresholdBytes)
       return;
 
@@ -292,7 +285,6 @@ class WasmStreamingClient : public v8::WasmStreaming::Client {
  private:
   String response_url_;
   base::Time response_time_;
-  v8::Global<v8::Context> context_;
   scoped_refptr<CachedMetadata> cached_module_;
 
   DISALLOW_COPY_AND_ASSIGN(WasmStreamingClient);
@@ -365,8 +357,7 @@ void StreamFromResponseCallback(
         raw_resource->ScriptCacheHandler();
     if (cache_handler) {
       auto client = std::make_shared<WasmStreamingClient>(
-          url, raw_resource->GetResponse().ResponseTime(), args.GetIsolate(),
-          script_state->GetContext());
+          url, raw_resource->GetResponse().ResponseTime());
       streaming->SetClient(client);
       scoped_refptr<CachedMetadata> cached_module =
           cache_handler->GetCachedMetadata(kWasmModuleTag);

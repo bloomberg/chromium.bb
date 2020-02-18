@@ -44,6 +44,7 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Clipboard URL                                                       |  800
 // Zero Suggest (most visited, Android only)                           |  600--
 // Zero Suggest (default, may be overridden by server)                 |  100
+// Local History Zero Suggest                                          |  500--
 //
 // UNKNOWN input type:
 // --------------------------------------------------------------------|-----
@@ -149,6 +150,7 @@ class AutocompleteProvider
     TYPE_CLIPBOARD = 1 << 8,
     TYPE_DOCUMENT = 1 << 9,
     TYPE_ON_DEVICE_HEAD = 1 << 10,
+    TYPE_ZERO_SUGGEST_LOCAL_HISTORY = 1 << 11,
   };
 
   explicit AutocompleteProvider(Type type);
@@ -286,6 +288,12 @@ class AutocompleteProvider
   // whether the caller should perform steps that are only valid in this state.
   static bool InExplicitExperimentalKeywordMode(const AutocompleteInput& input,
                                                 const base::string16& keyword);
+
+  // Uses the keyword entry mode in |input| (and possibly compare the length
+  // of the user input vs |keyword|) to decide if the user intentionally
+  // entered keyword mode.
+  static bool IsExplicitlyInKeywordMode(const AutocompleteInput& input,
+                                        const base::string16& keyword);
 
  protected:
   friend class base::RefCountedThreadSafe<AutocompleteProvider>;

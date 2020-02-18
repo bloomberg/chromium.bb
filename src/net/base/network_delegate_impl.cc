@@ -27,16 +27,13 @@ void NetworkDelegateImpl::OnBeforeSendHeaders(
     const ProxyRetryInfoMap& proxy_retry_info,
     HttpRequestHeaders* headers) {}
 
-void NetworkDelegateImpl::OnStartTransaction(
-    URLRequest* request,
-    const HttpRequestHeaders& headers) {}
-
 int NetworkDelegateImpl::OnHeadersReceived(
     URLRequest* request,
     CompletionOnceCallback callback,
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
-    GURL* allowed_unsafe_redirect_url) {
+    const IPEndPoint& endpoint,
+    base::Optional<GURL>* preserve_fragment_on_redirect_url) {
   return OK;
 }
 
@@ -45,12 +42,6 @@ void NetworkDelegateImpl::OnBeforeRedirect(URLRequest* request,
 
 void NetworkDelegateImpl::OnResponseStarted(URLRequest* request,
                                             int net_error) {}
-
-void NetworkDelegateImpl::OnNetworkBytesReceived(URLRequest* request,
-                                                 int64_t bytes_received) {}
-
-void NetworkDelegateImpl::OnNetworkBytesSent(URLRequest* request,
-                                             int64_t bytes_sent) {}
 
 void NetworkDelegateImpl::OnCompleted(URLRequest* request,
                                       bool started,
@@ -61,14 +52,6 @@ void NetworkDelegateImpl::OnURLRequestDestroyed(URLRequest* request) {
 
 void NetworkDelegateImpl::OnPACScriptError(int line_number,
                                            const base::string16& error) {
-}
-
-NetworkDelegate::AuthRequiredResponse NetworkDelegateImpl::OnAuthRequired(
-    URLRequest* request,
-    const AuthChallengeInfo& auth_info,
-    AuthCallback callback,
-    AuthCredentials* credentials) {
-  return AUTH_REQUIRED_RESPONSE_NO_ACTION;
 }
 
 bool NetworkDelegateImpl::OnCanGetCookies(const URLRequest& request,
@@ -82,13 +65,6 @@ bool NetworkDelegateImpl::OnCanSetCookie(const URLRequest& request,
                                          CookieOptions* options,
                                          bool allowed_from_caller) {
   return allowed_from_caller;
-}
-
-bool NetworkDelegateImpl::OnCanAccessFile(
-    const URLRequest& request,
-    const base::FilePath& original_path,
-    const base::FilePath& absolute_path) const {
-  return false;
 }
 
 bool NetworkDelegateImpl::OnForcePrivacyMode(

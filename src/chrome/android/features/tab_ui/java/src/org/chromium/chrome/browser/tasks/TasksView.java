@@ -5,20 +5,34 @@
 package org.chromium.chrome.browser.tasks;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
-import android.support.v4.view.MarginLayoutParamsCompat;
+import android.content.res.Resources;
+import android.support.design.widget.AppBarLayout;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer;
+import org.chromium.chrome.browser.ntp.IncognitoDescriptionView;
+import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.tab_ui.R;
 
 // The view of the tasks surface.
-class TasksView extends LinearLayout {
+class TasksView extends CoordinatorLayoutForPointer {
     private final Context mContext;
-    private FrameLayout mTabSwitcherContainer;
+    private FrameLayout mBodyViewContainer;
+    private FrameLayout mCarouselTabSwitcherContainer;
+    private AppBarLayout mHeaderView;
+    private View mSearchBox;
+    private TextView mSearchBoxText;
+    private IncognitoDescriptionView mIncognitoDescriptionView;
+    private View.OnClickListener mIncognitoDescriptionLearnMoreListener;
 
     /** Default constructor needed to inflate via XML. */
     public TasksView(Context context, AttributeSet attrs) {
@@ -30,31 +44,135 @@ class TasksView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mTabSwitcherContainer = (FrameLayout) findViewById(R.id.tab_switcher_container);
+        mCarouselTabSwitcherContainer =
+                (FrameLayout) findViewById(R.id.carousel_tab_switcher_container);
+        mSearchBox = findViewById(R.id.search_box);
+        mHeaderView = (AppBarLayout) findViewById(R.id.task_surface_header);
+        AppBarLayout.LayoutParams layoutParams =
+                (AppBarLayout.LayoutParams) mSearchBox.getLayoutParams();
+        layoutParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
+        mSearchBoxText = (TextView) mSearchBox.findViewById(R.id.search_box_text);
     }
 
-    ViewGroup getTabSwitcherContainer() {
-        return mTabSwitcherContainer;
+    ViewGroup getCarouselTabSwitcherContainer() {
+        return mCarouselTabSwitcherContainer;
     }
 
-    void setIsTabCarousel(boolean isTabCarousel) {
-        if (isTabCarousel) {
-            // TODO(crbug.com/982018): Change view according to incognito and dark mode.
-            findViewById(R.id.tab_switcher_title).setVisibility(View.VISIBLE);
+    ViewGroup getBodyViewContainer() {
+        return findViewById(R.id.tasks_surface_body);
+    }
 
-            // Add negative margin to start so as to reduce the first Tab card's visual distance to
-            // the start edge to ~16dp.
-            // TODO(crbug.com/982018): Add test to guard the visual expectation.
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            MarginLayoutParamsCompat.setMarginStart(layoutParams,
-                    mContext.getResources().getDimensionPixelSize(
-                            R.dimen.tab_carousel_start_margin));
-            mTabSwitcherContainer.setLayoutParams(layoutParams);
+    /**
+     * Set the visibility of the tab carousel.
+     * @param isVisible Whether it's visible.
+     */
+    void setTabCarouselVisibility(boolean isVisible) {
+        mCarouselTabSwitcherContainer.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        findViewById(R.id.tab_switcher_title).setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Set the given listener for the fake search box.
+     * @param listener The given listener.
+     */
+    void setFakeSearchBoxClickListener(@Nullable View.OnClickListener listener) {
+        mSearchBoxText.setOnClickListener(listener);
+    }
+
+    /**
+     * Set the given watcher for the fake search box.
+     * @param textWatcher The given {@link TextWatcher}.
+     */
+    void setFakeSearchBoxTextWatcher(TextWatcher textWatcher) {
+        mSearchBoxText.addTextChangedListener(textWatcher);
+    }
+
+    /**
+     * Set the visibility of the fake search box.
+     * @param isVisible Whether it's visible.
+     */
+    void setFakeSearchBoxVisibility(boolean isVisible) {
+        mSearchBox.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Set the visibility of the voice recognition button.
+     * @param isVisible Whether it's visible.
+     */
+    void setVoiceRecognitionButtonVisibility(boolean isVisible) {
+        findViewById(R.id.voice_search_button).setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Set the voice recognition button click listener.
+     * @param listener The given listener.
+     */
+    void setVoiceRecognitionButtonClickListener(@Nullable View.OnClickListener listener) {
+        findViewById(R.id.voice_search_button).setOnClickListener(listener);
+    }
+
+    /**
+     * Set the visibility of the Most Visited Tiles.
+     */
+    void setMostVisitedVisibility(int visibility) {
+        findViewById(R.id.mv_tiles_container).setVisibility(visibility);
+    }
+
+    /**
+     * Set the {@link android.view.View.OnClickListener} for More Tabs.
+     */
+    void setMoreTabsOnClickListener(@Nullable View.OnClickListener listener) {
+        findViewById(R.id.more_tabs).setOnClickListener(listener);
+    }
+
+    /**
+     * Set the incognito state.
+     * @param isIncognito Whether it's in incognito mode.
+     */
+    void setIncognitoMode(boolean isIncognito) {
+        Resources resources = mContext.getResources();
+        int backgroundColor = ChromeColors.getPrimaryBackgroundColor(resources, isIncognito);
+        setBackgroundColor(backgroundColor);
+        mHeaderView.setBackgroundColor(backgroundColor);
+        mSearchBox.setBackgroundResource(
+                isIncognito ? R.drawable.fake_search_box_bg_incognito : R.drawable.ntp_search_box);
+        int hintTextColor = isIncognito
+                ? ApiCompatibilityUtils.getColor(resources, R.color.locationbar_light_hint_text)
+                : ApiCompatibilityUtils.getColor(resources, R.color.locationbar_dark_hint_text);
+        mSearchBoxText.setHintTextColor(hintTextColor);
+    }
+
+    /**
+     * Initialize incognito description view.
+     * Note that this interface is supposed to be called only once.
+     */
+    void initializeIncognitoDescriptionView() {
+        assert mIncognitoDescriptionView == null;
+        ViewStub stub = (ViewStub) findViewById(R.id.incognito_description_layout_stub);
+        mIncognitoDescriptionView = (IncognitoDescriptionView) stub.inflate();
+        if (mIncognitoDescriptionLearnMoreListener != null) {
+            setIncognitoDescriptionLearnMoreClickListener(mIncognitoDescriptionLearnMoreListener);
+            mIncognitoDescriptionLearnMoreListener = null;
         }
     }
 
-    void setMoreTabsOnClicklistener(@Nullable View.OnClickListener listener) {
-        findViewById(R.id.more_tabs).setOnClickListener(listener);
+    /**
+     * Set the visibility of the incognito description.
+     * @param isVisible Whether it's visible or not.
+     */
+    void setIncognitoDescriptionVisibility(boolean isVisible) {
+        mIncognitoDescriptionView.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Set the incognito description learn more click listener.
+     * @param listener The given click listener.
+     */
+    void setIncognitoDescriptionLearnMoreClickListener(View.OnClickListener listener) {
+        if (mIncognitoDescriptionView == null) {
+            mIncognitoDescriptionLearnMoreListener = listener;
+            return;
+        }
+        mIncognitoDescriptionView.findViewById(R.id.learn_more).setOnClickListener(listener);
     }
 }

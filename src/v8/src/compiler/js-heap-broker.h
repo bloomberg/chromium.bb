@@ -12,6 +12,7 @@
 #include "src/compiler/feedback-source.h"
 #include "src/compiler/processed-feedback.h"
 #include "src/compiler/refs-map.h"
+#include "src/compiler/serializer-hints.h"
 #include "src/handles/handles.h"
 #include "src/interpreter/bytecode-array-accessor.h"
 #include "src/objects/feedback-vector.h"
@@ -32,6 +33,12 @@ std::ostream& operator<<(std::ostream& os, const ObjectRef& ref);
   do {                                                               \
     if (broker->tracing_enabled() && FLAG_trace_heap_broker_verbose) \
       broker->Trace() << x << '\n';                                  \
+  } while (false)
+
+#define TRACE_BROKER_MEMORY(broker, x)                              \
+  do {                                                              \
+    if (broker->tracing_enabled() && FLAG_trace_heap_broker_memory) \
+      broker->Trace() << x << std::endl;                            \
   } while (false)
 
 #define TRACE_BROKER_MISSING(broker, x)                             \
@@ -86,6 +93,10 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
   void Retire();
   bool SerializingAllowed() const;
 
+#ifdef DEBUG
+  void PrintRefsAnalysis() const;
+#endif  // DEBUG
+
   // Returns nullptr iff handle unknown.
   ObjectData* GetData(Handle<Object>) const;
   // Never returns nullptr.
@@ -125,6 +136,12 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
       FeedbackSource const& source);
   ProcessedFeedback const& GetFeedbackForInstanceOf(
       FeedbackSource const& source);
+  ProcessedFeedback const& GetFeedbackForArrayOrObjectLiteral(
+      FeedbackSource const& source);
+  ProcessedFeedback const& GetFeedbackForRegExpLiteral(
+      FeedbackSource const& source);
+  ProcessedFeedback const& GetFeedbackForTemplateObject(
+      FeedbackSource const& source);
   ProcessedFeedback const& GetFeedbackForPropertyAccess(
       FeedbackSource const& source, AccessMode mode,
       base::Optional<NameRef> static_name);
@@ -143,6 +160,12 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
   ProcessedFeedback const& ProcessFeedbackForPropertyAccess(
       FeedbackSource const& source, AccessMode mode,
       base::Optional<NameRef> static_name);
+  ProcessedFeedback const& ProcessFeedbackForArrayOrObjectLiteral(
+      FeedbackSource const& source);
+  ProcessedFeedback const& ProcessFeedbackForRegExpLiteral(
+      FeedbackSource const& source);
+  ProcessedFeedback const& ProcessFeedbackForTemplateObject(
+      FeedbackSource const& source);
 
   bool FeedbackIsInsufficient(FeedbackSource const& source) const;
 
@@ -157,7 +180,16 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
 
   StringRef GetTypedArrayStringTag(ElementsKind kind);
 
-  std::ostream& Trace();
+  bool ShouldBeSerializedForCompilation(const SharedFunctionInfoRef& shared,
+                                        const FeedbackVectorRef& feedback,
+                                        const HintsVector& arguments) const;
+  void SetSerializedForCompilation(const SharedFunctionInfoRef& shared,
+                                   const FeedbackVectorRef& feedback,
+                                   const HintsVector& arguments);
+  bool IsSerializedForCompilation(const SharedFunctionInfoRef& shared,
+                                  const FeedbackVectorRef& feedback) const;
+
+  std::ostream& Trace() const;
   void IncrementTracingIndentation();
   void DecrementTracingIndentation();
 
@@ -182,6 +214,12 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
   ProcessedFeedback const& ReadFeedbackForPropertyAccess(
       FeedbackSource const& source, AccessMode mode,
       base::Optional<NameRef> static_name);
+  ProcessedFeedback const& ReadFeedbackForArrayOrObjectLiteral(
+      FeedbackSource const& source);
+  ProcessedFeedback const& ReadFeedbackForRegExpLiteral(
+      FeedbackSource const& source);
+  ProcessedFeedback const& ReadFeedbackForTemplateObject(
+      FeedbackSource const& source);
 
   void InitializeRefsMap();
   void CollectArrayAndObjectPrototypes();
@@ -199,7 +237,7 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
       array_and_object_prototypes_;
   BrokerMode mode_ = kDisabled;
   bool const tracing_enabled_;
-  StdoutStream trace_out_;
+  mutable StdoutStream trace_out_;
   unsigned trace_indentation_ = 0;
   PerIsolateCompilerCache* compiler_cache_ = nullptr;
   ZoneUnorderedMap<FeedbackSource, ProcessedFeedback const*,
@@ -211,6 +249,22 @@ class V8_EXPORT_PRIVATE JSHeapBroker {
       property_access_infos_;
 
   ZoneVector<ObjectData*> typed_array_string_tags_;
+
+  struct SerializedFunction {
+    SharedFunctionInfoRef shared;
+    FeedbackVectorRef feedback;
+
+    bool operator<(const SerializedFunction& other) const {
+      if (shared.object().address() < other.shared.object().address()) {
+        return true;
+      }
+      if (shared.object().address() == other.shared.object().address()) {
+        return feedback.object().address() < other.feedback.object().address();
+      }
+      return false;
+    }
+  };
+  ZoneMultimap<SerializedFunction, HintsVector> serialized_functions_;
 
   static const size_t kMinimalRefsBucketCount = 8;     // must be power of 2
   static const size_t kInitialRefsBucketCount = 1024;  // must be power of 2

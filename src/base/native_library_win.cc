@@ -8,7 +8,6 @@
 
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/string_util.h"
@@ -102,7 +101,7 @@ NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
     // directory as the library may have dependencies on DLLs in this
     // directory.
     module = ::LoadLibraryExW(
-        as_wcstr(library_path.value()), nullptr,
+        library_path.value().c_str(), nullptr,
         LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
     // If LoadLibraryExW succeeds, log this metric and return.
     if (module) {
@@ -129,7 +128,7 @@ NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
       restore_directory = true;
     }
   }
-  module = ::LoadLibraryW(as_wcstr(library_path.value()));
+  module = ::LoadLibraryW(library_path.value().c_str());
 
   // GetLastError() needs to be called immediately after LoadLibraryW call.
   if (!module && error)
@@ -152,13 +151,13 @@ NativeLibrary LoadSystemLibraryHelper(const FilePath& library_path,
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   NativeLibrary module;
   BOOL module_found =
-      ::GetModuleHandleExW(0, as_wcstr(library_path.value()), &module);
+      ::GetModuleHandleExW(0, library_path.value().c_str(), &module);
   if (!module_found) {
     bool are_search_flags_available = AreSearchFlagsAvailable();
     // Prefer LOAD_LIBRARY_SEARCH_SYSTEM32 to avoid DLL preloading attacks.
     DWORD flags = are_search_flags_available ? LOAD_LIBRARY_SEARCH_SYSTEM32
                                              : LOAD_WITH_ALTERED_SEARCH_PATH;
-    module = ::LoadLibraryExW(as_wcstr(library_path.value()), nullptr, flags);
+    module = ::LoadLibraryExW(library_path.value().c_str(), nullptr, flags);
 
     if (!module && error)
       error->code = ::GetLastError();
@@ -170,12 +169,12 @@ NativeLibrary LoadSystemLibraryHelper(const FilePath& library_path,
   return module;
 }
 
-Optional<FilePath> GetSystemLibraryName(FilePath::StringPieceType name) {
+FilePath GetSystemLibraryName(FilePath::StringPieceType name) {
   FilePath library_path;
   // Use an absolute path to load the DLL to avoid DLL preloading attacks.
-  if (!base::PathService::Get(base::DIR_SYSTEM, &library_path))
-    return base::nullopt;
-  return make_optional(library_path.Append(name));
+  if (PathService::Get(DIR_SYSTEM, &library_path))
+    library_path = library_path.Append(name);
+  return library_path;
 }
 
 }  // namespace
@@ -210,18 +209,19 @@ std::string GetLoadableModuleName(StringPiece name) {
 
 NativeLibrary LoadSystemLibrary(FilePath::StringPieceType name,
                                 NativeLibraryLoadError* error) {
-  Optional<FilePath> library_path = GetSystemLibraryName(name);
-  if (library_path)
-    return LoadSystemLibraryHelper(library_path.value(), error);
-  if (error)
-    error->code = ERROR_NOT_FOUND;
-  return nullptr;
+  FilePath library_path = GetSystemLibraryName(name);
+  if (library_path.empty()) {
+    if (error)
+      error->code = ERROR_NOT_FOUND;
+    return nullptr;
+  }
+  return LoadSystemLibraryHelper(library_path, error);
 }
 
 NativeLibrary PinSystemLibrary(FilePath::StringPieceType name,
                                NativeLibraryLoadError* error) {
-  Optional<FilePath> library_path = GetSystemLibraryName(name);
-  if (!library_path) {
+  FilePath library_path = GetSystemLibraryName(name);
+  if (library_path.empty()) {
     if (error)
       error->code = ERROR_NOT_FOUND;
     return nullptr;
@@ -231,25 +231,28 @@ NativeLibrary PinSystemLibrary(FilePath::StringPieceType name,
   // Dllmain.
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   ScopedNativeLibrary module;
-  if (!::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN,
-                            as_wcstr(library_path.value().value()),
-                            ScopedNativeLibrary::Receiver(module).get())) {
-    // Load and pin the library since it wasn't already loaded.
-    module = ScopedNativeLibrary(
-        LoadSystemLibraryHelper(library_path.value(), error));
-    if (module.is_valid()) {
-      ScopedNativeLibrary temp;
-      if (!::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN,
-                                as_wcstr(library_path.value().value()),
-                                ScopedNativeLibrary::Receiver(temp).get())) {
-        if (error)
-          error->code = ::GetLastError();
-        // Return nullptr since we failed to pin the module.
-        return nullptr;
-      }
-    }
+  if (::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN,
+                           library_path.value().c_str(),
+                           ScopedNativeLibrary::Receiver(module).get())) {
+    return module.release();
   }
-  return module.release();
+
+  // Load and pin the library since it wasn't already loaded.
+  module = ScopedNativeLibrary(LoadSystemLibraryHelper(library_path, error));
+  if (!module.is_valid())
+    return nullptr;
+
+  ScopedNativeLibrary temp;
+  if (::GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN,
+                           library_path.value().c_str(),
+                           ScopedNativeLibrary::Receiver(temp).get())) {
+    return module.release();
+  }
+
+  if (error)
+    error->code = ::GetLastError();
+  // Return nullptr since we failed to pin the module.
+  return nullptr;
 }
 
 }  // namespace base

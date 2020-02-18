@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -35,40 +37,14 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-
-namespace {
-
-// Retries fetching |histogram_name| until it contains at least |count| samples.
-void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
-                                        const std::string& histogram_name,
-                                        size_t count) {
-  while (true) {
-    base::ThreadPoolInstance::Get()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-
-    content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-    const std::vector<base::Bucket> buckets =
-        histogram_tester->GetAllSamples(histogram_name);
-    size_t total_count = 0;
-    for (const auto& bucket : buckets) {
-      total_count += bucket.count;
-    }
-    if (total_count >= count) {
-      break;
-    }
-  }
-}
-
-}  // namespace
+#include "third_party/blink/public/common/features.h"
 
 // The first parameter selects whether the DeferAllScript optimization type is
 // enabled, and the second parameter selects whether
 // OptimizationGuideKeyedService is enabled. (The tests should pass in the same
 // way for all cases).
 class DeferAllScriptPriorityBrowserTest
-    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
+    : public ::testing::WithParamInterface<bool>,
       public InProcessBrowserTest {
  public:
   DeferAllScriptPriorityBrowserTest() = default;
@@ -79,6 +55,7 @@ class DeferAllScriptPriorityBrowserTest
       scoped_feature_list_.InitWithFeatures(
           {previews::features::kPreviews,
            previews::features::kDeferAllScriptPreviews,
+           blink::features::kLowerJavaScriptPriorityWhenForceDeferred,
            optimization_guide::features::kOptimizationHints,
            data_reduction_proxy::features::
                kDataReductionProxyEnabledWithNetworkService},
@@ -86,26 +63,17 @@ class DeferAllScriptPriorityBrowserTest
     } else {
       scoped_feature_list_.InitWithFeatures(
           {previews::features::kPreviews,
+           blink::features::kLowerJavaScriptPriorityWhenForceDeferred,
            optimization_guide::features::kOptimizationHints,
            data_reduction_proxy::features::
                kDataReductionProxyEnabledWithNetworkService},
           {});
     }
 
-    if (std::get<1>(GetParam())) {
-      param_feature_list_.InitWithFeatures(
-          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
-    } else {
-      param_feature_list_.InitWithFeatures(
-          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
-    }
-
     InProcessBrowserTest::SetUp();
   }
 
-  bool IsDeferAllScriptFeatureEnabled() const {
-    return std::get<0>(GetParam());
-  }
+  bool IsDeferAllScriptFeatureEnabled() const { return GetParam(); }
 
   // Returns the fetch time for the JavaScript file (in milliseconds). This
   // value is obtained using the resource timing API.
@@ -265,17 +233,9 @@ class DeferAllScriptPriorityBrowserTest
 };
 
 // Parameter is true if the test should be run with defer feature enabled.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          DeferAllScriptPriorityBrowserTest,
-                         ::testing::Combine(::testing::Bool(),
-                                            ::testing::Bool()));
-
-// Avoid flakes and issues on non-applicable platforms.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
-#else
-#define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
-#endif
+                         ::testing::Bool());
 
 // Fetches an HTML weboage that fetches CSS files followed by an external
 // JavaScript file. Verifies that the fetching of the JavaScript files is
@@ -291,7 +251,7 @@ INSTANTIATE_TEST_SUITE_P(,
 // as non-delayale, thus fetching it in parallel with the CSS files.
 IN_PROC_BROWSER_TEST_P(
     DeferAllScriptPriorityBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsWhitelisted)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsWhitelisted)) {
   GURL url = https_url();
 
   if (IsDeferAllScriptFeatureEnabled()) {

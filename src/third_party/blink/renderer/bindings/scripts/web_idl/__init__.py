@@ -19,6 +19,8 @@ def _setup_sys_path():
                      'scripts'),
         # //third_party/ply
         os.path.join(root_dir, 'third_party'),
+        # //third_party/pyjson5/src/json5
+        os.path.join(root_dir, 'third_party', 'pyjson5', 'src'),
         # //tools/idl_parser
         os.path.join(root_dir, 'tools'),
     ] + sys.path
@@ -28,14 +30,36 @@ _setup_sys_path()
 
 
 from .ast_group import AstGroup
+from .attribute import Attribute
+from .callback_function import CallbackFunction
+from .callback_interface import CallbackInterface
 from .composition_parts import Component
+from .constant import Constant
+from .constructor import Constructor
+from .constructor import ConstructorGroup
 from .database import Database
 from .database_builder import build_database
+from .dictionary import Dictionary
+from .dictionary import DictionaryMember
+from .enumeration import Enumeration
+from .exposure import Exposure
+from .function_like import FunctionLike
+from .function_like import OverloadGroup
+from .idl_type import IdlType
+from .interface import Interface
+from .literal_constant import LiteralConstant
+from .namespace import Namespace
+from .operation import Operation
+from .operation import OperationGroup
+from .runtime_enabled_features import RuntimeEnabledFeatures
+from .typedef import Typedef
+from .union import Union
 
 
-__all__ = [
-    "AstGroup",
-    "Component",
-    "Database",
-    "build_database",
-]
+def init(runtime_enabled_features_paths):
+    """
+    Args:
+        runtime_enabled_features_paths: Paths to the definition files of
+            runtime-enabled features ("runtime_enabled_features.json5").
+    """
+    RuntimeEnabledFeatures.init(filepaths=runtime_enabled_features_paths)

@@ -17,10 +17,9 @@ ch-ua-model
 ch-ua-platform
 ch-viewport-width
 ch-width
-document-access
 document-domain
 document-write
-downloads-without-user-activation
+downloads
 encrypted-media
 execution-while-not-rendered
 execution-while-out-of-viewport
@@ -57,7 +56,6 @@ unoptimized-lossy-images
 unsized-media
 usb
 vertical-scroll
-vr
 wake-lock
-xr
+xr-spatial-tracking
 

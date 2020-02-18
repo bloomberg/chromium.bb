@@ -8,36 +8,71 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/back_forward_cache.h"
+#include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/reload_type.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
 class FrameTreeNode;
+class NavigationRequest;
 class RenderFrameHostImpl;
 class SiteInstance;
 struct LoadCommittedDetails;
 
 class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
  public:
-  NavigationControllerImpl(
-      NavigationControllerDelegate* delegate,
-      BrowserContext* browser_context);
+  // This tracks one NavigationRequest navigating to a pending NavigationEntry.
+  // In some cases, several NavigationRequests are referencing the same pending
+  // NavigationEntry. For instance:
+  // - A reload requested while a reload is already in progress.
+  // - An history navigation causing several subframes to navigate.
+  //
+  // When no NavigationRequests are referencing the pending NavigationEntry
+  // anymore, it should be discarded to avoid a URL spoof.
+  //
+  // The deletion is not always immediate, because it is not possible to delete
+  // the entry while requesting a navigation to it at the same time. In this
+  // case, the deletion happens later, when returning from the function.
+  //
+  // If the pending NavigationEntry is discarded before the PendingEntryRef(s),
+  // then removing the last associated PendingEntryRef is a no-op. It is a no-op
+  // forever, even if the entry becomes the pending NavigationEntry again in the
+  // meantime. Rather than track the NavigationRequest or pending entry
+  // explicitly, this ref class simply goes into a set that gets cleared with
+  // each change to the pending entry
+  class PendingEntryRef {
+   public:
+    explicit PendingEntryRef(
+        base::WeakPtr<NavigationControllerImpl> controller);
+    ~PendingEntryRef();
+
+   private:
+    base::WeakPtr<NavigationControllerImpl> controller_;
+    DISALLOW_COPY_AND_ASSIGN(PendingEntryRef);
+  };
+
+  NavigationControllerImpl(NavigationControllerDelegate* delegate,
+                           BrowserContext* browser_context);
   ~NavigationControllerImpl() override;
 
   // NavigationController implementation:
@@ -66,10 +101,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
                const std::string& extra_headers) override;
   void LoadURLWithParams(const LoadURLParams& params) override;
   void LoadIfNecessary() override;
-  void LoadErrorPage(RenderFrameHost* render_frame_host,
-                     const GURL& url,
-                     const std::string& error_page_html,
-                     net::Error error) override;
+  void LoadPostCommitErrorPage(RenderFrameHost* render_frame_host,
+                               const GURL& url,
+                               const std::string& error_page_html,
+                               net::Error error) override;
   bool CanGoBack() override;
   bool CanGoForward() override;
   bool CanGoToOffset(int offset) override;
@@ -78,6 +113,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void GoToIndex(int index) override;
   void GoToOffset(int offset) override;
   bool RemoveEntryAtIndex(int index) override;
+  void PruneForwardEntries() override;
   const SessionStorageNamespaceMap& GetSessionStorageNamespaceMap() override;
   SessionStorageNamespace* GetDefaultSessionStorageNamespace() override;
   bool NeedsReload() override;
@@ -96,6 +132,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void DeleteNavigationEntries(
       const DeletionPredicate& deletionPredicate) override;
   bool IsEntryMarkedToBeSkipped(int index) override;
+  BackForwardCacheImpl& GetBackForwardCache() override;
 
   // Starts a navigation in a newly created subframe as part of a history
   // navigation. Returns true if the history navigation could start, false
@@ -103,7 +140,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // navigation to the default src URL for the frame instead.
   bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      mojom::NavigationClientAssociatedPtrInfo* navigation_client);
+      mojo::PendingAssociatedRemote<mojom::NavigationClient>*
+          navigation_client);
 
   // Navigates to a specified offset from the "current entry". Currently records
   // a histogram indicating whether the session history navigation would only
@@ -134,8 +172,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // The session storage namespace that all child RenderViews belonging to
   // |instance| should use.
-  SessionStorageNamespace* GetSessionStorageNamespace(
-      SiteInstance* instance);
+  SessionStorageNamespace* GetSessionStorageNamespace(SiteInstance* instance);
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.
@@ -147,9 +184,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Return the entry with the given unique id, or null if not found.
   NavigationEntryImpl* GetEntryWithUniqueID(int nav_entry_id) const;
 
-  NavigationControllerDelegate* delegate() const {
-    return delegate_;
-  }
+  NavigationControllerDelegate* delegate() const { return delegate_; }
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -244,7 +279,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   static size_t max_entry_count();
 
   void SetGetTimestampCallbackForTest(
-      const base::Callback<base::Time()>& get_timestamp_callback);
+      const base::RepeatingCallback<base::Time()>& get_timestamp_callback);
 
   // Discards only the pending entry. |was_failure| should be set if the pending
   // entry is being discarded because it failed to load.
@@ -253,8 +288,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Sets a flag on the pending NavigationEntryImpl instance if any that the
   // navigation failed due to an SSL error.
   void SetPendingNavigationSSLError(bool error);
-
-  BackForwardCache& back_forward_cache() { return back_forward_cache_; }
 
 // Returns true if the string corresponds to a valid data URL, false
 // otherwise.
@@ -266,6 +299,24 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Invoked when a user activation occurs within the page, so that relevant
   // entries can be updated as needed.
   void NotifyUserActivation();
+
+  // Tracks a new association between the current pending entry and a
+  // NavigationRequest. Callers are responsible for only calling this for
+  // requests corresponding to the current pending entry.
+  std::unique_ptr<PendingEntryRef> ReferencePendingEntry();
+
+  // Like NavigationController::CreateNavigationEntry, but takes an extra
+  // |source_site_instance| argument.
+  static std::unique_ptr<NavigationEntryImpl> CreateNavigationEntry(
+      const GURL& url,
+      Referrer referrer,
+      base::Optional<url::Origin> initiator_origin,
+      SiteInstance* source_site_instance,
+      ui::PageTransition transition,
+      bool is_renderer_initiated,
+      const std::string& extra_headers,
+      BrowserContext* browser_context,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
 
  private:
   friend class RestoreHelper;
@@ -366,8 +417,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool is_history_navigation_in_new_child_frame);
 
   // Returns whether there is a pending NavigationEntry whose unique ID matches
-  // the given NavigationHandle's pending_nav_entry_id.
-  bool PendingEntryMatchesHandle(NavigationHandleImpl* handle) const;
+  // the given NavigationRequest's pending_nav_entry_id.
+  bool PendingEntryMatchesRequest(NavigationRequest* request) const;
 
   // Classifies the given renderer navigation (see the NavigationType enum).
   NavigationType ClassifyNavigation(
@@ -394,30 +445,30 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool is_same_document,
       bool replace_entry,
       bool previous_document_was_activated,
-      NavigationHandleImpl* handle);
+      NavigationRequest* request);
   void RendererDidNavigateToExistingPage(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_same_document,
       bool was_restored,
-      NavigationHandleImpl* handle,
+      NavigationRequest* request,
       bool keep_pending_entry);
   void RendererDidNavigateToSamePage(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_same_document,
-      NavigationHandleImpl* handle);
+      NavigationRequest* request);
   void RendererDidNavigateNewSubframe(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_same_document,
       bool replace_entry,
       bool previous_document_was_activated,
-      NavigationHandleImpl* handle);
+      NavigationRequest* request);
   bool RendererDidNavigateAutoSubframe(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      NavigationHandleImpl* handle);
+      NavigationRequest* request);
 
   // Allows the derived class to issue notifications that a load has been
   // committed. This will fill in the active entry to the details structure.
@@ -425,8 +476,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Updates the virtual URL of an entry to match a new URL, for cases where
   // the real renderer URL is derived from the virtual URL, like view-source:
-  void UpdateVirtualURLToURL(NavigationEntryImpl* entry,
-                             const GURL& new_url);
+  void UpdateVirtualURLToURL(NavigationEntryImpl* entry, const GURL& new_url);
 
   // Invoked after session/tab restore or cloning a tab. Resets the transition
   // type of the entries, updates the max page id and creates the active
@@ -435,8 +485,12 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Inserts a new entry or replaces the current entry with a new one, removing
   // all entries after it. The new entry will become the active one.
+  // If |was_post_commit_error_| is set, the last committed entry will be saved,
+  // the new entry will replace it, and on any navigation away from the new
+  // entry or on reloads, the old one will replace |entry|.
   void InsertOrReplaceEntry(std::unique_ptr<NavigationEntryImpl> entry,
-                            bool replace);
+                            bool replace,
+                            bool was_post_commit_error);
 
   // Removes the entry at |index|, as long as it is not the current entry.
   void RemoveEntryAtIndexInternal(int index);
@@ -489,10 +543,15 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // at |reference_index| will get their skippable flag set to |skippable|.
   void SetSkippableForSameDocumentEntries(int reference_index, bool skippable);
 
+  // Called when one PendingEntryRef is deleted. When all of the refs for the
+  // current pending entry have been deleted, this automatically discards the
+  // pending NavigationEntry.
+  void PendingEntryRefDeleted(PendingEntryRef* ref);
+
   // ---------------------------------------------------------------------------
 
   // The user browser context associated with this controller.
-  BrowserContext* browser_context_;
+  BrowserContext* const browser_context_;
 
   // List of |NavigationEntry|s for this controller.
   std::vector<std::unique_ptr<NavigationEntryImpl>> entries_;
@@ -504,7 +563,15 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // This may refer to an item in the entries_ list if the pending_entry_index_
   // != -1, or it may be its own entry that should be deleted. Be careful with
   // the memory management.
-  NavigationEntryImpl* pending_entry_;
+  NavigationEntryImpl* pending_entry_ = nullptr;
+
+  // This keeps track of the NavigationRequests associated with the pending
+  // NavigationEntry. When all of them have been deleted, or have stopped
+  // loading, the pending NavigationEntry can be discarded.
+  //
+  // This is meant to avoid a class of URL spoofs where the navigation is
+  // canceled, but the stale pending NavigationEntry is left in place.
+  std::set<PendingEntryRef*> pending_entry_refs_;
 
   // If a new entry fails loading, details about it are temporarily held here
   // until the error page is shown (or 0 otherwise).
@@ -514,21 +581,21 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // issues: 1. This might hang around longer than we'd like if there is no
   // error page loaded, and 2. This doesn't work very well for frames.
   // http://crbug.com/474261
-  int failed_pending_entry_id_;
+  int failed_pending_entry_id_ = 0;
 
   // The index of the currently visible entry.
-  int last_committed_entry_index_;
+  int last_committed_entry_index_ = -1;
 
   // The index of the pending entry if it is in entries_, or -1 if
   // pending_entry_ is a new entry (created by LoadURL).
-  int pending_entry_index_;
+  int pending_entry_index_ = -1;
 
   // The index for the entry that is shown until a navigation occurs.  This is
   // used for interstitial pages. -1 if there are no such entry.
   // Note that this entry really appears in the list of entries, but only
   // temporarily (until the next navigation).  Any index pointing to an entry
   // after the transient entry will become invalid if you navigate forward.
-  int transient_entry_index_;
+  int transient_entry_index_ = -1;
 
   // The delegate associated with the controller. Possibly NULL during
   // setup.
@@ -538,7 +605,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   SSLManager ssl_manager_;
 
   // Whether we need to be reloaded when made active.
-  bool needs_reload_;
+  bool needs_reload_ = false;
 
   // Source of when |needs_reload_| is set. Only valid when |needs_reload_|
   // is set.
@@ -546,10 +613,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Whether this is the initial navigation.
   // Becomes false when initial navigation commits.
-  bool is_initial_navigation_;
+  bool is_initial_navigation_ = true;
 
   // Prevent unsafe re-entrant calls to NavigateToPendingEntry.
-  bool in_navigate_to_pending_entry_;
+  bool in_navigate_to_pending_entry_ = false;
 
   // Used to find the appropriate SessionStorageNamespace for the storage
   // partition of a NavigationEntry.
@@ -565,10 +632,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // If a repost is pending, its type (RELOAD or RELOAD_BYPASSING_CACHE),
   // NO_RELOAD otherwise.
-  ReloadType pending_reload_;
+  ReloadType pending_reload_ = ReloadType::NONE;
 
   // Used to get timestamps for newly-created navigation entries.
-  base::Callback<base::Time()> get_timestamp_callback_;
+  base::RepeatingCallback<base::Time()> get_timestamp_callback_;
 
   // Used to smooth out timestamps from |get_timestamp_callback_|.
   // Without this, whenever there is a run of redirects or
@@ -581,7 +648,21 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   //
   // Stores frozen RenderFrameHost. Restores them on history navigation.
   // See BackForwardCache class documentation.
-  BackForwardCache back_forward_cache_;
+  BackForwardCacheImpl back_forward_cache_;
+
+  // Holds the entry that was committed at the time an error page was triggered
+  // due to a call to LoadPostCommitErrorPage. The error entry will take its
+  // place until the user navigates again, at which point it will go back into
+  // the entry list instead of the error entry. Set to nullptr if there is no
+  // post commit error entry. Note that this entry must always correspond to the
+  // last committed entry index, and that there can be only a single post-commit
+  // error page entry in its place in entries_. This ensures that its spot in
+  // entries_ cannot go away (e.g., due to PruneForwardEntries) and that it can
+  // go back into place after any subsequent commit.
+  std::unique_ptr<NavigationEntryImpl> entry_replaced_by_post_commit_error_;
+
+  // NOTE: This must be the last member.
+  base::WeakPtrFactory<NavigationControllerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigationControllerImpl);
 };

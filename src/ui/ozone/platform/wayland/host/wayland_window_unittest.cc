@@ -9,7 +9,7 @@
 
 #include <linux/input.h>
 #include <wayland-server-core.h>
-#include <xdg-shell-unstable-v5-server-protocol.h>
+#include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
 #include "base/run_loop.h"
@@ -31,6 +31,7 @@
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::Mock;
+using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrEq;
 
@@ -98,37 +99,37 @@ class WaylandWindowTest : public WaylandTest {
                           int height,
                           uint32_t serial,
                           struct wl_array* states) {
-    if (!xdg_surface_->xdg_toplevel()) {
-      xdg_surface_send_configure(xdg_surface_->resource(), width, height,
-                                 states, serial);
-      return;
-    }
-
-    // In xdg_shell_v6, both surfaces send serial configure event and toplevel
+    // In xdg_shell_v6+, both surfaces send serial configure event and toplevel
     // surfaces send other data like states, heights and widths.
-    zxdg_surface_v6_send_configure(xdg_surface_->resource(), serial);
-    ASSERT_TRUE(xdg_surface_->xdg_toplevel());
-    zxdg_toplevel_v6_send_configure(xdg_surface_->xdg_toplevel()->resource(),
-                                    width, height, states);
+    if (GetParam() == kXdgShellV6) {
+      zxdg_surface_v6_send_configure(xdg_surface_->resource(), serial);
+      ASSERT_TRUE(xdg_surface_->xdg_toplevel());
+      zxdg_toplevel_v6_send_configure(xdg_surface_->xdg_toplevel()->resource(),
+                                      width, height, states);
+    } else {
+      xdg_surface_send_configure(xdg_surface_->resource(), serial);
+      ASSERT_TRUE(xdg_surface_->xdg_toplevel());
+      xdg_toplevel_send_configure(xdg_surface_->xdg_toplevel()->resource(),
+                                  width, height, states);
+    }
   }
 
   void SendConfigureEventPopup(gfx::AcceleratedWidget menu_widget,
                                const gfx::Rect bounds) {
     auto* popup = GetPopupByWidget(menu_widget);
     ASSERT_TRUE(popup);
-    if (GetParam() == kXdgShellV5) {
-      LOG(WARNING) << "XDG V5 does not support configure events for popups.";
-    } else {
+    if (GetParam() == kXdgShellV6) {
       zxdg_popup_v6_send_configure(popup->resource(), bounds.x(), bounds.y(),
                                    bounds.width(), bounds.height());
+    } else {
+      xdg_popup_send_configure(popup->resource(), bounds.x(), bounds.y(),
+                               bounds.width(), bounds.height());
     }
   }
 
   // Depending on a shell version, xdg_surface_ or xdg_toplevel surface should
   // get the mock calls. This method decided, which surface to use.
   wl::MockXdgSurface* GetXdgSurface() {
-    if (GetParam() == kXdgShellV5)
-      return xdg_surface_;
     return xdg_surface_->xdg_toplevel();
   }
 
@@ -138,7 +139,7 @@ class WaylandWindowTest : public WaylandTest {
 
   ScopedWlArray InitializeWlArrayWithActivatedState() {
     ScopedWlArray states;
-    AddStateToWlArray(XDG_SURFACE_STATE_ACTIVATED, states.get());
+    AddStateToWlArray(XDG_TOPLEVEL_STATE_ACTIVATED, states.get());
     return states;
   }
 
@@ -186,11 +187,6 @@ class WaylandWindowTest : public WaylandTest {
     auto* popup = GetPopupByWidget(menu_widget);
     ASSERT_TRUE(popup);
 
-    if (GetParam() == kXdgShellV5) {
-      LOG(WARNING) << "XDG V5 does not support xdg_positioner";
-      return;
-    }
-
     EXPECT_EQ(popup->anchor_rect(), position.anchor_rect);
     EXPECT_EQ(popup->size(), position.size);
     EXPECT_EQ(popup->anchor(), position.anchor);
@@ -201,13 +197,9 @@ class WaylandWindowTest : public WaylandTest {
   wl::MockXdgPopup* GetPopupByWidget(gfx::AcceleratedWidget widget) {
     wl::MockSurface* mock_surface = server_.GetObject<wl::MockSurface>(widget);
     if (mock_surface) {
-      if (GetParam() == kXdgShellV5) {
-        return mock_surface->xdg_popup();
-      } else {
-        auto* mock_xdg_surface = mock_surface->xdg_surface();
-        if (mock_xdg_surface)
-          return mock_xdg_surface->xdg_popup();
-      }
+      auto* mock_xdg_surface = mock_surface->xdg_surface();
+      if (mock_xdg_surface)
+        return mock_xdg_surface->xdg_popup();
     }
     return nullptr;
   }
@@ -236,7 +228,7 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
   VerifyAndClearExpectations();
 
   auto active_maximized = MakeStateArray(
-      {XDG_SURFACE_STATE_ACTIVATED, XDG_SURFACE_STATE_MAXIMIZED});
+      {XDG_TOPLEVEL_STATE_ACTIVATED, XDG_TOPLEVEL_STATE_MAXIMIZED});
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
                                                kMaximizedBounds.height()));
@@ -250,7 +242,7 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
   Sync();
   VerifyAndClearExpectations();
 
-  auto inactive_maximized = MakeStateArray({XDG_SURFACE_STATE_MAXIMIZED});
+  auto inactive_maximized = MakeStateArray({XDG_TOPLEVEL_STATE_MAXIMIZED});
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
                                                kMaximizedBounds.height()));
   EXPECT_CALL(delegate_, OnActivationChanged(Eq(false)));
@@ -327,7 +319,7 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
   SendConfigureEvent(0, 0, 1, states.get());
   Sync();
 
-  AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, states.get());
+  AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN, states.get());
 
   EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
   EXPECT_CALL(delegate_,
@@ -383,7 +375,7 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
   EXPECT_EQ(window_->GetPlatformWindowState(),
             PlatformWindowState::kFullScreen);
 
-  AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, states.get());
+  AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN, states.get());
   SendConfigureEvent(0, 0, 2, states.get());
 
   Sync();
@@ -400,7 +392,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   VerifyAndClearExpectations();
 
   auto active_maximized = MakeStateArray(
-      {XDG_SURFACE_STATE_ACTIVATED, XDG_SURFACE_STATE_MAXIMIZED});
+      {XDG_TOPLEVEL_STATE_ACTIVATED, XDG_TOPLEVEL_STATE_MAXIMIZED});
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kMaximizedBounds.width(),
                                                kMaximizedBounds.height()));
@@ -421,7 +413,7 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PlatformWindowState::kFullScreen)));
   window_->ToggleFullscreen();
-  AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, active_maximized.get());
+  AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN, active_maximized.get());
   SendConfigureEvent(kMaximizedBounds.width(), kMaximizedBounds.height(), 3,
                      active_maximized.get());
   Sync();
@@ -453,7 +445,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
   const gfx::Rect maximized_bounds = gfx::Rect(0, 0, 1024, 768);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
   window_->Maximize();
-  AddStateToWlArray(XDG_SURFACE_STATE_MAXIMIZED, states.get());
+  AddStateToWlArray(XDG_TOPLEVEL_STATE_MAXIMIZED, states.get());
   SendConfigureEvent(maximized_bounds.width(), maximized_bounds.height(), 1,
                      states.get());
   Sync();
@@ -491,7 +483,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
   const gfx::Rect fullscreen_bounds = gfx::Rect(0, 0, 1280, 720);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(fullscreen_bounds)));
   window_->ToggleFullscreen();
-  AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, states.get());
+  AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN, states.get());
   SendConfigureEvent(fullscreen_bounds.width(), fullscreen_bounds.height(), 2,
                      states.get());
   Sync();
@@ -527,7 +519,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   const gfx::Rect maximized_bounds = gfx::Rect(0, 0, 1024, 768);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
   window_->Maximize();
-  AddStateToWlArray(XDG_SURFACE_STATE_MAXIMIZED, states.get());
+  AddStateToWlArray(XDG_TOPLEVEL_STATE_MAXIMIZED, states.get());
   SendConfigureEvent(maximized_bounds.width(), maximized_bounds.height(), 1,
                      states.get());
   Sync();
@@ -537,7 +529,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   const gfx::Rect fullscreen_bounds = gfx::Rect(0, 0, 1280, 720);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(fullscreen_bounds)));
   window_->ToggleFullscreen();
-  AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, states.get());
+  AddStateToWlArray(XDG_TOPLEVEL_STATE_FULLSCREEN, states.get());
   SendConfigureEvent(fullscreen_bounds.width(), fullscreen_bounds.height(), 2,
                      states.get());
   Sync();
@@ -548,7 +540,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   window_->Maximize();
   // Reinitialize wl_array, which removes previous old states.
   states = InitializeWlArrayWithActivatedState();
-  AddStateToWlArray(XDG_SURFACE_STATE_MAXIMIZED, states.get());
+  AddStateToWlArray(XDG_TOPLEVEL_STATE_MAXIMIZED, states.get());
   SendConfigureEvent(maximized_bounds.width(), maximized_bounds.height(), 3,
                      states.get());
   Sync();
@@ -610,12 +602,12 @@ TEST_P(WaylandWindowTest, CanDispatchMouseEventDefault) {
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventFocus) {
-  // set_pointer_focus(true) requires a WaylandPointer.
+  // SetPointerFocus(true) requires a WaylandPointer.
   wl_seat_send_capabilities(server_.seat()->resource(),
                             WL_SEAT_CAPABILITY_POINTER);
   Sync();
   ASSERT_TRUE(connection_->pointer());
-  window_->set_pointer_focus(true);
+  window_->SetPointerFocus(true);
   EXPECT_TRUE(window_->CanDispatchEvent(&test_mouse_event_));
 }
 
@@ -736,13 +728,13 @@ TEST_P(WaylandWindowTest, OnAcceleratedWidgetDestroy) {
 TEST_P(WaylandWindowTest, CanCreateMenuWindow) {
   MockPlatformWindowDelegate menu_window_delegate;
 
-  // set_pointer_focus(true) requires a WaylandPointer.
+  // SetPointerFocus(true) requires a WaylandPointer.
   wl_seat_send_capabilities(
       server_.seat()->resource(),
       WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_TOUCH);
   Sync();
   ASSERT_TRUE(connection_->pointer() && connection_->touch());
-  window_->set_pointer_focus(true);
+  window_->SetPointerFocus(true);
 
   std::unique_ptr<WaylandWindow> menu_window;
   EXPECT_TRUE(CreateWaylandWindowWithParams(
@@ -751,7 +743,7 @@ TEST_P(WaylandWindowTest, CanCreateMenuWindow) {
 
   Sync();
 
-  window_->set_pointer_focus(false);
+  window_->SetPointerFocus(false);
   window_->set_touch_focus(false);
 
   EXPECT_FALSE(CreateWaylandWindowWithParams(
@@ -803,7 +795,7 @@ TEST_P(WaylandWindowTest, CanDispatchEventToMenuWindowNonNested) {
                             WL_SEAT_CAPABILITY_POINTER);
   Sync();
   ASSERT_TRUE(connection_->pointer());
-  window_->set_pointer_focus(true);
+  window_->SetPointerFocus(true);
 
   // Make sure the events are sent to the menu window despite the pointer focus
   // on the main window. Typically, it's the menu controller, which must get all
@@ -839,7 +831,7 @@ TEST_P(WaylandWindowTest, CanDispatchEventToMenuWindowNested) {
                             WL_SEAT_CAPABILITY_POINTER);
   Sync();
   ASSERT_TRUE(connection_->pointer());
-  window_->set_pointer_focus(true);
+  window_->SetPointerFocus(true);
 
   // In case of nested menu windows, it is the main menu window, which must
   // receive all the events.
@@ -874,24 +866,35 @@ TEST_P(WaylandWindowTest, DispatchWindowResize) {
 // bounds back from relative to parent to be relative to screen/toplevel window.
 // All bounds values are taken by manually running the browser.
 TEST_P(WaylandWindowTest, AdjustPopupBounds) {
-  // Only shell v6 exercises this test as long as shell v5 does not support
-  // positioners.
-  if (GetParam() == kXdgShellV5)
-    return;
+  PopupPosition menu_window_positioner, nested_menu_window_positioner;
 
-  PopupPosition menu_window_positioner = {
-      gfx::Rect(439, 46, 1, 30), gfx::Size(287, 409),
-      ZXDG_POSITIONER_V6_ANCHOR_BOTTOM | ZXDG_POSITIONER_V6_ANCHOR_RIGHT,
-      ZXDG_POSITIONER_V6_GRAVITY_BOTTOM | ZXDG_POSITIONER_V6_GRAVITY_RIGHT,
-      ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_SLIDE_X |
-          ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_FLIP_Y};
+  if (GetParam() == kXdgShellV6) {
+    menu_window_positioner = {
+        gfx::Rect(439, 46, 1, 30), gfx::Size(287, 409),
+        ZXDG_POSITIONER_V6_ANCHOR_BOTTOM | ZXDG_POSITIONER_V6_ANCHOR_RIGHT,
+        ZXDG_POSITIONER_V6_GRAVITY_BOTTOM | ZXDG_POSITIONER_V6_GRAVITY_RIGHT,
+        ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_SLIDE_X |
+            ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_FLIP_Y};
 
-  PopupPosition nested_menu_window_positioner = {
-      gfx::Rect(4, 80, 279, 1), gfx::Size(305, 99),
-      ZXDG_POSITIONER_V6_ANCHOR_TOP | ZXDG_POSITIONER_V6_ANCHOR_RIGHT,
-      ZXDG_POSITIONER_V6_GRAVITY_BOTTOM | ZXDG_POSITIONER_V6_GRAVITY_RIGHT,
-      ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_FLIP_X |
-          ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_SLIDE_Y};
+    nested_menu_window_positioner = {
+        gfx::Rect(4, 80, 279, 1), gfx::Size(305, 99),
+        ZXDG_POSITIONER_V6_ANCHOR_TOP | ZXDG_POSITIONER_V6_ANCHOR_RIGHT,
+        ZXDG_POSITIONER_V6_GRAVITY_BOTTOM | ZXDG_POSITIONER_V6_GRAVITY_RIGHT,
+        ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_FLIP_X |
+            ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_SLIDE_Y};
+  } else {
+    menu_window_positioner = {gfx::Rect(439, 46, 1, 30), gfx::Size(287, 409),
+                              XDG_POSITIONER_ANCHOR_BOTTOM_RIGHT,
+                              XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT,
+                              XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X |
+                                  XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y};
+
+    nested_menu_window_positioner = {
+        gfx::Rect(4, 80, 279, 1), gfx::Size(305, 99),
+        XDG_POSITIONER_ANCHOR_TOP_RIGHT, XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT,
+        XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X |
+            XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y};
+  }
 
   auto* toplevel_window = window_.get();
   toplevel_window->SetBounds(gfx::Rect(0, 0, 739, 574));
@@ -1083,7 +1086,7 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
   // Wayland compositor repositioning the nested window may result in a window
   // shown on another display.
   auto active_maximized = MakeStateArray(
-      {XDG_SURFACE_STATE_ACTIVATED, XDG_SURFACE_STATE_MAXIMIZED});
+      {XDG_TOPLEVEL_STATE_ACTIVATED, XDG_TOPLEVEL_STATE_MAXIMIZED});
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
 
   window_->Maximize();
@@ -1101,10 +1104,15 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
 
   nested_menu_window_widget = nested_menu_window->GetWidget();
   // The anchor and gravity must change to be on the right side.
-  nested_menu_window_positioner.anchor &= ~ZXDG_POSITIONER_V6_ANCHOR_RIGHT;
-  nested_menu_window_positioner.anchor |= ZXDG_POSITIONER_V6_ANCHOR_LEFT;
-  nested_menu_window_positioner.gravity &= ~ZXDG_POSITIONER_V6_GRAVITY_RIGHT;
-  nested_menu_window_positioner.gravity |= ZXDG_POSITIONER_V6_GRAVITY_LEFT;
+  if (GetParam() == kXdgShellV6) {
+    nested_menu_window_positioner.anchor =
+        ZXDG_POSITIONER_V6_ANCHOR_TOP | ZXDG_POSITIONER_V6_ANCHOR_LEFT;
+    nested_menu_window_positioner.gravity =
+        ZXDG_POSITIONER_V6_GRAVITY_BOTTOM | ZXDG_POSITIONER_V6_GRAVITY_LEFT;
+  } else {
+    nested_menu_window_positioner.anchor = XDG_POSITIONER_ANCHOR_TOP_LEFT;
+    nested_menu_window_positioner.gravity = XDG_POSITIONER_GRAVITY_BOTTOM_LEFT;
+  }
   VerifyXdgPopupPosition(nested_menu_window_widget,
                          nested_menu_window_positioner);
 
@@ -1127,7 +1135,7 @@ TEST_P(WaylandWindowTest, SetOpaqueRegion) {
       server_.GetObject<wl::MockSurface>(window_->GetWidget());
 
   gfx::Rect new_bounds(0, 0, 500, 600);
-  auto state_array = MakeStateArray({XDG_SURFACE_STATE_ACTIVATED});
+  auto state_array = MakeStateArray({XDG_TOPLEVEL_STATE_ACTIVATED});
   SendConfigureEvent(new_bounds.width(), new_bounds.height(), 1,
                      state_array.get());
 
@@ -1154,17 +1162,106 @@ TEST_P(WaylandWindowTest, SetOpaqueRegion) {
 TEST_P(WaylandWindowTest, OnCloseRequest) {
   EXPECT_CALL(delegate_, OnCloseRequest());
 
-  if (xdg_surface_->xdg_toplevel())
+  if (GetParam() == kXdgShellV6)
     zxdg_toplevel_v6_send_close(xdg_surface_->xdg_toplevel()->resource());
   else
-    xdg_surface_send_close(xdg_surface_->resource());
+    xdg_toplevel_send_close(xdg_surface_->xdg_toplevel()->resource());
 
   Sync();
 }
 
-INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+TEST_P(WaylandWindowTest, TooltipSimpleParent) {
+  VerifyAndClearExpectations();
+
+  gfx::Rect tooltip_window_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
+  std::unique_ptr<WaylandWindow> tooltip_window;
+  EXPECT_TRUE(CreateWaylandWindowWithParams(
+      PlatformWindowType::kTooltip, window_->GetWidget(), tooltip_window_bounds,
+      &delegate_, &tooltip_window));
+
+  window_->SetPointerFocus(true);
+
+  tooltip_window->Show(false);
+
+  Sync();
+
+  auto* mock_tooltip_surface =
+      server_.GetObject<wl::MockSurface>(tooltip_window->GetWidget());
+  auto* test_subsurface = mock_tooltip_surface->sub_surface();
+
+  EXPECT_EQ(test_subsurface->position(), tooltip_window_bounds.origin());
+  EXPECT_FALSE(test_subsurface->sync());
+
+  window_->SetPointerFocus(false);
+}
+
+TEST_P(WaylandWindowTest, TooltipNestedParent) {
+  VerifyAndClearExpectations();
+
+  gfx::Rect menu_window_bounds(gfx::Point(10, 10), gfx::Size(100, 100));
+  std::unique_ptr<WaylandWindow> menu_window;
+  EXPECT_TRUE(CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, window_->GetWidget(), menu_window_bounds,
+      &delegate_, &menu_window));
+
+  VerifyAndClearExpectations();
+
+  gfx::Rect tooltip_window_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
+  std::unique_ptr<WaylandWindow> tooltip_window;
+  EXPECT_TRUE(CreateWaylandWindowWithParams(
+      PlatformWindowType::kTooltip, menu_window->GetWidget(),
+      tooltip_window_bounds, &delegate_, &tooltip_window));
+
+  VerifyAndClearExpectations();
+
+  menu_window->SetPointerFocus(true);
+
+  tooltip_window->Show(false);
+
+  Sync();
+
+  auto* mock_tooltip_surface =
+      server_.GetObject<wl::MockSurface>(tooltip_window->GetWidget());
+  auto* test_subsurface = mock_tooltip_surface->sub_surface();
+
+  auto new_origin = tooltip_window_bounds.origin() -
+                    menu_window_bounds.origin().OffsetFromOrigin();
+  EXPECT_EQ(test_subsurface->position(), new_origin);
+
+  menu_window->SetPointerFocus(false);
+}
+
+TEST_P(WaylandWindowTest, OnSizeConstraintsChanged) {
+  const bool kBooleans[] = {false, true};
+  for (bool has_min_size : kBooleans) {
+    for (bool has_max_size : kBooleans) {
+      base::Optional<gfx::Size> min_size =
+          has_min_size ? base::Optional<gfx::Size>(gfx::Size(100, 200))
+                       : base::nullopt;
+      base::Optional<gfx::Size> max_size =
+          has_max_size ? base::Optional<gfx::Size>(gfx::Size(300, 400))
+                       : base::nullopt;
+      EXPECT_CALL(delegate_, GetMinimumSizeForWindow())
+          .WillOnce(Return(min_size));
+      EXPECT_CALL(delegate_, GetMaximumSizeForWindow())
+          .WillOnce(Return(max_size));
+
+      EXPECT_CALL(*GetXdgSurface(), SetMinSize(100, 200))
+          .Times(has_min_size ? 1 : 0);
+      EXPECT_CALL(*GetXdgSurface(), SetMaxSize(300, 400))
+          .Times(has_max_size ? 1 : 0);
+
+      window_->SizeConstraintsChanged();
+      Sync();
+
+      VerifyAndClearExpectations();
+    }
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandWindowTest,
-                         ::testing::Values(kXdgShellV5));
+                         ::testing::Values(kXdgShellStable));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandWindowTest,
                          ::testing::Values(kXdgShellV6));

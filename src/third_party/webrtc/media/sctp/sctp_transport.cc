@@ -24,6 +24,7 @@ enum PreservedErrno {
 #include <memory>
 
 #include "absl/algorithm/container.h"
+#include "absl/base/attributes.h"
 #include "absl/types/optional.h"
 #include "media/base/codec.h"
 #include "media/base/media_channel.h"
@@ -49,8 +50,8 @@ namespace {
 static constexpr size_t kSctpMtu = 1200;
 
 // Set the initial value of the static SCTP Data Engines reference count.
-int g_usrsctp_usage_count = 0;
-rtc::GlobalLockPod g_usrsctp_lock_;
+ABSL_CONST_INIT int g_usrsctp_usage_count = 0;
+ABSL_CONST_INIT rtc::GlobalLock g_usrsctp_lock_;
 
 // DataMessageType is used for the SCTP "Payload Protocol Identifier", as
 // defined in http://tools.ietf.org/html/rfc4960#section-14.4
@@ -432,6 +433,19 @@ SctpTransport::SctpTransport(rtc::Thread* network_thread,
 SctpTransport::~SctpTransport() {
   // Close abruptly; no reset procedure.
   CloseSctpSocket();
+  // It's not strictly necessary to reset these fields to nullptr,
+  // but having these fields set to nullptr is a clear indication that
+  // object was destructed. There was a bug in usrsctp when it
+  // invoked OnSctpOutboundPacket callback for destructed SctpTransport,
+  // which caused obscure SIGSEGV on access to these fields,
+  // having this fields set to nullptr will make it easier to understand
+  // that SctpTransport was destructed and "use-after-free" bug happen.
+  // SIGSEGV error triggered on dereference these pointers will also
+  // be easier to understand due to 0x0 address. All of this assumes
+  // that ASAN is not enabled to detect "use-after-free", which is
+  // currently default configuration.
+  network_thread_ = nullptr;
+  transport_ = nullptr;
 }
 
 void SctpTransport::SetDtlsTransport(rtc::PacketTransportInternal* transport) {
@@ -703,7 +717,7 @@ bool SctpTransport::Connect() {
   }
   // Set the MTU and disable MTU discovery.
   // We can only do this after usrsctp_connect or it has no effect.
-  sctp_paddrparams params = {{0}};
+  sctp_paddrparams params = {};
   memcpy(&params.spp_address, &remote_sconn, sizeof(remote_sconn));
   params.spp_flags = SPP_PMTUD_DISABLE;
   // The MTU value provided specifies the space available for chunks in the
@@ -1095,9 +1109,18 @@ void SctpTransport::OnNotificationFromSctp(
     case SCTP_NOTIFICATIONS_STOPPED_EVENT:
       RTC_LOG(LS_INFO) << "SCTP_NOTIFICATIONS_STOPPED_EVENT";
       break;
-    case SCTP_SEND_FAILED_EVENT:
-      RTC_LOG(LS_INFO) << "SCTP_SEND_FAILED_EVENT";
+    case SCTP_SEND_FAILED_EVENT: {
+      const struct sctp_send_failed_event& ssfe =
+          notification.sn_send_failed_event;
+      RTC_LOG(LS_WARNING) << "SCTP_SEND_FAILED_EVENT: message with"
+                          << " PPID = "
+                          << rtc::NetworkToHost32(ssfe.ssfe_info.snd_ppid)
+                          << " SID = " << ssfe.ssfe_info.snd_sid
+                          << " flags = " << rtc::ToHex(ssfe.ssfe_info.snd_flags)
+                          << " failed to sent due to error = "
+                          << rtc::ToHex(ssfe.ssfe_error);
       break;
+    }
     case SCTP_STREAM_RESET_EVENT:
       OnStreamResetEvent(&notification.sn_strreset_event);
       break;
@@ -1111,6 +1134,9 @@ void SctpTransport::OnNotificationFromSctp(
       // keep around the last-transmitted set of SSIDs we wanted to close for
       // error recovery.  It doesn't seem likely to occur, and if so, likely
       // harmless within the lifetime of a single SCTP association.
+      break;
+    case SCTP_PEER_ADDR_CHANGE:
+      RTC_LOG(LS_INFO) << "SCTP_PEER_ADDR_CHANGE";
       break;
     default:
       RTC_LOG(LS_WARNING) << "Unknown SCTP event: "

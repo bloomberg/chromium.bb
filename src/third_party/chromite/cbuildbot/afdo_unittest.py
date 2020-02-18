@@ -234,7 +234,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     write_file = self.PatchObject(osutils, 'WriteFile')
 
     global_tmpdir = '/global/tmp'
-    self.PatchObject(osutils, 'GetGlobalTempDir', returns=global_tmpdir)
+    self.PatchObject(osutils, 'GetGlobalTempDir', return_value=global_tmpdir)
 
     merge_plan = {
         1: ('gs://cwp/1.afdo.xz', 'gs://bench/1.afdo.bz2'),
@@ -291,6 +291,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
         'uncompress_file',
         'compress_file',
         'upload',
+        'remove_indirect_call_targets',
     ])
 
     def MockList(*_args, **_kwargs):
@@ -320,10 +321,12 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
 
     mock_gs = mock.Mock()
     mock_gs.List = MockList
-    run_command = self.PatchObject(cros_build_lib, 'RunCommand')
+    run_command = self.PatchObject(cros_build_lib, 'run')
     uncompress_file = self.PatchObject(cros_build_lib, 'UncompressFile')
     compress_file = self.PatchObject(cros_build_lib, 'CompressFile')
     upload = self.PatchObject(afdo, 'GSUploadIfNotPresent')
+    remove_indirect_call_targets = self.PatchObject(
+        afdo, '_RemoveIndirectCallTargetsFromProfile')
     upload.return_value = upload_ok
     merged_name, uploaded = afdo.CreateAndUploadMergedAFDOProfile(
         mock_gs, '/buildroot', **kwargs)
@@ -332,7 +335,8 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
         run_command=run_command,
         uncompress_file=uncompress_file,
         compress_file=compress_file,
-        upload=upload)
+        upload=upload,
+        remove_indirect_call_targets=remove_indirect_call_targets)
 
   def testCreateAndUploadMergedAFDOProfileMergesBranchProfiles(self):
     unmerged_name = _benchmark_afdo_profile_name(major=10, build=13, patch=99)
@@ -352,8 +356,8 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
           compression_suffix=False)
 
     expected_unordered_args = [
-        '-output=/tmp/' + _afdo_name(
-            major=10, build=13, patch=2, merged_suffix=True),
+        '-output=/tmp/raw-' +
+        _afdo_name(major=10, build=13, patch=2, merged_suffix=True),
         '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=11),
         '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=12),
         '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=13),
@@ -369,8 +373,47 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(ordered_args, expected_ordered_args)
 
     unordered_args = args[len(expected_ordered_args):]
-    self.assertItemsEqual(unordered_args, expected_unordered_args)
+    self.assertCountEqual(unordered_args, expected_unordered_args)
     self.assertEqual(mocks.gs_context.Copy.call_count, 5)
+
+  def testCreateAndUploadMergedAFDOProfileRemovesIndirectCallTargets(self):
+    unmerged_name = _benchmark_afdo_profile_name(major=10, build=13, patch=99)
+
+    merged_name, uploaded, mocks = \
+        self.runCreateAndUploadMergedAFDOProfileOnce(
+            recent_to_merge=2,
+            unmerged_name=unmerged_name)
+    self.assertTrue(uploaded)
+
+    def _afdo_name(major, build, patch=0, merged_suffix=False):
+      return _benchmark_afdo_profile_name(
+          major=major,
+          build=build,
+          patch=patch,
+          merged_suffix=merged_suffix,
+          compression_suffix=False)
+
+    merge_output_name = 'raw-' + _afdo_name(
+        major=10, build=13, patch=2, merged_suffix=True)
+    self.assertNotEqual(merged_name, merge_output_name)
+
+    expected_unordered_args = [
+        '-output=/tmp/' + merge_output_name,
+        '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=13, patch=1),
+        '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=13, patch=2),
+    ]
+
+    # Note that these should all be in-chroot names.
+    expected_ordered_args = ['llvm-profdata', 'merge', '-sample']
+    args = mocks.run_command.call_args[0][0]
+    ordered_args = args[:len(expected_ordered_args)]
+    self.assertEqual(ordered_args, expected_ordered_args)
+
+    unordered_args = args[len(expected_ordered_args):]
+    self.assertCountEqual(unordered_args, expected_unordered_args)
+
+    mocks.remove_indirect_call_targets.assert_called_once_with(
+        '/tmp/' + merge_output_name, '/tmp/' + merged_name)
 
   def testCreateAndUploadMergedAFDOProfileWorksInTheHappyCase(self):
     merged_name, uploaded, mocks = \
@@ -389,23 +432,24 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     # Note that these should all be in-chroot names.
     expected_ordered_args = ['llvm-profdata', 'merge', '-sample']
 
-    def _afdo_name(major, build, merged_suffix=False):
+    def _afdo_name(major, build, patch=0, merged_suffix=False):
       return _benchmark_afdo_profile_name(
           major=major,
           build=build,
+          patch=patch,
           merged_suffix=merged_suffix,
           compression_suffix=False)
 
     input_afdo_names = [
-        _afdo_name(major=10, build=11),
-        _afdo_name(major=10, build=12),
         _afdo_name(major=10, build=13),
+        _afdo_name(major=10, build=13, patch=1),
+        _afdo_name(major=10, build=13, patch=2),
         _afdo_name(major=11, build=14),
         _afdo_name(major=11, build=15),
     ]
 
     output_afdo_name = _afdo_name(major=11, build=15, merged_suffix=True)
-    expected_unordered_args = ['-output=/tmp/' + output_afdo_name]
+    expected_unordered_args = ['-output=/tmp/raw-' + output_afdo_name]
     expected_unordered_args += [
         '-weighted-input=1,/tmp/' + n for n in input_afdo_names
     ]
@@ -415,7 +459,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(ordered_args, expected_ordered_args)
 
     unordered_args = args[len(expected_ordered_args):]
-    self.assertItemsEqual(unordered_args, expected_unordered_args)
+    self.assertCountEqual(unordered_args, expected_unordered_args)
     self.assertEqual(mocks.gs_context.Copy.call_count, 5)
 
     self.assertEqual(mocks.uncompress_file.call_count, 5)
@@ -457,7 +501,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
                                                      max_age_days=1000)
     self.assertTrue(uploaded)
     self.assertIsNotNone(merged_name)
-    self.assertEqual(mocks.gs_context.Copy.call_count, 7)
+    self.assertEqual(mocks.gs_context.Copy.call_count, 9)
 
   def testNoProfileIsGeneratedIfNoFilesBeforeMergedNameExist(self):
     merged_name, uploaded, _ = \
@@ -505,7 +549,8 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     # Note that these should all be in-chroot names.
     expected_ordered_args = ['llvm-profdata', 'merge', '-sample']
     expected_unordered_args = [
-        '-output=/tmp/' + _afdo_name(major=10, build=11, merged_suffix=True),
+        '-output=/tmp/raw-' +
+        _afdo_name(major=10, build=11, merged_suffix=True),
         '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=9),
         '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=10),
         '-weighted-input=1,/tmp/' + _afdo_name(major=10, build=11),
@@ -516,7 +561,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(ordered_args, expected_ordered_args)
 
     unordered_args = args[len(expected_ordered_args):]
-    self.assertItemsEqual(unordered_args, expected_unordered_args)
+    self.assertCountEqual(unordered_args, expected_unordered_args)
 
     self.assertEqual(mocks.gs_context.Copy.call_count, 3)
     self.assertEqual(mocks.uncompress_file.call_count, 3)
@@ -535,6 +580,63 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
       mocks.uncompress_file.assert_not_called()
       mocks.compress_file.assert_not_called()
       mocks.upload.assert_not_called()
+
+  def testRemoveIndirectCallTargetsActuallyAppearsToWork(self):
+    run_command = self.PatchObject(cros_build_lib, 'run')
+    path_exists = self.PatchObject(os.path, 'exists', return_value=False)
+
+    input_path = '/input/path'
+    input_path_txt = input_path + '.txt'
+    output_path = '/output/path'
+    output_path_txt = output_path + '.txt'
+    afdo._RemoveIndirectCallTargetsFromProfile(input_path, output_path)
+
+    self.assertEqual(run_command.call_count, 3)
+    merge_to_text, removal, merge_to_bin = run_command.call_args_list
+
+    path_exists.insert_called_with(os.path.join('/chroot', input_path_txt))
+    self.assertEqual(
+        merge_to_text,
+        mock.call(
+            [
+                'llvm-profdata',
+                'merge',
+                '-sample',
+                '-output=%s' % input_path_txt,
+                '-text',
+                input_path,
+            ],
+            enter_chroot=True,
+            print_cmd=True,
+        ))
+
+    # Probably no value in checking for the actual script name.
+    script_name = removal[0][0][0]
+    removal.assert_equal(
+        removal,
+        mock.call(
+            [
+                script_name,
+                '--input=%s' % input_path_txt,
+                '--output=%s' % output_path_txt,
+            ],
+            enter_chroot=True,
+            print_cmd=True,
+        ))
+
+    self.assertEqual(
+        merge_to_bin,
+        mock.call(
+            [
+                'llvm-profdata',
+                'merge',
+                '-sample',
+                '-output=' + output_path,
+                output_path_txt,
+            ],
+            enter_chroot=True,
+            print_cmd=True,
+        ))
 
   def testFindLatestProfile(self):
     versions = [[1, 0, 0, 0], [1, 2, 3, 4], [2, 2, 2, 2]]
@@ -578,8 +680,8 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
               url=(path % ('3.8', 'R61-9765.70-1506575230')), **unused),
       ]
 
-    self.PatchObject(gs.GSContext,
-                     'List', lambda _, path, **kwargs: MockGsList(path))
+    self.PatchObject(gs.GSContext, 'List',
+                     lambda _, path, **kwargs: MockGsList(path))
     profiles = afdo.GetAvailableKernelProfiles()
     self.assertIn([63, 9901, 21, 1506581597], profiles['4.4'])
     self.assertIn([61, 9765, 70, 1506575230], profiles['3.8'])
@@ -614,8 +716,8 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
           gs.GSListResult(url=os.path.join(path, f), **unused) for f in profiles
       ]
 
-    self.PatchObject(gs.GSContext,
-                     'List', lambda _, path, **kwargs: MockGsList(path))
+    self.PatchObject(gs.GSContext, 'List',
+                     lambda _, path, **kwargs: MockGsList(path))
 
     def _test(version, idx):
       unused = {

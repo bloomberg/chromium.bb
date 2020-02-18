@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_type.h"
@@ -38,8 +39,8 @@ SensorProviderProxyImpl::SensorProviderProxyImpl(
 SensorProviderProxyImpl::~SensorProviderProxyImpl() = default;
 
 void SensorProviderProxyImpl::Bind(
-    device::mojom::SensorProviderRequest request) {
-  binding_set_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<device::mojom::SensorProvider> receiver) {
+  receiver_set_.Add(this, std::move(receiver));
 }
 
 void SensorProviderProxyImpl::GetSensor(SensorType type,
@@ -57,9 +58,9 @@ void SensorProviderProxyImpl::GetSensor(SensorType type,
       return;
     }
 
-    connector->BindInterface(device::mojom::kServiceName,
-                             mojo::MakeRequest(&sensor_provider_));
-    sensor_provider_.set_connection_error_handler(base::BindOnce(
+    connector->Connect(device::mojom::kServiceName,
+                       sensor_provider_.BindNewPipeAndPassReceiver());
+    sensor_provider_.set_disconnect_handler(base::BindOnce(
         &SensorProviderProxyImpl::OnConnectionError, base::Unretained(this)));
   }
 
@@ -81,6 +82,23 @@ void SensorProviderProxyImpl::OnPermissionRequestCompleted(
   if (status != blink::mojom::PermissionStatus::GRANTED || !sensor_provider_) {
     std::move(callback).Run(SensorCreationResult::ERROR_NOT_ALLOWED, nullptr);
     return;
+  }
+
+  // Unblock the orientation sensors as these are tested to play well with
+  // back-forward cache. This is conservative.
+  // TODO(crbug.com/1027985): Test and unblock all of the sensors to work with
+  // back-forward cache.
+  switch (type) {
+    case SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES:
+    case SensorType::ABSOLUTE_ORIENTATION_QUATERNION:
+    case SensorType::RELATIVE_ORIENTATION_EULER_ANGLES:
+    case SensorType::RELATIVE_ORIENTATION_QUATERNION:
+      break;
+    default:
+      static_cast<RenderFrameHostImpl*>(render_frame_host_)
+          ->OnSchedulerTrackedFeatureUsed(
+              blink::scheduler::WebSchedulerTrackedFeature::
+                  kRequestedBackForwardCacheBlockedSensors);
   }
   sensor_provider_->GetSensor(type, std::move(callback));
 }
@@ -126,9 +144,9 @@ bool SensorProviderProxyImpl::CheckFeaturePolicies(SensorType type) const {
 }
 
 void SensorProviderProxyImpl::OnConnectionError() {
-  // Close all the upstream bindings to notify them of this failure as the
+  // Close all the bindings to notify them of this failure as the
   // GetSensorCallbacks will never be called.
-  binding_set_.CloseAllBindings();
+  receiver_set_.Clear();
   sensor_provider_.reset();
 }
 

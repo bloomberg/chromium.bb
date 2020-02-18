@@ -33,13 +33,19 @@ def cmd (command):
 		def timeout (p, is_killed):
 			is_killed['value'] = True
 			p.kill ()
-		timer = threading.Timer (2, timeout, [p, is_killed])
+		timeout_seconds = int (os.environ.get ("HB_TEST_SHAPE_FUZZER_TIMEOUT", "2"))
+		timer = threading.Timer (timeout_seconds, timeout, [p, is_killed])
 
 		try:
 			timer.start()
 			p.wait ()
 			tempf.seek (0)
-			text = tempf.read ().decode ("utf-8").strip ()
+			text = tempf.read ()
+
+			#TODO: Detect debug mode with a better way
+			is_debug_mode = b"SANITIZE" in text
+
+			text = "" if is_debug_mode else text.decode ("utf-8").strip ()
 			returncode = p.returncode
 		finally:
 			timer.cancel()

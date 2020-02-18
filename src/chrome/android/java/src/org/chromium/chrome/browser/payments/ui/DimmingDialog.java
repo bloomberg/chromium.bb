@@ -15,8 +15,6 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
-import android.support.v4.view.animation.FastOutLinearInInterpolator;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -25,12 +23,14 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.widget.FrameLayout;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
+import org.chromium.chrome.browser.ui.widget.animation.AnimatorProperties;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
-import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -188,7 +188,7 @@ import java.util.Collection;
             AnimatorSet alphaSet = new AnimatorSet();
             alphaSet.playTogether(scrimFader, alphaAnimator);
             alphaSet.setDuration(DIALOG_ENTER_ANIMATION_MS);
-            alphaSet.setInterpolator(new LinearOutSlowInInterpolator());
+            alphaSet.setInterpolator(Interpolators.LINEAR_OUT_SLOW_IN_INTERPOLATOR);
             alphaSet.start();
         }
     }
@@ -223,7 +223,7 @@ import java.util.Collection;
 
             AnimatorSet current = new AnimatorSet();
             current.setDuration(DIALOG_EXIT_ANIMATION_MS);
-            current.setInterpolator(new FastOutLinearInInterpolator());
+            current.setInterpolator(Interpolators.FAST_OUT_LINEAR_IN_INTERPOLATOR);
             current.playTogether(animators);
             current.addListener(this);
             current.start();

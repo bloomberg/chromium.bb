@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_container_view.h"
 
-#include "ash/shelf/shelf_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 
 namespace ash {
 
@@ -24,22 +24,20 @@ void ShelfContainerView::Initialize() {
 }
 
 gfx::Size ShelfContainerView::CalculatePreferredSize() const {
-  const int width =
-      ShelfView::GetSizeOfAppIcons(shelf_view_->last_visible_index() -
-                                       shelf_view_->first_visible_index() + 1,
-                                   false);
-  const int height = ShelfConstants::button_size();
-  return shelf_view_->shelf()->IsHorizontalAlignment()
-             ? gfx::Size(width, height)
-             : gfx::Size(height, width);
+  return CalculateIdealSize();
 }
 
 void ShelfContainerView::ChildPreferredSizeChanged(views::View* child) {
-  PreferredSizeChanged();
-}
+  // The CL (https://crrev.com/c/1876128) modifies View::PreferredSizeChanged
+  // by moving InvalidateLayout() after ChildPreferredSizeChanged(). Meanwhile,
+  // the parent view of ShelfContainerView overrides ChildPreferredSizeChanged
+  // with calling Layout(). Due to the CL above, ShelfContainerView is not
+  // labeled as |needs_layout_| when the parent view updates the layout. As a
+  // result, Calling Layout() in the parent view may not trigger the update in
+  // child view. So we have to invalidate the layout here explicitly.
+  InvalidateLayout();
 
-void ShelfContainerView::Layout() {
-  shelf_view_->SetBoundsRect(gfx::Rect(shelf_view_->GetPreferredSize()));
+  PreferredSizeChanged();
 }
 
 const char* ShelfContainerView::GetClassName() const {
@@ -50,6 +48,19 @@ void ShelfContainerView::TranslateShelfView(const gfx::Vector2dF& offset) {
   gfx::Transform transform_matrix;
   transform_matrix.Translate(-offset);
   shelf_view_->SetTransform(transform_matrix);
+  shelf_view_->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
+                                        true);
+}
+
+gfx::Size ShelfContainerView::CalculateIdealSize() const {
+  const int width =
+      ShelfView::GetSizeOfAppIcons(shelf_view_->last_visible_index() -
+                                       shelf_view_->first_visible_index() + 1,
+                                   false);
+  const int height = ShelfConfig::Get()->button_size();
+  return shelf_view_->shelf()->IsHorizontalAlignment()
+             ? gfx::Size(width, height)
+             : gfx::Size(height, width);
 }
 
 }  // namespace ash

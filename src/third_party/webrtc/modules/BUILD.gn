@@ -15,7 +15,6 @@ group("modules") {
     "audio_device",
     "audio_mixer",
     "audio_processing",
-    "bitrate_controller",
     "congestion_controller",
     "pacing",
     "remote_bitrate_estimator",
@@ -40,7 +39,7 @@ rtc_source_set("module_api_public") {
   ]
 }
 
-rtc_source_set("module_api") {
+rtc_library("module_api") {
   visibility = [ "*" ]
   sources = [
     "include/module.h",
@@ -48,12 +47,6 @@ rtc_source_set("module_api") {
     "include/module_common_types.h",
   ]
   deps = [
-    ":module_api_public",
-    ":module_fec_api",
-    "..:webrtc_common",
-    "../api:rtp_headers",
-    "../api/video:video_frame_type",
-    "../modules/rtp_rtcp:rtp_video_header",
     "../rtc_base:safe_conversions",
     "../rtc_base/system:rtc_export",
   ]
@@ -236,7 +229,7 @@ if (rtc_include_tests) {
       "audio_mixer:audio_mixer_unittests",
       "audio_processing:audio_processing_unittests",
       "audio_processing/aec3:aec3_unittests",
-      "bitrate_controller:bitrate_controller_unittests",
+      "audio_processing/ns:ns_unittests",
       "congestion_controller:congestion_controller_unittests",
       "pacing:pacing_unittests",
       "remote_bitrate_estimator:remote_bitrate_estimator_unittests",

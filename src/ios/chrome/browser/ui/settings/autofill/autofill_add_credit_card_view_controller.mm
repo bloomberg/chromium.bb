@@ -6,10 +6,12 @@
 
 #include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -21,6 +23,12 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+NSString* const kAddCreditCardViewID = @"kAddCreditCardViewID";
+NSString* const kSettingsAddCreditCardButtonID =
+    @"kSettingsAddCreditCardButtonID";
+NSString* const kSettingsAddCreditCardCancelButtonID =
+    @"kSettingsAddCreditCardCancelButtonID";
 
 namespace {
 
@@ -40,7 +48,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface AutofillAddCreditCardViewController ()
+@interface AutofillAddCreditCardViewController () <
+    TableViewTextEditItemDelegate>
 
 // The AddCreditCardViewControllerDelegate for this ViewController.
 @property(nonatomic, weak) id<AddCreditCardViewControllerDelegate> delegate;
@@ -59,6 +68,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // The expiration year set from the CreditCardConsumer protocol, used to update
 // the UI.
 @property(nonatomic, strong) NSString* expirationYear;
+
+// The card number scanned using the credit card scanner.
+@property(nonatomic, strong) NSString* scannedCardNumber;
+
+// The expiration month scanned using the credit card scanner.
+@property(nonatomic, strong) NSString* scannedExpirationMonth;
+
+// The expiration year scanned using the credit card scanner.
+@property(nonatomic, strong) NSString* scannedExpirationYear;
 
 @end
 
@@ -83,6 +101,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super viewDidLoad];
 
   self.view.backgroundColor = UIColor.cr_systemGroupedBackgroundColor;
+  self.tableView.accessibilityIdentifier = kAddCreditCardViewID;
 
   self.navigationItem.title = l10n_util::GetNSString(
       IDS_IOS_CREDIT_CARD_SETTINGS_ADD_PAYMENT_METHOD_TITLE);
@@ -93,6 +112,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
               style:UIBarButtonItemStylePlain
              target:self
              action:@selector(handleCancelButton:)];
+  self.navigationItem.leftBarButtonItem.accessibilityIdentifier =
+      kSettingsAddCreditCardCancelButtonID;
 
   self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_ADD_BUTTON)
@@ -100,6 +121,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
              target:self
              action:@selector(didTapAddButton:)];
   self.navigationItem.rightBarButtonItem.enabled = NO;
+  self.navigationItem.rightBarButtonItem.accessibilityIdentifier =
+      kSettingsAddCreditCardButtonID;
 
   [self loadModel];
 }
@@ -178,6 +201,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cameraButtonItem.text = l10n_util::GetNSString(
       IDS_IOS_AUTOFILL_ADD_CREDIT_CARD_OPEN_CAMERA_BUTTON_LABEL);
   cameraButtonItem.textAlignment = NSTextAlignmentCenter;
+  cameraButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
   if (base::FeatureList::IsEnabled(kCreditCardScanner)) {
     if (@available(iOS 13, *)) {
       [model addSectionWithIdentifier:SectionIdentifierCameraButton];
@@ -209,6 +233,66 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return nil;
 }
 
+#pragma mark - TableViewTextEditItemDelegate
+
+- (void)tableViewItemDidBeginEditing:
+    (TableViewTextEditItem*)tableViewTextEditItem {
+  // Sets a field to have valid text when a user begins editing so that the
+  // error icon is not visible while a user edits a field.
+  tableViewTextEditItem.hasValidText = YES;
+  [self reconfigureCellsForItems:@[ tableViewTextEditItem ]];
+}
+
+- (void)tableViewItemDidChange:(TableViewTextEditItem*)tableViewTextEditItem {
+  // Checks the validity of the form and enables/disables the add button when
+  // the user types a character that makes the form valid/invalid.
+  [self updateCreditCardData];
+
+  self.navigationItem.rightBarButtonItem.enabled =
+      [self.delegate addCreditCardViewController:self
+                         isValidCreditCardNumber:self.cardNumber
+                                 expirationMonth:self.expirationMonth
+                                  expirationYear:self.expirationYear];
+
+  [self reconfigureCellsForItems:@[ tableViewTextEditItem ]];
+}
+
+- (void)tableViewItemDidEndEditing:
+    (TableViewTextEditItem*)tableViewTextEditItem {
+  // Checks the validity of the field when a user ends editing and updates the
+  // cells to display the error icon if the text is invalid.
+  [self updateCreditCardData];
+
+  // Considers a textfield to be valid if it has no data.
+  if (tableViewTextEditItem.textFieldValue.length == 0) {
+    tableViewTextEditItem.hasValidText = YES;
+    [self reconfigureCellsForItems:@[ tableViewTextEditItem ]];
+    return;
+  }
+
+  switch (tableViewTextEditItem.type) {
+    case ItemTypeCardNumber:
+      tableViewTextEditItem.hasValidText =
+          [self.delegate addCreditCardViewController:self
+                             isValidCreditCardNumber:self.cardNumber];
+      break;
+    case ItemTypeExpirationMonth:
+      tableViewTextEditItem.hasValidText =
+          [self.delegate addCreditCardViewController:self
+                    isValidCreditCardExpirationMonth:self.expirationMonth];
+      break;
+    case ItemTypeExpirationYear:
+      tableViewTextEditItem.hasValidText =
+          [self.delegate addCreditCardViewController:self
+                     isValidCreditCardExpirationYear:self.expirationYear];
+      break;
+    default:
+      // For the 'Name on card' textfield.
+      tableViewTextEditItem.hasValidText = YES;
+  }
+  [self reconfigureCellsForItems:@[ tableViewTextEditItem ]];
+}
+
 #pragma mark - UITableViewDataSource
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
@@ -223,13 +307,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       base::mac::ObjCCast<TableViewTextEditCell>(cell);
   editCell.textField.delegate = self;
   editCell.selectionStyle = UITableViewCellSelectionStyleNone;
-  // The cell could be reused by TableView.
-  [editCell.textField removeTarget:self
-                            action:@selector(textFieldDidChange:)
-                  forControlEvents:UIControlEventEditingChanged];
-  [editCell.textField addTarget:self
-                         action:@selector(textFieldDidChange:)
-               forControlEvents:UIControlEventEditingChanged];
 
   return cell;
 }
@@ -240,18 +317,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
             expirationMonth:(NSString*)expirationMonth
              expirationYear:(NSString*)expirationYear {
   if (cardNumber) {
+    self.scannedCardNumber = cardNumber;
     [self updateCellForItemType:ItemTypeCardNumber
             inSectionIdentifier:SectionIdentifierCreditCardDetails
                        withText:cardNumber];
   }
 
   if (expirationMonth) {
+    self.scannedExpirationMonth = expirationMonth;
     [self updateCellForItemType:ItemTypeExpirationMonth
             inSectionIdentifier:SectionIdentifierCreditCardDetails
                        withText:expirationMonth];
   }
 
   if (expirationYear) {
+    self.scannedExpirationYear = expirationYear;
     [self updateCellForItemType:ItemTypeExpirationYear
             inSectionIdentifier:SectionIdentifierCreditCardDetails
                        withText:expirationYear];
@@ -263,6 +343,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Handles Add button to add a new credit card.
 - (void)didTapAddButton:(id)sender {
   [self updateCreditCardData];
+
+  // Metrics logged if the data scanned using the credit card scanner is
+  // modified by the user.
+  if (self.scannedCardNumber && self.cardNumber != self.scannedCardNumber) {
+    base::RecordAction(base::UserMetricsAction(
+        "MobileCreditCardScannerScannedCardNumberModified"));
+  }
+  if (self.scannedExpirationMonth &&
+      self.expirationMonth != self.scannedExpirationMonth) {
+    base::RecordAction(base::UserMetricsAction(
+        "MobileCreditCardScannerScannedExpiryMonthModified"));
+  }
+  if (self.scannedExpirationYear &&
+      self.expirationYear != self.scannedExpirationYear) {
+    base::RecordAction(base::UserMetricsAction(
+        "MobileCreditCardScannerScannedExpiryYearModified"));
+  }
 
   [self.delegate addCreditCardViewController:self
                  addCreditCardWithHolderName:self.cardHolderName
@@ -316,12 +413,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self reconfigureCellsForItems:@[ item ]];
 }
 
-// Updates the status of the "Add" button based on the content of the
-// textfields.
-- (void)textFieldDidChange:(id)sender {
-  self.navigationItem.rightBarButtonItem.enabled = [self tableViewHasUserInput];
-}
-
 // Dimisses this view controller when Cancel button is tapped.
 - (void)handleCancelButton:(id)sender {
   [self.delegate addCreditCardViewControllerDidCancel:self];
@@ -336,11 +427,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                   autofillUIType:
                                       (AutofillUIType)autofillUIType {
   AutofillEditItem* item = [[AutofillEditItem alloc] initWithType:itemType];
+  item.delegate = self;
   item.textFieldName = textFieldName;
   item.textFieldValue = textFieldValue;
   item.textFieldPlaceholder = textFieldPlaceholder;
   item.keyboardType = keyboardType;
-  item.hideEditIcon = NO;
+  item.hideIcon = NO;
   item.textFieldEnabled = YES;
   item.autofillUIType = autofillUIType;
   return item;
@@ -348,6 +440,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Presents the credit card scanner camera screen.
 - (void)handleCameraButton {
+  base::RecordAction(
+      base::UserMetricsAction("MobileAddCreditCard.UseCameraButton"));
   [self.delegate addCreditCardViewControllerDidUseCamera:self];
 }
 

@@ -32,7 +32,6 @@
 
 #include <memory>
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
@@ -46,7 +45,6 @@
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
-#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -155,12 +153,11 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebString& name,
     const WebString& user_agent,
     const WebString& content_security_policy,
-    mojom::ContentSecurityPolicyType policy_type,
+    network::mojom::ContentSecurityPolicyType policy_type,
     network::mojom::IPAddressSpace creation_address_space,
     const base::UnguessableToken& appcache_host_id,
     const base::UnguessableToken& devtools_worker_token,
     mojo::ScopedMessagePipeHandle content_settings_handle,
-    mojo::ScopedMessagePipeHandle interface_provider,
     mojo::ScopedMessagePipeHandle browser_interface_broker,
     bool pause_worker_context_on_start) {
   DCHECK(IsMainThread());
@@ -181,10 +178,10 @@ void WebSharedWorkerImpl::StartWorkerContext(
           network::mojom::ReferrerPolicy::kDefault,
           /*outgoing_referrer=*/String(),
           CalculateHttpsState(starter_origin.get()),
-          AllowedByNosniff::MimeTypeCheck::kLax, creation_address_space,
+          AllowedByNosniff::MimeTypeCheck::kLaxForWorker,
+          creation_address_space,
           /*insecure_request_policy=*/kBlockAllMixedContent,
-          FetchClientSettingsObject::InsecureNavigationsSet(),
-          /*mixed_autoupgrade_opt_out=*/false);
+          FetchClientSettingsObject::InsecureNavigationsSet());
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
       client_->CreateWorkerFetchContext();
@@ -215,7 +212,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
       std::move(web_worker_fetch_context), Vector<CSPHeaderAndType>(),
       outside_settings_object->GetReferrerPolicy(),
       outside_settings_object->GetSecurityOrigin(), starter_secure_context,
-      outside_settings_object->GetHttpsState(), CreateWorkerClients(),
+      outside_settings_object->GetHttpsState(),
+      MakeGarbageCollected<WorkerClients>(),
       std::make_unique<SharedWorkerContentSettingsProxy>(
           mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
               std::move(content_settings_handle), 0u)),
@@ -223,8 +221,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
       nullptr /* origin_trial_tokens */, devtools_worker_token,
       std::move(worker_settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_response_map */,
-      service_manager::mojom::blink::InterfaceProviderPtrInfo(
-          std::move(interface_provider), 0u),
       mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>(
           std::move(browser_interface_broker),
           mojom::blink::BrowserInterfaceBroker::Version_),
@@ -260,13 +256,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
   // We are now ready to inspect worker thread.
   client_->WorkerReadyForInspection(devtools_agent_remote.PassPipe(),
                                     devtools_agent_host_receiver.PassPipe());
-}
-
-WorkerClients* WebSharedWorkerImpl::CreateWorkerClients() {
-  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
-  CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
-      *worker_clients);
-  return worker_clients;
 }
 
 void WebSharedWorkerImpl::TerminateWorkerContext() {

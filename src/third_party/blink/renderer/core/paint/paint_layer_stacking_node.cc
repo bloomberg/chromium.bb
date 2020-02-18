@@ -88,11 +88,13 @@ void PaintLayerStackingNode::DirtyZOrderLists() {
   pos_z_order_list_.clear();
   neg_z_order_list_.clear();
 
-  for (auto& entry : layer_to_overlay_scrollbars_painting_after_.Values()) {
+  for (auto& entry :
+       layer_to_overlay_overflow_controls_painting_after_.Values()) {
     for (PaintLayer* layer : entry)
-      layer->SetNeedsReorderOverlayScrollbars(false);
+      layer->SetNeedsReorderOverlayOverflowControls(false);
   }
-  layer_to_overlay_scrollbars_painting_after_.clear();
+  layer_to_overlay_overflow_controls_painting_after_.clear();
+  overlay_overflow_controls_reordered_list_.clear();
 
   z_order_lists_dirty_ = true;
 
@@ -154,7 +156,7 @@ void PaintLayerStackingNode::RebuildZOrderLists() {
 #endif
   DCHECK(z_order_lists_dirty_);
 
-  layer_.SetNeedsReorderOverlayScrollbars(false);
+  layer_.SetNeedsReorderOverlayOverflowControls(false);
   for (PaintLayer* child = layer_.FirstChild(); child;
        child = child->NextSibling())
     CollectLayers(*child, nullptr);
@@ -196,7 +198,7 @@ void PaintLayerStackingNode::RebuildZOrderLists() {
 
 void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer,
                                            HighestLayers* highest_layers) {
-  paint_layer.SetNeedsReorderOverlayScrollbars(false);
+  paint_layer.SetNeedsReorderOverlayOverflowControls(false);
 
   if (paint_layer.IsInTopLayer())
     return;
@@ -216,10 +218,10 @@ void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer,
     return;
 
   base::Optional<HighestLayers> subtree_highest_layers;
-  bool has_overlay_scrollbars =
+  bool has_overlay_overflow_controls =
       paint_layer.GetScrollableArea() &&
-      paint_layer.GetScrollableArea()->HasOverlayScrollbars();
-  if (has_overlay_scrollbars)
+      paint_layer.GetScrollableArea()->HasOverlayOverflowControls();
+  if (has_overlay_overflow_controls)
     subtree_highest_layers.emplace();
 
   for (PaintLayer* child = paint_layer.FirstChild(); child;
@@ -228,24 +230,25 @@ void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer,
                                                  : highest_layers);
   }
 
-  if (has_overlay_scrollbars) {
-    const PaintLayer* layer_to_paint_overlay_scrollbars_after =
+  if (has_overlay_overflow_controls) {
+    const PaintLayer* layer_to_paint_overlay_overflow_controls_after =
         subtree_highest_layers->highest_in_flow_stacked;
     if (object.CanContainFixedPositionObjects()) {
-      SetIfHigher(layer_to_paint_overlay_scrollbars_after,
+      SetIfHigher(layer_to_paint_overlay_overflow_controls_after,
                   subtree_highest_layers->highest_fixed_position);
     }
     if (object.CanContainAbsolutePositionObjects()) {
-      SetIfHigher(layer_to_paint_overlay_scrollbars_after,
+      SetIfHigher(layer_to_paint_overlay_overflow_controls_after,
                   subtree_highest_layers->highest_absolute_position);
     }
-    if (layer_to_paint_overlay_scrollbars_after) {
-      layer_to_overlay_scrollbars_painting_after_
-          .insert(layer_to_paint_overlay_scrollbars_after, PaintLayers())
+    if (layer_to_paint_overlay_overflow_controls_after) {
+      layer_to_overlay_overflow_controls_painting_after_
+          .insert(layer_to_paint_overlay_overflow_controls_after, PaintLayers())
           .stored_value->value.push_back(&paint_layer);
+      overlay_overflow_controls_reordered_list_.push_back(&paint_layer);
     }
-    paint_layer.SetNeedsReorderOverlayScrollbars(
-        !!layer_to_paint_overlay_scrollbars_after);
+    paint_layer.SetNeedsReorderOverlayOverflowControls(
+        !!layer_to_paint_overlay_overflow_controls_after);
 
     if (highest_layers)
       highest_layers->Merge(*subtree_highest_layers);

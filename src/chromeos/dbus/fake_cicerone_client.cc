@@ -38,6 +38,12 @@ FakeCiceroneClient::FakeCiceroneClient() {
 
   import_lxd_container_response_.set_status(
       vm_tools::cicerone::ImportLxdContainerResponse::IMPORTING);
+
+  upgrade_container_response_.set_status(
+      vm_tools::cicerone::UpgradeContainerResponse::STARTED);
+
+  cancel_upgrade_container_response_.set_status(
+      vm_tools::cicerone::CancelUpgradeContainerResponse::CANCELLED);
 }
 
 FakeCiceroneClient::~FakeCiceroneClient() = default;
@@ -92,6 +98,14 @@ bool FakeCiceroneClient::IsExportLxdContainerProgressSignalConnected() {
 
 bool FakeCiceroneClient::IsImportLxdContainerProgressSignalConnected() {
   return is_import_lxd_container_progress_signal_connected_;
+}
+
+bool FakeCiceroneClient::IsApplyAnsiblePlaybookProgressSignalConnected() {
+  return is_apply_ansible_playbook_progress_signal_connected_;
+}
+
+bool FakeCiceroneClient::IsUpgradeContainerProgressSignalConnected() {
+  return is_upgrade_container_progress_signal_connected_;
 }
 
 // Currently no tests need to change the output of this method. If you want to
@@ -197,21 +211,19 @@ void FakeCiceroneClient::StartLxdContainer(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), start_lxd_container_response_));
-  if (request.async()) {
-    // Trigger CiceroneClient::Observer::NotifyLxdContainerStartingSignal.
-    vm_tools::cicerone::LxdContainerStartingSignal signal;
-    signal.set_owner_id(request.owner_id());
-    signal.set_vm_name(request.vm_name());
-    signal.set_container_name(request.container_name());
-    signal.set_status(lxd_container_starting_signal_status_);
-    signal.mutable_os_release()->CopyFrom(lxd_container_os_release_);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&FakeCiceroneClient::NotifyLxdContainerStarting,
-                       base::Unretained(this), std::move(signal)));
-  }
-  if (lxd_container_starting_signal_status_ ==
-      vm_tools::cicerone::LxdContainerStartingSignal::STARTED) {
+
+  // Trigger CiceroneClient::Observer::NotifyLxdContainerStartingSignal.
+  vm_tools::cicerone::LxdContainerStartingSignal signal;
+  signal.set_owner_id(request.owner_id());
+  signal.set_vm_name(request.vm_name());
+  signal.set_container_name(request.container_name());
+  signal.set_status(lxd_container_starting_signal_status_);
+  signal.mutable_os_release()->CopyFrom(lxd_container_os_release_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyLxdContainerStarting,
+                                base::Unretained(this), std::move(signal)));
+
+  if (send_container_started_signal_) {
     // Trigger CiceroneClient::Observer::NotifyContainerStartedSignal.
     vm_tools::cicerone::ContainerStartedSignal signal;
     signal.set_owner_id(request.owner_id());
@@ -280,6 +292,32 @@ void FakeCiceroneClient::CancelImportLxdContainer(
                                 cancel_import_lxd_container_response_));
 }
 
+void FakeCiceroneClient::ApplyAnsiblePlaybook(
+    const vm_tools::cicerone::ApplyAnsiblePlaybookRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), apply_ansible_playbook_response_));
+}
+
+void FakeCiceroneClient::UpgradeContainer(
+    const vm_tools::cicerone::UpgradeContainerRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::UpgradeContainerResponse> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), upgrade_container_response_));
+}
+
+void FakeCiceroneClient::CancelUpgradeContainer(
+    const vm_tools::cicerone::CancelUpgradeContainerRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::CancelUpgradeContainerResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), cancel_upgrade_container_response_));
+}
+
 void FakeCiceroneClient::NotifyLxdContainerCreated(
     const vm_tools::cicerone::LxdContainerCreatedSignal& proto) {
   for (auto& observer : observer_list_) {
@@ -340,6 +378,20 @@ void FakeCiceroneClient::NotifyPendingAppListUpdates(
     const vm_tools::cicerone::PendingAppListUpdatesSignal& proto) {
   for (auto& observer : observer_list_) {
     observer.OnPendingAppListUpdates(proto);
+  }
+}
+
+void FakeCiceroneClient::NotifyApplyAnsiblePlaybookProgress(
+    const vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal& signal) {
+  for (auto& observer : observer_list_) {
+    observer.OnApplyAnsiblePlaybookProgress(signal);
+  }
+}
+
+void FakeCiceroneClient::NotifyUpgradeContainerProgress(
+    const vm_tools::cicerone::UpgradeContainerProgressSignal& signal) {
+  for (auto& observer : observer_list_) {
+    observer.OnUpgradeContainerProgress(signal);
   }
 }
 

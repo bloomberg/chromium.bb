@@ -86,7 +86,7 @@ class AppBannerManagerTest : public AppBannerManager {
     // Fake the call to ReportStatus here - this is usually called in
     // platform-specific code which is not exposed here.
     ReportStatus(SHOWING_WEB_APP_BANNER);
-    RecordDidShowBanner("AppBanner.WebApp.Shown");
+    RecordDidShowBanner();
 
     ASSERT_FALSE(banner_shown_.get());
     banner_shown_.reset(new bool(true));
@@ -259,6 +259,22 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
       CreateAppBannerManager(browser()));
   RunBannerTest(browser(), manager.get(),
                 GetBannerURLWithManifest("/banners/manifest_no_type_caps.json"),
+                base::nullopt);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerSvgIcon) {
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  RunBannerTest(browser(), manager.get(),
+                GetBannerURLWithManifest("/banners/manifest_svg_icon.json"),
+                base::nullopt);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerWebPIcon) {
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  RunBannerTest(browser(), manager.get(),
+                GetBannerURLWithManifest("/banners/manifest_webp_icon.json"),
                 base::nullopt);
 }
 

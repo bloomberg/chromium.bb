@@ -46,13 +46,9 @@ class NavigatorTest : public RenderViewHostImplTestHarness {
   using SiteInstanceDescriptor = RenderFrameHostManager::SiteInstanceDescriptor;
   using SiteInstanceRelation = RenderFrameHostManager::SiteInstanceRelation;
 
-  void SetUp() override {
-    RenderViewHostImplTestHarness::SetUp();
-  }
+  void SetUp() override { RenderViewHostImplTestHarness::SetUp(); }
 
-  void TearDown() override {
-    RenderViewHostImplTestHarness::TearDown();
-  }
+  void TearDown() override { RenderViewHostImplTestHarness::TearDown(); }
 
   TestNavigationURLLoader* GetLoaderForNavigationRequest(
       NavigationRequest* request) const {
@@ -93,7 +89,7 @@ TEST_F(NavigatorTest, SimpleBrowserInitiatedNavigationFromNonLiveRenderer) {
 
   // As there's no live renderer the navigation should not wait for a
   // beforeUnload ACK from the renderer and start right away.
-  EXPECT_EQ(NavigationRequest::STARTED, request->state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, request->state());
   ASSERT_TRUE(GetLoaderForNavigationRequest(request));
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 
@@ -146,7 +142,7 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedSameSiteNavigation) {
 
   // The navigation is immediately started as there's no need to wait for
   // beforeUnload to be executed.
-  EXPECT_EQ(NavigationRequest::STARTED, request->state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, request->state());
   EXPECT_FALSE(request->common_params().has_user_gesture);
   EXPECT_EQ(kUrl2, request->common_params().url);
   EXPECT_FALSE(request->browser_initiated());
@@ -193,7 +189,7 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
 
   // The navigation is immediately started as there's no need to wait for
   // beforeUnload to be executed.
-  EXPECT_EQ(NavigationRequest::STARTED, request->state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, request->state());
   EXPECT_EQ(kUrl2, request->common_params().url);
   EXPECT_FALSE(request->browser_initiated());
   if (AreAllSitesIsolatedForTesting() ||
@@ -289,14 +285,14 @@ TEST_F(NavigatorTest, BeginNavigation) {
   TestNavigationURLLoader* subframe_loader =
       GetLoaderForNavigationRequest(subframe_request);
   ASSERT_TRUE(subframe_loader);
-  EXPECT_EQ(NavigationRequest::STARTED, subframe_request->state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, subframe_request->state());
   EXPECT_EQ(kUrl2, subframe_request->common_params().url);
   EXPECT_EQ(kUrl2, subframe_loader->request_info()->common_params->url);
   // First party for cookies url should be that of the main frame.
   EXPECT_EQ(kUrl1, subframe_loader->request_info()->site_for_cookies);
 
-  url::Origin origin = url::Origin::Create(kUrl1);
-  EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
+  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(kUrl1),
+                                     url::Origin::Create(kUrl2)),
             subframe_loader->request_info()->network_isolation_key);
   EXPECT_FALSE(subframe_loader->request_info()->is_main_frame);
   EXPECT_TRUE(subframe_loader->request_info()->parent_is_main_frame);
@@ -338,7 +334,7 @@ TEST_F(NavigatorTest, BeginNavigation) {
   EXPECT_TRUE(main_request->browser_initiated());
   // BeforeUnloadACK was received from the renderer so the navigation should
   // have started.
-  EXPECT_EQ(NavigationRequest::STARTED, main_request->state());
+  EXPECT_EQ(NavigationRequest::WILL_START_REQUEST, main_request->state());
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(root_node));
 
   // As the main frame hasn't yet committed the subframe still exists. Thus, the
@@ -373,12 +369,12 @@ TEST_F(NavigatorTest, NoContent) {
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
 
   // Commit an HTTP 204 response.
-  scoped_refptr<network::ResourceResponse> response(
-      new network::ResourceResponse);
+  auto response = network::mojom::URLResponseHead::New();
   const char kNoContentHeaders[] = "HTTP/1.1 204 No Content\0\0";
-  response->head.headers = new net::HttpResponseHeaders(
+  response->headers = new net::HttpResponseHeaders(
       std::string(kNoContentHeaders, base::size(kNoContentHeaders)));
-  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(response);
+  GetLoaderForNavigationRequest(main_request)
+      ->CallOnResponseStarted(std::move(response));
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.
@@ -399,11 +395,12 @@ TEST_F(NavigatorTest, NoContent) {
   EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
 
   // Commit an HTTP 205 response.
-  response = new network::ResourceResponse;
+  response = network::mojom::URLResponseHead::New();
   const char kResetContentHeaders[] = "HTTP/1.1 205 Reset Content\0\0";
-  response->head.headers = new net::HttpResponseHeaders(
+  response->headers = new net::HttpResponseHeaders(
       std::string(kResetContentHeaders, base::size(kResetContentHeaders)));
-  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(response);
+  GetLoaderForNavigationRequest(main_request)
+      ->CallOnResponseStarted(std::move(response));
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.

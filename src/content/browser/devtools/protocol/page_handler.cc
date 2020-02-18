@@ -107,14 +107,13 @@ std::unique_ptr<Page::ScreencastFrameMetadata> BuildScreencastFrameMetadata(
     float device_scale_factor,
     float page_scale_factor,
     const gfx::Vector2dF& root_scroll_offset,
-    float top_controls_height,
-    float top_controls_shown_ratio) {
+    float top_controls_visible_height) {
   if (surface_size.IsEmpty() || device_scale_factor == 0)
     return nullptr;
 
   const gfx::SizeF content_size_dip =
       gfx::ScaleSize(gfx::SizeF(surface_size), 1 / device_scale_factor);
-  float top_offset_dip = top_controls_height * top_controls_shown_ratio;
+  float top_offset_dip = top_controls_visible_height;
   gfx::Vector2dF root_scroll_offset_dip = root_scroll_offset;
   if (IsUseZoomForDSFEnabled()) {
     top_offset_dip /= device_scale_factor;
@@ -157,8 +156,7 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
                           double* device_scale_factor,
                           double* page_scale_factor,
                           gfx::Vector2dF* root_scroll_offset,
-                          double* top_controls_height,
-                          double* top_controls_shown_ratio) {
+                          double* top_controls_visible_height) {
   // Get metadata from |frame| and ensure that no metadata is missing.
   bool success = true;
   double root_scroll_offset_x, root_scroll_offset_y;
@@ -171,10 +169,8 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
   success &= frame.metadata()->GetDouble(
       media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_Y, &root_scroll_offset_y);
   success &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::TOP_CONTROLS_HEIGHT, top_controls_height);
-  success &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::TOP_CONTROLS_SHOWN_RATIO,
-      top_controls_shown_ratio);
+      media::VideoFrameMetadata::TOP_CONTROLS_VISIBLE_HEIGHT,
+      top_controls_visible_height);
   DCHECK(success);
 
   root_scroll_offset->set_x(root_scroll_offset_x);
@@ -184,7 +180,6 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
 }  // namespace
 
 PageHandler::PageHandler(EmulationHandler* emulation_handler,
-                         void** active_file_chooser_interceptor,
                          bool allow_set_download_behavior,
                          bool allow_file_access)
     : DevToolsDomainHandler(Page::Metainfo::domainName),
@@ -202,9 +197,7 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler,
       last_surface_size_(gfx::Size()),
       host_(nullptr),
       emulation_handler_(emulation_handler),
-      active_file_chooser_interceptor_(active_file_chooser_interceptor),
-      allow_set_download_behavior_(allow_set_download_behavior),
-      allow_file_access_(allow_file_access) {
+      allow_set_download_behavior_(allow_set_download_behavior) {
   bool create_video_consumer = true;
 #ifdef OS_ANDROID
   // Video capture doesn't work on Android WebView. Use CopyFromSurface instead.
@@ -271,7 +264,7 @@ void PageHandler::Wire(UberDispatcher* dispatcher) {
 }
 
 void PageHandler::OnSynchronousSwapCompositorFrame(
-    const DevToolsFrameMetadata& frame_metadata) {
+    const cc::RenderFrameMetadata& frame_metadata) {
   // Cache |frame_metadata_| as InnerSwapCompositorFrame may also be called on
   // screencast start.
   frame_metadata_ = frame_metadata;
@@ -353,8 +346,6 @@ Response PageHandler::Enable() {
 Response PageHandler::Disable() {
   enabled_ = false;
   screencast_enabled_ = false;
-
-  SetInterceptFileChooserDialog(false);
 
   if (video_consumer_)
     video_consumer_->StopCapture();
@@ -514,9 +505,9 @@ void PageHandler::NavigationReset(NavigationRequest* navigation_request) {
     return;
   std::string frame_id =
       navigation_request->frame_tree_node()->devtools_frame_token().ToString();
-  bool success = navigation_request->net_error() == net::OK;
+  bool success = navigation_request->GetNetErrorCode() == net::OK;
   std::string error_string =
-      net::ErrorToString(navigation_request->net_error());
+      net::ErrorToString(navigation_request->GetNetErrorCode());
   navigate_callback->second->sendSuccess(
       frame_id,
       Maybe<std::string>(
@@ -614,114 +605,6 @@ Response PageHandler::ResetNavigationHistory() {
   NavigationController& controller = web_contents->GetController();
   controller.DeleteNavigationEntries(base::BindRepeating(&ReturnTrue));
   return Response::OK();
-}
-
-Response PageHandler::SetInterceptFileChooserDialog(bool enabled) {
-  if (!allow_file_access_)
-    return Response::Error("Not Allowed");
-  if (*active_file_chooser_interceptor_ == this && enabled)
-    return Response::OK();
-  if (*active_file_chooser_interceptor_ &&
-      *active_file_chooser_interceptor_ != this) {
-    return enabled
-               ? Response::Error(
-                     "Cannot enable file chooser interception because other "
-                     "protocol client already intercepts it")
-               : Response::Error("File chooser interception was not enabled");
-  }
-  *active_file_chooser_interceptor_ = enabled ? this : nullptr;
-  if (!enabled && file_chooser_listener_)
-    FallbackOrCancelFileChooser();
-  return Response::OK();
-}
-
-Response PageHandler::HandleFileChooser(
-    const std::string& action,
-    Maybe<protocol::Array<std::string>> optional_files) {
-  if (!host_)
-    return Response::Error("Cannot resolve file paths");
-  if (!file_chooser_listener_)
-    return Response::Error("No pending file chooser");
-
-  if (action == Page::HandleFileChooser::ActionEnum::Fallback) {
-    if (optional_files.isJust()) {
-      return Response::InvalidParams(
-          "Either 'ignore' or 'files' parameter should be specified; received "
-          "both");
-    }
-    FallbackOrCancelFileChooser();
-    return Response::OK();
-  }
-
-  if (action == Page::HandleFileChooser::ActionEnum::Accept) {
-    if (!optional_files.isJust())
-      return Response::InvalidParams("Files must be specified");
-    std::unique_ptr<protocol::Array<std::string>> files =
-        optional_files.takeJust();
-    if (file_chooser_params_->mode ==
-            blink::mojom::FileChooserParams::Mode::kOpen &&
-        files->size() > 1) {
-      return Response::Error("Expected to accept a single file");
-    }
-    std::vector<blink::mojom::FileChooserFileInfoPtr> chooser_files;
-    for (const std::string& file : *files) {
-      base::FilePath file_path = base::FilePath::FromUTF8Unsafe(file);
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-          host_->GetProcess()->GetID(), file_path);
-      chooser_files.push_back(blink::mojom::FileChooserFileInfo::NewNativeFile(
-          blink::mojom::NativeFileInfo::New(file_path, base::string16())));
-    }
-    file_chooser_listener_->FileSelected(
-        std::move(chooser_files), base::FilePath(), file_chooser_params_->mode);
-    file_chooser_listener_.reset();
-    file_chooser_params_.reset();
-    file_chooser_rfh_id_.reset();
-    return Response::OK();
-  }
-
-  if (action == Page::HandleFileChooser::ActionEnum::Cancel) {
-    file_chooser_listener_->FileSelectionCanceled();
-    file_chooser_listener_.reset();
-    file_chooser_params_.reset();
-    file_chooser_rfh_id_.reset();
-    return Response::OK();
-  }
-
-  return Response::InvalidParams("Unknown action '" + action + "'");
-}
-
-void PageHandler::FallbackOrCancelFileChooser() {
-  RenderFrameHost* rfh = RenderFrameHost::FromID(file_chooser_rfh_id_->first,
-                                                 file_chooser_rfh_id_->second);
-  WebContents* web_contents = GetWebContents();
-  if (rfh && web_contents && web_contents->GetDelegate()) {
-    web_contents->GetDelegate()->RunFileChooser(
-        rfh, std::move(file_chooser_listener_), *file_chooser_params_);
-  } else {
-    file_chooser_listener_->FileSelectionCanceled();
-  }
-  file_chooser_listener_.reset();
-  file_chooser_params_.reset();
-  file_chooser_rfh_id_.reset();
-}
-
-bool PageHandler::InterceptFileChooser(
-    RenderFrameHostImpl* rfh,
-    std::unique_ptr<FileSelectListener>* listener,
-    const blink::mojom::FileChooserParams& params) {
-  if (*active_file_chooser_interceptor_ != this)
-    return false;
-  file_chooser_rfh_id_ =
-      std::make_pair<int, int>(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
-  DCHECK(!file_chooser_listener_);
-  file_chooser_listener_ = std::move(*listener);
-  file_chooser_params_ =
-      std::make_unique<blink::mojom::FileChooserParams>(params);
-  frontend_->FileChooserOpened(
-      params.mode == blink::mojom::FileChooserParams::Mode::kOpen
-          ? Page::FileChooserOpened::ModeEnum::SelectSingle
-          : Page::FileChooserOpened::ModeEnum::SelectMultiple);
-  return true;
 }
 
 void PageHandler::CaptureSnapshot(
@@ -1095,15 +978,16 @@ void PageHandler::InnerSwapCompositorFrame() {
   if (snapshot_size.IsEmpty())
     return;
 
-  double top_controls_height = frame_metadata_->top_controls_height;
-  double top_controls_shown_ratio = frame_metadata_->top_controls_shown_ratio;
+  double top_controls_visible_height =
+      frame_metadata_->top_controls_height *
+      frame_metadata_->top_controls_shown_ratio;
 
   std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata =
       BuildScreencastFrameMetadata(
           surface_size, frame_metadata_->device_scale_factor,
           frame_metadata_->page_scale_factor,
-          frame_metadata_->root_scroll_offset, top_controls_height,
-          top_controls_shown_ratio);
+          frame_metadata_->root_scroll_offset.value_or(gfx::Vector2dF()),
+          top_controls_visible_height);
   if (!page_metadata)
     return;
 
@@ -1140,15 +1024,14 @@ void PageHandler::OnFrameFromVideoConsumer(
   }
 
   double device_scale_factor, page_scale_factor;
-  double top_controls_height, top_controls_shown_ratio;
+  double top_controls_visible_height;
   gfx::Vector2dF root_scroll_offset;
   GetMetadataFromFrame(*frame, &device_scale_factor, &page_scale_factor,
-                       &root_scroll_offset, &top_controls_height,
-                       &top_controls_shown_ratio);
+                       &root_scroll_offset, &top_controls_visible_height);
   std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata =
-      BuildScreencastFrameMetadata(
-          surface_size, device_scale_factor, page_scale_factor,
-          root_scroll_offset, top_controls_height, top_controls_shown_ratio);
+      BuildScreencastFrameMetadata(surface_size, device_scale_factor,
+                                   page_scale_factor, root_scroll_offset,
+                                   top_controls_visible_height);
   if (!page_metadata)
     return;
 

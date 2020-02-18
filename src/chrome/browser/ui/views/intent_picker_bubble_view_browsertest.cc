@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/web_applications/test/bookmark_app_navigation_browsertest.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
@@ -25,9 +25,8 @@ class IntentPickerBubbleViewBrowserTest
  public:
   void SetUp() override {
     // TODO(schenney): Stop disabling Paint Holding. crbug.com/1001189
-    scoped_feature_list_.InitWithFeatures(
-        {features::kIntentPicker},
-        {blink::features::kAvoidFlashBetweenNavigation});
+    scoped_feature_list_.InitWithFeatures({features::kIntentPicker},
+                                          {blink::features::kPaintHolding});
     extensions::test::BookmarkAppNavigationBrowserTest::SetUp();
   }
 
@@ -50,6 +49,12 @@ class IntentPickerBubbleViewBrowserTest
         "document.body.appendChild(iframe);");
   }
 
+  PageActionIconView* GetIntentPickerIcon() {
+    return BrowserView::GetBrowserViewForBrowser(browser())
+        ->toolbar_button_provider()
+        ->GetPageActionIconView(PageActionIconType::kIntentPicker);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -70,11 +75,7 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
       in_scope_url, base::BindOnce(&ClickLinkAndWait, web_contents,
                                    in_scope_url, LinkTarget::SELF, GetParam()));
 
-  PageActionIconView* intent_picker_view =
-      BrowserView::GetBrowserViewForBrowser(browser())
-          ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
-          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
+  PageActionIconView* intent_picker_view = GetIntentPickerIcon();
   EXPECT_TRUE(intent_picker_view->GetVisible());
 
   IntentPickerBubbleView* intent_picker =
@@ -148,11 +149,7 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
   const GURL out_of_scope_url =
       https_server().GetURL(GetAppUrlHost(), GetOutOfScopeUrlPath());
 
-  PageActionIconView* intent_picker_view =
-      BrowserView::GetBrowserViewForBrowser(browser())
-          ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
-          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
+  PageActionIconView* intent_picker_view = GetIntentPickerIcon();
 
   // OpenNewTab opens a new tab and focus on the new tab.
   OpenNewTab(in_scope_url);
@@ -177,11 +174,7 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
   const GURL out_of_scope_url =
       https_server().GetURL(GetAppUrlHost(), GetOutOfScopeUrlPath());
 
-  PageActionIconView* intent_picker_view =
-      BrowserView::GetBrowserViewForBrowser(browser())
-          ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
-          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
+  PageActionIconView* intent_picker_view = GetIntentPickerIcon();
 
   OpenNewTab(out_of_scope_url);
   content::WebContents* initial_tab =
@@ -214,11 +207,7 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
   const GURL redirect_url = https_server().GetURL(
       GetOtherAppUrlHost(), CreateServerRedirect(out_of_scope_url));
 
-  PageActionIconView* intent_picker_view =
-      BrowserView::GetBrowserViewForBrowser(browser())
-          ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
-          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
+  PageActionIconView* intent_picker_view = GetIntentPickerIcon();
 
   OpenNewTab(in_scope_url);
   EXPECT_TRUE(intent_picker_view->GetVisible());

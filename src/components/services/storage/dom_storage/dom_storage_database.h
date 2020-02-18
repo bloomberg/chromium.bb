@@ -25,6 +25,7 @@
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace storage {
 
@@ -125,12 +126,31 @@ class DomStorageDatabase : private base::trace_event::MemoryDumpProvider {
   // Gets all database entries whose key starts with |prefix|.
   Status GetPrefixed(KeyView prefix, std::vector<KeyValuePair>* entries) const;
 
-  // Deletes all database entries whose key starts with |prefix|.
-  Status DeletePrefixed(KeyView prefix) const;
+  // Adds operations to |batch| which will delete all database entries whose key
+  // starts with |prefix| when committed.
+  Status DeletePrefixed(KeyView prefix, leveldb::WriteBatch* batch) const;
 
-  // Copies all database entries whose key starts with |prefix| over to new
-  // entries with |prefix| replaced by |new_prefix| in each new key.
-  Status CopyPrefixed(KeyView prefix, KeyView new_prefix) const;
+  // Adds operations to |batch| which when committed will copy all database
+  // entries whose key starts with |prefix| over to new entries with |prefix|
+  // replaced by |new_prefix| in each new key.
+  Status CopyPrefixed(KeyView prefix,
+                      KeyView new_prefix,
+                      leveldb::WriteBatch* batch) const;
+
+  // Commits operations in |batch| to the database.
+  Status Commit(leveldb::WriteBatch* batch) const;
+
+  // Rewrites the database on disk to clean up traces of deleted entries.
+  //
+  // NOTE: If |RewriteDB()| fails, this DomStorageDatabase may no longer be
+  // usable; in such cases, all future operations will return an IOError status.
+  Status RewriteDB();
+
+  void SetDestructionCallbackForTesting(base::OnceClosure callback) {
+    destruction_callback_ = std::move(callback);
+  }
+
+  void MakeAllCommitsFailForTesting() { fail_commits_for_testing_ = true; }
 
  private:
   friend class base::SequenceBound<DomStorageDatabase>;
@@ -176,9 +196,16 @@ class DomStorageDatabase : private base::trace_event::MemoryDumpProvider {
   const std::string name_;
   const std::unique_ptr<leveldb::Env> env_;
   const leveldb_env::Options options_;
-  const std::unique_ptr<leveldb::DB> db_;
   const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>
       memory_dump_id_;
+  std::unique_ptr<leveldb::DB> db_;
+
+  // Causes all calls to |Commit()| to fail with an IOError for simulated
+  // disk failures in testing.
+  bool fail_commits_for_testing_ = false;
+
+  // Callback to run on destruction in tests.
+  base::OnceClosure destruction_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

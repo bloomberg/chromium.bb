@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import os
 import collections
 
@@ -18,8 +20,6 @@ from telemetry import story
 from telemetry.timeline import bounds
 from telemetry.timeline import model as model_module
 from telemetry.timeline import tracing_config
-
-from telemetry.value import list_of_scalar_values
 
 
 BLINK_PERF_BASE_DIR = os.path.join(path_util.GetChromiumSrcDir(),
@@ -49,7 +49,8 @@ def StoryNameFromUrl(url, prefix):
 def CreateStorySetFromPath(path, skipped_file,
                            shared_page_state_class=(
                                shared_page_state.SharedPageState),
-                           append_query=None):
+                           append_query=None,
+                           extra_tags=None):
   assert os.path.exists(path)
 
   page_urls = []
@@ -100,7 +101,8 @@ def CreateStorySetFromPath(path, skipped_file,
     ps.AddStory(_BlinkPerfPage(
         url, ps, ps.base_dir,
         shared_page_state_class=shared_page_state_class,
-        name=name))
+        name=name,
+        tags=extra_tags))
   return ps
 
 def _CreateMergedEventsBoundaries(events, max_start_time):
@@ -300,20 +302,18 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
 
   def PrintAndCollectTraceEventMetrics(self, trace_cpu_time_metrics, results):
     unit = 'ms'
-    print
+    print()
     for trace_event_name, cpu_times in trace_cpu_time_metrics.iteritems():
-      print 'CPU times of trace event "%s":' % trace_event_name
+      print('CPU times of trace event "%s":' % trace_event_name)
       cpu_times_string = ', '.join(['{0:.10f}'.format(t) for t in cpu_times])
-      print 'values %s %s' % (cpu_times_string, unit)
+      print('values %s %s' % (cpu_times_string, unit))
       avg = 0.0
       if cpu_times:
         avg = sum(cpu_times)/len(cpu_times)
-      print 'avg', '{0:.10f}'.format(avg), unit
-      results.AddValue(list_of_scalar_values.ListOfScalarValues(
-          results.current_page, name=trace_event_name, units=unit,
-          values=cpu_times))
-      print
-    print '\n'
+      print('avg', '{0:.10f}'.format(avg), unit)
+      results.AddMeasurement(trace_event_name, unit, cpu_times)
+      print()
+    print('\n')
 
   def ValidateAndMeasurePage(self, page, tab, results):
     trace_cpu_time_metrics = {}
@@ -333,7 +333,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
 
     for line in log.splitlines():
       if line.startswith("FATAL: "):
-        print line
+        print(line)
         continue
       if not line.startswith('values '):
         continue
@@ -342,14 +342,13 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
       units = parts[-1]
       metric = page.name.split('.')[0].replace('/', '_')
       if values:
-        results.AddValue(list_of_scalar_values.ListOfScalarValues(
-            results.current_page, metric, units, values))
+        results.AddMeasurement(metric, units, values)
       else:
         raise legacy_page_test.MeasurementFailure('Empty test results')
 
       break
 
-    print log
+    print(log)
 
     self.PrintAndCollectTraceEventMetrics(trace_cpu_time_metrics, results)
 
@@ -357,10 +356,12 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
 class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
 
   test = _BlinkPerfMeasurement
+  TAGS = []
 
   def CreateStorySet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, self.SUBDIR)
-    return CreateStorySetFromPath(path, SKIPPED_FILE)
+    return CreateStorySetFromPath(path, SKIPPED_FILE,
+                                  extra_tags=self.TAGS)
 
 
 @benchmark.Info(emails=['dmazzoni@chromium.org'],
@@ -431,7 +432,7 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
       page.skipped_gpus = []
     return story_set
 
-@benchmark.Info(emails=['hayato@chromium.org'],
+@benchmark.Info(emails=['masonfreed@chromium.org'],
                 component='Blink>DOM',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfDOM(_BlinkPerfBenchmark):
@@ -442,7 +443,7 @@ class BlinkPerfDOM(_BlinkPerfBenchmark):
     return 'blink_perf.dom'
 
 
-@benchmark.Info(emails=['hayato@chromium.org'],
+@benchmark.Info(emails=['masonfreed@chromium.org'],
                 component='Blink>DOM',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfEvents(_BlinkPerfBenchmark):
@@ -479,6 +480,7 @@ class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfLayout(_BlinkPerfBenchmark):
   SUBDIR = 'layout'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -505,11 +507,12 @@ class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
     ])
 
 
-@benchmark.Info(emails=['wangxianzhu@chromium.org'],
+@benchmark.Info(emails=['pdr@chromium.org', 'wangxianzhu@chromium.org'],
                 component='Blink>Paint',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfPaint(_BlinkPerfBenchmark):
   SUBDIR = 'paint'
+  TAGS = _BlinkPerfBenchmark.TAGS + ['all']
 
   @classmethod
   def Name(cls):
@@ -529,7 +532,7 @@ class BlinkPerfParser(_BlinkPerfBenchmark):
     return 'blink_perf.parser'
 
 
-@benchmark.Info(emails=['kouhei@chromium.org', 'fs@opera.com'],
+@benchmark.Info(emails=['fs@opera.com', 'pdr@chromium.org'],
                 component='Blink>SVG',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfSVG(_BlinkPerfBenchmark):
@@ -540,7 +543,7 @@ class BlinkPerfSVG(_BlinkPerfBenchmark):
     return 'blink_perf.svg'
 
 
-@benchmark.Info(emails=['hayato@chromium.org'],
+@benchmark.Info(emails=['masonfreed@chromium.org'],
                 component='Blink>DOM>ShadowDOM',
                 documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
@@ -566,4 +569,5 @@ class BlinkPerfDisplayLocking(_BlinkPerfBenchmark):
     return 'blink_perf.display_locking'
 
   def SetExtraBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs(['--enable-blink-features=DisplayLocking'])
+    options.AppendExtraBrowserArgs(
+      ['--enable-blink-features=DisplayLocking,CSSContentSize'])

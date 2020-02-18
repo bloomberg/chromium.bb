@@ -144,6 +144,10 @@ public:
     SkSurfaceCharacterization createCharacterization(GrContext* context) const {
         size_t maxResourceBytes = context->getResourceCacheLimit();
 
+        if (!context->colorTypeSupportedAsSurface(fColorType)) {
+            return SkSurfaceCharacterization();
+        }
+
         // Note that Ganesh doesn't make use of the SkImageInfo's alphaType
         SkImageInfo ii = SkImageInfo::Make(fWidth, fHeight, fColorType,
                                            kPremul_SkAlphaType, fColorSpace);
@@ -184,6 +188,7 @@ public:
                                         ? GrMipMapped::kNo
                                         : GrMipMapped(fShouldCreateMipMaps);
 
+#ifdef SK_GL
         if (fUsesGLFBO0) {
             if (GrBackendApi::kOpenGL != context->backend()) {
                 return nullptr;
@@ -206,6 +211,7 @@ public:
             SkASSERT(result->isCompatible(c));
             return result;
         }
+#endif
 
         *backend = context->createBackendTexture(fWidth, fHeight, fColorType,
                                                  SkColors::kTransparent,
@@ -492,6 +498,51 @@ void DDLSurfaceCharacterizationTestImpl(GrContext* context, skiatest::Reporter* 
         REPORTER_ASSERT(reporter, char3.isValid());
         REPORTER_ASSERT(reporter, 32 == char3.width());
         REPORTER_ASSERT(reporter, 32 == char3.height());
+
+        s = nullptr;
+        params.cleanUpBackEnd(context, backend);
+    }
+
+    // Exercise the createColorSpace method
+    {
+        SurfaceParameters params(context);
+        GrBackendTexture backend;
+
+        sk_sp<SkSurface> s = params.make(context, &backend);
+        if (!s) {
+            return;
+        }
+
+        SkSurfaceCharacterization char0;
+        SkAssertResult(s->characterize(&char0));
+
+        // The default params create an sRGB color space
+        REPORTER_ASSERT(reporter, char0.colorSpace()->isSRGB());
+        REPORTER_ASSERT(reporter, !char0.colorSpace()->gammaIsLinear());
+
+        {
+            sk_sp<SkColorSpace> newCS = SkColorSpace::MakeSRGBLinear();
+
+            SkSurfaceCharacterization char1 = char0.createColorSpace(std::move(newCS));
+            REPORTER_ASSERT(reporter, char1.isValid());
+            REPORTER_ASSERT(reporter, !char1.colorSpace()->isSRGB());
+            REPORTER_ASSERT(reporter, char1.colorSpace()->gammaIsLinear());
+        }
+
+        {
+            SkSurfaceCharacterization char2 = char0.createColorSpace(nullptr);
+            REPORTER_ASSERT(reporter, char2.isValid());
+            REPORTER_ASSERT(reporter, !char2.colorSpace());
+        }
+
+        {
+            sk_sp<SkColorSpace> newCS = SkColorSpace::MakeSRGBLinear();
+
+            SkSurfaceCharacterization invalid;
+            REPORTER_ASSERT(reporter, !invalid.isValid());
+            SkSurfaceCharacterization stillInvalid = invalid.createColorSpace(std::move(newCS));
+            REPORTER_ASSERT(reporter, !stillInvalid.isValid());
+        }
 
         s = nullptr;
         params.cleanUpBackEnd(context, backend);
@@ -831,8 +882,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DDLSkSurfaceFlush, reporter, ctxInfo) {
 
     GrBackendTexture backendTexture;
 
-    if (!create_backend_texture(context, &backendTexture, ii, SkColors::kCyan,
-                                GrMipMapped::kNo, GrRenderable::kNo)) {
+    if (!CreateBackendTexture(context, &backendTexture, ii, SkColors::kCyan, GrMipMapped::kNo,
+                              GrRenderable::kNo)) {
         REPORTER_ASSERT(reporter, false);
         return;
     }
@@ -891,7 +942,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DDLSkSurfaceFlush, reporter, ctxInfo) {
     REPORTER_ASSERT(reporter, fulfillInfo.fTex->unique());
     fulfillInfo.fTex.reset();
 
-    delete_backend_texture(context, backendTexture);
+    DeleteBackendTexture(context, backendTexture);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -949,6 +1000,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DDLMultipleDDLs, reporter, ctxInfo) {
     }
 }
 
+#ifdef SK_GL
 ////////////////////////////////////////////////////////////////////////////////
 // Check that the texture-specific flags (i.e., for external & rectangle textures) work
 // for promise images. As such, this is a GL-only test.
@@ -994,6 +1046,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(DDLTextureFlagsTest, reporter, ctxInfo) {
         }
     }
 }
+#endif  // SK_GL
 
 ////////////////////////////////////////////////////////////////////////////////
 // Test colorType and pixelConfig compatibility.

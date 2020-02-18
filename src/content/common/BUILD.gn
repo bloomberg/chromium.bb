@@ -24,6 +24,7 @@ buildflag_header("buildflags") {
   flags = [
     "USE_EXTERNAL_POPUP_MENU=$use_external_popup_menu",
     "ALLOW_CRITICAL_MEMORY_PRESSURE_HANDLING_IN_FOREGROUND=$allow_critical_memory_pressure_handling_in_foreground",
+    "ENABLE_SCREEN_CAPTURE=$enable_screen_capture",
   ]
 }
 
@@ -32,7 +33,10 @@ source_set("common") {
   # In addition, targets outside of the content component (shell and tests)
   # must not link to this because it will duplicate the code in the component
   # build.
-  visibility = [ "//content/*" ]
+  visibility = [
+    "//content/*",
+    "//tools/ipc_fuzzer/message_replay:ipc_fuzzer_replay",
+  ]
 
   sources = [
     "accessibility_messages.h",
@@ -59,6 +63,9 @@ source_set("common") {
     "browser_plugin/browser_plugin_messages.h",
     "child_process_host_impl.cc",
     "child_process_host_impl.h",
+    "common_param_traits.cc",
+    "common_param_traits.h",
+    "common_param_traits_macros.h",
     "common_sandbox_support_linux.cc",
     "content_constants_internal.cc",
     "content_constants_internal.h",
@@ -139,8 +146,6 @@ source_set("common") {
     "input/input_event_mojom_traits.h",
     "input/input_event_stream_validator.cc",
     "input/input_event_stream_validator.h",
-    "input/input_param_traits.cc",
-    "input/input_param_traits.h",
     "input/sync_compositor_messages.cc",
     "input/sync_compositor_messages.h",
     "input/synthetic_gesture_params.cc",
@@ -176,11 +181,6 @@ source_set("common") {
     "mac/font_loader.mm",
     "media/cdm_info.cc",
     "media/media_player_delegate_messages.h",
-    "media/peer_connection_tracker_messages.h",
-    "mime_sniffing_throttle.cc",
-    "mime_sniffing_throttle.h",
-    "mime_sniffing_url_loader.cc",
-    "mime_sniffing_url_loader.h",
     "navigation_gesture.h",
     "navigation_params.cc",
     "navigation_params.h",
@@ -192,7 +192,6 @@ source_set("common") {
     "page_messages.h",
     "page_state_serialization.cc",
     "page_state_serialization.h",
-    "page_zoom.cc",
     "pepper_file_util.cc",
     "pepper_file_util.h",
     "pepper_plugin_list.cc",
@@ -200,8 +199,6 @@ source_set("common") {
     "pepper_renderer_instance_data.cc",
     "pepper_renderer_instance_data.h",
     "process_type.cc",
-    "render_widget_surface_properties.cc",
-    "render_widget_surface_properties.h",
     "resource_messages.h",
     "resource_timing_info.cc",
     "resource_timing_info.h",
@@ -226,8 +223,6 @@ source_set("common") {
     "text_input_state.h",
     "thread_pool_util.cc",
     "thread_pool_util.h",
-    "throttling_url_loader.cc",
-    "throttling_url_loader.h",
     "unfreezable_frame_messages.h",
     "unique_name_helper.cc",
     "unique_name_helper.h",
@@ -251,6 +246,7 @@ source_set("common") {
   public_deps = [
     ":mojo_bindings",
     "//cc",
+    "//cc/ipc",
     "//gpu/command_buffer/common",
     "//ipc",
     "//services/network:network_service",
@@ -473,11 +469,9 @@ mojom("mojo_bindings") {
     "frame_proxy.mojom",
     "frame_sink_provider.mojom",
     "histogram_fetcher.mojom",
-    "host_zoom.mojom",
     "input/input_handler.mojom",
     "input/input_injector.mojom",
     "input/synchronous_compositor.mojom",
-    "media/peer_connection_tracker.mojom",
     "media/renderer_audio_input_stream_factory.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
     "native_types.mojom",
@@ -506,10 +500,11 @@ mojom("mojo_bindings") {
   import_dirs = [ "//mojo/services" ]
 
   public_deps = [
-    "//components/services/leveldb/public/mojom",
+    "//cc/mojom",
     "//components/tracing/common:interfaces",
     "//content/public/common:interfaces",
     "//content/public/common:resource_type_bindings",
+    "//ipc:mojom",
     "//ipc:mojom_constants",
     "//media/capture/mojom:video_capture",
     "//media/mojo/mojom",

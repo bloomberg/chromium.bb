@@ -21,16 +21,11 @@
 #include <memory>
 #include <tuple>
 
-#include <google/protobuf/io/zero_copy_stream.h>
 #include "perfetto/base/export.h"
 #include "perfetto/base/logging.h"
 #include "perfetto/ext/tracing/core/slice.h"
 
 namespace perfetto {
-
-namespace protos {
-class TracePacket;  // From protos/trace_packet.pb.h.
-}  // namespace protos
 
 // A wrapper around a byte buffer that contains a protobuf-encoded TracePacket
 // (see trace_packet.proto). The TracePacket is decoded only if the Consumer
@@ -43,10 +38,12 @@ class TracePacket;  // From protos/trace_packet.pb.h.
 class PERFETTO_EXPORT TracePacket {
  public:
   using const_iterator = Slices::const_iterator;
-  using ZeroCopyInputStream = ::google::protobuf::io::ZeroCopyInputStream;
 
   // The field id of protos::Trace::packet, static_assert()-ed in the unittest.
   static constexpr uint32_t kPacketFieldNumber = 1;
+
+  // Maximum size of the preamble returned by GetProtoPreamble().
+  static constexpr size_t kMaxPreambleBytes = 8;
 
   TracePacket();
   ~TracePacket();
@@ -55,20 +52,6 @@ class PERFETTO_EXPORT TracePacket {
 
   // Accesses all the raw slices in the packet, for saving them to file/network.
   const Slices& slices() const { return slices_; }
-
-  // Decodes the packet. This function requires that the caller:
-  // 1) Does #include "protos/perfetto/trace/trace_packet.pb.h"
-  // 2) Links against the //protos/trace:lite target.
-  // The core service code deliberately doesn't link against that in order to
-  // avoid binary bloat. This is the reason why this is a templated function.
-  // It doesn't need to be (i.e. the caller should not specify the template
-  // argument) but doing so prevents the compiler trying to resolve the
-  // TracePacket type until it's needed, in which case the caller needs (1).
-  template <typename TracePacketType = protos::TracePacket>
-  bool Decode(TracePacketType* packet) const {
-    std::unique_ptr<ZeroCopyInputStream> istr = CreateSlicedInputStream();
-    return packet->ParseFromZeroCopyStream(istr.get());
-  }
 
   // Mutator, used only by the service and tests.
   void AddSlice(Slice);
@@ -86,15 +69,17 @@ class PERFETTO_EXPORT TracePacket {
   // and its size.
   std::tuple<char*, size_t> GetProtoPreamble();
 
+  // Returns the raw protobuf bytes of the slices, all stitched together into
+  // a string. Only for testing.
+  std::string GetRawBytesForTesting();
+
  private:
   TracePacket(const TracePacket&) = delete;
   TracePacket& operator=(const TracePacket&) = delete;
 
-  std::unique_ptr<ZeroCopyInputStream> CreateSlicedInputStream() const;
-
   Slices slices_;     // Not owned.
   size_t size_ = 0;   // SUM(slice.size for slice in slices_).
-  char preamble_[8];  // Deliberately not initialized.
+  char preamble_[kMaxPreambleBytes];  // Deliberately not initialized.
 
   // Remember to update the move operators and their unittest if adding new
   // fields. ConsumerIPCClientImpl::OnReadBuffersResponse() relies on

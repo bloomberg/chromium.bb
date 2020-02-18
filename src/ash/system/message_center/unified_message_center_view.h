@@ -19,6 +19,10 @@ namespace gfx {
 class LinearAnimation;
 }  // namespace gfx
 
+namespace message_center {
+class Notification;
+}  // namespace message_center
+
 namespace views {
 class ScrollView;
 }  // namespace views
@@ -26,6 +30,8 @@ class ScrollView;
 namespace ash {
 
 class MessageCenterScrollBar;
+class StackedNotificationBar;
+class UnifiedMessageCenterBubble;
 class UnifiedSystemTrayModel;
 class UnifiedSystemTrayView;
 
@@ -48,51 +54,16 @@ enum class UnifiedMessageCenterAnimationState {
   COLLAPSE,
 };
 
-// The header shown above the notification list displaying the number of hidden
-// notifications. There are currently two UI implementations toggled by the
-// NotificationStackingBarRedesign feature flag.
-class StackingNotificationCounterView : public views::View {
- public:
-  explicit StackingNotificationCounterView(views::ButtonListener* listener);
-  ~StackingNotificationCounterView() override;
-
-  // Sets the number of total notifications and hidden notifications. Returns
-  // true if the count was updated from the previous SetCount() call.
-  bool SetCount(int total_notification_count, int stacked_notification_count);
-
-  // Sets the current animation state.
-  void SetAnimationState(UnifiedMessageCenterAnimationState animation_state);
-
-  // views::View:
-  void OnPaint(gfx::Canvas* canvas) override;
-  const char* GetClassName() const override;
-
- private:
-  friend class UnifiedMessageCenterViewTest;
-
-  void UpdateVisibility();
-
-  int total_notification_count_ = 0;
-  int stacked_notification_count_ = 0;
-  UnifiedMessageCenterAnimationState animation_state_ =
-      UnifiedMessageCenterAnimationState::IDLE;
-
-  views::Label* const count_label_;
-  views::Button* const clear_all_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(StackingNotificationCounterView);
-};
-
 // Manages scrolling of notification list.
 class ASH_EXPORT UnifiedMessageCenterView
     : public views::View,
       public MessageCenterScrollBar::Observer,
-      public views::ButtonListener,
       public views::FocusChangeListener,
       public gfx::AnimationDelegate {
  public:
   UnifiedMessageCenterView(UnifiedSystemTrayView* parent,
-                           UnifiedSystemTrayModel* model);
+                           UnifiedSystemTrayModel* model,
+                           UnifiedMessageCenterBubble* bubble);
   ~UnifiedMessageCenterView() override;
 
   // Sets the maximum height that the view can take.
@@ -117,7 +88,28 @@ class ASH_EXPORT UnifiedMessageCenterView
   void ConfigureMessageView(message_center::MessageView* message_view);
 
   // Count number of notifications that are above visible area.
-  int GetStackedNotificationCount() const;
+  std::vector<message_center::Notification*> GetStackedNotifications() const;
+
+  // Relinquish focus and transfer it to the quick settings widget.
+  void FocusOut(bool reverse);
+
+  // Set the first child view to be focused when focus is acquired.
+  // This is the first visible child unless reverse is true, in which case
+  // it is the last visible child.
+  void FocusEntered(bool reverse);
+
+  // Expand message center to show all notifications and stacked notification
+  // bar if needed.
+  void SetExpanded();
+
+  // Collapse the message center to only show the stacked notification bar.
+  void SetCollapsed(bool animate);
+
+  // Called when user clicks the clear all button.
+  void ClearAllNotifications();
+
+  // Called when user clicks the see all notifications button.
+  void ExpandMessageCenter();
 
   // views::View:
   void AddedToWidget() override;
@@ -129,9 +121,6 @@ class ASH_EXPORT UnifiedMessageCenterView
   // MessageCenterScrollBar::Observer:
   void OnMessageCenterScrolled() override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // views::FocusChangeListener:
   void OnWillChangeFocus(views::View* before, views::View* now) override;
   void OnDidChangeFocus(views::View* before, views::View* now) override;
@@ -141,6 +130,8 @@ class ASH_EXPORT UnifiedMessageCenterView
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
 
+  bool collapsed() { return collapsed_; }
+
  protected:
   // Virtual for testing.
   virtual void SetNotificationRectBelowScroll(
@@ -148,6 +139,7 @@ class ASH_EXPORT UnifiedMessageCenterView
 
  private:
   friend class UnifiedMessageCenterViewTest;
+  friend class UnifiedMessageCenterBubbleTest;
 
   // Starts the animation to hide the notification stacking bar.
   void StartHideStackingBarAnimation();
@@ -169,9 +161,16 @@ class ASH_EXPORT UnifiedMessageCenterView
   // TopCornerBorder.
   void NotifyRectBelowScroll();
 
+  // Get first and last focusable child views. These functions are used to
+  // figure out if we need to focus out or to set the correct focused view
+  // when focus is acquired from another widget.
+  View* GetFirstFocusableChild();
+  View* GetLastFocusableChild();
+
   UnifiedSystemTrayView* const parent_;
   UnifiedSystemTrayModel* const model_;
-  StackingNotificationCounterView* const stacking_counter_;
+  UnifiedMessageCenterBubble* const message_center_bubble_;
+  StackedNotificationBar* const notification_bar_;
   MessageCenterScrollBar* const scroll_bar_;
   views::ScrollView* const scroller_;
   UnifiedMessageListView* const message_list_view_;
@@ -184,10 +183,15 @@ class ASH_EXPORT UnifiedMessageCenterView
   // or collapsed).
   int available_height_ = 0;
 
+  // Current state of the message center view.
+  bool collapsed_ = false;
+
   // Tracks the current animation state.
   UnifiedMessageCenterAnimationState animation_state_ =
       UnifiedMessageCenterAnimationState::IDLE;
   const std::unique_ptr<gfx::LinearAnimation> animation_;
+
+  const std::unique_ptr<views::FocusSearch> focus_search_;
 
   views::FocusManager* focus_manager_ = nullptr;
 

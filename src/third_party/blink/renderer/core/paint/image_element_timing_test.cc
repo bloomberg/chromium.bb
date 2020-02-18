@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
-#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -42,17 +42,21 @@ class ImageElementTimingTest : public testing::Test {
   // the LayoutImage.
   LayoutImage* SetImageResource(const char* id, int width, int height) {
     ImageResourceContent* content = CreateImageForTest(width, height);
-    auto* layout_image = ToLayoutImage(GetLayoutObjectById(id));
-    layout_image->ImageResource()->SetImageResource(content);
-    return layout_image;
+    if (auto* layout_image = ToLayoutImageOrNull(GetLayoutObjectById(id))) {
+      layout_image->ImageResource()->SetImageResource(content);
+      return layout_image;
+    }
+    return nullptr;
   }
 
   // Similar to above but for a LayoutSVGImage.
   LayoutSVGImage* SetSVGImageResource(const char* id, int width, int height) {
     ImageResourceContent* content = CreateImageForTest(width, height);
-    auto* layout_image = ToLayoutSVGImage(GetLayoutObjectById(id));
-    layout_image->ImageResource()->SetImageResource(content);
-    return layout_image;
+    if (auto* layout_image = ToLayoutSVGImageOrNull(GetLayoutObjectById(id))) {
+      layout_image->ImageResource()->SetImageResource(content);
+      return layout_image;
+    }
+    return nullptr;
   }
 
   bool ImagesNotifiedContains(
@@ -99,7 +103,7 @@ class ImageElementTimingTest : public testing::Test {
     sk_sp<SkImage> image = surface->makeImageSnapshot();
     ImageResourceContent* original_image_resource =
         ImageResourceContent::CreateLoaded(
-            StaticBitmapImage::Create(image).get());
+            UnacceleratedStaticBitmapImage::Create(image).get());
     return original_image_resource;
   }
 };
@@ -122,13 +126,13 @@ TEST_F(ImageElementTimingTest, TestIsExplicitlyRegisteredForTiming) {
   LayoutObject* with_undefined_attribute =
       GetLayoutObjectById("unset-attribute");
   actual = internal::IsExplicitlyRegisteredForTiming(with_undefined_attribute);
-  EXPECT_FALSE(actual) << "Nodes with undefined 'elementtiming' attribute "
-                          "should not be explicitly registered.";
+  EXPECT_TRUE(actual) << "Nodes with undefined 'elementtiming' attribute "
+                         "should be explicitly registered.";
 
   LayoutObject* with_empty_attribute = GetLayoutObjectById("empty-attribute");
   actual = internal::IsExplicitlyRegisteredForTiming(with_empty_attribute);
-  EXPECT_FALSE(actual) << "Nodes with an empty 'elementtiming' attribute "
-                          "should not be explicitly registered.";
+  EXPECT_TRUE(actual) << "Nodes with an empty 'elementtiming' attribute "
+                         "should be explicitly registered.";
 
   LayoutObject* with_explicit_element_timing =
       GetLayoutObjectById("valid-attribute");
@@ -156,13 +160,10 @@ TEST_F(ImageElementTimingTest, IgnoresUnmarkedElement) {
 TEST_F(ImageElementTimingTest, ImageInsideSVG) {
   frame_test_helpers::LoadHTMLString(
       web_view_helper_.GetWebView()->MainFrameImpl(), R"HTML(
-    <svg mask="url(#mask)">
-      <mask id="mask">
-        <foreignObject width="100" height="100">
-          <img elementtiming="image-inside-svg" id="target" style='width: 100px; height: 100px;'/>
-        </foreignObject>
-      </mask>
-      <rect width="100" height="100" fill="green"/>
+    <svg>
+      <foreignObject width="100" height="100">
+        <img elementtiming="image-inside-svg" id="target" style='width: 100px; height: 100px;'/>
+      </foreignObject>
     </svg>
   )HTML",
       base_url_);
@@ -173,6 +174,26 @@ TEST_F(ImageElementTimingTest, ImageInsideSVG) {
   // |layout_image| should have had its paint notified to ImageElementTiming.
   EXPECT_TRUE(ImagesNotifiedContains(
       std::make_pair(layout_image, layout_image->CachedImage())));
+}
+
+TEST_F(ImageElementTimingTest, ImageInsideNonRenderedSVG) {
+  frame_test_helpers::LoadHTMLString(
+      web_view_helper_.GetWebView()->MainFrameImpl(), R"HTML(
+    <svg mask="url(#mask)">
+      <mask id="mask">
+        <foreignObject width="100" height="100">
+          <img elementtiming="image-inside-svg" id="target" style='width: 100px; height: 100px;'/>
+        </foreignObject>
+      </mask>
+      <rect width="100" height="100" fill="green"/>
+    </svg>
+  )HTML",
+      base_url_);
+
+  // HTML inside foreignObject in a non-rendered SVG subtree should not generate
+  // layout objects. Generating layout objects for caused crashes
+  // (crbug.com/905850) as well as correctness issues.
+  EXPECT_FALSE(GetLayoutObjectById("target"));
 }
 
 TEST_F(ImageElementTimingTest, ImageRemoved) {

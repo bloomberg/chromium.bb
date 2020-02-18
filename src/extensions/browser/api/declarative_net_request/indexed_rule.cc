@@ -13,8 +13,10 @@
 #include "base/strings/string_util.h"
 #include "components/url_pattern_index/url_pattern_index.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -123,16 +125,24 @@ class UrlFilterParser {
   DISALLOW_COPY_AND_ASSIGN(UrlFilterParser);
 };
 
+bool IsCaseSensitive(const dnr_api::Rule& parsed_rule) {
+  // If case sensitivity is not explicitly specified, rules are considered case
+  // sensitive by default.
+  if (!parsed_rule.condition.is_url_filter_case_sensitive)
+    return true;
+
+  return *parsed_rule.condition.is_url_filter_case_sensitive;
+}
+
 // Returns a bitmask of flat_rule::OptionFlag corresponding to |parsed_rule|.
 uint8_t GetOptionsMask(const dnr_api::Rule& parsed_rule) {
   uint8_t mask = flat_rule::OptionFlag_NONE;
 
   if (parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_ALLOW)
     mask |= flat_rule::OptionFlag_IS_WHITELIST;
-  if (parsed_rule.condition.is_url_filter_case_sensitive &&
-      !*parsed_rule.condition.is_url_filter_case_sensitive) {
+
+  if (!IsCaseSensitive(parsed_rule))
     mask |= flat_rule::OptionFlag_IS_CASE_INSENSITIVE;
-  }
 
   switch (parsed_rule.condition.domain_type) {
     case dnr_api::DOMAIN_TYPE_FIRSTPARTY:
@@ -347,6 +357,14 @@ ParseResult ParseRedirect(dnr_api::Redirect redirect,
     return ValidateTransform(*indexed_rule->url_transform);
   }
 
+  if (redirect.regex_substitution) {
+    if (redirect.regex_substitution->empty())
+      return ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION;
+
+    indexed_rule->regex_substitution = std::move(*redirect.regex_substitution);
+    return ParseResult::SUCCESS;
+  }
+
   return ParseResult::ERROR_INVALID_REDIRECT;
 }
 
@@ -399,9 +417,46 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
     return ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST;
   }
 
+  if (parsed_rule.condition.url_filter && parsed_rule.condition.regex_filter)
+    return ParseResult::ERROR_MULTIPLE_FILTERS_SPECIFIED;
+
+  // TODO(crbug.com/974391): Implement limits on the number of regex rules an
+  // extension can specify.
+  const bool is_regex_rule = !!parsed_rule.condition.regex_filter;
+
+  if (!is_regex_rule && indexed_rule->regex_substitution)
+    return ParseResult::ERROR_REGEX_SUBSTITUTION_WITHOUT_FILTER;
+
+  if (is_regex_rule) {
+    if (parsed_rule.condition.regex_filter->empty())
+      return ParseResult::ERROR_EMPTY_REGEX_FILTER;
+
+    if (!base::IsStringASCII(*parsed_rule.condition.regex_filter))
+      return ParseResult::ERROR_NON_ASCII_REGEX_FILTER;
+
+    bool require_capturing = indexed_rule->regex_substitution.has_value();
+
+    // TODO(karandeepb): Regex compilation can be expensive. Also, these need to
+    // be compiled again once the ruleset is loaded, which means duplicate work.
+    // We should maintain a global cache of compiled regexes.
+    re2::RE2 regex(
+        *parsed_rule.condition.regex_filter,
+        CreateRE2Options(IsCaseSensitive(parsed_rule), require_capturing));
+
+    if (!regex.ok())
+      return ParseResult::ERROR_INVALID_REGEX_FILTER;
+
+    std::string error;
+    if (indexed_rule->regex_substitution &&
+        !regex.CheckRewriteString(*indexed_rule->regex_substitution, &error)) {
+      return ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION;
+    }
+  }
+
   if (parsed_rule.condition.url_filter) {
     if (parsed_rule.condition.url_filter->empty())
       return ParseResult::ERROR_EMPTY_URL_FILTER;
+
     if (!base::IsStringASCII(*parsed_rule.condition.url_filter))
       return ParseResult::ERROR_NON_ASCII_URL_FILTER;
   }
@@ -431,10 +486,16 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
     return ParseResult::ERROR_NON_ASCII_EXCLUDED_DOMAIN;
   }
 
-  // Parse the |anchor_left|, |anchor_right|, |url_pattern_type| and
-  // |url_pattern| fields.
-  UrlFilterParser::Parse(std::move(parsed_rule.condition.url_filter),
-                         indexed_rule);
+  if (is_regex_rule) {
+    indexed_rule->url_pattern_type =
+        url_pattern_index::flat::UrlPatternType_REGEXP;
+    indexed_rule->url_pattern = std::move(*parsed_rule.condition.regex_filter);
+  } else {
+    // Parse the |anchor_left|, |anchor_right|, |url_pattern_type| and
+    // |url_pattern| fields.
+    UrlFilterParser::Parse(std::move(parsed_rule.condition.url_filter),
+                           indexed_rule);
+  }
 
   // url_pattern_index doesn't support patterns starting with a domain anchor
   // followed by a wildcard, e.g. ||*xyz.
@@ -465,7 +526,6 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   DCHECK(IsSubset(indexed_rule->options, flat_rule::OptionFlag_ANY));
   DCHECK(IsSubset(indexed_rule->element_types, flat_rule::ElementType_ANY));
   DCHECK_EQ(flat_rule::ActivationType_NONE, indexed_rule->activation_types);
-  DCHECK_NE(flat_rule::UrlPatternType_REGEXP, indexed_rule->url_pattern_type);
   DCHECK_NE(flat_rule::AnchorType_SUBDOMAIN, indexed_rule->anchor_right);
 
   return ParseResult::SUCCESS;

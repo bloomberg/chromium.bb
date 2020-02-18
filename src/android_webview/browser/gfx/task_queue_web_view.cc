@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "android_webview/browser/aw_feature_list.h"
+#include "android_webview/common/aw_features.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/containers/queue.h"
@@ -18,6 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
+#include "components/viz/common/features.h"
 
 namespace android_webview {
 
@@ -329,7 +330,7 @@ ScopedAllowGL::~ScopedAllowGL() {
 // static
 TaskQueueWebView* TaskQueueWebView::GetInstance() {
   static TaskQueueWebView* task_queue =
-      base::FeatureList::IsEnabled(features::kVizForWebView)
+      ::features::IsUsingVizForWebView()
           ? static_cast<TaskQueueWebView*>(new TaskQueueViz)
           : static_cast<TaskQueueWebView*>(new TaskQueueSingleThread);
   return task_queue;

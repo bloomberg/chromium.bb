@@ -8,18 +8,20 @@
 #include <memory>
 
 #include "osp/impl/quic/quic_connection_impl.h"
-#include "platform/api/logging.h"
-#include "platform/api/network_runner.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
-#include "platform/api/trace_logging.h"
 #include "platform/base/error.h"
 #include "third_party/chromium_quic/src/base/location.h"
 #include "third_party/chromium_quic/src/base/task_runner.h"
 #include "third_party/chromium_quic/src/net/third_party/quic/core/quic_constants.h"
 #include "third_party/chromium_quic/src/net/third_party/quic/platform/impl/quic_chromium_clock.h"
+#include "util/logging.h"
+#include "util/trace_logging.h"
+
+using openscreen::platform::TraceCategory;
 
 namespace openscreen {
+namespace osp {
 class QuicTaskRunner final : public ::base::TaskRunner {
  public:
   explicit QuicTaskRunner(platform::TaskRunner* task_runner);
@@ -60,11 +62,11 @@ bool QuicTaskRunner::RunsTasksInCurrentSequence() const {
 }
 
 QuicConnectionFactoryImpl::QuicConnectionFactoryImpl(
-    platform::NetworkRunner* network_runner)
-    : network_runner_(network_runner) {
-  task_runner_ = ::base::MakeRefCounted<QuicTaskRunner>(network_runner);
+    platform::TaskRunner* task_runner)
+    : task_runner_(task_runner) {
+  quic_task_runner_ = ::base::MakeRefCounted<QuicTaskRunner>(task_runner);
   alarm_factory_ = std::make_unique<::net::QuicChromiumAlarmFactory>(
-      task_runner_.get(), ::quic::QuicChromiumClock::GetInstance());
+      quic_task_runner_.get(), ::quic::QuicChromiumClock::GetInstance());
   ::quic::QuartcFactoryConfig factory_config;
   factory_config.alarm_factory = alarm_factory_.get();
   factory_config.clock = ::quic::QuicChromiumClock::GetInstance();
@@ -89,28 +91,28 @@ void QuicConnectionFactoryImpl::SetServerDelegate(
     // partial progress (i.e. "unwatch" all the sockets and call
     // sockets_.clear() to close the sockets)?
     auto create_result =
-        platform::UdpSocket::Create(network_runner_, this, endpoint);
+        platform::UdpSocket::Create(task_runner_, this, endpoint);
     if (!create_result) {
       OSP_LOG_ERROR << "failed to create socket (for " << endpoint
                     << "): " << create_result.error().message();
       continue;
     }
-    platform::UdpSocketUniquePtr server_socket = create_result.MoveValue();
-    Error bind_result = server_socket->Bind();
-    if (!bind_result.ok()) {
-      OSP_LOG_ERROR << "failed to bind socket (for " << endpoint
-                    << "): " << bind_result.message();
-      continue;
-    }
-    network_runner_->ReadRepeatedly(server_socket.get(), this);
+    platform::UdpSocketUniquePtr server_socket =
+        std::move(create_result.value());
+    server_socket->Bind();
     sockets_.emplace_back(std::move(server_socket));
   }
 }
 
 void QuicConnectionFactoryImpl::OnRead(
-    platform::UdpPacket packet,
-    platform::NetworkRunner* network_runner) {
+    platform::UdpSocket* socket,
+    ErrorOr<platform::UdpPacket> packet_or_error) {
   TRACE_SCOPED(TraceCategory::Quic, "QuicConnectionFactoryImpl::OnRead");
+  if (packet_or_error.is_error()) {
+    return;
+  }
+
+  platform::UdpPacket packet = std::move(packet_or_error.value());
   // Ensure that |packet.socket| is one of the instances owned by
   // QuicConnectionFactoryImpl.
   auto packet_ptr = &packet;
@@ -139,12 +141,12 @@ void QuicConnectionFactoryImpl::OnRead(
       connections_.emplace(packet.source(),
                            OpenConnection{result_ptr, packet.socket()});
       server_delegate_->OnIncomingConnection(std::move(result));
-      result_ptr->OnRead(std::move(packet), network_runner);
+      result_ptr->OnRead(socket, std::move(packet));
     }
   } else {
     OSP_VLOG << __func__ << ": data for existing connection from "
              << packet.source();
-    conn_it->second.connection->OnRead(std::move(packet), network_runner);
+    conn_it->second.connection->OnRead(socket, std::move(packet));
   }
 }
 
@@ -152,14 +154,14 @@ std::unique_ptr<QuicConnection> QuicConnectionFactoryImpl::Connect(
     const IPEndpoint& endpoint,
     QuicConnection::Delegate* connection_delegate) {
   auto create_result =
-      platform::UdpSocket::Create(network_runner_, this, endpoint);
+      platform::UdpSocket::Create(task_runner_, this, endpoint);
   if (!create_result) {
     OSP_LOG_ERROR << "failed to create socket: "
                   << create_result.error().message();
     // TODO(mfoltz): This method should return ErrorOr<uni_ptr<QuicConnection>>.
     return nullptr;
   }
-  platform::UdpSocketUniquePtr socket = create_result.MoveValue();
+  platform::UdpSocketUniquePtr socket = std::move(create_result.value());
   auto transport = std::make_unique<UdpTransport>(socket.get(), endpoint);
 
   ::quic::QuartcSessionConfig session_config;
@@ -172,8 +174,6 @@ std::unique_ptr<QuicConnection> QuicConnectionFactoryImpl::Connect(
   auto result = std::make_unique<QuicConnectionImpl>(
       this, connection_delegate, std::move(transport),
       quartc_factory_->CreateQuartcSession(session_config));
-
-  network_runner_->ReadRepeatedly(socket.get(), this);
 
   // TODO(btolsch): This presents a problem for multihomed receivers, which may
   // register as a different endpoint in their response.  I think QUIC is
@@ -201,7 +201,6 @@ void QuicConnectionFactoryImpl::OnConnectionClosed(QuicConnection* connection) {
                    [socket](const decltype(connections_)::value_type& entry) {
                      return entry.second.socket == socket;
                    }) == connections_.end()) {
-    network_runner_->CancelRead(socket);
     auto socket_it =
         std::find_if(sockets_.begin(), sockets_.end(),
                      [socket](const platform::UdpSocketUniquePtr& s) {
@@ -214,17 +213,14 @@ void QuicConnectionFactoryImpl::OnConnectionClosed(QuicConnection* connection) {
 
 void QuicConnectionFactoryImpl::OnError(platform::UdpSocket* socket,
                                         Error error) {
-  OSP_UNIMPLEMENTED();
+  OSP_LOG_ERROR << "failed to configure socket " << error.message();
 }
 
 void QuicConnectionFactoryImpl::OnSendError(platform::UdpSocket* socket,
                                             Error error) {
+  // TODO(crbug.com/openscreen/67): Implement this method.
   OSP_UNIMPLEMENTED();
 }
 
-void QuicConnectionFactoryImpl::OnRead(platform::UdpSocket* socket,
-                                       ErrorOr<platform::UdpPacket> packet) {
-  OSP_UNIMPLEMENTED();
-}
-
+}  // namespace osp
 }  // namespace openscreen

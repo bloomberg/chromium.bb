@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_endian.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
 
 namespace quic {
 
@@ -44,7 +44,6 @@ QuicTraceVisitor::QuicTraceVisitor(const QuicConnection* connection)
 }
 
 void QuicTraceVisitor::OnPacketSent(const SerializedPacket& serialized_packet,
-                                    QuicPacketNumber /*original_packet_number*/,
                                     TransmissionType /*transmission_type*/,
                                     QuicTime sent_time) {
   quic_trace::Event* event = trace_.add_events();
@@ -172,7 +171,7 @@ void QuicTraceVisitor::PopulateFrameInfo(const QuicFrame& frame,
 
       quic_trace::FlowControlInfo* info =
           frame_record->mutable_flow_control_info();
-      info->set_max_data(frame.window_update_frame->byte_offset);
+      info->set_max_data(frame.window_update_frame->max_data);
       if (!is_connection) {
         info->set_stream_id(frame.window_update_frame->stream_id);
       }
@@ -266,7 +265,8 @@ void QuicTraceVisitor::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame,
 
 void QuicTraceVisitor::OnSuccessfulVersionNegotiation(
     const ParsedQuicVersion& version) {
-  uint32_t tag = QuicEndian::HostToNet32(CreateQuicVersionLabel(version));
+  uint32_t tag =
+      quiche::QuicheEndian::HostToNet32(CreateQuicVersionLabel(version));
   std::string binary_tag(reinterpret_cast<const char*>(&tag), sizeof(tag));
   trace_.set_protocol_version(binary_tag);
 }

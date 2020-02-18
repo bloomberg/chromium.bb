@@ -8,6 +8,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/grit/generated_resources.h"
@@ -186,8 +187,8 @@ void CrostiniPackageNotification::UpdateProgress(PackageOperationStatus status,
           auto registration =
               crostini_registry_service->GetRegistration(app_id);
           if (registration.has_value() &&
-              registration->VmName() == container_id_.first &&
-              registration->ContainerName() == container_id_.second) {
+              registration->VmName() == container_id_.vm_name &&
+              registration->ContainerName() == container_id_.container_name) {
             app_id_ = app_id;
             app_count_++;
           }
@@ -268,8 +269,11 @@ void CrostiniPackageNotification::Close(bool by_user) {
 void CrostiniPackageNotification::Click(
     const base::Optional<int>& button_index,
     const base::Optional<base::string16>& reply) {
+  if (current_status_ != PackageOperationStatus::SUCCEEDED)
+    return;
+
   if (app_count_ == 0) {
-    LaunchCrostiniApp(profile_, kCrostiniTerminalId,
+    LaunchCrostiniApp(profile_, GetTerminalId(),
                       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   } else if (app_count_ == 1) {
     DCHECK(!app_id_.empty());

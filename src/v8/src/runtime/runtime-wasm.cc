@@ -71,7 +71,7 @@ RUNTIME_FUNCTION(Runtime_WasmIsValidFuncRefValue) {
   if (function->IsNull(isolate)) {
     return Smi::FromInt(true);
   }
-  if (WasmExportedFunction::IsWasmExportedFunction(*function)) {
+  if (WasmExternalFunction::IsWasmExternalFunction(*function)) {
     return Smi::FromInt(true);
   }
   return Smi::FromInt(false);
@@ -150,7 +150,12 @@ RUNTIME_FUNCTION(Runtime_WasmExceptionGetTag) {
   CONVERT_ARG_CHECKED(Object, except_obj_raw, 0);
   // TODO(mstarzinger): Manually box because parameters are not visited yet.
   Handle<Object> except_obj(except_obj_raw, isolate);
-  return *WasmExceptionPackage::GetExceptionTag(isolate, except_obj);
+  if (!except_obj->IsWasmExceptionPackage(isolate)) {
+    return ReadOnlyRoots(isolate).undefined_value();
+  }
+  Handle<WasmExceptionPackage> exception =
+      Handle<WasmExceptionPackage>::cast(except_obj);
+  return *WasmExceptionPackage::GetExceptionTag(isolate, exception);
 }
 
 RUNTIME_FUNCTION(Runtime_WasmExceptionGetValues) {
@@ -162,7 +167,12 @@ RUNTIME_FUNCTION(Runtime_WasmExceptionGetValues) {
   CONVERT_ARG_CHECKED(Object, except_obj_raw, 0);
   // TODO(mstarzinger): Manually box because parameters are not visited yet.
   Handle<Object> except_obj(except_obj_raw, isolate);
-  return *WasmExceptionPackage::GetExceptionValues(isolate, except_obj);
+  if (!except_obj->IsWasmExceptionPackage(isolate)) {
+    return ReadOnlyRoots(isolate).undefined_value();
+  }
+  Handle<WasmExceptionPackage> exception =
+      Handle<WasmExceptionPackage>::cast(except_obj);
+  return *WasmExceptionPackage::GetExceptionValues(isolate, exception);
 }
 
 RUNTIME_FUNCTION(Runtime_WasmRunInterpreter) {
@@ -552,7 +562,7 @@ RUNTIME_FUNCTION(Runtime_WasmTableFill) {
   Handle<WasmTableObject> table(
       WasmTableObject::cast(instance->tables().get(table_index)), isolate);
 
-  uint32_t table_size = static_cast<uint32_t>(table->entries().length());
+  uint32_t table_size = table->current_length();
 
   if (start > table_size) {
     return ThrowTableOutOfBounds(isolate, instance);

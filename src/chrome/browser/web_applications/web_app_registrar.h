@@ -5,63 +5,47 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_REGISTRAR_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_REGISTRAR_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
-#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chrome/browser/web_applications/abstract_web_app_database.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 namespace web_app {
 
 class WebApp;
-class WebAppRegistryUpdate;
 
-// A registry. This is a read-only container, which owns WebApp objects.
+using Registry = std::map<AppId, std::unique_ptr<WebApp>>;
+
+// A registry model. This is a read-only container, which owns WebApp objects.
 class WebAppRegistrar : public AppRegistrar {
  public:
-  explicit WebAppRegistrar(Profile* profile, AbstractWebAppDatabase* database);
+  explicit WebAppRegistrar(Profile* profile);
   ~WebAppRegistrar() override;
-
-  void RegisterApp(std::unique_ptr<WebApp> web_app);
-  std::unique_ptr<WebApp> UnregisterApp(const AppId& app_id);
-  void UnregisterAll();
 
   bool is_empty() const { return registry_.empty(); }
 
   const WebApp* GetAppById(const AppId& app_id) const;
 
-  using CommitCallback = base::OnceCallback<void(bool success)>;
-
-  // This is the writable API for the registry. Any updates should be written to
-  // LevelDb. There can be only 1 update at a time.
-  std::unique_ptr<WebAppRegistryUpdate> BeginUpdate();
-  void CommitUpdate(std::unique_ptr<WebAppRegistryUpdate> update,
-                    CommitCallback callback);
-
   // AppRegistrar:
-  void Init(base::OnceClosure callback) override;
-  WebAppRegistrar* AsWebAppRegistrar() override;
   bool IsInstalled(const AppId& app_id) const override;
   bool IsLocallyInstalled(const AppId& app_id) const override;
-  bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   bool WasInstalledByUser(const AppId& app_id) const override;
-  base::Optional<AppId> FindAppWithUrlInScope(const GURL& url) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const AppId& app_id) const override;
   std::string GetAppDescription(const AppId& app_id) const override;
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
-  LaunchContainer GetAppLaunchContainer(const AppId& app_id) const override;
-  void SetAppLaunchContainer(const AppId& app_id,
-                             LaunchContainer launch_container) override;
+  DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
+  DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
+  std::vector<WebApplicationIconInfo> GetAppIconInfos(
+      const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
 
   // Only range-based |for| loop supported. Don't use AppSet directly.
@@ -103,7 +87,7 @@ class WebAppRegistrar : public AppRegistrar {
     const_iterator end() const;
 
    private:
-    const WebAppRegistrar* registrar_;
+    const WebAppRegistrar* const registrar_;
 #if DCHECK_IS_ON()
     const size_t mutations_count_;
 #endif
@@ -112,35 +96,38 @@ class WebAppRegistrar : public AppRegistrar {
 
   const AppSet AllApps() const;
 
-  const Registry& registry_for_testing() const { return registry_; }
+ protected:
+  Registry& registry() { return registry_; }
+  void SetRegistry(Registry&& registry);
+
+  void CountMutation();
 
  private:
-  friend class WebAppRegistryUpdate;
-  FRIEND_TEST_ALL_PREFIXES(WebAppRegistrarTest, AllAppsMutable);
+  Registry registry_;
+#if DCHECK_IS_ON()
+  size_t mutations_count_ = 0;
+#endif
+  DISALLOW_COPY_AND_ASSIGN(WebAppRegistrar);
+};
+
+// A writable API for the registry model. Mutable WebAppRegistrar must be used
+// only by WebAppSyncBridge.
+class WebAppRegistrarMutable : public WebAppRegistrar {
+ public:
+  explicit WebAppRegistrarMutable(Profile* profile);
+  ~WebAppRegistrarMutable() override;
+
+  void InitRegistry(Registry&& registry);
 
   WebApp* GetAppByIdMutable(const AppId& app_id);
   AppSet AllAppsMutable();
 
-  void OnDatabaseOpened(base::OnceClosure callback, Registry registry);
-  void OnDataWritten(CommitCallback callback, bool success);
-
-  void CountMutation();
-
-  Registry registry_;
-
-  // An abstract database, not owned by this registrar.
-  AbstractWebAppDatabase* database_;
-
-  bool is_in_update_ = false;
-
-#if DCHECK_IS_ON()
-  size_t mutations_count_ = 0;
-#endif
-
-  base::WeakPtrFactory<WebAppRegistrar> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebAppRegistrar);
+  using WebAppRegistrar::CountMutation;
+  using WebAppRegistrar::registry;
 };
+
+// For testing and debug purposes.
+bool IsRegistryEqual(const Registry& registry, const Registry& registry2);
 
 }  // namespace web_app
 

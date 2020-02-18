@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "content/browser/indexed_db/cursor_impl.h"
+#include "content/browser/indexed_db/file_stream_reader_to_data_pipe.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -21,11 +23,15 @@
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
+#include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/transaction_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "storage/browser/blob/blob_storage_context.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "net/base/net_errors.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/database/database_util.h"
+#include "storage/browser/file_system/file_stream_reader.h"
 #include "url/origin.h"
 
 namespace content {
@@ -62,29 +68,176 @@ void CallAbortStatusCallbackOnIDBThread(
 
 }  // namespace
 
+// BlobDataItemReader implementation providing a BlobDataItem -> file adapter.
+class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
+ public:
+  IndexedDBDataItemReader(
+      IndexedDBDispatcherHost* host,
+      const base::FilePath& file_path,
+      base::Time expected_modification_time,
+      base::RepeatingClosure release_callback,
+      scoped_refptr<base::TaskRunner> file_task_runner,
+      scoped_refptr<base::TaskRunner> io_task_runner,
+      mojo::PendingReceiver<storage::mojom::BlobDataItemReader>
+          initial_receiver)
+      : host_(host),
+        file_path_(file_path),
+        expected_modification_time_(std::move(expected_modification_time)),
+        release_callback_(std::move(release_callback)),
+        file_task_runner_(std::move(file_task_runner)),
+        io_task_runner_(std::move(io_task_runner)) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(host);
+    DCHECK(file_task_runner_);
+
+    AddReader(std::move(initial_receiver));
+
+    // Unretained(this) is safe because |this| owns |receivers_|.
+    receivers_.set_disconnect_handler(
+        base::BindRepeating(&IndexedDBDataItemReader::OnClientDisconnected,
+                            base::Unretained(this)));
+  }
+
+  ~IndexedDBDataItemReader() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    release_callback_.Run();
+  }
+
+  void AddReader(mojo::PendingReceiver<BlobDataItemReader> receiver) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(receiver.is_valid());
+
+    receivers_.Add(this, std::move(receiver));
+  }
+
+  void Read(uint64_t offset,
+            uint64_t length,
+            mojo::ScopedDataPipeProducerHandle pipe,
+            ReadCallback callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    auto reader = storage::FileStreamReader::CreateForLocalFile(
+        file_task_runner_.get(), file_path_, offset,
+        expected_modification_time_);
+    auto adapter = std::make_unique<FileStreamReaderToDataPipe>(
+        std::move(reader), std::move(pipe));
+    auto* raw_adapter = adapter.get();
+
+    // Have the adapter (owning the reader) be owned by the result callback.
+    auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
+    auto result_callback = base::BindOnce(
+        [](std::unique_ptr<FileStreamReaderToDataPipe> reader,
+           scoped_refptr<base::SequencedTaskRunner> task_runner,
+           ReadCallback callback, int result) {
+          // |callback| is expected to be run on the original sequence
+          // that called this Read function, so post it back.
+          task_runner->PostTask(FROM_HERE,
+                                base::BindOnce(std::move(callback), result));
+        },
+        std::move(adapter), std::move(current_task_runner),
+        std::move(callback));
+
+    // On Windows, all async file IO needs to be done on the io thread.
+    // Do this on all platforms for consistency, even if not necessary on posix.
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](FileStreamReaderToDataPipe* adapter,
+               mojo::ScopedDataPipeProducerHandle pipe, uint64_t length,
+               base::OnceCallback<void(int)> result_callback) {
+              adapter->Start(std::move(result_callback), length);
+            },
+            // |raw_adapter| is owned by |result_callback|.
+            base::Unretained(raw_adapter), std::move(pipe), length,
+            std::move(result_callback)));
+  }
+
+  void ReadSideData(ReadSideDataCallback callback) override {
+    // This type should never have side data.
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    std::move(callback).Run(net::ERR_NOT_IMPLEMENTED, mojo_base::BigBuffer());
+  }
+
+ private:
+  void OnClientDisconnected() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (!receivers_.empty())
+      return;
+
+    host_->RemoveBoundReaders(file_path_);
+    // |this| is likely deleted at this point.
+  }
+
+  mojo::ReceiverSet<storage::mojom::BlobDataItemReader> receivers_;
+
+  // |this| is owned by |host|, so this raw "client pointer" is safe.
+  IndexedDBDispatcherHost* host_;
+
+  base::FilePath file_path_;
+  base::Time expected_modification_time_;
+  base::RepeatingClosure release_callback_;
+
+  // There are a lot of task runners in this class:
+  // * IndexedDBDataItemReader itself needs to run on the IDB sequence.
+  //   This is because releasing a ref needs to be done synchronously when
+  //   the mojo interface connection is broken to avoid racing with adding
+  //   refs, and the active blob registry is on the IDB sequence.
+  // * LocalFileStreamReader wants its own |file_task_runner_| to run
+  //   various asynchronous file operations on.
+  // * net::FileStream (used by LocalFileStreamReader) needs to be run
+  //   on an IO thread for asynchronous file operations (on Windows), which
+  //   is done by passing in an |io_task_runner| to do this.
+  scoped_refptr<base::TaskRunner> file_task_runner_;
+  scoped_refptr<base::TaskRunner> io_task_runner_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBDataItemReader);
+};
+
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     int ipc_process_id,
     scoped_refptr<IndexedDBContextImpl> indexed_db_context,
-    scoped_refptr<ChromeBlobStorageContext> blob_storage_context)
+    mojo::PendingRemote<storage::mojom::BlobStorageContext> remote)
     : indexed_db_context_(std::move(indexed_db_context)),
-      blob_storage_context_(std::move(blob_storage_context)),
+      file_task_runner_(
+          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                  base::TaskPriority::USER_VISIBLE})),
       ipc_process_id_(ipc_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(indexed_db_context_);
-  DCHECK(blob_storage_context_);
+  DCHECK(remote.is_valid());
+
+  // Bind the BlobStorageContext remote on the idb sequence.
+  IDBTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](IndexedDBDispatcherHost* host,
+             mojo::PendingRemote<storage::mojom::BlobStorageContext> remote) {
+            DCHECK_CALLED_ON_VALID_SEQUENCE(host->sequence_checker_);
+            host->mojo_blob_storage_context_.Bind(std::move(remote));
+          },
+          // As |this| is destroyed on the idb task runner, it is safe to
+          // pass it directly.
+          base::Unretained(this), std::move(remote)));
 }
 
 IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void IndexedDBDispatcherHost::AddBinding(
-    blink::mojom::IDBFactoryRequest request,
-    const url::Origin& origin) {
+void IndexedDBDispatcherHost::AddReceiver(
+    int render_process_id,
+    int render_frame_id,
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::IDBFactory> pending_receiver) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request), {origin});
+  DCHECK_EQ(render_process_id, ipc_process_id_);
+  receivers_.Add(this, std::move(pending_receiver),
+                 {origin, IndexedDBExecutionContextConnectionTracker(
+                              render_process_id, render_frame_id)});
 }
 
 void IndexedDBDispatcherHost::AddDatabaseBinding(
@@ -143,7 +296,7 @@ void IndexedDBDispatcherHost::GetDatabaseInfo(
         pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
@@ -157,7 +310,7 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
         pending_callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
@@ -177,7 +330,7 @@ void IndexedDBDispatcherHost::Open(
     int64_t transaction_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
@@ -192,8 +345,9 @@ void IndexedDBDispatcherHost::Open(
       std::move(transaction_receiver), context.origin);
   std::unique_ptr<IndexedDBPendingConnection> connection =
       std::make_unique<IndexedDBPendingConnection>(
-          std::move(callbacks), std::move(database_callbacks), ipc_process_id_,
-          transaction_id, version, std::move(create_transaction_callback));
+          std::move(callbacks), std::move(database_callbacks),
+          context.connection_tracker.CreateHandle(), transaction_id, version,
+          std::move(create_transaction_callback));
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
   indexed_db_context_->GetIDBFactory()->Open(name, std::move(connection),
@@ -206,7 +360,7 @@ void IndexedDBDispatcherHost::DeleteDatabase(
     bool force_close) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this->AsWeakPtr(), context.origin,
                              std::move(pending_callbacks), IDBTaskRunner()));
@@ -219,7 +373,7 @@ void IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabase(
     AbortTransactionsAndCompactDatabaseCallback mojo_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   base::OnceCallback<void(leveldb::Status)> callback_on_io = base::BindOnce(
       &CallCompactionStatusCallbackOnIDBThread, std::move(mojo_callback));
   indexed_db_context_->GetIDBFactory()->AbortTransactionsAndCompactDatabase(
@@ -230,7 +384,7 @@ void IndexedDBDispatcherHost::AbortTransactionsForDatabase(
     AbortTransactionsForDatabaseCallback mojo_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const auto& context = bindings_.dispatch_context();
+  const auto& context = receivers_.current_context();
   base::OnceCallback<void(leveldb::Status)> callback_on_io = base::BindOnce(
       &CallAbortStatusCallbackOnIDBThread, std::move(mojo_callback));
   indexed_db_context_->GetIDBFactory()->AbortTransactionsForDatabase(
@@ -247,6 +401,75 @@ void IndexedDBDispatcherHost::CreateAndBindTransactionImpl(
       transaction, origin, this->AsWeakPtr(), IDBTaskRunner());
   AddTransactionBinding(std::move(transaction_impl),
                         std::move(transaction_receiver));
+}
+
+void IndexedDBDispatcherHost::BindFileReader(
+    const base::FilePath& path,
+    base::Time expected_modification_time,
+    base::RepeatingClosure release_callback,
+    mojo::PendingReceiver<storage::mojom::BlobDataItemReader> receiver) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(receiver.is_valid());
+  DCHECK(file_task_runner_);
+
+  auto itr = file_reader_map_.find(path);
+  if (itr != file_reader_map_.end()) {
+    itr->second->AddReader(std::move(receiver));
+    return;
+  }
+
+  auto io_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+  auto reader = std::make_unique<IndexedDBDataItemReader>(
+      this, path, expected_modification_time, std::move(release_callback),
+      file_task_runner_, std::move(io_task_runner), std::move(receiver));
+  file_reader_map_.insert({path, std::move(reader)});
+}
+
+void IndexedDBDispatcherHost::RemoveBoundReaders(const base::FilePath& path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  file_reader_map_.erase(path);
+}
+
+void IndexedDBDispatcherHost::CreateAllBlobs(
+    const std::vector<IndexedDBBlobInfo>& blob_infos,
+    std::vector<blink::mojom::IDBBlobInfoPtr>* output_infos) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  IDB_TRACE("IndexedDBDispatcherHost::CreateAllBlobs");
+
+  DCHECK_EQ(blob_infos.size(), output_infos->size());
+  if (blob_infos.empty())
+    return;
+
+  // First, handle all the "file path" value blobs on this sequence.
+  for (size_t i = 0; i < blob_infos.size(); ++i) {
+    auto& blob_info = blob_infos[i];
+    auto& output_info = (*output_infos)[i];
+
+    auto receiver = output_info->blob.InitWithNewPipeAndPassReceiver();
+    if (blob_info.is_remote_valid()) {
+      output_info->uuid = blob_info.uuid();
+      blob_info.Clone(std::move(receiver));
+      continue;
+    }
+
+    auto element = storage::mojom::BlobDataItem::New();
+    // TODO(enne): do we have to handle unknown size here??
+    element->size = blob_info.size();
+    element->side_data_size = 0;
+    element->content_type = base::UTF16ToUTF8(blob_info.type());
+    element->type = storage::mojom::BlobDataItemType::kIndexedDB;
+
+    BindFileReader(blob_info.file_path(), blob_info.last_modified(),
+                   blob_info.release_callback(),
+                   element->reader.InitWithNewPipeAndPassReceiver());
+
+    // Write results to output_info.
+    output_info->uuid = base::GenerateGUID();
+
+    mojo_blob_storage_context()->RegisterFromDataItem(
+        std::move(receiver), output_info->uuid, std::move(element));
+  }
 }
 
 void IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings() {

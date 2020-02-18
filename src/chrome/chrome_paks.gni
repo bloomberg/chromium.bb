@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/locales.gni")
+import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
+import("//chromeos/components/media_app_ui/media_app_ui.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//ui/base/ui_features.gni")
 import("chrome_repack_locales.gni")
@@ -58,12 +60,12 @@ template("chrome_repack_percent") {
     }
     if (is_chromeos) {
       sources += [
-        "$root_gen_dir/ash/components/resources/ash_components_resources_${percent}_percent.pak",
+        "$root_gen_dir/ash/app_list/resources/app_list_resources_${percent}_percent.pak",
         "$root_gen_dir/ash/login/resources/login_resources_${percent}_percent.pak",
         "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak",
       ]
       deps += [
-        "//ash/components/resources",
+        "//ash/app_list/resources",
         "//ash/login/resources",
         "//ui/chromeos/resources",
       ]
@@ -71,10 +73,6 @@ template("chrome_repack_percent") {
     if (enable_extensions) {
       sources += [ "$root_gen_dir/extensions/extensions_browser_resources_${percent}_percent.pak" ]
       deps += [ "//extensions:extensions_browser_resources" ]
-    }
-    if (enable_app_list) {
-      sources += [ "$root_gen_dir/ash/app_list/resources/app_list_resources_${percent}_percent.pak" ]
-      deps += [ "//ash/app_list/resources" ]
     }
 
     output = "${invoker.output_dir}/chrome_${percent}_percent.pak"
@@ -94,9 +92,6 @@ template("chrome_extra_paks") {
       "$root_gen_dir/chrome/browser_resources.pak",
       "$root_gen_dir/chrome/chrome_unscaled_resources.pak",
       "$root_gen_dir/chrome/common_resources.pak",
-      "$root_gen_dir/chrome/invalidations_resources.pak",
-      "$root_gen_dir/chrome/net_internals_resources.pak",
-      "$root_gen_dir/chrome/quota_internals_resources.pak",
       "$root_gen_dir/components/autofill/core/browser/autofill_address_rewriter_resources.pak",
       "$root_gen_dir/components/components_resources.pak",
       "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
@@ -109,9 +104,6 @@ template("chrome_extra_paks") {
     deps = [
       "//chrome/app/theme:chrome_unscaled_resources",
       "//chrome/browser:resources",
-      "//chrome/browser/resources:invalidations_resources",
-      "//chrome/browser/resources:net_internals_resources",
-      "//chrome/browser/resources:quota_internals_resources",
       "//chrome/common:resources",
       "//components/autofill/core/browser:autofill_address_rewriter_resources",
       "//components/resources",
@@ -129,26 +121,29 @@ template("chrome_extra_paks") {
       sources += invoker.additional_paks
     }
 
-    if (is_android) {
-      sources += [ "$root_gen_dir/chrome/webapks_ui_resources.pak" ]
-      deps += [ "//chrome/browser/resources:webapks_ui_resources" ]
-    } else {
+    if (!is_android) {
       # New paks should be added here by default.
       sources += [
-        "$root_gen_dir/chrome/bluetooth_internals_resources.pak",
+        "$root_gen_dir/chrome/bookmarks_resources.pak",
         "$root_gen_dir/chrome/component_extension_resources.pak",
+        "$root_gen_dir/chrome/dev_ui_resources.pak",
         "$root_gen_dir/chrome/downloads_resources.pak",
+        "$root_gen_dir/chrome/history_resources.pak",
         "$root_gen_dir/chrome/local_ntp_resources.pak",
+        "$root_gen_dir/chrome/new_tab_page_resources.pak",
         "$root_gen_dir/chrome/settings_resources.pak",
         "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
         "$root_gen_dir/headless/headless_lib_resources.pak",
       ]
       deps += [
+        "//chrome/browser/resources:bookmarks_resources",
         "//chrome/browser/resources:component_extension_resources",
+        "//chrome/browser/resources:dev_ui_paks",
         "//chrome/browser/resources:downloads_resources",
+        "//chrome/browser/resources:history_resources",
         "//chrome/browser/resources:local_ntp_resources",
+        "//chrome/browser/resources:new_tab_page_resources",
         "//chrome/browser/resources:settings_resources",
-        "//chrome/browser/resources/bluetooth_internals:resources",
         "//content/browser/devtools:devtools_resources",
         "//headless:resources",
       ]
@@ -160,6 +155,10 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/cellular_setup_resources.pak",
         "$root_gen_dir/chrome/multidevice_setup_resources.pak",
         "$root_gen_dir/chrome/os_settings_resources.pak",
+        "$root_gen_dir/chromeos/chromeos_help_app_bundle_resources.pak",
+        "$root_gen_dir/chromeos/chromeos_help_app_resources.pak",
+        "$root_gen_dir/chromeos/chromeos_media_app_bundle_resources.pak",
+        "$root_gen_dir/chromeos/chromeos_media_app_resources.pak",
         "$root_gen_dir/chromeos/chromeos_resources.pak",
         "$root_gen_dir/third_party/ink/ink_resources.pak",
         "$root_gen_dir/ui/file_manager/file_manager_resources.pak",
@@ -171,6 +170,10 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/chromeos:cellular_setup_resources",
         "//chrome/browser/resources/chromeos:multidevice_setup_resources",
         "//chromeos/resources",
+        "//chromeos/resources:help_app_bundle_resources",
+        "//chromeos/resources:help_app_resources",
+        "//chromeos/resources:media_app_bundle_resources",
+        "//chromeos/resources:media_app_resources",
         "//third_party/ink:ink_resources",
         "//ui/file_manager:resources",
       ]
@@ -199,6 +202,10 @@ template("chrome_extra_paks") {
     if (enable_webui_tab_strip) {
       sources += [ "$root_gen_dir/chrome/tab_strip_resources.pak" ]
       deps += [ "//chrome/browser/resources:tab_strip_resources" ]
+    }
+    if (enable_kaleidoscope) {
+      sources += [ "$root_gen_dir/chrome/browser/media/kaleidoscope/internal/kaleidoscope_resources.pak" ]
+      deps += [ "//chrome/browser/media/kaleidoscope/internal:kaleidoscope_resources_grit" ]
     }
   }
 }

@@ -14,6 +14,7 @@ You can add a .testignore file to a dir to disable scanning it.
 from __future__ import print_function
 
 import errno
+import glob
 import json
 import multiprocessing
 import os
@@ -43,7 +44,9 @@ TEST_SIG_TIMEOUT = 5
 # How long (in seconds) to let tests clean up after CTRL+C is sent.
 SIGINT_TIMEOUT = 5
 # How long (in seconds) to let all children clean up after CTRL+C is sent.
-CTRL_C_TIMEOUT = SIGINT_TIMEOUT + 5
+# This has to be big enough to try and tear down ~72 parallel tests (which is
+# how many cores we commonly have in Googler workstations today).
+CTRL_C_TIMEOUT = SIGINT_TIMEOUT + 15
 
 
 # The cache file holds various timing information.  This is used later on to
@@ -86,7 +89,7 @@ SPECIAL_TESTS = {
     'scripts/cros_extract_deps_unittest': INSIDE,
     'scripts/cros_generate_update_payload_unittest': INSIDE,
     'scripts/cros_mark_android_as_stable_unittest': INSIDE,
-    'scripts/cros_oobe_autoconfig_unittest': INSIDE,
+    'scripts/cros_oobe_autoconfig_unittest': SKIP, # https://crbug.com/1000761
     'scripts/cros_install_debug_syms_unittest': INSIDE,
     'scripts/cros_list_modified_packages_unittest': INSIDE,
     'scripts/cros_mark_as_stable_unittest': INSIDE,
@@ -95,17 +98,22 @@ SPECIAL_TESTS = {
     'scripts/cros_run_unit_tests_unittest': INSIDE,
     'scripts/dep_tracker_unittest': INSIDE,
     'scripts/gconv_strip_unittest': INSIDE,
+    'scripts/merge_logs_unittest': INSIDE,
     'scripts/test_image_unittest': INSIDE,
     'service/dependency_unittest': INSIDE,
 
+    # These require 3rd party modules that are in the chroot.
+    'cli/cros/cros_bisect_unittest': INSIDE,
+    'cli/cros/cros_flash_unittest': INSIDE,
+    'cli/cros/cros_stage_unittest': INSIDE,
+    'lib/dev_server_wrapper_unittest': INSIDE,
+    'lib/xbuddy/build_artifact_unittest': INSIDE,
+    'lib/xbuddy/common_util_unittest': INSIDE,
+    'lib/xbuddy/downloader_unittest': INSIDE,
+    'lib/xbuddy/xbuddy_unittest': INSIDE,
+
     # Tests that need to run outside the chroot.
     'lib/cgroups_unittest': OUTSIDE,
-
-    # Running cros_sdk_unittest through run_tests is triggering
-    # a hang inside lvm.
-    # TODO(crbug.com/764335): Change this back to OUTSIDE once
-    # the lvm hang is resolved.
-    'scripts/cros_sdk_unittest': SKIP,
 
     # The proto compile unittest requires network access to install protoc
     # with CIPD. Since ebuilds have no network access and our tests are run
@@ -116,7 +124,7 @@ SPECIAL_TESTS = {
 
     # Tests that take >2 minutes to run.  All the slow tests are
     # disabled atm though ...
-    #'scripts/cros_portage_upgrade_unittest': SKIP,
+    # 'scripts/cros_portage_upgrade_unittest': SKIP,
 }
 
 SLOW_TESTS = {
@@ -135,11 +143,12 @@ SLOW_TESTS = {
 }
 
 
-def RunTest(test, cmd, tmpfile, finished, total):
+def RunTest(test, interp, cmd, tmpfile, finished, total):
   """Run |test| with the |cmd| line and save output to |tmpfile|.
 
   Args:
     test: The human readable name for this test.
+    interp: Which Python version to use.
     cmd: The full command line to run the test.
     tmpfile: File to write test output to.
     finished: Counter to update when this test finishes running.
@@ -148,10 +157,10 @@ def RunTest(test, cmd, tmpfile, finished, total):
   Returns:
     The exit code of the test.
   """
-  logging.info('Starting %s', test)
+  logging.info('Starting %s %s', interp, test)
 
   with cros_build_lib.TimedSection() as timer:
-    ret = cros_build_lib.RunCommand(
+    ret = cros_build_lib.run(
         cmd, capture_output=True, error_code_ok=True,
         combine_stdout_stderr=True, debug_level=logging.DEBUG,
         int_timeout=SIGINT_TIMEOUT)
@@ -164,7 +173,8 @@ def RunTest(test, cmd, tmpfile, finished, total):
     else:
       func = logging.info
       msg = 'Finished'
-    func('%s [%i/%i] %s (%s)', msg, finished.value, total, test, timer.delta)
+    func('%s [%i/%i] %s %s (%s)', msg, finished.value, total, interp, test,
+         timer.delta)
 
     # Save the timing for this test run for future usage.
     seconds = timer.delta.total_seconds()
@@ -248,7 +258,8 @@ def SortTests(tests, jobs=1, timing_cache_file=None):
   return ret
 
 
-def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1):
+def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
+                  pyver=None):
   """Build the tests to execute.
 
   Take care of special test handling like whether it needs to be inside or
@@ -260,13 +271,22 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1):
     network: Whether to execute network tests.
     config_skew: Whether to execute config skew tests.
     jobs: How many jobs will we run in parallel.
+    pyver: Which versions of Python to test against.
 
   Returns:
     List of tests to execute and their full command line.
   """
   testsets = []
-  for test in SortTests(tests, jobs=jobs):
-    cmd = [test]
+
+  def PythonWrappers(tests):
+    for test in tests:
+      if pyver is None or pyver == 'py2':
+        yield (test, 'python2')
+      if pyver is None or pyver == 'py3':
+        yield (test, 'python3')
+
+  for (test, interp) in PythonWrappers(SortTests(tests, jobs=jobs)):
+    cmd = [interp, test]
 
     # See if this test requires special consideration.
     status = SPECIAL_TESTS.get(test)
@@ -278,7 +298,8 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1):
         if not chroot_available:
           logging.info('Skipping %s: chroot not available', test)
           continue
-        cmd = ['cros_sdk', '--', os.path.join('..', '..', 'chromite', test)]
+        cmd = ['cros_sdk', '--', interp,
+               os.path.join('..', '..', 'chromite', test)]
     elif status is OUTSIDE:
       if cros_build_lib.IsInsideChroot():
         logging.info('Skipping %s: must be outside the chroot', test)
@@ -302,13 +323,13 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1):
     cmd = ['timeout', '--preserve-status', '-k', '%sm' % TEST_SIG_TIMEOUT,
            '%sm' % TEST_TIMEOUT] + cmd
 
-    testsets.append((test, cmd, tempfile.TemporaryFile()))
+    testsets.append((test, interp, cmd, tempfile.TemporaryFile()))
 
   return testsets
 
 
 def RunTests(tests, jobs=1, chroot_available=True, network=False,
-             config_skew=False, dryrun=False, failfast=False):
+             config_skew=False, dryrun=False, failfast=False, pyver=None):
   """Execute |paths| with |jobs| in parallel (including |network| tests).
 
   Args:
@@ -319,6 +340,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
     config_skew: Whether to run config skew tests.
     dryrun: Do everything but execute the test.
     failfast: Stop on first failure
+    pyver: Which versions of Python to test against.
 
   Returns:
     True if all tests pass, else False.
@@ -337,10 +359,10 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
   try:
     # Build up the testsets.
     testsets = BuildTestSets(tests, chroot_available, network,
-                             config_skew, jobs=jobs)
+                             config_skew, jobs=jobs, pyver=pyver)
 
     # Fork each test and add it to the list.
-    for test, cmd, tmpfile in testsets:
+    for test, interp, cmd, tmpfile in testsets:
       if failed and failfast:
         logging.error('failure detected; stopping new tests')
         break
@@ -357,7 +379,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
             logging.info('Would have run: %s', cros_build_lib.CmdToStr(cmd))
             ret = 0
           else:
-            ret = RunTest(test, cmd, tmpfile, finished, len(testsets))
+            ret = RunTest(test, interp, cmd, tmpfile, finished, len(testsets))
         except KeyboardInterrupt:
           pass
         except BaseException:
@@ -379,14 +401,21 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False,
     CleanupChildren(pids)
 
   # Walk through the results.
+  passed_tests = []
   failed_tests = []
-  for test, cmd, tmpfile in testsets:
+  for test, interp, cmd, tmpfile in testsets:
     tmpfile.seek(0)
-    output = tmpfile.read()
+    output = tmpfile.read().decode('utf-8', 'replace')
+    desc = '[%s] %s' % (interp, test)
     if output:
-      failed_tests.append(test)
-      logging.error('### LOG: %s\n%s\n', test, output.rstrip())
+      failed_tests.append(desc)
+      logging.error('### LOG: %s\n%s\n', desc, output.rstrip())
+    else:
+      passed_tests.append(desc)
 
+  if passed_tests:
+    logging.debug('The following %i tests passed:\n  %s', len(passed_tests),
+                  '\n  '.join(sorted(passed_tests)))
   if failed_tests:
     logging.error('The following %i tests failed:\n  %s', len(failed_tests),
                   '\n  '.join(sorted(failed_tests)))
@@ -464,6 +493,22 @@ def FindTests(search_paths=('.',)):
           yield test
 
 
+def ClearPythonCacheFiles():
+  """Clear cache files in the chromite repo.
+
+  When switching branches, modules can be deleted or renamed, but the old pyc
+  files stick around and confuse Python.  This is a bit of a hack, but should
+  be good enough for now.
+  """
+  result = cros_build_lib.dbg_run(
+      ['git', 'ls-tree', '-r', '-z', '--name-only', 'HEAD'], encoding='utf-8',
+      capture_output=True)
+  for subdir in set(os.path.dirname(x) for x in result.stdout.split('\0')):
+    for path in glob.glob(os.path.join(subdir, '*.pyc')):
+      osutils.SafeUnlink(path)
+    osutils.RmDir(os.path.join(subdir, '__pycache__'), ignore_missing=True)
+
+
 def ChrootAvailable():
   """See if `cros_sdk` will work at all.
 
@@ -512,6 +557,12 @@ def GetParser():
   parser.add_argument('--config_skew', default=False, action='store_true',
                       help='Run tests that check if new config matches legacy '
                            'config')
+  parser.add_argument('--py2', dest='pyver', action='store_const', const='py2',
+                      help='Only run Python 2 unittests.')
+  parser.add_argument('--py3', dest='pyver', action='store_const', const='py3',
+                      help='Only run Python 3 unittests.')
+  parser.add_argument('--clear-pycache', action='store_true',
+                      help='Clear .pyc files, then exit without running tests.')
   parser.add_argument('tests', nargs='*', default=None, help='Tests to run')
   return parser
 
@@ -523,7 +574,8 @@ def main(argv):
 
   # Process list output quickly as it takes no privileges.
   if opts.list:
-    print('\n'.join(sorted(opts.tests or FindTests((constants.CHROMITE_DIR,)))))
+    tests = set(opts.tests or FindTests((constants.CHROMITE_DIR,)))
+    print('\n'.join(sorted(tests)))
     return
 
   # Many of our tests require a valid chroot to run. Make sure it's created
@@ -532,7 +584,7 @@ def main(argv):
   if (not os.path.exists(chroot) and
       ChrootAvailable() and
       not cros_build_lib.IsInsideChroot()):
-    cros_build_lib.RunCommand(['cros_sdk', '--create'])
+    cros_build_lib.run(['cros_sdk', '--create'])
 
   # This is a cheesy hack to make sure gsutil is populated in the cache before
   # we run tests. This is a partial workaround for crbug.com/468838.
@@ -544,6 +596,22 @@ def main(argv):
   # Make them happy.
   os.chdir(constants.CHROMITE_DIR)
   tests = opts.tests or FindTests()
+
+  # Clear python caches now that we're root, in the right dir, but before we
+  # run any tests.
+  ClearPythonCacheFiles()
+  if opts.clear_pycache:
+    return
+
+  # Sanity check the environment.  https://crbug.com/1015450
+  st = os.stat('/')
+  if st.st_mode & 0o7777 != 0o755:
+    cros_build_lib.Die('The root directory has broken permissions: %o\n'
+                       'Fix with: sudo chmod 755 /' % (st.st_mode,))
+  if st.st_uid or st.st_gid:
+    cros_build_lib.Die('The root directory has broken ownership: %i:%i'
+                       ' (should be 0:0)\nFix with: sudo chown 0:0 /' %
+                       (st.st_uid, st.st_gid))
 
   if opts.quick:
     SPECIAL_TESTS.update(SLOW_TESTS)
@@ -568,7 +636,7 @@ def main(argv):
       result = RunTests(
           tests, jobs=jobs, chroot_available=ChrootAvailable(),
           network=opts.network, config_skew=opts.config_skew,
-          dryrun=opts.dryrun, failfast=opts.failfast)
+          dryrun=opts.dryrun, failfast=opts.failfast, pyver=opts.pyver)
 
     if result:
       logging.info('All tests succeeded! (%s total)', timer.delta)

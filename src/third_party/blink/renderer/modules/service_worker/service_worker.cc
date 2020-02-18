@@ -56,7 +56,7 @@ const AtomicString& ServiceWorker::InterfaceName() const {
 
 void ServiceWorker::postMessage(ScriptState* script_state,
                                 const ScriptValue& message,
-                                Vector<ScriptValue>& transfer,
+                                HeapVector<ScriptValue>& transfer,
                                 ExceptionState& exception_state) {
   PostMessageOptions* options = PostMessageOptions::Create();
   if (!transfer.IsEmpty())
@@ -87,6 +87,8 @@ void ServiceWorker::postMessage(ScriptState* script_state,
 
   BlinkTransferableMessage msg;
   msg.message = serialized_message;
+  msg.sender_origin =
+      GetExecutionContext()->GetSecurityOrigin()->IsolatedCopy();
   msg.ports = MessagePort::DisentanglePorts(
       ExecutionContext::From(script_state), transferables.message_ports,
       exception_state);
@@ -116,10 +118,8 @@ String ServiceWorker::scriptURL() const {
 
 String ServiceWorker::state() const {
   switch (state_) {
-    case mojom::blink::ServiceWorkerState::kUnknown:
-      // The web platform should never see this internal state
-      NOTREACHED();
-      return "unknown";
+    case mojom::blink::ServiceWorkerState::kParsed:
+      return "parsed";
     case mojom::blink::ServiceWorkerState::kInstalling:
       return "installing";
     case mojom::blink::ServiceWorkerState::kInstalled:

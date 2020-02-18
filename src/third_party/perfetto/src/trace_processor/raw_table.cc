@@ -18,7 +18,9 @@
 
 #include <inttypes.h>
 
-#include "src/trace_processor/ftrace_descriptors.h"
+#include "perfetto/base/compiler.h"
+#include "perfetto/ext/base/string_utils.h"
+#include "src/trace_processor/gfp_flags.h"
 #include "src/trace_processor/sqlite/sqlite_utils.h"
 #include "src/trace_processor/variadic.h"
 
@@ -33,8 +35,24 @@
 namespace perfetto {
 namespace trace_processor {
 
+namespace {
+std::tuple<uint32_t, uint32_t> ParseKernelReleaseVersion(
+    base::StringView system_release) {
+  size_t first_dot_pos = system_release.find(".");
+  size_t second_dot_pos = system_release.find(".", first_dot_pos + 1);
+  auto major_version = base::StringToUInt32(
+      system_release.substr(0, first_dot_pos).ToStdString());
+  auto minor_version = base::StringToUInt32(
+      system_release
+          .substr(first_dot_pos + 1, second_dot_pos - (first_dot_pos + 1))
+          .ToStdString());
+  return std::make_tuple(major_version.value(), minor_version.value());
+}
+}  // namespace
+
 RawTable::RawTable(sqlite3* db, const TraceStorage* storage)
     : storage_(storage) {
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_FTRACE)
   auto fn = [](sqlite3_context* ctx, int argc, sqlite3_value** argv) {
     auto* thiz = static_cast<RawTable*>(sqlite3_user_data(ctx));
     thiz->ToSystrace(ctx, argc, argv);
@@ -42,6 +60,9 @@ RawTable::RawTable(sqlite3* db, const TraceStorage* storage)
   sqlite3_create_function(db, "to_ftrace", 1,
                           SQLITE_UTF8 | SQLITE_DETERMINISTIC, this, fn, nullptr,
                           nullptr);
+#else   // PERFETTO_BUILDFLAG(PERFETTO_TP_FTRACE)
+  base::ignore_result(db);
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_FTRACE)
 }
 
 void RawTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
@@ -66,15 +87,38 @@ uint32_t RawTable::RowCount() {
 
 int RawTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
   info->estimated_cost = RowCount();
+  info->sqlite_omit_order_by = true;
 
   // Only the string columns are handled by SQLite
-  info->order_by_consumed = true;
   size_t name_index = schema().ColumnIndexFromName("name");
   for (size_t i = 0; i < qc.constraints().size(); i++) {
-    info->omit[i] = qc.constraints()[i].iColumn != static_cast<int>(name_index);
+    info->sqlite_omit_constraint[i] =
+        qc.constraints()[i].column != static_cast<int>(name_index);
   }
 
   return SQLITE_OK;
+}
+
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_FTRACE)
+bool RawTable::ParseGfpFlags(Variadic value, base::StringWriter* writer) {
+  if (!storage_->metadata().MetadataExists(metadata::KeyIDs::system_name) ||
+      !storage_->metadata().MetadataExists(metadata::KeyIDs::system_release)) {
+    return false;
+  }
+
+  const Variadic& name =
+      storage_->metadata().GetScalarMetadata(metadata::KeyIDs::system_name);
+  base::StringView system_name = storage_->GetString(name.string_value);
+  if (system_name != "Linux")
+    return false;
+
+  const Variadic& release =
+      storage_->metadata().GetScalarMetadata(metadata::KeyIDs::system_release);
+  base::StringView system_release = storage_->GetString(release.string_value);
+  auto version = ParseKernelReleaseVersion(system_release);
+
+  WriteGfpFlag(value.uint_value, version, writer);
+  return true;
 }
 
 void RawTable::FormatSystraceArgs(NullTermStringView event_name,
@@ -85,7 +129,7 @@ void RawTable::FormatSystraceArgs(NullTermStringView event_name,
   auto ub = std::find(lb, set_ids.end(), arg_set_id + 1);
 
   auto start_row = static_cast<uint32_t>(std::distance(set_ids.begin(), lb));
-
+  auto end_row = static_cast<uint32_t>(std::distance(set_ids.begin(), ub));
   using ValueWriter = std::function<void(const Variadic&)>;
   auto write_value = [this, writer](const Variadic& value) {
     switch (value.type) {
@@ -125,12 +169,17 @@ void RawTable::FormatSystraceArgs(NullTermStringView event_name,
     uint32_t arg_row = start_row + arg_idx;
     const auto& args = storage_->args();
     const auto& key = storage_->GetString(args.keys()[arg_row]);
-    const auto& value = args.arg_values()[arg_row];
 
     writer->AppendChar(' ');
     writer->AppendString(key.c_str(), key.size());
     writer->AppendChar('=');
-    value_fn(value);
+
+    if (key == "gfp_flags" &&
+        ParseGfpFlags(args.arg_values()[arg_row], writer)) {
+      return;
+    }
+
+    value_fn(args.arg_values()[arg_row]);
   };
 
   if (event_name == "sched_switch") {
@@ -227,7 +276,11 @@ void RawTable::FormatSystraceArgs(NullTermStringView event_name,
           writer->AppendUnsignedInt(value.uint_value & ((1 << 20) - 1));
         });
     writer->AppendString(" ino ");
-    write_value_at_index(MFA::kIInoFieldNumber - 1, write_value);
+    write_value_at_index(MFA::kIInoFieldNumber - 1,
+                         [writer](const Variadic& value) {
+                           PERFETTO_DCHECK(value.type == Variadic::Type::kUint);
+                           writer->AppendHexInt(value.uint_value);
+                         });
     writer->AppendString(" page=0000000000000000");
     writer->AppendString(" pfn=");
     write_value_at_index(MFA::kPfnFieldNumber - 1, write_value);
@@ -239,9 +292,9 @@ void RawTable::FormatSystraceArgs(NullTermStringView event_name,
                          });
     return;
   } else if (event_name == "print") {
-    using P = protos::pbzero::PrintFtraceEvent;
-
-    uint32_t arg_row = start_row + P::kBufFieldNumber - 1;
+    // 'ip' may be the first field or it may be dropped. We only care
+    // about the 'buf' field which will always appear last.
+    uint32_t arg_row = end_row - 1;
     const auto& args = storage_->args();
     const auto& value = args.arg_values()[arg_row];
     const auto& str = storage_->GetString(value.string_value);
@@ -362,6 +415,7 @@ void RawTable::ToSystrace(sqlite3_context* ctx,
   FormatSystraceArgs(event_name, raw_evts.arg_set_ids()[row], &writer);
   sqlite3_result_text(ctx, writer.CreateStringCopy(), -1, free);
 }
+#endif  // PERFETTO_BUILDFLAG(PERFETTO_TP_FTRACE)
 
 }  // namespace trace_processor
 }  // namespace perfetto

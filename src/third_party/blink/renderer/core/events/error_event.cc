@@ -44,7 +44,8 @@ ErrorEvent* ErrorEvent::CreateSanitizedError(ScriptState* script_state) {
   return MakeGarbageCollected<ErrorEvent>(
       "Script error.",
       std::make_unique<SourceLocation>(String(), 0, 0, nullptr),
-      ScriptValue::CreateNull(script_state), &script_state->World());
+      ScriptValue::CreateNull(script_state->GetIsolate()),
+      &script_state->World());
 }
 
 ErrorEvent::ErrorEvent()
@@ -108,8 +109,8 @@ ScriptValue ErrorEvent::error(ScriptState* script_state) const {
   //    thus passing it around would cause leakage.
   // 2) Errors cannot be cloned (or serialized):
   if (World() != &script_state->World() || error_.IsEmpty())
-    return ScriptValue::CreateNull(script_state);
-  return ScriptValue(script_state, error_.Get(script_state));
+    return ScriptValue::CreateNull(script_state->GetIsolate());
+  return ScriptValue(script_state->GetIsolate(), error_.Get(script_state));
 }
 
 void ErrorEvent::Trace(blink::Visitor* visitor) {

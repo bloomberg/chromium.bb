@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/win/registry.h"
-#include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
 namespace gfx {
@@ -76,8 +75,9 @@ class CachedFontRenderParams {
         params_->subpixel_rendering = GetSubpixelRenderingGeometry();
       }
     }
-    singleton_hwnd_observer_ = std::make_unique<SingletonHwndObserver>(
-        base::Bind(&CachedFontRenderParams::OnWndProc, base::Unretained(this)));
+    singleton_hwnd_observer_ =
+        std::make_unique<SingletonHwndObserver>(base::BindRepeating(
+            &CachedFontRenderParams::OnWndProc, base::Unretained(this)));
     return *params_;
   }
 

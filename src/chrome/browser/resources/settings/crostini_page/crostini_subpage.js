@@ -10,7 +10,8 @@
 Polymer({
   is: 'settings-crostini-subpage',
 
-  behaviors: [PrefsBehavior, WebUIListenerBehavior],
+  behaviors:
+      [PrefsBehavior, WebUIListenerBehavior, settings.RouteOriginBehavior],
 
   properties: {
     /** Preferences state. */
@@ -30,6 +31,25 @@ Polymer({
       },
     },
 
+    /** @private {boolean} */
+    showArcAdbSideloading_: {
+      type: Boolean,
+      computed: 'and_(isArcAdbSideloadingSupported_, isAndroidEnabled_)',
+    },
+
+    /** @private {boolean} */
+    isArcAdbSideloadingSupported_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('ArcAdbSideloadingSupported');
+      },
+    },
+
+    /** @private {boolean} */
+    isAndroidEnabled_: {
+      type: Boolean,
+    },
+
     /**
      * Whether the uninstall options should be displayed.
      * @private {boolean}
@@ -39,7 +59,13 @@ Polymer({
     },
   },
 
-  observers: ['onCrostiniEnabledChanged_(prefs.crostini.enabled.value)'],
+  /** settings.RouteOriginBehavior override */
+  route_: settings.routes.CROSTINI_DETAILS,
+
+  observers: [
+    'onCrostiniEnabledChanged_(prefs.crostini.enabled.value)',
+    'onArcEnabledChanged_(prefs.arc.enabled.value)'
+  ],
 
   attached: function() {
     const callback = (status) => {
@@ -48,6 +74,15 @@ Polymer({
     this.addWebUIListener('crostini-installer-status-changed', callback);
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestCrostiniInstallerStatus();
+  },
+
+  ready: function() {
+    const r = settings.routes;
+    this.addFocusConfig_(r.CROSTINI_SHARED_PATHS, '#crostini-shared-paths');
+    this.addFocusConfig_(
+        r.CROSTINI_SHARED_USB_DEVICES, '#crostini-shared-usb-devices');
+    this.addFocusConfig_(r.CROSTINI_EXPORT_IMPORT, '#crostini-export-import');
+    this.addFocusConfig_(r.CROSTINI_ANDROID_ADB, '#crostini-enable-arc-adb');
   },
 
   /** @private */
@@ -59,8 +94,18 @@ Polymer({
   },
 
   /** @private */
+  onArcEnabledChanged_: function(enabled) {
+    this.isAndroidEnabled_ = enabled;
+  },
+
+  /** @private */
   onExportImportClick_: function() {
     settings.navigateTo(settings.routes.CROSTINI_EXPORT_IMPORT);
+  },
+
+  /** @private */
+  onEnableArcAdbClick_: function() {
+    settings.navigateTo(settings.routes.CROSTINI_ANDROID_ADB);
   },
 
   /**
@@ -79,5 +124,10 @@ Polymer({
   /** @private */
   onSharedUsbDevicesClick_: function() {
     settings.navigateTo(settings.routes.CROSTINI_SHARED_USB_DEVICES);
+  },
+
+  /** @private */
+  and_: function(a, b) {
+    return a && b;
   },
 });

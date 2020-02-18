@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("../../../gn/test.gni")
+
 source_set("tables") {
   sources = [
     "macros.h",
     "macros_internal.h",
+    "profiler_tables.h",
     "slice_tables.h",
     "track_tables.h",
   ]
@@ -36,4 +39,18 @@ source_set("unittests") {
     "../../../gn:default_deps",
     "../../../gn:gtest_and_gmock",
   ]
+}
+
+if (enable_perfetto_benchmarks) {
+  source_set("benchmarks") {
+    testonly = true
+    deps = [
+      ":tables",
+      "../../../gn:benchmark",
+      "../../../gn:default_deps",
+    ]
+    sources = [
+      "macros_benchmark.cc",
+    ]
+  }
 }

@@ -34,7 +34,7 @@ CheckoutInfo = collections.namedtuple(
 class ChrootPathResolver(object):
   """Perform path resolution to/from the chroot.
 
-  Args:
+  Attributes:
     source_path: Value to override default source root inference.
     source_from_path_repo: Whether to infer the source root from the converted
       path's repo parent during inbound translation; overrides |source_path|.

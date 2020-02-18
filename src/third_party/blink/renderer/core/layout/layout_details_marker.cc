@@ -21,37 +21,29 @@
 #include "third_party/blink/renderer/core/layout/layout_details_marker.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/html_details_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/paint/details_marker_painter.h"
 
 namespace blink {
 
-using namespace html_names;
-
 LayoutDetailsMarker::LayoutDetailsMarker(Element* element)
     : LayoutBlockFlow(element) {}
 
 LayoutDetailsMarker::Orientation LayoutDetailsMarker::GetOrientation() const {
-  switch (StyleRef().GetWritingMode()) {
-    case WritingMode::kHorizontalTb:
-      if (StyleRef().IsLeftToRightDirection())
-        return IsOpen() ? kDown : kRight;
-      return IsOpen() ? kDown : kLeft;
-    case WritingMode::kVerticalRl:
-      if (StyleRef().IsLeftToRightDirection())
-        return IsOpen() ? kLeft : kDown;
-      return IsOpen() ? kLeft : kUp;
-    case WritingMode::kVerticalLr:
-      if (StyleRef().IsLeftToRightDirection())
-        return IsOpen() ? kRight : kDown;
-      return IsOpen() ? kRight : kUp;
-    // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
-    default:
-      break;
+  // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
+  const auto mode = StyleRef().GetWritingMode();
+  DCHECK(mode != WritingMode::kSidewaysRl && mode != WritingMode::kSidewaysLr);
+
+  if (IsOpen()) {
+    if (mode == WritingMode::kHorizontalTb)
+      return kDown;
+    return (mode == WritingMode::kVerticalRl) ? kLeft : kRight;
   }
-  NOTREACHED();
-  return kRight;
+  if (mode == WritingMode::kHorizontalTb)
+    return StyleRef().IsLeftToRightDirection() ? kRight : kLeft;
+  return StyleRef().IsLeftToRightDirection() ? kDown : kUp;
 }
 
 void LayoutDetailsMarker::Paint(const PaintInfo& paint_info) const {
@@ -61,13 +53,14 @@ void LayoutDetailsMarker::Paint(const PaintInfo& paint_info) const {
 bool LayoutDetailsMarker::IsOpen() const {
   for (LayoutObject* layout_object = Parent(); layout_object;
        layout_object = layout_object->Parent()) {
-    if (!layout_object->GetNode())
+    const auto* node = layout_object->GetNode();
+    if (!node)
       continue;
-    if (IsHTMLDetailsElement(*layout_object->GetNode()))
-      return !To<Element>(layout_object->GetNode())
-                  ->getAttribute(kOpenAttr)
-                  .IsNull();
-    if (IsHTMLInputElement(*layout_object->GetNode()))
+
+    if (auto* details = DynamicTo<HTMLDetailsElement>(node))
+      return details->FastHasAttribute(html_names::kOpenAttr);
+
+    if (IsA<HTMLInputElement>(*node))
       return true;
   }
 

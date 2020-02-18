@@ -72,37 +72,48 @@ constexpr size_t kUnwindBatchSize = 1000;
 static std::vector<std::string> kSkipMaps{"heapprofd_client.so"};
 #pragma GCC diagnostic pop
 
-std::unique_ptr<unwindstack::Regs> CreateFromRawData(unwindstack::ArchEnum arch,
-                                                     void* raw_data) {
-  std::unique_ptr<unwindstack::Regs> ret;
-  // unwindstack::RegsX::Read returns a raw ptr which we are expected to free.
-  switch (arch) {
-    case unwindstack::ARCH_X86:
-      ret.reset(unwindstack::RegsX86::Read(raw_data));
-      break;
-    case unwindstack::ARCH_X86_64:
-      ret.reset(unwindstack::RegsX86_64::Read(raw_data));
-      break;
-    case unwindstack::ARCH_ARM:
-      ret.reset(unwindstack::RegsArm::Read(raw_data));
-      break;
-    case unwindstack::ARCH_ARM64:
-      ret.reset(unwindstack::RegsArm64::Read(raw_data));
-      break;
-    case unwindstack::ARCH_MIPS:
-      ret.reset(unwindstack::RegsMips::Read(raw_data));
-      break;
-    case unwindstack::ARCH_MIPS64:
-      ret.reset(unwindstack::RegsMips64::Read(raw_data));
-      break;
-    case unwindstack::ARCH_UNKNOWN:
-      ret.reset(nullptr);
-      break;
-  }
-  return ret;
+size_t GetRegsSize(unwindstack::Regs* regs) {
+  if (regs->Is32Bit())
+    return sizeof(uint32_t) * regs->total_regs();
+  return sizeof(uint64_t) * regs->total_regs();
+}
+
+void ReadFromRawData(unwindstack::Regs* regs, void* raw_data) {
+  memcpy(regs->RawData(), raw_data, GetRegsSize(regs));
 }
 
 }  // namespace
+
+std::unique_ptr<unwindstack::Regs> CreateRegsFromRawData(
+    unwindstack::ArchEnum arch,
+    void* raw_data) {
+  std::unique_ptr<unwindstack::Regs> ret;
+  switch (arch) {
+    case unwindstack::ARCH_X86:
+      ret.reset(new unwindstack::RegsX86());
+      break;
+    case unwindstack::ARCH_X86_64:
+      ret.reset(new unwindstack::RegsX86_64());
+      break;
+    case unwindstack::ARCH_ARM:
+      ret.reset(new unwindstack::RegsArm());
+      break;
+    case unwindstack::ARCH_ARM64:
+      ret.reset(new unwindstack::RegsArm64());
+      break;
+    case unwindstack::ARCH_MIPS:
+      ret.reset(new unwindstack::RegsMips());
+      break;
+    case unwindstack::ARCH_MIPS64:
+      ret.reset(new unwindstack::RegsMips64());
+      break;
+    case unwindstack::ARCH_UNKNOWN:
+      break;
+  }
+  if (ret)
+    ReadFromRawData(ret.get(), raw_data);
+  return ret;
+}
 
 StackOverlayMemory::StackOverlayMemory(std::shared_ptr<unwindstack::Memory> mem,
                                        uint64_t sp,
@@ -165,8 +176,8 @@ void FileDescriptorMaps::Reset() {
 
 bool DoUnwind(WireMessage* msg, UnwindingMetadata* metadata, AllocRecord* out) {
   AllocMetadata* alloc_metadata = msg->alloc_header;
-  std::unique_ptr<unwindstack::Regs> regs(
-      CreateFromRawData(alloc_metadata->arch, alloc_metadata->register_data));
+  std::unique_ptr<unwindstack::Regs> regs(CreateRegsFromRawData(
+      alloc_metadata->arch, alloc_metadata->register_data));
   if (regs == nullptr) {
     PERFETTO_DLOG("Unable to construct unwindstack::Regs");
     unwindstack::FrameData frame_data{};
@@ -195,6 +206,9 @@ bool DoUnwind(WireMessage* msg, UnwindingMetadata* metadata, AllocRecord* out) {
     if (attempt > 0) {
       PERFETTO_DLOG("Reparsing maps");
       metadata->ReparseMaps();
+      // Regs got invalidated by libuwindstack's speculative jump.
+      // Reset.
+      ReadFromRawData(regs.get(), alloc_metadata->register_data);
       out->reparsed_map = true;
 #if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
       unwinder.SetJitDebug(metadata->jit_debug.get(), regs->Arch());
@@ -289,9 +303,7 @@ void UnwindingWorker::HandleUnwindBatch(pid_t peer_pid) {
     shmem.EndRead(std::move(buf));
     // Reparsing takes time, so process the rest in a new batch to avoid timing
     // out.
-    // TODO(fmayer): Do not special case blocking mode.
-    if (client_data.client_config.block_client &&
-        reparses_before < client_data.metadata.reparses) {
+    if (reparses_before < client_data.metadata.reparses) {
       repost_task = true;
       break;
     }
@@ -360,7 +372,7 @@ void UnwindingWorker::PostHandoffSocket(HandoffData handoff_data) {
 void UnwindingWorker::HandleHandoffSocket(HandoffData handoff_data) {
   auto sock = base::UnixSocket::AdoptConnected(
       handoff_data.sock.ReleaseFd(), this, this->thread_task_runner_.get(),
-      base::SockType::kStream);
+      base::SockFamily::kUnix, base::SockType::kStream);
   pid_t peer_pid = sock->peer_pid();
 
   UnwindingMetadata metadata(peer_pid, std::move(handoff_data.maps_fd),

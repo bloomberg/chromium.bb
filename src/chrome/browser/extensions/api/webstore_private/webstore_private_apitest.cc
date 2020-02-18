@@ -251,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath missing_directory = temp_dir.Take();
-  EXPECT_TRUE(base::DeleteFile(missing_directory, true));
+  EXPECT_TRUE(base::DeleteFileRecursively(missing_directory));
   WebstoreInstaller::SetDownloadDirectoryForTests(&missing_directory);
 
   // Now run the install test, which should succeed.
@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
 
   // Cleanup.
   if (base::DirectoryExists(missing_directory))
-    EXPECT_TRUE(base::DeleteFile(missing_directory, true));
+    EXPECT_TRUE(base::DeleteFileRecursively(missing_directory));
 }
 
 // Tests passing a localized name.
@@ -380,7 +380,8 @@ class ExtensionWebstorePrivateApiTestChild
       : embedded_test_server_(std::make_unique<net::EmbeddedTestServer>()),
         logged_in_user_mixin_(&mixin_host_,
                               chromeos::LoggedInUserMixin::LogInType::kChild,
-                              embedded_test_server_.get()) {
+                              embedded_test_server_.get(),
+                              this) {
     // Suppress regular user login to enable child user login.
     set_chromeos_user_ = false;
   }
@@ -425,8 +426,7 @@ class ExtensionWebstorePrivateApiTestChild
   void SetUpOnMainThread() override {
     mixin_host_.SetUpOnMainThread();
     ExtensionWebstorePrivateApiTest::SetUpOnMainThread();
-    logged_in_user_mixin_.SetUpOnMainThreadHelper(
-        host_resolver(), this, true /* issue_any_scope_token */);
+    logged_in_user_mixin_.LogInUser(true /*issue_any_scope_token*/);
   }
 
   void TearDownOnMainThread() override {

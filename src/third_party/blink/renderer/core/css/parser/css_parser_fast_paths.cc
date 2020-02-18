@@ -24,8 +24,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 static inline bool IsSimpleLengthPropertyID(CSSPropertyID property_id,
                                             bool& accepts_negative_numbers) {
   switch (property_id) {
@@ -532,7 +530,7 @@ CSSValue* CSSParserFastPaths::ParseColor(const String& string,
                                           string.length(), quirks_mode);
   if (!parse_result)
     return nullptr;
-  return CSSColorValue::Create(color);
+  return cssvalue::CSSColorValue::Create(color);
 }
 
 bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
@@ -607,7 +605,10 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kWebkitInlineFlex ||
              value_id == CSSValueID::kNone || value_id == CSSValueID::kGrid ||
              value_id == CSSValueID::kInlineGrid ||
-             value_id == CSSValueID::kContents;
+             value_id == CSSValueID::kContents ||
+             (RuntimeEnabledFeatures::MathMLCoreEnabled() &&
+              (value_id == CSSValueID::kMath ||
+               value_id == CSSValueID::kInlineMath));
     case CSSPropertyID::kDominantBaseline:
       return value_id == CSSValueID::kAuto ||
              value_id == CSSValueID::kAlphabetic ||
@@ -656,7 +657,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kNone || value_id == CSSValueID::kAuto;
     case CSSPropertyID::kOverflowWrap:
       return value_id == CSSValueID::kNormal ||
-             value_id == CSSValueID::kBreakWord;
+             value_id == CSSValueID::kBreakWord ||
+             value_id == CSSValueID::kAnywhere;
     case CSSPropertyID::kOverflowBlock:
     case CSSPropertyID::kOverflowInline:
     case CSSPropertyID::kOverflowX:
@@ -886,6 +888,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyID::kFontKerning:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kNone;
+    case CSSPropertyID::kFontOpticalSizing:
+      return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone;
     case CSSPropertyID::kWebkitFontSmoothing:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone ||
              value_id == CSSValueID::kAntialiased ||
@@ -1061,6 +1065,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kFlexDirection:
     case CSSPropertyID::kFlexWrap:
     case CSSPropertyID::kFontKerning:
+    case CSSPropertyID::kFontOpticalSizing:
     case CSSPropertyID::kWebkitFontSmoothing:
     case CSSPropertyID::kLineBreak:
     case CSSPropertyID::kWebkitLineBreak:
@@ -1092,6 +1097,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
 bool CSSParserFastPaths::IsPartialKeywordPropertyID(CSSPropertyID property_id) {
   switch (property_id) {
     case CSSPropertyID::kDisplay:
+    case CSSPropertyID::kListStyleType:
       return true;
     default:
       return false;

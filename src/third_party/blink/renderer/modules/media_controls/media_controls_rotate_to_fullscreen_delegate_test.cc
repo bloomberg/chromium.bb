@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -34,12 +33,11 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
+using testing::_;
 using testing::AtLeast;
 using testing::Return;
 
 namespace blink {
-
-using namespace html_names;
 
 namespace {
 
@@ -72,7 +70,7 @@ class MockChromeClient : public EmptyChromeClient {
     Fullscreen::DidExitFullscreen(*frame.GetDocument());
   }
 
-  MOCK_CONST_METHOD0(GetScreenInfo, WebScreenInfo());
+  MOCK_CONST_METHOD1(GetScreenInfo, WebScreenInfo(LocalFrame&));
 };
 
 class StubLocalFrameClient : public EmptyLocalFrameClient {
@@ -110,7 +108,7 @@ class MediaControlsRotateToFullscreenDelegateTest
     SetupPageWithClients(&clients,
                          MakeGarbageCollected<StubLocalFrameClient>());
     video_ = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
-    GetVideo().setAttribute(kControlsAttr, g_empty_atom);
+    GetVideo().setAttribute(html_names::kControlsAttr, g_empty_atom);
     // Most tests should call GetDocument().body()->AppendChild(&GetVideo());
     // This is not done automatically, so that tests control timing of `Attach`.
   }
@@ -147,7 +145,7 @@ class MediaControlsRotateToFullscreenDelegateTest
     // If scripts are not enabled, controls will always be shown.
     GetFrame().GetSettings()->SetScriptEnabled(true);
 
-    GetVideo().removeAttribute(kControlsAttr);
+    GetVideo().removeAttribute(html_names::kControlsAttr);
   }
 
   void DispatchEvent(EventTarget& target, const AtomicString& type) {
@@ -191,7 +189,7 @@ void MediaControlsRotateToFullscreenDelegateTest::InitScreenAndVideo(
   // Set initial screen orientation (called by `Attach` during `AppendChild`).
   WebScreenInfo screen_info;
   screen_info.orientation_type = initial_screen_orientation;
-  EXPECT_CALL(GetChromeClient(), GetScreenInfo())
+  EXPECT_CALL(GetChromeClient(), GetScreenInfo(_))
       .Times(AtLeast(1))
       .WillRepeatedly(Return(screen_info));
 
@@ -219,11 +217,8 @@ void MediaControlsRotateToFullscreenDelegateTest::InitScreenAndVideo(
 }
 
 void MediaControlsRotateToFullscreenDelegateTest::PlayVideo() {
-  {
-    std::unique_ptr<UserGestureIndicator> gesture =
-        LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
-    GetVideo().Play();
-  }
+  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  GetVideo().Play();
   test::RunPendingTasks();
 }
 
@@ -232,7 +227,7 @@ void MediaControlsRotateToFullscreenDelegateTest::RotateTo(
   WebScreenInfo screen_info;
   screen_info.orientation_type = new_screen_orientation;
   testing::Mock::VerifyAndClearExpectations(&GetChromeClient());
-  EXPECT_CALL(GetChromeClient(), GetScreenInfo())
+  EXPECT_CALL(GetChromeClient(), GetScreenInfo(_))
       .Times(AtLeast(1))
       .WillRepeatedly(Return(screen_info));
   DispatchEvent(GetWindow(), event_type_names::kOrientationchange);
@@ -306,11 +301,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_FALSE(IsObservingVisibility());
 
   // Should start observing visibility when played.
-  {
-    std::unique_ptr<UserGestureIndicator> gesture =
-        LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
-    GetVideo().Play();
-  }
+  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  GetVideo().Play();
   test::RunPendingTasks();
   EXPECT_TRUE(IsObservingVisibility());
   EXPECT_FALSE(ObservedVisibility());
@@ -327,11 +319,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_FALSE(ObservedVisibility());
 
   // Should resume observing visibility when playback resumes.
-  {
-    std::unique_ptr<UserGestureIndicator> gesture =
-        LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
-    GetVideo().Play();
-  }
+  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  GetVideo().Play();
   test::RunPendingTasks();
   EXPECT_TRUE(IsObservingVisibility());
   EXPECT_FALSE(ObservedVisibility());
@@ -621,11 +610,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Simulate the webpage requesting fullscreen on some other element than the
   // video (in this case document.body).
-  {
-    std::unique_ptr<UserGestureIndicator> gesture =
-        LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
-    Fullscreen::RequestFullscreen(*GetDocument().body());
-  }
+  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  Fullscreen::RequestFullscreen(*GetDocument().body());
   test::RunPendingTasks();
   EXPECT_TRUE(Fullscreen::IsFullscreenElement(*GetDocument().body()));
   EXPECT_FALSE(GetVideo().IsFullscreen());
@@ -652,11 +638,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_EQ(SimpleOrientation::kLandscape, ComputeVideoOrientation());
 
   // Start in fullscreen.
-  {
-    std::unique_ptr<UserGestureIndicator> gesture =
-        LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
-    GetMediaControls().EnterFullscreen();
-  }
+  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  GetMediaControls().EnterFullscreen();
   // n.b. omit to call Fullscreen::From(GetDocument()).DidEnterFullscreen() so
   // that MediaControlsOrientationLockDelegate doesn't trigger, which avoids
   // having to create deviceorientation events here to unlock it again.
@@ -683,11 +666,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_EQ(SimpleOrientation::kPortrait, ComputeVideoOrientation());
 
   // Start in fullscreen.
-  {
-    std::unique_ptr<UserGestureIndicator> gesture =
-        LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
-    GetMediaControls().EnterFullscreen();
-  }
+  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  GetMediaControls().EnterFullscreen();
   // n.b. omit to call Fullscreen::From(GetDocument()).DidEnterFullscreen() so
   // that MediaControlsOrientationLockDelegate doesn't trigger, which avoids
   // having to create deviceorientation events here to unlock it again.
@@ -715,11 +695,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Simulate the webpage requesting fullscreen on some other element than the
   // video (in this case document.body).
-  {
-    std::unique_ptr<UserGestureIndicator> gesture =
-        LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
-    Fullscreen::RequestFullscreen(*GetDocument().body());
-  }
+  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  Fullscreen::RequestFullscreen(*GetDocument().body());
   test::RunPendingTasks();
   EXPECT_TRUE(Fullscreen::IsFullscreenElement(*GetDocument().body()));
   EXPECT_FALSE(GetVideo().IsFullscreen());

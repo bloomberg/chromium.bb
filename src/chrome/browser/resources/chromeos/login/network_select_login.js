@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Polymer element wrapping cr-network-select for login/oobe.
+ * @fileoverview Polymer element wrapping network-select for login/oobe.
  */
 
 {
@@ -84,7 +84,7 @@
 
     /** Refreshes the list of the networks. */
     refresh: function() {
-      /** @type {!CrNetworkSelectElement} */ (this.$.networkSelect)
+      /** @type {!NetworkSelectElement} */ (this.$.networkSelect)
           .refreshNetworks();
       this.networkLastSelectedGuid_ = '';
     },
@@ -102,42 +102,6 @@
     /** Called when dialog is hidden. */
     onBeforeHide: function() {
       this.is_shown_ = false;
-    },
-
-    /**
-     * Call after strings are loaded to set CrOncStrings for cr-network-select.
-     */
-    setCrOncStrings: function() {
-      CrOncStrings = {
-        OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
-        OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
-        OncTypeMobile: loadTimeData.getString('OncTypeMobile'),
-        OncTypeTether: loadTimeData.getString('OncTypeTether'),
-        OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
-        OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
-        networkListItemConnected:
-            loadTimeData.getString('networkListItemConnected'),
-        networkListItemConnecting:
-            loadTimeData.getString('networkListItemConnecting'),
-        networkListItemConnectingTo:
-            loadTimeData.getString('networkListItemConnectingTo'),
-        networkListItemInitializing:
-            loadTimeData.getString('networkListItemInitializing'),
-        networkListItemScanning:
-            loadTimeData.getString('networkListItemScanning'),
-        networkListItemNotConnected:
-            loadTimeData.getString('networkListItemNotConnected'),
-        networkListItemNoNetwork:
-            loadTimeData.getString('networkListItemNoNetwork'),
-        vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
-
-        // Additional strings for custom items.
-        addWiFiListItemName: loadTimeData.getString('addWiFiListItemName'),
-        proxySettingsListItemName:
-            loadTimeData.getString('proxySettingsListItemName'),
-        offlineDemoSetupListItemName:
-            loadTimeData.getString('offlineDemoSetupListItemName'),
-      };
     },
 
     /**
@@ -231,7 +195,7 @@
     },
 
     /**
-     * Event triggered when a cr-network-list-item connection state changes.
+     * Event triggered when a network-list-item connection state changes.
      * @param {!CustomEvent<!OncMojo.NetworkStateProperties>} event
      * @private
      */
@@ -326,16 +290,15 @@
       var oncType = OncMojo.getNetworkTypeString(networkState.type);
       var guid = networkState.guid;
 
+      var shouldShowNetworkDetails = isConnected ||
+          networkState.connectionState ==
+              chromeos.networkConfig.mojom.ConnectionStateType.kConnecting;
       // Cellular should normally auto connect. If it is selected, show the
       // details UI since there is no configuration UI for Cellular.
-      if (networkState.type ==
-          chromeos.networkConfig.mojom.NetworkType.kCellular) {
-        chrome.send('showNetworkDetails', [oncType, guid]);
-        return;
-      }
+      shouldShowNetworkDetails |= networkState.type ==
+          chromeos.networkConfig.mojom.NetworkType.kCellular;
 
-      // Allow proxy to be set for connected networks.
-      if (isConnected) {
+      if (shouldShowNetworkDetails) {
         chrome.send('showNetworkDetails', [oncType, guid]);
         return;
       }
@@ -345,19 +308,32 @@
         return;
       }
 
-      chrome.networkingPrivate.startConnect(guid, () => {
-        const lastError = chrome.runtime.lastError;
-        if (!lastError)
-          return;
-        const message = lastError.message;
-        if (message == 'connecting' || message == 'connect-canceled' ||
-            message == 'connected' || message == 'Error.InvalidNetworkGuid') {
-          return;
+      const networkConfig =
+          network_config.MojoInterfaceProviderImpl.getInstance()
+              .getMojoServiceRemote();
+
+      networkConfig.startConnect(guid).then(response => {
+        switch (response.result) {
+          case mojom.StartConnectResult.kSuccess:
+            return;
+          case mojom.StartConnectResult.kInvalidGuid:
+          case mojom.StartConnectResult.kInvalidState:
+          case mojom.StartConnectResult.kCanceled:
+            // TODO(stevenjb/khorimoto): Consider handling these cases.
+            return;
+          case mojom.StartConnectResult.kNotConfigured:
+            if (!OncMojo.networkTypeIsMobile(networkState.type)) {
+              chrome.send('showNetworkConfig', [guid]);
+            } else {
+              console.error('Cellular network is not configured: ' + guid);
+            }
+            return;
+          case mojom.StartConnectResult.kBlocked:
+          case mojom.StartConnectResult.kUnknown:
+            console.error(
+                'startConnect failed for: ' + guid + ': ' + response.message);
+            return;
         }
-        console.error(
-            'networkingPrivate.startConnect error: ' + message +
-            ' For: ' + guid);
-        chrome.send('showNetworkConfig', [guid]);
       });
     },
 

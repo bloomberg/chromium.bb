@@ -19,7 +19,6 @@ class GURL;
 
 namespace content {
 class RenderFrameHost;
-class RenderViewHost;
 class WebContents;
 class WebUI;
 class WebUIMessageHandler;
@@ -88,9 +87,7 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
 
   // A callback to notify the delegate that a web dialog has been shown.
   // |webui| is the WebUI with which the dialog is associated.
-  // |render_view_host| is the RenderViewHost for the shown dialog.
-  virtual void OnDialogShown(content::WebUI* webui,
-                             content::RenderViewHost* render_view_host) {}
+  virtual void OnDialogShown(content::WebUI* webui) {}
 
   // A callback to notify the delegate that the window is requesting to be
   // closed.  If this returns true, the dialog is closed, otherwise the
@@ -123,6 +120,10 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // have a title bar.  This is useful when presenting branded interfaces.
   virtual bool ShouldShowDialogTitle() const = 0;
 
+  // A callback to allow the delegate to center title text. Default is
+  // false.
+  virtual bool ShouldCenterDialogTitleText() const;
+
   // Returns true if the dialog should show a close button in the title bar.
   // Default implementation returns true.
   virtual bool ShouldShowCloseButton() const;
@@ -142,8 +143,8 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
                                     content::WebContents** out_new_contents);
 
   // A callback to control whether a WebContents will be created. Returns
-  // false to disallow the creation. Return true to use the default handler.
-  virtual bool HandleShouldCreateWebContents();
+  // true to disallow the creation. Return false to use the default handler.
+  virtual bool HandleShouldOverrideWebContentsCreation();
 
   // Stores the dialog bounds.
   virtual void StoreDialogSize(const gfx::Size& dialog_size) {}

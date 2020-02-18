@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.payments;
 
 import android.content.Context;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.JsonWriter;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -25,6 +26,8 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentOptions;
+import org.chromium.payments.mojom.PaymentShippingOption;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -158,8 +161,12 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     public boolean canMakePayment() {
         return PaymentsExperimentalFeatures.isEnabled(
                        ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)
-                ? getMissingFields() == CompletionStatus.COMPLETE && mHaveRequestedAutofillData
+                ? strictCanMakePayment()
                 : mHasValidNumberAndName;
+    }
+
+    public boolean strictCanMakePayment() {
+        return getMissingFields() == CompletionStatus.COMPLETE && mHaveRequestedAutofillData;
     }
 
     @Override
@@ -172,8 +179,8 @@ public class AutofillPaymentInstrument extends PaymentInstrument
             String unusedOrigin, String unusedIFrameOrigin, byte[][] unusedCertificateChain,
             Map<String, PaymentMethodData> unusedMethodDataMap, PaymentItem unusedTotal,
             List<PaymentItem> unusedDisplayItems,
-            Map<String, PaymentDetailsModifier> unusedModifiers,
-            InstrumentDetailsCallback callback) {
+            Map<String, PaymentDetailsModifier> unusedModifiers, PaymentOptions paymentOptions,
+            List<PaymentShippingOption> shippingOptions, InstrumentDetailsCallback callback) {
         // The billing address should never be null for a credit card at this point.
         assert mBillingAddress != null;
         assert AutofillAddress.checkAddressCompletionStatus(
@@ -284,7 +291,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
             mSecurityCode = "";
         }
 
-        mCallback.onInstrumentDetailsReady(mMethodName, stringWriter.toString());
+        mCallback.onInstrumentDetailsReady(mMethodName, stringWriter.toString(), new PayerData());
         mCallback = null;
     }
 
@@ -425,6 +432,12 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         return mCard;
     }
 
+    /** @return The billing address associated with this payment instrument. */
+    @Nullable
+    public AutofillProfile getBillingProfile() {
+        return mBillingAddress;
+    }
+
     @Override
     public String getPreviewString(String labelSeparator, int maxLength) {
         StringBuilder previewString = new StringBuilder(getLabel());
@@ -442,14 +455,17 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     /** @return a bit vector of the card's missing fields. */
     public int getMissingFields() {
         int missingFields = CompletionStatus.COMPLETE;
-        if (mBillingAddress == null)
+        if (mBillingAddress == null) {
             missingFields |= CompletionStatus.CREDIT_CARD_NO_BILLING_ADDRESS;
-        if (!mCard.hasValidCreditCardExpirationDate())
+        }
+        if (!mCard.hasValidCreditCardExpirationDate()) {
             missingFields |= CompletionStatus.CREDIT_CARD_EXPIRED;
+        }
 
         if (mCard.getIsLocal()) {
-            if (TextUtils.isEmpty(mCard.getName()))
+            if (TextUtils.isEmpty(mCard.getName())) {
                 missingFields |= CompletionStatus.CREDIT_CARD_NO_CARDHOLDER;
+            }
 
             if (PersonalDataManager.getInstance().getBasicCardIssuerNetwork(
                         mCard.getNumber().toString(), true)
@@ -458,8 +474,9 @@ public class AutofillPaymentInstrument extends PaymentInstrument
             }
         }
 
-        if (!mIsMatchingMerchantsRequestedCardType)
+        if (!mIsMatchingMerchantsRequestedCardType) {
             missingFields |= CompletionStatus.CREDIT_CARD_TYPE_MISMATCH;
+        }
 
         return missingFields;
     }

@@ -11,6 +11,7 @@
 #include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/web_app_specifics.pb.h"
 
 // Keep this file in sync with the .proto files in this directory.
 //
@@ -110,6 +111,9 @@ const char* ProtoEnumToString(
     sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type);
 
 const char* ProtoEnumToString(
+    sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode);
+
+const char* ProtoEnumToString(
     sync_pb::WifiConfigurationSpecificsData::SecurityType security_type);
 
 const char* ProtoEnumToString(
@@ -126,9 +130,6 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::WifiConfigurationSpecificsData::ProxyConfiguration::ProxyOption
         proxy_option);
-
-const char* ProtoEnumToString(
-    sync_pb::WifiCredentialSpecifics::SecurityClass security_class);
 
 }  // namespace syncer
 

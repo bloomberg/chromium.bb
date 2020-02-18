@@ -280,25 +280,14 @@ class PersonalDataManagerTestBase {
   AccountInfo SetActiveSecondaryAccount() {
     AccountInfo account_info;
     account_info.email = kSyncTransportAccountEmail;
-    account_info.account_id = "account_id";
+    account_info.account_id = CoreAccountId("account_id");
     sync_service_.SetAuthenticatedAccountInfo(account_info);
     sync_service_.SetIsAuthenticatedAccountPrimary(false);
     return account_info;
   }
 
-  void MoveJapanCityToStreetAddress(PersonalDataManager* personal_data,
-                                    int move_times) {
-    base::RunLoop run_loop;
-    EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
-        .WillRepeatedly(QuitMessageLoop(&run_loop));
-    EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
-        .Times(move_times);
-    personal_data->MoveJapanCityToStreetAddress();
-    run_loop.Run();
-  }
-
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::MainThreadType::UI};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_test_env_;
@@ -958,7 +947,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileSetModificationDate) {
   SaveImportedProfileToPersonalDataManager(profile);
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(1U, profiles.size());
-  EXPECT_GT(base::TimeDelta::FromMilliseconds(1000),
+  EXPECT_GT(base::TimeDelta::FromMilliseconds(2000),
             AutofillClock::Now() - profiles[0]->modification_date());
 }
 
@@ -1337,7 +1326,6 @@ TEST_F(PersonalDataManagerTest, AddFullCardAsMaskedCard) {
   test::SetCreditCardInfo(&server_card, "Clyde Barrow",
                           "378282246310005" /* American Express */, "04",
                           "2999", "1");
-
 
   personal_data_->AddFullServerCreditCard(server_card);
 
@@ -1932,14 +1920,15 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
 
   // Disabling Autofill blows away this cache and shouldn't account for Autofill
   // profiles.
-  prefs::SetAutofillEnabled(prefs_.get(), false);
+  prefs::SetAutofillProfileEnabled(prefs_.get(), false);
+  prefs::SetAutofillCreditCardEnabled(prefs_.get(), false);
   WaitForOnPersonalDataChanged();
   EXPECT_EQ(default_country,
             personal_data_->GetDefaultCountryCodeForNewAddress());
 
   // Enabling Autofill blows away the cached value and should reflect the new
   // value (accounting for profiles).
-  prefs::SetAutofillEnabled(prefs_.get(), true);
+  prefs::SetAutofillProfileEnabled(prefs_.get(), true);
   EXPECT_EQ(base::UTF16ToUTF8(moose.GetRawInfo(ADDRESS_HOME_COUNTRY)),
             personal_data_->GetDefaultCountryCodeForNewAddress());
 }
@@ -2512,7 +2501,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
   SetServerProfiles(server_profiles);
 
   // Disable Profile autofill.
-  prefs::SetProfileAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillProfileEnabled(personal_data_->pref_service_, false);
   WaitForOnPersonalDataChanged();
   ConvertWalletAddressesAndUpdateWalletCards();
 
@@ -2566,7 +2555,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(2U, personal_data_->GetProfilesToSuggest().size());
 
   // Disable Profile autofill.
-  prefs::SetProfileAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillProfileEnabled(personal_data_->pref_service_, false);
   // Reload the database.
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
@@ -2584,7 +2573,7 @@ TEST_F(PersonalDataManagerTest,
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestions_NoProfilesAddedIfDisabled) {
   // Disable Profile autofill.
-  prefs::SetProfileAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillProfileEnabled(personal_data_->pref_service_, false);
 
   // Add a local profile.
   AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -2773,7 +2762,7 @@ TEST_F(PersonalDataManagerTest,
   profile2.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(10));
   profile2.set_use_count(1);
 
-  EXPECT_TRUE(profile1.HasGreaterFrecencyThan(&profile2, base::Time::Now()));
+  EXPECT_TRUE(profile1.HasGreaterFrecencyThan(&profile2, AutofillClock::Now()));
 
   AddProfileToPersonalDataManager(profile1);
   AddProfileToPersonalDataManager(profile2);
@@ -3257,7 +3246,7 @@ TEST_F(PersonalDataManagerTest,
   WaitForOnPersonalDataChanged();
 
   // Disable Credit card autofill.
-  prefs::SetCreditCardAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillCreditCardEnabled(personal_data_->pref_service_, false);
   WaitForOnPersonalDataChanged();
 
   // Check that profiles were saved.
@@ -3308,7 +3297,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(5U, personal_data_->GetCreditCards().size());
 
   // Disable Credit card autofill.
-  prefs::SetCreditCardAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillCreditCardEnabled(personal_data_->pref_service_, false);
   // Reload the database.
   ResetPersonalDataManager(USER_MODE_NORMAL);
 
@@ -3330,7 +3319,7 @@ TEST_F(PersonalDataManagerTest,
 TEST_F(PersonalDataManagerTest,
        GetCreditCardSuggestions_NoCreditCardsAddedIfDisabled) {
   // Disable Profile autofill.
-  prefs::SetCreditCardAutofillEnabled(personal_data_->pref_service_, false);
+  prefs::SetAutofillCreditCardEnabled(personal_data_->pref_service_, false);
 
   // Add a local credit card.
   CreditCard credit_card("002149C1-EE28-4213-A3B9-DA243FFF021B",
@@ -4478,7 +4467,7 @@ TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
 
   // Merge the imported profile into the existing profiles.
   std::vector<AutofillProfile> profiles;
-  std::string guid = personal_data_->MergeProfile(
+  std::string guid = AutofillProfileComparator::MergeProfile(
       imported_profile, &existing_profiles, "US-EN", &profiles);
 
   // The new profile should be merged into the "fox" profile.
@@ -4527,7 +4516,7 @@ TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
 
   // Merge the imported profile into the existing profiles.
   std::vector<AutofillProfile> profiles;
-  std::string guid = personal_data_->MergeProfile(
+  std::string guid = AutofillProfileComparator::MergeProfile(
       imported_profile, &existing_profiles, "US-EN", &profiles);
 
   // The new profile should be merged into the existing profile.
@@ -6881,108 +6870,6 @@ TEST_F(PersonalDataManagerTest, ClearCreditCardNonSettingsOrigins) {
             personal_data_->GetCreditCardsToSuggest(false)[3]->origin());
 }
 
-// Tests that all city fields in a Japan profile are moved to the street address
-// field.
-TEST_F(PersonalDataManagerTest, MoveJapanCityToStreetAddress) {
-  // Turn on sync feature to avoid calling MoveJapanCityToStreetAddress on
-  // adding the profiles implicitly.
-  ASSERT_TRUE(TurnOnSyncFeature());
-  // A US profile with both street address and a city.
-  std::string guid0 = base::GenerateGUID();
-  {
-    AutofillProfile profile0(guid0, test::kEmptyOrigin);
-    test::SetProfileInfo(&profile0, "Homer", "J", "Simpson",
-                         "homer.simpson@abc.com", "", "742. Evergreen Terrace",
-                         "", "Springfield", "IL", "91601", "US", "");
-    AddProfileToPersonalDataManager(profile0);
-  }
-
-  // A JP profile with both street address and a city.
-  std::string guid1 = base::GenerateGUID();
-  {
-    AutofillProfile profile1(guid1, test::kEmptyOrigin);
-    test::SetProfileInfo(&profile1, "Homer", "J", "Simpson",
-                         "homer.simpson@abc.com", "", "742. Evergreen Terrace",
-                         "", "Springfield", "IL", "91601", "JP", "");
-    AddProfileToPersonalDataManager(profile1);
-  }
-
-  // A JP profile with only a city.
-  std::string guid2 = base::GenerateGUID();
-  {
-    AutofillProfile profile2(guid2, test::kEmptyOrigin);
-    test::SetProfileInfo(&profile2, "Homer", "J", "Simpson",
-                         "homer.simpson@abc.com", "", "", "", "Springfield",
-                         "IL", "91601", "JP", "");
-    AddProfileToPersonalDataManager(profile2);
-  }
-
-  // A JP profile with only a street address.
-  std::string guid3 = base::GenerateGUID();
-  {
-    AutofillProfile profile3(guid3, test::kEmptyOrigin);
-    test::SetProfileInfo(&profile3, "Homer", "J", "Simpson",
-                         "homer.simpson@abc.com", "", "742. Evergreen Terrace",
-                         "", "", "IL", "91601", "JP", "");
-    AddProfileToPersonalDataManager(profile3);
-  }
-
-  // A JP profile with neither a street address nor a city.
-  std::string guid4 = base::GenerateGUID();
-  {
-    AutofillProfile profile4(guid4, test::kEmptyOrigin);
-    test::SetProfileInfo(&profile4, "Homer", "J", "Simpson",
-                         "homer.simpson@abc.com", "", "", "", "", "IL", "91601",
-                         "JP", "");
-    AddProfileToPersonalDataManager(profile4);
-  }
-  auto profiles = personal_data_->GetProfiles();
-  ASSERT_EQ(5U, profiles.size());
-
-  MoveJapanCityToStreetAddress(
-      personal_data_.get(),
-      2);  // For the japan profiles where the city is not empty.
-
-  {
-    AutofillProfile* profile0 = personal_data_->GetProfileByGUID(guid0);
-    EXPECT_EQ(base::ASCIIToUTF16("742. Evergreen Terrace"),
-              profile0->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
-    EXPECT_EQ(base::ASCIIToUTF16("Springfield"),
-              profile0->GetRawInfo(ADDRESS_HOME_CITY));
-  }
-
-  {
-    AutofillProfile* profile1 = personal_data_->GetProfileByGUID(guid1);
-    EXPECT_EQ(base::ASCIIToUTF16("742. Evergreen Terrace\nSpringfield"),
-              profile1->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
-    EXPECT_EQ(base::ASCIIToUTF16("742. Evergreen Terrace"),
-              profile1->GetRawInfo(ADDRESS_HOME_LINE1));
-    EXPECT_EQ(base::ASCIIToUTF16("Springfield"),
-              profile1->GetRawInfo(ADDRESS_HOME_LINE2));
-    EXPECT_TRUE(profile1->GetRawInfo(ADDRESS_HOME_CITY).empty());
-  }
-
-  {
-    AutofillProfile* profile2 = personal_data_->GetProfileByGUID(guid2);
-    EXPECT_EQ(base::ASCIIToUTF16("Springfield"),
-              profile2->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
-    EXPECT_TRUE(profile2->GetRawInfo(ADDRESS_HOME_CITY).empty());
-  }
-
-  {
-    AutofillProfile* profile3 = personal_data_->GetProfileByGUID(guid3);
-    EXPECT_EQ(base::ASCIIToUTF16("742. Evergreen Terrace"),
-              profile3->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
-    EXPECT_TRUE(profile3->GetRawInfo(ADDRESS_HOME_CITY).empty());
-  }
-
-  {
-    AutofillProfile* profile4 = personal_data_->GetProfileByGUID(guid4);
-    EXPECT_TRUE(profile4->GetRawInfo(ADDRESS_HOME_STREET_ADDRESS).empty());
-    EXPECT_TRUE(profile4->GetRawInfo(ADDRESS_HOME_CITY).empty());
-  }
-}
-
 // Tests that all the non settings origins of autofill profiles are cleared even
 // if sync is disabled.
 TEST_F(
@@ -7192,7 +7079,7 @@ TEST_F(PersonalDataManagerTest, RequestProfileServerValidity) {
       AutofillDataModel::INVALID,     AutofillDataModel::VALID,
       AutofillDataModel::UNVALIDATED, AutofillDataModel::INVALID};
   ASSERT_EQ(types.size(), states.size());
-  for (unsigned long i = 0; i < types.size(); ++i) {
+  for (uint64_t i = 0; i < types.size(); ++i) {
     (*profile_validity_map
           .mutable_field_validity_states())[static_cast<int>(types[i])] =
         static_cast<int>(states[i]);
@@ -7231,7 +7118,7 @@ TEST_F(PersonalDataManagerTest, RequestProfileServerValidity) {
   auto validities =
       personal_data_->GetProfileValidityByGUID(guid).field_validity_states();
   ASSERT_EQ(validities.size(), types.size());
-  for (unsigned long i = 0; i < types.size(); ++i)
+  for (uint64_t i = 0; i < types.size(); ++i)
     EXPECT_EQ(validities.at(types[i]), states[i]);
 
   guid = "00000000-0000-0000-0000-0000000000002";
@@ -7564,8 +7451,8 @@ TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
 
 TEST_F(PersonalDataManagerTest, OnAccountsCookieDeletedByUserAction) {
   // Set up some sync transport opt-ins in the prefs.
-  ::autofill::prefs::SetUserOptedInWalletSyncTransport(prefs_.get(), "account1",
-                                                       true);
+  ::autofill::prefs::SetUserOptedInWalletSyncTransport(
+      prefs_.get(), CoreAccountId("account1"), true);
   EXPECT_FALSE(
       prefs_->GetDictionary(prefs::kAutofillSyncTransportOptIn)->DictEmpty());
 
@@ -7591,7 +7478,7 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   // Set an an active secondary account.
   AccountInfo active_info;
   active_info.email = kPrimaryAccountEmail;
-  active_info.account_id = "account_id";
+  active_info.account_id = CoreAccountId("account_id");
   sync_service_.SetAuthenticatedAccountInfo(active_info);
   sync_service_.SetIsAuthenticatedAccountPrimary(false);
 
@@ -7704,7 +7591,7 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   // Set an an active secondary account.
   AccountInfo active_info;
   active_info.email = kPrimaryAccountEmail;
-  active_info.account_id = "account_id";
+  active_info.account_id = CoreAccountId("account_id");
   sync_service_.SetAuthenticatedAccountInfo(active_info);
   sync_service_.SetIsAuthenticatedAccountPrimary(false);
 
@@ -7952,7 +7839,7 @@ namespace {
 
 class OneTimeObserver : public PersonalDataManagerObserver {
  public:
-  OneTimeObserver(PersonalDataManager* manager) : manager_(manager) {}
+  explicit OneTimeObserver(PersonalDataManager* manager) : manager_(manager) {}
 
   ~OneTimeObserver() override {
     if (manager_)

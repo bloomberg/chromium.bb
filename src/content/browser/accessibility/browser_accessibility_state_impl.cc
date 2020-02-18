@@ -156,16 +156,19 @@ void BrowserAccessibilityStateImpl::UpdateHistogramsForTesting() {
   UpdateHistogramsOnOtherThread();
 }
 
+bool BrowserAccessibilityStateImpl::IsCaretBrowsingEnabled() const {
+  // TODO(crbug.com/1018947): Refine this check once UX provided to toggle caret
+  // browsing mode.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCaretBrowsing);
+}
+
 void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
   UpdatePlatformSpecificHistogramsOnUIThread();
 
   for (auto& callback : ui_thread_histogram_callbacks_)
     std::move(callback).Run();
   ui_thread_histogram_callbacks_.clear();
-
-  // TODO(dmazzoni): remove this in M59 since Accessibility.ModeFlag
-  // supercedes it.  http://crbug.com/672205
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.State", IsAccessibleBrowser());
 
   UMA_HISTOGRAM_BOOLEAN("Accessibility.InvertedColors",
                         color_utils::IsInvertedColorScheme());

@@ -299,13 +299,17 @@ EGLBoolean EGLAPIENTRY EGL_QueryDeviceAttribEXT(EGLDeviceEXT device,
                                  GetDeviceIfValid(dev));
                 return EGL_FALSE;
             }
-            error = dev->getDevice(value);
-            if (error.isError())
+            error = dev->getAttribute(attribute, value);
+            break;
+        case EGL_CGL_CONTEXT_ANGLE:
+        case EGL_CGL_PIXEL_FORMAT_ANGLE:
+            if (!dev->getExtensions().deviceCGL)
             {
-                thread->setError(error, GetDebug(), "eglQueryDeviceAttribEXT",
+                thread->setError(EglBadAttribute(), GetDebug(), "eglQueryDeviceAttribEXT",
                                  GetDeviceIfValid(dev));
                 return EGL_FALSE;
             }
+            error = dev->getAttribute(attribute, value);
             break;
         default:
             thread->setError(EglBadAttribute(), GetDebug(), "eglQueryDeviceAttribEXT",
@@ -313,6 +317,11 @@ EGLBoolean EGLAPIENTRY EGL_QueryDeviceAttribEXT(EGLDeviceEXT device,
             return EGL_FALSE;
     }
 
+    if (error.isError())
+    {
+        thread->setError(error, GetDebug(), "eglQueryDeviceAttribEXT", GetDeviceIfValid(dev));
+        return EGL_FALSE;
+    }
     thread->setSuccess();
     return EGL_TRUE;
 }
@@ -1482,4 +1491,28 @@ EGLint EGLAPIENTRY EGL_DupNativeFenceFDANDROID(EGLDisplay dpy, EGLSyncKHR sync)
     return result;
 }
 
+EGLBoolean EGLAPIENTRY EGL_SwapBuffersWithFrameTokenANGLE(EGLDisplay dpy,
+                                                          EGLSurface surface,
+                                                          EGLFrameTokenANGLE frametoken)
+{
+    ANGLE_SCOPED_GLOBAL_LOCK();
+    FUNC_EVENT("EGLDisplay dpy = 0x%016" PRIxPTR ", EGLSurface surface = 0x%016" PRIxPTR
+               ", EGLFrameTokenANGLE frametoken = 0x%llX",
+               (uintptr_t)dpy, (uintptr_t)surface, (unsigned long long)frametoken);
+
+    egl::Display *display    = static_cast<egl::Display *>(dpy);
+    egl::Surface *eglSurface = static_cast<egl::Surface *>(surface);
+    Thread *thread           = egl::GetCurrentThread();
+
+    ANGLE_EGL_TRY_RETURN(
+        thread, ValidateSwapBuffersWithFrameTokenANGLE(display, eglSurface, frametoken),
+        "eglSwapBuffersWithFrameTokenANGLE", GetDisplayIfValid(display), EGL_FALSE);
+
+    ANGLE_EGL_TRY_RETURN(thread, eglSurface->swapWithFrameToken(thread->getContext(), frametoken),
+                         "eglSwapBuffersWithFrameTokenANGLE", GetDisplayIfValid(display),
+                         EGL_FALSE);
+
+    thread->setSuccess();
+    return EGL_TRUE;
+}
 }  // extern "C"

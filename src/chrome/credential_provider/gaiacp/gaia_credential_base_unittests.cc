@@ -5,12 +5,19 @@
 #include <windows.h>
 
 #include <sddl.h>  // For ConvertSidToStringSid()
+#include <wrl/client.h>
 
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time_override.h"
+
+#include "chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/password_recovery_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
@@ -66,13 +73,13 @@ class GcpGaiaCredentialBaseTest : public GlsRunnerTestBase {};
 
 TEST_F(GcpGaiaCredentialBaseTest, Advise) {
   // Create provider with credentials. This should Advise the credential.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
   // Release ref count so the credential can be deleted by the call to
   // ReleaseProvider.
-  cred.Release();
+  cred.Reset();
 
   // Release the provider. This should unadvise the credential.
   ASSERT_EQ(S_OK, ReleaseProvider());
@@ -80,7 +87,7 @@ TEST_F(GcpGaiaCredentialBaseTest, Advise) {
 
 TEST_F(GcpGaiaCredentialBaseTest, SetSelected) {
   // Create provider and credential only.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
@@ -96,7 +103,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_NoInternet) {
       FakeInternetAvailabilityChecker::kHicForceNo);
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
@@ -105,12 +112,12 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_NoInternet) {
 
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_GlsLoadingFailed) {
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
   // Fail loading the gls logon UI.
   test->FailLoadingGaiaLogonStub();
 
@@ -120,7 +127,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_GlsLoadingFailed) {
 
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Start) {
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
@@ -129,12 +136,12 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Start) {
 
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -158,12 +165,12 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
 TEST_F(GcpGaiaCredentialBaseTest,
        GetSerialization_SetDeselectedBeforeReportResult) {
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -187,6 +194,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Verify that the authentication results dictionary is not empty.
   ASSERT_FALSE(test->IsAuthenticationResultsEmpty());
+  ASSERT_FALSE(test->IsAdJoinedUser());
 
   // Trigger ReportResult and verify that the authentication results are saved
   // into registry and ResetInternalState is triggered.
@@ -209,12 +217,12 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Abort) {
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
   ASSERT_EQ(S_OK, test->SetDefaultExitCode(kUiecAbort));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
@@ -236,12 +244,12 @@ TEST_F(GcpGaiaCredentialBaseTest,
                       &first_sid));
   ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -256,12 +264,12 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_MultipleCalls) {
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   constexpr wchar_t kStartGlsEventName[] =
       L"GetSerialization_MultipleCalls_Wait";
@@ -292,6 +300,80 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_MultipleCalls) {
   ASSERT_EQ(S_OK, WaitForLogonProcess());
 }
 
+// Test disabling force reset password field. If provided gaia password
+// isn't valid, credential goes into password recovery flow. If the force reset
+// password is disabled through registry, force reset password field should be
+// in CPFS_HIDDEN state.
+// 0 - Disable force reset pasword link.
+// 1 - Enable force reset password link.
+// 2 - Test default value of registry. By default force reset password link
+// should be enabled.
+class GcpGaiaCredentialBaseForceResetRegistryTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<int> {};
+
+TEST_P(GcpGaiaCredentialBaseForceResetRegistryTest,
+       ForceResetPasswordRegistry) {
+  int enable_forgot_password_registry_value = GetParam();
+
+  if (enable_forgot_password_registry_value < 2)
+    ASSERT_EQ(S_OK,
+              SetGlobalFlagForTesting(kRegMdmEnableForcePasswordReset,
+                                      enable_forgot_password_registry_value));
+
+  // Create a fake user for which the windows password does not match the gaia
+  // password supplied by the test gls process.
+  CComBSTR sid;
+  CComBSTR windows_password = L"password2";
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                L"foo", (BSTR)windows_password, L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  ASSERT_EQ(CPFS_HIDDEN,
+            fake_credential_provider_credential_events()->GetFieldState(
+                cred.Get(), FID_FORGOT_PASSWORD_LINK));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
+
+  if (!enable_forgot_password_registry_value) {
+    ASSERT_EQ(CPFS_HIDDEN,
+              fake_credential_provider_credential_events()->GetFieldState(
+                  cred.Get(), FID_FORGOT_PASSWORD_LINK));
+  } else {
+    ASSERT_EQ(CPFS_DISPLAY_IN_SELECTED_TILE,
+              fake_credential_provider_credential_events()->GetFieldState(
+                  cred.Get(), FID_FORGOT_PASSWORD_LINK));
+  }
+
+  // Update the Windows password to be the real password created for the user.
+  cred->SetStringValue(FID_CURRENT_PASSWORD_FIELD, windows_password);
+  // Sign in information should still be available.
+  EXPECT_TRUE(test->GetFinalEmail().length());
+
+  // Both Windows and Gaia credentials should be valid now.
+  EXPECT_TRUE(test->CanAttemptWindowsLogon());
+  EXPECT_TRUE(test->IsWindowsPasswordValidForStoredUser());
+
+  // Finish logon successfully but with no credential changed event.
+  ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpGaiaCredentialBaseForceResetRegistryTest,
+                         ::testing::Values(0, 1, 2));
+
 TEST_F(GcpGaiaCredentialBaseTest,
        GetSerialization_PasswordChangedForAssociatedUser) {
   USES_CONVERSION;
@@ -306,17 +388,25 @@ TEST_F(GcpGaiaCredentialBaseTest,
                 base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  ASSERT_EQ(CPFS_HIDDEN,
+            fake_credential_provider_credential_events()->GetFieldState(
+                cred.Get(), FID_FORGOT_PASSWORD_LINK));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
+
+  ASSERT_EQ(CPFS_DISPLAY_IN_SELECTED_TILE,
+            fake_credential_provider_credential_events()->GetFieldState(
+                cred.Get(), FID_FORGOT_PASSWORD_LINK));
 
   // Check that the process has not finished yet.
   CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
@@ -330,7 +420,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Credentials should still be available.
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
 
   // Set an invalid password and try to get serialization again. Credentials
   // should still be valid but serialization is not complete.
@@ -348,7 +438,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Both Windows and Gaia credentials should be valid now
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_FALSE, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_TRUE(test->IsWindowsPasswordValidForStoredUser());
 
   // Finish logon successfully but with no credential changed event.
   ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
@@ -368,17 +458,17 @@ TEST_F(GcpGaiaCredentialBaseTest,
                 base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
 
   // Check that the process has not finished yet.
   CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
@@ -392,7 +482,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Credentials should still be available.
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
 
   // Simulate a click on the "Forgot Password" link.
   cred->CommandLinkClicked(FID_FORGOT_PASSWORD_LINK);
@@ -415,17 +505,17 @@ TEST_F(GcpGaiaCredentialBaseTest,
                 base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
 
   // Check that the process has not finished yet.
   CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
@@ -439,7 +529,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Credentials should still be available.
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_OK, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_FALSE(test->IsWindowsPasswordValidForStoredUser());
 
   // Simulate a click on the "Forgot Password" link.
   cred->CommandLinkClicked(FID_FORGOT_PASSWORD_LINK);
@@ -463,7 +553,7 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
   // Both Windows and Gaia credentials should be valid now
   EXPECT_TRUE(test->CanAttemptWindowsLogon());
-  EXPECT_EQ(S_FALSE, test->IsWindowsPasswordValidForStoredUser());
+  EXPECT_TRUE(test->IsWindowsPasswordValidForStoredUser());
 
   // Finish logon successfully but with no credential changed event.
   ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
@@ -471,12 +561,12 @@ TEST_F(GcpGaiaCredentialBaseTest,
 
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Cancel) {
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   // This event is merely used to keep the gls running while it is cancelled
   // through SetDeselected().
@@ -502,7 +592,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Cancel) {
 
 TEST_F(GcpGaiaCredentialBaseTest, FailedUserCreation) {
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
@@ -515,15 +605,42 @@ TEST_F(GcpGaiaCredentialBaseTest, FailedUserCreation) {
   ASSERT_EQ(S_OK, FinishLogonProcess(false, false, IDS_INTERNAL_ERROR_BASE));
 }
 
+TEST_F(GcpGaiaCredentialBaseTest, FailOnInvalidDomain) {
+  const base::string16 allowed_email_domains =
+      L"acme.com,acme2.com,acme3.com";
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"ed", allowed_email_domains));
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  // Fail due to invalid domain.
+  ASSERT_EQ(S_OK, test->SetDefaultExitCode(kUiecInvalidEmailDomain));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  const base::string16 formatted_domains_str =
+      L"acme.com, acme2.com, acme3.com";
+  base::string16 expected_error_msg = base::ReplaceStringPlaceholders(
+      GetStringResource(IDS_INVALID_EMAIL_DOMAIN_BASE), {formatted_domains_str},
+      nullptr);
+
+  // Logon process should fail with the specified error message.
+  ASSERT_EQ(S_OK, FinishLogonProcess(false, false, expected_error_msg));
+}
+
 TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD) {
   USES_CONVERSION;
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   constexpr char email[] = "foo@imfl.info";
 
@@ -538,7 +655,7 @@ TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD) {
 TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughUsageScenario) {
   USES_CONVERSION;
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   // Set the other user tile so that we can get the anonymous credential
   // that may try create a new user.
@@ -578,7 +695,7 @@ TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughMdm) {
   fake_user_array()->SetAccountOptions(CPAO_EMPTY_LOCAL);
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
@@ -607,14 +724,14 @@ TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   // Create with invalid token handle response.
   SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   // User should have invalid token handle and be locked.
   EXPECT_FALSE(
@@ -659,14 +776,14 @@ TEST_F(GcpGaiaCredentialBaseTest, DenySigninBlockedDuringSignin) {
   ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   // Create with valid token handle response and sign in the anonymous
   // credential with the user that should still be valid.
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -711,16 +828,131 @@ TEST_F(GcpGaiaCredentialBaseTest, DenySigninBlockedDuringSignin) {
   EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
 }
 
+class BaseTimeClockOverrideValue {
+ public:
+  static base::Time NowOverride() { return current_time_; }
+  static base::Time current_time_;
+};
+
+base::Time BaseTimeClockOverrideValue::current_time_;
+TEST_F(GcpGaiaCredentialBaseTest,
+       DenySigninBlockedDuringSignin_StaleOnlineLogin) {
+  USES_CONVERSION;
+
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 1));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
+
+  // Create a fake user that has the same gaia id as the test gaia id.
+  CComBSTR first_sid;
+  base::string16 username(L"foo");
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      username, L"password", L"name", L"comment",
+                      base::UTF8ToUTF16(kDefaultGaiaId), base::string16(),
+                      &first_sid));
+  ASSERT_EQ(2ul, fake_os_user_manager()->GetUserCount());
+
+  // Move the current time beyond staleness time period.
+  base::Time last_online_login = base::Time::Now();
+  base::string16 last_online_login_millis = base::NumberToString16(
+      last_online_login.ToDeltaSinceWindowsEpoch().InMilliseconds());
+  int validity_period_in_days = 10;
+  DWORD validity_period_in_days_dword =
+      static_cast<DWORD>(validity_period_in_days);
+  ASSERT_EQ(S_OK, SetUserProperty((BSTR)first_sid,
+                                  base::UTF8ToUTF16(std::string(
+                                      kKeyLastSuccessfulOnlineLoginMillis)),
+                                  last_online_login_millis));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(
+                      base::UTF8ToUTF16(std::string(kKeyValidityPeriodInDays)),
+                      validity_period_in_days_dword));
+
+  GoogleMdmEnrolledStatusForTesting force_success(true);
+  fake_internet_checker()->SetHasInternetConnection(
+      FakeInternetAvailabilityChecker::kHicForceYes);
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  // Create with valid token handle response and sign in the anonymous
+  // credential with the user that should still be valid.
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  // User access shouldn't be blocked before login starts.
+  EXPECT_FALSE(fake_associated_user_validator()
+                   ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
+      OLE2W(first_sid)));
+
+  // Internet should be disabled for stale online login verifications to be
+  // considered.
+  fake_internet_checker()->SetHasInternetConnection(
+      FakeInternetAvailabilityChecker::kHicForceNo);
+  // Advance the time that is more than the offline validity period.
+  BaseTimeClockOverrideValue::current_time_ =
+      last_online_login + base::TimeDelta::FromDays(validity_period_in_days) +
+      base::TimeDelta::FromMilliseconds(1);
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &BaseTimeClockOverrideValue::NowOverride, nullptr, nullptr);
+
+  // User access should be blocked now that the time has been moved.
+  ASSERT_TRUE(fake_associated_user_validator()
+                  ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_TRUE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
+      OLE2W(first_sid)));
+
+  // Reset the internet back to being on.
+  fake_internet_checker()->SetHasInternetConnection(
+      FakeInternetAvailabilityChecker::kHicForceYes);
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  // Now finish the logon.
+  ASSERT_EQ(S_OK, FinishLogonProcessWithCred(true, true, 0, cred));
+
+  // User should have been associated.
+  EXPECT_EQ(test->GetFinalUsername(), username);
+  // Email should be the same as the default one.
+  EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+
+  ReportLogonProcessResult(cred);
+
+  // User access shouldn't be blocked after login completes.
+  EXPECT_FALSE(fake_associated_user_validator()
+                   ->DenySigninForUsersWithInvalidTokenHandles(CPUS_LOGON));
+  EXPECT_FALSE(fake_associated_user_validator()->IsUserAccessBlockedForTesting(
+      OLE2W(first_sid)));
+
+  wchar_t latest_online_login_millis[512];
+  ULONG latest_online_login_size = base::size(latest_online_login_millis);
+  ASSERT_EQ(S_OK, GetUserProperty(
+                      OLE2W(first_sid),
+                      base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
+                      latest_online_login_millis, &latest_online_login_size));
+  int64_t latest_online_login_millis_int64;
+  base::StringToInt64(latest_online_login_millis,
+                      &latest_online_login_millis_int64);
+
+  long difference =
+      latest_online_login_millis_int64 -
+      BaseTimeClockOverrideValue::current_time_.ToDeltaSinceWindowsEpoch()
+          .InMilliseconds();
+  ASSERT_EQ(0, difference);
+}
+
 TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD_Gmail) {
   USES_CONVERSION;
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   constexpr char email[] = "bar@gmail.com";
 
@@ -736,12 +968,12 @@ TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD_Googlemail) {
   USES_CONVERSION;
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   constexpr char email[] = "toto@googlemail.com";
 
@@ -756,12 +988,12 @@ TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD_Googlemail) {
 TEST_F(GcpGaiaCredentialBaseTest, InvalidUsernameCharacters) {
   USES_CONVERSION;
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   constexpr char email[] = "a\\[]:|<>+=;?*z@gmail.com";
 
@@ -777,12 +1009,12 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailTooLong) {
   USES_CONVERSION;
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   constexpr char email[] = "areallylongemailadressdude@gmail.com";
 
@@ -797,12 +1029,12 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailTooLong) {
 TEST_F(GcpGaiaCredentialBaseTest, EmailTooLong2) {
   USES_CONVERSION;
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   constexpr char email[] = "foo@areallylongdomaindude.com";
 
@@ -819,12 +1051,12 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailIsNoAt) {
   constexpr char email[] = "foo";
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress(email));
 
@@ -840,12 +1072,12 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailIsAtCom) {
   constexpr char email[] = "@com";
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress(email));
 
@@ -861,12 +1093,12 @@ TEST_F(GcpGaiaCredentialBaseTest, EmailIsAtDotCom) {
   constexpr char email[] = "@.com";
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   ASSERT_EQ(S_OK, test->SetGlsEmailAddress(email));
 
@@ -882,7 +1114,7 @@ class GcpGaiaCredentialBaseAdScenariosTest : public GcpGaiaCredentialBaseTest {
   void SetUp() override;
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred_;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred_;
   // The admin sdk users directory get URL.
   std::string get_cd_user_url_ = base::StringPrintf(
       "https://www.googleapis.com/admin/directory/v1/users/"
@@ -912,8 +1144,8 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
   fake_http_url_fetcher_factory()->SetFakeFailedResponse(
       GURL(gaia_urls_->oauth2_token_url().spec().c_str()), E_FAIL);
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -946,8 +1178,8 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
       GURL(gaia_urls_->oauth2_token_url().spec().c_str()),
       FakeWinHttpUrlFetcher::Headers(), "{}");
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -982,8 +1214,8 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(get_cd_user_url_.c_str()), FakeWinHttpUrlFetcher::Headers(), "{}");
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -1012,8 +1244,8 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
   fake_http_url_fetcher_factory()->SetFakeFailedResponse(
       GURL(get_cd_user_url_.c_str()), E_FAIL);
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -1066,8 +1298,8 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
       GURL(get_cd_user_url_.c_str()), FakeWinHttpUrlFetcher::Headers(),
       admin_sdk_response);
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -1121,12 +1353,13 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
       GURL(get_cd_user_url_.c_str()), FakeWinHttpUrlFetcher::Headers(),
       admin_sdk_response);
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred_.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred_.As(&test));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
   EXPECT_EQ(test->GetFinalEmail(), kDefaultEmail);
+  ASSERT_TRUE(test->IsAdJoinedUser());
 
   // Make sure no user was created and the login happens on the
   // existing user instead.
@@ -1209,12 +1442,12 @@ TEST_P(GcpGaiaCredentialBaseConsumerEmailTest, ConsumerEmailSignin) {
   }
 
   // Create provider and start logon.
-  CComPtr<ICredentialProviderCredential> cred;
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  CComPtr<ITestCredential> test;
-  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
 
   test->SetGlsEmailAddress(user_email);
 
@@ -1249,7 +1482,7 @@ TEST_P(GcpGaiaCredentialBaseConsumerEmailTest, ConsumerEmailSignin) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBaseConsumerEmailTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Values(0, 1, 2),
@@ -1273,9 +1506,7 @@ class GcpGaiaCredentialBasePasswordRecoveryTest
 TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   // Enable standard escrow service features in non-Chrome builds so that
   // the escrow service code can be tested by the build machines.
-#if !defined(GOOGLE_CHROME_BUILD)
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler(true);
-#endif
+  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
   USES_CONVERSION;
 
   int generate_public_key_result = std::get<0>(GetParam());
@@ -1283,7 +1514,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   int generate_public_key_again_result = std::get<2>(GetParam());
 
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl,
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
                                           L"https://escrow.com"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
@@ -1345,7 +1576,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   // Sign on once to store the password in the LSA
   {
     // Create provider and start logon.
-    CComPtr<ICredentialProviderCredential> cred;
+    Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
     ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
@@ -1386,12 +1617,12 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   // automatically.
   {
     // Create provider and start logon.
-    CComPtr<ICredentialProviderCredential> cred;
+    Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
     ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-    CComPtr<ITestCredential> test;
-    ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+    Microsoft::WRL::ComPtr<ITestCredential> test;
+    ASSERT_EQ(S_OK, cred.As(&test));
 
     // Send back a different gaia password to force a password update.
     ASSERT_EQ(S_OK, test->SetGlsGaiaPassword(kNewPassword));
@@ -1402,14 +1633,20 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
 
     ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
-    CComPtr<ITestCredentialProvider> test_provider;
-    ASSERT_EQ(S_OK, created_provider().QueryInterface(&test_provider));
+    Microsoft::WRL::ComPtr<ITestCredentialProvider> test_provider;
+    ASSERT_EQ(S_OK, created_provider().As(&test_provider));
 
     // If either password storage or recovery failed then the user will need to
     // enter their old Windows password.
     if (!should_store_succeed || !should_recover_succeed) {
       // Logon should not complete but there is no error message.
       EXPECT_EQ(test_provider->credentials_changed_fired(), false);
+
+      // Make sure password textbox is shown if the recovery of the password
+      // through escros service fails.
+      ASSERT_EQ(CPFS_DISPLAY_IN_SELECTED_TILE,
+                fake_credential_provider_credential_events()->GetFieldState(
+                    cred.Get(), FID_CURRENT_PASSWORD_FIELD));
 
       // Set the correct old password so that the user can sign in.
       ASSERT_EQ(S_OK,
@@ -1418,6 +1655,12 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
       // Finish logon successfully now which should update the password.
       ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
     } else {
+      // Make sure password textbox isn't shown if the recovery of the password
+      // through escrow service succeeds.
+      ASSERT_EQ(CPFS_HIDDEN,
+                fake_credential_provider_credential_events()->GetFieldState(
+                    cred.Get(), FID_CURRENT_PASSWORD_FIELD));
+
       // Make sure the new password is sent to the provider.
       EXPECT_STREQ(A2OLE(kNewPassword), OLE2CW(test_provider->password()));
 
@@ -1442,12 +1685,12 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   if (generate_public_key_again_result != 0) {
     constexpr char kNewPassword2[] = "password3";
     // Create provider and start logon.
-    CComPtr<ICredentialProviderCredential> cred;
+    Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
     ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-    CComPtr<ITestCredential> test;
-    ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+    Microsoft::WRL::ComPtr<ITestCredential> test;
+    ASSERT_EQ(S_OK, cred.As(&test));
 
     // Send back a different gaia password to force a password update.
     ASSERT_EQ(S_OK, test->SetGlsGaiaPassword(kNewPassword2));
@@ -1458,8 +1701,8 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
 
     ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
-    CComPtr<ITestCredentialProvider> test_provider;
-    ASSERT_EQ(S_OK, created_provider().QueryInterface(&test_provider));
+    Microsoft::WRL::ComPtr<ITestCredentialProvider> test_provider;
+    ASSERT_EQ(S_OK, created_provider().As(&test_provider));
 
     // Logon should not complete but there is no error message.
     EXPECT_EQ(test_provider->credentials_changed_fired(), false);
@@ -1481,7 +1724,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBasePasswordRecoveryTest,
                          ::testing::Combine(::testing::Values(0, 1, 2),
                                             ::testing::Values(0, 1, 2),
@@ -1497,9 +1740,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
        PasswordRecovery_Disabled) {
   // Enable standard escrow service features in non-Chrome builds so that
   // the escrow service code can be tested by the build machines.
-#if !defined(GOOGLE_CHROME_BUILD)
-  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler(true);
-#endif
+  GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler;
   USES_CONVERSION;
   const wchar_t* escrow_service_url = GetParam();
 
@@ -1509,14 +1750,14 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
   // SetGlobalFlagForTesting effectively deletes the registry when the provided
   // registry value is empty. That implicitly enables escrow service without a
   // registry override.
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl, L""));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl, L""));
 
   if (escrow_service_url) {
     base::win::RegKey key;
     ASSERT_EQ(ERROR_SUCCESS,
               key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_WRITE));
-    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kRegMdmEscrowServiceServerUrl,
-                                            escrow_service_url));
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.WriteValue(kRegEscrowServiceServerUrl, escrow_service_url));
   }
 
   GoogleMdmEnrolledStatusForTesting force_success(true);
@@ -1554,7 +1795,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
   // Sign on once to store the password in the LSA
   {
     // Create provider and start logon.
-    CComPtr<ICredentialProviderCredential> cred;
+    Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
     ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
@@ -1573,12 +1814,12 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
     constexpr char kNewPassword[] = "password2";
 
     // Create provider and start logon.
-    CComPtr<ICredentialProviderCredential> cred;
+    Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
     ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-    CComPtr<ITestCredential> test;
-    ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+    Microsoft::WRL::ComPtr<ITestCredential> test;
+    ASSERT_EQ(S_OK, cred.As(&test));
 
     // Send back a different gaia password to force a password update.
     ASSERT_EQ(S_OK, test->SetGlsGaiaPassword(kNewPassword));
@@ -1589,8 +1830,8 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
 
     ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
-    CComPtr<ITestCredentialProvider> test_provider;
-    ASSERT_EQ(S_OK, created_provider().QueryInterface(&test_provider));
+    Microsoft::WRL::ComPtr<ITestCredentialProvider> test_provider;
+    ASSERT_EQ(S_OK, created_provider().As(&test_provider));
 
     // Empty escrow service url will disable password
     // recovery and force the user to enter their password.
@@ -1621,10 +1862,60 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
                          ::testing::Values(nullptr,
                                            L"",
                                            L"https://escrowservice.com"));
+
+TEST_F(GcpGaiaCredentialBaseTest, FullNameUpdated) {
+  USES_CONVERSION;
+
+  CredentialProviderSigninDialogTestDataStorage test_data_storage;
+
+  CComBSTR username = L"foo_bar";
+  CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
+  CComBSTR password = A2COLE(test_data_storage.GetSuccessPassword().c_str());
+  CComBSTR email = A2COLE(test_data_storage.GetSuccessEmail().c_str());
+
+  // Create a fake user to reauth.
+  CComBSTR sid;
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                OLE2CW(username), OLE2CW(password), OLE2CW(full_name),
+                L"comment", base::UTF8ToUTF16(test_data_storage.GetSuccessId()),
+                OLE2CW(email), &sid));
+
+  base::string16 current_full_name;
+  ASSERT_EQ(S_OK, OSUserManager::Get()->GetUserFullname(
+                      OSUserManager::GetLocalDomain().c_str(), username,
+                      &current_full_name));
+  ASSERT_EQ(current_full_name, (BSTR)full_name);
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  // Create with invalid token handle response so that a reauth occurs.
+  SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
+
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  ASSERT_EQ(S_OK, test->SetGlsEmailAddress(std::string()));
+
+  // Override the full name in the gls command line.
+  std::string new_full_name = "New Name";
+  ASSERT_EQ(S_OK, test->SetGaiaFullNameOverride(new_full_name));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  base::string16 updated_full_name;
+  ASSERT_EQ(S_OK, OSUserManager::Get()->GetUserFullname(
+                      OSUserManager::GetLocalDomain().c_str(), username,
+                      &updated_full_name));
+  ASSERT_EQ(updated_full_name, base::UTF8ToUTF16(new_full_name));
+}
+
 }  // namespace testing
 }  // namespace credential_provider

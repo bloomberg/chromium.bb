@@ -16,7 +16,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_MACOSX)
@@ -29,7 +28,10 @@ namespace {
 
 class TestDialog : public DialogDelegateView {
  public:
-  TestDialog() : input_(new views::Textfield()) { AddChildView(input_); }
+  TestDialog() : input_(new views::Textfield()) {
+    DialogDelegate::set_draggable(true);
+    AddChildView(input_);
+  }
   ~TestDialog() override = default;
 
   void Init() {
@@ -57,7 +59,6 @@ class TestDialog : public DialogDelegateView {
     closed_ = true;
     return closeable_;
   }
-  bool IsDialogDraggable() const override { return true; }
 
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(200, 200);
@@ -67,7 +68,6 @@ class TestDialog : public DialogDelegateView {
   }
   base::string16 GetWindowTitle() const override { return title_; }
   View* GetInitiallyFocusedView() override { return input_; }
-  bool ShouldUseCustomFrame() const override { return true; }
   int GetDialogButtons() const override { return dialog_buttons_; }
 
   void CheckAndResetStates(bool canceled,
@@ -121,12 +121,24 @@ class DialogTest : public ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
+
+    // These tests all expect to use a custom frame on the dialog so they can
+    // control hit-testing and other behavior. Custom frames are only supported
+    // with a parent widget, so create the parent widget here.
+    views::Widget::InitParams params =
+        CreateParams(views::Widget::InitParams::TYPE_WINDOW);
+    params.bounds = gfx::Rect(10, 11, 200, 200);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    parent_widget_.Init(std::move(params));
+    parent_widget_.Show();
+
     InitializeDialog();
     ShowDialog();
   }
 
   void TearDown() override {
     dialog_->TearDown();
+    parent_widget_.Close();
     ViewsTestBase::TearDown();
   }
 
@@ -138,9 +150,13 @@ class DialogTest : public ViewsTestBase {
     dialog_->Init();
   }
 
-  void ShowDialog() {
-    DialogDelegate::CreateDialogWidget(dialog_, GetContext(), nullptr)->Show();
+  views::Widget* CreateDialogWidget(DialogDelegate* dialog) {
+    views::Widget* widget = DialogDelegate::CreateDialogWidget(
+        dialog, GetContext(), parent_widget_.GetNativeView());
+    return widget;
   }
+
+  void ShowDialog() { CreateDialogWidget(dialog_)->Show(); }
 
   void SimulateKeyEvent(const ui::KeyEvent& event) {
     ui::KeyEvent event_copy = event;
@@ -149,8 +165,10 @@ class DialogTest : public ViewsTestBase {
   }
 
   TestDialog* dialog() const { return dialog_; }
+  views::Widget* parent_widget() { return &parent_widget_; }
 
  private:
+  views::Widget parent_widget_;
   TestDialog* dialog_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DialogTest);
@@ -159,9 +177,8 @@ class DialogTest : public ViewsTestBase {
 }  // namespace
 
 TEST_F(DialogTest, AcceptAndCancel) {
-  DialogClientView* client_view = dialog()->GetDialogClientView();
-  LabelButton* ok_button = client_view->ok_button();
-  LabelButton* cancel_button = client_view->cancel_button();
+  LabelButton* ok_button = dialog()->GetOkButton();
+  LabelButton* cancel_button = dialog()->GetCancelButton();
 
   // Check that return/escape accelerators accept/close dialogs.
   EXPECT_EQ(dialog()->input(), dialog()->GetFocusManager()->GetFocusedView());
@@ -208,8 +225,8 @@ TEST_F(DialogTest, AcceptAndCancel) {
 
 TEST_F(DialogTest, RemoveDefaultButton) {
   // Removing buttons from the dialog here should not cause a crash on close.
-  delete dialog()->GetDialogClientView()->ok_button();
-  delete dialog()->GetDialogClientView()->cancel_button();
+  delete dialog()->GetOkButton();
+  delete dialog()->GetCancelButton();
 }
 
 TEST_F(DialogTest, HitTest_HiddenTitle) {
@@ -290,7 +307,7 @@ TEST_F(DialogTest, HitTest_CloseButton) {
   frame->ResetWindowControls();
 
   const gfx::Rect close_button_bounds =
-      frame->GetCloseButtonForTest()->bounds();
+      frame->GetCloseButtonForTesting()->bounds();
   EXPECT_EQ(HTCLOSE,
             frame->NonClientHitTest(gfx::Point(close_button_bounds.x() + 4,
                                                close_button_bounds.y() + 4)));
@@ -299,7 +316,7 @@ TEST_F(DialogTest, HitTest_CloseButton) {
 TEST_F(DialogTest, BoundsAccommodateTitle) {
   TestDialog* dialog2(new TestDialog());
   dialog2->set_title(base::ASCIIToUTF16("Title"));
-  DialogDelegate::CreateDialogWidget(dialog2, GetContext(), nullptr);
+  CreateDialogWidget(dialog2);
 
   // Remove the close button so it doesn't influence the bounds if it's taller
   // than the title.
@@ -354,8 +371,6 @@ class InitialFocusTestDialog : public DialogDelegateView {
   InitialFocusTestDialog() = default;
   ~InitialFocusTestDialog() override = default;
 
-  views::View* OkButton() { return GetDialogClientView()->ok_button(); }
-
   // DialogDelegateView overrides:
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_OK; }
 
@@ -367,8 +382,7 @@ class InitialFocusTestDialog : public DialogDelegateView {
 // focus, test it is still able to receive focus once the Widget is activated.
 TEST_F(DialogTest, InitialFocusWithDeactivatedWidget) {
   InitialFocusTestDialog* dialog = new InitialFocusTestDialog();
-  Widget* dialog_widget =
-      DialogDelegate::CreateDialogWidget(dialog, GetContext(), nullptr);
+  Widget* dialog_widget = CreateDialogWidget(dialog);
   // Set the initial focus while the Widget is unactivated to prevent the
   // initially focused View from receiving focus. Use a minimised state here to
   // prevent the Widget from being activated while this happens.
@@ -376,13 +390,13 @@ TEST_F(DialogTest, InitialFocusWithDeactivatedWidget) {
 
   // Nothing should be focused, because the Widget is still deactivated.
   EXPECT_EQ(nullptr, dialog_widget->GetFocusManager()->GetFocusedView());
-  EXPECT_EQ(dialog->OkButton(),
+  EXPECT_EQ(dialog->GetOkButton(),
             dialog_widget->GetFocusManager()->GetStoredFocusView());
   dialog_widget->Show();
   // After activation, the initially focused View should have focus as intended.
-  EXPECT_EQ(dialog->OkButton(),
+  EXPECT_EQ(dialog->GetOkButton(),
             dialog_widget->GetFocusManager()->GetFocusedView());
-  EXPECT_TRUE(dialog->OkButton()->HasFocus());
+  EXPECT_TRUE(dialog->GetOkButton()->HasFocus());
   dialog_widget->CloseNow();
 }
 
@@ -400,15 +414,13 @@ TEST_F(DialogTest, UnfocusableInitialFocus) {
   DialogDelegateView* dialog = new DialogDelegateView();
   Textfield* textfield = new Textfield();
   dialog->AddChildView(textfield);
-  Widget* dialog_widget =
-      DialogDelegate::CreateDialogWidget(dialog, GetContext(), nullptr);
+  Widget* dialog_widget = CreateDialogWidget(dialog);
 
 #if !defined(OS_MACOSX)
   // For non-Mac, turn off focusability on all the dialog's buttons manually.
   // This achieves the same effect as disabling full keyboard access.
-  DialogClientView* dcv = dialog->GetDialogClientView();
-  dcv->ok_button()->SetFocusBehavior(View::FocusBehavior::NEVER);
-  dcv->cancel_button()->SetFocusBehavior(View::FocusBehavior::NEVER);
+  dialog->GetOkButton()->SetFocusBehavior(View::FocusBehavior::NEVER);
+  dialog->GetCancelButton()->SetFocusBehavior(View::FocusBehavior::NEVER);
 #endif
 
   // On showing the dialog, the initially focused View will be the OK button.
@@ -418,13 +430,6 @@ TEST_F(DialogTest, UnfocusableInitialFocus) {
   EXPECT_TRUE(textfield->HasFocus());
   EXPECT_EQ(textfield, dialog->GetFocusManager()->GetFocusedView());
   dialog_widget->CloseNow();
-}
-
-TEST_F(DialogTest, DontSnapWithoutButtons) {
-  TestDialog dialog;
-  EXPECT_TRUE(dialog.ShouldSnapFrameWidth());
-  dialog.set_dialog_buttons(ui::DIALOG_BUTTON_NONE);
-  EXPECT_FALSE(dialog.ShouldSnapFrameWidth());
 }
 
 }  // namespace views

@@ -24,10 +24,15 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
  public:
   PersonalDataManagerAndroid(JNIEnv* env, jobject obj);
 
+  static base::android::ScopedJavaLocalRef<jobject>
+  CreateJavaCreditCardFromNative(JNIEnv* env, const CreditCard& card);
   static void PopulateNativeCreditCardFromJava(
       const base::android::JavaRef<jobject>& jcard,
       JNIEnv* env,
       CreditCard* card);
+  static base::android::ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
+      JNIEnv* env,
+      const AutofillProfile& profile);
   static void PopulateNativeProfileFromJava(
       const base::android::JavaParamRef<jobject>& jprofile,
       JNIEnv* env,
@@ -339,8 +344,6 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   void CancelPendingGetSubKeys(JNIEnv* env);
 
   void SetSyncServiceForTesting(JNIEnv* env);
-
-  static const char* GetPrefNameExposedToJava(int pref_index);
 
  private:
   ~PersonalDataManagerAndroid() override;

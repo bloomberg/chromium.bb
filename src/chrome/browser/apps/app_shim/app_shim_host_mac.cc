@@ -15,16 +15,14 @@
 #include "components/remote_cocoa/browser/application_host.h"
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "ui/base/ui_base_features.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 AppShimHost::AppShimHost(AppShimHost::Client* client,
                          const std::string& app_id,
                          const base::FilePath& profile_path,
                          bool uses_remote_views)
     : client_(client),
-      host_binding_(this),
-      app_shim_request_(mojo::MakeRequest(&app_shim_)),
+      app_shim_receiver_(app_shim_.BindNewPipeAndPassReceiver()),
       launch_shim_has_been_called_(false),
       app_id_(app_id),
       profile_path_(profile_path),
@@ -36,12 +34,13 @@ AppShimHost::AppShimHost(AppShimHost::Client* client,
       base::FeatureList::IsEnabled(features::kAppShimRemoteCocoa)) {
     // Create the interface that will be used by views::NativeWidgetMac to
     // create NSWindows hosted in the app shim process.
-    remote_cocoa::mojom::ApplicationAssociatedRequest views_application_request;
+    mojo::PendingAssociatedReceiver<remote_cocoa::mojom::Application>
+        views_application_receiver;
     remote_cocoa_application_host_ =
         std::make_unique<remote_cocoa::ApplicationHost>(
-            &views_application_request);
+            &views_application_receiver);
     app_shim_->CreateRemoteCocoaApplication(
-        std::move(views_application_request));
+        std::move(views_application_receiver));
   }
 }
 
@@ -124,11 +123,11 @@ void AppShimHost::OnBootstrapConnected(
 
   DCHECK(!bootstrap_);
   bootstrap_ = std::move(bootstrap);
-  bootstrap_->OnConnectedToHost(std::move(app_shim_request_));
+  bootstrap_->OnConnectedToHost(std::move(app_shim_receiver_));
 
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  host_binding_.Bind(bootstrap_->GetLaunchAppShimHostRequest());
-  host_binding_.set_connection_error_with_reason_handler(
+  host_receiver_.Bind(bootstrap_->GetAppShimHostReceiver());
+  host_receiver_.set_disconnect_with_reason_handler(
       base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
 }
 
@@ -139,7 +138,7 @@ void AppShimHost::LaunchShim() {
 
   if (bootstrap_) {
     // If there is a connected app shim process, focus the app windows.
-    client_->OnShimFocus(this, apps::APP_SHIM_FOCUS_NORMAL,
+    client_->OnShimFocus(this, chrome::mojom::AppShimFocusType::kNormal,
                          std::vector<base::FilePath>());
   } else {
     // Otherwise, attempt to launch whatever app shims we find.
@@ -147,13 +146,19 @@ void AppShimHost::LaunchShim() {
   }
 }
 
-void AppShimHost::FocusApp(apps::AppShimFocusType focus_type,
+void AppShimHost::FocusApp(chrome::mojom::AppShimFocusType focus_type,
                            const std::vector<base::FilePath>& files) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   client_->OnShimFocus(this, focus_type, files);
 }
 
+void AppShimHost::ProfileSelectedFromMenu(const base::FilePath& profile_path) {
+  client_->OnShimSelectedProfile(this, profile_path);
+}
+
 base::FilePath AppShimHost::GetProfilePath() const {
+  // This should only be used by single-profile-app paths.
+  DCHECK(!profile_path_.empty());
   return profile_path_;
 }
 

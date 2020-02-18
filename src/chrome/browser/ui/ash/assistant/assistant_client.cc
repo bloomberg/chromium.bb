@@ -8,8 +8,6 @@
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "ash/public/cpp/network_config_service.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -32,7 +30,6 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
 
 namespace {
 
@@ -86,14 +83,12 @@ void AssistantClient::MaybeInit(Profile* profile) {
 
   initialized_ = true;
 
-  chromeos::assistant::mojom::ClientPtr client_ptr;
-  client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-
   bool is_test = base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kBrowserTest);
   auto* service =
       AssistantServiceConnection::GetForProfile(profile_)->service();
-  service->Init(std::move(client_ptr), device_actions_.AddBinding(), is_test);
+  service->Init(client_receiver_.BindNewPipeAndPassRemote(),
+                device_actions_.AddReceiver(), is_test);
   assistant_image_downloader_ = std::make_unique<AssistantImageDownloader>();
   assistant_setup_ = std::make_unique<AssistantSetup>(service);
 
@@ -125,13 +120,9 @@ void AssistantClient::BindAssistant(
       std::move(receiver));
 }
 
-void AssistantClient::OnAssistantStatusChanged(bool running) {
-  // |running| means assistent mojom service is running. This maps to
-  // |STOPPED| and |NOT_READY|. |RUNNING| maps to UI is shown and an assistant
-  // session is running.
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
-      running ? ash::mojom::VoiceInteractionState::STOPPED
-              : ash::mojom::VoiceInteractionState::NOT_READY);
+void AssistantClient::OnAssistantStatusChanged(
+    ash::mojom::AssistantState new_state) {
+  ash::AssistantState::Get()->NotifyStatusChanged(new_state);
 }
 
 void AssistantClient::RequestAssistantStructure(
@@ -176,12 +167,6 @@ void AssistantClient::RequestAssistantStateController(
     mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver) {
   ash::AssistantInterfaceBinder::GetInstance()->BindStateController(
       std::move(receiver));
-}
-
-void AssistantClient::RequestPrefStoreConnector(
-    mojo::PendingReceiver<prefs::mojom::PrefStoreConnector> receiver) {
-  content::BrowserContext::GetConnectorFor(profile_)->Connect(
-      prefs::mojom::kServiceName, std::move(receiver));
 }
 
 void AssistantClient::RequestBatteryMonitor(

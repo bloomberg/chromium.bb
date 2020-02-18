@@ -78,6 +78,7 @@ enum class BlendMode {
   kSaturation,
   kColor,
   kLuminosity,
+  kLast = kLuminosity,
 };
 
 constexpr uint32_t FXSYS_BGR(uint8_t b, uint8_t g, uint8_t r) {
@@ -94,6 +95,10 @@ constexpr uint8_t FXSYS_GetGValue(uint32_t bgr) {
 
 constexpr uint8_t FXSYS_GetBValue(uint32_t bgr) {
   return (bgr >> 16) & 0xff;
+}
+
+constexpr unsigned int FXSYS_GetUnsignedAlpha(float alpha) {
+  return static_cast<unsigned int>(alpha * 255.f + 0.5f);
 }
 
 #define FXSYS_GetCValue(cmyk) ((uint8_t)((cmyk) >> 24) & 0xff)

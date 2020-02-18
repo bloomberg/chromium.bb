@@ -3,5 +3,14 @@
 # found in the LICENSE file.
 
 include_rules = [
-    '+platform/api',
+    '-platform'
+    '-util',
+    '-third_party',
 ]
+
+specific_include_rules = {
+  ".*_unittest\.cc": [
+    '+util',
+    '+third_party',
+  ],
+}

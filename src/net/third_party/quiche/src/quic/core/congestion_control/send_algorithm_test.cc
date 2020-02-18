@@ -6,13 +6,13 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quiche/src/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
@@ -189,12 +189,12 @@ class SendAlgorithmTest : public QuicTestWithParam<TestParams> {
   void CreateSetup(const QuicBandwidth& test_bandwidth,
                    const QuicTime::Delta& test_link_delay,
                    QuicByteCount bottleneck_queue_length) {
-    switch_ = QuicMakeUnique<simulator::Switch>(&simulator_, "Switch", 8,
-                                                bottleneck_queue_length);
-    quic_sender_link_ = QuicMakeUnique<simulator::SymmetricLink>(
+    switch_ = std::make_unique<simulator::Switch>(&simulator_, "Switch", 8,
+                                                  bottleneck_queue_length);
+    quic_sender_link_ = std::make_unique<simulator::SymmetricLink>(
         &quic_sender_, switch_->port(1), kLocalLinkBandwidth,
         kLocalPropagationDelay);
-    receiver_link_ = QuicMakeUnique<simulator::SymmetricLink>(
+    receiver_link_ = std::make_unique<simulator::SymmetricLink>(
         &receiver_, switch_->port(2), test_bandwidth, test_link_delay);
   }
 

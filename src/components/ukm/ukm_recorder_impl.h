@@ -68,6 +68,9 @@ class UkmRecorderImpl : public UkmRecorder {
   // Deletes stored recordings.
   void Purge();
 
+  // Deletes stored recordings related to Chrome extensions.
+  void PurgeExtensionRecordings();
+
   // Marks a source as no longer needed to be kept alive in memory. The source
   // with given id will be removed from in-memory recordings at the next
   // reporting cycle.
@@ -131,6 +134,7 @@ class UkmRecorderImpl : public UkmRecorder {
   friend ::ukm::UkmRecorderImplTest;
   friend ::ukm::UkmUtilsForTest;
   FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, IsSampledIn);
+  FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, PurgeExtensionRecordings);
 
   struct MetricAggregate {
     uint64_t total_count = 0;
@@ -189,7 +193,7 @@ class UkmRecorderImpl : public UkmRecorder {
   std::set<uint64_t> whitelisted_entry_hashes_;
 
   // Sampling configurations, loaded from a field-trial.
-  int default_sampling_rate_ = 0;
+  int default_sampling_rate_ = -1;  // -1 == not yet loaded
   base::flat_map<uint64_t, int> event_sampling_rates_;
 
   // Contains data from various recordings which periodically get serialized

@@ -1,0 +1,14 @@
+{
+  "sysroot": {
+    "build_target": {
+      "name": "%(build_target)s"
+    },
+    "path": "/build/%(build_target)s"
+  },
+  "chrome_root": "/path/to/chrome",
+  "goma_config": {
+    "goma_dir": "/path/to/goma",
+    "goma_client_json": "/path/to/goma/client/json",
+    "chromeos_goma_dir": "/path/to/chromeos/goma/dir"
+  }
+}

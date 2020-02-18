@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_driven_test.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/geo/country_names.h"
@@ -128,11 +129,9 @@ class PersonalDataManagerMock : public PersonalDataManager {
 };
 
 PersonalDataManagerMock::PersonalDataManagerMock()
-    : PersonalDataManager("en-US") {
-}
+    : PersonalDataManager("en-US") {}
 
-PersonalDataManagerMock::~PersonalDataManagerMock() {
-}
+PersonalDataManagerMock::~PersonalDataManagerMock() {}
 
 void PersonalDataManagerMock::Reset() {
   profiles_.clear();
@@ -141,8 +140,8 @@ void PersonalDataManagerMock::Reset() {
 std::string PersonalDataManagerMock::SaveImportedProfile(
     const AutofillProfile& profile) {
   std::vector<AutofillProfile> profiles;
-  std::string merged_guid =
-      MergeProfile(profile, &profiles_, "en-US", &profiles);
+  std::string merged_guid = AutofillProfileComparator::MergeProfile(
+      profile, &profiles_, "en-US", &profiles);
   if (merged_guid == profile.guid())
     profiles_.push_back(std::make_unique<AutofillProfile>(profile));
   return merged_guid;
@@ -202,8 +201,7 @@ AutofillMergeTest::AutofillMergeTest() : DataDrivenTest(GetTestDataDir()) {
   }
 }
 
-AutofillMergeTest::~AutofillMergeTest() {
-}
+AutofillMergeTest::~AutofillMergeTest() {}
 
 void AutofillMergeTest::SetUp() {
   test::DisableSystemServices(nullptr);
@@ -247,8 +245,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
       do {
         ++separator_pos;
       } while (separator_pos < line.size() && line[separator_pos] == ' ');
-      base::string16 value =
-          base::UTF8ToUTF16(line.substr(separator_pos));
+      base::string16 value = base::UTF8ToUTF16(line.substr(separator_pos));
       base::ReplaceFirstSubstringAfterOffset(
           &value, 0, base::ASCIIToUTF16("\\n"), base::ASCIIToUTF16("\n"));
 
@@ -279,12 +276,15 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
 
       // Import the profile.
       std::unique_ptr<CreditCard> imported_credit_card;
+      base::Optional<std::string> unused_imported_vpa;
       form_data_importer_->ImportFormData(form_structure,
                                           true,  // address autofill enabled,
                                           true,  // credit card autofill enabled
                                           false,  // should return local card
-                                          &imported_credit_card);
+                                          &imported_credit_card,
+                                          &unused_imported_vpa);
       EXPECT_FALSE(imported_credit_card);
+      EXPECT_FALSE(unused_imported_vpa.has_value());
 
       // Clear the |form| to start a new profile.
       form.fields.clear();
@@ -304,7 +304,7 @@ TEST_P(AutofillMergeTest, DataDrivenMergeProfiles) {
                        kIsExpectedToPass);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AutofillMergeTest,
                          testing::ValuesIn(GetTestFiles()));
 

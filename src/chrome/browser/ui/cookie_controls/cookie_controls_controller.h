@@ -26,8 +26,11 @@ class CookieControlsController {
  public:
   enum class Status {
     kUninitialized,
+    // Cookie blocking is enabled.
     kEnabled,
+    // Cookie blocking is disabled.
     kDisabled,
+    // Cookie blocking is enabled in general but was disabled for this site.
     kDisabledForSite,
   };
 
@@ -44,11 +47,9 @@ class CookieControlsController {
   // blocking.
   void OnCookieBlockingEnabledForSite(bool block_third_party_cookies);
 
-  // Returns the number of registrable domains with blocked cookies.
-  int GetBlockedDomainCount();
 
   void AddObserver(CookieControlsView* obs);
-  void RemoveObserver(const CookieControlsView* obs);
+  void RemoveObserver(CookieControlsView* obs);
 
  private:
   // The observed WebContents changes during the lifetime of the
@@ -76,8 +77,12 @@ class CookieControlsController {
   // Updates the blocked cookie count of |icon_|.
   void PresentBlockedCookieCounter();
 
-  // Callback for when the cookie controls preference changes.
-  void OnCookieControlsPrefChanged();
+  // Returns the number of blocked cookies.
+  int GetBlockedCookieCount();
+
+  // Callback for when the cookie controls or third-party cookie blocking
+  // preference changes.
+  void OnPrefChanged();
 
   content::WebContents* GetWebContents();
 

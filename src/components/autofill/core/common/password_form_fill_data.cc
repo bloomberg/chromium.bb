@@ -24,13 +24,14 @@ PasswordFormFillData::PasswordFormFillData() = default;
 
 PasswordFormFillData::PasswordFormFillData(
     const PasswordForm& form_on_page,
-    const std::map<base::string16, const PasswordForm*>& matches,
+    const std::vector<const PasswordForm*>& matches,
     const PasswordForm& preferred_match,
     bool wait_for_username)
     : form_renderer_id(form_on_page.form_data.unique_renderer_id),
       name(form_on_page.form_data.name),
       origin(form_on_page.origin),
       action(form_on_page.action),
+      uses_account_store(preferred_match.IsUsingAccountStore()),
       wait_for_username(wait_for_username),
       has_renderer_ids(form_on_page.has_renderer_ids) {
   // Note that many of the |FormFieldData| members are not initialized for
@@ -65,17 +66,26 @@ PasswordFormFillData::PasswordFormFillData(
     preferred_realm = preferred_match.signon_realm;
 
   // Copy additional username/value pairs.
-  for (const auto& it : matches) {
-    if (it.second != &preferred_match) {
-      PasswordAndRealm& value = additional_logins[it.first];
-      value.password = it.second->password_value;
-      if (IsPublicSuffixMatchOrAffiliationBasedMatch(*it.second))
-        value.realm = it.second->signon_realm;
-    }
+  for (const PasswordForm* match : matches) {
+    if (match == &preferred_match)
+      continue;
+    PasswordAndMetadata& value = additional_logins[match->username_value];
+    value.password = match->password_value;
+    value.uses_account_store = match->IsUsingAccountStore();
+    if (IsPublicSuffixMatchOrAffiliationBasedMatch(*match))
+      value.realm = match->signon_realm;
   }
 }
 
-PasswordFormFillData::PasswordFormFillData(const PasswordFormFillData& other) =
+PasswordFormFillData::PasswordFormFillData(const PasswordFormFillData&) =
+    default;
+
+PasswordFormFillData& PasswordFormFillData::operator=(
+    const PasswordFormFillData&) = default;
+
+PasswordFormFillData::PasswordFormFillData(PasswordFormFillData&&) = default;
+
+PasswordFormFillData& PasswordFormFillData::operator=(PasswordFormFillData&&) =
     default;
 
 PasswordFormFillData::~PasswordFormFillData() = default;

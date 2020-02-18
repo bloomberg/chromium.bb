@@ -15,10 +15,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
-import android.support.v4.view.animation.FastOutLinearInInterpolator;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.text.InputFilter;
 import android.text.Spanned;
@@ -40,16 +37,19 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.preferences.PreferenceUtils;
-import org.chromium.chrome.browser.preferences.autofill.CreditCardNumberFormattingTextWatcher;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
-import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
-import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.browser.settings.SettingsUtils;
+import org.chromium.chrome.browser.settings.autofill.CreditCardNumberFormattingTextWatcher;
+import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
+import org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView;
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.ArrayList;
@@ -175,7 +175,7 @@ public class EditorDialog
 
     /** Launches the Autofill help page on top of the current Context. */
     public static void launchAutofillHelpPage(Context context) {
-        HelpAndFeedback.getInstance(context).show((Activity) context,
+        HelpAndFeedback.getInstance().show((Activity) context,
                 context.getString(R.string.help_context_autofill), Profile.getLastUsedProfile(),
                 null);
     }
@@ -231,7 +231,7 @@ public class EditorDialog
         params.topMargin = toolbar.getLayoutParams().height;
         shadow.setLayoutParams(params);
         scrollView.getViewTreeObserver().addOnScrollChangedListener(
-                PreferenceUtils.getShowShadowOnScrollListener(scrollView, shadow));
+                SettingsUtils.getShowShadowOnScrollListener(scrollView, shadow));
     }
 
     /**
@@ -309,7 +309,7 @@ public class EditorDialog
 
         mDialogInOutAnimator = animatorSet;
         mDialogInOutAnimator.setDuration(DIALOG_EXIT_ANIMATION_MS);
-        mDialogInOutAnimator.setInterpolator(new FastOutLinearInInterpolator());
+        mDialogInOutAnimator.setInterpolator(Interpolators.FAST_OUT_LINEAR_IN_INTERPOLATOR);
         mDialogInOutAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -561,7 +561,7 @@ public class EditorDialog
 
         mDialogInOutAnimator = animatorSet;
         mDialogInOutAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
-        mDialogInOutAnimator.setInterpolator(new LinearOutSlowInInterpolator());
+        mDialogInOutAnimator.setInterpolator(Interpolators.LINEAR_OUT_SLOW_IN_INTERPOLATOR);
         mDialogInOutAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {

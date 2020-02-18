@@ -40,9 +40,6 @@ enum AndroidLogPriority {
 
 // Begin of protos/perfetto/common/data_source_descriptor.proto
 
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos
-// to reflect changes in the corresponding C++ headers.
-
 // This message is sent from Producer(s) to the tracing Service when registering
 // to advertise their capabilities. It describes the structure of tracing
 // protos that will be produced by the data source and the supported filters.
@@ -75,24 +72,27 @@ message DataSourceDescriptor {
 // Begin of protos/perfetto/common/gpu_counter_descriptor.proto
 
 // Description of GPU counters.
-// This message is sent by a GPU counter producer to specify the counters available in the hardware.
+// This message is sent by a GPU counter producer to specify the counters
+// available in the hardware.
 message GpuCounterDescriptor {
   message GpuCounterSpec {
     optional uint32 counter_id = 1;
     optional string name = 2;
     optional string description = 3;
-    reserved 4;
+    reserved 4;  // MeasureUnit unit (deprecated)
     oneof peak_value {
       int64 int_peak_value = 5;
       double double_peak_value = 6;
-    };
+    }
     repeated MeasureUnit numerator_units = 7;
     repeated MeasureUnit denominator_units = 8;
+    optional bool select_by_default = 9;
   }
   repeated GpuCounterSpec specs = 1;
 
-  // Allow producer to group counters into block to represent counter islands.  A capacity may be
-  // specified to indicate the number of counters that can be enable simultaneously in that block.
+  // Allow producer to group counters into block to represent counter islands.
+  // A capacity may be specified to indicate the number of counters that can be
+  // enable simultaneously in that block.
   message GpuCounterBlock {
     // required. Unique ID for the counter group.
     optional uint32 block_id = 1;
@@ -107,6 +107,19 @@ message GpuCounterDescriptor {
   }
   repeated GpuCounterBlock blocks = 2;
 
+  // optional.  Minimum sampling period supported by the producer in
+  // nanoseconds.
+  optional uint64 min_sampling_period_ns = 3;
+
+  // optional.  Maximum sampling period supported by the producer in
+  // nanoseconds.
+  optional uint64 max_sampling_period_ns = 4;
+
+  // optional.  The producer supports counter sampling by instrumenting the
+  // command buffer.
+  optional bool supports_instrumented_sampling = 5;
+
+  // next id: 41
   enum MeasureUnit {
     NONE = 0;
 
@@ -141,6 +154,8 @@ message GpuCounterDescriptor {
     VERTEX = 25;
     PIXEL = 26;
     TRIANGLE = 27;
+    PRIMITIVE = 38;
+    FRAGMENT = 39;
 
     MILLIWATT = 28;
     WATT = 29;
@@ -155,7 +170,9 @@ message GpuCounterDescriptor {
     KELVIN = 36;
 
     PERCENT = 37;
-  };
+
+    INSTRUCTION = 40;
+  }
 }
 
 // End of protos/perfetto/common/gpu_counter_descriptor.proto
@@ -308,7 +325,7 @@ enum VmstatCounters {
 
 // Statistics for the internals of the tracing service.
 //
-// Next id: 10.
+// Next id: 11.
 message TraceStats {
   // From TraceBuffer::Stats.
   //
@@ -452,9 +469,6 @@ message TraceStats {
 
 // Begin of protos/perfetto/common/tracing_service_state.proto
 
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos.py
-// to reflect changes in the corresponding C++ headers.
-
 // Reports the state of the tracing service. Used to gather details about the
 // data sources connected.
 // See ConsumerPort::QueryServiceState().
@@ -576,6 +590,9 @@ message GraphicsFrameEvent {
     PRESENT_FENCE = 8;
     RELEASE_FENCE = 9;
     MODIFY = 10;
+    DETACH = 11;
+    ATTACH = 12;
+    CANCEL = 13;
   }
 
   message BufferEvent {
@@ -741,22 +758,23 @@ message ClockSnapshot {
     //             IDs and setting this ID to hash(full_clock_name) & ~127.
     optional uint32 clock_id = 1;
 
-    // Unit is ns unless specified otherwise by the resolution_* fields below.
+    // Absolute timestamp. Unit is ns unless specified otherwise by the
+    // unit_multiplier_ns field below.
     optional uint64 timestamp = 2;
 
-    // TODO(eseckler): the fields below and sequence-scoped clock IDs are not
-    // supported yet by the trace processor.
+    // When true each TracePacket's timestamp should be interpreted as a delta
+    // from the last TracePacket's timestamp (referencing this clock) emitted by
+    // the same packet_sequence_id. Should only be used for user-defined
+    // sequence-local clocks. The first packet timestamp after each
+    // ClockSnapshot that contains this clock is relative to the |timestamp| in
+    // the ClockSnapshot.
+    optional bool is_incremental = 3;
 
-    // When true the timestamp should be interpreted as a delta from the last
-    // TracePacket's timestamp emitted by the same packet_sequence_id.
-    // The first packet timestamp after a ClockSnapshot is relative to the last
-    // ClockSnapshot seen on the packet sequence.
-    // optional bool is_incremental = 3;
-
-    // Allows to specify a custom unit different than the default (ns)
-    // for this clock domain. A multiplier of 1000 means that a timestamp = 3
-    // should be interpreted as 3000 ns = 3 us.
-    // optional uint64 unit_multiplier_ns = 4;
+    // Allows to specify a custom unit different than the default (ns) for this
+    // clock domain. A multiplier of 1000 means that a timestamp = 3 should be
+    // interpreted as 3000 ns = 3 us. All snapshots for the same clock within a
+    // trace need to use the same unit.
+    optional uint64 unit_multiplier_ns = 4;
   }
   repeated Clock clocks = 1;
 }
@@ -2277,9 +2295,7 @@ message FtraceEvent {
     SysExitFtraceEvent sys_exit = 330;
     ZeroFtraceEvent zero = 331;
     GpuFrequencyFtraceEvent gpu_frequency = 332;
-    GpuSchedEnqueueFtraceEvent gpu_sched_enqueue = 333;
-    GpuSchedSubmitFtraceEvent gpu_sched_submit = 334;
-    GpuSchedCompleteFtraceEvent gpu_sched_complete = 335;
+    // removed field with id 333
   }
 }
 
@@ -2287,12 +2303,48 @@ message FtraceEvent {
 
 // Begin of protos/perfetto/trace/ftrace/ftrace_event_bundle.proto
 
-// One parsed page from per-cpu ftrace buffer.
+// The result of tracing one or more ftrace data pages from a single per-cpu
+// kernel ring buffer. If collating multiple pages' worth of events, all of
+// them come from contiguous pages, with no kernel data loss in between.
 message FtraceEventBundle {
   optional uint32 cpu = 1;
   repeated FtraceEvent event = 2;
-  // True if this cpu's ftrace kernel buffer lost events since the last read.
+  // Set to true if there was data loss between the last time we've read from
+  // the corresponding per-cpu kernel buffer, and the earliest event recorded
+  // in this bundle.
   optional bool lost_events = 3;
+
+  // Optionally-enabled compact encoding of a batch of scheduling events. Only
+  // a subset of events & their fields is recorded.
+  // All fields (except comms) are stored in a structure-of-arrays form, one
+  // entry in each repeated field per event.
+  message CompactSched {
+    // Interned table of unique strings for this bundle.
+    repeated string intern_table = 5;
+
+    // Delta-encoded timestamps across all sched_switch events within this
+    // bundle. The first is absolute, each next one is relative to its
+    // predecessor.
+    repeated uint64 switch_timestamp = 1 [packed = true];
+    repeated int64 switch_prev_state = 2 [packed = true];
+    repeated int32 switch_next_pid = 3 [packed = true];
+    repeated int32 switch_next_prio = 4 [packed = true];
+    // One per event, index into |intern_table| corresponding to the
+    // next_comm field of the event.
+    repeated uint32 switch_next_comm_index = 6 [packed = true];
+
+    // Delta-encoded timestamps across all sched_waking events within this
+    // bundle. The first is absolute, each next one is relative to its
+    // predecessor.
+    repeated uint64 waking_timestamp = 7 [packed = true];
+    repeated int32 waking_pid = 8 [packed = true];
+    repeated int32 waking_target_cpu = 9 [packed = true];
+    repeated int32 waking_prio = 10 [packed = true];
+    // One per event, index into |intern_table| corresponding to the
+    // comm field of the event.
+    repeated uint32 waking_comm_index = 11 [packed = true];
+  }
+  optional CompactSched compact_sched = 4;
 }
 
 // End of protos/perfetto/trace/ftrace/ftrace_event_bundle.proto
@@ -2373,31 +2425,6 @@ message GenericFtraceEvent {
 }
 
 // End of protos/perfetto/trace/ftrace/generic.proto
-
-// Begin of protos/perfetto/trace/ftrace/gpu.proto
-
-message GpuSchedEnqueueFtraceEvent {
-  optional uint32 ctx_id = 1;
-  optional uint32 job_id = 2;
-  optional uint32 priority = 3;
-  optional uint32 submission_id = 4;
-}
-message GpuSchedSubmitFtraceEvent {
-  optional uint32 ctx_id = 1;
-  optional uint32 hwqueue_id = 2;
-  optional uint32 job_id = 3;
-  optional uint32 priority = 4;
-  optional uint32 submission_id = 5;
-}
-message GpuSchedCompleteFtraceEvent {
-  optional uint32 ctx_id = 1;
-  optional uint32 job_id = 2;
-  optional string msg = 3;
-  optional uint32 priority = 4;
-  optional uint32 submission_id = 5;
-}
-
-// End of protos/perfetto/trace/ftrace/gpu.proto
 
 // Begin of protos/perfetto/trace/ftrace/kmem.proto
 
@@ -2876,8 +2903,11 @@ message MmVmscanKswapdSleepFtraceEvent {
 // emitted proactively in advance of referring to them in later packets.
 //
 // Next reserved id: 8 (up to 15).
-// Next id: 22.
+// Next id: 23.
 message InternedData {
+  // TODO(eseckler): Replace iid fields inside interned messages with
+  // map<iid, message> type fields in InternedData.
+
   // Each field's message type needs to specify an |iid| field, which is the ID
   // of the entry in the field's interning index. Each field constructs its own
   // index, thus interning IDs are scoped to the tracing session and field
@@ -2910,6 +2940,9 @@ message InternedData {
   repeated Frame frames = 6;
   // A callstack of a program.
   repeated Callstack callstacks = 7;
+
+  // Additional Vulkan information sent in a VulkanMemoryEvent message
+  repeated InternedString vulkan_memory_keys = 22;
 }
 
 // End of protos/perfetto/trace/interned_data/interned_data.proto
@@ -2967,11 +3000,14 @@ message PowerRails {
   message RailDescriptor {
     // Index corresponding to the rail
     optional uint32 index = 1;
+
     // Name of the rail
     optional string rail_name = 2;
+
     // Name of the subsystem to which this rail belongs
     optional string subsys_name = 3;
-    // Hardware sampling rate
+
+    // Hardware sampling rate (Hz).
     optional uint32 sampling_rate = 4;
   }
 
@@ -2981,9 +3017,11 @@ message PowerRails {
   message EnergyData {
     // Index corresponding to RailDescriptor.index
     optional uint32 index = 1;
-    // Time since device boot(CLOCK_BOOTTIME) in milli-seconds
+
+    // Time since device boot(CLOCK_BOOTTIME) in milli-seconds.
     optional uint64 timestamp_ms = 2;
-    // Accumulated energy since device boot in microwatt-seconds (uWs)
+
+    // Accumulated energy since device boot in microwatt-seconds (uWs).
     optional uint64 energy = 3;
   }
 
@@ -2993,6 +3031,47 @@ message PowerRails {
 // End of protos/perfetto/trace/power/power_rails.proto
 
 // Begin of protos/perfetto/trace/profiling/heap_graph.proto
+
+message ObfuscatedMember {
+  optional string obfuscated_name = 1;
+  optional string deobfuscated_name = 2;
+}
+
+message ObfuscatedClass {
+  optional string obfuscated_name = 1;
+  optional string deobfuscated_name = 2;
+  repeated ObfuscatedMember obfuscated_members = 3;
+}
+
+message DeobfuscationMapping {
+  optional string package_name = 1;
+  optional int64 version_code = 2;
+  repeated ObfuscatedClass obfuscated_classes = 3;
+}
+
+message HeapGraphRoot {
+  enum Type {
+    ROOT_UNKNOWN = 0;
+    ROOT_JNI_GLOBAL = 1;
+    ROOT_JNI_LOCAL = 2;
+    ROOT_JAVA_FRAME = 3;
+    ROOT_NATIVE_STACK = 4;
+    ROOT_STICKY_CLASS = 5;
+    ROOT_THREAD_BLOCK = 6;
+    ROOT_MONITOR_USED = 7;
+    ROOT_THREAD_OBJECT = 8;
+    ROOT_INTERNED_STRING = 9;
+    ROOT_FINALIZING = 10;
+    ROOT_DEBUGGER = 11;
+    ROOT_REFERENCE_CLEANUP = 12;
+    ROOT_VM_INTERNAL = 13;
+    ROOT_JNI_MONITOR = 14;
+  };
+  // Objects retained by this root.
+  repeated uint64 object_ids = 1 [packed = true];
+
+  optional Type root_type = 2;
+}
 
 message HeapGraphObject {
   optional uint64 id = 1;
@@ -3005,17 +3084,27 @@ message HeapGraphObject {
 
   // Indices for InternedData.field_names for the name of the field referring
   // to the object.
-  repeated uint64 reference_field_id = 4;
+  repeated uint64 reference_field_id = 4 [packed = true];
 
   // Ids of the Object that is referred to.
-  repeated uint64 reference_object_id = 5;
+  repeated uint64 reference_object_id = 5 [packed = true];
 }
 
 message HeapGraph {
   optional int32 pid = 1;
 
-  // Live objects at the time this dump was taken.
+  // This contains all objects at the time this dump was taken. Some of these
+  // will be live, some of those unreachable (garbage). To find the live
+  // objects, the client needs to build the transitive closure of objects
+  // reachable from |roots|.
+  // All objects not contained within that transitive closure are garbage that
+  // has not yet been collected.
   repeated HeapGraphObject objects = 2;
+
+  // Roots at the time this dump was taken.
+  // All live objects are reachable from the roots. All other objects are
+  // garbage.
+  repeated HeapGraphRoot roots = 7;
 
   // Type names used in managed heap graph.
   repeated InternedString type_names = 3;
@@ -3030,6 +3119,9 @@ message HeapGraph {
 // End of protos/perfetto/trace/profiling/heap_graph.proto
 
 // Begin of protos/perfetto/trace/profiling/profile_common.proto
+
+// TODO(fmayer): Figure out naming thoroughout this file to get a
+// nomenclature that works between Windows and Linux.
 
 // The interning fields in this file can refer to 2 different intern tables,
 // depending on the message they are used in. If the interned fields are present
@@ -3060,11 +3152,68 @@ message ProfiledFrameSymbols {
   repeated uint32 line_number = 4;
 }
 
+message Line {
+  optional string function_name = 1;
+  optional string source_file_name = 2;
+  optional uint32 line_number = 3;
+}
+
+// Symbols for a given address in a module.
+message AddressSymbols {
+  optional uint64 address = 1;
+
+  // Source lines that correspond to this address.
+  //
+  // These are repeated because when inlining happens, multiple functions'
+  // frames can be at a single address. Imagine function Foo calling the
+  // std::vector<int> constructor, which gets inlined at 0xf00. We then get
+  // both Foo and the std::vector<int> constructor when we symbolize the
+  // address.
+  repeated Line lines = 2;
+}
+
+// Symbols for addresses seen in a module.
+message ModuleSymbols {
+  // Fully qualified path to the mapping.
+  // E.g. /system/lib64/libc.so.
+  optional string path = 1;
+
+  // .note.gnu.build-id on Linux (not hex encoded).
+  // uuid on MacOS.
+  // Module GUID on Windows.
+  optional string build_id = 2;
+  repeated AddressSymbols address_symbols = 3;
+}
+
 message Mapping {
   optional uint64 iid = 1;       // Interning key.
   optional uint64 build_id = 2;  // Interning key.
-  // TODO(fmayer): Document difference between those two.
-  optional uint64 exact_offset = 8;
+
+  // The linker may create multiple memory mappings for the same shared
+  // library.
+  // This is so that the ELF header is mapped as read only, while the
+  // executable memory is mapped as executable only.
+  // The details of this depend on the linker, a possible mapping of an ELF
+  // file is this:
+  //         +----------------------+
+  // ELF     |xxxxxxxxxyyyyyyyyyyyyy|
+  //         +---------+------------+
+  //         |         |
+  //         | read    | executable
+  //         v mapping v mapping
+  //         +----------------------+
+  // Memory  |xxxxxxxxx|yyyyyyyyyyyy|
+  //         +------------------+---+
+  //         ^         ^        ^
+  //         +         +        +
+  //       start     exact    relpc
+  //       offset   offset    0x1800
+  //       0x0000   0x1000
+  //
+  // exact_offset is the offset into the library file of this mapping.
+  // start_offset is the offset into the library file of the first mapping
+  // for that library. For native libraries (.so files) this should be 0.
+  optional uint64 exact_offset = 8;  // This is not set on Android 10.
   optional uint64 start_offset = 3;
   optional uint64 start = 4;
   optional uint64 end = 5;
@@ -3288,6 +3437,9 @@ message ProcessTree {
     // No longer used as of Apr 2018, when the dedicated |threads| field was
     // introduced in ProcessTree.
     repeated Thread threads_deprecated = 4 [deprecated = true];
+
+    // The uid for the process, as per /proc/pid/status.
+    optional int32 uid = 5;
   }
 
   // List of processes and threads in the client. These lists are incremental
@@ -3379,6 +3531,7 @@ message Utsname {
 
 message SystemInfo {
   optional Utsname utsname = 1;
+  optional string android_build_fingerprint = 2;
 }
 
 // End of protos/perfetto/trace/system_info.proto
@@ -3403,7 +3556,7 @@ message Trace {
 // TracePacket(s).
 //
 // Next reserved id: 13 (up to 15).
-// Next id: 61.
+// Next id: 64.
 message TracePacket {
   // The timestamp of the TracePacket.
   // By default this timestamps refers to the trace clock (CLOCK_BOOTTIME on
@@ -3451,9 +3604,13 @@ message TracePacket {
     StreamingProfilePacket streaming_profile_packet = 54;
     HeapGraph heap_graph = 56;
     GraphicsFrameEvent graphics_frame_event = 57;
+    // removed field with id 62
+    GpuLog gpu_log = 63;
 
     // Only used in profile packets.
     ProfiledFrameSymbols profiled_frame_symbols = 55;
+    ModuleSymbols module_symbols = 61;
+    DeobfuscationMapping deobfuscation_mapping = 64;
 
     // Only used by TrackEvent.
     TrackDescriptor track_descriptor = 60;
@@ -3505,6 +3662,7 @@ message TracePacket {
   // it (since the last reset of interning state). It may also be emitted
   // proactively in advance of referring to them in later packets.
   optional InternedData interned_data = 12;
+
 
   enum SequenceFlags {
     SEQ_UNSPECIFIED = 0;
@@ -3579,6 +3737,349 @@ message TracePacketDefaults {
   optional TrackEventDefaults track_event_defaults = 11;
 }
 // End of protos/perfetto/trace/trace_packet_defaults.proto
+
+// Begin of protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.proto
+
+// Describes Chrome's Compositor scheduler's current state and associated
+// variables.
+//
+// These protos and enums were adapted from the corresponding original JSON
+// trace event for the scheduler state. In contrast to the JSON, we use strongly
+// typed enum values instead of strings for many fields, and
+// microsecond-granularity timestamps.
+//
+// The original format was generated in JSON by the code at
+// https://cs.chromium.org/chromium/src/cc/scheduler/scheduler.cc?l=870&rcl=5e15eabc9c0eec8daf94fdf78e93f13b6e3b63dd
+//
+// TODO(nuskos): Update link once we've switched to writing this proto.
+//
+// All non-delta-timestamps are absolute CLOCK_MONOTONIC timestamps.
+
+enum ChromeCompositorSchedulerAction {
+  CC_SCHEDULER_ACTION_UNSPECIFIED = 0;
+  CC_SCHEDULER_ACTION_NONE = 1;
+  CC_SCHEDULER_ACTION_SEND_BEGIN_MAIN_FRAME = 2;
+  CC_SCHEDULER_ACTION_COMMIT = 3;
+  CC_SCHEDULER_ACTION_ACTIVATE_SYNC_TREE = 4;
+  CC_SCHEDULER_ACTION_DRAW_IF_POSSIBLE = 5;
+  CC_SCHEDULER_ACTION_DRAW_FORCED = 6;
+  CC_SCHEDULER_ACTION_DRAW_ABORT = 7;
+  CC_SCHEDULER_ACTION_BEGIN_LAYER_TREE_FRAME_SINK_CREATION = 8;
+  CC_SCHEDULER_ACTION_PREPARE_TILES = 9;
+  CC_SCHEDULER_ACTION_INVALIDATE_LAYER_TREE_FRAME_SINK = 10;
+  CC_SCHEDULER_ACTION_PERFORM_IMPL_SIDE_INVALIDATION = 11;
+  CC_SCHEDULER_ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL = 12;
+  CC_SCHEDULER_ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON = 13;
+}
+
+// Next id: 18
+message ChromeCompositorSchedulerState {
+  enum BeginImplFrameDeadlineMode {
+    DEADLINE_MODE_UNSPECIFIED = 0;
+    DEADLINE_MODE_NONE = 1;
+    DEADLINE_MODE_IMMEDIATE = 2;
+    DEADLINE_MODE_REGULAR = 3;
+    DEADLINE_MODE_LATE = 4;
+    DEADLINE_MODE_BLOCKED = 5;
+  }
+  optional ChromeCompositorStateMachine state_machine = 1;
+  optional bool observing_begin_frame_source = 2;
+  optional bool begin_impl_frame_deadline_task = 3;
+  optional bool pending_begin_frame_task = 4;
+  optional bool skipped_last_frame_missed_exceeded_deadline = 5;
+  optional bool skipped_last_frame_to_reduce_latency = 6;
+  optional ChromeCompositorSchedulerAction inside_action = 7;
+  optional BeginImplFrameDeadlineMode deadline_mode = 8;
+  optional int64 deadline_us = 9;
+  optional int64 deadline_scheduled_at_us = 10;
+  optional int64 now_us = 11;
+  optional int64 now_to_deadline_delta_us = 12;
+  optional int64 now_to_deadline_scheduled_at_delta_us = 13;
+  optional BeginImplFrameArgs begin_impl_frame_args = 14;
+  optional BeginFrameObserverState begin_frame_observer_state = 15;
+  optional BeginFrameSourceState begin_frame_source_state = 16;
+  optional CompositorTimingHistory compositor_timing_history = 17;
+}
+
+// Describes the current values stored in the Chrome Compositor state machine.
+// Next id: 3
+message ChromeCompositorStateMachine {
+  // Next id: 6
+  message MajorState {
+    enum BeginImplFrameState {
+      BEGIN_IMPL_FRAME_UNSPECIFIED = 0;
+      BEGIN_IMPL_FRAME_IDLE = 1;
+      BEGIN_IMPL_FRAME_INSIDE_BEGIN_FRAME = 2;
+      BEGIN_IMPL_FRAME_INSIDE_DEADLINE = 3;
+    }
+    enum BeginMainFrameState {
+      BEGIN_MAIN_FRAME_UNSPECIFIED = 0;
+      BEGIN_MAIN_FRAME_IDLE = 1;
+      BEGIN_MAIN_FRAME_SENT = 2;
+      BEGIN_MAIN_FRAME_READY_TO_COMMIT = 3;
+    }
+    enum LayerTreeFrameSinkState {
+      LAYER_TREE_FRAME_UNSPECIFIED = 0;
+      LAYER_TREE_FRAME_NONE = 1;
+      LAYER_TREE_FRAME_ACTIVE = 2;
+      LAYER_TREE_FRAME_CREATING = 3;
+      LAYER_TREE_FRAME_WAITING_FOR_FIRST_COMMIT = 4;
+      LAYER_TREE_FRAME_WAITING_FOR_FIRST_ACTIVATION = 5;
+    }
+    enum ForcedRedrawOnTimeoutState {
+      FORCED_REDRAW_UNSPECIFIED = 0;
+      FORCED_REDRAW_IDLE = 1;
+      FORCED_REDRAW_WAITING_FOR_COMMIT = 2;
+      FORCED_REDRAW_WAITING_FOR_ACTIVATION = 3;
+      FORCED_REDRAW_WAITING_FOR_DRAW = 4;
+    }
+    optional ChromeCompositorSchedulerAction next_action = 1;
+    optional BeginImplFrameState begin_impl_frame_state = 2;
+    optional BeginMainFrameState begin_main_frame_state = 3;
+    optional LayerTreeFrameSinkState layer_tree_frame_sink_state = 4;
+    optional ForcedRedrawOnTimeoutState forced_redraw_state = 5;
+  }
+  optional MajorState major_state = 1;
+
+  // Next id: 47
+  message MinorState {
+    enum TreePriority {
+      TREE_PRIORITY_UNSPECIFIED = 0;
+      TREE_PRIORITY_SAME_PRIORITY_FOR_BOTH_TREES = 1;
+      TREE_PRIORITY_SMOOTHNESS_TAKES_PRIORITY = 2;
+      TREE_PRIORITY_NEW_CONTENT_TAKES_PRIORITY = 3;
+    }
+    enum ScrollHandlerState {
+      SCROLL_HANDLER_UNSPECIFIED = 0;
+      SCROLL_AFFECTS_SCROLL_HANDLER = 1;
+      SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER = 2;
+    }
+    optional int32 commit_count = 1;
+    optional int32 current_frame_number = 2;
+    optional int32 last_frame_number_submit_performed = 3;
+    optional int32 last_frame_number_draw_performed = 4;
+    optional int32 last_frame_number_begin_main_frame_sent = 5;
+    optional bool did_draw = 6;
+    optional bool did_send_begin_main_frame_for_current_frame = 7;
+    optional bool did_notify_begin_main_frame_not_expected_until = 8;
+    optional bool did_notify_begin_main_frame_not_expected_soon = 9;
+    optional bool wants_begin_main_frame_not_expected = 10;
+    optional bool did_commit_during_frame = 11;
+    optional bool did_invalidate_layer_tree_frame_sink = 12;
+    optional bool did_perform_impl_side_invalidaion = 13;
+    optional bool did_prepare_tiles = 14;
+    optional int32 consecutive_checkerboard_animations = 15;
+    optional int32 pending_submit_frames = 16;
+    optional int32 submit_frames_with_current_layer_tree_frame_sink = 17;
+    optional bool needs_redraw = 18;
+    optional bool needs_prepare_tiles = 19;
+    optional bool needs_begin_main_frame = 20;
+    optional bool needs_one_begin_impl_frame = 21;
+    optional bool visible = 22;
+    optional bool begin_frame_source_paused = 23;
+    optional bool can_draw = 24;
+    optional bool resourceless_draw = 25;
+    optional bool has_pending_tree = 26;
+    optional bool pending_tree_is_ready_for_activation = 27;
+    optional bool active_tree_needs_first_draw = 28;
+    optional bool active_tree_is_ready_to_draw = 29;
+    optional bool did_create_and_initialize_first_layer_tree_frame_sink = 30;
+    optional TreePriority tree_priority = 31;
+    optional ScrollHandlerState scroll_handler_state = 32;
+    optional bool critical_begin_main_frame_to_activate_is_fast = 33;
+    optional bool main_thread_missed_last_deadline = 34;
+    optional bool skip_next_begin_main_frame_to_reduce_latency = 35;
+    optional bool video_needs_begin_frames = 36;
+    optional bool defer_begin_main_frame = 37;
+    optional bool last_commit_had_no_updates = 38;
+    optional bool did_draw_in_last_frame = 39;
+    optional bool did_submit_in_last_frame = 40;
+    optional bool needs_impl_side_invalidation = 41;
+    optional bool current_pending_tree_is_impl_side = 42;
+    optional bool previous_pending_tree_was_impl_side = 43;
+    optional bool processing_animation_worklets_for_active_tree = 44;
+    optional bool processing_animation_worklets_for_pending_tree = 45;
+    optional bool processing_paint_worklets_for_pending_tree = 46;
+  }
+  optional MinorState minor_state = 2;
+}
+
+// Next id: 12
+message BeginFrameArgs {
+  // JSON format has a "type" field that was always just "BeginFrameArgs" we
+  // drop this in the proto representation, and instead make the JSON format
+  // "subtype" field become the type field.
+  enum BeginFrameArgsType {
+    BEGIN_FRAME_ARGS_TYPE_UNSPECIFIED = 0;
+    BEGIN_FRAME_ARGS_TYPE_INVALID = 1;
+    BEGIN_FRAME_ARGS_TYPE_NORMAL = 2;
+    BEGIN_FRAME_ARGS_TYPE_MISSED = 3;
+  }
+  optional BeginFrameArgsType type = 1;
+  optional uint64 source_id = 2;
+  optional uint64 sequence_number = 3;
+  optional int64 frame_time_us = 4;
+  optional int64 deadline_us = 5;
+  optional int64 interval_delta_us = 6;
+  optional bool on_critical_path = 7;
+  optional bool animate_only = 8;
+  oneof created_from {
+    // The interned SourceLocation.
+    uint64 source_location_iid = 9;
+    // The SourceLocation that this args was created from.
+    // TODO(nuskos): Eventually we will support interning inside of
+    // TypedArgument TraceEvents and then we shouldn't need this SourceLocation
+    // since we can emit it as part of the InternedData message. When we can
+    // remove this |source_location|.
+    SourceLocation source_location = 10;
+  }
+}
+
+// Next id: 7
+message BeginImplFrameArgs {
+  optional int64 updated_at_us = 1;
+  optional int64 finished_at_us = 2;
+  enum State {
+    BEGIN_FRAME_FINISHED = 0;
+    BEGIN_FRAME_USING = 1;
+  }
+  optional State state = 3;
+  oneof args {
+    // Only set if |state| is BEGIN_FRAME_FINISHED.
+    BeginFrameArgs current_args = 4;
+    // Only set if |state| is BEGIN_FRAME_USING.
+    BeginFrameArgs last_args = 5;
+  }
+  message TimestampsInUs {
+    optional int64 interval_delta = 1;
+    optional int64 now_to_deadline_delta = 2;
+    optional int64 frame_time_to_now_delta = 3;
+    optional int64 frame_time_to_deadline_delta = 4;
+    optional int64 now = 5;
+    optional int64 frame_time = 6;
+    optional int64 deadline = 7;
+  }
+  optional TimestampsInUs timestamps_in_us = 6;
+}
+
+message BeginFrameObserverState {
+  optional int64 dropped_begin_frame_args = 1;
+  optional BeginFrameArgs last_begin_frame_args = 2;
+}
+
+message BeginFrameSourceState {
+  optional uint32 source_id = 1;
+  optional bool paused = 2;
+  optional uint32 num_observers = 3;
+  optional BeginFrameArgs last_begin_frame_args = 4;
+}
+
+message CompositorTimingHistory {
+  optional int64 begin_main_frame_queue_critical_estimate_delta_us = 1;
+  optional int64 begin_main_frame_queue_not_critical_estimate_delta_us = 2;
+  optional int64 begin_main_frame_start_to_ready_to_commit_estimate_delta_us =
+      3;
+  optional int64 commit_to_ready_to_activate_estimate_delta_us = 4;
+  optional int64 prepare_tiles_estimate_delta_us = 5;
+  optional int64 activate_estimate_delta_us = 6;
+  optional int64 draw_estimate_delta_us = 7;
+}
+
+// End of protos/perfetto/trace/track_event/chrome_compositor_scheduler_state.proto
+
+// Begin of protos/perfetto/trace/track_event/chrome_histogram_sample.proto
+
+// An individual histogram sample logged via Chrome's UMA metrics system.
+message ChromeHistogramSample {
+  // MD5 hash of the metric name. Either |name_hash| or |name| or both
+  // must be present.
+  optional uint64 name_hash = 1;
+  optional string name = 2;
+  optional int64 sample = 3;
+}
+
+// End of protos/perfetto/trace/track_event/chrome_histogram_sample.proto
+
+// Begin of protos/perfetto/trace/track_event/chrome_keyed_service.proto
+
+// Details about one of Chrome's keyed services associated with the event.
+message ChromeKeyedService {
+  // Name of the service, e.g. "MediaRouter", "PreviewsService", etc. (in
+  // Chrome, these are static strings known at compile time).
+  optional string name = 1;
+}
+
+// End of protos/perfetto/trace/track_event/chrome_keyed_service.proto
+
+// Begin of protos/perfetto/trace/track_event/chrome_legacy_ipc.proto
+
+// Details about a legacy Chrome IPC message that is either sent by the event.
+// TODO(eseckler): Also use this message on the receiving side?
+message ChromeLegacyIpc {
+  enum MessageClass {
+    CLASS_UNSPECIFIED = 0;
+    CLASS_AUTOMATION = 1;
+    CLASS_FRAME = 2;
+    CLASS_PAGE = 3;
+    CLASS_VIEW = 4;
+    CLASS_WIDGET = 5;
+    CLASS_INPUT = 6;
+    CLASS_TEST = 7;
+    CLASS_WORKER = 8;
+    CLASS_NACL = 9;
+    CLASS_GPU_CHANNEL = 10;
+    CLASS_MEDIA = 11;
+    CLASS_PPAPI = 12;
+    CLASS_CHROME = 13;
+    CLASS_DRAG = 14;
+    CLASS_PRINT = 15;
+    CLASS_EXTENSION = 16;
+    CLASS_TEXT_INPUT_CLIENT = 17;
+    CLASS_BLINK_TEST = 18;
+    CLASS_ACCESSIBILITY = 19;
+    CLASS_PRERENDER = 20;
+    CLASS_CHROMOTING = 21;
+    CLASS_BROWSER_PLUGIN = 22;
+    CLASS_ANDROID_WEB_VIEW = 23;
+    CLASS_NACL_HOST = 24;
+    CLASS_ENCRYPTED_MEDIA = 25;
+    CLASS_CAST = 26;
+    CLASS_GIN_JAVA_BRIDGE = 27;
+    CLASS_CHROME_UTILITY_PRINTING = 28;
+    CLASS_OZONE_GPU = 29;
+    CLASS_WEB_TEST = 30;
+    CLASS_NETWORK_HINTS = 31;
+    CLASS_EXTENSIONS_GUEST_VIEW = 32;
+    CLASS_GUEST_VIEW = 33;
+    CLASS_MEDIA_PLAYER_DELEGATE = 34;
+    CLASS_EXTENSION_WORKER = 35;
+    CLASS_SUBRESOURCE_FILTER = 36;
+    CLASS_UNFREEZABLE_FRAME = 37;
+  }
+
+  // Corresponds to the message class type defined in Chrome's IPCMessageStart
+  // enum, e.g. FrameMsgStart,
+  optional MessageClass message_class = 1;
+
+  // Line number of the message definition. See Chrome's IPC_MESSAGE_ID and
+  // IPC_MESSAGE_START macros.
+  optional uint32 message_line = 2;
+}
+
+// End of protos/perfetto/trace/track_event/chrome_legacy_ipc.proto
+
+// Begin of protos/perfetto/trace/track_event/chrome_user_event.proto
+
+// Details about a UI interaction initiated by the user, such as opening or
+// closing a tab or a context menu.
+message ChromeUserEvent {
+  // Name of the action, e.g. "NewTab", "ShowBookmarkManager", etc. (in
+  // Chrome, these are usually static strings known at compile time, or
+  // concatenations of multiple such static strings).
+  optional string action = 1;
+}
+
+// End of protos/perfetto/trace/track_event/chrome_user_event.proto
 
 // Begin of protos/perfetto/trace/track_event/debug_annotation.proto
 
@@ -3657,16 +4158,13 @@ message LogMessageBody {
 
 // Begin of protos/perfetto/trace/track_event/process_descriptor.proto
 
-// Process-wide data that is periodically emitted by one thread per process.
-// Valid for all events in packet sequences emitted by the same process.
+// Describes a process's attributes. Emitted as part of a TrackDescriptor,
+// usually by the process's main thread.
 //
 // Next id: 5.
 message ProcessDescriptor {
   optional int32 pid = 1;
   repeated string cmdline = 2;
-
-  // To support old UI. New UI should determine default sorting by process_type.
-  optional int32 legacy_sort_index = 3;
 
   // See chromium's content::ProcessType.
   enum ChromeProcessType {
@@ -3682,6 +4180,9 @@ message ProcessDescriptor {
   }
   optional ChromeProcessType chrome_process_type = 4;
   optional int32 process_priority = 5;
+
+  // To support old UI. New UI should determine default sorting by process_type.
+  optional int32 legacy_sort_index = 3;
 }
 
 // End of protos/perfetto/trace/track_event/process_descriptor.proto
@@ -3714,17 +4215,15 @@ message TaskExecution {
 
 // Begin of protos/perfetto/trace/track_event/thread_descriptor.proto
 
-// Periodically emitted data that's common to all events emitted by the same
-// thread, i.e. all events in the same packet sequence. Valid for all subsequent
-// events in the same sequence.
+// Describes a thread's attributes. Emitted as part of a TrackDescriptor,
+// usually by the thread's trace writer.
 //
 // Next id: 9.
 message ThreadDescriptor {
   optional int32 pid = 1;
   optional int32 tid = 2;
 
-  // To support old UI. New UI should determine default sorting by thread_type.
-  optional int32 legacy_sort_index = 3;
+  optional string thread_name = 5;
 
   enum ChromeThreadType {
     CHROME_THREAD_UNSPECIFIED = 0;
@@ -3753,15 +4252,23 @@ message ThreadDescriptor {
   };
   optional ChromeThreadType chrome_thread_type = 4;
 
-  // TODO(eseckler): Replace this with ChromeThreadType where possible.
-  optional string thread_name = 5;
+  // ---------------------------------------------------------------------------
+  // Deprecated / legacy fields, which will be removed in the future:
+  // ---------------------------------------------------------------------------
+
+  // Deprecated. Use ClockSnapshot in combination with TracePacket's timestamp
+  // and timestamp_clock_id fields instead.
+  optional int64 reference_timestamp_us = 6;
 
   // Absolute reference values. Clock values in subsequent TrackEvents can be
   // encoded accumulatively and relative to these. This reduces their var-int
   // encoding size.
-  optional int64 reference_timestamp_us = 6;
+  // TODO(eseckler): Deprecated. Replace these with ClockSnapshot encoding.
   optional int64 reference_thread_time_us = 7;
   optional int64 reference_thread_instruction_count = 8;
+
+  // To support old UI. New UI should determine default sorting by thread_type.
+  optional int32 legacy_sort_index = 3;
 }
 
 // End of protos/perfetto/trace/track_event/thread_descriptor.proto
@@ -3771,9 +4278,10 @@ message ThreadDescriptor {
 // Defines a track for TrackEvents. Slices and instant events on the same track
 // will be nested based on their timestamps, see TrackEvent::Type.
 //
-// A packet sequence needs to emit a TrackDescriptor for every track on which it
-// emits TrackEvents. TrackDescriptors should be reemitted whenever incremental
-// state is cleared.
+// A TrackDescriptor only needs to be emitted by one trace writer / producer and
+// is valid for the entirety of the trace. To ensure the descriptor isn't lost
+// when the ring buffer wraps, it should be reemitted whenever incremental state
+// is cleared.
 //
 // As a fallback, TrackEvents emitted without an explicit track association will
 // be associated with an implicit trace-global track (uuid = 0), see also
@@ -3796,7 +4304,8 @@ message TrackDescriptor {
   // Name of the track.
   optional string name = 2;
 
-  // Optional arguments for specific types of tracks.
+  // Associate the track with a process or thread - the UI will draw this track
+  // in the context of the process/thread.
   optional ProcessDescriptor process = 3;
   optional ThreadDescriptor thread = 4;
 }
@@ -3805,68 +4314,69 @@ message TrackDescriptor {
 
 // Begin of protos/perfetto/trace/track_event/track_event.proto
 
+// NOTE: Full TrackEvent support in the client lib and chrome is WIP, thus these
+// protos are still subject to change. Don't depend on them staying as they are.
+
 // Trace events emitted by client instrumentation library (TRACE_EVENT macros),
 // which describe activity on a track, such as a thread or asynchronous event
 // track. The track is specified using separate TrackDescriptor messages and
 // referred to via the track's UUID.
 //
-// This message is optimized for writing and makes heavy use of data interning
-// and delta encoding (e.g. of timestamps) to reduce data repetition and encoded
-// data size.
+// A simple TrackEvent packet specifies a timestamp, category, name and type:
+//   trace_packet {
+//     timestamp: 1000
+//     track_event {
+//       categories: ["my_cat"]
+//       name: "my_event"
+//       type: TYPE_INSTANT
+//      }
+//    }
 //
-// A TrackEvent exists in the context of its packet sequence (TracePackets
-// emitted by the same producer + writer) and refers to data in preceding
-// TracePackets emitted on the same sequence, both directly and indirectly. For
-// example, interned data entries are emitted as part of a TracePacket and
-// directly referred to from TrackEvents by their interning IDs. Default values
-// for attributes of events on the same sequence (e.g. their default track
-// association) can be emitted as part of a TrackEventDefaults message.
+// To associate an event with a custom track (e.g. a thread), the track is
+// defined in a separate packet and referred to from the TrackEvent by its UUID:
+//   trace_packet {
+//     track_descriptor {
+//       track_uuid: 1234
+//       name: "my_track"
 //
-// Next reserved id: 12 (up to 15).
-// Next id: 24.
+//       // Optionally, associate the track with a thread.
+//       thread_descriptor {
+//         pid: 10
+//         tid: 10
+//         ..
+//       }
+//     }
+//   }
+//
+// A pair of TYPE_SLICE_BEGIN and _END events form a slice on the track:
+//   trace_packet {
+//     timestamp: 1200
+//     track_event {
+//       track_uuid: 1234
+//       categories: ["my_cat"]
+//       name: "my_slice"
+//       type: TYPE_SLICE_BEGIN
+//     }
+//   }
+//   trace_packet {
+//     timestamp: 1400
+//     track_event {
+//       track_uuid: 1234
+//       type: TYPE_SLICE_END
+//     }
+//   }
+//
+// TrackEvents also support optimizations to reduce data repetition and encoded
+// data size, e.g. through data interning (names, categories, ...) and delta
+// encoding of timestamps/counters. For details, see the InternedData message.
+// Further, default values for attributes of events on the same sequence (e.g.
+// their default track association) can be emitted as part of a
+// TrackEventDefaults message.
+//
+// Next reserved id: 12 (up to 15). Next id: 29.
 message TrackEvent {
-  // Timestamp in microseconds (usually CLOCK_MONOTONIC).
-  oneof timestamp {
-    // Delta timestamp value since the last TrackEvent or ThreadDescriptor. To
-    // calculate the absolute timestamp value, sum up all delta values of the
-    // preceding TrackEvents since the last ThreadDescriptor and add the sum to
-    // the |reference_timestamp| in ThreadDescriptor. This value should always
-    // be positive.
-    int64 timestamp_delta_us = 1;
-    // Absolute value (e.g. a manually specified timestamp in the macro).
-    // This is a one-off value that does not affect delta timestamp computation
-    // in subsequent TrackEvents.
-    int64 timestamp_absolute_us = 16;
-  }
-
-  // CPU time for the current thread (e.g., CLOCK_THREAD_CPUTIME_ID) in
-  // microseconds.
-  oneof thread_time {
-    // Same encoding as |timestamp| fields above.
-    int64 thread_time_delta_us = 2;
-    // TODO(eseckler): Consider removing absolute thread time support. It's
-    // currently required to support writing PHASE_COMPLETE events out-of-order,
-    // but shouldn't be required anymore when we split them into begin/end.
-    int64 thread_time_absolute_us = 17;
-  }
-
-  // Value of the instruction counter for the current thread.
-  oneof thread_instruction_count {
-    // Same encoding as |timestamp| fields above.
-    int64 thread_instruction_count_delta = 8;
-    // TODO(eseckler): Consider removing absolute thread instruction count
-    // support. It's currently required to support writing PHASE_COMPLETE events
-    // out-of-order, but shouldn't be required anymore when we split them into
-    // begin/end.
-    int64 thread_instruction_count_absolute = 20;
-  }
-
-  // TODO(eseckler): Add a way to specify Tracks.
-
   // Names of categories of the event. In the client library, categories are a
   // way to turn groups of individual events on or off.
-  //
-  // We intend to add a binary symbol version of this in the future.
   repeated uint64 category_iids = 3;  // interned EventCategoryName.
   repeated string categories = 22;    // non-interned variant.
 
@@ -3876,12 +4386,12 @@ message TrackEvent {
   // Note that metrics should not rely on event names, as they are prone to
   // changing. Instead, they should use typed arguments to identify the events
   // they are interested in.
-  //
-  // We intend to add a binary symbol version of this in the future.
   oneof name_field {
     uint64 name_iid = 10;  // interned EventName.
     string name = 23;      // non-interned variant.
   }
+
+  // TODO(eseckler): Support using binary symbols for category/event names.
 
   // Type of the TrackEvent (required if |phase| in LegacyEvent is not set).
   enum Type {
@@ -3921,6 +4431,36 @@ message TrackEvent {
   // implicit trace-global track (uuid 0). See TrackDescriptor::uuid.
   optional uint64 track_uuid = 11;
 
+  // TODO(eseckler): Add flow event support.
+
+  // TODO(eseckler): Encode thread_time and thread_instruction_count using a
+  // ClockSnapshot + clock id instead of ThreadDescriptor's reference values.
+
+  // CPU time for the current thread (e.g., CLOCK_THREAD_CPUTIME_ID) in
+  // microseconds.
+  oneof thread_time {
+    // Delta timestamp value since the last TrackEvent or ThreadDescriptor. To
+    // calculate the absolute timestamp value, sum up all delta values of the
+    // preceding TrackEvents since the last ThreadDescriptor and add the sum to
+    // the |reference_timestamp| in ThreadDescriptor. This value should always
+    // be positive.
+    int64 thread_time_delta_us = 2;
+    // This is a one-off absolute value that does not affect delta timestamp
+    // computation in subsequent TrackEvents.
+    int64 thread_time_absolute_us = 17;
+  }
+
+  // Value of the instruction counter for the current thread.
+  oneof thread_instruction_count {
+    // Same encoding as |thread_time| field above.
+    int64 thread_instruction_count_delta = 8;
+    int64 thread_instruction_count_absolute = 20;
+  }
+
+  // ---------------------------------------------------------------------------
+  // TrackEvent arguments:
+  // ---------------------------------------------------------------------------
+
   // Unstable key/value annotations shown in the trace viewer but not intended
   // for metrics use.
   repeated DebugAnnotation debug_annotations = 4;
@@ -3928,8 +4468,33 @@ message TrackEvent {
   // Typed event arguments:
   optional TaskExecution task_execution = 5;
   optional LogMessage log_message = 21;
+  optional ChromeCompositorSchedulerState cc_scheduler_state = 24;
+  optional ChromeUserEvent chrome_user_event = 25;
+  optional ChromeKeyedService chrome_keyed_service = 26;
+  optional ChromeLegacyIpc chrome_legacy_ipc = 27;
+  optional ChromeHistogramSample chrome_histogram_sample = 28;
+  // New argument types go here :)
 
-  // TODO(eseckler): New argument types go here :)
+  // ---------------------------------------------------------------------------
+  // Deprecated / legacy event fields, which will be removed in the future:
+  // ---------------------------------------------------------------------------
+
+  // Deprecated. Use the |timestamp| and |timestamp_clock_id| fields in
+  // TracePacket instead.
+  //
+  // Timestamp in microseconds (usually CLOCK_MONOTONIC).
+  oneof timestamp {
+    // Delta timestamp value since the last TrackEvent or ThreadDescriptor. To
+    // calculate the absolute timestamp value, sum up all delta values of the
+    // preceding TrackEvents since the last ThreadDescriptor and add the sum to
+    // the |reference_timestamp| in ThreadDescriptor. This value should always
+    // be positive.
+    int64 timestamp_delta_us = 1;
+    // Absolute value (e.g. a manually specified timestamp in the macro).
+    // This is a one-off value that does not affect delta timestamp computation
+    // in subsequent TrackEvents.
+    int64 timestamp_absolute_us = 16;
+  }
 
   // Apart from {category, time, thread time, tid, pid}, other legacy trace
   // event attributes are initially simply proxied for conversion to a JSON
@@ -4054,19 +4619,43 @@ message GpuCounterEvent {
     }
   }
   repeated GpuCounter counters = 2;
+
+  // optional. Identifier for GPU in a multi-gpu device.
+  optional int32 gpu_id = 3;
 }
 
 // End of protos/perfetto/trace/gpu/gpu_counter_event.proto
 
+// Begin of protos/perfetto/trace/gpu/gpu_log.proto
+
+// Message for logging events GPU data producer.
+message GpuLog {
+  enum Severity {
+    LOG_SEVERITY_UNSPECIFIED = 0;
+    LOG_SEVERITY_VERBOSE = 1;
+    LOG_SEVERITY_DEBUG = 2;
+    LOG_SEVERITY_INFO = 3;
+    LOG_SEVERITY_WARNING = 4;
+    LOG_SEVERITY_ERROR = 5;
+  };
+  optional Severity severity = 1;
+
+  optional string tag = 2;
+
+  optional string log_message = 3;
+}
+
+// End of protos/perfetto/trace/gpu/gpu_log.proto
+
 // Begin of protos/perfetto/trace/gpu/gpu_render_stage_event.proto
 
-// next id: 12
+// next id: 13
 message GpuRenderStageEvent {
   // required. Unique ID for the event.
   optional uint64 event_id = 1;
 
-  // optional. Duration in GPU clock.  If unset, this is a single time point
-  // event.
+  // optional. Duration of the event.  This should be in the same clock domain as the timestamp of
+  // the packet.  If unset, this is a single time point event.
   optional uint64 duration = 2;
 
   // required. ID to a hardware queue description in the specifications.
@@ -4078,11 +4667,14 @@ message GpuRenderStageEvent {
   // required. GL context/VK device.
   optional uint64 context = 5;
 
-  // optional. The surface or render target for this event.
-  optional uint64 surface_id = 8;
+  // optional. The render target for this event.
+  optional uint64 render_target_handle = 8;
 
-  // optional. Render pass handle.
+  // optional. The Vulkan render pass handle.
   optional uint64 render_pass_handle = 9;
+
+  // optional. The Vulkan command buffer handle.
+  optional uint64 command_buffer_handle = 12;
 
   // optional. Submission ID generated by the UMD.
   optional uint32 submission_id = 10;
@@ -4109,23 +4701,19 @@ message GpuRenderStageEvent {
       optional string description = 2;
     }
 
-    // Labels to categorize the hw Queue this event goes on
+    // Labels to categorize the hw Queue this event goes on.
     repeated Description hw_queue = 2;
 
-    // Labels to categorize render stage(binning, render, compute etc)
+    // Labels to categorize render stage(binning, render, compute etc).
     repeated Description stage = 3;
   }
   optional Specifications specifications = 7;
 
-  // optional.  If True, duration must not be set and a GpuRenderStageEndEvent is expected.
-  optional bool begin_event = 11;
+  // optional. Identifier for GPU in a multi-gpu device.
+  optional int32 gpu_id = 11;
 
   // Extension for vendor's custom proto.
   extensions 100;
-}
-
-// Message to signal the end of the last render stage event that had set begin_event.
-message GpuRenderStageEndEvent {
 }
 
 // End of protos/perfetto/trace/gpu/gpu_render_stage_event.proto
@@ -4149,9 +4737,6 @@ message AndroidLogConfig {
 
 // Begin of protos/perfetto/config/chrome/chrome_config.proto
 
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos.py
-// to reflect changes in the corresponding C++ headers.
-
 message ChromeConfig {
   optional string trace_config = 1;
 
@@ -4163,9 +4748,6 @@ message ChromeConfig {
 // End of protos/perfetto/config/chrome/chrome_config.proto
 
 // Begin of protos/perfetto/config/data_source_config.proto
-
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos.py
-// to reflect changes in the corresponding C++ headers.
 
 // The configuration that is passed to each data source when starting tracing.
 message DataSourceConfig {
@@ -4210,15 +4792,30 @@ message DataSourceConfig {
   // cpp classes and polluting tracing/core with data-source-specific classes.
   // Instead they are treated as opaque strings containing raw proto bytes.
 
+  // Data source name: linux.ftrace
   optional FtraceConfig ftrace_config = 100 [lazy = true];
+  // Data source name: linux.inode_file_map
   optional InodeFileConfig inode_file_config = 102 [lazy = true];
+  // Data source name: linux.process_stats
   optional ProcessStatsConfig process_stats_config = 103 [lazy = true];
+  // Data source name: linux.sys_stats
   optional SysStatsConfig sys_stats_config = 104 [lazy = true];
+  // Data source name: android.heapprofd
   optional HeapprofdConfig heapprofd_config = 105 [lazy = true];
+  // Data source name: android.java_hprof
+  optional JavaHprofConfig java_hprof_config = 110 [lazy = true];
+  // Data source name: android.power
   optional AndroidPowerConfig android_power_config = 106 [lazy = true];
+  // Data source name: android.log
   optional AndroidLogConfig android_log_config = 107 [lazy = true];
+  // TODO(fmayer): Add data source name for this.
   optional GpuCounterConfig gpu_counter_config = 108 [lazy = true];
+  // Data source name: android.packages_list
   optional PackagesListConfig packages_list_config = 109 [lazy = true];
+  // Data source name: linux.perf
+  optional PerfEventConfig perf_event_config = 111 [lazy = true];
+  // Data source name: vulkan.memory_tracker
+  optional VulkanMemoryConfig vulkan_memory_config = 112 [lazy = true];
 
   // Chrome is special as it doesn't use the perfetto IPC layer. We want to
   // avoid proto serialization and de-serialization there because that would
@@ -4245,9 +4842,6 @@ message DataSourceConfig {
 
 // Begin of protos/perfetto/config/ftrace/ftrace_config.proto
 
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos.py
-// to reflect changes in the corresponding C++ headers.
-
 message FtraceConfig {
   repeated string ftrace_events = 1;
   repeated string atrace_categories = 2;
@@ -4255,14 +4849,21 @@ message FtraceConfig {
   // *Per-CPU* buffer size.
   optional uint32 buffer_size_kb = 10;
   optional uint32 drain_period_ms = 11;
+
+  // Configuration for compact encoding of scheduler events. When enabled (and
+  // recording the relevant ftrace events), specific high-volume events are
+  // encoded in a denser format than normal.
+  message CompactSchedConfig {
+    // If true, and sched_switch or sched_waking ftrace events are enabled,
+    // record those events in the compact format.
+    optional bool enabled = 1;
+  }
+  optional CompactSchedConfig compact_sched = 12;
 }
 
 // End of protos/perfetto/config/ftrace/ftrace_config.proto
 
 // Begin of protos/perfetto/config/inode_file/inode_file_config.proto
-
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos.py
-// to reflect changes in the corresponding C++ headers.
 
 message InodeFileConfig {
   message MountPointMappingEntry {
@@ -4314,9 +4915,6 @@ message AndroidPowerConfig {
 
 // Begin of protos/perfetto/config/process_stats/process_stats_config.proto
 
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos.py
-// to reflect changes in the corresponding C++ headers.
-
 message ProcessStatsConfig {
   enum Quirks {
     QUIRKS_UNSPECIFIED = 0;
@@ -4361,9 +4959,6 @@ message ProcessStatsConfig {
 
 // Begin of protos/perfetto/config/sys_stats/sys_stats_config.proto
 
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos.py
-// to reflect changes in the corresponding C++ headers.
-
 // This file defines the configuration for the Linux /proc poller data source,
 // which injects counters in the trace.
 // Counters that are needed in the trace must be explicitly listed in the
@@ -4406,9 +5001,6 @@ message SysStatsConfig {
 // End of protos/perfetto/config/sys_stats/sys_stats_config.proto
 
 // Begin of protos/perfetto/config/test_config.proto
-
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos.py
-// to reflect changes in the corresponding C++ headers.
 
 // The configuration for a fake producer used in tests.
 message TestConfig {
@@ -4458,15 +5050,12 @@ message TestConfig {
 
 // Begin of protos/perfetto/config/trace_config.proto
 
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos
-// to reflect changes in the corresponding C++ headers.
-
 // The overall config that is used when starting a new tracing session through
 // ProducerPort::StartTracing().
 // It contains the general config for the logging buffer(s) and the configs for
 // all the data source being enabled.
 //
-// Next id: 27.
+// Next id: 29.
 message TraceConfig {
   message BufferConfig {
     optional uint32 size_kb = 1;
@@ -4724,7 +5313,7 @@ message TraceConfig {
   enum CompressionType {
     COMPRESSION_TYPE_UNSPECIFIED = 0;
     COMPRESSION_TYPE_DEFLATE = 1;
-  };
+  }
   optional CompressionType compression_type = 24;
 
   // Android-only. Debug builds only. Not for general use. If set, saves a
@@ -4742,8 +5331,12 @@ message TraceConfig {
   }
   optional IncidentReportConfig incident_report_config = 25;
 
+  // DEPRECATED. Was trace_uuid, use trace_uuid_msb and trace_uuid_lsb instead.
+  reserved 26;
   // An identifier clients can use to tie this trace to other logging.
-  optional bytes trace_uuid = 26;
+  // Alternative encoding of trace_uuid as two int64s.
+  optional int64 trace_uuid_msb = 27;
+  optional int64 trace_uuid_lsb = 28;
 }
 
 // End of protos/perfetto/config/trace_config.proto
@@ -4757,7 +5350,7 @@ message HeapprofdConfig {
     optional uint32 dump_phase_ms = 5;
     // ms to wait between following dumps.
     optional uint32 dump_interval_ms = 6;
-  };
+  }
 
   // Set to 1 for perfect accuracy.
   // Otherwise, sample every sample_interval_bytes on average.
@@ -4812,6 +5405,10 @@ message HeapprofdConfig {
   // process.
   optional bool block_client = 9;
 
+  // If set, stop the trace session after blocking the client for this
+  // timeout. Needs to be larger than 100 us, otherwise no retries are done.
+  optional uint32 block_client_timeout_us = 14;
+
   // Do not profile processes from startup, only match already running
   // processes.
   //
@@ -4844,10 +5441,46 @@ message HeapprofdConfig {
 
 // End of protos/perfetto/config/profiling/heapprofd_config.proto
 
-// Begin of protos/perfetto/config/gpu/gpu_counter_config.proto
+// Begin of protos/perfetto/config/profiling/java_hprof_config.proto
 
-// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos.py
-// to reflect changes in the corresponding C++ headers.
+// Configuration for go/heapprofd.
+message JavaHprofConfig {
+  // If dump_interval_ms != 0, the following configuration is used.
+  message ContinuousDumpConfig {
+    // ms to wait before first continuous dump.
+    // A dump is always created at the beginning of the trace.
+    optional uint32 dump_phase_ms = 1;
+    // ms to wait between following dumps.
+    optional uint32 dump_interval_ms = 2;
+  }
+
+  // This input is normalized in the following way: if it contains slashes,
+  // everything up to the last slash is discarded. If it contains "@",
+  // everything after the first @ is discared.
+  // E.g. /system/bin/surfaceflinger@1.0 normalizes to surfaceflinger.
+  // This transformation is also applied to the processes' command lines when
+  // matching.
+  repeated string process_cmdline = 1;
+
+  // For watermark based triggering or local debugging.
+  repeated uint64 pid = 2;
+
+  // Dump at a predefined interval.
+  optional ContinuousDumpConfig continuous_dump_config = 3;
+}
+
+// End of protos/perfetto/config/profiling/java_hprof_config.proto
+
+// Begin of protos/perfetto/config/profiling/perf_event_config.proto
+
+// TODO(b/144281346): unstable, do not use. Will change in incompatible ways.
+message PerfEventConfig {
+  optional int32 tid = 1;
+}
+
+// End of protos/perfetto/config/profiling/perf_event_config.proto
+
+// Begin of protos/perfetto/config/gpu/gpu_counter_config.proto
 
 message GpuCounterConfig {
   // Desired sampling interval for counters.
@@ -4856,9 +5489,27 @@ message GpuCounterConfig {
   // List of counters to be sampled. Counter IDs correspond to the ones
   // described in GpuCounterSpec in the data source descriptor.
   repeated uint32 counter_ids = 2;
+
+  // Sample counters by instrumenting command buffers.
+  optional bool instrumented_sampling = 3;
+
+  // Fix gpu clock rate during trace session.
+  optional bool fix_gpu_clock = 4;
 }
 
 // End of protos/perfetto/config/gpu/gpu_counter_config.proto
+
+// Begin of protos/perfetto/config/gpu/vulkan_memory_config.proto
+
+message VulkanMemoryConfig {
+  // Tracking driver memory usage events
+  optional bool track_driver_memory_usage = 1;
+
+  // Tracking device memory usage events
+  optional bool track_device_memory_usage = 2;
+}
+
+// End of protos/perfetto/config/gpu/vulkan_memory_config.proto
 
 // Begin of protos/perfetto/config/android/packages_list_config.proto
 

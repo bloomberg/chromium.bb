@@ -22,15 +22,16 @@ void CSSMathFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSPrimitiveValue::TraceAfterDispatch(visitor);
 }
 
-CSSMathFunctionValue::CSSMathFunctionValue(CSSMathExpressionNode* expression,
-                                           ValueRange range)
+CSSMathFunctionValue::CSSMathFunctionValue(
+    const CSSMathExpressionNode* expression,
+    ValueRange range)
     : CSSPrimitiveValue(kMathFunctionClass), expression_(expression) {
   is_non_negative_math_function_ = range == kValueRangeNonNegative;
 }
 
 // static
 CSSMathFunctionValue* CSSMathFunctionValue::Create(
-    CSSMathExpressionNode* expression,
+    const CSSMathExpressionNode* expression,
     ValueRange range) {
   if (!expression)
     return nullptr;
@@ -96,12 +97,9 @@ Length CSSMathFunctionValue::ConvertToLength(
 static String BuildCSSText(const String& expression) {
   StringBuilder result;
   result.Append("calc");
-  bool expression_has_single_term = expression[0] != '(';
-  if (expression_has_single_term)
-    result.Append('(');
+  result.Append('(');
   result.Append(expression);
-  if (expression_has_single_term)
-    result.Append(')');
+  result.Append(')');
   return result.ToString();
 }
 
@@ -141,9 +139,7 @@ bool CSSMathFunctionValue::IsComputationallyIndependent() const {
 
 scoped_refptr<CalculationValue> CSSMathFunctionValue::ToCalcValue(
     const CSSToLengthConversionData& conversion_data) const {
-  return CalculationValue::CreateSimplified(
-      expression_->ToCalculationExpression(conversion_data),
-      PermittedValueRange());
+  return expression_->ToCalcValue(conversion_data, PermittedValueRange());
 }
 
 }  // namespace blink

@@ -36,7 +36,7 @@ namespace blink {
 // There are cases where promises cannot work (e.g., where the thread is being
 // terminated). In such cases operations will silently fail.
 class CORE_EXPORT ScriptPromiseResolver
-    : public GarbageCollectedFinalized<ScriptPromiseResolver>,
+    : public GarbageCollected<ScriptPromiseResolver>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseResolver);
   USING_PRE_FINALIZER(ScriptPromiseResolver, Dispose);
@@ -148,7 +148,7 @@ class CORE_EXPORT ScriptPromiseResolver
   const Member<ScriptState> script_state_;
   TaskHandle deferred_resolve_task_;
   Resolver resolver_;
-  ScopedPersistent<v8::Value> value_;
+  TraceWrapperV8Reference<v8::Value> value_;
 
   // To support keepAliveWhilePending(), this object needs to keep itself
   // alive while in that state.

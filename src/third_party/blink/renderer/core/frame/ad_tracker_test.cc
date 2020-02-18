@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -133,6 +134,36 @@ TEST_F(AdTrackerTest, AnyExecutingScriptsTaggedAsAdResource) {
 
   WillExecuteScript("https://example.com/foo.js");
   WillExecuteScript("https://example.com/bar.js");
+  EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResource());
+}
+
+TEST_F(AdTrackerTest, TopOfStackOnly_NoAdsOnTop) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kTopOfStackAdTagging);
+  CreateAdTracker();
+
+  String ad_script_url("https://example.com/bar.js");
+  AppendToKnownAdScripts(ad_script_url);
+
+  WillExecuteScript(ad_script_url);
+  WillExecuteScript("https://example.com/foo.js");
+  ad_tracker_->SetScriptAtTopOfStack("https://www.example.com/baz.js");
+
+  EXPECT_FALSE(AnyExecutingScriptsTaggedAsAdResource());
+}
+
+TEST_F(AdTrackerTest, TopOfStackOnly_AdsOnTop) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kTopOfStackAdTagging);
+  CreateAdTracker();
+
+  String ad_script_url("https://example.com/bar.js");
+  AppendToKnownAdScripts(ad_script_url);
+
+  WillExecuteScript(ad_script_url);
+  WillExecuteScript("https://example.com/foo.js");
+  ad_tracker_->SetScriptAtTopOfStack(ad_script_url);
+
   EXPECT_TRUE(AnyExecutingScriptsTaggedAsAdResource());
 }
 

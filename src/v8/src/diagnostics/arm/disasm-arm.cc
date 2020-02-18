@@ -590,7 +590,7 @@ int Decoder::FormatOption(Instruction* instr, const char* format) {
     }
     case 't': {  // 'target: target of branch instructions
       DCHECK(STRING_STARTS_WITH(format, "target"));
-      int off = (instr->SImmed24Value() << 2) + 8;
+      int off = (static_cast<uint32_t>(instr->SImmed24Value()) << 2) + 8u;
       out_buffer_pos_ += SNPrintF(
           out_buffer_ + out_buffer_pos_, "%+d -> %s", off,
           converter_.NameOfAddress(reinterpret_cast<byte*>(instr) + off));
@@ -1890,6 +1890,17 @@ void Decoder::DecodeSpecialCondition(Instruction* instr) {
                        op, size, Vd, Vn, Vm);
           break;
         }
+        case 0x4: {
+          if (instr->Bit(4) == 0) {
+            // vshl.s<size> Qd, Qm, Qn.
+            out_buffer_pos_ +=
+                SNPrintF(out_buffer_ + out_buffer_pos_,
+                         "vshl.s%d q%d, q%d, q%d", size, Vd, Vm, Vn);
+          } else {
+            Unknown(instr);
+          }
+          break;
+        }
         case 0x6: {
           // vmin/vmax.s<size> Qd, Qm, Qn.
           const char* op = instr->Bit(4) == 1 ? "vmin" : "vmax";
@@ -1980,8 +1991,27 @@ void Decoder::DecodeSpecialCondition(Instruction* instr) {
       break;
     }
     case 5:
-      if ((instr->Bits(18, 16) == 0) && (instr->Bits(11, 6) == 0x28) &&
-          (instr->Bit(4) == 1)) {
+      if (instr->Bit(23) == 1 && instr->Bits(21, 19) == 0 &&
+          instr->Bit(7) == 0 && instr->Bit(4) == 1) {
+        // One register and a modified immediate value, see ARM DDI 0406C.d
+        // A7.4.6.
+        byte cmode = instr->Bits(11, 8);
+        switch (cmode) {
+          case 0: {
+            int vd = instr->VFPDRegValue(kSimd128Precision);
+            int a = instr->Bit(24);
+            int bcd = instr->Bits(18, 16);
+            int efgh = instr->Bits(3, 0);
+            int imm64 = a << 7 | bcd << 4 | efgh;
+            out_buffer_pos_ += SNPrintF(out_buffer_ + out_buffer_pos_,
+                                        "vmov.i32 q%d, %d", vd, imm64);
+            break;
+          }
+          default:
+            Unknown(instr);
+        }
+      } else if ((instr->Bits(18, 16) == 0) && (instr->Bits(11, 6) == 0x28) &&
+                 (instr->Bit(4) == 1)) {
         // vmovl signed
         if ((instr->VdValue() & 1) != 0) Unknown(instr);
         int Vd = (instr->Bit(22) << 3) | (instr->VdValue() >> 1);
@@ -2081,6 +2111,17 @@ void Decoder::DecodeSpecialCondition(Instruction* instr) {
           out_buffer_pos_ +=
               SNPrintF(out_buffer_ + out_buffer_pos_, "%s.u%d q%d, q%d, q%d",
                        op, size, Vd, Vn, Vm);
+          break;
+        }
+        case 0x4: {
+          if (instr->Bit(4) == 0) {
+            // vshl.u<size> Qd, Qm, Qn.
+            out_buffer_pos_ +=
+                SNPrintF(out_buffer_ + out_buffer_pos_,
+                         "vshl.u%d q%d, q%d, q%d", size, Vd, Vm, Vn);
+          } else {
+            Unknown(instr);
+          }
           break;
         }
         case 0x6: {
@@ -2194,13 +2235,15 @@ void Decoder::DecodeSpecialCondition(Instruction* instr) {
           PrintDRegister(Vm);
         } else if (instr->Bits(17, 16) == 0x2 && instr->Bits(11, 8) == 0x2 &&
                    instr->Bits(7, 6) != 0) {
-          // vqmovn.<type><size> Dd, Qm.
+          // vqmov{u}n.<type><size> Dd, Qm.
           int Vd = instr->VFPDRegValue(kDoublePrecision);
           int Vm = instr->VFPMRegValue(kSimd128Precision);
-          char type = instr->Bit(6) != 0 ? 'u' : 's';
+          int op = instr->Bits(7, 6);
+          const char* name = op == 0b01 ? "vqmovun" : "vqmovn";
+          char type = op == 0b11 ? 'u' : 's';
           int size = 2 * kBitsPerByte * (1 << instr->Bits(19, 18));
           out_buffer_pos_ +=
-              SNPrintF(out_buffer_ + out_buffer_pos_, "vqmovn.%c%i d%d, q%d",
+              SNPrintF(out_buffer_ + out_buffer_pos_, "%s.%c%i d%d, q%d", name,
                        type, size, Vd, Vm);
         } else {
           int Vd, Vm;

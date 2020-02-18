@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.background_task_scheduler;
 
 import android.content.Context;
-import android.support.annotation.IntDef;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
@@ -48,8 +49,6 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
         int DONE = 2;
     }
 
-    protected NativeBackgroundTask() {}
-
     /** Indicates that the task has already been stopped. Should only be accessed on UI Thread. */
     private boolean mTaskStopped;
 
@@ -64,6 +63,17 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
 
     /** Make sure that we do not double record task finished metric */
     private boolean mFinishMetricRecorded;
+
+    private BackgroundTaskSchedulerExternalUma mExternalUma;
+
+    protected NativeBackgroundTask() {
+        this(BackgroundTaskSchedulerExternalUma.getInstance());
+    }
+
+    @VisibleForTesting
+    NativeBackgroundTask(BackgroundTaskSchedulerExternalUma externalUma) {
+        mExternalUma = externalUma;
+    }
 
     @Override
     public final boolean onStartTask(
@@ -128,19 +138,21 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
             final Runnable rescheduleRunnable) {
         if (isNativeLoadedInFullBrowserMode()) {
             mRunningInServiceManagerOnlyMode = false;
-            recordMetrics();
+            mExternalUma.reportNativeTaskStarted(mTaskId, mRunningInServiceManagerOnlyMode);
+            recordMemoryUsageWithRandomDelay(mRunningInServiceManagerOnlyMode);
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, startWithNativeRunnable);
             return;
         }
 
         boolean wasInServiceManagerOnlyMode = isNativeLoadedInServiceManagerOnlyMode();
         mRunningInServiceManagerOnlyMode = supportsServiceManagerOnly();
-        recordMetrics();
+        mExternalUma.reportNativeTaskStarted(mTaskId, mRunningInServiceManagerOnlyMode);
 
         final BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
                 PostTask.postTask(UiThreadTaskTraits.DEFAULT, startWithNativeRunnable);
+                recordMemoryUsageWithRandomDelay(mRunningInServiceManagerOnlyMode);
             }
             @Override
             public boolean startServiceManagerOnly() {
@@ -162,8 +174,7 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
                 // to Full Browser mode, but not cases in which Service Manager Only Mode was
                 // already started.
                 if (!wasInServiceManagerOnlyMode) {
-                    BackgroundTaskSchedulerExternalUma.reportTaskStartedNative(
-                            mTaskId, mRunningInServiceManagerOnlyMode);
+                    mExternalUma.reportTaskStartedNative(mTaskId, mRunningInServiceManagerOnlyMode);
                 }
 
                 try {
@@ -172,9 +183,8 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
                     ChromeBrowserInitializer.getInstance(context).handlePostNativeStartup(
                             true /* isAsync */, parts);
                 } catch (ProcessInitException e) {
-                    Log.e(TAG, "ProcessInitException while starting the browser process.");
+                    Log.e(TAG, "Background Launch Error", e);
                     rescheduleRunnable.run();
-                    return;
                 }
             }
         });
@@ -257,12 +267,6 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
         return getBrowserStartupController().isRunningInServiceManagerMode();
     }
 
-    private void recordMetrics() {
-        BackgroundTaskSchedulerExternalUma.reportNativeTaskStarted(
-                mTaskId, mRunningInServiceManagerOnlyMode);
-        recordMemoryUsageWithRandomDelay(mRunningInServiceManagerOnlyMode);
-    }
-
     @VisibleForTesting
     protected BrowserStartupController getBrowserStartupController() {
         return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER);
@@ -272,8 +276,7 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
       ThreadUtils.assertOnUiThread();
       if (!mFinishMetricRecorded) {
         mFinishMetricRecorded = true;
-        BackgroundTaskSchedulerExternalUma.reportNativeTaskFinished(
-                mTaskId, mRunningInServiceManagerOnlyMode);
+        mExternalUma.reportNativeTaskFinished(mTaskId, mRunningInServiceManagerOnlyMode);
       }
     }
 

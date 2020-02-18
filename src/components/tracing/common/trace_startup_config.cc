@@ -72,21 +72,17 @@ TraceStartupConfig::GetDefaultBrowserStartupConfig() {
   // First 10k events at start are sufficient to debug startup traces.
   trace_config.SetTraceBufferSizeInEvents(10000);
   trace_config.SetProcessFilterConfig(process_config);
-  // Enable argument filter since we could be background tracing.
-  trace_config.EnableArgumentFilter();
   return trace_config;
 }
 
 TraceStartupConfig::TraceStartupConfig() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisablePerfetto)) {
-    const std::string value =
-        command_line->GetSwitchValueASCII(switches::kTraceStartupOwner);
-    if (value == "devtools") {
-      session_owner_ = SessionOwner::kDevToolsTracingHandler;
-    } else if (value == "system") {
-      session_owner_ = SessionOwner::kSystemTracing;
-    }
+  const std::string value =
+      command_line->GetSwitchValueASCII(switches::kTraceStartupOwner);
+  if (value == "devtools") {
+    session_owner_ = SessionOwner::kDevToolsTracingHandler;
+  } else if (value == "system") {
+    session_owner_ = SessionOwner::kSystemTracing;
   }
 
   if (EnableFromCommandLine()) {
@@ -250,6 +246,8 @@ bool TraceStartupConfig::EnableFromBackgroundTracing() {
 
   SetBackgroundStartupTracingEnabled(false);
   trace_config_ = GetDefaultBrowserStartupConfig();
+  trace_config_.EnableArgumentFilter();
+
   is_enabled_ = true;
   session_owner_ = SessionOwner::kBackgroundTracing;
   should_trace_to_result_file_ = false;

@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTER_JOB_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTER_JOB_H_
 
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -49,16 +51,20 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
 
   // For registration jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(
-      base::WeakPtr<ServiceWorkerContextCore> context,
+      ServiceWorkerContextCore* context,
       const GURL& script_url,
-      const blink::mojom::ServiceWorkerRegistrationOptions& options);
+      const blink::mojom::ServiceWorkerRegistrationOptions& options,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object);
 
   // For update jobs.
   CONTENT_EXPORT ServiceWorkerRegisterJob(
-      base::WeakPtr<ServiceWorkerContextCore> context,
+      ServiceWorkerContextCore* context,
       ServiceWorkerRegistration* registration,
       bool force_bypass_cache,
-      bool skip_script_comparison);
+      bool skip_script_comparison,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object);
   ~ServiceWorkerRegisterJob() override;
 
   // Registers a callback to be called when the promise would resolve (whether
@@ -68,6 +74,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   // ServiceWorkerRegisterJobBase implementation:
   void Start() override;
   void Abort() override;
+  void WillShutDown() override;
   bool Equals(ServiceWorkerRegisterJobBase* job) const override;
   RegistrationJobType GetType() const override;
 
@@ -171,12 +178,10 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
 
   void BumpLastUpdateCheckTimeIfNeeded();
 
-  // The ServiceWorkerContextCore object should always outlive this.
-  base::WeakPtr<ServiceWorkerContextCore> context_;
+  // The ServiceWorkerContextCore object must outlive this.
+  ServiceWorkerContextCore* const context_;
 
   std::unique_ptr<ServiceWorkerUpdateChecker> update_checker_;
-  std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
-      compared_script_info_map_;
 
   RegistrationJobType job_type_;
   const GURL scope_;
@@ -186,8 +191,14 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   blink::mojom::ScriptType worker_script_type_ =
       blink::mojom::ScriptType::kClassic;
   const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
+  // "A job has a client (a service worker client). It is initially null."
+  // https://w3c.github.io/ServiceWorker/#dfn-job-client
+  // This fetch client settings object roughly corresponds to the job's client.
+  blink::mojom::FetchClientSettingsObjectPtr
+      outside_fetch_client_settings_object_;
   std::vector<RegistrationCallback> callbacks_;
   Phase phase_;
+  bool is_shutting_down_;
   Internal internal_;
   bool is_promise_resolved_;
   bool should_uninstall_on_failure_;

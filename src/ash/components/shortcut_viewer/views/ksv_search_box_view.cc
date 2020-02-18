@@ -6,6 +6,7 @@
 
 #include "ash/components/shortcut_viewer/vector_icons/vector_icons.h"
 #include "ash/components/strings/grit/ash_components_strings.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_view_delegate.h"
@@ -111,7 +112,7 @@ void KSVSearchBoxView::SetupCloseButton() {
   close->SetImage(
       views::ImageButton::STATE_NORMAL,
       gfx::CreateVectorIcon(kKsvSearchCloseIcon, gfx::kGoogleGrey700));
-  close->SetSize(gfx::Size(kIconSize, kIconSize));
+  close->SetPreferredSize(gfx::Size(kIconSize, kIconSize));
   close->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   close->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   const base::string16 close_button_label(
@@ -126,7 +127,7 @@ void KSVSearchBoxView::SetupBackButton() {
   back->SetImage(
       views::ImageButton::STATE_NORMAL,
       gfx::CreateVectorIcon(kKsvSearchBackIcon, gfx::kGoogleBlue500));
-  back->SetSize(gfx::Size(kIconSize, kIconSize));
+  back->SetPreferredSize(gfx::Size(kIconSize, kIconSize));
   back->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   back->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   const base::string16 back_button_label(

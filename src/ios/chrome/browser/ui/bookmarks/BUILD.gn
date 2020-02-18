@@ -104,7 +104,6 @@ source_set("bookmarks") {
     "//ios/chrome/common/ui_util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",
-    "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
     "//ui/base",
     "//ui/gfx",
@@ -153,7 +152,11 @@ source_set("unit_tests") {
 }
 
 source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
+  defines = [ "CHROME_EARL_GREY_1" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
   testonly = true
   sources = [
     "bookmarks_egtest.mm",
@@ -165,7 +168,6 @@ source_set("eg_tests") {
     "//components/bookmarks/browser",
     "//components/prefs",
     "//components/strings",
-    "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",
@@ -184,13 +186,11 @@ source_set("eg_tests") {
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web/public/test/http_server",
     "//ui/base",
     "//url",
   ]
-  libs = [
-    "UIKit.framework",
-    "XCTest.framework",
-  ]
+  libs = [ "UIKit.framework" ]
 }

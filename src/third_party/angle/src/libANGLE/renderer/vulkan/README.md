@@ -16,11 +16,11 @@ offer a number of significant benefits:
 
 ## Back-end Design
 
-The [RendererVk](RendererVk.cpp) is a singleton. RendererVk owns shared global resources like the
-[VkDevice][VkDevice], [VkQueue][VkQueue], the [Vulkan format tables](vk_format_utils.h) and
-[internal Vulkan shaders](shaders). The back-end creates a new [ContextVk](ContextVk.cpp) instance
-to manage each allocated OpenGL Context. ContextVk processes state changes and handles action
-commands like `glDrawArrays` and `glDrawElements`.
+The [`RendererVk`](RendererVk.cpp) class represents an `EGLDisplay`. `RendererVk` owns shared global
+resources like the [VkDevice][VkDevice], [VkQueue][VkQueue], the [Vulkan format tables](vk_format_utils.h)
+and [internal Vulkan shaders](shaders). The [ContextVk](ContextVk.cpp) class implements the back-end
+of a front-end OpenGL Context. ContextVk processes state changes and handles action commands like
+`glDrawArrays` and `glDrawElements`.
 
 Implementation details can be found in the `doc` directory.
 
@@ -28,3 +28,6 @@ Implementation details can be found in the `doc` directory.
 - [Shader Module Compilation](doc/ShaderModuleCompilation.md)
 - [OpenGL Line Segment Rasterization](doc/OpenGLLineSegmentRasterization.md)
 - [Format Tables and Emulation](doc/FormatTablesAndEmulation.md)
+
+[VkDevice]: https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkDevice.html
+[VkQueue]: https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkQueue.html

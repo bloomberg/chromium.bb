@@ -261,11 +261,11 @@ class RunAttributes(object):
 
   # TODO(mtennant): Complain if a child process attempts to set a non-parallel
   # run attribute?  It could be done something like this:
-  #def __setattr__(self, attr, value):
-  #  """Override __setattr__ to prevent misuse of run attributes."""
-  #  if attr in self.REGULAR_ATTRS:
-  #    assert not self._IsChildProcess()
-  #  super(RunAttributes, self).__setattr__(attr, value)
+  # def __setattr__(self, attr, value):
+  #   """Override __setattr__ to prevent misuse of run attributes."""
+  #   if attr in self.REGULAR_ATTRS:
+  #     assert not self._IsChildProcess()
+  #   super(RunAttributes, self).__setattr__(attr, value)
 
   def _GetBoardAttrName(self, attr, board, target):
     """Translate plain |attr| to uniquified board attribute name.
@@ -749,10 +749,13 @@ class _BuilderRunBase(object):
       raise VersionNotSetError('builder must call SetVersionInfo first')
     return self.attrs.version_info
 
-  def GetVersion(self):
+  def GetVersion(self, include_chrome=True):
     """Calculate full R<chrome_version>-<chromeos_version> version string.
 
     See GetVersionInfo() notes about runtime usage.
+
+    Args:
+      include_chrome: Whether to include the Chrome version.
 
     Returns:
       The version string for this run.
@@ -764,13 +767,14 @@ class _BuilderRunBase(object):
     # without a CIDB id.
     build_id = self.attrs.metadata.GetValueWithDefault('build_id', 0)
 
+    calc_version = ''
+    if include_chrome:
+      calc_version += 'R%s-' % (verinfo.chrome_branch,)
     if release_tag:
-      calc_version = 'R%s-%s' % (verinfo.chrome_branch, release_tag)
+      calc_version += release_tag
     else:
       # Non-versioned builds need the build number to uniquify the image.
-      calc_version = 'R%s-%s-b%s' % (verinfo.chrome_branch,
-                                     verinfo.VersionString(),
-                                     build_id)
+      calc_version += '%s-b%s' % (verinfo.VersionString(), build_id)
 
     return calc_version
 
@@ -1000,7 +1004,7 @@ class _RealBuilderRun(object):
         # each time, which is nice for identity and equality checks.  Subtle
         # gotcha that we accept: if the function itself on run_base is replaced
         # then this will continue to provide the behavior of the previous one.
-        #setattr(self, attr, FuncWrapper)
+        # setattr(self, attr, FuncWrapper)
 
         return FuncWrapper
       else:

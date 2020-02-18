@@ -7,30 +7,35 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/signin_view_controller_delegate.h"
+#include "components/signin/public/base/signin_buildflags.h"
+#include "content/public/browser/web_contents.h"
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/google_api_keys.h"
 #include "url/url_constants.h"
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 namespace {
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Returns the sign-in reason for |mode|.
 signin_metrics::Reason GetSigninReasonFromMode(profiles::BubbleViewMode mode) {
   DCHECK(SigninViewController::ShouldShowSigninForMode(mode));
@@ -84,17 +89,14 @@ int FindDiceSigninTab(TabStripModel* tab_strip, const GURL& signin_url) {
 
 // Returns the promo action to be used when signing with a new account.
 signin_metrics::PromoAction GetPromoActionForNewAccount(
-    signin::IdentityManager* identity_manager,
-    signin::AccountConsistencyMethod account_consistency) {
-  if (account_consistency != signin::AccountConsistencyMethod::kDice)
-    return signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE;
-
+    signin::IdentityManager* identity_manager) {
   return !identity_manager->GetAccountsWithRefreshTokens().empty()
              ? signin_metrics::PromoAction::
                    PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT
              : signin_metrics::PromoAction::
                    PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT;
 }
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace
 
@@ -112,6 +114,7 @@ bool SigninViewController::ShouldShowSigninForMode(
          mode == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH;
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
                                       Browser* browser,
                                       signin_metrics::AccessPoint access_point,
@@ -119,19 +122,19 @@ void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
   DCHECK(ShouldShowSigninForMode(mode));
 
   Profile* profile = browser->profile();
-  signin::AccountConsistencyMethod account_consistency =
-      AccountConsistencyModeManager::GetMethodForProfile(profile);
   std::string email;
   signin_metrics::Reason signin_reason = GetSigninReasonFromMode(mode);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   if (signin_reason == signin_metrics::Reason::REASON_REAUTHENTICATION) {
-    auto* manager = IdentityManagerFactory::GetForProfile(profile);
-    email = manager->GetPrimaryAccountInfo().email;
+    email = identity_manager->GetPrimaryAccountInfo().email;
   }
-  signin_metrics::PromoAction promo_action = GetPromoActionForNewAccount(
-      IdentityManagerFactory::GetForProfile(profile), account_consistency);
+  signin_metrics::PromoAction promo_action =
+      GetPromoActionForNewAccount(identity_manager);
   ShowDiceSigninTab(browser, signin_reason, access_point, promo_action, email,
                     redirect_url);
 }
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 void SigninViewController::ShowModalSyncConfirmationDialog(Browser* browser) {
   CloseModalSignin();
@@ -172,6 +175,7 @@ void SigninViewController::ResetModalSigninDelegate() {
   delegate_ = nullptr;
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void SigninViewController::ShowDiceSigninTab(
     Browser* browser,
     signin_metrics::Reason signin_reason,
@@ -180,10 +184,8 @@ void SigninViewController::ShowDiceSigninTab(
     const std::string& email_hint,
     const GURL& redirect_url) {
 #if DCHECK_IS_ON()
-  if (!signin::DiceMethodGreaterOrEqual(
-          AccountConsistencyModeManager::GetMethodForProfile(
-              browser->profile()),
-          signin::AccountConsistencyMethod::kDiceMigration)) {
+  if (!AccountConsistencyModeManager::IsDiceEnabledForProfile(
+          browser->profile())) {
     // Developers often fall into the trap of not configuring the OAuth client
     // ID and client secret and then attempt to sign in to Chromium, which
     // fail as the account consistency is disabled. Explicitly check that the
@@ -286,6 +288,7 @@ void SigninViewController::ShowDiceAddAccountTab(
       access_point, signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
       email_hint);
 }
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 content::WebContents*
 SigninViewController::GetModalDialogWebContentsForTesting() {

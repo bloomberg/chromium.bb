@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -30,6 +31,9 @@ namespace {
 const char kImageURL[] = "http://www.example.com/image";
 const char kURLResponseData[] = "EncodedImageData";
 
+const char kTestUmaClientName[] = "TestUmaClient";
+const char kHistogramName[] = "ImageFetcher.RequestStatusCode";
+
 }  // namespace
 
 namespace image_fetcher {
@@ -43,6 +47,8 @@ class ImageDataFetcherTest : public testing::Test {
         image_data_fetcher_(shared_factory_) {}
   ~ImageDataFetcherTest() override {}
 
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
   MOCK_METHOD2(OnImageDataFetched,
                void(const std::string&, const RequestMetadata&));
 
@@ -53,7 +59,8 @@ class ImageDataFetcherTest : public testing::Test {
                void(const std::string&, const RequestMetadata&));
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::HistogramTester histogram_tester_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
@@ -71,7 +78,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
       GURL(kImageURL),
       base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
                      base::Unretained(this)),
-      TRAFFIC_ANNOTATION_FOR_TESTS);
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName));
 
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
@@ -85,16 +92,54 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
   EXPECT_EQ(pending_request->credentials_mode,
             network::mojom::CredentialsMode::kOmit);
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string raw_header =
       "HTTP/1.1 200 OK\n"
       "Content-type: image/png\n\n";
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(raw_header));
-  head.mime_type = "image/png";
+  head->mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
-  test_url_loader_factory_.AddResponse(GURL(kImageURL), head, content, status);
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), std::move(head),
+                                       content, status);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester().ExpectBucketCount(std::string(kHistogramName), 200, 1);
+}
+
+TEST_F(ImageDataFetcherTest, FetchImageDataTrafficAnnotationOnly) {
+  std::string content = kURLResponseData;
+
+  image_data_fetcher_.FetchImageData(
+      GURL(kImageURL),
+      base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
+                     base::Unretained(this)),
+      TRAFFIC_ANNOTATION_FOR_TESTS, false);
+
+  RequestMetadata expected_metadata;
+  expected_metadata.mime_type = std::string("image/png");
+  expected_metadata.http_response_code = net::HTTP_OK;
+  EXPECT_CALL(*this, OnImageDataFetched(content, expected_metadata));
+
+  // Check to make sure the request is pending with proper flags, and
+  // provide a response.
+  const network::ResourceRequest* pending_request;
+  EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL, &pending_request));
+  EXPECT_EQ(pending_request->credentials_mode,
+            network::mojom::CredentialsMode::kOmit);
+
+  auto head = network::mojom::URLResponseHead::New();
+  std::string raw_header =
+      "HTTP/1.1 200 OK\n"
+      "Content-type: image/png\n\n";
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(raw_header));
+  head->mime_type = "image/png";
+  network::URLLoaderCompletionStatus status;
+  status.decoded_body_length = content.size();
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), std::move(head),
+                                       content, status);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -105,7 +150,8 @@ TEST_F(ImageDataFetcherTest, FetchImageDataWithCookies) {
       GURL(kImageURL),
       base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
                      base::Unretained(this)),
-      TRAFFIC_ANNOTATION_FOR_TESTS, true);
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName),
+      true);
 
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
@@ -119,16 +165,17 @@ TEST_F(ImageDataFetcherTest, FetchImageDataWithCookies) {
   EXPECT_EQ(pending_request->credentials_mode,
             network::mojom::CredentialsMode::kInclude);
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string raw_header =
       "HTTP/1.1 200 OK\n"
       "Content-type: image/png\n\n";
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(raw_header));
-  head.mime_type = "image/png";
+  head->mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
-  test_url_loader_factory_.AddResponse(GURL(kImageURL), head, content, status);
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), std::move(head),
+                                       content, status);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -139,7 +186,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
       GURL(kImageURL),
       base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
                      base::Unretained(this)),
-      TRAFFIC_ANNOTATION_FOR_TESTS);
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName));
 
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
@@ -150,16 +197,17 @@ TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
   // Check to make sure the request is pending, and provide a response.
   EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL));
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string raw_header =
       "HTTP/1.1 404 Not Found\n"
       "Content-type: image/png\n\n";
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(raw_header));
-  head.mime_type = "image/png";
+  head->mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
-  test_url_loader_factory_.AddResponse(GURL(kImageURL), head, content, status);
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), std::move(head),
+                                       content, status);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -170,7 +218,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData_WithContentLocation) {
       GURL(kImageURL),
       base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
                      base::Unretained(this)),
-      TRAFFIC_ANNOTATION_FOR_TESTS);
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName));
 
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
@@ -182,17 +230,18 @@ TEST_F(ImageDataFetcherTest, FetchImageData_WithContentLocation) {
   // Check to make sure the request is pending, and provide a response.
   EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL));
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string raw_header =
       "HTTP/1.1 404 Not Found\n"
       "Content-type: image/png\n"
       "Content-location: http://test-location/image.png\n\n";
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(raw_header));
-  head.mime_type = "image/png";
+  head->mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
-  test_url_loader_factory_.AddResponse(GURL(kImageURL), head, content, status);
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), std::move(head),
+                                       content, status);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -201,7 +250,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FailedRequest) {
       GURL(kImageURL),
       base::BindOnce(&ImageDataFetcherTest::OnImageDataFetchedFailedRequest,
                      base::Unretained(this)),
-      TRAFFIC_ANNOTATION_FOR_TESTS);
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName));
 
   RequestMetadata expected_metadata;
   expected_metadata.http_response_code = net::URLFetcher::RESPONSE_CODE_INVALID;
@@ -211,11 +260,12 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FailedRequest) {
   // Check to make sure the request is pending, and provide a response.
   EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL));
 
-  network::ResourceResponseHead head;
-  head.mime_type = "image/png";
+  auto head = network::mojom::URLResponseHead::New();
+  head->mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.error_code = net::ERR_INVALID_URL;
-  test_url_loader_factory_.AddResponse(GURL(kImageURL), head, "", status);
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), std::move(head), "",
+                                       status);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -227,12 +277,12 @@ TEST_F(ImageDataFetcherTest, FetchImageData_MultipleRequests) {
       GURL(kImageURL),
       base::BindOnce(&ImageDataFetcherTest::OnImageDataFetchedMultipleRequests,
                      base::Unretained(this)),
-      TRAFFIC_ANNOTATION_FOR_TESTS);
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName));
   image_data_fetcher_.FetchImageData(
       GURL(kImageURL),
       base::BindOnce(&ImageDataFetcherTest::OnImageDataFetchedMultipleRequests,
                      base::Unretained(this)),
-      TRAFFIC_ANNOTATION_FOR_TESTS);
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName));
 
   // Multiple calls to FetchImageData for the same URL will result in
   // multiple URLFetchers being created.
@@ -250,7 +300,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData_CancelFetchIfImageExceedsMaxSize) {
       GURL(kImageURL),
       base::BindOnce(&ImageDataFetcherTest::OnImageDataFetched,
                      base::Unretained(this)),
-      TRAFFIC_ANNOTATION_FOR_TESTS);
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName));
 
   // Fetching an oversized image will behave like any other failed request.
   // There will be exactly one call to OnImageDataFetched containing a response
@@ -274,7 +324,7 @@ TEST_F(ImageDataFetcherTest, DeleteFromCallback) {
           [&](const std::string&, const RequestMetadata&) {
             heap_fetcher = nullptr;
           }),
-      TRAFFIC_ANNOTATION_FOR_TESTS);
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kTestUmaClientName));
 
   test_url_loader_factory_.AddResponse(kImageURL, "");
   base::RunLoop().RunUntilIdle();

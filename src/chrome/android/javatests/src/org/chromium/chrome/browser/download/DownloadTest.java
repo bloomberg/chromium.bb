@@ -35,9 +35,11 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.download.DownloadTestRule.CustomMainActivityStart;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -69,7 +71,7 @@ import java.util.List;
     @Rule
     public DownloadTestRule mDownloadTestRule = new DownloadTestRule(this);
 
-    private static final String TAG = "cr_DownloadTest";
+    private static final String TAG = "DownloadTest";
     private static final String SUPERBO_CONTENTS =
             "plain text response from a POST";
 
@@ -107,13 +109,13 @@ import java.util.List;
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         deleteTestFiles();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
         deleteTestFiles();
     }
@@ -236,7 +238,7 @@ import java.util.List;
     @MediumTest
     @Feature({"Downloads"})
     @DisabledTest(message = "crbug.com/597230")
-    public void testDuplicateHttpPostDownload_Cancel() throws Exception {
+    public void testDuplicateHttpPostDownload_Cancel() {
         // Download a file.
         mDownloadTestRule.loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "post.html"));
         waitForFocus();
@@ -341,7 +343,7 @@ import java.util.List;
                 mDownloadTestRule.hasDownload(FILENAME_TEXT_2, SUPERBO_CONTENTS));
     }
 
-    private void goToLastTab() throws Exception {
+    private void goToLastTab() {
         final TabModel model = mDownloadTestRule.getActivity().getCurrentTabModel();
         final int count = model.getCount();
 
@@ -351,8 +353,8 @@ import java.util.List;
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mDownloadTestRule.getActivity().getActivityTab() == model.getTabAt(count - 1)
-                        && mDownloadTestRule.getActivity().getActivityTab().isReady();
+                Tab tab = mDownloadTestRule.getActivity().getActivityTab();
+                return tab == model.getTabAt(count - 1) && ChromeTabUtils.isRendererReady(tab);
             }
         });
     }

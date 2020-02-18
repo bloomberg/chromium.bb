@@ -57,11 +57,10 @@
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/quic/quic_context.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/data_protocol_handler.h"
-#include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -267,18 +266,21 @@ void IOSIOThread::Init() {
   params_.ignore_certificate_errors = false;
   params_.enable_user_alternate_protocol_ports = false;
 
+  globals_->quic_context = std::make_unique<net::QuicContext>();
+
   std::string quic_user_agent_id = GetChannelString();
   if (!quic_user_agent_id.empty())
     quic_user_agent_id.push_back(' ');
   quic_user_agent_id.append(
       version_info::GetProductNameAndVersionForUserAgent());
   quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(web::BuildOSCpuInfo());
+  quic_user_agent_id.append(web::BuildOSCpuInfo(web::UserAgentType::MOBILE));
 
   // Set up field trials, ignoring debug command line options.
   network_session_configurator::ParseCommandLineAndFieldTrials(
       base::CommandLine(base::CommandLine::NO_PROGRAM),
-      /*is_quic_force_disabled=*/false, quic_user_agent_id, &params_);
+      /*is_quic_force_disabled=*/false, quic_user_agent_id, &params_,
+      globals_->quic_context->params());
 
   globals_->system_proxy_resolution_service =
       ProxyServiceFactory::CreateProxyResolutionService(
@@ -361,11 +363,6 @@ net::URLRequestContext* IOSIOThread::ConstructSystemRequestContext(
 
   net::URLRequestJobFactoryImpl* system_job_factory =
       new net::URLRequestJobFactoryImpl();
-  // Data URLs are always loaded through the system request context on iOS
-  // (due to UIWebView limitations).
-  bool set_protocol = system_job_factory->SetProtocolHandler(
-      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
-  DCHECK(set_protocol);
   globals->system_url_request_job_factory.reset(system_job_factory);
   context->set_job_factory(globals->system_url_request_job_factory.get());
 
@@ -375,6 +372,7 @@ net::URLRequestContext* IOSIOThread::ConstructSystemRequestContext(
       globals->http_user_agent_settings.get());
 
   context->set_http_server_properties(globals->http_server_properties.get());
+  context->set_quic_context(globals->quic_context.get());
 
   net::HttpNetworkSession::Context system_context;
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(

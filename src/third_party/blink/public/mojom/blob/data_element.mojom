@@ -8,7 +8,6 @@ import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
-import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 // A blob is built up of elements of various types.
@@ -103,7 +102,7 @@ struct DataElementFilesystemURL {
 // A reference to a slice of another blob.
 struct DataElementBlob {
   // The blob being referenced.
-  blink.mojom.Blob blob;
+  pending_remote<blink.mojom.Blob> blob;
   // Offset to the beginning of the slice.
   uint64 offset;
   // Length of the slice.

@@ -11,6 +11,7 @@ graphs mapping from portage packages to the dependency source.
 
 from __future__ import print_function
 
+from chromite.api import faux
 from chromite.api import validate
 from chromite.lib import portage_util
 from chromite.service import dependency
@@ -48,6 +49,13 @@ def AugmentDepGraphProtoFromJsonMap(json_map, graph):
       source_path.path = path
 
 
+def _GetBuildDependencyGraphResponse(_input_proto, output_proto, _config):
+  """Add fake dep_graph data to a successful response."""
+  output_proto.dep_graph.build_target.name = 'target_board'
+
+
+@faux.success(_GetBuildDependencyGraphResponse)
+@faux.empty_error
 @validate.require('build_target.name')
 @validate.validation_complete
 def GetBuildDependencyGraph(input_proto, output_proto, _config):
@@ -60,5 +68,6 @@ def GetBuildDependencyGraph(input_proto, output_proto, _config):
   """
   board = input_proto.build_target.name
 
-  json_map = dependency.GetBuildDependency(board)
+  json_map, sdk_json_map = dependency.GetBuildDependency(board)
   AugmentDepGraphProtoFromJsonMap(json_map, output_proto.dep_graph)
+  AugmentDepGraphProtoFromJsonMap(sdk_json_map, output_proto.sdk_dep_graph)

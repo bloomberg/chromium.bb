@@ -15,15 +15,19 @@
 #include "dawn_native/metal/BackendMTL.h"
 
 #include "common/Constants.h"
+#include "common/Platform.h"
 #include "dawn_native/Instance.h"
 #include "dawn_native/MetalBackend.h"
 #include "dawn_native/metal/DeviceMTL.h"
 
-#import <IOKit/IOKitLib.h>
+#if defined(DAWN_PLATFORM_MACOS)
+#    import <IOKit/IOKitLib.h>
+#endif
 
 namespace dawn_native { namespace metal {
 
     namespace {
+
         struct PCIIDs {
             uint32_t vendorId;
             uint32_t deviceId;
@@ -34,6 +38,7 @@ namespace dawn_native { namespace metal {
             uint32_t vendorId;
         };
 
+#if defined(DAWN_PLATFORM_MACOS)
         const Vendor kVendors[] = {{"AMD", kVendorID_AMD},
                                    {"Radeon", kVendorID_AMD},
                                    {"Intel", kVendorID_Intel},
@@ -150,6 +155,19 @@ namespace dawn_native { namespace metal {
             NSOperatingSystemVersion macOS10_11 = {10, 11, 0};
             return [NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:macOS10_11];
         }
+#elif defined(DAWN_PLATFORM_IOS)
+        MaybeError GetDevicePCIInfo(id<MTLDevice> device, PCIIDs* ids) {
+            DAWN_UNUSED(device);
+            *ids = PCIIDs{0, 0};
+            return {};
+        }
+
+        bool IsMetalSupported() {
+            return true;
+        }
+#else
+#    error "Unsupported Apple platform."
+#endif
     }  // anonymous namespace
 
     // The Metal backend's Adapter.
@@ -166,11 +184,17 @@ namespace dawn_native { namespace metal {
                 mPCIInfo.deviceId = ids.deviceId;
             };
 
+#if defined(DAWN_PLATFORM_IOS)
+            mDeviceType = DeviceType::IntegratedGPU;
+#elif defined(DAWN_PLATFORM_MACOS)
             if ([device isLowPower]) {
                 mDeviceType = DeviceType::IntegratedGPU;
             } else {
                 mDeviceType = DeviceType::DiscreteGPU;
             }
+#else
+#    error "Unsupported Apple platform."
+#endif
 
             InitializeSupportedExtensions();
         }
@@ -184,9 +208,11 @@ namespace dawn_native { namespace metal {
             return {new Device(this, mDevice, descriptor)};
         }
         void InitializeSupportedExtensions() {
+#if defined(DAWN_PLATFORM_MACOS)
             if ([mDevice supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v1]) {
                 mSupportedExtensions.EnableExtension(Extension::TextureCompressionBC);
             }
+#endif
         }
 
         id<MTLDevice> mDevice = nil;
@@ -201,14 +227,27 @@ namespace dawn_native { namespace metal {
     }
 
     std::vector<std::unique_ptr<AdapterBase>> Backend::DiscoverDefaultAdapters() {
-        NSArray<id<MTLDevice>>* devices = MTLCopyAllDevices();
-
         std::vector<std::unique_ptr<AdapterBase>> adapters;
-        for (id<MTLDevice> device in devices) {
-            adapters.push_back(std::make_unique<Adapter>(GetInstance(), device));
-        }
 
-        [devices release];
+        if (@available(macOS 10.11, *)) {
+#if defined(DAWN_PLATFORM_MACOS)
+            NSArray<id<MTLDevice>>* devices = MTLCopyAllDevices();
+
+            for (id<MTLDevice> device in devices) {
+                adapters.push_back(std::make_unique<Adapter>(GetInstance(), device));
+            }
+
+            [devices release];
+#endif
+        } else if (@available(iOS 8.0, *)) {
+#if defined(DAWN_PLATFORM_IOS)
+            // iOS only has a single device so MTLCopyAllDevices doesn't exist there.
+            adapters.push_back(
+                std::make_unique<Adapter>(GetInstance(), MTLCreateSystemDefaultDevice()));
+#endif
+        } else {
+            UNREACHABLE();
+        }
         return adapters;
     }
 

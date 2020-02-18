@@ -79,6 +79,35 @@ base::ThreadLocalStorage::Slot& DangerousPatternTLS() {
   return *dangerous_pattern_tls;
 }
 
+// Allow middle dot (U+00B7) only on Catalan domains when between two 'l's, to
+// permit the Catalan character ela geminada to be expressed.
+// See https://tools.ietf.org/html/rfc5892#appendix-A.3 for details.
+bool HasUnsafeMiddleDot(const icu::UnicodeString& label_string,
+                        base::StringPiece top_level_domain) {
+  int last_index = 0;
+  while (true) {
+    int index = label_string.indexOf("·", last_index);
+    if (index < 0) {
+      break;
+    }
+    DCHECK_LT(index, label_string.length());
+    if (top_level_domain != "cat") {
+      // Non-Catalan domains cannot contain middle dot.
+      return true;
+    }
+    // Middle dot at the beginning or end.
+    if (index == 0 || index == label_string.length() - 1) {
+      return true;
+    }
+    // Middle dot not surrounded by an 'l'.
+    if (label_string[index - 1] != 'l' || label_string[index + 1] != 'l') {
+      return true;
+    }
+    last_index = index + 1;
+  }
+  return false;
+}
+
 #include "components/url_formatter/spoof_checks/top_domains/domains-trie-inc.cc"
 
 // All the domains in the above file have 4 or fewer labels.
@@ -147,12 +176,21 @@ IDNSpoofChecker::IDNSpoofChecker() {
   // These Cyrillic letters look like Latin. A domain label entirely made of
   // these letters is blocked as a simplified whole-script-spoofable.
   cyrillic_letters_latin_alike_ = icu::UnicodeSet(
-      icu::UnicodeString::fromUTF8("[асԁеһіјӏорԗԛѕԝхуъЬҽпгѵѡ]"), status);
+      icu::UnicodeString::fromUTF8("[аысԁеԍһіюјӏорԗԛѕԝхуъЬҽпгѵѡ]"), status);
   cyrillic_letters_latin_alike_.freeze();
 
   cyrillic_letters_ =
       icu::UnicodeSet(UNICODE_STRING_SIMPLE("[[:Cyrl:]]"), status);
   cyrillic_letters_.freeze();
+
+  // These characters are, or look like, digits. A domain label entirely made of
+  // digit-lookalikes or digits is blocked.
+  digits_ = icu::UnicodeSet(UNICODE_STRING_SIMPLE("[0-9]"), status);
+  digits_.freeze();
+  digit_lookalikes_ = icu::UnicodeSet(
+      icu::UnicodeString::fromUTF8("[θ२২੨੨૨೩೭շзҙӡउওਤ੩૩౩ဒვპ੫丩ㄐճ৪੪୫૭୨౨]"),
+      status);
+  digit_lookalikes_.freeze();
 
   DCHECK(U_SUCCESS(status));
   // This set is used to determine whether or not to apply a slow
@@ -170,6 +208,14 @@ IDNSpoofChecker::IDNSpoofChecker() {
       status);
   lgc_letters_n_ascii_.freeze();
 
+  // Latin small letter thorn ("þ", U+00FE) can be used to spoof both b and p.
+  // It's used in modern Icelandic orthography, so allow it for the Icelandic
+  // ccTLD (.is) but block in any other TLD. Also block Latin small letter eth
+  // ("ð", U+00F0) which can be used to spoof the letter o.
+  icelandic_characters_ =
+      icu::UnicodeSet(UNICODE_STRING_SIMPLE("[\\u00fe\\u00f0]"), status);
+  icelandic_characters_.freeze();
+
   // Used for diacritics-removal before the skeleton calculation. Add
   // "ł > l; ø > o; đ > d" that are not handled by "NFD; Nonspacing mark
   // removal; NFC".
@@ -182,8 +228,9 @@ IDNSpoofChecker::IDNSpoofChecker() {
       UTRANS_FORWARD, parse_error, status));
 
   // Supplement the Unicode confusable list by the following mapping.
+  //  NOTE: Adding a digit-lookalike? Add it to digit_lookalikes_ above, too.
   //   - {U+00E6 (æ), U+04D5 (ӕ)}  => "ae"
-  //   - {U+00FE (þ), U+03FC (ϼ), U+048F (ҏ)} => p
+  //   - {U+03FC (ϼ), U+048F (ҏ)} => p
   //   - {U+0127 (ħ), U+043D (н), U+045B (ћ), U+04A3 (ң), U+04A5 (ҥ),
   //      U+04C8 (ӈ), U+04CA (ӊ), U+050B (ԋ), U+0527 (ԧ), U+0529 (ԩ)} => h
   //   - {U+0138 (ĸ), U+03BA (κ), U+043A (к), U+049B (қ), U+049D (ҝ),
@@ -193,7 +240,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //     TODO: see https://crbug.com/843352 for further work on
   //     U+0525 and U+0153.
   //   - {U+0167 (ŧ), U+0442 (т), U+04AD (ҭ), U+050F (ԏ), U+4E03 (七),
-  //     U+4E05 (丅), U+4E06 (丆)} => t
+  //     U+4E05 (丅), U+4E06 (丆), U+4E01 (丁)} => t
   //   - {U+0185 (ƅ), U+044C (ь), U+048D (ҍ), U+0432 (в)} => b
   //   - {U+03C9 (ω), U+0448 (ш), U+0449 (щ), U+0E1E (พ),
   //      U+0E1F (ฟ), U+0E9E (ພ), U+0E9F (ຟ)} => w
@@ -228,9 +275,9 @@ IDNSpoofChecker::IDNSpoofChecker() {
   extra_confusable_mapper_.reset(icu::Transliterator::createFromRules(
       UNICODE_STRING_SIMPLE("ExtraConf"),
       icu::UnicodeString::fromUTF8(
-          "[æӕ] > ae; [þϼҏ] > p; [ħнћңҥӈӊԋԧԩ] > h;"
+          "[æӕ] > ae; [ϼҏ] > p; [ħнћңҥӈӊԋԧԩ] > h;"
           "[ĸκкқҝҟҡӄԟ] > k; [ŋпԥกח] > n; œ > ce;"
-          "[ŧтҭԏ七丅丆] > t; [ƅьҍв] > b;  [ωшщพฟພຟ] > w;"
+          "[ŧтҭԏ七丅丆丁] > t; [ƅьҍв] > b;  [ωшщพฟພຟ] > w;"
           "[мӎ] > m; [єҽҿၔ] > e; ґ > r; [ғӻ] > f;"
           "[ҫင] > c; [ұ丫] > y; [χҳӽӿ乂] > x;"
           "[ԃძ]  > d; [ԍဌ] > g; [ടรຣຮ] > s; ၂ > j;"
@@ -255,8 +302,10 @@ IDNSpoofChecker::~IDNSpoofChecker() {
   uspoof_close(checker_);
 }
 
-bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
-                                             bool is_tld_ascii) {
+bool IDNSpoofChecker::SafeToDisplayAsUnicode(
+    base::StringPiece16 label,
+    base::StringPiece top_level_domain,
+    base::StringPiece16 top_level_domain_unicode) {
   UErrorCode status = U_ZERO_ERROR;
   int32_t result =
       uspoof_check(checker_, label.data(),
@@ -266,7 +315,7 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
   if (U_FAILURE(status) || (result & USPOOF_ALL_CHECKS))
     return false;
 
-  icu::UnicodeString label_string(FALSE, label.data(),
+  icu::UnicodeString label_string(FALSE /* isTerminated */, label.data(),
                                   base::checked_cast<int32_t>(label.size()));
 
   // A punycode label with 'xn--' prefix is not subject to the URL
@@ -282,6 +331,21 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
   // such. See http://crbug.com/595263 .
   if (deviation_characters_.containsSome(label_string))
     return false;
+
+  // Disallow Icelandic confusables for domains outside Iceland's ccTLD (.is).
+  if (label_string.length() > 1 && top_level_domain != "is" &&
+      icelandic_characters_.containsSome(label_string))
+    return false;
+
+  // Disallow Latin Schwa (U+0259) for domains outside Azerbaijan's ccTLD (.az).
+  if (label_string.length() > 1 && top_level_domain != "az" &&
+      label_string.indexOf("ə") != -1)
+    return false;
+
+  // Disallow middle dot (U+00B7) when unsafe.
+  if (HasUnsafeMiddleDot(label_string, top_level_domain)) {
+    return false;
+  }
 
   // If there's no script mixing, the input is regarded as safe without any
   // extra check unless it falls into one of three categories:
@@ -300,9 +364,16 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
   if (result == USPOOF_SINGLE_SCRIPT_RESTRICTIVE &&
       kana_letters_exceptions_.containsNone(label_string) &&
       combining_diacritics_exceptions_.containsNone(label_string)) {
-    // Check Cyrillic confusable only for ASCII TLDs.
-    return !is_tld_ascii || !IsMadeOfLatinAlikeCyrillic(label_string);
+    // Check Cyrillic confusable only for TLDs where Cyrillic characters are
+    // uncommon.
+    return IsCyrillicTopLevelDomain(top_level_domain,
+                                    top_level_domain_unicode) ||
+           !IsMadeOfLatinAlikeCyrillic(label_string);
   }
+
+  // Disallow domains that contain only numbers and number-spoofs.
+  if (IsDigitLookalike(label_string))
+    return false;
 
   // Additional checks for |label| with multiple scripts, one of which is Latin.
   // Disallow non-ASCII Latin letters to mix with a non-Latin script.
@@ -358,13 +429,28 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
             R"([^\p{scx=kana}\p{scx=hira}]\u30fc|^\u30fc|)"
             R"([a-z]\u30fb|\u30fb[a-z]|)"
 
-            // Disallow U+4E00 (CJK unified ideograph) and U+3127 (Bopomofo
-            // Letter I) unless they are next to Hiragana, Katagana or Han.
-            // U+2F00 (Kangxi Radical One) is similar, but it's normalized to
-            // U+4E00 so it's not explicitly checked here.
-            R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}])"
-            R"([\u4e00\u3127])"
-            R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}]|)"
+            // Disallow these CJK ideographs if they are next to non-CJK
+            // characters. These characters can be used to spoof Latin
+            // characters or punctuation marks:
+            // U+4E00 (一), U+3127 (ㄧ), U+4E28 (丨), U+4E5B (乛), U+4E03 (七),
+            // U+4E05 (丅), U+5341 (十), U+3007 (〇), U+3112 (ㄒ), U+311A (ㄚ),
+            // U+311F (ㄟ), U+3128 (ㄨ), U+3129 (ㄩ), U+3108 (ㄈ), U+31BA (ㆺ),
+            // U+31B3 (ㆳ), U+5DE5 (工), U+31B2 (ㆲ), U+8BA0 (讠), U+4E01 (丁)
+            // These characters are already blocked:
+            // U+2F00 (⼀) (normalized to U+4E00), U+3192 (㆒), U+2F02 (⼂),
+            // U+2F17 (⼗) and U+3038 (〸) (both normalized to U+5341 (十)).
+            // Check if there is non-{Hiragana, Katagana, Han, Bopomofo} on the
+            // left.
+            R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}\p{scx=bopo}])"
+            R"([\u4e00\u3127\u4e28\u4e5b\u4e03\u4e05\u5341\u3007\u3112)"
+            R"(\u311a\u311f\u3128\u3129\u3108\u31ba\u31b3\u5dE5)"
+            R"(\u31b2\u8ba0\u4e01]|)"
+            // Check if there is non-{Hiragana, Katagana, Han, Bopomofo} on the
+            // right.
+            R"([\u4e00\u3127\u4e28\u4e5b\u4e03\u4e05\u5341\u3007\u3112)"
+            R"(\u311a\u311f\u3128\u3129\u3108\u31ba\u31b3\u5de5)"
+            R"(\u31b2\u8ba0\u4e01])"
+            R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}\p{scx=bopo}]|)"
 
             // Disallow combining diacritical mark (U+0300-U+0339) after a
             // non-LGC character. Other combining diacritical marks are not in
@@ -581,6 +667,38 @@ bool IDNSpoofChecker::IsMadeOfLatinAlikeCyrillic(
   }
   return !cyrillic_in_label.isEmpty() &&
          cyrillic_letters_latin_alike_.containsAll(cyrillic_in_label);
+}
+
+bool IDNSpoofChecker::IsDigitLookalike(const icu::UnicodeString& label) {
+  bool has_lookalike_char = false;
+  icu::StringCharacterIterator it(label);
+  for (it.setToStart(); it.hasNext();) {
+    const UChar32 c = it.next32PostInc();
+    if (digits_.contains(c)) {
+      continue;
+    }
+    if (digit_lookalikes_.contains(c)) {
+      has_lookalike_char = true;
+      continue;
+    }
+    return false;
+  }
+  return has_lookalike_char;
+}
+
+bool IDNSpoofChecker::IsCyrillicTopLevelDomain(
+    base::StringPiece tld,
+    base::StringPiece16 tld_unicode) const {
+  icu::UnicodeString tld_string(
+      FALSE /* isTerminated */, tld_unicode.data(),
+      base::checked_cast<int32_t>(tld_unicode.size()));
+  if (cyrillic_letters_.containsSome(tld_string)) {
+    return true;
+  }
+  // These ASCII TLDs contain a large number of domains with Cyrillic
+  // characters.
+  return tld == "bg" || tld == "by" || tld == "kz" || tld == "pyc" ||
+         tld == "ru" || tld == "su" || tld == "ua" || tld == "uz";
 }
 
 // static

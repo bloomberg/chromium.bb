@@ -18,9 +18,11 @@
 namespace base {
 class Pickle;
 class PickleIterator;
-}
+}  // namespace base
 
 namespace autofill {
+
+class LogBuffer;
 
 // The flags describing form field properties.
 enum FieldPropertiesFlags {
@@ -55,45 +57,55 @@ struct FormFieldData {
   using RoleAttribute = mojom::FormFieldData_RoleAttribute;
   using LabelSource = mojom::FormFieldData_LabelSource;
 
+  // Less-than relation for STL containers. Compares only members needed to
+  // uniquely identify a field.
+  struct IdentityComparator {
+    bool operator()(const FormFieldData& a, const FormFieldData& b) const;
+  };
+
   static constexpr uint32_t kNotSetFormControlRendererId =
       std::numeric_limits<uint32_t>::max();
 
   FormFieldData();
-  FormFieldData(const FormFieldData& other);
+  FormFieldData(const FormFieldData&);
+  FormFieldData& operator=(const FormFieldData&);
+  FormFieldData(FormFieldData&&);
+  FormFieldData& operator=(FormFieldData&&);
   ~FormFieldData();
 
-  // Returns true if two form fields are the same, not counting the value.
+  // Returns true if both fields are identical, ignoring value- and
+  // parsing related members.
+  // See also SimilarFieldAs(), DynamicallySameFieldAs().
   bool SameFieldAs(const FormFieldData& field) const;
 
-  // SameFieldAs() is a little restricted when field's style changed
-  // dynamically, like css.
-  // This method only compares critical attributes of field to check whether
-  // they are similar enough to be considered as same field if form's
-  // other information isn't changed.
+  // Returns true if both fields are identical, ignoring members that
+  // are typically changed dynamically.
+  // Strictly weaker than SameFieldAs().
   bool SimilarFieldAs(const FormFieldData& field) const;
 
-  // If |field| is the same as this from the POV of dynamic refills.
+  // Returns true if both forms are equivalent from the POV of dynamic refills.
+  // Strictly weaker than SameFieldAs(): replaces equality of |is_focusable| and
+  // |role| with equality of IsVisible().
   bool DynamicallySameFieldAs(const FormFieldData& field) const;
 
-  // Returns true for all of textfield-looking types such as text, password,
+  // Returns true for all of textfield-looking types: text, password,
   // search, email, url, and number. It must work the same way as Blink function
   // WebInputElement::IsTextField(), and it returns false if |*this| represents
   // a textarea.
   bool IsTextInputElement() const;
+
+  bool IsPasswordInputElement() const;
 
   // Returns true if the field is visible to the user.
   bool IsVisible() const {
     return is_focusable && role != RoleAttribute::kPresentation;
   }
 
-  // Note: operator==() performs a full-field-comparison(byte by byte), this is
-  // different from SameFieldAs(), which ignores comparison for those "values"
-  // not regarded as part of identity of the field, such as is_autofilled and
-  // the option_values/contents etc.
-  bool operator==(const FormFieldData& field) const;
-  bool operator!=(const FormFieldData& field) const;
-  // Comparison operator exposed for STL map. Uses label, then name to sort.
-  bool operator<(const FormFieldData& field) const;
+  // These functions do not work for Autofill code.
+  // TODO(https://crbug.com/1006745): Fix this.
+  bool DidUserType() const;
+  bool HadFocus() const;
+  bool WasAutofilled() const;
 
 #if defined(OS_IOS)
   // The identifier which uniquely addresses this field in the DOM. This is an
@@ -109,6 +121,11 @@ struct FormFieldData {
 #define EXPECT_EQ_UNIQUE_ID(expected, actual)
 #endif
 
+  // NOTE: update IdentityComparator                 when adding new a member.
+  // NOTE: update SameFieldAs()            if needed when adding new a member.
+  // NOTE: update SimilarFieldAs()         if needed when adding new a member.
+  // NOTE: update DynamicallySameFieldAs() if needed when adding new a member.
+
   // The name by which autofill knows this field. This is generally either the
   // name attribute or the id_attribute value, which-ever is non-empty with
   // priority given to the name_attribute. This value is used when computing
@@ -116,8 +133,6 @@ struct FormFieldData {
   // TODO(crbug/896689): remove this and use attributes/unique_id instead.
   base::string16 name;
 
-  // If you add more, be sure to update the comparison operators, SameFieldAs,
-  // serializing functions (in the .cc file) and the constructor.
   base::string16 id_attribute;
   base::string16 name_attribute;
   base::string16 label;
@@ -129,10 +144,9 @@ struct FormFieldData {
   base::string16 aria_label;
   base::string16 aria_description;
 
-  // Unique renderer id which is returned by function
-  // WebFormControlElement::UniqueRendererFormControlId(). It is not persistant
-  // between page loads, so it is not saved and not used in comparison in
-  // SameFieldAs().
+  // Unique renderer id returned by WebFormElement::UniqueRendererFormId(). It
+  // is not persistent between page loads, so it is not saved and not used in
+  // comparison in SameFieldAs().
   uint32_t unique_renderer_id = kNotSetFormControlRendererId;
 
   // The ax node id of the form control in the accessibility tree.
@@ -201,6 +215,9 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
     EXPECT_EQ(expected.id_attribute, actual.id_attribute);                     \
     EXPECT_EQ(expected.name_attribute, actual.name_attribute);                 \
   } while (0)
+
+// Produces a <table> element with information about the form.
+LogBuffer& operator<<(LogBuffer& buffer, const FormFieldData& form);
 
 }  // namespace autofill
 

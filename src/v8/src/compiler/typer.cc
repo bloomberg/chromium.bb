@@ -850,10 +850,21 @@ Type Typer::Visitor::TypeInductionVariablePhi(Node* node) {
   Type initial_type = Operand(node, 0);
   Type increment_type = Operand(node, 2);
 
-  // We only handle integer induction variables (otherwise ranges
-  // do not apply and we cannot do anything).
+  // If we do not have enough type information for the initial value or
+  // the increment, just return the initial value's type.
+  if (initial_type.IsNone() ||
+      increment_type.Is(typer_->cache_->kSingletonZero)) {
+    return initial_type;
+  }
+
+  // We only handle integer induction variables (otherwise ranges do not apply
+  // and we cannot do anything). Moreover, we don't support infinities in
+  // {increment_type} because the induction variable can become NaN through
+  // addition/subtraction of opposing infinities.
   if (!initial_type.Is(typer_->cache_->kInteger) ||
-      !increment_type.Is(typer_->cache_->kInteger)) {
+      !increment_type.Is(typer_->cache_->kInteger) ||
+      increment_type.Min() == -V8_INFINITY ||
+      increment_type.Max() == +V8_INFINITY) {
     // Fallback to normal phi typing, but ensure monotonicity.
     // (Unfortunately, without baking in the previous type, monotonicity might
     // be violated because we might not yet have retyped the incrementing
@@ -866,18 +877,11 @@ Type Typer::Visitor::TypeInductionVariablePhi(Node* node) {
     }
     return type;
   }
-  // If we do not have enough type information for the initial value or
-  // the increment, just return the initial value's type.
-  if (initial_type.IsNone() ||
-      increment_type.Is(typer_->cache_->kSingletonZero)) {
-    return initial_type;
-  }
 
   // Now process the bounds.
   auto res = induction_vars_->induction_variables().find(node->id());
   DCHECK(res != induction_vars_->induction_variables().end());
   InductionVariable* induction_var = res->second;
-
   InductionVariable::ArithmeticType arithmetic_type = induction_var->Type();
 
   double min = -V8_INFINITY;
@@ -935,8 +939,8 @@ Type Typer::Visitor::TypeInductionVariablePhi(Node* node) {
     // The lower bound must be at most the initial value's lower bound.
     min = std::min(min, initial_type.Min());
   } else {
-    // Shortcut: If the increment can be both positive and negative,
-    // the variable can go arbitrarily far, so just return integer.
+    // If the increment can be both positive and negative, the variable can go
+    // arbitrarily far.
     return typer_->cache_->kInteger;
   }
   if (FLAG_trace_turbo_loop) {
@@ -1339,6 +1343,10 @@ Type Typer::Visitor::TypeJSCreateLiteralRegExp(Node* node) {
   return Type::OtherObject();
 }
 
+Type Typer::Visitor::TypeJSGetTemplateObject(Node* node) {
+  return Type::Array();
+}
+
 Type Typer::Visitor::TypeJSLoadProperty(Node* node) {
   return Type::NonInternal();
 }
@@ -1471,12 +1479,14 @@ Type Typer::Visitor::TypeJSGetSuperConstructor(Node* node) {
 }
 
 // JS context operators.
+Type Typer::Visitor::TypeJSHasContextExtension(Node* node) {
+  return Type::Boolean();
+}
 
 Type Typer::Visitor::TypeJSLoadContext(Node* node) {
   ContextAccess const& access = ContextAccessOf(node->op());
   switch (access.index()) {
     case Context::PREVIOUS_INDEX:
-    case Context::NATIVE_CONTEXT_INDEX:
     case Context::SCOPE_INFO_INDEX:
       return Type::OtherInternal();
     default:
@@ -2192,8 +2202,14 @@ Type Typer::Visitor::TypeLoadField(Node* node) {
   return FieldAccessOf(node->op()).type;
 }
 
+Type Typer::Visitor::TypeLoadMessage(Node* node) { return Type::Any(); }
+
 Type Typer::Visitor::TypeLoadElement(Node* node) {
   return ElementAccessOf(node->op()).type;
+}
+
+Type Typer::Visitor::TypeLoadStackArgument(Node* node) {
+  return Type::NonInternal();
 }
 
 Type Typer::Visitor::TypeLoadFromObject(Node* node) { UNREACHABLE(); }
@@ -2221,6 +2237,8 @@ Type Typer::Visitor::TypeLoadDataViewElement(Node* node) {
 }
 
 Type Typer::Visitor::TypeStoreField(Node* node) { UNREACHABLE(); }
+
+Type Typer::Visitor::TypeStoreMessage(Node* node) { UNREACHABLE(); }
 
 Type Typer::Visitor::TypeStoreElement(Node* node) { UNREACHABLE(); }
 

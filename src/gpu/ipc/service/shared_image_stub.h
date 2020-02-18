@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ipc/ipc_listener.h"
@@ -56,6 +57,17 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   SharedImageDestructionCallback GetSharedImageDestructionCallback(
       const Mailbox& mailbox);
 
+  bool CreateSharedImage(const Mailbox& mailbox,
+                         int client_id,
+                         gfx::GpuMemoryBufferHandle handle,
+                         gfx::BufferFormat format,
+                         SurfaceHandle surface_handle,
+                         const gfx::Size& size,
+                         const gfx::ColorSpace& color_space,
+                         uint32_t usage);
+  bool UpdateSharedImage(const Mailbox& mailbox,
+                         const gfx::GpuFenceHandle& in_fence_handle);
+
  private:
   SharedImageStub(GpuChannel* channel, int32_t route_id);
 
@@ -82,12 +94,17 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   bool MakeContextCurrent();
   ContextResult MakeContextCurrentAndCreateFactory();
   void OnError();
-  void OnSyncTokenReleased(const Mailbox& mailbox);
 
   // Wait on the sync token if any and destroy the shared image.
   void DestroySharedImage(const Mailbox& mailbox, const SyncToken& sync_token);
 
   GpuChannel* channel_;
+
+  // While this is not a CommandBuffer, this provides a unique identifier for
+  // a SharedImageStub, comprised of identifiers which it was already using.
+  // TODO(jonross): Look into a rename of CommandBufferId to reflect that it can
+  // be a unique identifier for numerous gpu constructs.
+  CommandBufferId command_buffer_id_;
   SequenceId sequence_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   scoped_refptr<SharedContextState> context_state_;

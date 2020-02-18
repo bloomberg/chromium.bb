@@ -62,6 +62,9 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   base::AtExitManager exit_manager;
 
   base::CommandLine::Init(argc, argv);
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
   remoting::InitHostLogging();
 
 #if defined(OS_MACOSX)
@@ -105,10 +108,27 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   scoped_refptr<DaemonController> daemon_controller =
       DaemonController::Create();
 
+#if defined(OS_MACOSX)
+  if (command_line->HasSwitch(kCheckPermissionSwitchName)) {
+    int exit_code;
+    daemon_controller->CheckPermission(
+        /* it2me */ false,
+        // base::BindOnce cannot bind a capturing lambda, so the "captured"
+        // parameters are bound manually. This is safe because the run-loop is
+        // run to completion within this scope.
+        base::BindOnce(
+            [](int* exit_code, base::RunLoop* run_loop, bool perm) {
+              *exit_code = (perm ? kSuccessExitCode : kNoPermissionExitCode);
+              run_loop->Quit();
+            },
+            &exit_code, &run_loop));
+    run_loop.Run();
+    return exit_code;
+  }
+#endif  // defined(OS_MACOSX)
+
   // Pass handle of the native view to the controller so that the UAC prompts
   // are focused properly.
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
   int64_t native_view_handle = 0;
   if (command_line->HasSwitch(kParentWindowSwitchName)) {
     std::string native_view =
@@ -250,6 +270,10 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   // Set up the native messaging channel.
   std::unique_ptr<extensions::NativeMessagingChannel> channel(
       new PipeMessagingChannel(std::move(read_file), std::move(write_file)));
+
+#if defined(OS_POSIX)
+  PipeMessagingChannel::ReopenStdinStdout();
+#endif  // defined(OS_POSIX)
 
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(

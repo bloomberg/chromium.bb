@@ -13,14 +13,19 @@
 #include "include/core/SkFlattenable.h"
 #include "include/core/SkRefCnt.h"
 
-class GrColorSpaceInfo;
+class GrColorInfo;
 class GrFragmentProcessor;
 class GrRecordingContext;
 class SkBitmap;
 class SkColorMatrix;
 class SkColorSpace;
 struct SkStageRec;
-class SkString;
+
+namespace skvm {
+    class Builder;
+    struct F32;
+    struct Uniforms;
+}
 
 /**
  *  ColorFilters are optional objects in the drawing pipeline. When present in
@@ -56,6 +61,11 @@ public:
 
     bool appendStages(const SkStageRec& rec, bool shaderIsOpaque) const;
 
+    virtual bool program(skvm::Builder*,
+                         SkColorSpace* dstCS,
+                         skvm::Uniforms* uniforms,
+                         skvm::F32* r, skvm::F32* g, skvm::F32* b, skvm::F32* a) const;
+
     enum Flags {
         /** If set the filter methods will not change the alpha channel of the colors.
         */
@@ -67,7 +77,13 @@ public:
     virtual uint32_t getFlags() const { return 0; }
 
     SkColor filterColor(SkColor) const;
-    SkColor4f filterColor4f(const SkColor4f&, SkColorSpace*) const;
+
+    /**
+     * Converts the src color (in src colorspace), into the dst colorspace,
+     * then applies this filter to it, returning the filtered color in the dst colorspace.
+     */
+    SkColor4f filterColor4f(const SkColor4f& srcColor, SkColorSpace* srcCS,
+                            SkColorSpace* dstCS) const;
 
     /** Construct a colorfilter whose effect is to first apply the inner filter and then apply
      *  this filter, applied to the output of the inner filter.
@@ -90,7 +106,7 @@ public:
      *  A null return indicates that the color filter isn't implemented for the GPU backend.
      */
     virtual std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(
-            GrRecordingContext*, const GrColorSpaceInfo& dstColorSpaceInfo) const;
+            GrRecordingContext*, const GrColorInfo& dstColorInfo) const;
 #endif
 
     bool affectsTransparentBlack() const {

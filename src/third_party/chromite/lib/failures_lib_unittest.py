@@ -20,7 +20,7 @@ class StepFailureTests(cros_test_lib.TestCase):
 
   def testConvertToStageFailureMessage(self):
     """Test ConvertToStageFailureMessage."""
-    failure = failures_lib.StepFailure(message='step failure message')
+    failure = failures_lib.StepFailure('step failure message')
     stage_failure_msg = failure.ConvertToStageFailureMessage(
         1, 'HWTest [sanity]')
     self.assertEqual(stage_failure_msg.stage_name, 'HWTest [sanity]')
@@ -85,12 +85,12 @@ class CompoundFailureTest(cros_test_lib.TestCase):
     exc_infos.extend(self._CreateExceptInfos(ValueError, message='bar2',
                                              traceback='foo2'))
     exc = failures_lib.CompoundFailure(exc_infos=exc_infos)
-    self.assertTrue('bar1' in str(exc))
-    self.assertTrue('bar2' in str(exc))
-    self.assertTrue('KeyError' in str(exc))
-    self.assertTrue('ValueError' in str(exc))
-    self.assertTrue('foo1' in str(exc))
-    self.assertTrue('foo2' in str(exc))
+    self.assertIn('bar1', str(exc))
+    self.assertIn('bar2', str(exc))
+    self.assertIn('KeyError', str(exc))
+    self.assertIn('ValueError', str(exc))
+    self.assertIn('foo1', str(exc))
+    self.assertIn('foo2', str(exc))
 
   def testConvertToStageFailureMessage(self):
     """Test ConvertToStageFailureMessage."""
@@ -173,7 +173,7 @@ class SetFailureTypeTest(cros_test_lib.TestCase):
                         self.ERROR_MESSAGE)()
     except Exception as e:
       self.assertTrue(isinstance(e, self.TacoNotTasty))
-      self.assertTrue(e.message, self.ERROR_MESSAGE)
+      self.assertTrue(e.msg, self.ERROR_MESSAGE)
       self.assertEqual(len(e.exc_infos), 1)
       self.assertEqual(e.exc_infos[0].str, self.ERROR_MESSAGE)
       self.assertEqual(e.exc_infos[0].type, self.FooException)
@@ -194,12 +194,12 @@ class SetFailureTypeTest(cros_test_lib.TestCase):
       self.assertEqual(e.exc_infos, org_infos)
       # All essential inforamtion should be included in the message of
       # the new excpetion.
-      self.assertTrue(tb1 in str(e))
-      self.assertTrue(tb2 in str(e))
-      self.assertTrue(str(ValueError) in str(e))
-      self.assertTrue(str(OSError) in str(e))
-      self.assertTrue(str('No taco') in str(e))
-      self.assertTrue(str('No salsa') in str(e))
+      self.assertIn(tb1, str(e))
+      self.assertIn(tb2, str(e))
+      self.assertIn(str(ValueError), str(e))
+      self.assertIn(str(OSError), str(e))
+      self.assertIn(str('No taco'), str(e))
+      self.assertIn(str('No salsa'), str(e))
 
       # Assert that summary does not contain the textual tracebacks.
       self.assertFalse(tb1 in e.ToSummaryString())
@@ -268,7 +268,7 @@ class GetStageFailureMessageFromExceptionTests(cros_test_lib.TestCase):
 
   def testGetStageFailureMessageFromExceptionOnStepFailure(self):
     """Test GetStageFailureMessageFromException on StepFailure."""
-    exc = failures_lib.StepFailure(message='step failure message')
+    exc = failures_lib.StepFailure('step failure message')
     msg = failures_lib.GetStageFailureMessageFromException(
         'CommitQueueSync', 1, exc)
     self.assertEqual(msg.build_stage_id, 1)
@@ -293,8 +293,7 @@ class BuildFailuresForFindit(cros_test_lib.TestCase):
   """Test cases for exporting build failures for Findit integration."""
 
   def testBuildFailuresJson(self):
-    error = cros_build_lib.RunCommandError('run cmd error',
-                                           cros_build_lib.CommandResult())
+    error = cros_build_lib.RunCommandError('run cmd error')
     failed_packages = ['sys-apps/mosys', 'chromeos-base/cryptohome']
     build_failure = failures_lib.PackageBuildFailure(
         error, './build_packages', failed_packages)

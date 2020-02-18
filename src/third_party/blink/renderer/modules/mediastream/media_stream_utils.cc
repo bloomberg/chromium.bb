@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/webaudio_media_stream_source.h"
@@ -25,7 +25,7 @@ void CreateNativeVideoMediaStreamTrack(blink::WebMediaStreamTrack track) {
       blink::MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
   track.SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
-      native_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
+      native_source, blink::MediaStreamVideoSource::ConstraintsOnceCallback(),
       track.IsEnabled()));
 }
 

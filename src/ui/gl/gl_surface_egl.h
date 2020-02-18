@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/egl_timestamps.h"
@@ -47,13 +48,16 @@ enum DisplayType {
   ANGLE_OPENGLES_NULL = 10,
   ANGLE_VULKAN = 11,
   ANGLE_VULKAN_NULL = 12,
-  DISPLAY_TYPE_MAX = 13,
+  ANGLE_D3D11on12 = 13,
+  ANGLE_SWIFTSHADER = 14,
+  DISPLAY_TYPE_MAX = 15,
 };
 
 GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,
                                   bool supports_angle_opengl,
                                   bool supports_angle_null,
                                   bool supports_angle_vulkan,
+                                  bool supports_angle_swiftshader,
                                   const base::CommandLine* command_line,
                                   std::vector<DisplayType>* init_displays);
 
@@ -107,7 +111,8 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 
 // Encapsulates an EGL surface bound to a view.
 class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
-                                         public EGLTimestampClient {
+                                         public EGLTimestampClient,
+                                         public ui::PlatformEventDispatcher {
  public:
   NativeViewGLSurfaceEGL(EGLNativeWindowType window,
                          std::unique_ptr<gfx::VSyncProvider> vsync_provider);
@@ -162,6 +167,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   ~NativeViewGLSurfaceEGL() override;
 
   EGLNativeWindowType window_ = 0;
+  std::vector<EGLNativeWindowType> children_;
   gfx::Size size_ = gfx::Size(1, 1);
   bool enable_fixed_size_angle_ = true;
 
@@ -179,6 +185,10 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   bool CommitAndClearPendingOverlays();
   void UpdateSwapEvents(EGLuint64KHR newFrameId, bool newFrameIdIsValid);
   void TraceSwapEvents(EGLuint64KHR oldFrameId);
+
+  // PlatformEventDispatcher implementation.
+  bool CanDispatchEvent(const ui::PlatformEvent& event) override;
+  uint32_t DispatchEvent(const ui::PlatformEvent& event) override;
 
   EGLSurface surface_ = nullptr;
   bool supports_post_sub_buffer_ = false;

@@ -63,15 +63,32 @@ class SnapshotByteSource final {
     return answer;
   }
 
+  int GetIntSlow() {
+    // Unlike GetInt, this reads only up to the end of the blob, even if less
+    // than 4 bytes are remaining.
+    // TODO(jgruber): Remove once the use in MakeFromScriptsSource is gone.
+    DCHECK(position_ < length_);
+    uint32_t answer = data_[position_];
+    if (position_ + 1 < length_) answer |= data_[position_ + 1] << 8;
+    if (position_ + 2 < length_) answer |= data_[position_ + 2] << 16;
+    if (position_ + 3 < length_) answer |= data_[position_ + 3] << 24;
+    int bytes = (answer & 3) + 1;
+    Advance(bytes);
+    uint32_t mask = 0xffffffffu;
+    mask >>= 32 - (bytes << 3);
+    answer &= mask;
+    answer >>= 2;
+    return answer;
+  }
+
   // Returns length.
   int GetBlob(const byte** data);
 
   int position() { return position_; }
   void set_position(int position) { position_ = position; }
 
-  std::pair<uint32_t, uint32_t> GetChecksum() const {
-    Checksum checksum(Vector<const byte>(data_, length_));
-    return {checksum.a(), checksum.b()};
+  uint32_t GetChecksum() const {
+    return Checksum(Vector<const byte>(data_, length_));
   }
 
  private:

@@ -78,7 +78,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -262,10 +262,10 @@ bool GetColorsFromRect(PhysicalRect rect,
     if (!layout_object)
       continue;
 
-    if (IsA<HTMLCanvasElement>(element) || IsHTMLEmbedElement(element) ||
-        IsHTMLImageElement(element) || IsHTMLObjectElement(element) ||
-        IsHTMLPictureElement(element) || element->IsSVGElement() ||
-        IsHTMLVideoElement(element)) {
+    if (IsA<HTMLCanvasElement>(element) || IsA<HTMLEmbedElement>(element) ||
+        IsA<HTMLImageElement>(element) || IsA<HTMLObjectElement>(element) ||
+        IsA<HTMLPictureElement>(element) || element->IsSVGElement() ||
+        IsA<HTMLVideoElement>(element)) {
       colors.clear();
       found_opaque_color = false;
       continue;
@@ -1041,11 +1041,12 @@ InspectorCSSAgent::AnimationsForNode(Element* element) {
       std::make_unique<protocol::Array<protocol::CSS::CSSKeyframesRule>>();
   Document* owner_document = element->ownerDocument();
 
-  StyleResolver& style_resolver = owner_document->EnsureStyleResolver();
-  scoped_refptr<ComputedStyle> style = style_resolver.StyleForElement(element);
+  owner_document->UpdateStyleAndLayoutTreeForNode(element);
+  const ComputedStyle* style = element->EnsureComputedStyle();
   if (!style)
     return css_keyframes_rules;
   const CSSAnimationData* animation_data = style->Animations();
+  StyleResolver& style_resolver = owner_document->EnsureStyleResolver();
   for (wtf_size_t i = 0;
        animation_data && i < animation_data->NameList().size(); ++i) {
     AtomicString animation_name(animation_data->NameList()[i]);
@@ -1184,12 +1185,11 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
   LayoutText* layout_text = ToLayoutText(layout_object);
 
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    auto fragments = NGPaintFragment::InlineFragmentsFor(layout_object);
-    if (fragments.IsInLayoutNGInlineFormattingContext()) {
-      for (const NGPaintFragment* fragment : fragments) {
-        const auto& text_fragment =
-            To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
-        const ShapeResultView* shape_result = text_fragment.TextShapeResult();
+    if (layout_object->IsInLayoutNGInlineFormattingContext()) {
+      NGInlineCursor cursor;
+      cursor.MoveTo(*layout_object);
+      for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
+        const ShapeResultView* shape_result = cursor.CurrentTextShapeResult();
         if (!shape_result)
           continue;
         Vector<ShapeResult::RunFontData> run_font_data_list;

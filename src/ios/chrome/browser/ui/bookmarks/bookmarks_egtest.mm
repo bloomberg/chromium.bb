@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #include <vector>
@@ -18,11 +17,10 @@
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
-#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
@@ -42,6 +40,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -105,8 +104,8 @@ id<GREYMatcher> NavigateBackButtonTo(NSString* previousViewControllerLabel) {
       grey_anyOf(grey_accessibilityLabel(previousViewControllerLabel),
                  grey_accessibilityLabel(@"Back"), nil);
 
-  return grey_allOf(grey_kindOfClass([UIButton class]),
-                    grey_ancestor(grey_kindOfClass([UINavigationBar class])),
+  return grey_allOf(grey_kindOfClassName(@"UIButton"),
+                    grey_ancestor(grey_kindOfClassName(@"UINavigationBar")),
                     buttonLabelMatcher, nil);
 }
 
@@ -334,7 +333,7 @@ id<GREYMatcher> SearchIconButton() {
 - (void)testKeyboardCommandsRegistered_AddBookmark {
   // Add the bookmark.
   [BookmarksTestCase starCurrentTab];
-  GREYAssertTrue(chrome_test_util::GetRegisteredKeyCommandsCount() > 0,
+  GREYAssertTrue([ChromeEarlGrey registeredKeyCommandCount] > 0,
                  @"Some keyboard commands are registered.");
 }
 
@@ -364,7 +363,7 @@ id<GREYMatcher> SearchIconButton() {
                                  kPopupMenuToolsMenuTableViewId)]
         performAction:grey_tap()];
   }
-  GREYAssertTrue(chrome_test_util::GetRegisteredKeyCommandsCount() == 0,
+  GREYAssertTrue([ChromeEarlGrey registeredKeyCommandCount] == 0,
                  @"No keyboard commands are registered.");
 }
 
@@ -398,7 +397,7 @@ id<GREYMatcher> SearchIconButton() {
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(@"Mobile Bookmarks"),
-                                   grey_kindOfClass([UITableViewCell class]),
+                                   grey_kindOfClassName(@"UITableViewCell"),
                                    nil)] assertWithMatcher:grey_nil()];
 
   // Open the first folder, to be able to go back twice on the bookmarks.
@@ -978,8 +977,7 @@ id<GREYMatcher> SearchIconButton() {
 + (void)openBookmarkFolder:(NSString*)bookmarkFolder {
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_kindOfClass(
-                                       NSClassFromString(@"UITableViewCell")),
+                                   grey_kindOfClassName(@"UITableViewCell"),
                                    grey_descendant(grey_text(bookmarkFolder)),
                                    nil)] performAction:grey_tap()];
 }
@@ -1516,8 +1514,7 @@ id<GREYMatcher> SearchIconButton() {
 + (void)verifyBookmarkFolderIsSeen:(NSString*)bookmarkFolder {
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_kindOfClass(
-                                       NSClassFromString(@"UITableViewCell")),
+                                   grey_kindOfClassName(@"UITableViewCell"),
                                    grey_descendant(grey_text(bookmarkFolder)),
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -1851,7 +1848,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify the delete confirmation button shows up.
   [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      inRoot:grey_kindOfClassName(@"UITableView")]
       assertWithMatcher:grey_notNil()];
 
   // Change to edit mode
@@ -1862,7 +1859,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify the delete confirmation button is gone after entering edit mode.
   [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      inRoot:grey_kindOfClassName(@"UITableView")]
       assertWithMatcher:grey_nil()];
 
   // Swipe action on "Second URL".  This should not bring out delete
@@ -1873,7 +1870,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify the delete confirmation button doesn't appear.
   [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      inRoot:grey_kindOfClassName(@"UITableView")]
       assertWithMatcher:grey_nil()];
 
   // Cancel edit mode
@@ -1887,7 +1884,7 @@ id<GREYMatcher> SearchIconButton() {
   // Verify the delete confirmation button shows up. (swipe-to-delete is
   // re-enabled).
   [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      inRoot:grey_kindOfClassName(@"UITableView")]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -2911,19 +2908,11 @@ id<GREYMatcher> SearchIconButton() {
       selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Cancel the sign-in operation.
-    [[EarlGrey selectElementWithMatcher:
-                   grey_buttonTitle([l10n_util::GetNSString(
-                       IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
-                       uppercaseString])] performAction:grey_tap()];
-  } else {
-    // Cancel the add account operation.
-    [[EarlGrey
-        selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"Cancel"),
-                                            grey_sufficientlyVisible(), nil)]
-        performAction:grey_tap()];
-  }
+  // Cancel the sign-in operation.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_buttonTitle([l10n_util::GetNSString(
+                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
+                     uppercaseString])] performAction:grey_tap()];
 
   // Check that the bookmarks UI reappeared and the cell is still here.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
@@ -2939,7 +2928,7 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase openBookmarks];
 
   // Set up a fake identity.
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -2954,19 +2943,11 @@ id<GREYMatcher> SearchIconButton() {
                                           grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
 
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Cancel the sign-in operation.
-    [[EarlGrey selectElementWithMatcher:
-                   grey_buttonTitle([l10n_util::GetNSString(
-                       IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
-                       uppercaseString])] performAction:grey_tap()];
-  } else {
-    // Undo the sign-in operation.
-    [[EarlGrey selectElementWithMatcher:
-                   grey_buttonTitle([l10n_util::GetNSString(
-                       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_UNDO_BUTTON)
-                       uppercaseString])] performAction:grey_tap()];
-  }
+  // Cancel the sign-in operation.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_buttonTitle([l10n_util::GetNSString(
+                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
+                     uppercaseString])] performAction:grey_tap()];
 
   // Check that the bookmarks UI reappeared and the cell is still here.
   [SigninEarlGreyUI
@@ -2982,7 +2963,7 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   // Set up a fake identity.
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -2997,10 +2978,8 @@ id<GREYMatcher> SearchIconButton() {
                                           grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
 
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Select the identity to dismiss the identity chooser.
-    [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
-  }
+  // Select the identity to dismiss the identity chooser.
+  [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
 
   // Tap the CANCEL button.
   [[EarlGrey selectElementWithMatcher:
@@ -4653,8 +4632,7 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Verify search bar is enabled.
-  [[EarlGrey selectElementWithMatcher:grey_kindOfClass(
-                                          NSClassFromString(@"UISearchBar"))]
+  [[EarlGrey selectElementWithMatcher:grey_kindOfClassName(@"UISearchBar")]
       assertWithMatcher:grey_userInteractionEnabled()];
 
   // Change to edit mode
@@ -4664,16 +4642,14 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 
   // Verify search bar is disabled.
-  [[EarlGrey selectElementWithMatcher:grey_kindOfClass(
-                                          NSClassFromString(@"UISearchBar"))]
+  [[EarlGrey selectElementWithMatcher:grey_kindOfClassName(@"UISearchBar")]
       assertWithMatcher:grey_not(grey_userInteractionEnabled())];
 
   // Cancel edito mode.
   [BookmarksTestCase closeContextBarEditMode];
 
   // Verify search bar is enabled.
-  [[EarlGrey selectElementWithMatcher:grey_kindOfClass(
-                                          NSClassFromString(@"UISearchBar"))]
+  [[EarlGrey selectElementWithMatcher:grey_kindOfClassName(@"UISearchBar")]
       assertWithMatcher:grey_userInteractionEnabled()];
 }
 

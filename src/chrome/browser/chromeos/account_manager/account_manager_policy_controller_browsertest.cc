@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_policy_controller.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_policy_controller_factory.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -31,10 +32,6 @@ class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
  public:
   AccountManagerPolicyControllerTest() = default;
   ~AccountManagerPolicyControllerTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    scoped_feature_list_.InitAndEnableFeature(features::kAccountManager);
-  }
 
   void SetUpOnMainThread() override {
     // Prep private fields.
@@ -111,7 +108,6 @@ class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir temp_dir_;
   // Non-owning pointer.
   AccountManager* account_manager_ = nullptr;

@@ -17,13 +17,10 @@
 
 namespace blink {
 
-class TextPaintTimingDetectorTest
-    : public testing::Test,
-      private ScopedFirstContentfulPaintPlusPlusForTest {
+class TextPaintTimingDetectorTest : public testing::Test {
  public:
   TextPaintTimingDetectorTest()
-      : ScopedFirstContentfulPaintPlusPlusForTest(true),
-        test_task_runner_(
+      : test_task_runner_(
             base::MakeRefCounted<base::TestMockTimeTaskRunner>()) {}
 
   void SetUp() override {
@@ -108,6 +105,10 @@ class TextPaintTimingDetectorTest
 
   void SimulateInputEvent() {
     GetPaintTimingDetector().NotifyInputEvent(WebInputEvent::Type::kMouseDown);
+  }
+
+  void SimulateScroll() {
+    GetPaintTimingDetector().NotifyScroll(ScrollType::kUserScroll);
   }
 
   void InvokeCallback() {
@@ -740,6 +741,32 @@ TEST_F(TextPaintTimingDetectorTest, SameSizeShouldNotBeIgnored) {
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   EXPECT_EQ(CountRankingSetSize(), 4u);
+}
+
+TEST_F(TextPaintTimingDetectorTest, VisibleTextAfterUserInput) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  AppendDivElementToBody("text");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 1u);
+  EXPECT_TRUE(GetLargestTextPaintManager());
+
+  SimulateInputEvent();
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 1u);
+}
+
+TEST_F(TextPaintTimingDetectorTest, VisibleTextAfterUserScroll) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+  AppendDivElementToBody("text");
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 1u);
+  EXPECT_TRUE(GetLargestTextPaintManager());
+
+  SimulateScroll();
+  UpdateAllLifecyclePhasesAndSimulateSwapTime();
+  EXPECT_EQ(CountVisibleTexts(), 1u);
 }
 
 }  // namespace blink

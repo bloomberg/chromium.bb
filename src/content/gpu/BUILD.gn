@@ -35,8 +35,11 @@ target(link_target_type, "gpu_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
+    "browser_exposed_gpu_interfaces.cc",
+    "browser_exposed_gpu_interfaces.h",
     "gpu_child_thread.cc",
     "gpu_child_thread.h",
+    "gpu_child_thread_receiver_bindings.cc",
     "gpu_main.cc",
     "gpu_process.cc",
     "gpu_process.h",
@@ -106,6 +109,10 @@ target(link_target_type, "gpu_sources") {
 
   if (is_linux || is_mac || is_win) {
     deps += [ "//sandbox" ]
+  }
+
+  if (is_mac) {
+    deps += [ "//components/metal_util" ]
   }
 
   if (use_x11) {

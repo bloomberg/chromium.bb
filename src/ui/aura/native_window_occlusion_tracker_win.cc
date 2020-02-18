@@ -90,6 +90,11 @@ void NativeWindowOcclusionTrackerWin::OnWindowDestroying(Window* window) {
   Disable(window);
 }
 
+NativeWindowOcclusionTrackerWin**
+NativeWindowOcclusionTrackerWin::GetInstanceForTesting() {
+  return &g_tracker;
+}
+
 NativeWindowOcclusionTrackerWin::NativeWindowOcclusionTrackerWin()
     :  // Use a COMSTATaskRunner so that registering and unregistering
        // event hooks will happen on the same thread, as required by Windows,
@@ -111,10 +116,10 @@ NativeWindowOcclusionTrackerWin::NativeWindowOcclusionTrackerWin()
 }
 
 NativeWindowOcclusionTrackerWin::~NativeWindowOcclusionTrackerWin() {
-  // This shouldn't be reached, because if it is, |occlusion_calculator_| will
-  // be deleted on the ui thread, which is problematic if there tasks scheduled
-  // on the background thread.
-  NOTREACHED();
+  // This shouldn't be reached in production code, because if it is,
+  // |occlusion_calculator_| will be deleted on the ui thread, which is
+  // problematic if there tasks scheduled on the background thread.
+  // Tests are allowed to delete the instance after running all pending tasks.
 }
 
 // static
@@ -130,7 +135,6 @@ bool NativeWindowOcclusionTrackerWin::IsWindowVisibleAndFullyOpaque(
     return false;
 
   LONG ex_styles = GetWindowLong(hwnd, GWL_EXSTYLE);
-
   // Filter out "transparent" windows, windows where the mouse clicks fall
   // through them.
   if (ex_styles & WS_EX_TRANSPARENT)
@@ -148,12 +152,20 @@ bool NativeWindowOcclusionTrackerWin::IsWindowVisibleAndFullyOpaque(
   if (ex_styles & WS_EX_LAYERED) {
     BYTE alpha;
     DWORD flags;
-    if (GetLayeredWindowAttributes(hwnd, nullptr, &alpha, &flags)) {
-      if (flags & LWA_ALPHA && alpha < 255)
-        return false;
-      if (flags & LWA_COLORKEY)
-        return false;
-    }
+
+    // GetLayeredWindowAttributes only works if the application has
+    // previously called SetLayeredWindowAttributes on the window.
+    // The function will fail if the layered window was setup with
+    // UpdateLayeredWindow. Treat this failure as the window being transparent.
+    // See Remarks section of
+    // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getlayeredwindowattributes
+    if (!GetLayeredWindowAttributes(hwnd, nullptr, &alpha, &flags))
+      return false;
+
+    if (flags & LWA_ALPHA && alpha < 255)
+      return false;
+    if (flags & LWA_COLORKEY)
+      return false;
   }
 
   // Filter out windows that do not have a simple rectangular region.
@@ -209,8 +221,16 @@ void NativeWindowOcclusionTrackerWin::UpdateOcclusionState(
   }
 }
 
-void NativeWindowOcclusionTrackerWin::OnSessionChange(WPARAM status_code) {
-  if (status_code == WTS_SESSION_LOCK) {
+void NativeWindowOcclusionTrackerWin::OnSessionChange(
+    WPARAM status_code,
+    const bool* is_current_session) {
+  if (is_current_session && !*is_current_session)
+    return;
+  if (status_code == WTS_SESSION_UNLOCK) {
+    // UNLOCK will cause a foreground window change, which will
+    // trigger an occlusion calculation on its own.
+    screen_locked_ = false;
+  } else if (status_code == WTS_SESSION_LOCK && is_current_session) {
     screen_locked_ = true;
     // Set all visible root windows as occluded. If not visible,
     // set them as hidden.
@@ -220,12 +240,7 @@ void NativeWindowOcclusionTrackerWin::OnSessionChange(WPARAM status_code) {
               ? Window::OcclusionState::HIDDEN
               : Window::OcclusionState::OCCLUDED);
     }
-  } else if (status_code == WTS_SESSION_UNLOCK) {
-    screen_locked_ = false;
   }
-  // Other session changes don't need to trigger occlusion calculation. In
-  // particular, UNLOCK will cause a foreground window change, which will
-  // trigger an occlusion calculation on its own.
 }
 
 NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
@@ -516,20 +531,14 @@ bool NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   // computed for all |root_window_hwnds_occlusion_state_|, and if so, skipping
   // further oclcusion calculations. However, we still want to keep computing
   // |current_pids_with_visible_windows_|, so this function always returns true.
-  for (auto& root_window_pair : root_window_hwnds_occlusion_state_) {
-    if (hwnd == root_window_pair.first) {
-      if (root_window_pair.second.occlusion_state ==
-          Window::OcclusionState::HIDDEN) {
-        break;
-      }
-
-      root_window_pair.second.occlusion_state =
-          root_window_pair.second.unoccluded_region.isEmpty()
-              ? Window::OcclusionState::OCCLUDED
-              : Window::OcclusionState::VISIBLE;
-      break;
-    }
+  auto it = root_window_hwnds_occlusion_state_.find(hwnd);
+  if (it != root_window_hwnds_occlusion_state_.end() &&
+      it->second.occlusion_state != Window::OcclusionState::HIDDEN) {
+    it->second.occlusion_state = it->second.unoccluded_region.isEmpty()
+                                     ? Window::OcclusionState::OCCLUDED
+                                     : Window::OcclusionState::VISIBLE;
   }
+
   if (!WindowCanOccludeOtherWindowsOnCurrentVirtualDesktop(hwnd, &window_rect))
     return true;
   // We are interested in this window, but are not currently hooking it with

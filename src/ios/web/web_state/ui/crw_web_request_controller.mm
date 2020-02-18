@@ -426,7 +426,11 @@ enum class BackForwardNavigationType {
   context->SetIsPost([self.navigationHandler isCurrentNavigationItemPOST]);
   context->SetIsSameDocument(sameDocumentNavigation);
 
-  if (!IsWKInternalUrl(requestURL) && !placeholderNavigation) {
+  // If WKWebView.loading is used for WebState::IsLoading, do not set it for
+  // renderer-initated navigation otherwise WebState::IsLoading will remain true
+  // after hash change in the web page.
+  if (!IsWKInternalUrl(requestURL) && !placeholderNavigation &&
+      (!web::features::UseWKWebViewLoading() || !rendererInitiated)) {
     self.webState->SetIsLoading(true);
   }
 
@@ -477,14 +481,26 @@ enum class BackForwardNavigationType {
     // loading placeholder URL.
     return;
   }
-
-  if (![self.navigationHandler.navigationStates
-              lastNavigationWithPendingItemInNavigationContext]) {
-    self.webState->SetIsLoading(false);
-  } else {
-    // There is another pending navigation, so the state is still loading.
+  if (!web::features::UseWKWebViewLoading()) {
+    if (![self.navigationHandler.navigationStates
+                lastNavigationWithPendingItemInNavigationContext]) {
+      self.webState->SetIsLoading(false);
+    } else {
+      // There is another pending navigation, so the state is still loading.
+    }
   }
+
   self.webState->OnPageLoaded(currentURL, YES);
+
+  if (context) {
+    if (context->IsRendererInitiated()) {
+      UMA_HISTOGRAM_TIMES("PLT.iOS.RendererInitiatedPageLoadTime",
+                          context->GetElapsedTimeSinceCreation());
+    } else {
+      UMA_HISTOGRAM_TIMES("PLT.iOS.BrowserInitiatedPageLoadTime",
+                          context->GetElapsedTimeSinceCreation());
+    }
+  }
 }
 
 // Reports Navigation.IOSWKWebViewSlowFastBackForward UMA. No-op if pending
@@ -604,6 +620,15 @@ enum class BackForwardNavigationType {
   // the next request sent by this web view.
   web::UserAgentType itemUserAgentType =
       self.currentNavItem->GetUserAgentType();
+
+  if (itemUserAgentType == web::UserAgentType::AUTOMATIC) {
+    DCHECK(
+        base::FeatureList::IsEnabled(web::features::kDefaultToDesktopOnIPad));
+    itemUserAgentType = web::GetDefaultUserAgent(self.webView);
+    self.currentNavItem->SetUserAgentType(
+        itemUserAgentType, /*update_inherited_user_agent =*/false);
+  }
+
   if (itemUserAgentType != web::UserAgentType::NONE) {
     NSString* userAgentString = base::SysUTF8ToNSString(
         web::GetWebClient()->GetUserAgent(itemUserAgentType));
@@ -654,6 +679,16 @@ enum class BackForwardNavigationType {
     web::NavigationItem* item = self.currentNavItem;
     GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
     GURL virtualURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+
+    // Do not attempt to navigate to file URLs that are typed into the
+    // omnibox.
+    if (navigationURL.SchemeIsFile() &&
+        !web::GetWebClient()->IsAppSpecificURL(virtualURL) &&
+        !IsRestoreSessionUrl(navigationURL)) {
+      [_delegate webRequestControllerStopLoading:self];
+      return;
+    }
+
     // Set |item| to nullptr here to avoid any use-after-free issues, as it can
     // be cleared by the call to -registerLoadRequestForURL below.
     item = nullptr;
@@ -671,6 +706,10 @@ enum class BackForwardNavigationType {
 
     if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
         self.navigationManagerImpl->IsRestoreSessionInProgress()) {
+      if (self.navigationManagerImpl->ShouldBlockUrlDuringRestore(
+              navigationURL)) {
+        return;
+      }
       [_delegate
           webRequestControllerDisableNavigationGesturesUntilFinishNavigation:
               self];

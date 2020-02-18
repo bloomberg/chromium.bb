@@ -5,17 +5,19 @@
 package org.chromium.chrome.browser.payments;
 
 import android.content.Context;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+
+import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.AddressField;
+import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge;
+import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge.AddressField;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.payments.mojom.PaymentAddress;
 
@@ -238,10 +240,14 @@ public class AutofillAddress extends EditableOption {
             completionStatus |= CompletionStatus.INVALID_RECIPIENT;
         }
 
-        if (checkType != CompletenessCheckType.IGNORE_PHONE
-                && !PhoneNumberUtils.isGlobalPhoneNumber(
-                           PhoneNumberUtils.stripSeparators(profile.getPhoneNumber().toString()))) {
-            completionStatus |= CompletionStatus.INVALID_PHONE_NUMBER;
+        // TODO(crbug.com/999286): PhoneNumberUtils internally trigger disk reads for certain
+        //                         devices/configurations.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            if (checkType != CompletenessCheckType.IGNORE_PHONE
+                    && !PhoneNumberUtils.isGlobalPhoneNumber(PhoneNumberUtils.stripSeparators(
+                            profile.getPhoneNumber().toString()))) {
+                completionStatus |= CompletionStatus.INVALID_PHONE_NUMBER;
+            }
         }
 
         List<Integer> requiredFields = AutofillProfileBridge.getRequiredAddressFields(

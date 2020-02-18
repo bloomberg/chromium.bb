@@ -18,7 +18,6 @@ class PresubmitApi(recipe_api.RecipeApi):
     # According to event mon data we have, it seems like anything longer than
     # this is a bug, and should just instant fail.
     self._timeout_s = properties.timeout_s
-    self._vpython_spec_path = properties.vpython_spec_path
 
   @property
   def presubmit_support_path(self):
@@ -27,6 +26,7 @@ class PresubmitApi(recipe_api.RecipeApi):
   def __call__(self, *args, **kwargs):
     """Return a presubmit step."""
 
+    kwargs['venv'] = True
     name = kwargs.pop('name', 'presubmit')
     with self.m.depot_tools.on_path():
       presubmit_args = list(args) + [
@@ -52,7 +52,8 @@ class PresubmitApi(recipe_api.RecipeApi):
     """
     # Expect callers to have already set up their gclient configuration.
 
-    bot_update_step = self.m.bot_update.ensure_checkout(timeout=3600)
+    bot_update_step = self.m.bot_update.ensure_checkout(
+        timeout=3600, no_fetch_tags=True)
     relative_root = self.m.gclient.get_gerrit_patch_root().rstrip('/')
 
     abs_root = self.m.context.cwd.join(relative_root)
@@ -106,16 +107,10 @@ class PresubmitApi(recipe_api.RecipeApi):
       '--upstream', upstream,  # '' if not in bot_update mode.
     ])
 
-    venv = None
-    # TODO(iannucci): verify that presubmit_support.py correctly finds and
-    # uses .vpython files, then remove this configuration.
-    if self._vpython_spec_path:
-      venv = abs_root.join(self._vpython_spec_path)
-
     raw_result = result_pb2.RawResult()
     step_json = self(
         *presubmit_args,
-        venv=venv, timeout=self._timeout_s,
+        timeout=self._timeout_s,
         # ok_ret='any' causes all exceptions to be ignored in this step
         ok_ret='any')
     # Set recipe result values
@@ -246,4 +241,3 @@ def _createSummaryMarkdown(step_json):
       ' look at the stdout of the presubmit step.')
     )
   return '\n\n'.join(error_messages)
-

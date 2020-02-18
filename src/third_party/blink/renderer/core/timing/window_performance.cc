@@ -77,6 +77,34 @@ String GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
   return attr_value;
 }
 
+AtomicString GetFrameOwnerType(HTMLFrameOwnerElement* frame_owner) {
+  switch (frame_owner->OwnerType()) {
+    case FrameOwnerElementType::kNone:
+      return "window";
+    case FrameOwnerElementType::kIframe:
+      return "iframe";
+    case FrameOwnerElementType::kObject:
+      return "object";
+    case FrameOwnerElementType::kEmbed:
+      return "embed";
+    case FrameOwnerElementType::kFrame:
+      return "frame";
+    case FrameOwnerElementType::kPortal:
+      return "portal";
+  }
+  NOTREACHED();
+  return "";
+}
+
+String GetFrameSrc(HTMLFrameOwnerElement* frame_owner) {
+  switch (frame_owner->OwnerType()) {
+    case FrameOwnerElementType::kObject:
+      return GetFrameAttribute(frame_owner, html_names::kDataAttr, false);
+    default:
+      return GetFrameAttribute(frame_owner, html_names::kSrcAttr, false);
+  }
+}
+
 const AtomicString& SelfKeyword() {
   DEFINE_STATIC_LOCAL(const AtomicString, kSelfAttribution, ("self"));
   return kSelfAttribution;
@@ -110,12 +138,6 @@ AtomicString SameOriginAttribution(Frame* observer_frame,
   if (culprit_frame->Tree().IsDescendantOf(observer_frame))
     return SameOriginDescendantKeyword();
   return SameOriginKeyword();
-}
-
-bool IsSameOrigin(const AtomicString& key) {
-  DCHECK(IsMainThread());
-  return key == SameOriginKeyword() || key == SameOriginDescendantKeyword() ||
-         key == SameOriginAncestorKeyword() || key == SelfKeyword();
 }
 
 }  // namespace
@@ -291,34 +313,28 @@ std::pair<AtomicString, DOMWindow*> WindowPerformance::SanitizedAttribution(
   return std::make_pair(kCrossOriginAttribution, nullptr);
 }
 
-void WindowPerformance::ReportLongTask(
-    base::TimeTicks start_time,
-    base::TimeTicks end_time,
-    ExecutionContext* task_context,
-    bool has_multiple_contexts,
-    const SubTaskAttribution::EntriesVector& sub_task_attributions) {
+void WindowPerformance::ReportLongTask(base::TimeTicks start_time,
+                                       base::TimeTicks end_time,
+                                       ExecutionContext* task_context,
+                                       bool has_multiple_contexts) {
   if (!GetFrame())
     return;
   std::pair<AtomicString, DOMWindow*> attribution =
       WindowPerformance::SanitizedAttribution(
           task_context, has_multiple_contexts, GetFrame());
   DOMWindow* culprit_dom_window = attribution.second;
-  SubTaskAttribution::EntriesVector empty_vector;
   if (!culprit_dom_window || !culprit_dom_window->GetFrame() ||
       !culprit_dom_window->GetFrame()->DeprecatedLocalOwner()) {
-    AddLongTaskTiming(
-        start_time, end_time, attribution.first, g_empty_string, g_empty_string,
-        g_empty_string,
-        IsSameOrigin(attribution.first) ? sub_task_attributions : empty_vector);
+    AddLongTaskTiming(start_time, end_time, attribution.first, "window",
+                      g_empty_string, g_empty_string, g_empty_string);
   } else {
     HTMLFrameOwnerElement* frame_owner =
         culprit_dom_window->GetFrame()->DeprecatedLocalOwner();
     AddLongTaskTiming(
-        start_time, end_time, attribution.first,
-        GetFrameAttribute(frame_owner, html_names::kSrcAttr, false),
+        start_time, end_time, attribution.first, GetFrameOwnerType(frame_owner),
+        GetFrameSrc(frame_owner),
         GetFrameAttribute(frame_owner, html_names::kIdAttr, false),
-        GetFrameAttribute(frame_owner, html_names::kNameAttr, true),
-        IsSameOrigin(attribution.first) ? sub_task_attributions : empty_vector);
+        GetFrameAttribute(frame_owner, html_names::kNameAttr, true));
   }
 }
 
@@ -396,7 +412,6 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          const IntSize& intrinsic_size,
                                          const AtomicString& id,
                                          Element* element) {
-  DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(GetExecutionContext()));
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, url, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(load_time), identifier,
@@ -425,8 +440,6 @@ void WindowPerformance::DispatchFirstInputTiming(
 void WindowPerformance::AddLayoutShiftValue(double value,
                                             bool input_detected,
                                             base::TimeTicks input_timestamp) {
-  DCHECK(RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
-      GetExecutionContext()));
   auto* entry = MakeGarbageCollected<LayoutShift>(
       now(), value, input_detected,
       input_detected ? MonotonicTimeToDOMHighResTimeStamp(input_timestamp)

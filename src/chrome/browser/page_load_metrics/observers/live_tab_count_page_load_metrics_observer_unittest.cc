@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
-#include "chrome/browser/page_load_metrics/page_load_tracker.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "components/tab_count_metrics/tab_count_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -70,7 +70,7 @@ class LiveTabCountPageLoadMetricsObserverTest
       web_contents()->WasShown();
     }
 
-    SimulateTimingUpdate(timing);
+    tester()->SimulateTimingUpdate(timing);
   }
 
  protected:
@@ -86,7 +86,7 @@ class LiveTabCountPageLoadMetricsObserverTest
         std::string(internal::kHistogramPrefixLiveTabCount) +
         std::string(page_load_histogram_suffix);
     for (size_t bucket = 0; bucket < expected_counts.size(); bucket++) {
-      histogram_tester().ExpectTotalCount(
+      tester()->histogram_tester().ExpectTotalCount(
           tab_count_metrics::HistogramName(histogram_prefix,
                                            /* live_tabs_only = */ true, bucket),
           expected_counts[bucket]);

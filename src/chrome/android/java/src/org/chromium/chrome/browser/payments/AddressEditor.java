@@ -6,10 +6,11 @@ package org.chromium.chrome.browser.payments;
 
 import android.app.ProgressDialog;
 import android.os.Handler;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
@@ -18,9 +19,9 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.GetSubKeysRequestDelegate;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.AddressField;
-import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.AddressUiComponent;
+import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge;
+import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge.AddressField;
+import org.chromium.chrome.browser.settings.autofill.AutofillProfileBridge.AddressUiComponent;
 import org.chromium.chrome.browser.widget.prefeditor.EditorBase;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel.EditorFieldValidator;
@@ -473,7 +474,7 @@ public class AddressEditor
         // For tests, the time-out is set to 0. In this case, we should not
         // fetch the admin-areas, and show a text-field instead.
         // This is to have the tests independent of the network status.
-        if (PersonalDataManager.getInstance().getRequestTimeoutMS() == 0) {
+        if (PersonalDataManager.getRequestTimeoutMS() == 0) {
             onSubKeysReceived(null, null);
             return;
         }

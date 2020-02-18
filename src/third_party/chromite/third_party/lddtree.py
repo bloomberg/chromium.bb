@@ -119,7 +119,8 @@ def GenerateLdsoWrapper(root, path, interp, libpaths=(), elfsubdir=None):
   """
   basedir = os.path.dirname(path)
   interp_dir, interp_name = os.path.split(interp)
-  libpaths = dedupe([interp_dir] + list(libpaths))
+  # Add ldso interpreter dir to end of libpaths as a fallback library path.
+  libpaths = dedupe(list(libpaths) + [interp_dir])
   replacements = {
     'interp': os.path.join(os.path.relpath(interp_dir, basedir),
                            interp_name),
@@ -154,7 +155,9 @@ else
   esac
 fi
 basedir=${base%%/*}
-exec \
+# TODO(crbug/1003841): Remove LD_ARGV0 once
+# ld.so supports forwarding the binary name.
+LD_ARGV0="$0" exec \
   "${basedir}/%(interp)s" \
   --library-path "%(libpaths)s" \
   --inhibit-rpath '' \

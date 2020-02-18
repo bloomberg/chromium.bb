@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/icon_manager.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "ui/gfx/font_list.h"
@@ -53,6 +55,7 @@ namespace views {
 class ImageButton;
 class Label;
 class MdTextButton;
+class StyledLabel;
 }
 
 // Represents a single download item on the download shelf. Encompasses an icon,
@@ -76,7 +79,7 @@ class DownloadItemView : public views::InkDropHostView,
   // Returns the base color for text on this download item, based on |theme|.
   static SkColor GetTextColorForThemeProvider(const ui::ThemeProvider* theme);
 
-  void OnExtractIconComplete(gfx::Image icon);
+  void OnExtractIconComplete(IconLoader::IconSize icon_size, gfx::Image icon);
 
   // Returns the DownloadUIModel object belonging to this item.
   DownloadUIModel* model() { return model_.get(); }
@@ -94,7 +97,6 @@ class DownloadItemView : public views::InkDropHostView,
 
   // views::View:
   void Layout() override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   gfx::Size CalculatePreferredSize() const override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
@@ -116,6 +118,9 @@ class DownloadItemView : public views::InkDropHostView,
   // views::AnimationDelegateViews implementation.
   void AnimationProgressed(const gfx::Animation* animation) override;
 
+  // Adds styling to the filename in |label|, if present.
+  void StyleFilenameInLabel(views::StyledLabel* label);
+
  protected:
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -129,9 +134,11 @@ class DownloadItemView : public views::InkDropHostView,
   enum State { NORMAL = 0, HOT, PUSHED };
 
   enum Mode {
-    NORMAL_MODE = 0,  // Showing download item.
-    DANGEROUS_MODE,   // Displaying the dangerous download warning.
-    MALICIOUS_MODE    // Displaying the malicious download warning.
+    NORMAL_MODE = 0,    // Showing download item.
+    DANGEROUS_MODE,     // Displaying the dangerous download warning.
+    MALICIOUS_MODE,     // Displaying the malicious download warning.
+    DEEP_SCANNING_MODE  // Displaying information about in progress deep
+                        // scanning.
   };
 
   static constexpr int kTextWidth = 140;
@@ -152,27 +159,8 @@ class DownloadItemView : public views::InkDropHostView,
   // dangerous download.
   static constexpr int kSaveDiscardButtonPadding = 5;
 
-  // The touchable space around the dropdown button's icon.
-  static constexpr int kDropdownBorderWidth = 10;
-
   // The space on the right side of the dangerous download label.
   static constexpr int kLabelPadding = 8;
-
-  // Height/width of the warning icon, also in dp.
-  static constexpr int kWarningIconSize = 24;
-
-  // Height/width of the erro icon, also in dp.
-  static constexpr int kErrorIconSize = 27;
-
-  // How long the 'download complete' animation should last for.
-  static constexpr int kCompleteAnimationDurationMs = 2500;
-
-  // How long the 'download interrupted' animation should last for.
-  static constexpr int kInterruptedAnimationDurationMs = 2500;
-
-  // How long we keep the item disabled after the user clicked it to open the
-  // downloaded item.
-  static constexpr int kDisabledOnOpenDuration = 3000;
 
   void OpenDownload();
 
@@ -223,8 +211,14 @@ class DownloadItemView : public views::InkDropHostView,
     return mode_ == DANGEROUS_MODE || mode_ == MALICIOUS_MODE;
   }
 
-  // Clears or shows the warning dialog as per the state of |model_|.
-  void ToggleWarningDialog();
+  // Whether we are in the deep scanning mode.
+  bool IsShowingDeepScanning() const { return mode_ == DEEP_SCANNING_MODE; }
+
+  // Starts showing the normal mode dialog, clearing the existing dialog.
+  void TransitionToNormalMode();
+
+  // Starts showing the warning dialog, clearing the existing dialog.
+  void TransitionToWarningDialog();
 
   // Reverts from dangerous mode to normal download mode.
   void ClearWarningDialog();
@@ -232,6 +226,15 @@ class DownloadItemView : public views::InkDropHostView,
   // Starts displaying the dangerous download warning or the malicious download
   // warning.
   void ShowWarningDialog();
+
+  // Starts showing the deep scanning dialog, clearing the existing dialog.
+  void TransitionToDeepScanningDialog();
+
+  // Reverts from deep scanning mode to normal download mode.
+  void ClearDeepScanningDialog();
+
+  // Starts displaying the deep scanning warning.
+  void ShowDeepScanningDialog();
 
   // Returns the current warning icon (should only be called when the view is
   // actually showing a warning).
@@ -250,7 +253,11 @@ class DownloadItemView : public views::InkDropHostView,
   // line (if short), or broken across two lines.  In the latter case,
   // linebreaks near the middle of the string and sets the label's text
   // accordingly.  Returns the preferred size for the label.
-  static gfx::Size AdjustTextAndGetSize(views::Label* label);
+  template <typename T>
+  static gfx::Size AdjustTextAndGetSize(
+      T* label,
+      base::RepeatingCallback<void(T*, const base::string16&)>
+          update_text_and_style);
 
   // Reenables the item after it has been disabled when a user clicked it to
   // open the downloaded file.
@@ -298,14 +305,20 @@ class DownloadItemView : public views::InkDropHostView,
   // the text width.
   base::string16 ElidedFilename();
 
+  // Opens a file while async scanning is still pending.
+  void OpenDownloadDuringAsyncScanning();
+
+  // Returns the height/width of the warning icon, in dp.
+  static int GetWarningIconSize();
+
+  // Returns the height/width of the error icon, in dp.
+  static int GetErrorIconSize();
+
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
 
   // The focus ring for this Button.
   std::unique_ptr<views::FocusRing> focus_ring_;
-
-  // Elements of our particular download
-  base::string16 status_text_;
 
   // The font list used to print the file name and warning text.
   gfx::FontList font_list_;
@@ -373,7 +386,7 @@ class DownloadItemView : public views::InkDropHostView,
   views::ImageButton* dropdown_button_ = nullptr;
 
   // Dangerous mode label.
-  views::Label* dangerous_download_label_;
+  views::StyledLabel* dangerous_download_label_;
 
   // Whether the dangerous mode label has been sized yet.
   bool dangerous_download_label_sized_;
@@ -405,6 +418,22 @@ class DownloadItemView : public views::InkDropHostView,
   // item.  Store the path used, so that we can detect a change in the path
   // and reload the icon.
   base::FilePath last_download_item_path_;
+
+  // Deep scanning mode label.
+  views::StyledLabel* deep_scanning_label_ = nullptr;
+
+  // Deep scanning open now button.
+  views::MdTextButton* open_now_button_ = nullptr;
+
+  // Whether the user has selected "open now" on a download pending asynchronous
+  // scanning.
+  bool should_open_while_scanning_ = false;
+
+  // Deep scanning modal dialog confirming choice to "open now".
+  TabModalConfirmDialog* open_now_modal_dialog_;
+
+  // Icon for the download.
+  gfx::ImageSkia icon_;
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.

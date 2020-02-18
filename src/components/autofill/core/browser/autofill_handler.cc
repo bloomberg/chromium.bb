@@ -8,7 +8,10 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_internals/log_message.h"
+#include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -82,26 +85,19 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
   // the pointer values.
   std::set<FormSignature> new_form_signatures;
   for (const FormData& form : forms) {
-    const auto parse_form_start_time = TimeTicks::Now();
+    const auto parse_form_start_time = AutofillTickClock::NowTicks();
     FormStructure* cached_form_structure = nullptr;
     FormStructure* form_structure = nullptr;
     // Try to find the FormStructure that corresponds to |form| if the form
     // contains credit card fields only.
     // |cached_form_structure| may still be nullptr after this call.
-    if (base::FeatureList::IsEnabled(features::kAutofillImportDynamicForms)) {
-      ignore_result(FindCachedForm(form, &cached_form_structure));
-      bool only_contains_credit_card_fields = true;
-      if (cached_form_structure) {
-        for (const FormType& form_type :
-             cached_form_structure->GetFormTypes()) {
-          if (form_type != CREDIT_CARD_FORM) {
-            only_contains_credit_card_fields = false;
-            break;
-          }
+    ignore_result(FindCachedForm(form, &cached_form_structure));
+    if (cached_form_structure) {
+      for (const FormType& form_type : cached_form_structure->GetFormTypes()) {
+        if (form_type != CREDIT_CARD_FORM) {
+          cached_form_structure = nullptr;
+          break;
         }
-      }
-      if (!only_contains_credit_card_fields) {
-        cached_form_structure = nullptr;
       }
     }
 
@@ -109,7 +105,7 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
       continue;
     DCHECK(form_structure);
     new_form_signatures.insert(form_structure->form_signature());
-    AutofillMetrics::LogParseFormTiming(TimeTicks::Now() -
+    AutofillMetrics::LogParseFormTiming(AutofillTickClock::NowTicks() -
                                         parse_form_start_time);
   }
 
@@ -274,12 +270,17 @@ bool AutofillHandler::ParseForm(const FormData& form,
                                 const FormStructure* cached_form,
                                 FormStructure** parsed_form_structure) {
   DCHECK(parsed_form_structure);
-  if (form_structures_.size() >= kAutofillHandlerMaxFormCacheSize)
+  if (form_structures_.size() >= kAutofillHandlerMaxFormCacheSize) {
+    if (log_manager_) {
+      log_manager_->Log() << LoggingScope::kAbortParsing
+                          << LogMessage::kAbortParsingTooManyForms << form;
+    }
     return false;
+  }
 
   auto form_structure = std::make_unique<FormStructure>(form);
   form_structure->ParseFieldTypesFromAutocompleteAttributes();
-  if (!form_structure->ShouldBeParsed())
+  if (!form_structure->ShouldBeParsed(log_manager_))
     return false;
 
   if (cached_form) {
@@ -291,9 +292,8 @@ bool AutofillHandler::ParseForm(const FormData& form,
     if (observer_for_testing_)
       observer_for_testing_->OnFormParsed();
 
-    if (form_structure.get()->value_from_dynamic_change_form()) {
+    if (form_structure.get()->value_from_dynamic_change_form())
       value_from_dynamic_change_form_ = true;
-    }
   }
 
   form_structure->DetermineHeuristicTypes(log_manager_);

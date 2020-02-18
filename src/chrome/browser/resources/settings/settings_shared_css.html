@@ -1,14 +1,20 @@
+<if expr="chromeos">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cros_color_overrides.html">
+</if>
 <link rel="import" href="chrome://resources/cr_elements/search_highlight_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-<link rel="import" href="settings_icons_css.html">
 <link rel="import" href="settings_vars_css.html">
 
 
 <!-- Common styles for Material Design settings. -->
 <dom-module id="settings-shared">
   <template>
-    <style include="settings-icons cr-shared-style search-highlight-style">
+    <style include="cr-shared-style search-highlight-style
+<if expr='chromeos'>
+          cros-color-overrides
+</if>
+    ">
       /* Prevent action-links from being selected to avoid accidental
        * selection when trying to click it. */
       a[is=action-link] {
@@ -135,6 +141,12 @@
         margin-top: 12px;  /* Align cr-button with <h2>. */
       }
 
+      .link-wrapper {
+        align-items: center;
+        display: flex;
+        flex-grow: 1;
+      }
+
       /* A list-frame is an outer container for list-items. It is intended to be
        * outside of a settings-box. A list-frame is likely to follow a
        * settings box. */
@@ -209,6 +221,18 @@
        * setting section (page or subpage). */
       .settings-box {
         @apply --cr-section;
+      }
+
+      .settings-box.no-padding {
+        padding: 0;
+      }
+
+      .settings-box.no-padding .margin-matches-padding {
+        margin: 0 var(--cr-section-padding);
+      }
+
+      .settings-box.no-padding > .link-wrapper {
+        padding: 0 var(--cr-section-padding);
       }
 
       .settings-box.two-line {
@@ -327,6 +351,10 @@
         /* Match cr-button's default height. */
         height: 32px;
         margin: 0 16px;
+      }
+
+      .settings-box.no-padding > .link-wrapper ~ .separator {
+        margin: 0;
       }
 
       .column-header {

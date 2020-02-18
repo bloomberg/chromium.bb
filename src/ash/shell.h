@@ -163,6 +163,7 @@ class ScreenPinningController;
 class ScreenPositionController;
 class ScreenSwitchCheckController;
 class SessionControllerImpl;
+class ShelfConfig;
 class ShelfController;
 class ShelfWindowWatcher;
 class ShellDelegate;
@@ -172,7 +173,6 @@ class ShellState;
 class ShutdownControllerImpl;
 class SmsObserver;
 class SnapController;
-class SplitViewController;
 class StickyKeysController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
@@ -186,7 +186,6 @@ class TrayAction;
 class TrayBluetoothHelper;
 class VideoActivityNotifier;
 class VideoDetector;
-class VpnList;
 class WallpaperControllerImpl;
 class WaylandServerController;
 class WindowCycleController;
@@ -450,14 +449,12 @@ class ASH_EXPORT Shell : public SessionObserver,
   ::wm::ShadowController* shadow_controller() {
     return shadow_controller_.get();
   }
+  ShelfConfig* shelf_config() { return shelf_config_.get(); }
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
   ShellDelegate* shell_delegate() { return shell_delegate_.get(); }
   ShellState* shell_state() { return shell_state_.get(); }
   ShutdownControllerImpl* shutdown_controller() {
     return shutdown_controller_.get();
-  }
-  SplitViewController* split_view_controller() {
-    return split_view_controller_.get();
   }
   StickyKeysController* sticky_keys_controller() {
     return sticky_keys_controller_.get();
@@ -488,7 +485,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
   VideoDetector* video_detector() { return video_detector_.get(); }
-  VpnList* vpn_list() { return vpn_list_.get(); }
   WallpaperControllerImpl* wallpaper_controller() {
     return wallpaper_controller_.get();
   }
@@ -538,16 +534,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Called when the login status changes.
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(LoginStatus status);
-
-  // Notifies observers that split view mode is about to be started (before the
-  // window gets snapped and activated).
-  void NotifySplitViewModeStarting();
-
-  // Notifies observers that split view mode has been started.
-  void NotifySplitViewModeStarted();
-
-  // Notifies observers that split view mode has ended.
-  void NotifySplitViewModeEnded();
 
   // Notifies observers that fullscreen mode has changed for |container|.
   // |container| is always the active desk container.
@@ -672,6 +658,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<NightLightControllerImpl> night_light_controller_;
   std::unique_ptr<PolicyRecommendationRestorer> policy_recommendation_restorer_;
   std::unique_ptr<ScreenSwitchCheckController> screen_switch_check_controller_;
+  std::unique_ptr<ShelfConfig> shelf_config_;
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;
@@ -683,7 +670,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ToastManagerImpl> toast_manager_;
   std::unique_ptr<TouchDevicesController> touch_devices_controller_;
   std::unique_ptr<TrayAction> tray_action_;
-  std::unique_ptr<VpnList> vpn_list_;
   std::unique_ptr<WallpaperControllerImpl> wallpaper_controller_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<OverviewController> overview_controller_;
@@ -776,9 +762,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<HighlighterController> highlighter_controller_;
 
   std::unique_ptr<DockedMagnifierControllerImpl> docked_magnifier_controller_;
-
-  // The split view controller for Chrome OS.
-  std::unique_ptr<SplitViewController> split_view_controller_;
 
   std::unique_ptr<SnapController> snap_controller_;
 

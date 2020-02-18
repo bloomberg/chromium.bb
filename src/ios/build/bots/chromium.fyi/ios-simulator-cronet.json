@@ -3,7 +3,7 @@
     "Cronet tests 64-bit iOS 12 and 13 simulators.",
     "Tests run on iPhone X."
   ],
-  "xcode build version": "11a420a",
+  "xcode build version": "11a1027",
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "disable_brotli_filter=false",
@@ -27,15 +27,15 @@
       "app": "cronet_test",
       "device type": "iPhone X",
       "os": "12.2",
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome"
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
     },
     {
       "app": "cronet_test",
       "device type": "iPhone X",
-      "os": "13.0",
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome"
+      "os": "13.1",
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
     }
   ]
 }

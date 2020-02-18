@@ -64,14 +64,15 @@ bool VerifyInitiatorOrigin(int process_id,
 
 }  // namespace
 
-bool VerifyDownloadUrlParams(int process_id,
+bool VerifyDownloadUrlParams(SiteInstance* site_instance,
                              const FrameHostMsg_DownloadUrl_Params& params,
                              mojo::PendingRemote<blink::mojom::BlobURLToken>*
                                  out_blob_url_token_remote) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(site_instance);
   DCHECK(out_blob_url_token_remote);
+  RenderProcessHost* process = site_instance->GetProcess();
+  int process_id = process->GetID();
 
   // Verify |params.blob_url_token| and populate |out_blob_url_token_remote|.
   if (!VerifyBlobToken(process_id, params.blob_url_token, params.url,
@@ -82,6 +83,11 @@ bool VerifyDownloadUrlParams(int process_id,
   // Verify |params.initiator_origin|.
   if (!VerifyInitiatorOrigin(process_id, params.initiator_origin))
     return false;
+
+  // For large data URLs, they are passed through |params.data_url_blob| and
+  // |params.url| should be empty.
+  if (!params.url.is_valid())
+    return params.data_url_blob.is_valid();
 
   // Verification succeeded.
   return true;
@@ -115,10 +121,9 @@ bool VerifyOpenURLParams(SiteInstance* site_instance,
             process->GetBrowserContext(), std::move(blob_url_token_remote));
   }
 
-  // Verify |params.resource_request_body|.
+  // Verify |params.post_body|.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanReadRequestBody(site_instance,
-                                  params.resource_request_body)) {
+  if (!policy->CanReadRequestBody(site_instance, params.post_body)) {
     bad_message::ReceivedBadMessage(process,
                                     bad_message::ILLEGAL_UPLOAD_PARAMS);
     return false;
@@ -148,7 +153,7 @@ bool VerifyBeginNavigationCommonParams(
     return false;
   }
 
-  // Verify |resource_request_body|.
+  // Verify |post_data|.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanReadRequestBody(site_instance, common_params->post_data)) {
     bad_message::ReceivedBadMessage(process,

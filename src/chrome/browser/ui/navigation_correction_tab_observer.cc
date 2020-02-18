@@ -18,10 +18,20 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 using content::RenderFrameHost;
 using content::WebContents;
+
+namespace {
+
+// Disabled due to a server-side issue with returned results.
+// TODO(https://crbug.com/1030281): Either find an owner to fix this, or remove
+// the feature.
+bool g_allow_enable_corrections_for_testing = false;
+
+}  // namespace
 
 NavigationCorrectionTabObserver::NavigationCorrectionTabObserver(
     WebContents* web_contents)
@@ -38,6 +48,11 @@ NavigationCorrectionTabObserver::NavigationCorrectionTabObserver(
 }
 
 NavigationCorrectionTabObserver::~NavigationCorrectionTabObserver() {}
+
+void NavigationCorrectionTabObserver::SetAllowEnableCorrectionsForTesting(
+    bool allow_enable_corrections_for_testing) {
+  g_allow_enable_corrections_for_testing = allow_enable_corrections_for_testing;
+}
 
 // static
 void NavigationCorrectionTabObserver::RegisterProfilePrefs(
@@ -65,7 +80,7 @@ GURL NavigationCorrectionTabObserver::GetNavigationCorrectionURL() const {
   // Disable navigation corrections when the preference is disabled or when in
   // Incognito mode.
   if (!profile_->GetPrefs()->GetBoolean(prefs::kAlternateErrorPagesEnabled) ||
-      profile_->IsOffTheRecord()) {
+      profile_->IsOffTheRecord() || !g_allow_enable_corrections_for_testing) {
     return GURL();
   }
 
@@ -79,7 +94,7 @@ void NavigationCorrectionTabObserver::OnEnabledChanged() {
 void NavigationCorrectionTabObserver::UpdateNavigationCorrectionInfo(
     RenderFrameHost* render_frame_host) {
   GURL google_base_url(UIThreadSearchTermsData().GoogleBaseURLValue());
-  chrome::mojom::NavigationCorrectorAssociatedPtr client;
+  mojo::AssociatedRemote<chrome::mojom::NavigationCorrector> client;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
   client->SetNavigationCorrectionInfo(
       GetNavigationCorrectionURL(),

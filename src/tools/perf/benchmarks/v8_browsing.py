@@ -2,36 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import re
-
 from core import perf_benchmark
 from telemetry import benchmark
 from telemetry import story
 from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
 import page_sets
-
-
-# Track only the high-level GC stats to reduce the data load on dashboard.
-_IGNORED_V8_STATS_RE = re.compile(
-    r'_(idle_deadline_overrun|percentage_idle|outside_idle)')
-_V8_GC_HIGH_LEVEL_STATS_RE = re.compile(r'^v8-gc-('
-    r'full-mark-compactor_|'
-    r'incremental-finalize_|'
-    r'incremental-step_|'
-    r'latency-mark-compactor_|'
-    r'mark-compactor-|'
-    r'memory-mark-compactor_|'
-    r'scavenger_|'
-    r'total_)')
-
-
-def V8BrowsingShouldAddValue(name):
-  if 'v8-gc' in name:
-    return (_V8_GC_HIGH_LEVEL_STATS_RE.search(name) and
-            not _IGNORED_V8_STATS_RE.search(name))
-  # Allow all other metrics.
-  return True
 
 
 def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
@@ -48,7 +24,10 @@ def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
     'webkit.console',
     # Blink categories.
     'blink_gc',
+    # Needed for the metric reported by page.
+    'blink.user_timing'
   ]
+
   options.ExtendTraceCategoryFilter(categories)
   if enable_runtime_call_stats:
     options.AddTraceCategoryFilter('disabled-by-default-v8.runtime_stats')
@@ -67,6 +46,7 @@ def AugmentOptionsForV8BrowsingMetrics(options, enable_runtime_call_stats=True):
     'expectedQueueingTimeMetric',
     'gcMetric',
     'memoryMetric',
+    'reportedByPageMetric',
   ]
   options.ExtendTimelineBasedMetric(metrics)
   if enable_runtime_call_stats:
@@ -86,11 +66,6 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
     options = timeline_based_measurement.Options()
     AugmentOptionsForV8BrowsingMetrics(options)
     return options
-
-  @classmethod
-  def ShouldAddValue(cls, name, from_first_story_run):
-    del from_first_story_run  # unused
-    return V8BrowsingShouldAddValue(name)
 
 
 @benchmark.Info(

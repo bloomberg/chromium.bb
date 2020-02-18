@@ -10,6 +10,7 @@ import unittest
 from py_utils import cloud_storage
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_finder_exceptions
+from telemetry.internal.results import artifact_logger
 from telemetry.testing import browser_test_context
 from typ import json_results
 from typ import test_case
@@ -33,6 +34,10 @@ class SeriallyExecutedBrowserTestCase(test_case.TestCase):
   def shortName(self):
     """Returns the method name this test runs, without the package prefix."""
     return self._private_methodname
+
+  def set_artifacts(self, artifacts):
+    super(SeriallyExecutedBrowserTestCase, self).set_artifacts(artifacts)
+    artifact_logger.RegisterArtifactImplementation(artifacts)
 
   @classmethod
   def Name(cls):
@@ -192,7 +197,8 @@ class SeriallyExecutedBrowserTestCase(test_case.TestCase):
     are no expectations files passed to typ, then a tuple of
     (set(['PASS']), False) should be returned from this function.
     """
-    return self.__class__._typ_runner.expectations_for(self)
+    exp = self.__class__._typ_runner.expectations_for(self)
+    return exp.results, exp.should_retry_on_failure
 
   @classmethod
   def GetPlatformTags(cls, browser):

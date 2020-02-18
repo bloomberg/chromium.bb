@@ -2,172 +2,174 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unit tests for results_processor.
-
-These tests mostly test that argument parsing and processing work as expected.
-They mock out accesses to the operating system, so no files are actually read
-nor written.
-"""
+"""Unit tests for results_processor methods."""
 
 import datetime
-import posixpath
-import re
+import os
 import unittest
 
 import mock
 
 from core.results_processor import processor
+from core.results_processor import testing
+
+from tracing.value.diagnostics import generic_set
+from tracing.value.diagnostics import date_range
+from tracing.value import histogram_set
 
 
-# To easily mock module level symbols within the processor module.
-def module(symbol):
-  return 'core.results_processor.processor.' + symbol
+class ResultsProcessorUnitTests(unittest.TestCase):
+  def testAddDiagnosticsToHistograms(self):
+    start_ts = 1500000000
+    start_iso = datetime.datetime.utcfromtimestamp(start_ts).isoformat() + 'Z'
 
+    test_result = testing.TestResult(
+        'benchmark/story',
+        output_artifacts={
+            'trace.html': testing.Artifact('/trace.html', 'gs://trace.html'),
+        },
+        start_time=start_iso,
+        tags=['story_tag:test'],
+        result_id='3',
+    )
+    test_result['_histograms'] = histogram_set.HistogramSet()
+    test_result['_histograms'].CreateHistogram('a', 'unitless', [0])
 
-class ProcessOptionsTestCase(unittest.TestCase):
-  def setUp(self):
-    self.legacy_formats = []
-    self.standalone = False
+    processor.AddDiagnosticsToHistograms(
+        test_result, test_suite_start=start_iso, results_label='label',
+        test_path_format='telemetry')
 
-    # Mock os module within results_processor so path manipulations do not
-    # depend on the file system of the test environment.
-    mock_os = mock.patch(module('os')).start()
+    hist = test_result['_histograms'].GetFirstHistogram()
+    self.assertEqual(hist.diagnostics['labels'],
+                     generic_set.GenericSet(['label']))
+    self.assertEqual(hist.diagnostics['benchmarks'],
+                     generic_set.GenericSet(['benchmark']))
+    self.assertEqual(hist.diagnostics['benchmarkStart'],
+                     date_range.DateRange(start_ts * 1e3))
+    self.assertEqual(hist.diagnostics['traceStart'],
+                     date_range.DateRange(start_ts * 1e3))
+    self.assertEqual(hist.diagnostics['stories'],
+                     generic_set.GenericSet(['story']))
+    self.assertEqual(hist.diagnostics['storyTags'],
+                     generic_set.GenericSet(['test']))
+    self.assertEqual(hist.diagnostics['storysetRepeats'],
+                     generic_set.GenericSet([3]))
+    self.assertEqual(hist.diagnostics['traceUrls'],
+                     generic_set.GenericSet(['gs://trace.html']))
 
-    def realpath(path):
-      return posixpath.normpath(posixpath.join(mock_os.getcwd(), path))
+  def testUploadArtifacts(self):
+    test_result = testing.TestResult(
+        'benchmark/story',
+        output_artifacts={
+          'logs': testing.Artifact('/log.log'),
+          'trace.html': testing.Artifact('/trace.html'),
+          'screenshot': testing.Artifact('/screenshot.png'),
+        },
+    )
 
-    def expanduser(path):
-      return re.sub(r'~', '/path/to/home', path)
+    with mock.patch('py_utils.cloud_storage.Insert') as cloud_patch:
+      cloud_patch.return_value = 'gs://url'
+      processor.UploadArtifacts(test_result, 'bucket', 'run1')
+      cloud_patch.assert_has_calls([
+          mock.call('bucket', 'run1/benchmark/story/logs', '/log.log'),
+          mock.call('bucket', 'run1/benchmark/story/trace.html', '/trace.html'),
+          mock.call('bucket', 'run1/benchmark/story/screenshot',
+                    '/screenshot.png'),
+        ],
+        any_order=True,
+      )
 
-    mock_os.getcwd.return_value = '/path/to/curdir'
-    mock_os.path.realpath.side_effect = realpath
-    mock_os.path.expanduser.side_effect = expanduser
-    mock_os.path.dirname.side_effect = posixpath.dirname
-    mock_os.path.join.side_effect = posixpath.join
+    for artifact in test_result['outputArtifacts'].itervalues():
+      self.assertEqual(artifact['remoteUrl'], 'gs://url')
 
-    mock.patch(module('_DefaultOutputDir'),
-               return_value='/path/to/output_dir').start()
+  def testRunIdentifier(self):
+    with mock.patch('random.randint') as randint_patch:
+      randint_patch.return_value = 54321
+      run_identifier = processor.RunIdentifier(
+          results_label='src@abc + 123',
+          test_suite_start='2019-10-01T12:00:00.123456Z')
+    self.assertEqual(run_identifier, 'src_abc_123_20191001T120000_54321')
 
-  def tearDown(self):
-    mock.patch.stopall()
+  def testAggregateTBMv2Traces(self):
+    test_result = testing.TestResult(
+        'benchmark/story2',
+        output_artifacts={
+            'trace/1.json': testing.Artifact(
+                os.path.join('test_run', 'story2', 'trace', '1.json')),
+            'trace/2.txt': testing.Artifact(
+                os.path.join('test_run', 'story2', 'trace', '2.txt')),
+        },
+    )
 
-  def ParseArgs(self, args):
-    parser = processor.ArgumentParser(
-        standalone=self.standalone, legacy_formats=self.legacy_formats)
-    options = parser.parse_args(args)
-    processor.ProcessOptions(options)
-    return options
+    serialize_method = 'tracing.trace_data.trace_data.SerializeAsHtml'
+    with mock.patch(serialize_method) as mock_serialize:
+      processor.AggregateTBMv2Traces(test_result)
 
+    self.assertEqual(mock_serialize.call_count, 1)
+    trace_files, file_path = mock_serialize.call_args[0][:2]
+    self.assertEqual(
+        set(trace_files),
+        set([
+            os.path.join('test_run', 'story2', 'trace', '1.json'),
+            os.path.join('test_run', 'story2', 'trace', '2.txt'),
+        ]),
+    )
+    self.assertEqual(
+        file_path,
+        os.path.join('test_run', 'story2', 'trace', 'trace.html'),
+    )
 
-class TestProcessOptions(ProcessOptionsTestCase):
-  def testOutputDir_default(self):
-    options = self.ParseArgs([])
-    self.assertEqual(options.output_dir, '/path/to/output_dir')
+    artifacts = test_result['outputArtifacts']
+    self.assertEqual(len(artifacts), 1)
+    self.assertEqual(artifacts.keys()[0], 'trace.html')
 
-  def testOutputDir_homeDir(self):
-    options = self.ParseArgs(['--output-dir', '~/my_outputs'])
-    self.assertEqual(options.output_dir, '/path/to/home/my_outputs')
+  def testMeasurementToHistogram(self):
+    hist = processor.MeasurementToHistogram('a', {
+      'unit': 'sizeInBytes',
+      'samples': [1, 2, 3],
+      'description': 'desc',
+    })
 
-  def testOutputDir_relPath(self):
-    options = self.ParseArgs(['--output-dir', 'my_outputs'])
-    self.assertEqual(options.output_dir, '/path/to/curdir/my_outputs')
+    self.assertEqual(hist.name, 'a')
+    self.assertEqual(hist.unit, 'sizeInBytes')
+    self.assertEqual(hist.sample_values, [1, 2, 3])
+    self.assertEqual(hist.description, 'desc')
 
-  def testOutputDir_absPath(self):
-    options = self.ParseArgs(['--output-dir', '/path/to/somewhere/else'])
-    self.assertEqual(options.output_dir, '/path/to/somewhere/else')
+  def testMeasurementToHistogramLegacyUnits(self):
+    hist = processor.MeasurementToHistogram('a', {
+      'unit': 'seconds',
+      'samples': [1, 2, 3],
+    })
 
-  @mock.patch(module('datetime'))
-  def testIntermediateDir_default(self, mock_datetime):
-    mock_datetime.datetime.utcnow.return_value = (
-        datetime.datetime(2015, 10, 21, 7, 28))
-    options = self.ParseArgs(['--output-dir', '/output'])
-    self.assertEqual(options.intermediate_dir,
-                     '/output/artifacts/run_20151021T072800Z')
+    self.assertEqual(hist.name, 'a')
+    self.assertEqual(hist.unit, 'ms_smallerIsBetter')
+    self.assertEqual(hist.sample_values, [1000, 2000, 3000])
 
-  @mock.patch(module('datetime'))
-  def testIntermediateDir_withResultsLabel(self, mock_datetime):
-    mock_datetime.datetime.utcnow.return_value = (
-        datetime.datetime(2015, 10, 21, 7, 28))
-    options = self.ParseArgs(
-        ['--output-dir', '/output', '--results-label', 'test my feature'])
-    self.assertEqual(options.intermediate_dir,
-                     '/output/artifacts/test_my_feature_20151021T072800Z')
+  def testMeasurementToHistogramUnknownUnits(self):
+    with self.assertRaises(ValueError):
+      processor.MeasurementToHistogram('a', {'unit': 'yards', 'samples': [9]})
 
-  def testUploadBucket_noUploadResults(self):
-    options = self.ParseArgs([])
-    self.assertFalse(options.upload_results)
-    self.assertIsNone(options.upload_bucket)
+  def testGetTraceUrlRemote(self):
+    test_result = testing.TestResult(
+        'benchmark/story',
+        output_artifacts={
+            'trace.html': testing.Artifact('trace.html', 'gs://trace.html')
+        },
+    )
+    url = processor.GetTraceUrl(test_result)
+    self.assertEqual(url, 'gs://trace.html')
 
-  @mock.patch(module('cloud_storage'))
-  def testUploadBucket_uploadResultsToDefaultBucket(self, mock_storage):
-    mock_storage.BUCKET_ALIASES = {'output': 'default-bucket'}
-    options = self.ParseArgs(['--upload-results'])
-    self.assertTrue(options.upload_results)
-    self.assertEqual(options.upload_bucket, 'default-bucket')
+  def testGetTraceUrlLocal(self):
+    test_result = testing.TestResult(
+        'benchmark/story',
+        output_artifacts={
+            'trace.html': testing.Artifact('trace.html')
+        },
+    )
+    url = processor.GetTraceUrl(test_result)
+    self.assertEqual(url, 'file://trace.html')
 
-  @mock.patch(module('cloud_storage'))
-  def testUploadBucket_uploadResultsToBucket(self, mock_storage):
-    mock_storage.BUCKET_ALIASES = {'output': 'default-bucket'}
-    options = self.ParseArgs(
-        ['--upload-results', '--upload-bucket', 'my_bucket'])
-    self.assertTrue(options.upload_results)
-    self.assertEqual(options.upload_bucket, 'my_bucket')
-
-  @mock.patch(module('cloud_storage'))
-  def testUploadBucket_uploadResultsToAlias(self, mock_storage):
-    mock_storage.BUCKET_ALIASES = {
-        'output': 'default-bucket', 'special': 'some-special-bucket'}
-    options = self.ParseArgs(
-        ['--upload-results', '--upload-bucket', 'special'])
-    self.assertTrue(options.upload_results)
-    self.assertEqual(options.upload_bucket, 'some-special-bucket')
-
-  def testDefaultOutputFormat(self):
-    self.legacy_formats = ['html']
-    options = self.ParseArgs([])
-    self.assertEqual(options.output_formats, [])
-    self.assertEqual(options.legacy_output_formats, ['html'])
-
-  def testUnkownOutputFormatRaises(self):
-    with self.assertRaises(SystemExit):
-      self.ParseArgs(['--output-format', 'unknown'])
-
-  @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
-  def testOutputFormatsSplit(self):
-    self.legacy_formats = ['old-format']
-    options = self.ParseArgs(
-        ['--output-format', 'new-format', '--output-format', 'old-format'])
-    self.assertEqual(options.output_formats, ['new-format'])
-    self.assertEqual(options.legacy_output_formats, ['old-format'])
-
-  @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
-  def testNoDuplicateOutputFormats(self):
-    self.legacy_formats = ['old-format']
-    options = self.ParseArgs(
-        ['--output-format', 'new-format', '--output-format', 'old-format',
-         '--output-format', 'new-format', '--output-format', 'old-format'])
-    self.assertEqual(options.output_formats, ['new-format'])
-    self.assertEqual(options.legacy_output_formats, ['old-format'])
-
-
-class StandaloneTestProcessOptions(ProcessOptionsTestCase):
-  def setUp(self):
-    super(StandaloneTestProcessOptions, self).setUp()
-    self.standalone = True
-
-  def testOutputFormatRequired(self):
-    with self.assertRaises(SystemExit):
-      self.ParseArgs([])
-
-  @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
-  def testIntermediateDirRequired(self):
-    with self.assertRaises(SystemExit):
-      self.ParseArgs(['--output-format', 'new-format'])
-
-  @mock.patch.dict(module('SUPPORTED_FORMATS'), {'new-format': None})
-  def testSuccessful(self):
-    options = self.ParseArgs(
-        ['--output-format', 'new-format', '--intermediate-dir', 'some_dir'])
-    self.assertEqual(options.output_formats, ['new-format'])
-    self.assertEqual(options.intermediate_dir, '/path/to/curdir/some_dir')
-    self.assertEqual(options.output_dir, '/path/to/output_dir')
+  def testGetTraceUrlEmpty(self):
+    test_result = testing.TestResult('benchmark/story')
+    url = processor.GetTraceUrl(test_result)
+    self.assertIsNone(url)

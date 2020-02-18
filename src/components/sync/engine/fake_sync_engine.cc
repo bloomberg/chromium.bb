@@ -4,17 +4,17 @@
 
 #include "components/sync/engine/fake_sync_engine.h"
 
+#include <utility>
+
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/model/model_type_controller_delegate.h"
 
 namespace syncer {
-namespace {
 
-const char kTestCacheGuid[] = "test-guid";
-const char kTestBirthday[] = "1";
-
-}  // namespace
+constexpr char FakeSyncEngine::kTestCacheGuid[];
+constexpr char FakeSyncEngine::kTestBirthday[];
+constexpr char FakeSyncEngine::kTestKeystoreKey[];
 
 FakeSyncEngine::FakeSyncEngine() {}
 FakeSyncEngine::~FakeSyncEngine() {}
@@ -22,10 +22,10 @@ FakeSyncEngine::~FakeSyncEngine() {}
 void FakeSyncEngine::Initialize(InitParams params) {
   bool success = !fail_initial_download_;
   initialized_ = success;
-  params.host->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
-                                   WeakHandle<DataTypeDebugInfoListener>(),
-                                   kTestCacheGuid, kTestBirthday,
-                                   /*bag_of_chips=*/"", success);
+  params.host->OnEngineInitialized(
+      ModelTypeSet(), WeakHandle<JsBackend>(),
+      WeakHandle<DataTypeDebugInfoListener>(), kTestCacheGuid, kTestBirthday,
+      /*bag_of_chips=*/"", kTestKeystoreKey, success);
 }
 
 bool FakeSyncEngine::IsInitialized() const {
@@ -45,6 +45,12 @@ void FakeSyncEngine::StartSyncingWithServer() {}
 void FakeSyncEngine::SetEncryptionPassphrase(const std::string& passphrase) {}
 
 void FakeSyncEngine::SetDecryptionPassphrase(const std::string& passphrase) {}
+
+void FakeSyncEngine::AddTrustedVaultDecryptionKeys(
+    const std::vector<std::string>& keys,
+    base::OnceClosure done_cb) {
+  std::move(done_cb).Run();
+}
 
 void FakeSyncEngine::StopSyncingForShutdown() {}
 
@@ -107,5 +113,7 @@ void FakeSyncEngine::OnCookieJarChanged(bool account_mismatch,
 }
 
 void FakeSyncEngine::SetInvalidationsForSessionsEnabled(bool enabled) {}
+
+void FakeSyncEngine::GetNigoriNodeForDebugging(AllNodesCallback callback) {}
 
 }  // namespace syncer

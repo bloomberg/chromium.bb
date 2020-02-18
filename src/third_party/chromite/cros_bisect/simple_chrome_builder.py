@@ -103,9 +103,8 @@ ChromeOS (board specified.) Also, it can deploy the result to ChromeOS DUT
                       self.chromium_dir)
 
     osutils.SafeMakedirs(self.chromium_dir)
-    cros_build_lib.RunCommand(['fetch', '--nohooks', 'chromium'],
-                              cwd=self.chromium_dir,
-                              log_output=True)
+    cros_build_lib.run(['fetch', '--nohooks', 'chromium'],
+                       cwd=self.chromium_dir, log_output=True)
     # 'managed' should be set to False. Otherwise, 'gclient sync' will call
     # 'git pull' to ruin bisecting point.
     gclient.WriteConfigFile(self.gclient, self.chromium_dir, True, None,

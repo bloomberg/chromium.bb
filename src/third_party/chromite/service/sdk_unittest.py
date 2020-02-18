@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.lib import chroot_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.service import sdk
@@ -74,14 +75,25 @@ class UpdateArgumentsTest(cros_test_lib.TestCase):
     instance = sdk.UpdateArguments(**kwargs)
     return instance.GetArgList()
 
-  def testGetArgList(self):
-    """Test the GetArgList method."""
+  def testBuildSource(self):
+    """Test the build_source argument."""
     self.assertIn('--nousepkg', self._GetArgList(build_source=True))
 
+  def testNoBuildSource(self):
+    """Test using binpkgs."""
+    self.assertNotIn('--nousepkg', self._GetArgList(build_source=False))
+
+  def testToolchainTargets(self):
+    """Test the toolchain boards argument."""
     expected = ['--toolchain_boards', 'board1,board2']
     result = self._GetArgList(toolchain_targets=['board1', 'board2'])
     for arg in expected:
       self.assertIn(arg, result)
+
+  def testNoToolchainTargets(self):
+    """Test no toolchain boards argument."""
+    self.assertIn('--skip_toolchain_update',
+                  self._GetArgList(toolchain_targets=None))
 
 
 class CreateTest(cros_test_lib.RunCommandTempDirTestCase):
@@ -110,6 +122,27 @@ class CreateTest(cros_test_lib.RunCommandTempDirTestCase):
     arguments = sdk.CreateArguments()
     with self.assertRaises(cros_build_lib.DieSystemExit):
       sdk.Create(arguments)
+
+
+class DeleteTest(cros_test_lib.RunCommandTestCase):
+  """Delete function tests."""
+
+  def testDeleteNoChroot(self):
+    """Test no chroot provided."""
+    sdk.Delete()
+    # cros clean sysroots command.
+    self.assertCommandContains(['clean', '--sysroots'])
+    # cros_sdk --delete.
+    self.assertCommandContains(['--delete'])
+    # Double whammy: no chroot specified for cros_sdk --delete, and no
+    # cros clean --chroot.
+    self.assertCommandContains(['--chroot'], expected=False)
+
+  def testDeleteWithChroot(self):
+    """Test with chroot provided."""
+    path = '/some/path'
+    sdk.Delete(chroot=chroot_lib.Chroot(path))
+    self.assertCommandContains(['--delete', '--chroot', path])
 
 
 class UpdateTest(cros_test_lib.RunCommandTestCase):

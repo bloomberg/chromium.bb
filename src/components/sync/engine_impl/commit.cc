@@ -51,8 +51,7 @@ Commit::~Commit() {
 }
 
 // static
-std::unique_ptr<Commit> Commit::Init(ModelTypeSet requested_types,
-                                     ModelTypeSet enabled_types,
+std::unique_ptr<Commit> Commit::Init(ModelTypeSet enabled_types,
                                      size_t max_entries,
                                      const std::string& account_name,
                                      const std::string& cache_guid,
@@ -61,10 +60,8 @@ std::unique_ptr<Commit> Commit::Init(ModelTypeSet requested_types,
                                      CommitProcessor* commit_processor,
                                      ExtensionsActivity* extensions_activity) {
   // Gather per-type contributions.
-  ContributionMap contributions;
-  commit_processor->GatherCommitContributions(requested_types, max_entries,
-                                              cookie_jar_mismatch,
-                                              cookie_jar_empty, &contributions);
+  ContributionMap contributions = commit_processor->GatherCommitContributions(
+      max_entries, cookie_jar_mismatch, cookie_jar_empty);
 
   // Give up if no one had anything to commit.
   if (contributions.empty())
@@ -115,10 +112,8 @@ SyncerError Commit::PostAndProcessResponse(
     ModelType request_type = it->first;
     request_types.Put(request_type);
     UMA_HISTOGRAM_ENUMERATION("Sync.PostedDataTypeCommitRequest",
-                              ModelTypeToHistogramInt(request_type),
-                              static_cast<int>(ModelType::NUM_ENTRIES));
+                              ModelTypeHistogramValue(request_type));
   }
-  cycle->mutable_status_controller()->set_commit_request_types(request_types);
 
   if (cycle->context()->debug_info_getter()) {
     sync_pb::DebugInfo* debug_info = message_.mutable_debug_info();

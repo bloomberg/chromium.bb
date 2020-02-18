@@ -13,6 +13,7 @@
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/animation/scroll_offset_animation_curve_factory.h"
 #include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/test/animation_test_common.h"
@@ -266,9 +267,8 @@ TEST_F(ElementAnimationsTest,
 
   // Animation with initial value set.
   std::unique_ptr<ScrollOffsetAnimationCurve> curve_fixed(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
   curve_fixed->SetInitialValue(initial_value);
   const int animation1_id = 1;
   std::unique_ptr<KeyframeModel> animation_fixed(KeyframeModel::Create(
@@ -280,12 +280,12 @@ TEST_F(ElementAnimationsTest,
                                          ->curve()
                                          ->ToScrollOffsetAnimationCurve()
                                          ->GetValue(base::TimeDelta()));
+  animation_->RemoveKeyframeModel(animation1_id);
 
   // Animation without initial value set.
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
   const int animation2_id = 2;
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
       std::move(curve), animation2_id, 1, TargetProperty::SCROLL_OFFSET));
@@ -297,6 +297,7 @@ TEST_F(ElementAnimationsTest,
                           ->curve()
                           ->ToScrollOffsetAnimationCurve()
                           ->GetValue(base::TimeDelta()));
+  animation_->RemoveKeyframeModel(animation2_id);
 }
 
 class TestAnimationDelegateThatDestroysAnimation
@@ -367,7 +368,7 @@ TEST_F(ElementAnimationsTest, AddedAnimationIsDestroyed) {
   EXPECT_EQ(AnimationEvent::STARTED, events->events_[0].type);
 
   // The actual detachment happens here, inside the callback
-  animation2->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation2->DispatchAndDelegateAnimationEvent(events->events_[0]);
   EXPECT_TRUE(delegate.started());
 }
 
@@ -399,7 +400,7 @@ TEST_F(ElementAnimationsTest, DoNotClobberStartTimes) {
 
   // Synchronize the start times.
   EXPECT_EQ(1u, events->events_.size());
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   EXPECT_EQ(animation_->keyframe_effect()
                 ->GetKeyframeModelById(keyframe_model_id)
                 ->start_time(),
@@ -446,7 +447,7 @@ TEST_F(ElementAnimationsTest, UseSpecifiedStartTimes) {
 
   // Synchronize the start times.
   EXPECT_EQ(1u, events->events_.size());
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
 
   EXPECT_EQ(start_time, animation_->keyframe_effect()
                             ->GetKeyframeModelById(keyframe_model_id)
@@ -503,7 +504,7 @@ TEST_F(ElementAnimationsTest, Activation) {
   animation_impl_->Tick(kInitialTickTime);
   animation_impl_->UpdateState(true, events.get());
   EXPECT_EQ(1u, events->events_.size());
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
 
   EXPECT_EQ(1u, host->ticking_animations_for_testing().size());
   EXPECT_EQ(1u, host_impl->ticking_animations_for_testing().size());
@@ -530,8 +531,7 @@ TEST_F(ElementAnimationsTest, Activation) {
   EXPECT_EQ(0u, host_impl->ticking_animations_for_testing().size());
 
   EXPECT_EQ(1u, events->events_.size());
-  animation_->keyframe_effect()->NotifyKeyframeModelFinished(
-      events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   animation_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1500));
   animation_->UpdateState(true, nullptr);
 
@@ -585,7 +585,7 @@ TEST_F(ElementAnimationsTest, SyncPause) {
 
   animation_->Tick(time);
   animation_->UpdateState(true, nullptr);
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
 
   EXPECT_EQ(KeyframeModel::RUNNING,
             animation_impl_->keyframe_effect()
@@ -662,7 +662,7 @@ TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
   EXPECT_EQ(AnimationEvent::STARTED, events->events_[0].type);
 
   // Notify main thread animations that the animation has started.
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
 
   // Complete animation on impl thread.
   events = CreateEventsForTesting();
@@ -671,8 +671,7 @@ TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
   EXPECT_EQ(1u, events->events_.size());
   EXPECT_EQ(AnimationEvent::FINISHED, events->events_[0].type);
 
-  animation_->keyframe_effect()->NotifyKeyframeModelFinished(
-      events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
 
   animation_->Tick(kInitialTickTime + TimeDelta::FromSeconds(2));
   animation_->UpdateState(true, nullptr);
@@ -713,7 +712,7 @@ TEST_F(ElementAnimationsTest, AnimationsAreDeleted) {
   // There should be a STARTED event for the animation.
   EXPECT_EQ(1u, events->events_.size());
   EXPECT_EQ(AnimationEvent::STARTED, events->events_[0].type);
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
 
   animation_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   animation_->UpdateState(true, nullptr);
@@ -735,8 +734,7 @@ TEST_F(ElementAnimationsTest, AnimationsAreDeleted) {
   EXPECT_TRUE(animation_->GetKeyframeModel(TargetProperty::OPACITY));
   EXPECT_TRUE(animation_impl_->GetKeyframeModel(TargetProperty::OPACITY));
 
-  animation_->keyframe_effect()->NotifyKeyframeModelFinished(
-      events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
 
   animation_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(3000));
   animation_->UpdateState(true, nullptr);
@@ -892,9 +890,8 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
 
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
       std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
@@ -926,7 +923,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   EXPECT_EQ(initial_value,
             client_impl_.GetScrollOffset(element_id_, ElementListType::ACTIVE));
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   animation_->Tick(kInitialTickTime + duration / 2);
   animation_->UpdateState(true, nullptr);
   EXPECT_TRUE(animation_->keyframe_effect()->HasTickingKeyframeModel());
@@ -963,9 +960,8 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionOnImplOnly) {
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
   curve->SetInitialValue(initial_value);
   double duration_in_seconds = curve->Duration().InSecondsF();
 
@@ -1065,9 +1061,8 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
   gfx::ScrollOffset initial_value(500.f, 100.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
 
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
       std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
@@ -1107,7 +1102,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
   animation_impl_->UpdateState(true, events.get());
   DCHECK_EQ(1UL, events->events_.size());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   animation_->Tick(kInitialTickTime + duration / 2);
   animation_->UpdateState(true, nullptr);
   EXPECT_TRUE(animation_->keyframe_effect()->HasTickingKeyframeModel());
@@ -1144,9 +1139,8 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   // First test the 1-argument version of RemoveKeyframeModel.
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
 
   int keyframe_model_id = 1;
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
@@ -1175,9 +1169,8 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
                    ->scroll_offset_animation_was_interrupted());
 
   // Now, test the 2-argument version of RemoveKeyframeModel.
-  curve = ScrollOffsetAnimationCurve::Create(
-      target_value, CubicBezierTimingFunction::CreatePreset(
-                        CubicBezierTimingFunction::EaseType::EASE_IN_OUT));
+  curve = ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+      target_value);
   keyframe_model = KeyframeModel::Create(std::move(curve), keyframe_model_id, 0,
                                          TargetProperty::SCROLL_OFFSET);
   keyframe_model->set_needs_synchronized_start_time(true);
@@ -1268,9 +1261,8 @@ TEST_F(ElementAnimationsTest,
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
   curve->SetInitialValue(initial_value);
   TimeDelta duration = curve->Duration();
   std::unique_ptr<KeyframeModel> to_add(KeyframeModel::Create(
@@ -1331,7 +1323,7 @@ TEST_F(ElementAnimationsTest, SpecifiedStartTimesAreSentToMainThreadDelegate) {
 
   // Synchronize the start times.
   EXPECT_EQ(1u, events->events_.size());
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
 
   // Validate start time on the main thread delegate.
   EXPECT_EQ(start_time, delegate.start_time());
@@ -1350,6 +1342,7 @@ TEST_F(ElementAnimationsTest,
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
       1, TargetProperty::OPACITY));
   to_add->set_needs_synchronized_start_time(true);
+  int keyframe_model_id = to_add->id();
 
   // We should pause at the first keyframe indefinitely waiting for that
   // animation to start.
@@ -1368,9 +1361,12 @@ TEST_F(ElementAnimationsTest,
   EXPECT_EQ(0.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
 
   // Send the synchronized start time.
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(AnimationEvent(
-      AnimationEvent::STARTED, ElementId(), 1, TargetProperty::OPACITY,
-      kInitialTickTime + TimeDelta::FromMilliseconds(2000)));
+  animation_->DispatchAndDelegateAnimationEvent(
+      AnimationEvent(AnimationEvent::STARTED,
+                     {animation_->animation_timeline()->id(), animation_->id(),
+                      animation_->keyframe_effect()->id(), keyframe_model_id},
+                     1, TargetProperty::OPACITY,
+                     kInitialTickTime + TimeDelta::FromMilliseconds(2000)));
   animation_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(5000));
   animation_->UpdateState(true, events.get());
   EXPECT_EQ(1.f, client_.GetOpacity(element_id_, ElementListType::ACTIVE));
@@ -2015,7 +2011,7 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
       KeyframeModel::WAITING_FOR_DELETION,
       animation_impl_->GetKeyframeModel(TargetProperty::OPACITY)->run_state());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelAborted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   EXPECT_EQ(KeyframeModel::ABORTED,
             animation_->GetKeyframeModel(TargetProperty::OPACITY)->run_state());
   EXPECT_TRUE(delegate.aborted());
@@ -2052,9 +2048,8 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
   curve->SetInitialValue(initial_value);
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
       std::move(curve), keyframe_model_id, 0, TargetProperty::SCROLL_OFFSET));
@@ -2091,8 +2086,7 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
             animation_impl_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET));
 
   // MT receives the event to take over.
-  animation_->keyframe_effect()->NotifyKeyframeModelTakeover(
-      events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   EXPECT_TRUE(delegate.takeover());
 
   // SingleKeyframeEffectAnimation::NotifyAnimationTakeover requests
@@ -2678,7 +2672,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime);
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   // Finish the animation.
@@ -2751,7 +2745,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   animation_->RemoveKeyframeModel(keyframe_model_id);
@@ -2804,7 +2798,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   animation_impl_->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
@@ -2821,7 +2815,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(4000));
   animation_impl_->UpdateState(true, events.get());
 
-  element_animations_->NotifyAnimationAborted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   EXPECT_FALSE(client_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_.GetTransformIsCurrentlyAnimating(
@@ -2905,7 +2899,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime);
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   // Finish the animation.
@@ -2967,7 +2961,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   animation_->RemoveKeyframeModel(keyframe_model_id);
@@ -3019,7 +3013,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   animation_impl_->AbortKeyframeModelsWithProperty(TargetProperty::OPACITY,
@@ -3036,7 +3030,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(4000));
   animation_impl_->UpdateState(true, events.get());
 
-  element_animations_->NotifyAnimationAborted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   EXPECT_FALSE(client_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
@@ -3119,7 +3113,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime);
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   // Finish the animation.
@@ -3181,7 +3175,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   animation_->RemoveKeyframeModel(keyframe_model_id);
@@ -3233,7 +3227,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   animation_impl_->AbortKeyframeModelsWithProperty(TargetProperty::FILTER,
@@ -3250,7 +3244,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(4000));
   animation_impl_->UpdateState(true, events.get());
 
-  element_animations_->NotifyAnimationAborted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   EXPECT_FALSE(client_.GetHasPotentialFilterAnimation(element_id_,
                                                       ElementListType::ACTIVE));
   EXPECT_FALSE(client_.GetFilterIsCurrentlyAnimating(element_id_,
@@ -3334,7 +3328,7 @@ TEST_F(ElementAnimationsTest,
   animation_impl_->Tick(kInitialTickTime);
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   // Finish the animation.
@@ -3396,7 +3390,7 @@ TEST_F(ElementAnimationsTest,
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   animation_->RemoveKeyframeModel(keyframe_model_id);
@@ -3448,7 +3442,7 @@ TEST_F(ElementAnimationsTest,
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   animation_impl_->UpdateState(true, events.get());
 
-  animation_->keyframe_effect()->NotifyKeyframeModelStarted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   events->events_.clear();
 
   animation_impl_->AbortKeyframeModelsWithProperty(
@@ -3465,7 +3459,7 @@ TEST_F(ElementAnimationsTest,
   animation_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(4000));
   animation_impl_->UpdateState(true, events.get());
 
-  element_animations_->NotifyAnimationAborted(events->events_[0]);
+  animation_->DispatchAndDelegateAnimationEvent(events->events_[0]);
   EXPECT_FALSE(client_.GetHasPotentialBackdropFilterAnimation(
       element_id_, ElementListType::ACTIVE));
   EXPECT_FALSE(client_.GetBackdropFilterIsCurrentlyAnimating(

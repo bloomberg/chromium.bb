@@ -31,12 +31,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.telephony.TelephonyManager;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.compat.ApiHelperForM;
 
 import java.io.IOException;
@@ -915,7 +916,13 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
      */
     public void register() {
         assertOnThread();
-        if (mRegistered) return;
+        if (mRegistered) {
+            // Even when registered previously, Android may not send callbacks about change of
+            // network state when the device screen is turned on from off. Get the most up-to-date
+            // network state. See https://crbug.com/1007998 for more details.
+            connectionTypeChanged();
+            return;
+        }
 
         if (mShouldSignalObserver) {
             connectionTypeChanged();

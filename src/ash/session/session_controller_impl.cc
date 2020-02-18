@@ -352,16 +352,15 @@ void SessionControllerImpl::SetUserSessionOrder(
     // most-recently active user with a loaded PrefService.
     PrefService* user_pref_service =
         GetUserPrefServiceForUser(user_sessions_[0]->user_info.account_id);
-    if (user_pref_service)
+    if (user_pref_service && last_active_user_prefs_ != user_pref_service) {
       last_active_user_prefs_ = user_pref_service;
+      MaybeNotifyOnActiveUserPrefServiceChanged();
+    }
 
     for (auto& observer : observers_) {
       observer.OnActiveUserSessionChanged(
           user_sessions_[0]->user_info.account_id);
     }
-
-    if (user_pref_service)
-      MaybeNotifyOnActiveUserPrefServiceChanged();
 
     UpdateLoginStatus();
   }
@@ -392,7 +391,6 @@ void SessionControllerImpl::StartLock(StartLockCallback callback) {
   lock_state_controller->SetLockScreenDisplayedCallback(
       base::BindOnce(&SessionControllerImpl::OnLockAnimationFinished,
                      weak_ptr_factory_.GetWeakPtr()));
-  lock_state_controller->OnStartingLock();
 }
 
 void SessionControllerImpl::NotifyChromeLockAnimationsComplete() {
@@ -508,15 +506,17 @@ void SessionControllerImpl::SetSessionState(SessionState state) {
 }
 
 void SessionControllerImpl::AddUserSession(const UserSession& user_session) {
-  const AccountId account_id(user_session.user_info.account_id);
-
   if (primary_session_id_ == 0u)
     primary_session_id_ = user_session.session_id;
 
   user_sessions_.push_back(std::make_unique<UserSession>(user_session));
 
-  OnProfilePrefServiceInitialized(account_id,
-                                  GetUserPrefServiceForUser(account_id));
+  const AccountId account_id(user_session.user_info.account_id);
+  PrefService* user_prefs = GetUserPrefServiceForUser(account_id);
+  // |user_prefs| could be null in tests.
+  if (user_prefs)
+    OnProfilePrefServiceInitialized(account_id, user_prefs);
+
   UpdateLoginStatus();
   for (auto& observer : observers_)
     observer.OnUserSessionAdded(account_id);
@@ -567,10 +567,12 @@ LoginStatus SessionControllerImpl::CalculateLoginStatusForActiveSession()
     case user_manager::USER_TYPE_CHILD:
       return LoginStatus::SUPERVISED;
     case user_manager::USER_TYPE_ARC_KIOSK_APP:
-      return LoginStatus::ARC_KIOSK_APP;
+      return LoginStatus::KIOSK_APP;
     case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
       // TODO: There is no LoginStatus for this.
       return LoginStatus::USER;
+    case user_manager::USER_TYPE_WEB_KIOSK_APP:
+      return LoginStatus::KIOSK_APP;
     case user_manager::NUM_USER_TYPES:
       // Avoid having a "default" case so the compiler catches new enum values.
       NOTREACHED();

@@ -102,7 +102,7 @@ ValueWrapperSyntheticModuleScript::CreateWithError(
   settings_object->GetModuleRecordResolver()->RegisterModuleScript(
       value_wrapper_module_script);
   value_wrapper_module_script->SetParseErrorAndClearRecord(
-      ScriptValue(settings_object->GetScriptState(), error));
+      ScriptValue(settings_object->GetScriptState()->GetIsolate(), error));
   // Step 7. "Return script."
   // [spec text]
   return value_wrapper_module_script;
@@ -139,9 +139,15 @@ v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
       value_wrapper_synthetic_module_script =
           static_cast<const ValueWrapperSyntheticModuleScript*>(
               module_record_resolver->GetModuleScriptFromModuleRecord(module));
-  module->SetSyntheticModuleExport(
-      V8String(isolate, "default"),
+  v8::TryCatch try_catch(isolate);
+  v8::Maybe<bool> result = module->SetSyntheticModuleExport(
+      isolate, V8String(isolate, "default"),
       value_wrapper_synthetic_module_script->export_value_.NewLocal(isolate));
+
+  // Setting the default export should never fail.
+  DCHECK(!try_catch.HasCaught());
+  DCHECK(!result.IsNothing() && result.FromJust());
+
   return v8::Undefined(reinterpret_cast<v8::Isolate*>(isolate));
 }
 

@@ -20,7 +20,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/browser_task_environment.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/base/test_completion_callback.h"
@@ -71,22 +71,23 @@ class MockHTTPServer {
   std::map<GURL, Response> responses_;
 };
 
-// A URLLoaderFactory that returns a mocked response provided by MockHTTPServer.
-class MockNetworkURLLoaderFactory final
-    : public network::mojom::URLLoaderFactory {
+// Mocks network activity. Used by URLLoaderInterceptor.
+class MockNetwork {
  public:
-  explicit MockNetworkURLLoaderFactory(MockHTTPServer* mock_server)
+  explicit MockNetwork(MockHTTPServer* mock_server)
       : mock_server_(mock_server) {}
 
-  // network::mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  MockNetwork(const MockNetwork&) = delete;
+  MockNetwork& operator=(const MockNetwork&) = delete;
+
+  void set_to_access_network(bool access_network) {
+    access_network_ = access_network;
+  }
+
+  network::ResourceRequest last_request() const { return last_request_; }
+
+  bool InterceptNetworkRequest(URLLoaderInterceptor::RequestParams* params) {
+    const network::ResourceRequest& url_request = params->url_request;
     last_request_ = url_request;
     const MockHTTPServer::Response& response =
         mock_server_->Get(url_request.url);
@@ -95,56 +96,46 @@ class MockNetworkURLLoaderFactory final
     net::HttpResponseInfo info;
     info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(response.headers));
-    network::ResourceResponseHead response_head;
-    response_head.headers = info.headers;
-    response_head.headers->GetMimeType(&response_head.mime_type);
-    response_head.network_accessed = access_network_;
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->headers = info.headers;
+    response_head->headers->GetMimeType(&response_head->mime_type);
+    response_head->network_accessed = access_network_;
     if (response.has_certificate_error) {
-      response_head.cert_status = net::CERT_STATUS_DATE_INVALID;
+      response_head->cert_status = net::CERT_STATUS_DATE_INVALID;
     }
 
-    if (response_head.headers->response_code() == 307) {
-      client->OnReceiveRedirect(net::RedirectInfo(), response_head);
-      return;
+    mojo::Remote<network::mojom::URLLoaderClient>& client = params->client;
+    if (response_head->headers->response_code() == 307) {
+      client->OnReceiveRedirect(net::RedirectInfo(), std::move(response_head));
+      return true;
     }
-    client->OnReceiveResponse(response_head);
+    client->OnReceiveResponse(std::move(response_head));
 
     uint32_t bytes_written = response.body.size();
     mojo::ScopedDataPipeConsumerHandle consumer;
     mojo::ScopedDataPipeProducerHandle producer;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              mojo::CreateDataPipe(nullptr, &producer, &consumer));
+    CHECK_EQ(MOJO_RESULT_OK,
+             mojo::CreateDataPipe(nullptr, &producer, &consumer));
     MojoResult result = producer->WriteData(
         response.body.data(), &bytes_written, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-    ASSERT_EQ(MOJO_RESULT_OK, result);
+    CHECK_EQ(MOJO_RESULT_OK, result);
     client->OnStartLoadingResponseBody(std::move(consumer));
 
     network::URLLoaderCompletionStatus status;
     status.error_code = net::OK;
     client->OnComplete(status);
-  }
-
-  void set_to_access_network(bool access_network) {
-    access_network_ = access_network;
-  }
-
-  network::ResourceRequest last_request() const { return last_request_; }
-
-  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
-    NOTREACHED();
+    return true;
   }
 
  private:
   // |mock_server_| is owned by ServiceWorkerNewScriptLoaderTest.
-  MockHTTPServer* mock_server_;
+  MockHTTPServer* const mock_server_;
 
-  // The most recent request received by this factory.
+  // The most recent request received.
   network::ResourceRequest last_request_;
 
   // Controls whether a load simulates accessing network or cache.
   bool access_network_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
 };
 
 // ServiceWorkerNewScriptLoaderTest is for testing the handling of requests for
@@ -153,7 +144,9 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
  public:
   ServiceWorkerNewScriptLoaderTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
-        mock_server_(std::make_unique<MockHTTPServer>()) {}
+        mock_network_(&mock_server_),
+        interceptor_(base::BindRepeating(&MockNetwork::InterceptNetworkRequest,
+                                         base::Unretained(&mock_network_))) {}
   ~ServiceWorkerNewScriptLoaderTest() override = default;
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
@@ -163,23 +156,18 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
 
     context()->storage()->LazyInitializeForTest();
 
-    mock_server_->Set(GURL(kNormalScriptURL),
-                      MockHTTPServer::Response(
-                          std::string("HTTP/1.1 200 OK\n"
-                                      "Content-Type: text/javascript\n\n"),
-                          std::string("this body came from the network")));
-    mock_server_->Set(
+    mock_server_.Set(GURL(kNormalScriptURL),
+                     MockHTTPServer::Response(
+                         std::string("HTTP/1.1 200 OK\n"
+                                     "Content-Type: text/javascript\n\n"),
+                         std::string("this body came from the network")));
+    mock_server_.Set(
         GURL(kNormalImportedScriptURL),
         MockHTTPServer::Response(
             std::string("HTTP/1.1 200 OK\n"
                         "Content-Type: text/javascript\n\n"),
             std::string(
                 "this is an import script response body from the network")));
-
-    // Initialize URLLoaderFactory.
-    mock_url_loader_factory_ =
-        std::make_unique<MockNetworkURLLoaderFactory>(mock_server_.get());
-    helper_->SetNetworkFactory(mock_url_loader_factory_.get());
   }
 
   // Sets up ServiceWorkerRegistration and ServiceWorkerVersion. This should be
@@ -242,9 +230,8 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
 
     *out_client = std::make_unique<network::TestURLLoaderClient>();
     *out_loader = ServiceWorkerNewScriptLoader::CreateAndStart(
-        routing_id, request_id, options, request,
-        (*out_client)->CreateInterfacePtr(), version_,
-        helper_->url_loader_factory_getter()->GetNetworkFactory(),
+        routing_id, request_id, options, request, (*out_client)->CreateRemote(),
+        version_, helper_->url_loader_factory_getter()->GetNetworkFactory(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
@@ -252,7 +239,7 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
   bool VerifyStoredResponse(const GURL& url) {
     return ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
         LookupResourceId(url), context()->storage(),
-        mock_server_->Get(url).body);
+        mock_server_.Get(url).body);
   }
 
   int64_t LookupResourceId(const GURL& url) {
@@ -261,12 +248,15 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
 
  protected:
   BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<MockNetworkURLLoaderFactory> mock_url_loader_factory_;
+
+  MockHTTPServer mock_server_;
+  MockNetwork mock_network_;
+  URLLoaderInterceptor interceptor_;
+
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  std::unique_ptr<MockHTTPServer> mock_server_;
 };
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Success) {
@@ -287,7 +277,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success) {
   std::string response;
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client->response_body_release(), &response));
-  EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
+  EXPECT_EQ(mock_server_.Get(kScriptURL).body, response);
 
   // WRITE_OK should be recorded once plus one as we record a single write
   // success and the end of the body.
@@ -302,7 +292,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_EmptyBody) {
   const GURL kScriptURL("https://example.com/empty.js");
   std::unique_ptr<network::TestURLLoaderClient> client;
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
-  mock_server_->Set(
+  mock_server_.Set(
       kScriptURL,
       MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
                                            "Content-Type: text/javascript\n\n"),
@@ -336,7 +326,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_LargeBody) {
   const uint32_t kBodySize =
       ServiceWorkerNewScriptLoader::kReadBufferSize * 1.6;
   const GURL kScriptURL("https://example.com/large-body.js");
-  mock_server_->Set(
+  mock_server_.Set(
       kScriptURL,
       MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
                                            "Content-Type: text/javascript\n\n"),
@@ -352,7 +342,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_LargeBody) {
   std::string response;
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client->response_body_release(), &response));
-  EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
+  EXPECT_EQ(mock_server_.Get(kScriptURL).body, response);
 
   // The response should also be stored in the storage.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
@@ -369,9 +359,9 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_404) {
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
   const GURL kScriptURL("https://example.com/nonexistent.js");
-  mock_server_->Set(kScriptURL, MockHTTPServer::Response(
-                                    std::string("HTTP/1.1 404 Not Found\n\n"),
-                                    std::string()));
+  mock_server_.Set(kScriptURL, MockHTTPServer::Response(
+                                   std::string("HTTP/1.1 404 Not Found\n\n"),
+                                   std::string()));
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
@@ -393,7 +383,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_Redirect) {
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
   const GURL kScriptURL("https://example.com/redirect.js");
-  mock_server_->Set(
+  mock_server_.Set(
       kScriptURL,
       MockHTTPServer::Response(
           std::string("HTTP/1.1 307 Temporary Redirect\n\n"), std::string()));
@@ -422,7 +412,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_CertificateError) {
   MockHTTPServer::Response response(std::string("HTTP/1.1 200 OK\n\n"),
                                     std::string("body"));
   response.has_certificate_error = true;
-  mock_server_->Set(kScriptURL, response);
+  mock_server_.Set(kScriptURL, response);
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
@@ -445,9 +435,9 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_NoMimeType) {
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
   const GURL kScriptURL("https://example.com/no-mime-type.js");
-  mock_server_->Set(kScriptURL, MockHTTPServer::Response(
-                                    std::string("HTTP/1.1 200 OK\n\n"),
-                                    std::string("body with no MIME type")));
+  mock_server_.Set(kScriptURL, MockHTTPServer::Response(
+                                   std::string("HTTP/1.1 200 OK\n\n"),
+                                   std::string("body with no MIME type")));
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
@@ -469,10 +459,10 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_BadMimeType) {
   std::unique_ptr<ServiceWorkerNewScriptLoader> loader;
 
   const GURL kScriptURL("https://example.com/bad-mime-type.js");
-  mock_server_->Set(kScriptURL, MockHTTPServer::Response(
-                                    std::string("HTTP/1.1 200 OK\n"
-                                                "Content-Type: text/css\n\n"),
-                                    std::string("body with bad MIME type")));
+  mock_server_.Set(kScriptURL, MockHTTPServer::Response(
+                                   std::string("HTTP/1.1 200 OK\n"
+                                               "Content-Type: text/css\n\n"),
+                                   std::string("body with bad MIME type")));
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
@@ -498,12 +488,12 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_PathRestriction) {
   // Service-Worker-Allowed header allows it.
   const GURL kScriptURL("https://example.com/out-of-scope/normal.js");
   const GURL kScope("https://example.com/in-scope/");
-  mock_server_->Set(kScriptURL,
-                    MockHTTPServer::Response(
-                        std::string("HTTP/1.1 200 OK\n"
-                                    "Content-Type: text/javascript\n"
-                                    "Service-Worker-Allowed: /in-scope/\n\n"),
-                        std::string("٩( ’ω’ )و I'm body!")));
+  mock_server_.Set(kScriptURL,
+                   MockHTTPServer::Response(
+                       std::string("HTTP/1.1 200 OK\n"
+                                   "Content-Type: text/javascript\n"
+                                   "Service-Worker-Allowed: /in-scope/\n\n"),
+                       std::string("٩( ’ω’ )و I'm body!")));
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = kScope;
   SetUpRegistrationWithOptions(kScriptURL, options);
@@ -517,7 +507,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_PathRestriction) {
   std::string response;
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client->response_body_release(), &response));
-  EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
+  EXPECT_EQ(mock_server_.Get(kScriptURL).body, response);
 
   // WRITE_OK should be recorded once plus one as we record a single write
   // success and the end of the body.
@@ -536,7 +526,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Error_PathRestriction) {
   // Service-Worker-Allowed header is not specified.
   const GURL kScriptURL("https://example.com/out-of-scope/normal.js");
   const GURL kScope("https://example.com/in-scope/");
-  mock_server_->Set(
+  mock_server_.Set(
       kScriptURL,
       MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
                                            "Content-Type: text/javascript\n\n"),
@@ -596,7 +586,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Update) {
   ActivateVersion();
 
   // Change the script on the server.
-  mock_server_->Set(
+  mock_server_.Set(
       kScriptURL,
       MockHTTPServer::Response(std::string("HTTP/1.1 200 OK\n"
                                            "Content-Type: text/javascript\n\n"),
@@ -650,12 +640,12 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_All) {
   // since last update time is null.
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
-  network::ResourceRequest request = mock_url_loader_factory_->last_request();
+  network::ResourceRequest request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   // Promote to active and prepare to update.
@@ -667,12 +657,12 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_All) {
   SetUpVersion(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_FALSE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_FALSE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   // Set update check to far in the past and repeat. The requests should
@@ -683,12 +673,12 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_All) {
   SetUpVersion(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 }
 
@@ -710,12 +700,12 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_Imports) {
   // since last update time is null.
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
-  network::ResourceRequest request = mock_url_loader_factory_->last_request();
+  network::ResourceRequest request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   // Promote to active and prepare to update.
@@ -727,12 +717,12 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_Imports) {
   SetUpVersion(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_FALSE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   // Set the time to far in the past and repeat. The requests should validate
@@ -743,12 +733,12 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_Imports) {
   SetUpVersion(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 }
 
@@ -769,12 +759,12 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_None) {
   // since kNone (and the last update time is null anyway).
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
-  network::ResourceRequest request = mock_url_loader_factory_->last_request();
+  network::ResourceRequest request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   // Promote to active and prepare to update.
@@ -785,12 +775,12 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, UpdateViaCache_None) {
   SetUpVersion(kScriptURL);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 }
 
@@ -818,12 +808,12 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, ForceBypassCache) {
   // Install the main script and imported script. The cache should be validated.
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
-  network::ResourceRequest request = mock_url_loader_factory_->last_request();
+  network::ResourceRequest request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
-  request = mock_url_loader_factory_->last_request();
+  request = mock_network_.last_request();
   EXPECT_TRUE(request.load_flags & net::LOAD_VALIDATE_CACHE);
 }
 
@@ -840,7 +830,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, AccessedNetwork) {
 
   // Install the main script. The network accessed flag should be flipped on.
   version_->embedded_worker()->network_accessed_for_script_ = false;
-  mock_url_loader_factory_->set_to_access_network(true);
+  mock_network_.set_to_access_network(true);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
@@ -849,7 +839,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, AccessedNetwork) {
   // Install the imported script. The network accessed flag should be unchanged,
   // as it's only meant for main scripts.
   version_->embedded_worker()->network_accessed_for_script_ = false;
-  mock_url_loader_factory_->set_to_access_network(true);
+  mock_network_.set_to_access_network(true);
   DoRequest(kImportedScriptURL, &client, &loader);
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
@@ -859,7 +849,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, AccessedNetwork) {
   // network accessed flag should be off.
   SetUpRegistration(kScriptURL);
   version_->embedded_worker()->network_accessed_for_script_ = false;
-  mock_url_loader_factory_->set_to_access_network(false);
+  mock_network_.set_to_access_network(false);
   DoRequest(kScriptURL, &client, &loader);
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);

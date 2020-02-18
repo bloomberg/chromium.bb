@@ -58,7 +58,8 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare()
     self.buildstore = FakeBuildStore()
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     extra_config = {'upload_symbols': True, 'push_image': True}
     super(ArchiveStageTest, self)._Prepare(
         bot_id, extra_config=extra_config, **kwargs)
@@ -85,7 +86,7 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
     ])
     self.RunStage()
     # pylint: disable=no-member
-    self.assertEquals(commands.PushImages.call_count, 0)
+    self.assertEqual(commands.PushImages.call_count, 0)
 
   def ConstructStageForArchiveStep(self):
     """Stage construction for archive steps."""
@@ -103,7 +104,8 @@ class UploadPrebuiltsStageTest(
   cmd = 'upload_prebuilts'
   RELEASE_TAG = ''
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(UploadPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
     self.cmd = os.path.join(self.build_root, constants.CHROMITE_BIN_SUBDIR,
                             'upload_prebuilts')
@@ -174,7 +176,8 @@ class UploadDevInstallerPrebuiltsStageTest(
 
     self._Prepare()
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(UploadDevInstallerPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
 
     self._run.options.chrome_rev = None
@@ -264,6 +267,8 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     self.stage = None
 
+  # Our API here is not great when it comes to kwargs passing.
+  # pylint: disable=arguments-differ
   def _Prepare(self, extra_config=None, **kwargs):
     """Prepare this stage for testing."""
     if extra_config is None:
@@ -276,6 +281,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
         extra_config=extra_config, **kwargs)
     self._run.attrs.release_tag = self.VERSION
     self.buildstore = FakeBuildStore()
+  # pylint: enable=arguments-differ
 
   def ConstructStage(self):
     """Create a DebugSymbolsStage instance for testing"""
@@ -370,8 +376,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testUploadCrashStillNotifies(self):
     """Crashes in symbol upload should still notify external events."""
     self.upload_mock.side_effect = failures_lib.BuildScriptFailure(
-        cros_build_lib.RunCommandError('mew', cros_build_lib.CommandResult()),
-        'mew')
+        cros_build_lib.RunCommandError('mew'), 'mew')
     result = self._TestPerformStage()
     self.assertIs(result[0], results_lib.Results.FORGIVEN)
 
@@ -381,8 +386,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testUploadCrashUploadsList(self):
     """A crash in symbol upload should still post the failed list file."""
     self.upload_mock.side_effect = failures_lib.BuildScriptFailure(
-        cros_build_lib.RunCommandError('mew', cros_build_lib.CommandResult()),
-        'mew')
+        cros_build_lib.RunCommandError('mew'), 'mew')
     self._Prepare()
     stage = self.ConstructStage()
 
@@ -589,7 +593,7 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
       valid_version_lines[0] = 'clang version 8.0.1\n'
       return ''.join(valid_version_lines)
 
-    with patch(cros_build_lib, 'RunCommand') as run_command:
+    with patch(cros_build_lib, 'run') as run_command:
       run_command.side_effect = self._MetadataMultiDispatch(
           equery_uses_fn=equery_uses,
           clang_version_fn=clang_version)
@@ -597,7 +601,7 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
       with self.assertRaises(ValueError) as raised:
         stage._CollectLLVMMetadata()
 
-      self.assertIn('version string', raised.exception.message)
+      self.assertIn('version string', str(raised.exception))
 
   def testCollectLLVMMetadataRaisesIfClangIsntPGOGenerated(self):
     stage = self.ConstructStage()
@@ -605,7 +609,7 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
     def clang_version():
       return self._VALID_CLANG_VERSION_STRING
 
-    with patch(cros_build_lib, 'RunCommand') as run_command:
+    with patch(cros_build_lib, 'run') as run_command:
       for uses in ['', ' - - llvm_pgo_generate :']:
         def equery_uses():
           # We're using a loop var on purpose; this function should die by the
@@ -620,7 +624,7 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
         with self.assertRaises(ValueError) as raised:
           stage._CollectLLVMMetadata()
 
-        self.assertIn('pgo_generate flag', raised.exception.message)
+        self.assertIn('pgo_generate flag', str(raised.exception))
 
   def testCollectLLVMMetadataFunctionsInASimpleCase(self):
     def clang_version():
@@ -631,7 +635,7 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     stage = self.ConstructStage()
 
-    run_command = self.PatchObject(cros_build_lib, 'RunCommand')
+    run_command = self.PatchObject(cros_build_lib, 'run')
     run_command.side_effect = self._MetadataMultiDispatch(equery_uses,
                                                           clang_version)
     write_file = self.PatchObject(osutils, 'WriteFile')

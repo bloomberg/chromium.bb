@@ -22,10 +22,7 @@ class Value;
 
 using String = v8_inspector::String16;
 using StringBuilder = v8_inspector::String16Builder;
-struct ProtocolMessage {
-  String json;
-  std::vector<uint8_t> binary;
-};
+using ProtocolMessage = std::vector<uint8_t>;
 
 class StringUtil {
  public:
@@ -72,15 +69,9 @@ class StringUtil {
   }
   static std::unique_ptr<protocol::Value> parseJSON(const String16& json);
   static std::unique_ptr<protocol::Value> parseJSON(const StringView& json);
-  static ProtocolMessage jsonToMessage(String message);
-  static ProtocolMessage binaryToMessage(std::vector<uint8_t> message);
 
   static String fromUTF8(const uint8_t* data, size_t length) {
     return String16::fromUTF8(reinterpret_cast<const char*>(data), length);
-  }
-
-  static String fromUTF16(const uint16_t* data, size_t length) {
-    return String16(data, length);
   }
 
   static String fromUTF16LE(const uint16_t* data, size_t length) {
@@ -101,13 +92,23 @@ class StringUtil {
 // therefore it's unnecessary to provide an implementation here.
 class Binary {
  public:
-  const uint8_t* data() const { UNIMPLEMENTED(); }
-  size_t size() const { UNIMPLEMENTED(); }
+  Binary() = default;
+
+  const uint8_t* data() const { return bytes_->data(); }
+  size_t size() const { return bytes_->size(); }
   String toBase64() const { UNIMPLEMENTED(); }
   static Binary fromBase64(const String& base64, bool* success) {
     UNIMPLEMENTED();
   }
-  static Binary fromSpan(const uint8_t* data, size_t size) { UNIMPLEMENTED(); }
+  static Binary fromSpan(const uint8_t* data, size_t size) {
+    return Binary(std::make_shared<std::vector<uint8_t>>(data, data + size));
+  }
+
+ private:
+  std::shared_ptr<std::vector<uint8_t>> bytes_;
+
+  explicit Binary(std::shared_ptr<std::vector<uint8_t>> bytes)
+      : bytes_(bytes) {}
 };
 }  // namespace protocol
 
@@ -149,7 +150,6 @@ class BinaryStringBuffer : public StringBuffer {
   DISALLOW_COPY_AND_ASSIGN(BinaryStringBuffer);
 };
 
-String16 debuggerIdToString(const std::pair<int64_t, int64_t>& debuggerId);
 String16 stackTraceIdToString(uintptr_t id);
 
 }  //  namespace v8_inspector

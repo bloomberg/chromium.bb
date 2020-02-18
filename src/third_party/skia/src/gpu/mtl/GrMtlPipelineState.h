@@ -46,9 +46,11 @@ public:
 
     id<MTLRenderPipelineState> mtlPipelineState() { return fPipelineState; }
 
-    void setData(const GrRenderTarget*, GrSurfaceOrigin,
-                 const GrPrimitiveProcessor& primPRoc, const GrPipeline& pipeline,
-                 const GrTextureProxy* const primProcTextures[]);
+    void setData(const GrRenderTarget*, const GrProgramInfo&);
+
+    void setTextures(const GrProgramInfo& programInfo,
+                     const GrSurfaceProxy* const primProcTextures[]);
+    void bindTextures(id<MTLRenderCommandEncoder> renderCmdEncoder);
 
     void setDrawState(id<MTLRenderCommandEncoder>, const GrSwizzle& outputSwizzle,
                       const GrXferProcessor&);
@@ -99,7 +101,7 @@ private:
 
     void setRenderTargetState(const GrRenderTarget*, GrSurfaceOrigin);
 
-    void bind(id<MTLRenderCommandEncoder>);
+    void bindUniforms(id<MTLRenderCommandEncoder>);
 
     void setBlendConstants(id<MTLRenderCommandEncoder>, const GrSwizzle&, const GrXferProcessor&);
 

@@ -29,6 +29,9 @@ class ASH_EXPORT PageIndicatorView : public views::View,
   // Otherwise, it shows an intermediate state while animating.
   void SetExpandedAmount(double expanded_amount);
 
+  // Returns the height of this view when the tray is fully expanded.
+  int GetExpandedHeight();
+
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
@@ -40,7 +43,7 @@ class ASH_EXPORT PageIndicatorView : public views::View,
   class PageIndicatorButton;
 
   // PaginationModelObserver:
-  void TotalPagesChanged() override;
+  void TotalPagesChanged(int previous_page_count, int new_page_count) override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
 
   bool IsPageSelectedForTesting(int index);

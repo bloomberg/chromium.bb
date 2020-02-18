@@ -2,17 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {$} from 'chrome://resources/js/util.m.js';
+
+import {FittingType} from './pdf_fitting_type.js';
+import {InactiveZoomManager, ZoomManager} from './zoom_manager.js';
+
 /**
  * @typedef {{
  *   width: number,
  *   height: number,
+ *   layoutOptions: (!LayoutOptions|undefined),
  *   pageDimensions: Array<ViewportRect>,
  * }}
  */
 let DocumentDimensions;
 
+/** @typedef {{defaultPageOrientation: number}} */
+export let LayoutOptions;
+
 /** @typedef {{x: number, y: number}} */
-let Point;
+export let Point;
+
+/** @typedef {{x: (number|undefined), y: (number|undefined)}} */
+export let PartialPoint;
 
 /** @typedef {{width: number, height: number}} */
 let Size;
@@ -70,7 +84,7 @@ function frameToPluginCoordinate(coordinateInFrame) {
   };
 }
 
-class Viewport {
+export class Viewport {
   /**
    * @param {!Window} window
    * @param {!HTMLDivElement} sizer The element which represents the size of the
@@ -186,11 +200,19 @@ class Viewport {
     this.userInitiatedCallback_ = userInitiatedCallback;
   }
 
+  rotateClockwise() {
+    this.rotateBySteps_(1);
+  }
+
+  rotateCounterclockwise() {
+    this.rotateBySteps_(3);
+  }
+
   /**
    * @param {number} n The number of clockwise 90-degree rotations to increment
    *     by.
    */
-  rotateClockwise(n) {
+  rotateBySteps_(n) {
     this.rotations_ = (this.rotations_ + n) % 4;
   }
 
@@ -276,6 +298,15 @@ class Viewport {
       width: this.documentDimensions_.width,
       height: this.documentDimensions_.height
     };
+  }
+
+  /**
+   * @return {!LayoutOptions|undefined} A dictionary carrying layout options
+   *     from the plugin.
+   */
+  getLayoutOptions() {
+    return this.documentDimensions_ ? this.documentDimensions_.layoutOptions :
+                                      undefined;
   }
 
   /**
@@ -605,7 +636,7 @@ class Viewport {
       const bottom =
           this.pageDimensions_[page].y + this.pageDimensions_[page].height;
 
-      if (top <= y && bottom > y) {
+      if (top <= y && y <= bottom) {
         return page;
       }
 
@@ -1166,7 +1197,9 @@ class Viewport {
         this.fittingType_ == FittingType.FIT_TO_HEIGHT);
   }
 
-  /** @param {!Point} point The position to which to scroll the viewport. */
+  /**
+   * @param {!PartialPoint} point The position to which to scroll the viewport.
+   */
   scrollTo(point) {
     let changed = false;
     const newPosition = this.position;

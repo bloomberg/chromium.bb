@@ -9,10 +9,12 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Application.ActivityLifecycleCallbacks;
 import android.os.Bundle;
-import android.support.annotation.AnyThread;
-import android.support.annotation.MainThread;
-import android.support.annotation.Nullable;
 import android.view.Window;
+
+import androidx.annotation.AnyThread;
+import androidx.annotation.MainThread;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -465,6 +467,7 @@ public class ApplicationStatus {
      * @return Whether any Activity under this Application is visible.
      */
     @AnyThread
+    @CalledByNative
     public static boolean hasVisibleActivities() {
         assert isInitialized();
         int state = getStateForApplication();

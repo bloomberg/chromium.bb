@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/core/fetch/request.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/loader/request_destination.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
@@ -32,6 +34,7 @@
 #include "third_party/blink/renderer/core/url/url_search_params.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
@@ -50,21 +53,16 @@ namespace blink {
 FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
     ScriptState* script_state,
     const FetchRequestData* original) {
-  FetchRequestData* request = FetchRequestData::Create();
+  auto* request = MakeGarbageCollected<FetchRequestData>();
   request->SetURL(original->Url());
   request->SetMethod(original->Method());
   request->SetHeaderList(original->HeaderList()->Clone());
+  request->SetOrigin(ExecutionContext::From(script_state)->GetSecurityOrigin());
   // FIXME: Set client.
   DOMWrapperWorld& world = script_state->World();
-  if (world.IsIsolatedWorld()) {
-    request->SetOrigin(world.IsolatedWorldSecurityOrigin());
-    request->SetShouldAlsoUseFactoryBoundOriginForCors(true);
-  } else {
-    request->SetOrigin(
-        ExecutionContext::From(script_state)->GetSecurityOrigin());
-  }
+  if (world.IsIsolatedWorld())
+    request->SetIsolatedWorldOrigin(world.IsolatedWorldSecurityOrigin());
   // FIXME: Set ForceOriginHeaderFlag.
-  request->SetSameOriginDataURLFlag(true);
   request->SetReferrerString(original->ReferrerString());
   request->SetReferrerPolicy(original->GetReferrerPolicy());
   request->SetMode(original->Mode());
@@ -77,8 +75,9 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetKeepalive(original->Keepalive());
   request->SetIsHistoryNavigation(original->IsHistoryNavigation());
   if (original->URLLoaderFactory()) {
-    network::mojom::blink::URLLoaderFactoryPtr factory_clone;
-    original->URLLoaderFactory()->Clone(MakeRequest(&factory_clone));
+    mojo::PendingRemote<network::mojom::blink::URLLoaderFactory> factory_clone;
+    original->URLLoaderFactory()->Clone(
+        factory_clone.InitWithNewPipeAndPassReceiver());
     request->SetURLLoaderFactory(std::move(factory_clone));
   }
   request->SetWindowId(original->WindowId());
@@ -226,8 +225,8 @@ Request* Request::CreateRequestWithRequestOrString(
   // |request|'s cache mode, redirect mode is |request|'s redirect mode, and
   // integrity metadata is |request|'s integrity metadata."
   FetchRequestData* request = CreateCopyOfFetchRequestDataForFetch(
-      script_state,
-      input_request ? input_request->GetRequest() : FetchRequestData::Create());
+      script_state, input_request ? input_request->GetRequest()
+                                  : MakeGarbageCollected<FetchRequestData>());
 
   if (input_request) {
     // "Set |signal| to input’s signal."
@@ -267,10 +266,12 @@ Request* Request::CreateRequestWithRequestOrString(
     // fetching of a blob URL should work even after the URL is revoked as long
     // as the request was created while the URL was still valid.
     if (parsed_url.ProtocolIs("blob")) {
-      network::mojom::blink::URLLoaderFactoryPtr url_loader_factory;
+      mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+          url_loader_factory;
       ExecutionContext::From(script_state)
           ->GetPublicURLManager()
-          .Resolve(parsed_url, MakeRequest(&url_loader_factory));
+          .Resolve(parsed_url,
+                   url_loader_factory.InitWithNewPipeAndPassReceiver());
       request->SetURLLoaderFactory(std::move(url_loader_factory));
     }
 
@@ -320,7 +321,7 @@ Request* Request::CreateRequestWithRequestOrString(
       if ((parsed_referrer.ProtocolIsAbout() &&
            parsed_referrer.Host().IsEmpty() &&
            parsed_referrer.GetPath() == "client") ||
-          !origin->IsSameSchemeHostPort(
+          !origin->IsSameOriginWith(
               SecurityOrigin::Create(parsed_referrer).get())) {
         // If |parsedReferrer|'s host is empty
         // it's cannot-be-a-base-URL flag must be set
@@ -899,6 +900,13 @@ String Request::ContentType() const {
   String result;
   request_->HeaderList()->Get(http_names::kContentType, result);
   return result;
+}
+
+mojom::RequestContextType Request::GetRequestContextType() const {
+  if (!request_) {
+    return mojom::RequestContextType::UNSPECIFIED;
+  }
+  return request_->Context();
 }
 
 void Request::Trace(blink::Visitor* visitor) {

@@ -25,7 +25,7 @@ namespace content {
 // TODO: Rewrite other observers to use this (or be replaced by it).
 class DownloadUpdatedObserver : public download::DownloadItem::Observer {
  public:
-  typedef base::Callback<bool(download::DownloadItem*)> EventFilter;
+  using EventFilter = base::RepeatingCallback<bool(download::DownloadItem*)>;
 
   // The filter passed may be called multiple times, even after it
   // returns true.
@@ -286,7 +286,7 @@ class DownloadTestItemCreationObserver
            interrupt_reason_ == download::DOWNLOAD_INTERRUPT_REASON_NONE;
   }
 
-  const download::DownloadUrlParameters::OnStartedCallback callback();
+  download::DownloadUrlParameters::OnStartedCallback callback();
 
  private:
   friend class base::RefCountedThreadSafe<DownloadTestItemCreationObserver>;
@@ -315,7 +315,7 @@ class SavePackageFinishedObserver : public download::DownloadItem::Observer,
                                     public DownloadManager::Observer {
  public:
   SavePackageFinishedObserver(DownloadManager* manager,
-                              const base::Closure& callback);
+                              base::OnceClosure callback);
   ~SavePackageFinishedObserver() override;
 
   // download::DownloadItem::Observer:
@@ -330,7 +330,7 @@ class SavePackageFinishedObserver : public download::DownloadItem::Observer,
  private:
   DownloadManager* download_manager_;
   download::DownloadItem* download_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackageFinishedObserver);
 };

@@ -265,7 +265,9 @@ void StyleInvalidator::InvalidateChildren(Element& element) {
   if (UNLIKELY(!!element.GetShadowRoot()))
     InvalidateShadowRootChildren(element);
 
-  SiblingData sibling_data;
+  // Initialization of the variable costs up to 15% on blink_perf.css
+  // AttributeDescendantSelector.html benchmark.
+  SiblingData sibling_data STACK_UNINITIALIZED;
   PushNthSiblingInvalidationSets(sibling_data);
 
   for (Element* child = ElementTraversal::FirstChild(element); child;
@@ -303,8 +305,9 @@ void StyleInvalidator::Invalidate(Element& element, SiblingData& sibling_data) {
     // styles but we do it. If we ever stop doing that then this code and the
     // PushInvalidationSetsForContainerNode above need to move out of the
     // if-block.
-    if (InvalidatesSlotted() && IsHTMLSlotElement(element))
-      InvalidateSlotDistributedElements(ToHTMLSlotElement(element));
+    auto* html_slot_element = DynamicTo<HTMLSlotElement>(element);
+    if (html_slot_element && InvalidatesSlotted())
+      InvalidateSlotDistributedElements(*html_slot_element);
 
     if (InsertionPointCrossing() && element.IsV0InsertionPoint()) {
       element.SetNeedsStyleRecalc(kSubtreeStyleChange,

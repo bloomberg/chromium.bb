@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "media/gpu/accelerated_video_decoder.h"
-#include "media/gpu/format_utils.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -61,6 +60,7 @@ class MockAcceleratedVideoDecoder : public AcceleratedVideoDecoder {
   MOCK_METHOD0(Reset, void());
   MOCK_METHOD0(Decode, DecodeResult());
   MOCK_CONST_METHOD0(GetPicSize, gfx::Size());
+  MOCK_CONST_METHOD0(GetProfile, VideoCodecProfile());
   MOCK_CONST_METHOD0(GetVisibleRect, gfx::Rect());
   MOCK_CONST_METHOD0(GetRequiredNumOfPictures, size_t());
   MOCK_CONST_METHOD0(GetNumReferenceFrames, size_t());
@@ -68,10 +68,13 @@ class MockAcceleratedVideoDecoder : public AcceleratedVideoDecoder {
 
 class MockVaapiWrapper : public VaapiWrapper {
  public:
-  MockVaapiWrapper() = default;
-  MOCK_METHOD4(
-      CreateContextAndSurfaces,
-      bool(unsigned int, const gfx::Size&, size_t, std::vector<VASurfaceID>*));
+  MockVaapiWrapper(CodecMode mode) : VaapiWrapper(mode) {}
+  MOCK_METHOD5(CreateContextAndSurfaces,
+               bool(unsigned int,
+                    const gfx::Size&,
+                    SurfaceUsageHint,
+                    size_t,
+                    std::vector<VASurfaceID>*));
   MOCK_METHOD1(CreateContext, bool(const gfx::Size&));
   MOCK_METHOD1(DestroyContextAndSurfaces, void(std::vector<VASurfaceID>));
 
@@ -150,8 +153,8 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
         decoder_thread_("VaapiVideoDecodeAcceleratorTestThread"),
         mock_decoder_(new ::testing::StrictMock<MockAcceleratedVideoDecoder>),
         mock_vaapi_picture_factory_(new MockVaapiPictureFactory()),
-        mock_vaapi_wrapper_(new MockVaapiWrapper()),
-        mock_vpp_vaapi_wrapper_(new MockVaapiWrapper()),
+        mock_vaapi_wrapper_(new MockVaapiWrapper(VaapiWrapper::kDecode)),
+        mock_vpp_vaapi_wrapper_(new MockVaapiWrapper(VaapiWrapper::kDecode)),
         weak_ptr_factory_(this) {
     decoder_thread_.Start();
 
@@ -169,7 +172,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
 
     // TODO(crbug.com/917999): add IMPORT mode to test variations.
     vda_.output_mode_ = VideoDecodeAccelerator::Config::OutputMode::ALLOCATE;
-
+    vda_.profile_ = GetParam().video_codec;
     vda_.buffer_allocation_mode_ =
         GetParam().decode_using_client_picture_buffers
             ? VaapiVideoDecodeAccelerator::BufferAllocationMode::kNone
@@ -208,7 +211,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
   }
 
   // Try and QueueInputBuffer()s, where we pretend that |mock_decoder_| requests
-  // to kAllocateNewSurfaces: |vda_| will ping us to ProvidePictureBuffers().
+  // to kConfigChange: |vda_| will ping us to ProvidePictureBuffers().
   // If |expect_dismiss_picture_buffers| is signalled, then we expect as well
   // that |vda_| will emit |num_picture_buffers_to_dismiss| DismissPictureBuffer
   // calls.
@@ -224,11 +227,13 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
                 SetStream(_, IsExpectedDecoderBuffer(kInputSize, nullptr)))
         .WillOnce(Return());
     EXPECT_CALL(*mock_decoder_, Decode())
-        .WillOnce(Return(AcceleratedVideoDecoder::kAllocateNewSurfaces));
+        .WillOnce(Return(AcceleratedVideoDecoder::kConfigChange));
 
+    EXPECT_CALL(*mock_decoder_, GetPicSize()).WillOnce(Return(picture_size));
+    EXPECT_CALL(*mock_decoder_, GetProfile())
+        .WillOnce(Return(GetParam().video_codec));
     EXPECT_CALL(*mock_decoder_, GetRequiredNumOfPictures())
         .WillOnce(Return(num_pictures));
-    EXPECT_CALL(*mock_decoder_, GetPicSize()).WillOnce(Return(picture_size));
     const size_t kNumReferenceFrames = num_pictures / 2;
     EXPECT_CALL(*mock_decoder_, GetNumReferenceFrames())
         .WillOnce(Return(kNumReferenceFrames));
@@ -295,9 +300,11 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
       const size_t kNumReferenceFrames = 1 + num_pictures / 2;
       EXPECT_CALL(
           *mock_vaapi_wrapper_,
-          CreateContextAndSurfaces(_, picture_size, kNumReferenceFrames, _))
+          CreateContextAndSurfaces(
+              _, picture_size, VaapiWrapper::SurfaceUsageHint::kVideoDecoder,
+              kNumReferenceFrames, _))
           .WillOnce(DoAll(
-              WithArg<3>(Invoke([kNumReferenceFrames](
+              WithArg<4>(Invoke([kNumReferenceFrames](
                                     std::vector<VASurfaceID>* va_surface_ids) {
                 va_surface_ids->resize(kNumReferenceFrames);
               })),

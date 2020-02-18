@@ -9,6 +9,8 @@ from __future__ import print_function
 
 from chromite.lib import cros_test_lib
 from chromite.lib import factory
+from chromite.utils import memoize
+
 
 def _GET_OBJECT():
   return object()
@@ -19,8 +21,8 @@ class FactoryTest(cros_test_lib.TestCase):
   _OBJECT_NAME = 'Test Object Name'
   _OBJECT_TYPES = {
       't0' : _GET_OBJECT,
-      't1' : factory.CachedFunctionCall(_GET_OBJECT),
-      't3' : factory.CachedFunctionCall(_GET_OBJECT),
+      't1' : memoize.Memoize(_GET_OBJECT),
+      't3' : memoize.Memoize(_GET_OBJECT),
       't4' : None,
   }
 

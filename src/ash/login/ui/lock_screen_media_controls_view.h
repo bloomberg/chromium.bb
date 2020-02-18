@@ -5,9 +5,9 @@
 #ifndef ASH_LOGIN_UI_LOCK_SCREEN_MEDIA_CONTROLS_VIEW_H_
 #define ASH_LOGIN_UI_LOCK_SCREEN_MEDIA_CONTROLS_VIEW_H_
 
-#include <set>
-
 #include "ash/ash_export.h"
+#include "base/containers/flat_set.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -41,6 +41,7 @@ class ASH_EXPORT LockScreenMediaControlsView
     : public views::View,
       public media_session::mojom::MediaControllerObserver,
       public media_session::mojom::MediaControllerImageObserver,
+      public base::PowerObserver,
       public views::ButtonListener,
       public ui::ImplicitAnimationObserver {
  public:
@@ -64,7 +65,8 @@ class ASH_EXPORT LockScreenMediaControlsView
     kSessionChanged,
     kDismissedByUser,
     kUnlocked,
-    kMaxValue = kUnlocked
+    kDeviceSleep,
+    kMaxValue = kDeviceSleep
   };
 
   // Whether the controls were shown or not shown and the reason why. This is
@@ -136,6 +138,9 @@ class ASH_EXPORT LockScreenMediaControlsView
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // base::PowerObserver:
+  void OnSuspend() override;
+
   void FlushForTesting();
 
   void set_media_controller_for_testing(
@@ -152,6 +157,8 @@ class ASH_EXPORT LockScreenMediaControlsView
 
   // Hide the controls because of |reason|.
   void Hide(HideReason reason);
+
+  void HideArtwork();
 
   // Set whether the controls should be shown and record the reason why.
   void SetShown(Shown shown);
@@ -226,12 +233,16 @@ class ASH_EXPORT LockScreenMediaControlsView
   // Automatically hides the controls a few seconds if no media playing.
   std::unique_ptr<base::OneShotTimer> hide_controls_timer_;
 
+  // Make artwork view invisible if there is no artwork update after receiving
+  // an empty artwork.
+  std::unique_ptr<base::OneShotTimer> hide_artwork_timer_;
+
   // Caches the text to be read by screen readers describing the media controls
   // view.
   base::string16 accessible_name_;
 
   // Set of enabled actions.
-  std::set<media_session::mojom::MediaSessionAction> enabled_actions_;
+  base::flat_set<media_session::mojom::MediaSessionAction> enabled_actions_;
 
   // Contains the visible and draggable UI of the media controls.
   views::View* contents_view_ = nullptr;
@@ -250,6 +261,8 @@ class ASH_EXPORT LockScreenMediaControlsView
   NonAccessibleView* button_row_ = nullptr;
   MediaActionButton* play_pause_button_ = nullptr;
   media_message_center::MediaControlsProgressView* progress_ = nullptr;
+
+  std::vector<views::Button*> media_action_buttons_;
 
   // Callbacks.
   const MediaControlsEnabled media_controls_enabled_;

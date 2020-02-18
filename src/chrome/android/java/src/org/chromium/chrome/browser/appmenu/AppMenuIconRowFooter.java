@@ -18,6 +18,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 
 /**
  * A {@link LinearLayout} that displays a horizontal row of icons for page actions.
@@ -107,7 +109,7 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
     private void updateBookmarkMenuItem(BookmarkBridge bookmarkBridge, Tab currentTab) {
         mBookmarkButton.setEnabled(bookmarkBridge.isEditBookmarksEnabled());
 
-        if (currentTab.getBookmarkId() != Tab.INVALID_BOOKMARK_ID) {
+        if (BookmarkBridge.hasBookmarkIdForTab(currentTab)) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
             mBookmarkButton.setContentDescription(getContext().getString(R.string.edit_bookmark));
             ApiCompatibilityUtils.setImageTintList(mBookmarkButton,

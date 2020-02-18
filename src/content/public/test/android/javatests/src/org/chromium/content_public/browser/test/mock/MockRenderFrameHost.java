@@ -7,6 +7,7 @@ package org.chromium.content_public.browser.test.mock;
 import org.chromium.base.Callback;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.services.service_manager.InterfaceProvider;
+import org.chromium.url.Origin;
 
 /**
  * Mock class for {@link RenderFrameHost}.
@@ -18,7 +19,17 @@ public class MockRenderFrameHost implements RenderFrameHost {
     }
 
     @Override
+    public Origin getLastCommittedOrigin() {
+        return null;
+    }
+
+    @Override
     public void getCanonicalUrlForSharing(Callback<String> callback) {}
+
+    @Override
+    public boolean isPaymentFeaturePolicyEnabled() {
+        return false;
+    }
 
     @Override
     public InterfaceProvider getRemoteInterfaces() {
@@ -35,6 +46,11 @@ public class MockRenderFrameHost implements RenderFrameHost {
 
     @Override
     public boolean isRenderFrameCreated() {
+        return false;
+    }
+
+    @Override
+    public boolean areInputEventsIgnored() {
         return false;
     }
 }

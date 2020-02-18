@@ -29,8 +29,6 @@ const char* kExpectedFontFamilyNames[] = {"AndroidClock",
                                           "Roboto",
                                           "Noto Color Emoji",
                                           "Noto Sans Bengali",
-                                          "Noto Sans Bengali",
-                                          "Noto Sans Bengali UI",
                                           "Noto Sans Bengali UI",
                                           "Noto Sans Devanagari",
                                           "Noto Sans Devanagari",
@@ -150,7 +148,8 @@ class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
     ASSERT_TRUE(embedded_test_server()->Start());
     TestNavigationObserver navigation_observer(
         static_cast<WebContentsImpl*>(shell()->web_contents()));
-    NavigateToURL(shell(), embedded_test_server()->GetURL("a.com", url));
+    EXPECT_TRUE(
+        NavigateToURL(shell(), embedded_test_server()->GetURL("a.com", url)));
     ASSERT_TRUE(navigation_observer.last_navigation_succeeded());
   }
 

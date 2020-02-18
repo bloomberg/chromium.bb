@@ -70,6 +70,8 @@ namespace {
 // that span browser restarts.
 const char kPreTestPrefix[] = "PRE_";
 
+const char kManualTestPrefix[] = "MANUAL_";
+
 TestLauncherDelegate* g_launcher_delegate = nullptr;
 #if !defined(OS_ANDROID)
 // ContentMain is not run on Android in the test process, and is run via
@@ -123,7 +125,10 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
  public:
   explicit WrapperTestLauncherDelegate(
       content::TestLauncherDelegate* launcher_delegate)
-      : launcher_delegate_(launcher_delegate) {}
+      : launcher_delegate_(launcher_delegate) {
+    run_manual_tests_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kRunManualTestsFlag);
+  }
 
   // base::TestLauncherDelegate:
   bool GetTests(std::vector<base::TestIdentifier>* output) override;
@@ -140,6 +145,8 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 
   base::TimeDelta GetTimeout() override;
 
+  bool ShouldRunTest(const base::TestIdentifier& test) override;
+
  private:
   // Relays timeout notification from the TestLauncher (by way of a
   // ProcessLifetimeObserver) to the caller's content::TestLauncherDelegate.
@@ -151,7 +158,7 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 
   content::TestLauncherDelegate* launcher_delegate_;
 
-
+  bool run_manual_tests_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WrapperTestLauncherDelegate);
 };
@@ -208,7 +215,7 @@ base::CommandLine WrapperTestLauncherDelegate::GetCommandLine(
   // tests unless this flag was specified to the browser test executable.
   new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
   new_cmd_line.AppendSwitchASCII("gtest_filter", test_name);
-  new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
+  new_cmd_line.AppendSwitch(switches::kSingleProcessTests);
   return new_cmd_line;
 }
 
@@ -240,16 +247,16 @@ void WrapperTestLauncherDelegate::ProcessTestResults(
 
   launcher_delegate_->PostRunTest(&test_results.front());
 }
+// TODO(isamsonov): crbug.com/1004417 remove when windows builders
+// stop flaking on MANAUAL_ tests.
+bool WrapperTestLauncherDelegate::ShouldRunTest(
+    const base::TestIdentifier& test) {
+  return run_manual_tests_ ||
+         !base::StartsWith(test.test_name, kManualTestPrefix,
+                           base::CompareCase::SENSITIVE);
+}
 
 }  // namespace
-
-const char kHelpFlag[]   = "help";
-
-const char kLaunchAsBrowser[] = "as-browser";
-
-const char kSingleProcessTestsFlag[]   = "single_process";
-
-const char kWaitForDebuggerWebUI[] = "wait-for-debugger-webui";
 
 void AppendCommandLineSwitches() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -273,7 +280,14 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
-  if (command_line->HasSwitch(kHelpFlag)) {
+  // TODO(tluk) Remove deprecation warning after a few releases. Deprecation
+  // warning issued version 79.
+  if (command_line->HasSwitch("single_process")) {
+    fprintf(stderr, "use --single-process-tests instead of --single_process");
+    exit(1);
+  }
+
+  if (command_line->HasSwitch(switches::kHelpFlag)) {
     PrintUsage();
     return 0;
   }
@@ -310,12 +324,12 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   // This needs to be before trying to run tests as otherwise utility processes
   // end up being launched as a test, which leads to rerunning the test.
   if (command_line->HasSwitch(switches::kProcessType) ||
-      command_line->HasSwitch(kLaunchAsBrowser)) {
+      command_line->HasSwitch(switches::kLaunchAsBrowser)) {
     return ContentMain(params);
   }
 #endif
 
-  if (command_line->HasSwitch(kSingleProcessTestsFlag) ||
+  if (command_line->HasSwitch(switches::kSingleProcessTests) ||
       (command_line->HasSwitch(switches::kSingleProcess) &&
        command_line->HasSwitch(base::kGTestFilterFlag)) ||
       command_line->HasSwitch(base::kGTestListTestsFlag) ||
@@ -331,11 +345,12 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   TestTimeouts::Initialize();
 
   fprintf(stdout,
-      "IMPORTANT DEBUGGING NOTE: each test is run inside its own process.\n"
-      "For debugging a test inside a debugger, use the\n"
-      "--gtest_filter=<your_test_name> flag along with either\n"
-      "--single_process (to run the test in one launcher/browser process) or\n"
-      "--single-process (to do the above, and also run Chrome in single-"
+          "IMPORTANT DEBUGGING NOTE: each test is run inside its own process.\n"
+          "For debugging a test inside a debugger, use the\n"
+          "--gtest_filter=<your_test_name> flag along with either\n"
+          "--single-process-tests (to run the test in one launcher/browser "
+          "process) or\n"
+          "--single-process (to do the above, and also run Chrome in single-"
           "process mode).\n");
 
   base::debug::VerifyDebugger();

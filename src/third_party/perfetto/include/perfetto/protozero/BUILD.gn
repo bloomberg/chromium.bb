@@ -18,13 +18,17 @@ source_set("protozero") {
   ]
   sources = [
     "contiguous_memory_range.h",
+    "copyable_ptr.h",
+    "cpp_message_obj.h",
     "field.h",
     "message.h",
     "message_handle.h",
+    "packed_repeated_fields.h",
     "proto_decoder.h",
     "proto_utils.h",
     "scattered_heap_buffer.h",
     "scattered_stream_null_delegate.h",
     "scattered_stream_writer.h",
+    "static_buffer.h",
   ]
 }

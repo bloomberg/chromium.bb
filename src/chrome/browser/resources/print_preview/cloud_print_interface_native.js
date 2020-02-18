@@ -2,40 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('cloudprint', function() {
-  'use strict';
+import {CloudPrintInterface} from './cloud_print_interface.js';
 
-  /** @implements {cloudprint.CloudPrintInterface} */
-  class CloudPrintInterfaceNative {
-    constructor() {}
+/** @implements {CloudPrintInterface} */
+export class CloudPrintInterfaceNative {
+  constructor() {}
 
-    /** @override */
-    isCloudDestinationSearchInProgress() {}
+  /** @override */
+  areCookieDestinationsDisabled() {}
 
-    /** @override */
-    getEventTarget() {}
+  /** @override */
+  isCloudDestinationSearchInProgress() {}
 
-    /** @override */
-    search(opt_account, opt_origin) {}
+  /** @override */
+  getEventTarget() {}
 
-    /** @override */
-    setUsers(users) {}
+  /** @override */
+  search(opt_account, opt_origin) {}
 
-    /** @override */
-    invites(account) {}
+  /** @override */
+  setUsers(users) {}
 
-    /** @override */
-    processInvite(invitation, accept) {}
+  /** @override */
+  invites(account) {}
 
-    /** @override */
-    submit(destination, printTicket, documentTitle, data) {}
+  /** @override */
+  processInvite(invitation, accept) {}
 
-    /** @override */
-    printer(printerId, origin, account) {}
-  }
+  /** @override */
+  submit(destination, printTicket, documentTitle, data) {}
 
-  // Export
-  return {
-    CloudPrintInterfaceNative: CloudPrintInterfaceNative,
-  };
-});
+  /** @override */
+  printer(printerId, origin, account) {}
+}

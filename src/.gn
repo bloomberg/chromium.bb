@@ -29,22 +29,7 @@ default_args = {
   # also needs to be defined to src/ios/BUILD.gn (respectively removed from both
   # location when it is removed).
 
-  v8_extra_library_files = [
-    # Do *not* add more files to this list. V8 extra libraries is deprecated.
-    # TODO(902633): This list is be removed once streams are ported to C++.
-    # Dependencies used by the extra libraries. Putting them here causes them
-    # to be executed first during snapshot creation.
-    "//third_party/blink/renderer/core/streams/CommonOperations.js",
-    "//third_party/blink/renderer/core/streams/CommonStrings.js",
-    "//third_party/blink/renderer/core/streams/SimpleQueue.js",
-
-    # Extra libraries.
-    "//third_party/blink/renderer/core/streams/ByteLengthQueuingStrategy.js",
-    "//third_party/blink/renderer/core/streams/CountQueuingStrategy.js",
-    "//third_party/blink/renderer/core/streams/ReadableStream.js",
-    "//third_party/blink/renderer/core/streams/WritableStream.js",
-    "//third_party/blink/renderer/core/streams/TransformStream.js",
-  ]
+  v8_extra_library_files = []
   v8_experimental_extra_library_files = []
   v8_enable_gdbjit = false
   v8_imminent_deprecation_warnings = false
@@ -71,6 +56,7 @@ default_args = {
 # their includes checked for proper dependencies when you run either
 # "gn check" or "gn gen --check".
 check_targets = [
+  "//android_webview/*",
   "//apps/*",
   "//ash/*",
   "//base/*",
@@ -352,7 +338,6 @@ check_targets = [
   "//third_party/appurify-python/*",
   "//third_party/arcore-android-sdk/*",
   "//third_party/ashmem/*",
-  "//third_party/auto/*",
   "//third_party/axe-core/*",
   "//third_party/bazel/*",
   "//third_party/binutils/*",
@@ -391,19 +376,15 @@ check_targets = [
   "//third_party/depot_tools/*",
   "//third_party/deqp/*",
   "//third_party/devscripts/*",
-  "//third_party/devtools-node-modules/*",
   "//third_party/dom_distiller_js/*",
   "//third_party/elfutils/*",
-  "//third_party/errorprone/*",
   "//third_party/espresso/*",
   "//third_party/expat/*",
   "//third_party/eyesfree/*",
-  "//third_party/feed/*",
 
   # "//third_party/ffmpeg/*",  # android_cronet only https://crbug.com/898793
   "//third_party/flac/*",
   "//third_party/flatbuffers/*",
-  "//third_party/flot/*",
   "//third_party/fontconfig/*",
   "//third_party/freetype/*",
   "//third_party/freetype2/*",
@@ -559,8 +540,7 @@ check_targets = [
   "//third_party/sqlite4java/*",
   "//third_party/stp/*",
   "//third_party/sudden_motion_sensor/*",
-
-  # "//third_party/swiftshader/*",  # 1 error
+  "//third_party/swiftshader/*",
   "//third_party/swig/*",
   "//third_party/tcmalloc/*",
   "//third_party/test_fonts/*",
@@ -598,6 +578,8 @@ check_targets = [
   "//url/*",
 
   #"//v8/*",  # Errors: https://bugs.chromium.org/p/v8/issues/detail?id=7330
+
+  "//weblayer/*",
 ]
 
 # These are the list of GN files that run exec_script. This whitelist exists

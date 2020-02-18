@@ -3,13 +3,11 @@
 <translationbundle lang="te">
 <translation id="1276998909102132017">గ్యాలరీ చిత్రాలు</translation>
 <translation id="1430915738399379752">ముద్రించు</translation>
-<translation id="1462966117743110941">మీ కెమెరా ఇప్పుడు కొత్త మోడ్‌లకు మద్దతు ఇస్తుంది, అలాగే మీ డౌన్‌లోడ్‌లు ఫోల్డర్‌లలో మీ ఫోటోలు, వీడియోలు అందుబాటులో ఉంటాయి.</translation>
 <translation id="1620510694547887537">కెమెరా</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">ఏదీ రికార్డ్ చేయలేదు</translation>
 <translation id="1862930711583847113"><ph name="FILE" />ను ఎగుమతి చేయడం సాధ్యం కాలేదు</translation>
 <translation id="1899697626337024495">ఫోటో రిజల్యూషన్</translation>
-<translation id="2008689030244369546">పూర్తిగా సరికొత్త రూపం</translation>
 <translation id="2036868001356139588">టైమర్ వ్యవధి</translation>
 <translation id="2050339315714019657">పోర్ట్రెయిట్</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> యాక్టివ్‌గా ఉంది</translation>
@@ -24,6 +22,7 @@
 
 నిల్వ అనుమతులు కలిగిన యాప్‌లు మీ ఫోటోలు మరియు వీడియోలను యాక్సెస్ చేయగలుగుతాయి.</translation>
 <translation id="3081586908890909590">వీడియో రికార్డింగ్ మోడ్‌కు మార్చు</translation>
+<translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">గ్రిడ్ రకం</translation>
 <translation id="3227137524299004712">మైక్రోఫోన్</translation>
 <translation id="3259149966178251584">కెమెరా రిజల్యూషన్</translation>
@@ -44,9 +43,7 @@
 <translation id="5671277269877808209">చతురస్రం</translation>
 <translation id="5775960006311140197">నిపుణుల మోడ్</translation>
 <translation id="5869546221129391014">గ్రిడ్</translation>
-<translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6073451960410192870">రికార్డ్ చేయడం ఆపివేయి</translation>
-<translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6197807149213783179">మెటాడేటాను సేవ్ చేయి</translation>
 <translation id="6233780560267770709">3 బై 3</translation>
 <translation id="6243827288366940320">గోల్డెన్ నిష్పత్తి</translation>
@@ -65,6 +62,8 @@
 <translation id="7658239707568436148">రద్దు చేయి</translation>
 <translation id="7670511624014457267">60 FPS</translation>
 <translation id="8049189770492311300">టైమర్</translation>
+<translation id="8067883171444229417">వీడియోను ప్లే చేయి</translation>
+<translation id="8131740175452115882">నిర్ధారించు</translation>
 <translation id="8145038249676204903">ఫోటోను తీయడానికి మార్చు</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>

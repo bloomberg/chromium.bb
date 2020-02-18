@@ -122,14 +122,15 @@ std::unique_ptr<syncer::EntityData> CopyToEntityData(
 base::Optional<syncer::ModelError> ParseLocalEntriesOnBackendSequence(
     base::Time now,
     std::map<std::string, std::unique_ptr<SendTabToSelfEntry>>* entries,
-    std::string* local_session_name,
+    std::string* local_personalizable_device_name,
     std::unique_ptr<ModelTypeStore::RecordList> record_list) {
   DCHECK(entries);
   DCHECK(entries->empty());
-  DCHECK(local_session_name);
+  DCHECK(local_personalizable_device_name);
   DCHECK(record_list);
 
-  *local_session_name = syncer::GetSessionNameBlocking();
+  *local_personalizable_device_name =
+      syncer::GetPersonalizableDeviceNameBlocking();
 
   for (const syncer::ModelTypeStore::Record& r : *record_list) {
     auto specifics = std::make_unique<SendTabToSelfLocal>();
@@ -373,11 +374,6 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
 
   if (!url.is_valid()) {
     UMA_HISTOGRAM_ENUMERATION(kAddEntryStatus, UMAAddEntryStatus::FAILURE);
-    return nullptr;
-  }
-
-  // AddEntry should be a no-op if the UI is disabled
-  if (!base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI)) {
     return nullptr;
   }
 
@@ -712,6 +708,12 @@ bool SendTabToSelfBridge::ShouldUpdateTargetDeviceInfoList() const {
 }
 
 void SendTabToSelfBridge::SetTargetDeviceInfoList() {
+  // Verify that the current TrackedCacheGuid() is the local GUID without
+  // enforcing that tracked cache GUID is set.
+  DCHECK(device_info_tracker_->IsRecentLocalCacheGuid(
+             change_processor()->TrackedCacheGuid()) ||
+         change_processor()->TrackedCacheGuid().empty());
+
   std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
       device_info_tracker_->GetAllDeviceInfo();
   number_of_devices_ = all_devices.size();
@@ -726,6 +728,7 @@ void SendTabToSelfBridge::SetTargetDeviceInfoList() {
 
   target_device_name_to_cache_info_.clear();
   std::set<std::string> unique_device_names;
+  std::unordered_map<std::string, int> short_names_counter;
   for (const auto& device : all_devices) {
     // If the current device is considered expired for our purposes, stop here
     // since the next devices in the vector are at least as expired than this
@@ -734,14 +737,12 @@ void SendTabToSelfBridge::SetTargetDeviceInfoList() {
       break;
     }
 
-    // TODO(crbug.com/966413): Implement a better way to dedupe local devices in
-    // case the user has other devices with the same name.
-    // Don't include this device. Also compare the name as the device can have
-    // different cache guids (e.g. after stopping and re-starting sync).
-    if (device->guid() == change_processor()->TrackedCacheGuid() ||
-        device->client_name() == local_device_name_) {
+    // Don't include this device if it is the local device.
+    if (device_info_tracker_->IsRecentLocalCacheGuid(device->guid())) {
       continue;
     }
+
+    DCHECK_NE(device->guid(), change_processor()->TrackedCacheGuid());
 
     // Don't include devices that have disabled the send tab to self receiving
     // feature.
@@ -749,15 +750,24 @@ void SendTabToSelfBridge::SetTargetDeviceInfoList() {
       continue;
     }
 
+    SharingDeviceNames device_names = GetSharingDeviceNames(device.get());
+
     // Only keep one device per device name. We only keep the first occurrence
     // which is the most recent.
-    if (unique_device_names.insert(device->client_name()).second) {
-      TargetDeviceInfo target_device_info(device->client_name(), device->guid(),
-                                          device->device_type(),
-                                          device->last_updated_timestamp());
+    if (unique_device_names.insert(device_names.full_name).second) {
+      TargetDeviceInfo target_device_info(
+          device_names.full_name, device_names.short_name, device->guid(),
+          device->device_type(), device->last_updated_timestamp());
       target_device_name_to_cache_info_.push_back(target_device_info);
       oldest_non_expired_device_timestamp_ = device->last_updated_timestamp();
+
+      short_names_counter[device_names.short_name]++;
     }
+  }
+  for (auto& device_info : target_device_name_to_cache_info_) {
+    bool unique_short_name = short_names_counter[device_info.short_name] == 1;
+    device_info.device_name =
+        (unique_short_name ? device_info.short_name : device_info.full_name);
   }
 }
 

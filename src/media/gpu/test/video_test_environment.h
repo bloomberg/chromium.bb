@@ -32,19 +32,15 @@ class VideoTestEnvironment : public ::testing::Environment {
  public:
   VideoTestEnvironment();
   virtual ~VideoTestEnvironment();
+
   // ::testing::Environment implementation.
-  // Set up video test environment, called once for entire test run.
-  void SetUp() override;
   // Tear down video test environment, called once for entire test run.
   void TearDown() override;
 
-  // Get the name of the current test.
-  base::FilePath::StringType GetTestName() const;
+  // Get the name of the test output file path (testsuitename/testname).
+  base::FilePath GetTestOutputFilePath() const;
 
  private:
-  // Whether the test environment has been initialized.
-  bool initialized_ = false;
-
   // An exit manager is required to run callbacks on shutdown.
   base::AtExitManager at_exit_manager;
 

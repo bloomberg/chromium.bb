@@ -119,9 +119,6 @@ class NetWatcher :
 
   // net::NetworkChangeNotifier::DNSObserver implementation.
   void OnDNSChanged() override { LOG(INFO) << "OnDNSChanged()"; }
-  void OnInitialDNSConfigRead() override {
-    LOG(INFO) << "OnInitialDNSConfigRead()";
-  }
 
   // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
   void OnNetworkChanged(
@@ -179,7 +176,7 @@ int main(int argc, char* argv[]) {
       new net::NetworkChangeNotifierLinux(ignored_interfaces));
 #else
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
-      net::NetworkChangeNotifier::Create());
+      net::NetworkChangeNotifier::CreateIfNeeded());
 #endif
 
   // Use the network loop as the file loop also.

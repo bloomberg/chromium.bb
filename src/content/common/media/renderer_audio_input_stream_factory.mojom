@@ -17,7 +17,7 @@ import "services/audio/public/mojom/audio_processing.mojom";
 // by the lifetime of the client.
 interface RendererAudioInputStreamFactory {
   CreateStream(
-      RendererAudioInputStreamFactoryClient client,
+      pending_remote<RendererAudioInputStreamFactoryClient> client,
       mojo_base.mojom.UnguessableToken session_id,
       media.mojom.AudioParameters params,
       bool automatic_gain_control,
@@ -44,8 +44,8 @@ interface RendererAudioInputStreamFactoryClient {
   // process hosting it crashing, this function should be called again with a
   // fresh stream.
   StreamCreated(
-      media.mojom.AudioInputStream stream,
-      media.mojom.AudioInputStreamClient& client_request,
+      pending_remote<media.mojom.AudioInputStream> stream,
+      pending_receiver<media.mojom.AudioInputStreamClient> client_request,
       media.mojom.ReadOnlyAudioDataPipe data_pipe,
       bool initially_muted,
       mojo_base.mojom.UnguessableToken? stream_id);

@@ -22,7 +22,8 @@
 #include "media/capture/video/chromeos/request_builder.h"
 #include "media/capture/video/chromeos/stream_buffer_manager.h"
 #include "media/capture/video_capture_types.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace media {
 
@@ -120,7 +121,8 @@ class CAPTURE_EXPORT RequestManager final
     base::Optional<uint64_t> input_buffer_id;
   };
 
-  RequestManager(cros::mojom::Camera3CallbackOpsRequest callback_ops_request,
+  RequestManager(mojo::PendingReceiver<cros::mojom::Camera3CallbackOps>
+                     callback_ops_receiver,
                  std::unique_ptr<StreamCaptureInterface> capture_interface,
                  CameraDeviceContext* device_context,
                  VideoCaptureBufferType buffer_type,
@@ -218,6 +220,10 @@ class CAPTURE_EXPORT RequestManager final
   void SetSensorTimestamp(cros::mojom::CameraMetadataPtr* settings,
                           uint64_t shutter_timestamp);
 
+  // Puts availability of Zero Shutter Lag into the metadata.
+  void SetZeroShutterLag(cros::mojom::CameraMetadataPtr* settings,
+                         bool enabled);
+
   // Prepares a capture request by mixing repeating request with one-shot
   // request if it exists. If there are reprocess requests in the queue, just
   // build the reprocess capture request without mixing the repeating request.
@@ -274,7 +280,7 @@ class CAPTURE_EXPORT RequestManager final
   // SetRepeatingCaptureMetadata(), update them onto |capture_settings|.
   void UpdateCaptureSettings(cros::mojom::CameraMetadataPtr* capture_settings);
 
-  mojo::Binding<cros::mojom::Camera3CallbackOps> callback_ops_;
+  mojo::Receiver<cros::mojom::Camera3CallbackOps> callback_ops_;
 
   std::unique_ptr<StreamCaptureInterface> capture_interface_;
 

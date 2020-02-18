@@ -27,7 +27,6 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_jpeg_encoder.h"
 #include "media/parsers/jpeg_parser.h"
-#include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
 namespace media {
 
@@ -157,8 +156,9 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
     input_size_ = gfx::Size();
 
     std::vector<VASurfaceID> va_surfaces;
-    if (!vaapi_wrapper_->CreateContextAndSurfaces(va_format, input_size, 1,
-                                                  &va_surfaces)) {
+    if (!vaapi_wrapper_->CreateContextAndSurfaces(
+            va_format, input_size, VaapiWrapper::SurfaceUsageHint::kGeneric, 1,
+            &va_surfaces)) {
       VLOGF(1) << "Failed to create VA surface";
       notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
       return;
@@ -171,14 +171,8 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   // We need to explicitly blit the bound input surface here to make sure the
   // input we sent to VAAPI encoder is in tiled NV12 format since implicit
   // tiling logic is not contained in every driver.
-  auto input_pixmap = CreateNativePixmapDmaBuf(input_frame.get());
-  if (!input_pixmap) {
-    VLOGF(1) << "Cannot create native pixmap for input frame";
-    notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
-    return;
-  }
   auto input_surface =
-      vpp_vaapi_wrapper_->CreateVASurfaceForPixmap(input_pixmap);
+      vpp_vaapi_wrapper_->CreateVASurfaceForVideoFrame(input_frame.get());
   if (!input_surface) {
     VLOGF(1) << "Failed to create input va surface";
     notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
@@ -249,8 +243,13 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   // size, where buffer_size can be obtained from the first plane's size.
   auto output_gmb_handle = CreateGpuMemoryBufferHandle(output_frame.get());
   DCHECK(!output_gmb_handle.is_null());
+
+  // In this case, we use the R_8 buffer with height == 1 to represent a data
+  // container. As a result, we use plane.stride as size of the data here since
+  // plane.size might be larger due to height alignment.
   const gfx::Size output_gmb_buffer_size(
-      base::checked_cast<int32_t>(output_frame->layout().planes()[0].size), 1);
+      base::checked_cast<int32_t>(output_frame->layout().planes()[0].stride),
+      1);
   auto output_gmb_buffer =
       gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
           std::move(output_gmb_handle), output_gmb_buffer_size,
@@ -315,7 +314,8 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
 
     std::vector<VASurfaceID> va_surfaces;
     if (!vaapi_wrapper_->CreateContextAndSurfaces(
-            VA_RT_FORMAT_YUV420, input_size, 1, &va_surfaces)) {
+            VA_RT_FORMAT_YUV420, input_size,
+            VaapiWrapper::SurfaceUsageHint::kGeneric, 1, &va_surfaces)) {
       VLOGF(1) << "Failed to create VA surface";
       notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
       return;
@@ -453,6 +453,12 @@ VaapiJpegEncodeAccelerator::Initialize(
                                                VAJEAEncoderResult::kError));
   if (!vpp_vaapi_wrapper) {
     VLOGF(1) << "Failed initializing VAAPI wrapper for VPP";
+    return PLATFORM_FAILURE;
+  }
+
+  // Size is irrelevant for a VPP context.
+  if (!vpp_vaapi_wrapper->CreateContext(gfx::Size())) {
+    VLOGF(1) << "Failed to create context for VPP";
     return PLATFORM_FAILURE;
   }
 

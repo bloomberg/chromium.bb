@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
@@ -52,7 +53,6 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/drop_data.h"
 #include "net/base/filename_util.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/aura/client/aura_constants.h"
@@ -215,17 +215,13 @@ void PrepareDragForDownload(
 
   // Provide the data as file (CF_HDROP). A temporary download file with the
   // Zone.Identifier ADS (Alternate Data Stream) attached will be created.
-  scoped_refptr<DragDownloadFile> download_file =
-      new DragDownloadFile(
-          download_path,
-          base::File(),
-          download_url,
-          Referrer(page_url, drop_data.referrer_policy),
-          page_encoding,
-          web_contents);
+  auto download_file = std::make_unique<DragDownloadFile>(
+      download_path, base::File(), download_url,
+      Referrer(page_url, drop_data.referrer_policy), page_encoding,
+      web_contents);
   ui::OSExchangeData::DownloadFileInfo file_download(base::FilePath(),
-                                                     download_file.get());
-  provider->SetDownloadFileInfo(file_download);
+                                                     std::move(download_file));
+  provider->SetDownloadFileInfo(&file_download);
 }
 #endif  // defined(OS_WIN)
 
@@ -398,6 +394,25 @@ aura::Window* GetHostWindow(aura::Window* window) {
 }
 
 }  // namespace
+
+WebContentsViewAura::OnPerformDropContext::OnPerformDropContext(
+    RenderWidgetHostImpl* target_rwh,
+    const ui::DropTargetEvent& event,
+    std::unique_ptr<ui::OSExchangeData> data,
+    base::ScopedClosureRunner end_drag_runner,
+    base::Optional<gfx::PointF> transformed_pt,
+    gfx::PointF screen_pt)
+    : target_rwh(target_rwh->GetWeakPtr()),
+      event(event),
+      data(std::move(data)),
+      end_drag_runner(std::move(end_drag_runner)),
+      transformed_pt(std::move(transformed_pt)),
+      screen_pt(screen_pt) {}
+
+WebContentsViewAura::OnPerformDropContext::OnPerformDropContext(
+    OnPerformDropContext&&) = default;
+
+WebContentsViewAura::OnPerformDropContext::~OnPerformDropContext() = default;
 
 #if defined(OS_WIN)
 // A web contents observer that watches for navigations while an async drop
@@ -936,12 +951,7 @@ Visibility WebContentsViewAura::GetVisibility() const {
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, WebContentsView implementation:
 
-void WebContentsViewAura::CreateView(const gfx::Size& initial_size,
-                                     gfx::NativeView context) {
-  // NOTE: we ignore |initial_size| since in some cases it's wrong (such as
-  // if the bookmark bar is not shown and you create a new tab). The right
-  // value is set shortly after this, so its safe to ignore.
-
+void WebContentsViewAura::CreateView(gfx::NativeView context) {
   CreateAuraWindow(context);
 
   // delegate_->GetDragDestDelegate() creates a new delegate on every call.
@@ -952,7 +962,7 @@ void WebContentsViewAura::CreateView(const gfx::Size& initial_size,
 }
 
 RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host, bool is_guest_view_hack) {
+    RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
@@ -966,10 +976,8 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
 
   RenderWidgetHostViewAura* view =
       g_create_render_widget_host_view
-          ? g_create_render_widget_host_view(render_widget_host,
-                                             is_guest_view_hack)
-          : new RenderWidgetHostViewAura(render_widget_host,
-                                         is_guest_view_hack);
+          ? g_create_render_widget_host_view(render_widget_host)
+          : new RenderWidgetHostViewAura(render_widget_host);
   view->InitAsChild(GetRenderWidgetHostViewParent());
 
   RenderWidgetHostImpl* host_impl =
@@ -992,7 +1000,7 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
 
 RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForChildWidget(
     RenderWidgetHost* render_widget_host) {
-  return new RenderWidgetHostViewAura(render_widget_host, false);
+  return new RenderWidgetHostViewAura(render_widget_host);
 }
 
 void WebContentsViewAura::SetPageTitle(const base::string16& title) {
@@ -1429,10 +1437,44 @@ void WebContentsViewAura::PerformDropCallback(
   if (!current_drop_data_)
     return;
 
-  const int key_modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
+  OnPerformDropContext context(target_rwh, event, std::move(data),
+                               std::move(end_drag_runner), transformed_pt,
+                               screen_pt);
+  // |delegate_| may be null in unit tests.
+  if (delegate_) {
+    delegate_->OnPerformDrop(
+        *current_drop_data_,
+        base::BindOnce(&WebContentsViewAura::FinishOnPerformDropCallback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(context)));
+  } else {
+    FinishOnPerformDropCallback(
+        std::move(context),
+        WebContentsViewDelegate::DropCompletionResult::kContinue);
+  }
+}
+
+void WebContentsViewAura::FinishOnPerformDropCallback(
+    OnPerformDropContext context,
+    WebContentsViewDelegate::DropCompletionResult result) {
+  const int key_modifiers =
+      ui::EventFlagsToWebEventModifiers(context.event.flags());
+  // This is possibly an async callback.  Make sure the RWH is still valid.
+  if (!context.target_rwh || !IsValidDragTarget(context.target_rwh.get()))
+    return;
+
+  if (result != WebContentsViewDelegate::DropCompletionResult::kContinue) {
+    if (!drop_callback_for_testing_.is_null()) {
+      std::move(drop_callback_for_testing_)
+          .Run(context.target_rwh.get(), *current_drop_data_,
+               context.transformed_pt.value(), context.screen_pt, key_modifiers,
+               /*drop_allowed=*/false);
+    }
+    return;
+  }
+
 #if defined(OS_WIN)
   if (ShouldIncludeVirtualFiles(*current_drop_data_) &&
-      data->HasVirtualFilenames()) {
+      context.data->HasVirtualFilenames()) {
     // Asynchronously retrieve the actual content of any virtual files now (this
     // step is not needed for "real" files already on the file system, e.g.
     // those dropped on Chromium from the desktop). When all content has been
@@ -1446,22 +1488,23 @@ void WebContentsViewAura::PerformDropCallback(
     // GetVirtualFilesAsTempFiles will immediately return false if there are no
     // virtual files to retrieve (all items are folders e.g.) and no callback
     // will be received.
-    if (data->GetVirtualFilesAsTempFiles(std::move(callback))) {
+    if (context.data->GetVirtualFilesAsTempFiles(std::move(callback))) {
       // Cache the parameters as they were at the time of the drop. This is
       // needed for checking that the drop target is still valid when the async
       // operation completes.
       async_drop_navigation_observer_ =
           std::make_unique<AsyncDropNavigationObserver>(
               web_contents_, std::move(current_drop_data_),
-              std::move(end_drag_runner), target_rwh, transformed_pt.value(),
-              screen_pt, key_modifiers);
+              std::move(context.end_drag_runner), context.target_rwh.get(),
+              context.transformed_pt.value(), context.screen_pt, key_modifiers);
       return;
     }
   }
 
 #endif
-  CompleteDrop(target_rwh, *current_drop_data_, transformed_pt.value(),
-               screen_pt, key_modifiers);
+  CompleteDrop(context.target_rwh.get(), *current_drop_data_,
+               context.transformed_pt.value(), context.screen_pt,
+               key_modifiers);
   current_drop_data_.reset();
 }
 
@@ -1490,7 +1533,7 @@ void WebContentsViewAura::CompleteDrop(RenderWidgetHostImpl* target_rwh,
   if (!drop_callback_for_testing_.is_null()) {
     std::move(drop_callback_for_testing_)
         .Run(target_rwh, drop_data, client_pt, screen_pt, key_modifiers,
-             /*drop_allowed*/ true);
+             /*drop_allowed=*/true);
   }
 }
 

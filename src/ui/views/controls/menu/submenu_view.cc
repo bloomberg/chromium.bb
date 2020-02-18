@@ -8,6 +8,7 @@
 #include <numeric>
 
 #include "base/compiler_specific.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/paint_recorder.h"
@@ -26,9 +27,6 @@ namespace {
 
 // Height of the drop indicator. This should be an even number.
 constexpr int kDropIndicatorHeight = 2;
-
-// Color of the drop indicator.
-constexpr SkColor kDropIndicatorColor = SK_ColorBLACK;
 
 }  // namespace
 
@@ -227,7 +225,9 @@ void SubmenuView::PaintChildren(const PaintInfo& paint_info) {
   if (paint_drop_indicator) {
     gfx::Rect bounds = CalculateDropIndicatorBounds(drop_item_, drop_position_);
     ui::PaintRecorder recorder(paint_info.context(), size());
-    recorder.canvas()->FillRect(bounds, kDropIndicatorColor);
+    const SkColor drop_indicator_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_MenuDropIndicator);
+    recorder.canvas()->FillRect(bounds, drop_indicator_color);
   }
 }
 
@@ -407,9 +407,13 @@ void SubmenuView::Reposition(const gfx::Rect& bounds) {
 
 void SubmenuView::Close() {
   if (host_) {
-    NotifyAccessibilityEvent(ax::mojom::Event::kMenuPopupEnd, true);
+    // We send the event to the ScrollViewContainer first because the View
+    // accessibility delegate sets up a focus override when receiving the
+    // kMenuStart event that we want to be disabled when we send the
+    // kMenuPopupEnd event in order to access the previously focused node.
     GetScrollViewContainer()->NotifyAccessibilityEvent(
         ax::mojom::Event::kMenuEnd, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuPopupEnd, true);
 
     host_->DestroyMenuHost();
     host_ = nullptr;

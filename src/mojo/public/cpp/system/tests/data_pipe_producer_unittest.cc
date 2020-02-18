@@ -40,10 +40,10 @@ class DataPipeReader {
         watcher_(FROM_HERE,
                  SimpleWatcher::ArmingPolicy::AUTOMATIC,
                  base::SequencedTaskRunnerHandle::Get()) {
-    watcher_.Watch(
-        consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-        MOJO_WATCH_CONDITION_SATISFIED,
-        base::Bind(&DataPipeReader::OnDataAvailable, base::Unretained(this)));
+    watcher_.Watch(consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                   MOJO_WATCH_CONDITION_SATISFIED,
+                   base::BindRepeating(&DataPipeReader::OnDataAvailable,
+                                       base::Unretained(this)));
   }
   ~DataPipeReader() = default;
 
@@ -271,8 +271,8 @@ TEST_F(DataPipeProducerTest, TinyFile) {
 
 TEST_F(DataPipeProducerTest, HugeFile) {
   // We want a file size that is many times larger than the data pipe size.
-  // 63MB is large enough, while being small enough to fit in a typical tmpfs.
-  constexpr size_t kHugeFileSize = 63 * 1024 * 1024;
+  // 5MB is large enough, while being small enough to fit in a typical tmpfs.
+  constexpr size_t kHugeFileSize = 5 * 1024 * 1024;
   constexpr uint32_t kDataPipeSize = 512 * 1024;
 
   std::string test_string(kHugeFileSize, 'a');

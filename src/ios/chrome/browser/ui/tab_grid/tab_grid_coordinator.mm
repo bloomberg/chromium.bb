@@ -177,6 +177,7 @@
   self.remoteTabsMediator = [[RecentTabsMediator alloc] init];
   self.remoteTabsMediator.browserState = _regularTabModel.browserState;
   self.remoteTabsMediator.consumer = baseViewController.remoteTabsConsumer;
+  self.remoteTabsMediator.webStateList = self.regularTabModel.webStateList;
   // TODO(crbug.com/845636) : Currently, the image data source must be set
   // before the mediator starts updating its consumer. Fix this so that order of
   // calls does not matter.
@@ -184,8 +185,8 @@
       self.remoteTabsMediator;
   baseViewController.remoteTabsViewController.delegate =
       self.remoteTabsMediator;
-  baseViewController.remoteTabsViewController.dispatcher =
-      static_cast<id<ApplicationCommands>>(self.dispatcher);
+  baseViewController.remoteTabsViewController.handler =
+      HandlerForProtocol(self.dispatcher, ApplicationCommands);
   baseViewController.remoteTabsViewController.loadStrategy =
       UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
   baseViewController.remoteTabsViewController.restoredTabDisposition =

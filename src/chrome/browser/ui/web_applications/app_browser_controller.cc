@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 
 #include "base/feature_list.h"
+#include "base/strings/string_piece.h"
+#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,7 +27,9 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/favicon_size.h"
@@ -34,15 +38,14 @@
 namespace web_app {
 
 // static
-std::unique_ptr<web_app::AppBrowserController>
+std::unique_ptr<AppBrowserController>
 AppBrowserController::MaybeCreateWebAppController(Browser* browser) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  const AppId app_id =
-      web_app::GetAppIdFromApplicationName(browser->app_name());
+  const AppId app_id = GetAppIdFromApplicationName(browser->app_name());
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-    auto* provider = web_app::WebAppProvider::Get(browser->profile());
+    auto* provider = WebAppProvider::Get(browser->profile());
     if (provider && provider->registrar().IsInstalled(app_id))
-      return std::make_unique<web_app::WebAppBrowserController>(browser);
+      return std::make_unique<WebAppBrowserController>(browser);
   }
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(browser->profile())
@@ -51,7 +54,7 @@ AppBrowserController::MaybeCreateWebAppController(Browser* browser) {
     if (base::FeatureList::IsEnabled(
             features::kDesktopPWAsUnifiedUiController) &&
         extension->from_bookmark()) {
-      return std::make_unique<web_app::WebAppBrowserController>(browser);
+      return std::make_unique<WebAppBrowserController>(browser);
     }
     return std::make_unique<extensions::HostedAppBrowserController>(browser);
   }
@@ -78,8 +81,19 @@ base::string16 AppBrowserController::FormatUrlOrigin(const GURL& url) {
       net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
 }
 
-AppBrowserController::AppBrowserController(Browser* browser)
-    : content::WebContentsObserver(nullptr), browser_(browser) {
+AppBrowserController::AppBrowserController(
+    Browser* browser,
+    base::Optional<web_app::AppId> app_id)
+    : content::WebContentsObserver(nullptr),
+      app_id_(std::move(app_id)),
+      browser_(browser),
+      // Show tabs for Terminals only
+      // TODO(crbug.com/846546): Generalise has_tab_strip_ as a SystemWebApp
+      // capability.
+      has_tab_strip_(HasAppId() ? GetAppIdForSystemWebApp(
+                                      browser->profile(),
+                                      SystemAppType::TERMINAL) == GetAppId()
+                                : false) {
   browser->tab_strip_model()->AddObserver(this);
 }
 
@@ -91,11 +105,82 @@ bool AppBrowserController::CreatedForInstalledPwa() const {
   return false;
 }
 
-bool AppBrowserController::HasTabStrip() const {
-  // Show tabs for Terminal only.
-  // TODO(crbug.com/846546): Generalise this as a SystemWebApp capability.
-  return GetAppIdForSystemWebApp(browser()->profile(),
-                                 SystemAppType::TERMINAL) == GetAppId();
+bool AppBrowserController::ShouldShowCustomTabBar() const {
+  if (!IsInstalled())
+    return false;
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  if (!web_contents)
+    return false;
+
+  GURL launch_url = GetAppLaunchURL();
+  base::StringPiece launch_scheme = launch_url.scheme_piece();
+
+  bool is_internal_launch_scheme =
+      launch_scheme == extensions::kExtensionScheme ||
+      launch_scheme == content::kChromeUIScheme;
+
+  // The current page must be secure for us to hide the toolbar. However,
+  // chrome:// launch URL apps can hide the toolbar,
+  // if the current WebContents URLs are the same as the launch scheme.
+  //
+  // Note that the launch scheme may be insecure, but as long as the current
+  // page's scheme is secure, we can hide the toolbar.
+  base::StringPiece secure_page_scheme =
+      is_internal_launch_scheme ? launch_scheme : url::kHttpsScheme;
+
+  auto should_show_toolbar_for_url = [&](const GURL& url) -> bool {
+    // If the url is unset, it doesn't give a signal as to whether the toolbar
+    // should be shown or not. In lieu of more information, do not show the
+    // toolbar.
+    if (url.is_empty())
+      return false;
+
+    // Page URLs that are not within scope
+    // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
+    // corresponding to |launch_url| show the toolbar.
+    bool out_of_scope = !IsUrlInAppScope(url);
+
+    if (url.scheme_piece() != secure_page_scheme) {
+      // Some origins are (such as localhost) are considered secure even when
+      // served over non-secure schemes. However, in order to hide the toolbar,
+      // the 'considered secure' origin must also be in the app's scope.
+      return out_of_scope || !InstallableManager::IsOriginConsideredSecure(url);
+    }
+
+    if (IsForSystemWebApp()) {
+      DCHECK_EQ(url.scheme_piece(), content::kChromeUIScheme);
+      return false;
+    }
+
+    return out_of_scope;
+  };
+
+  GURL visible_url = web_contents->GetVisibleURL();
+  GURL last_committed_url = web_contents->GetLastCommittedURL();
+
+  if (last_committed_url.is_empty() && visible_url.is_empty())
+    return should_show_toolbar_for_url(initial_url());
+
+  if (should_show_toolbar_for_url(visible_url) ||
+      should_show_toolbar_for_url(last_committed_url)) {
+    return true;
+  }
+
+  // Insecure external web sites show the toolbar.
+  // Note: IsContentSecure is false until a navigation is committed.
+  if (!last_committed_url.is_empty() && !is_internal_launch_scheme &&
+      !InstallableManager::IsContentSecure(web_contents)) {
+    return true;
+  }
+
+  return false;
+}
+
+bool AppBrowserController::has_tab_strip() const {
+  return has_tab_strip_;
 }
 
 bool AppBrowserController::HasTitlebarToolbar() const {
@@ -139,6 +224,10 @@ bool AppBrowserController::IsHostedApp() const {
   return false;
 }
 
+WebAppBrowserController* AppBrowserController::AsWebAppBrowserController() {
+  return nullptr;
+}
+
 bool AppBrowserController::CanUninstall() const {
   return false;
 }
@@ -154,12 +243,12 @@ void AppBrowserController::UpdateCustomTabBarVisibility(bool animate) const {
 }
 
 bool AppBrowserController::IsForSystemWebApp() const {
-  if (!GetAppId())
+  if (!HasAppId())
     return false;
 
-  return web_app::WebAppProvider::Get(browser()->profile())
+  return WebAppProvider::Get(browser()->profile())
       ->system_web_app_manager()
-      .IsSystemWebApp(*GetAppId());
+      .IsSystemWebApp(GetAppId());
 }
 
 void AppBrowserController::DidStartNavigation(
@@ -212,20 +301,19 @@ void AppBrowserController::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
+  if (selection.active_tab_changed()) {
+    content::WebContentsObserver::Observe(selection.new_contents);
+    DidChangeThemeColor(GetThemeColor());
+  }
   if (change.type() == TabStripModelChange::kInserted) {
     for (const auto& contents : change.GetInsert()->contents)
       OnTabInserted(contents.contents);
   } else if (change.type() == TabStripModelChange::kRemoved) {
     for (const auto& contents : change.GetRemove()->contents)
       OnTabRemoved(contents.contents);
+    // WebContents should be null when the last tab is closed.
+    DCHECK_EQ(web_contents() == nullptr, tab_strip_model->empty());
   }
-  if (selection.active_tab_changed()) {
-    content::WebContentsObserver::Observe(selection.new_contents);
-    DidChangeThemeColor(GetThemeColor());
-  }
-
-  // WebContents should be null when the last tab is closed.
-  DCHECK_EQ(web_contents() == nullptr, tab_strip_model->empty());
 }
 
 void AppBrowserController::OnTabInserted(content::WebContents* contents) {

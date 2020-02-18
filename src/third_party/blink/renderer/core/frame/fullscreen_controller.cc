@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/frame/fullscreen_controller.h"
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/web/web_fullscreen_options.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom-blink.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -47,17 +47,6 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 
 namespace blink {
-
-namespace {
-
-WebLocalFrameClient& GetWebFrameClient(LocalFrame& frame) {
-  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  DCHECK(web_frame);
-  DCHECK(web_frame->Client());
-  return *web_frame->Client();
-}
-
-}  // anonymous namespace
 
 FullscreenController::FullscreenController(WebViewImpl* web_view_base)
     : web_view_base_(web_view_base),
@@ -168,10 +157,8 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
     return;
 
   DCHECK(state_ == State::kInitial);
-  blink::WebFullscreenOptions blink_options;
-  // Only clone options if the feature is enabled.
-  blink_options.prefers_navigation_bar = options->navigationUI() != "hide";
-  GetWebFrameClient(frame).EnterFullscreen(blink_options);
+  frame.GetLocalFrameHostRemote().EnterFullscreen(
+      mojom::blink::FullscreenOptions::New(options->navigationUI() != "hide"));
 
   state_ = State::kEnteringFullscreen;
 }
@@ -184,7 +171,7 @@ void FullscreenController::ExitFullscreen(LocalFrame& frame) {
   if (state_ != State::kFullscreen)
     return;
 
-  GetWebFrameClient(frame).ExitFullscreen();
+  frame.GetLocalFrameHostRemote().ExitFullscreen();
 
   state_ = State::kExitingFullscreen;
 }
@@ -195,13 +182,14 @@ void FullscreenController::FullscreenElementChanged(Element* old_element,
 
   // We only override the WebView's background color for overlay fullscreen
   // video elements, so have to restore the override when the element changes.
-  if (IsHTMLVideoElement(old_element))
+  auto* old_video_element = DynamicTo<HTMLVideoElement>(old_element);
+  if (old_video_element)
     RestoreBackgroundColorOverride();
 
   if (new_element) {
     DCHECK(Fullscreen::IsFullscreenElement(*new_element));
 
-    if (auto* video_element = ToHTMLVideoElementOrNull(*new_element)) {
+    if (auto* video_element = DynamicTo<HTMLVideoElement>(*new_element)) {
       video_element->DidEnterFullscreen();
 
       // If the video uses overlay fullscreen mode, make the background
@@ -214,15 +202,15 @@ void FullscreenController::FullscreenElementChanged(Element* old_element,
   if (old_element) {
     DCHECK(!Fullscreen::IsFullscreenElement(*old_element));
 
-    if (auto* video_element = ToHTMLVideoElementOrNull(*old_element))
-      video_element->DidExitFullscreen();
+    if (old_video_element)
+      old_video_element->DidExitFullscreen();
   }
 
   // Tell the browser the fullscreen state has changed.
   if (Element* owner = new_element ? new_element : old_element) {
     Document& doc = owner->GetDocument();
     if (LocalFrame* frame = doc.GetFrame()) {
-      GetWebFrameClient(*frame).FullscreenStateChanged(!!new_element);
+      frame->GetLocalFrameHostRemote().FullscreenStateChanged(!!new_element);
       if (IsSpatialNavigationEnabled(frame)) {
         doc.GetPage()->GetSpatialNavigationController().FullscreenStateChanged(
             new_element);

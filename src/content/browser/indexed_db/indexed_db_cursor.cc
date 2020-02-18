@@ -20,7 +20,7 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 using blink::IndexedDBKey;
 
@@ -33,12 +33,12 @@ namespace {
 // back end; in that case the tx will already have sent an abort to the request
 // so this would be ignored.
 IndexedDBDatabaseError CreateCursorClosedError() {
-  return IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
+  return IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
                                 "The cursor has been closed.");
 }
 
 IndexedDBDatabaseError CreateError(
-    uint16_t code,
+    blink::mojom::IDBException code,
     const char* message,
     base::WeakPtr<IndexedDBTransaction> transaction) {
   if (transaction)
@@ -113,7 +113,7 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
 
     // CreateError() needs to be called before calling Close() so
     // |transaction_| is alive.
-    auto error = CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+    auto error = CreateError(blink::mojom::IDBException::kUnknownError,
                              "Error advancing cursor", transaction_);
     Close();
     std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(
@@ -127,13 +127,7 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
   if (value) {
     mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
     blob_info.swap(value->blob_info);
-
-    if (!IndexedDBCallbacks::CreateAllBlobs(
-            dispatcher_host->blob_storage_context(),
-            IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
-                blob_info, &mojo_value->blob_or_file_info))) {
-      return s;
-    }
+    dispatcher_host->CreateAllBlobs(blob_info, &mojo_value->blob_or_file_info);
   } else {
     mojo_value = blink::mojom::IDBValue::New();
   }
@@ -200,7 +194,7 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
     // |transaction_| must be valid for CreateError(), so we can't call
     // Close() until after calling CreateError().
     IndexedDBDatabaseError error =
-        CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+        CreateError(blink::mojom::IDBException::kUnknownError,
                     "Error continuing cursor.", transaction_);
     Close();
     std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(
@@ -214,13 +208,7 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
   if (value) {
     mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
     blob_info.swap(value->blob_info);
-
-    if (!IndexedDBCallbacks::CreateAllBlobs(
-            dispatcher_host->blob_storage_context(),
-            IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
-                blob_info, &mojo_value->blob_or_file_info))) {
-      return s;
-    }
+    dispatcher_host->CreateAllBlobs(blob_info, &mojo_value->blob_or_file_info);
   } else {
     mojo_value = blink::mojom::IDBValue::New();
   }
@@ -294,7 +282,7 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
       // |transaction_| must be valid for CreateError(), so we can't call
       // Close() until after calling CreateError().
       IndexedDBDatabaseError error =
-          CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+          CreateError(blink::mojom::IDBException::kUnknownError,
                       "Error continuing cursor.", transaction_);
       Close();
       std::move(callback).Run(blink::mojom::IDBCursorResult::NewErrorResult(
@@ -345,18 +333,8 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
   for (size_t i = 0; i < found_values.size(); ++i) {
     mojo_values.push_back(
         IndexedDBValue::ConvertAndEraseValue(&found_values[i]));
-  }
-
-  std::vector<IndexedDBCallbacks::IndexedDBValueBlob> value_blobs;
-  for (size_t i = 0; i < mojo_values.size(); ++i) {
-    IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
-        &value_blobs, found_values[i].blob_info,
-        &mojo_values[i]->blob_or_file_info);
-  }
-
-  if (!IndexedDBCallbacks::CreateAllBlobs(
-          dispatcher_host->blob_storage_context(), std::move(value_blobs))) {
-    return s;
+    dispatcher_host->CreateAllBlobs(found_values[i].blob_info,
+                                    &mojo_values[i]->blob_or_file_info);
   }
 
   std::move(callback).Run(blink::mojom::IDBCursorResult::NewValues(

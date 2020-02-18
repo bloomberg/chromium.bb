@@ -11,6 +11,7 @@
 
 #include <algorithm>
 
+#include "base/numerics/ranges.h"
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
@@ -215,12 +216,13 @@ STDMETHODIMP TSFTextStore::GetSelection(ULONG selection_index,
 STDMETHODIMP TSFTextStore::GetStatus(TS_STATUS* status) {
   if (!status)
     return E_INVALIDARG;
-
-  // Setting input pane policy to manual so TryShow/TryHide APIs can function
-  // properly. We definitely need to think about a good solution here (i.e.
-  // remove TryShow/TryHide APIs if possible) and let TSF handle SIP based on
-  // textstore document focus.
-  status->dwDynamicFlags = TS_SD_INPUTPANEMANUALDISPLAYENABLE;
+  // TODO(snianu): Uncomment this once TSF fix for input pane policy is
+  // serviced.
+  // if (input_panel_policy_manual_)
+  //   status->dwDynamicFlags |= TS_SD_INPUTPANEMANUALDISPLAYENABLE;
+  // else
+  //   status->dwDynamicFlags &= ~TS_SD_INPUTPANEMANUALDISPLAYENABLE;
+  status->dwDynamicFlags |= TS_SD_INPUTPANEMANUALDISPLAYENABLE;
   // We don't support hidden text.
   // TODO(IME): Remove TS_SS_TRANSITORY to support Korean reconversion
   status->dwStaticFlags = TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT;
@@ -461,9 +463,9 @@ STDMETHODIMP TSFTextStore::QueryInsert(LONG acp_test_start,
   const LONG composition_start = static_cast<LONG>(composition_start_);
   const LONG buffer_size = static_cast<LONG>(string_buffer_document_.size());
   *acp_result_start =
-      std::min(std::max(composition_start, acp_test_start), buffer_size);
+      base::ClampToRange(acp_test_start, composition_start, buffer_size);
   *acp_result_end =
-      std::min(std::max(composition_start, acp_test_end), buffer_size);
+      base::ClampToRange(acp_test_end, composition_start, buffer_size);
   return S_OK;
 }
 
@@ -625,20 +627,23 @@ STDMETHODIMP TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // (composition_string) is not the same as previous composition string
   // (prev_composition_string_) during same composition or the composition
   // string is the same for different composition or selection is changed during
-  // composition. If composition_string is empty and there is an existing
-  // composition going on, we still need to call into blink to complete the
-  // composition started by TSF.
+  // composition or IME spans are changed during same composition. If
+  // composition_string is empty and there is an existing composition going on,
+  // we still need to call into blink to complete the composition started by
+  // TSF.
   if ((has_composition_range_ &&
        (previous_composition_start_ != composition_range_.start() ||
         previous_composition_string_ != composition_string ||
         !previous_composition_selection_range_.EqualsIgnoringDirection(
-            selection_))) ||
+            selection_) ||
+        previous_text_spans_ != text_spans_)) ||
       ((wparam_keydown_fired_ != 0) &&
        text_input_client_->HasCompositionText() &&
        composition_string.empty())) {
     previous_composition_string_ = composition_string;
     previous_composition_start_ = composition_range_.start();
     previous_composition_selection_range_ = selection_;
+    previous_text_spans_ = text_spans_;
 
     // We need to remove replacing text first before starting new composition if
     // there are any.
@@ -909,6 +914,7 @@ STDMETHODIMP TSFTextStore::OnEndEdit(ITfContext* context,
     previous_composition_string_.clear();
     previous_composition_start_ = 0;
     previous_composition_selection_range_ = gfx::Range::InvalidRange();
+    previous_text_spans_.clear();
   }
 
   return S_OK;
@@ -925,7 +931,11 @@ bool TSFTextStore::GetDisplayAttribute(TfGuidAtom guid_atom,
           guid, display_attribute_info.GetAddressOf(), nullptr))) {
     return false;
   }
-  return SUCCEEDED(display_attribute_info->GetAttributeInfo(attribute));
+  // Display Attribute can be null so query for attributes only when its
+  // available
+  if (display_attribute_info)
+    return SUCCEEDED(display_attribute_info->GetAttributeInfo(attribute));
+  return false;
 }
 
 bool TSFTextStore::GetCompositionStatus(
@@ -1196,10 +1206,19 @@ bool TSFTextStore::ConfirmComposition() {
   previous_composition_string_.clear();
   previous_composition_start_ = 0;
   previous_composition_selection_range_ = gfx::Range::InvalidRange();
+  previous_text_spans_.clear();
   string_pending_insertion_.clear();
   composition_start_ = selection_.end();
 
   return TerminateComposition();
+}
+
+void TSFTextStore::SetInputPanelPolicy(bool input_panel_policy_manual) {
+  input_panel_policy_manual_ = input_panel_policy_manual;
+  // This notification tells TSF that the input pane flag has changed.
+  // TSF queries for the status of this flag using GetStatus and gets
+  // the updated value.
+  text_store_acp_sink_->OnStatusChange(TS_SD_INPUTPANEMANUALDISPLAYENABLE);
 }
 
 void TSFTextStore::SendOnLayoutChange() {

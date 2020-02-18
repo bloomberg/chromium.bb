@@ -367,7 +367,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
             PaintPropertyChangeType::kChangedOnlyCompositedValues) {
           const auto* paint_invalidation_layer =
               paint_invalidator_context.paint_invalidation_container->Layer();
-          if (!paint_invalidation_layer->NeedsRepaint()) {
+          if (!paint_invalidation_layer->SelfNeedsRepaint()) {
             auto* mapping =
                 paint_invalidation_layer->GetCompositedLayerMapping();
             if (!mapping)
@@ -390,6 +390,17 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     ToLayoutBoxModelObject(object).Layer()->SetNeedsRepaint();
 
   CompositingLayerPropertyUpdater::Update(object);
+}
+
+LocalFrameView* FindWebViewPluginContentFrameView(
+    const LayoutEmbeddedContent& embedded_content) {
+  for (Frame* frame = embedded_content.GetFrame()->Tree().FirstChild(); frame;
+       frame = frame->Tree().NextSibling()) {
+    if (frame->IsLocalFrame() &&
+        To<LocalFrame>(frame)->OwnerLayoutObject() == &embedded_content)
+      return To<LocalFrame>(frame)->View();
+  }
+  return nullptr;
 }
 
 void PrePaintTreeWalk::Walk(const LayoutObject& object) {
@@ -470,18 +481,26 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
     if (object.IsLayoutEmbeddedContent()) {
       const LayoutEmbeddedContent& layout_embedded_content =
           ToLayoutEmbeddedContent(object);
-      FrameView* frame_view = layout_embedded_content.ChildFrameView();
-      if (auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view)) {
+      if (auto* embedded_view =
+              layout_embedded_content.GetEmbeddedContentView()) {
         if (context().tree_builder_context) {
           auto& offset =
               context().tree_builder_context->fragments[0].current.paint_offset;
           offset += layout_embedded_content.ReplacedContentRect().offset;
-          offset -= PhysicalOffset(local_frame_view->FrameRect().Location());
+          offset -= PhysicalOffset(embedded_view->FrameRect().Location());
           offset = PhysicalOffset(RoundedIntPoint(offset));
         }
-        Walk(*local_frame_view);
+        if (embedded_view->IsLocalFrameView()) {
+          Walk(*To<LocalFrameView>(embedded_view));
+        } else if (embedded_view->IsPluginView()) {
+          // If it is a webview plugin, walk into the content frame view.
+          if (auto* plugin_content_frame_view =
+                  FindWebViewPluginContentFrameView(layout_embedded_content))
+            Walk(*plugin_content_frame_view);
+        } else {
+          // We need to do nothing for RemoteFrameView. See crbug.com/579281.
+        }
       }
-      // TODO(pdr): Investigate RemoteFrameView (crbug.com/579281).
     }
 
     object.NotifyDisplayLockDidPrePaint(DisplayLockLifecycleTarget::kChildren);

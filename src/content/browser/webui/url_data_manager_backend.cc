@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -179,17 +180,6 @@ bool URLDataManagerBackend::CheckURLIsValid(const GURL& url) {
   }
 
   return true;
-}
-
-void URLDataManagerBackend::URLToRequestPath(const GURL& url,
-                                             std::string* path) {
-  const std::string& spec = url.possibly_invalid_spec();
-  const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
-  // + 1 to skip the slash at the beginning of the path.
-  int offset = parsed.CountCharactersBefore(url::Parsed::PATH, false) + 1;
-
-  if (offset < static_cast<int>(spec.size()))
-    path->assign(spec.substr(offset));
 }
 
 bool URLDataManagerBackend::IsValidNetworkErrorCode(int error_code) {

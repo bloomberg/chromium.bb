@@ -165,8 +165,9 @@ void PresentationServiceImpl::SetReceiver(
   presentation_receiver_remote_.set_disconnect_handler(base::BindOnce(
       &PresentationServiceImpl::OnConnectionError, base::Unretained(this)));
   receiver_delegate_->RegisterReceiverConnectionAvailableCallback(
-      base::Bind(&PresentationServiceImpl::OnReceiverConnectionAvailable,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(
+          &PresentationServiceImpl::OnReceiverConnectionAvailable,
+          weak_factory_.GetWeakPtr()));
 }
 
 void PresentationServiceImpl::ListenForScreenAvailability(const GURL& url) {
@@ -292,8 +293,8 @@ void PresentationServiceImpl::ListenForConnectionStateChange(
   if (controller_delegate_) {
     controller_delegate_->ListenForConnectionStateChange(
         render_process_id_, render_frame_id_, connection,
-        base::Bind(&PresentationServiceImpl::OnConnectionStateChanged,
-                   weak_factory_.GetWeakPtr(), connection));
+        base::BindRepeating(&PresentationServiceImpl::OnConnectionStateChanged,
+                            weak_factory_.GetWeakPtr(), connection));
   }
 }
 
@@ -373,9 +374,9 @@ void PresentationServiceImpl::SetDefaultPresentationUrls(
                               presentation_urls,
                               render_frame_host_->GetLastCommittedOrigin());
   controller_delegate_->SetDefaultPresentationUrls(
-      request,
-      base::Bind(&PresentationServiceImpl::OnDefaultPresentationStarted,
-                 weak_factory_.GetWeakPtr()));
+      request, base::BindRepeating(
+                   &PresentationServiceImpl::OnDefaultPresentationStarted,
+                   weak_factory_.GetWeakPtr()));
 }
 
 void PresentationServiceImpl::CloseConnection(
@@ -393,6 +394,11 @@ void PresentationServiceImpl::Terminate(const GURL& presentation_url,
   if (controller_delegate_)
     controller_delegate_->Terminate(render_process_id_, render_frame_id_,
                                     presentation_id);
+}
+
+void PresentationServiceImpl::SetControllerDelegateForTesting(
+    ControllerPresentationServiceDelegate* controller_delegate) {
+  controller_delegate_ = controller_delegate;
 }
 
 void PresentationServiceImpl::OnConnectionStateChanged(
@@ -449,9 +455,16 @@ void PresentationServiceImpl::OnReceiverConnectionAvailable(
 
 void PresentationServiceImpl::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
+  // Since the PresentationServiceImpl is tied to the lifetime of a
+  // RenderFrameHost, we should reset the connections when a navigation
+  // finished but we're still using the same RenderFrameHost.
+  // We don't need to do anything when the navigation didn't actually commit,
+  // won't use the same RenderFrameHost, or is restoring a RenderFrameHost from
+  // the back-forward cache.
   DVLOG(2) << "PresentationServiceImpl::DidNavigateAnyFrame";
   if (!navigation_handle->HasCommitted() ||
-      !FrameMatches(navigation_handle->GetRenderFrameHost())) {
+      !FrameMatches(navigation_handle->GetRenderFrameHost()) ||
+      navigation_handle->IsServedFromBackForwardCache()) {
     return;
   }
 

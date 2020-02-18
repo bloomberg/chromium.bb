@@ -11,8 +11,6 @@
 #include "base/synchronization/lock.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/tracing/public/cpp/traced_process.h"
-#include "services/tracing/public/mojom/traced_process.mojom.h"
 
 namespace service_manager {
 
@@ -73,34 +71,38 @@ BinderOverrides& GetBinderOverrides() {
 }  // namespace
 
 ServiceBinding::ServiceBinding(service_manager::Service* service)
-    : service_(service), binding_(this) {
+    : service_(service) {
   DCHECK(service_);
 }
 
 ServiceBinding::ServiceBinding(service_manager::Service* service,
-                               mojom::ServiceRequest request)
+                               mojo::PendingReceiver<mojom::Service> receiver)
     : ServiceBinding(service) {
-  if (request.is_pending())
-    Bind(std::move(request));
+  if (receiver.is_valid())
+    Bind(std::move(receiver));
 }
 
 ServiceBinding::~ServiceBinding() = default;
 
 Connector* ServiceBinding::GetConnector() {
   if (!connector_)
-    connector_ = Connector::Create(&pending_connector_request_);
+    connector_ = Connector::Create(&pending_connector_receiver_);
   return connector_.get();
 }
 
-void ServiceBinding::Bind(mojom::ServiceRequest request) {
+void ServiceBinding::Bind(mojo::PendingReceiver<mojom::Service> receiver) {
   DCHECK(!is_bound());
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(base::BindOnce(
       &ServiceBinding::OnConnectionError, base::Unretained(this)));
 }
 
 void ServiceBinding::RequestClose() {
-  DCHECK(is_bound());
+  // We allow for innoccuous RequestClose() calls on unbound ServiceBindings.
+  // This may occur e.g. when running a service in-process.
+  if (!is_bound())
+    return;
+
   if (service_control_.is_bound()) {
     service_control_->RequestQuit();
   } else {
@@ -114,7 +116,7 @@ void ServiceBinding::RequestClose() {
 
 void ServiceBinding::Close() {
   DCHECK(is_bound());
-  binding_.Close();
+  receiver_.reset();
   service_control_.reset();
   connector_.reset();
 }
@@ -142,10 +144,10 @@ void ServiceBinding::OnStart(const Identity& identity,
                              OnStartCallback callback) {
   identity_ = identity;
 
-  if (!pending_connector_request_.is_pending())
-    connector_ = Connector::Create(&pending_connector_request_);
-  std::move(callback).Run(std::move(pending_connector_request_),
-                          mojo::MakeRequest(&service_control_));
+  if (!pending_connector_receiver_.is_valid())
+    connector_ = Connector::Create(&pending_connector_receiver_);
+  std::move(callback).Run(std::move(pending_connector_receiver_),
+                          service_control_.BindNewEndpointAndPassReceiver());
 
   service_->OnStart();
 
@@ -166,12 +168,6 @@ void ServiceBinding::OnBindInterface(
       GetBinderOverrides().GetOverride(identity_.name(), interface_name);
   if (override) {
     override.Run(source_info, std::move(interface_pipe));
-    return;
-  }
-
-  if (interface_name == tracing::mojom::TracedProcess::Name_) {
-    tracing::TracedProcess::OnTracedProcessRequest(
-        tracing::mojom::TracedProcessRequest(std::move(interface_pipe)));
     return;
   }
 

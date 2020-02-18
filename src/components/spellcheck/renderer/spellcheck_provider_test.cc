@@ -33,18 +33,16 @@ void FakeTextCheckingCompletion::DidCancelCheckingText() {
 TestingSpellCheckProvider::TestingSpellCheckProvider(
     service_manager::LocalInterfaceProvider* embedder_provider)
     : SpellCheckProvider(nullptr,
-                         new SpellCheck(nullptr, embedder_provider),
-                         embedder_provider),
-      binding_(this) {}
+                         new SpellCheck(embedder_provider),
+                         embedder_provider) {}
 
 TestingSpellCheckProvider::TestingSpellCheckProvider(
     SpellCheck* spellcheck,
     service_manager::LocalInterfaceProvider* embedder_provider)
-    : SpellCheckProvider(nullptr, spellcheck, embedder_provider),
-      binding_(this) {}
+    : SpellCheckProvider(nullptr, spellcheck, embedder_provider) {}
 
 TestingSpellCheckProvider::~TestingSpellCheckProvider() {
-  binding_.Close();
+  receiver_.reset();
   // dictionary_update_observer_ must be released before deleting spellcheck_.
   ResetDictionaryUpdateObserverForTesting();
   delete spellcheck_;
@@ -55,11 +53,8 @@ void TestingSpellCheckProvider::RequestTextChecking(
     std::unique_ptr<blink::WebTextCheckingCompletion> completion) {
   if (!loop_ && !base::MessageLoopCurrent::Get())
     loop_ = std::make_unique<base::MessageLoop>();
-  if (!binding_.is_bound()) {
-    spellcheck::mojom::SpellCheckHostPtr host_proxy;
-    binding_.Bind(mojo::MakeRequest(&host_proxy));
-    SetSpellCheckHostForTesting(std::move(host_proxy));
-  }
+  if (!receiver_.is_bound())
+    SetSpellCheckHostForTesting(receiver_.BindNewPipeAndPassRemote());
   SpellCheckProvider::RequestTextChecking(text, std::move(completion));
   base::RunLoop().RunUntilIdle();
 }
@@ -121,6 +116,23 @@ void TestingSpellCheckProvider::FillSuggestionList(const base::string16&,
   NOTREACHED();
 }
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+void TestingSpellCheckProvider::GetPerLanguageSuggestions(
+    const base::string16& word,
+    GetPerLanguageSuggestionsCallback callback) {
+  NOTREACHED();
+}
+
+void TestingSpellCheckProvider::RequestPartialTextCheck(
+    const base::string16& text,
+    int route_id,
+    const std::vector<SpellCheckResult>& partial_results,
+    bool fill_suggestions,
+    RequestPartialTextCheckCallback callback) {
+  NOTREACHED();
+}
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 #if defined(OS_ANDROID)
 void TestingSpellCheckProvider::DisconnectSessionBridge() {

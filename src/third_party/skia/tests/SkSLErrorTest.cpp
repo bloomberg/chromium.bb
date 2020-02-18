@@ -378,7 +378,7 @@ DEF_TEST(SkSLUnreachable, r) {
 DEF_TEST(SkSLNoReturn, r) {
     test_failure(r,
                  "int foo() { if (2 > 5) return 3; }",
-                 "error: 1: function can exit without returning a value\n1 error\n");
+                 "error: 1: function 'foo' can exit without returning a value\n1 error\n");
 }
 
 DEF_TEST(SkSLBreakOutsideLoop, r) {
@@ -523,8 +523,8 @@ DEF_TEST(SkSLDuplicateOutput, r) {
                  "error: 1: out location=0, index=0 is reserved for sk_FragColor\n1 error\n");
 }
 
-DEF_TEST(SkSLConstantSwizzleNotLast, r) {
+DEF_TEST(SkSLSpuriousFloat, r) {
     test_failure(r,
-                 "void main() { sk_FragColor = half4(1).rg00; }",
-                 "error: 1: only the last swizzle component can be a constant\n1 error\n");
+                 "void main() { float x; x = 1.5 2.5; }",
+                 "error: 1: expected ';', but found '2.5'\n1 error\n");
 }

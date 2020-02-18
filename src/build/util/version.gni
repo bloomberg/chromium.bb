@@ -26,7 +26,7 @@ chrome_version_file = "//chrome/VERSION"
 
 _script_arguments = []
 
-if (target_os == "mac") {
+if (is_mac) {
   _version_dictionary_template += "patch_hi = @PATCH_HI@ patch_lo = @PATCH_LO@ "
 
   _script_arguments += [
@@ -43,15 +43,18 @@ if (target_os == "mac") {
       "chrome_modern_version_code = \"@CHROME_MODERN_VERSION_CODE@\" " +
       "monochrome_version_code = \"@MONOCHROME_VERSION_CODE@\" " +
       "trichrome_version_code = \"@TRICHROME_VERSION_CODE@\" " +
-      "notouch_chrome_version_code = \"@NOTOUCH_CHROME_VERSION_CODE@\" " +
       "webview_stable_version_code = \"@WEBVIEW_STABLE_VERSION_CODE@\" " +
       "webview_beta_version_code = \"@WEBVIEW_BETA_VERSION_CODE@\" " +
       "webview_dev_version_code = \"@WEBVIEW_DEV_VERSION_CODE@\" "
 
   if (target_cpu == "arm64" || target_cpu == "x64") {
     _version_dictionary_template +=
+        "monochrome_32_version_code = \"@MONOCHROME_32_VERSION_CODE@\" " +
+        "monochrome_32_64_version_code = \"@MONOCHROME_32_64_VERSION_CODE@\" " +
         "monochrome_64_32_version_code = \"@MONOCHROME_64_32_VERSION_CODE@\" " +
         "monochrome_64_version_code = \"@MONOCHROME_64_VERSION_CODE@\" " +
+        "trichrome_32_version_code = \"@TRICHROME_32_VERSION_CODE@\" " +
+        "trichrome_32_64_version_code = \"@TRICHROME_32_64_VERSION_CODE@\" " +
         "trichrome_64_32_version_code = \"@TRICHROME_64_32_VERSION_CODE@\" " +
         "trichrome_64_version_code = \"@TRICHROME_64_VERSION_CODE@\" "
   }
@@ -78,7 +81,10 @@ _script_arguments += [
 _result = exec_script("version.py",
                       _script_arguments,
                       "scope",
-                      [ chrome_version_file ])
+                      [
+                        chrome_version_file,
+                        "android_chrome_version.py",
+                      ])
 
 # Full version. For example "45.0.12321.0"
 chrome_version_full = _result.full
@@ -89,7 +95,7 @@ chrome_version_minor = _result.minor
 chrome_version_build = _result.build
 chrome_version_patch = _result.patch
 
-if (target_os == "mac") {
+if (is_mac) {
   chrome_version_patch_hi = _result.patch_hi
   chrome_version_patch_lo = _result.patch_lo
 
@@ -100,13 +106,16 @@ if (target_os == "mac") {
                          [
                            "chrome_modern_version_code",
                            "chrome_version_code",
+                           "monochrome_version_code",
+                           "monochrome_32_version_code",
+                           "monochrome_32_64_version_code",
                            "monochrome_64_32_version_code",
                            "monochrome_64_version_code",
-                           "monochrome_version_code",
-                           "notouch_chrome_version_code",
+                           "trichrome_version_code",
+                           "trichrome_32_version_code",
+                           "trichrome_32_64_version_code",
                            "trichrome_64_32_version_code",
                            "trichrome_64_version_code",
-                           "trichrome_version_code",
                            "webview_beta_version_code",
                            "webview_dev_version_code",
                            "webview_stable_version_code",
@@ -120,7 +129,6 @@ if (target_os == "mac") {
     "ChromeModern: $chrome_modern_version_code",
     "Monochrome: $monochrome_version_code",
     "TrichromeChrome: $trichrome_version_code",
-    "MonochromeFP: $notouch_chrome_version_code",
     "AndroidWebviewStable: $webview_stable_version_code",
     "AndroidWebviewBeta: $webview_beta_version_code",
     "AndroidWebviewDev: $webview_dev_version_code",
@@ -128,8 +136,12 @@ if (target_os == "mac") {
 
   if (target_cpu == "arm64" || target_cpu == "x64") {
     lines_to_write += [
+      "Monochrome32: $monochrome_32_version_code",
+      "Monochrome3264: $monochrome_32_64_version_code",
       "Monochrome6432: $monochrome_64_32_version_code",
       "Monochrome64: $monochrome_64_version_code",
+      "TrichromeChrome32: $trichrome_32_version_code",
+      "TrichromeChrome3264: $trichrome_32_64_version_code",
       "TrichromeChrome6432: $trichrome_64_32_version_code",
       "TrichromeChrome64: $trichrome_64_version_code",
     ]

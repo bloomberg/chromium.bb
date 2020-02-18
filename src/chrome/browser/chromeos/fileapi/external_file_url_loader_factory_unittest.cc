@@ -9,17 +9,12 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "components/drive/chromeos/fake_file_system.h"
-#include "components/drive/service/fake_drive_service.h"
-#include "components/drive/service/test_util.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
@@ -30,7 +25,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/test/test_url_loader_client.h"
-#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -49,11 +44,7 @@ constexpr char kExpectedFileContents[] =
 class ExternalFileURLLoaderFactoryTest : public testing::Test {
  protected:
   ExternalFileURLLoaderFactoryTest()
-      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
-        integration_service_factory_callback_(base::BindRepeating(
-            &ExternalFileURLLoaderFactoryTest::CreateDriveIntegrationService,
-            base::Unretained(this))),
-        fake_file_system_(nullptr) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   ~ExternalFileURLLoaderFactoryTest() override {}
 
@@ -81,12 +72,6 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
                              chromeos::file_system_provider::MountOptions(
                                  kFileSystemId, "Test FileSystem"));
 
-    // Create the drive integration service for the profile.
-    integration_service_factory_scope_.reset(
-        new drive::DriveIntegrationServiceFactory::ScopedFactoryForTest(
-            &integration_service_factory_callback_));
-    drive::DriveIntegrationServiceFactory::GetForProfile(profile);
-
     // Create the URLLoaderFactory.
     url_loader_factory_ = std::make_unique<ExternalFileURLLoaderFactory>(
         profile, render_process_host_id());
@@ -107,48 +92,21 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
     return request;
   }
 
-  network::mojom::URLLoaderPtr CreateURLLoaderAndStart(
+  mojo::PendingRemote<network::mojom::URLLoader> CreateURLLoaderAndStart(
       network::TestURLLoaderClient* client,
       const network::ResourceRequest& resource_request) {
-    network::mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<network::mojom::URLLoader> loader;
     url_loader_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        network::mojom::kURLLoadOptionNone, resource_request,
-        client->CreateInterfacePtr(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, network::mojom::kURLLoadOptionNone,
+        resource_request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     return loader;
   }
 
  private:
-  // Create the drive integration service for the |profile|
-  drive::DriveIntegrationService* CreateDriveIntegrationService(
-      Profile* profile) {
-    drive::FakeDriveService* const drive_service = new drive::FakeDriveService;
-    if (!drive::test_util::SetUpTestEntries(drive_service))
-      return NULL;
-
-    const std::string& drive_mount_name =
-        drive::util::GetDriveMountPointPath(profile).BaseName().AsUTF8Unsafe();
-    storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-        drive_mount_name, storage::kFileSystemTypeDrive,
-        storage::FileSystemMountOption(),
-        drive::util::GetDriveMountPointPath(profile));
-    DCHECK(!fake_file_system_);
-    fake_file_system_ = new drive::test_util::FakeFileSystem(drive_service);
-    if (!drive_cache_dir_.CreateUniqueTempDir())
-      return NULL;
-    return new drive::DriveIntegrationService(
-        profile, nullptr, drive_service, drive_mount_name,
-        drive_cache_dir_.GetPath(), fake_file_system_);
-  }
-
   content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
-  drive::DriveIntegrationServiceFactory::FactoryCallback
-      integration_service_factory_callback_;
-  std::unique_ptr<drive::DriveIntegrationServiceFactory::ScopedFactoryForTest>
-      integration_service_factory_scope_;
-  drive::test_util::FakeFileSystem* fake_file_system_;
 
   std::unique_ptr<ExternalFileURLLoaderFactory> url_loader_factory_;
 
@@ -156,14 +114,13 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
   std::unique_ptr<chromeos::FakeChromeUserManager> user_manager_;
   // Used to register the profile with the ChildProcessSecurityPolicyImpl.
   std::unique_ptr<content::MockRenderProcessHost> render_process_host_;
-  base::ScopedTempDir drive_cache_dir_;
 };
 
 TEST_F(ExternalFileURLLoaderFactoryTest, NonGetMethod) {
   network::TestURLLoaderClient client;
   network::ResourceRequest request = CreateRequest(kTestUrl);
   request.method = "POST";
-  network::mojom::URLLoaderPtr loader =
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
       CreateURLLoaderAndStart(&client, request);
 
   client.RunUntilComplete();
@@ -174,44 +131,25 @@ TEST_F(ExternalFileURLLoaderFactoryTest, NonGetMethod) {
 
 TEST_F(ExternalFileURLLoaderFactoryTest, RegularFile) {
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader =
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
       CreateURLLoaderAndStart(&client, CreateRequest(kTestUrl));
 
   client.RunUntilComplete();
 
   ASSERT_EQ(net::OK, client.completion_status().error_code);
-  EXPECT_EQ("text/plain", client.response_head().mime_type);
+  EXPECT_EQ("text/plain", client.response_head()->mime_type);
   std::string response_body;
   ASSERT_TRUE(mojo::BlockingCopyToString(client.response_body_release(),
                                          &response_body));
   EXPECT_EQ(kExpectedFileContents, response_body);
 }
 
-TEST_F(ExternalFileURLLoaderFactoryTest, HostedDocument) {
-  // Hosted documents are never opened via externalfile: URLs with DriveFS.
-  if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
-    return;
-  }
-  // Open a gdoc file.
-  network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader = CreateURLLoaderAndStart(
-      &client,
-      CreateRequest("externalfile:drive-test-user-hash/root/Document 1 "
-                    "excludeDir-test.gdoc"));
-
-  client.RunUntilRedirectReceived();
-
-  // Make sure that a hosted document triggers redirection.
-  EXPECT_TRUE(client.has_received_redirect());
-  EXPECT_TRUE(client.redirect_info().new_url.is_valid());
-  EXPECT_TRUE(client.redirect_info().new_url.SchemeIs("https"));
-}
-
 TEST_F(ExternalFileURLLoaderFactoryTest, RootDirectory) {
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader = CreateURLLoaderAndStart(
-      &client,
-      CreateRequest("externalfile:abc:test-filesystem:test-user-hash/"));
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
+      CreateURLLoaderAndStart(
+          &client,
+          CreateRequest("externalfile:abc:test-filesystem:test-user-hash/"));
 
   client.RunUntilComplete();
 
@@ -220,9 +158,11 @@ TEST_F(ExternalFileURLLoaderFactoryTest, RootDirectory) {
 
 TEST_F(ExternalFileURLLoaderFactoryTest, NonExistingFile) {
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader = CreateURLLoaderAndStart(
-      &client, CreateRequest("externalfile:abc:test-filesystem:test-user-hash/"
-                             "non-existing-file.txt"));
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
+      CreateURLLoaderAndStart(
+          &client,
+          CreateRequest("externalfile:abc:test-filesystem:test-user-hash/"
+                        "non-existing-file.txt"));
 
   client.RunUntilComplete();
 
@@ -231,7 +171,7 @@ TEST_F(ExternalFileURLLoaderFactoryTest, NonExistingFile) {
 
 TEST_F(ExternalFileURLLoaderFactoryTest, WrongFormat) {
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader =
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
       CreateURLLoaderAndStart(&client, CreateRequest("externalfile:"));
 
   client.RunUntilComplete();
@@ -243,7 +183,7 @@ TEST_F(ExternalFileURLLoaderFactoryTest, RangeHeader) {
   network::TestURLLoaderClient client;
   network::ResourceRequest request = CreateRequest(kTestUrl);
   request.headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=3-5");
-  network::mojom::URLLoaderPtr loader =
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
       CreateURLLoaderAndStart(&client, request);
 
   client.RunUntilComplete();
@@ -260,7 +200,7 @@ TEST_F(ExternalFileURLLoaderFactoryTest, WrongRangeHeader) {
   network::TestURLLoaderClient client;
   network::ResourceRequest request = CreateRequest(kTestUrl);
   request.headers.SetHeader(net::HttpRequestHeaders::kRange, "Invalid range");
-  network::mojom::URLLoaderPtr loader =
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
       CreateURLLoaderAndStart(&client, request);
 
   client.RunUntilComplete();
@@ -282,7 +222,7 @@ TEST_F(SubresourceExternalFileURLLoaderFactoryTest, SubresourceAllowed) {
       render_process_host_id(), content::kExternalFileScheme);
 
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader =
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
       CreateURLLoaderAndStart(&client, CreateRequest(kTestUrl));
 
   client.RunUntilComplete();

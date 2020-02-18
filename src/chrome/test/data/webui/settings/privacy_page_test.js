@@ -91,7 +91,80 @@ cr.define('settings_privacy_page', function() {
     };
   }
 
+  function registerUMALoggingTests() {
+    suite('PrivacyPageUMACheck', function() {
+      /** @type {settings.TestPrivacyPageBrowserProxy} */
+      let testBrowserProxy;
+
+      /** @type {SettingsPrivacyPageElement} */
+      let page;
+
+      setup(function() {
+        testBrowserProxy = new TestPrivacyPageBrowserProxy();
+        settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+        PolymerTest.clearBody();
+        page = document.createElement('settings-privacy-page');
+        document.body.appendChild(page);
+      });
+
+      teardown(function() {
+        page.remove();
+      });
+
+      test('LogMangeCerfificatesClick', function() {
+        page.$$('#manageCertificates').click();
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES,
+                  result);
+            });
+      });
+
+      test('LogClearBrowsingClick', function() {
+        page.$$('#clearBrowsingData').click();
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_CLEAR_BROWSING_DATA,
+                  result);
+            });
+      });
+
+      test('LogDoNotTrackClick', function() {
+        page.$$('#doNotTrack').click();
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK,
+                  result);
+            });
+      });
+
+      test('LogCanMakePaymentToggleClick', function() {
+        page.$$('#canMakePaymentToggle').click();
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD,
+                  result);
+            });
+      });
+
+      test('LogSiteSettingsSubpageClick', function() {
+        page.$$('#site-settings-subpage-trigger').click();
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
+            .then(result => {
+              assertEquals(
+                  settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS,
+                  result);
+            });
+      });
+    });
+  }
+
   function registerNativeCertificateManagerTests() {
+    assert(cr.isMac || cr.isWindows);
     suite('NativeCertificateManager', function() {
       /** @type {settings.TestPrivacyPageBrowserProxy} */
       let testBrowserProxy;
@@ -124,14 +197,23 @@ cr.define('settings_privacy_page', function() {
       let page;
 
       setup(function() {
+        const testBrowserProxy = new TestPrivacyPageBrowserProxy();
+        settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+        const testSyncBrowserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
+        PolymerTest.clearBody();
+
         page = document.createElement('settings-privacy-page');
         page.prefs = {
           signin: {
             allowed_on_next_startup:
-                {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
+                {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
           },
+          safebrowsing:
+              {enabled: {value: true}, scout_reporting_enabled: {value: true}},
         };
         document.body.appendChild(page);
+        return testSyncBrowserProxy.whenCalled('getSyncStatus');
       });
 
       teardown(function() {
@@ -153,9 +235,22 @@ cr.define('settings_privacy_page', function() {
             dialog.$$('#clearBrowsingDataDialog'), 'open', '');
       });
 
+      test('defaultPrivacySettings', function() {
+        Polymer.dom.flush();
+
+        assertFalse(loadTimeData.getBoolean('privacySettingsRedesignEnabled'));
+        assertVisible(page.$$('#syncLinkRow'), true);
+
+        // These elements should not even be present in the DOM
+        assertFalse(!!page.$$('#safeBrowsingToggle'));
+        assertFalse(!!page.$$('#passwordsLeakDetectionToggle'));
+        assertFalse(!!page.$$('#safeBrowsingReportingToggle'));
+      });
+
       if (!cr.isChromeOS) {
         test('signinAllowedToggle', function() {
-          const toggle = page.$.signinAllowedToggle;
+          const toggle = page.$$('#signinAllowedToggle');
+          assertVisible(toggle, true);
 
           page.syncStatus = {signedIn: false};
           // Check initial setup.
@@ -243,7 +338,72 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
+  function registerPrivacySettingsRedesignTests() {
+    suite('PrivacySettingsRedesignTests', function() {
+      /** @type {SettingsPrivacyPageElement} */
+      let page;
+
+      suiteSetup(function() {
+        loadTimeData.overrideValues({
+          privacySettingsRedesignEnabled: true,
+          passwordsLeakDetectionEnabled: true,
+        });
+      });
+
+      setup(function() {
+        PolymerTest.clearBody();
+        page = document.createElement('settings-privacy-page');
+        page.prefs = {
+          profile: {password_manager_leak_detection: {value: true}},
+          safebrowsing:
+              {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+        };
+        document.body.appendChild(page);
+        Polymer.dom.flush();
+      });
+
+      teardown(function() {
+        page.remove();
+      });
+
+      test('redesignedPrivacySettings', function() {
+        Polymer.dom.flush();
+
+        // Unloaded elements will not be present in the DOM
+        assertFalse(!!page.$$('#syncLinkRow'));
+        assertFalse(!!page.$$('#signinAllowedToggle'));
+
+        assertVisible(page.$$('#safeBrowsingToggle'), true);
+        assertVisible(page.$$('#passwordsLeakDetectionToggle'), true);
+        assertVisible(page.$$('#safeBrowsingReportingToggle'), true);
+      });
+
+      test('safeBrowsingReportingToggle', function() {
+        const safeBrowsingToggle = page.$$('#safeBrowsingToggle');
+        const safeBrowsingReportingToggle =
+            page.$$('#safeBrowsingReportingToggle');
+        assertTrue(safeBrowsingToggle.checked);
+        assertFalse(safeBrowsingReportingToggle.disabled);
+        assertTrue(safeBrowsingReportingToggle.checked);
+        safeBrowsingToggle.click();
+        Polymer.dom.flush();
+
+        assertFalse(safeBrowsingToggle.checked);
+        assertTrue(safeBrowsingReportingToggle.disabled);
+        assertFalse(safeBrowsingReportingToggle.checked);
+        assertTrue(page.prefs.safebrowsing.scout_reporting_enabled.value);
+        safeBrowsingToggle.click();
+        Polymer.dom.flush();
+
+        assertTrue(safeBrowsingToggle.checked);
+        assertFalse(safeBrowsingReportingToggle.disabled);
+        assertTrue(safeBrowsingReportingToggle.checked);
+      });
+    });
+  }
+
   function registerClearBrowsingDataTestsDice() {
+    assert(!cr.isChromeOS);
     suite('ClearBrowsingDataDice', function() {
       /** @type {settings.TestClearBrowsingDataBrowserProxy} */
       let testBrowserProxy;
@@ -640,9 +800,7 @@ cr.define('settings_privacy_page', function() {
       }
 
       setup(() => {
-        loadTimeData.overrideValues({
-          enableBlockAutoplayContentSetting: true
-        });
+        loadTimeData.overrideValues({enableBlockAutoplayContentSetting: true});
 
         testBrowserProxy = new TestPrivacyPageBrowserProxy();
         settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
@@ -737,15 +895,13 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
-  if (cr.isMac || cr.isWindows) {
-    registerNativeCertificateManagerTests();
-  }
-
-  if (!cr.isChromeOS) {
-    registerClearBrowsingDataTestsDice();
-  }
-
-  registerClearBrowsingDataTests();
-  registerPrivacyPageTests();
-  registerPrivacyPageSoundTests();
+  return {
+    registerNativeCertificateManagerTests,
+    registerClearBrowsingDataTestsDice,
+    registerClearBrowsingDataTests,
+    registerPrivacyPageTests,
+    registerPrivacyPageSoundTests,
+    registerPrivacySettingsRedesignTests,
+    registerUMALoggingTests,
+  };
 });

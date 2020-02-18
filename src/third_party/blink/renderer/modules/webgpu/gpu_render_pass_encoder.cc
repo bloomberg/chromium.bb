@@ -4,10 +4,11 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pass_encoder.h"
 
+#include "third_party/blink/renderer/bindings/modules/v8/double_sequence_or_gpu_color_dict.h"
+#include "third_party/blink/renderer/core/typed_arrays/typed_flexible_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
-#include "third_party/blink/renderer/modules/webgpu/gpu_color.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
@@ -17,15 +18,15 @@ namespace blink {
 // static
 GPURenderPassEncoder* GPURenderPassEncoder::Create(
     GPUDevice* device,
-    DawnRenderPassEncoder render_pass_encoder) {
+    WGPURenderPassEncoder render_pass_encoder) {
   return MakeGarbageCollected<GPURenderPassEncoder>(device,
                                                     render_pass_encoder);
 }
 
 GPURenderPassEncoder::GPURenderPassEncoder(
     GPUDevice* device,
-    DawnRenderPassEncoder render_pass_encoder)
-    : DawnObject<DawnRenderPassEncoder>(device, render_pass_encoder) {}
+    WGPURenderPassEncoder render_pass_encoder)
+    : DawnObject<WGPURenderPassEncoder>(device, render_pass_encoder) {}
 
 GPURenderPassEncoder::~GPURenderPassEncoder() {
   if (IsDawnControlClientDestroyed()) {
@@ -37,10 +38,31 @@ GPURenderPassEncoder::~GPURenderPassEncoder() {
 void GPURenderPassEncoder::setBindGroup(
     uint32_t index,
     GPUBindGroup* bindGroup,
-    const Vector<uint64_t>& dynamicOffsets) {
+    const Vector<uint32_t>& dynamicOffsets) {
   GetProcs().renderPassEncoderSetBindGroup(
       GetHandle(), index, bindGroup->GetHandle(), dynamicOffsets.size(),
       dynamicOffsets.data());
+}
+
+void GPURenderPassEncoder::setBindGroup(
+    uint32_t index,
+    GPUBindGroup* bind_group,
+    const FlexibleUint32ArrayView& dynamic_offsets_data,
+    uint64_t dynamic_offsets_data_start,
+    uint32_t dynamic_offsets_data_length,
+    ExceptionState& exception_state) {
+  if (!ValidateSetBindGroupDynamicOffsets(
+          dynamic_offsets_data, dynamic_offsets_data_start,
+          dynamic_offsets_data_length, exception_state)) {
+    return;
+  }
+
+  const uint32_t* data =
+      dynamic_offsets_data.DataMaybeOnStack() + dynamic_offsets_data_start;
+
+  GetProcs().renderPassEncoderSetBindGroup(GetHandle(), index,
+                                           bind_group->GetHandle(),
+                                           dynamic_offsets_data_length, data);
 }
 
 void GPURenderPassEncoder::pushDebugGroup(String groupLabel) {
@@ -61,8 +83,14 @@ void GPURenderPassEncoder::setPipeline(GPURenderPipeline* pipeline) {
   GetProcs().renderPassEncoderSetPipeline(GetHandle(), pipeline->GetHandle());
 }
 
-void GPURenderPassEncoder::setBlendColor(GPUColor* color) {
-  DawnColor dawn_color = AsDawnType(color);
+void GPURenderPassEncoder::setBlendColor(DoubleSequenceOrGPUColorDict& color,
+                                         ExceptionState& exception_state) {
+  if (color.IsDoubleSequence() && color.GetAsDoubleSequence().size() != 4) {
+    exception_state.ThrowRangeError("color size must be 4");
+    return;
+  }
+
+  WGPUColor dawn_color = AsDawnType(&color);
   GetProcs().renderPassEncoderSetBlendColor(GetHandle(), &dawn_color);
 }
 
@@ -92,22 +120,11 @@ void GPURenderPassEncoder::setIndexBuffer(GPUBuffer* buffer, uint64_t offset) {
                                              offset);
 }
 
-void GPURenderPassEncoder::setVertexBuffers(
-    uint32_t startSlot,
-    const HeapVector<Member<GPUBuffer>>& buffers,
-    const Vector<uint64_t>& offsets,
-    ExceptionState& exception_state) {
-  if (buffers.size() != offsets.size()) {
-    exception_state.ThrowRangeError(
-        "buffers array and offsets array must be the same length");
-    return;
-  }
-
-  std::unique_ptr<DawnBuffer[]> dawn_buffers = AsDawnType(buffers);
-
-  GetProcs().renderPassEncoderSetVertexBuffers(
-      GetHandle(), startSlot, buffers.size(), dawn_buffers.get(),
-      offsets.data());
+void GPURenderPassEncoder::setVertexBuffer(uint32_t slot,
+                                           const GPUBuffer* buffer,
+                                           const uint64_t offset) {
+  GetProcs().renderPassEncoderSetVertexBuffer(GetHandle(), slot,
+                                              buffer->GetHandle(), offset);
 }
 
 void GPURenderPassEncoder::draw(uint32_t vertexCount,
@@ -142,7 +159,7 @@ void GPURenderPassEncoder::drawIndexedIndirect(GPUBuffer* indirectBuffer,
 
 void GPURenderPassEncoder::executeBundles(
     const HeapVector<Member<GPURenderBundle>>& bundles) {
-  std::unique_ptr<DawnRenderBundle[]> dawn_bundles = AsDawnType(bundles);
+  std::unique_ptr<WGPURenderBundle[]> dawn_bundles = AsDawnType(bundles);
 
   GetProcs().renderPassEncoderExecuteBundles(GetHandle(), bundles.size(),
                                              dawn_bundles.get());

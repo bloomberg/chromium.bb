@@ -814,10 +814,7 @@ enum WebGLPowerPreference { "default", "low-power", "high-performance" };
               </p>
               <p>
                 WebGL implementations use context lost and restored events to regulate power and
-                memory consumption, <em>regardless</em> of the value of this attribute. <em>At
-                WebGLRenderingContext creation time, this attribute will be ignored if no event
-                listeners exist which would handle both <code>"webglcontextlost"</code>
-                and <code>"webglcontextrestored"</code> events dispatched to the canvas element.</em>
+                memory consumption, <em>regardless</em> of the value of this attribute.
               </p>
               <p>
                 The allowed values are:
@@ -835,14 +832,21 @@ enum WebGLPowerPreference { "default", "low-power", "high-performance" };
                   </p>
                   <p>
                     Indicates a request for a GPU configuration that prioritizes rendering
-                    performance over power consumption.  Any content that chooses this value should
-                    be aware that it is more likely that the user agent will force a lost context at
-                    any time. Implementations may decide to initially respect this request and,
-                    after some time, lose the context and restore a new context ignoring the
-                    request. Developers are encouraged to only specify this value if they believe it
+                    performance over power consumption.
+                    Developers are encouraged to only specify this value if they believe it
                     is absolutely necessary, since it may significantly decrease battery life on
                     mobile devices.
+                    Implementations may decide to initially respect this request and,
+                    after some time, lose the context and restore a new context ignoring the
+                    request.
                   </p>
+                  <div class="note">
+                    <p>
+                      Applications that request <code>high-performance</code> should test and
+                      maintain robust context loss handling, as User Agents are very likely to decide
+                      to lose background <code>high-performance</code> contexts.
+                    </p>
+                  </div>
                   <p>
                     <em>low-power</em>
                   </p>
@@ -3446,7 +3450,7 @@ WebGLRenderingContext includes WebGLRenderingContextOverloads;
     <pre class="idl">
 [Exposed=(Window,Worker),
  Constructor(DOMString type,
- optional WebGLContextEventInit eventInit)]
+ optional WebGLContextEventInit eventInit = {})]
 interface <dfn id="WebGLContextLostEvent">WebGLContextEvent</dfn> : <a href="http://www.w3.org/TR/domcore/#event">Event</a> {
     readonly attribute DOMString statusMessage;
 };
@@ -3565,8 +3569,9 @@ dictionary WebGLContextEventInit : <a href="http://www.w3.org/TR/domcore/#eventi
 
     <div class="note">
         Once the context is restored, WebGL resources such as textures and buffers that were created
-        before the context was lost are no longer valid. The application needs to reinitialize the
-        context's state and recreate all such resources.
+        before the context was lost are no longer valid.
+        Previously enabled extensions are not restored.
+        The application will want to restore all modified state and destroyed extensions and resources.
     </div>
 
     <div class="example">
@@ -4394,6 +4399,32 @@ extensions.
     drivers don't accept uniforms and vertex attributes with the same name.
 </div>
 
+<h3>Wide point primitive clipping</h3>
+<p>
+    <code>POINTS</code> primitives may or may not be discarded if the vertex lies outside the clip
+    volume, but within the near and far clip planes.
+</p>
+<div class="note rationale">
+    <p>
+        Clipping of wide points works differently in GLES and GL, and this difference in behavior is
+        prohibitive to work around in implementations.
+    </p>
+    <p>
+        <a href="#refsGLES20">OpenGL ES 2.0.25</a> p46:
+        <blockquote>
+            If the primitive under consideration is a point, then clipping discards it if it lies
+            outside the near or far clip plane; otherwise it is passed unchanged.
+        </blockquote>
+    </p>
+    <p>
+        <a href="#refsGL32CORE">OpenGL 3.2 Core</a> p97:
+        <blockquote>
+            If the primitive under consideration is a point, then clipping passes it unchanged if it
+            lies within the clip volume; otherwise, it is discarded.
+        </blockquote>
+    </p>
+</div>
+
 <!-- ======================================================================================================= -->
 
     <h2>References</h2>
@@ -4421,6 +4452,11 @@ extensions.
         <dd><cite><a href="http://www.ecma-international.org/ecma-262/6.0/">
             ECMAScript&reg; 2015 Language Specification</a></cite>,
             Ecma International, 2015.
+        </dd>
+        <dt id="refsGL32CORE">[GL32CORE]</dt>
+        <dd><cite><a href="https://www.khronos.org/registry/OpenGL/specs/gl/glspec32.core.pdf">
+            The OpenGL&reg; Graphics System: A Specification (Version 3.2 (Core Profile) - December 7, 2009)</a></cite>,
+            M. Segal, K. Akeley, December 2009.
         </dd>
         <dt id="refsGLES20">[GLES20]</dt>
         <dd><cite><a href="http://www.khronos.org/registry/gles/specs/2.0/es_full_spec_2.0.25.pdf">

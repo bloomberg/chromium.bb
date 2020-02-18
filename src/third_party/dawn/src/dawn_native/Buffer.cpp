@@ -91,17 +91,17 @@ namespace dawn_native {
 
         DAWN_TRY(ValidateBufferUsage(descriptor->usage));
 
-        dawn::BufferUsage usage = descriptor->usage;
+        wgpu::BufferUsage usage = descriptor->usage;
 
-        const dawn::BufferUsage kMapWriteAllowedUsages =
-            dawn::BufferUsage::MapWrite | dawn::BufferUsage::CopySrc;
-        if (usage & dawn::BufferUsage::MapWrite && (usage & kMapWriteAllowedUsages) != usage) {
+        const wgpu::BufferUsage kMapWriteAllowedUsages =
+            wgpu::BufferUsage::MapWrite | wgpu::BufferUsage::CopySrc;
+        if (usage & wgpu::BufferUsage::MapWrite && (usage & kMapWriteAllowedUsages) != usage) {
             return DAWN_VALIDATION_ERROR("Only CopySrc is allowed with MapWrite");
         }
 
-        const dawn::BufferUsage kMapReadAllowedUsages =
-            dawn::BufferUsage::MapRead | dawn::BufferUsage::CopyDst;
-        if (usage & dawn::BufferUsage::MapRead && (usage & kMapReadAllowedUsages) != usage) {
+        const wgpu::BufferUsage kMapReadAllowedUsages =
+            wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
+        if (usage & wgpu::BufferUsage::MapRead && (usage & kMapReadAllowedUsages) != usage) {
             return DAWN_VALIDATION_ERROR("Only CopyDst is allowed with MapRead");
         }
 
@@ -115,6 +115,12 @@ namespace dawn_native {
           mSize(descriptor->size),
           mUsage(descriptor->usage),
           mState(BufferState::Unmapped) {
+        // Add readonly storage usage if the buffer has a storage usage. The validation rules in
+        // ValidatePassResourceUsage will make sure we don't use both at the same
+        // time.
+        if (mUsage & wgpu::BufferUsage::Storage) {
+            mUsage |= kReadOnlyStorage;
+        }
     }
 
     BufferBase::BufferBase(DeviceBase* device, ObjectBase::ErrorTag tag)
@@ -124,8 +130,8 @@ namespace dawn_native {
     BufferBase::~BufferBase() {
         if (mState == BufferState::Mapped) {
             ASSERT(!IsError());
-            CallMapReadCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr, 0u);
-            CallMapWriteCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr, 0u);
+            CallMapReadCallback(mMapSerial, WGPUBufferMapAsyncStatus_Unknown, nullptr, 0u);
+            CallMapWriteCallback(mMapSerial, WGPUBufferMapAsyncStatus_Unknown, nullptr, 0u);
         }
     }
 
@@ -146,7 +152,7 @@ namespace dawn_native {
         return mSize;
     }
 
-    dawn::BufferUsage BufferBase::GetUsage() const {
+    wgpu::BufferUsage BufferBase::GetUsage() const {
         ASSERT(!IsError());
         return mUsage;
     }
@@ -167,9 +173,7 @@ namespace dawn_native {
         // error buffer.
         // TODO(enga): Suballocate and reuse memory from a larger staging buffer so we don't create
         // many small buffers.
-        DynamicUploader* uploader = nullptr;
-        DAWN_TRY_ASSIGN(uploader, GetDevice()->GetDynamicUploader());
-        DAWN_TRY_ASSIGN(mStagingBuffer, uploader->CreateStagingBuffer(GetSize()));
+        DAWN_TRY_ASSIGN(mStagingBuffer, GetDevice()->CreateStagingBuffer(GetSize()));
 
         ASSERT(mStagingBuffer->GetMappedPointer() != nullptr);
         *mappedPointer = reinterpret_cast<uint8_t*>(mStagingBuffer->GetMappedPointer());
@@ -191,7 +195,7 @@ namespace dawn_native {
     }
 
     void BufferBase::CallMapReadCallback(uint32_t serial,
-                                         DawnBufferMapAsyncStatus status,
+                                         WGPUBufferMapAsyncStatus status,
                                          const void* pointer,
                                          uint32_t dataLength) {
         ASSERT(!IsError());
@@ -199,14 +203,14 @@ namespace dawn_native {
             ASSERT(mMapWriteCallback == nullptr);
             // Tag the callback as fired before firing it, otherwise it could fire a second time if
             // for example buffer.Unmap() is called inside the application-provided callback.
-            DawnBufferMapReadCallback callback = mMapReadCallback;
+            WGPUBufferMapReadCallback callback = mMapReadCallback;
             mMapReadCallback = nullptr;
             callback(status, pointer, dataLength, mMapUserdata);
         }
     }
 
     void BufferBase::CallMapWriteCallback(uint32_t serial,
-                                          DawnBufferMapAsyncStatus status,
+                                          WGPUBufferMapAsyncStatus status,
                                           void* pointer,
                                           uint32_t dataLength) {
         ASSERT(!IsError());
@@ -214,7 +218,7 @@ namespace dawn_native {
             ASSERT(mMapReadCallback == nullptr);
             // Tag the callback as fired before firing it, otherwise it could fire a second time if
             // for example buffer.Unmap() is called inside the application-provided callback.
-            DawnBufferMapWriteCallback callback = mMapWriteCallback;
+            WGPUBufferMapWriteCallback callback = mMapWriteCallback;
             mMapWriteCallback = nullptr;
             callback(status, pointer, dataLength, mMapUserdata);
         }
@@ -231,9 +235,9 @@ namespace dawn_native {
         }
     }
 
-    void BufferBase::MapReadAsync(DawnBufferMapReadCallback callback, void* userdata) {
-        if (GetDevice()->ConsumedError(ValidateMap(dawn::BufferUsage::MapRead))) {
-            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_ERROR, nullptr, 0, userdata);
+    void BufferBase::MapReadAsync(WGPUBufferMapReadCallback callback, void* userdata) {
+        if (GetDevice()->ConsumedError(ValidateMap(wgpu::BufferUsage::MapRead))) {
+            callback(WGPUBufferMapAsyncStatus_Error, nullptr, 0, userdata);
             return;
         }
         ASSERT(!IsError());
@@ -252,11 +256,11 @@ namespace dawn_native {
     }
 
     MaybeError BufferBase::SetSubDataImpl(uint32_t start, uint32_t count, const void* data) {
-        DynamicUploader* uploader = nullptr;
-        DAWN_TRY_ASSIGN(uploader, GetDevice()->GetDynamicUploader());
+        DynamicUploader* uploader = GetDevice()->GetDynamicUploader();
 
         UploadHandle uploadHandle;
-        DAWN_TRY_ASSIGN(uploadHandle, uploader->Allocate(count));
+        DAWN_TRY_ASSIGN(uploadHandle,
+                        uploader->Allocate(count, GetDevice()->GetPendingCommandSerial()));
         ASSERT(uploadHandle.mappedBuffer != nullptr);
 
         memcpy(uploadHandle.mappedBuffer, data, count);
@@ -267,9 +271,9 @@ namespace dawn_native {
         return {};
     }
 
-    void BufferBase::MapWriteAsync(DawnBufferMapWriteCallback callback, void* userdata) {
-        if (GetDevice()->ConsumedError(ValidateMap(dawn::BufferUsage::MapWrite))) {
-            callback(DAWN_BUFFER_MAP_ASYNC_STATUS_ERROR, nullptr, 0, userdata);
+    void BufferBase::MapWriteAsync(WGPUBufferMapWriteCallback callback, void* userdata) {
+        if (GetDevice()->ConsumedError(ValidateMap(wgpu::BufferUsage::MapWrite))) {
+            callback(WGPUBufferMapAsyncStatus_Error, nullptr, 0, userdata);
             return;
         }
         ASSERT(!IsError());
@@ -311,8 +315,7 @@ namespace dawn_native {
         ASSERT(mStagingBuffer);
         DAWN_TRY(GetDevice()->CopyFromStagingToBuffer(mStagingBuffer.get(), 0, this, 0, GetSize()));
 
-        DynamicUploader* uploader = nullptr;
-        DAWN_TRY_ASSIGN(uploader, GetDevice()->GetDynamicUploader());
+        DynamicUploader* uploader = GetDevice()->GetDynamicUploader();
         uploader->ReleaseStagingBuffer(std::move(mStagingBuffer));
 
         return {};
@@ -336,8 +339,8 @@ namespace dawn_native {
             // completed before the Unmap.
             // Callbacks are not fired if there is no callback registered, so this is correct for
             // CreateBufferMapped.
-            CallMapReadCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr, 0u);
-            CallMapWriteCallback(mMapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN, nullptr, 0u);
+            CallMapReadCallback(mMapSerial, WGPUBufferMapAsyncStatus_Unknown, nullptr, 0u);
+            CallMapWriteCallback(mMapSerial, WGPUBufferMapAsyncStatus_Unknown, nullptr, 0u);
             UnmapImpl();
         }
         mState = BufferState::Unmapped;
@@ -377,14 +380,14 @@ namespace dawn_native {
             return DAWN_VALIDATION_ERROR("Buffer subdata out of range");
         }
 
-        if (!(mUsage & dawn::BufferUsage::CopyDst)) {
+        if (!(mUsage & wgpu::BufferUsage::CopyDst)) {
             return DAWN_VALIDATION_ERROR("Buffer needs the CopyDst usage bit");
         }
 
         return {};
     }
 
-    MaybeError BufferBase::ValidateMap(dawn::BufferUsage requiredUsage) const {
+    MaybeError BufferBase::ValidateMap(wgpu::BufferUsage requiredUsage) const {
         DAWN_TRY(GetDevice()->ValidateObject(this));
 
         switch (mState) {
@@ -412,7 +415,7 @@ namespace dawn_native {
                 // even if it did not have a mappable usage.
                 return {};
             case BufferState::Unmapped:
-                if ((mUsage & (dawn::BufferUsage::MapRead | dawn::BufferUsage::MapWrite)) == 0) {
+                if ((mUsage & (wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite)) == 0) {
                     return DAWN_VALIDATION_ERROR("Buffer does not have map usage");
                 }
                 return {};

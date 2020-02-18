@@ -256,9 +256,9 @@ void WebViewPermissionHelper::CanDownload(
 void WebViewPermissionHelper::RequestPointerLockPermission(
     bool user_gesture,
     bool last_unlocked_by_target,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   web_view_permission_helper_delegate_->RequestPointerLockPermission(
-      user_gesture, last_unlocked_by_target, callback);
+      user_gesture, last_unlocked_by_target, std::move(callback));
 }
 
 void WebViewPermissionHelper::RequestGeolocationPermission(
@@ -282,15 +282,6 @@ void WebViewPermissionHelper::RequestFileSystemPermission(
     base::OnceCallback<void(bool)> callback) {
   web_view_permission_helper_delegate_->RequestFileSystemPermission(
       url, allowed_by_default, std::move(callback));
-}
-
-void WebViewPermissionHelper::FileSystemAccessedAsync(int render_process_id,
-                                                      int render_frame_id,
-                                                      int request_id,
-                                                      const GURL& url,
-                                                      bool blocked_by_policy) {
-  web_view_permission_helper_delegate_->FileSystemAccessedAsync(
-      render_process_id, render_frame_id, request_id, url, blocked_by_policy);
 }
 
 int WebViewPermissionHelper::RequestPermission(

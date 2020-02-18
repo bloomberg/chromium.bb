@@ -69,8 +69,10 @@ interface BroadcastChannel : EventTarget
     setter onmessage
     setter onmessageerror
 interface ByteLengthQueuingStrategy
+    attribute @@toStringTag
+    getter highWaterMark
+    getter size
     method constructor
-    method size
 interface CSSSkewX : CSSTransformComponent
     attribute @@toStringTag
     getter ax
@@ -136,9 +138,16 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
-interface CountQueuingStrategy
+interface CompressionStream
+    attribute @@toStringTag
+    getter readable
+    getter writable
     method constructor
-    method size
+interface CountQueuingStrategy
+    attribute @@toStringTag
+    getter highWaterMark
+    getter size
+    method constructor
 interface Crypto
     attribute @@toStringTag
     getter subtle
@@ -355,6 +364,11 @@ interface DOMStringList
     method constructor
     method contains
     method item
+interface DecompressionStream
+    attribute @@toStringTag
+    getter readable
+    getter writable
+    method constructor
 interface ErrorEvent : Event
     attribute @@toStringTag
     getter colno
@@ -817,6 +831,7 @@ interface OffscreenCanvasRenderingContext2D
     method fillText
     method getImageData
     method getLineDash
+    method getTransform
     method isPointInPath
     method isPointInStroke
     method lineTo
@@ -884,11 +899,15 @@ interface PaymentRequestEvent : ExtendableEvent
     getter instrumentKey
     getter methodData
     getter modifiers
+    getter paymentOptions
     getter paymentRequestId
     getter paymentRequestOrigin
+    getter shippingOptions
     getter topOrigin
     getter total
     method changePaymentMethod
+    method changeShippingAddress
+    method changeShippingOption
     method constructor
     method openWindow
     method respondWith
@@ -967,6 +986,16 @@ interface PerformanceServerTiming
     getter name
     method constructor
     method toJSON
+interface PeriodicSyncEvent : ExtendableEvent
+    attribute @@toStringTag
+    getter tag
+    method constructor
+interface PeriodicSyncManager
+    attribute @@toStringTag
+    method constructor
+    method getTags
+    method register
+    method unregister
 interface PermissionStatus : EventTarget
     attribute @@toStringTag
     getter onchange
@@ -1110,6 +1139,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter navigationPreload
     getter onupdatefound
     getter paymentManager
+    getter periodicSync
     getter pushManager
     getter scope
     getter sync
@@ -1947,6 +1977,7 @@ interface WebGL2RenderingContext
     method isVertexArray
     method lineWidth
     method linkProgram
+    method makeXRCompatible
     method pauseTransformFeedback
     method pixelStorei
     method polygonOffset
@@ -2439,6 +2470,7 @@ interface WebGLRenderingContext
     method isTexture
     method lineWidth
     method linkProgram
+    method makeXRCompatible
     method pixelStorei
     method polygonOffset
     method readPixels
@@ -2563,7 +2595,6 @@ interface WorkerGlobalScope : EventTarget
     getter self
     method atob
     method btoa
-    method cancelAnimationFrame
     method clearInterval
     method clearTimeout
     method constructor
@@ -2571,7 +2602,6 @@ interface WorkerGlobalScope : EventTarget
     method fetch
     method importScripts
     method queueMicrotask
-    method requestAnimationFrame
     method setInterval
     method setTimeout
     setter onerror
@@ -2647,9 +2677,11 @@ interface WritableStreamDefaultWriter
     getter onnotificationclick
     getter onnotificationclose
     getter onpaymentrequest
+    getter onperiodicsync
     getter onpush
     getter onsync
     getter registration
+    getter serviceWorker
     method gc
     method skipWaiting
     setter onabortpayment
@@ -2665,6 +2697,7 @@ interface WritableStreamDefaultWriter
     setter onnotificationclick
     setter onnotificationclose
     setter onpaymentrequest
+    setter onperiodicsync
     setter onpush
     setter onsync
 PASS Verify the interface of ServiceWorkerGlobalScope

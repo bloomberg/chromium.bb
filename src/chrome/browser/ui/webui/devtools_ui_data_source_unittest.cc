@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/strcat.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/url_data_source.h"
@@ -49,9 +50,15 @@ class TestDevToolsDataSource : public DevToolsDataSource {
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       int load_flags,
-      const GotDataCallback& callback) override {
-    std::string copy_of_url = url.spec();
-    callback.Run(base::RefCountedString::TakeString(&copy_of_url));
+      GotDataCallback callback) override {
+    std::string result = "url: " + url.spec();
+    std::move(callback).Run(base::RefCountedString::TakeString(&result));
+  }
+
+  void StartFileRequest(const std::string& path,
+                        GotDataCallback callback) override {
+    std::string result = "file: " + path;
+    std::move(callback).Run(base::RefCountedString::TakeString(&result));
   }
 };
 
@@ -74,13 +81,14 @@ class DevToolsUIDataSourceTest : public testing::Test {
 
   std::string data() const { return data_; }
 
+  // TODO(crbug/1009127): pass in GURL instead.
   void StartRequest(const std::string& path) {
     data_received_ = false;
     data_.clear();
     std::string trimmed_path = path.substr(1);
     content::WebContents::Getter wc_getter;
     data_source()->StartDataRequest(
-        trimmed_path, std::move(wc_getter),
+        GURL("chrome://any-host/" + trimmed_path), std::move(wc_getter),
         base::BindRepeating(&DevToolsUIDataSourceTest::OnDataReceived,
                             base::Unretained(this)));
   }
@@ -120,12 +128,28 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledURLWithQueryParam) {
   EXPECT_FALSE(data().empty());
 }
 
+TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledURLWithSwitch) {
+#if defined(OS_WIN)
+  const char* flag_value = "file://C:/tmp/";
+#else
+  const char* flag_value = "file://tmp/";
+#endif
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kCustomDevtoolsFrontend, flag_value);
+  const GURL path =
+      DevToolsUrl().Resolve(DevToolsBundledPath(kDevToolsUITestFrontEndUrl));
+  StartRequest(path.path());
+  EXPECT_TRUE(data_received());
+  EXPECT_EQ(data(), "file: devtools_app.html");
+}
+
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsInvalidBundledURL) {
   const GURL path =
       DevToolsUrl().Resolve(DevToolsBundledPath("invalid_devtools_app.html"));
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_TRUE(data().empty());
+  ASSERT_TRUE(base::StartsWith(data(), kDevToolsUITest404Response,
+                               base::CompareCase::SENSITIVE));
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsInvalidBundledURLWithQueryParam) {
@@ -133,7 +157,8 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsInvalidBundledURLWithQueryParam) {
       DevToolsUrl().Resolve(DevToolsBundledPath("invalid_devtools_app.html"));
   StartRequest(path.path() + "?foo");
   EXPECT_TRUE(data_received());
-  EXPECT_TRUE(data().empty());
+  ASSERT_TRUE(base::StartsWith(data(), kDevToolsUITest404Response,
+                               base::CompareCase::SENSITIVE));
 }
 
 // devtools/blank path
@@ -159,8 +184,9 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsRemoteURL) {
       DevToolsUrl().Resolve(DevToolsRemotePath(kDevToolsUITestFrontEndUrl));
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_EQ(data(),
-            "https://chrome-devtools-frontend.appspot.com/devtools_app.html");
+  EXPECT_EQ(
+      data(),
+      "url: https://chrome-devtools-frontend.appspot.com/devtools_app.html");
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsRemoteURLWithQueryParam) {
@@ -179,7 +205,8 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsCustomURLWithNoSwitch) {
       DevToolsUrl().Resolve(DevToolsCustomPath(kDevToolsUITestFrontEndUrl));
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_TRUE(data().empty());
+  ASSERT_TRUE(base::StartsWith(data(), kDevToolsUITest404Response,
+                               base::CompareCase::SENSITIVE));
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsCustomURLWithSwitch) {
@@ -189,7 +216,7 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsCustomURLWithSwitch) {
       DevToolsUrl().Resolve(DevToolsCustomPath(kDevToolsUITestFrontEndUrl));
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_EQ(data(), "http://localhost:8090/front_end/devtools_app.html");
+  EXPECT_EQ(data(), "url: http://localhost:8090/front_end/devtools_app.html");
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsCustomURLWithSwitchAndQueryParam) {
@@ -199,7 +226,8 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsCustomURLWithSwitchAndQueryParam) {
       DevToolsUrl().Resolve(DevToolsCustomPath(kDevToolsUITestFrontEndUrl));
   StartRequest(path.path() + "?foo");
   EXPECT_TRUE(data_received());
-  EXPECT_EQ(data(), "http://localhost:8090/front_end/devtools_app.html?foo");
+  EXPECT_EQ(data(),
+            "url: http://localhost:8090/front_end/devtools_app.html?foo");
 }
 
 #if !DCHECK_IS_ON()
@@ -222,7 +250,8 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsNoRoute) {
   const GURL path = DevToolsUrl().Resolve(kDevToolsUITestFrontEndUrl);
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_TRUE(data().empty());
+  ASSERT_TRUE(base::StartsWith(data(), kDevToolsUITest404Response,
+                               base::CompareCase::SENSITIVE));
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsNoRouteWithSwitch) {
@@ -231,5 +260,6 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsNoRouteWithSwitch) {
   const GURL path = DevToolsUrl().Resolve(kDevToolsUITestFrontEndUrl);
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_TRUE(data().empty());
+  ASSERT_TRUE(base::StartsWith(data(), kDevToolsUITest404Response,
+                               base::CompareCase::SENSITIVE));
 }

@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +30,9 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
                                      syncer::SECURITY_EVENTS,
                                      syncer::AUTOFILL_WALLET_DATA);
   allowed_types.PutAll(syncer::ControlTypes());
+  if (base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
+    allowed_types.Put(syncer::DEVICE_INFO);
+  }
   return allowed_types;
 }
 
@@ -141,7 +145,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   // set first-time setup to complete.
   secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
   GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
-  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
 
   EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
@@ -184,6 +189,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
 
   // Save the cache GUID to file to remember after restart, for test
   // verification purposes only.
+  base::ScopedAllowBlockingForTesting allow_blocking;
   ASSERT_NE(-1, base::WriteFile(GetTestFilePathForCacheGuid(),
                                 cache_guid.c_str(), cache_guid.size()));
 }
@@ -207,6 +213,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   ASSERT_FALSE(prefs.GetCacheGuid().empty());
 
   std::string old_cache_guid;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   ASSERT_TRUE(
       base::ReadFileToString(GetTestFilePathForCacheGuid(), &old_cache_guid));
   ASSERT_FALSE(old_cache_guid.empty());

@@ -5,6 +5,7 @@
 /** @fileoverview Runs the Print Preview tests. */
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN('#include "services/network/public/cpp/features.h"');
 
 const PrintPreviewTest = class extends PolymerTest {
   /** @override */
@@ -15,14 +16,9 @@ const PrintPreviewTest = class extends PolymerTest {
   /** @override */
   get extraLibraries() {
     return [
-      ...super.extraLibraries,
-      '//ui/webui/resources/js/assert.js',
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
     ];
-  }
-
-  /** @override */
-  get loaderFile() {
-    return 'subpage_loader.html';
   }
 
   // The name of the mocha suite. Should be overridden by subclasses.
@@ -30,12 +26,9 @@ const PrintPreviewTest = class extends PolymerTest {
     return null;
   }
 
-  // The name of the custom element under test. Should be overridden by
-  // subclasses that are not directly loading the URL of a custom element.
-  get customElementName() {
-    const r = /chrome\:\/\/print\/([a-zA-Z-_]+)\/([a-zA-Z-_]+)\.html/;
-    const result = r.exec(this.browsePreload);
-    return 'print-preview-' + result[2].replace(/_/gi, '-');
+  /** @override */
+  get featureList() {
+    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 
   /** @param {string} testName The name of the test to run. */
@@ -48,20 +41,7 @@ const PrintPreviewTest = class extends PolymerTest {
 var PrintPreviewAppTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/app.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'cloud_print_interface_stub.js',
-      'native_layer_stub.js',
-      'plugin_stub.js',
-      'print_preview_test_utils.js',
-      'print_preview_app_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/print_preview_app_test.js';
   }
 
   /** @override */
@@ -78,23 +58,23 @@ TEST_F('PrintPreviewAppTest', 'PrintPresets', function() {
   this.runMochaTest(print_preview_app_test.TestNames.PrintPresets);
 });
 
+TEST_F('PrintPreviewAppTest', 'DestinationsManaged', function() {
+  this.runMochaTest(print_preview_app_test.TestNames.DestinationsManaged);
+});
+
+TEST_F('PrintPreviewAppTest', 'HeaderFooterManaged', function() {
+  this.runMochaTest(print_preview_app_test.TestNames.HeaderFooterManaged);
+});
+
+TEST_F('PrintPreviewAppTest', 'CssBackgroundManaged', function() {
+  this.runMochaTest(print_preview_app_test.TestNames.CssBackgroundManaged);
+});
+
 // eslint-disable-next-line no-var
 var PrintPreviewSidebarTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/sidebar.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'cloud_print_interface_stub.js',
-      'native_layer_stub.js',
-      'print_preview_test_utils.js',
-      'print_preview_sidebar_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/print_preview_sidebar_test.js';
   }
 
   /** @override */
@@ -113,16 +93,7 @@ TEST_F(
 var PrintPreviewPagesSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/pages_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'pages_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/pages_settings_test.js';
   }
 
   /** @override */
@@ -151,19 +122,7 @@ TEST_F('PrintPreviewPagesSettingsTest', 'NupChangesPages', function() {
 var PrintPreviewPolicyTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/app.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'native_layer_stub.js',
-      'plugin_stub.js',
-      'print_preview_test_utils.js',
-      'policy_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/policy_test.js';
   }
 
   /** @override */
@@ -172,36 +131,19 @@ var PrintPreviewPolicyTest = class extends PrintPreviewTest {
   }
 };
 
-TEST_F('PrintPreviewPolicyTest', 'EnableHeaderFooterByPref', function() {
-  this.runMochaTest(policy_tests.TestNames.EnableHeaderFooterByPref);
+TEST_F('PrintPreviewPolicyTest', 'HeaderFooterPolicy', function() {
+  this.runMochaTest(policy_tests.TestNames.HeaderFooterPolicy);
 });
 
-TEST_F('PrintPreviewPolicyTest', 'DisableHeaderFooterByPref', function() {
-  this.runMochaTest(policy_tests.TestNames.DisableHeaderFooterByPref);
-});
-
-TEST_F('PrintPreviewPolicyTest', 'EnableHeaderFooterByPolicy', function() {
-  this.runMochaTest(policy_tests.TestNames.EnableHeaderFooterByPolicy);
-});
-
-TEST_F('PrintPreviewPolicyTest', 'DisableHeaderFooterByPolicy', function() {
-  this.runMochaTest(policy_tests.TestNames.DisableHeaderFooterByPolicy);
+TEST_F('PrintPreviewPolicyTest', 'CssBackgroundPolicy', function() {
+  this.runMochaTest(policy_tests.TestNames.CssBackgroundPolicy);
 });
 
 // eslint-disable-next-line no-var
 var PrintPreviewSettingsSelectTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/settings_select.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'settings_select_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/settings_select_test.js';
   }
 };
 
@@ -213,26 +155,12 @@ TEST_F('PrintPreviewSettingsSelectTest', 'All', function() {
 var PrintPreviewSelectBehaviorTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/select_behavior.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'select_behavior_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/select_behavior_test.js';
   }
 
   /** @override */
   get suiteName() {
     return select_behavior_test.suiteName;
-  }
-
-  /** @override */
-  get customElementName() {
-    // This test is loading a behavior, not an element.
-    return null;
   }
 };
 
@@ -244,15 +172,7 @@ TEST_F('PrintPreviewSelectBehaviorTest', 'CallProcessSelectChange', function() {
 var PrintPreviewNumberSettingsSectionTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/number_settings_section.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'number_settings_section_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/number_settings_section_test.js';
   }
 
   /** @override */
@@ -271,18 +191,7 @@ TEST_F(
 var PrintPreviewRestoreStateTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/app.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_browser_proxy.js',
-      'native_layer_stub.js',
-      'plugin_stub.js',
-      'print_preview_test_utils.js',
-      'restore_state_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/restore_state_test.js';
   }
 
   /** @override */
@@ -307,16 +216,7 @@ TEST_F('PrintPreviewRestoreStateTest', 'SaveValues', function() {
 var PrintPreviewModelTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/data/model.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'model_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/model_test.js';
   }
 
   /** @override */
@@ -349,16 +249,7 @@ TEST_F('PrintPreviewModelTest', 'ChangeDestination', function() {
 var PrintPreviewModelSettingsAvailabilityTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/data/model.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'model_settings_availability_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/model_settings_availability_test.js';
   }
 };
 
@@ -371,16 +262,7 @@ GEN('#if defined(OS_CHROMEOS)');
 var PrintPreviewModelSettingsPolicyTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/data/model.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'model_settings_policy_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/model_settings_policy_test.js';
   }
 };
 
@@ -393,18 +275,7 @@ GEN('#endif');
 var PrintPreviewPreviewGenerationTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/app.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_browser_proxy.js',
-      'native_layer_stub.js',
-      'plugin_stub.js',
-      'print_preview_test_utils.js',
-      'preview_generation_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/preview_generation_test.js';
   }
 
   /** @override */
@@ -419,10 +290,6 @@ TEST_F('PrintPreviewPreviewGenerationTest', 'Color', function() {
 
 TEST_F('PrintPreviewPreviewGenerationTest', 'CssBackground', function() {
   this.runMochaTest(preview_generation_test.TestNames.CssBackground);
-});
-
-TEST_F('PrintPreviewPreviewGenerationTest', 'FitToPage', function() {
-  this.runMochaTest(preview_generation_test.TestNames.FitToPage);
 });
 
 TEST_F('PrintPreviewPreviewGenerationTest', 'HeaderFooter', function() {
@@ -461,6 +328,10 @@ TEST_F('PrintPreviewPreviewGenerationTest', 'Scaling', function() {
   this.runMochaTest(preview_generation_test.TestNames.Scaling);
 });
 
+TEST_F('PrintPreviewPreviewGenerationTest', 'ScalingPdf', function() {
+  this.runMochaTest(preview_generation_test.TestNames.ScalingPdf);
+});
+
 GEN('#if !defined(OS_WIN) && !defined(OS_MACOSX)');
 TEST_F('PrintPreviewPreviewGenerationTest', 'Rasterize', function() {
   this.runMochaTest(preview_generation_test.TestNames.Rasterize);
@@ -490,16 +361,7 @@ GEN('#if !defined(OS_CHROMEOS)');
 var PrintPreviewLinkContainerTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/link_container.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'link_container_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/link_container_test.js';
   }
 
   /** @override */
@@ -532,19 +394,7 @@ GEN('#if defined(OS_WIN) || defined(OS_MACOSX)');
 var PrintPreviewSystemDialogBrowserTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/app.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'native_layer_stub.js',
-      'plugin_stub.js',
-      'print_preview_test_utils.js',
-      'system_dialog_browsertest.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/system_dialog_browsertest.js';
   }
 
   /** @override */
@@ -572,21 +422,7 @@ GEN('#endif');  // defined(OS_WIN) || defined(OS_MACOSX)
 var PrintPreviewInvalidSettingsBrowserTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/app.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '//ui/webui/resources/js/cr/event_target.js',
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'cloud_print_interface_stub.js',
-      'native_layer_stub.js',
-      'plugin_stub.js',
-      'print_preview_test_utils.js',
-      'invalid_settings_browsertest.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/invalid_settings_browsertest.js';
   }
 
   /** @override */
@@ -626,31 +462,12 @@ TEST_F(
 var PrintPreviewDestinationStoreTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/data/destination_store.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '//ui/webui/resources/js/web_ui_listener_behavior.js',
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'cloud_print_interface_stub.js',
-      'native_layer_stub.js',
-      'print_preview_test_utils.js',
-      'destination_store_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/destination_store_test.js';
   }
 
   /** @override */
   get suiteName() {
     return destination_store_test.suiteName;
-  }
-
-  /** @override */
-  get customElementName() {
-    // This test is loading a data class, not an element.
-    return null;
   }
 };
 
@@ -703,11 +520,9 @@ TEST_F(
           destination_store_test.TestNames.LoadAndSelectDestination);
     });
 
-GEN('#if defined(OS_CHROMEOS)');
 TEST_F('PrintPreviewDestinationStoreTest', 'NoPrintersShowsError', function() {
   this.runMochaTest(destination_store_test.TestNames.NoPrintersShowsError);
 });
-GEN('#endif');
 
 TEST_F(
     'PrintPreviewDestinationStoreTest', 'UnreachableRecentCloudPrinter',
@@ -731,21 +546,7 @@ TEST_F(
 var PrintPreviewDestinationDialogTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/destination_dialog.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '//ui/webui/resources/js/web_ui_listener_behavior.js',
-      '//ui/webui/resources/js/cr/event_target.js',
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'cloud_print_interface_stub.js',
-      'native_layer_stub.js',
-      'print_preview_test_utils.js',
-      'destination_dialog_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/destination_dialog_test.js';
   }
 
   /** @override */
@@ -774,16 +575,7 @@ TEST_F('PrintPreviewDestinationDialogTest', 'UserAccounts', function() {
 var PrintPreviewAdvancedDialogTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/advanced_settings_dialog.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'advanced_dialog_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/advanced_dialog_test.js';
   }
 
   /** @override */
@@ -825,19 +617,7 @@ TEST_F('PrintPreviewAdvancedDialogTest', 'AdvancedSettingsFilter', function() {
 var PrintPreviewPreviewAreaTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/preview_area.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'native_layer_stub.js',
-      'plugin_stub.js',
-      'print_preview_test_utils.js',
-      'preview_area_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/preview_area_test.js';
   }
 
   /** @override */
@@ -858,16 +638,7 @@ TEST_F('PrintPreviewPreviewAreaTest', 'ViewportSizeChanges', function() {
 var PrintPreviewCustomMarginsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/margin_control_container.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'custom_margins_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/custom_margins_test.js';
   }
 
   /** @override */
@@ -944,23 +715,60 @@ TEST_F('PrintPreviewCustomMarginsTest', 'ControlsDisabledOnError', function() {
   this.runMochaTest(custom_margins_test.TestNames.ControlsDisabledOnError);
 });
 
+GEN('#if defined(OS_CHROMEOS)');
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationSearchTestChromeOS = class extends PrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/test_loader.html?module=print_preview/destination_search_test_chromeos.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_search_test_chromeos.suiteName;
+  }
+};
+
+TEST_F(
+    'PrintPreviewDestinationSearchTestChromeOS', 'ReceiveSuccessfulSetup',
+    function() {
+      this.runMochaTest(
+          destination_search_test_chromeos.TestNames.ReceiveSuccessfulSetup);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationSearchTestChromeOS', 'ResolutionFails', function() {
+      this.runMochaTest(
+          destination_search_test_chromeos.TestNames.ResolutionFails);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationSearchTestChromeOS', 'ReceiveFailedSetup',
+    function() {
+      this.runMochaTest(
+          destination_search_test_chromeos.TestNames.ReceiveFailedSetup);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationSearchTestChromeOS',
+    'ReceiveSuccessfultSetupWithPolicies', function() {
+      this.runMochaTest(
+          destination_search_test_chromeos.TestNames.ResolutionFails);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationSearchTestChromeOS', 'CloudKioskPrinter',
+    function() {
+      this.runMochaTest(
+          destination_search_test_chromeos.TestNames.CloudKioskPrinter);
+    });
+
+GEN('#else');
 // eslint-disable-next-line no-var
 var PrintPreviewDestinationSearchTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/destination_dialog.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '//ui/webui/resources/js/web_ui_listener_behavior.js',
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'native_layer_stub.js',
-      'print_preview_test_utils.js',
-      'destination_search_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/destination_search_test.js';
   }
 
   /** @override */
@@ -970,49 +778,21 @@ var PrintPreviewDestinationSearchTest = class extends PrintPreviewTest {
 };
 
 TEST_F(
-    'PrintPreviewDestinationSearchTest', 'ReceiveSuccessfulSetup', function() {
+    'PrintPreviewDestinationSearchTest', 'GetCapabilitiesSucceeds', function() {
       this.runMochaTest(
-          destination_search_test.TestNames.ReceiveSuccessfulSetup);
+          destination_search_test.TestNames.GetCapabilitiesSucceeds);
     });
 
-GEN('#if defined(OS_CHROMEOS)');
-TEST_F('PrintPreviewDestinationSearchTest', 'ResolutionFails', function() {
-  this.runMochaTest(destination_search_test.TestNames.ResolutionFails);
-});
-
-TEST_F('PrintPreviewDestinationSearchTest', 'ReceiveFailedSetup', function() {
-  this.runMochaTest(destination_search_test.TestNames.ReceiveFailedSetup);
-});
-
-TEST_F(
-    'PrintPreviewDestinationSearchTest', 'ReceiveSuccessfultSetupWithPolicies',
-    function() {
-      this.runMochaTest(destination_search_test.TestNames.ResolutionFails);
-    });
-
-GEN('#else');  // !defined(OS_CHROMEOS)
 TEST_F('PrintPreviewDestinationSearchTest', 'GetCapabilitiesFails', function() {
   this.runMochaTest(destination_search_test.TestNames.GetCapabilitiesFails);
 });
-GEN('#endif');  // defined(OS_CHROMEOS)
-
-TEST_F('PrintPreviewDestinationSearchTest', 'CloudKioskPrinter', function() {
-  this.runMochaTest(destination_search_test.TestNames.CloudKioskPrinter);
-});
+GEN('#endif');
 
 // eslint-disable-next-line no-var
 var PrintPreviewHeaderTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/header.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'header_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/header_test.js';
   }
 
   /** @override */
@@ -1037,68 +817,15 @@ TEST_F('PrintPreviewHeaderTest', 'HeaderChangesForState', function() {
   this.runMochaTest(header_test.TestNames.HeaderChangesForState);
 });
 
-TEST_F('PrintPreviewHeaderTest', 'ButtonOrder', function() {
-  this.runMochaTest(header_test.TestNames.ButtonOrder);
-});
-
 TEST_F('PrintPreviewHeaderTest', 'EnterprisePolicy', function() {
   this.runMochaTest(header_test.TestNames.EnterprisePolicy);
-});
-
-// eslint-disable-next-line no-var
-var PrintPreviewHeaderNewTest = class extends PrintPreviewTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://print/ui/header_new.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'header_new_test.js',
-    ]);
-  }
-
-  /** @override */
-  get suiteName() {
-    return header_new_test.suiteName;
-  }
-};
-
-TEST_F('PrintPreviewHeaderNewTest', 'HeaderPrinterTypes', function() {
-  this.runMochaTest(header_new_test.TestNames.HeaderPrinterTypes);
-});
-
-TEST_F('PrintPreviewHeaderNewTest', 'HeaderWithDuplex', function() {
-  this.runMochaTest(header_new_test.TestNames.HeaderWithDuplex);
-});
-
-TEST_F('PrintPreviewHeaderNewTest', 'HeaderWithCopies', function() {
-  this.runMochaTest(header_new_test.TestNames.HeaderWithCopies);
-});
-
-TEST_F('PrintPreviewHeaderNewTest', 'HeaderChangesForState', function() {
-  this.runMochaTest(header_new_test.TestNames.HeaderChangesForState);
-});
-
-TEST_F('PrintPreviewHeaderNewTest', 'EnterprisePolicy', function() {
-  this.runMochaTest(header_new_test.TestNames.EnterprisePolicy);
 });
 
 // eslint-disable-next-line no-var
 var PrintPreviewButtonStripTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/button_strip.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'button_strip_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/button_strip_test.js';
   }
 
   /** @override */
@@ -1123,15 +850,7 @@ TEST_F('PrintPreviewButtonStripTest', 'ButtonStripFiresEvents', function() {
 var PrintPreviewDestinationItemTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/destination_list_item.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'print_preview_test_utils.js',
-      'destination_item_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/destination_item_test.js';
   }
 
   /** @override */
@@ -1164,16 +883,7 @@ TEST_F('PrintPreviewDestinationItemTest', 'QueryDescription', function() {
 var PrintPreviewAdvancedItemTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/advanced_settings_item.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'advanced_item_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/advanced_item_test.js';
   }
 
   /** @override */
@@ -1210,15 +920,7 @@ TEST_F('PrintPreviewAdvancedItemTest', 'QueryOption', function() {
 var PrintPreviewDestinationListTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/destination_list.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'destination_list_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/destination_list_test.js';
   }
 
   /** @override */
@@ -1241,18 +943,7 @@ TEST_F(
 var PrintPreviewPrintButtonTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/app.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_browser_proxy.js',
-      'native_layer_stub.js',
-      'plugin_stub.js',
-      'print_preview_test_utils.js',
-      'print_button_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/print_button_test.js';
   }
 
   /** @override */
@@ -1273,19 +964,7 @@ TEST_F('PrintPreviewPrintButtonTest', 'PDFPrintVisiblePreview', function() {
 var PrintPreviewKeyEventTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/app.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'native_layer_stub.js',
-      'plugin_stub.js',
-      'print_preview_test_utils.js',
-      'key_event_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/key_event_test.js';
   }
 
   /** @override */
@@ -1333,24 +1012,27 @@ TEST_F('PrintPreviewKeyEventTest', 'CtrlShiftPOpensSystemDialog', function() {
 });
 
 // eslint-disable-next-line no-var
-var PrintPreviewDestinationSettingsTest = class extends PrintPreviewTest {
+var PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/destination_settings.html';
+    return 'chrome://print/test_loader.html?module=print_preview/destination_select_test.js';
   }
 
   /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '//ui/webui/resources/js/web_ui_listener_behavior.js',
-      '../test_browser_proxy.js',
-      '../test_util.js',
-      'cloud_print_interface_stub.js',
-      'print_preview_test_utils.js',
-      'native_layer_stub.js',
-      'print_preview_test_utils.js',
-      'destination_settings_test.js',
-    ]);
+  get suiteName() {
+    return destination_select_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewDestinationSelectTest', 'ChangeIcon', function() {
+  this.runMochaTest(destination_select_test.TestNames.ChangeIcon);
+});
+
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationSettingsTest = class extends PrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/test_loader.html?module=print_preview/destination_settings_test.js';
   }
 
   /** @override */
@@ -1423,20 +1105,25 @@ TEST_F(
           destination_settings_test.TestNames.ResetDestinationOnSignOut);
     });
 
+TEST_F('PrintPreviewDestinationSettingsTest', 'DisabledSaveAsPdf', function() {
+  this.runMochaTest(destination_settings_test.TestNames.DisabledSaveAsPdf);
+});
+
+TEST_F('PrintPreviewDestinationSettingsTest', 'NoDestinations', function() {
+  this.runMochaTest(destination_settings_test.TestNames.NoDestinations);
+});
+
+GEN('#if defined(OS_CHROMEOS)');
+TEST_F('PrintPreviewDestinationSettingsTest', 'EulaIsDisplayed', function() {
+  this.runMochaTest(destination_settings_test.TestNames.EulaIsDisplayed);
+});
+GEN('#endif');
+
 // eslint-disable-next-line no-var
 var PrintPreviewScalingSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/scaling_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'scaling_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/scaling_settings_test.js';
   }
 
   /** @override */
@@ -1467,16 +1154,7 @@ TEST_F(
 var PrintPreviewCopiesSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/copies_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'copies_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/copies_settings_test.js';
   }
 };
 
@@ -1488,16 +1166,7 @@ TEST_F('PrintPreviewCopiesSettingsTest', 'All', function() {
 var PrintPreviewMediaSizeSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/media_size_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'media_size_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/media_size_settings_test.js';
   }
 };
 
@@ -1509,16 +1178,7 @@ TEST_F('PrintPreviewMediaSizeSettingsTest', 'All', function() {
 var PrintPreviewDpiSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/dpi_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'dpi_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/dpi_settings_test.js';
   }
 };
 
@@ -1530,16 +1190,7 @@ TEST_F('PrintPreviewDpiSettingsTest', 'All', function() {
 var PrintPreviewOtherOptionsSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/other_options_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'other_options_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/other_options_settings_test.js';
   }
 };
 
@@ -1551,16 +1202,7 @@ TEST_F('PrintPreviewOtherOptionsSettingsTest', 'All', function() {
 var PrintPreviewLayoutSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/layout_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'layout_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/layout_settings_test.js';
   }
 };
 
@@ -1572,16 +1214,7 @@ TEST_F('PrintPreviewLayoutSettingsTest', 'All', function() {
 var PrintPreviewColorSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/color_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'color_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/color_settings_test.js';
   }
 };
 
@@ -1593,16 +1226,7 @@ TEST_F('PrintPreviewColorSettingsTest', 'All', function() {
 var PrintPreviewMarginsSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/margins_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'margins_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/margins_settings_test.js';
   }
 };
 
@@ -1614,16 +1238,7 @@ TEST_F('PrintPreviewMarginsSettingsTest', 'All', function() {
 var PrintPreviewPagesPerSheetSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/pages_per_sheet_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'pages_per_sheet_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/pages_per_sheet_settings_test.js';
   }
 };
 
@@ -1635,16 +1250,7 @@ TEST_F('PrintPreviewPagesPerSheetSettingsTest', 'All', function() {
 var PrintPreviewDuplexSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/duplex_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'duplex_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/duplex_settings_test.js';
   }
 };
 
@@ -1657,16 +1263,7 @@ GEN('#if defined(OS_CHROMEOS)');
 var PrintPreviewPinSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/pin_settings.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'pin_settings_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/pin_settings_test.js';
   }
 };
 
@@ -1679,19 +1276,7 @@ GEN('#endif');
 var PrintPreviewUserManagerTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/data/user_manager.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      '../test_browser_proxy.js',
-      'cloud_print_interface_stub.js',
-      'native_layer_stub.js',
-      'print_preview_test_utils.js',
-      'user_manager_test.js',
-    ]);
+    return 'chrome://print/test_loader.html?module=print_preview/user_manager_test.js';
   }
 };
 

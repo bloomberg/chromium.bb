@@ -271,7 +271,7 @@ android_library("cronet_api_java") {
 
   deps = [
     ":api_version",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
 }
 
@@ -311,7 +311,7 @@ android_library("cronet_impl_common_base_java") {
   deps = [
     ":cronet_api_java",
     ":impl_version",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
   deps += cronet_impl_common_java_deps_to_package
 
@@ -327,7 +327,7 @@ android_library("cronet_impl_java_util_java") {
 
   deps = [
     ":cronet_api_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
 }
 
@@ -346,7 +346,7 @@ android_library("cronet_impl_platform_base_java") {
     ":cronet_impl_common_base_java",
     ":cronet_impl_java_util_java",
     "//net/android:net_thread_stats_uid_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
 }
@@ -422,10 +422,12 @@ android_library("cronet_impl_native_base_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
+    "//base:jni_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
   deps += cronet_impl_native_java_deps_to_package
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   srcjar_deps = cronet_impl_native_java_srcjar_deps
 }
@@ -732,13 +734,40 @@ repackage_jars("repackage_util") {
   ]
 }
 
+# See crbug.com/1005836 for more info on why repackage_native requires 2 extra
+# targets. These 3 targets exist to ensure the correct version of GEN_JNI
+# (a generated class containing native method definitions) is included.
 repackage_jars("repackage_native") {
   output = "$_package_dir/cronet_impl_native_java.jar"
-  deps = cronet_impl_native_java_deps_to_package + [
-           ":cronet_impl_native_base_java",
-           ":cronet_jni_registration_java",
-         ]
+  deps = [
+    ":cronet_jni_registration_java",
+    ":repackage_native_java",
+  ]
   jar_excluded_patterns = _jar_excluded_patterns
+}
+
+_native_intermediate_jar_path = "$target_out_dir/repackage_native_impl.jar"
+
+# Do not depend on this target directly. Use :repackage_native.
+repackage_jars("repackage_native_impl") {
+  output = _native_intermediate_jar_path
+  deps = cronet_impl_native_java_deps_to_package +
+         [ ":cronet_impl_native_base_java" ]
+  jar_excluded_patterns = _jar_excluded_patterns
+}
+
+# Do not depend on this target directly. Use :repackage_native.
+# This target exists to provide :repackage_native with a suitable target to
+# depend on (since dist_aar only pulls in deps of type "java_library").
+android_java_prebuilt("repackage_native_java") {
+  jar_path = _native_intermediate_jar_path
+
+  # Since only the unprocessed jar is used, no need to complete the bytecode
+  # processing steps.
+  enable_bytecode_rewriter = false
+  deps = [
+    ":repackage_native_impl",
+  ]
 }
 
 repackage_jars("repackage_common") {
@@ -898,6 +927,7 @@ if (!is_component_build) {
   android_library("cronet_common_javatests") {
     testonly = true
     java_files = [
+      "test/javatests/src/org/chromium/net/TestUploadDataProvider.java",
       "test/javatests/src/org/chromium/net/TestUrlRequestCallback.java",
       "test/javatests/src/org/chromium/net/CronetTestRule.java",
     ]
@@ -978,7 +1008,6 @@ if (!is_component_build) {
       "test/javatests/src/org/chromium/net/TestDrivenDataProvider.java",
       "test/javatests/src/org/chromium/net/TestNetworkQualityRttListener.java",
       "test/javatests/src/org/chromium/net/TestNetworkQualityThroughputListener.java",
-      "test/javatests/src/org/chromium/net/TestUploadDataProvider.java",
       "test/javatests/src/org/chromium/net/UploadDataProvidersTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/CronetBufferedOutputStreamTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/CronetChunkedOutputStreamTest.java",
@@ -1311,7 +1340,7 @@ if (!is_component_build) {
     outputs = [
       _zip_file,
     ]
-    _annotations_jar = "$root_out_dir/lib.java/third_party/android_deps/com_android_support_support_annotations.jar"
+    _annotations_jar = "$root_out_dir/lib.java/third_party/android_deps/androidx_annotation_annotation.jar"
     _src_jar = "$_package_dir/cronet_api-src.jar"
     inputs = [
       _annotations_jar,
@@ -1343,7 +1372,7 @@ if (!is_component_build) {
     ]
     deps = [
       ":jar_cronet_api_source",
-      "//third_party/android_deps:com_android_support_support_annotations_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
   }
 

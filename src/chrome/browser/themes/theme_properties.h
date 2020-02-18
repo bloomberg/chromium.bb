@@ -51,6 +51,8 @@ class ThemeProperties {
     COLOR_NTP_HEADER,
     COLOR_CONTROL_BUTTON_BACKGROUND,
     COLOR_TOOLBAR_BUTTON_ICON,
+    COLOR_OMNIBOX_TEXT,
+    COLOR_OMNIBOX_BACKGROUND,
 
     TINT_BUTTONS,
     TINT_FRAME,
@@ -140,6 +142,9 @@ class ThemeProperties {
     // These colors don't have constant default values. They are derived from
     // the runtime value of other colors.
     COLOR_NTP_TEXT_LIGHT,
+    COLOR_NTP_LOGO,
+    // Color for the background of the most visited/custom link tile.
+    COLOR_NTP_SHORTCUT,
 
 #if defined(OS_WIN)
     // The color of the 1px border around the window on Windows 10.
@@ -151,6 +156,25 @@ class ThemeProperties {
     // Colors for in-product help promo bubbles.
     COLOR_FEATURE_PROMO_BUBBLE_TEXT,
     COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND,
+
+    COLOR_OMNIBOX_BACKGROUND_HOVERED,
+    COLOR_OMNIBOX_SELECTED_KEYWORD,
+    COLOR_OMNIBOX_TEXT_DIMMED,
+    COLOR_OMNIBOX_RESULTS_BG,
+    COLOR_OMNIBOX_RESULTS_BG_HOVERED,
+    COLOR_OMNIBOX_RESULTS_BG_SELECTED,
+    COLOR_OMNIBOX_RESULTS_TEXT_SELECTED,
+    COLOR_OMNIBOX_RESULTS_TEXT_DIMMED,
+    COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED,
+    COLOR_OMNIBOX_RESULTS_ICON,
+    COLOR_OMNIBOX_RESULTS_ICON_SELECTED,
+    COLOR_OMNIBOX_RESULTS_URL,
+    COLOR_OMNIBOX_RESULTS_URL_SELECTED,
+    COLOR_OMNIBOX_BUBBLE_OUTLINE,
+    COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE,
+    COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
+    COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
+    COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
   };
 
   // Themes are hardcoded to draw frame images as if they start this many DIPs

@@ -120,7 +120,7 @@ class ProtocolPerfTest
     encode_thread_.Start();
     decode_thread_.Start();
 
-    network_change_notifier_ = net::NetworkChangeNotifier::Create();
+    network_change_notifier_ = net::NetworkChangeNotifier::CreateIfNeeded();
 
     desktop_environment_factory_.reset(
         new FakeDesktopEnvironmentFactory(capture_thread_.task_runner()));
@@ -319,7 +319,7 @@ class ProtocolPerfTest
         protocol::GetSharedSecretHash(kHostId, kHostPin);
     std::unique_ptr<protocol::AuthenticatorFactory> auth_factory =
         protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
-            true, kHostOwner, host_cert, key_pair, std::vector<std::string>(),
+            kHostOwner, host_cert, key_pair, std::vector<std::string>(),
             host_pin_hash, nullptr);
     host_->SetAuthenticatorFactory(std::move(auth_factory));
 

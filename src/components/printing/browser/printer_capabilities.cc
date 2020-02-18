@@ -31,6 +31,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "base/feature_list.h"
+#include "components/printing/browser/ipp_l10n.h"
+#include "components/strings/grit/components_strings.h"
+#include "printing/printing_features_chromeos.h"
+#include "ui/base/l10n/l10n_util.h"
+#endif  // defined(OS_CHROMEOS)
+
 #if BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 #include "components/printing/browser/print_media_l10n.h"
 #endif
@@ -62,19 +70,35 @@ void PopulateAllPaperDisplayNames(PrinterSemanticCapsAndDefaults* info) {
 }
 #endif  // BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 
+#if defined(OS_CHROMEOS)
+void PopulateAdvancedCapsLocalization(
+    std::vector<AdvancedCapability>* advanced_capabilities) {
+  auto& l10n_map = CapabilityLocalizationMap();
+  for (AdvancedCapability& capability : *advanced_capabilities) {
+    auto it = l10n_map.find(capability.name);
+    if (it != l10n_map.end())
+      capability.display_name = l10n_util::GetStringUTF8(it->second);
+
+    for (AdvancedCapabilityValue& value : capability.values) {
+      auto it = l10n_map.find(capability.name + "/" + value.name);
+      if (it != l10n_map.end())
+        value.display_name = l10n_util::GetStringUTF8(it->second);
+    }
+  }
+}
+#endif  // defined(OS_CHROMEOS)
+
 // Returns a dictionary representing printer capabilities as CDD.  Returns
 // an empty dictionary if a dictionary could not be generated.
-base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
+base::Value GetPrinterCapabilitiesOnBlockingTaskRunner(
     const std::string& device_name,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
     bool has_secure_protocol,
-    scoped_refptr<PrintBackend> print_backend) {
+    scoped_refptr<PrintBackend> backend) {
+  DCHECK(!device_name.empty());
+
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  DCHECK(!device_name.empty());
-  scoped_refptr<PrintBackend> backend =
-      print_backend ? print_backend
-                    : printing::PrintBackend::CreateInstance(nullptr);
 
   VLOG(1) << "Get printer capabilities start for " << device_name;
   crash_keys::ScopedPrinterInfo crash_key(
@@ -94,6 +118,9 @@ base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
 #if defined(OS_CHROMEOS)
   if (!has_secure_protocol)
     info.pin_supported = false;
+
+  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes))
+    PopulateAdvancedCapsLocalization(&info.advanced_capabilities);
 #endif  // defined(OS_CHROMEOS)
 
   return cloud_print::PrinterSemanticCapsAndDefaultsToCdd(info);
@@ -122,7 +149,7 @@ std::string GetUserFriendlyName(const std::string& printer_name) {
 }
 #endif
 
-base::Value GetSettingsOnBlockingPool(
+base::Value GetSettingsOnBlockingTaskRunner(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
@@ -138,16 +165,27 @@ base::Value GetSettingsOnBlockingPool(
                       base::Value(basic_info.display_name));
   printer_info.SetKey(kSettingPrinterDescription,
                       base::Value(basic_info.printer_description));
+
+  base::Value options(base::Value::Type::DICTIONARY);
+
+#if defined(OS_CHROMEOS)
+  auto it = basic_info.options.find(kPrinterEulaURL);
+  options.SetKey(kPrinterEulaURL, it != basic_info.options.end()
+                                      ? base::Value(it->second)
+                                      : base::Value());
   printer_info.SetKey(
       kCUPSEnterprisePrinter,
       base::Value(base::Contains(basic_info.options, kCUPSEnterprisePrinter) &&
                   basic_info.options.at(kCUPSEnterprisePrinter) == kValueTrue));
+#endif  // defined(OS_CHROMEOS)
+
+  printer_info.SetKey(kSettingPrinterOptions, std::move(options));
 
   base::Value printer_info_capabilities(base::Value::Type::DICTIONARY);
   printer_info_capabilities.SetKey(kPrinter, std::move(printer_info));
   printer_info_capabilities.SetKey(
       kSettingCapabilities,
-      GetPrinterCapabilitiesOnBlockingPoolThread(
+      GetPrinterCapabilitiesOnBlockingTaskRunner(
           device_name, additional_papers, has_secure_protocol, print_backend));
   return printer_info_capabilities;
 }

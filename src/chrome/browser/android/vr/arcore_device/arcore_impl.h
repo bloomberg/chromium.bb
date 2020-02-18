@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_generic.h"
+#include "base/util/type_safety/id_type.h"
 #include "chrome/browser/android/vr/arcore_device/arcore.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_sdk.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -56,6 +57,11 @@ void inline ScopedGenericArObject<ArPlane*>::Free(ArPlane* ar_plane) {
 }
 
 template <>
+void inline ScopedGenericArObject<ArAnchor*>::Free(ArAnchor* ar_anchor) {
+  ArAnchor_release(ar_anchor);
+}
+
+template <>
 void inline ScopedGenericArObject<ArTrackableList*>::Free(
     ArTrackableList* ar_trackable_list) {
   ArTrackableList_destroy(ar_trackable_list);
@@ -83,6 +89,37 @@ using ScopedArCoreObject = base::ScopedGeneric<T, ScopedGenericArObject<T>>;
 
 }  // namespace internal
 
+using PlaneId = util::IdTypeU64<class PlaneTag>;
+using AnchorId = util::IdTypeU64<class AnchorTag>;
+using HitTestSubscriptionId = util::IdTypeU64<class HitTestSubscriptionTag>;
+
+struct HitTestSubscriptionData {
+  mojom::XRNativeOriginInformationPtr native_origin_information;
+  const std::vector<mojom::EntityTypeForHitTest> entity_types;
+  mojom::XRRayPtr ray;
+
+  HitTestSubscriptionData(
+      mojom::XRNativeOriginInformationPtr native_origin_information,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      mojom::XRRayPtr ray);
+  HitTestSubscriptionData(HitTestSubscriptionData&& other);
+  ~HitTestSubscriptionData();
+};
+
+struct TransientInputHitTestSubscriptionData {
+  const std::string profile_name;
+  const std::vector<mojom::EntityTypeForHitTest> entity_types;
+  mojom::XRRayPtr ray;
+
+  TransientInputHitTestSubscriptionData(
+      const std::string& profile_name,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      mojom::XRRayPtr ray);
+  TransientInputHitTestSubscriptionData(
+      TransientInputHitTestSubscriptionData&& other);
+  ~TransientInputHitTestSubscriptionData();
+};
+
 // This class should be created and accessed entirely on a Gl thread.
 class ArCoreImpl : public ArCore {
  public:
@@ -106,8 +143,40 @@ class ArCoreImpl : public ArCore {
   void Pause() override;
   void Resume() override;
 
+  float GetEstimatedFloorHeight() override;
+
   bool RequestHitTest(const mojom::XRRayPtr& ray,
                       std::vector<mojom::XRHitResultPtr>* hit_results) override;
+
+  // Helper.
+  bool RequestHitTest(
+      const gfx::Point3F& origin,
+      const gfx::Vector3dF& direction,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      std::vector<mojom::XRHitResultPtr>* hit_results);
+
+  base::Optional<uint64_t> SubscribeToHitTest(
+      mojom::XRNativeOriginInformationPtr nativeOriginInformation,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      mojom::XRRayPtr ray) override;
+  base::Optional<uint64_t> SubscribeToHitTestForTransientInput(
+      const std::string& profile_name,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      mojom::XRRayPtr ray) override;
+
+  mojom::XRHitTestSubscriptionResultsDataPtr GetHitTestSubscriptionResults(
+      const gfx::Transform& mojo_from_viewer,
+      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+          maybe_input_state) override;
+
+  void UnsubscribeFromHitTest(uint64_t subscription_id) override;
+
+  base::Optional<uint64_t> CreateAnchor(
+      const device::mojom::PosePtr& pose) override;
+  base::Optional<uint64_t> CreateAnchor(const device::mojom::PosePtr& pose,
+                                        uint64_t plane_id) override;
+
+  void DetachAnchor(uint64_t anchor_id) override;
 
  private:
   bool IsOnGlThread();
@@ -150,7 +219,7 @@ class ArCoreImpl : public ArCore {
   // planes already have an ID assigned. The result includes freshly assigned
   // IDs for newly detected planes along with previously known IDs for updated
   // and unchanged planes. It excludes planes that are no longer being tracked.
-  std::vector<int32_t> GetAllPlaneIds();
+  std::vector<uint64_t> GetAllPlaneIds();
 
   // Returns vector containing information about all anchors updated in the
   // current frame.
@@ -158,19 +227,79 @@ class ArCoreImpl : public ArCore {
 
   // The result will contain IDs of all anchors still tracked in the current
   // frame.
-  std::vector<int32_t> GetAllAnchorIds();
+  std::vector<uint64_t> GetAllAnchorIds();
 
-  int32_t next_id_ = 1;
-  std::unordered_map<void*, int32_t> ar_plane_address_to_id_;
-  std::unordered_map<void*, int32_t> ar_anchor_address_to_id_;
+  uint64_t next_id_ = 1;
+  std::map<void*, PlaneId> ar_plane_address_to_id_;
+  std::map<PlaneId, device::internal::ScopedArCoreObject<ArTrackable*>>
+      plane_id_to_plane_object_;
+  std::map<void*, AnchorId> ar_anchor_address_to_id_;
+  std::map<AnchorId, device::internal::ScopedArCoreObject<ArAnchor*>>
+      anchor_id_to_anchor_object_;
+
+  std::map<HitTestSubscriptionId, HitTestSubscriptionData>
+      hit_test_subscription_id_to_data_;
+  std::map<HitTestSubscriptionId, TransientInputHitTestSubscriptionData>
+      hit_test_subscription_id_to_transient_hit_test_data_;
 
   // Returns tuple containing plane id and a boolean signifying that the plane
-  // was created. The result will be a nullopt in case the ID should be assigned
-  // but next ID would result in an integer overflow.
-  base::Optional<std::pair<int32_t, bool>> CreateOrGetPlaneId(
-      void* plane_address);
-  base::Optional<std::pair<int32_t, bool>> CreateOrGetAnchorId(
-      void* anchor_address);
+  // was created.
+  std::pair<PlaneId, bool> CreateOrGetPlaneId(void* plane_address);
+  std::pair<AnchorId, bool> CreateOrGetAnchorId(void* anchor_address);
+
+  HitTestSubscriptionId CreateHitTestSubscriptionId();
+
+  // Returns hit test subscription results for a single subscription given
+  // current XRSpace transformation.
+  device::mojom::XRHitTestSubscriptionResultDataPtr
+  GetHitTestSubscriptionResult(
+      HitTestSubscriptionId id,
+      const mojom::XRRay& ray,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      const gfx::Transform& ray_transformation);
+
+  // Returns transient hit test subscription results for a single subscription.
+  // The results will be grouped by input source as there might be multiple
+  // input sources that match input source profile name set on a transient hit
+  // test subscription.
+  // |input_source_ids_and_transforms| contains tuples with (input source id,
+  // mojo from input source transform).
+  device::mojom::XRHitTestTransientInputSubscriptionResultDataPtr
+  GetTransientHitTestSubscriptionResult(
+      HitTestSubscriptionId id,
+      const mojom::XRRay& ray,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      const std::vector<std::pair<uint32_t, gfx::Transform>>&
+          input_source_ids_and_transforms);
+
+  // Returns mojo_from_native_origin transform given native origin
+  // information. If the transform cannot be found, it will return
+  // base::nullopt.
+  base::Optional<gfx::Transform> GetMojoFromNativeOrigin(
+      const mojom::XRNativeOriginInformationPtr& native_origin_information,
+      const gfx::Transform& mojo_from_viewer,
+      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+          maybe_input_state);
+
+  // Returns mojo_from_reference_space transform given reference space
+  // category. Mojo_from_reference_space is equivalent to
+  // mojo_from_native_origin for native origins that are reference spaces.
+  // If the transform cannot be found, it will return base::nullopt.
+  base::Optional<gfx::Transform> GetMojoFromReferenceSpace(
+      device::mojom::XRReferenceSpaceCategory category,
+      const gfx::Transform& mojo_from_viewer);
+
+  // Returns a collection of tuples (input_source_id,
+  // mojo_from_input_source) for input sources that match the passed in
+  // profile name. Mojo_from_input_source is equivalent to
+  // mojo_from_native_origin for native origins that are input sources. If
+  // there are no input sources that match the profile name, the result will
+  // be empty.
+  std::vector<std::pair<uint32_t, gfx::Transform>> GetMojoFromInputSources(
+      const std::string& profile_name,
+      const gfx::Transform& mojo_from_viewer,
+      const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
+          maybe_input_state);
 
   // Executes |fn| for each still tracked, non-subsumed plane present in
   // |arcore_planes_|.

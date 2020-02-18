@@ -8,12 +8,11 @@
 #include <memory>
 #include <string>
 
+#include "base/supports_user_data.h"
 #include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
-
-namespace aura {
-class Window;
-}  // namespace aura
+#include "chromecast/browser/webview/web_content_controller.h"
+#include "url/gurl.h"
 
 namespace chromecast {
 class CastWebContents;
@@ -22,44 +21,48 @@ class CastWebContents;
 namespace content {
 class BrowserContext;
 class WebContents;
+class NavigationHandle;
+class NavigationThrottle;
 }  // namespace content
 
 namespace chromecast {
 
+class WebviewNavigationThrottle;
+
 // This owns a WebContents and CastWebContents and processes proto commands
 // to allow the web contents to be controlled and embedded.
 class WebviewController : public CastWebContents::Delegate,
-                          public CastWebContents::Observer {
+                          public CastWebContents::Observer,
+                          public WebContentController {
  public:
-  class Client {
-   public:
-    virtual ~Client() {}
-    virtual void EnqueueSend(
-        std::unique_ptr<webview::WebviewResponse> response) = 0;
-    virtual void OnError(const std::string& error_message) = 0;
-  };
   WebviewController(content::BrowserContext* browser_context, Client* client);
   ~WebviewController() override;
+
+  // Returns a navigation throttle for the current navigation request, if one is
+  // necessary.
+  static std::unique_ptr<content::NavigationThrottle>
+  MaybeGetNavigationThrottle(content::NavigationHandle* handle);
 
   // Cause the controller to be destroyed after giving the webpage a chance to
   // run unload events. This unsets the client so no more messages will be
   // sent.
-  void Destroy();
+  void Destroy() override;
+
+  void ProcessRequest(const webview::WebviewRequest& request) override;
 
   // Close the page. This will cause a stopped response to eventually be sent.
   void ClosePage();
 
-  void ProcessRequest(const webview::WebviewRequest& request);
+  // Dispatch a navigation request event with the information supplied in the
+  // navigation handle.
+  void SendNavigationEvent(WebviewNavigationThrottle* throttle,
+                           content::NavigationHandle* navigation_handle);
 
-  // Attach this web contents to an aura window as a child.
-  void AttachTo(aura::Window* window, int window_id);
+ protected:
+  content::WebContents* GetWebContents() override;
 
  private:
   webview::AsyncPageEvent_State current_state();
-
-  void ProcessInputEvent(const webview::InputEvent& ev);
-
-  bool Check(bool condition, const char* error);
 
   // CastWebContents::Delegate
   void OnPageStateChanged(CastWebContents* cast_web_contents) override;
@@ -69,10 +72,19 @@ class WebviewController : public CastWebContents::Delegate,
   // CastWebContents::Observer
   void ResourceLoadFailed(CastWebContents* cast_web_contents) override;
 
-  Client* client_;  // Not owned.
   std::unique_ptr<content::WebContents> contents_;
   std::unique_ptr<CastWebContents> cast_web_contents_;
   bool stopped_ = false;
+
+  // The navigation throttle for the current navigation event, if any.
+  // Is set only:
+  //    When has_navigation_delegate is true, and
+  //    A NavigationEvent call is currently in process.
+  // Cleared immediately after the NavigationDecision has been processed.
+  WebviewNavigationThrottle* current_navigation_throttle_ =
+      nullptr;  // Not owned.
+
+  base::WeakPtrFactory<WebviewController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebviewController);
 };

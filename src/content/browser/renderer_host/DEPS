@@ -4,6 +4,7 @@ include_rules = [
   "+components/viz/host",
   "+components/viz/service",
   "+jni",
+  "+net/dns/public",
   "+third_party/blink/public/platform/web_gesture_curve.h",
   "+third_party/zlib",
   "+ui/events/gestures/blink/web_gesture_curve_impl.h",
@@ -33,6 +34,7 @@ specific_include_rules = {
   ],
   "render_process_host_impl\.cc": [
     "+content/browser/frame_host/render_frame_message_filter.h",
+    "+google_apis/gaia/gaia_switches.h",
     # TODO(crbug.com/734668): Dependencies on ozone should be removed, as content
     # embedded in mus won't be able to talk to the native ozone.
     "+ui/ozone/public/ozone_switches.h",
@@ -51,17 +53,5 @@ specific_include_rules = {
   ],
   "render_widget_host_view_event_handler\.cc": [
     "+content/browser/frame_host",
-  ],
-  # RenderWidgetHostViewGuest dependency is needed to allow for routing mouse
-  # events to the correct owner RenderWidgetHostViewBase. It should be removed
-  # when all inner WebContents are based on OOPIF structure (as opposed to
-  # BrowserPlugin).
-  # TODO(kenrb, wjmaclean): Remove this when RenderWidgetHostViewGuest is
-  # deleted. See https://crbug.com/533069.
-  "render_widget_host_input_event_router.cc": [
-    "+content/browser/frame_host/render_widget_host_view_guest.h",
-  ],
-  "render_widget_host_view_base\.cc": [
-    "+content/browser/frame_host/render_widget_host_view_guest.h",
   ],
 }

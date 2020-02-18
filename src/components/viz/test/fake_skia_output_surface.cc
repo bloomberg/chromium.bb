@@ -28,7 +28,8 @@ namespace viz {
 
 FakeSkiaOutputSurface::FakeSkiaOutputSurface(
     scoped_refptr<ContextProvider> context_provider)
-    : context_provider_(std::move(context_provider)) {
+    : SkiaOutputSurface(SkiaOutputSurface::Type::kOpenGL),
+      context_provider_(std::move(context_provider)) {
   texture_deleter_ =
       std::make_unique<TextureDeleter>(base::ThreadTaskRunnerHandle::Get());
 }
@@ -177,12 +178,14 @@ void FakeSkiaOutputSurface::ReleaseImageContexts(
     std::vector<std::unique_ptr<ImageContext>> image_contexts) {}
 
 std::unique_ptr<ExternalUseClient::ImageContext>
-FakeSkiaOutputSurface::CreateImageContext(const gpu::MailboxHolder& holder,
-                                          const gfx::Size& size,
-                                          ResourceFormat format,
-                                          sk_sp<SkColorSpace> color_space) {
+FakeSkiaOutputSurface::CreateImageContext(
+    const gpu::MailboxHolder& holder,
+    const gfx::Size& size,
+    ResourceFormat format,
+    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
+    sk_sp<SkColorSpace> color_space) {
   return std::make_unique<ExternalUseClient::ImageContext>(
-      holder, size, format, std::move(color_space));
+      holder, size, format, ycbcr_info, std::move(color_space));
 }
 
 void FakeSkiaOutputSurface::SkiaSwapBuffers(OutputSurfaceFrame frame) {
@@ -356,7 +359,14 @@ void FakeSkiaOutputSurface::SwapBuffersAck() {
 
 void FakeSkiaOutputSurface::ScheduleGpuTaskForTesting(
     base::OnceClosure callback,
-    std::vector<gpu::SyncToken> sync_tokesn) {
+    std::vector<gpu::SyncToken> sync_tokens) {
+  NOTIMPLEMENTED();
+}
+
+void FakeSkiaOutputSurface::SendOverlayPromotionNotification(
+    std::vector<gpu::SyncToken> sync_tokens,
+    base::flat_set<gpu::Mailbox> promotion_denied,
+    base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) {
   NOTIMPLEMENTED();
 }
 

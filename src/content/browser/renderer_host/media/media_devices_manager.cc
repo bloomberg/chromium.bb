@@ -33,7 +33,8 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system.h"
 #include "media/base/media_switches.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -62,13 +63,27 @@ struct {
 // Frame rates for sources with no support for capability enumeration.
 const uint16_t kFallbackVideoFrameRates[] = {30, 60};
 
+const char* DeviceTypeToString(blink::MediaDeviceType device_type) {
+  switch (device_type) {
+    case blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT:
+      return "AUDIO_INPUT";
+    case blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT:
+      return "VIDEO_INPUT";
+    case blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT:
+      return "AUDIO_OUTPUT";
+    default:
+      NOTREACHED();
+  }
+  return "UNKNOWN";
+}
+
 // Private helper method to generate a string for the log message that lists the
 // human readable names of |devices|.
 std::string GetLogMessageString(
     blink::MediaDeviceType device_type,
     const blink::WebMediaDeviceInfoArray& device_infos) {
-  std::string output_string =
-      base::StringPrintf("Getting devices of type %d:\n", device_type);
+  std::string output_string = base::StringPrintf(
+      "Getting devices of type %s:\n", DeviceTypeToString(device_type));
   if (device_infos.empty())
     return output_string + "No devices found.";
   for (const auto& device_info : device_infos)
@@ -299,8 +314,7 @@ MediaDevicesManager::SubscriptionRequest::operator=(SubscriptionRequest&&) =
 class MediaDevicesManager::AudioServiceDeviceListener
     : public audio::mojom::DeviceListener {
  public:
-  explicit AudioServiceDeviceListener(service_manager::Connector* connector)
-      : binding_(this) {
+  explicit AudioServiceDeviceListener(service_manager::Connector* connector) {
     TryConnectToService(connector);
   }
   ~AudioServiceDeviceListener() override = default;
@@ -337,22 +351,21 @@ class MediaDevicesManager::AudioServiceDeviceListener
   void DoConnectToService(service_manager::Connector* connector) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!mojo_audio_device_notifier_);
-    DCHECK(!binding_);
-    connector->BindInterface(audio::mojom::kServiceName,
-                             mojo::MakeRequest(&mojo_audio_device_notifier_));
-    mojo_audio_device_notifier_.set_connection_error_handler(base::BindOnce(
+    DCHECK(!receiver_.is_bound());
+    connector->Connect(
+        audio::mojom::kServiceName,
+        mojo_audio_device_notifier_.BindNewPipeAndPassReceiver());
+    mojo_audio_device_notifier_.set_disconnect_handler(base::BindOnce(
         &MediaDevicesManager::AudioServiceDeviceListener::OnConnectionError,
         weak_factory_.GetWeakPtr(), connector));
-    audio::mojom::DeviceListenerPtr audio_device_listener_ptr;
-    binding_.Bind(mojo::MakeRequest(&audio_device_listener_ptr));
     mojo_audio_device_notifier_->RegisterListener(
-        audio_device_listener_ptr.PassInterface());
+        receiver_.BindNewPipeAndPassRemote());
   }
 
   void OnConnectionError(service_manager::Connector* connector) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     mojo_audio_device_notifier_.reset();
-    binding_.Close();
+    receiver_.reset();
 
     // Resetting the error handler in a posted task since doing it synchronously
     // results in a browser crash. See https://crbug.com/845142.
@@ -362,8 +375,8 @@ class MediaDevicesManager::AudioServiceDeviceListener
                        weak_factory_.GetWeakPtr(), connector));
   }
 
-  mojo::Binding<audio::mojom::DeviceListener> binding_;
-  audio::mojom::DeviceNotifierPtr mojo_audio_device_notifier_;
+  mojo::Receiver<audio::mojom::DeviceListener> receiver_{this};
+  mojo::Remote<audio::mojom::DeviceNotifier> mojo_audio_device_notifier_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

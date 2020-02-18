@@ -275,7 +275,7 @@ void AppCacheStorageImpl::InitTask::Run() {
   if (!db_file_path_.empty() &&
       !base::PathExists(db_file_path_) &&
       base::DirectoryExists(disk_cache_directory_)) {
-    base::DeleteFile(disk_cache_directory_, true);
+    base::DeleteFileRecursively(disk_cache_directory_);
     if (base::DirectoryExists(disk_cache_directory_)) {
       database_->Disable();  // This triggers OnFatalError handling.
       return;
@@ -305,10 +305,11 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
         kDelay);
   }
 
-  if (storage_->service()->quota_manager_proxy()) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheReady,
-                                  storage_->service()->quota_client()));
+  if (storage_->service()->quota_client()) {
+    base::PostTask(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheReady,
+                       base::RetainedRef(storage_->service()->quota_client())));
   }
 }
 
@@ -366,6 +367,8 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
       info.cache_id = cache_record.cache_id;
       info.group_id = group.group_id;
       info.is_complete = true;
+      info.manifest_parser_version = cache_record.manifest_parser_version;
+      info.manifest_scope = cache_record.manifest_scope;
       infos.push_back(info);
     }
   }

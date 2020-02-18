@@ -4,16 +4,18 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
-import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -30,9 +32,11 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
     /** The transparency fraction of the IPH bubble. */
     private static final float DUET_IPH_BUBBLE_ALPHA_FRACTION = 0.9f;
 
+    /** The transparency fraction of the IPH background. */
+    private static final float DUET_IPH_BACKGROUND_ALPHA_FRACTION = 0.3f;
+
     /** The model for the browsing mode bottom toolbar that holds all of its state. */
     private final BrowsingModeBottomToolbarModel mModel;
-    private final OverviewModeObserver mOverviewModeObserver;
 
     /** The overview mode manager. */
     private OverviewModeBehavior mOverviewModeBehavior;
@@ -47,17 +51,6 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
      */
     BrowsingModeBottomToolbarMediator(BrowsingModeBottomToolbarModel model) {
         mModel = model;
-        mOverviewModeObserver = new EmptyOverviewModeObserver() {
-            @Override
-            public void onOverviewModeStartedShowing(boolean showToolbar) {
-                mModel.set(BrowsingModeBottomToolbarModel.IS_VISIBLE, false);
-            }
-
-            @Override
-            public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
-                mModel.set(BrowsingModeBottomToolbarModel.IS_VISIBLE, true);
-            }
-        };
     }
 
     void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
@@ -65,47 +58,69 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
         mThemeColorProvider.addThemeColorObserver(this);
     }
 
-    void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
-        if (mOverviewModeBehavior != null) {
-            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
-        }
-        mOverviewModeBehavior = overviewModeBehavior;
-        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
-    }
-
     /**
      * Maybe show the IPH bubble for Chrome Duet.
+     * @param feature A String identifying the feature.
      * @param activity An activity to attach the IPH to.
      * @param anchor The view to anchor the IPH to.
      * @param tracker A tracker for IPH.
+     * @param completeRunnable The Runnable to be called if the user tab on the view.
      */
-    void showIPH(ChromeActivity activity, View anchor, Tracker tracker) {
-        if (!tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_DUET_FEATURE)) return;
-        int baseColor =
+    void showIPH(@FeatureConstants String feature, ChromeActivity activity, View anchor,
+            Tracker tracker, Runnable completeRunnable) {
+        if (!tracker.shouldTriggerHelpUI(feature) || !anchor.isEnabled()) return;
+        int innerBackgroundColor =
+                ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.modern_primary_color);
+        int baseBubbleColor =
                 ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.modern_blue_600);
 
         // Clear out the alpha and use custom transparency.
-        int finalColor =
-                (baseColor & 0x00FFFFFF) | ((int) (DUET_IPH_BUBBLE_ALPHA_FRACTION * 255) << 24);
+        int finalOuterColor =
+                applyCustomAlphaToColor(baseBubbleColor, DUET_IPH_BUBBLE_ALPHA_FRACTION);
+        int finalScrimColor =
+                applyCustomAlphaToColor(baseBubbleColor, DUET_IPH_BACKGROUND_ALPHA_FRACTION);
 
-        FeatureHighlightProvider.getInstance().buildForView(activity, anchor,
-                R.string.iph_duet_title, FeatureHighlightProvider.TextAlignment.CENTER,
-                R.style.TextAppearance_WhiteTitle1, R.string.iph_duet_description,
-                FeatureHighlightProvider.TextAlignment.CENTER, R.style.TextAppearance_WhiteBody,
-                finalColor, DUET_IPH_BUBBLE_SHOW_DURATION_MS);
+        @StringRes
+        int titleId = 0;
+        @StringRes
+        int descId = 0;
+        switch (feature) {
+            case FeatureConstants.CHROME_DUET_HOME_BUTTON_FEATURE:
+                titleId = R.string.iph_duet_home_button_title;
+                descId = R.string.iph_duet_home_button_description;
+                break;
+            case FeatureConstants.CHROME_DUET_SEARCH_FEATURE:
+                titleId = R.string.iph_duet_search_title;
+                descId = R.string.iph_duet_search_description;
+                break;
+            case FeatureConstants.CHROME_DUET_TAB_SWITCHER_FEATURE:
+                titleId = R.string.iph_duet_tab_switcher_title;
+                descId = R.string.iph_duet_tab_switcher_description;
+                break;
+            default:
+                assert false : "Unsupported FeatureConstants: " + feature;
+        }
+        FeatureHighlightProvider.getInstance().buildForView(activity, anchor, titleId,
+                FeatureHighlightProvider.TextAlignment.CENTER, R.style.TextAppearance_WhiteTitle1,
+                descId, FeatureHighlightProvider.TextAlignment.CENTER,
+                R.style.TextAppearance_WhiteBody, innerBackgroundColor, finalOuterColor,
+                finalScrimColor, DUET_IPH_BUBBLE_SHOW_DURATION_MS, completeRunnable);
 
-        anchor.postDelayed(() -> tracker.dismissed(FeatureConstants.CHROME_DUET_FEATURE),
-                DUET_IPH_BUBBLE_SHOW_DURATION_MS);
+        anchor.postDelayed(() -> tracker.dismissed(feature), DUET_IPH_BUBBLE_SHOW_DURATION_MS);
+    }
+
+    /**
+     * Dismiss the IPH bubble for Chrome Duet.
+     * @param activity An activity to attach the IPH to.
+     */
+    void dismissIPH(AppCompatActivity activity) {
+        FeatureHighlightProvider.getInstance().dismiss(activity);
     }
 
     /**
      * Clean up anything that needs to be when the bottom toolbar is destroyed.
      */
     void destroy() {
-        if (mOverviewModeBehavior != null) {
-            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
-            mOverviewModeBehavior = null;
-        }
         if (mThemeColorProvider != null) {
             mThemeColorProvider.removeThemeColorObserver(this);
             mThemeColorProvider = null;
@@ -115,5 +130,15 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
     @Override
     public void onThemeColorChanged(int primaryColor, boolean shouldAnimate) {
         mModel.set(BrowsingModeBottomToolbarModel.PRIMARY_COLOR, primaryColor);
+    }
+
+    /**
+     * Set the alpha for the color.
+     * @param baseColor The color which alpha will apply to.
+     * @param alpha The desired alpha for the color. The value should between 0 to 1. 0 means total
+     *         transparency, 1 means total non-transparency.
+     */
+    private @ColorInt int applyCustomAlphaToColor(@ColorInt int baseColor, float alpha) {
+        return (baseColor & 0x00FFFFFF) | ((int) (alpha * 255) << 24);
     }
 }

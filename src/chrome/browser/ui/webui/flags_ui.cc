@@ -75,7 +75,9 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 #endif
 
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
+  source->AddResourcePath(flags_ui::kFlagsCSS, IDR_FLAGS_UI_FLAGS_CSS);
   source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
+  source->UseStringsJs();
   return source;
 }
 
@@ -127,6 +129,7 @@ void FlagsUI::AddStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("enabled", IDS_FLAGS_UI_ENABLED_FEATURE);
   source->AddLocalizedString("experiment-enabled",
                              IDS_FLAGS_UI_EXPERIMENT_ENABLED);
+  source->AddLocalizedString("heading", IDS_FLAGS_UI_TITLE);
   source->AddLocalizedString("no-results", IDS_FLAGS_UI_NO_RESULTS);
   source->AddLocalizedString("not-available-platform",
                              IDS_FLAGS_UI_NOT_AVAILABLE_ON_PLATFORM);
@@ -141,6 +144,10 @@ void FlagsUI::AddStrings(content::WebUIDataSource* source) {
                              IDS_FLAGS_UI_SEARCH_PLACEHOLDER);
   source->AddLocalizedString("title", IDS_FLAGS_UI_TITLE);
   source->AddLocalizedString("unavailable", IDS_FLAGS_UI_UNAVAILABLE_FEATURE);
+  source->AddLocalizedString("searchResultsSingular",
+                             IDS_FLAGS_UI_SEARCH_RESULTS_SINGULAR);
+  source->AddLocalizedString("searchResultsPlural",
+                             IDS_FLAGS_UI_SEARCH_RESULTS_PLURAL);
 }
 
 // static
@@ -156,11 +163,11 @@ void FlagsDeprecatedUI::AddStrings(content::WebUIDataSource* source) {
                              IDS_DEPRECATED_FEATURES_ENABLED_FEATURE);
   source->AddLocalizedString("experiment-enabled",
                              IDS_DEPRECATED_UI_EXPERIMENT_ENABLED);
+  source->AddLocalizedString("heading", IDS_DEPRECATED_FEATURES_HEADING);
   source->AddLocalizedString("no-results", IDS_DEPRECATED_FEATURES_NO_RESULTS);
   source->AddLocalizedString("not-available-platform",
                              IDS_DEPRECATED_FEATURES_NOT_AVAILABLE_ON_PLATFORM);
-  source->AddLocalizedString("page-warning",
-                             IDS_DEPRECATED_FEATURES_PAGE_WARNING);
+  source->AddString("page-warning", std::string());
   source->AddLocalizedString("page-warning-explanation",
                              IDS_DEPRECATED_FEATURES_PAGE_WARNING_EXPLANATION);
   source->AddLocalizedString("relaunch", IDS_DEPRECATED_FEATURES_RELAUNCH);
@@ -172,6 +179,10 @@ void FlagsDeprecatedUI::AddStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("title", IDS_DEPRECATED_FEATURES_TITLE);
   source->AddLocalizedString("unavailable",
                              IDS_DEPRECATED_FEATURES_UNAVAILABLE_FEATURE);
+  source->AddLocalizedString("searchResultsSingular",
+                             IDS_ENTERPRISE_UI_SEARCH_RESULTS_SINGULAR);
+  source->AddLocalizedString("searchResultsPlural",
+                             IDS_ENTERPRISE_UI_SEARCH_RESULTS_PLURAL);
 }
 
 template <class T>

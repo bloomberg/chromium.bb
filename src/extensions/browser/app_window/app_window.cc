@@ -454,6 +454,14 @@ void AppWindow::ExitPictureInPicture() {
   app_delegate_->ExitPictureInPicture();
 }
 
+bool AppWindow::ShouldShowStaleContentOnEviction(content::WebContents* source) {
+#if defined(OS_CHROMEOS)
+  return true;
+#else
+  return false;
+#endif  // defined(OS_CHROMEOS)
+}
+
 bool AppWindow::OnMessageReceived(const IPC::Message& message,
                                   content::RenderFrameHost* render_frame_host) {
   bool handled = true;
@@ -798,7 +806,8 @@ void AppWindow::StartAppIconDownload() {
   image_loader_ptr_factory_.InvalidateWeakPtrs();
   web_contents()->DownloadImage(
       app_icon_url_,
-      true,   // is a favicon
+      true,  // is a favicon
+      app_delegate_->PreferredIconSize(),
       0,      // no maximum size
       false,  // normal cache policy
       base::BindOnce(&AppWindow::DidDownloadFavicon,
@@ -913,7 +922,7 @@ void AppWindow::NavigationStateChanged(content::WebContents* source,
 void AppWindow::EnterFullscreenModeForTab(
     content::WebContents* source,
     const GURL& origin,
-    const blink::WebFullscreenOptions& options) {
+    const blink::mojom::FullscreenOptions& options) {
   ToggleFullscreenModeForTab(source, true);
 }
 
@@ -947,10 +956,10 @@ bool AppWindow::IsFullscreenForTabOrPending(
   return IsHtmlApiFullscreen();
 }
 
-blink::WebDisplayMode AppWindow::GetDisplayMode(
+blink::mojom::DisplayMode AppWindow::GetDisplayMode(
     const content::WebContents* source) {
-  return IsFullscreen() ? blink::kWebDisplayModeFullscreen
-                        : blink::kWebDisplayModeStandalone;
+  return IsFullscreen() ? blink::mojom::DisplayMode::kFullscreen
+                        : blink::mojom::DisplayMode::kStandalone;
 }
 
 WindowController* AppWindow::GetExtensionWindowController() const {

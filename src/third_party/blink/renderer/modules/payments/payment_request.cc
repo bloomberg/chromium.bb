@@ -11,8 +11,7 @@
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
@@ -45,6 +44,7 @@
 #include "third_party/blink/renderer/modules/payments/payer_errors.h"
 #include "third_party/blink/renderer/modules/payments/payment_address.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_init.h"
+#include "third_party/blink/renderer/modules/payments/payment_details_modifier.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_update.h"
 #include "third_party/blink/renderer/modules/payments/payment_item.h"
 #include "third_party/blink/renderer/modules/payments/payment_method_change_event.h"
@@ -53,9 +53,6 @@
 #include "third_party/blink/renderer/modules/payments/payment_shipping_option.h"
 #include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
-#if defined(OS_ANDROID)
-#include "third_party/blink/renderer/modules/payments/skip_to_gpay_utils.h"
-#endif  // defined(OS_ANDROID)
 #include "third_party/blink/renderer/modules/payments/update_payment_details_function.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -67,6 +64,10 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
+
+#if defined(OS_ANDROID)
+#include "third_party/blink/renderer/modules/payments/skip_to_gpay_utils.h"
+#endif  // defined(OS_ANDROID)
 
 namespace {
 
@@ -393,19 +394,13 @@ void SetAndroidPayMethodData(v8::Isolate* isolate,
     output->api_version = android_pay->apiVersion();
 }
 
-// Parses basic-card data to avoid parsing JSON in the browser.
-void SetBasicCardMethodData(const ScriptValue& input,
-                            PaymentMethodDataPtr& output,
-                            ExceptionState& exception_state) {
-  BasicCardHelper::ParseBasiccardData(input, output->supported_networks,
-                                      output->supported_types, exception_state);
-}
-
-void StringifyAndParseMethodSpecificData(v8::Isolate* isolate,
-                                         const String& supported_method,
-                                         const ScriptValue& input,
-                                         PaymentMethodDataPtr& output,
-                                         ExceptionState& exception_state) {
+void StringifyAndParseMethodSpecificData(
+    v8::Isolate* isolate,
+    const String& supported_method,
+    const ScriptValue& input,
+    PaymentMethodDataPtr& output,
+    bool* basic_card_has_supported_card_types,
+    ExceptionState& exception_state) {
   PaymentsValidators::ValidateAndStringifyObject(
       isolate, "Payment method data", input, output->stringified_data,
       exception_state);
@@ -423,13 +418,17 @@ void StringifyAndParseMethodSpecificData(v8::Isolate* isolate,
   }
 
   if (supported_method == "basic-card") {
-    SetBasicCardMethodData(input, output, exception_state);
+    // Parses basic-card data to avoid parsing JSON in the browser.
+    BasicCardHelper::ParseBasiccardData(
+        input, output->supported_networks, output->supported_types,
+        basic_card_has_supported_card_types, exception_state);
   }
 }
 
 void ValidateAndConvertPaymentDetailsModifiers(
     const HeapVector<Member<PaymentDetailsModifier>>& input,
     Vector<PaymentDetailsModifierPtr>& output,
+    bool* basic_card_has_supported_card_types,
     ExecutionContext& execution_context,
     ExceptionState& exception_state) {
   if (input.size() > PaymentRequest::kMaxListSize) {
@@ -469,19 +468,22 @@ void ValidateAndConvertPaymentDetailsModifiers(
     if (modifier->hasData() && !modifier->data().IsEmpty()) {
       StringifyAndParseMethodSpecificData(
           execution_context.GetIsolate(), modifier->supportedMethod(),
-          modifier->data(), output.back()->method_data, exception_state);
+          modifier->data(), output.back()->method_data,
+          basic_card_has_supported_card_types, exception_state);
     } else {
       output.back()->method_data->stringified_data = "";
     }
   }
 }
 
-void ValidateAndConvertPaymentDetailsBase(const PaymentDetailsBase* input,
-                                          const PaymentOptions* options,
-                                          PaymentDetailsPtr& output,
-                                          String& shipping_option_output,
-                                          ExecutionContext& execution_context,
-                                          ExceptionState& exception_state) {
+void ValidateAndConvertPaymentDetailsBase(
+    const PaymentDetailsBase* input,
+    const PaymentOptions* options,
+    PaymentDetailsPtr& output,
+    String& shipping_option_output,
+    bool* basic_card_has_supported_card_types,
+    ExecutionContext& execution_context,
+    ExceptionState& exception_state) {
   if (input->hasDisplayItems()) {
     output->display_items = Vector<PaymentItemPtr>();
     ValidateAndConvertDisplayItems(input->displayItems(), "display items",
@@ -507,26 +509,29 @@ void ValidateAndConvertPaymentDetailsBase(const PaymentDetailsBase* input,
   if (input->hasModifiers()) {
     output->modifiers = Vector<PaymentDetailsModifierPtr>();
     ValidateAndConvertPaymentDetailsModifiers(
-        input->modifiers(), *output->modifiers, execution_context,
+        input->modifiers(), *output->modifiers,
+        basic_card_has_supported_card_types, execution_context,
         exception_state);
   }
 }
 
-void ValidateAndConvertPaymentDetailsInit(const PaymentDetailsInit* input,
-                                          const PaymentOptions* options,
-                                          PaymentDetailsPtr& output,
-                                          String& shipping_option_output,
-                                          ExecutionContext& execution_context,
-                                          ExceptionState& exception_state) {
+void ValidateAndConvertPaymentDetailsInit(
+    const PaymentDetailsInit* input,
+    const PaymentOptions* options,
+    PaymentDetailsPtr& output,
+    String& shipping_option_output,
+    bool* basic_card_has_supported_card_types,
+    ExecutionContext& execution_context,
+    ExceptionState& exception_state) {
   DCHECK(input->hasTotal());
   ValidateAndConvertTotal(input->total(), "total", output->total,
                           execution_context, exception_state);
   if (exception_state.HadException())
     return;
 
-  ValidateAndConvertPaymentDetailsBase(input, options, output,
-                                       shipping_option_output,
-                                       execution_context, exception_state);
+  ValidateAndConvertPaymentDetailsBase(
+      input, options, output, shipping_option_output,
+      basic_card_has_supported_card_types, execution_context, exception_state);
 }
 
 void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate* input,
@@ -535,9 +540,9 @@ void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate* input,
                                             String& shipping_option_output,
                                             ExecutionContext& execution_context,
                                             ExceptionState& exception_state) {
-  ValidateAndConvertPaymentDetailsBase(input, options, output,
-                                       shipping_option_output,
-                                       execution_context, exception_state);
+  ValidateAndConvertPaymentDetailsBase(
+      input, options, output, shipping_option_output,
+      /*has_supported_card_types=*/nullptr, execution_context, exception_state);
   if (exception_state.HadException())
     return;
 
@@ -585,6 +590,7 @@ void ValidateAndConvertPaymentMethodData(
     bool& skip_to_gpay_ready,
     Vector<payments::mojom::blink::PaymentMethodDataPtr>& output,
     HashSet<String>& method_names,
+    bool* basic_card_has_supported_card_types,
     ExecutionContext& execution_context,
     ExceptionState& exception_state) {
   if (input.IsEmpty()) {
@@ -621,7 +627,7 @@ void ValidateAndConvertPaymentMethodData(
       StringifyAndParseMethodSpecificData(
           execution_context.GetIsolate(),
           payment_method_data->supportedMethod(), payment_method_data->data(),
-          output.back(), exception_state);
+          output.back(), basic_card_has_supported_card_types, exception_state);
       if (exception_state.HadException())
         continue;
 
@@ -717,6 +723,10 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
   if (!is_user_gesture) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPaymentRequestShowWithoutGesture);
+  }
+
+  if (basic_card_has_supported_card_types_) {
+    UseCounter::Count(GetExecutionContext(), WebFeature::kBasicCardType);
   }
 
   // TODO(crbug.com/779126): add support for handling payment requests in
@@ -1088,7 +1098,8 @@ PaymentRequest::PaymentRequest(
           execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
           &PaymentRequest::OnUpdatePaymentDetailsTimeout),
-      is_waiting_for_show_promise_to_resolve_(false) {
+      is_waiting_for_show_promise_to_resolve_(false),
+      basic_card_has_supported_card_types_(false) {
   DCHECK(GetExecutionContext()->IsSecureContext());
 
   if (!AllowedToUsePaymentRequest(execution_context)) {
@@ -1118,13 +1129,15 @@ PaymentRequest::PaymentRequest(
   Vector<payments::mojom::blink::PaymentMethodDataPtr> validated_method_data;
   ValidateAndConvertPaymentMethodData(method_data, options_, skip_to_gpay_ready,
                                       validated_method_data, method_names_,
+                                      &basic_card_has_supported_card_types_,
                                       *GetExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
   ValidateAndConvertPaymentDetailsInit(details, options_, validated_details,
-                                       shipping_option_, *GetExecutionContext(),
-                                       exception_state);
+                                       shipping_option_,
+                                       &basic_card_has_supported_card_types_,
+                                       *GetExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -1151,9 +1164,9 @@ PaymentRequest::PaymentRequest(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       execution_context->GetTaskRunner(TaskType::kUserInteraction);
 
-  GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&payment_provider_, task_runner));
-  payment_provider_.set_connection_error_handler(
+  GetFrame()->GetBrowserInterfaceBroker().GetInterface(
+      payment_provider_.BindNewPipeAndPassReceiver(task_runner));
+  payment_provider_.set_disconnect_handler(
       WTF::Bind(&PaymentRequest::OnConnectionError, WrapWeakPersistent(this)));
 
   UseCounter::Count(execution_context, WebFeature::kPaymentRequestInitialized);
@@ -1183,7 +1196,7 @@ void PaymentRequest::OnPaymentMethodChange(const String& method_name,
   DCHECK(!complete_resolver_);
 
   if (!RuntimeEnabledFeatures::PaymentMethodChangeEventEnabled()) {
-    payment_provider_->NoUpdatedPaymentDetails();
+    payment_provider_->OnPaymentDetailsNotUpdated();
     return;
   }
 
@@ -1211,7 +1224,8 @@ void PaymentRequest::OnPaymentMethodChange(const String& method_name,
       ClearResolversAndCloseMojoConnection();
       return;
     }
-    init->setMethodDetails(ScriptValue(script_state, parsed_value));
+    init->setMethodDetails(
+        ScriptValue(script_state->GetIsolate(), parsed_value));
   }
 
   PaymentRequestUpdateEvent* event = PaymentMethodChangeEvent::Create(
@@ -1538,7 +1552,7 @@ void PaymentRequest::DispatchPaymentRequestUpdateEvent(
     GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kWarning, message));
-    payment_provider_->NoUpdatedPaymentDetails();
+    payment_provider_->OnPaymentDetailsNotUpdated();
     // Make sure that updateWith() is only allowed to be called within the same
     // event loop as the event dispatch. See
     // https://w3c.github.io/payment-request/#paymentrequest-updated-algorithm

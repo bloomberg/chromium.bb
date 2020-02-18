@@ -13,9 +13,10 @@ import org.chromium.chrome.browser.ntp.cards.ActionItem.State;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.FaviconFetchResult;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSitesBridge;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -28,11 +29,11 @@ public abstract class SuggestionsMetrics {
     // UI Element interactions
 
     public static void recordSurfaceVisible() {
-        if (!ChromePreferenceManager.getInstance().readBoolean(
-                    ChromePreferenceManager.CONTENT_SUGGESTIONS_SHOWN_KEY, false)) {
+        if (!SharedPreferencesManager.getInstance().readBoolean(
+                    ChromePreferenceKeys.CONTENT_SUGGESTIONS_SHOWN_KEY, false)) {
             RecordUserAction.record("Suggestions.FirstTimeSurfaceVisible");
-            ChromePreferenceManager.getInstance().writeBoolean(
-                    ChromePreferenceManager.CONTENT_SUGGESTIONS_SHOWN_KEY, true);
+            SharedPreferencesManager.getInstance().writeBoolean(
+                    ChromePreferenceKeys.CONTENT_SUGGESTIONS_SHOWN_KEY, true);
         }
 
         RecordUserAction.record("Suggestions.SurfaceVisible");
@@ -220,8 +221,7 @@ public abstract class SuggestionsMetrics {
         private void recordSpinnerShowUMA(@State int state) {
             int feedSpinnerType;
 
-            // Here is convert the to {@link SpinnerType} in /third_party/feed/src/main/java/com/
-            // google/android/libraries/feed/host/logging/SpinnerType.java.
+            // Here is convert the to {@link SpinnerType} in SpinnerType.java.
             // {@link SpinnerType} cannot be directly used here since feed libraries are not always
             // compiled.
             switch (state) {

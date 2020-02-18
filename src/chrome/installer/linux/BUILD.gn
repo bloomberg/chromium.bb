@@ -10,7 +10,6 @@ import("//build/config/sysroot.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
-import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
 import("//components/nacl/features.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 
@@ -29,6 +28,7 @@ assert(is_linux)
 packaging_files_executables = [
   "$root_out_dir/chrome",
   "$root_out_dir/chrome_sandbox",
+  "$root_out_dir/crashpad_handler",
 ]
 packaging_files_shlibs = []
 
@@ -352,6 +352,7 @@ group("installer_deps") {
     "//chrome:packed_resources",
     "//chrome/browser/resources/media/mei_preload:component",
     "//sandbox/linux:chrome_sandbox",
+    "//third_party/crashpad/crashpad/handler:crashpad_handler",
   ]
   if (enable_nacl) {
     public_deps += [

@@ -6,9 +6,18 @@
 
 #include <limits>
 
+#include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/test/bind_test_util.h"
+#include "base/threading/thread.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/web/modules/mediastream/video_track_adapter_settings.h"
+#include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/modules/mediastream/mock_encoded_video_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
+#include "third_party/blink/renderer/modules/mediastream/video_track_adapter_settings.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/video_frame_utils.h"
 
 namespace blink {
 
@@ -187,6 +196,263 @@ TEST(VideoTrackAdapterTest, NoRescaling) {
   EXPECT_TRUE(success);
   EXPECT_EQ(desired_size.width(), kInputWidth);
   EXPECT_EQ(desired_size.height(), kInputHeight);
+}
+
+class VideoTrackAdapterFixtureTest : public ::testing::Test {
+ public:
+  VideoTrackAdapterFixtureTest()
+      : testing_render_thread_("TestingRenderThread"),
+        frame_received_(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+  ~VideoTrackAdapterFixtureTest() override = default;
+
+ protected:
+  void SetUp() override { testing_render_thread_.Start(); }
+
+  void TearDown() override {
+    if (track_added_) {
+      testing_render_thread_.task_runner()->PostTask(
+          FROM_HERE, base::BindOnce(&VideoTrackAdapter::RemoveTrack, adapter_,
+                                    null_track_.get()));
+    }
+    testing_render_thread_.Stop();
+  }
+
+  void CreateAdapter(media::VideoCaptureFormat capture_format) {
+    mock_source_ =
+        std::make_unique<MockMediaStreamVideoSource>(capture_format, false);
+    // Create the VideoTrackAdapter instance on |testing_render_thread_|.
+    base::WaitableEvent adapter_created(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    testing_render_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          adapter_ = base::MakeRefCounted<VideoTrackAdapter>(
+              platform_support_->GetIOTaskRunner(), mock_source_->GetWeakPtr());
+          adapter_created.Signal();
+        }));
+    adapter_created.Wait();
+  }
+
+  // Create or re-configure the dummy |null_track_| with the given
+  // |adapter_settings|.
+  void ConfigureTrack(const VideoTrackAdapterSettings& adapter_settings) {
+    if (!track_added_) {
+      AddTrackInternal(null_track_.get(), adapter_settings);
+      track_added_ = true;
+    } else {
+      testing_render_thread_.task_runner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&VideoTrackAdapter::ReconfigureTrack, adapter_,
+                         null_track_.get(), adapter_settings));
+    }
+  }
+
+  void AddTrackInternal(MediaStreamVideoTrack* track,
+                        const VideoTrackAdapterSettings& adapter_settings) {
+    testing_render_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &VideoTrackAdapter::AddTrack, adapter_, track,
+            base::BindRepeating(&VideoTrackAdapterFixtureTest::OnFrameDelivered,
+                                base::Unretained(this)),
+            base::BindRepeating(
+                &VideoTrackAdapterFixtureTest::OnEncodedVideoFrameDelivered,
+                base::Unretained(this)),
+            base::DoNothing(), base::DoNothing(), adapter_settings));
+  }
+
+  void SetFrameValidationCallback(VideoCaptureDeliverFrameCB callback) {
+    frame_validation_callback_ = std::move(callback);
+  }
+
+  // Deliver |frame| to |adapter_| and wait until OnFrameDelivered signals that
+  // it receives the processed frame.
+  void DeliverAndValidateFrame(scoped_refptr<media::VideoFrame> frame,
+                               base::TimeTicks estimated_capture_time) {
+    auto deliver_frame = [&]() {
+      platform_support_->GetIOTaskRunner()->PostTask(
+          FROM_HERE, base::BindOnce(&VideoTrackAdapter::DeliverFrameOnIO,
+                                    adapter_, frame, estimated_capture_time));
+    };
+
+    frame_received_.Reset();
+    // Bounce the call to DeliverFrameOnIO off |testing_render_thread_| to
+    // synchronize with the AddTrackOnIO / ReconfigureTrackOnIO that would be
+    // invoked through ConfigureTrack.
+    testing_render_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting(deliver_frame));
+    frame_received_.Wait();
+  }
+
+  void OnFrameDelivered(scoped_refptr<media::VideoFrame> frame,
+                        base::TimeTicks estimated_capture_time) {
+    if (frame_validation_callback_) {
+      frame_validation_callback_.Run(frame, estimated_capture_time);
+    }
+    frame_received_.Signal();
+  }
+
+  MOCK_METHOD2(OnEncodedVideoFrameDelivered,
+               void(scoped_refptr<EncodedVideoFrame>,
+                    base::TimeTicks estimated_capture_time));
+
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport>
+      platform_support_;
+  base::Thread testing_render_thread_;
+  std::unique_ptr<MockMediaStreamVideoSource> mock_source_;
+  scoped_refptr<VideoTrackAdapter> adapter_;
+
+  base::WaitableEvent frame_received_;
+  VideoCaptureDeliverFrameCB frame_validation_callback_;
+
+  // For testing we use a nullptr for MediaStreamVideoTrack.
+  std::unique_ptr<MediaStreamVideoTrack> null_track_ = nullptr;
+  bool track_added_ = false;
+};
+
+TEST_F(VideoTrackAdapterFixtureTest, DeliverFrame_GpuMemoryBuffer) {
+  // Attributes for the original input frame.
+  const gfx::Size kCodedSize(1280, 960);
+  const gfx::Rect kVisibleRect(0, 120, 1280, 720);
+  const gfx::Size kNaturalSize(1280, 720);
+  const double kFrameRate = 30.0;
+  auto gmb_frame =
+      CreateTestFrame(kCodedSize, kVisibleRect, kNaturalSize,
+                      media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+
+  // Initialize the VideoTrackAdapter to handle GpuMemoryBuffer. NV12 is the
+  // only pixel format supported at the moment.
+  const media::VideoCaptureFormat stream_format(kCodedSize, kFrameRate,
+                                                media::PIXEL_FORMAT_NV12);
+  CreateAdapter(stream_format);
+
+  // Keep the desired size the same as the natural size of the original frame.
+  VideoTrackAdapterSettings settings_nonscaled(kNaturalSize, kFrameRate);
+  ConfigureTrack(settings_nonscaled);
+  auto check_nonscaled = [&](scoped_refptr<media::VideoFrame> frame,
+                             base::TimeTicks estimated_capture_time) {
+    // We should get the original frame as-is here.
+    EXPECT_EQ(frame->storage_type(),
+              media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+    EXPECT_EQ(frame->GetGpuMemoryBuffer(), gmb_frame->GetGpuMemoryBuffer());
+    EXPECT_EQ(frame->coded_size(), kCodedSize);
+    EXPECT_EQ(frame->visible_rect(), kVisibleRect);
+    EXPECT_EQ(frame->natural_size(), kNaturalSize);
+  };
+  SetFrameValidationCallback(base::BindLambdaForTesting(check_nonscaled));
+  DeliverAndValidateFrame(gmb_frame, base::TimeTicks());
+
+  // Scale the original frame by a factor of 0.5x.
+  const gfx::Size kDesiredSize(640, 360);
+  VideoTrackAdapterSettings settings_scaled(kDesiredSize, kFrameRate);
+  ConfigureTrack(settings_scaled);
+  auto check_scaled = [&](scoped_refptr<media::VideoFrame> frame,
+                          base::TimeTicks estimated_capture_time) {
+    // The original frame should be wrapped in a new frame, with |kDesiredSize|
+    // exposed as natural size of the wrapped frame.
+    EXPECT_EQ(frame->storage_type(),
+              media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+    EXPECT_EQ(frame->GetGpuMemoryBuffer(), gmb_frame->GetGpuMemoryBuffer());
+    EXPECT_EQ(frame->coded_size(), kCodedSize);
+    EXPECT_EQ(frame->visible_rect(), kVisibleRect);
+    EXPECT_EQ(frame->natural_size(), kDesiredSize);
+  };
+  SetFrameValidationCallback(base::BindLambdaForTesting(check_scaled));
+  DeliverAndValidateFrame(gmb_frame, base::TimeTicks());
+}
+
+class VideoTrackAdapterEncodedTest : public ::testing::Test {
+ public:
+  VideoTrackAdapterEncodedTest()
+      : render_thread_("VideoTrackAdapterEncodedTest_RenderThread") {
+    render_thread_.Start();
+    auto source = std::make_unique<MockMediaStreamVideoSource>(
+        media::VideoCaptureFormat(), false);
+    mock_source_ = source.get();
+    web_source_.Initialize(
+        blink::WebString::FromASCII("source_id"),
+        blink::WebMediaStreamSource::kTypeVideo,
+        blink::WebString::FromASCII("DeliverEncodedVideoFrameSource"),
+        false /* remote */);
+    web_source_.SetPlatformSource(std::move(source));
+    RunSyncOnRenderThread([&] {
+      adapter_ = base::MakeRefCounted<VideoTrackAdapter>(
+          platform_support_->GetIOTaskRunner(), mock_source_->GetWeakPtr());
+    });
+  }
+
+  ~VideoTrackAdapterEncodedTest() {
+    web_source_.Reset();
+    WebHeap::CollectAllGarbageForTesting();
+  }
+
+  std::unique_ptr<MediaStreamVideoTrack> AddTrack() {
+    auto track = std::make_unique<MediaStreamVideoTrack>(
+        mock_source_, WebPlatformMediaStreamSource::ConstraintsOnceCallback(),
+        true);
+    RunSyncOnRenderThread([&] {
+      adapter_->AddTrack(
+          track.get(),
+          base::BindRepeating(&VideoTrackAdapterEncodedTest::OnFrameDelivered,
+                              base::Unretained(this)),
+          base::BindRepeating(
+              &VideoTrackAdapterEncodedTest::OnEncodedVideoFrameDelivered,
+              base::Unretained(this)),
+          base::DoNothing(), base::DoNothing(), VideoTrackAdapterSettings());
+    });
+    return track;
+  }
+
+  template <class Function>
+  void RunSyncOnRenderThread(Function function) {
+    base::RunLoop run_loop;
+    base::OnceClosure quit_closure = run_loop.QuitClosure();
+    render_thread_.task_runner()->PostTask(FROM_HERE,
+                                           base::BindLambdaForTesting([&] {
+                                             std::move(function)();
+                                             std::move(quit_closure).Run();
+                                           }));
+    run_loop.Run();
+  }
+
+  MOCK_METHOD2(OnFrameDelivered,
+               void(scoped_refptr<media::VideoFrame> frame,
+                    base::TimeTicks estimated_capture_time));
+  MOCK_METHOD2(OnEncodedVideoFrameDelivered,
+               void(scoped_refptr<EncodedVideoFrame>,
+                    base::TimeTicks estimated_capture_time));
+
+ protected:
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport>
+      platform_support_;
+  base::Thread render_thread_;
+  WebMediaStreamSource web_source_;
+  MockMediaStreamVideoSource* mock_source_;
+  scoped_refptr<VideoTrackAdapter> adapter_;
+};
+
+TEST_F(VideoTrackAdapterEncodedTest, DeliverEncodedVideoFrame) {
+  auto track1 = AddTrack();
+  auto track2 = AddTrack();
+  EXPECT_CALL(*this, OnEncodedVideoFrameDelivered)
+      .Times(2)
+      .WillRepeatedly(
+          testing::Invoke([&](const scoped_refptr<EncodedVideoFrame>& frame,
+                              base::TimeTicks estimated_capture_time) {}));
+  base::RunLoop run_loop;
+  base::OnceClosure quit_closure = run_loop.QuitClosure();
+  platform_support_->GetIOTaskRunner()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        adapter_->DeliverEncodedVideoFrameOnIO(
+            base::MakeRefCounted<MockEncodedVideoFrame>(), base::TimeTicks());
+        std::move(quit_closure).Run();
+      }));
+  run_loop.Run();
+  RunSyncOnRenderThread([&] {
+    adapter_->RemoveTrack(track1.get());
+    adapter_->RemoveTrack(track2.get());
+  });
 }
 
 }  // namespace blink

@@ -7,7 +7,8 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_dedicated_worker.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -32,7 +33,6 @@ class ExecutionContext;
 class PostMessageOptions;
 class ScriptState;
 class WorkerClassicScriptLoader;
-class WorkerClients;
 
 // Implementation of the Worker interface defined in the WebWorker HTML spec:
 // https://html.spec.whatwg.org/C/#worker
@@ -66,7 +66,7 @@ class CORE_EXPORT DedicatedWorker final
 
   void postMessage(ScriptState*,
                    const ScriptValue& message,
-                   Vector<ScriptValue>& transfer,
+                   HeapVector<ScriptValue>& transfer,
                    ExceptionState&);
   void postMessage(ScriptState*,
                    const ScriptValue& message,
@@ -85,7 +85,6 @@ class CORE_EXPORT DedicatedWorker final
   // Implements WebDedicatedWorker.
   // Called only when PlzDedicatedWorker is enabled.
   void OnWorkerHostCreated(
-      mojo::ScopedMessagePipeHandle interface_provider,
       mojo::ScopedMessagePipeHandle browser_interface_broker) override;
   void OnScriptLoadStarted() override;
   void OnScriptLoadStartFailed() override;
@@ -112,7 +111,6 @@ class CORE_EXPORT DedicatedWorker final
       network::mojom::ReferrerPolicy,
       base::Optional<network::mojom::IPAddressSpace> response_address_space);
   scoped_refptr<WebWorkerFetchContext> CreateWebWorkerFetchContext();
-  WorkerClients* CreateWorkerClients();
   // May return nullptr.
   std::unique_ptr<WebContentSettingsClient> CreateWebContentSettingsClient();
 
@@ -136,8 +134,6 @@ class CORE_EXPORT DedicatedWorker final
 
   // Used for tracking cross-debugger calls.
   v8_inspector::V8StackTraceId v8_stack_trace_id_;
-
-  service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider_;
 
   mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
       browser_interface_broker_;

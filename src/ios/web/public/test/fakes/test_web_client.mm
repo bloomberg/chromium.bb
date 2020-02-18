@@ -38,6 +38,15 @@ bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
          url.SchemeIs(kTestAppSpecificScheme);
 }
 
+bool TestWebClient::ShouldBlockUrlDuringRestore(const GURL& url,
+                                                WebState* web_state) const {
+  return false;
+}
+
+void TestWebClient::AddSerializableData(
+    web::SerializableUserDataManager* user_data_manager,
+    web::WebState* web_state) {}
+
 base::string16 TestWebClient::GetPluginNotSupportedText() const {
   return plugin_not_supported_text_;
 }
@@ -73,6 +82,7 @@ void TestWebClient::AllowCertificateError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     bool overridable,
+    int64_t navigation_id,
     const base::Callback<void(bool)>& callback) {
   last_cert_error_code_ = cert_error;
   last_cert_error_ssl_info_ = ssl_info;
@@ -94,10 +104,12 @@ void TestWebClient::PrepareErrorPage(
     NSError* error,
     bool is_post,
     bool is_off_the_record,
+    const base::Optional<net::SSLInfo>& info,
+    int64_t navigation_id,
     base::OnceCallback<void(NSString*)> callback) {
   std::move(callback).Run(base::SysUTF8ToNSString(testing::GetErrorText(
       web_state, url, base::SysNSStringToUTF8(error.domain), error.code,
-      is_post, is_off_the_record)));
+      is_post, is_off_the_record, info.has_value())));
 }
 
 UIView* TestWebClient::GetWindowedContainer() {

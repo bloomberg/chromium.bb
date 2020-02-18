@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "crypto/symmetric_key.h"
 #import "ios/web/public/web_state.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 #include "url/gurl.h"
 
 namespace web {
@@ -70,6 +70,11 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
   void DetachFromWebState();
   // Returns the script command name to use for this WebFrame.
   const std::string GetScriptCommandPrefix();
+  // Encrypts |payload| and returns a JSON string of a dictionary containing
+  // the encrypted metadata and its initialization vector. If encryption fails,
+  // an empty string will be returned.
+  const std::string EncryptPayload(base::DictionaryValue payload,
+                                   const std::string& additiona_data);
 
   // A structure to store the callbacks associated with the
   // |CallJavaScriptFunction| requests.

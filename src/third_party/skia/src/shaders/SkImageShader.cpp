@@ -9,6 +9,7 @@
 #include "src/core/SkBitmapController.h"
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkColorSpaceXformSteps.h"
+#include "src/core/SkOpts.h"
 #include "src/core/SkRasterPipeline.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkWriteBuffer.h"
@@ -72,20 +73,24 @@ bool SkImageShader::isOpaque() const {
 
 #ifdef SK_ENABLE_LEGACY_SHADERCONTEXT
 static bool legacy_shader_can_handle(const SkMatrix& inv) {
-    if (!inv.isScaleTranslate()) {
+    if (inv.hasPerspective()) {
+        return false;
+    }
+
+    // Scale+translate methods are always present, but affine might not be.
+    if (!SkOpts::S32_alpha_D32_filter_DXDY && !inv.isScaleTranslate()) {
         return false;
     }
 
     // legacy code uses SkFixed 32.32, so ensure the inverse doesn't map device coordinates
     // out of range.
     const SkScalar max_dev_coord = 32767.0f;
-    SkRect src;
-    SkAssertResult(inv.mapRect(&src, SkRect::MakeWH(max_dev_coord, max_dev_coord)));
+    const SkRect src = inv.mapRect(SkRect::MakeWH(max_dev_coord, max_dev_coord));
 
     // take 1/4 of max signed 32bits so we have room to subtract local values
     const SkScalar max_fixed32dot32 = SK_MaxS32 * 0.25f;
     if (!SkRect::MakeLTRB(-max_fixed32dot32, -max_fixed32dot32,
-                           max_fixed32dot32, max_fixed32dot32).contains(src)) {
+                          +max_fixed32dot32, +max_fixed32dot32).contains(src)) {
         return false;
     }
 
@@ -101,9 +106,11 @@ SkShaderBase::Context* SkImageShader::onMakeContext(const ContextRec& rec,
     if (fImage->colorType() != kN32_SkColorType) {
         return nullptr;
     }
+#if !defined(SK_SUPPORT_LEGACY_TILED_BITMAPS)
     if (fTileModeX != fTileModeY) {
         return nullptr;
     }
+#endif
     if (fTileModeX == SkTileMode::kDecal || fTileModeY == SkTileMode::kDecal) {
         return nullptr;
     }
@@ -165,7 +172,7 @@ sk_sp<SkShader> SkImageShader::Make(sk_sp<SkImage> image,
 
 #include "include/private/GrRecordingContext.h"
 #include "src/gpu/GrCaps.h"
-#include "src/gpu/GrColorSpaceInfo.h"
+#include "src/gpu/GrColorInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrBicubicEffect.h"
@@ -228,8 +235,7 @@ std::unique_ptr<GrFragmentProcessor> SkImageShader::asFragmentProcessor(
         return nullptr;
     }
 
-    GrPixelConfig config = proxy->config();
-    bool isAlphaOnly = GrPixelConfigIsAlphaOnly(config);
+    SkAlphaType srcAlphaType = fImage->alphaType();
 
     lmInverse.postScale(scaleAdjust[0], scaleAdjust[1]);
 
@@ -239,21 +245,22 @@ std::unique_ptr<GrFragmentProcessor> SkImageShader::asFragmentProcessor(
         // the bicubic filter if clamp to border was unsupported in hardware
         static constexpr auto kDir = GrBicubicEffect::Direction::kXY;
         inner = GrBicubicEffect::Make(std::move(proxy), lmInverse, wrapModes, domainX, domainY,
-                                      kDir, fImage->alphaType());
+                                      kDir, srcAlphaType);
     } else {
+        auto dimensions = proxy->dimensions();
+        inner = GrSimpleTextureEffect::Make(std::move(proxy), srcAlphaType, lmInverse,
+                                            samplerState);
         if (domainX != GrTextureDomain::kIgnore_Mode || domainY != GrTextureDomain::kIgnore_Mode) {
-            SkRect domain = GrTextureDomain::MakeTexelDomain(
-                    SkIRect::MakeWH(proxy->width(), proxy->height()),
-                    domainX, domainY);
-            inner = GrTextureDomainEffect::Make(std::move(proxy), lmInverse, domain,
-                                                domainX, domainY, samplerState);
-        } else {
-            inner = GrSimpleTextureEffect::Make(std::move(proxy), lmInverse, samplerState);
+            SkRect domain = GrTextureDomain::MakeTexelDomain(SkIRect::MakeSize(dimensions),
+                                                             domainX, domainY);
+            inner = GrDomainEffect::Make(std::move(inner), domain, domainX, domainY,
+                                         samplerState.filter());
         }
     }
-    inner = GrColorSpaceXformEffect::Make(std::move(inner), fImage->colorSpace(),
-                                          fImage->alphaType(),
-                                          args.fDstColorSpaceInfo->colorSpace());
+    inner = GrColorSpaceXformEffect::Make(std::move(inner), fImage->colorSpace(), srcAlphaType,
+                                          args.fDstColorInfo->colorSpace());
+
+    bool isAlphaOnly = SkColorTypeIsAlphaOnly(fImage->colorType());
     if (isAlphaOnly) {
         return inner;
     } else if (args.fInputColorIsOpaque) {
@@ -421,10 +428,17 @@ bool SkImageShader::doStages(const SkStageRec& rec, SkImageStageUpdater* updater
         void* ctx = gather;
         switch (info.colorType()) {
             case kAlpha_8_SkColorType:      p->append(SkRasterPipeline::gather_a8,      ctx); break;
+            case kA16_unorm_SkColorType:    p->append(SkRasterPipeline::gather_a16,     ctx); break;
+            case kA16_float_SkColorType:    p->append(SkRasterPipeline::gather_af16,    ctx); break;
             case kRGB_565_SkColorType:      p->append(SkRasterPipeline::gather_565,     ctx); break;
             case kARGB_4444_SkColorType:    p->append(SkRasterPipeline::gather_4444,    ctx); break;
+            case kR8G8_unorm_SkColorType:   p->append(SkRasterPipeline::gather_rg88,    ctx); break;
+            case kR16G16_unorm_SkColorType: p->append(SkRasterPipeline::gather_rg1616,  ctx); break;
+            case kR16G16_float_SkColorType: p->append(SkRasterPipeline::gather_rgf16,  ctx);  break;
             case kRGBA_8888_SkColorType:    p->append(SkRasterPipeline::gather_8888,    ctx); break;
             case kRGBA_1010102_SkColorType: p->append(SkRasterPipeline::gather_1010102, ctx); break;
+            case kR16G16B16A16_unorm_SkColorType:
+                                            p->append(SkRasterPipeline::gather_16161616,ctx); break;
             case kRGBA_F16Norm_SkColorType:
             case kRGBA_F16_SkColorType:     p->append(SkRasterPipeline::gather_f16,     ctx); break;
             case kRGBA_F32_SkColorType:     p->append(SkRasterPipeline::gather_f32,     ctx); break;

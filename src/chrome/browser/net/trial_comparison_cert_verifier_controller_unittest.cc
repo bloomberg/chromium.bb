@@ -16,17 +16,19 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
-#include "chrome/browser/ssl/cert_logger.pb.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/security_interstitials/content/cert_logger.pb.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
@@ -84,15 +86,16 @@ class MockTrialComparisonCertVerifierConfigClient
     : public network::mojom::TrialComparisonCertVerifierConfigClient {
  public:
   MockTrialComparisonCertVerifierConfigClient(
-      network::mojom::TrialComparisonCertVerifierConfigClientRequest
-          config_client_request)
-      : binding_(this, std::move(config_client_request)) {}
+      mojo::PendingReceiver<
+          network::mojom::TrialComparisonCertVerifierConfigClient>
+          config_client_receiver)
+      : receiver_(this, std::move(config_client_receiver)) {}
 
   MOCK_METHOD1(OnTrialConfigUpdated, void(bool allowed));
 
  private:
-  mojo::Binding<network::mojom::TrialComparisonCertVerifierConfigClient>
-      binding_;
+  mojo::Receiver<network::mojom::TrialComparisonCertVerifierConfigClient>
+      receiver_;
 };
 
 class TrialComparisonCertVerifierControllerTest : public testing::Test {
@@ -125,13 +128,10 @@ class TrialComparisonCertVerifierControllerTest : public testing::Test {
     reporting_service_test_helper()->SetFailureMode(
         certificate_reporting_test_utils::REPORTS_SUCCESSFUL);
 
-    // Creating the profile before the SafeBrowsingService ensures the
-    // ServiceManagerConnection is initialized.
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
     ASSERT_TRUE(g_browser_process->profile_manager());
-    profile_ = profile_manager_->CreateTestingProfile("profile1");
 
     sb_service_ =
         base::MakeRefCounted<safe_browsing::TestSafeBrowsingService>();
@@ -139,23 +139,29 @@ class TrialComparisonCertVerifierControllerTest : public testing::Test {
         sb_service_.get());
     g_browser_process->safe_browsing_service()->Initialize();
 
+    // SafeBrowsingService expects to be initialized before any profiles are
+    // created.
+    profile_ = profile_manager_->CreateTestingProfile("profile1");
+
     // Initialize CertificateReportingService for |profile_|.
     ASSERT_TRUE(reporting_service());
     base::RunLoop().RunUntilIdle();
   }
 
   void CreateController(Profile* profile) {
-    network::mojom::TrialComparisonCertVerifierConfigClientPtr config_client;
-    auto config_client_request = mojo::MakeRequest(&config_client);
+    mojo::PendingRemote<network::mojom::TrialComparisonCertVerifierConfigClient>
+        config_client;
+    auto config_client_receiver =
+        config_client.InitWithNewPipeAndPassReceiver();
 
     trial_controller_ =
         std::make_unique<TrialComparisonCertVerifierController>(profile);
     trial_controller_->AddClient(std::move(config_client),
-                                 mojo::MakeRequest(&report_client_));
+                                 report_client_.BindNewPipeAndPassReceiver());
 
     mock_config_client_ = std::make_unique<
         StrictMock<MockTrialComparisonCertVerifierConfigClient>>(
-        std::move(config_client_request));
+        std::move(config_client_receiver));
   }
 
   void CreateController() { CreateController(profile()); }
@@ -183,8 +189,8 @@ class TrialComparisonCertVerifierControllerTest : public testing::Test {
   TrialComparisonCertVerifierController& trial_controller() {
     return *trial_controller_;
   }
-  network::mojom::TrialComparisonCertVerifierReportClientPtr& report_client() {
-    return report_client_;
+  network::mojom::TrialComparisonCertVerifierReportClient* report_client() {
+    return report_client_.get();
   }
   MockTrialComparisonCertVerifierConfigClient& mock_config_client() {
     return *mock_config_client_;
@@ -213,7 +219,8 @@ class TrialComparisonCertVerifierControllerTest : public testing::Test {
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
 
-  network::mojom::TrialComparisonCertVerifierReportClientPtr report_client_;
+  mojo::Remote<network::mojom::TrialComparisonCertVerifierReportClient>
+      report_client_;
   std::unique_ptr<TrialComparisonCertVerifierController> trial_controller_;
   std::unique_ptr<StrictMock<MockTrialComparisonCertVerifierConfigClient>>
       mock_config_client_;
@@ -386,16 +393,19 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
       features::kCertDualVerificationTrialFeature);
   CreateController();
 
-  network::mojom::TrialComparisonCertVerifierReportClientPtr report_client_2;
+  mojo::Remote<network::mojom::TrialComparisonCertVerifierReportClient>
+      report_client_2;
 
-  network::mojom::TrialComparisonCertVerifierConfigClientPtr config_client_2;
-  auto config_client_2_request = mojo::MakeRequest(&config_client_2);
+  mojo::PendingRemote<network::mojom::TrialComparisonCertVerifierConfigClient>
+      config_client_2;
+  auto config_client_2_receiver =
+      config_client_2.InitWithNewPipeAndPassReceiver();
 
   trial_controller().AddClient(std::move(config_client_2),
-                               mojo::MakeRequest(&report_client_2));
+                               report_client_2.BindNewPipeAndPassReceiver());
 
   StrictMock<MockTrialComparisonCertVerifierConfigClient> mock_config_client_2(
-      std::move(config_client_2_request));
+      std::move(config_client_2_receiver));
 
   EXPECT_FALSE(trial_controller().IsAllowed());
 

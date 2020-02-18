@@ -9,7 +9,7 @@
 #include "base/task_runner_util.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/extension_resource_path_normalizer.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace extensions {
@@ -56,8 +56,7 @@ int WriteFile(const base::FilePath& path,
 
 // static
 std::unique_ptr<ImageSanitizer> ImageSanitizer::CreateAndStart(
-    service_manager::Connector* connector,
-    const service_manager::ServiceFilter& service_filter,
+    data_decoder::DataDecoder* decoder,
     const base::FilePath& image_dir,
     const std::set<base::FilePath>& image_paths,
     ImageDecodedCallback image_decoded_callback,
@@ -65,7 +64,7 @@ std::unique_ptr<ImageSanitizer> ImageSanitizer::CreateAndStart(
   std::unique_ptr<ImageSanitizer> sanitizer(new ImageSanitizer(
       image_dir, image_paths, std::move(image_decoded_callback),
       std::move(done_callback)));
-  sanitizer->Start(connector, service_filter);
+  sanitizer->Start(decoder);
   return sanitizer;
 }
 
@@ -81,9 +80,7 @@ ImageSanitizer::ImageSanitizer(
 
 ImageSanitizer::~ImageSanitizer() = default;
 
-void ImageSanitizer::Start(
-    service_manager::Connector* connector,
-    const service_manager::ServiceFilter& service_filter) {
+void ImageSanitizer::Start(data_decoder::DataDecoder* decoder) {
   if (image_paths_.empty()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&ImageSanitizer::ReportSuccess,
@@ -91,8 +88,9 @@ void ImageSanitizer::Start(
     return;
   }
 
-  connector->BindInterface(service_filter, &image_decoder_ptr_);
-  image_decoder_ptr_.set_connection_error_handler(
+  decoder->GetService()->BindImageDecoder(
+      image_decoder_.BindNewPipeAndPassReceiver());
+  image_decoder_.set_disconnect_handler(
       base::BindOnce(&ImageSanitizer::ReportError, weak_factory_.GetWeakPtr(),
                      Status::kServiceError, base::FilePath()));
 
@@ -143,7 +141,7 @@ void ImageSanitizer::ImageFileRead(
     return;
   }
   const std::vector<uint8_t>& image_data = std::get<0>(read_and_delete_result);
-  image_decoder_ptr_->DecodeImage(
+  image_decoder_->DecodeImage(
       image_data, data_decoder::mojom::ImageCodec::DEFAULT,
       /*shrink_to_fit=*/false, kMaxImageCanvas, gfx::Size(),
       base::BindOnce(&ImageSanitizer::ImageDecoded, weak_factory_.GetWeakPtr(),
@@ -219,7 +217,7 @@ void ImageSanitizer::ReportError(Status status, const base::FilePath& path) {
 }
 
 void ImageSanitizer::CleanUp() {
-  image_decoder_ptr_.reset();
+  image_decoder_.reset();
   // It's important to clear the repeating callback as it may cause a circular
   // reference (the callback holds a ref to an object that has a ref to |this|)
   // that would cause a leak.

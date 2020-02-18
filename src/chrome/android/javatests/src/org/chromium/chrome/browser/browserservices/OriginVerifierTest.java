@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import android.net.Uri;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -19,15 +18,15 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
+import org.chromium.chrome.browser.settings.privacy.BrowsingDataBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.mock.MockWebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.HashSet;
@@ -59,9 +58,6 @@ public class OriginVerifierTest {
     private static final String SHA_256_FINGERPRINT_OFFICIAL =
             "19:75:B2:F1:71:77:BC:89:A5:DF:F3:1F:9E:64:A6:CA:E2:81:A5"
             + ":3D:C1:D1:D5:9B:1D:14:7F:E1:C8:2A:FA:00";
-    private static final String SHA_256_FINGERPRINT = ChromeVersionInfo.isOfficialBuild()
-            ? SHA_256_FINGERPRINT_OFFICIAL
-            : SHA_256_FINGERPRINT_PUBLIC;
 
     private Origin mHttpsOrigin;
     private Origin mHttpOrigin;
@@ -88,13 +84,13 @@ public class OriginVerifierTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
 
-        mHttpsOrigin = new Origin("https://www.example.com");
-        mHttpOrigin = new Origin("http://www.android.com");
+        mHttpsOrigin = Origin.create("https://www.example.com");
+        mHttpOrigin = Origin.create("http://www.android.com");
 
-        mHandleAllUrlsVerifier =
-                new OriginVerifier(PACKAGE_NAME, CustomTabsService.RELATION_HANDLE_ALL_URLS);
-        mUseAsOriginVerifier =
-                new OriginVerifier(PACKAGE_NAME, CustomTabsService.RELATION_USE_AS_ORIGIN);
+        mHandleAllUrlsVerifier = new OriginVerifier(
+                PACKAGE_NAME, CustomTabsService.RELATION_HANDLE_ALL_URLS, new MockWebContents());
+        mUseAsOriginVerifier = new OriginVerifier(
+                PACKAGE_NAME, CustomTabsService.RELATION_USE_AS_ORIGIN, /* webContents= */ null);
         mVerificationResultSemaphore = new Semaphore(0);
     }
 
@@ -102,19 +98,21 @@ public class OriginVerifierTest {
     @SmallTest
     public void testSHA256CertificateChecks() {
         Assert.assertEquals(STRING_ARRAY, OriginVerifier.byteArrayToHexString(BYTE_ARRAY));
-        Assert.assertEquals(SHA_256_FINGERPRINT,
-                OriginVerifier.getCertificateSHA256FingerprintForPackage(PACKAGE_NAME));
+
+        String fingerprint = OriginVerifier.getCertificateSHA256FingerprintForPackage(PACKAGE_NAME);
+
+        // We could try to determine which fingerprint we should be signed with, but it's easier to
+        // just check that we match either of the fingerprints. The chances of our code returning
+        // an incorrect value that just happens to match the wrong fingerprint is incredibly small.
+        if (SHA_256_FINGERPRINT_OFFICIAL.equals(fingerprint)) return;
+        if (SHA_256_FINGERPRINT_PUBLIC.equals(fingerprint)) return;
+
+        Assert.fail("Generated fingerprint matches neither official nor public.");
     }
 
     @Test
     @SmallTest
     public void testOnlyHttpsAllowed() throws InterruptedException {
-        Origin origin = new Origin(Uri.parse("LOL"));
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT,
-                () -> mHandleAllUrlsVerifier.start(new TestOriginVerificationListener(), origin));
-        Assert.assertTrue(
-                mVerificationResultSemaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        Assert.assertFalse(mLastVerified);
         PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                 () -> mHandleAllUrlsVerifier.start(
                                 new TestOriginVerificationListener(), mHttpOrigin));
@@ -147,7 +145,7 @@ public class OriginVerifierTest {
 
     @Test
     @SmallTest
-    public void testWipedWithBrowsingData() throws InterruptedException, TimeoutException {
+    public void testWipedWithBrowsingData() throws TimeoutException {
         CallbackHelper callbackHelper = new CallbackHelper();
 
         String relationship = "relationship1";

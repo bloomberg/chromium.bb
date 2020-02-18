@@ -27,14 +27,16 @@
 
 namespace blink {
 
-LayoutProgress::LayoutProgress(HTMLProgressElement* element)
+LayoutProgress::LayoutProgress(Element* element)
     : LayoutBlockFlow(element),
       position_(HTMLProgressElement::kInvalidPosition),
       animating_(false),
       animation_timer_(
           element->GetDocument().GetTaskRunner(TaskType::kInternalDefault),
           this,
-          &LayoutProgress::AnimationTimerFired) {}
+          &LayoutProgress::AnimationTimerFired) {
+  DCHECK(IsA<HTMLProgressElement>(element));
+}
 
 LayoutProgress::~LayoutProgress() = default;
 
@@ -105,7 +107,7 @@ void LayoutProgress::UpdateAnimationState() {
 }
 
 HTMLProgressElement* LayoutProgress::ProgressElement() const {
-  return ToHTMLProgressElement(GetNode());
+  return To<HTMLProgressElement>(GetNode());
 }
 
 }  // namespace blink

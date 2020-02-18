@@ -76,11 +76,16 @@ class CONTENT_EXPORT BackgroundSyncController {
       int num_attempts,
       int max_attempts) {}
 
-  // Calculates the soonest wakeup delta across all storage partitions and
-  // schedules a background task to wake up the browser to process
-  // Background Sync registrations.
-  virtual void ScheduleBrowserWakeUp(
-      blink::mojom::BackgroundSyncType sync_type) {}
+  // Schedules a background task with delay |delay| to wake up the browser to
+  // process Background Sync registrations of type |sync_type|.
+  virtual void ScheduleBrowserWakeUpWithDelay(
+      blink::mojom::BackgroundSyncType sync_type,
+      base::TimeDelta delay) {}
+
+  // Cancel the background task that wakes the browser up to process Background
+  // Sync registrations of type |sync_type|.
+  virtual void CancelBrowserWakeup(blink::mojom::BackgroundSyncType sync_type) {
+  }
 
   // Calculates the delay after which the next sync event should be fired
   // for a BackgroundSync registration. The delay is based on the sync_type of
@@ -103,6 +108,25 @@ class CONTENT_EXPORT BackgroundSyncController {
   // changes concerning origins we don't care about.
   virtual void NoteSuspendedPeriodicSyncOrigins(
       std::set<url::Origin> suspended_origins) = 0;
+
+  // Updates its internal list of origins for which we have periodic Background
+  // Sync registrations. This is compiled from each BackgroundSyncManager when
+  // they are initialized and subsequently kept up to date. This list is used to
+  // respond to changes in site settings affecting the feature.
+  virtual void NoteRegisteredPeriodicSyncOrigins(
+      std::set<url::Origin> registered_origins) = 0;
+
+  // Adds |origin| to its internal list of origins for which we have periodic
+  // Background Sync registrations. This list used to unregister periodic
+  // Background Sync when the controller deems necessary, for instance, upon
+  // revocation of permission.
+  virtual void AddToTrackedOrigins(const url::Origin& origin) = 0;
+
+  // Removes |origin| from its internal list of origins for which we have
+  // periodic Background Sync registrations. This list used to unregister
+  // periodic Background Sync when the controller deems necessary, for instance,
+  //  upon revocation of permission.
+  virtual void RemoveFromTrackedOrigins(const url::Origin& origin) = 0;
 };
 
 }  // namespace content

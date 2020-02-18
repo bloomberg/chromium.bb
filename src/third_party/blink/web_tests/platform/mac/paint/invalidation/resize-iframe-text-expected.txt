@@ -1,17 +1,6 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [500, 400],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [500, 400],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [500, 400],
       "contentsOpaque": true,
@@ -21,11 +10,6 @@
           "object": "Scrolling background of LayoutView #document",
           "rect": [0, 200, 500, 200],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 500, 200],
-          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutNGBlockFlow HTML",

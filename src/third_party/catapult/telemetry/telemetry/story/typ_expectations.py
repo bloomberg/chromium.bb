@@ -18,6 +18,22 @@ from typ import json_results
 
 ResultType = json_results.ResultType
 
+# TODO(crbug.com/999335): This set includes all the legal tags that can be
+# used in expectations.config. We will add a presubmit check which will make
+# sure that the set of tags below and set of all the tags used in
+# expectations.config stay in sync.
+SYSTEM_CONDITION_TAGS = frozenset([
+    'android', 'android-go', 'android-low-end', 'android-nexus-5',
+    'android-nexus-5x', 'android-nexus-6', 'android-pixel-2',
+    'chromeos', 'chromeos-local', 'chromeos-remote', 'desktop', 'linux', 'mac',
+    'mac-10.12', 'win', 'win10', 'win7', 'android-not-webview',
+    'android-webview', 'mobile', 'android-marshmallow', 'android-lollipop',
+    'android-nougat', 'android-oreo', 'android-pie', 'android-10',
+    'android-webview-google', 'reference', 'android-chromium', 'ubuntu',
+    'android-kitkat', 'highsierra', 'sierra', 'mac-10.11', 'release', 'exact',
+    'debug', 'android-weblayer',
+])
+
 
 class StoryExpectations(object):
 
@@ -34,11 +50,11 @@ class StoryExpectations(object):
   def SetTags(self, tags):
     self._typ_expectations.set_tags(tags)
 
-  def _IsStoryOrBenchmarkDisabled(self, pattern):
-    expected_results, _, reasons = self._typ_expectations.expectations_for(
-        pattern)
+  def _IsStoryOrBenchmarkDisabled(self, story_name):
+    exp = self._typ_expectations.expectations_for(story_name)
+    expected_results, reasons = exp.results, exp.reason
     if ResultType.Skip in expected_results:
-      return reasons.pop() if reasons else 'No reason given'
+      return reasons if reasons else 'No reason given'
     return ''
 
   def IsBenchmarkDisabled(self):

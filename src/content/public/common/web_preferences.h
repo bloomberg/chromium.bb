@@ -14,8 +14,6 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "net/nqe/effective_connection_type.h"
-#include "third_party/blink/public/common/css/forced_colors.h"
-#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "url/gurl.h"
@@ -122,7 +120,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool flash_stage3d_baseline_enabled;
   bool privileged_webgl_extensions_enabled;
   bool webgl_errors_to_console_enabled;
-  bool mock_scrollbars_enabled;
   bool hide_scrollbars;
   bool accelerated_2d_canvas_enabled;
   bool antialiased_2d_canvas_disabled;
@@ -182,7 +179,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool smart_insert_delete_enabled;
   bool spatial_navigation_enabled;
   bool caret_browsing_enabled;
-  bool use_solid_color_scrollbars;
   bool navigate_on_drag_drop;
   blink::mojom::V8CacheOptions v8_cache_options;
   bool record_whole_document;
@@ -284,6 +280,9 @@ struct CONTENT_EXPORT WebPreferences {
   bool disable_features_depending_on_viz;
   // Don't accelerate small canvases to avoid crashes TODO(crbug.com/1004304)
   bool disable_accelerated_small_canvases;
+  // Re-enable Web Components v0 on Webview, temporarily. This should get
+  // removed when crbug.com/1021631 gets fixed.
+  bool reenable_web_components_v0;
 #endif  // defined(OS_ANDROID)
 
   // Enable forcibly modifying content rendering to result in a light on dark
@@ -313,18 +312,6 @@ struct CONTENT_EXPORT WebPreferences {
 
   // Defines the current autoplay policy.
   AutoplayPolicy autoplay_policy;
-
-  // The preferred color scheme for the web content. The scheme is used to
-  // evaluate the prefers-color-scheme media query and resolve UA color scheme
-  // to be used based on the supported-color-schemes META tag and CSS property.
-  blink::PreferredColorScheme preferred_color_scheme =
-      blink::PreferredColorScheme::kNoPreference;
-
-  // Forced colors indicates whether forced color mode is active or not. Forced
-  // colors is used to evaluate the forced-colors and prefers-color-scheme
-  // media queries and is used to resolve the default color scheme as indicated
-  // by the preferred_color_scheme.
-  blink::ForcedColors forced_colors = blink::ForcedColors::kNone;
 
   // Network quality threshold below which resources from iframes are assigned
   // either kVeryLow or kVeryLow Blink priority.
@@ -356,6 +343,11 @@ struct CONTENT_EXPORT WebPreferences {
       lazy_frame_loading_distance_thresholds_px;
   std::map<net::EffectiveConnectionType, int>
       lazy_image_loading_distance_thresholds_px;
+  std::map<net::EffectiveConnectionType, int> lazy_image_first_k_fully_load;
+
+  // Setting to false disables upgrades to HTTPS for HTTP resources in HTTPS
+  // sites.
+  bool allow_mixed_content_upgrades;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for

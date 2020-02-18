@@ -40,7 +40,7 @@ constexpr base::TimeDelta kHintsFetcherHostFetchedValidDuration =
 
 HintsFetcher::HintsFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    GURL optimization_guide_service_url,
+    const GURL& optimization_guide_service_url,
     PrefService* pref_service)
     : optimization_guide_service_url_(net::AppendOrReplaceQueryParameter(
           optimization_guide_service_url,
@@ -50,7 +50,7 @@ HintsFetcher::HintsFetcher(
       time_clock_(base::DefaultClock::GetInstance()) {
   url_loader_factory_ = std::move(url_loader_factory);
   CHECK(optimization_guide_service_url_.SchemeIs(url::kHttpsScheme));
-  CHECK(features::IsHintsFetchingEnabled());
+  DCHECK(features::IsRemoteFetchingEnabled());
 }
 
 HintsFetcher::~HintsFetcher() {}
@@ -67,36 +67,62 @@ void HintsFetcher::SetTimeClockForTesting(const base::Clock* time_clock) {
 }
 
 // static
-void HintsFetcher::RecordHintsFetcherCoverage(PrefService* pref_service,
-                                              const std::string& host) {
+bool HintsFetcher::WasHostCoveredByFetch(PrefService* pref_service,
+                                         const std::string& host) {
+  return WasHostCoveredByFetch(pref_service, host,
+                               base::DefaultClock::GetInstance());
+}
+
+// static
+bool HintsFetcher::WasHostCoveredByFetch(PrefService* pref_service,
+                                         const std::string& host,
+                                         const base::Clock* time_clock) {
   DictionaryPrefUpdate hosts_fetched(
       pref_service, prefs::kHintsFetcherHostsSuccessfullyFetched);
   base::Optional<double> value =
       hosts_fetched->FindDoubleKey(HashHostForDictionary(host));
-  if (!value) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false);
-    return;
-  }
+  if (!value)
+    return false;
 
   base::Time host_valid_time = base::Time::FromDeltaSinceWindowsEpoch(
       base::TimeDelta::FromSecondsD(*value));
-  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintsFetcher.WasHostCoveredByFetch",
-                        host_valid_time > base::Time::Now());
+  return host_valid_time > time_clock->Now();
 }
 
 bool HintsFetcher::FetchOptimizationGuideServiceHints(
     const std::vector<std::string>& hosts,
+    optimization_guide::proto::RequestContext request_context,
     HintsFetchedCallback hints_fetched_callback) {
   SEQUENCE_CHECKER(sequence_checker_);
 
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
-    std::move(hints_fetched_callback).Run(base::nullopt);
+    std::move(hints_fetched_callback)
+        .Run(request_context, HintsFetcherRequestStatus::kNetworkOffline,
+             base::nullopt);
     return false;
   }
 
-  if (url_loader_)
+  if (active_url_loader_) {
+    std::move(hints_fetched_callback)
+        .Run(request_context, HintsFetcherRequestStatus::kFetcherBusy,
+             base::nullopt);
     return false;
+  }
+
+  std::vector<std::string> filtered_hosts =
+      GetSizeLimitedHostsDueForHintsRefresh(hosts);
+  if (filtered_hosts.empty()) {
+    std::move(hints_fetched_callback)
+        .Run(request_context, HintsFetcherRequestStatus::kNoHostsToFetch,
+             base::nullopt);
+    return false;
+  }
+
+  DCHECK_GE(features::MaxHostsForOptimizationGuideServiceHintsFetch(),
+            filtered_hosts.size());
+
+  hints_fetch_start_time_ = base::TimeTicks::Now();
+  request_context_ = request_context;
 
   get_hints_request_ = std::make_unique<proto::GetHintsRequest>();
 
@@ -109,9 +135,9 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   // for clients to specify their supported optimization types or have a static
   // assert on the last OptimizationType.
 
-  get_hints_request_->set_context(proto::CONTEXT_BATCH_UPDATE);
+  get_hints_request_->set_context(request_context_);
 
-  for (const auto& host : hosts) {
+  for (const auto& host : filtered_hosts) {
     proto::HostInfo* host_info = get_hints_request_->add_hosts();
     host_info->set_host(host);
   }
@@ -146,37 +172,40 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   resource_request->url = optimization_guide_service_url_;
 
   resource_request->method = "POST";
-  resource_request->load_flags = net::LOAD_BYPASS_PROXY;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
-  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                 traffic_annotation);
+  active_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
 
-  url_loader_->AttachStringForUpload(serialized_request,
-                                     "application/x-protobuf");
+  active_url_loader_->AttachStringForUpload(serialized_request,
+                                            "application/x-protobuf");
 
   UMA_HISTOGRAM_COUNTS_100(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", hosts.size());
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount",
+      filtered_hosts.size());
 
-  // |url_loader_| should not retry on 5xx errors since the server may already
-  // be overloaded.  |url_loader_| should retry on network changes since the
-  // network stack may receive the connection change event later than |this|.
+  // |active_url_loader_| should not retry on 5xx errors since the server may
+  // already be overloaded. |active_url_loader_| should retry on network changes
+  // since the network stack may receive the connection change event later than
+  // |this|.
   static const int kMaxRetries = 1;
-  url_loader_->SetRetryOptions(
+  active_url_loader_->SetRetryOptions(
       kMaxRetries, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
 
-  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+  active_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&HintsFetcher::OnURLLoadComplete, base::Unretained(this)));
 
   hints_fetched_callback_ = std::move(hints_fetched_callback);
-  hosts_fetched_ = hosts;
+  hosts_fetched_ = filtered_hosts;
   return true;
 }
 
 void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
                                   int net_status,
                                   int response_code) {
+  SEQUENCE_CHECKER(sequence_checker_);
+
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
       std::make_unique<proto::GetHintsResponse>();
 
@@ -194,10 +223,17 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
     UMA_HISTOGRAM_COUNTS_100(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount",
         get_hints_response->hints_size());
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency",
+        base::TimeTicks::Now() - hints_fetch_start_time_);
     UpdateHostsSuccessfullyFetched();
-    std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
+    std::move(hints_fetched_callback_)
+        .Run(request_context_, HintsFetcherRequestStatus::kSuccess,
+             std::move(get_hints_response));
   } else {
-    std::move(hints_fetched_callback_).Run(base::nullopt);
+    std::move(hints_fetched_callback_)
+        .Run(request_context_, HintsFetcherRequestStatus::kResponseError,
+             base::nullopt);
   }
 }
 
@@ -253,13 +289,62 @@ void HintsFetcher::UpdateHostsSuccessfullyFetched() {
 
 void HintsFetcher::OnURLLoadComplete(
     std::unique_ptr<std::string> response_body) {
+  SEQUENCE_CHECKER(sequence_checker_);
+
   int response_code = -1;
-  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
-    response_code = url_loader_->ResponseInfo()->headers->response_code();
+  if (active_url_loader_->ResponseInfo() &&
+      active_url_loader_->ResponseInfo()->headers) {
+    response_code =
+        active_url_loader_->ResponseInfo()->headers->response_code();
   }
-  HandleResponse(response_body ? *response_body : "", url_loader_->NetError(),
-                 response_code);
-  url_loader_.reset();
+  HandleResponse(response_body ? *response_body : "",
+                 active_url_loader_->NetError(), response_code);
+  active_url_loader_.reset();
+}
+
+std::vector<std::string> HintsFetcher::GetSizeLimitedHostsDueForHintsRefresh(
+    const std::vector<std::string>& hosts) const {
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  DictionaryPrefUpdate hosts_fetched(
+      pref_service_, prefs::kHintsFetcherHostsSuccessfullyFetched);
+
+  std::vector<std::string> target_hosts;
+  target_hosts.reserve(hosts.size());
+
+  for (const auto& host : hosts) {
+    // Skip over localhosts, IP addresses, and invalid hosts.
+    if (net::HostStringIsLocalhost(host))
+      continue;
+    url::CanonHostInfo host_info;
+    std::string canonicalized_host(net::CanonicalizeHost(host, &host_info));
+    if (host_info.IsIPAddress() ||
+        !net::IsCanonicalizedHostCompliant(canonicalized_host)) {
+      continue;
+    }
+
+    bool host_hints_due_for_refresh = true;
+
+    base::Optional<double> value =
+        hosts_fetched->FindDoubleKey(HashHostForDictionary(host));
+    if (value) {
+      base::Time host_valid_time = base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromSecondsD(*value));
+      host_hints_due_for_refresh =
+          (host_valid_time - features::GetHintsFetchRefreshDuration() <=
+           time_clock_->Now());
+    }
+    if (host_hints_due_for_refresh)
+      target_hosts.push_back(host);
+
+    if (target_hosts.size() >=
+        features::MaxHostsForOptimizationGuideServiceHintsFetch()) {
+      break;
+    }
+  }
+  DCHECK_GE(features::MaxHostsForOptimizationGuideServiceHintsFetch(),
+            target_hosts.size());
+  return target_hosts;
 }
 
 }  // namespace optimization_guide

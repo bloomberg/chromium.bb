@@ -29,6 +29,18 @@ var CrElementsV3FocusTest = class extends PolymerInteractiveUITest {
 };
 
 // eslint-disable-next-line no-var
+var CrElementsActionMenuV3Test = class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_action_menu_test.m.js';
+  }
+};
+
+TEST_F('CrElementsActionMenuV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrElementsCheckboxV3Test = class extends CrElementsV3FocusTest {
   /** @override */
   get browsePreload() {
@@ -37,6 +49,18 @@ var CrElementsCheckboxV3Test = class extends CrElementsV3FocusTest {
 };
 
 TEST_F('CrElementsCheckboxV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrElementsExpandButtonV3FocusTest = class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_expand_button_focus_tests.m.js';
+  }
+};
+
+TEST_F('CrElementsExpandButtonV3FocusTest', 'All', function() {
   mocha.run();
 });
 
@@ -91,5 +115,17 @@ var CrElementsToggleV3Test = class extends CrElementsV3FocusTest {
 };
 
 TEST_F('CrElementsToggleV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var IronListFocusV3Test = class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/iron_list_focus_test.m.js';
+  }
+};
+
+TEST_F('IronListFocusV3Test', 'All', function() {
   mocha.run();
 });

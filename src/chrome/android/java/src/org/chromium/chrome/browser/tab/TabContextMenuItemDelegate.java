@@ -6,22 +6,25 @@ package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.MailTo;
 import android.net.Uri;
 import android.provider.Browser;
 import android.provider.ContactsContract;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItemDelegate;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -36,13 +39,11 @@ import org.chromium.ui.base.PageTransition;
 import java.net.URI;
 import java.util.Locale;
 
-import androidx.browser.customtabs.CustomTabsIntent;
-
 /**
  * A default {@link ContextMenuItemDelegate} that supports the context menu functionality in Tab.
  */
 public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
-    private final Tab mTab;
+    private final TabImpl mTab;
     private boolean mLoadOriginalImageRequestedForPageLoad;
     private EmptyTabObserver mDataReductionProxyContextMenuTabObserver;
 
@@ -50,7 +51,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
      * Builds a {@link TabContextMenuItemDelegate} instance.
      */
     public TabContextMenuItemDelegate(Tab tab) {
-        mTab = tab;
+        mTab = (TabImpl) tab;
         mDataReductionProxyContextMenuTabObserver = new EmptyTabObserver() {
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
@@ -72,7 +73,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
 
     @Override
     public boolean isIncognitoSupported() {
-        return PrefServiceBridge.getInstance().isIncognitoModeEnabled();
+        return IncognitoUtils.isIncognitoModeEnabled();
     }
 
     @Override
@@ -219,13 +220,19 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
                                   .getDataReductionProxyPassThroughHeader()
                         : null);
         loadUrlParams.setReferrer(referrer);
-        mTab.getActivity().getTabModelSelector().openNewTab(loadUrlParams,
-                TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, isIncognito());
+        mTab.getActivity().getTabModelSelector().openNewTab(
+                loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, isIncognito());
     }
 
     @Override
     public void onOpenInEphemeralTab(String url, String title) {
-        mTab.getActivity().getEphemeralTabPanel().requestOpenPanel(url, title, mTab.isIncognito());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET)) {
+            mTab.getActivity().getEphemeralTabCoordinator().requestOpenSheet(
+                    url, title, mTab.isIncognito());
+        } else {
+            mTab.getActivity().getEphemeralTabPanel().requestOpenPanel(
+                    url, title, mTab.isIncognito());
+        }
     }
 
     @Override
@@ -234,15 +241,14 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         Intent chromeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl));
         chromeIntent.setPackage(applicationContext.getPackageName());
         chromeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        PackageManager packageManager = applicationContext.getPackageManager();
 
-        if (packageManager.queryIntentActivities(chromeIntent, 0).isEmpty()) {
+        if (PackageManagerUtils.queryIntentActivities(chromeIntent, 0).isEmpty()) {
             // If Chrome can't handle intent fallback to using any other VIEW handlers.
             chromeIntent.setPackage(null);
 
             // Query again without the package name set and if there are still no handlers for the
             // URI fail gracefully, and do nothing, since this will still cause a crash if launched.
-            if (packageManager.queryIntentActivities(chromeIntent, 0).isEmpty()) return;
+            if (PackageManagerUtils.queryIntentActivities(chromeIntent, 0).isEmpty()) return;
         }
 
         boolean activityStarted = false;
@@ -271,11 +277,11 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     public void onOpenInNewChromeTabFromCCT(String linkUrl, boolean isIncognito) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setClass(mTab.getApplicationContext(), ChromeLauncherActivity.class);
+        intent.setClass(ContextUtils.getApplicationContext(), ChromeLauncherActivity.class);
         if (isIncognito) {
             intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
-            intent.putExtra(
-                    Browser.EXTRA_APPLICATION_ID, mTab.getApplicationContext().getPackageName());
+            intent.putExtra(Browser.EXTRA_APPLICATION_ID,
+                    ContextUtils.getApplicationContext().getPackageName());
             IntentHandler.addTrustedIntentExtras(intent);
             IntentHandler.setTabLaunchType(intent, TabLaunchType.FROM_EXTERNAL_APP);
         }

@@ -20,6 +20,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/common/origin_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -185,9 +186,16 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
   if (IsOfflinePage())
     return omnibox::kOfflinePinIcon;
 
-  switch (GetSecurityLevel()) {
+  security_state::SecurityLevel security_level = GetSecurityLevel();
+  switch (security_level) {
     case security_state::NONE:
-    case security_state::HTTP_SHOW_WARNING:
+      return omnibox::kHttpIcon;
+    case security_state::WARNING:
+      // When kMarkHttpAsParameterDangerWarning is enabled, show a danger
+      // triangle icon.
+      if (security_state::ShouldShowDangerTriangleForWarningLevel()) {
+        return omnibox::kNotSecureWarningIcon;
+      }
       return omnibox::kHttpIcon;
     case security_state::EV_SECURE:
     case security_state::SECURE:
@@ -195,7 +203,7 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return vector_icons::kBusinessIcon;
     case security_state::DANGEROUS:
-      return omnibox::kHttpsInvalidIcon;
+      return omnibox::kNotSecureWarningIcon;
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
       return omnibox::kHttpIcon;
@@ -218,7 +226,7 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
     return SecureChipText(l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE));
 
   switch (GetSecurityLevel()) {
-    case security_state::HTTP_SHOW_WARNING:
+    case security_state::WARNING:
       return SecureChipText(
           l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));
     case security_state::EV_SECURE: {

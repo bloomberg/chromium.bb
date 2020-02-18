@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/url_formatter/url_formatter.h"
+#include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/web_client.h"
@@ -43,14 +44,22 @@ std::unique_ptr<NavigationItem> NavigationItem::Create() {
 NavigationItemImpl::NavigationItemImpl()
     : unique_id_(GetUniqueIDInConstructor()),
       transition_type_(ui::PAGE_TRANSITION_LINK),
-      user_agent_type_(UserAgentType::MOBILE),
+      user_agent_type_(UserAgentType::NONE),
+      user_agent_type_inheritance_(UserAgentType::NONE),
       is_created_from_push_state_(false),
       has_state_been_replaced_(false),
       is_created_from_hash_change_(false),
       should_skip_repost_form_confirmation_(false),
       should_skip_serialization_(false),
       navigation_initiation_type_(web::NavigationInitiationType::NONE),
-      is_untrusted_(false) {}
+      is_untrusted_(false) {
+  if (base::FeatureList::IsEnabled(features::kDefaultToDesktopOnIPad)) {
+    // TODO(crbug.com/1025227): Once it is enabled by default, move it to the
+    // default constructor.
+    user_agent_type_ = UserAgentType::AUTOMATIC;
+    user_agent_type_inheritance_ = UserAgentType::AUTOMATIC;
+  }
+}
 
 NavigationItemImpl::~NavigationItemImpl() {
 }
@@ -68,6 +77,7 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       ssl_(item.ssl_),
       timestamp_(item.timestamp_),
       user_agent_type_(item.user_agent_type_),
+      user_agent_type_inheritance_(item.user_agent_type_inheritance_),
       http_request_headers_([item.http_request_headers_ mutableCopy]),
       serialized_state_object_([item.serialized_state_object_ copy]),
       is_created_from_push_state_(item.is_created_from_push_state_),
@@ -99,9 +109,14 @@ void NavigationItemImpl::SetURL(const GURL& url) {
   cached_display_title_.clear();
   error_retry_state_machine_.SetURL(url);
   if (!wk_navigation_util::URLNeedsUserAgentType(url)) {
-    SetUserAgentType(web::UserAgentType::NONE);
+    SetUserAgentType(UserAgentType::NONE,
+                     /*update_inherited_user_agent =*/true);
   } else if (GetUserAgentType() == web::UserAgentType::NONE) {
-    SetUserAgentType(web::UserAgentType::MOBILE);
+    UserAgentType type =
+        base::FeatureList::IsEnabled(features::kDefaultToDesktopOnIPad)
+            ? UserAgentType::AUTOMATIC
+            : UserAgentType::MOBILE;
+    SetUserAgentType(type, /*update_inherited_user_agent =*/true);
   }
 }
 
@@ -195,8 +210,11 @@ base::Time NavigationItemImpl::GetTimestamp() const {
   return timestamp_;
 }
 
-void NavigationItemImpl::SetUserAgentType(UserAgentType type) {
+void NavigationItemImpl::SetUserAgentType(UserAgentType type,
+                                          bool update_inherited_user_agent) {
   user_agent_type_ = type;
+  if (update_inherited_user_agent)
+    user_agent_type_inheritance_ = type;
   DCHECK_EQ(!wk_navigation_util::URLNeedsUserAgentType(GetURL()),
             user_agent_type_ == UserAgentType::NONE);
 }
@@ -211,6 +229,10 @@ bool NavigationItemImpl::IsUntrusted() {
 
 UserAgentType NavigationItemImpl::GetUserAgentType() const {
   return user_agent_type_;
+}
+
+UserAgentType NavigationItemImpl::GetUserAgentForInheritance() const {
+  return user_agent_type_inheritance_;
 }
 
 bool NavigationItemImpl::HasPostData() const {
@@ -345,7 +367,8 @@ NSString* NavigationItemImpl::GetDescription() const {
       stringWithFormat:
           @"url:%s virtual_url_:%s originalurl:%s referrer: %s title:%s "
           @"transition:%d "
-           "displayState:%@ userAgentType:%s is_create_from_push_state: %@ "
+           "displayState:%@ userAgentType:%s userAgentForInheritance:%s "
+           "is_create_from_push_state: %@ "
            "has_state_been_replaced: %@ is_created_from_hash_change: %@ "
            "navigation_initiation_type: %d",
           url_.spec().c_str(), virtual_url_.spec().c_str(),
@@ -353,6 +376,7 @@ NSString* NavigationItemImpl::GetDescription() const {
           base::UTF16ToUTF8(title_).c_str(), transition_type_,
           page_display_state_.GetDescription(),
           GetUserAgentTypeDescription(user_agent_type_).c_str(),
+          GetUserAgentTypeDescription(user_agent_type_inheritance_).c_str(),
           is_created_from_push_state_ ? @"true" : @"false",
           has_state_been_replaced_ ? @"true" : @"false",
           is_created_from_hash_change_ ? @"true" : @"false",

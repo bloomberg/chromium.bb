@@ -34,20 +34,20 @@ bool ValidateDrawElementsInstancedBaseVertexBaseInstanceANGLE(Context *context,
                                                               GLuint baseInstance);
 bool ValidateMultiDrawArraysInstancedBaseInstanceANGLE(Context *context,
                                                        PrimitiveMode modePacked,
-                                                       GLsizei drawcount,
+                                                       const GLint *firsts,
                                                        const GLsizei *counts,
                                                        const GLsizei *instanceCounts,
-                                                       const GLint *firsts,
-                                                       const GLuint *baseInstances);
+                                                       const GLuint *baseInstances,
+                                                       GLsizei drawcount);
 bool ValidateMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE(Context *context,
                                                                    PrimitiveMode modePacked,
-                                                                   DrawElementsType typePacked,
-                                                                   GLsizei drawcount,
                                                                    const GLsizei *counts,
-                                                                   const GLsizei *instanceCounts,
+                                                                   DrawElementsType typePacked,
                                                                    const GLvoid *const *indices,
+                                                                   const GLsizei *instanceCounts,
                                                                    const GLint *baseVertices,
-                                                                   const GLuint *baseInstances);
+                                                                   const GLuint *baseInstances,
+                                                                   GLsizei drawcount);
 
 // GL_ANGLE_copy_texture_3d
 bool ValidateCopyTexture3DANGLE(Context *context,
@@ -101,6 +101,19 @@ bool ValidateRenderbufferStorageMultisampleANGLE(Context *context,
                                                  GLsizei width,
                                                  GLsizei height);
 
+// GL_ANGLE_get_image
+bool ValidateGetTexImageANGLE(Context *context,
+                              TextureTarget targetPacked,
+                              GLint level,
+                              GLenum format,
+                              GLenum type,
+                              void *pixels);
+bool ValidateGetRenderbufferImageANGLE(Context *context,
+                                       GLenum target,
+                                       GLenum format,
+                                       GLenum type,
+                                       void *pixels);
+
 // GL_ANGLE_instanced_arrays
 bool ValidateDrawArraysInstancedANGLE(Context *context,
                                       PrimitiveMode modePacked,
@@ -148,6 +161,7 @@ bool ValidateProvokingVertexANGLE(Context *context, ProvokingVertexConvention mo
 
 // GL_ANGLE_request_extension
 bool ValidateRequestExtensionANGLE(Context *context, const GLchar *name);
+bool ValidateDisableExtensionANGLE(Context *context, const GLchar *name);
 
 // GL_ANGLE_robust_client_memory
 bool ValidateGetBooleanvRobustANGLE(Context *context,
@@ -834,6 +848,36 @@ bool ValidateQueryCounterEXT(Context *context, QueryID idPacked, QueryType targe
 // GL_EXT_draw_buffers
 bool ValidateDrawBuffersEXT(Context *context, GLsizei n, const GLenum *bufs);
 
+// GL_EXT_draw_elements_base_vertex
+bool ValidateDrawElementsBaseVertexEXT(Context *context,
+                                       PrimitiveMode modePacked,
+                                       GLsizei count,
+                                       DrawElementsType typePacked,
+                                       const void *indices,
+                                       GLint basevertex);
+bool ValidateDrawElementsInstancedBaseVertexEXT(Context *context,
+                                                PrimitiveMode modePacked,
+                                                GLsizei count,
+                                                DrawElementsType typePacked,
+                                                const void *indices,
+                                                GLsizei instancecount,
+                                                GLint basevertex);
+bool ValidateDrawRangeElementsBaseVertexEXT(Context *context,
+                                            PrimitiveMode modePacked,
+                                            GLuint start,
+                                            GLuint end,
+                                            GLsizei count,
+                                            DrawElementsType typePacked,
+                                            const void *indices,
+                                            GLint basevertex);
+bool ValidateMultiDrawElementsBaseVertexEXT(Context *context,
+                                            PrimitiveMode modePacked,
+                                            const GLsizei *count,
+                                            DrawElementsType typePacked,
+                                            const void *const *indices,
+                                            GLsizei primcount,
+                                            const GLint *basevertex);
+
 // GL_EXT_geometry_shader
 bool ValidateFramebufferTextureEXT(Context *context,
                                    GLenum target,
@@ -1005,6 +1049,8 @@ bool ValidateImportSemaphoreFdEXT(Context *context,
                                   HandleType handleTypePacked,
                                   GLint fd);
 
+// GL_EXT_texture_filter_anisotropic
+
 // GL_EXT_texture_storage
 bool ValidateTexStorage1DEXT(Context *context,
                              GLenum target,
@@ -1099,6 +1145,29 @@ bool ValidateEGLImageTargetRenderbufferStorageOES(Context *context,
 bool ValidateEGLImageTargetTexture2DOES(Context *context,
                                         TextureType targetPacked,
                                         GLeglImageOES image);
+
+// GL_OES_draw_elements_base_vertex
+bool ValidateDrawElementsBaseVertexOES(Context *context,
+                                       PrimitiveMode modePacked,
+                                       GLsizei count,
+                                       DrawElementsType typePacked,
+                                       const void *indices,
+                                       GLint basevertex);
+bool ValidateDrawElementsInstancedBaseVertexOES(Context *context,
+                                                PrimitiveMode modePacked,
+                                                GLsizei count,
+                                                DrawElementsType typePacked,
+                                                const void *indices,
+                                                GLsizei instancecount,
+                                                GLint basevertex);
+bool ValidateDrawRangeElementsBaseVertexOES(Context *context,
+                                            PrimitiveMode modePacked,
+                                            GLuint start,
+                                            GLuint end,
+                                            GLsizei count,
+                                            DrawElementsType typePacked,
+                                            const void *indices,
+                                            GLint basevertex);
 
 // GL_OES_draw_texture
 bool ValidateDrawTexfOES(Context *context,

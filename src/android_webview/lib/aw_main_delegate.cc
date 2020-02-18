@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "android_webview/browser/aw_content_browser_client.h"
-#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/aw_media_url_interceptor.h"
 #include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/browser/gfx/gpu_service_web_view.h"
@@ -15,6 +14,7 @@
 #include "android_webview/browser/scoped_add_feature_flags.h"
 #include "android_webview/browser/tracing/aw_trace_event_args_whitelist.h"
 #include "android_webview/common/aw_descriptors.h"
+#include "android_webview/common/aw_features.h"
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_resource_bundle.h"
 #include "android_webview/common/aw_switches.h"
@@ -29,7 +29,6 @@
 #include "base/cpu.h"
 #include "base/i18n/icu_util.h"
 #include "base/i18n/rtl.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
@@ -71,9 +70,9 @@
 
 namespace android_webview {
 
-AwMainDelegate::AwMainDelegate() {}
+AwMainDelegate::AwMainDelegate() = default;
 
-AwMainDelegate::~AwMainDelegate() {}
+AwMainDelegate::~AwMainDelegate() = default;
 
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);
@@ -94,9 +93,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   // Web Notification API and the Push API are not supported (crbug.com/434712)
   cl->AppendSwitch(switches::kDisableNotifications);
-
-  // WebRTC hardware decoding is not supported, internal bug 15075307
-  cl->AppendSwitch(switches::kDisableWebRtcHWDecoding);
 
   // Check damage in OnBeginFrame to prevent unnecessary draws.
   cl->AppendSwitch(cc::switches::kCheckDamageEarly);
@@ -131,12 +127,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // metadata and controls.
   cl->AppendSwitch(switches::kDisableMediaSessionAPI);
 
-  // WebView CTS fails in numerous ways if we drop pre-commit input.
-  // We would like to remove this flag, but it requires a cross team effort to
-  // figure out how to address the failures.
-  // crbug.com/987626 is the tracking bug for removing this flag from tests.
-  cl->AppendSwitch(switches::kAllowPreCommitInput);
-
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).
@@ -150,9 +140,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     ui::GestureConfiguration::GetInstance()
         ->set_fling_touchscreen_tap_suppression_enabled(false);
 
-    base::android::RegisterApkAssetWithFileDescriptorStore(
-        content::kV8NativesDataDescriptor,
-        gin::V8Initializer::GetNativesFilePath());
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
     gin::V8Initializer::V8SnapshotFileType file_type =
         gin::V8Initializer::V8SnapshotFileType::kWithAdditionalContext;
@@ -193,19 +180,32 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // WebView does not and should not support WebAuthN.
     features.DisableIfNotSet(::features::kWebAuth);
 
-    // WebView isn't compatible with OOP-D.
-    features.DisableIfNotSet(::features::kVizDisplayCompositor);
+    // Checking for command line here as FeatureList isn't initialized here yet,
+    // so we can't use FeatureList::IsEnabled. This is necessary if someone
+    // enabled feature through command line. Finch experiments will need to set
+    // all flags in trial config.
+    if (features.IsEnabled(::features::kVizForWebView)) {
+      cl->AppendSwitch(switches::kWebViewEnableSharedImage);
+      features.EnableIfNotSet(::features::kUseSkiaRenderer);
+    } else {
+      // Disable OOP-D if viz for WebView not enabled.
+      features.DisableIfNotSet(::features::kVizDisplayCompositor);
 
-    // WebView does not support AndroidOverlay yet for video overlays.
-    features.DisableIfNotSet(media::kUseAndroidOverlay);
+      // Viz for WebView is required to support embedding CompositorFrameSinks
+      // which is needed for UseSurfaceLayerForVideo feature.
+      // https://crbug.com/853832
+      features.EnableIfNotSet(media::kDisableSurfaceLayerForVideo);
+    }
 
-    // WebView doesn't support embedding CompositorFrameSinks which is needed
-    // for UseSurfaceLayerForVideo feature. https://crbug.com/853832
-    features.EnableIfNotSet(media::kDisableSurfaceLayerForVideo);
+    // WebView does not support overlay fullscreen yet for video overlays.
+    features.DisableIfNotSet(media::kOverlayFullscreenVideo);
 
     // WebView does not support EME persistent license yet, because it's not
     // clear on how user can remove persistent media licenses from UI.
     features.DisableIfNotSet(media::kMediaDrmPersistentLicense);
+
+    // WebView does not support Picture-in-Picture yet.
+    features.DisableIfNotSet(media::kPictureInPictureAPI);
 
     features.DisableIfNotSet(
         autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
@@ -217,6 +217,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // TODO(https://crbug.com/963653): SmsReceiver is not yet supported on
     // WebView.
     features.DisableIfNotSet(::features::kSmsReceiver);
+
+    features.DisableIfNotSet(::features::kWebXr);
 
     // De-jelly is never supported on WebView.
     features.EnableIfNotSet(::features::kDisableDeJelly);
@@ -372,7 +374,7 @@ gpu::SharedImageManager* GetSharedImageManager() {
 }
 
 viz::VizCompositorThreadRunner* GetVizCompositorThreadRunner() {
-  return base::FeatureList::IsEnabled(features::kVizForWebView)
+  return ::features::IsUsingVizForWebView()
              ? VizCompositorThreadRunnerWebView::GetInstance()
              : nullptr;
 }

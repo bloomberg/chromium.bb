@@ -111,10 +111,11 @@ base::FilePath GetVersionedFileName(base::StringPiece input_language,
   // number if you're updating either dic or aff files. Increment the minor
   // version number if you're updating only dic_delta files.
   static constexpr LanguageVersion kSpecialVersionString[] = {
-      {"tr-TR",
-       "-4-0"},  // Jan 9, 2013: Add "FLAG num" to aff to avoid heapcheck
-                 // crash.
-      {"tg-TG", "-5-0"},  // Mar 4, 2014: Add Tajik dictionary.
+      // Jan 9, 2013: Add "FLAG num" to aff to avoid heapcheck crash.
+      {"tr-TR", "-4-0"},
+
+      // Mar 4, 2014: Add Tajik dictionary.
+      {"tg-TG", "-5-0"},
 
       // October 2017: Update from upstream.
       {"en-AU", "-8-0"},
@@ -130,6 +131,10 @@ base::FilePath GetVersionedFileName(base::StringPiece input_language,
 
       // April 2019: Update Persian
       {"fa-IR", "-8-0"},
+
+      // November 2019: Update Serbian-Latin and Serbian-Cyrillic
+      {"sh", "-4-0"},
+      {"sr", "-4-0"},
   };
 
   // Generate the bdict file name using default version string or special
@@ -189,6 +194,35 @@ void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
   }
   *language_code = std::string(language);
   *country_code = std::string(country);
+}
+
+void FillSuggestions(
+    const std::vector<std::vector<base::string16>>& suggestions_list,
+    std::vector<base::string16>* optional_suggestions) {
+  DCHECK(optional_suggestions);
+  size_t num_languages = suggestions_list.size();
+
+  // Compute maximum number of suggestions in a single language.
+  size_t max_suggestions = 0;
+  for (const auto& suggestions : suggestions_list)
+    max_suggestions = std::max(max_suggestions, suggestions.size());
+
+  for (size_t count = 0; count < (max_suggestions * num_languages); ++count) {
+    size_t language = count % num_languages;
+    size_t index = count / num_languages;
+
+    if (suggestions_list[language].size() <= index)
+      continue;
+
+    const base::string16& suggestion = suggestions_list[language][index];
+    // Only add the suggestion if it's unique.
+    if (!base::Contains(*optional_suggestions, suggestion)) {
+      optional_suggestions->push_back(suggestion);
+    }
+    if (optional_suggestions->size() >= kMaxSuggestions) {
+      break;
+    }
+  }
 }
 
 }  // namespace spellcheck

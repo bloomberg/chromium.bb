@@ -6,8 +6,8 @@
 
 #include "base/stl_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "url/gurl.h"
 
@@ -34,7 +34,7 @@ bool IsImageAutoReload(content::ResourceType resource_type,
 // Returns the ratio of original data size (without applying interventions) to
 // actual data use for a placeholder.
 double EstimatePartialImageRequestSavings(
-    const network::ResourceResponseHead& response_head) {
+    const network::mojom::URLResponseHead& response_head) {
   if (!response_head.headers)
     return 1.0;
 
@@ -57,7 +57,7 @@ double EstimatePartialImageRequestSavings(
 // that this request was previously fetched as a placeholder, and therefore
 // recorded savings earlier.
 double EstimateAutoReloadImageRequestSavings(
-    const network::ResourceResponseHead& response_head) {
+    const network::mojom::URLResponseHead& response_head) {
   static const double kPlageholderContentInCache = 2048;
 
   // Count the new network usage. For a reloaded placeholder image, 2KB will be
@@ -78,6 +78,8 @@ PageResourceDataUse::PageResourceDataUse()
       is_main_frame_resource_(false),
       is_secure_scheme_(false),
       proxy_used_(false),
+      is_primary_frame_resource_(false),
+      completed_before_fcp_(false),
       cache_type_(mojom::CacheType::kNotCached) {}
 
 PageResourceDataUse::PageResourceDataUse(const PageResourceDataUse& other) =
@@ -87,7 +89,7 @@ PageResourceDataUse::~PageResourceDataUse() = default;
 void PageResourceDataUse::DidStartResponse(
     const GURL& response_url,
     int resource_id,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     content::ResourceType resource_type,
     content::PreviewsState previews_state) {
   resource_id_ = resource_id;
@@ -165,6 +167,11 @@ void PageResourceDataUse::SetIsMainFrameResource(bool is_main_frame_resource) {
   is_main_frame_resource_ = is_main_frame_resource;
 }
 
+void PageResourceDataUse::SetCompletedBeforeFCP(bool completed_before_fcp) {
+  DCHECK(completed_before_fcp);
+  completed_before_fcp_ = completed_before_fcp;
+}
+
 int PageResourceDataUse::CalculateNewlyReceivedBytes() {
   int newly_received_bytes = total_received_bytes_ - last_update_bytes_;
   last_update_bytes_ = total_received_bytes_;
@@ -191,6 +198,7 @@ mojom::ResourceDataUpdatePtr PageResourceDataUse::GetResourceDataUpdate() {
   resource_data_update->proxy_used = proxy_used_;
   resource_data_update->is_primary_frame_resource = is_primary_frame_resource_;
   resource_data_update->origin = origin_;
+  resource_data_update->completed_before_fcp = completed_before_fcp_;
   return resource_data_update;
 }
 }  // namespace page_load_metrics

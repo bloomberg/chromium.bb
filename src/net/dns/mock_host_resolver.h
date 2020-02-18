@@ -20,6 +20,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
@@ -83,6 +84,7 @@ class MockHostResolverBase
       public base::SupportsWeakPtr<MockHostResolverBase> {
  private:
   class RequestImpl;
+  class ProbeRequestImpl;
   class MdnsListenerImpl;
 
  public:
@@ -113,11 +115,14 @@ class MockHostResolverBase
   }
 
   // HostResolver methods:
+  void OnShutdown() override;
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;
+  std::unique_ptr<ProbeRequest> CreateDohProbeRequest() override;
   std::unique_ptr<MdnsListener> CreateMdnsListener(
       const HostPortPair& host,
       DnsQueryType query_type) override;
@@ -128,6 +133,7 @@ class MockHostResolverBase
   // with the given parameters. Returns the net error of the cached result.
   int LoadIntoCache(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const base::Optional<ResolveHostParameters>& optional_parameters);
 
   // Returns true if there are pending requests that can be resolved by invoking
@@ -153,11 +159,14 @@ class MockHostResolverBase
   // Detach cancelled request.
   void DetachRequest(size_t id);
 
-  // Returns the request with the given id.
-  RequestImpl* request(size_t id);
+  // Returns the hostname of the request with the given id.
+  const std::string& request_host(size_t id);
 
   // Returns the priority of the request with the given id.
   RequestPriority request_priority(size_t id);
+
+  // Returns NetworkIsolationKey of the request with the given id.
+  const NetworkIsolationKey& request_network_isolation_key(size_t id);
 
   // Like ResolveNow, but doesn't take an ID. DCHECKs if there's more than one
   // pending request.
@@ -182,12 +191,21 @@ class MockHostResolverBase
     return last_request_priority_;
   }
 
+  // Returns the NetworkIsolationKey passed in to the last call to Resolve() (or
+  // base::nullopt if Resolve() hasn't been called yet).
+  const base::Optional<NetworkIsolationKey>&
+  last_request_network_isolation_key() {
+    return last_request_network_isolation_key_;
+  }
+
   // Returns the SecureDnsMode override of the last call to Resolve() (or
   // base::nullopt if Resolve() hasn't been called yet).
-  base::Optional<DnsConfig::SecureDnsMode> last_secure_dns_mode_override()
-      const {
+  const base::Optional<DnsConfig::SecureDnsMode>&
+  last_secure_dns_mode_override() const {
     return last_secure_dns_mode_override_;
   }
+
+  bool IsDohProbeRunning() const { return !!doh_probe_request_; }
 
   void TriggerMdnsListeners(const HostPortPair& host,
                             DnsQueryType query_type,
@@ -216,6 +234,9 @@ class MockHostResolverBase
 
   typedef std::map<size_t, RequestImpl*> RequestMap;
 
+  // Returns the request with the given id.
+  RequestImpl* request(size_t id);
+
   // If > 0, |cache_invalidation_num| is the number of times a cached entry can
   // be read before it invalidates itself. Useful to force cache expiration
   // scenarios.
@@ -229,6 +250,7 @@ class MockHostResolverBase
   // DNS_CACHE_MISS if failed.
   int ResolveFromIPLiteralOrCache(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       DnsQueryType dns_query_type,
       HostResolverFlags flags,
       HostResolverSource source,
@@ -237,6 +259,7 @@ class MockHostResolverBase
       base::Optional<HostCache::EntryStaleness>* stale_info);
   // Resolve via |proc_|.
   int ResolveProc(const HostPortPair& host,
+                  const NetworkIsolationKey& network_isolation_key,
                   AddressFamily requested_address_family,
                   HostResolverFlags flags,
                   HostResolverSource source,
@@ -246,6 +269,7 @@ class MockHostResolverBase
   void RemoveCancelledListener(MdnsListenerImpl* listener);
 
   RequestPriority last_request_priority_;
+  base::Optional<NetworkIsolationKey> last_request_network_isolation_key_;
   base::Optional<DnsConfig::SecureDnsMode> last_secure_dns_mode_override_;
   bool synchronous_mode_;
   bool ondemand_mode_;
@@ -262,6 +286,7 @@ class MockHostResolverBase
   // RemoveCancelledListener().
   RequestMap requests_;
   size_t next_request_id_;
+  ProbeRequestImpl* doh_probe_request_ = nullptr;
   std::set<MdnsListenerImpl*> listeners_;
 
   size_t num_resolve_;
@@ -377,6 +402,9 @@ class RuleBasedHostResolverProc : public HostResolverProc {
   // Simulate a lookup failure for |host| (it also can be a pattern).
   void AddSimulatedFailure(const std::string& host);
 
+  // Simulate a lookup timeout failure for |host| (it also can be a pattern).
+  void AddSimulatedTimeoutFailure(const std::string& host);
+
   // Deletes all the rules that have been added.
   void ClearRules();
 
@@ -395,6 +423,7 @@ class RuleBasedHostResolverProc : public HostResolverProc {
   struct Rule {
     enum ResolverType {
       kResolverTypeFail,
+      kResolverTypeFailTimeout,
       // TODO(mmenke): Is it really reasonable for a "mock" host resolver to
       // fall back to the system resolver?
       kResolverTypeSystem,
@@ -447,20 +476,36 @@ class HangingHostResolver : public HostResolver {
  public:
   HangingHostResolver();
   ~HangingHostResolver() override;
+  void OnShutdown() override;
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
+      const NetworkIsolationKey& network_isolation_key,
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;
+
+  std::unique_ptr<ProbeRequest> CreateDohProbeRequest() override;
 
   // Use to detect cancellations since there's otherwise no externally-visible
   // differentiation between a cancelled and a hung task.
   int num_cancellations() const { return num_cancellations_; }
 
+  // Return the corresponding values passed to the most recent call to
+  // CreateRequest()
+  const HostPortPair& last_host() const { return last_host_; }
+  const NetworkIsolationKey& last_network_isolation_key() const {
+    return last_network_isolation_key_;
+  }
+
  private:
   class RequestImpl;
+  class ProbeRequestImpl;
+
+  HostPortPair last_host_;
+  NetworkIsolationKey last_network_isolation_key_;
 
   int num_cancellations_ = 0;
+  bool shutting_down_ = false;
   base::WeakPtrFactory<HangingHostResolver> weak_ptr_factory_{this};
 };
 

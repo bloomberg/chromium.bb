@@ -29,6 +29,7 @@ extern const base::Feature kAutofillCreateDataForTest;
 extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillEnableAccountWalletStorage;
 extern const base::Feature kAutofillEnableCompanyName;
+extern const base::Feature kAutofillEnableHideSuggestionsUI;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
@@ -42,8 +43,10 @@ extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillProfileClientValidation;
 extern const base::Feature kAutofillProfileServerValidation;
 extern const base::Feature kAutofillRejectCompanyBirthyear;
+extern const base::Feature kAutofillRejectCompanySocialTitle;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillRichMetadataQueries;
+extern const base::Feature kAutofillSaveAndFillVPA;
 extern const base::Feature kAutofillSaveOnProbablySubmitted;
 extern const base::Feature kAutofillServerCommunication;
 extern const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms;
@@ -51,14 +54,14 @@ extern const base::Feature kAutofillShowAutocompleteConsoleWarnings;
 extern const base::Feature kAutofillShowTypePredictions;
 extern const base::Feature kAutofillSkipComparingInferredLabels;
 extern const base::Feature kAutofillTokenPrefixMatching;
+extern const base::Feature kAutofillTouchToFill;
 extern const base::Feature kAutofillUploadThrottling;
 extern const base::Feature kAutofillUseApi;
 extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
-
+extern const base::Feature kAutofillUseServerCVCPrediction;
 #if defined(OS_ANDROID)
 extern const base::Feature kAutofillManualFallbackAndroid;
 extern const base::Feature kAutofillRefreshStyleAndroid;
-extern const base::Feature kTouchToFillAndroid;
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID) || defined(OS_IOS)

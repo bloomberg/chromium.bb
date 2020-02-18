@@ -78,26 +78,23 @@
   <template>
     <style include="cups-printer-shared"></style>
     <add-printer-dialog>
-      <div slot="dialog-title">$i18n{addPrintersManuallyTitle}</div>
-        <div id="general-error-container" hidden="[[!errorText_]]">
-          <div id="general-error">
-            <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
-            <div id="general-error-message">
-              [[errorText_]]
-            </div>
-          </div>
-        </div>
+      <div slot="dialog-title">
+        <span>$i18n{addPrintersManuallyTitle}</span>
+        <printer-dialog-error error-text="[[errorText_]]">
+        </printer-dialog-error>
+      </div>
       <div slot="dialog-body">
         <div class="settings-box first two-line">
           <cr-input class="printer-name-input" autofocus
             id="printerNameInput" value="{{newPrinter.printerName}}"
-            label="$i18n{printerName}" maxlength=64>
+            label="$i18n{printerName}" maxlength=64 on-keypress="onKeypress_">
           </cr-input>
         </div>
         <div class="settings-box two-line">
           <cr-input id="printerAddressInput" label="$i18n{printerAddress}"
               value="{{newPrinter.printerAddress}}" maxlength=63
-              error-message="$i18n{ippPrinterUnreachable}">
+              error-message="$i18n{ippPrinterUnreachable}"
+              on-keypress="onKeypress_">
           </cr-input>
         </div>
         <div class="settings-box two-line">
@@ -121,8 +118,9 @@
           </div>
         </div>
         <div class="settings-box two-line">
-          <cr-input label="$i18n{printerQueue}"
-              value="{{newPrinter.printerQueue}}" maxlength=64>
+          <cr-input id="printerQueueInput" label="$i18n{printerQueue}"
+              value="{{newPrinter.printerQueue}}" maxlength=64
+              on-keypress="onKeypress_">
           </cr-input>
         </div>
       </div>
@@ -159,15 +157,10 @@
       }
     </style>
     <add-printer-dialog>
-      <div slot="dialog-title">$i18n{manufacturerAndModelDialogTitle}
-        <div id="general-error-container" hidden="[[!errorText_]]">
-            <div id="general-error">
-              <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
-              <div id="general-error-message">
-                [[errorText_]]
-              </div>
-            </div>
-        </div>
+      <div slot="dialog-title">
+        <span>$i18n{manufacturerAndModelDialogTitle}</span>
+        <printer-dialog-error error-text="[[errorText_]]">
+        </printer-dialog-error>
       </div>
       <div slot="dialog-body">
         <div class="subtext" id="makeModelTextInfo">
@@ -202,26 +195,31 @@
               aria-labelledby="ppdLabel" invalid="[[invalidPPD_]]"
               error-message="$i18n{selectDriverErrorMessage}" tabindex="-1">
           </cr-input>
-          <cr-button class="browse-button" on-click="onBrowseFile_">
+          <cr-button class="browse-button" on-click="onBrowseFile_"
+              aria-label="$i18n{selectDriverButtonAriaLabel}">
             $i18n{selectDriverButtonText}
           </cr-button>
         </div>
-        <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
-          <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
-        </div>
       </div>
       <div slot="dialog-buttons">
-        <cr-button class="cancel-button" on-click="onCancelTap_">
-          $i18n{cancel}
-        </cr-button>
-        <cr-button class="action-button" id="addPrinterButton"
-            disabled="[[!canAddPrinter_(activePrinter.ppdManufacturer,
-                                        activePrinter.ppdModel,
-                                        activePrinter.printerPPDPath,
-                                        addPrinterInProgress_)]]"
-            on-click="addPrinter_">
-          $i18n{addPrinterButtonText}
-        </cr-button>
+        <div> <!-- Left group -->
+          <div class="eula" id="eulaUrl" hidden="[[!eulaUrl_]]">
+            <a href="[[eulaUrl_]]" target="_blank">$i18n{printerEulaNotice}</a>
+          </div>
+        </div>
+        <div> <!-- Right group -->
+          <cr-button class="cancel-button" on-click="onCancelTap_">
+            $i18n{cancel}
+          </cr-button>
+          <cr-button class="action-button" id="addPrinterButton"
+              disabled="[[!canAddPrinter_(activePrinter.ppdManufacturer,
+                                          activePrinter.ppdModel,
+                                          activePrinter.printerPPDPath,
+                                          addPrinterInProgress_)]]"
+              on-click="addPrinter_">
+            $i18n{addPrinterButtonText}
+          </cr-button>
+        </div>
       </div>
     </add-printer-dialog>
   </template>
@@ -239,7 +237,7 @@
       <div slot="dialog-title">[[dialogTitle]]</div>
       <div slot="dialog-body">
         <paper-spinner-lite active></paper-spinner-lite>
-        <div id="configuringMessage">$i18n{printerConfiguringMessage}</div>
+        <div id="configuringMessage"></div>
       </div>
       <div slot="dialog-buttons">
         <cr-button class="cancel-button" on-click="onCloseConfiguringTap_">

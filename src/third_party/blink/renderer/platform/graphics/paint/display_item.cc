@@ -98,18 +98,10 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(SVGClip);
     DEBUG_STRING_CASE(SVGFilter);
     DEBUG_STRING_CASE(SVGMask);
-    DEBUG_STRING_CASE(ScrollbarBackButtonEnd);
-    DEBUG_STRING_CASE(ScrollbarBackButtonStart);
-    DEBUG_STRING_CASE(ScrollbarBackground);
-    DEBUG_STRING_CASE(ScrollbarBackTrack);
-    DEBUG_STRING_CASE(ScrollbarCorner);
-    DEBUG_STRING_CASE(ScrollbarForwardButtonEnd);
-    DEBUG_STRING_CASE(ScrollbarForwardButtonStart);
-    DEBUG_STRING_CASE(ScrollbarForwardTrack);
     DEBUG_STRING_CASE(ScrollbarThumb);
     DEBUG_STRING_CASE(ScrollbarTickmarks);
-    DEBUG_STRING_CASE(ScrollbarTrackBackground);
-    DEBUG_STRING_CASE(ScrollbarCompositedScrollbar);
+    DEBUG_STRING_CASE(ScrollbarTrackAndButtons);
+    DEBUG_STRING_CASE(ScrollCorner);
     DEBUG_STRING_CASE(SelectionTint);
     DEBUG_STRING_CASE(TableCollapsedBorders);
     DEBUG_STRING_CASE(VideoBitmap);
@@ -134,6 +126,8 @@ static String ForeignLayerTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(ForeignLayerWrapper);
     DEBUG_STRING_CASE(ForeignLayerContentsWrapper);
     DEBUG_STRING_CASE(ForeignLayerLinkHighlight);
+    DEBUG_STRING_CASE(ForeignLayerViewportScroll);
+    DEBUG_STRING_CASE(ForeignLayerViewportScrollbar);
     DEFAULT_CASE;
   }
 }
@@ -161,6 +155,8 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
     DEBUG_STRING_CASE(LayerChunkFloat);
     DEBUG_STRING_CASE(LayerChunkForeground);
     DEBUG_STRING_CASE(LayerChunkNormalFlowAndPositiveZOrderChildren);
+    DEBUG_STRING_CASE(ScrollbarHorizontal);
+    DEBUG_STRING_CASE(ScrollbarVertical);
     DEBUG_STRING_CASE(UninitializedType);
     DEFAULT_CASE;
   }

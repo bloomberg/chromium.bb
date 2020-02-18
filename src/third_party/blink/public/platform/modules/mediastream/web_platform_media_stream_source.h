@@ -21,12 +21,8 @@ class WebMediaStreamSource;
 class BLINK_PLATFORM_EXPORT WebPlatformMediaStreamSource {
  public:
   using SourceStoppedCallback =
-      base::Callback<void(const WebMediaStreamSource& source)>;
+      base::OnceCallback<void(const WebMediaStreamSource& source)>;
 
-  using ConstraintsCallback =
-      base::Callback<void(WebPlatformMediaStreamSource* source,
-                          mojom::MediaStreamRequestResult result,
-                          const WebString& result_name)>;
   using ConstraintsRepeatingCallback =
       base::RepeatingCallback<void(WebPlatformMediaStreamSource* source,
                                    mojom::MediaStreamRequestResult result,
@@ -58,7 +54,7 @@ class BLINK_PLATFORM_EXPORT WebPlatformMediaStreamSource {
   void SetDevice(const MediaStreamDevice& device);
 
   // Sets a callback that will be triggered when StopSource is called.
-  void SetStopCallback(const SourceStoppedCallback& stop_callback);
+  void SetStopCallback(SourceStoppedCallback stop_callback);
 
   // Clears the previously-set SourceStoppedCallback so that it will not be run
   // in the future.

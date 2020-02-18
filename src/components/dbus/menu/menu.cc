@@ -15,8 +15,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/dbus/menu/properties_interface.h"
-#include "components/dbus/menu/success_barrier_callback.h"
+#include "components/dbus/properties/dbus_properties.h"
+#include "components/dbus/properties/success_barrier_callback.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -112,13 +112,13 @@ DbusMenu::MenuItem::~MenuItem() = default;
 
 DbusMenu::ScopedMethodResponse::ScopedMethodResponse(
     dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender* response_sender)
+    dbus::ExportedObject::ResponseSender response_sender)
     : method_call_(method_call),
-      response_sender_(response_sender),
+      response_sender_(std::move(response_sender)),
       reader_(method_call_) {}
 
 DbusMenu::ScopedMethodResponse::~ScopedMethodResponse() {
-  response_sender_->Run(std::move(response_));
+  std::move(response_sender_).Run(std::move(response_));
 }
 
 dbus::MessageWriter& DbusMenu::ScopedMethodResponse::Writer() {
@@ -163,7 +163,7 @@ DbusMenu::DbusMenu(dbus::ExportedObject* exported_object,
         base::BindRepeating(&DbusMenu::OnExported, weak_factory_.GetWeakPtr()));
   }
 
-  properties_ = std::make_unique<DbusPropertiesInterface>(menu_, barrier_);
+  properties_ = std::make_unique<DbusProperties>(menu_, barrier_);
   properties_->RegisterInterface(kInterfaceDbusMenu);
   auto set_property = [&](const std::string& property_name, auto&& value) {
     properties_->SetProperty(kInterfaceDbusMenu, property_name,
@@ -249,7 +249,7 @@ dbus::ExportedObject::MethodCallCallback DbusMenu::WrapMethodCallback(
       [](base::RepeatingCallback<void(ScopedMethodResponse*)> bound_callback,
          dbus::MethodCall* method_call,
          dbus::ExportedObject::ResponseSender response_sender) {
-        ScopedMethodResponse response(method_call, &response_sender);
+        ScopedMethodResponse response(method_call, std::move(response_sender));
         bound_callback.Run(&response);
       },
       callback);

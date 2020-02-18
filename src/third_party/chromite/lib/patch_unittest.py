@@ -8,7 +8,7 @@
 from __future__ import print_function
 
 import copy
-import contextlib
+import functools
 import itertools
 import os
 import shutil
@@ -26,7 +26,7 @@ from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 
 
-_GetNumber = iter(itertools.count()).next
+_GetNumber = functools.partial(next, itertools.count())
 
 # Change-ID of a known open change in public gerrit.
 GERRIT_OPEN_CHANGEID = '8366'
@@ -251,14 +251,19 @@ I am the first commit.
                                      site_params.EXTERNAL_REMOTE),
                           sha1=sha1, **kwargs)
 
-  def _run(self, cmd, cwd=None):
+  def _run(self, cmd, cwd=None, **kwargs):
+    # This is to match git.RunGit behavior.
+    kwargs.setdefault('print_cmd', False)
+    kwargs.setdefault('capture_output', True)
+    kwargs.setdefault('encoding', 'utf-8')
+
     # Note that cwd is intentionally set to a location the user can't write
     # to; this flushes out any bad usage in the tests that would work by
     # fluke of being invoked from w/in a git repo.
     if cwd is None:
       cwd = self.default_cwd
-    return cros_build_lib.RunCommand(
-        cmd, cwd=cwd, print_cmd=False, capture_output=True).output.strip()
+
+    return cros_build_lib.run(cmd, cwd=cwd, **kwargs).output.strip()
 
   def _GetSha1(self, cwd, refspec):
     return self._run(['git', 'rev-list', '-n1', refspec], cwd=cwd)
@@ -379,13 +384,13 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     git1 = self._MakeRepo('git1', self.source)
     sha1 = self._GetSha1(git1, 'HEAD')
     patch = self._MkPatch(self.source, sha1)
-    self.assertEquals(patch._GetParents(git1), [])
+    self.assertEqual(patch._GetParents(git1), [])
 
   def testGet1Parent(self):
     git1 = self._MakeRepo('git1', self.source)
     patch1 = self.CommitFile(git1, 'foo', 'foo')
     patch2 = self.CommitFile(git1, 'bar', 'bar')
-    self.assertEquals(patch2._GetParents(git1), [patch1.sha1])
+    self.assertEqual(patch2._GetParents(git1), [patch1.sha1])
 
   def testGet2Parents(self):
     # Prepare a merge commit, then test that its two parents are correctly
@@ -402,8 +407,8 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     sha1 = self._GetSha1(git1, 'HEAD')
     patch_merge = self._MkPatch(self.source, sha1, suppress_branch=True)
 
-    self.assertEquals(patch_merge._GetParents(git1),
-                      [patch_left.sha1, patch_right.sha1])
+    self.assertEqual(patch_merge._GetParents(git1),
+                     [patch_left.sha1, patch_right.sha1])
 
   def testIsAncestor(self):
     git1 = self._MakeRepo('git1', self.source)
@@ -1140,13 +1145,10 @@ class TestGerritPatch(TestGitRepoPatch):
 
     for msg in self._MakeCommitMessages():
       for footers in self._MakeFooters():
-        ctx = contextlib.nested(
-            mock.patch('chromite.lib.patch.FooterForApproval',
-                       new=mock.Mock(side_effect=itertools.cycle(footers))),
-            mock.patch.object(patch, '_approvals',
-                              new=[approval] * len(footers)))
-
-        with ctx:
+        with mock.patch('chromite.lib.patch.FooterForApproval',
+                        new=mock.Mock(side_effect=itertools.cycle(footers))), \
+             mock.patch.object(patch, '_approvals',
+                               new=[approval] * len(footers)):
           patch._commit_message = msg
 
           # Idempotence
@@ -1277,9 +1279,9 @@ class PrepareLocalPatchesTests(cros_test_lib.RunCommandTestCase):
     self.PatchObject(cros_patch.LocalPatch, 'Fetch', return_value=output_obj)
     self.PatchObject(git, 'RunGit', return_value=output_obj)
     patch_info = cros_patch.PrepareLocalPatches(self.manifest, self.patches)[0]
-    self.assertEquals(patch_info.project, self.project)
-    self.assertEquals(patch_info.ref, self.branch)
-    self.assertEquals(patch_info.tracking_branch, self.tracking_branch)
+    self.assertEqual(patch_info.project, self.project)
+    self.assertEqual(patch_info.ref, self.branch)
+    self.assertEqual(patch_info.tracking_branch, self.tracking_branch)
 
   def testBranchSpecifiedSuccessRun(self):
     """Test success with branch specified by user."""
@@ -1387,7 +1389,7 @@ class MockPatchFactory(object):
     patch_mock: Optional PatchMock instance.
     """
     self.patch_mock = patch_mock
-    self._patch_counter = (itertools.count(1)).next
+    self._patch_counter = functools.partial(next, itertools.count(1))
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite',
@@ -1401,7 +1403,8 @@ class MockPatchFactory(object):
     change_id = hex(change_id)[2:].rstrip('L').lower()
     change_id = 'I%s' % change_id.rjust(40, '0')
     sha1 = hex(_GetNumber())[2:].rstrip('L').lower().rjust(40, '0')
-    patch_number = (patch_number if patch_number is not None else _GetNumber())
+    if patch_number is None:
+      patch_number = _GetNumber()
     fake_url = 'http://foo/bar'
     if not approvals:
       approvals = [{'type': 'VRIF', 'value': '1', 'grantedOn': 1391733002},

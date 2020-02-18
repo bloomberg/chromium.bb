@@ -21,12 +21,12 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
 import org.chromium.chrome.browser.sharing.SharingAdapter;
-import org.chromium.chrome.browser.sharing.SharingDeviceCapability;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy.DeviceInfo;
 import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.protocol.SharingSpecificFields;
 import org.chromium.ui.widget.ButtonCompat;
 
 /**
@@ -95,13 +95,15 @@ public class SharedClipboardShareActivity
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
 
-        mAdapter = new SharingAdapter(SharingDeviceCapability.SHARED_CLIPBOARD);
+        mAdapter = new SharingAdapter(SharingSpecificFields.EnabledFeatures.SHARED_CLIPBOARD);
         if (!mAdapter.isEmpty()) {
             findViewById(R.id.device_picker_toolbar).setVisibility(View.VISIBLE);
             SharedClipboardMetrics.recordShowDeviceList();
         } else {
             SharedClipboardMetrics.recordShowEducationalDialog();
         }
+
+        SharedClipboardMetrics.recordDeviceCount(mAdapter.getCount());
 
         ListView listView = findViewById(R.id.device_picker_list);
         listView.setAdapter(mAdapter);
@@ -126,7 +128,8 @@ public class SharedClipboardShareActivity
         SharedClipboardMetrics.recordDeviceClick(position);
         SharedClipboardMetrics.recordTextSize(text.length());
 
-        SharedClipboardMessageHandler.showSendingNotification(device.guid, device.clientName, text);
+        SharedClipboardMessageHandler.showSendingNotification(
+                device.guid, device.clientName, device.lastUpdatedTimestampMillis, text);
         finish();
     }
 }

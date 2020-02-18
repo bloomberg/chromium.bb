@@ -24,7 +24,6 @@
 #include "Device/Config.hpp"
 
 #include <spirv/unified1/spirv.hpp>
-#include <spirv/unified1/GLSL.std.450.h>
 
 #include <climits>
 #include <mutex>
@@ -120,6 +119,7 @@ std::shared_ptr<rr::Routine> SpirvShader::emitSamplerRoutine(ImageInstruction in
 		Vector4f dsx = {0, 0, 0, 0};
 		Vector4f dsy = {0, 0, 0, 0};
 		Vector4f offset = {0, 0, 0, 0};
+		SIMD::Int sampleId = 0;
 		SamplerFunction samplerFunction = instruction.getSamplerFunction();
 
 		uint32_t i = 0;
@@ -169,7 +169,10 @@ std::shared_ptr<rr::Routine> SpirvShader::emitSamplerRoutine(ImageInstruction in
 			offset[j] = in[i];
 		}
 
-		// TODO(b/133868964): Handle 'Sample' operand.
+		if(instruction.sample)
+		{
+			sampleId = As<SIMD::Int>(in[i]);
+		}
 
 		SamplerCore s(constants, samplerState);
 
@@ -199,7 +202,7 @@ std::shared_ptr<rr::Routine> SpirvShader::emitSamplerRoutine(ImageInstruction in
 					dPdy.y = Float(0.0f);
 				}
 
-				Vector4f sample = s.sampleTexture(texture, sampler, uvw[0], uvw[1], uvw[2], q, lod[i], dPdx, dPdy, offset, samplerFunction);
+				Vector4f sample = s.sampleTexture(texture, sampler, uvw[0], uvw[1], uvw[2], q, lod[i], dPdx, dPdy, offset, sampleId, samplerFunction);
 
 				Pointer<Float> rgba = out;
 				rgba[0 * SIMD::Width + i] = Pointer<Float>(&sample.x)[i];
@@ -210,7 +213,7 @@ std::shared_ptr<rr::Routine> SpirvShader::emitSamplerRoutine(ImageInstruction in
 		}
 		else
 		{
-			Vector4f sample = s.sampleTexture(texture, sampler, uvw[0], uvw[1], uvw[2], q, lodOrBias.x, (dsx.x), (dsy.x), offset, samplerFunction);
+			Vector4f sample = s.sampleTexture(texture, sampler, uvw[0], uvw[1], uvw[2], q, lodOrBias.x, (dsx.x), (dsy.x), offset, sampleId, samplerFunction);
 
 			Pointer<SIMD::Float> rgba = out;
 			rgba[0] = sample.x;

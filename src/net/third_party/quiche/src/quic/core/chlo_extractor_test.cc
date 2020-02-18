@@ -6,11 +6,11 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
@@ -70,15 +70,7 @@ class ChloExtractorTest : public QuicTest {
     }
     QuicFramer framer(SupportedVersions(header_.version), QuicTime::Zero(),
                       Perspective::IS_CLIENT, kQuicDefaultConnectionIdLength);
-    if (version.handshake_protocol == PROTOCOL_TLS1_3) {
-      CrypterPair crypters;
-      CryptoUtils::CreateTlsInitialCrypters(Perspective::IS_CLIENT,
-                                            version.transport_version,
-                                            TestConnectionId(), &crypters);
-      framer.SetEncrypter(ENCRYPTION_INITIAL, std::move(crypters.encrypter));
-      framer.InstallDecrypter(ENCRYPTION_INITIAL,
-                              std::move(crypters.decrypter));
-    }
+    framer.SetInitialObfuscators(TestConnectionId());
     if (!QuicVersionUsesCryptoFrames(version.transport_version) ||
         munge_stream_id) {
       QuicStreamId stream_id =
@@ -99,7 +91,7 @@ class ChloExtractorTest : public QuicTest {
         framer.EncryptPayload(ENCRYPTION_INITIAL, header_.packet_number,
                               *packet, buffer_, QUIC_ARRAYSIZE(buffer_));
     ASSERT_NE(0u, encrypted_length);
-    packet_ = QuicMakeUnique<QuicEncryptedPacket>(buffer_, encrypted_length);
+    packet_ = std::make_unique<QuicEncryptedPacket>(buffer_, encrypted_length);
     EXPECT_TRUE(packet_ != nullptr);
     DeleteFrames(&frames);
   }
@@ -119,7 +111,6 @@ TEST_F(ChloExtractorTest, FindsValidChlo) {
   // Construct a CHLO with each supported version
   for (ParsedQuicVersion version : AllSupportedVersions()) {
     SCOPED_TRACE(version);
-    ParsedQuicVersionVector versions(SupportedVersions(version));
     header_.version = version;
     if (QuicVersionHasLongHeaderLengths(version.transport_version) &&
         header_.version_flag) {
@@ -131,7 +122,7 @@ TEST_F(ChloExtractorTest, FindsValidChlo) {
     }
     MakePacket(version, client_hello_str, /*munge_offset*/ false,
                /*munge_stream_id*/ false);
-    EXPECT_TRUE(ChloExtractor::Extract(*packet_, versions, {}, &delegate_,
+    EXPECT_TRUE(ChloExtractor::Extract(*packet_, version, {}, &delegate_,
                                        kQuicDefaultConnectionIdLength))
         << ParsedQuicVersionToString(version);
     EXPECT_EQ(version.transport_version, delegate_.transport_version());
@@ -152,20 +143,19 @@ TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongStream) {
   std::string client_hello_str(client_hello.GetSerialized().AsStringPiece());
   MakePacket(version, client_hello_str,
              /*munge_offset*/ false, /*munge_stream_id*/ true);
-  EXPECT_FALSE(ChloExtractor::Extract(*packet_, AllSupportedVersions(), {},
-                                      &delegate_,
+  EXPECT_FALSE(ChloExtractor::Extract(*packet_, version, {}, &delegate_,
                                       kQuicDefaultConnectionIdLength));
 }
 
 TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongOffset) {
+  ParsedQuicVersion version = AllSupportedVersions()[0];
   CryptoHandshakeMessage client_hello;
   client_hello.set_tag(kCHLO);
 
   std::string client_hello_str(client_hello.GetSerialized().AsStringPiece());
-  MakePacket(AllSupportedVersions()[0], client_hello_str, /*munge_offset*/ true,
+  MakePacket(version, client_hello_str, /*munge_offset*/ true,
              /*munge_stream_id*/ false);
-  EXPECT_FALSE(ChloExtractor::Extract(*packet_, AllSupportedVersions(), {},
-                                      &delegate_,
+  EXPECT_FALSE(ChloExtractor::Extract(*packet_, version, {}, &delegate_,
                                       kQuicDefaultConnectionIdLength));
 }
 
@@ -176,8 +166,7 @@ TEST_F(ChloExtractorTest, DoesNotFindInvalidChlo) {
   }
   MakePacket(version, "foo", /*munge_offset*/ false,
              /*munge_stream_id*/ true);
-  EXPECT_FALSE(ChloExtractor::Extract(*packet_, AllSupportedVersions(), {},
-                                      &delegate_,
+  EXPECT_FALSE(ChloExtractor::Extract(*packet_, version, {}, &delegate_,
                                       kQuicDefaultConnectionIdLength));
 }
 

@@ -33,6 +33,11 @@
 #pragma clang diagnostic ignored "-Wextra-semi"
 #endif  // defined(__clang__)
 
+#ifdef _MSC_VER
+__pragma(warning(push))
+__pragma(warning(disable : 4146)) // unary minus operator applied to unsigned type, result still unsigned
+#endif
+
 #include "llvm/Analysis/LoopPass.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/ExecutionEngine/JITSymbol.h"
@@ -66,6 +71,10 @@
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif // defined(__clang__)
+
+#ifdef _MSC_VER
+__pragma(warning(pop))
+#endif
 
 #define ARGS(...) {__VA_ARGS__}
 #define CreateCall2 CreateCall
@@ -309,8 +318,14 @@ namespace
 	// settings and no Reactor routine directly links against another.
 	class JITRoutine : public rr::Routine
 	{
+#if LLVM_VERSION_MAJOR >= 8
+		using ObjLayer = llvm::orc::LegacyRTDyldObjectLinkingLayer;
+		using CompileLayer = llvm::orc::LegacyIRCompileLayer<ObjLayer, llvm::orc::SimpleCompiler>;
+#else
 		using ObjLayer = llvm::orc::RTDyldObjectLinkingLayer;
 		using CompileLayer = llvm::orc::IRCompileLayer<ObjLayer, llvm::orc::SimpleCompiler>;
+#endif
+
 	public:
 		JITRoutine(
 				std::unique_ptr<llvm::Module> module,
@@ -390,7 +405,7 @@ namespace
 			}
 		}
 
-		const void *getEntry(int index) override
+		const void *getEntry(int index) const override
 		{
 			return addresses[index];
 		}
@@ -611,7 +626,7 @@ namespace
 		return jit->builder->CreateCall(trunc, ARGS(x));
 	}
 
-	// Packed add/sub saturatation
+	// Packed add/sub with saturation
 	llvm::Value *lowerPSAT(llvm::Value *x, llvm::Value *y, bool isAdd, bool isSigned)
 	{
 		llvm::VectorType *ty = llvm::cast<llvm::VectorType>(x->getType());
@@ -644,26 +659,6 @@ namespace
 		res = lowerPMINMAX(res, max, llvm::ICmpInst::ICMP_SLT);
 
 		return jit->builder->CreateTrunc(res, ty);
-	}
-
-	llvm::Value *lowerPUADDSAT(llvm::Value *x, llvm::Value *y)
-	{
-		return lowerPSAT(x, y, true, false);
-	}
-
-	llvm::Value *lowerPSADDSAT(llvm::Value *x, llvm::Value *y)
-	{
-		return lowerPSAT(x, y, true, true);
-	}
-
-	llvm::Value *lowerPUSUBSAT(llvm::Value *x, llvm::Value *y)
-	{
-		return lowerPSAT(x, y, false, false);
-	}
-
-	llvm::Value *lowerPSSUBSAT(llvm::Value *x, llvm::Value *y)
-	{
-		return lowerPSAT(x, y, false, true);
 	}
 
 	llvm::Value *lowerSQRT(llvm::Value *x)
@@ -817,6 +812,44 @@ namespace
 	}
 #endif  // !defined(__i386__) && !defined(__x86_64__)
 
+#if (LLVM_VERSION_MAJOR >= 8) || (!defined(__i386__) && !defined(__x86_64__))
+	llvm::Value *lowerPUADDSAT(llvm::Value *x, llvm::Value *y)
+	{
+		#if LLVM_VERSION_MAJOR >= 8
+			return jit->builder->CreateBinaryIntrinsic(llvm::Intrinsic::uadd_sat, x, y);
+		#else
+			return lowerPSAT(x, y, true, false);
+		#endif
+	}
+
+	llvm::Value *lowerPSADDSAT(llvm::Value *x, llvm::Value *y)
+	{
+		#if LLVM_VERSION_MAJOR >= 8
+			return jit->builder->CreateBinaryIntrinsic(llvm::Intrinsic::sadd_sat, x, y);
+		#else
+			return lowerPSAT(x, y, true, true);
+		#endif
+	}
+
+	llvm::Value *lowerPUSUBSAT(llvm::Value *x, llvm::Value *y)
+	{
+		#if LLVM_VERSION_MAJOR >= 8
+			return jit->builder->CreateBinaryIntrinsic(llvm::Intrinsic::usub_sat, x, y);
+		#else
+			return lowerPSAT(x, y, false, false);
+		#endif
+	}
+
+	llvm::Value *lowerPSSUBSAT(llvm::Value *x, llvm::Value *y)
+	{
+		#if LLVM_VERSION_MAJOR >= 8
+			return jit->builder->CreateBinaryIntrinsic(llvm::Intrinsic::ssub_sat, x, y);
+		#else
+			return lowerPSAT(x, y, false, true);
+		#endif
+	}
+#endif  // (LLVM_VERSION_MAJOR >= 8) || (!defined(__i386__) && !defined(__x86_64__))
+
 	llvm::Value *lowerMulHigh(llvm::Value *x, llvm::Value *y, bool sext)
 	{
 		llvm::VectorType *ty = llvm::cast<llvm::VectorType>(x->getType());
@@ -840,13 +873,61 @@ namespace
 		llvm::Value *mulh = jit->builder->CreateAShr(mult, intTy->getBitWidth());
 		return jit->builder->CreateTrunc(mulh, ty);
 	}
+
+	llvm::Value *createGather(llvm::Value *base, llvm::Type *elTy, llvm::Value *offsets, llvm::Value *mask, unsigned int alignment, bool zeroMaskedLanes)
+	{
+		ASSERT(base->getType()->isPointerTy());
+		ASSERT(offsets->getType()->isVectorTy());
+		ASSERT(mask->getType()->isVectorTy());
+
+		auto numEls = mask->getType()->getVectorNumElements();
+		auto i1Ty = ::llvm::Type::getInt1Ty(jit->context);
+		auto i32Ty = ::llvm::Type::getInt32Ty(jit->context);
+		auto i8Ty = ::llvm::Type::getInt8Ty(jit->context);
+		auto i8PtrTy = i8Ty->getPointerTo();
+		auto elPtrTy = elTy->getPointerTo();
+		auto elVecTy = ::llvm::VectorType::get(elTy, numEls);
+		auto elPtrVecTy = ::llvm::VectorType::get(elPtrTy, numEls);
+		auto i8Base = jit->builder->CreatePointerCast(base, i8PtrTy);
+		auto i8Ptrs = jit->builder->CreateGEP(i8Base, offsets);
+		auto elPtrs = jit->builder->CreatePointerCast(i8Ptrs, elPtrVecTy);
+		auto i8Mask = jit->builder->CreateIntCast(mask, ::llvm::VectorType::get(i1Ty, numEls), false); // vec<int, int, ...> -> vec<bool, bool, ...>
+		auto passthrough = zeroMaskedLanes ? ::llvm::Constant::getNullValue(elVecTy) : llvm::UndefValue::get(elVecTy);
+		auto align = ::llvm::ConstantInt::get(i32Ty, alignment);
+		auto func = ::llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::masked_gather, { elVecTy, elPtrVecTy } );
+		return jit->builder->CreateCall(func, { elPtrs, align, i8Mask, passthrough });
+	}
+
+	void createScatter(llvm::Value *base, llvm::Value *val, llvm::Value *offsets, llvm::Value *mask, unsigned int alignment)
+	{
+		ASSERT(base->getType()->isPointerTy());
+		ASSERT(val->getType()->isVectorTy());
+		ASSERT(offsets->getType()->isVectorTy());
+		ASSERT(mask->getType()->isVectorTy());
+
+		auto numEls = mask->getType()->getVectorNumElements();
+		auto i1Ty = ::llvm::Type::getInt1Ty(jit->context);
+		auto i32Ty = ::llvm::Type::getInt32Ty(jit->context);
+		auto i8Ty = ::llvm::Type::getInt8Ty(jit->context);
+		auto i8PtrTy = i8Ty->getPointerTo();
+		auto elVecTy = val->getType();
+		auto elTy = elVecTy->getVectorElementType();
+		auto elPtrTy = elTy->getPointerTo();
+		auto elPtrVecTy = ::llvm::VectorType::get(elPtrTy, numEls);
+		auto i8Base = jit->builder->CreatePointerCast(base, i8PtrTy);
+		auto i8Ptrs = jit->builder->CreateGEP(i8Base, offsets);
+		auto elPtrs = jit->builder->CreatePointerCast(i8Ptrs, elPtrVecTy);
+		auto i8Mask = jit->builder->CreateIntCast(mask, ::llvm::VectorType::get(i1Ty, numEls), false); // vec<int, int, ...> -> vec<bool, bool, ...>
+		auto align = ::llvm::ConstantInt::get(i32Ty, alignment);
+		auto func = ::llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::masked_scatter, { elVecTy, elPtrVecTy } );
+		jit->builder->CreateCall(func, { val, elPtrs, align, i8Mask });
+	}
 }
 
 namespace rr
 {
 	const Capabilities Caps =
 	{
-		true, // CallSupported
 		true, // CoroutinesSupported
 	};
 
@@ -1719,53 +1800,24 @@ namespace rr
 		jit->builder->CreateCall(func, { V(val), V(ptr), align, i8Mask });
 	}
 
-	Value *Nucleus::createGather(Value *base, Type *elTy, Value *offsets, Value *mask, unsigned int alignment, bool zeroMaskedLanes)
+	RValue<Float4> Gather(RValue<Pointer<Float>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes /* = false */)
 	{
-		ASSERT(V(base)->getType()->isPointerTy());
-		ASSERT(V(offsets)->getType()->isVectorTy());
-		ASSERT(V(mask)->getType()->isVectorTy());
-
-		auto numEls = V(mask)->getType()->getVectorNumElements();
-		auto i1Ty = ::llvm::Type::getInt1Ty(jit->context);
-		auto i32Ty = ::llvm::Type::getInt32Ty(jit->context);
-		auto i8Ty = ::llvm::Type::getInt8Ty(jit->context);
-		auto i8PtrTy = i8Ty->getPointerTo();
-		auto elPtrTy = T(elTy)->getPointerTo();
-		auto elVecTy = ::llvm::VectorType::get(T(elTy), numEls);
-		auto elPtrVecTy = ::llvm::VectorType::get(elPtrTy, numEls);
-		auto i8Base = jit->builder->CreatePointerCast(V(base), i8PtrTy);
-		auto i8Ptrs = jit->builder->CreateGEP(i8Base, V(offsets));
-		auto elPtrs = jit->builder->CreatePointerCast(i8Ptrs, elPtrVecTy);
-		auto i8Mask = jit->builder->CreateIntCast(V(mask), ::llvm::VectorType::get(i1Ty, numEls), false); // vec<int, int, ...> -> vec<bool, bool, ...>
-		auto passthrough = zeroMaskedLanes ? ::llvm::Constant::getNullValue(elVecTy) : llvm::UndefValue::get(elVecTy);
-		auto align = ::llvm::ConstantInt::get(i32Ty, alignment);
-		auto func = ::llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::masked_gather, { elVecTy, elPtrVecTy } );
-		return V(jit->builder->CreateCall(func, { elPtrs, align, i8Mask, passthrough }));
+		return As<Float4>(V(createGather(V(base.value), T(Float::getType()), V(offsets.value), V(mask.value), alignment, zeroMaskedLanes)));
 	}
 
-	void Nucleus::createScatter(Value *base, Value *val, Value *offsets, Value *mask, unsigned int alignment)
+	RValue<Int4> Gather(RValue<Pointer<Int>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes /* = false */)
 	{
-		ASSERT(V(base)->getType()->isPointerTy());
-		ASSERT(V(val)->getType()->isVectorTy());
-		ASSERT(V(offsets)->getType()->isVectorTy());
-		ASSERT(V(mask)->getType()->isVectorTy());
+		return As<Int4>(V(createGather(V(base.value), T(Float::getType()), V(offsets.value), V(mask.value), alignment, zeroMaskedLanes)));
+	}
 
-		auto numEls = V(mask)->getType()->getVectorNumElements();
-		auto i1Ty = ::llvm::Type::getInt1Ty(jit->context);
-		auto i32Ty = ::llvm::Type::getInt32Ty(jit->context);
-		auto i8Ty = ::llvm::Type::getInt8Ty(jit->context);
-		auto i8PtrTy = i8Ty->getPointerTo();
-		auto elVecTy = V(val)->getType();
-		auto elTy = elVecTy->getVectorElementType();
-		auto elPtrTy = elTy->getPointerTo();
-		auto elPtrVecTy = ::llvm::VectorType::get(elPtrTy, numEls);
-		auto i8Base = jit->builder->CreatePointerCast(V(base), i8PtrTy);
-		auto i8Ptrs = jit->builder->CreateGEP(i8Base, V(offsets));
-		auto elPtrs = jit->builder->CreatePointerCast(i8Ptrs, elPtrVecTy);
-		auto i8Mask = jit->builder->CreateIntCast(V(mask), ::llvm::VectorType::get(i1Ty, numEls), false); // vec<int, int, ...> -> vec<bool, bool, ...>
-		auto align = ::llvm::ConstantInt::get(i32Ty, alignment);
-		auto func = ::llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::masked_scatter, { elVecTy, elPtrVecTy } );
-		jit->builder->CreateCall(func, { V(val), elPtrs, align, i8Mask });
+	void Scatter(RValue<Pointer<Float>> base, RValue<Float4> val, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment)
+	{
+		return createScatter(V(base.value), V(val.value), V(offsets.value), V(mask.value), alignment);
+	}
+
+	void Scatter(RValue<Pointer<Int>> base, RValue<Int4> val, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment)
+	{
+		return createScatter(V(base.value), V(val.value), V(offsets.value), V(mask.value), alignment);
 	}
 
 	void Nucleus::createFence(std::memory_order memoryOrder)
@@ -3948,6 +4000,13 @@ namespace rr
 		return RValue<Pointer<Byte>>(V(jit->builder->CreateIntToPtr(ptrAsInt, T(Pointer<Byte>::getType()))));
 	}
 
+	RValue<Pointer<Byte>> ConstantData(void const * data, size_t size)
+	{
+		auto str = ::llvm::StringRef(reinterpret_cast<const char*>(data), size);
+		auto ptr = jit->builder->CreateGlobalStringPtr(str);
+		return RValue<Pointer<Byte>>(V(ptr));
+	}
+
 	Value* Call(RValue<Pointer<Byte>> fptr, Type* retTy, std::initializer_list<Value*> args, std::initializer_list<Type*> argTys)
 	{
 		::llvm::SmallVector<::llvm::Type*, 8> paramTys;
@@ -4095,58 +4154,90 @@ namespace rr
 
 		RValue<Short4> paddsw(RValue<Short4> x, RValue<Short4> y)
 		{
-			llvm::Function *paddsw = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_padds_w);
+			#if LLVM_VERSION_MAJOR >= 8
+				return As<Short4>(V(lowerPSADDSAT(V(x.value), V(y.value))));
+			#else
+				llvm::Function *paddsw = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_padds_w);
 
-			return As<Short4>(V(jit->builder->CreateCall2(paddsw, ARGS(V(x.value), V(y.value)))));
+				return As<Short4>(V(jit->builder->CreateCall2(paddsw, ARGS(V(x.value), V(y.value)))));
+			#endif
 		}
 
 		RValue<Short4> psubsw(RValue<Short4> x, RValue<Short4> y)
 		{
-			llvm::Function *psubsw = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_psubs_w);
+			#if LLVM_VERSION_MAJOR >= 8
+				return As<Short4>(V(lowerPSSUBSAT(V(x.value), V(y.value))));
+			#else
+				llvm::Function *psubsw = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_psubs_w);
 
-			return As<Short4>(V(jit->builder->CreateCall2(psubsw, ARGS(V(x.value), V(y.value)))));
+				return As<Short4>(V(jit->builder->CreateCall2(psubsw, ARGS(V(x.value), V(y.value)))));
+			#endif
 		}
 
 		RValue<UShort4> paddusw(RValue<UShort4> x, RValue<UShort4> y)
 		{
-			llvm::Function *paddusw = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_paddus_w);
+			#if LLVM_VERSION_MAJOR >= 8
+				return As<UShort4>(V(lowerPUADDSAT(V(x.value), V(y.value))));
+			#else
+				llvm::Function *paddusw = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_paddus_w);
 
-			return As<UShort4>(V(jit->builder->CreateCall2(paddusw, ARGS(V(x.value), V(y.value)))));
+				return As<UShort4>(V(jit->builder->CreateCall2(paddusw, ARGS(V(x.value), V(y.value)))));
+			#endif
 		}
 
 		RValue<UShort4> psubusw(RValue<UShort4> x, RValue<UShort4> y)
 		{
-			llvm::Function *psubusw = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_psubus_w);
+			#if LLVM_VERSION_MAJOR >= 8
+				return As<UShort4>(V(lowerPUSUBSAT(V(x.value), V(y.value))));
+			#else
+				llvm::Function *psubusw = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_psubus_w);
 
-			return As<UShort4>(V(jit->builder->CreateCall2(psubusw, ARGS(V(x.value), V(y.value)))));
+				return As<UShort4>(V(jit->builder->CreateCall2(psubusw, ARGS(V(x.value), V(y.value)))));
+			#endif
 		}
 
 		RValue<SByte8> paddsb(RValue<SByte8> x, RValue<SByte8> y)
 		{
-			llvm::Function *paddsb = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_padds_b);
+			#if LLVM_VERSION_MAJOR >= 8
+				return As<SByte8>(V(lowerPSADDSAT(V(x.value), V(y.value))));
+			#else
+				llvm::Function *paddsb = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_padds_b);
 
-			return As<SByte8>(V(jit->builder->CreateCall2(paddsb, ARGS(V(x.value), V(y.value)))));
+				return As<SByte8>(V(jit->builder->CreateCall2(paddsb, ARGS(V(x.value), V(y.value)))));
+			#endif
 		}
 
 		RValue<SByte8> psubsb(RValue<SByte8> x, RValue<SByte8> y)
 		{
-			llvm::Function *psubsb = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_psubs_b);
+			#if LLVM_VERSION_MAJOR >= 8
+				return As<SByte8>(V(lowerPSSUBSAT(V(x.value), V(y.value))));
+			#else
+				llvm::Function *psubsb = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_psubs_b);
 
-			return As<SByte8>(V(jit->builder->CreateCall2(psubsb, ARGS(V(x.value), V(y.value)))));
+				return As<SByte8>(V(jit->builder->CreateCall2(psubsb, ARGS(V(x.value), V(y.value)))));
+			#endif
 		}
 
 		RValue<Byte8> paddusb(RValue<Byte8> x, RValue<Byte8> y)
 		{
-			llvm::Function *paddusb = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_paddus_b);
+			#if LLVM_VERSION_MAJOR >= 8
+				return As<Byte8>(V(lowerPUADDSAT(V(x.value), V(y.value))));
+			#else
+				llvm::Function *paddusb = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_paddus_b);
 
-			return As<Byte8>(V(jit->builder->CreateCall2(paddusb, ARGS(V(x.value), V(y.value)))));
+				return As<Byte8>(V(jit->builder->CreateCall2(paddusb, ARGS(V(x.value), V(y.value)))));
+			#endif
 		}
 
 		RValue<Byte8> psubusb(RValue<Byte8> x, RValue<Byte8> y)
 		{
-			llvm::Function *psubusb = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_psubus_b);
+			#if LLVM_VERSION_MAJOR >= 8
+				return As<Byte8>(V(lowerPUSUBSAT(V(x.value), V(y.value))));
+			#else
+				llvm::Function *psubusb = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::x86_sse2_psubus_b);
 
-			return As<Byte8>(V(jit->builder->CreateCall2(psubusb, ARGS(V(x.value), V(y.value)))));
+				return As<Byte8>(V(jit->builder->CreateCall2(psubusb, ARGS(V(x.value), V(y.value)))));
+			#endif
 		}
 
 		RValue<UShort4> pavgw(RValue<UShort4> x, RValue<UShort4> y)
@@ -4460,6 +4551,7 @@ namespace rr
 		return elements;
 	}
 
+	std::vector<Value*> PrintValue::Ty<Byte>::val(const RValue<Byte>& v) { return toInt({v.value}, false); }
 	std::vector<Value*> PrintValue::Ty<Byte4>::val(const RValue<Byte4>& v) { return toInt(extractAll(v.value, 4), false); }
 	std::vector<Value*> PrintValue::Ty<Int>::val(const RValue<Int>& v) { return toInt({v.value}, true); }
 	std::vector<Value*> PrintValue::Ty<Int2>::val(const RValue<Int2>& v) { return toInt(extractAll(v.value, 2), true); }
@@ -4467,7 +4559,9 @@ namespace rr
 	std::vector<Value*> PrintValue::Ty<UInt>::val(const RValue<UInt>& v) { return toInt({v.value}, false); }
 	std::vector<Value*> PrintValue::Ty<UInt2>::val(const RValue<UInt2>& v) { return toInt(extractAll(v.value, 2), false); }
 	std::vector<Value*> PrintValue::Ty<UInt4>::val(const RValue<UInt4>& v) { return toInt(extractAll(v.value, 4), false); }
+	std::vector<Value*> PrintValue::Ty<Short>::val(const RValue<Short>& v) { return toInt({v.value}, true); }
 	std::vector<Value*> PrintValue::Ty<Short4>::val(const RValue<Short4>& v) { return toInt(extractAll(v.value, 4), true); }
+	std::vector<Value*> PrintValue::Ty<UShort>::val(const RValue<UShort>& v) { return toInt({v.value}, false); }
 	std::vector<Value*> PrintValue::Ty<UShort4>::val(const RValue<UShort4>& v) { return toInt(extractAll(v.value, 4), false); }
 	std::vector<Value*> PrintValue::Ty<Float>::val(const RValue<Float>& v) { return toDouble({v.value}); }
 	std::vector<Value*> PrintValue::Ty<Float4>::val(const RValue<Float4>& v) { return toDouble(extractAll(v.value, 4)); }

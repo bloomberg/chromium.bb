@@ -25,6 +25,12 @@ const char kHintsProtoOverride[] = "optimization_guide_hints_override";
 // hosts.
 const char kFetchHintsOverride[] = "optimization-guide-fetch-hints-override";
 
+// Overrides scheduling and time delays for fetching prediction models and host
+// model features. This causes a prediction model and host model features fetch
+// immediately on start up.
+const char kFetchModelsAndHostModelFeaturesOverrideTimer[] =
+    "optimization-guide-fetch-models-and-features-override";
+
 // Overrides the hints fetch scheduling and delay, causing a hints fetch
 // immediately on start up using the TopHostProvider. This is meant for testing.
 const char kFetchHintsOverrideTimer[] =
@@ -32,25 +38,46 @@ const char kFetchHintsOverrideTimer[] =
 
 // Overrides the Optimization Guide Service URL that the HintsFetcher will
 // request remote hints from.
-const char kOptimizationGuideServiceURL[] = "optimization-guide-service-url";
+const char kOptimizationGuideServiceGetHintsURL[] =
+    "optimization-guide-service-get-hosts-url";
+
+// Overrides the Optimization Guide Service URL that the PredictionModelFetcher
+// will request remote models and host features from.
+const char kOptimizationGuideServiceGetModelsURL[] =
+    "optimization-guide-service-get-models-url";
 
 // Overrides the Optimization Guide Service API Key for remote requests to be
 // made.
 const char kOptimizationGuideServiceAPIKey[] =
     "optimization-guide-service-api-key";
 
-// Purges the hint cache store on startup, so that it's guaranteed to be using
-// fresh data.
-const char kPurgeHintCacheStore[] = "purge_hint_cache_store";
+// Purges the store containing fetched and component hints on startup, so that
+// it's guaranteed to be using fresh data.
+const char kPurgeHintsStore[] = "purge-optimization-guide-store";
+
+// Purges the store containing prediction medels and host model features on
+// startup, so that it's guaranteed to be using fresh data.
+const char kPurgeModelAndFeaturesStore[] = "purge-model-and-features-store";
+
+const char kDisableFetchingHintsAtNavigationStartForTesting[] =
+    "disable-fetching-hints-at-navigation-start";
+
+const char kDisableCheckingUserPermissionsForTesting[] =
+    "disable-checking-optimization-guide-user-permissions";
 
 bool IsHintComponentProcessingDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kHintsProtoOverride);
 }
 
-bool ShouldPurgeHintCacheStoreOnStartup() {
+bool ShouldPurgeOptimizationGuideStoreOnStartup() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   return cmd_line->HasSwitch(kHintsProtoOverride) ||
-         cmd_line->HasSwitch(kPurgeHintCacheStore);
+         cmd_line->HasSwitch(kPurgeHintsStore);
+}
+
+bool ShouldPurgeModelAndFeaturesStoreOnStartup() {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  return cmd_line->HasSwitch(kPurgeModelAndFeaturesStore);
 }
 
 // Parses a list of hosts to have hints fetched for. This overrides scheduling
@@ -80,6 +107,11 @@ bool ShouldOverrideFetchHintsTimer() {
       kFetchHintsOverrideTimer);
 }
 
+bool ShouldOverrideFetchModelsAndFeaturesTimer() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kFetchModelsAndHostModelFeaturesOverrideTimer);
+}
+
 std::unique_ptr<optimization_guide::proto::Configuration>
 ParseComponentConfigFromCommandLine() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -103,6 +135,17 @@ ParseComponentConfigFromCommandLine() {
   }
 
   return proto_configuration;
+}
+
+bool DisableFetchingHintsAtNavigationStartForTesting() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(
+      kDisableFetchingHintsAtNavigationStartForTesting);
+}
+
+bool ShouldOverrideCheckingUserPermissionsToFetchHintsForTesting() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(kDisableCheckingUserPermissionsForTesting);
 }
 
 }  // namespace switches

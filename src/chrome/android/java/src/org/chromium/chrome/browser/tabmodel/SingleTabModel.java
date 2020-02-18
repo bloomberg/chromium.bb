@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.tabmodel;
 import android.app.Activity;
 
 import org.chromium.base.ActivityState;
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 
 import java.util.List;
 
@@ -54,20 +54,20 @@ public class SingleTabModel implements TabModel {
             int state = ApplicationStatus.getStateForActivity(mActivity);
             if (state == ActivityState.CREATED || state == ActivityState.STARTED
                     || state == ActivityState.RESUMED) {
-                mTab.show(TabSelectionType.FROM_USER);
+                ((TabImpl) mTab).show(TabSelectionType.FROM_USER);
             }
         }
-        if (oldTab != null && oldTab.isInitialized()) {
+        if (oldTab != null && ((TabImpl) oldTab).isInitialized()) {
             for (TabModelObserver observer : mObservers) {
                 observer.didCloseTab(oldTab.getId(), oldTab.isIncognito());
             }
-            oldTab.destroy();
+            ((TabImpl) oldTab).destroy();
         }
     }
 
     @Override
     public Profile getProfile() {
-        return mTab == null ? null : mTab.getProfile();
+        return mTab == null ? null : ((TabImpl) mTab).getProfile();
     }
 
     @Override
@@ -99,7 +99,7 @@ public class SingleTabModel implements TabModel {
     @Override
     public boolean closeTab(Tab tab, boolean animate, boolean uponExit, boolean canUndo) {
         if (mTab == null || mTab.getId() != tab.getId()) return false;
-        closeTabAndFinish();
+        setTab(null);
         return true;
     }
 
@@ -109,17 +109,12 @@ public class SingleTabModel implements TabModel {
         return closeTab(tab, animate, uponExit, canUndo);
     }
 
-    private void closeTabAndFinish() {
-        setTab(null);
-        ApiCompatibilityUtils.finishAndRemoveTask(mActivity);
-    }
-
     @Override
     public void closeMultipleTabs(List<Tab> tabs, boolean canUndo) {
         if (mTab == null) return;
         for (Tab tab : tabs) {
             if (tab.getId() == mTab.getId()) {
-                closeTabAndFinish();
+                setTab(null);
                 return;
             }
         }
@@ -132,7 +127,7 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public void closeAllTabs(boolean allowDelegation, boolean uponExit) {
-        closeTabAndFinish();
+        setTab(null);
     }
 
     // Tab retrieval functions.
@@ -158,7 +153,7 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public void destroy() {
-        if (mTab != null) mTab.destroy();
+        if (mTab != null) ((TabImpl) mTab).destroy();
         mTab = null;
     }
 

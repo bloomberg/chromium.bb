@@ -31,7 +31,7 @@ class Layer;
 class ScopedLayerAnimationSettings;
 }  // namespace ui
 
-namespace app_list {
+namespace ash {
 
 class AppListPage;
 class AppListView;
@@ -97,7 +97,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // The app list gets closed and drag and drop operations need to be cancelled.
   void CancelDrag();
 
-  // If |drag_and_drop| is not NULL it will be called upon drag and drop
+  // If |drag_and_drop| is not nullptr it will be called upon drag and drop
   // operations outside the application list.
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
@@ -116,6 +116,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // ShowSearchResults(true) was invoked.
   void ShowEmbeddedAssistantUI(bool show);
   bool IsShowingEmbeddedAssistantUI() const;
+
+  void FocusEmbeddedAssistantPage();
 
   void ShowFolderContent(AppListFolderItem* folder);
 
@@ -175,16 +177,24 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Returns the pagination model for the ContentsView.
   const ash::PaginationModel& pagination_model() { return pagination_model_; }
 
-  // Returns search box bounds to use for content views that do not specify
-  // their own custom layout.
-  gfx::Rect GetDefaultSearchBoxBounds() const;
+  // Returns the search box bounds to use for a given app list (pagination)
+  // state (in the current app list view state).
+  gfx::Rect GetSearchBoxBounds(ash::AppListState state) const;
 
-  // Returns search box bounds to use for a given state.
-  gfx::Rect GetSearchBoxBoundsForState(ash::AppListState state) const;
+  // Returns the search box bounds size to use for a given app list (pagination)
+  // state (in the current app list view state).
+  gfx::Size GetSearchBoxSize(ash::AppListState state) const;
 
-  // Returns the content area bounds to use for content views that do not
-  // specify their own custom layout.
-  gfx::Rect GetDefaultContentsBounds() const;
+  // Returns the search box bounds size to use for a given app list (pagination)
+  // state and app list view state.
+  gfx::Rect GetSearchBoxBoundsForViewState(
+      ash::AppListState state,
+      ash::AppListViewState view_state) const;
+
+  // Returns the expected search box bounds based on the app list transition
+  // progress.
+  gfx::Rect GetSearchBoxExpectedBoundsForProgress(ash::AppListState state,
+                                                  float progress) const;
 
   // Performs the 'back' action for the active page. Returns whether the action
   // was handled.
@@ -194,16 +204,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void Layout() override;
   const char* GetClassName() const override;
 
-  // Starts the fade out animation when the app list is closed. This
-  // prevents the contents from being visible behind the shelf.
-  void FadeOutOnClose(base::TimeDelta animation_duration);
-
-  // Starts the fade in animation when the app list is opened. This prevents the
-  // contents from being visible behind the shelf.
-  void FadeInOnOpen(base::TimeDelta animation_duration);
-
   // Overridden from PaginationModelObserver:
-  void TotalPagesChanged() override;
+  void TotalPagesChanged(int previous_page_count, int new_page_count) override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
   void TransitionStarted() override;
   void TransitionChanged() override;
@@ -214,9 +216,11 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Updates y position and opacity of the items in this view during dragging.
   void UpdateYPositionAndOpacity();
 
-  // Returns the scale that is used to transform the AppListMainView. The scale
-  // is also applied to search box window.
-  float GetAppListMainViewScale() const;
+  // Starts animated transition to |target_view_state|.
+  // Manages the child view opacity, and vertically translates search box and
+  // app list pages to the bounds required for the new view state.
+  void AnimateToViewState(ash::AppListViewState target_view_state,
+                          const base::TimeDelta& animation_duration);
 
   // Show/hide the expand arrow view button when contents view is in fullscreen
   // and tablet mode is enabled.
@@ -230,15 +234,17 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void AddSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
   void RemoveSearchBoxUpdateObserver(SearchBoxUpdateObserver* observer);
 
+  // Adjusts search box view size so it fits within the contents view margins
+  // (when centered).
+  gfx::Size AdjustSearchBoxSizeToFitMargins(
+      const gfx::Size& preferred_size) const;
+
  private:
   // Sets the active launcher page.
   void SetActiveStateInternal(int page_index, bool animate);
 
   // Invoked when active view is changed.
   void ActivePageChanged();
-
-  // Returns the size of the default content area.
-  gfx::Size GetDefaultContentsSize() const;
 
   void InitializeSearchBoxAnimation(ash::AppListState current_state,
                                     ash::AppListState target_state);
@@ -280,6 +286,13 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Converts rect to widget without applying transform.
   gfx::Rect ConvertRectToWidgetWithoutTransform(const gfx::Rect& rect);
 
+  // Returns the search box origin y coordinate to use for a given app list
+  // (pagination) state and app list view state.
+  // NOTE: The search box will be horizontally centered in the current content
+  // bounds.
+  int GetSearchBoxTopForViewState(ash::AppListState state,
+                                  ash::AppListViewState view_state) const;
+
   // Unowned pointer to application list model.
   AppListModel* model_ = nullptr;
 
@@ -320,11 +333,19 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // If true, SetActiveState immediately.
   bool set_active_state_without_animation_ = false;
 
+  // If set, the app list page that was used to determine the search box
+  // placement when the contents view layout was last updated for app list view
+  // state (either using UpdateYPositionAndOpacity() or AnimateToViewState()).
+  // Used primarily to determine the initial search box position when animating
+  // to a new app list view state.
+  base::Optional<ash::AppListState> target_page_for_last_view_state_update_;
+  base::Optional<ash::AppListViewState> last_target_view_state_;
+
   base::ObserverList<SearchBoxUpdateObserver> search_box_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_CONTENTS_VIEW_H_

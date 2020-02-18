@@ -49,9 +49,11 @@ content::RenderFrameHost* GetRenderFrameHostToUse(
 
 }  // namespace
 
-void StartPrint(content::WebContents* contents,
-                bool print_preview_disabled,
-                bool has_selection) {
+void StartPrint(
+    content::WebContents* contents,
+    mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
+    bool print_preview_disabled,
+    bool has_selection) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   using PrintViewManagerImpl = PrintViewManager;
 #else
@@ -71,7 +73,12 @@ void StartPrint(content::WebContents* contents,
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (!print_preview_disabled) {
-    print_view_manager->PrintPreviewNow(rfh_to_use, has_selection);
+    if (print_renderer) {
+      print_view_manager->PrintPreviewWithPrintRenderer(
+          rfh_to_use, std::move(print_renderer));
+    } else {
+      print_view_manager->PrintPreviewNow(rfh_to_use, has_selection);
+    }
     return;
   }
 #endif  // ENABLE_PRINT_PREVIEW

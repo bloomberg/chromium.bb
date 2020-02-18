@@ -41,10 +41,8 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HTMLMetaElement::HTMLMetaElement(Document& document)
-    : HTMLElement(kMetaTag, document) {}
+    : HTMLElement(html_names::kMetaTag, document) {}
 
 static bool IsInvalidSeparator(UChar c) {
   return c == ';';
@@ -202,8 +200,8 @@ Length HTMLMetaElement::ParseViewportValueAsLength(Document* document,
     return Length();  // auto
 
   if (document && document->GetPage()) {
-    value =
-        document->GetPage()->GetChromeClient().WindowToViewportScalar(value);
+    value = document->GetPage()->GetChromeClient().WindowToViewportScalar(
+        document->GetFrame(), value);
   }
   return Length::Fixed(ClampLengthValue(value));
 }
@@ -476,12 +474,13 @@ void HTMLMetaElement::ProcessViewportContentAttribute(
 }
 
 void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
-  const AtomicString& content_value = FastGetAttribute(kContentAttr);
+  const AtomicString& content_value =
+      FastGetAttribute(html_names::kContentAttr);
   if (content_value.IsNull())
     return;
   if (EqualIgnoringASCIICase(name_value, "theme-color") &&
       GetDocument().GetFrame()) {
-    GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
+    GetDocument().GetFrame()->DidChangeThemeColor();
   } else if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
     GetDocument().ColorSchemeMetaChanged();
   }
@@ -489,14 +488,14 @@ void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
 
 void HTMLMetaElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == kNameAttr) {
+  if (params.name == html_names::kNameAttr) {
     if (IsInDocumentTree())
       NameRemoved(params.old_value);
     ProcessContent();
-  } else if (params.name == kContentAttr) {
+  } else if (params.name == html_names::kContentAttr) {
     ProcessContent();
     ProcessHttpEquiv();
-  } else if (params.name == kHttpEquivAttr) {
+  } else if (params.name == html_names::kHttpEquivAttr) {
     ProcessHttpEquiv();
   } else {
     HTMLElement::ParseAttribute(params);
@@ -518,7 +517,7 @@ void HTMLMetaElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
   if (!insertion_point.IsInDocumentTree())
     return;
-  const AtomicString& name_value = FastGetAttribute(kNameAttr);
+  const AtomicString& name_value = FastGetAttribute(html_names::kNameAttr);
   if (!name_value.IsEmpty())
     NameRemoved(name_value);
 }
@@ -533,10 +532,12 @@ static bool InDocumentHead(HTMLMetaElement* element) {
 void HTMLMetaElement::ProcessHttpEquiv() {
   if (!IsInDocumentTree())
     return;
-  const AtomicString& content_value = FastGetAttribute(kContentAttr);
+  const AtomicString& content_value =
+      FastGetAttribute(html_names::kContentAttr);
   if (content_value.IsNull())
     return;
-  const AtomicString& http_equiv_value = FastGetAttribute(kHttpEquivAttr);
+  const AtomicString& http_equiv_value =
+      FastGetAttribute(html_names::kHttpEquivAttr);
   if (http_equiv_value.IsEmpty())
     return;
   HttpEquiv::Process(GetDocument(), http_equiv_value, content_value,
@@ -547,15 +548,16 @@ void HTMLMetaElement::ProcessContent() {
   if (!IsInDocumentTree())
     return;
 
-  const AtomicString& name_value = FastGetAttribute(kNameAttr);
+  const AtomicString& name_value = FastGetAttribute(html_names::kNameAttr);
   if (name_value.IsEmpty())
     return;
 
-  const AtomicString& content_value = FastGetAttribute(kContentAttr);
+  const AtomicString& content_value =
+      FastGetAttribute(html_names::kContentAttr);
 
   if (EqualIgnoringASCIICase(name_value, "theme-color") &&
       GetDocument().GetFrame()) {
-    GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
+    GetDocument().GetFrame()->DidChangeThemeColor();
     return;
   }
   if (EqualIgnoringASCIICase(name_value, "color-scheme")) {
@@ -572,6 +574,8 @@ void HTMLMetaElement::ProcessContent() {
     ProcessViewportContentAttribute(content_value,
                                     ViewportDescription::kViewportMeta);
   } else if (EqualIgnoringASCIICase(name_value, "referrer")) {
+    UseCounter::Count(&GetDocument(),
+                      WebFeature::kHTMLMetaElementReferrerPolicy);
     GetDocument().ParseAndSetReferrerPolicy(content_value,
                                             true /* support legacy keywords */);
   } else if (EqualIgnoringASCIICase(name_value, "handheldfriendly") &&
@@ -593,11 +597,11 @@ WTF::TextEncoding HTMLMetaElement::ComputeEncoding() const {
 }
 
 const AtomicString& HTMLMetaElement::Content() const {
-  return getAttribute(kContentAttr);
+  return FastGetAttribute(html_names::kContentAttr);
 }
 
 const AtomicString& HTMLMetaElement::HttpEquiv() const {
-  return getAttribute(kHttpEquivAttr);
+  return FastGetAttribute(html_names::kHttpEquivAttr);
 }
 
 const AtomicString& HTMLMetaElement::GetName() const {

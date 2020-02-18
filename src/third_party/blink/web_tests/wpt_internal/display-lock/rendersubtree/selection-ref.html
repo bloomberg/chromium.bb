@@ -12,19 +12,17 @@
     width: 20px; height: 20px;
   }
   #userSelectNone {
-    width: 30px; height: 30px;
+    user-select: none;
   }
 </style>
-<div id="neighbor">
-  neighbor
-</div>
 <div id="container">
-  <div>
+  <div id="notLocked">
     not locked!
   </div>
   <div id="nonActivatable">
   </div>
   <div id="userSelectNone">
+    activatable user-select is none
   </div>
   <div id="nested">
     nested activatable locked
@@ -33,7 +31,7 @@
 <script>
   window.getSelection().removeAllRanges();
   const selectionRange = document.createRange();
-  selectionRange.setStart(neighbor.firstChild, 4);
+  selectionRange.setStart(notLocked.firstChild, 4);
   selectionRange.setEnd(nested.firstChild, 7);
   window.getSelection().addRange(selectionRange);
 </script>

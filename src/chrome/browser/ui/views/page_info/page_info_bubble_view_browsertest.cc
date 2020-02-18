@@ -48,6 +48,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/test/widget_test.h"
@@ -203,7 +204,6 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
       // the certificate button subtitle.
       identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_EV_CERT;
       identity.connection_status = PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED;
-      identity.identity_status_description = "Issued to: Thawte Inc [US]";
       scoped_refptr<net::X509Certificate> ev_cert =
           net::X509Certificate::CreateFromBytes(
               reinterpret_cast<const char*>(thawte_der), sizeof(thawte_der));
@@ -342,7 +342,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     // Set some dummy non-default permissions. This will trigger a reload prompt
     // when the bubble is closed.
     PageInfoUI::PermissionInfo permission;
-    permission.type = ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+    permission.type = ContentSettingsType::NOTIFICATIONS;
     permission.setting = ContentSetting::CONTENT_SETTING_BLOCK;
     permission.default_setting = ContentSetting::CONTENT_SETTING_ASK;
     permission.source = content_settings::SettingSource::SETTING_SOURCE_USER;
@@ -364,6 +364,13 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
         static_cast<PageInfoBubbleView*>(
             PageInfoBubbleView::GetPageInfoBubbleForTesting());
     return page_info_bubble_view->certificate_button_->title()->GetText();
+  }
+
+  base::string16 GetCertificateButtonSubtitle() const {
+    PageInfoBubbleView* page_info_bubble_view =
+        static_cast<PageInfoBubbleView*>(
+            PageInfoBubbleView::GetPageInfoBubbleForTesting());
+    return page_info_bubble_view->certificate_button_->subtitle()->GetText();
   }
 
   const base::string16 GetPageInfoBubbleViewDetailText() {
@@ -744,6 +751,48 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, BlockedAndInvalidCert) {
                                        invalid_parens));
 }
 
+// Ensure a page that has an EV certificate *and* is blocked by Safe Browsing
+// shows the correct PageInfo UI. Regression test for crbug.com/1014240.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, MalwareAndEvCert) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  ui_test_utils::NavigateToURL(browser(), https_server.GetURL("/simple.html"));
+
+  // Generate a valid mock EV HTTPS identity, with an EV certificate. Must
+  // match conditions in PageInfoBubbleView::SetIdentityInfo() for setting
+  // the certificate button subtitle.
+  PageInfoUI::IdentityInfo identity;
+  identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_EV_CERT;
+  identity.connection_status = PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED;
+  scoped_refptr<net::X509Certificate> ev_cert =
+      net::X509Certificate::CreateFromBytes(
+          reinterpret_cast<const char*>(thawte_der), sizeof(thawte_der));
+  ASSERT_TRUE(ev_cert);
+  identity.certificate = ev_cert;
+
+  // Have the page also trigger an SB malware warning.
+  identity.safe_browsing_status = PageInfo::SAFE_BROWSING_STATUS_MALWARE;
+
+  OpenPageInfoBubble(browser());
+  SetPageInfoBubbleIdentityInfo(identity);
+
+  views::BubbleDialogDelegateView* page_info =
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
+
+  // Verify bubble complains of malware...
+  EXPECT_EQ(page_info->GetWindowTitle(),
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_MALWARE_SUMMARY));
+
+  // ...and has the correct organization details in the Certificate button.
+  EXPECT_EQ(GetCertificateButtonSubtitle(),
+            l10n_util::GetStringFUTF16(
+                IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED,
+                base::UTF8ToUTF16("Thawte Inc"), base::UTF8ToUTF16("US")));
+}
+
 namespace {
 
 // Tracks focus of an arbitrary UI element.
@@ -833,15 +882,22 @@ class ViewFocusTracker : public FocusTracker, public views::ViewObserver {
   void OnViewBlurred(views::View* observed_view) override { OnBlurred(); }
 
  private:
-  ScopedObserver<views::View, ViewFocusTracker> scoped_observer_{this};
+  ScopedObserver<views::View, views::ViewObserver> scoped_observer_{this};
 };
 
 }  // namespace
 
+#if defined(OS_MACOSX)
+// https://crbug.com/1029882
+#define MAYBE_FocusReturnsToContentOnClose DISABLED_FocusReturnsToContentOnClose
+#else
+#define MAYBE_FocusReturnsToContentOnClose FocusReturnsToContentOnClose
+#endif
+
 // Test that when the PageInfo bubble is closed, focus is returned to the web
 // contents pane.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       FocusReturnsToContentOnClose) {
+                       MAYBE_FocusReturnsToContentOnClose) {
   content::WebContents* const web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   WebContentsFocusTracker web_contents_focus_tracker(web_contents);
@@ -859,12 +915,21 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   EXPECT_TRUE(web_contents_focus_tracker.focused());
 }
 
+#if defined(OS_MACOSX)
+// https://crbug.com/1029882
+#define MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt \
+  DISABLED_FocusDoesNotReturnToContentsOnReloadPrompt
+#else
+#define MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt \
+  FocusDoesNotReturnToContentsOnReloadPrompt
+#endif
+
 // Test that when the PageInfo bubble is closed and a reload prompt is
 // displayed, focus is NOT returned to the web contents pane, but rather returns
 // to the location bar so accessibility users must tab through the reload prompt
 // before getting back to web contents (see https://crbug.com/910067).
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       FocusDoesNotReturnToContentsOnReloadPrompt) {
+                       MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt) {
   content::WebContents* const web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   WebContentsFocusTracker web_contents_focus_tracker(web_contents);

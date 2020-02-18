@@ -40,9 +40,7 @@
 </if>
 <if expr="not chromeos">
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
-<link rel="import" href="sync_account_control.html">
 <link rel="import" href="import_data_dialog.html">
-<link rel="import" href="manage_profile.html">
 </if>
 
 <dom-module id="settings-people-page">
@@ -66,46 +64,15 @@
         width: 40px;
       }
 
-      #sync-status.no-error {
-        --cr-link-row-start-icon-color: var(--google-green-refresh-700);
-      }
-
-      @media (prefers-color-scheme: dark) {
-        #sync-status.no-error {
-          --cr-link-row-start-icon-color: var(--google-green-refresh-300);
-        }
-      }
-
       #sync-setup {
         --cr-secondary-text: {
           color: var(--settings-error-color);
         }
       }
 
-      #sync-status[actionable].auth-error {
-        --cr-link-row-start-icon-color: var(--google-blue-500);
-      }
-
-      @media (prefers-color-scheme: dark) {
-        #sync-status[actionable].auth-error {
-          --cr-link-row-start-icon-color: var(--google-blue-refresh-300);
-        }
-      }
-
-      #sync-status:not([actionable]) .subpage-arrow {
-        display: none;
-      }
-
       cr-link-row {
         --cr-link-row-icon-width: 40px;
         border-top: var(--cr-separator-line);
-      }
-
-      #sync-status[actionable].sync-error {
-        --cr-link-row-start-icon-color: var(--settings-error-color);
-        --cr-secondary-text: {
-          color: var(--settings-error-color);
-        }
       }
 
       .icon-container {
@@ -146,8 +113,8 @@
         <template is="dom-if" if="[[shouldShowSyncAccountControl_(diceEnabled_,
             syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
           <settings-sync-account-control
-              unified-consent-enabled="[[unifiedConsentEnabled_]]"
               sync-status="[[syncStatus]]"
+              prefs="{{prefs}}"
               promo-label-with-account="$i18n{peopleSignInPrompt}"
               promo-label-with-no-account="$i18n{peopleSignInPrompt}"
               promo-secondary-label-with-account=
@@ -178,7 +145,9 @@
 <if expr="not chromeos">
                 <cr-icon-button class="subpage-arrow"
                     aria-label="$i18n{editPerson}"
-                    aria-describedby="profile-name"></cr-icon-button>
+                    aria-describedby="profile-name"
+                    aria-roledescription="$i18n{subpageArrowRoleDescription}">
+                </cr-icon-button>
 </if>
 <if expr="chromeos">
                 <cr-icon-button class$="[[profileRowIconClass_]]"
@@ -228,25 +197,12 @@
 </if>
         </template>
 
-        <template is="dom-if"
-            if="[[isPreUnifiedConsentAdvancedSyncSettingsVisible_(
-                syncStatus, unifiedConsentEnabled_)]]">
-          <cr-link-row id="sync-status"
-              class$="[[getSyncStatusClass_(syncStatus)]]"
-              label="$i18n{syncAndNonPersonalizedServices}"
-              sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
-              on-click="onSyncTap_" start-icon="[[getSyncIcon_(syncStatus)]]"
-              actionable$="[[isSyncStatusActionable_(syncStatus)]]">
-          </cr-link-row>
-        </template>
-
-        <template is="dom-if" if="[[unifiedConsentEnabled_]]">
-          <cr-link-row id="sync-setup"
-              label="$i18n{syncAndNonPersonalizedServices}"
-              sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
-              on-click="onSyncTap_">
-          </cr-link-row>
-        </template>
+        <cr-link-row id="sync-setup"
+            label="$i18n{syncAndNonPersonalizedServices}"
+            sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
+            on-click="onSyncTap_"
+            role-description="$i18n{subpageArrowRoleDescription}">
+        </cr-link-row>
 
 <if expr="not chromeos">
         <template is="dom-if" if="[[diceEnabled_]]">
@@ -260,8 +216,9 @@
             <div class="start settings-box-text">
               $i18n{profileNameAndPicture}
             </div>
-            <cr-icon-button class="subpage-arrow"
-                aria-label="$i18n{editPerson}"></cr-icon-button>
+            <cr-icon-button class="subpage-arrow" aria-label="$i18n{editPerson}"
+                aria-roledescription="$i18n{subpageArrowRoleDescription}">
+            </cr-icon-button>
           </div>
         </template>
 </if>
@@ -272,12 +229,15 @@
             label="[[selectLockScreenTitleString(hasPinLogin)]]"
             sub-label="[[getPasswordState_(hasPin,
                 prefs.settings.enable_screen_lock.value)]]"
+            role-description="$i18n{subpageArrowRoleDescription}"
             hidden="[[!pageVisibility.people.lockScreen]]"></cr-link-row>
 
         <template is="dom-if" if="[[pageVisibility.people.googleAccounts]]">
           <cr-link-row id="account-manager-subpage-trigger" class="hr"
               on-click="onAccountManagerTap_"
-              label="$i18n{accountManagerSubMenuLabel}"></cr-link-row>
+              label="$i18n{accountManagerSubMenuLabel}"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
         </template>
         <template is="dom-if" if="[[showParentalControls_]]">
           <settings-parental-controls-page>
@@ -285,13 +245,15 @@
         </template>
         <cr-link-row id="manage-other-people-subpage-trigger"
             label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_"
+            role-description="$i18n{subpageArrowRoleDescription}"
             hidden="[[!pageVisibility.people.manageUsers]]">
         </cr-link-row>
 
         <template is="dom-if" if="[[pageVisibility.people.kerberosAccounts]]">
           <cr-link-row id="kerberos-accounts-subpage-trigger" class="hr"
               on-click="onKerberosAccountsTap_"
-              label="$i18n{kerberosAccountsSubMenuLabel}">
+              label="$i18n{kerberosAccountsSubMenuLabel}"
+              role-description="$i18n{subpageArrowRoleDescription}">
             <cr-policy-indicator indicator-type="userPolicy">
             </cr-policy-indicator>
           </cr-link-row>
@@ -305,36 +267,28 @@
 </if>
 
       </div>
-      <template is="dom-if" route-path="/syncSetup"
-          no-search="[[!isAdvancedSyncSettingsSearchable_(
-              syncStatus, unifiedConsentEnabled_)]]">
+      <template is="dom-if" route-path="/syncSetup">
         <settings-subpage
-            associated-control="[[getAdvancedSyncSettingsAssociatedControl_(
-                unifiedConsentEnabled_)]]"
+            associated-control="[[$$('#sync-setup')]]"
             page-title="$i18n{syncPageTitle}"
-            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}"
-            no-search$="[[!isAdvancedSyncSettingsSearchable_(syncStatus,
-                unifiedConsentEnabled_)]]">
+            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
           <settings-sync-page
 <if expr="not chromeos">
               dice-enabled="[[diceEnabled_]]"
 </if>
-              unified-consent-enabled="[[unifiedConsentEnabled_]]"
               sync-status="[[syncStatus]]" prefs="{{prefs}}"
               page-visibility="[[pageVisibility.privacy]]">
           </settings-sync-page>
         </settings-subpage>
       </template>
 
-      <template is="dom-if" if="[[unifiedConsentEnabled_]]">
-        <template is="dom-if" route-path="/syncSetup/advanced">
-          <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
-              associated-control="[[$$('#sync-setup')]]"
-              learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
-            <settings-sync-controls sync-status="[[syncStatus]]">
-            </settings-sync-controls>
-          </settings-subpage>
-        </template>
+      <template is="dom-if" route-path="/syncSetup/advanced">
+        <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
+            associated-control="[[$$('#sync-setup')]]"
+            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
+          <settings-sync-controls sync-status="[[syncStatus]]">
+          </settings-sync-controls>
+        </settings-subpage>
       </template>
 
 <if expr="chromeos">

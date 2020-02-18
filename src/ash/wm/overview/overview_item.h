@@ -8,14 +8,14 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/caption_container_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
+#include "ash/wm/window_state_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/controls/button/button.h"
@@ -25,19 +25,20 @@ class Shadow;
 }  // namespace ui
 
 namespace views {
+class ImageButton;
 class Widget;
 }  // namespace views
 
 namespace ash {
 class DragWindowController;
 class OverviewGrid;
+class OverviewItemView;
 class RoundedLabelWidget;
 
 // This class represents an item in overview mode.
-class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
+class ASH_EXPORT OverviewItem : public views::ButtonListener,
                                 public aura::WindowObserver,
-                                public ui::ImplicitAnimationObserver,
-                                public views::ButtonListener {
+                                public WindowStateObserver {
  public:
   OverviewItem(aura::Window* window,
                OverviewSession* overview,
@@ -103,18 +104,23 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // Closes |transform_window_|.
   void CloseWindow();
 
-  // Called when the window is minimized or unminimized.
-  void OnMinimizedStateChanged();
-
   // Shows the cannot snap warning if currently in splitview, and the associated
   // window cannot be snapped.
   void UpdateCannotSnapWarningVisibility();
+
+  // Hides the cannot snap warning (if it was showing) until the next call to
+  // |UpdateCannotSnapWarningVisibility|.
+  void HideCannotSnapWarning();
 
   // Called when a OverviewItem on any grid is dragged. Hides the close button
   // when a drag is started, and reshows it when a drag is finished.
   // Additionally hides the title and window icon if |item| is this.
   void OnSelectorItemDragStarted(OverviewItem* item);
   void OnSelectorItemDragEnded(bool snap);
+
+  // Shows/Hides window item during window dragging. Used when swiping up a
+  // window from shelf.
+  void SetVisibleDuringWindowDragging(bool visible, bool animate);
 
   ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType()
       const;
@@ -188,36 +194,44 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // If kNewOverviewLayout is on, use this function for handling events.
   void HandleGestureEventForTabletModeLayout(ui::GestureEvent* event);
 
-  // CaptionContainerView::EventDelegate:
-  void HandleMouseEvent(const ui::MouseEvent& event) override;
-  void HandleGestureEvent(ui::GestureEvent* event) override;
-  bool ShouldIgnoreGestureEvents() override;
-  void OnHighlightedViewActivated() override;
-  void OnHighlightedViewClosed() override;
+  // Handles events forwarded from |overview_item_view_|.
+  void HandleMouseEvent(const ui::MouseEvent& event);
+  void HandleGestureEvent(ui::GestureEvent* event);
+  bool ShouldIgnoreGestureEvents();
+  void OnHighlightedViewActivated();
+  void OnHighlightedViewClosed();
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
   void OnWindowDestroying(aura::Window* window) override;
-  void OnWindowTitleChanged(aura::Window* window) override;
 
-  // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override;
+  // WindowStateObserver:
+  void OnPostWindowStateTypeChange(WindowState* window_state,
+                                   WindowStateType old_type) override;
 
   const gfx::RectF& target_bounds() const { return target_bounds_; }
 
   views::Widget* item_widget() { return item_widget_.get(); }
 
-  CaptionContainerView* caption_container_view() {
-    return caption_container_view_;
-  }
+  OverviewItemView* overview_item_view() { return overview_item_view_; }
 
   OverviewGrid* overview_grid() { return overview_grid_; }
+
+  bool should_use_spawn_animation() const {
+    return should_use_spawn_animation_;
+  }
+  void set_should_use_spawn_animation(bool value) {
+    should_use_spawn_animation_ = value;
+  }
 
   void set_should_animate_when_entering(bool should_animate) {
     should_animate_when_entering_ = should_animate;
@@ -242,8 +256,14 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   void set_disable_mask(bool disable) { disable_mask_ = disable; }
 
+  void set_unclipped_size(base::Optional<gfx::Size> unclipped_size) {
+    unclipped_size_ = unclipped_size;
+  }
+
+  void set_activate_on_unminimized(bool val) { activate_on_unminimized_ = val; }
+
   views::ImageButton* GetCloseButtonForTesting();
-  float GetCloseButtonVisibilityForTesting() const;
+  float GetCloseButtonOpacityForTesting() const;
   float GetTitlebarOpacityForTesting() const;
   gfx::Rect GetShadowBoundsForTesting();
   RoundedLabelWidget* cannot_snap_widget_for_testing() {
@@ -256,14 +276,36 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
  private:
   friend class OverviewSessionRoundedCornerTest;
   friend class OverviewSessionTest;
-  class OverviewCloseButton;
+  FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest, Clipping);
   FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
                            OverviewUnsnappableIndicatorVisibility);
 
+  // Returns the target bounds of |window_|. Same as |target_bounds_|, with some
+  // insets.
+  gfx::RectF GetWindowTargetBoundsWithInsets() const;
+
+  // Functions to be called back when their associated animations complete.
+  void OnWindowCloseAnimationCompleted();
+  void OnItemSpawnedAnimationCompleted();
+  void OnItemBoundsAnimationStarted();
+  void OnItemBoundsAnimationEnded();
+
+  // Performs the spawn-item-in-overview animation (which is a fade-in plus
+  // scale-up animation), on the given |window|. |target_transform| is the final
+  // transform that should be applied to |window| at the end of the animation.
+  // |window| is either the real window associated with this item (from
+  // GetWindow()), or the `item_widget_->GetNativeWindow()` if the associated
+  // window is minimized.
+  void PerformItemSpawnedAnimation(aura::Window* window,
+                                   const gfx::Transform& target_transform);
+
   // Sets the bounds of this overview item to |target_bounds| in |root_window_|.
   // The bounds change will be animated as specified by |animation_type|.
+  // |is_first_update| is true when we set this item's bounds for the first
+  // time.
   void SetItemBounds(const gfx::RectF& target_bounds,
-                     OverviewAnimationType animation_type);
+                     OverviewAnimationType animation_type,
+                     bool is_first_update);
 
   // Creates the window label.
   void CreateWindowLabel();
@@ -276,15 +318,12 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // using |animation_type|.
   void AnimateOpacity(float opacity, OverviewAnimationType animation_type);
 
-  // Allows a test to directly set animation state.
-  gfx::SlideAnimation* GetBackgroundViewAnimation();
-
   // Called before dragging. Scales up the window a little bit to indicate its
   // selection and stacks the window at the top of the Z order in order to keep
   // it visible while dragging around.
   void StartDrag();
 
-  // TODO(sammiequon): Current events go from CaptionContainerView to
+  // TODO(sammiequon): Current events go from OverviewItemView to
   // OverviewItem to OverviewSession to OverviewWindowDragController. We may be
   // able to shorten this pipeline.
   void HandlePressEvent(const gfx::PointF& location_in_screen,
@@ -308,7 +347,9 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // The contained Window's wrapper.
   ScopedOverviewTransformWindow transform_window_;
 
-  // The target bounds this overview item is fit within.
+  // The target bounds this overview item is fit within. When in splitview,
+  // |item_widget_| is fit within these bounds, but the window itself is
+  // transformed to |unclipped_size_|, and then clipped.
   gfx::RectF target_bounds_;
 
   // True if running SetItemBounds. This prevents recursive calls resulting from
@@ -317,15 +358,13 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   bool in_bounds_update_ = false;
 
   // A widget stacked under the |transform_window_|. The widget has
-  // |caption_container_view_| as its contents view. The widget is backed by a
+  // |overview_item_view_| as its contents view. The widget is backed by a
   // NOT_DRAWN layer since most of its surface is transparent.
   std::unique_ptr<views::Widget> item_widget_;
 
   // The view associated with |item_widget_|. Contains a title, close button and
   // maybe a backdrop. Forwards certain events to |this|.
-  CaptionContainerView* caption_container_view_ = nullptr;
-
-  OverviewCloseButton* close_button_ = nullptr;
+  OverviewItemView* overview_item_view_ = nullptr;
 
   // A widget with text that may show up on top of |transform_window_| to notify
   // users this window cannot be snapped.
@@ -342,6 +381,12 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // Pointer to the OverviewGrid that contains |this|. Guaranteed to be non-null
   // for the lifetime of |this|.
   OverviewGrid* overview_grid_;
+
+  // True if this item should be added to an active overview session using the
+  // spawn animation on its first update. This implies an animation type of
+  // OVERVIEW_ANIMATION_SPAWN_ITEM_IN_OVERVIEW. This value will be reset to
+  // false once the spawn animation is performed.
+  bool should_use_spawn_animation_ = false;
 
   // True if the contained window should animate during the entering animation.
   bool should_animate_when_entering_ = true;
@@ -364,15 +409,35 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // True to always disable mask regardless of the state.
   bool disable_mask_ = false;
 
-  // Stores the last translations of the windows affected by SetBounds. Used for
-  // ease of calculations when swiping away overview mode using home launcher
-  // gesture.
+  bool prepared_for_overview_ = false;
+
+  // If true, the next time |window_| is uniminimized, we will activate it (and
+  // end overview). Done this way because some windows (ARC app windows) have
+  // their window states changed async, so we need to wait until the window is
+  // fully unminimized before activation as opposed to having two consecutive
+  // calls.
+  bool activate_on_unminimized_ = false;
+
+  // This has a value when there is a snapped window, or a window about to be
+  // snapped (triggering a splitview preview area). This will be set when items
+  // are positioned in OverviewGrid. The bounds delivered in |SetBounds| are the
+  // true bounds of this item, but we want to maintain the aspect ratio of the
+  // window, who's bounds are not set to split view size. So in |SetItemBounds|,
+  // we transform the window not to |target_bounds_| but to this value, and then
+  // apply clipping on the window to |target_bounds_|.
+  base::Optional<gfx::Size> unclipped_size_ = base::nullopt;
+
+  // Stores the last translations of the windows affected by |SetBounds|. Used
+  // for ease of calculations when swiping away overview mode using home
+  // launcher gesture.
   base::flat_map<aura::Window*, int> translation_y_map_;
 
   // The shadow around the overview window. Shadows the original window, not
   // |item_widget_|. Done here instead of on the original window because of the
   // rounded edges mask applied on entering overview window.
   std::unique_ptr<ui::Shadow> shadow_;
+
+  base::WeakPtrFactory<OverviewItem> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewItem);
 };

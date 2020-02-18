@@ -1,4 +1,6 @@
 /*
+ * Copyright (C) 2019 The Android Open Source Project
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,7 +39,9 @@ class StorageTable : public SqliteTable {
     Cursor(StorageTable* table);
 
     // Implementation of SqliteTable::Cursor.
-    int Filter(const QueryConstraints& qc, sqlite3_value** argv) override;
+    int Filter(const QueryConstraints& qc,
+               sqlite3_value** argv,
+               FilterHistory) override;
     int Next() override;
     int Eof() override;
     int Column(sqlite3_context*, int N) override;

@@ -24,7 +24,9 @@ namespace viz {
 
 SoftwareOutputSurface::SoftwareOutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(std::move(software_device)) {}
+    : OutputSurface(std::move(software_device)) {
+  capabilities_.max_frames_pending = software_device_->MaxFramesPending();
+}
 
 SoftwareOutputSurface::~SoftwareOutputSurface() = default;
 
@@ -67,10 +69,7 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
         ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, swap_time);
   }
 
-  DCHECK(stored_latency_info_.empty())
-      << "A second frame is not expected to "
-      << "arrive before the previous latency info is processed.";
-  stored_latency_info_ = std::move(frame.latency_info);
+  stored_latency_info_.emplace(std::move(frame.latency_info));
 
   software_device()->OnSwapBuffers(
       base::BindOnce(&SoftwareOutputSurface::SwapBuffersCallback,
@@ -110,15 +109,16 @@ uint32_t SoftwareOutputSurface::GetFramebufferCopyTextureFormat() {
 
 void SoftwareOutputSurface::SwapBuffersCallback(base::TimeTicks swap_time,
                                                 const gfx::Size& pixel_size) {
-  latency_tracker_.OnGpuSwapBuffersCompleted(stored_latency_info_);
-  client_->DidFinishLatencyInfo(stored_latency_info_);
-  std::vector<ui::LatencyInfo>().swap(stored_latency_info_);
+  auto& latency_info = stored_latency_info_.front();
+  latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
+  std::vector<ui::LatencyInfo>().swap(latency_info);
   client_->DidReceiveSwapBuffersAck({swap_time, swap_time});
+  stored_latency_info_.pop();
 
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeDelta interval_to_next_refresh =
       now.SnappedToNextTick(refresh_timebase_, refresh_interval_) - now;
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (needs_swap_size_notifications_)
     client_->DidSwapWithSize(pixel_size);
 #endif
@@ -147,7 +147,7 @@ gfx::OverlayTransform SoftwareOutputSurface::GetDisplayTransform() {
   return gfx::OVERLAY_TRANSFORM_NONE;
 }
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void SoftwareOutputSurface::SetNeedsSwapSizeNotifications(
     bool needs_swap_size_notifications) {
   needs_swap_size_notifications_ = needs_swap_size_notifications;

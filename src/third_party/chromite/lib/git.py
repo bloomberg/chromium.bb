@@ -44,9 +44,6 @@ class RemoteRef(_RemoteRef):
   def __new__(cls, remote, ref, project_name=None):
     return super(RemoteRef, cls).__new__(cls, remote, ref, project_name)
 
-  def __init__(self, remote, ref, project_name=None):
-    super(RemoteRef, self).__init__(remote, ref, project_name)
-
 
 def FindRepoDir(path):
   """Returns the nearest higher-level repo dir from the specified path.
@@ -76,10 +73,10 @@ def IsSubmoduleCheckoutRoot(path, remote, url):
     url: The exact URL the |remote| needs to be pointed at.
   """
   if os.path.isdir(path):
-    remote_url = cros_build_lib.RunCommand(
+    remote_url = cros_build_lib.run(
         ['git', '--git-dir', path, 'config', 'remote.%s.url' % remote],
         redirect_stdout=True, debug_level=logging.DEBUG,
-        error_code_ok=True).output.strip()
+        error_code_ok=True, encoding='utf-8').output.strip()
     if remote_url == url:
       return True
   return False
@@ -324,7 +321,7 @@ class ProjectCheckout(dict):
 class Manifest(object):
   """SAX handler that parses the manifest document.
 
-  Properties:
+  Attributes:
     checkouts_by_name: A dictionary mapping the names for <project> tags to a
       list of ProjectCheckout objects.
     checkouts_by_path: A dictionary mapping paths for <project> tags to a single
@@ -377,7 +374,14 @@ class Manifest(object):
     handler.startElement = self._StartElement
     handler.endElement = self._EndElement
     parser.setContentHandler(handler)
-    parser.parse(source)
+
+    # Python 2 seems to expect either a file name (as a string) or an
+    # opened file as the parameter to parser.parse, whereas Python 3
+    # seems to expect a URL (as a string) or opened file. Make it
+    # compatible with both by opening files first.
+    with cros_build_lib.Open(source) as f:
+      parser.parse(f)
+
     if finalize:
       self._FinalizeAllProjectData()
 
@@ -652,7 +656,7 @@ class ManifestCheckout(Manifest):
     Returns:
       A list of ProjectCheckout objects.
     """
-    return self.checkouts_by_path.values()
+    return list(self.checkouts_by_path.values())
 
   def FindCheckoutFromPath(self, path, strict=True):
     """Find the associated checkouts for a given |path|.
@@ -764,7 +768,7 @@ class ManifestCheckout(Manifest):
 
 
 def RunGit(git_repo, cmd, **kwargs):
-  """RunCommand wrapper for git commands.
+  """Wrapper for git commands.
 
   This suppresses print_cmd, and suppresses output by default.  Git
   functionality w/in this module should use this unless otherwise
@@ -776,7 +780,7 @@ def RunGit(git_repo, cmd, **kwargs):
     cmd: A sequence of the git subcommand to run.  The 'git' prefix is
       added automatically.  If you wished to run 'git remote update',
       this would be ['remote', 'update'] for example.
-    kwargs: Any RunCommand or GenericRetry options/overrides to use.
+    kwargs: Any run or GenericRetry options/overrides to use.
 
   Returns:
     A CommandResult object.
@@ -784,7 +788,8 @@ def RunGit(git_repo, cmd, **kwargs):
   kwargs.setdefault('print_cmd', False)
   kwargs.setdefault('cwd', git_repo)
   kwargs.setdefault('capture_output', True)
-  return cros_build_lib.RunCommand(['git'] + cmd, **kwargs)
+  kwargs.setdefault('encoding', 'utf-8')
+  return cros_build_lib.run(['git'] + cmd, **kwargs)
 
 
 def Init(git_repo):
@@ -882,10 +887,18 @@ def MatchBranchName(git_repo, pattern, namespace=''):
   Returns:
     List of matching branch names (with |namespace| trimmed).
   """
-  match = re.compile(pattern, flags=re.I)
   output = RunGit(git_repo, ['ls-remote', git_repo, namespace + '*']).output
   branches = [x.split()[1] for x in output.splitlines()]
   branches = [x[len(namespace):] for x in branches if x.startswith(namespace)]
+
+  # Try exact match first.
+  match = re.compile(r'(^|/)%s$' % (pattern,), flags=re.I)
+  ret = [x for x in branches if match.search(x)]
+  if ret:
+    return ret
+
+  # Fall back to regex match if no exact match.
+  match = re.compile(pattern, flags=re.I)
   return [x for x in branches if match.search(x)]
 
 
@@ -1127,7 +1140,7 @@ def RmPath(path):
   RunGit(dirname, ['rm', '--', filename])
 
 
-def GetObjectAtRev(git_repo, obj, rev):
+def GetObjectAtRev(git_repo, obj, rev, binary=False):
   """Return the contents of a git object at a particular revision.
 
   This could be used to look at an old version of a file or directory, for
@@ -1137,12 +1150,14 @@ def GetObjectAtRev(git_repo, obj, rev):
     git_repo: Path to a directory in the git repository to query.
     obj: The name of the object to read.
     rev: The revision to retrieve.
+    binary: If true, return bytes instead of decoding as a UTF-8 string.
 
   Returns:
     The content of the object.
   """
   rev_obj = '%s:%s' % (rev, obj)
-  return RunGit(git_repo, ['show', rev_obj]).output
+  encoding = None if binary else 'utf-8'
+  return RunGit(git_repo, ['show', rev_obj], encoding=encoding).output
 
 
 def RevertPath(git_repo, filename, rev):
@@ -1156,27 +1171,33 @@ def RevertPath(git_repo, filename, rev):
   RunGit(git_repo, ['checkout', rev, '--', filename])
 
 
-def Log(git_repo, pretty=None, after=None, until=None,
-        reverse=False, date=None, paths=None):
+# In Log, we use "format" to refer to the --format flag to
+# git. Disable the nags from pylint.
+# pylint: disable=redefined-builtin
+def Log(git_repo, format=None, after=None, until=None,
+        reverse=False, date=None, max_count=None, rev='HEAD',
+        paths=None):
   """Return git log output for the given arguments.
 
   For more detailed description of the parameters, run `git help log`.
 
   Args:
     git_repo: Path to a directory in the git repository.
-    pretty: Passed directly to the --pretty flag.
+    format: Passed directly to the --format flag.
     after: Passed directly to --after flag.
     until: Passed directly to --until flag.
     reverse: If true, set --reverse flag.
-    date: Passed ddirectly to --date flag.
+    date: Passed directly to --date flag.
+    max_count: Passed directly to --max-count flag.
+    rev: Commit (or revision range) to log.
     paths: List of paths to log commits for (enumerated after final -- ).
 
   Returns:
     The raw log output as a string.
   """
   cmd = ['log']
-  if pretty:
-    cmd.append('--pretty=%s' % pretty)
+  if format:
+    cmd.append('--format=%s' % format)
   if after:
     cmd.append('--after=%s' % after)
   if until:
@@ -1185,10 +1206,14 @@ def Log(git_repo, pretty=None, after=None, until=None,
     cmd.append('--reverse')
   if date:
     cmd.append('--date=%s' % date)
+  if max_count:
+    cmd.append('--max-count=%s' % max_count)
+  cmd.append(rev)
   if paths:
     cmd.append('--')
     cmd.extend(paths)
-  return RunGit(git_repo, cmd).output
+  return RunGit(git_repo, cmd, errors='replace').stdout
+# pylint: enable=redefined-builtin
 
 
 def Commit(git_repo, message, amend=False, allow_empty=False,
@@ -1214,7 +1239,7 @@ def Commit(git_repo, message, amend=False, allow_empty=False,
     cmd.append('--reset-author')
   RunGit(git_repo, cmd)
 
-  log = RunGit(git_repo, ['log', '-n', '1', '--format=format:%B']).output
+  log = Log(git_repo, max_count=1, format='format:%B')
   match = re.search('Change-Id: (?P<ID>I[a-fA-F0-9]*)', log)
   return match.group('ID') if match else None
 
@@ -1247,7 +1272,7 @@ def RawDiff(path, target):
 
   cmd = ['diff', '-M', '--raw', target]
   diff = RunGit(path, cmd).output
-  diff_lines = diff.strip().split('\n')
+  diff_lines = diff.strip().splitlines()
   for line in diff_lines:
     match = DIFF_RE.match(line)
     if not match:
@@ -1401,7 +1426,7 @@ def PushBranch(branch, git_repo, dryrun=False,
                            ref=remote_ref.ref.replace(
                                'heads', 'for', 1) + '%notify=NONE,submit',
                            project_name=remote_ref.project_name)
-  #reference = staging_branch if staging_branch is not None else remote_ref.ref
+  # reference = staging_branch if staging_branch is not None else remote_ref.ref
   if staging_branch is not None:
     remote_ref = remote_ref._replace(ref=staging_branch)
 

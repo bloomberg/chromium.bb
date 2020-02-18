@@ -12,6 +12,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/login/ui/bottom_status_indicator.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
@@ -89,6 +90,7 @@ class ASH_EXPORT LockContentsView
     LoginErrorBubble* warning_banner_bubble() const;
     LoginErrorBubble* supervised_user_deprecation_bubble() const;
     views::View* system_info() const;
+    views::View* bottom_status_indicator() const;
     LoginExpandedPublicAccountView* expanded_view() const;
     views::View* main_view() const;
 
@@ -105,8 +107,6 @@ class ASH_EXPORT LockContentsView
   };
 
   enum class AcceleratorAction {
-    kFocusNextUser,
-    kFocusPreviousUser,
     kShowSystemInfo,
     kShowFeedback,
     kShowResetScreen,
@@ -127,6 +127,9 @@ class ASH_EXPORT LockContentsView
 
   void FocusNextUser();
   void FocusPreviousUser();
+  void ShowEntrepriseDomainName(const std::string& entreprise_domain_name);
+  void ShowAdbEnabled();
+  void ShowSystemInfo();
   void ShowParentAccessDialog();
   void RequestSecurityTokenPin(SecurityTokenPinRequest request);
   void ClearSecurityTokenPinRequest();
@@ -135,6 +138,7 @@ class ASH_EXPORT LockContentsView
   void Layout() override;
   void AddedToWidget() override;
   void OnFocus() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
@@ -162,9 +166,11 @@ class ASH_EXPORT LockContentsView
                             const EasyUnlockIconOptions& icon) override;
   void OnWarningMessageUpdated(const base::string16& message) override;
   void OnSystemInfoChanged(bool show,
+                           bool enforced,
                            const std::string& os_version_label_text,
                            const std::string& enterprise_info_text,
-                           const std::string& bluetooth_name) override;
+                           const std::string& bluetooth_name,
+                           bool adb_sideloading_enabled) override;
   void OnPublicSessionDisplayNameChanged(
       const AccountId& account_id,
       const std::string& display_name) override;
@@ -223,6 +229,7 @@ class ASH_EXPORT LockContentsView
     bool enable_tap_auth = false;
     bool force_online_sign_in = false;
     bool disable_auth = false;
+    bool show_pin_pad_for_password = false;
     base::Optional<EasyUnlockIconOptions> easy_unlock_state;
     FingerprintState fingerprint_state;
 
@@ -245,6 +252,9 @@ class ASH_EXPORT LockContentsView
                             int portrait_dist,
                             bool landscape);
 
+  // Set |spacing_middle| for media controls.
+  void SetMediaControlsSpacing(bool landscape);
+
   // 1-2 users.
   void CreateLowDensityLayout(const std::vector<LoginUserInfo>& users);
   // 3-6 users.
@@ -260,6 +270,11 @@ class ASH_EXPORT LockContentsView
   // Lay out the top header. This is called when the children of the top header
   // change contents or visibility.
   void LayoutTopHeader();
+
+  // Lay out the bottom status indicator. This is called when system information
+  // is shown if ADB is enabled and at the initialization of lock screen if the
+  // device is enrolled.
+  void LayoutBottomStatusIndicator();
 
   // Lay out the expanded public session view.
   void LayoutPublicSessionView();
@@ -357,6 +372,10 @@ class ASH_EXPORT LockContentsView
   // Performs the specified accelerator action.
   void PerformAction(AcceleratorAction action);
 
+  // Check whether the view should display the system information based on all
+  // factors including policy settings, channel and Alt-V accelerator.
+  bool GetSystemInfoVisibility() const;
+
   const LockScreen::ScreenType screen_type_;
 
   std::vector<UserState> users_;
@@ -407,6 +426,9 @@ class ASH_EXPORT LockContentsView
   // Bubble for displaying supervised user deprecation message.
   LoginErrorBubble* supervised_user_deprecation_bubble_;
 
+  // Bottom status indicator displaying entreprise domain or ADB enabled alert
+  BottomStatusIndicator* bottom_status_indicator_;
+
   int unlock_attempt_ = 0;
 
   // Whether a lock screen app is currently active (i.e. lock screen note action
@@ -419,6 +441,14 @@ class ASH_EXPORT LockContentsView
   // Whether the lock screen note is disabled. Used to override the actual lock
   // screen note state.
   bool disable_lock_screen_note_ = false;
+
+  // Whether the system information should be displayed or not be displayed
+  // forcedly according to policy settings.
+  base::Optional<bool> enable_system_info_enforced_ = base::nullopt;
+
+  // Whether the system information is intended to be displayed if possible.
+  // (e.g., Alt-V is pressed, particular OS channels)
+  bool enable_system_info_if_possible_ = false;
 
   // Expanded view for public account user to select language and keyboard.
   LoginExpandedPublicAccountView* expanded_view_ = nullptr;

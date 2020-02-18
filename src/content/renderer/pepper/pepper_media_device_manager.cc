@@ -273,8 +273,7 @@ blink::mojom::MediaStreamDispatcherHost*
 PepperMediaDeviceManager::GetMediaStreamDispatcherHost() {
   if (!dispatcher_host_) {
     CHECK(render_frame());
-    CHECK(render_frame()->GetRemoteInterfaces());
-    render_frame()->GetRemoteInterfaces()->GetInterface(
+    render_frame()->GetBrowserInterfaceBroker()->GetInterface(
         dispatcher_host_.BindNewPipeAndPassReceiver());
   }
   return dispatcher_host_.get();
@@ -290,16 +289,15 @@ PepperMediaDeviceManager::GetMediaStreamDeviceObserver() const {
   return observer;
 }
 
-const blink::mojom::MediaDevicesDispatcherHostPtr&
+blink::mojom::MediaDevicesDispatcherHost*
 PepperMediaDeviceManager::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
     CHECK(render_frame());
-    CHECK(render_frame()->GetRemoteInterfaces());
-    render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&media_devices_dispatcher_));
+    render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+        media_devices_dispatcher_.BindNewPipeAndPassReceiver());
   }
 
-  return media_devices_dispatcher_;
+  return media_devices_dispatcher_.get();
 }
 
 void PepperMediaDeviceManager::OnDestruct() {

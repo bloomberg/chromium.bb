@@ -16,6 +16,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,8 +29,9 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
+#include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
-#include "components/omnibox/browser/history_url_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/omnibox/browser/remote_suggestions_service.h"
 #include "components/omnibox/browser/search_provider.h"
@@ -118,9 +120,9 @@ void LogOmniboxRemoteNoUrlEligibilityOnNTP(
   auto* provider = service ? service->GetDefaultSearchProvider() : nullptr;
   auto engine = provider ? provider->GetEngineType(service->search_terms_data())
                          : SEARCH_ENGINE_UNKNOWN;
-  auto variant = OmniboxFieldTrial::GetZeroSuggestVariant(page_class);
+  const auto variants = OmniboxFieldTrial::GetZeroSuggestVariants(page_class);
 
-  if (variant != ZeroSuggestProvider::kRemoteNoUrlVariant) {
+  if (!base::Contains(variants, ZeroSuggestProvider::kRemoteNoUrlVariant)) {
     value =
         ZeroSuggestEligibilityForRemoteNoURL::kIneligibleUserNotParticipating;
   } else if (client->IsOffTheRecord()) {
@@ -156,29 +158,29 @@ constexpr char kArbitraryInsecureUrlString[] = "http://www.google.com/";
 constexpr char kOmniboxZeroSuggestEligibleHistogramName[] =
     "Omnibox.ZeroSuggest.Eligible.OnFocusV2";
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
-// If the user is not signed-in or the user does not have Google set up as their
-// default search engine, the remote suggestions service is replaced with the
-// most visited service.
-bool RemoteSuggestionsShouldFallBackToMostVisited(
+// Remote suggestions are allowed only if the user is signed-in and has Google
+// set up as their default search engine. This only applies to
+// kRemoteNoUrlVariant since most of these checks are done in
+// BaseSearchProvider::CanSendURL (with the exception of the authentication
+// state) which applies to kRemoteSendUrlVariant.
+bool RemoteNoUrlSuggestionsAreAllowed(
     AutocompleteProviderClient* client,
     const TemplateURLService* template_url_service) {
   if (!client->SearchSuggestEnabled())
-    return true;
+    return false;
 
   if (!client->IsAuthenticated())
-    return true;
+    return false;
 
   if (template_url_service == nullptr)
     return false;
 
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
-  return default_provider == nullptr ||
+  return default_provider &&
          default_provider->GetEngineType(
-             template_url_service->search_terms_data()) != SEARCH_ENGINE_GOOGLE;
+             template_url_service->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 }
-#endif
 
 }  // namespace
 
@@ -191,9 +193,8 @@ const char ZeroSuggestProvider::kMostVisitedVariant[] = "MostVisited";
 // static
 ZeroSuggestProvider* ZeroSuggestProvider::Create(
     AutocompleteProviderClient* client,
-    HistoryURLProvider* history_url_provider,
     AutocompleteProviderListener* listener) {
-  return new ZeroSuggestProvider(client, history_url_provider, listener);
+  return new ZeroSuggestProvider(client, listener);
 }
 
 // static
@@ -229,7 +230,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   permanent_text_ = input.text();
   current_query_ = input.current_url().spec();
   current_title_ = input.current_title();
-  current_url_match_ = MatchForCurrentURL();
+  current_text_match_ = MatchForCurrentText();
 
   TemplateURLRef::SearchTermsArgs search_terms_args;
   search_terms_args.page_classification = current_page_classification_;
@@ -305,8 +306,9 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
 }
 
 void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
-  if (OmniboxFieldTrial::GetZeroSuggestVariant(current_page_classification_) ==
-      kRemoteNoUrlVariant) {
+  if (base::Contains(OmniboxFieldTrial::GetZeroSuggestVariants(
+                         current_page_classification_),
+                     kRemoteNoUrlVariant)) {
     // Remove the deleted match from the cache, so it is not shown to the user
     // again. Since we cannot remove just one result, blow away the cache.
     client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
@@ -332,10 +334,8 @@ void ZeroSuggestProvider::ResetSession() {
 
 ZeroSuggestProvider::ZeroSuggestProvider(
     AutocompleteProviderClient* client,
-    HistoryURLProvider* history_url_provider,
     AutocompleteProviderListener* listener)
     : BaseSearchProvider(AutocompleteProvider::TYPE_ZERO_SUGGEST, client),
-      history_url_provider_(history_url_provider),
       listener_(listener),
       result_type_running_(NONE) {
   // Record whether remote zero suggest is possible for this user / profile.
@@ -540,10 +540,10 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
     // URL suggestions to users who are not in the personalized field trial for
     // zero query suggestions.
     if (IsNTPPage(current_page_classification_) ||
-        !current_url_match_.destination_url.is_valid()) {
+        !current_text_match_.destination_url.is_valid()) {
       return;
     }
-    matches_.push_back(current_url_match_);
+    matches_.push_back(current_text_match_);
     int relevance = 600;
     if (num_results > 0) {
       UMA_HISTOGRAM_COUNTS_1M(
@@ -567,12 +567,12 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   if (num_results == 0)
     return;
 
-  // Do not add the default URL match if we're on the NTP to prevent
+  // Do not add the default text match if we're on the NTP to prevent
   // chrome-native://newtab or chrome://newtab from showing up on the list of
   // suggestions.
   if (!IsNTPPage(current_page_classification_) &&
-      current_url_match_.destination_url.is_valid()) {
-    matches_.push_back(current_url_match_);
+      current_text_match_.destination_url.is_valid()) {
+    matches_.push_back(current_text_match_);
   }
 
   for (MatchMap::const_iterator it(map.begin()); it != map.end(); ++it)
@@ -585,7 +585,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   }
 }
 
-AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
+AutocompleteMatch ZeroSuggestProvider::MatchForCurrentText() {
   // The placeholder suggestion for the current URL has high relevance so
   // that it is in the first suggestion slot and inline autocompleted. It
   // gets dropped as soon as the user types something.
@@ -595,9 +595,15 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
       (base::FeatureList::IsEnabled(omnibox::kDisplayTitleForCurrentUrl))
           ? current_title_
           : base::string16();
-  return VerbatimMatchForURL(client(), tmp, GURL(current_query_), description,
-                             history_url_provider_,
-                             results_.verbatim_relevance);
+
+  // We pass a nullptr as the |history_url_provider| parameter now to force
+  // VerbatimMatch to do a classification, since the text can be a search query.
+  // TODO(tommycli): Simplify this - probably just bypass VerbatimMatchForURL.
+  AutocompleteMatch match = VerbatimMatchForURL(
+      client(), tmp, GURL(current_query_), description,
+      /*history_url_provider=*/nullptr, results_.verbatim_relevance);
+  match.provider = this;
+  return match;
 }
 
 bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
@@ -685,10 +691,10 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
       kOmniboxZeroSuggestEligibleHistogramName, static_cast<int>(eligibility),
       static_cast<int>(ZeroSuggestEligibility::ELIGIBLE_MAX_VALUE));
 
-  std::string field_trial_variant =
-      OmniboxFieldTrial::GetZeroSuggestVariant(current_page_classification_);
+  const auto field_trial_variants =
+      OmniboxFieldTrial::GetZeroSuggestVariants(current_page_classification_);
 
-  if (field_trial_variant == kNoneVariant ||
+  if (base::Contains(field_trial_variants, kNoneVariant) ||
       base::FeatureList::IsEnabled(
           omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
     return NONE;
@@ -699,23 +705,25 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
   if (current_page_classification_ == OmniboxEventProto::CHROMEOS_APP_LIST)
     return REMOTE_NO_URL;
 
-  if (field_trial_variant == kRemoteNoUrlVariant) {
+  if (base::Contains(field_trial_variants, kRemoteNoUrlVariant)) {
+    if (RemoteNoUrlSuggestionsAreAllowed(client(), template_url_service))
+      return REMOTE_NO_URL;
+
 #if defined(OS_ANDROID) || defined(OS_IOS)
-    // TODO(tommycli): It's odd that this doesn't apply to kRemoteSendUrlVariant
-    // as well. Most likely this fallback concept should be replaced by
+    // Remote suggestions are replaced with the most visited ones.
+    // TODO(tommycli): Most likely this fallback concept should be replaced by
     // a more general configuration setup.
-    if (RemoteSuggestionsShouldFallBackToMostVisited(client(),
-                                                     template_url_service)) {
-      return MOST_VISITED;
-    }
-#endif
-    return REMOTE_NO_URL;
+    return MOST_VISITED;
+#else
+    return NONE;
+#endif  //  defined(OS_ANDROID) || defined(OS_IOS)
   }
 
-  if (field_trial_variant == kRemoteSendUrlVariant && can_send_current_url)
+  if (base::Contains(field_trial_variants, kRemoteSendUrlVariant) &&
+      can_send_current_url)
     return REMOTE_SEND_URL;
 
-  if (field_trial_variant == kMostVisitedVariant)
+  if (base::Contains(field_trial_variants, kMostVisitedVariant))
     return MOST_VISITED;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -723,7 +731,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
   //  - There is no configured variant for |page_classification| AND
   //  - The user is not on the search results page of the default search
   //    provider.
-  if (field_trial_variant.empty() &&
+  if (field_trial_variants.empty() &&
       current_page_classification_ !=
           OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT &&
       current_page_classification_ !=

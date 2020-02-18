@@ -19,28 +19,27 @@
 #include <vector>
 
 #include "perfetto/base/logging.h"
+#include "perfetto/profiling/symbolizer.h"
+#include "perfetto/trace_processor/trace_processor.h"
 
-#ifndef PERFETTO_NOLOCALSYMBOLIZE
-#include "tools/trace_to_text/local_symbolizer.h"  // nogncheck
+#if PERFETTO_BUILDFLAG(PERFETTO_LOCAL_SYMBOLIZER)
+#include "tools/trace_to_text/local_symbolizer.h"
 #endif
 
-#include "tools/trace_to_text/symbolizer.h"
-#include "tools/trace_to_text/trace_symbol_table.h"
+#include "protos/perfetto/trace/trace.pbzero.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
 #include "tools/trace_to_text/utils.h"
-
-#include "protos/perfetto/trace/interned_data/interned_data.pb.h"
-#include "protos/perfetto/trace/profiling/profile_common.pb.h"
-#include "protos/perfetto/trace/profiling/profile_packet.pb.h"
 
 namespace perfetto {
 namespace trace_to_text {
+
 // Ingest profile, and emit a symbolization table for each sequence. This can
 // be prepended to the profile to attach the symbol information.
 int SymbolizeProfile(std::istream* input, std::ostream* output) {
   std::unique_ptr<Symbolizer> symbolizer;
   auto binary_path = GetPerfettoBinaryPath();
   if (!binary_path.empty()) {
-#ifndef PERFETTO_NOLOCALSYMBOLIZE
+#if PERFETTO_BUILDFLAG(PERFETTO_LOCAL_SYMBOLIZER)
     symbolizer.reset(new LocalSymbolizer(GetPerfettoBinaryPath()));
 #else
     PERFETTO_FATAL("This build does not support local symbolization.");
@@ -49,19 +48,20 @@ int SymbolizeProfile(std::istream* input, std::ostream* output) {
 
   if (!symbolizer)
     PERFETTO_FATAL("No symbolizer selected");
+  trace_processor::Config config;
+  std::unique_ptr<trace_processor::TraceProcessor> tp =
+      trace_processor::TraceProcessor::CreateInstance(config);
 
-  return VisitCompletePacket(
-      input, [&output, &symbolizer](
-                 uint32_t seq_id,
-                 const std::vector<protos::ProfilePacket>& packet_fragments,
-                 const std::vector<protos::InternedData>& interned_data) {
-        TraceSymbolTable symbol_table(symbolizer.get());
-        if (!symbol_table.Visit(packet_fragments, interned_data))
-          return false;
-        symbol_table.Finalize();
-        symbol_table.WriteResult(output, seq_id);
-        return true;
-      });
+  if (!ReadTrace(tp.get(), input))
+    PERFETTO_FATAL("Failed to read trace.");
+
+  tp->NotifyEndOfFile();
+
+  SymbolizeDatabase(tp.get(), symbolizer.get(),
+                    [output](const std::string& packet_proto) {
+                      WriteTracePacket(packet_proto, output);
+                    });
+  return 0;
 }
 
 }  // namespace trace_to_text

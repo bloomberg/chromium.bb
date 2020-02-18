@@ -4,16 +4,16 @@
 
 #include "chrome/browser/ui/webui/certificate_manager_localized_strings_provider.h"
 
-#include "base/stl_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
 
 namespace certificate_manager {
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"certificateManagerExpandA11yLabel",
        IDS_SETTINGS_CERTIFICATE_MANAGER_EXPAND_ACCESSIBILITY_LABEL},
       {"certificateManagerNoCertificates",
@@ -37,7 +37,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
       {"certificateManagerImportAndBind",
        IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_AND_BIND},
       {"certificateManagerExport", IDS_SETTINGS_CERTIFICATE_MANAGER_EXPORT},
-      {"certificateManagerDelete", IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE},
+      {"certificateManagerDelete", IDS_SETTINGS_DELETE},
       {"certificateManagerUntrusted",
        IDS_SETTINGS_CERTIFICATE_MANAGER_UNTRUSTED},
       // CA trust edit dialog.
@@ -80,9 +80,10 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_CERTIFICATE_MANAGER_CONFIRM_PASSWORD},
       {"certificateImportErrorFormat",
        IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_ERROR_FORMAT},
+      // For A11y.
+      {"menu", IDS_MENU},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
 }  // namespace certificate_manager

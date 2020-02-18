@@ -19,6 +19,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_range.h"
+#include "components/viz/service/frame_sinks/begin_frame_tracker.h"
 #include "components/viz/service/frame_sinks/surface_resource_holder.h"
 #include "components/viz/service/frame_sinks/surface_resource_holder_client.h"
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
@@ -112,8 +113,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void OnSurfaceActivated(Surface* surface) override;
   void OnSurfaceDestroyed(Surface* surface) override;
   void OnSurfaceWillDraw(Surface* surface) override;
-  void OnSurfaceWasDrawn(uint32_t frame_token,
-                         base::TimeTicks draw_start_timestamp) override;
   void RefResources(
       const std::vector<TransferableResource>& resources) override;
   void UnrefResources(const std::vector<ReturnedResource>& resources) override;
@@ -133,6 +132,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       const gfx::Rect& damage_rect,
       base::TimeTicks expected_display_time) override;
   void OnSurfacePresented(uint32_t frame_token,
+                          base::TimeTicks draw_start_timestamp,
+                          const gfx::SwapTimings& swap_timings,
                           const gfx::PresentationFeedback& feedback) override;
   bool NeedsSyncTokens() const override;
 
@@ -214,6 +215,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   void DidReceiveCompositorFrameAck();
   void DidPresentCompositorFrame(uint32_t frame_token,
+                                 base::TimeTicks draw_start_timestamp,
+                                 const gfx::SwapTimings& swap_timings,
                                  const gfx::PresentationFeedback& feedback);
   void DidRejectCompositorFrame(
       uint32_t frame_token,
@@ -294,7 +297,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // clients would be able to capture content for which they are not authorized.
   bool allow_copy_output_requests_;
 
-  // TODO(crbug.com/754872): Remove once tab capture has moved into VIZ.
+  // Used for tests only.
   AggregatedDamageCallback aggregated_damage_callback_;
 
   uint64_t last_frame_index_ = kFrameIndexStart - 1;
@@ -326,11 +329,12 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
 
-  // Contains FrameTimingDetails for in-flight frames that have not yet been
-  // presented or aborted. After presentation the details are moved into
-  // |frame_timing_details_| which is sent to the client and cleared with each
-  // OnBeginFrame()
-  FrameTimingDetailsMap pending_frame_timing_details_;
+  BeginFrameTracker begin_frame_tracker_;
+
+  // Maps |frame_token| to the timestamp when that frame was received. This
+  // timestamp is combined with the information received in OnSurfacePresented()
+  // and stored in |frame_timing_details_|.
+  base::flat_map<uint32_t, base::TimeTicks> pending_received_frame_times_;
   FrameTimingDetailsMap frame_timing_details_;
   LocalSurfaceId last_evicted_local_surface_id_;
 

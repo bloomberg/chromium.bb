@@ -115,18 +115,47 @@ void RecordFilterResultEvent(
     base::UmaHistogramSparse("ManagedUsers.FilteringResult", value);
 }
 
+bool IsMainFrameWhitelisted(content::WebContents* web_contents) {
+  auto* navigation_observer =
+      SupervisedUserNavigationObserver::FromWebContents(web_contents);
+  if (!navigation_observer)
+    return false;
+  auto behavior = navigation_observer->main_frame_filtering_behavior();
+  auto reason = navigation_observer->main_frame_filtering_behavior_reason();
+  bool is_allowed =
+      behavior == SupervisedUserURLFilter::FilteringBehavior::ALLOW;
+  bool is_whitelisted =
+      reason == supervised_user_error_page::FilteringBehaviorReason::WHITELIST;
+  bool is_manual =
+      reason == supervised_user_error_page::FilteringBehaviorReason::MANUAL;
+
+  return is_allowed && (is_whitelisted || is_manual);
+}
+
 }  // namespace
 
 // static
 std::unique_ptr<SupervisedUserNavigationThrottle>
 SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
-    return nullptr;
   Profile* profile = Profile::FromBrowserContext(
       navigation_handle->GetWebContents()->GetBrowserContext());
+
   if (!profile->IsSupervised())
     return nullptr;
+
+  if (!navigation_handle->IsInMainFrame()) {
+    SupervisedUserService* service =
+        SupervisedUserServiceFactory::GetForProfile(profile);
+    if (!service->IsSupervisedUserIframeFilterEnabled())
+      return nullptr;
+
+    // If the url in the main main frame has already been whitelisted by
+    // parents, then don't create the throttle for the subframe.
+    if (IsMainFrameWhitelisted(navigation_handle->GetWebContents()))
+      return nullptr;
+  }
+
   // Can't use std::make_unique because the constructor is private.
   return base::WrapUnique(
       new SupervisedUserNavigationThrottle(navigation_handle));
@@ -185,6 +214,7 @@ void SupervisedUserNavigationThrottle::ShowInterstitialAsync(
   SupervisedUserNavigationObserver::OnRequestBlocked(
       navigation_handle()->GetWebContents(), navigation_handle()->GetURL(),
       reason, navigation_handle()->GetNavigationId(),
+      navigation_handle()->GetFrameTreeNodeId(),
       base::Bind(&SupervisedUserNavigationThrottle::OnInterstitialResult,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -225,6 +255,15 @@ void SupervisedUserNavigationThrottle::OnCheckDone(
       (reason == supervised_user_error_page::ASYNC_CHECKER ||
        reason == supervised_user_error_page::BLACKLIST)) {
     RecordFilterResultEvent(true, behavior, reason, uncertain, transition);
+  }
+
+  if (navigation_handle()->IsInMainFrame()) {
+    // Update navigation observer about the navigation state of the main frame.
+    auto* navigation_observer =
+        SupervisedUserNavigationObserver::FromWebContents(
+            navigation_handle()->GetWebContents());
+    if (navigation_observer)
+      navigation_observer->UpdateMainFrameFilteringStatus(behavior, reason);
   }
 
   if (behavior == SupervisedUserURLFilter::BLOCK)

@@ -23,10 +23,10 @@
 CXFA_FFDateTimeEdit::CXFA_FFDateTimeEdit(CXFA_Node* pNode)
     : CXFA_FFTextEdit(pNode) {}
 
-CXFA_FFDateTimeEdit::~CXFA_FFDateTimeEdit() {}
+CXFA_FFDateTimeEdit::~CXFA_FFDateTimeEdit() = default;
 
 CFWL_DateTimePicker* CXFA_FFDateTimeEdit::GetPickerWidget() {
-  return static_cast<CFWL_DateTimePicker*>(m_pNormalWidget.get());
+  return static_cast<CFWL_DateTimePicker*>(GetNormalWidget());
 }
 
 CFX_RectF CXFA_FFDateTimeEdit::GetBBox(FocusOption focus) {
@@ -41,39 +41,41 @@ bool CXFA_FFDateTimeEdit::PtInActiveRect(const CFX_PointF& point) {
 }
 
 bool CXFA_FFDateTimeEdit::LoadWidget() {
+  ASSERT(!IsLoaded());
   auto pNewPicker = pdfium::MakeUnique<CFWL_DateTimePicker>(GetFWLApp());
   CFWL_DateTimePicker* pWidget = pNewPicker.get();
-  m_pNormalWidget = std::move(pNewPicker);
-  m_pNormalWidget->SetFFWidget(this);
+  SetNormalWidget(std::move(pNewPicker));
+  pWidget->SetFFWidget(this);
 
-  CFWL_NoteDriver* pNoteDriver =
-      m_pNormalWidget->GetOwnerApp()->GetNoteDriver();
-  pNoteDriver->RegisterEventTarget(m_pNormalWidget.get(),
-                                   m_pNormalWidget.get());
-  m_pOldDelegate = m_pNormalWidget->GetDelegate();
-  m_pNormalWidget->SetDelegate(this);
-  m_pNormalWidget->LockUpdate();
+  CFWL_NoteDriver* pNoteDriver = pWidget->GetOwnerApp()->GetNoteDriver();
+  pNoteDriver->RegisterEventTarget(pWidget, pWidget);
+  m_pOldDelegate = pWidget->GetDelegate();
+  pWidget->SetDelegate(this);
 
-  WideString wsText = m_pNode->GetValue(XFA_VALUEPICTURE_Display);
-  pWidget->SetEditText(wsText);
+  {
+    CFWL_Widget::ScopedUpdateLock update_lock(pWidget);
+    WideString wsText = m_pNode->GetValue(XFA_VALUEPICTURE_Display);
+    pWidget->SetEditText(wsText);
 
-  CXFA_Value* value = m_pNode->GetFormValueIfExists();
-  if (value) {
-    switch (value->GetChildValueClassID()) {
-      case XFA_Element::Date: {
-        if (!wsText.IsEmpty()) {
-          CXFA_LocaleValue lcValue = XFA_GetLocaleValue(m_pNode.Get());
-          CFX_DateTime date = lcValue.GetDate();
-          if (date.IsSet())
-            pWidget->SetCurSel(date.GetYear(), date.GetMonth(), date.GetDay());
-        }
-      } break;
-      default:
-        break;
+    CXFA_Value* value = m_pNode->GetFormValueIfExists();
+    if (value) {
+      switch (value->GetChildValueClassID()) {
+        case XFA_Element::Date: {
+          if (!wsText.IsEmpty()) {
+            CXFA_LocaleValue lcValue = XFA_GetLocaleValue(m_pNode.Get());
+            CFX_DateTime date = lcValue.GetDate();
+            if (date.IsSet())
+              pWidget->SetCurSel(date.GetYear(), date.GetMonth(),
+                                 date.GetDay());
+          }
+        } break;
+        default:
+          break;
+      }
     }
+    UpdateWidgetProperty();
   }
-  UpdateWidgetProperty();
-  m_pNormalWidget->UnlockUpdate();
+
   return CXFA_FFField::LoadWidget();
 }
 
@@ -85,7 +87,7 @@ void CXFA_FFDateTimeEdit::UpdateWidgetProperty() {
   uint32_t dwExtendedStyle = FWL_STYLEEXT_DTP_ShortDateFormat;
   dwExtendedStyle |= UpdateUIProperty();
   dwExtendedStyle |= GetAlignment();
-  m_pNormalWidget->ModifyStylesEx(dwExtendedStyle, 0xFFFFFFFF);
+  GetNormalWidget()->ModifyStylesEx(dwExtendedStyle, 0xFFFFFFFF);
 
   uint32_t dwEditStyles = 0;
   Optional<int32_t> numCells = m_pNode->GetNumberOfCells();
@@ -149,7 +151,7 @@ bool CXFA_FFDateTimeEdit::CommitData() {
 }
 
 bool CXFA_FFDateTimeEdit::UpdateFWLData() {
-  if (!m_pNormalWidget)
+  if (!GetNormalWidget())
     return false;
 
   XFA_VALUEPICTURE eType = XFA_VALUEPICTURE_Display;
@@ -167,7 +169,7 @@ bool CXFA_FFDateTimeEdit::UpdateFWLData() {
         pPicker->SetCurSel(date.GetYear(), date.GetMonth(), date.GetDay());
     }
   }
-  m_pNormalWidget->Update();
+  GetNormalWidget()->Update();
   return true;
 }
 
@@ -207,7 +209,7 @@ void CXFA_FFDateTimeEdit::OnSelectChanged(CFWL_Widget* pWidget,
 void CXFA_FFDateTimeEdit::OnProcessEvent(CFWL_Event* pEvent) {
   if (pEvent->GetType() == CFWL_Event::Type::SelectChanged) {
     auto* event = static_cast<CFWL_EventSelectChanged*>(pEvent);
-    OnSelectChanged(m_pNormalWidget.get(), event->iYear, event->iMonth,
+    OnSelectChanged(GetNormalWidget(), event->iYear, event->iMonth,
                     event->iDay);
     return;
   }

@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/blob/shareable_file_reference.h"
-#include "storage/browser/fileapi/async_file_util.h"
-#include "storage/browser/fileapi/watcher_manager.h"
+#include "storage/browser/file_system/async_file_util.h"
+#include "storage/browser/file_system/watcher_manager.h"
 
 namespace storage {
 class FileSystemOperationContext;
@@ -122,16 +122,16 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
       storage::FileSystemContext* context);
 
   // Adds watcher to |url|.
-  void AddWatcher(const storage::FileSystemURL& url,
-                  bool recursive,
-                  const storage::WatcherManager::StatusCallback& callback,
-                  const storage::WatcherManager::NotificationCallback&
-                      notification_callback);
+  void AddWatcher(
+      const storage::FileSystemURL& url,
+      bool recursive,
+      storage::WatcherManager::StatusCallback callback,
+      storage::WatcherManager::NotificationCallback notification_callback);
 
   // Removes watcher of |url|.
   void RemoveWatcher(const storage::FileSystemURL& url,
                      const bool recursive,
-                     const storage::WatcherManager::StatusCallback& callback);
+                     storage::WatcherManager::StatusCallback callback);
 
  private:
   class MediaPathFilterWrapper;

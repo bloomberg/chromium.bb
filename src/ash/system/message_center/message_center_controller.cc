@@ -37,7 +37,7 @@ void MessageCenterController::RegisterProfilePrefs(
   registry->RegisterStringPref(
       prefs::kMessageCenterLockScreenMode,
       prefs::kMessageCenterLockScreenModeHide,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
 namespace {

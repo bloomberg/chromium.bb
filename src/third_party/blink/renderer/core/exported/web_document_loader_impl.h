@@ -67,8 +67,6 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   const WebURLResponse& GetResponse() const override;
   bool HasUnreachableURL() const override;
   WebURL UnreachableURL() const override;
-  int ErrorCode() const override;
-  network::mojom::IPAddressSpace GetIPAddressSpace() const override;
   void RedirectChain(WebVector<WebURL>&) const override;
   bool IsClientRedirect() const override;
   bool ReplacesCurrentHistoryItem() const override;
@@ -84,6 +82,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   void BlockParser() override;
   void ResumeParser() override;
   bool HasBeenLoadedAsWebArchive() const override;
+  WebURLRequest::PreviewsState GetPreviewsState() const override;
   WebArchiveInfo GetArchiveInfo() const override;
   bool HadUserGesture() const override;
   bool IsListingFtpDirectory() const override;

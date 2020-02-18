@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/modules/webgl/ext_texture_filter_anisotropic.h"
 #include "third_party/blink/renderer/modules/webgl/khr_parallel_shader_compile.h"
 #include "third_party/blink/renderer/modules/webgl/oes_element_index_uint.h"
+#include "third_party/blink/renderer/modules/webgl/oes_fbo_render_mipmap.h"
 #include "third_party/blink/renderer/modules/webgl/oes_standard_derivatives.h"
 #include "third_party/blink/renderer/modules/webgl/oes_texture_float.h"
 #include "third_party/blink/renderer/modules/webgl/oes_texture_float_linear.h"
@@ -67,7 +68,7 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_draw_buffers.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_lose_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_multi_draw.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_multi_draw_instanced.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_multi_draw_instanced_base_vertex_base_instance.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_video_texture.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 
@@ -167,6 +168,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<EXTsRGB>(exts_rgb_);
   RegisterExtension<KHRParallelShaderCompile>(khr_parallel_shader_compile_);
   RegisterExtension<OESElementIndexUint>(oes_element_index_uint_);
+  RegisterExtension<OESFboRenderMipmap>(oes_fbo_render_mipmap_);
   RegisterExtension<OESStandardDerivatives>(oes_standard_derivatives_);
   RegisterExtension<OESTextureFloat>(oes_texture_float_);
   RegisterExtension<OESTextureFloatLinear>(oes_texture_float_linear_);
@@ -191,8 +193,6 @@ void WebGLRenderingContext::RegisterContextExtensions() {
   RegisterExtension<WebGLLoseContext>(webgl_lose_context_, kApprovedExtension,
                                       kBothPrefixes);
   RegisterExtension<WebGLMultiDraw>(webgl_multi_draw_, kDraftExtension);
-  RegisterExtension<WebGLMultiDrawInstanced>(webgl_multi_draw_instanced_,
-                                             kDraftExtension);
   RegisterExtension<WebGLVideoTexture>(webgl_video_texture_, kDraftExtension);
 }
 
@@ -208,6 +208,7 @@ void WebGLRenderingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(exts_rgb_);
   visitor->Trace(khr_parallel_shader_compile_);
   visitor->Trace(oes_element_index_uint_);
+  visitor->Trace(oes_fbo_render_mipmap_);
   visitor->Trace(oes_standard_derivatives_);
   visitor->Trace(oes_texture_float_);
   visitor->Trace(oes_texture_float_linear_);
@@ -227,7 +228,6 @@ void WebGLRenderingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(webgl_draw_buffers_);
   visitor->Trace(webgl_lose_context_);
   visitor->Trace(webgl_multi_draw_);
-  visitor->Trace(webgl_multi_draw_instanced_);
   visitor->Trace(webgl_video_texture_);
   WebGLRenderingContextBase::Trace(visitor);
 }

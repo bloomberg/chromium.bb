@@ -65,6 +65,8 @@ class TestHooks : public AnimationDelegate {
       LayerTreeHostImpl* host_impl) {}
   virtual void DidReceiveCompositorFrameAckOnThread(
       LayerTreeHostImpl* host_impl) {}
+  virtual void DidScheduleBeginMainFrame() {}
+  virtual void DidRunBeginMainFrame() {}
   virtual void DidReceivePresentationTimeOnThread(
       LayerTreeHostImpl* host_impl,
       uint32_t frame_token,
@@ -129,6 +131,8 @@ class TestHooks : public AnimationDelegate {
                                base::TimeTicks animation_start_time,
                                std::unique_ptr<AnimationCurve> curve) override {
   }
+  void NotifyLocalTimeUpdated(
+      base::Optional<base::TimeDelta> local_time) override {}
 
   // OutputSurface indirections to the LayerTreeTest, that can be further
   // overridden.

@@ -30,7 +30,7 @@ import java.util.Map;
  * JellyBean through Marshmallow.
  */
 public final class BootstrapApplication extends Application {
-    private static final String TAG = "cr.incrementalinstall";
+    private static final String TAG = "incrementalinstall";
     private static final String MANAGED_DIR_PREFIX = "/data/local/tmp/incremental-app-";
     private static final String REAL_APP_META_DATA_NAME = "incremental-install-real-app";
     private static final String REAL_INSTRUMENTATION_META_DATA_NAME0 =
@@ -101,10 +101,10 @@ public final class BootstrapApplication extends Application {
             }
 
             mClassLoaderPatcher.importNativeLibs(instLibDir);
-            sIncrementalDexFiles = mClassLoaderPatcher.loadDexFiles(instDexDir);
+            sIncrementalDexFiles = mClassLoaderPatcher.loadDexFiles(instDexDir, instPackageName);
             if (instPackageNameDiffers) {
                 mClassLoaderPatcher.importNativeLibs(appLibDir);
-                mClassLoaderPatcher.loadDexFiles(appDexDir);
+                mClassLoaderPatcher.loadDexFiles(appDexDir, appPackageName);
             }
 
             if (isFirstRun && mClassLoaderPatcher.mIsPrimaryProcess) {

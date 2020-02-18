@@ -56,7 +56,9 @@ DisallowedFeatures AdjustDisallowedFeatures(
     adjusted_disallowed_features.oes_texture_float_linear = true;
     adjusted_disallowed_features.ext_color_buffer_half_float = true;
     adjusted_disallowed_features.oes_texture_half_float_linear = true;
+    adjusted_disallowed_features.ext_texture_filter_anisotropic = true;
     adjusted_disallowed_features.ext_float_blend = true;
+    adjusted_disallowed_features.oes_fbo_render_mipmap = true;
   }
   return adjusted_disallowed_features;
 }
@@ -124,7 +126,7 @@ ContextGroup::ContextGroup(
       shared_image_representation_factory_(
           std::make_unique<SharedImageRepresentationFactory>(
               shared_image_manager,
-              memory_tracker.get())) {
+              memory_tracker_.get())) {
   DCHECK(discardable_manager);
   DCHECK(feature_info_);
   DCHECK(mailbox_manager_);
@@ -619,18 +621,17 @@ void ContextGroup::Destroy(DecoderContext* decoder, bool have_context) {
     ReportProgress();
   }
 
-  memory_tracker_ = nullptr;
-
   if (passthrough_discardable_manager_) {
     passthrough_discardable_manager_->DeleteContextGroup(this);
   }
 
   if (passthrough_resources_) {
     gl::GLApi* api = have_context ? gl::g_current_gl_context : nullptr;
-    passthrough_resources_->Destroy(api);
+    passthrough_resources_->Destroy(api, progress_reporter_);
     passthrough_resources_.reset();
     ReportProgress();
   }
+  memory_tracker_ = nullptr;
 }
 
 uint32_t ContextGroup::GetMemRepresented() const {

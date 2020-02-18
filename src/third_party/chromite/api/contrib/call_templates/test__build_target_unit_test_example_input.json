@@ -1,1 +1,6 @@
-{"build_target": {"name": "eve"}, "result_path": "/tmp"}
+{
+  "build_target": {
+    "name": "%(build_target)s"
+  },
+  "result_path": "/tmp"
+}

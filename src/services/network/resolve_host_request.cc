@@ -19,6 +19,7 @@ namespace network {
 ResolveHostRequest::ResolveHostRequest(
     net::HostResolver* resolver,
     const net::HostPortPair& host,
+    const net::NetworkIsolationKey& network_isolation_key,
     const base::Optional<net::HostResolver::ResolveHostParameters>&
         optional_parameters,
     net::NetLog* net_log) {
@@ -26,26 +27,28 @@ ResolveHostRequest::ResolveHostRequest(
   DCHECK(net_log);
 
   internal_request_ = resolver->CreateRequest(
-      host, net::NetLogWithSource::Make(net_log, net::NetLogSourceType::NONE),
+      host, network_isolation_key,
+      net::NetLogWithSource::Make(net_log, net::NetLogSourceType::NONE),
       optional_parameters);
 }
 
 ResolveHostRequest::~ResolveHostRequest() {
-  if (control_handle_binding_.is_bound())
-    control_handle_binding_.Close();
+  control_handle_receiver_.reset();
 
   if (response_client_.is_bound()) {
-    response_client_->OnComplete(net::ERR_FAILED, base::nullopt);
-    response_client_ = nullptr;
+    response_client_->OnComplete(net::ERR_NAME_NOT_RESOLVED,
+                                 net::ResolveErrorInfo(net::ERR_FAILED),
+                                 base::nullopt);
+    response_client_.reset();
   }
 }
 
 int ResolveHostRequest::Start(
-    mojom::ResolveHostHandleRequest control_handle_request,
-    mojom::ResolveHostClientPtr response_client,
+    mojo::PendingReceiver<mojom::ResolveHostHandle> control_handle_receiver,
+    mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client,
     net::CompletionOnceCallback callback) {
   DCHECK(internal_request_);
-  DCHECK(!control_handle_binding_.is_bound());
+  DCHECK(!control_handle_receiver_.is_bound());
   DCHECK(!response_client_.is_bound());
 
   // Unretained |this| reference is safe because if |internal_request_| goes out
@@ -53,18 +56,20 @@ int ResolveHostRequest::Start(
   // callback.
   int rv = internal_request_->Start(
       base::BindOnce(&ResolveHostRequest::OnComplete, base::Unretained(this)));
+  mojo::Remote<mojom::ResolveHostClient> response_client(
+      std::move(pending_response_client));
   if (rv != net::ERR_IO_PENDING) {
-    response_client->OnComplete(rv, GetAddressResults());
+    response_client->OnComplete(rv, GetResolveErrorInfo(), GetAddressResults());
     return rv;
   }
 
-  if (control_handle_request)
-    control_handle_binding_.Bind(std::move(control_handle_request));
+  if (control_handle_receiver)
+    control_handle_receiver_.Bind(std::move(control_handle_receiver));
 
   response_client_ = std::move(response_client);
   // Unretained |this| reference is safe because connection error cannot occur
   // if |response_client_| goes out of scope.
-  response_client_.set_connection_error_handler(base::BindOnce(
+  response_client_.set_disconnect_handler(base::BindOnce(
       &ResolveHostRequest::Cancel, base::Unretained(this), net::ERR_FAILED));
 
   callback_ = std::move(callback);
@@ -80,6 +85,7 @@ void ResolveHostRequest::Cancel(int error) {
 
   internal_request_ = nullptr;
   cancelled_ = true;
+  resolve_error_info_ = net::ResolveErrorInfo(error);
   OnComplete(error);
 }
 
@@ -87,13 +93,23 @@ void ResolveHostRequest::OnComplete(int error) {
   DCHECK(response_client_.is_bound());
   DCHECK(callback_);
 
-  control_handle_binding_.Close();
+  control_handle_receiver_.reset();
   SignalNonAddressResults();
-  response_client_->OnComplete(error, GetAddressResults());
-  response_client_ = nullptr;
+  response_client_->OnComplete(error, GetResolveErrorInfo(),
+                               GetAddressResults());
+  response_client_.reset();
 
   // Invoke completion callback last as it may delete |this|.
-  std::move(callback_).Run(error);
+  std::move(callback_).Run(GetResolveErrorInfo().error);
+}
+
+net::ResolveErrorInfo ResolveHostRequest::GetResolveErrorInfo() const {
+  if (cancelled_) {
+    return resolve_error_info_;
+  }
+
+  DCHECK(internal_request_);
+  return internal_request_->GetResolveErrorInfo();
 }
 
 const base::Optional<net::AddressList>& ResolveHostRequest::GetAddressResults()

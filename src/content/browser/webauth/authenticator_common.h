@@ -117,11 +117,11 @@ class CONTENT_EXPORT AuthenticatorCommon {
 
   // Replaces the current |request_| with a |MakeCredentialRequestHandler|,
   // effectively restarting the request.
-  void StartMakeCredentialRequest();
+  void StartMakeCredentialRequest(bool allow_skipping_pin_touch);
 
   // Replaces the current |request_| with a |GetAssertionRequestHandler|,
   // effectively restarting the request.
-  void StartGetAssertionRequest();
+  void StartGetAssertionRequest(bool allow_skipping_pin_touch);
 
   bool IsFocused() const;
 
@@ -136,6 +136,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
       const std::string& type,
       const std::string& origin,
       base::span<const uint8_t> challenge,
+      bool is_cross_origin,
       bool use_legacy_u2f_type_key = false);
 
   // Callback to handle the async response from a U2fDevice.
@@ -174,7 +175,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   // The request delegate decides whether to present the user with a visual
   // error before the request is finally resolved with |status|.
   void SignalFailureToRequestDelegate(
-      const ::device::FidoAuthenticator* authenticator,
+      const device::FidoAuthenticator* authenticator,
       AuthenticatorRequestClientDelegate::InterestingFailureReason reason,
       blink::mojom::AuthenticatorStatus status);
 
@@ -193,7 +194,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   RenderFrameHost* const render_frame_host_;
   service_manager::Connector* connector_ = nullptr;
   base::flat_set<device::FidoTransportProtocol> transports_;
-
+  device::FidoDiscoveryFactory* discovery_factory_ = nullptr;
   std::unique_ptr<device::FidoRequestHandlerBase> request_;
   blink::mojom::Authenticator::MakeCredentialCallback
       make_credential_response_callback_;

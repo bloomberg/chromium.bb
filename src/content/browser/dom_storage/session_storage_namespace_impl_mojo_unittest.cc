@@ -4,20 +4,22 @@
 
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "components/services/leveldb/public/cpp/util.h"
+#include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
+#include "components/services/storage/dom_storage/async_dom_storage_database.h"
+#include "components/services/storage/dom_storage/dom_storage_database.h"
+#include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
-#include "content/browser/dom_storage/test/storage_area_test_util.h"
-#include "content/browser/site_instance_impl.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/fake_leveldb_database.h"
 #include "content/test/gmock_util.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -27,14 +29,22 @@
 #include "url/gurl.h"
 
 namespace content {
+
 namespace {
-using leveldb::StdStringToUint8Vector;
-using leveldb::mojom::DatabaseError;
+
 using NamespaceEntry = SessionStorageMetadata::NamespaceEntry;
 
 constexpr const int kTestProcessIdOrigin1 = 11;
 constexpr const int kTestProcessIdAllOrigins = 12;
 constexpr const int kTestProcessIdOrigin3 = 13;
+
+std::vector<uint8_t> StdStringToUint8Vector(const std::string& s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
+
+MATCHER(OKStatus, "Equality matcher for type OK leveldb::Status") {
+  return arg.ok();
+}
 
 class MockListener : public SessionStorageDataMap::Listener {
  public:
@@ -44,7 +54,7 @@ class MockListener : public SessionStorageDataMap::Listener {
                void(const std::vector<uint8_t>& map_id,
                     SessionStorageDataMap* map));
   MOCK_METHOD1(OnDataMapDestruction, void(const std::vector<uint8_t>& map_id));
-  MOCK_METHOD1(OnCommitResult, void(leveldb::mojom::DatabaseError error));
+  MOCK_METHOD1(OnCommitResult, void(leveldb::Status));
 };
 
 class SessionStorageNamespaceImplMojoTest
@@ -56,22 +66,45 @@ class SessionStorageNamespaceImplMojoTest
         test_namespace_id2_(base::GenerateGUID()),
         test_origin1_(url::Origin::Create(GURL("https://host1.com/"))),
         test_origin2_(url::Origin::Create(GURL("https://host2.com/"))),
-        test_origin3_(url::Origin::Create(GURL("https://host3.com/"))),
-        database_(&mock_data_) {}
+        test_origin3_(url::Origin::Create(GURL("https://host3.com/"))) {}
   ~SessionStorageNamespaceImplMojoTest() override = default;
+
+  void RunBatch(
+      std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> tasks) {
+    base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
+    database_->RunBatchDatabaseTasks(
+        std::move(tasks),
+        base::BindLambdaForTesting([&](leveldb::Status) { loop.Quit(); }));
+    loop.Run();
+  }
 
   void SetUp() override {
     // Create a database that already has a namespace saved.
+    base::RunLoop loop;
+    database_ = storage::AsyncDomStorageDatabase::OpenInMemory(
+        base::nullopt, "SessionStorageNamespaceImplMojoTest",
+        base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
+        base::BindLambdaForTesting([&](leveldb::Status) { loop.Quit(); }));
+    loop.Run();
+
     metadata_.SetupNewDatabase();
-    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
     auto entry = metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_);
-    auto map_id =
-        metadata_.RegisterNewMap(entry, test_origin1_, &save_operations);
+    auto map_id = metadata_.RegisterNewMap(entry, test_origin1_, &save_tasks);
     DCHECK(map_id->KeyPrefix() == StdStringToUint8Vector("map-0-"));
-    database_.Write(std::move(save_operations), base::DoNothing());
+    RunBatch(std::move(save_tasks));
+
     // Put some data in one of the maps.
-    mock_data_[StdStringToUint8Vector("map-0-key1")] =
-        StdStringToUint8Vector("data1");
+    base::RunLoop put_loop;
+    database_->database().PostTaskWithThisObject(
+        FROM_HERE,
+        base::BindLambdaForTesting([&](const storage::DomStorageDatabase& db) {
+          ASSERT_TRUE(db.Put(StdStringToUint8Vector("map-0-key1"),
+                             StdStringToUint8Vector("data1"))
+                          .ok());
+          put_loop.Quit();
+        }));
+    put_loop.Run();
 
     auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
     security_policy->Add(kTestProcessIdOrigin1, &browser_context_);
@@ -124,10 +157,10 @@ class SessionStorageNamespaceImplMojoTest
   scoped_refptr<SessionStorageMetadata::MapData> RegisterNewAreaMap(
       NamespaceEntry namespace_entry,
       const url::Origin& origin) {
-    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
     auto map_data =
-        metadata_.RegisterNewMap(namespace_entry, origin, &save_operations);
-    database_.Write(std::move(save_operations), base::DoNothing());
+        metadata_.RegisterNewMap(namespace_entry, origin, &save_tasks);
+    RunBatch(std::move(save_tasks));
     return map_data;
   }
 
@@ -136,22 +169,23 @@ class SessionStorageNamespaceImplMojoTest
       const std::string& destination_namespace,
       const SessionStorageNamespaceImplMojo::OriginAreas& areas_to_clone)
       override {
-    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+    std::vector<storage::AsyncDomStorageDatabase::BatchDatabaseTask> save_tasks;
     auto namespace_entry =
         metadata_.GetOrCreateNamespaceEntry(destination_namespace);
     metadata_.RegisterShallowClonedNamespace(source_namespace, namespace_entry,
-                                             &save_operations);
-    database_.Write(std::move(save_operations), base::DoNothing());
+                                             &save_tasks);
+    RunBatch(std::move(save_tasks));
 
     auto it = namespaces_.find(destination_namespace);
     if (it == namespaces_.end()) {
       auto* namespace_impl =
           CreateSessionStorageNamespaceImplMojo(destination_namespace);
-      namespace_impl->PopulateAsClone(&database_, namespace_entry,
+      namespace_impl->PopulateAsClone(database_.get(), namespace_entry,
                                       areas_to_clone);
       return;
     }
-    it->second->PopulateAsClone(&database_, namespace_entry, areas_to_clone);
+    it->second->PopulateAsClone(database_.get(), namespace_entry,
+                                areas_to_clone);
   }
 
   scoped_refptr<SessionStorageDataMap> MaybeGetExistingDataMapForId(
@@ -179,8 +213,7 @@ class SessionStorageNamespaceImplMojoTest
       data_maps_;
 
   testing::StrictMock<MockListener> listener_;
-  std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
-  FakeLevelDBDatabase database_;
+  std::unique_ptr<storage::AsyncDomStorageDatabase> database_;
 };
 
 TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoad) {
@@ -193,7 +226,8 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoad) {
       .Times(1);
 
   namespace_impl->PopulateFromMetadata(
-      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
+      database_.get(),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),
@@ -204,7 +238,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoad) {
                          leveldb_1.BindNewEndpointAndPassReceiver());
 
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(leveldb_1.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(leveldb_1.get(), &data));
   EXPECT_EQ(1ul, data.size());
   EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
@@ -226,7 +260,8 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoadWithMapOperations) {
       .Times(1);
 
   namespace_impl->PopulateFromMetadata(
-      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
+      database_.get(),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),
@@ -236,12 +271,16 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoadWithMapOperations) {
   ss_namespace->OpenArea(test_origin1_,
                          leveldb_1.BindNewEndpointAndPassReceiver());
 
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(1);
-  test::PutSync(leveldb_1.get(), StdStringToUint8Vector("key2"),
-                StdStringToUint8Vector("data2"), base::nullopt, "");
+  base::RunLoop commit_loop;
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
+      .Times(1)
+      .WillOnce(testing::Invoke([&](auto error) { commit_loop.Quit(); }));
+  storage::test::PutSync(leveldb_1.get(), StdStringToUint8Vector("key2"),
+                         StdStringToUint8Vector("data2"), base::nullopt, "");
+  commit_loop.Run();
 
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(leveldb_1.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(leveldb_1.get(), &data));
   EXPECT_EQ(2ul, data.size());
   EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
@@ -252,6 +291,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoadWithMapOperations) {
 
   EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
       .Times(1);
+
   namespaces_.clear();
 }
 
@@ -267,7 +307,8 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneBeforeBind) {
       .Times(1);
 
   namespace_impl1->PopulateFromMetadata(
-      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
+      database_.get(),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace1;
   namespace_impl1->Bind(ss_namespace1.BindNewPipeAndPassReceiver(),
@@ -285,15 +326,21 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneBeforeBind) {
                           leveldb_2.BindNewEndpointAndPassReceiver());
 
   // Do a put in the cloned namespace.
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(2);
+  base::RunLoop commit_loop;
+  auto commit_callback = base::BarrierClosure(2, commit_loop.QuitClosure());
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
+      .Times(2)
+      .WillRepeatedly(
+          testing::Invoke([&](auto error) { commit_callback.Run(); }));
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
       .Times(1);
-  test::PutSync(leveldb_2.get(), StdStringToUint8Vector("key2"),
-                StdStringToUint8Vector("data2"), base::nullopt, "");
+  storage::test::PutSync(leveldb_2.get(), StdStringToUint8Vector("key2"),
+                         StdStringToUint8Vector("data2"), base::nullopt, "");
+  commit_loop.Run();
 
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(leveldb_2.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(leveldb_2.get(), &data));
   EXPECT_EQ(2ul, data.size());
   EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
@@ -323,7 +370,8 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneAfterBind) {
       .Times(1);
 
   namespace_impl1->PopulateFromMetadata(
-      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
+      database_.get(),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace1;
   namespace_impl1->Bind(ss_namespace1.BindNewPipeAndPassReceiver(),
@@ -353,19 +401,23 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneAfterBind) {
   ASSERT_TRUE(namespace_impl2->IsPopulated());
 
   // Do a put in the cloned namespace.
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(1);
-  test::PutSync(leveldb_n2_o2.get(), StdStringToUint8Vector("key2"),
-                StdStringToUint8Vector("data2"), base::nullopt, "");
+  base::RunLoop commit_loop;
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
+      .Times(1)
+      .WillOnce(testing::Invoke([&](auto error) { commit_loop.Quit(); }));
+  storage::test::PutSync(leveldb_n2_o2.get(), StdStringToUint8Vector("key2"),
+                         StdStringToUint8Vector("data2"), base::nullopt, "");
+  commit_loop.Run();
 
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(leveldb_n2_o1.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(leveldb_n2_o1.get(), &data));
   EXPECT_EQ(1ul, data.size());
   EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
                                         StdStringToUint8Vector("data1"))));
 
   data.clear();
-  EXPECT_TRUE(test::GetAllSync(leveldb_n2_o2.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(leveldb_n2_o2.get(), &data));
   EXPECT_EQ(1ul, data.size());
   EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key2"),
@@ -387,7 +439,8 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginData) {
       .Times(1);
 
   namespace_impl->PopulateFromMetadata(
-      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
+      database_.get(),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),
@@ -399,7 +452,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginData) {
   ss_namespace.FlushForTesting();
 
   // Create an observer to make sure the deletion is observed.
-  testing::StrictMock<test::MockLevelDBObserver> mock_observer;
+  testing::StrictMock<storage::test::MockLevelDBObserver> mock_observer;
   mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
       &mock_observer);
   leveldb_1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
@@ -409,11 +462,15 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginData) {
   EXPECT_CALL(mock_observer, AllDeleted("\n"))
       .WillOnce(base::test::RunClosure(loop.QuitClosure()));
 
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(1);
+  base::RunLoop commit_loop;
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
+      .Times(1)
+      .WillOnce(testing::Invoke([&](auto error) { commit_loop.Quit(); }));
   namespace_impl->RemoveOriginData(test_origin1_, base::DoNothing());
+  commit_loop.Run();
 
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(leveldb_1.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(leveldb_1.get(), &data));
   EXPECT_EQ(0ul, data.size());
 
   // Check that the observer was notified.
@@ -433,10 +490,11 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginDataWithoutBinding) {
       .Times(1);
 
   namespace_impl->PopulateFromMetadata(
-      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
+      database_.get(),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
 
   base::RunLoop loop;
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .WillOnce(base::test::RunClosure(loop.QuitClosure()));
   namespace_impl->RemoveOriginData(test_origin1_, base::DoNothing());
   loop.Run();
@@ -457,7 +515,8 @@ TEST_F(SessionStorageNamespaceImplMojoTest, ProcessLockedToOtherOrigin) {
       .Times(1);
 
   namespace_impl->PopulateFromMetadata(
-      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
+      database_.get(),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),
@@ -484,7 +543,8 @@ TEST_F(SessionStorageNamespaceImplMojoTest, PurgeUnused) {
       .Times(1);
 
   namespace_impl->PopulateFromMetadata(
-      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
+      database_.get(),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),
@@ -517,7 +577,8 @@ TEST_F(SessionStorageNamespaceImplMojoTest, NamespaceBindingPerOrigin) {
       .Times(1);
 
   namespace_impl->PopulateFromMetadata(
-      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
+      database_.get(),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace_o1;
   namespace_impl->Bind(ss_namespace_o1.BindNewPipeAndPassReceiver(),
@@ -561,7 +622,8 @@ TEST_F(SessionStorageNamespaceImplMojoTest, ReopenClonedAreaAfterPurge) {
       .WillOnce(testing::SaveArg<1>(&data_map));
 
   namespace_impl->PopulateFromMetadata(
-      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
+      database_.get(),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
 
   mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace;
   namespace_impl->Bind(ss_namespace.BindNewPipeAndPassReceiver(),

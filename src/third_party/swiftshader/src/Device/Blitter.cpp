@@ -68,14 +68,12 @@ namespace sw
 			return;
 		}
 
-		State state(format, dstFormat, 1, dest->getSampleCountFlagBits(), { 0xF });
+		State state(format, dstFormat, 1, dest->getSampleCountFlagBits(), Options{ 0xF });
 		auto blitRoutine = getBlitRoutine(state);
 		if(!blitRoutine)
 		{
 			return;
 		}
-
-		void(*blitFunction)(const BlitData *data) = (void(*)(const BlitData*))blitRoutine->getEntry();
 
 		VkImageSubresourceLayers subresLayers =
 		{
@@ -129,7 +127,7 @@ namespace sw
 				for (uint32_t depth = subresourceRange.baseArrayLayer; depth <= lastLayer; depth++)
 				{
 					data.dest = dest->getTexelPointer({0, 0, static_cast<int32_t>(depth)}, subresLayers);
-					blitFunction(&data);
+					blitRoutine(&data);
 				}
 			}
 			else
@@ -140,7 +138,7 @@ namespace sw
 					{
 						data.dest = dest->getTexelPointer({ 0, 0, static_cast<int32_t>(depth) }, subresLayers);
 
-						blitFunction(&data);
+						blitRoutine(&data);
 					}
 				}
 			}
@@ -452,12 +450,10 @@ namespace sw
 		case VK_FORMAT_D16_UNORM:
 			c.x = Float(Int((*Pointer<UShort>(element))));
 			break;
-		case VK_FORMAT_D24_UNORM_S8_UINT:
 		case VK_FORMAT_X8_D24_UNORM_PACK32:
 			c.x = Float(Int((*Pointer<UInt>(element) & UInt(0xFFFFFF00)) >> 8));
 			break;
 		case VK_FORMAT_D32_SFLOAT:
-		case VK_FORMAT_D32_SFLOAT_S8_UINT:
 			c.x = *Pointer<Float>(element);
 			break;
 		case VK_FORMAT_S8_UINT:
@@ -987,12 +983,10 @@ namespace sw
 		case VK_FORMAT_D16_UNORM:
 			*Pointer<UShort>(element) = UShort(RoundInt(Float(c.x)));
 			break;
-		case VK_FORMAT_D24_UNORM_S8_UINT:
 		case VK_FORMAT_X8_D24_UNORM_PACK32:
 			*Pointer<UInt>(element) = UInt(RoundInt(Float(c.x)) << 8);
 			break;
 		case VK_FORMAT_D32_SFLOAT:
-		case VK_FORMAT_D32_SFLOAT_S8_UINT:
 			*Pointer<Float>(element) = c.x;
 			break;
 		case VK_FORMAT_S8_UINT:
@@ -1032,6 +1026,7 @@ namespace sw
 		case VK_FORMAT_R8G8_UINT:
 			c = Insert(c, Int(*Pointer<Byte>(element + 1)), 1);
 		case VK_FORMAT_R8_UINT:
+		case VK_FORMAT_S8_UINT:
 			c = Insert(c, Int(*Pointer<Byte>(element)), 0);
 			break;
 		case VK_FORMAT_R16G16B16A16_SINT:
@@ -1090,6 +1085,7 @@ namespace sw
 		case VK_FORMAT_R8G8B8_USCALED:
 		case VK_FORMAT_R8G8_USCALED:
 		case VK_FORMAT_R8_USCALED:
+		case VK_FORMAT_S8_UINT:
 			c = Min(As<UInt4>(c), UInt4(0xFF));
 			break;
 		case VK_FORMAT_R16G16B16A16_UINT:
@@ -1215,6 +1211,7 @@ namespace sw
 			if(writeG) { *Pointer<Byte>(element + 1) = Byte(Extract(c, 1)); }
 		case VK_FORMAT_R8_UINT:
 		case VK_FORMAT_R8_USCALED:
+		case VK_FORMAT_S8_UINT:
 			if(writeR) { *Pointer<Byte>(element) = Byte(Extract(c, 0)); }
 			break;
 		case VK_FORMAT_R16G16B16A16_SINT:
@@ -1295,7 +1292,7 @@ namespace sw
 
 	void Blitter::ApplyScaleAndClamp(Float4 &value, const State &state, bool preScaled)
 	{
-		float4 scale, unscale;
+		float4 scale{}, unscale{};
 
 		if(state.clearOperation &&
 		   state.sourceFormat.isNonNormalizedInteger() &&
@@ -1325,7 +1322,7 @@ namespace sw
 		bool srcSRGB = state.sourceFormat.isSRGBformat();
 		bool dstSRGB = state.destFormat.isSRGBformat();
 
-		if(state.convertSRGB && ((srcSRGB && !preScaled) || dstSRGB))   // One of the formats is sRGB encoded.
+		if(state.allowSRGBConversion && ((srcSRGB && !preScaled) || dstSRGB))   // One of the formats is sRGB encoded.
 		{
 			value *= preScaled ? Float4(1.0f / scale.x, 1.0f / scale.y, 1.0f / scale.z, 1.0f / scale.w) : // Unapply scale
 			                     Float4(1.0f / unscale.x, 1.0f / unscale.y, 1.0f / unscale.z, 1.0f / unscale.w); // Apply unscale
@@ -1348,18 +1345,9 @@ namespace sw
 		}
 	}
 
-	Int Blitter::ComputeOffset(Int &x, Int &y, Int &pitchB, int bytes, bool quadLayout)
+	Int Blitter::ComputeOffset(Int &x, Int &y, Int &pitchB, int bytes)
 	{
-		if(!quadLayout)
-		{
-			return y * pitchB + x * bytes;
-		}
-		else
-		{
-			// (x & ~1) * 2 + (x & 1) == (x - (x & 1)) * 2 + (x & 1) == x * 2 - (x & 1) * 2 + (x & 1) == x * 2 - (x & 1)
-			return (y & Int(~1)) * pitchB +
-			       ((y & Int(1)) * 2 + x * 2 - (x & Int(1))) * bytes;
-		}
+		return y * pitchB + x * bytes;
 	}
 
 	Float4 Blitter::LinearToSRGB(Float4 &c)
@@ -1386,9 +1374,9 @@ namespace sw
 		return s;
 	}
 
-	std::shared_ptr<Routine> Blitter::generate(const State &state)
+	Blitter::BlitRoutineType Blitter::generate(const State &state)
 	{
-		Function<Void(Pointer<Byte>)> function;
+		BlitFunction function;
 		{
 			Pointer<Byte> blit(function.Arg<0>());
 
@@ -1413,8 +1401,6 @@ namespace sw
 			bool intSrc = state.sourceFormat.isNonNormalizedInteger();
 			bool intDst = state.destFormat.isNonNormalizedInteger();
 			bool intBoth = intSrc && intDst;
-			bool srcQuadLayout = state.sourceFormat.hasQuadLayout();
-			bool dstQuadLayout = state.destFormat.hasQuadLayout();
 			int srcBytes = state.sourceFormat.bytes();
 			int dstBytes = state.destFormat.bytes();
 
@@ -1441,16 +1427,21 @@ namespace sw
 			For(Int j = y0d, j < y1d, j++)
 			{
 				Float y = state.clearOperation ? RValue<Float>(y0) : y0 + Float(j) * h;
-				Pointer<Byte> destLine = dest + (dstQuadLayout ? j & Int(~1) : RValue<Int>(j)) * dPitchB;
+				Pointer<Byte> destLine = dest + j * dPitchB;
 
 				For(Int i = x0d, i < x1d, i++)
 				{
 					Float x = state.clearOperation ? RValue<Float>(x0) : x0 + Float(i) * w;
-					Pointer<Byte> d = destLine + (dstQuadLayout ? (((j & Int(1)) << 1) + (i * 2) - (i & Int(1))) : RValue<Int>(i)) * dstBytes;
+					Pointer<Byte> d = destLine + i * dstBytes;
 
 					if(hasConstantColorI)
 					{
-						write(constantColorI, d, state);
+						for(int s = 0; s < state.destSamples; s++)
+						{
+							write(constantColorI, d, state);
+
+							d += *Pointer<Int>(blit + OFFSET(BlitData, dSliceB));
+						}
 					}
 					else if(hasConstantColorF)
 					{
@@ -1472,11 +1463,16 @@ namespace sw
 							Y = Clamp(Y, 0, sHeight - 1);
 						}
 
-						Pointer<Byte> s = source + ComputeOffset(X, Y, sPitchB, srcBytes, srcQuadLayout);
+						Pointer<Byte> s = source + ComputeOffset(X, Y, sPitchB, srcBytes);
 
 						// When both formats are true integer types, we don't go to float to avoid losing precision
 						Int4 color = readInt4(s, state);
-						write(color, d, state);
+						for(int s = 0; s < state.destSamples; s++)
+						{
+							write(color, d, state);
+
+							d += *Pointer<Int>(blit + OFFSET(BlitData,dSliceB));
+						}
 					}
 					else
 					{
@@ -1494,13 +1490,13 @@ namespace sw
 								Y = Clamp(Y, 0, sHeight - 1);
 							}
 
-							Pointer<Byte> s = source + ComputeOffset(X, Y, sPitchB, srcBytes, srcQuadLayout);
+							Pointer<Byte> s = source + ComputeOffset(X, Y, sPitchB, srcBytes);
 
 							color = readFloat4(s, state);
 
 							if(state.srcSamples > 1) // Resolve multisampled source
 							{
-								if(state.convertSRGB && state.sourceFormat.isSRGBformat()) // sRGB -> RGB
+								if(state.allowSRGBConversion && state.sourceFormat.isSRGBformat()) // sRGB -> RGB
 								{
 									ApplyScaleAndClamp(color, state);
 									preScaled = true;
@@ -1511,7 +1507,7 @@ namespace sw
 									s += *Pointer<Int>(blit + OFFSET(BlitData, sSliceB));
 									color = readFloat4(s, state);
 
-									if(state.convertSRGB && state.sourceFormat.isSRGBformat()) // sRGB -> RGB
+									if(state.allowSRGBConversion && state.sourceFormat.isSRGBformat()) // sRGB -> RGB
 									{
 										ApplyScaleAndClamp(color, state);
 										preScaled = true;
@@ -1543,17 +1539,17 @@ namespace sw
 							X1 = IfThenElse(X1 >= sWidth, X0, X1);
 							Y1 = IfThenElse(Y1 >= sHeight, Y0, Y1);
 
-							Pointer<Byte> s00 = source + ComputeOffset(X0, Y0, sPitchB, srcBytes, srcQuadLayout);
-							Pointer<Byte> s01 = source + ComputeOffset(X1, Y0, sPitchB, srcBytes, srcQuadLayout);
-							Pointer<Byte> s10 = source + ComputeOffset(X0, Y1, sPitchB, srcBytes, srcQuadLayout);
-							Pointer<Byte> s11 = source + ComputeOffset(X1, Y1, sPitchB, srcBytes, srcQuadLayout);
+							Pointer<Byte> s00 = source + ComputeOffset(X0, Y0, sPitchB, srcBytes);
+							Pointer<Byte> s01 = source + ComputeOffset(X1, Y0, sPitchB, srcBytes);
+							Pointer<Byte> s10 = source + ComputeOffset(X0, Y1, sPitchB, srcBytes);
+							Pointer<Byte> s11 = source + ComputeOffset(X1, Y1, sPitchB, srcBytes);
 
 							Float4 c00 = readFloat4(s00, state);
 							Float4 c01 = readFloat4(s01, state);
 							Float4 c10 = readFloat4(s10, state);
 							Float4 c11 = readFloat4(s11, state);
 
-							if(state.convertSRGB && state.sourceFormat.isSRGBformat()) // sRGB -> RGB
+							if(state.allowSRGBConversion && state.sourceFormat.isSRGBformat()) // sRGB -> RGB
 							{
 								ApplyScaleAndClamp(c00, state);
 								ApplyScaleAndClamp(c01, state);
@@ -1587,7 +1583,7 @@ namespace sw
 		return function("BlitRoutine");
 	}
 
-	std::shared_ptr<Routine> Blitter::getBlitRoutine(const State &state)
+	Blitter::BlitRoutineType Blitter::getBlitRoutine(const State &state)
 	{
 		std::unique_lock<std::mutex> lock(blitMutex);
 		auto blitRoutine = blitCache.query(state);
@@ -1601,7 +1597,7 @@ namespace sw
 		return blitRoutine;
 	}
 
-	std::shared_ptr<Routine> Blitter::getCornerUpdateRoutine(const State &state)
+	Blitter::CornerUpdateRoutineType Blitter::getCornerUpdateRoutine(const State &state)
 	{
 		std::unique_lock<std::mutex> lock(cornerUpdateMutex);
 		auto cornerUpdateRoutine = cornerUpdateCache.query(state);
@@ -1619,16 +1615,13 @@ namespace sw
 	{
 		auto aspect = static_cast<VkImageAspectFlagBits>(subresource.aspectMask);
 		auto format = src->getFormat(aspect);
-		State state(format, format.getNonQuadLayoutFormat(), VK_SAMPLE_COUNT_1_BIT, VK_SAMPLE_COUNT_1_BIT,
-					{false, false});
+		State state(format, format, VK_SAMPLE_COUNT_1_BIT, VK_SAMPLE_COUNT_1_BIT, Options{false, false});
 
 		auto blitRoutine = getBlitRoutine(state);
 		if(!blitRoutine)
 		{
 			return;
 		}
-
-		void(*blitFunction)(const BlitData *data) = (void(*)(const BlitData*))blitRoutine->getEntry();
 
 		BlitData data =
 		{
@@ -1674,7 +1667,7 @@ namespace sw
 			{
 				data.source = src->getTexelPointer(srcOffset, srcSubresLayers);
 				ASSERT(data.source < src->end());
-				blitFunction(&data);
+				blitRoutine(&data);
 				srcOffset.z++;
 				data.dest = (dst += bufferSlicePitch);
 			}
@@ -1685,16 +1678,13 @@ namespace sw
 	{
 		auto aspect = static_cast<VkImageAspectFlagBits>(subresource.aspectMask);
 		auto format = dst->getFormat(aspect);
-		State state(format.getNonQuadLayoutFormat(), format, VK_SAMPLE_COUNT_1_BIT, VK_SAMPLE_COUNT_1_BIT,
-					{false, false});
+		State state(format, format, VK_SAMPLE_COUNT_1_BIT, VK_SAMPLE_COUNT_1_BIT, Options{false, false});
 
 		auto blitRoutine = getBlitRoutine(state);
 		if(!blitRoutine)
 		{
 			return;
 		}
-
-		void(*blitFunction)(const BlitData *data) = (void(*)(const BlitData*))blitRoutine->getEntry();
 
 		BlitData data =
 		{
@@ -1705,7 +1695,10 @@ namespace sw
 			bufferSlicePitch, // sSliceB
 			dst->slicePitchBytes(aspect, subresource.mipLevel), // dSliceB
 
-			0, 0, 1, 1,
+			static_cast<float>(-offset.x), // x0
+			static_cast<float>(-offset.y), // y0
+			1.0f, // w
+			1.0f, // h
 
 			offset.y, // y0d
 			static_cast<int>(offset.y + extent.height), // y1d
@@ -1740,7 +1733,7 @@ namespace sw
 			{
 				data.dest = dst->getTexelPointer(dstOffset, dstSubresLayers);
 				ASSERT(data.dest < dst->end());
-				blitFunction(&data);
+				blitRoutine(&data);
 				dstOffset.z++;
 				data.source = (src += bufferSlicePitch);
 			}
@@ -1786,9 +1779,17 @@ namespace sw
 		float x0 = region.srcOffsets[0].x + (0.5f - region.dstOffsets[0].x) * widthRatio;
 		float y0 = region.srcOffsets[0].y + (0.5f - region.dstOffsets[0].y) * heightRatio;
 
+		auto srcFormat = src->getFormat(srcAspect);
+		auto dstFormat = dst->getFormat(dstAspect);
+
 		bool doFilter = (filter != VK_FILTER_NEAREST);
+		bool allowSRGBConversion =
+			doFilter ||
+			(src->getSampleCountFlagBits() > 1) ||
+			(srcFormat.isSRGBformat() != dstFormat.isSRGBformat());
+
 		State state(src->getFormat(srcAspect), dst->getFormat(dstAspect), src->getSampleCountFlagBits(), dst->getSampleCountFlagBits(),
-		            { doFilter, doFilter || (src->getSampleCountFlagBits() > 1) });
+		            Options{ doFilter, allowSRGBConversion });
 		state.clampToEdge = (region.srcOffsets[0].x < 0) ||
 		                    (region.srcOffsets[0].y < 0) ||
 		                    (static_cast<uint32_t>(region.srcOffsets[1].x) > srcExtent.width) ||
@@ -1800,8 +1801,6 @@ namespace sw
 		{
 			return;
 		}
-
-		void(*blitFunction)(const BlitData *data) = (void(*)(const BlitData*))blitRoutine->getEntry();
 
 		BlitData data =
 		{
@@ -1869,7 +1868,7 @@ namespace sw
 				ASSERT(data.source < src->end());
 				ASSERT(data.dest < dst->end());
 
-				blitFunction(&data);
+				blitRoutine(&data);
 				srcOffset.z++;
 				dstOffset.z++;
 			}
@@ -1879,18 +1878,17 @@ namespace sw
 	void Blitter::computeCubeCorner(Pointer<Byte>& layer, Int& x0, Int& x1, Int& y0, Int& y1, Int& pitchB, const State& state)
 	{
 		int bytes = state.sourceFormat.bytes();
-		bool quadLayout = state.sourceFormat.hasQuadLayout();
 
-		Float4 c = readFloat4(layer + ComputeOffset(x0, y1, pitchB, bytes, quadLayout), state) +
-		           readFloat4(layer + ComputeOffset(x1, y0, pitchB, bytes, quadLayout), state) +
-		           readFloat4(layer + ComputeOffset(x1, y1, pitchB, bytes, quadLayout), state);
+		Float4 c = readFloat4(layer + ComputeOffset(x0, y1, pitchB, bytes), state) +
+		           readFloat4(layer + ComputeOffset(x1, y0, pitchB, bytes), state) +
+		           readFloat4(layer + ComputeOffset(x1, y1, pitchB, bytes), state);
 
 		c *= Float4(1.0f / 3.0f);
 
-		write(c, layer + ComputeOffset(x0, y0, pitchB, bytes, quadLayout), state);
+		write(c, layer + ComputeOffset(x0, y0, pitchB, bytes), state);
 	}
 
-	std::shared_ptr<Routine> Blitter::generateCornerUpdate(const State& state)
+	Blitter::CornerUpdateRoutineType Blitter::generateCornerUpdate(const State& state)
 	{
 		// Reading and writing from/to the same image
 		ASSERT(state.sourceFormat == state.destFormat);
@@ -1901,7 +1899,7 @@ namespace sw
 			UNIMPLEMENTED("state.srcSamples %d", state.srcSamples);
 		}
 
-		Function<Void(Pointer<Byte>)> function;
+		CornerUpdateFunction function;
 		{
 			Pointer<Byte> blit(function.Arg<0>());
 
@@ -1984,7 +1982,7 @@ namespace sw
 		VkImageAspectFlagBits aspect = static_cast<VkImageAspectFlagBits>(subresourceLayers.aspectMask);
 		vk::Format format = image->getFormat(aspect);
 		VkSampleCountFlagBits samples = image->getSampleCountFlagBits();
-		State state(format, format, samples, samples, { 0xF });
+		State state(format, format, samples, samples, Options{ 0xF });
 
 		if(samples != VK_SAMPLE_COUNT_1_BIT)
 		{
@@ -1997,8 +1995,6 @@ namespace sw
 			return;
 		}
 
-		void(*cornerUpdateFunction)(const CubeBorderData *data) = (void(*)(const CubeBorderData*))cornerUpdateRoutine->getEntry();
-
 		VkExtent3D extent = image->getMipLevelExtent(aspect, subresourceLayers.mipLevel);
 		CubeBorderData data =
 		{
@@ -2007,7 +2003,7 @@ namespace sw
 			static_cast<uint32_t>(image->getLayerSize(aspect)),
 			extent.width
 		};
-		cornerUpdateFunction(&data);
+		cornerUpdateRoutine(&data);
 	}
 
 	void Blitter::copyCubeEdge(vk::Image* image,

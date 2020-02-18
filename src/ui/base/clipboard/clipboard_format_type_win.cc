@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,7 +30,17 @@ ClipboardFormatType::ClipboardFormatType(UINT native_format,
                                          DWORD tymed)
     : data_{/* .cfFormat */ static_cast<CLIPFORMAT>(native_format),
             /* .ptd */ nullptr, /* .dwAspect */ DVASPECT_CONTENT,
-            /* .lindex */ index, /* .tymed*/ tymed} {}
+            /* .lindex */ index, /* .tymed*/ tymed} {
+  // Log the frequency of invalid formats being input into the constructor.
+  if (!native_format) {
+    static int error_count = 0;
+    ++error_count;
+    // TODO(https://crbug.com/1000919): Evaluate and remove UMA metrics after
+    // enough data is gathered.
+    base::UmaHistogramCounts100("Clipboard.RegisterClipboardFormatFailure",
+                                error_count);
+  }
+}
 
 ClipboardFormatType::~ClipboardFormatType() = default;
 
@@ -41,6 +52,8 @@ std::string ClipboardFormatType::Serialize() const {
 ClipboardFormatType ClipboardFormatType::Deserialize(
     const std::string& serialization) {
   int clipboard_format = -1;
+  // |serialization| is expected to be a string representing the Windows
+  // data_.cfFormat (format number) returned by GetType.
   if (!base::StringToInt(serialization, &clipboard_format)) {
     NOTREACHED();
     return ClipboardFormatType();

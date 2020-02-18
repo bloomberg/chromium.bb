@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
@@ -40,6 +41,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/accessibility/accessibility_features.h"
 
 namespace content {
 
@@ -102,14 +104,25 @@ void DumpAccessibilityTestBase::SetUpOnMainThread() {
 }
 
 void DumpAccessibilityTestBase::SetUp() {
+  std::vector<base::Feature> enabled_features;
+  std::vector<base::Feature> disabled_features;
+
+  // Enable exposing "display: none" nodes to the browser process for testing.
+  enabled_features.emplace_back(
+      features::kEnableAccessibilityExposeARIAAnnotations);
+
+  // Enable exposing ARIA Annotation roles.
+  enabled_features.emplace_back(
+      features::kEnableAccessibilityExposeDisplayNone);
+
   // TODO(dmazzoni): DumpAccessibilityTree expectations are based on the
   // assumption that the accessibility labels feature is off. (There are
   // also several tests that explicitly enable the feature.) It'd be better
   // if DumpAccessibilityTree tests assumed that the feature is on by
   // default instead.  http://crbug.com/940330
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kExperimentalAccessibilityLabels);
+  disabled_features.emplace_back(features::kExperimentalAccessibilityLabels);
 
+  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   ContentBrowserTest::SetUp();
 }
 
@@ -121,18 +134,16 @@ DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
       PropertyFilter(base::ASCIIToUTF16("*"), PropertyFilter::ALLOW));
   formatter->SetPropertyFilters(property_filters);
   formatter->set_show_ids(true);
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
   base::string16 ax_tree_dump;
-  formatter->FormatAccessibilityTree(
-      web_contents->GetRootBrowserAccessibilityManager()->GetRoot(),
-      &ax_tree_dump);
+  formatter->FormatAccessibilityTreeForTesting(
+      GetRootAccessibilityNode(shell()->web_contents()), &ax_tree_dump);
   return ax_tree_dump;
 }
 
 void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
     const std::string& test_html,
     std::vector<std::string>* wait_for,
+    std::vector<std::string>* execute,
     std::vector<std::string>* run_until,
     std::vector<std::string>* default_action_on) {
   for (const std::string& line : base::SplitString(
@@ -142,6 +153,7 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
     const std::string& deny_str = formatter_->GetDenyString();
     const std::string& deny_node_str = formatter_->GetDenyNodeString();
     const std::string& wait_str = "@WAIT-FOR:";
+    const std::string& execute_str = "@EXECUTE-AND-WAIT-FOR:";
     const std::string& until_str = "@RUN-UNTIL-EVENT:";
     const std::string& default_action_on_str = "@DEFAULT-ACTION-ON:";
     if (base::StartsWith(line, allow_empty_str, base::CompareCase::SENSITIVE)) {
@@ -169,6 +181,9 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
       }
     } else if (base::StartsWith(line, wait_str, base::CompareCase::SENSITIVE)) {
       wait_for->push_back(line.substr(wait_str.size()));
+    } else if (base::StartsWith(line, execute_str,
+                                base::CompareCase::SENSITIVE)) {
+      execute->push_back(line.substr(execute_str.size()));
     } else if (base::StartsWith(line, until_str,
                                 base::CompareCase::SENSITIVE)) {
       run_until->push_back(line.substr(until_str.size()));
@@ -255,13 +270,14 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
   // Parse filters and other directives in the test file.
   std::vector<std::string> wait_for;
+  std::vector<std::string> execute;
   std::vector<std::string> run_until;
   std::vector<std::string> default_action_on;
   property_filters_.clear();
   node_filters_.clear();
   formatter_->AddDefaultFilters(&property_filters_);
   AddDefaultFilters(&property_filters_);
-  ParseHtmlForExtraDirectives(html_contents, &wait_for, &run_until,
+  ParseHtmlForExtraDirectives(html_contents, &wait_for, &execute, &run_until,
                               &default_action_on);
 
   // Get the test URL.
@@ -291,8 +307,19 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kClicked);
+    BrowserAccessibility* action_element;
 
-    BrowserAccessibility* action_element = FindNode(str);
+    size_t parent_node_delimiter_index = str.find(",");
+    if (parent_node_delimiter_index != std::string::npos) {
+      auto node_name = str.substr(0, parent_node_delimiter_index);
+      auto parent_node_name = str.substr(parent_node_delimiter_index + 1);
+
+      BrowserAccessibility* parent_node = FindNode(parent_node_name);
+      DCHECK(parent_node) << "Parent node name provided but not found";
+      action_element = FindNode(node_name, parent_node);
+    } else {
+      action_element = FindNode(str);
+    }
 
     ui::AXActionData action_data;
     action_data.action = ax::mojom::Action::kDoDefault;
@@ -374,6 +401,35 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   // Call the subclass to dump the output.
   std::vector<std::string> actual_lines = Dump(run_until);
 
+  // Execute and wait for specified string
+  for (const auto& function_name : execute) {
+    DLOG(INFO) << "executing: " << function_name;
+    base::Value result =
+        ExecuteScriptAndGetValue(web_contents->GetMainFrame(), function_name);
+    const std::string& str = result.is_string() ? result.GetString() : "";
+    // If no string is specified, do not wait.
+    bool wait_for_string = str != "";
+    while (wait_for_string) {
+      // Loop until specified string is found.
+      base::string16 tree_dump = DumpUnfilteredAccessibilityTreeAsString();
+      if (base::UTF16ToUTF8(tree_dump).find(str) != std::string::npos) {
+        wait_for_string = false;
+        // Append an additional dump if the specified string was found.
+        std::vector<std::string> additional_dump = Dump(run_until);
+        actual_lines.emplace_back("=== Start Continuation ===");
+        actual_lines.insert(actual_lines.end(), additional_dump.begin(),
+                            additional_dump.end());
+        break;
+      }
+      // Block until the next accessibility notification in any frame.
+      VLOG(1) << "Still waiting on this text to be found: " << str;
+      VLOG(1) << "Waiting until the next accessibility event";
+      AccessibilityNotificationWaiter accessibility_waiter(
+          web_contents, ui::AXMode(), ax::mojom::Event::kNone);
+      accessibility_waiter.WaitForNotification();
+    }
+  }
+
   // Validate against the expectation file.
   bool matches_expectation = test_helper.ValidateAgainstExpectation(
       file_path, expected_file, actual_lines, *expected_lines);
@@ -383,10 +439,14 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 }
 
 BrowserAccessibility* DumpAccessibilityTestBase::FindNode(
-    const std::string& name) {
-  BrowserAccessibility* root = GetManager()->GetRoot();
-  CHECK(root);
-  return FindNodeInSubtree(*root, name);
+    const std::string& name,
+    BrowserAccessibility* search_root) {
+  if (!search_root)
+    search_root = GetManager()->GetRoot();
+
+  CHECK(search_root);
+  BrowserAccessibility* node = FindNodeInSubtree(*search_root, name);
+  return node;
 }
 
 BrowserAccessibilityManager* DumpAccessibilityTestBase::GetManager() {
@@ -398,9 +458,8 @@ BrowserAccessibilityManager* DumpAccessibilityTestBase::GetManager() {
 BrowserAccessibility* DumpAccessibilityTestBase::FindNodeInSubtree(
     BrowserAccessibility& node,
     const std::string& name) {
-  if (node.GetStringAttribute(ax::mojom::StringAttribute::kName) == name) {
+  if (node.GetStringAttribute(ax::mojom::StringAttribute::kName) == name)
     return &node;
-  }
 
   for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
     BrowserAccessibility* result =

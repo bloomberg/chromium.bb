@@ -27,7 +27,7 @@ void DisplayFavicon(scoped_refptr<cc::UIResourceLayer> layer,
                     const float bar_margin,
                     const base::RepeatingCallback<void()>& favicon_callback) {
   const float bounds_width =
-      android::OverlayPanelLayer::kDefaultIconWidthDp * dp_to_px;
+      android::EphemeralTabLayer::kFaviconWidthDp * dp_to_px;
 
   // Dimension to which favicons are resized - half the size of default icon.
   const float icon_size = bounds_width / 2.0f;
@@ -58,6 +58,8 @@ void EphemeralTabLayer::SetProperties(
     content::WebContents* web_contents,
     int title_view_resource_id,
     int caption_view_resource_id,
+    int security_icon_resource_id,
+    jfloat security_icon_opacity,
     jfloat caption_animation_percentage,
     jfloat text_layer_min_height,
     jfloat title_caption_spacing,
@@ -76,15 +78,15 @@ void EphemeralTabLayer::SetProperties(
     float bar_height,
     bool bar_border_visible,
     float bar_border_height,
-    bool bar_shadow_visible,
     int icon_color,
     int drag_handlebar_color,
     jfloat favicon_opacity,
     bool progress_bar_visible,
     float progress_bar_height,
     float progress_bar_opacity,
-    int progress_bar_completion,
-    int separator_line_color) {
+    float progress_bar_completion,
+    int separator_line_color,
+    bool is_new_layout) {
   if (web_contents_ != web_contents) {
     web_contents_ = web_contents;
     if (web_contents_) {
@@ -107,11 +109,19 @@ void EphemeralTabLayer::SetProperties(
       dp_to_px, content_layer, bar_height, panel_x, panel_y, panel_width,
       panel_height, bar_background_color, bar_margin_side, bar_margin_top,
       bar_height, 0.0f, title_opacity, bar_border_visible, bar_border_height,
-      bar_shadow_visible, icon_color, drag_handlebar_color,
-      1.0f /* icon opacity */, separator_line_color);
+      icon_color, drag_handlebar_color, 1.0f /* icon opacity */,
+      separator_line_color);
 
-  SetupTextLayer(bar_top, bar_height, text_layer_min_height,
-                 caption_view_resource_id, caption_animation_percentage,
+  // Content setup, to center in space below drag handle (when present).
+  int content_top = bar_top;
+  int content_height = bar_height;
+  if (is_new_layout) {
+    content_top += bar_margin_top;
+    content_height -= bar_margin_top;
+  }
+  SetupTextLayer(content_top, content_height, text_layer_min_height,
+                 caption_view_resource_id, security_icon_resource_id,
+                 security_icon_opacity, caption_animation_percentage,
                  caption_visible, title_view_resource_id,
                  title_caption_spacing);
 
@@ -129,10 +139,12 @@ void EphemeralTabLayer::SetProperties(
   panel_icon_->SetOpacity(1 - favicon_opacity);
 }
 
-void EphemeralTabLayer::SetupTextLayer(float bar_top,
-                                       float bar_height,
+void EphemeralTabLayer::SetupTextLayer(float content_top,
+                                       float content_height,
                                        float text_layer_min_height,
-                                       int caption_resource_id,
+                                       int caption_view_resource_id,
+                                       int security_icon_resource_id,
+                                       float security_icon_opacity,
                                        float animation_percentage,
                                        bool caption_visible,
                                        int title_resource_id,
@@ -158,19 +170,35 @@ void EphemeralTabLayer::SetupTextLayer(float bar_top,
   if (caption_visible) {
     // Grabs the dynamic Search Caption resource so we can get a snapshot.
     caption_resource = resource_manager_->GetResource(
-        ui::ANDROID_RESOURCE_TYPE_DYNAMIC, caption_resource_id);
+        ui::ANDROID_RESOURCE_TYPE_DYNAMIC, caption_view_resource_id);
   }
 
   if (animation_percentage != 0.f) {
-    if (caption_->parent() != text_layer_) {
+    if (caption_->parent() != text_layer_)
       text_layer_->AddChild(caption_);
-    }
+
+    if (security_icon_layer_->parent() != text_layer_)
+      text_layer_->AddChild(security_icon_layer_);
     if (caption_resource) {
       caption_->SetUIResourceId(caption_resource->ui_resource()->id());
       caption_->SetBounds(caption_resource->size());
     }
-  } else if (caption_->parent()) {
-    caption_->RemoveFromParent();
+  } else {
+    if (caption_->parent())
+      caption_->RemoveFromParent();
+    if (security_icon_layer_->parent())
+      security_icon_layer_->RemoveFromParent();
+  }
+
+  // Set up security icon layer
+  if (security_icon_resource_id) {
+    ui::Resource* security_icon_resource =
+        resource_manager_->GetStaticResourceWithTint(security_icon_resource_id,
+                                                     0);
+    security_icon_layer_->SetUIResourceId(
+        security_icon_resource->ui_resource()->id());
+    security_icon_layer_->SetBounds(gfx::ScaleToRoundedSize(
+        security_icon_resource->size(), kSecurityIconScale));
   }
 
   // ---------------------------------------------------------------------------
@@ -185,7 +213,7 @@ void EphemeralTabLayer::SetupTextLayer(float bar_top,
   float layer_width =
       std::max(title_->bounds().width(), caption_->bounds().width());
 
-  float layer_top = bar_top + (bar_height - layer_height) / 2;
+  float layer_top = content_top + (content_height - layer_height) / 2;
   text_layer_->SetBounds(gfx::Size(layer_width, layer_height));
   text_layer_->SetPosition(gfx::PointF(0.f, layer_top));
   text_layer_->SetMasksToBounds(true);
@@ -228,7 +256,32 @@ void EphemeralTabLayer::SetupTextLayer(float bar_top,
                       caption_top_end * animation_percentage;
 
   title_->SetPosition(gfx::PointF(0.f, title_top));
-  caption_->SetPosition(gfx::PointF(0.f, caption_top));
+  bool is_rtl = l10n_util::IsLayoutRtl();
+  float caption_left = 0.f;
+  if (is_rtl && security_icon_resource_id) {
+    caption_left = security_icon_layer_->bounds().width();
+  }
+  caption_->SetPosition(gfx::PointF(caption_left, caption_top));
+
+  // Security icon
+  if (!security_icon_resource_id)
+    return;
+
+  float icon_x;
+  if (is_rtl) {
+    icon_x = bar_margin_side_ * 2 + close_icon_->bounds().width();
+    if (open_tab_icon_resource_id_ != kInvalidResourceID) {
+      icon_x += bar_margin_side_ * 2 + open_tab_icon_->bounds().width();
+    }
+  } else {
+    icon_x = bar_margin_side_ +
+             (kFaviconWidthDp + kSecurityIconMarginStartDp) * dp_to_px_;
+  }
+  float icon_y = caption_top + (caption_->bounds().height() -
+                                security_icon_layer_->bounds().height()) /
+                                   2;
+  security_icon_layer_->SetPosition(gfx::PointF(icon_x, icon_y));
+  security_icon_layer_->SetOpacity(security_icon_opacity);
 }
 
 void EphemeralTabLayer::OnFaviconUpdated(
@@ -264,11 +317,13 @@ EphemeralTabLayer::EphemeralTabLayer(
       title_(cc::UIResourceLayer::Create()),
       caption_(cc::UIResourceLayer::Create()),
       favicon_layer_(cc::UIResourceLayer::Create()),
+      security_icon_layer_(cc::UIResourceLayer::Create()),
       text_layer_(cc::UIResourceLayer::Create()) {
   // Content layer
   text_layer_->SetIsDrawable(true);
   title_->SetIsDrawable(true);
   caption_->SetIsDrawable(true);
+  security_icon_layer_->SetIsDrawable(true);
 
   AddBarTextLayer(text_layer_);
   text_layer_->AddChild(title_);

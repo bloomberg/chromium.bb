@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_features.h"
@@ -35,15 +34,15 @@ class NetworkSessionConfiguratorTest : public testing::Test {
  public:
   NetworkSessionConfiguratorTest()
       : quic_user_agent_id_("Chrome/52.0.2709.0 Linux x86_64") {
-    field_trial_list_.reset(new base::FieldTrialList(
-        std::make_unique<base::MockEntropyProvider>()));
+    scoped_feature_list_.Init();
     variations::testing::ClearAllVariationParams();
   }
 
   void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line) {
     network_session_configurator::ParseCommandLineAndFieldTrials(
         command_line,
-        /*is_quic_force_disabled=*/false, quic_user_agent_id_, &params_);
+        /*is_quic_force_disabled=*/false, quic_user_agent_id_, &params_,
+        &quic_params_);
   }
 
   void ParseFieldTrials() {
@@ -52,8 +51,9 @@ class NetworkSessionConfiguratorTest : public testing::Test {
   }
 
   std::string quic_user_agent_id_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   net::HttpNetworkSession::Params params_;
+  net::QuicParams quic_params_;
 };
 
 TEST_F(NetworkSessionConfiguratorTest, Defaults) {
@@ -71,9 +71,8 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
 
   EXPECT_FALSE(params_.enable_quic);
   EXPECT_FALSE(params_.enable_quic_proxies_for_https_urls);
-  EXPECT_EQ("Chrome/52.0.2709.0 Linux x86_64",
-            params_.quic_params.user_agent_id);
-  EXPECT_EQ(0u, params_.quic_params.origins_to_force_quic_on.size());
+  EXPECT_EQ("Chrome/52.0.2709.0 Linux x86_64", quic_params_.user_agent_id);
+  EXPECT_EQ(0u, quic_params_.origins_to_force_quic_on.size());
 }
 
 TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialGroupNameDoesNotMatter) {
@@ -102,39 +101,34 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.enable_quic);
-  EXPECT_FALSE(params_.quic_params.mark_quic_broken_when_network_blackholes);
-  EXPECT_TRUE(params_.quic_params.retry_without_alt_svc_on_quic_errors);
-  EXPECT_FALSE(params_.quic_params.support_ietf_format_quic_altsvc);
-  EXPECT_EQ(1350u, params_.quic_params.max_packet_length);
-  EXPECT_EQ(quic::QuicTagVector(), params_.quic_params.connection_options);
-  EXPECT_EQ(quic::QuicTagVector(),
-            params_.quic_params.client_connection_options);
+  EXPECT_TRUE(quic_params_.retry_without_alt_svc_on_quic_errors);
+  EXPECT_EQ(1350u, quic_params_.max_packet_length);
+  EXPECT_EQ(quic::QuicTagVector(), quic_params_.connection_options);
+  EXPECT_EQ(quic::QuicTagVector(), quic_params_.client_connection_options);
   EXPECT_FALSE(params_.enable_server_push_cancellation);
-  EXPECT_FALSE(params_.quic_params.close_sessions_on_ip_change);
-  EXPECT_FALSE(params_.quic_params.goaway_sessions_on_ip_change);
-  EXPECT_EQ(net::kIdleConnectionTimeout,
-            params_.quic_params.idle_connection_timeout);
+  EXPECT_FALSE(quic_params_.close_sessions_on_ip_change);
+  EXPECT_FALSE(quic_params_.goaway_sessions_on_ip_change);
+  EXPECT_EQ(net::kIdleConnectionTimeout, quic_params_.idle_connection_timeout);
   EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kPingTimeoutSecs),
-            params_.quic_params.reduced_ping_timeout);
+            quic_params_.reduced_ping_timeout);
   EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kMaxTimeForCryptoHandshakeSecs),
-            params_.quic_params.max_time_before_crypto_handshake);
+            quic_params_.max_time_before_crypto_handshake);
   EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kInitialIdleTimeoutSecs),
-            params_.quic_params.max_idle_time_before_crypto_handshake);
-  EXPECT_FALSE(params_.quic_params.race_cert_verification);
-  EXPECT_FALSE(params_.quic_params.estimate_initial_rtt);
-  EXPECT_FALSE(params_.quic_params.migrate_sessions_on_network_change_v2);
-  EXPECT_FALSE(params_.quic_params.migrate_sessions_early_v2);
-  EXPECT_FALSE(params_.quic_params.retry_on_alternate_network_before_handshake);
-  EXPECT_FALSE(params_.quic_params.migrate_idle_sessions);
-  EXPECT_FALSE(params_.quic_params.go_away_on_path_degrading);
-  EXPECT_TRUE(params_.quic_params.initial_rtt_for_handshake.is_zero());
-  EXPECT_FALSE(params_.quic_params.allow_server_migration);
+            quic_params_.max_idle_time_before_crypto_handshake);
+  EXPECT_FALSE(quic_params_.race_cert_verification);
+  EXPECT_FALSE(quic_params_.estimate_initial_rtt);
+  EXPECT_FALSE(quic_params_.migrate_sessions_on_network_change_v2);
+  EXPECT_FALSE(quic_params_.migrate_sessions_early_v2);
+  EXPECT_FALSE(quic_params_.retry_on_alternate_network_before_handshake);
+  EXPECT_FALSE(quic_params_.migrate_idle_sessions);
+  EXPECT_FALSE(quic_params_.go_away_on_path_degrading);
+  EXPECT_TRUE(quic_params_.initial_rtt_for_handshake.is_zero());
+  EXPECT_FALSE(quic_params_.allow_server_migration);
   EXPECT_TRUE(params_.quic_host_allowlist.empty());
-  EXPECT_TRUE(params_.quic_params.retransmittable_on_wire_timeout.is_zero());
+  EXPECT_TRUE(quic_params_.retransmittable_on_wire_timeout.is_zero());
 
-  net::HttpNetworkSession::Params default_params;
-  EXPECT_EQ(default_params.quic_params.supported_versions,
-            params_.quic_params.supported_versions);
+  EXPECT_EQ(net::DefaultSupportedQuicVersions(),
+            quic_params_.supported_versions);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromParams) {
@@ -169,18 +163,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicProxiesForHttpsUrls) {
   EXPECT_TRUE(params_.enable_quic_proxies_for_https_urls);
 }
 
-TEST_F(NetworkSessionConfiguratorTest,
-       MarkQuicBrokenWhenNetworkBlackholesFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["mark_quic_broken_when_network_blackholes"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_params.mark_quic_broken_when_network_blackholes);
-}
-
 TEST_F(NetworkSessionConfiguratorTest, DisableRetryWithoutAltSvcOnQuicErrors) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["retry_without_alt_svc_on_quic_errors"] = "false";
@@ -189,18 +171,7 @@ TEST_F(NetworkSessionConfiguratorTest, DisableRetryWithoutAltSvcOnQuicErrors) {
 
   ParseFieldTrials();
 
-  EXPECT_FALSE(params_.quic_params.retry_without_alt_svc_on_quic_errors);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, SupportIetfFormatQuicAltSvc) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["support_ietf_format_quic_altsvc"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_params.support_ietf_format_quic_altsvc);
+  EXPECT_FALSE(quic_params_.retry_without_alt_svc_on_quic_errors);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -212,7 +183,7 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.close_sessions_on_ip_change);
+  EXPECT_TRUE(quic_params_.close_sessions_on_ip_change);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -224,7 +195,7 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.goaway_sessions_on_ip_change);
+  EXPECT_TRUE(quic_params_.goaway_sessions_on_ip_change);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -237,7 +208,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1000),
-            params_.quic_params.retransmittable_on_wire_timeout);
+            quic_params_.retransmittable_on_wire_timeout);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -250,7 +221,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(300),
-            params_.quic_params.idle_connection_timeout);
+            quic_params_.idle_connection_timeout);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -261,7 +232,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
   EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kPingTimeoutSecs),
-            params_.quic_params.reduced_ping_timeout);
+            quic_params_.reduced_ping_timeout);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -272,7 +243,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
   EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kPingTimeoutSecs),
-            params_.quic_params.reduced_ping_timeout);
+            quic_params_.reduced_ping_timeout);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -283,7 +254,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
   EXPECT_EQ(base::TimeDelta::FromSeconds(10),
-            params_.quic_params.reduced_ping_timeout);
+            quic_params_.reduced_ping_timeout);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -294,7 +265,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
   EXPECT_EQ(base::TimeDelta::FromSeconds(7),
-            params_.quic_params.max_time_before_crypto_handshake);
+            quic_params_.max_time_before_crypto_handshake);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -305,7 +276,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
   EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kMaxTimeForCryptoHandshakeSecs),
-            params_.quic_params.max_time_before_crypto_handshake);
+            quic_params_.max_time_before_crypto_handshake);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -316,7 +287,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
   EXPECT_EQ(base::TimeDelta::FromSeconds(11),
-            params_.quic_params.max_idle_time_before_crypto_handshake);
+            quic_params_.max_idle_time_before_crypto_handshake);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -327,7 +298,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
   EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kInitialIdleTimeoutSecs),
-            params_.quic_params.max_idle_time_before_crypto_handshake);
+            quic_params_.max_idle_time_before_crypto_handshake);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicRaceCertVerification) {
@@ -338,7 +309,7 @@ TEST_F(NetworkSessionConfiguratorTest, QuicRaceCertVerification) {
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.race_cert_verification);
+  EXPECT_TRUE(quic_params_.race_cert_verification);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, EnableServerPushCancellation) {
@@ -360,7 +331,7 @@ TEST_F(NetworkSessionConfiguratorTest, QuicEstimateInitialRtt) {
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.estimate_initial_rtt);
+  EXPECT_TRUE(quic_params_.estimate_initial_rtt);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -372,7 +343,7 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.migrate_sessions_on_network_change_v2);
+  EXPECT_TRUE(quic_params_.migrate_sessions_on_network_change_v2);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -384,7 +355,7 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.migrate_sessions_early_v2);
+  EXPECT_TRUE(quic_params_.migrate_sessions_early_v2);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -396,7 +367,7 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.retry_on_alternate_network_before_handshake);
+  EXPECT_TRUE(quic_params_.retry_on_alternate_network_before_handshake);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -408,7 +379,7 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.go_away_on_path_degrading);
+  EXPECT_TRUE(quic_params_.go_away_on_path_degrading);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -421,9 +392,9 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.migrate_idle_sessions);
+  EXPECT_TRUE(quic_params_.migrate_idle_sessions);
   EXPECT_EQ(base::TimeDelta::FromSeconds(15),
-            params_.quic_params.idle_session_migration_period);
+            quic_params_.idle_session_migration_period);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -436,7 +407,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(10),
-            params_.quic_params.max_time_on_non_default_network);
+            quic_params_.max_time_on_non_default_network);
 }
 
 TEST_F(
@@ -450,9 +421,8 @@ TEST_F(
 
   ParseFieldTrials();
 
-  EXPECT_EQ(
-      3,
-      params_.quic_params.max_migrations_to_non_default_network_on_write_error);
+  EXPECT_EQ(3,
+            quic_params_.max_migrations_to_non_default_network_on_write_error);
 }
 
 TEST_F(
@@ -466,20 +436,20 @@ TEST_F(
 
   ParseFieldTrials();
 
-  EXPECT_EQ(4, params_.quic_params
-                   .max_migrations_to_non_default_network_on_path_degrading);
+  EXPECT_EQ(
+      4, quic_params_.max_migrations_to_non_default_network_on_path_degrading);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
-       QuicAllowServerMigrationFromFieldTrialParams) {
+       QuicAllowPortMigrationFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
-  field_trial_params["allow_server_migration"] = "true";
+  field_trial_params["allow_port_migration"] = "true";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.allow_server_migration);
+  EXPECT_TRUE(quic_params_.allow_port_migration);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromFieldTrialParams) {
@@ -490,7 +460,7 @@ TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromFieldTrialParams) {
 
   ParseFieldTrials();
 
-  EXPECT_EQ(1450u, params_.quic_params.max_packet_length);
+  EXPECT_EQ(1450u, quic_params_.max_packet_length);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
@@ -505,7 +475,7 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
   quic::ParsedQuicVersionVector supported_versions = {
       {quic::PROTOCOL_QUIC_CRYPTO,
        quic::AllSupportedTransportVersions().back()}};
-  EXPECT_EQ(supported_versions, params_.quic_params.supported_versions);
+  EXPECT_EQ(supported_versions, quic_params_.supported_versions);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParamsAlpn) {
@@ -518,7 +488,7 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParamsAlpn) {
 
   quic::ParsedQuicVersionVector supported_versions = {
       {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_48}};
-  EXPECT_EQ(supported_versions, params_.quic_params.supported_versions);
+  EXPECT_EQ(supported_versions, quic_params_.supported_versions);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -541,7 +511,7 @@ TEST_F(NetworkSessionConfiguratorTest,
       {quic::PROTOCOL_QUIC_CRYPTO, version1},
       {quic::PROTOCOL_QUIC_CRYPTO, version2},
   };
-  EXPECT_EQ(supported_versions, params_.quic_params.supported_versions);
+  EXPECT_EQ(supported_versions, quic_params_.supported_versions);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, SameQuicVersionsFromFieldTrialParams) {
@@ -559,7 +529,7 @@ TEST_F(NetworkSessionConfiguratorTest, SameQuicVersionsFromFieldTrialParams) {
 
   quic::ParsedQuicVersionVector supported_versions;
   supported_versions.push_back(quic::AllSupportedVersions().front());
-  EXPECT_EQ(supported_versions, params_.quic_params.supported_versions);
+  EXPECT_EQ(supported_versions, quic_params_.supported_versions);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -575,7 +545,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   options.push_back(quic::kTIME);
   options.push_back(quic::kTBBR);
   options.push_back(quic::kREJ);
-  EXPECT_EQ(options, params_.quic_params.connection_options);
+  EXPECT_EQ(options, quic_params_.connection_options);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -590,7 +560,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   quic::QuicTagVector options;
   options.push_back(quic::kTBBR);
   options.push_back(quic::k1RTT);
-  EXPECT_EQ(options, params_.quic_params.client_connection_options);
+  EXPECT_EQ(options, quic_params_.client_connection_options);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicHostAllowlist) {
@@ -618,18 +588,18 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHostAllowlistEmpty) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicFlags) {
-  FLAGS_quic_supports_tls_handshake = false;
+  FLAGS_quic_reloadable_flag_quic_supports_tls_handshake = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_99 = false;
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["set_quic_flags"] =
-      "FLAGS_quic_supports_tls_handshake=true,"
+      "FLAGS_quic_reloadable_flag_quic_supports_tls_handshake=true,"
       "FLAGS_quic_reloadable_flag_quic_enable_version_99=true";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(FLAGS_quic_supports_tls_handshake);
+  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_supports_tls_handshake);
   EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_99);
 }
 
@@ -690,7 +660,7 @@ TEST_F(NetworkSessionConfiguratorTest, QuicConnectionOptions) {
   expected_options.push_back(quic::kTIME);
   expected_options.push_back(quic::kTBBR);
   expected_options.push_back(quic::kREJ);
-  EXPECT_EQ(expected_options, params_.quic_params.connection_options);
+  EXPECT_EQ(expected_options, quic_params_.connection_options);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicMaxPacketLength) {
@@ -698,7 +668,7 @@ TEST_F(NetworkSessionConfiguratorTest, QuicMaxPacketLength) {
   command_line.AppendSwitch(switches::kEnableQuic);
   command_line.AppendSwitchASCII(switches::kQuicMaxPacketLength, "42");
   ParseCommandLineAndFieldTrials(command_line);
-  EXPECT_EQ(42u, params_.quic_params.max_packet_length);
+  EXPECT_EQ(42u, quic_params_.max_packet_length);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicVersion) {
@@ -710,9 +680,8 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersion) {
     command_line.AppendSwitchASCII(switches::kQuicVersion,
                                    quic::QuicVersionToString(version));
     ParseCommandLineAndFieldTrials(command_line);
-    ASSERT_EQ(1u, params_.quic_params.supported_versions.size());
-    EXPECT_EQ(version,
-              params_.quic_params.supported_versions[0].transport_version);
+    ASSERT_EQ(1u, quic_params_.supported_versions.size());
+    EXPECT_EQ(version, quic_params_.supported_versions[0].transport_version);
   }
 }
 
@@ -725,7 +694,7 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersionAlpn) {
 
   quic::ParsedQuicVersionVector supported_versions = {
       {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_48}};
-  EXPECT_EQ(supported_versions, params_.quic_params.supported_versions);
+  EXPECT_EQ(supported_versions, quic_params_.supported_versions);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, OriginToForceQuicOn) {
@@ -733,9 +702,9 @@ TEST_F(NetworkSessionConfiguratorTest, OriginToForceQuicOn) {
   command_line.AppendSwitch(switches::kEnableQuic);
   command_line.AppendSwitchASCII(switches::kOriginToForceQuicOn, "*");
   ParseCommandLineAndFieldTrials(command_line);
-  EXPECT_EQ(1u, params_.quic_params.origins_to_force_quic_on.size());
-  EXPECT_EQ(1u, params_.quic_params.origins_to_force_quic_on.count(
-                    net::HostPortPair()));
+  EXPECT_EQ(1u, quic_params_.origins_to_force_quic_on.size());
+  EXPECT_EQ(1u,
+            quic_params_.origins_to_force_quic_on.count(net::HostPortPair()));
 }
 
 TEST_F(NetworkSessionConfiguratorTest, OriginToForceQuicOn2) {
@@ -743,8 +712,8 @@ TEST_F(NetworkSessionConfiguratorTest, OriginToForceQuicOn2) {
   command_line.AppendSwitch(switches::kEnableQuic);
   command_line.AppendSwitchASCII(switches::kOriginToForceQuicOn, "foo:1234");
   ParseCommandLineAndFieldTrials(command_line);
-  EXPECT_EQ(1u, params_.quic_params.origins_to_force_quic_on.size());
-  EXPECT_EQ(1u, params_.quic_params.origins_to_force_quic_on.count(
+  EXPECT_EQ(1u, quic_params_.origins_to_force_quic_on.size());
+  EXPECT_EQ(1u, quic_params_.origins_to_force_quic_on.count(
                     net::HostPortPair("foo", 1234)));
 }
 
@@ -753,10 +722,10 @@ TEST_F(NetworkSessionConfiguratorTest, OriginToForceQuicOn3) {
   command_line.AppendSwitch(switches::kEnableQuic);
   command_line.AppendSwitchASCII(switches::kOriginToForceQuicOn, "foo:1,bar:2");
   ParseCommandLineAndFieldTrials(command_line);
-  EXPECT_EQ(2u, params_.quic_params.origins_to_force_quic_on.size());
-  EXPECT_EQ(1u, params_.quic_params.origins_to_force_quic_on.count(
+  EXPECT_EQ(2u, quic_params_.origins_to_force_quic_on.size());
+  EXPECT_EQ(1u, quic_params_.origins_to_force_quic_on.count(
                     net::HostPortPair("foo", 1)));
-  EXPECT_EQ(1u, params_.quic_params.origins_to_force_quic_on.count(
+  EXPECT_EQ(1u, quic_params_.origins_to_force_quic_on.count(
                     net::HostPortPair("bar", 2)));
 }
 
@@ -839,10 +808,26 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHeadersIncludeH2StreamDependency) {
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.headers_include_h2_stream_dependency);
+  EXPECT_TRUE(quic_params_.headers_include_h2_stream_dependency);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, Http2GreaseSettings) {
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseSettingsFromCommandLine) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kHttp2GreaseSettings);
+
+  ParseCommandLineAndFieldTrials(command_line);
+
+  bool greased_setting_found = false;
+  for (const auto& setting : params_.http2_settings) {
+    if ((setting.first & 0x0f0f) == 0x0a0a) {
+      greased_setting_found = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(greased_setting_found);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseSettingsFromFieldTrial) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["http2_grease_settings"] = "true";
   variations::AssociateVariationParams("HTTP2", "Enabled", field_trial_params);
@@ -860,7 +845,18 @@ TEST_F(NetworkSessionConfiguratorTest, Http2GreaseSettings) {
   EXPECT_TRUE(greased_setting_found);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, Http2GreaseFrameType) {
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseFrameTypeFromCommandLine) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kHttp2GreaseFrameType);
+
+  ParseCommandLineAndFieldTrials(command_line);
+
+  ASSERT_TRUE(params_.greased_http2_frame);
+  const uint8_t frame_type = params_.greased_http2_frame.value().type;
+  EXPECT_EQ(0x0b, frame_type % 0x1f);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2GreaseFrameTypeFromFieldTrial) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["http2_grease_frame_type"] = "true";
   variations::AssociateVariationParams("HTTP2", "Enabled", field_trial_params);
@@ -905,7 +901,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(500),
-            params_.quic_params.initial_rtt_for_handshake);
+            quic_params_.initial_rtt_for_handshake);
 }
 
 }  // namespace network_session_configurator

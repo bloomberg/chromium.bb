@@ -321,7 +321,8 @@ void FakeSessionManagerClient::StartSession(
   user_sessions_[cryptohome_id.account_id()] = user_id_hash;
 }
 
-void FakeSessionManagerClient::StopSession() {
+void FakeSessionManagerClient::StopSession(
+    login_manager::SessionStopReason reason) {
   session_stopped_ = true;
 }
 
@@ -674,6 +675,12 @@ void FakeSessionManagerClient::GetArcStartTime(
       FROM_HERE, std::move(callback),
       arc_available_ ? base::make_optional(arc_start_time_) : base::nullopt);
 }
+
+void FakeSessionManagerClient::EnableAdbSideload(
+    EnableAdbSideloadCallback callback) {}
+
+void FakeSessionManagerClient::QueryAdbSideload(
+    QueryAdbSideloadCallback callback) {}
 
 void FakeSessionManagerClient::NotifyArcInstanceStopped() {
   for (auto& observer : observers_)

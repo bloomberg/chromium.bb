@@ -49,6 +49,7 @@ const char* kSwitchesToPropagate[] = {
     kExtendedSafeBrowsingEnabledSwitch,
     switches::kTestChildProcess,
     kTestingSwitch,
+    kTestLoggingPathSwitch,
 };
 
 std::map<SandboxType, base::Process>* g_target_processes = nullptr;  // Leaked.
@@ -280,8 +281,9 @@ ResultCode StartSandboxTarget(const base::CommandLine& sandbox_command_line,
       &last_win_error, &temp_process_info);
   if (sandbox_result != sandbox::SBOX_ALL_OK) {
     LOG(DFATAL) << "Failed to spawn sandbox target: " << sandbox_result
-                << " , last sandbox warning : " << last_sbox_warning
-                << " , last windows error: " << last_win_error;
+                << ", last sandbox warning: " << last_sbox_warning
+                << ", last windows error: "
+                << logging::SystemErrorCodeToString(last_win_error);
     return RESULT_CODE_FAILED_TO_START_SANDBOX_PROCESS;
   }
 

@@ -12,8 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/simple_test_tick_clock.h"
-#include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/unittest_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,8 +58,6 @@ void InitializeSiteDataProto(SiteDataProto* site_data) {
   site_data->mutable_updates_title_in_background()->CopyFrom(
       used_feature_proto);
   site_data->mutable_uses_audio_in_background()->CopyFrom(used_feature_proto);
-  site_data->mutable_uses_notifications_in_background()->CopyFrom(
-      used_feature_proto);
 
   DCHECK(site_data->IsInitialized());
 }
@@ -74,9 +71,7 @@ class SiteDataReaderTest : public ::testing::Test {
   // SiteDataImpl is protected and not visible to
   // base::MakeRefCounted.
   SiteDataReaderTest() {
-    PerformanceManagerClock::SetClockForTesting(&test_clock_);
 
-    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     test_impl_ = base::WrapRefCounted(new internal::SiteDataImpl(
         url::Origin::Create(GURL("foo.com")), &delegate_, &data_store_));
     test_impl_->NotifySiteLoaded();
@@ -88,12 +83,14 @@ class SiteDataReaderTest : public ::testing::Test {
   ~SiteDataReaderTest() override {
     test_impl_->NotifySiteUnloaded(
         performance_manager::TabVisibility::kBackground);
-    PerformanceManagerClock::ResetClockForTesting();
+  }
+  void AdvanceClock(base::TimeDelta delta) {
+    task_environment_.FastForwardBy(delta);
   }
 
-  base::SimpleTestTickClock test_clock_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
-  // The mock delegate used by the SiteDataImpl objects
   // created by this class, NiceMock is used to avoid having to set expectations
   // in test cases that don't care about this.
   ::testing::NiceMock<testing::MockSiteDataImplOnDestroyDelegate> delegate_;
@@ -118,8 +115,6 @@ TEST_F(SiteDataReaderTest, TestAccessors) {
             reader_->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            reader_->UsesNotificationsInBackground());
 
   // Simulates a title update event, make sure it gets reported directly.
   test_impl_->NotifyUpdatesTitleInBackground();
@@ -129,7 +124,7 @@ TEST_F(SiteDataReaderTest, TestAccessors) {
 
   // Advance the clock by a large amount of time, enough for the unused features
   // observation windows to expire.
-  test_clock_.Advance(base::TimeDelta::FromDays(31));
+  AdvanceClock(base::TimeDelta::FromDays(31));
 
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
             reader_->UpdatesFaviconInBackground());
@@ -137,8 +132,6 @@ TEST_F(SiteDataReaderTest, TestAccessors) {
             reader_->UpdatesTitleInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
             reader_->UsesAudioInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
-            reader_->UsesNotificationsInBackground());
 }
 
 TEST_F(SiteDataReaderTest, FreeingReaderDoesntCauseWriteOperation) {

@@ -6,14 +6,19 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
+#include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_12_decrypter.h"
+#include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/aes_128_gcm_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
+#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_hkdf.h"
@@ -24,21 +29,36 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_endian.h"
 
 namespace quic {
 
+namespace {
+
+// Implements the HKDF-Expand-Label function as defined in section 7.1 of RFC
+// 8446, except that it uses "quic " as the prefix instead of "tls13 ", as
+// specified by draft-ietf-quic-tls-14. The HKDF-Expand-Label function takes 4
+// explicit arguments (Secret, Label, Context, and Length), as well as
+// implicit PRF which is the hash function negotiated by TLS. Its use in QUIC
+// (as needed by the QUIC stack, instead of as used internally by the TLS
+// stack) is only for deriving initial secrets for obfuscation and for
+// calculating packet protection keys and IVs from the corresponding packet
+// protection secret. Neither of these uses need a Context (a zero-length
+// context is provided), so this argument is omitted here.
+//
+// The implicit PRF is explicitly passed into HkdfExpandLabel as |prf|; the
+// Secret, Label, and Length are passed in as |secret|, |label|, and
+// |out_len|, respectively. The resulting expanded secret is returned.
+//
 // TODO(nharper): HkdfExpandLabel and SetKeyAndIV (below) implement what is
 // specified in draft-ietf-quic-tls-16. The latest editors' draft has changed
 // derivation again, and this will need to be updated to reflect those (and any
 // other future) changes.
-// static
-std::vector<uint8_t> CryptoUtils::HkdfExpandLabel(
-    const EVP_MD* prf,
-    const std::vector<uint8_t>& secret,
-    const std::string& label,
-    size_t out_len) {
+std::vector<uint8_t> HkdfExpandLabel(const EVP_MD* prf,
+                                     const std::vector<uint8_t>& secret,
+                                     const std::string& label,
+                                     size_t out_len) {
   bssl::ScopedCBB quic_hkdf_label;
   CBB inner_label;
   const char label_prefix[] = "tls13 ";
@@ -69,15 +89,17 @@ std::vector<uint8_t> CryptoUtils::HkdfExpandLabel(
   return out;
 }
 
+}  // namespace
+
 void CryptoUtils::SetKeyAndIV(const EVP_MD* prf,
                               const std::vector<uint8_t>& pp_secret,
                               QuicCrypter* crypter) {
-  std::vector<uint8_t> key = CryptoUtils::HkdfExpandLabel(
-      prf, pp_secret, "quic key", crypter->GetKeySize());
-  std::vector<uint8_t> iv = CryptoUtils::HkdfExpandLabel(
-      prf, pp_secret, "quic iv", crypter->GetIVSize());
-  std::vector<uint8_t> pn = CryptoUtils::HkdfExpandLabel(
-      prf, pp_secret, "quic hp", crypter->GetKeySize());
+  std::vector<uint8_t> key =
+      HkdfExpandLabel(prf, pp_secret, "quic key", crypter->GetKeySize());
+  std::vector<uint8_t> iv =
+      HkdfExpandLabel(prf, pp_secret, "quic iv", crypter->GetIVSize());
+  std::vector<uint8_t> pn =
+      HkdfExpandLabel(prf, pp_secret, "quic hp", crypter->GetKeySize());
   crypter->SetKey(
       QuicStringPiece(reinterpret_cast<char*>(key.data()), key.size()));
   crypter->SetIV(
@@ -88,38 +110,122 @@ void CryptoUtils::SetKeyAndIV(const EVP_MD* prf,
 
 namespace {
 
-static_assert(kQuicIetfDraftVersion == 22, "Salts do not match draft version");
-// Salt from https://tools.ietf.org/html/draft-ietf-quic-tls-22#section-5.2
-const uint8_t kInitialSalt[] = {0x7f, 0xbc, 0xdb, 0x0e, 0x7c, 0x66, 0xbb,
-                                0xe9, 0x19, 0x3a, 0x96, 0xcd, 0x21, 0x51,
-                                0x9e, 0xbd, 0x7a, 0x02, 0x64, 0x4a};
+static_assert(kQuicIetfDraftVersion == 24, "Salts do not match draft version");
+// Salt from https://tools.ietf.org/html/draft-ietf-quic-tls-24#section-5.2
+const uint8_t kDraft23InitialSalt[] = {0xc3, 0xee, 0xf7, 0x12, 0xc7, 0x2e, 0xbb,
+                                       0x5a, 0x11, 0xa7, 0xd2, 0x43, 0x2b, 0xb4,
+                                       0x63, 0x65, 0xbe, 0xf9, 0xf5, 0x02};
+
+// Salts used by deployed versions of QUIC. When introducing a new version,
+// generate a new salt by running `openssl rand -hex 20`.
+
+// Salt to use for initial obfuscators in version T048.
+const uint8_t kT048Salt[] = {0x1f, 0x89, 0xf6, 0xe7, 0xc2, 0x18, 0xf4,
+                             0x2e, 0x6c, 0xe1, 0x9e, 0x91, 0xb2, 0x23,
+                             0xbb, 0x4c, 0x47, 0xc9, 0x12, 0xff};
+// Salt to use for initial obfuscators in version T049.
+const uint8_t kT049Salt[] = {0x69, 0xe5, 0x79, 0x2a, 0x41, 0xd0, 0xa2,
+                             0x9c, 0xf9, 0xbc, 0x5c, 0x04, 0x5a, 0xeb,
+                             0xcf, 0xeb, 0x51, 0xf6, 0x9f, 0x22};
+// Salt to use for initial obfuscators in version Q050.
+const uint8_t kQ050Salt[] = {0x50, 0x45, 0x74, 0xef, 0xd0, 0x66, 0xfe,
+                             0x2f, 0x9d, 0x94, 0x5c, 0xfc, 0xdb, 0xd3,
+                             0xa7, 0xf0, 0xd3, 0xb5, 0x6b, 0x45};
+// Salt to use for initial obfuscators in version T050.
+const uint8_t kT050Salt[] = {0x7f, 0xf5, 0x79, 0xe5, 0xac, 0xd0, 0x72,
+                             0x91, 0x55, 0x80, 0x30, 0x4c, 0x43, 0xa2,
+                             0x36, 0x7c, 0x60, 0x48, 0x83, 0x10};
+// Salt to use for initial obfuscators in version Q099.
+const uint8_t kQ099Salt[] = {0xc0, 0xa2, 0xee, 0x20, 0xc7, 0xe1, 0x83,
+                             0x74, 0xc8, 0xa1, 0xa0, 0xc8, 0xa5, 0x21,
+                             0xb5, 0x31, 0xee, 0x04, 0x7e, 0xc8};
+
+const uint8_t* InitialSaltForVersion(const ParsedQuicVersion& version,
+                                     size_t* out_len) {
+  static_assert(QUIC_ARRAYSIZE(kSupportedTransportVersions) == 6u,
+                "Supported versions out of sync with initial encryption salts");
+  switch (version.handshake_protocol) {
+    case PROTOCOL_QUIC_CRYPTO:
+      switch (version.transport_version) {
+        case QUIC_VERSION_50:
+          *out_len = QUIC_ARRAYSIZE(kQ050Salt);
+          return kQ050Salt;
+        case QUIC_VERSION_99:
+          *out_len = QUIC_ARRAYSIZE(kQ099Salt);
+          return kQ099Salt;
+        case QUIC_VERSION_RESERVED_FOR_NEGOTIATION:
+          // It doesn't matter what salt we use for
+          // QUIC_VERSION_RESERVED_FOR_NEGOTIATION, but some tests try to use a
+          // QuicFramer with QUIC_VERSION_RESERVED_FOR_NEGOTIATION and will hit
+          // the following QUIC_BUG if there isn't a case for it. ):
+          *out_len = QUIC_ARRAYSIZE(kDraft23InitialSalt);
+          return kDraft23InitialSalt;
+        default:
+          QUIC_BUG << "No initial obfuscation salt for version " << version;
+      }
+      break;
+    case PROTOCOL_TLS1_3:
+      switch (version.transport_version) {
+        case QUIC_VERSION_48:
+          *out_len = QUIC_ARRAYSIZE(kT048Salt);
+          return kT048Salt;
+        case QUIC_VERSION_49:
+          *out_len = QUIC_ARRAYSIZE(kT049Salt);
+          return kT049Salt;
+        case QUIC_VERSION_50:
+          *out_len = QUIC_ARRAYSIZE(kT050Salt);
+          return kT050Salt;
+        case QUIC_VERSION_99:
+          // ParsedQuicVersion(PROTOCOL_TLS1_3, QUIC_VERSION_99) uses the IETF
+          // salt.
+          *out_len = QUIC_ARRAYSIZE(kDraft23InitialSalt);
+          return kDraft23InitialSalt;
+        default:
+          QUIC_BUG << "No initial obfuscation salt for version " << version;
+      }
+      break;
+    case PROTOCOL_UNSUPPORTED:
+    default:
+      QUIC_BUG << "No initial obfuscation salt for version " << version;
+  }
+  *out_len = QUIC_ARRAYSIZE(kDraft23InitialSalt);
+  return kDraft23InitialSalt;
+}
 
 const char kPreSharedKeyLabel[] = "QUIC PSK";
 
 }  // namespace
 
 // static
-void CryptoUtils::CreateTlsInitialCrypters(Perspective perspective,
-                                           QuicTransportVersion version,
+void CryptoUtils::CreateInitialObfuscators(Perspective perspective,
+                                           ParsedQuicVersion version,
                                            QuicConnectionId connection_id,
                                            CrypterPair* crypters) {
   QUIC_DLOG(INFO) << "Creating "
                   << (perspective == Perspective::IS_CLIENT ? "client"
                                                             : "server")
-                  << " TLS crypters for " << connection_id;
-  QUIC_BUG_IF(!QuicUtils::IsConnectionIdValidForVersion(connection_id, version))
+                  << " crypters for version " << version << " with CID "
+                  << connection_id;
+  if (!version.UsesInitialObfuscators()) {
+    crypters->encrypter = std::make_unique<NullEncrypter>(perspective);
+    crypters->decrypter = std::make_unique<NullDecrypter>(perspective);
+    return;
+  }
+  QUIC_BUG_IF(!QuicUtils::IsConnectionIdValidForVersion(
+      connection_id, version.transport_version))
       << "CreateTlsInitialCrypters: attempted to use connection ID "
-      << connection_id << " which is invalid with version "
-      << QuicVersionToString(version);
+      << connection_id << " which is invalid with version " << version;
   const EVP_MD* hash = EVP_sha256();
 
+  size_t salt_len;
+  const uint8_t* salt = InitialSaltForVersion(version, &salt_len);
   std::vector<uint8_t> handshake_secret;
   handshake_secret.resize(EVP_MAX_MD_SIZE);
   size_t handshake_secret_len;
-  const bool hkdf_extract_success = HKDF_extract(
-      handshake_secret.data(), &handshake_secret_len, hash,
-      reinterpret_cast<const uint8_t*>(connection_id.data()),
-      connection_id.length(), kInitialSalt, QUIC_ARRAYSIZE(kInitialSalt));
+  const bool hkdf_extract_success =
+      HKDF_extract(handshake_secret.data(), &handshake_secret_len, hash,
+                   reinterpret_cast<const uint8_t*>(connection_id.data()),
+                   connection_id.length(), salt, salt_len);
   QUIC_BUG_IF(!hkdf_extract_success)
       << "HKDF_extract failed when creating initial crypters";
   handshake_secret.resize(handshake_secret_len);
@@ -134,14 +240,14 @@ void CryptoUtils::CreateTlsInitialCrypters(Perspective perspective,
     encryption_label = server_label;
     decryption_label = client_label;
   }
-  crypters->encrypter = QuicMakeUnique<Aes128GcmEncrypter>();
   std::vector<uint8_t> encryption_secret = HkdfExpandLabel(
       hash, handshake_secret, encryption_label, EVP_MD_size(hash));
+  crypters->encrypter = std::make_unique<Aes128GcmEncrypter>();
   SetKeyAndIV(hash, encryption_secret, crypters->encrypter.get());
 
-  crypters->decrypter = QuicMakeUnique<Aes128GcmDecrypter>();
   std::vector<uint8_t> decryption_secret = HkdfExpandLabel(
       hash, handshake_secret, decryption_label, EVP_MD_size(hash));
+  crypters->decrypter = std::make_unique<Aes128GcmDecrypter>();
   SetKeyAndIV(hash, decryption_secret, crypters->decrypter.get());
 }
 
@@ -173,7 +279,8 @@ void CryptoUtils::GenerateNonce(QuicWallTime now,
 }
 
 // static
-bool CryptoUtils::DeriveKeys(QuicStringPiece premaster_secret,
+bool CryptoUtils::DeriveKeys(const ParsedQuicVersion& version,
+                             QuicStringPiece premaster_secret,
                              QuicTag aead,
                              QuicStringPiece client_nonce,
                              QuicStringPiece server_nonce,
@@ -191,9 +298,9 @@ bool CryptoUtils::DeriveKeys(QuicStringPiece premaster_secret,
                                              pre_shared_key.size() + 8 +
                                              premaster_secret.size() + 8;
 
-    psk_premaster_secret = QuicMakeUnique<char[]>(psk_premaster_secret_size);
+    psk_premaster_secret = std::make_unique<char[]>(psk_premaster_secret_size);
     QuicDataWriter writer(psk_premaster_secret_size, psk_premaster_secret.get(),
-                          HOST_BYTE_ORDER);
+                          quiche::HOST_BYTE_ORDER);
 
     if (!writer.WriteStringPiece(label) || !writer.WriteUInt8(0) ||
         !writer.WriteStringPiece(pre_shared_key) ||
@@ -208,10 +315,14 @@ bool CryptoUtils::DeriveKeys(QuicStringPiece premaster_secret,
         QuicStringPiece(psk_premaster_secret.get(), psk_premaster_secret_size);
   }
 
-  crypters->encrypter = QuicEncrypter::Create(aead);
-  crypters->decrypter = QuicDecrypter::Create(aead);
+  crypters->encrypter = QuicEncrypter::Create(version, aead);
+  crypters->decrypter = QuicDecrypter::Create(version, aead);
+
   size_t key_bytes = crypters->encrypter->GetKeySize();
   size_t nonce_prefix_bytes = crypters->encrypter->GetNoncePrefixSize();
+  if (version.UsesInitialObfuscators()) {
+    nonce_prefix_bytes = crypters->encrypter->GetIVSize();
+  }
   size_t subkey_secret_bytes =
       subkey_secret == nullptr ? 0 : premaster_secret.length();
 
@@ -233,22 +344,26 @@ bool CryptoUtils::DeriveKeys(QuicStringPiece premaster_secret,
     case Diversification::NEVER: {
       if (perspective == Perspective::IS_SERVER) {
         if (!crypters->encrypter->SetKey(hkdf.server_write_key()) ||
-            !crypters->encrypter->SetNoncePrefix(hkdf.server_write_iv()) ||
+            !crypters->encrypter->SetNoncePrefixOrIV(version,
+                                                     hkdf.server_write_iv()) ||
             !crypters->encrypter->SetHeaderProtectionKey(
                 hkdf.server_hp_key()) ||
             !crypters->decrypter->SetKey(hkdf.client_write_key()) ||
-            !crypters->decrypter->SetNoncePrefix(hkdf.client_write_iv()) ||
+            !crypters->decrypter->SetNoncePrefixOrIV(version,
+                                                     hkdf.client_write_iv()) ||
             !crypters->decrypter->SetHeaderProtectionKey(
                 hkdf.client_hp_key())) {
           return false;
         }
       } else {
         if (!crypters->encrypter->SetKey(hkdf.client_write_key()) ||
-            !crypters->encrypter->SetNoncePrefix(hkdf.client_write_iv()) ||
+            !crypters->encrypter->SetNoncePrefixOrIV(version,
+                                                     hkdf.client_write_iv()) ||
             !crypters->encrypter->SetHeaderProtectionKey(
                 hkdf.client_hp_key()) ||
             !crypters->decrypter->SetKey(hkdf.server_write_key()) ||
-            !crypters->decrypter->SetNoncePrefix(hkdf.server_write_iv()) ||
+            !crypters->decrypter->SetNoncePrefixOrIV(version,
+                                                     hkdf.server_write_iv()) ||
             !crypters->decrypter->SetHeaderProtectionKey(
                 hkdf.server_hp_key())) {
           return false;
@@ -263,10 +378,12 @@ bool CryptoUtils::DeriveKeys(QuicStringPiece premaster_secret,
       }
 
       if (!crypters->encrypter->SetKey(hkdf.client_write_key()) ||
-          !crypters->encrypter->SetNoncePrefix(hkdf.client_write_iv()) ||
+          !crypters->encrypter->SetNoncePrefixOrIV(version,
+                                                   hkdf.client_write_iv()) ||
           !crypters->encrypter->SetHeaderProtectionKey(hkdf.client_hp_key()) ||
           !crypters->decrypter->SetPreliminaryKey(hkdf.server_write_key()) ||
-          !crypters->decrypter->SetNoncePrefix(hkdf.server_write_iv()) ||
+          !crypters->decrypter->SetNoncePrefixOrIV(version,
+                                                   hkdf.server_write_iv()) ||
           !crypters->decrypter->SetHeaderProtectionKey(hkdf.server_hp_key())) {
         return false;
       }
@@ -284,10 +401,11 @@ bool CryptoUtils::DeriveKeys(QuicStringPiece premaster_secret,
           *diversification.nonce(), key_bytes, nonce_prefix_bytes, &key,
           &nonce_prefix);
       if (!crypters->decrypter->SetKey(hkdf.client_write_key()) ||
-          !crypters->decrypter->SetNoncePrefix(hkdf.client_write_iv()) ||
+          !crypters->decrypter->SetNoncePrefixOrIV(version,
+                                                   hkdf.client_write_iv()) ||
           !crypters->decrypter->SetHeaderProtectionKey(hkdf.client_hp_key()) ||
           !crypters->encrypter->SetKey(key) ||
-          !crypters->encrypter->SetNoncePrefix(nonce_prefix) ||
+          !crypters->encrypter->SetNoncePrefixOrIV(version, nonce_prefix) ||
           !crypters->encrypter->SetHeaderProtectionKey(hkdf.server_hp_key())) {
         return false;
       }

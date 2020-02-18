@@ -105,7 +105,7 @@ class CPURegister : public RegisterBase<CPURegister, kRegAfterLast> {
   enum RegisterType { kRegister, kVRegister, kNoRegister };
 
   static constexpr CPURegister no_reg() {
-    return CPURegister{0, 0, kNoRegister};
+    return CPURegister{kCode_no_reg, 0, kNoRegister};
   }
 
   template <int code, int size, RegisterType type>
@@ -121,49 +121,45 @@ class CPURegister : public RegisterBase<CPURegister, kRegAfterLast> {
 
   RegisterType type() const { return reg_type_; }
   int SizeInBits() const {
-    DCHECK(IsValid());
+    DCHECK(is_valid());
     return reg_size_;
   }
   int SizeInBytes() const {
-    DCHECK(IsValid());
+    DCHECK(is_valid());
     DCHECK_EQ(SizeInBits() % 8, 0);
     return reg_size_ / 8;
   }
   bool Is8Bits() const {
-    DCHECK(IsValid());
+    DCHECK(is_valid());
     return reg_size_ == 8;
   }
   bool Is16Bits() const {
-    DCHECK(IsValid());
+    DCHECK(is_valid());
     return reg_size_ == 16;
   }
   bool Is32Bits() const {
-    DCHECK(IsValid());
+    DCHECK(is_valid());
     return reg_size_ == 32;
   }
   bool Is64Bits() const {
-    DCHECK(IsValid());
+    DCHECK(is_valid());
     return reg_size_ == 64;
   }
   bool Is128Bits() const {
-    DCHECK(IsValid());
+    DCHECK(is_valid());
     return reg_size_ == 128;
   }
-  bool IsValid() const { return reg_type_ != kNoRegister; }
   bool IsNone() const { return reg_type_ == kNoRegister; }
-  constexpr bool Is(const CPURegister& other) const {
-    return Aliases(other) && (reg_size_ == other.reg_size_);
-  }
   constexpr bool Aliases(const CPURegister& other) const {
-    return (reg_code_ == other.reg_code_) && (reg_type_ == other.reg_type_);
+    return RegisterBase::operator==(other) && reg_type_ == other.reg_type_;
   }
 
   constexpr bool operator==(const CPURegister& other) const {
-    return Is(other);
+    return RegisterBase::operator==(other) && reg_size_ == other.reg_size_ &&
+           reg_type_ == other.reg_type_;
   }
-
   constexpr bool operator!=(const CPURegister& other) const {
-    return !(*this == other);
+    return !operator==(other);
   }
 
   bool IsZero() const;
@@ -203,9 +199,6 @@ class CPURegister : public RegisterBase<CPURegister, kRegAfterLast> {
   VRegister Q() const;
 
   bool IsSameSizeAndType(const CPURegister& other) const;
-
-  bool is(const CPURegister& other) const { return Is(other); }
-  bool is_valid() const { return IsValid(); }
 
  protected:
   int reg_size_;
@@ -457,8 +450,8 @@ class VRegister : public CPURegister {
 ASSERT_TRIVIALLY_COPYABLE(VRegister);
 
 // No*Reg is used to indicate an unused argument, or an error case. Note that
-// these all compare equal (using the Is() method). The Register and VRegister
-// variants are provided for convenience.
+// these all compare equal. The Register and VRegister variants are provided for
+// convenience.
 constexpr Register NoReg = Register::no_reg();
 constexpr VRegister NoVReg = VRegister::no_reg();
 constexpr CPURegister NoCPUReg = CPURegister::no_reg();
@@ -525,13 +518,11 @@ ALIAS_REGISTER(VRegister, fp_scratch2, d31);
 
 // AreAliased returns true if any of the named registers overlap. Arguments set
 // to NoReg are ignored. The system stack pointer may be specified.
-bool AreAliased(const CPURegister& reg1, const CPURegister& reg2,
-                const CPURegister& reg3 = NoReg,
-                const CPURegister& reg4 = NoReg,
-                const CPURegister& reg5 = NoReg,
-                const CPURegister& reg6 = NoReg,
-                const CPURegister& reg7 = NoReg,
-                const CPURegister& reg8 = NoReg);
+V8_EXPORT_PRIVATE bool AreAliased(
+    const CPURegister& reg1, const CPURegister& reg2,
+    const CPURegister& reg3 = NoReg, const CPURegister& reg4 = NoReg,
+    const CPURegister& reg5 = NoReg, const CPURegister& reg6 = NoReg,
+    const CPURegister& reg7 = NoReg, const CPURegister& reg8 = NoReg);
 
 // AreSameSizeAndType returns true if all of the specified registers have the
 // same size, and are of the same type. The system stack pointer may be
@@ -573,12 +564,12 @@ class V8_EXPORT_PRIVATE CPURegList {
         size_(reg0.SizeInBits()),
         type_(reg0.type()) {
     DCHECK(AreSameSizeAndType(reg0, regs...));
-    DCHECK(IsValid());
+    DCHECK(is_valid());
   }
 
   CPURegList(CPURegister::RegisterType type, int size, RegList list)
       : list_(list), size_(size), type_(type) {
-    DCHECK(IsValid());
+    DCHECK(is_valid());
   }
 
   CPURegList(CPURegister::RegisterType type, int size, int first_reg,
@@ -591,22 +582,20 @@ class V8_EXPORT_PRIVATE CPURegList {
     DCHECK(last_reg >= first_reg);
     list_ = (1ULL << (last_reg + 1)) - 1;
     list_ &= ~((1ULL << first_reg) - 1);
-    DCHECK(IsValid());
+    DCHECK(is_valid());
   }
 
   CPURegister::RegisterType type() const {
-    DCHECK(IsValid());
     return type_;
   }
 
   RegList list() const {
-    DCHECK(IsValid());
     return list_;
   }
 
   inline void set_list(RegList new_list) {
-    DCHECK(IsValid());
     list_ = new_list;
+    DCHECK(is_valid());
   }
 
   // Combine another CPURegList into this one. Registers that already exist in
@@ -654,7 +643,6 @@ class V8_EXPORT_PRIVATE CPURegList {
   static CPURegList GetSafepointSavedRegisters();
 
   bool IsEmpty() const {
-    DCHECK(IsValid());
     return list_ == 0;
   }
 
@@ -662,7 +650,6 @@ class V8_EXPORT_PRIVATE CPURegList {
                        const CPURegister& other2 = NoCPUReg,
                        const CPURegister& other3 = NoCPUReg,
                        const CPURegister& other4 = NoCPUReg) const {
-    DCHECK(IsValid());
     RegList list = 0;
     if (!other1.IsNone() && (other1.type() == type_)) list |= other1.bit();
     if (!other2.IsNone() && (other2.type() == type_)) list |= other2.bit();
@@ -672,12 +659,10 @@ class V8_EXPORT_PRIVATE CPURegList {
   }
 
   int Count() const {
-    DCHECK(IsValid());
     return CountSetBits(list_, kRegListSizeInBits);
   }
 
   int RegisterSizeInBits() const {
-    DCHECK(IsValid());
     return size_;
   }
 
@@ -688,7 +673,6 @@ class V8_EXPORT_PRIVATE CPURegList {
   }
 
   int TotalSizeInBytes() const {
-    DCHECK(IsValid());
     return RegisterSizeInBytes() * Count();
   }
 
@@ -697,7 +681,7 @@ class V8_EXPORT_PRIVATE CPURegList {
   int size_;
   CPURegister::RegisterType type_;
 
-  bool IsValid() const {
+  bool is_valid() const {
     constexpr RegList kValidRegisters{0x8000000ffffffff};
     constexpr RegList kValidVRegisters{0x0000000ffffffff};
     switch (type_) {

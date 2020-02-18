@@ -25,7 +25,9 @@ declare_args() {
 # Depends on all non-test targets that should be built by the Chromecast
 # internal build infrastructure.
 group("all") {
-  deps = []
+  deps = [
+    "//chromecast/build:archive",
+  ]
   if (is_android && chromecast_branding == "public") {
     deps += [ ":cast_shell_apk" ]
   }
@@ -51,6 +53,12 @@ group("all") {
 # This is a config which is applied on all cast_* targets (which should be all
 # code under chromecast/).
 config("cast_config") {
+}
+
+config("iot_service") {
+  if (iot_service_rpath != "") {
+    ldflags = [ "-Wl,-rpath=${iot_service_rpath}" ]
+  }
 }
 
 # A list of all public test() binaries. This is an organizational target that
@@ -91,7 +99,7 @@ cast_test_group("cast_tests") {
   }
 
   if (use_v4l2_codec) {
-    tests += [ "//media/gpu:video_decode_accelerator_unittest" ]
+    tests += [ "//media/gpu:video_decode_accelerator_tests" ]
   }
 
   if (is_linux) {
@@ -269,7 +277,7 @@ cast_test_group("cast_tests") {
     if (is_android_things) {
       gtest_excludes += [
         "FontUniqueNameLookupTest.TestMatchPostScriptNameTtc",
-        "SiteInstanceTest.HasWrongProcessForURL",
+        "SiteInstanceTest.IsSuitableForURL",
       ]
     }
     if (target_os == "linux" && !is_cast_desktop_build) {
@@ -278,7 +286,7 @@ cast_test_group("cast_tests") {
       # Disable RenderWidgetHostTest.Background because we disable the
       # blacklist to enable WebGL (b/16142554)
       gtest_excludes += [
-        "DOMStorageDatabaseTest.TestCanOpenAndReadWebCoreDatabase",
+        "LegacyDomStorageDatabaseTest.TestCanOpenAndReadWebCoreDatabase",
         "DesktopCaptureDeviceTest.Capture",
         "GamepadProviderTest.PollingAccess",
         "PepperGamepadHostTest.WaitForReply",
@@ -500,12 +508,12 @@ repack("cast_shell_pak") {
     "$root_gen_dir/chromecast/app/shell_resources.pak",
     "$root_gen_dir/chromecast/bindings/bindings_resources.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
-    "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
+    "$root_gen_dir/third_party/blink/public/strings/blink_strings_en-US.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
@@ -519,11 +527,11 @@ repack("cast_shell_pak") {
     "//chromecast/bindings:bindings_resources_grit",
     "//content:resources",
     "//content/app/resources",
-    "//content/app/strings",
     "//mojo/public/js:resources",
     "//net:net_resources",
     "//third_party/blink/public:resources",
     "//third_party/blink/public:scaled_resources_100_percent",
+    "//third_party/blink/public/strings",
     "//ui/resources",
     "//ui/strings",
   ]
@@ -572,7 +580,9 @@ foreach(locale, cast_locales) {
       deps += [ "//chromecast/internal/castui:cast_ui_app_strings" ]
 
       if (enable_chromecast_webui) {
-        sources += [ "$root_gen_dir/chromecast/internal/castui/ui_localized_${locale}.pak" ]
+        sources += [
+          "$root_gen_dir/chromecast/internal/castui/ui_localized_${locale}.pak",
+        ]
         deps += [ "//chromecast/internal/castui:cast_ui_localized" ]
       }
     }
@@ -655,9 +665,12 @@ if (is_android) {
     android_manifest = "$root_gen_dir/cast_shell_manifest/AndroidManifest.xml"
     android_manifest_dep = "//chromecast/browser/android:cast_shell_manifest"
 
+    min_sdk_version = 21
+    target_sdk_version = 28
+
     shared_libraries = [ "//chromecast/android:libcast_shell_android" ]
 
-    locale_config_java_packages = [ "org.chromium.chromecast.shell" ]
+    product_config_java_packages = [ "org.chromium.chromecast.shell" ]
 
     deps = [
       ":cast_shell_apk_assets",

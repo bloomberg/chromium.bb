@@ -44,7 +44,7 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   // Add an empty item so that the start of the line can be set later.
   wtf_size_t line_start_index = items_.size();
   items_.Grow(line_start_index + 1);
-  offsets_.Grow(line_start_index + 1);
+  offsets_.push_back(offset);
 
   AddItems(current_line_.begin(), current_line_.end());
 
@@ -54,8 +54,8 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   // TODO(kojii): We probably need an end marker too for the reverse-order
   // traversals.
 
-  for (unsigned i = size_before; i < offsets_.size(); ++i)
-    offsets_[i] += offset;
+  // Keep children's offsets relative to |line|. They will be adjusted later in
+  // |ConvertToPhysical()|.
 
   current_line_.clear();
 #if DCHECK_IS_ON()
@@ -79,8 +79,18 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       // Create an item if this box has no inline children.
       const NGPhysicalBoxFragment& box =
           To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
+      // Floats are in the fragment tree, not in the fragment item list.
+      DCHECK(!box.IsFloating());
+
       if (child.children_count <= 1) {
-        items_.push_back(std::make_unique<NGFragmentItem>(box, 1));
+        // Compute |has_floating_descendants_for_paint_| to optimize tree
+        // traversal in paint.
+        if (!has_floating_descendants_for_paint_ && box.IsFloating())
+          has_floating_descendants_for_paint_ = true;
+
+        DCHECK(child.HasBidiLevel());
+        items_.push_back(std::make_unique<NGFragmentItem>(
+            box, 1, DirectionFromLevel(child.bidi_level)));
         offsets_.push_back(child.offset);
         ++child_iter;
         continue;
@@ -106,8 +116,9 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       wtf_size_t item_count = items_.size() - box_start_index;
 
       // Create an item for the start of the box.
-      items_[box_start_index] =
-          std::make_unique<NGFragmentItem>(box, item_count);
+      DCHECK(child.HasBidiLevel());
+      items_[box_start_index] = std::make_unique<NGFragmentItem>(
+          box, item_count, DirectionFromLevel(child.bidi_level));
       continue;
     }
 
@@ -116,6 +127,17 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
     DCHECK(!child.out_of_flow_positioned_box);
     ++child_iter;
   }
+}
+
+void NGFragmentItemsBuilder::AddListMarker(
+    const NGPhysicalBoxFragment& marker_fragment,
+    const LogicalOffset& offset) {
+  // Resolved direction matters only for inline items, and outside list markers
+  // are not inline.
+  const TextDirection resolved_direction = TextDirection::kLtr;
+  items_.push_back(
+      std::make_unique<NGFragmentItem>(marker_fragment, 1, resolved_direction));
+  offsets_.push_back(offset);
 }
 
 // Convert internal logical offsets to physical. Items are kept with logical
@@ -128,11 +150,37 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
   DCHECK(!is_converted_to_physical_);
 #endif
 
-  const LogicalOffset* offset_iter = offsets_.begin();
-  for (auto& item : items_) {
-    item->SetOffset(offset_iter->ConvertToPhysical(writing_mode, direction,
-                                                   outer_size, item->Size()));
-    ++offset_iter;
+  std::unique_ptr<NGFragmentItem>* item_iter = items_.begin();
+  const LogicalOffset* offset = offsets_.begin();
+  for (; item_iter != items_.end(); ++item_iter, ++offset) {
+    DCHECK_NE(offset, offsets_.end());
+    NGFragmentItem* item = item_iter->get();
+    item->SetOffset(offset->ConvertToPhysical(writing_mode, direction,
+                                              outer_size, item->Size()));
+
+    // Transform children of lines separately from children of the block,
+    // because they may have different directions from the block. To do
+    // this, their offsets are relative to their containing line box.
+    if (item->Type() == NGFragmentItem::kLine) {
+      unsigned descendants_count = item->DescendantsCount();
+      DCHECK(descendants_count);
+      if (descendants_count) {
+        const PhysicalRect line_box_bounds = item->Rect();
+        while (--descendants_count) {
+          ++offset;
+          ++item_iter;
+          DCHECK_NE(offset, offsets_.end());
+          DCHECK_NE(item_iter, items_.end());
+          item = item_iter->get();
+          // Use `kLtr` because inline items are after bidi-reoder, and that
+          // their offset is visual, not logical.
+          item->SetOffset(
+              offset->ConvertToPhysical(writing_mode, TextDirection::kLtr,
+                                        line_box_bounds.size, item->Size()) +
+              line_box_bounds.offset);
+        }
+      }
+    }
   }
 
 #if DCHECK_IS_ON()
@@ -145,7 +193,39 @@ void NGFragmentItemsBuilder::ToFragmentItems(WritingMode writing_mode,
                                              const PhysicalSize& outer_size,
                                              void* data) {
   ConvertToPhysical(writing_mode, direction, outer_size);
+  AssociateNextForSameLayoutObject();
   new (data) NGFragmentItems(this);
+}
+
+void NGFragmentItemsBuilder::AssociateNextForSameLayoutObject() {
+  // items_[0] can be:
+  //  - kBox  for list marker, e.g. <li>abc</li>
+  //  - kLine for line, e.g. <div>abc</div>
+  // Calling get() is necessary below because operator<< in std::unique_ptr is
+  // a C++20 feature.
+  // TODO(https://crbug.com/980914): Drop .get() once we move to C++20.
+  DCHECK(items_.IsEmpty() || items_[0]->IsContainer()) << items_[0].get();
+  HashMap<const LayoutObject*, wtf_size_t> last_fragment_map;
+  for (wtf_size_t index = 1u; index < items_.size(); ++index) {
+    const NGFragmentItem& item = *items_[index];
+    if (item.Type() == NGFragmentItem::kLine)
+      continue;
+    LayoutObject* const layout_object = item.GetMutableLayoutObject();
+    DCHECK(layout_object->IsInLayoutNGInlineFormattingContext()) << item;
+    auto insert_result = last_fragment_map.insert(layout_object, index);
+    if (insert_result.is_new_entry) {
+      // TDOO(yosin): Once we update all |LayoutObject::FirstInlineFragment()|,
+      // we should enable below.
+      // layout_object->SetFirstInlineFragmentItemIndex(index);
+      continue;
+    }
+    const wtf_size_t last_index = insert_result.stored_value->value;
+    insert_result.stored_value->value = index;
+    DCHECK_GT(last_index, 0u) << item;
+    DCHECK_LT(last_index, items_.size());
+    DCHECK_LT(last_index, index);
+    items_[last_index]->SetDeltaToNextForSameLayoutObject(index - last_index);
+  }
 }
 
 }  // namespace blink

@@ -1248,22 +1248,22 @@ static int lpath_getBounds(lua_State* L) {
     return 1;
 }
 
-static const char* fill_type_to_str(SkPath::FillType fill) {
+static const char* fill_type_to_str(SkPathFillType fill) {
     switch (fill) {
-        case SkPath::kEvenOdd_FillType:
+        case SkPathFillType::kEvenOdd:
             return "even-odd";
-        case SkPath::kWinding_FillType:
+        case SkPathFillType::kWinding:
             return "winding";
-        case SkPath::kInverseEvenOdd_FillType:
+        case SkPathFillType::kInverseEvenOdd:
             return "inverse-even-odd";
-        case SkPath::kInverseWinding_FillType:
+        case SkPathFillType::kInverseWinding:
             return "inverse-winding";
     }
     return "unknown";
 }
 
 static int lpath_getFillType(lua_State* L) {
-    SkPath::FillType fill = get_obj<SkPath>(L, 1)->getFillType();
+    SkPathFillType fill = get_obj<SkPath>(L, 1)->getNewFillType();
     SkLua(L).pushString(fill_type_to_str(fill));
     return 1;
 }
@@ -1310,7 +1310,7 @@ static int lpath_getSegmentTypes(lua_State* L) {
 }
 
 static int lpath_isConvex(lua_State* L) {
-    bool isConvex = SkPath::kConvex_Convexity == get_obj<SkPath>(L, 1)->getConvexity();
+    bool isConvex = get_obj<SkPath>(L, 1)->isConvex();
     SkLua(L).pushBool(isConvex);
     return 1;
 }
@@ -1328,31 +1328,6 @@ static int lpath_isRect(lua_State* L) {
     if (pred) {
         SkLua(L).pushRect(r);
         ret_count += 1;
-    }
-    return ret_count;
-}
-
-static const char* dir2string(SkPath::Direction dir) {
-    static const char* gStr[] = {
-        "unknown", "cw", "ccw"
-    };
-    SkASSERT((unsigned)dir < SK_ARRAY_COUNT(gStr));
-    return gStr[dir];
-}
-
-static int lpath_isNestedFillRects(lua_State* L) {
-    SkRect rects[2];
-    SkPath::Direction dirs[2];
-    bool pred = get_obj<SkPath>(L, 1)->isNestedFillRects(rects, dirs);
-    int ret_count = 1;
-    lua_pushboolean(L, pred);
-    if (pred) {
-        SkLua lua(L);
-        lua.pushRect(rects[0]);
-        lua.pushRect(rects[1]);
-        lua_pushstring(L, dir2string(dirs[0]));
-        lua_pushstring(L, dir2string(dirs[0]));
-        ret_count += 4;
     }
     return ret_count;
 }
@@ -1447,7 +1422,6 @@ static const struct luaL_Reg gSkPath_Methods[] = {
     { "isConvex", lpath_isConvex },
     { "isEmpty", lpath_isEmpty },
     { "isRect", lpath_isRect },
-    { "isNestedFillRects", lpath_isNestedFillRects },
     { "countPoints", lpath_countPoints },
     { "reset", lpath_reset },
     { "moveTo", lpath_moveTo },

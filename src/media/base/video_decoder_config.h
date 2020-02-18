@@ -48,7 +48,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                      const gfx::Rect& visible_rect,
                      const gfx::Size& natural_size,
                      const std::vector<uint8_t>& extra_data,
-                     const EncryptionScheme& encryption_scheme);
+                     EncryptionScheme encryption_scheme);
   VideoDecoderConfig(const VideoDecoderConfig& other);
 
   ~VideoDecoderConfig();
@@ -63,7 +63,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                   const gfx::Rect& visible_rect,
                   const gfx::Size& natural_size,
                   const std::vector<uint8_t>& extra_data,
-                  const EncryptionScheme& encryption_scheme);
+                  EncryptionScheme encryption_scheme);
 
   // Returns true if this object has appropriate configuration values, false
   // otherwise.
@@ -109,9 +109,24 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // The shape of encoded pixels. Given visible_rect() and a pixel aspect ratio,
   // it is possible to compute natural_size() (see video_util.h).
   //
+  // SUBTLE: "pixel aspect ratio" != "display aspect ratio". *Pixel* aspect
+  // ratio describes the shape of a *pixel* as the ratio of its width to its
+  // height (ex: anamorphic video may have rectangular pixels). *Display* aspect
+  // ratio is natural_width / natural_height.
+  //
+  // CONTRACT: Dynamic changes to *pixel* aspect ratio are not supported unless
+  // done with explicit signal (new init-segment in MSE). Streams may still
+  // change their frame sizes dynamically, including their *display* aspect
+  // ratio. But, at this time (2019) changes to pixel aspect ratio are not
+  // surfaced by all platform decoders (ex: MediaCodec), so non-support is
+  // chosen for cross platform consistency. Hence, natural size should always be
+  // computed by scaling visbilte_size by the *pixel* aspect ratio from the
+  // container metadata. See GetNaturalSize() in video_util.h.
+  //
   // TODO(crbug.com/837337): This should be explicitly set (replacing
-  // |natural_size|). It should also be possible to determine whether it was set
-  // at all, since in-stream information may override it if it was not.
+  // |natural_size|). Alternatively, this could be replaced by
+  // GetNaturalSize(visible_rect), with pixel aspect ratio being an internal
+  // detail of the config.
   double GetPixelAspectRatio() const;
 
   // Optional video decoder initialization data, such as H.264 AVCC.
@@ -125,12 +140,12 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // Whether the video stream is potentially encrypted.
   // Note that in a potentially encrypted video stream, individual buffers
   // can be encrypted or not encrypted.
-  bool is_encrypted() const { return encryption_scheme_.is_encrypted(); }
+  bool is_encrypted() const {
+    return encryption_scheme_ != EncryptionScheme::kUnencrypted;
+  }
 
   // Encryption scheme used for encrypted buffers.
-  const EncryptionScheme& encryption_scheme() const {
-    return encryption_scheme_;
-  }
+  EncryptionScheme encryption_scheme() const { return encryption_scheme_; }
 
   // Color space of the image data.
   void set_color_space_info(const VideoColorSpace& color_space);
@@ -160,7 +175,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   std::vector<uint8_t> extra_data_;
 
-  EncryptionScheme encryption_scheme_;
+  EncryptionScheme encryption_scheme_ = EncryptionScheme::kUnencrypted;
 
   VideoColorSpace color_space_info_;
   base::Optional<HDRMetadata> hdr_metadata_;

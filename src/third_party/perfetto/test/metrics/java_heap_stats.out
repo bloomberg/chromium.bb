@@ -1,0 +1,14 @@
+java_heap_stats {
+  instance_stats {
+    upid: 2
+    process {
+      name: "system_server"
+      uid: 1000
+    }
+    samples {
+      ts: 10
+      heap_size: 480
+      reachable_heap_size: 96
+    }
+  }
+}

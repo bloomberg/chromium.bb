@@ -35,7 +35,7 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
+}  // namespace base
 
 namespace gfx {
 class GpuFence;
@@ -170,6 +170,12 @@ class Surface final : public ui::PropertyHandler {
   void SetClientSurfaceId(int32_t client_surface_id);
   int32_t GetClientSurfaceId() const;
 
+  // Enable embedding of an arbitrary viz surface in this exo surface.
+  // If the callback is valid, a SurfaceDrawQuad will be emitted targeting
+  // the returned SurfaceId each frame.
+  void SetEmbeddedSurfaceId(
+      base::RepeatingCallback<viz::SurfaceId()> surface_id_callback);
+
   // Request that the attached surface buffer at the next commit is associated
   // with a gpu fence to be signaled when the buffer is ready for use.
   void SetAcquireFence(std::unique_ptr<gfx::GpuFence> gpu_fence);
@@ -271,6 +277,9 @@ class Surface final : public ui::PropertyHandler {
 
   // Sets the |surface_hierarchy_content_bounds_|.
   void SetSurfaceHierarchyContentBoundsForTest(const gfx::Rect& content_bounds);
+
+  // Requests that this surface should be made active (i.e. foregrounded).
+  void RequestActivation();
 
  private:
   struct State {
@@ -439,6 +448,10 @@ class Surface final : public ui::PropertyHandler {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<ash::OutputProtectionDelegate> output_protection_;
 #endif  // defined(OS_CHROMEOS)
+
+  viz::SurfaceId first_embedded_surface_id_;
+  viz::SurfaceId latest_embedded_surface_id_;
+  base::RepeatingCallback<viz::SurfaceId()> get_current_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

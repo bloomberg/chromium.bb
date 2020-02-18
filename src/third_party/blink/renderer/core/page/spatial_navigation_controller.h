@@ -24,8 +24,8 @@ struct PhysicalRect;
 // Navigation is used to move and interact with a page in a purely directional
 // way, e.g. keyboard arrows. We use the term "interest" to specify which
 // element the user is currently on.
-class CORE_EXPORT SpatialNavigationController
-    : public GarbageCollectedFinalized<SpatialNavigationController> {
+class CORE_EXPORT SpatialNavigationController final
+    : public GarbageCollected<SpatialNavigationController> {
  public:
   explicit SpatialNavigationController(Page& page);
 

@@ -16,12 +16,16 @@
 #error "This file requires ARC support."
 #endif
 
+// Accessibility identifier for the Google services settings table view.
+NSString* const kGoogleServicesSettingsViewIdentifier =
+    @"google_services_settings_view_controller";
+
 @implementation GoogleServicesSettingsViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.tableView.accessibilityIdentifier =
-      @"google_services_settings_view_controller";
+      kGoogleServicesSettingsViewIdentifier;
   self.title = l10n_util::GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE);
 }
 
@@ -31,9 +35,8 @@
   NSIndexPath* indexPath =
       [self.tableViewModel indexPathForItemType:sender.tag];
   DCHECK(indexPath);
-  SyncSwitchItem* syncSwitchItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
-      [self.tableViewModel itemAtIndexPath:indexPath]);
-  [self.serviceDelegate toggleSwitchItem:syncSwitchItem withValue:sender.isOn];
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  [self.serviceDelegate toggleSwitchItem:item withValue:sender.isOn];
 }
 
 #pragma mark - UITableViewDataSource

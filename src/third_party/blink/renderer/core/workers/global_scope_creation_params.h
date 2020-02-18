@@ -9,12 +9,12 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
-#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
-#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
@@ -62,7 +62,6 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       std::unique_ptr<WorkerSettings>,
       V8CacheOptions,
       WorkletModuleResponsesMap*,
-      service_manager::mojom::blink::InterfaceProviderPtrInfo = {},
       mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
           browser_interface_broker = mojo::NullRemote(),
       BeginFrameProviderParams begin_frame_provider_params = {},
@@ -151,8 +150,6 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   V8CacheOptions v8_cache_options;
 
   CrossThreadPersistent<WorkletModuleResponsesMap> module_responses_map;
-
-  service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider;
 
   mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
       browser_interface_broker;

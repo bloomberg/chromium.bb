@@ -7,11 +7,11 @@ import json
 
 from blinkpy.common.checkout.git_mock import MockGit
 from blinkpy.common.host_mock import MockHost
-from blinkpy.common.net.buildbot import Build
 from blinkpy.common.net.git_cl import CLStatus
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
 from blinkpy.common.net.network_transaction import NetworkTimeout
+from blinkpy.common.net.results_fetcher import Build
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.executive_mock import MockCall
 from blinkpy.common.system.executive_mock import MockExecutive
@@ -357,19 +357,6 @@ class TestImporterTest(LoggingTestCase):
             '/chromium/src/+/master/docs/testing/web_platform_tests.md\n\n'
             'NOAUTOREVERT=true\n'
             'No-Export: true')
-        self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
-
-    def test_cl_description_with_environ_variables(self):
-        host = MockHost()
-        host.executive = MockExecutive(output='Last commit message\n')
-        importer = TestImporter(host)
-        importer.host.environ['BUILDBOT_MASTERNAME'] = 'my.master'
-        importer.host.environ['BUILDBOT_BUILDERNAME'] = 'b'
-        importer.host.environ['BUILDBOT_BUILDNUMBER'] = '123'
-        description = importer._cl_description(directory_owners={})
-        self.assertIn(
-            'Build: https://ci.chromium.org/buildbot/my.master/b/123\n\n',
-            description)
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
 
     def test_cl_description_moves_noexport_tag(self):

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_HID_HID_H_
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/hid.mojom-blink.h"
+#include "services/device/public/mojom/hid.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -37,8 +37,10 @@ class HID : public EventTargetWithInlineData, public ContextLifecycleObserver {
   // Web-exposed interfaces:
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
-  ScriptPromise getDevices(ScriptState*);
-  ScriptPromise requestDevice(ScriptState*, const HIDDeviceRequestOptions*);
+  ScriptPromise getDevices(ScriptState*, ExceptionState&);
+  ScriptPromise requestDevice(ScriptState*,
+                              const HIDDeviceRequestOptions*,
+                              ExceptionState&);
 
   void Connect(const String& device_guid,
                mojo::PendingRemote<device::mojom::blink::HidConnectionClient>

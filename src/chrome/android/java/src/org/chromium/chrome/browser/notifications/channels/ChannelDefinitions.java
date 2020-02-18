@@ -10,7 +10,8 @@ import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
 import android.content.res.Resources;
 import android.os.Build;
-import android.support.annotation.StringDef;
+
+import androidx.annotation.StringDef;
 
 import org.chromium.chrome.R;
 
@@ -56,7 +57,8 @@ public class ChannelDefinitions {
     @StringDef({ChannelId.BROWSER, ChannelId.DOWNLOADS, ChannelId.INCOGNITO, ChannelId.MEDIA,
             ChannelId.SCREEN_CAPTURE, ChannelId.CONTENT_SUGGESTIONS, ChannelId.WEBAPP_ACTIONS,
             ChannelId.SITES, ChannelId.SHARING, ChannelId.UPDATES, ChannelId.COMPLETED_DOWNLOADS,
-            ChannelId.PERMISSION_REQUESTS, ChannelId.PERMISSION_REQUESTS_HIGH})
+            ChannelId.PERMISSION_REQUESTS, ChannelId.PERMISSION_REQUESTS_HIGH,
+            ChannelId.ANNOUNCEMENT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {
         String BROWSER = "browser";
@@ -74,6 +76,7 @@ public class ChannelDefinitions {
         String COMPLETED_DOWNLOADS = "completed_downloads";
         String PERMISSION_REQUESTS = "permission_requests";
         String PERMISSION_REQUESTS_HIGH = "permission_requests_high";
+        String ANNOUNCEMENT = "announcement";
     }
 
     @StringDef({
@@ -178,15 +181,11 @@ public class ChannelDefinitions {
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL,
                             true /* showNotificationBadges */));
 
-            map.put(ChannelId.PERMISSION_REQUESTS,
-                    new PredefinedChannel(ChannelId.PERMISSION_REQUESTS,
-                            R.string.notification_category_permission_requests,
-                            NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL));
-
-            map.put(ChannelId.PERMISSION_REQUESTS_HIGH,
-                    new PredefinedChannel(ChannelId.PERMISSION_REQUESTS_HIGH,
-                            R.string.notification_category_permission_requests,
-                            NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.GENERAL));
+            map.put(ChannelId.ANNOUNCEMENT,
+                    new PredefinedChannel(ChannelId.ANNOUNCEMENT,
+                            R.string.announcement_notification_channel_name,
+                            NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL,
+                            true /* showNotificationBadges */));
 
             MAP = Collections.unmodifiableMap(map);
             STARTUP = Collections.unmodifiableSet(startup);
@@ -199,7 +198,9 @@ public class ChannelDefinitions {
      * channel ids so they aren't accidentally reused.
      */
     private static final String[] LEGACY_CHANNEL_IDS = {
-            ChannelDefinitions.ChannelId.SITES
+            ChannelDefinitions.ChannelId.SITES,
+            ChannelDefinitions.ChannelId.PERMISSION_REQUESTS,
+            ChannelDefinitions.ChannelId.PERMISSION_REQUESTS_HIGH,
     };
 
     // Map defined in static inner class so it's only initialized lazily.

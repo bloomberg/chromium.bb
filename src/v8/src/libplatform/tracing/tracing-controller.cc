@@ -14,9 +14,9 @@
 
 #ifdef V8_USE_PERFETTO
 #include "base/trace_event/common/trace_event_common.h"
-#include "perfetto/trace/chrome/chrome_trace_event.pbzero.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
 #include "perfetto/tracing.h"
+#include "protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
 #include "src/base/platform/platform.h"
 #include "src/base/platform/semaphore.h"
 #include "src/libplatform/tracing/json-trace-event-listener.h"
@@ -129,7 +129,7 @@ void AddArgsToTraceProto(
         break;
       }
       case TRACE_VALUE_TYPE_BOOL:
-        arg->set_bool_value(arg_value.as_bool);
+        arg->set_bool_value(arg_value.as_uint);
         break;
       case TRACE_VALUE_TYPE_UINT:
         arg->set_uint_value(arg_value.as_uint);
@@ -280,7 +280,7 @@ void TracingController::StartTracing(TraceConfig* trace_config) {
 #ifdef V8_USE_PERFETTO
   DCHECK_NOT_NULL(output_stream_);
   DCHECK(output_stream_->good());
-  json_listener_ = base::make_unique<JSONTraceEventListener>(output_stream_);
+  json_listener_ = std::make_unique<JSONTraceEventListener>(output_stream_);
 
   // TODO(petermarshall): Set other the params for the config.
   ::perfetto::TraceConfig perfetto_trace_config;

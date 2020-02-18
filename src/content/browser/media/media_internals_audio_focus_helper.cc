@@ -60,7 +60,7 @@ void MediaInternalsAudioFocusHelper::SendAudioFocusState() {
     return;
 
   // Get the audio focus state from the media session service.
-  audio_focus_ptr_->GetFocusRequests(base::BindOnce(
+  audio_focus_->GetFocusRequests(base::BindOnce(
       &MediaInternalsAudioFocusHelper::DidGetAudioFocusRequestList,
       base::Unretained(this)));
 }
@@ -93,8 +93,8 @@ void MediaInternalsAudioFocusHelper::SetEnabled(bool enabled) {
   EnsureServiceConnection();
 
   if (!enabled) {
-    audio_focus_ptr_.reset();
-    audio_focus_debug_ptr_.reset();
+    audio_focus_.reset();
+    audio_focus_debug_.reset();
     receiver_.reset();
   }
 }
@@ -111,25 +111,25 @@ bool MediaInternalsAudioFocusHelper::EnsureServiceConnection() {
     return false;
 
   // Connect to the media session service.
-  if (!audio_focus_ptr_.is_bound()) {
-    connector->BindInterface(media_session::mojom::kServiceName,
-                             mojo::MakeRequest(&audio_focus_ptr_));
-    audio_focus_ptr_.set_connection_error_handler(base::BindRepeating(
+  if (!audio_focus_.is_bound()) {
+    connector->Connect(media_session::mojom::kServiceName,
+                       audio_focus_.BindNewPipeAndPassReceiver());
+    audio_focus_.set_disconnect_handler(base::BindRepeating(
         &MediaInternalsAudioFocusHelper::OnMojoError, base::Unretained(this)));
   }
 
   // Connect to the media session service debug interface.
-  if (!audio_focus_debug_ptr_.is_bound()) {
-    connector->BindInterface(media_session::mojom::kServiceName,
-                             mojo::MakeRequest(&audio_focus_debug_ptr_));
-    audio_focus_debug_ptr_.set_connection_error_handler(
+  if (!audio_focus_debug_.is_bound()) {
+    connector->Connect(media_session::mojom::kServiceName,
+                       audio_focus_debug_.BindNewPipeAndPassReceiver());
+    audio_focus_debug_.set_disconnect_handler(
         base::BindRepeating(&MediaInternalsAudioFocusHelper::OnDebugMojoError,
                             base::Unretained(this)));
   }
 
   // Add the observer to receive audio focus events.
   if (!receiver_.is_bound()) {
-    audio_focus_ptr_->AddObserver(receiver_.BindNewPipeAndPassRemote());
+    audio_focus_->AddObserver(receiver_.BindNewPipeAndPassRemote());
 
     receiver_.set_disconnect_handler(base::BindRepeating(
         &MediaInternalsAudioFocusHelper::OnMojoError, base::Unretained(this)));
@@ -139,12 +139,12 @@ bool MediaInternalsAudioFocusHelper::EnsureServiceConnection() {
 }
 
 void MediaInternalsAudioFocusHelper::OnMojoError() {
-  audio_focus_ptr_.reset();
+  audio_focus_.reset();
   receiver_.reset();
 }
 
 void MediaInternalsAudioFocusHelper::OnDebugMojoError() {
-  audio_focus_debug_ptr_.reset();
+  audio_focus_debug_.reset();
 }
 
 void MediaInternalsAudioFocusHelper::DidGetAudioFocusRequestList(
@@ -167,11 +167,11 @@ void MediaInternalsAudioFocusHelper::DidGetAudioFocusRequestList(
     std::string id_string = session->request_id.value().ToString();
     base::DictionaryValue media_session_data;
     media_session_data.SetKey(kAudioFocusIdKey, base::Value(id_string));
-    stack_data.GetList().push_back(std::move(media_session_data));
+    stack_data.Append(std::move(media_session_data));
 
     request_state_.emplace(id_string, session.Clone());
 
-    audio_focus_debug_ptr_->GetDebugInfoForRequest(
+    audio_focus_debug_->GetDebugInfoForRequest(
         session->request_id.value(),
         base::BindOnce(
             &MediaInternalsAudioFocusHelper::DidGetAudioFocusDebugInfo,

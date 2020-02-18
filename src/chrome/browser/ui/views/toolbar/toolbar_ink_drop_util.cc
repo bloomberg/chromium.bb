@@ -16,16 +16,38 @@
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/installable_ink_drop_config.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
-constexpr float kToolbarInkDropHighlightVisibleOpacity = 0.08f;
-}
+class ToolbarButtonHighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  // HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    gfx::Rect rect(view->size());
+    rect.Inset(GetToolbarInkDropInsets(view));
 
-gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
-                                    const gfx::Insets& margin_insets) {
+    const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+        views::EMPHASIS_MAXIMUM, rect.size());
+
+    SkPath path;
+    path.addRoundRect(gfx::RectToSkRect(rect), radii, radii);
+    return path;
+  }
+};
+}  // namespace
+
+gfx::Insets GetToolbarInkDropInsets(const views::View* host_view) {
+  gfx::Insets margin_insets;
+  gfx::Insets* const internal_padding =
+      host_view->GetProperty(views::kInternalPaddingKey);
+  if (internal_padding)
+    margin_insets = *internal_padding;
+
   // Inset the inkdrop insets so that the end result matches the target inkdrop
   // dimensions.
   const gfx::Size host_size = host_view->size();
@@ -35,19 +57,6 @@ gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
       gfx::Insets((host_size.height() - inkdrop_dimensions) / 2);
 
   return inkdrop_insets;
-}
-
-void SetToolbarButtonHighlightPath(views::View* host_view,
-                                   const gfx::Insets& margin_insets) {
-  gfx::Rect rect(host_view->size());
-  rect.Inset(GetToolbarInkDropInsets(host_view, margin_insets));
-
-  const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MAXIMUM, rect.size());
-
-  auto path = std::make_unique<SkPath>();
-  path->addRoundRect(gfx::RectToSkRect(rect), radii, radii);
-  host_view->SetProperty(views::kHighlightPathKey, path.release());
 }
 
 std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
@@ -75,4 +84,18 @@ views::InstallableInkDropConfig GetToolbarInstallableInkDropConfig(
   config.ripple_opacity = kToolbarInkDropVisibleOpacity;
   config.highlight_opacity = kToolbarInkDropHighlightVisibleOpacity;
   return config;
+}
+
+void InstallToolbarButtonHighlightPathGenerator(views::View* host) {
+  views::HighlightPathGenerator::Install(
+      host, std::make_unique<ToolbarButtonHighlightPathGenerator>());
+}
+
+void ConfigureInkDropForToolbar(views::Button* host) {
+  host->set_has_ink_drop_action_on_click(true);
+  InstallToolbarButtonHighlightPathGenerator(host);
+  host->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+  host->set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
+  host->set_ink_drop_highlight_opacity(kToolbarInkDropHighlightVisibleOpacity);
+  host->set_ink_drop_base_color(GetToolbarInkDropBaseColor(host));
 }

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import logging
 import os
 import time
@@ -14,9 +16,9 @@ import py_utils
 
 class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
-  # ChromeOS and Android are currently hard coded to return None for minidump
-  # paths, so disable on those platforms.
-  @decorators.Disabled('chromeos', 'android')
+  # Minidump symbolization doesn't work in ChromeOS local mode if the rootfs is
+  # still read-only, so skip the test in that case.
+  @decorators.Disabled('chromeos-local')
   def testSymbolizeMinidump(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var sam = "car";', 'sam')
@@ -34,6 +36,12 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     if all_unsymbolized_paths is not None:
       logging.info('testSymbolizeMinidump: all unsymbolized paths '
           + ''.join(all_unsymbolized_paths))
+
+    # Flakes on chromeos: crbug.com/1014754
+    # This has failed to repro either locally or on swarming, so dump extra
+    # information if this is hit on the bots.
+    if len(all_unsymbolized_paths) != 1:
+      self._browser.CollectDebugData(logging.ERROR)
     self.assertTrue(len(all_unsymbolized_paths) == 1)
 
     # Now symbolize that minidump and make sure there are no longer any present
@@ -48,47 +56,9 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     self.assertTrue(len(all_unsymbolized_after_symbolize_paths) == 0)
 
   @decorators.Isolated
-  # The way Android handles crashes is through a different set of methods, so
-  # have an Android-specific test similar to testSymbolizeMinidump.
-  @decorators.Enabled('android')
-  def testGetStackTrace(self):
-    self._LoadPageThenWait('var sam = "car";', 'sam')
-    self._browser.tabs.New().Navigate('chrome://gpucrash', timeout=5)
-    _, output = self._browser.GetStackTrace()
-
-    # The output is a single string with multiple sections:
-    # 1. UI Dump
-    # 2. Logcat
-    # 3. Stack from Logcat
-    # 4. Tombstones
-    # 5. Crashpad stackwalk
-    # Each section is finished with 80 asterisks, so split based on that.
-    sections = output.split('*' * 80 + '\n')
-
-    # We will always get the UI dump and logcat sections. The logcat stack,
-    # tombstones, and Crashpad stack are dependent on the necessary tools being
-    # present, which they always should be. The Crashpad section actually having
-    # data is dependent on a Crashpad dump being found, which may not always be
-    # the case. So, expect 5 actual sections (6 total due to the way .split()
-    # works), the 5th possibly not having any valid data.
-    self.assertTrue(len(sections) == 6)
-    self.assertTrue(sections[2].startswith('Stack from Logcat'))
-    self.assertTrue(sections[3].startswith('Tombstones'))
-
-    # Since the crash is a simulated one from gl::Crash(), we expect that to
-    # show up in the symbolized stacks, but not the unsymbolized one.
-    crash_function = 'gl::Crash()'
-    self.assertFalse(crash_function in sections[1])
-    self.assertTrue(crash_function in sections[2])
-    self.assertTrue(crash_function in sections[3])
-    # If we actually have a valid Crashpad stack, make sure it contains the
-    # crash function as well.
-    print sections[4][:80]
-    if '**EMPTY**' not in sections[4]:
-      self.assertTrue(crash_function in sections[4])
-
-  @decorators.Isolated
-  @decorators.Disabled('chromeos', 'android')
+  # Minidump symbolization doesn't work in ChromeOS local mode if the rootfs is
+  # still read-only, so skip the test in that case.
+  @decorators.Disabled('chromeos-local')
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')
@@ -103,6 +73,11 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     if all_paths is not None:
       logging.info('testMultipleCrashMinidumps: first crash all paths: '
           + ''.join(all_paths))
+    # Flakes on chromeos: crbug.com/1014754
+    # This has failed to repro either locally or on swarming, so dump extra
+    # information if this is hit on the bots.
+    if len(all_paths) != 1:
+      self._browser.CollectDebugData(logging.ERROR)
     self.assertEquals(len(all_paths), 1)
     self.assertEqual(all_paths[0], first_crash_path)
     all_unsymbolized_paths = self._browser.GetAllUnsymbolizedMinidumpPaths()

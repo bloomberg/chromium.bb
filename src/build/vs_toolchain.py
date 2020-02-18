@@ -25,10 +25,19 @@ json_data_file = os.path.join(script_dir, 'win_toolchain.json')
 
 # VS versions are listed in descending order of priority (highest first).
 MSVS_VERSIONS = collections.OrderedDict([
-  ('2017', '15.0'),
   ('2019', '16.0'),
+  ('2017', '15.0'),
 ])
 
+# List of preferred VC toolset version based on MSVS
+MSVC_TOOLSET_VERSION = {
+   '2019' : 'VC142',
+   '2017' : 'VC141',
+}
+
+def _HostIsWindows():
+  """Returns True if running on a Windows host (including under cygwin)."""
+  return sys.platform in ('win32', 'cygwin')
 
 def SetEnvironmentAndGetRuntimeDllDirs():
   """Sets up os.environ to use the depot_tools VS toolchain with gyp, and
@@ -44,7 +53,7 @@ def SetEnvironmentAndGetRuntimeDllDirs():
       bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
   # When running on a non-Windows host, only do this if the SDK has explicitly
   # been downloaded before (in which case json_data_file will exist).
-  if ((sys.platform in ('win32', 'cygwin') or os.path.exists(json_data_file))
+  if ((_HostIsWindows() or os.path.exists(json_data_file))
       and depot_tools_win_toolchain):
     if ShouldUpdateToolchain():
       if len(sys.argv) > 1 and sys.argv[1] == 'update':
@@ -154,7 +163,8 @@ def GetVisualStudioVersion():
         os.environ.get('vs%s_install' % version),
         os.path.expandvars('%ProgramFiles(x86)%' +
                            '/Microsoft Visual Studio/%s' % version)):
-      if path and os.path.exists(path):
+      if path and any(os.path.exists(os.path.join(path, edition)) for edition in
+          ('Enterprise', 'Professional', 'Community', 'Preview')):
         available_versions.append(version)
         break
 
@@ -217,6 +227,11 @@ def _CopyRuntimeImpl(target, source, verbose=True):
     # Make the file writable so that we can overwrite or delete it later,
     # keep it readable.
     os.chmod(target, stat.S_IWRITE | stat.S_IREAD)
+    # Sometimes BUILTIN/Administrators and SYSTEM doesn't grant the access
+    # to the file on bots. crbug.com/956016.
+    if _HostIsWindows():  # Skip if icacls is not available.
+      subprocess.call(['icacls', target, '/grant', 'Administrators:f'])
+      subprocess.call(['icacls', target, '/grant', 'SYSTEM:f'])
 
 def _SortByHighestVersionNumberFirst(list_of_str_versions):
   """This sorts |list_of_str_versions| according to version number rules
@@ -241,14 +256,19 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
   exist, but the target directory does exist."""
   if target_cpu == 'arm64':
     # Windows ARM64 VCRuntime is located at {toolchain_root}/VC/Redist/MSVC/
-    # {x.y.z}/[debug_nonredist/]arm64/Microsoft.VC141.CRT/.
+    # {x.y.z}/[debug_nonredist/]arm64/Microsoft.VC14x.CRT/.
+    # Select VC toolset directory based on Visual Studio version
     vc_redist_root = FindVCRedistRoot()
     if suffix.startswith('.'):
+      vc_toolset_dir = 'Microsoft.{}.CRT' \
+         .format(MSVC_TOOLSET_VERSION[GetVisualStudioVersion()])
       source_dir = os.path.join(vc_redist_root,
-                                'arm64', 'Microsoft.VC141.CRT')
+                                'arm64', vc_toolset_dir)
     else:
+      vc_toolset_dir = 'Microsoft.{}.DebugCRT' \
+         .format(MSVC_TOOLSET_VERSION[GetVisualStudioVersion()])
       source_dir = os.path.join(vc_redist_root, 'debug_nonredist',
-                                'arm64', 'Microsoft.VC141.DebugCRT')
+                                'arm64', vc_toolset_dir)
   for file_part in ('msvcp', 'vccorlib', 'vcruntime'):
     dll = dll_pattern % file_part
     target = os.path.join(target_dir, dll)
@@ -417,17 +437,16 @@ def _GetDesiredVsToolchainHashes():
   * //docs/windows_build_instructions.md mentions of VS or Windows SDK.
     Keeps the document consistent with the toolchain version.
   """
-  env_version = GetVisualStudioVersion()
-  if env_version == '2017':
-    # VS 2017 Update 9 (15.9.12) with 10.0.18362 SDK, 10.0.17763 version of
-    # Debuggers, and 10.0.17134 version of d3dcompiler_47.dll, with ARM64
-    # libraries.
-    toolchain_hash = '418b3076791776573a815eb298c8aa590307af63'
-    # Third parties that do not have access to the canonical toolchain can map
-    # canonical toolchain version to their own toolchain versions.
-    toolchain_hash_mapping_key = 'GYP_MSVS_HASH_%s' % toolchain_hash
-    return [os.environ.get(toolchain_hash_mapping_key, toolchain_hash)]
-  raise Exception('Unsupported VS version %s' % env_version)
+  # VS 2019 Update 9 (16.3.29324.140) with 10.0.18362 SDK, 10.0.17763 version of
+  # Debuggers, and 10.0.17134 version of d3dcompiler_47.dll, with ARM64
+  # libraries.
+  # See go/chromium-msvc-toolchain for instructions about how to update the
+  # toolchain.
+  toolchain_hash = '8f58c55897a3282ed617055775a77ec3db771b88'
+  # Third parties that do not have access to the canonical toolchain can map
+  # canonical toolchain version to their own toolchain versions.
+  toolchain_hash_mapping_key = 'GYP_MSVS_HASH_%s' % toolchain_hash
+  return [os.environ.get(toolchain_hash_mapping_key, toolchain_hash)]
 
 
 def ShouldUpdateToolchain():
@@ -458,8 +477,7 @@ def Update(force=False, no_download=False):
 
   depot_tools_win_toolchain = \
       bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
-  if ((sys.platform in ('win32', 'cygwin') or force) and
-        depot_tools_win_toolchain):
+  if (_HostIsWindows() or force) and depot_tools_win_toolchain:
     import find_depot_tools
     depot_tools_path = find_depot_tools.add_depot_tools_to_path()
 

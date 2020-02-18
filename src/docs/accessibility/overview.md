@@ -18,7 +18,7 @@ Assistive technology includes:
 * Screen readers for blind users that describe the screen using
   synthesized speech or braille
 * Voice control applications that let you speak to the computer,
-* Switch access that lets you control the computer with a small number
+* Switch Access that lets you control the computer with a small number
   of physical switches,
 * Magnifiers that magnify a portion of the screen, and often highlight the
   cursor and caret for easier viewing, and
@@ -505,7 +505,7 @@ gives extension JavaScript access to the accessibility tree, events, and
 actions. This API is implemented in C++ by [AutomationInternalCustomBindings],
 which is renderer-side code, and in JavaScript by the [automation API]. The API
 is defined by [automation.idl], which must be kept synchronized with
-[ax_enums.idl].
+[ax_enums.mojom].
 
 [AccessibilityHostMsg_EventParams]: https://cs.chromium.org/chromium/src/content/common/accessibility_messages.h?sq=package:chromium&l=75
 [AutomationInternalCustomBindings]: https://cs.chromium.org/chromium/src/extensions/renderer/api/automation/automation_internal_custom_bindings.h
@@ -530,6 +530,6 @@ is defined by [automation.idl], which must be kept synchronized with
 [WebAXObject]: https://cs.chromium.org/chromium/src/third_party/blink/public/web/web_ax_object.h
 [automation API]: https://cs.chromium.org/chromium/src/chrome/renderer/resources/extensions/automation
 [automation.idl]: https://cs.chromium.org/chromium/src/extensions/common/api/automation.idl
-[ax_enums.idl]: https://cs.chromium.org/chromium/src/ui/accessibility/ax_enums.idl
+[ax_enums.mojom]: https://cs.chromium.org/chromium/src/ui/accessibility/ax_enums.mojom
 [chrome.automation API]: https://developer.chrome.com/extensions/automation
 [webui-js]: https://cs.chromium.org/chromium/src/ui/webui/resources/js/cr/ui/

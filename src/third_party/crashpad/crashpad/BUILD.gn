@@ -23,14 +23,18 @@ config("crashpad_config") {
 if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
   test("crashpad_tests") {
     deps = [
-      "client:client_test",
-      "handler:handler_test",
-      "minidump:minidump_test",
-      "snapshot:snapshot_test",
       "test:gmock_main",
       "test:test_test",
-      "util:util_test",
     ]
+    if (!crashpad_is_ios) {
+      deps += [
+        "client:client_test",
+        "handler:handler_test",
+        "minidump:minidump_test",
+        "snapshot:snapshot_test",
+        "util:util_test",
+      ]
+    }
   }
 
   if (crashpad_is_in_fuchsia) {
@@ -103,15 +107,14 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
       ]
 
       if (crashpad_use_boringssl_for_http_transport_socket) {
-        deps += [ "util:generate_test_server_key" ]
         resources += [
           {
-            path = "$root_out_dir/crashpad_util_test_cert.pem"
-            dest = "crashpad_util_test_cert.pem"
+            path = "util/net/testdata/crashpad_util_test_cert.pem"
+            dest = "util/net/testdata/crashpad_util_test_cert.pem"
           },
           {
-            path = "$root_out_dir/crashpad_util_test_key.pem"
-            dest = "crashpad_util_test_key.pem"
+            path = "util/net/testdata/crashpad_util_test_key.pem"
+            dest = "util/net/testdata/crashpad_util_test_key.pem"
           },
         ]
       }
@@ -136,6 +139,9 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
       "client:client_test",
       "test:gmock_main",
     ]
+    if (crashpad_is_ios) {
+      deps -= [ "client:client_test" ]
+    }
   }
 
   test("crashpad_handler_test") {
@@ -143,6 +149,9 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
       "handler:handler_test",
       "test:gtest_main",
     ]
+    if (crashpad_is_ios) {
+      deps -= [ "handler:handler_test" ]
+    }
   }
 
   test("crashpad_minidump_test") {
@@ -150,6 +159,9 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
       "minidump:minidump_test",
       "test:gtest_main",
     ]
+    if (crashpad_is_ios) {
+      deps -= [ "minidump:minidump_test" ]
+    }
   }
 
   test("crashpad_snapshot_test") {
@@ -157,6 +169,9 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
       "snapshot:snapshot_test",
       "test:gtest_main",
     ]
+    if (crashpad_is_ios) {
+      deps -= [ "snapshot:snapshot_test" ]
+    }
   }
 
   test("crashpad_test_test") {
@@ -171,5 +186,8 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
       "test:gmock_main",
       "util:util_test",
     ]
+    if (crashpad_is_ios) {
+      deps -= [ "util:util_test" ]
+    }
   }
 }

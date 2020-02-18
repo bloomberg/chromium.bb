@@ -12,6 +12,8 @@
 #include "base/run_loop.h"
 #include "chrome/browser/net/dns_probe_test_util.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,9 +51,9 @@ class FakeNetworkContext : public network::TestNetworkContext {
 
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
-      network::mojom::HostResolverRequest request) override {
+      mojo::PendingReceiver<network::mojom::HostResolver> receiver) override {
     ASSERT_FALSE(resolver_);
-    resolver_ = std::make_unique<FakeHostResolver>(std::move(request),
+    resolver_ = std::make_unique<FakeHostResolver>(std::move(receiver),
                                                    std::move(result_list_));
   }
 
@@ -69,11 +71,11 @@ class FirstHangingThenFakeResolverNetworkContext
 
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
-      network::mojom::HostResolverRequest request) override {
+      mojo::PendingReceiver<network::mojom::HostResolver> receiver) override {
     if (call_num == 0) {
-      resolver_ = std::make_unique<HangingHostResolver>(std::move(request));
+      resolver_ = std::make_unique<HangingHostResolver>(std::move(receiver));
     } else {
-      resolver_ = std::make_unique<FakeHostResolver>(std::move(request),
+      resolver_ = std::make_unique<FakeHostResolver>(std::move(receiver),
                                                      std::move(result_list_));
     }
     call_num++;
@@ -89,7 +91,9 @@ class FirstHangingThenFakeResolverNetworkContext
 
 class DnsProbeRunnerTest : public testing::Test {
  protected:
-  void SetupTest(int query_result, FakeHostResolver::Response query_response);
+  void SetupTest(int query_result,
+                 net::ResolveErrorInfo resolve_error_info,
+                 FakeHostResolver::Response query_response);
   void SetupTest(std::vector<FakeHostResolver::SingleResult> result_list);
   void RunTest(DnsProbeRunner::Result expected_probe_results);
 
@@ -103,8 +107,9 @@ class DnsProbeRunnerTest : public testing::Test {
 };
 
 void DnsProbeRunnerTest::SetupTest(int query_result,
+                                   net::ResolveErrorInfo resolve_error_info,
                                    FakeHostResolver::Response query_response) {
-  SetupTest({{query_result, query_response}});
+  SetupTest({{query_result, resolve_error_info, query_response}});
 }
 
 void DnsProbeRunnerTest::SetupTest(
@@ -129,38 +134,51 @@ void DnsProbeRunnerTest::RunTest(DnsProbeRunner::Result expected_probe_result) {
 }
 
 TEST_F(DnsProbeRunnerTest, Probe_OK) {
-  SetupTest(net::OK, FakeHostResolver::kOneAddressResponse);
+  SetupTest(net::OK, net::ResolveErrorInfo(net::OK),
+            FakeHostResolver::kOneAddressResponse);
   RunTest(DnsProbeRunner::CORRECT);
 }
 
 TEST_F(DnsProbeRunnerTest, Probe_EMPTY) {
-  SetupTest(net::OK, FakeHostResolver::kEmptyResponse);
+  SetupTest(net::OK, net::ResolveErrorInfo(net::OK),
+            FakeHostResolver::kEmptyResponse);
   RunTest(DnsProbeRunner::INCORRECT);
 }
 
 TEST_F(DnsProbeRunnerTest, Probe_TIMEOUT) {
-  SetupTest(net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse);
+  SetupTest(net::ERR_NAME_NOT_RESOLVED,
+            net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+            FakeHostResolver::kNoResponse);
   RunTest(DnsProbeRunner::UNREACHABLE);
 }
 
 TEST_F(DnsProbeRunnerTest, Probe_NXDOMAIN) {
-  SetupTest(net::ERR_NAME_NOT_RESOLVED, FakeHostResolver::kNoResponse);
+  SetupTest(net::ERR_NAME_NOT_RESOLVED,
+            net::ResolveErrorInfo(net::ERR_NAME_NOT_RESOLVED),
+            FakeHostResolver::kNoResponse);
   RunTest(DnsProbeRunner::INCORRECT);
 }
 
 TEST_F(DnsProbeRunnerTest, Probe_FAILING) {
-  SetupTest(net::ERR_DNS_SERVER_FAILED, FakeHostResolver::kNoResponse);
+  SetupTest(net::ERR_NAME_NOT_RESOLVED,
+            net::ResolveErrorInfo(net::ERR_DNS_SERVER_FAILED),
+            FakeHostResolver::kNoResponse);
   RunTest(DnsProbeRunner::FAILING);
 }
 
 TEST_F(DnsProbeRunnerTest, Probe_DnsNotRun) {
-  SetupTest(net::ERR_DNS_CACHE_MISS, FakeHostResolver::kNoResponse);
+  SetupTest(net::ERR_NAME_NOT_RESOLVED,
+            net::ResolveErrorInfo(net::ERR_DNS_CACHE_MISS),
+            FakeHostResolver::kNoResponse);
   RunTest(DnsProbeRunner::UNKNOWN);
 }
 
 TEST_F(DnsProbeRunnerTest, TwoProbes) {
-  SetupTest({{net::OK, FakeHostResolver::kOneAddressResponse},
-             {net::ERR_NAME_NOT_RESOLVED, FakeHostResolver::kNoResponse}});
+  SetupTest({{net::OK, net::ResolveErrorInfo(net::OK),
+              FakeHostResolver::kOneAddressResponse},
+             {net::ERR_NAME_NOT_RESOLVED,
+              net::ResolveErrorInfo(net::ERR_NAME_NOT_RESOLVED),
+              FakeHostResolver::kNoResponse}});
   RunTest(DnsProbeRunner::CORRECT);
   RunTest(DnsProbeRunner::INCORRECT);
 }
@@ -169,7 +187,8 @@ TEST_F(DnsProbeRunnerTest, MojoConnectionError) {
   // Use a HostResolverGetter that returns a HangingHostResolver on the first
   // call, and a FakeHostResolver on the second call.
   FirstHangingThenFakeResolverNetworkContext network_context(
-      {{net::OK, FakeHostResolver::kOneAddressResponse}});
+      {{net::OK, net::ResolveErrorInfo(net::OK),
+        FakeHostResolver::kOneAddressResponse}});
   runner_ = std::make_unique<DnsProbeRunner>(
       net::DnsConfigOverrides(),
       base::BindRepeating(

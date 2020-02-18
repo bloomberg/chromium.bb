@@ -17,14 +17,15 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProper
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.PORTRAIT_ORIENTATION;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.SHOW_WHEN_VISIBLE;
 
-import android.support.annotation.Nullable;
-import android.support.annotation.Px;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.Px;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Supplier;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
@@ -36,6 +37,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.StateProperty;
@@ -73,8 +75,8 @@ import java.util.HashSet;
  */
 class ManualFillingMediator extends EmptyTabObserver
         implements KeyboardAccessoryCoordinator.VisibilityDelegate, View.OnLayoutChangeListener {
-    static private final int MINIMAL_AVAILABLE_VERTICAL_SPACE = 128; // in DP.
-    static private final int MINIMAL_AVAILABLE_HORIZONTAL_SPACE = 180; // in DP.
+    private static final int MINIMAL_AVAILABLE_VERTICAL_SPACE = 128; // in DP.
+    private static final int MINIMAL_AVAILABLE_HORIZONTAL_SPACE = 180; // in DP.
 
     private PropertyModel mModel = ManualFillingProperties.createFillingModel();
     private WindowAndroid mWindowAndroid;
@@ -115,9 +117,11 @@ class ManualFillingMediator extends EmptyTabObserver
             pause();
             refreshTabs();
         }
+    };
 
+    private final FullscreenListener mFullscreenListener = new FullscreenListener() {
         @Override
-        public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
+        public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
             pause();
         }
     };
@@ -154,6 +158,7 @@ class ManualFillingMediator extends EmptyTabObserver
                 mStateCache.destroyStateFor(tab);
             }
         };
+        mActivity.getFullscreenManager().addListener(mFullscreenListener);
         ensureObserverRegistered(getActiveBrowserTab());
         refreshTabs();
     }
@@ -233,6 +238,7 @@ class ManualFillingMediator extends EmptyTabObserver
         mObservedTabs.clear();
         LayoutManager manager = getLayoutManager();
         if (manager != null) manager.removeSceneChangeObserver(mTabSwitcherObserver);
+        mActivity.getFullscreenManager().removeListener(mFullscreenListener);
         mWindowAndroid = null;
         mActivity = null;
     }

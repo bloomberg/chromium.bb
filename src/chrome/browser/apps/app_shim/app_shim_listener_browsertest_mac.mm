@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
@@ -18,24 +19,28 @@
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/test/app_shim_listener_test_api_mac.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/mac/app_shim.mojom.h"
-#include "chrome/common/mac/app_shim_param_traits.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_utils.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
-using LaunchAppCallback =
-    chrome::mojom::AppShimHostBootstrap::LaunchAppCallback;
+using OnShimConnectedCallback =
+    chrome::mojom::AppShimHostBootstrap::OnShimConnectedCallback;
 
 const char kTestAppMode[] = "test_app";
+const GURL kTestAppUrl("https://example.com");
 
 // A test version of the AppShimController mojo client in chrome_main_app_mode.
 class TestShimClient : public chrome::mojom::AppShim {
@@ -48,43 +53,47 @@ class TestShimClient : public chrome::mojom::AppShim {
     return AppShimController::ConnectToBrowser(server_name);
   }
 
-  chrome::mojom::AppShimHostRequest GetHostRequest() {
-    return std::move(host_request_);
+  mojo::PendingReceiver<chrome::mojom::AppShimHost> GetHostReceiver() {
+    return std::move(host_receiver_);
   }
-  LaunchAppCallback GetLaunchAppCallback() {
-    return base::BindOnce(&TestShimClient::LaunchAppDone,
+  OnShimConnectedCallback GetOnShimConnectedCallback() {
+    return base::BindOnce(&TestShimClient::OnShimConnectedDone,
                           base::Unretained(this));
   }
 
-  chrome::mojom::AppShimHostPtr& host() { return host_; }
-  chrome::mojom::AppShimHostBootstrapPtr& host_bootstrap() {
+  mojo::Remote<chrome::mojom::AppShimHostBootstrap>& host_bootstrap() {
     return host_bootstrap_;
   }
 
   // chrome::mojom::AppShim implementation (not used in testing, but can be).
   void CreateRemoteCocoaApplication(
-      remote_cocoa::mojom::ApplicationAssociatedRequest request) override {}
+      mojo::PendingAssociatedReceiver<remote_cocoa::mojom::Application>
+          receiver) override {}
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
-  void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
+  void SetUserAttention(
+      chrome::mojom::AppShimAttentionType attention_type) override {}
   void SetBadgeLabel(const std::string& badge_label) override {}
+  void UpdateProfileMenu(std::vector<chrome::mojom::ProfileMenuItemPtr>
+                             profile_menu_items) override {}
 
  private:
-  void LaunchAppDone(apps::AppShimLaunchResult result,
-                     chrome::mojom::AppShimRequest app_shim_request) {
-    shim_binding_.Bind(std::move(app_shim_request));
+  void OnShimConnectedDone(
+      chrome::mojom::AppShimLaunchResult result,
+      mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {
+    shim_receiver_.Bind(std::move(app_shim_receiver));
   }
 
   mojo::IsolatedConnection mojo_connection_;
-  mojo::Binding<chrome::mojom::AppShim> shim_binding_;
-  chrome::mojom::AppShimHostPtr host_;
-  chrome::mojom::AppShimHostRequest host_request_;
-  chrome::mojom::AppShimHostBootstrapPtr host_bootstrap_;
+  mojo::Receiver<chrome::mojom::AppShim> shim_receiver_{this};
+  mojo::Remote<chrome::mojom::AppShimHost> host_;
+  mojo::PendingReceiver<chrome::mojom::AppShimHost> host_receiver_;
+  mojo::Remote<chrome::mojom::AppShimHostBootstrap> host_bootstrap_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShimClient);
 };
 
 TestShimClient::TestShimClient()
-    : shim_binding_(this), host_request_(mojo::MakeRequest(&host_)) {
+    : host_receiver_(host_.BindNewPipeAndPassReceiver()) {
   base::FilePath user_data_dir;
   CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
 
@@ -96,8 +105,9 @@ TestShimClient::TestShimClient()
 
   mojo::ScopedMessagePipeHandle message_pipe =
       mojo_connection_.Connect(std::move(endpoint));
-  host_bootstrap_ = chrome::mojom::AppShimHostBootstrapPtr(
-      chrome::mojom::AppShimHostBootstrapPtrInfo(std::move(message_pipe), 0));
+  host_bootstrap_ = mojo::Remote<chrome::mojom::AppShimHostBootstrap>(
+      mojo::PendingRemote<chrome::mojom::AppShimHostBootstrap>(
+          std::move(message_pipe), 0));
 }
 
 // Browser Test for AppShimListener to test IPC interactions.
@@ -105,7 +115,7 @@ class AppShimListenerBrowserTest : public InProcessBrowserTest,
                                    public AppShimHostBootstrap::Client,
                                    public chrome::mojom::AppShimHost {
  public:
-  AppShimListenerBrowserTest() : binding_(this) {}
+  AppShimListenerBrowserTest() = default;
 
  protected:
   // Wait for OnShimProcessConnected, then send a quit, and wait for the
@@ -122,16 +132,17 @@ class AppShimListenerBrowserTest : public InProcessBrowserTest,
 
   std::unique_ptr<TestShimClient> test_client_;
   std::vector<base::FilePath> last_launch_files_;
-  apps::AppShimLaunchType last_launch_type_ = apps::APP_SHIM_LAUNCH_NUM_TYPES;
+  base::Optional<chrome::mojom::AppShimLaunchType> last_launch_type_;
 
  private:
   // chrome::mojom::AppShimHost.
-  void FocusApp(apps::AppShimFocusType focus_type,
+  void FocusApp(chrome::mojom::AppShimFocusType focus_type,
                 const std::vector<base::FilePath>& files) override {}
+  void ProfileSelectedFromMenu(const base::FilePath& profile_path) override {}
 
   std::unique_ptr<base::RunLoop> runner_;
-  mojo::Binding<chrome::mojom::AppShimHost> binding_;
-  chrome::mojom::AppShimPtr app_shim_ptr_;
+  mojo::Receiver<chrome::mojom::AppShimHost> receiver_{this};
+  mojo::Remote<chrome::mojom::AppShim> app_shim_;
 
   int launch_count_ = 0;
 
@@ -158,37 +169,45 @@ void AppShimListenerBrowserTest::TearDownOnMainThread() {
 void AppShimListenerBrowserTest::OnShimProcessConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   ++launch_count_;
-  binding_.Bind(bootstrap->GetLaunchAppShimHostRequest());
+  receiver_.Bind(bootstrap->GetAppShimHostReceiver());
   last_launch_type_ = bootstrap->GetLaunchType();
   last_launch_files_ = bootstrap->GetLaunchFiles();
 
-  bootstrap->OnConnectedToHost(mojo::MakeRequest(&app_shim_ptr_));
+  bootstrap->OnConnectedToHost(app_shim_.BindNewPipeAndPassReceiver());
   runner_->Quit();
 }
 
 // Test regular launch, which would ask Chrome to launch the app.
 IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTest, LaunchNormal) {
   test_client_.reset(new TestShimClient());
-  test_client_->host_bootstrap()->LaunchApp(
-      test_client_->GetHostRequest(), browser()->profile()->GetPath(),
-      kTestAppMode, apps::APP_SHIM_LAUNCH_NORMAL, std::vector<base::FilePath>(),
-      test_client_->GetLaunchAppCallback());
-
+  auto app_shim_info = chrome::mojom::AppShimInfo::New();
+  app_shim_info->profile_path = browser()->profile()->GetPath();
+  app_shim_info->app_id = kTestAppMode;
+  app_shim_info->app_url = kTestAppUrl;
+  app_shim_info->launch_type = chrome::mojom::AppShimLaunchType::kNormal;
+  test_client_->host_bootstrap()->OnShimConnected(
+      test_client_->GetHostReceiver(), std::move(app_shim_info),
+      test_client_->GetOnShimConnectedCallback());
   RunAndExitGracefully();
-  EXPECT_EQ(apps::APP_SHIM_LAUNCH_NORMAL, last_launch_type_);
+  EXPECT_EQ(chrome::mojom::AppShimLaunchType::kNormal, last_launch_type_);
   EXPECT_TRUE(last_launch_files_.empty());
 }
 
 // Test register-only launch, used when Chrome has already launched the app.
 IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTest, LaunchRegisterOnly) {
   test_client_.reset(new TestShimClient());
-  test_client_->host_bootstrap()->LaunchApp(
-      test_client_->GetHostRequest(), browser()->profile()->GetPath(),
-      kTestAppMode, apps::APP_SHIM_LAUNCH_REGISTER_ONLY,
-      std::vector<base::FilePath>(), test_client_->GetLaunchAppCallback());
+  auto app_shim_info = chrome::mojom::AppShimInfo::New();
+  app_shim_info->profile_path = browser()->profile()->GetPath();
+  app_shim_info->app_id = kTestAppMode;
+  app_shim_info->app_url = kTestAppUrl;
+  app_shim_info->launch_type = chrome::mojom::AppShimLaunchType::kRegisterOnly;
+  test_client_->host_bootstrap()->OnShimConnected(
+      test_client_->GetHostReceiver(), std::move(app_shim_info),
+      test_client_->GetOnShimConnectedCallback());
 
   RunAndExitGracefully();
-  EXPECT_EQ(apps::APP_SHIM_LAUNCH_REGISTER_ONLY, last_launch_type_);
+  EXPECT_EQ(chrome::mojom::AppShimLaunchType::kRegisterOnly,
+            *last_launch_type_);
   EXPECT_TRUE(last_launch_files_.empty());
 }
 

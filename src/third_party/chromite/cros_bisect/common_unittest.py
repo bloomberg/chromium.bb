@@ -192,15 +192,11 @@ class TestScore(cros_test_lib.TestCase):
 class ClassAOptionsChecker(common.OptionsChecker):
   """Used to test common.OptionsChecker."""
   REQUIRED_ARGS = ('a', )
-  def __init__(self, options):
-    super(ClassAOptionsChecker, self).__init__(options)
 
 
 class ClassBOptionsChecker(ClassAOptionsChecker):
   """Used to test common.OptionsChecker."""
   REQUIRED_ARGS = ClassAOptionsChecker.REQUIRED_ARGS + ('b', )
-  def __init__(self, options):
-    super(ClassBOptionsChecker, self).__init__(options)
 
 
 class TestOptionsChecker(cros_test_lib.TestCase):
@@ -224,18 +220,18 @@ class TestOptionsChecker(cros_test_lib.TestCase):
     # Missing 'a' argument.
     with self.assertRaises(common.MissingRequiredOptionsException) as cm:
       ClassAOptionsChecker(options_b)
-    exception_message = cm.exception.message
-    self.assertTrue('Missing command line' in exception_message)
-    self.assertTrue('ClassAOptionsChecker' in exception_message)
-    self.assertTrue("['a']" in exception_message)
+    exception_message = str(cm.exception)
+    self.assertIn('Missing command line', exception_message)
+    self.assertIn('ClassAOptionsChecker', exception_message)
+    self.assertIn("['a']", exception_message)
 
     # Missing derived 'a' argument.
     with self.assertRaises(common.MissingRequiredOptionsException) as cm:
       ClassBOptionsChecker(options_b)
-    exception_message = cm.exception.message
-    self.assertTrue('Missing command line' in exception_message)
-    self.assertTrue('ClassBOptionsChecker' in exception_message)
-    self.assertTrue("['a']" in exception_message)
+    exception_message = str(cm.exception)
+    self.assertIn('Missing command line', exception_message)
+    self.assertIn('ClassBOptionsChecker', exception_message)
+    self.assertIn("['a']", exception_message)
 
   def testSanityCheckOptions(self):
     """Like testInit, but just call SanityCheckOptions()."""
@@ -254,15 +250,15 @@ class TestOptionsChecker(cros_test_lib.TestCase):
     # Missing 'a' argument.
     with self.assertRaises(common.MissingRequiredOptionsException) as cm:
       ClassAOptionsChecker.SanityCheckOptions(options_b)
-    exception_message = cm.exception.message
-    self.assertTrue('Missing command line' in exception_message)
-    self.assertTrue('ClassAOptionsChecker' in exception_message)
-    self.assertTrue("['a']" in exception_message)
+    exception_message = str(cm.exception)
+    self.assertIn('Missing command line', exception_message)
+    self.assertIn('ClassAOptionsChecker', exception_message)
+    self.assertIn("['a']", exception_message)
 
     # Missing derived 'a' argument.
     with self.assertRaises(common.MissingRequiredOptionsException) as cm:
       ClassBOptionsChecker.SanityCheckOptions(options_b)
-    exception_message = cm.exception.message
-    self.assertTrue('Missing command line' in exception_message)
-    self.assertTrue('ClassBOptionsChecker' in exception_message)
-    self.assertTrue("['a']" in exception_message)
+    exception_message = str(cm.exception)
+    self.assertIn('Missing command line', exception_message)
+    self.assertIn('ClassBOptionsChecker', exception_message)
+    self.assertIn("['a']", exception_message)

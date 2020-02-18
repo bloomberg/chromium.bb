@@ -5,15 +5,62 @@
 #ifndef BASE_TEST_GMOCK_CALLBACK_SUPPORT_H_
 #define BASE_TEST_GMOCK_CALLBACK_SUPPORT_H_
 
+#include <functional>
 #include <tuple>
+#include <utility>
 
+#include "base/callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
 namespace test {
 
-// Matchers for base::Callback and base::Closure.
+// TODO(crbug.com/752720): Simplify using std::apply once C++17 is available.
+template <typename CallbackFunc, typename ArgTuple, size_t... I>
+decltype(auto) RunOnceCallbackUnwrapped(CallbackFunc&& f,
+                                        ArgTuple&& t,
+                                        std::index_sequence<I...>) {
+  return std::move(f).Run(std::get<I>(t)...);
+}
 
+// TODO(crbug.com/752720): Simplify using std::apply once C++17 is available.
+template <typename CallbackFunc, typename ArgTuple, size_t... I>
+decltype(auto) RunRepeatingCallbackUnwrapped(CallbackFunc&& f,
+                                             ArgTuple&& t,
+                                             std::index_sequence<I...>) {
+  return f.Run(std::get<I>(t)...);
+}
+
+// Functor used for RunOnceClosure<N>() and RunOnceCallback<N>() actions.
+template <size_t I, typename... Vals>
+struct RunOnceCallbackAction {
+  std::tuple<Vals...> vals;
+
+  template <typename... Args>
+  decltype(auto) operator()(Args&&... args) {
+    constexpr size_t size = std::tuple_size<decltype(vals)>::value;
+    return RunOnceCallbackUnwrapped(
+        std::get<I>(std::forward_as_tuple(std::forward<Args>(args)...)),
+        std::move(vals), std::make_index_sequence<size>{});
+  }
+};
+
+// Functor used for RunClosure<N>() and RunCallback<N>() actions.
+template <size_t I, typename... Vals>
+struct RunRepeatingCallbackAction {
+  std::tuple<Vals...> vals;
+
+  template <typename... Args>
+  decltype(auto) operator()(Args&&... args) {
+    constexpr size_t size = std::tuple_size<decltype(vals)>::value;
+    return RunRepeatingCallbackUnwrapped(
+        std::get<I>(std::forward_as_tuple(std::forward<Args>(args)...)),
+        std::move(vals), std::make_index_sequence<size>{});
+  }
+};
+
+// Matchers for base::{Once,Repeating}Callback and
+// base::{Once,Repeating}Closure.
 MATCHER(IsNullCallback, "a null callback") {
   return (arg.is_null());
 }
@@ -22,23 +69,32 @@ MATCHER(IsNotNullCallback, "a non-null callback") {
   return (!arg.is_null());
 }
 
-// The RunClosure<N>() action invokes Run() method on the N-th (0-based)
-// argument of the mock function.
-
-ACTION_TEMPLATE(RunClosure,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_0_VALUE_PARAMS()) {
-  ::testing::get<k>(args).Run();
-}
-
+// The Run[Once]Closure() action invokes the Run() method on the closure
+// provided when the action is constructed.
 ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-// Various overloads for RunCallback<N>().
-//
-// The RunCallback<N>(p1, p2, ..., p_k) action invokes Run() method on the N-th
-// (0-based) argument of the mock function, with arguments p1, p2, ..., p_k.
+// TODO(kylechar): This action can't take a OnceClosure by value, fix that.
+ACTION_P(RunOnceClosure, closure) {
+  std::move(closure).Run();
+}
+
+// The Run[Once]Closure<N>() action invokes the Run() method on the N-th
+// (0-based) argument of the mock function.
+template <size_t I>
+RunRepeatingCallbackAction<I> RunClosure() {
+  return {};
+}
+
+template <size_t I>
+RunOnceCallbackAction<I> RunOnceClosure() {
+  return {};
+}
+
+// The Run[Once]Callback<N>(p1, p2, ..., p_k) action invokes the Run() method on
+// the N-th (0-based) argument of the mock function, with arguments p1, p2, ...,
+// p_k.
 //
 // Notes:
 //
@@ -60,115 +116,16 @@ ACTION_P(RunClosure, closure) {
 //   reference of the copy, instead of the original temporary object,
 //   to the callback.  This makes it easy for a user to define an
 //   RunCallback action from temporary values and have it performed later.
-
-ACTION_TEMPLATE(RunCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_0_VALUE_PARAMS()) {
-  return ::testing::get<k>(args).Run();
+template <size_t I, typename... Vals>
+RunOnceCallbackAction<I, std::decay_t<Vals>...> RunOnceCallback(
+    Vals&&... vals) {
+  return {std::forward_as_tuple(std::forward<Vals>(vals)...)};
 }
 
-ACTION_TEMPLATE(RunCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(p0)) {
-  return ::testing::get<k>(args).Run(p0);
-}
-
-ACTION_TEMPLATE(RunCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_2_VALUE_PARAMS(p0, p1)) {
-  return ::testing::get<k>(args).Run(p0, p1);
-}
-
-ACTION_TEMPLATE(RunCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_3_VALUE_PARAMS(p0, p1, p2)) {
-  return ::testing::get<k>(args).Run(p0, p1, p2);
-}
-
-ACTION_TEMPLATE(RunCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_4_VALUE_PARAMS(p0, p1, p2, p3)) {
-  return ::testing::get<k>(args).Run(p0, p1, p2, p3);
-}
-
-ACTION_TEMPLATE(RunCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_5_VALUE_PARAMS(p0, p1, p2, p3, p4)) {
-  return ::testing::get<k>(args).Run(p0, p1, p2, p3, p4);
-}
-
-ACTION_TEMPLATE(RunCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_6_VALUE_PARAMS(p0, p1, p2, p3, p4, p5)) {
-  return ::testing::get<k>(args).Run(p0, p1, p2, p3, p4, p5);
-}
-
-ACTION_TEMPLATE(RunCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_7_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6)) {
-  return ::testing::get<k>(args).Run(p0, p1, p2, p3, p4, p5, p6);
-}
-
-// Various overloads for RunOnceClosure and RunOnceCallback<N>(). These are
-// mostly the same as RunClosure and RunCallback<N>() above except that they
-// support the move-only base::OnceCallback types.
-
-ACTION_TEMPLATE(RunOnceClosure,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_0_VALUE_PARAMS()) {
-  std::move(::testing::get<k>(args)).Run();
-}
-
-ACTION_P(RunOnceClosure, closure) {
-  std::move(closure).Run();
-}
-
-ACTION_TEMPLATE(RunOnceCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_0_VALUE_PARAMS()) {
-  return std::move(::testing::get<k>(args)).Run();
-}
-
-ACTION_TEMPLATE(RunOnceCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(p0)) {
-  return std::move(::testing::get<k>(args)).Run(p0);
-}
-
-ACTION_TEMPLATE(RunOnceCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_2_VALUE_PARAMS(p0, p1)) {
-  return std::move(::testing::get<k>(args)).Run(p0, p1);
-}
-
-ACTION_TEMPLATE(RunOnceCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_3_VALUE_PARAMS(p0, p1, p2)) {
-  return std::move(::testing::get<k>(args)).Run(p0, p1, p2);
-}
-
-ACTION_TEMPLATE(RunOnceCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_4_VALUE_PARAMS(p0, p1, p2, p3)) {
-  return std::move(::testing::get<k>(args)).Run(p0, p1, p2, p3);
-}
-
-ACTION_TEMPLATE(RunOnceCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_5_VALUE_PARAMS(p0, p1, p2, p3, p4)) {
-  return std::move(::testing::get<k>(args)).Run(p0, p1, p2, p3, p4);
-}
-
-ACTION_TEMPLATE(RunOnceCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_6_VALUE_PARAMS(p0, p1, p2, p3, p4, p5)) {
-  return std::move(::testing::get<k>(args)).Run(p0, p1, p2, p3, p4, p5);
-}
-
-ACTION_TEMPLATE(RunOnceCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_7_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6)) {
-  return std::move(::testing::get<k>(args)).Run(p0, p1, p2, p3, p4, p5, p6);
+template <size_t I, typename... Vals>
+RunRepeatingCallbackAction<I, std::decay_t<Vals>...> RunCallback(
+    Vals&&... vals) {
+  return {std::forward_as_tuple(std::forward<Vals>(vals)...)};
 }
 
 }  // namespace test

@@ -5,6 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
+  generate_java = true
   sources = [
     "compositing/begin_frame_args.mojom",
     "compositing/compositing_mode_watcher.mojom",
@@ -32,6 +33,7 @@ mojom("mojom") {
     "compositing/surface_range.mojom",
     "compositing/texture_releaser.mojom",
     "compositing/transferable_resource.mojom",
+    "compositing/vertical_scroll_direction.mojom",
     "compositing/video_detector_observer.mojom",
     "gpu.mojom",
     "hit_test/aggregated_hit_test_region.mojom",

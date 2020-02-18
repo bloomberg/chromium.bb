@@ -53,4 +53,12 @@ void SetSelectionColors(unsigned active_background_color,
       inactive_background_color, inactive_foreground_color);
 }
 
+void SystemColorsChanged() {
+  LayoutTheme::GetTheme().PlatformColorsDidChange();
+}
+
+void ColorSchemeChanged() {
+  LayoutTheme::GetTheme().ColorSchemeDidChange();
+}
+
 }  // namespace blink

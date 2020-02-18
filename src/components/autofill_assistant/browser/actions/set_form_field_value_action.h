@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
@@ -24,6 +25,9 @@ class SetFormFieldValueAction : public Action {
   ~SetFormFieldValueAction() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SetFormFieldValueActionTest,
+                           PasswordIsClearedFromMemory);
+
   // A field input as extracted from the proto, but already checked for
   // validity.
   struct FieldInput {
@@ -46,11 +50,11 @@ class SetFormFieldValueAction : public Action {
   // Overrides Action:
   void InternalProcessAction(ProcessActionCallback callback) override;
 
-  void OnWaitForElement(bool element_found);
+  void OnWaitForElement(const ClientStatus& element_status);
 
   void OnGetFieldValue(int field_index,
                        const std::string& requested_value,
-                       bool status,
+                       const ClientStatus& element_status,
                        const std::string& actual_value);
 
   void OnSetFieldValue(int next, const ClientStatus& status);

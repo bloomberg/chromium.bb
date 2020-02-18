@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "cc/cc_export.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/sync_query_collection.h"
@@ -52,7 +53,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                DrawMode mode);
   ~SkiaRenderer() override;
 
-  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
+  void SwapBuffers(SwapFrameData swap_frame_data) override;
+  void SwapBuffersComplete() override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {
     disable_picture_quad_image_filtering_ = disable;
@@ -84,12 +86,15 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void EnsureScissorTestDisabled() override;
   void CopyDrawnRenderPass(const copy_output::RenderPassGeometry& geometry,
                            std::unique_ptr<CopyOutputRequest> request) override;
+#if defined(OS_WIN)
   void SetEnableDCLayers(bool enable) override;
+#endif
   void DidChangeVisibility() override;
   void FinishDrawingQuadList() override;
   void GenerateMipmap() override;
 
  private:
+  enum class BypassMode;
   struct DrawQuadParams;
   struct DrawRPDQParams;
   class ScopedSkImageBuilder;
@@ -104,63 +109,121 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void PrepareCanvas(const base::Optional<gfx::Rect>& scissor_rect,
                      const base::Optional<gfx::RRectF>& rounded_corner_bounds,
                      const gfx::Transform* cdt);
+  // Further modify the canvas as needed to apply the effects represented by
+  // |rpdq_params|. Call Prepare[Paint|Color]OrCanvasForRPDQ when possible,
+  // in order apply the RPDQ effects into a more efficient format.
+  void PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
+                            DrawQuadParams* params);
+  // Attempt to apply the effects in |rpdq_params| to the paint used to draw
+  // the quad; otherwise modify the current canvas instead.
+  void PreparePaintOrCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
+                                   DrawQuadParams* params,
+                                   SkPaint* paint);
+  // Attempt to apply the effects in |rpdq_params| to the color used to draw
+  // the quad; otherwise modify the current canvas as a fallback.
+  void PrepareColorOrCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
+                                   DrawQuadParams* params,
+                                   SkColor* color);
 
   // The returned DrawQuadParams can be modified by the DrawX calls that accept
   // params so that they can apply explicit data transforms before sending to
   // Skia in a consistent manner.
-  DrawQuadParams CalculateDrawQuadParams(const DrawQuad* quad,
-                                         const gfx::QuadF* draw_region);
-  DrawRPDQParams CalculateRPDQParams(const SkImage* src_image,
-                                     const RenderPassDrawQuad* quad,
+  DrawQuadParams CalculateDrawQuadParams(const gfx::Transform& target_to_device,
+                                         const gfx::Rect* scissor_rect,
+                                         const DrawQuad* quad,
+                                         const gfx::QuadF* draw_region) const;
+  DrawRPDQParams CalculateRPDQParams(const RenderPassDrawQuad* quad,
                                      DrawQuadParams* params);
+  // Modifies |params| and |rpdq_params| to apply correctly when drawing the
+  // RenderPass directly via |bypass_quad|.
+  BypassMode CalculateBypassParams(const DrawQuad* bypass_quad,
+                                   DrawRPDQParams* rpdq_params,
+                                   DrawQuadParams* params) const;
 
   SkCanvas::ImageSetEntry MakeEntry(const SkImage* image,
                                     int matrix_index,
-                                    const DrawQuadParams& params);
+                                    const DrawQuadParams& params) const;
   // Returns overall constraint to pass to Skia, and modifies |params| to
   // emulate content area clamping different from the provided texture coords.
   SkCanvas::SrcRectConstraint ResolveTextureConstraints(
       const SkImage* image,
       const gfx::RectF& valid_texel_bounds,
-      DrawQuadParams* params);
+      DrawQuadParams* params) const;
+  // True or false if the DrawQuad can have the scissor rect applied by
+  // modifying the quad's visible_rect instead of as a separate clip operation.
+  bool CanExplicitlyScissor(
+      const DrawQuad* quad,
+      const gfx::QuadF* draw_region,
+      const gfx::Transform& contents_device_transform) const;
 
   bool MustFlushBatchedQuads(const DrawQuad* new_quad,
-                             const DrawQuadParams& params);
+                             const DrawRPDQParams* rpdq_params,
+                             const DrawQuadParams& params) const;
   void AddQuadToBatch(const SkImage* image,
                       const gfx::RectF& valid_texel_bounds,
                       DrawQuadParams* params);
   void FlushBatchedQuads();
 
-  // Utility to draw a single quad as a filled color
-  void DrawColoredQuad(SkColor color, DrawQuadParams* params);
-  // Utility to make a single ImageSetEntry and draw it with the complex paint.
+  // Utility function that calls appropriate draw function based on quad
+  // material. If |rpdq_params| is not null, then |quad| is assumed to be the
+  // bypass quad associated with the RenderPass that defined the |rpdq_params|.
+  void DrawQuadInternal(const DrawQuad* quad,
+                        const DrawRPDQParams* rpdq_params,
+                        DrawQuadParams* params);
+
+  // Utility to draw a single quad as a filled color, and optionally apply the
+  // effects defined in |rpdq_params| when the quad is bypassing the render pass
+  void DrawColoredQuad(SkColor color,
+                       const DrawRPDQParams* rpdq_params,
+                       DrawQuadParams* params);
+  // Utility to make a single ImageSetEntry and draw it with the complex paint,
+  // and optionally apply the effects defined in |rpdq_params| when the quad is
+  // bypassing the render pass
   void DrawSingleImage(const SkImage* image,
                        const gfx::RectF& valid_texel_bounds,
-                       const SkPaint& paint,
+                       const DrawRPDQParams* rpdq_params,
+                       SkPaint* paint,
                        DrawQuadParams* params);
 
-  // DebugBorder, Picture, RPDQ, and SolidColor quads cannot be batched. They
-  // either are not textures (debug, picture, solid color), or it's very likely
-  // the texture will have advanced paint effects (rpdq)
+  // RPDQ, DebugBorder and picture quads cannot be batched. They
+  // either are not textures (debug, picture), or it's very likely
+  // the texture will have advanced paint effects (rpdq). Additionally, they do
+  // not support being drawn directly for a pass-through RenderPass.
+  void DrawRenderPassQuad(const RenderPassDrawQuad* quad,
+                          DrawQuadParams* params);
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
                            DrawQuadParams* params);
   void DrawPictureQuad(const PictureDrawQuad* quad, DrawQuadParams* params);
-  void DrawRenderPassQuad(const RenderPassDrawQuad* quad,
-                          DrawQuadParams* params);
-  void DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
-                                  const SkImage* content_image,
-                                  DrawQuadParams* params);
+
+  // Solid-color quads are not batchable, but can be drawn directly in place of
+  // a RenderPass (hence it takes the optional DrawRPDQParams).
   void DrawSolidColorQuad(const SolidColorDrawQuad* quad,
+                          const DrawRPDQParams* rpdq_params,
                           DrawQuadParams* params);
 
   void DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
+                           const DrawRPDQParams* rpdq_params,
                            DrawQuadParams* params);
-  void DrawTextureQuad(const TextureDrawQuad* quad, DrawQuadParams* params);
-  void DrawTileDrawQuad(const TileDrawQuad* quad, DrawQuadParams* params);
-  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad, DrawQuadParams* params);
-  void DrawUnsupportedQuad(const DrawQuad* quad, DrawQuadParams* params);
+  void DrawTextureQuad(const TextureDrawQuad* quad,
+                       const DrawRPDQParams* rpdq_params,
+                       DrawQuadParams* params);
+  void DrawTileDrawQuad(const TileDrawQuad* quad,
+                        const DrawRPDQParams* rpdq_params,
+                        DrawQuadParams* params);
+  void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
+                        const DrawRPDQParams* rpdq_params,
+                        DrawQuadParams* params);
 
-  const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
+  void DrawUnsupportedQuad(const DrawQuad* quad,
+                           const DrawRPDQParams* rpdq_params,
+                           DrawQuadParams* params);
+
+  // Schedule overlay candidates for presentation at next SwapBuffers().
+  void ScheduleOverlays();
+
+  // skia_renderer can draw most single-quad passes directly, regardless of
+  // blend mode or image filtering.
+  const DrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
   // Get corresponding GrContext. Returns nullptr when there is no GrContext.
   // TODO(weiliangc): This currently only returns nullptr. If SKPRecord isn't
@@ -252,6 +315,15 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // It is only used with DDL.
   base::Optional<DisplayResourceProvider::LockSetForExternalUse>
       lock_set_for_external_use_;
+
+  // Locks for overlays are pending for swapbuffers.
+  base::circular_deque<
+      std::vector<DisplayResourceProvider::ScopedReadLockSharedImage>>
+      pending_overlay_locks_;
+  // Locks for overlays have been committed. |pending_overlay_locks_| will
+  // be moved to |committed_overlay_locks_| after SwapBuffers() completed.
+  std::vector<DisplayResourceProvider::ScopedReadLockSharedImage>
+      committed_overlay_locks_;
 
   // Specific for SkPRecord.
   std::unique_ptr<SkPictureRecorder> root_recorder_;

@@ -21,6 +21,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/nqe/effective_connection_type.h"
+#include "services/network/public/cpp/content_security_policy.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "url/gurl.h"
@@ -156,10 +157,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP) ResourceResponseInfo {
   // the ServiceWorker. Empty if the response isn't from the CacheStorage.
   std::string cache_storage_cache_name;
 
-  // Effective connection type when the resource was fetched. This is populated
-  // only for responses that correspond to main frame requests.
-  net::EffectiveConnectionType effective_connection_type;
-
   // Bitmask of status info of the SSL certificate. See cert_status_flags.h for
   // values.
   net::CertStatus cert_status;
@@ -209,6 +206,12 @@ struct COMPONENT_EXPORT(NETWORK_CPP) ResourceResponseInfo {
   // If the request received an authentication challenge, the challenge info is
   // recorded here.
   base::Optional<net::AuthChallengeInfo> auth_challenge_info;
+
+  // See URLResponseHead mojo documentation.
+  base::Optional<base::UnguessableToken> recursive_prefetch_token;
+
+  // The parsed content security policy from the response headers.
+  ContentSecurityPolicy content_security_policy;
 
   // NOTE: When adding or changing fields here, also update
   // ResourceResponse::DeepCopy in resource_response.cc.

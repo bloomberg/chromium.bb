@@ -10,20 +10,23 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
-#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/sync_device_info/device_info.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
-using App = SharingUiController::App;
-
 // static
 SharedClipboardUiController*
 SharedClipboardUiController::GetOrCreateFromWebContents(
     content::WebContents* web_contents) {
+  // Use active WebContents if available.
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser)
+    web_contents = browser->tab_strip_model()->GetActiveWebContents();
   SharedClipboardUiController::CreateForWebContents(web_contents);
   return SharedClipboardUiController::FromWebContents(web_contents);
 }
@@ -41,28 +44,31 @@ void SharedClipboardUiController::OnDeviceSelected(
   OnDeviceChosen(device);
 }
 
-base::string16 SharedClipboardUiController::GetTitle() {
-  // There is no left click dialog - so no title
-  return base::string16();
+base::string16 SharedClipboardUiController::GetTitle(
+    SharingDialogType dialog_type) {
+  // Shared clipboard only shows error dialogs.
+  DCHECK_EQ(SharingDialogType::kErrorDialog, dialog_type);
+
+  if (send_result() == SharingSendMessageResult::kPayloadTooLarge) {
+    return l10n_util::GetStringUTF16(
+        IDS_BROWSER_SHARING_SHARED_CLIPBOARD_ERROR_DIALOG_TITLE_PAYLOAD_TOO_LARGE);
+  }
+
+  return SharingUiController::GetTitle(dialog_type);
 }
 
 PageActionIconType SharedClipboardUiController::GetIconType() {
   return PageActionIconType::kSharedClipboard;
 }
 
-int SharedClipboardUiController::GetRequiredDeviceCapabilities() {
-  return static_cast<int>(SharingDeviceCapability::kSharedClipboard);
+sync_pb::SharingSpecificFields::EnabledFeatures
+SharedClipboardUiController::GetRequiredFeature() {
+  return sync_pb::SharingSpecificFields::SHARED_CLIPBOARD;
 }
 
 // No need for apps for shared clipboard feature
 void SharedClipboardUiController::DoUpdateApps(UpdateAppsCallback callback) {
-  std::move(callback).Run(std::vector<App>());
-}
-
-// Error message dialog.
-SharingDialog* SharedClipboardUiController::DoShowDialog(
-    BrowserWindow* window) {
-  return window->ShowSharingDialog(web_contents(), this);
+  std::move(callback).Run(std::vector<SharingApp>());
 }
 
 void SharedClipboardUiController::OnDeviceChosen(
@@ -74,21 +80,12 @@ void SharedClipboardUiController::OnDeviceChosen(
   SendMessageToDevice(device, std::move(sharing_message));
 }
 
-void SharedClipboardUiController::OnAppChosen(const App& app) {
+void SharedClipboardUiController::OnAppChosen(const SharingApp& app) {
   // Do nothing - there is no apps
 }
 
 base::string16 SharedClipboardUiController::GetContentType() const {
   return l10n_util::GetStringUTF16(IDS_BROWSER_SHARING_CONTENT_TYPE_TEXT);
-}
-
-base::string16 SharedClipboardUiController::GetErrorDialogTitle() const {
-  if (send_result() == SharingSendMessageResult::kPayloadTooLarge) {
-    return l10n_util::GetStringUTF16(
-        IDS_BROWSER_SHARING_SHARED_CLIPBOARD_ERROR_DIALOG_TITLE_PAYLOAD_TOO_LARGE);
-  }
-
-  return SharingUiController::GetErrorDialogTitle();
 }
 
 base::string16 SharedClipboardUiController::GetErrorDialogText() const {
@@ -101,24 +98,17 @@ base::string16 SharedClipboardUiController::GetErrorDialogText() const {
 }
 
 const gfx::VectorIcon& SharedClipboardUiController::GetVectorIcon() const {
-  return kSendTabToSelfIcon;
+  return kCopyIcon;
 }
 
 base::string16 SharedClipboardUiController::GetTextForTooltipAndAccessibleName()
     const {
-  // TODO(yasmo): Update the text after approval.
-  return base::string16();
+  return l10n_util::GetStringUTF16(IDS_OMNIBOX_TOOLTIP_SHARED_CLIPBOARD);
 }
 
 SharingFeatureName SharedClipboardUiController::GetFeatureMetricsPrefix()
     const {
   return SharingFeatureName::kSharedClipboard;
-}
-
-base::string16 SharedClipboardUiController::GetEducationWindowTitleText()
-    const {
-  // No educational window text for shared clipboard.
-  return base::string16();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SharedClipboardUiController)

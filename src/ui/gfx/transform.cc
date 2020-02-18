@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform_util.h"
 
@@ -392,13 +393,16 @@ void Transform::Transpose() {
 }
 
 void Transform::FlattenTo2d() {
-  matrix_.set(2, 0, 0.0);
-  matrix_.set(2, 1, 0.0);
-  matrix_.set(0, 2, 0.0);
-  matrix_.set(1, 2, 0.0);
-  matrix_.set(2, 2, 1.0);
-  matrix_.set(3, 2, 0.0);
-  matrix_.set(2, 3, 0.0);
+  float tmp[16];
+  matrix_.asColMajorf(tmp);
+  tmp[2] = 0.0;
+  tmp[6] = 0.0;
+  tmp[8] = 0.0;
+  tmp[9] = 0.0;
+  tmp[10] = 1.0;
+  tmp[11] = 0.0;
+  tmp[14] = 0.0;
+  matrix_.setColMajorf(tmp);
 }
 
 bool Transform::IsFlat() const {
@@ -479,6 +483,14 @@ bool Transform::TransformRectReverse(RectF* rect) const {
   SkRect src = RectFToSkRect(*rect);
   matrix.mapRect(&src);
   *rect = SkRectToRectF(src);
+  return true;
+}
+
+bool Transform::TransformRRectF(RRectF* rrect) const {
+  SkRRect result;
+  if (!SkRRect(*rrect).transform(matrix_, &result))
+    return false;
+  *rrect = gfx::RRectF(result);
   return true;
 }
 

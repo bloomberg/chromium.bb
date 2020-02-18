@@ -99,7 +99,7 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
   BrowserAccessibilityManager::FireBlinkEvent(event_type, node);
   switch (event_type) {
     case ax::mojom::Event::kClicked:
-      if (ui::IsInvokable(node->GetData()))
+      if (node->GetData().IsInvocable())
         FireUiaAccessibilityEvent(UIA_Invoke_InvokedEventId, node);
       break;
     case ax::mojom::Event::kEndOfTest: {
@@ -242,9 +242,17 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       if (node->IsIgnored()) {
         FireWinAccessibilityEvent(EVENT_OBJECT_HIDE, node);
         FireUiaStructureChangedEvent(StructureChangeType_ChildRemoved, node);
+        if (node->GetRole() == ax::mojom::Role::kMenu) {
+          FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPEND, node);
+          FireUiaAccessibilityEvent(UIA_MenuClosedEventId, node);
+        }
       } else {
         FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
         FireUiaStructureChangedEvent(StructureChangeType_ChildAdded, node);
+        if (node->GetRole() == ax::mojom::Role::kMenu) {
+          FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPSTART, node);
+          FireUiaAccessibilityEvent(UIA_MenuOpenedEventId, node);
+        }
       }
       aria_properties_events_.insert(node);
       break;
@@ -268,6 +276,11 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireUiaAccessibilityEvent(UIA_LiveRegionChangedEventId, node);
       break;
     case ui::AXEventGenerator::Event::LIVE_REGION_CHANGED:
+      // This will force ATs that synchronously call get_newText (e.g., NVDA) to
+      // read the entire live region hypertext.
+      ToBrowserAccessibilityWin(node)->GetCOM()->ForceNewHypertext();
+      FireWinAccessibilityEvent(IA2_EVENT_TEXT_INSERTED, node);
+
       // This event is redundant with the IA2_EVENT_TEXT_INSERTED events;
       // however, JAWS 2018 and earlier do not process the text inserted
       // events when "virtual cursor mode" is turned off (Insert+Z).
@@ -303,9 +316,11 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::NAME_CHANGED:
       FireUiaPropertyChangedEvent(UIA_NamePropertyId, node);
-      // Only fire name changes when the name comes from an attribute, otherwise
-      // name changes are redundant with text removed/inserted events.
-      if (node->GetData().GetNameFrom() != ax::mojom::NameFrom::kContents)
+      // Only fire name changes when the name comes from an attribute, and is
+      // not contained within an active live-region; otherwise name changes are
+      // redundant with text removed/inserted events.
+      if (node->GetData().GetNameFrom() != ax::mojom::NameFrom::kContents &&
+          !node->GetData().IsContainedInActiveLiveRegion())
         FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
       break;
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
@@ -316,7 +331,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::READONLY_CHANGED:
-      if (ui::IsRangeValueSupported(node->GetData()))
+      if (node->GetData().IsRangeValueSupported())
         FireUiaPropertyChangedEvent(UIA_RangeValueIsReadOnlyPropertyId, node);
       else if (ui::IsValuePatternSupported(node))
         FireUiaPropertyChangedEvent(UIA_ValueIsReadOnlyPropertyId, node);
@@ -363,7 +378,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::VALUE_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_VALUECHANGE, node);
-      if (ui::IsRangeValueSupported(node->GetData())) {
+      if (node->GetData().IsRangeValueSupported()) {
         FireUiaPropertyChangedEvent(UIA_RangeValueValuePropertyId, node);
         aria_properties_events_.insert(node);
       } else if (ui::IsValuePatternSupported(node)) {
@@ -371,19 +386,19 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       }
       break;
     case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:
-      if (IsRangeValueSupported(node->GetData())) {
+      if (node->GetData().IsRangeValueSupported()) {
         FireUiaPropertyChangedEvent(UIA_RangeValueMaximumPropertyId, node);
         aria_properties_events_.insert(node);
       }
       break;
     case ui::AXEventGenerator::Event::VALUE_MIN_CHANGED:
-      if (IsRangeValueSupported(node->GetData())) {
+      if (node->GetData().IsRangeValueSupported()) {
         FireUiaPropertyChangedEvent(UIA_RangeValueMinimumPropertyId, node);
         aria_properties_events_.insert(node);
       }
       break;
     case ui::AXEventGenerator::Event::VALUE_STEP_CHANGED:
-      if (IsRangeValueSupported(node->GetData())) {
+      if (node->GetData().IsRangeValueSupported()) {
         FireUiaPropertyChangedEvent(UIA_RangeValueSmallChangePropertyId, node);
         FireUiaPropertyChangedEvent(UIA_RangeValueLargeChangePropertyId, node);
       }
@@ -407,15 +422,17 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
 void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
     LONG win_event_type,
     BrowserAccessibility* node) {
-  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
-    return;
   if (!ShouldFireEventForNode(node))
     return;
-  // Suppress events when |IGNORED_CHANGED| except for related SHOW / HIDE
+  // Suppress events when |IGNORED_CHANGED| except for related SHOW / HIDE.
+  // Also include MENUPOPUPSTART / MENUPOPUPEND since a change in the ignored
+  // state may show / hide a popup by exposing it to the tree or not.
   if (base::Contains(ignored_changed_nodes_, node)) {
     switch (win_event_type) {
       case EVENT_OBJECT_HIDE:
       case EVENT_OBJECT_SHOW:
+      case EVENT_SYSTEM_MENUPOPUPEND:
+      case EVENT_SYSTEM_MENUPOPUPSTART:
         break;
       default:
         return;
@@ -443,9 +460,20 @@ void BrowserAccessibilityManagerWin::FireUiaAccessibilityEvent(
     return;
   if (!ShouldFireEventForNode(node))
     return;
-  // Suppress events when |IGNORED_CHANGED|
-  if (node->IsIgnored() || base::Contains(ignored_changed_nodes_, node))
+  // Suppress events when |IGNORED_CHANGED| except for MenuClosed / MenuOpen
+  // since a change in the ignored state may show / hide a popup by exposing
+  // it to the tree or not.
+  if (base::Contains(ignored_changed_nodes_, node)) {
+    switch (uia_event) {
+      case UIA_MenuClosedEventId:
+      case UIA_MenuOpenedEventId:
+        break;
+      default:
+        return;
+    }
+  } else if (node->IsIgnored()) {
     return;
+  }
 
   ::UiaRaiseAutomationEvent(ToBrowserAccessibilityWin(node)->GetCOM(),
                             uia_event);

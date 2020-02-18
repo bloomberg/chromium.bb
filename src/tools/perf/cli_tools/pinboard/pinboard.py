@@ -35,15 +35,24 @@ TZ = 'America/Los_Angeles'  # MTV-time.
 
 # Only these are exported and uploaded to the Cloud Storage dataset.
 MEASUREMENTS = set([
-    'memory:chrome:renderer_processes:reported_by_chrome:v8:effective_size',
+    # V8 metrics.
     'JavaScript:duration',
-    'Optimize:duration',
     'Optimize-Background:duration',
-    'Total:duration',
-    'V8-Only:duration',
+    'Optimize:duration',
+    'RunsPerMinute',
     'Total-Main-Thread:duration',
+    'Total:duration',
     'V8-Only-Main-Thread:duration',
-    'total:500ms_window:renderer_eqt:v8'
+    'V8-Only:duration',
+    'memory:chrome:renderer_processes:reported_by_chrome:v8:effective_size',
+    'total:500ms_window:renderer_eqt:v8',
+
+    # Startup metrics.
+    'experimental_content_start_time',
+    'experimental_navigation_start_time',
+    'first_contentful_paint_time',
+    'messageloop_start_time',
+    'navigation_commit_time',
 ])
 
 # Compute averages over a fixed set of active stories. These may need to be
@@ -65,7 +74,9 @@ ACTIVE_STORIES = set([
     'load:media:facebook_photos',
     'load:media:youtube:2018',
     'load:news:irctc',
-    'load:news:wikipedia:2018'
+    'load:news:wikipedia:2018',
+    'intent:coldish:bbc',
+    'Speedometer2',
 ])
 
 
@@ -131,9 +142,10 @@ def CollectPinpointResults(state):
 def LoadJobsState():
   """Load the latest recorded state of pinpoint jobs."""
   local_path = CachedFilePath(JOBS_STATE_FILE)
-  if os.path.exists(local_path):
+  if os.path.exists(local_path) or DownloadFromCloudStorage(local_path):
     return LoadJsonFile(local_path)
   else:
+    logging.info('No jobs state found. Creating empty state.')
     return []
 
 
@@ -153,23 +165,52 @@ def UpdateJobsState(state):
       UploadToCloudStorage(local_path)
 
 
-def AggregateAndUploadResults(state):
-  """Aggregate results collected and upload them to cloud storage."""
-  cached_results = CachedFilePath(DATASET_PKL_FILE)
-  dfs = []
-
-  if os.path.exists(cached_results):
-    # To speed things up, we take the cache computed from previous results.
-    df = pd.read_pickle(cached_results)
-    dfs.append(df)
-    known_revisions = set(df['revision'])
+def GetCachedDataset():
+  """Load the latest dataset with cached data."""
+  local_path = CachedFilePath(DATASET_PKL_FILE)
+  if os.path.exists(local_path) or DownloadFromCloudStorage(local_path):
+    return pd.read_pickle(local_path)
   else:
-    known_revisions = set()
+    return None
+
+
+def UpdateCachedDataset(df):
+  """Write back the dataset with cached data."""
+  local_path = CachedFilePath(DATASET_PKL_FILE)
+  df.to_pickle(local_path)
+  UploadToCloudStorage(local_path)
+
+
+def GetItemsToUpdate(state):
+  """Select jobs with new data to download and cached data for existing jobs.
+
+  This also filters out old revisions to keep only recent (6 months) data.
+
+  Returns:
+    new_items: A list of job items from which to get data.
+    cached_df: A DataFrame with existing cached data, may be None.
+  """
+  from_date = str(TimeAgo(months=6).date())
+  new_items = [item for item in state if item['timestamp'] > from_date]
+  df = GetCachedDataset()
+  if df is not None:
+    recent_revisions = set(item['revision'] for item in new_items)
+    df = df[df['revision'].isin(recent_revisions)]
+    known_revisions = set(df['revision'])
+    new_items = [
+        item for item in new_items if item['revision'] not in known_revisions]
+  return new_items, df
+
+
+def AggregateAndUploadResults(new_items, cached_df=None):
+  """Aggregate results collected and upload them to cloud storage."""
+  dfs = []
+  if cached_df is not None:
+    dfs.append(cached_df)
 
   found_new = False
-  for item in state:
-    if item['revision'] in known_revisions or _SkipProcessing(item):
-      # Revision is already in cache, jobs are not ready, or all have failed.
+  for item in new_items:
+    if _SkipProcessing(item):  # Jobs are not ready, or all have failed.
       continue
     if not found_new:
       logging.info('Processing data from new results:')
@@ -183,7 +224,7 @@ def AggregateAndUploadResults(state):
 
   # Otherwise update our cache and upload.
   df = pd.concat(dfs, ignore_index=True)
-  df.to_pickle(cached_results)
+  UpdateCachedDataset(df)
 
   # Drop revisions with no results and mark the last result for each metric,
   # both with/without patch, as a 'reference'. This allows making score cards
@@ -313,13 +354,25 @@ def UploadToCloudStorage(filepath):
       filepath, posixpath.join(CLOUD_STORAGE_DIR, os.path.basename(filepath)))
 
 
+def DownloadFromCloudStorage(filepath):
+  """Get the given file from cloud storage."""
+  try:
+    gsutil.Copy(
+        posixpath.join(CLOUD_STORAGE_DIR, os.path.basename(filepath)), filepath)
+    logging.info('Downloaded copy of %s from cloud storage.', filepath)
+    return True
+  except subprocess.CalledProcessError:
+    logging.info('Failed to download copy of %s from cloud storage.', filepath)
+    return False
+
+
 def LoadJsonFile(filename):
   with open(filename) as f:
     return json.load(f)
 
 
-def Yesterday():
-  return pd.Timestamp.now(TZ) - pd.DateOffset(days=1)
+def TimeAgo(**kwargs):
+  return pd.Timestamp.now(TZ) - pd.DateOffset(**kwargs)
 
 
 def SetUpLogging(level):
@@ -349,7 +402,7 @@ def Main():
             "results, 'upload' aggregated data, or 'auto' to do all in "
             "sequence."))
   parser.add_argument(
-      '--date', type=lambda s: pd.Timestamp(s, tz=TZ), default=Yesterday(),
+      '--date', type=lambda s: pd.Timestamp(s, tz=TZ), default=TimeAgo(days=1),
       help=('Run jobs for the last commit landed on the given date (assuming '
             'MTV time). Defaults to the last commit landed yesterday.'))
   args = parser.parse_args()
@@ -357,14 +410,19 @@ def Main():
     logging.info('=== auto run for %s ===', args.date)
     args.actions = actions
 
+  cached_results_dir = CachedFilePath('job_results')
+  if not os.path.isdir(cached_results_dir):
+    os.makedirs(cached_results_dir)
+
   state = LoadJobsState()
   try:
     if 'start' in args.actions:
       StartPinpointJobs(state, args.date)
+    new_items, cached_df = GetItemsToUpdate(state)
     if 'collect' in args.actions:
-      CollectPinpointResults(state)
+      CollectPinpointResults(new_items)
   finally:
     UpdateJobsState(state)
 
   if 'upload' in args.actions:
-    AggregateAndUploadResults(state)
+    AggregateAndUploadResults(new_items, cached_df)

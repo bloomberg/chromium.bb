@@ -76,7 +76,6 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   MOCK_METHOD1(SyncModelHasUserCreatedNodes, bool(bool*));
   MOCK_METHOD0(CryptoReadyIfNecessary, bool());
   MOCK_CONST_METHOD1(GetDataTypeContext, bool(std::string*));
-  MOCK_METHOD1(RecordAssociationTime, void(base::TimeDelta time));
 
   void SetConnectReturn(base::WeakPtr<SyncableService> service) {
     connect_return_ = service;
@@ -175,7 +174,8 @@ class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
 class SyncAsyncDirectoryTypeControllerTest : public testing::Test {
  public:
   SyncAsyncDirectoryTypeControllerTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         backend_thread_("dbthread") {}
 
   void SetUp() override {
@@ -220,7 +220,6 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test {
     EXPECT_CALL(*change_processor_, GetAllSyncDataReturnError(_, _))
         .WillOnce(Return(SyncError()));
     EXPECT_CALL(*change_processor_, GetSyncCount()).WillOnce(Return(0));
-    EXPECT_CALL(*change_processor_, RecordAssociationTime(_));
   }
 
   void SetActivateExpectations(DataTypeController::ConfigureResult result) {
@@ -249,7 +248,7 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test {
 
   static void SignalDone(WaitableEvent* done) { done->Signal(); }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::Thread backend_thread_;
 
   StartCallbackMock start_callback_;
@@ -283,7 +282,6 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest, StartFirstRun) {
       .WillOnce(DoAll(SetArgPointee<0>(false), Return(true)));
   EXPECT_CALL(*change_processor_, GetAllSyncDataReturnError(_, _))
       .WillOnce(Return(SyncError()));
-  EXPECT_CALL(*change_processor_, RecordAssociationTime(_));
   SetActivateExpectations(DataTypeController::OK_FIRST_RUN);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());
   Start();
@@ -318,7 +316,6 @@ TEST_F(SyncAsyncDirectoryTypeControllerTest, StartAssociationFailed) {
       .WillOnce(DoAll(SetArgPointee<0>(true), Return(true)));
   EXPECT_CALL(*change_processor_, GetAllSyncDataReturnError(_, _))
       .WillOnce(Return(SyncError()));
-  EXPECT_CALL(*change_processor_, RecordAssociationTime(_));
   SetStartFailExpectations(DataTypeController::ASSOCIATION_FAILED);
   // Set up association to fail with an association failed error.
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_ui_dtc_->state());

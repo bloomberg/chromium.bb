@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/modules/peerconnection/webrtc_video_track_source.h"
+#include "third_party/blink/renderer/platform/peerconnection/webrtc_video_track_source.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/libyuv/include/libyuv/scale.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
@@ -25,6 +26,43 @@ gfx::Rect CropRectangle(const gfx::Rect& input_rect,
   return result;
 }
 
+gfx::Rect ScaleRectangle(const gfx::Rect& input_rect,
+                         gfx::Size original,
+                         gfx::Size scaled) {
+  if (input_rect.IsEmpty()) {
+    return input_rect;
+  }
+  gfx::Rect result;
+  // Rounded down.
+  result.set_x(input_rect.x() * scaled.width() / original.width());
+  result.set_y(input_rect.y() * scaled.height() / original.height());
+  // rounded up.
+  result.set_width(input_rect.width() * scaled.width() / original.width());
+  result.set_height(input_rect.height() * scaled.height() / original.height());
+  // Snap to 2x2 grid because of UV subsampling.
+  if (result.x() % 2) {
+    result.set_x(result.x() - 1);
+    result.set_width(result.width() + 1);
+  }
+  if (result.y() % 2) {
+    result.set_y(result.y() - 1);
+    result.set_height(result.height() + 1);
+  }
+  if (result.width() % 2) {
+    result.set_width(result.width() + 1);
+  }
+  if (result.height() % 2) {
+    result.set_height(result.height() + 1);
+  }
+  // Expand the rect by 2 pixels in each direction, to include any possible
+  // scaling artifacts.
+  result.set_x(result.x() - 2);
+  result.set_y(result.y() - 2);
+  result.set_width(result.width() + 4);
+  result.set_height(result.height() + 4);
+  result.Intersect(gfx::Rect(0, 0, scaled.width(), scaled.height()));
+  return result;
+}
 }  // anonymous namespace
 
 namespace blink {
@@ -69,6 +107,8 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
   if (!(frame->IsMappable() &&
         (frame->format() == media::PIXEL_FORMAT_I420 ||
          frame->format() == media::PIXEL_FORMAT_I420A)) &&
+      !(frame->storage_type() ==
+        media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) &&
       !frame->HasTextures()) {
     // Since connecting sources and sinks do not check the format, we need to
     // just ignore formats that we can not handle.
@@ -96,15 +136,22 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
   DVLOG(3) << "has_valid_update_rect = " << has_valid_update_rect;
   if (has_capture_counter)
     previous_capture_counter_ = capture_counter;
-  if (has_valid_update_rect)
-    accumulated_update_rect_.Union(update_rect);
-  else
-    accumulated_update_rect_.Union(gfx::Rect(frame->coded_size()));
+  if (has_valid_update_rect) {
+    if (!accumulated_update_rect_) {
+      accumulated_update_rect_ = update_rect;
+    } else {
+      accumulated_update_rect_->Union(update_rect);
+    }
+  } else {
+    accumulated_update_rect_ = base::nullopt;
+  }
 
-  DVLOG(3) << "accumulated_update_rect_ = [" << accumulated_update_rect_.x()
-           << ", " << accumulated_update_rect_.y() << ", "
-           << accumulated_update_rect_.width() << ", "
-           << accumulated_update_rect_.height() << "]";
+  if (accumulated_update_rect_) {
+    DVLOG(3) << "accumulated_update_rect_ = [" << accumulated_update_rect_->x()
+             << ", " << accumulated_update_rect_->y() << ", "
+             << accumulated_update_rect_->width() << ", "
+             << accumulated_update_rect_->height() << "]";
+  }
 
   // Calculate desired target cropping and scaling of the received frame. Note,
   // that the frame may already have some cropping and scaling soft-applied via
@@ -123,14 +170,21 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
       timestamp_aligner_.TranslateTimestamp(frame->timestamp().InMicroseconds(),
                                             now_us);
 
-  // Return |frame| directly if it is texture backed, because there is no
-  // cropping support for texture yet. See http://crbug/503653.
-  if (frame->HasTextures()) {
+  // Return |frame| directly if it is texture not backed up by GPU memory,
+  // because there is no cropping support for texture yet. See
+  // http://crbug/503653.
+  if (frame->HasTextures() &&
+      frame->storage_type() != media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     // The webrtc::VideoFrame::UpdateRect expected by WebRTC must
     // be relative to the |visible_rect()|. We need to translate.
-    const auto cropped_rect =
-        CropRectangle(accumulated_update_rect_, frame->visible_rect());
-    DeliverFrame(std::move(frame), cropped_rect, translated_camera_time_us);
+    base::Optional<gfx::Rect> cropped_rect;
+    if (accumulated_update_rect_) {
+      cropped_rect =
+          CropRectangle(*accumulated_update_rect_, frame->visible_rect());
+    }
+
+    DeliverFrame(std::move(frame), OptionalOrNullptr(cropped_rect),
+                 translated_camera_time_us);
     return;
   }
 
@@ -159,26 +213,39 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
                                frame_adaptation_params.scale_to_height);
   // Soft-apply the new (combined) cropping and scaling.
   scoped_refptr<media::VideoFrame> video_frame =
-      media::VideoFrame::WrapVideoFrame(*frame, frame->format(),
+      media::VideoFrame::WrapVideoFrame(frame, frame->format(),
                                         cropped_visible_rect, adapted_size);
   if (!video_frame)
     return;
 
-  // Attach shared ownership of the wrapped |frame| to the wrapping
-  // |video_frame|.
-  video_frame->AddDestructionObserver(
-      base::BindOnce(base::DoNothing::Once<scoped_refptr<media::VideoFrame>>(),
-                     std::move(frame)));
+  // The webrtc::VideoFrame::UpdateRect expected by WebRTC must be
+  // relative to the |visible_rect()|. We need to translate.
+  if (accumulated_update_rect_) {
+    accumulated_update_rect_ =
+        CropRectangle(*accumulated_update_rect_, frame->visible_rect());
+  }
 
   // If no scaling is needed, return a wrapped version of |frame| directly.
   // The soft-applied cropping will be taken into account by the remainder
   // of the pipeline.
   if (video_frame->natural_size() == video_frame->visible_rect().size()) {
-    // The webrtc::VideoFrame::UpdateRect expected by WebRTC must be
-    // relative to the |visible_rect()|. We need to translate.
-    const auto cropped_rect =
-        CropRectangle(accumulated_update_rect_, video_frame->visible_rect());
-    DeliverFrame(std::move(video_frame), cropped_rect,
+    DeliverFrame(std::move(video_frame),
+                 OptionalOrNullptr(accumulated_update_rect_),
+                 translated_camera_time_us);
+    return;
+  }
+
+  if (accumulated_update_rect_) {
+    accumulated_update_rect_ = ScaleRectangle(
+        *accumulated_update_rect_, video_frame->visible_rect().size(),
+        video_frame->natural_size());
+  }
+
+  // Delay scaling if |video_frame| is backed by GpuMemoryBuffer.
+  if (video_frame->storage_type() ==
+      media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    DeliverFrame(std::move(video_frame),
+                 OptionalOrNullptr(accumulated_update_rect_),
                  translated_camera_time_us);
     return;
   }
@@ -216,14 +283,9 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
                        adapted_size.width(), adapted_size.height(),
                        libyuv::kFilterBilinear);
   }
-  // When scaling is applied and any part of the frame has changed, we mark the
-  // whole frame as changed.
-  DeliverFrame(
-      std::move(scaled_frame),
-      accumulated_update_rect_.IsEmpty()
-          ? gfx::Rect()
-          : gfx::Rect(0, 0, adapted_size.width(), adapted_size.height()),
-      translated_camera_time_us);
+  DeliverFrame(std::move(scaled_frame),
+               OptionalOrNullptr(accumulated_update_rect_),
+               translated_camera_time_us);
 }
 
 WebRtcVideoTrackSource::FrameAdaptationParams
@@ -242,33 +304,39 @@ WebRtcVideoTrackSource::ComputeAdaptationParams(int width,
 
 void WebRtcVideoTrackSource::DeliverFrame(
     scoped_refptr<media::VideoFrame> frame,
-    gfx::Rect update_rect,
+    gfx::Rect* update_rect,
     int64_t timestamp_us) {
-  DVLOG(3) << "update_rect = "
-           << "[" << update_rect.x() << ", " << update_rect.y() << ", "
-           << update_rect.width() << ", " << update_rect.height() << "]";
+  if (update_rect) {
+    DVLOG(3) << "update_rect = "
+             << "[" << update_rect->x() << ", " << update_rect->y() << ", "
+             << update_rect->width() << ", " << update_rect->height() << "]";
+  }
 
   // If the cropping or the size have changed since the previous
   // frame, even if nothing in the incoming coded frame content has changed, we
   // have to assume that every pixel in the outgoing frame has changed.
-  if (frame->visible_rect() != cropping_rect_of_previous_delivered_frame_) {
+  if (frame->visible_rect() != cropping_rect_of_previous_delivered_frame_ ||
+      frame->natural_size() != natural_size_of_previous_delivered_frame_) {
     cropping_rect_of_previous_delivered_frame_ = frame->visible_rect();
-    update_rect = gfx::Rect(0, 0, frame->visible_rect().width(),
-                            frame->visible_rect().height());
+    natural_size_of_previous_delivered_frame_ = frame->natural_size();
+    update_rect = nullptr;
   }
+
+  webrtc::VideoFrame::Builder frame_builder =
+      webrtc::VideoFrame::Builder()
+          .set_video_frame_buffer(
+              new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame))
+          .set_rotation(webrtc::kVideoRotation_0)
+          .set_timestamp_us(timestamp_us);
+  if (update_rect) {
+    frame_builder.set_update_rect(webrtc::VideoFrame::UpdateRect{
+        update_rect->x(), update_rect->y(), update_rect->width(),
+        update_rect->height()});
+  }
+  OnFrame(frame_builder.build());
 
   // Clear accumulated_update_rect_.
   accumulated_update_rect_ = gfx::Rect();
-
-  OnFrame(webrtc::VideoFrame::Builder()
-              .set_video_frame_buffer(
-                  new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame))
-              .set_rotation(webrtc::kVideoRotation_0)
-              .set_timestamp_us(timestamp_us)
-              .set_update_rect(webrtc::VideoFrame::UpdateRect{
-                  update_rect.x(), update_rect.y(), update_rect.width(),
-                  update_rect.height()})
-              .build());
 }
 
 }  // namespace blink

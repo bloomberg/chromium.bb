@@ -122,6 +122,18 @@ class SyncPrefs : public CryptoSyncPrefs,
                         UserSelectableTypeSet registered_types,
                         UserSelectableTypeSet selected_types);
 
+#if defined(OS_CHROMEOS)
+  // Chrome OS provides a separate settings UI surface for sync of OS types,
+  // including a separate "Sync All" toggle for OS types.
+  bool IsSyncAllOsTypesEnabled() const;
+  UserSelectableOsTypeSet GetSelectedOsTypes() const;
+  void SetSelectedOsTypes(bool sync_all_os_types,
+                          UserSelectableOsTypeSet registered_types,
+                          UserSelectableOsTypeSet selected_types);
+  bool GetOsSyncFeatureEnabled() const;
+  void SetOsSyncFeatureEnabled(bool enabled);
+#endif
+
   // Whether Sync is forced off by enterprise policy. Note that this only covers
   // one out of two types of policy, "browser" policy. The second kind, "cloud"
   // policy, is handled directly in ProfileSyncService.
@@ -137,7 +149,7 @@ class SyncPrefs : public CryptoSyncPrefs,
   void SetKeystoreEncryptionBootstrapToken(const std::string& token) override;
 
   // Maps |type| to its corresponding preference name.
-  static const char* GetPrefNameForTypeForTesting(UserSelectableType type);
+  static const char* GetPrefNameForType(UserSelectableType type);
 
   // Copy of various fields historically owned and persisted by the Directory.
   // This is a future-proof approach to ultimately replace the Directory once

@@ -417,7 +417,7 @@ clock is within ten weeks of the embedded build timestamp. Key pinning is a
 useful security measure but it tightly couples client and server configurations
 and completely breaks when those configurations are out of sync. In order to
 manage that risk we need to ensure that we can promptly update pinning clients
-an in emergency and ensure that non-emergency changes can be deployed in a
+in an emergency and ensure that non-emergency changes can be deployed in a
 reasonable timeframe.
 
 Each of the conditions listed above helps ensure those properties:
@@ -523,9 +523,9 @@ of the certificate, thus exposing a user's HTTPS browsing history to the
 responder (a third party).
 
 That said, you can use enterprise policies to [enable soft-fail
-OCSP](https://www.chromium.org/administrators/policy-list-3#EnableOnlineRevocationChecks)
+OCSP](https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnableOnlineRevocationChecks)
 and hard-fail OCSP for [local trust
-anchors](https://www.chromium.org/administrators/policy-list-3#RequireOnlineRevocationChecksForLocalAnchors).
+anchors](https://cloud.google.com/docs/chrome-enterprise/policies/?policy=RequireOnlineRevocationChecksForLocalAnchors).
 
 Chrome performs online checking for [Extended
 Validation](https://cabforum.org/about-ev-ssl/) certificates if it does not

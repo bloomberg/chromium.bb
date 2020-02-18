@@ -392,6 +392,10 @@ class UprevOverlayManager(object):
     try:
       result = ebuild.RevWorkOnEBuild(
           os.path.join(constants.SOURCE_ROOT, 'src'), self.manifest)
+    except portage_util.EbuildVersionError as e:
+      logging.warning('An error occurred while uprevving %s, skipping: %s',
+                      ebuild.package, e)
+      return
     except (OSError, IOError):
       logging.warning(
           'Cannot rev %s\n'
@@ -456,10 +460,10 @@ def clean_stale_packages(new_package_atoms, build_targets, chroot=None):
   def _do_clean_stale_packages(board):
     if board:
       suffix = '-' + board
-      runcmd = cros_build_lib.RunCommand
+      runcmd = cros_build_lib.run
     else:
       suffix = ''
-      runcmd = cros_build_lib.SudoRunCommand
+      runcmd = cros_build_lib.sudo_run
 
     if cros_build_lib.IsOutsideChroot():
       # Setup runcmd with the chroot arguments once.

@@ -15,13 +15,16 @@
 #include "libassistant/shared/public/platform_audio_input.h"
 
 namespace chromeos {
+class CrasAudioHandler;
+class PowerManagerClient;
+
 namespace assistant {
 
 class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
  public:
   AudioInputProviderImpl(mojom::Client* client,
-                         const std::string& input_device_id,
-                         const std::string& hotword_device_id);
+                         PowerManagerClient* power_manager_client,
+                         CrasAudioHandler* cras_audio_handler);
   ~AudioInputProviderImpl() override;
 
   // assistant_client::AudioInputProvider overrides:

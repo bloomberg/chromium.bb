@@ -184,11 +184,6 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
         ui::test::MockMotionEvent(ui::MotionEvent::Action::DOWN));
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
-  }
-
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
     if (!ui::TouchSelectionMenuRunner::GetInstance())
@@ -352,7 +347,7 @@ class TouchSelectionControllerClientAuraSiteIsolationTest
   void SendTouch(RenderWidgetHostViewAura* view,
                  ui::EventType type,
                  gfx::Point point) {
-    DCHECK(type >= ui::ET_TOUCH_RELEASED && type << ui::ET_TOUCH_CANCELLED);
+    DCHECK(type >= ui::ET_TOUCH_RELEASED && type <= ui::ET_TOUCH_CANCELLED);
     // If we want the GestureRecognizer to create the gestures for us, we must
     // register the outgoing touch event with it by sending it through the
     // window's event dispatching system.
@@ -879,7 +874,6 @@ class TouchSelectionControllerClientAuraScaleFactorTest
     : public TouchSelectionControllerClientAuraTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
     command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "2");
   }
 };
@@ -926,23 +920,23 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraScaleFactorTest,
   const ui::TouchSelectionController* controller =
       GetRenderWidgetHostViewAura()->selection_controller();
 
-  gfx::PointF start_top = controller->start().edge_top();
+  gfx::PointF start_top = controller->start().edge_start();
 
   // The selection start should be uppper left, and selection end should be
   // upper right.
-  EXPECT_LT(controller->start().edge_top().x(), point.x());
-  EXPECT_LT(controller->start().edge_bottom().x(), point.x());
+  EXPECT_LT(controller->start().edge_start().x(), point.x());
+  EXPECT_LT(controller->start().edge_end().x(), point.x());
 
-  EXPECT_LT(point.x(), controller->end().edge_top().x());
-  EXPECT_LT(point.x(), controller->end().edge_bottom().x());
+  EXPECT_LT(point.x(), controller->end().edge_start().x());
+  EXPECT_LT(point.x(), controller->end().edge_end().x());
 
   // Handles are created below the selection. The top position should roughly
   // be within the handle size from the touch position.
-  float handle_size = controller->start().edge_bottom().y() -
-                      controller->start().edge_top().y();
+  float handle_size =
+      controller->start().edge_end().y() - controller->start().edge_start().y();
   float handle_max_bottom = point.y() + handle_size;
-  EXPECT_GT(handle_max_bottom, controller->start().edge_top().y());
-  EXPECT_GT(handle_max_bottom, controller->end().edge_top().y());
+  EXPECT_GT(handle_max_bottom, controller->start().edge_start().y());
+  EXPECT_GT(handle_max_bottom, controller->end().edge_start().y());
 
   gfx::Point handle_point = gfx::ToRoundedPoint(
       rwhva->selection_controller()->GetStartHandleRect().CenterPoint());
@@ -976,8 +970,8 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraScaleFactorTest,
   selection_controller_client()->Wait();
 
   // The handle should have moved to right.
-  EXPECT_EQ(start_top.y(), controller->start().edge_top().y());
-  EXPECT_LT(start_top.x(), controller->start().edge_top().x());
+  EXPECT_EQ(start_top.y(), controller->start().edge_start().y());
+  EXPECT_LT(start_top.x(), controller->start().edge_start().x());
 
   EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
             rwhva->selection_controller()->active_status());

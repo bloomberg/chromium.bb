@@ -19,7 +19,9 @@
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -108,8 +110,9 @@ class ServiceInstance : public mojom::Connector,
   class InterfaceFilter;
   friend class InterfaceFilter;
 
-  void OnStartCompleted(mojom::ConnectorRequest connector_request,
-                        mojom::ServiceControlAssociatedRequest control_request);
+  void OnStartCompleted(
+      mojo::PendingReceiver<mojom::Connector> connector_receiver,
+      mojo::PendingAssociatedReceiver<mojom::ServiceControl> control_receiver);
   void OnConnectRequestAcknowledged();
   void MarkUnreachable();
   void MaybeNotifyPidAvailable();
@@ -142,17 +145,14 @@ class ServiceInstance : public mojom::Connector,
       mojo::ScopedMessagePipeHandle service_remote_handle,
       mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver,
       RegisterServiceInstanceCallback callback) override;
-  void Clone(mojom::ConnectorRequest request) override;
-  void FilterInterfaces(const std::string& filter_name,
-                        const Identity& source,
-                        mojom::InterfaceProviderRequest source_request,
-                        mojom::InterfaceProviderPtr target) override;
+  void Clone(mojo::PendingReceiver<mojom::Connector> receiver) override;
 
   // mojom::ServiceControl:
   void RequestQuit() override;
 
   // mojom::ServiceManager:
-  void AddListener(mojom::ServiceManagerListenerPtr listener) override;
+  void AddListener(
+      mojo::PendingRemote<mojom::ServiceManagerListener> listener) override;
 
   // Always owns |this|.
   service_manager::ServiceManager* const service_manager_;
@@ -193,10 +193,6 @@ class ServiceInstance : public mojom::Connector,
 
   // Indicates if the instance is permanently stopped.
   bool stopped_ = false;
-
-  // Active interface filters registered by this instance.
-  std::set<std::unique_ptr<InterfaceFilter>, base::UniquePtrComparator>
-      interface_filters_;
 
   // The number of outstanding OnBindingInterface requests currently in flight
   // for this instance. This is the total number of OnBindInterface requests

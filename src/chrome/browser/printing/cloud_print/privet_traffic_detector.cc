@@ -17,6 +17,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_interfaces.h"
@@ -63,13 +65,14 @@ void GetNetworkListOnUIThread(
 
 void CreateUDPSocketOnUIThread(
     content::BrowserContext* profile,
-    network::mojom::UDPSocketRequest request,
-    network::mojom::UDPSocketListenerPtr listener_ptr) {
+    mojo::PendingReceiver<network::mojom::UDPSocket> receiver,
+    mojo::PendingRemote<network::mojom::UDPSocketListener> listener_remote) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   network::mojom::NetworkContext* network_context =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetNetworkContext();
-  network_context->CreateUDPSocket(std::move(request), std::move(listener_ptr));
+  network_context->CreateUDPSocket(std::move(receiver),
+                                   std::move(listener_remote));
 }
 
 }  // namespace
@@ -90,8 +93,7 @@ PrivetTrafficDetector::PrivetTrafficDetector(
 PrivetTrafficDetector::~PrivetTrafficDetector() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
-  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
-                                     helper_);
+  base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO}, helper_);
 }
 
 void PrivetTrafficDetector::OnConnectionChanged(
@@ -108,8 +110,7 @@ PrivetTrafficDetector::Helper::Helper(
     base::RepeatingClosure on_traffic_detected)
     : profile_(profile),
       on_traffic_detected_(on_traffic_detected),
-      restart_attempts_(kMaxRestartAttempts),
-      listener_binding_(this) {
+      restart_attempts_(kMaxRestartAttempts) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -148,14 +149,10 @@ void PrivetTrafficDetector::Helper::Restart(
 void PrivetTrafficDetector::Helper::Bind() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  network::mojom::UDPSocketListenerPtr listener_ptr;
-  network::mojom::UDPSocketListenerRequest listener_request =
-      mojo::MakeRequest(&listener_ptr);
-  listener_binding_.Bind(std::move(listener_request));
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&CreateUDPSocketOnUIThread, profile_,
-                     mojo::MakeRequest(&socket_), std::move(listener_ptr)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&CreateUDPSocketOnUIThread, profile_,
+                                socket_.BindNewPipeAndPassReceiver(),
+                                listener_receiver_.BindNewPipeAndPassRemote()));
 
   network::mojom::UDPSocketOptionsPtr socket_options =
       network::mojom::UDPSocketOptions::New();
@@ -238,7 +235,7 @@ void PrivetTrafficDetector::Helper::OnJoinGroupComplete(int rv) {
 void PrivetTrafficDetector::Helper::ResetConnection() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   socket_.reset();
-  listener_binding_.Close();
+  listener_receiver_.reset();
 }
 
 void PrivetTrafficDetector::Helper::OnReceived(

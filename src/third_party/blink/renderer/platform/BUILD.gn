@@ -16,7 +16,10 @@ import("//third_party/blink/renderer/platform/platform_generated.gni")
 import("//v8/gni/v8.gni")
 
 # Most targets in this file are private actions so use that as the default.
-visibility = [ ":*" ]
+visibility = [
+  ":*",
+  "//third_party/blink/renderer/platform/heap:test_support",
+]
 
 blink_platform_avx_files = [
   "audio/cpu/x86/vector_math_avx.cc",
@@ -111,6 +114,7 @@ group("make_platform_generated") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/blink/renderer/*" ]
   public_deps = [
+    ":bindings_buildflags",
     ":character_data",
     ":color_data",
     ":font_family_names",
@@ -138,7 +142,6 @@ group("blink_platform_public_deps") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/blink/renderer/platform/*" ]
   public_deps = [
-    ":bindings_buildflags",
     ":make_platform_generated",
     "//base",
     "//cc",
@@ -398,6 +401,8 @@ jumbo_component("platform") {
     "bindings/callback_method_retriever.cc",
     "bindings/callback_method_retriever.h",
     "bindings/custom_wrappable.h",
+    "bindings/dictionary_base.h",
+    "bindings/dom_data_store.cc",
     "bindings/dom_data_store.h",
     "bindings/dom_wrapper_world.cc",
     "bindings/dom_wrapper_world.h",
@@ -461,6 +466,10 @@ jumbo_component("platform") {
     "bindings/wrapper_type_info.cc",
     "bindings/wrapper_type_info.h",
     "content_decryption_module_result.h",
+    "cookie/canonical_cookie.cc",
+    "cookie/canonical_cookie.h",
+    "cookie/canonical_cookie_mojom_traits.cc",
+    "cookie/canonical_cookie_mojom_traits.h",
     "cpu/mips/common_macros_msa.h",
     "crypto.cc",
     "crypto.h",
@@ -471,14 +480,10 @@ jumbo_component("platform") {
     "data_resource_helper.h",
     "exported/file_path_conversion.cc",
     "exported/interface_registry.cc",
-    "exported/mediastream/media_stream_audio_level_calculator.cc",
-    "exported/mediastream/media_stream_audio_processor_options.cc",
-    "exported/mediastream/media_stream_audio_source.cc",
     "exported/mediastream/media_stream_audio_track.cc",
     "exported/mediastream/web_media_element_source_utils.cc",
     "exported/mediastream/web_platform_media_stream_source.cc",
     "exported/mediastream/web_platform_media_stream_track.cc",
-    "exported/mediastream/webrtc_uma_histograms.cc",
     "exported/platform.cc",
     "exported/url_conversion.cc",
     "exported/video_capture/web_video_capture_impl_manager.cc",
@@ -486,7 +491,6 @@ jumbo_component("platform") {
     "exported/web_audio_device.cc",
     "exported/web_blob_info.cc",
     "exported/web_cache.cc",
-    "exported/web_canonical_cookie.cc",
     "exported/web_coalesced_input_event.cc",
     "exported/web_content_decryption_module.cc",
     "exported/web_content_decryption_module_access.cc",
@@ -506,10 +510,8 @@ jumbo_component("platform") {
     "exported/web_font_description.cc",
     "exported/web_gesture_event.cc",
     "exported/web_http_body.cc",
-    "exported/web_http_header_map.cc",
     "exported/web_http_load_info.cc",
     "exported/web_icon_sizes_parser.cc",
-    "exported/web_image.cc",
     "exported/web_image_generator.cc",
     "exported/web_input_event.cc",
     "exported/web_media_constraints.cc",
@@ -529,20 +531,8 @@ jumbo_component("platform") {
     "exported/web_prerender.cc",
     "exported/web_prerendering_support.cc",
     "exported/web_resource_timing_info.cc",
-    "exported/web_rtc_answer_options.cc",
-    "exported/web_rtc_ice_candidate.cc",
-    "exported/web_rtc_offer_options.cc",
     "exported/web_rtc_peer_connection_handler_client.cc",
-    "exported/web_rtc_rtp_receiver.cc",
-    "exported/web_rtc_rtp_sender.cc",
-    "exported/web_rtc_rtp_source.cc",
-    "exported/web_rtc_rtp_transceiver.cc",
-    "exported/web_rtc_session_description.cc",
-    "exported/web_rtc_session_description_request.cc",
     "exported/web_rtc_stats.cc",
-    "exported/web_rtc_stats_request.cc",
-    "exported/web_rtc_stats_response.cc",
-    "exported/web_rtc_void_request.cc",
     "exported/web_runtime_features.cc",
     "exported/web_security_origin.cc",
     "exported/web_string.cc",
@@ -550,7 +540,6 @@ jumbo_component("platform") {
     "exported/web_text_input_info.cc",
     "exported/web_text_run.cc",
     "exported/web_thread_safe_data.cc",
-    "exported/web_thread_type.cc",
     "exported/web_time_range.cc",
     "exported/web_touch_event.cc",
     "exported/web_url.cc",
@@ -605,8 +594,12 @@ jumbo_component("platform") {
     "fonts/font_family.h",
     "fonts/font_global_context.cc",
     "fonts/font_global_context.h",
+    "fonts/font_matching_metrics.cc",
+    "fonts/font_matching_metrics.h",
     "fonts/font_metrics.cc",
     "fonts/font_metrics.h",
+    "fonts/font_optical_sizing.cc",
+    "fonts/font_optical_sizing.h",
     "fonts/font_orientation.cc",
     "fonts/font_orientation.h",
     "fonts/font_platform_data.cc",
@@ -724,6 +717,10 @@ jumbo_component("platform") {
     "fonts/web_font_typeface_factory.h",
     "fonts/win/dwrite_font_format_support.cc",
     "fonts/win/dwrite_font_format_support.h",
+    "fonts/win/fallback_family_style_cache_win.cc",
+    "fonts/win/fallback_family_style_cache_win.h",
+    "fonts/win/fallback_lru_cache_win.cc",
+    "fonts/win/fallback_lru_cache_win.h",
     "fonts/win/font_cache_skia_win.cc",
     "fonts/win/font_fallback_win.cc",
     "fonts/win/font_fallback_win.h",
@@ -834,6 +831,8 @@ jumbo_component("platform") {
     "graphics/compositing/chunk_to_layer_mapper.h",
     "graphics/compositing/content_layer_client_impl.cc",
     "graphics/compositing/content_layer_client_impl.h",
+    "graphics/compositing/layers_as_json.cc",
+    "graphics/compositing/layers_as_json.h",
     "graphics/compositing/paint_artifact_compositor.cc",
     "graphics/compositing/paint_artifact_compositor.h",
     "graphics/compositing/paint_chunks_to_cc_layer.cc",
@@ -999,7 +998,6 @@ jumbo_component("platform") {
     "graphics/interpolation_space.cc",
     "graphics/interpolation_space.h",
     "graphics/lab_color_space.h",
-    "graphics/link_highlight.h",
     "graphics/logging_canvas.cc",
     "graphics/logging_canvas.h",
     "graphics/mailbox_texture_holder.cc",
@@ -1074,6 +1072,8 @@ jumbo_component("platform") {
     "graphics/paint/scroll_hit_test_display_item.h",
     "graphics/paint/scroll_paint_property_node.cc",
     "graphics/paint/scroll_paint_property_node.h",
+    "graphics/paint/scrollbar_display_item.cc",
+    "graphics/paint/scrollbar_display_item.h",
     "graphics/paint/subsequence_recorder.h",
     "graphics/paint/transform_paint_property_node.cc",
     "graphics/paint/transform_paint_property_node.h",
@@ -1104,6 +1104,8 @@ jumbo_component("platform") {
     "graphics/replaying_canvas.h",
     "graphics/scoped_interpolation_quality.h",
     "graphics/scroll_types.h",
+    "graphics/scrollbar_theme_settings.cc",
+    "graphics/scrollbar_theme_settings.h",
     "graphics/skia/image_pixel_locker.cc",
     "graphics/skia/image_pixel_locker.h",
     "graphics/skia/sk_size_hash.h",
@@ -1184,10 +1186,20 @@ jumbo_component("platform") {
     "mac/web_core_ns_cell_extras.h",
     "mac/web_core_ns_cell_extras.mm",
     "media/webaudiosourceprovider_impl.cc",
+    "media_capabilities/web_audio_configuration.h",
+    "media_capabilities/web_media_capabilities_info.h",
+    "media_capabilities/web_media_configuration.h",
+    "media_capabilities/web_video_configuration.h",
     "mediastream/aec_dump_agent_impl.cc",
     "mediastream/aec_dump_agent_impl.h",
     "mediastream/audio_service_audio_processor_proxy.cc",
     "mediastream/audio_service_audio_processor_proxy.h",
+    "mediastream/media_stream_audio_level_calculator.cc",
+    "mediastream/media_stream_audio_level_calculator.h",
+    "mediastream/media_stream_audio_processor_options.cc",
+    "mediastream/media_stream_audio_processor_options.h",
+    "mediastream/media_stream_audio_source.cc",
+    "mediastream/media_stream_audio_source.h",
     "mediastream/media_stream_component.cc",
     "mediastream/media_stream_component.h",
     "mediastream/media_stream_descriptor.cc",
@@ -1198,6 +1210,8 @@ jumbo_component("platform") {
     "mediastream/media_stream_web_audio_source.h",
     "mediastream/webaudio_media_stream_source.cc",
     "mediastream/webaudio_media_stream_source.h",
+    "mediastream/webrtc_uma_histograms.cc",
+    "mediastream/webrtc_uma_histograms.h",
     "mhtml/archive_resource.cc",
     "mhtml/archive_resource.h",
     "mhtml/mhtml_archive.cc",
@@ -1210,26 +1224,59 @@ jumbo_component("platform") {
     "mojo/big_string_mojom_traits.h",
     "mojo/bluetooth_mojom_traits.cc",
     "mojo/bluetooth_mojom_traits.h",
-    "mojo/canonical_cookie_mojom_traits.cc",
-    "mojo/canonical_cookie_mojom_traits.h",
     "mojo/fetch_api_request_headers_mojom_traits.h",
-    "mojo/interface_invalidator.cc",
-    "mojo/interface_invalidator.h",
+    "mojo/kurl_mojom_traits.h",
     "mojo/mojo_helper.h",
-    "mojo/revocable_binding.h",
-    "mojo/revocable_interface_ptr.h",
-    "mojo/revocable_strong_binding.h",
+    "mojo/security_origin_mojom_traits.h",
     "mojo/string16_mojom_traits.cc",
     "mojo/string16_mojom_traits.h",
+    "p2p/empty_network_manager.cc",
+    "p2p/empty_network_manager.h",
+    "p2p/filtering_network_manager.cc",
+    "p2p/filtering_network_manager.h",
+    "p2p/host_address_request.cc",
+    "p2p/host_address_request.h",
+    "p2p/ipc_network_manager.cc",
+    "p2p/ipc_network_manager.h",
+    "p2p/ipc_socket_factory.cc",
+    "p2p/ipc_socket_factory.h",
+    "p2p/mdns_responder_adapter.cc",
+    "p2p/mdns_responder_adapter.h",
+    "p2p/network_list_manager.h",
+    "p2p/network_list_observer.h",
+    "p2p/network_manager_uma.cc",
+    "p2p/network_manager_uma.h",
+    "p2p/port_allocator.cc",
+    "p2p/port_allocator.h",
+    "p2p/socket_client.h",
+    "p2p/socket_client_delegate.h",
+    "p2p/socket_client_impl.cc",
+    "p2p/socket_client_impl.h",
+    "p2p/socket_dispatcher.cc",
+    "p2p/socket_dispatcher.h",
     "peerconnection/audio_codec_factory.cc",
+    "peerconnection/audio_codec_factory.h",
     "peerconnection/rtc_answer_options_platform.h",
+    "peerconnection/rtc_api_name.h",
     "peerconnection/rtc_dtmf_sender_handler.cc",
     "peerconnection/rtc_dtmf_sender_handler.h",
+    "peerconnection/rtc_event_log_output_sink.h",
     "peerconnection/rtc_event_log_output_sink_proxy.cc",
     "peerconnection/rtc_event_log_output_sink_proxy.h",
+    "peerconnection/rtc_ice_candidate_platform.cc",
+    "peerconnection/rtc_ice_candidate_platform.h",
+    "peerconnection/rtc_legacy_stats.h",
     "peerconnection/rtc_offer_options_platform.h",
+    "peerconnection/rtc_rtp_receiver_platform.cc",
+    "peerconnection/rtc_rtp_receiver_platform.h",
+    "peerconnection/rtc_rtp_sender_platform.cc",
+    "peerconnection/rtc_rtp_sender_platform.h",
     "peerconnection/rtc_rtp_source.cc",
     "peerconnection/rtc_rtp_source.h",
+    "peerconnection/rtc_rtp_transceiver_platform.cc",
+    "peerconnection/rtc_rtp_transceiver_platform.h",
+    "peerconnection/rtc_session_description_platform.cc",
+    "peerconnection/rtc_session_description_platform.h",
     "peerconnection/rtc_session_description_request.h",
     "peerconnection/rtc_stats.cc",
     "peerconnection/rtc_stats.h",
@@ -1244,8 +1291,18 @@ jumbo_component("platform") {
     "peerconnection/rtc_video_encoder_factory.cc",
     "peerconnection/rtc_video_encoder_factory.h",
     "peerconnection/rtc_void_request.h",
+    "peerconnection/stun_field_trial.cc",
+    "peerconnection/stun_field_trial.h",
+    "peerconnection/transmission_encoding_info_handler.cc",
+    "peerconnection/transmission_encoding_info_handler.h",
+    "peerconnection/two_keys_adapter_map.h",
+    "peerconnection/video_codec_factory.cc",
+    "peerconnection/video_codec_factory.h",
     "peerconnection/webrtc_audio_sink.cc",
+    "peerconnection/webrtc_audio_sink.h",
+    "peerconnection/webrtc_util.h",
     "peerconnection/webrtc_video_track_source.cc",
+    "peerconnection/webrtc_video_track_source.h",
     "prerender.cc",
     "prerender.h",
     "prerender_client.h",
@@ -1367,11 +1424,12 @@ jumbo_component("platform") {
     "weborigin/security_policy.cc",
     "weborigin/security_policy.h",
     "weborigin/security_violation_reporting_policy.h",
-    "weborigin/url_security_origin_map.h",
     "webrtc/peer_connection_remote_audio_source.cc",
     "webrtc/peer_connection_remote_audio_source.h",
     "webrtc/track_observer.cc",
+    "webrtc/track_observer.h",
     "webrtc/webrtc_logging.cc",
+    "webrtc/webrtc_source.h",
     "webrtc/webrtc_video_frame_adapter.cc",
     "webrtc/webrtc_video_frame_adapter.h",
     "webrtc/webrtc_video_utils.cc",
@@ -1385,9 +1443,12 @@ jumbo_component("platform") {
   sources += get_target_outputs(":character_data") +
              get_target_outputs(":color_data") +
              get_target_outputs(":font_family_names")
-  set_sources_assignment_filter([ "*.pickle" ])
-  sources += get_target_outputs(":runtime_enabled_features")
-  set_sources_assignment_filter(sources_assignment_filter)
+
+  foreach(_output, get_target_outputs(":runtime_enabled_features")) {
+    if (get_path_info(_output, "extension") != "pickle") {
+      sources += [ _output ]
+    }
+  }
 
   if (is_win) {
     jumbo_excluded_sources = [
@@ -1427,15 +1488,19 @@ jumbo_component("platform") {
     "//third_party/blink/renderer/platform/loader",
     "//third_party/blink/renderer/platform/network",
     "//third_party/blink/renderer/platform/scheduler",
+    "//ui/gfx",
   ]
   deps = [
     ":platform_export",
     "//base/allocator:buildflags",
+    "//cc/ipc",
+    "//components/paint_preview/common",
     "//components/viz/client",
     "//components/viz/common",
     "//crypto",
     "//device/vr/public/mojom:mojom_blink",
     "//gin",
+    "//jingle:webrtc_glue",
     "//media",
     "//media/capture/mojom:video_capture",
     "//mojo/public/cpp/base",
@@ -1445,31 +1510,20 @@ jumbo_component("platform") {
     "//services/viz/public/cpp/gpu",
     "//skia:skcms",
     "//third_party:freetype_harfbuzz",
+    "//third_party/abseil-cpp/absl/types:optional",
+    "//third_party/blink/public:image_resources",
     "//third_party/blink/public/common",
     "//third_party/blink/public/mojom:embedded_frame_sink_mojo_bindings_blink",
+    "//third_party/blink/public/strings",
     "//third_party/ced",
     "//third_party/emoji-segmenter",
     "//third_party/icu",
-    "//third_party/webrtc/api:libjingle_logging_api",
-    "//third_party/webrtc/api/audio_codecs/L16:audio_decoder_L16",
-    "//third_party/webrtc/api/audio_codecs/L16:audio_encoder_L16",
-    "//third_party/webrtc/api/audio_codecs/g711:audio_decoder_g711",
-    "//third_party/webrtc/api/audio_codecs/g711:audio_encoder_g711",
-    "//third_party/webrtc/api/audio_codecs/g722:audio_decoder_g722",
-    "//third_party/webrtc/api/audio_codecs/g722:audio_encoder_g722",
-    "//third_party/webrtc/api/audio_codecs/isac:audio_decoder_isac",
-    "//third_party/webrtc/api/audio_codecs/isac:audio_encoder_isac",
-    "//third_party/webrtc/api/audio_codecs/opus:audio_decoder_multiopus",
-    "//third_party/webrtc/api/audio_codecs/opus:audio_decoder_opus",
-    "//third_party/webrtc/api/audio_codecs/opus:audio_encoder_multiopus",
-    "//third_party/webrtc/api/audio_codecs/opus:audio_encoder_opus",
-    "//third_party/webrtc/modules/video_coding:webrtc_h264",
-    "//third_party/webrtc/p2p:rtc_p2p",
-    "//third_party/webrtc_overrides:init_webrtc",
+    "//third_party/libyuv",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//third_party/zlib/google:compression_utils",
     "//ui/base:base",
-    "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gfx/mojom",
   ]
 
   if (is_mac) {
@@ -1547,12 +1601,28 @@ jumbo_component("platform") {
   configs += blink_symbols_config
 }
 
+source_set("geometry_mojom_traits") {
+  visibility += [ "//ui/gfx/geometry/mojom:mojom_blink" ]
+
+  sources = [
+    "mojo/geometry_mojom_traits.cc",
+    "mojo/geometry_mojom_traits.h",
+  ]
+
+  public_deps = [
+    "//third_party/blink/public:blink_headers",
+    "//ui/gfx/geometry/mojom:mojom_blink_headers",
+  ]
+}
+
 jumbo_static_library("test_support") {
   visibility += [ "//third_party/blink/*" ]
   testonly = true
 
   sources = [
     "graphics/gpu/drawing_buffer_test_helpers.h",
+    "graphics/test/gpu_test_utils.cc",
+    "graphics/test/gpu_test_utils.h",
     "testing/code_cache_loader_mock.cc",
     "testing/code_cache_loader_mock.h",
     "testing/compositor_test.cc",
@@ -1562,6 +1632,8 @@ jumbo_static_library("test_support") {
     "testing/fake_display_item_client.h",
     "testing/fake_graphics_layer.h",
     "testing/fake_graphics_layer_client.h",
+    "testing/find_cc_layer.cc",
+    "testing/find_cc_layer.h",
     "testing/font_test_helpers.cc",
     "testing/font_test_helpers.h",
     "testing/histogram_tester.cc",
@@ -1588,12 +1660,12 @@ jumbo_static_library("test_support") {
     "testing/testing_platform_support.h",
     "testing/testing_platform_support_with_mock_scheduler.cc",
     "testing/testing_platform_support_with_mock_scheduler.h",
-    "testing/testing_platform_support_with_web_rtc.cc",
-    "testing/testing_platform_support_with_web_rtc.h",
     "testing/unit_test_helpers.cc",
     "testing/unit_test_helpers.h",
     "testing/url_test_helpers.cc",
     "testing/url_test_helpers.h",
+    "testing/video_frame_utils.cc",
+    "testing/video_frame_utils.h",
     "testing/viewport_layers_setup.cc",
     "testing/viewport_layers_setup.h",
     "testing/weburl_loader_mock.cc",
@@ -1603,7 +1675,7 @@ jumbo_static_library("test_support") {
   ]
 
   # fuzzed_data_provider may not work with a custom toolchain.
-  if (custom_toolchain == "") {
+  if (custom_toolchain == "" && is_clang) {
     sources += [
       "testing/fuzzed_data_provider.cc",
       "testing/fuzzed_data_provider.h",
@@ -1629,11 +1701,13 @@ jumbo_static_library("test_support") {
 
   deps = [
     "//base/test:test_support",
+    "//media:test_support",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//skia",
     "//third_party/blink/renderer/platform/blob:test_support",
+    "//third_party/blink/renderer/platform/heap:test_support",
     "//third_party/blink/renderer/platform/loader:test_support",
     "//third_party/blink/renderer/platform/network:test_support",
     "//third_party/blink/renderer/platform/scheduler:test_support",
@@ -1669,12 +1743,11 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "audio/vector_math_test.cc",
     "bindings/parkable_string_test.cc",
     "bindings/runtime_call_stats_test.cc",
+    "cookie/canonical_cookie_test.cc",
     "exported/file_path_conversion_test.cc",
-    "exported/mediastream/media_stream_audio_processor_options_test.cc",
     "exported/mediastream/media_stream_audio_test.cc",
-    "exported/mediastream/webrtc_uma_histograms_test.cc",
+    "exported/page_zoom_test.cc",
     "exported/video_capture/web_video_capture_impl_manager_test.cc",
-    "exported/web_canonical_cookie_test.cc",
     "exported/web_icon_sizes_parser_test.cc",
     "exported/web_screen_info_test.cc",
     "exported/web_string_test.cc",
@@ -1789,15 +1862,21 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "loader/cors/cors_test.cc",
     "mac/graphics_context_canvas_test.mm",
     "media/webaudiosourceprovider_impl_test.cc",
+    "mediastream/media_stream_audio_processor_options_test.cc",
+    "mediastream/webrtc_uma_histograms_test.cc",
     "mhtml/mhtml_parser_test.cc",
     "mojo/big_string_mojom_traits_test.cc",
     "mojo/geometry_mojom_traits_test.cc",
-    "mojo/interface_invalidator_test.cc",
     "mojo/kurl_security_origin_test.cc",
     "mojo/string16_mojom_traits_test.cc",
+    "p2p/filtering_network_manager_test.cc",
+    "p2p/ipc_network_manager_test.cc",
     "peerconnection/rtc_stats_test.cc",
     "peerconnection/rtc_video_decoder_adapter_test.cc",
     "peerconnection/rtc_video_encoder_test.cc",
+    "peerconnection/stun_field_trial_test.cc",
+    "peerconnection/task_queue_factory_test.cc",
+    "peerconnection/transmission_encoding_info_handler_test.cc",
     "peerconnection/two_keys_adapter_map_unittest.cc",
     "peerconnection/webrtc_video_track_source_test.cc",
     "text/bidi_resolver_test.cc",
@@ -1822,16 +1901,20 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "transforms/rotation_test.cc",
     "transforms/transform_operations_test.cc",
     "transforms/transformation_matrix_test.cc",
+    "video_capture/gpu_memory_buffer_test_support.cc",
+    "video_capture/gpu_memory_buffer_test_support.h",
     "video_capture/video_capture_impl_test.cc",
     "weborigin/known_ports_test.cc",
     "weborigin/kurl_test.cc",
     "weborigin/scheme_registry_test.cc",
     "weborigin/security_origin_test.cc",
     "weborigin/security_policy_test.cc",
+    "webrtc/webrtc_video_frame_adapter_test.cc",
   ]
 
   if (is_win) {
     sources += [ "text/locale_win_test.cc" ]
+    sources += [ "fonts/win/fallback_lru_cache_win_test.cc" ]
   } else if (is_mac) {
     sources += [
       "fonts/opentype/open_type_caps_support_test.mm",
@@ -1876,7 +1959,9 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "//third_party/blink/renderer/platform/network:unit_tests",
     "//third_party/blink/renderer/platform/scheduler:unit_tests",
     "//third_party/blink/renderer/platform/wtf",
-    "//third_party/webrtc/stats:rtc_stats_test_utils",
+    "//third_party/libyuv",
+    "//third_party/webrtc/api/task_queue:task_queue_test",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojom:test_interfaces_blink",
@@ -2056,6 +2141,19 @@ fuzzer_test("blink_png_decoder_fuzzer") {
   ]
 }
 
+# Fuzzer for blink::DateTimeFormat.
+fuzzer_test("blink_date_time_format_fuzzer") {
+  sources = [
+    "text/date_time_format_fuzzer.cc",
+  ]
+  deps = [
+    ":blink_fuzzer_test_support",
+    ":platform",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/date.dict"
+  seed_corpus = "text/date_time_format_fuzzer_seed_corpus"
+}
+
 # Fuzzer for blink::JSONParser.
 fuzzer_test("blink_json_parser_fuzzer") {
   sources = [
@@ -2151,7 +2249,6 @@ jumbo_source_set("unit_tests") {
     "graphics/test/stub_image.h",
 
     # Tests migrated from the web/tests directory.
-    "exported/web_image_test.cc",
     "exported/web_resource_timing_info_test.cc",
     "exported/web_url_request_test.cc",
     "exported/web_url_response_test.cc",

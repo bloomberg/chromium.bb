@@ -22,17 +22,18 @@ namespace dawn_native {
 
     class RefCounted {
       public:
-        RefCounted();
+        RefCounted(uint64_t payload = 0);
         virtual ~RefCounted();
 
-        uint64_t GetRefCount() const;
+        uint64_t GetRefCountForTesting() const;
+        uint64_t GetRefCountPayload() const;
 
         // Dawn API
         void Reference();
         void Release();
 
       protected:
-        std::atomic_uint64_t mRefCount = {1};
+        std::atomic_uint64_t mRefCount;
     };
 
     template <typename T>
@@ -104,6 +105,12 @@ namespace dawn_native {
             return mPointee;
         }
 
+        T* Detach() {
+            T* pointee = mPointee;
+            mPointee = nullptr;
+            return pointee;
+        }
+
       private:
         void Reference() const {
             if (mPointee != nullptr) {
@@ -119,6 +126,13 @@ namespace dawn_native {
         // static_assert(std::is_base_of<RefCounted, T>::value, "");
         T* mPointee = nullptr;
     };
+
+    template <typename T>
+    Ref<T> AcquireRef(T* pointee) {
+        Ref<T> ref(pointee);
+        ref->Release();
+        return ref;
+    }
 
 }  // namespace dawn_native
 

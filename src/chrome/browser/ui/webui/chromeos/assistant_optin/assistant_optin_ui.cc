@@ -8,10 +8,11 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/buildflag.h"
+#include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -19,7 +20,9 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -29,6 +32,9 @@
 #include "content/public/common/content_features.h"
 #include "net/base/url_util.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -38,9 +44,16 @@ namespace {
 
 AssistantOptInDialog* g_dialog = nullptr;
 
-constexpr int kAssistantOptInDialogWidth = 768;
-constexpr int kAssistantOptInDialogHeight = 640;
 constexpr int kCaptionBarHeight = 32;
+constexpr int kDialogMargin = 48;
+constexpr gfx::Size kDialogMaxSize = gfx::Size(768, 768);
+constexpr gfx::Size kDialogMinSize = gfx::Size(544, 464);
+constexpr gfx::Insets kDialogInsets =
+    gfx::Insets(kDialogMargin + kCaptionBarHeight,
+                kDialogMargin,
+                kDialogMargin,
+                kDialogMargin);
+
 constexpr char kFlowTypeParamKey[] = "flow-type";
 constexpr char kCaptionBarHeightParamKey[] = "caption-bar-height";
 
@@ -80,10 +93,11 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
   source->UseStringsJs();
   source->AddResourcePath("assistant_optin.js", IDR_ASSISTANT_OPTIN_JS);
   source->AddResourcePath("assistant_logo.png", IDR_ASSISTANT_LOGO_PNG);
-  source->AddBoolean("hotwordDspAvailable", chromeos::IsHotwordDspAvailable());
   source->SetDefaultResource(IDR_ASSISTANT_OPTIN_HTML);
   source->AddResourcePath("voice_match_animation.json",
                           IDR_ASSISTANT_VOICE_MATCH_ANIMATION);
+  source->AddResourcePath("voice_match_already_setup_animation.json",
+                          IDR_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_ANIMATION);
   source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 
@@ -123,10 +137,24 @@ void AssistantOptInUI::Initialize() {
 void AssistantOptInDialog::Show(
     ash::FlowType type,
     ash::AssistantSetup::StartAssistantOptInFlowCallback callback) {
+#if !BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+  std::move(callback).Run(false);
+  return;
+#endif
+
+  // Check Assistant allowed state.
+  if (::assistant::IsAssistantAllowedForProfile(
+          ProfileManager::GetActiveUserProfile()) !=
+      ash::mojom::AssistantAllowedState::ALLOWED) {
+    std::move(callback).Run(false);
+    return;
+  }
+
   // Check session state here to prevent timing issue -- session state might
   // have changed during the mojom calls to launch the opt-in dalog.
   if (session_manager::SessionManager::Get()->session_state() !=
       session_manager::SessionState::ACTIVE) {
+    std::move(callback).Run(false);
     return;
   }
   if (g_dialog) {
@@ -167,17 +195,19 @@ void AssistantOptInDialog::AdjustWidgetInitParams(
 }
 
 void AssistantOptInDialog::GetDialogSize(gfx::Size* size) const {
-  size->SetSize(kAssistantOptInDialogWidth,
-                kAssistantOptInDialogHeight - kCaptionBarHeight);
+  auto bounds = display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  bounds.Inset(kDialogInsets);
+  auto dialog_size = bounds.size();
+  dialog_size.SetToMin(kDialogMaxSize);
+  dialog_size.SetToMax(kDialogMinSize);
+  size->SetSize(dialog_size.width(), dialog_size.height());
 }
 
 std::string AssistantOptInDialog::GetDialogArgs() const {
   return std::string();
 }
 
-void AssistantOptInDialog::OnDialogShown(
-    content::WebUI* webui,
-    content::RenderViewHost* render_view_host) {
+void AssistantOptInDialog::OnDialogShown(content::WebUI* webui) {
   assistant_ui_ = static_cast<AssistantOptInUI*>(webui->GetController());
 }
 

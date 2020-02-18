@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 
 namespace autofill {
 struct FormData;
@@ -30,6 +31,23 @@ using FieldTypeMap = std::map<base::string16, autofill::ServerFieldType>;
 using VoteTypeMap =
     std::map<base::string16, autofill::AutofillUploadContents::Field::VoteType>;
 
+// Contains information for sending a SINGLE_USERNAME vote.
+struct SingleUsernameVoteData {
+  SingleUsernameVoteData(uint32_t renderer_id,
+                         const FormPredictions& form_predictions);
+  SingleUsernameVoteData(const SingleUsernameVoteData&);
+  SingleUsernameVoteData& operator=(const SingleUsernameVoteData&);
+  SingleUsernameVoteData(SingleUsernameVoteData&& other);
+  ~SingleUsernameVoteData();
+
+  // Renderer id of an input element, for which the SINGLE_USERNAME vote will be
+  // sent.
+  uint32_t renderer_id;
+
+  // Predictions for the form which contains a field with |renderer_id|.
+  FormPredictions form_predictions;
+};
+
 // This class manages vote uploads for password forms.
 class VotesUploader {
  public:
@@ -42,8 +60,7 @@ class VotesUploader {
   void SendVotesOnSave(
       const autofill::FormData& observed,
       const autofill::PasswordForm& submitted_form,
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
+      const std::vector<const autofill::PasswordForm*>& best_matches,
       autofill::PasswordForm* pending_credentials);
 
   // Check to see if |pending| corresponds to an account creation form. If we
@@ -65,8 +82,7 @@ class VotesUploader {
   // Sends USERNAME and PASSWORD votes, when a credential is used to login for
   // the first time. |form_to_upload| is the submitted login form.
   void UploadFirstLoginVotes(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
+      const std::vector<const autofill::PasswordForm*>& best_matches,
       const autofill::PasswordForm& pending_credentials,
       const autofill::PasswordForm& form_to_upload);
 
@@ -95,14 +111,19 @@ class VotesUploader {
       uint32_t username_element_renderer_id,
       autofill::FormStructure* form_structure);
 
-  bool get_generation_popup_was_shown() const {
-    return generation_popup_was_shown_;
-  }
+  // Sends single a username vote if |single_username_vote_data_| is set.
+  // |credentials_saved| equals true if credentials with a single username form
+  // were saved, false if they were not saved.
+  // If |single_username_vote_data| is set, the vote sent is either
+  // SINGLE_USERNAME (if the user saved the credential with the username
+  // captured from |single_username_vote_data|) or NOT_USERNAME (if the user did
+  // not save the credential or modified the username).
+  void MaybeSendSingleUsernameVote(bool credentials_saved);
+
   void set_generation_popup_was_shown(bool generation_popup_was_shown) {
     generation_popup_was_shown_ = generation_popup_was_shown;
   }
 
-  bool is_manual_generation() const { return is_manual_generation_; }
   void set_is_manual_generation(bool is_manual_generation) {
     is_manual_generation_ = is_manual_generation;
   }
@@ -110,6 +131,7 @@ class VotesUploader {
   const base::string16& get_generation_element() const {
     return generation_element_;
   }
+
   void set_generation_element(const base::string16& generation_element) {
     generation_element_ = generation_element;
   }
@@ -138,6 +160,13 @@ class VotesUploader {
     generated_password_changed_ = generated_password_changed;
   }
 
+  void clear_single_username_vote_data() { single_username_vote_data_.reset(); }
+
+  void set_single_username_vote_data(int renderer_id,
+                                     const FormPredictions& form_predictions) {
+    single_username_vote_data_.emplace(renderer_id, form_predictions);
+  }
+
  private:
   // The outcome of the form classifier.
   enum FormClassifierOutcome {
@@ -149,15 +178,11 @@ class VotesUploader {
   // Adds a vote on password generation usage to |form_structure|.
   void AddGeneratedVote(autofill::FormStructure* form_structure);
 
-  // Adds a vote from HTML parsing based form classifier to |form_structure|.
-  void AddFormClassifierVote(autofill::FormStructure* form_structure);
-
   // Sets the known-value flag for each field, indicating that the field
   // contained a previously stored credential on submission.
   void SetKnownValueFlag(
       const autofill::PasswordForm& pending_credentials,
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
+      const std::vector<const autofill::PasswordForm*>& best_matches,
       autofill::FormStructure* form_to_upload);
 
   // Searches for |username| in |all_possible_usernames| of |match|. If the
@@ -165,6 +190,16 @@ class VotesUploader {
   // and the function returns true.
   bool FindUsernameInOtherPossibleUsernames(const autofill::PasswordForm& match,
                                             const base::string16& username);
+
+  bool StartUploadRequest(
+      std::unique_ptr<autofill::FormStructure> form_to_upload,
+      const autofill::ServerFieldTypeSet& available_field_types);
+
+  // Save a vote |field_type| for a field with |field_signature| from a form
+  // with |form_signature| to FieldInfoManager.
+  void SaveFieldVote(uint64_t form_signature,
+                     uint32_t field_signature,
+                     autofill::ServerFieldType field_type);
 
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
@@ -209,6 +244,8 @@ class VotesUploader {
   // Maps an |unique_renderer_id| to the initial value of the fields of an
   // observed form.
   std::map<uint32_t, base::string16> initial_values_;
+
+  base::Optional<SingleUsernameVoteData> single_username_vote_data_;
 };
 
 }  // namespace password_manager

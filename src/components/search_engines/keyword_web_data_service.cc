@@ -136,9 +136,14 @@ void KeywordWebDataService::SetBuiltinKeywordVersion(int version) {
                         base::Bind(&SetBuiltinKeywordVersionImpl, version));
 }
 
+void KeywordWebDataService::ShutdownOnUISequence() {
+  CommitQueuedOperations();
+  WebDataServiceBase::ShutdownOnUISequence();
+}
+
 KeywordWebDataService::~KeywordWebDataService() {
   DCHECK(!batch_mode_level_);
-  CommitQueuedOperations();
+  DCHECK(queued_keyword_operations_.empty());
 }
 
 void KeywordWebDataService::AdjustBatchModeLevel(bool entering_batch_mode) {

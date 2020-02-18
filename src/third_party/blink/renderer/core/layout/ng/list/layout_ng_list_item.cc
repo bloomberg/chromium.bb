@@ -53,7 +53,10 @@ void LayoutNGListItem::StyleDidChange(StyleDifference diff,
 
   UpdateMarker();
 
-  if (old_style && old_style->ListStyleType() != StyleRef().ListStyleType())
+  if (old_style && (old_style->ListStyleType() != StyleRef().ListStyleType() ||
+                    (StyleRef().ListStyleType() == EListStyleType::kString &&
+                     old_style->ListStyleStringValue() !=
+                         StyleRef().ListStyleStringValue())))
     ListStyleTypeChanged();
 }
 
@@ -73,9 +76,13 @@ void LayoutNGListItem::ListStyleTypeChanged() {
 void LayoutNGListItem::OrdinalValueChanged() {
   if (marker_type_ == kOrdinalValue && is_marker_text_updated_) {
     is_marker_text_updated_ = false;
-    DCHECK(marker_);
-    marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-        layout_invalidation_reason::kListValueChange);
+
+    // |marker_| can be a nullptr, for example, in the case of :after list item
+    // elements.
+    if (marker_) {
+      marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+          layout_invalidation_reason::kListValueChange);
+    }
   }
 }
 
@@ -140,14 +147,36 @@ void LayoutNGListItem::UpdateMarker() {
   }
 
   // Create a marker box if it does not exist yet.
+  Node* list_item = GetNode();
+  const ComputedStyle* cached_marker_style =
+      list_item->IsPseudoElement()
+          ? nullptr
+          : ToElement(list_item)->CachedStyleForPseudoElement(kPseudoIdMarker);
+  if (cached_marker_style && cached_marker_style->GetContentData()) {
+    // Don't create an anonymous layout for the marker, it will be generated
+    // by the ::marker pseudo-element.
+    DestroyMarker();
+    marker_type_ = kStatic;
+    is_marker_text_updated_ = true;
+    return;
+  }
   scoped_refptr<ComputedStyle> marker_style;
+  if (cached_marker_style) {
+    marker_style = ComputedStyle::Clone(*cached_marker_style);
+  } else {
+    marker_style = ComputedStyle::Create();
+    marker_style->InheritFrom(style);
+    marker_style->SetStyleType(kPseudoIdMarker);
+    marker_style->SetUnicodeBidi(UnicodeBidi::kIsolate);
+    marker_style->SetFontVariantNumericSpacing(
+        FontVariantNumeric::kTabularNums);
+  }
   if (IsInside()) {
     if (marker_ && !marker_->IsLayoutInline())
       DestroyMarker();
     if (!marker_)
       marker_ = LayoutNGInsideListMarker::CreateAnonymous(&GetDocument());
-    marker_style = ComputedStyle::CreateAnonymousStyleWithDisplay(
-        style, EDisplay::kInline);
+    marker_style->SetDisplay(EDisplay::kInline);
     auto margins =
         LayoutListMarker::InlineMarginsForInside(style, IsMarkerImage());
     marker_style->SetMarginStart(Length::Fixed(margins.first));
@@ -157,8 +186,7 @@ void LayoutNGListItem::UpdateMarker() {
       DestroyMarker();
     if (!marker_)
       marker_ = LayoutNGListMarker::CreateAnonymous(&GetDocument());
-    marker_style = ComputedStyle::CreateAnonymousStyleWithDisplay(
-        style, EDisplay::kInlineBlock);
+    marker_style->SetDisplay(EDisplay::kInlineBlock);
     // Do not break inside the marker, and honor the trailing spaces.
     marker_style->SetWhiteSpace(EWhiteSpace::kPre);
     // Compute margins for 'outside' during layout, because it requires the
@@ -184,13 +212,38 @@ LayoutNGListItem* LayoutNGListItem::FromMarker(const LayoutObject& marker) {
   for (LayoutObject* parent = marker.Parent(); parent;
        parent = parent->Parent()) {
     if (parent->IsLayoutNGListItem()) {
-      DCHECK(ToLayoutNGListItem(parent)->Marker() == &marker);
+#if DCHECK_IS_ON()
+      LayoutObject* parent_marker = ToLayoutNGListItem(parent)->Marker();
+      if (parent_marker) {
+        DCHECK(!marker.GetNode());
+        DCHECK_EQ(ToLayoutNGListItem(parent)->Marker(), &marker);
+      } else {
+        DCHECK(marker.GetNode()->IsMarkerPseudoElement());
+        DCHECK_EQ(marker.GetNode()->parentElement()->GetLayoutBox(), parent);
+      }
+#endif
       return ToLayoutNGListItem(parent);
     }
     // These DCHECKs are not critical but to ensure we cover all cases we know.
     DCHECK(parent->IsAnonymous());
     DCHECK(parent->IsLayoutBlockFlow() || parent->IsLayoutFlowThread());
   }
+  return nullptr;
+}
+
+LayoutNGListItem* LayoutNGListItem::FromMarkerOrMarkerContent(
+    const LayoutObject& object) {
+  DCHECK(object.IsAnonymous());
+
+  if (object.IsLayoutNGListMarkerIncludingInside())
+    return FromMarker(object);
+
+  // Check if this is a marker content.
+  if (const LayoutObject* parent = object.Parent()) {
+    if (parent->IsLayoutNGListMarkerIncludingInside())
+      return FromMarker(*parent);
+  }
+
   return nullptr;
 }
 
@@ -212,11 +265,15 @@ LayoutNGListItem::MarkerType LayoutNGListItem::MarkerText(
   switch (style.ListStyleType()) {
     case EListStyleType::kNone:
       return kStatic;
+    case EListStyleType::kString: {
+      text->Append(style.ListStyleStringValue());
+      return kStatic;
+    }
     case EListStyleType::kDisc:
     case EListStyleType::kCircle:
     case EListStyleType::kSquare:
       // value is ignored for these types
-      text->Append(list_marker_text::GetText(Style()->ListStyleType(), 0));
+      text->Append(list_marker_text::GetText(style.ListStyleType(), 0));
       if (format == kWithSuffix)
         text->Append(' ');
       return kSymbolValue;
@@ -273,9 +330,9 @@ LayoutNGListItem::MarkerType LayoutNGListItem::MarkerText(
     case EListStyleType::kUpperRoman:
     case EListStyleType::kUrdu: {
       int value = Value();
-      text->Append(list_marker_text::GetText(Style()->ListStyleType(), value));
+      text->Append(list_marker_text::GetText(style.ListStyleType(), value));
       if (format == kWithSuffix) {
-        text->Append(list_marker_text::Suffix(Style()->ListStyleType(), value));
+        text->Append(list_marker_text::Suffix(style.ListStyleType(), value));
         text->Append(' ');
       }
       return kOrdinalValue;

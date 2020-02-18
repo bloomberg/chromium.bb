@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "cast/common/certificate/types.h"
 #include "platform/base/error.h"
 #include "platform/base/macros.h"
 
@@ -41,36 +42,7 @@ enum class DigestAlgorithm {
   kSha512,
 };
 
-struct ConstDataSpan {
-  const uint8_t* data;
-  uint32_t length;
-};
-
-struct DateTime {
-  uint16_t year;
-  uint8_t month;
-  uint8_t day;
-  uint8_t hour;
-  uint8_t minute;
-  uint8_t second;
-};
-
 struct TrustStore;
-
-class CastTrustStore {
- public:
-  // Singleton for the Cast trust store for legacy networkingPrivate use.
-  static CastTrustStore* GetInstance();
-
-  CastTrustStore();
-  ~CastTrustStore();
-
-  TrustStore* trust_store() const { return trust_store_.get(); }
-
- private:
-  std::unique_ptr<TrustStore> trust_store_;
-  OSP_DISALLOW_COPY_AND_ASSIGN(CastTrustStore);
-};
 
 // An object of this type is returned by the VerifyDeviceCert function, and can
 // be used for additional certificate-related operations, using the verified
@@ -132,7 +104,7 @@ class CertVerificationContext {
 //     properties from the device certificate (Common Name).
 //   * |policy| is filled with an indication of the device certificate's policy
 //     (i.e. is it for audio-only devices or is it unrestricted?)
-MAYBE_NODISCARD openscreen::Error VerifyDeviceCert(
+[[nodiscard]] openscreen::Error VerifyDeviceCert(
     const std::vector<std::string>& der_certs,
     const DateTime& time,
     std::unique_ptr<CertVerificationContext>* context,

@@ -5,12 +5,13 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/trace_event/traced_value.h"
 
 namespace cc {
 
 std::string MainThreadScrollingReason::AsText(uint32_t reasons) {
-  base::trace_event::TracedValue traced_value;
+  base::trace_event::TracedValue traced_value(0, /*force_json=*/true);
   AddToTracedValue(reasons, traced_value);
   std::string result = traced_value.ToString();
   // Remove '{main_thread_scrolling_reasons:[', ']}', and any '"' chars.
@@ -19,6 +20,8 @@ std::string MainThreadScrollingReason::AsText(uint32_t reasons) {
   result =
       result.substr(array_start_pos + 1, array_end_pos - array_start_pos - 1);
   base::Erase(result, '\"');
+  // Add spaces after all commas.
+  base::ReplaceChars(result, ",", ", ", &result);
   return result;
 }
 

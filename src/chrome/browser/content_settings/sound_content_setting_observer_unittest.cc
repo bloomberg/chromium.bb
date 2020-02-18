@@ -67,12 +67,12 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
   void ChangeSoundContentSettingTo(ContentSetting setting) {
     GURL url = web_contents()->GetLastCommittedURL();
     host_content_settings_map_->SetContentSettingDefaultScope(
-        url, url, CONTENT_SETTINGS_TYPE_SOUND, std::string(), setting);
+        url, url, ContentSettingsType::SOUND, std::string(), setting);
   }
 
   void ChangeDefaultSoundContentSettingTo(ContentSetting setting) {
     host_content_settings_map_->SetDefaultContentSetting(
-        CONTENT_SETTINGS_TYPE_SOUND, setting);
+        ContentSettingsType::SOUND, setting);
   }
 
   void SimulateAudioStarting() {
@@ -194,17 +194,6 @@ TEST_F(SoundContentSettingObserverTest, DontUnmuteWhenMutedByExtension) {
   EXPECT_TRUE(web_contents()->IsAudioMuted());
 
   // Navigating to a new URL should not unmute the tab muted by an extension.
-  NavigateAndCommit(GURL(kURL2));
-  EXPECT_TRUE(web_contents()->IsAudioMuted());
-}
-
-TEST_F(SoundContentSettingObserverTest, DontUnmuteWhenMutedForMediaCapture) {
-  EXPECT_FALSE(web_contents()->IsAudioMuted());
-
-  SetMuteStateForReason(true, TabMutedReason::MEDIA_CAPTURE);
-  EXPECT_TRUE(web_contents()->IsAudioMuted());
-
-  // Navigating to a new URL should not unmute the tab muted for media capture.
   NavigateAndCommit(GURL(kURL2));
   EXPECT_TRUE(web_contents()->IsAudioMuted());
 }

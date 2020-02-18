@@ -215,7 +215,11 @@ class OmniboxEditModel {
       WindowOpenDisposition disposition,
       base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
-  // Asks the browser to load the item at |index|, with the given properties.
+  // Asks the browser to load |match|. |index| is only used for logging, and
+  // can be kNoMatch if the popup was closed, or if none of the suggestions
+  // in the popup were used (in the unusual no-default-match case). In that
+  // case, an artificial result set with only |match| will be logged.
+  //
   // OpenMatch() needs to know the original text that drove this action.  If
   // |pasted_text| is non-empty, this is a Paste-And-Go/Search action, and
   // that's the relevant input text.  Otherwise, the relevant input text is
@@ -291,7 +295,15 @@ class OmniboxEditModel {
 
   // Called when the view is gaining focus.  |control_down| is whether the
   // control key is down (at the time we're gaining focus).
-  void OnSetFocus(bool control_down);
+  // |suppress_on_focus_suggestions| is set to true when on-focus suggestions
+  // should not appear for this focus event. For instance, for
+  // renderer-initiated focus events, it should be set to true.
+  void OnSetFocus(bool control_down, bool suppress_on_focus_suggestions);
+
+  // Shows On-Focus Suggestions (ZeroSuggest) if no query is currently running
+  // and the popup is closed. This can be called multiple times without harm,
+  // since it will early-exit if an earlier request is in progress (or done).
+  void ShowOnFocusSuggestionsIfAutocompleteIdle();
 
   // Sets the visibility of the caret in the omnibox, if it has focus. The
   // visibility of the caret is reset to visible if either
@@ -342,19 +354,19 @@ class OmniboxEditModel {
   // separate pieces of data into one call so we can update all the UI
   // efficiently:
   //   |text| is either the new temporary text from the user manually selecting
-  //     a different match, or the inline autocomplete text.  We distinguish by
-  //     checking if |destination_for_temporary_text_change| is NULL.
+  //     a different match, or the inline autocomplete text.
+  //   |is_temporary_text| is true if |text| contains the temporary text for
+  //     a match, and is false if |text| contains the inline autocomplete text.
   //   |destination_for_temporary_text_change| is NULL (if temporary text should
   //     not change) or the pre-change destination URL (if temporary text should
   //     change) so we can save it off to restore later.
   //   |keyword| is the keyword to show a hint for if |is_keyword_hint| is true,
   //     or the currently selected keyword if |is_keyword_hint| is false (see
   //     comments on keyword_ and is_keyword_hint_).
-  void OnPopupDataChanged(
-      const base::string16& text,
-      GURL* destination_for_temporary_text_change,
-      const base::string16& keyword,
-      bool is_keyword_hint);
+  void OnPopupDataChanged(const base::string16& text,
+                          bool is_temporary_text,
+                          const base::string16& keyword,
+                          bool is_keyword_hint);
 
   // Called by the OmniboxView after something changes, with details about what
   // state changes occured.  Updates internal state, updates the popup if
@@ -377,7 +389,8 @@ class OmniboxEditModel {
   // Name of the histogram tracking cut or copy omnibox commands.
   static const char kCutOrCopyAllTextHistogram[];
 
-  OmniboxView* view() { return view_; }
+  // Just forwards the call to the OmniboxView referred within.
+  void SetAccessibilityLabel(const AutocompleteMatch& match);
 
  private:
   friend class OmniboxControllerTest;
@@ -428,15 +441,15 @@ class OmniboxEditModel {
   base::string16 MaybeStripKeyword(const base::string16& text) const;
   base::string16 MaybePrependKeyword(const base::string16& text) const;
 
-  // If there's a selected match, copies it into |match|. Else, returns the
-  // default match for the current text, as well as the alternate nav URL, if
-  // |alternate_nav_url| is non-NULL and there is such a URL.
+  // Copies a match corresponding to the current text into |match|, and
+  // populates |alternate_nav_url| as well if it's not nullptr. If the popup
+  // is closed, the match is generated from the autocomplete classifier.
   void GetInfoForCurrentText(AutocompleteMatch* match,
                              GURL* alternate_nav_url) const;
 
   // Reverts the edit box from a temporary text back to the original user text.
-  // If |revert_popup| is true then the popup will be reverted as well.
-  void RevertTemporaryText(bool revert_popup);
+  // Also resets the popup to the initial state.
+  void RevertTemporaryTextAndPopup();
 
   // Accepts current keyword if the user just typed a space at the end of
   // |new_text|.  This handles both of the following cases:

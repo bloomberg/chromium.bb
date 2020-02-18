@@ -337,6 +337,8 @@
 "inline-flex"
 "grid"
 "inline-grid"
+"math"
+"inline-math"
 "contents"
 "-webkit-flex"
 "-webkit-inline-flex"
@@ -915,6 +917,12 @@
 "active"
 "linktext"
 "visitedtext"
+"back-button"
+"activetext"
+"field"
+"fieldtext"
+"canvas"
+"canvastext"
 
 # at-rules
 "@charset"

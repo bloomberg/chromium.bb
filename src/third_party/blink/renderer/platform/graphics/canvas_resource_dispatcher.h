@@ -22,7 +22,8 @@ class CanvasResource;
 
 class CanvasResourceDispatcherClient {
  public:
-  virtual void BeginFrame() = 0;
+  virtual bool BeginFrame() = 0;
+  virtual void SetFilterQualityInResource(SkFilterQuality filter_quality) = 0;
 };
 
 class PLATFORM_EXPORT CanvasResourceDispatcher
@@ -60,6 +61,10 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
                          const SkIRect& damage_rect,
                          bool needs_vertical_flip,
                          bool is_opaque);
+  void ReplaceBeginFrameAck(const viz::BeginFrameArgs& args) {
+    current_begin_frame_ack_ = viz::BeginFrameAck(args, true);
+  }
+  bool HasTooManyPendingFrames() const;
 
   void Reshape(const IntSize&);
 
@@ -76,6 +81,9 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                ::gpu::mojom::blink::MailboxPtr id);
   void DidDeleteSharedBitmap(::gpu::mojom::blink::MailboxPtr id);
+
+  void SetFilterQuality(SkFilterQuality filter_quality);
+  void SetPlaceholderCanvasDispatcher(int placeholder_canvas_id);
 
  private:
   friend class CanvasResourceDispatcherTest;

@@ -16,7 +16,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -45,7 +46,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
 
   bool IsTracingActive() override;
 
-  void Connect(mojom::PerfettoServicePtr perfetto_service);
+  void Connect(mojo::PendingRemote<mojom::PerfettoService> perfetto_service);
 
   void set_in_process_shmem_arbiter(perfetto::SharedMemoryArbiter* arbiter) {
     DCHECK(!in_process_arbiter_);
@@ -89,8 +90,9 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   size_t shared_buffer_page_size_kb() const override;
   perfetto::SharedMemoryArbiter* GetInProcessShmemArbiter() override;
 
-  void BindClientAndHostPipesForTesting(mojom::ProducerClientRequest,
-                                        mojom::ProducerHostPtrInfo);
+  void BindClientAndHostPipesForTesting(
+      mojo::PendingReceiver<mojom::ProducerClient>,
+      mojo::PendingRemote<mojom::ProducerHost>);
   void ResetSequenceForTesting();
 
  protected:
@@ -99,12 +101,13 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
  private:
   friend class base::NoDestructor<ProducerClient>;
 
-  void BindClientAndHostPipesOnSequence(mojom::ProducerClientRequest,
-                                        mojom::ProducerHostPtrInfo);
+  void BindClientAndHostPipesOnSequence(
+      mojo::PendingReceiver<mojom::ProducerClient>,
+      mojo::PendingRemote<mojom::ProducerHost>);
 
   uint32_t data_sources_tracing_ = 0;
-  std::unique_ptr<mojo::Binding<mojom::ProducerClient>> binding_;
-  mojom::ProducerHostPtr producer_host_;
+  std::unique_ptr<mojo::Receiver<mojom::ProducerClient>> receiver_;
+  mojo::Remote<mojom::ProducerHost> producer_host_;
   std::unique_ptr<MojoSharedMemory> shared_memory_;
   std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_;
   perfetto::SharedMemoryArbiter* in_process_arbiter_ = nullptr;

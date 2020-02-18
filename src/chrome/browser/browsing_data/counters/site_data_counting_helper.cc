@@ -18,12 +18,13 @@
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "media/media_buildflags.h"
 #include "net/cookies/cookie_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
-#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -126,7 +127,12 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
   // Counting site usage data and durable permissions.
   auto* hcsm = HostContentSettingsMapFactory::GetForProfile(profile_);
   const ContentSettingsType content_settings[] = {
-      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, CONTENT_SETTINGS_TYPE_APP_BANNER};
+    ContentSettingsType::DURABLE_STORAGE,
+    ContentSettingsType::APP_BANNER,
+#if !defined(OS_ANDROID)
+    ContentSettingsType::INSTALLED_WEB_APP_METADATA,
+#endif
+  };
   for (auto type : content_settings) {
     tasks_ += 1;
     GetOriginsFromHostContentSettignsMap(hcsm, type);

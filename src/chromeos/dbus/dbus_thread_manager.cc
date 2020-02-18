@@ -11,6 +11,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread.h"
+#include "chromeos/dbus/anomaly_detector_client.h"
 #include "chromeos/dbus/arc_keymaster_client.h"
 #include "chromeos/dbus/arc_midis_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
@@ -22,7 +23,7 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_clients_browser.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/gnubby_client.h"
 #include "chromeos/dbus/image_burner_client.h"
@@ -105,6 +106,11 @@ DBusThreadManager::~DBusThreadManager() {
 
 dbus::Bus* DBusThreadManager::GetSystemBus() {
   return system_bus_.get();
+}
+
+AnomalyDetectorClient* DBusThreadManager::GetAnomalyDetectorClient() {
+  return clients_browser_ ? clients_browser_->anomaly_detector_client_.get()
+                          : nullptr;
 }
 
 ArcAppfuseProviderClient* DBusThreadManager::GetArcAppfuseProviderClient() {
@@ -238,11 +244,6 @@ VirtualFileProviderClient* DBusThreadManager::GetVirtualFileProviderClient() {
   return clients_browser_
              ? clients_browser_->virtual_file_provider_client_.get()
              : nullptr;
-}
-
-WilcoDtcSupportdClient* DBusThreadManager::GetWilcoDtcSupportdClient() {
-  return clients_browser_ ? clients_browser_->wilco_dtc_supportd_client_.get()
-                          : nullptr;
 }
 
 VmPluginDispatcherClient* DBusThreadManager::GetVmPluginDispatcherClient() {

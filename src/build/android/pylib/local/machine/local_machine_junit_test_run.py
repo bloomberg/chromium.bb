@@ -5,6 +5,7 @@
 import json
 import logging
 import os
+import zipfile
 
 from devil.utils import cmd_helper
 from pylib import constants
@@ -31,15 +32,13 @@ class LocalMachineJunitTestRun(test_run.TestRun):
   def RunTests(self, results):
     with tempfile_ext.NamedTemporaryDirectory() as temp_dir:
       json_file_path = os.path.join(temp_dir, 'results.json')
-
       java_script = os.path.join(
           constants.GetOutDirectory(), 'bin', 'helper',
           self._test_instance.suite)
       command = [java_script]
 
       # Add Jar arguments.
-      jar_args = ['-test-jars', self._test_instance.suite + '.jar',
-                  '-json-results-file', json_file_path]
+      jar_args = ['-json-results-file', json_file_path]
       if self._test_instance.test_filter:
         jar_args.extend(['-gtest-filter', self._test_instance.test_filter])
       if self._test_instance.package_filter:
@@ -55,8 +54,6 @@ class LocalMachineJunitTestRun(test_run.TestRun):
           self._test_instance.robolectric_runtime_deps_dir,
           '-Ddir.source.root=%s' % constants.DIR_SOURCE_ROOT,
           '-Drobolectric.resourcesMode=binary',
-          '-Dchromium.robolectric.resource.ap_=%s' %
-          self._test_instance.resource_apk
       ]
 
       if logging.getLogger().isEnabledFor(logging.INFO):
@@ -89,6 +86,14 @@ class LocalMachineJunitTestRun(test_run.TestRun):
 
       if jvm_args:
         command.extend(['--jvm-args', '"%s"' % ' '.join(jvm_args)])
+
+      # Create properties file for Robolectric test runners so they can find the
+      # binary resources.
+      properties_jar_path = os.path.join(temp_dir, 'properties.jar')
+      with zipfile.ZipFile(properties_jar_path, 'w') as z:
+        z.writestr('com/android/tools/test_config.properties',
+                   'android_resource_apk=%s' % self._test_instance.resource_apk)
+      command.extend(['--classpath', properties_jar_path])
 
       cmd_helper.RunCmd(command)
       try:

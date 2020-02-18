@@ -14,6 +14,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_data_writer.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
 
 namespace quic {
 
@@ -24,6 +25,8 @@ namespace quic {
 struct QUIC_EXPORT_PRIVATE TransportParameters {
   // The identifier used to differentiate transport parameters.
   enum TransportParameterId : uint16_t;
+  // A map used to specify custom parameters.
+  using ParameterMap = QuicUnorderedMap<TransportParameterId, std::string>;
   // Represents an individual QUIC transport parameter that only encodes a
   // variable length integer. Can only be created inside the constructor for
   // TransportParameters.
@@ -165,6 +168,10 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
   // to store.
   IntegerParameter active_connection_id_limit;
 
+  // Indicates support for the DATAGRAM frame and the maximum frame size that
+  // the sender accepts. See draft-pauly-quic-datagram.
+  IntegerParameter max_datagram_frame_size;
+
   // Transport parameters used by Google QUIC but not IETF QUIC. This is
   // serialized into a TransportParameter struct with a TransportParameterId of
   // kGoogleQuicParamId.
@@ -173,6 +180,9 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
   // Validates whether transport parameters are valid according to
   // the specification.
   bool AreValid() const;
+
+  // Custom parameters that may be specific to application protocol.
+  ParameterMap custom_parameters;
 
   // Allows easily logging transport parameters.
   std::string ToString() const;

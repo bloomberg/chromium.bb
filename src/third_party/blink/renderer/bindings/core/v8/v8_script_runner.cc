@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
@@ -477,26 +478,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
   return result;
 }
 
-v8::MaybeLocal<v8::Value> V8ScriptRunner::CallInternalFunction(
-    v8::Isolate* isolate,
-    v8::MicrotaskQueue* microtask_queue,
-    v8::Local<v8::Function> function,
-    v8::Local<v8::Value> receiver,
-    int argc,
-    v8::Local<v8::Value> args[]) {
-  TRACE_EVENT0("v8", "v8.callFunction");
-  RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
-  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
-
-  v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
-  v8::MicrotasksScope microtasks_scope(
-      isolate, microtask_queue, v8::MicrotasksScope::kDoNotRunMicrotasks);
-  v8::MaybeLocal<v8::Value> result =
-      function->Call(isolate->GetCurrentContext(), receiver, argc, args);
-  CHECK(!isolate->IsDead());
-  return result;
-}
-
 v8::MaybeLocal<v8::Value> V8ScriptRunner::EvaluateModule(
     v8::Isolate* isolate,
     ExecutionContext* execution_context,
@@ -522,24 +503,6 @@ void V8ScriptRunner::ReportException(v8::Isolate* isolate,
     V8Initializer::MessageHandlerInMainThread(message, exception);
   else
     V8Initializer::MessageHandlerInWorker(message, exception);
-}
-
-v8::MaybeLocal<v8::Value> V8ScriptRunner::CallExtraHelper(
-    ScriptState* script_state,
-    const char* name,
-    uint32_t num_args,
-    v8::Local<v8::Value>* args) {
-  v8::Isolate* isolate = script_state->GetIsolate();
-  v8::Local<v8::Value> function_value;
-  v8::Local<v8::Context> context = script_state->GetContext();
-  if (!context->GetExtrasBindingObject()
-           ->Get(context, V8AtomicString(isolate, name))
-           .ToLocal(&function_value))
-    return v8::MaybeLocal<v8::Value>();
-  v8::Local<v8::Function> function = function_value.As<v8::Function>();
-  return V8ScriptRunner::CallInternalFunction(
-      isolate, ToMicrotaskQueue(script_state), function, v8::Undefined(isolate),
-      num_args, args);
 }
 
 }  // namespace blink

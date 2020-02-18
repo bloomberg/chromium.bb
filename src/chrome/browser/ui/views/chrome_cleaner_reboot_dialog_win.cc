@@ -21,7 +21,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace chrome {
 
@@ -48,6 +47,12 @@ ChromeCleanerRebootDialog::ChromeCleanerRebootDialog(
     safe_browsing::ChromeCleanerRebootDialogController* dialog_controller)
     : dialog_controller_(dialog_controller) {
   DCHECK(dialog_controller_);
+
+  DialogDelegate::set_draggable(true);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          IDS_CHROME_CLEANUP_REBOOT_PROMPT_RESTART_BUTTON_LABEL));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -85,23 +90,10 @@ base::string16 ChromeCleanerRebootDialog::GetWindowTitle() const {
 views::View* ChromeCleanerRebootDialog::GetInitiallyFocusedView() {
   // Set focus away from the Restart/OK button to prevent accidental prompt
   // acceptance if the user is typing as the dialog appears.
-  const views::DialogClientView* dcv = GetDialogClientView();
-  return dcv ? dcv->cancel_button() : nullptr;
+  return GetCancelButton();
 }
 
 // DialogDelegate overrides.
-
-base::string16 ChromeCleanerRebootDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  DCHECK(button == ui::DIALOG_BUTTON_OK || button == ui::DIALOG_BUTTON_CANCEL);
-  DCHECK(dialog_controller_);
-
-  return button == ui::DIALOG_BUTTON_OK
-             ? l10n_util::GetStringUTF16(
-                   IDS_CHROME_CLEANUP_REBOOT_PROMPT_RESTART_BUTTON_LABEL)
-             : DialogDelegate::GetDialogButtonLabel(button);
-}
-
 bool ChromeCleanerRebootDialog::Accept() {
   HandleDialogInteraction(DialogInteractionResult::kAccept);
   return true;
@@ -114,10 +106,6 @@ bool ChromeCleanerRebootDialog::Cancel() {
 
 bool ChromeCleanerRebootDialog::Close() {
   HandleDialogInteraction(DialogInteractionResult::kClose);
-  return true;
-}
-
-bool ChromeCleanerRebootDialog::IsDialogDraggable() const {
   return true;
 }
 

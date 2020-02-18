@@ -30,7 +30,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace ash {
 
@@ -993,7 +992,7 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
   AutoclickMenuView* menu = GetAutoclickMenuView();
   ASSERT_TRUE(menu);
 
-  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(ShelfAlignment::kBottom);
   // The menu should be positioned above the shelf, not overlapping.
   EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
             screen_height - shelf->GetIdealBounds().height() -
@@ -1002,7 +1001,7 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
   EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().x(),
             screen_width - kCollisionWindowWorkAreaInsetsDp);
 
-  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(ShelfAlignment::kLeft);
   // The menu should move to the bottom of the screen.
   EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
             screen_height - kCollisionWindowWorkAreaInsetsDp);
@@ -1010,7 +1009,7 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
   EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().x(),
             screen_width - kCollisionWindowWorkAreaInsetsDp);
 
-  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  shelf->SetAlignment(ShelfAlignment::kRight);
   // The menu should stay at the bottom of the screen.
   EXPECT_EQ(menu->GetBoundsInScreen().bottom_right().y(),
             screen_height - kCollisionWindowWorkAreaInsetsDp);
@@ -1020,7 +1019,7 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
                 shelf->GetIdealBounds().width());
 
   // Reset state.
-  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(ShelfAlignment::kBottom);
 }
 
 TEST_F(AutoclickTest, AvoidsShelfBubble) {
@@ -1078,7 +1077,7 @@ TEST_F(AutoclickTest, ConfirmationDialogShownWhenDisablingFeature) {
   EXPECT_TRUE(dialog);
 
   // Canceling the dialog will cause the feature to continue to be enabled.
-  dialog->GetDialogClientView()->CancelWindow();
+  dialog->CancelDialog();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
   EXPECT_TRUE(Shell::Get()->accessibility_controller()->autoclick_enabled());
@@ -1089,7 +1088,7 @@ TEST_F(AutoclickTest, ConfirmationDialogShownWhenDisablingFeature) {
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
   dialog = GetAutoclickController()->GetDisableDialogForTesting();
   EXPECT_TRUE(dialog);
-  dialog->GetDialogClientView()->AcceptWindow();
+  dialog->AcceptDialog();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
   EXPECT_FALSE(Shell::Get()->accessibility_controller()->autoclick_enabled());

@@ -28,6 +28,8 @@ if (enable_vr) {
       "util/sample_queue.h",
       "util/sliding_average.cc",
       "util/sliding_average.h",
+      "util/stage_utils.cc",
+      "util/stage_utils.h",
       "util/transform_utils.cc",
       "util/transform_utils.h",
       "util/xr_standard_gamepad_builder.cc",
@@ -56,9 +58,6 @@ if (enable_vr) {
 
     if (enable_gvr_services) {
       sources += [
-        "android/gvr/cardboard_gamepad_data_fetcher.cc",
-        "android/gvr/cardboard_gamepad_data_fetcher.h",
-        "android/gvr/cardboard_gamepad_data_provider.h",
         "android/gvr/gvr_delegate.cc",
         "android/gvr/gvr_delegate.h",
         "android/gvr/gvr_delegate_provider.h",
@@ -68,9 +67,6 @@ if (enable_vr) {
         "android/gvr/gvr_device.h",
         "android/gvr/gvr_device_provider.cc",
         "android/gvr/gvr_device_provider.h",
-        "android/gvr/gvr_gamepad_data_fetcher.cc",
-        "android/gvr/gvr_gamepad_data_fetcher.h",
-        "android/gvr/gvr_gamepad_data_provider.h",
         "android/gvr/gvr_utils.cc",
         "android/gvr/gvr_utils.h",
       ]
@@ -84,25 +80,11 @@ if (enable_vr) {
 
       deps += [
         ":jni_headers",
-        "//device/gamepad",
-        "//device/gamepad/public/cpp:shared_with_blink",
         "//third_party/blink/public:blink_headers",
         "//third_party/gvr-android-sdk:gvr_shim",
       ]
       ldflags = [ "-landroid" ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
-    }
-
-    if (!is_android) {
-      sources += [
-        "isolated_gamepad_data_fetcher.cc",
-        "isolated_gamepad_data_fetcher.h",
-      ]
-
-      deps += [
-        "//device/gamepad",
-        "//device/gamepad/public/cpp:shared_with_blink",
-      ]
     }
 
     if (enable_openvr) {
@@ -232,7 +214,10 @@ if (enable_vr) {
     }
 
     if (enable_openxr) {
-      deps += [ "//third_party/openxr" ]
+      deps += [
+        "//components/version_info",
+        "//third_party/openxr",
+      ]
 
       sources += [
         "openxr/openxr_api_wrapper.cc",
@@ -241,10 +226,12 @@ if (enable_vr) {
         "openxr/openxr_controller.h",
         "openxr/openxr_device.cc",
         "openxr/openxr_device.h",
-        "openxr/openxr_gamepad_helper.cc",
-        "openxr/openxr_gamepad_helper.h",
+        "openxr/openxr_input_helper.cc",
+        "openxr/openxr_input_helper.h",
         "openxr/openxr_render_loop.cc",
         "openxr/openxr_render_loop.h",
+        "openxr/openxr_statics.cc",
+        "openxr/openxr_statics.h",
         "openxr/openxr_util.cc",
         "openxr/openxr_util.h",
       ]
@@ -265,8 +252,6 @@ if (enable_vr) {
       "test/fake_vr_device.h",
       "test/fake_vr_device_provider.cc",
       "test/fake_vr_device_provider.h",
-      "test/fake_vr_display_impl_client.cc",
-      "test/fake_vr_display_impl_client.h",
       "test/fake_vr_service_client.cc",
       "test/fake_vr_service_client.h",
       "vr_export.h",
@@ -379,6 +364,7 @@ if (enable_openxr) {
 
     deps = [
       "//base",
+      "//components/version_info",
       "//device/vr/public/mojom:test_mojom",
       "//third_party/openxr:openxr_headers",
     ]
@@ -401,8 +387,10 @@ if (enable_gvr_services) {
     java_files = java_sources_needing_jni
     deps = [
       "//base:base_java",
+      "//base:jni_java",
       "//third_party/gvr-android-sdk:gvr_common_java",
       "//ui/android:ui_java",
     ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
 }

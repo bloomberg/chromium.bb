@@ -29,7 +29,7 @@
 #include <memory>
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
@@ -75,6 +75,7 @@ class MODULES_EXPORT IDBTransaction final
       int64_t transaction_id,
       const HashSet<String>& scope,
       mojom::IDBTransactionMode,
+      mojom::IDBTransactionDurability,
       IDBDatabase* database);
   static IDBTransaction* CreateVersionChange(
       ExecutionContext*,
@@ -90,6 +91,7 @@ class MODULES_EXPORT IDBTransaction final
                  int64_t,
                  const HashSet<String>& scope,
                  mojom::IDBTransactionMode,
+                 mojom::IDBTransactionDurability,
                  IDBDatabase*);
   // For upgrade transactions.
   IDBTransaction(ExecutionContext*,
@@ -122,6 +124,7 @@ class MODULES_EXPORT IDBTransaction final
 
   // Implement the IDBTransaction IDL
   const String& mode() const;
+  const String& durability() const;
   DOMStringList* objectStoreNames() const;
   IDBDatabase* db() const { return database_.Get(); }
   DOMException* error() const { return error_; }
@@ -152,7 +155,14 @@ class MODULES_EXPORT IDBTransaction final
   // Called when deleting an index whose IDBIndex had been created.
   void IndexDeleted(IDBIndex*);
 
-  void SetActive(bool);
+  // Called during event dispatch.
+  //
+  // This can trigger transaction auto-commit.
+  void SetActive(bool new_is_active);
+
+  // Called right before and after structured serialization.
+  void SetActiveDuringSerialization(bool new_is_active);
+
   void SetError(DOMException*);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort)
@@ -213,6 +223,7 @@ class MODULES_EXPORT IDBTransaction final
   Member<IDBDatabase> database_;
   Member<IDBOpenDBRequest> open_db_request_;
   const mojom::IDBTransactionMode mode_;
+  const mojom::IDBTransactionDurability durability_;
 
   // The names of the object stores that make up this transaction's scope.
   //

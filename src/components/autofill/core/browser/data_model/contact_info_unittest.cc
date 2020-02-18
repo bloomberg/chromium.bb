@@ -183,219 +183,6 @@ TEST(NameInfoTest, GetFullName) {
             name.GetInfo(AutofillType(NAME_FULL), "en-US"));
 }
 
-struct ParsedNamesAreEqualTestCase {
-  std::string starting_names[3];
-  std::string additional_names[3];
-  bool expected_result;
-};
-
-class ParsedNamesAreEqualTest
-    : public testing::TestWithParam<ParsedNamesAreEqualTestCase> {};
-
-TEST_P(ParsedNamesAreEqualTest, ParsedNamesAreEqual) {
-  auto test_case = GetParam();
-
-  // Construct the starting_profile.
-  NameInfo starting_profile;
-  starting_profile.SetRawInfo(NAME_FIRST,
-                              UTF8ToUTF16(test_case.starting_names[0]));
-  starting_profile.SetRawInfo(NAME_MIDDLE,
-                              UTF8ToUTF16(test_case.starting_names[1]));
-  starting_profile.SetRawInfo(NAME_LAST,
-                              UTF8ToUTF16(test_case.starting_names[2]));
-
-  // Construct the additional_profile.
-  NameInfo additional_profile;
-  additional_profile.SetRawInfo(NAME_FIRST,
-                                UTF8ToUTF16(test_case.additional_names[0]));
-  additional_profile.SetRawInfo(NAME_MIDDLE,
-                                UTF8ToUTF16(test_case.additional_names[1]));
-  additional_profile.SetRawInfo(NAME_LAST,
-                                UTF8ToUTF16(test_case.additional_names[2]));
-
-  // Verify the test expectations.
-  EXPECT_EQ(test_case.expected_result,
-            starting_profile.ParsedNamesAreEqual(additional_profile));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ContactInfoTest,
-    ParsedNamesAreEqualTest,
-    testing::Values(
-        // Identical name comparison.
-        ParsedNamesAreEqualTestCase{{"Marion", "Mitchell", "Morrison"},
-                                    {"Marion", "Mitchell", "Morrison"},
-                                    true},
-
-        // Case-sensitive comparisons.
-        ParsedNamesAreEqualTestCase{{"Marion", "Mitchell", "Morrison"},
-                                    {"Marion", "Mitchell", "MORRISON"},
-                                    false},
-        ParsedNamesAreEqualTestCase{{"Marion", "Mitchell", "Morrison"},
-                                    {"MARION", "Mitchell", "MORRISON"},
-                                    false},
-        ParsedNamesAreEqualTestCase{{"Marion", "Mitchell", "Morrison"},
-                                    {"MARION", "MITCHELL", "MORRISON"},
-                                    false},
-        ParsedNamesAreEqualTestCase{{"Marion", "", "Mitchell Morrison"},
-                                    {"MARION", "", "MITCHELL MORRISON"},
-                                    false},
-        ParsedNamesAreEqualTestCase{{"Marion Mitchell", "", "Morrison"},
-                                    {"MARION MITCHELL", "", "MORRISON"},
-                                    false},
-
-        // Identical full names but different canonical forms.
-        ParsedNamesAreEqualTestCase{{"Marion", "Mitchell", "Morrison"},
-                                    {"Marion", "", "Mitchell Morrison"},
-                                    false},
-        ParsedNamesAreEqualTestCase{{"Marion", "Mitchell", "Morrison"},
-                                    {"Marion Mitchell", "", "MORRISON"},
-                                    false},
-
-        // Different names.
-        ParsedNamesAreEqualTestCase{{"Marion", "Mitchell", "Morrison"},
-                                    {"Marion", "M.", "Morrison"},
-                                    false},
-        ParsedNamesAreEqualTestCase{{"Marion", "Mitchell", "Morrison"},
-                                    {"MARION", "M.", "MORRISON"},
-                                    false},
-        ParsedNamesAreEqualTestCase{{"Marion", "Mitchell", "Morrison"},
-                                    {"David", "Mitchell", "Morrison"},
-                                    false},
-
-        // Non-ASCII characters.
-        ParsedNamesAreEqualTestCase{{"M\xc3\xa1rion Mitchell", "", "Morrison"},
-                                    {"M\xc3\xa1rion Mitchell", "", "Morrison"},
-                                    true}));
-
-struct OverwriteNameTestCase {
-  std::string existing_name[4];
-  std::string new_name[4];
-  std::string expected_name[4];
-};
-
-class OverwriteNameTest : public testing::TestWithParam<OverwriteNameTestCase> {
-};
-
-TEST_P(OverwriteNameTest, OverwriteName) {
-  auto test_case = GetParam();
-  // Construct the starting_profile.
-  NameInfo existing_name;
-  existing_name.SetRawInfo(NAME_FIRST, UTF8ToUTF16(test_case.existing_name[0]));
-  existing_name.SetRawInfo(NAME_MIDDLE,
-                           UTF8ToUTF16(test_case.existing_name[1]));
-  existing_name.SetRawInfo(NAME_LAST, UTF8ToUTF16(test_case.existing_name[2]));
-  existing_name.SetRawInfo(NAME_FULL, UTF8ToUTF16(test_case.existing_name[3]));
-
-  // Construct the additional_profile.
-  NameInfo new_name;
-  new_name.SetRawInfo(NAME_FIRST, UTF8ToUTF16(test_case.new_name[0]));
-  new_name.SetRawInfo(NAME_MIDDLE, UTF8ToUTF16(test_case.new_name[1]));
-  new_name.SetRawInfo(NAME_LAST, UTF8ToUTF16(test_case.new_name[2]));
-  new_name.SetRawInfo(NAME_FULL, UTF8ToUTF16(test_case.new_name[3]));
-
-  existing_name.OverwriteName(new_name);
-
-  // Verify the test expectations.
-  EXPECT_EQ(UTF8ToUTF16(test_case.expected_name[0]),
-            existing_name.GetRawInfo(NAME_FIRST));
-  EXPECT_EQ(UTF8ToUTF16(test_case.expected_name[1]),
-            existing_name.GetRawInfo(NAME_MIDDLE));
-  EXPECT_EQ(UTF8ToUTF16(test_case.expected_name[2]),
-            existing_name.GetRawInfo(NAME_LAST));
-  EXPECT_EQ(UTF8ToUTF16(test_case.expected_name[3]),
-            existing_name.GetRawInfo(NAME_FULL));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ContactInfoTest,
-    OverwriteNameTest,
-    testing::Values(
-        // Missing information in the original name gets filled with the new
-        // name's information.
-        OverwriteNameTestCase{
-            {"", "", "", ""},
-            {"Marion", "Mitchell", "Morrison", "Marion Mitchell Morrison"},
-            {"Marion", "Mitchell", "Morrison", "Marion Mitchell Morrison"},
-        },
-        // The new name's values overwrite the exsiting name values if they are
-        // different
-        OverwriteNameTestCase{
-            {"Marion", "Mitchell", "Morrison", "Marion Mitchell Morrison"},
-            {"Mario", "Mitchell", "Thompson", "Mario Mitchell Morrison"},
-            {"Mario", "Mitchell", "Thompson", "Mario Mitchell Morrison"},
-        },
-        // An existing name values do not get replaced with empty values.
-        OverwriteNameTestCase{
-            {"Marion", "Mitchell", "Morrison", "Marion Mitchell Morrison"},
-            {"", "", "", ""},
-            {"Marion", "Mitchell", "Morrison", "Marion Mitchell Morrison"},
-        },
-        // An existing full middle not does not get replaced by a middle name
-        // initial.
-        OverwriteNameTestCase{
-            {"Marion", "Mitchell", "Morrison", "Marion Mitchell Morrison"},
-            {"Marion", "M", "Morrison", "Marion Mitchell Morrison"},
-            {"Marion", "Mitchell", "Morrison", "Marion Mitchell Morrison"},
-        },
-        // An existing middle name initial is overwritten by the new profile's
-        // middle name value.
-        OverwriteNameTestCase{
-            {"Marion", "M", "Morrison", "Marion Mitchell Morrison"},
-            {"Marion", "Mitchell", "Morrison", "Marion Mitchell Morrison"},
-            {"Marion", "Mitchell", "Morrison", "Marion Mitchell Morrison"},
-        },
-        // A NameInfo with only the full name set overwritten with a NameInfo
-        // with only the name parts set result in a NameInfo with all the name
-        // parts and name full set.
-        OverwriteNameTestCase{
-            {"", "", "", "Marion Mitchell Morrison"},
-            {"Marion", "Mitchell", "Morrison", ""},
-            {"Marion", "Mitchell", "Morrison", "Marion Mitchell Morrison"},
-        },
-        // A NameInfo with only the name parts set overwritten with a NameInfo
-        // with only the full name set result in a NameInfo with all the name
-        // parts and name full set.
-        OverwriteNameTestCase{
-            {"Marion", "Mitchell", "Morrison", ""},
-            {"", "", "", "Marion Mitchell Morrison"},
-            {"Marion", "Mitchell", "Morrison", "Marion Mitchell Morrison"},
-        }));
-
-struct NamePartsAreEmptyTestCase {
-  std::string first;
-  std::string middle;
-  std::string last;
-  std::string full;
-  bool expected_result;
-};
-
-class NamePartsAreEmptyTest
-    : public testing::TestWithParam<NamePartsAreEmptyTestCase> {};
-
-TEST_P(NamePartsAreEmptyTest, NamePartsAreEmpty) {
-  auto test_case = GetParam();
-  // Construct the NameInfo.
-  NameInfo name;
-  name.SetRawInfo(NAME_FIRST, UTF8ToUTF16(test_case.first));
-  name.SetRawInfo(NAME_MIDDLE, UTF8ToUTF16(test_case.middle));
-  name.SetRawInfo(NAME_LAST, UTF8ToUTF16(test_case.last));
-  name.SetRawInfo(NAME_FULL, UTF8ToUTF16(test_case.full));
-
-  // Verify the test expectations.
-  EXPECT_EQ(test_case.expected_result, name.NamePartsAreEmpty());
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ContactInfoTest,
-    NamePartsAreEmptyTest,
-    testing::Values(NamePartsAreEmptyTestCase{"", "", "", "", true},
-                    NamePartsAreEmptyTestCase{"", "", "",
-                                              "Marion Mitchell Morrison", true},
-                    NamePartsAreEmptyTestCase{"Marion", "", "", "", false},
-                    NamePartsAreEmptyTestCase{"", "Mitchell", "", "", false},
-                    NamePartsAreEmptyTestCase{"", "", "Morrison", "", false}));
-
 TEST(CompanyTest, CompanyNameYear) {
   base::test::ScopedFeatureList scoped_features;
   scoped_features.InitWithFeatures(
@@ -432,6 +219,33 @@ TEST(CompanyTest, CompanyNameYear) {
   company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2345"));
   EXPECT_EQ(UTF8ToUTF16("2345"), company.GetRawInfo(COMPANY_NAME));
 
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr"));
+  EXPECT_EQ(UTF8ToUTF16("Mr"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr."));
+  EXPECT_EQ(UTF8ToUTF16("Mr."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mrs"));
+  EXPECT_EQ(UTF8ToUTF16("Mrs"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mrs."));
+  EXPECT_EQ(UTF8ToUTF16("Mrs."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr. & Mrs."));
+  EXPECT_EQ(UTF8ToUTF16("Mr. & Mrs."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr. & Mrs. Smith"));
+  EXPECT_EQ(UTF8ToUTF16("Mr. & Mrs. Smith"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Frau"));
+  EXPECT_EQ(UTF8ToUTF16("Frau"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Frau Doktor"));
+  EXPECT_EQ(UTF8ToUTF16("Frau Doktor"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Herr"));
+  EXPECT_EQ(UTF8ToUTF16("Herr"), company.GetRawInfo(COMPANY_NAME));
+
   profile.set_origin("Not empty");
   ASSERT_TRUE(profile.IsVerified());
 
@@ -449,6 +263,142 @@ TEST(CompanyTest, CompanyNameYear) {
 
   company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2345"));
   EXPECT_EQ(UTF8ToUTF16("2345"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr"));
+  EXPECT_EQ(UTF8ToUTF16("Mr"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr."));
+  EXPECT_EQ(UTF8ToUTF16("Mr."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mrs"));
+  EXPECT_EQ(UTF8ToUTF16("Mrs"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mrs."));
+  EXPECT_EQ(UTF8ToUTF16("Mrs."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr. & Mrs."));
+  EXPECT_EQ(UTF8ToUTF16("Mr. & Mrs."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr. & Mrs. Smith"));
+  EXPECT_EQ(UTF8ToUTF16("Mr. & Mrs. Smith"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Frau"));
+  EXPECT_EQ(UTF8ToUTF16("Frau"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Frau Doktor"));
+  EXPECT_EQ(UTF8ToUTF16("Frau Doktor"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Herr"));
+  EXPECT_EQ(UTF8ToUTF16("Herr"), company.GetRawInfo(COMPANY_NAME));
+}
+
+TEST(CompanyTest, CompanyNameSocialTitle) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillRejectCompanySocialTitle},
+      /*disabled_features=*/{});
+
+  AutofillProfile profile;
+  CompanyInfo company(&profile);
+  ASSERT_FALSE(profile.IsVerified());
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Google"));
+  EXPECT_EQ(UTF8ToUTF16("Google"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1987"));
+  EXPECT_EQ(UTF8ToUTF16("1987"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("It was 1987."));
+  EXPECT_EQ(UTF8ToUTF16("It was 1987."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1987 was the year."));
+  EXPECT_EQ(UTF8ToUTF16("1987 was the year."),
+            company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Yes, 1987 was the year."));
+  EXPECT_EQ(UTF8ToUTF16("Yes, 1987 was the year."),
+            company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2019"));
+  EXPECT_EQ(UTF8ToUTF16("2019"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1818"));
+  EXPECT_EQ(UTF8ToUTF16("1818"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2345"));
+  EXPECT_EQ(UTF8ToUTF16("2345"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr"));
+  EXPECT_EQ(UTF8ToUTF16(""), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr."));
+  EXPECT_EQ(UTF8ToUTF16(""), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mrs"));
+  EXPECT_EQ(UTF8ToUTF16(""), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mrs."));
+  EXPECT_EQ(UTF8ToUTF16(""), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr. & Mrs."));
+  EXPECT_EQ(UTF8ToUTF16("Mr. & Mrs."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr. & Mrs. Smith"));
+  EXPECT_EQ(UTF8ToUTF16("Mr. & Mrs. Smith"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Frau"));
+  EXPECT_EQ(UTF8ToUTF16(""), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Frau Doktor"));
+  EXPECT_EQ(UTF8ToUTF16("Frau Doktor"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Herr"));
+  EXPECT_EQ(UTF8ToUTF16(""), company.GetRawInfo(COMPANY_NAME));
+
+  profile.set_origin("Not empty");
+  ASSERT_TRUE(profile.IsVerified());
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Google"));
+  EXPECT_EQ(UTF8ToUTF16("Google"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1987"));
+  EXPECT_EQ(UTF8ToUTF16("1987"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2019"));
+  EXPECT_EQ(UTF8ToUTF16("2019"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1818"));
+  EXPECT_EQ(UTF8ToUTF16("1818"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2345"));
+  EXPECT_EQ(UTF8ToUTF16("2345"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr"));
+  EXPECT_EQ(UTF8ToUTF16("Mr"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr."));
+  EXPECT_EQ(UTF8ToUTF16("Mr."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mrs"));
+  EXPECT_EQ(UTF8ToUTF16("Mrs"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mrs."));
+  EXPECT_EQ(UTF8ToUTF16("Mrs."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr. & Mrs."));
+  EXPECT_EQ(UTF8ToUTF16("Mr. & Mrs."), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Mr. & Mrs. Smith"));
+  EXPECT_EQ(UTF8ToUTF16("Mr. & Mrs. Smith"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Frau"));
+  EXPECT_EQ(UTF8ToUTF16("Frau"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Frau Doktor"));
+  EXPECT_EQ(UTF8ToUTF16("Frau Doktor"), company.GetRawInfo(COMPANY_NAME));
+
+  company.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Herr"));
+  EXPECT_EQ(UTF8ToUTF16("Herr"), company.GetRawInfo(COMPANY_NAME));
 }
 
 TEST(CompanyTest, CompanyNameYearCopy) {
@@ -484,6 +434,43 @@ TEST(CompanyTest, CompanyNameYearIsEqual) {
 
   company_old.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("2019"));
   company_young.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("1987"));
+
+  EXPECT_EQ(company_old, company_young);
+}
+
+TEST(CompanyTest, CompanyNameSocialTitleCopy) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillRejectCompanySocialTitle},
+      /*disabled_features=*/{});
+
+  AutofillProfile profile;
+  ASSERT_FALSE(profile.IsVerified());
+
+  CompanyInfo company_google(&profile);
+  CompanyInfo company_year(&profile);
+
+  company_google.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Google"));
+  company_year.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Prof."));
+
+  company_google = company_year;
+  EXPECT_EQ(UTF8ToUTF16(""), company_google.GetRawInfo(COMPANY_NAME));
+}
+
+TEST(CompanyTest, CompanyNameSocialTitleIsEqual) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillRejectCompanySocialTitle},
+      /*disabled_features=*/{});
+
+  AutofillProfile profile;
+  ASSERT_FALSE(profile.IsVerified());
+
+  CompanyInfo company_old(&profile);
+  CompanyInfo company_young(&profile);
+
+  company_old.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Dr"));
+  company_young.SetRawInfo(COMPANY_NAME, UTF8ToUTF16("Prof"));
 
   EXPECT_EQ(company_old, company_young);
 }

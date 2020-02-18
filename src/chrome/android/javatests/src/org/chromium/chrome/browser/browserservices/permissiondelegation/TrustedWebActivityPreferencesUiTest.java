@@ -20,15 +20,15 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.preferences.ChromeImageViewPreference;
-import org.chromium.chrome.browser.preferences.ExpandablePreferenceGroup;
-import org.chromium.chrome.browser.preferences.Preferences;
-import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
-import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
-import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
-import org.chromium.chrome.browser.preferences.website.SiteSettingsTestUtils;
-import org.chromium.chrome.browser.preferences.website.Website;
-import org.chromium.chrome.browser.preferences.website.WebsiteAddress;
+import org.chromium.chrome.browser.settings.ChromeImageViewPreference;
+import org.chromium.chrome.browser.settings.ExpandablePreferenceGroup;
+import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.website.SingleCategoryPreferences;
+import org.chromium.chrome.browser.settings.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.settings.website.SiteSettingsCategory;
+import org.chromium.chrome.browser.settings.website.SiteSettingsTestUtils;
+import org.chromium.chrome.browser.settings.website.Website;
+import org.chromium.chrome.browser.settings.website.WebsiteAddress;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -69,19 +69,19 @@ public class TrustedWebActivityPreferencesUiTest {
     @Feature({"Preferences"})
     public void testSingleCategoryManagedBy() throws Exception {
         final String site = "http://example.com";
-        final Origin origin = new Origin(site);
+        final Origin origin = Origin.create(site);
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPermissionMananger.register(origin, mPackage, true));
+                () -> mPermissionMananger.updatePermission(origin, mPackage, true));
 
-        Preferences preferenceActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
+        SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
                 SiteSettingsCategory.Type.NOTIFICATIONS);
         final String groupName = "managed_group";
 
         final SingleCategoryPreferences websitePreferences =
                 TestThreadUtils.runOnUiThreadBlocking(() -> {
                     final SingleCategoryPreferences preferences =
-                            (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+                            (SingleCategoryPreferences) settingsActivity.getMainFragment();
                     final ExpandablePreferenceGroup group =
                             (ExpandablePreferenceGroup) preferences.findPreference(groupName);
                     preferences.onPreferenceClick(group);
@@ -110,32 +110,31 @@ public class TrustedWebActivityPreferencesUiTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mPermissionMananger.unregister(origin));
 
-        preferenceActivity.finish();
+        settingsActivity.finish();
     }
 
     /**
      * Tests that registered sites show 'Managed by' in the title when viewing the details for a
      * single website.
-     * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testWebsitePreferencesManagedBy() throws Exception {
+    public void testWebsitePreferencesManagedBy() {
         final String site = "http://example.com";
-        final Origin origin = new Origin(site);
+        final Origin origin = Origin.create(site);
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mPermissionMananger.register(origin, mPackage, true));
+                () -> mPermissionMananger.updatePermission(origin, mPackage, true));
 
         WebsiteAddress address = WebsiteAddress.create(site);
         Website website = new Website(address, address);
-        final Preferences preferenceActivity =
+        final SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSingleWebsitePreferences(website);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             final SingleWebsitePreferences websitePreferences =
-                    (SingleWebsitePreferences) preferenceActivity.getMainFragment();
+                    (SingleWebsitePreferences) settingsActivity.getMainFragment();
             final ChromeImageViewPreference notificationPreference =
                     (ChromeImageViewPreference) websitePreferences.findPreference(
                             "push_notifications_list");
@@ -145,6 +144,6 @@ public class TrustedWebActivityPreferencesUiTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mPermissionMananger.unregister(origin));
 
-        preferenceActivity.finish();
+        settingsActivity.finish();
     }
 }

@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -470,12 +471,12 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result.value();
   }
 
-  blink::ServiceWorkerStatusCode FindRegistrationForDocument(
+  blink::ServiceWorkerStatusCode FindRegistrationForClientUrl(
       const GURL& document_url,
       scoped_refptr<ServiceWorkerRegistration>* registration) {
     base::Optional<blink::ServiceWorkerStatusCode> result;
     base::RunLoop loop;
-    storage()->FindRegistrationForDocument(
+    storage()->FindRegistrationForClientUrl(
         document_url, base::BindOnce(&FindCallback, loop.QuitClosure(), &result,
                                      registration));
     loop.Run();
@@ -594,7 +595,7 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
 
   scoped_refptr<ServiceWorkerRegistration> found_registration;
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
-            FindRegistrationForDocument(kDocumentUrl, &found_registration));
+            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
             FindRegistrationForScope(kScope, &found_registration));
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
@@ -688,7 +689,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
 
   // We shouldn't find anything without having stored anything.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
-            FindRegistrationForDocument(kDocumentUrl, &found_registration));
+            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
   EXPECT_FALSE(found_registration.get());
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
@@ -726,7 +727,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
 
   // Now we should find it and get the live ptr back immediately.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(kDocumentUrl, &found_registration));
+            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
   EXPECT_EQ(live_registration, found_registration);
   EXPECT_EQ(kResource1Size + kResource2Size,
             live_registration->resources_total_size_bytes());
@@ -762,9 +763,9 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   // Drop the live registration, but keep the version live.
   live_registration = nullptr;
 
-  // Now FindRegistrationForDocument should be async.
+  // Now FindRegistrationForClientUrl should be async.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(kDocumentUrl, &found_registration));
+            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
   ASSERT_TRUE(found_registration.get());
   EXPECT_EQ(kRegistrationId, found_registration->id());
   EXPECT_TRUE(found_registration->HasOneRef());
@@ -836,7 +837,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   // The Find methods should return a registration with an active version
   // and the expected update time.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(kDocumentUrl, &found_registration));
+            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
   ASSERT_TRUE(found_registration.get());
   EXPECT_EQ(kRegistrationId, found_registration->id());
   EXPECT_TRUE(found_registration->HasOneRef());
@@ -879,7 +880,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   EXPECT_FALSE(found_registration.get());
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
-            FindRegistrationForDocument(kDocumentUrl, &found_registration));
+            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
   EXPECT_FALSE(found_registration.get());
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
@@ -919,7 +920,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   found_registration = nullptr;
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(kDocumentUrl, &found_registration));
+            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
   EXPECT_EQ(live_registration, found_registration);
   found_registration = nullptr;
 
@@ -960,7 +961,7 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   EXPECT_FALSE(found_registration.get());
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
-            FindRegistrationForDocument(kDocumentUrl, &found_registration));
+            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
   EXPECT_FALSE(found_registration.get());
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorNotFound,
@@ -1375,7 +1376,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoint);
-  registration_->active_version()->AddControllee(host.get());
+  registration_->active_version()->AddControllee(host->container_host());
 
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
@@ -1389,7 +1390,8 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Dooming the version should cause the resources to be deleted.
   base::RunLoop loop;
   storage()->SetPurgingCompleteCallbackForTest(loop.QuitClosure());
-  registration_->active_version()->RemoveControllee(host->client_uuid());
+  registration_->active_version()->RemoveControllee(
+      host->container_host()->client_uuid());
   registration_->active_version()->Doom();
   loop.Run();
   EXPECT_TRUE(GetPurgeableResourceIdsFromDB().empty());
@@ -1408,7 +1410,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoint);
-  registration_->active_version()->AddControllee(host.get());
+  registration_->active_version()->AddControllee(host->container_host());
 
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
@@ -1541,7 +1543,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, true /* is_parent_frame_secure */,
       helper_->context()->AsWeakPtr(), &remote_endpoint);
-  registration_->active_version()->AddControllee(host.get());
+  registration_->active_version()->AddControllee(host->container_host());
 
   // Make an updated registration.
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
@@ -1572,7 +1574,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   storage()->SetPurgingCompleteCallbackForTest(loop.QuitClosure());
   scoped_refptr<ServiceWorkerVersion> old_version(
       registration_->active_version());
-  old_version->RemoveControllee(host->client_uuid());
+  old_version->RemoveControllee(host->container_host()->client_uuid());
   registration_->ActivateWaitingVersionWhenReady();
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
 
@@ -1649,7 +1651,7 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
 
   // Find a registration among installing ones.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(kDocumentUrl, &found_registration));
+            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
   EXPECT_EQ(live_registration2, found_registration);
   found_registration = nullptr;
 
@@ -1674,7 +1676,7 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
 
   // Find a registration among installed ones.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(kDocumentUrl, &found_registration));
+            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
   EXPECT_EQ(live_registration2, found_registration);
 }
 
@@ -1721,13 +1723,13 @@ TEST_F(ServiceWorkerStorageTest, OriginTrialsAbsentEntryAndEmptyEntry) {
   scoped_refptr<ServiceWorkerRegistration> found_registration;
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(scope1, &found_registration));
+            FindRegistrationForClientUrl(scope1, &found_registration));
   ASSERT_TRUE(found_registration->active_version());
   // origin_trial_tokens must be unset.
   EXPECT_FALSE(found_registration->active_version()->origin_trial_tokens());
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(scope2, &found_registration));
+            FindRegistrationForClientUrl(scope2, &found_registration));
   ASSERT_TRUE(found_registration->active_version());
   // Empty origin_trial_tokens must exist.
   ASSERT_TRUE(found_registration->active_version()->origin_trial_tokens());
@@ -1851,7 +1853,7 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
 
   scoped_refptr<ServiceWorkerRegistration> found_registration;
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(kScope, &found_registration));
+            FindRegistrationForClientUrl(kScope, &found_registration));
   ASSERT_TRUE(found_registration->active_version());
   const blink::TrialTokenValidator::FeatureToTokensMap& found_tokens =
       *found_registration->active_version()->origin_trial_tokens();
@@ -1881,7 +1883,7 @@ TEST_F(ServiceWorkerStorageTest, AbsentNavigationPreloadState) {
 
   scoped_refptr<ServiceWorkerRegistration> found_registration;
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(scope1, &found_registration));
+            FindRegistrationForClientUrl(scope1, &found_registration));
   const blink::mojom::NavigationPreloadState& registration_state =
       found_registration->navigation_preload_state();
   EXPECT_FALSE(registration_state.enabled);
@@ -1927,7 +1929,7 @@ TEST_F(ServiceWorkerStorageDiskTest, ScriptResponseTime) {
   // Read the registration. The main script's response time should be gettable.
   scoped_refptr<ServiceWorkerRegistration> found_registration;
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(kScope, &found_registration));
+            FindRegistrationForClientUrl(kScope, &found_registration));
   ASSERT_TRUE(found_registration);
   auto* waiting_version = found_registration->waiting_version();
   ASSERT_TRUE(waiting_version);
@@ -2013,7 +2015,7 @@ TEST_F(ServiceWorkerStorageDiskTest, DisabledNavigationPreloadState) {
 
   scoped_refptr<ServiceWorkerRegistration> found_registration;
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(kScope, &found_registration));
+            FindRegistrationForClientUrl(kScope, &found_registration));
   const blink::mojom::NavigationPreloadState& registration_state =
       found_registration->navigation_preload_state();
   EXPECT_FALSE(registration_state.enabled);
@@ -2051,7 +2053,7 @@ TEST_F(ServiceWorkerStorageDiskTest, EnabledNavigationPreloadState) {
 
   scoped_refptr<ServiceWorkerRegistration> found_registration;
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForDocument(kScope, &found_registration));
+            FindRegistrationForClientUrl(kScope, &found_registration));
   const blink::mojom::NavigationPreloadState& registration_state =
       found_registration->navigation_preload_state();
   EXPECT_TRUE(registration_state.enabled);

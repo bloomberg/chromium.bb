@@ -35,7 +35,7 @@ void OmniboxController::StartAutocomplete(
 
   if (client_->GetOmniboxControllerEmitter()) {
     client_->GetOmniboxControllerEmitter()->NotifyOmniboxQuery(
-        autocomplete_controller_.get(), input.text());
+        autocomplete_controller_.get(), input);
   }
 
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
@@ -52,15 +52,15 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
   if (default_match_changed) {
     // The default match has changed, we need to let the OmniboxEditModel know
     // about new inline autocomplete text (blue highlight).
-    const AutocompleteResult::const_iterator match(result().default_match());
-    if (match != result().end()) {
+    if (auto* match = result().default_match()) {
       current_match_ = *match;
       omnibox_edit_model_->OnCurrentMatchChanged();
     } else {
       InvalidateCurrentMatch();
       if (popup_)
         popup_->OnResultChanged();
-      omnibox_edit_model_->OnPopupDataChanged(base::string16(), nullptr,
+      omnibox_edit_model_->OnPopupDataChanged(base::string16(),
+                                              /*is_temporary_text=*/false,
                                               base::string16(), false);
     }
   } else if (popup_) {

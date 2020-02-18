@@ -13,24 +13,22 @@
 
 class SigninClient;
 
+// Enables usage of Gaia Auth Multilogin endpoint for identity consistency.
+extern const base::Feature kUseMultiloginEndpoint;
+
 namespace signin {
 
 // AccountReconcilorDelegate specialized for Dice.
 class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
  public:
   DiceAccountReconcilorDelegate(SigninClient* signin_client,
-                                AccountConsistencyMethod account_consistency,
                                 bool migration_completed);
   ~DiceAccountReconcilorDelegate() override {}
 
   // AccountReconcilorDelegate:
   bool IsReconcileEnabled() const override;
+  bool IsMultiloginEndpointEnabled() const override;
   bool IsAccountConsistencyEnforced() const override;
-  void MaybeLogInconsistencyReason(
-      const CoreAccountId& primary_account,
-      const std::vector<CoreAccountId>& chrome_accounts,
-      const std::vector<gaia::ListedAccount>& gaia_accounts,
-      bool first_execution) const override;
   gaia::GaiaSource GetGaiaApiSource() const override;
   CoreAccountId GetFirstGaiaAccountForReconcile(
       const std::vector<CoreAccountId>& chrome_accounts,
@@ -45,8 +43,7 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
   // Disables force dice migration and sets dice migration as completed.
   void OnRevokeTokensNotInCookiesCompleted(
       RevokeTokenAction revoke_token_action) override;
-  void OnReconcileFinished(const CoreAccountId& first_account,
-                           bool reconcile_is_noop) override;
+  void OnReconcileFinished(const CoreAccountId& first_account) override;
   bool ShouldRevokeTokensOnCookieDeleted() override;
 
  private:
@@ -87,7 +84,6 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
       bool primary_has_error) const override;
 
   SigninClient* signin_client_;
-  AccountConsistencyMethod account_consistency_;
   bool migration_completed_;
 
   // Last known "first account". Used when cookies are lost as a best guess.

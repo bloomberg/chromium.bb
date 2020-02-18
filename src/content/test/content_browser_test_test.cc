@@ -16,6 +16,7 @@
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/test_launcher_test_utils.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -56,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_RendererCrash) {
       shell()->web_contents()->GetMainFrame()->GetProcess(),
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
 
-  NavigateToURL(shell(), GetWebUIURL("crash"));
+  EXPECT_FALSE(NavigateToURL(shell(), GetWebUIURL("crash")));
   renderer_shutdown_observer.Wait();
 
   EXPECT_FALSE(renderer_shutdown_observer.did_exit_normally());
@@ -82,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
   new_test.AppendSwitchASCII(base::kGTestFilterFlag,
                              "ContentBrowserTest.MANUAL_RendererCrash");
   new_test.AppendSwitch(switches::kRunManualTestsFlag);
-  new_test.AppendSwitch(kSingleProcessTestsFlag);
+  new_test.AppendSwitch(switches::kSingleProcessTests);
 
 #if defined(THREAD_SANITIZER)
   // TSan appears to not be able to report intentional crashes from sandboxed
@@ -123,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, BrowserCrashCallStack) {
   new_test.AppendSwitchASCII(base::kGTestFilterFlag,
                              "ContentBrowserTest.MANUAL_BrowserCrash");
   new_test.AppendSwitch(switches::kRunManualTestsFlag);
-  new_test.AppendSwitch(kSingleProcessTestsFlag);
+  new_test.AppendSwitch(switches::kSingleProcessTests);
   std::string output;
   base::GetAppOutputAndError(new_test, &output);
 
@@ -189,15 +190,8 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RunMockTests) {
   base::Value* val = root->FindDictKey("test_locations");
   ASSERT_TRUE(val);
   EXPECT_EQ(3u, val->DictSize());
-  // If path or test location changes, the following expectation
-  // will need to change accordingly.
-  std::string file_name = "../../content/test/content_browser_test_test.cc";
-  EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
-      val, "MockContentBrowserTest.DISABLED_PassTest", file_name, 152));
-  EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
-      val, "MockContentBrowserTest.DISABLED_FailTest", file_name, 156));
-  EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
-      val, "MockContentBrowserTest.DISABLED_CrashTest", file_name, 160));
+  EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocations(
+      val, "MockContentBrowserTest"));
 
   val = root->FindListKey("per_iteration_data");
   ASSERT_TRUE(val);
@@ -232,7 +226,7 @@ class ContentBrowserTestSanityTest : public ContentBrowserTest {
 
     base::string16 expected_title(base::ASCIIToUTF16("OK"));
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     base::string16 title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, title);
   }

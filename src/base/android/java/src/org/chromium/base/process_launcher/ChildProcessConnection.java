@@ -13,7 +13,9 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ChildBindingState;
 import org.chromium.base.Log;
@@ -21,7 +23,7 @@ import org.chromium.base.MemoryPressureLevel;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
+import org.chromium.base.compat.ApiHelperForQ;
 import org.chromium.base.memory.MemoryPressureCallback;
 
 import java.util.Arrays;
@@ -159,9 +161,13 @@ public class ChildProcessConnection {
         public void updateGroupImportance(int group, int importanceInGroup) {
             assert isBound();
             if (BindService.supportVariableConnections()) {
-                BindService.updateServiceGroup(mContext, this, group, importanceInGroup);
-                BindService.doBindService(mContext, mBindIntent, this, mBindFlags, mHandler,
-                        mExecutor, mInstanceName);
+                try {
+                    ApiHelperForQ.updateServiceGroup(mContext, this, group, importanceInGroup);
+                    BindService.doBindService(mContext, mBindIntent, this, mBindFlags, mHandler,
+                            mExecutor, mInstanceName);
+                } catch (IllegalArgumentException e) {
+                    // TODO(crbug.com/1026626): Stop ignoring this exception.
+                }
             }
         }
 

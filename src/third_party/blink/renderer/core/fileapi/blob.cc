@@ -40,8 +40,6 @@
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_wrapper.h"
 #include "third_party/blink/renderer/core/url/dom_url.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -124,6 +122,7 @@ Blob* Blob::Create(
   bool normalize_line_endings_to_native = (options->endings() == "native");
   if (normalize_line_endings_to_native)
     UseCounter::Count(context, WebFeature::kFileAPINativeLineEndings);
+  UseCounter::Count(context, WebFeature::kCreateObjectBlob);
 
   auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(options->type()));
@@ -158,12 +157,13 @@ void Blob::PopulateBlobData(
   for (const auto& item : parts) {
     if (item.IsArrayBuffer()) {
       DOMArrayBuffer* array_buffer = item.GetAsArrayBuffer();
-      blob_data->AppendBytes(array_buffer->Data(), array_buffer->ByteLength());
+      blob_data->AppendBytes(array_buffer->Data(),
+                             array_buffer->ByteLengthAsSizeT());
     } else if (item.IsArrayBufferView()) {
       DOMArrayBufferView* array_buffer_view =
           item.GetAsArrayBufferView().View();
       blob_data->AppendBytes(array_buffer_view->BaseAddress(),
-                             array_buffer_view->byteLength());
+                             array_buffer_view->byteLengthAsSizeT());
     } else if (item.IsBlob()) {
       item.GetAsBlob()->AppendTo(*blob_data);
     } else if (item.IsUSVString()) {
@@ -211,7 +211,8 @@ Blob* Blob::slice(int64_t start,
   auto blob_data = std::make_unique<BlobData>();
   blob_data->SetContentType(NormalizeType(content_type));
   blob_data->AppendBlob(blob_data_handle_, start, length);
-  return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
+  return MakeGarbageCollected<Blob>(
+      BlobDataHandle::Create(std::move(blob_data), length));
 }
 
 ReadableStream* Blob::stream(ScriptState* script_state) const {
@@ -256,6 +257,14 @@ void Blob::AppendTo(BlobData& blob_data) const {
 URLRegistry& Blob::Registry() const {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(NullURLRegistry, instance, ());
   return instance;
+}
+
+bool Blob::IsMojoBlob() {
+  return true;
+}
+
+void Blob::CloneMojoBlob(mojo::PendingReceiver<mojom::blink::Blob> receiver) {
+  blob_data_handle_->CloneBlobRemote(std::move(receiver));
 }
 
 mojo::PendingRemote<mojom::blink::Blob> Blob::AsMojoBlob() {

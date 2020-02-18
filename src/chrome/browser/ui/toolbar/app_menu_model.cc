@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -157,13 +158,12 @@ void ZoomMenuModel::Build() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // HelpMenuModel
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// Only used in branded builds.
 
 const base::Feature kIncludeBetaForumMenuItem{
     "IncludeBetaForumMenuItem", base::FEATURE_DISABLED_BY_DEFAULT};
 
-class AppMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
+class HelpMenuModel : public ui::SimpleMenuModel {
  public:
   HelpMenuModel(ui::SimpleMenuModel::Delegate* delegate, Browser* browser)
       : SimpleMenuModel(delegate) {
@@ -199,8 +199,6 @@ class AppMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
 
   DISALLOW_COPY_AND_ASSIGN(HelpMenuModel);
 };
-
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolsMenuModel
@@ -446,6 +444,10 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       if (!uma_action_recorded_)
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Cast", delta);
       LogMenuAction(MENU_ACTION_CAST);
+      // TODO(takumif): Look into moving this metrics logging to a single
+      // location, like MediaRouterDialogController::ShowMediaRouterDialog().
+      media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
+          media_router::MediaRouterDialogOpenOrigin::APP_MENU);
       break;
 
     // Edit menu.
@@ -635,7 +637,7 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       }
       LogMenuAction(MENU_ACTION_SITE_SETTINGS);
       break;
-    case IDC_HOSTED_APP_MENU_APP_INFO:
+    case IDC_WEB_APP_MENU_APP_INFO:
       if (!uma_action_recorded_)
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.AppInfo", delta);
       LogMenuAction(MENU_ACTION_APP_INFO);
@@ -754,10 +756,10 @@ void AppMenuModel::Build() {
   AddSeparator(ui::NORMAL_SEPARATOR);
 
   if (!browser_->profile()->IsOffTheRecord()) {
-    recent_tabs_sub_menu_model_ =
-        std::make_unique<RecentTabsSubMenuModel>(provider_, browser_);
+    sub_menus_.push_back(
+        std::make_unique<RecentTabsSubMenuModel>(provider_, browser_));
     AddSubMenuWithStringId(IDC_RECENT_TABS_MENU, IDS_HISTORY_MENU,
-                           recent_tabs_sub_menu_model_.get());
+                           sub_menus_.back().get());
   }
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
   if (!browser_->profile()->IsGuestSession()) {
@@ -777,22 +779,18 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
 
-  base::Optional<web_app::AppId> app_id =
-      web_app::GetPwaForSecureActiveTab(browser());
-  if (app_id) {
-    auto* provider = web_app::WebAppProvider::Get(browser()->profile());
+  if (base::Optional<base::string16> name =
+          GetInstallPWAAppMenuItemName(browser_)) {
+    AddItem(IDC_INSTALL_PWA, *name);
+  } else if (base::Optional<web_app::AppId> app_id =
+                 web_app::GetPwaForSecureActiveTab(browser_)) {
+    auto* provider = web_app::WebAppProvider::Get(browser_->profile());
+    const base::string16 short_name =
+        base::UTF8ToUTF16(provider->registrar().GetAppShortName(*app_id));
+    const base::string16 truncated_name = gfx::TruncateString(
+        short_name, kMaxAppNameLength, gfx::CHARACTER_BREAK);
     AddItem(IDC_OPEN_IN_PWA_WINDOW,
-            l10n_util::GetStringFUTF16(
-                IDS_OPEN_IN_APP_WINDOW,
-                gfx::TruncateString(
-                    base::UTF8ToUTF16(
-                        provider->registrar().GetAppShortName(*app_id)),
-                    kMaxAppNameLength, gfx::CHARACTER_BREAK)));
-  } else {
-    base::Optional<base::string16> install_pwa_item_name =
-        GetInstallPWAAppMenuItemName(browser_);
-    if (install_pwa_item_name)
-      AddItem(IDC_INSTALL_PWA, *install_pwa_item_name);
+            l10n_util::GetStringFUTF16(IDS_OPEN_IN_APP_WINDOW, truncated_name));
   }
 
   if (dom_distiller::IsDomDistillerEnabled())
@@ -808,9 +806,9 @@ void AppMenuModel::Build() {
   }
 #endif
 
-  tools_menu_model_ = std::make_unique<ToolsMenuModel>(this, browser_);
+  sub_menus_.push_back(std::make_unique<ToolsMenuModel>(this, browser_));
   AddSubMenuWithStringId(IDC_MORE_TOOLS_MENU, IDS_MORE_TOOLS_MENU,
-                         tools_menu_model_.get());
+                         sub_menus_.back().get());
   AddSeparator(ui::LOWER_SEPARATOR);
   CreateCutCopyPasteMenu();
   AddSeparator(ui::UPPER_SEPARATOR);
@@ -820,8 +818,8 @@ void AppMenuModel::Build() {
 // 'About' item has been moved to this submenu, it's reinstated here for
 // Chromium builds.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  help_menu_model_ = std::make_unique<HelpMenuModel>(this, browser_);
-  AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU, help_menu_model_.get());
+  sub_menus_.push_back(std::make_unique<HelpMenuModel>(this, browser_));
+  AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU, sub_menus_.back().get());
 #else
 #if defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings))
@@ -887,16 +885,12 @@ void AppMenuModel::CreateCutCopyPasteMenu() {
 }
 
 void AppMenuModel::CreateZoomMenu() {
-  // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
-  // layout for this menu item in AppMenu.xib. It does, however, use the
-  // command_id value from AddButtonItem() to identify this special item.
   zoom_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
   zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_MINUS,
                                                   IDS_ZOOM_MINUS2);
   zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_PLUS,
                                                   IDS_ZOOM_PLUS2);
-  zoom_menu_item_model_->AddItemWithImage(IDC_FULLSCREEN,
-                                          IDR_FULLSCREEN_MENU_BUTTON);
+  zoom_menu_item_model_->AddImageItem(IDC_FULLSCREEN);
   AddButtonItem(IDC_ZOOM_MENU, zoom_menu_item_model_.get());
 }
 

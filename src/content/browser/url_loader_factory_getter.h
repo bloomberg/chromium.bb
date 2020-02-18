@@ -12,10 +12,13 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 class SharedURLLoaderFactory;
 }  // namespace network
 
@@ -59,8 +62,8 @@ class URLLoaderFactoryGetter
   // Called on the UI thread to get an info that holds a reference to this
   // URLLoaderFactoryGetter, which can be used to construct a similar
   // SharedURLLoaderFactory as returned from |GetNetworkFactory()| on IO thread.
-  CONTENT_EXPORT std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-  GetNetworkFactoryInfo();
+  CONTENT_EXPORT std::unique_ptr<network::PendingSharedURLLoaderFactory>
+  GetPendingNetworkFactory();
 
   // Called on the IO thread. The factory obtained from here can only be used
   // from the browser process. It must NOT be sent to a renderer process. It has
@@ -75,7 +78,8 @@ class URLLoaderFactoryGetter
   // When NetworkService is disabled, this clones the non-NetworkService direct
   // network factory.
   CONTENT_EXPORT void CloneNetworkFactory(
-      network::mojom::URLLoaderFactoryRequest network_factory_request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+          network_factory_receiver);
 
   // Overrides the network URLLoaderFactory for subsequent requests. Passing a
   // null pointer will restore the default behavior.
@@ -83,12 +87,12 @@ class URLLoaderFactoryGetter
       network::mojom::URLLoaderFactory* test_factory,
       bool is_corb_enabled = false);
 
-  CONTENT_EXPORT network::mojom::URLLoaderFactoryPtr*
+  CONTENT_EXPORT mojo::Remote<network::mojom::URLLoaderFactory>*
   original_network_factory_for_testing() {
     return &network_factory_;
   }
 
-  CONTENT_EXPORT network::mojom::URLLoaderFactoryPtr*
+  CONTENT_EXPORT mojo::Remote<network::mojom::URLLoaderFactory>*
   original_network_factory__corb_enabled_for_testing() {
     return &network_factory_corb_enabled_;
   }
@@ -98,7 +102,7 @@ class URLLoaderFactoryGetter
   // called either on the IO thread or before threads start. This callback is
   // run on the IO thread.
   using GetNetworkFactoryCallback = base::RepeatingCallback<void(
-      URLLoaderFactoryGetter* url_loader_factory_getter)>;
+      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)>;
   CONTENT_EXPORT static void SetGetNetworkFactoryCallbackForTesting(
       const GetNetworkFactoryCallback& get_network_factory_callback);
 
@@ -106,7 +110,7 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT void FlushNetworkInterfaceOnIOThreadForTesting();
 
  private:
-  class URLLoaderFactoryForIOThreadInfo;
+  class PendingURLLoaderFactoryForIOThread;
   class URLLoaderFactoryForIOThread;
 
   friend class base::DeleteHelper<URLLoaderFactoryGetter>;
@@ -114,18 +118,19 @@ class URLLoaderFactoryGetter
 
   CONTENT_EXPORT ~URLLoaderFactoryGetter();
   void InitializeOnIOThread(
-      network::mojom::URLLoaderFactoryPtrInfo network_factory);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> network_factory);
 
   // Moves |network_factory| to |network_factory_| or
   // |network_factory_corb_enabled_| depending on |is_corb_enabled| and sets up
   // an error handler.
   void ReinitializeOnIOThread(
-      network::mojom::URLLoaderFactoryPtr network_factory,
+      mojo::Remote<network::mojom::URLLoaderFactory> network_factory,
       bool is_corb_enabled);
 
   // Send |network_factory_request| to cached |StoragePartitionImpl|.
   void HandleNetworkFactoryRequestOnUIThread(
-      network::mojom::URLLoaderFactoryRequest network_factory_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+          network_factory_receiver,
       bool is_corb_enabled);
 
   // Called on the IO thread to get the URLLoaderFactory to the network service.
@@ -137,8 +142,8 @@ class URLLoaderFactoryGetter
   void FlushNetworkInterfaceForTesting(base::OnceClosure callback);
 
   // Only accessed on IO thread.
-  network::mojom::URLLoaderFactoryPtr network_factory_;
-  network::mojom::URLLoaderFactoryPtr network_factory_corb_enabled_;
+  mojo::Remote<network::mojom::URLLoaderFactory> network_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> network_factory_corb_enabled_;
   network::mojom::URLLoaderFactory* test_factory_ = nullptr;
   network::mojom::URLLoaderFactory* test_factory_corb_enabled_ = nullptr;
 

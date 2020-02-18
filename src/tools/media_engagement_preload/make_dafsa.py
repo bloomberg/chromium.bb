@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import array
 import json
 import sys
@@ -24,7 +26,7 @@ import media_engagement_preload_pb2
 A Deterministic acyclic finite state automaton (DAFSA) is a compact
 representation of an unordered word list (dictionary).
 
-http://en.wikipedia.org/wiki/Deterministic_acyclic_finite_state_automaton
+https://en.wikipedia.org/wiki/Deterministic_acyclic_finite_state_automaton
 
 This python program converts a list of strings to a byte array in C++.
 This python program fetches strings and return values from a gperf file

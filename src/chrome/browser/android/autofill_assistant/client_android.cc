@@ -18,6 +18,7 @@
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantClient_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantDirectActionImpl_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -131,6 +132,7 @@ bool ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jobjectArray>& parameter_names,
                           const JavaParamRef<jobjectArray>& parameter_values,
                           const JavaParamRef<jobject>& jonboarding_coordinator,
+                          jboolean jonboarding_shown,
                           jlong jservice) {
   // When Start() is called, AA_START should have been measured. From now on,
   // the client is responsible for keeping track of dropouts, so that for each
@@ -151,6 +153,7 @@ bool ClientAndroid::Start(JNIEnv* env,
   std::unique_ptr<TriggerContextImpl> trigger_context = CreateTriggerContext(
       env, jexperiment_ids, parameter_names, parameter_values);
   trigger_context->SetCCT(true);
+  trigger_context->SetOnboardingShown(jonboarding_shown);
 
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
   return controller_->Start(initial_url, std::move(trigger_context));
@@ -209,7 +212,7 @@ void ClientAndroid::OnAccessToken(JNIEnv* env,
   }
 }
 
-void ClientAndroid::ListDirectActions(
+void ClientAndroid::FetchWebsiteActions(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jexperiment_ids,
@@ -223,14 +226,26 @@ void ClientAndroid::ListDirectActions(
   controller_->Track(
       CreateTriggerContext(env, jexperiment_ids, jargument_names,
                            jargument_values),
-      base::BindOnce(&ClientAndroid::OnListDirectActions,
+      base::BindOnce(&ClientAndroid::OnFetchWebsiteActions,
                      weak_ptr_factory_.GetWeakPtr(), scoped_jcallback));
 }
 
-void ClientAndroid::OnListDirectActions(
-    const base::android::JavaRef<jobject>& jcallback) {
+bool ClientAndroid::HasRunFirstCheck(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) const {
+  return controller_ != nullptr && controller_->HasRunFirstCheck();
+}
+
+base::android::ScopedJavaLocalRef<jobjectArray>
+ClientAndroid::GetDirectActionsAsJavaArrayOfStrings(JNIEnv* env) const {
   // Using a set here helps remove duplicates.
   std::set<std::string> names;
+
+  if (!controller_) {
+    return base::android::ToJavaArrayOfStrings(
+        env, std::vector<std::string>(names.begin(), names.end()));
+  }
+
   for (const UserAction& user_action : controller_->GetUserActions()) {
     if (!user_action.enabled())
       continue;
@@ -244,11 +259,74 @@ void ClientAndroid::OnListDirectActions(
   if (ui_controller_android_)
     names.insert(kCancelActionName);
 
+  return base::android::ToJavaArrayOfStrings(
+      env, std::vector<std::string>(names.begin(), names.end()));
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+ClientAndroid::ToJavaAutofillAssistantDirectAction(
+    JNIEnv* env,
+    const DirectAction& direct_action) const {
+  std::set<std::string> names;
+  for (const std::string& name : direct_action.names)
+    names.insert(name);
+  auto jnames = base::android::ToJavaArrayOfStrings(
+      env, std::vector<std::string>(names.begin(), names.end()));
+
+  std::vector<std::string> required_arguments;
+  for (const std::string& arg : direct_action.required_arguments)
+    required_arguments.emplace_back(arg);
+  auto jrequired_arguments =
+      base::android::ToJavaArrayOfStrings(env, required_arguments);
+
+  std::vector<std::string> optional_arguments;
+  for (const std::string& arg : direct_action.optional_arguments)
+    optional_arguments.emplace_back(arg);
+  auto joptional_arguments =
+      base::android::ToJavaArrayOfStrings(env, std::move(optional_arguments));
+
+  return Java_AutofillAssistantDirectActionImpl_Constructor(
+      env, jnames, jrequired_arguments, joptional_arguments);
+}
+
+base::android::ScopedJavaLocalRef<jobjectArray> ClientAndroid::GetDirectActions(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  DCHECK(controller_ != nullptr);
+  size_t actions_count = 0;
+  for (const UserAction& user_action : controller_->GetUserActions()) {
+    if (!user_action.enabled())
+      continue;
+    ++actions_count;
+  }
+
+  // Prepare the java array to hold the direct actions.
+  base::android::ScopedJavaLocalRef<jclass> directaction_array_class =
+      base::android::GetClass(env,
+                              "org/chromium/chrome/browser/autofill_assistant/"
+                              "AutofillAssistantDirectActionImpl");
+
+  jobjectArray joa = env->NewObjectArray(
+      actions_count, directaction_array_class.obj(), nullptr);
+  jni_generator::CheckException(env);
+
+  actions_count = 0;
+  for (const UserAction& user_action : controller_->GetUserActions()) {
+    if (!user_action.enabled())
+      continue;
+
+    auto jdirect_action =
+        ToJavaAutofillAssistantDirectAction(env, user_action.direct_action());
+    env->SetObjectArrayElement(joa, actions_count++, jdirect_action.obj());
+  }
+  return base::android::ScopedJavaLocalRef<jobjectArray>(env, joa);
+}
+
+void ClientAndroid::OnFetchWebsiteActions(
+    const base::android::JavaRef<jobject>& jcallback) {
   JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantClient_sendDirectActionList(
-      env, java_object_, jcallback,
-      base::android::ToJavaArrayOfStrings(
-          env, std::vector<std::string>(names.begin(), names.end())));
+  Java_AutofillAssistantClient_onFetchWebsiteActions(
+      env, java_object_, jcallback, controller_ != nullptr);
 }
 
 bool ClientAndroid::PerformDirectAction(
@@ -289,7 +367,7 @@ bool ClientAndroid::PerformDirectAction(
 
 int ClientAndroid::FindDirectAction(const std::string& action_name) {
   // It's too late to create a controller. This should have been done in
-  // ListDirectActions.
+  // FetchWebsiteActions.
   if (!controller_)
     return -1;
 
@@ -387,6 +465,22 @@ std::string ClientAndroid::GetCountryCode() {
   return base::android::ConvertJavaStringToUTF8(
       Java_AutofillAssistantClient_getCountryCode(AttachCurrentThread(),
                                                   java_object_));
+}
+
+DeviceContext ClientAndroid::GetDeviceContext() {
+  DeviceContext context;
+  Version version;
+  version.sdk_int = Java_AutofillAssistantClient_getSdkInt(
+      AttachCurrentThread(), java_object_);
+
+  context.version = version;
+  context.manufacturer = base::android::ConvertJavaStringToUTF8(
+      Java_AutofillAssistantClient_getDeviceManufacturer(AttachCurrentThread(),
+                                                         java_object_));
+  context.model = base::android::ConvertJavaStringToUTF8(
+      Java_AutofillAssistantClient_getDeviceModel(AttachCurrentThread(),
+                                                  java_object_));
+  return context;
 }
 
 void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {

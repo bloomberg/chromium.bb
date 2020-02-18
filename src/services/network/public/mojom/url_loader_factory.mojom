@@ -24,6 +24,10 @@ const uint32 kURLLoadOptionUseHeaderClient = 16;
 const uint32 kURLLoadOptionBlockAllCookies = 32;
 // Similar to |kURLLoadOptionBlockAllCookies|, but only for third party cookies.
 const uint32 kURLLoadOptionBlockThirdPartyCookies = 64;
+// This request is for CORS preflight. This is used in the network service.
+// This is set and used only in the network service, no callsites outside the
+// service must set this.
+const uint32 kURLLoadOptionAsCorsPreflight = 128;
 
 interface URLLoaderFactory {
   // Creates a URLLoader and starts loading with the given |request|. |client|'s
@@ -35,14 +39,14 @@ interface URLLoaderFactory {
   // remove this.
   // |request_id| is for compatibility with the existing Chrome IPC.
   // A pair (routing_id, request_id) is assumed to be unique within one factory.
-  CreateLoaderAndStart(URLLoader& loader,
+  CreateLoaderAndStart(pending_receiver<URLLoader> loader,
                        int32 routing_id,
                        int32 request_id,
                        uint32 options,
                        URLRequest request,
-                       URLLoaderClient client,
+                       pending_remote<URLLoaderClient> client,
                        MutableNetworkTrafficAnnotationTag traffic_annotation);
 
   // Connects a new pipe to this instance of the URLLoaderFactory interface.
-  Clone(URLLoaderFactory& factory);
+  Clone(pending_receiver<URLLoaderFactory> factory);
 };

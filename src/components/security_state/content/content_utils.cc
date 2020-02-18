@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_state/content/ssl_status_input_event_data.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_chromium_strings.h"
@@ -36,26 +37,29 @@ namespace security_state {
 namespace {
 
 // Note: This is a lossy operation. Not all of the policies that can be
-// expressed by a SecurityLevel can be expressed by a blink::WebSecurityStyle.
-blink::WebSecurityStyle SecurityLevelToSecurityStyle(
+// expressed by a SecurityLevel can be expressed by a blink::SecurityStyle.
+blink::SecurityStyle SecurityLevelToSecurityStyle(
     security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::NONE:
-    case security_state::HTTP_SHOW_WARNING:
-      return blink::kWebSecurityStyleNeutral;
+      return blink::SecurityStyle::kNeutral;
+    case security_state::WARNING:
+      if (security_state::ShouldShowDangerTriangleForWarningLevel())
+        return blink::SecurityStyle::kInsecure;
+      return blink::SecurityStyle::kNeutral;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
     case security_state::EV_SECURE:
     case security_state::SECURE:
-      return blink::kWebSecurityStyleSecure;
+      return blink::SecurityStyle::kSecure;
     case security_state::DANGEROUS:
-      return blink::kWebSecurityStyleInsecure;
+      return blink::SecurityStyle::kInsecureBroken;
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
-      return blink::kWebSecurityStyleNeutral;
+      return blink::SecurityStyle::kNeutral;
   }
 
   NOTREACHED();
-  return blink::kWebSecurityStyleUnknown;
+  return blink::SecurityStyle::kUnknown;
 }
 
 void ExplainHTTPSecurity(
@@ -66,8 +70,12 @@ void ExplainHTTPSecurity(
   // summary for the page and add a bullet describing the issue.
   if (security_level == security_state::DANGEROUS &&
       !security_state::IsSchemeCryptographic(visible_security_state.url)) {
-    security_style_explanations->summary =
-        l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY);
+    // Only change the summary if it's empty to avoid overwriting summaries
+    // from SafeBrowsing or Safety Tips.
+    if (security_style_explanations->summary.empty()) {
+      security_style_explanations->summary =
+          l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY);
+    }
     if (visible_security_state.insecure_input_events.insecure_field_edited) {
       security_style_explanations->insecure_explanations.push_back(
           content::SecurityStyleExplanation(
@@ -90,7 +98,10 @@ void ExplainSafeBrowsingSecurity(
   content::SecurityStyleExplanation explanation(
       l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING_SUMMARY),
       l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING_DESCRIPTION));
-  security_style_explanations->insecure_explanations.push_back(explanation);
+
+  // Always insert SafeBrowsing explanation at the front.
+  security_style_explanations->insecure_explanations.insert(
+      security_style_explanations->insecure_explanations.begin(), explanation);
 }
 
 void ExplainCertificateSecurity(
@@ -279,6 +290,55 @@ void ExplainConnectionSecurity(
       std::move(recommendations));
 }
 
+void ExplainSafetyTipSecurity(
+    const security_state::VisibleSecurityState& visible_security_state,
+    content::SecurityStyleExplanations* security_style_explanations) {
+  std::vector<content::SecurityStyleExplanation> explanations;
+
+  switch (visible_security_state.safety_tip_info.status) {
+    case security_state::SafetyTipStatus::kBadReputation:
+    case security_state::SafetyTipStatus::kBadReputationIgnored:
+      explanations.emplace_back(
+          l10n_util::GetStringUTF8(
+              IDS_SECURITY_TAB_SAFETY_TIP_BAD_REPUTATION_SUMMARY),
+          l10n_util::GetStringUTF8(
+              IDS_SECURITY_TAB_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION));
+      break;
+
+    case security_state::SafetyTipStatus::kLookalike:
+    case security_state::SafetyTipStatus::kLookalikeIgnored:
+      explanations.emplace_back(
+          l10n_util::GetStringUTF8(
+              IDS_SECURITY_TAB_SAFETY_TIP_LOOKALIKE_SUMMARY),
+          l10n_util::GetStringFUTF8(
+              IDS_SECURITY_TAB_SAFETY_TIP_LOOKALIKE_DESCRIPTION,
+              security_interstitials::common_string_util::GetFormattedHostName(
+                  visible_security_state.safety_tip_info.safe_url)));
+      break;
+
+    case security_state::SafetyTipStatus::kBadKeyword:
+      NOTREACHED();
+      return;
+
+    case security_state::SafetyTipStatus::kNone:
+    case security_state::SafetyTipStatus::kUnknown:
+      return;
+  }
+
+  if (!explanations.empty()) {
+    // To avoid overwriting SafeBrowsing's title, set the main summary only if
+    // it's empty. The title set here can be overridden by later checks (e.g.
+    // bad HTTP).
+    if (security_style_explanations->summary.empty()) {
+      security_style_explanations->summary =
+          l10n_util::GetStringUTF8(IDS_SECURITY_TAB_SAFETY_TIP_TITLE);
+    }
+    DCHECK_EQ(1u, explanations.size());
+    security_style_explanations->insecure_explanations.push_back(
+        explanations[0]);
+  }
+}
+
 void ExplainContentSecurity(
     const security_state::VisibleSecurityState& visible_security_state,
     content::SecurityStyleExplanations* security_style_explanations) {
@@ -394,6 +454,10 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
   state->contained_mixed_form =
       !!(ssl.content_status &
          content::SSLStatus::DISPLAYED_FORM_WITH_INSECURE_ACTION);
+  state->connection_used_legacy_tls =
+      !!(net::ObsoleteSSLStatus(ssl.connection_status,
+                                ssl.peer_signature_algorithm) &
+         net::OBSOLETE_SSL_MASK_PROTOCOL);
 
   SSLStatusInputEventData* input_events =
       static_cast<SSLStatusInputEventData*>(ssl.user_data.get());
@@ -404,12 +468,17 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
   return state;
 }
 
-blink::WebSecurityStyle GetSecurityStyle(
+blink::SecurityStyle GetSecurityStyle(
     security_state::SecurityLevel security_level,
     const security_state::VisibleSecurityState& visible_security_state,
     content::SecurityStyleExplanations* security_style_explanations) {
-  const blink::WebSecurityStyle security_style =
+  const blink::SecurityStyle security_style =
       SecurityLevelToSecurityStyle(security_level);
+
+  // Safety tips come after SafeBrowsing but before HTTP warnings.
+  // ExplainSafeBrowsingSecurity always inserts warnings to the front, so
+  // doing safety tips check here works.
+  ExplainSafetyTipSecurity(visible_security_state, security_style_explanations);
 
   if (visible_security_state.malicious_content_status !=
       security_state::MALICIOUS_CONTENT_STATUS_NONE) {

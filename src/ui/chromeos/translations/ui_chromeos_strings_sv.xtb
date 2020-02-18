@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pingvin</translation>
 <translation id="183183971458492120">Läser in information …</translation>
 <translation id="1838709767668011582">Google-webbplats</translation>
-<translation id="1839704667838141620">Ändra hur filen delas</translation>
 <translation id="1844692022597038441">Den här filen är inte tillgänglig offline.</translation>
 <translation id="184633654410729720">Tangentbord för thailändska (Kedmanee)</translation>
 <translation id="1847880352285315359">Sparat</translation>
-<translation id="1864676585353837027">Ändra hur dessa filer delas</translation>
 <translation id="1864756863218646478">Filen hittades inte.</translation>
 <translation id="1921986354447415460">Tangentbord för turkiska F</translation>
 <translation id="1931134289871235022">Slovakiska</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Installera ny tjänst</translation>
 <translation id="1947424002851288782">Tyskt tangentbord</translation>
 <translation id="1972984168337863910">Utöka panel med information om filåtgärder</translation>
-<translation id="197560921582345123">Kan redigera</translation>
 <translation id="1984603991036629094">Armeniskt fonetiskt tangentbord</translation>
 <translation id="2001796770603320721">Hantera i Drive</translation>
 <translation id="2009067268969781306">Om du formaterar en enhet raderas all data som lagras på den. Det går inte att ångra åtgärden.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">Lossa mapp</translation>
 <translation id="3678559383040232393">Maltesiskt tangentbord</translation>
 <translation id="3685122418104378273">Google Drive-synkronisering inaktiveras som standard när mobildata används.</translation>
+<translation id="3689865792480713551">Avbryt <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Enheten kan inte öppnas eftersom dess filsystem inte stöds.</translation>
 <translation id="3741243925913727067">Säkerhetskopiera foton och videor från mediaenheten till Google Drive.</translation>
 <translation id="3749289110408117711">Filnamn</translation>
@@ -286,7 +284,6 @@
 <translation id="4522570452068850558">Info</translation>
 <translation id="4552678318981539154">Köp mer lagringsutrymme</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="4568854179928172494">Ändrades</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Mer...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> har lagts till som markerad.</translation>
@@ -349,7 +346,7 @@
 <translation id="5123433949759960244">Basketboll</translation>
 <translation id="5129662217315786329">polska</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>
-<translation id="5145331109270917438">Ändrad den</translation>
+<translation id="5145331109270917438">Ändringsdatum</translation>
 <translation id="515594325917491223">Schack</translation>
 <translation id="5158593464696388225">Det gick inte att spara bilden.</translation>
 <translation id="5159383109919732130"><ph name="BEGIN_BOLD" />Ta inte bort enheten ännu!<ph name="END_BOLD" />
@@ -467,6 +464,7 @@
 <translation id="6339145975392024142">Internationellt för USA (PC)</translation>
 <translation id="6346310558342052870">Begränsad åtkomst</translation>
 <translation id="6353618411602605519">Kroatiskt tangentbord</translation>
+<translation id="6356685157277930264">Feedback för filfönster</translation>
 <translation id="6358884629796491903">Drake</translation>
 <translation id="637062427944097960">Filen öppnades på ett annat skrivbord. Byt till <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) om du vill visa den.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> objekt</translation>
@@ -566,6 +564,7 @@
 <translation id="7589661784326793847">Ett ögonblick</translation>
 <translation id="7603724359189955920">Rutnät</translation>
 <translation id="7627790789328695202">Det finns redan en fil med namnet <ph name="FILE_NAME" />. Byt namn på filen och försök igen.</translation>
+<translation id="7628656427739290098"><ph name="PERCENT" /> % klart.</translation>
 <translation id="7649070708921625228">Hjälp</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" /> objekt flyttas ...</translation>
 <translation id="7658239707568436148">Avbryt</translation>
@@ -592,7 +591,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Att hämta dessa filer kräver ungefär <ph name="FILE_SIZE" /> mobildata.</translation>
 <translation id="7846076177841592234">Rensa val</translation>
-<translation id="7850851215703745691">Dessa filer i Drive delas inte ännu</translation>
 <translation id="7853966320808728790">franska (BÉPO)</translation>
 <translation id="7864662577698025113">Lägg till ny tjänst</translation>
 <translation id="7873831373602885875">Det går inte att spara i <ph name="FOLDER_NAME" />. Alla ändringar sparas i <ph name="DOWNLOADS_FOLDER" /> i mappen Nedladdningar.</translation>
@@ -608,7 +606,6 @@
 <translation id="7969525169268594403">slovenska</translation>
 <translation id="7982283708762922719">Höjd</translation>
 <translation id="7987485481246785146">Tangentbord baserat på sorani/kurdiska och arabiska</translation>
-<translation id="799923393800005025">Kan visa</translation>
 <translation id="8008366997883261463">Hund</translation>
 <translation id="8028993641010258682">Storlek</translation>
 <translation id="8031722894461705849">Slovakiskt tangentbord</translation>
@@ -670,8 +667,6 @@
 <translation id="8600173386174225982">Fillistan har ändrats till miniatyrvy.</translation>
 <translation id="8601932370724196034">Bildfil för Crostini</translation>
 <translation id="8669949407341943408">Flyttar …</translation>
-<translation id="8671210955687109937">Kan kommentera</translation>
-<translation id="8686213429977032554">Den här filen i Drive delas inte ännu</translation>
 <translation id="8698464937041809063">Google-teckning</translation>
 <translation id="8714406895390098252">Cykel</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> har markerats.</translation>

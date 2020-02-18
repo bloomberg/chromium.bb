@@ -12,7 +12,8 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace media {
@@ -27,7 +28,7 @@ class VideoEncodeAcceleratorClient
  public:
   VideoEncodeAcceleratorClient(
       VideoEncodeAccelerator::Client* client,
-      mojom::VideoEncodeAcceleratorClientRequest request);
+      mojo::PendingReceiver<mojom::VideoEncodeAcceleratorClient> receiver);
   ~VideoEncodeAcceleratorClient() override = default;
 
   // mojom::VideoEncodeAcceleratorClient impl.
@@ -41,15 +42,15 @@ class VideoEncodeAcceleratorClient
 
  private:
   VideoEncodeAccelerator::Client* client_;
-  mojo::Binding<mojom::VideoEncodeAcceleratorClient> binding_;
+  mojo::Receiver<mojom::VideoEncodeAcceleratorClient> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncodeAcceleratorClient);
 };
 
 VideoEncodeAcceleratorClient::VideoEncodeAcceleratorClient(
     VideoEncodeAccelerator::Client* client,
-    mojom::VideoEncodeAcceleratorClientRequest request)
-    : client_(client), binding_(this, std::move(request)) {
+    mojo::PendingReceiver<mojom::VideoEncodeAcceleratorClient> receiver)
+    : client_(client), receiver_(this, std::move(receiver)) {
   DCHECK(client_);
 }
 
@@ -82,7 +83,7 @@ void VideoEncodeAcceleratorClient::NotifyError(
 }  // anonymous namespace
 
 MojoVideoEncodeAccelerator::MojoVideoEncodeAccelerator(
-    mojom::VideoEncodeAcceleratorPtr vea,
+    mojo::PendingRemote<mojom::VideoEncodeAccelerator> vea,
     const gpu::VideoEncodeAcceleratorSupportedProfiles& supported_profiles)
     : vea_(std::move(vea)), supported_profiles_(supported_profiles) {
   DVLOG(1) << __func__;
@@ -106,13 +107,13 @@ bool MojoVideoEncodeAccelerator::Initialize(const Config& config,
     return false;
 
   // Get a mojom::VideoEncodeAcceleratorClient bound to a local implementation
-  // (VideoEncodeAcceleratorClient) and send the pointer remotely.
-  mojom::VideoEncodeAcceleratorClientPtr vea_client_ptr;
+  // (VideoEncodeAcceleratorClient) and send the remote.
+  mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient> vea_client_remote;
   vea_client_ = std::make_unique<VideoEncodeAcceleratorClient>(
-      client, mojo::MakeRequest(&vea_client_ptr));
+      client, vea_client_remote.InitWithNewPipeAndPassReceiver());
 
   bool result = false;
-  vea_->Initialize(config, std::move(vea_client_ptr), &result);
+  vea_->Initialize(config, std::move(vea_client_remote), &result);
   return result;
 }
 
@@ -125,19 +126,31 @@ void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
   DCHECK(vea_.is_bound());
 
 #if defined(OS_LINUX)
+  // TODO(crbug.com/1003197): Remove this once we stop supporting STORAGE_DMABUF
+  // in VideoEncodeAccelerator.
   if (frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
     DCHECK(frame->HasDmaBufs());
     vea_->Encode(
-        std::move(frame), force_keyframe,
+        frame, force_keyframe,
         base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),
                        frame));
     return;
   }
 #endif
+  if (frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    vea_->Encode(
+        frame, force_keyframe,
+        base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),
+                       frame));
+    return;
+  }
 
-  DCHECK_EQ(PIXEL_FORMAT_I420, frame->format());
-  DCHECK_EQ(VideoFrame::STORAGE_SHMEM, frame->storage_type());
-  DCHECK(frame->shm_region()->IsValid());
+  if (frame->format() != PIXEL_FORMAT_I420 ||
+      VideoFrame::STORAGE_SHMEM != frame->storage_type() ||
+      !frame->shm_region()->IsValid()) {
+    DLOG(ERROR) << "Unexpected video frame buffer";
+    return;
+  }
 
   // Oftentimes |frame|'s underlying planes will be aligned and not tightly
   // packed, so don't use VideoFrame::AllocationSize().

@@ -42,10 +42,11 @@ JNI_OfflineItemBridge_createOfflineItemAndMaybeAddToList(
       ConvertUTF8ToJavaString(env, item.original_url.spec()),
       item.is_off_the_record, static_cast<jint>(item.state),
       static_cast<jint>(item.fail_state), static_cast<jint>(item.pending_state),
-      item.is_resumable, item.allow_metered, item.received_bytes, 
-      item.progress.value, item.progress.max.value_or(-1), 
-      static_cast<jint>(item.progress.unit), item.time_remaining_ms, 
-      item.is_dangerous, item.can_rename);
+      item.is_resumable, item.allow_metered, item.received_bytes,
+      item.progress.value, item.progress.max.value_or(-1),
+      static_cast<jint>(item.progress.unit), item.time_remaining_ms,
+      item.is_dangerous, item.can_rename, item.ignore_visuals,
+      item.content_quality_score);
 }
 
 }  // namespace

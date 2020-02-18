@@ -27,21 +27,32 @@ class SkiaOutputSurfaceDependencyWebView
 
   std::unique_ptr<gpu::SingleTaskSequence> CreateSequence() override;
   bool IsUsingVulkan() override;
+  bool IsUsingDawn() override;
   gpu::SharedImageManager* GetSharedImageManager() override;
   gpu::SyncPointManager* GetSyncPointManager() override;
   const gpu::GpuDriverBugWorkarounds& GetGpuDriverBugWorkarounds() override;
   scoped_refptr<gpu::SharedContextState> GetSharedContextState() override;
   gpu::raster::GrShaderCache* GetGrShaderCache() override;
   viz::VulkanContextProvider* GetVulkanContextProvider() override;
+  viz::DawnContextProvider* GetDawnContextProvider() override;
   const gpu::GpuPreferences& GetGpuPreferences() override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() override;
   gpu::MailboxManager* GetMailboxManager() override;
+  gpu::ImageFactory* GetGpuImageFactory() override;
   void ScheduleGrContextCleanup() override;
   void PostTaskToClientThread(base::OnceClosure closure) override;
   bool IsOffscreen() override;
   gpu::SurfaceHandle GetSurfaceHandle() override;
   scoped_refptr<gl::GLSurface> CreateGLSurface(
       base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) override;
+  base::ScopedClosureRunner CacheGLSurface(gl::GLSurface* surface) override;
+  void RegisterDisplayContext(gpu::DisplayContext* display_context) override;
+  void UnregisterDisplayContext(gpu::DisplayContext* display_context) override;
+  void DidLoseContext(bool offscreen,
+                      gpu::error::ContextLostReason reason,
+                      const GURL& active_url) override;
+
+  base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
 
  private:
   gl::GLSurface* const gl_surface_;

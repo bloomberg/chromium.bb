@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -22,17 +23,16 @@
 #include "third_party/blink/renderer/core/style/shape_value.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/core/style/style_generated_image.h"
+#include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-using namespace css_test_helpers;
-
 TEST(ComputedStyleTest, ShapeOutsideBoxEqual) {
-  ShapeValue* shape1 = ShapeValue::CreateBoxShapeValue(CSSBoxType::kContent);
-  ShapeValue* shape2 = ShapeValue::CreateBoxShapeValue(CSSBoxType::kContent);
+  auto* shape1 = MakeGarbageCollected<ShapeValue>(CSSBoxType::kContent);
+  auto* shape2 = MakeGarbageCollected<ShapeValue>(CSSBoxType::kContent);
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
   style1->SetShapeOutside(shape1);
@@ -43,10 +43,10 @@ TEST(ComputedStyleTest, ShapeOutsideBoxEqual) {
 TEST(ComputedStyleTest, ShapeOutsideCircleEqual) {
   scoped_refptr<BasicShapeCircle> circle1 = BasicShapeCircle::Create();
   scoped_refptr<BasicShapeCircle> circle2 = BasicShapeCircle::Create();
-  ShapeValue* shape1 =
-      ShapeValue::CreateShapeValue(circle1, CSSBoxType::kContent);
-  ShapeValue* shape2 =
-      ShapeValue::CreateShapeValue(circle2, CSSBoxType::kContent);
+  auto* shape1 = MakeGarbageCollected<ShapeValue>(std::move(circle1),
+                                                  CSSBoxType::kContent);
+  auto* shape2 = MakeGarbageCollected<ShapeValue>(std::move(circle2),
+                                                  CSSBoxType::kContent);
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
   style1->SetShapeOutside(shape1);
@@ -127,16 +127,16 @@ TEST(ComputedStyleTest, LayoutContainmentStackingContext) {
 
 TEST(ComputedStyleTest, FirstPublicPseudoStyle) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetHasPseudoStyle(kPseudoIdFirstLine);
-  EXPECT_TRUE(style->HasPseudoStyle(kPseudoIdFirstLine));
-  EXPECT_TRUE(style->HasAnyPublicPseudoStyles());
+  style->SetHasPseudoElementStyle(kPseudoIdFirstLine);
+  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdFirstLine));
+  EXPECT_TRUE(style->HasAnyPseudoElementStyles());
 }
 
-TEST(ComputedStyleTest, LastPublicPseudoStyle) {
+TEST(ComputedStyleTest, LastPublicPseudoElementStyle) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetHasPseudoStyle(kPseudoIdScrollbar);
-  EXPECT_TRUE(style->HasPseudoStyle(kPseudoIdScrollbar));
-  EXPECT_TRUE(style->HasAnyPublicPseudoStyles());
+  style->SetHasPseudoElementStyle(kPseudoIdScrollbar);
+  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdScrollbar));
+  EXPECT_TRUE(style->HasAnyPseudoElementStyles());
 }
 
 TEST(ComputedStyleTest,
@@ -450,7 +450,8 @@ TEST(ComputedStyleTest, AnimationFlags) {
 
 TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
   auto* document = MakeGarbageCollected<Document>();
-  RegisterProperty(*document, "--x", "<length>", "0px", false);
+  css_test_helpers::RegisterProperty(*document, "--x", "<length>", "0px",
+                                     false);
 
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
@@ -479,14 +480,15 @@ TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
 
 TEST(ComputedStyleTest, CustomPropertiesEqual_Data) {
   auto* document = MakeGarbageCollected<Document>();
-  RegisterProperty(*document, "--x", "<length>", "0px", false);
+  css_test_helpers::RegisterProperty(*document, "--x", "<length>", "0px",
+                                     false);
 
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
 
-  auto value1 = CreateVariableData("foo");
-  auto value2 = CreateVariableData("bar");
-  auto value3 = CreateVariableData("foo");
+  auto value1 = css_test_helpers::CreateVariableData("foo");
+  auto value2 = css_test_helpers::CreateVariableData("bar");
+  auto value3 = css_test_helpers::CreateVariableData("foo");
 
   Vector<AtomicString> properties;
   properties.push_back("--x");
@@ -511,8 +513,9 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
 
-  dummy_page_holder_->GetDocument().GetSettings()->SetPreferredColorScheme(
-      PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(dummy_page_holder_->GetDocument(),
+                                              PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
                            initial, initial);
@@ -533,6 +536,56 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
 
   To<Longhand>(ref.GetProperty()).ApplyValue(state, *light_value);
   EXPECT_EQ(WebColorScheme::kLight, style->UsedColorScheme());
+}
+
+TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
+  ScopedCSSColorSchemeForTest scoped_property_enabled(true);
+
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
+      std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
+  const ComputedStyle* initial = &ComputedStyle::InitialStyle();
+
+  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
+      kUASheetMode, SecureContextMode::kInsecureContext);
+  const CSSValue* internal_light_dark = CSSParser::ParseSingleValue(
+      CSSPropertyID::kColor, "-internal-light-dark-color(black, white)",
+      ua_context);
+
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(dummy_page_holder_->GetDocument(),
+                                              PreferredColorScheme::kDark);
+  StyleResolverState state(dummy_page_holder_->GetDocument(),
+                           *dummy_page_holder_->GetDocument().documentElement(),
+                           initial, initial);
+
+  StyleResolver& resolver =
+      dummy_page_holder_->GetDocument().EnsureStyleResolver();
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  state.SetStyle(style);
+
+  CSSValueList* dark_value = CSSValueList::CreateSpaceSeparated();
+  dark_value->Append(*CSSIdentifierValue::Create(CSSValueID::kDark));
+
+  CSSValueList* light_value = CSSValueList::CreateSpaceSeparated();
+  light_value->Append(*CSSIdentifierValue::Create(CSSValueID::kLight));
+
+  CSSPropertyRef scheme_property("color-scheme", state.GetDocument());
+  CSSPropertyRef color_property("color", state.GetDocument());
+
+  To<Longhand>(color_property.GetProperty())
+      .ApplyValue(state, *internal_light_dark);
+  To<Longhand>(scheme_property.GetProperty()).ApplyValue(state, *dark_value);
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled())
+    resolver.ApplyCascadedColorValue(state);
+  EXPECT_EQ(Color::kWhite, style->VisitedDependentColor(GetCSSPropertyColor()));
+
+  To<Longhand>(color_property.GetProperty())
+      .ApplyValue(state, *internal_light_dark);
+  To<Longhand>(scheme_property.GetProperty()).ApplyValue(state, *light_value);
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled())
+    resolver.ApplyCascadedColorValue(state);
+  EXPECT_EQ(Color::kBlack, style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 }  // namespace blink

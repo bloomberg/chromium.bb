@@ -5,14 +5,13 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_EVDEV_H_
 
+#include <linux/input.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <bitset>
 #include <memory>
 #include <queue>
-
-#include <linux/input.h>
 // See if we compile against new enough headers and add missing definition
 // if the headers are too old.
 #ifndef MT_TOOL_PALM
@@ -20,14 +19,15 @@
 #endif
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_libevent.h"
+#include "base/metrics/field_trial_params.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/touch_evdev_debug_buffer.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 
@@ -37,7 +37,9 @@ class DeviceEventDispatcherEvdev;
 class FalseTouchFinder;
 struct InProgressTouchEvdev;
 
-class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
+COMPONENT_EXPORT(EVDEV) extern const base::Feature kEnableSingleCancelTouch;
+
+class COMPONENT_EXPORT(EVDEV) TouchEventConverterEvdev
     : public EventConverterEvdev {
  public:
   TouchEventConverterEvdev(base::ScopedFD fd,
@@ -70,6 +72,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   static const char kHoldCountAtReleaseEventName[];
   static const char kHoldCountAtCancelEventName[];
+  static const char kPalmFilterTimerEventName[];
 
  private:
   friend class MockTouchEventConverterEvdev;
@@ -99,19 +102,21 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   void UpdateTrackingId(int slot, int tracking_id);
   void ReleaseTouches();
+
   // Returns true if all touches were marked cancelled. Otherwise false.
   bool MaybeCancelAllTouches();
   bool IsPalm(const InProgressTouchEvdev& touch);
+
   // Normalize pressure value to [0, 1].
   float ScalePressure(int32_t value) const;
 
   int NextTrackingId();
 
   // Input device file descriptor.
-  base::ScopedFD input_device_fd_;
+  const base::ScopedFD input_device_fd_;
 
   // Dispatcher for events.
-  DeviceEventDispatcherEvdev* dispatcher_;
+  DeviceEventDispatcherEvdev* const dispatcher_;
 
   // Set if we drop events in kernel (SYN_DROPPED) or in process.
   bool dropped_events_ = false;
@@ -183,6 +188,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // Callback to enable/disable palm suppression.
   base::RepeatingCallback<void(bool)> enable_palm_suppression_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };
 

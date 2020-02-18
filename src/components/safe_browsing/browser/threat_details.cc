@@ -17,6 +17,7 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "components/history/core/browser/history_service.h"
@@ -27,8 +28,10 @@
 #include "components/safe_browsing/db/hit_report.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -99,6 +102,7 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
       return ClientSafeBrowsingReportRequest::AD_SAMPLE;
     case SB_THREAT_TYPE_BLOCKED_AD_REDIRECT:
       return ClientSafeBrowsingReportRequest::BLOCKED_AD_REDIRECT;
+    case SB_THREAT_TYPE_SAVED_PASSWORD_REUSE:
     case SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE:
     case SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
     case SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
@@ -307,6 +311,7 @@ void TrimElements(const std::set<int> target_ids,
     }
   }
 }
+
 }  // namespace
 
 // The default ThreatDetailsFactory.  Global, made a singleton so we
@@ -637,8 +642,11 @@ void ThreatDetails::StartCollection() {
 }
 
 void ThreatDetails::RequestThreatDOMDetails(content::RenderFrameHost* frame) {
-  safe_browsing::mojom::ThreatReporterPtr threat_reporter;
-  frame->GetRemoteInterfaces()->GetInterface(&threat_reporter);
+  content::BackForwardCache::DisableForRenderFrameHost(
+      frame, "safe_browsing::ThreatDetails");
+  mojo::Remote<safe_browsing::mojom::ThreatReporter> threat_reporter;
+  frame->GetRemoteInterfaces()->GetInterface(
+      threat_reporter.BindNewPipeAndPassReceiver());
   safe_browsing::mojom::ThreatReporter* raw_threat_report =
       threat_reporter.get();
   pending_render_frame_hosts_.push_back(frame);
@@ -649,7 +657,7 @@ void ThreatDetails::RequestThreatDOMDetails(content::RenderFrameHost* frame) {
 
 // When the renderer is done, this is called.
 void ThreatDetails::OnReceivedThreatDOMDetails(
-    mojom::ThreatReporterPtr threat_reporter,
+    mojo::Remote<mojom::ThreatReporter> threat_reporter,
     content::RenderFrameHost* sender,
     std::vector<mojom::ThreatDOMDetailsNodePtr> params) {
   // If the RenderFrameHost was closed between sending the IPC and this callback

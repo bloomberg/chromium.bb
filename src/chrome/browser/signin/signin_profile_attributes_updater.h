@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
@@ -25,7 +26,8 @@ class SigninProfileAttributesUpdater
       signin::IdentityManager* identity_manager,
       SigninErrorController* signin_error_controller,
       ProfileAttributesStorage* profile_attributes_storage,
-      const base::FilePath& profile_path);
+      const base::FilePath& profile_path,
+      PrefService* prefs);
 
   ~SigninProfileAttributesUpdater() override;
 
@@ -44,15 +46,18 @@ class SigninProfileAttributesUpdater
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
+  void OnUnconsentedPrimaryAccountChanged(
+      const CoreAccountInfo& unconsented_primary_account_info) override;
 
   signin::IdentityManager* identity_manager_;
   SigninErrorController* signin_error_controller_;
   ProfileAttributesStorage* profile_attributes_storage_;
   const base::FilePath profile_path_;
-  ScopedObserver<signin::IdentityManager, SigninProfileAttributesUpdater>
-      identity_manager_observer_;
-  ScopedObserver<SigninErrorController, SigninProfileAttributesUpdater>
-      signin_error_controller_observer_;
+  PrefService* prefs_;
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
+      identity_manager_observer_{this};
+  ScopedObserver<SigninErrorController, SigninErrorController::Observer>
+      signin_error_controller_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SigninProfileAttributesUpdater);
 };

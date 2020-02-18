@@ -5,7 +5,6 @@
 #include "base/memory/platform_shared_memory_region.h"
 
 #include "base/logging.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/process/process_metrics.h"
 #include "base/system/sys_info.h"
@@ -69,6 +68,19 @@ TEST_F(PlatformSharedMemoryRegionTest, CreateTooLargeRegionIsInvalid) {
 
   PlatformSharedMemoryRegion region2 =
       PlatformSharedMemoryRegion::CreateUnsafe(too_large_region_size);
+  EXPECT_FALSE(region2.IsValid());
+}
+
+// Tests that creating a region of maximum possible value returns an invalid
+// region.
+TEST_F(PlatformSharedMemoryRegionTest, CreateMaxSizeRegionIsInvalid) {
+  size_t max_region_size = std::numeric_limits<size_t>::max();
+  PlatformSharedMemoryRegion region =
+      PlatformSharedMemoryRegion::CreateWritable(max_region_size);
+  EXPECT_FALSE(region.IsValid());
+
+  PlatformSharedMemoryRegion region2 =
+      PlatformSharedMemoryRegion::CreateUnsafe(max_region_size);
   EXPECT_FALSE(region2.IsValid());
 }
 
@@ -415,67 +427,6 @@ TEST_F(PlatformSharedMemoryRegionTest, UnsafeRegionConvertToUnsafeDeathTest) {
       PlatformSharedMemoryRegion::CreateUnsafe(kRegionSize);
   ASSERT_TRUE(region.IsValid());
   EXPECT_DEATH_IF_SUPPORTED(region.ConvertToUnsafe(), kErrorRegex);
-}
-
-// Check that taking from a SharedMemoryHandle works.
-TEST_F(PlatformSharedMemoryRegionTest, TakeFromSharedMemoryHandle) {
-  SharedMemory shm;
-  auto region = PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-      shm.TakeHandle(), PlatformSharedMemoryRegion::Mode::kUnsafe);
-  ASSERT_FALSE(region.IsValid());
-
-  shm.CreateAndMapAnonymous(10);
-  region = PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-      shm.TakeHandle(), PlatformSharedMemoryRegion::Mode::kUnsafe);
-  ASSERT_TRUE(region.IsValid());
-
-#if !(defined(OS_MACOSX) && !defined(OS_IOS))
-  // Note that it's not possible on all platforms for TakeFromSharedMemoryHandle
-  // to conveniently check if the SharedMemoryHandle is readonly or
-  // not. Therefore it is actually possible to get an kUnsafe
-  // PlatformSharedMemoryRegion from a readonly handle on some platforms.
-  SharedMemoryCreateOptions options;
-  options.size = 10;
-  options.share_read_only = true;
-  shm.Create(options);
-  EXPECT_DEATH_IF_SUPPORTED(
-      PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-          shm.GetReadOnlyHandle(), PlatformSharedMemoryRegion::Mode::kUnsafe),
-      "");
-#endif  // !(defined(OS_MACOSX) && !defined(OS_IOS))
-}
-
-// Check that taking from a readonly SharedMemoryHandle works.
-TEST_F(PlatformSharedMemoryRegionTest, TakeFromReadOnlySharedMemoryHandle) {
-  SharedMemory shm;
-  // Note that getting a read-only handle from an unmapped SharedMemory will
-  // fail, so the invalid region case cannot be tested.
-  SharedMemoryCreateOptions options;
-  options.size = 10;
-  options.share_read_only = true;
-  shm.Create(options);
-  auto readonly_handle = shm.GetReadOnlyHandle();
-#if defined(OS_ANDROID)
-  readonly_handle.SetRegionReadOnly();
-#endif
-  auto region = PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-      readonly_handle, PlatformSharedMemoryRegion::Mode::kReadOnly);
-  ASSERT_TRUE(region.IsValid());
-}
-
-// Check that taking from a SharedMemoryHandle in writable mode fails.
-TEST_F(PlatformSharedMemoryRegionTest, WritableTakeFromSharedMemoryHandle) {
-  SharedMemory shm;
-  EXPECT_DEATH_IF_SUPPORTED(
-      PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-          shm.TakeHandle(), PlatformSharedMemoryRegion::Mode::kWritable),
-      "");
-
-  shm.CreateAndMapAnonymous(10);
-  EXPECT_DEATH_IF_SUPPORTED(
-      PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-          shm.TakeHandle(), PlatformSharedMemoryRegion::Mode::kWritable),
-      "");
 }
 
 }  // namespace subtle

@@ -20,8 +20,8 @@
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_stream_frame_data_producer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
@@ -45,13 +45,15 @@ class QuicTestPacketMaker {
   // the parent stream ID set to 0 (ignoring the |parent_stream_id| param).
   QuicTestPacketMaker(quic::ParsedQuicVersion version,
                       quic::QuicConnectionId connection_id,
-                      quic::MockClock* clock,
+                      const quic::QuicClock* clock,
                       const std::string& host,
                       quic::Perspective perspective,
                       bool client_headers_include_h2_stream_dependency);
   ~QuicTestPacketMaker();
 
   void set_hostname(const std::string& host);
+  void set_max_allowed_push_id(quic::QuicStreamId push_id);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeConnectivityProbingPacket(
       uint64_t num,
       bool include_version);
@@ -132,6 +134,13 @@ class QuicTestPacketMaker {
       uint64_t largest_received,
       uint64_t smallest_received,
       uint64_t least_unacked,
+      quic::QuicErrorCode quic_error,
+      const std::string& quic_error_details);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRstAndConnectionClosePacket(
+      uint64_t num,
+      bool include_version,
+      quic::QuicStreamId stream_id,
+      quic::QuicRstStreamErrorCode error_code,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndConnectionClosePacket(
@@ -280,10 +289,6 @@ class QuicTestPacketMaker {
   std::unique_ptr<quic::QuicReceivedPacket> MakeInitialSettingsPacket(
       uint64_t packet_number);
 
-  std::unique_ptr<quic::QuicReceivedPacket> MakeSettingsPacket(
-      uint64_t packet_number,
-      bool should_include_version);
-
   std::unique_ptr<quic::QuicReceivedPacket> MakePriorityPacket(
       uint64_t packet_number,
       bool should_include_version,
@@ -405,6 +410,7 @@ class QuicTestPacketMaker {
   quic::QuicStreamId GetHeadersStreamId() const;
 
   std::string GenerateHttp3SettingsData();
+  std::string GenerateHttp3MaxPushIdData();
   std::string GenerateHttp3PriorityData(spdy::SpdyPriority priority,
                                         quic::QuicStreamId stream_id);
 
@@ -412,11 +418,11 @@ class QuicTestPacketMaker {
 
   quic::ParsedQuicVersion version_;
   quic::QuicConnectionId connection_id_;
-  quic::MockClock* clock_;  // Owned by QuicStreamFactory.
+  const quic::QuicClock* clock_;  // Not owned.
   std::string host_;
+  quic::QuicStreamId max_allowed_push_id_;
   spdy::SpdyFramer spdy_request_framer_;
   spdy::SpdyFramer spdy_response_framer_;
-  quic::HttpEncoder http_encoder_;
   bool coalesce_http_frames_;
   bool save_packet_frames_;
   DecoderStreamErrorDelegate decoder_stream_error_delegate_;

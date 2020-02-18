@@ -14,7 +14,7 @@
 #include "components/page_load_metrics/renderer/page_resource_data_use.h"
 #include "components/subresource_filter/content/renderer/ad_resource_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 
 class GURL;
@@ -43,8 +43,7 @@ class MetricsRenderFrameObserver
   // RenderFrameObserver implementation
   void DidChangePerformanceTiming() override;
   void DidChangeCpuTiming(base::TimeDelta time) override;
-  void DidObserveLoadingBehavior(
-      blink::WebLoadingBehaviorFlag behavior) override;
+  void DidObserveLoadingBehavior(blink::LoadingBehaviorFlag behavior) override;
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature) override;
   void DidObserveNewCssPropertyUsage(blink::mojom::CSSSampleId css_property,
                                      bool is_animated) override;
@@ -53,7 +52,7 @@ class MetricsRenderFrameObserver
       blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
   void DidStartResponse(const GURL& response_url,
                         int request_id,
-                        const network::ResourceResponseHead& response_head,
+                        const network::mojom::URLResponseHead& response_head,
                         content::ResourceType resource_type,
                         content::PreviewsState previews_state) override;
   void DidReceiveTransferSizeUpdate(int request_id,
@@ -69,7 +68,7 @@ class MetricsRenderFrameObserver
                                       bool from_archive) override;
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override;
+  void DidFailProvisionalLoad() override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
   void OnDestruct() override;
@@ -92,6 +91,10 @@ class MetricsRenderFrameObserver
   // ad.
   void UpdateResourceMetadata(int request_id);
 
+  // Called on the completion of a resource from network or cache to determine
+  // if it completed before FCP.
+  void MaybeSetCompletedBeforeFCP(int request_id);
+
   void SendMetrics();
   virtual mojom::PageLoadTimingPtr GetTiming() const;
   virtual std::unique_ptr<base::OneShotTimer> CreateTimer();
@@ -105,7 +108,7 @@ class MetricsRenderFrameObserver
   // information from ongoing resource requests on the previous page (or right
   // before this page loads in a new renderer).
   std::unique_ptr<PageResourceDataUse> provisional_frame_resource_data_use_;
-  int provisional_frame_resource_id = 0;
+  int provisional_frame_resource_id_ = 0;
 
   ScopedObserver<subresource_filter::AdResourceTracker,
                  subresource_filter::AdResourceTracker::Observer>
@@ -113,6 +116,9 @@ class MetricsRenderFrameObserver
 
   // Set containing all request ids that were reported as ads from the renderer.
   std::set<int> ad_request_ids_;
+
+  // Set containing all request ids that were reported as completing before FCP.
+  std::set<int> before_fcp_request_ids_;
 
   // Will be null when we're not actively sending metrics.
   std::unique_ptr<PageTimingMetricsSender> page_timing_metrics_sender_;

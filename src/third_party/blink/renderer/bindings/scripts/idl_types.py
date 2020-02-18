@@ -50,7 +50,6 @@ BASIC_TYPES = (PRIMITIVE_TYPES | frozenset([
     'DOMString',
     'ByteString',
     'USVString',
-    'Date',
     # http://heycam.github.io/webidl/#idl-types
     'void',
 ]))
@@ -74,7 +73,6 @@ TYPE_NAMES = {
     'ByteString': 'ByteString',
     'USVString': 'USVString',
     'object': 'Object',
-    'Date': 'Date',
 }
 
 STRING_TYPES = frozenset([
@@ -363,6 +361,11 @@ class IdlUnionType(IdlTypeBase):
     def sequence_member_type(self):
         return self.single_matching_member_type(
             lambda member_type: member_type.is_sequence_type)
+
+    @property
+    def dictionary_member_type(self):
+        return self.single_matching_member_type(
+            lambda member_type: member_type.is_dictionary)
 
     @property
     def as_union_type(self):

@@ -17,6 +17,7 @@
 
 #include "common/vulkan_platform.h"
 #include "dawn_native/Error.h"
+#include "dawn_native/VulkanBackend.h"
 #include "dawn_native/vulkan/ExternalHandle.h"
 
 namespace dawn_native { namespace vulkan {
@@ -25,22 +26,41 @@ namespace dawn_native { namespace vulkan {
 
 namespace dawn_native { namespace vulkan { namespace external_memory {
 
+    struct MemoryImportParams {
+        VkDeviceSize allocationSize;
+        uint32_t memoryTypeIndex;
+    };
+
     class Service {
       public:
         explicit Service(Device* device);
         ~Service();
 
-        // True if the device reports it supports this feature
-        bool Supported(VkFormat format,
-                       VkImageType type,
-                       VkImageTiling tiling,
-                       VkImageUsageFlags usage,
-                       VkImageCreateFlags flags);
+        // True if the device reports it supports importing external memory.
+        bool SupportsImportMemory(VkFormat format,
+                                  VkImageType type,
+                                  VkImageTiling tiling,
+                                  VkImageUsageFlags usage,
+                                  VkImageCreateFlags flags);
+
+        // True if the device reports it supports creating VkImages from external memory.
+        bool SupportsCreateImage(const ExternalImageDescriptor* descriptor,
+                                 VkFormat format,
+                                 VkImageUsageFlags usage);
+
+        // Returns the parameters required for importing memory
+        ResultOrError<MemoryImportParams> GetMemoryImportParams(
+            const ExternalImageDescriptor* descriptor,
+            VkImage image);
 
         // Given an external handle pointing to memory, import it into a VkDeviceMemory
         ResultOrError<VkDeviceMemory> ImportMemory(ExternalMemoryHandle handle,
-                                                   VkDeviceSize allocationSize,
-                                                   uint32_t memoryTypeIndex);
+                                                   const MemoryImportParams& importParams,
+                                                   VkImage image);
+
+        // Create a VkImage for the given handle type
+        ResultOrError<VkImage> CreateImage(const ExternalImageDescriptor* descriptor,
+                                           const VkImageCreateInfo& baseCreateInfo);
 
       private:
         Device* mDevice = nullptr;

@@ -10,6 +10,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -17,7 +18,7 @@
 #include "ash/wm/window_state.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/transient_window_manager.h"
@@ -59,18 +60,47 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
 
   void DoPress(Mode mode) {
     DCHECK_NE(mode, Mode::kNone);
-    gfx::Point press_location;
+    gfx::PointF press_location;
     if (mode == Mode::kSlideUpToShow) {
-      press_location = Shelf::ForWindow(Shell::GetPrimaryRootWindow())
-                           ->GetIdealBounds()
-                           .CenterPoint();
+      press_location =
+          gfx::PointF(Shelf::ForWindow(Shell::GetPrimaryRootWindow())
+                          ->GetIdealBounds()
+                          .CenterPoint());
     }
 
     GetGestureHandler()->OnPressEvent(mode, press_location);
   }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherGestureHandlerTest);
+};
+
+// Records ShelfBackgroundType changes.
+class ShelfBackgroundTypeWatcher : public ShelfObserver {
+ public:
+  ShelfBackgroundTypeWatcher(Shelf* shelf) : shelf_(shelf) {
+    shelf_->AddObserver(this);
+  }
+  ~ShelfBackgroundTypeWatcher() override { shelf_->RemoveObserver(this); }
+
+  void OnBackgroundTypeChanged(ShelfBackgroundType background_type,
+                               AnimationChangeType change_type) override {
+    background_changes_.push_back(background_type);
+  }
+
+  void CheckEqual(std::vector<ShelfBackgroundType> background_changes) {
+    EXPECT_EQ(background_changes_, background_changes);
+  }
+
+  void Reset() { background_changes_.clear(); }
+
+ private:
+  Shelf* shelf_;
+  std::vector<ShelfBackgroundType> background_changes_;
 };
 
 // Tests that the gesture handler will not have a window to act on if there are
@@ -127,14 +157,14 @@ TEST_F(HomeLauncherGestureHandlerTest, CancellingSlideUp) {
   // Tests that when cancelling a scroll that was on the bottom half, the window
   // is still visible.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 300.f), 0.f, 1.f);
   GetGestureHandler()->Cancel();
   EXPECT_TRUE(window->IsVisible());
 
   // Tests that when cancelling a scroll that was on the top half, the window is
   // now invisible.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 100.f), 0.f, 1.f);
   GetGestureHandler()->Cancel();
   EXPECT_FALSE(window->IsVisible());
 }
@@ -149,15 +179,17 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingingSlideUp) {
 
   // Tests that flinging down in this mode will keep the window visible.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 10.f);
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 300.f), 0.f, 10.f);
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
+                                      /*velocity_y=*/base::nullopt);
   ASSERT_TRUE(window->IsVisible());
 
   // Tests that flinging up in this mode will hide the window and show the
   // home launcher.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), -10.f);
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 300.f), 0.f, -10.f);
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_FALSE(window->IsVisible());
 }
 
@@ -172,14 +204,16 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingingSlideDown) {
 
   // Tests that flinging up in this mode will not show the mru window.
   DoPress(Mode::kSlideDownToHide);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), -10.f);
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 100.f), 0.f, -10.f);
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 100.f),
+                                      /*velocity_y=*/base::nullopt);
   ASSERT_FALSE(window->IsVisible());
 
   // Tests that flinging down in this mode will show the mru window.
   DoPress(Mode::kSlideDownToHide);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 10.f);
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 100.f), 0.f, 10.f);
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 100.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_TRUE(window->IsVisible());
 }
 
@@ -191,8 +225,9 @@ TEST_F(HomeLauncherGestureHandlerTest, SlidingBelowPressPoint) {
 
   // Tests that the windows transform does not change when trying to slide below
   // the press event location.
-  GetGestureHandler()->OnPressEvent(Mode::kSlideUpToShow, gfx::Point(0, 400));
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 420), 1.f);
+  GetGestureHandler()->OnPressEvent(Mode::kSlideUpToShow,
+                                    gfx::PointF(0.f, 400.f));
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 420.f), 0.f, 1.f);
   EXPECT_EQ(gfx::Transform(), window->transform());
 }
 
@@ -215,7 +250,7 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
   EXPECT_FALSE(GetGestureHandler()->GetActiveWindow());
 
   // Tests that while scrolling the window transform changes.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 300.f), 0.f, 1.f);
   EXPECT_NE(window1_initial_translation,
             window1->transform().To2dTranslation().y());
   EXPECT_NE(window2_initial_translation,
@@ -223,7 +258,8 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
 
   // Tests that after releasing at below the halfway point, we remain in
   // overview mode.
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_TRUE(controller->InOverviewSession());
   EXPECT_EQ(window1_initial_translation,
             window1->transform().To2dTranslation().y());
@@ -233,7 +269,8 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
   // Tests that after releasing on the top half, overview mode has been
   // exited, and the two windows have been minimized to show the home launcher.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 100.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_FALSE(controller->InOverviewSession());
   EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
   EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
@@ -253,19 +290,21 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewModeNoWindows) {
   EXPECT_FALSE(GetGestureHandler()->GetActiveWindow());
 
   // Tests that while scrolling the window transform changes.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 300.f), 0.f, 1.f);
   EXPECT_EQ(0.f, widget_window->transform().To2dTranslation().x());
   EXPECT_NE(0.f, widget_window->transform().To2dTranslation().y());
 
   // Tests that after releasing at below the halfway point, we remain in
   // overview mode.
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_TRUE(controller->InOverviewSession());
 
   // Tests that after releasing on the top half, overview mode has been
   // exited.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 100.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_FALSE(controller->InOverviewSession());
 }
 
@@ -293,11 +332,9 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
   // Snap one window and leave overview mode open with the other window.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   ASSERT_TRUE(overview_controller->InOverviewSession());
-  ASSERT_TRUE(split_view_controller->InSplitViewMode());
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
 
   const int window2_initial_translation =
       window2->transform().To2dTranslation().y();
@@ -305,26 +342,28 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
   EXPECT_EQ(window1.get(), GetGestureHandler()->GetActiveWindow());
 
   // Tests that while scrolling the window transforms change.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 300.f), 0.f, 1.f);
   EXPECT_NE(window1->transform(), gfx::Transform());
   EXPECT_NE(window2_initial_translation,
             window2->transform().To2dTranslation().y());
 
   // Tests that after releasing at below the halfway point, we remain in
   // both splitview and overview mode.
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_EQ(window1->transform(), gfx::Transform());
   EXPECT_EQ(window2_initial_translation,
             window2->transform().To2dTranslation().y());
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Tests that after releasing on the top half, overivew and splitview have
   // both been exited, and both windows are minimized to show the home launcher.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 100.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
   EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
 }
@@ -338,11 +377,10 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
   auto window2 = CreateWindowForTesting();
 
   // Snap two windows to start.
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
-  ASSERT_TRUE(split_view_controller->InSplitViewMode());
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Make |window1| the most recent used window. It should be the main window in
   // HomeLauncherGestureHandler.
@@ -352,78 +390,91 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
   EXPECT_EQ(window2.get(), GetGestureHandler()->GetSecondaryWindow());
 
   // Tests that while scrolling the window transforms change.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 300.f), 0.f, 1.f);
   EXPECT_NE(window1->transform(), gfx::Transform());
   EXPECT_NE(window2->transform(), gfx::Transform());
 
   // Tests that after releasing at below the halfway point, we remain in
   // splitview.
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_EQ(window1->transform(), gfx::Transform());
   EXPECT_EQ(window2->transform(), gfx::Transform());
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Tests that after releasing on the bottom half, splitview has been ended,
   // and the two windows have been minimized to show the home launcher.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
-  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 100.f),
+                                      /*velocity_y=*/base::nullopt);
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
   EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
 }
 
 // Tests that the shelf background is transparent when the home launcher is
-// dragged, and does not shift to opaque until the home launcher is completely
-// hidden from view and the finger is released.
-TEST_F(HomeLauncherGestureHandlerTest, TransparentShelfWileDragging) {
+// dragged, and shift to opaque when the in-app shelf is starting to show until
+// finger is released.
+TEST_F(HomeLauncherGestureHandlerTest, TransparentToOpaqueShelfWileDragging) {
   UpdateDisplay("400x456");
 
   auto window = CreateWindowForTesting();
   ASSERT_TRUE(window->IsVisible());
-  ASSERT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
+  ASSERT_EQ(ShelfBackgroundType::kInApp, AshTestBase::GetPrimaryShelf()
+                                             ->shelf_layout_manager()
+                                             ->GetShelfBackgroundType());
+
+  ShelfBackgroundTypeWatcher watcher(AshTestBase::GetPrimaryShelf());
 
   // Begin to show the home launcher, the shelf should become transparent.
   DoPress(Mode::kSlideUpToShow);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
+  EXPECT_EQ(ShelfBackgroundType::kHomeLauncher, AshTestBase::GetPrimaryShelf()
+                                                    ->shelf_layout_manager()
+                                                    ->GetShelfBackgroundType());
 
   // Fling up to complete showing the home launcher, the shelf should remain
   // transparent.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), -10.f);
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 300.f), 0.f, -10.f);
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
+                                      /*velocity_y=*/base::nullopt);
+  EXPECT_EQ(ShelfBackgroundType::kHomeLauncher, AshTestBase::GetPrimaryShelf()
+                                                    ->shelf_layout_manager()
+                                                    ->GetShelfBackgroundType());
+  watcher.CheckEqual({ShelfBackgroundType::kHomeLauncher});
+
+  // Reset the watcher queue to start recording the changes during the slide
+  // down.
+  watcher.Reset();
 
   // Begin to hide the home launcher, the background should still be
   // transparent.
   DoPress(Mode::kSlideDownToHide);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
+  EXPECT_EQ(ShelfBackgroundType::kHomeLauncher, AshTestBase::GetPrimaryShelf()
+                                                    ->shelf_layout_manager()
+                                                    ->GetShelfBackgroundType());
 
-  // Fling down to hide the home launcher, the shelf should still be
-  // transparent.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), -10.f);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
+  // Fling down to hide the home launcher before the middle of the screen, the
+  // shelf should still be transparent.
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 100.f), 0.f, -10.f);
+  EXPECT_EQ(ShelfBackgroundType::kHomeLauncher, AshTestBase::GetPrimaryShelf()
+                                                    ->shelf_layout_manager()
+                                                    ->GetShelfBackgroundType());
 
-  // The shelf should transition to opauqe when the gesture sequence has
-  // completed.
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED,
-            AshTestBase::GetPrimaryShelf()
-                ->shelf_layout_manager()
-                ->GetShelfBackgroundType());
+  // Continue the fling down after the middle of the screen, the shelf
+  // background should now be the in-app shelf.
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 250.f), 0.f, -10.f);
+  EXPECT_EQ(ShelfBackgroundType::kInApp, AshTestBase::GetPrimaryShelf()
+                                             ->shelf_layout_manager()
+                                             ->GetShelfBackgroundType());
+
+  // The shelf background should be the in-app shelf when the gesture sequence
+  // has completed.
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
+                                      /*velocity_y=*/base::nullopt);
+  EXPECT_EQ(ShelfBackgroundType::kInApp, AshTestBase::GetPrimaryShelf()
+                                             ->shelf_layout_manager()
+                                             ->GetShelfBackgroundType());
+  watcher.CheckEqual({ShelfBackgroundType::kInApp});
 }
 
 class HomeLauncherModeGestureHandlerTest
@@ -449,7 +500,7 @@ class HomeLauncherModeGestureHandlerTest
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherModeGestureHandlerTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          HomeLauncherModeGestureHandlerTest,
                          testing::Values(Mode::kSlideDownToHide,
                                          Mode::kSlideUpToShow));
@@ -463,7 +514,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, TransformAndOpacityChangesOnScroll) {
 
   // Test that on scrolling to a point on the top half of the work area, the
   // window's opacity is between 0 and 0.5 and its transform has changed.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 100.f), 0.f, 1.f);
   const gfx::Transform top_half_transform = window->transform();
   EXPECT_NE(gfx::Transform(), top_half_transform);
   EXPECT_GT(window->layer()->opacity(), 0.f);
@@ -471,7 +522,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, TransformAndOpacityChangesOnScroll) {
 
   // Test that on scrolling to a point on the bottom half of the work area, the
   // window's opacity is between 0.5 and 1 and its transform has changed.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 300.f), 0.f, 1.f);
   EXPECT_NE(gfx::Transform(), window->transform());
   EXPECT_NE(gfx::Transform(), top_half_transform);
   EXPECT_GT(window->layer()->opacity(), 0.5f);
@@ -492,12 +543,13 @@ TEST_P(HomeLauncherModeGestureHandlerTest, BelowHalfShowsWindow) {
   ASSERT_FALSE(window3->IsVisible());
 
   // After a scroll the transform and opacity are no longer the identity and 1.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 300.f), 0.f, 1.f);
   EXPECT_NE(gfx::Transform(), window1->transform());
   EXPECT_NE(1.f, window1->layer()->opacity());
 
   // Tests the transform and opacity have returned to the identity and 1.
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_EQ(gfx::Transform(), window1->transform());
   EXPECT_EQ(1.f, window1->layer()->opacity());
 
@@ -524,7 +576,8 @@ TEST_P(HomeLauncherModeGestureHandlerTest, AboveHalfReleaseMinimizesWindow) {
   ASSERT_FALSE(window3->IsVisible());
 
   // Test that |window1| is minimized on release.
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 100.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
 
   // The rest of the windows remain invisible, to show the home launcher.
@@ -551,14 +604,15 @@ TEST_P(HomeLauncherModeGestureHandlerTest, WindowWithTransientChild) {
 
   // Tests that after scrolling to the halfway point, the transient child's
   // opacity and transform are halfway to their final values.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 200.f), 0.f, 1.f);
   EXPECT_LE(0.45f, child->layer()->opacity());
   EXPECT_GE(0.55f, child->layer()->opacity());
   EXPECT_NE(gfx::Transform(), child->transform());
 
   // Tests that after releasing on the bottom half, the transient child reverts
   // to its original values.
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(0.f, 300.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_EQ(1.0f, child->layer()->opacity());
   EXPECT_EQ(gfx::Transform(), child->transform());
 }
@@ -572,7 +626,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, EndScrollOnTabletModeEnd) {
   ASSERT_TRUE(GetGestureHandler()->GetActiveWindow());
 
   // Scroll to a point above the halfway mark of the work area.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 50), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::PointF(0.f, 50.f), 0.f, 1.f);
   EXPECT_TRUE(GetGestureHandler()->GetActiveWindow());
   EXPECT_FALSE(WindowState::Get(window.get())->IsMinimized());
 
@@ -611,7 +665,8 @@ TEST_P(HomeLauncherModeGestureHandlerTest, AnimatingToEndResetsState) {
     EXPECT_FALSE(GetGestureHandler()->hidden_windows_.empty());
 
   // Tests that after a drag, the variables are either null or empty.
-  GetGestureHandler()->OnReleaseEvent(gfx::Point(10, 10));
+  GetGestureHandler()->OnReleaseEvent(gfx::PointF(10.f, 10.f),
+                                      /*velocity_y=*/base::nullopt);
   EXPECT_FALSE(GetGestureHandler()->GetActiveWindow());
   EXPECT_FALSE(GetGestureHandler()->last_event_location_);
   EXPECT_EQ(Mode::kNone, GetGestureHandler()->mode_);

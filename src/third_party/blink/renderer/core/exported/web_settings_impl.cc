@@ -461,10 +461,6 @@ void WebSettingsImpl::SetEditingBehavior(EditingBehavior behavior) {
   settings_->SetEditingBehaviorType(static_cast<EditingBehaviorType>(behavior));
 }
 
-void WebSettingsImpl::SetMockScrollbarsEnabled(bool enabled) {
-  settings_->SetMockScrollbarsEnabled(enabled);
-}
-
 void WebSettingsImpl::SetHideScrollbars(bool enabled) {
   dev_tools_emulator_->SetHideScrollbars(enabled);
 }
@@ -660,10 +656,6 @@ void WebSettingsImpl::SetSmartInsertDeleteEnabled(bool enabled) {
   settings_->SetSmartInsertDeleteEnabled(enabled);
 }
 
-void WebSettingsImpl::SetUseSolidColorScrollbars(bool enabled) {
-  settings_->SetUseSolidColorScrollbars(enabled);
-}
-
 void WebSettingsImpl::SetMainFrameResizesAreOrientationChanges(bool enabled) {
   dev_tools_emulator_->SetMainFrameResizesAreOrientationChanges(enabled);
 }
@@ -754,17 +746,33 @@ void WebSettingsImpl::SetLazyImageLoadingDistanceThresholdPx4G(
   settings_->SetLazyImageLoadingDistanceThresholdPx4G(distance_px);
 }
 
+void WebSettingsImpl::SetLazyImageFirstKFullyLoadUnknown(int num_images) {
+  settings_->SetLazyImageFirstKFullyLoadUnknown(num_images);
+}
+
+void WebSettingsImpl::SetLazyImageFirstKFullyLoadSlow2G(int num_images) {
+  settings_->SetLazyImageFirstKFullyLoadSlow2G(num_images);
+}
+
+void WebSettingsImpl::SetLazyImageFirstKFullyLoad2G(int num_images) {
+  settings_->SetLazyImageFirstKFullyLoad2G(num_images);
+}
+
+void WebSettingsImpl::SetLazyImageFirstKFullyLoad3G(int num_images) {
+  settings_->SetLazyImageFirstKFullyLoad3G(num_images);
+}
+
+void WebSettingsImpl::SetLazyImageFirstKFullyLoad4G(int num_images) {
+  settings_->SetLazyImageFirstKFullyLoad4G(num_images);
+}
+
 void WebSettingsImpl::SetForceDarkModeEnabled(bool enabled) {
   settings_->SetForceDarkModeEnabled(enabled);
 }
 
-void WebSettingsImpl::SetPreferredColorScheme(
-    PreferredColorScheme color_scheme) {
-  settings_->SetPreferredColorScheme(color_scheme);
-}
-
-void WebSettingsImpl::SetForcedColors(ForcedColors forced_colors) {
-  settings_->SetForcedColors(forced_colors);
+void WebSettingsImpl::SetNavigationControls(
+    NavigationControls navigation_controls) {
+  settings_->SetNavigationControls(navigation_controls);
 }
 
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAllowed,

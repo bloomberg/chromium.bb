@@ -16,7 +16,7 @@
 #define DAWNNATIVE_ATTACHMENTSTATE_H_
 
 #include "common/Constants.h"
-#include "dawn_native/RefCounted.h"
+#include "dawn_native/CachedObject.h"
 
 #include "dawn_native/dawn_platform.h"
 
@@ -50,25 +50,22 @@ namespace dawn_native {
 
       protected:
         std::bitset<kMaxColorAttachments> mColorAttachmentsSet;
-        std::array<dawn::TextureFormat, kMaxColorAttachments> mColorFormats;
+        std::array<wgpu::TextureFormat, kMaxColorAttachments> mColorFormats;
         // Default (texture format Undefined) indicates there is no depth stencil attachment.
-        dawn::TextureFormat mDepthStencilFormat = dawn::TextureFormat::Undefined;
+        wgpu::TextureFormat mDepthStencilFormat = wgpu::TextureFormat::Undefined;
         uint32_t mSampleCount = 0;
     };
 
-    class AttachmentState : public AttachmentStateBlueprint, public RefCounted {
+    class AttachmentState : public AttachmentStateBlueprint, public CachedObject {
       public:
         AttachmentState(DeviceBase* device, const AttachmentStateBlueprint& blueprint);
         ~AttachmentState() override;
 
         std::bitset<kMaxColorAttachments> GetColorAttachmentsMask() const;
-        dawn::TextureFormat GetColorAttachmentFormat(uint32_t index) const;
+        wgpu::TextureFormat GetColorAttachmentFormat(uint32_t index) const;
         bool HasDepthStencilAttachment() const;
-        dawn::TextureFormat GetDepthStencilFormat() const;
+        wgpu::TextureFormat GetDepthStencilFormat() const;
         uint32_t GetSampleCount() const;
-
-      private:
-        DeviceBase* mDevice;
     };
 
 }  // namespace dawn_native

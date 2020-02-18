@@ -24,6 +24,8 @@ swiftshader_source_set("WSI") {
 
   if (is_linux) {
     sources += [
+      "XcbSurfaceKHR.cpp",
+      "XcbSurfaceKHR.hpp",
       "XlibSurfaceKHR.cpp",
       "XlibSurfaceKHR.hpp",
       "libX11.cpp",
@@ -38,6 +40,17 @@ swiftshader_source_set("WSI") {
     ]
   }
 
+  if (is_mac) {
+    sources += [
+      "MetalSurface.mm",
+      "MetalSurface.h",
+    ]
+    libs = [
+      "Cocoa.framework",
+      "QuartzCore.framework",
+    ]
+  }
+
   include_dirs = [
     "..",
     "../../include",
@@ -45,6 +58,9 @@ swiftshader_source_set("WSI") {
   ]
 
   deps = [
+    "../../third_party/marl:Marl_headers",
     "../Vulkan:swiftshader_libvulkan_headers",
   ]
+
+  configs = [ "../Vulkan:swiftshader_libvulkan_private_config", ]
 }

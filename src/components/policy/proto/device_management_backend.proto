@@ -840,6 +840,24 @@ message VolumeInfo {
   optional int64 storage_free = 3;
 }
 
+// Information about a single CPU utilization.
+message CpuUtilizationInfo {
+  // CPU utilization (0-100).
+  optional int32 cpu_utilization_pct = 1;
+  // The timestamp representing time at which the information was collected.
+  // [timestamp] is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 timestamp = 2;
+}
+
+// Information about a single free RAM.
+message SystemFreeRamInfo {
+  // Free RAM [in bytes] (unreliable due to GC).
+  optional int64 size_in_bytes = 1;
+  // The timestamp representing time at which the information was collected.
+  // [timestamp] is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 timestamp = 2;
+}
+
 // Information about a single CPU temperature channel.
 message CPUTempInfo {
   // Temperature channel label.
@@ -848,6 +866,15 @@ message CPUTempInfo {
   optional int32 cpu_temp = 2;
   // Unix timestamp.
   optional int64 timestamp = 3;
+}
+
+// Contains the Stateful Partition Information for user data storage in the
+// device.
+message StatefulPartitionInfo {
+  // Available space for user data storage in the device in bytes.
+  optional int64 available_space = 1;
+  // Total space for user data storage in the device in bytes.
+  optional int64 total_space = 2;
 }
 
 // Chrome release channel, shared for different reports.
@@ -989,9 +1016,11 @@ message DeviceStatusReportRequest {
   repeated NetworkState network_states = 11;
 
   // Samples of CPU utilization (0-100), sampled once every 120 seconds.
+  // To deprecate: Use CpuUtilizationInfo instead.
   repeated int32 cpu_utilization_pct_samples = 12;
 
   // Total RAM on the device.
+  // To deprecate: Use SystemFreeRamInfo instead.
   optional int64 system_ram_total = 14;
 
   // Samples of free RAM [in bytes] (unreliable due to GC).
@@ -1036,6 +1065,15 @@ message DeviceStatusReportRequest {
 
   // Status for various system-wide non-hardware elements.
   optional SystemStatus system_status = 28;
+
+  // Stateful Partition Information for user data.
+  optional StatefulPartitionInfo stateful_partition_info = 29;
+
+  // Samples of CPU utilization (0-100), sampled once every 120 seconds.
+  repeated CpuUtilizationInfo cpu_utilization_infos = 30;
+
+  // Samples of free RAM [in bytes] (unreliable due to GC).
+  repeated SystemFreeRamInfo system_ram_free_infos = 31;
 }
 
 message OsUpdateStatus {
@@ -1057,6 +1095,14 @@ message OsUpdateStatus {
 
   // New required platform version from the pending updated kiosk app.
   optional string new_required_platform_version = 3;
+
+  // The timestamp of the last update check.
+  // [timestamp] is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 last_checked_timestamp = 4;
+
+  // The timestamp of the last reboot.
+  // [timestamp] is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 last_reboot_timestamp = 5;
 }
 
 // Provides status information for an installed app/extension.
@@ -1128,6 +1174,11 @@ message ChromeSignedInUser {
 message ExtensionRequest {
   // ID of the installed app/extension for a Chrome app or extension.
   optional string id = 1;
+
+  // When the user commits to requesting the extension.
+  // [request_timestamp] is milliseconds since Epoch in UTC timezone
+  // (Java time).
+  optional int64 request_timestamp = 2;
 }
 
 // Extension information.
@@ -1186,6 +1237,12 @@ message Extension {
 
   // The list of host based permissions the extension requires.
   repeated string host_permissions = 11;
+
+  // URL of the app, used by (legacy) packaged app and hosted app.
+  optional string app_launch_url = 12;
+
+  // True if the extension comes from web store.
+  optional bool from_webstore = 13;
 }
 
 // Plugin information.
@@ -1393,6 +1450,13 @@ message ChromeDesktopReportRequest {
   optional OSReport os_report = 7;
   // A string contains OS user name.
   optional string os_user_name = 8;
+}
+
+// Report user level status on Chrome OS platform. Chrome OS equivalent of
+// ChromeDesktopReportRequest.
+message ChromeOsUserReportRequest {
+  // Browser related info.
+  optional BrowserReport browser_report = 1;
 }
 
 // A validation issue from validating a policy value that was contained in
@@ -1611,6 +1675,11 @@ message DeviceStatusReportResponse {
 // upload errors will be set in the containing DeviceManagementResponse or
 // eventually at the HTTP level as mentioned in a TODO.
 message ChromeDesktopReportResponse {}
+
+// Response from DMServer to a ChromeOS user report request. The report
+// upload errors will be set in the containing DeviceManagementResponse or
+// eventually at the HTTP level as mentioned in a TODO.
+message ChromeOsUserReportResponse {}
 
 // Response from DMServer to update user devices' status.
 // It is possible that status report fails but policy request succeed.  In such
@@ -2114,14 +2183,13 @@ message SamlParametersProto {
   // Auth Session ID which the client is supposed to use in the subsequent
   // DMServer request (to be sent after SAML flow completes).
   optional string auth_session_id = 2;
-  // URL that ends the SAML flow.
-  optional string auth_acl_url = 3;
 }
 
-// Gets URLs to the SAML IdP authentication flow for using it with public
+// Gets a URL to the SAML IdP authentication flow for using it with public
 // SAML session. Sent when a user logs in to a SAML public session account.
 message PublicSamlUserRequest {
-  // An identifier for the server IdP.
+  // Identifier for the public saml account. Same as
+  // DeviceLocalAccountInfoProto.account_id.
   optional string account_id = 1;
 }
 
@@ -2435,6 +2503,7 @@ message ChildStatusReportResponse {
 //     * device_state_retrieval
 //     * enterprise_check
 //     * chrome_desktop_report
+//     * chrome_os_user_report
 //     * ping
 //     * policy
 //     * register
@@ -2470,8 +2539,8 @@ message ChildStatusReportResponse {
 //   * For unregister, policy, status, cert_upload, remote_commands,
 //     gcm_id_update, active_directory_enroll_play_user,
 //     active_directory_play_activity, active_directory_user_signin,
-//     policy_validation_report, chrome_desktop_report
-//     and refresh_account requests
+//     policy_validation_report, chrome_desktop_report,
+//     chrome_os_user_report and refresh_account requests
 //     Authorization: GoogleDMToken token=<dm token from register>
 //
 //   * The Authorization header isn't used for enterprise_check,
@@ -2483,6 +2552,7 @@ message ChildStatusReportResponse {
 // HTTP query parameter - request, as listed below. Other requests within the
 // container will be ignored.
 //   chrome_desktop_report: chrome_desktop_report_request
+//   chrome_os_user_report: chrome_os_user_report_request
 //   cert_upload: cert_upload_request
 //   check_device_pairing: check_device_pairing_request
 //   device_pairing: device_pairing_request
@@ -2609,7 +2679,10 @@ message DeviceManagementRequest {
   // Request from device for SAML IdP URL address.
   optional PublicSamlUserRequest public_saml_user_request = 32;
 
-  // Next id: 33.
+  // A ChromeOS user report request.
+  optional ChromeOsUserReportRequest chrome_os_user_report_request = 33;
+
+  // Next id: 34.
 }
 
 // Response from server to device.
@@ -2731,5 +2804,8 @@ message DeviceManagementResponse {
   // Response to public SAML session user request.
   optional PublicSamlUserResponse public_saml_user_response = 31;
 
-  // Next id: 32.
+  // Response to a ChromeOS user report request.
+  optional ChromeOsUserReportResponse chrome_os_user_report_response = 32;
+
+  // Next id: 33.
 }

@@ -12,7 +12,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -54,7 +53,7 @@ InstanceID::Result GCMClientResultToInstanceIDResult(
 std::unique_ptr<InstanceID> InstanceID::CreateInternal(
     const std::string& app_id,
     gcm::GCMDriver* gcm_driver) {
-  return base::WrapUnique(new InstanceIDImpl(app_id, gcm_driver));
+  return std::make_unique<InstanceIDImpl>(app_id, gcm_driver);
 }
 
 InstanceIDImpl::InstanceIDImpl(const std::string& app_id,
@@ -119,26 +118,27 @@ void InstanceIDImpl::DoGetToken(
 void InstanceIDImpl::ValidateToken(const std::string& authorized_entity,
                                    const std::string& scope,
                                    const std::string& token,
-                                   const ValidateTokenCallback& callback) {
+                                   ValidateTokenCallback callback) {
   DCHECK(!authorized_entity.empty());
   DCHECK(!scope.empty());
   DCHECK(!token.empty());
 
   RunWhenReady(base::BindOnce(&InstanceIDImpl::DoValidateToken,
                               weak_ptr_factory_.GetWeakPtr(), authorized_entity,
-                              scope, token, callback));
+                              scope, token, std::move(callback)));
 }
 
 void InstanceIDImpl::DoValidateToken(const std::string& authorized_entity,
                                      const std::string& scope,
                                      const std::string& token,
-                                     const ValidateTokenCallback& callback) {
+                                     ValidateTokenCallback callback) {
   if (id_.empty()) {
-    callback.Run(false /* is_valid */);
+    std::move(callback).Run(false /* is_valid */);
     return;
   }
 
-  Handler()->ValidateToken(app_id(), authorized_entity, scope, token, callback);
+  Handler()->ValidateToken(app_id(), authorized_entity, scope, token,
+                           std::move(callback));
 }
 
 void InstanceIDImpl::DeleteTokenImpl(const std::string& authorized_entity,
@@ -229,6 +229,7 @@ void InstanceIDImpl::GetInstanceIDDataCompleted(
 void InstanceIDImpl::EnsureIDGenerated() {
   if (!id_.empty())
     return;
+  UMA_HISTOGRAM_BOOLEAN("InstanceID.GeneratedNewID", true);
 
   // Now produce the ID in the following steps:
 

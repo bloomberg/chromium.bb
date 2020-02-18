@@ -5,13 +5,23 @@
 #ifndef CHROME_BROWSER_UNEXPIRE_FLAGS_H_
 #define CHROME_BROWSER_UNEXPIRE_FLAGS_H_
 
+#include "base/callback.h"
 #include "base/feature_list.h"
 
 namespace flags {
 
-extern const base::Feature kUnexpireFlagsM76;
+extern const base::Feature kUnexpireFlagsM78;
+extern const base::Feature kUnexpireFlagsM80;
 
 bool IsFlagExpired(const char* internal_name);
+
+namespace testing {
+
+using FlagPredicate = base::RepeatingCallback<bool(const std::string&)>;
+
+void SetFlagExpiredPredicate(FlagPredicate predicate);
+
+}  // namespace testing
 
 }  // namespace flags
 

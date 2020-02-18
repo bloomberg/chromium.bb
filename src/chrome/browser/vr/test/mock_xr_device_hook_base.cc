@@ -50,20 +50,16 @@ device_test::mojom::ControllerFrameDataPtr DeviceToMojoControllerFrameData(
 }
 
 MockXRDeviceHookBase::MockXRDeviceHookBase()
-    : tracked_classes_{device_test::mojom::TrackedDeviceClass::
-                           kTrackedDeviceInvalid},
-      binding_(this) {
+    : tracked_classes_{
+          device_test::mojom::TrackedDeviceClass::kTrackedDeviceInvalid} {
   vr::GetXRDeviceService()->BindTestHook(
-      mojo::MakeRequest(&service_test_hook_));
-
-  device_test::mojom::XRTestHookPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
+      service_test_hook_.BindNewPipeAndPassReceiver());
 
   mojo::ScopedAllowSyncCallForTesting scoped_allow_sync;
   // For now, always have the HMD connected.
   tracked_classes_[0] =
       device_test::mojom::TrackedDeviceClass::kTrackedDeviceHmd;
-  service_test_hook_->SetTestHook(std::move(client));
+  service_test_hook_->SetTestHook(receiver_.BindNewPipeAndPassRemote());
 }
 
 MockXRDeviceHookBase::~MockXRDeviceHookBase() {
@@ -71,11 +67,11 @@ MockXRDeviceHookBase::~MockXRDeviceHookBase() {
 }
 
 void MockXRDeviceHookBase::StopHooking() {
-  // We don't call service_test_hook_->SetTestHook(nullptr), since that
-  // will potentially deadlock with reentrant or crossing synchronous mojo
+  // We don't call service_test_hook_->SetTestHook(mojo::NullRemote()), since
+  // that will potentially deadlock with reentrant or crossing synchronous mojo
   // calls.
-  binding_.Close();
-  service_test_hook_ = nullptr;
+  receiver_.reset();
+  service_test_hook_.reset();
 }
 
 void MockXRDeviceHookBase::OnFrameSubmitted(
@@ -145,10 +141,18 @@ void MockXRDeviceHookBase::WaitGetControllerData(
   std::move(callback).Run(DeviceToMojoControllerFrameData(data));
 }
 
-void MockXRDeviceHookBase::WaitGetSessionStateStopping(
-    device_test::mojom::XRTestHook::WaitGetSessionStateStoppingCallback
-        callback) {
-  std::move(callback).Run(false);
+void MockXRDeviceHookBase::WaitGetEventData(
+    device_test::mojom::XRTestHook::WaitGetEventDataCallback callback) {
+  if (event_data_queue_.empty()) {
+    device_test::mojom::EventDataPtr ret = device_test::mojom::EventData::New();
+    ret->type = device_test::mojom::EventType::kNoEvent;
+    std::move(callback).Run(std::move(ret));
+    return;
+  }
+  device_test::mojom::EventDataPtr ret =
+      device_test::mojom::EventData::New(event_data_queue_.front());
+  std::move(callback).Run(std::move(ret));
+  event_data_queue_.pop();
 }
 
 unsigned int MockXRDeviceHookBase::ConnectController(
@@ -208,4 +212,8 @@ device::ControllerFrameData MockXRDeviceHookBase::CreateValidController(
   ret.pose_data.device_to_origin[10] = 1;
   ret.pose_data.device_to_origin[15] = 1;
   return ret;
+}
+
+void MockXRDeviceHookBase::PopulateEvent(device_test::mojom::EventData data) {
+  event_data_queue_.push(data);
 }

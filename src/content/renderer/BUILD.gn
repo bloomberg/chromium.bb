@@ -6,7 +6,6 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
-import("//build/split_static_library.gni")
 import("//content/common/features.gni")
 import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -17,7 +16,7 @@ import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 if (is_component_build) {
   link_target_type = "jumbo_source_set"
 } else {
-  link_target_type = "jumbo_split_static_library"
+  link_target_type = "jumbo_static_library"
 }
 
 target(link_target_type, "renderer") {
@@ -48,6 +47,8 @@ target(link_target_type, "renderer") {
     "accessibility/render_accessibility_impl.h",
     "android/synchronous_layer_tree_frame_sink.cc",
     "android/synchronous_layer_tree_frame_sink.h",
+    "browser_exposed_renderer_interfaces.cc",
+    "browser_exposed_renderer_interfaces.h",
     "browser_plugin/browser_plugin.cc",
     "browser_plugin/browser_plugin.h",
     "browser_plugin/browser_plugin_manager.cc",
@@ -67,6 +68,8 @@ target(link_target_type, "renderer") {
     "context_menu_params_builder.h",
     "crash_helpers.cc",
     "crash_helpers.h",
+    "discardable_memory_utils.cc",
+    "discardable_memory_utils.h",
     "dom_automation_controller.cc",
     "dom_automation_controller.h",
     "drop_data_builder.cc",
@@ -198,38 +201,6 @@ target(link_target_type, "renderer") {
     "media/renderer_webaudiodevice_impl.h",
     "media/renderer_webmediaplayer_delegate.cc",
     "media/renderer_webmediaplayer_delegate.h",
-    "media/webrtc/media_stream_track_metrics.cc",
-    "media/webrtc/media_stream_track_metrics.h",
-    "media/webrtc/media_stream_video_webrtc_sink.cc",
-    "media/webrtc/media_stream_video_webrtc_sink.h",
-    "media/webrtc/peer_connection_dependency_factory.cc",
-    "media/webrtc/peer_connection_dependency_factory.h",
-    "media/webrtc/peer_connection_tracker.cc",
-    "media/webrtc/peer_connection_tracker.h",
-    "media/webrtc/rtc_certificate_generator.cc",
-    "media/webrtc/rtc_certificate_generator.h",
-    "media/webrtc/rtc_peer_connection_handler.cc",
-    "media/webrtc/rtc_peer_connection_handler.h",
-    "media/webrtc/rtc_rtp_receiver.cc",
-    "media/webrtc/rtc_rtp_receiver.h",
-    "media/webrtc/rtc_rtp_sender.cc",
-    "media/webrtc/rtc_rtp_sender.h",
-    "media/webrtc/rtc_rtp_transceiver.cc",
-    "media/webrtc/rtc_rtp_transceiver.h",
-    "media/webrtc/stun_field_trial.cc",
-    "media/webrtc/stun_field_trial.h",
-    "media/webrtc/transceiver_state_surfacer.cc",
-    "media/webrtc/transceiver_state_surfacer.h",
-    "media/webrtc/transmission_encoding_info_handler.cc",
-    "media/webrtc/transmission_encoding_info_handler.h",
-    "media/webrtc/video_codec_factory.cc",
-    "media/webrtc/video_codec_factory.h",
-    "media/webrtc/webrtc_media_stream_track_adapter.cc",
-    "media/webrtc/webrtc_media_stream_track_adapter.h",
-    "media/webrtc/webrtc_media_stream_track_adapter_map.cc",
-    "media/webrtc/webrtc_media_stream_track_adapter_map.h",
-    "media/webrtc/webrtc_set_description_observer.cc",
-    "media/webrtc/webrtc_set_description_observer.h",
     "menu_item_builder.cc",
     "menu_item_builder.h",
     "mhtml_handle_writer.cc",
@@ -244,30 +215,6 @@ target(link_target_type, "renderer") {
     "navigation_state.h",
     "net_info_helper.cc",
     "net_info_helper.h",
-    "p2p/empty_network_manager.cc",
-    "p2p/empty_network_manager.h",
-    "p2p/filtering_network_manager.cc",
-    "p2p/filtering_network_manager.h",
-    "p2p/host_address_request.cc",
-    "p2p/host_address_request.h",
-    "p2p/ipc_network_manager.cc",
-    "p2p/ipc_network_manager.h",
-    "p2p/ipc_socket_factory.cc",
-    "p2p/ipc_socket_factory.h",
-    "p2p/mdns_responder_adapter.cc",
-    "p2p/mdns_responder_adapter.h",
-    "p2p/network_list_manager.h",
-    "p2p/network_list_observer.h",
-    "p2p/network_manager_uma.cc",
-    "p2p/network_manager_uma.h",
-    "p2p/port_allocator.cc",
-    "p2p/port_allocator.h",
-    "p2p/socket_client.h",
-    "p2p/socket_client_delegate.h",
-    "p2p/socket_client_impl.cc",
-    "p2p/socket_client_impl.h",
-    "p2p/socket_dispatcher.cc",
-    "p2p/socket_dispatcher.h",
     "peripheral_content_heuristic.cc",
     "peripheral_content_heuristic.h",
     "queue_message_swap_promise.cc",
@@ -356,6 +303,8 @@ target(link_target_type, "renderer") {
     "worker/dedicated_worker_host_factory_client.h",
     "worker/embedded_shared_worker_stub.cc",
     "worker/embedded_shared_worker_stub.h",
+    "worker/fetch_client_settings_object_helpers.cc",
+    "worker/fetch_client_settings_object_helpers.h",
     "worker/shared_worker_factory_impl.cc",
     "worker/shared_worker_factory_impl.h",
     "worker/worker_thread_registry.cc",
@@ -367,15 +316,6 @@ target(link_target_type, "renderer") {
       "media/cast_renderer_client_factory.cc",
       "media/cast_renderer_client_factory.h",
     ]
-  }
-
-  if (!is_component_build) {
-    if (is_win && is_official_build) {
-      split_count = 2  # In certain configurations a full renderer.lib can
-                       # be 2+ GB which breaks some Windows tools.
-    } else {
-      split_count = 1
-    }
   }
 
   configs += [
@@ -400,13 +340,11 @@ target(link_target_type, "renderer") {
     "//components/discardable_memory/client",
     "//components/metrics",
     "//components/metrics:single_sample_metrics",
-    "//components/services/leveldb/public/cpp",
     "//components/url_formatter",
     "//components/viz/client",
     "//components/viz/common",
     "//components/viz/service",
     "//content:resources",
-    "//content/app/strings:strings_grit",
     "//content/child",
     "//content/common",
     "//content/common:buildflags",
@@ -423,7 +361,6 @@ target(link_target_type, "renderer") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/client:raster_interface",
     "//gpu/command_buffer/client:webgpu_interface",
-    "//jingle:webrtc_glue",
     "//media",
     "//media:media_buildflags",
     "//media/blink",
@@ -461,58 +398,11 @@ target(link_target_type, "renderer") {
     "//third_party/blink/public:blink",
     "//third_party/blink/public:buildflags",
     "//third_party/blink/public/common",
+    "//third_party/blink/public/strings:strings_grit",
     "//third_party/boringssl",
     "//third_party/icu",
     "//third_party/libyuv",
     "//third_party/sqlite",
-    "//third_party/webrtc/api:callfactory_api",
-    "//third_party/webrtc/api:libjingle_logging_api",
-    "//third_party/webrtc/api:libjingle_peerconnection_api",
-    "//third_party/webrtc/api:rtc_stats_api",
-    "//third_party/webrtc/api:scoped_refptr",
-    "//third_party/webrtc/api/audio:aec3_config",
-    "//third_party/webrtc/api/audio:aec3_config_json",
-    "//third_party/webrtc/api/audio:aec3_factory",
-    "//third_party/webrtc/api/audio_codecs:audio_codecs_api",
-    "//third_party/webrtc/api/rtc_event_log:rtc_event_log_factory",
-    "//third_party/webrtc/api/video:video_bitrate_allocation",
-    "//third_party/webrtc/api/video:video_frame",
-    "//third_party/webrtc/api/video:video_frame_i420",
-    "//third_party/webrtc/api/video:video_rtp_headers",
-    "//third_party/webrtc/api/video_codecs:rtc_software_fallback_wrappers",
-    "//third_party/webrtc/api/video_codecs:video_codecs_api",
-    "//third_party/webrtc/common_video:common_video",
-    "//third_party/webrtc/media:rtc_audio_video",
-    "//third_party/webrtc/media:rtc_internal_video_codecs",
-    "//third_party/webrtc/media:rtc_media",
-    "//third_party/webrtc/media:rtc_media_base",
-    "//third_party/webrtc/media:rtc_simulcast_encoder_adapter",
-    "//third_party/webrtc/media:rtc_vp9_profile",
-    "//third_party/webrtc/modules/audio_device",
-    "//third_party/webrtc/modules/audio_processing",
-    "//third_party/webrtc/modules/audio_processing:api",
-    "//third_party/webrtc/modules/audio_processing:audio_processing_statistics",
-    "//third_party/webrtc/modules/audio_processing/aec_dump",
-    "//third_party/webrtc/modules/video_coding:webrtc_h264",
-    "//third_party/webrtc/p2p:libstunprober",
-    "//third_party/webrtc/p2p:rtc_p2p",
-    "//third_party/webrtc/pc:libjingle_peerconnection",
-    "//third_party/webrtc/pc:rtc_pc",
-    "//third_party/webrtc/pc:rtc_pc_base",
-    "//third_party/webrtc/rtc_base:async_resolver_interface",
-    "//third_party/webrtc/rtc_base:ip_address",
-    "//third_party/webrtc/rtc_base:rtc_base",
-    "//third_party/webrtc/rtc_base:rtc_task_queue",
-    "//third_party/webrtc/rtc_base:socket_address",
-    "//third_party/webrtc/rtc_base:threading",
-    "//third_party/webrtc/rtc_base:timeutils",
-
-    # TODO(titovartem) remove dependency on WebRTC internals.
-    "//third_party/webrtc/rtc_base/third_party/sigslot:sigslot",
-    "//third_party/webrtc/stats",
-    "//third_party/webrtc/system_wrappers",
-    "//third_party/webrtc_overrides:init_webrtc",
-    "//third_party/webrtc_overrides:task_queue_factory",
     "//third_party/widevine/cdm:headers",
     "//ui/accessibility",
     "//ui/base",
@@ -552,6 +442,7 @@ target(link_target_type, "renderer") {
 
     deps += [
       "//third_party/android_ndk:cpu_features",
+      "//third_party/ashmem",
       "//third_party/libphonenumber",
     ]
   } else {
@@ -583,11 +474,16 @@ target(link_target_type, "renderer") {
 
   if (is_fuchsia) {
     sources += [
+      "media/fuchsia_renderer_factory.cc",
+      "media/fuchsia_renderer_factory.h",
       "render_view_fuchsia.cc",
       "renderer_main_platform_delegate_fuchsia.cc",
     ]
 
-    deps += [ "//media/fuchsia/cdm" ]
+    deps += [
+      "//media/fuchsia/audio",
+      "//media/fuchsia/cdm/client",
+    ]
   }
 
   if (enable_media_remoting) {
@@ -671,8 +567,6 @@ target(link_target_type, "renderer") {
       "pepper/pepper_platform_video_capture.h",
       "pepper/pepper_plugin_instance_impl.cc",
       "pepper/pepper_plugin_instance_impl.h",
-      "pepper/pepper_plugin_instance_metrics.cc",
-      "pepper/pepper_plugin_instance_metrics.h",
       "pepper/pepper_plugin_registry.cc",
       "pepper/pepper_plugin_registry.h",
       "pepper/pepper_proxy_channel_delegate_impl.cc",

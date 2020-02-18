@@ -57,11 +57,12 @@ Bbr2Sender::Bbr2Sender(QuicTime now,
                        QuicPacketCount initial_cwnd_in_packets,
                        QuicPacketCount max_cwnd_in_packets,
                        QuicRandom* random,
-                       QuicConnectionStats* /*stats*/)
+                       QuicConnectionStats* stats)
     : mode_(Bbr2Mode::STARTUP),
       rtt_stats_(rtt_stats),
       unacked_packets_(unacked_packets),
       random_(random),
+      connection_stats_(stats),
       params_(kDefaultMinimumCongestionWindow,
               max_cwnd_in_packets * kDefaultTCPMSS),
       model_(&params_,
@@ -75,7 +76,7 @@ Bbr2Sender::Bbr2Sender(QuicTime now,
       pacing_rate_(kInitialPacingGain * QuicBandwidth::FromBytesAndTimeDelta(
                                             cwnd_,
                                             rtt_stats->SmoothedOrInitialRtt())),
-      startup_(this, &model_),
+      startup_(this, &model_, now),
       drain_(this, &model_),
       probe_bw_(this, &model_),
       probe_rtt_(this, &model_),
@@ -114,10 +115,8 @@ const Limits<QuicByteCount>& Bbr2Sender::cwnd_limits() const {
   return params_.cwnd_limits;
 }
 
-void Bbr2Sender::AdjustNetworkParameters(QuicBandwidth bandwidth,
-                                         QuicTime::Delta rtt,
-                                         bool allow_cwnd_to_decrease) {
-  model_.UpdateNetworkParameters(bandwidth, rtt);
+void Bbr2Sender::AdjustNetworkParameters(const NetworkParams& params) {
+  model_.UpdateNetworkParameters(params.bandwidth, params.rtt);
 
   if (mode_ == Bbr2Mode::STARTUP) {
     const QuicByteCount prior_cwnd = cwnd_;
@@ -127,7 +126,7 @@ void Bbr2Sender::AdjustNetworkParameters(QuicBandwidth bandwidth,
     // we are reducing the number of updates needed to arrive at the target.
     cwnd_ = model_.BDP(model_.BandwidthEstimate());
     UpdateCongestionWindow(0);
-    if (!allow_cwnd_to_decrease) {
+    if (!params.allow_cwnd_to_decrease) {
       cwnd_ = std::max(cwnd_, prior_cwnd);
     }
   }
@@ -170,6 +169,7 @@ void Bbr2Sender::OnCongestionEvent(bool /*rtt_updated*/,
 
     QUIC_DVLOG(2) << this << " Mode change:  " << mode_ << " ==> " << next_mode
                   << "  @ " << event_time;
+    BBR2_MODE_DISPATCH(Leave(congestion_event));
     mode_ = next_mode;
     BBR2_MODE_DISPATCH(Enter(congestion_event));
     --mode_changes_allowed;
@@ -311,6 +311,10 @@ void Bbr2Sender::OnApplicationLimited(QuicByteCount bytes_in_flight) {
                 << ", CWND: " << GetCongestionWindow();
 }
 
+void Bbr2Sender::PopulateConnectionStats(QuicConnectionStats* stats) const {
+  stats->num_ack_aggregation_epochs = model_.num_ack_aggregation_epochs();
+}
+
 bool Bbr2Sender::ShouldSendProbingPacket() const {
   // TODO(wub): Implement ShouldSendProbingPacket properly.
   if (!BBR2_MODE_DISPATCH(IsProbingForBandwidth())) {
@@ -363,6 +367,9 @@ Bbr2Sender::DebugState Bbr2Sender::ExportDebugState() const {
   s.bandwidth_hi = model_.MaxBandwidth();
   s.bandwidth_lo = model_.bandwidth_lo();
   s.bandwidth_est = BandwidthEstimate();
+  s.inflight_hi = model_.inflight_hi();
+  s.inflight_lo = model_.inflight_lo();
+  s.max_ack_height = model_.MaxAckHeight();
   s.min_rtt = model_.MinRtt();
   s.min_rtt_timestamp = model_.MinRttTimestamp();
   s.congestion_window = cwnd_;

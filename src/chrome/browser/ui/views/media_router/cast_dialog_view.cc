@@ -41,7 +41,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace media_router {
 
@@ -49,6 +48,16 @@ namespace {
 
 // This value is negative so that it doesn't overlap with a sink index.
 constexpr int kAlternativeSourceButtonId = -1;
+
+std::unique_ptr<views::Button> CreateSourcesButton(
+    views::ButtonListener* listener) {
+  auto sources_button = std::make_unique<views::MdTextButtonWithDownArrow>(
+      listener,
+      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON));
+  sources_button->SetID(kAlternativeSourceButtonId);
+  sources_button->SetEnabled(false);
+  return sources_button;
+}
 
 }  // namespace
 
@@ -128,20 +137,6 @@ base::string16 CastDialogView::GetWindowTitle() const {
       NOTREACHED();
       return base::string16();
   }
-}
-
-int CastDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
-}
-
-std::unique_ptr<views::View> CastDialogView::CreateExtraView() {
-  auto sources_button = std::make_unique<views::MdTextButtonWithDownArrow>(
-      this,
-      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON));
-  sources_button->SetID(kAlternativeSourceButtonId);
-  sources_button->SetEnabled(false);
-  sources_button_ = sources_button.get();
-  return sources_button;
 }
 
 bool CastDialogView::Close() {
@@ -266,7 +261,9 @@ CastDialogView::CastDialogView(views::View* anchor_view,
       selected_source_(SourceType::kTab),
       controller_(controller),
       profile_(profile),
-      metrics_(start_time) {
+      metrics_(start_time, profile) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  sources_button_ = DialogDelegate::SetExtraView(CreateSourcesButton(this));
   ShowNoSinksView();
 }
 

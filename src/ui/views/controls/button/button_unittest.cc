@@ -72,7 +72,7 @@ class TestButton : public Button, public ButtonListener {
   ~TestButton() override = default;
 
   KeyClickAction GetKeyClickActionForEvent(const ui::KeyEvent& event) override {
-    if (custom_key_click_action_ == KeyClickAction::CLICK_NONE)
+    if (custom_key_click_action_ == KeyClickAction::kNone)
       return Button::GetKeyClickActionForEvent(event);
     return custom_key_click_action_;
   }
@@ -117,7 +117,7 @@ class TestButton : public Button, public ButtonListener {
   int ink_drop_layer_add_count_ = 0;
   int ink_drop_layer_remove_count_ = 0;
 
-  KeyClickAction custom_key_click_action_ = KeyClickAction::CLICK_NONE;
+  KeyClickAction custom_key_click_action_ = KeyClickAction::kNone;
 
   DISALLOW_COPY_AND_ASSIGN(TestButton);
 };
@@ -335,7 +335,7 @@ TEST_F(ButtonTest, NotifyAction) {
   // Set the notify action to its listener on mouse press.
   button()->Reset();
   button()->button_controller()->set_notify_action(
-      ButtonController::NotifyAction::NOTIFY_ON_PRESS);
+      ButtonController::NotifyAction::kOnPress);
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
@@ -370,7 +370,7 @@ TEST_F(ButtonTest, NotifyActionNoClick) {
   // Set the notify action to its listener on mouse press.
   button()->Reset();
   button()->button_controller()->set_notify_action(
-      ButtonController::NotifyAction::NOTIFY_ON_PRESS);
+      ButtonController::NotifyAction::kOnPress);
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON));
@@ -626,7 +626,7 @@ TEST_F(ButtonTest, InkDropShowHideOnMouseDraggedNotifyOnRelease) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
   button()->button_controller()->set_notify_action(
-      ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
+      ButtonController::NotifyAction::kOnRelease);
 
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
@@ -668,7 +668,7 @@ TEST_F(ButtonTest, InkDropShowHideOnMouseDraggedNotifyOnPress) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), true);
   button()->button_controller()->set_notify_action(
-      ButtonController::NotifyAction::NOTIFY_ON_PRESS);
+      ButtonController::NotifyAction::kOnPress);
 
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
@@ -831,9 +831,8 @@ TEST_F(ButtonTest, CustomActionOnKeyPressedEvent) {
   button()->RequestFocus();
   EXPECT_TRUE(button()->HasFocus());
 
-  // Set the button to handle any key pressed event as |CLICK_ON_KEY_PRESS|.
-  button()->set_custom_key_click_action(
-      Button::KeyClickAction::CLICK_ON_KEY_PRESS);
+  // Set the button to handle any key pressed event as kOnKeyPress.
+  button()->set_custom_key_click_action(Button::KeyClickAction::kOnKeyPress);
 
   ui::KeyEvent control_press(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, ui::EF_NONE);
   EXPECT_TRUE(button()->OnKeyPressed(control_press));

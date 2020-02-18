@@ -8,7 +8,9 @@
 #include <utility>
 
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/modules/credentialmanager/authentication_extensions_client_inputs.h"
 #include "third_party/blink/renderer/modules/credentialmanager/authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/modules/credentialmanager/cable_authentication_data.h"
 #include "third_party/blink/renderer/modules/credentialmanager/cable_registration_data.h"
@@ -152,6 +154,12 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
     case blink::mojom::blink::AuthenticatorStatus::
         PROTECTION_POLICY_INCONSISTENT:
       return CredentialManagerError::PROTECTION_POLICY_INCONSISTENT;
+    case blink::mojom::blink::AuthenticatorStatus::OPAQUE_DOMAIN:
+      return CredentialManagerError::OPAQUE_DOMAIN;
+    case blink::mojom::blink::AuthenticatorStatus::INVALID_PROTOCOL:
+      return CredentialManagerError::INVALID_PROTOCOL;
+    case blink::mojom::blink::AuthenticatorStatus::BAD_RELYING_PARTY_ID:
+      return CredentialManagerError::BAD_RELYING_PARTY_ID;
     case blink::mojom::blink::AuthenticatorStatus::SUCCESS:
       NOTREACHED();
       break;
@@ -166,12 +174,13 @@ Vector<uint8_t> ConvertFixedSizeArray(
     const blink::ArrayBufferOrArrayBufferView& buffer,
     unsigned length) {
   if (buffer.IsArrayBuffer() &&
-      (buffer.GetAsArrayBuffer()->ByteLength() != length)) {
+      (buffer.GetAsArrayBuffer()->DeprecatedByteLengthAsUnsigned() != length)) {
     return Vector<uint8_t>();
   }
 
   if (buffer.IsArrayBufferView() &&
-      buffer.GetAsArrayBufferView().View()->byteLength() != length) {
+      buffer.GetAsArrayBufferView().View()->deprecatedByteLengthAsUnsigned() !=
+          length) {
     return Vector<uint8_t>();
   }
 
@@ -186,12 +195,13 @@ TypeConverter<Vector<uint8_t>, blink::ArrayBufferOrArrayBufferView>::Convert(
   Vector<uint8_t> vector;
   if (buffer.IsArrayBuffer()) {
     vector.Append(static_cast<uint8_t*>(buffer.GetAsArrayBuffer()->Data()),
-                  buffer.GetAsArrayBuffer()->ByteLength());
+                  buffer.GetAsArrayBuffer()->DeprecatedByteLengthAsUnsigned());
   } else {
     DCHECK(buffer.IsArrayBufferView());
-    vector.Append(static_cast<uint8_t*>(
-                      buffer.GetAsArrayBufferView().View()->BaseAddress()),
-                  buffer.GetAsArrayBufferView().View()->byteLength());
+    vector.Append(
+        static_cast<uint8_t*>(
+            buffer.GetAsArrayBufferView().View()->BaseAddress()),
+        buffer.GetAsArrayBufferView().View()->deprecatedByteLengthAsUnsigned());
   }
   return vector;
 }
@@ -575,13 +585,18 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
     if (extensions->hasCableAuthentication()) {
       Vector<CableAuthenticationPtr> mojo_data;
       for (auto& data : extensions->cableAuthentication()) {
+        if (data->version() != 1) {
+          continue;
+        }
         CableAuthenticationPtr mojo_cable =
             CableAuthentication::From(data.Get());
         if (mojo_cable) {
           mojo_data.push_back(std::move(mojo_cable));
         }
       }
-      mojo_options->cable_authentication_data = std::move(mojo_data);
+      if (mojo_data.size() > 0) {
+        mojo_options->cable_authentication_data = std::move(mojo_data);
+      }
     }
 #if defined(OS_ANDROID)
     if (extensions->hasUvm()) {

@@ -4,15 +4,17 @@
 
 package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
-import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
+import org.chromium.content_public.common.BrowserControlsState;
+import org.chromium.ui.util.TokenHolder;
 
 import javax.inject.Inject;
 
@@ -25,14 +27,14 @@ import dagger.Lazy;
 public class DynamicModuleToolbarController implements InflationObserver, NativeInitObserver {
     private final Lazy<ChromeFullscreenManager> mFullscreenManager;
     private final CustomTabToolbarCoordinator mToolbarCoordinator;
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
 
-    private int mControlsHidingToken = FullscreenManager.INVALID_TOKEN;
+    private int mControlsHidingToken = TokenHolder.INVALID_TOKEN;
     private boolean mHasReleasedToken;
 
     @Inject
     public DynamicModuleToolbarController(Lazy<ChromeFullscreenManager> fullscreenManager,
-            CustomTabIntentDataProvider intentDataProvider,
+            BrowserServicesIntentDataProvider intentDataProvider,
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
             CustomTabToolbarCoordinator toolbarCoordinator) {
         mFullscreenManager = fullscreenManager;
@@ -47,7 +49,7 @@ public class DynamicModuleToolbarController implements InflationObserver, Native
 
     @Override
     public void onPostInflationStartup() {
-        mToolbarCoordinator.setToolbarHidden(true);
+        mToolbarCoordinator.setBrowserControlsState(BrowserControlsState.HIDDEN);
         mControlsHidingToken =
                 mFullscreenManager.get().hideAndroidControlsAndClearOldToken(mControlsHidingToken);
         mHasReleasedToken = false;
@@ -61,7 +63,7 @@ public class DynamicModuleToolbarController implements InflationObserver, Native
     }
 
     /* package */ void releaseAndroidControlsHidingToken() {
-        mToolbarCoordinator.setToolbarHidden(false);
+        mToolbarCoordinator.setBrowserControlsState(BrowserControlsState.BOTH);
         mFullscreenManager.get().releaseAndroidControlsHidingToken(mControlsHidingToken);
         mHasReleasedToken = true;
     }
@@ -73,6 +75,6 @@ public class DynamicModuleToolbarController implements InflationObserver, Native
 
     @VisibleForTesting
     boolean hasAcquiredToken() {
-        return mControlsHidingToken != FullscreenManager.INVALID_TOKEN;
+        return mControlsHidingToken != TokenHolder.INVALID_TOKEN;
     }
 }

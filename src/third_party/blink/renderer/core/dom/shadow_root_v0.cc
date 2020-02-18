@@ -65,7 +65,7 @@ inline void DistributionPool::PopulateChildren(const ContainerNode& parent) {
   Clear();
   for (Node* child = parent.firstChild(); child; child = child->nextSibling()) {
     // Re-distribution across v0 and v1 shadow trees is not supported
-    if (IsHTMLSlotElement(child))
+    if (IsA<HTMLSlotElement>(child))
       continue;
 
     if (IsActiveV0InsertionPoint(*child)) {
@@ -145,8 +145,14 @@ ShadowRootV0::DescendantInsertionPoints() {
 
 const V0InsertionPoint* ShadowRootV0::FinalDestinationInsertionPointFor(
     const Node* key) const {
+#if DCHECK_IS_ON()
   DCHECK(key);
-  DCHECK(!key->NeedsDistributionRecalc());
+  // Allow traversal without V0 distribution up-to-date for marking ancestors
+  // with ChildNeedsStyleRecalc() when FlatTreeStyleRecalc is enabled.
+  DCHECK(!key->NeedsDistributionRecalc() ||
+         RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled() &&
+             key->GetDocument().AllowDirtyShadowV0Traversal());
+#endif
   NodeToDestinationInsertionPoints::const_iterator it =
       node_to_insertion_points_.find(key);
   return it == node_to_insertion_points_.end() ? nullptr : it->value->back();
@@ -162,13 +168,15 @@ const DestinationInsertionPoints* ShadowRootV0::DestinationInsertionPointsFor(
 }
 
 void ShadowRootV0::Distribute() {
+  ClearDistribution();
+
   DistributionPool pool(GetShadowRoot().host());
   HTMLShadowElement* shadow_insertion_point = nullptr;
 
   for (const auto& point : DescendantInsertionPoints()) {
     if (!point->IsActive())
       continue;
-    if (auto* shadow = ToHTMLShadowElementOrNull(*point)) {
+    if (auto* shadow = DynamicTo<HTMLShadowElement>(*point)) {
       DCHECK(!shadow_insertion_point);
       shadow_insertion_point = shadow;
     } else {

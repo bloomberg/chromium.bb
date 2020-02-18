@@ -92,8 +92,9 @@ void BlobImpl::Clone(mojo::PendingReceiver<blink::mojom::Blob> receiver) {
   receivers_.Add(this, std::move(receiver));
 }
 
-void BlobImpl::AsDataPipeGetter(network::mojom::DataPipeGetterRequest request) {
-  data_pipe_getter_bindings_.AddBinding(this, std::move(request));
+void BlobImpl::AsDataPipeGetter(
+    mojo::PendingReceiver<network::mojom::DataPipeGetter> receiver) {
+  data_pipe_getter_receivers_.Add(this, std::move(receiver));
 }
 
 void BlobImpl::ReadRange(
@@ -145,28 +146,16 @@ void BlobImpl::ReadSideData(ReadSideDataCallback callback) {
           std::move(callback).Run(base::nullopt);
           return;
         }
-        auto io_buffer = base::MakeRefCounted<net::IOBufferWithSize>(body_size);
-
-        auto io_callback = base::AdaptCallbackForRepeating(base::BindOnce(
-            [](scoped_refptr<net::IOBufferWithSize> io_buffer,
-               ReadSideDataCallback callback, int result) {
+        item->data_handle()->ReadSideData(base::BindOnce(
+            [](ReadSideDataCallback callback, int result,
+               mojo_base::BigBuffer buffer) {
               if (result < 0) {
                 std::move(callback).Run(base::nullopt);
                 return;
               }
-              const uint8_t* data =
-                  reinterpret_cast<const uint8_t*>(io_buffer->data());
-              std::move(callback).Run(
-                  base::make_span(data, data + io_buffer->size()));
+              std::move(callback).Run(std::move(buffer));
             },
-            io_buffer, std::move(callback)));
-
-        // TODO(crbug.com/867848): Plumb BigBuffer into
-        // BlobDataItem::DataHandle::ReadSideData().
-        int rv = item->data_handle()->ReadSideData(std::move(io_buffer),
-                                                   io_callback);
-        if (rv != net::ERR_IO_PENDING)
-          io_callback.Run(rv);
+            std::move(callback)));
       },
       *handle_, std::move(callback)));
 }
@@ -175,8 +164,9 @@ void BlobImpl::GetInternalUUID(GetInternalUUIDCallback callback) {
   std::move(callback).Run(handle_->uuid());
 }
 
-void BlobImpl::Clone(network::mojom::DataPipeGetterRequest request) {
-  data_pipe_getter_bindings_.AddBinding(this, std::move(request));
+void BlobImpl::Clone(
+    mojo::PendingReceiver<network::mojom::DataPipeGetter> receiver) {
+  data_pipe_getter_receivers_.Add(this, std::move(receiver));
 }
 
 void BlobImpl::Read(mojo::ScopedDataPipeProducerHandle handle,
@@ -192,10 +182,10 @@ void BlobImpl::FlushForTesting() {
   receivers_.FlushForTesting();
   if (!weak_self)
     return;
-  data_pipe_getter_bindings_.FlushForTesting();
+  data_pipe_getter_receivers_.FlushForTesting();
   if (!weak_self)
     return;
-  if (receivers_.empty() && data_pipe_getter_bindings_.empty())
+  if (receivers_.empty() && data_pipe_getter_receivers_.empty())
     delete this;
 }
 
@@ -206,7 +196,7 @@ BlobImpl::BlobImpl(std::unique_ptr<BlobDataHandle> handle,
   receivers_.Add(this, std::move(receiver));
   receivers_.set_disconnect_handler(
       base::BindRepeating(&BlobImpl::OnMojoDisconnect, base::Unretained(this)));
-  data_pipe_getter_bindings_.set_connection_error_handler(
+  data_pipe_getter_receivers_.set_disconnect_handler(
       base::BindRepeating(&BlobImpl::OnMojoDisconnect, base::Unretained(this)));
 }
 
@@ -215,7 +205,7 @@ BlobImpl::~BlobImpl() = default;
 void BlobImpl::OnMojoDisconnect() {
   if (!receivers_.empty())
     return;
-  if (!data_pipe_getter_bindings_.empty())
+  if (!data_pipe_getter_receivers_.empty())
     return;
   delete this;
 }

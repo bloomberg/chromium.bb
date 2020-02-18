@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/debug/asan_invalid_access.h"
 #include "base/debug/profiler.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/sanitizer_buildflags.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -27,7 +28,7 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/ppapi_plugin_process_host.h"  // nogncheck
-#include "ppapi/proxy/ppapi_messages.h"  // nogncheck
+#include "ppapi/proxy/ppapi_messages.h"                 // nogncheck
 #endif
 
 #if defined(OS_WIN)
@@ -59,8 +60,8 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
   bool crash = url == kChromeUIPpapiFlashCrashURL;
 
   std::vector<PpapiPluginProcessHost*> hosts;
-  PpapiPluginProcessHost::FindByName(
-      base::UTF8ToUTF16(kFlashPluginName), &hosts);
+  PpapiPluginProcessHost::FindByName(base::UTF8ToUTF16(kFlashPluginName),
+                                     &hosts);
   for (auto iter = hosts.begin(); iter != hosts.end(); ++iter) {
     if (crash)
       (*iter)->Send(new PpapiMsg_Crash());
@@ -72,8 +73,7 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
 
 bool IsAsanDebugURL(const GURL& url) {
   if (!(url.is_valid() && url.SchemeIs(kChromeUIScheme) &&
-        url.DomainIs(kAsanCrashDomain) &&
-        url.has_path())) {
+        url.DomainIs(kAsanCrashDomain) && url.has_path())) {
     return false;
   }
 
@@ -128,22 +128,15 @@ void HangCurrentThread() {
 
 }  // namespace
 
-bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
-  // Ensure that the user explicitly navigated to this URL, unless
-  // kEnableGpuBenchmarking is enabled by Telemetry.
+bool HandleDebugURL(const GURL& url,
+                    ui::PageTransition transition,
+                    bool is_explicit_navigation) {
+  // We want to handle the debug URL if the user explicitly navigated to this
+  // URL, unless kEnableGpuBenchmarking is enabled by Telemetry.
   bool is_telemetry_navigation =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kEnableGpuBenchmarking) &&
       (PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED));
-
-  // TODO(crbug.com/986346): allow this behavior to be customized by the
-  // embedder.
-  bool is_explicit_navigation =
-#if defined(ENABLE_ADDRESS_BAR)
-      transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR;
-#else
-      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED);
-#endif
 
   if (!is_explicit_navigation && !is_telemetry_navigation)
     return false;
@@ -182,7 +175,7 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   if (url == kChromeUIGpuCleanURL) {
     GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
-                             base::Bind([](GpuProcessHost* host) {
+                             base::BindOnce([](GpuProcessHost* host) {
                                if (host)
                                  host->gpu_service()->DestroyAllChannels();
                              }));
@@ -192,7 +185,7 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   if (url == kChromeUIGpuCrashURL) {
     GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
-                             base::Bind([](GpuProcessHost* host) {
+                             base::BindOnce([](GpuProcessHost* host) {
                                if (host)
                                  host->gpu_service()->Crash();
                              }));
@@ -203,7 +196,7 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   if (url == kChromeUIGpuJavaCrashURL) {
     GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
-                             base::Bind([](GpuProcessHost* host) {
+                             base::BindOnce([](GpuProcessHost* host) {
                                if (host)
                                  host->gpu_service()->ThrowJavaException();
                              }));
@@ -214,7 +207,7 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   if (url == kChromeUIGpuHangURL) {
     GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED,
                              false /* force_create */,
-                             base::Bind([](GpuProcessHost* host) {
+                             base::BindOnce([](GpuProcessHost* host) {
                                if (host)
                                  host->gpu_service()->Hang();
                              }));
@@ -224,6 +217,18 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
   if (url == kChromeUIPpapiFlashCrashURL || url == kChromeUIPpapiFlashHangURL) {
     base::PostTask(FROM_HERE, {BrowserThread::IO},
                    base::BindOnce(&HandlePpapiFlashDebugURL, url));
+    return true;
+  }
+
+  if (url == kChromeUIMemoryPressureCriticalURL) {
+    base::MemoryPressureListener::NotifyMemoryPressure(
+        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+    return true;
+  }
+
+  if (url == kChromeUIMemoryPressureModerateURL) {
+    base::MemoryPressureListener::NotifyMemoryPressure(
+        base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
     return true;
   }
 

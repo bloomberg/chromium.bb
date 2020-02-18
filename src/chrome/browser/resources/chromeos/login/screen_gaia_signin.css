@@ -2,11 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-:host(.saml-interstitial) {
-  height: 528px;
-  width: 448px;
-}
-
 .signin-link {
   color: rgb(37, 79, 155);
   cursor: pointer;
@@ -35,14 +30,18 @@
   transition: opacity 500ms ease-out;
 }
 
+#signin-frame,
+#signin-frame-container {
+  height: 100%;
+  width: 100%;
+}
+
 #signin-frame {
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
   display: block;
-  height: 560px;
   overflow: hidden;
   position: static;
-  width: 768px;
 }
 
 :host .step-contents {
@@ -74,15 +73,6 @@
   font-size: 13px;
 }
 
-:host(.whitelist-error) .step-contents,
-:host(.whitelist-error) .gaia-dialog {
-  visibility: hidden;
-}
-
-:host(.whitelist-error) .step-loading {
-  visibility: hidden;
-}
-
 .step-loading {
   align-items: center;
   bottom: 0;
@@ -102,34 +92,8 @@
   position: absolute;
   right: 0;
   top: 0;
-  visibility: hidden;
 }
 
-:host(.whitelist-error) #gaia-whitelist-error {
-  visibility: visible;
-}
-
-:host(:not(.saml-interstitial)) #gaia-step-contents {
-  display: none;
-}
-
-:host(.saml) #signin-frame {
-  height: 516px;
+:host(.saml) #signin-frame-container {
   padding-top: 44px;
-}
-
-#signin-frame-dialog #buttons-container {
-  padding: 0 calc(32px - 4px); /* real width - button margin */
-}
-
-#signin-frame-dialog[full-screen-dialog] #buttons-container {
-  padding: 0 calc(64px - 4px); /* real width - button margin */
-}
-
-#gaia-screen-navigation-buttons {
-  height: 100%;
-}
-
-#gaia-screen-buttons-overlay {
-  background: rgba(0, 0, 0, 0.6);
 }

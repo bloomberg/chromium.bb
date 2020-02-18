@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "crypto/sha2.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
@@ -43,7 +42,8 @@
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "url/url_canon.h"
 
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+#if defined(OS_FUCHSIA) || defined(USE_NSS_CERTS) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
 #include "net/cert/cert_verify_proc_builtin.h"
 #endif
 
@@ -58,10 +58,6 @@
 #elif defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "net/cert/cert_verify_proc_win.h"
-#elif defined(OS_FUCHSIA)
-#include "net/cert/cert_verify_proc_builtin.h"
-#else
-#error Implement certificate verification.
 #endif
 
 namespace net {
@@ -457,15 +453,10 @@ WARN_UNUSED_RESULT bool InspectSignatureAlgorithmsInChain(
 
 }  // namespace
 
+#if !defined(OS_FUCHSIA)
 // static
-scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault(
+scoped_refptr<CertVerifyProc> CertVerifyProc::CreateSystemVerifyProc(
     scoped_refptr<CertNetFetcher> cert_net_fetcher) {
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-  if (base::FeatureList::IsEnabled(features::kCertVerifierBuiltinFeature)) {
-    return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher),
-                                       /*system_trust_store_provider=*/nullptr);
-  }
-#endif
 #if defined(USE_NSS_CERTS)
   return new CertVerifyProcNSS();
 #elif defined(OS_ANDROID)
@@ -476,13 +467,22 @@ scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault(
   return new CertVerifyProcMac();
 #elif defined(OS_WIN)
   return new CertVerifyProcWin();
-#elif defined(OS_FUCHSIA)
-  return CreateCertVerifyProcBuiltin(std::move(cert_net_fetcher),
-                                     /*system_trust_store_provider=*/nullptr);
 #else
 #error Unsupported platform
 #endif
 }
+#endif
+
+#if defined(OS_FUCHSIA) || defined(USE_NSS_CERTS) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+// static
+scoped_refptr<CertVerifyProc> CertVerifyProc::CreateBuiltinVerifyProc(
+    scoped_refptr<CertNetFetcher> cert_net_fetcher) {
+  return CreateCertVerifyProcBuiltin(
+      std::move(cert_net_fetcher),
+      SystemTrustStoreProvider::CreateDefaultForSSL());
+}
+#endif
 
 CertVerifyProc::CertVerifyProc() {}
 
@@ -532,6 +532,30 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     BestEffortCheckOCSP(ocsp_response, *verify_result->verified_cert,
                         &verify_result->ocsp_result);
   }
+
+  // Check to see if the connection is being intercepted.
+  if (crl_set) {
+    for (const auto& hash : verify_result->public_key_hashes) {
+      if (hash.tag() != HASH_VALUE_SHA256)
+        continue;
+      if (!crl_set->IsKnownInterceptionKey(base::StringPiece(
+              reinterpret_cast<const char*>(hash.data()), hash.size())))
+        continue;
+
+      if (verify_result->cert_status & CERT_STATUS_REVOKED) {
+        // If the chain was revoked, and a known MITM was present, signal that
+        // with a more meaningful error message.
+        verify_result->cert_status |= CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED;
+        rv = MapCertStatusToNetError(verify_result->cert_status);
+      } else {
+        // Otherwise, simply signal informatively. Both statuses are not set
+        // simultaneously.
+        verify_result->cert_status |= CERT_STATUS_KNOWN_INTERCEPTION_DETECTED;
+      }
+      break;
+    }
+  }
+
   std::vector<std::string> dns_names, ip_addrs;
   cert->GetSubjectAltName(&dns_names, &ip_addrs);
   if (HasNameConstraintsViolation(verify_result->public_key_hashes,

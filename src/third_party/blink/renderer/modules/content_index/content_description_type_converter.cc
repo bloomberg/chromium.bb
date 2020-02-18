@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/content_index/content_description_type_converter.h"
 
 #include "third_party/blink/public/mojom/content_index/content_index.mojom-blink.h"
+#include "third_party/blink/renderer/modules/content_index/content_icon_definition.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -13,6 +14,8 @@ namespace mojo {
 namespace {
 
 blink::mojom::ContentCategory GetContentCategory(const WTF::String& category) {
+  if (category == "")
+    return blink::mojom::ContentCategory::NONE;
   if (category == "homepage")
     return blink::mojom::ContentCategory::HOME_PAGE;
   if (category == "article")
@@ -23,11 +26,13 @@ blink::mojom::ContentCategory GetContentCategory(const WTF::String& category) {
     return blink::mojom::ContentCategory::AUDIO;
 
   NOTREACHED();
-  return blink::mojom::ContentCategory::ARTICLE;
+  return blink::mojom::ContentCategory::NONE;
 }
 
 WTF::String GetContentCategory(blink::mojom::ContentCategory category) {
   switch (category) {
+    case blink::mojom::ContentCategory::NONE:
+      return "";
     case blink::mojom::ContentCategory::HOME_PAGE:
       return "homepage";
     case blink::mojom::ContentCategory::ARTICLE:

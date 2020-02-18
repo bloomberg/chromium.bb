@@ -27,6 +27,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/upgrade_util_mac.h"
@@ -37,6 +38,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/staging_watcher.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
@@ -454,10 +456,21 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
                         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME), false);
   [app_controller mainMenuCreated];
 
-  // Initialize the OSCrypt.
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
+
+  // Initialize the OSCrypt.
   OSCrypt::Init(local_state);
+
+  // AppKit only restores windows to their original spaces when relaunching
+  // apps after a restart, and puts them all on the current space when an app
+  // is manually quit and relaunched. If Chrome restarted itself, ask AppKit to
+  // treat this launch like a system restart and restore everything.
+  if (local_state->GetBoolean(prefs::kWasRestarted)) {
+    [NSUserDefaults.standardUserDefaults registerDefaults:@{
+      @"NSWindowRestoresWorkspaceAtLaunch" : @YES
+    }];
+  }
 }
 
 void ChromeBrowserMainPartsMac::PostMainMessageLoopStart() {

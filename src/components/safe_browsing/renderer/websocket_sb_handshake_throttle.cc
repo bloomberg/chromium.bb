@@ -14,7 +14,6 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/renderer/render_frame.h"
 #include "ipc/ipc_message.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -51,7 +50,7 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
   int load_flags = 0;
   start_time_ = base::TimeTicks::Now();
   safe_browsing_->CreateCheckerAndCheck(
-      render_frame_id_, mojo::MakeRequest(&url_checker_), url, "GET",
+      render_frame_id_, url_checker_.BindNewPipeAndPassReceiver(), url, "GET",
       net::HttpRequestHeaders(), load_flags,
       content::ResourceType::kSubResource, false /* has_user_gesture */,
       false /* originated_from_service_worker */,
@@ -60,9 +59,8 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
 
   // This use of base::Unretained() is safe because the handler will not be
   // called after |url_checker_| is destroyed, and it is owned by this object.
-  url_checker_.set_connection_error_handler(
-      base::BindOnce(&WebSocketSBHandshakeThrottle::OnConnectionError,
-                     base::Unretained(this)));
+  url_checker_.set_disconnect_handler(base::BindOnce(
+      &WebSocketSBHandshakeThrottle::OnMojoDisconnect, base::Unretained(this)));
 }
 
 void WebSocketSBHandshakeThrottle::OnCompleteCheck(bool proceed,
@@ -87,27 +85,27 @@ void WebSocketSBHandshakeThrottle::OnCompleteCheck(bool proceed,
 }
 
 void WebSocketSBHandshakeThrottle::OnCheckResult(
-    mojom::UrlCheckNotifierRequest slow_check_notifier,
+    mojo::PendingReceiver<mojom::UrlCheckNotifier> slow_check_notifier,
     bool proceed,
     bool showed_interstitial) {
-  if (!slow_check_notifier.is_pending()) {
+  if (!slow_check_notifier.is_valid()) {
     OnCompleteCheck(proceed, showed_interstitial);
     return;
   }
 
   // TODO(yzshen): Notify the network service to pause processing response body.
-  if (!notifier_binding_) {
-    notifier_binding_ =
-        std::make_unique<mojo::Binding<mojom::UrlCheckNotifier>>(this);
+  if (!notifier_receiver_) {
+    notifier_receiver_ =
+        std::make_unique<mojo::Receiver<mojom::UrlCheckNotifier>>(this);
   }
-  notifier_binding_->Bind(std::move(slow_check_notifier));
+  notifier_receiver_->Bind(std::move(slow_check_notifier));
 }
 
-void WebSocketSBHandshakeThrottle::OnConnectionError() {
+void WebSocketSBHandshakeThrottle::OnMojoDisconnect() {
   DCHECK_EQ(result_, Result::UNKNOWN);
 
   url_checker_.reset();
-  notifier_binding_.reset();
+  notifier_receiver_.reset();
 
   // Make the destructor record NOT_SUPPORTED in the result histogram.
   result_ = Result::NOT_SUPPORTED;

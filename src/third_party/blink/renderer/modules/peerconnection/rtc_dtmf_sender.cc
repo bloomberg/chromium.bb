@@ -29,12 +29,12 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_tone_change_event.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -48,14 +48,14 @@ static const int kDefaultInterToneGapMs = 70;
 
 RTCDTMFSender* RTCDTMFSender::Create(
     ExecutionContext* context,
-    std::unique_ptr<WebRTCDTMFSenderHandler> dtmf_sender_handler) {
+    std::unique_ptr<RtcDtmfSenderHandler> dtmf_sender_handler) {
   DCHECK(dtmf_sender_handler);
   return MakeGarbageCollected<RTCDTMFSender>(context,
                                              std::move(dtmf_sender_handler));
 }
 
 RTCDTMFSender::RTCDTMFSender(ExecutionContext* context,
-                             std::unique_ptr<WebRTCDTMFSenderHandler> handler)
+                             std::unique_ptr<RtcDtmfSenderHandler> handler)
     : ContextLifecycleObserver(context),
       handler_(std::move(handler)),
       stopped_(false) {
@@ -156,7 +156,7 @@ void RTCDTMFSender::PlayoutTask() {
   DispatchEvent(*event.Release());
 }
 
-void RTCDTMFSender::DidPlayTone(const WebString& tone) {
+void RTCDTMFSender::DidPlayTone(const String& tone) {
   // We're using the DidPlayTone with an empty buffer to signal the
   // end of the tone.
   if (tone.IsEmpty()) {
@@ -184,6 +184,7 @@ void RTCDTMFSender::ContextDestroyed(ExecutionContext*) {
 
 void RTCDTMFSender::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
+  RtcDtmfSenderHandler::Client::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
 

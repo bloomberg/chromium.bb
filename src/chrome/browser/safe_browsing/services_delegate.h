@@ -40,7 +40,6 @@ class ResourceRequestDetector;
 struct ResourceRequestInfo;
 class SafeBrowsingService;
 class SafeBrowsingDatabaseManager;
-class TelemetryService;
 struct V4ProtocolConfig;
 class VerdictCacheManager;
 
@@ -61,6 +60,7 @@ class ServicesDelegate {
     virtual bool CanCreateDownloadProtectionService() = 0;
     virtual bool CanCreateIncidentReportingService() = 0;
     virtual bool CanCreateResourceRequestDetector() = 0;
+    virtual bool CanCreateBinaryUploadService() = 0;
 
     // Caller takes ownership of the returned object. Cannot use std::unique_ptr
     // because services may not be implemented for some build configs.
@@ -68,6 +68,7 @@ class ServicesDelegate {
     virtual DownloadProtectionService* CreateDownloadProtectionService() = 0;
     virtual IncidentReportingService* CreateIncidentReportingService() = 0;
     virtual ResourceRequestDetector* CreateResourceRequestDetector() = 0;
+    virtual BinaryUploadService* CreateBinaryUploadService() = 0;
   };
 
   // Creates the ServicesDelegate using its's default ServicesCreator.
@@ -126,9 +127,8 @@ class ServicesDelegate {
   PasswordProtectionService* GetPasswordProtectionService(
       Profile* profile) const;
 
-  virtual void CreateTelemetryService(Profile* profile) = 0;
-  virtual void RemoveTelemetryService() = 0;
-  virtual TelemetryService* GetTelemetryService() const = 0;
+  virtual void CreateTelemetryService(Profile* profile) {}
+  virtual void RemoveTelemetryService(Profile* profile) {}
 
   virtual void CreateVerdictCacheManager(Profile* profile);
   virtual void RemoveVerdictCacheManager(Profile* profile);
@@ -148,16 +148,16 @@ class ServicesDelegate {
   // Unowned pointer
   ServicesCreator* const services_creator_;
 
-  // TODO(xinghuilu@): Change it to base::map<>
   // Tracks existing Profiles, and their corresponding
   // ChromePasswordProtectionService instances.
   // Accessed on UI thread.
-  std::map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
+  base::flat_map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
       password_protection_service_map_;
 
   // Tracks existing Profiles, and their corresponding VerdictCacheManager
   // instances. Accessed on UI thread.
-  std::map<Profile*, std::unique_ptr<VerdictCacheManager>> cache_manager_map_;
+  base::flat_map<Profile*, std::unique_ptr<VerdictCacheManager>>
+      cache_manager_map_;
 };
 
 }  // namespace safe_browsing

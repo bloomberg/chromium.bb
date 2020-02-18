@@ -7,13 +7,13 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
@@ -135,8 +135,9 @@ class BbrSenderTest : public QuicTest {
         endpoint->connection()->clock()->Now(), rtt_stats,
         QuicSentPacketManagerPeer::GetUnackedPacketMap(
             QuicConnectionPeer::GetSentPacketManager(endpoint->connection())),
-        kInitialCongestionWindowPackets, kDefaultMaxCongestionWindowPackets,
-        &random_, QuicConnectionPeer::GetStats(endpoint->connection()));
+        kInitialCongestionWindowPackets,
+        GetQuicFlag(FLAGS_quic_max_congestion_window), &random_,
+        QuicConnectionPeer::GetStats(endpoint->connection()));
     QuicConnectionPeer::SetSendAlgorithm(endpoint->connection(), sender);
     endpoint->RecordTrace();
     return sender;
@@ -146,24 +147,24 @@ class BbrSenderTest : public QuicTest {
   // receiver and the switch.  The switch has the buffers four times larger than
   // the bottleneck BDP, which should guarantee a lack of losses.
   void CreateDefaultSetup() {
-    switch_ = QuicMakeUnique<simulator::Switch>(&simulator_, "Switch", 8,
-                                                2 * kTestBdp);
-    bbr_sender_link_ = QuicMakeUnique<simulator::SymmetricLink>(
+    switch_ = std::make_unique<simulator::Switch>(&simulator_, "Switch", 8,
+                                                  2 * kTestBdp);
+    bbr_sender_link_ = std::make_unique<simulator::SymmetricLink>(
         &bbr_sender_, switch_->port(1), kLocalLinkBandwidth,
         kLocalPropagationDelay);
-    receiver_link_ = QuicMakeUnique<simulator::SymmetricLink>(
+    receiver_link_ = std::make_unique<simulator::SymmetricLink>(
         &receiver_, switch_->port(2), kTestLinkBandwidth,
         kTestPropagationDelay);
   }
 
   // Same as the default setup, except the buffer now is half of the BDP.
   void CreateSmallBufferSetup() {
-    switch_ = QuicMakeUnique<simulator::Switch>(&simulator_, "Switch", 8,
-                                                0.5 * kTestBdp);
-    bbr_sender_link_ = QuicMakeUnique<simulator::SymmetricLink>(
+    switch_ = std::make_unique<simulator::Switch>(&simulator_, "Switch", 8,
+                                                  0.5 * kTestBdp);
+    bbr_sender_link_ = std::make_unique<simulator::SymmetricLink>(
         &bbr_sender_, switch_->port(1), kLocalLinkBandwidth,
         kLocalPropagationDelay);
-    receiver_link_ = QuicMakeUnique<simulator::SymmetricLink>(
+    receiver_link_ = std::make_unique<simulator::SymmetricLink>(
         &receiver_, switch_->port(2), kTestLinkBandwidth,
         kTestPropagationDelay);
   }
@@ -171,19 +172,19 @@ class BbrSenderTest : public QuicTest {
   // Creates the variation of the default setup in which there is another sender
   // that competes for the same bottleneck link.
   void CreateCompetitionSetup() {
-    switch_ = QuicMakeUnique<simulator::Switch>(&simulator_, "Switch", 8,
-                                                2 * kTestBdp);
+    switch_ = std::make_unique<simulator::Switch>(&simulator_, "Switch", 8,
+                                                  2 * kTestBdp);
 
     // Add a small offset to the competing link in order to avoid
     // synchronization effects.
     const QuicTime::Delta small_offset = QuicTime::Delta::FromMicroseconds(3);
-    bbr_sender_link_ = QuicMakeUnique<simulator::SymmetricLink>(
+    bbr_sender_link_ = std::make_unique<simulator::SymmetricLink>(
         &bbr_sender_, switch_->port(1), kLocalLinkBandwidth,
         kLocalPropagationDelay);
-    competing_sender_link_ = QuicMakeUnique<simulator::SymmetricLink>(
+    competing_sender_link_ = std::make_unique<simulator::SymmetricLink>(
         &competing_sender_, switch_->port(3), kLocalLinkBandwidth,
         kLocalPropagationDelay + small_offset);
-    receiver_link_ = QuicMakeUnique<simulator::SymmetricLink>(
+    receiver_link_ = std::make_unique<simulator::SymmetricLink>(
         &receiver_multiplexer_, switch_->port(2), kTestLinkBandwidth,
         kTestPropagationDelay);
   }
@@ -379,8 +380,9 @@ TEST_F(BbrSenderTest, SimpleTransferAckDecimation) {
       bbr_sender_.connection()->clock()->Now(), rtt_stats_,
       QuicSentPacketManagerPeer::GetUnackedPacketMap(
           QuicConnectionPeer::GetSentPacketManager(bbr_sender_.connection())),
-      kInitialCongestionWindowPackets, kDefaultMaxCongestionWindowPackets,
-      &random_, QuicConnectionPeer::GetStats(bbr_sender_.connection()));
+      kInitialCongestionWindowPackets,
+      GetQuicFlag(FLAGS_quic_max_congestion_window), &random_,
+      QuicConnectionPeer::GetStats(bbr_sender_.connection()));
   QuicConnectionPeer::SetSendAlgorithm(bbr_sender_.connection(), sender_);
   // Enable Ack Decimation on the receiver.
   QuicConnectionPeer::SetAckMode(receiver_.connection(),
@@ -1247,10 +1249,18 @@ TEST_F(BbrSenderTest, SimpleCompetition) {
 TEST_F(BbrSenderTest, ResumeConnectionState) {
   CreateDefaultSetup();
 
-  bbr_sender_.connection()->AdjustNetworkParameters(kTestLinkBandwidth,
-                                                    kTestRtt, false);
-  EXPECT_EQ(kTestLinkBandwidth, sender_->ExportDebugState().max_bandwidth);
-  EXPECT_EQ(kTestLinkBandwidth, sender_->BandwidthEstimate());
+  bbr_sender_.connection()->AdjustNetworkParameters(
+      SendAlgorithmInterface::NetworkParams(kTestLinkBandwidth, kTestRtt,
+                                            false));
+  if (!GetQuicReloadableFlag(quic_bbr_donot_inject_bandwidth)) {
+    EXPECT_EQ(kTestLinkBandwidth, sender_->ExportDebugState().max_bandwidth);
+    EXPECT_EQ(kTestLinkBandwidth, sender_->BandwidthEstimate());
+  }
+  EXPECT_EQ(kTestLinkBandwidth * kTestRtt,
+            sender_->ExportDebugState().congestion_window);
+  if (GetQuicReloadableFlag(quic_bbr_fix_pacing_rate)) {
+    EXPECT_EQ(kTestLinkBandwidth, sender_->PacingRate(/*bytes_in_flight=*/0));
+  }
   EXPECT_APPROX_EQ(kTestRtt, sender_->ExportDebugState().min_rtt, 0.01f);
 
   DriveOutOfStartup();
@@ -1299,13 +1309,87 @@ TEST_F(BbrSenderTest, StartupStats) {
   EXPECT_THAT(stats.slowstart_bytes_sent, AllOf(Ge(100000u), Le(1000000u)));
   EXPECT_LE(stats.slowstart_packets_lost, 10u);
   EXPECT_LE(stats.slowstart_bytes_lost, 10000u);
-  EXPECT_THAT(stats.slowstart_duration,
+  EXPECT_FALSE(stats.slowstart_duration.IsRunning());
+  EXPECT_THAT(stats.slowstart_duration.GetTotalElapsedTime(),
               AllOf(Ge(QuicTime::Delta::FromMilliseconds(500)),
                     Le(QuicTime::Delta::FromMilliseconds(1500))));
-  EXPECT_EQ(QuicTime::Zero(), stats.slowstart_start_time);
-  EXPECT_EQ(stats.slowstart_duration,
+  EXPECT_EQ(stats.slowstart_duration.GetTotalElapsedTime(),
             QuicConnectionPeer::GetSentPacketManager(bbr_sender_.connection())
                 ->GetSlowStartDuration());
+}
+
+// Regression test for b/143540157.
+TEST_F(BbrSenderTest, RecalculatePacingRateOnCwndChange1RTT) {
+  CreateDefaultSetup();
+
+  bbr_sender_.AddBytesToTransfer(1 * 1024 * 1024);
+  // Wait until an ACK comes back.
+  const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(5);
+  bool simulator_result = simulator_.RunUntilOrTimeout(
+      [this]() { return !sender_->ExportDebugState().min_rtt.IsZero(); },
+      timeout);
+  ASSERT_TRUE(simulator_result);
+  const QuicByteCount previous_cwnd =
+      sender_->ExportDebugState().congestion_window;
+
+  // Bootstrap cwnd.
+  bbr_sender_.connection()->AdjustNetworkParameters(
+      SendAlgorithmInterface::NetworkParams(kTestLinkBandwidth,
+                                            QuicTime::Delta::Zero(), false));
+  if (!GetQuicReloadableFlag(quic_bbr_donot_inject_bandwidth)) {
+    EXPECT_EQ(kTestLinkBandwidth, sender_->ExportDebugState().max_bandwidth);
+    EXPECT_EQ(kTestLinkBandwidth, sender_->BandwidthEstimate());
+  }
+  EXPECT_LT(previous_cwnd, sender_->ExportDebugState().congestion_window);
+
+  if (GetQuicReloadableFlag(quic_bbr_fix_pacing_rate)) {
+    // Verify pacing rate is re-calculated based on the new cwnd and min_rtt.
+    EXPECT_APPROX_EQ(QuicBandwidth::FromBytesAndTimeDelta(
+                         sender_->ExportDebugState().congestion_window,
+                         sender_->ExportDebugState().min_rtt),
+                     sender_->PacingRate(/*bytes_in_flight=*/0), 0.01f);
+  } else {
+    // Pacing rate is still based on initial cwnd.
+    EXPECT_APPROX_EQ(QuicBandwidth::FromBytesAndTimeDelta(
+                         kInitialCongestionWindowPackets * kDefaultTCPMSS,
+                         sender_->ExportDebugState().min_rtt),
+                     sender_->PacingRate(/*bytes_in_flight=*/0), 0.01f);
+  }
+}
+
+TEST_F(BbrSenderTest, RecalculatePacingRateOnCwndChange0RTT) {
+  CreateDefaultSetup();
+  // Initial RTT is available.
+  const_cast<RttStats*>(rtt_stats_)->set_initial_rtt(kTestRtt);
+
+  // Bootstrap cwnd.
+  bbr_sender_.connection()->AdjustNetworkParameters(
+      SendAlgorithmInterface::NetworkParams(kTestLinkBandwidth,
+                                            QuicTime::Delta::Zero(), false));
+  if (!GetQuicReloadableFlag(quic_bbr_donot_inject_bandwidth)) {
+    EXPECT_EQ(kTestLinkBandwidth, sender_->ExportDebugState().max_bandwidth);
+    EXPECT_EQ(kTestLinkBandwidth, sender_->BandwidthEstimate());
+  }
+  EXPECT_LT(kInitialCongestionWindowPackets * kDefaultTCPMSS,
+            sender_->ExportDebugState().congestion_window);
+  // No Rtt sample is available.
+  EXPECT_TRUE(sender_->ExportDebugState().min_rtt.IsZero());
+
+  if (GetQuicReloadableFlag(quic_bbr_fix_pacing_rate)) {
+    // Verify pacing rate is re-calculated based on the new cwnd and initial
+    // RTT.
+    EXPECT_APPROX_EQ(QuicBandwidth::FromBytesAndTimeDelta(
+                         sender_->ExportDebugState().congestion_window,
+                         rtt_stats_->initial_rtt()),
+                     sender_->PacingRate(/*bytes_in_flight=*/0), 0.01f);
+  } else {
+    // Pacing rate is still based on initial cwnd.
+    EXPECT_APPROX_EQ(
+        2.885f * QuicBandwidth::FromBytesAndTimeDelta(
+                     kInitialCongestionWindowPackets * kDefaultTCPMSS,
+                     rtt_stats_->initial_rtt()),
+        sender_->PacingRate(/*bytes_in_flight=*/0), 0.01f);
+  }
 }
 
 }  // namespace test

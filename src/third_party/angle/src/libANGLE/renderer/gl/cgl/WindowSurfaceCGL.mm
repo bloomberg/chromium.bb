@@ -6,18 +6,22 @@
 
 // WindowSurfaceCGL.cpp: CGL implementation of egl::Surface for windows
 
-#include "libANGLE/renderer/gl/cgl/WindowSurfaceCGL.h"
+#include "common/platform.h"
 
-#import <Cocoa/Cocoa.h>
-#include <OpenGL/OpenGL.h>
-#import <QuartzCore/QuartzCore.h>
+#ifdef ANGLE_PLATFORM_MACOS
 
-#include "common/debug.h"
-#include "libANGLE/Context.h"
-#include "libANGLE/renderer/gl/FramebufferGL.h"
-#include "libANGLE/renderer/gl/RendererGL.h"
-#include "libANGLE/renderer/gl/StateManagerGL.h"
-#include "libANGLE/renderer/gl/cgl/DisplayCGL.h"
+#    include "libANGLE/renderer/gl/cgl/WindowSurfaceCGL.h"
+
+#    import <Cocoa/Cocoa.h>
+#    include <OpenGL/OpenGL.h>
+#    import <QuartzCore/QuartzCore.h>
+
+#    include "common/debug.h"
+#    include "libANGLE/Context.h"
+#    include "libANGLE/renderer/gl/FramebufferGL.h"
+#    include "libANGLE/renderer/gl/RendererGL.h"
+#    include "libANGLE/renderer/gl/StateManagerGL.h"
+#    include "libANGLE/renderer/gl/cgl/DisplayCGL.h"
 
 @interface WebSwapLayer : CAOpenGLLayer {
     CGLContextObj mDisplayContext;
@@ -334,3 +338,5 @@ FramebufferImpl *WindowSurfaceCGL::createDefaultFramebuffer(const gl::Context *c
 }
 
 }  // namespace rx
+
+#endif  // ANGLE_PLATFORM_MACOS

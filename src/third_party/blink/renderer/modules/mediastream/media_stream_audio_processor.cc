@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <algorithm>
+#include <array>
 #include <limits>
 #include <string>
 #include <utility>
@@ -23,17 +24,19 @@
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "media/base/limits.h"
+#include "media/webrtc/helpers.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
+#include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config_json.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
+#include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing_statistics.h"
 #include "third_party/webrtc/modules/audio_processing/typing_detection.h"
 #include "third_party/webrtc_overrides/task_queue_factory.h"
@@ -58,35 +61,13 @@ namespace {
 
 using webrtc::AudioProcessing;
 
+bool UseMultiChannelCaptureProcessing() {
+  return base::FeatureList::IsEnabled(
+      features::kWebRtcEnableCaptureMultiChannelApm);
+}
+
 constexpr int kAudioProcessingNumberOfChannels = 1;
 constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
-
-AudioProcessing::ChannelLayout MapLayout(media::ChannelLayout media_layout) {
-  switch (media_layout) {
-    case media::CHANNEL_LAYOUT_MONO:
-      return AudioProcessing::kMono;
-    case media::CHANNEL_LAYOUT_STEREO:
-      return AudioProcessing::kStereo;
-    case media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC:
-      return AudioProcessing::kStereoAndKeyboard;
-    default:
-      NOTREACHED() << "Layout not supported: " << media_layout;
-      return AudioProcessing::kMono;
-  }
-}
-
-// This is only used for playout data where only max two channels is supported.
-AudioProcessing::ChannelLayout ChannelsToLayout(int num_channels) {
-  switch (num_channels) {
-    case 1:
-      return AudioProcessing::kMono;
-    case 2:
-      return AudioProcessing::kStereo;
-    default:
-      NOTREACHED() << "Channels not supported: " << num_channels;
-      return AudioProcessing::kMono;
-  }
-}
 
 }  // namespace
 
@@ -258,7 +239,9 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
       audio_mirroring_(false),
       typing_detected_(false),
       aec_dump_agent_impl_(AecDumpAgentImpl::Create(this)),
-      stopped_(false) {
+      stopped_(false),
+      use_capture_multi_channel_processing_(
+          UseMultiChannelCaptureProcessing()) {
   DCHECK(main_thread_runner_);
   DETACH_FROM_THREAD(capture_thread_checker_);
   DETACH_FROM_THREAD(render_thread_checker_);
@@ -437,6 +420,7 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
                                               int audio_delay_milliseconds) {
   DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
   DCHECK_GE(audio_bus->channels(), 1);
+  DCHECK_LE(audio_bus->channels(), media::limits::kMaxChannels);
   int frames_per_10_ms = sample_rate / 100;
   if (audio_bus->frames() != frames_per_10_ms) {
     if (unsupported_buffer_size_log_count_ < 10) {
@@ -453,22 +437,24 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
             std::numeric_limits<base::subtle::Atomic32>::max());
   base::subtle::Release_Store(&render_delay_ms_, audio_delay_milliseconds);
 
-  // Limit the number of channels to two (stereo) now when multi-channel audio
-  // sources are supported. We still want to prevent the AEC from "seeing" the
-  // full signal.
-  // TODO(crbug.com/982276): process all channels when multi-channel AEC is
-  // supported.
-  int channels = std::min(2, audio_bus->channels());
-
-  Vector<const float*> channel_ptrs(channels);
-  for (int i = 0; i < channels; ++i)
-    channel_ptrs[i] = audio_bus->channel(i);
+  webrtc::StreamConfig input_stream_config(sample_rate, audio_bus->channels());
+  // If the input audio appears to contain upmixed mono audio, then APM is only
+  // given the left channel. This reduces computational complexity and improves
+  // convergence of audio processing algorithms.
+  // TODO(crbug.com/1023337): Ensure correct channel count in input audio bus.
+  assume_upmixed_mono_playout_ = assume_upmixed_mono_playout_ &&
+                                 LeftAndRightChannelsAreSymmetric(*audio_bus);
+  if (assume_upmixed_mono_playout_) {
+    input_stream_config.set_num_channels(1);
+  }
+  std::array<const float*, media::limits::kMaxChannels> input_ptrs;
+  for (int i = 0; i < static_cast<int>(input_stream_config.num_channels()); ++i)
+    input_ptrs[i] = audio_bus->channel(i);
 
   // TODO(ajm): Should AnalyzeReverseStream() account for the
   // |audio_delay_milliseconds|?
   const int apm_error = audio_processing_->AnalyzeReverseStream(
-      channel_ptrs.data(), audio_bus->frames(), sample_rate,
-      ChannelsToLayout(channels));
+      input_ptrs.data(), input_stream_config);
   if (apm_error != webrtc::AudioProcessing::kNoError &&
       apm_playout_error_code_log_count_ < 10) {
     LOG(ERROR) << "MSAP::OnPlayoutData: AnalyzeReverseStream error="
@@ -535,6 +521,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   // Experimental options provided at creation.
   webrtc::Config config;
+  config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(
+      properties.goog_experimental_noise_suppression));
 
   // If the experimental AGC is enabled, check for overridden config params.
   if (properties.goog_experimental_auto_gain_control) {
@@ -577,6 +565,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
+  apm_config.pipeline.multi_channel_render = true;
+  apm_config.pipeline.multi_channel_capture =
+      use_capture_multi_channel_processing_;
+
   base::Optional<double> gain_control_compression_gain_db;
   blink::PopulateApmConfig(&apm_config, properties,
                            audio_processing_platform_config_json,
@@ -634,10 +626,14 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
                                      blink::kAudioProcessingSampleRate
 #endif  // defined(IS_CHROMECAST)
                                      : input_format.sample_rate();
-  media::ChannelLayout output_channel_layout =
-      audio_processing_
-          ? media::GuessChannelLayout(kAudioProcessingNumberOfChannels)
-          : input_format.channel_layout();
+
+  media::ChannelLayout output_channel_layout;
+  if (!audio_processing_ || use_capture_multi_channel_processing_) {
+    output_channel_layout = input_format.channel_layout();
+  } else {
+    output_channel_layout =
+        media::GuessChannelLayout(kAudioProcessingNumberOfChannels);
+  }
 
   // The output channels from the fifo is normally the same as input.
   int fifo_output_channels = input_format.channels();
@@ -722,10 +718,8 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
   ap->set_stream_analog_level(volume);
   ap->set_stream_key_pressed(key_pressed);
 
-  int err = ap->ProcessStream(
-      process_ptrs, process_frames, input_format_.sample_rate(),
-      MapLayout(input_format_.channel_layout()), output_format_.sample_rate(),
-      MapLayout(output_format_.channel_layout()), output_ptrs);
+  int err = ap->ProcessStream(process_ptrs, CreateStreamConfig(input_format_),
+                              CreateStreamConfig(output_format_), output_ptrs);
   DCHECK_EQ(err, 0) << "ProcessStream() error: " << err;
 
   if (typing_detector_) {

@@ -31,6 +31,7 @@
 #include "extensions/common/extension_paths.h"
 #include "services/network/test/test_cookie_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace chromeos {
 
@@ -44,7 +45,7 @@ const char kTestUrl2[] = "https://test-url-2.com/";
 
 web_app::ExternalInstallOptions GetInstallOptionsForUrl(const GURL& url) {
   web_app::ExternalInstallOptions options(
-      url, web_app::LaunchContainer::kWindow,
+      url, blink::mojom::DisplayMode::kStandalone,
       web_app::ExternalInstallSource::kInternalDefault);
   options.override_previous_user_uninstall = true;
   options.bypass_service_worker_check = true;
@@ -194,7 +195,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     host_content_settings_map_->ClearSettingsForOneType(
-        ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+        ContentSettingsType::NOTIFICATIONS);
     fake_cookie_manager_ = std::make_unique<FakeCookieManager>();
     auto test_pwa_delegate =
         std::make_unique<TestPwaDelegate>(fake_cookie_manager_.get());
@@ -225,7 +226,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     base::HistogramTester histogram_tester;
 
     test_pending_app_manager_->SetInstallResultCode(
-        web_app::InstallResultCode::kFailedUnknownReason);
+        web_app::InstallResultCode::kGetWebApplicationInfoFailed);
 
     setup_controller_->SetUpApp(
         app_url, install_url,
@@ -399,8 +400,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
   ContentSetting GetNotificationSetting(const GURL& url) {
     std::unique_ptr<base::Value> notification_settings_value =
         host_content_settings_map_->GetWebsiteSetting(
-            url, GURL() /* top_level_url */,
-            ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+            url, GURL() /* top_level_url */, ContentSettingsType::NOTIFICATIONS,
             content_settings::ResourceIdentifier(), nullptr);
     return static_cast<ContentSetting>(notification_settings_value->GetInt());
   }

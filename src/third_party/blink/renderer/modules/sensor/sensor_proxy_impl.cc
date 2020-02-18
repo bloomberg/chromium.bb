@@ -11,11 +11,11 @@
 #include "third_party/blink/renderer/modules/sensor/sensor_reading_remapper.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
+using device::mojom::blink::SensorCreationResult;
+
 namespace blink {
 
-using namespace device::mojom::blink;
-
-SensorProxyImpl::SensorProxyImpl(SensorType sensor_type,
+SensorProxyImpl::SensorProxyImpl(device::mojom::blink::SensorType sensor_type,
                                  SensorProviderProxy* provider,
                                  Page* page)
     : SensorProxy(sensor_type, provider, page),
@@ -50,7 +50,7 @@ void SensorProxyImpl::Initialize() {
 }
 
 void SensorProxyImpl::AddConfiguration(
-    SensorConfigurationPtr configuration,
+    device::mojom::blink::SensorConfigurationPtr configuration,
     base::OnceCallback<void(bool)> callback) {
   DCHECK(IsInitialized());
   AddActiveFrequency(configuration->frequency);
@@ -59,7 +59,7 @@ void SensorProxyImpl::AddConfiguration(
 }
 
 void SensorProxyImpl::RemoveConfiguration(
-    SensorConfigurationPtr configuration) {
+    device::mojom::blink::SensorConfigurationPtr configuration) {
   DCHECK(IsInitialized());
   RemoveActiveFrequency(configuration->frequency);
   sensor_remote_->RemoveConfiguration(std::move(configuration));
@@ -122,7 +122,7 @@ void SensorProxyImpl::RaiseError() {
 }
 
 void SensorProxyImpl::SensorReadingChanged() {
-  DCHECK_EQ(ReportingMode::ON_CHANGE, mode_);
+  DCHECK_EQ(device::mojom::blink::ReportingMode::ON_CHANGE, mode_);
   if (ShouldProcessReadings())
     UpdateSensorReading();
 }
@@ -154,8 +154,9 @@ void SensorProxyImpl::HandleSensorError(SensorCreationResult error) {
   }
 }
 
-void SensorProxyImpl::OnSensorCreated(SensorCreationResult result,
-                                      SensorInitParamsPtr params) {
+void SensorProxyImpl::OnSensorCreated(
+    SensorCreationResult result,
+    device::mojom::blink::SensorInitParamsPtr params) {
   DCHECK_EQ(kInitializing, state_);
   if (!params) {
     DCHECK_NE(SensorCreationResult::SUCCESS, result);
@@ -175,7 +176,7 @@ void SensorProxyImpl::OnSensorCreated(SensorCreationResult result,
   DCHECK_GT(default_frequency_, 0.0);
 
   sensor_remote_.Bind(std::move(params->sensor));
-  client_receiver_.Bind(std::move(params->client_request));
+  client_receiver_.Bind(std::move(params->client_receiver));
 
   shared_buffer_reader_ = device::SensorReadingSharedBufferReader::Create(
       std::move(params->memory), params->buffer_offset);
@@ -216,7 +217,7 @@ bool SensorProxyImpl::ShouldProcessReadings() const {
 }
 
 void SensorProxyImpl::UpdatePollingStatus() {
-  if (mode_ != ReportingMode::CONTINUOUS)
+  if (mode_ != device::mojom::blink::ReportingMode::CONTINUOUS)
     return;
 
   if (ShouldProcessReadings()) {

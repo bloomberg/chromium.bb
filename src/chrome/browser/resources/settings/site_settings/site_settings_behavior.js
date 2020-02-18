@@ -193,7 +193,7 @@ const SiteSettingsBehaviorImpl = {
     };
     // These categories are gated behind flags.
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.SERIAL_PORTS,
+        settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
         'enableExperimentalWebPlatformFeatures');
     addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.ADS,
@@ -202,11 +202,11 @@ const SiteSettingsBehaviorImpl = {
         settings.ContentSettingsTypes.PAYMENT_HANDLER,
         'enablePaymentHandlerContentSetting');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
-        'enableBluetoothScanningContentSetting');
-    addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
         'enableNativeFileSystemWriteContentSetting');
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.MIXEDSCRIPT,
+        'enableInsecureContentContentSetting');
     return this.contentTypes_.slice(0);
   },
 

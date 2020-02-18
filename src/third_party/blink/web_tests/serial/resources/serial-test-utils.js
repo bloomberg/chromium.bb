@@ -21,27 +21,28 @@ function compareArrays(actual, expected) {
     assert_equals(actual[i], expected[i], `Mismatch at position ${i}.`);
 }
 
-// Pull from |reader| until it reports done and return the data as a combined
-// Uint8Array.
-async function readAll(reader) {
+// Pull from |reader| until at least |targetLength| is read or the stream
+// reports done. The data is returned as a combined Uint8Array.
+async function readWithLength(reader, targetLength) {
   const chunks = [];
+  let actualLength = 0;
+
   while (true) {
     let { value, done } = await reader.read();
-    if (done) {
+    chunks.push(value);
+    actualLength += value.byteLength;
+
+    if (actualLength >= targetLength || done) {
       // It would be better to allocate |buffer| up front with the number of
       // of bytes expected but this is the best that can be done without a BYOB
       // reader to control the amount of data read.
-      const length =
-          chunks.reduce((total, chunk) => total + chunk.byteLength, 0);
-      const buffer = new Uint8Array(length);
+      const buffer = new Uint8Array(actualLength);
       chunks.reduce((offset, chunk) => {
         buffer.set(chunk, offset);
         return offset + chunk.byteLength;
       }, 0);
       return buffer;
     }
-
-    chunks.push(value);
   }
 }
 
@@ -139,17 +140,12 @@ class FakeSerialPort {
     this.binding = new mojo.Binding(device.mojom.SerialPort,
                                     this, request);
     this.binding.setConnectionErrorHandler(() => {
-      // OS typically clears DTR on close.
-      this.outputSignals_.dtr = false;
-      this.writable_.getWriter().close();
-      this.binding = undefined;
+      this.close();
     });
   }
 
   write(data) {
-    let writer = this.writable_.getWriter();
-    writer.write(data);
-    writer.releaseLock();
+    this.writer_.write(data);
   }
 
   async read() {
@@ -159,10 +155,34 @@ class FakeSerialPort {
     return result;
   }
 
-  simulateParityError() {
-    this.writable_.getWriter().close();
+  simulateReadError(error) {
+    this.writer_.close();
+    this.writer_.releaseLock();
+    this.writer_ = undefined;
     this.writable_ = undefined;
-    this.client_.onReadError(device.mojom.SerialReceiveError.PARITY_ERROR);
+    this.client_.onReadError(error);
+  }
+
+  simulateParityError() {
+    this.simulateReadError(device.mojom.SerialReceiveError.PARITY_ERROR);
+  }
+
+  simulateDisconnectOnRead() {
+    this.simulateReadError(device.mojom.SerialReceiveError.DISCONNECTED);
+  }
+
+  simulateWriteError(error) {
+    this.readable_.cancel();
+    this.readable_ = undefined;
+    this.client_.onSendError(error);
+  }
+
+  simulateSystemErrorOnWrite() {
+    this.simulateWriteError(device.mojom.SerialSendError.SYSTEM_ERROR);
+  }
+
+  simulateDisconnectOnWrite() {
+    this.simulateWriteError(device.mojom.SerialSendError.DISCONNECTED);
   }
 
   simulateInputSignals(signals) {
@@ -173,17 +193,30 @@ class FakeSerialPort {
     return this.outputSignals_;
   }
 
-  waitForErrorCleared() {
+  waitForReadErrorCleared() {
     if (this.writable_)
       return Promise.resolve();
 
-    if (!this.errorClearedPromise_) {
-      this.errorClearedPromise_ = new Promise((resolve) => {
-        this.errorCleared_ = resolve;
+    if (!this.readErrorClearedPromise_) {
+      this.readErrorClearedPromise_ = new Promise((resolve) => {
+        this.readErrorCleared_ = resolve;
       });
     }
 
-    return this.errorClearedPromise_;
+    return this.readErrorClearedPromise_;
+  }
+
+  waitForWriteErrorCleared() {
+    if (this.readable_)
+      return Promise.resolve();
+
+    if (!this.writeErrorClearedPromise_) {
+      this.writeErrorClearedPromise_ = new Promise((resolve) => {
+        this.writeErrorCleared_ = resolve;
+      });
+    }
+
+    return this.writeErrorClearedPromise_;
   }
 
   async open(options, in_stream, out_stream, client) {
@@ -191,17 +224,29 @@ class FakeSerialPort {
     this.client_ = client;
     this.readable_ = new ReadableStream(new DataPipeSource(in_stream));
     this.writable_ = new WritableStream(new DataPipeSink(out_stream));
+    this.writer_ = this.writable_.getWriter();
     // OS typically sets DTR on open.
     this.outputSignals_.dtr = true;
     return { success: true };
   }
 
-  async clearSendError(in_stream) {}
+  async clearSendError(in_stream) {
+    this.readable_ = new ReadableStream(new DataPipeSource(in_stream));
+    if (this.writeErrorCleared_) {
+      this.writeErrorCleared_();
+      this.writeErrorCleared_ = undefined;
+      this.writeErrorClearedPromise_ = undefined;
+    }
+  }
 
   async clearReadError(out_stream) {
     this.writable_ = new WritableStream(new DataPipeSink(out_stream));
-    if (this.errorCleared_)
-      this.errorCleared_();
+    this.writer_ = this.writable_.getWriter();
+    if (this.readErrorCleared_) {
+      this.readErrorCleared_();
+      this.readErrorCleared_ = undefined;
+      this.readErrorClearedPromise_ = undefined;
+    }
   }
 
   async flush() {
@@ -241,12 +286,17 @@ class FakeSerialPort {
     };
   }
 
-  async setBreak() {
-    return { success: false };
-  }
-
-  async clearBreak() {
-    return { success: false };
+  async close() {
+    // OS typically clears DTR on close.
+    this.outputSignals_.dtr = false;
+    if (this.writer_) {
+      this.writer_.close();
+      this.writer_.releaseLock();
+      this.writer_ = undefined;
+    }
+    this.writable_ = undefined;
+    this.binding = undefined;
+    return {};
   }
 }
 
@@ -254,7 +304,7 @@ class FakeSerialPort {
 class FakeSerialService {
   constructor() {
     this.interceptor_ =
-        new MojoInterfaceInterceptor(blink.mojom.SerialService.name);
+        new MojoInterfaceInterceptor(blink.mojom.SerialService.name, "context", true);
     this.interceptor_.oninterfacerequest = e => this.bind(e.handle);
     this.bindingSet_ = new mojo.BindingSet(blink.mojom.SerialService);
     this.nextToken_ = 0;
@@ -328,12 +378,12 @@ class FakeSerialService {
       return { port: null };
   }
 
-  async getPort(token, port_request) {
+  async getPort(token, port_receiver) {
     let record = this.ports_.get(token.low);
     if (record !== undefined) {
-      record.fakePort.bind(port_request);
+      record.fakePort.bind(port_receiver);
     } else {
-      port_request.close();
+      port_receiver.close();
     }
   }
 }

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_BARCODE_DETECTOR_STATICS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_BARCODE_DETECTOR_STATICS_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -20,7 +21,7 @@ class ScriptPromiseResolver;
 // This class owns the BarcodeDetectionProvider connection used to create the
 // BarcodeDetector instances for this ExecutionContext.
 class BarcodeDetectorStatics final
-    : public GarbageCollectedFinalized<BarcodeDetectorStatics>,
+    : public GarbageCollected<BarcodeDetectorStatics>,
       public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(BarcodeDetectorStatics);
 
@@ -33,7 +34,7 @@ class BarcodeDetectorStatics final
   ~BarcodeDetectorStatics();
 
   void CreateBarcodeDetection(
-      shape_detection::mojom::blink::BarcodeDetectionRequest,
+      mojo::PendingReceiver<shape_detection::mojom::blink::BarcodeDetection>,
       shape_detection::mojom::blink::BarcodeDetectorOptionsPtr);
   ScriptPromise EnumerateSupportedFormats(ScriptState*);
 
@@ -46,7 +47,8 @@ class BarcodeDetectorStatics final
       const Vector<shape_detection::mojom::blink::BarcodeFormat>&);
   void OnConnectionError();
 
-  shape_detection::mojom::blink::BarcodeDetectionProviderPtr service_;
+  mojo::Remote<shape_detection::mojom::blink::BarcodeDetectionProvider>
+      service_;
 
   // Holds Promises returned by EnumerateSupportedFormats() so that they can be
   // resolve in the case of a Mojo connection error.

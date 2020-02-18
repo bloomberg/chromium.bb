@@ -12,8 +12,10 @@
 
 #include "base/containers/span.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/bindings/callback_function_base.h"
 #include "third_party/blink/renderer/platform/bindings/callback_interface_base.h"
+#include "third_party/blink/renderer/platform/bindings/dictionary_base.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -38,6 +40,19 @@ inline v8::Local<v8::Value> ToV8(ScriptWrappable* impl,
   wrapper = impl->Wrap(isolate, creation_context);
   DCHECK(!wrapper.IsEmpty());
   return wrapper;
+}
+
+// Dictionary
+
+inline v8::Local<v8::Value> ToV8(bindings::DictionaryBase* dictionary,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate* isolate) {
+  if (UNLIKELY(!dictionary))
+    return v8::Null(isolate);
+  v8::Local<v8::Value> v8_value =
+      dictionary->CreateV8Object(isolate, creation_context);
+  DCHECK(!v8_value.IsEmpty());
+  return v8_value;
 }
 
 // Callback function
@@ -321,6 +336,12 @@ template <typename T>
 inline v8::Local<v8::Value> ToV8(T&& value, ScriptState* script_state) {
   return ToV8(std::forward<T>(value), script_state->GetContext()->Global(),
               script_state->GetIsolate());
+}
+
+// Date
+inline v8::Local<v8::Value> ToV8(base::Time date, ScriptState* script_state) {
+  return v8::Date::New(script_state->GetContext(), date.ToJsTimeIgnoringNull())
+      .ToLocalChecked();
 }
 
 // Only declare ToV8(void*,...) for checking function overload mismatch.

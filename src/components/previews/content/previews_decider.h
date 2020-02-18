@@ -5,16 +5,11 @@
 #ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_DECIDER_H_
 #define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_DECIDER_H_
 
-#include <string>
-#include <vector>
-
 #include "components/previews/core/previews_experiments.h"
 
 namespace content {
 class NavigationHandle;
 }  // namespace content
-
-class GURL;
 
 namespace previews {
 class PreviewsUserData;
@@ -42,21 +37,10 @@ class PreviewsDecider {
                                    content::NavigationHandle* navigation_handle,
                                    PreviewsType type) const = 0;
 
-  // Requests that any applicable detailed page hints be loaded. Returns
-  // whether client knows that it has hints for the host of the URL for
-  // |navigation_handle| (that may need to be loaded from persistent storage).
-  virtual bool LoadPageHints(content::NavigationHandle* navigation_handle) = 0;
-
-  // Whether |url| has loaded resource loading hints and, if it does, populates
-  // |out_resource_patterns_to_block| with the resource patterns to block.
-  virtual bool GetResourceLoadingHints(
-      const GURL& url,
-      std::vector<std::string>* out_resource_patterns_to_block) const = 0;
-
-  // Logs UMA for whether the OptimizationGuide HintCache has a matching Hint
-  // guidance for |url|. This is useful for measuring the effectiveness of the
-  // page hints provided by Cacao.
-  virtual void LogHintCacheMatch(const GURL& url, bool is_committed) const = 0;
+  // Whether there may be commit-time preview guidance available for the URL
+  // associated with |navigation_handle|.
+  virtual bool AreCommitTimePreviewsAvailable(
+      content::NavigationHandle* navigation_handle) = 0;
 
  protected:
   PreviewsDecider() {}

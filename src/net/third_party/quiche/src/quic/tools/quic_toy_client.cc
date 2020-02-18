@@ -45,6 +45,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
@@ -52,7 +53,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
@@ -63,7 +63,6 @@
 
 namespace {
 
-using quic::QuicSocketAddress;
 using quic::QuicStringPiece;
 using quic::QuicTextUtils;
 using quic::QuicUrl;
@@ -161,6 +160,12 @@ DEFINE_QUIC_COMMAND_LINE_FLAG(
     false,
     "If true, drop response body immediately after it is received.");
 
+DEFINE_QUIC_COMMAND_LINE_FLAG(
+    bool,
+    disable_port_changes,
+    false,
+    "If true, do not change local port after each request.");
+
 namespace quic {
 
 QuicToyClient::QuicToyClient(ClientFactory* client_factory)
@@ -189,7 +194,7 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   } else if (!quic_version_string.empty()) {
     if (quic_version_string[0] == 'T') {
       // ParseQuicVersionString checks quic_supports_tls_handshake.
-      SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
+      SetQuicReloadableFlag(quic_supports_tls_handshake, true);
     }
     quic::ParsedQuicVersion parsed_quic_version =
         quic::ParseQuicVersionString(quic_version_string);
@@ -209,7 +214,7 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   const int32_t num_requests(GetQuicFlag(FLAGS_num_requests));
   std::unique_ptr<quic::ProofVerifier> proof_verifier;
   if (GetQuicFlag(FLAGS_disable_certificate_verification)) {
-    proof_verifier = quic::QuicMakeUnique<FakeProofVerifier>();
+    proof_verifier = std::make_unique<FakeProofVerifier>();
   } else {
     proof_verifier = quic::CreateDefaultProofVerifier(url.host());
   }
@@ -217,6 +222,11 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   // Build the client, and try to connect.
   std::unique_ptr<QuicSpdyClientBase> client = client_factory_->CreateClient(
       url.host(), host, port, versions, std::move(proof_verifier));
+
+  if (client == nullptr) {
+    std::cerr << "Failed to create client." << std::endl;
+    return 1;
+  }
 
   int32_t initial_mtu = GetQuicFlag(FLAGS_initial_mtu);
   client->set_initial_max_packet_length(
@@ -338,7 +348,7 @@ int QuicToyClient::SendRequestsAndPrintResponses(
     }
 
     // Change the ephemeral port if there are more requests to do.
-    if (i + 1 < num_requests) {
+    if (!GetQuicFlag(FLAGS_disable_port_changes) && i + 1 < num_requests) {
       if (!client->ChangeEphemeralPort()) {
         std::cerr << "Failed to change ephemeral port." << std::endl;
         return 1;

@@ -12,9 +12,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/browser/sharing/sharing_metrics.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_metrics.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/base/models/simple_menu_model.h"
+
+namespace syncer {
+class DeviceInfo;
+}  // namespace syncer
 
 class RenderViewContextMenuProxy;
 
@@ -45,6 +49,7 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
   void ExecuteCommand(int command_id) override;
 
   void BuildMenu(const std::string& phone_number,
+                 const std::string& selection_text,
                  SharingClickToCallEntryPoint entry_point);
 
  private:
@@ -63,9 +68,12 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
 
   ClickToCallUiController* controller_ = nullptr;
 
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> devices_;
+
   SubMenuDelegate sub_menu_delegate_{this};
 
   std::string phone_number_;
+  std::string selection_text_;
   base::Optional<SharingClickToCallEntryPoint> entry_point_;
 
   std::unique_ptr<ui::SimpleMenuModel> sub_menu_model_;

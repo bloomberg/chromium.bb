@@ -26,8 +26,6 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   DevToolsProtocolTest();
   ~DevToolsProtocolTest() override;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override;
-
   void SetUpOnMainThread() override;
 
  protected:
@@ -38,7 +36,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
                               int32_t line_no,
                               const base::string16& source_id) override;
 
-  blink::WebSecurityStyle GetSecurityStyle(
+  blink::SecurityStyle GetSecurityStyle(
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations) override;
 

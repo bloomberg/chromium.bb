@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
@@ -102,6 +103,9 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
   // the call to store() triggered from the unload handler.
   void TestStoreInUnloadHandlerForSameSiteNavigation(
       bool preestablish_mojo_pipe) {
+    WebContents()->GetController().GetBackForwardCache().DisableForTesting(
+        content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
+
     // Use URLs that differ on subdomains so we can tell which one was used for
     // saving, but they still belong to the same SiteInstance, so they will be
     // renderered in the same RenderFrame (in the same process).
@@ -210,6 +214,9 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
   // the call to store() triggered from the unload handler.
   void TestStoreInUnloadHandlerForCrossSiteNavigation(
       bool preestablish_mojo_pipe) {
+    WebContents()->GetController().GetBackForwardCache().DisableForTesting(
+        content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
+
     const GURL a_url = https_test_server().GetURL("a.com", "/title1.html");
     const GURL b_url = https_test_server().GetURL("b.com", "/title2.html");
 

@@ -33,7 +33,8 @@ enum SimpleDownloadError {
 }  // namespace
 
 ImeService::ImeService(mojo::PendingReceiver<mojom::ImeService> receiver)
-    : receiver_(this, std::move(receiver)) {
+    : receiver_(this, std::move(receiver)),
+      main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   input_engine_ = chromeos::features::IsImeDecoderWithSandboxEnabled()
                       ? std::make_unique<DecoderEngine>(this)
                       : std::make_unique<InputEngine>();
@@ -68,7 +69,10 @@ void ImeService::SimpleDownloadFinished(SimpleDownloadCallback callback,
   if (file.empty()) {
     callback(SIMPLE_DOWNLOAD_ERROR_FAILED, "");
   } else {
-    callback(SIMPLE_DOWNLOAD_ERROR_OK, file.MaybeAsASCII().c_str());
+    // Convert downloaded file path to an whitelisted path.
+    base::FilePath target(kUserInputMethodsDirPath);
+    target = target.Append(kLanguageDataDirName).Append(file.BaseName());
+    callback(SIMPLE_DOWNLOAD_ERROR_OK, target.MaybeAsASCII().c_str());
   }
 }
 
@@ -77,7 +81,7 @@ const char* ImeService::GetImeBundleDir() {
 }
 
 const char* ImeService::GetImeGlobalDir() {
-  // Global IME data dir will not be supported yet.
+  // Global IME data is supported yet.
   return "";
 }
 
@@ -86,10 +90,11 @@ const char* ImeService::GetImeUserHomeDir() {
 }
 
 void ImeService::RunInMainSequence(ImeSequencedTask task, int task_id) {
-  // Always run tasks on current SequencedTaskRunner.
-  // It's necessary for making any call on a bound Mojo Remote.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(task, task_id));
+  // This helps ensure that tasks run in the **main** SequencedTaskRunner.
+  // E.g. the Mojo Remotes are bound on the main_task_runner_, so that any task
+  // invoked Mojo call from other threads (sequences) should be posted to
+  // main_task_runner_ by this function.
+  main_task_runner_->PostTask(FROM_HERE, base::BindOnce(task, task_id));
 }
 
 int ImeService::SimpleDownloadToFile(const char* url,
@@ -99,11 +104,16 @@ int ImeService::SimpleDownloadToFile(const char* url,
     callback(SIMPLE_DOWNLOAD_ERROR_ABORTED, "");
     LOG(ERROR) << "Failed to download due to missing binding.";
   } else {
+    // Target path MUST be relative for security concerns.
+    // Compose a relative download path beased on the request.
+    base::FilePath initial_path(file_path);
+    base::FilePath relative_path(kInputMethodsDirName);
+    relative_path = relative_path.Append(kLanguageDataDirName)
+                        .Append(initial_path.BaseName());
+
     GURL download_url(url);
-    // |file_path| must be relative.
-    base::FilePath relative_file_path(file_path);
     platform_access_->DownloadImeFileTo(
-        download_url, relative_file_path,
+        download_url, relative_path,
         base::BindOnce(&ImeService::SimpleDownloadFinished,
                        base::Unretained(this), std::move(callback)));
   }

@@ -391,6 +391,13 @@ virtual void MultiDrawArraysInstancedWEBGL(GLenum mode,
                                            const GLsizei* counts,
                                            const GLsizei* instance_counts,
                                            GLsizei drawcount) = 0;
+virtual void MultiDrawArraysInstancedBaseInstanceWEBGL(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instance_counts,
+    const GLuint* baseinstances,
+    GLsizei drawcount) = 0;
 virtual void MultiDrawElementsWEBGL(GLenum mode,
                                     const GLsizei* counts,
                                     GLenum type,
@@ -402,6 +409,15 @@ virtual void MultiDrawElementsInstancedWEBGL(GLenum mode,
                                              const GLsizei* offsets,
                                              const GLsizei* instance_counts,
                                              GLsizei drawcount) = 0;
+virtual void MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLsizei* offsets,
+    const GLsizei* instance_counts,
+    const GLint* basevertices,
+    const GLuint* baseinstances,
+    GLsizei drawcount) = 0;
 virtual void StencilFunc(GLenum func, GLint ref, GLuint mask) = 0;
 virtual void StencilFuncSeparate(GLenum face,
                                  GLenum func,
@@ -657,6 +673,10 @@ virtual void DispatchCompute(GLuint num_groups_x,
                              GLuint num_groups_y,
                              GLuint num_groups_z) = 0;
 virtual void DispatchComputeIndirect(GLintptr offset) = 0;
+virtual void DrawArraysIndirect(GLenum mode, const void* offset) = 0;
+virtual void DrawElementsIndirect(GLenum mode,
+                                  GLenum type,
+                                  const void* offset) = 0;
 virtual void GetProgramInterfaceiv(GLuint program,
                                    GLenum program_interface,
                                    GLenum pname,
@@ -781,11 +801,24 @@ virtual void DrawArraysInstancedANGLE(GLenum mode,
                                       GLint first,
                                       GLsizei count,
                                       GLsizei primcount) = 0;
+virtual void DrawArraysInstancedBaseInstanceANGLE(GLenum mode,
+                                                  GLint first,
+                                                  GLsizei count,
+                                                  GLsizei primcount,
+                                                  GLuint baseinstance) = 0;
 virtual void DrawElementsInstancedANGLE(GLenum mode,
                                         GLsizei count,
                                         GLenum type,
                                         const void* indices,
                                         GLsizei primcount) = 0;
+virtual void DrawElementsInstancedBaseVertexBaseInstanceANGLE(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint basevertex,
+    GLuint baseinstance) = 0;
 virtual void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) = 0;
 virtual void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) = 0;
 virtual GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) = 0;
@@ -961,10 +994,10 @@ virtual void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
                                                  GLenum genMode,
                                                  GLint components,
                                                  const GLfloat* coeffs) = 0;
+virtual void ContextVisibilityHintCHROMIUM(GLboolean visibility) = 0;
 virtual void CoverageModulationCHROMIUM(GLenum components) = 0;
 virtual GLenum GetGraphicsResetStatusKHR() = 0;
 virtual void BlendBarrierKHR() = 0;
-virtual void ApplyScreenSpaceAntialiasingCHROMIUM() = 0;
 virtual void BindFragDataLocationIndexedEXT(GLuint program,
                                             GLuint colorNumber,
                                             GLuint index,

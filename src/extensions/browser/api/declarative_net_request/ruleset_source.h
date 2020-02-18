@@ -12,19 +12,16 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
-
-namespace base {
-class Token;
-}  // namespace base
 
 namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
+namespace data_decoder {
+class DataDecoder;
+}  // namespace data_decoder
 
 namespace extensions {
 class Extension;
@@ -137,6 +134,7 @@ class RulesetSource {
   static std::unique_ptr<RulesetSource> CreateTemporarySource(
       size_t id,
       size_t priority,
+      api::declarative_net_request::SourceType type,
       size_t rule_count_limit,
       ExtensionId extension_id);
 
@@ -144,6 +142,7 @@ class RulesetSource {
                 base::FilePath indexed_path,
                 size_t id,
                 size_t priority,
+                api::declarative_net_request::SourceType type,
                 size_t rule_count_limit,
                 ExtensionId extension_id);
   ~RulesetSource();
@@ -162,6 +161,9 @@ class RulesetSource {
   size_t id() const { return id_; }
   size_t priority() const { return priority_; }
 
+  // The origin type for this ruleset. Can be from the manifest or dynamic.
+  api::declarative_net_request::SourceType type() const { return type_; }
+
   // The maximum number of rules that will be indexed from this source.
   size_t rule_count_limit() const { return rule_count_limit_; }
 
@@ -176,15 +178,12 @@ class RulesetSource {
   using IndexAndPersistJSONRulesetCallback =
       base::OnceCallback<void(IndexAndPersistJSONRulesetResult)>;
   // Same as IndexAndPersistJSONRulesetUnsafe but parses the JSON rules file
-  // out-of-process. |connector| should be a connector to the ServiceManager
-  // usable on the current sequence. Optionally clients can pass a valid
-  // |decoder_batch_id| to be used when accessing the data decoder service,
-  // which is used internally to parse JSON.
+  // out-of-process. |decoder| corresponds to a Data Decoder service instance
+  // to use for decode operations related to this call.
   //
   // NOTE: This must be called on a sequence where file IO is allowed.
   void IndexAndPersistJSONRuleset(
-      service_manager::Connector* connector,
-      const base::Optional<base::Token>& decoder_batch_id,
+      data_decoder::DataDecoder* decoder,
       IndexAndPersistJSONRulesetCallback callback) const;
 
   // Indexes the given |rules| in indexed/flatbuffer format. Populates
@@ -207,6 +206,7 @@ class RulesetSource {
   base::FilePath indexed_path_;
   size_t id_;
   size_t priority_;
+  api::declarative_net_request::SourceType type_;
   size_t rule_count_limit_;
   ExtensionId extension_id_;
 

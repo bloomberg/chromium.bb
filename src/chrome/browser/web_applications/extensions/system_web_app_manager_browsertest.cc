@@ -4,15 +4,20 @@
 
 #include "chrome/browser/web_applications/extensions/system_web_app_manager_browsertest.h"
 
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/extensions/browsertest_util.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
@@ -28,9 +33,11 @@
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -75,7 +82,7 @@ class TestWebUIController : public content::WebUIController {
         }),
         base::BindRepeating(
             [](const std::string& id,
-               const content::WebUIDataSource::GotDataCallback& callback) {
+               content::WebUIDataSource::GotDataCallback callback) {
               scoped_refptr<base::RefCountedString> ref_contents(
                   new base::RefCountedString);
               if (id == "manifest.json")
@@ -85,7 +92,7 @@ class TestWebUIController : public content::WebUIController {
               else
                 NOTREACHED();
 
-              callback.Run(ref_contents);
+              std::move(callback).Run(ref_contents);
             }));
     content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                   data_source);
@@ -110,33 +117,58 @@ class TestWebUIControllerFactory : public content::WebUIControllerFactory {
 
   content::WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
                                       const GURL& url) override {
-    return reinterpret_cast<content::WebUI::TypeID>(1);
+    if (url.SchemeIs(content::kChromeUIScheme))
+      return reinterpret_cast<content::WebUI::TypeID>(1);
+
+    return content::WebUI::kNoWebUI;
   }
 
   bool UseWebUIForURL(content::BrowserContext* browser_context,
                       const GURL& url) override {
-    return true;
+    return url.SchemeIs(content::kChromeUIScheme);
   }
   bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
                               const GURL& url) override {
-    return true;
+    return url.SchemeIs(content::kChromeUIScheme);
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWebUIControllerFactory);
 };
 
-SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest()
-    : factory_(std::make_unique<TestWebUIControllerFactory>()),
-      test_web_app_provider_creator_(
-          base::BindOnce(&SystemWebAppManagerBrowserTest::CreateWebAppProvider,
-                         base::Unretained(this))) {
-  scoped_feature_list_.InitWithFeatures({features::kSystemWebApps}, {});
-  content::WebUIControllerFactory::RegisterFactory(factory_.get());
+SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest(
+    bool install_mock) {
+  scoped_feature_list_.InitWithFeatures(
+      {features::kSystemWebApps, blink::features::kNativeFileSystemAPI,
+       blink::features::kFileHandlingAPI},
+      {});
+  if (install_mock) {
+    factory_ = std::make_unique<TestWebUIControllerFactory>();
+    test_web_app_provider_creator_ =
+        std::make_unique<TestWebAppProviderCreator>(base::BindOnce(
+            &SystemWebAppManagerBrowserTest::CreateWebAppProvider,
+            base::Unretained(this)));
+    content::WebUIControllerFactory::RegisterFactory(factory_.get());
+  }
 }
 
 SystemWebAppManagerBrowserTest::~SystemWebAppManagerBrowserTest() {
-  content::WebUIControllerFactory::UnregisterFactoryForTesting(factory_.get());
+  if (factory_) {
+    content::WebUIControllerFactory::UnregisterFactoryForTesting(
+        factory_.get());
+  }
+}
+
+// static
+const extensions::Extension*
+SystemWebAppManagerBrowserTest::GetExtensionForAppBrowser(Browser* browser) {
+  return static_cast<extensions::HostedAppBrowserController*>(
+             browser->app_controller())
+      ->GetExtensionForTesting();
+}
+
+SystemWebAppManager& SystemWebAppManagerBrowserTest::GetManager() {
+  return WebAppProvider::Get(browser()->profile())->system_web_app_manager();
 }
 
 std::unique_ptr<KeyedService>
@@ -153,8 +185,10 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
   provider->SetSystemWebAppManager(std::move(test_system_web_app_manager));
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps[SystemAppType::SETTINGS] =
-      SystemAppInfo(content::GetWebUIURL("test-system-app/pwa.html"));
+  system_apps.emplace(
+      SystemAppType::SETTINGS,
+      SystemAppInfo("OSSettings",
+                    content::GetWebUIURL("test-system-app/pwa.html")));
   test_system_web_app_manager_->SetSystemApps(std::move(system_apps));
 
   // Start registry and all dependent subsystems:
@@ -163,35 +197,52 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
   return provider;
 }
 
+void SystemWebAppManagerBrowserTest::WaitForTestSystemAppInstall() {
+  // Wait for the System Web Apps to install.
+  if (factory_) {
+    base::RunLoop run_loop;
+    GetManager().on_apps_synchronized().Post(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  } else {
+    GetManager().InstallSystemAppsForTesting();
+  }
+}
+
 Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch(
     SystemAppType system_app_type) {
-  Profile* profile = browser()->profile();
+  WaitForTestSystemAppInstall();
+  apps::AppLaunchParams params = LaunchParamsForApp(system_app_type);
+  content::WebContents* web_contents = LaunchApp(params);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  EXPECT_EQ(web_app::GetAppIdFromApplicationName(browser->app_name()),
+            params.app_id);
+  return browser;
+}
 
-  // Wait for the System Web Apps to install.
-  base::RunLoop run_loop;
-  test_system_web_app_manager_->on_apps_synchronized().Post(
-      FROM_HERE, run_loop.QuitClosure());
-  run_loop.Run();
-
+apps::AppLaunchParams SystemWebAppManagerBrowserTest::LaunchParamsForApp(
+    SystemAppType system_app_type) {
   base::Optional<AppId> app_id =
-      test_system_web_app_manager_->GetAppIdForSystemApp(system_app_type);
+      GetManager().GetAppIdForSystemApp(system_app_type);
   DCHECK(app_id.has_value());
+  return apps::AppLaunchParams(
+      *app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::CURRENT_TAB,
+      apps::mojom::AppLaunchSource::kSourceTest);
+}
 
-  const extensions::Extension* app =
-      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
-          app_id.value());
-  DCHECK(app);
-
-  return extensions::browsertest_util::LaunchAppBrowser(profile, app);
+content::WebContents* SystemWebAppManagerBrowserTest::LaunchApp(
+    const apps::AppLaunchParams& params) {
+  // Use apps::LaunchService::OpenApplication() to get the most coverage. E.g.,
+  // this is what is invoked by file_manager::file_tasks::ExecuteWebTask() on
+  // ChromeOS.
+  return apps::LaunchService::Get(browser()->profile())
+      ->OpenApplication(params);
 }
 
 // Test that System Apps install correctly with a manifest.
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
-  const extensions::Extension* app =
-      static_cast<extensions::HostedAppBrowserController*>(
-          WaitForSystemAppInstallAndLaunch(SystemAppType::SETTINGS)
-              ->app_controller())
-          ->GetExtensionForTesting();
+  const extensions::Extension* app = GetExtensionForAppBrowser(
+      WaitForSystemAppInstallAndLaunch(SystemAppType::SETTINGS));
   EXPECT_EQ("Test System App", app->name());
   EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0),
             extensions::AppThemeColorInfo::GetThemeColor(app));
@@ -202,9 +253,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
   EXPECT_EQ(extensions::util::GetInstalledPwaForUrl(
                 browser()->profile(), content::GetWebUIURL("test-system-app/")),
             app);
-  EXPECT_TRUE(WebAppProvider::Get(browser()->profile())
-                  ->system_web_app_manager()
-                  .IsSystemWebApp(app->id()));
+  EXPECT_TRUE(GetManager().IsSystemWebApp(app->id()));
 }
 
 // Check the toolbar is not shown for system web apps for pages on the chrome://
@@ -234,6 +283,46 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
       app_browser->tab_strip_model()->GetActiveWebContents(), off_scheme_page,
       1);
   EXPECT_TRUE(app_browser->app_controller()->ShouldShowCustomTabBar());
+}
+
+// Check launch files are passed to application.
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
+                       LaunchFilesForSystemWebApp) {
+  WaitForTestSystemAppInstall();
+  apps::AppLaunchParams params = LaunchParamsForApp(SystemAppType::SETTINGS);
+  params.source = apps::mojom::AppLaunchSource::kSourceChromeInternal;
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+  base::FilePath temp_file_path;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.GetPath(),
+                                             &temp_file_path));
+
+  params.launch_files = {temp_file_path};
+
+  const GURL& launch_url = WebAppProvider::Get(browser()->profile())
+                               ->registrar()
+                               .GetAppLaunchURL(params.app_id);
+  content::TestNavigationObserver navigation_observer(launch_url);
+  navigation_observer.StartWatchingNewWebContents();
+
+  content::WebContents* web_contents =
+      OpenApplication(browser()->profile(), params);
+
+  navigation_observer.Wait();
+
+  auto result =
+      content::EvalJs(web_contents,
+                      "new Promise(resolve => {"
+                      "  launchQueue.setConsumer(launchParams => {"
+                      "    resolve(launchParams.files.length);"
+                      "  });"
+                      "});",
+                      content::EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /*world_id*/);
+
+  // Files array should be populated with one file.
+  EXPECT_EQ(1, result.value.GetInt());
 }
 
 }  // namespace web_app

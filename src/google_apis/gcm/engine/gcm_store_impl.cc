@@ -147,11 +147,12 @@ std::string ParseGServiceSettingKey(const std::string& key) {
 }
 
 std::string MakeAccountKey(const CoreAccountId& account_id) {
-  return kAccountKeyStart + account_id.id;
+  return kAccountKeyStart + account_id.ToString();
 }
 
 CoreAccountId ParseAccountKey(const std::string& key) {
-  return CoreAccountId(key.substr(base::size(kAccountKeyStart) - 1));
+  return CoreAccountId::FromString(
+      key.substr(base::size(kAccountKeyStart) - 1));
 }
 
 std::string MakeHeartbeatKey(const std::string& scope) {

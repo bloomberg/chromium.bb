@@ -15,7 +15,6 @@
 #include <memory>
 #include <vector>
 
-#include "absl/memory/memory.h"
 #include "modules/remote_bitrate_estimator/test/bwe_test_logging.h"
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
 #include "modules/rtp_rtcp/source/rtp_rtcp_config.h"
@@ -182,28 +181,6 @@ RtpReceiveStats StreamStatisticianImpl::GetStats() const {
   return stats;
 }
 
-bool StreamStatisticianImpl::GetStatistics(RtcpStatistics* statistics,
-                                           bool reset) {
-  rtc::CritScope cs(&stream_lock_);
-  if (!ReceivedRtpPacket()) {
-    return false;
-  }
-
-  if (!reset) {
-    if (!ReceivedRtpPacket()) {
-      // No report.
-      return false;
-    }
-    // Just get last report.
-    *statistics = last_reported_statistics_;
-    return true;
-  }
-
-  *statistics = CalculateRtcpStatistics();
-
-  return true;
-}
-
 bool StreamStatisticianImpl::GetActiveStatisticsAndReset(
     RtcpStatistics* statistics) {
   rtc::CritScope cs(&stream_lock_);
@@ -249,9 +226,6 @@ RtcpStatistics StreamStatisticianImpl::CalculateRtcpStatistics() {
       static_cast<uint32_t>(received_seq_max_);
   // Note: internal jitter value is in Q4 and needs to be scaled by 1/16.
   stats.jitter = jitter_q4_ >> 4;
-
-  // Store this report.
-  last_reported_statistics_ = stats;
 
   // Only for report blocks in RTCP SR and RR.
   last_report_cumulative_loss_ = cumulative_loss_;
@@ -321,7 +295,7 @@ bool StreamStatisticianImpl::IsRetransmitOfOldPacket(
 }
 
 std::unique_ptr<ReceiveStatistics> ReceiveStatistics::Create(Clock* clock) {
-  return absl::make_unique<ReceiveStatisticsImpl>(clock);
+  return std::make_unique<ReceiveStatisticsImpl>(clock);
 }
 
 ReceiveStatisticsImpl::ReceiveStatisticsImpl(Clock* clock)

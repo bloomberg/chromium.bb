@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
@@ -73,11 +73,15 @@ class AssistantCoordinator {
         return mBottomBarCoordinator;
     }
 
+    AssistantKeyboardCoordinator getKeyboardCoordinator() {
+        return mKeyboardCoordinator;
+    }
+
     /**
      * Show the Chrome feedback form.
      */
     public void showFeedback(String debugContext) {
-        HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity, Profile.getLastUsedProfile(),
+        HelpAndFeedback.getInstance().showFeedback(mActivity, Profile.getLastUsedProfile(),
                 mActivity.getActivityTab().getUrl(), FEEDBACK_CATEGORY_TAG,
                 FeedbackContext.buildContextString(mActivity, debugContext, 4));
     }

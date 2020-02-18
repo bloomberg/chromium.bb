@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/sensor.mojom-blink.h"
+#include "services/device/public/mojom/sensor.mojom-blink-forward.h"
 #include "services/device/public/mojom/sensor_provider.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -20,7 +20,7 @@ namespace blink {
 
 class DeviceSensorEventPump;
 
-class DeviceSensorEntry : public GarbageCollectedFinalized<DeviceSensorEntry>,
+class DeviceSensorEntry : public GarbageCollected<DeviceSensorEntry>,
                           public device::mojom::blink::SensorClient {
   USING_PRE_FINALIZER(DeviceSensorEntry, Dispose);
 

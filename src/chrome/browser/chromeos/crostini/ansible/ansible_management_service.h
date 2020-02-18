@@ -24,32 +24,55 @@ constexpr char kCrostiniDefaultAnsibleVersion[] =
 class AnsibleManagementService : public KeyedService,
                                  public LinuxPackageOperationProgressObserver {
  public:
+  // Observer class for Ansible Management Service related events.
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override = default;
+    virtual void OnAnsibleSoftwareConfigurationStarted() = 0;
+    virtual void OnAnsibleSoftwareConfigurationFinished(bool success) = 0;
+  };
+
   static AnsibleManagementService* GetForProfile(Profile* profile);
 
   explicit AnsibleManagementService(Profile* profile);
   ~AnsibleManagementService() override;
 
-  void InstallAnsibleInDefaultContainer(
+  // |callback| is called once default Crostini container configuration is
+  // finished.
+  void ConfigureDefaultContainer(
       base::OnceCallback<void(bool success)> callback);
 
-  void ApplyAnsiblePlaybookToDefaultContainer(const std::string& playbook);
-
   // LinuxPackageOperationProgressObserver:
-  void OnInstallLinuxPackageProgress(const std::string& vm_name,
-                                     const std::string& container_name,
+  void OnInstallLinuxPackageProgress(const ContainerId& container_id,
                                      InstallLinuxPackageProgressStatus status,
                                      int progress_percent) override;
-  void OnUninstallPackageProgress(const std::string& vm_name,
-                                  const std::string& container_name,
+  void OnUninstallPackageProgress(const ContainerId& container_id,
                                   UninstallPackageProgressStatus status,
                                   int progress_percent) override;
 
+  void OnApplyAnsiblePlaybookProgress(
+      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::Status status);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
+  void InstallAnsibleInDefaultContainer();
   void OnInstallAnsibleInDefaultContainer(CrostiniResult result);
+  void GetAnsiblePlaybookToApply();
+  void OnAnsiblePlaybookRetrieved(bool success);
+  void ApplyAnsiblePlaybookToDefaultContainer();
+  void OnApplyAnsiblePlaybook(
+      base::Optional<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
+          response);
+
+  // Helper function that runs relevant callback and notifies observers.
+  void OnConfigurationFinished(bool success);
 
   Profile* profile_;
-  base::OnceCallback<void(bool success)>
-      ansible_installation_finished_callback_;
+  base::ObserverList<Observer> observers_;
+  base::OnceCallback<void(bool success)> configuration_finished_callback_;
+  std::string playbook_;
   base::WeakPtrFactory<AnsibleManagementService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AnsibleManagementService);

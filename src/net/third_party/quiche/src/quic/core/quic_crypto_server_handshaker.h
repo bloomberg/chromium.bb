@@ -50,6 +50,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
   bool ZeroRttAttempted() const override;
   void SetPreviousCachedNetworkParams(
       CachedNetworkParameters cached_network_params) override;
+  void OnPacketDecrypted(EncryptionLevel level) override;
   bool ShouldSendExpectCTHeader() const override;
 
   // From QuicCryptoStream
@@ -91,7 +92,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
  private:
   friend class test::QuicCryptoServerStreamPeer;
 
-  class ValidateCallback : public ValidateClientHelloResultCallback {
+  class QUIC_EXPORT_PRIVATE ValidateCallback
+      : public ValidateClientHelloResultCallback {
    public:
     explicit ValidateCallback(QuicCryptoServerHandshaker* parent);
     ValidateCallback(const ValidateCallback&) = delete;
@@ -155,12 +157,13 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
 
   // Returns the QuicTransportVersion of the connection.
   QuicTransportVersion transport_version() const {
-    return session_->connection()->transport_version();
+    return session_->transport_version();
   }
 
   QuicCryptoServerStream* stream_;
 
   QuicSession* session_;
+  HandshakerDelegateInterface* delegate_;
 
   // crypto_config_ contains crypto parameters for the handshake.
   const QuicCryptoServerConfig* crypto_config_;

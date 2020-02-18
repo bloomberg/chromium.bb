@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 
-namespace app_list {
+namespace ash {
 namespace switches {
 
 // Specifies the chrome-extension:// URL for the contents of an additional page
@@ -21,10 +21,18 @@ const char kDisableAppListDismissOnBlur[] = "disable-app-list-dismiss-on-blur";
 // If set, the app list will be enabled as if enabled from CWS.
 const char kEnableAppList[] = "enable-app-list";
 
+// If set, the CrOSActionRecorder will be enabled which will record some user
+// actions on device.
+const char kEnableCrOSActionRecorder[] = "enable-cros-action-recorder";
+// Log user actions with action name hashed.
+const char kCrOSActionRecorderWithHash[] = "log-with-hash";
+// Log user actions with action name unhashed.
+const char kCrOSActionRecorderWithoutHash[] = "log-without-hash";
+
 bool ShouldNotDismissOnBlur() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableAppListDismissOnBlur);
 }
 
 }  // namespace switches
-}  // namespace app_list
+}  // namespace ash

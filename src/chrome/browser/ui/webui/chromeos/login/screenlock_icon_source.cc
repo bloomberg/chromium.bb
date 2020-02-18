@@ -34,25 +34,26 @@ std::string ScreenlockIconSource::GetSource() const {
 }
 
 void ScreenlockIconSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
   if (!icon_provider_) {
-    callback.Run(GetDefaultIcon().As1xPNGBytes().get());
+    std::move(callback).Run(GetDefaultIcon().As1xPNGBytes().get());
     return;
   }
 
-  GURL url(chrome::kChromeUIScreenlockIconURL + path);
+  // TODO(crbug/1009127): Make sure |url| matches
+  // |chrome::kChromeUIScreenlockIconURL| now that |url| is available.
   std::string username =
       net::UnescapeBinaryURLComponent(url.path_piece().substr(1));
 
   gfx::Image image = icon_provider_->GetIcon(username);
   if (image.IsEmpty()) {
-    callback.Run(GetDefaultIcon().As1xPNGBytes().get());
+    std::move(callback).Run(GetDefaultIcon().As1xPNGBytes().get());
     return;
   }
 
-  callback.Run(image.As1xPNGBytes().get());
+  std::move(callback).Run(image.As1xPNGBytes().get());
 }
 
 std::string ScreenlockIconSource::GetMimeType(const std::string&) const {

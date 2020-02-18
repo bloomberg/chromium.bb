@@ -16,7 +16,7 @@ class AppMenuModel;
 class Browser;
 
 namespace views {
-class MenuButtonListener;
+class ButtonListener;
 class MenuButtonController;
 }  // namespace views
 
@@ -25,15 +25,12 @@ class MenuButtonController;
 // displays the app menu.
 class AppMenuButton : public ToolbarButton {
  public:
-  explicit AppMenuButton(views::MenuButtonListener* menu_button_listener);
+  explicit AppMenuButton(views::ButtonListener* button_listener);
   ~AppMenuButton() override;
 
   views::MenuButtonController* menu_button_controller() const {
     return menu_button_controller_;
   }
-
-  // ToolbarButton:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   void AddObserver(AppMenuButtonObserver* observer);
   void RemoveObserver(AppMenuButtonObserver* observer);

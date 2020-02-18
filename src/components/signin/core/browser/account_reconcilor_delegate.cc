@@ -14,15 +14,13 @@ bool AccountReconcilorDelegate::IsReconcileEnabled() const {
   return false;
 }
 
+bool AccountReconcilorDelegate::IsMultiloginEndpointEnabled() const {
+  return true;
+}
+
 bool AccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
   return false;
 }
-
-void AccountReconcilorDelegate::MaybeLogInconsistencyReason(
-    const CoreAccountId& primary_account,
-    const std::vector<CoreAccountId>& chrome_accounts,
-    const std::vector<gaia::ListedAccount>& gaia_accounts,
-    bool first_execution) const {}
 
 gaia::GaiaSource AccountReconcilorDelegate::GetGaiaApiSource() const {
   NOTREACHED() << "Reconcile is not enabled, no Gaia API calls should be made.";
@@ -182,6 +180,10 @@ bool AccountReconcilorDelegate::ShouldRevokeTokensNotInCookies() const {
 
 bool AccountReconcilorDelegate::ShouldRevokeTokensOnCookieDeleted() {
   return false;
+}
+
+bool AccountReconcilorDelegate::ShouldRevokeTokensIfNoPrimaryAccount() const {
+  return true;
 }
 
 base::TimeDelta AccountReconcilorDelegate::GetReconcileTimeout() const {

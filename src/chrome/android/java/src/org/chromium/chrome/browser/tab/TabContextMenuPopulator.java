@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.view.ContextMenu;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuHelper;
@@ -23,7 +24,7 @@ import java.util.List;
 public class TabContextMenuPopulator implements ContextMenuPopulator {
     @Nullable
     private final ContextMenuPopulator mPopulator;
-    private final Tab mTab;
+    private final TabImpl mTab;
 
     /**
      * Constructs an instance of a {@link ContextMenuPopulator} and delegate calls to
@@ -33,7 +34,7 @@ public class TabContextMenuPopulator implements ContextMenuPopulator {
      */
     public TabContextMenuPopulator(ContextMenuPopulator populator, Tab tab) {
         mPopulator = populator;
-        mTab = tab;
+        mTab = (TabImpl) tab;
     }
 
     @Override

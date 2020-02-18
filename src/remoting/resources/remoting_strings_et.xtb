@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Halb</translation>
 <translation id="1152528166145813711">Valige ...</translation>
 <translation id="1199593201721843963">Keela kaugühendused</translation>
+<translation id="1201402288615127009">Edasi</translation>
 <translation id="1291443878853470558">Kui soovite rakendusega Chromoting arvuti juurde pääseda, siis lubage kaugühendused.</translation>
 <translation id="1297009705180977556">Viga hostiga <ph name="HOSTNAME" /> ühendamisel</translation>
 <translation id="1324095856329524885">(see funktsioon ei ole veel teie arvutis saadaval)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome Remote Desktop on nüüd saadaval ka veebis. Proovige meie <ph name="LINK_BEGIN" />veebirakendust<ph name="LINK_END" /> — see on kiire ja tasuta ning pakub veelgi rohkem funktsioone, sh täiustatud tuge mitme monitori kasutamiseks.</translation>
 <translation id="1643640058022401035">Lehelt lahkudes katkeb teie rakenduse Chromoting seanss.</translation>
 <translation id="1654128982815600832">Arvuti kaugühenduste lubamine …</translation>
+<translation id="1697532407822776718">Kõik on valmis!</translation>
 <translation id="170207782578677537">Arvuti registreerimine ebaõnnestus.</translation>
 <translation id="174018511426417793">Ühtki arvutit ei ole registreeritud. Arvutis kaugühenduste lubamiseks installige Chrome Remote Desktop ja klõpsake nupul „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Ühendamine ...</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Hosti protsess</translation>
 <translation id="20876857123010370">Puuteplaadirežiim</translation>
 <translation id="2089514346391228378">Selles arvutis on lubatud kaugühendused.</translation>
+<translation id="2198363917176605566">Teenuse <ph name="PRODUCT_NAME" /> kasutamiseks peate andma ekraanikuva salvestamise loa, et Maci ekraanil kuvatud sisu saaks kaugseadmesse saata.
+
+Selle loa andmiseks klõpsake alloleval nupul „<ph name="BUTTON_NAME" />”, et avada eelistuste paan „Ekraanikuva salvestamine”, ja märkige ruut teenuse „<ph name="SERVICE_SCRIPT_NAME" />” juures.
+
+Kui ruut teenuse „<ph name="SERVICE_SCRIPT_NAME" />” juures on juba märgitud, eemaldage märge ja märkige see siis uuesti.</translation>
 <translation id="2208514473086078157">Reegli seaded ei luba jagada seda arvutit Chrome Remote Desktopi hostina. Abi saamiseks võtke ühendust süsteemiülemaga</translation>
 <translation id="2220529011494928058">Probleemist teatamine</translation>
 <translation id="2221097377466213233">Kasuta Windowsis parempoolset juhtklahvi Ctrl (Maci puhul klahv ⌘)</translation>
@@ -48,17 +55,16 @@
 <translation id="2314101195544969792">Teie rakenduse <ph name="APPLICATION_NAME" /> seanss on olnud mõnda aega passiivne ja ühendus katkestatakse peagi.</translation>
 <translation id="2317666076142640974">Vaadake uue <ph name="LINK_BEGIN" />veebirakenduse Chrome Remote Desktop<ph name="LINK_END" /> eelvaadet. Soovime kuulda teie tagasisidet.</translation>
 <translation id="2320166752086256636">Peida klaviatuur</translation>
-<translation id="2332192922827071008">Ava eelistused</translation>
 <translation id="2353140552984634198">Rakendus Chromoting võimaldab teil turvaliselt arvuti juurde pääseda.</translation>
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="2366718077645204424">Hostiga ei saa ühendust. Seda põhjustab ilmselt kasutatava võrgu konfiguratsioon.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Viimati nähtud võrgus <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Seda rakendust enam ei toetata. Uusimate funktsioonide ja turvavärskenduste saamiseks kasutage <ph name="LINK_BEGIN" />veebirakendust Chrome Remote Desktop<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Aidake meil Chrome Remote Desktopi täiustada, lubades meil koguda kasutusstatistikat ja krahhiaruandeid.</translation>
+<translation id="2504109125669302160">Andke teenusele <ph name="PRODUCT_NAME" /> luba „Juurdepääsufunktsioonid”</translation>
 <translation id="2509394361235492552">Ühendatud hostiga <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MÄRKUS: kõigi klaviatuuri otseteede saadavuse tagamiseks saate rakenduse Chrome Remote Desktop seadistada valikule „Ava aknana”.</translation>
 <translation id="2540992418118313681">Kas soovite jagada seda arvutit teise kasutajaga, nii et ta saab seda kasutada ja juhtida?</translation>
-<translation id="254771646005658629">Kaugkasutajatel selle Maci haldamise lubamine</translation>
 <translation id="2579271889603567289">Host jooksis kokku või selle käivitamine ebaõnnestus.</translation>
 <translation id="2599300881200251572">See teenus lubab sissetulevad ühendused Chrome Remote Desktopi klientidelt.</translation>
 <translation id="2647232381348739934">Chromootimise teenus</translation>
@@ -136,6 +142,8 @@
 <translation id="4405930547258349619">Põhikogu</translation>
 <translation id="4430435636878359009">Keelab selle arvutiga kaugühenduse loomise</translation>
 <translation id="4430915108080446161">Pääsukoodi loomine ...</translation>
+<translation id="443560535555262820">Avage juurdepääsufunktsioonide eelistused</translation>
+<translation id="4450893287417543264">Ära kuva uuesti</translation>
 <translation id="4472575034687746823">Alustamine</translation>
 <translation id="4481276415609939789">Ühtki arvutit ei ole registreeritud. Arvutis kaugühenduste lubamiseks installige rakendus Chromoting ja klõpsake nupul „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4513946894732546136">Tagasiside</translation>
@@ -173,6 +181,7 @@
 <translation id="518094545883702183">Seda teavet kasutatakse ainult teavitatud probleemi diagnoosimiseks, see on saadaval ainult probleemiga tegelejale ja seda ei säilitata üle 30 päeva.</translation>
 <translation id="5204575267916639804">KKK-d</translation>
 <translation id="5222676887888702881">Logi välja</translation>
+<translation id="5234764350956374838">Loobu</translation>
 <translation id="5254120496627797685">Lehelt lahkudes katkeb teie Chrome Remote Desktopi seanss.</translation>
 <translation id="5308380583665731573">Ühendamine</translation>
 <translation id="5327248766486351172">Nimi</translation>
@@ -183,11 +192,6 @@
 <translation id="5419185025274123272">Rakendust ei saanud lähtestada. Saate siiski saata veaaruande.</translation>
 <translation id="5419418238395129586">Viimati veebis: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host on välja lülitatud.</translation>
-<translation id="5463789431147491241">Teenuse <ph name="PRODUCT_NAME" /> kasutamiseks selles Macis toimige järgmiselt.
-
-Valige allpool nupp „<ph name="BUTTON_NAME" />”. Märkige turva- ja privaatsuseelistustes ruut „<ph name="SERVICE_SCRIPT_NAME" />”.
-
-Kui ruut „<ph name="SERVICE_SCRIPT_NAME" />” on juba märgitud, eemaldage märge ja märkige siis ruut uuesti.</translation>
 <translation id="5510035215749041527">Katkesta kohe ühendus</translation>
 <translation id="5593560073513909978">Teenus on ajutiselt kättesaamatu. Proovige hiljem uuesti.</translation>
 <translation id="5601503069213153581">PIN-kood</translation>
@@ -218,12 +222,18 @@ Kui ruut „<ph name="SERVICE_SCRIPT_NAME" />” on juba märgitud, eemaldage m�
 <translation id="6198252989419008588">Muuda PIN-koodi</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (aegunud)</translation>
 <translation id="6221358653751391898">Te ei ole Chrome'i sisse logitud. Logige sisse ja proovige uuesti.</translation>
+<translation id="6223301979382383752">Ava ekraanikuva salvestamise eelistused</translation>
 <translation id="6227369581881558336">Chrome Remote Desktop on nüüd saadaval ka veebis ja pakub uusi funktsioone, sh failiedastust. Vaadake meie <ph name="LINK_BEGIN" />veebirakendust<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Konsooli loogikakuval käitatav host on varjatud režiimi toetamiseks välja lülitatud, lülitades hostile, mida käitatakse kasutajapõhises seansis.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Midagi muud.</translation>
 <translation id="6398765197997659313">Välju täisekraanilt</translation>
+<translation id="6411861157501911556">Teenuse <ph name="PRODUCT_NAME" /> kasutamiseks peate andma juurdepääsufunktsioonide loa, et kaugseadmest saaks sellesse Maci käsklusi sisestada.
+
+Selle loa andmiseks klõpsake alloleval nupul „<ph name="BUTTON_NAME" />”, et avada eelistuste paan „Juurdepääsufunktsioonid”, ja märkige ruut teenuse „<ph name="SERVICE_SCRIPT_NAME" />” juures.
+
+Kui ruut teenuse „<ph name="SERVICE_SCRIPT_NAME" />” juures on juba märgitud, eemaldage märge ja märkige see siis uuesti.</translation>
 <translation id="6441316101718669559">Sellel platvormil ei toetata töölaua integreerimist. Saate rakendust kasutada, kuid kasutuskogemus on kehvem.</translation>
 <translation id="652218476070540101">Selle arvuti PIN-koodi värskendatakse ...</translation>
 <translation id="6527303717912515753">Jaga</translation>
@@ -304,6 +314,7 @@ Kui ruut „<ph name="SERVICE_SCRIPT_NAME" />” on juba märgitud, eemaldage m�
 <translation id="837021510621780684">Sellest arvutist</translation>
 <translation id="8383794970363966105">Chromootimise kasutamiseks peate lisama seadmele Google'i konto.</translation>
 <translation id="8386846956409881180">Host on seadistatud sobimatu OAuth-mandaadiga.</translation>
+<translation id="8397385476380433240">Andke teenusele <ph name="PRODUCT_NAME" /> luba</translation>
 <translation id="8406498562923498210">Valige seanss, mis Chrome Remote Desktopi keskkonnas käivitada. (Pange tähele, et teatud tüüpi seansside puhul ei pruugita toetada seansi samaaegset käitamist Chrome Remote Desktopis ja kohalikus konsoolis.)</translation>
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8445362773033888690">Kuva Google Play poes</translation>
@@ -330,6 +341,7 @@ Kui ruut „<ph name="SERVICE_SCRIPT_NAME" />” on juba märgitud, eemaldage m�
 <translation id="9149580767411232853">Kogu kaugtöölaud hoitakse nähtaval</translation>
 <translation id="9149992051684092333">Arvuti jagamise alustamiseks andke allolev pääsukood inimesele, kes teid aitama hakkab.</translation>
 <translation id="916856682307586697">XSession-vaikeseansi käivitamine</translation>
+<translation id="9187628920394877737">Andke teenusele <ph name="PRODUCT_NAME" /> luba „Ekraanikuva salvestamine”</translation>
 <translation id="9188433529406846933">Volita</translation>
 <translation id="9213184081240281106">Sobimatu hosti seadistus.</translation>
 <translation id="951991426597076286">Keeldu</translation>

@@ -6,15 +6,17 @@
 
 #include "third_party/blink/renderer/modules/sms/sms_receiver.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/sms/sms.h"
 #include "third_party/blink/renderer/modules/sms/sms_metrics.h"
+#include "third_party/blink/renderer/modules/sms/sms_receiver_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -25,28 +27,52 @@ namespace blink {
 
 SMSReceiver::SMSReceiver(ExecutionContext* context) : ContextClient(context) {}
 
+SMSReceiver::~SMSReceiver() = default;
+
 ScriptPromise SMSReceiver::receive(ScriptState* script_state,
-                                   const SMSReceiverOptions* options) {
+                                   const SMSReceiverOptions* options,
+                                   ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
 
   LocalFrame* frame = GetFrame();
+  if (!frame) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "Script context has shut down.");
+    return ScriptPromise();
+  }
+
   if (!frame->IsMainFrame() && frame->IsCrossOriginSubframe()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kNotAllowedError,
-                          "Must have the same origin as the top-level frame."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "Must have the same origin as the top-level frame.");
+    return ScriptPromise();
+  }
+
+  if (options->hasSignal() && options->signal()->aborted()) {
+    RecordSMSOutcome(SMSReceiverOutcome::kAborted, GetDocument()->UkmSourceID(),
+                     GetDocument()->UkmRecorder());
+    exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
+                                      "Request has been aborted.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+
+  if (options->hasSignal()) {
+    options->signal()->AddAlgorithm(WTF::Bind(&SMSReceiver::Abort,
+                                              WrapWeakPersistent(this),
+                                              WrapPersistent(resolver)));
+  }
+
   requests_.insert(resolver);
 
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      GetExecutionContext()->GetTaskRunner(TaskType::kInternalIPC);
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
 
   if (!service_) {
-    GetExecutionContext()->GetInterfaceProvider()->GetInterface(
+    GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
         service_.BindNewPipeAndPassReceiver(task_runner));
     service_.set_disconnect_handler(WTF::Bind(
         &SMSReceiver::OnSMSReceiverConnectionError, WrapWeakPersistent(this)));
@@ -59,7 +85,16 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
   return resolver->Promise();
 }
 
-SMSReceiver::~SMSReceiver() = default;
+void SMSReceiver::Abort(ScriptPromiseResolver* resolver) {
+  RecordSMSOutcome(SMSReceiverOutcome::kAborted, GetDocument()->UkmSourceID(),
+                   GetDocument()->UkmRecorder());
+  service_->Abort();
+
+  resolver->Reject(
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+
+  requests_.erase(resolver);
+}
 
 void SMSReceiver::OnReceive(ScriptPromiseResolver* resolver,
                             base::TimeTicks start_time,

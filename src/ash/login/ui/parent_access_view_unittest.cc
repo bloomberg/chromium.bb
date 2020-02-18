@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/arrow_button_view.h"
@@ -118,12 +119,14 @@ class ParentAccessViewTest : public LoginTestBase {
   }
 
   // Shows parent access widget with the specified |reason|.
-  void ShowWidget(ParentAccessRequestReason reason) {
+  void ShowWidget(ParentAccessRequestReason reason =
+                      ParentAccessRequestReason::kUnlockTimeLimits) {
+    validation_time_ = base::Time::Now();
     ParentAccessWidget::Show(
         account_id_,
         base::BindRepeating(&ParentAccessViewTest::OnFinished,
                             base::Unretained(this)),
-        reason);
+        reason, false /*extra_dimmer*/, validation_time_);
     ParentAccessWidget* widget = ParentAccessWidget::Get();
     ASSERT_TRUE(widget);
   }
@@ -203,7 +206,7 @@ TEST_P(ParentAccessViewModifiersTest, CheckStrings) {
             test_api.description_label()->GetText());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ParentAccessViewModifiersTest,
                          testing::ValuesIn(kViewModifiersTestData));
 
@@ -422,9 +425,11 @@ TEST_F(ParentAccessViewTest, Backspace) {
 
 // Tests input with virtual pin keyboard.
 TEST_F(ParentAccessViewTest, PinKeyboard) {
-  StartView();
+  ShowWidget();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
+  ParentAccessWidget* widget = ParentAccessWidget::Get();
+  view_ = ParentAccessWidget::TestApi(widget).parent_access_view();
   ParentAccessView::TestApi test_api(view_);
   LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
@@ -438,7 +443,6 @@ TEST_F(ParentAccessViewTest, PinKeyboard) {
     SimulatePinKeyboardPress(test_pin_keyboard.GetButton(i));
     base::RunLoop().RunUntilIdle();
   }
-  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
   EXPECT_EQ(1, successful_validation_);
   ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess, 1,
                           1);
@@ -507,12 +511,6 @@ TEST_F(ParentAccessViewTest, TabKeyTraversal) {
   EXPECT_TRUE(test_api.back_button()->HasFocus());
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
-  EXPECT_TRUE(test_api.title_label()->HasFocus());
-
-  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
-  EXPECT_TRUE(test_api.description_label()->HasFocus());
-
-  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
@@ -537,12 +535,6 @@ TEST_F(ParentAccessViewTest, BackwardTabKeyTraversal) {
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
-
-  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  EXPECT_TRUE(test_api.description_label()->HasFocus());
-
-  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  EXPECT_TRUE(test_api.title_label()->HasFocus());
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   EXPECT_TRUE(test_api.back_button()->HasFocus());
@@ -672,6 +664,22 @@ TEST_F(ParentAccessViewTest, VirtualKeyboardHidden) {
   EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
 
   DismissWidget();
+}
+
+// Tests that spoken feedback keycombo starts screen reader.
+TEST_F(ParentAccessWidgetTest, SpokenFeedbackKeyCombo) {
+  ShowWidget(ParentAccessRequestReason::kUnlockTimeLimits);
+
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->spoken_feedback_enabled());
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_Z),
+                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(controller->spoken_feedback_enabled());
 }
 
 }  // namespace ash

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Rect;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -18,12 +17,14 @@ import android.support.v7.widget.RecyclerView.Recycler;
 import android.support.v7.widget.RecyclerView.State;
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.list.DateOrderedListCoordinator.DateOrderedListObserver;
 import org.chromium.chrome.browser.download.home.list.holder.ListItemViewHolder;
-import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.ui.widget.displaystyle.HorizontalDisplayStyle;
+import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
 import org.chromium.ui.modelutil.ForwardingListObservable;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
@@ -184,9 +185,11 @@ class DateOrderedListView {
 
             ListItem item = mModel.get(position);
             boolean isFullWidthMedia = false;
-            switch (ListUtils.getViewTypeForItem(mModel.get(position), mConfig)) {
-                case ListUtils.ViewType.IMAGE:
-                case ListUtils.ViewType.IMAGE_FULL_WIDTH:
+            @ListUtils.ViewType
+            int viewType = ListUtils.getViewTypeForItem(mModel.get(position), mConfig);
+            switch (viewType) {
+                case ListUtils.ViewType.IMAGE: // fall through
+                case ListUtils.ViewType.IMAGE_FULL_WIDTH: // fall through
                 case ListUtils.ViewType.IN_PROGRESS_IMAGE:
                     isFullWidthMedia = ((ListItem.OfflineItemListItem) item).spanFullWidth;
                     if (isFullWidthMedia || mGridLayoutManager.getSpanCount() == 1) {
@@ -207,10 +210,28 @@ class DateOrderedListView {
                     outRect.bottom = mPrefetchVerticalPaddingPx / 2;
                     isFullWidthMedia = true;
                     break;
-                case ListUtils.ViewType.PREFETCH:
+                case ListUtils.ViewType.PREFETCH_ARTICLE: // fall through
+                case ListUtils.ViewType.AUDIO:
                     outRect.left = mHorizontalPaddingPx;
                     outRect.right = mHorizontalPaddingPx;
                     outRect.top = mPrefetchVerticalPaddingPx / 2;
+                    outRect.bottom = mPrefetchVerticalPaddingPx / 2;
+                    break;
+                case ListUtils.ViewType.GROUP_CARD_HEADER: // fall through
+                case ListUtils.ViewType.GROUP_CARD_FOOTER: // fall through
+                case ListUtils.ViewType.GROUP_CARD_ITEM: // fall through
+                case ListUtils.ViewType.GROUP_CARD_DIVIDER_MIDDLE:
+                    outRect.left = mHorizontalPaddingPx;
+                    outRect.right = mHorizontalPaddingPx;
+                    break;
+                case ListUtils.ViewType.GROUP_CARD_DIVIDER_TOP:
+                    outRect.left = mHorizontalPaddingPx;
+                    outRect.right = mHorizontalPaddingPx;
+                    outRect.top = mPrefetchVerticalPaddingPx / 2;
+                    break;
+                case ListUtils.ViewType.GROUP_CARD_DIVIDER_BOTTOM:
+                    outRect.left = mHorizontalPaddingPx;
+                    outRect.right = mHorizontalPaddingPx;
                     outRect.bottom = mPrefetchVerticalPaddingPx / 2;
                     break;
             }

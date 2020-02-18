@@ -59,6 +59,8 @@ namespace net {
 
 namespace {
 
+const void* kResultDebugDataKey = &kResultDebugDataKey;
+
 typedef OSStatus (*SecTrustCopyExtendedResultFuncPtr)(SecTrustRef,
                                                       CFDictionaryRef*);
 
@@ -144,6 +146,7 @@ CertStatus CertStatusFromOSStatus(OSStatus status) {
       // TODO(wtc): Should we add CERT_STATUS_WRONG_USAGE?
       return CERT_STATUS_INVALID;
 
+    case errSecInternalError:
     case CSSMERR_APPLETP_CRL_BAD_URI:
     case CSSMERR_APPLETP_IDP_FAIL:
       return CERT_STATUS_INVALID;
@@ -404,6 +407,27 @@ void AppendPublicKeyHashesAndUpdateKnownRoot(CFArrayRef chain,
   std::reverse(hashes->begin(), hashes->end());
 }
 
+void UpdateDebugData(SecTrustResultType trust_result,
+                     OSStatus cssm_result,
+                     CFIndex chain_length,
+                     const CSSM_TP_APPLE_EVIDENCE_INFO* chain_info,
+                     base::SupportsUserData* debug_data) {
+  std::vector<CertVerifyProcMac::ResultDebugData::CertEvidenceInfo>
+      status_chain;
+  for (CFIndex i = 0; i < chain_length; ++i) {
+    CertVerifyProcMac::ResultDebugData::CertEvidenceInfo info;
+    info.status_bits = chain_info[i].StatusBits;
+    for (uint32_t status_code_index = 0;
+         status_code_index < chain_info[i].NumStatusCodes;
+         ++status_code_index) {
+      info.status_codes.push_back(chain_info[i].StatusCodes[status_code_index]);
+    }
+    status_chain.push_back(std::move(info));
+  }
+  CertVerifyProcMac::ResultDebugData::Create(
+      trust_result, cssm_result, std::move(status_chain), debug_data);
+}
+
 enum CRLSetResult {
   kCRLSetOk,
   kCRLSetRevoked,
@@ -513,6 +537,10 @@ CRLSetResult CheckRevocationWithCRLSet(CFArrayRef chain, CRLSet* crl_set) {
 // |verified_chain|, and |chain_info| with the verification results. On
 // failure, no output parameters are modified.
 //
+// WARNING: Beginning with macOS 10.13, if |trust_result| is equal to
+// kSecTrustResultInvalid, any further accesses via SecTrust APIs to |trust_ref|
+// may invalidate |chain_info|.
+//
 // Note: An OK return does not mean that |cert_array| is trusted, merely that
 // verification was performed successfully.
 //
@@ -614,6 +642,8 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
     return NetErrorFromOSStatus(status);
   CFArrayRef tmp_verified_chain = NULL;
   CSSM_TP_APPLE_EVIDENCE_INFO* tmp_chain_info;
+  // WARNING: Beginning with OS X 10.13, |tmp_chain_info| may be freed by any
+  // other accesses via SecTrust APIs to |tmp_trust|.
   status = SecTrustGetResult(tmp_trust, &tmp_trust_result, &tmp_verified_chain,
                              &tmp_chain_info);
   if (status)
@@ -917,8 +947,21 @@ int VerifyWithGivenFlags(X509Certificate* cert,
   bool policy_fail_already_mapped = false;
   bool weak_key_or_signature_algorithm = false;
 
+  // As of macOS 10.13, if |trust_result| (from SecTrustGetResult) returns
+  // kSecTrustResultInvalid, subsequent invocations of SecTrust APIs may
+  // result in revalidating the SecTrust, invalidating the pointers such
+  // as |chain_info|. In releases earlier than 10.13, this call would have
+  // additional information, except that information is unused and
+  // irrelevant if the result was invalid, so the placeholder
+  // errSecInternalError is fine.
+  OSStatus cssm_result = errSecInternalError;
+  if (trust_result != kSecTrustResultInvalid) {
+    status = SecTrustGetCssmResultCode(trust_ref, &cssm_result);
+    if (status)
+      return NetErrorFromOSStatus(status);
+  }
+
   // Evaluate the results
-  OSStatus cssm_result;
   switch (trust_result) {
     case kSecTrustResultUnspecified:
     case kSecTrustResultProceed:
@@ -935,9 +978,6 @@ int VerifyWithGivenFlags(X509Certificate* cert,
 
     case kSecTrustResultRecoverableTrustFailure:
       // Certificate chain has a failure that can be overridden by the user.
-      status = SecTrustGetCssmResultCode(trust_ref, &cssm_result);
-      if (status)
-        return NetErrorFromOSStatus(status);
       if (cssm_result == CSSMERR_TP_VERIFY_ACTION_FAILED) {
         policy_failed = true;
       } else {
@@ -1013,9 +1053,6 @@ int VerifyWithGivenFlags(X509Certificate* cert,
       break;
 
     default:
-      status = SecTrustGetCssmResultCode(trust_ref, &cssm_result);
-      if (status)
-        return NetErrorFromOSStatus(status);
       verify_result->cert_status |= CertStatusFromOSStatus(cssm_result);
       if (!IsCertStatusError(verify_result->cert_status)) {
         LOG(WARNING) << "trust_result=" << trust_result;
@@ -1037,6 +1074,9 @@ int VerifyWithGivenFlags(X509Certificate* cert,
       completed_chain, &verify_result->public_key_hashes,
       &verify_result->is_issued_by_known_root);
 
+  UpdateDebugData(trust_result, cssm_result, CFArrayGetCount(completed_chain),
+                  chain_info, verify_result);
+
   if (IsCertStatusError(verify_result->cert_status))
     return MapCertStatusToNetError(verify_result->cert_status);
 
@@ -1045,9 +1085,55 @@ int VerifyWithGivenFlags(X509Certificate* cert,
 
 }  // namespace
 
-CertVerifyProcMac::CertVerifyProcMac() {}
+CertVerifyProcMac::ResultDebugData::CertEvidenceInfo::CertEvidenceInfo() =
+    default;
+CertVerifyProcMac::ResultDebugData::CertEvidenceInfo::~CertEvidenceInfo() =
+    default;
+CertVerifyProcMac::ResultDebugData::CertEvidenceInfo::CertEvidenceInfo(
+    const CertEvidenceInfo&) = default;
+CertVerifyProcMac::ResultDebugData::CertEvidenceInfo::CertEvidenceInfo(
+    CertEvidenceInfo&&) = default;
 
-CertVerifyProcMac::~CertVerifyProcMac() {}
+CertVerifyProcMac::ResultDebugData::ResultDebugData(
+    uint32_t trust_result,
+    int32_t result_code,
+    std::vector<CertEvidenceInfo> status_chain)
+    : trust_result_(trust_result),
+      result_code_(result_code),
+      status_chain_(std::move(status_chain)) {}
+
+CertVerifyProcMac::ResultDebugData::~ResultDebugData() = default;
+
+CertVerifyProcMac::ResultDebugData::ResultDebugData(const ResultDebugData&) =
+    default;
+
+// static
+const CertVerifyProcMac::ResultDebugData*
+CertVerifyProcMac::ResultDebugData::Get(
+    const base::SupportsUserData* debug_data) {
+  return static_cast<ResultDebugData*>(
+      debug_data->GetUserData(kResultDebugDataKey));
+}
+
+// static
+void CertVerifyProcMac::ResultDebugData::Create(
+    uint32_t trust_result,
+    int32_t result_code,
+    std::vector<CertEvidenceInfo> status_chain,
+    base::SupportsUserData* debug_data) {
+  debug_data->SetUserData(kResultDebugDataKey,
+                          std::make_unique<ResultDebugData>(
+                              trust_result, result_code, status_chain));
+}
+
+std::unique_ptr<base::SupportsUserData::Data>
+CertVerifyProcMac::ResultDebugData::Clone() {
+  return std::make_unique<ResultDebugData>(*this);
+}
+
+CertVerifyProcMac::CertVerifyProcMac() = default;
+
+CertVerifyProcMac::~CertVerifyProcMac() = default;
 
 bool CertVerifyProcMac::SupportsAdditionalTrustAnchors() const {
   return false;

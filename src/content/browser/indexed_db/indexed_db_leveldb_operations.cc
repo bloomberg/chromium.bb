@@ -6,20 +6,19 @@
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/values.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
+#include "components/services/storage/indexed_db/scopes/varint_coding.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_iterator.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
 #include "content/browser/indexed_db/indexed_db_data_loss_info.h"
-#include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/leveldb_env.h"
-#include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -30,7 +29,6 @@ using leveldb::Status;
 namespace content {
 namespace indexed_db {
 namespace {
-
 class LDBComparator : public leveldb::Comparator {
  public:
   LDBComparator() = default;
@@ -45,37 +43,6 @@ class LDBComparator : public leveldb::Comparator {
                              const leveldb::Slice& limit) const override {}
   void FindShortSuccessor(std::string* key) const override {}
 };
-
-template <typename DBOrTransaction>
-Status GetIntInternal(DBOrTransaction* db,
-                      const StringPiece& key,
-                      int64_t* found_int,
-                      bool* found) {
-  std::string result;
-  Status s = db->Get(key, &result, found);
-  if (!s.ok())
-    return s;
-  if (!*found)
-    return Status::OK();
-  StringPiece slice(result);
-  if (DecodeInt(&slice, found_int) && slice.empty())
-    return s;
-  return InternalInconsistencyStatus();
-}
-
-template <typename Transaction>
-leveldb::Status PutInternal(Transaction* transaction,
-                            const StringPiece& key,
-                            std::string* value) {
-  return transaction->Put(key, value);
-}
-template <>
-leveldb::Status PutInternal(LevelDBWriteBatch* write_batch,
-                            const StringPiece& key,
-                            std::string* value) {
-  write_batch->Put(key, base::StringPiece(*value));
-  return leveldb::Status::OK();
-}
 }  // namespace
 
 const base::FilePath::CharType kBlobExtension[] = FILE_PATH_LITERAL(".blob");
@@ -126,7 +93,7 @@ bool IsPathTooLong(const base::FilePath& leveldb_dir) {
     const int min = 140;
     const int max = 300;
     const int num_buckets = 12;
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
+    base::UmaHistogramCustomCounts(
         "WebCore.IndexedDB.BackingStore.OverlyLargeOriginLength",
         component_length, min, max, num_buckets);
     return true;
@@ -181,24 +148,6 @@ leveldb::Status IOErrorStatus() {
   return leveldb::Status::IOError("IO Error");
 }
 
-template <typename DBOrTransaction>
-Status GetInt(DBOrTransaction* db,
-              const StringPiece& key,
-              int64_t* found_int,
-              bool* found) {
-  return GetIntInternal(db, key, found_int, found);
-}
-template Status GetInt<TransactionalLevelDBTransaction>(
-    TransactionalLevelDBTransaction* db,
-    const StringPiece& key,
-    int64_t* found_int,
-    bool* found);
-template Status GetInt<TransactionalLevelDBDatabase>(
-    TransactionalLevelDBDatabase* db,
-    const StringPiece& key,
-    int64_t* found_int,
-    bool* found);
-
 leveldb::Status PutBool(TransactionalLevelDBTransaction* transaction,
                         const StringPiece& key,
                         bool value) {
@@ -206,28 +155,6 @@ leveldb::Status PutBool(TransactionalLevelDBTransaction* transaction,
   EncodeBool(value, &buffer);
   return transaction->Put(key, &buffer);
 }
-
-template <typename Transaction>
-leveldb::Status PutInt(Transaction* transaction_or_write_batch,
-                       const StringPiece& key,
-                       int64_t value) {
-  DCHECK_GE(value, 0);
-  std::string buffer;
-  EncodeInt(value, &buffer);
-  return PutInternal(transaction_or_write_batch, key, &buffer);
-}
-template leveldb::Status PutInt<TransactionalLevelDBTransaction>(
-    TransactionalLevelDBTransaction* transaction,
-    const StringPiece& key,
-    int64_t value);
-template leveldb::Status PutInt<LevelDBDirectTransaction>(
-    LevelDBDirectTransaction* transaction,
-    const StringPiece& key,
-    int64_t value);
-template leveldb::Status PutInt<LevelDBWriteBatch>(
-    LevelDBWriteBatch* transaction,
-    const StringPiece& key,
-    int64_t value);
 
 template <typename DBOrTransaction>
 Status GetVarInt(DBOrTransaction* db,
@@ -262,7 +189,7 @@ leveldb::Status PutVarInt(TransactionOrWriteBatch* transaction_or_write_batch,
                           int64_t value) {
   std::string buffer;
   EncodeVarInt(value, &buffer);
-  return PutInternal(transaction_or_write_batch, key, &buffer);
+  return PutValue(transaction_or_write_batch, key, &buffer);
 }
 template leveldb::Status PutVarInt<TransactionalLevelDBTransaction>(
     TransactionalLevelDBTransaction* transaction,
@@ -567,7 +494,7 @@ bool FindGreatestKeyLessThanOrEqual(
 }
 
 bool GetBlobKeyGeneratorCurrentNumber(
-    TransactionalLevelDBTransaction* leveldb_transaction,
+    LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t* blob_key_generator_current_number) {
   const std::string key_gen_key = DatabaseMetaDataKey::Encode(
@@ -596,7 +523,7 @@ bool GetBlobKeyGeneratorCurrentNumber(
 }
 
 bool UpdateBlobKeyGeneratorCurrentNumber(
-    TransactionalLevelDBTransaction* leveldb_transaction,
+    LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t blob_key_generator_current_number) {
 #if DCHECK_IS_ON()

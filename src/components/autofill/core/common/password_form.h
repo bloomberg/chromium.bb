@@ -303,6 +303,16 @@ struct PasswordForm {
   // as signal for password generation eligibility.
   bool is_new_password_reliable = false;
 
+  enum class Store {
+    // Default value.
+    kNotSet,
+    // Credential came from the profile (i.e. local) storage.
+    kProfileStore,
+    // Credential came from the Gaia-account-scoped storage.
+    kAccountStore
+  };
+  Store in_store = Store::kNotSet;
+
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.
   bool IsPossibleChangePasswordForm() const;
@@ -328,6 +338,13 @@ struct PasswordForm {
   // not set.
   bool IsSingleUsername() const;
 
+  // Returns whether this form is stored in the account-scoped store, i.e.
+  // whether |in_store == Store::kAccountStore|.
+  bool IsUsingAccountStore() const;
+
+  // Returns true when |password_value| or |new_password_value| are non-empty.
+  bool HasNonEmptyPasswordValue() const;
+
   // Equality operators for testing.
   bool operator==(const PasswordForm& form) const;
   bool operator!=(const PasswordForm& form) const;
@@ -346,18 +363,9 @@ struct PasswordForm {
 bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
                                     const PasswordForm& right);
 
-// A comparator for the unique key.
-struct LessThanUniqueKey {
-  bool operator()(const std::unique_ptr<PasswordForm>& left,
-                  const std::unique_ptr<PasswordForm>& right) const;
-};
-
 // Converts a vector of ValueElementPair to string.
 base::string16 ValueElementVectorToString(
     const ValueElementVector& value_element_pairs);
-
-// Returns true if |scheme| corresponds to http auth scheme.
-bool IsHttpAuthScheme(PasswordForm::Scheme scheme);
 
 // For testing.
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form);

@@ -63,6 +63,7 @@ class VideoCaptureBufferPoolTest
       : expected_dropped_id_(0),
         pool_(new media::VideoCaptureBufferPoolImpl(
             std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
+            media::VideoCaptureBufferType::kSharedMemory,
             kTestBufferPoolSize)) {}
 
   void ExpectDroppedId(int expected_dropped_id) {
@@ -93,7 +94,7 @@ class VideoCaptureBufferPoolTest
         new Buffer(pool_, std::move(buffer_handle), buffer_id));
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   int expected_dropped_id_;
   scoped_refptr<media::VideoCaptureBufferPool> pool_;
 
@@ -265,7 +266,7 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   buffer4.reset();
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoCaptureBufferPoolTest,
                          testing::ValuesIn(kCapturePixelFormats));
 

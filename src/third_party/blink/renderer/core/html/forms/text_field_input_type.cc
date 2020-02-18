@@ -56,12 +56,10 @@
 
 namespace blink {
 
-using namespace html_names;
-
 class DataListIndicatorElement final : public HTMLDivElement {
  private:
   inline HTMLInputElement* HostInput() const {
-    return ToHTMLInputElement(OwnerShadowHost());
+    return To<HTMLInputElement>(OwnerShadowHost());
   }
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&,
@@ -98,7 +96,7 @@ class DataListIndicatorElement final : public HTMLDivElement {
  public:
   DataListIndicatorElement(Document& document) : HTMLDivElement(document) {
     SetShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
-    setAttribute(kIdAttr, shadow_element_names::PickerIndicator());
+    setAttribute(html_names::kIdAttr, shadow_element_names::PickerIndicator());
   }
 };
 
@@ -374,9 +372,7 @@ void TextFieldInputType::ListAttributeTargetChanged() {
   }
 }
 
-void TextFieldInputType::AttributeChanged() {
-  // FIXME: Updating on any attribute update should be unnecessary. We should
-  // figure out what attributes affect.
+void TextFieldInputType::ValueAttributeChanged() {
   UpdateView();
 }
 
@@ -492,7 +488,8 @@ void TextFieldInputType::UpdatePlaceholderText() {
                                             ? CSSValueID::kBlock
                                             : CSSValueID::kNone,
                                         true);
-    placeholder->setAttribute(kIdAttr, shadow_element_names::Placeholder());
+    placeholder->setAttribute(html_names::kIdAttr,
+                              shadow_element_names::Placeholder());
     Element* container = ContainerElement();
     Node* previous = container ? container : GetElement().InnerEditorElement();
     previous->parentNode()->InsertBefore(placeholder, previous);
@@ -504,7 +501,7 @@ void TextFieldInputType::UpdatePlaceholderText() {
 void TextFieldInputType::AppendToFormData(FormData& form_data) const {
   InputType::AppendToFormData(form_data);
   const AtomicString& dirname_attr_value =
-      GetElement().FastGetAttribute(kDirnameAttr);
+      GetElement().FastGetAttribute(html_names::kDirnameAttr);
   if (!dirname_attr_value.IsNull()) {
     form_data.AppendFromElement(dirname_attr_value,
                                 GetElement().DirectionForFormData());

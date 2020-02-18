@@ -257,7 +257,7 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
 
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        chrome::kLanguageOptionsSubPage);
+                                        chrome::kLanguageSubPage);
   return true;
 }
 
@@ -293,6 +293,15 @@ bool ChromeVirtualKeyboardDelegate::SetHitTestBounds(
 
   keyboard_client->SetHitTestBounds(bounds);
   return true;
+}
+
+bool ChromeVirtualKeyboardDelegate::SetAreaToRemainOnScreen(
+    const gfx::Rect& bounds) {
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (!keyboard_client->is_keyboard_enabled())
+    return false;
+
+  return keyboard_client->SetAreaToRemainOnScreen(bounds);
 }
 
 bool ChromeVirtualKeyboardDelegate::SetDraggableArea(
@@ -377,14 +386,31 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "handwritinggesture",
       base::FeatureList::IsEnabled(features::kHandwritingGesture)));
   features->AppendString(GenerateFeatureFlag(
+      "usemojodecoder", base::FeatureList::IsEnabled(
+                            chromeos::features::kImeDecoderWithSandbox)));
+  features->AppendString(GenerateFeatureFlag(
       "hmminputlogic",
       base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicHmm)));
   features->AppendString(GenerateFeatureFlag(
       "fstinputlogic",
       base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicFst)));
   features->AppendString(GenerateFeatureFlag(
-      "fstnonenglish", base::FeatureList::IsEnabled(
-                           chromeos::features::kImeInputLogicFstNonEnglish)));
+      "fstnonenglish",
+      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicFst)));
+  features->AppendString(GenerateFeatureFlag(
+      "floatingkeyboarddefault",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kVirtualKeyboardFloatingDefault)));
+  features->AppendString(GenerateFeatureFlag(
+      "mozcinputlogic",
+      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicMozc)));
+  features->AppendString(GenerateFeatureFlag(
+      "borderedkey", base::FeatureList::IsEnabled(
+                         chromeos::features::kVirtualKeyboardBorderedKey)));
+  features->AppendString(GenerateFeatureFlag(
+      "resizablefloatingkeyboard",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kVirtualKeyboardFloatingResizable)));
 
   results->Set("features", std::move(features));
 

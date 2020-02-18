@@ -10,47 +10,71 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 
+class Profile;
 struct WebApplicationInfo;
 
 namespace web_app {
 
 class WebApp;
 class WebAppIconManager;
-class WebAppRegistrar;
+class WebAppSyncBridge;
 
 class WebAppInstallFinalizer final : public InstallFinalizer {
  public:
-  explicit WebAppInstallFinalizer(WebAppIconManager* icon_manager);
+  WebAppInstallFinalizer(Profile* profile,
+                         WebAppSyncBridge* sync_bridge,
+                         WebAppIconManager* icon_manager);
   ~WebAppInstallFinalizer() override;
 
   // InstallFinalizer:
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
+  void FinalizeFallbackInstallAfterSync(
+      const AppId& app_id,
+      InstallFinalizedCallback callback) override;
+  void FinalizeUninstallAfterSync(const AppId& app_id,
+                                  UninstallWebAppCallback callback) override;
+  void FinalizeUpdate(const WebApplicationInfo& web_app_info,
+                      InstallFinalizedCallback callback) override;
   void UninstallExternalWebApp(const GURL& app_url,
+                               ExternalInstallSource external_install_source,
                                UninstallWebAppCallback callback) override;
-  void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback) override;
-  bool CanCreateOsShortcuts() const override;
-  void CreateOsShortcuts(const AppId& app_id,
-                         bool add_to_desktop,
-                         CreateOsShortcutsCallback callback) override;
+  bool CanUserUninstallFromSync(const AppId& app_id) const override;
+  void UninstallWebAppFromSyncByUser(const AppId& app_id,
+                                     UninstallWebAppCallback callback) override;
+  bool CanUserUninstallExternalApp(const AppId& app_id) const override;
+  void UninstallExternalAppByUser(const AppId& app_id,
+                                  UninstallWebAppCallback callback) override;
+  bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const AppId& app_id) override;
-  bool CanSkipAppUpdateForSync(
-      const AppId& app_id,
-      const WebApplicationInfo& web_app_info) const override;
-  bool CanUserUninstallFromSync(const AppId& app_id) const override;
-  void SetSubsystems(AppRegistrar* registrar,
-                     WebAppUiManager* ui_manager) override;
 
  private:
-  void OnDataWritten(InstallFinalizedCallback callback,
-                     std::unique_ptr<WebApp> web_app,
-                     bool success);
+  void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback callback);
+  void UninstallWebAppOrRemoveSource(const AppId& app_id,
+                                     Source::Type source,
+                                     UninstallWebAppCallback callback);
 
+  void OnIconsDataWritten(InstallFinalizedCallback callback,
+                          std::unique_ptr<WebApp> web_app,
+                          bool success);
+  void OnIconsDataDeleted(const AppId& app_id,
+                          UninstallWebAppCallback callback,
+                          bool success);
+  void OnDatabaseCommitCompleted(InstallFinalizedCallback callback,
+                                 const AppId& app_id,
+                                 bool success);
+  void OnFallbackInstallFinalized(const AppId& app_in_sync_install_id,
+                                  InstallFinalizedCallback callback,
+                                  const AppId& installed_app_id,
+                                  InstallResultCode code);
+
+  Profile* const profile_;
+  WebAppSyncBridge* const sync_bridge_;
   WebAppIconManager* const icon_manager_;
-  WebAppRegistrar* registrar_ = nullptr;
 
   base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};
 

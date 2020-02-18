@@ -11,11 +11,12 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
-#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
-#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_renderer.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_renderer_sink.h"
 #include "third_party/blink/renderer/modules/mediastream/track_audio_renderer.h"
+#include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
+#include "third_party/blink/renderer/modules/webrtc/webrtc_audio_renderer.h"
 #include "third_party/blink/renderer/platform/webrtc/peer_connection_remote_audio_source.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
@@ -32,7 +33,7 @@ namespace {
 // will not be able to pick an appropriate device and return 0.
 base::UnguessableToken GetSessionIdForWebRtcAudioRenderer() {
   WebRtcAudioDeviceImpl* audio_device =
-      Platform::Current()->GetWebRtcAudioDevice();
+      PeerConnectionDependencyFactory::GetInstance()->GetWebRtcAudioDevice();
   return audio_device
              ? audio_device->GetAuthorizedDeviceSessionIdForAudioRenderer()
              : base::UnguessableToken();
@@ -117,7 +118,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
 
   // This is a remote WebRTC media stream.
   WebRtcAudioDeviceImpl* audio_device =
-      Platform::Current()->GetWebRtcAudioDevice();
+      PeerConnectionDependencyFactory::GetInstance()->GetWebRtcAudioDevice();
   DCHECK(audio_device);
 
   // Share the existing renderer if any, otherwise create a new one.
@@ -128,8 +129,10 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
     DVLOG(1) << "Creating WebRtcAudioRenderer for remote WebRTC track.";
 
     renderer = new WebRtcAudioRenderer(
-        Platform::Current()->GetWebRtcSignalingTaskRunner(), web_stream,
-        web_frame, GetSessionIdForWebRtcAudioRenderer(), device_id.Utf8());
+        PeerConnectionDependencyFactory::GetInstance()
+            ->GetWebRtcSignalingTaskRunner(),
+        web_stream, web_frame, GetSessionIdForWebRtcAudioRenderer(),
+        device_id.Utf8());
 
     if (!audio_device->SetAudioRenderer(renderer.get())) {
       WebRtcLogMessage("Error: SetAudioRenderer failed for remote track.");

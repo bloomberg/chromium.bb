@@ -17,6 +17,8 @@
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/password_manager/core/browser/field_info_manager.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/vote_uploads_test_matchers.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -30,11 +32,14 @@ using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormStructure;
 using autofill::NEW_PASSWORD;
+using autofill::NOT_USERNAME;
 using autofill::PASSWORD;
 using autofill::PasswordAttribute;
 using autofill::PasswordForm;
 using autofill::ServerFieldType;
 using autofill::ServerFieldTypeSet;
+using autofill::SINGLE_USERNAME;
+using autofill::UNKNOWN_TYPE;
 using autofill::mojom::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 using testing::_;
@@ -45,6 +50,12 @@ using testing::SaveArg;
 
 namespace password_manager {
 namespace {
+
+MATCHER_P3(FieldInfoHasData, form_signature, field_signature, field_type, "") {
+  return arg.form_signature == form_signature &&
+         arg.field_signature == field_signature &&
+         arg.field_type == field_type && arg.create_time != base::Time();
+}
 
 constexpr int kNumberOfPasswordAttributes =
     static_cast<int>(PasswordAttribute::kPasswordAttributesCount);
@@ -76,6 +87,13 @@ class MockAutofillDownloadManager : public AutofillDownloadManager {
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_METHOD0(GetAutofillDownloadManager, AutofillDownloadManager*());
+  MOCK_CONST_METHOD0(GetFieldInfoManager, FieldInfoManager*());
+};
+
+class MockFieldInfoManager : public FieldInfoManager {
+ public:
+  MOCK_METHOD3(AddFieldType, void(uint64_t, uint32_t, ServerFieldType));
+  MOCK_CONST_METHOD2(GetFieldType, ServerFieldType(uint64_t, uint32_t));
 };
 
 }  // namespace
@@ -220,9 +238,9 @@ TEST_F(VotesUploaderTest, InitialValueDetection) {
 TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote) {
   VotesUploader votes_uploader(&client_, true);
   // Checks that randomization distorts information about present and missed
-  // character classess, but a true value is still restorable with aggregation
+  // character classes, but a true value is still restorable with aggregation
   // of many distorted reports.
-  const char* kPasswordSnippets[] = {"abc", "XYZ", "123", "*-_"};
+  const char* kPasswordSnippets[kNumberOfPasswordAttributes] = {"abc", "*-_"};
   for (int test_case = 0; test_case < 10; ++test_case) {
     bool has_password_attribute[kNumberOfPasswordAttributes];
     base::string16 password_value;
@@ -236,8 +254,8 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote) {
 
     FormData form;
     FormStructure form_structure(form);
-    int reported_false[kNumberOfPasswordAttributes] = {0, 0, 0, 0};
-    int reported_true[kNumberOfPasswordAttributes] = {0, 0, 0, 0};
+    int reported_false[kNumberOfPasswordAttributes] = {0, 0};
+    int reported_true[kNumberOfPasswordAttributes] = {0, 0};
 
     int reported_actual_length = 0;
     int reported_wrong_length = 0;
@@ -290,7 +308,8 @@ TEST_F(VotesUploaderTest, GeneratePasswordSpecialSymbolVote) {
 
   const base::string16 password_value = ASCIIToUTF16("password-withsymbols!");
   const int kNumberOfRuns = 2000;
-  const int kSpecialSymbolsAttribute = 3;
+  const int kSpecialSymbolsAttribute =
+      static_cast<int>(PasswordAttribute::kHasSpecialSymbol);
 
   FormData form;
 
@@ -371,6 +390,120 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote_NonAsciiPassword) {
 
     EXPECT_FALSE(vote.has_value()) << password;
   }
+}
+
+TEST_F(VotesUploaderTest, NoSingleUsernameDataNoUpload) {
+  VotesUploader votes_uploader(&client_, false);
+  EXPECT_CALL(mock_autofill_download_manager_,
+              StartUploadRequest(_, _, _, _, _, _))
+      .Times(0);
+  votes_uploader.MaybeSendSingleUsernameVote(true /* credentials_saved */);
+}
+
+TEST_F(VotesUploaderTest, UploadSingleUsername) {
+  for (bool credentials_saved : {false, true}) {
+    SCOPED_TRACE(testing::Message("credentials_saved = ") << credentials_saved);
+    VotesUploader votes_uploader(&client_, false);
+
+    MockFieldInfoManager mock_field_manager;
+    ON_CALL(mock_field_manager, GetFieldType(_, _))
+        .WillByDefault(Return(UNKNOWN_TYPE));
+    ON_CALL(client_, GetFieldInfoManager())
+        .WillByDefault(Return(&mock_field_manager));
+
+    constexpr uint32_t kUsernameRendererId = 101;
+    constexpr uint32_t kUsernameFieldSignature = 1234;
+    constexpr uint64_t kFormSignature = 1000;
+
+    FormPredictions form_predictions;
+    form_predictions.form_signature = kFormSignature;
+    // Add a non-username field.
+    form_predictions.fields.emplace_back();
+    form_predictions.fields.back().renderer_id = kUsernameRendererId - 1;
+    form_predictions.fields.back().signature = kUsernameFieldSignature - 1;
+
+    // Add the username field.
+    form_predictions.fields.emplace_back();
+    form_predictions.fields.back().renderer_id = kUsernameRendererId;
+    form_predictions.fields.back().signature = kUsernameFieldSignature;
+
+    votes_uploader.set_single_username_vote_data(kUsernameRendererId,
+                                                 form_predictions);
+
+    ServerFieldTypeSet expected_types = {credentials_saved ? SINGLE_USERNAME
+                                                           : NOT_USERNAME};
+    EXPECT_CALL(mock_autofill_download_manager_,
+                StartUploadRequest(SignatureIs(kFormSignature), false,
+                                   expected_types, std::string(), true,
+                                   /* pref_service= */ nullptr));
+
+    votes_uploader.MaybeSendSingleUsernameVote(credentials_saved);
+  }
+}
+
+TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
+  VotesUploader votes_uploader(&client_, false);
+  constexpr uint32_t kUsernameRendererId = 101;
+  constexpr uint32_t kUsernameFieldSignature = 1234;
+  constexpr uint64_t kFormSignature = 1000;
+
+  FormPredictions form_predictions;
+  form_predictions.form_signature = kFormSignature;
+
+  // Add the username field.
+  form_predictions.fields.emplace_back();
+  form_predictions.fields.back().renderer_id = kUsernameRendererId;
+  form_predictions.fields.back().signature = kUsernameFieldSignature;
+
+  votes_uploader.set_single_username_vote_data(kUsernameRendererId,
+                                               form_predictions);
+
+  // Init store and expect that adding field info is called.
+  scoped_refptr<MockPasswordStore> store = new MockPasswordStore;
+  store->Init(syncer::SyncableService::StartSyncFlare(), /*prefs=*/nullptr);
+  EXPECT_CALL(*store,
+              AddFieldInfoImpl(FieldInfoHasData(
+                  kFormSignature, kUsernameFieldSignature, SINGLE_USERNAME)));
+
+  // Init FieldInfoManager.
+  FieldInfoManagerImpl field_info_manager(store);
+  EXPECT_CALL(client_, GetFieldInfoManager())
+      .WillRepeatedly(Return(&field_info_manager));
+
+  votes_uploader.MaybeSendSingleUsernameVote(true /*  credentials_saved */);
+  task_environment_.RunUntilIdle();
+  store->ShutdownOnUIThread();
+}
+
+TEST_F(VotesUploaderTest, DontUploadSingleUsernameWhenAlreadyUploaded) {
+  VotesUploader votes_uploader(&client_, false);
+  constexpr uint32_t kUsernameRendererId = 101;
+  constexpr uint32_t kUsernameFieldSignature = 1234;
+  constexpr uint64_t kFormSignature = 1000;
+
+  MockFieldInfoManager mock_field_manager;
+  ON_CALL(client_, GetFieldInfoManager())
+      .WillByDefault(Return(&mock_field_manager));
+  // Simulate that the vote has been already uploaded.
+  ON_CALL(mock_field_manager,
+          GetFieldType(kFormSignature, kUsernameFieldSignature))
+      .WillByDefault(Return(SINGLE_USERNAME));
+
+  FormPredictions form_predictions;
+  form_predictions.form_signature = kFormSignature;
+
+  // Add the username field.
+  form_predictions.fields.emplace_back();
+  form_predictions.fields.back().renderer_id = kUsernameRendererId;
+  form_predictions.fields.back().signature = kUsernameFieldSignature;
+
+  votes_uploader.set_single_username_vote_data(kUsernameRendererId,
+                                               form_predictions);
+
+  // Expect no upload, since the vote has been already uploaded.
+  EXPECT_CALL(mock_autofill_download_manager_, StartUploadRequest).Times(0);
+
+  votes_uploader.MaybeSendSingleUsernameVote(true /*credentials_saved*/);
 }
 
 }  // namespace password_manager

@@ -15,8 +15,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "components/services/storage/indexed_db/scopes/leveldb_scopes_factory.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/leveldb_write_batch.h"
 #include "content/browser/indexed_db/indexed_db_data_loss_info.h"
-#include "content/browser/indexed_db/scopes/leveldb_scopes_factory.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
@@ -29,6 +31,7 @@ namespace content {
 class TransactionalLevelDBDatabase;
 class TransactionalLevelDBIterator;
 class TransactionalLevelDBTransaction;
+class LevelDBDirectTransaction;
 
 namespace indexed_db {
 
@@ -53,18 +56,45 @@ std::string CONTENT_EXPORT ReadCorruptionInfo(const base::FilePath& path_base,
 
 // Was able to use LevelDB to read the data w/o error, but the data read was not
 // in the expected format.
-leveldb::Status InternalInconsistencyStatus();
+leveldb::Status CONTENT_EXPORT InternalInconsistencyStatus();
 
 leveldb::Status InvalidDBKeyStatus();
 
 leveldb::Status IOErrorStatus();
 
+template <typename Transaction>
+leveldb::Status PutValue(Transaction* transaction,
+                         const base::StringPiece& key,
+                         std::string* value) {
+  return transaction->Put(key, value);
+}
+
+// This function must be declared as 'inline' to avoid duplicate symbols.
+template <>
+inline leveldb::Status PutValue(LevelDBWriteBatch* write_batch,
+                                const base::StringPiece& key,
+                                std::string* value) {
+  write_batch->Put(key, base::StringPiece(*value));
+  return leveldb::Status::OK();
+}
+
 // Note - this uses DecodeInt, which is a 'dumb' varint decoder. See DecodeInt.
 template <typename DBOrTransaction>
-leveldb::Status CONTENT_EXPORT GetInt(DBOrTransaction* db,
-                                      const base::StringPiece& key,
-                                      int64_t* found_int,
-                                      bool* found);
+leveldb::Status GetInt(DBOrTransaction* db,
+                       const base::StringPiece& key,
+                       int64_t* found_int,
+                       bool* found) {
+  std::string result;
+  leveldb::Status s = db->Get(key, &result, found);
+  if (!s.ok())
+    return s;
+  if (!*found)
+    return leveldb::Status::OK();
+  base::StringPiece slice(result);
+  if (DecodeInt(&slice, found_int) && slice.empty())
+    return s;
+  return InternalInconsistencyStatus();
+}
 
 WARN_UNUSED_RESULT leveldb::Status PutBool(
     TransactionalLevelDBTransaction* transaction,
@@ -73,10 +103,15 @@ WARN_UNUSED_RESULT leveldb::Status PutBool(
 
 // Note - this uses EncodeInt, which is a 'dumb' varint encoder. See EncodeInt.
 template <typename TransactionOrWriteBatch>
-WARN_UNUSED_RESULT leveldb::Status CONTENT_EXPORT
-PutInt(TransactionOrWriteBatch* transaction,
-       const base::StringPiece& key,
-       int64_t value);
+WARN_UNUSED_RESULT leveldb::Status PutInt(
+    TransactionOrWriteBatch* transaction_or_write_batch,
+    const base::StringPiece& key,
+    int64_t value) {
+  DCHECK_GE(value, 0);
+  std::string buffer;
+  EncodeInt(value, &buffer);
+  return PutValue(transaction_or_write_batch, key, &buffer);
+}
 
 template <typename DBOrTransaction>
 WARN_UNUSED_RESULT leveldb::Status GetVarInt(DBOrTransaction* db,
@@ -160,12 +195,12 @@ WARN_UNUSED_RESULT bool FindGreatestKeyLessThanOrEqual(
     leveldb::Status* s);
 
 WARN_UNUSED_RESULT bool GetBlobKeyGeneratorCurrentNumber(
-    TransactionalLevelDBTransaction* leveldb_transaction,
+    LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t* blob_key_generator_current_number);
 
 WARN_UNUSED_RESULT bool UpdateBlobKeyGeneratorCurrentNumber(
-    TransactionalLevelDBTransaction* leveldb_transaction,
+    LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t blob_key_generator_current_number);
 

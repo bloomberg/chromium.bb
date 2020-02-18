@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -17,12 +18,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-
-namespace {
-
-const int kTrayItemAnimationDurationMS = 200;
-
-}  // namespace
 
 void IconizedLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (custom_accessible_name_.empty())
@@ -67,7 +62,7 @@ void TrayItemView::SetVisible(bool set_visible) {
 
   if (!animation_) {
     animation_.reset(new gfx::SlideAnimation(this));
-    animation_->SetSlideDuration(GetAnimationDurationMS());
+    animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
     animation_->SetTweenType(gfx::Tween::LINEAR);
     animation_->Reset(GetVisible() ? 1.0 : 0.0);
   }
@@ -80,10 +75,6 @@ void TrayItemView::SetVisible(bool set_visible) {
     AnimationProgressed(animation_.get());
     views::View::SetVisible(true);
   }
-}
-
-int TrayItemView::GetAnimationDurationMS() {
-  return kTrayItemAnimationDurationMS;
 }
 
 bool TrayItemView::IsHorizontalAlignment() const {

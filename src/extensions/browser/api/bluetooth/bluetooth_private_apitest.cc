@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/gmock_callback_support.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -20,6 +21,8 @@
 #include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using base::test::RunClosure;
+using base::test::RunOnceClosure;
 using device::BluetoothDiscoveryFilter;
 using device::BluetoothUUID;
 using device::MockBluetoothAdapter;
@@ -155,12 +158,6 @@ class BluetoothPrivateApiTest : public ExtensionApiTest {
   std::unique_ptr<NiceMock<MockBluetoothDevice>> mock_device_;
 };
 
-ACTION_TEMPLATE(InvokeCallbackArgument,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_0_VALUE_PARAMS()) {
-  std::move(std::get<k>(args)).Run();
-}
-
 IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, SetAdapterState) {
   ON_CALL(*mock_adapter_, GetName())
       .WillByDefault(ReturnPointee(&adapter_name_));
@@ -236,9 +233,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DisconnectAll) {
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_device_, Disconnect(_, _))
       .Times(3)
-      .WillOnce(InvokeCallbackArgument<1>())
-      .WillOnce(InvokeCallbackArgument<1>())
-      .WillOnce(InvokeCallbackArgument<0>());
+      .WillOnce(RunClosure<1>())
+      .WillOnce(RunClosure<1>())
+      .WillOnce(RunClosure<0>());
   ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/disconnect"))
       << message_;
 }
@@ -259,9 +256,13 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DiscoveryFilter) {
       device::BLUETOOTH_TRANSPORT_DUAL);
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
   discovery_filter.SetPathloss(50);
-  discovery_filter.AddUUID(BluetoothUUID("cafe"));
-  discovery_filter.AddUUID(
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(BluetoothUUID("cafe"));
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter2;
+  device_filter2.uuids.insert(
       BluetoothUUID("0000bebe-0000-1000-8000-00805f9b34fb"));
+  discovery_filter.AddDeviceFilter(std::move(device_filter));
+  discovery_filter.AddDeviceFilter(std::move(device_filter2));
 
   EXPECT_CALL(*mock_adapter_, StartScanWithFilter_(
                                   IsFilterEqual(&discovery_filter), testing::_))
@@ -282,8 +283,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, Connect) {
       .Times(2)
       .WillOnce(Return(false))
       .WillOnce(Return(true));
-  EXPECT_CALL(*mock_device_, Connect(_, _, _))
-      .WillOnce(InvokeCallbackArgument<1>());
+  EXPECT_CALL(*mock_device_, Connect_(_, _, _)).WillOnce(RunOnceClosure<1>());
   ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/connect"))
       << message_;
 }
@@ -294,12 +294,12 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, Pair) {
                   _, device::BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH));
   EXPECT_CALL(*mock_device_, ExpectingConfirmation())
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_device_, Pair(_, _, _))
+  EXPECT_CALL(*mock_device_, Pair_(_, _, _))
       .WillOnce(DoAll(
           WithoutArgs(Invoke(
               this,
               &BluetoothPrivateApiTest::DispatchConfirmPasskeyPairingEvent)),
-          InvokeCallbackArgument<1>()));
+          RunOnceClosure<1>()));
   ASSERT_TRUE(RunComponentExtensionTest("bluetooth_private/pair")) << message_;
 }
 

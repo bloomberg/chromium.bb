@@ -32,10 +32,11 @@ DEF_GPUTEST_FOR_METAL_CONTEXT(MtlBackendAllocationTest, reporter, ctxInfo) {
     const GrMtlCaps* mtlCaps = static_cast<const GrMtlCaps*>(context->priv().caps());
 
     constexpr SkColor4f kTransCol { 0, 0.25f, 0.75f, 0.5f };
+    constexpr SkColor4f kGrayCol { 0.75f, 0.75f, 0.75f, 0.75f };
 
     struct {
         GrColorType      fColorType;
-        MTLPixelFormat fFormat;
+        MTLPixelFormat   fFormat;
         SkColor4f        fColor;
     } combinations[] = {
         { GrColorType::kRGBA_8888,        MTLPixelFormatRGBA8Unorm,      SkColors::kRed       },
@@ -56,26 +57,19 @@ DEF_GPUTEST_FOR_METAL_CONTEXT(MtlBackendAllocationTest, reporter, ctxInfo) {
 
         { GrColorType::kAlpha_8,          MTLPixelFormatA8Unorm,         kTransCol            },
         { GrColorType::kAlpha_8,          MTLPixelFormatR8Unorm,         kTransCol            },
-        { GrColorType::kGray_8,           MTLPixelFormatR8Unorm,         SkColors::kDkGray    },
-
-        { GrColorType::kRGBA_F32,         MTLPixelFormatRGBA32Float,     SkColors::kRed       },
+        { GrColorType::kGray_8,           MTLPixelFormatR8Unorm,         kGrayCol             },
 
         { GrColorType::kRGBA_F16_Clamped, MTLPixelFormatRGBA16Float,     SkColors::kLtGray    },
         { GrColorType::kRGBA_F16,         MTLPixelFormatRGBA16Float,     SkColors::kYellow    },
 
-        { GrColorType::kRG_88,            MTLPixelFormatRG8Unorm,        { 0.5f, 0.5f, 0, 0 } },
+        { GrColorType::kRG_88,            MTLPixelFormatRG8Unorm,        { 0.5f, 0.5f, 0, 1 } },
         { GrColorType::kAlpha_F16,        MTLPixelFormatR16Float,        { 1.0f, 0, 0, 0.5f } },
 
-        { GrColorType::kR_16,             MTLPixelFormatR16Unorm,        SkColors::kRed       },
+        { GrColorType::kAlpha_16,         MTLPixelFormatR16Unorm,        kTransCol            },
         { GrColorType::kRG_1616,          MTLPixelFormatRG16Unorm,       SkColors::kYellow    },
 
-        // Experimental (for Y416 and mutant P016/P010)
         { GrColorType::kRGBA_16161616,    MTLPixelFormatRGBA16Unorm,     SkColors::kLtGray    },
         { GrColorType::kRG_F16,           MTLPixelFormatRG16Float,       SkColors::kYellow    },
-
-#ifdef SK_BUILD_FOR_IOS
-        { GrColorType::kUnknown,          MTLPixelFormatETC2_RGB8,       SkColors::kRed       }
-#endif
     };
 
     for (auto combo : combinations) {
@@ -106,10 +100,6 @@ DEF_GPUTEST_FOR_METAL_CONTEXT(MtlBackendAllocationTest, reporter, ctxInfo) {
                     }
                 }
 
-#ifdef SK_BUILD_FOR_IOS
-                // We current disallow uninitialized compressed textures in the Metal backend
-                if (combo.fFormat != MTLPixelFormatETC2_RGB8)
-#endif
                 {
                     auto uninitCreateMtd = [format](GrContext* context,
                                                     GrMipMapped mipMapped,
@@ -123,18 +113,51 @@ DEF_GPUTEST_FOR_METAL_CONTEXT(MtlBackendAllocationTest, reporter, ctxInfo) {
                                   combo.fColorType, mipMapped, renderable);
                 }
 
-                // Not implemented for Metal yet
                 {
-                    auto createWithColorMtd = [format](GrContext* context,
-                                                       const SkColor4f& color,
-                                                       GrMipMapped mipMapped,
-                                                       GrRenderable renderable) {
-                        return context->createBackendTexture(32, 32, format, color,
+                    // We're creating backend textures without specifying a color type "view" of
+                    // them at the public API level. Therefore, Ganesh will not apply any swizzles
+                    // before writing the color to the texture. However, our validation code does
+                    // rely on interpreting the texture contents via a SkColorType and therefore
+                    // swizzles may be applied during the read step.
+                    // Ideally we'd update our validation code to use a "raw" read that doesn't
+                    // impose a color type but for now we just munge the data we upload to match the
+                    // expectation.
+                    GrSwizzle swizzle;
+                    switch (combo.fColorType) {
+                        case GrColorType::kAlpha_8:
+                            swizzle = GrSwizzle("aaaa");
+                            break;
+                        case GrColorType::kAlpha_16:
+                            swizzle = GrSwizzle("aaaa");
+                            break;
+                        case GrColorType::kAlpha_F16:
+                            swizzle = GrSwizzle("aaaa");
+                            break;
+                        default:
+                            break;
+                    }
+                    auto createWithColorMtd = [format, swizzle](GrContext* context,
+                                                                const SkColor4f& color,
+                                                                GrMipMapped mipMapped,
+                                                                GrRenderable renderable) {
+                        auto swizzledColor = swizzle.applyTo(color);
+                        return context->createBackendTexture(32, 32, format, swizzledColor,
                                                              mipMapped, renderable);
                     };
-
-                    test_color_init(context, reporter, createWithColorMtd,
-                                    combo.fColorType, combo.fColor, mipMapped, renderable);
+                    // We make our comparison color using SkPixmap::erase(color) on a pixmap of
+                    // combo.fColorType and then calling SkPixmap::readPixels(). erase() will premul
+                    // the color passed to it. However, createBackendTexture() that takes a
+                    // SkColor4f is color type/alpha type unaware and will simply compute luminance
+                    // from the r, g, b, channels.
+                    SkColor4f color = combo.fColor;
+                    if (combo.fColorType == GrColorType::kGray_8) {
+                        color = {color.fR * color.fA,
+                            color.fG * color.fA,
+                            color.fB * color.fA,
+                            1.f};
+                    }
+                    test_color_init(context, reporter, createWithColorMtd, combo.fColorType, color,
+                                    mipMapped, renderable);
                 }
             }
         }

@@ -43,7 +43,12 @@ constexpr uint32_t kPathBuilderIterationLimit = 25000;
 constexpr base::TimeDelta kMaxVerificationTime =
     base::TimeDelta::FromSeconds(60);
 
+constexpr base::TimeDelta kPerAttemptMinVerificationTimeLimit =
+    base::TimeDelta::FromSeconds(5);
+
 DEFINE_CERT_ERROR_ID(kPathLacksEVPolicy, "Path does not have an EV policy");
+
+const void* kResultDebugDataKey = &kResultDebugDataKey;
 
 RevocationPolicy NoRevocationChecking() {
   RevocationPolicy policy;
@@ -136,7 +141,8 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
 
   // This is called for each built chain, including ones which failed. It is
   // responsible for adding errors to the built chain if it is not acceptable.
-  void CheckPathAfterVerification(CertPathBuilderResultPath* path) override {
+  void CheckPathAfterVerification(const CertPathBuilder& path_builder,
+                                  CertPathBuilderResultPath* path) override {
     // If the path is already invalid, don't check revocation status. The chain
     // is expected to be valid when doing revocation checks (since for instance
     // the correct issuer for a certificate may need to be known). Also if
@@ -191,8 +197,8 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
     // respective certificates, so |errors->ContainsHighSeverityErrors()| will
     // reflect the revocation status of the chain after this call.
     CheckValidatedChainRevocation(
-        path->certs, policy, stapled_leaf_ocsp_response_, net_fetcher_,
-        &path->errors,
+        path->certs, policy, path_builder.deadline(),
+        stapled_leaf_ocsp_response_, net_fetcher_, &path->errors,
         &PathBuilderDelegateDataImpl::GetOrCreate(path)
              ->stapled_ocsp_verify_result);
   }
@@ -306,7 +312,9 @@ CertVerifyProcBuiltin::CertVerifyProcBuiltin(
     scoped_refptr<CertNetFetcher> net_fetcher,
     std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider)
     : net_fetcher_(std::move(net_fetcher)),
-      system_trust_store_provider_(std::move(system_trust_store_provider)) {}
+      system_trust_store_provider_(std::move(system_trust_store_provider)) {
+  DCHECK(system_trust_store_provider_);
+}
 
 CertVerifyProcBuiltin::~CertVerifyProcBuiltin() = default;
 
@@ -379,8 +387,10 @@ void MapPathBuilderErrorsToCertStatus(const CertPathErrors& errors,
     *cert_status |= CERT_STATUS_DATE_INVALID;
   }
 
-  if (errors.ContainsError(cert_errors::kDistrustedByTrustStore))
+  if (errors.ContainsError(cert_errors::kDistrustedByTrustStore) ||
+      errors.ContainsError(cert_errors::kVerifySignedDataFailed)) {
     *cert_status |= CERT_STATUS_AUTHORITY_INVALID;
+  }
 
   // IMPORTANT: If the path was invalid for a reason that was not
   // explicity checked above, set a general error. This is important as
@@ -439,7 +449,7 @@ CertPathBuilder::Result TryBuildPath(
     const scoped_refptr<ParsedCertificate>& target,
     CertIssuerSourceStatic* intermediates,
     SystemTrustStore* ssl_trust_store,
-    base::Time verification_time,
+    const der::GeneralizedTime& der_verification_time,
     base::TimeTicks deadline,
     VerificationType verification_type,
     SimplePathBuilderDelegate::DigestPolicy digest_policy,
@@ -449,13 +459,6 @@ CertPathBuilder::Result TryBuildPath(
     CertNetFetcher* net_fetcher,
     const EVRootCAMetadata* ev_metadata,
     bool* checked_revocation) {
-  der::GeneralizedTime der_verification_time;
-  if (!der::EncodeTimeAsGeneralizedTime(verification_time,
-                                        &der_verification_time)) {
-    // This shouldn't be possible.
-    return CertPathBuilder::Result();
-  }
-
   // Path building will require candidate paths to conform to at least one of
   // the policies in |user_initial_policy_set|.
   std::set<der::Input> user_initial_policy_set;
@@ -586,13 +589,8 @@ int AssignVerifyResult(X509Certificate* input_cert,
 // This implementation is simplistic, and looks only for the presence of the
 // kUnacceptableSignatureAlgorithm error somewhere among the built paths.
 bool CanTryAgainWithWeakerDigestPolicy(const CertPathBuilder::Result& result) {
-  for (const auto& path : result.paths) {
-    if (path->errors.ContainsError(
-            cert_errors::kUnacceptableSignatureAlgorithm))
-      return true;
-  }
-
-  return false;
+  return result.AnyPathContainsError(
+      cert_errors::kUnacceptableSignatureAlgorithm);
 }
 
 int CertVerifyProcBuiltin::VerifyInternal(
@@ -611,6 +609,18 @@ int CertVerifyProcBuiltin::VerifyInternal(
   base::Time verification_time = base::Time::Now();
   base::TimeTicks deadline = base::TimeTicks::Now() + kMaxVerificationTime;
 
+  der::GeneralizedTime der_verification_time;
+  if (!der::EncodeTimeAsGeneralizedTime(verification_time,
+                                        &der_verification_time)) {
+    // This shouldn't be possible.
+    // We don't really have a good error code for this type of error.
+    verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
+    return ERR_CERT_AUTHORITY_INVALID;
+  }
+
+  CertVerifyProcBuiltinResultDebugData::Create(verify_result, verification_time,
+                                               der_verification_time);
+
   // Parse the target certificate.
   scoped_refptr<ParsedCertificate> target =
       ParseCertificateFromBuffer(input_cert->cert_buffer(), &parsing_errors);
@@ -626,9 +636,7 @@ int CertVerifyProcBuiltin::VerifyInternal(
 
   // Parse the additional trust anchors and setup trust store.
   std::unique_ptr<SystemTrustStore> ssl_trust_store =
-      system_trust_store_provider_
-          ? system_trust_store_provider_->CreateSystemTrustStore()
-          : CreateSslSystemTrustStore();
+      system_trust_store_provider_->CreateSystemTrustStore();
 
   for (const auto& x509_cert : additional_trust_anchors) {
     scoped_refptr<ParsedCertificate> cert =
@@ -671,15 +679,35 @@ int CertVerifyProcBuiltin::VerifyInternal(
     const auto& cur_attempt = attempts[cur_attempt_index];
     verification_type = cur_attempt.verification_type;
 
+    // If a previous attempt used up most/all of the deadline, extend the
+    // deadline a little bit to give this verification attempt a chance at
+    // success.
+    deadline = std::max(
+        deadline, base::TimeTicks::Now() + kPerAttemptMinVerificationTimeLimit);
+
     // Run the attempt through the path builder.
     result = TryBuildPath(
-        target, &intermediates, ssl_trust_store.get(), verification_time,
+        target, &intermediates, ssl_trust_store.get(), der_verification_time,
         deadline, cur_attempt.verification_type, cur_attempt.digest_policy,
         flags, ocsp_response, crl_set, net_fetcher_.get(), ev_metadata,
         &checked_revocation_for_some_path);
 
-    if (result.HasValidPath() || result.exceeded_deadline)
+    if (result.HasValidPath())
       break;
+
+    if (result.exceeded_deadline) {
+      if (verification_type == VerificationType::kEV &&
+          result.AnyPathContainsError(cert_errors::kUnableToCheckRevocation)) {
+        // EV verification failed due to deadline exceeded and unable to check
+        // revocation. Try the non-EV attempt even though the deadline has been
+        // reached, since a revocation checking failure on EV should be a
+        // soft-fail. (Since the non-EV attempt generally will not be using
+        // revocation checking it hopefully won't hit the deadline too.)
+        continue;
+      }
+      // Otherwise, stop immediately if an attempt exceeds the deadline.
+      break;
+    }
 
     // If this path building attempt (may have) failed due to the chain using a
     // weak signature algorithm, enqueue a similar attempt but with weaker
@@ -712,13 +740,60 @@ int CertVerifyProcBuiltin::VerifyInternal(
   return error;
 }
 
+class DefaultSystemTrustStoreProvider : public SystemTrustStoreProvider {
+ public:
+  std::unique_ptr<SystemTrustStore> CreateSystemTrustStore() override {
+    return CreateSslSystemTrustStore();
+  }
+};
+
 }  // namespace
+
+// static
+std::unique_ptr<SystemTrustStoreProvider>
+SystemTrustStoreProvider::CreateDefaultForSSL() {
+  return std::make_unique<DefaultSystemTrustStoreProvider>();
+}
+
+CertVerifyProcBuiltinResultDebugData::CertVerifyProcBuiltinResultDebugData(
+    base::Time verification_time,
+    const der::GeneralizedTime& der_verification_time)
+    : verification_time_(verification_time),
+      der_verification_time_(der_verification_time) {}
+
+// static
+const CertVerifyProcBuiltinResultDebugData*
+CertVerifyProcBuiltinResultDebugData::Get(
+    const base::SupportsUserData* debug_data) {
+  return static_cast<CertVerifyProcBuiltinResultDebugData*>(
+      debug_data->GetUserData(kResultDebugDataKey));
+}
+
+// static
+void CertVerifyProcBuiltinResultDebugData::Create(
+    base::SupportsUserData* debug_data,
+    base::Time verification_time,
+    const der::GeneralizedTime& der_verification_time) {
+  debug_data->SetUserData(
+      kResultDebugDataKey,
+      std::make_unique<CertVerifyProcBuiltinResultDebugData>(
+          verification_time, der_verification_time));
+}
+
+std::unique_ptr<base::SupportsUserData::Data>
+CertVerifyProcBuiltinResultDebugData::Clone() {
+  return std::make_unique<CertVerifyProcBuiltinResultDebugData>(*this);
+}
 
 scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin(
     scoped_refptr<CertNetFetcher> net_fetcher,
     std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider) {
   return base::MakeRefCounted<CertVerifyProcBuiltin>(
       std::move(net_fetcher), std::move(system_trust_store_provider));
+}
+
+base::TimeDelta GetCertVerifyProcBuiltinTimeLimitForTesting() {
+  return kMaxVerificationTime;
 }
 
 }  // namespace net

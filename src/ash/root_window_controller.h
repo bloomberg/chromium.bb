@@ -46,6 +46,7 @@ enum class LoginStatus;
 class RootWindowLayoutManager;
 class Shelf;
 class ShelfLayoutManager;
+class SplitViewController;
 class StackingController;
 class StatusAreaWidget;
 class SystemModalContainerLayoutManager;
@@ -74,10 +75,13 @@ class ASH_EXPORT RootWindowController {
   ~RootWindowController();
 
   // Creates and Initialize the RootWindowController for primary display.
-  static void CreateForPrimaryDisplay(AshWindowTreeHost* host);
+  // Returns a pointer to the newly created controller.
+  static RootWindowController* CreateForPrimaryDisplay(AshWindowTreeHost* host);
 
   // Creates and Initialize the RootWindowController for secondary displays.
-  static void CreateForSecondaryDisplay(AshWindowTreeHost* host);
+  // Returns a pointer to the newly created controller.
+  static RootWindowController* CreateForSecondaryDisplay(
+      AshWindowTreeHost* host);
 
   // Returns a RootWindowController of the window's root window.
   static RootWindowController* ForWindow(const aura::Window* window);
@@ -99,6 +103,10 @@ class ASH_EXPORT RootWindowController {
   const aura::WindowTreeHost* GetHost() const;
   aura::Window* GetRootWindow();
   const aura::Window* GetRootWindow() const;
+
+  SplitViewController* split_view_controller() const {
+    return split_view_controller_.get();
+  }
 
   Shelf* shelf() const { return shelf_.get(); }
 
@@ -255,11 +263,6 @@ class ASH_EXPORT RootWindowController {
   // not this is the first boot.
   void CreateSystemWallpaper(RootWindowType root_window_type);
 
-  // Resets Shell::GetRootWindowForNewWindows() if appropriate. This is called
-  // during shutdown to make sure GetRootWindowForNewWindows() isn't referencing
-  // this.
-  void ResetRootForNewWindowsIfNecessary();
-
   // Callback for MenuRunner.
   void OnMenuClosed();
 
@@ -283,6 +286,8 @@ class ASH_EXPORT RootWindowController {
   std::unique_ptr<AppMenuModelAdapter> root_window_menu_model_adapter_;
 
   std::unique_ptr<StackingController> stacking_controller_;
+
+  std::unique_ptr<SplitViewController> split_view_controller_;
 
   // The shelf controller for this root window. Exists for the entire lifetime
   // of the RootWindowController so that it is safe for observers to be added

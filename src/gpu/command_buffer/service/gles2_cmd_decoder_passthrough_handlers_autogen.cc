@@ -4613,6 +4613,20 @@ error::Error GLES2DecoderPassthroughImpl::HandlePathStencilFuncCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleContextVisibilityHintCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::ContextVisibilityHintCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::ContextVisibilityHintCHROMIUM*>(
+          cmd_data);
+  GLboolean visibility = static_cast<GLboolean>(c.visibility);
+  error::Error error = DoContextVisibilityHintCHROMIUM(visibility);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleCoverageModulationCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -4639,21 +4653,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleBlendBarrierKHR(
   }
 
   error::Error error = DoBlendBarrierKHR();
-  if (error != error::kNoError) {
-    return error;
-  }
-  return error::kNoError;
-}
-
-error::Error
-GLES2DecoderPassthroughImpl::HandleApplyScreenSpaceAntialiasingCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  if (!features().chromium_screen_space_antialiasing) {
-    return error::kUnknownCommand;
-  }
-
-  error::Error error = DoApplyScreenSpaceAntialiasingCHROMIUM();
   if (error != error::kNoError) {
     return error;
   }

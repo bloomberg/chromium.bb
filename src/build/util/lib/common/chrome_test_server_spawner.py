@@ -355,7 +355,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       _logger.info('Test server is running on port %d forwarded to %d.' %
               (new_server.forwarder_device_port, new_server.host_port))
       port = new_server.forwarder_device_port
-      assert not self.server.test_servers.has_key(port)
+      assert port not in self.server.test_servers
       self.server.test_servers[port] = new_server
     else:
       new_server.Stop()
@@ -366,13 +366,13 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Stops the test server instance."""
     try:
       port = int(params['port'][0])
-    except ValueError, KeyError:
+    except ValueError:
       port = None
     if port == None or port <= 0:
       self._SendResponse(400, 'Invalid request.', {}, 'port must be specified')
       return
 
-    if not self.server.test_servers.has_key(port):
+    if port not in self.server.test_servers:
       self._SendResponse(400, 'Invalid request.', {},
                          "testserver isn't running on port %d" % port)
       return

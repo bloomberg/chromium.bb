@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/optional.h"
+#include "base/test/gtest_util.h"
 #include "base/test/launcher/test_result.h"
 
 namespace base {
@@ -22,6 +23,18 @@ std::string FindStringKeyOrEmpty(const Value& dict_value,
                                  const std::string& key) {
   const std::string* value = dict_value.FindStringKey(key);
   return value ? *value : std::string();
+}
+
+// Find and return test case with name |test_case_name|,
+// return null if missing.
+const testing::TestCase* GetTestCase(const std::string& test_case_name) {
+  testing::UnitTest* const unit_test = testing::UnitTest::GetInstance();
+  for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
+    const testing::TestCase* test_case = unit_test->GetTestCase(i);
+    if (test_case->name() == test_case_name)
+      return test_case;
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -62,7 +75,7 @@ bool ValidateTestResult(const Value* iteration_data,
     return false;
   }
 
-  const Value& val = results->GetList().at(0);
+  const Value& val = results->GetList()[0];
   if (!val.is_dict()) {
     ADD_FAILURE() << "Value must be of type DICTIONARY";
     return false;
@@ -83,6 +96,24 @@ bool ValidateTestResult(const Value* iteration_data,
     return false;
   }
   return true;
+}
+
+bool ValidateTestLocations(const Value* test_locations,
+                           const std::string& test_case_name) {
+  const testing::TestCase* test_case = GetTestCase(test_case_name);
+  if (test_case == nullptr) {
+    ADD_FAILURE() << "Could not find test case " << test_case_name;
+    return false;
+  }
+  bool result = true;
+  for (int j = 0; j < test_case->total_test_count(); ++j) {
+    const testing::TestInfo* test_info = test_case->GetTestInfo(j);
+    std::string full_name =
+        FormatFullTestName(test_case->name(), test_info->name());
+    result &= ValidateTestLocation(test_locations, full_name, test_info->file(),
+                                   test_info->line());
+  }
+  return result;
 }
 
 bool ValidateTestLocation(const Value* test_locations,

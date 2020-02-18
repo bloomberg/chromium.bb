@@ -6,46 +6,43 @@
 
 #include <memory>
 
+#include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 
 namespace quic {
-
 QuicConnectionCloseFrame::QuicConnectionCloseFrame()
     // Default close type ensures that existing, pre-V99 code works as expected.
     : close_type(GOOGLE_QUIC_CONNECTION_CLOSE),
       quic_error_code(QUIC_NO_ERROR),
-      extracted_error_code(QUIC_IETF_GQUIC_ERROR_MISSING),
-      transport_close_frame_type(0) {}
-
-QuicConnectionCloseFrame::QuicConnectionCloseFrame(QuicErrorCode error_code,
-                                                   std::string error_details)
-    // Default close type ensures that existing, pre-V99 code works as expected.
-    : close_type(GOOGLE_QUIC_CONNECTION_CLOSE),
-      quic_error_code(error_code),
-      extracted_error_code(error_code),
-      error_details(std::move(error_details)),
+      extracted_error_code(QUIC_NO_ERROR),
       transport_close_frame_type(0) {}
 
 QuicConnectionCloseFrame::QuicConnectionCloseFrame(
-    QuicErrorCode quic_error_code,
-    std::string error_details,
-    uint64_t ietf_application_error_code)
-    : close_type(IETF_QUIC_APPLICATION_CONNECTION_CLOSE),
-      application_error_code(ietf_application_error_code),
-      extracted_error_code(quic_error_code),
-      error_details(std::move(error_details)),
-      transport_close_frame_type(0) {}
-
-QuicConnectionCloseFrame::QuicConnectionCloseFrame(
-    QuicErrorCode quic_error_code,
-    std::string error_details,
-    QuicIetfTransportErrorCodes transport_error_code,
-    uint64_t transport_frame_type)
-    : close_type(IETF_QUIC_TRANSPORT_CONNECTION_CLOSE),
-      transport_error_code(transport_error_code),
-      extracted_error_code(quic_error_code),
-      error_details(std::move(error_details)),
-      transport_close_frame_type(transport_frame_type) {}
+    QuicTransportVersion transport_version,
+    QuicErrorCode error_code,
+    std::string error_phrase,
+    uint64_t frame_type)
+    : extracted_error_code(error_code), error_details(error_phrase) {
+  if (!VersionHasIetfQuicFrames(transport_version)) {
+    close_type = GOOGLE_QUIC_CONNECTION_CLOSE;
+    quic_error_code = error_code;
+    transport_close_frame_type = 0;
+    return;
+  }
+  QuicErrorCodeToIetfMapping mapping =
+      QuicErrorCodeToTransportErrorCode(error_code);
+  if (mapping.is_transport_close_) {
+    // Maps to a transport close
+    close_type = IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
+    transport_error_code = mapping.transport_error_code_;
+    transport_close_frame_type = frame_type;
+    return;
+  }
+  // Maps to an application close.
+  close_type = IETF_QUIC_APPLICATION_CONNECTION_CLOSE;
+  application_error_code = mapping.application_error_code_;
+  transport_close_frame_type = 0;
+}
 
 std::ostream& operator<<(
     std::ostream& os,

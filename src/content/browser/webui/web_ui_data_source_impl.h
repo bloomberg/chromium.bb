@@ -67,9 +67,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   ~WebUIDataSourceImpl() override;
 
   // Completes a request by sending our dictionary of localized strings.
-  void SendLocalizedStringsAsJSON(
-      const URLDataSource::GotDataCallback& callback,
-      bool from_js_module);
+  void SendLocalizedStringsAsJSON(URLDataSource::GotDataCallback callback,
+                                  bool from_js_module);
 
   // Protected for testing.
   virtual const base::DictionaryValue* GetLocalizedStrings() const;
@@ -83,9 +82,9 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   // Methods that match URLDataSource which are called by
   // InternalDataSource.
   std::string GetMimeType(const std::string& path) const;
-  void StartDataRequest(const std::string& path,
+  void StartDataRequest(const GURL& url,
                         const WebContents::Getter& wc_getter,
-                        const URLDataSource::GotDataCallback& callback);
+                        URLDataSource::GotDataCallback callback);
 
   int PathToIdrOrDefault(const std::string& path) const;
 

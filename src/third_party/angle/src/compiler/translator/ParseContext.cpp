@@ -169,7 +169,8 @@ TParseContext::TParseContext(TSymbolTable &symt,
                              ShCompileOptions options,
                              bool checksPrecErrors,
                              TDiagnostics *diagnostics,
-                             const ShBuiltInResources &resources)
+                             const ShBuiltInResources &resources,
+                             ShShaderOutput outputType)
     : symbolTable(symt),
       mDeferredNonEmptyDeclarationErrorCheck(false),
       mShaderType(type),
@@ -217,7 +218,8 @@ TParseContext::TParseContext(TSymbolTable &symt,
       mGeometryShaderMaxVertices(-1),
       mMaxGeometryShaderInvocations(resources.MaxGeometryShaderInvocations),
       mMaxGeometryShaderMaxVertices(resources.MaxGeometryOutputVertices),
-      mFunctionBodyNewScope(false)
+      mFunctionBodyNewScope(false),
+      mOutputType(outputType)
 {}
 
 TParseContext::~TParseContext() {}
@@ -542,6 +544,9 @@ bool TParseContext::checkCanBeLValue(const TSourceLoc &line, const char *op, TIn
             break;
         case EvqFrontFacing:
             message = "can't modify gl_FrontFacing";
+            break;
+        case EvqHelperInvocation:
+            message = "can't modify gl_HelperInvocation";
             break;
         case EvqPointCoord:
             message = "can't modify gl_PointCoord";
@@ -1014,15 +1019,18 @@ unsigned int TParseContext::checkIsValidArraySize(const TSourceLoc &line, TInter
         return 1u;
     }
 
-    // The size of arrays is restricted here to prevent issues further down the
-    // compiler/translator/driver stack. Shader Model 5 generation hardware is limited to
-    // 4096 registers so this should be reasonable even for aggressively optimizable code.
-    const unsigned int sizeLimit = 65536;
-
-    if (size > sizeLimit)
+    if (IsOutputHLSL(getOutputType()))
     {
-        error(line, "array size too large", "");
-        return 1u;
+        // The size of arrays is restricted here to prevent issues further down the
+        // compiler/translator/driver stack. Shader Model 5 generation hardware is limited to
+        // 4096 registers so this should be reasonable even for aggressively optimizable code.
+        const unsigned int sizeLimit = 65536;
+
+        if (size > sizeLimit)
+        {
+            error(line, "array size too large", "");
+            return 1u;
+        }
     }
 
     return size;
@@ -2637,7 +2645,7 @@ TIntermDeclaration *TParseContext::parseSingleArrayInitDeclaration(
     return declaration;
 }
 
-TIntermInvariantDeclaration *TParseContext::parseInvariantDeclaration(
+TIntermGlobalQualifierDeclaration *TParseContext::parseGlobalQualifierDeclaration(
     const TTypeQualifierBuilder &typeQualifierBuilder,
     const TSourceLoc &identifierLoc,
     const ImmutableString &identifier,
@@ -2690,7 +2698,7 @@ TIntermInvariantDeclaration *TParseContext::parseInvariantDeclaration(
     TIntermSymbol *intermSymbol = new TIntermSymbol(variable);
     intermSymbol->setLine(identifierLoc);
 
-    return new TIntermInvariantDeclaration(intermSymbol, identifierLoc);
+    return new TIntermGlobalQualifierDeclaration(intermSymbol, identifierLoc);
 }
 
 void TParseContext::parseDeclarator(TPublicType &publicType,
@@ -3364,10 +3372,9 @@ TFunction *TParseContext::parseFunctionDeclarator(const TSourceLoc &location, TF
 
     if (getShaderVersion() >= 300)
     {
-        const UnmangledBuiltIn *builtIn =
-            symbolTable.getUnmangledBuiltInForShaderVersion(function->name(), getShaderVersion());
-        if (builtIn &&
-            (builtIn->extension == TExtension::UNDEFINED || isExtensionEnabled(builtIn->extension)))
+
+        if (symbolTable.isUnmangledBuiltInName(function->name(), getShaderVersion(),
+                                               extensionBehavior()))
         {
             // With ESSL 3.00 and above, names of built-in functions cannot be redeclared as
             // functions. Therefore overloading or redefining builtin functions is an error.
@@ -4019,6 +4026,29 @@ TIntermTyped *TParseContext::addIndexExpression(TIntermTyped *baseExpression,
         else if (mShaderSpec == SH_WEBGL2_SPEC && baseExpression->getQualifier() == EvqFragData)
         {
             error(location, "array index for gl_FragData must be constant zero", "[");
+        }
+        else if (baseExpression->isArray())
+        {
+            TType elementType;
+            switch (mShaderVersion)
+            {
+                case 100:
+                    break;
+                case 300:
+                case 310:
+                    elementType = baseExpression->getType();
+                    elementType.toArrayElementType();
+                    if (elementType.isSampler())
+                    {
+                        error(location,
+                              "array index for samplers must be constant integral expressions",
+                              "[");
+                    }
+                    break;
+                default:
+                    UNREACHABLE();
+                    break;
+            }
         }
     }
 

@@ -3,13 +3,11 @@
 <translationbundle lang="sl">
 <translation id="1276998909102132017">Slike v galeriji</translation>
 <translation id="1430915738399379752">Natisni</translation>
-<translation id="1462966117743110941">Vaš fotoaparat zdaj podpira nove načine in fotografije ter videoposnetki bodo na voljo v mapi Prenosi.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Nič ni posneto</translation>
 <translation id="1862930711583847113">Datoteke <ph name="FILE" /> ni mogoče izvoziti</translation>
 <translation id="1899697626337024495">Ločljivost fotografije</translation>
-<translation id="2008689030244369546">Popolnoma nov videz</translation>
 <translation id="2036868001356139588">Trajanje časovnika</translation>
 <translation id="2050339315714019657">Pokončno</translation>
 <translation id="2064538373111010176">Fotoaparat <ph name="CAMERA" /> je aktiven</translation>
@@ -24,6 +22,7 @@
 
         Aplikacije z dovoljenji za shrambo bodo imele dostop do fotografij in videoposnetkov.</translation>
 <translation id="3081586908890909590">Preklop na snemanje videa</translation>
+<translation id="313467653172006084">30 sličic/s</translation>
 <translation id="3183731565330012717">Vrsta mreže</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3259149966178251584">Ločljivost fotoaparata</translation>
@@ -44,9 +43,7 @@
 <translation id="5671277269877808209">Kvadratno</translation>
 <translation id="5775960006311140197">Poznavalski način</translation>
 <translation id="5869546221129391014">Mreža</translation>
-<translation id="6040143037577758943">Zapri</translation>
 <translation id="6073451960410192870">Ustavi snemanje</translation>
-<translation id="6165508094623778733">Več o tem</translation>
 <translation id="6197807149213783179">Shrani metapodatke</translation>
 <translation id="6233780560267770709">3 x 3</translation>
 <translation id="6243827288366940320">Zlato razmerje</translation>
@@ -65,6 +62,8 @@
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7670511624014457267">60 sličic/s</translation>
 <translation id="8049189770492311300">Časovnik</translation>
+<translation id="8067883171444229417">Predvajanje videa</translation>
+<translation id="8131740175452115882">Potrdi</translation>
 <translation id="8145038249676204903">Preklop na fotografiranje</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8428213095426709021">Nastavitve</translation>

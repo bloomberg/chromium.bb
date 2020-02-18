@@ -5,20 +5,32 @@
 #include "ash/app_list/app_list_controller_impl.h"
 
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/test/app_list_test_view_delegate.h"
+#include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/app_list/views/apps_container_view.h"
+#include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray_test_api.h"
@@ -26,9 +38,14 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/i18n/number_formatting.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
@@ -39,31 +56,28 @@ namespace ash {
 
 namespace {
 
-using ::app_list::kAppListResultLaunchIndexAndQueryLength;
-using ::app_list::kAppListTileLaunchIndexAndQueryLength;
-using ::app_list::SearchResultLaunchLocation;
-
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
-app_list::AppListView* GetAppListView() {
+AppListView* GetAppListView() {
   return Shell::Get()->app_list_controller()->presenter()->GetView();
 }
 
-bool GetExpandArrowViewVisibility() {
-  return GetAppListView()
-      ->app_list_main_view()
-      ->contents_view()
-      ->expand_arrow_view()
-      ->GetVisible();
+ContentsView* GetContentsView() {
+  return GetAppListView()->app_list_main_view()->contents_view();
 }
 
-app_list::SearchBoxView* GetSearchBoxView() {
-  return GetAppListView()
-      ->app_list_main_view()
-      ->contents_view()
-      ->GetSearchBoxView();
+views::View* GetExpandArrowView() {
+  return GetContentsView()->expand_arrow_view();
+}
+
+bool GetExpandArrowViewVisibility() {
+  return GetExpandArrowView()->GetVisible();
+}
+
+SearchBoxView* GetSearchBoxView() {
+  return GetContentsView()->GetSearchBoxView();
 }
 
 aura::Window* GetVirtualKeyboardWindow() {
@@ -71,6 +85,10 @@ aura::Window* GetVirtualKeyboardWindow() {
       ->keyboard_controller()
       ->keyboard_ui_controller()
       ->GetKeyboardWindow();
+}
+
+AppsGridView* GetAppsGridView() {
+  return GetContentsView()->GetAppsContainerView()->apps_grid_view();
 }
 
 void ShowAppListNow() {
@@ -104,6 +122,14 @@ class AppListControllerImplTest : public AshTestBase {
     return AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   }
 
+  void PopulateItem(int num) {
+    for (int i = 0; i < num; i++) {
+      std::unique_ptr<AppListItem> item(
+          new AppListItem("app_id" + base::UTF16ToUTF8(base::FormatNumber(i))));
+      Shell::Get()->app_list_controller()->GetModel()->AddItem(std::move(item));
+    }
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImplTest);
 };
@@ -113,13 +139,16 @@ class AppListControllerImplTest : public AshTestBase {
 // orientation.
 TEST_F(AppListControllerImplTest, AppListHiddenWhenShelfAlignmentChanges) {
   Shelf* const shelf = AshTestBase::GetPrimaryShelf();
-  shelf->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(ShelfAlignment::kBottom);
 
   const std::vector<ash::ShelfAlignment> alignments(
-      {SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT, SHELF_ALIGNMENT_BOTTOM});
+      {ShelfAlignment::kLeft, ShelfAlignment::kRight, ShelfAlignment::kBottom});
   for (ash::ShelfAlignment alignment : alignments) {
     ShowAppListNow();
-    EXPECT_TRUE(Shell::Get()->app_list_controller()->presenter()->IsVisible());
+    EXPECT_TRUE(Shell::Get()
+                    ->app_list_controller()
+                    ->presenter()
+                    ->IsVisibleDeprecated());
     shelf->SetAlignment(alignment);
     EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
   }
@@ -141,10 +170,8 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
   // Activate w1 then press home launcher button. Expand arrow view should show
   // because w1 still exists.
   wm::ActivateWindow(w1.get());
-  Shell::Get()
-      ->home_screen_controller()
-      ->home_launcher_gesture_handler()
-      ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
+  Shell::Get()->home_screen_controller()->GoHome(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_EQ(WindowStateType::kMinimized,
             WindowState::Get(w1.get())->GetStateType());
   EXPECT_TRUE(GetExpandArrowViewVisibility());
@@ -184,8 +211,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
   EXPECT_EQ(0, app_list_screen_bounds.y());
   EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
   gfx::Transform expected_transform;
-  expected_transform.Translate(
-      0, -app_list::AppListConfig::instance().background_radius());
+  expected_transform.Translate(0, -(ShelfConfig::Get()->shelf_size() / 2));
   EXPECT_EQ(
       expected_transform,
       GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
@@ -208,12 +234,12 @@ TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
   // Set IME client. Otherwise the emoji panel is unable to show.
   ImeController* ime_controller = Shell::Get()->ime_controller();
   TestImeControllerClient client;
-  ime_controller->SetClient(client.CreateInterfacePtr());
+  ime_controller->SetClient(client.CreateRemote());
 
   // Show the app list view and right-click on the search box with mouse. So the
   // text field's context menu shows.
   ShowAppListNow();
-  app_list::SearchBoxView* search_box_view =
+  SearchBoxView* search_box_view =
       GetAppListView()->app_list_main_view()->search_box_view();
   gfx::Point center_point = search_box_view->GetBoundsInScreen().CenterPoint();
   ui::test::EventGenerator* event_generator = GetEventGenerator();
@@ -235,11 +261,54 @@ TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
 
   // AppListBackgroundShield is translated to hide the rounded corners.
   gfx::Transform expected_transform;
-  expected_transform.Translate(
-      0, -app_list::AppListConfig::instance().background_radius());
+  expected_transform.Translate(0, -(ShelfConfig::Get()->shelf_size() / 2));
   EXPECT_EQ(
       expected_transform,
       GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
+}
+
+// Verifies that the dragged item has the correct focusable siblings after drag
+// (https://crbug.com/990071).
+TEST_F(AppListControllerImplTest, CheckTabOrderAfterDragIconToShelf) {
+  // Adds three items to AppsGridView.
+  PopulateItem(3);
+
+  // Shows the app list in fullscreen.
+  ShowAppListNow();
+  ASSERT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
+  GetEventGenerator()->GestureTapAt(
+      GetExpandArrowView()->GetBoundsInScreen().CenterPoint());
+  ASSERT_EQ(AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+
+  test::AppsGridViewTestApi apps_grid_view_test_api(GetAppsGridView());
+  const AppListItemView* item1 =
+      apps_grid_view_test_api.GetViewAtIndex(GridIndex(0, 0));
+  AppListItemView* item2 =
+      apps_grid_view_test_api.GetViewAtIndex(GridIndex(0, 1));
+  const AppListItemView* item3 =
+      apps_grid_view_test_api.GetViewAtIndex(GridIndex(0, 2));
+
+  // Verifies that AppListItemView has the correct focusable siblings before
+  // drag.
+  ASSERT_EQ(item1, item2->GetPreviousFocusableView());
+  ASSERT_EQ(item3, item2->GetNextFocusableView());
+
+  // Pins |item2| by dragging it to ShelfView.
+  ShelfView* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
+  ASSERT_EQ(0, shelf_view->view_model()->view_size());
+  GetEventGenerator()->MoveMouseTo(item2->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->PressLeftButton();
+  item2->FireMouseDragTimerForTest();
+  GetEventGenerator()->MoveMouseTo(
+      shelf_view->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ReleaseLeftButton();
+  ASSERT_EQ(1, shelf_view->view_model()->view_size());
+
+  // Verifies that the dragged item has the correct previous/next focusable
+  // view after drag.
+  EXPECT_EQ(item1, item2->GetPreviousFocusableView());
+  EXPECT_EQ(item3, item2->GetNextFocusableView());
 }
 
 // Verifies that in clamshell mode the bounds of AppListView are correct when
@@ -274,6 +343,46 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
   EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
                 ash::AppListViewState::kPeeking),
             GetAppListViewNativeWindow()->bounds());
+}
+
+// Verifies that in clamshell mode the AppListView bounds remain in the
+// fullscreen size while the virtual keyboard is shown, even if the app list
+// view state changes.
+TEST_F(AppListControllerImplTest,
+       AppListViewBoundsRemainFullScreenWhenVKeyboardEnabled) {
+  Shell::Get()->keyboard_controller()->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kShelfEnabled);
+
+  // Show the AppListView in fullscreen state and click on the search box with
+  // the mouse. So the VirtualKeyboard is shown. Wait until the virtual keyboard
+  // shows.
+  ShowAppListNow();
+  GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
+  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
+
+  EXPECT_EQ(0, GetAppListView()->GetBoundsInScreen().y());
+
+  // Simulate half state getting set again, and but verify the app list bounds
+  // remain at the top of the screen.
+  GetAppListView()->SetState(AppListViewState::kHalf);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
+
+  EXPECT_EQ(0, GetAppListView()->GetBoundsInScreen().y());
+
+  // Close the virtual keyboard. Wait until it is hidden.
+  Shell::Get()->keyboard_controller()->HideKeyboard(HideReason::kUser);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
+
+  // Verify the app list bounds have been updated to match kHalf state.
+  EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
+  const gfx::Rect shelf_bounds =
+      AshTestBase::GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen();
+  EXPECT_EQ(shelf_bounds.bottom() - 545 /*half app list height*/,
+            GetAppListView()->GetBoundsInScreen().y());
 }
 
 // Verifies that in tablet mode, the AppListView has correct bounds when the
@@ -355,16 +464,24 @@ TEST_F(AppListControllerImplTest, CloseNotificationWithAppListShown) {
 // expand view arrow. (see https://crbug.com/906858)
 TEST_F(AppListControllerImplTest,
        EnterFullScreenModeAfterTappingNearExpandArrow) {
+  // The bounds for the tap target of the expand arrow button, taken from
+  // expand_arrow_view.cc |kTapTargetWidth| and |kTapTargetHeight|.
+  constexpr int tapping_width = 156;
+  constexpr int tapping_height = 72;
+
   ShowAppListNow();
   ASSERT_EQ(ash::AppListViewState::kPeeking,
             GetAppListView()->app_list_state());
 
   // Get in screen bounds of arrow
-  const gfx::Rect expand_arrow = GetAppListView()
-                                     ->app_list_main_view()
-                                     ->contents_view()
-                                     ->expand_arrow_view()
-                                     ->GetBoundsInScreen();
+  gfx::Rect expand_arrow = GetAppListView()
+                               ->app_list_main_view()
+                               ->contents_view()
+                               ->expand_arrow_view()
+                               ->GetBoundsInScreen();
+  const int horizontal_padding = (tapping_width - expand_arrow.width()) / 2;
+  const int vertical_padding = (tapping_height - expand_arrow.height()) / 2;
+  expand_arrow.Inset(-horizontal_padding, -vertical_padding);
 
   // Tap expand arrow icon and check that full screen apps view is entered.
   ui::test::EventGenerator* event_generator = GetEventGenerator();
@@ -376,17 +493,218 @@ TEST_F(AppListControllerImplTest,
   DismissAppListNow();
   base::RunLoop().RunUntilIdle();
 
-  // Re-enter peeking mode and test that tapping near (but not directly on)
-  // the expand arrow icon still brings up full app list view.
+  // Re-enter peeking mode and test that tapping on one of the bounds of the
+  // tap target for the expand arrow icon still brings up full app list
+  // view.
   ShowAppListNow();
   ASSERT_EQ(ash::AppListViewState::kPeeking,
             GetAppListView()->app_list_state());
 
-  event_generator->GestureTapAt(
-      gfx::Point(expand_arrow.top_right().x(), expand_arrow.top_right().y()));
+  event_generator->GestureTapAt(gfx::Point(expand_arrow.top_right().x() - 1,
+                                           expand_arrow.top_right().y() + 1));
 
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
+}
+
+class HotseatAppListControllerImplTest
+    : public AppListControllerImplTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  HotseatAppListControllerImplTest() = default;
+  ~HotseatAppListControllerImplTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(chromeos::features::kShelfHotseat);
+    } else {
+      feature_list_.InitAndDisableFeature(chromeos::features::kShelfHotseat);
+    }
+    AppListControllerImplTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(HotseatAppListControllerImplTest);
+};
+
+// Tests with both hotseat disabled and enabled.
+INSTANTIATE_TEST_SUITE_P(All,
+                         HotseatAppListControllerImplTest,
+                         testing::Bool());
+
+// Verifies that the pinned app should still show after canceling the drag from
+// AppsGridView to Shelf (https://crbug.com/1021768).
+TEST_P(HotseatAppListControllerImplTest, DragItemFromAppsGridView) {
+  // Turn on the tablet mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(IsTabletMode());
+
+  Shelf* const shelf = GetPrimaryShelf();
+
+  // Add icons with the same app id to Shelf and AppsGridView respectively.
+  ShelfViewTestAPI shelf_view_test_api(shelf->GetShelfViewForTesting());
+  std::string app_id = shelf_view_test_api.AddItem(TYPE_PINNED_APP).app_id;
+  Shell::Get()->app_list_controller()->GetModel()->AddItem(
+      std::make_unique<AppListItem>(app_id));
+
+  AppsGridView* apps_grid_view = GetAppsGridView();
+  AppListItemView* app_list_item_view =
+      test::AppsGridViewTestApi(apps_grid_view).GetViewAtIndex(GridIndex(0, 0));
+  views::View* shelf_icon_view =
+      shelf->GetShelfViewForTesting()->view_model()->view_at(0);
+
+  // Drag the app icon from AppsGridView to Shelf. Then move the icon back to
+  // AppsGridView before drag ends.
+  GetEventGenerator()->MoveMouseTo(
+      app_list_item_view->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->PressLeftButton();
+  app_list_item_view->FireMouseDragTimerForTest();
+  GetEventGenerator()->MoveMouseTo(
+      shelf_icon_view->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->MoveMouseTo(
+      apps_grid_view->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ReleaseLeftButton();
+
+  // The icon's opacity updates at the end of animation.
+  shelf_view_test_api.RunMessageLoopUntilAnimationsDone();
+
+  // The icon is pinned before drag starts. So the shelf icon should show in
+  // spite that drag is canceled.
+  EXPECT_TRUE(shelf_icon_view->GetVisible());
+  EXPECT_EQ(1.0f, shelf_icon_view->layer()->opacity());
+}
+
+// Tests for HomeScreenDelegate::GetInitialAppListItemScreenBoundsForWindow
+// implemtenation.
+TEST_P(HotseatAppListControllerImplTest, GetItemBoundsForWindow) {
+  // Populate app list model with 25 items, of which items at indices in
+  // |folders| are folders containing a single item.
+  const std::set<int> folders = {5, 23};
+  AppListModel* model = Shell::Get()->app_list_controller()->GetModel();
+  for (int i = 0; i < 25; ++i) {
+    if (folders.count(i)) {
+      const std::string folder_id = base::StringPrintf("fake_folder_%d", i);
+      auto folder = std::make_unique<AppListFolderItem>(folder_id);
+      model->AddItem(std::move(folder));
+      auto item = std::make_unique<AppListItem>(
+          base::StringPrintf("fake_id_in_folder_%d", i));
+      model->AddItemToFolder(std::move(item), folder_id);
+    } else {
+      auto item =
+          std::make_unique<AppListItem>(base::StringPrintf("fake_id_%d", i));
+      model->AddItem(std::move(item));
+    }
+  }
+  // Enable tablet mode - this should also show the app list.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  AppsGridView* apps_grid_view = GetAppListView()
+                                     ->app_list_main_view()
+                                     ->contents_view()
+                                     ->GetAppsContainerView()
+                                     ->apps_grid_view();
+  auto apps_grid_test_api =
+      std::make_unique<test::AppsGridViewTestApi>(apps_grid_view);
+
+  const struct {
+    // The kAppIDKey property value for the test window.
+    std::string window_app_id;
+    // If set the grid position of the app list item whose screen bounds should
+    // be returned by GetInitialAppListItemScreenBoundsForWindow().
+    // If nullopt, GetInitialAppListItemScreenBoundsForWindow() is expected to
+    // return the apps grid center rect.
+    base::Optional<GridIndex> grid_position;
+  } kTestCases[] = {{"fake_id_0", GridIndex(0, 0)},
+                    {"fake_id_2", GridIndex(0, 2)},
+                    {"fake_id_in_folder_5", base::nullopt},
+                    {"fake_id_15", GridIndex(0, 15)},
+                    {"fake_id_in_folder_23", base::nullopt},
+                    {"non_existent", base::nullopt},
+                    {"", base::nullopt},
+                    {"fake_id_22", base::nullopt}};
+
+  // Tests the case app ID property is not set on the window.
+  std::unique_ptr<aura::Window> window_without_app_id(CreateTestWindow());
+
+  HomeScreenDelegate* const home_screen_delegate =
+      Shell::Get()->home_screen_controller()->delegate();
+  // NOTE: Calculate the apps grid bounds after test window is shown, as showing
+  // the window can change the app list layout (due to the change in the shelf
+  // height).
+  const gfx::Rect apps_grid_bounds = apps_grid_view->GetBoundsInScreen();
+  const gfx::Rect apps_grid_center =
+      gfx::Rect(apps_grid_bounds.CenterPoint(), gfx::Size(1, 1));
+
+  EXPECT_EQ(apps_grid_center,
+            home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
+                window_without_app_id.get()));
+
+  // Run tests cases, both for when the first and the second apps grid page is
+  // selected - the returned bounds should be the same in both cases, as
+  // GetInitialAppListItemScreenBoundsForWindow() always returns bounds state
+  // for the first page.
+  for (int selected_page = 0; selected_page < 2; ++selected_page) {
+    GetAppListView()->GetAppsPaginationModel()->SelectPage(selected_page,
+                                                           false);
+    for (const auto& test_case : kTestCases) {
+      SCOPED_TRACE(::testing::Message()
+                   << "Test case: {" << test_case.window_app_id << ", "
+                   << (test_case.grid_position.has_value()
+                           ? test_case.grid_position->ToString()
+                           : "null")
+                   << "} with selected page " << selected_page);
+
+      std::unique_ptr<aura::Window> window(CreateTestWindow());
+      window->SetProperty(ash::kAppIDKey,
+                          new std::string(test_case.window_app_id));
+
+      const gfx::Rect item_bounds =
+          home_screen_delegate->GetInitialAppListItemScreenBoundsForWindow(
+              window.get());
+      if (!test_case.grid_position.has_value()) {
+        EXPECT_EQ(apps_grid_center, item_bounds);
+      } else {
+        const int kItemsPerRow = 5;
+        gfx::Rect expected_bounds =
+            apps_grid_test_api->GetItemTileRectOnCurrentPageAt(
+                test_case.grid_position->slot / kItemsPerRow,
+                test_case.grid_position->slot % kItemsPerRow);
+        expected_bounds.Offset(apps_grid_bounds.x(), apps_grid_bounds.y());
+        EXPECT_EQ(expected_bounds, item_bounds);
+      }
+    }
+  }
+}
+
+// Verifies that apps grid and hotseat bounds do not overlap when switching from
+// side shelf app list to tablet mode.
+TEST_P(HotseatAppListControllerImplTest,
+       NoOverlapWithHotseatOnSwitchFromSideShelf) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  Shelf* const shelf = GetPrimaryShelf();
+  shelf->SetAlignment(ShelfAlignment::kRight);
+  ShowAppListNow();
+  ASSERT_EQ(AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+
+  gfx::Rect apps_grid_view_bounds = GetAppsGridView()->GetBoundsInScreen();
+  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
+      shelf->shelf_widget()->GetWindowBoundsInScreen()));
+  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
+      shelf->shelf_widget()->hotseat_widget()->GetWindowBoundsInScreen()));
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  EXPECT_EQ(AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+
+  apps_grid_view_bounds = GetAppsGridView()->GetBoundsInScreen();
+  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
+      shelf->shelf_widget()->GetWindowBoundsInScreen()));
+  EXPECT_FALSE(apps_grid_view_bounds.Intersects(
+      shelf->shelf_widget()->hotseat_widget()->GetWindowBoundsInScreen()));
 }
 
 // The test parameter indicates whether the shelf should auto-hide. In either
@@ -401,7 +719,7 @@ class AppListAnimationTest : public AshTestBase,
     AshTestBase::SetUp();
 
     Shelf* const shelf = AshTestBase::GetPrimaryShelf();
-    shelf->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM);
+    shelf->SetAlignment(ShelfAlignment::kBottom);
 
     if (GetParam()) {
       shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -443,7 +761,7 @@ class AppListAnimationTest : public AshTestBase,
   // The app list view y coordinate in peeking state.
   int PeekingHeightTop() const {
     return shown_shelf_bounds_.bottom() -
-           app_list::AppListConfig::instance().peeking_app_list_height();
+           AppListConfig::instance().peeking_app_list_height();
   }
 
  private:
@@ -622,6 +940,10 @@ TEST_F(AppListControllerImplMetricsTest, LogManyClicksInOneBucket) {
 // launcher gesture drag in tablet mode (https://crbug.com/947105).
 TEST_F(AppListControllerImplMetricsTest,
        PresentationTimeRecordedForDragInTabletMode) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(
+      features::kDragFromShelfToHomeOrOverview);
+
   // Wait until the construction of TabletModeController finishes.
   base::RunLoop().RunUntilIdle();
 
@@ -633,10 +955,8 @@ TEST_F(AppListControllerImplMetricsTest,
   // hidden.
   std::unique_ptr<aura::Window> w(
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
-  Shell::Get()
-      ->home_screen_controller()
-      ->home_launcher_gesture_handler()
-      ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
+  Shell::Get()->home_screen_controller()->GoHome(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_FALSE(w->IsVisible());
   EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
@@ -706,10 +1026,8 @@ TEST_F(AppListControllerImplMetricsTest,
   // hidden.
   std::unique_ptr<aura::Window> w(
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
-  Shell::Get()
-      ->home_screen_controller()
-      ->home_launcher_gesture_handler()
-      ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
+  Shell::Get()->home_screen_controller()->GoHome(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_FALSE(w->IsVisible());
   EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
@@ -730,6 +1048,7 @@ TEST_F(AppListControllerImplMetricsTest,
   EXPECT_FALSE(IsTabletMode());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
+  GetAppListTestHelper()->CheckVisibility(false);
 
   // Check metrics initial values.
   histogram_tester_.ExpectTotalCount(
@@ -750,7 +1069,6 @@ TEST_F(AppListControllerImplMetricsTest,
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->GestureScrollSequence(shelf_center, target_point,
                                    base::TimeDelta::FromMicroseconds(500), 1);
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
   histogram_tester_.ExpectTotalCount(

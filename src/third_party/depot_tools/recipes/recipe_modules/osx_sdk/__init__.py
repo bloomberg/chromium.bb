@@ -9,6 +9,7 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/step',
+    'recipe_engine/version',
 ]
 
 from recipe_engine.recipe_api import Property

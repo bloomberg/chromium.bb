@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/desks_helper.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/desks/desks_histogram_enums.h"
 #include "ash/wm/desks/root_window_desk_switch_animator.h"
@@ -29,7 +30,8 @@ class Desk;
 
 // Defines a controller for creating, destroying and managing virtual desks and
 // their windows.
-class ASH_EXPORT DesksController : public wm::ActivationChangeObserver,
+class ASH_EXPORT DesksController : public DesksHelper,
+                                   public wm::ActivationChangeObserver,
                                    public SessionObserver {
  public:
   class Observer {
@@ -47,6 +49,9 @@ class ASH_EXPORT DesksController : public wm::ActivationChangeObserver,
     // desk.
     virtual void OnDeskActivationChanged(const Desk* activated,
                                          const Desk* deactivated) = 0;
+
+    // Called when the desk switch animations is launching.
+    virtual void OnDeskSwitchAnimationLaunching() = 0;
 
     // Called when the desk switch animations on all root windows finish.
     virtual void OnDeskSwitchAnimationFinished() = 0;
@@ -126,6 +131,9 @@ class ASH_EXPORT DesksController : public wm::ActivationChangeObserver,
   // added or about to be removed in order to update all the available desks.
   void OnRootWindowAdded(aura::Window* root_window);
   void OnRootWindowClosing(aura::Window* root_window);
+
+  // DesksHelper:
+  bool BelongsToActiveDesk(aura::Window* window) override;
 
   // ::wm::ActivationChangeObserver:
   void OnWindowActivating(ActivationReason reason,

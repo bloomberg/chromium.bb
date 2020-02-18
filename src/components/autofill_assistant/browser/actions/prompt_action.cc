@@ -33,7 +33,11 @@ void PromptAction::InternalProcessAction(ProcessActionCallback callback) {
   }
 
   callback_ = std::move(callback);
-  delegate_->SetStatusMessage(proto_.prompt().message());
+  if (proto_.prompt().has_message()) {
+    // TODO(b/144468818): Deprecate and remove message from this action and use
+    // tell instead.
+    delegate_->SetStatusMessage(proto_.prompt().message());
+  }
 
   SetupPreconditions();
   UpdateUserActions();
@@ -152,8 +156,10 @@ void PromptAction::CheckAutoSelect() {
   delegate_->RunElementChecks(auto_select_checker_.get());
 }
 
-void PromptAction::OnAutoSelectElementExists(int choice_index, bool exists) {
-  if (exists)
+void PromptAction::OnAutoSelectElementExists(
+    int choice_index,
+    const ClientStatus& element_status) {
+  if (element_status.ok())
     auto_select_choice_index_ = choice_index;
 
   // Calling OnSuggestionChosen() is delayed until try_done, as it indirectly

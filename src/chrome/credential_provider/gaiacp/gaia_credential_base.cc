@@ -26,11 +26,13 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "base/win/current_module.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
+#include "build/branding_buildflags.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
@@ -38,6 +40,7 @@
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/grit/gaia_static_resources.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
@@ -94,6 +97,27 @@ base::string16 GetEmailDomains() {
     }
   }
   return base::string16(&email_domains[0]);
+}
+
+// Get a pretty-printed string of the list of email domains that we can display
+// to the end-user.
+base::string16 GetEmailDomainsPrintableString() {
+  base::string16 email_domains_reg = GetEmailDomains();
+  if (email_domains_reg.empty())
+    return email_domains_reg;
+
+  std::vector<base::string16> domains =
+      base::SplitString(base::ToLowerASCII(email_domains_reg),
+                        base::ASCIIToUTF16(kEmailDomainsSeparator),
+                        base::WhitespaceHandling::TRIM_WHITESPACE,
+                        base::SplitResult::SPLIT_WANT_NONEMPTY);
+  base::string16 email_domains_str;
+  for (size_t i = 0; i < domains.size(); ++i) {
+    email_domains_str += domains[i];
+    if (i < domains.size() - 1)
+      email_domains_str += L", ";
+  }
+  return email_domains_str;
 }
 
 // Use WinHttpUrlFetcher to communicate with the admin sdk and fetch the active
@@ -475,7 +499,7 @@ HRESULT ValidateResult(const base::Value& result, BSTR* status_text) {
         break;
       case kUiecInvalidEmailDomain:
         *status_text = CGaiaCredentialBase::AllocErrorString(
-            IDS_INVALID_EMAIL_DOMAIN_BASE);
+            IDS_INVALID_EMAIL_DOMAIN_BASE, {GetEmailDomainsPrintableString()});
         break;
       case kUiecMissingSigninData:
         *status_text =
@@ -1116,7 +1140,7 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
 
 // static
 void CGaiaCredentialBase::TellOmahaDidRun() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Tell omaha that product was used.  Best effort only.
   //
   // This code always runs as LocalSystem, which means that HKCU maps to
@@ -1132,7 +1156,7 @@ void CGaiaCredentialBase::TellOmahaDidRun() {
     if (sts != ERROR_SUCCESS)
       LOGFN(INFO) << "Unable to write omaha dr value sts=" << sts;
   }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void CGaiaCredentialBase::PreventDenyAccessUpdate() {
@@ -1146,6 +1170,14 @@ void CGaiaCredentialBase::PreventDenyAccessUpdate() {
 // static
 BSTR CGaiaCredentialBase::AllocErrorString(UINT id) {
   CComBSTR str(GetStringResource(id).c_str());
+  return str.Detach();
+}
+
+// static
+BSTR CGaiaCredentialBase::AllocErrorString(
+    UINT id,
+    const std::vector<base::string16>& replacements) {
+  CComBSTR str(GetStringResource(id, replacements).c_str());
   return str.Detach();
 }
 
@@ -1173,7 +1205,7 @@ HRESULT CGaiaCredentialBase::Advise(ICredentialProviderCredentialEvents* cpce) {
 
 HRESULT CGaiaCredentialBase::UnAdvise(void) {
   LOGFN(INFO);
-  events_.Release();
+  events_.Reset();
 
   return S_OK;
 }
@@ -1908,7 +1940,8 @@ HRESULT CGaiaCredentialBase::ReportResult(
     // handle. Token handle is saved as empty here, so that if for any reason
     // forked process fails to save association, it will enforce re-auth due to
     // invalid token handle.
-    HRESULT hr = RegisterAssociation(OLE2CW(user_sid_), gaia_id, email, L"");
+    base::string16 sid = OLE2CW(user_sid_);
+    HRESULT hr = RegisterAssociation(sid, gaia_id, email, L"");
     if (FAILED(hr))
       return hr;
 
@@ -1943,7 +1976,7 @@ HRESULT CGaiaCredentialBase::Initialize(IGaiaCredentialProvider* provider) {
 HRESULT CGaiaCredentialBase::Terminate() {
   LOGFN(INFO);
   SetDeselected();
-  provider_.Release();
+  provider_.Reset();
   return S_OK;
 }
 
@@ -2009,6 +2042,27 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
     if (FAILED(hr)) {
       LOGFN(ERROR) << "ValidateExistingUser hr=" << putHR(hr);
       return hr;
+    }
+
+    // Update the name on the OS account if authenticated user has a different
+    // name.
+    base::string16 os_account_fullname;
+    hr = OSUserManager::Get()->GetUserFullname(found_domain, found_username,
+                                               &os_account_fullname);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "GetUserFullname hr=" << putHR(hr);
+      return hr;
+    }
+
+    base::string16 profile_fullname = GetDictString(result, kKeyFullname);
+    if (SUCCEEDED(hr) &&
+        os_account_fullname.compare(profile_fullname.c_str()) != 0) {
+      hr = OSUserManager::Get()->SetUserFullname(found_domain, found_username,
+                                                 profile_fullname.c_str());
+      if (FAILED(hr)) {
+        LOGFN(ERROR) << "SetUserFullname hr=" << putHR(hr);
+        return hr;
+      }
     }
 
     *username = ::SysAllocString(found_username);
@@ -2116,6 +2170,19 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
 
     base::IgnoreResult(zero_dict_on_exit.Release());
     authentication_results_ = std::move(properties);
+    // Update the info whether the user is an AD joined user or local user.
+    base::string16 sid = OLE2CW(user_sid_);
+    authentication_results_->SetKey(
+        kKeyIsAdJoinedUser,
+        base::Value(OSUserManager::Get()->IsUserDomainJoined(sid) ? "true"
+                                                                  : "false"));
+    // Update the time at which the login attempt happened. This would help
+    // track the last time an online login happened via GCPW.
+    int64_t current_time = static_cast<int64_t>(
+        base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds());
+    authentication_results_->SetKey(
+        kKeyLastSuccessfulOnlineLoginMillis,
+        base::Value(base::NumberToString(current_time)));
   }
 
   base::string16 local_password =
@@ -2222,10 +2289,10 @@ void CGaiaCredentialBase::DisplayPasswordField(int password_message) {
                               GetStringResource(password_message).c_str());
       events_->SetFieldState(this, FID_CURRENT_PASSWORD_FIELD,
                              CPFS_DISPLAY_IN_SELECTED_TILE);
-      // Request force password change wouldn't work on a domain joined
-      // machine as it requires domain admin role privileges to communicate
-      // with the domain controller whereas GCPW only has SYSTEM privilege.
-      if (!OSUserManager::Get()->IsUserDomainJoined(get_sid().m_str)) {
+      // Force password link won't be displayed if the machine is domain joined
+      // or force reset password is disabled through registry.
+      if (!OSUserManager::Get()->IsUserDomainJoined(get_sid().m_str) &&
+          GetGlobalFlagOrDefault(kRegMdmEnableForcePasswordReset, 1)) {
         events_->SetFieldState(this, FID_FORGOT_PASSWORD_LINK,
                                CPFS_DISPLAY_IN_SELECTED_TILE);
         events_->SetFieldString(

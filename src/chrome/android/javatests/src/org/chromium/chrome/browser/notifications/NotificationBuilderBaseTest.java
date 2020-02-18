@@ -20,8 +20,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 /**
@@ -37,7 +37,7 @@ public class NotificationBuilderBaseTest {
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Not initializing the browser process is safe because GetDomainAndRegistry() is
         // stand-alone.
         mActivityTestRule.loadNativeLibraryNoBrowserProcess();
@@ -52,7 +52,7 @@ public class NotificationBuilderBaseTest {
     @Test
     @MediumTest
     @Feature({"Browser", "Notifications"})
-    public void testEnsureNormalizedIconBehavior() throws Exception {
+    public void testEnsureNormalizedIconBehavior() {
         // Get the dimensions of the notification icon that will be presented to the user.
         Context appContext = InstrumentationRegistry.getInstrumentation()
                                      .getTargetContext()
@@ -100,7 +100,7 @@ public class NotificationBuilderBaseTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Notifications"})
-    public void testHiddenIconReturnsNull() throws Exception {
+    public void testHiddenIconReturnsNull() {
         NotificationBuilderBase notificationBuilder =
                 new NotificationBuilderBase(InstrumentationRegistry.getInstrumentation()
                                                     .getTargetContext()

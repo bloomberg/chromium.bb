@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/test/app/browsing_data_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/histogram_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -62,6 +63,10 @@ const char kClearPageScript[] = "document.body.innerHTML='';";
 
 // The delay to use to serve slow URLs.
 const CGFloat kSlowURLDelay = 3;
+
+// The delay to use to serve very slow URLS -- tests using this delay expect the
+// page to never load.
+const CGFloat kVerySlowURLDelay = 20;
 
 // The delay to wait for an element to appear before tapping on it.
 const CGFloat kWaitElementTimeout = 3;
@@ -427,7 +432,9 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
                  @"Failed to open Incognito Tab");
 
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
-      std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
+      std::make_unique<HtmlResponseProvider>(responses), kVerySlowURLDelay));
+
+  [ChromeEarlGrey removeBrowsingCache];
 
   SwitchToNormalMode();
 
@@ -502,7 +509,10 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
                  @"Failed to open Incognito Tab");
 
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
-      std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
+      std::make_unique<HtmlResponseProvider>(responses), kVerySlowURLDelay));
+
+  [ChromeEarlGrey removeBrowsingCache];
+
   SwitchToNormalMode();
 
   // Letting page load start.

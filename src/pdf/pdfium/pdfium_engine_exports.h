@@ -19,6 +19,10 @@ class PDFiumEngineExports : public PDFEngineExports {
   ~PDFiumEngineExports() override;
 
 // PDFEngineExports:
+#if defined(OS_CHROMEOS)
+  std::vector<uint8_t> CreateFlattenedPdf(
+      base::span<const uint8_t> input_buffer) override;
+#endif  // defined(OS_CHROMEOS)
 #if defined(OS_WIN)
   bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
                          int page_number,
@@ -47,6 +51,8 @@ class PDFiumEngineExports : public PDFEngineExports {
   bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                      int* page_count,
                      double* max_page_width) override;
+  base::Optional<bool> IsPDFDocTagged(
+      base::span<const uint8_t> pdf_buffer) override;
   bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
                              int page_number,
                              double* width,

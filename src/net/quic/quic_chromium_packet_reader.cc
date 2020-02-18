@@ -17,7 +17,7 @@ namespace net {
 
 QuicChromiumPacketReader::QuicChromiumPacketReader(
     DatagramClientSocket* socket,
-    quic::QuicClock* clock,
+    const quic::QuicClock* clock,
     Visitor* visitor,
     int yield_after_packets,
     quic::QuicTime::Delta yield_after_duration,
@@ -31,7 +31,7 @@ QuicChromiumPacketReader::QuicChromiumPacketReader(
       yield_after_duration_(yield_after_duration),
       yield_after_(quic::QuicTime::Infinite()),
       read_buffer_(base::MakeRefCounted<IOBufferWithSize>(
-          static_cast<size_t>(quic::kMaxOutgoingPacketSize))),
+          static_cast<size_t>(quic::kMaxIncomingPacketSize))),
       net_log_(net_log) {}
 
 QuicChromiumPacketReader::~QuicChromiumPacketReader() {}
@@ -44,7 +44,7 @@ void QuicChromiumPacketReader::StartReading() {
     if (num_packets_read_ == 0)
       yield_after_ = clock_->Now() + yield_after_duration_;
 
-    DCHECK(socket_);
+    CHECK(socket_);
     read_pending_ = true;
     int rv =
         socket_->Read(read_buffer_.get(), read_buffer_->size(),
@@ -74,8 +74,7 @@ void QuicChromiumPacketReader::StartReading() {
 }
 
 size_t QuicChromiumPacketReader::EstimateMemoryUsage() const {
-  // Return the size of |read_buffer_|.
-  return quic::kMaxOutgoingPacketSize;
+  return read_buffer_->size();
 }
 
 bool QuicChromiumPacketReader::ProcessReadResult(int result) {
@@ -93,14 +92,17 @@ bool QuicChromiumPacketReader::ProcessReadResult(int result) {
   IPEndPoint peer_address;
   socket_->GetLocalAddress(&local_address);
   socket_->GetPeerAddress(&peer_address);
+  auto self = weak_factory_.GetWeakPtr();
+  // Notifies the visitor that |this| reader gets a new packet, which may delete
+  // |this| if |this| is a connectivity probing reader.
   return visitor_->OnPacket(packet, ToQuicSocketAddress(local_address),
-                            ToQuicSocketAddress(peer_address));
+                            ToQuicSocketAddress(peer_address)) &&
+         self;
 }
 
 void QuicChromiumPacketReader::OnReadComplete(int result) {
-  if (ProcessReadResult(result)) {
+  if (ProcessReadResult(result))
     StartReading();
-  }
 }
 
 }  // namespace net

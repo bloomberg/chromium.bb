@@ -14,9 +14,11 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
-#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_candidate_list.h"
+#include "components/viz/service/display/overlay_candidate_validator_strategy.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
+#include "components/viz/service/display/skia_output_surface.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
@@ -30,22 +32,40 @@ namespace {
 class SendPromotionHintsBeforeReturning {
  public:
   SendPromotionHintsBeforeReturning(DisplayResourceProvider* resource_provider,
-                                    OverlayCandidateList* candidates)
-      : resource_provider_(resource_provider), candidates_(candidates) {}
+                                    OverlayCandidateList* candidates,
+                                    SkiaOutputSurface* skia_output_surface)
+      : resource_provider_(resource_provider),
+        candidates_(candidates),
+        skia_output_surface_(skia_output_surface) {}
   ~SendPromotionHintsBeforeReturning() {
-    resource_provider_->SendPromotionHints(
-        candidates_->promotion_hint_info_map_,
-        candidates_->promotion_hint_requestor_set_);
+    if (skia_output_surface_) {
+      base::flat_set<gpu::Mailbox> promotion_denied;
+      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions;
+      auto locks = candidates_->ConvertLocalPromotionToMailboxKeyed(
+          resource_provider_, &promotion_denied, &possible_promotions);
+
+      std::vector<gpu::SyncToken> locks_sync_tokens;
+      for (auto& read_lock : locks)
+        locks_sync_tokens.push_back(read_lock->sync_token());
+
+      skia_output_surface_->SendOverlayPromotionNotification(
+          std::move(locks_sync_tokens), std::move(promotion_denied),
+          std::move(possible_promotions));
+    } else {
+      resource_provider_->SendPromotionHints(
+          candidates_->promotion_hint_info_map_,
+          candidates_->promotion_hint_requestor_set_);
+    }
   }
 
  private:
   DisplayResourceProvider* resource_provider_;
   OverlayCandidateList* candidates_;
+  SkiaOutputSurface* skia_output_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(SendPromotionHintsBeforeReturning);
 };
 #endif
-
 }  // namespace
 
 // Default implementation of whether a strategy would remove the output surface
@@ -106,31 +126,68 @@ OverlayStrategy OverlayProcessor::Strategy::GetUMAEnum() const {
 }
 
 std::unique_ptr<OverlayProcessor> OverlayProcessor::CreateOverlayProcessor(
-    const ContextProvider* context_provider,
+    SkiaOutputSurface* skia_output_surface,
     gpu::SurfaceHandle surface_handle,
+    const OutputSurface::Capabilities& capabilities,
     const RendererSettings& renderer_settings) {
-  return base::WrapUnique(new OverlayProcessor(
-      OverlayCandidateValidator::Create(surface_handle, context_provider,
-                                        renderer_settings),
-      std::make_unique<DCLayerOverlayProcessor>(context_provider,
-                                                renderer_settings)));
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  auto validator = OverlayCandidateValidator::Create(
+      surface_handle, capabilities, renderer_settings);
+#else  // defined(USE_OZONE) || defined(OS_ANDROID) || Default
+  auto validator = OverlayCandidateValidatorStrategy::Create(
+      surface_handle, capabilities, renderer_settings);
+#endif
+
+  auto processor = base::WrapUnique(
+      new OverlayProcessor(skia_output_surface, std::move(validator)));
+#if defined(OS_WIN)
+  processor->InitializeDCOverlayProcessor(
+      std::make_unique<DCLayerOverlayProcessor>(capabilities,
+                                                renderer_settings));
+#endif
+  return processor;
 }
 
+#if defined(OS_ANDROID)
 OverlayProcessor::OverlayProcessor(
-    std::unique_ptr<OverlayCandidateValidator> overlay_validator,
-    std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor)
+    SkiaOutputSurface* skia_output_surface,
+    std::unique_ptr<OverlayCandidateValidatorStrategy> overlay_validator)
     : overlay_validator_(std::move(overlay_validator)),
-      dc_layer_overlay_processor_(std::move(dc_layer_overlay_processor)) {
-  DCHECK(dc_layer_overlay_processor_);
+      skia_output_surface_(skia_output_surface) {
   if (overlay_validator_)
     overlay_validator_->InitializeStrategies();
 }
+#elif defined(OS_MACOSX) || defined(OS_WIN)
+OverlayProcessor::OverlayProcessor(
+    SkiaOutputSurface* skia_output_surface,
+    std::unique_ptr<OverlayCandidateValidator> overlay_validator)
+    : overlay_validator_(std::move(overlay_validator)) {}
+#else  // defined(USE_OZONE)
+OverlayProcessor::OverlayProcessor(
+    SkiaOutputSurface* skia_output_surface,
+    std::unique_ptr<OverlayCandidateValidatorStrategy> overlay_validator)
+    : overlay_validator_(std::move(overlay_validator)) {
+  if (overlay_validator_)
+    overlay_validator_->InitializeStrategies();
+}
+#endif
 
 // For testing.
 OverlayProcessor::OverlayProcessor(
-    std::unique_ptr<OverlayCandidateValidator> overlay_validator)
-    : OverlayProcessor(std::move(overlay_validator),
-                       std::make_unique<DCLayerOverlayProcessor>()) {}
+    std::unique_ptr<OverlayValidator> overlay_validator)
+    : OverlayProcessor(nullptr, std::move(overlay_validator)) {
+#if defined(OS_WIN)
+  InitializeDCOverlayProcessor(std::make_unique<DCLayerOverlayProcessor>());
+#endif
+}
+
+#if defined(OS_WIN)
+void OverlayProcessor::InitializeDCOverlayProcessor(
+    std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor) {
+  DCHECK(!dc_layer_overlay_processor_);
+  dc_layer_overlay_processor_.swap(dc_layer_overlay_processor);
+}
+#endif  // defined(OS_WIN)
 
 OverlayProcessor::~OverlayProcessor() = default;
 
@@ -145,8 +202,13 @@ bool OverlayProcessor::ProcessForCALayers(
     RenderPass* render_pass,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
-    CALayerOverlayList* ca_layer_overlays,
+    CandidateList* ca_layer_overlays,
     gfx::Rect* damage_rect) {
+#if defined(OS_MACOSX)
+  // Skip overlay processing if we have copy request.
+  if (!render_pass->copy_requests.empty())
+    return true;
+
   if (!overlay_validator_ || !overlay_validator_->AllowCALayerOverlays())
     return false;
 
@@ -157,12 +219,13 @@ bool OverlayProcessor::ProcessForCALayers(
     return false;
 
   // CALayer overlays are all-or-nothing. If all quads were replaced with
-  // layers then clear the list and remove the backbuffer from the overcandidate
-  // list.
+  // layers then mark the output surface as already handled.
   output_surface_already_handled_ = true;
   overlay_damage_rect_ = render_pass->output_rect;
   *damage_rect = gfx::Rect();
   return true;
+#endif  // defined(OS_MACOSX)
+  return false;
 }
 
 bool OverlayProcessor::ProcessForDCLayers(
@@ -170,8 +233,19 @@ bool OverlayProcessor::ProcessForDCLayers(
     RenderPassList* render_passes,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
-    DCLayerOverlayList* dc_layer_overlays,
+    CandidateList* dc_layer_overlays,
     gfx::Rect* damage_rect) {
+#if defined(OS_WIN)
+  // Skip overlay processing if we have copy request.
+  if (!render_passes->back()->copy_requests.empty()) {
+    damage_rect->Union(dc_layer_overlay_processor_
+                           ->previous_frame_overlay_damage_contribution());
+    // Update damage rect before calling ClearOverlayState, otherwise
+    // previous_frame_overlay_rect_union will be empty.
+    dc_layer_overlay_processor_->ClearOverlayState();
+    return true;
+  }
+
   if (!overlay_validator_ || !overlay_validator_->AllowDCLayerOverlays())
     return false;
 
@@ -179,6 +253,8 @@ bool OverlayProcessor::ProcessForDCLayers(
       resource_provider, gfx::RectF(render_passes->back()->output_rect),
       render_passes, damage_rect, dc_layer_overlays);
   return true;
+#endif  // defined(OS_WIN)
+  return false;
 }
 
 void OverlayProcessor::ProcessForOverlays(
@@ -188,9 +264,7 @@ void OverlayProcessor::ProcessForOverlays(
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
     OutputSurfaceOverlayPlane* output_surface_plane,
-    OverlayCandidateList* candidates,
-    CALayerOverlayList* ca_layer_overlays,
-    DCLayerOverlayList* dc_layer_overlays,
+    CandidateList* candidates,
     gfx::Rect* damage_rect,
     std::vector<gfx::Rect>* content_bounds) {
   TRACE_EVENT0("viz", "OverlayProcessor::ProcessForOverlays");
@@ -198,48 +272,42 @@ void OverlayProcessor::ProcessForOverlays(
   // Be sure to send out notifications, regardless of whether we get to
   // processing for overlays or not.  If we don't, then we should notify that
   // they are not promotable.
-  SendPromotionHintsBeforeReturning notifier(resource_provider, candidates);
+  SendPromotionHintsBeforeReturning notifier(resource_provider, candidates,
+                                             skia_output_surface_);
 #endif
 
   // Clear to get ready to handle output surface as overlay.
   output_surface_already_handled_ = false;
 
-  // Reset |previous_frame_underlay_rect_| in case UpdateDamageRect() not being
-  // invoked.  Also reset |previous_frame_underlay_was_unoccluded_|.
-  const gfx::Rect previous_frame_underlay_rect = previous_frame_underlay_rect_;
-  previous_frame_underlay_rect_ = gfx::Rect();
-  bool previous_frame_underlay_was_unoccluded =
-      previous_frame_underlay_was_unoccluded_;
-  previous_frame_underlay_was_unoccluded_ = false;
-
-  RenderPass* root_render_pass = render_passes->back().get();
-
-  // If we have any copy requests, we can't remove any quads for overlays,
-  // CALayers, or DCLayers because the framebuffer would be missing the removed
-  // quads' contents.
-  if (!root_render_pass->copy_requests.empty()) {
-    damage_rect->Union(dc_layer_overlay_processor_
-                           ->previous_frame_overlay_damage_contribution());
-    // Update damage rect before calling ClearOverlayState, otherwise
-    // previous_frame_overlay_rect_union will be empty.
-    dc_layer_overlay_processor_->ClearOverlayState();
-    return;
-  }
-
   // First attempt to process for CALayers.
-  if (ProcessForCALayers(resource_provider, root_render_pass,
+  if (ProcessForCALayers(resource_provider, render_passes->back().get(),
                          render_pass_filters, render_pass_backdrop_filters,
-                         ca_layer_overlays, damage_rect)) {
+                         candidates, damage_rect)) {
     return;
   }
 
   if (ProcessForDCLayers(resource_provider, render_passes, render_pass_filters,
-                         render_pass_backdrop_filters, dc_layer_overlays,
+                         render_pass_backdrop_filters, candidates,
                          damage_rect)) {
     return;
   }
 
   DCHECK(candidates->empty());
+
+#if defined(OS_ANDROID) || defined(USE_OZONE)
+  RenderPass* render_pass = render_passes->back().get();
+
+  // If we have any copy requests, we can't remove any quads for overlays or
+  // CALayers because the framebuffer would be missing the removed quads'
+  // contents.
+  if (!render_pass->copy_requests.empty()) {
+    // Reset |previous_frame_underlay_rect_| in case UpdateDamageRect() not
+    // being invoked.  Also reset |previous_frame_underlay_was_unoccluded_|.
+    previous_frame_underlay_rect_ = gfx::Rect();
+    previous_frame_underlay_was_unoccluded_ = false;
+    return;
+  }
+
   // Only if that fails, attempt hardware overlay strategies.
   bool success = false;
   if (overlay_validator_) {
@@ -249,22 +317,28 @@ void OverlayProcessor::ProcessForOverlays(
   }
 
   if (success) {
-    UpdateDamageRect(candidates, previous_frame_underlay_rect,
-                     previous_frame_underlay_was_unoccluded,
-                     &root_render_pass->quad_list, damage_rect);
+    UpdateDamageRect(candidates, previous_frame_underlay_rect_,
+                     previous_frame_underlay_was_unoccluded_,
+                     &render_pass->quad_list, damage_rect);
   } else {
-    if (!previous_frame_underlay_rect.IsEmpty())
-      damage_rect->Union(previous_frame_underlay_rect);
+    if (!previous_frame_underlay_rect_.IsEmpty())
+      damage_rect->Union(previous_frame_underlay_rect_);
 
     DCHECK(candidates->empty());
+
+    previous_frame_underlay_rect_ = gfx::Rect();
+    previous_frame_underlay_was_unoccluded_ = false;
   }
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"),
                  "Scheduled overlay planes", candidates->size());
+
+#endif
 }
 
-// Subtract on-top opaque overlays from the damage rect, unless the overlays use
-// the backbuffer as their content (in which case, add their combined rect
+#if defined(OS_ANDROID) || defined(USE_OZONE)
+// Subtract on-top opaque overlays from the damage rect, unless the overlays
+// use the backbuffer as their content (in which case, add their combined rect
 // back to the damage at the end).
 // Also subtract unoccluded underlays from the damage rect if we know that the
 // same underlay was scheduled on the previous frame. If the renderer decides
@@ -291,13 +365,12 @@ void OverlayProcessor::UpdateDamageRect(
       // Track the underlay_rect from frame to frame. If it is the same and
       // nothing is on top of it then that rect doesn't need to be damaged
       // because the drawing is occurring on a different plane. If it is
-      // different then that indicates that a different underlay has been chosen
-      // and the previous underlay rect should be damaged because it has changed
-      // planes from the underlay plane to the main plane.
-      // It then checks that this is not a transition from occluded to
-      // unoccluded.
+      // different then that indicates that a different underlay has been
+      // chosen and the previous underlay rect should be damaged because it
+      // has changed planes from the underlay plane to the main plane. It then
+      // checks that this is not a transition from occluded to unoccluded.
       //
-      // We also insist that the underlay is unoccluded for at leat one frame,
+      // We also insist that the underlay is unoccluded for at least one frame,
       // else when content above the overlay transitions from not fully
       // transparent to fully transparent, we still need to erase it from the
       // framebuffer.  Otherwise, the last non-transparent frame will remain.
@@ -335,18 +408,20 @@ void OverlayProcessor::UpdateDamageRect(
 
   previous_frame_underlay_rect_ = this_frame_underlay_rect;
 }
+#endif
 
 OverlayProcessor::OutputSurfaceOverlayPlane
 OverlayProcessor::ProcessOutputSurfaceAsOverlay(
     const gfx::Size& viewport_size,
     const gfx::BufferFormat& buffer_format,
-    const gfx::ColorSpace& color_space) const {
+    const gfx::ColorSpace& color_space,
+    bool has_alpha) const {
   OutputSurfaceOverlayPlane overlay_plane;
   overlay_plane.transform = gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE;
   overlay_plane.resource_size = viewport_size;
   overlay_plane.format = buffer_format;
   overlay_plane.color_space = color_space;
-  overlay_plane.enable_blending = false;
+  overlay_plane.enable_blending = has_alpha;
 
   // Adjust transformation and display_rect based on display rotation.
   overlay_plane.display_rect =

@@ -127,6 +127,10 @@ void EnsureGraphicsModelsEqual(const ArcTracingGraphicsModel& model1,
   EXPECT_EQ(model1.view_buffers(), model2.view_buffers());
   EXPECT_EQ(model1.system_model(), model2.system_model());
   EXPECT_EQ(model1.duration(), model2.duration());
+  EXPECT_EQ(model1.app_title(), model2.app_title());
+  EXPECT_EQ(model1.app_icon_png(), model2.app_icon_png());
+  EXPECT_EQ(model1.timestamp(), model2.timestamp());
+  EXPECT_EQ(model1.platform(), model2.platform());
 }
 
 }  // namespace
@@ -183,13 +187,14 @@ TEST_F(ArcTracingModelTest, TopLevel) {
        GraphicsEventType::kSurfaceFlingerInvalidationDone,
        GraphicsEventType::kSurfaceFlingerCompositionStart,
        GraphicsEventType::kSurfaceFlingerCompositionDone}));
-  EXPECT_TRUE(ValidateGrahpicsEvents(
-      graphics_model.android_top_level().global_events(),
-      {GraphicsEventType::kVsync,
-       GraphicsEventType::kSurfaceFlingerCompositionJank}));
+  EXPECT_TRUE(
+      ValidateGrahpicsEvents(graphics_model.android_top_level().global_events(),
+                             {GraphicsEventType::kSurfaceFlingerVsyncHandler,
+                              GraphicsEventType::kSurfaceFlingerCompositionJank,
+                              GraphicsEventType::kVsyncTimestamp}));
   ASSERT_FALSE(graphics_model.android_top_level().global_events().empty());
   // Check trimmed by VSYNC.
-  EXPECT_EQ(GraphicsEventType::kVsync,
+  EXPECT_EQ(GraphicsEventType::kSurfaceFlingerVsyncHandler,
             graphics_model.android_top_level().global_events()[0].type);
   EXPECT_EQ(0U,
             graphics_model.android_top_level().global_events()[0].timestamp);
@@ -511,6 +516,13 @@ TEST_F(ArcTracingModelTest, GraphicsModelLoadSerialize) {
   std::unique_ptr<ArcTracingGraphicsModel> model =
       LoadGraphicsModel("gm_good.json");
   ASSERT_TRUE(model);
+  EXPECT_EQ("CrOS 12642.0.0 (Official Build) dev-channel eve",
+            model->platform());
+  EXPECT_EQ("Play Store", model->app_title());
+  EXPECT_FALSE(model->app_icon_png().empty());
+  EXPECT_EQ(base::Time::FromJsTime(1572898642036L), model->timestamp());
+  EXPECT_EQ(1000U, model->duration());
+
   ArcTracingGraphicsModel test_model;
   EXPECT_TRUE(test_model.LoadFromJson(model->SerializeToJson()));
   EnsureGraphicsModelsEqual(*model, test_model);
@@ -619,7 +631,7 @@ TEST_F(ArcTracingModelTest, InputEvents) {
   ASSERT_TRUE(model.Build(tracing_data));
 
   ArcTracingGraphicsModel graphics_model;
-  graphics_model.set_skip_structure_validation_for_testing();
+  graphics_model.set_skip_structure_validation();
   ASSERT_TRUE(graphics_model.Build(model));
 
   const std::vector<GraphicsEvents>& buffers =

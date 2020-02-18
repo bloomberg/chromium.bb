@@ -82,7 +82,7 @@ void XlibSurfaceKHR::detachImage(PresentImage* image)
 	}
 }
 
-void XlibSurfaceKHR::present(PresentImage* image)
+VkResult XlibSurfaceKHR::present(PresentImage* image)
 {
 	auto it = imageMap.find(image);
 	if(it != imageMap.end())
@@ -91,10 +91,21 @@ void XlibSurfaceKHR::present(PresentImage* image)
 
 		if(xImage->data)
 		{
+			XWindowAttributes attr;
+			libX11->XGetWindowAttributes(pDisplay, window, &attr);
+			VkExtent2D windowExtent = {static_cast<uint32_t>(attr.width), static_cast<uint32_t>(attr.height)};
 			VkExtent3D extent = image->getImage()->getMipLevelExtent(VK_IMAGE_ASPECT_COLOR_BIT, 0);
+
+			if (windowExtent.width != extent.width || windowExtent.height != extent.height)
+			{
+				return VK_ERROR_OUT_OF_DATE_KHR;
+			}
+
 			libX11->XPutImage(pDisplay, window, gc, xImage, 0, 0, 0, 0, extent.width, extent.height);
 		}
 	}
+
+	return VK_SUCCESS;
 }
 
 }

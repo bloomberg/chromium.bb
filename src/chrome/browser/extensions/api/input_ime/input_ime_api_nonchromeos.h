@@ -35,7 +35,8 @@ class InputImeEventRouter : public InputImeEventRouterBase {
 
   // Gets the input method engine if the extension is active.
   input_method::InputMethodEngineBase* GetEngineIfActive(
-      const std::string& extension_id) override;
+      const std::string& extension_id,
+      std::string* error) override;
 
   // Actives the extension with new input method engine, and deletes the
   // previous engine if another extension was active.
@@ -60,7 +61,7 @@ class InputImeCreateWindowFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("input.ime.createWindow", INPUT_IME_CREATEWINDOW)
 
  protected:
-  ~InputImeCreateWindowFunction() override {}
+  ~InputImeCreateWindowFunction() override = default;
 
   // ExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
@@ -71,7 +72,7 @@ class InputImeShowWindowFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("input.ime.showWindow", INPUT_IME_SHOWWINDOW)
 
  protected:
-  ~InputImeShowWindowFunction() override {}
+  ~InputImeShowWindowFunction() override = default;
 
   // ExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
@@ -82,7 +83,7 @@ class InputImeHideWindowFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("input.ime.hideWindow", INPUT_IME_HIDEWINDOW)
 
  protected:
-  ~InputImeHideWindowFunction() override {}
+  ~InputImeHideWindowFunction() override = default;
 
   // ExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
@@ -97,7 +98,7 @@ class InputImeActivateFunction : public ExtensionFunction {
   static bool disable_bubble_for_testing_;
 
  protected:
-  ~InputImeActivateFunction() override {}
+  ~InputImeActivateFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -114,7 +115,7 @@ class InputImeDeactivateFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("input.ime.deactivate", INPUT_IME_DEACTIVATE)
 
  protected:
-  ~InputImeDeactivateFunction() override {}
+  ~InputImeDeactivateFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;

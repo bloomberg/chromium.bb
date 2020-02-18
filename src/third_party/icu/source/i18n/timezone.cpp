@@ -527,10 +527,7 @@ TimeZone::detectHostTimeZone()
 
 // -------------------------------------
 
-static UMutex *gDefaultZoneMutex() {
-    static UMutex* m = new UMutex();
-    return m;
-}
+static UMutex gDefaultZoneMutex;
 
 /**
  * Initialize DEFAULT_ZONE from the system default time zone.  
@@ -541,7 +538,7 @@ static void U_CALLCONV initDefault()
 {
     ucln_i18n_registerCleanup(UCLN_I18N_TIMEZONE, timeZone_cleanup);
 
-    Mutex lock(gDefaultZoneMutex());
+    Mutex lock(&gDefaultZoneMutex);
     // If setDefault() has already been called we can skip getting the
     // default zone information from the system.
     if (DEFAULT_ZONE != NULL) {
@@ -563,9 +560,6 @@ static void U_CALLCONV initDefault()
 
     TimeZone *default_zone = TimeZone::detectHostTimeZone();
 
-    // The only way for DEFAULT_ZONE to be non-null at this point is if the user
-    // made a thread-unsafe call to setDefault() or adoptDefault() in another
-    // thread while this thread was doing something that required getting the default.
     U_ASSERT(DEFAULT_ZONE == NULL);
 
     DEFAULT_ZONE = default_zone;
@@ -578,7 +572,7 @@ TimeZone::createDefault()
 {
     umtx_initOnce(gDefaultZoneInitOnce, initDefault);
     {
-        Mutex lock(gDefaultZoneMutex());
+        Mutex lock(&gDefaultZoneMutex);
         return (DEFAULT_ZONE != NULL) ? DEFAULT_ZONE->clone() : NULL;
     }
 }
@@ -591,7 +585,7 @@ TimeZone::adoptDefault(TimeZone* zone)
     if (zone != NULL)
     {
         {
-            Mutex lock(gDefaultZoneMutex());
+            Mutex lock(&gDefaultZoneMutex);
             TimeZone *old = DEFAULT_ZONE;
             DEFAULT_ZONE = zone;
             delete old;

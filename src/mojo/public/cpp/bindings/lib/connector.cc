@@ -7,18 +7,24 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/trace_event/trace_event.h"
+#include "mojo/public/c/system/quota.h"
 #include "mojo/public/cpp/bindings/features.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
+#include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "mojo/public/cpp/bindings/lib/tracing_helper.h"
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
@@ -161,6 +167,13 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
 }
 
 Connector::~Connector() {
+  if (quota_checker_) {
+    // Clear the message pipe handle in the checker.
+    quota_checker_->SetMessagePipe(MessagePipeHandle());
+    UMA_HISTOGRAM_COUNTS_1M("Mojo.Connector.MaxUnreadMessageQuotaUsed",
+                            quota_checker_->GetMaxQuotaUsage());
+  }
+
   {
     // Allow for quick destruction on any sequence if the pipe is already
     // closed.
@@ -209,6 +222,10 @@ void Connector::RaiseError() {
 }
 
 void Connector::SetConnectionGroup(ConnectionGroup::Ref ref) {
+  // If this Connector already belonged to a group, parent the new group to that
+  // one so that the reference is not lost.
+  if (connection_group_)
+    ref.SetParentGroup(std::move(connection_group_));
   connection_group_ = std::move(ref);
 }
 
@@ -279,12 +296,8 @@ void Connector::ResumeIncomingMethodCallProcessing() {
     if (!weak_self)
       return;
   } else {
-    for (size_t i = 0; i < dispatch_queue_.size(); ++i) {
-      task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(base::IgnoreResult(
-                                        &Connector::DispatchNextMessageInQueue),
-                                    weak_self_));
-    }
+    while (num_pending_dispatch_tasks_ < dispatch_queue_.size())
+      PostDispatchNextMessageInQueue();
   }
 
   paused_ = false;
@@ -317,6 +330,9 @@ bool Connector::Accept(Message* message) {
     DCHECK(dump_result);
   }
 #endif
+
+  if (quota_checker_)
+    quota_checker_->BeforeWrite();
 
   MojoResult rv =
       WriteMessageNew(message_pipe_.get(), message->TakeMojoMessage(),
@@ -369,6 +385,14 @@ void Connector::SetWatcherHeapProfilerTag(const char* tag) {
     if (handle_watcher_)
       handle_watcher_->set_heap_profiler_tag(tag);
   }
+}
+
+void Connector::SetMessageQuotaChecker(
+    scoped_refptr<internal::MessageQuotaChecker> checker) {
+  DCHECK(checker && !quota_checker_);
+
+  quota_checker_ = std::move(checker);
+  quota_checker_->SetMessagePipe(message_pipe_.get());
 }
 
 // static
@@ -433,7 +457,8 @@ void Connector::WaitToReadMore() {
   handle_watcher_->set_heap_profiler_tag(heap_profiler_tag_);
   MojoResult rv = handle_watcher_->Watch(
       message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-      base::Bind(&Connector::OnWatcherHandleReady, base::Unretained(this)));
+      base::BindRepeating(&Connector::OnWatcherHandleReady,
+                          base::Unretained(this)));
 
   if (message_pipe_.is_valid()) {
     peer_remoteness_tracker_.emplace(
@@ -528,6 +553,19 @@ bool Connector::DispatchMessage(Message message) {
   return true;
 }
 
+void Connector::PostDispatchNextMessageInQueue() {
+  DCHECK_LT(num_pending_dispatch_tasks_, dispatch_queue_.size());
+  ++num_pending_dispatch_tasks_;
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Connector::CallDispatchNextMessageInQueue, weak_self_));
+}
+
+void Connector::CallDispatchNextMessageInQueue() {
+  --num_pending_dispatch_tasks_;
+  DispatchNextMessageInQueue();
+}
+
 bool Connector::DispatchNextMessageInQueue() {
   if (error_ || paused_)
     return false;
@@ -590,10 +628,8 @@ void Connector::ReadAllAvailableMessages() {
         return;
     } else {
       dispatch_queue_.push(std::move(message));
-      task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(base::IgnoreResult(
-                                        &Connector::DispatchNextMessageInQueue),
-                                    weak_self_));
+      if (num_pending_dispatch_tasks_ < dispatch_queue_.size())
+        PostDispatchNextMessageInQueue();
     }
 
     first_message_in_batch = false;

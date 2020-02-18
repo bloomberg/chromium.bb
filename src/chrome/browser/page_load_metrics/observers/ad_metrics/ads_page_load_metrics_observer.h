@@ -14,7 +14,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
@@ -30,8 +30,7 @@ class AdsPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver,
       public subresource_filter::SubresourceFilterObserver {
  public:
-
-  // Returns a new AdsPageLoadMetricObserver. If the feature is disabled it
+  // Returns a new AdsPageLoadMetricsObserver. If the feature is disabled it
   // returns nullptr.
   static std::unique_ptr<AdsPageLoadMetricsObserver> CreateIfNeeded(
       content::WebContents* web_contents);
@@ -55,6 +54,30 @@ class AdsPageLoadMetricsObserver
     base::TimeDelta cpu_time;
 
     DISALLOW_COPY_AND_ASSIGN(AggregateFrameInfo);
+  };
+
+  // Helper class that generates a random amount of noise to apply to thresholds
+  // for heavy ads. A different noise should be generated for each frame.
+  class HeavyAdThresholdNoiseProvider {
+   public:
+    // |use_noise| indicates whether this provider should give values of noise
+    // or just 0. If the heavy ad blocklist mitigation is disabled, |use_noise|
+    // should be set to false to provide a deterministic debugging path.
+    explicit HeavyAdThresholdNoiseProvider(bool use_noise);
+    virtual ~HeavyAdThresholdNoiseProvider() = default;
+
+    // Gets a random amount of noise to add to a threshold. The generated noise
+    // is uniform random over the range 0 to kMaxThresholdNoiseBytes. Virtual
+    // for testing.
+    virtual int GetNetworkThresholdNoiseForFrame() const;
+
+    // Maximum amount of additive noise to add to the network threshold to
+    // obscure cross origin resource sizes: 1303 KB.
+    static const int kMaxNetworkThresholdNoiseBytes = 1303 * 1024;
+
+   private:
+    // Whether to use noise.
+    const bool use_noise_;
   };
 
   explicit AdsPageLoadMetricsObserver(base::TickClock* clock = nullptr,
@@ -101,11 +124,20 @@ class AdsPageLoadMetricsObserver
       content::RenderFrameHost* render_frame_host) override;
   void OnFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
+  void SetHeavyAdThresholdNoiseProviderForTesting(
+      std::unique_ptr<HeavyAdThresholdNoiseProvider> noise_provider) {
+    heavy_ad_threshold_noise_provider_ = std::move(noise_provider);
+  }
+
  private:
   // subresource_filter::SubresourceFilterObserver:
   void OnAdSubframeDetected(
       content::RenderFrameHost* render_frame_host) override;
   void OnSubresourceFilterGoingAway() override;
+  void OnPageActivationComputed(
+      content::NavigationHandle* navigation_handle,
+      const subresource_filter::mojom::ActivationState& activation_state)
+      override;
 
   // Gets the number of bytes that we may have not attributed to ad
   // resources due to the resource being reported as an ad late.
@@ -123,11 +155,16 @@ class AdsPageLoadMetricsObserver
 
   void RecordPageResourceTotalHistograms(ukm::SourceId source_id);
   void RecordHistograms(ukm::SourceId source_id);
+  void RecordAggregateHistogramsForCpuUsage();
   void RecordAggregateHistogramsForAdTagging(
       FrameData::FrameVisibility visibility);
-  void RecordAggregateHistogramsForCpuUsage();
+  void RecordAggregateHistogramsForHeavyAds();
+
+  // Should be called on all frames prior to recording any aggregate histograms.
+  void RecordPerFrameHistograms(const FrameData& ad_frame_data);
   void RecordPerFrameHistogramsForAdTagging(const FrameData& ad_frame_data);
   void RecordPerFrameHistogramsForCpuUsage(const FrameData& ad_frame_data);
+  void RecordPerFrameHistogramsForHeavyAds(const FrameData& ad_frame_data);
 
   // Checks to see if a resource is waiting for a navigation in the given
   // RenderFrameHost to commit before it can be processed. If so, call
@@ -138,12 +175,10 @@ class AdsPageLoadMetricsObserver
   // |ad_frames_data_storage_|.
   FrameData* FindFrameData(FrameTreeNodeId id);
 
-  // Loads the heavy ad intervention page in the target frame if it is safe to
-  // do so on this origin, and the frame meets the criteria to be considered a
-  // heavy ad.
-  // TODO(johnidel): Ads may only automatically be unloaded 5 times per-origin
-  // per day and to prevent a side channel leak of cross-origin resource size /
-  // CPU usage.
+  // Triggers the heavy ad intervention page in the target frame if it is safe
+  // to do so on this origin, and the frame meets the criteria to be considered
+  // a heavy ad. This first sends an intervention report to every affected
+  // frame then loads an error page in the root ad frame.
   void MaybeTriggerHeavyAdIntervention(
       content::RenderFrameHost* render_frame_host,
       FrameData* frame_data);
@@ -164,6 +199,9 @@ class AdsPageLoadMetricsObserver
   // responsible frame is found, the data is an iterator to the end of
   // |ad_frames_data_storage_|.
   std::map<FrameTreeNodeId, std::list<FrameData>::iterator> ad_frames_data_;
+
+  int64_t navigation_id_ = -1;
+  bool subresource_filter_is_enabled_ = false;
 
   // When the observer receives report of a document resource loading for a
   // sub-frame before the sub-frame commit occurs, hold onto the resource
@@ -208,6 +246,10 @@ class AdsPageLoadMetricsObserver
   // The tick clock used to get the current time.  Can be replaced by tests.
   const base::TickClock* clock_;
 
+  // Whether the page load currently being observed is a reload of a previous
+  // page.
+  bool page_load_is_reload_ = false;
+
   // Stores whether the heavy ad intervention is blocklisted or not for the user
   // on the URL of this page. Incognito Profiles will cause this to be set to
   // true. Used as a cache to avoid checking the blocklist once the page is
@@ -218,8 +260,25 @@ class AdsPageLoadMetricsObserver
   // be replaced by tests.
   HeavyAdBlocklist* heavy_ad_blocklist_;
 
-  // Whether the heavy ad blocklist feature is enabled.
-  const bool heavy_ad_blocklist_enabled_;
+  // Whether the heavy ad privacy mitigations feature is enabled.
+  const bool heavy_ad_privacy_mitigations_enabled_;
+
+  // Whether there was a heavy ad on the page at some point.
+  bool heavy_ad_on_page_ = false;
+
+  std::unique_ptr<HeavyAdThresholdNoiseProvider>
+      heavy_ad_threshold_noise_provider_;
+
+  // Whether we should only send reports, and not unload frames tagged as heavy
+  // ads by the intervention. This is null until the proper feature param is
+  // queried once a heavy ad is seen. Sending reports should still log entries
+  // to the blocklist as it is observable by the page. Reporting only should use
+  // a different message that indicates the frame was not unloaded.
+  base::Optional<bool> heavy_ad_send_reports_only_;
+
+  // Whether reports should be sent when the heavy ad intervention occurs. This
+  // is null until the proper feature param is queried once a heavy ad is seen.
+  base::Optional<bool> heavy_ad_reporting_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };

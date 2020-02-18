@@ -12,10 +12,10 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
-#include "components/viz/service/display/ca_layer_overlay.h"
-#include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/display_resource_provider.h"
+#include "components/viz/service/display/overlay_candidate_list.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
@@ -68,7 +68,21 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
       float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
 
   // Public interface implemented by subclasses.
-  virtual void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) = 0;
+  struct SwapFrameData {
+    SwapFrameData();
+    ~SwapFrameData();
+
+    SwapFrameData& operator=(SwapFrameData&&);
+    SwapFrameData(SwapFrameData&&);
+
+    SwapFrameData(const SwapFrameData&) = delete;
+    SwapFrameData& operator=(const SwapFrameData&) = delete;
+
+    std::vector<ui::LatencyInfo> latency_info;
+    bool top_controls_visible_height_changed = false;
+  };
+  virtual void SwapBuffers(SwapFrameData swap_frame_data) = 0;
+  virtual void SwapBuffersSkipped() {}
   virtual void SwapBuffersComplete() {}
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) {}
@@ -90,9 +104,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
 
-    OverlayCandidateList overlay_list;
-    CALayerOverlayList ca_layer_overlay_list;
-    DCLayerOverlayList dc_layer_overlay_list;
+    OverlayProcessor::CandidateList overlay_list;
     // When we have a buffer queue, the output surface could be treated as an
     // overlay plane, and the struct to store that information is in
     // |output_surface_plane|.
@@ -113,6 +125,10 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     return !!overlay_processor_->GetOverlayCandidateValidator();
   }
   bool OverlayNeedsSurfaceOccludingDamageRect() const;
+
+  gfx::Rect GetLastRootScissorRectForTesting() const {
+    return last_root_render_pass_scissor_rect_;
+  }
 
  protected:
   friend class BspWalkActionDrawPolygon;
@@ -200,14 +216,12 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   virtual void DoDrawQuad(const DrawQuad* quad,
                           const gfx::QuadF* clip_region) = 0;
   virtual void BeginDrawingFrame() = 0;
+  virtual void FlushOverdrawFeedback(const gfx::Rect& output_rect) {}
   virtual void FinishDrawingFrame() = 0;
   // If a pass contains a single tile draw quad and can be drawn without
   // a render pass (e.g. applying a filter directly to the tile quad)
   // return that quad, otherwise return null.
-  static const TileDrawQuad* CanPassBeDrawnDirectly(
-      const RenderPass* pass,
-      DisplayResourceProvider* const resource_provider);
-  virtual const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass);
+  virtual const DrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass);
   virtual void FinishDrawingQuadList() {}
   virtual bool FlippedFramebuffer() const = 0;
   virtual void EnsureScissorTestEnabled() = 0;
@@ -216,7 +230,9 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   virtual void CopyDrawnRenderPass(
       const copy_output::RenderPassGeometry& geometry,
       std::unique_ptr<CopyOutputRequest> request) = 0;
+#if defined(OS_WIN)
   virtual void SetEnableDCLayers(bool enable) = 0;
+#endif
   virtual void GenerateMipmap() = 0;
 
   gfx::Size surface_size_for_swap_buffers() const {
@@ -238,6 +254,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   bool use_partial_swap_ = false;
   // Whether overdraw feedback is enabled and can be used.
   bool overdraw_feedback_ = false;
+#if defined(OS_WIN)
   // Whether the SetDrawRectangle and EnableDCLayers commands are in
   // use.
   bool supports_dc_layers_ = false;
@@ -246,10 +263,13 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // This counts the number of draws since the last time
   // DirectComposition layers needed to be used.
   int frames_since_using_dc_layers_ = 0;
+#endif
 
   // A map from RenderPass id to the single quad present in and replacing the
-  // RenderPass.
-  base::flat_map<RenderPassId, TileDrawQuad> render_pass_bypass_quads_;
+  // RenderPass. The DrawQuads are owned by their RenderPasses, which outlive
+  // the drawn frame, so it is safe to store these pointers until the end of
+  // DrawFrame().
+  base::flat_map<RenderPassId, const DrawQuad*> render_pass_bypass_quads_;
 
   // A map from RenderPass id to the filters used when drawing the RenderPass.
   base::flat_map<RenderPassId, cc::FilterOperations*> render_pass_filters_;
@@ -257,6 +277,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
       render_pass_backdrop_filters_;
   base::flat_map<RenderPassId, base::Optional<gfx::RRectF>>
       render_pass_backdrop_filter_bounds_;
+  base::flat_map<RenderPassId, gfx::Rect> backdrop_filter_output_rects_;
 
   bool visible_ = false;
   bool disable_color_checks_for_testing_ = false;
@@ -285,6 +306,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 #if DCHECK_IS_ON()
   bool overdraw_feedback_support_missing_logged_once_ = false;
 #endif
+  gfx::Rect last_root_render_pass_scissor_rect_;
   gfx::Size enlarge_pass_texture_amount_;
 
   // The current drawing frame is valid only during the duration of the

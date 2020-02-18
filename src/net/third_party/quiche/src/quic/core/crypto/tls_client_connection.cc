@@ -14,11 +14,14 @@ TlsClientConnection::TlsClientConnection(SSL_CTX* ssl_ctx, Delegate* delegate)
 bssl::UniquePtr<SSL_CTX> TlsClientConnection::CreateSslCtx() {
   bssl::UniquePtr<SSL_CTX> ssl_ctx = TlsConnection::CreateSslCtx();
   // Configure certificate verification.
-  // TODO(nharper): This only verifies certs on initial connection, not on
-  // resumption. Chromium has this callback be a no-op and verifies the
-  // certificate after the connection is complete. We need to re-verify on
-  // resumption in case of expiration or revocation/distrust.
   SSL_CTX_set_custom_verify(ssl_ctx.get(), SSL_VERIFY_PEER, &VerifyCallback);
+  int reverify_on_resume_enabled = 1;
+  SSL_CTX_set_reverify_on_resume(ssl_ctx.get(), reverify_on_resume_enabled);
+
+  // Configure session caching.
+  SSL_CTX_set_session_cache_mode(
+      ssl_ctx.get(), SSL_SESS_CACHE_CLIENT | SSL_SESS_CACHE_NO_INTERNAL);
+  SSL_CTX_sess_set_new_cb(ssl_ctx.get(), NewSessionCallback);
   return ssl_ctx;
 }
 
@@ -28,6 +31,13 @@ enum ssl_verify_result_t TlsClientConnection::VerifyCallback(
     uint8_t* out_alert) {
   return static_cast<TlsClientConnection*>(ConnectionFromSsl(ssl))
       ->delegate_->VerifyCert(out_alert);
+}
+
+// static
+int TlsClientConnection::NewSessionCallback(SSL* ssl, SSL_SESSION* session) {
+  static_cast<TlsClientConnection*>(ConnectionFromSsl(ssl))
+      ->delegate_->InsertSession(bssl::UniquePtr<SSL_SESSION>(session));
+  return 1;
 }
 
 }  // namespace quic

@@ -28,7 +28,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_web_contents_observer.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/load_monitoring_extension_host_queue.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/runtime_data.h"
@@ -102,13 +101,11 @@ ExtensionHost::~ExtensionHost() {
       content::Details<ExtensionHost>(this));
   for (auto& observer : observer_list_)
     observer.OnExtensionHostDestroyed(this);
-  for (auto& observer : deferred_start_render_host_observer_list_)
-    observer.OnDeferredStartRenderHostDestroyed(this);
 
   // Remove ourselves from the queue as late as possible (before effectively
   // destroying self, but after everything else) so that queues that are
   // monitoring lifetime get a chance to see stop-loading events.
-  delegate_->GetExtensionHostQueue()->Remove(this);
+  ExtensionHostQueue::GetInstance().Remove(this);
 
   // Deliberately stop observing |host_contents_| because its destruction
   // events (like DidStopLoading, it turns out) can call back into
@@ -138,7 +135,7 @@ void ExtensionHost::CreateRenderViewSoon() {
     // to defer.
     CreateRenderViewNow();
   } else {
-    delegate_->GetExtensionHostQueue()->Add(this);
+    ExtensionHostQueue::GetInstance().Add(this);
   }
 }
 
@@ -156,16 +153,6 @@ void ExtensionHost::CreateRenderViewNow() {
     // Connect orphaned dev-tools instances.
     delegate_->OnRenderViewCreatedForBackgroundPage(this);
   }
-}
-
-void ExtensionHost::AddDeferredStartRenderHostObserver(
-    DeferredStartRenderHostObserver* observer) {
-  deferred_start_render_host_observer_list_.AddObserver(observer);
-}
-
-void ExtensionHost::RemoveDeferredStartRenderHostObserver(
-    DeferredStartRenderHostObserver* observer) {
-  deferred_start_render_host_observer_list_.RemoveObserver(observer);
 }
 
 void ExtensionHost::Close() {
@@ -262,13 +249,6 @@ void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
       content::Details<ExtensionHost>(this));
 }
 
-void ExtensionHost::DidStartLoading() {
-  if (!has_loaded_once_) {
-    for (auto& observer : deferred_start_render_host_observer_list_)
-      observer.OnDeferredStartRenderHostDidStartFirstLoad(this);
-  }
-}
-
 void ExtensionHost::DidStopLoading() {
   // Only record UMA for the first load. Subsequent loads will likely behave
   // quite different, and it's first load we're most interested in.
@@ -281,8 +261,8 @@ void ExtensionHost::DidStopLoading() {
         extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
         content::Source<BrowserContext>(browser_context_),
         content::Details<ExtensionHost>(this));
-    for (auto& observer : deferred_start_render_host_observer_list_)
-      observer.OnDeferredStartRenderHostDidStopFirstLoad(this);
+    for (auto& observer : observer_list_)
+      observer.OnExtensionHostDidStopFirstLoad(this);
   }
 }
 

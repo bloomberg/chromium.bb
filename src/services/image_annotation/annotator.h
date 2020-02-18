@@ -17,16 +17,15 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace image_annotation {
 
@@ -43,6 +42,14 @@ namespace image_annotation {
 // images) or image pixels to the external server.
 class Annotator : public mojom::Annotator {
  public:
+  class Client {
+   public:
+    virtual ~Client() {}
+
+    virtual void BindJsonParser(
+        mojo::PendingReceiver<data_decoder::mojom::JsonParser> receiver) = 0;
+  };
+
   // The HTTP request header in which the API key should be transmitted.
   static constexpr char kGoogApiKeyHeader[] = "X-Goog-Api-Key";
 
@@ -73,27 +80,29 @@ class Annotator : public mojom::Annotator {
             int batch_size,
             double min_ocr_confidence,
             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-            service_manager::Connector* connector);
+            std::unique_ptr<Client> client);
   ~Annotator() override;
 
-  // Start providing behavior for the given Mojo request.
-  void BindRequest(mojom::AnnotatorRequest request);
+  // Start providing behavior for the given Mojo receiver.
+  void BindReceiver(mojo::PendingReceiver<mojom::Annotator> receiver);
 
   // mojom::Annotator:
   void AnnotateImage(const std::string& source_id,
                      const std::string& description_language_tag,
-                     mojom::ImageProcessorPtr image,
+                     mojo::PendingRemote<mojom::ImageProcessor> image,
                      AnnotateImageCallback callback) override;
 
  private:
   // The relevant info for a request from a client feature for a single image.
   struct ClientRequestInfo {
-    ClientRequestInfo(mojom::ImageProcessorPtr image_processor,
-                      AnnotateImageCallback callback);
+    ClientRequestInfo(
+        mojo::PendingRemote<mojom::ImageProcessor> image_processor,
+        AnnotateImageCallback callback);
     ~ClientRequestInfo();
 
-    mojom::ImageProcessorPtr image_processor;  // The interface to use for local
-                                               // processing for this client.
+    mojo::Remote<mojom::ImageProcessor>
+        image_processor;  // The interface to use for local
+                          // processing for this client.
 
     AnnotateImageCallback callback;  // The callback to execute when
                                      // processing has finished.
@@ -153,7 +162,7 @@ class Annotator : public mojom::Annotator {
 
   // Create or reuse a connection to the data decoder service for safe JSON
   // parsing.
-  data_decoder::mojom::JsonParser& GetJsonParser();
+  data_decoder::mojom::JsonParser* GetJsonParser();
 
   // Removes the given request, reassigning local processing if its associated
   // image processor had some ongoing.
@@ -191,6 +200,8 @@ class Annotator : public mojom::Annotator {
       const std::set<RequestKey>& request_keys,
       const std::map<std::string, mojom::AnnotateImageResultPtr>& results);
 
+  const std::unique_ptr<Client> client_;
+
   // Maps from request key to previously-obtained annotation results.
   // TODO(crbug.com/916420): periodically clear entries from this cache.
   std::map<RequestKey, mojom::AnnotateImageResultPtr> cached_results_;
@@ -208,7 +219,7 @@ class Annotator : public mojom::Annotator {
   // Note that separate local processing will be scheduled for two requests that
   // share a source ID but differ in language. This is suboptimal; in future we
   // could share local processing among all relevant requests.
-  std::map<RequestKey, mojom::ImageProcessorPtr*> local_processors_;
+  std::map<RequestKey, mojo::Remote<mojom::ImageProcessor>*> local_processors_;
 
   // A list of currently-ongoing HTTP requests to the image annotation server.
   UrlLoaderList ongoing_server_requests_;
@@ -227,12 +238,10 @@ class Annotator : public mojom::Annotator {
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  service_manager::Connector* const connector_;
-
-  mojo::BindingSet<mojom::Annotator> bindings_;
+  mojo::ReceiverSet<mojom::Annotator> receivers_;
 
   // Should not be used directly; GetJsonParser() should be called instead.
-  data_decoder::mojom::JsonParserPtr json_parser_;
+  mojo::Remote<data_decoder::mojom::JsonParser> json_parser_;
 
   // A timer used to throttle server request frequency.
   base::RepeatingTimer server_request_timer_;

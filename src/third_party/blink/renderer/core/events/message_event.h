@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -181,6 +182,15 @@ class CORE_EXPORT MessageEvent final : public Event {
     return data_as_serialized_script_value_->Value();
   }
 
+  // Returns true when |data_as_serialized_script_value_| contains values that
+  // remote origins cannot access. If true, remote origins must dispatch a
+  // messageerror event instead of message event.
+  bool IsOriginCheckRequiredToAccessData() const;
+
+  // Returns true when |data_as_serialized_script_value_| is locked to an
+  // agent cluster.
+  bool IsLockedToAgentCluster() const;
+
   void EntangleMessagePorts(ExecutionContext*);
 
   void Trace(blink::Visitor*) override;
@@ -237,6 +247,9 @@ class CORE_EXPORT MessageEvent final : public Event {
   bool transfer_user_activation_ = false;
   bool allow_autoplay_ = false;
 };
+
+extern CORE_EXPORT const V8PrivateProperty::SymbolKey
+    kPrivatePropertyMessageEventCachedData;
 
 }  // namespace blink
 

@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -164,6 +165,13 @@ class ReceiverSetBase {
   // disconnection notifications until a new receiver is added to the set.
   void Clear() { receivers_.clear(); }
 
+  // Predicate to test if a receiver exists in the set.
+  //
+  // Returns |true| if the receiver is in the set and |false| if not.
+  bool HasReceiver(ReceiverId id) const {
+    return base::Contains(receivers_, id);
+  }
+
   bool empty() const { return receivers_.empty(); }
 
   size_t size() const { return receivers_.size(); }
@@ -279,7 +287,7 @@ class ReceiverSetBase {
           receiver_set_(receiver_set),
           receiver_id_(receiver_id),
           context_(std::move(context)) {
-      receiver_.AddFilter(std::make_unique<DispatchFilter>(this));
+      receiver_.SetFilter(std::make_unique<DispatchFilter>(this));
       receiver_.set_disconnect_with_reason_handler(
           base::BindOnce(&Entry::OnDisconnect, base::Unretained(this)));
     }
@@ -291,17 +299,19 @@ class ReceiverSetBase {
     void FlushForTesting() { receiver_.FlushForTesting(); }
 
    private:
-    class DispatchFilter : public MessageReceiver {
+    class DispatchFilter : public MessageFilter {
      public:
       explicit DispatchFilter(Entry* entry) : entry_(entry) {}
       ~DispatchFilter() override {}
 
      private:
-      // MessageReceiver:
-      bool Accept(Message* message) override {
+      // MessageFilter:
+      bool WillDispatch(Message* message) override {
         entry_->WillDispatch();
         return true;
       }
+
+      void DidDispatchOrReject(Message* message, bool accepted) override {}
 
       Entry* entry_;
 

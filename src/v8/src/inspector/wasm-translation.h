@@ -5,6 +5,7 @@
 #ifndef V8_INSPECTOR_WASM_TRANSLATION_H_
 #define V8_INSPECTOR_WASM_TRANSLATION_H_
 
+#include <memory>
 #include <unordered_map>
 
 #include "include/v8.h"
@@ -53,6 +54,9 @@ class WasmTranslation {
   bool TranslateProtocolLocationToWasmScriptLocation(String16* script_id,
                                                      int* line_number,
                                                      int* column_number);
+
+  // Find the end byte offset for a fake script.
+  int GetEndOffset(const String16& script_id);
 
   const String16& GetSource(const String16& script_id, int func_index);
   int GetStartLine(const String16& script_id, int func_index) { return 0; }

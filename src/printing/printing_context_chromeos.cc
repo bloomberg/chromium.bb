@@ -8,65 +8,43 @@
 #include <stdint.h>
 #include <unicode/ulocdata.h>
 
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "printing/backend/cups_connection.h"
+#include "printing/backend/cups_ipp_constants.h"
 #include "printing/backend/cups_ipp_util.h"
 #include "printing/backend/cups_printer.h"
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
+#include "printing/printing_features_chromeos.h"
 #include "printing/units.h"
 
 namespace printing {
 
 namespace {
 
-using ScopedCupsOption = std::unique_ptr<cups_option_t, OptionDeleter>;
-
-// convert from a ColorMode setting to a print-color-mode value from PWG 5100.13
+// Convert from a ColorMode setting to a print-color-mode value from PWG 5100.13
 const char* GetColorModelForMode(int color_mode) {
   const char* mode_string;
-  switch (color_mode) {
-    case COLOR:
-    case CMYK:
-    case CMY:
-    case KCMY:
-    case CMY_K:
-    case RGB:
-    case RGB16:
-    case RGBA:
-    case COLORMODE_COLOR:
-    case BROTHER_CUPS_COLOR:
-    case BROTHER_BRSCRIPT3_COLOR:
-    case HP_COLOR_COLOR:
-    case PRINTOUTMODE_NORMAL:
-    case PROCESSCOLORMODEL_CMYK:
-    case PROCESSCOLORMODEL_RGB:
-      mode_string = CUPS_PRINT_COLOR_MODE_COLOR;
-      break;
-    case GRAY:
-    case BLACK:
-    case GRAYSCALE:
-    case COLORMODE_MONOCHROME:
-    case BROTHER_CUPS_MONO:
-    case BROTHER_BRSCRIPT3_BLACK:
-    case HP_COLOR_BLACK:
-    case PRINTOUTMODE_NORMAL_GRAY:
-    case PROCESSCOLORMODEL_GREYSCALE:
-      mode_string = CUPS_PRINT_COLOR_MODE_MONOCHROME;
-      break;
-    default:
-      mode_string = nullptr;
-      LOG(WARNING) << "Unrecognized color mode";
-      break;
+  base::Optional<bool> is_color =
+      PrintingContextChromeos::ColorModeIsColor(color_mode);
+  if (is_color.has_value()) {
+    mode_string = is_color.value() ? CUPS_PRINT_COLOR_MODE_COLOR
+                                   : CUPS_PRINT_COLOR_MODE_MONOCHROME;
+  } else {
+    mode_string = nullptr;
   }
 
   return mode_string;
@@ -94,6 +72,52 @@ base::StringPiece GetCollateString(bool collate) {
   return collate ? kCollated : kUncollated;
 }
 
+// This enum is used for UMA. It shouldn't be renumbered and numeric values
+// shouldn't be reused.
+enum class Attribute {
+  kConfirmationSheetPrint = 0,
+  kFinishings = 1,
+  kIppAttributeFidelity = 2,
+  kJobName = 3,
+  kJobPriority = 4,
+  kJobSheets = 5,
+  kMultipleDocumentHandling = 6,
+  kOrientationRequested = 7,
+  kOutputBin = 8,
+  kPrintQuality = 9,
+  kMaxValue = kPrintQuality,
+};
+
+using AttributeMap = std::map<base::StringPiece, Attribute>;
+
+AttributeMap GenerateAttributeMap() {
+  AttributeMap result;
+  result.emplace("confirmation-sheet-print",
+                 Attribute::kConfirmationSheetPrint);
+  result.emplace("finishings", Attribute::kFinishings);
+  result.emplace("ipp-attribute-fidelity", Attribute::kIppAttributeFidelity);
+  result.emplace("job-name", Attribute::kJobName);
+  result.emplace("job-priority", Attribute::kJobPriority);
+  result.emplace("job-sheets", Attribute::kJobSheets);
+  result.emplace("multiple-document-handling",
+                 Attribute::kMultipleDocumentHandling);
+  result.emplace("orientation-requested", Attribute::kOrientationRequested);
+  result.emplace("output-bin", Attribute::kOutputBin);
+  result.emplace("print-quality", Attribute::kPrintQuality);
+  return result;
+}
+
+void ReportEnumUsage(const std::string& attribute_name) {
+  static const base::NoDestructor<AttributeMap> attributes(
+      GenerateAttributeMap());
+  auto it = attributes->find(attribute_name);
+  if (it == attributes->end())
+    return;
+
+  base::UmaHistogramEnumeration("Printing.CUPS.IppAttributes", it->second);
+}
+
+// This records UMA for advanced attributes usage, so only call once per job.
 std::vector<ScopedCupsOption> SettingsToCupsOptions(
     const PrintSettings& settings) {
   const char* sides = nullptr;
@@ -130,6 +154,37 @@ std::vector<ScopedCupsOption> SettingsToCupsOptions(
     options.push_back(ConstructOption(kIppPinEncryption, kPinEncryptionNone));
   }
 
+  if (base::FeatureList::IsEnabled(printing::kAdvancedPpdAttributes)) {
+    size_t regular_attr_count = options.size();
+    std::map<std::string, std::vector<std::string>> multival;
+    for (const auto& setting : settings.advanced_settings()) {
+      const std::string& key = setting.first;
+      const std::string& value = setting.second.GetString();
+      if (value.empty())
+        continue;
+
+      // Check for multivalue enum ("attribute/value").
+      size_t pos = key.find('/');
+      if (pos == std::string::npos) {
+        // Regular value.
+        ReportEnumUsage(key);
+        options.push_back(ConstructOption(key, value));
+        continue;
+      }
+      // Store selected enum values.
+      if (value == kOptionTrue)
+        multival[key.substr(0, pos)].push_back(key.substr(pos + 1));
+    }
+    // Pass multivalue enums as comma-separated lists.
+    for (const auto& it : multival) {
+      ReportEnumUsage(it.first);
+      options.push_back(
+          ConstructOption(it.first, base::JoinString(it.second, ",")));
+    }
+    base::UmaHistogramCounts1000("Printing.CUPS.IppAttributesUsed",
+                                 options.size() - regular_attr_count);
+  }
+
   return options;
 }
 
@@ -162,6 +217,41 @@ PrintingContextChromeos::PrintingContextChromeos(Delegate* delegate)
 
 PrintingContextChromeos::~PrintingContextChromeos() {
   ReleaseContext();
+}
+
+// static
+base::Optional<bool> PrintingContextChromeos::ColorModeIsColor(int color_mode) {
+  switch (color_mode) {
+    case COLOR:
+    case CMYK:
+    case CMY:
+    case KCMY:
+    case CMY_K:
+    case RGB:
+    case RGB16:
+    case RGBA:
+    case COLORMODE_COLOR:
+    case BROTHER_CUPS_COLOR:
+    case BROTHER_BRSCRIPT3_COLOR:
+    case HP_COLOR_COLOR:
+    case PRINTOUTMODE_NORMAL:
+    case PROCESSCOLORMODEL_CMYK:
+    case PROCESSCOLORMODEL_RGB:
+      return true;
+    case GRAY:
+    case BLACK:
+    case GRAYSCALE:
+    case COLORMODE_MONOCHROME:
+    case BROTHER_CUPS_MONO:
+    case BROTHER_BRSCRIPT3_BLACK:
+    case HP_COLOR_BLACK:
+    case PRINTOUTMODE_NORMAL_GRAY:
+    case PROCESSCOLORMODEL_GREYSCALE:
+      return false;
+    default:
+      LOG(WARNING) << "Unrecognized color mode.";
+      return base::nullopt;
+  }
 }
 
 void PrintingContextChromeos::AskUserForSettings(

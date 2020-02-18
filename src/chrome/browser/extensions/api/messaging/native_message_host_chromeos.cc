@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
+#include "chrome/browser/chromeos/drive/drivefs_native_message_host.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_messaging.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,7 +44,8 @@ const char* const kEchoHostOrigins[] = {
 
 class EchoHost : public NativeMessageHost {
  public:
-  static std::unique_ptr<NativeMessageHost> Create() {
+  static std::unique_ptr<NativeMessageHost> Create(
+      content::BrowserContext* browser_context) {
     return std::unique_ptr<NativeMessageHost>(new EchoHost());
   }
 
@@ -90,10 +92,12 @@ struct BuiltInHost {
   const char* const name;
   const char* const* const allowed_origins;
   int allowed_origins_count;
-  std::unique_ptr<NativeMessageHost> (*create_function)();
+  std::unique_ptr<NativeMessageHost> (*create_function)(
+      content::BrowserContext*);
 };
 
-std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
+std::unique_ptr<NativeMessageHost> CreateIt2MeHost(
+    content::BrowserContext* browser_context) {
   return remoting::CreateIt2MeNativeMessagingHostForChromeOS(
       base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
       base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
@@ -129,6 +133,10 @@ static const BuiltInHost kBuiltInHost[] = {
      chromeos::kWilcoDtcSupportdHostOrigins,
      chromeos::kWilcoDtcSupportdHostOriginsSize,
      &chromeos::CreateExtensionOwnedWilcoDtcSupportdMessageHost},
+    {drive::kDriveFsNativeMessageHostName,
+     drive::kDriveFsNativeMessageHostOrigins,
+     drive::kDriveFsNativeMessageHostOriginsSize,
+     &drive::CreateDriveFsNativeMessageHost},
 };
 
 bool MatchesSecurityOrigin(const BuiltInHost& host,
@@ -157,7 +165,7 @@ std::unique_ptr<NativeMessageHost> NativeMessageHost::Create(
     std::string name(host.name);
     if (name == native_host_name) {
       if (MatchesSecurityOrigin(host, source_extension_id)) {
-        return (*host.create_function)();
+        return (*host.create_function)(browser_context);
       }
       *error = kForbiddenError;
       return nullptr;

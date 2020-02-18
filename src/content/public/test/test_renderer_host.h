@@ -35,6 +35,12 @@ namespace display {
 class Screen;
 }
 
+namespace net {
+namespace test {
+class MockNetworkChangeNotifier;
+}
+}  // namespace net
+
 namespace ui {
 class ScopedOleInitializer;
 }
@@ -85,9 +91,6 @@ class RenderFrameHostTester {
   // Gives tests access to RenderFrameHostImpl::OnDetach. Destroys |this|.
   virtual void Detach() = 0;
 
-  // Simulates a navigation stopping in the RenderFrameHost.
-  virtual void SimulateNavigationStop() = 0;
-
   // Calls OnBeforeUnloadACK on this RenderFrameHost with the given parameter.
   virtual void SendBeforeUnloadACK(bool proceed) = 0;
 
@@ -96,12 +99,12 @@ class RenderFrameHostTester {
   virtual void SimulateSwapOutACK() = 0;
 
   // Set the feature policy header for the RenderFrameHost for test. Currently
-  // this is limited to setting a whitelist for a single feature. This function
+  // this is limited to setting an allowlist for a single feature. This function
   // can be generalized as needed. Setting a header policy should only be done
   // once per navigation of the RFH.
   virtual void SimulateFeaturePolicyHeader(
       blink::mojom::FeaturePolicyFeature feature,
-      const std::vector<url::Origin>& whitelist) = 0;
+      const std::vector<url::Origin>& allowlist) = 0;
 
   // Gets all the console messages requested via
   // RenderFrameHost::AddMessageToConsole in this frame.
@@ -154,7 +157,7 @@ class RenderViewHostTestEnabler {
 #if defined(OS_ANDROID)
   std::unique_ptr<display::Screen> screen_;
 #endif
-  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
+  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
   std::unique_ptr<MockRenderProcessHostFactory> rph_factory_;
   std::unique_ptr<TestRenderViewHostFactory> rvh_factory_;
   std::unique_ptr<TestRenderFrameHostFactory> rfh_factory_;
@@ -260,6 +263,15 @@ class RenderViewHostTestHarness : public testing::Test {
   std::unique_ptr<BrowserTaskEnvironment> task_environment_;
 
   std::unique_ptr<ContentBrowserSanityChecker> sanity_checker_;
+
+  // TODO(crbug.com/1011275): This is a temporary work around to fix flakiness
+  // on tests. The default behavior of the network stack is to allocate a
+  // leaking SystemDnsConfigChangeNotifier. This holds on to a set of
+  // FilePathWatchers on Posix and ObjectWatchers on Windows that outlive
+  // the message queues of the task_environment_ and may post messages after
+  // their death.
+  std::unique_ptr<net::test::MockNetworkChangeNotifier>
+      network_change_notifier_;
 
   std::unique_ptr<BrowserContext> browser_context_;
 

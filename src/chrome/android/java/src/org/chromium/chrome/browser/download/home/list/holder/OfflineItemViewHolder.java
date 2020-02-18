@@ -4,30 +4,38 @@
 
 package org.chromium.chrome.browser.download.home.list.holder;
 
-import android.graphics.Bitmap;
+import static org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu.buildMenuListItem;
+
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.CallSuper;
 import android.view.View;
 import android.widget.ImageView;
+
+import androidx.annotation.CallSuper;
 
 import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListProperties;
+import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.chrome.browser.download.home.list.view.AsyncImageView;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.view.SelectionView;
-import org.chromium.chrome.browser.ui.widget.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenu;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButtonDelegate;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Helper that supports all typical actions for OfflineItems.
  */
-class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton.Delegate {
+class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButtonDelegate {
     /** The {@link View} that visually represents the selected state of this list item. */
     protected final SelectionView mSelectionView;
 
@@ -43,6 +51,7 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
 
     // flag to hide rename list menu option for offline pages
     private boolean mCanRename;
+    private boolean mCanShare;
 
     /**
      * Creates a new instance of a {@link MoreButtonViewHolder}.
@@ -99,17 +108,24 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
 
         // Push 'thumbnail' state.
         if (mThumbnail != null) {
-            mThumbnail.setImageResizer(
-                    new BitmapResizer(mThumbnail, Filters.fromOfflineItem(offlineItem)));
-            mThumbnail.setAsyncImageDrawable((consumer, width, height) -> {
-                return properties.get(ListProperties.PROVIDER_VISUALS)
-                        .getVisuals(offlineItem, width, height, (id, visuals) -> {
-                            consumer.onResult(onThumbnailRetrieved(visuals));
-                        });
-            }, offlineItem.id);
+            if (offlineItem.ignoreVisuals) {
+                mThumbnail.setVisibility(View.GONE);
+                mThumbnail.setImageDrawable(null);
+            } else {
+                mThumbnail.setVisibility(View.VISIBLE);
+                mThumbnail.setImageResizer(
+                        new BitmapResizer(mThumbnail, Filters.fromOfflineItem(offlineItem)));
+                mThumbnail.setAsyncImageDrawable((consumer, width, height) -> {
+                    return properties.get(ListProperties.PROVIDER_VISUALS)
+                            .getVisuals(offlineItem, width, height, (id, visuals) -> {
+                                consumer.onResult(onThumbnailRetrieved(visuals));
+                            });
+                }, offlineItem.id);
+            }
         }
 
         mCanRename = mRenameCallback != null && offlineItem.canRename;
+        mCanShare = UiUtils.canShare(offlineItem);
     }
 
     @Override
@@ -117,6 +133,25 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
         // This should cancel any outstanding async request as well as drop any currently visible
         // bitmap.
         mThumbnail.setImageDrawable(null);
+    }
+
+    @Override
+    public ListMenu getListMenu() {
+        ModelList listItems = new ModelList();
+        if (mCanShare) listItems.add(buildMenuListItem(R.string.share, 0, 0));
+        if (mCanRename) listItems.add(buildMenuListItem(R.string.rename, 0, 0));
+        listItems.add(buildMenuListItem(R.string.delete, 0, 0));
+        ListMenu.Delegate delegate = (model) -> {
+            int textId = model.get(ListMenuItemProperties.TITLE_ID);
+            if (textId == R.string.share) {
+                if (mShareCallback != null) mShareCallback.run();
+            } else if (textId == R.string.delete) {
+                if (mDeleteCallback != null) mDeleteCallback.run();
+            } else if (textId == R.string.rename) {
+                if (mRenameCallback != null) mRenameCallback.run();
+            }
+        };
+        return new BasicListMenu(mMore.getContext(), listItems, delegate);
     }
 
     /**
@@ -131,32 +166,6 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
     protected Drawable onThumbnailRetrieved(OfflineItemVisuals visuals) {
         if (visuals == null || visuals.icon == null) return null;
         return new BitmapDrawable(itemView.getResources(), visuals.icon);
-    }
-
-    // ListMenuButton.Delegate implementation.
-    @Override
-    public ListMenuButton.Item[] getItems() {
-        if (mCanRename) {
-            return new ListMenuButton.Item[] {
-                    new ListMenuButton.Item(itemView.getContext(), R.string.share, true),
-                    new ListMenuButton.Item(itemView.getContext(), R.string.rename, true),
-                    new ListMenuButton.Item(itemView.getContext(), R.string.delete, true)};
-        } else {
-            return new ListMenuButton.Item[] {
-                    new ListMenuButton.Item(itemView.getContext(), R.string.share, true),
-                    new ListMenuButton.Item(itemView.getContext(), R.string.delete, true)};
-        }
-    }
-
-    @Override
-    public void onItemSelected(ListMenuButton.Item item) {
-        if (item.getTextId() == R.string.share) {
-            if (mShareCallback != null) mShareCallback.run();
-        } else if (item.getTextId() == R.string.delete) {
-            if (mDeleteCallback != null) mDeleteCallback.run();
-        } else if (item.getTextId() == R.string.rename) {
-            if (mRenameCallback != null) mRenameCallback.run();
-        }
     }
 
     private boolean shouldPushSelection(PropertyModel properties, ListItem item) {
@@ -186,25 +195,33 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
 
         @Override
         public void maybeResizeImage(Drawable drawable) {
-            if (!(drawable instanceof BitmapDrawable)) return;
+            Matrix matrix = null;
 
-            Matrix matrix = upscaleBitmapIfNecessary(((BitmapDrawable) drawable).getBitmap());
+            if (drawable instanceof BitmapDrawable) {
+                matrix = upscaleBitmapIfNecessary((BitmapDrawable) drawable);
+            }
+
             mImageView.setImageMatrix(matrix);
             mImageView.setScaleType(
                     matrix == null ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.MATRIX);
         }
 
-        private Matrix upscaleBitmapIfNecessary(Bitmap bitmap) {
-            if (bitmap == null) return null;
+        private Matrix upscaleBitmapIfNecessary(BitmapDrawable drawable) {
+            if (drawable == null) return null;
 
-            float scale = computeScaleFactor(bitmap);
+            int width = drawable.getBitmap().getWidth();
+            int height = drawable.getBitmap().getHeight();
+
+            float scale = computeScaleFactor(width, height);
             if (scale <= 1.f) return null;
 
             // Compute the required matrix to scale and center the bitmap.
+            float dx = (mImageView.getWidth() - width * scale) / 2.f;
+            float dy = (mImageView.getHeight() - height * scale) / 2.f;
+
             Matrix matrix = new Matrix();
-            matrix.setScale(scale, scale);
-            matrix.postTranslate((mImageView.getWidth() - scale * bitmap.getWidth()) * 0.5f,
-                    (mImageView.getHeight() - scale * bitmap.getHeight()) * 0.5f);
+            matrix.postScale(scale, scale);
+            matrix.postTranslate(dx, dy);
             return matrix;
         }
 
@@ -213,9 +230,9 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
          * dimensions. The scaled bitmap will be centered inside the view. No scaling if the
          * dimensions are comparable.
          */
-        private float computeScaleFactor(Bitmap bitmap) {
-            float widthRatio = (float) mImageView.getWidth() / bitmap.getWidth();
-            float heightRatio = (float) mImageView.getHeight() / bitmap.getHeight();
+        private float computeScaleFactor(int width, int height) {
+            float widthRatio = (float) mImageView.getWidth() / width;
+            float heightRatio = (float) mImageView.getHeight() / height;
 
             UmaUtils.recordImageViewRequiredStretch(widthRatio, heightRatio, mFilter);
             if (Math.max(widthRatio, heightRatio) < IMAGE_VIEW_MAX_SCALE_FACTOR) return 1.f;

@@ -77,7 +77,7 @@ class FormSaverImplTest : public testing::Test {
 
  protected:
   // For the MockPasswordStore.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<StrictMock<MockPasswordStore>> mock_store_;
   FormSaverImpl form_saver_;
 
@@ -351,7 +351,7 @@ TEST_P(FormSaverImplSaveTest, FormDataSanitized) {
   EXPECT_TRUE(saved_field.css_classes.empty());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          FormSaverImplSaveTest,
                          ::testing::Values(SaveOperation::kSave,
                                            SaveOperation::kUpdate,

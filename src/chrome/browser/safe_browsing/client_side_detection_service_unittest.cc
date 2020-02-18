@@ -58,7 +58,7 @@ class MockModelLoader : public ModelLoader {
 
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
-  MockClientSideDetectionService() : ClientSideDetectionService(NULL) {}
+  MockClientSideDetectionService() : ClientSideDetectionService(nullptr) {}
 
   ~MockClientSideDetectionService() override {}
 
@@ -127,7 +127,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
                    int net_error) {
     if (net_error != net::OK) {
       test_url_loader_factory_.AddResponse(
-          url, network::ResourceResponseHead(), std::string(),
+          url, network::mojom::URLResponseHead::New(), std::string(),
           network::URLLoaderCompletionStatus(net_error));
       return;
     }

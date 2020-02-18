@@ -13,8 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/data_saver/data_saver_top_host_provider.h"
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -26,6 +24,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/offline_page_item.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
@@ -283,8 +282,6 @@ void PreviewsUITabHelper::DidStartNavigation(
     return;
 
   MaybeRecordPreviewReload(navigation_handle);
-
-  DataSaverTopHostProvider::MaybeUpdateTopHostBlacklist(navigation_handle);
 
   MaybeShowInfoBar(navigation_handle);
 }

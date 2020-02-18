@@ -6,6 +6,7 @@
 #define ASH_APP_LIST_VIEWS_APP_LIST_VIEW_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
@@ -36,17 +37,6 @@ class ImplicitAnimationObserver;
 }  // namespace ui
 
 namespace ash {
-class PaginationModel;
-
-FORWARD_DECLARE_TEST(AppListControllerImplTest,
-                     CheckAppListViewBoundsWhenVKeyboardEnabled);
-FORWARD_DECLARE_TEST(AppListControllerImplTest,
-                     CheckAppListViewBoundsWhenDismissVKeyboard);
-FORWARD_DECLARE_TEST(AppListControllerImplMetricsTest,
-                     PresentationTimeRecordedForDragInTabletMode);
-}  // namespace ash
-
-namespace app_list {
 class AppsContainerView;
 class ApplicationDragAndDropHost;
 class AppListBackgroundShieldView;
@@ -55,16 +45,20 @@ class AppListMainView;
 class AppListModel;
 class AppsGridView;
 class BoundsAnimationObserver;
+class PaginationModel;
 class SearchBoxView;
 class SearchModel;
 
-namespace {
+FORWARD_DECLARE_TEST(AppListControllerImplTest,
+                     CheckAppListViewBoundsWhenVKeyboardEnabled);
+FORWARD_DECLARE_TEST(AppListControllerImplTest,
+                     CheckAppListViewBoundsWhenDismissVKeyboard);
+FORWARD_DECLARE_TEST(AppListControllerImplMetricsTest,
+                     PresentationTimeRecordedForDragInTabletMode);
 
 // The fraction of app list height that the app list must be released at in
 // order to transition to the next state.
 constexpr int kAppListThresholdDenominator = 3;
-
-}  // namespace
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
@@ -111,8 +105,12 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // The snapping thresholds for dragging app list from shelf in laptop mode,
   // measured in DIPs.
-  static constexpr int kDragSnapToClosedThreshold = 144;
+  static constexpr int kDragSnapToClosedThreshold = 120;
   static constexpr int kDragSnapToPeekingThreshold = 561;
+
+  // The velocity the app list must be dragged from the shelf in order to
+  // transition to the next state, measured in DIPs/event.
+  static constexpr int kDragVelocityFromShelfThreshold = 120;
 
   // The velocity the app list must be dragged in order to transition to the
   // next state, measured in DIPs/event.
@@ -133,8 +131,15 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   static void SetShortAnimationForTesting(bool enabled);
   static bool ShortAnimationsForTesting();
 
+  // Returns the app list transition progress value associated with a app list
+  // view state. This matches the values GetAppListTransitionProgress() is
+  // expected to return when app list view is exactly in the provided state.
+  static float GetTransitionProgressForState(ash::AppListViewState state);
+
   // Initializes the view, only done once per session.
-  void InitView(bool is_tablet_mode, gfx::NativeView parent);
+  void InitView(bool is_tablet_mode,
+                gfx::NativeView parent,
+                base::RepeatingClosure on_bounds_animation_ended_callback);
 
   // Initializes the contents of the view.
   void InitContents(bool is_tablet_mode);
@@ -148,7 +153,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Sets the state of all child views to be re-shown, then shows the view.
   void Show(bool is_side_shelf, bool is_tablet_mode);
 
-  // If |drag_and_drop_host| is not NULL it will be called upon drag and drop
+  // If |drag_and_drop_host| is not nullptr it will be called upon drag and drop
   // operations outside the application list. This has to be called after
   // Initialize was called since the app list object needs to exist so that
   // it can set the host.
@@ -251,10 +256,32 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Returns current app list height above display bottom.
   int GetCurrentAppListHeight() const;
 
+  // Flags that can be passed to GetAppListTransitionProgress(). For more
+  // details, see GetAppListTransitionProgress() documentation.
+  static constexpr int kProgressFlagNone = 0;
+  static constexpr int kProgressFlagSearchResults = 1;
+  static constexpr int kProgressFlagWithTransform = 1 << 1;
+
   // The progress of app list height transitioning from closed to fullscreen
   // state. [0.0, 1.0] means the progress between closed and peeking state,
   // while [1.0, 2.0] means the progress between peeking and fullscreen state.
-  float GetAppListTransitionProgress() const;
+  //
+  // By default, this calculates progress for drag operation while app list
+  // is AppListState::kApps state, relative to the current app list view bounds.
+  // The |flags| argument can be used to amend this behavior:
+  // *   Use |kProgressFlagNone| for default behavior.
+  // *   If |kProgressFlagSearchResult| flag is set, the progress will be
+  //     calculated using kHalf state height as baseline. This should be used
+  //     when calculating contents layout for search results state.
+  // *   If |kProgressFlagWithTransform| is set, the progress will be calculated
+  //     for the app list height offset by the current app list view transform.
+  //     This should be used when setting up transform animations for views
+  //     whose bounds depend on the app list height - in particular when the
+  //     animation is implemented by setting up target bounds first, and then
+  //     animating view layer transform from one that matches current bounds to
+  //     an identity transform. This flag is needed to properly calculate the
+  //     initial animation transform.
+  float GetAppListTransitionProgress(int flags) const;
 
   // Returns the height of app list in fullscreen state.
   int GetFullscreenStateHeight() const;
@@ -295,6 +322,11 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Moves the AppListView off screen and calls a layout if needed.
   void OnBoundsAnimationCompleted();
 
+  // Returns the expected tile bounds in screen coordinates the provided app
+  // grid item ID , if the item is in the first apps grid page. Otherwise, it
+  // returns 1x1 rectangle in the apps grid center.
+  gfx::Rect GetItemScreenBoundsInFirstGridPage(const std::string& id) const;
+
   gfx::NativeView parent_window() const { return parent_window_; }
 
   ash::AppListViewState app_list_state() const { return app_list_state_; }
@@ -331,6 +363,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   const AppListConfig& GetAppListConfig() const;
 
   SkColor GetAppListBackgroundShieldColorForTest();
+
+  // Returns true if the Embedded Assistant UI is currently being shown.
+  bool IsShowingEmbeddedAssistantUI() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplTest,
@@ -371,6 +406,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Converts |state| to the fullscreen equivalent.
   void ConvertAppListStateToFullscreenEquivalent(ash::AppListViewState* state);
 
+  // Gets the animation duration that transition to |taget_state| should have.
+  base::TimeDelta GetStateTransitionAnimationDuration(
+      ash::AppListViewState target_state);
+
   // Kicks off the proper animation for the state change. If an animation is
   // in progress it will be interrupted.
   void StartAnimationForState(ash::AppListViewState new_state);
@@ -387,6 +426,11 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Creates an Accessibility Event if the state transition warrants one.
   void MaybeCreateAccessibilityEvent(ash::AppListViewState new_state);
+
+  // Ensures that the app list widget bounds are set to the preferred bounds for
+  // the current app list view state - intended to be called when the
+  // display bounds available to the app list view change.
+  void EnsureWidgetBoundsMatchCurrentState();
 
   // Returns the remaining vertical distance for the bounds movement
   // animation.
@@ -437,17 +481,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   gfx::Rect GetPreferredWidgetBoundsForState(ash::AppListViewState state);
 
   // Updates y position of |app_list_background_shield_| based on the
-  // |app_list_state_| and |is_in_drag_|.
-  void UpdateAppListBackgroundYPosition();
-
-  // Returns whether it should update child views' position and opacity in each
-  // animation frame.
-  bool ShouldUpdateChildViewsDuringAnimation(
-      ash::AppListViewState target_state) const;
-
-  // Returns whether AppList's rounded corners should be hidden based on
-  // |bounds|.
-  bool ShouldHideRoundedCorners(const gfx::Rect& bounds) const;
+  // |state| and |is_in_drag_|.
+  void UpdateAppListBackgroundYPosition(ash::AppListViewState state);
 
   AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
   AppListModel* const model_;        // Not Owned.
@@ -511,15 +546,16 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // An observer to notify AppListView of bounds animation completion.
   std::unique_ptr<BoundsAnimationObserver> bounds_animation_observer_;
 
-  // For UMA and testing. If non-null, triggered when the app list is painted.
-  base::Closure next_paint_callback_;
-
   // Metric reporter for state change animations.
   const std::unique_ptr<StateAnimationMetricsReporter>
       state_animation_metrics_reporter_;
 
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
+
+  // Whether the app list has been translated up to ensure app list folder
+  // view header is visible when onscreen keyboard is shown.
+  bool offset_to_show_folder_with_onscreen_keyboard_ = false;
 
   // View used to announce:
   // 1. state transition for peeking and fullscreen
@@ -530,23 +566,18 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Records the presentation time for app launcher dragging.
   std::unique_ptr<ash::PresentationTimeRecorder> presentation_time_recorder_;
 
-  // Update child views' position and opacity in each animation frame when it is
-  // true. The padding between child views is affected by the height of
-  // AppListView. In the normal animation, child views' location is only updated
-  // at the end of animation. As a result, the dramatic change in padding leads
-  // to animation jank. However, updating child views in each animation frame is
-  // expensive. So it is only applied in the limited scenarios.
-  bool update_childview_each_frame_ = false;
-
   // If set, the app list config that should be used within the app list view
   // instead of the default instance.
   std::unique_ptr<AppListConfig> app_list_config_;
+
+  // Callback which is run when the bounds animation of the widget is ended.
+  base::RepeatingClosure on_bounds_animation_ended_callback_;
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_APP_LIST_VIEW_H_

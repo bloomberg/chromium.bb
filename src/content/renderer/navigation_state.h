@@ -33,7 +33,6 @@ class CONTENT_EXPORT NavigationState {
   static std::unique_ptr<NavigationState> CreateBrowserInitiated(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
-      base::TimeTicks time_commit_requested,
       mojom::FrameNavigationControl::CommitNavigationCallback callback,
       mojom::NavigationClient::CommitNavigationCallback
           per_navigation_mojo_interface_callback,
@@ -57,11 +56,9 @@ class CONTENT_EXPORT NavigationState {
   const mojom::CommitNavigationParams& commit_params() const {
     return *commit_params_;
   }
-  bool request_committed() const { return request_committed_; }
   bool uses_per_navigation_mojo_interface() const {
     return navigation_client_.get();
   }
-  void set_request_committed(bool value) { request_committed_ = value; }
   void set_was_within_same_document(bool value) {
     was_within_same_document_ = value;
   }
@@ -72,10 +69,6 @@ class CONTENT_EXPORT NavigationState {
 
   void set_transition_type(ui::PageTransition transition) {
     common_params_->transition = transition;
-  }
-
-  base::TimeTicks time_commit_requested() const {
-    return time_commit_requested_;
   }
 
   // Only used when PerNavigationMojoInterface is enabled.
@@ -98,7 +91,6 @@ class CONTENT_EXPORT NavigationState {
   NavigationState(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
-      base::TimeTicks time_commit_requested,
       bool is_content_initiated,
       content::mojom::FrameNavigationControl::CommitNavigationCallback callback,
       content::mojom::NavigationClient::CommitNavigationCallback
@@ -106,7 +98,6 @@ class CONTENT_EXPORT NavigationState {
       std::unique_ptr<NavigationClient> navigation_client,
       bool was_initiated_in_this_frame);
 
-  bool request_committed_;
   bool was_within_same_document_;
 
   // Indicates whether the navigation was initiated by the same RenderFrame
@@ -134,9 +125,6 @@ class CONTENT_EXPORT NavigationState {
   // FrameLoader has committedFirstRealDocumentLoad as a replacement. (Added for
   // http://crbug.com/178380).
   mojom::CommitNavigationParamsPtr commit_params_;
-
-  // Time when RenderFrameImpl::CommitNavigation() is called.
-  base::TimeTicks time_commit_requested_;
 
   // The NavigationClient interface gives control over the navigation ongoing in
   // the browser process.

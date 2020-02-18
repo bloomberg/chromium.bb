@@ -63,6 +63,10 @@ int SBThreatTypeToJavaThreatType(const SBThreatType& sb_threat_type) {
       return safe_browsing::JAVA_THREAT_TYPE_POTENTIALLY_HARMFUL_APPLICATION;
     case SB_THREAT_TYPE_URL_UNWANTED:
       return safe_browsing::JAVA_THREAT_TYPE_UNWANTED_SOFTWARE;
+    case SB_THREAT_TYPE_CSD_WHITELIST:
+      return safe_browsing::JAVA_THREAT_TYPE_CSD_ALLOWLIST;
+    case SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST:
+      return safe_browsing::JAVA_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST;
     default:
       NOTREACHED();
       return 0;
@@ -118,8 +122,6 @@ void OnUrlCheckDoneOnIOThread(jlong callback_id,
                               jint result_status,
                               const std::string metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << __FUNCTION__ << ": check: " << callback_id
-           << " status: " << result_status << " metadata: [" << metadata << "]";
 
   PendingCallbacksMap* pending_callbacks = GetPendingCallbacksMapOnIOThread();
   bool found = base::Contains(*pending_callbacks, callback_id);
@@ -137,7 +139,6 @@ void OnUrlCheckDoneOnIOThread(jlong callback_id,
       CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
 
       ReportUmaResult(UMA_STATUS_TIMEOUT);
-      DVLOG(1) << "Safe browsing API call timed-out";
     } else {
       CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
 
@@ -162,9 +163,6 @@ void OnUrlCheckDoneOnIOThread(jlong callback_id,
     ThreatMetadata threat_metadata;
     ReportUmaResult(
         ParseJsonFromGMSCore(metadata, &worst_threat, &threat_metadata));
-    if (worst_threat != SB_THREAT_TYPE_SAFE) {
-      DVLOG(1) << "Check " << callback_id << " was a MATCH";
-    }
 
     std::move(*callback).Run(worst_threat, threat_metadata);
   }
@@ -195,10 +193,6 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
   TRACE_EVENT1("safe_browsing", "SafeBrowsingApiHandlerBridge::OnUrlCheckDone",
                "metadata", metadata_str);
 
-  DVLOG(1) << "OnURLCheckDone invoked for check " << callback_id
-           << " with status=" << result_status << " and metadata=["
-           << metadata_str << "]";
-
   base::PostTask(FROM_HERE, {BrowserThread::IO},
                  base::BindOnce(&OnUrlCheckDoneOnIOThread, callback_id,
                                 result_status, metadata_str));
@@ -215,12 +209,26 @@ SafeBrowsingApiHandlerBridge::~SafeBrowsingApiHandlerBridge() {}
 bool SafeBrowsingApiHandlerBridge::CheckApiIsSupported() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!checked_api_support_) {
-    DVLOG(1) << "Checking API support.";
     j_api_handler_ = base::android::ScopedJavaGlobalRef<jobject>(
         Java_SafeBrowsingApiBridge_create(AttachCurrentThread()));
     checked_api_support_ = true;
   }
   return j_api_handler_.obj() != nullptr;
+}
+
+bool SafeBrowsingApiHandlerBridge::StartAllowlistCheck(
+    const GURL& url,
+    const SBThreatType& sb_threat_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!CheckApiIsSupported()) {
+    return false;
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
+  int j_threat_type = SBThreatTypeToJavaThreatType(sb_threat_type);
+  return Java_SafeBrowsingApiBridge_startAllowlistLookup(env, j_api_handler_,
+                                                         j_url, j_threat_type);
 }
 
 std::string SafeBrowsingApiHandlerBridge::GetSafetyNetId() {
@@ -235,7 +243,6 @@ std::string SafeBrowsingApiHandlerBridge::GetSafetyNetId() {
         Java_SafeBrowsingApiBridge_getSafetyNetId(env, j_api_handler_);
     safety_net_id =
         jsafety_net_id ? ConvertJavaStringToUTF8(env, jsafety_net_id) : "";
-    DVLOG(1) << __FUNCTION__ << ": safety_net_id: " << safety_net_id;
   }
 
   return safety_net_id;
@@ -258,7 +265,6 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
   jlong callback_id = next_callback_id_++;
   GetPendingCallbacksMapOnIOThread()->insert(
       {callback_id, std::move(callback)});
-  DVLOG(1) << "Starting check " << callback_id << " for URL " << url;
 
   DCHECK(!threat_types.empty());
 
@@ -269,6 +275,16 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
 
   Java_SafeBrowsingApiBridge_startUriLookup(env, j_api_handler_, callback_id,
                                             j_url, j_threat_types);
+}
+
+bool SafeBrowsingApiHandlerBridge::StartCSDAllowlistCheck(const GURL& url) {
+  return StartAllowlistCheck(url, safe_browsing::SB_THREAT_TYPE_CSD_WHITELIST);
+}
+
+bool SafeBrowsingApiHandlerBridge::StartHighConfidenceAllowlistCheck(
+    const GURL& url) {
+  return StartAllowlistCheck(
+      url, safe_browsing::SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST);
 }
 
 }  // namespace safe_browsing

@@ -28,6 +28,8 @@
 #ifndef DAV1D_HEADERS_H
 #define DAV1D_HEADERS_H
 
+#include <stddef.h>
+
 // Constants from Section 3. "Symbols and abbreviated terms"
 #define DAV1D_MAX_CDEF_STRENGTHS 8
 #define DAV1D_MAX_OPERATING_POINTS 32
@@ -38,6 +40,17 @@
 #define DAV1D_PRIMARY_REF_NONE 7
 #define DAV1D_REFS_PER_FRAME 7
 #define DAV1D_TOTAL_REFS_PER_FRAME (DAV1D_REFS_PER_FRAME + 1)
+
+enum Dav1dObuType {
+    DAV1D_OBU_SEQ_HDR   = 1,
+    DAV1D_OBU_TD        = 2,
+    DAV1D_OBU_FRAME_HDR = 3,
+    DAV1D_OBU_TILE_GRP  = 4,
+    DAV1D_OBU_METADATA  = 5,
+    DAV1D_OBU_FRAME     = 6,
+    DAV1D_OBU_REDUNDANT_FRAME_HDR = 7,
+    DAV1D_OBU_PADDING   = 15,
+};
 
 enum Dav1dTxfmMode {
     DAV1D_TX_4X4_ONLY,
@@ -176,6 +189,13 @@ typedef struct Dav1dMasteringDisplay {
     uint32_t min_luminance;
 } Dav1dMasteringDisplay;
 
+typedef struct Dav1dITUTT35 {
+    uint8_t  country_code;
+    uint8_t  country_code_extension_byte;
+    size_t   payload_size;
+    uint8_t *payload;
+} Dav1dITUTT35;
+
 typedef struct Dav1dSequenceHeader {
     /**
      * Stream profile, 0 for 8-10 bits/component 4:2:0 or monochrome;
@@ -289,7 +309,7 @@ typedef struct Dav1dLoopfilterModeRefDeltas {
 } Dav1dLoopfilterModeRefDeltas;
 
 typedef struct Dav1dFilmGrainData {
-    uint16_t seed;
+    unsigned seed;
     int num_y_points;
     uint8_t y_points[14][2 /* value, scaling */];
     int chroma_scaling_from_luma;

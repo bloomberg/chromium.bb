@@ -21,6 +21,7 @@ namespace content {
 
 class BackgroundSyncController;
 class ContentIndexProvider;
+class ClientHintsControllerDelegate;
 class DownloadManagerDelegate;
 class PermissionControllerDelegate;
 class ShellDownloadManagerDelegate;
@@ -53,13 +54,14 @@ class ShellBrowserContext : public BrowserContext {
   BrowserPluginGuestManager* GetGuestManager() override;
   storage::SpecialStoragePolicy* GetSpecialStoragePolicy() override;
   PushMessagingService* GetPushMessagingService() override;
+  StorageNotificationService* GetStorageNotificationService() override;
   SSLHostStateDelegate* GetSSLHostStateDelegate() override;
   PermissionControllerDelegate* GetPermissionControllerDelegate() override;
-  ClientHintsControllerDelegate* GetClientHintsControllerDelegate() override;
   BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   BackgroundSyncController* GetBackgroundSyncController() override;
   BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate() override;
   ContentIndexProvider* GetContentIndexProvider() override;
+  ClientHintsControllerDelegate* GetClientHintsControllerDelegate() override;
 
  protected:
   // Contains URLRequestContextGetter required for resource loading.

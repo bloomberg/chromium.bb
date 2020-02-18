@@ -7,11 +7,14 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_storage_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -75,7 +78,7 @@ void ChromeAppCacheService::DeleteOnCorrectThread() const {
     return;
   }
   if (BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
     return;
   }
   // Better to leak than crash on shutdown.

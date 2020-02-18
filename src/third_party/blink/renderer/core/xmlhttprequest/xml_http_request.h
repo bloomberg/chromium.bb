@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/document_parser_client.h"
@@ -175,12 +176,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   Document* GetDocument() const;
 
-  // Returns the SecurityOrigin of the isolated world if the XMLHttpRequest was
-  // created in an isolated world. Otherwise, returns the SecurityOrigin of the
-  // execution context.
-  const SecurityOrigin* GetSecurityOrigin() const;
-  SecurityOrigin* GetMutableSecurityOrigin();
-
   void DidSendData(uint64_t bytes_sent,
                    uint64_t total_bytes_to_be_sent) override;
   void DidReceiveResponse(uint64_t identifier,
@@ -300,7 +295,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   Member<XMLHttpRequestUpload> upload_;
 
   KURL url_;
-  network::mojom::blink::URLLoaderFactoryPtr blob_url_loader_factory_;
+  mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+      blob_url_loader_factory_;
   AtomicString method_;
   HTTPHeaderMap request_headers_;
   // Not converted to ASCII lowercase. Must be lowered later or compared

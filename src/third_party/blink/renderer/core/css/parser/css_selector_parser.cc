@@ -252,6 +252,8 @@ bool IsPseudoClassValidAfterPseudoElement(
     case CSSSelector::kPseudoSelection:
       return pseudo_class == CSSSelector::kPseudoWindowInactive;
     case CSSSelector::kPseudoPart:
+      return IsUserActionPseudoClass(pseudo_class) ||
+             pseudo_class == CSSSelector::kPseudoState;
     case CSSSelector::kPseudoWebKitCustomElement:
     case CSSSelector::kPseudoBlinkInternalElement:
       return IsUserActionPseudoClass(pseudo_class);
@@ -266,6 +268,11 @@ bool IsSimpleSelectorValidAfterPseudoElement(
   switch (compound_pseudo_element) {
     case CSSSelector::kPseudoUnknown:
       return true;
+    case CSSSelector::kPseudoAfter:
+    case CSSSelector::kPseudoBefore:
+      if (simple_selector.GetPseudoType() == CSSSelector::kPseudoMarker)
+        return true;
+      break;
     case CSSSelector::kPseudoContent:
       return simple_selector.Match() != CSSSelector::kPseudoElement;
     case CSSSelector::kPseudoSlotted:
@@ -522,10 +529,19 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
   bool has_arguments = token.GetType() == kFunctionToken;
   selector->UpdatePseudoType(value, *context_, has_arguments, context_->Mode());
 
-  if (selector->Match() == CSSSelector::kPseudoElement &&
-      (selector->GetPseudoType() == CSSSelector::kPseudoBefore ||
-       selector->GetPseudoType() == CSSSelector::kPseudoAfter)) {
-    context_->Count(WebFeature::kHasBeforeOrAfterPseudoElement);
+  if (selector->Match() == CSSSelector::kPseudoElement) {
+    switch (selector->GetPseudoType()) {
+      case CSSSelector::kPseudoBefore:
+      case CSSSelector::kPseudoAfter:
+        context_->Count(WebFeature::kHasBeforeOrAfterPseudoElement);
+        break;
+      case CSSSelector::kPseudoMarker:
+        context_->Count(WebFeature::kHasMarkerPseudoElement);
+        if (!RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled())
+          return nullptr;
+        break;
+      default:;
+    }
   }
 
   if (selector->Match() == CSSSelector::kPseudoElement &&
@@ -599,6 +615,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
       selector->AdoptSelectorVector(selector_vector);
       return selector;
     }
+    case CSSSelector::kPseudoState:
     case CSSSelector::kPseudoPart: {
       const CSSParserToken& ident = block.ConsumeIncludingWhitespace();
       if (ident.GetType() != kIdentToken || !block.AtEnd())

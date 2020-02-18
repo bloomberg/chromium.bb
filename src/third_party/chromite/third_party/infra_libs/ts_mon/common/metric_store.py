@@ -136,7 +136,7 @@ class _TargetFieldsValues(object):
     # Normalize the target fields by converting them into a hashable tuple.
     if not target_fields:
       target_fields = {}
-    key = tuple(sorted(target_fields.iteritems()))
+    key = tuple(sorted(target_fields.items()))
 
     return self._values[key]
 
@@ -148,7 +148,7 @@ class _TargetFieldsValues(object):
     self._get_target_values(target_fields)[fields] = value
 
   def iter_targets(self, default_target):
-    for target_fields, fields_values in self._values.iteritems():
+    for target_fields, fields_values in self._values.items():
       if target_fields:
         target = copy.copy(default_target)
         target.update({k: v for k, v in target_fields})
@@ -182,7 +182,7 @@ class InProcessMetricStore(MetricStore):
 
   def iter_field_values(self, name):
     return itertools.chain.from_iterable(
-        x.iteritems() for _, x
+        x.items() for _, x
         in self._entry(name).iter_targets(self._state.target))
 
   def get_all(self):
@@ -192,7 +192,7 @@ class InProcessMetricStore(MetricStore):
       values = copy.deepcopy(self._values)
     end_time = self._time_fn()
 
-    for name, metric_values in values.iteritems():
+    for name, metric_values in values.items():
       if name not in self._state.metrics:
         continue
       start_time = metric_values.start_time

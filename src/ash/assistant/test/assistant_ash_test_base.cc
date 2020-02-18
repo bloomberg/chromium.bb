@@ -4,107 +4,233 @@
 
 #include "ash/assistant/test/assistant_ash_test_base.h"
 
+#include <string>
+#include <utility>
+
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/views/app_list_main_view.h"
-#include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/assistant/assistant_main_view.h"
 #include "ash/app_list/views/assistant/assistant_page_view.h"
-#include "ash/app_list/views/contents_view.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "ash/session/session_controller_impl.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/run_loop.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/views/controls/textfield/textfield.h"
 
 namespace ash {
 
-AssistantAshTestBase::AssistantAshTestBase() = default;
+namespace {
+
+using chromeos::assistant::mojom::AssistantInteractionMetadata;
+using chromeos::assistant::mojom::AssistantInteractionType;
+
+gfx::Point GetPointInside(const views::View* view) {
+  return view->GetBoundsInScreen().CenterPoint();
+}
+
+bool CanProcessEvents(const views::View* view) {
+  const views::View* ancestor = view;
+  while (ancestor != nullptr) {
+    if (!ancestor->CanProcessEventsWithinSubtree())
+      return false;
+    ancestor = ancestor->parent();
+  }
+  return true;
+}
+
+void CheckCanProcessEvents(const views::View* view) {
+  if (!view->IsDrawn()) {
+    ADD_FAILURE()
+        << view->GetClassName()
+        << " can not process events because it is not drawn on screen.";
+  } else if (!CanProcessEvents(view)) {
+    ADD_FAILURE() << view->GetClassName() << " can not process events.";
+  }
+}
+
+}  // namespace
+
+AssistantAshTestBase::AssistantAshTestBase()
+    : test_api_(AssistantTestApi::Create()) {}
 
 AssistantAshTestBase::~AssistantAshTestBase() = default;
 
 void AssistantAshTestBase::SetUp() {
   scoped_feature_list_.InitAndEnableFeature(
-      app_list_features::kEnableEmbeddedAssistantUI);
+      app_list_features::kEnableAssistantLauncherUI);
+
+  // Enable virtual keyboard.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      keyboard::switches::kEnableVirtualKeyboard);
 
   AshTestBase::SetUp();
 
+  // Make the display big enough to hold the app list.
+  UpdateDisplay("1024x768");
+
   // Enable Assistant in settings.
-  Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetBoolean(
-      chromeos::assistant::prefs::kAssistantEnabled, true);
+  test_api_->EnableAssistant();
 
   // Cache controller.
   controller_ = Shell::Get()->assistant_controller();
   DCHECK(controller_);
 
   // At this point our Assistant service is ready for use.
-  // Indicate this by changing status from NOT_READY to STOPPED.
-  AssistantState::Get()->NotifyStatusChanged(
-      mojom::VoiceInteractionState::STOPPED);
+  // Indicate this by changing status from NOT_READY to READY.
+  AssistantState::Get()->NotifyStatusChanged(mojom::AssistantState::READY);
 
-  DisableAnimations();
+  test_api_->DisableAnimations();
+
+  // Wait for virtual keyboard to load.
+  SetTouchKeyboardEnabled(true);
 }
 
 void AssistantAshTestBase::TearDown() {
+  windows_.clear();
+  SetTouchKeyboardEnabled(false);
   AshTestBase::TearDown();
-  ReenableAnimations();
+  scoped_feature_list_.Reset();
 }
 
-const app_list::AssistantMainView* AssistantAshTestBase::main_view() const {
-  return page_view()->GetMainViewForTest();
+void AssistantAshTestBase::ShowAssistantUi(AssistantEntryPoint entry_point) {
+  if (entry_point == AssistantEntryPoint::kHotword) {
+    // If the Assistant is triggered via Hotword, the interaction is triggered
+    // by the Assistant service.
+    assistant_service()->StartVoiceInteraction();
+  } else {
+    // Otherwise, the interaction is triggered by a call to |ShowUi|.
+    controller_->ui_controller()->ShowUi(entry_point);
+  }
+  // Send all mojom messages to/from the assistant service.
+  base::RunLoop().RunUntilIdle();
 }
 
-const app_list::AssistantPageView* AssistantAshTestBase::page_view() const {
-  const int index = contents_view()->GetPageIndexForState(
-      ash::AppListState::kStateEmbeddedAssistant);
-  return static_cast<app_list::AssistantPageView*>(
-      contents_view()->GetPageView(index));
+void AssistantAshTestBase::CloseAssistantUi(AssistantExitPoint exit_point) {
+  controller_->ui_controller()->CloseUi(exit_point);
+}
+
+void AssistantAshTestBase::CloseLauncher() {
+  ash::Shell::Get()->app_list_controller()->ViewClosing();
+}
+
+void AssistantAshTestBase::SetTabletMode(bool enable) {
+  test_api_->SetTabletMode(enable);
+}
+
+void AssistantAshTestBase::SetPreferVoice(bool prefer_voice) {
+  test_api_->SetPreferVoice(prefer_voice);
+}
+
+bool AssistantAshTestBase::IsVisible() {
+  return test_api_->IsVisible();
+}
+
+views::View* AssistantAshTestBase::main_view() {
+  return test_api_->main_view();
+}
+
+views::View* AssistantAshTestBase::page_view() {
+  return test_api_->page_view();
+}
+
+views::View* AssistantAshTestBase::app_list_view() {
+  return test_api_->app_list_view();
 }
 
 void AssistantAshTestBase::MockAssistantInteractionWithResponse(
     const std::string& response_text) {
-  const std::string query = std::string("input text");
-
-  // |controller_| will blackhole any server response if it hasn't sent
-  // a request first, so we need to start by sending a request.
-  controller_->interaction_controller()->OnDialogPlateContentsCommitted(query);
-  // Then the server can start an interaction and return the response.
-  controller_->interaction_controller()->OnInteractionStarted(
-      chromeos::assistant::mojom::AssistantInteractionMetadata::New(
-          /*type=*/chromeos::assistant::mojom::AssistantInteractionType::kText,
-          /*query=*/query));
-  controller_->interaction_controller()->OnTextResponse(response_text);
-  controller_->interaction_controller()->OnInteractionFinished(
-      AssistantInteractionController::AssistantInteractionResolution::kNormal);
+  MockAssistantInteractionWithQueryAndResponse(/*query=*/"input text",
+                                               response_text);
 }
 
-void AssistantAshTestBase::ShowAssistantUi(AssistantEntryPoint entry_point) {
-  controller_->ui_controller()->ShowUi(entry_point);
+void AssistantAshTestBase::MockAssistantInteractionWithQueryAndResponse(
+    const std::string& query,
+    const std::string& response_text) {
+  SendQueryThroughTextField(query);
+  auto response = std::make_unique<InteractionResponse>();
+  response->AddTextResponse(response_text)
+      ->AddResolution(InteractionResponse::Resolution::kNormal);
+  assistant_service()->SetInteractionResponse(std::move(response));
+
+  base::RunLoop().RunUntilIdle();
 }
 
-const app_list::ContentsView* AssistantAshTestBase::contents_view() const {
-  auto* app_list_view =
-      Shell::Get()->app_list_controller()->presenter()->GetView();
-
-  DCHECK(app_list_view) << "AppListView has not been initialized yet. "
-                           "Be sure to call |ShowAssistantUI| first";
-
-  return app_list_view->app_list_main_view()->contents_view();
+void AssistantAshTestBase::SendQueryThroughTextField(const std::string& query) {
+  test_api_->SendTextQuery(query);
 }
 
-void AssistantAshTestBase::DisableAnimations() {
-  app_list::AppListView::SetShortAnimationForTesting(true);
+void AssistantAshTestBase::TapOnAndWait(views::View* view) {
+  CheckCanProcessEvents(view);
+  GetEventGenerator()->GestureTapAt(GetPointInside(view));
 
-  // The |AssistantProcessIndicator| uses a cyclic animation,
-  // which will go in an infinite loop if the animation has ZERO_DURATION.
-  // So we use a NON_ZERO_DURATION instead.
-  scoped_animation_duration_ =
-      std::make_unique<ui::ScopedAnimationDurationScaleMode>(
-          ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  base::RunLoop().RunUntilIdle();
 }
 
-void AssistantAshTestBase::ReenableAnimations() {
-  scoped_animation_duration_ = nullptr;
-  app_list::AppListView::SetShortAnimationForTesting(false);
+void AssistantAshTestBase::ClickOnAndWait(views::View* view) {
+  CheckCanProcessEvents(view);
+  GetEventGenerator()->MoveMouseTo(GetPointInside(view));
+  GetEventGenerator()->ClickLeftButton();
+
+  base::RunLoop().RunUntilIdle();
+}
+
+base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
+AssistantAshTestBase::current_interaction() {
+  return assistant_service()->current_interaction();
+}
+
+aura::Window* AssistantAshTestBase::SwitchToNewAppWindow() {
+  windows_.push_back(CreateAppWindow());
+
+  aura::Window* window = windows_.back().get();
+  window->SetName("<app-window>");
+  return window;
+}
+
+aura::Window* AssistantAshTestBase::window() {
+  return test_api_->window();
+}
+
+views::Textfield* AssistantAshTestBase::input_text_field() {
+  return test_api_->input_text_field();
+}
+
+views::View* AssistantAshTestBase::mic_view() {
+  return test_api_->mic_view();
+}
+
+views::View* AssistantAshTestBase::greeting_label() {
+  return test_api_->greeting_label();
+}
+
+views::View* AssistantAshTestBase::voice_input_toggle() {
+  return test_api_->voice_input_toggle();
+}
+
+views::View* AssistantAshTestBase::keyboard_input_toggle() {
+  return test_api_->keyboard_input_toggle();
+}
+
+void AssistantAshTestBase::ShowKeyboard() {
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+  keyboard_controller->ShowKeyboard(/*lock=*/false);
+}
+
+bool AssistantAshTestBase::IsKeyboardShowing() const {
+  return keyboard::IsKeyboardShowing();
+}
+
+AssistantInteractionController* AssistantAshTestBase::interaction_controller() {
+  return controller_->interaction_controller();
+}
+
+TestAssistantService* AssistantAshTestBase::assistant_service() {
+  return ash_test_helper()->test_assistant_service();
 }
 
 }  // namespace ash

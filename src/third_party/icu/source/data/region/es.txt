@@ -287,6 +287,8 @@ es{
         VU{"Vanuatu"}
         WF{"Wallis y Futuna"}
         WS{"Samoa"}
+        XA{"Pseudoacentos"}
+        XB{"Pseudobidi"}
         XK{"Kosovo"}
         YE{"Yemen"}
         YT{"Mayotte"}
@@ -307,5 +309,5 @@ es{
         SZ{"Suazilandia"}
         TL{"Timor Oriental"}
     }
-    Version{"2.1.49.82"}
+    Version{"36"}
 }

@@ -5,21 +5,18 @@
 import shutil
 import tempfile
 import unittest
+
 import mock
 
 from telemetry import android
 from telemetry import benchmark
 from telemetry.testing import options_for_unittests
 from telemetry.timeline import chrome_trace_category_filter
-from telemetry.internal import story_runner
 from telemetry import page
 from telemetry.page import legacy_page_test
 from telemetry.page import shared_page_state
 from telemetry import story as story_module
 from telemetry.web_perf import timeline_based_measurement
-from telemetry.story import typ_expectations
-
-from tracing.value.diagnostics import generic_set
 
 
 class DummyPageTest(legacy_page_test.LegacyPageTest):
@@ -48,15 +45,6 @@ class BenchmarkTest(unittest.TestCase):
   def tearDown(self):
     shutil.rmtree(self.options.output_dir)
 
-  def testNewTestExpectationsFormatIsUsed(self):
-    b = TestBenchmark(
-        story_module.Story(
-            name='test name',
-            shared_state_class=shared_page_state.SharedPageState))
-    b.AugmentExpectationsWithFile('# results: [ Skip ]\nb1 [ Skip ]\n')
-    self.assertIsInstance(
-        b.expectations, typ_expectations.StoryExpectations)
-
   def testPageTestWithIncompatibleStory(self):
     b = TestBenchmark(story_module.Story(
         name='test story',
@@ -79,21 +67,12 @@ class BenchmarkTest(unittest.TestCase):
         Exception, 'containing only telemetry.page.Page stories'):
       b.Run(self.options)
 
-  def testPageTestWithCompatibleStory(self):
-    original_run_fn = story_runner.Run
-    was_run = [False]
-    def RunStub(*arg, **kwargs):
-      del arg, kwargs
-      was_run[0] = True
-    story_runner.Run = RunStub
+  @mock.patch('telemetry.internal.story_runner.RunStorySet')
+  def testPageTestWithCompatibleStory(self, mock_run_story_set):
+    b = TestBenchmark(page.Page(url='about:blank', name='about:blank'))
+    b.Run(self.options)
 
-    try:
-      b = TestBenchmark(page.Page(url='about:blank', name='about:blank'))
-      b.Run(self.options)
-    finally:
-      story_runner.Run = original_run_fn
-
-    self.assertTrue(was_run[0])
+    self.assertTrue(mock_run_story_set.called)
 
   def testBenchmarkMakesTbmTestByDefault(self):
     class DefaultTbmBenchmark(benchmark.Benchmark):
@@ -113,33 +92,6 @@ class BenchmarkTest(unittest.TestCase):
         '"UnknownTestType" is not a PageTest or a StoryTest')
     with self.assertRaisesRegexp(TypeError, type_error_regex):
       UnknownTestTypeBenchmark().CreatePageTest(options=None)
-
-  def testBenchmarkWithOverridenShouldAddValue(self):
-    class ShouldNotAddValueBenchmark(TestBenchmark):
-
-      @classmethod
-      def ShouldAddValue(cls, unused_value, unused_is_first_result):
-        return False
-
-    original_run_fn = story_runner.Run
-    valid_should_add_value = [False]
-
-    def RunStub(test, story_set_module, finder_options, results,
-                *args, **kwargs): # pylint: disable=unused-argument
-      should_add_value = results._should_add_value
-      valid = should_add_value == ShouldNotAddValueBenchmark.ShouldAddValue
-      valid_should_add_value[0] = valid
-
-    story_runner.Run = RunStub
-
-    try:
-      b = ShouldNotAddValueBenchmark(
-          page.Page(url='about:blank', name='about:blank'))
-      b.Run(self.options)
-    finally:
-      story_runner.Run = original_run_fn
-
-    self.assertTrue(valid_should_add_value[0])
 
   def testGetOwners(self):
     @benchmark.Owner(emails=['alice@chromium.org'])
@@ -165,15 +117,10 @@ class BenchmarkTest(unittest.TestCase):
     bar_owners_diagnostic = BarBenchmark(None).GetOwners()
     baz_owners_diagnostic = BazBenchmark(None).GetOwners()
 
-    self.assertIsInstance(foo_owners_diagnostic, generic_set.GenericSet)
-    self.assertIsInstance(bar_owners_diagnostic, generic_set.GenericSet)
-    self.assertIsInstance(baz_owners_diagnostic, generic_set.GenericSet)
-
-    self.assertEqual(foo_owners_diagnostic.AsDict()['values'],
-                     ['alice@chromium.org'])
-    self.assertEqual(bar_owners_diagnostic.AsDict()['values'],
+    self.assertEqual(foo_owners_diagnostic, ['alice@chromium.org'])
+    self.assertEqual(bar_owners_diagnostic,
                      ['bob@chromium.org', 'ben@chromium.org'])
-    self.assertEqual(baz_owners_diagnostic.AsDict()['values'], [])
+    self.assertIsNone(baz_owners_diagnostic)
 
   def testGetBugComponents(self):
     @benchmark.Owner(emails=['alice@chromium.org'])
@@ -191,11 +138,8 @@ class BenchmarkTest(unittest.TestCase):
     foo_bug_components_diagnostic = FooBenchmark(None).GetBugComponents()
     bar_bug_components_diagnostic = BarBenchmark(None).GetBugComponents()
 
-    self.assertIsInstance(foo_bug_components_diagnostic, generic_set.GenericSet)
-    self.assertIsInstance(bar_bug_components_diagnostic, generic_set.GenericSet)
-
-    self.assertEqual(list(foo_bug_components_diagnostic), [])
-    self.assertEqual(list(bar_bug_components_diagnostic), ['xyzzyx'])
+    self.assertIsNone(foo_bug_components_diagnostic)
+    self.assertEqual(bar_bug_components_diagnostic, 'xyzzyx')
 
   def testChromeTraceOptionsUpdateFilterString(self):
     class TbmBenchmark(benchmark.Benchmark):
@@ -265,7 +209,7 @@ class BenchmarkTest(unittest.TestCase):
         shared_state_class=shared_page_state.SharedPageState))
     # We can pass None for both arguments because it defaults to ALL for
     # supported platforms, which always returns true.
-    self.assertTrue(b._CanRunOnPlatform(None, None))
+    self.assertTrue(b.CanRunOnPlatform(None, None))
 
   def testCanRunOnPlatformReturnFalse(self):
     b = TestBenchmark(story_module.Story(
@@ -274,15 +218,4 @@ class BenchmarkTest(unittest.TestCase):
     b.SUPPORTED_PLATFORMS = [] # pylint: disable=invalid-name
     # We can pass None for both arguments because we select no platforms as
     # supported, which always returns false.
-    self.assertFalse(b._CanRunOnPlatform(None, None))
-
-  def testAugmentExpectationsWithFileData(self):
-    b = TestBenchmark(story_module.Story(
-        name='test_name',
-        shared_state_class=shared_page_state.SharedPageState))
-    data = ('# results: [ skip ]\n'
-            'crbug.com/123 benchmark_unittest.TestBenchmark/test_name [ Skip ]')
-    b.AugmentExpectationsWithFile(data)
-    story = mock.MagicMock()
-    story.name = 'test_name'
-    self.assertTrue(b.expectations.IsStoryDisabled(story))
+    self.assertFalse(b.CanRunOnPlatform(None, None))

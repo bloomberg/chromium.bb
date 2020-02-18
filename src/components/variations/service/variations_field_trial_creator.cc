@@ -234,8 +234,12 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
 std::unique_ptr<ClientFilterableState>
 VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
     const base::Version& version) {
+  // Note that passing base::Unretained(client_) is safe here because |client_|
+  // lives until Chrome exits.
+  auto IsEnterpriseCallback = base::Bind(&VariationsServiceClient::IsEnterprise,
+                                         base::Unretained(client_));
   std::unique_ptr<ClientFilterableState> state =
-      std::make_unique<ClientFilterableState>();
+      std::make_unique<ClientFilterableState>(IsEnterpriseCallback);
   state->locale = application_locale_;
   state->reference_date = GetReferenceDateForExpiryChecks(local_state());
   state->version = version;
@@ -252,7 +256,6 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
   // evaluated, that field trial would not be able to apply for this case.
   state->is_low_end_device = base::SysInfo::IsLowEndDevice();
 #endif
-  state->is_enterprise = client_->IsEnterprise();
   state->session_consistency_country = GetLatestCountry();
   state->permanent_consistency_country = LoadPermanentConsistencyCountry(
       version, state->session_consistency_country);
@@ -406,7 +409,7 @@ bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,
   if (last_fetch_time.is_null()) {
     // If the last fetch time is missing and we have a seed, then this must be
     // the first run of Chrome. Store the current time as the last fetch time.
-    seed_store_->RecordLastFetchTime();
+    seed_store_->RecordLastFetchTime(base::Time::Now());
     RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_FETCH_TIME_MISSING);
     return true;
   }
@@ -506,6 +509,13 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
       break;
     case VariationsHttpHeaderProvider::ForceIdsResult::SUCCESS:
       break;
+  }
+
+  bool success = http_header_provider->ForceDisableVariationIds(
+      command_line->GetSwitchValueASCII(switches::kForceDisableVariationIds));
+  if (!success) {
+    ExitWithMessage(base::StringPrintf("Invalid --%s list specified.",
+                                       switches::kForceDisableVariationIds));
   }
 
   feature_list->InitializeFromCommandLine(

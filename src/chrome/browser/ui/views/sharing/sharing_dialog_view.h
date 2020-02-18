@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/sharing/sharing_dialog.h"
-#include "chrome/browser/sharing/sharing_ui_controller.h"
+#include "chrome/browser/sharing/sharing_dialog_data.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -20,7 +20,6 @@ class StyledLabel;
 class View;
 }  // namespace views
 
-class Browser;
 class HoverButton;
 enum class SharingDialogType;
 
@@ -32,34 +31,29 @@ class SharingDialogView : public SharingDialog,
   // Bubble will be anchored to |anchor_view|.
   SharingDialogView(views::View* anchor_view,
                     content::WebContents* web_contents,
-                    SharingUiController* controller);
+                    SharingDialogData data);
 
   ~SharingDialogView() override;
 
-  // SharingDialogView:
+  // SharingDialog:
   void Hide() override;
 
-  // views::WidgetDelegateView:
+  // LocationBarBubbleDelegateView:
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
+  void WebContentsDestroyed() override;
+  gfx::Size CalculatePreferredSize() const override;
+  void AddedToWidget() override;
+  void OnThemeChanged() override;
 
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override;
 
-  // views::DialogDelegate:
-  int GetDialogButtons() const override;
-  std::unique_ptr<views::View> CreateFootnoteView() override;
-
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-  void AddedToWidget() override;
-  void OnThemeChanged() override;
 
   static views::BubbleDialogDelegateView* GetAsBubble(SharingDialog* dialog);
 
@@ -73,9 +67,11 @@ class SharingDialogView : public SharingDialog,
   FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, AppPressed);
   FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, ThemeChangedEmptyList);
 
+  FRIEND_TEST_ALL_PREFIXES(ClickToCallBrowserTest, LeftClick_ChooseDevice);
+
   SharingDialogType GetDialogType() const;
 
-  // views::BubbleDialogDelegateView:
+  // LocationBarBubbleDelegateView:
   void Init() override;
 
   // Shows a header image in the dialog view.
@@ -88,13 +84,12 @@ class SharingDialogView : public SharingDialog,
   // Populates the dialog view containing error help text.
   void InitErrorView();
 
-  SharingUiController* controller_ = nullptr;
+  SharingDialogData data_;
+
   // References to device and app buttons views.
   std::vector<HoverButton*> dialog_buttons_;
   // References to device and app button icons.
   std::vector<views::ImageView*> button_icons_;
-  Browser* browser_ = nullptr;
-  bool send_failed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SharingDialogView);
 };

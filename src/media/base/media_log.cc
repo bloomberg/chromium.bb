@@ -84,41 +84,11 @@ std::string MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "MEDIA_DEBUG_LOG_ENTRY";
     case MediaLogEvent::PROPERTY_CHANGE:
       return "PROPERTY_CHANGE";
+    case MediaLogEvent::BUFFERING_STATE_CHANGE:
+      return "BUFFERING_STATE_CHANGE";
     case MediaLogEvent::SUSPENDED:
       return "SUSPENDED";
   }
-  NOTREACHED();
-  return NULL;
-}
-
-std::string MediaLog::PipelineStatusToString(PipelineStatus status) {
-#define STRINGIFY_STATUS_CASE(status) \
-  case status:                        \
-    return #status
-
-  switch (status) {
-    STRINGIFY_STATUS_CASE(PIPELINE_OK);
-    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_NETWORK);
-    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_DECODE);
-    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_ABORT);
-    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_INITIALIZATION_FAILED);
-    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_COULD_NOT_RENDER);
-    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED);
-    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_READ);
-    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_INVALID_STATE);
-    STRINGIFY_STATUS_CASE(DEMUXER_ERROR_COULD_NOT_OPEN);
-    STRINGIFY_STATUS_CASE(DEMUXER_ERROR_COULD_NOT_PARSE);
-    STRINGIFY_STATUS_CASE(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
-    STRINGIFY_STATUS_CASE(DEMUXER_ERROR_DETECTED_HLS);
-    STRINGIFY_STATUS_CASE(DECODER_ERROR_NOT_SUPPORTED);
-    STRINGIFY_STATUS_CASE(CHUNK_DEMUXER_ERROR_APPEND_FAILED);
-    STRINGIFY_STATUS_CASE(CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR);
-    STRINGIFY_STATUS_CASE(CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR);
-    STRINGIFY_STATUS_CASE(AUDIO_RENDERER_ERROR);
-  }
-
-#undef STRINGIFY_STATUS_CASE
-
   NOTREACHED();
   return NULL;
 }
@@ -205,6 +175,16 @@ MediaLog::~MediaLog() {
     InvalidateLog();
 }
 
+void MediaLog::OnWebMediaPlayerDestroyed() {
+  AddEvent(CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
+  base::AutoLock auto_lock(parent_log_record_->lock);
+  // Forward to the parent log's implementation.
+  if (parent_log_record_->media_log)
+    parent_log_record_->media_log->OnWebMediaPlayerDestroyedLocked();
+}
+
+void MediaLog::OnWebMediaPlayerDestroyedLocked() {}
+
 void MediaLog::AddEvent(std::unique_ptr<MediaLogEvent> event) {
   base::AutoLock auto_lock(parent_log_record_->lock);
   // Forward to the parent log's implementation.
@@ -225,17 +205,6 @@ std::string MediaLog::GetErrorMessage() {
 
 std::string MediaLog::GetErrorMessageLocked() {
   return "";
-}
-
-void MediaLog::RecordRapporWithSecurityOrigin(const std::string& metric) {
-  base::AutoLock auto_lock(parent_log_record_->lock);
-  // Forward to the parent log's implementation.
-  if (parent_log_record_->media_log)
-    parent_log_record_->media_log->RecordRapporWithSecurityOriginLocked(metric);
-}
-
-void MediaLog::RecordRapporWithSecurityOriginLocked(const std::string& metric) {
-  DVLOG(1) << "Default MediaLog doesn't support rappor reporting.";
 }
 
 std::unique_ptr<MediaLogEvent> MediaLog::CreateCreatedEvent(
@@ -329,7 +298,7 @@ std::unique_ptr<MediaLogEvent> MediaLog::CreateBufferingStateChangedEvent(
     const std::string& property,
     BufferingState state,
     BufferingStateChangeReason reason) {
-  return CreateStringEvent(MediaLogEvent::PROPERTY_CHANGE, property,
+  return CreateStringEvent(MediaLogEvent::BUFFERING_STATE_CHANGE, property,
                            BufferingStateToString(state, reason));
 }
 
@@ -337,30 +306,6 @@ void MediaLog::AddLogEvent(MediaLogLevel level, const std::string& message) {
   std::unique_ptr<MediaLogEvent> event(
       CreateEvent(MediaLogLevelToEventType(level)));
   event->params.SetString(MediaLogLevelToString(level), message);
-  AddEvent(std::move(event));
-}
-
-void MediaLog::SetStringProperty(
-    const std::string& key, const std::string& value) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
-  event->params.SetString(key, value);
-  AddEvent(std::move(event));
-}
-
-void MediaLog::SetDoubleProperty(
-    const std::string& key, double value) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
-  event->params.SetDouble(key, value);
-  AddEvent(std::move(event));
-}
-
-void MediaLog::SetBooleanProperty(
-    const std::string& key, bool value) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
-  event->params.SetBoolean(key, value);
   AddEvent(std::move(event));
 }
 

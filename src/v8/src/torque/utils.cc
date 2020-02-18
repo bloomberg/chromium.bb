@@ -9,6 +9,7 @@
 
 #include "src/base/logging.h"
 #include "src/torque/ast.h"
+#include "src/torque/declarable.h"
 #include "src/torque/utils.h"
 
 namespace v8 {
@@ -130,10 +131,32 @@ MessageBuilder::MessageBuilder(const std::string& message,
     position = CurrentSourcePosition::Get();
   }
   message_ = TorqueMessage{message, position, kind};
+  if (CurrentScope::HasScope()) {
+    // Traverse the parent scopes to find one that was created to represent a
+    // specialization of something generic. If we find one, then log it and
+    // continue walking the scope tree of the code that requested that
+    // specialization. This allows us to collect the stack of locations that
+    // caused a specialization.
+    Scope* scope = CurrentScope::Get();
+    while (scope) {
+      SpecializationRequester requester = scope->GetSpecializationRequester();
+      if (!requester.IsNone()) {
+        extra_messages_.push_back(
+            {"Note: in specialization " + requester.name + " requested here",
+             requester.position, kind});
+        scope = requester.scope;
+      } else {
+        scope = scope->ParentScope();
+      }
+    }
+  }
 }
 
 void MessageBuilder::Report() const {
   TorqueMessages::Get().push_back(message_);
+  for (const auto& message : extra_messages_) {
+    TorqueMessages::Get().push_back(message);
+  }
 }
 
 [[noreturn]] void MessageBuilder::Throw() const {
@@ -212,19 +235,25 @@ bool IsValidTypeName(const std::string& s) {
 }
 
 std::string CapifyStringWithUnderscores(const std::string& camellified_string) {
+  // Special case: JSAbc yields JS_ABC, not JSABC, for any Abc.
+  size_t js_position = camellified_string.find("JS");
+
   std::string result;
-  bool previousWasLower = false;
-  for (auto current : camellified_string) {
-    if (previousWasLower && isupper(current)) {
+  bool previousWasLowerOrDigit = false;
+  for (size_t index = 0; index < camellified_string.size(); ++index) {
+    char current = camellified_string[index];
+    if ((previousWasLowerOrDigit && isupper(current)) ||
+        (js_position != std::string::npos &&
+         index == js_position + strlen("JS"))) {
       result += "_";
     }
     if (current == '.' || current == '-') {
       result += "_";
-      previousWasLower = false;
+      previousWasLowerOrDigit = false;
       continue;
     }
     result += toupper(current);
-    previousWasLower = (islower(current));
+    previousWasLowerOrDigit = islower(current) || isdigit(current);
   }
   return result;
 }

@@ -35,8 +35,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -66,6 +65,8 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace blink {
 
@@ -79,7 +80,7 @@ enum WebSocketOpCode {
 }  // namespace
 
 class WebSocketChannelImpl::BlobLoader final
-    : public GarbageCollectedFinalized<WebSocketChannelImpl::BlobLoader>,
+    : public GarbageCollected<WebSocketChannelImpl::BlobLoader>,
       public FileReaderLoaderClient {
  public:
   BlobLoader(scoped_refptr<BlobDataHandle>,
@@ -102,8 +103,8 @@ class WebSocketChannelImpl::BlobLoader final
   std::unique_ptr<FileReaderLoader> loader_;
 };
 
-class WebSocketChannelImpl::Message
-    : public GarbageCollectedFinalized<WebSocketChannelImpl::Message> {
+class WebSocketChannelImpl::Message final
+    : public GarbageCollected<WebSocketChannelImpl::Message> {
  public:
   Message(const std::string&, base::OnceClosure completion_callback);
   explicit Message(scoped_refptr<BlobDataHandle>);
@@ -251,15 +252,9 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
   }
 
   mojo::Remote<mojom::blink::WebSocketConnector> connector;
-  if (execution_context_->GetInterfaceProvider()) {
-    execution_context_->GetInterfaceProvider()->GetInterface(
-        connector.BindNewPipeAndPassReceiver(
-            execution_context_->GetTaskRunner(TaskType::kWebSocket)));
-  } else {
-    // Create a fake request. This will lead to a closed WebSocket due to
-    // a mojo connection error.
-    ignore_result(connector.BindNewPipeAndPassReceiver());
-  }
+  execution_context_->GetBrowserInterfaceBroker().GetInterface(
+      connector.BindNewPipeAndPassReceiver(
+          execution_context_->GetTaskRunner(TaskType::kWebSocket)));
 
   connector->Connect(
       url, protocols, GetBaseFetchContext()->GetSiteForCookies(),
@@ -334,8 +329,8 @@ void WebSocketChannelImpl::Send(
 
 WebSocketChannel::SendResult WebSocketChannelImpl::Send(
     const DOMArrayBuffer& buffer,
-    unsigned byte_offset,
-    unsigned byte_length,
+    size_t byte_offset,
+    size_t byte_length,
     base::OnceClosure completion_callback) {
   NETWORK_DVLOG(1) << this << " Send(" << buffer.Data() << ", " << byte_offset
                    << ", " << byte_length << ") "
@@ -415,6 +410,18 @@ void WebSocketChannelImpl::Disconnect() {
   Dispose();
 }
 
+void WebSocketChannelImpl::CancelHandshake() {
+  NETWORK_DVLOG(1) << this << " CancelHandshake()";
+  if (GetState() != State::kConnecting)
+    return;
+
+  // This may still disconnect even if the handshake is complete if we haven't
+  // got the message yet.
+  // TODO(ricea): Plumb it through to the network stack to fix the race
+  // condition.
+  Disconnect();
+}
+
 void WebSocketChannelImpl::ApplyBackpressure() {
   backpressure_ = true;
 }
@@ -439,11 +446,17 @@ void WebSocketChannelImpl::OnOpeningHandshakeStarted(
   handshake_request_ = std::move(request);
 }
 
-void WebSocketChannelImpl::OnResponseReceived(
-    network::mojom::blink::WebSocketHandshakeResponsePtr response) {
+void WebSocketChannelImpl::OnConnectionEstablished(
+    mojo::PendingRemote<network::mojom::blink::WebSocket> websocket,
+    mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
+        client_receiver,
+    network::mojom::blink::WebSocketHandshakeResponsePtr response,
+    mojo::ScopedDataPipeConsumerHandle readable) {
   DCHECK_EQ(GetState(), State::kConnecting);
-  NETWORK_DVLOG(1) << this << " OnResponseReceived("
-                   << response->url.GetString() << ")";
+  const String& protocol = response->selected_protocol;
+  const String& extensions = response->extensions;
+  NETWORK_DVLOG(1) << this << " OnConnectionEstablished(" << protocol << ", "
+                   << extensions << ")";
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "WebSocketReceiveHandshakeResponse",
       TRACE_EVENT_SCOPE_THREAD, "data",
@@ -452,18 +465,7 @@ void WebSocketChannelImpl::OnResponseReceived(
                                               handshake_request_.get(),
                                               response.get());
   handshake_request_ = nullptr;
-}
 
-void WebSocketChannelImpl::OnConnectionEstablished(
-    mojo::PendingRemote<network::mojom::blink::WebSocket> websocket,
-    mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
-        client_receiver,
-    const String& protocol,
-    const String& extensions,
-    mojo::ScopedDataPipeConsumerHandle readable) {
-  DCHECK_EQ(GetState(), State::kConnecting);
-  NETWORK_DVLOG(1) << this << " OnConnectionEstablished(" << protocol << ", "
-                   << extensions << ")";
   // From now on, we will detect mojo errors via |client_receiver_|.
   handshake_client_receiver_.reset();
   client_receiver_.Bind(
@@ -625,15 +627,8 @@ void WebSocketChannelImpl::SendAndAdjustQuota(
     network::mojom::blink::WebSocketMessageType type,
     base::span<const char> data,
     uint64_t* consumed_buffered_amount) {
-  // TODO(darin): Avoid this copy.
-  Vector<uint8_t> data_to_pass;
-  // This cast is always valid because the data size is limited by
-  // sending_quota_, which is controlled by the browser process and in practice
-  // is always much smaller than 4GB.
-  // TODO(ricea): Change the type of sending_quota_ to wtf_size_t.
-  data_to_pass.ReserveInitialCapacity(static_cast<wtf_size_t>(data.size()));
-  data_to_pass.Append(data.data(), static_cast<wtf_size_t>(data.size()));
-
+  base::span<const uint8_t> data_to_pass(
+      reinterpret_cast<const uint8_t*>(data.data()), data.size());
   websocket_->SendFrame(fin, type, data_to_pass);
 
   sending_quota_ -= data.size();
@@ -682,7 +677,7 @@ void WebSocketChannelImpl::ProcessSendQueue() {
         CHECK(message->array_buffer);
         SendInternal(network::mojom::blink::WebSocketMessageType::BINARY,
                      static_cast<const char*>(message->array_buffer->Data()),
-                     message->array_buffer->ByteLength(),
+                     message->array_buffer->DeprecatedByteLengthAsUnsigned(),
                      &consumed_buffered_amount);
         break;
       case kMessageTypeClose: {
@@ -887,12 +882,22 @@ void WebSocketChannelImpl::ConsumeDataFrame(
     return;
   }
 
+  // TODO(yoichio): Do this after EndReadData by reading |message_chunks_|
+  // instead.
+  if (receiving_message_type_is_text_ && received_text_is_all_ascii_) {
+    for (size_t i = 0; i < size; i++) {
+      if (!IsASCII(data[i])) {
+        received_text_is_all_ascii_ = false;
+        break;
+      }
+    }
+  }
+
   if (!fin) {
     message_chunks_.Append(base::make_span(data, size));
     return;
   }
 
-  const wtf_size_t message_size = static_cast<wtf_size_t>(message_size_so_far);
   Vector<base::span<const char>> chunks = message_chunks_.GetView();
   if (size > 0) {
     chunks.push_back(base::make_span(data, size));
@@ -904,20 +909,8 @@ void WebSocketChannelImpl::ConsumeDataFrame(
                                     false, chunks);
 
   if (receiving_message_type_is_text_) {
-    Vector<char> flatten;
-    base::span<const char> span;
-    if (chunks.size() > 1) {
-      flatten.ReserveCapacity(message_size);
-      for (const auto& chunk : chunks) {
-        flatten.Append(chunk.data(), static_cast<wtf_size_t>(chunk.size()));
-      }
-      span = base::make_span(flatten.data(), flatten.size());
-    } else if (chunks.size() == 1) {
-      span = chunks[0];
-    }
-    String message = span.size() > 0
-                         ? String::FromUTF8(span.data(), span.size())
-                         : g_empty_string;
+    String message = GetTextMessage(
+        chunks, static_cast<wtf_size_t>(message_size_so_far + size));
     if (message.IsNull()) {
       FailAsError("Could not decode a text frame as UTF-8.");
     } else {
@@ -927,6 +920,47 @@ void WebSocketChannelImpl::ConsumeDataFrame(
     client_->DidReceiveBinaryMessage(chunks);
   }
   message_chunks_.Clear();
+  received_text_is_all_ascii_ = true;
+}
+
+String WebSocketChannelImpl::GetTextMessage(
+    const Vector<base::span<const char>>& chunks,
+    wtf_size_t size) {
+  DCHECK(receiving_message_type_is_text_);
+
+  if (size == 0) {
+    return g_empty_string;
+  }
+
+  // We can skip UTF8 encoding if received text contains only ASCII.
+  // We do this in order to avoid constructing a temporary buffer.
+  if (received_text_is_all_ascii_) {
+    LChar* buffer;
+    scoped_refptr<StringImpl> string_impl =
+        StringImpl::CreateUninitialized(size, buffer);
+    size_t index = 0;
+    for (const auto& chunk : chunks) {
+      DCHECK_LE(index + chunk.size(), size);
+      memcpy(buffer + index, chunk.data(), chunk.size());
+      index += chunk.size();
+    }
+    DCHECK_EQ(index, size);
+    return String(std::move(string_impl));
+  }
+
+  Vector<char> flatten;
+  base::span<const char> span;
+  if (chunks.size() > 1) {
+    flatten.ReserveCapacity(size);
+    for (const auto& chunk : chunks) {
+      flatten.Append(chunk.data(), static_cast<wtf_size_t>(chunk.size()));
+    }
+    span = base::make_span(flatten.data(), flatten.size());
+  } else if (chunks.size() == 1) {
+    span = chunks[0];
+  }
+  DCHECK_EQ(span.size(), size);
+  return String::FromUTF8(span.data(), span.size());
 }
 
 void WebSocketChannelImpl::OnConnectionError(const base::Location& set_from,
@@ -949,6 +983,7 @@ void WebSocketChannelImpl::OnConnectionError(const base::Location& set_from,
 }
 
 void WebSocketChannelImpl::Dispose() {
+  message_chunks_.Reset();
   has_initiated_opening_handshake_ = true;
   feature_handle_for_scheduler_.reset();
   handshake_throttle_.reset();

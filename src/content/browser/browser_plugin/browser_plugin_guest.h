@@ -229,14 +229,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Returns whether the guest is attached to an embedder.
   bool attached() const { return attached_; }
 
-  // Attaches this BrowserPluginGuest to the provided |embedder_web_contents|
-  // and initializes the guest with the provided |params|. Attaching a guest
-  // to an embedder implies that this guest's lifetime is no longer managed
-  // by its opener, and it can begin loading resources.
-  void Attach(int browser_plugin_instance_id,
-              WebContentsImpl* embedder_web_contents,
-              const BrowserPluginHostMsg_Attach_Params& params);
-
   // Returns whether BrowserPluginGuest is interested in receiving the given
   // |message|.
   static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
@@ -256,13 +248,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                                   const std::string& user_input);
 
   void PointerLockPermissionResponse(bool allow);
-
-  void ResendEventToEmbedder(const blink::WebInputEvent& event);
-
-  // TODO(ekaramad): Remove this once https://crbug.com/642826 is resolved.
-  bool can_use_cross_process_frames() const {
-    return can_use_cross_process_frames_;
-  }
 
   gfx::Point GetCoordinatesInEmbedderWebContents(
       const gfx::Point& relative_point);
@@ -381,10 +366,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                          bool is_top_level,
                          const std::string& name);
 
-  // Called when WillAttach is complete.
-  void OnWillAttachComplete(WebContentsImpl* embedder_web_contents,
-                            const BrowserPluginHostMsg_Attach_Params& params);
-
   // Returns identical message with current browser_plugin_instance_id() if
   // the input was created with browser_plugin::kInstanceIdNone, else it returns
   // the input message unmodified. If no current browser_plugin_instance_id()
@@ -458,11 +439,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   base::circular_deque<std::unique_ptr<IPC::Message>> pending_messages_;
 
   BrowserPluginGuestDelegate* const delegate_;
-
-  // Whether or not this BrowserPluginGuest can use cross process frames. This
-  // means when we have --use-cross-process-frames-for-guests on, the
-  // WebContents associated with this BrowserPluginGuest has OOPIF structure.
-  bool can_use_cross_process_frames_;
 
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_;
   ScreenInfo screen_info_;

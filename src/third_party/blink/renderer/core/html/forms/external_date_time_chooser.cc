@@ -25,7 +25,8 @@
 
 #include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
@@ -108,7 +109,7 @@ bool ExternalDateTimeChooser::IsShowingDateTimeChooserUI() const {
 mojom::blink::DateTimeChooser& ExternalDateTimeChooser::GetDateTimeChooser(
     LocalFrame* frame) {
   if (!date_time_chooser_) {
-    frame->GetInterfaceProvider().GetInterface(
+    frame->GetBrowserInterfaceBroker().GetInterface(
         date_time_chooser_.BindNewPipeAndPassReceiver());
   }
 
@@ -117,9 +118,20 @@ mojom::blink::DateTimeChooser& ExternalDateTimeChooser::GetDateTimeChooser(
 }
 
 void ExternalDateTimeChooser::DidChooseValue(double value) {
+  // Cache the owner element first, because DidChooseValue might run
+  // JavaScript code and destroy |client|.
+  Element* element = client_ ? &client_->OwnerElement() : nullptr;
   if (client_)
     client_->DidChooseValue(value);
-  // didChooseValue might run JavaScript code, and endChooser() might be
+
+  // Post an accessibility event on the owner element to indicate the
+  // value changed.
+  if (element) {
+    if (AXObjectCache* cache = element->GetDocument().ExistingAXObjectCache())
+      cache->HandleValueChanged(element);
+  }
+
+  // DidChooseValue might run JavaScript code, and endChooser() might be
   // called. However DateTimeChooserCompletionImpl still has one reference to
   // this object.
   if (client_)

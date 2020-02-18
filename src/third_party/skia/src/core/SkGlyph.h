@@ -13,6 +13,7 @@
 #include "include/private/SkChecksum.h"
 #include "include/private/SkFixed.h"
 #include "include/private/SkTo.h"
+#include "include/private/SkVx.h"
 #include "src/core/SkMask.h"
 
 class SkArenaAlloc;
@@ -23,29 +24,48 @@ class SkScalerContext;
 #define MASK_FORMAT_UNKNOWN         (0xFF)
 #define MASK_FORMAT_JUST_ADVANCE    MASK_FORMAT_UNKNOWN
 
-/** SkGlyphID + subpixel-pos */
+// A combination of SkGlyphID and sub-pixel position information.
 struct SkPackedGlyphID {
     static constexpr uint32_t kImpossibleID = ~0u;
     enum {
-        kSubBits = 2u,
-        kSubMask = ((1u << kSubBits) - 1),
-        kSubShift = 24u, // must be large enough for glyphs and unichars
-        kCodeMask = ((1u << kSubShift) - 1),
-        // relative offsets for X and Y subpixel bits
-        kSubShiftX = kSubBits,
-        kSubShiftY = 0
+        // Lengths
+        kGlyphIDLen     = 16u,
+        kSubPixelPosLen = 2u,
+
+        // Bit positions
+        kSubPixelX = 0u,
+        kGlyphID   = kSubPixelPosLen,
+        kSubPixelY = kGlyphIDLen + kSubPixelPosLen,
+        kEndData   = kGlyphIDLen + 2 * kSubPixelPosLen,
+
+        // Masks
+        kGlyphIDMask     = (1u << kGlyphIDLen) - 1,
+        kSubPixelPosMask = (1u << kSubPixelPosLen) - 1,
+        kMaskAll         = (1u << kEndData) - 1,
+
+        // Location of sub pixel info in a fixed pointer number.
+        kFixedPointBinaryPointPos = 16u,
+        kFixedPointSubPixelPosBits = kFixedPointBinaryPointPos - kSubPixelPosLen,
     };
 
+    static constexpr SkScalar kSubpixelRound = 1.f / (1u << (SkPackedGlyphID::kSubPixelPosLen + 1));
+
+    static constexpr SkIPoint kXYFieldMask{kSubPixelPosMask << kSubPixelX,
+                                           kSubPixelPosMask << kSubPixelY};
+
     constexpr explicit SkPackedGlyphID(SkGlyphID glyphID)
-            : fID{glyphID} { }
+            : fID{(uint32_t)glyphID << kGlyphID} { }
 
     constexpr SkPackedGlyphID(SkGlyphID glyphID, SkFixed x, SkFixed y)
-            : fID {PackIDXY(glyphID, x, y)} {
-        SkASSERT(fID != kImpossibleID);
-    }
+            : fID {PackIDXY(glyphID, x, y)} { }
 
-    constexpr SkPackedGlyphID(SkGlyphID code, SkIPoint pt)
-        : SkPackedGlyphID(code, pt.fX, pt.fY) { }
+    constexpr SkPackedGlyphID(SkGlyphID glyphID, uint32_t x, uint32_t y)
+            : fID {PackIDSubXSubY(glyphID, x, y)} { }
+
+    SkPackedGlyphID(SkGlyphID glyphID, SkPoint pt, SkIPoint mask)
+        : fID{PackIDSkPoint(glyphID, pt, mask)} { }
+
+    constexpr explicit SkPackedGlyphID(uint32_t v) : fID{v & kMaskAll} { }
 
     constexpr SkPackedGlyphID() : fID{kImpossibleID} {}
 
@@ -59,8 +79,8 @@ struct SkPackedGlyphID {
         return this->fID < that.fID;
     }
 
-    uint32_t code() const {
-        return fID & kCodeMask;
+    SkGlyphID glyphID() const {
+        return (fID >> kGlyphID) & kGlyphIDMask;
     }
 
     uint32_t value() const {
@@ -68,11 +88,11 @@ struct SkPackedGlyphID {
     }
 
     SkFixed getSubXFixed() const {
-        return SubToFixed(ID2SubX(fID));
+        return this->subToFixed(kSubPixelX);
     }
 
     SkFixed getSubYFixed() const {
-        return SubToFixed(ID2SubY(fID));
+        return this->subToFixed(kSubPixelY);
     }
 
     uint32_t hash() const {
@@ -81,32 +101,60 @@ struct SkPackedGlyphID {
 
     SkString dump() const {
         SkString str;
-        str.appendf("code: %d, x: %d, y:%d", code(), getSubXFixed(), getSubYFixed());
+        str.appendf("glyphID: %d, x: %d, y:%d", glyphID(), getSubXFixed(), getSubYFixed());
         return str;
     }
 
 private:
+    static constexpr uint32_t PackIDSubXSubY(SkGlyphID glyphID, uint32_t x, uint32_t y) {
+        SkASSERT(x < (1u << kSubPixelPosLen));
+        SkASSERT(y < (1u << kSubPixelPosLen));
+
+        return (x << kSubPixelX) | (y << kSubPixelY) | (glyphID << kGlyphID);
+    }
+
+    // Assumptions: pt is properly rounded. mask is set for the x or y fields.
+    //
+    // A sub-pixel field is a number on the interval [2^kSubPixel, 2^(kSubPixel + kSubPixelPosLen)).
+    // Where kSubPixel is either kSubPixelX or kSubPixelY. Given a number x on [0, 1) we can
+    // generate a sub-pixel field using:
+    //    sub-pixel-field = x * 2^(kSubPixel + kSubPixelPosLen)
+    //
+    // We can generate the integer sub-pixel field by &-ing the integer part of sub-filed with the
+    // sub-pixel field mask.
+    //    int-sub-pixel-field = int(sub-pixel-field) & (kSubPixelPosMask << kSubPixel)
+    //
+    // The last trick is to extend the range from [0, 1) to [0, 2). The extend range is
+    // necessary because the modulo 1 calculation (pt - floor(pt)) generates numbers on [-1, 1).
+    // This does not round (floor) properly when converting to integer. Adding one to the range
+    // causes truncation and floor to be the same. Coincidentally, masking to produce the field also
+    // removes the +1.
+    static uint32_t PackIDSkPoint(SkGlyphID glyphID, SkPoint pt, SkIPoint mask) {
+        using namespace skvx;
+        using XY = Vec<2, float>;
+        using SubXY = Vec<2, int>;
+        const XY magic = {1.f * (1u << (kSubPixelPosLen + kSubPixelX)),
+                          1.f * (1u << (kSubPixelPosLen + kSubPixelY))};
+        XY pos{pt.x(), pt.y()};
+        XY subPos = (pos - floor(pos)) + 1.0f;
+        SubXY sub = cast<int>(subPos * magic) & SubXY{mask.x(), mask.y()};
+        SkASSERT(sub[0] / (1u << kSubPixelX) < (1u << kSubPixelPosLen));
+        SkASSERT(sub[1] / (1u << kSubPixelY) < (1u << kSubPixelPosLen));
+
+        return (glyphID << kGlyphID) | sub[0] | sub[1];
+    }
+
     static constexpr uint32_t PackIDXY(SkGlyphID glyphID, SkFixed x, SkFixed y) {
-        return (FixedToSub(x) << (kSubShift + kSubShiftX))
-             | (FixedToSub(y) << (kSubShift + kSubShiftY))
-             | glyphID;
+        return PackIDSubXSubY(glyphID, FixedToSub(x), FixedToSub(y));
     }
 
-    static constexpr unsigned ID2SubX(uint32_t id) {
-        return id >> (kSubShift + kSubShiftX);
+    static constexpr uint32_t FixedToSub(SkFixed n) {
+        return ((uint32_t)n >> kFixedPointSubPixelPosBits) & kSubPixelPosMask;
     }
 
-    static constexpr unsigned ID2SubY(uint32_t id) {
-        return (id >> (kSubShift + kSubShiftY)) & kSubMask;
-    }
-
-    static constexpr unsigned FixedToSub(SkFixed n) {
-        return (n >> (16 - kSubBits)) & kSubMask;
-    }
-
-    static constexpr SkFixed SubToFixed(uint32_t sub) {
-        SkASSERT(sub <= kSubMask);
-        return sub << (16u - kSubBits);
+    constexpr SkFixed subToFixed(uint32_t subPixelPosBit) const {
+        uint32_t subPixelPosition = (fID >> subPixelPosBit) & kSubPixelPosMask;
+        return subPixelPosition << kFixedPointSubPixelPosBits;
     }
 
     uint32_t fID;
@@ -116,8 +164,8 @@ struct SkGlyphPrototype;
 
 class SkGlyph {
 public:
-    static constexpr SkFixed kSubpixelRound = SK_FixedHalf >> SkPackedGlyphID::kSubBits;
-
+    // SkGlyph() is used for testing.
+    constexpr SkGlyph() : fID{SkPackedGlyphID()} { }
     constexpr explicit SkGlyph(SkPackedGlyphID id) : fID{id} { }
     explicit SkGlyph(const SkGlyphPrototype& p);
 
@@ -125,7 +173,7 @@ public:
     SkScalar advanceX() const { return fAdvanceX; }
     SkScalar advanceY() const { return fAdvanceY; }
 
-    SkGlyphID getGlyphID() const { return fID.code(); }
+    SkGlyphID getGlyphID() const { return fID.glyphID(); }
     SkPackedGlyphID getPackedID() const { return fID; }
     SkFixed getSubXFixed() const { return fID.getSubXFixed(); }
     SkFixed getSubYFixed() const { return fID.getSubYFixed(); }

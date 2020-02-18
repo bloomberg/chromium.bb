@@ -9,6 +9,7 @@
 
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/focus_cycler.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -24,6 +25,7 @@
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -97,7 +99,8 @@ class WindowCycleControllerTest : public AshTestBase {
 
     shelf_view_test_.reset(
         new ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting()));
-    shelf_view_test_->SetAnimationDuration(1);
+    shelf_view_test_->SetAnimationDuration(
+        base::TimeDelta::FromMilliseconds(1));
   }
 
   const aura::Window::Windows GetWindows(WindowCycleController* controller) {
@@ -479,9 +482,6 @@ TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
 
-  // Showing the Alt+Tab UI does however deactivate the erstwhile active window.
-  EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
-
   controller->CompleteCycling();
 }
 
@@ -491,6 +491,8 @@ TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
 
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  wm::ActivateWindow(window0.get());
+
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplay().id());
   GetAppListTestHelper()->CheckVisibility(true);
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
@@ -499,10 +501,29 @@ TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
 
   // Make sure that dismissing the app list this way doesn't pass activation
   // to a different window.
-  EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
 
   controller->CompleteCycling();
+}
+
+// Tests that beginning window selection doesn't hide the app list in tablet
+// mode.
+TEST_F(WindowCycleControllerTest, SelectingDoesNotHideAppListInTabletMode) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
+  EXPECT_TRUE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
+
+  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  wm::ActivateWindow(window0.get());
+
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
+  controller->HandleCycleWindow(WindowCycleController::FORWARD);
+
+  window0->Hide();
+  window1->Hide();
+  EXPECT_TRUE(Shell::Get()->home_screen_controller()->IsHomeScreenVisible());
 }
 
 // Tests that cycling through windows doesn't change their minimized state.

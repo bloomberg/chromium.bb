@@ -122,8 +122,9 @@ void VRUiHostImpl::CapturingStateModelTransience::
     *active_capture_state_model_ = CapturingStateModel();
 }
 
-VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
-                           device::mojom::XRCompositorHostPtr compositor)
+VRUiHostImpl::VRUiHostImpl(
+    device::mojom::XRDeviceId device_id,
+    mojo::PendingRemote<device::mojom::XRCompositorHost> compositor)
     : compositor_(std::move(compositor)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       triggered_capturing_transience_(&triggered_capturing_state_model_) {
@@ -137,8 +138,9 @@ VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
     runtime->AddObserver(this);
   }
 
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               &geolocation_config_);
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName,
+      geolocation_config_.BindNewPipeAndPassReceiver());
 }
 
 VRUiHostImpl::~VRUiHostImpl() {
@@ -155,7 +157,7 @@ VRUiHostImpl::~VRUiHostImpl() {
 // static
 std::unique_ptr<VRUiHost> VRUiHostImpl::Create(
     device::mojom::XRDeviceId device_id,
-    device::mojom::XRCompositorHostPtr compositor) {
+    mojo::PendingRemote<device::mojom::XRCompositorHost> compositor) {
   DVLOG(1) << __func__;
   return std::make_unique<VRUiHostImpl>(device_id, std::move(compositor));
 }
@@ -227,6 +229,7 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
     StartUiRendering();
     InitCapturingStates();
     ui_rendering_thread_->SetWebXrPresenting(true);
+    ui_rendering_thread_->SetFramesThrottled(frames_throttled_);
 
     PollCapturingState();
 
@@ -242,7 +245,7 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
 
       // There might already be a visible permission bubble from before
       // we registered the observer, show the HMD message now in that case.
-      if (permission_request_manager_->IsBubbleVisible())
+      if (permission_request_manager_->IsRequestInProgress())
         OnBubbleAdded();
     } else {
       DVLOG(1) << __func__ << ": No PermissionRequestManager";
@@ -254,6 +257,17 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
       ui_rendering_thread_->SetWebXrPresenting(false);
     StopUiRendering();
   }
+}
+
+void VRUiHostImpl::SetFramesThrottled(bool throttled) {
+  frames_throttled_ = throttled;
+
+  if (!ui_rendering_thread_) {
+    DVLOG(1) << __func__ << ": no ui_rendering_thread_";
+    return;
+  }
+
+  ui_rendering_thread_->SetFramesThrottled(frames_throttled_);
 }
 
 void VRUiHostImpl::SetVRDisplayInfo(
@@ -380,27 +394,23 @@ void VRUiHostImpl::InitCapturingStates() {
   content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
   potential_capturing_.audio_capture_enabled =
       permission_manager
-          ->GetPermissionStatusForFrame(
-              ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, rfh,
-              origin)
+          ->GetPermissionStatusForFrame(ContentSettingsType::MEDIASTREAM_MIC,
+                                        rfh, origin)
           .content_setting == CONTENT_SETTING_ALLOW;
   potential_capturing_.video_capture_enabled =
       permission_manager
-          ->GetPermissionStatusForFrame(
-              ContentSettingsType::CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-              rfh, origin)
+          ->GetPermissionStatusForFrame(ContentSettingsType::MEDIASTREAM_CAMERA,
+                                        rfh, origin)
           .content_setting == CONTENT_SETTING_ALLOW;
   potential_capturing_.location_access_enabled =
       permission_manager
-          ->GetPermissionStatusForFrame(
-              ContentSettingsType::CONTENT_SETTINGS_TYPE_GEOLOCATION, rfh,
-              origin)
+          ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION, rfh,
+                                        origin)
           .content_setting == CONTENT_SETTING_ALLOW;
   potential_capturing_.midi_connected =
       permission_manager
-          ->GetPermissionStatusForFrame(
-              ContentSettingsType::CONTENT_SETTINGS_TYPE_MIDI_SYSEX, rfh,
-              origin)
+          ->GetPermissionStatusForFrame(ContentSettingsType::MIDI_SYSEX, rfh,
+                                        origin)
           .content_setting == CONTENT_SETTING_ALLOW;
 
   indicators_shown_start_time_ = base::Time::Now();
@@ -443,7 +453,7 @@ void VRUiHostImpl::PollCapturingState() {
           TabSpecificContentSettings::CAMERA_BLOCKED);
 
     active_capturing.midi_connected =
-        settings->IsContentAllowed(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+        settings->IsContentAllowed(ContentSettingsType::MIDI_SYSEX);
   }
 
   // Screen capture.

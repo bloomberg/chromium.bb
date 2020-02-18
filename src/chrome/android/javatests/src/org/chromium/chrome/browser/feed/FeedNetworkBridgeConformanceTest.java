@@ -11,17 +11,16 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.host.network.HttpRequest;
-import com.google.android.libraries.feed.api.host.network.HttpResponse;
-import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.testing.conformance.network.NetworkClientConformanceTest;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Consumer;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest;
+import org.chromium.chrome.browser.feed.library.api.host.network.HttpResponse;
+import org.chromium.chrome.browser.feed.library.testing.conformance.network.NetworkClientConformanceTest;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -101,15 +100,15 @@ public final class FeedNetworkBridgeConformanceTest extends NetworkClientConform
 
     private void createNetworkClient() {
         // The networkClient is declared and tested in NetworkClientConformanceTest
-        networkClient = new FeedTestNetworkBridge(Profile.getLastUsedProfile());
+        mNetworkClient = new FeedTestNetworkBridge(Profile.getLastUsedProfile());
     }
 
     private void destroyNetworkClient() {
-        ((FeedTestNetworkBridge) networkClient).destroy();
-        networkClient = null;
+        ((FeedTestNetworkBridge) mNetworkClient).destroy();
+        mNetworkClient = null;
     }
 
-    private void createAndStartTestServer() throws InterruptedException {
+    private void createAndStartTestServer() {
         Context c = InstrumentationRegistry.getContext();
         mTestServer = EmbeddedTestServer.createAndStartServer(c);
     }
@@ -120,7 +119,7 @@ public final class FeedNetworkBridgeConformanceTest extends NetworkClientConform
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         createAndStartTestServer();
         TestThreadUtils.runOnUiThreadBlocking(() -> createNetworkClient());
     }

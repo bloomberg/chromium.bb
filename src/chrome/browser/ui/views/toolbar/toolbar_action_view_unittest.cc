@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "content/public/test/test_web_contents_factory.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/test/event_generator.h"
 
@@ -25,7 +25,10 @@ class TestToolbarActionViewDelegate : public ToolbarActionView::Delegate {
   TestToolbarActionViewDelegate() : shown_in_menu_(false),
                                     overflow_reference_view_(nullptr),
                                     web_contents_(nullptr) {}
-  ~TestToolbarActionViewDelegate() override {}
+  TestToolbarActionViewDelegate(const TestToolbarActionViewDelegate&) = delete;
+  TestToolbarActionViewDelegate& operator=(
+      const TestToolbarActionViewDelegate&) = delete;
+  ~TestToolbarActionViewDelegate() override = default;
 
   // ToolbarActionView::Delegate:
   content::WebContents* GetCurrentWebContents() override {
@@ -62,8 +65,6 @@ class TestToolbarActionViewDelegate : public ToolbarActionView::Delegate {
   views::MenuButton* overflow_reference_view_;
 
   content::WebContents* web_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestToolbarActionViewDelegate);
 };
 
 class OpenMenuListener : public views::ContextMenuController {
@@ -73,6 +74,8 @@ class OpenMenuListener : public views::ContextMenuController {
         opened_menu_(false) {
     view_->set_context_menu_controller(this);
   }
+  OpenMenuListener(const OpenMenuListener&) = delete;
+  OpenMenuListener& operator=(const OpenMenuListener&) = delete;
   ~OpenMenuListener() override {
     view_->set_context_menu_controller(nullptr);
   }
@@ -89,8 +92,6 @@ class OpenMenuListener : public views::ContextMenuController {
   views::View* view_;
 
   bool opened_menu_;
-
-  DISALLOW_COPY_AND_ASSIGN(OpenMenuListener);
 };
 
 }  // namespace
@@ -98,7 +99,10 @@ class OpenMenuListener : public views::ContextMenuController {
 class ToolbarActionViewUnitTest : public ChromeViewsTestBase {
  public:
   ToolbarActionViewUnitTest() : widget_(nullptr) {}
-  ~ToolbarActionViewUnitTest() override {}
+  ToolbarActionViewUnitTest(const ToolbarActionViewUnitTest&) = delete;
+  ToolbarActionViewUnitTest& operator=(const ToolbarActionViewUnitTest&) =
+      delete;
+  ~ToolbarActionViewUnitTest() override = default;
 
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
@@ -121,8 +125,6 @@ class ToolbarActionViewUnitTest : public ChromeViewsTestBase {
  private:
   // The widget managed by this test.
   views::Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionViewUnitTest);
 };
 
 // A MenuButton subclass that provides access to some MenuButton internals.
@@ -131,11 +133,9 @@ class TestToolbarActionView : public ToolbarActionView {
   TestToolbarActionView(ToolbarActionViewController* view_controller,
                         Delegate* delegate)
       : ToolbarActionView(view_controller, delegate) {}
-
+  TestToolbarActionView(const TestToolbarActionView&) = delete;
+  TestToolbarActionView& operator=(const TestToolbarActionView&) = delete;
   ~TestToolbarActionView() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestToolbarActionView);
 };
 
 // Verifies there is no crash when a ToolbarActionView with an InkDrop is

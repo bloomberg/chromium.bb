@@ -10,9 +10,10 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/command_observer.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
@@ -28,9 +29,10 @@
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/animation/animation_delegate_views.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
+#include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
@@ -48,7 +50,7 @@ class HomeButton;
 class MediaToolbarButtonView;
 class ReloadButton;
 class ToolbarButton;
-class ToolbarPageActionIconContainerView;
+class ToolbarAccountIconContainerView;
 
 namespace bookmarks {
 class BookmarkBubbleObserver;
@@ -64,7 +66,6 @@ class FlexLayout;
 
 // The Browser Window's toolbar.
 class ToolbarView : public views::AccessiblePaneView,
-                    public views::MenuButtonListener,
                     public ui::AcceleratorProvider,
                     public views::AnimationDelegateViews,
                     public LocationBarView::Delegate,
@@ -105,6 +106,10 @@ class ToolbarView : public views::AccessiblePaneView,
   // transition.
   void UpdateCustomTabBarVisibility(bool visible, bool animate);
 
+  // We may or may not be using a WebUI tab strip. Make sure toolbar items are
+  // added or removed accordingly.
+  void UpdateForWebUITabStrip();
+
   // Clears the current state for |tab|.
   void ResetTabState(content::WebContents* tab);
 
@@ -121,15 +126,13 @@ class ToolbarView : public views::AccessiblePaneView,
       bool show_stay_in_chrome,
       bool show_remember_selection,
       PageActionIconType icon_type,
+      const base::Optional<url::Origin>& initiating_origin,
       IntentPickerResponse callback);
 
   // Shows a bookmark bubble and anchors it appropriately.
   void ShowBookmarkBubble(const GURL& url,
                           bool already_bookmarked,
                           bookmarks::BookmarkBubbleObserver* observer);
-
-  // Access to the avatar button.
-  AvatarToolbarButton* GetAvatarToolbarButton();
 
   // Accessors.
   Browser* browser() const { return browser_; }
@@ -144,19 +147,14 @@ class ToolbarView : public views::AccessiblePaneView,
   CustomTabBarView* custom_tab_bar() { return custom_tab_bar_; }
   media_router::CastToolbarButton* cast_button() const { return cast_; }
   MediaToolbarButtonView* media_button() const { return media_button_; }
-  ToolbarPageActionIconContainerView* toolbar_page_action_container() const {
-    return toolbar_page_action_container_;
+  ToolbarAccountIconContainerView* toolbar_account_icon_container() const {
+    return toolbar_account_icon_container_;
   }
   BrowserAppMenuButton* app_menu_button() const { return app_menu_button_; }
   HomeButton* home_button() const { return home_; }
   AppMenuIconController* app_menu_icon_controller() {
     return &app_menu_icon_controller_;
   }
-
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
 
   // LocationBarView::Delegate:
   content::WebContents* GetWebContents() override;
@@ -192,7 +190,6 @@ class ToolbarView : public views::AccessiblePaneView,
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
-  void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
   const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& acc) override;
@@ -231,13 +228,16 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* GetBrowserActionsContainer() override;
   ToolbarActionView* GetToolbarActionViewForId(const std::string& id) override;
   views::View* GetDefaultExtensionDialogAnchorView() override;
-  OmniboxPageActionIconContainerView* GetOmniboxPageActionIconContainerView()
-      override;
+  PageActionIconView* GetPageActionIconView(PageActionIconType type) override;
   AppMenuButton* GetAppMenuButton() override;
-  gfx::Rect GetFindBarBoundingBox(int contents_height) const override;
+  gfx::Rect GetFindBarBoundingBox(int contents_bottom) const override;
   void FocusToolbar() override;
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
-  views::View* GetAnchorView() override;
+  views::View* GetAnchorView(PageActionIconType type) override;
+  void ZoomChangedForActiveTab(bool can_show_bubble) override;
+  AvatarToolbarButton* GetAvatarToolbarButton() override;
+  ToolbarButton* GetBackButton() override;
+  ReloadButton* GetReloadButton() override;
 
   // BrowserRootView::DropTarget
   BrowserRootView::DropIndex GetDropIndex(
@@ -271,7 +271,7 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* browser_actions_ = nullptr;
   ExtensionsToolbarContainer* extensions_container_ = nullptr;
   media_router::CastToolbarButton* cast_ = nullptr;
-  ToolbarPageActionIconContainerView* toolbar_page_action_container_ = nullptr;
+  ToolbarAccountIconContainerView* toolbar_account_icon_container_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
   MediaToolbarButtonView* media_button_ = nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;

@@ -17,13 +17,14 @@
 
 #include "dawn_native/Texture.h"
 
+#include <IOSurface/IOSurfaceRef.h>
 #import <Metal/Metal.h>
 
 namespace dawn_native { namespace metal {
 
     class Device;
 
-    MTLPixelFormat MetalPixelFormat(dawn::TextureFormat format);
+    MTLPixelFormat MetalPixelFormat(wgpu::TextureFormat format);
     MaybeError ValidateIOSurfaceCanBeWrapped(const DeviceBase* device,
                                              const TextureDescriptor* descriptor,
                                              IOSurfaceRef ioSurface,

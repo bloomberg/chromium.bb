@@ -108,92 +108,6 @@ bool AllowsInterface(const Manifest::RequiredCapabilityMap& source_requirements,
 
 }  // namespace
 
-// This implements filtering logic for interface filters added to a service
-// instance via |Connector.FilterInterfaces()|.
-class ServiceInstance::InterfaceFilter : public mojom::InterfaceProvider {
- public:
-  InterfaceFilter(
-      service_manager::ServiceManager* service_manager,
-      ServiceInstance* instance,
-      const std::string& filter_name,
-      const Identity& source_identity,
-      const Identity& target_identity,
-      mojo::PendingRemote<mojom::InterfaceProvider> target_remote,
-      mojo::PendingReceiver<mojom::InterfaceProvider> source_receiver)
-      : service_manager_(service_manager),
-        instance_(instance),
-        filter_name_(filter_name),
-        source_identity_(source_identity),
-        target_identity_(target_identity),
-        target_remote_(std::move(target_remote)),
-        source_receiver_(this, std::move(source_receiver)) {
-    DCHECK(source_identity_.IsValid());
-    DCHECK(target_identity_.IsValid());
-    target_remote_.set_disconnect_handler(
-        base::BindOnce(&InterfaceFilter::OnDisconnect, base::Unretained(this)));
-    source_receiver_.set_disconnect_handler(
-        base::BindOnce(&InterfaceFilter::OnDisconnect, base::Unretained(this)));
-  }
-
-  ~InterfaceFilter() override = default;
-
- private:
-  // mojom::InterfaceProvider:
-  void GetInterface(const std::string& interface_name,
-                    mojo::ScopedMessagePipeHandle receiving_pipe) override {
-    ServiceInstance* source =
-        service_manager_->GetExistingInstance(source_identity_);
-    ServiceInstance* target =
-        service_manager_->GetExistingInstance(target_identity_);
-    if (!source || !target)
-      return;
-
-    const auto& source_filters =
-        source->manifest().required_interface_filter_capabilities;
-    const auto& target_filters =
-        target->manifest().exposed_interface_filter_capabilities;
-
-    auto source_iter = source_filters.find(filter_name_);
-    if (source_iter == source_filters.end()) {
-      DLOG(ERROR) << source_identity_.name() << " does not specify any "
-                  << "requirements for a filter named '" << filter_name_ << "'";
-      return;
-    }
-
-    auto target_iter = target_filters.find(filter_name_);
-    if (target_iter == target_filters.end()) {
-      DLOG(ERROR) << target_identity_.name() << " does not expose any "
-                  << "capabilities for a filter named '" << filter_name_ << "'";
-      return;
-    }
-
-    if (AllowsInterface(source_iter->second, target_identity_.name(),
-                        target_iter->second, interface_name)) {
-      target_remote_->GetInterface(interface_name, std::move(receiving_pipe));
-    } else {
-      ReportBlockedInterface(source_identity_.name(), target_identity_.name(),
-                             interface_name);
-    }
-  }
-
-  void OnDisconnect() {
-    // Deletes |this|.
-    auto iter = instance_->interface_filters_.find(this);
-    instance_->interface_filters_.erase(iter);
-  }
-
-  const service_manager::ServiceManager* const service_manager_;
-  ServiceInstance* const instance_;
-  const std::string filter_name_;
-  const Identity source_identity_;
-  const Identity target_identity_;
-
-  mojo::Remote<mojom::InterfaceProvider> target_remote_;
-  mojo::Receiver<mojom::InterfaceProvider> source_receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterfaceFilter);
-};
-
 ServiceInstance::ServiceInstance(
     service_manager::ServiceManager* service_manager,
     const Identity& identity,
@@ -356,16 +270,16 @@ void ServiceInstance::BindServiceManagerReceiver(
 }
 
 void ServiceInstance::OnStartCompleted(
-    mojom::ConnectorRequest connector_request,
-    mojom::ServiceControlAssociatedRequest control_request) {
+    mojo::PendingReceiver<mojom::Connector> connector_receiver,
+    mojo::PendingAssociatedReceiver<mojom::ServiceControl> control_receiver) {
   state_ = mojom::InstanceState::kStarted;
-  if (connector_request.is_pending()) {
-    connector_receivers_.Add(this, std::move(connector_request));
+  if (connector_receiver.is_valid()) {
+    connector_receivers_.Add(this, std::move(connector_receiver));
     connector_receivers_.set_disconnect_handler(base::BindRepeating(
         &ServiceInstance::OnConnectorDisconnected, base::Unretained(this)));
   }
-  if (control_request.is_pending())
-    control_receiver_.Bind(std::move(control_request));
+  if (control_receiver.is_valid())
+    control_receiver_.Bind(std::move(control_receiver));
   service_manager_->NotifyServiceStarted(identity_, pid_);
   MaybeNotifyPidAvailable();
 }
@@ -564,18 +478,8 @@ void ServiceInstance::RegisterServiceInstance(
   std::move(callback).Run(mojom::ConnectResult::SUCCEEDED);
 }
 
-void ServiceInstance::Clone(mojom::ConnectorRequest request) {
-  connector_receivers_.Add(this, std::move(request));
-}
-
-void ServiceInstance::FilterInterfaces(
-    const std::string& filter_name,
-    const Identity& source,
-    mojom::InterfaceProviderRequest source_request,
-    mojom::InterfaceProviderPtr target) {
-  interface_filters_.insert(std::make_unique<InterfaceFilter>(
-      service_manager_, this, filter_name, source, identity_,
-      target.PassInterface(), std::move(source_request)));
+void ServiceInstance::Clone(mojo::PendingReceiver<mojom::Connector> receiver) {
+  connector_receivers_.Add(this, std::move(receiver));
 }
 
 void ServiceInstance::RequestQuit() {
@@ -588,7 +492,8 @@ void ServiceInstance::RequestQuit() {
   OnServiceDisconnected();
 }
 
-void ServiceInstance::AddListener(mojom::ServiceManagerListenerPtr listener) {
+void ServiceInstance::AddListener(
+    mojo::PendingRemote<mojom::ServiceManagerListener> listener) {
   service_manager_->AddListener(std::move(listener));
 }
 

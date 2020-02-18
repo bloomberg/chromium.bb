@@ -14,7 +14,6 @@
 #include <memory>
 #include <utility>
 
-#include "absl/memory/memory.h"
 #include "api/rtc_event_log/rtc_event_log.h"
 #include "logging/rtc_event_log/events/rtc_event_dtls_transport_state.h"
 #include "logging/rtc_event_log/events/rtc_event_dtls_writable_state.h"
@@ -381,6 +380,14 @@ bool DtlsTransport::GetSrtpCryptoSuite(int* cipher) {
   return dtls_->GetDtlsSrtpCryptoSuite(cipher);
 }
 
+bool DtlsTransport::GetSslVersionBytes(int* version) const {
+  if (dtls_state() != DTLS_TRANSPORT_CONNECTED) {
+    return false;
+  }
+
+  return dtls_->GetSslVersionBytes(version);
+}
+
 // Called from upper layers to send a media packet.
 int DtlsTransport::SendPacket(const char* data,
                               size_t size,
@@ -646,13 +653,15 @@ void DtlsTransport::OnDtlsEvent(rtc::StreamInterface* dtls, int sig, int err) {
         SignalReadPacket(this, buf, read, rtc::TimeMicros(), 0);
       } else if (ret == rtc::SR_EOS) {
         // Remote peer shut down the association with no error.
-        RTC_LOG(LS_INFO) << ToString() << ": DTLS transport closed";
+        RTC_LOG(LS_INFO) << ToString() << ": DTLS transport closed by remote";
         set_writable(false);
         set_dtls_state(DTLS_TRANSPORT_CLOSED);
       } else if (ret == rtc::SR_ERROR) {
         // Remote peer shut down the association with an error.
-        RTC_LOG(LS_INFO) << ToString()
-                         << ": DTLS transport error, code=" << read_error;
+        RTC_LOG(LS_INFO)
+            << ToString()
+            << ": Closed by remote with DTLS transport error, code="
+            << read_error;
         set_writable(false);
         set_dtls_state(DTLS_TRANSPORT_FAILED);
       }
@@ -752,7 +761,7 @@ void DtlsTransport::set_writable(bool writable) {
   }
   if (event_log_) {
     event_log_->Log(
-        absl::make_unique<webrtc::RtcEventDtlsWritableState>(writable));
+        std::make_unique<webrtc::RtcEventDtlsWritableState>(writable));
   }
   RTC_LOG(LS_VERBOSE) << ToString() << ": set_writable to: " << writable;
   writable_ = writable;
@@ -767,7 +776,7 @@ void DtlsTransport::set_dtls_state(DtlsTransportState state) {
     return;
   }
   if (event_log_) {
-    event_log_->Log(absl::make_unique<webrtc::RtcEventDtlsTransportState>(
+    event_log_->Log(std::make_unique<webrtc::RtcEventDtlsTransportState>(
         ConvertDtlsTransportState(state)));
   }
   RTC_LOG(LS_VERBOSE) << ToString() << ": set_dtls_state from:" << dtls_state_

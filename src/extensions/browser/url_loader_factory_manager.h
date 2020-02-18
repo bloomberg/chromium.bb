@@ -9,8 +9,8 @@
 #include "content/public/browser/navigation_handle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/host_id.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -58,16 +58,43 @@ class URLLoaderFactoryManager {
                               const HostID& host_id);
 
   // Creates a URLLoaderFactory that should be used for requests initiated from
-  // |process| by |initiator_origin|.  Returns a "null" InterfacePtrInfo if the
-  // default, extensions-agnostic URLLoaderFactory should be used (if either
-  // |initiator_origin| is not associated with an extension, or the extension
-  // doesn't need a special URLLoaderFactory).
-  static network::mojom::URLLoaderFactoryPtrInfo CreateFactory(
+  // |process| by |origin|.
+  //
+  // The behavior of this method depends on the intended consumer of the
+  // URLLoaderFactory:
+  // - "web": No changes are made to |factory_params| - an extensions-agnostic,
+  //   default URLLoaderFactory should be used
+  // - "extension": Extension-specific permissions are set in |factory_params|
+  //   if the factory will be used by an extension frame (e.g. from an extension
+  //   background page).
+  // - "content script": For most extensions no changes are made to
+  //   |factory_params| (e.g. for non-allowlisted and/or manifest V3+
+  //   extensions), but some extensions might need to set extension-specific
+  //   security properties in the URLLoaderFactory used by content scripts.
+  // The method recognizes the intended consumer based on |origin| ("web" vs
+  // other cases) and |process| ("extension" vs "content script").
+  //
+  // The following examples might help understand the difference between
+  // |origin| and other properties of a factory and/or network request:
+  //
+  //                               |    web      |  extension  | content script
+  // ------------------------------|-------------|-------------|---------------
+  // network::ResourceRequest:     |             |             |
+  // - request_initiator           |    web      |  extension  |     web
+  // - isolated_world_origin       |   nullopt   |   nullopt   |  extension
+  //                               |             |             |
+  // OverrideFactory...Params:     |             |             |
+  // - origin                      |    web      |  extension  |  extension
+  //                               |             |             |
+  // URLLoaderFactoryParams:       |             |             |
+  // - request_initiator_site_lock |    web      |  extension  |     web
+  // - overridden properties?      |    no       |     yes     |  if needed
+  //    - is_corb_enabled          |  secure     |  ext-based  | ext-based if
+  //    - ..._access_patterns      |    default  |             |   allowlisted
+  static void OverrideURLLoaderFactoryParams(
       content::RenderProcessHost* process,
-      network::mojom::NetworkContext* network_context,
-      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-          header_client,
-      const url::Origin& initiator_origin);
+      const url::Origin& origin,
+      network::mojom::URLLoaderFactoryParams* factory_params);
 
   static void AddExtensionToAllowlistForTesting(const Extension& extension);
   static void RemoveExtensionFromAllowlistForTesting(

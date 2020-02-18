@@ -20,7 +20,7 @@
 #include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -33,7 +33,7 @@
 namespace gpu {
 
 namespace {
-sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
+sk_sp<SkPromiseImageTexture> CreatePromiseTextureVideo(
     viz::VulkanContextProvider* context_provider,
     base::android::ScopedHardwareBufferHandle ahb_handle,
     gfx::Size size,
@@ -93,8 +93,9 @@ sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
   return promise_texture;
 }
 
-void DestroyVkPromiseTexture(viz::VulkanContextProvider* context_provider,
-                             sk_sp<SkPromiseImageTexture> promise_texture) {
+void DestroyVkPromiseTextureVideo(
+    viz::VulkanContextProvider* context_provider,
+    sk_sp<SkPromiseImageTexture> promise_texture) {
   DCHECK(promise_texture);
   DCHECK(promise_texture->unique());
 
@@ -179,20 +180,22 @@ void SharedImageVideo::OnContextLost() {
   context_state_ = nullptr;
 }
 
-base::Optional<VulkanYCbCrInfo> SharedImageVideo::GetYcbcrInfo() {
+base::Optional<VulkanYCbCrInfo> SharedImageVideo::GetYcbcrInfo(
+    StreamTextureSharedImageInterface* stream_texture_sii,
+    scoped_refptr<SharedContextState> context_state) {
   // For non-vulkan context, return null.
-  if (!context_state_->GrContextIsVulkan())
+  if (!context_state->GrContextIsVulkan())
     return base::nullopt;
 
   // GetAHardwareBuffer() renders the latest image and gets AHardwareBuffer
   // from it.
-  auto scoped_hardware_buffer = stream_texture_sii_->GetAHardwareBuffer();
+  auto scoped_hardware_buffer = stream_texture_sii->GetAHardwareBuffer();
   if (!scoped_hardware_buffer) {
     return base::nullopt;
   }
 
   DCHECK(scoped_hardware_buffer->buffer());
-  auto* context_provider = context_state_->vk_context_provider();
+  auto* context_provider = context_state->vk_context_provider();
   VulkanImplementation* vk_implementation =
       context_provider->GetVulkanImplementation();
   VkDevice vk_device = context_provider->GetDeviceQueue()->GetVulkanDevice();
@@ -295,8 +298,8 @@ class SharedImageRepresentationVideoSkiaVk
     // |promise_texture_| could be null if we never being read.
     if (!promise_texture_)
       return;
-    DestroyVkPromiseTexture(context_state_->vk_context_provider(),
-                            std::move(promise_texture_));
+    DestroyVkPromiseTextureVideo(context_state_->vk_context_provider(),
+                                 std::move(promise_texture_));
   }
 
   sk_sp<SkSurface> BeginWriteAccess(
@@ -326,8 +329,8 @@ class SharedImageRepresentationVideoSkiaVk
         LOG(ERROR) << "Failed to get the hardware buffer.";
         return nullptr;
       }
+      DCHECK(scoped_hardware_buffer_->buffer());
     }
-    DCHECK(scoped_hardware_buffer_->buffer());
 
     // Wait on the sync fd attached to the buffer to make sure buffer is
     // ready before the read. This is done by inserting the sync fd semaphore
@@ -339,7 +342,7 @@ class SharedImageRepresentationVideoSkiaVk
 
     if (!promise_texture_) {
       // Create the promise texture.
-      promise_texture_ = CreatePromiseTexture(
+      promise_texture_ = CreatePromiseTextureVideo(
           context_state_->vk_context_provider(),
           scoped_hardware_buffer_->TakeBuffer(), size(), format());
     }
@@ -519,16 +522,24 @@ class SharedImageRepresentationOverlayVideo
       : gpu::SharedImageRepresentationOverlay(manager, backing, tracker),
         stream_image_(backing->stream_texture_sii_) {}
 
+ protected:
   void BeginReadAccess() override {
-    TRACE_EVENT0("media",
-                 "SharedImageRepresentationOverlayVideo::BeginReadAccess");
-    // A |CodecImage| could only be overlaied if it is already in a SurfaceView.
-    DCHECK(!stream_image_->HasTextureOwner());
-
-    stream_image_->RenderToOverlay();
+    // A |CodecImage| is already in a SurfaceView, render content to the
+    // overlay.
+    if (!stream_image_->HasTextureOwner()) {
+      TRACE_EVENT0("media",
+                   "SharedImageRepresentationOverlayVideo::BeginReadAccess");
+      stream_image_->RenderToOverlay();
+    }
   }
 
   void EndReadAccess() override {}
+
+  gl::GLImage* GetGLImage() override {
+    DCHECK(stream_image_->HasTextureOwner())
+        << "The backing is already in a SurfaceView!";
+    return stream_image_.get();
+  }
 
   void NotifyOverlayPromotion(bool promotion,
                               const gfx::Rect& bounds) override {

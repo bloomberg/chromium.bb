@@ -107,6 +107,9 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
     content::WebContents* webrtc_internals_tab =
         browser()->tab_strip_model()->GetActiveWebContents();
 
+    // TODO(https://crbug.com/1004239): Stop relying on the legacy getStats()
+    // API.
+    ChangeToLegacyGetStats(webrtc_internals_tab);
     test::SleepInJavascript(webrtc_internals_tab, duration_msec);
 
     return std::unique_ptr<base::DictionaryValue>(
@@ -121,9 +124,16 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
     ASSERT_TRUE(test::HasReferenceFilesInCheckout());
     ASSERT_TRUE(embedded_test_server()->Start());
 
+    ASSERT_GE(TestTimeouts::test_launcher_timeout().InSeconds(), 100)
+        << "This is a long-running test; you must specify "
+           "--test-launcher-timeout to have a value of at least 100000.";
     ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 100)
         << "This is a long-running test; you must specify "
            "--ui-test-action-max-timeout to have a value of at least 100000.";
+    ASSERT_LT(TestTimeouts::action_max_timeout(),
+              TestTimeouts::test_launcher_timeout())
+        << "action_max_timeout needs to be strictly-less-than "
+           "test_launcher_timeout";
 
     content::WebContents* left_tab =
         OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
@@ -174,9 +184,16 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
     ASSERT_TRUE(test::HasReferenceFilesInCheckout());
     ASSERT_TRUE(embedded_test_server()->Start());
 
+    ASSERT_GE(TestTimeouts::test_launcher_timeout().InSeconds(), 100)
+        << "This is a long-running test; you must specify "
+           "--test-launcher-timeout to have a value of at least 100000.";
     ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 100)
         << "This is a long-running test; you must specify "
            "--ui-test-action-max-timeout to have a value of at least 100000.";
+    ASSERT_LT(TestTimeouts::action_max_timeout(),
+              TestTimeouts::test_launcher_timeout())
+        << "action_max_timeout needs to be strictly-less-than "
+           "test_launcher_timeout";
 
     content::WebContents* left_tab =
         OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);

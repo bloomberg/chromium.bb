@@ -142,7 +142,7 @@ RendererImpl::~RendererImpl() {
 
 void RendererImpl::Initialize(MediaResource* media_resource,
                               RendererClient* client,
-                              const PipelineStatusCB& init_cb) {
+                              PipelineStatusCallback init_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -152,11 +152,12 @@ void RendererImpl::Initialize(MediaResource* media_resource,
 
   client_ = client;
   media_resource_ = media_resource;
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
 
   if (HasEncryptedStream() && !cdm_context_) {
     DVLOG(1) << __func__ << ": Has encrypted stream but CDM is not set.";
     state_ = STATE_INIT_PENDING_CDM;
+    OnWaiting(WaitingReason::kNoCdm);
     return;
   }
 
@@ -165,7 +166,7 @@ void RendererImpl::Initialize(MediaResource* media_resource,
 }
 
 void RendererImpl::SetCdm(CdmContext* cdm_context,
-                          const CdmAttachedCB& cdm_attached_cb) {
+                          CdmAttachedCB cdm_attached_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(cdm_context);
@@ -173,12 +174,12 @@ void RendererImpl::SetCdm(CdmContext* cdm_context,
 
   if (cdm_context_) {
     DVLOG(1) << "Switching CDM not supported.";
-    cdm_attached_cb.Run(false);
+    std::move(cdm_attached_cb).Run(false);
     return;
   }
 
   cdm_context_ = cdm_context;
-  cdm_attached_cb.Run(true);
+  std::move(cdm_attached_cb).Run(true);
 
   if (state_ != STATE_INIT_PENDING_CDM)
     return;
@@ -188,7 +189,15 @@ void RendererImpl::SetCdm(CdmContext* cdm_context,
   InitializeAudioRenderer();
 }
 
-void RendererImpl::Flush(const base::Closure& flush_cb) {
+void RendererImpl::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  DVLOG(1) << __func__;
+  DCHECK(!latency_hint || (*latency_hint >= base::TimeDelta()));
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  // TODO(chcunningham): Plumb to audio/video renderers in a follow up CL.
+}
+
+void RendererImpl::Flush(base::OnceClosure flush_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!flush_cb_);
@@ -196,7 +205,7 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
   TRACE_EVENT_ASYNC_BEGIN0("media", "RendererImpl::Flush", this);
 
   if (state_ == STATE_FLUSHED) {
-    flush_cb_ = BindToCurrentLoop(flush_cb);
+    flush_cb_ = BindToCurrentLoop(std::move(flush_cb));
     FinishFlush();
     return;
   }
@@ -206,7 +215,7 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
     return;
   }
 
-  flush_cb_ = flush_cb;
+  flush_cb_ = std::move(flush_cb);
   state_ = STATE_FLUSHING;
 
   // If a stream restart is pending, this Flush() will complete it. Upon flush
@@ -343,7 +352,7 @@ bool RendererImpl::HasEncryptedStream() {
 void RendererImpl::FinishInitialization(PipelineStatus status) {
   DCHECK(init_cb_);
   TRACE_EVENT_ASYNC_END1("media", "RendererImpl::Initialize", this, "status",
-                         MediaLog::PipelineStatusToString(status));
+                         PipelineStatusToString(status));
   std::move(init_cb_).Run(status);
 }
 
@@ -359,8 +368,8 @@ void RendererImpl::InitializeAudioRenderer() {
   DCHECK_EQ(state_, STATE_INITIALIZING);
   DCHECK(init_cb_);
 
-  PipelineStatusCB done_cb =
-      base::Bind(&RendererImpl::OnAudioRendererInitializeDone, weak_this_);
+  PipelineStatusCB done_cb = base::BindRepeating(
+      &RendererImpl::OnAudioRendererInitializeDone, weak_this_);
 
   // TODO(servolk): Implement proper support for multiple streams. But for now
   // pick the first enabled stream to preserve the existing behavior.
@@ -410,8 +419,8 @@ void RendererImpl::InitializeVideoRenderer() {
   DCHECK_EQ(state_, STATE_INITIALIZING);
   DCHECK(init_cb_);
 
-  PipelineStatusCB done_cb =
-      base::Bind(&RendererImpl::OnVideoRendererInitializeDone, weak_this_);
+  PipelineStatusCB done_cb = base::BindRepeating(
+      &RendererImpl::OnVideoRendererInitializeDone, weak_this_);
 
   // TODO(servolk): Implement proper support for multiple streams. But for now
   // pick the first enabled stream to preserve the existing behavior.
@@ -430,7 +439,8 @@ void RendererImpl::InitializeVideoRenderer() {
       new RendererClientInternal(DemuxerStream::VIDEO, this, media_resource_));
   video_renderer_->Initialize(
       video_stream, cdm_context_, video_renderer_client_.get(),
-      base::Bind(&RendererImpl::GetWallClockTimes, base::Unretained(this)),
+      base::BindRepeating(&RendererImpl::GetWallClockTimes,
+                          base::Unretained(this)),
       done_cb);
 }
 
@@ -490,8 +500,8 @@ void RendererImpl::FlushAudioRenderer() {
   if (!audio_renderer_ || !audio_playing_) {
     OnAudioRendererFlushDone();
   } else {
-    audio_renderer_->Flush(base::BindRepeating(
-        &RendererImpl::OnAudioRendererFlushDone, weak_this_));
+    audio_renderer_->Flush(
+        base::BindOnce(&RendererImpl::OnAudioRendererFlushDone, weak_this_));
   }
 }
 
@@ -526,8 +536,8 @@ void RendererImpl::FlushVideoRenderer() {
   if (!video_renderer_ || !video_playing_) {
     OnVideoRendererFlushDone();
   } else {
-    video_renderer_->Flush(base::BindRepeating(
-        &RendererImpl::OnVideoRendererFlushDone, weak_this_));
+    video_renderer_->Flush(
+        base::BindOnce(&RendererImpl::OnVideoRendererFlushDone, weak_this_));
   }
 }
 
@@ -715,8 +725,8 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
         deferred_video_underflow_cb_.IsCancelled()) {
       DVLOG(4) << __func__ << " Deferring HAVE_NOTHING for video stream.";
       deferred_video_underflow_cb_.Reset(
-          base::Bind(&RendererImpl::OnBufferingStateChange, weak_this_, type,
-                     new_buffering_state, reason));
+          base::BindRepeating(&RendererImpl::OnBufferingStateChange, weak_this_,
+                              type, new_buffering_state, reason));
       task_runner_->PostDelayedTask(FROM_HERE,
                                     deferred_video_underflow_cb_.callback(),
                                     video_underflow_threshold_);
@@ -887,7 +897,7 @@ void RendererImpl::OnError(PipelineStatus error) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
   TRACE_EVENT1("media", "RendererImpl::OnError", "error",
-               MediaLog::PipelineStatusToString(error));
+               PipelineStatusToString(error));
 
   // An error has already been delivered.
   if (state_ == STATE_ERROR)
@@ -974,7 +984,7 @@ void RendererImpl::OnSelectedVideoTracksChanged(
   }
 
   pending_video_track_change_ = true;
-  video_renderer_->Flush(base::BindRepeating(
+  video_renderer_->Flush(base::BindOnce(
       &RendererImpl::CleanUpTrackChange, weak_this_,
       base::Passed(&fix_stream_cb), &video_ended_, &video_playing_));
 }
@@ -1016,7 +1026,7 @@ void RendererImpl::OnEnabledAudioTracksChanged(
   if (audio_playing_)
     PausePlayback();
 
-  audio_renderer_->Flush(base::BindRepeating(
+  audio_renderer_->Flush(base::BindOnce(
       &RendererImpl::CleanUpTrackChange, weak_this_,
       base::Passed(&fix_stream_cb), &audio_ended_, &audio_playing_));
 }

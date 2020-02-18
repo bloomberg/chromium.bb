@@ -13,7 +13,6 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/base/math_util.h"
-#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
@@ -288,6 +287,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXPECT_SET_NEEDS_COMMIT(1, top->SetBounds(arbitrary_size));
   EXPECT_SET_NEEDS_COMMIT(0, mask_layer1->SetBounds(arbitrary_size));
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(top->SetMaskLayer(mask_layer1));
 
   // Set up the impl layers after the full tree is constructed, including the
@@ -327,22 +327,6 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(top->SetContentsOpaque(true));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
-      top->PushPropertiesTo(top_impl.get());
-      child->PushPropertiesTo(child_impl.get());
-      child2->PushPropertiesTo(child2_impl.get());
-      grand_child->PushPropertiesTo(grand_child_impl.get()));
-
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(top->SetShouldFlattenTransform(false));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
-      top->PushPropertiesTo(top_impl.get());
-      child->PushPropertiesTo(child_impl.get());
-      child2->PushPropertiesTo(child2_impl.get());
-      grand_child->PushPropertiesTo(grand_child_impl.get()));
-
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(top->Set3dSortingContextId(1));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       top->PushPropertiesTo(top_impl.get());
       child->PushPropertiesTo(child_impl.get());
@@ -495,6 +479,75 @@ TEST_F(LayerTest, AddAndRemoveChild) {
   EXPECT_EQ(parent.get(), child->RootLayer());
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), child->RemoveFromParent());
+}
+
+TEST_F(LayerTest, SetMaskLayer) {
+  scoped_refptr<Layer> parent = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  mask->SetPosition(gfx::PointF(88, 99));
+
+  parent->SetMaskLayer(mask);
+  ASSERT_EQ(1u, parent->children().size());
+  EXPECT_EQ(parent.get(), mask->parent());
+  EXPECT_EQ(mask.get(), parent->children()[0]);
+  EXPECT_TRUE(parent->IsMaskedByChild());
+
+  // Should ignore mask layer's position.
+  EXPECT_TRUE(mask->position().IsOrigin());
+  mask->SetPosition(gfx::PointF(11, 22));
+  EXPECT_TRUE(mask->position().IsOrigin());
+
+  parent->SetMaskLayer(mask);
+  ASSERT_EQ(1u, parent->children().size());
+  EXPECT_EQ(parent.get(), mask->parent());
+  EXPECT_EQ(mask.get(), parent->children()[0]);
+  EXPECT_TRUE(parent->IsMaskedByChild());
+
+  scoped_refptr<PictureLayer> mask2 = PictureLayer::Create(&client);
+  parent->SetMaskLayer(mask2);
+  EXPECT_FALSE(mask->parent());
+  ASSERT_EQ(1u, parent->children().size());
+  EXPECT_EQ(parent.get(), mask2->parent());
+  EXPECT_EQ(mask2.get(), parent->children()[0]);
+  EXPECT_TRUE(parent->IsMaskedByChild());
+
+  parent->SetMaskLayer(nullptr);
+  EXPECT_EQ(0u, parent->children().size());
+  EXPECT_FALSE(mask2->parent());
+  EXPECT_FALSE(parent->IsMaskedByChild());
+}
+
+TEST_F(LayerTest, RemoveMaskLayerFromParent) {
+  scoped_refptr<Layer> parent = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+
+  parent->SetMaskLayer(mask);
+  mask->RemoveFromParent();
+  EXPECT_EQ(0u, parent->children().size());
+  EXPECT_FALSE(mask->parent());
+  EXPECT_FALSE(parent->IsMaskedByChild());
+
+  scoped_refptr<PictureLayer> mask2 = PictureLayer::Create(&client);
+  parent->SetMaskLayer(mask2);
+  EXPECT_TRUE(parent->IsMaskedByChild());
+}
+
+TEST_F(LayerTest, AddChildAfterSetMaskLayer) {
+  scoped_refptr<Layer> parent = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  parent->SetMaskLayer(mask);
+  EXPECT_TRUE(parent->IsMaskedByChild());
+
+  parent->AddChild(Layer::Create());
+  EXPECT_EQ(mask.get(), parent->children().back().get());
+  EXPECT_TRUE(parent->IsMaskedByChild());
+
+  parent->InsertChild(Layer::Create(), parent->children().size());
+  EXPECT_EQ(mask.get(), parent->children().back().get());
+  EXPECT_TRUE(parent->IsMaskedByChild());
 }
 
 TEST_F(LayerTest, AddSameChildTwice) {
@@ -848,58 +901,6 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
   EXPECT_TRUE(LayerNeedsDisplay(test_layer.get()));
 }
 
-TEST_F(LayerTest, TestSettingMainThreadScrollingReason) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
-                                  layer_tree_host_->SetRootLayer(test_layer));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(true));
-
-  // sanity check of initial test condition
-  EXPECT_FALSE(LayerNeedsDisplay(test_layer.get()));
-
-  uint32_t reasons = 0, reasons_to_clear = 0, reasons_after_clearing = 0;
-  reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
-  reasons |= MainThreadScrollingReason::kHandlingScrollFromMainThread;
-  reasons |= MainThreadScrollingReason::kScrollbarScrolling;
-
-  reasons_to_clear |= MainThreadScrollingReason::kHandlingScrollFromMainThread;
-
-  reasons_after_clearing |=
-      MainThreadScrollingReason::kThreadedScrollingDisabled;
-  reasons_after_clearing |= MainThreadScrollingReason::kScrollbarScrolling;
-
-  // Check that the reasons are added correctly.
-  EXPECT_SET_NEEDS_COMMIT(
-      1, test_layer->AddMainThreadScrollingReasons(
-             MainThreadScrollingReason::kThreadedScrollingDisabled));
-  EXPECT_SET_NEEDS_COMMIT(
-      1, test_layer->AddMainThreadScrollingReasons(
-             MainThreadScrollingReason::kHandlingScrollFromMainThread));
-  EXPECT_SET_NEEDS_COMMIT(1,
-                          test_layer->AddMainThreadScrollingReasons(
-                              MainThreadScrollingReason::kScrollbarScrolling));
-  EXPECT_EQ(reasons, test_layer->GetMainThreadScrollingReasons());
-
-  // Check that the reasons can be selectively cleared.
-  EXPECT_SET_NEEDS_COMMIT(
-      1, test_layer->ClearMainThreadScrollingReasons(reasons_to_clear));
-  EXPECT_EQ(reasons_after_clearing,
-            test_layer->GetMainThreadScrollingReasons());
-
-  // Check that clearing non-set reasons doesn't set needs commit.
-  reasons_to_clear = 0;
-  reasons_to_clear |= MainThreadScrollingReason::kFrameOverlay;
-  EXPECT_SET_NEEDS_COMMIT(
-      0, test_layer->ClearMainThreadScrollingReasons(reasons_to_clear));
-  EXPECT_EQ(reasons_after_clearing,
-            test_layer->GetMainThreadScrollingReasons());
-
-  // Check that adding an existing condition doesn't set needs commit.
-  EXPECT_SET_NEEDS_COMMIT(
-      0, test_layer->AddMainThreadScrollingReasons(
-             MainThreadScrollingReason::kThreadedScrollingDisabled));
-}
-
 TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
@@ -924,7 +925,6 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsFastRoundedCorner(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetOpacity(0.5f));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBlendMode(SkBlendMode::kHue));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsRootForIsolatedGroup(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetContentsOpaque(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetPosition(gfx::PointF(4.f, 9.f)));
   // We can use any layer pointer here since we aren't syncing for real.
@@ -932,9 +932,6 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetUserScrollable(true, false));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetScrollOffset(
       gfx::ScrollOffset(10, 10)));
-  EXPECT_SET_NEEDS_COMMIT(
-      1, test_layer->AddMainThreadScrollingReasons(
-             MainThreadScrollingReason::kThreadedScrollingDisabled));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetNonFastScrollableRegion(
       Region(gfx::Rect(1, 1, 2, 2))));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(
@@ -948,6 +945,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHideLayerAndSubtree(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetElementId(ElementId(2)));
 
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, test_layer->SetMaskLayer(mask_layer1));
 
   // The above tests should not have caused a change to the needs_display flag.
@@ -966,7 +964,6 @@ TEST_F(LayerTest, PushPropertiesAccumulatesUpdateRect) {
                                   layer_tree_host_->SetRootLayer(test_layer));
 
   host_impl_.active_tree()->SetRootLayerForTesting(std::move(impl_layer));
-  host_impl_.active_tree()->BuildLayerListForTesting();
   LayerImpl* impl_layer_ptr = host_impl_.active_tree()->LayerById(1);
   test_layer->SetNeedsDisplayRect(gfx::Rect(5, 5));
   test_layer->PushPropertiesTo(impl_layer_ptr);
@@ -1097,9 +1094,6 @@ void AssertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host) {
 
   for (size_t i = 0; i < layer->children().size(); ++i)
     AssertLayerTreeHostMatchesForSubtree(layer->children()[i].get(), host);
-
-  if (layer->mask_layer())
-    AssertLayerTreeHostMatchesForSubtree(layer->mask_layer(), host);
 }
 
 class LayerLayerTreeHostTest : public testing::Test {};

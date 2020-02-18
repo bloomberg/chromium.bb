@@ -15,6 +15,12 @@
 
 namespace quic {
 
+namespace test {
+
+class QpackBlockingManagerPeer;
+
+}  // namespace test
+
 // Class to keep track of blocked streams and blocking dynamic table entries:
 // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#blocked-decoding
 // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#blocked-insertion
@@ -34,21 +40,22 @@ class QUIC_EXPORT_PRIVATE QpackBlockingManager {
   void OnStreamCancellation(QuicStreamId stream_id);
 
   // Called when an Insert Count Increment instruction is received on the
-  // decoder stream.
-  void OnInsertCountIncrement(uint64_t increment);
+  // decoder stream.  Returns true if Known Received Count is successfully
+  // updated.  Returns false on overflow.
+  bool OnInsertCountIncrement(uint64_t increment);
 
   // Called when sending a header block containing references to dynamic table
   // entries with |indices|.  |indices| must not be empty.
   void OnHeaderBlockSent(QuicStreamId stream_id, IndexSet indices);
 
-  // Called when sending Insert With Name Reference or Duplicate instruction on
-  // encoder stream, inserting entry |inserted_index| referring to
-  // |referred_index|.
-  void OnReferenceSentOnEncoderStream(uint64_t inserted_index,
-                                      uint64_t referred_index);
-
-  // Returns the number of blocked streams.
-  uint64_t blocked_stream_count() const;
+  // Returns true if sending blocking references on stream |stream_id| would not
+  // increase the total number of blocked streams above
+  // |maximum_blocked_streams|.  Note that if |stream_id| is already blocked
+  // then it is always allowed to send more blocking references on it.
+  // Behavior is undefined if |maximum_blocked_streams| is smaller than number
+  // of currently blocked streams.
+  bool blocking_allowed_on_stream(QuicStreamId stream_id,
+                                  uint64_t maximum_blocked_streams) const;
 
   // Returns the index of the blocking entry with the smallest index,
   // or std::numeric_limits<uint64_t>::max() if there are no blocking entries.
@@ -62,6 +69,8 @@ class QUIC_EXPORT_PRIVATE QpackBlockingManager {
   static uint64_t RequiredInsertCount(const IndexSet& indices);
 
  private:
+  friend test::QpackBlockingManagerPeer;
+
   // A stream typically has only one header block, except for the rare cases of
   // 1xx responses, trailers, or push promises.  Even if there are multiple
   // header blocks sent on a single stream, they might not be blocked at the
@@ -69,11 +78,6 @@ class QUIC_EXPORT_PRIVATE QpackBlockingManager {
   // footprint when holding few elements.
   using HeaderBlocksForStream = std::list<IndexSet>;
   using HeaderBlocks = QuicUnorderedMap<QuicStreamId, HeaderBlocksForStream>;
-
-  // Increases |known_received_count_| to |new_known_received_count|, which must
-  // me larger than |known_received_count_|.  Removes acknowledged references
-  // from |unacked_encoder_stream_references_|.
-  void IncreaseKnownReceivedCountTo(uint64_t new_known_received_count);
 
   // Increase or decrease the reference count for each index in |indices|.
   void IncreaseReferenceCounts(const IndexSet& indices);
@@ -83,13 +87,7 @@ class QUIC_EXPORT_PRIVATE QpackBlockingManager {
   // Must not contain a stream id with an empty queue.
   HeaderBlocks header_blocks_;
 
-  // Unacknowledged references on the encoder stream.
-  // The key is the absolute index of the inserted entry,
-  // the mapped value is the absolute index of the entry referred.
-  std::map<uint64_t, uint64_t> unacked_encoder_stream_references_;
-
-  // Number of references in |header_blocks_| and
-  // |unacked_encoder_stream_references_| for each entry index.
+  // Number of references in |header_blocks_| for each entry index.
   std::map<uint64_t, uint64_t> entry_reference_counts_;
 
   uint64_t known_received_count_;

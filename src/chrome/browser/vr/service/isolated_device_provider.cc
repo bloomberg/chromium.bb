@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/vr/service/vr_ui_host.h"
 #include "chrome/browser/vr/service/xr_device_service.h"
-#include "device/vr/buildflags/buildflags.h"
-#include "device/vr/isolated_gamepad_data_fetcher.h"
 
 namespace {
 constexpr int kMaxRetries = 3;
@@ -19,12 +17,11 @@ namespace vr {
 void IsolatedVRDeviceProvider::Initialize(
     base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                  device::mojom::VRDisplayInfoPtr,
-                                 device::mojom::XRRuntimePtr)>
+                                 mojo::PendingRemote<device::mojom::XRRuntime>)>
         add_device_callback,
     base::RepeatingCallback<void(device::mojom::XRDeviceId)>
         remove_device_callback,
     base::OnceClosure initialization_complete) {
-
   add_device_callback_ = std::move(add_device_callback);
   remove_device_callback_ = std::move(remove_device_callback);
   initialization_complete_ = std::move(initialization_complete);
@@ -37,24 +34,19 @@ bool IsolatedVRDeviceProvider::Initialized() {
 }
 
 void IsolatedVRDeviceProvider::OnDeviceAdded(
-    device::mojom::XRRuntimePtr device,
-    device::mojom::IsolatedXRGamepadProviderFactoryPtr gamepad_factory,
-    device::mojom::XRCompositorHostPtr compositor_host,
+    mojo::PendingRemote<device::mojom::XRRuntime> device,
+    mojo::PendingRemote<device::mojom::XRCompositorHost> compositor_host,
     device::mojom::XRDeviceId device_id) {
   add_device_callback_.Run(device_id, nullptr, std::move(device));
 
   auto ui_host =
       (*VRUiHost::GetFactory())(device_id, std::move(compositor_host));
   ui_host_map_.insert(std::make_pair(device_id, std::move(ui_host)));
-
-  device::IsolatedGamepadDataFetcher::Factory::AddGamepad(
-      device_id, std::move(gamepad_factory));
 }
 
 void IsolatedVRDeviceProvider::OnDeviceRemoved(device::mojom::XRDeviceId id) {
   remove_device_callback_.Run(id);
   ui_host_map_.erase(id);
-  device::IsolatedGamepadDataFetcher::Factory::RemoveGamepad(id);
 }
 
 void IsolatedVRDeviceProvider::OnServerError() {
@@ -63,7 +55,6 @@ void IsolatedVRDeviceProvider::OnServerError() {
   for (auto& entry : ui_host_map_) {
     auto id = entry.first;
     remove_device_callback_.Run(id);
-    device::IsolatedGamepadDataFetcher::Factory::RemoveGamepad(id);
   }
   ui_host_map_.clear();
 
@@ -77,7 +68,7 @@ void IsolatedVRDeviceProvider::OnServerError() {
     OnDevicesEnumerated();
   } else {
     device_provider_.reset();
-    binding_.Close();
+    receiver_.reset();
     retry_count_++;
     SetupDeviceProvider();
   }
@@ -98,23 +89,16 @@ void IsolatedVRDeviceProvider::OnDevicesEnumerated() {
 
 void IsolatedVRDeviceProvider::SetupDeviceProvider() {
   GetXRDeviceService()->BindRuntimeProvider(
-      mojo::MakeRequest(&device_provider_));
-  device_provider_.set_connection_error_handler(base::BindOnce(
+      device_provider_.BindNewPipeAndPassReceiver());
+  device_provider_.set_disconnect_handler(base::BindOnce(
       &IsolatedVRDeviceProvider::OnServerError, base::Unretained(this)));
 
-  device::mojom::IsolatedXRRuntimeProviderClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-  device_provider_->RequestDevices(std::move(client));
+  device_provider_->RequestDevices(receiver_.BindNewPipeAndPassRemote());
 }
 
-IsolatedVRDeviceProvider::IsolatedVRDeviceProvider() : binding_(this) {}
+IsolatedVRDeviceProvider::IsolatedVRDeviceProvider() = default;
 
-IsolatedVRDeviceProvider::~IsolatedVRDeviceProvider() {
-  for (auto& entry : ui_host_map_) {
-    auto device_id = entry.first;
-    device::IsolatedGamepadDataFetcher::Factory::RemoveGamepad(device_id);
-  }
-  // Default destructor handles renderer_host_map_ cleanup.
-}
+// Default destructor handles renderer_host_map_ cleanup.
+IsolatedVRDeviceProvider::~IsolatedVRDeviceProvider() = default;
 
 }  // namespace vr

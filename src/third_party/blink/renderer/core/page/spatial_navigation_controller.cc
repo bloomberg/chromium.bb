@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -96,7 +96,6 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
   if (distance == kMaxDistance)
     return;
 
-
   if (distance < *best_distance && IsUnobscured(candidate)) {
     *best_candidate = candidate;
     *best_distance = distance;
@@ -139,12 +138,20 @@ bool SpatialNavigationController::HandleArrowKeyboardEvent(
   if (direction == SpatialNavigationDirection::kNone)
     return false;
 
+  // If the focus has already moved by a previous handler, return false.
+  const Element* focused = GetFocusedElement();
+  if (focused && focused != event->target()) {
+    // SpatNav does not need to handle this arrow key because
+    // the webpage had a key-handler that already moved focus.
+    return false;
+  }
+
   // In focusless mode, the user must explicitly move focus in and out of an
   // editable so we can avoid advancing interest and we should swallow the
   // event. This prevents double-handling actions for things like search box
   // suggestions.
   if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
-    if (Element* focused = GetFocusedElement()) {
+    if (focused) {
       if (HasEditableStyle(*focused) || focused->IsTextControl())
         return true;
     }
@@ -450,10 +457,10 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
     element = interest_element_;
   }
 
-  DispatchMouseMoveAt(element);
-
-  if (!element)
+  if (!element) {
+    DispatchMouseMoveAt(nullptr);
     return;
+  }
 
   // Before focusing the new element, check if we're leaving an iframe (= moving
   // focus out of an iframe). In this case, we want the exited [nested] iframes
@@ -463,11 +470,15 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
 
   element->focus(FocusParams(SelectionBehaviorOnFocus::kReset,
                              kWebFocusTypeSpatialNavigation, nullptr));
+  DispatchMouseMoveAt(element);
 }
 
 void SpatialNavigationController::DispatchMouseMoveAt(Element* element) {
-  FloatPoint event_position =
-      element ? RectInViewport(*element).Location() : FloatPoint(-1, -1);
+  FloatPoint event_position(-1, -1);
+  if (element) {
+    event_position = RectInViewport(*element).Location();
+    event_position.Move(1, 1);
+  }
 
   // TODO(bokan): Can we get better screen coordinates?
   FloatPoint event_position_screen = event_position;
@@ -620,9 +631,9 @@ bool SpatialNavigationController::UpdateIsFormFocused(Element* element) {
 
 bool SpatialNavigationController::UpdateHasDefaultVideoControls(
     Element* element) {
-  bool has_default_video_controls =
-      IsFocused(element) && IsHTMLVideoElement(element) &&
-      ToHTMLVideoElement(element)->ShouldShowControls();
+  auto* video_element = DynamicTo<HTMLVideoElement>(element);
+  bool has_default_video_controls = IsFocused(element) && video_element &&
+                                    video_element->ShouldShowControls();
   if (has_default_video_controls ==
       spatial_navigation_state_->has_default_video_controls) {
     return false;
@@ -639,7 +650,7 @@ SpatialNavigationController::GetSpatialNavigationHost() {
     if (!frame)
       return spatial_navigation_host_;
 
-    frame->GetInterfaceProvider().GetInterface(
+    frame->GetBrowserInterfaceBroker().GetInterface(
         spatial_navigation_host_.BindNewPipeAndPassReceiver(
             frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }

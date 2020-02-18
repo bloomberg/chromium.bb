@@ -77,6 +77,14 @@ base::Optional<base::Token> TabRestoreServiceDelegateImplIOS::GetTabGroupForTab(
   return base::nullopt;
 }
 
+TabRestoreServiceDelegateImplIOS::TabGroupMetadata
+TabRestoreServiceDelegateImplIOS::GetTabGroupMetadata(base::Token group) const {
+  // Since we never return a group from GetTabGroupForTab(), this should never
+  // be called.
+  NOTREACHED();
+  return TabGroupMetadata();
+}
+
 const gfx::Rect TabRestoreServiceDelegateImplIOS::GetRestoredBounds() const {
   // Not supported by iOS.
   return gfx::Rect();
@@ -98,6 +106,7 @@ sessions::LiveTab* TabRestoreServiceDelegateImplIOS::AddRestoredTab(
     int selected_navigation,
     const std::string& extension_app_id,
     base::Optional<base::Token> group,
+    const TabGroupMetadata* group_metadata,
     bool select,
     bool pin,
     bool from_last_session,
@@ -135,4 +144,10 @@ void TabRestoreServiceDelegateImplIOS::CloseTab() {
   WebStateList* web_state_list = GetWebStateList();
   web_state_list->CloseWebStateAt(web_state_list->active_index(),
                                   WebStateList::CLOSE_USER_ACTION);
+}
+
+void TabRestoreServiceDelegateImplIOS::SetTabGroupMetadata(
+    base::Token group,
+    TabGroupMetadata group_metadata) {
+  // Not supported on iOS.
 }

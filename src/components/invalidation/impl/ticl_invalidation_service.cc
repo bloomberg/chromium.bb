@@ -61,9 +61,9 @@ TiclInvalidationService::TiclInvalidationService(
     const std::string& user_agent,
     IdentityProvider* identity_provider,
     gcm::GCMDriver* gcm_driver,
-    base::RepeatingCallback<
-        void(base::WeakPtr<TiclInvalidationService>,
-             network::mojom::ProxyResolvingSocketFactoryRequest)>
+    base::RepeatingCallback<void(
+        base::WeakPtr<TiclInvalidationService>,
+        mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
         get_socket_factory_callback,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -362,15 +362,6 @@ void TiclInvalidationService::StartInvalidator() {
           url_loader_factory_->Clone(), network_connection_tracker_,
           gcm_invalidation_bridge_->CreateDelegate());
 
-  // TODO(crbug.com/912042): Deprecate this histogram, now that it only has one
-  // possible value.
-  enum InvalidationNetworkChannel {
-    // Deprecated: PUSH_CLIENT_CHANNEL = 0,
-    GCM_NETWORK_CHANNEL = 1,
-    NETWORK_CHANNELS_COUNT = 2
-  };
-  UMA_HISTOGRAM_ENUMERATION("Invalidations.NetworkChannel", GCM_NETWORK_CHANNEL,
-                            NETWORK_CHANNELS_COUNT);
   invalidator_ = std::make_unique<syncer::NonBlockingInvalidator>(
       network_channel_creator,
       invalidation_state_tracker_->GetInvalidatorClientId(),
@@ -386,12 +377,12 @@ void TiclInvalidationService::StartInvalidator() {
 }
 
 void TiclInvalidationService::UpdateInvalidatorCredentials() {
-  std::string email = identity_provider_->GetActiveAccountId();
+  CoreAccountId account_id = identity_provider_->GetActiveAccountId();
 
-  DCHECK(!email.empty()) << "Expected user to be signed in.";
+  DCHECK(!account_id.empty()) << "Expected user to be signed in.";
 
-  DVLOG(2) << "UpdateCredentials: " << email;
-  invalidator_->UpdateCredentials(email, access_token_);
+  DVLOG(2) << "UpdateCredentials: " << account_id;
+  invalidator_->UpdateCredentials(account_id, access_token_);
 }
 
 void TiclInvalidationService::StopInvalidator() {

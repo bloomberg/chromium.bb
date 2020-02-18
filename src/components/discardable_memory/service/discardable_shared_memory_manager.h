@@ -25,17 +25,15 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/discardable_memory/common/discardable_memory_export.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace base {
 class WaitableEvent;
-}
-
-namespace service_manager {
-struct BindSourceInfo;
 }
 
 namespace discardable_memory {
@@ -58,9 +56,9 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   // created in the current process.
   static DiscardableSharedMemoryManager* Get();
 
-  // Bind the manager to a mojo interface request.
-  void Bind(mojom::DiscardableSharedMemoryManagerRequest request,
-            const service_manager::BindSourceInfo& source_info);
+  // Bind the manager to a mojo interface receiver.
+  void Bind(
+      mojo::PendingReceiver<mojom::DiscardableSharedMemoryManager> receiver);
 
   // Overridden from base::DiscardableMemoryAllocator:
   std::unique_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
@@ -95,7 +93,11 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   void EnforceMemoryPolicy();
 
   // Returns bytes of allocated discardable memory.
-  size_t GetBytesAllocated();
+  size_t GetBytesAllocated() const override;
+
+  void ReleaseFreeMemory() override {
+    // Do nothing since we already subscribe to memory pressure notifications.
+  }
 
  private:
   class MemorySegment : public base::RefCountedThreadSafe<MemorySegment> {
@@ -131,37 +133,41 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   void DeletedDiscardableSharedMemory(int32_t id, int client_id);
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-  void ReduceMemoryUsageUntilWithinMemoryLimit();
-  void ReduceMemoryUsageUntilWithinLimit(size_t limit);
-  void ReleaseMemory(base::DiscardableSharedMemory* memory);
+  void ReduceMemoryUsageUntilWithinMemoryLimit()
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void ReduceMemoryUsageUntilWithinLimit(size_t limit)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void ReleaseMemory(base::DiscardableSharedMemory* memory)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
   void BytesAllocatedChanged(size_t new_bytes_allocated) const;
 
   // Virtual for tests.
   virtual base::Time Now() const;
-  virtual void ScheduleEnforceMemoryPolicy();
+  virtual void ScheduleEnforceMemoryPolicy() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Invalidate weak pointers for the mojo thread.
   void InvalidateMojoThreadWeakPtrs(base::WaitableEvent* event);
 
   int32_t next_client_id_;
 
-  base::Lock lock_;
+  mutable base::Lock lock_;
   using MemorySegmentMap =
       std::unordered_map<int32_t, scoped_refptr<MemorySegment>>;
   using ClientMap = std::unordered_map<int, MemorySegmentMap>;
-  ClientMap clients_;
+  ClientMap clients_ GUARDED_BY(lock_);
   // Note: The elements in |segments_| are arranged in such a way that they form
   // a heap. The LRU memory segment always first.
   using MemorySegmentVector = std::vector<scoped_refptr<MemorySegment>>;
-  MemorySegmentVector segments_;
-  size_t default_memory_limit_;
-  size_t memory_limit_;
-  size_t bytes_allocated_;
-  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
-  scoped_refptr<base::SingleThreadTaskRunner>
-      enforce_memory_policy_task_runner_;
-  base::Closure enforce_memory_policy_callback_;
-  bool enforce_memory_policy_pending_;
+  MemorySegmentVector segments_ GUARDED_BY(lock_);
+  size_t default_memory_limit_ GUARDED_BY(lock_);
+  size_t memory_limit_ GUARDED_BY(lock_);
+  size_t bytes_allocated_ GUARDED_BY(lock_);
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_
+      GUARDED_BY(lock_);
+  scoped_refptr<base::SingleThreadTaskRunner> enforce_memory_policy_task_runner_
+      GUARDED_BY(lock_);
+  base::Closure enforce_memory_policy_callback_ GUARDED_BY(lock_);
+  bool enforce_memory_policy_pending_ GUARDED_BY(lock_);
 
   // The message loop for running mojom::DiscardableSharedMemoryManager
   // implementations.

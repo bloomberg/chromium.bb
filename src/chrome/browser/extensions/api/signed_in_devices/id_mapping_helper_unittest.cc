@@ -33,13 +33,17 @@ TEST(IdMappingHelperTest, SetIdsForDevices) {
 
   devices.push_back(std::make_unique<DeviceInfo>(
       base::GenerateGUID(), "abc Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id1", base::Time(),
-      /*send_tab_to_self_receiving_enabled=*/true));
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id1",
+      base::SysInfo::HardwareInfo(), base::Time(),
+      /*send_tab_to_self_receiving_enabled=*/true,
+      /*sharing_info=*/base::nullopt));
 
   devices.push_back(std::make_unique<DeviceInfo>(
       base::GenerateGUID(), "def Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id2", base::Time(),
-      /*send_tab_to_self_receiving_enabled=*/true));
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id2",
+      base::SysInfo::HardwareInfo(), base::Time(),
+      /*send_tab_to_self_receiving_enabled=*/true,
+      /*sharing_info=*/base::nullopt));
 
   base::DictionaryValue dictionary;
 
@@ -56,8 +60,10 @@ TEST(IdMappingHelperTest, SetIdsForDevices) {
   // Now add a third device.
   devices.push_back(std::make_unique<DeviceInfo>(
       base::GenerateGUID(), "ghi Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id3", base::Time(),
-      /*send_tab_to_self_receiving_enabled=*/true));
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id3",
+      base::SysInfo::HardwareInfo(), base::Time(),
+      /*send_tab_to_self_receiving_enabled=*/true,
+      /*sharing_info=*/base::nullopt));
 
   CreateMappingForUnmappedDevices(devices, &dictionary);
 

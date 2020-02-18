@@ -8,9 +8,11 @@
 #include <memory>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "device/fido/fido_constants.h"
@@ -29,6 +31,9 @@ using blink::mojom::PublicKeyCredentialCreationOptions;
 using blink::mojom::PublicKeyCredentialCreationOptionsPtr;
 using blink::mojom::PublicKeyCredentialRequestOptions;
 using blink::mojom::PublicKeyCredentialRequestOptionsPtr;
+using device::AttestationConveyancePreference;
+using device::AuthenticatorAttachment;
+using device::AuthenticatorSelectionCriteria;
 using device::CredentialType;
 using device::FidoTransportProtocol;
 using device::PublicKeyCredentialDescriptor;
@@ -53,9 +58,11 @@ class CreditCardFIDOAuthenticator
     // Registration flow, including a challenge to sign.
     OPT_IN_WITH_CHALLENGE_FLOW,
     // Opt-in attempt flow, no challenge to sign.
-    OPT_IN_WITHOUT_CHALLENGE_FLOW,
+    OPT_IN_FETCH_CHALLENGE_FLOW,
     // Opt-out flow.
     OPT_OUT_FLOW,
+    // Authorization of a new card.
+    FOLLOWUP_AFTER_CVC_AUTH_FLOW,
   };
   class Requester {
    public:
@@ -63,21 +70,30 @@ class CreditCardFIDOAuthenticator
     virtual void OnFIDOAuthenticationComplete(
         bool did_succeed,
         const CreditCard* card = nullptr) = 0;
+    virtual void OnFidoAuthorizationComplete(bool did_succeed) = 0;
   };
   CreditCardFIDOAuthenticator(AutofillDriver* driver, AutofillClient* client);
   ~CreditCardFIDOAuthenticator() override;
 
-  // Offer the option to use WebAuthn for authenticating future card unmasking.
-  void ShowWebauthnOfferDialog();
-
-  // Authentication
+  // Invokes Authentication flow. Responds to |accessor_| with full pan.
   void Authenticate(const CreditCard* card,
                     base::WeakPtr<Requester> requester,
                     base::TimeTicks form_parsed_timestamp,
                     base::Value request_options);
 
-  // Registration
-  void Register(base::Value creation_options = base::Value());
+  // Invokes Registration flow. Sends credentials created from
+  // |creation_options| along with the |card_authorization_token| to Payments in
+  // order to enroll the user and authorize the corresponding card.
+  void Register(std::string card_authorization_token = std::string(),
+                base::Value creation_options = base::Value());
+
+  // Invokes an Authorization flow. Sends signature created from
+  // |request_options| along with the |card_authorization_token| to Payments in
+  // order to authorize the corresponding card. Notifies |requester| once
+  // Authorization is complete.
+  void Authorize(base::WeakPtr<Requester> requester,
+                 std::string card_authorization_token,
+                 base::Value request_options);
 
   // Opts the user out.
   void OptOut();
@@ -87,14 +103,27 @@ class CreditCardFIDOAuthenticator
   // and enabled. Otherwise invokes callback with false.
   virtual void IsUserVerifiable(base::OnceCallback<void(bool)> callback);
 
-  // The synchronous version of IsUserVerifiable. Used on settings page load.
-  bool IsUserVerifiable();
-
   // Returns true only if the user has opted-in to use WebAuthn for autofill.
   virtual bool IsUserOptedIn();
 
   // Ensures that local user opt-in pref is in-sync with payments server.
   void SyncUserOptIn(AutofillClient::UnmaskDetails& unmask_details);
+
+  // Cancel the ongoing verification process. Used to reset states in this class
+  // and in the FullCardRequest if any.
+  void CancelVerification();
+
+#if !defined(OS_ANDROID)
+  // Invoked when a Webauthn offer dialog is about to be shown.
+  void OnWebauthnOfferDialogRequested(std::string card_authorization_token);
+
+  // Invoked when the WebAuthn offer dialog is accepted or declined/cancelled.
+  void OnWebauthnOfferDialogUserResponse(bool did_accept);
+#endif
+
+  // Retrieves the strike database for offering FIDO authentication.
+  FidoAuthenticationStrikeDatabase*
+  GetOrCreateFidoAuthenticationStrikeDatabase();
 
   // Returns the current flow.
   Flow current_flow() { return current_flow_; }
@@ -124,7 +153,7 @@ class CreditCardFIDOAuthenticator
       PublicKeyCredentialCreationOptionsPtr creation_options);
 
   // Makes a request to payments to either opt-in or opt-out the user.
-  void OptChange(bool opt_in, base::Value attestation_response = base::Value());
+  void OptChange(base::Value authenticator_response = base::Value());
 
   // The callback invoked from the WebAuthn prompt including the
   // |assertion_response|, which will be sent to Google Payments to retrieve
@@ -141,13 +170,9 @@ class CreditCardFIDOAuthenticator
       MakeCredentialAuthenticatorResponsePtr attestation_response);
 
   // Sets prefstore to enable credit card authentication if rpc was successful.
-  void OnDidGetOptChangeResult(AutofillClient::PaymentsRpcResult result,
-                               bool user_is_opted_in,
-                               base::Value creation_options = base::Value());
-
-  // The callback invoked from the WebAuthn offer dialog when it is accepted or
-  // declined/cancelled.
-  void OnWebauthnOfferDialogUserResponse(bool did_accept);
+  void OnDidGetOptChangeResult(
+      AutofillClient::PaymentsRpcResult result,
+      payments::PaymentsClient::OptChangeResponseDetails& response);
 
   // payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(
@@ -184,14 +209,18 @@ class CreditCardFIDOAuthenticator
   // Returns true if |request_options| contains a challenge.
   bool IsValidCreationOptions(const base::Value& creation_options);
 
-  // Sets the value for |user_is_verifiable_|.
-  void SetUserIsVerifiable(bool user_is_verifiable);
+  // Logs the result of a WebAuthn prompt.
+  void LogWebauthnResult(AuthenticatorStatus status);
 
   // Card being unmasked.
   const CreditCard* card_;
 
   // The current flow in progress.
   Flow current_flow_ = NONE_FLOW;
+
+  // Token used for authorizing new cards. Helps tie CVC auth and FIDO calls
+  // together in order to support FIDO-only unmasking on future attempts.
+  std::string card_authorization_token_;
 
   // Meant for histograms recorded in FullCardRequest.
   base::TimeTicks form_parsed_timestamp_;
@@ -215,8 +244,10 @@ class CreditCardFIDOAuthenticator
   // Weak pointer to object that is requesting authentication.
   base::WeakPtr<Requester> requester_;
 
-  // Set when callback for IsUserVerifiable() is invoked with passed value.
-  base::Optional<bool> user_is_verifiable_ = base::nullopt;
+  // Strike database to ensure we limit the number of times we offer fido
+  // authentication.
+  std::unique_ptr<FidoAuthenticationStrikeDatabase>
+      fido_authentication_strike_database_;
 
   // Signaled when callback for IsUserVerifiable() is invoked.
   base::WaitableEvent user_is_verifiable_callback_received_;

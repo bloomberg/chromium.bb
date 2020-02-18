@@ -24,6 +24,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/host_frame_sink_client.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -31,13 +32,13 @@
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/compositor_lock.h"
 #include "ui/compositor/compositor_observer.h"
-#include "ui/compositor/external_begin_frame_client.h"
 #include "ui/compositor/layer_animator_collection.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/overlay_transform.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -73,8 +74,6 @@ class RasterContextProvider;
 namespace ui {
 
 class Compositor;
-class ExternalBeginFrameClient;
-class LatencyInfo;
 class Layer;
 class Reflector;
 class ScopedAnimationDurationScaleMode;
@@ -145,15 +144,19 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   virtual void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                          base::TimeTicks timebase,
                                          base::TimeDelta interval) = 0;
-  virtual void IssueExternalBeginFrame(ui::Compositor* compositor,
-                                       const viz::BeginFrameArgs& args) = 0;
+
+  virtual void IssueExternalBeginFrame(
+      ui::Compositor* compositor,
+      const viz::BeginFrameArgs& args,
+      bool force,
+      base::OnceCallback<void(const viz::BeginFrameAck&)> callback) = 0;
 
   virtual void SetOutputIsSecure(Compositor* compositor, bool secure) = 0;
 
   // Adds an observer for vsync parameter changes.
   virtual void AddVSyncParameterObserver(
       Compositor* compositor,
-      viz::mojom::VSyncParameterObserverPtr observer) = 0;
+      mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer) = 0;
 };
 
 // This class abstracts the creation of the 3D context for the compositor. It is
@@ -211,7 +214,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
              ui::ContextFactoryPrivate* context_factory_private,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner,
              bool enable_pixel_canvas,
-             ExternalBeginFrameClient* external_begin_frame_client = nullptr,
+             bool use_external_begin_frame_control = false,
              bool force_software_compositor = false,
              const char* trace_environment_name = nullptr);
   ~Compositor() override;
@@ -274,8 +277,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void DisableSwapUntilResize();
   void ReenableSwap();
 
-  void SetLatencyInfo(const LatencyInfo& latency_info);
-
   // Sets the compositor's device scale factor and size.
   void SetScaleAndSize(
       float scale,
@@ -287,6 +288,12 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void SetDisplayColorSpace(
       const gfx::ColorSpace& color_space,
       float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
+
+  // Set the transform/rotation info for the display output surface.
+  void SetDisplayTransformHint(gfx::OverlayTransform hint);
+  gfx::OverlayTransform display_transform_hint() const {
+    return host_->display_transform_hint();
+  }
 
   // Returns the size of the widget that is being drawn to in pixel coordinates.
   const gfx::Size& size() const { return size_; }
@@ -312,7 +319,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void SetDisplayVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval);
   void AddVSyncParameterObserver(
-      viz::mojom::VSyncParameterObserverPtr observer);
+      mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer);
 
   // Sets the widget for the compositor to render into.
   void SetAcceleratedWidget(gfx::AcceleratedWidget widget);
@@ -398,6 +405,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       const gfx::PresentationFeedback& feedback) override;
   void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override {}
+  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
+      override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
@@ -408,7 +417,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void OnCompleteSwapWithNewSize(const gfx::Size& size);
 #endif
 
@@ -427,8 +436,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   int activated_frame_count() const { return activated_frame_count_; }
   float refresh_rate() const { return refresh_rate_; }
 
-  ExternalBeginFrameClient* external_begin_frame_client() {
-    return external_begin_frame_client_;
+  bool use_external_begin_frame_control() const {
+    return use_external_begin_frame_control_;
   }
 
   void SetAllowLocksToExtendTimeout(bool allowed) {
@@ -477,10 +486,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   // Snapshot of last set vsync parameters, to avoid redundant IPCs.
   base::TimeTicks vsync_timebase_;
-  base::TimeDelta vsync_interval_;
+  base::TimeDelta vsync_interval_ = viz::BeginFrameArgs::DefaultInterval();
+  bool has_vsync_params_ = false;
 
-  ExternalBeginFrameClient* const external_begin_frame_client_;
-
+  const bool use_external_begin_frame_control_;
   const bool force_software_compositor_;
 
   // The device scale factor of the monitor that this compositor is compositing

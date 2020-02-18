@@ -35,7 +35,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
@@ -158,8 +157,7 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
       int worker_thread_id)
       : dispatcher_(dispatcher),
         observer_(this),
-        render_process_host_(render_process_host),
-        worker_thread_id_(worker_thread_id) {
+        render_process_host_(render_process_host) {
     observer_.Add(render_process_host_);
 
     DCHECK(ExtensionsClient::Get()
@@ -180,10 +178,11 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
     CleanUp();
   }
 
-  ExtensionFunction::ResponseCallback CreateCallback(int request_id) {
+  ExtensionFunction::ResponseCallback CreateCallback(int request_id,
+                                                     int worker_thread_id) {
     return base::Bind(
         &UIThreadWorkerResponseCallbackWrapper::OnExtensionFunctionCompleted,
-        weak_ptr_factory_.GetWeakPtr(), request_id);
+        weak_ptr_factory_.GetWeakPtr(), request_id, worker_thread_id);
   }
 
  private:
@@ -197,6 +196,7 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
   }
 
   void OnExtensionFunctionCompleted(int request_id,
+                                    int worker_thread_id,
                                     ExtensionFunction::ResponseType type,
                                     const base::ListValue& results,
                                     const std::string& error) {
@@ -205,7 +205,7 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
       return;
     }
     render_process_host_->Send(new ExtensionMsg_ResponseWorker(
-        worker_thread_id_, request_id, type == ExtensionFunction::SUCCEEDED,
+        worker_thread_id, request_id, type == ExtensionFunction::SUCCEEDED,
         results, error));
   }
 
@@ -213,7 +213,6 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
   ScopedObserver<content::RenderProcessHost, content::RenderProcessHostObserver>
       observer_{this};
   content::RenderProcessHost* const render_process_host_;
-  const int worker_thread_id_;
   base::WeakPtrFactory<UIThreadWorkerResponseCallbackWrapper> weak_ptr_factory_{
       this};
 
@@ -296,6 +295,13 @@ void ExtensionFunctionDispatcher::Dispatch(
     if (!rph)
       return;
 
+    WorkerId worker_id{params.extension_id, render_process_id,
+                       params.service_worker_version_id,
+                       params.worker_thread_id};
+    // Ignore if the worker has already stopped.
+    if (!ProcessManager::Get(browser_context_)->HasServiceWorker(worker_id))
+      return;
+
     WorkerResponseCallbackMapKey key(render_process_id,
                                      params.service_worker_version_id);
     UIThreadWorkerResponseCallbackWrapperMap::const_iterator iter =
@@ -311,7 +317,8 @@ void ExtensionFunctionDispatcher::Dispatch(
     }
     DispatchWithCallbackInternal(
         params, nullptr, render_process_id,
-        callback_wrapper->CreateCallback(params.request_id));
+        callback_wrapper->CreateCallback(params.request_id,
+                                         params.worker_thread_id));
   }
 }
 
@@ -496,7 +503,7 @@ ExtensionFunctionDispatcher::CreateExtensionFunction(
   if (!function) {
     LOG(ERROR) << "Unknown Extension API - " << params.name;
     SendAccessDenied(callback);
-    return NULL;
+    return nullptr;
   }
 
   function->SetArgs(params.arguments.Clone());

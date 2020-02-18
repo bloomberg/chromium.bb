@@ -36,12 +36,8 @@ namespace {
 const base::FeatureParam<bool> kEnableInterstitialForTopSites{
     &features::kLookalikeUrlNavigationSuggestionsUI, "topsites", false};
 
-using lookalikes::LookalikeUrlNavigationThrottle;
 using MatchType = LookalikeUrlInterstitialPage::MatchType;
 using UserAction = LookalikeUrlInterstitialPage::UserAction;
-using NavigationSuggestionEvent =
-    lookalikes::LookalikeUrlNavigationThrottle::NavigationSuggestionEvent;
-using lookalikes::DomainInfo;
 using url_formatter::TopDomainEntry;
 
 typedef content::NavigationThrottle::ThrottleCheckResult ThrottleCheckResult;
@@ -83,13 +79,16 @@ std::string GetMatchingSiteEngagementDomain(
 }
 
 // Returns the first matching top domain with an edit distance of at most one
-// to |domain_and_registry|.
+// to |domain_and_registry|. This search is done in lexicographic order on the
+// top 500 suitable domains, instead of in order by popularity. This means that
+// the resulting "similar" domain may not be the most popular domain that
+// matches.
 std::string GetSimilarDomainFromTop500(const DomainInfo& navigated_domain) {
   for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
-    for (const char* const top_domain_skeleton : top500_domains::kTop500) {
-      if (lookalikes::IsEditDistanceAtMostOne(
-              base::UTF8ToUTF16(navigated_skeleton),
-              base::UTF8ToUTF16(top_domain_skeleton))) {
+    for (const char* const top_domain_skeleton :
+         top500_domains::kTop500EditDistanceSkeletons) {
+      if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
+                                  base::UTF8ToUTF16(top_domain_skeleton))) {
         const std::string top_domain =
             url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton)
                 .domain;
@@ -125,9 +124,8 @@ std::string GetSimilarDomainFromEngagedSites(
         continue;
       }
       for (const std::string& engaged_skeleton : engaged_site.skeletons) {
-        if (lookalikes::IsEditDistanceAtMostOne(
-                base::UTF8ToUTF16(navigated_skeleton),
-                base::UTF8ToUTF16(engaged_skeleton))) {
+        if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
+                                    base::UTF8ToUTF16(engaged_skeleton))) {
           // If the only difference between the navigated and engaged
           // domain is the registry part, this is unlikely to be a spoofing
           // attempt. Ignore this match and continue. E.g. If the navigated
@@ -155,25 +153,42 @@ bool IsInterstitialReload(const GURL& current_url,
 void RecordUMAFromMatchType(MatchType match_type) {
   switch (match_type) {
     case MatchType::kTopSite:
-      RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
+      RecordEvent(LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+                      kMatchTopSite);
       break;
     case MatchType::kSiteEngagement:
-      RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
+      RecordEvent(LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+                      kMatchSiteEngagement);
       break;
     case MatchType::kEditDistance:
-      RecordEvent(NavigationSuggestionEvent::kMatchEditDistance);
+      RecordEvent(LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+                      kMatchEditDistance);
       break;
     case MatchType::kEditDistanceSiteEngagement:
-      RecordEvent(NavigationSuggestionEvent::kMatchEditDistanceSiteEngagement);
+      RecordEvent(LookalikeUrlNavigationThrottle::NavigationSuggestionEvent::
+                      kMatchEditDistanceSiteEngagement);
       break;
     case MatchType::kNone:
       break;
   }
 }
 
-}  // namespace
+// Returns the index of the first URL in the redirect chain which has a
+// different eTLD+1 than the initial URL. If all URLs have the same eTLD+1,
+// returns 0.
+size_t FindFirstCrossSiteURL(const std::vector<GURL>& redirect_chain) {
+  DCHECK_GE(redirect_chain.size(), 2u);
+  const GURL initial_url = redirect_chain[0];
+  const std::string initial_etld_plus_one = GetETLDPlusOne(initial_url.host());
+  for (size_t i = 1; i < redirect_chain.size(); i++) {
+    if (initial_etld_plus_one != GetETLDPlusOne(redirect_chain[i].host())) {
+      return i;
+    }
+  }
+  return 0;
+}
 
-namespace lookalikes {
+}  // namespace
 
 // static
 const char LookalikeUrlNavigationThrottle::kHistogramName[] =
@@ -235,10 +250,21 @@ bool IsEditDistanceAtMostOne(const base::string16& str1,
 
 bool IsSafeRedirect(const std::string& matching_domain,
                     const std::vector<GURL>& redirect_chain) {
-  if (redirect_chain.size() != 2) {
+  if (redirect_chain.size() < 2) {
     return false;
   }
-  const GURL redirect_target = redirect_chain[redirect_chain.size() - 1];
+  const size_t first_cross_site_redirect =
+      FindFirstCrossSiteURL(redirect_chain);
+  DCHECK_GE(first_cross_site_redirect, 0u);
+  DCHECK_LE(first_cross_site_redirect, redirect_chain.size() - 1);
+  if (first_cross_site_redirect == 0) {
+    // All URLs in the redirect chain belong to the same eTLD+1.
+    return true;
+  }
+  // There is a redirect from the initial eTLD+1 to another site. In order to be
+  // a safe redirect, it should be to the root of |matching_domain|. This
+  // ignores any further redirects after |matching_domain|.
+  const GURL redirect_target = redirect_chain[first_cross_site_redirect];
   return matching_domain == GetETLDPlusOne(redirect_target.host()) &&
          redirect_target == redirect_target.GetWithEmptyPath();
 }
@@ -588,5 +614,3 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
 
   return content::NavigationThrottle::PROCEED;
 }
-
-}  // namespace lookalikes

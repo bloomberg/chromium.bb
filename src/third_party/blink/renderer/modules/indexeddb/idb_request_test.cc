@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
-#include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
@@ -91,7 +90,7 @@ class BackendDatabaseWithMockedClose
                          int64_t transaction_id,
                          const WTF::Vector<int64_t>& object_store_ids,
                          mojom::blink::IDBTransactionMode mode,
-                         bool relaxed_durability) override {}
+                         mojom::blink::IDBTransactionDurability) override {}
   MOCK_METHOD0(Close, void());
   void VersionChangeIgnored() override {}
   void AddObserver(int64_t transaction_id,
@@ -198,7 +197,8 @@ class IDBRequestTest : public testing::Test {
     HashSet<String> transaction_scope = {"store"};
     transaction_ = IDBTransaction::CreateNonVersionChange(
         scope.GetScriptState(), std::move(transaction_backend), kTransactionId,
-        transaction_scope, mojom::IDBTransactionMode::ReadOnly, db_.Get());
+        transaction_scope, mojom::IDBTransactionMode::ReadOnly,
+        mojom::IDBTransactionDurability::Relaxed, db_.Get());
 
     IDBKeyPath store_key_path("primaryKey");
     scoped_refptr<IDBObjectStoreMetadata> store_metadata = base::AdoptRef(
@@ -435,10 +435,9 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
 class AsyncTraceStateForTesting : public IDBRequest::AsyncTraceState {
  public:
   AsyncTraceStateForTesting() : IDBRequest::AsyncTraceState() {}
-  AsyncTraceStateForTesting(AsyncTraceStateForTesting&& other) noexcept
+  AsyncTraceStateForTesting(AsyncTraceStateForTesting&& other)
       : IDBRequest::AsyncTraceState(std::move(other)) {}
-  AsyncTraceStateForTesting& operator=(
-      AsyncTraceStateForTesting&& rhs) noexcept {
+  AsyncTraceStateForTesting& operator=(AsyncTraceStateForTesting&& rhs) {
     AsyncTraceState::operator=(std::move(rhs));
     return *this;
   }

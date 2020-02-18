@@ -36,7 +36,7 @@ class TestUrilib(cros_test_lib.MockTempDirTestCase):
 
     for protocol in tests:
       for uri in tests[protocol]:
-        self.assertEquals(protocol, urilib.ExtractProtocol(uri))
+        self.assertEqual(protocol, urilib.ExtractProtocol(uri))
 
   def testGetUriType(self):
     tests = {'gs': ['gs://',
@@ -52,7 +52,7 @@ class TestUrilib(cros_test_lib.MockTempDirTestCase):
 
     for uri_type in tests:
       for uri in tests[uri_type]:
-        self.assertEquals(uri_type, urilib.GetUriType(uri))
+        self.assertEqual(uri_type, urilib.GetUriType(uri))
 
   @cros_test_lib.NetworkTest()
   def testURLRetrieve(self):

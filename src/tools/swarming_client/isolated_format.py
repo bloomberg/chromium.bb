@@ -16,7 +16,6 @@ from utils import file_path
 from utils import fs
 from utils import tools
 
-
 # Version stored and expected in .isolated files.
 ISOLATED_FILE_VERSION = '1.6'
 
@@ -35,7 +34,7 @@ SUPPORTED_ALGOS = {
 
 
 # Used for serialization.
-SUPPORTED_ALGOS_REVERSE = dict((v, k) for k, v in SUPPORTED_ALGOS.iteritems())
+SUPPORTED_ALGOS_REVERSE = dict((v, k) for k, v in SUPPORTED_ALGOS.items())
 
 
 SUPPORTED_FILE_TYPES = ['basic', 'tar']

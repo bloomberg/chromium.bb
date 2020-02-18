@@ -396,14 +396,6 @@ void AstTraversalVisitor<Subclass>::VisitProperty(Property* expr) {
 }
 
 template <class Subclass>
-void AstTraversalVisitor<Subclass>::VisitResolvedProperty(
-    ResolvedProperty* expr) {
-  PROCESS_EXPRESSION(expr);
-  RECURSE_EXPRESSION(VisitVariableProxy(expr->object()));
-  RECURSE_EXPRESSION(VisitVariableProxy(expr->property()));
-}
-
-template <class Subclass>
 void AstTraversalVisitor<Subclass>::VisitCall(Call* expr) {
   PROCESS_EXPRESSION(expr);
   RECURSE_EXPRESSION(Visit(expr->expression()));
@@ -490,7 +482,13 @@ void AstTraversalVisitor<Subclass>::VisitClassLiteral(ClassLiteral* expr) {
   if (expr->instance_members_initializer_function() != nullptr) {
     RECURSE_EXPRESSION(Visit(expr->instance_members_initializer_function()));
   }
-  ZonePtrList<ClassLiteral::Property>* props = expr->properties();
+  ZonePtrList<ClassLiteral::Property>* private_members =
+      expr->private_members();
+  for (int i = 0; i < private_members->length(); ++i) {
+    ClassLiteralProperty* prop = private_members->at(i);
+    RECURSE_EXPRESSION(Visit(prop->value()));
+  }
+  ZonePtrList<ClassLiteral::Property>* props = expr->public_members();
   for (int i = 0; i < props->length(); ++i) {
     ClassLiteralProperty* prop = props->at(i);
     if (!prop->key()->IsLiteral()) {

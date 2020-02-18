@@ -70,15 +70,33 @@ QuicTime UberLossAlgorithm::GetLossTimeout() const {
   return loss_timeout;
 }
 
-void UberLossAlgorithm::SpuriousRetransmitDetected(
+void UberLossAlgorithm::SpuriousLossDetected(
     const QuicUnackedPacketMap& unacked_packets,
-    QuicTime time,
     const RttStats& rtt_stats,
-    QuicPacketNumber spurious_retransmission) {
-  general_loss_algorithms_[unacked_packets.GetPacketNumberSpace(
-                               spurious_retransmission)]
-      .SpuriousRetransmitDetected(unacked_packets, time, rtt_stats,
-                                  spurious_retransmission);
+    QuicTime ack_receive_time,
+    QuicPacketNumber packet_number,
+    QuicPacketNumber previous_largest_acked) {
+  general_loss_algorithms_[unacked_packets.GetPacketNumberSpace(packet_number)]
+      .SpuriousLossDetected(unacked_packets, rtt_stats, ack_receive_time,
+                            packet_number, previous_largest_acked);
+}
+
+void UberLossAlgorithm::SetReorderingShift(int reordering_shift) {
+  for (int8_t i = INITIAL_DATA; i < NUM_PACKET_NUMBER_SPACES; ++i) {
+    general_loss_algorithms_[i].set_reordering_shift(reordering_shift);
+  }
+}
+
+void UberLossAlgorithm::EnableAdaptiveReorderingThreshold() {
+  for (int8_t i = INITIAL_DATA; i < NUM_PACKET_NUMBER_SPACES; ++i) {
+    general_loss_algorithms_[i].enable_adaptive_reordering_threshold();
+  }
+}
+
+void UberLossAlgorithm::EnableAdaptiveTimeThreshold() {
+  for (int8_t i = INITIAL_DATA; i < NUM_PACKET_NUMBER_SPACES; ++i) {
+    general_loss_algorithms_[i].enable_adaptive_time_threshold();
+  }
 }
 
 }  // namespace quic

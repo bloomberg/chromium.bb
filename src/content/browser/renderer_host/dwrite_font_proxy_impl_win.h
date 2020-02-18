@@ -9,8 +9,7 @@
 #include <dwrite_2.h>
 #include <dwrite_3.h>
 #include <wrl.h>
-#include <set>
-#include <utility>
+#include <string>
 #include <vector>
 
 #include "base/location.h"
@@ -22,11 +21,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom.h"
-
-namespace service_manager {
-struct BindSourceInfo;
-}
 
 namespace content {
 
@@ -39,8 +35,8 @@ class CONTENT_EXPORT DWriteFontProxyImpl
   DWriteFontProxyImpl();
   ~DWriteFontProxyImpl() override;
 
-  static void Create(blink::mojom::DWriteFontProxyRequest request,
-                     const service_manager::BindSourceInfo& source_info);
+  static void Create(
+      mojo::PendingReceiver<blink::mojom::DWriteFontProxy> receiver);
 
   void SetWindowsFontsPathForTesting(base::string16 path);
 
@@ -70,11 +66,11 @@ class CONTENT_EXPORT DWriteFontProxyImpl
   void GetUniqueNameLookupTable(
       GetUniqueNameLookupTableCallback callback) override;
 
-  void FallbackFamilyNameForCodepoint(
+  void FallbackFamilyAndStyleForCodepoint(
       const std::string& base_family_name,
       const std::string& locale_name,
       uint32_t codepoint,
-      FallbackFamilyNameForCodepointCallback callback) override;
+      FallbackFamilyAndStyleForCodepointCallback callback) override;
 
   void InitializeDirectWrite();
 
@@ -99,4 +95,4 @@ class CONTENT_EXPORT DWriteFontProxyImpl
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_DWRITE_FONT_PROXY_MESSAGE_FILTER_WIN_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_DWRITE_FONT_PROXY_IMPL_WIN_H_

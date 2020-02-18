@@ -44,6 +44,8 @@ This script is normally called from the swarming recipe module in tools/build.
 
 """
 
+from __future__ import print_function
+
 import argparse
 import copy
 import json
@@ -56,7 +58,7 @@ import urllib
 import base_test_triggerer
 
 class Bot(object):
-  """ Eligible bots to run the task"""
+  """Eligible bots to run the task."""
   def __init__(self, bot_id, is_alive):
     self._bot_id = bot_id
     self._is_alive = is_alive
@@ -131,7 +133,7 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
       if verbose:
         self._print_device_affinity_info({}, {},
           self._eligible_bots_by_ids, trigger_count)
-      raise ValueError('Not enough available machines exist in in swarming'
+      raise ValueError('Not enough available machines exist in swarming '
                        'pool.  Shards requested (%d) exceeds available bots '
                        '(%d).' % (
                            trigger_count, len(self._eligible_bots_by_ids)))
@@ -161,7 +163,7 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
         shard_to_bot_assignment_map[shard_index] = \
             unallocated_healthy_bots.pop()
         if verbose:
-          print 'First time shard %d has been triggered' % shard_index
+          print('First time shard %d has been triggered' % shard_index)
       elif not bot:
         shard_to_bot_assignment_map[shard_index] = unallocated_bad_bots.pop()
 
@@ -172,8 +174,9 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
         healthy_bot = unallocated_healthy_bots.pop()
         shard_to_bot_assignment_map[shard_index] = healthy_bot
         if verbose:
-          print ('Device affinity broken for bot %s, new '
-                 'mapping to bot %s' % (dead_bot.id(), healthy_bot.id()))
+          print('Device affinity broken for shard #%d. bot %s is dead, new '
+                'mapping to bot %s' % (
+                    shard_index, dead_bot.id(), healthy_bot.id()))
 
     # Now populate the indices into the bot_configs array
     selected_configs = []
@@ -190,17 +193,18 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
 
   def _print_device_affinity_info(
       self, new_map, existing_map, health_map, num_shards):
+    print()
     for shard_index in xrange(num_shards):
       existing = existing_map.get(shard_index, None)
       new = new_map.get(shard_index, None)
-      existing_id = ""
+      existing_id = ''
       if existing:
         existing_id = existing.id()
-      new_id = ""
+      new_id = ''
       if new:
         new_id = new.id()
-      print "Shard %d\n\tprevious: %s\n\tnew: %s" % (
-          shard_index, existing_id, new_id)
+      print('Shard %d\n\tprevious: %s\n\tnew: %s' % (
+          shard_index, existing_id, new_id))
 
     healthy_bots = []
     dead_bots = []
@@ -209,12 +213,16 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
         healthy_bots.append(b.id())
       else:
         dead_bots.append(b.id())
-    print "Healthy bots: %s" % healthy_bots
-    print "Dead Bots: %s" % dead_bots
+    print('Shards needed: %d' % num_shards)
+    print('Total bots (dead + healthy): %d' % (
+        len(dead_bots) + len(healthy_bots)))
+    print('Healthy bots, %d: %s' % (len(healthy_bots), healthy_bots))
+    print('Dead Bots, %d: %s' % (len(dead_bots), dead_bots))
+    print()
 
 
   def _query_swarming_for_eligible_bot_configs(self, dimensions):
-    """ Query Swarming to figure out which bots are available.
+    """Query Swarming to figure out which bots are available.
 
       Returns: a dictionary in which the keys are the bot id and
       the values are Bot object that indicate the health status
@@ -227,6 +235,8 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
     query_result = self.query_swarming(
         'bots/list', values, True, server=self._swarming_server,
         service_account=self._service_account)
+    if 'items' not in query_result:
+      return {}
     perf_bots = {}
     for bot in query_result['items']:
       alive = (not bot['is_dead'] and not bot['quarantined'])

@@ -18,7 +18,7 @@ class TrayContainer : public views::View {
   explicit TrayContainer(Shelf* shelf);
   ~TrayContainer() override;
 
-  void UpdateAfterShelfAlignmentChange();
+  void UpdateAfterShelfChange();
 
   void SetMargin(int main_axis_margin, int cross_axis_margin);
 

@@ -4,10 +4,9 @@
 
 module viz.mojom;
 
-import "gpu/ipc/common/vulkan_ycbcr_info.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "services/viz/public/mojom/compositing/surface_range.mojom";
 import "services/viz/public/mojom/compositing/shared_quad_state.mojom";
+import "services/viz/public/mojom/compositing/surface_range.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/color_space.mojom";
 import "ui/gfx/mojom/transform.mojom";
@@ -34,10 +33,6 @@ struct RenderPassQuadState {
   // Render surface's normalized mask texture rect.
   gfx.mojom.RectF mask_uv_rect;
   gfx.mojom.Size mask_texture_size;
-
-  // If true, the mask described by mask_resource_id should be applied to only
-  // the backdrop-filtered image.
-  bool mask_applies_to_backdrop;
 
   // The scale from layer space of the root layer of the render pass to
   // the render pass physical pixels. This scale is applied to the filter
@@ -66,7 +61,6 @@ struct StreamVideoQuadState {
   gfx.mojom.Size resource_size_in_pixels;
   gfx.mojom.PointF uv_top_left;
   gfx.mojom.PointF uv_bottom_right;
-  gpu.mojom.VulkanYCbCrInfo? ycbcr_info;
 };
 
 struct SurfaceQuadState {

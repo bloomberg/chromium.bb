@@ -32,6 +32,8 @@
 #error "This file requires ARC support."
 #endif
 
+using base::UserMetricsAction;
+
 namespace {
 
 typedef NS_ENUM(int, TrailingButtonState) {
@@ -167,8 +169,8 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-    DCHECK(self.badgeView) << "The badge view must be set at this point";
-    self.locationBarSteadyView.badgeView = self.badgeView;
+  DCHECK(self.badgeView) << "The badge view must be set at this point";
+  self.locationBarSteadyView.badgeView = self.badgeView;
 
   [_locationBarSteadyView.locationButton
              addTarget:self
@@ -291,11 +293,11 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 }
 
 - (void)hideSteadyViewBadgeView {
-    [self.locationBarSteadyView displayBadgeView:NO animated:NO];
+  [self.locationBarSteadyView displayBadgeView:NO animated:NO];
 }
 
 - (void)showSteadyViewBadgeView {
-    [self.locationBarSteadyView displayBadgeView:YES animated:NO];
+  [self.locationBarSteadyView displayBadgeView:YES animated:NO];
 }
 
 - (void)setEditViewFaded:(BOOL)hidden {
@@ -435,7 +437,7 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 // The actual share dialog is opened by the dispatcher, only collect the metrics
 // here.
 - (void)shareButtonPressed {
-  base::RecordAction(base::UserMetricsAction("MobileToolbarShareMenu"));
+  RecordAction(UserMetricsAction("MobileToolbarShareMenu"));
 }
 
 
@@ -451,25 +453,18 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
     // when it's the first time setting the first responder.
     dispatch_async(dispatch_get_main_queue(), ^{
       UIMenuController* menu = [UIMenuController sharedMenuController];
-      if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
-        UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
-            initWithTitle:l10n_util::GetNSString((IDS_IOS_SEARCH_COPIED_IMAGE))
-                   action:@selector(searchCopiedImage:)];
-        UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
-            initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
-                   action:@selector(visitCopiedLink:)];
-        UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
-            initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
-                   action:@selector(searchCopiedText:)];
-        [menu setMenuItems:@[
-          searchCopiedImage, visitCopiedLink, searchCopiedText
-        ]];
-      } else {
-        UIMenuItem* pasteAndGo = [[UIMenuItem alloc]
-            initWithTitle:l10n_util::GetNSString(IDS_IOS_PASTE_AND_GO)
-                   action:@selector(pasteAndGo:)];
-        [menu setMenuItems:@[ pasteAndGo ]];
-      }
+      UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
+          initWithTitle:l10n_util::GetNSString((IDS_IOS_SEARCH_COPIED_IMAGE))
+                 action:@selector(searchCopiedImage:)];
+      UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
+          initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
+                 action:@selector(visitCopiedLink:)];
+      UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
+          initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
+                 action:@selector(searchCopiedText:)];
+      [menu setMenuItems:@[
+        searchCopiedImage, visitCopiedLink, searchCopiedText
+      ]];
 
       [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
       [menu setMenuVisible:YES animated:YES];
@@ -482,14 +477,9 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  if (action == @selector(copy:)) {
+  // Allow copying if the steady location bar is visible.
+  if (!self.locationBarSteadyView.hidden && action == @selector(copy:)) {
     return YES;
-  }
-
-  // remove along with flag kCopiedContentBehavior
-  if (action == @selector(pasteAndGo:)) {
-    DCHECK(!base::FeatureList::IsEnabled(kCopiedContentBehavior));
-    return UIPasteboard.generalPasteboard.string.length > 0;
   }
 
   if (action == @selector(searchCopiedImage:) ||
@@ -497,7 +487,6 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
       action == @selector(searchCopiedText:)) {
     ClipboardRecentContent* clipboardRecentContent =
         ClipboardRecentContent::GetInstance();
-    DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
     if (self.searchByImageEnabled &&
         clipboardRecentContent->GetRecentImageFromClipboard().has_value()) {
       return action == @selector(searchCopiedImage:);
@@ -518,7 +507,8 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 }
 
 - (void)searchCopiedImage:(id)sender {
-  DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
+  RecordAction(
+      UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
   if (base::Optional<gfx::Image> optionalImage =
           ClipboardRecentContent::GetInstance()
               ->GetRecentImageFromClipboard()) {
@@ -528,10 +518,13 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 }
 
 - (void)visitCopiedLink:(id)sender {
+  RecordAction(
+      UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
   [self pasteAndGo:sender];
 }
 
 - (void)searchCopiedText:(id)sender {
+  RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedText"));
   [self pasteAndGo:sender];
 }
 
@@ -539,18 +532,14 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 // so we need two different selectors.
 - (void)pasteAndGo:(id)sender {
   NSString* query;
-  if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
-    ClipboardRecentContent* clipboardRecentContent =
-        ClipboardRecentContent::GetInstance();
-    if (base::Optional<GURL> optionalUrl =
-            clipboardRecentContent->GetRecentURLFromClipboard()) {
-      query = base::SysUTF8ToNSString(optionalUrl.value().spec());
-    } else if (base::Optional<base::string16> optionalText =
-                   clipboardRecentContent->GetRecentTextFromClipboard()) {
-      query = base::SysUTF16ToNSString(optionalText.value());
-    }
-  } else {
-    query = UIPasteboard.generalPasteboard.string;
+  ClipboardRecentContent* clipboardRecentContent =
+      ClipboardRecentContent::GetInstance();
+  if (base::Optional<GURL> optionalUrl =
+          clipboardRecentContent->GetRecentURLFromClipboard()) {
+    query = base::SysUTF8ToNSString(optionalUrl.value().spec());
+  } else if (base::Optional<base::string16> optionalText =
+                 clipboardRecentContent->GetRecentTextFromClipboard()) {
+    query = base::SysUTF16ToNSString(optionalText.value());
   }
   [self.dispatcher loadQuery:query immediately:YES];
 }

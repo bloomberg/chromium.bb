@@ -26,8 +26,6 @@ ui::mojom::SourceEventType UISourceEventTypeToMojo(ui::SourceEventType type) {
       return ui::mojom::SourceEventType::KEY_PRESS;
     case ui::SourceEventType::TOUCHPAD:
       return ui::mojom::SourceEventType::TOUCHPAD;
-    case ui::SourceEventType::FRAME:
-      return ui::mojom::SourceEventType::FRAME;
     case ui::SourceEventType::SCROLLBAR:
       return ui::mojom::SourceEventType::SCROLLBAR;
     case ui::SourceEventType::OTHER:
@@ -53,8 +51,6 @@ ui::SourceEventType MojoSourceEventTypeToUI(ui::mojom::SourceEventType type) {
       return ui::SourceEventType::KEY_PRESS;
     case ui::mojom::SourceEventType::TOUCHPAD:
       return ui::SourceEventType::TOUCHPAD;
-    case ui::mojom::SourceEventType::FRAME:
-      return ui::SourceEventType::FRAME;
     case ui::mojom::SourceEventType::SCROLLBAR:
       return ui::SourceEventType::SCROLLBAR;
     case ui::mojom::SourceEventType::OTHER:
@@ -159,27 +155,6 @@ EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::ToMojom(
     case ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT;
-    case ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT;
     case ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
@@ -200,9 +175,6 @@ EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::ToMojom(
     case ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
     case ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT;
@@ -236,33 +208,6 @@ bool EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::
       *output = ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT;
       return true;
     case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT:
-      *output = ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT;
-      return true;
-    case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT:
-      *output = ui::LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT;
-      return true;
-    case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT:
-      *output = ui::LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT;
-      return true;
-    case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT:
-      *output = ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT;
-      return true;
-    case ui::mojom::LatencyComponentType::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT:
-      *output = ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
-      return true;
-    case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT:
-      *output = ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT;
-      return true;
-    case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT:
-      *output = ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT;
-      return true;
-    case ui::mojom::LatencyComponentType::
         INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT:
       *output = ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
       return true;
@@ -288,10 +233,6 @@ bool EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::
     case ui::mojom::LatencyComponentType::
         INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT:
       *output = ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
-      return true;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT:
-      *output = ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
       return true;
     case ui::mojom::LatencyComponentType::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
       *output = ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;

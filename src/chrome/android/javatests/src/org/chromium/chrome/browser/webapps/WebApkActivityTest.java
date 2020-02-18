@@ -27,14 +27,13 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
-import org.chromium.chrome.browser.touchless.TouchlessDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.browser.WebApkInfoBuilder;
+import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -145,7 +144,7 @@ public final class WebApkActivityTest {
     @Test
     @LargeTest
     @Feature({"WebApk"})
-    public void testLaunchIntervalHistogramNotRecordedOnFirstLaunch() throws Exception {
+    public void testLaunchIntervalHistogramNotRecordedOnFirstLaunch() {
         android.util.Log.e("ABCD", "Start");
         final String histogramName = "WebApk.LaunchInterval";
         WebApkActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
@@ -200,16 +199,14 @@ public final class WebApkActivityTest {
      */
     @LargeTest
     @Test
-    public void testActivateWebApkLPlus() throws Exception {
+    public void testActivateWebApkLPlus() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         // Launch WebAPK.
         WebApkActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
                 getTestServerUrl("manifest_test_page.html"), getTestServerUrl("/")));
 
-        Class<? extends ChromeActivity> mainClass = FeatureUtilities.isNoTouchModeEnabled()
-                ? TouchlessDelegate.getNoTouchActivityClass()
-                : ChromeTabbedActivity.class;
+        Class<? extends ChromeActivity> mainClass = ChromeTabbedActivity.class;
 
         // Move WebAPK to the background by launching Chrome.
         Intent intent = new Intent(InstrumentationRegistry.getTargetContext(), mainClass);
@@ -219,7 +216,7 @@ public final class WebApkActivityTest {
         ChromeActivityTestRule.waitFor(mainClass);
 
         TabWebContentsDelegateAndroid tabDelegate =
-                webApkActivity.getActivityTab().getTabWebContentsDelegateAndroid();
+                TabTestUtils.getTabWebContentsDelegate(webApkActivity.getActivityTab());
         tabDelegate.activateContents();
 
         // WebApkActivity should have been brought back to the foreground.

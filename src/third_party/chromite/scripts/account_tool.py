@@ -109,7 +109,7 @@ def main(argv):
     if homedir != '/dev/null' and not os.path.exists(homedir_path):
       osutils.SafeMakedirs(homedir_path, sudo=True)
       uid = account_db.users[options.name].uid
-      cros_build_lib.SudoRunCommand(
+      cros_build_lib.sudo_run(
           ['chown', '%d:%d' % (uid, uid), homedir_path], print_cmd=False)
 
   elif options.action == ACTION_INSTALL_GROUP:

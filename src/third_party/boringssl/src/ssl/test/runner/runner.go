@@ -601,6 +601,9 @@ type testCase struct {
 	// sendWarningAlerts is the number of consecutive warning alerts to send
 	// before each test message.
 	sendWarningAlerts int
+	// sendUserCanceledAlerts is the number of consecutive user_canceled alerts to
+	// send before each test message.
+	sendUserCanceledAlerts int
 	// sendBogusAlertType, if true, causes a bogus alert of invalid type to
 	// be sent before each test message.
 	sendBogusAlertType bool
@@ -1003,6 +1006,10 @@ func doExchange(test *testCase, config *Config, conn net.Conn, isResume bool, tr
 
 		for i := 0; i < test.sendWarningAlerts; i++ {
 			tlsConn.SendAlert(alertLevelWarning, alertUnexpectedMessage)
+		}
+
+		for i := 0; i < test.sendUserCanceledAlerts; i++ {
+			tlsConn.SendAlert(alertLevelWarning, alertUserCanceled)
 		}
 
 		if test.sendBogusAlertType {
@@ -2590,8 +2597,28 @@ read alert 1 0
 			expectedError:      ":BAD_ALERT:",
 			expectedLocalError: "remote error: error decoding message",
 		},
+		// Although TLS 1.3 intended to remove warning alerts, it left in
+		// user_canceled. JDK11 misuses this alert as a post-handshake
+		// full-duplex signal. As a workaround, skip user_canceled as in
+		// TLS 1.2, which is consistent with NSS and OpenSSL.
 		{
-			name: "SendWarningAlerts",
+			name: "SendUserCanceledAlerts-TLS13",
+			config: Config{
+				MaxVersion: VersionTLS13,
+			},
+			sendUserCanceledAlerts: 4,
+		},
+		{
+			name: "SendUserCanceledAlerts-TooMany-TLS13",
+			config: Config{
+				MaxVersion: VersionTLS13,
+			},
+			sendUserCanceledAlerts: 5,
+			shouldFail:             true,
+			expectedError:          ":TOO_MANY_WARNING_ALERTS:",
+		},
+		{
+			name: "SendWarningAlerts-TooMany",
 			config: Config{
 				MaxVersion: VersionTLS12,
 			},
@@ -2600,7 +2627,7 @@ read alert 1 0
 			expectedError:     ":TOO_MANY_WARNING_ALERTS:",
 		},
 		{
-			name: "SendWarningAlerts-Async",
+			name: "SendWarningAlerts-TooMany-Async",
 			config: Config{
 				MaxVersion: VersionTLS12,
 			},
@@ -4383,6 +4410,7 @@ func addStateMachineCoverageTests(config stateMachineTestConfig) {
 		resumeSession: true,
 		// Ensure session tickets are used, not session IDs.
 		noSessionCache: true,
+		flags:          []string{"-expect-no-hrr"},
 	})
 	tests = append(tests, testCase{
 		name: "Basic-Client-RenewTicket",
@@ -4414,7 +4442,10 @@ func addStateMachineCoverageTests(config stateMachineTestConfig) {
 			},
 		},
 		resumeSession: true,
-		flags:         []string{"-expect-no-session-id"},
+		flags: []string{
+			"-expect-no-session-id",
+			"-expect-no-hrr",
+		},
 	})
 	tests = append(tests, testCase{
 		testType: serverTest,
@@ -4482,6 +4513,7 @@ func addStateMachineCoverageTests(config stateMachineTestConfig) {
 			},
 			// Cover HelloRetryRequest during an ECDHE-PSK resumption.
 			resumeSession: true,
+			flags:         []string{"-expect-hrr"},
 		})
 
 		tests = append(tests, testCase{
@@ -4495,6 +4527,7 @@ func addStateMachineCoverageTests(config stateMachineTestConfig) {
 			},
 			// Cover HelloRetryRequest during an ECDHE-PSK resumption.
 			resumeSession: true,
+			flags:         []string{"-expect-hrr"},
 		})
 
 		tests = append(tests, testCase{
@@ -5263,6 +5296,18 @@ func addStateMachineCoverageTests(config stateMachineTestConfig) {
 			renegotiate: 1,
 			flags: []string{
 				"-renegotiate-freely",
+				"-expect-total-renegotiations", "1",
+			},
+		})
+
+		tests = append(tests, testCase{
+			name: "Renegotiate-Client-Explicit",
+			config: Config{
+				MaxVersion: VersionTLS12,
+			},
+			renegotiate: 1,
+			flags: []string{
+				"-renegotiate-explicit",
 				"-expect-total-renegotiations", "1",
 			},
 		})
@@ -10437,13 +10482,12 @@ var testCurves = []struct {
 	{"P-521", CurveP521},
 	{"X25519", CurveX25519},
 	{"CECPQ2", CurveCECPQ2},
-	{"CECPQ2b", CurveCECPQ2b},
 }
 
 const bogusCurve = 0x1234
 
 func isPqGroup(r CurveID) bool {
-	return r == CurveCECPQ2 || r == CurveCECPQ2b
+	return r == CurveCECPQ2
 }
 
 func addCurveTests() {
@@ -10916,21 +10960,6 @@ func addCurveTests() {
 		},
 	})
 
-	// CECPQ2b should not be offered by a TLS < 1.3 client.
-	testCases = append(testCases, testCase{
-		name: "CECPQ2bNotInTLS12",
-		config: Config{
-			Bugs: ProtocolBugs{
-				FailIfCECPQ2Offered: true,
-			},
-		},
-		flags: []string{
-			"-max-version", strconv.Itoa(VersionTLS12),
-			"-curves", strconv.Itoa(int(CurveCECPQ2b)),
-			"-curves", strconv.Itoa(int(CurveX25519)),
-		},
-	})
-
 	// CECPQ2 should not crash a TLS < 1.3 client if the server mistakenly
 	// selects it.
 	testCases = append(testCases, testCase{
@@ -10949,38 +10978,9 @@ func addCurveTests() {
 		expectedError: ":WRONG_CURVE:",
 	})
 
-	// CECPQ2b should not crash a TLS < 1.3 client if the server mistakenly
-	// selects it.
-	testCases = append(testCases, testCase{
-		name: "CECPQ2bNotAcceptedByTLS12Client",
-		config: Config{
-			Bugs: ProtocolBugs{
-				SendCurve: CurveCECPQ2b,
-			},
-		},
-		flags: []string{
-			"-max-version", strconv.Itoa(VersionTLS12),
-			"-curves", strconv.Itoa(int(CurveCECPQ2b)),
-			"-curves", strconv.Itoa(int(CurveX25519)),
-		},
-		shouldFail:    true,
-		expectedError: ":WRONG_CURVE:",
-	})
-
 	// CECPQ2 should not be offered by default as a client.
 	testCases = append(testCases, testCase{
 		name: "CECPQ2NotEnabledByDefaultInClients",
-		config: Config{
-			MinVersion: VersionTLS13,
-			Bugs: ProtocolBugs{
-				FailIfCECPQ2Offered: true,
-			},
-		},
-	})
-
-	// CECPQ2b should not be offered by default as a client.
-	testCases = append(testCases, testCase{
-		name: "CECPQ2bNotEnabledByDefaultInClients",
 		config: Config{
 			MinVersion: VersionTLS13,
 			Bugs: ProtocolBugs{
@@ -11021,38 +11021,6 @@ func addCurveTests() {
 		},
 	})
 
-	// If CECPQ2b is offered, both X25519 and CECPQ2b should have a key-share.
-	testCases = append(testCases, testCase{
-		name: "NotJustCECPQ2bKeyShare",
-		config: Config{
-			MinVersion: VersionTLS13,
-			Bugs: ProtocolBugs{
-				ExpectedKeyShares: []CurveID{CurveCECPQ2b, CurveX25519},
-			},
-		},
-		flags: []string{
-			"-curves", strconv.Itoa(int(CurveCECPQ2b)),
-			"-curves", strconv.Itoa(int(CurveX25519)),
-			"-expect-curve-id", strconv.Itoa(int(CurveCECPQ2b)),
-		},
-	})
-
-	// ... but only if CECPQ2b is listed first.
-	testCases = append(testCases, testCase{
-		name: "CECPQ2bKeyShareNotIncludedSecond",
-		config: Config{
-			MinVersion: VersionTLS13,
-			Bugs: ProtocolBugs{
-				ExpectedKeyShares: []CurveID{CurveX25519},
-			},
-		},
-		flags: []string{
-			"-curves", strconv.Itoa(int(CurveX25519)),
-			"-curves", strconv.Itoa(int(CurveCECPQ2b)),
-			"-expect-curve-id", strconv.Itoa(int(CurveX25519)),
-		},
-	})
-
 	// If CECPQ2 is the only configured curve, the key share is sent.
 	testCases = append(testCases, testCase{
 		name: "JustConfiguringCECPQ2Works",
@@ -11068,21 +11036,6 @@ func addCurveTests() {
 		},
 	})
 
-	// If CECPQ2b is the only configured curve, the key share is sent.
-	testCases = append(testCases, testCase{
-		name: "JustConfiguringCECPQ2bWorks",
-		config: Config{
-			MinVersion: VersionTLS13,
-			Bugs: ProtocolBugs{
-				ExpectedKeyShares: []CurveID{CurveCECPQ2b},
-			},
-		},
-		flags: []string{
-			"-curves", strconv.Itoa(int(CurveCECPQ2b)),
-			"-expect-curve-id", strconv.Itoa(int(CurveCECPQ2b)),
-		},
-	})
-
 	// As a server, CECPQ2 is not yet supported by default.
 	testCases = append(testCases, testCase{
 		testType: serverTest,
@@ -11091,21 +11044,6 @@ func addCurveTests() {
 			MinVersion:       VersionTLS13,
 			CurvePreferences: []CurveID{CurveCECPQ2, CurveX25519},
 			DefaultCurves:    []CurveID{CurveCECPQ2},
-		},
-		flags: []string{
-			"-server-preference",
-			"-expect-curve-id", strconv.Itoa(int(CurveX25519)),
-		},
-	})
-
-	// As a server, CECPQ2b is not yet supported by default.
-	testCases = append(testCases, testCase{
-		testType: serverTest,
-		name:     "CECPQ2bNotEnabledByDefaultForAServer",
-		config: Config{
-			MinVersion:       VersionTLS13,
-			CurvePreferences: []CurveID{CurveCECPQ2b, CurveX25519},
-			DefaultCurves:    []CurveID{CurveCECPQ2b},
 		},
 		flags: []string{
 			"-server-preference",
@@ -12633,6 +12571,7 @@ func addTLS13HandshakeTests() {
 			CurvePreferences: []CurveID{CurveX25519},
 		},
 		expectedCurveID: CurveX25519,
+		flags:           []string{"-expect-hrr"},
 	})
 
 	testCases = append(testCases, testCase{
@@ -12646,6 +12585,7 @@ func addTLS13HandshakeTests() {
 		// Although the ClientHello did not predict our preferred curve,
 		// we always select it whether it is predicted or not.
 		expectedCurveID: CurveX25519,
+		flags:           []string{"-expect-hrr"},
 	})
 
 	testCases = append(testCases, testCase{
@@ -14037,21 +13977,6 @@ func addTLS13CipherPreferenceTests() {
 		},
 	})
 
-	// CECPQ2b prefers 256-bit ciphers but will use AES-128 if there's nothing else.
-	testCases = append(testCases, testCase{
-		testType: serverTest,
-		name:     "TLS13-CipherPreference-CECPQ2b-AES128Only",
-		config: Config{
-			MaxVersion: VersionTLS13,
-			CipherSuites: []uint16{
-				TLS_AES_128_GCM_SHA256,
-			},
-		},
-		flags: []string{
-			"-curves", strconv.Itoa(int(CurveCECPQ2b)),
-		},
-	})
-
 	// When a 256-bit cipher is offered, even if not in first place, it should be
 	// picked.
 	testCases = append(testCases, testCase{
@@ -14073,40 +13998,6 @@ func addTLS13CipherPreferenceTests() {
 	testCases = append(testCases, testCase{
 		testType: serverTest,
 		name:     "TLS13-CipherPreference-CECPQ2-AES128PreferredOtherwise",
-		config: Config{
-			MaxVersion: VersionTLS13,
-			CipherSuites: []uint16{
-				TLS_AES_128_GCM_SHA256,
-				TLS_AES_256_GCM_SHA384,
-			},
-		},
-		flags: []string{
-			"-curves", strconv.Itoa(int(CurveX25519)),
-		},
-		expectedCipher: TLS_AES_128_GCM_SHA256,
-	})
-
-	// When a 256-bit cipher is offered, even if not in first place, it should be
-	// picked.
-	testCases = append(testCases, testCase{
-		testType: serverTest,
-		name:     "TLS13-CipherPreference-CECPQ2b-AES256Preferred",
-		config: Config{
-			MaxVersion: VersionTLS13,
-			CipherSuites: []uint16{
-				TLS_AES_128_GCM_SHA256,
-				TLS_AES_256_GCM_SHA384,
-			},
-		},
-		flags: []string{
-			"-curves", strconv.Itoa(int(CurveCECPQ2b)),
-		},
-		expectedCipher: TLS_AES_256_GCM_SHA384,
-	})
-	// ... but when CECPQ2b isn't being used, the client's preference controls.
-	testCases = append(testCases, testCase{
-		testType: serverTest,
-		name:     "TLS13-CipherPreference-CECPQ2b-AES128PreferredOtherwise",
 		config: Config{
 			MaxVersion: VersionTLS13,
 			CipherSuites: []uint16{
@@ -14151,42 +14042,6 @@ func addTLS13CipherPreferenceTests() {
 		},
 		flags: []string{
 			"-curves", strconv.Itoa(int(CurveCECPQ2)),
-			"-expect-cipher-aes", strconv.Itoa(int(TLS_AES_256_GCM_SHA384)),
-			"-expect-cipher-no-aes", strconv.Itoa(int(TLS_CHACHA20_POLY1305_SHA256)),
-		},
-	})
-
-	// Test that CECPQ2b continues to honor AES vs ChaCha20 logic.
-	testCases = append(testCases, testCase{
-		testType: serverTest,
-		name:     "TLS13-CipherPreference-CECPQ2b-AES128-ChaCha20-AES256",
-		config: Config{
-			MaxVersion: VersionTLS13,
-			CipherSuites: []uint16{
-				TLS_AES_128_GCM_SHA256,
-				TLS_CHACHA20_POLY1305_SHA256,
-				TLS_AES_256_GCM_SHA384,
-			},
-		},
-		flags: []string{
-			"-curves", strconv.Itoa(int(CurveCECPQ2b)),
-			"-expect-cipher-aes", strconv.Itoa(int(TLS_CHACHA20_POLY1305_SHA256)),
-			"-expect-cipher-no-aes", strconv.Itoa(int(TLS_CHACHA20_POLY1305_SHA256)),
-		},
-	})
-	testCases = append(testCases, testCase{
-		testType: serverTest,
-		name:     "TLS13-CipherPreference-CECPQ2b-AES128-AES256-ChaCha20",
-		config: Config{
-			MaxVersion: VersionTLS13,
-			CipherSuites: []uint16{
-				TLS_AES_128_GCM_SHA256,
-				TLS_AES_256_GCM_SHA384,
-				TLS_CHACHA20_POLY1305_SHA256,
-			},
-		},
-		flags: []string{
-			"-curves", strconv.Itoa(int(CurveCECPQ2b)),
 			"-expect-cipher-aes", strconv.Itoa(int(TLS_AES_256_GCM_SHA384)),
 			"-expect-cipher-no-aes", strconv.Itoa(int(TLS_CHACHA20_POLY1305_SHA256)),
 		},
@@ -15380,67 +15235,6 @@ func addDelegatedCredentialTests() {
 	})
 }
 
-func addPQExperimentSignalTests() {
-	testCases = append(testCases, testCase{
-		testType: serverTest,
-		name:     "PQExperimentSignal-Server-NoEchoIfNotConfigured",
-		config: Config{
-			MinVersion: VersionTLS13,
-			MaxVersion: VersionTLS13,
-			Bugs: ProtocolBugs{
-				ExpectPQExperimentSignal: false,
-			},
-			PQExperimentSignal: true,
-		},
-	})
-
-	testCases = append(testCases, testCase{
-		testType: serverTest,
-		name:     "PQExperimentSignal-Server-Echo",
-		config: Config{
-			MinVersion: VersionTLS13,
-			MaxVersion: VersionTLS13,
-			Bugs: ProtocolBugs{
-				ExpectPQExperimentSignal: true,
-			},
-			PQExperimentSignal: true,
-		},
-		flags: []string{
-			"-enable-pq-experiment-signal",
-			"-expect-pq-experiment-signal",
-		},
-	})
-
-	testCases = append(testCases, testCase{
-		testType: clientTest,
-		name:     "PQExperimentSignal-Client-NotDefault",
-		config: Config{
-			MinVersion: VersionTLS13,
-			MaxVersion: VersionTLS13,
-			Bugs: ProtocolBugs{
-				ExpectPQExperimentSignal: false,
-			},
-			PQExperimentSignal: true,
-		},
-	})
-
-	testCases = append(testCases, testCase{
-		testType: clientTest,
-		name:     "PQExperimentSignal-Client",
-		config: Config{
-			MinVersion: VersionTLS13,
-			MaxVersion: VersionTLS13,
-			Bugs: ProtocolBugs{
-				ExpectPQExperimentSignal: true,
-			},
-		},
-		flags: []string{
-			"-enable-pq-experiment-signal",
-			"-expect-pq-experiment-signal",
-		},
-	})
-}
-
 func worker(statusChan chan statusMsg, c chan *testCase, shimPath string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -15578,7 +15372,6 @@ func main() {
 	addCertCompressionTests()
 	addJDK11WorkaroundTests()
 	addDelegatedCredentialTests()
-	addPQExperimentSignalTests()
 
 	testCases = append(testCases, convertToSplitHandshakeTests(testCases)...)
 

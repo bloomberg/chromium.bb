@@ -20,10 +20,9 @@
 
     <!-- Tab Actions -->
     <item type="id" name="close_tab" />
+    <item type="id" name="ungroup_tab" />
 
     <!-- InfoBar constants -->
-    <item type="id" name="button_primary" />
-    <item type="id" name="button_secondary" />
     <item type="id" name="infobar_icon" />
     <item type="id" name="infobar_close_button" />
     <item type="id" name="infobar_extra_check" />
@@ -114,16 +113,10 @@
     <!-- Menu item IDs for FullscreenActivities -->
     <item type="id" name="contextmenu_open_in_chrome" />
 
-    <!-- App menu item custom tags -->
-    <item type="id" name="menu_item_enter_anim_id" />
-    <item type="id" name="menu_item_original_background" />
-    <item type="id" name="menu_item_background_drawable_position" />
-
     <!-- VR constants -->
     <item type="id" name="vr_overlay_view" />
 
     <!-- Tags -->
-    <item type="id" name="highlight_state" />
     <item type="id" name="item_animator" />
     <item type="id" name="highlight_color" />
     <item type="id" name="context_menu_delegate" />

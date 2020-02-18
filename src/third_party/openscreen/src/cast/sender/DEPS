@@ -2,6 +2,6 @@
 
 include_rules = [
    # libcast sender code must not depend on the receiver.
-   '+cast/common/public',
+   '+cast/common',
    '+cast/sender'
 ]

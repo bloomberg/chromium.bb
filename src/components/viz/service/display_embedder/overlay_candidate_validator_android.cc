@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "components/viz/service/display/overlay_candidate_list.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -56,14 +57,6 @@ void OverlayCandidateValidatorAndroid::CheckOverlaySupport(
     candidate.overlay_handled = true;
     candidate.plane_z_order = -1;
   }
-}
-
-bool OverlayCandidateValidatorAndroid::AllowCALayerOverlays() const {
-  return false;
-}
-
-bool OverlayCandidateValidatorAndroid::AllowDCLayerOverlays() const {
-  return false;
 }
 
 bool OverlayCandidateValidatorAndroid::NeedsSurfaceOccludingDamageRect() const {

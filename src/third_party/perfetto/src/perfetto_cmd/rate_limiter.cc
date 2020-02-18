@@ -26,10 +26,6 @@
 #include "perfetto/ext/base/utils.h"
 #include "src/perfetto_cmd/perfetto_cmd.h"
 
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
-#include <sys/system_properties.h>
-#endif  // PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
-
 namespace perfetto {
 namespace {
 
@@ -41,19 +37,6 @@ const uint64_t kMaxUploadResetPeriodInSeconds = 60 * 60 * 24;
 
 // Maximum of 10mb every 24h.
 const uint64_t kMaxUploadInBytes = 1024 * 1024 * 10;
-
-bool IsUserBuild() {
-#if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
-  char value[PROP_VALUE_MAX];
-  if (!__system_property_get("ro.build.type", value)) {
-    PERFETTO_ELOG("Unable to read ro.build.type: assuming user build");
-    return true;
-  }
-  return strcmp(value, "user") == 0;
-#else
-  return false;
-#endif  // PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
-}
 
 }  // namespace
 
@@ -70,7 +53,7 @@ bool RateLimiter::ShouldTrace(const Args& args) {
 
   // If we're tracing a user build we should only trace if the override in
   // the config is set:
-  if (IsUserBuild() && !args.allow_user_build_tracing) {
+  if (args.is_user_build && !args.allow_user_build_tracing) {
     PERFETTO_ELOG(
         "Guardrail: allow_user_build_tracing must be set to trace on user "
         "builds");
@@ -121,15 +104,17 @@ bool RateLimiter::ShouldTrace(const Args& args) {
     return true;
   }
 
-  // If we've uploaded more than 10mb in the last 24 hours we shouldn't trace
-  // now.
-  uint64_t max_upload_guardrail = args.max_upload_bytes_override > 0
-                                      ? args.max_upload_bytes_override
-                                      : kMaxUploadInBytes;
-  if (state_.total_bytes_uploaded() > max_upload_guardrail) {
-    PERFETTO_ELOG("Guardrail: Uploaded >10mb DropBox in the last 24h.");
-    if (!args.ignore_guardrails)
-      return false;
+  if (args.is_user_build) {
+    // If we've uploaded more than 10mb in the last 24 hours we shouldn't trace
+    // now.
+    uint64_t max_upload_guardrail = args.max_upload_bytes_override > 0
+                                        ? args.max_upload_bytes_override
+                                        : kMaxUploadInBytes;
+    if (state_.total_bytes_uploaded() > max_upload_guardrail) {
+      PERFETTO_ELOG("Guardrail: Uploaded >10mb DropBox in the last 24h.");
+      if (!args.ignore_guardrails)
+        return false;
+    }
   }
 
   return true;
@@ -173,7 +158,7 @@ bool RateLimiter::StateFileExists() {
 }
 
 bool RateLimiter::ClearState() {
-  PerfettoCmdState zero{};
+  gen::PerfettoCmdState zero{};
   zero.set_total_bytes_uploaded(0);
   zero.set_last_trace_timestamp(0);
   zero.set_first_trace_timestamp(0);
@@ -183,7 +168,7 @@ bool RateLimiter::ClearState() {
   return success;
 }
 
-bool RateLimiter::LoadState(PerfettoCmdState* state) {
+bool RateLimiter::LoadState(gen::PerfettoCmdState* state) {
   base::ScopedFile in_fd(base::OpenFile(GetStateFilePath(), O_RDONLY));
 
   if (!in_fd)
@@ -192,27 +177,23 @@ bool RateLimiter::LoadState(PerfettoCmdState* state) {
   ssize_t bytes = PERFETTO_EINTR(read(in_fd.get(), &buf, sizeof(buf)));
   if (bytes <= 0)
     return false;
-  return state->ParseFromArray(&buf, static_cast<int>(bytes));
+  return state->ParseFromArray(&buf, static_cast<size_t>(bytes));
 }
 
-bool RateLimiter::SaveState(const PerfettoCmdState& state) {
+bool RateLimiter::SaveState(const gen::PerfettoCmdState& state) {
   // Rationale for 0666: the cmdline client can be executed under two
   // different Unix UIDs: shell and statsd. If we run one after the
   // other and the file has 0600 permissions, then the 2nd run won't
   // be able to read the file and will clear it, aborting the trace.
   // SELinux still prevents that anything other than the perfetto
   // executable can change the guardrail file.
+  std::vector<uint8_t> buf = state.SerializeAsArray();
   base::ScopedFile out_fd(
       base::OpenFile(GetStateFilePath(), O_WRONLY | O_CREAT | O_TRUNC, 0666));
   if (!out_fd)
     return false;
-  char buf[1024];
-  size_t size = static_cast<size_t>(state.ByteSize());
-  PERFETTO_CHECK(size < sizeof(buf));
-  if (!state.SerializeToArray(&buf, static_cast<int>(size)))
-    return false;
-  ssize_t written = base::WriteAll(out_fd.get(), &buf, size);
-  return written >= 0 && static_cast<size_t>(written) == size;
+  ssize_t written = base::WriteAll(out_fd.get(), buf.data(), buf.size());
+  return written >= 0 && static_cast<size_t>(written) == buf.size();
 }
 
 }  // namespace perfetto

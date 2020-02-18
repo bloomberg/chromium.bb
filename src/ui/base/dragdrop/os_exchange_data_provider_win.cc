@@ -683,19 +683,19 @@ bool OSExchangeDataProviderWin::HasCustomFormat(
 }
 
 void OSExchangeDataProviderWin::SetDownloadFileInfo(
-    const OSExchangeData::DownloadFileInfo& download) {
+    OSExchangeData::DownloadFileInfo* download) {
   // If the filename is not provided, set storage to NULL to indicate that
   // the delay rendering will be used.
   // TODO(dcheng): Is it actually possible for filename to be empty here? I
   // think we always synthesize one in WebContentsDragWin.
   STGMEDIUM* storage = NULL;
-  if (!download.filename.empty())
-    GetStorageForFileNames({FileInfo(download.filename, base::FilePath())});
+  if (!download->filename.empty())
+    GetStorageForFileNames({FileInfo(download->filename, base::FilePath())});
 
   // Add CF_HDROP.
   auto info = std::make_unique<DataObjectImpl::StoredDataInfo>(
       ClipboardFormatType::GetCFHDropType().ToFormatEtc(), storage);
-  info->downloader = download.downloader;
+  info->downloader = std::move(download->downloader);
   data_->contents_.push_back(std::move(info));
 
   // Adding a download file always enables async mode.
@@ -857,14 +857,10 @@ DataObjectImpl::DataObjectImpl()
     : is_aborting_(false),
       in_drag_loop_(false),
       in_async_mode_(false),
-      async_operation_started_(false),
-      observer_(NULL) {
-}
+      async_operation_started_(false) {}
 
 DataObjectImpl::~DataObjectImpl() {
   StopDownloads();
-  if (observer_)
-    observer_->OnDataObjectDisposed();
 }
 
 void DataObjectImpl::StopDownloads() {
@@ -895,12 +891,16 @@ void DataObjectImpl::RemoveData(const FORMATETC& format) {
 void DataObjectImpl::OnDownloadCompleted(const base::FilePath& file_path) {
   for (std::unique_ptr<StoredDataInfo>& content : contents_) {
     if (content->format_etc.cfFormat == CF_HDROP) {
+      // Retrieve the downloader first so it won't get destroyed.
+      auto downloader = std::move(content->downloader);
+      if (downloader)
+        downloader->Stop();
       // Replace stored data.
       STGMEDIUM* storage =
           GetStorageForFileNames({FileInfo(file_path, base::FilePath())});
       content = std::make_unique<StoredDataInfo>(
           ClipboardFormatType::GetCFHDropType().ToFormatEtc(), storage);
-
+      content->downloader = std::move(downloader);
       break;
     }
   }
@@ -937,11 +937,6 @@ HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
 
       if (!wait_for_data)
         return DV_E_FORMATETC;
-
-      // Notify the observer we start waiting for the data. This gives
-      // an observer a chance to end the drag and drop.
-      if (observer_)
-        observer_->OnWaitForData();
 
       // Now we can start the download.
       if (content->downloader.get()) {

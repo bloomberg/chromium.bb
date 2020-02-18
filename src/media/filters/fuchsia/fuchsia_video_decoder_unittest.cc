@@ -189,7 +189,7 @@ class FuchsiaVideoDecoderTest : public testing::Test {
   }
   ~FuchsiaVideoDecoderTest() override = default;
 
-  bool Initialize(VideoDecoderConfig config) WARN_UNUSED_RESULT {
+  bool InitializeDecoder(VideoDecoderConfig config) WARN_UNUSED_RESULT {
     base::RunLoop run_loop;
     bool init_cb_result = false;
     decoder_->Initialize(
@@ -201,11 +201,18 @@ class FuchsiaVideoDecoderTest : public testing::Test {
             },
             &init_cb_result, &run_loop),
         base::BindRepeating(&FuchsiaVideoDecoderTest::OnVideoFrame,
-                            base::Unretained(this)),
-        base::NullCallback());
+                            weak_factory_.GetWeakPtr()),
+        base::DoNothing());
 
     run_loop.Run();
     return init_cb_result;
+  }
+
+  void ResetDecoder() {
+    base::RunLoop run_loop;
+    decoder_->Reset(base::BindRepeating(
+        [](base::RunLoop* run_loop) { run_loop->Quit(); }, &run_loop));
+    run_loop.Run();
   }
 
   void OnVideoFrame(scoped_refptr<VideoFrame> frame) {
@@ -215,77 +222,155 @@ class FuchsiaVideoDecoderTest : public testing::Test {
     while (output_frames_.size() > frames_to_keep_) {
       output_frames_.pop_front();
     }
-    if (on_frame_)
-      on_frame_.Run();
+    if (run_loop_)
+      run_loop_->Quit();
   }
 
-  DecodeStatus DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
-    base::RunLoop run_loop;
-    DecodeStatus status;
-    decoder_->Decode(buffer,
-                     base::BindRepeating(
-                         [](DecodeStatus* status, base::RunLoop* run_loop,
-                            DecodeStatus result) {
-                           *status = result;
-                           run_loop->Quit();
-                         },
-                         &status, &run_loop));
-
-    run_loop.Run();
-
-    return status;
+  void DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
+    decoder_->Decode(
+        buffer,
+        base::BindRepeating(&FuchsiaVideoDecoderTest::OnFrameDecoded,
+                            weak_factory_.GetWeakPtr(), num_input_buffers_));
+    num_input_buffers_ += 1;
   }
 
-  DecodeStatus ReadAndDecodeFrame(const std::string& name) {
-    return DecodeBuffer(ReadTestDataFile(name));
+  void ReadAndDecodeFrame(const std::string& name) {
+    DecodeBuffer(ReadTestDataFile(name));
+  }
+
+  void OnFrameDecoded(size_t frame_pos, DecodeStatus status) {
+    EXPECT_EQ(frame_pos, num_decoded_buffers_);
+    num_decoded_buffers_ += 1;
+    last_decode_status_ = status;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  // Waits until all pending decode requests are finished.
+  void WaitDecodeDone() {
+    size_t target_pos = num_input_buffers_;
+    while (num_decoded_buffers_ < target_pos) {
+      base::RunLoop run_loop;
+      run_loop_ = &run_loop;
+      run_loop.Run();
+      run_loop_ = nullptr;
+      ASSERT_EQ(last_decode_status_, DecodeStatus::OK);
+    }
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
   TestSharedImageInterface shared_image_interface_;
   viz::TestContextSupport gpu_context_support_;
 
   std::unique_ptr<VideoDecoder> decoder_;
 
+  size_t num_input_buffers_ = 0;
+
+  // Number of frames for which DecodeCB has been called. That doesn't mean
+  // we've received corresponding output frames.
+  size_t num_decoded_buffers_ = 0;
+
   std::list<scoped_refptr<VideoFrame>> output_frames_;
-  int num_output_frames_ = 0;
+  size_t num_output_frames_ = 0;
+
+  DecodeStatus last_decode_status_ = DecodeStatus::OK;
+  base::RunLoop* run_loop_ = nullptr;
 
   // Number of frames that OnVideoFrame() should keep in |output_frames_|.
   size_t frames_to_keep_ = 2;
 
-  base::RepeatingClosure on_frame_;
+  base::WeakPtrFactory<FuchsiaVideoDecoderTest> weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(FuchsiaVideoDecoderTest);
 };
+
+scoped_refptr<DecoderBuffer> GetH264Frame(size_t frame_num) {
+  static scoped_refptr<DecoderBuffer> frames[] = {
+      ReadTestDataFile("h264-320x180-frame-0"),
+      ReadTestDataFile("h264-320x180-frame-1"),
+      ReadTestDataFile("h264-320x180-frame-2"),
+      ReadTestDataFile("h264-320x180-frame-3")};
+  CHECK_LT(frame_num, base::size(frames));
+  return frames[frame_num];
+}
 
 TEST_F(FuchsiaVideoDecoderTest, CreateAndDestroy) {}
 
 TEST_F(FuchsiaVideoDecoderTest, CreateInitDestroy) {
-  EXPECT_TRUE(Initialize(TestVideoConfig::NormalH264()));
+  EXPECT_TRUE(InitializeDecoder(TestVideoConfig::NormalH264()));
 }
 
 TEST_F(FuchsiaVideoDecoderTest, DISABLED_VP9) {
-  ASSERT_TRUE(Initialize(TestVideoConfig::Normal(kCodecVP9)));
+  ASSERT_TRUE(InitializeDecoder(TestVideoConfig::Normal(kCodecVP9)));
 
-  ASSERT_TRUE(ReadAndDecodeFrame("vp9-I-frame-320x240") == DecodeStatus::OK);
-  ASSERT_TRUE(DecodeBuffer(DecoderBuffer::CreateEOSBuffer()) ==
-              DecodeStatus::OK);
+  DecodeBuffer(ReadTestDataFile("vp9-I-frame-320x240"));
+  DecodeBuffer(DecoderBuffer::CreateEOSBuffer());
+  ASSERT_NO_FATAL_FAILURE(WaitDecodeDone());
 
-  EXPECT_EQ(num_output_frames_, 1);
+  EXPECT_EQ(num_output_frames_, 1U);
 }
 
 TEST_F(FuchsiaVideoDecoderTest, H264) {
-  ASSERT_TRUE(Initialize(TestVideoConfig::NormalH264()));
+  ASSERT_TRUE(InitializeDecoder(TestVideoConfig::NormalH264()));
 
-  ASSERT_TRUE(ReadAndDecodeFrame("h264-320x180-frame-0") == DecodeStatus::OK);
-  ASSERT_TRUE(ReadAndDecodeFrame("h264-320x180-frame-1") == DecodeStatus::OK);
-  ASSERT_TRUE(ReadAndDecodeFrame("h264-320x180-frame-2") == DecodeStatus::OK);
-  ASSERT_TRUE(ReadAndDecodeFrame("h264-320x180-frame-3") == DecodeStatus::OK);
-  ASSERT_TRUE(DecodeBuffer(DecoderBuffer::CreateEOSBuffer()) ==
-              DecodeStatus::OK);
+  DecodeBuffer(GetH264Frame(0));
+  DecodeBuffer(GetH264Frame(1));
+  ASSERT_NO_FATAL_FAILURE(WaitDecodeDone());
 
-  EXPECT_EQ(num_output_frames_, 4);
+  DecodeBuffer(GetH264Frame(2));
+  DecodeBuffer(GetH264Frame(3));
+  DecodeBuffer(DecoderBuffer::CreateEOSBuffer());
+  ASSERT_NO_FATAL_FAILURE(WaitDecodeDone());
+
+  EXPECT_EQ(num_output_frames_, 4U);
+}
+
+// Verify that the decoder can be re-initialized while there pending decode
+// requests.
+TEST_F(FuchsiaVideoDecoderTest, ReinitializeH264) {
+  ASSERT_TRUE(InitializeDecoder(TestVideoConfig::NormalH264()));
+  DecodeBuffer(GetH264Frame(0));
+  DecodeBuffer(GetH264Frame(1));
+  ASSERT_NO_FATAL_FAILURE(WaitDecodeDone());
+
+  num_output_frames_ = 0;
+
+  // Re-initialize decoder and send the same data again.
+  ASSERT_TRUE(InitializeDecoder(TestVideoConfig::NormalH264()));
+  DecodeBuffer(GetH264Frame(0));
+  DecodeBuffer(GetH264Frame(1));
+  DecodeBuffer(GetH264Frame(2));
+  DecodeBuffer(GetH264Frame(3));
+  DecodeBuffer(DecoderBuffer::CreateEOSBuffer());
+  ASSERT_NO_FATAL_FAILURE(WaitDecodeDone());
+
+  EXPECT_EQ(num_output_frames_, 4U);
+}
+
+// Verify that the decoder can be re-initialized after Reset().
+TEST_F(FuchsiaVideoDecoderTest, ResetAndReinitializeH264) {
+  ASSERT_TRUE(InitializeDecoder(TestVideoConfig::NormalH264()));
+  DecodeBuffer(GetH264Frame(0));
+  DecodeBuffer(GetH264Frame(1));
+  ASSERT_NO_FATAL_FAILURE(WaitDecodeDone());
+
+  ResetDecoder();
+
+  num_output_frames_ = 0;
+
+  // Re-initialize decoder and send the same data again.
+  ASSERT_TRUE(InitializeDecoder(TestVideoConfig::NormalH264()));
+  DecodeBuffer(GetH264Frame(0));
+  DecodeBuffer(GetH264Frame(1));
+  DecodeBuffer(GetH264Frame(2));
+  DecodeBuffer(GetH264Frame(3));
+  DecodeBuffer(DecoderBuffer::CreateEOSBuffer());
+  ASSERT_NO_FATAL_FAILURE(WaitDecodeDone());
+
+  EXPECT_EQ(num_output_frames_, 4U);
 }
 
 }  // namespace media

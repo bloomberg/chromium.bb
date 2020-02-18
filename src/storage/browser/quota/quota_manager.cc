@@ -220,7 +220,7 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
     // Start the async process of gathering the info we need.
     // Gather 4 pieces of info before computing an answer:
     // settings, device_storage_capacity, host_usage, and host_quota.
-    base::Closure barrier = base::BarrierClosure(
+    base::RepeatingClosure barrier = base::BarrierClosure(
         4, base::BindOnce(&UsageAndQuotaInfoGatherer::OnBarrierComplete,
                           weak_factory_.GetWeakPtr()));
 
@@ -303,7 +303,7 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
     return static_cast<QuotaManager*>(observer());
   }
 
-  void OnGotSettings(const base::Closure& barrier_closure,
+  void OnGotSettings(base::RepeatingClosure barrier_closure,
                      const QuotaSettings& settings) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     settings_ = settings;
@@ -317,30 +317,30 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
     }
   }
 
-  void OnGotCapacity(const base::Closure& barrier_closure,
+  void OnGotCapacity(base::OnceClosure barrier_closure,
                      int64_t total_space,
                      int64_t available_space) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     total_space_ = total_space;
     available_space_ = available_space;
-    barrier_closure.Run();
+    std::move(barrier_closure).Run();
   }
 
-  void OnGotHostUsage(const base::Closure& barrier_closure,
+  void OnGotHostUsage(base::OnceClosure barrier_closure,
                       int64_t usage,
                       blink::mojom::UsageBreakdownPtr usage_breakdown) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     host_usage_ = usage;
     host_usage_breakdown_ = std::move(usage_breakdown);
-    barrier_closure.Run();
+    std::move(barrier_closure).Run();
   }
 
-  void SetDesiredHostQuota(const base::Closure& barrier_closure,
+  void SetDesiredHostQuota(base::OnceClosure barrier_closure,
                            blink::mojom::QuotaStatusCode status,
                            int64_t quota) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     desired_host_quota_ = quota;
-    barrier_closure.Run();
+    std::move(barrier_closure).Run();
   }
 
   void OnBarrierComplete() { CallCompleted(); }
@@ -406,18 +406,18 @@ class QuotaManager::EvictionRoundInfoHelper : public QuotaTask {
     return static_cast<QuotaManager*>(observer());
   }
 
-  void OnGotSettings(const base::Closure& barrier_closure,
+  void OnGotSettings(base::OnceClosure barrier_closure,
                      const QuotaSettings& settings) {
     settings_ = settings;
-    barrier_closure.Run();
+    std::move(barrier_closure).Run();
   }
 
-  void OnGotCapacity(const base::Closure& barrier_closure,
+  void OnGotCapacity(base::OnceClosure barrier_closure,
                      int64_t total_space,
                      int64_t available_space) {
     total_space_ = total_space;
     available_space_ = available_space;
-    barrier_closure.Run();
+    std::move(barrier_closure).Run();
   }
 
   void OnBarrierComplete() {
@@ -545,7 +545,7 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
   void Run() override {
     error_count_ = 0;
     remaining_clients_ = manager()->clients_.size();
-    for (auto* client : manager()->clients_) {
+    for (const auto& client : manager()->clients_) {
       if (quota_client_mask_ & client->id()) {
         static int tracing_id = 0;
         TRACE_EVENT_ASYNC_BEGIN2(
@@ -632,7 +632,7 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   void Run() override {
     error_count_ = 0;
     remaining_clients_ = manager()->clients_.size();
-    for (auto* client : manager()->clients_) {
+    for (const auto& client : manager()->clients_) {
       client->GetOriginsForHost(
           type_, host_,
           base::BindOnce(&HostDataDeleter::DidGetOriginsForHost,
@@ -728,7 +728,7 @@ class QuotaManager::StorageCleanupHelper : public QuotaTask {
 
     // This may synchronously trigger |callback_| at the end of the for loop,
     // make sure we do nothing after this block.
-    for (auto* client : manager()->clients_) {
+    for (const auto& client : manager()->clients_) {
       if (quota_client_mask_ & client->id()) {
         client->PerformStorageCleanup(type_, barrier);
       } else {
@@ -1217,7 +1217,7 @@ bool QuotaManager::ResetUsageTracker(StorageType type) {
 
 QuotaManager::~QuotaManager() {
   proxy_->manager_ = nullptr;
-  for (auto* client : clients_)
+  for (const auto& client : clients_)
     client->OnQuotaManagerDestroyed();
   if (database_)
     db_runner_->DeleteSoon(FROM_HERE, database_.release());
@@ -1293,10 +1293,10 @@ void QuotaManager::DidBootstrapDatabase(
   GetLRUOrigin(StorageType::kTemporary, std::move(did_get_origin_callback));
 }
 
-void QuotaManager::RegisterClient(QuotaClient* client) {
+void QuotaManager::RegisterClient(scoped_refptr<QuotaClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!database_.get());
-  clients_.push_back(client);
+  clients_.push_back(std::move(client));
 }
 
 UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {

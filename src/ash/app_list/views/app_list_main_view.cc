@@ -38,9 +38,8 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/public/activation_client.h"
 
-namespace app_list {
+namespace ash {
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppListMainView:
@@ -85,19 +84,6 @@ void AppListMainView::AddContentsViews() {
   AddChildView(contents_view_);
 
   search_box_view_->set_contents_view(contents_view_);
-}
-
-void AppListMainView::ShowAppListWhenReady() {
-  // After switching to tablet mode, other app windows may be active. Show the
-  // app list without activating it to avoid breaking other windows' state.
-  const aura::Window* active_window =
-      wm::GetActivationClient(
-          app_list_view_->GetWidget()->GetNativeView()->GetRootWindow())
-          ->GetActiveWindow();
-  if (app_list_view_->is_tablet_mode() && active_window)
-    GetWidget()->ShowInactive();
-  else
-    GetWidget()->Show();
 }
 
 void AppListMainView::ModelChanged() {
@@ -173,6 +159,16 @@ void AppListMainView::OnResultInstalled(SearchResult* result) {
   search_box_view_->ClearSearch();
 }
 
+// AppListModelObserver overrides:
+void AppListMainView::OnAppListStateChanged(AppListState new_state,
+                                            AppListState old_state) {
+  if (new_state == AppListState::kStateEmbeddedAssistant) {
+    search_box_view_->SetVisible(false);
+  } else {
+    search_box_view_->SetVisible(true);
+  }
+}
+
 void AppListMainView::QueryChanged(search_box::SearchBoxViewBase* sender) {
   base::string16 raw_query = search_model_->search_box()->text();
   base::string16 query;
@@ -231,4 +227,4 @@ void AppListMainView::BackButtonPressed() {
     app_list_view_->Dismiss();
 }
 
-}  // namespace app_list
+}  // namespace ash

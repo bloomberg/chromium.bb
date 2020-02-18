@@ -15,6 +15,7 @@ import tempfile
 
 from chromite.lib import constants
 from chromite.lib import auto_updater
+from chromite.lib import auto_updater_transfer
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -44,8 +45,8 @@ class UsbImagerOperation(operation.ProgressBarOperation):
   def _GetDDPid(self):
     """Get the Pid of dd."""
     try:
-      pids = cros_build_lib.RunCommand(['pgrep', 'dd'], capture_output=True,
-                                       print_cmd=False).output
+      pids = cros_build_lib.run(['pgrep', 'dd'], capture_output=True,
+                                print_cmd=False, encoding='utf-8').stdout
       for pid in pids.splitlines():
         if osutils.IsChildProcess(int(pid), name='dd'):
           return int(pid)
@@ -58,7 +59,7 @@ class UsbImagerOperation(operation.ProgressBarOperation):
     """Send USR1 signal to dd to get status update."""
     try:
       cmd = ['kill', '-USR1', str(dd_pid)]
-      cros_build_lib.SudoRunCommand(cmd, print_cmd=False)
+      cros_build_lib.sudo_run(cmd, print_cmd=False)
     except cros_build_lib.RunCommandError:
       # Here we assume that dd finished in the background.
       return
@@ -91,11 +92,11 @@ def _IsFilePathGPTDiskImage(file_path, require_pmbr=False):
     require_pmbr: Whether to require a PMBR in LBA0.
   """
   if os.path.isfile(file_path):
-    with open(file_path) as image_file:
+    with open(file_path, 'rb') as image_file:
       if require_pmbr:
         # Seek to the end of LBA0 and look for the PMBR boot signature.
         image_file.seek(0x1fe)
-        if image_file.read(2) != '\x55\xaa':
+        if image_file.read(2) != b'\x55\xaa':
           return False
         # Current file position is start of LBA1 now.
       else:
@@ -103,7 +104,7 @@ def _IsFilePathGPTDiskImage(file_path, require_pmbr=False):
         image_file.seek(0x200)
 
       # See if there's a GPT here.
-      if image_file.read(8) == 'EFI PART':
+      if image_file.read(8) == b'EFI PART':
         return True
 
   return False
@@ -118,7 +119,7 @@ def _ChooseImageFromDirectory(dir_path):
   images = sorted([x for x in os.listdir(dir_path) if
                    _IsFilePathGPTDiskImage(os.path.join(dir_path, x))])
   idx = 0
-  if len(images) == 0:
+  if not images:
     raise ValueError('No image found in %s.' % dir_path)
   elif len(images) > 1:
     idx = cros_build_lib.GetChoice(
@@ -212,11 +213,11 @@ class USBImager(object):
         '--dst=%s' % device,
         '--skip_postinstall',
     ]
-    cros_build_lib.SudoRunCommand(cmd,
-                                  print_cmd=True,
-                                  debug_level=logging.NOTICE,
-                                  combine_stdout_stderr=True,
-                                  log_output=True)
+    cros_build_lib.sudo_run(cmd,
+                            print_cmd=True,
+                            debug_level=logging.NOTICE,
+                            combine_stdout_stderr=True,
+                            log_output=True)
 
   def CopyImageToDevice(self, image, device):
     """Copies |image| to the removable |device|.
@@ -226,13 +227,13 @@ class USBImager(object):
       device: Device to copy to.
     """
     cmd = ['dd', 'if=%s' % image, 'of=%s' % device, 'bs=4M', 'iflag=fullblock',
-           'oflag=sync']
+           'oflag=direct', 'conv=fdatasync']
     if logging.getLogger().getEffectiveLevel() <= logging.NOTICE:
       op = UsbImagerOperation(image)
-      op.Run(cros_build_lib.SudoRunCommand, cmd, debug_level=logging.NOTICE,
-             update_period=0.5)
+      op.Run(cros_build_lib.sudo_run, cmd, debug_level=logging.NOTICE,
+             encoding='utf-8', update_period=0.5)
     else:
-      cros_build_lib.SudoRunCommand(
+      cros_build_lib.sudo_run(
           cmd, debug_level=logging.NOTICE,
           print_cmd=logging.getLogger().getEffectiveLevel() < logging.NOTICE)
 
@@ -240,11 +241,14 @@ class USBImager(object):
     # up for us with a 'write' command, so we have a standards-conforming GPT.
     # Ignore errors because sfdisk (util-linux < v2.32) isn't always happy to
     # fix GPT sanity issues.
-    cros_build_lib.SudoRunCommand(['sfdisk', device], input='write\n',
-                                  error_code_ok=True,
-                                  debug_level=self.debug_level)
+    cros_build_lib.sudo_run(['sfdisk', device], input='write\n',
+                            error_code_ok=True,
+                            debug_level=self.debug_level)
 
-    cros_build_lib.SudoRunCommand(['sync'], debug_level=self.debug_level)
+    cros_build_lib.sudo_run(['partx', '-u', device],
+                            debug_level=self.debug_level)
+    cros_build_lib.sudo_run(['sync', '-d', device],
+                            debug_level=self.debug_level)
 
   def _GetImagePath(self):
     """Returns the image path to use."""
@@ -332,7 +336,6 @@ class FileImager(USBImager):
 
 class RemoteDeviceUpdater(object):
   """Performs update on a remote device."""
-  DEVSERVER_FILENAME = 'devserver.py'
   STATEFUL_UPDATE_BIN = '/usr/bin/stateful_update'
   UPDATE_ENGINE_BIN = 'update_engine_client'
   # Root working directory on the device. This directory is in the
@@ -415,6 +418,7 @@ class RemoteDeviceUpdater(object):
       logging.info('Using provided payloads in %s', self.image)
       return self.image
 
+    image_path = None
     if os.path.isfile(self.image):
       # The given path is an image.
       image_path = self.image
@@ -431,23 +435,45 @@ class RemoteDeviceUpdater(object):
                          (device.board, self.board))
       logging.info('Board is %s', self.board)
 
-      # Translate the xbuddy path to get the exact image to use.
-      translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
-          self.image, self.board, static_dir=DEVSERVER_STATIC_DIR)
-      image_path = ds_wrapper.TranslatedPathToLocalPath(
-          translated_path, DEVSERVER_STATIC_DIR)
-      payload_dir = os.path.join(os.path.dirname(image_path), 'payloads')
 
-    logging.notice('Using image path %s and payload directory %s',
-                   image_path, payload_dir)
+      # TODO(crbug.com/872441): Once devserver code has been moved to chromite,
+      # use xbuddy library directly instead of the devserver_wrapper.
+      # Fetch the full payload and properties, and stateful files. If this
+      # fails, fallback to downloading the image.
+      try:
+        translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
+            os.path.join(self.image, 'full_payload'), self.board,
+            static_dir=DEVSERVER_STATIC_DIR, silent=True)
+        payload_dir = os.path.dirname(
+            ds_wrapper.TranslatedPathToLocalPath(translated_path,
+                                                 DEVSERVER_STATIC_DIR))
+        ds_wrapper.GetImagePathWithXbuddy(
+            os.path.join(self.image, 'stateful'), self.board,
+            static_dir=DEVSERVER_STATIC_DIR, silent=True)
+        fetch_image = False
+      except (ds_wrapper.ImagePathError, ds_wrapper.ArtifactDownloadError):
+        logging.info('Could not find full_payload or stateful for "%s"',
+                     self.image)
+        fetch_image = True
+
+      # We didn't find the full_payload, attempt to download the image.
+      if fetch_image:
+        translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
+            self.image, self.board, static_dir=DEVSERVER_STATIC_DIR)
+        image_path = ds_wrapper.TranslatedPathToLocalPath(
+            translated_path, DEVSERVER_STATIC_DIR)
+        payload_dir = os.path.join(os.path.dirname(image_path), 'payloads')
+        logging.notice('Using image path %s and payload directory %s',
+                       image_path, payload_dir)
 
     # Generate rootfs and stateful update payloads if they do not exist.
-    payload_path = os.path.join(payload_dir, ds_wrapper.ROOTFS_FILENAME)
+    payload_path = os.path.join(payload_dir,
+                                auto_updater_transfer.ROOTFS_FILENAME)
     if not os.path.exists(payload_path):
       paygen_payload_lib.GenerateUpdatePayload(
           image_path, payload_path, src_image=self.src_image_to_delta)
-    if not os.path.exists(os.path.join(payload_dir,
-                                       ds_wrapper.STATEFUL_FILENAME)):
+    if not os.path.exists(os.path.join(
+        payload_dir, auto_updater_transfer.STATEFUL_FILENAME)):
       paygen_stateful_payload_lib.GenerateStatefulPayload(image_path,
                                                           payload_dir)
     return payload_dir
@@ -471,8 +497,11 @@ class RemoteDeviceUpdater(object):
           payload_dir = self.GetPayloadDir(device)
 
           # Do auto-update
-          chromeos_AU = auto_updater.ChromiumOSFlashUpdater(
-              device, payload_dir, self.tempdir,
+          chromeos_AU = auto_updater.ChromiumOSUpdater(
+              device=device,
+              build_name=None,
+              payload_dir=payload_dir,
+              tempdir=self.tempdir,
               do_rootfs_update=self.do_rootfs_update,
               do_stateful_update=self.do_stateful_update,
               reboot=self.reboot,
@@ -482,6 +511,7 @@ class RemoteDeviceUpdater(object):
               send_payload_in_parallel=self.send_payload_in_parallel,
               experimental_au=self.experimental_au)
           chromeos_AU.CheckPayloads()
+          chromeos_AU.PreparePayloadPropsFile()
           chromeos_AU.RunUpdate()
 
         except Exception:
@@ -500,6 +530,7 @@ class RemoteDeviceUpdater(object):
 
     finally:
       self.Cleanup()
+
 
 def Flash(device, image, board=None, install=False, src_image_to_delta=None,
           rootfs_update=True, stateful_update=True, clobber_stateful=False,

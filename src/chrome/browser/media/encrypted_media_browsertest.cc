@@ -61,8 +61,6 @@ const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
 const char kExternalClearKeyInitializeFailKeySystem[] =
     "org.chromium.externalclearkey.initializefail";
-const char kExternalClearKeyOutputProtectionTestKeySystem[] =
-    "org.chromium.externalclearkey.outputprotectiontest";
 const char kExternalClearKeyPlatformVerificationTestKeySystem[] =
     "org.chromium.externalclearkey.platformverificationtest";
 const char kExternalClearKeyCrashKeySystem[] =
@@ -70,12 +68,14 @@ const char kExternalClearKeyCrashKeySystem[] =
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
     "org.chromium.externalclearkey.verifycdmhosttest";
-#endif
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 const char kExternalClearKeyStorageIdTestKeySystem[] =
     "org.chromium.externalclearkey.storageidtest";
+#if BUILDFLAG(ENABLE_CDM_PROXY)
 const char kExternalClearKeyCdmProxyKeySystem[] =
     "org.chromium.externalclearkey.cdmproxy";
-#endif
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 // Sessions to load.
 const char kNoSessionToLoad[] = "";
@@ -348,6 +348,17 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
                           PlayCount::ONCE, expected_title);
   }
 
+  void TestOutputProtection(bool create_recorder_before_media_keys) {
+    // Make sure the Clear Key CDM is properly registered in CdmRegistry.
+    EXPECT_TRUE(IsLibraryCdmRegistered(media::kClearKeyCdmGuid));
+
+    base::StringPairs query_params;
+    if (create_recorder_before_media_keys)
+      query_params.emplace_back("createMediaRecorderBeforeMediaKeys", "1");
+    RunMediaTestPage("eme_and_get_display_media.html", query_params,
+                     kUnitTestSuccess, true);
+  }
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
@@ -356,6 +367,10 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
     command_line->AppendSwitchASCII(
         switches::kOverrideEnabledCdmInterfaceVersion,
         base::NumberToString(GetCdmInterfaceVersion()));
+    // The output protection tests create a MediaRecorder on a MediaStream,
+    // so this allows for a fake stream to be created.
+    command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 };
 
@@ -382,7 +397,6 @@ class ECKIncognitoEncryptedMediaTest : public EncryptedMediaTestBase {
     command_line->AppendSwitch(switches::kIncognito);
   }
 };
-
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 // Tests encrypted media playback with a combination of parameters:
@@ -553,9 +567,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm");
 }
 
-// TODO(xhwang): Test is flaky. https://crbug.com/890124.
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
-                       DISABLED_Playback_Multiple_VideoAudio_WebM) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Multiple_VideoAudio_WebM) {
   if (!IsPlayBackPossible(CurrentKeySystem())) {
     DVLOG(0) << "Skipping test - Playback_Multiple test requires playback.";
     return;
@@ -572,6 +584,15 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4_FLAC) {
   TestSimplePlayback("bear-flac-cenc.mp4");
 }
 
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4_OPUS) {
+  // MP4 without MSE is not support yet, http://crbug.com/170793.
+  if (CurrentSourceType() != SrcType::MSE) {
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    return;
+  }
+  TestSimplePlayback("bear-opus-cenc.mp4");
+}
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
@@ -583,13 +604,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9) {
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
                        Playback_VideoOnly_WebM_VP9Profile2) {
-#if BUILDFLAG(ENABLE_WIDEVINE)
-  // TODO(crbug.com/707128): Update Widevine CDM to support VP9 profile 1/2/3.
-  if (IsWidevine(CurrentKeySystem())) {
-    DVLOG(0) << "Skipping test - Widevine CDM does not support VP9 profile 2";
-    return;
-  }
-#endif
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm");
 }
 
@@ -599,13 +613,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
-#if BUILDFLAG(ENABLE_WIDEVINE)
-  // TODO(crbug.com/707128): Update Widevine CDM to support VP9 profile 1/2/3.
-  if (IsWidevine(CurrentKeySystem())) {
-    DVLOG(0) << "Skipping test - Widevine CDM does not support VP9 profile 2";
-    return;
-  }
-#endif
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.mp4");
 }
 
@@ -721,13 +728,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4) {
   TestSimplePlayback("bear-640x360-v_frag-cenc.mp4");
 }
 
-// Flaky: crbug.com/847881
-#if defined(MAC_OSX)
-#define MAYBE_Playback_VideoOnly_MP4_MDAT DISABLED_Playback_VideoOnly_MP4_MDAT
-#else
-#define MAYBE_Playback_VideoOnly_MP4_MDAT Playback_VideoOnly_MP4_MDAT
-#endif
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, MAYBE_Playback_VideoOnly_MP4_MDAT) {
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_MDAT) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != SrcType::MSE) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
@@ -742,11 +743,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CBCS) {
     return;
   }
 
-#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
   TestSimplePlayback("bear-640x360-v_frag-cbcs.mp4");
-#else
-  DVLOG(0) << "Skipping test; 'cbcs' decryption not supported.";
-#endif
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
@@ -793,10 +790,15 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, InitializeCDMFail) {
                        kEmeNotSupportedError);
 }
 
+// TODO(1019187): Failing on win7.
+#if defined(OS_WIN)
+#define MAYBE_CDMCrashDuringDecode DISABLED_CDMCrashDuringDecode
+#else
+#define MAYBE_CDMCrashDuringDecode CDMCrashDuringDecode
+#endif
 // When CDM crashes, we should still get a decode error and all sessions should
 // be closed.
-// Flaky: crbug.com/832800
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DISABLED_CDMCrashDuringDecode) {
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_CDMCrashDuringDecode) {
   TestNonPlaybackCases(kExternalClearKeyCrashKeySystem,
                        kEmeSessionClosedAndError);
 }
@@ -805,11 +807,13 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, FileIOTest) {
   TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem, kUnitTestSuccess);
 }
 
-// TODO(xhwang): Investigate how to fake capturing activities to test the
-// network link detection logic in OutputProtectionProxy.
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, OutputProtectionTest) {
-  TestNonPlaybackCases(kExternalClearKeyOutputProtectionTestKeySystem,
-                       kUnitTestSuccess);
+// Output protection tests.
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, OutputProtectionBeforeMediaKeys) {
+  TestOutputProtection(/*create_recorder_before_media_keys=*/true);
+}
+
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, OutputProtectionAfterMediaKeys) {
+  TestOutputProtection(/*create_recorder_before_media_keys=*/false);
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, PlatformVerificationTest) {
@@ -876,9 +880,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DecryptOnly_VideoOnly_MP4_CBCS) {
   // 'cbcs' decryption is only supported on CDM 10 or later as long as
   // the appropriate buildflag is enabled.
   std::string expected_result =
-      GetCdmInterfaceVersion() >= 10 && BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
-          ? media::kEnded
-          : media::kError;
+      GetCdmInterfaceVersion() >= 10 ? media::kEnded : media::kError;
   RunEncryptedMediaTest(kDefaultEmePlayer, "bear-640x360-v_frag-cbcs.mp4",
                         kExternalClearKeyDecryptOnlyKeySystem, SrcType::MSE,
                         kNoSessionToLoad, false, PlayCount::ONCE,
@@ -909,9 +911,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Playback_Encryption_CBCS) {
   // 'cbcs' decryption is only supported on CDM 10 or later as long as
   // the appropriate buildflag is enabled.
   std::string expected_result =
-      GetCdmInterfaceVersion() >= 10 && BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
-          ? media::kEnded
-          : media::kError;
+      GetCdmInterfaceVersion() >= 10 ? media::kEnded : media::kError;
   RunEncryptedMediaMultipleFileTest(
       kExternalClearKeyKeySystem, "bear-640x360-v_frag-cbcs.mp4",
       "bear-640x360-a_frag-cbcs.mp4", expected_result);
@@ -946,6 +946,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MultipleCdmTypes) {
 
 // Tests that only works on newer CDM interfaces.
 
+#if BUILDFLAG(ENABLE_CDM_PROXY)
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
   if (GetCdmInterfaceVersion() < 11) {
     DVLOG(0) << "Skipping test; CdmProxy only supported on CDM_11 and above.";
@@ -956,6 +957,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
   RunSimpleEncryptedMediaTest("bear-a_enc-a.webm",
                               kExternalClearKeyCdmProxyKeySystem, SrcType::MSE);
 }
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
 // Incognito tests. Ideally we would run all above tests in incognito mode to
 // ensure that everything works. However, that would add a lot of extra tests
@@ -975,5 +977,4 @@ IN_PROC_BROWSER_TEST_F(ECKIncognitoEncryptedMediaTest, LoadSessionAfterClose) {
                             kExternalClearKeyKeySystem, query_params,
                             media::kEnded);
 }
-
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

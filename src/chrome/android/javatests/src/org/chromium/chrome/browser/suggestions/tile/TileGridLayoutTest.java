@@ -16,12 +16,13 @@ import static org.chromium.chrome.test.util.browser.suggestions.mostvisited.Fake
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.support.annotation.Nullable;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
+import androidx.annotation.Nullable;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -51,9 +52,9 @@ import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
@@ -208,7 +209,7 @@ public class TileGridLayoutTest {
         return siteSuggestions;
     }
 
-    private NewTabPage setUpFakeDataToShowOnNtp(int suggestionCount) throws InterruptedException {
+    private NewTabPage setUpFakeDataToShowOnNtp(int suggestionCount) {
         List<SiteSuggestion> siteSuggestions = makeSuggestions(suggestionCount);
 
         FakeMostVisitedSites mMostVisitedSites = new FakeMostVisitedSites();
@@ -278,7 +279,7 @@ public class TileGridLayoutTest {
      * @return the layout in which the suggestions are rendered.
      */
     private TileGridLayout renderTiles(List<SiteSuggestion> siteSuggestions,
-            List<String> offlineUrls) throws IOException, InterruptedException {
+            List<String> offlineUrls) throws InterruptedException {
         // Launching the activity, that should now use the right UI.
         mActivityTestRule.startMainActivityOnBlankPage();
         ChromeActivity activity = mActivityTestRule.getActivity();
@@ -312,7 +313,7 @@ public class TileGridLayoutTest {
     }
 
     private TileGridLayout renderTiles(List<SiteSuggestion> siteSuggestions)
-            throws IOException, InterruptedException {
+            throws InterruptedException {
         return renderTiles(siteSuggestions, Collections.emptyList());
     }
 

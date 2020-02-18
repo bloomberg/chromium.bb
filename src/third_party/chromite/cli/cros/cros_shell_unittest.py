@@ -31,7 +31,7 @@ class ShellTest(cros_test_lib.MockTempDirTestCase,
                 cros_test_lib.OutputTestCase):
   """Test the flow of ShellCommand.run with the SSH methods mocked out."""
 
-  DEVICE_IP = '1.1.1.1'
+  DEVICE_IP = remote_access.TEST_IP
 
   def SetupCommandMock(self, cmd_args):
     """Sets up the `cros shell` command mock."""
@@ -74,7 +74,7 @@ class ShellTest(cros_test_lib.MockTempDirTestCase,
     """Tests a non-interactive command as a single argument.
 
     Examples:
-      cros shell 1.1.1.1 "ls -l /etc"
+      cros shell 127.0.0.1 "ls -l /etc"
     """
     self.SetupCommandMock([self.DEVICE_IP, 'ls -l /etc'])
     self.cmd_mock.inst.Run()
@@ -86,7 +86,7 @@ class ShellTest(cros_test_lib.MockTempDirTestCase,
     """Tests a non-interactive command as multiple arguments with "--".
 
     Examples:
-      cros shell 1.1.1.1 -- ls -l /etc
+      cros shell 127.0.0.1 -- ls -l /etc
     """
     self.SetupCommandMock([self.DEVICE_IP, '--', 'ls', '-l', '/etc'])
     self.cmd_mock.inst.Run()

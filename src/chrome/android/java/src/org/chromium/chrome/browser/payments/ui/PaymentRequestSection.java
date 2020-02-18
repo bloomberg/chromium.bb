@@ -8,10 +8,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.support.annotation.ColorInt;
-import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.widget.GridLayout;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -33,11 +30,15 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.DualControlLayout;
-import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.browser.ui.widget.DualControlLayout;
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.ui.HorizontalListDividerDrawable;
 import org.chromium.ui.UiUtils;
@@ -545,7 +546,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             public void run() {
                 Animation out = new AlphaAnimation(mUpdatedView.getAlpha(), 0.0f);
                 out.setDuration(UPDATE_TEXT_ANIMATION_DURATION_MS);
-                out.setInterpolator(new LinearOutSlowInInterpolator());
+                out.setInterpolator(Interpolators.LINEAR_OUT_SLOW_IN_INTERPOLATOR);
                 out.setFillAfter(true);
                 mUpdatedView.startAnimation(out);
             }
@@ -716,7 +717,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             // to avoid restarting a previous or current fade in animation.
             Animation in = new AlphaAnimation(mUpdatedView.getAlpha(), 1.0f);
             in.setDuration(UPDATE_TEXT_ANIMATION_DURATION_MS);
-            in.setInterpolator(new LinearOutSlowInInterpolator());
+            in.setInterpolator(Interpolators.LINEAR_OUT_SLOW_IN_INTERPOLATOR);
             in.setFillAfter(true);
             mUpdatedView.startAnimation(in);
 
@@ -1517,7 +1518,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             setBackground(HorizontalListDividerDrawable.create(getContext()));
             LinearLayout.LayoutParams params =
                     new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
-                            resources.getDimensionPixelSize(R.dimen.separator_height));
+                            resources.getDimensionPixelSize(R.dimen.divider_height));
 
             int margin =
                     resources.getDimensionPixelSize(R.dimen.editor_dialog_section_large_spacing);

@@ -2,33 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import './number_settings_section.js';
+import './print_preview_shared_css.js';
+import './settings_section.js';
 
-/** @enum {number} */
-const ScalingValue = {
-  DEFAULT: 0,
-  FIT_TO_PAGE: 1,
-  CUSTOM: 2,
-};
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ScalingType} from '../data/scaling.js';
+
+import {SelectBehavior} from './select_behavior.js';
+import {SettingsBehavior} from './settings_behavior.js';
 
 /*
- * When fit to page is available, the checkbox and input interact as follows:
- * 1. When checkbox is checked, the fit to page scaling value is displayed in
- * the input. The error message is cleared if it was present.
- * 2. When checkbox is unchecked, the most recent valid scale value is restored.
- * 3. If the input is modified while the checkbox is checked, the checkbox will
- * be unchecked automatically, regardless of the validity of the new value.
+ * Fit to page and fit to paper options will only be displayed for PDF
+ * documents. If the custom option is selected, an additional input field will
+ * appear to enter the custom scale factor.
  */
 Polymer({
   is: 'print-preview-scaling-settings',
 
-  behaviors: [SettingsBehavior, print_preview.SelectBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [SettingsBehavior, SelectBehavior],
 
   properties: {
     disabled: {
       type: Boolean,
       observer: 'onDisabledChanged_',
     },
+
+    isPdf: Boolean,
 
     /** @private {string} */
     currentValue_: {
@@ -39,8 +44,8 @@ Polymer({
     /** @private {boolean} */
     customSelected_: {
       type: Boolean,
-      computed: 'computeCustomSelected_(settings.customScaling.*, ' +
-          'settings.fitToPage.*)',
+      computed: 'computeCustomSelected_(settingKey_, ' +
+          'settings.scalingType.*, settings.scalingTypePdf.*)',
     },
 
     /** @private {boolean} */
@@ -52,14 +57,23 @@ Polymer({
       value: false,
     },
 
+    /** @private {string} */
+    settingKey_: {
+      type: String,
+      computed: 'computeSettingKey_(isPdf)',
+    },
+
     /** Mirroring the enum so that it can be used from HTML bindings. */
-    ScalingValue: Object,
+    ScalingValue: {
+      type: Object,
+      value: ScalingType,
+    },
   },
 
   observers: [
-    'onFitToPageSettingChange_(settings.fitToPage.value)',
+    'onScalingTypeSettingChanged_(settingKey_, settings.scalingType.value, ' +
+        'settings.scalingTypePdf.value)',
     'onScalingSettingChanged_(settings.scaling.value)',
-    'onCustomScalingSettingChanged_(settings.customScaling.value)',
   ],
 
   /** @private {string} */
@@ -81,28 +95,24 @@ Polymer({
    */
   userSelectedCustomScaling_: false,
 
-  /** @override */
-  ready: function() {
-    this.ScalingValue = ScalingValue;
-  },
-
   onProcessSelectChange: function(value) {
-    if (value === ScalingValue.FIT_TO_PAGE.toString()) {
-      this.setSetting('fitToPage', true);
-      return;
-    }
-
-    const fitToPageAvailable = this.getSetting('fitToPage').available;
-    if (fitToPageAvailable) {
-      this.setSetting('fitToPage', false);
-    }
-    const isCustom = value === ScalingValue.CUSTOM.toString();
+    const isCustom = value === ScalingType.CUSTOM.toString();
     if (isCustom && !this.customScalingSettingSet_) {
       this.userSelectedCustomScaling_ = true;
     } else {
       this.customScalingSettingSet_ = false;
     }
-    this.setSetting('customScaling', isCustom);
+
+    const valueAsNumber = parseInt(value, 10);
+    if (isCustom || value === ScalingType.DEFAULT.toString()) {
+      this.setSetting('scalingType', valueAsNumber);
+    }
+    if (this.isPdf ||
+        this.getSetting('scalingTypePdf').value === ScalingType.DEFAULT ||
+        this.getSetting('scalingTypePdf').value === ScalingType.CUSTOM) {
+      this.setSetting('scalingTypePdf', valueAsNumber);
+    }
+
     if (isCustom) {
       this.setSetting('scaling', this.currentValue_);
     }
@@ -117,35 +127,6 @@ Polymer({
     }
   },
 
-  /** @private */
-  onFitToPageSettingChange_: function() {
-    if (!this.getSettingValue('fitToPage') ||
-        !this.getSetting('fitToPage').available) {
-      return;
-    }
-
-    this.updateScalingToValid_();
-    this.selectedValue = ScalingValue.FIT_TO_PAGE.toString();
-  },
-
-  /** @private */
-  onCustomScalingSettingChanged_: function() {
-    if (this.getSettingValue('fitToPage') &&
-        this.getSetting('fitToPage').available) {
-      return;
-    }
-
-    const isCustom =
-        /** @type {boolean} */ (this.getSetting('customScaling').value);
-    if (!isCustom) {
-      this.updateScalingToValid_();
-    } else {
-      this.customScalingSettingSet_ = true;
-    }
-    this.selectedValue = isCustom ? ScalingValue.CUSTOM.toString() :
-                                    ScalingValue.DEFAULT.toString();
-  },
-
   /**
    * Updates the input string when scaling setting is set.
    * @private
@@ -156,9 +137,25 @@ Polymer({
     this.currentValue_ = value;
   },
 
+  /** @private */
+  onScalingTypeSettingChanged_: function() {
+    if (!this.settingKey_) {
+      return;
+    }
+
+    const value = /** @type {!ScalingType} */
+        (this.getSettingValue(this.settingKey_));
+    if (value !== ScalingType.CUSTOM) {
+      this.updateScalingToValid_();
+    } else {
+      this.customScalingSettingSet_ = true;
+    }
+    this.selectedValue = value.toString();
+  },
+
   /**
-   * Updates scaling and fit to page settings based on the validity and current
-   * value of the scaling input.
+   * Updates scaling settings based on the validity and current value of the
+   * scaling input.
    * @private
    */
   onInputChanged_: function() {
@@ -188,9 +185,16 @@ Polymer({
    * @private
    */
   computeCustomSelected_: function() {
-    return /** @type {boolean} */ (this.getSettingValue('customScaling')) &&
-        (!this.getSetting('fitToPage').available ||
-         !(/** @type {boolean} */ (this.getSettingValue('fitToPage'))));
+    return !!this.settingKey_ &&
+        this.getSettingValue(this.settingKey_) === ScalingType.CUSTOM;
+  },
+
+  /**
+   * @return {string} The key of the appropriate scaling setting.
+   * @private
+   */
+  computeSettingKey_: function() {
+    return this.isPdf ? 'scalingTypePdf' : 'scalingType';
   },
 
   /** @private */

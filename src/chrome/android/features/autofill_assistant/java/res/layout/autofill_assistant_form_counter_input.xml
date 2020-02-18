@@ -9,11 +9,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/autofill_assistant_bottombar_horizontal_spacing"
+    android:layout_marginEnd="12dp"
     android:orientation="vertical">
     <TextView
         android:id="@+id/label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/autofill_assistant_form_counter_button_padding"
         android:layout_marginBottom="4dp"
         android:textAppearance="@style/TextAppearance.BlackButtonText"/>
     <LinearLayout
@@ -23,6 +26,7 @@
         android:gravity="center_vertical"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
+        android:layout_marginEnd="@dimen/autofill_assistant_form_counter_button_padding"
         android:orientation="horizontal"
         android:visibility="gone"
         tools:ignore="UseCompoundDrawables">
@@ -30,17 +34,17 @@
             android:id="@+id/expand_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.BlackCaption"/>
+            android:textAppearance="@style/TextAppearance.BlueLink2"/>
         <TextView
             android:id="@+id/minimize_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.BlackCaption"/>
-        <ImageView
+            android:textAppearance="@style/TextAppearance.BlueLink2"/>
+        <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/chevron"
             android:layout_width="16dp"
             android:layout_height="16dp"
-            android:tint="@color/default_text_color_secondary_list"
+            android:tint="@color/blue_when_enabled"
             app:srcCompat="@drawable/ic_expand_more_black_24dp"
             tools:ignore="ContentDescription"/>
     </LinearLayout>

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -12,7 +13,10 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
+#include "base/containers/flat_tree.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
+#include "chrome/browser/chromeos/crostini/crostini_force_close_watcher.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -28,7 +32,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/chrome_features.h"
 #include "components/arc/arc_util.h"
+#include "components/exo/permission.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -42,6 +48,11 @@
 #include "ui/wm/core/window_util.h"
 
 namespace {
+
+// Time allowed for apps to self-activate after launch, see
+// go/crostini-self-activate for details.
+constexpr base::TimeDelta kSelfActivationTimeout =
+    base::TimeDelta::FromSeconds(5);
 
 void MoveWindowFromOldDisplayToNewDisplay(aura::Window* window,
                                           display::Display& old_display,
@@ -208,6 +219,16 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   if (shelf_app_id.empty())
     return;
 
+  // At this point, all remaining windows are Crostini windows. Firstly, we add
+  // support for forcibly closing it. We use the registration to retrieve the
+  // app's name, but this may be null in the case of apps with no associated
+  // launcher entry (i.e. no .desktop file), in which case the app's name is
+  // unknown.
+  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
+      registry_service->GetRegistration(shelf_app_id);
+  RegisterCrostiniWindowForForceClose(
+      window, registration.has_value() ? registration->Name() : "");
+
   // Failed to uniquely identify the Crostini app that this window is for.
   // The spinners on the shelf have internal app IDs which are valid
   // extensions IDs. If the ID here starts with "crostini:" then it implies
@@ -252,6 +273,8 @@ void CrostiniAppWindowShelfController::RegisterAppWindow(
     const std::string& shelf_app_id) {
   window->SetProperty(aura::client::kAppType,
                       static_cast<int>(ash::AppType::CROSTINI_APP));
+  window->SetProperty(ash::kAppIDKey, shelf_app_id);
+
   const ash::ShelfID shelf_id(shelf_app_id);
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   aura_window_to_app_window_[window] =
@@ -291,6 +314,10 @@ void CrostiniAppWindowShelfController::OnWindowDestroying(
   }
 
   aura_window_to_app_window_.erase(app_window_it);
+
+  base::EraseIf(activation_permissions_, [&window](const auto& element) {
+    return element.first == window;
+  });
 }
 
 AppWindowLauncherItemController*
@@ -321,6 +348,19 @@ void CrostiniAppWindowShelfController::UnregisterAppWindow(
   app_window->SetController(nullptr);
 }
 
+void CrostiniAppWindowShelfController::RegisterCrostiniWindowForForceClose(
+    aura::Window* window,
+    const std::string& app_name) {
+  if (!base::FeatureList::IsEnabled(features::kCrostiniForceClose))
+    return;
+  exo::ShellSurfaceBase* surface = exo::GetShellSurfaceBaseForWindow(window);
+  if (!surface)
+    return;
+  crostini::ForceCloseWatcher::Watch(
+      std::make_unique<crostini::ShellSurfaceForceCloseDelegate>(surface,
+                                                                 app_name));
+}
+
 void CrostiniAppWindowShelfController::OnItemDelegateDiscarded(
     ash::ShelfItemDelegate* delegate) {
   for (auto& it : aura_window_to_app_window_) {
@@ -339,6 +379,24 @@ void CrostiniAppWindowShelfController::OnAppLaunchRequested(
     const std::string& app_id,
     int64_t display_id) {
   crostini_app_display_.Register(app_id, display_id);
+  // Remove the old permissions and add a permission for every window the app
+  // currently has open.
+  activation_permissions_.clear();
+  ash::ShelfModel* model = owner()->shelf_model();
+  AppWindowLauncherItemController* launcher_item_controller =
+      model->GetAppWindowLauncherItemController(
+          model->items()[model->ItemIndexByAppID(app_id)].id);
+  // Apps run for the first time won't have a launcher controller yet, return
+  // early because they won't have windows either so permissions aren't
+  // necessary.
+  if (!launcher_item_controller)
+    return;
+  for (ui::BaseWindow* app_window : launcher_item_controller->windows()) {
+    activation_permissions_.emplace(
+        app_window->GetNativeWindow(),
+        exo::GrantPermissionToActivate(app_window->GetNativeWindow(),
+                                       kSelfActivationTimeout));
+  }
 }
 
 void CrostiniAppWindowShelfController::Restart(const ash::ShelfID& shelf_id,

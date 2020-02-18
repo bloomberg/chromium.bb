@@ -45,6 +45,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -138,22 +139,22 @@ network::ResourceRequest CreateResourceRequest(const std::string& method,
 // depending on the on test type.
 class GetResult {
  public:
-  GetResult(const network::ResourceResponseHead& response, int result)
-      : resource_response_(response), result_(result) {}
+  GetResult(network::mojom::URLResponseHeadPtr response, int result)
+      : response_(std::move(response)), result_(result) {}
   GetResult(GetResult&& other) : result_(other.result_) {}
   ~GetResult() = default;
 
   std::string GetResponseHeaderByName(const std::string& name) const {
     std::string value;
-    if (resource_response_.headers)
-      resource_response_.headers->GetNormalizedHeader(name, &value);
+    if (response_ && response_->headers)
+      response_->headers->GetNormalizedHeader(name, &value);
     return value;
   }
 
   int result() const { return result_; }
 
  private:
-  const network::ResourceResponseHead resource_response_;
+  network::mojom::URLResponseHeadPtr response_;
   int result_;
 
   DISALLOW_COPY_AND_ASSIGN(GetResult);
@@ -262,13 +263,12 @@ class ExtensionProtocolsTestBase : public testing::Test {
     constexpr int32_t kRoutingId = 81;
     constexpr int32_t kRequestId = 28;
 
-    network::mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<network::mojom::URLLoader> loader;
     network::TestURLLoaderClient client;
     loader_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), kRoutingId, kRequestId,
+        loader.InitWithNewPipeAndPassReceiver(), kRoutingId, kRequestId,
         network::mojom::kURLLoadOptionNone,
-        CreateResourceRequest("GET", resource_type, url),
-        client.CreateInterfacePtr(),
+        CreateResourceRequest("GET", resource_type, url), client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     if (power_monitor_source_) {
@@ -277,7 +277,7 @@ class ExtensionProtocolsTestBase : public testing::Test {
     }
 
     client.RunUntilComplete();
-    return GetResult(client.response_head(),
+    return GetResult(client.response_head().Clone(),
                      client.completion_status().error_code);
   }
 

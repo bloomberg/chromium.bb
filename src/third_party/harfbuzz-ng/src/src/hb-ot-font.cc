@@ -160,11 +160,11 @@ hb_ot_get_glyph_v_origin (hb_font_t *font,
 #endif
 
   hb_glyph_extents_t extents = {0};
-  if (ot_face->glyf->get_extents (glyph, &extents))
+  if (ot_face->glyf->get_extents (font, glyph, &extents))
   {
     const OT::vmtx_accelerator_t &vmtx = *ot_face->vmtx;
-    hb_position_t tsb = vmtx.get_side_bearing (glyph);
-    *y = font->em_scale_y (extents.y_bearing + tsb);
+    hb_position_t tsb = vmtx.get_side_bearing (font, glyph);
+    *y = extents.y_bearing + font->em_scale_y (tsb);
     return true;
   }
 
@@ -188,9 +188,9 @@ hb_ot_get_glyph_extents (hb_font_t *font,
 #if !defined(HB_NO_OT_FONT_BITMAP) && !defined(HB_NO_COLOR)
   if (!ret) ret = ot_face->sbix->get_extents (font, glyph, extents);
 #endif
-  if (!ret) ret = ot_face->glyf->get_extents (glyph, extents);
+  if (!ret) ret = ot_face->glyf->get_extents (font, glyph, extents);
 #ifndef HB_NO_OT_FONT_CFF
-  if (!ret) ret = ot_face->cff1->get_extents (glyph, extents);
+  if (!ret) ret = ot_face->cff1->get_extents (font, glyph, extents);
   if (!ret) ret = ot_face->cff2->get_extents (font, glyph, extents);
 #endif
 #if !defined(HB_NO_OT_FONT_BITMAP) && !defined(HB_NO_COLOR)
@@ -198,30 +198,26 @@ hb_ot_get_glyph_extents (hb_font_t *font,
 #endif
 
   // TODO Hook up side-bearings variations.
-  extents->x_bearing = font->em_scale_x (extents->x_bearing);
-  extents->y_bearing = font->em_scale_y (extents->y_bearing);
-  extents->width     = font->em_scale_x (extents->width);
-  extents->height    = font->em_scale_y (extents->height);
   return ret;
 }
 
 #ifndef HB_NO_OT_FONT_GLYPH_NAMES
 static hb_bool_t
 hb_ot_get_glyph_name (hb_font_t *font HB_UNUSED,
-                      void *font_data,
-                      hb_codepoint_t glyph,
-                      char *name, unsigned int size,
-                      void *user_data HB_UNUSED)
+		      void *font_data,
+		      hb_codepoint_t glyph,
+		      char *name, unsigned int size,
+		      void *user_data HB_UNUSED)
 {
   const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
   return ot_face->post->get_glyph_name (glyph, name, size);
 }
 static hb_bool_t
 hb_ot_get_glyph_from_name (hb_font_t *font HB_UNUSED,
-                           void *font_data,
-                           const char *name, int len,
-                           hb_codepoint_t *glyph,
-                           void *user_data HB_UNUSED)
+			   void *font_data,
+			   const char *name, int len,
+			   hb_codepoint_t *glyph,
+			   void *user_data HB_UNUSED)
 {
   const hb_ot_face_t *ot_face = (const hb_ot_face_t *) font_data;
   return ot_face->post->get_glyph_from_name (name, len, glyph);
@@ -314,6 +310,20 @@ hb_ot_font_set_funcs (hb_font_t *font)
 		     &font->face->table,
 		     nullptr);
 }
+
+#ifndef HB_NO_VAR
+int
+_glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
+{
+  return font->face->table.glyf->get_side_bearing_var (font, glyph, is_vertical);
+}
+
+unsigned
+_glyf_get_advance_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
+{
+  return font->face->table.glyf->get_advance_var (font, glyph, is_vertical);
+}
+#endif
 
 
 #endif

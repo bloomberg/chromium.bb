@@ -6,37 +6,46 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_RENDER_PASS_ENCODER_H_
 
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_programmable_pass_encoder.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
 class GPUBindGroup;
 class GPUBuffer;
-class GPUColor;
+class DoubleSequenceOrGPUColorDict;
 class GPURenderBundle;
 class GPURenderPipeline;
 
-class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
+class GPURenderPassEncoder : public DawnObject<WGPURenderPassEncoder>,
+                             public GPUProgrammablePassEncoder {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static GPURenderPassEncoder* Create(
       GPUDevice* device,
-      DawnRenderPassEncoder render_pass_encoder);
+      WGPURenderPassEncoder render_pass_encoder);
   explicit GPURenderPassEncoder(GPUDevice* device,
-                                DawnRenderPassEncoder render_pass_encoder);
+                                WGPURenderPassEncoder render_pass_encoder);
   ~GPURenderPassEncoder() override;
 
   // gpu_render_pass_encoder.idl
   void setBindGroup(uint32_t index,
                     GPUBindGroup* bindGroup,
-                    const Vector<uint64_t>& dynamicOffsets);
+                    const Vector<uint32_t>& dynamicOffsets);
+  void setBindGroup(uint32_t index,
+                    GPUBindGroup* bind_group,
+                    const FlexibleUint32ArrayView& dynamic_offsets_data,
+                    uint64_t dynamic_offsets_data_start,
+                    uint32_t dynamic_offsets_data_length,
+                    ExceptionState& exception_state);
   void pushDebugGroup(String groupLabel);
   void popDebugGroup();
   void insertDebugMarker(String markerLabel);
   void setPipeline(GPURenderPipeline* pipeline);
 
-  void setBlendColor(GPUColor* color);
+  void setBlendColor(DoubleSequenceOrGPUColorDict& color,
+                     ExceptionState& exception_state);
   void setStencilReference(uint32_t reference);
   void setViewport(float x,
                    float y,
@@ -46,10 +55,9 @@ class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
                    float maxDepth);
   void setScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
   void setIndexBuffer(GPUBuffer* buffer, uint64_t offset);
-  void setVertexBuffers(uint32_t startSlot,
-                        const HeapVector<Member<GPUBuffer>>& buffers,
-                        const Vector<uint64_t>& offsets,
-                        ExceptionState& exception_state);
+  void setVertexBuffer(uint32_t slot,
+                       const GPUBuffer* buffer,
+                       const uint64_t offset);
   void draw(uint32_t vertexCount,
             uint32_t instanceCount,
             uint32_t firstVertex,

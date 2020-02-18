@@ -13,7 +13,7 @@
 
 namespace blink {
 
-XRPlane::XRPlane(int32_t id,
+XRPlane::XRPlane(uint64_t id,
                  XRSession* session,
                  const device::mojom::blink::XRPlaneDataPtr& plane_data,
                  double timestamp)
@@ -26,7 +26,7 @@ XRPlane::XRPlane(int32_t id,
                   plane_data->polygon),
               timestamp) {}
 
-XRPlane::XRPlane(int32_t id,
+XRPlane::XRPlane(uint64_t id,
                  XRSession* session,
                  const base::Optional<Orientation>& orientation,
                  const TransformationMatrix& pose_matrix,
@@ -41,7 +41,7 @@ XRPlane::XRPlane(int32_t id,
   DVLOG(3) << __func__;
 }
 
-int32_t XRPlane::id() const {
+uint64_t XRPlane::id() const {
   return id_;
 }
 
@@ -83,14 +83,10 @@ HeapVector<Member<DOMPointReadOnly>> XRPlane::polygon() const {
 
 ScriptPromise XRPlane::createAnchor(ScriptState* script_state,
                                     XRRigidTransform* initial_pose,
-                                    XRSpace* space) {
-  // TODO(https://crbug.com/992033): Implement anchor creation from a plane
-  // instead of rejecting the promise. This'll cause the string literal used
-  // below to be removed.
-  return ScriptPromise::RejectWithDOMException(
-      script_state,
-      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                         "Device does not support anchors!"));
+                                    XRSpace* space,
+                                    ExceptionState& exception_state) {
+  return session_->CreateAnchor(script_state, initial_pose, space, this,
+                                exception_state);
 }
 
 void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data,

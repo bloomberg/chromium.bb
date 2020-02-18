@@ -50,7 +50,7 @@ void AsyncDirectoryTypeController::LoadModels(
     const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(configure_context.storage_option, STORAGE_ON_DISK)
+  DCHECK_EQ(configure_context.sync_mode, SyncMode::kFull)
       << " for type " << ModelTypeToString(type());
 
   model_load_callback_ = model_load_callback;
@@ -111,8 +111,6 @@ void AsyncDirectoryTypeController::StartAssociating(
   DCHECK_EQ(state_, MODEL_LOADED);
   state_ = ASSOCIATING;
 
-  // Store UserShare now while on UI thread to avoid potential race
-  // condition in StartAssociationWithSharedChangeProcessor.
   user_share_ = sync_service()->GetUserShare();
 
   start_callback_ = std::move(start_callback);
@@ -211,15 +209,8 @@ void AsyncDirectoryTypeController::StartDone(
 
 void AsyncDirectoryTypeController::RecordStartFailure(ConfigureResult result) {
   DCHECK(CalledOnValidThread());
-  // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures2",
-                            ModelTypeToHistogramInt(type()),
-                            static_cast<int>(ModelType::NUM_ENTRIES));
-#define PER_DATA_TYPE_MACRO(type_str)                                    \
-  UMA_HISTOGRAM_ENUMERATION("Sync." type_str "ConfigureFailure", result, \
-                            MAX_CONFIGURE_RESULT);
-  SYNC_DATA_TYPE_HISTOGRAM(type());
-#undef PER_DATA_TYPE_MACRO
+                            ModelTypeHistogramValue(type()));
 }
 
 void AsyncDirectoryTypeController::DisableImpl(const SyncError& error) {

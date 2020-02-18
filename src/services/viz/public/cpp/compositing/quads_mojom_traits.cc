@@ -72,7 +72,6 @@ bool StructTraits<viz::mojom::RenderPassQuadStateDataView, viz::DrawQuad>::Read(
   quad->resources.ids[viz::RenderPassDrawQuad::kMaskResourceIdIndex] =
       data.mask_resource_id();
   quad->resources.count = data.mask_resource_id() ? 1 : 0;
-  quad->mask_applies_to_backdrop = data.mask_applies_to_backdrop();
   quad->render_pass_id = data.render_pass_id();
   // RenderPass ids are never zero.
   if (!quad->render_pass_id)
@@ -110,8 +109,7 @@ bool StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad>::
              &quad->overlay_resources.size_in_pixels
                   [viz::StreamVideoDrawQuad::kResourceIdIndex]) &&
          data.ReadUvTopLeft(&quad->uv_top_left) &&
-         data.ReadUvBottomRight(&quad->uv_bottom_right) &&
-         data.ReadYcbcrInfo(&quad->ycbcr_info);
+         data.ReadUvBottomRight(&quad->uv_bottom_right);
 }
 
 // static

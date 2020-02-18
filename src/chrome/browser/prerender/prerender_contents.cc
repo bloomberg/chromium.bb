@@ -42,6 +42,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/http/http_response_headers.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -111,24 +112,17 @@ class PrerenderContents::WebContentsDelegateImpl
     std::move(callback).Run(false);
   }
 
-  bool ShouldCreateWebContents(
-      content::WebContents* web_contents,
-      content::RenderFrameHost* opener,
+  bool IsWebContentsCreationOverridden(
       content::SiteInstance* source_site_instance,
-      int32_t route_id,
-      int32_t main_frame_route_id,
-      int32_t main_frame_widget_route_id,
       content::mojom::WindowContainerType window_container_type,
       const GURL& opener_url,
       const std::string& frame_name,
-      const GURL& target_url,
-      const std::string& partition_id,
-      SessionStorageNamespace* session_storage_namespace) override {
+      const GURL& target_url) override {
     // Since we don't want to permit child windows that would have a
     // window.opener property, terminate prerendering.
     prerender_contents_->Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);
     // Cancel the popup.
-    return false;
+    return true;
   }
 
   bool OnGoToEntryOffset(int offset) override {
@@ -179,7 +173,6 @@ PrerenderContents::PrerenderContents(
     Origin origin)
     : prerender_mode_(DEPRECATED_FULL_PRERENDER),
       prerendering_has_started_(false),
-      prerender_canceler_binding_(this),
       prerender_manager_(prerender_manager),
       prerender_url_(url),
       referrer_(referrer),
@@ -213,8 +206,6 @@ PrerenderContents::PrerenderContents(
   }
 
   DCHECK(prerender_manager);
-  registry_.AddInterface(base::Bind(
-      &PrerenderContents::OnPrerenderCancelerRequest, base::Unretained(this)));
 }
 
 bool PrerenderContents::Init() {
@@ -361,7 +352,8 @@ PrerenderContents::~PrerenderContents() {
       IPC::ChannelProxy* channel = host->GetChannel();
       // |channel| might be NULL in tests.
       if (host->IsInitializedAndNotDead() && channel) {
-        chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
+        mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
+            prerender_dispatcher;
         channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
         prerender_dispatcher->PrerenderRemoveAliases(alias_urls_);
       }
@@ -484,7 +476,8 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
       IPC::ChannelProxy* channel = host->GetChannel();
       // |channel| might be NULL in tests.
       if (host->IsInitializedAndNotDead() && channel) {
-        chrome::mojom::PrerenderDispatcherAssociatedPtr prerender_dispatcher;
+        mojo::AssociatedRemote<chrome::mojom::PrerenderDispatcher>
+            prerender_dispatcher;
         channel->GetRemoteAssociatedInterface(&prerender_dispatcher);
         prerender_dispatcher->PrerenderAddAlias(url);
       }
@@ -515,13 +508,6 @@ void PrerenderContents::RenderProcessGone(base::TerminationStatus status) {
   Destroy(FINAL_STATUS_RENDERER_CRASHED);
 }
 
-void PrerenderContents::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
-}
-
 void PrerenderContents::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   // When a new RenderFrame is created for a prerendering WebContents, tell the
@@ -537,7 +523,7 @@ void PrerenderContents::DidStopLoading() {
   NotifyPrerenderStopLoading();
 }
 
-void PrerenderContents::DocumentLoadedInFrame(
+void PrerenderContents::DOMContentLoaded(
     content::RenderFrameHost* render_frame_host) {
   if (!render_frame_host->GetParent())
     NotifyPrerenderDomContentLoaded();
@@ -763,10 +749,10 @@ void PrerenderContents::CancelPrerenderForSyncDeferredRedirect() {
   Destroy(FINAL_STATUS_BAD_DEFERRED_REDIRECT);
 }
 
-void PrerenderContents::OnPrerenderCancelerRequest(
-    chrome::mojom::PrerenderCancelerRequest request) {
-  if (!prerender_canceler_binding_.is_bound())
-    prerender_canceler_binding_.Bind(std::move(request));
+void PrerenderContents::OnPrerenderCancelerReceiver(
+    mojo::PendingReceiver<chrome::mojom::PrerenderCanceler> receiver) {
+  if (!prerender_canceler_receiver_.is_bound())
+    prerender_canceler_receiver_.Bind(std::move(receiver));
 }
 
 void PrerenderContents::AddNetworkBytes(int64_t bytes) {

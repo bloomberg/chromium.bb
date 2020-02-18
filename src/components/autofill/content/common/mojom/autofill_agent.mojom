@@ -36,8 +36,8 @@ interface AutofillAgent {
   PreviewFieldWithValue(mojo_base.mojom.String16 value);
 
   // Sets the currently selected node's corresponding accessibility node's
-  // suggestion availability.
-  SetSuggestionAvailability(bool available);
+  // autofill/autocomplete suggestion availability.
+  SetSuggestionAvailability(AutofillState type);
 
   // Sets the currently selected node's value to be the given data list value.
   AcceptDataListSuggestion(mojo_base.mojom.String16 value);
@@ -51,10 +51,6 @@ interface AutofillAgent {
   // values.
   PreviewPasswordSuggestion(mojo_base.mojom.String16 username,
                             mojo_base.mojom.String16 password);
-
-  // Sent when a password form is initially detected and suggestions should be
-  // shown. Used by the fill-on-select experiment.
-  ShowInitialPasswordAccountSuggestions(PasswordFormFillData form_data);
 
   // Configures the render to require, or not, a user gesture before notifying
   // the autofill agent of a field change. The default is true. Bypassing the
@@ -89,6 +85,10 @@ interface PasswordAutofillAgent {
   // because the browser process will own the popup UI.
   FillPasswordForm(PasswordFormFillData form_data);
 
+  // Lets the renderer know that there are no saved credentials for filling.
+  // This is the "no results" equivalent of FillPasswordForm.
+  InformNoSavedCredentials();
+
   // Fills the given |credential| into the last focused text input.
   FillIntoFocusedField(bool is_password, mojo_base.mojom.String16 credential);
 
@@ -96,10 +96,13 @@ interface PasswordAutofillAgent {
   // logging the decisions made about saving the password.
   SetLoggingState(bool active);
 
-  // Sent when Autofill manager gets the query response from the Autofill server
-  // which contains information about username and password for some forms.
-  // |predictions| maps forms to their username fields.
-  AutofillUsernameAndPasswordDataReceived(FormsPredictionsMap predictions);
+  // Informs the renderer that the Touch To Fill sheet has been closed.
+  // Indicates whether the virtual keyboard should be shown instead.
+  TouchToFillClosed(bool show_virtual_keyboard);
+
+  // Annotate password related (username, password) DOM input elements with
+  // corresponding HTML attributes. It is used only for debugging.
+  AnnotateFieldsWithParsingResult(ParsingResult parsing_result);
 };
 
 // There is one instance of this interface per render frame in the render

@@ -15,10 +15,11 @@ import android.os.Environment;
 import android.provider.MediaStore.MediaColumns;
 import android.text.format.DateUtils;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -203,6 +204,15 @@ public class OfflinePageArchivePublisherBridge {
             Log.d(TAG, "Failed to finish publishing archive.");
         }
 
+        // Android Q's MediaStore.Downloads has an issue that the custom mime type which is not
+        // supported by MimeTypeMap is overridden to "application/octet-stream" when publishing.
+        // To deal with this issue we set the mime type again after publishing.
+        // See crbug.com/1010829 for more details.
+        final ContentValues mimeTypeValues = new ContentValues();
+        mimeTypeValues.put(MediaColumns.MIME_TYPE, "multipart/related");
+        if (contentResolver.update(intermediateUri, mimeTypeValues, null, null) != 1) {
+            Log.d(TAG, "Failed to update mime type.");
+        }
         return intermediateUri.toString();
     }
 }

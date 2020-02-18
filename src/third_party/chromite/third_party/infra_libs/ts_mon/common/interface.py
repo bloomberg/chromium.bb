@@ -36,7 +36,6 @@ import logging
 import random
 import threading
 import time
-import traceback
 
 from infra_libs.ts_mon.common import errors
 from infra_libs.ts_mon.common import metric_store
@@ -134,7 +133,7 @@ def _generate_proto():
   count = 0
   for (target, metric, start_time, end_time, fields_values
        ) in state.store.get_all():
-    for fields, value in fields_values.iteritems():
+    for fields, value in fields_values.items():
       if count >= METRICS_DATA_LENGTH_LIMIT:
         yield proto
         proto = metrics_pb2.MetricsPayload()
@@ -242,7 +241,7 @@ def register_global_metrics_callback(name, callback):
 
 
 def invoke_global_callbacks():
-  for name, callback in state.global_metrics_callbacks.iteritems():
+  for name, callback in state.global_metrics_callbacks.items():
     logging.debug('Invoking callback %s', name)
     try:
       callback()

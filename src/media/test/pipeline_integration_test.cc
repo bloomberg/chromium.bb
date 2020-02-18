@@ -43,6 +43,7 @@
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/services/media_manifest.h"                    // nogncheck
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"  // nogncheck
 #include "services/service_manager/public/cpp/test/test_service.h"  // nogncheck
 #include "services/service_manager/public/cpp/test/test_service_manager.h"  // nogncheck
@@ -190,6 +191,20 @@ static base::Time kLiveTimelineOffset() {
 
   return timeline_offset;
 }
+
+#if defined(OS_MACOSX)
+class ScopedVerboseLogEnabler {
+ public:
+  ScopedVerboseLogEnabler() : old_level_(logging::GetMinLogLevel()) {
+    logging::SetMinLogLevel(-1);
+  }
+  ~ScopedVerboseLogEnabler() { logging::SetMinLogLevel(old_level_); }
+
+ private:
+  const int old_level_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedVerboseLogEnabler);
+};
+#endif
 
 enum PromiseResult { RESOLVED, REJECTED };
 
@@ -396,52 +411,6 @@ class FailingVideoDecoder : public VideoDecoder {
   bool NeedsBitstreamConversion() const override { return true; }
 };
 
-// TODO(xhwang): These tests have been disabled for some time as apptests and no
-//               longer pass. They need to be reconstituted as shell tests.
-//               Currently there are compile issues which must be resolved,
-//               preferably by eliminating multiple inheritance here which is
-//               banned by Google C++ style.
-#if defined(MOJO_RENDERER) && defined(ENABLE_MOJO_PIPELINE_INTEGRATION_TEST)
-const char kTestServiceName[] = "media_pipeline_integration_unittests";
-
-class PipelineIntegrationTest : public testing::Testing,
-                                public PipelineIntegrationTestBase {
- public:
-  PipelineIntegrationTest()
-      : test_service_manager_(
-            {GetMediaManifest(),
-             service_manager::ManifestBuilder()
-                 .WithServiceName(kTestServiceName)
-                 .RequireCapability(mojom::kMediaServiceName, "media:media")
-                 .Build()}),
-        test_service_(
-            test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
-
-  void SetUp() override {
-    InitializeMediaLibrary();
-  }
-
- protected:
-  std::unique_ptr<Renderer> CreateRenderer(
-      CreateVideoDecodersCB prepend_video_decoders_cb,
-      CreateAudioDecodersCB prepend_audio_decoders_cb) override {
-    test_service_.connector()->BindInterface(mojom::kMediaServiceName,
-                                             &media_interface_factory_);
-
-    mojom::RendererPtr mojo_renderer;
-    media_interface_factory_->CreateRenderer(std::string(),
-                                             mojo::MakeRequest(&mojo_renderer));
-
-    return std::make_unique<MojoRenderer>(message_loop_.task_runner(),
-                                          std::move(mojo_renderer));
-  }
-
- private:
-  service_manager::TestServiceManager test_service_manager_;
-  service_manager::TestService test_service_;
-  mojom::InterfaceFactoryPtr media_interface_factory_;
-};
-#else
 class PipelineIntegrationTest : public testing::Test,
                                 public PipelineIntegrationTestBase {
  public:
@@ -492,7 +461,6 @@ class PipelineIntegrationTest : public testing::Test,
     run_loop.Run();
   }
 };
-#endif  // defined(MOJO_RENDERER)
 
 struct PlaybackTestData {
   const std::string filename;
@@ -813,6 +781,11 @@ TEST_F(PipelineIntegrationTest, PlaybackTooManyChannels) {
 }
 
 TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
+#if defined(OS_MACOSX)
+  // Enable scoped logs to help track down hangs.  http://crbug.com/1014646
+  ScopedVerboseLogEnabler scoped_log_enabler;
+#endif
+
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed | kNoClockless));
 
   // Disable audio.
@@ -845,6 +818,11 @@ TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
 }
 
 TEST_F(PipelineIntegrationTest, PlaybackWithVideoTrackDisabledThenEnabled) {
+#if defined(OS_MACOSX)
+  // Enable scoped logs to help track down hangs.  http://crbug.com/1014646
+  ScopedVerboseLogEnabler scoped_log_enabler;
+#endif
+
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed | kNoClockless));
 
   // Disable video.
@@ -904,7 +882,15 @@ TEST_F(PipelineIntegrationTest, TrackStatusChangesAfterPipelineEnded) {
   OnSelectedVideoTrackChanged(MediaTrack::Id("1"));
 }
 
-TEST_F(PipelineIntegrationTest, TrackStatusChangesWhileSuspended) {
+// TODO(https://crbug.com/1009964): Enable test when MacOS flake is fixed.
+#if defined(OS_MACOSX)
+#define MAYBE_TrackStatusChangesWhileSuspended \
+  DISABLED_TrackStatusChangesWhileSuspended
+#else
+#define MAYBE_TrackStatusChangesWhileSuspended TrackStatusChangesWhileSuspended
+#endif
+
+TEST_F(PipelineIntegrationTest, MAYBE_TrackStatusChangesWhileSuspended) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kNoClockless));
   Play();
 
@@ -1835,6 +1821,23 @@ TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_AV1_MP4) {
   Stop();
 }
 
+TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_AV1_Audio_OPUS_MP4) {
+  TestMediaSource source("bear-av1-opus.mp4", 50253);
+  EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kVP9WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Shutdown();
+  Stop();
+}
+
 TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_AV1_10bit_MP4) {
   TestMediaSource source("bear-av1-320x180-10bit.mp4", 19658);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
@@ -1892,6 +1895,12 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_FlacInMp4) {
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_AV1_Mp4) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-av1.mp4"));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+TEST_F(PipelineIntegrationTest, BasicPlayback_Video_AV1_Audio_Opus_Mp4) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-av1-opus.mp4"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
@@ -2596,7 +2605,7 @@ TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_VideoOnly_MP4_HEVC) {
   const char kMp4HevcVideoOnly[] = "video/mp4; codecs=\"hvc1.1.6.L93.B0\"";
   TestMediaSource source("bear-320x240-v_frag-hevc.mp4", kMp4HevcVideoOnly,
                          kAppendWholeFile);
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   PipelineStatus status = StartPipelineWithMediaSource(&source);
   EXPECT_TRUE(status == PIPELINE_OK || status == DECODER_ERROR_NOT_SUPPORTED);
 #else
@@ -2611,7 +2620,7 @@ TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_VideoOnly_MP4_HEV1) {
   const char kMp4Hev1VideoOnly[] = "video/mp4; codecs=\"hev1.1.6.L93.B0\"";
   TestMediaSource source("bear-320x240-v_frag-hevc.mp4", kMp4Hev1VideoOnly,
                          kAppendWholeFile);
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   PipelineStatus status = StartPipelineWithMediaSource(&source);
   EXPECT_TRUE(status == PIPELINE_OK || status == DECODER_ERROR_NOT_SUPPORTED);
 #else
@@ -2624,6 +2633,11 @@ TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_VideoOnly_MP4_HEV1) {
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 TEST_F(PipelineIntegrationTest, SeekWhilePaused) {
+#if defined(OS_MACOSX)
+  // Enable scoped logs to help track down hangs.  http://crbug.com/1014646
+  ScopedVerboseLogEnabler scoped_log_enabler;
+#endif
+
   // This test is flaky without kNoClockless, see crbug.com/796250.
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kNoClockless));
 
@@ -2648,6 +2662,11 @@ TEST_F(PipelineIntegrationTest, SeekWhilePaused) {
 }
 
 TEST_F(PipelineIntegrationTest, SeekWhilePlaying) {
+#if defined(OS_MACOSX)
+  // Enable scoped logs to help track down hangs.  http://crbug.com/1014646
+  ScopedVerboseLogEnabler scoped_log_enabler;
+#endif
+
   // This test is flaky without kNoClockless, see crbug.com/796250.
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kNoClockless));
 

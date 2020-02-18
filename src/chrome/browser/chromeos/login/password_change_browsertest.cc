@@ -66,7 +66,8 @@ class SessionStartWaiter : public session_manager::SessionManagerObserver {
 
  private:
   base::OnceClosure session_active_callback_;
-  ScopedObserver<session_manager::SessionManager, SessionStartWaiter>
+  ScopedObserver<session_manager::SessionManager,
+                 session_manager::SessionManagerObserver>
       session_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionStartWaiter);
@@ -180,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTest, RetryOnWrongPassword) {
   test::OobeJS()
       .CreateWaiter(test::GetOobeElementPath(
                         {"gaia-password-changed", "oldPasswordInput"}) +
-                    ".isInvalid")
+                    ".invalid")
       ->Wait();
   test::OobeJS().ExpectEnabledPath(
       {"gaia-password-changed", "oldPasswordCard"});

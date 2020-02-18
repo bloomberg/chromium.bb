@@ -15,8 +15,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.annotation.IntDef;
 
+import androidx.annotation.IntDef;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.TrustedWebUtils;
@@ -24,8 +24,8 @@ import androidx.browser.customtabs.TrustedWebUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
@@ -36,24 +36,19 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.PaymentHandlerActivity;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.chrome.browser.incognito.IncognitoDisclosureActivity;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
-import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.ui.widget.Toast;
-import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -71,9 +66,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             "com.google.android.apps.chrome.EXTRA_LAUNCH_MODE";
 
     private static final String TAG = "ActivitiyDispatcher";
-
-    private static final String NO_TOUCH_ACTIVITY_NAME =
-            "org.chromium.chrome.browser.touchless.NoTouchActivity";
 
     /**
      * Timeout in ms for reading PartnerBrowserCustomizations provider. We do not trust third party
@@ -198,19 +190,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             return Action.FINISH_ACTIVITY;
         }
 
-        // Check if we should launch a WebApk to handle the intent.
-        // For NoTouchMode, prefer to launch PWAs instead of the browser on view intents.
-        if (!mIsCustomTabIntent && FeatureUtilities.isNoTouchModeEnabled() && url != null
-                && Intent.ACTION_VIEW.equals(mIntent.getAction())) {
-            String packageName = WebApkValidator.queryFirstWebApkPackage(
-                    ContextUtils.getApplicationContext(), url);
-            if (packageName != null) {
-                mActivity.startActivity(WebApkValidator.createWebApkIntentForUrlAndOptionalPackage(
-                        url, packageName));
-                return Action.FINISH_ACTIVITY;
-            }
-        }
-
         // Check if we should push the user through First Run.
         if (FirstRunFlowSequencer.launch(mActivity, mIntent, false /* requiresBroadcast */,
                     false /* preferLightweightFre */)) {
@@ -233,8 +212,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             int resolvers =
-                    ContextUtils.getApplicationContext()
-                            .getPackageManager()
+                    PackageManagerUtils
                             .queryIntentActivities(searchIntent, PackageManager.GET_RESOLVED_FILTER)
                             .size();
             if (resolvers == 0) {
@@ -273,11 +251,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      */
     public static boolean isCustomTabIntent(Intent intent) {
         if (intent == null) return false;
-        // CCT is disabled in noTouch mode except for some Chrome-internal exceptions.
-        if (FeatureUtilities.isNoTouchModeEnabled()
-                && !IntentHandler.wasIntentSenderChrome(intent)) {
-            return false;
-        }
         if (CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
                 || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
             return false;
@@ -407,20 +380,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // Create and fire a launch intent.
         Intent launchIntent = createCustomTabActivityIntent(mActivity, mIntent);
 
-        boolean hasOffTheRecordProfile =
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted()
-                && Profile.getLastUsedProfile().hasOffTheRecordProfile();
-
-        boolean shouldShowIncognitoDisclosure =
-                CustomTabIntentDataProvider.isValidExternalIncognitoIntent(launchIntent)
-                && hasOffTheRecordProfile;
-
-        if (shouldShowIncognitoDisclosure) {
-            IncognitoDisclosureActivity.launch(mActivity, launchIntent);
-            return;
-        }
-
         // Allow disk writes during startActivity() to avoid strict mode violations on some
         // Samsung devices, see https://crbug.com/796548.
         try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
@@ -436,6 +395,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      * Handles launching a {@link ChromeTabbedActivity}.
      */
     @SuppressLint("InlinedApi")
+    @SuppressWarnings("checkstyle:SystemExitCheck") // Allowed due to https://crbug.com/847921#c17.
     private @Action int dispatchToTabbedActivity() {
         if (mIsVrIntent) {
             for (Activity activity : ApplicationStatus.getRunningActivities()) {
@@ -456,18 +416,9 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         maybePrefetchDnsInBackground();
 
         Intent newIntent = new Intent(mIntent);
-        String targetActivityClassName = null;
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            // When in No Touch Mode we don't support tabs, and replace the TabbedActivity with the
-            // NoTouchActivity.
-            // We can't depend on NoTouchActivity directly as it's not always compiled in, so
-            // refer to it by string.
-            targetActivityClassName = NO_TOUCH_ACTIVITY_NAME;
-        } else {
-            targetActivityClassName = MultiWindowUtils.getInstance()
-                                              .getTabbedActivityForIntent(newIntent, mActivity)
-                                              .getName();
-        }
+        String targetActivityClassName = MultiWindowUtils.getInstance()
+                                                 .getTabbedActivityForIntent(newIntent, mActivity)
+                                                 .getName();
         newIntent.setClassName(
                 mActivity.getApplicationContext().getPackageName(), targetActivityClassName);
         newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);

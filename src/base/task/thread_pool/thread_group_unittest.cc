@@ -53,6 +53,7 @@ using ThreadGroupNativeType =
 #endif
 
 constexpr size_t kMaxTasks = 4;
+constexpr size_t kTooManyTasks = 1000;
 // By default, tests allow half of the thread group to be used by best-effort
 // tasks.
 constexpr size_t kMaxBestEffortTasks = kMaxTasks / 2;
@@ -654,6 +655,50 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSourceMultipleTime) {
   task_tracker_.FlushForTesting();
 }
 
+// Verify that Cancel() on a job stops running the worker task and causes
+// current workers to yield.
+TEST_P(ThreadGroupTest, CancelJobTaskSource) {
+  StartThreadGroup();
+
+  CheckedLock tasks_running_lock;
+  std::unique_ptr<ConditionVariable> tasks_running_cv =
+      tasks_running_lock.CreateConditionVariable();
+  bool tasks_running = false;
+
+  // Schedule a big number of tasks.
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&](experimental::JobDelegate* delegate) {
+        {
+          CheckedAutoLock auto_lock(tasks_running_lock);
+          tasks_running = true;
+        }
+        tasks_running_cv->Signal();
+
+        while (!delegate->ShouldYield()) {
+        }
+      }),
+      /* num_tasks_to_run */ kTooManyTasks);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool()}, &mock_pooled_task_runner_delegate_);
+
+  mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
+  experimental::JobHandle job_handle =
+      internal::JobTaskSource::CreateJobHandle(task_source);
+
+  // Wait for at least 1 task to start running.
+  {
+    CheckedAutoLock auto_lock(tasks_running_lock);
+    while (!tasks_running)
+      tasks_running_cv->Wait();
+  }
+
+  // Cancels pending tasks and unblocks running ones.
+  job_handle.Cancel();
+
+  // This should not block since the job got cancelled.
+  task_tracker_.FlushForTesting();
+}
+
 // Verify that calling JobTaskSource::NotifyConcurrencyIncrease() (re-)schedule
 // tasks with the intended concurrency.
 TEST_P(ThreadGroupTest, JobTaskSourceConcurrencyIncrease) {
@@ -731,6 +776,37 @@ TEST_P(ThreadGroupTest, ScheduleEmptyJobTaskSource) {
 
   // This should not block since there's no task to run.
   task_tracker_.FlushForTesting();
+}
+
+// Verify that Join() on a job contributes to max concurrency and waits for all
+// workers to return.
+TEST_P(ThreadGroupTest, JoinJobTaskSource) {
+  StartThreadGroup();
+
+  WaitableEvent threads_continue;
+  RepeatingClosure threads_continue_barrier = BarrierClosure(
+      kMaxTasks + 1,
+      BindOnce(&WaitableEvent::Signal, Unretained(&threads_continue)));
+
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&](experimental::JobDelegate*) {
+        threads_continue_barrier.Run();
+        test::WaitWithoutBlockingObserver(&threads_continue);
+      }),
+      /* num_tasks_to_run */ kMaxTasks + 1);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool()}, &mock_pooled_task_runner_delegate_);
+
+  mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
+  experimental::JobHandle job_handle =
+      internal::JobTaskSource::CreateJobHandle(task_source);
+  job_handle.Join();
+  // All worker tasks should complete before Join() returns.
+  EXPECT_EQ(0U, job_task->GetMaxConcurrency());
+  thread_group_->JoinForTesting();
+  EXPECT_EQ(1U, task_source->HasOneRef());
+  // Prevent TearDown() from calling JoinForTesting() again.
+  thread_group_ = nullptr;
 }
 
 // Verify that the maximum number of BEST_EFFORT tasks that can run concurrently

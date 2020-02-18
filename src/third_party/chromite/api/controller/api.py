@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+from chromite.api import faux
 from chromite.api import router as router_lib
 from chromite.api import validate
 
@@ -19,6 +20,7 @@ VERSION_MINOR = 0
 VERSION_BUG = 0
 
 
+@faux.all_empty
 @validate.validation_complete
 def GetMethods(_input_proto, output_proto, _config):
   """List all of the registered methods."""

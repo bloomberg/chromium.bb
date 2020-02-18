@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Tučňák</translation>
 <translation id="183183971458492120">Načítání informací...</translation>
 <translation id="1838709767668011582">Web Google</translation>
-<translation id="1839704667838141620">Změňte sdílení tohoto souboru</translation>
 <translation id="1844692022597038441">Tento soubor není k dispozici v režimu offline.</translation>
 <translation id="184633654410729720">Thajská klávesnice (Kedmanee)</translation>
 <translation id="1847880352285315359">Uloženo</translation>
-<translation id="1864676585353837027">Změňte způsob sdílení těchto souborů.</translation>
 <translation id="1864756863218646478">Soubor se nepodařilo nalézt.</translation>
 <translation id="1921986354447415460">Turecká klávesnice (typ F)</translation>
 <translation id="1931134289871235022">slovenština</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Nainstalovat novou službu</translation>
 <translation id="1947424002851288782">Německá klávesnice</translation>
 <translation id="1972984168337863910">Rozbalit panely zpětné vazby k souborům</translation>
-<translation id="197560921582345123">Může upravovat</translation>
 <translation id="1984603991036629094">Arménská fonetická klávesnice</translation>
 <translation id="2001796770603320721">Spravovat na Disku</translation>
 <translation id="2009067268969781306">Naformátováním jednotky smažete všechna na ní uložená data. Tuto akci nelze vrátit zpět.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">Odepnout složku</translation>
 <translation id="3678559383040232393">Maltská klávesnice</translation>
 <translation id="3685122418104378273">Když používáte mobilní datové připojení, synchronizace s Diskem Google je ve výchozím nastavení vypnutá.</translation>
+<translation id="3689865792480713551">Zrušit <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Toto zařízení nelze otevřít, protože jeho systém souborů není podporován.</translation>
 <translation id="3741243925913727067">Zálohujte fotky a videa ze svého mediálního zařízení na Disk Google.</translation>
 <translation id="3749289110408117711">Název souboru</translation>
@@ -286,7 +284,6 @@
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4552678318981539154">Koupit větší úložiště</translation>
 <translation id="4559767610552730302">Rozostření</translation>
-<translation id="4568854179928172494">Čas změny</translation>
 <translation id="4572815280350369984">Soubor <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Další...</translation>
 <translation id="4579744207439506346">Do výběru byla přidána položka <ph name="ENTRY_NAME" />.</translation>
@@ -466,6 +463,7 @@
 <translation id="6339145975392024142">USA – mezinárodní (PC)</translation>
 <translation id="6346310558342052870">Přístup je omezen</translation>
 <translation id="6353618411602605519">Chorvatská klávesnice</translation>
+<translation id="6356685157277930264">Okno zpětné vazby k souborům</translation>
 <translation id="6358884629796491903">Drak</translation>
 <translation id="637062427944097960">Tento soubor je otevřen na jiné ploše. Chcete-li jej zobrazit, přejděte do profilu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6395575651121294044">Počet položek: <ph name="NUMBER_OF_FILES" /></translation>
@@ -565,6 +563,7 @@
 <translation id="7589661784326793847">Chvilku strpení</translation>
 <translation id="7603724359189955920">Mřížky</translation>
 <translation id="7627790789328695202">Jejda, soubor <ph name="FILE_NAME" /> již existuje. Přejmenujte jej a zkuste to znovu.</translation>
+<translation id="7628656427739290098">Hotovo <ph name="PERCENT" /> %.</translation>
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7654209398114106148">Přesouvání <ph name="NUMBER_OF_ITEMS" /> položek...</translation>
 <translation id="7658239707568436148">Zrušit</translation>
@@ -591,7 +590,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Načtení souborů spotřebuje přibližně <ph name="FILE_SIZE" /> mobilních dat.</translation>
 <translation id="7846076177841592234">Zrušit výběr</translation>
-<translation id="7850851215703745691">Tyto soubory na Disku dosud nejsou sdíleny</translation>
 <translation id="7853966320808728790">Francouzská klávesnice BÉPO</translation>
 <translation id="7864662577698025113">Přidat novou službu</translation>
 <translation id="7873831373602885875">Do složky <ph name="FOLDER_NAME" /> nelze ukládat. Všechny úpravy budou uloženy do složky <ph name="DOWNLOADS_FOLDER" /> ve složce Stažené soubory.</translation>
@@ -607,7 +605,6 @@
 <translation id="7969525169268594403">slovinština</translation>
 <translation id="7982283708762922719">Výška</translation>
 <translation id="7987485481246785146">Kurdská klávesnice (sorání) s arabským rozložením</translation>
-<translation id="799923393800005025">Může zobrazit</translation>
 <translation id="8008366997883261463">Jack Russell teriér</translation>
 <translation id="8028993641010258682">Velikost</translation>
 <translation id="8031722894461705849">Slovenská klávesnice</translation>
@@ -669,8 +666,6 @@
 <translation id="8600173386174225982">Seznam souborů se změnil na zobrazení miniatur.</translation>
 <translation id="8601932370724196034">Soubor obrazu Crostini</translation>
 <translation id="8669949407341943408">Přesouvání...</translation>
-<translation id="8671210955687109937">Může přidávat komentáře</translation>
-<translation id="8686213429977032554">Tento soubor na Disku dosud není sdílen</translation>
 <translation id="8698464937041809063">Nákres Google</translation>
 <translation id="8714406895390098252">Kolo</translation>
 <translation id="8719721339511222681">Vybrali jste položku <ph name="ENTRY_NAME" />.</translation>

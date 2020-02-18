@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/mru_cache.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -20,9 +21,10 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "media/base/video_codecs.h"
-#include "media/base/video_decoder.h"
 #include "media/base/video_frame_layout.h"
+#include "media/gpu/chromeos/video_decoder_pipeline.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/video/supported_video_decoder_config.h"
 #include "ui/gfx/geometry/rect.h"
@@ -36,32 +38,22 @@ class VaapiWrapper;
 class VideoFrame;
 class VASurface;
 
-class VaapiVideoDecoder : public media::VideoDecoder,
+class VaapiVideoDecoder : public DecoderInterface,
                           public DecodeSurfaceHandler<VASurface> {
  public:
-  using GetFramePoolCB = base::RepeatingCallback<DmabufVideoFramePool*()>;
-
-  static std::unique_ptr<VideoDecoder> Create(
-      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+  static std::unique_ptr<DecoderInterface> Create(
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-      GetFramePoolCB get_pool);
+      base::WeakPtr<DecoderInterface::Client> client);
 
   static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
-  // media::VideoDecoder implementation.
-  std::string GetDisplayName() const override;
-  bool IsPlatformDecoder() const override;
-  bool NeedsBitstreamConversion() const override;
-  bool CanReadWithoutStalling() const override;
-  int GetMaxDecodeRequests() const override;
+  // DecoderInterface implementation.
   void Initialize(const VideoDecoderConfig& config,
-                  bool low_delay,
-                  CdmContext* cdm_context,
                   InitCB init_cb,
-                  const OutputCB& output_cb,
-                  const WaitingCB& waiting_cb) override;
+                  const OutputCB& output_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
+  void OnPipelineFlushed() override;
 
   // DecodeSurfaceHandler<VASurface> implementation.
   scoped_refptr<VASurface> CreateSurface() override;
@@ -95,25 +87,10 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   };
 
   VaapiVideoDecoder(
-      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-      GetFramePoolCB get_pool);
+      base::WeakPtr<DecoderInterface::Client> client);
   ~VaapiVideoDecoder() override;
 
-  // Destroy the VAAPIVideoDecoder, aborts pending decode requests and blocks
-  // until destroyed.
-  void Destroy() override;
-
-  // Initialize the VAAPI video decoder on the decoder thread.
-  void InitializeTask(const VideoDecoderConfig& config,
-                      InitCB init_cb,
-                      OutputCB output_cb);
-  // Destroy the VAAPI video decoder on the decoder thread.
-  void DestroyTask();
-
-  // Queue a decode task on the decoder thread. If the decoder is currently
-  // waiting for input buffers decoding will be started.
-  void QueueDecodeTask(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb);
   // Schedule the next decode task in the queue to be executed.
   void ScheduleNextDecodeTask();
   // Try to decode a single input buffer on the decoder thread.
@@ -124,11 +101,8 @@ class VaapiVideoDecoder : public media::VideoDecoder,
 
   // Output a single |video_frame| on the decoder thread.
   void OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
+                       const gfx::Rect& visible_rect,
                        base::TimeDelta timestamp);
-  // Called when a different output frame resolution is requested on the decoder
-  // thread. This happens when either decoding just started or a resolution
-  // change occurred in the video stream.
-  void ChangeFrameResolutionTask();
   // Release the video frame associated with the specified |surface_id| on the
   // decoder thread. This is called when the last reference to the associated
   // VASurface has been released, which happens when the decoder outputted the
@@ -146,15 +120,9 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   // tasks have been executed and all frames have been output.
   void FlushTask();
 
-  // Reset the decoder on the decoder thread. This will abort any pending decode
-  // task. The |reset_cb| will be passed to ResetDoneTask() and called when
-  // resetting has completed.
-  void ResetTask(base::OnceClosure reset_cb);
-  // Called on the decoder thread once resetting is done. Executes |reset_cb|.
+  // Called when resetting the decoder is done, executes |reset_cb|.
   void ResetDoneTask(base::OnceClosure reset_cb);
 
-  // Called on decoder thread to schedule |decode_cb| on the client task runner.
-  void RunDecodeCB(DecodeCB decode_cb, DecodeStatus status);
   // Change the current |state_| to the specified |state| on the decoder thread.
   void SetState(State state);
 
@@ -166,21 +134,21 @@ class VaapiVideoDecoder : public media::VideoDecoder,
 
   // The video stream's profile.
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
-  // True if the decoder needs bitstream conversion before decoding.
-  bool needs_bitstream_conversion_ = false;
 
-  // Output frame properties.
-  base::Optional<VideoFrameLayout> frame_layout_;
-  gfx::Rect visible_rect_;
+  // The video coded size.
+  gfx::Size pic_size_;
+
   // Ratio of natural size to |visible_rect_| of the output frames.
   double pixel_aspect_ratio_ = 0.0;
 
   // Video frame pool used to allocate and recycle video frames.
-  GetFramePoolCB get_pool_cb_;
   DmabufVideoFramePool* frame_pool_ = nullptr;
 
-  // The mapping between buffer id and the timestamp.
-  std::map<int32_t, base::TimeDelta> buffer_id_to_timestamp_;
+  // The time at which each buffer decode operation started. Not each decode
+  // operation leads to a frame being output and frames might be reordered, so
+  // we don't know when it's safe to drop a timestamp. This means we need to use
+  // a cache here, with a size large enough to account for frame reordering.
+  base::MRUCache<int32_t, base::TimeDelta> buffer_id_to_timestamp_;
 
   // Queue containing all requested decode tasks.
   base::queue<DecodeTask> decode_task_queue_;
@@ -196,10 +164,6 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
-  const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
-  const scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
-
-  SEQUENCE_CHECKER(client_sequence_checker_);
   SEQUENCE_CHECKER(decoder_sequence_checker_);
 
   base::WeakPtr<VaapiVideoDecoder> weak_this_;

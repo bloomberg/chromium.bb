@@ -41,8 +41,9 @@
 <translation id="2397416548179033562">Chrome-menu weergeven</translation>
 <translation id="2424073332829844142">Caps Lock in- en uitschakelen</translation>
 <translation id="2441202986792279177">Snel schakelen tussen vensters</translation>
-<translation id="2454251766545114447">Display uitzoomen</translation>
+<translation id="2454251766545114447">Uitzoomen scherm</translation>
 <translation id="2478303094958140141">ChromeVox (gesproken feedback) in- of uitschakelen</translation>
+<translation id="2480851840841871861">Google Assistent openen</translation>
 <translation id="2488661730534396940">Het bureaublad aan de linkerkant activeren</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Omlaag bladeren op de webpagina</translation>
@@ -85,7 +86,7 @@
 <translation id="3837047332182291558">Toetsenbord helderder maken (alleen voor toetsenborden met achtergrondverlichting)</translation>
 <translation id="3949671998904569433">komma</translation>
 <translation id="3976863468609830880">Klikken op het laatste pictogram op de plank</translation>
-<translation id="3994783594793697310">Displayzoomniveau resetten</translation>
+<translation id="3994783594793697310">Zoomniveau scherm resetten</translation>
 <translation id="4026843240379844265">Actief venster verplaatsen tussen schermen</translation>
 <translation id="4035482366624727273">Alles op de pagina selecteren</translation>
 <translation id="4060703249685950734">Het laatste tabblad of venster dat je hebt gesloten, opnieuw openen</translation>
@@ -97,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> of <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Overzichtsmodus</translation>
 <translation id="4382340674111381977">Ga terug naar de vorige pagina</translation>
+<translation id="4458670250301149821">Een app-pictogram verplaatsen naar/uit een map in het app-raster</translation>
 <translation id="4472417192667361414">Systeem- en weergave-instellingen</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, daarna <ph name="LEFT" /> of <ph name="RIGHT" /> of <ph name="UP" /> of <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Hulp voor sneltoetsen openen</translation>
 <translation id="4628718545549558538">Het statusgedeelte openen (waar je accountafbeelding wordt weergegeven)</translation>
 <translation id="4642092649622328492">Gedeeltelijk screenshot maken</translation>
@@ -135,7 +138,7 @@
 <translation id="6228457605945141550">Helderheid verlagen</translation>
 <translation id="6276708887952587684">Paginabron weergeven</translation>
 <translation id="6321940490215594447">De pagina Geschiedenis openen</translation>
-<translation id="6340769215862220182">Display inzoomen</translation>
+<translation id="6340769215862220182">Inzoomen scherm</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Tekst tot het einde van de regel selecteren</translation>
 <translation id="6419237577786823024"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="LEFT" /> of <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="RIGHT" /></translation>
@@ -155,7 +158,7 @@
 <translation id="6740781404993465795">Het volgende woord of de volgende letter selecteren</translation>
 <translation id="6755851152783057058">Overschakelen naar de laatst gebruikte invoermethode</translation>
 <translation id="6760706756348334449">Volume omlaag</translation>
-<translation id="6941333068993625698">Feedback verzenden</translation>
+<translation id="6941333068993625698">Feedback sturen</translation>
 <translation id="6981982820502123353">Toegankelijkheid</translation>
 <translation id="7020813747703216897">Geen overeenkomende resultaten gevonden</translation>
 <translation id="7025325401470358758">Volgend deelvenster</translation>
@@ -169,6 +172,7 @@
 <translation id="7439718573248533901">De volgende letter verwijderen (vooruit verwijderen)</translation>
 <translation id="7500368597227394048">koppelteken</translation>
 <translation id="7611271430932669992">De focus naar pop-ups en dialoogvensters verplaatsen</translation>
+<translation id="7635348532214572995">Een app-pictogram verplaatsen in het app-raster</translation>
 <translation id="766326951329901120">Content vanaf het klembord plakken als platte tekst</translation>
 <translation id="7703010453515335249">rechte haak links</translation>
 <translation id="7724603315864178912">Knip</translation>
@@ -203,6 +207,7 @@
 <translation id="9041599225465145264">Content vanaf het klembord plakken</translation>
 <translation id="9052808072970550123">Overschakelen naar de volgende gebruiker</translation>
 <translation id="906458777597946297">Venster maximaliseren</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, daarna <ph name="LEFT" /> of <ph name="RIGHT" /> of <ph name="UP" /> of <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Naar het begin van de regel gaan</translation>
 <translation id="9106898733795143799">Pagina- en webbrowser</translation>
 <translation id="9162942292291287644">Geen zoekresultaat voor <ph name="QUERY" /></translation>

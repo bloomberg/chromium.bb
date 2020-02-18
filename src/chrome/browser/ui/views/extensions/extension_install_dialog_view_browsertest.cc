@@ -34,12 +34,12 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 using extensions::PermissionIDSet;
 using extensions::PermissionMessage;
@@ -188,14 +188,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
     // User presses install.
     ExtensionInstallPromptTestHelper helper;
     views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
-    delegate_view->GetDialogClientView()->AcceptWindow();
+    delegate_view->AcceptDialog();
     EXPECT_EQ(ExtensionInstallPrompt::Result::ACCEPTED, helper.result());
   }
   {
     // User presses cancel.
     ExtensionInstallPromptTestHelper helper;
     views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
-    delegate_view->GetDialogClientView()->CancelWindow();
+    delegate_view->CancelDialog();
     EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
   }
   {

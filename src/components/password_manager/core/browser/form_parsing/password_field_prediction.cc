@@ -16,15 +16,6 @@ using autofill::ServerFieldType;
 
 namespace password_manager {
 
-namespace {
-
-// Returns true if the field is password or username prediction.
-bool IsCredentialRelatedPrediction(ServerFieldType type) {
-  return DeriveFromServerFieldType(type) != CredentialFieldType::kNone;
-}
-
-}  // namespace
-
 CredentialFieldType DeriveFromServerFieldType(ServerFieldType type) {
   switch (type) {
     case autofill::USERNAME:
@@ -44,7 +35,15 @@ CredentialFieldType DeriveFromServerFieldType(ServerFieldType type) {
   }
 }
 
-FormPredictions ConvertToFormPredictions(const FormStructure& form_structure) {
+FormPredictions::FormPredictions() = default;
+FormPredictions::FormPredictions(const FormPredictions&) = default;
+FormPredictions& FormPredictions::operator=(const FormPredictions&) = default;
+FormPredictions::FormPredictions(FormPredictions&&) = default;
+FormPredictions& FormPredictions::operator=(FormPredictions&&) = default;
+FormPredictions::~FormPredictions() = default;
+
+FormPredictions ConvertToFormPredictions(int driver_id,
+                                         const FormStructure& form_structure) {
   // This is a mostly mechanical transformation, except for the following case:
   // If there is no explicit CONFIRMATION_PASSWORD field, and there are two
   // fields with the same signature and one of the "new password" types, then
@@ -66,7 +65,7 @@ FormPredictions ConvertToFormPredictions(const FormStructure& form_structure) {
     }
   }
 
-  FormPredictions result;
+  std::vector<PasswordFieldPrediction> field_predictions;
   for (const auto& field : form_structure) {
     ServerFieldType server_type = field->server_type();
 
@@ -81,24 +80,28 @@ FormPredictions ConvertToFormPredictions(const FormStructure& form_structure) {
       }
     }
 
-    if (IsCredentialRelatedPrediction(server_type)) {
-      bool may_use_prefilled_placeholder = false;
-      for (const auto& predictions : field->server_predictions()) {
-        may_use_prefilled_placeholder |=
-            predictions.may_use_prefilled_placeholder();
-      }
-
-      result.push_back(
-          {.renderer_id = field->unique_renderer_id,
-           .type = server_type,
-           .may_use_prefilled_placeholder = may_use_prefilled_placeholder});
-#if defined(OS_IOS)
-      result.back().unique_id = field->unique_id;
-#endif
+    bool may_use_prefilled_placeholder = false;
+    for (const auto& predictions : field->server_predictions()) {
+      may_use_prefilled_placeholder |=
+          predictions.may_use_prefilled_placeholder();
     }
+
+    field_predictions.emplace_back();
+    field_predictions.back().renderer_id = field->unique_renderer_id;
+    field_predictions.back().signature = field->GetFieldSignature();
+    field_predictions.back().type = server_type;
+    field_predictions.back().may_use_prefilled_placeholder =
+        may_use_prefilled_placeholder;
+#if defined(OS_IOS)
+    field_predictions.back().unique_id = field->unique_id;
+#endif
   }
 
-  return result;
+  FormPredictions predictions;
+  predictions.driver_id = driver_id;
+  predictions.form_signature = form_structure.form_signature();
+  predictions.fields = std::move(field_predictions);
+  return predictions;
 }
 
 }  // namespace password_manager

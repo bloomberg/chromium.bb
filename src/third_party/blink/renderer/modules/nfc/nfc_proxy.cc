@@ -6,12 +6,11 @@
 
 #include <utility>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/renderer/core/page/focus_controller.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_reader.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/renderer/modules/nfc/ndef_reader.h"
+#include "third_party/blink/renderer/modules/nfc/ndef_writer.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_writer.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
 namespace blink {
@@ -36,7 +35,6 @@ NFCProxy* NFCProxy::From(Document& document) {
 // NFCProxy
 NFCProxy::NFCProxy(Document& document)
     : PageVisibilityObserver(document.GetPage()),
-      FocusChangedObserver(document.GetPage()),
       Supplement<Document>(document),
       client_receiver_(this) {}
 
@@ -50,25 +48,25 @@ void NFCProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(writers_);
   visitor->Trace(readers_);
   PageVisibilityObserver::Trace(visitor);
-  FocusChangedObserver::Trace(visitor);
   Supplement<Document>::Trace(visitor);
 }
 
-void NFCProxy::StartReading(NFCReader* reader, const NFCScanOptions* options) {
+void NFCProxy::StartReading(NDEFReader* reader,
+                            const NDEFScanOptions* options,
+                            device::mojom::blink::NFC::WatchCallback callback) {
   DCHECK(reader);
-  if (readers_.Contains(reader))
-    return;
+  DCHECK(!readers_.Contains(reader));
 
   EnsureMojoConnection();
   nfc_remote_->Watch(
-      device::mojom::blink::NFCScanOptions::From(options), next_watch_id_,
+      device::mojom::blink::NDEFScanOptions::From(options), next_watch_id_,
       WTF::Bind(&NFCProxy::OnReaderRegistered, WrapPersistent(this),
-                WrapPersistent(reader), next_watch_id_));
+                WrapPersistent(reader), next_watch_id_, std::move(callback)));
   readers_.insert(reader, next_watch_id_);
   next_watch_id_++;
 }
 
-void NFCProxy::StopReading(NFCReader* reader) {
+void NFCProxy::StopReading(NDEFReader* reader) {
   DCHECK(reader);
   auto iter = readers_.find(reader);
   if (iter != readers_.end()) {
@@ -81,18 +79,18 @@ void NFCProxy::StopReading(NFCReader* reader) {
   }
 }
 
-bool NFCProxy::IsReading(const NFCReader* reader) {
+bool NFCProxy::IsReading(const NDEFReader* reader) {
   DCHECK(reader);
-  return readers_.Contains(const_cast<NFCReader*>(reader));
+  return readers_.Contains(const_cast<NDEFReader*>(reader));
 }
 
-void NFCProxy::AddWriter(NFCWriter* writer) {
+void NFCProxy::AddWriter(NDEFWriter* writer) {
   DCHECK(!writers_.Contains(writer));
   writers_.insert(writer);
 }
 
 void NFCProxy::Push(device::mojom::blink::NDEFMessagePtr message,
-                    device::mojom::blink::NFCPushOptionsPtr options,
+                    device::mojom::blink::NDEFPushOptionsPtr options,
                     device::mojom::blink::NFC::PushCallback cb) {
   EnsureMojoConnection();
   nfc_remote_->Push(std::move(message), std::move(options), std::move(cb));
@@ -102,7 +100,7 @@ void NFCProxy::CancelPush(
     const String& target,
     device::mojom::blink::NFC::CancelPushCallback callback) {
   DCHECK(nfc_remote_);
-  nfc_remote_->CancelPush(StringToNFCPushTarget(target), std::move(callback));
+  nfc_remote_->CancelPush(StringToNDEFPushTarget(target), std::move(callback));
 }
 
 // device::mojom::blink::NFCClient implementation.
@@ -110,8 +108,8 @@ void NFCProxy::OnWatch(const Vector<uint32_t>& watch_ids,
                        const String& serial_number,
                        device::mojom::blink::NDEFMessagePtr message) {
   // Dispatch the event to all matched readers. We iterate on a copy of
-  // |readers_| because the user's NFCReader#onreading event handler may call
-  // NFCReader#stop() to modify |readers_| just during the iteration process.
+  // |readers_| because the user's NDEFReader#onreading event handler may call
+  // NDEFReader#stop() to modify |readers_| just during the iteration process.
   // This loop is O(n^2), however, we assume the number of readers to be small
   // so it'd be just OK.
   ReaderMap copy = readers_;
@@ -121,9 +119,11 @@ void NFCProxy::OnWatch(const Vector<uint32_t>& watch_ids,
   }
 }
 
-void NFCProxy::OnReaderRegistered(NFCReader* reader,
-                                  uint32_t watch_id,
-                                  device::mojom::blink::NFCErrorPtr error) {
+void NFCProxy::OnReaderRegistered(
+    NDEFReader* reader,
+    uint32_t watch_id,
+    device::mojom::blink::NFC::WatchCallback callback,
+    device::mojom::blink::NDEFErrorPtr error) {
   DCHECK(reader);
   // |reader| may have already stopped reading.
   if (!readers_.Contains(reader))
@@ -136,24 +136,18 @@ void NFCProxy::OnReaderRegistered(NFCReader* reader,
     return;
 
   if (error) {
-    reader->OnError(error->error_type);
     readers_.erase(reader);
+    std::move(callback).Run(std::move(error));
     return;
   }
 
-  // It's good the watch request has been accepted, we do nothing here but just
-  // wait for message notifications in OnWatch().
+  std::move(callback).Run(nullptr);
+
+  // It's good the watch request has been accepted, next we just wait for
+  // message notifications in OnWatch().
 }
 
 void NFCProxy::PageVisibilityChanged() {
-  UpdateSuspendedStatus();
-}
-
-void NFCProxy::FocusedFrameChanged() {
-  UpdateSuspendedStatus();
-}
-
-void NFCProxy::UpdateSuspendedStatus() {
   // If service is not initialized, there cannot be any pending NFC activities.
   if (!nfc_remote_)
     return;
@@ -162,33 +156,17 @@ void NFCProxy::UpdateSuspendedStatus() {
   // https://w3c.github.io/web-nfc/#nfc-suspended
   // TODO(https://crbug.com/520391): Suspend/Resume NFC in the browser process
   // instead to prevent a compromised renderer from using NFC in the background.
-  if (ShouldSuspendNFC())
+  if (!GetPage()->IsPageVisible())
     nfc_remote_->SuspendNFCOperations();
   else
     nfc_remote_->ResumeNFCOperations();
-}
-
-bool NFCProxy::ShouldSuspendNFC() const {
-  if (!GetPage()->IsPageVisible())
-    return true;
-
-  LocalFrame* focused_frame = GetPage()->GetFocusController().FocusedFrame();
-  LocalFrame* this_frame = GetSupplementable()->GetFrame();
-
-  if (!focused_frame || !this_frame)
-    return true;
-
-  if (focused_frame != this_frame)
-    return true;
-
-  return false;
 }
 
 void NFCProxy::EnsureMojoConnection() {
   if (nfc_remote_)
     return;
 
-  GetSupplementable()->GetInterfaceProvider()->GetInterface(
+  GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
       nfc_remote_.BindNewPipeAndPassReceiver());
   nfc_remote_.set_disconnect_handler(
       WTF::Bind(&NFCProxy::OnMojoConnectionError, WrapWeakPersistent(this)));
@@ -208,9 +186,7 @@ void NFCProxy::OnMojoConnectionError() {
   // Notify all active readers about the connection error and clear the list.
   ReaderMap readers = std::move(readers_);
   for (auto& pair : readers) {
-    // The reader may call StopReading() to remove itself from |readers_| when
-    // handling the error.
-    pair.key->OnError(device::mojom::blink::NFCErrorType::NOT_SUPPORTED);
+    pair.key->OnMojoConnectionError();
   }
 
   // Each connection maintains its own watch ID numbering, so reset to 1 on

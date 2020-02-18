@@ -19,6 +19,7 @@
 
 namespace views {
 
+class BubbleFrameView;
 class DialogClientView;
 class DialogObserver;
 class LabelButton;
@@ -35,6 +36,30 @@ class LabelButton;
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
  public:
+  struct Params {
+    Params();
+    ~Params();
+    base::Optional<int> default_button = base::nullopt;
+    bool round_corners = true;
+    bool draggable = false;
+
+    // Whether to use the Views-styled frame (if true) or a platform-native
+    // frame if false. In general, dialogs that look like fully separate windows
+    // should use the platform-native frame, and all other dialogs should use
+    // the Views-styled one.
+    bool custom_frame = true;
+
+    // A bitmask of buttons (from ui::DialogButton) that are present in this
+    // dialog.
+    int buttons = ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+
+    // Text labels for the buttons on this dialog. Any button without a label
+    // here will get the default text for its type from GetDialogButtonLabel.
+    // Prefer to use this field (via set_button_label) rather than override
+    // GetDialogButtonLabel - see https://crbug.com/1011446
+    base::string16 button_labels[ui::DIALOG_BUTTON_LAST + 1];
+  };
+
   DialogDelegate();
 
   // Creates a widget at a default location.
@@ -53,8 +78,20 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
                                                       gfx::NativeView parent,
                                                       const gfx::Rect& bounds);
 
+  // Called when the DialogDelegate and its frame have finished initializing but
+  // not been shown yet. Override this to perform customizations to the dialog
+  // that need to happen after the dialog's widget, border, buttons, and so on
+  // are ready.
+  //
+  // Overrides of this method should be quite rare - prefer to do dialog
+  // customization before the frame/widget/etc are ready if at all possible, via
+  // other setters on this class.
+  virtual void OnDialogInitialized() {}
+
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog. Note: Dialogs with just an OK button are frowned upon.
+  // DEPRECATED: Prefer to use set_buttons() below; this method is being
+  // removed. See https://crbug.com/1011446.
   virtual int GetDialogButtons() const;
 
   // Returns the default dialog button. This should not be a mask as only
@@ -63,27 +100,13 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // behavior is to return ui::DIALOG_BUTTON_OK or
   // ui::DIALOG_BUTTON_CANCEL (in that order) if they are
   // present, ui::DIALOG_BUTTON_NONE otherwise.
-  virtual int GetDefaultDialogButton() const;
+  int GetDefaultDialogButton() const;
 
   // Returns the label of the specified dialog button.
   virtual base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
 
   // Returns whether the specified dialog button is enabled.
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const;
-
-  // Override this function to display an extra view adjacent to the buttons.
-  // Overrides may construct the view; this will only be called once per dialog.
-  virtual std::unique_ptr<View> CreateExtraView();
-
-  // Override this function to adjust the padding between the extra view and
-  // the confirm/cancel buttons. Note that if there are no buttons, this will
-  // not be used.
-  // If a custom padding should be used, returns true and populates |padding|.
-  virtual bool GetExtraViewPadding(int* padding);
-
-  // Override this function to display a footnote view below the buttons.
-  // Overrides may construct the view; this will only be called once per dialog.
-  virtual std::unique_ptr<View> CreateFootnoteView();
 
   // For Dialog boxes, if there is a "Cancel" button or no dialog button at all,
   // this is called when the user presses the "Cancel" button.
@@ -106,22 +129,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // must remain open.
   virtual bool Close();
 
-  // Dialogs should not be draggable unless the dialog can be created with no
-  // parent browser window.
-  virtual bool IsDialogDraggable() const;
-
-  // Updates the properties and appearance of |button| which has been created
-  // for type |type|. Override to do special initialization above and beyond
-  // the typical.
-  virtual void UpdateButton(LabelButton* button, ui::DialogButton type);
-
-  // Returns true if this dialog should snap the frame width based on the
-  // LayoutProvider's snapping.
-  virtual bool ShouldSnapFrameWidth() const;
-
-  // Returns whether the dialog should have round corners
-  virtual bool ShouldHaveRoundCorners() const;
-
   // Overridden from WidgetDelegate:
   View* GetInitiallyFocusedView() override;
   DialogDelegate* AsDialogDelegate() override;
@@ -130,18 +137,36 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   static NonClientFrameView* CreateDialogFrameView(Widget* widget);
 
-  // Returns true if this particular dialog should use a Chrome-styled frame
-  // like the one used for bubbles. The alternative is a more platform-native
-  // frame.
-  virtual bool ShouldUseCustomFrame() const;
-
   const gfx::Insets& margins() const { return margins_; }
   void set_margins(const gfx::Insets& margins) { margins_ = margins; }
 
-  // A helper for accessing the DialogClientView object contained by this
-  // delegate's Window.
-  const DialogClientView* GetDialogClientView() const;
-  DialogClientView* GetDialogClientView();
+  template <typename T>
+  T* SetExtraView(std::unique_ptr<T> extra_view) {
+    T* view = extra_view.get();
+    extra_view_ = std::move(extra_view);
+    return view;
+  }
+
+  template <typename T>
+  T* SetFootnoteView(std::unique_ptr<T> footnote_view) {
+    T* view = footnote_view.get();
+    footnote_view_ = std::move(footnote_view);
+    return view;
+  }
+
+  // Returns the BubbleFrameView of this dialog delegate. A bubble frame view
+  // will only be created when use_custom_frame() is true.
+  BubbleFrameView* GetBubbleFrameView() const;
+
+  // Helpers for accessing parts of the DialogClientView without needing to know
+  // about DialogClientView. Do not call these before OnDialogInitialized.
+  views::LabelButton* GetOkButton() const;
+  views::LabelButton* GetCancelButton() const;
+  views::View* GetExtraView() const;
+
+  // Helper for accessing the footnote view. Unlike the three methods just
+  // above, this *is* safe to call before OnDialogInitialized.
+  views::View* GetFootnoteViewForTesting() const;
 
   // Add or remove an observer notified by calls to DialogModelChanged().
   void AddObserver(DialogObserver* observer);
@@ -150,16 +175,90 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Notifies observers when the result of the DialogModel overrides changes.
   void DialogModelChanged();
 
+  void set_default_button(int button) { params_.default_button = button; }
+  void set_use_round_corners(bool round) { params_.round_corners = round; }
+  void set_draggable(bool draggable) { params_.draggable = draggable; }
+  bool draggable() const { return params_.draggable; }
+  void set_use_custom_frame(bool use) { params_.custom_frame = use; }
+  bool use_custom_frame() const { return params_.custom_frame; }
+  void set_buttons(int buttons) { params_.buttons = buttons; }
+
+  void set_button_label(ui::DialogButton button, base::string16 label) {
+    params_.button_labels[button] = label;
+  }
+
+  // Returns ownership of the extra view for this dialog, if one was provided
+  // via SetExtraView(). This is only for use by DialogClientView; don't call
+  // it.
+  // It would be good to instead have a DialogClientView::SetExtraView method
+  // that passes ownership into DialogClientView once. Unfortunately doing this
+  // broke a bunch of tests in a subtle way: the obvious place to call
+  // DCV::SetExtraView was from DD::OnWidgetInitialized.  DCV::SetExtraView
+  // would then add the new view to DCV, which would invalidate its layout.
+  // However, many tests were doing essentially this:
+  //
+  //   TestDialogDelegate delegate;
+  //   ShowBubble(&delegate);
+  //   TryToUseExtraView();
+  //
+  // and then trying to use the extra view's bounds, most commonly by
+  // synthesizing mouse clicks on it. At this point the extra view's layout is
+  // invalid *but* it has not yet been laid out, because View::InvalidateLayout
+  // schedules a deferred re-layout later. The design where DCV pulls the extra
+  // view from DD doesn't have this issue: during the initial construction of
+  // DCV, DCV fetches the extra view and slots it into its layout, and then the
+  // initial layout pass in Widget::Init causes the extra view to get laid out.
+  // Deferring inserting the extra view until after Widget::Init has finished is
+  // what causes the extra view to not be laid out (and hence the tests to
+  // fail).
+  //
+  // Potential future fixes:
+  // 1) The tests could manually force a re-layout here, or
+  // 2) The tests could be rewritten to not depend on the extra view's
+  //    bounds, by not trying to deliver mouse events to it somehow, or
+  // 3) DCV::SetupLayout could always force an explicit Layout, ignoring the
+  //    lazy layout system in View::InvalidateLayout
+  std::unique_ptr<View> DisownExtraView();
+
+  // Externally or accept the dialog. These methods:
+  // 1) Invoke the DialogDelegate's Cancel or Accept methods
+  // 2) Depending on their return value, close the dialog's widget.
+  // Neither of these methods can be called before the dialog has been
+  // initialized.
+  void CancelDialog();
+  void AcceptDialog();
+
+  // Reset the dialog's shown timestamp, for tests that are subject to the
+  // "unintended interaction" detection mechanism.
+  void ResetViewShownTimeStampForTesting();
+
+  // Set the insets used for the dialog's button row. This should be used only
+  // rarely.
+  // TODO(ellyjones): Investigate getting rid of this entirely and having all
+  // dialogs use the same button row insets.
+  void SetButtonRowInsets(const gfx::Insets& insets);
+
  protected:
   ~DialogDelegate() override;
 
   // Overridden from WidgetDelegate:
   ax::mojom::Role GetAccessibleWindowRole() override;
 
+  const Params& GetParams() const { return params_; }
+
+  // Return ownership of the footnote view for this dialog. Only use this in
+  // subclass overrides of CreateNonClientFrameView.
+  std::unique_ptr<View> DisownFootnoteView();
+
  private:
-  // A flag indicating whether this dialog is able to use the custom frame
-  // style for dialogs.
-  bool supports_custom_frame_ = true;
+  // Overridden from WidgetDelegate. If you need to hook after widget
+  // initialization, use OnDialogInitialized above.
+  void OnWidgetInitialized() final;
+
+  // A helper for accessing the DialogClientView object contained by this
+  // delegate's Window.
+  const DialogClientView* GetDialogClientView() const;
+  DialogClientView* GetDialogClientView();
 
   // The margins between the content and the inside of the border.
   // TODO(crbug.com/733040): Most subclasses assume they must set their own
@@ -169,6 +268,15 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   // The time the dialog is created.
   base::TimeTicks creation_time_;
+
+  // Dialog parameters for this dialog.
+  Params params_;
+
+  // The extra view for this dialog, if there is one.
+  std::unique_ptr<View> extra_view_ = nullptr;
+
+  // The footnote view for this dialog, if there is one.
+  std::unique_ptr<View> footnote_view_ = nullptr;
 
   // Observers for DialogModel changes.
   base::ObserverList<DialogObserver>::Unchecked observer_list_;

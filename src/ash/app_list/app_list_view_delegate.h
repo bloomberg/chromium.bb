@@ -23,19 +23,16 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace ash {
-enum class AppListViewState;
-}
-
 namespace ui {
 class GestureEvent;
 class ImplicitAnimationObserver;
 class SimpleMenuModel;
 }  // namespace ui
 
-namespace app_list {
+namespace ash {
 
 class AppListModel;
+enum class AppListViewState;
 struct AppLaunchedMetricParams;
 class SearchModel;
 
@@ -65,11 +62,14 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // chrome/browser/ui/app_list/app_launch_event_logger.proto. |launch_type| is
   // either kAppSearchResult or kSearchResult and is used to determine which
   // histograms to log to.
+  // |launch_as_default|: True if the result is launched as the default result
+  // by user pressing ENTER key.
   virtual void OpenSearchResult(const std::string& result_id,
                                 int event_flags,
                                 ash::AppListLaunchedFrom launched_from,
                                 ash::AppListLaunchType launch_type,
-                                int suggestion_index) = 0;
+                                int suggestion_index,
+                                bool launch_as_default) = 0;
 
   // Called to log UMA metrics for the launch of an item either in the app tile
   // list or the search result list. The |launch_location| argument determines
@@ -78,7 +78,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // window. For instance, the first launcher result item is index 0, regardless
   // of if there is an answer card above it.
   virtual void LogResultLaunchHistogram(
-      app_list::SearchResultLaunchLocation launch_location,
+      SearchResultLaunchLocation launch_location,
       int suggestion_index) = 0;
 
   // Logs the UMA histogram metrics for user's abandonment of launcher search.
@@ -92,7 +92,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
                                         int event_flags) = 0;
 
   // Returns the context menu model for a ChromeSearchResult with |result_id|,
-  // or NULL if there is currently no menu for the result.
+  // or nullptr if there is currently no menu for the result.
   // Note the returned menu model is owned by that result.
   using GetContextMenuModelCallback =
       base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
@@ -121,8 +121,8 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
                             int event_flags,
                             ash::AppListLaunchedFrom launched_from) = 0;
 
-  // Returns the context menu model for a ChromeAppListItem with |id|, or NULL
-  // if there is currently no menu for the item (e.g. during install).
+  // Returns the context menu model for a ChromeAppListItem with |id|, or
+  // nullptr if there is currently no menu for the item (e.g. during install).
   // Note the returned menu model is owned by that item.
   virtual void GetContextMenuModel(const std::string& id,
                                    GetContextMenuModelCallback callback) = 0;
@@ -138,9 +138,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
 
   // Forwards events to the home launcher gesture handler and returns true if
   // they have been processed.
-  virtual bool ProcessHomeLauncherGesture(
-      ui::GestureEvent* event,
-      const gfx::Point& screen_location) = 0;
+  virtual bool ProcessHomeLauncherGesture(ui::GestureEvent* event) = 0;
 
   // Returns True if the last event passing through app list was a key event.
   // This is stored in the controller and managed by the presenter.
@@ -209,8 +207,11 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Adjusts the bounds by snapping it to the edge of the display in pixel
   // space. This prevents 1px gaps on displays with non-integer scale factors.
   virtual gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) = 0;
+
+  // Gets the current shelf height from the ShelfConfig.
+  virtual int GetShelfHeight() = 0;
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_VIEW_DELEGATE_H_

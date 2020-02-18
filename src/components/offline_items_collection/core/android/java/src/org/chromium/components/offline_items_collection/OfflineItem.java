@@ -76,6 +76,8 @@ public class OfflineItem implements Cloneable {
     public boolean isAccelerated;
     public boolean promoteOrigin;
     public boolean canRename;
+    public boolean ignoreVisuals;
+    public double contentQualityScore;
 
     // Content Metadata.
     public long totalSizeBytes;
@@ -132,6 +134,8 @@ public class OfflineItem implements Cloneable {
         clone.filePath = filePath;
         clone.mimeType = mimeType;
         clone.canRename = canRename;
+        clone.ignoreVisuals = ignoreVisuals;
+        clone.contentQualityScore = contentQualityScore;
         clone.pageUrl = pageUrl;
         clone.originalUrl = originalUrl;
         clone.isOffTheRecord = isOffTheRecord;

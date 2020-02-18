@@ -22,9 +22,9 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
@@ -40,7 +40,10 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
@@ -54,6 +57,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/user_agent.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace arc {
@@ -234,6 +238,12 @@ bool IsArcAllowedForProfileInternal(const Profile* profile,
   return true;
 }
 
+void ShowContactAdminDialog() {
+  chrome::ShowWarningMessageBox(
+      nullptr, l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_CONTACT_ADMIN_TITLE),
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_CONTACT_ADMIN_CONTEXT));
+}
+
 }  // namespace
 
 bool IsRealUserProfile(const Profile* profile) {
@@ -367,6 +377,12 @@ bool SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
   if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile)) {
     if (enabled && !IsArcPlayStoreEnabledForProfile(profile)) {
       LOG(WARNING) << "Attempt to enable disabled by policy ARC.";
+      if (chromeos::switches::IsTabletFormFactor()) {
+        VLOG(1) << "Showing contact admin dialog managed user of tablet form "
+                   "factor devices.";
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::BindOnce(&ShowContactAdminDialog));
+      }
       return false;
     }
     VLOG(1) << "Google-Play-Store-enabled pref is managed. Request to "
@@ -661,6 +677,32 @@ std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
                             std::make_unique<arc::ArcWebContentsData>());
 
   return web_contents;
+}
+
+std::string GetHistogramNameByUserType(const std::string& base_name,
+                                       const Profile* profile) {
+  if (profile == nullptr) {
+    profile = ProfileManager::GetPrimaryUserProfile();
+  }
+  if (IsRobotOrOfflineDemoAccountMode()) {
+    chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
+    if (demo_session && demo_session->started()) {
+      return demo_session->offline_enrolled() ? base_name + ".OfflineDemoMode"
+                                              : base_name + ".DemoMode";
+    }
+    return base_name + ".RobotAccount";
+  }
+  if (profile->IsChild())
+    return base_name + ".Child";
+  if (IsActiveDirectoryUserForProfile(profile))
+    return base_name + ".ActiveDirectory";
+  return base_name +
+         (policy_util::IsAccountManaged(profile) ? ".Managed" : ".Unmanaged");
+}
+
+std::string GetHistogramNameByUserTypeForPrimaryProfile(
+    const std::string& base_name) {
+  return GetHistogramNameByUserType(base_name, /*profile=*/nullptr);
 }
 
 }  // namespace arc

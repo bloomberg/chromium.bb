@@ -38,7 +38,7 @@
       }
 
       iron-icon {
-        --iron-icon-fill-color: var(--google-grey-refresh-500);
+        --iron-icon-fill-color: var(--cros-search-page-question-icon-color);
       }
 
       cr-policy-pref-indicator {
@@ -59,7 +59,7 @@
                   aria-label="$i18n{osSearchEngineTooltip}"
                   aria-describedby="tooltip"></iron-icon>
               <paper-tooltip id="tooltip" for="help-icon" position="bottom"
-                  fit-to-visible-bounds>
+                  aria-hidden="true" fit-to-visible-bounds>
                 $i18n{osSearchEngineTooltip}
               </paper-tooltip>
             </div>
@@ -100,7 +100,8 @@
               label="$i18n{searchGoogleAssistant}"
               sub-label="[[getAssistantEnabledDisabledLabel_(
                   prefs.settings.voice_interaction.enabled.value)]]"
-              on-click="onGoogleAssistantTap_">
+              on-click="onGoogleAssistantTap_"
+              role-description="$i18n{subpageArrowRoleDescription}">
           </cr-link-row>
         </template>
       </div>

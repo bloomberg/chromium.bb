@@ -5,6 +5,7 @@
 #include "net/third_party/quiche/src/quic/quartc/quartc_multiplexer.h"
 
 #include <memory>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/core/frames/quic_connection_close_frame.h"
 #include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
@@ -13,7 +14,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test_mem_slice_vector.h"
@@ -23,6 +23,7 @@
 #include "net/third_party/quiche/src/quic/quartc/quartc_session.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_stream.h"
 #include "net/third_party/quiche/src/quic/quartc/simulated_packet_transport.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/link.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
 
@@ -185,14 +186,14 @@ class QuartcMultiplexerTest : public QuicTest {
         server_multiplexer_(simulator_.GetStreamSendBufferAllocator(),
                             &server_session_delegate_,
                             &server_default_receiver_),
-        client_endpoint_(QuicMakeUnique<QuartcClientEndpoint>(
+        client_endpoint_(std::make_unique<QuartcClientEndpoint>(
             simulator_.GetAlarmFactory(),
             simulator_.GetClock(),
             simulator_.GetRandomGenerator(),
             &client_multiplexer_,
             quic::QuartcSessionConfig(),
             /*serialized_server_config=*/"")),
-        server_endpoint_(QuicMakeUnique<QuartcServerEndpoint>(
+        server_endpoint_(std::make_unique<QuartcServerEndpoint>(
             simulator_.GetAlarmFactory(),
             simulator_.GetClock(),
             simulator_.GetRandomGenerator(),
@@ -468,8 +469,10 @@ TEST_F(QuartcMultiplexerTest, CloseEvent) {
   Connect();
   Disconnect();
 
-  EXPECT_EQ(client_session_delegate_.error(), QUIC_CONNECTION_CANCELLED);
-  EXPECT_EQ(server_session_delegate_.error(), QUIC_CONNECTION_CANCELLED);
+  EXPECT_THAT(client_session_delegate_.error(),
+              test::IsError(QUIC_CONNECTION_CANCELLED));
+  EXPECT_THAT(server_session_delegate_.error(),
+              test::IsError(QUIC_CONNECTION_CANCELLED));
 }
 
 TEST_F(QuartcMultiplexerTest, CongestionEvent) {

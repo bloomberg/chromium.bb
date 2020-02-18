@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
+import("//media/webrtc/audio_processing.gni")
 import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("mediastream") {
@@ -12,6 +13,7 @@ blink_modules_sources("mediastream") {
     "apply_constraints_request.cc",
     "apply_constraints_request.h",
     "dom_window_media_stream.h",
+    "encoded_frame.h",
     "input_device_info.cc",
     "input_device_info.h",
     "local_media_stream_audio_source.cc",
@@ -29,9 +31,11 @@ blink_modules_sources("mediastream") {
     "media_stream_audio_processor.cc",
     "media_stream_audio_processor.h",
     "media_stream_constraints_util.cc",
+    "media_stream_constraints_util.h",
     "media_stream_constraints_util_audio.cc",
     "media_stream_constraints_util_audio.h",
     "media_stream_constraints_util_sets.cc",
+    "media_stream_constraints_util_sets.h",
     "media_stream_constraints_util_video_content.cc",
     "media_stream_constraints_util_video_content.h",
     "media_stream_constraints_util_video_device.cc",
@@ -65,7 +69,9 @@ blink_modules_sources("mediastream") {
     "overconstrained_error.cc",
     "overconstrained_error.h",
     "processed_local_audio_source.cc",
+    "processed_local_audio_source.h",
     "remote_media_stream_track_adapter.cc",
+    "remote_media_stream_track_adapter.h",
     "track_audio_renderer.cc",
     "track_audio_renderer.h",
     "user_media_client.cc",
@@ -79,6 +85,7 @@ blink_modules_sources("mediastream") {
     "video_track_adapter.cc",
     "video_track_adapter.h",
     "video_track_adapter_settings.cc",
+    "video_track_adapter_settings.h",
     "web_media_stream_device_observer.cc",
     "web_media_stream_utils.cc",
     "webaudio_media_stream_audio_sink.cc",
@@ -89,6 +96,7 @@ blink_modules_sources("mediastream") {
   ]
   deps = [
     "//media/capture/mojom:image_capture_blink",
+    "//media/webrtc",
   ]
 }
 
@@ -98,9 +106,15 @@ jumbo_source_set("test_support") {
   sources = [
     "mock_constraint_factory.cc",
     "mock_constraint_factory.h",
+    "mock_encoded_video_frame.h",
     "mock_media_stream_registry.cc",
+    "mock_media_stream_registry.h",
     "mock_media_stream_video_sink.cc",
+    "mock_media_stream_video_sink.h",
     "mock_media_stream_video_source.cc",
+    "mock_media_stream_video_source.h",
+    "testing_platform_support_with_mock_audio_capture_source.cc",
+    "testing_platform_support_with_mock_audio_capture_source.h",
   ]
 
   deps = [
@@ -110,6 +124,6 @@ jumbo_source_set("test_support") {
     "//testing/gmock",
     "//third_party/blink/public:test_headers",
     "//third_party/blink/public/mojom:mojom_platform_blink_headers",
-    "//third_party/webrtc_overrides:init_webrtc",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 }

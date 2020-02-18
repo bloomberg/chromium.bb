@@ -37,7 +37,7 @@ class PLATFORM_EXPORT DarkModeFilter {
   // TODO(gilmanmh): Add a role for shadows. In general, we don't want to
   // invert shadows, but we may need to do some other kind of processing for
   // them.
-  enum class ElementRole { kText, kBackground };
+  enum class ElementRole { kText, kBackground, kSVG };
   Color InvertColorIfNeeded(const Color& color, ElementRole element_role);
   base::Optional<cc::PaintFlags> ApplyToFlagsIfNeeded(
       const cc::PaintFlags& flags,
@@ -45,8 +45,11 @@ class PLATFORM_EXPORT DarkModeFilter {
 
   // |image| and |flags| must not be null.
   void ApplyToImageFlagsIfNeeded(const FloatRect& src_rect,
+                                 const FloatRect& dest_rect,
                                  Image* image,
                                  cc::PaintFlags* flags);
+
+  SkColorFilter* GetImageFilterForTesting() { return image_filter_.get(); }
 
  private:
   DarkModeSettings settings_;

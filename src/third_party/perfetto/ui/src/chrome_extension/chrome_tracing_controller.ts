@@ -16,19 +16,23 @@ import {Protocol} from 'devtools-protocol';
 import {ProtocolProxyApi} from 'devtools-protocol/types/protocol-proxy-api';
 import * as rpc from 'noice-json-rpc';
 
+import {extractTraceConfig} from '../base/extract_utils';
 import {TraceConfig} from '../common/protos';
 import {
   ConsumerPortResponse,
   GetTraceStatsResponse,
   ReadBuffersResponse
 } from '../controller/consumer_port_types';
+import {RpcConsumerPort} from '../controller/record_controller_interfaces';
 import {perfetto} from '../gen/protos';
 
 import {DevToolsSocket} from './devtools_socket';
 
-const CHUNK_SIZE: number = 1024 * 1024 * 64;
+// The chunk size should be large enough to support reasonable batching of data,
+// but small enough not to cause stack overflows in uint8ArrayToString().
+const CHUNK_SIZE: number = 1024 * 1024 * 16;  // 16Mb
 
-export class ChromeTracingController {
+export class ChromeTracingController extends RpcConsumerPort {
   private streamHandle: string|undefined = undefined;
   private uiPort: chrome.runtime.Port;
   private api: ProtocolProxyApi.ProtocolApi;
@@ -36,6 +40,16 @@ export class ChromeTracingController {
   private lastBufferUsageEvent: Protocol.Tracing.BufferUsageEvent|undefined;
 
   constructor(port: chrome.runtime.Port) {
+    super({
+      onConsumerPortResponse: (message: ConsumerPortResponse) =>
+          this.uiPort.postMessage(message),
+
+      onError: (error: string) =>
+          this.uiPort.postMessage({type: 'ChromeExtensionError', error}),
+
+      onStatus: (status) =>
+          this.uiPort.postMessage({type: 'ChromeExtensionStatus', status})
+    });
     this.uiPort = port;
     this.devtoolsSocket = new DevToolsSocket();
     this.devtoolsSocket.on('close', () => this.resetState());
@@ -45,18 +59,10 @@ export class ChromeTracingController {
     this.api.Tracing.on('bufferUsage', this.onBufferUsage.bind(this));
   }
 
-  sendMessage(message: ConsumerPortResponse) {
-    this.uiPort.postMessage(message);
-  }
-
-  sendErrorMessage(error: string) {
-    this.uiPort.postMessage({type: 'ErrorResponse', result: {error}});
-  }
-
-  onMessage(request: {method: string, traceConfig: Uint8Array}) {
-    switch (request.method) {
+  handleCommand(methodName: string, requestData: Uint8Array) {
+    switch (methodName) {
       case 'EnableTracing':
-        this.enableTracing(request);
+        this.enableTracing(requestData);
         break;
       case 'FreeBuffers':
         this.freeBuffers();
@@ -74,19 +80,25 @@ export class ChromeTracingController {
         this.getCategories();
         break;
       default:
-        this.sendErrorMessage('Action not recognised');
-        console.log('Received not recognized message: ', request.method);
+        this.sendErrorMessage('Action not recognized');
+        console.log('Received not recognized message: ', methodName);
         break;
     }
   }
 
-  enableTracing(request: {method: string, traceConfig: Uint8Array}) {
+  enableTracing(enableTracingRequest: Uint8Array) {
     this.resetState();
-    const traceConfig = TraceConfig.decode(new Uint8Array(request.traceConfig));
+    const traceConfigProto = extractTraceConfig(enableTracingRequest);
+    if (!traceConfigProto) {
+      this.sendErrorMessage('Invalid trace config');
+      return;
+    }
+    const traceConfig = TraceConfig.decode(traceConfigProto);
     const chromeConfig = this.extractChromeConfig(traceConfig);
     this.handleStartTracing(chromeConfig);
   }
 
+  // TODO(nicomazz): write unit test for this
   extractChromeConfig(perfettoConfig: TraceConfig):
       Protocol.Tracing.TraceConfig {
     for (const ds of perfettoConfig.dataSources) {
@@ -106,7 +118,6 @@ export class ChromeTracingController {
   }
 
   async readBuffers(offset = 0) {
-    // TODO(nicomazz): Add error handling also in the frontend.
     if (!this.devtoolsSocket.isAttached() || this.streamHandle === undefined) {
       this.sendErrorMessage('No tracing session to read from');
       return;
@@ -117,12 +128,12 @@ export class ChromeTracingController {
     if (res === undefined) return;
 
     const chunk = res.base64Encoded ? atob(res.data) : res.data;
-    // TODO(nicomazz): remove the conversion to unknown when we stream each
-    // chunk to the trace processor.
+    // The 'as {} as UInt8Array' is done because we can't send ArrayBuffers
+    // trough a chrome.runtime.Port. The conversion from string to ArrayBuffer
+    // takes place on the other side of the port.
     const response: ReadBuffersResponse = {
       type: 'ReadBuffersResponse',
-      slices:
-          [{data: chunk as unknown as Uint8Array, lastSliceForPacket: res.eof}]
+      slices: [{data: chunk as {} as Uint8Array, lastSliceForPacket: res.eof}]
     };
     this.sendMessage(response);
     if (res.eof) return;

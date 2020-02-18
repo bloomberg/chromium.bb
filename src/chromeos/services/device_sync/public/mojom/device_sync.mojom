@@ -6,8 +6,10 @@ module chromeos.device_sync.mojom;
 
 import "chromeos/components/multidevice/mojom/multidevice_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "services/preferences/public/mojom/preferences.mojom";
 
+// Denotes the outcome of an HTTP request, where results like kBadRequest map
+// onto HTTP error codes while others like kRequestServiceNotYetInitialized
+// reflect issues adjacent to the actual HTTP request.
 enum NetworkRequestResult {
   // Successful network request.
   kSuccess,
@@ -43,9 +45,43 @@ enum NetworkRequestResult {
   kUnknown
 };
 
+// Describes the desired state of a device's software feature.
+enum FeatureStatusChange {
+  // Enables a feature on a device and disables the feature on all other
+  // devices associated with the account.
+  kEnableExclusively,
+
+  // Enables a feature on a device; other devices on the account are
+  // unaffected.
+  kEnableNonExclusively,
+
+  // Disables a feature on a device; other devices on the account are
+  // unaffected.
+  kDisable
+};
+
+// Denotes the relevant CryptAuth service.
+enum CryptAuthService {
+  kEnrollment,
+  kDeviceSync
+};
+
+// Describes a device's network reachability.
+enum ConnectivityStatus {
+  kOnline,
+  kOffline,
+  kUnknownConnectivity
+};
+
 struct FindEligibleDevicesResponse {
   array<chromeos.multidevice.mojom.RemoteDevice> eligible_devices;
   array<chromeos.multidevice.mojom.RemoteDevice> ineligible_devices;
+};
+
+struct DeviceActivityStatus {
+  string device_id;
+  mojo_base.mojom.Time last_activity_time;
+  ConnectivityStatus connectivity_status;
 };
 
 struct DebugInfo {
@@ -76,9 +112,10 @@ interface DeviceSyncObserver {
 };
 
 // TODO(khorimoto): Flesh out API.
+// Calls to this API run in the browser process.
 interface DeviceSync {
   // Adds an Observer of this API.
-  AddObserver(DeviceSyncObserver observer) => ();
+  AddObserver(pending_remote<DeviceSyncObserver> observer) => ();
 
   // Triggers an enrollment; result is relayed via the OnEnrollmentFinished()
   // observer function. Returns whether the call could be completed
@@ -122,11 +159,25 @@ interface DeviceSync {
   // SoftwareFeature::EASY_UNLOCK_HOST and |enabled| = false, |public_key| is
   // ignored, because that combination of arguments disables EASY_UNLOCK_HOST on
   // all of the user's devices.
+  //
+  // TODO(https://crbug.com/1019206): Remove this function when v1 DeviceSync
+  // is deprecated.
   SetSoftwareFeatureState(
       string device_public_key,
       chromeos.multidevice.mojom.SoftwareFeature software_feature,
       bool enabled,
       bool is_exclusive) => (NetworkRequestResult result_code);
+
+  // Enables or disables |feature| for the device with Instance ID
+  // |device_instance_id|.
+  //
+  // This function can only affect devices using CryptAuth v2 DeviceSync since
+  // it requires an Instance ID. See SetSoftwareFeatureState() for the v1
+  // DeviceSync analog.
+  SetFeatureStatus(
+      string device_instance_id,
+      chromeos.multidevice.mojom.SoftwareFeature feature,
+      FeatureStatusChange status_change) => (NetworkRequestResult result_code);
 
   // Finds devices which are eligible for the given feature. When this function
   // is invoked, a network request will be sent to each eligible device which
@@ -136,31 +187,44 @@ interface DeviceSync {
   // On success, this function returns a null error_code with a valid response
   // to the callback; on error, it returns a valid error_code string indicating
   // the reason for failure along with a null response.
+  //
+  // TODO(https://crbug.com/1019206): Remove this function when v1 DeviceSync
+  // is deprecated.
   FindEligibleDevices(
       chromeos.multidevice.mojom.SoftwareFeature software_feature) =>
           (NetworkRequestResult result_code,
            FindEligibleDevicesResponse? response);
+
+  // Sends a GCM message--via CryptAuth--to devices with Instance IDs
+  // |device_instance_ids|. The message includes the CryptAuth
+  // service--Enrollment or DeviceSync--and the feature
+  // type--kBetterTogetherHost, for example--indicating the reason for the
+  // notification; these are specified by |cryptauth_service| and |feature|,
+  // respectively.
+  NotifyDevices(
+      array<string> device_instance_ids,
+      CryptAuthService cryptauth_service,
+      chromeos.multidevice.mojom.SoftwareFeature feature) =>
+    (NetworkRequestResult result_code);
+
+  // Retrieves the activity status of the user's devices. When this function
+  // is invoked, a network request will be sent to the CryptAuth server to
+  // retrieve the last time a device was used.
+  //
+  // On success, this function returns a null error_code with the activity
+  // statuses to the callback; on error, it returns a valid error_code string
+  // indicating the reason for failure along with a null activity statuses.
+  //
+  // This method is expected to be used by multidevice_setup service running
+  // in the browser process.
+  GetDevicesActivityStatus() =>
+          (NetworkRequestResult result_code,
+           array<DeviceActivityStatus>? device_activity_statuses);
 
   // Functions below are implemented for chrome://proximity-auth page, which is
   // intended for debugging purposes only.
   // TODO(khorimoto): Determine whether a new, debug-only interface should be
   //                  refactored out of DeviceSync.
   GetDebugInfo() => (DebugInfo? debug_info);
-};
-
-// The main interface to the Device Sync service, used to initialized a new
-// instance of the service.
-interface DeviceSyncServiceInitializer {
-  // Initializes the service instance, binding a DeviceSyncService endpoint
-  // with access to a given PrefStoreConnector.
-  Initialize(
-      pending_receiver<DeviceSyncService> receiver,
-      pending_remote<prefs.mojom.PrefStoreConnector> pref_store_connector);
-};
-
-// The main interface to the Device Sync service.
-interface DeviceSyncService {
-  // Binds a new DeviceSync endpoint.
-  BindDeviceSync(pending_receiver<DeviceSync> receiver);
 };
 

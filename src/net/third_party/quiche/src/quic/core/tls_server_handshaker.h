@@ -34,10 +34,6 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
 
   ~TlsServerHandshaker() override;
 
-  // Creates and configures an SSL_CTX to be used with a TlsServerHandshaker.
-  // The caller is responsible for ownership of the newly created struct.
-  static bssl::UniquePtr<SSL_CTX> CreateSslCtx();
-
   // From QuicCryptoServerStream::HandshakerDelegate
   void CancelOutstandingCallbacks() override;
   bool GetBase64SHA256ClientChannelID(std::string* output) const override;
@@ -50,6 +46,7 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   bool ZeroRttAttempted() const override;
   void SetPreviousCachedNetworkParams(
       CachedNetworkParameters cached_network_params) override;
+  void OnPacketDecrypted(EncryptionLevel level) override;
   bool ShouldSendExpectCTHeader() const override;
 
   // From QuicCryptoServerStream::HandshakerDelegate and TlsHandshaker
@@ -88,7 +85,8 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   TlsConnection::Delegate* ConnectionDelegate() override { return this; }
 
  private:
-  class SignatureCallback : public ProofSource::SignatureCallback {
+  class QUIC_EXPORT_PRIVATE SignatureCallback
+      : public ProofSource::SignatureCallback {
    public:
     explicit SignatureCallback(TlsServerHandshaker* handshaker);
     void Run(bool ok, std::string signature) override;
@@ -104,6 +102,7 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
     STATE_LISTENING,
     STATE_SIGNATURE_PENDING,
     STATE_SIGNATURE_COMPLETE,
+    STATE_ENCRYPTION_HANDSHAKE_DATA_PROCESSED,
     STATE_HANDSHAKE_COMPLETE,
     STATE_CONNECTION_CLOSED,
   };

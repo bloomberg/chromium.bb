@@ -32,6 +32,8 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/containers/checked_iterators.h"
+#include "base/containers/checked_range.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
@@ -83,6 +85,10 @@ class BASE_EXPORT Value {
   using BlobStorage = std::vector<uint8_t>;
   using DictStorage = flat_map<std::string, std::unique_ptr<Value>>;
   using ListStorage = std::vector<Value>;
+
+  using ListView = CheckedContiguousRange<ListStorage>;
+  using ConstListView = CheckedContiguousConstRange<ListStorage>;
+
   // See technical note below explaining why this is used.
   using DoubleStorage = struct { alignas(4) char v[sizeof(double)]; };
 
@@ -111,6 +117,8 @@ class BASE_EXPORT Value {
   // Adaptors for converting from the old way to the new way and vice versa.
   static Value FromUniquePtrValue(std::unique_ptr<Value> val);
   static std::unique_ptr<Value> ToUniquePtrValue(Value val);
+  static const DictionaryValue& AsDictionaryValue(const Value& val);
+  static const ListValue& AsListValue(const Value& val);
 
   Value(Value&& that) noexcept;
   Value() noexcept {}  // A null value
@@ -144,7 +152,7 @@ class BASE_EXPORT Value {
   explicit Value(const DictStorage& in_dict);
   explicit Value(DictStorage&& in_dict) noexcept;
 
-  explicit Value(const ListStorage& in_list);
+  explicit Value(span<const Value> in_list);
   explicit Value(ListStorage&& in_list) noexcept;
 
   Value& operator=(Value&& that) noexcept;
@@ -176,7 +184,61 @@ class BASE_EXPORT Value {
   const BlobStorage& GetBlob() const;
 
   ListStorage& GetList();
-  const ListStorage& GetList() const;
+  ConstListView GetList() const;
+
+  // Transfers ownership of the the underlying list to the caller. Subsequent
+  // calls to GetList() will return an empty list.
+  // Note: This CHECKs that type() is Type::LIST.
+  ListStorage TakeList();
+
+  // Appends |value| to the end of the list.
+  // Note: These CHECK that type() is Type::LIST.
+  void Append(bool value);
+  void Append(int value);
+  void Append(double value);
+  void Append(const char* value);
+  void Append(StringPiece value);
+  void Append(std::string&& value);
+  void Append(const char16* value);
+  void Append(StringPiece16 value);
+  void Append(Value&& value);
+
+  // Inserts |value| before |pos|.
+  // Note: These CHECK that type() is Type::LIST.
+  // TODO(crbug.com/990059): Remove ListStorage::const_iterator overload once
+  // mutable GetList() returns a base::span.
+  ListStorage::iterator Insert(ListStorage::const_iterator pos, Value&& value);
+  CheckedContiguousIterator<Value> Insert(
+      CheckedContiguousConstIterator<Value> pos,
+      Value&& value);
+
+  // Erases the Value pointed to by |iter|. Returns false if |iter| is out of
+  // bounds.
+  // Note: This CHECKs that type() is Type::LIST.
+  // TODO(crbug.com/990059): Remove ListStorage::const_iterator overload once
+  // mutable GetList() returns a base::span.
+  bool EraseListIter(ListStorage::const_iterator iter);
+  bool EraseListIter(CheckedContiguousConstIterator<Value> iter);
+
+  // Erases all Values that compare equal to |val|. Returns the number of
+  // deleted Values.
+  // Note: This CHECKs that type() is Type::LIST.
+  size_t EraseListValue(const Value& val);
+
+  // Erases all Values for which |pred| returns true. Returns the number of
+  // deleted Values.
+  // Note: This CHECKs that type() is Type::LIST.
+  template <typename Predicate>
+  size_t EraseListValueIf(Predicate pred) {
+    CHECK(is_list());
+    const size_t old_size = list_.size();
+    base::EraseIf(list_, pred);
+    return old_size - list_.size();
+  }
+
+  // Erases all Values from the list.
+  // Note: This CHECKs that type() is Type::LIST.
+  void ClearList();
 
   // |FindKey| looks up |key| in the underlying dictionary. If found, it returns
   // a pointer to the element. Otherwise it returns nullptr.
@@ -723,11 +785,11 @@ class BASE_EXPORT ListValue : public Value {
   static std::unique_ptr<ListValue> From(std::unique_ptr<Value> value);
 
   ListValue();
-  explicit ListValue(const ListStorage& in_list);
+  explicit ListValue(span<const Value> in_list);
   explicit ListValue(ListStorage&& in_list) noexcept;
 
   // Clears the contents of this ListValue
-  // DEPRECATED, use GetList()::clear() instead.
+  // DEPRECATED, use ClearList() instead.
   void Clear();
 
   // Returns the number of Values in this list.
@@ -803,29 +865,31 @@ class BASE_EXPORT ListValue : public Value {
   // DEPRECATED, use GetList()::erase() instead.
   iterator Erase(iterator iter, std::unique_ptr<Value>* out_value);
 
+  using Value::Append;
   // Appends a Value to the end of the list.
-  // DEPRECATED, use GetList()::push_back() instead.
+  // DEPRECATED, use Value::Append() instead.
   void Append(std::unique_ptr<Value> in_value);
 
   // Convenience forms of Append.
-  // DEPRECATED, use GetList()::emplace_back() instead.
+  // DEPRECATED, use Value::Append() instead.
   void AppendBoolean(bool in_value);
   void AppendInteger(int in_value);
   void AppendDouble(double in_value);
   void AppendString(StringPiece in_value);
   void AppendString(const string16& in_value);
-  // DEPRECATED, use GetList()::emplace_back() in a loop instead.
+  // DEPRECATED, use Value::Append() in a loop instead.
   void AppendStrings(const std::vector<std::string>& in_values);
   void AppendStrings(const std::vector<string16>& in_values);
 
   // Appends a Value if it's not already present. Returns true if successful,
   // or false if the value was already
-  // DEPRECATED, use std::find() with GetList()::push_back() instead.
+  // DEPRECATED, use std::find() with Value::Append() instead.
   bool AppendIfNotPresent(std::unique_ptr<Value> in_value);
 
+  using Value::Insert;
   // Insert a Value at index.
   // Returns true if successful, or false if the index was out of range.
-  // DEPRECATED, use GetList()::insert() instead.
+  // DEPRECATED, use Value::Insert() instead.
   bool Insert(size_t index, std::unique_ptr<Value> in_value);
 
   // Searches for the first instance of |value| in the list using the Equals

@@ -272,11 +272,15 @@ class GenerateAFDOArtifactStage(generic_stages.BoardSpecificBuilderStage,
           os.path.join(self._build_root, 'chroot', self.archive_path))
       if self.is_orderfile:
         artifacts = commands.GenerateAFDOArtifacts(
-            self._build_root, self._current_board,
+            self._build_root,
+            self._run.options.chrome_root,
+            self._current_board,
             output_path, toolchain_pb2.ORDERFILE)
       else:
         artifacts = commands.GenerateAFDOArtifacts(
-            self._build_root, self._current_board,
+            self._build_root,
+            self._run.options.chrome_root,
+            self._current_board,
             output_path, toolchain_pb2.BENCHMARK_AFDO)
       # The artifacts are uploaded to centralized GS bucket in the
       # APIs. Only need to upload to builder's bucket now.
@@ -337,6 +341,15 @@ class KernelAFDOUpdateEbuildStage(VerifyAFDOArtifactStage):
         **kwargs)
 
 
+class ChromeAFDOUpdateEbuildStage(VerifyAFDOArtifactStage):
+  """Updates Chrome ebuilds with latest unvetted AFDO profiles."""
+  def __init__(self, *args, **kwargs):
+    super(ChromeAFDOUpdateEbuildStage, self).__init__(
+        *args, afdo_type=toolchain_pb2.CHROME_AFDO,
+        build_api='chromite.api.ToolchainService/UpdateEbuildWithAFDOArtifacts',
+        **kwargs)
+
+
 class UploadVettedOrderfileStage(VerifyAFDOArtifactStage):
   """Upload a vetted orderfile to GS bucket."""
   def __init__(self, *args, **kwargs):
@@ -351,5 +364,14 @@ class UploadVettedKernelAFDOStage(VerifyAFDOArtifactStage):
   def __init__(self, *args, **kwargs):
     super(UploadVettedKernelAFDOStage, self).__init__(
         *args, afdo_type=toolchain_pb2.KERNEL_AFDO,
+        build_api='chromite.api.ToolchainService/UploadVettedAFDOArtifacts',
+        **kwargs)
+
+
+class UploadVettedChromeAFDOStage(VerifyAFDOArtifactStage):
+  """Upload latest Chrome AFDO profiles."""
+  def __init__(self, *args, **kwargs):
+    super(UploadVettedChromeAFDOStage, self).__init__(
+        *args, afdo_type=toolchain_pb2.CHROME_AFDO,
         build_api='chromite.api.ToolchainService/UploadVettedAFDOArtifacts',
         **kwargs)

@@ -25,6 +25,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 
 using content::NavigationController;
@@ -85,7 +86,7 @@ void SearchEngineTabHelper::WebContentsDestroyed() {
 
 SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      osdd_handler_bindings_(web_contents, this) {
+      osdd_handler_receivers_(web_contents, this) {
   DCHECK(web_contents);
 
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
@@ -101,7 +102,7 @@ void SearchEngineTabHelper::PageHasOpenSearchDescriptionDocument(
   // keyword.
 
   // Only accept messages from the main frame.
-  if (osdd_handler_bindings_.GetCurrentTargetFrame() !=
+  if (osdd_handler_receivers_.GetCurrentTargetFrame() !=
       web_contents()->GetMainFrame())
     return;
 
@@ -137,15 +138,15 @@ void SearchEngineTabHelper::PageHasOpenSearchDescriptionDocument(
     return;
 
   auto* frame = web_contents()->GetMainFrame();
-  network::mojom::URLLoaderFactoryPtr url_loader_factory;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory;
   frame->CreateNetworkServiceDefaultFactory(
-      mojo::MakeRequest(&url_loader_factory));
+      url_loader_factory.BindNewPipeAndPassReceiver());
 
   // Download the OpenSearch description document. If this is successful, a
   // new keyword will be created when done.
   TemplateURLFetcherFactory::GetForProfile(profile)->ScheduleDownload(
       keyword, osdd_url, entry->GetFavicon().url,
-      url::Origin::Create(web_contents()->GetURL()), url_loader_factory.get(),
+      frame->GetLastCommittedOrigin(), url_loader_factory.get(),
       frame->GetRoutingID(),
       static_cast<int>(content::ResourceType::kSubResource));
 }

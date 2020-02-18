@@ -18,14 +18,17 @@ perfetto_proto_library("@TYPE@") {
   sources = [
     "batt_metric.proto",
     "cpu_metric.proto",
-    "heap_profile_callsite_stats.proto",
+    "heap_profile_callsites.proto",
     "ion_metric.proto",
+    "java_heap_stats.proto",
     "lmk_metric.proto",
+    "lmk_reason_metric.proto",
     "mem_metric.proto",
     "mem_unagg_metric.proto",
     "package_list.proto",
     "powrails_metric.proto",
-    "process_growth.proto",
+    "process_metadata.proto",
     "startup_metric.proto",
+    "unsymbolized_frames.proto",
   ]
 }

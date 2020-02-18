@@ -14,8 +14,8 @@ import "mojo/public/mojom/base/time.mojom";
 interface DriveFsBootstrap {
   // Initialize a DriveFS instance with its configuration and mojo connections
   // to the browser.
-  Init(DriveFsConfiguration config, DriveFs& drive_fs,
-       DriveFsDelegate delegate);
+  Init(DriveFsConfiguration config, pending_receiver<DriveFs> drive_fs,
+       pending_remote<DriveFsDelegate> delegate);
 };
 
 // Implemented by DriveFS, used from Chrome.
@@ -49,13 +49,24 @@ interface DriveFs {
       (FileError error);
 
   // Start a search query with given parameters.
-  StartSearchQuery(SearchQuery& query, QueryParameters query_params);
+  StartSearchQuery(pending_receiver<SearchQuery> query,
+                   QueryParameters query_params);
 
   // Fetches all changelogs, i.e. for My Drive and all Team Drives.
   FetchAllChangeLogs();
 
   // Fetches the changelog(s) using the provided |options|.
   FetchChangeLog(array<FetchChangeLogOptions> options);
+
+  // Send a native message |request| to DriveFS. |request| is a DriveFS
+  // specific message that looks like "native_opener/v2/$command_id/$message",
+  // where $command_id is an integer and $message is the base64 encoding of a
+  // JSPB encoded proto message.
+  //
+  // |response| is only filled out if |error| is kOk, and returns a JSPB
+  // encoded proto message.
+  SendNativeMessageRequest(string request) => (
+      FileError error, string response);
 };
 
 // Implemented by Chrome, used from DriveFS.

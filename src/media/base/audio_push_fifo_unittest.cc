@@ -25,7 +25,7 @@ class AudioPushFifoTest : public testing::TestWithParam<int> {
   int output_chunk_size() const { return GetParam(); }
 
   void SetUp() final {
-    fifo_.reset(new AudioPushFifo(base::Bind(
+    fifo_.reset(new AudioPushFifo(base::BindRepeating(
         &AudioPushFifoTest::ReceiveAndCheckNextChunk, base::Unretained(this))));
     fifo_->Reset(output_chunk_size());
     ASSERT_EQ(output_chunk_size(), fifo_->frames_per_buffer());
@@ -230,7 +230,7 @@ TEST_P(AudioPushFifoTest, PushArbitraryNumbersOfFramesAtATime) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AudioPushFifoTest,
                          ::testing::Values(
                              // 1 ms output chunks at common sample rates.

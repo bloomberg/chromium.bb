@@ -5,22 +5,25 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.Context;
-import android.support.annotation.StringRes;
 import android.text.format.DateUtils;
+
+import androidx.annotation.StringRes;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
-import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 /**
  * Shows a card prompting the user to sign in. This item is also an {@link OptionalLeaf}, and sign
@@ -65,7 +68,9 @@ public class SignInPromo extends OptionalLeaf {
     protected SignInPromo(SigninManager signinManager) {
         Context context = ContextUtils.getApplicationContext();
 
-        mCanSignIn = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
+        // TODO(bsazonov): Signin manager should check for native status in isSignInAllowed
+        mCanSignIn = signinManager.isSignInAllowed()
+                && !signinManager.getIdentityManager().hasPrimaryAccount();
         mAccountsReady = AccountManagerFacade.get().isCachePopulated();
         updateVisibility();
 
@@ -104,8 +109,8 @@ public class SignInPromo extends OptionalLeaf {
     /** @return Whether the {@link SignInPromo} should be created. */
     public static boolean shouldCreatePromo() {
         return !sDisablePromoForTests
-                && !ChromePreferenceManager.getInstance().readBoolean(
-                        ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false)
+                && !SharedPreferencesManager.getInstance().readBoolean(
+                        ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false)
                 && !getSuppressionStatus();
     }
 
@@ -160,8 +165,8 @@ public class SignInPromo extends OptionalLeaf {
         mDismissed = true;
         updateVisibility();
 
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, true);
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, true);
 
         final @StringRes int promoHeader = mSigninPromoController.getDescriptionStringId();
 

@@ -10,18 +10,17 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
-class SkBitmap;
-
 namespace blink {
 class KURL;
 class LocalFrame;
 class WebAssociatedURLLoader;
+class WebString;
 class WebURLResponse;
 
 // A resource fetcher that returns all (differently-sized) frames in
@@ -30,8 +29,11 @@ class MultiResolutionImageResourceFetcher {
   USING_FAST_MALLOC(MultiResolutionImageResourceFetcher);
 
  public:
+  // The std::string arguments are, in order, the data and the MIME type
+  // (Content-Type) of the response.
   using Callback = base::OnceCallback<void(MultiResolutionImageResourceFetcher*,
-                                           const WTF::Vector<SkBitmap>&)>;
+                                           const std::string& data,
+                                           const WebString& mime_type)>;
 
   // This will be called asynchronously after the URL has been fetched,
   // successfully or not.  If there is a failure, response and data will both be
@@ -43,18 +45,11 @@ class MultiResolutionImageResourceFetcher {
   MultiResolutionImageResourceFetcher(
       const KURL& image_url,
       LocalFrame* frame,
-      int id,
       mojom::blink::RequestContextType request_context,
       mojom::blink::FetchCacheMode cache_mode,
       Callback callback);
 
   virtual ~MultiResolutionImageResourceFetcher();
-
-  // URL of the image we're downloading.
-  const KURL& image_url() const { return image_url_; }
-
-  // Unique identifier for the request.
-  int id() const { return id_; }
 
   // HTTP status code upon fetch completion.
   int http_status_code() const { return http_status_code_; }
@@ -65,7 +60,8 @@ class MultiResolutionImageResourceFetcher {
  private:
   class ClientImpl;
 
-  // ResourceFetcher::Callback. Decodes the image and invokes callback_.
+  // ResourceFetcher::Callback. Checks if the fetch succeeded and invokes
+  // |callback_|.
   void OnURLFetchComplete(const WebURLResponse& response,
                           const std::string& data);
 
@@ -95,14 +91,8 @@ class MultiResolutionImageResourceFetcher {
 
   Callback callback_;
 
-  // Unique identifier for the request.
-  const int id_;
-
   // HTTP status code upon fetch completion.
   int http_status_code_;
-
-  // URL of the image.
-  const KURL image_url_;
 
   std::unique_ptr<WebAssociatedURLLoader> loader_;
   std::unique_ptr<ClientImpl> client_;

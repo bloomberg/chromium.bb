@@ -19,7 +19,7 @@ class TestCreateGroups(cros_test_lib.TestCase):
 
   def _CrosSdk(self):
     cmd = ['cros_sdk', '--', 'sleep', '0.001']
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.run(cmd)
 
   def testCreateGroups(self):
     """Run many cros_sdk processes in parallel to test for race conditions."""

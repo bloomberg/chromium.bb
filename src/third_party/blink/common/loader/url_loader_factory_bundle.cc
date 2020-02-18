@@ -26,39 +26,39 @@ void BindPendingRemoteMapToRemoteMap(
         it.second;
     if ((*target)[key].is_bound())
       (*target)[key].reset();
-    if (pending_factory)  // factory_info.is_valid().
+    if (pending_factory)  // pending_factory.is_valid().
       (*target)[key].Bind(std::move(pending_factory));
   }
 }
 
 }  // namespace
 
-URLLoaderFactoryBundleInfo::URLLoaderFactoryBundleInfo() = default;
+PendingURLLoaderFactoryBundle::PendingURLLoaderFactoryBundle() = default;
 
-URLLoaderFactoryBundleInfo::URLLoaderFactoryBundleInfo(
+PendingURLLoaderFactoryBundle::PendingURLLoaderFactoryBundle(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_default_factory,
     SchemeMap pending_scheme_specific_factories,
-    OriginMap pending_initiator_specific_factories,
+    OriginMap pending_isolated_world_factories,
     bool bypass_redirect_checks)
     : pending_default_factory_(std::move(pending_default_factory)),
       pending_scheme_specific_factories_(
           std::move(pending_scheme_specific_factories)),
-      pending_initiator_specific_factories_(
-          std::move(pending_initiator_specific_factories)),
+      pending_isolated_world_factories_(
+          std::move(pending_isolated_world_factories)),
       bypass_redirect_checks_(bypass_redirect_checks) {}
 
-URLLoaderFactoryBundleInfo::~URLLoaderFactoryBundleInfo() = default;
+PendingURLLoaderFactoryBundle::~PendingURLLoaderFactoryBundle() = default;
 
 scoped_refptr<network::SharedURLLoaderFactory>
-URLLoaderFactoryBundleInfo::CreateFactory() {
-  auto other = std::make_unique<URLLoaderFactoryBundleInfo>();
+PendingURLLoaderFactoryBundle::CreateFactory() {
+  auto other = std::make_unique<PendingURLLoaderFactoryBundle>();
   other->pending_default_factory_ = std::move(pending_default_factory_);
   other->pending_appcache_factory_ = std::move(pending_appcache_factory_);
   other->pending_scheme_specific_factories_ =
       std::move(pending_scheme_specific_factories_);
-  other->pending_initiator_specific_factories_ =
-      std::move(pending_initiator_specific_factories_);
+  other->pending_isolated_world_factories_ =
+      std::move(pending_isolated_world_factories_);
   other->bypass_redirect_checks_ = bypass_redirect_checks_;
 
   return base::MakeRefCounted<URLLoaderFactoryBundle>(std::move(other));
@@ -69,8 +69,8 @@ URLLoaderFactoryBundleInfo::CreateFactory() {
 URLLoaderFactoryBundle::URLLoaderFactoryBundle() = default;
 
 URLLoaderFactoryBundle::URLLoaderFactoryBundle(
-    std::unique_ptr<URLLoaderFactoryBundleInfo> info) {
-  Update(std::move(info));
+    std::unique_ptr<PendingURLLoaderFactoryBundle> pending_factory) {
+  Update(std::move(pending_factory));
 }
 
 URLLoaderFactoryBundle::~URLLoaderFactoryBundle() = default;
@@ -81,10 +81,10 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactory(
   if (it != scheme_specific_factories_.end())
     return it->second.get();
 
-  if (request.request_initiator.has_value()) {
+  if (request.isolated_world_origin.has_value()) {
     auto it2 =
-        initiator_specific_factories_.find(request.request_initiator.value());
-    if (it2 != initiator_specific_factories_.end())
+        isolated_world_factories_.find(request.isolated_world_origin.value());
+    if (it2 != isolated_world_factories_.end())
       return it2->second.get();
   }
 
@@ -92,16 +92,16 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactory(
   if (appcache_factory_)
     return appcache_factory_.get();
 
-  return default_factory_.get();
+  return default_factory_.is_bound() ? default_factory_.get() : nullptr;
 }
 
 void URLLoaderFactoryBundle::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   network::mojom::URLLoaderFactory* factory_ptr = GetFactory(request);
   factory_ptr->CreateLoaderAndStart(std::move(loader), routing_id, request_id,
@@ -110,11 +110,11 @@ void URLLoaderFactoryBundle::CreateLoaderAndStart(
 }
 
 void URLLoaderFactoryBundle::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   NOTREACHED();
 }
 
-std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+std::unique_ptr<network::PendingSharedURLLoaderFactory>
 URLLoaderFactoryBundle::Clone() {
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
   if (default_factory_) {
@@ -122,11 +122,12 @@ URLLoaderFactoryBundle::Clone() {
         pending_default_factory.InitWithNewPipeAndPassReceiver());
   }
 
-  auto pending_factories = std::make_unique<blink::URLLoaderFactoryBundleInfo>(
-      std::move(pending_default_factory),
-      CloneRemoteMapToPendingRemoteMap(scheme_specific_factories_),
-      CloneRemoteMapToPendingRemoteMap(initiator_specific_factories_),
-      bypass_redirect_checks_);
+  auto pending_factories =
+      std::make_unique<blink::PendingURLLoaderFactoryBundle>(
+          std::move(pending_default_factory),
+          CloneRemoteMapToPendingRemoteMap(scheme_specific_factories_),
+          CloneRemoteMapToPendingRemoteMap(isolated_world_factories_),
+          bypass_redirect_checks_);
 
   if (appcache_factory_) {
     appcache_factory_->Clone(pending_factories->pending_appcache_factory()
@@ -141,12 +142,14 @@ bool URLLoaderFactoryBundle::BypassRedirectChecks() const {
 }
 
 void URLLoaderFactoryBundle::Update(
-    std::unique_ptr<URLLoaderFactoryBundleInfo> pending_factories) {
+    std::unique_ptr<PendingURLLoaderFactoryBundle> pending_factories) {
   if (pending_factories->pending_default_factory()) {
+    default_factory_.reset();
     default_factory_.Bind(
         std::move(pending_factories->pending_default_factory()));
   }
   if (pending_factories->pending_appcache_factory()) {
+    appcache_factory_.reset();
     appcache_factory_.Bind(
         std::move(pending_factories->pending_appcache_factory()));
   }
@@ -154,8 +157,8 @@ void URLLoaderFactoryBundle::Update(
       &scheme_specific_factories_,
       std::move(pending_factories->pending_scheme_specific_factories()));
   BindPendingRemoteMapToRemoteMap(
-      &initiator_specific_factories_,
-      std::move(pending_factories->pending_initiator_specific_factories()));
+      &isolated_world_factories_,
+      std::move(pending_factories->pending_isolated_world_factories()));
   bypass_redirect_checks_ = pending_factories->bypass_redirect_checks();
 }
 

@@ -23,6 +23,10 @@
 #include "chrome/updater/win/net/network.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/updater/mac/net/network.h"
+#endif
+
 namespace {
 
 // Default time constants.
@@ -98,14 +102,10 @@ std::string Configurator::GetDownloadPreference() const {
 
 scoped_refptr<update_client::NetworkFetcherFactory>
 Configurator::GetNetworkFetcherFactory() {
-#if defined(OS_WIN)
   if (!network_fetcher_factory_) {
     network_fetcher_factory_ = base::MakeRefCounted<NetworkFetcherFactory>();
   }
   return network_fetcher_factory_;
-#else
-  return nullptr;
-#endif
 }
 
 scoped_refptr<update_client::UnzipperFactory>
@@ -146,22 +146,9 @@ bool Configurator::IsPerUserInstall() const {
   return true;
 }
 
-std::vector<uint8_t> Configurator::GetRunActionKeyHash() const {
-  return {};
-}
-
-std::string Configurator::GetAppGuid() const {
-  return {};
-}
-
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 Configurator::GetProtocolHandlerFactory() const {
   return std::make_unique<update_client::ProtocolHandlerFactoryJSON>();
-}
-
-update_client::RecoveryCRXElevator Configurator::GetRecoveryCRXElevator()
-    const {
-  return {};
 }
 
 }  // namespace updater

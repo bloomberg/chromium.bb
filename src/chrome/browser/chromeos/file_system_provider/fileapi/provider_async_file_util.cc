@@ -4,20 +4,23 @@
 
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/shareable_file_reference.h"
-#include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_operation_context.h"
+#include "storage/browser/file_system/file_system_url.h"
 
 using content::BrowserThread;
 
@@ -108,6 +111,23 @@ void OnReadDirectory(storage::AsyncFileUtil::ReadDirectoryCallback callback,
                      base::File::Error result,
                      storage::AsyncFileUtil::EntryList entry_list,
                      bool has_more) {
+  auto new_end_it =
+      std::remove_if(entry_list.begin(), entry_list.end(),
+                     [](const filesystem::mojom::DirectoryEntry& entry) {
+                       if (!filesystem::mojom::IsKnownEnumValue(entry.type)) {
+                         return true;
+                       }
+                       if (entry.name.empty() || entry.name.value() == "." ||
+                           entry.name.value() == ".." ||
+                           base::Contains(entry.name.value(), '\0') ||
+                           base::Contains(entry.name.value(), '/') ||
+                           base::Contains(entry.name.value(), '\\')) {
+                         return true;
+                       }
+                       return false;
+                     });
+  entry_list.erase(new_end_it, entry_list.end());
+
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(callback, result, std::move(entry_list), has_more));

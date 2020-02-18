@@ -17,7 +17,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -82,7 +82,7 @@ std::unique_ptr<syncer::EntityData> SpecificsToEntity(
     const sync_pb::SessionSpecifics& specifics,
     base::Time mtime = base::Time::Now()) {
   auto data = std::make_unique<syncer::EntityData>();
-  data->client_tag_hash = syncer::GenerateSyncableHash(
+  data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
       syncer::SESSIONS, SessionStore::GetClientTag(specifics));
   *data->specifics.mutable_session() = specifics;
   data->modification_time = mtime;
@@ -111,7 +111,7 @@ std::unique_ptr<syncer::UpdateResponseData> CreateTombstone(
   auto tombstone = std::make_unique<syncer::EntityData>();
 
   tombstone->client_tag_hash =
-      syncer::GenerateSyncableHash(syncer::SESSIONS, client_tag);
+      syncer::ClientTagHash::FromUnhashed(syncer::SESSIONS, client_tag);
 
   auto data = std::make_unique<syncer::UpdateResponseData>();
   data->entity = std::move(tombstone);
@@ -123,7 +123,7 @@ syncer::CommitResponseData CreateSuccessResponse(
     const std::string& client_tag) {
   syncer::CommitResponseData response;
   response.client_tag_hash =
-      syncer::GenerateSyncableHash(syncer::SESSIONS, client_tag);
+      syncer::ClientTagHash::FromUnhashed(syncer::SESSIONS, client_tag);
   response.sequence_number = 1;
   return response;
 }
@@ -212,7 +212,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
     syncer::DataTypeActivationRequest request;
     request.error_handler = base::DoNothing();
     request.cache_guid = "TestCacheGuid";
-    request.authenticated_account_id = "SomeAccountId";
+    request.authenticated_account_id = CoreAccountId("SomeAccountId");
 
     base::RunLoop loop;
     real_processor_->OnSyncStarting(
@@ -322,7 +322,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
   syncer::ModelTypeStore* underlying_store() { return store_.get(); }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   const std::unique_ptr<syncer::ModelTypeStore> store_;
 
   // Dependencies.

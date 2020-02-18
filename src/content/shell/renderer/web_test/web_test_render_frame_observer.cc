@@ -24,7 +24,7 @@ namespace content {
 
 WebTestRenderFrameObserver::WebTestRenderFrameObserver(
     RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame), binding_(this) {
+    : RenderFrameObserver(render_frame) {
   test_runner::WebTestRunner* test_runner =
       WebTestRenderThreadObserver::GetInstance()
           ->test_interfaces()
@@ -34,16 +34,16 @@ WebTestRenderFrameObserver::WebTestRenderFrameObserver(
   render_frame->GetWebFrame()->SetTextCheckClient(
       test_runner->GetWebTextCheckClient());
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
-      base::BindRepeating(&WebTestRenderFrameObserver::BindRequest,
+      base::BindRepeating(&WebTestRenderFrameObserver::BindReceiver,
                           base::Unretained(this)));
 }
 
 WebTestRenderFrameObserver::~WebTestRenderFrameObserver() = default;
 
-void WebTestRenderFrameObserver::BindRequest(
-    mojom::WebTestControlAssociatedRequest request) {
-  binding_.Bind(std::move(request),
-                blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+void WebTestRenderFrameObserver::BindReceiver(
+    mojo::PendingAssociatedReceiver<mojom::WebTestControl> receiver) {
+  receiver_.Bind(std::move(receiver),
+                 blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 }
 
 void WebTestRenderFrameObserver::ReadyToCommitNavigation(
@@ -67,8 +67,7 @@ void WebTestRenderFrameObserver::DidCommitProvisionalLoad(
       ->DidCommitNavigationInMainFrame();
 }
 
-void WebTestRenderFrameObserver::DidFailProvisionalLoad(
-    const blink::WebURLError& error) {
+void WebTestRenderFrameObserver::DidFailProvisionalLoad() {
   if (!render_frame()->IsMainFrame())
     return;
   focus_on_next_commit_ = false;

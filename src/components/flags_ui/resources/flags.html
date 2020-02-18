@@ -20,6 +20,8 @@
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
 <script src="chrome://resources/js/util.js"></script>
+<script src="chrome://resources/js/load_time_data.js"></script>
+<script src="strings.js"></script>
 </head>
 <body>
 <div id="header">
@@ -36,16 +38,14 @@
       <button id="experiment-reset-all" type="button" tabindex="3">
           $i18n{reset}
       </button>
-      <div class="screen-reader-only" id="reset-all-success-message" role="status" aria-disabled="true">
-        $i18n{reset-acknowledged}
-      </div>
     </div>
   </div>
+  <div class="screen-reader-only" id="screen-reader-status-message" role="status"></div>
 </div>
 <div id="body-container" style="visibility:hidden">
   <div id="flagsTemplate">
     <div class="flex-container">
-      <div class="flex"><h1 class="section-header-title">$i18n{title}</h1></div>
+      <div class="flex"><h1 class="section-header-title">$i18n{heading}</h1></div>
       <span id="version" class="flex">$i18n{version}</span>
     </div>
     <div class="blurb-container">
@@ -215,7 +215,7 @@
         <div class="flex restart-notice" jstcache="0">$i18n{flagsRestartNotice}</div>
         <div class="flex">
 <if expr="not is_ios">
-          <button id="experiment-restart-button" class="primary" tabindex="9">
+          <button id="experiment-restart-button" class="primary" tabindex="-1">
             $i18n{relaunch}
           </button>
 </if>
@@ -224,7 +224,7 @@
     </div>
   </div>
 </div>
-<script src="chrome://flags/flags.js"></script>
+<script src="flags.js"></script>
 <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 </body>
 </html>

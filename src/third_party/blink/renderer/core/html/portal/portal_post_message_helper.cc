@@ -47,6 +47,9 @@ BlinkTransferableMessage PortalPostMessageHelper::CreateMessage(
   if (exception_state.HadException())
     return {};
 
+  transferable_message.sender_origin =
+      execution_context->GetSecurityOrigin()->IsolatedCopy();
+
   if (ThreadDebugger* debugger =
           ThreadDebugger::From(script_state->GetIsolate())) {
     transferable_message.sender_stack_trace_id =
@@ -67,11 +70,10 @@ void PortalPostMessageHelper::CreateAndDispatchMessageEvent(
     scoped_refptr<const SecurityOrigin> source_origin,
     scoped_refptr<const SecurityOrigin> target_origin) {
   DCHECK(event_target->ToPortalHost() ||
-         (event_target->ToNode() &&
-          ToHTMLPortalElementOrNull(event_target->ToNode())));
+         IsA<HTMLPortalElement>(event_target->ToNode()));
 
   if (target_origin &&
-      !target_origin->IsSameSchemeHostPort(
+      !target_origin->IsSameOriginWith(
           event_target->GetExecutionContext()->GetSecurityOrigin())) {
     return;
   }

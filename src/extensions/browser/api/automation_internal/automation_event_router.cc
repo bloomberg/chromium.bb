@@ -15,7 +15,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/automation_internal/automation_internal_api_delegate.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"
@@ -39,10 +38,6 @@ AutomationEventRouter::AutomationEventRouter()
     : active_context_(ExtensionsAPIClient::Get()
                           ->GetAutomationInternalApiDelegate()
                           ->GetActiveUserContext()) {
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 #if defined(USE_AURA)
   // Not reset because |this| is leaked.
   ExtensionsAPIClient::Get()
@@ -201,6 +196,7 @@ void AutomationEventRouter::Register(const ExtensionId& extension_id,
     if (!desktop)
       listener.tree_ids.insert(ax_tree_id);
     listeners_.push_back(listener);
+    rph_observers_.Add(content::RenderProcessHost::FromID(listener_process_id));
     UpdateActiveProfile();
     return;
   }
@@ -227,22 +223,19 @@ void AutomationEventRouter::DispatchAccessibilityEvents(
   DispatchAccessibilityEvents(event_bundle);
 }
 
-void AutomationEventRouter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type != content::NOTIFICATION_RENDERER_PROCESS_TERMINATED &&
-      type != content::NOTIFICATION_RENDERER_PROCESS_CLOSED) {
-    NOTREACHED();
-    return;
-  }
+void AutomationEventRouter::RenderProcessExited(
+    content::RenderProcessHost* host,
+    const content::ChildProcessTerminationInfo& info) {
+  RenderProcessHostDestroyed(host);
+}
 
-  content::RenderProcessHost* rph =
-      content::Source<content::RenderProcessHost>(source).ptr();
-  int process_id = rph->GetID();
+void AutomationEventRouter::RenderProcessHostDestroyed(
+    content::RenderProcessHost* host) {
+  int process_id = host->GetID();
   base::EraseIf(listeners_, [process_id](const AutomationListener& item) {
     return item.process_id == process_id;
   });
+  rph_observers_.Remove(host);
   UpdateActiveProfile();
 }
 

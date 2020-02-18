@@ -7,107 +7,72 @@
 
 #include "modules/particles/include/SkParticleBinding.h"
 
+#include "include/core/SkBitmap.h"
 #include "include/core/SkContourMeasure.h"
+#include "include/core/SkImage.h"
 #include "include/core/SkPath.h"
 #include "include/utils/SkParsePath.h"
 #include "include/utils/SkRandom.h"
 #include "include/utils/SkTextUtils.h"
-#include "modules/particles/include/SkCurve.h"
+#include "modules/particles/include/SkParticleEffect.h"
 #include "modules/particles/include/SkReflected.h"
+#include "modules/skresources/include/SkResources.h"
 #include "src/sksl/SkSLCompiler.h"
 
 void SkParticleBinding::visitFields(SkFieldVisitor* v) {
     v->visit("Name", fName);
 }
 
-// Exposes an SkCurve as an external, callable value. c(x) returns a float.
-class SkCurveExternalValue : public SkParticleExternalValue {
+class SkEffectExternalValue : public SkParticleExternalValue {
 public:
-    SkCurveExternalValue(const char* name, SkSL::Compiler& compiler, const SkCurve& curve)
-        : SkParticleExternalValue(name, compiler, *compiler.context().fFloat_Type)
-        , fCurve(curve) { }
+    SkEffectExternalValue(const char* name, SkSL::Compiler& compiler,
+                          sk_sp<SkParticleEffectParams> params)
+        : SkParticleExternalValue(name, compiler, *compiler.context().fVoid_Type)
+        , fParams(std::move(params)) {}
 
     bool canCall() const override { return true; }
     int callParameterCount() const override { return 1; }
     void getCallParameterTypes(const SkSL::Type** outTypes) const override {
-        outTypes[0] = fCompiler.context().fFloat_Type.get();
+        outTypes[0] = fCompiler.context().fBool_Type.get();
     }
 
     void call(int index, float* arguments, float* outReturn) override {
-        *outReturn = fCurve.eval(*arguments, fRandom[index]);
+        bool loop = ((int*)arguments)[0] != 0;
+        fEffect->addSpawnRequest(index, loop, fParams);
     }
 
 private:
-    SkCurve fCurve;
+    sk_sp<SkParticleEffectParams> fParams;
 };
 
-class SkCurveBinding : public SkParticleBinding {
+class SkEffectBinding : public SkParticleBinding {
 public:
-    SkCurveBinding(const char* name = "", const SkCurve& curve = 0.0f)
-        : SkParticleBinding(name)
-        , fCurve(curve) {}
+    SkEffectBinding(const char* name = "", sk_sp<SkParticleEffectParams> params = nullptr)
+            : SkParticleBinding(name)
+            , fParams(std::move(params)) {
+        if (!fParams) {
+            fParams.reset(new SkParticleEffectParams());
+        }
+    }
 
-    REFLECTED(SkCurveBinding, SkParticleBinding)
+    REFLECTED(SkEffectBinding, SkParticleBinding)
 
     void visitFields(SkFieldVisitor* v) override {
         SkParticleBinding::visitFields(v);
-        v->visit("Curve", fCurve);
+        fParams->visitFields(v);
     }
 
     std::unique_ptr<SkParticleExternalValue> toValue(SkSL::Compiler& compiler) override {
         return std::unique_ptr<SkParticleExternalValue>(
-                new SkCurveExternalValue(fName.c_str(), compiler, fCurve));
+            new SkEffectExternalValue(fName.c_str(), compiler, fParams));
+    }
+
+    void prepare(const skresources::ResourceProvider* resourceProvider) override {
+        fParams->prepare(resourceProvider);
     }
 
 private:
-    SkCurve fCurve;
-};
-
-// Exposes an SkColorCurve as an external, callable value. c(x) returns a float4.
-class SkColorCurveExternalValue : public SkParticleExternalValue {
-public:
-    SkColorCurveExternalValue(const char* name, SkSL::Compiler& compiler, const SkColorCurve& curve)
-        : SkParticleExternalValue(name, compiler, *compiler.context().fFloat4_Type)
-        , fCurve(curve) {
-    }
-
-    bool canCall() const override { return true; }
-    int callParameterCount() const override { return 1; }
-    void getCallParameterTypes(const SkSL::Type** outTypes) const override {
-        outTypes[0] = fCompiler.context().fFloat_Type.get();
-    }
-
-    void call(int index, float* arguments, float* outReturn) override {
-        SkColor4f color = fCurve.eval(*arguments, fRandom[index]);
-        memcpy(outReturn, color.vec(), 4 * sizeof(float));
-    }
-
-private:
-    SkColorCurve fCurve;
-};
-
-class SkColorCurveBinding : public SkParticleBinding {
-public:
-    SkColorCurveBinding(const char* name = "",
-                        const SkColorCurve& curve = SkColor4f{ 1.0f, 1.0f, 1.0f, 1.0f })
-        : SkParticleBinding(name)
-        , fCurve(curve) {
-    }
-
-    REFLECTED(SkColorCurveBinding, SkParticleBinding)
-
-        void visitFields(SkFieldVisitor* v) override {
-        SkParticleBinding::visitFields(v);
-        v->visit("Curve", fCurve);
-    }
-
-    std::unique_ptr<SkParticleExternalValue> toValue(SkSL::Compiler& compiler) override {
-        return std::unique_ptr<SkParticleExternalValue>(
-            new SkColorCurveExternalValue(fName.c_str(), compiler, fCurve));
-    }
-
-private:
-    SkColorCurve fCurve;
+    sk_sp<SkParticleEffectParams> fParams;
 };
 
 struct SkPathContours {
@@ -142,11 +107,12 @@ public:
     void call(int index, float* arguments, float* outReturn) override {
         SkScalar len = fPath->fTotalLength * arguments[0];
         int idx = 0;
-        while (idx < fPath->fContours.count() && len > fPath->fContours[idx]->length()) {
+        while (idx < fPath->fContours.count() - 1 && len > fPath->fContours[idx]->length()) {
             len -= fPath->fContours[idx++]->length();
         }
         SkVector localXAxis;
-        if (!fPath->fContours[idx]->getPosTan(len, (SkPoint*)outReturn, &localXAxis)) {
+        if (idx >= fPath->fContours.count() ||
+            !fPath->fContours[idx]->getPosTan(len, (SkPoint*)outReturn, &localXAxis)) {
             outReturn[0] = outReturn[1] = 0.0f;
             localXAxis = { 1, 0 };
         }
@@ -160,23 +126,17 @@ private:
 
 class SkPathBinding : public SkParticleBinding {
 public:
-    SkPathBinding(const char* name = "", const char* path = "")
+    SkPathBinding(const char* name = "", const char* pathPath = "", const char* pathName = "")
             : SkParticleBinding(name)
-            , fPath(path) {
-        this->rebuild();
-    }
+            , fPathPath(pathPath)
+            , fPathName(pathName) {}
 
     REFLECTED(SkPathBinding, SkParticleBinding)
 
     void visitFields(SkFieldVisitor* v) override {
-        SkString oldPath = fPath;
-
         SkParticleBinding::visitFields(v);
-        v->visit("Path", fPath);
-
-        if (fPath != oldPath) {
-            this->rebuild();
-        }
+        v->visit("PathPath", fPathPath);
+        v->visit("PathName", fPathName);
     }
 
     std::unique_ptr<SkParticleExternalValue> toValue(SkSL::Compiler& compiler) override {
@@ -184,15 +144,18 @@ public:
             new SkPathExternalValue(fName.c_str(), compiler, &fContours));
     }
 
-private:
-    SkString fPath;
-
-    void rebuild() {
-        SkPath path;
-        if (SkParsePath::FromSVGString(fPath.c_str(), &path)) {
-            fContours.rebuild(path);
+    void prepare(const skresources::ResourceProvider* resourceProvider) override {
+        if (auto pathData = resourceProvider->load(fPathPath.c_str(), fPathName.c_str())) {
+            SkPath path;
+            if (0 != path.readFromMemory(pathData->data(), pathData->size())) {
+                fContours.rebuild(path);
+            }
         }
     }
+
+private:
+    SkString fPathPath;
+    SkString fPathName;
 
     // Cached
     SkPathContours fContours;
@@ -203,23 +166,14 @@ public:
     SkTextBinding(const char* name = "", const char* text = "", SkScalar fontSize = 96)
             : SkParticleBinding(name)
             , fText(text)
-            , fFontSize(fontSize) {
-        this->rebuild();
-    }
+            , fFontSize(fontSize) {}
 
     REFLECTED(SkTextBinding, SkParticleBinding)
 
     void visitFields(SkFieldVisitor* v) override {
-        SkString oldText = fText;
-        SkScalar oldSize = fFontSize;
-
         SkParticleBinding::visitFields(v);
         v->visit("Text", fText);
         v->visit("FontSize", fFontSize);
-
-        if (fText != oldText || fFontSize != oldSize) {
-            this->rebuild();
-        }
     }
 
     std::unique_ptr<SkParticleExternalValue> toValue(SkSL::Compiler& compiler) override {
@@ -227,11 +181,7 @@ public:
             new SkPathExternalValue(fName.c_str(), compiler, &fContours));
     }
 
-private:
-    SkString fText;
-    SkScalar fFontSize;
-
-    void rebuild() {
+    void prepare(const skresources::ResourceProvider*) override {
         if (fText.isEmpty()) {
             return;
         }
@@ -242,27 +192,101 @@ private:
         fContours.rebuild(path);
     }
 
+private:
+    SkString fText;
+    SkScalar fFontSize;
+
     // Cached
     SkPathContours fContours;
 };
 
-sk_sp<SkParticleBinding> SkParticleBinding::MakeCurve(const char* name, const SkCurve& curve) {
-    return sk_sp<SkParticleBinding>(new SkCurveBinding(name, curve));
+// Exposes an SkBitmap as an external, callable value. p(xy) returns a float4
+class SkBitmapExternalValue : public SkParticleExternalValue {
+public:
+    SkBitmapExternalValue(const char* name, SkSL::Compiler& compiler, const SkBitmap& bitmap)
+            : SkParticleExternalValue(name, compiler, *compiler.context().fFloat4_Type)
+            , fBitmap(bitmap) {
+        SkASSERT(bitmap.colorType() == kRGBA_F32_SkColorType);
+    }
+
+    bool canCall() const override { return true; }
+    int callParameterCount() const override { return 1; }
+    void getCallParameterTypes(const SkSL::Type** outTypes) const override {
+        outTypes[0] = fCompiler.context().fFloat2_Type.get();
+    }
+
+    void call(int index, float* arguments, float* outReturn) override {
+        int x = SkTPin(static_cast<int>(arguments[0] * fBitmap.width()), 0, fBitmap.width() - 1);
+        int y = SkTPin(static_cast<int>(arguments[1] * fBitmap.height()), 0, fBitmap.height() - 1);
+        float* p = static_cast<float*>(fBitmap.getAddr(x, y));
+        memcpy(outReturn, p, 4 * sizeof(float));
+    }
+
+private:
+    SkBitmap fBitmap;
+};
+
+class SkImageBinding : public SkParticleBinding {
+public:
+    SkImageBinding(const char* name = "", const char* imagePath = "", const char* imageName = "")
+            : SkParticleBinding(name)
+            , fImagePath(imagePath)
+            , fImageName(imageName) {}
+
+    REFLECTED(SkImageBinding, SkParticleBinding)
+
+    void visitFields(SkFieldVisitor* v) override {
+        SkParticleBinding::visitFields(v);
+        v->visit("ImagePath", fImagePath);
+        v->visit("ImageName", fImageName);
+    }
+
+    std::unique_ptr<SkParticleExternalValue> toValue(SkSL::Compiler& compiler) override {
+        return std::unique_ptr<SkParticleExternalValue>(
+            new SkBitmapExternalValue(fName.c_str(), compiler, fBitmap));
+    }
+
+    void prepare(const skresources::ResourceProvider* resourceProvider) override {
+        if (auto asset = resourceProvider->loadImageAsset(fImagePath.c_str(), fImageName.c_str(),
+                                                          nullptr)) {
+            if (auto image = asset->getFrame(0)) {
+                fBitmap.allocPixels(image->imageInfo().makeColorType(kRGBA_F32_SkColorType));
+                image->readPixels(fBitmap.pixmap(), 0, 0);
+                return;
+            }
+        }
+
+        fBitmap.allocPixels(SkImageInfo::Make(1, 1, kRGBA_F32_SkColorType, kPremul_SkAlphaType));
+        fBitmap.eraseColor(SK_ColorWHITE);
+    }
+
+private:
+    SkString fImagePath;
+    SkString fImageName;
+
+    // Cached
+    SkBitmap fBitmap;
+};
+
+sk_sp<SkParticleBinding> SkParticleBinding::MakeEffect(const char* name,
+                                                       sk_sp<SkParticleEffectParams> params) {
+    return sk_sp<SkParticleBinding>(new SkEffectBinding(name, std::move(params)));
 }
 
-sk_sp<SkParticleBinding> SkParticleBinding::MakeColorCurve(const char* name,
-                                                           const SkColorCurve& curve) {
-    return sk_sp<SkParticleBinding>(new SkColorCurveBinding(name, curve));
+sk_sp<SkParticleBinding> SkParticleBinding::MakeImage(const char* name, const char* imagePath,
+                                                      const char* imageName) {
+    return sk_sp<SkParticleBinding>(new SkImageBinding(name, imagePath, imageName));
 }
 
-sk_sp<SkParticleBinding> SkParticleBinding::MakePathBinding(const char* name, const char* path) {
-    return sk_sp<SkParticleBinding>(new SkPathBinding(name, path));
+sk_sp<SkParticleBinding> SkParticleBinding::MakePath(const char* name, const char* pathPath,
+                                                     const char* pathName) {
+    return sk_sp<SkParticleBinding>(new SkPathBinding(name, pathPath, pathName));
 }
 
 void SkParticleBinding::RegisterBindingTypes() {
     REGISTER_REFLECTED(SkParticleBinding);
-    REGISTER_REFLECTED(SkCurveBinding);
-    REGISTER_REFLECTED(SkColorCurveBinding);
+    REGISTER_REFLECTED(SkEffectBinding);
+    REGISTER_REFLECTED(SkImageBinding);
     REGISTER_REFLECTED(SkPathBinding);
     REGISTER_REFLECTED(SkTextBinding);
 }

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -141,13 +140,16 @@ void Animation::UpdatePrefersReducedMotion() {
 
 // static
 bool Animation::PrefersReducedMotion() {
+  // --force-prefers-reduced-motion must always override
+  // |prefers_reduced_motion_|, so check it first.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForcePrefersReducedMotion)) {
     return true;
   }
-  if (!prefers_reduced_motion_)
+
+  if (!prefers_reduced_motion_.has_value())
     UpdatePrefersReducedMotion();
-  return *prefers_reduced_motion_;
+  return prefers_reduced_motion_.value();
 }
 
 bool Animation::ShouldSendCanceledFromStop() {

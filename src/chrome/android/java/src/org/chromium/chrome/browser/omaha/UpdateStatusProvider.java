@@ -14,10 +14,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
@@ -29,7 +31,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.AsyncTask.Status;
@@ -39,7 +40,8 @@ import org.chromium.chrome.browser.omaha.inline.InlineUpdateController;
 import org.chromium.chrome.browser.omaha.inline.InlineUpdateControllerFactory;
 import org.chromium.chrome.browser.omaha.metrics.UpdateSuccessMetrics;
 import org.chromium.chrome.browser.omaha.metrics.UpdateSuccessMetrics.UpdateType;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -202,8 +204,8 @@ public class UpdateStatusProvider implements ActivityStateListener {
             return;
         }
 
-        ChromePreferenceManager.getInstance().writeString(
-                ChromePreferenceManager.LATEST_UNSUPPORTED_VERSION, currentlyUsedVersion);
+        SharedPreferencesManager.getInstance().writeString(
+                ChromePreferenceKeys.LATEST_UNSUPPORTED_VERSION, currentlyUsedVersion);
         mStatus.latestUnsupportedVersion = currentlyUsedVersion;
         pingObservers();
     }
@@ -406,8 +408,8 @@ public class UpdateStatusProvider implements ActivityStateListener {
                     break;
                 case UpdateState.UNSUPPORTED_OS_VERSION:
                     status.latestUnsupportedVersion =
-                            ChromePreferenceManager.getInstance().readString(
-                                    ChromePreferenceManager.LATEST_UNSUPPORTED_VERSION, null);
+                            SharedPreferencesManager.getInstance().readString(
+                                    ChromePreferenceKeys.LATEST_UNSUPPORTED_VERSION, null);
                     break;
             }
 
@@ -427,12 +429,12 @@ public class UpdateStatusProvider implements ActivityStateListener {
                 status.updateState =
                         allowedToUpdate ? UpdateState.UPDATE_AVAILABLE : UpdateState.NONE;
 
-                ChromePreferenceManager.getInstance().removeKey(
-                        ChromePreferenceManager.LATEST_UNSUPPORTED_VERSION);
+                SharedPreferencesManager.getInstance().removeKey(
+                        ChromePreferenceKeys.LATEST_UNSUPPORTED_VERSION);
             } else if (!VersionNumberGetter.isCurrentOsVersionSupported()) {
                 status.updateState = UpdateState.UNSUPPORTED_OS_VERSION;
-                status.latestUnsupportedVersion = ChromePreferenceManager.getInstance().readString(
-                        ChromePreferenceManager.LATEST_UNSUPPORTED_VERSION, null);
+                status.latestUnsupportedVersion = SharedPreferencesManager.getInstance().readString(
+                        ChromePreferenceKeys.LATEST_UNSUPPORTED_VERSION, null);
             } else {
                 status.updateState = UpdateState.NONE;
             }

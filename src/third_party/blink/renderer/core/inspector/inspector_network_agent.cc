@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -539,17 +540,20 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
 
   String security_state = protocol::Security::SecurityStateEnum::Unknown;
   switch (response.GetSecurityStyle()) {
-    case kWebSecurityStyleUnknown:
+    case SecurityStyle::kUnknown:
       security_state = protocol::Security::SecurityStateEnum::Unknown;
       break;
-    case kWebSecurityStyleNeutral:
+    case SecurityStyle::kNeutral:
       security_state = protocol::Security::SecurityStateEnum::Neutral;
       break;
-    case kWebSecurityStyleInsecure:
+    case SecurityStyle::kInsecure:
       security_state = protocol::Security::SecurityStateEnum::Insecure;
       break;
-    case kWebSecurityStyleSecure:
+    case SecurityStyle::kSecure:
       security_state = protocol::Security::SecurityStateEnum::Secure;
+      break;
+    case SecurityStyle::kInsecureBroken:
+      security_state = protocol::Security::SecurityStateEnum::InsecureBroken;
       break;
   }
 
@@ -1540,7 +1544,7 @@ Response InspectorNetworkAgent::getCertificate(
   for (auto& resource : resources_data_->Resources()) {
     scoped_refptr<const SecurityOrigin> resource_origin =
         SecurityOrigin::Create(resource->RequestedURL());
-    if (resource_origin->IsSameSchemeHostPort(security_origin.get()) &&
+    if (resource_origin->IsSameOriginWith(security_origin.get()) &&
         resource->Certificate().size()) {
       for (auto& cert : resource->Certificate()) {
         (*certificate)

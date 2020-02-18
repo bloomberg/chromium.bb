@@ -30,13 +30,15 @@
 #include "src/ipc/test/test_socket.h"
 #include "test/gtest_and_gmock.h"
 
-#include "src/ipc/test/client_unittest_messages.pb.h"
-#include "src/ipc/wire_protocol.pb.h"
+#include "protos/perfetto/ipc/wire_protocol.gen.h"
+#include "src/ipc/test/client_unittest_messages.gen.h"
 
 namespace perfetto {
 namespace ipc {
 namespace {
 
+using ::perfetto::ipc::gen::ReplyProto;
+using ::perfetto::ipc::gen::RequestProto;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
@@ -88,7 +90,9 @@ class FakeClient : public base::UnixSocket::EventListener {
   MOCK_METHOD0(OnRequestError, void());
 
   explicit FakeClient(base::TaskRunner* task_runner) {
-    sock_ = base::UnixSocket::Connect(kSockName, this, task_runner);
+    sock_ = base::UnixSocket::Connect(kSockName, this, task_runner,
+                                      base::SockFamily::kUnix,
+                                      base::SockType::kStream);
   }
 
   ~FakeClient() override = default;
@@ -137,16 +141,16 @@ class FakeClient : public base::UnixSocket::EventListener {
     while (std::unique_ptr<Frame> frame = frame_deserializer_.PopNextFrame()) {
       ASSERT_EQ(1u, requests_.count(frame->request_id()));
       EXPECT_EQ(0, requests_[frame->request_id()]++);
-      if (frame->msg_case() == Frame::kMsgBindServiceReply) {
+      if (frame->has_msg_bind_service_reply()) {
         if (frame->msg_bind_service_reply().success())
           last_bound_service_id_ = frame->msg_bind_service_reply().service_id();
         return OnServiceBound(frame->msg_bind_service_reply());
       }
-      if (frame->msg_case() == Frame::kMsgInvokeMethodReply)
+      if (frame->has_msg_invoke_method_reply())
         return OnInvokeMethodReply(frame->msg_invoke_method_reply());
-      if (frame->msg_case() == Frame::kMsgRequestError)
+      if (frame->has_msg_request_error())
         return OnRequestError();
-      FAIL() << "Unexpected frame received from host " << frame->msg_case();
+      FAIL() << "Unexpected frame received from host";
     }
   }
 
@@ -334,15 +338,15 @@ TEST_F(HostImplTest, SendFileDescriptor) {
                                                sizeof(kFileContent))),
             sizeof(kFileContent));
   EXPECT_CALL(*fake_service, OnFakeMethod1(_, _))
-      .WillOnce(Invoke([on_reply_sent, &tx_file](const RequestProto&,
-                                                 DeferredBase* reply) {
-        std::unique_ptr<ReplyProto> reply_args(new ReplyProto());
-        auto async_res = AsyncResult<ProtoMessage>(
-            std::unique_ptr<ProtoMessage>(reply_args.release()));
-        async_res.set_fd(tx_file.fd());
-        reply->Resolve(std::move(async_res));
-        on_reply_sent();
-      }));
+      .WillOnce(Invoke(
+          [on_reply_sent, &tx_file](const RequestProto&, DeferredBase* reply) {
+            std::unique_ptr<ReplyProto> reply_args(new ReplyProto());
+            auto async_res = AsyncResult<ProtoMessage>(
+                std::unique_ptr<ProtoMessage>(reply_args.release()));
+            async_res.set_fd(tx_file.fd());
+            reply->Resolve(std::move(async_res));
+            on_reply_sent();
+          }));
   task_runner_->RunUntilCheckpoint("on_reply_sent");
   tx_file.ReleaseFD();
 

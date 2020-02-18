@@ -5,6 +5,7 @@
 #include "content/browser/worker_host/mock_shared_worker.h"
 
 #include "mojo/public/cpp/test_support/test_utils.h"
+#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
@@ -71,7 +72,7 @@ MockSharedWorkerFactory::~MockSharedWorkerFactory() = default;
 bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
     const GURL& expected_url,
     const std::string& expected_name,
-    blink::mojom::ContentSecurityPolicyType
+    network::mojom::ContentSecurityPolicyType
         expected_content_security_policy_type,
     mojo::Remote<blink::mojom::SharedWorkerHost>* host,
     mojo::PendingReceiver<blink::mojom::SharedWorker>* receiver) {
@@ -84,8 +85,6 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
     return false;
   if (!CheckEquality(expected_content_security_policy_type,
                      create_params->info->content_security_policy_type))
-    return false;
-  if (!create_params->interface_provider)
     return false;
   host->Bind(std::move(create_params->host));
   *receiver = std::move(create_params->receiver);
@@ -106,12 +105,11 @@ void MockSharedWorkerFactory::CreateSharedWorker(
         service_worker_provider_info,
     const base::Optional<base::UnguessableToken>& appcache_host_id,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
     mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
-    service_manager::mojom::InterfaceProviderPtr interface_provider,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker) {
   DCHECK(!create_params_);
@@ -121,7 +119,6 @@ void MockSharedWorkerFactory::CreateSharedWorker(
   create_params_->content_settings = std::move(content_settings);
   create_params_->host = std::move(host);
   create_params_->receiver = std::move(receiver);
-  create_params_->interface_provider = std::move(interface_provider);
 }
 
 MockSharedWorkerFactory::CreateParams::CreateParams() = default;

@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_viewport_container.h"
 
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 
 namespace blink {
@@ -35,7 +36,7 @@ LayoutSVGViewportContainer::LayoutSVGViewportContainer(SVGSVGElement* node)
 void LayoutSVGViewportContainer::UpdateLayout() {
   DCHECK(NeedsLayout());
 
-  const SVGSVGElement* svg = ToSVGSVGElement(GetElement());
+  const auto* svg = To<SVGSVGElement>(GetElement());
   is_layout_size_changed_ = SelfNeedsLayout() && svg->HasRelativeLengths();
 
   if (SelfNeedsLayout()) {
@@ -66,7 +67,7 @@ SVGTransformChange LayoutSVGViewportContainer::CalculateLocalTransform() {
   if (!needs_transform_update_)
     return SVGTransformChange::kNone;
 
-  const SVGSVGElement* svg = ToSVGSVGElement(GetElement());
+  const auto* svg = To<SVGSVGElement>(GetElement());
   SVGTransformChangeDetector change_detector(local_to_parent_transform_);
   local_to_parent_transform_ =
       AffineTransform::Translation(viewport_.X(), viewport_.Y()) *

@@ -291,7 +291,7 @@ class TestWritePackageIndex(cros_test_lib.MockTestCase, TestPkgIndex):
     """Test simple call of WriteToNamedTemporaryFile()"""
     self.PatchObject(self.pkgindex, 'Write')
     f = self.pkgindex.WriteToNamedTemporaryFile()
-    self.assertEqual(f.read(), '')
+    self.assertEqual(f.read(), b'')
 
 
 class TestUploadPrebuilt(cros_test_lib.MockTempDirTestCase):

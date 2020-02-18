@@ -395,6 +395,8 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     }
 
     request_->SetExtraRequestHeaders(extra_request_headers);
+    // Disable secure DNS for any DoH server hostname lookups to avoid deadlock.
+    request_->SetDisableSecureDns(true);
     // Bypass proxy settings and certificate-related network fetches (currently
     // just OCSP and CRL requests) to avoid deadlock. AIA requests and the
     // Negotiate scheme for HTTP authentication may also cause deadlocks, but
@@ -430,6 +432,10 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     DCHECK_NE(net::ERR_IO_PENDING, net_error);
     std::string content_type;
     if (net_error != OK) {
+      // Update the error code if there was an issue resolving the secure
+      // server hostname.
+      if (IsDnsError(net_error))
+        net_error = ERR_DNS_SECURE_RESOLVER_HOSTNAME_RESOLUTION_FAILED;
       ResponseCompleted(net_error);
       return;
     }
@@ -555,6 +561,8 @@ void ConstructDnsHTTPAttempt(DnsSession* session,
                              std::vector<std::unique_ptr<DnsAttempt>>* attempts,
                              URLRequestContext* url_request_context,
                              RequestPriority request_priority) {
+  DCHECK(url_request_context);
+
   uint16_t id = session->NextQueryId();
   std::unique_ptr<DnsQuery> query;
   if (attempts->empty()) {
@@ -860,6 +868,8 @@ class DnsOverHttpsProbeRunner {
   void StartProbe(int doh_server_index,
                   URLRequestContext* context,
                   bool network_change) {
+    DCHECK(context);
+
     // Clear the existing probe stats.
     probe_stats_[doh_server_index] = std::make_unique<ProbeStats>();
     session_->SetProbeSuccess(doh_server_index, false /* success */);
@@ -868,6 +878,8 @@ class DnsOverHttpsProbeRunner {
                   network_change,
                   base::TimeTicks::Now() /* sequence_start_time */);
   }
+
+  void CancelProbes() { probe_stats_.clear(); }
 
  private:
   struct ProbeStats {
@@ -896,6 +908,7 @@ class DnsOverHttpsProbeRunner {
     // than on probe completion.
     DCHECK(probe_stats);
     DCHECK(probe_stats->backoff_entry);
+    DCHECK(context);
     probe_stats->backoff_entry->InformOfRequest(false /* success */);
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
@@ -1175,7 +1188,7 @@ class DnsTransactionImpl : public DnsTransaction,
     net_log_.AddEventReferencingSource(NetLogEventType::DNS_TRANSACTION_ATTEMPT,
                                        attempt->GetSocketNetLog().source());
 
-    int rv = attempt->Start(base::Bind(
+    int rv = attempt->Start(base::BindOnce(
         &DnsTransactionImpl::OnAttemptComplete, base::Unretained(this),
         attempt_number, true /* record_rtt */, base::TimeTicks::Now()));
     if (rv == ERR_IO_PENDING) {
@@ -1188,6 +1201,8 @@ class DnsTransactionImpl : public DnsTransaction,
 
   AttemptResult MakeHTTPAttempt() {
     DCHECK(secure_);
+    DCHECK(url_request_context_);
+
     // doh_attempts_ counts the number of attempts made via HTTPS. To
     // get a server index cap that by the number of DoH servers we
     // have configured and search for the next good server.
@@ -1476,11 +1491,18 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
 
   void StartDohProbes(URLRequestContext* context,
                       bool network_change) override {
+    if (!context) {
+      // Unable to run DoH probes without a URLRequestContext.
+      return;
+    }
+
     for (size_t i = 0; i < session_->config().dns_over_https_servers.size();
          i++) {
       probe_runner_->StartProbe(i, context, network_change);
     }
   }
+
+  void CancelDohProbes() override { probe_runner_->CancelProbes(); }
 
   DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override {
     return session_->config().secure_dns_mode;

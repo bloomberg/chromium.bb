@@ -16,6 +16,7 @@
 #include "base/feature_list.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
@@ -60,6 +61,12 @@ bool HasDisableBestEffortTasksSwitch() {
              switches::kDisableBestEffortTasks);
 }
 
+const scoped_refptr<SequencedTaskRunner>& GetNullTaskRunner() {
+  static const NoDestructor<scoped_refptr<SequencedTaskRunner>>
+      null_task_runner;
+  return *null_task_runner;
+}
+
 }  // namespace
 
 ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label)
@@ -77,20 +84,23 @@ ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
                                          &delayed_task_manager_),
       has_disable_best_effort_switch_(HasDisableBestEffortTasksSwitch()),
       tracked_ref_factory_(this) {
-  DCHECK(!histogram_label.empty());
-
   foreground_thread_group_ = std::make_unique<ThreadGroupImpl>(
-      JoinString(
-          {histogram_label, kForegroundPoolEnvironmentParams.name_suffix}, "."),
+      histogram_label.empty()
+          ? std::string()
+          : JoinString(
+                {histogram_label, kForegroundPoolEnvironmentParams.name_suffix},
+                "."),
       kForegroundPoolEnvironmentParams.name_suffix,
       kForegroundPoolEnvironmentParams.priority_hint,
       task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef());
 
   if (CanUseBackgroundPriorityForWorkerThread()) {
     background_thread_group_ = std::make_unique<ThreadGroupImpl>(
-        JoinString(
-            {histogram_label, kBackgroundPoolEnvironmentParams.name_suffix},
-            "."),
+        histogram_label.empty()
+            ? std::string()
+            : JoinString({histogram_label,
+                          kBackgroundPoolEnvironmentParams.name_suffix},
+                         "."),
         kBackgroundPoolEnvironmentParams.name_suffix,
         kBackgroundPoolEnvironmentParams.priority_hint,
         task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef());
@@ -113,6 +123,9 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
   DCHECK(!started_);
 
   internal::InitializeThreadPrioritiesFeature();
+
+  if (FeatureList::IsEnabled(kNoPriorityInheritanceFromThreadPool))
+    internal::SetNoPriorityInheritanceFromThreadPool();
 
   // The max number of concurrent BEST_EFFORT tasks is |kMaxBestEffortTasks|,
   // unless the max number of foreground threads is lower.
@@ -153,6 +166,9 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
   // task_runner().
   task_tracker_->set_io_thread_task_runner(service_thread_->task_runner());
 #endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
+
+  // Update the CanRunPolicy based on |has_disable_best_effort_switch_|.
+  UpdateCanRunPolicy();
 
   // Needs to happen after starting the service thread to get its task_runner().
   scoped_refptr<TaskRunner> service_thread_task_runner =
@@ -264,6 +280,14 @@ ThreadPoolImpl::CreateUpdateableSequencedTaskRunner(const TaskTraits& traits) {
   return MakeRefCounted<PooledSequencedTaskRunner>(new_traits, this);
 }
 
+const scoped_refptr<SequencedTaskRunner>&
+ThreadPoolImpl::GetContinuationTaskRunner() {
+  // Default to null for parallel tasks; see task_tracker.cc's
+  // EphemeralTaskExecutor for how sequenced contexts handle this.
+  NOTREACHED();
+  return GetNullTaskRunner();
+}
+
 Optional<TimeTicks> ThreadPoolImpl::NextScheduledRunTimeForTesting() const {
   if (task_tracker_->HasIncompleteTaskSourcesForTesting())
     return TimeTicks::Now();
@@ -330,17 +354,29 @@ void ThreadPoolImpl::JoinForTesting() {
 #endif
 }
 
-void ThreadPoolImpl::SetHasFence(bool has_fence) {
+void ThreadPoolImpl::BeginFence() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(has_fence_, has_fence);
-  has_fence_ = has_fence;
+  ++num_fences_;
   UpdateCanRunPolicy();
 }
 
-void ThreadPoolImpl::SetHasBestEffortFence(bool has_best_effort_fence) {
+void ThreadPoolImpl::EndFence() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(has_best_effort_fence_, has_best_effort_fence);
-  has_best_effort_fence_ = has_best_effort_fence;
+  DCHECK_GT(num_fences_, 0);
+  --num_fences_;
+  UpdateCanRunPolicy();
+}
+
+void ThreadPoolImpl::BeginBestEffortFence() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ++num_best_effort_fences_;
+  UpdateCanRunPolicy();
+}
+
+void ThreadPoolImpl::EndBestEffortFence() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_GT(num_best_effort_fences_, 0);
+  --num_best_effort_fences_;
   UpdateCanRunPolicy();
 }
 
@@ -423,6 +459,14 @@ bool ThreadPoolImpl::EnqueueJobTaskSource(
   return true;
 }
 
+void ThreadPoolImpl::RemoveJobTaskSource(
+    scoped_refptr<JobTaskSource> task_source) {
+  auto transaction = task_source->BeginTransaction();
+  ThreadGroup* const current_thread_group =
+      GetThreadGroupForTraits(transaction.traits());
+  current_thread_group->RemoveTaskSource(*task_source);
+}
+
 bool ThreadPoolImpl::IsRunningPoolWithTraits(const TaskTraits& traits) const {
   return GetThreadGroupForTraits(traits)->IsBoundToCurrentThread();
 }
@@ -455,7 +499,7 @@ void ThreadPoolImpl::UpdatePriority(scoped_refptr<TaskSource> task_source,
     // |task_source| is changing thread groups; remove it from its current
     // thread group and reenqueue it.
     auto registered_task_source =
-        current_thread_group->RemoveTaskSource(task_source);
+        current_thread_group->RemoveTaskSource(*task_source);
     if (registered_task_source) {
       DCHECK(task_source);
       new_thread_group->PushTaskSourceAndWakeUpWorkers(
@@ -483,14 +527,14 @@ void ThreadPoolImpl::UpdateCanRunPolicy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CanRunPolicy can_run_policy;
-  if ((!has_fence_ && !has_best_effort_fence_ &&
+  if ((num_fences_ == 0 && num_best_effort_fences_ == 0 &&
        !has_disable_best_effort_switch_) ||
       task_tracker_->HasShutdownStarted()) {
     can_run_policy = CanRunPolicy::kAll;
-  } else if (has_fence_) {
+  } else if (num_fences_ != 0) {
     can_run_policy = CanRunPolicy::kNone;
   } else {
-    DCHECK(has_best_effort_fence_ || has_disable_best_effort_switch_);
+    DCHECK(num_best_effort_fences_ > 0 || has_disable_best_effort_switch_);
     can_run_policy = CanRunPolicy::kForegroundOnly;
   }
 

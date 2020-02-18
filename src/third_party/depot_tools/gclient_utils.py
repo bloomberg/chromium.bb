@@ -164,19 +164,16 @@ class PrintableObject(object):
     return output
 
 
-def FileRead(filename, mode='rU'):
+def FileRead(filename, mode='rbU'):
+  # Always decodes output to a Unicode string.
   # On Python 3 newlines are converted to '\n' by default and 'U' is deprecated.
-  if mode == 'rU' and sys.version_info.major == 3:
-    mode = 'r'
+  if mode == 'rbU' and sys.version_info.major == 3:
+    mode = 'rb'
   with open(filename, mode=mode) as f:
-    # codecs.open() has different behavior than open() on python 2.6 so use
-    # open() and decode manually.
     s = f.read()
-    try:
-      return s.decode('utf-8')
-    # AttributeError is for Py3 compatibility
-    except (UnicodeDecodeError, AttributeError):
-      return s
+    if isinstance(s, bytes):
+      return s.decode('utf-8', 'replace')
+    return s
 
 
 def FileWrite(filename, content, mode='w'):
@@ -218,7 +215,7 @@ def safe_rename(old, new):
 
 
 def rm_file_or_tree(path):
-  if os.path.isfile(path):
+  if os.path.isfile(path) or os.path.islink(path):
     os.remove(path)
   else:
     rmtree(path)
@@ -363,16 +360,21 @@ class Annotated(Wrapper):
       self.lock = threading.Lock()
     self.__output_buffers = {}
     self.__include_zero = include_zero
+    self._wrapped_write = getattr(self._wrapped, 'buffer', self._wrapped).write
 
   @property
   def annotated(self):
     return self
 
   def write(self, out):
+    # Store as bytes to ensure Unicode characters get output correctly.
+    if not isinstance(out, bytes):
+      out = out.encode('utf-8')
+
     index = getattr(threading.currentThread(), 'index', 0)
     if not index and not self.__include_zero:
       # Unindexed threads aren't buffered.
-      return self._wrapped.write(out)
+      return self._wrapped_write(out)
 
     self.lock.acquire()
     try:
@@ -380,7 +382,7 @@ class Annotated(Wrapper):
       # Strings are immutable, requiring to keep a lock for the whole dictionary
       # otherwise. Using an array is faster than using a dummy object.
       if not index in self.__output_buffers:
-        obj = self.__output_buffers[index] = ['']
+        obj = self.__output_buffers[index] = [b'']
       else:
         obj = self.__output_buffers[index]
     finally:
@@ -390,18 +392,18 @@ class Annotated(Wrapper):
     obj[0] += out
     while True:
       # TODO(agable): find both of these with a single pass.
-      cr_loc = obj[0].find('\r')
-      lf_loc = obj[0].find('\n')
+      cr_loc = obj[0].find(b'\r')
+      lf_loc = obj[0].find(b'\n')
       if cr_loc == lf_loc == -1:
         break
       elif cr_loc == -1 or (lf_loc >= 0 and lf_loc < cr_loc):
-        line, remaining = obj[0].split('\n', 1)
+        line, remaining = obj[0].split(b'\n', 1)
         if line:
-          self._wrapped.write('%d>%s\n' % (index, line))
+          self._wrapped_write(b'%d>%s\n' % (index, line))
       elif lf_loc == -1 or (cr_loc >= 0 and cr_loc < lf_loc):
-        line, remaining = obj[0].split('\r', 1)
+        line, remaining = obj[0].split(b'\r', 1)
         if line:
-          self._wrapped.write('%d>%s\r' % (index, line))
+          self._wrapped_write(b'%d>%s\r' % (index, line))
       obj[0] = remaining
 
   def flush(self):
@@ -423,7 +425,7 @@ class Annotated(Wrapper):
     # Don't keep the lock while writting. Will append \n when it shouldn't.
     for orphan in orphans:
       if orphan[1]:
-        self._wrapped.write('%d>%s\n' % (orphan[0], orphan[1]))
+        self._wrapped_write(b'%d>%s\n' % (orphan[0], orphan[1]))
     return self._wrapped.flush()
 
 
@@ -438,7 +440,7 @@ def MakeFileAutoFlush(fileobj, delay=10):
 def MakeFileAnnotated(fileobj, include_zero=False):
   if getattr(fileobj, 'annotated', None):
     return fileobj
-  return Annotated(fileobj)
+  return Annotated(fileobj, include_zero)
 
 
 GCLIENT_CHILDREN = []
@@ -527,7 +529,8 @@ def CheckCallAndFilter(args, print_stdout=False, filter_fn=None,
     header += '\n'
 
     if print_stdout:
-      sys.stdout.write(header)
+      stdout_write = getattr(sys.stdout, 'buffer', sys.stdout).write
+      stdout_write(header.encode())
     if filter_fn:
       filter_fn(header)
 
@@ -703,7 +706,8 @@ def GetGClientRootAndEntries(path=None):
     return None
   config_path = os.path.join(root, config_file)
   env = {}
-  execfile(config_path, env)
+  with open(config_path) as config:
+    exec(config.read(), env)
   config_dir = os.path.dirname(config_path)
   return config_dir, env['entries']
 
@@ -1222,7 +1226,7 @@ class FrozenDict(collections.Mapping):
       return True
     if len(self) != len(other):
       return False
-    for k, v in self.iteritems():
+    for k, v in self.items():
       if k not in other or other[k] != v:
         return False
     return True

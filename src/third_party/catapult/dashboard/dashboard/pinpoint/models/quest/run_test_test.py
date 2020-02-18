@@ -8,9 +8,8 @@ from __future__ import absolute_import
 
 import collections
 import json
-import unittest
-
 import mock
+import unittest
 
 from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models.quest import run_test

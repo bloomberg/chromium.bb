@@ -12,9 +12,12 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/manifest_update_task.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+
+class Profile;
 
 namespace content {
 class WebContents;
@@ -22,7 +25,6 @@ class WebContents;
 
 namespace web_app {
 
-class AppRegistrar;
 class WebAppUiManager;
 class InstallManager;
 
@@ -32,7 +34,7 @@ class InstallManager;
 // of being triggered by page loads.
 class ManifestUpdateManager final : public AppRegistrarObserver {
  public:
-  ManifestUpdateManager();
+  explicit ManifestUpdateManager(Profile* profile);
   ~ManifestUpdateManager() override;
 
   void SetSubsystems(AppRegistrar* registrar,
@@ -61,11 +63,17 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
   }
 
  private:
-  bool MaybeConsumeUpdateCheck(const AppId& app_id);
+  bool MaybeConsumeUpdateCheck(const GURL& origin, const AppId& app_id);
+  base::Optional<base::Time> GetLastUpdateCheckTime(const GURL& origin,
+                                                    const AppId& app_id) const;
+  void SetLastUpdateCheckTime(const GURL& origin,
+                              const AppId& app_id,
+                              base::Time time);
   void OnUpdateStopped(const ManifestUpdateTask& task,
                        ManifestUpdateResult result);
   void NotifyResult(const GURL& url, ManifestUpdateResult result);
 
+  Profile* const profile_ = nullptr;
   AppRegistrar* registrar_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
   InstallManager* install_manager_ = nullptr;
@@ -73,9 +81,6 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
   ScopedObserver<AppRegistrar, AppRegistrarObserver> registrar_observer_{this};
 
   base::flat_map<AppId, std::unique_ptr<ManifestUpdateTask>> tasks_;
-
-  // TODO(crbug.com/926083): Store this in prefs instead of RAM.
-  base::flat_map<AppId, base::Time> last_check_times_;
 
   base::Optional<base::Time> time_override_for_testing_;
   ResultCallback result_callback_for_testing_;

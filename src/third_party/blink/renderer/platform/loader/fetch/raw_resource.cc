@@ -111,7 +111,7 @@ void RawResource::AppendData(const char* data, size_t length) {
 }
 
 class RawResource::PreloadBytesConsumerClient final
-    : public GarbageCollectedFinalized<PreloadBytesConsumerClient>,
+    : public GarbageCollected<PreloadBytesConsumerClient>,
       public BytesConsumer::Client {
   USING_GARBAGE_COLLECTED_MIXIN(PreloadBytesConsumerClient);
 
@@ -236,6 +236,10 @@ SingleCachedMetadataHandler* RawResource::ScriptCacheHandler() {
   return static_cast<SingleCachedMetadataHandler*>(Resource::CacheHandler());
 }
 
+scoped_refptr<BlobDataHandle> RawResource::DownloadedBlob() const {
+  return downloaded_blob_;
+}
+
 void RawResource::Trace(Visitor* visitor) {
   visitor->Trace(bytes_consumer_for_preload_);
   Resource::Trace(visitor);
@@ -344,13 +348,6 @@ void RawResource::DidDownloadToBlob(scoped_refptr<BlobDataHandle> blob) {
     c->DidDownloadToBlob(this, blob);
 }
 
-void RawResource::ReportResourceTimingToClients(
-    const ResourceTimingInfo& info) {
-  ResourceClientWalker<RawResourceClient> w(Clients());
-  while (RawResourceClient* c = w.Next())
-    c->DidReceiveResourceTiming(this, info);
-}
-
 bool RawResource::MatchPreload(const FetchParameters& params,
                                base::SingleThreadTaskRunner* task_runner) {
   if (!Resource::MatchPreload(params, task_runner))
@@ -402,6 +399,9 @@ Resource::MatchStatus RawResource::CanReuse(
 
   return Resource::CanReuse(new_fetch_parameters);
 }
+
+void RawResourceClient::DidDownloadToBlob(Resource*,
+                                          scoped_refptr<BlobDataHandle>) {}
 
 RawResourceClientStateChecker::RawResourceClientStateChecker()
     : state_(kNotAddedAsClient) {}

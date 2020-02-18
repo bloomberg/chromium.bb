@@ -180,7 +180,8 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
   DCHECK(service);
   DCHECK(config_service_url_.is_valid());
   DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
-         previews::params::IsLitePageServerPreviewsEnabled());
+         previews::params::IsLitePageServerPreviewsEnabled() ||
+         params::ForceEnableClientConfigServiceForAllDataSaverUsers());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -243,6 +244,22 @@ void DataReductionProxyConfigServiceClient::Initialize(
 void DataReductionProxyConfigServiceClient::SetEnabled(bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
   enabled_ = enabled;
+}
+
+void DataReductionProxyConfigServiceClient::InvalidateAndRetrieveNewConfig() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  InvalidateConfig();
+  DCHECK(config_->GetProxiesForHttp().empty());
+
+  if (fetch_in_progress_) {
+    // If a client config fetch is already in progress, then do not start
+    // another fetch since starting a new fetch will cause extra data
+    // usage, and also cancel the ongoing fetch.
+    return;
+  }
+
+  RetrieveConfig();
 }
 
 void DataReductionProxyConfigServiceClient::RetrieveConfig() {
@@ -418,7 +435,8 @@ void DataReductionProxyConfigServiceClient::OnURLLoadComplete(
 void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
-         previews::params::IsLitePageServerPreviewsEnabled());
+         previews::params::IsLitePageServerPreviewsEnabled() ||
+         params::ForceEnableClientConfigServiceForAllDataSaverUsers());
 
   CreateClientConfigRequest request;
   std::string serialized_request;
@@ -504,7 +522,6 @@ void DataReductionProxyConfigServiceClient::InvalidateConfig() {
   config_storer_.Run(std::string());
   request_options_->Invalidate();
   config_values_->Invalidate();
-  service_->SetPingbackReportingFraction(0.0f);
   config_->OnNewClientConfigFetched();
 }
 
@@ -547,7 +564,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
     config_storer_.Run(encoded_config);
 
     // Record timing metrics on successful requests only.
-    const network::ResourceResponseHead* info = url_loader_->ResponseInfo();
+    const network::mojom::URLResponseHead* info = url_loader_->ResponseInfo();
     base::TimeDelta http_request_rtt =
         info->response_start - info->request_start;
     UMA_HISTOGRAM_TIMES("DataReductionProxy.ConfigService.HttpRequestRTT",
@@ -576,15 +593,6 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
 bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
     const ClientConfig& config) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  float reporting_fraction = 0.0f;
-  if (config.has_pageload_metrics_config() &&
-      config.pageload_metrics_config().has_reporting_fraction()) {
-    reporting_fraction = config.pageload_metrics_config().reporting_fraction();
-  }
-  DCHECK_LE(0.0f, reporting_fraction);
-  DCHECK_GE(1.0f, reporting_fraction);
-  service_->SetPingbackReportingFraction(reporting_fraction);
-
   if (!config.has_proxy_config())
     return false;
 

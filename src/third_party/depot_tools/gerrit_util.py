@@ -9,11 +9,11 @@ https://gerrit-review.googlesource.com/Documentation/rest-api.html
 """
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import base64
 import contextlib
-import cookielib
-import httplib  # Still used for its constants.
+import httplib2
 import json
 import logging
 import netrc
@@ -25,9 +25,6 @@ import stat
 import sys
 import tempfile
 import time
-import urllib
-import urlparse
-from cStringIO import StringIO
 from multiprocessing.pool import ThreadPool
 
 import auth
@@ -35,13 +32,21 @@ import gclient_utils
 import metrics
 import metrics_utils
 import subprocess2
-from third_party import httplib2
+
+from third_party import six
+from six.moves import urllib
+
+if sys.version_info.major == 2:
+  import cookielib
+  from StringIO import StringIO
+else:
+  import http.cookiejar as cookielib
+  from io import StringIO
 
 LOGGER = logging.getLogger()
 # With a starting sleep time of 1.5 seconds, 2^n exponential backoff, and seven
 # total tries, the sleep time between the first and last tries will be 94.5 sec.
-# TODO(crbug.com/881860): Lower this when crbug.com/877717 is fixed.
-TRY_LIMIT = 7
+TRY_LIMIT = 3
 
 
 # Controls the transport protocol used to communicate with Gerrit.
@@ -49,16 +54,18 @@ TRY_LIMIT = 7
 GERRIT_PROTOCOL = 'https'
 
 
+def time_sleep(seconds):
+  # Use this so that it can be mocked in tests without interfering with python
+  # system machinery.
+  return time.sleep(seconds)
+
+
 class GerritError(Exception):
   """Exception class for errors commuicating with the gerrit-on-borg service."""
-  def __init__(self, http_status, *args, **kwargs):
+  def __init__(self, http_status, message, *args, **kwargs):
     super(GerritError, self).__init__(*args, **kwargs)
     self.http_status = http_status
-    self.message = '(%d) %s' % (self.http_status, self.message)
-
-
-class GerritAuthenticationError(GerritError):
-  """Exception class for authentication errors during Gerrit communication."""
+    self.message = '(%d) %s' % (self.http_status, message)
 
 
 def _QueryString(params, first_param=None):
@@ -66,19 +73,9 @@ def _QueryString(params, first_param=None):
 
   https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
   """
-  q = [urllib.quote(first_param)] if first_param else []
+  q = [urllib.parse.quote(first_param)] if first_param else []
   q.extend(['%s:%s' % (key, val) for key, val in params])
   return '+'.join(q)
-
-
-def GetConnectionObject(protocol=None):
-  if protocol is None:
-    protocol = GERRIT_PROTOCOL
-  if protocol in ('http', 'https'):
-    return httplib2.Http()
-  else:
-    raise RuntimeError(
-        "Don't know how to work with protocol '%s'" % protocol)
 
 
 class Authenticator(object):
@@ -146,12 +143,7 @@ class CookiesAuthenticator(Authenticator):
       return ('Git host for Gerrit upload is unknown. Check your remote '
               'and the branch your branch is tracking. This tool assumes '
               'that you are using a git server at *.googlesource.com.')
-    assert not host.startswith('http')
-    # Assume *.googlesource.com pattern.
-    parts = host.split('.')
-    if not parts[0].endswith('-review'):
-      parts[0] += '-review'
-    url = 'https://%s/new-password' % ('.'.join(parts))
+    url = cls.get_new_password_url(host)
     return 'You can (re)generate your credentials by visiting %s' % url
 
   @classmethod
@@ -216,29 +208,28 @@ class CookiesAuthenticator(Authenticator):
       return gitcookies
 
     try:
-      f = open(path, 'rb')
+      f = gclient_utils.FileRead(path, 'rb').splitlines()
     except IOError:
       return gitcookies
 
-    with f:
-      for line in f:
-        try:
-          fields = line.strip().split('\t')
-          if line.strip().startswith('#') or len(fields) != 7:
-            continue
-          domain, xpath, key, value = fields[0], fields[2], fields[5], fields[6]
-          if xpath == '/' and key == 'o':
-            if value.startswith('git-'):
-              login, secret_token = value.split('=', 1)
-              gitcookies[domain] = (login, secret_token)
-            else:
-              gitcookies[domain] = ('', value)
-        except (IndexError, ValueError, TypeError) as exc:
-          LOGGER.warning(exc)
+    for line in f:
+      try:
+        fields = line.strip().split('\t')
+        if line.strip().startswith('#') or len(fields) != 7:
+          continue
+        domain, xpath, key, value = fields[0], fields[2], fields[5], fields[6]
+        if xpath == '/' and key == 'o':
+          if value.startswith('git-'):
+            login, secret_token = value.split('=', 1)
+            gitcookies[domain] = (login, secret_token)
+          else:
+            gitcookies[domain] = ('', value)
+      except (IndexError, ValueError, TypeError) as exc:
+        LOGGER.warning(exc)
     return gitcookies
 
   def _get_auth_for_host(self, host):
-    for domain, creds in self.gitcookies.iteritems():
+    for domain, creds in self.gitcookies.items():
       if cookielib.domain_match(host, domain):
         return (creds[0], None, creds[1])
     return self.netrc.authenticators(host)
@@ -247,7 +238,8 @@ class CookiesAuthenticator(Authenticator):
     a = self._get_auth_for_host(host)
     if a:
       if a[0]:
-        return 'Basic %s' % (base64.b64encode('%s:%s' % (a[0], a[2])))
+        secret = base64.b64encode(('%s:%s' % (a[0], a[2])).encode('utf-8'))
+        return 'Basic %s' % secret.decode('utf-8')
       else:
         return 'Bearer %s' % a[2]
     return None
@@ -306,11 +298,13 @@ class GceAuthenticator(Authenticator):
   def _get(url, **kwargs):
     next_delay_sec = 1
     for i in xrange(TRY_LIMIT):
-      p = urlparse.urlparse(url)
-      c = GetConnectionObject(protocol=p.scheme)
-      resp, contents = c.request(url, 'GET', **kwargs)
+      p = urllib.parse.urlparse(url)
+      if p.scheme not in ('http', 'https'):
+        raise RuntimeError(
+            "Don't know how to work with protocol '%s'" % protocol)
+      resp, contents = httplib2.Http().request(url, 'GET', **kwargs)
       LOGGER.debug('GET [%s] #%d/%d (%d)', url, i+1, TRY_LIMIT, resp.status)
-      if resp.status < httplib.INTERNAL_SERVER_ERROR:
+      if resp.status < 500:
         return (resp, contents)
 
       # Retry server error status codes.
@@ -318,7 +312,7 @@ class GceAuthenticator(Authenticator):
       if TRY_LIMIT - i > 1:
         LOGGER.info('Will retry in %d seconds (%d more times)...',
                     next_delay_sec, TRY_LIMIT - i - 1)
-        time.sleep(next_delay_sec)
+        time_sleep(next_delay_sec)
         next_delay_sec *= 2
 
   @classmethod
@@ -329,7 +323,7 @@ class GceAuthenticator(Authenticator):
         return cls._token_cache
 
     resp, contents = cls._get(cls._ACQUIRE_URL, headers=cls._ACQUIRE_HEADERS)
-    if resp.status != httplib.OK:
+    if resp.status != 200:
       return None
     cls._token_cache = json.loads(contents)
     cls._token_expiration = cls._token_cache['expires_in'] + time.time()
@@ -351,17 +345,11 @@ class LuciContextAuthenticator(Authenticator):
     return auth.has_luci_context_local_auth()
 
   def __init__(self):
-    self._access_token = None
-    self._ensure_fresh()
-
-  def _ensure_fresh(self):
-    if not self._access_token or self._access_token.needs_refresh():
-      self._access_token = auth.get_luci_context_access_token(
-          scopes=' '.join([auth.OAUTH_SCOPE_EMAIL, auth.OAUTH_SCOPE_GERRIT]))
+    self._authenticator = auth.Authenticator(
+        ' '.join([auth.OAUTH_SCOPE_EMAIL, auth.OAUTH_SCOPE_GERRIT]))
 
   def get_auth_header(self, _host):
-    self._ensure_fresh()
-    return 'Bearer %s' % self._access_token.token
+    return 'Bearer %s' % self._authenticator.get_access_token().token
 
 
 def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
@@ -382,22 +370,22 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     url = '/a%s' % url
 
   if body:
-    body = json.JSONEncoder().encode(body)
+    body = json.dumps(body, sort_keys=True)
     headers.setdefault('Content-Type', 'application/json')
   if LOGGER.isEnabledFor(logging.DEBUG):
     LOGGER.debug('%s %s://%s%s' % (reqtype, GERRIT_PROTOCOL, host, url))
-    for key, val in headers.iteritems():
+    for key, val in headers.items():
       if key == 'Authorization':
         val = 'HIDDEN'
       LOGGER.debug('%s: %s' % (key, val))
     if body:
       LOGGER.debug(body)
-  conn = GetConnectionObject()
-  # HACK: httplib.Http has no such attribute; we store req_host here for later
+  conn = httplib2.Http()
+  # HACK: httplib2.Http has no such attribute; we store req_host here for later
   # use in ReadHttpResponse.
   conn.req_host = host
   conn.req_params = {
-      'uri': urlparse.urljoin('%s://%s' % (GERRIT_PROTOCOL, host), url),
+      'uri': urllib.parse.urljoin('%s://%s' % (GERRIT_PROTOCOL, host), url),
       'method': reqtype,
       'headers': headers,
       'body': body,
@@ -418,6 +406,7 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
   for idx in range(TRY_LIMIT):
     before_response = time.time()
     response, contents = conn.request(**conn.req_params)
+    contents = contents.decode('utf-8', 'replace')
 
     response_time = time.time() - before_response
     metrics.collector.add_repeated(
@@ -426,21 +415,12 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
             conn.req_params['uri'], conn.req_params['method'], response.status,
             response_time))
 
-    # Check if this is an authentication issue.
-    www_authenticate = response.get('www-authenticate')
-    if (response.status in (httplib.UNAUTHORIZED, httplib.FOUND) and
-        www_authenticate):
-      auth_match = re.search('realm="([^"]+)"', www_authenticate, re.I)
-      host = auth_match.group(1) if auth_match else conn.req_host
-      reason = ('Authentication failed. Please make sure your .gitcookies file '
-                'has credentials for %s' % host)
-      raise GerritAuthenticationError(response.status, reason)
-
-    # If response.status < 500 then the result is final; break retry loop.
-    # If the response is 404/409, it might be because of replication lag, so
-    # keep trying anyway.
-    if ((response.status < 500 and response.status not in [404, 409])
-        or response.status in accept_statuses):
+    # If response.status is an accepted status,
+    # or response.status < 500 then the result is final; break retry loop.
+    # If the response is 404/409 it might be because of replication lag,
+    # so keep trying anyway.
+    if (response.status in accept_statuses
+        or response.status < 500 and response.status not in [404, 409]):
       LOGGER.debug('got response %d for %s %s', response.status,
                    conn.req_params['method'], conn.req_params['uri'])
       # If 404 was in accept_statuses, then it's expected that the file might
@@ -449,6 +429,7 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
       if response.status == 404:
         contents = ''
       break
+
     # A status >=500 is assumed to be a possible transient error; retry.
     http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
     LOGGER.warn('A transient error occurred while querying %s:\n'
@@ -457,30 +438,30 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
                 conn.req_host, conn.req_params['method'],
                 conn.req_params['uri'],
                 http_version, http_version, response.status, response.reason)
-    if response.status == 404:
-      # TODO(crbug/881860): remove this hack.
-      # HACK: try different Gerrit mirror as a workaround for potentially
-      # out-of-date mirror hit through default routing.
-      if conn.req_host == 'chromium-review.googlesource.com':
-        conn.req_params['uri'] = _UseGerritMirror(
-            conn.req_params['uri'], 'chromium-review.googlesource.com')
-        # And don't increase sleep_time in this case, since we suspect we've
-        # just asked wrong git mirror before.
-        sleep_time /= 2.0
 
-    if TRY_LIMIT - idx > 1:
+    if idx < TRY_LIMIT - 1:
       LOGGER.info('Will retry in %d seconds (%d more times)...',
                   sleep_time, TRY_LIMIT - idx - 1)
-      time.sleep(sleep_time)
+      time_sleep(sleep_time)
       sleep_time = sleep_time * 2
   # end of retries loop
-  if response.status not in accept_statuses:
-    if response.status in (401, 403):
-      print('Your Gerrit credentials might be misconfigured. Try: \n'
-            '  git cl creds-check')
-    reason = '%s: %s' % (response.reason, contents)
-    raise GerritError(response.status, reason)
-  return StringIO(contents)
+
+  if response.status in accept_statuses:
+    return StringIO(contents)
+
+  if response.status in (302, 401, 403):
+    www_authenticate = response.get('www-authenticate')
+    if not www_authenticate:
+      print('Your Gerrit credentials might be misconfigured.')
+    else:
+      auth_match = re.search('realm="([^"]+)"', www_authenticate, re.I)
+      host = auth_match.group(1) if auth_match else conn.req_host
+      print('Authentication failed. Please make sure your .gitcookies '
+            'file has credentials for %s.' % host)
+    print('Try:\n  git cl creds-check')
+
+  reason = '%s: %s' % (response.reason, contents)
+  raise GerritError(response.status, reason)
 
 
 def ReadHttpJsonResponse(conn, accept_statuses=frozenset([200])):
@@ -597,7 +578,7 @@ def MultiQueryChanges(host, params, change_list, limit=None, o_params=None,
   if not change_list:
     raise RuntimeError(
         "MultiQueryChanges requires a list of change numbers/id's")
-  q = ['q=%s' % '+OR+'.join([urllib.quote(str(x)) for x in change_list])]
+  q = ['q=%s' % '+OR+'.join([urllib.parse.quote(str(x)) for x in change_list])]
   if params:
     q.append(_QueryString(params))
   if limit:
@@ -623,7 +604,8 @@ def GetGerritFetchUrl(host):
 def GetCodeReviewTbrScore(host, project):
   """Given a Gerrit host name and project, return the Code-Review score for TBR.
   """
-  conn = CreateHttpConn(host, '/projects/%s' % urllib.quote(project, safe=''))
+  conn = CreateHttpConn(
+      host, '/projects/%s' % urllib.parse.quote(project, ''))
   project = ReadHttpJsonResponse(conn)
   if ('labels' not in project
       or 'Code-Review' not in project['labels']
@@ -798,7 +780,7 @@ def AddReviewers(host, change, reviewers=None, ccs=None, notify=True,
   resp = ReadHttpJsonResponse(conn, accept_statuses=accept_statuses)
 
   errored = set()
-  for result in resp.get('reviewers', {}).itervalues():
+  for result in resp.get('reviewers', {}).values():
     r = result.get('input')
     state = 'REVIEWER' if r in reviewers else 'CC'
     if result.get('error'):
@@ -808,24 +790,6 @@ def AddReviewers(host, change, reviewers=None, ccs=None, notify=True,
     # Try again, adding only those that didn't fail, and only accepting 200.
     AddReviewers(host, change, reviewers=(reviewers-errored),
                  ccs=(ccs-errored), notify=notify, accept_statuses=[200])
-
-
-def RemoveReviewers(host, change, remove=None):
-  """Removes reviewers from a change."""
-  if not remove:
-    return
-  if isinstance(remove, basestring):
-    remove = (remove,)
-  for r in remove:
-    path = 'changes/%s/reviewers/%s' % (change, r)
-    conn = CreateHttpConn(host, path, reqtype='DELETE')
-    try:
-      ReadHttpResponse(conn, accept_statuses=[204])
-    except GerritError as e:
-      raise GerritError(
-          e.http_status,
-          'Received unexpected http status while deleting reviewer "%s" '
-          'from change %s' % (r, change))
 
 
 def SetReview(host, change, msg=None, labels=None, notify=None, ready=None):
@@ -845,7 +809,7 @@ def SetReview(host, change, msg=None, labels=None, notify=None, ready=None):
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   response = ReadHttpJsonResponse(conn)
   if labels:
-    for key, val in labels.iteritems():
+    for key, val in labels.items():
       if ('labels' not in response or key not in response['labels'] or
           int(response['labels'][key] != int(val))):
         raise GerritError(200, 'Unable to set "%s" label on change %s.' % (
@@ -953,7 +917,7 @@ def ValidAccounts(host, accounts, max_threads=10):
   Invalid accounts, either not existing or without unique match,
   are not present as returned dictionary keys.
   """
-  assert not isinstance(accounts, basestring), type(accounts)
+  assert not isinstance(accounts, str), type(accounts)
   accounts = list(set(accounts))
   if not accounts:
     return {}
@@ -1010,32 +974,4 @@ def ChangeIdentifier(project, change_number):
   comparing to specifying just change_number.
   """
   assert int(change_number)
-  return '%s~%s' % (urllib.quote(project, safe=''), change_number)
-
-
-# TODO(crbug/881860): remove this hack.
-_GERRIT_MIRROR_PREFIXES = ['us1', 'us2', 'us3', 'eu1']
-assert all(3 == len(p) for p in _GERRIT_MIRROR_PREFIXES)
-
-
-def _UseGerritMirror(url, host):
-  """Returns a new URL which uses randomly selected mirror for a Gerrit host.
-
-  The URL's host should be for a given host or a result of prior call to this
-  function.
-
-  Assumes that the URL has a single occurence of the host substring.
-  """
-  assert host in url
-  suffix = '-mirror-' + host
-  prefixes = set(_GERRIT_MIRROR_PREFIXES)
-  prefix_len = len(_GERRIT_MIRROR_PREFIXES[0])
-  st = url.find(suffix)
-  if st == -1:
-    actual_host = host
-  else:
-    # Already uses some mirror.
-    assert st >= prefix_len, (url, host, st, prefix_len)
-    prefixes.remove(url[st-prefix_len:st])
-    actual_host = url[st-prefix_len:st+len(suffix)]
-  return url.replace(actual_host, random.choice(list(prefixes)) + suffix)
+  return '%s~%s' % (urllib.parse.quote(project, ''), change_number)

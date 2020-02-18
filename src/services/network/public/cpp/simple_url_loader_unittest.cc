@@ -31,10 +31,10 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -46,11 +46,11 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_network_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -571,22 +571,22 @@ class SimpleURLLoaderTestBase {
  public:
   SimpleURLLoaderTestBase()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
-    network::mojom::NetworkServicePtr network_service_ptr;
-    network::mojom::NetworkServiceRequest network_service_request =
-        mojo::MakeRequest(&network_service_ptr);
-    network_service_ =
-        network::NetworkService::Create(std::move(network_service_request),
-                                        /*netlog=*/nullptr);
+    mojo::Remote<network::mojom::NetworkService> network_service_remote;
+    network_service_ = network::NetworkService::Create(
+        network_service_remote.BindNewPipeAndPassReceiver());
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
-    network_service_ptr->CreateNetworkContext(
-        mojo::MakeRequest(&network_context_), std::move(context_params));
+    network_service_remote->CreateNetworkContext(
+        network_context_.BindNewPipeAndPassReceiver(),
+        std::move(context_params));
 
-    network::mojom::NetworkServiceClientPtr network_service_client_ptr;
+    mojo::PendingRemote<network::mojom::NetworkServiceClient>
+        network_service_client_remote;
     network_service_client_ = std::make_unique<TestNetworkServiceClient>(
-        mojo::MakeRequest(&network_service_client_ptr));
-    network_service_ptr->SetClient(std::move(network_service_client_ptr),
-                                   network::mojom::NetworkServiceParams::New());
+        network_service_client_remote.InitWithNewPipeAndPassReceiver());
+    network_service_remote->SetClient(
+        std::move(network_service_client_remote),
+        network::mojom::NetworkServiceParams::New());
 
     mojo::PendingRemote<network::mojom::NetworkContextClient>
         network_context_client_remote;
@@ -598,8 +598,11 @@ class SimpleURLLoaderTestBase {
         mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
+    url::Origin origin = url::Origin::Create(test_server_.base_url());
+    params->network_isolation_key = net::NetworkIsolationKey(origin, origin);
+    params->is_trusted = true;
     network_context_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_), std::move(params));
+        url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));
 
     test_server_.AddDefaultHandlers(base::FilePath(FILE_PATH_LITERAL("")));
     test_server_.RegisterRequestHandler(
@@ -640,8 +643,8 @@ class SimpleURLLoaderTestBase {
   std::unique_ptr<network::mojom::NetworkService> network_service_;
   std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
   std::unique_ptr<network::mojom::NetworkContextClient> network_context_client_;
-  network::mojom::NetworkContextPtr network_context_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
 
   net::test_server::EmbeddedTestServer test_server_;
 
@@ -671,6 +674,11 @@ class SimpleURLLoaderTest
     resource_request->url = url;
     resource_request->method = method;
     resource_request->enable_upload_progress = true;
+    resource_request->trusted_params =
+        network::ResourceRequest::TrustedParams();
+    url::Origin request_origin = url::Origin::Create(url);
+    resource_request->trusted_params->network_isolation_key =
+        net::NetworkIsolationKey(request_origin, request_origin);
     return std::make_unique<SimpleLoaderTestHelper>(std::move(resource_request),
                                                     GetParam());
   }
@@ -734,6 +742,29 @@ TEST_P(SimpleURLLoaderTest, Redirect) {
   }
 }
 
+// Redirect to a file:// URL.
+TEST_P(SimpleURLLoaderTest, RedirectFile) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper = CreateHelperForURL(
+      test_server_.GetURL("/server-redirect?file:///etc/passwd"));
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+
+  EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME,
+            test_helper->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper->simple_url_loader()->ResponseInfo());
+}
+
+// Redirect to a data:// URL.
+TEST_P(SimpleURLLoaderTest, RedirectData) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelperForURL(test_server_.GetURL(
+          "/server-redirect?data:text/plain;charset=utf-8;base64,Zm9v"));
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+
+  EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME,
+            test_helper->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper->simple_url_loader()->ResponseInfo());
+}
+
 // Make sure OnRedirectCallback is invoked on a redirect.
 TEST_P(SimpleURLLoaderTest, OnRedirectCallback) {
   std::unique_ptr<SimpleLoaderTestHelper> test_helper =
@@ -742,16 +773,16 @@ TEST_P(SimpleURLLoaderTest, OnRedirectCallback) {
 
   int num_redirects = 0;
   net::RedirectInfo redirect_info;
-  network::ResourceResponseHead response_head;
+  network::mojom::URLResponseHeadPtr response_head;
   test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
       [](int* num_redirects, net::RedirectInfo* redirect_info_ptr,
-         network::ResourceResponseHead* response_head_ptr,
+         network::mojom::URLResponseHeadPtr* response_head_ptr,
          const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head,
+         const network::mojom::URLResponseHead& response_head,
          std::vector<std::string>* to_be_removed_headers) {
         ++*num_redirects;
         *redirect_info_ptr = redirect_info;
-        *response_head_ptr = response_head;
+        *response_head_ptr = response_head.Clone();
       },
       base::Unretained(&num_redirects), base::Unretained(&redirect_info),
       base::Unretained(&response_head)));
@@ -765,8 +796,8 @@ TEST_P(SimpleURLLoaderTest, OnRedirectCallback) {
 
   EXPECT_EQ(1, num_redirects);
   EXPECT_EQ(test_server_.GetURL("/echo"), redirect_info.new_url);
-  ASSERT_TRUE(response_head.headers);
-  EXPECT_EQ(301, response_head.headers->response_code());
+  ASSERT_TRUE(response_head->headers);
+  EXPECT_EQ(301, response_head->headers->response_code());
 }
 
 // Make sure OnRedirectCallback is invoked on each redirect.
@@ -780,7 +811,7 @@ TEST_P(SimpleURLLoaderTest, OnRedirectCallbackTwoRedirects) {
   int num_redirects = 0;
   test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
       [](int* num_redirects, const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head,
+         const network::mojom::URLResponseHead& response_head,
          std::vector<std::string>* to_be_removed_headers) { ++*num_redirects; },
       base::Unretained(&num_redirects)));
 
@@ -805,7 +836,7 @@ TEST_P(SimpleURLLoaderTest, DeleteInOnRedirectCallback) {
       base::BindRepeating(
           [](std::unique_ptr<SimpleLoaderTestHelper> test_helper,
              base::RunLoop* run_loop, const net::RedirectInfo& redirect_info,
-             const network::ResourceResponseHead& response_head,
+             const network::mojom::URLResponseHead& response_head,
              std::vector<std::string>* to_be_removed_headers) {
             test_helper.reset();
             // Access the parameters to trigger a memory error if they have been
@@ -835,7 +866,7 @@ TEST_P(SimpleURLLoaderTest, UploadShortStringWithRedirect) {
   int num_redirects = 0;
   test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
       [](int* num_redirects, const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head,
+         const network::mojom::URLResponseHead& response_head,
          std::vector<std::string>* to_be_removed_headers) { ++*num_redirects; },
       base::Unretained(&num_redirects)));
 
@@ -863,7 +894,7 @@ TEST_P(SimpleURLLoaderTest, UploadLongStringWithRedirect) {
   int num_redirects = 0;
   test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
       [](int* num_redirects, const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head,
+         const network::mojom::URLResponseHead& response_head,
          std::vector<std::string>* to_be_removed_headers) { ++*num_redirects; },
       base::Unretained(&num_redirects)));
 
@@ -895,7 +926,7 @@ TEST_P(SimpleURLLoaderTest,
   int num_redirects = 0;
   test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
       [](int* num_redirects, const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head,
+         const network::mojom::URLResponseHead& response_head,
          std::vector<std::string>* to_be_removed_headers) {
         ++*num_redirects;
         to_be_removed_headers->push_back("foo");
@@ -929,7 +960,7 @@ TEST_P(SimpleURLLoaderTest,
   int num_redirects = 0;
   test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
       [](int* num_redirects, const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head,
+         const network::mojom::URLResponseHead& response_head,
          std::vector<std::string>* to_be_removed_headers) {
         ++*num_redirects;
         to_be_removed_headers->push_back("bar");
@@ -964,7 +995,7 @@ TEST_P(SimpleURLLoaderTest, OnResponseStartedCallback) {
   test_helper->simple_url_loader()->SetOnResponseStartedCallback(base::BindOnce(
       [](GURL* out_final_url, std::string* foo_header_value,
          base::OnceClosure quit_closure, const GURL& final_url,
-         const ResourceResponseHead& response_head) {
+         const mojom::URLResponseHead& response_head) {
         *out_final_url = final_url;
         if (response_head.headers) {
           response_head.headers->EnumerateHeader(/*iter=*/nullptr, "foo",
@@ -990,7 +1021,7 @@ TEST_P(SimpleURLLoaderTest, DeleteInOnResponseStartedCallback) {
       base::BindOnce(
           [](std::unique_ptr<SimpleLoaderTestHelper> test_helper,
              base::OnceClosure quit_closure, const GURL& final_url,
-             const ResourceResponseHead& response_head) {
+             const mojom::URLResponseHead& response_head) {
             // Delete the SimpleURLLoader.
             test_helper.reset();
             // Access the parameters to trigger a memory error if they have been
@@ -1711,19 +1742,21 @@ enum class TestLoaderEvent {
 // unexpected order, to test handling of events from less trusted processes.
 class MockURLLoader : public network::mojom::URLLoader {
  public:
-  MockURLLoader(base::test::TaskEnvironment* task_environment,
-                network::mojom::URLLoaderRequest url_loader_request,
-                network::mojom::URLLoaderClientPtr client,
-                std::vector<TestLoaderEvent> test_events,
-                scoped_refptr<network::ResourceRequestBody> request_body)
+  MockURLLoader(
+      base::test::TaskEnvironment* task_environment,
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      std::vector<TestLoaderEvent> test_events,
+      scoped_refptr<network::ResourceRequestBody> request_body)
       : task_environment_(task_environment),
-        binding_(this, std::move(url_loader_request)),
+        receiver_(this, std::move(url_loader_receiver)),
         client_(std::move(client)),
         test_events_(std::move(test_events)) {
     if (request_body && request_body->elements()->size() == 1 &&
         (*request_body->elements())[0].type() ==
             network::mojom::DataElementType::kDataPipe) {
-      data_pipe_getter_ = (*request_body->elements())[0].CloneDataPipeGetter();
+      data_pipe_getter_.Bind(
+          (*request_body->elements())[0].CloneDataPipeGetter());
       DCHECK(data_pipe_getter_);
     }
   }
@@ -1801,41 +1834,41 @@ class MockURLLoader : public network::mojom::URLLoader {
           redirect_info.new_url = GURL("bar://foo/");
           redirect_info.status_code = 301;
 
-          network::ResourceResponseHead response_info;
+          auto response_info = network::mojom::URLResponseHead::New();
           std::string headers(
               "HTTP/1.0 301 The Response Has Moved to Another Server\n"
               "Location: bar://foo/");
-          response_info.headers =
+          response_info->headers =
               base::MakeRefCounted<net::HttpResponseHeaders>(
                   net::HttpUtil::AssembleRawHeaders(headers));
-          client_->OnReceiveRedirect(redirect_info, response_info);
+          client_->OnReceiveRedirect(redirect_info, std::move(response_info));
           break;
         }
         case TestLoaderEvent::kReceivedResponse: {
-          network::ResourceResponseHead response_info;
+          auto response_info = network::mojom::URLResponseHead::New();
           std::string headers("HTTP/1.0 200 OK");
-          response_info.headers =
+          response_info->headers =
               base::MakeRefCounted<net::HttpResponseHeaders>(
                   net::HttpUtil::AssembleRawHeaders(headers));
-          client_->OnReceiveResponse(response_info);
+          client_->OnReceiveResponse(std::move(response_info));
           break;
         }
         case TestLoaderEvent::kReceived401Response: {
-          network::ResourceResponseHead response_info;
+          auto response_info = network::mojom::URLResponseHead::New();
           std::string headers("HTTP/1.0 401 Client Borkage");
-          response_info.headers =
+          response_info->headers =
               base::MakeRefCounted<net::HttpResponseHeaders>(
                   net::HttpUtil::AssembleRawHeaders(headers));
-          client_->OnReceiveResponse(response_info);
+          client_->OnReceiveResponse(std::move(response_info));
           break;
         }
         case TestLoaderEvent::kReceived501Response: {
-          network::ResourceResponseHead response_info;
+          auto response_info = network::mojom::URLResponseHead::New();
           std::string headers("HTTP/1.0 501 Server Borkage");
-          response_info.headers =
+          response_info->headers =
               base::MakeRefCounted<net::HttpResponseHeaders>(
                   net::HttpUtil::AssembleRawHeaders(headers));
-          client_->OnReceiveResponse(response_info);
+          client_->OnReceiveResponse(std::move(response_info));
           break;
         }
         case TestLoaderEvent::kBodyBufferReceived: {
@@ -1896,7 +1929,7 @@ class MockURLLoader : public network::mojom::URLLoader {
         }
         case TestLoaderEvent::kClientPipeClosed: {
           DCHECK(client_);
-          EXPECT_TRUE(binding_.is_bound());
+          EXPECT_TRUE(receiver_.is_bound());
           client_.reset();
           break;
         }
@@ -1950,14 +1983,14 @@ class MockURLLoader : public network::mojom::URLLoader {
   base::test::TaskEnvironment* task_environment_;
 
   std::unique_ptr<net::URLRequest> url_request_;
-  mojo::Binding<network::mojom::URLLoader> binding_;
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Receiver<network::mojom::URLLoader> receiver_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   std::vector<TestLoaderEvent> test_events_;
 
   mojo::ScopedDataPipeProducerHandle body_stream_;
 
-  network::mojom::DataPipeGetterPtr data_pipe_getter_;
+  mojo::Remote<network::mojom::DataPipeGetter> data_pipe_getter_;
   mojo::ScopedDataPipeConsumerHandle upload_data_pipe_;
 
   std::unique_ptr<base::RunLoop> read_run_loop_;
@@ -1976,28 +2009,30 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   // network::mojom::URLLoaderFactory implementation:
 
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest url_loader_request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& url_request,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
     ASSERT_FALSE(test_events_.empty());
     requested_urls_.push_back(url_request.url);
     url_loaders_.push_back(std::make_unique<MockURLLoader>(
-        task_environment_, std::move(url_loader_request), std::move(client),
+        task_environment_, std::move(url_loader_receiver), std::move(client),
         test_events_.front(), url_request.request_body));
     test_events_.pop_front();
 
     url_loader_queue_.push_back(url_loaders_.back().get());
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    mojo::BindingId id = binding_set_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
+    mojo::ReceiverId id = receiver_set_.Add(this, std::move(receiver));
     if (close_new_binding_on_clone_)
-      binding_set_.RemoveBinding(id);
+      receiver_set_.Remove(id);
   }
 
   // Makes clone fail close the newly created binding after bining the request,
@@ -2018,8 +2053,8 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
   // Runs all events for all created URLLoaders, in order.
   void RunTest(SimpleLoaderTestHelper* test_helper,
                bool wait_for_completion = true) {
-    network::mojom::URLLoaderFactoryPtr factory;
-    binding_set_.AddBinding(this, mojo::MakeRequest(&factory));
+    mojo::Remote<network::mojom::URLLoaderFactory> factory;
+    receiver_set_.Add(this, factory.BindNewPipeAndPassReceiver());
 
     test_helper->StartSimpleLoader(factory.get());
 
@@ -2054,7 +2089,7 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   std::list<GURL> requested_urls_;
 
-  mojo::BindingSet<network::mojom::URLLoaderFactory> binding_set_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receiver_set_;
 
   DISALLOW_COPY_AND_ASSIGN(MockURLLoaderFactory);
 };
@@ -2514,7 +2549,7 @@ TEST_P(SimpleURLLoaderTest, RetryAfterRedirect) {
       1, SimpleURLLoader::RETRY_ON_5XX);
   test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
       [](int* num_redirects, const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head,
+         const network::mojom::URLResponseHead& response_head,
          std::vector<std::string>* to_be_removed_headers) { ++*num_redirects; },
       base::Unretained(&num_redirects)));
   loader_factory.RunTest(test_helper.get());

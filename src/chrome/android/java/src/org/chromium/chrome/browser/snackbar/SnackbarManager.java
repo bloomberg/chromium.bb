@@ -6,19 +6,19 @@ package org.chromium.chrome.browser.snackbar;
 
 import android.app.Activity;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.infobar.InfoBar;
-import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Manager for the snackbar showing at the bottom of activity. There should be only one
@@ -30,8 +30,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
  * {@link SnackbarController#onDismissNoAction(Object)}. Note, snackbars of
  * {@link Snackbar#TYPE_PERSISTENT} do not get automatically dismissed after a timeout.
  */
-public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBarContainerObserver,
-                                        ActivityStateListener {
+public class SnackbarManager implements OnClickListener, ActivityStateListener {
     /**
      * Interface that shows the ability to provide a snackbar manager.
      */
@@ -74,6 +73,7 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
     private boolean mActivityInForeground;
     private boolean mIsDisabledForTesting;
     private ViewGroup mSnackbarParentView;
+    private final WindowAndroid mWindowAndroid;
     private final Runnable mHideRunnable = new Runnable() {
         @Override
         public void run() {
@@ -85,13 +85,16 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
     /**
      * Constructs a SnackbarManager to show snackbars in the given window.
      * @param activity The embedding activity.
-     * @param snackbarParentView The ViewGroup used to display snackbars. If this is null, the
-     *                           {@link SnackbarView} will determine where to attach the snackbar.
+     * @param snackbarParentView The ViewGroup used to display this snackbar.
+     * @param windowAndroid The WindowAndroid used for starting animation. If it is null,
+     *                      Animator#start is called instead.
      */
-    public SnackbarManager(Activity activity, @Nullable ViewGroup snackbarParentView) {
+    public SnackbarManager(Activity activity, ViewGroup snackbarParentView,
+            @Nullable WindowAndroid windowAndroid) {
         mActivity = activity;
         mUIThreadHandler = new Handler();
         mSnackbarParentView = snackbarParentView;
+        mWindowAndroid = windowAndroid;
 
         ApplicationStatus.registerStateListenerForActivity(this, mActivity);
         if (ApplicationStatus.getStateForActivity(mActivity) == ActivityState.STARTED
@@ -179,23 +182,17 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
         updateView();
     }
 
-    // InfoBarContainerObserver implementation.
-    @Override
-    public void onAddInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isFirst) {
+    /**
+     * After an infobar is added, brings snackbar view above it.
+     * TODO(crbug/1028382): Currently SnackbarManager doesn't observe InfobarContainer events.
+     * Restore this functionality, only without references to Infobar classes.
+     */
+    public void onAddInfoBar() {
         // Bring Snackbars to the foreground so that it's not blocked by infobars.
         if (isShowing()) {
             mView.bringToFront();
         }
     }
-
-    @Override
-    public void onRemoveInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isLast) {}
-
-    @Override
-    public void onInfoBarContainerAttachedToWindow(boolean hasInfobars) {}
-
-    @Override
-    public void onInfoBarContainerShownRatioChanged(InfoBarContainer container, float shownRatio) {}
 
     /**
      * Temporarily changes the parent {@link ViewGroup} of the snackbar. If a snackbar is currently
@@ -233,7 +230,8 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
         } else {
             boolean viewChanged = true;
             if (mView == null) {
-                mView = new SnackbarView(mActivity, this, currentSnackbar, mSnackbarParentView);
+                mView = new SnackbarView(
+                        mActivity, this, currentSnackbar, mSnackbarParentView, mWindowAndroid);
                 mView.show();
             } else {
                 viewChanged = mView.update(currentSnackbar);
@@ -257,8 +255,9 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
 
         if (AccessibilityUtil.isAccessibilityEnabled()) {
             durationMs *= 2;
-            if (durationMs < sAccessibilitySnackbarDurationMs)
+            if (durationMs < sAccessibilitySnackbarDurationMs) {
                 durationMs = sAccessibilitySnackbarDurationMs;
+            }
         }
 
         return durationMs;

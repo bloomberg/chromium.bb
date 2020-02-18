@@ -25,6 +25,8 @@ static_library("base") {
     "avatar_icon_util.h",
     "device_id_helper.cc",
     "device_id_helper.h",
+    "multilogin_parameters.cc",
+    "multilogin_parameters.h",
     "signin_client.cc",
     "signin_client.h",
     "signin_metrics.cc",
@@ -49,6 +51,14 @@ static_library("base") {
 
   if (is_chromeos) {
     deps += [ "//components/user_manager" ]
+  }
+}
+
+if (is_android) {
+  java_cpp_enum("signin_metrics_enum_javagen") {
+    sources = [
+      "signin_metrics.h",
+    ]
   }
 }
 

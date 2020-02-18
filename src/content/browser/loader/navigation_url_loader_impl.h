@@ -14,8 +14,11 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/previews_state.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace net {
 struct RedirectInfo;
@@ -54,7 +57,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
                       PreviewsState new_previews_state) override;
 
   void OnReceiveResponse(
-      scoped_refptr<network::ResourceResponse> response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       mojo::ScopedDataPipeConsumerHandle response_body,
       const GlobalRequestID& global_request_id,
@@ -62,7 +65,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
       base::TimeDelta total_ui_to_io_time,
       base::Time io_post_time);
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         scoped_refptr<network::ResourceResponse> response,
+                         network::mojom::URLResponseHeadPtr response,
                          base::Time io_post_time);
   void OnComplete(const network::URLLoaderCompletionStatus& status);
 
@@ -71,7 +74,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // schemes not handled by network service (e.g. files). This must be called on
   // the UI thread or before threads start.
   using URLLoaderFactoryInterceptor = base::RepeatingCallback<void(
-      network::mojom::URLLoaderFactoryRequest* request)>;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* receiver)>;
   static void SetURLLoaderFactoryInterceptorForTesting(
       const URLLoaderFactoryInterceptor& interceptor);
 
@@ -92,7 +95,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   class URLLoaderRequestController;
   void OnRequestStarted(base::TimeTicks timestamp);
 
-  void BindNonNetworkURLLoaderFactoryRequest(
+  void BindNonNetworkURLLoaderFactoryReceiver(
       int frame_tree_node_id,
       const GURL& url,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver);

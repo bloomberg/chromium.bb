@@ -64,6 +64,9 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
 
   void Tick(base::TimeTicks monotonic_time) override;
 
+  void UpdateState(bool start_ready_animations,
+                   AnimationEvents* events) override;
+
   void UpdateInputState(MutatorInputState* input_state,
                         base::TimeTicks monotonic_time,
                         const ScrollTree& scroll_tree,
@@ -130,7 +133,7 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   }
 
   // Updates the playback rate of the Impl thread instance.
-  // Called by the UI thread WorletAnimation instance during commit.
+  // Called by the UI thread WorkletAnimation instance during commit.
   void SetPlaybackRate(double playback_rate);
 
   bool IsTimelineActive(const ScrollTree& scroll_tree,
@@ -163,6 +166,11 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   // The value comes from the user script that runs inside the animation worklet
   // global scope.
   base::Optional<base::TimeDelta> local_time_;
+  // Local time passed to the main thread worklet animation to update its
+  // keyframe effect. We only set the most recent local time, meaning that if
+  // there are multiple compositor frames without a single main frame only
+  // the local time associated with the latest frame is sent to the main thread.
+  base::Optional<base::TimeDelta> last_synced_local_time_;
 
   base::Optional<base::TimeTicks> start_time_;
 

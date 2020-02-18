@@ -10,7 +10,10 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include <string>
+#include <utility>
 
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -112,14 +115,22 @@ void TabRestoreServiceHelper::BrowserClosing(LiveTabContext* context) {
   window->show_state = context->GetRestoredState();
   window->workspace = context->GetWorkspace();
 
+  base::flat_set<base::Token> seen_groups;
   for (int tab_index = 0; tab_index < context->GetTabCount(); ++tab_index) {
     auto tab = std::make_unique<Tab>();
     PopulateTab(tab.get(), tab_index, context,
                 context->GetLiveTabAt(tab_index));
     if (!tab->navigations.empty()) {
+      if (tab->group.has_value())
+        seen_groups.insert(tab->group.value());
       tab->browser_id = context->GetSessionID().id();
       window->tabs.push_back(std::move(tab));
     }
+  }
+
+  for (const base::Token& group : seen_groups) {
+    TabGroupMetadata metadata = context->GetTabGroupMetadata(group);
+    window->tab_groups.emplace(group, std::move(metadata));
   }
 
   if (window->tabs.size() == 1 && window->app_name.empty()) {
@@ -307,6 +318,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
           LiveTab* restored_tab = context->AddRestoredTab(
               tab.navigations, context->GetTabCount(),
               tab.current_navigation_index, tab.extension_app_id, tab.group,
+              base::OptionalOrNullptr(tab.group_metadata),
               static_cast<int>(tab_i) == window.selected_tab_index, tab.pinned,
               tab.from_last_session, tab.platform_data.get(),
               tab.user_agent_override);
@@ -316,6 +328,11 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
             live_tabs.push_back(restored_tab);
           }
         }
+
+        for (const auto& tab_group : window.tab_groups) {
+          context->SetTabGroupMetadata(tab_group.first, tab_group.second);
+        }
+
         // All the window's tabs had the same former browser_id.
         if (auto browser_id = window.tabs[0]->browser_id) {
           UpdateTabBrowserIDs(browser_id, context->GetSessionID());
@@ -539,6 +556,11 @@ void TabRestoreServiceHelper::PopulateTab(Tab* tab,
     tab->browser_id = context->GetSessionID().id();
     tab->pinned = context->IsTabPinned(tab->tabstrip_index);
     tab->group = context->GetTabGroupForTab(tab->tabstrip_index);
+    tab->group_metadata =
+        tab->group.has_value()
+            ? base::Optional<TabGroupMetadata>{context->GetTabGroupMetadata(
+                  tab->group.value())}
+            : base::nullopt;
   }
 }
 
@@ -583,7 +605,8 @@ LiveTabContext* TabRestoreServiceHelper::RestoreTab(
 
     restored_tab = context->AddRestoredTab(
         tab.navigations, tab_index, tab.current_navigation_index,
-        tab.extension_app_id, base::nullopt,
+        tab.extension_app_id, tab.group,
+        base::OptionalOrNullptr(tab.group_metadata),
         disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB, tab.pinned,
         tab.from_last_session, tab.platform_data.get(),
         tab.user_agent_override);

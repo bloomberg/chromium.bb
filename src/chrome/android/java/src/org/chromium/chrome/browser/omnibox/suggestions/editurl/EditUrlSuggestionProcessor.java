@@ -6,12 +6,13 @@ package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
@@ -27,8 +28,8 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.share.ShareMenuActionHandler;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -218,9 +219,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
                     mDesiredFaviconWidthPx,
                     (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
                             int iconType) -> {
-                        if (!mSuggestionHost.isActiveModel(model)) return;
                         model.set(EditUrlSuggestionProperties.SITE_FAVICON, icon);
-                        mSuggestionHost.notifyPropertyModelsChanged();
                     });
         }
 
@@ -304,8 +303,11 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
             mLocationBarDelegate.clearOmniboxFocus();
             // TODO(mdjones): This should only share the displayed URL instead of the background
             //                tab.
-            ShareMenuActionHandler.getInstance().onShareMenuItemSelected(
-                    activityTab.getActivity(), activityTab, false, activityTab.isIncognito());
+            ((TabImpl) activityTab)
+                    .getActivity()
+                    .getShareDelegateSupplier()
+                    .get()
+                    .share(activityTab, false);
         } else if (R.id.url_edit_icon == view.getId()) {
             ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.EDIT);
             ACTION_EDIT_URL_SUGGESTION_EDIT.record();

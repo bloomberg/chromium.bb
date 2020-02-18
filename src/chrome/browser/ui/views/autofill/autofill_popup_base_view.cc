@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -87,8 +88,8 @@ void AutofillPopupBaseView::DoShow() {
     params.parent = parent_widget_ ? parent_widget_->GetNativeView()
                                    : delegate_->container_view();
     // Ensure the bubble border is not painted on an opaque background.
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-    params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+    params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
     widget->Init(std::move(params));
     widget->AddObserver(this);
 

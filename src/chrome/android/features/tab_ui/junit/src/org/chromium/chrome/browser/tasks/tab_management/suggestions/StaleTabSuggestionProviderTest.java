@@ -40,7 +40,7 @@ public class StaleTabSuggestionProviderTest {
     TabContext mTabContext;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
@@ -51,13 +51,13 @@ public class StaleTabSuggestionProviderTest {
     @Test
     @Feature({"StaleTabSuggestionProvider"})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-            "enable-features=" + ChromeFeatureList.CLOSE_TAB_SUGGESTIONS_STALE + "<FakeStudyName",
+            "enable-features=" + ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<FakeStudyName",
             "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:"
                     + "close_tab_suggestions_stale_time_ms/86400000"})
     // 86400000 milliseconds = 1 day
     public void
-    testIdentifyStaleTabs() throws Exception {
+    testIdentifyStaleTabs() {
         StaleTabSuggestionProvider staleSuggestionsProvider = new StaleTabSuggestionProvider();
         List<TabContext.TabInfo> tabInfos = new ArrayList<>();
         tabInfos.add(new TabContext.TabInfo(3, "mock_recent_title", "mock_recent_url",

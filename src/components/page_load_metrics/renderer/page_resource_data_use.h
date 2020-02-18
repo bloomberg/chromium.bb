@@ -9,12 +9,12 @@
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/origin.h"
 
 class GURL;
 
 namespace network {
-struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 }  // namespace network
 
@@ -30,7 +30,7 @@ class PageResourceDataUse {
 
   void DidStartResponse(const GURL& response_url,
                         int resource_id,
-                        const network::ResourceResponseHead& response_head,
+                        const network::mojom::URLResponseHead& response_head,
                         content::ResourceType resource_type,
                         content::PreviewsState previews_state);
 
@@ -51,13 +51,14 @@ class PageResourceDataUse {
                               const std::string& mime_type);
 
   // Checks if the resource has completed loading or if the response was
-  // cancelled.
+  // canceled.
   bool IsFinishedLoading();
 
   int resource_id() const { return resource_id_; }
 
   void SetReportedAsAdResource(bool reported_as_ad_resource);
   void SetIsMainFrameResource(bool is_main_frame_resource);
+  void SetCompletedBeforeFCP(bool completed_before_fcp);
 
   // Creates a ResourceDataUpdate mojo for this resource. This page resource
   // contains information since the last time update. Should be called at most
@@ -85,7 +86,8 @@ class PageResourceDataUse {
   bool is_main_frame_resource_;
   bool is_secure_scheme_;
   bool proxy_used_;
-  bool is_primary_frame_resource_ = false;
+  bool is_primary_frame_resource_;
+  bool completed_before_fcp_;
 
   mojom::CacheType cache_type_;
 

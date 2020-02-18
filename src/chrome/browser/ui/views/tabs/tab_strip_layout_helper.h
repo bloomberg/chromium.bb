@@ -54,6 +54,11 @@ class TabStripLayoutHelper {
   // Returns the number of pinned tabs in the tabstrip.
   int GetPinnedTabCount() const;
 
+  // Returns a map of all tab groups and their bounds.
+  const std::map<TabGroupId, gfx::Rect>& group_header_ideal_bounds() const {
+    return group_header_ideal_bounds_;
+  }
+
   // Inserts a new tab at |index|, without animation. |tab_removed_callback|
   // will be invoked if the tab is removed at the end of a remove animation.
   void InsertTabAtNoAnimation(int model_index,
@@ -84,8 +89,10 @@ class TabStripLayoutHelper {
   // tabstrip will only happen after ExitTabClosingMode().
   void EnterTabClosingMode(int available_width);
 
-  // Notifies this that the tabstrip has left tab closing mode.
-  void ExitTabClosingMode();
+  // Called when the tabstrip has left tab closing mode or when falling back
+  // to the old animation system while in closing mode. Returns the current
+  // available width.
+  base::Optional<int> ExitTabClosingMode();
 
   // Invoked when |tab| has been destroyed by TabStrip (i.e. the remove
   // animation has completed).
@@ -141,7 +148,7 @@ class TabStripLayoutHelper {
 
   // Lays out tabs and group headers to their current bounds. Returns the
   // x-coordinate of the trailing edge of the trailing-most tab.
-  int LayoutTabs(int available_width);
+  int LayoutTabs(base::Optional<int> available_width);
 
  private:
   struct TabSlot;
@@ -179,6 +186,13 @@ class TabStripLayoutHelper {
   // as appropriate.
   void UpdateCachedTabWidth(int tab_index, int tab_width, bool active);
 
+  // The tabstrip may enter 'closing mode' when tabs are closed with the mouse.
+  // In closing mode, the ideal widths of tabs are manipulated to control which
+  // tab ends up under the cursor after each remove animation completes - the
+  // next tab to the right, if it exists, or the next tab to the left otherwise.
+  // Returns true if any width constraint is currently being enforced.
+  bool WidthsConstrainedForClosingMode();
+
   // The owning tabstrip's controller.
   const TabStripController* const controller_;
 
@@ -196,9 +210,18 @@ class TabStripLayoutHelper {
   // run layout and animations for those Views.
   std::vector<TabSlot> slots_;
 
-  // When in tab closing mode, tabs sometimes need to keep a fixed width. When
-  // defined, this TabSizer specifies that width.
-  base::Optional<TabSizer> cached_sizer_;
+  // Contains the ideal bounds of tab group headers.
+  std::map<TabGroupId, gfx::Rect> group_header_ideal_bounds_;
+
+  // When in tab closing mode, if we want the next tab to the right to end up
+  // under the cursor, each tab needs to stay the same size. When defined,
+  // this specifies that size.
+  base::Optional<TabWidthOverride> tab_width_override_;
+
+  // When in tab closing mode, if we want the next tab to the left to end up
+  // under the cursor, the overall space taken by tabs needs to stay the same.
+  // When defined, this specifies that size.
+  base::Optional<int> tabstrip_width_override_;
 
   // The current widths of tabs. If the space for tabs is not evenly divisible
   // into these widths, the initial tabs in the strip will be 1 px larger.

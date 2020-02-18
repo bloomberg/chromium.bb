@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/input_method/input_method_engine.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "chrome/test/base/testing_profile.h"
@@ -14,6 +15,9 @@
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace input_method {
 namespace {
@@ -83,10 +87,11 @@ class TestObserver : public InputMethodEngineBase::Observer {
   void OnKeyEvent(
       const std::string& engine_id,
       const InputMethodEngineBase::KeyboardEvent& event,
-      ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {
+      ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback) override {
     calls_bitmap_ |= ONKEYEVENT;
     engine_id_ = engine_id;
     key_event_ = event;
+    std::move(callback).Run(/* handled */ true);
   }
   void OnReset(const std::string& engine_id) override {
     calls_bitmap_ |= ONRESET;
@@ -101,7 +106,6 @@ class TestObserver : public InputMethodEngineBase::Observer {
     calls_bitmap_ |= ONCOMPOSITIONBOUNDSCHANGED;
     composition_bounds_ = bounds;
   }
-  bool IsInterestedInKeyEvent() const override { return true; }
   void OnSurroundingTextChanged(const std::string& engine_id,
                                 const std::string& text,
                                 int cursor_pos,
@@ -297,6 +301,19 @@ TEST_F(InputMethodEngineTest, TestDisableAfterSetComposition) {
 
   EXPECT_EQ(1, mock_ime_input_context_handler_->commit_text_call_count());
   EXPECT_EQ("hello", mock_ime_input_context_handler_->last_commit_text());
+}
+
+TEST_F(InputMethodEngineTest, KeyEventHandledRecordsLatencyHistogram) {
+  base::HistogramTester histogram_tester;
+
+  histogram_tester.ExpectTotalCount("InputMethod.KeyEventLatency", 0);
+
+  const ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A, 0,
+                           ui::DomKey::FromCharacter('a'),
+                           ui::EventTimeForNow());
+  engine_->ProcessKeyEvent(event, base::DoNothing());
+
+  histogram_tester.ExpectTotalCount("InputMethod.KeyEventLatency", 1);
 }
 
 }  // namespace input_method

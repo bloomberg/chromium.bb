@@ -30,22 +30,41 @@ class DbSqliteTable : public SqliteTable {
    public:
     explicit Cursor(DbSqliteTable* table);
 
+    Cursor(Cursor&&) noexcept = default;
+    Cursor& operator=(Cursor&&) = default;
+
     // Implementation of SqliteTable::Cursor.
-    int Filter(const QueryConstraints& qc, sqlite3_value** argv) override;
+    int Filter(const QueryConstraints& qc,
+               sqlite3_value** argv,
+               FilterHistory) override;
     int Next() override;
     int Eof() override;
     int Column(sqlite3_context*, int N) override;
 
    private:
+    Cursor(const Cursor&) = delete;
+    Cursor& operator=(const Cursor&) = delete;
+
     const Table* initial_db_table_ = nullptr;
 
     base::Optional<Table> db_table_;
     base::Optional<Table::Iterator> iterator_;
 
+    // Stores a sorted version of |db_table_| sorted on a repeated equals
+    // constraint. This allows speeding up repeated subqueries in joins
+    // significantly.
+    base::Optional<Table> sorted_cache_table_;
+
+    // Stores the count of repeated equality queries to decide whether it is
+    // wortwhile to sort |db_table_| to create |sorted_cache_table_|.
+    uint32_t repeated_cache_count_ = 0;
+
     std::vector<Constraint> constraints_;
     std::vector<Order> orders_;
-
-    bool eof_ = true;
+  };
+  struct QueryCost {
+    double cost;
+    uint32_t rows;
   };
 
   static void RegisterTable(sqlite3* db,
@@ -60,7 +79,11 @@ class DbSqliteTable : public SqliteTable {
                     const char* const*,
                     SqliteTable::Schema*) override final;
   std::unique_ptr<SqliteTable::Cursor> CreateCursor() override;
+  int ModifyConstraints(QueryConstraints*) override;
   int BestIndex(const QueryConstraints&, BestIndexInfo*) override;
+
+  // static for testing.
+  static QueryCost EstimateCost(const Table& table, const QueryConstraints& qc);
 
  private:
   const Table* table_ = nullptr;

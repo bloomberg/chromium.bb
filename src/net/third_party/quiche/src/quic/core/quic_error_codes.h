@@ -54,6 +54,8 @@ enum QuicRstStreamErrorCode {
   QUIC_HEADERS_TOO_LARGE,
   // The data is not likely arrive in time.
   QUIC_STREAM_TTL_EXPIRED,
+  // The stream received data that goes beyond its close offset.
+  QUIC_DATA_AFTER_CLOSE_OFFSET,
   // No error. Used as bound while iterating.
   QUIC_STREAM_LAST_ERROR,
 };
@@ -337,20 +339,44 @@ enum QuicErrorCode {
   // There are too many buffered control frames in control frame manager.
   QUIC_TOO_MANY_BUFFERED_CONTROL_FRAMES = 124,
 
+  // QuicTransport received invalid client indication.
+  QUIC_TRANSPORT_INVALID_CLIENT_INDICATION = 125,
+
+  // Internal error codes for QPACK errors.
+  QUIC_QPACK_DECOMPRESSION_FAILED = 126,
+  QUIC_QPACK_ENCODER_STREAM_ERROR = 127,
+  QUIC_QPACK_DECODER_STREAM_ERROR = 128,
+
+  // Received stream data beyond close offset.
+  QUIC_STREAM_DATA_BEYOND_CLOSE_OFFSET = 129,
+
+  // Received multiple close offset.
+  QUIC_STREAM_MULTIPLE_OFFSET = 130,
+
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 125,
+  QUIC_LAST_ERROR = 131,
 };
-// QuicErrorCodes is encoded as a single octet on-the-wire.
-static_assert(static_cast<int>(QUIC_LAST_ERROR) <=
-                  std::numeric_limits<uint8_t>::max(),
-              "QuicErrorCode exceeds single octet");
+// QuicErrorCodes is encoded as four octets on-the-wire when doing Google QUIC,
+// or a varint62 when doing IETF QUIC. Ensure that its value does not exceed
+// the smaller of the two limits.
+static_assert(static_cast<uint64_t>(QUIC_LAST_ERROR) <=
+                  static_cast<uint64_t>(std::numeric_limits<uint32_t>::max()),
+              "QuicErrorCode exceeds four octets");
 
 // Returns the name of the QuicRstStreamErrorCode as a char*
 QUIC_EXPORT_PRIVATE const char* QuicRstStreamErrorCodeToString(
     QuicRstStreamErrorCode error);
 
 // Returns the name of the QuicErrorCode as a char*
-QUIC_EXPORT const char* QuicErrorCodeToString(QuicErrorCode error);
+QUIC_EXPORT_PRIVATE const char* QuicErrorCodeToString(QuicErrorCode error);
+
+// Wire values for QPACK errors.
+// https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#error-code-registration
+enum QuicHttpQpackErrorCode {
+  IETF_QUIC_HTTP_QPACK_DECOMPRESSION_FAILED = 0x200,
+  IETF_QUIC_HTTP_QPACK_ENCODER_STREAM_ERROR = 0x201,
+  IETF_QUIC_HTTP_QPACK_DECODER_STREAM_ERROR = 0x202
+};
 
 QUIC_EXPORT_PRIVATE inline std::string HistogramEnumString(
     QuicErrorCode enum_value) {

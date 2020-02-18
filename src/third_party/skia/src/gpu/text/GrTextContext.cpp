@@ -32,10 +32,16 @@ static const int kSmallDFFontLimit = 32;
 static const int kMediumDFFontSize = 72;
 static const int kMediumDFFontLimit = 72;
 static const int kLargeDFFontSize = 162;
+#ifdef SK_BUILD_FOR_MAC
+static const int kLargeDFFontLimit = 162;
+static const int kExtraLargeDFFontSize = 256;
+#endif
 
 static const int kDefaultMinDistanceFieldFontSize = 18;
-#ifdef SK_BUILD_FOR_ANDROID
+#if defined(SK_BUILD_FOR_ANDROID)
 static const int kDefaultMaxDistanceFieldFontSize = 384;
+#elif defined(SK_BUILD_FOR_MAC)
+static const int kDefaultMaxDistanceFieldFontSize = kExtraLargeDFFontSize;
 #else
 static const int kDefaultMaxDistanceFieldFontSize = 2 * kLargeDFFontSize;
 #endif
@@ -70,12 +76,11 @@ SkColor GrTextContext::ComputeCanonicalColor(const SkPaint& paint, bool lcd) {
     return canonicalColor;
 }
 
-SkScalerContextFlags GrTextContext::ComputeScalerContextFlags(
-        const GrColorSpaceInfo& colorSpaceInfo) {
+SkScalerContextFlags GrTextContext::ComputeScalerContextFlags(const GrColorInfo& colorInfo) {
     // If we're doing linear blending, then we can disable the gamma hacks.
     // Otherwise, leave them on. In either case, we still want the contrast boost:
     // TODO: Can we be even smarter about mask gamma based on the dest transfer function?
-    if (colorSpaceInfo.isLinearlyBlended()) {
+    if (colorInfo.isLinearlyBlended()) {
         return SkScalerContextFlags::kBoostContrast;
     } else {
         return SkScalerContextFlags::kFakeGammaAndBoostContrast;
@@ -96,7 +101,21 @@ bool GrTextContext::CanDrawAsDistanceFields(const SkPaint& paint, const SkFont& 
                                             const SkSurfaceProps& props,
                                             bool contextSupportsDistanceFieldText,
                                             const Options& options) {
-    if (!viewMatrix.hasPerspective()) {
+    // mask filters modify alpha, which doesn't translate well to distance
+    if (paint.getMaskFilter() || !contextSupportsDistanceFieldText) {
+        return false;
+    }
+
+    // TODO: add some stroking support
+    if (paint.getStyle() != SkPaint::kFill_Style) {
+        return false;
+    }
+
+    if (viewMatrix.hasPerspective()) {
+        if (!options.fDistanceFieldVerticesAlwaysHaveW) {
+            return false;
+        }
+    } else {
         SkScalar maxScale = viewMatrix.getMaxScale();
         SkScalar scaledTextSize = maxScale * font.getSize();
         // Hinted text looks far better at small resolutions
@@ -114,16 +133,6 @@ bool GrTextContext::CanDrawAsDistanceFields(const SkPaint& paint, const SkFont& 
         if (!useDFT && scaledTextSize < kLargeDFFontSize) {
             return false;
         }
-    }
-
-    // mask filters modify alpha, which doesn't translate well to distance
-    if (paint.getMaskFilter() || !contextSupportsDistanceFieldText) {
-        return false;
-    }
-
-    // TODO: add some stroking support
-    if (paint.getStyle() != SkPaint::kFill_Style) {
-        return false;
     }
 
     return true;
@@ -164,10 +173,20 @@ SkFont GrTextContext::InitDistanceFieldFont(const SkFont& font,
     } else if (scaledTextSize <= kMediumDFFontLimit) {
         *textRatio = textSize / kMediumDFFontSize;
         dfFont.setSize(SkIntToScalar(kMediumDFFontSize));
+#ifdef SK_BUILD_FOR_MAC
+    } else if (scaledTextSize <= kLargeDFFontLimit) {
+        *textRatio = textSize / kLargeDFFontSize;
+        dfFont.setSize(SkIntToScalar(kLargeDFFontSize));
+    } else {
+        *textRatio = textSize / kExtraLargeDFFontSize;
+        dfFont.setSize(SkIntToScalar(kExtraLargeDFFontSize));
+    }
+#else
     } else {
         *textRatio = textSize / kLargeDFFontSize;
         dfFont.setSize(SkIntToScalar(kLargeDFFontSize));
     }
+#endif
 
     dfFont.setEdging(SkFont::Edging::kAntiAlias);
     dfFont.setForceAutoHinting(false);

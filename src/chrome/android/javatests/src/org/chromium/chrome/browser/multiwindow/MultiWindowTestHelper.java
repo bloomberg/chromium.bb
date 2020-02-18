@@ -11,7 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.junit.Assert;
 
@@ -116,7 +117,7 @@ public class MultiWindowTestHelper {
     private static void waitUntilActivityResumed(final Activity activity) {
         CriteriaHelper.pollUiThread(Criteria.equals(ActivityState.RESUMED, new Callable<Integer>() {
             @Override
-            public Integer call() throws Exception {
+            public Integer call() {
                 return ApplicationStatus.getStateForActivity(activity);
             }
         }));

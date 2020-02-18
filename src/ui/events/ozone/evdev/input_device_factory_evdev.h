@@ -12,20 +12,21 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/input_device_settings_evdev.h"
 #include "ui/events/ozone/evdev/touch_filter/shared_palm_detection_filter_state.h"
 #include "ui/ozone/public/input_controller.h"
 
 #if defined(USE_EVDEV_GESTURES)
-#include "ui/events/ozone/chromeos/gesture_properties_service.h"
+#include "ui/events/ozone/evdev/libgestures_glue/gesture_properties_service.h"
 #endif
 
 namespace ui {
@@ -34,7 +35,7 @@ class CursorDelegateEvdev;
 class DeviceEventDispatcherEvdev;
 
 #if !defined(USE_EVDEV)
-#error Missing dependency on ui/events/ozone:events_ozone_evdev
+#error Missing dependency on ui/events/ozone/evdev
 #endif
 
 #if defined(USE_EVDEV_GESTURES)
@@ -42,7 +43,7 @@ class GesturePropertyProvider;
 #endif
 
 // Manager for event device objects. All device I/O starts here.
-class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
+class COMPONENT_EXPORT(EVDEV) InputDeviceFactoryEvdev {
  public:
   InputDeviceFactoryEvdev(
       std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher,
@@ -68,7 +69,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
                         InputController::GetTouchEventLogReply reply);
 
   void GetGesturePropertiesService(
-      ozone::mojom::GesturePropertiesServiceRequest request);
+      mojo::PendingReceiver<ozone::mojom::GesturePropertiesService> receiver);
 
   base::WeakPtr<InputDeviceFactoryEvdev> GetWeakPtr();
 
@@ -106,10 +107,10 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
   void EnableDevices();
 
   // Task runner for our thread.
-  scoped_refptr<base::TaskRunner> task_runner_;
+  const scoped_refptr<base::TaskRunner> task_runner_;
 
   // Cursor movement.
-  CursorDelegateEvdev* cursor_;
+  CursorDelegateEvdev* const cursor_;
 
   // Shared Palm state.
   const std::unique_ptr<SharedPalmDetectionFilterState> shared_palm_state_;
@@ -121,7 +122,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 #endif
 
   // Dispatcher for events.
-  std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher_;
+  const std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher_;
 
   // Number of pending device additions & device classes.
   int pending_device_changes_ = 0;

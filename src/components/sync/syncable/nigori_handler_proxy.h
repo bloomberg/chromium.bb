@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_SYNCABLE_NIGORI_HANDLER_PROXY_H_
 #define COMPONENTS_SYNC_SYNCABLE_NIGORI_HANDLER_PROXY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -40,12 +41,15 @@ class NigoriHandlerProxy : public SyncEncryptionHandler::Observer,
       const KeyDerivationParams& key_derivation_params,
       const sync_pb::EncryptedData& pending_keys) override;
   void OnPassphraseAccepted() override;
+  void OnTrustedVaultKeyRequired() override;
+  void OnTrustedVaultKeyAccepted() override;
   void OnBootstrapTokenUpdated(const std::string& bootrstrap_token,
                                BootstrapTokenType type) override;
   void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                bool encrypt_everything) override;
   void OnEncryptionComplete() override;
-  void OnCryptographerStateChanged(Cryptographer* cryptographer) override;
+  void OnCryptographerStateChanged(Cryptographer* cryptographer,
+                                   bool has_pending_keys) override;
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time passphrase_time) override;
 
@@ -59,6 +63,8 @@ class NigoriHandlerProxy : public SyncEncryptionHandler::Observer,
       const syncable::BaseTransaction* const trans) const override;
   const Cryptographer* GetCryptographer(
       const syncable::BaseTransaction* const trans) const override;
+  const DirectoryCryptographer* GetDirectoryCryptographer(
+      const syncable::BaseTransaction* const trans) const override;
   ModelTypeSet GetEncryptedTypes(
       const syncable::BaseTransaction* const trans) const override;
   PassphraseType GetPassphraseType(
@@ -67,7 +73,7 @@ class NigoriHandlerProxy : public SyncEncryptionHandler::Observer,
  private:
   UserShare* user_share_;
 
-  Cryptographer cryptographer_;
+  std::unique_ptr<Cryptographer> cryptographer_;
   ModelTypeSet encrypted_types_;
   PassphraseType passphrase_type_;
 

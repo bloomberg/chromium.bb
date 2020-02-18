@@ -28,6 +28,7 @@
 #include "rtc_base/checks.h"
 #include "rtc_base/experiments/alr_experiment.h"
 #include "rtc_base/experiments/field_trial_parser.h"
+#include "rtc_base/experiments/min_video_bitrate_experiment.h"
 #include "rtc_base/experiments/rate_control_settings.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
@@ -53,60 +54,6 @@ bool TransportSeqNumExtensionConfigured(const VideoSendStream::Config& config) {
   return absl::c_any_of(extensions, [](const RtpExtension& ext) {
     return ext.uri == RtpExtension::kTransportSequenceNumberUri;
   });
-}
-
-const char kForcedFallbackFieldTrial[] =
-    "WebRTC-VP8-Forced-Fallback-Encoder-v2";
-
-const int kDefaultEncoderMinBitrateBps = 30000;
-const char kMinVideoBitrateExperiment[] = "WebRTC-Video-MinVideoBitrate";
-
-struct MinVideoBitrateConfig {
-  webrtc::FieldTrialParameter<webrtc::DataRate> min_video_bitrate;
-
-  MinVideoBitrateConfig()
-      : min_video_bitrate("br",
-                          webrtc::DataRate::bps(kDefaultEncoderMinBitrateBps)) {
-    webrtc::ParseFieldTrial(
-        {&min_video_bitrate},
-        webrtc::field_trial::FindFullName(kMinVideoBitrateExperiment));
-  }
-};
-
-absl::optional<int> GetFallbackMinBpsFromFieldTrial(VideoCodecType type) {
-  if (type != kVideoCodecVP8)
-    return absl::nullopt;
-
-  if (!webrtc::field_trial::IsEnabled(kForcedFallbackFieldTrial))
-    return absl::nullopt;
-
-  std::string group =
-      webrtc::field_trial::FindFullName(kForcedFallbackFieldTrial);
-  if (group.empty())
-    return absl::nullopt;
-
-  int min_pixels;
-  int max_pixels;
-  int min_bps;
-  if (sscanf(group.c_str(), "Enabled-%d,%d,%d", &min_pixels, &max_pixels,
-             &min_bps) != 3) {
-    return absl::nullopt;
-  }
-
-  if (min_bps <= 0)
-    return absl::nullopt;
-
-  return min_bps;
-}
-
-int GetEncoderMinBitrateBps(VideoCodecType type) {
-  if (GetFallbackMinBpsFromFieldTrial(type).has_value()) {
-    return GetFallbackMinBpsFromFieldTrial(type).value();
-  }
-  if (webrtc::field_trial::IsEnabled(kMinVideoBitrateExperiment)) {
-    return MinVideoBitrateConfig().min_video_bitrate->bps();
-  }
-  return kDefaultEncoderMinBitrateBps;
 }
 
 // Calculate max padding bitrate for a multi layer codec.
@@ -234,8 +181,7 @@ VideoSendStreamImpl::VideoSendStreamImpl(
     std::map<uint32_t, RtpState> suspended_ssrcs,
     std::map<uint32_t, RtpPayloadState> suspended_payload_states,
     VideoEncoderConfig::ContentType content_type,
-    std::unique_ptr<FecController> fec_controller,
-    MediaTransportInterface* media_transport)
+    std::unique_ptr<FecController> fec_controller)
     : clock_(clock),
       has_alr_probing_(config->periodic_alr_bandwidth_probing ||
                        GetAlrSettings(content_type)),
@@ -269,8 +215,7 @@ VideoSendStreamImpl::VideoSendStreamImpl(
           event_log,
           std::move(fec_controller),
           CreateFrameEncryptionConfig(config_))),
-      weak_ptr_factory_(this),
-      media_transport_(media_transport) {
+      weak_ptr_factory_(this) {
   video_stream_encoder->SetFecControllerOverride(rtp_video_sender_);
   RTC_DCHECK_RUN_ON(worker_queue_);
   RTC_LOG(LS_INFO) << "VideoSendStreamInternal: " << config_->ToString();
@@ -278,14 +223,7 @@ VideoSendStreamImpl::VideoSendStreamImpl(
 
   encoder_feedback_.SetRtpVideoSender(rtp_video_sender_);
 
-  if (media_transport_) {
-    // The configured ssrc is interpreted as a channel id, so there must be
-    // exactly one.
-    RTC_DCHECK_EQ(config_->rtp.ssrcs.size(), 1);
-    media_transport_->SetKeyFrameRequestCallback(&encoder_feedback_);
-  } else {
-    RTC_DCHECK(!config_->rtp.ssrcs.empty());
-  }
+  RTC_DCHECK(!config_->rtp.ssrcs.empty());
   RTC_DCHECK(call_stats_);
   RTC_DCHECK(transport_);
   RTC_DCHECK_NE(initial_encoder_max_bitrate, 0);
@@ -363,9 +301,6 @@ VideoSendStreamImpl::~VideoSendStreamImpl() {
       << "VideoSendStreamImpl::Stop not called";
   RTC_LOG(LS_INFO) << "~VideoSendStreamInternal: " << config_->ToString();
   transport_->DestroyRtpVideoSender(rtp_video_sender_);
-  if (media_transport_) {
-    media_transport_->SetKeyFrameRequestCallback(nullptr);
-  }
 }
 
 void VideoSendStreamImpl::RegisterProcessThread(
@@ -554,10 +489,16 @@ void VideoSendStreamImpl::OnEncoderConfigurationChanged(
   RTC_DCHECK_GE(config_->rtp.ssrcs.size(), streams.size());
   RTC_DCHECK_RUN_ON(worker_queue_);
 
+  const VideoCodecType codec_type =
+      PayloadStringToCodecType(config_->rtp.payload_name);
+
+  const absl::optional<DataRate> experimental_min_bitrate =
+      GetExperimentalMinVideoBitrate(codec_type);
   encoder_min_bitrate_bps_ =
-      std::max(streams[0].min_bitrate_bps,
-               GetEncoderMinBitrateBps(
-                   PayloadStringToCodecType(config_->rtp.payload_name)));
+      experimental_min_bitrate
+          ? experimental_min_bitrate->bps()
+          : std::max(streams[0].min_bitrate_bps, kDefaultMinVideoBitrateBps);
+
   encoder_max_bitrate_bps_ = 0;
   double stream_bitrate_priority_sum = 0;
   for (const auto& stream : streams) {
@@ -575,8 +516,6 @@ void VideoSendStreamImpl::OnEncoderConfigurationChanged(
                encoder_max_bitrate_bps_);
 
   // TODO(bugs.webrtc.org/10266): Query the VideoBitrateAllocator instead.
-  const VideoCodecType codec_type =
-      PayloadStringToCodecType(config_->rtp.payload_name);
   if (codec_type == kVideoCodecVP9) {
     max_padding_bitrate_ = has_alr_probing_ ? streams[0].min_bitrate_bps
                                             : streams[0].target_bitrate_bps;
@@ -630,31 +569,8 @@ EncodedImageCallback::Result VideoSendStreamImpl::OnEncodedImage(
   }
 
   EncodedImageCallback::Result result(EncodedImageCallback::Result::OK);
-  if (media_transport_) {
-    int64_t frame_id;
-    {
-      // TODO(nisse): Responsibility for allocation of frame ids should move to
-      // VideoStreamEncoder.
-      rtc::CritScope cs(&media_transport_id_lock_);
-      frame_id = media_transport_frame_id_++;
-    }
-    // TODO(nisse): Responsibility for reference meta data should be moved
-    // upstream, ideally close to the encoders, but probably VideoStreamEncoder
-    // will need to do some translation to produce reference info using frame
-    // ids.
-    std::vector<int64_t> referenced_frame_ids;
-    if (encoded_image._frameType != VideoFrameType::kVideoFrameKey) {
-      RTC_DCHECK_GT(frame_id, 0);
-      referenced_frame_ids.push_back(frame_id - 1);
-    }
-    media_transport_->SendVideoFrame(
-        config_->rtp.ssrcs[0], webrtc::MediaTransportEncodedVideoFrame(
-                                   frame_id, referenced_frame_ids,
-                                   config_->rtp.payload_type, encoded_image));
-  } else {
-    result = rtp_video_sender_->OnEncodedImage(
-        encoded_image, codec_specific_info, fragmentation);
-  }
+  result = rtp_video_sender_->OnEncodedImage(encoded_image, codec_specific_info,
+                                             fragmentation);
   // Check if there's a throttled VideoBitrateAllocation that we should try
   // sending.
   rtc::WeakPtr<VideoSendStreamImpl> send_stream = weak_ptr_;
@@ -674,6 +590,11 @@ EncodedImageCallback::Result VideoSendStreamImpl::OnEncodedImage(
   }
 
   return result;
+}
+
+void VideoSendStreamImpl::OnDroppedFrame(
+    EncodedImageCallback::DropReason reason) {
+  activity_ = true;
 }
 
 std::map<uint32_t, RtpState> VideoSendStreamImpl::GetRtpStates() const {
@@ -696,10 +617,7 @@ uint32_t VideoSendStreamImpl::OnBitrateUpdated(BitrateAllocationUpdate update) {
     update.stable_target_bitrate = update.target_bitrate;
   }
 
-  rtp_video_sender_->OnBitrateUpdated(
-      update.target_bitrate.bps(),
-      rtc::dchecked_cast<uint8_t>(update.packet_loss_ratio * 256),
-      update.round_trip_time.ms(), stats_proxy_->GetSendFrameRate());
+  rtp_video_sender_->OnBitrateUpdated(update, stats_proxy_->GetSendFrameRate());
   encoder_target_rate_bps_ = rtp_video_sender_->GetPayloadBitrateBps();
   const uint32_t protection_bitrate_bps =
       rtp_video_sender_->GetProtectionBitrateBps();

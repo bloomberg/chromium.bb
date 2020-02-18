@@ -216,7 +216,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
                          const content::ContextMenuParams& params) final;
   bool HandleKeyboardEvent(content::WebContents* source,
                            const content::NativeWebKeyboardEvent& event) final;
-  void LoadProgressChanged(content::WebContents* source, double progress) final;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) final;
   void RendererResponsive(content::WebContents* source,
@@ -232,7 +231,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,
-      const base::Callback<void(bool)>& callback) final;
+      base::OnceCallback<void(bool)> callback) final;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
                                   blink::mojom::MediaStreamType type) final;
@@ -259,7 +258,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void EnterFullscreenModeForTab(
       content::WebContents* web_contents,
       const GURL& origin,
-      const blink::WebFullscreenOptions& options) final;
+      const blink::mojom::FullscreenOptions& options) final;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) final;
   bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) final;
@@ -274,6 +273,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) final;
   void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
+  void LoadProgressChanged(double progress) final;
   void DocumentOnLoadCompletedInMainFrame() final;
   void RenderProcessGone(base::TerminationStatus status) final;
   void UserAgentOverrideSet(const std::string& user_agent) final;
@@ -358,18 +358,16 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
     // Whether OpenURL navigation from the newly created GuestView has changed
     // |url|. The pending OpenURL navigation needs to be applied after attaching
     // the GuestView.
-    bool url_changed_via_open_url;
+    bool url_changed_via_open_url = false;
 
     // Whether the newly created GuestView begun navigating away from the
     // initial URL.  Used to suppress the initial navigation when attaching the
     // GuestView and applying its attributes.
-    bool did_start_navigating_away_from_initial_url;
+    bool did_start_navigating_away_from_initial_url = false;
 
-    NewWindowInfo(const GURL& url, const std::string& name)
-        : name(name),
-          url(url),
-          url_changed_via_open_url(false),
-          did_start_navigating_away_from_initial_url(false) {}
+    NewWindowInfo(const GURL& url, const std::string& name);
+    NewWindowInfo(const NewWindowInfo&);
+    ~NewWindowInfo();
   };
 
   using PendingWindowMap = std::map<WebViewGuest*, NewWindowInfo>;

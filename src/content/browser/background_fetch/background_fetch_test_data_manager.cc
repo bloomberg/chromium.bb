@@ -27,9 +27,7 @@ class MockBGFQuotaManagerProxy : public MockQuotaManagerProxy {
                               base::ThreadTaskRunnerHandle::Get().get()) {}
 
   // Ignore quota client, it is irrelevant for these tests.
-  void RegisterClient(QuotaClient* client) override {
-    delete client;  // Directly delete, to avoid memory leak.
-  }
+  void RegisterClient(scoped_refptr<QuotaClient> client) override {}
 
   void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                         const url::Origin& origin,
@@ -76,8 +74,12 @@ void BackgroundFetchTestDataManager::InitializeOnCoreThread() {
       base::MakeRefCounted<CacheStorageContextImpl::ObserverList>());
   DCHECK(cache_manager_);
 
-  cache_manager_->SetBlobParametersForCache(
-      blob_storage_context_->context()->AsWeakPtr());
+  mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
+  blob_storage_context_->BindMojoContext(
+      remote.InitWithNewPipeAndPassReceiver());
+  auto context =
+      base::MakeRefCounted<BlobStorageContextWrapper>(std::move(remote));
+  cache_manager_->SetBlobParametersForCache(std::move(context));
 }
 
 BackgroundFetchTestDataManager::~BackgroundFetchTestDataManager() = default;

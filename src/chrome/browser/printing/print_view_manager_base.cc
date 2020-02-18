@@ -10,8 +10,8 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -126,9 +126,13 @@ PrintViewManagerBase::~PrintViewManagerBase() {
 bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
   DisconnectFromCurrentPrintJob();
 
+  // Don't print / print preview interstitials or crashed tabs.
+  if (IsInterstitialOrCrashed())
+    return false;
+
   SetPrintingRFH(rfh);
-  int32_t id = rfh->GetRoutingID();
-  return PrintNowInternal(rfh, std::make_unique<PrintMsg_PrintPages>(id));
+  GetPrintRenderFrame(rfh)->PrintRequestedPages();
+  return true;
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -378,6 +382,8 @@ void PrintViewManagerBase::DidStartLoading() {
 
 void PrintViewManagerBase::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
+  PrintManager::RenderFrameDeleted(render_frame_host);
+
   // Terminates or cancels the print job if one was pending.
   if (render_frame_host != printing_rfh_)
     return;
@@ -611,11 +617,8 @@ void PrintViewManagerBase::ReleasePrintJob() {
   if (!print_job_)
     return;
 
-  if (rfh) {
-    auto msg = std::make_unique<PrintMsg_PrintingDone>(rfh->GetRoutingID(),
-                                                       printing_succeeded_);
-    rfh->Send(msg.release());
-  }
+  if (rfh)
+    GetPrintRenderFrame(rfh)->PrintingDone(printing_succeeded_);
 
   registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                     content::Source<PrintJob>(print_job_.get()));
@@ -682,11 +685,16 @@ bool PrintViewManagerBase::OpportunisticallyCreatePrintJob(int cookie) {
   return true;
 }
 
+bool PrintViewManagerBase::IsInterstitialOrCrashed() {
+  return web_contents()->ShowingInterstitialPage() ||
+         web_contents()->IsCrashed();
+}
+
 bool PrintViewManagerBase::PrintNowInternal(
     content::RenderFrameHost* rfh,
     std::unique_ptr<IPC::Message> message) {
   // Don't print / print preview interstitials or crashed tabs.
-  if (web_contents()->ShowingInterstitialPage() || web_contents()->IsCrashed())
+  if (IsInterstitialOrCrashed())
     return false;
   return rfh->Send(message.release());
 }
@@ -718,7 +726,7 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
 
 void PrintViewManagerBase::SendPrintingEnabled(bool enabled,
                                                content::RenderFrameHost* rfh) {
-  rfh->Send(new PrintMsg_SetPrintingEnabled(rfh->GetRoutingID(), enabled));
+  GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
 }
 
 }  // namespace printing

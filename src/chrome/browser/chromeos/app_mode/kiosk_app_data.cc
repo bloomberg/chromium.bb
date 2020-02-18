@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_delegate.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
@@ -26,8 +25,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/constants.h"
@@ -38,7 +36,6 @@
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "extensions/common/verifier_formats.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 
@@ -92,10 +89,8 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
   void Start() {
-    auto connector = content::GetSystemConnector()->Clone();
     task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(&CrxLoader::StartInThreadPool, this,
-                                          std::move(connector)));
+                           base::BindOnce(&CrxLoader::StartInThreadPool, this));
   }
 
   bool success() const { return success_; }
@@ -139,8 +134,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
     NotifyFinishedInThreadPool();
   }
 
-  void StartInThreadPool(
-      std::unique_ptr<service_manager::Connector> connector) {
+  void StartInThreadPool() {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     if (!temp_dir_.CreateUniqueTempDir()) {
@@ -150,9 +144,8 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
     }
 
     auto unpacker = base::MakeRefCounted<extensions::SandboxedUnpacker>(
-        std::move(connector), extensions::Manifest::INTERNAL,
-        extensions::Extension::NO_FLAGS, temp_dir_.GetPath(),
-        task_runner_.get(), this);
+        extensions::Manifest::INTERNAL, extensions::Extension::NO_FLAGS,
+        temp_dir_.GetPath(), task_runner_.get(), this);
     unpacker->StartWithCrx(extensions::CRXFileInfo(
         crx_file_, extensions::GetPolicyVerifierFormat()));
   }
@@ -299,9 +292,8 @@ void KioskAppData::LoadFromInstalledApp(Profile* profile,
   SetStatus(STATUS_LOADING);
 
   if (!app) {
-    app = extensions::ExtensionSystem::Get(profile)
-              ->extension_service()
-              ->GetInstalledExtension(app_id());
+    app = extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
+        app_id());
   }
 
   DCHECK_EQ(app_id(), app->id());

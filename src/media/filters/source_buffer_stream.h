@@ -77,8 +77,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // expected to be in order, but multiple calls to Append() may add buffers out
   // of order or overlapping. Assumes all buffers within |buffers| are in
   // presentation order and are non-overlapping.
-  // Returns true if Append() was successful, false if |buffers| are not added.
-  bool Append(const BufferQueue& buffers);
+  void Append(const BufferQueue& buffers);
 
   // Removes buffers between |start| and |end| according to the steps
   // in the "Coded Frame Removal Algorithm" in the Media Source
@@ -249,10 +248,6 @@ class MEDIA_EXPORT SourceBufferStream {
   // iterator in |ranges_| that points to |new_range|. |new_range| becomes owned
   // by |ranges_|.
   RangeList::iterator AddToRanges(std::unique_ptr<SourceBufferRange> new_range);
-
-  // Returns an iterator that points to the place in |ranges_| where
-  // |selected_range_| lives.
-  RangeList::iterator GetSelectedRangeItr();
 
   // Sets the |selected_range_| to |range| and resets the next buffer position
   // for the previous |selected_range_|.

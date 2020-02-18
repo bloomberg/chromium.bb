@@ -52,4 +52,4 @@ def main(argv):
     try:
       cros_sdk_lib.RunChrootVersionHooks()
     except cros_sdk_lib.Error as e:
-      cros_build_lib.Die(e.message)
+      cros_build_lib.Die(e)

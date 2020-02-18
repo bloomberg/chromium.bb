@@ -40,7 +40,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_constants.h"
@@ -68,6 +67,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/url_constants.h"
@@ -153,6 +153,10 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
       return "crashed";
     case base::TERMINATION_STATUS_LAUNCH_FAILED:
       return "failed to launch";
+#if defined(OS_WIN)
+    case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
+      return "integrity failure";
+#endif
     case base::TERMINATION_STATUS_MAX_ENUM:
       break;
   }
@@ -197,7 +201,7 @@ void ParsePartitionParam(const base::DictionaryValue& create_params,
 }
 
 double ConvertZoomLevelToZoomFactor(double zoom_level) {
-  double zoom_factor = content::ZoomLevelToZoomFactor(zoom_level);
+  double zoom_factor = blink::PageZoomLevelToZoomFactor(zoom_level);
   // Because the conversion from zoom level to zoom factor isn't perfect, the
   // resulting zoom factor is rounded to the nearest 6th decimal place.
   zoom_factor = round(zoom_factor * 1000000) / 1000000;
@@ -210,6 +214,15 @@ static base::LazyInstance<WebViewKeyToIDMap>::DestructorAtExit
     web_view_key_to_id_map = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
+
+WebViewGuest::NewWindowInfo::NewWindowInfo(const GURL& url,
+                                           const std::string& name)
+    : name(name), url(url) {}
+
+WebViewGuest::NewWindowInfo::NewWindowInfo(const WebViewGuest::NewWindowInfo&) =
+    default;
+
+WebViewGuest::NewWindowInfo::~NewWindowInfo() = default;
 
 // static
 void WebViewGuest::CleanUp(content::BrowserContext* browser_context,
@@ -620,14 +633,6 @@ bool WebViewGuest::PreHandleGestureEvent(WebContents* source,
   return !allow_scaling_ && GuestViewBase::PreHandleGestureEvent(source, event);
 }
 
-void WebViewGuest::LoadProgressChanged(WebContents* source, double progress) {
-  auto args = std::make_unique<base::DictionaryValue>();
-  args->SetString(guest_view::kUrl, web_contents()->GetURL().spec());
-  args->SetDouble(webview::kProgress, progress);
-  DispatchEventToView(std::make_unique<GuestViewEvent>(
-      webview::kEventLoadProgress, std::move(args)));
-}
-
 void WebViewGuest::LoadAbort(bool is_top_level,
                              const GURL& url,
                              int error_code) {
@@ -838,10 +843,10 @@ void WebViewGuest::ReadyToCommitNavigation(
   // factories are pushed slightly later - during the commit.
   constexpr bool kPushToRendererNow = false;
 
-  // |request_initiator| in fetches initiated by content scripts should use the
-  // origin of the <webview> embedder.
+  // Content scripts run in an isolated world associated with the origin of the
+  // <webview> embedder.
   navigation_handle->GetRenderFrameHost()
-      ->MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
+      ->MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
           {owner_web_contents()->GetMainFrame()->GetLastCommittedOrigin()},
           kPushToRendererNow);
 }
@@ -898,6 +903,14 @@ void WebViewGuest::DidFinishNavigation(
       webview::kEventLoadCommit, std::move(args)));
 
   find_helper_.CancelAllFindSessions();
+}
+
+void WebViewGuest::LoadProgressChanged(double progress) {
+  auto args = std::make_unique<base::DictionaryValue>();
+  args->SetString(guest_view::kUrl, web_contents()->GetURL().spec());
+  args->SetDouble(webview::kProgress, progress);
+  DispatchEventToView(std::make_unique<GuestViewEvent>(
+      webview::kEventLoadProgress, std::move(args)));
 }
 
 void WebViewGuest::DocumentOnLoadCompletedInMainFrame() {
@@ -1045,11 +1058,9 @@ void WebViewGuest::CanDownload(const GURL& url,
 void WebViewGuest::RequestPointerLockPermission(
     bool user_gesture,
     bool last_unlocked_by_target,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   web_view_permission_helper_->RequestPointerLockPermission(
-      user_gesture,
-      last_unlocked_by_target,
-      callback);
+      user_gesture, last_unlocked_by_target, std::move(callback));
 }
 
 void WebViewGuest::SignalWhenReady(base::OnceClosure callback) {
@@ -1236,7 +1247,7 @@ void WebViewGuest::SetZoom(double zoom_factor) {
   did_set_explicit_zoom_ = true;
   auto* zoom_controller = ZoomController::FromWebContents(web_contents());
   DCHECK(zoom_controller);
-  double zoom_level = content::ZoomFactorToZoomLevel(zoom_factor);
+  double zoom_level = blink::PageZoomFactorToZoomLevel(zoom_factor);
   zoom_controller->SetZoomLevel(zoom_level);
 }
 
@@ -1406,7 +1417,7 @@ void WebViewGuest::WebContentsCreated(WebContents* source_contents,
 void WebViewGuest::EnterFullscreenModeForTab(
     WebContents* web_contents,
     const GURL& origin,
-    const blink::WebFullscreenOptions& options) {
+    const blink::mojom::FullscreenOptions& options) {
   // Ask the embedder for permission.
   base::DictionaryValue request_info;
   request_info.SetString(webview::kOrigin, origin.spec());

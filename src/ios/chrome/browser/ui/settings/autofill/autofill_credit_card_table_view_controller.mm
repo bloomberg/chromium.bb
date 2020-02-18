@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
@@ -35,9 +36,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kAutofillCreditCardTableViewId = @"kAutofillTableViewId";
-NSString* const kAutofillCreditCardSwitchViewId = @"cardItem_switch";
 
 namespace {
 
@@ -117,6 +115,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super viewDidLoad];
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.tableView.accessibilityIdentifier = kAutofillCreditCardTableViewId;
+  self.navigationController.toolbar.accessibilityIdentifier =
+      kAutofillPaymentMethodsToolbarId;
 
   base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
   if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
@@ -147,9 +147,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (BOOL)shouldHideToolbar {
-  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+  // There is a bug from apple that this method might be called in this view
+  // controller even if it is not the top view controller.
+  if (self.navigationController.topViewController == self &&
+      base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
     return NO;
   }
+
   return [super shouldHideToolbar];
 }
 
@@ -384,6 +388,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _personalDataManager->RemoveByGUID(item.GUID);
   }
 
+  self.editing = NO;
   __weak AutofillCreditCardTableViewController* weakSelf = self;
   [self.tableView
       performBatchUpdates:^{
@@ -430,6 +435,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // credit card details.
 - (void)handleAddPayment:(id)sender {
   DCHECK(base::FeatureList::IsEnabled(kSettingsAddPaymentMethod));
+  base::RecordAction(
+      base::UserMetricsAction("MobileAddCreditCard.AddPaymentMethodButton"));
 
   self.addCreditCardCoordinator = [[AutofillAddCreditCardCoordinator alloc]
       initWithBaseViewController:self
@@ -456,12 +463,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Getters and Setter
 
 - (BOOL)isAutofillCreditCardEnabled {
-  return autofill::prefs::IsCreditCardAutofillEnabled(
+  return autofill::prefs::IsAutofillCreditCardEnabled(
       _browserState->GetPrefs());
 }
 
 - (void)setAutofillCreditCardEnabled:(BOOL)isEnabled {
-  return autofill::prefs::SetCreditCardAutofillEnabled(
+  return autofill::prefs::SetAutofillCreditCardEnabled(
       _browserState->GetPrefs(), isEnabled);
 }
 
@@ -473,6 +480,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(handleAddPayment:)];
+    _addPaymentMethodButton.accessibilityIdentifier =
+        kSettingsAddPaymentMethodButtonId;
   }
   return _addPaymentMethodButton;
 }

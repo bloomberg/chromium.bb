@@ -14,7 +14,6 @@
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"
 #include "components/invalidation/impl/fcm_invalidation_listener.h"
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
-#include "components/invalidation/impl/push_client_channel.h"
 #include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
@@ -22,7 +21,7 @@
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/fake_push_client.h"
-#include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,6 +41,12 @@ class TestFCMSyncNetworkChannel : public FCMSyncNetworkChannel {
  public:
   void StartListening() override {}
   void StopListening() override {}
+
+  void RequestDetailedStatus(
+      const base::RepeatingCallback<void(const base::DictionaryValue&)>&
+          callback) override {}
+
+  using FCMSyncNetworkChannel::NotifyChannelStateChange;
 };
 
 // Fake delegate that keeps track of invalidation counts, payloads,
@@ -164,7 +169,6 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
             nullptr /* identity_provider */,
             nullptr /* pref_service */,
             nullptr /* loader_factory */,
-            base::BindRepeating(&data_decoder::SafeJsonParser::Parse, nullptr),
             "fake_sender_id",
             false) {
     ON_CALL(*this, LookupRegisteredPublicTopicByPrivateTopic)
@@ -251,17 +255,17 @@ class FCMInvalidationListenerTest : public testing::Test {
   }
 
   Topics GetRegisteredTopics() const {
-    return listener_.GetRegisteredIdsForTest();
+    return listener_.GetRegisteredTopicsForTest();
   }
 
   void RegisterAndFireInvalidate(const Topic& topic,
-                                 const std::string version,
+                                 int64_t version,
                                  const std::string& payload) {
     FireInvalidate(topic, version, payload);
   }
 
   void FireInvalidate(const Topic& topic,
-                      const std::string version,
+                      int64_t version,
                       const std::string& payload) {
     listener_.Invalidate(payload, topic, topic, version);
   }
@@ -285,8 +289,8 @@ class FCMInvalidationListenerTest : public testing::Test {
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
-  FCMSyncNetworkChannel* fcm_sync_network_channel_;
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
+  TestFCMSyncNetworkChannel* fcm_sync_network_channel_;
   MockRegistrationManager* registration_manager_;
 
  protected:
@@ -307,8 +311,7 @@ class FCMInvalidationListenerTest : public testing::Test {
 TEST_F(FCMInvalidationListenerTest, InvalidateNoPayload) {
   const Topic& topic = kBookmarksTopic_;
 
-  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion1),
-                            std::string());
+  RegisterAndFireInvalidate(topic, kVersion1, std::string());
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -322,8 +325,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateNoPayload) {
 TEST_F(FCMInvalidationListenerTest, InvalidateEmptyPayload) {
   const Topic& topic = kBookmarksTopic_;
 
-  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion1),
-                            std::string());
+  RegisterAndFireInvalidate(topic, kVersion1, std::string());
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -336,7 +338,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateEmptyPayload) {
 TEST_F(FCMInvalidationListenerTest, InvalidateWithPayload) {
   const Topic& topic = kPreferencesTopic_;
 
-  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion1), kPayload1);
+  RegisterAndFireInvalidate(topic, kVersion1, kPayload1);
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -350,7 +352,7 @@ TEST_F(FCMInvalidationListenerTest, ManyInvalidations_NoDrop) {
   const Topic& topic = kPreferencesTopic_;
   int64_t initial_version = kVersion1;
   for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
-    RegisterAndFireInvalidate(topic, base::NumberToString(i), kPayload1);
+    RegisterAndFireInvalidate(topic, i, kPayload1);
   }
   ASSERT_EQ(static_cast<size_t>(kRepeatCount), GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -369,7 +371,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
 
   EXPECT_EQ(0U, GetInvalidationCount(topic));
 
-  FireInvalidate(topic, base::NumberToString(kVersion1), kPayload1);
+  FireInvalidate(topic, kVersion1, kPayload1);
 
   ASSERT_EQ(0U, GetInvalidationCount(topic));
 
@@ -396,7 +398,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 
   int64_t initial_version = kVersion1;
   for (int64_t i = initial_version; i < initial_version + kRepeatCount; ++i) {
-    FireInvalidate(topic, base::NumberToString(i), kPayload1);
+    FireInvalidate(topic, i, kPayload1);
   }
 
   EnableNotifications();
@@ -411,14 +413,14 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
 TEST_F(FCMInvalidationListenerTest, InvalidateVersion) {
   const Topic& topic = kPreferencesTopic_;
 
-  RegisterAndFireInvalidate(topic, base::NumberToString(kVersion2), kPayload2);
+  RegisterAndFireInvalidate(topic, kVersion2, kPayload2);
 
   ASSERT_EQ(1U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
   EXPECT_EQ(kVersion2, GetVersion(topic));
   EXPECT_EQ(kPayload2, GetPayload(topic));
 
-  FireInvalidate(topic, base::NumberToString(kVersion1), kPayload1);
+  FireInvalidate(topic, kVersion1, kPayload1);
 
   ASSERT_EQ(2U, GetInvalidationCount(topic));
   ASSERT_FALSE(IsUnknownVersion(topic));
@@ -429,14 +431,14 @@ TEST_F(FCMInvalidationListenerTest, InvalidateVersion) {
 
 // Test a simple scenario for multiple IDs.
 TEST_F(FCMInvalidationListenerTest, InvalidateMultipleIds) {
-  RegisterAndFireInvalidate(kBookmarksTopic_, "3", std::string());
+  RegisterAndFireInvalidate(kBookmarksTopic_, 3, std::string());
   ASSERT_EQ(1U, GetInvalidationCount(kBookmarksTopic_));
   ASSERT_FALSE(IsUnknownVersion(kBookmarksTopic_));
   EXPECT_EQ(3, GetVersion(kBookmarksTopic_));
   EXPECT_EQ("", GetPayload(kBookmarksTopic_));
 
   // kExtensionId is not registered, so the invalidation should not get through.
-  FireInvalidate(kExtensionsTopic_, "2", std::string());
+  FireInvalidate(kExtensionsTopic_, 2, std::string());
   ASSERT_EQ(0U, GetInvalidationCount(kExtensionsTopic_));
 }
 

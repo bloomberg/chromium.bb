@@ -11,13 +11,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "absl/memory/memory.h"
+#include <memory>
+
 #include "test/fuzzers/utils/rtp_replayer.h"
 
 namespace webrtc {
 
 void FuzzOneInput(const uint8_t* data, size_t size) {
-  auto stream_state = absl::make_unique<test::RtpReplayer::StreamState>();
+  auto stream_state = std::make_unique<test::RtpReplayer::StreamState>();
   VideoReceiveStream::Config vp9_config(&(stream_state->transport));
 
   VideoReceiveStream::Decoder vp9_decoder;
@@ -29,7 +30,6 @@ void FuzzOneInput(const uint8_t* data, size_t size) {
   vp9_config.rtp.remote_ssrc = 1337;
   vp9_config.rtp.rtx_ssrc = 100;
   vp9_config.rtp.transport_cc = true;
-  vp9_config.rtp.remb = true;
   vp9_config.rtp.nack.rtp_history_ms = 1000;
 
   std::vector<VideoReceiveStream::Config> replay_configs;

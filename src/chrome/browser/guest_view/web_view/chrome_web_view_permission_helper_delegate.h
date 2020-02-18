@@ -7,20 +7,27 @@
 
 #include "base/macros.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/common/plugin.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/browser/web_contents_binding_set.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/common/plugin.mojom.h"
+#endif
+
 namespace extensions {
 class WebViewGuest;
 
 class ChromeWebViewPermissionHelperDelegate
-    : public WebViewPermissionHelperDelegate,
-      public chrome::mojom::PluginAuthHost {
+    : public WebViewPermissionHelperDelegate
+#if BUILDFLAG(ENABLE_PLUGINS)
+    ,
+      public chrome::mojom::PluginAuthHost
+#endif
+{
  public:
   explicit ChromeWebViewPermissionHelperDelegate(
       WebViewPermissionHelper* web_view_permission_helper);
@@ -33,7 +40,7 @@ class ChromeWebViewPermissionHelperDelegate
   void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   void RequestGeolocationPermission(
       int bridge_id,
       const GURL& requesting_frame,
@@ -44,11 +51,6 @@ class ChromeWebViewPermissionHelperDelegate
       const GURL& url,
       bool allowed_by_default,
       base::OnceCallback<void(bool)> callback) override;
-  void FileSystemAccessedAsync(int render_process_id,
-                               int render_frame_id,
-                               int request_id,
-                               const GURL& url,
-                               bool blocked_by_policy) override;
 #if BUILDFLAG(ENABLE_PLUGINS)
   // content::WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message,
@@ -61,8 +63,8 @@ class ChromeWebViewPermissionHelperDelegate
   void BlockedUnauthorizedPlugin(const base::string16& name,
                                  const std::string& identifier) override;
 
-  content::WebContentsFrameBindingSet<chrome::mojom::PluginAuthHost>
-      plugin_auth_host_bindings_;
+  content::WebContentsFrameReceiverSet<chrome::mojom::PluginAuthHost>
+      plugin_auth_host_receivers_;
 
   void OnPermissionResponse(const std::string& identifier,
                             bool allow,
@@ -86,10 +88,9 @@ class ChromeWebViewPermissionHelperDelegate
                                     bool allow,
                                     const std::string& user_input);
 
-  void OnPointerLockPermissionResponse(
-      const base::Callback<void(bool)>& callback,
-      bool allow,
-      const std::string& user_input);
+  void OnPointerLockPermissionResponse(base::OnceCallback<void(bool)> callback,
+                                       bool allow,
+                                       const std::string& user_input);
 
   // Bridge IDs correspond to a geolocation request. This method will remove
   // the bookkeeping for a particular geolocation request associated with the

@@ -64,6 +64,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/strings/string_util_win.h"
 #include "base/win/windows_version.h"
 #endif
 
@@ -238,8 +239,6 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
   // Handled by the launcher process.
   switches.erase(kGTestRepeatFlag);
   switches.erase(kIsolatedScriptTestRepeatFlag);
-  switches.erase(kGTestShuffleFlag);
-  switches.erase(kGTestRandomSeedFlag);
 
   // Don't try to write the final XML report in child processes.
   switches.erase(kGTestOutputFlag);
@@ -254,7 +253,7 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
   // on a CommandLine with a wrapper is known to break.
   // TODO(phajdan.jr): Give it a try to support CommandLine removing switches.
 #if defined(OS_WIN)
-  new_command_line.PrependWrapper(ASCIIToUTF16(wrapper));
+  new_command_line.PrependWrapper(UTF8ToWide(wrapper));
 #else
   new_command_line.PrependWrapper(wrapper);
 #endif
@@ -435,7 +434,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     ZX_CHECK(status == ZX_OK, status);
 
     // Cleanup the data directory.
-    CHECK(DeleteFile(nested_data_path, true));
+    CHECK(DeleteFileRecursively(nested_data_path));
 #elif defined(OS_POSIX)
     if (exit_code != 0) {
       // On POSIX, in case the test does not exit cleanly, either due to a crash
@@ -629,7 +628,7 @@ void TestRunner::Run(const std::vector<std::string>& test_names) {
   runners_done_ = 0;
   task_runners_.clear();
   for (size_t i = 0; i < runner_count_; i++) {
-    task_runners_.push_back(CreateSequencedTaskRunnerWithTraits(
+    task_runners_.push_back(CreateSequencedTaskRunner(
         {ThreadPool(), MayBlock(), TaskShutdownBehavior::BLOCK_SHUTDOWN}));
     ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -643,7 +642,7 @@ void TestRunner::LaunchNextTask(scoped_refptr<TaskRunner> task_runner,
                                 FilePath temp_dir) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // delete previous temporary directory
-  if (!temp_dir.empty() && !DeleteFile(temp_dir, true)) {
+  if (!temp_dir.empty() && !DeleteFileRecursively(temp_dir)) {
     // This needs to be non-fatal at least for Windows.
     LOG(WARNING) << "Failed to delete " << temp_dir.AsUTF8Unsafe();
   }
@@ -769,13 +768,18 @@ std::string TestLauncher::TestInfo::GetPrefixStrippedName() const {
 
 TestLauncherDelegate::~TestLauncherDelegate() = default;
 
+bool TestLauncherDelegate::ShouldRunTest(const TestIdentifier& test) {
+  return true;
+}
+
 TestLauncher::LaunchOptions::LaunchOptions() = default;
 TestLauncher::LaunchOptions::LaunchOptions(const LaunchOptions& other) =
     default;
 TestLauncher::LaunchOptions::~LaunchOptions() = default;
 
 TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
-                           size_t parallel_jobs)
+                           size_t parallel_jobs,
+                           size_t retry_limit)
     : launcher_delegate_(launcher_delegate),
       total_shards_(1),
       shard_index_(0),
@@ -785,7 +789,7 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       test_finished_count_(0),
       test_success_count_(0),
       test_broken_count_(0),
-      retry_limit_(0),
+      retry_limit_(retry_limit),
       force_run_broken_tests_(false),
       watchdog_timer_(FROM_HERE,
                       kOutputTimeout,
@@ -1241,12 +1245,12 @@ bool TestLauncher::Init(CommandLine* command_line) {
     }
 
     retry_limit_ = retry_limit;
-  } else if (BotModeEnabled(command_line) ||
-             !(command_line->HasSwitch(kGTestFilterFlag) ||
-               command_line->HasSwitch(kIsolatedScriptTestFilterFlag))) {
-    // Retry failures 1 time by default if we are running all of the tests or
-    // in bot mode.
-    retry_limit_ = 1;
+  } else if (!BotModeEnabled(command_line) &&
+             (command_line->HasSwitch(kGTestFilterFlag) ||
+              command_line->HasSwitch(kIsolatedScriptTestFilterFlag))) {
+    // No retry flag specified, not in bot mode and filtered by flag
+    // Set reties to zero
+    retry_limit_ = 0U;
   }
 
   force_run_broken_tests_ =
@@ -1264,8 +1268,8 @@ bool TestLauncher::Init(CommandLine* command_line) {
     auto filter =
         command_line->GetSwitchValueNative(switches::kTestLauncherFilterFile);
     for (auto filter_file :
-         SplitString(filter, FILE_PATH_LITERAL(";"), base::TRIM_WHITESPACE,
-                     base::SPLIT_WANT_ALL)) {
+         SplitStringPiece(filter, FILE_PATH_LITERAL(";"), base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_ALL)) {
       base::FilePath filter_file_path =
           base::MakeAbsoluteFilePath(FilePath(filter_file));
       if (!LoadFilterFile(filter_file_path, &positive_file_filter,
@@ -1427,7 +1431,10 @@ bool TestLauncher::InitTests() {
   }
   for (const TestIdentifier& test_id : tests) {
     TestInfo test_info(test_id);
-    tests_.push_back(test_info);
+    // TODO(isamsonov): crbug.com/1004417 remove when windows builders
+    // stop flaking on MANAUAL_ tests.
+    if (launcher_delegate_->ShouldRunTest(test_id))
+      tests_.push_back(test_info);
   }
   return true;
 }
@@ -1751,7 +1758,14 @@ size_t NumParallelJobs() {
   }
 
   // Default to the number of processor cores.
+#if defined(OS_WIN)
+  // Use processors in all groups (Windows splits more than 64 logical
+  // processors into groups).
+  return base::checked_cast<size_t>(
+      ::GetActiveProcessorCount(ALL_PROCESSOR_GROUPS));
+#else
   return base::checked_cast<size_t>(SysInfo::NumberOfProcessors());
+#endif
 }
 
 std::string GetTestOutputSnippet(const TestResult& result,

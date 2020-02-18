@@ -353,10 +353,21 @@ void JSONTraceExporter::SetTraceStatsMetadata(
     buf_dict->SetInteger("abi_violations", buf_stats.abi_violations());
     buf_dict->SetInteger("trace_writer_packet_loss",
                          buf_stats.trace_writer_packet_loss());
-    buf_list->GetList().push_back(std::move(buf_value));
+    buf_list->Append(std::move(buf_value));
   }
   dict->SetList("buffer_stats", std::move(buf_list));
   metadata_->SetDictionary("perfetto_trace_stats", std::move(dict));
+}
+
+void JSONTraceExporter::AddMetadata(const std::string& entry_name,
+                                    std::unique_ptr<base::Value> value) {
+  if (!metadata_filter_predicate_.is_null() &&
+      !metadata_filter_predicate_.Run(entry_name)) {
+    metadata_->SetString(entry_name, kStrippedArgument);
+    return;
+  }
+
+  metadata_->Set(entry_name, std::move(value));
 }
 
 JSONTraceExporter::ScopedJSONTraceEventAppender

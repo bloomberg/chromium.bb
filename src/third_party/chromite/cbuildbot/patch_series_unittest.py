@@ -13,7 +13,6 @@ import os
 import mock
 
 from chromite.cbuildbot import patch_series
-from chromite.cbuildbot import validation_pool_unittest
 from chromite.lib import config_lib
 from chromite.lib import gerrit
 from chromite.lib import git
@@ -23,6 +22,15 @@ from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
+
+
+class MockManifest(object):
+  """Helper class for Mocking Manifest objects."""
+
+  def __init__(self, path, **kwargs):
+    self.root = path
+    for key, attr in kwargs.items():
+      setattr(self, key, attr)
 
 
 def FakeFetchChangesForRepo(fetched_changes, by_repo, repo):
@@ -38,10 +46,11 @@ def FakeFetchChangesForRepo(fetched_changes, by_repo, repo):
 class FakePatch(partial_mock.PartialMock):
   """Mocks out dependency and fetch methods of GitRepoPatch.
 
-  Usage: set FakePatch.parents, .cq and .build_roots per patch, and set
-  FakePatch.assertEqual to your TestCase's assertEqual method.  The behavior of
-  `GerritDependencies`, `PaladinDependencies` and `Fetch` depends on the patch
-  id.
+  Examples:
+    set FakePatch.parents, .cq and .build_roots per patch, and set
+    FakePatch.assertEqual to your TestCase's assertEqual method.  The behavior
+    of GerritDependencies, PaladinDependencies and Fetch` depends on the patch
+    id.
   """
 
   TARGET = 'chromite.lib.patch.GitRepoPatch'
@@ -132,7 +141,7 @@ class PatchSeriesTestCase(patch_unittest.UploadedLocalPatchTestCase,
     for apply_mock in apply_mocks:
       apply_mock.assert_called_once_with(mock.ANY, trivial=False)
       value = apply_mock.call_args[0][0]
-      self.assertTrue(isinstance(value, validation_pool_unittest.MockManifest))
+      self.assertTrue(isinstance(value, MockManifest))
       self.assertEqual(value.root, self.build_root)
 
   def SetPatchApply(self, patch):
@@ -140,7 +149,7 @@ class PatchSeriesTestCase(patch_unittest.UploadedLocalPatchTestCase,
 
   def assertResults(self, series, changes, applied=(), failed_tot=(),
                     failed_inflight=(), frozen=True):
-    manifest = validation_pool_unittest.MockManifest(self.build_root)
+    manifest = MockManifest(self.build_root)
     result = series.Apply(changes, frozen=frozen, manifest=manifest)
 
     _GetIds = lambda seq: [x.id for x in seq]
@@ -155,8 +164,8 @@ class PatchSeriesTestCase(patch_unittest.UploadedLocalPatchTestCase,
     failed_inflight = _GetIds(failed_inflight)
 
     self.assertEqual(applied, applied_result)
-    self.assertItemsEqual(failed_inflight, failed_inflight_result)
-    self.assertItemsEqual(failed_tot, failed_tot_result)
+    self.assertCountEqual(failed_inflight, failed_inflight_result)
+    self.assertCountEqual(failed_tot, failed_tot_result)
     return result
 
 
@@ -597,5 +606,5 @@ class TestPatchSeries(PatchSeriesTestCase):
     ordered_plans, failed = series.CreateDisjointTransactions(changes)
     changes_in_plan = [change for plan in ordered_plans for change in plan]
 
-    self.assertItemsEqual(changes_in_plan, p[0:5])
-    self.assertItemsEqual(failed, [ex])
+    self.assertCountEqual(changes_in_plan, p[0:5])
+    self.assertCountEqual(failed, [ex])

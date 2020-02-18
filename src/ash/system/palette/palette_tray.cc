@@ -8,12 +8,12 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
@@ -180,7 +180,6 @@ PaletteTray::PaletteTray(Shelf* shelf)
       scoped_session_observer_(this) {
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
-  SetInkDropMode(InkDropMode::ON);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   icon_ = new views::ImageView();
   icon_->set_tooltip_text(
@@ -205,18 +204,17 @@ PaletteTray::~PaletteTray() {
 
 // static
 void PaletteTray::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kHasSeenStylus, false,
-                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kHasSeenStylus, false);
 }
 
 // static
 void PaletteTray::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kEnableStylusTools, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kLaunchPaletteOnEjectEvent, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
 bool PaletteTray::ContainsPointInScreen(const gfx::Point& point) {
@@ -552,7 +550,7 @@ void PaletteTray::UpdateTrayIcon() {
   icon_->SetImage(CreateVectorIcon(
       palette_tool_manager_->GetActiveTrayIcon(
           palette_tool_manager_->GetActiveTool(PaletteGroup::MODE)),
-      kTrayIconSize, kShelfIconColor));
+      kTrayIconSize, ShelfConfig::Get()->shelf_icon_color()));
 }
 
 void PaletteTray::OnPaletteEnabledPrefChanged() {
@@ -560,7 +558,7 @@ void PaletteTray::OnPaletteEnabledPrefChanged() {
       prefs::kEnableStylusTools);
 
   if (!is_palette_enabled_) {
-    SetVisible(false);
+    SetVisiblePreferred(false);
     palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
   } else {
     UpdateIconVisibility();
@@ -593,9 +591,10 @@ bool PaletteTray::HasSeenStylus() {
 }
 
 void PaletteTray::UpdateIconVisibility() {
-  SetVisible(HasSeenStylus() && is_palette_enabled_ &&
-             stylus_utils::HasStylusInput() && ShouldShowOnDisplay(this) &&
-             palette_utils::IsInUserSession());
+  SetVisiblePreferred(HasSeenStylus() && is_palette_enabled_ &&
+                      stylus_utils::HasStylusInput() &&
+                      ShouldShowOnDisplay(this) &&
+                      palette_utils::IsInUserSession());
 }
 
 }  // namespace ash

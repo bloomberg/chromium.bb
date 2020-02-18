@@ -14,12 +14,13 @@
 #include "osp/public/network_metrics.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/testing/message_demuxer_test_support.h"
-#include "platform/api/logging.h"
 #include "platform/base/error.h"
 #include "platform/test/fake_clock.h"
-#include "platform/test/fake_network_runner.h"
+#include "platform/test/fake_task_runner.h"
+#include "util/logging.h"
 
 namespace openscreen {
+namespace osp {
 namespace {
 
 using ::testing::_;
@@ -59,8 +60,11 @@ class ConnectionCallback final
 class QuicClientTest : public ::testing::Test {
  public:
   QuicClientTest() {
-    network_runner_ = std::make_unique<platform::FakeNetworkRunner>();
-    quic_bridge_ = std::make_unique<FakeQuicBridge>(network_runner_.get(),
+    fake_clock_ = std::make_unique<platform::FakeClock>(
+        platform::Clock::time_point(std::chrono::milliseconds(1298424)));
+    task_runner_ =
+        std::make_unique<platform::FakeTaskRunner>(fake_clock_.get());
+    quic_bridge_ = std::make_unique<FakeQuicBridge>(task_runner_.get(),
                                                     platform::FakeClock::now);
   }
 
@@ -117,9 +121,8 @@ class QuicClientTest : public ::testing::Test {
     EXPECT_EQ(received_message.message.str, message.message.str);
   }
 
-  std::unique_ptr<platform::FakeNetworkRunner> network_runner_;
-  platform::FakeClock fake_clock_{
-      platform::Clock::time_point(std::chrono::milliseconds(1298424))};
+  std::unique_ptr<platform::FakeClock> fake_clock_;
+  std::unique_ptr<platform::FakeTaskRunner> task_runner_;
   std::unique_ptr<FakeQuicBridge> quic_bridge_;
   QuicClient* client_;
 };
@@ -266,4 +269,5 @@ TEST_F(QuicClientTest, RequestIds) {
   EXPECT_EQ(0u, client_->endpoint_request_ids()->GetNextRequestId(endpoint_id));
 }
 
+}  // namespace osp
 }  // namespace openscreen

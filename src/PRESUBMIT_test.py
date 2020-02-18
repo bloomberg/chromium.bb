@@ -1267,6 +1267,12 @@ class LogUsageTest(unittest.TestCase):
         'private static final String TAG = "cr_foo.bar";',
         'Log.d(TAG, "foo");',
       ]),
+      MockAffectedFile('HasDottedTagPublic.java', [
+        'import org.chromium.base.Log;',
+        'some random stuff',
+        'public static final String TAG = "cr_foo.bar";',
+        'Log.d(TAG, "foo");',
+      ]),
       MockAffectedFile('HasNoTagDecl.java', [
         'import org.chromium.base.Log;',
         'some random stuff',
@@ -1332,9 +1338,10 @@ class LogUsageTest(unittest.TestCase):
 
     # Tag must not contain
     nb = len(msgs[4].items)
-    self.assertEqual(2, nb,
+    self.assertEqual(3, nb,
                      'Expected %d items, found %d: %s' % (2, nb, msgs[4].items))
     self.assertTrue('HasDottedTag.java' in msgs[4].items)
+    self.assertTrue('HasDottedTagPublic.java' in msgs[4].items)
     self.assertTrue('HasOldTag.java' in msgs[4].items)
 
 
@@ -1397,6 +1404,62 @@ class HardcodedGoogleHostsTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckHardcodedGoogleHostsInLowerLayers(
       input_api, MockOutputApi())
     self.assertEqual(0, len(warnings))
+
+
+class ChromeOsSyncedPrefRegistrationTest(unittest.TestCase):
+
+  def testWarnsOnChromeOsDirectories(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('ash/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('chrome/browser/chromeos/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('chromeos/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('components/arc/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('components/exo/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+    ]
+    warnings = PRESUBMIT._CheckChromeOsSyncedPrefRegistration(
+      input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testDoesNotWarnOnSyncOsPref(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('chromeos/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_OS_PREF']),
+    ]
+    warnings = PRESUBMIT._CheckChromeOsSyncedPrefRegistration(
+      input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testDoesNotWarnOnCrossPlatformDirectories(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('chrome/browser/ui/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('components/sync/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+      MockFile('content/browser/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF']),
+    ]
+    warnings = PRESUBMIT._CheckChromeOsSyncedPrefRegistration(
+      input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testSeparateWarningForPriorityPrefs(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('chromeos/file.cc',
+               ['PrefRegistrySyncable::SYNCABLE_PREF',
+                'PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF']),
+    ]
+    warnings = PRESUBMIT._CheckChromeOsSyncedPrefRegistration(
+      input_api, MockOutputApi())
+    self.assertEqual(2, len(warnings))
 
 
 class ForwardDeclarationTest(unittest.TestCase):
@@ -1909,7 +1972,53 @@ class ServiceManifestOwnerTest(unittest.TestCase):
     self.assertEqual([], errors)
 
 
-class BannedFunctionCheckTest(unittest.TestCase):
+class BannedTypeCheckTest(unittest.TestCase):
+
+  def testBannedCppFunctions(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('some/cpp/problematic/file.cc',
+               ['using namespace std;']),
+      MockFile('some/cpp/ok/file.cc',
+               ['using std::string;']),
+    ]
+
+    errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertTrue('some/cpp/problematic/file.c' in errors[0].message)
+    self.assertTrue('some/cpp/ok/file.cc' not in errors[0].message)
+
+  def testBannedBlinkDowncastHelpers(self):
+    input_api = MockInputApi()
+    input_api.files = [
+      MockFile('some/cpp/problematic/file1.cc',
+               ['DEFINE_TYPE_CASTS(ToType, FromType, from_argument,'
+                'PointerPredicate(), ReferencePredicate());']),
+      MockFile('some/cpp/problematic/file2.cc',
+               ['bool is_test_ele = IsHTMLTestElement(n);']),
+      MockFile('some/cpp/problematic/file3.cc',
+               ['auto* html_test_ele = ToHTMLTestElement(n);']),
+      MockFile('some/cpp/problematic/file4.cc',
+               ['auto* html_test_ele_or_null = ToHTMLTestElementOrNull(n);']),
+      MockFile('some/cpp/ok/file1.cc',
+               ['bool is_test_ele = IsA<HTMLTestElement>(n);']),
+      MockFile('some/cpp/ok/file2.cc',
+               ['auto* html_test_ele = To<HTMLTestElement>(n);']),
+      MockFile('some/cpp/ok/file3.cc',
+               ['auto* html_test_ele_or_null = ',
+                'DynamicTo<HTMLTestElement>(n);']),
+    ]
+
+    # warnings are errors[0], errors are errors[1]
+    errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
+    self.assertEqual(2, len(errors))
+    self.assertTrue('some/cpp/problematic/file1.cc' in errors[1].message)
+    self.assertTrue('some/cpp/problematic/file2.cc' in errors[0].message)
+    self.assertTrue('some/cpp/problematic/file3.cc' in errors[0].message)
+    self.assertTrue('some/cpp/problematic/file4.cc' in errors[0].message)
+    self.assertTrue('some/cpp/ok/file1.cc' not in errors[0].message)
+    self.assertTrue('some/cpp/ok/file2.cc' not in errors[0].message)
+    self.assertTrue('some/cpp/ok/file3.cc' not in errors[0].message)
 
   def testBannedIosObjcFunctions(self):
     input_api = MockInputApi()
@@ -1963,6 +2072,102 @@ class BannedFunctionCheckTest(unittest.TestCase):
     self.assertTrue('some/cpp/ok/file2.cc' not in results[1].message)
     self.assertTrue('third_party/blink/ok/file3.cc' not in results[0].message)
     self.assertTrue('content/renderer/ok/file3.cc' not in results[0].message)
+
+  def testDeprecatedMojoTypes(self):
+    ok_paths = ['some/cpp']
+    warning_paths = ['third_party/blink']
+    test_cases = [
+      {
+        'type': 'mojo::AssociatedBinding<>;',
+        'file': 'file1.c'
+      },
+      {
+        'type': 'mojo::AssociatedBindingSet<>;',
+        'file': 'file2.c'
+      },
+      {
+        'type': 'mojo::AssociatedInterfacePtr<>',
+        'file': 'file3.cc'
+      },
+      {
+        'type': 'mojo::AssociatedInterfacePtrInfo<>',
+        'file': 'file4.cc'
+      },
+      {
+        'type': 'mojo::AssociatedInterfaceRequest<>',
+        'file': 'file5.cc'
+      },
+      {
+        'type': 'mojo::Binding<>',
+        'file': 'file6.cc'
+      },
+      {
+        'type': 'mojo::BindingSet<>',
+        'file': 'file7.cc'
+      },
+      {
+        'type': 'mojo::InterfacePtr<>',
+        'file': 'file8.cc'
+      },
+      {
+        'type': 'mojo::InterfacePtrInfo<>',
+        'file': 'file9.cc'
+      },
+      {
+        'type': 'mojo::InterfaceRequest<>',
+        'file': 'file10.cc'
+      },
+      {
+        'type': 'mojo::MakeRequest()',
+        'file': 'file11.cc'
+      },
+      {
+        'type': 'mojo::MakeRequestAssociatedWithDedicatedPipe()',
+        'file': 'file12.cc'
+      },
+      {
+        'type': 'mojo::MakeStrongBinding()<>',
+        'file': 'file13.cc'
+      },
+      {
+        'type': 'mojo::MakeStrongAssociatedBinding()<>',
+        'file': 'file14.cc'
+      },
+      {
+        'type': 'mojo::StrongAssociatedBindingSet<>',
+        'file': 'file15.cc'
+      },
+      {
+        'type': 'mojo::StrongBindingSet<>',
+        'file': 'file16.cc'
+      },
+    ]
+
+    # Build the list of MockFiles considering paths that should trigger warnings
+    # as well as paths that should not trigger anything.
+    input_api = MockInputApi()
+    input_api.files = []
+    for test_case in test_cases:
+      for path in ok_paths:
+        input_api.files.append(MockFile(os.path.join(path, test_case['file']),
+                                        [test_case['type']]))
+      for path in warning_paths:
+        input_api.files.append(MockFile(os.path.join(path, test_case['file']),
+                                        [test_case['type']]))
+
+    results = PRESUBMIT._CheckNoDeprecatedMojoTypes(input_api, MockOutputApi())
+
+    # Only warnings for now for all deprecated Mojo types.
+    self.assertEqual(1, len(results))
+
+    for test_case in test_cases:
+      # Check that no warnings or errors have been triggered for these paths.
+      for path in ok_paths:
+        self.assertFalse(path in results[0].message)
+
+      # Check warnings have been triggered for these paths.
+      for path in warning_paths:
+        self.assertTrue(path in results[0].message)
 
 
 class NoProductionCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
@@ -2042,6 +2247,38 @@ class NoProductionJavaCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
 
     results = PRESUBMIT._CheckNoProductionCodeUsingTestOnlyFunctionsJava(
         mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(results))
+
+
+class NewImagesWarningTest(unittest.TestCase):
+  def testTruePositives(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('dir/android/res/drawable/foo.png', []),
+      MockFile('dir/android/res/drawable-v21/bar.svg', []),
+      MockFile('dir/android/res/mipmap-v21-en/baz.webp', []),
+      MockFile('dir/android/res_gshoe/drawable-mdpi/foobar.png', []),
+    ]
+
+    results = PRESUBMIT._CheckNewImagesWarning(mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(results))
+    self.assertEqual(4, len(results[0].items))
+    self.assertTrue('foo.png' in results[0].items[0].LocalPath())
+    self.assertTrue('bar.svg' in results[0].items[1].LocalPath())
+    self.assertTrue('baz.webp' in results[0].items[2].LocalPath())
+    self.assertTrue('foobar.png' in results[0].items[3].LocalPath())
+
+  def testFalsePositives(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('dir/pngs/README.md', []),
+      MockFile('java/test/res/drawable/foo.png', []),
+      MockFile('third_party/blink/foo.png', []),
+      MockFile('dir/third_party/libpng/src/foo.cc', ['foobar']),
+      MockFile('dir/resources.webp/.gitignore', ['foo.png']),
+    ]
+
+    results = PRESUBMIT._CheckNewImagesWarning(mock_input_api, MockOutputApi())
     self.assertEqual(0, len(results))
 
 
@@ -2205,6 +2442,10 @@ class TranslationScreenshotsTest(unittest.TestCase):
   def makeInputApi(self, files):
     input_api = MockInputApi()
     input_api.files = files
+    # Override os_path.exists because the presubmit uses the actual
+    # os.path.exists.
+    input_api.CreateMockFileInPath(
+        [x.LocalPath() for x in input_api.AffectedFiles(include_deletes=True)])
     return input_api
 
   def testNoScreenshots(self):
@@ -2504,6 +2745,41 @@ class CheckFuzzTargetsTest(unittest.TestCase):
     })
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].items, ['fuzzer.cc'])
+
+
+class SetNoParentTest(unittest.TestCase):
+  def testSetNoParentMissing(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('goat/OWNERS',
+                       [
+                         'set noparent',
+                         'jochen@chromium.org',
+                         'per-file *.json=set noparent',
+                         'per-file *.json=jochen@chromium.org',
+                       ])
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckSetNoParent(mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertTrue('goat/OWNERS:1' in errors[0].long_text)
+    self.assertTrue('goat/OWNERS:3' in errors[0].long_text)
+
+
+  def testSetNoParentWithCorrectRule(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('goat/OWNERS',
+                       [
+                         'set noparent',
+                         'file://ipc/SECURITY_OWNERS',
+                         'per-file *.json=set noparent',
+                         'per-file *.json=file://ipc/SECURITY_OWNERS',
+                       ])
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckSetNoParent(mock_input_api, mock_output_api)
+    self.assertEqual([], errors)
 
 
 if __name__ == '__main__':

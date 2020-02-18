@@ -4,6 +4,8 @@
 
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -82,6 +84,7 @@ TemplateURLServiceTestUtil::TemplateURLServiceTestUtil() : changed_count_(0) {
 
 TemplateURLServiceTestUtil::~TemplateURLServiceTestUtil() {
   ClearModel();
+  web_data_service_->ShutdownOnUISequence();
   profile_.reset();
 
   // Flush the message loop to make application verifiers happy.
@@ -134,7 +137,7 @@ void TemplateURLServiceTestUtil::ResetModel(bool verify_load) {
               HistoryServiceFactory::GetForProfileIfExists(
                   profile(), ServiceAccessType::EXPLICIT_ACCESS),
               &search_term_)),
-      nullptr, base::Closure()));
+      base::Closure()));
   model()->AddObserver(this);
   changed_count_ = 0;
   if (verify_load)

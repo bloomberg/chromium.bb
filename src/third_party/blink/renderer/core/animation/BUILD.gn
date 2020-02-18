@@ -19,7 +19,6 @@ buildflag_header("buildflags") {
 }
 
 blink_core_sources("animation") {
-  split_count = 5
   sources = [
     "animatable.cc",
     "animatable.h",
@@ -152,14 +151,18 @@ blink_core_sources("animation") {
     "effect_stack.h",
     "element_animations.cc",
     "element_animations.h",
-    "filter_interpolation_functions.cc",
-    "filter_interpolation_functions.h",
     "image_list_property_functions.h",
     "image_slice_property_functions.h",
     "inert_effect.cc",
     "inert_effect.h",
+    "interpolable_filter.cc",
+    "interpolable_filter.h",
     "interpolable_length.cc",
     "interpolable_length.h",
+    "interpolable_shadow.cc",
+    "interpolable_shadow.h",
+    "interpolable_transform_list.cc",
+    "interpolable_transform_list.h",
     "interpolable_value.cc",
     "interpolable_value.h",
     "interpolated_svg_path_source.h",
@@ -202,8 +205,6 @@ blink_core_sources("animation") {
     "scroll_timeline.h",
     "scroll_timeline_util.cc",
     "scroll_timeline_util.h",
-    "shadow_interpolation_functions.cc",
-    "shadow_interpolation_functions.h",
     "side_index.h",
     "size_interpolation_functions.cc",
     "size_interpolation_functions.h",
@@ -293,5 +294,6 @@ blink_core_tests("unit_tests") {
     "svg_number_interpolation_type_test.cc",
     "timing_calculations_test.cc",
     "timing_input_test.cc",
+    "timing_test.cc",
   ]
 }

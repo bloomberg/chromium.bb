@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace content {
 
@@ -35,28 +35,26 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
       ServiceWorkerContextWrapper* context_wrapper);
   ~ServiceWorkerNavigationHandleCore();
 
-  // Called when a ServiceWorkerProviderHost was created.
-  void OnCreatedProviderHost(
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info);
-
-  // Called when the navigation is ready to commit, set the 2 IDs for the
-  // pre-created provider host.
-  void OnBeginNavigationCommit(int render_process_id, int render_frame_id);
-
-  void OnBeginWorkerCommit();
+  // Called by corresponding methods in ServiceWorkerNavigationHandle. See
+  // comments in the header of ServiceWorkerNavigationHandle for details.
+  void OnBeginNavigationCommit(
+      int render_process_id,
+      int render_frame_id,
+      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
+  void OnBeginWorkerCommit(
+      network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy);
 
   ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();
   }
 
-  void set_provider_host(
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host) {
-    provider_host_ = std::move(provider_host);
+  void set_container_host(
+      base::WeakPtr<ServiceWorkerContainerHost> container_host) {
+    container_host_ = std::move(container_host);
   }
 
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host() {
-    return provider_host_;
+  base::WeakPtr<ServiceWorkerContainerHost> container_host() {
+    return container_host_;
   }
 
   void set_interceptor(
@@ -75,7 +73,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
  private:
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   base::WeakPtr<ServiceWorkerNavigationHandle> ui_handle_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  base::WeakPtr<ServiceWorkerContainerHost> container_host_;
   std::unique_ptr<ServiceWorkerControlleeRequestHandler> interceptor_;
   base::WeakPtrFactory<ServiceWorkerNavigationHandleCore> weak_factory_{this};
 

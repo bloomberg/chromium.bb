@@ -28,11 +28,12 @@ class ExecuteScript;
 
 namespace features {
 CORE_EXPORT extern const base::Feature kAsyncStackAdTagging;
+CORE_EXPORT extern const base::Feature kTopOfStackAdTagging;
 }
 
 // Tracker for tagging resources as ads based on the call stack scripts.
 // The tracker is maintained per local root.
-class CORE_EXPORT AdTracker : public GarbageCollectedFinalized<AdTracker> {
+class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
  public:
   // Finds an AdTracker for a given ExecutionContext.
   static AdTracker* FromExecutionContext(ExecutionContext*);
@@ -107,6 +108,7 @@ class CORE_EXPORT AdTracker : public GarbageCollectedFinalized<AdTracker> {
   uint32_t running_ad_async_tasks_ = 0;
 
   const bool async_stack_enabled_;
+  const bool top_of_stack_only_;
 
   DISALLOW_COPY_AND_ASSIGN(AdTracker);
 };

@@ -13,12 +13,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
@@ -34,7 +36,6 @@ class BrowserContext;
 
 namespace extensions {
 class Extension;
-class ExtensionRegistry;
 namespace api {
 namespace app_runtime {
 struct ActionData;
@@ -194,7 +195,8 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   void LaunchAppForNewNote(Profile* profile, const base::FilePath& path);
 
   // arc::ArcIntentHelperObserver:
-  void OnIntentFiltersUpdated() override;
+  void OnIntentFiltersUpdated(
+      const base::Optional<std::string>& package_name) override;
 
   // arc::ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
@@ -293,7 +295,7 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   // Tracks ExtensionRegistry observation for different profiles.
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   // The profile for which lock screen apps are enabled,
   Profile* profile_with_enabled_lock_screen_apps_ = nullptr;

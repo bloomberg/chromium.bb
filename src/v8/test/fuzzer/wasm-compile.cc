@@ -322,7 +322,7 @@ class WasmGenerator {
       return Generate<wanted_type>(data);
     }
 
-    if (opcode != kExprGetLocal) Generate(local.type, data);
+    if (opcode != kExprLocalGet) Generate(local.type, data);
     builder_->EmitWithU32V(opcode, local.index);
     if (wanted_type != kWasmStmt && local.type != wanted_type) {
       Convert(local.type, wanted_type);
@@ -332,14 +332,14 @@ class WasmGenerator {
   template <ValueType wanted_type>
   void get_local(DataRange* data) {
     static_assert(wanted_type != kWasmStmt, "illegal type");
-    local_op<wanted_type>(data, kExprGetLocal);
+    local_op<wanted_type>(data, kExprLocalGet);
   }
 
-  void set_local(DataRange* data) { local_op<kWasmStmt>(data, kExprSetLocal); }
+  void set_local(DataRange* data) { local_op<kWasmStmt>(data, kExprLocalSet); }
 
   template <ValueType wanted_type>
   void tee_local(DataRange* data) {
-    local_op<wanted_type>(data, kExprTeeLocal);
+    local_op<wanted_type>(data, kExprLocalTee);
   }
 
   template <size_t num_bytes>
@@ -377,7 +377,7 @@ class WasmGenerator {
     }
 
     if (is_set) Generate(global.type, data);
-    builder_->EmitWithU32V(is_set ? kExprSetGlobal : kExprGetGlobal,
+    builder_->EmitWithU32V(is_set ? kExprGlobalSet : kExprGlobalGet,
                            global.index);
     if (!is_set && global.type != wanted_type) {
       Convert(global.type, wanted_type);
@@ -413,15 +413,15 @@ class WasmGenerator {
 
   void grow_memory(DataRange* data);
 
-  using generate_fn = void (WasmGenerator::*const)(DataRange*);
+  using GenerateFn = void (WasmGenerator::*const)(DataRange*);
 
   template <size_t N>
-  void GenerateOneOf(generate_fn (&alternates)[N], DataRange* data) {
+  void GenerateOneOf(GenerateFn (&alternatives)[N], DataRange* data) {
     static_assert(N < std::numeric_limits<uint8_t>::max(),
-                  "Too many alternates. Replace with a bigger type if needed.");
+                  "Too many alternatives. Use a bigger type if needed.");
     const auto which = data->get<uint8_t>();
 
-    generate_fn alternate = alternates[which % N];
+    GenerateFn alternate = alternatives[which % N];
     (this->*alternate)(data);
   }
 
@@ -465,7 +465,7 @@ class WasmGenerator {
 
   template <ValueType T1, ValueType T2, ValueType... Ts>
   void Generate(DataRange* data) {
-    // TODO(clemensh): Implement a more even split.
+    // TODO(clemensb): Implement a more even split.
     auto first_data = data->split();
     Generate<T1>(&first_data);
     Generate<T2, Ts...>(data);
@@ -492,7 +492,7 @@ void WasmGenerator::Generate<kWasmStmt>(DataRange* data) {
   GeneratorRecursionScope rec_scope(this);
   if (recursion_limit_reached() || data->size() == 0) return;
 
-  constexpr generate_fn alternates[] = {
+  constexpr GenerateFn alternatives[] = {
       &WasmGenerator::sequence<kWasmStmt, kWasmStmt>,
       &WasmGenerator::sequence<kWasmStmt, kWasmStmt, kWasmStmt, kWasmStmt>,
       &WasmGenerator::sequence<kWasmStmt, kWasmStmt, kWasmStmt, kWasmStmt,
@@ -521,7 +521,7 @@ void WasmGenerator::Generate<kWasmStmt>(DataRange* data) {
       &WasmGenerator::set_local,
       &WasmGenerator::set_global};
 
-  GenerateOneOf(alternates, data);
+  GenerateOneOf(alternatives, data);
 }
 
 template <>
@@ -532,7 +532,7 @@ void WasmGenerator::Generate<kWasmI32>(DataRange* data) {
     return;
   }
 
-  constexpr generate_fn alternates[] = {
+  constexpr GenerateFn alternatives[] = {
       &WasmGenerator::i32_const<1>,
       &WasmGenerator::i32_const<2>,
       &WasmGenerator::i32_const<3>,
@@ -619,7 +619,7 @@ void WasmGenerator::Generate<kWasmI32>(DataRange* data) {
 
       &WasmGenerator::call<kWasmI32>};
 
-  GenerateOneOf(alternates, data);
+  GenerateOneOf(alternatives, data);
 }
 
 template <>
@@ -630,7 +630,7 @@ void WasmGenerator::Generate<kWasmI64>(DataRange* data) {
     return;
   }
 
-  constexpr generate_fn alternates[] = {
+  constexpr GenerateFn alternatives[] = {
       &WasmGenerator::i64_const<1>,
       &WasmGenerator::i64_const<2>,
       &WasmGenerator::i64_const<3>,
@@ -687,7 +687,7 @@ void WasmGenerator::Generate<kWasmI64>(DataRange* data) {
 
       &WasmGenerator::call<kWasmI64>};
 
-  GenerateOneOf(alternates, data);
+  GenerateOneOf(alternatives, data);
 }
 
 template <>
@@ -698,14 +698,32 @@ void WasmGenerator::Generate<kWasmF32>(DataRange* data) {
     return;
   }
 
-  constexpr generate_fn alternates[] = {
+  constexpr GenerateFn alternatives[] = {
       &WasmGenerator::sequence<kWasmF32, kWasmStmt>,
       &WasmGenerator::sequence<kWasmStmt, kWasmF32>,
       &WasmGenerator::sequence<kWasmStmt, kWasmF32, kWasmStmt>,
 
+      &WasmGenerator::op<kExprF32Abs, kWasmF32>,
+      &WasmGenerator::op<kExprF32Neg, kWasmF32>,
+      &WasmGenerator::op<kExprF32Ceil, kWasmF32>,
+      &WasmGenerator::op<kExprF32Floor, kWasmF32>,
+      &WasmGenerator::op<kExprF32Trunc, kWasmF32>,
+      &WasmGenerator::op<kExprF32NearestInt, kWasmF32>,
+      &WasmGenerator::op<kExprF32Sqrt, kWasmF32>,
       &WasmGenerator::op<kExprF32Add, kWasmF32, kWasmF32>,
       &WasmGenerator::op<kExprF32Sub, kWasmF32, kWasmF32>,
       &WasmGenerator::op<kExprF32Mul, kWasmF32, kWasmF32>,
+      &WasmGenerator::op<kExprF32Div, kWasmF32, kWasmF32>,
+      &WasmGenerator::op<kExprF32Min, kWasmF32, kWasmF32>,
+      &WasmGenerator::op<kExprF32Max, kWasmF32, kWasmF32>,
+      &WasmGenerator::op<kExprF32CopySign, kWasmF32, kWasmF32>,
+
+      &WasmGenerator::op<kExprF32SConvertI32, kWasmI32>,
+      &WasmGenerator::op<kExprF32UConvertI32, kWasmI32>,
+      &WasmGenerator::op<kExprF32SConvertI64, kWasmI64>,
+      &WasmGenerator::op<kExprF32UConvertI64, kWasmI64>,
+      &WasmGenerator::op<kExprF32ConvertF64, kWasmF64>,
+      &WasmGenerator::op<kExprF32ReinterpretI32, kWasmI32>,
 
       &WasmGenerator::block<kWasmF32>,
       &WasmGenerator::loop<kWasmF32>,
@@ -722,7 +740,7 @@ void WasmGenerator::Generate<kWasmF32>(DataRange* data) {
 
       &WasmGenerator::call<kWasmF32>};
 
-  GenerateOneOf(alternates, data);
+  GenerateOneOf(alternatives, data);
 }
 
 template <>
@@ -733,14 +751,32 @@ void WasmGenerator::Generate<kWasmF64>(DataRange* data) {
     return;
   }
 
-  constexpr generate_fn alternates[] = {
+  constexpr GenerateFn alternatives[] = {
       &WasmGenerator::sequence<kWasmF64, kWasmStmt>,
       &WasmGenerator::sequence<kWasmStmt, kWasmF64>,
       &WasmGenerator::sequence<kWasmStmt, kWasmF64, kWasmStmt>,
 
+      &WasmGenerator::op<kExprF64Abs, kWasmF64>,
+      &WasmGenerator::op<kExprF64Neg, kWasmF64>,
+      &WasmGenerator::op<kExprF64Ceil, kWasmF64>,
+      &WasmGenerator::op<kExprF64Floor, kWasmF64>,
+      &WasmGenerator::op<kExprF64Trunc, kWasmF64>,
+      &WasmGenerator::op<kExprF64NearestInt, kWasmF64>,
+      &WasmGenerator::op<kExprF64Sqrt, kWasmF64>,
       &WasmGenerator::op<kExprF64Add, kWasmF64, kWasmF64>,
       &WasmGenerator::op<kExprF64Sub, kWasmF64, kWasmF64>,
       &WasmGenerator::op<kExprF64Mul, kWasmF64, kWasmF64>,
+      &WasmGenerator::op<kExprF64Div, kWasmF64, kWasmF64>,
+      &WasmGenerator::op<kExprF64Min, kWasmF64, kWasmF64>,
+      &WasmGenerator::op<kExprF64Max, kWasmF64, kWasmF64>,
+      &WasmGenerator::op<kExprF64CopySign, kWasmF64, kWasmF64>,
+
+      &WasmGenerator::op<kExprF64SConvertI32, kWasmI32>,
+      &WasmGenerator::op<kExprF64UConvertI32, kWasmI32>,
+      &WasmGenerator::op<kExprF64SConvertI64, kWasmI64>,
+      &WasmGenerator::op<kExprF64UConvertI64, kWasmI64>,
+      &WasmGenerator::op<kExprF64ConvertF32, kWasmF32>,
+      &WasmGenerator::op<kExprF64ReinterpretI64, kWasmI64>,
 
       &WasmGenerator::block<kWasmF64>,
       &WasmGenerator::loop<kWasmF64>,
@@ -757,7 +793,7 @@ void WasmGenerator::Generate<kWasmF64>(DataRange* data) {
 
       &WasmGenerator::call<kWasmF64>};
 
-  GenerateOneOf(alternates, data);
+  GenerateOneOf(alternatives, data);
 }
 
 void WasmGenerator::grow_memory(DataRange* data) {

@@ -199,6 +199,12 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   // Calls CancelRequest().
   ~SpdyStreamRequest();
 
+  // Returns the time when ConfirmHandshake() completed, if this request had to
+  // wait for ConfirmHandshake().
+  base::TimeTicks confirm_handshake_end() const {
+    return confirm_handshake_end_;
+  }
+
   // Starts the request to create a stream. If OK is returned, then
   // ReleaseStream() may be called. If ERR_IO_PENDING is returned,
   // then when the stream is created, |callback| will be called, at
@@ -248,16 +254,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
  private:
   friend class SpdySession;
 
-  enum State {
-    STATE_NONE,
-    STATE_WAIT_FOR_CONFIRMATION,
-    STATE_REQUEST_STREAM,
-  };
-
-  void OnIOComplete(int rv);
-  int DoLoop(int rv);
-  int DoWaitForConfirmation();
-  int DoRequestStream(int rv);
+  void OnConfirmHandshakeComplete(int rv);
 
   // Called by |session_| when the stream attempt has finished
   // successfully.
@@ -280,13 +277,12 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   base::WeakPtr<SpdySession> session_;
   base::WeakPtr<SpdyStream> stream_;
   GURL url_;
-  bool can_send_early_;
   RequestPriority priority_;
   SocketTag socket_tag_;
   NetLogWithSource net_log_;
   CompletionOnceCallback callback_;
   MutableNetworkTrafficAnnotationTag traffic_annotation_;
-  State next_state_;
+  base::TimeTicks confirm_handshake_end_;
 
   base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_{this};
 
@@ -323,7 +319,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               bool enable_ping_based_connection_checking,
               bool is_http_enabled,
               bool is_quic_enabled,
-              bool support_ietf_format_quic_altsvc,
               bool is_trusted_proxy,
               size_t session_max_recv_window_size,
               int session_max_queued_capped_frames,
@@ -404,6 +399,14 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void EnqueueStreamWrite(const base::WeakPtr<SpdyStream>& stream,
                           spdy::SpdyFrameType frame_type,
                           std::unique_ptr<SpdyBufferProducer> producer);
+
+  // Returns true if this session is configured to send greased HTTP/2 frames.
+  // For more details on greased frames, see
+  // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
+  bool GreasedFramesEnabled() const;
+
+  // Send greased frame, that is, a frame of reserved type.
+  void EnqueueGreasedFrame(const base::WeakPtr<SpdyStream>& stream);
 
   // Runs the handshake to completion to confirm the handshake with the server.
   // If ERR_IO_PENDING is returned, then when the handshake is confirmed,
@@ -802,7 +805,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // that |stream| may hold the last reference to the session.
   void DeleteStream(std::unique_ptr<SpdyStream> stream, int status);
 
-  void RecordPingRTTHistogram(base::TimeDelta duration);
   void RecordHistograms();
   void RecordProtocolErrorHistogram(SpdyProtocolErrorDetails details);
   static void RecordPushedStreamVaryResponseHeaderHistogram(
@@ -1175,9 +1177,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   const bool is_http2_enabled_;
   const bool is_quic_enabled_;
-
-  // If true, alt-svc headers advertising QUIC in IETF format will be supported.
-  const bool support_ietf_format_quic_altsvc_;
 
   // If true, this session is being made to a trusted SPDY/HTTP2 proxy that is
   // allowed to push cross-origin resources.

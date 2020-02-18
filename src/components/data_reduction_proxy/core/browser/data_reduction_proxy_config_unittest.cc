@@ -31,6 +31,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
@@ -212,7 +213,6 @@ class DataReductionProxyConfigTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
-  base::FieldTrialList field_trial_list(nullptr);
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "DataCompressionProxyHoldback", "Enabled"));
 
@@ -274,7 +274,8 @@ TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
 }
 
 // Flaky on Linux. http://crbug.com/973385
-#if defined(OS_LINUX)
+// Flaky on Win. http://crbug.com/1010685
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_TestOnNetworkChanged DISABLED_TestOnNetworkChanged
 #else
 #define MAYBE_TestOnNetworkChanged TestOnNetworkChanged
@@ -372,7 +373,7 @@ TEST_F(DataReductionProxyConfigTest, MAYBE_TestOnNetworkChanged) {
 }
 
 // Verifies that the warm up URL is fetched correctly.
-TEST_F(DataReductionProxyConfigTest, WarmupURL) {
+TEST_F(DataReductionProxyConfigTest, DISABLED_WarmupURL) {
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
   const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
@@ -403,6 +404,9 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
 
     ResetSettings();
 
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.Init();
+
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
 
@@ -411,7 +415,6 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
     ASSERT_TRUE(variations::AssociateVariationParams(
         params::GetQuicFieldTrialName(), "Enabled", variation_params));
 
-    base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
                                            "Enabled");
 

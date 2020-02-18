@@ -55,32 +55,33 @@ RTCSessionDescription* RTCSessionDescription::Create(
     UseCounter::Count(context, WebFeature::kRTCSessionDescriptionInitNoSdp);
 
   return MakeGarbageCollected<RTCSessionDescription>(
-      WebRTCSessionDescription(type, sdp));
+      MakeGarbageCollected<RTCSessionDescriptionPlatform>(type, sdp));
 }
 
 RTCSessionDescription* RTCSessionDescription::Create(
-    WebRTCSessionDescription web_session_description) {
-  return MakeGarbageCollected<RTCSessionDescription>(web_session_description);
+    RTCSessionDescriptionPlatform* platform_session_description) {
+  return MakeGarbageCollected<RTCSessionDescription>(
+      platform_session_description);
 }
 
 RTCSessionDescription::RTCSessionDescription(
-    WebRTCSessionDescription web_session_description)
-    : web_session_description_(web_session_description) {}
+    RTCSessionDescriptionPlatform* platform_session_description)
+    : platform_session_description_(platform_session_description) {}
 
 String RTCSessionDescription::type() const {
-  return web_session_description_.GetType();
+  return platform_session_description_->GetType();
 }
 
 void RTCSessionDescription::setType(const String& type) {
-  web_session_description_.SetType(type);
+  platform_session_description_->SetType(type);
 }
 
 String RTCSessionDescription::sdp() const {
-  return web_session_description_.Sdp();
+  return platform_session_description_->Sdp();
 }
 
 void RTCSessionDescription::setSdp(const String& sdp) {
-  web_session_description_.SetSDP(sdp);
+  platform_session_description_->SetSdp(sdp);
 }
 
 ScriptValue RTCSessionDescription::toJSONForBinding(ScriptState* script_state) {
@@ -90,8 +91,13 @@ ScriptValue RTCSessionDescription::toJSONForBinding(ScriptState* script_state) {
   return result.GetScriptValue();
 }
 
-WebRTCSessionDescription RTCSessionDescription::WebSessionDescription() {
-  return web_session_description_;
+RTCSessionDescriptionPlatform* RTCSessionDescription::WebSessionDescription() {
+  return platform_session_description_;
+}
+
+void RTCSessionDescription::Trace(blink::Visitor* visitor) {
+  visitor->Trace(platform_session_description_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

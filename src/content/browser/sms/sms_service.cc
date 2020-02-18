@@ -6,6 +6,7 @@
 
 #include <iterator>
 #include <queue>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,27 +14,31 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "content/browser/sms/sms_metrics.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_type.h"
+#include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
+using blink::SmsReceiverDestroyedReason;
 using blink::mojom::SmsStatus;
 
 namespace content {
 
 SmsService::SmsService(
-    SmsProvider* provider,
+    SmsFetcher* fetcher,
     const url::Origin& origin,
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver)
     : FrameServiceBase(host, std::move(receiver)),
-      sms_provider_(provider),
+      fetcher_(fetcher),
       origin_(origin) {}
 
 SmsService::SmsService(
-    SmsProvider* provider,
+    SmsFetcher* fetcher,
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver)
-    : SmsService(provider,
+    : SmsService(fetcher,
                  host->GetLastCommittedOrigin(),
                  host,
                  std::move(receiver)) {}
@@ -45,7 +50,7 @@ SmsService::~SmsService() {
 
 // static
 void SmsService::Create(
-    SmsProvider* provider,
+    SmsFetcher* fetcher,
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver) {
   DCHECK(host);
@@ -53,53 +58,74 @@ void SmsService::Create(
   // SmsService owns itself. It will self-destruct when a mojo interface
   // error occurs, the render frame host is deleted, or the render frame host
   // navigates to a new document.
-  new SmsService(provider, host, std::move(receiver));
+  new SmsService(fetcher, host, std::move(receiver));
 }
 
 void SmsService::Receive(ReceiveCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (callback_) {
-    std::move(callback).Run(blink::mojom::SmsStatus::kCancelled, base::nullopt);
-    return;
+    std::move(callback_).Run(SmsStatus::kCancelled, base::nullopt);
+    fetcher_->Unsubscribe(origin_, this);
   }
-
-  DCHECK(!sms_);
 
   start_time_ = base::TimeTicks::Now();
 
-  sms_provider_->AddObserver(this);
-
   callback_ = std::move(callback);
 
-  sms_provider_->Retrieve();
+  // |sms_| and prompt are still present from the previous request so a new
+  // subscription is unnecessary.
+  if (prompt_open_) {
+    // TODO(crbug.com/1024598): Add UMA histogram.
+    return;
+  }
+
+  fetcher_->Subscribe(origin_, this);
 }
 
-bool SmsService::OnReceive(const url::Origin& origin,
-                           const std::string& one_time_code,
+void SmsService::OnReceive(const std::string& one_time_code,
                            const std::string& sms) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (origin_ != origin)
-    return false;
 
   DCHECK(!sms_);
   DCHECK(!start_time_.is_null());
 
   RecordSmsReceiveTime(base::TimeTicks::Now() - start_time_);
 
-  sms_provider_->RemoveObserver(this);
-
   sms_ = sms;
   receive_time_ = base::TimeTicks::Now();
 
   OpenInfoBar(one_time_code);
+}
 
-  return true;
+void SmsService::Abort() {
+  DCHECK(callback_);
+
+  Process(SmsStatus::kAborted, base::nullopt);
+}
+
+void SmsService::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
+  switch (load_details.type) {
+    case NavigationType::NAVIGATION_TYPE_NEW_PAGE:
+      RecordDestroyedReason(SmsReceiverDestroyedReason::kNavigateNewPage);
+      break;
+    case NavigationType::NAVIGATION_TYPE_EXISTING_PAGE:
+      RecordDestroyedReason(SmsReceiverDestroyedReason::kNavigateExistingPage);
+      break;
+    case NavigationType::NAVIGATION_TYPE_SAME_PAGE:
+      RecordDestroyedReason(SmsReceiverDestroyedReason::kNavigateSamePage);
+      break;
+    default:
+      // Ignore cases we don't care about.
+      break;
+  }
 }
 
 void SmsService::OpenInfoBar(const std::string& one_time_code) {
   WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
 
+  prompt_open_ = true;
   web_contents->GetDelegate()->CreateSmsPrompt(
       render_frame_host(), origin_, one_time_code,
       base::BindOnce(&SmsService::OnConfirm, weak_ptr_factory_.GetWeakPtr()),
@@ -124,7 +150,10 @@ void SmsService::OnConfirm() {
   DCHECK(!receive_time_.is_null());
   RecordContinueOnSuccessTime(base::TimeTicks::Now() - receive_time_);
 
-  Process(SmsStatus::kSuccess, sms_);
+  prompt_open_ = false;
+
+  if (callback_)
+    Process(SmsStatus::kSuccess, sms_);
 }
 
 void SmsService::OnCancel() {
@@ -134,15 +163,23 @@ void SmsService::OnCancel() {
   DCHECK(!receive_time_.is_null());
   RecordCancelOnSuccessTime(base::TimeTicks::Now() - receive_time_);
 
-  Process(SmsStatus::kCancelled, base::nullopt);
+  prompt_open_ = false;
+
+  if (callback_)
+    Process(SmsStatus::kCancelled, base::nullopt);
 }
 
 void SmsService::CleanUp() {
-  callback_.Reset();
-  sms_.reset();
+  // Skip resetting |sms_| and |receive_time_| while prompt is still open
+  // in case it needs to be returned to the next incoming request upon prompt
+  // confirmation.
+  if (!prompt_open_) {
+    sms_.reset();
+    receive_time_ = base::TimeTicks();
+  }
   start_time_ = base::TimeTicks();
-  receive_time_ = base::TimeTicks();
-  sms_provider_->RemoveObserver(this);
+  callback_.Reset();
+  fetcher_->Unsubscribe(origin_, this);
 }
 
 }  // namespace content

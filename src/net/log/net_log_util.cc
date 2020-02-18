@@ -19,6 +19,7 @@
 #include "net/base/address_family.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_verifier.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
@@ -117,13 +118,18 @@ disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
 // Returns true if |request1| was created before |request2|.
 bool RequestCreatedBefore(const URLRequest* request1,
                           const URLRequest* request2) {
+  // Only supported when both requests have the same non-null NetLog.
+  DCHECK(request1->net_log().net_log());
+  DCHECK_EQ(request1->net_log().net_log(), request2->net_log().net_log());
+
   if (request1->creation_time() < request2->creation_time())
     return true;
   if (request1->creation_time() > request2->creation_time())
     return false;
-  // If requests were created at the same time, sort by ID.  Mostly matters for
-  // testing purposes.
-  return request1->identifier() < request2->identifier();
+  // If requests were created at the same time, sort by NetLogSource ID. Some
+  // NetLog tests assume the returned order exactly matches creation order, even
+  // creation times of two events are potentially the same.
+  return request1->net_log().source().id < request2->net_log().source().id;
 }
 
 }  // namespace
@@ -148,6 +154,20 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
       dict->SetInteger(flag.name, flag.constant);
 
     constants_dict->Set("certStatusFlag", std::move(dict));
+  }
+
+  // Add a dictionary with information about the relationship between
+  // CertVerifier::VerifyFlags and their symbolic names.
+  {
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+
+    dict->SetInteger("VERIFY_DISABLE_NETWORK_FETCHES",
+                     CertVerifier::VERIFY_DISABLE_NETWORK_FETCHES);
+
+    static_assert(CertVerifier::VERIFY_FLAGS_LAST == (1 << 0),
+                  "Update with new flags");
+
+    constants_dict->Set("certVerifierFlags", std::move(dict));
   }
 
   // Add a dictionary with information about the relationship between load flag

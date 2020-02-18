@@ -78,8 +78,7 @@ WebURL WebURLLoaderMock::ServeRedirect(
 
   bool report_raw_headers = false;
   bool follow = client_->WillFollowRedirect(
-      redirect_url, redirect_url,
-      WebSecurityOrigin::Create(WebURL(redirect_url)), WebString(),
+      redirect_url, redirect_url, WebString(),
       network::mojom::ReferrerPolicy::kDefault, request.HttpMethod(),
       redirect_response, report_raw_headers);
   // |this| might be deleted in willFollowRedirect().
@@ -109,7 +108,7 @@ void WebURLLoaderMock::LoadSynchronously(
 void WebURLLoaderMock::LoadAsynchronously(const WebURLRequest& request,
                                           WebURLLoaderClient* client) {
   DCHECK(client);
-  DCHECK(factory_->IsMockedURL(request.Url()));
+  DCHECK(factory_->IsMockedURL(request.Url())) << request.Url();
   client_ = client;
   factory_->LoadAsynchronouly(request, this);
 }

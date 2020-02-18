@@ -6,6 +6,7 @@
 
 #include "base/test/task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,19 +29,23 @@ class SettingsRootTableViewControllerTest : public PlatformTest {
   }
 
   SettingsNavigationController* NavigationController() {
-    if (!chrome_browser_state_) {
+    if (!browser_) {
       TestChromeBrowserState::Builder test_cbs_builder;
       chrome_browser_state_ = test_cbs_builder.Build();
+      WebStateList* web_state_list = nullptr;
+      browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
+                                               web_state_list);
     }
     return [[SettingsNavigationController alloc]
         initWithRootViewController:nil
-                      browserState:chrome_browser_state_.get()
+                           browser:browser_.get()
                           delegate:nil];
   }
 
  protected:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<TestBrowser> browser_;
 };
 
 TEST_F(SettingsRootTableViewControllerTest, TestUpdateUIForEditState) {
@@ -53,29 +58,38 @@ TEST_F(SettingsRootTableViewControllerTest, TestUpdateUIForEditState) {
 
   // Check that there the navigation controller's button if the table view isn't
   // edited and the controller has the default behavior for
-  // |shouldShowEditButton|.
+  // |shouldShowEditButton|. Also check that toolbar is hidden when
+  // |shouldHideToolbar| returns YES.
   controller.tableView.editing = NO;
+  OCMExpect([mockController shouldHideToolbar]).andReturn(YES);
   [controller updateUIForEditState];
   UIBarButtonItem* item = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:nil
                            action:nil];
   EXPECT_NSEQ(item.title, controller.navigationItem.rightBarButtonItem.title);
+  EXPECT_TRUE(controller.navigationController.toolbarHidden);
 
   // Check that there the OK button if the table view is being edited and the
-  // controller has the default behavior for |shouldShowEditButton|.
+  // controller has the default behavior for |shouldShowEditButton|. Also check
+  // that toolbar is not hidden when |shouldHideToolbar| returns NO.
   controller.tableView.editing = YES;
+  OCMExpect([mockController shouldHideToolbar]).andReturn(NO);
   [controller updateUIForEditState];
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON),
               controller.navigationItem.rightBarButtonItem.title);
+  EXPECT_FALSE(controller.navigationController.toolbarHidden);
 
   // Check that there the OK button if the table view isn't edited and the
-  // controller returns YES for |shouldShowEditButton|.
+  // controller returns YES for |shouldShowEditButton|. Also check that toolbar
+  // is not hidden when |shouldHideToolbar| returns NO.
   controller.tableView.editing = NO;
   OCMStub([mockController shouldShowEditButton]).andReturn(YES);
+  OCMExpect([mockController shouldHideToolbar]).andReturn(NO);
   [controller updateUIForEditState];
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON),
               controller.navigationItem.rightBarButtonItem.title);
+  EXPECT_FALSE(controller.navigationController.toolbarHidden);
 }
 
 // Tests that the delete button in the bottom toolbar is displayed only when the

@@ -13,7 +13,9 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
@@ -21,23 +23,23 @@ namespace predictors {
 
 ResolveHostClientImpl::ResolveHostClientImpl(
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     ResolveHostCallback callback,
     network::mojom::NetworkContext* network_context)
-    : binding_(this), callback_(std::move(callback)) {
+    : callback_(std::move(callback)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  network::mojom::ResolveHostClientPtr resolve_host_client_ptr;
-  binding_.Bind(
-      mojo::MakeRequest(&resolve_host_client_ptr),
-      base::CreateSingleThreadTaskRunner(
-          {content::BrowserThread::UI, content::BrowserTaskType::kPreconnect}));
+
   network::mojom::ResolveHostParametersPtr parameters =
       network::mojom::ResolveHostParameters::New();
   parameters->initial_priority = net::RequestPriority::IDLE;
   parameters->is_speculative = true;
-  network_context->ResolveHost(net::HostPortPair::FromURL(url),
-                               std::move(parameters),
-                               std::move(resolve_host_client_ptr));
-  binding_.set_connection_error_handler(base::BindOnce(
+  network_context->ResolveHost(
+      net::HostPortPair::FromURL(url), network_isolation_key,
+      std::move(parameters),
+      receiver_.BindNewPipeAndPassRemote(base::CreateSingleThreadTaskRunner(
+          {content::BrowserThread::UI,
+           content::BrowserTaskType::kPreconnect})));
+  receiver_.set_disconnect_handler(base::BindOnce(
       &ResolveHostClientImpl::OnConnectionError, base::Unretained(this)));
 }
 
@@ -45,6 +47,7 @@ ResolveHostClientImpl::~ResolveHostClientImpl() = default;
 
 void ResolveHostClientImpl::OnComplete(
     int result,
+    const net::ResolveErrorInfo& resolve_error_info,
     const base::Optional<net::AddressList>& resolved_addresses) {
   std::move(callback_).Run(result == net::OK);
 }

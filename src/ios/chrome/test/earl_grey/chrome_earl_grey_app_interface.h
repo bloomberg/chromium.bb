@@ -6,11 +6,13 @@
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_APP_INTERFACE_H_
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #import "components/content_settings/core/common/content_settings.h"
 #import "components/sync/base/model_type.h"
 
 @class ElementSelector;
+@class NamedGuide;
 
 // ChromeEarlGreyAppInterface contains the app-side implementation for helpers
 // that primarily work via direct model access. These helpers are compiled into
@@ -21,6 +23,10 @@
 // returning. Returns nil on success, or else an NSError indicating why the
 // operation failed.
 + (NSError*)clearBrowsingHistory;
+
+// Clears browsing cache. Returns nil on success, or else an NSError indicating
+// the operation failed.
++ (NSError*)removeBrowsingCache;
 
 // Loads the URL |spec| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
@@ -36,6 +42,10 @@
 
 // Reloads the page without waiting for the page to load.
 + (void)startReloading;
+
+// Returns the NamedGuide with the given |name|, if one is attached to |view|
+// or one of |view|'s ancestors.  If no guide is found, returns nil.
++ (NamedGuide*)guideWithName:(NSString*)name view:(UIView*)view;
 
 #pragma mark - Tab Utilities (EG2)
 
@@ -60,6 +70,9 @@
 // If not succeed returns an NSError indicating  why the
 // operation failed, otherwise nil.
 + (NSError*)simulateTabsBackgrounding;
+
+// Persists the current list of tabs to disk immediately.
++ (void)saveSessionImmediately;
 
 // Returns the number of main (non-incognito) tabs currently evicted.
 + (NSUInteger)evictedMainTabCount WARN_UNUSED_RESULT;
@@ -91,6 +104,10 @@
 // normal after closing all tabs.
 + (void)closeAllTabsInCurrentMode;
 
+// Closes all normal (non-incognito) tabs. If not succeed returns an NSError
+// indicating why the operation failed, otherwise nil.
++ (NSError*)closeAllNormalTabs;
+
 // Closes all incognito tabs. If not succeed returns an NSError indicating  why
 // the operation failed, otherwise nil.
 + (NSError*)closeAllIncognitoTabs;
@@ -106,6 +123,18 @@
 // Navigates forward to the next page without waiting for the page to load.
 + (void)startGoingForward;
 
+// Returns the title of the current selected tab.
++ (NSString*)currentTabTitle;
+
+// Returns the title of the next tab. Assumes that there is a next tab.
++ (NSString*)nextTabTitle;
+
+// Returns a unique identifier for the current Tab.
++ (NSString*)currentTabID;
+
+// Returns a unique identifier for the next Tab.
++ (NSString*)nextTabID;
+
 #pragma mark - WebState Utilities (EG2)
 
 // Attempts to tap the element with |element_id| within window.frames[0] of the
@@ -115,8 +144,9 @@
 + (NSError*)tapWebStateElementInIFrameWithID:(NSString*)elementID;
 
 // Taps html element with |elementID| in the current web state.
-// On failure returns NO and |error| is set to include a message.
-+ (BOOL)tapWebStateElementWithID:(NSString*)elementID error:(NSError*)error;
+// If not succeed returns an NSError indicating why the
+// operation failed, otherwise nil.
++ (NSError*)tapWebStateElementWithID:(NSString*)elementID;
 
 // Waits for the current web state to contain an element matching |selector|.
 // If not succeed returns an NSError indicating  why the operation failed,
@@ -154,6 +184,26 @@
 // Returns the current WebState's VisibleURL.
 + (NSString*)webStateVisibleURL;
 
+// Returns the current WebState's last committed URL.
++ (NSString*)webStateLastCommittedURL;
+
+// Purges cached web view pages in the current web state, so the next time back
+// navigation will not use a cached page. Browsers don't have to use a fresh
+// version for back/forward navigation for HTTP pages and may serve a version
+// from the cache even if the Cache-Control response header says otherwise.
++ (void)purgeCachedWebViewPages;
+
+// Returns YES if the current WebState's navigation manager is currently
+// restoring session state.
++ (BOOL)isRestoreSessionInProgress;
+
+// Returns YES if the current WebState's web view uses the content inset to
+// correctly align the top of the content with the bottom of the top bar.
++ (BOOL)webStateWebViewUsesContentInset;
+
+// Returns the size of the current WebState's web view.
++ (CGSize)webStateWebViewSize;
+
 #pragma mark - Sync Utilities (EG2)
 
 // Clears the autofill profile for the given |GUID|.
@@ -179,6 +229,12 @@
 // Clears bookmarks. If not succeed returns an NSError indicating  why the
 // operation failed, otherwise nil.
 + (NSError*)clearBookmarks;
+
+#pragma mark - URL Utilities (EG2)
+
+// Returns the title string to be used for a page with |URL| if that page
+// doesn't specify a title.
++ (NSString*)displayTitleForURL:(NSString*)URL;
 
 #pragma mark - Sync Utilities (EG2)
 
@@ -286,6 +342,23 @@
 // Returns YES if WebPaymentsModifiers feature is enabled.
 + (BOOL)isWebPaymentsModifiersEnabled WARN_UNUSED_RESULT;
 
+// Returns YES if SettingsAddPaymentMethod feature is enabled.
++ (BOOL)isSettingsAddPaymentMethodEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if CreditCardScanner feature is enabled.
++ (BOOL)isCreditCardScannerEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if AutofillEnableCompanyName feature is enabled.
++ (BOOL)isAutofillCompanyNameEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if custom WebKit frameworks were properly loaded, rather than
+// system frameworks. Always returns YES if the app was not requested to run
+// with custom WebKit frameworks.
++ (BOOL)isCustomWebKitLoadedIfRequested WARN_UNUSED_RESULT;
+
+// Returns YES if collections are presented in cards.
++ (BOOL)isCollectionsCardPresentationStyleEnabled WARN_UNUSED_RESULT;
+
 #pragma mark - Popup Blocking
 
 // Gets the current value of the popup content setting preference for the
@@ -295,6 +368,11 @@
 // Sets the popup content setting preference to the given value for the original
 // browser state.
 + (void)setPopupPrefValue:(ContentSetting)value;
+
+#pragma mark - Keyboard Command utilities
+
+// The count of key commands registered with the currently active BVC.
++ (NSInteger)registeredKeyCommandCount;
 
 @end
 

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "ash/root_window_controller.h"
@@ -179,7 +180,8 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
 
     // May reshow the home launcher after dragging.
-    Shell::Get()->home_screen_controller()->OnWindowDragEnded();
+    Shell::Get()->home_screen_controller()->OnWindowDragEnded(
+        /*animate=*/false);
 
     // Clears the background wallpaper blur.
     auto* wallpaper_view =
@@ -220,7 +222,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
 
   // The original backdrop mode of the source window. Should be disabled during
   // dragging.
-  BackdropWindowMode source_window_backdrop_ = BackdropWindowMode::kAuto;
+  BackdropWindowMode source_window_backdrop_ = BackdropWindowMode::kAutoOpaque;
 
   DISALLOW_COPY_AND_ASSIGN(WindowsHider);
 };
@@ -310,9 +312,10 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
     } else {
       // Put the source window on the other side of the split screen.
       expected_bounds = split_view_controller_->GetSnappedWindowBoundsInScreen(
-          source_window, snap_position == SplitViewController::LEFT
-                             ? SplitViewController::RIGHT
-                             : SplitViewController::LEFT);
+          snap_position == SplitViewController::LEFT
+              ? SplitViewController::RIGHT
+              : SplitViewController::LEFT,
+          source_window);
     }
   }
   ::wm::ConvertRectFromScreen(source_window->parent(), &expected_bounds);

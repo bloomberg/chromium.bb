@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
-#include "build/build_config.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -23,7 +22,6 @@
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
-#include "content/shell/renderer/web_test/test_media_stream_renderer_factory.h"
 #include "content/shell/renderer/web_test/test_websocket_handshake_throttle_provider.h"
 #include "content/shell/renderer/web_test/web_test_render_frame_observer.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
@@ -37,6 +35,7 @@
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -48,8 +47,6 @@ using blink::WebFrame;
 using blink::WebLocalFrame;
 using blink::WebPlugin;
 using blink::WebPluginParams;
-using blink::WebRTCPeerConnectionHandler;
-using blink::WebRTCPeerConnectionHandlerClient;
 using blink::WebThemeEngine;
 
 namespace content {
@@ -76,18 +73,6 @@ void WebTestContentRendererClient::RenderViewCreated(RenderView* render_view) {
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
   test_runner->Reset(false /* for_new_test */);
-}
-
-WebThemeEngine* WebTestContentRendererClient::OverrideThemeEngine() {
-  return WebTestRenderThreadObserver::GetInstance()
-      ->test_interfaces()
-      ->ThemeEngine();
-}
-
-std::unique_ptr<blink::WebMediaStreamRendererFactory>
-WebTestContentRendererClient::CreateMediaStreamRendererFactory() {
-  return std::unique_ptr<blink::WebMediaStreamRendererFactory>(
-      new TestMediaStreamRendererFactory());
 }
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
@@ -122,16 +107,6 @@ bool WebTestContentRendererClient::IsIdleMediaSuspendEnabled() {
   // Disable idle media suspend to avoid web tests getting into accidentally
   // bad states if they take too long to run.
   return false;
-}
-
-bool WebTestContentRendererClient::SuppressLegacyTLSVersionConsoleMessage() {
-#if defined(OS_MACOSX)
-  // Blink uses an outdated test server on older versions of macOS. Until those
-  // are fixed, suppress the warning. See https://crbug.com/936515.
-  return true;
-#else
-  return false;
-#endif
 }
 
 }  // namespace content

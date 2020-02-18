@@ -191,7 +191,6 @@ class ParamChecker(BaseChecker):
   # in chromite.cli.cros.lint
   class _MessageCP010(object):
     """Message for missing @param statements."""
-    pass
 
   name = 'doc_string_param_checker'
   priority = -1

@@ -5,9 +5,8 @@
 package org.chromium.chrome.browser.feed;
 
 import android.app.Activity;
-import android.support.annotation.IntDef;
 
-import com.google.android.libraries.feed.api.client.lifecycle.AppLifecycleListener;
+import androidx.annotation.IntDef;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -15,6 +14,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
+import org.chromium.chrome.browser.feed.library.api.client.lifecycle.AppLifecycleListener;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 
@@ -180,7 +180,7 @@ public class FeedAppLifecycle
             mDelayedInitializeStarted = true;
             boolean initFeed = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                     ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, "init_feed_after_startup",
-                    true);
+                    false);
             if (initFeed) {
                 DeferredStartupHandler.getInstance().addDeferredTask(() -> {
                     // Since this is being run asynchronously, it's possible #destroy() is called

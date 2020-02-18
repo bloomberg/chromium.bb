@@ -13,7 +13,7 @@ cache reduces pipeline recompilation time significantly. But even cached
 pipeline recompilations are orders of manitude slower than OpenGL state changes.
 
 The second level cache is an ANGLE-owned hash map from OpenGL state vectors to compiled pipelines.
-See [GraphicsPipelineCache][GraphicsPipelineCache] in [vk_cache_utils.h](vk_cache_utils.h). ANGLE's
+See [GraphicsPipelineCache][GraphicsPipelineCache] in [vk_cache_utils.h](../vk_cache_utils.h). ANGLE's
 [GraphicsPipelineDesc][GraphicsPipelineDesc] class is a tightly packed 256-byte description of the
 current OpenGL rendering state. We also use a [xxHash](https://github.com/Cyan4973/xxHash) for the
 fastest possible hash computation. The hash map speeds up state changes considerably. But it is
@@ -35,8 +35,6 @@ applications map from one state to many this will slow down the transition time.
 improved in the future using a faster look up. For instance we could keep a sorted transition table
 or use a small hash map for transitions.
 
-[VkDevice]: https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkDevice.html
-[VkQueue]: https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkQueue.html
 [VkPipeline]: https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkPipeline.html
 [VkPipelineCache]: https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkPipelineCache.html
 [GraphicsPipelineCache]: https://chromium.googlesource.com/angle/angle/+/225f08bf85a368f905362cdd1366e4795680452c/src/libANGLE/renderer/vulkan/vk_cache_utils.h#498

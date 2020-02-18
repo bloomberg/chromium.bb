@@ -1,7 +1,7 @@
 [
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "branch",
@@ -32,7 +32,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "branchinfo",
@@ -60,7 +60,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
@@ -110,7 +110,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
@@ -137,7 +137,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
@@ -185,7 +185,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "abandon",
@@ -229,7 +229,7 @@
   },
   {
     "cmd": [
-      "python",
+      "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",

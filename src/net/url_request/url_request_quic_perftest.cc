@@ -26,6 +26,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "net/quic/crypto/proof_source_chromium.h"
+#include "net/quic/quic_context.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -39,7 +40,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "url/gurl.h"
 
 using testing::_;
@@ -62,6 +63,20 @@ const char kHelloAltSvcResponse[] = "Hello from QUIC Server";
 const char kHelloOriginResponse[] = "Hello from TCP Server";
 const int kHelloStatus = 200;
 
+static constexpr char kMetricPrefixURLRequestQuick[] = "URLRequestQuic.";
+static constexpr char kMetricRequestTimeMs[] = "request_time";
+static constexpr char kMetricActiveQuicJobsCount[] = "active_quic_jobs";
+static constexpr char kMetricActiveQuicSessionsCount[] = "active_quic_sessions";
+
+perf_test::PerfResultReporter SetUpURLRequestQuicReporter(
+    const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixURLRequestQuick, story);
+  reporter.RegisterImportantMetric(kMetricRequestTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricActiveQuicJobsCount, "count");
+  reporter.RegisterImportantMetric(kMetricActiveQuicSessionsCount, "count");
+  return reporter;
+}
+
 std::unique_ptr<test_server::HttpResponse> HandleRequest(
     const test_server::HttpRequest& request) {
   std::unique_ptr<test_server::BasicHttpResponse> http_response(
@@ -69,23 +84,11 @@ std::unique_ptr<test_server::HttpResponse> HandleRequest(
   http_response->AddCustomHeader(
       "Alt-Svc",
       base::StringPrintf("quic=\"%s:%d\"; v=\"%u\"", kAltSvcHost, kAltSvcPort,
-                         HttpNetworkSession::Params()
-                             .quic_params.supported_versions[0]
-                             .transport_version));
+                         kDefaultSupportedQuicVersion.transport_version));
   http_response->set_code(HTTP_OK);
   http_response->set_content(kHelloOriginResponse);
   http_response->set_content_type("text/plain");
   return std::move(http_response);
-}
-
-void PrintPerfTest(const std::string& name,
-                   int value,
-                   const std::string& unit) {
-  const ::testing::TestInfo* test_info =
-      ::testing::UnitTest::GetInstance()->current_test_info();
-  perf_test::PrintResult(test_info->test_case_name(),
-                         std::string(".") + test_info->name(), name,
-                         static_cast<double>(value), unit, true);
 }
 
 class URLRequestQuicPerfTest : public ::testing::Test {
@@ -118,10 +121,11 @@ class URLRequestQuicPerfTest : public ::testing::Test {
         new HttpNetworkSession::Params);
     params->enable_quic = true;
     params->enable_user_alternate_protocol_ports = true;
-    params->quic_params.allow_remote_alt_svc = true;
+    quic_context_.params()->allow_remote_alt_svc = true;
     context_->set_host_resolver(host_resolver_.get());
     context_->set_http_network_session_params(std::move(params));
     context_->set_cert_verifier(&cert_verifier_);
+    context_->set_quic_context(&quic_context_);
     context_->Init();
   }
 
@@ -187,6 +191,7 @@ class URLRequestQuicPerfTest : public ::testing::Test {
   std::unique_ptr<TestURLRequestContext> context_;
   quic::QuicMemoryCacheBackend memory_cache_backend_;
   MockCertVerifier cert_verifier_;
+  QuicContext quic_context_;
 };
 
 void CheckScalarInDump(const MemoryAllocatorDump* dump,
@@ -221,7 +226,9 @@ TEST_F(URLRequestQuicPerfTest, TestGetRequest) {
     }
   }
   base::TimeTicks end = base::TimeTicks::Now();
-  PrintPerfTest("time", (end - start).InMilliseconds() / kNumRequest, "ms");
+  auto reporter = SetUpURLRequestQuicReporter("get");
+  reporter.AddResult(kMetricRequestTimeMs,
+                     (end - start).InMillisecondsF() / kNumRequest);
 
   EXPECT_TRUE(quic_succeeded);
   base::trace_event::MemoryDumpManager::GetInstance()->SetupForTracing(
@@ -259,11 +266,9 @@ TEST_F(URLRequestQuicPerfTest, TestGetRequest) {
                           base::trace_event::MemoryAllocatorDump::kUnitsObjects,
                           0);
 
-        PrintPerfTest("active_quic_jobs", 0, "count");
         CheckScalarInDump(quic_stream_factory_dump, "all_sessions",
                           base::trace_event::MemoryAllocatorDump::kUnitsObjects,
                           1);
-        PrintPerfTest("active_quic_sessions", 1, "count");
 
         std::string stream_factory_dump_name = base::StringPrintf(
             "net/http_network_session_0x%" PRIxPTR "/stream_factory",
@@ -271,7 +276,6 @@ TEST_F(URLRequestQuicPerfTest, TestGetRequest) {
                 context->http_transaction_factory()->GetSession()));
         ASSERT_EQ(0u, allocator_dumps.count(stream_factory_dump_name));
         quit_closure.Run();
-
       };
   base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
       args,

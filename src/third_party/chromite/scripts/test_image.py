@@ -12,6 +12,7 @@ import unittest
 
 from chromite.lib import constants
 from chromite.lib import commandline
+from chromite.lib import image_lib
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -103,7 +104,12 @@ def main(args):
   image_file = FindImage(opts.image)
   tmp_in_chroot = path_util.FromChrootPath('/tmp')
   with osutils.TempDir(base_dir=tmp_in_chroot) as temp_dir:
-    with osutils.MountImageContext(image_file, temp_dir):
+    with image_lib.LoopbackPartitions(image_file, temp_dir) as image:
+      # Due to the lack of mount context, we mount the partitions
+      # but do not reference directly.  This will be removed with the
+      # submission of http://crrev/c/1795578
+      _ = image.Mount((constants.PART_ROOT_A,))[0]
+      _ = image.Mount((constants.PART_STATE,))[0]
       with osutils.ChdirContext(temp_dir):
         result = runner.run(all_tests)
 

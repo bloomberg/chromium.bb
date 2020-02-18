@@ -35,12 +35,13 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
-#include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -51,7 +52,7 @@
 namespace blink {
 
 class CORE_EXPORT ApplicationCacheHost
-    : public GarbageCollectedFinalized<ApplicationCacheHost>,
+    : public GarbageCollected<ApplicationCacheHost>,
       public mojom::blink::AppCacheFrontend {
  public:
   ApplicationCacheHost(
@@ -104,7 +105,8 @@ class CORE_EXPORT ApplicationCacheHost
   void LogMessage(mojom::blink::ConsoleMessageLevel log_level,
                   const String& message) override {}
   void SetSubresourceFactory(
-      network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override {}
+      mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+          url_loader_factory) override {}
 
   virtual void Trace(blink::Visitor*) {}
 

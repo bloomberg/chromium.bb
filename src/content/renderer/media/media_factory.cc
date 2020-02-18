@@ -41,10 +41,10 @@
 #include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/connect.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_element_source_utils.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
@@ -72,7 +72,8 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include "media/fuchsia/cdm/fuchsia_cdm_factory.h"
+#include "content/renderer/media/fuchsia_renderer_factory.h"
+#include "media/fuchsia/cdm/client/fuchsia_cdm_util.h"
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
 #include "media/mojo/clients/mojo_cdm_factory.h"  // nogncheck
 #else
@@ -81,10 +82,6 @@
 
 #if defined(OS_FUCHSIA) && BUILDFLAG(ENABLE_MOJO_CDM)
 #error "MojoCdm should be disabled for Fuchsia."
-#endif
-
-#if BUILDFLAG(ENABLE_MOJO_RENDERER)
-#include "media/mojo/clients/mojo_renderer_factory.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER) || BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
@@ -158,10 +155,7 @@ MediaFactory::GetVideoSurfaceLayerMode() {
     return blink::WebMediaPlayer::SurfaceLayerMode::kNever;
 #endif  // OS_ANDROID
 
-  if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo))
-    return blink::WebMediaPlayer::SurfaceLayerMode::kAlways;
-
-  return blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand;
+  return blink::WebMediaPlayer::SurfaceLayerMode::kAlways;
 }
 
 MediaFactory::MediaFactory(
@@ -176,6 +170,11 @@ MediaFactory::~MediaFactory() {
   // new tasks using the DecoderFactory will execute, so we don't need to worry
   // about additional posted tasks from Stop().
   if (decoder_factory_) {
+    // Prevent any new decoders from being created to avoid future access to the
+    // external decoder factory (MojoDecoderFactory) since it requires access to
+    // the (about to be destructed) RenderFrame.
+    decoder_factory_->Shutdown();
+
     // DeleteSoon() shouldn't ever fail, we should always have a RenderThread at
     // this time and subsequently a media thread. To fail, the media thread must
     // be dead/dying (which only happens at ~RenderThreadImpl), in which case
@@ -187,10 +186,10 @@ MediaFactory::~MediaFactory() {
 
 void MediaFactory::SetupMojo() {
   // Only do setup once.
-  DCHECK(!remote_interfaces_);
+  DCHECK(!interface_broker_);
 
-  remote_interfaces_ = render_frame_->GetRemoteInterfaces();
-  DCHECK(remote_interfaces_);
+  interface_broker_ = render_frame_->GetBrowserInterfaceBroker();
+  DCHECK(interface_broker_);
 }
 
 #if defined(OS_ANDROID)
@@ -363,8 +362,9 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   DCHECK_EQ(static_cast<FrameFetchContext*>(fetch_context_.get())->frame(),
             web_frame);
 
-  media::mojom::MediaMetricsProviderPtr metrics_provider;
-  remote_interfaces_->GetInterface(mojo::MakeRequest(&metrics_provider));
+  mojo::PendingRemote<media::mojom::MediaMetricsProvider> metrics_provider;
+  interface_broker_->GetInterface(
+      metrics_provider.InitWithNewPipeAndPassReceiver());
 
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner;
@@ -392,8 +392,9 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           render_thread->GetWorkerTaskRunner(),
           render_thread->compositor_task_runner(),
           video_frame_compositor_task_runner,
-          base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
-                     base::Unretained(blink::MainThreadIsolate())),
+          base::BindRepeating(
+              &v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
+              base::Unretained(blink::MainThreadIsolate())),
           initial_cdm, request_routing_token_cb_, media_observer,
           enable_instant_source_buffer_gc, embedded_media_experience_enabled,
           std::move(metrics_provider),
@@ -436,41 +437,43 @@ MediaFactory::CreateRendererFactorySelector(
     media::DecoderFactory* decoder_factory,
     std::unique_ptr<media::RemotePlaybackClientWrapper> client_wrapper,
     base::WeakPtr<media::MediaObserver>* out_media_observer) {
+  using FactoryType = media::RendererFactoryType;
+
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   // Render thread may not exist in tests, returning nullptr if it does not.
   if (!render_thread)
     return nullptr;
 
   auto factory_selector = std::make_unique<media::RendererFactorySelector>();
+  bool use_default_renderer_factory = true;
 
 #if defined(OS_ANDROID)
-  DCHECK(remote_interfaces_);
+  DCHECK(interface_broker_);
 
   // MediaPlayerRendererClientFactory setup.
-  auto mojo_media_player_renderer_factory =
-      std::make_unique<media::MojoRendererFactory>(
-          GetMediaInterfaceFactory());
-
-  // Always give |factory_selector| a MediaPlayerRendererClient factory. WMPI
-  // might fallback to it if the final redirected URL is an HLS url.
-  factory_selector->AddFactory(
-      media::RendererFactorySelector::FactoryType::MEDIA_PLAYER,
+  auto media_player_factory =
       std::make_unique<MediaPlayerRendererClientFactory>(
-          render_thread->compositor_task_runner(),
-          std::move(mojo_media_player_renderer_factory),
-          base::BindRepeating(&StreamTextureWrapperImpl::Create,
-                              render_thread->EnableStreamTextureCopy(),
-                              render_thread->GetStreamTexureFactory(),
-                              base::ThreadTaskRunnerHandle::Get())));
+          render_thread->compositor_task_runner(), CreateMojoRendererFactory(),
+          base::BindRepeating(
+              &StreamTextureWrapperImpl::Create,
+              render_thread->EnableStreamTextureCopy(),
+              render_thread->GetStreamTexureFactory(),
+              render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 
-  factory_selector->SetUseMediaPlayer(use_media_player);
+  if (use_media_player) {
+    factory_selector->AddBaseFactory(FactoryType::kMediaPlayer,
+                                     std::move(media_player_factory));
+    use_default_renderer_factory = false;
+  } else {
+    // Always give |factory_selector| a MediaPlayerRendererClient factory. WMPI
+    // might fallback to it if the final redirected URL is an HLS url.
+    factory_selector->AddFactory(FactoryType::kMediaPlayer,
+                                 std::move(media_player_factory));
+  }
 
   // FlingingRendererClientFactory (FRCF) setup.
-  auto mojo_flinging_factory =
-      std::make_unique<media::MojoRendererFactory>(GetMediaInterfaceFactory());
-
   auto flinging_factory = std::make_unique<FlingingRendererClientFactory>(
-      std::move(mojo_flinging_factory), std::move(client_wrapper));
+      CreateMojoRendererFactory(), std::move(client_wrapper));
 
   // base::Unretained() is safe here because |factory_selector| owns and
   // outlives |flinging_factory|.
@@ -478,83 +481,81 @@ MediaFactory::CreateRendererFactorySelector(
       base::BindOnce(&FlingingRendererClientFactory::SetRemotePlayStateChangeCB,
                      base::Unretained(flinging_factory.get())));
 
+  // Must bind the callback first since |flinging_factory| will be moved.
   // base::Unretained() is also safe here, for the same reasons.
-  factory_selector->SetQueryIsFlingingActiveCB(
+  auto is_flinging_cb =
       base::BindRepeating(&FlingingRendererClientFactory::IsFlingingActive,
-                          base::Unretained(flinging_factory.get())));
-
-  factory_selector->AddFactory(
-      media::RendererFactorySelector::FactoryType::FLINGING,
-      std::move(flinging_factory));
+                          base::Unretained(flinging_factory.get()));
+  factory_selector->AddConditionalFactory(
+      FactoryType::kFlinging, std::move(flinging_factory), is_flinging_cb);
 #endif  // defined(OS_ANDROID)
 
-  bool use_mojo_renderer_factory = false;
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
-  use_mojo_renderer_factory = enable_mojo_renderer;
-  if (use_mojo_renderer_factory) {
-    auto mojo_renderer_factory = std::make_unique<media::MojoRendererFactory>(
-        GetMediaInterfaceFactory());
-
+  DCHECK(!use_media_player);
+  if (enable_mojo_renderer) {
+    use_default_renderer_factory = false;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
-    factory_selector->AddFactory(
-        media::RendererFactorySelector::FactoryType::CAST,
-        std::make_unique<CastRendererClientFactory>(
-            media_log, std::move(mojo_renderer_factory)));
-
-    factory_selector->SetBaseFactoryType(
-        media::RendererFactorySelector::FactoryType::CAST);
+    factory_selector->AddBaseFactory(
+        FactoryType::kCast, std::make_unique<CastRendererClientFactory>(
+                                media_log, CreateMojoRendererFactory()));
 #else
     // The "default" MojoRendererFactory can be wrapped by a
     // DecryptingRendererFactory without changing any behavior.
     // TODO(tguilbert/xhwang): Add "FactoryType::DECRYPTING" if ever we need to
     // distinguish between a "pure" and "decrypting" MojoRenderer.
-    factory_selector->AddFactory(
-        media::RendererFactorySelector::FactoryType::MOJO,
-        std::make_unique<media::DecryptingRendererFactory>(
-            media_log, std::move(mojo_renderer_factory)));
-
-    factory_selector->SetBaseFactoryType(
-        media::RendererFactorySelector::FactoryType::MOJO);
+    factory_selector->AddBaseFactory(
+        FactoryType::kMojo, std::make_unique<media::DecryptingRendererFactory>(
+                                media_log, CreateMojoRendererFactory()));
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
   }
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
-  if (!use_mojo_renderer_factory) {
-    factory_selector->AddFactory(
-        media::RendererFactorySelector::FactoryType::DEFAULT,
+#if defined(OS_FUCHSIA)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFuchsiaAudioConsumer)) {
+    use_default_renderer_factory = false;
+    factory_selector->AddBaseFactory(
+        FactoryType::kFuchsia,
+        std::make_unique<FuchsiaRendererFactory>(
+            media_log, decoder_factory,
+            base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
+                                base::Unretained(render_thread)),
+            render_frame_->GetBrowserInterfaceBroker()));
+  }
+#endif  // defined(OS_FUCHSIA)
+
+  if (use_default_renderer_factory) {
+    factory_selector->AddBaseFactory(
+        FactoryType::kDefault,
         std::make_unique<media::DefaultRendererFactory>(
             media_log, decoder_factory,
-            base::Bind(&RenderThreadImpl::GetGpuFactories,
-                       base::Unretained(render_thread))));
-
-    factory_selector->SetBaseFactoryType(
-        media::RendererFactorySelector::FactoryType::DEFAULT);
+            base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
+                                base::Unretained(render_thread))));
   }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  media::mojom::RemotingSourcePtr remoting_source;
-  auto remoting_source_request = mojo::MakeRequest(&remoting_source);
-  media::mojom::RemoterPtr remoter;
+  mojo::PendingRemote<media::mojom::RemotingSource> remoting_source;
+  auto remoting_source_receiver =
+      remoting_source.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<media::mojom::Remoter> remoter;
   GetRemoterFactory()->Create(std::move(remoting_source),
-                              mojo::MakeRequest(&remoter));
+                              remoter.InitWithNewPipeAndPassReceiver());
   using RemotingController = media::remoting::RendererController;
   auto remoting_controller = std::make_unique<RemotingController>(
-      std::move(remoting_source_request), std::move(remoter));
+      std::move(remoting_source_receiver), std::move(remoter));
   *out_media_observer = remoting_controller->GetWeakPtr();
 
   auto courier_factory =
       std::make_unique<media::remoting::CourierRendererFactory>(
           std::move(remoting_controller));
 
-  // base::Unretained is safe here because |factory_selector| owns
-  // |courier_factory|.
-  factory_selector->SetQueryIsRemotingActiveCB(
-      base::Bind(&media::remoting::CourierRendererFactory::IsRemotingActive,
-                 base::Unretained(courier_factory.get())));
-
-  factory_selector->AddFactory(
-      media::RendererFactorySelector::FactoryType::COURIER,
-      std::move(courier_factory));
+  // Must bind the callback first since |courier_factory| will be moved.
+  // base::Unretained is safe because |factory_selector| owns |courier_factory|.
+  auto is_remoting_cb = base::BindRepeating(
+      &media::remoting::CourierRendererFactory::IsRemotingActive,
+      base::Unretained(courier_factory.get()));
+  factory_selector->AddConditionalFactory(
+      FactoryType::kCourier, std::move(courier_factory), is_remoting_cb);
 #endif
 
   return factory_selector;
@@ -592,7 +593,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
 
   return new blink::WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(), std::move(media_log),
-      CreateMediaStreamRendererFactory(),
+      blink::CreateWebMediaStreamRendererFactory(),
       render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
       render_thread->GetIOTaskRunner(), video_frame_compositor_task_runner,
       render_thread->GetMediaThreadTaskRunner(),
@@ -612,15 +613,6 @@ MediaFactory::GetWebMediaPlayerDelegate() {
   return media_player_delegate_;
 }
 
-std::unique_ptr<blink::WebMediaStreamRendererFactory>
-MediaFactory::CreateMediaStreamRendererFactory() {
-  std::unique_ptr<blink::WebMediaStreamRendererFactory> factory =
-      GetContentClient()->renderer()->CreateMediaStreamRendererFactory();
-  if (factory.get())
-    return factory;
-  return blink::CreateWebMediaStreamRendererFactory();
-}
-
 media::DecoderFactory* MediaFactory::GetDecoderFactory() {
   if (!decoder_factory_) {
     std::unique_ptr<media::DecoderFactory> external_decoder_factory;
@@ -637,9 +629,11 @@ media::DecoderFactory* MediaFactory::GetDecoderFactory() {
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 media::mojom::RemoterFactory* MediaFactory::GetRemoterFactory() {
+  DCHECK(interface_broker_);
+
   if (!remoter_factory_) {
-    DCHECK(remote_interfaces_);
-    remote_interfaces_->GetInterface(&remoter_factory_);
+    interface_broker_->GetInterface(
+        remoter_factory_.BindNewPipeAndPassReceiver());
   }
   return remoter_factory_.get();
 }
@@ -650,7 +644,8 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
     return cdm_factory_.get();
 
 #if defined(OS_FUCHSIA)
-  cdm_factory_ = std::make_unique<media::FuchsiaCdmFactory>(remote_interfaces_);
+  DCHECK(interface_broker_);
+  cdm_factory_ = media::CreateFuchsiaCdmFactory(interface_broker_);
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
   cdm_factory_ =
       std::make_unique<media::MojoCdmFactory>(GetMediaInterfaceFactory());
@@ -663,13 +658,20 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)
 media::mojom::InterfaceFactory* MediaFactory::GetMediaInterfaceFactory() {
+  DCHECK(interface_broker_);
+
   if (!media_interface_factory_) {
-    DCHECK(remote_interfaces_);
-    media_interface_factory_.reset(
-        new MediaInterfaceFactory(remote_interfaces_));
+    media_interface_factory_ =
+        std::make_unique<MediaInterfaceFactory>(interface_broker_);
   }
 
   return media_interface_factory_.get();
+}
+
+std::unique_ptr<media::MojoRendererFactory>
+MediaFactory::CreateMojoRendererFactory() {
+  return std::make_unique<media::MojoRendererFactory>(
+      GetMediaInterfaceFactory());
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA)
 

@@ -24,12 +24,13 @@
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/logging.h"
 #include "perfetto/base/task_runner.h"
+#include "perfetto/ext/base/hash.h"
 #include "perfetto/ext/base/thread_checker.h"
 #include "perfetto/ext/base/waitable_event.h"
-#include "perfetto/ext/tracing/core/buffer_exhausted_policy.h"
 #include "perfetto/ext/tracing/core/trace_packet.h"
 #include "perfetto/ext/tracing/core/trace_writer.h"
 #include "perfetto/ext/tracing/core/tracing_service.h"
+#include "perfetto/tracing/buffer_exhausted_policy.h"
 #include "perfetto/tracing/core/data_source_config.h"
 #include "perfetto/tracing/data_source.h"
 #include "perfetto/tracing/internal/data_source_internal.h"
@@ -55,6 +56,13 @@ class StopArgsImpl : public DataSourceBase::StopArgs {
   mutable std::function<void()> async_stop_closure;
 };
 
+uint64_t ComputeConfigHash(const DataSourceConfig& config) {
+  base::Hash hasher;
+  std::string config_bytes = config.SerializeAsString();
+  hasher.Update(config_bytes.data(), config_bytes.size());
+  return hasher.digest();
+}
+
 }  // namespace
 
 // ----- Begin of TracingMuxerImpl::ProducerImpl
@@ -79,7 +87,8 @@ void TracingMuxerImpl::ProducerImpl::OnConnect() {
 void TracingMuxerImpl::ProducerImpl::OnDisconnect() {
   PERFETTO_DCHECK_THREAD(thread_checker_);
   connected_ = false;
-  PERFETTO_DFATAL("Producer::OnDisconnect not implemented");  // TODO.
+  // TODO: handle more graceful.
+  PERFETTO_ELOG("Cannot connect to traced. Is it running?");
 }
 
 void TracingMuxerImpl::ProducerImpl::OnTracingSetup() {
@@ -163,6 +172,26 @@ void TracingMuxerImpl::ConsumerImpl::OnDisconnect() {
   connected_ = false;
 
   // TODO notify the client somehow.
+
+  // Notify the muxer that it is safe to destroy |this|. This is needed because
+  // the ConsumerEndpoint stored in |service_| requires that |this| be safe to
+  // access until OnDisconnect() is called.
+  muxer_->OnConsumerDisconnected(this);
+}
+
+void TracingMuxerImpl::ConsumerImpl::Disconnect() {
+  // This is weird and deserves a comment.
+  //
+  // When we called the ConnectConsumer method on the service it returns
+  // us a ConsumerEndpoint which we stored in |service_|, however this
+  // ConsumerEndpoint holds a pointer to the ConsumerImpl pointed to by
+  // |this|. Part of the API contract to TracingService::ConnectConsumer is that
+  // the ConsumerImpl pointer has to be valid until the
+  // ConsumerImpl::OnDisconnect method is called. Therefore we reset the
+  // ConsumerEndpoint |service_|. Eventually this will call
+  // ConsumerImpl::OnDisconnect and we will inform the muxer it is safe to
+  // call the destructor of |this|.
+  service_.reset();
 }
 
 void TracingMuxerImpl::ConsumerImpl::OnTracingDisabled() {
@@ -244,8 +273,7 @@ void TracingMuxerImpl::ConsumerImpl::OnObservableEvents(
                               state_change.data_source_name()};
       data_source_states_[handle] =
           state_change.state() ==
-          ObservableEvents::DataSourceInstanceStateChange::
-              DATA_SOURCE_INSTANCE_STATE_STARTED;
+          ObservableEvents::DATA_SOURCE_INSTANCE_STATE_STARTED;
     }
     // Data sources are first reported as being stopped before starting, so once
     // all the data sources we know about have started we can declare tracing
@@ -441,7 +469,7 @@ bool TracingMuxerImpl::RegisterDataSource(
 
   static std::atomic<uint32_t> last_id{};
   uint32_t new_index = last_id++;
-  if (new_index >= kMaxDataSources - 1) {
+  if (new_index >= kMaxDataSources) {
     PERFETTO_DLOG(
         "RegisterDataSource failed: too many data sources already registered");
     return false;
@@ -473,12 +501,39 @@ void TracingMuxerImpl::SetupDataSource(TracingBackendId backend_id,
   PERFETTO_DCHECK_THREAD(thread_checker_);
   PERFETTO_DLOG("Setting up data source %" PRIu64 " %s", instance_id,
                 cfg.name().c_str());
+  uint64_t config_hash = ComputeConfigHash(cfg);
 
   for (const auto& rds : data_sources_) {
     if (rds.descriptor.name() != cfg.name())
       continue;
-
     DataSourceStaticState& static_state = *rds.static_state;
+
+    // If this data source is already active for this exact config, don't start
+    // another instance. This happens when we have several data sources with the
+    // same name, in which case the service sends one SetupDataSource event for
+    // each one. Since we can't map which event maps to which data source, we
+    // ensure each event only starts one data source instance.
+    // TODO(skyostil): Register a unique id with each data source to the service
+    // to disambiguate.
+    bool active_for_config = false;
+    for (uint32_t i = 0; i < kMaxDataSourceInstances; i++) {
+      if (!static_state.TryGet(i))
+        continue;
+      auto* internal_state =
+          reinterpret_cast<DataSourceState*>(&static_state.instances[i]);
+      if (internal_state->backend_id == backend_id &&
+          internal_state->config_hash == config_hash) {
+        active_for_config = true;
+        break;
+      }
+    }
+    if (active_for_config) {
+      PERFETTO_DLOG(
+          "Data source %s is already active with this config, skipping",
+          cfg.name().c_str());
+      continue;
+    }
+
     for (uint32_t i = 0; i < kMaxDataSourceInstances; i++) {
       // Find a free slot.
       if (static_state.TryGet(i))
@@ -495,14 +550,16 @@ void TracingMuxerImpl::SetupDataSource(TracingBackendId backend_id,
       internal_state->data_source_instance_id = instance_id;
       internal_state->buffer_id =
           static_cast<internal::BufferId>(cfg.target_buffer());
+      internal_state->config_hash = config_hash;
       internal_state->data_source = rds.factory();
 
       // This must be made at the end. See matching acquire-load in
       // DataSource::Trace().
-      static_state.valid_instances.fetch_or(1 << i, std::memory_order_acq_rel);
+      static_state.valid_instances.fetch_or(1 << i, std::memory_order_release);
 
       DataSourceBase::SetupArgs setup_args;
       setup_args.config = &cfg;
+      setup_args.internal_instance_index = i;
       internal_state->data_source->OnSetup(setup_args);
       return;
     }
@@ -510,6 +567,7 @@ void TracingMuxerImpl::SetupDataSource(TracingBackendId backend_id,
         "Maximum number of data source instances exhausted. "
         "Dropping data source %" PRIu64,
         instance_id);
+    break;
   }
 }
 
@@ -525,9 +583,12 @@ void TracingMuxerImpl::StartDataSource(TracingBackendId backend_id,
     return;
   }
 
+  DataSourceBase::StartArgs start_args{};
+  start_args.internal_instance_index = ds.instance_idx;
+
   std::lock_guard<std::recursive_mutex> guard(ds.internal_state->lock);
   ds.internal_state->trace_lambda_enabled = true;
-  ds.internal_state->data_source->OnStart(DataSourceBase::StartArgs{});
+  ds.internal_state->data_source->OnStart(start_args);
 }
 
 // Called by the service of one of the backends.
@@ -544,6 +605,7 @@ void TracingMuxerImpl::StopDataSource_AsyncBegin(
   }
 
   StopArgsImpl stop_args{};
+  stop_args.internal_instance_index = ds.instance_idx;
   stop_args.async_stop_closure = [this, backend_id, instance_id] {
     // TracingMuxerImpl is long lived, capturing |this| is okay.
     // The notification closure can be moved out of the StopArgs by the
@@ -611,12 +673,12 @@ void TracingMuxerImpl::DestroyStoppedTraceWritersForCurrentThread() {
   // Iterate across all possible data source types.
   auto cur_generation = generation_.load(std::memory_order_acquire);
   auto* root_tls = GetOrCreateTracingTLS();
-  for (size_t ds_idx = 0; ds_idx < kMaxDataSources; ds_idx++) {
+
+  auto destroy_stopped_instances = [](DataSourceThreadLocalState& tls) {
     // |tls| has a vector of per-data-source-instance thread-local state.
-    DataSourceThreadLocalState& tls = root_tls->data_sources_tls[ds_idx];
     DataSourceStaticState* static_state = tls.static_state;
     if (!static_state)
-      continue;  // Slot not used.
+      return;  // Slot not used.
 
     // Iterate across all possible instances for this data source.
     for (uint32_t inst = 0; inst < kMaxDataSourceInstances; inst++) {
@@ -633,7 +695,14 @@ void TracingMuxerImpl::DestroyStoppedTraceWritersForCurrentThread() {
       // The DataSource instance has been destroyed or recycled.
       ds_tls.Reset();  // Will also destroy the |ds_tls.trace_writer|.
     }
+  };
+
+  for (size_t ds_idx = 0; ds_idx < kMaxDataSources; ds_idx++) {
+    // |tls| has a vector of per-data-source-instance thread-local state.
+    DataSourceThreadLocalState& tls = root_tls->data_sources_tls[ds_idx];
+    destroy_stopped_instances(tls);
   }
+  destroy_stopped_instances(root_tls->track_event_tls);
   root_tls->generation = cur_generation;
 }
 
@@ -721,11 +790,6 @@ void TracingMuxerImpl::StopTracingSession(TracingSessionGlobalID session_id) {
   if (!consumer)
     return;
 
-  if (!consumer->trace_config_) {
-    PERFETTO_ELOG("Must call Setup(config) and Start() first");
-    return;
-  }
-
   if (consumer->start_pending_) {
     // If the session hasn't started yet, wait until it does before stopping.
     consumer->stop_pending_ = true;
@@ -737,6 +801,9 @@ void TracingMuxerImpl::StopTracingSession(TracingSessionGlobalID session_id) {
     // If the session was already stopped (e.g., it failed to start), don't try
     // stopping again.
     consumer->NotifyStopComplete();
+  } else if (!consumer->trace_config_) {
+    PERFETTO_ELOG("Must call Setup(config) and Start() first");
+    return;
   } else {
     consumer->service_->DisableTracing();
   }
@@ -748,12 +815,29 @@ void TracingMuxerImpl::DestroyTracingSession(
     TracingSessionGlobalID session_id) {
   PERFETTO_DCHECK_THREAD(thread_checker_);
   for (RegisteredBackend& backend : backends_) {
-    auto pred = [session_id](const std::unique_ptr<ConsumerImpl>& consumer) {
-      return consumer->session_id_ == session_id;
-    };
-    backend.consumers.erase(std::remove_if(backend.consumers.begin(),
-                                           backend.consumers.end(), pred),
-                            backend.consumers.end());
+    // We need to find the consumer (if any) and call Disconnect as we destroy
+    // the tracing session. We can't call Disconnect() inside this for loop
+    // because in the in-process case this will end up to a synchronous call to
+    // OnConsumerDisconnect which will invalidate all the iterators to
+    // |backend.consumers|.
+    ConsumerImpl* consumer = nullptr;
+    for (auto& con : backend.consumers) {
+      if (con->session_id_ == session_id) {
+        consumer = con.get();
+        break;
+      }
+    }
+    if (consumer) {
+      // We broke out of the loop above on the assumption that each backend will
+      // only have a single consumer per session. This DCHECK ensures that
+      // this is the case.
+      PERFETTO_DCHECK(
+          std::count_if(backend.consumers.begin(), backend.consumers.end(),
+                        [session_id](const std::unique_ptr<ConsumerImpl>& con) {
+                          return con->session_id_ == session_id;
+                        }) == 1u);
+      consumer->Disconnect();
+    }
   }
 }
 
@@ -774,11 +858,25 @@ TracingMuxerImpl::ConsumerImpl* TracingMuxerImpl::FindConsumer(
   PERFETTO_DCHECK_THREAD(thread_checker_);
   for (RegisteredBackend& backend : backends_) {
     for (auto& consumer : backend.consumers) {
-      if (consumer->session_id_ == session_id)
+      if (consumer->session_id_ == session_id) {
+        PERFETTO_DCHECK(consumer->service_);
         return consumer.get();
+      }
     }
   }
   return nullptr;
+}
+
+void TracingMuxerImpl::OnConsumerDisconnected(ConsumerImpl* consumer) {
+  PERFETTO_DCHECK_THREAD(thread_checker_);
+  for (RegisteredBackend& backend : backends_) {
+    auto pred = [consumer](const std::unique_ptr<ConsumerImpl>& con) {
+      return con.get() == consumer;
+    };
+    backend.consumers.erase(std::remove_if(backend.consumers.begin(),
+                                           backend.consumers.end(), pred),
+                            backend.consumers.end());
+  }
 }
 
 TracingMuxerImpl::FindDataSourceRes TracingMuxerImpl::FindDataSource(
@@ -800,15 +898,11 @@ TracingMuxerImpl::FindDataSourceRes TracingMuxerImpl::FindDataSource(
 
 // Can be called from any thread.
 std::unique_ptr<TraceWriterBase> TracingMuxerImpl::CreateTraceWriter(
-    DataSourceState* data_source) {
+    DataSourceState* data_source,
+    BufferExhaustedPolicy buffer_exhausted_policy) {
   ProducerImpl* producer = backends_[data_source->backend_id].producer.get();
-  // We choose BufferExhaustedPolicy::kDrop to avoid stalls when all SMB chunks
-  // are allocated, ensuring that the app keeps working even when tracing hits
-  // its SMB limit. Note that this means we will lose data in such a case
-  // (tracked in BufferStats::trace_writer_packet_loss). To reduce this data
-  // loss, apps should choose a large enough SMB size.
   return producer->service_->CreateTraceWriter(data_source->buffer_id,
-                                               BufferExhaustedPolicy::kDrop);
+                                               buffer_exhausted_policy);
 }
 
 // This is called via the public API Tracing::NewTrace().

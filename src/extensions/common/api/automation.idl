@@ -8,7 +8,7 @@
 // used to programmatically interact with a page by examining names, roles, and
 // states, listening for events, and performing actions on nodes.
 [nocompile] namespace automation {
-  // Keep the following enums in sync with 'ui/accessibility/ax_enums.idl'.
+  // Keep the following enums in sync with 'ui/accessibility/ax_enums.mojom'.
   // They are kept here purely for extension docs generation.
 
   // Possible events fired on an $(ref:automation.AutomationNode).
@@ -81,7 +81,6 @@
     alert,
     alertDialog,
     anchor,
-    annotation,
     application,
     article,
     audio,
@@ -94,11 +93,14 @@
     cell,
     checkBox,
     client,
+    code,
     colorWell,
     column,
     columnHeader,
     comboBoxGrouping,
     comboBoxMenuButton,
+    comment,
+    commentSection,
     complementary,
     contentDeletion,
     contentInsertion,
@@ -160,10 +162,12 @@
     // --------------------------------------------------------------
     document,
     embeddedObject,
+    emphasis,
     feed,
     figcaption,
     figure,
     footer,
+    footerAsNonLandmark,
     form,
     genericContainer,
     // --------------------------------------------------------------
@@ -176,6 +180,8 @@
     // --------------------------------------------------------------
     grid,
     group,
+    header,
+    headerAsNonLandmark,
     heading,
     iframe,
     iframePresentational,
@@ -224,20 +230,26 @@
     radioButton,
     radioGroup,
     region,
+    revision,
     rootWebArea,
     row,
+    rowGroup,
     rowHeader,
     ruby,
+    rubyAnnotation,
     scrollBar,
     scrollView,
     search,
     searchBox,
+    section,
     slider,
     sliderThumb,
     spinButton,
     splitter,
     staticText,
     status,
+    strong,
+    suggestion,
     svgRoot,
     switch,
     tab,
@@ -377,6 +389,14 @@
     value
   };
 
+  enum DescriptionFromType {
+    uninitialized,
+    attribute,
+    contents,
+    relatedElement,
+    title
+  };
+
   // The input restriction for a object -- even non-controls can be disabled.
   enum Restriction {
     disabled,
@@ -404,6 +424,15 @@
     press,
     select,
     uncheck
+};
+
+  // Types of markers on text. See <code>AutomationNode.markerTypes</code>.
+enum MarkerType {
+  spelling,
+  grammar,
+  textMatch,
+  activeSuggestion,
+  suggestion
 };
 
   dictionary Rect {
@@ -503,8 +532,7 @@
   callback PerformActionCallbackWithNode = void(AutomationNode node);
   callback BoundsForRangeCallback = void(Rect bounds);
 
-
-  dictionary CustomAction {
+      [nocompile, noinline_doc] dictionary CustomAction {
     long id;
     DOMString description;
   };
@@ -514,7 +542,7 @@
   // for details on how to associate this object with a string.
   // Also, the start and end indices always point to the first code unit of a
   // valid code-point.
-  dictionary LanguageSpan {
+    [nocompile, noinline_doc] dictionary LanguageSpan {
     // Inclusive start index of substring that contains language.
     long startIndex;
     // Exclusive end index of substring that contains language.
@@ -523,6 +551,19 @@
     DOMString language;
     // Probability that language is correct.
     double probability;
+  };
+
+    // A marker associated with an AutomationNode.
+  [nocompile, noinline_doc] dictionary Marker {
+    // The start offset within the text of the associated node.
+    long startOffset;
+
+    // The end offset within the text of the associated node.
+    long endOffset;
+
+    // A mapping of MarkerType to true or undefined indicating the marker types
+    // for this marker.
+    object flags;
   };
 
   // A single node in an Automation tree.
@@ -566,9 +607,12 @@
     DOMString? roleDescription;
 
     // The accessible name for this node, via the
-    // <a href="http://www.w3.org/TR/wai-aria/roles#namecalculation">
+    // <a href="http://www.w3.org/TR/wai-aria/#namecalculation">
     // Accessible Name Calculation</a> process.
     DOMString? name;
+
+    // The tooltip of the node, if any.
+    DOMString? tooltip;
 
     // The source of the name.
     NameFromType? nameFrom;
@@ -603,7 +647,7 @@
     long[]? nonInlineTextWordEnds;
 
     // The nodes, if any, which this node is specified to control via
-    // <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-controls">
+    // <a href="http://www.w3.org/TR/wai-aria/#aria-controls">
     // <code>aria-controls</code></a>.
     AutomationNode[]? controls;
 
@@ -612,7 +656,7 @@
 
     // The nodes, if any, which may optionally be navigated to after this
     // one. See
-    // <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-flowto">
+    // <a href="http://www.w3.org/TR/wai-aria/#aria-flowto">
     // <code>aria-flowto</code></a>.
     AutomationNode[]? flowTo;
 
@@ -722,15 +766,8 @@
     // The input type, like email or number.
     DOMString? textInputType;
 
-    // An array of indexes of the start position of each text marker.
-    long[] markerStarts;
-
-    // An array of indexes of the end position of each text marker.
-    long[] markerEnds;
-
-    // An array of numerical types indicating the type of each text marker,
-    // such as a spelling error.
-    long[] markerTypes;
+    // An array of Marker objects for this node.
+    Marker[]? markers;
 
     //
     // Tree selection attributes (available on root nodes only)
@@ -813,7 +850,7 @@
     long? tableCellColumnIndex;
 
     // The ARIA column index as specified by the page author.
-    long? ariaCellColumnIndex;
+    long? tableCellAriaColumnIndex;
 
     // The number of columns that this cell spans (default is 1).
     long? tableCellColumnSpan;
@@ -823,7 +860,7 @@
     long? tableCellRowIndex;
 
     // The ARIA row index as specified by the page author.
-    long? ariaCellRowIndex;
+    long? tableCellAriaRowIndex;
 
     // The number of rows that this cell spans (default is 1).
     long? tableCellRowSpan;
@@ -1110,6 +1147,17 @@
 
     static AutomationNode getNextTextMatch(
         DOMString searchStr, boolean backward);
+
+    // Returns the detected languages for the provided string attribute as an
+    // array of LanguageSpan objects. There are several guarantees about the
+    // format of the LanguageSpan array:
+    // 1. Is either empty or contains LanguageSpans that cover all indices in
+    // the associated string attribute value.
+    // 2. Is sorted by increasing startIndex (those with smaller startIndex
+    // appear first).
+    // 3. LanguageSpans are non-overlapping and contain exactly one language.
+    static LanguageSpan[] languageAnnotationForStringAttribute(
+        DOMString attribute);
   };
 
   // Called when the <code>AutomationNode</code> for the page is available.
@@ -1156,16 +1204,5 @@
     // the value where the selection starts or ends, respectively.
     [nocompile] static void setDocumentSelection(
         SetDocumentSelectionParams params);
-
-    // Returns the detected languages for the provided string attribute as an
-    // array of LanguageSpan objects. There are several guarantees about the
-    // format of the LanguageSpan array:
-    // 1. Is either empty or contains LanguageSpans that cover all indices in
-    // the associated string attribute value.
-    // 2. Is sorted by increasing startIndex (those with smaller startIndex
-    // appear first).
-    // 3. LanguageSpans are non-overlapping and contain exactly one language.
-    [nocompile] LanguageSpan[] languageAnnotationForStringAttribute(
-        DOMString attribute);
   };
 };

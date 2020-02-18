@@ -8,10 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/ssl/ssl_blocking_page_base.h"
 #include "chrome/common/buildflags.h"
+#include "components/security_interstitials/content/ssl_blocking_page_base.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
@@ -39,25 +38,25 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
   // Interstitial type, for testing.
   static const void* const kTypeForTesting;
 
-  CaptivePortalBlockingPage(
-      content::WebContents* web_contents,
-      const GURL& request_url,
-      const GURL& login_url,
-      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      const net::SSLInfo& ssl_info,
-      int cert_error,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback);
+  CaptivePortalBlockingPage(content::WebContents* web_contents,
+                            const GURL& request_url,
+                            const GURL& login_url,
+                            std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+                            const net::SSLInfo& ssl_info,
+                            int cert_error);
   ~CaptivePortalBlockingPage() override;
 
   // InterstitialPageDelegate method:
   const void* GetTypeForTesting() override;
 
- protected:
-  // Returns true if the connection is a Wi-Fi connection. Virtual for tests.
-  virtual bool IsWifiConnection() const;
-  // Returns the SSID of the connected Wi-Fi network, if any. Virtual for tests.
-  virtual std::string GetWiFiSSID() const;
+  void OverrideWifiInfoForTesting(bool is_wifi_connection,
+                                  const std::string& wifi_ssid);
+
+ private:
+  // Returns true if the connection is a Wi-Fi connection.
+  bool IsWifiConnection() const;
+  // Returns the SSID of the connected Wi-Fi network, if any.
+  std::string GetWiFiSSID() const;
 
   // SecurityInterstitialPage methods:
   bool ShouldCreateNewNavigation() const override;
@@ -67,16 +66,16 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
   // InterstitialPageDelegate method:
   void CommandReceived(const std::string& command) override;
   void OverrideEntry(content::NavigationEntry* entry) override;
-  void OnProceed() override;
-  void OnDontProceed() override;
 
- private:
   // URL of the login page, opened when the user clicks the "Connect" button.
   // If empty, the default captive portal detection URL for the platform will be
   // used.
   const GURL login_url_;
   const net::SSLInfo ssl_info_;
-  base::Callback<void(content::CertificateRequestResultType)> callback_;
+
+  bool is_wifi_info_overridden_for_testing_ = false;
+  bool is_wifi_connection_for_testing_ = false;
+  std::string wifi_ssid_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPage);
 };

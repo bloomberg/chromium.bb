@@ -4,143 +4,73 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.content.Intent;
-import android.support.annotation.Nullable;
-import android.text.TextUtils;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+
+import androidx.annotation.Nullable;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
-import org.chromium.blink_public.platform.WebDisplayMode;
-import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.ShortcutSource;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.content_public.common.ScreenOrientationValues;
-import org.chromium.webapk.lib.common.splash.SplashLayout;
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 
 /**
  * Stores info about a web app.
  */
 public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider {
-    private static final String TAG = "WebappInfo";
-
+    private int mToolbarColor;
+    private boolean mHasCustomToolbarColor;
+    private Drawable mCloseButtonIcon;
     private WebappExtras mWebappExtras;
-
-    public static WebappIntentDataProvider createEmpty() {
-        return new WebappIntentDataProvider(WebappExtras.createEmpty());
-    }
+    private WebApkExtras mWebApkExtras;
 
     /**
-     * Converts color from signed Integer where an unspecified color is represented as null to
-     * to unsigned long where an unspecified color is represented as
-     * {@link ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING}.
+     * Returns the toolbar color to use if a custom color is not specified by the webapp.
      */
-    public static long colorFromIntegerColor(Integer color) {
-        if (color != null) {
-            return color.intValue();
-        }
-        return ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
+    public static int getDefaultToolbarColor() {
+        return Color.WHITE;
     }
 
-    /**
-     * Converts color from unsigned long where an unspecified color is represented as
-     * {@link ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING} to a signed Integer where an
-     * unspecified color is represented as null.
-     */
-    public static Integer colorFromLongColor(long longColor) {
-        return (longColor == ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING)
-                ? null
-                : Integer.valueOf((int) longColor);
-    }
-
-    public static String idFromIntent(Intent intent) {
-        return IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ID);
-    }
-
-    private static int sourceFromIntent(Intent intent) {
-        int source = IntentUtils.safeGetIntExtra(
-                intent, ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
-        if (source >= ShortcutSource.COUNT) {
-            source = ShortcutSource.UNKNOWN;
-        }
-        return source;
-    }
-
-    private static String titleFromIntent(Intent intent) {
-        // The reference to title has been kept for reasons of backward compatibility. For intents
-        // and shortcuts which were created before we utilized the concept of name and shortName,
-        // we set the name and shortName to be the title.
-        String title = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_TITLE);
-        return title == null ? "" : title;
-    }
-
-    private static String nameFromIntent(Intent intent) {
-        String name = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_NAME);
-        return name == null ? titleFromIntent(intent) : name;
-    }
-
-    private static String shortNameFromIntent(Intent intent) {
-        String shortName = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_SHORT_NAME);
-        return shortName == null ? titleFromIntent(intent) : shortName;
-    }
-
-    /**
-     * Construct a WebappIntentDataProvider.
-     * @param intent Intent containing info about the app.
-     */
-    public static WebappIntentDataProvider create(Intent intent) {
-        String id = idFromIntent(intent);
-        String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
-        if (id == null || url == null) {
-            Log.e(TAG, "Incomplete data provided: " + id + ", " + url);
-            return null;
-        }
-
-        String icon = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ICON);
-
-        String scope = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_SCOPE);
-        if (TextUtils.isEmpty(scope)) {
-            scope = ShortcutHelper.getScopeFromUrl(url);
-        }
-
-        @WebDisplayMode
-        int displayMode = IntentUtils.safeGetIntExtra(
-                intent, ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.STANDALONE);
-        int orientation = IntentUtils.safeGetIntExtra(
-                intent, ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
-        int source = sourceFromIntent(intent);
-        Integer themeColor = colorFromLongColor(
-                IntentUtils.safeGetLongExtra(intent, ShortcutHelper.EXTRA_THEME_COLOR,
-                        ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING));
-        Integer backgroundColor = colorFromLongColor(
-                IntentUtils.safeGetLongExtra(intent, ShortcutHelper.EXTRA_BACKGROUND_COLOR,
-                        ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING));
-        boolean isIconGenerated = IntentUtils.safeGetBooleanExtra(
-                intent, ShortcutHelper.EXTRA_IS_ICON_GENERATED, false);
-        boolean isIconAdaptive = IntentUtils.safeGetBooleanExtra(
-                intent, ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, false);
-        boolean forceNavigation = IntentUtils.safeGetBooleanExtra(
-                intent, ShortcutHelper.EXTRA_FORCE_NAVIGATION, false);
-
-        String name = nameFromIntent(intent);
-        String shortName = shortNameFromIntent(intent);
-
-        int defaultBackgroundColor =
-                SplashLayout.getDefaultBackgroundColor(ContextUtils.getApplicationContext());
-
-        WebappExtras webappExtras = new WebappExtras(id, url, scope, new WebappIcon(icon), name,
-                shortName, displayMode, orientation, source, themeColor, backgroundColor,
-                defaultBackgroundColor, isIconGenerated, isIconAdaptive, forceNavigation);
-        return new WebappIntentDataProvider(webappExtras);
-    }
-
-    private WebappIntentDataProvider(WebappExtras webappExtras) {
+    WebappIntentDataProvider(int toolbarColor, boolean hasCustomToolbarColor,
+            WebappExtras webappExtras, WebApkExtras webApkExtras) {
+        mToolbarColor = toolbarColor;
+        mHasCustomToolbarColor = hasCustomToolbarColor;
+        mCloseButtonIcon = TintedDrawable.constructTintedDrawable(
+                ContextUtils.getApplicationContext(), R.drawable.btn_close);
         mWebappExtras = webappExtras;
+        mWebApkExtras = webApkExtras;
+    }
+
+    @Override
+    public int getToolbarColor() {
+        return mToolbarColor;
+    }
+
+    @Override
+    public boolean hasCustomToolbarColor() {
+        return mHasCustomToolbarColor;
+    }
+
+    @Override
+    public Drawable getCloseButtonDrawable() {
+        return mCloseButtonIcon;
+    }
+
+    @Override
+    public int getTitleVisibilityState() {
+        return CustomTabsIntent.SHOW_PAGE_TITLE;
     }
 
     @Override
     @Nullable
     public WebappExtras getWebappExtras() {
         return mWebappExtras;
+    }
+
+    @Override
+    @Nullable
+    public WebApkExtras getWebApkExtras() {
+        return mWebApkExtras;
     }
 }

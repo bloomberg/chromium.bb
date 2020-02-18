@@ -12,12 +12,13 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "gpu/command_buffer/service/mock_texture_owner.h"
 #include "gpu/config/gpu_preferences.h"
-#include "gpu/ipc/common/android/mock_texture_owner.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/mock_android_overlay.h"
 #include "media/base/android/mock_media_crypto_context.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/android/android_video_surface_chooser_impl.h"
@@ -149,8 +150,8 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
         .WillByDefault(RunCallback<1>(texture_owner));
 
     auto* observable_mcvd = new DestructionObservableMCVD(
-        gpu_preferences_, gpu_feature_info_, device_info_.get(),
-        codec_allocator_.get(), std::move(surface_chooser),
+        gpu_preferences_, gpu_feature_info_, std::make_unique<NullMediaLog>(),
+        device_info_.get(), codec_allocator_.get(), std::move(surface_chooser),
         base::BindRepeating(&CreateAndroidOverlayCb),
         base::Bind(&MediaCodecVideoDecoderTest::RequestOverlayInfoCb,
                    base::Unretained(this)),
@@ -280,7 +281,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
 
  protected:
   const VideoCodec codec_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::android::ScopedJavaGlobalRef<jobject> java_surface_;
   scoped_refptr<DecoderBuffer> fake_decoder_buffer_;
   std::unique_ptr<MockDeviceInfo> device_info_;
@@ -705,6 +706,28 @@ TEST_P(MediaCodecVideoDecoderVp8Test, UnregisterPlayerBeforeSyncDestruction) {
 
   // Make sure the decoder is now destroyed.
   destruction_observer_->ExpectDestruction();
+}
+
+TEST_P(MediaCodecVideoDecoderVp8Test, ResetDoesNotDrainVp8WithAsyncApi) {
+  EXPECT_CALL(*device_info_, IsAsyncApiSupported())
+      .WillRepeatedly(Return(true));
+
+  auto* codec =
+      InitializeFully_OneDecodePending(TestVideoConfig::Large(codec_));
+  // Accept the first decode to transition out of the flushed state.
+  codec->AcceptOneInput();
+  PumpCodec();
+
+  // The reset should complete immediately because the codec is not VP8 so
+  // it doesn't need draining.  We don't expect a call to Flush on the codec
+  // since it will be deferred until the first decode after the reset.
+  base::MockCallback<base::Closure> reset_cb;
+  EXPECT_CALL(reset_cb, Run());
+  mcvd_->Reset(reset_cb.Get());
+  // The reset should complete before destroying the codec, since TearDown will
+  // complete the drain for VP8.  It still might not call reset since a drain
+  // for destroy probably doesn't, but either way we expect it before the drain.
+  testing::Mock::VerifyAndClearExpectations(&reset_cb);
 }
 
 TEST_P(MediaCodecVideoDecoderH264Test, ResetDoesNotDrainNonVp8Codecs) {

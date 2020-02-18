@@ -9,10 +9,16 @@ source_set("components") {
     "app_registrar.cc",
     "app_registrar.h",
     "app_registrar_observer.h",
+    "app_registry_controller.cc",
+    "app_registry_controller.h",
+    "app_shortcut_manager.cc",
+    "app_shortcut_manager.h",
+    "app_shortcut_observer.h",
     "external_install_options.cc",
     "external_install_options.h",
     "externally_installed_web_app_prefs.cc",
     "externally_installed_web_app_prefs.h",
+    "file_handler_manager.cc",
     "file_handler_manager.h",
     "install_bounce_metric.cc",
     "install_bounce_metric.h",
@@ -36,23 +42,22 @@ source_set("components") {
     "web_app_constants.h",
     "web_app_data_retriever.cc",
     "web_app_data_retriever.h",
+    "web_app_file_handler_registration.cc",
+    "web_app_file_handler_registration.h",
     "web_app_helpers.cc",
     "web_app_helpers.h",
     "web_app_icon_generator.cc",
     "web_app_icon_generator.h",
     "web_app_install_utils.cc",
     "web_app_install_utils.h",
+    "web_app_prefs_utils.cc",
+    "web_app_prefs_utils.h",
     "web_app_provider_base.cc",
     "web_app_provider_base.h",
     "web_app_provider_base_factory.cc",
     "web_app_provider_base_factory.h",
     "web_app_shortcut.cc",
     "web_app_shortcut.h",
-    "web_app_shortcut_chromeos.cc",
-    "web_app_shortcut_mac.h",
-    "web_app_shortcut_mac.mm",
-    "web_app_shortcut_win.cc",
-    "web_app_shortcut_win.h",
     "web_app_tab_helper.cc",
     "web_app_tab_helper.h",
     "web_app_ui_manager.h",
@@ -73,19 +78,42 @@ source_set("components") {
     "web_app_icon_downloader.h",
   ]
 
+  if (is_chromeos) {
+    sources += [ "web_app_shortcut_chromeos.cc" ]
+  }
+
   if (is_desktop_linux) {
     # Desktop linux, doesn't count ChromeOS.
     sources += [
+      "web_app_file_handler_registration_linux.cc",
       "web_app_shortcut_linux.cc",
       "web_app_shortcut_linux.h",
     ]
   }
 
+  if (is_mac) {
+    sources += [
+      "web_app_shortcut_mac.h",
+      "web_app_shortcut_mac.mm",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "web_app_file_handler_registration_win.cc",
+      "web_app_file_handler_registration_win.h",
+      "web_app_shortcut_win.cc",
+      "web_app_shortcut_win.h",
+    ]
+  }
+
   deps = [
+    "//base/util/values:values_util",
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/browser/web_applications:web_app_group",
     "//chrome/common",
+    "//components/content_settings/core/browser",
     "//components/crx_file",
     "//components/favicon/content",
     "//components/keyed_service/content",
@@ -93,6 +121,7 @@ source_set("components") {
     "//components/user_manager:user_manager",
     "//content/public/browser",
     "//extensions/common:common_constants",
+    "//services/preferences/public/cpp",
     "//skia",
   ]
 }
@@ -101,16 +130,26 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "app_shortcut_manager_unittest.cc",
+    "file_handler_manager_unittest.cc",
     "pending_app_manager_unittest.cc",
+    "web_app_constants_unittest.cc",
     "web_app_data_retriever_unittest.cc",
     "web_app_helpers_unittest.cc",
     "web_app_icon_downloader_unittest.cc",
     "web_app_icon_generator_unittest.cc",
     "web_app_install_utils_unittest.cc",
-    "web_app_shortcut_mac_unittest.mm",
     "web_app_shortcut_unittest.cc",
     "web_app_utils_unittest.cc",
   ]
+
+  if (is_win) {
+    sources += [ "web_app_file_handler_registration_win_unittest.cc" ]
+  }
+
+  if (is_mac) {
+    sources += [ "web_app_shortcut_mac_unittest.mm" ]
+  }
 
   if (is_desktop_linux) {
     # Desktop linux, doesn't count ChromeOS.

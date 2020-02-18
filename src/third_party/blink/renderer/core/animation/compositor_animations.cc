@@ -74,10 +74,10 @@ bool ConsiderAnimationAsIncompatible(const Animation& animation,
   if (&animation == &animation_to_add)
     return false;
 
-  if (animation.NeedsCompositorTimeSync())
+  if (animation.pending())
     return true;
 
-  switch (animation.GetPlayState()) {
+  switch (animation.CalculateAnimationPlayState()) {
     case Animation::kIdle:
       return false;
     case Animation::kRunning:
@@ -267,6 +267,13 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           if (keyframe_value) {
             DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
             DCHECK(keyframe_value->IsDouble() || keyframe_value->IsColor());
+            // If a custom property is not used by CSS Paint, then we should not
+            // support that on the compositor thread.
+            if (layout_object && layout_object->Style() &&
+                !layout_object->Style()->HasCSSPaintImagesUsingCustomProperty(
+                    property.CustomPropertyName(),
+                    layout_object->GetDocument()))
+              reasons |= kUnsupportedCSSProperty;
             // TODO: Add support for keyframes containing different types
             if (keyframes.front()->GetCompositorKeyframeValue()->GetType() !=
                 keyframe_value->GetType()) {

@@ -39,8 +39,6 @@
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/drive/chromeos/file_system_interface.h"
-#include "components/drive/drive.pb.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/storage_monitor/storage_info.h"
@@ -55,15 +53,15 @@
 #include "extensions/browser/extension_util.h"
 #include "net/base/escape.h"
 #include "services/device/public/mojom/mtp_manager.mojom.h"
-#include "storage/browser/fileapi/external_mount_points.h"
-#include "storage/browser/fileapi/file_stream_reader.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_file_util.h"
-#include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/fileapi/file_system_operation_runner.h"
-#include "storage/common/fileapi/file_system_info.h"
-#include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/browser/file_system/external_mount_points.h"
+#include "storage/browser/file_system/file_stream_reader.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/file_system_file_util.h"
+#include "storage/browser/file_system/file_system_operation_context.h"
+#include "storage/browser/file_system/file_system_operation_runner.h"
+#include "storage/common/file_system/file_system_info.h"
+#include "storage/common/file_system/file_system_types.h"
+#include "storage/common/file_system/file_system_util.h"
 #include "third_party/cros_system_api/constants/cryptohome.h"
 
 using chromeos::disks::DiskMountManager;
@@ -409,19 +407,19 @@ ExtensionFunction::ResponseAction FileManagerPrivateGrantAccessFunction::Run() {
 namespace {
 
 void PostResponseCallbackTaskToUIThread(
-    const FileWatchFunctionBase::ResponseCallback& callback,
+    FileWatchFunctionBase::ResponseCallback callback,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, success));
+                 base::BindOnce(std::move(callback), success));
 }
 
 void PostNotificationCallbackTaskToUIThread(
-    const storage::WatcherManager::NotificationCallback& callback,
+    storage::WatcherManager::NotificationCallback callback,
     storage::WatcherManager::ChangeType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, type));
+                 base::BindOnce(std::move(callback), type));
 }
 
 }  // namespace
@@ -573,21 +571,7 @@ FileManagerPrivateGetSizeStatsFunction::Run() {
   if (!volume.get())
     return RespondNow(Error("Volume not found"));
 
-  if (volume->type() == file_manager::VOLUME_TYPE_GOOGLE_DRIVE &&
-      !base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
-    drive::FileSystemInterface* file_system =
-        drive::util::GetFileSystemByProfile(chrome_details.GetProfile());
-    if (!file_system) {
-      // |file_system| is NULL if Drive is disabled.
-      // If stats couldn't be gotten for drive, result should be left
-      // undefined. See comments in GetDriveAvailableSpaceCallback().
-      return RespondNow(NoArguments());
-    }
-
-    file_system->GetAvailableSpace(base::BindOnce(
-        &FileManagerPrivateGetSizeStatsFunction::OnGetDriveAvailableSpace,
-        this));
-  } else if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
+  if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
     // Resolve storage_name.
     storage_monitor::StorageMonitor* storage_monitor =
         storage_monitor::StorageMonitor::GetInstance();
@@ -618,22 +602,6 @@ FileManagerPrivateGetSizeStatsFunction::Run() {
                        base::Owned(remaining_size)));
   }
   return RespondLater();
-}
-
-void FileManagerPrivateGetSizeStatsFunction::OnGetDriveAvailableSpace(
-    drive::FileError error,
-    int64_t bytes_total,
-    int64_t bytes_used) {
-  if (error == drive::FILE_ERROR_OK) {
-    const uint64_t bytes_total_unsigned = bytes_total;
-    // bytes_used can be larger than bytes_total (over quota).
-    const uint64_t bytes_remaining_unsigned =
-        std::max(bytes_total - bytes_used, int64_t(0));
-    OnGetSizeStats(&bytes_total_unsigned, &bytes_remaining_unsigned);
-  } else {
-    // If stats couldn't be gotten for drive, result should be left undefined.
-    Respond(NoArguments());
-  }
 }
 
 void FileManagerPrivateGetSizeStatsFunction::OnGetMtpAvailableSpace(
@@ -678,11 +646,6 @@ FileManagerPrivateInternalValidatePathNameLengthFunction::Run() {
       file_system_context->CrackURL(GURL(params->parent_url)));
   if (!chromeos::FileSystemBackend::CanHandleURL(file_system_url))
     return RespondNow(Error("Invalid URL"));
-
-  // No explicit limit on the length of Drive file names.
-  if (file_system_url.type() == storage::kFileSystemTypeDrive) {
-    return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
-  }
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -897,18 +860,7 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterCheckDiskSpace(
     RunAfterFreeDiskSpace(true);
     return;
   }
-  // Also we can try to secure needed space by freeing Drive caches.
-  drive::FileSystemInterface* const drive_file_system =
-      drive::util::GetFileSystemByProfile(chrome_details_.GetProfile());
-  if (!drive_file_system) {
-    RunAfterFreeDiskSpace(false);
-    return;
-  }
-  drive_file_system->FreeDiskSpaceIfNeededFor(
-      space_needed,
-      base::Bind(
-          &FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace,
-          this));
+  RunAfterFreeDiskSpace(false);
 }
 
 void FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace(
@@ -1113,31 +1065,20 @@ FileManagerPrivateSearchFilesByHashesFunction::Run() {
   std::set<std::string> hashes(params->hash_list.begin(),
                                params->hash_list.end());
 
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(chrome_details_.GetProfile());
-  if (file_system) {
-    file_system->SearchByHashes(
-        hashes,
-        base::BindOnce(
-            &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes,
-            this, hashes));
-  } else {
-    // |file_system| is NULL if the backend is DriveFs. It doesn't provide
-    // dedicated backup solution yet, so for now just walk the files and check
-    // MD5 extended attribute.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(
-            &FileManagerPrivateSearchFilesByHashesFunction::SearchByAttribute,
-            this, hashes,
-            integration_service->GetMountPointPath().Append(
-                drive::util::kDriveMyDriveRootDirName),
-            drive::util::GetDriveMountPointPath(chrome_details_.GetProfile())),
-        base::BindOnce(
-            &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByAttribute,
-            this, hashes));
-  }
+  // DriveFs doesn't provide dedicated backup solution yet, so for now just walk
+  // the files and check MD5 extended attribute.
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(
+          &FileManagerPrivateSearchFilesByHashesFunction::SearchByAttribute,
+          this, hashes,
+          integration_service->GetMountPointPath().Append(
+              drive::util::kDriveMyDriveRootDirName),
+          base::FilePath("/").Append(drive::util::kDriveMyDriveRootDirName)),
+      base::BindOnce(
+          &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByAttribute,
+          this, hashes));
 
   return RespondLater();
 }
@@ -1198,10 +1139,7 @@ void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
     DCHECK(result->HasKey(hashAndPath.hash));
     base::ListValue* list;
     result->GetListWithoutPathExpansion(hashAndPath.hash, &list);
-    list->AppendString(
-        file_manager::util::ConvertDrivePathToFileSystemUrl(
-            chrome_details_.GetProfile(), hashAndPath.path, extension_id())
-            .spec());
+    list->AppendString(hashAndPath.path.value());
   }
   Respond(OneArgument(std::move(result)));
 }
@@ -1251,7 +1189,6 @@ void FileManagerPrivateSearchFilesFunction::OnSearchByPattern(
   const std::string fs_root = base::StrCat({url.spec(), "/"});
 
   auto entries = std::make_unique<base::ListValue>();
-  entries->GetList().reserve(results.size());
   for (const auto& result : results) {
     base::FilePath fs_path("/");
     if (!my_files_path.AppendRelativePath(result.first, &fs_path)) {
@@ -1262,70 +1199,12 @@ void FileManagerPrivateSearchFilesFunction::OnSearchByPattern(
     entry.SetKey("fileSystemRoot", base::Value(fs_root));
     entry.SetKey("fileFullPath", base::Value(fs_path.AsUTF8Unsafe()));
     entry.SetKey("fileIsDirectory", base::Value(result.second));
-    entries->GetList().emplace_back(std::move(entry));
+    entries->Append(std::move(entry));
   }
 
   auto result = std::make_unique<base::DictionaryValue>();
   result->SetKey("entries", std::move(*entries));
   Respond(OneArgument(std::move(result)));
-}
-
-FileManagerPrivateInternalSetEntryTagFunction::
-    FileManagerPrivateInternalSetEntryTagFunction()
-    : chrome_details_(this) {}
-
-ExtensionFunction::ResponseAction
-FileManagerPrivateInternalSetEntryTagFunction::Run() {
-  using extensions::api::file_manager_private_internal::SetEntryTag::Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  scoped_refptr<storage::FileSystemContext> file_system_context =
-      file_manager::util::GetFileSystemContextForRenderFrameHost(
-          Profile::FromBrowserContext(browser_context()), render_frame_host());
-  const storage::FileSystemURL file_system_url(
-      file_system_context->CrackURL(GURL(params->url)));
-  if (file_system_url.type() == storage::kFileSystemTypeDriveFs) {
-    return RespondNow(NoArguments());
-  }
-
-  const base::FilePath drive_path =
-      drive::util::ExtractDrivePath(file_system_url.path());
-  if (drive_path.empty())
-    return RespondNow(Error("Only Drive files and directories are supported."));
-
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(chrome_details_.GetProfile());
-  // |file_system| is NULL if Drive is disabled.
-  if (!file_system)
-    return RespondNow(Error("Drive is disabled."));
-
-  google_apis::drive::Property::Visibility visibility;
-  switch (params->visibility) {
-    case extensions::api::file_manager_private::ENTRY_TAG_VISIBILITY_PRIVATE:
-      visibility = google_apis::drive::Property::VISIBILITY_PRIVATE;
-      break;
-    case extensions::api::file_manager_private::ENTRY_TAG_VISIBILITY_PUBLIC:
-      visibility = google_apis::drive::Property::VISIBILITY_PUBLIC;
-      break;
-    default:
-      NOTREACHED();
-      return RespondNow(Error("Invalid visibility."));
-      break;
-  }
-
-  file_system->SetProperty(
-      drive_path, visibility, params->key, params->value,
-      base::Bind(&FileManagerPrivateInternalSetEntryTagFunction::
-                     OnSetEntryPropertyCompleted,
-                 this));
-  return RespondLater();
-}
-
-void FileManagerPrivateInternalSetEntryTagFunction::OnSetEntryPropertyCompleted(
-    drive::FileError result) {
-  Respond(result == drive::FILE_ERROR_OK ? NoArguments()
-                                         : Error("Failed to set a tag."));
 }
 
 ExtensionFunction::ResponseAction

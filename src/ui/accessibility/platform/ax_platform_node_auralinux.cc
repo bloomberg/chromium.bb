@@ -15,9 +15,10 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/debug/leak_annotations.h"
-#include "base/memory/protected_memory_cfi.h"
 #include "base/no_destructor.h"
+#include "base/numerics/ranges.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -26,7 +27,6 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_mode_observer.h"
@@ -59,6 +59,14 @@
 
 #if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 30, 0)
 #define ATK_230
+#endif
+
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 32, 0)
+#define ATK_232
+#endif
+
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 34, 0)
+#define ATK_234
 #endif
 
 namespace ui {
@@ -129,6 +137,8 @@ AXPlatformNodeAuraLinux* g_current_selected = nullptr;
 // null if if the AtkObject is destroyed.
 AtkObject* g_active_top_level_frame = nullptr;
 
+AtkObject* g_active_views_dialog = nullptr;
+
 #if defined(ATK_216)
 constexpr AtkRole kStaticRole = ATK_ROLE_STATIC;
 constexpr AtkRole kSubscriptRole = ATK_ROLE_SUBSCRIPT;
@@ -143,6 +153,14 @@ constexpr AtkRole kSuperscriptRole = ATK_ROLE_TEXT;
 constexpr AtkRole kAtkFootnoteRole = ATK_ROLE_FOOTNOTE;
 #else
 constexpr AtkRole kAtkFootnoteRole = ATK_ROLE_LIST_ITEM;
+#endif
+
+#if defined(ATK_234)
+constexpr AtkRole kAtkRoleContentDeletion = ATK_ROLE_CONTENT_DELETION;
+constexpr AtkRole kAtkRoleContentInsertion = ATK_ROLE_CONTENT_INSERTION;
+#else
+constexpr AtkRole kAtkRoleContentDeletion = ATK_ROLE_SECTION;
+constexpr AtkRole kAtkRoleContentInsertion = ATK_ROLE_SECTION;
 #endif
 
 AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
@@ -172,6 +190,10 @@ bool SupportsAtkComponentScrollingInterface() {
   return dlsym(RTLD_DEFAULT, "atk_component_scroll_to_point");
 }
 
+bool SupportsAtkTextScrollingInterface() {
+  return dlsym(RTLD_DEFAULT, "atk_text_scroll_substring_to_point");
+}
+
 AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
   while (atk_object) {
     if (atk_object_get_role(atk_object) == ATK_ROLE_FRAME)
@@ -189,21 +211,6 @@ AtkObject* FindAtkObjectToplevelParentDocument(AtkObject* atk_object) {
     atk_object = atk_object_get_parent(atk_object);
   }
   return toplevel_document;
-}
-
-bool EmitsAtkTextEvents(AtkObject* atk_object) {
-  // If this node is not a static text node, it supports the full AtkText
-  // interface.
-  AtkRole role = atk_object_get_role(atk_object);
-  if (role != ATK_ROLE_TEXT)
-    return true;
-
-  // If this node is not a static text leaf node, it supports the full AtkText
-  // interface.
-  if (atk_object_get_n_accessible_children(atk_object))
-    return true;
-
-  return false;
 }
 
 bool IsFrameAncestorOfAtkObject(AtkObject* frame, AtkObject* atk_object) {
@@ -353,74 +360,79 @@ AtkObject* GetActiveDescendantOfCurrentFocused() {
 
   return nullptr;
 }
-bool SelectionOffsetsIndicateSelection(const std::pair<int, int>& offsets) {
-  return offsets.first >= 0 && offsets.second >= 0 &&
-         offsets.first != offsets.second;
-}
 
-void AddTextAttributeToSet(const AtkTextAttribute attribute,
-                           const std::string& value,
-                           AtkAttributeSet** attributes) {
+void PrependTextAttributeToSet(const std::string& attribute,
+                               const std::string& value,
+                               AtkAttributeSet** attributes) {
+  DCHECK(attributes);
+
   AtkAttribute* new_attribute =
       static_cast<AtkAttribute*>(g_malloc(sizeof(AtkAttribute)));
-  new_attribute->name = g_strdup(atk_text_attribute_get_name(attribute));
+  new_attribute->name = g_strdup(attribute.c_str());
   new_attribute->value = g_strdup(value.c_str());
   *attributes = g_slist_prepend(*attributes, new_attribute);
 }
 
-bool HasInvalidAttributeInSet(AtkAttributeSet* attributes) {
-  const char* underline_attribute =
-      atk_text_attribute_get_name(ATK_TEXT_ATTR_UNDERLINE);
-  DCHECK(underline_attribute);
-
-  AtkAttributeSet* current = attributes;
-  while (current) {
-    const AtkAttribute* attribute = static_cast<AtkAttribute*>(current->data);
-    if (!g_strcmp0(attribute->name, underline_attribute) &&
-        !g_strcmp0(attribute->value, "error")) {
-      return true;
-    }
-    current = g_slist_next(current);
-  }
-  return false;
+void PrependAtkTextAttributeToSet(const AtkTextAttribute attribute,
+                                  const std::string& value,
+                                  AtkAttributeSet** attributes) {
+  PrependTextAttributeToSet(atk_text_attribute_get_name(attribute), value,
+                            attributes);
 }
 
-bool AttributeSetsEqual(AtkAttributeSet* one, AtkAttributeSet* two) {
-  AtkAttributeSet* current_one = one;
-  AtkAttributeSet* current_two = two;
-
-  while (current_one && current_two) {
-    const AtkAttribute* attribute_one =
-        static_cast<AtkAttribute*>(current_one->data);
-    const AtkAttribute* attribute_two =
-        static_cast<AtkAttribute*>(current_two->data);
-
-    if (g_strcmp0(attribute_one->name, attribute_two->name) ||
-        g_strcmp0(attribute_one->value, attribute_two->value)) {
-      return false;
-    }
-
-    current_one = g_slist_next(current_one);
-    current_two = g_slist_next(current_two);
-  }
-
-  // The sets are only equal if they have the same length, which means that we
-  // need to have iterated to the end of both sets.
-  return !current_one && !current_two;
+std::string ToAtkTextAttributeColor(const std::string color) {
+  // The platform-independent color string is in the form "rgb(r, g, b)",
+  // but ATK expects a string like "r, g, b". We convert the string here
+  // by stripping away the unnecessary characters.
+  DCHECK(base::StartsWith(color, "rgb(", base::CompareCase::INSENSITIVE_ASCII));
+  DCHECK(base::EndsWith(color, ")", base::CompareCase::INSENSITIVE_ASCII));
+  return color.substr(4, color.length() - 5);
 }
 
-AtkAttributeSet* CopyAttributeSet(AtkAttributeSet* attributes) {
+AtkAttributeSet* ToAtkAttributeSet(const TextAttributeList& attributes) {
   AtkAttributeSet* copied_attributes = nullptr;
-  while (attributes) {
-    const AtkAttribute* attribute =
-        static_cast<const AtkAttribute*>(attributes->data);
-    AtkAttribute* new_attribute =
-        static_cast<AtkAttribute*>(g_malloc(sizeof(AtkAttribute)));
-    new_attribute->name = g_strdup(attribute->name);
-    new_attribute->value = g_strdup(attribute->value);
-    copied_attributes = g_slist_prepend(copied_attributes, new_attribute);
-
-    attributes = g_slist_next(attributes);
+  for (const auto& attribute : attributes) {
+    if (attribute.first == "background-color") {
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_BG_COLOR,
+                                   ToAtkTextAttributeColor(attribute.second),
+                                   &copied_attributes);
+    } else if (attribute.first == "color") {
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_FG_COLOR,
+                                   ToAtkTextAttributeColor(attribute.second),
+                                   &copied_attributes);
+    } else if (attribute.first == "font-family") {
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_FAMILY_NAME, attribute.second,
+                                   &copied_attributes);
+    } else if (attribute.first == "font-size") {
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_SIZE, attribute.second,
+                                   &copied_attributes);
+    } else if (attribute.first == "font-weight" && attribute.second == "bold") {
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_WEIGHT, "700",
+                                   &copied_attributes);
+    } else if (attribute.first == "font-style") {
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_STYLE, "italic",
+                                   &copied_attributes);
+    } else if (attribute.first == "text-line-through-style") {
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_STRIKETHROUGH, "true",
+                                   &copied_attributes);
+    } else if (attribute.first == "text-underline-style") {
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "single",
+                                   &copied_attributes);
+    } else if (attribute.first == "invalid") {
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_INVALID, attribute.second,
+                                   &copied_attributes);
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "error",
+                                   &copied_attributes);
+    } else if (attribute.first == "language") {
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, attribute.second,
+                                   &copied_attributes);
+    } else if (attribute.first == "writing-mode") {
+      PrependAtkTextAttributeToSet(ATK_TEXT_ATTR_DIRECTION, attribute.second,
+                                   &copied_attributes);
+    } else if (attribute.first == "text-position") {
+      PrependTextAttributeToSet(attribute.first, attribute.second,
+                                &copied_attributes);
+    }
   }
 
   return g_slist_reverse(copied_attributes);
@@ -762,11 +774,45 @@ void GetMinimumIncrement(AtkValue* atk_value, GValue* value) {
                                  value);
 }
 
+gboolean SetCurrentValue(AtkValue* atk_value, const GValue* value) {
+  g_return_val_if_fail(ATK_VALUE(atk_value), FALSE);
+
+  AtkObject* atk_object = ATK_OBJECT(atk_value);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return FALSE;
+
+  std::string new_value;
+  switch (G_VALUE_TYPE(value)) {
+    case G_TYPE_FLOAT:
+      new_value = base::NumberToString(g_value_get_float(value));
+      break;
+    case G_TYPE_INT:
+      new_value = base::NumberToString(g_value_get_int(value));
+      break;
+    case G_TYPE_INT64:
+      new_value = base::NumberToString(g_value_get_int64(value));
+      break;
+    case G_TYPE_STRING:
+      new_value = g_value_get_string(value);
+      break;
+    default:
+      return FALSE;
+  }
+
+  AXActionData data;
+  data.action = ax::mojom::Action::kSetValue;
+  data.value = new_value;
+  obj->GetDelegate()->AccessibilityPerformAction(data);
+  return TRUE;
+}
+
 void Init(AtkValueIface* iface) {
   iface->get_current_value = GetCurrentValue;
   iface->get_maximum_value = GetMaximumValue;
   iface->get_minimum_value = GetMinimumValue;
   iface->get_minimum_increment = GetMinimumIncrement;
+  iface->set_current_value = SetCurrentValue;
 }
 
 const GInterfaceInfo Info = {reinterpret_cast<GInterfaceInitFunc>(Init),
@@ -869,8 +915,7 @@ gchar* GetText(AtkText* atk_text, gint start_offset, gint end_offset) {
     end_offset = text.size();
   } else {
     end_offset = obj->UnicodeToUTF16OffsetInText(end_offset);
-    end_offset = std::max(start_offset,
-                          std::min(end_offset, static_cast<int>(text.size())));
+    end_offset = base::ClampToRange(int{text.size()}, start_offset, end_offset);
   }
 
   DCHECK_GE(start_offset, 0);
@@ -900,7 +945,7 @@ gunichar GetCharacterAtOffset(AtkText* atk_text, int offset) {
   int32_t text_length = text.length();
 
   offset = obj->UnicodeToUTF16OffsetInText(offset);
-  int32_t limited_offset = std::max(0, std::min(text_length, offset));
+  int32_t limited_offset = base::ClampToRange(offset, 0, text_length);
 
   uint32_t code_point;
   base::ReadUnicodeCharacter(text.c_str(), text_length + 1, &limited_offset,
@@ -981,10 +1026,6 @@ char* GetTextAtOffset(AtkText* atk_text,
                       AtkTextBoundary atk_boundary,
                       int* start_offset,
                       int* end_offset) {
-  if (atk_boundary == ATK_TEXT_BOUNDARY_CHAR) {
-    return GetCharacter(atk_text, offset, start_offset, end_offset);
-  }
-
   AXTextBoundary boundary = FromAtkTextBoundary(atk_boundary);
   return GetTextWithBoundaryType(atk_text, offset, boundary, start_offset,
                                  end_offset);
@@ -1129,10 +1170,6 @@ char* GetStringAtOffset(AtkText* atk_text,
   *start_offset = -1;
   *end_offset = -1;
 
-  if (atk_granularity == ATK_TEXT_GRANULARITY_CHAR) {
-    return GetCharacter(atk_text, offset, start_offset, end_offset);
-  }
-
   AXTextBoundary boundary = FromAtkTextGranularity(atk_granularity);
   return GetTextWithBoundaryType(atk_text, offset, boundary, start_offset,
                                  end_offset);
@@ -1251,7 +1288,7 @@ AtkAttributeSet* GetRunAttributes(AtkText* atk_text,
   if (!obj)
     return nullptr;
 
-  return CopyAttributeSet(
+  return ToAtkAttributeSet(
       obj->GetTextAttributes(offset, start_offset, end_offset));
 }
 
@@ -1260,8 +1297,37 @@ AtkAttributeSet* GetDefaultAttributes(AtkText* atk_text) {
   AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
   if (!obj)
     return nullptr;
-  return CopyAttributeSet(obj->GetDefaultTextAttributes());
+  return ToAtkAttributeSet(obj->GetDefaultTextAttributes());
 }
+
+#if defined(ATK_232)
+gboolean ScrollSubstringTo(AtkText* atk_text,
+                           gint start_offset,
+                           gint end_offset,
+                           AtkScrollType scroll_type) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
+  if (!obj)
+    return FALSE;
+
+  return obj->ScrollSubstringIntoView(scroll_type, start_offset, end_offset);
+}
+
+gboolean ScrollSubstringToPoint(AtkText* atk_text,
+                                gint start_offset,
+                                gint end_offset,
+                                AtkCoordType atk_coord_type,
+                                gint x,
+                                gint y) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
+  if (!obj)
+    return FALSE;
+
+  return obj->ScrollSubstringToPoint(start_offset, end_offset, atk_coord_type,
+                                     x, y);
+}
+#endif  // ATK_232
 
 void Init(AtkTextIface* iface) {
   iface->get_text = GetText;
@@ -1285,6 +1351,13 @@ void Init(AtkTextIface* iface) {
 
 #if defined(ATK_210)
   iface->get_string_at_offset = GetStringAtOffset;
+#endif
+
+#if defined(ATK_232)
+  if (SupportsAtkTextScrollingInterface()) {
+    iface->scroll_substring_to = ScrollSubstringTo;
+    iface->scroll_substring_to_point = ScrollSubstringToPoint;
+  }
 #endif
 }
 
@@ -1808,6 +1881,9 @@ const gchar* GetName(AtkObject* atk_object) {
   if (!obj)
     return nullptr;
 
+  if (!obj->IsNameExposed())
+    return nullptr;
+
   ax::mojom::NameFrom name_from = obj->GetData().GetNameFrom();
   if (obj->GetStringAttribute(ax::mojom::StringAttribute::kName).empty() &&
       name_from != ax::mojom::NameFrom::kAttributeExplicitlyEmpty)
@@ -1832,7 +1908,23 @@ gint GetIndexInParent(AtkObject* atk_object) {
   if (!parent)
     return -1;
 
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return -1;
+
   int n_children = atk_object_get_n_accessible_children(parent);
+
+  // Ask the delegate for the index in parent, and return it if it's plausible.
+  //
+  // Delegates are allowed to not implement this (AXPlatformNodeDelegateBase
+  // returns -1). Also, delegates may not know the correct answer if this
+  // node is the root of a tree that's embedded in another tree, in which
+  // case the delegate should return -1 and we'll compute it.
+  int index_in_parent = obj->GetDelegate()->GetIndexInParent();
+  if (index_in_parent >= 0 && index_in_parent < n_children)
+    return index_in_parent;
+
+  // Otherwise, search the parent's children.
   for (int i = 0; i < n_children; i++) {
     AtkObject* child = atk_object_ref_accessible_child(parent, i);
     g_object_unref(child);
@@ -1987,68 +2079,57 @@ using GetRowColumnSpanFunc = bool (*)(AtkTableCell* cell,
                                       gint* row_span,
                                       gint* col_span);
 
-static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetTypeFunc>
-    g_atk_table_cell_get_type;
+static GetTypeFunc g_atk_table_cell_get_type;
 
-static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetColumnHeaderCellsFunc>
-    g_atk_table_cell_get_column_header_cells;
+static GetColumnHeaderCellsFunc g_atk_table_cell_get_column_header_cells;
 
-static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetRowHeaderCellsFunc>
-    g_atk_table_cell_get_row_header_cells;
+static GetRowHeaderCellsFunc g_atk_table_cell_get_row_header_cells;
 
-static PROTECTED_MEMORY_SECTION base::ProtectedMemory<GetRowColumnSpanFunc>
-    g_atk_table_cell_get_row_column_span;
+static GetRowColumnSpanFunc g_atk_table_cell_get_row_column_span;
 
 }  // namespace
 
 // static
+NO_SANITIZE("cfi-icall")
 GType AtkTableCellInterface::GetType() {
-  return base::UnsanitizedCfiCall(g_atk_table_cell_get_type)();
+  return g_atk_table_cell_get_type();
 }
 
 // static
+NO_SANITIZE("cfi-icall")
 GPtrArray* AtkTableCellInterface::GetColumnHeaderCells(AtkTableCell* cell) {
-  return base::UnsanitizedCfiCall(g_atk_table_cell_get_column_header_cells)(
-      cell);
+  return g_atk_table_cell_get_column_header_cells(cell);
 }
 
 // static
+NO_SANITIZE("cfi-icall")
 GPtrArray* AtkTableCellInterface::GetRowHeaderCells(AtkTableCell* cell) {
-  return base::UnsanitizedCfiCall(g_atk_table_cell_get_row_header_cells)(cell);
+  return g_atk_table_cell_get_row_header_cells(cell);
 }
 
 // static
+NO_SANITIZE("cfi-icall")
 bool AtkTableCellInterface::GetRowColumnSpan(AtkTableCell* cell,
                                              gint* row,
                                              gint* column,
                                              gint* row_span,
                                              gint* col_span) {
-  return base::UnsanitizedCfiCall(g_atk_table_cell_get_row_column_span)(
-      cell, row, column, row_span, col_span);
+  return g_atk_table_cell_get_row_column_span(cell, row, column, row_span,
+                                              col_span);
 }
 
 // static
 bool AtkTableCellInterface::Exists() {
-  static base::ProtectedMemory<GetTypeFunc>::Initializer
-      init_atk_table_cell_get_type(
-          &g_atk_table_cell_get_type,
-          reinterpret_cast<GetTypeFunc>(
-              dlsym(RTLD_DEFAULT, "atk_table_cell_get_type")));
-  static base::ProtectedMemory<GetColumnHeaderCellsFunc>::Initializer
-      init_atk_table_cell_get_column_header_cells(
-          &g_atk_table_cell_get_column_header_cells,
-          reinterpret_cast<GetColumnHeaderCellsFunc>(
-              dlsym(RTLD_DEFAULT, "atk_table_cell_get_column_header_cells")));
-  static base::ProtectedMemory<GetRowHeaderCellsFunc>::Initializer
-      init_atk_table_cell_get_row_header_cells(
-          &g_atk_table_cell_get_row_header_cells,
-          reinterpret_cast<GetRowHeaderCellsFunc>(
-              dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_header_cells")));
-  static base::ProtectedMemory<GetRowColumnSpanFunc>::Initializer
-      init_atk_table_cell_get_row_column_span(
-          &g_atk_table_cell_get_row_column_span,
-          reinterpret_cast<GetRowColumnSpanFunc>(
-              dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span")));
+  g_atk_table_cell_get_type = reinterpret_cast<GetTypeFunc>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_type"));
+  g_atk_table_cell_get_column_header_cells =
+      reinterpret_cast<GetColumnHeaderCellsFunc>(
+          dlsym(RTLD_DEFAULT, "atk_table_cell_get_column_header_cells"));
+  g_atk_table_cell_get_row_header_cells =
+      reinterpret_cast<GetRowHeaderCellsFunc>(
+          dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_header_cells"));
+  g_atk_table_cell_get_row_column_span = reinterpret_cast<GetRowColumnSpanFunc>(
+      dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span"));
   return *g_atk_table_cell_get_type;
 }
 
@@ -2072,17 +2153,15 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   // for each object.
   interface_mask |= 1 << ATK_ACTION_INTERFACE;
 
-  // TODO(accessibility): We should only expose this for some elements, but
-  // it might be better to do this after exposing the hypertext interface
-  // as well.
-  interface_mask |= 1 << ATK_TEXT_INTERFACE;
-
-  if (!IsPlainTextField())
-    interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;
+  if (!ui::IsImageOrVideo(GetData().role)) {
+    interface_mask |= 1 << ATK_TEXT_INTERFACE;
+    if (!IsPlainTextField())
+      interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;
+  }
 
   // Value Interface
   AtkRole role = GetAtkRole();
-  if (IsRangeValueSupported(GetData())) {
+  if (GetData().IsRangeValueSupported()) {
     interface_mask |= 1 << ATK_VALUE_INTERFACE;
   }
 
@@ -2288,7 +2367,7 @@ void AXPlatformNodeAuraLinux::StaticInitialize() {
   AtkUtilAuraLinux::GetInstance()->InitializeAsync();
 }
 
-AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
+AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
   switch (GetData().role) {
     case ax::mojom::Role::kAlert:
       return ATK_ROLE_ALERT;
@@ -2296,10 +2375,11 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_DIALOG;
     case ax::mojom::Role::kAnchor:
       return ATK_ROLE_LINK;
-    case ax::mojom::Role::kAnnotation:
-      // TODO(accessibility) Panels are generally for containers of widgets.
-      // This should probably be a section (if a container) or static if text.
-      return ATK_ROLE_PANEL;
+    case ax::mojom::Role::kComment:
+    case ax::mojom::Role::kCommentSection:
+    case ax::mojom::Role::kRevision:
+    case ax::mojom::Role::kSuggestion:
+      return ATK_ROLE_SECTION;
     case ax::mojom::Role::kApplication:
       // Only use ATK_ROLE_APPLICATION for elements with no parent, since it
       // is only for top level app windows and not ARIA applications.
@@ -2313,6 +2393,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kAudio:
       return ATK_ROLE_AUDIO;
     case ax::mojom::Role::kBanner:
+    case ax::mojom::Role::kHeader:
       return ATK_ROLE_LANDMARK;
     case ax::mojom::Role::kBlockquote:
       return ATK_ROLE_BLOCK_QUOTE;
@@ -2343,9 +2424,9 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kComplementary:
       return ATK_ROLE_LANDMARK;
     case ax::mojom::Role::kContentDeletion:
+      return kAtkRoleContentDeletion;
     case ax::mojom::Role::kContentInsertion:
-      // TODO(accessibility) https://github.com/w3c/html-aam/issues/141
-      return ATK_ROLE_SECTION;
+      return kAtkRoleContentInsertion;
     case ax::mojom::Role::kContentInfo:
     case ax::mojom::Role::kFooter:
       return ATK_ROLE_LANDMARK;
@@ -2429,6 +2510,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kFeed:
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kGenericContainer:
+    case ax::mojom::Role::kFooterAsNonLandmark:
+    case ax::mojom::Role::kHeaderAsNonLandmark:
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kGraphicsDocument:
       return ATK_ROLE_DOCUMENT_FRAME;
@@ -2452,8 +2535,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kImageMap:
       return ATK_ROLE_IMAGE_MAP;
     case ax::mojom::Role::kInlineTextBox:
-      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
-      return ATK_ROLE_TEXT;
+      return kStaticRole;
     case ax::mojom::Role::kInputTime:
       return ATK_ROLE_DATE_EDITOR;
     case ax::mojom::Role::kLabelText:
@@ -2472,8 +2554,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kLineBreak:
       // TODO(Accessibility) Having a separate accessible object for line breaks
       // is inconsistent with other implementations. http://crbug.com/873144#c1.
-      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
-      return ATK_ROLE_TEXT;
+      return kStaticRole;
     case ax::mojom::Role::kLink:
       return ATK_ROLE_LINK;
     case ax::mojom::Role::kList:
@@ -2489,9 +2570,14 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kListItem:
       return ATK_ROLE_LIST_ITEM;
     case ax::mojom::Role::kListMarker:
-      // TODO(Accessibility) Having a separate accessible object for the marker
-      // is inconsistent with other implementations. http://crbug.com/873144.
-      return kStaticRole;
+      if (!GetChildCount()) {
+        // There's only a name attribute when using Legacy layout. With Legacy
+        // layout, list markers have no child and are considered as StaticText.
+        // We consider a list marker as a group in LayoutNG since it has
+        // a text child node.
+        return kStaticRole;
+      }
+      return ATK_ROLE_PANEL;
     case ax::mojom::Role::kLog:
       return ATK_ROLE_LOG;
     case ax::mojom::Role::kMain:
@@ -2544,11 +2630,24 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_RADIO_BUTTON;
     case ax::mojom::Role::kRadioGroup:
       return ATK_ROLE_PANEL;
-    case ax::mojom::Role::kRegion: {
-      std::string html_tag =
-          GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-      if (html_tag == "section" &&
-          GetData()
+    case ax::mojom::Role::kRegion:
+      return ATK_ROLE_LANDMARK;
+    case ax::mojom::Role::kRootWebArea:
+      return ATK_ROLE_DOCUMENT_WEB;
+    case ax::mojom::Role::kRow:
+      return ATK_ROLE_TABLE_ROW;
+    case ax::mojom::Role::kRowGroup:
+      return ATK_ROLE_PANEL;
+    case ax::mojom::Role::kRowHeader:
+      return ATK_ROLE_ROW_HEADER;
+    case ax::mojom::Role::kRuby:
+      return kStaticRole;
+    case ax::mojom::Role::kRubyAnnotation:
+      // TODO(accessibility) Panels are generally for containers of widgets.
+      // This should probably be a section (if a container) or static if text.
+      return ATK_ROLE_PANEL;
+    case ax::mojom::Role::kSection: {
+      if (GetData()
               .GetString16Attribute(ax::mojom::StringAttribute::kName)
               .empty()) {
         // Do not use ARIA mapping for nameless <section>.
@@ -2558,14 +2657,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
         return ATK_ROLE_LANDMARK;
       }
     }
-    case ax::mojom::Role::kRootWebArea:
-      return ATK_ROLE_DOCUMENT_WEB;
-    case ax::mojom::Role::kRow:
-      return ATK_ROLE_TABLE_ROW;
-    case ax::mojom::Role::kRowHeader:
-      return ATK_ROLE_ROW_HEADER;
-    case ax::mojom::Role::kRuby:
-      return kStaticRole;
     case ax::mojom::Role::kScrollBar:
       return ATK_ROLE_SCROLL_BAR;
     case ax::mojom::Role::kSearch:
@@ -2587,8 +2678,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
         default:
           break;
       }
-      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
-      return ATK_ROLE_TEXT;
+      return kStaticRole;
     }
     case ax::mojom::Role::kStatus:
       return ATK_ROLE_STATUSBAR;
@@ -2621,6 +2711,9 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kTextFieldWithComboBox:
       return ATK_ROLE_COMBO_BOX;
     case ax::mojom::Role::kAbbr:
+    case ax::mojom::Role::kCode:
+    case ax::mojom::Role::kEmphasis:
+    case ax::mojom::Role::kStrong:
     case ax::mojom::Role::kTime:
       return kStaticRole;
     case ax::mojom::Role::kTimer:
@@ -2671,6 +2764,9 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
     atk_state_set_add_state(atk_state_set, ATK_STATE_ACTIVE);
   if (menu_active &&
       FindAtkObjectParentFrame(GetActiveMenus().back()) == atk_object_)
+    atk_state_set_add_state(atk_state_set, ATK_STATE_ACTIVE);
+
+  if (atk_object_ && atk_object_ == g_active_views_dialog)
     atk_state_set_add_state(atk_state_set, ATK_STATE_ACTIVE);
 
   bool is_minimized = delegate_->IsMinimized();
@@ -3081,6 +3177,19 @@ void AXPlatformNodeAuraLinux::OnMenuPopupHide() {
   }
 }
 
+void AXPlatformNodeAuraLinux::ResendFocusSignalsForCurrentlyFocusedNode() {
+  auto* frame = AtkObjectToAXPlatformNodeAuraLinux(g_active_top_level_frame);
+  if (!frame)
+    return;
+
+  AtkObject* focused_node = frame->GetDelegate()->GetFocus();
+  if (!focused_node)
+    return;
+
+  g_signal_emit_by_name(focused_node, "focus-event", true);
+  atk_object_notify_state_change(focused_node, ATK_STATE_FOCUSED, true);
+}
+
 void AXPlatformNodeAuraLinux::OnMenuPopupEnd() {
   if (!GetActiveMenus().empty() && g_active_top_level_frame &&
       ComputeActiveTopLevelFrame() != g_active_top_level_frame) {
@@ -3089,6 +3198,7 @@ void AXPlatformNodeAuraLinux::OnMenuPopupEnd() {
                                    TRUE);
   }
 
+  ResendFocusSignalsForCurrentlyFocusedNode();
   GetActiveMenus().clear();
 }
 
@@ -3141,6 +3251,37 @@ void AXPlatformNodeAuraLinux::OnWindowVisibilityChanged() {
   atk_object_notify_state_change(atk_object, ATK_STATE_ICONIFIED, minimized);
 }
 
+void AXPlatformNodeAuraLinux::OnScrolledToAnchor() {
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  DCHECK(ATK_IS_TEXT(atk_object));
+  g_signal_emit_by_name(atk_object, "text-caret-moved", 0);
+}
+
+void AXPlatformNodeAuraLinux::SetActiveViewsDialog() {
+  AtkObject* old_views_dialog = g_active_views_dialog;
+  AtkObject* new_views_dialog = nullptr;
+
+  AtkObject* parent = GetOrCreateAtkObject();
+  if (!GetDelegate()->IsWebContent()) {
+    while (parent) {
+      if (atk_object_get_role(parent) == ATK_ROLE_DIALOG) {
+        new_views_dialog = parent;
+        break;
+      }
+      parent = atk_object_get_parent(parent);
+    }
+  }
+
+  if (old_views_dialog == new_views_dialog)
+    return;
+
+  SetWeakGPtrToAtkObject(&g_active_views_dialog, new_views_dialog);
+  if (old_views_dialog)
+    atk_object_notify_state_change(old_views_dialog, ATK_STATE_ACTIVE, FALSE);
+  if (new_views_dialog)
+    atk_object_notify_state_change(new_views_dialog, ATK_STATE_ACTIVE, TRUE);
+}
+
 void AXPlatformNodeAuraLinux::OnFocused() {
   AtkObject* atk_object = GetOrCreateAtkObject();
 
@@ -3151,6 +3292,8 @@ void AXPlatformNodeAuraLinux::OnFocused() {
 
   if (atk_object == g_current_focused)
     return;
+
+  SetActiveViewsDialog();
 
   if (g_current_focused) {
     g_signal_emit_by_name(g_current_focused, "focus-event", false);
@@ -3218,35 +3361,136 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
   return false;
 }
 
-void AXPlatformNodeAuraLinux::OnTextSelectionChanged() {
-  AtkObject* atk_object = GetOrCreateAtkObject();
-  if (!EmitsAtkTextEvents(atk_object)) {
-    if (auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent()))
-      parent->OnTextSelectionChanged();
+bool AXPlatformNodeAuraLinux::EmitsAtkTextEvents() const {
+  // If this node is not a static text node, it supports the full AtkText
+  // interface.
+  if (GetAtkRole() != kStaticRole)
+    return true;
+
+  // If this node has children it is not a static text leaf node and supports
+  // the full AtkText interface.
+  if (GetChildCount())
+    return true;
+
+  return false;
+}
+
+void AXPlatformNodeAuraLinux::GetFullSelection(int32_t* anchor_node_id,
+                                               int* anchor_offset,
+                                               int32_t* focus_node_id,
+                                               int* focus_offset) {
+  DCHECK(anchor_node_id);
+  DCHECK(anchor_offset);
+  DCHECK(focus_node_id);
+  DCHECK(focus_offset);
+
+  if (IsPlainTextField() &&
+      GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, anchor_offset) &&
+      GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, focus_offset)) {
+    int32_t node_id = GetData().id != -1 ? GetData().id : GetUniqueId();
+    *anchor_node_id = *focus_node_id = node_id;
     return;
   }
 
-  DCHECK(ATK_IS_TEXT(atk_object));
+  ui::AXTree::Selection selection = GetDelegate()->GetUnignoredSelection();
+  *anchor_node_id = selection.anchor_object_id;
+  *anchor_offset = selection.anchor_offset;
+  *focus_node_id = selection.focus_object_id;
+  *focus_offset = selection.focus_offset;
+}
 
-  std::pair<int, int> new_selection;
-  GetSelectionOffsets(&new_selection.first, &new_selection.second);
-  std::pair<int, int> old_selection = text_selection_;
-  text_selection_ = new_selection;
+AXPlatformNodeAuraLinux& AXPlatformNodeAuraLinux::FindEditableRootOrDocument() {
+  if (GetAtkRole() == ATK_ROLE_DOCUMENT_WEB)
+    return *this;
+  if (GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot))
+    return *this;
+  if (auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent()))
+    return parent->FindEditableRootOrDocument();
+  return *this;
+}
+
+AXPlatformNodeAuraLinux* AXPlatformNodeAuraLinux::FindCommonAncestor(
+    AXPlatformNodeAuraLinux* other) {
+  if (this == other || other->IsDescendantOf(this))
+    return this;
+  if (auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent()))
+    return parent->FindCommonAncestor(other);
+  return nullptr;
+}
+
+void AXPlatformNodeAuraLinux::UpdateSelectionInformation(int32_t anchor_node_id,
+                                                         int anchor_offset,
+                                                         int32_t focus_node_id,
+                                                         int focus_offset) {
+  had_nonzero_width_selection =
+      focus_node_id != anchor_node_id || focus_offset != anchor_offset;
+  current_caret_ = std::make_pair(focus_node_id, focus_offset);
+}
+
+void AXPlatformNodeAuraLinux::EmitSelectionChangedSignal(bool had_selection) {
+  if (!EmitsAtkTextEvents()) {
+    if (auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent()))
+      parent->EmitSelectionChangedSignal(had_selection);
+    return;
+  }
+
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  DCHECK(ATK_IS_TEXT(atk_object));
 
   // ATK does not consider a collapsed selection a selection, so
   // when the collapsed selection changes (caret movement), we should
   // avoid sending text-selection-changed events.
-  bool has_selection = SelectionOffsetsIndicateSelection(new_selection);
-  bool had_selection = SelectionOffsetsIndicateSelection(old_selection);
-  if (has_selection != had_selection ||
-      (has_selection && new_selection != old_selection)) {
+  if (HasSelection() || had_selection)
     g_signal_emit_by_name(atk_object, "text-selection-changed");
+}
+
+void AXPlatformNodeAuraLinux::EmitCaretChangedSignal() {
+  if (!EmitsAtkTextEvents()) {
+    if (auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent()))
+      parent->EmitCaretChangedSignal();
+    return;
   }
 
-  if (HasCaret() && new_selection.second != old_selection.second) {
-    g_signal_emit_by_name(atk_object, "text-caret-moved",
-                          UTF16ToUnicodeOffsetInText(new_selection.second));
+  DCHECK(HasCaret());
+  std::pair<int, int> selection = GetSelectionOffsetsForAtk();
+
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  DCHECK(ATK_IS_TEXT(atk_object));
+  g_signal_emit_by_name(atk_object, "text-caret-moved",
+                        UTF16ToUnicodeOffsetInText(selection.second));
+}
+
+void AXPlatformNodeAuraLinux::OnTextSelectionChanged() {
+  int32_t anchor_node_id, focus_node_id;
+  int anchor_offset, focus_offset;
+  GetFullSelection(&anchor_node_id, &anchor_offset, &focus_node_id,
+                   &focus_offset);
+
+  auto* anchor_node = static_cast<AXPlatformNodeAuraLinux*>(
+      GetDelegate()->GetFromNodeID(anchor_node_id));
+  auto* focus_node = static_cast<AXPlatformNodeAuraLinux*>(
+      GetDelegate()->GetFromNodeID(focus_node_id));
+  if (!anchor_node || !focus_node)
+    return;
+
+  AXPlatformNodeAuraLinux& editable_root = FindEditableRootOrDocument();
+  AXPlatformNodeAuraLinux* common_ancestor =
+      focus_node->FindCommonAncestor(anchor_node);
+  if (common_ancestor) {
+    common_ancestor->EmitSelectionChangedSignal(
+        editable_root.HadNonZeroWidthSelection());
   }
+
+  // It's possible for the selection to change and for the caret to stay in
+  // place. This might happen if the selection is totally reset with a
+  // different anchor node, but the same focus node. We should avoid sending a
+  // caret changed signal in that case.
+  std::pair<int32_t, int> prev_caret = editable_root.GetCurrentCaret();
+  if (prev_caret.first != focus_node_id || prev_caret.second != focus_offset)
+    focus_node->EmitCaretChangedSignal();
+
+  editable_root.UpdateSelectionInformation(anchor_node_id, anchor_offset,
+                                           focus_node_id, focus_offset);
 }
 
 bool AXPlatformNodeAuraLinux::SupportsSelectionWithAtkSelection() {
@@ -3273,12 +3517,10 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
   // If this is a non-web-content text entry, then we need to trigger text
   // change signals when the value changes. This is handled by browser
   // accessibility for web content.
-  if (IsPlainTextField() || !GetDelegate()->IsWebContent()) {
+  if (IsPlainTextField() && !GetDelegate()->IsWebContent())
     UpdateHypertext();
-    return;
-  }
 
-  if (!IsRangeValueSupported(GetData()))
+  if (!GetData().IsRangeValueSupported())
     return;
 
   float float_val;
@@ -3322,7 +3564,7 @@ void AXPlatformNodeAuraLinux::OnDocumentTitleChanged() {
 void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
   // We might not have a parent, in that case we don't need to send the event.
   // We also don't want to notify if this is an ignored node
-  if (!GetParent() || ui::IsIgnored(GetData()))
+  if (!GetParent() || GetData().IsIgnored())
     return;
   g_signal_emit_by_name(GetParent(), "children-changed::add",
                         GetIndexInParent(), GetOrCreateAtkObject());
@@ -3331,7 +3573,7 @@ void AXPlatformNodeAuraLinux::OnSubtreeCreated() {
 void AXPlatformNodeAuraLinux::OnSubtreeWillBeDeleted() {
   // There is a chance there won't be a parent as we're in the deletion process.
   // We also don't want to notify if this is an ignored node
-  if (!GetParent() || ui::IsIgnored(GetData()))
+  if (!GetParent() || GetData().IsIgnored())
     return;
 
   g_signal_emit_by_name(GetParent(), "children-changed::remove",
@@ -3456,13 +3698,33 @@ AXPlatformNodeAuraLinux::GetEmbeddedObjectIndicesForId(int id) {
                         UTF16ToUnicodeOffsetInText(offset->first + 1));
 }
 
+base::Optional<std::pair<int, int>>
+AXPlatformNodeAuraLinux::GetEmbeddedObjectIndices() {
+  auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent());
+  if (!parent)
+    return base::nullopt;
+  return parent->GetEmbeddedObjectIndicesForId(GetUniqueId());
+}
+
 void AXPlatformNodeAuraLinux::UpdateHypertext() {
+  // For text only objects, ensure that the parent's hypertext is updated as
+  // well. Text only objects insert their text directly into their parents
+  // hypertext, instead of being represented as embedded object characters.
+  if (IsTextOnlyObject()) {
+    if (AtkObject* parent = GetParent()) {
+      if (auto* parent_node = AtkObjectToAXPlatformNodeAuraLinux(parent)) {
+        parent_node->UpdateHypertext();
+      }
+    }
+  }
+
   EnsureAtkObjectIsValid();
   AXHypertext old_hypertext = hypertext_;
   base::OffsetAdjuster::Adjustments old_adjustments = GetHypertextAdjustments();
 
   UpdateComputedHypertext();
   text_unicode_adjustments_ = base::nullopt;
+  offset_to_text_attributes_.clear();
 
   if ((!GetData().HasState(ax::mojom::State::kEditable) ||
        GetData().GetRestriction() == ax::mojom::Restriction::kReadOnly) &&
@@ -3470,16 +3732,13 @@ void AXPlatformNodeAuraLinux::UpdateHypertext() {
     return;
   }
 
+  if (!EmitsAtkTextEvents())
+    return;
+
   size_t shared_prefix, old_len, new_len;
   ComputeHypertextRemovedAndInserted(old_hypertext, &shared_prefix, &old_len,
                                      &new_len);
-
   AtkObject* atk_object = GetOrCreateAtkObject();
-  DCHECK(ATK_IS_TEXT(atk_object));
-
-  if (!EmitsAtkTextEvents(atk_object))
-    return;
-
   if (old_len > 0) {
     base::string16 removed_substring =
         old_hypertext.hypertext.substr(shared_prefix, old_len);
@@ -3600,9 +3859,21 @@ gfx::Rect AXPlatformNodeAuraLinux::GetExtentsRelativeToAtkCoordinateType(
     AtkCoordType coord_type) const {
   gfx::Rect extents = delegate_->GetBoundsRect(AXCoordinateSystem::kScreen,
                                                AXClippingBehavior::kUnclipped);
-  if (coord_type == ATK_XY_WINDOW) {
-    gfx::Vector2d frame_origin = -GetParentOriginInScreenCoordinates();
-    extents.Offset(frame_origin);
+  switch (coord_type) {
+    case ATK_XY_SCREEN:
+      break;
+    case ATK_XY_WINDOW: {
+      gfx::Vector2d window_origin = -GetParentFrameOriginInScreenCoordinates();
+      extents.Offset(window_origin);
+      break;
+    }
+#if defined(ATK_230)
+    case ATK_XY_PARENT: {
+      gfx::Vector2d parent_origin = -GetParentOriginInScreenCoordinates();
+      extents.Offset(parent_origin);
+      break;
+    }
+#endif
   }
 
   return extents;
@@ -3643,15 +3914,9 @@ void AXPlatformNodeAuraLinux::GetSize(gint* width, gint* height) {
 
 gfx::NativeViewAccessible
 AXPlatformNodeAuraLinux::HitTestSync(gint x, gint y, AtkCoordType coord_type) {
-  if (coord_type == ATK_XY_WINDOW) {
-    if (AtkObject* atk_object = GetParent()) {
-      gfx::Point window_coords = FindAtkObjectParentCoords(atk_object);
-      x += window_coords.x();
-      y += window_coords.y();
-    }
-  }
-
-  return delegate_->HitTestSync(x, y);
+  gfx::Point scroll_to(x, y);
+  scroll_to = ConvertPointToScreenCoordinates(scroll_to, coord_type);
+  return delegate_->HitTestSync(scroll_to.x(), scroll_to.y());
 }
 
 bool AXPlatformNodeAuraLinux::GrabFocus() {
@@ -3827,20 +4092,6 @@ AtkHyperlink* AXPlatformNodeAuraLinux::GetAtkHyperlink() {
       ATK_HYPERLINK(g_object_new(AX_PLATFORM_ATK_HYPERLINK_TYPE, 0));
   ax_platform_atk_hyperlink_set_object(
       AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), this);
-
-  auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent());
-  if (!parent)
-    return atk_hyperlink_;
-
-  base::Optional<std::pair<int, int>> indices =
-      parent->GetEmbeddedObjectIndicesForId(GetUniqueId());
-  if (!indices.has_value())
-    return atk_hyperlink_;
-
-  ax_platform_atk_hyperlink_set_indices(
-      AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), indices->first,
-      indices->second);
-
   return atk_hyperlink_;
 }
 
@@ -3878,6 +4129,16 @@ base::string16 AXPlatformNodeAuraLinux::GetHypertext() const {
   return hypertext_.hypertext;
 }
 
+bool AXPlatformNodeAuraLinux::IsNameExposed() {
+  const AXNodeData& data = GetData();
+  switch (data.role) {
+    case ax::mojom::Role::kListMarker:
+      return !GetChildCount();
+    default:
+      return true;
+  }
+}
+
 int AXPlatformNodeAuraLinux::GetCaretOffset() {
   if (!HasCaret()) {
     base::Optional<FindInPageResultInfo> result =
@@ -3888,9 +4149,8 @@ int AXPlatformNodeAuraLinux::GetCaretOffset() {
     return -1;
   }
 
-  int selection_start, selection_end;
-  GetSelectionOffsets(&selection_start, &selection_end);
-  return UTF16ToUnicodeOffsetInText(selection_end);
+  std::pair<int, int> selection = GetSelectionOffsetsForAtk();
+  return UTF16ToUnicodeOffsetInText(selection.second);
 }
 
 bool AXPlatformNodeAuraLinux::SetCaretOffset(int offset) {
@@ -3908,7 +4168,6 @@ bool AXPlatformNodeAuraLinux::SetCaretOffset(int offset) {
   if (!SetHypertextSelection(offset, offset))
     return false;
 
-  OnTextSelectionChanged();
   return true;
 }
 
@@ -3930,22 +4189,20 @@ bool AXPlatformNodeAuraLinux::SetTextSelectionForAtkText(int start_offset,
 
   // Even if we don't change anything, we still want to act like we
   // were successful.
-  int old_start_offset, old_end_offset;
-  GetSelectionExtents(&old_start_offset, &old_end_offset);
-  if (old_start_offset == start_offset && old_end_offset == end_offset)
+  std::pair<int, int> old_offsets = GetSelectionOffsetsForAtk();
+  if (old_offsets.first == start_offset && old_offsets.second == end_offset)
     return true;
 
   if (!SetHypertextSelection(start_offset, end_offset))
     return false;
 
-  OnTextSelectionChanged();
   return true;
 }
 
 bool AXPlatformNodeAuraLinux::HasSelection() {
-  std::pair<int, int> selection;
-  GetSelectionOffsets(&selection.first, &selection.second);
-  return SelectionOffsetsIndicateSelection(selection);
+  std::pair<int, int> selection = GetSelectionOffsetsForAtk();
+  return selection.first >= 0 && selection.second >= 0 &&
+         selection.first != selection.second;
 }
 
 void AXPlatformNodeAuraLinux::GetSelectionExtents(int* start_offset,
@@ -3955,26 +4212,25 @@ void AXPlatformNodeAuraLinux::GetSelectionExtents(int* start_offset,
   if (end_offset)
     *end_offset = 0;
 
-  int selection_start, selection_end;
-  GetSelectionOffsets(&selection_start, &selection_end);
-  if (selection_start < 0 || selection_end < 0 ||
-      selection_start == selection_end)
+  std::pair<int, int> selection = GetSelectionOffsetsForAtk();
+  if (selection.first < 0 || selection.second < 0 ||
+      selection.first == selection.second)
     return;
 
   // We should ignore the direction of the selection when exposing start and
   // end offsets. According to the ATK documentation the end offset is always
   // the offset immediately past the end of the selection. This wouldn't make
   // sense if end < start.
-  if (selection_end < selection_start)
-    std::swap(selection_start, selection_end);
+  if (selection.second < selection.first)
+    std::swap(selection.first, selection.second);
 
-  selection_start = UTF16ToUnicodeOffsetInText(selection_start);
-  selection_end = UTF16ToUnicodeOffsetInText(selection_end);
+  selection.first = UTF16ToUnicodeOffsetInText(selection.first);
+  selection.second = UTF16ToUnicodeOffsetInText(selection.second);
 
   if (start_offset)
-    *start_offset = selection_start;
+    *start_offset = selection.first;
   if (end_offset)
-    *end_offset = selection_end;
+    *end_offset = selection.second;
 }
 
 // Since this method doesn't return a static gchar*, we expect the caller of
@@ -4025,16 +4281,7 @@ void AXPlatformNodeAuraLinux::ScrollToPoint(AtkCoordType atk_coord_type,
                                             int x,
                                             int y) {
   gfx::Point scroll_to(x, y);
-  switch (atk_coord_type) {
-    case ATK_XY_SCREEN:
-      break;
-    case ATK_XY_WINDOW:
-      scroll_to += GetParentFrameOriginInScreenCoordinates();
-      break;
-    case ATK_XY_PARENT:
-      scroll_to += GetParentOriginInScreenCoordinates();
-      break;
-  }
+  scroll_to = ConvertPointToScreenCoordinates(scroll_to, atk_coord_type);
 
   ui::AXActionData action_data;
   action_data.target_node_id = GetData().id;
@@ -4042,20 +4289,16 @@ void AXPlatformNodeAuraLinux::ScrollToPoint(AtkCoordType atk_coord_type,
   action_data.target_point = scroll_to;
   GetDelegate()->AccessibilityPerformAction(action_data);
 }
-#endif  // defined(ATK_230)
 
-#if defined(ATK_230)
-void AXPlatformNodeAuraLinux::ScrollNodeIntoView(
+void AXPlatformNodeAuraLinux::ScrollNodeRectIntoView(
+    gfx::Rect rect,
     AtkScrollType atk_scroll_type) {
-  gfx::Rect r = GetDelegate()->GetBoundsRect(AXCoordinateSystem::kScreen,
-                                             AXClippingBehavior::kUnclipped);
-  r -= r.OffsetFromOrigin();
-
   ui::AXActionData action_data;
   action_data.target_node_id = GetData().id;
   action_data.action = ax::mojom::Action::kScrollToMakeVisible;
-  action_data.target_rect = r;
+  action_data.target_rect = rect;
 
+  action_data.scroll_behavior = ax::mojom::ScrollBehavior::kScrollIfVisible;
   action_data.horizontal_scroll_alignment = ax::mojom::ScrollAlignment::kNone;
   action_data.vertical_scroll_alignment = ax::mojom::ScrollAlignment::kNone;
 
@@ -4099,242 +4342,84 @@ void AXPlatformNodeAuraLinux::ScrollNodeIntoView(
   GetDelegate()->AccessibilityPerformAction(action_data);
 }
 
+void AXPlatformNodeAuraLinux::ScrollNodeIntoView(
+    AtkScrollType atk_scroll_type) {
+  gfx::Rect rect = GetDelegate()->GetBoundsRect(AXCoordinateSystem::kScreen,
+                                                AXClippingBehavior::kUnclipped);
+  rect -= rect.OffsetFromOrigin();
+  ScrollNodeRectIntoView(rect, atk_scroll_type);
+}
 #endif  // defined(ATK_230)
 
-AtkAttributes AXPlatformNodeAuraLinux::ComputeTextAttributes() const {
-  AtkAttributeSet* attributes = nullptr;
+#if defined(ATK_232)
+base::Optional<gfx::Rect>
+AXPlatformNodeAuraLinux::GetUnclippedHypertextRangeBoundsRect(int start_offset,
+                                                              int end_offset) {
+  start_offset = UnicodeToUTF16OffsetInText(start_offset);
+  end_offset = UnicodeToUTF16OffsetInText(end_offset);
 
-  int color;
-  if (GetIntAttribute(ax::mojom::IntAttribute::kBackgroundColor, &color)) {
-    unsigned int red = SkColorGetR(color);
-    unsigned int green = SkColorGetG(color);
-    unsigned int blue = SkColorGetB(color);
-    std::string color_value = base::NumberToString(red) + ',' +
-                              base::NumberToString(green) + ',' +
-                              base::NumberToString(blue);
-    AddTextAttributeToSet(ATK_TEXT_ATTR_BG_COLOR, color_value, &attributes);
-  }
+  base::string16 text = GetHypertext();
+  if (start_offset < 0 || start_offset > int{text.length()})
+    return base::nullopt;
+  if (end_offset < 0 || end_offset > int{text.length()})
+    return base::nullopt;
 
-  if (GetIntAttribute(ax::mojom::IntAttribute::kColor, &color)) {
-    unsigned int red = SkColorGetR(color);
-    unsigned int green = SkColorGetG(color);
-    unsigned int blue = SkColorGetB(color);
-    std::string color_value = base::NumberToString(red) + ',' +
-                              base::NumberToString(green) + ',' +
-                              base::NumberToString(blue);
-    AddTextAttributeToSet(ATK_TEXT_ATTR_FG_COLOR, color_value, &attributes);
-  }
+  if (end_offset < start_offset)
+    std::swap(start_offset, end_offset);
 
-  std::string font_family(
-      GetInheritedStringAttribute(ax::mojom::StringAttribute::kFontFamily));
-  // Attribute has no default value.
-  if (!font_family.empty()) {
-    AddTextAttributeToSet(ATK_TEXT_ATTR_FAMILY_NAME, font_family, &attributes);
-  }
-
-  float font_size;
-  // Attribute has no default value.
-  if (GetFloatAttribute(ax::mojom::FloatAttribute::kFontSize, &font_size)) {
-    // The ATK Spec requires the value to be in pt, not in pixels.
-    // There are 72 points per inch.
-    // We assume that there are 96 pixels per inch on a standard display.
-    // TODO(nektar): Figure out the current value of pixels per inch.
-    float points = font_size * 72.0 / 96.0;
-    AddTextAttributeToSet(ATK_TEXT_ATTR_SIZE,
-                          base::NumberToString(points) + "pt", &attributes);
-  }
-
-  // TODO(nektar): Add Blink support for the following attributes:
-  // text-line-through-mode, text-line-through-width, text-outline:false,
-  // text-position:baseline, text-shadow:none, text-underline-mode:continuous.
-
-  int32_t text_style = GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
-  if (text_style) {
-    if (GetData().HasTextStyle(ax::mojom::TextStyle::kBold)) {
-      // TODO(mrobinson): This is based on the weight that CSS uses for "bold,"
-      // but we'd like to support more font weights here.
-      AddTextAttributeToSet(ATK_TEXT_ATTR_WEIGHT, "700", &attributes);
-    }
-
-    if (GetData().HasTextStyle(ax::mojom::TextStyle::kItalic)) {
-      // TODO(mrobinson): We'd also like to support "oblique" here.
-      AddTextAttributeToSet(ATK_TEXT_ATTR_STYLE, "italic", &attributes);
-    }
-
-    if (GetData().HasTextStyle(ax::mojom::TextStyle::kLineThrough))
-      AddTextAttributeToSet(ATK_TEXT_ATTR_STRIKETHROUGH, "true", &attributes);
-
-    if (GetData().HasTextStyle(ax::mojom::TextStyle::kUnderline)) {
-      // TODO(mrobinson): Figure out a more specific value.
-      AddTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "single", &attributes);
-    }
-  }
-
-  // Screen readers look at the text attributes to determine if something is
-  // misspelled, so we need to propagate any spelling attributes from immediate
-  // parents of text-only objects. AXPlatformNodeBase::GetInvalidValue takes
-  // care of searching upward to find the appropriate values.
-  std::string invalid_value = GetInvalidValue();
-  if (!invalid_value.empty())
-    AddTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "error", &attributes);
-
-  std::string language = GetDelegate()->GetLanguage();
-  if (!language.empty())
-    AddTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, language, &attributes);
-
-  auto text_direction = static_cast<ax::mojom::TextDirection>(
-      GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
-  switch (text_direction) {
-    case ax::mojom::TextDirection::kNone:
-      break;
-    case ax::mojom::TextDirection::kLtr:
-      AddTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, "ltr", &attributes);
-      break;
-    case ax::mojom::TextDirection::kRtl:
-      AddTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, "rtl", &attributes);
-      break;
-    case ax::mojom::TextDirection::kTtb:
-      // Not listed in the ATK docs.
-      AddTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, "ttb", &attributes);
-      break;
-    case ax::mojom::TextDirection::kBtt:
-      // Not listed in the ATK docs.
-      AddTextAttributeToSet(ATK_TEXT_ATTR_LANGUAGE, "btt", &attributes);
-      break;
-  }
-
-  return AtkAttributes(attributes);
+  return GetDelegate()->GetHypertextRangeBoundsRect(
+      UnicodeToUTF16OffsetInText(start_offset),
+      UnicodeToUTF16OffsetInText(end_offset), AXCoordinateSystem::kScreen,
+      AXClippingBehavior::kUnclipped);
 }
+
+bool AXPlatformNodeAuraLinux::ScrollSubstringIntoView(
+    AtkScrollType atk_scroll_type,
+    int start_offset,
+    int end_offset) {
+  base::Optional<gfx::Rect> optional_rect =
+      GetUnclippedHypertextRangeBoundsRect(start_offset, end_offset);
+  if (!optional_rect.has_value())
+    return false;
+
+  gfx::Rect rect = *optional_rect;
+  gfx::Rect node_rect = GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kUnclipped);
+  rect -= node_rect.OffsetFromOrigin();
+  ScrollNodeRectIntoView(rect, atk_scroll_type);
+
+  return true;
+}
+
+bool AXPlatformNodeAuraLinux::ScrollSubstringToPoint(
+    int start_offset,
+    int end_offset,
+    AtkCoordType atk_coord_type,
+    int x,
+    int y) {
+  base::Optional<gfx::Rect> optional_rect =
+      GetUnclippedHypertextRangeBoundsRect(start_offset, end_offset);
+  if (!optional_rect.has_value())
+    return false;
+
+  gfx::Rect rect = *optional_rect;
+  gfx::Rect node_rect = GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kUnclipped);
+  ScrollToPoint(atk_coord_type, x - (rect.x() - node_rect.x()),
+                y - (rect.y() - node_rect.y()));
+
+  return true;
+}
+#endif  // defined(ATK_232)
 
 void AXPlatformNodeAuraLinux::ComputeStylesIfNeeded() {
   if (!offset_to_text_attributes_.empty())
     return;
 
   default_text_attributes_ = ComputeTextAttributes();
-  std::map<int, AtkAttributes> attributes_map;
-  if (IsLeaf()) {
-    attributes_map[0] =
-        AtkAttributes(CopyAttributeSet(default_text_attributes_.get()));
-    MergeSpellingIntoAtkTextAttributesAtOffset(0 /* start_offset */,
-                                               &attributes_map);
-    offset_to_text_attributes_.swap(attributes_map);
-    return;
-  }
-
-  int start_offset = 0;
-  for (auto child_iterator_ptr = GetDelegate()->ChildrenBegin();
-       *child_iterator_ptr != *GetDelegate()->ChildrenEnd();
-       ++(*child_iterator_ptr)) {
-    auto* child = AtkObjectToAXPlatformNodeAuraLinux(
-        child_iterator_ptr->GetNativeViewAccessible());
-    if (!child)
-      continue;
-
-    AtkAttributes attributes = child->ComputeTextAttributes();
-    if (attributes_map.empty()) {
-      attributes_map[start_offset] = std::move(attributes);
-    } else {
-      // Only add the attributes for this child if we are at the start of a new
-      // style span.
-      AtkAttributeSet* previous_attributes =
-          attributes_map.rbegin()->second.get();
-      if (!AttributeSetsEqual(attributes.get(), previous_attributes))
-        attributes_map[start_offset] = std::move(attributes);
-    }
-
-    if (child->IsTextOnlyObject()) {
-      MergeSpellingIntoAtkTextAttributesAtOffset(start_offset, &attributes_map);
-      start_offset += child->GetHypertext().length();
-    } else {
-      start_offset += 1;
-    }
-  }
-
+  TextAttributeMap attributes_map =
+      GetDelegate()->ComputeTextAttributeMap(default_text_attributes_);
   offset_to_text_attributes_.swap(attributes_map);
-}
-
-void AXPlatformNodeAuraLinux::MergeSpellingIntoAtkTextAttributesAtOffset(
-    int offset,
-    std::map<int, AtkAttributes>* text_attributes) {
-  DCHECK(text_attributes);
-
-  int hypertext_length = static_cast<int>(GetHypertext().length());
-  std::map<int, AtkAttributeSet*> spelling_attributes;
-  if (IsTextOnlyObject()) {
-    const std::vector<int32_t>& marker_types =
-        GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes);
-    const std::vector<int>& marker_starts =
-        GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts);
-    const std::vector<int>& marker_ends =
-        GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds);
-    for (size_t i = 0; i < marker_types.size(); ++i) {
-      bool isSpellingError =
-          (marker_types[i] &
-           static_cast<int32_t>(ax::mojom::MarkerType::kSpelling)) != 0;
-      bool isGrammarError =
-          (marker_types[i] &
-           static_cast<int32_t>(ax::mojom::MarkerType::kGrammar)) != 0;
-      if (!isSpellingError && !isGrammarError)
-        continue;
-
-      // Add a starting attribute for the error, if one does not already exist.
-      // We use a default value of an AtkAttributes (unique_ptr of
-      // AtkAttributeSet*) set to a nullptr. Since AtkAttributeSet is a GSList,
-      // a nullptr is an empty set.
-      int marker_start_offset = offset + marker_starts[i];
-      auto default_value = std::make_pair(marker_start_offset, nullptr);
-      auto iterator = text_attributes->insert(default_value).first;
-
-      if (!HasInvalidAttributeInSet(iterator->second.get())) {
-        // `attributes` is a unique_ptr, but here we want to modify the head of
-        // the list without having the unique_ptr delete it. We leak the
-        // pointer to `attribute_set` and then reset the new list value into
-        // the iterator.
-        AtkAttributeSet* attribute_set = iterator->second.release();
-        AddTextAttributeToSet(ATK_TEXT_ATTR_UNDERLINE, "error", &attribute_set);
-        if (isSpellingError) {
-          AddTextAttributeToSet(ATK_TEXT_ATTR_INVALID, "spelling",
-                                &attribute_set);
-        }
-        if (isGrammarError) {
-          AddTextAttributeToSet(ATK_TEXT_ATTR_INVALID, "grammar",
-                                &attribute_set);
-        }
-        iterator->second.reset(attribute_set);
-      }
-
-      // Make sure there is at least an empty attribute set to end the marker.
-      int marker_end_offset = offset + marker_ends[i];
-      DCHECK_LE(marker_end_offset, hypertext_length);
-      text_attributes->insert(std::make_pair(marker_end_offset, nullptr));
-    }
-  }
-
-  if (IsPlainTextField()) {
-    AXPlatformNodeDelegate* delegate = GetDelegate();
-    DCHECK(delegate);
-
-    int anchor_start_offset = offset;
-    AXNodeRange range(delegate->CreateTextPositionAt(0),
-                      delegate->CreateTextPositionAt(hypertext_length));
-    for (const auto& leaf_text_range : range) {
-      DCHECK(!leaf_text_range.IsNull());
-      DCHECK_EQ(leaf_text_range.anchor()->GetAnchor(),
-                leaf_text_range.focus()->GetAnchor())
-          << "An leaf text range should only span a single object.";
-      auto* node = static_cast<AXPlatformNodeAuraLinux*>(
-          delegate->GetFromNodeID(leaf_text_range.anchor()->GetAnchor()->id()));
-
-      // The AXNodeRange may include this node as well. We need to skip
-      // that one to avoid an infinite recursive loop.
-      if (node == this)
-        continue;
-
-      node->MergeSpellingIntoAtkTextAttributesAtOffset(anchor_start_offset,
-                                                       text_attributes);
-      anchor_start_offset += leaf_text_range.GetText().length();
-    }
-  }
 }
 
 int AXPlatformNodeAuraLinux::FindStartOfStyle(
@@ -4364,9 +4449,10 @@ int AXPlatformNodeAuraLinux::FindStartOfStyle(
   return start_offset;
 }
 
-AtkAttributeSet* AXPlatformNodeAuraLinux::GetTextAttributes(int offset,
-                                                            int* start_offset,
-                                                            int* end_offset) {
+const TextAttributeList& AXPlatformNodeAuraLinux::GetTextAttributes(
+    int offset,
+    int* start_offset,
+    int* end_offset) {
   ComputeStylesIfNeeded();
   DCHECK(!offset_to_text_attributes_.empty());
 
@@ -4383,12 +4469,12 @@ AtkAttributeSet* AXPlatformNodeAuraLinux::GetTextAttributes(int offset,
                               UTF16ToUnicodeOffsetInText(style_start));
   SetIntPointerValueIfNotNull(end_offset,
                               UTF16ToUnicodeOffsetInText(style_end));
-  return iterator->second.get();
+  return iterator->second;
 }
 
-AtkAttributeSet* AXPlatformNodeAuraLinux::GetDefaultTextAttributes() {
+const TextAttributeList& AXPlatformNodeAuraLinux::GetDefaultTextAttributes() {
   ComputeStylesIfNeeded();
-  return default_text_attributes_.get();
+  return default_text_attributes_;
 }
 
 void AXPlatformNodeAuraLinux::TerminateFindInPage() {
@@ -4400,7 +4486,7 @@ void AXPlatformNodeAuraLinux::ActivateFindInPageResult(int start_offset,
   AtkObject* atk_object = GetOrCreateAtkObject();
   DCHECK(ATK_IS_TEXT(atk_object));
 
-  if (!EmitsAtkTextEvents(atk_object)) {
+  if (!EmitsAtkTextEvents()) {
     ActivateFindInPageInParent(start_offset, end_offset);
     return;
   }
@@ -4487,6 +4573,36 @@ AXPlatformNodeAuraLinux::GetSelectionOffsetsFromFindInPage() {
     return base::nullopt;
 
   return iterator->second;
+}
+
+gfx::Point AXPlatformNodeAuraLinux::ConvertPointToScreenCoordinates(
+    const gfx::Point& point,
+    AtkCoordType atk_coord_type) {
+  switch (atk_coord_type) {
+    case ATK_XY_WINDOW:
+      return point + GetParentFrameOriginInScreenCoordinates();
+#if defined(ATK_230)
+    case ATK_XY_PARENT:
+      return point + GetParentOriginInScreenCoordinates();
+#endif
+    case ATK_XY_SCREEN:
+    default:
+      return point;
+  }
+}
+
+std::pair<int, int> AXPlatformNodeAuraLinux::GetSelectionOffsetsForAtk() {
+  // In web content we always want to look at the selection from the tree
+  // instead of the selection that might be set via node attributes. This is
+  // because the tree selection is the absolute truth about what is visually
+  // selected, whereas node attributes might contain selection extents that are
+  // no longer part of the visual selection.
+  std::pair<int, int> selection;
+  if (GetDelegate()->IsWebContent())
+    GetSelectionOffsetsFromTree(&selection.first, &selection.second);
+  else
+    GetSelectionOffsets(&selection.first, &selection.second);
+  return selection;
 }
 
 }  // namespace ui

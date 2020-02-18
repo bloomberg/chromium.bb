@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_stream_sender.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_stream_receiver.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_header_table.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_instruction_decoder.h"
@@ -45,7 +44,8 @@ class QUIC_EXPORT_PRIVATE QpackProgressiveDecoder
     virtual void OnDecodingCompleted() = 0;
 
     // Called when a decoding error has occurred.  No other methods will be
-    // called afterwards.
+    // called afterwards.  Implementations are allowed to destroy
+    // the QpackProgressiveDecoder instance synchronously.
     virtual void OnDecodingErrorDetected(QuicStringPiece error_message) = 0;
   };
 
@@ -66,15 +66,27 @@ class QUIC_EXPORT_PRIVATE QpackProgressiveDecoder
     virtual void OnStreamUnblocked(QuicStreamId stream_id) = 0;
   };
 
+  // Visitor to be notified when decoding is completed.
+  class QUIC_EXPORT_PRIVATE DecodingCompletedVisitor {
+   public:
+    virtual ~DecodingCompletedVisitor() = default;
+
+    // Called when decoding is completed, with Required Insert Count of the
+    // decoded header block.  Required Insert Count is defined at
+    // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#blocked-streams.
+    virtual void OnDecodingCompleted(QuicStreamId stream_id,
+                                     uint64_t required_insert_count) = 0;
+  };
+
   QpackProgressiveDecoder() = delete;
   QpackProgressiveDecoder(QuicStreamId stream_id,
                           BlockedStreamLimitEnforcer* enforcer,
+                          DecodingCompletedVisitor* visitor,
                           QpackHeaderTable* header_table,
-                          QpackDecoderStreamSender* decoder_stream_sender,
                           HeadersHandlerInterface* handler);
   QpackProgressiveDecoder(const QpackProgressiveDecoder&) = delete;
   QpackProgressiveDecoder& operator=(const QpackProgressiveDecoder&) = delete;
-  ~QpackProgressiveDecoder() override = default;
+  ~QpackProgressiveDecoder() override;
 
   // Provide a data fragment to decode.
   void Decode(QuicStringPiece data);
@@ -89,6 +101,7 @@ class QUIC_EXPORT_PRIVATE QpackProgressiveDecoder
 
   // QpackHeaderTable::Observer implementation.
   void OnInsertCountReachedThreshold() override;
+  void Cancel() override;
 
  private:
   bool DoIndexedHeaderFieldInstruction();
@@ -116,8 +129,8 @@ class QUIC_EXPORT_PRIVATE QpackProgressiveDecoder
   QpackInstructionDecoder instruction_decoder_;
 
   BlockedStreamLimitEnforcer* const enforcer_;
+  DecodingCompletedVisitor* const visitor_;
   QpackHeaderTable* const header_table_;
-  QpackDecoderStreamSender* const decoder_stream_sender_;
   HeadersHandlerInterface* const handler_;
 
   // Required Insert Count and Base are decoded from the Header Data Prefix.
@@ -145,6 +158,10 @@ class QUIC_EXPORT_PRIVATE QpackProgressiveDecoder
 
   // True if a decoding error has been detected.
   bool error_detected_;
+
+  // True if QpackHeaderTable has been destroyed
+  // while decoding is still blocked.
+  bool cancelled_;
 };
 
 }  // namespace quic

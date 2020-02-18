@@ -29,11 +29,20 @@ HeapProfileTracker::HeapProfileTracker(TraceProcessorContext* context)
 
 HeapProfileTracker::~HeapProfileTracker() = default;
 
+void HeapProfileTracker::SetProfilePacketIndex(uint64_t index) {
+  if (last_profile_packet_index_ != 0 &&
+      last_profile_packet_index_ + 1 != index) {
+    context_->storage->IncrementStats(stats::heapprofd_missing_packet);
+  }
+  last_profile_packet_index_ = index;
+}
+
 void HeapProfileTracker::AddAllocation(
+    StackProfileTracker* stack_profile_tracker,
     const SourceAllocation& alloc,
     const StackProfileTracker::InternLookup* intern_lookup) {
-  auto maybe_callstack_id = context_->stack_profile_tracker->FindCallstack(
-      alloc.callstack_id, intern_lookup);
+  auto maybe_callstack_id =
+      stack_profile_tracker->FindCallstack(alloc.callstack_id, intern_lookup);
   if (!maybe_callstack_id)
     return;
 
@@ -91,16 +100,18 @@ void HeapProfileTracker::StoreAllocation(SourceAllocation alloc) {
 }
 
 void HeapProfileTracker::CommitAllocations(
+    StackProfileTracker* stack_profile_tracker,
     const StackProfileTracker::InternLookup* intern_lookup) {
   for (const auto& p : pending_allocs_)
-    AddAllocation(p, intern_lookup);
+    AddAllocation(stack_profile_tracker, p, intern_lookup);
   pending_allocs_.clear();
 }
 
 void HeapProfileTracker::FinalizeProfile(
+    StackProfileTracker* stack_profile_tracker,
     const StackProfileTracker::InternLookup* intern_lookup) {
-  CommitAllocations(intern_lookup);
-  context_->stack_profile_tracker->ClearIndices();
+  CommitAllocations(stack_profile_tracker, intern_lookup);
+  stack_profile_tracker->ClearIndices();
 }
 
 }  // namespace trace_processor

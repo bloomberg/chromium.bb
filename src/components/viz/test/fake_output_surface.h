@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -51,6 +52,10 @@ class FakeOutputSurface : public OutputSurface {
     capabilities_.max_frames_pending = max;
   }
 
+  void set_supports_dc_layers(bool supports) {
+    capabilities_.supports_dc_layers = supports;
+  }
+
   OutputSurfaceFrame* last_sent_frame() { return last_sent_frame_.get(); }
   size_t num_sent_frames() { return num_sent_frames_; }
 
@@ -78,7 +83,7 @@ class FakeOutputSurface : public OutputSurface {
       UpdateVSyncParametersCallback callback) override;
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   gfx::OverlayTransform GetDisplayTransform() override;
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
 #endif
@@ -119,7 +124,6 @@ class FakeOutputSurface : public OutputSurface {
   GLenum framebuffer_format_ = 0;
   unsigned gpu_fence_id_ = 0;
   unsigned overlay_texture_id_ = 0;
-  OverlayCandidateValidator* overlay_candidate_validator_ = nullptr;
   gfx::ColorSpace last_reshape_color_space_;
   gfx::Rect last_set_draw_rectangle_;
 

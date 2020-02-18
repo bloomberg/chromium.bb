@@ -11,9 +11,6 @@ declare_args() {
 
   # Enable thread sanitizer.
   is_tsan = false
-
-  # Enable trace logging.
-  enable_trace_logging = false
 }
 
 config("compiler_defaults") {
@@ -77,6 +74,12 @@ config("openscreen_code") {
 
   if (is_gcc) {
     cflags += [ "-Wno-maybe-uninitialized" ]
+    cflags_cc += [
+      # GCC 7.2 reports noexcept errors that are not found in GCC 8.
+      # TODO(crbug.com/openscreen/40): Remove this when bots are upgraded to
+      # >= GCC 8.3.
+      "-Wno-noexcept-type",
+    ]
   }
 
   if (is_clang) {
@@ -115,9 +118,10 @@ config("openscreen_code") {
   defines = []
   if (dcheck_always_on) {
     defines += [ "DCHECK_ALWAYS_ON" ]
-  }
-  if (enable_trace_logging) {
-    defines += [ "ENABLE_TRACE_LOGGING" ]
+  } else if (!is_debug) {
+    # C-style assertions in the standard library should match the behavior of
+    # OSP_DCHECKs. Thus, turn them off whenever OSP_DCHECKs would be turned off.
+    defines += [ "NDEBUG" ]
   }
 }
 

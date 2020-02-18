@@ -35,8 +35,8 @@ PoseFrameData MojoToDevicePoseFrameData(
 }
 
 XRTestHookWrapper::XRTestHookWrapper(
-    device_test::mojom::XRTestHookPtrInfo hook_info)
-    : hook_info_(std::move(hook_info)) {}
+    mojo::PendingRemote<device_test::mojom::XRTestHook> pending_hook)
+    : pending_hook_(std::move(pending_hook)) {}
 
 void XRTestHookWrapper::OnFrameSubmitted(SubmittedFrameData frame_data) {
   if (hook_) {
@@ -166,27 +166,28 @@ ControllerFrameData XRTestHookWrapper::WaitGetControllerData(
   return {};
 }
 
-bool XRTestHookWrapper::WaitGetSessionStateStopping() {
+device_test::mojom::EventData XRTestHookWrapper::WaitGetEventData() {
+  device_test::mojom::EventData ret = {};
   if (hook_) {
-    bool stopping = false;
-    hook_->WaitGetSessionStateStopping(&stopping);
-    return stopping;
+    device_test::mojom::EventDataPtr data;
+    hook_->WaitGetEventData(&data);
+    if (data) {
+      ret = *data;
+    }
   }
-  return false;
+  return ret;
 }
 
 void XRTestHookWrapper::AttachCurrentThread() {
-  if (hook_info_) {
-    hook_.Bind(std::move(hook_info_));
-  }
+  if (pending_hook_)
+    hook_.Bind(std::move(pending_hook_));
 
   current_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 void XRTestHookWrapper::DetachCurrentThread() {
-  if (hook_) {
-    hook_info_ = hook_.PassInterface();
-  }
+  if (hook_)
+    pending_hook_ = hook_.Unbind();
 
   current_task_runner_ = nullptr;
 }

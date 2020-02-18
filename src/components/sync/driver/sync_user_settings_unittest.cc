@@ -11,14 +11,40 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service_crypto.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 namespace syncer {
 
 namespace {
+
+// Declared here because the pref is obsolete in production code.
+const char kSyncSessions[] = "sync.sessions";
+
+ModelTypeSet GetUserTypes() {
+  ModelTypeSet user_types = UserTypes();
+#if defined(OS_CHROMEOS)
+  // These types only exist when SplitSettingsSync is enabled.
+  if (!chromeos::features::IsSplitSettingsSyncEnabled()) {
+    user_types.RemoveAll(
+        {OS_PREFERENCES, OS_PRIORITY_PREFERENCES, WIFI_CONFIGURATIONS});
+  }
+#else
+  // Ignore all Chrome OS types on non-Chrome OS platforms.
+  user_types.RemoveAll({APP_LIST, ARC_PACKAGE, OS_PREFERENCES,
+                        OS_PRIORITY_PREFERENCES, PRINTERS,
+                        WIFI_CONFIGURATIONS});
+#endif
+  return user_types;
+}
 
 ModelTypeSet GetPreferredUserTypes(
     const SyncUserSettingsImpl& sync_user_settings) {
@@ -33,7 +59,8 @@ class SyncUserSettingsTest : public testing::Test {
 
     sync_service_crypto_ = std::make_unique<SyncServiceCrypto>(
         /*notify_observers=*/base::DoNothing(),
-        /*reconfigure=*/base::DoNothing(), sync_prefs_.get());
+        /*reconfigure=*/base::DoNothing(), sync_prefs_.get(),
+        /*trusted_vault_client=*/nullptr);
   }
 
   std::unique_ptr<SyncUserSettingsImpl> MakeSyncUserSettings(
@@ -95,7 +122,7 @@ TEST_F(SyncUserSettingsTest, DeleteDirectivesAndProxyTabsMigration) {
   // in proxy tabs also being enabled. Also, manually disable typed urls, which
   // should mean that history delete directives are not enabled.
   pref_service_.SetBoolean(prefs::kSyncTypedUrls, false);
-  pref_service_.SetBoolean(prefs::kSyncSessions, true);
+  pref_service_.SetBoolean(kSyncSessions, true);
   MigrateSessionsToProxyTabsPrefs(&pref_service_);
 
   preferred_types = sync_user_settings->GetPreferredDataTypes();
@@ -105,62 +132,48 @@ TEST_F(SyncUserSettingsTest, DeleteDirectivesAndProxyTabsMigration) {
 
 TEST_F(SyncUserSettingsTest, PreferredTypesSyncEverything) {
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
-      MakeSyncUserSettings(UserTypes());
+      MakeSyncUserSettings(GetUserTypes());
 
+  ModelTypeSet expected_types = GetUserTypes();
   EXPECT_TRUE(sync_user_settings->IsSyncEverythingEnabled());
-  EXPECT_EQ(UserTypes(), GetPreferredUserTypes(*sync_user_settings));
+  EXPECT_EQ(expected_types, GetPreferredUserTypes(*sync_user_settings));
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
     sync_user_settings->SetSelectedTypes(/*sync_everything=*/true,
                                          /*selected_type=*/{type});
-    EXPECT_EQ(UserTypes(), GetPreferredUserTypes(*sync_user_settings));
+    EXPECT_EQ(expected_types, GetPreferredUserTypes(*sync_user_settings));
   }
 }
 
+#if defined(OS_CHROMEOS)
+TEST_F(SyncUserSettingsTest, PreferredTypesSyncAllOsTypes) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+
+  std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
+      MakeSyncUserSettings(GetUserTypes());
+
+  EXPECT_TRUE(sync_user_settings->IsSyncAllOsTypesEnabled());
+  EXPECT_EQ(GetUserTypes(), GetPreferredUserTypes(*sync_user_settings));
+  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+    sync_user_settings->SetSelectedOsTypes(/*sync_all_os_types=*/true,
+                                           /*selected_types=*/{type});
+    EXPECT_EQ(GetUserTypes(), GetPreferredUserTypes(*sync_user_settings));
+  }
+}
+#endif  // defined(OS_CHROMEOS)
+
 TEST_F(SyncUserSettingsTest, PreferredTypesNotKeepEverythingSynced) {
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
-      MakeSyncUserSettings(UserTypes());
+      MakeSyncUserSettings(GetUserTypes());
 
   sync_user_settings->SetSelectedTypes(
       /*sync_everything=*/false,
       /*selected_types=*/UserSelectableTypeSet());
-  ASSERT_NE(UserTypes(), GetPreferredUserTypes(*sync_user_settings));
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
-    ModelTypeSet expected_preferred_types{
-        UserSelectableTypeToCanonicalModelType(type)};
-    if (type == UserSelectableType::kAutofill) {
-      expected_preferred_types.Put(AUTOFILL_PROFILE);
-      expected_preferred_types.Put(AUTOFILL_WALLET_DATA);
-      expected_preferred_types.Put(AUTOFILL_WALLET_METADATA);
-    }
-    if (type == UserSelectableType::kPreferences) {
-      expected_preferred_types.Put(DICTIONARY);
-      expected_preferred_types.Put(PRIORITY_PREFERENCES);
-      expected_preferred_types.Put(SEARCH_ENGINES);
-      expected_preferred_types.Put(PRINTERS);
-    }
-    if (type == UserSelectableType::kApps) {
-      expected_preferred_types.Put(APP_LIST);
-      expected_preferred_types.Put(APP_SETTINGS);
-      expected_preferred_types.Put(ARC_PACKAGE);
-      expected_preferred_types.Put(WEB_APPS);
-    }
-    if (type == UserSelectableType::kExtensions) {
-      expected_preferred_types.Put(EXTENSION_SETTINGS);
-    }
-    if (type == UserSelectableType::kHistory) {
-      expected_preferred_types.Put(HISTORY_DELETE_DIRECTIVES);
-      expected_preferred_types.Put(SESSIONS);
-      expected_preferred_types.Put(FAVICON_IMAGES);
-      expected_preferred_types.Put(FAVICON_TRACKING);
-      expected_preferred_types.Put(USER_EVENTS);
-    }
-    if (type == UserSelectableType::kTabs) {
-      expected_preferred_types.Put(SESSIONS);
-      expected_preferred_types.Put(FAVICON_IMAGES);
-      expected_preferred_types.Put(FAVICON_TRACKING);
-      expected_preferred_types.Put(SEND_TAB_TO_SELF);
-    }
+  ASSERT_NE(GetUserTypes(), GetPreferredUserTypes(*sync_user_settings));
 
+  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+    ModelTypeSet expected_preferred_types =
+        UserSelectableTypeToAllModelTypes(type);
     expected_preferred_types.PutAll(AlwaysPreferredUserTypes());
     sync_user_settings->SetSelectedTypes(/*sync_everything=*/false,
                                          /*selected_types=*/{type});
@@ -169,10 +182,41 @@ TEST_F(SyncUserSettingsTest, PreferredTypesNotKeepEverythingSynced) {
   }
 }
 
+#if defined(OS_CHROMEOS)
+TEST_F(SyncUserSettingsTest, PreferredTypesNotAllOsTypesSynced) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+
+  std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
+      MakeSyncUserSettings(GetUserTypes());
+
+  sync_user_settings->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*selected_types=*/UserSelectableTypeSet());
+  sync_user_settings->SetSelectedOsTypes(
+      /*sync_all_os_types=*/false,
+      /*selected_types=*/UserSelectableOsTypeSet());
+  EXPECT_FALSE(sync_user_settings->IsSyncEverythingEnabled());
+  EXPECT_FALSE(sync_user_settings->IsSyncAllOsTypesEnabled());
+  EXPECT_EQ(AlwaysPreferredUserTypes(),
+            GetPreferredUserTypes(*sync_user_settings));
+
+  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+    ModelTypeSet expected_preferred_types =
+        UserSelectableOsTypeToAllModelTypes(type);
+    expected_preferred_types.PutAll(AlwaysPreferredUserTypes());
+    sync_user_settings->SetSelectedOsTypes(/*sync_all_os_types=*/false,
+                                           /*selected_types=*/{type});
+    EXPECT_EQ(expected_preferred_types,
+              GetPreferredUserTypes(*sync_user_settings));
+  }
+}
+#endif  // defined(OS_CHROMEOS)
+
 // Device info should always be enabled.
 TEST_F(SyncUserSettingsTest, DeviceInfo) {
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
-      MakeSyncUserSettings(UserTypes());
+      MakeSyncUserSettings(GetUserTypes());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(DEVICE_INFO));
   sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/true,
@@ -192,7 +236,7 @@ TEST_F(SyncUserSettingsTest, DeviceInfo) {
 // User Consents should always be enabled.
 TEST_F(SyncUserSettingsTest, UserConsents) {
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
-      MakeSyncUserSettings(UserTypes());
+      MakeSyncUserSettings(GetUserTypes());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(USER_CONSENTS));
   sync_user_settings->SetSelectedTypes(
       /*keep_everything_synced=*/true,
@@ -208,6 +252,31 @@ TEST_F(SyncUserSettingsTest, UserConsents) {
       /*selected_types=*/UserSelectableTypeSet());
   EXPECT_TRUE(sync_user_settings->GetPreferredDataTypes().Has(USER_CONSENTS));
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(SyncUserSettingsTest, AlwaysPreferredTypes_ChromeOS) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+
+  std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
+      MakeSyncUserSettings(GetUserTypes());
+
+  // Disable all browser types.
+  sync_user_settings->SetSelectedTypes(
+      /*keep_everything_synced=*/false,
+      /*selected_types=*/UserSelectableTypeSet());
+
+  // Disable all OS types.
+  sync_user_settings->SetSelectedOsTypes(
+      /*sync_all_os_types=*/false,
+      /*selected_types=*/UserSelectableOsTypeSet());
+
+  // Important types are still preferred.
+  ModelTypeSet preferred_types = sync_user_settings->GetPreferredDataTypes();
+  EXPECT_TRUE(preferred_types.Has(DEVICE_INFO));
+  EXPECT_TRUE(preferred_types.Has(USER_CONSENTS));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 

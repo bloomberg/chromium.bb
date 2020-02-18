@@ -23,6 +23,7 @@
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_url_loader.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -42,6 +43,9 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/base/filename_util.h"
 #include "net/http/http_request_headers.h"
@@ -153,8 +157,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
     virtual ~Observer() {}
   };
 
-  explicit TestURLLoaderClient(Observer* observer)
-      : observer_(observer), binding_(this) {}
+  explicit TestURLLoaderClient(Observer* observer) : observer_(observer) {}
   ~TestURLLoaderClient() override {}
 
   void OnReceiveResponse(
@@ -187,12 +190,12 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
     observer_->OnComplete();
   }
 
-  network::mojom::URLLoaderClientPtr CreateInterfacePtr() {
-    network::mojom::URLLoaderClientPtr client_ptr;
-    binding_.Bind(mojo::MakeRequest(&client_ptr));
-    binding_.set_connection_error_handler(base::BindOnce(
-        &TestURLLoaderClient::OnConnectionError, base::Unretained(this)));
-    return client_ptr;
+  mojo::PendingRemote<network::mojom::URLLoaderClient> CreateRemote() {
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote =
+        receiver_.BindNewPipeAndPassRemote();
+    receiver_.set_disconnect_handler(base::BindOnce(
+        &TestURLLoaderClient::OnMojoDisconnect, base::Unretained(this)));
+    return client_remote;
   }
 
   mojo::DataPipeConsumerHandle response_body() { return response_body_.get(); }
@@ -202,10 +205,10 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   }
 
  private:
-  void OnConnectionError() {}
+  void OnMojoDisconnect() {}
 
   Observer* observer_ = nullptr;
-  mojo::Binding<network::mojom::URLLoaderClient> binding_;
+  mojo::Receiver<network::mojom::URLLoaderClient> receiver_{this};
   mojo::ScopedDataPipeConsumerHandle response_body_;
   network::URLLoaderCompletionStatus completion_status_;
 
@@ -276,7 +279,7 @@ class OfflinePageURLLoaderBuilder : public TestURLLoaderClient::Observer {
   std::unique_ptr<OfflinePageURLLoader> url_loader_;
   std::unique_ptr<TestURLLoaderClient> client_;
   std::unique_ptr<mojo::SimpleWatcher> handle_watcher_;
-  network::mojom::URLLoaderPtr loader_;
+  mojo::Remote<network::mojom::URLLoader> loader_;
   std::string mime_type_;
   std::string body_;
 };
@@ -433,14 +436,10 @@ class OfflinePageRequestHandlerTest : public testing::Test {
 
 #if defined(OS_ANDROID)
   // OfflinePageTabHelper instantiates PrefetchService which in turn requests a
-  // fresh GCM token automatically. These two lines mock out InstanceID (the
-  // component which actually requests the token from play services). Without
-  // this, each test takes an extra 30s waiting on the token (because
-  // content::BrowserTaskEnvironment tries to finish all pending tasks before
-  // ending the test).
+  // fresh GCM token automatically. This causes the request to be done
+  // synchronously instead of with a posted task.
   instance_id::InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting
       block_async_;
-  instance_id::ScopedUseFakeInstanceIDAndroid use_fake_;
 #endif  // OS_ANDROID
 
   // These are not thread-safe. But they can be used in the pattern that
@@ -1015,11 +1014,13 @@ void OfflinePageURLLoaderBuilder::MaybeStartLoader(
 
   // OfflinePageURLLoader decides to handle the request as offline page. Since
   // now, OfflinePageURLLoader will own itself and live as long as its URLLoader
-  // and URLLoaderClientPtr are alive.
+  // and URLLoaderClient are alive.
   url_loader_.release();
 
+  loader_.reset();
   std::move(request_handler)
-      .Run(request, mojo::MakeRequest(&loader_), client_->CreateInterfacePtr());
+      .Run(request, loader_.BindNewPipeAndPassReceiver(),
+           client_->CreateRemote());
 }
 
 void OfflinePageURLLoaderBuilder::ReadBody() {

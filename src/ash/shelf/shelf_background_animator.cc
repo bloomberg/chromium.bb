@@ -9,11 +9,15 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/public/cpp/login_constants.h"
+#include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
-#include "ash/shelf/shelf_constants.h"
+#include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
@@ -24,15 +28,6 @@ using LumaRange = color_utils::LumaRange;
 using SaturationRange = color_utils::SaturationRange;
 
 namespace ash {
-
-namespace {
-
-// Returns the color profile used for the shelf.
-ColorProfile GetShelfColorProfile() {
-  return ColorProfile(LumaRange::DARK, SaturationRange::MUTED);
-}
-
-}  // namespace
 
 ShelfBackgroundAnimator::AnimationValues::AnimationValues() = default;
 
@@ -55,10 +50,18 @@ bool ShelfBackgroundAnimator::AnimationValues::InitialValuesEqualTargetValuesOf(
 }
 
 ShelfBackgroundAnimator::ShelfBackgroundAnimator(
-    ShelfBackgroundType background_type,
     Shelf* shelf,
     WallpaperControllerImpl* wallpaper_controller)
-    : shelf_(shelf), wallpaper_controller_(wallpaper_controller) {
+    : shelf_(shelf), wallpaper_controller_(wallpaper_controller) {}
+
+ShelfBackgroundAnimator::~ShelfBackgroundAnimator() {
+  if (wallpaper_controller_)
+    wallpaper_controller_->RemoveObserver(this);
+  if (shelf_)
+    shelf_->RemoveObserver(this);
+}
+
+void ShelfBackgroundAnimator::Init(ShelfBackgroundType background_type) {
   if (wallpaper_controller_)
     wallpaper_controller_->AddObserver(this);
   if (shelf_)
@@ -67,13 +70,6 @@ ShelfBackgroundAnimator::ShelfBackgroundAnimator(
   // Initialize animators so that adding observers get notified with consistent
   // values.
   AnimateBackground(background_type, AnimationChangeType::IMMEDIATE);
-}
-
-ShelfBackgroundAnimator::~ShelfBackgroundAnimator() {
-  if (wallpaper_controller_)
-    wallpaper_controller_->RemoveObserver(this);
-  if (shelf_)
-    shelf_->RemoveObserver(this);
 }
 
 void ShelfBackgroundAnimator::AddObserver(
@@ -113,29 +109,9 @@ void ShelfBackgroundAnimator::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(animation, animator_.get());
   SetAnimationValues(animation->GetCurrentValue());
   animator_.reset();
-}
 
-// Gets the target color alpha value of the shelf according to the given
-// |background_type|.
-int ShelfBackgroundAnimator::GetBackgroundAlphaValue(
-    ShelfBackgroundType background_type) const {
-  switch (background_type) {
-    case SHELF_BACKGROUND_DEFAULT:
-    case SHELF_BACKGROUND_OVERVIEW:
-      return kShelfTranslucentAlpha;
-    case SHELF_BACKGROUND_MAXIMIZED:
-      return kShelfTranslucentMaximizedWindow;
-    case SHELF_BACKGROUND_APP_LIST:
-    case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
-      return kShelfTranslucentOverAppList;
-    case SHELF_BACKGROUND_OOBE:
-      return SK_AlphaTRANSPARENT;
-    case SHELF_BACKGROUND_LOGIN:
-      return SK_AlphaTRANSPARENT;
-    case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
-      return login_constants::kNonBlurredWallpaperBackgroundAlpha;
-  }
-  return SK_AlphaTRANSPARENT;
+  for (auto& observer : observers_)
+    observer.OnShelfBackgroundAnimationEnded();
 }
 
 void ShelfBackgroundAnimator::OnWallpaperColorsChanged() {
@@ -196,25 +172,27 @@ bool ShelfBackgroundAnimator::CanReuseAnimator(
 
 void ShelfBackgroundAnimator::CreateAnimator(
     ShelfBackgroundType background_type) {
-  int duration_ms = 0;
+  base::TimeDelta duration;
 
   switch (background_type) {
-    case SHELF_BACKGROUND_DEFAULT:
-    case SHELF_BACKGROUND_APP_LIST:
-    case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
-      duration_ms = 500;
+    case ShelfBackgroundType::kDefaultBg:
+    case ShelfBackgroundType::kAppList:
+    case ShelfBackgroundType::kHomeLauncher:
+    case ShelfBackgroundType::kMaximizedWithAppList:
+      duration = base::TimeDelta::FromMilliseconds(500);
       break;
-    case SHELF_BACKGROUND_MAXIMIZED:
-    case SHELF_BACKGROUND_OOBE:
-    case SHELF_BACKGROUND_LOGIN:
-    case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
-    case SHELF_BACKGROUND_OVERVIEW:
-      duration_ms = 250;
+    case ShelfBackgroundType::kMaximized:
+    case ShelfBackgroundType::kOobe:
+    case ShelfBackgroundType::kLogin:
+    case ShelfBackgroundType::kLoginNonBlurredWallpaper:
+    case ShelfBackgroundType::kOverview:
+    case ShelfBackgroundType::kInApp:
+      duration = base::TimeDelta::FromMilliseconds(250);
       break;
   }
 
   animator_ = std::make_unique<gfx::SlideAnimation>(this);
-  animator_->SetSlideDuration(duration_ms);
+  animator_->SetSlideDuration(duration);
 }
 
 void ShelfBackgroundAnimator::StopAnimator() {
@@ -230,42 +208,45 @@ void ShelfBackgroundAnimator::SetTargetValues(
 void ShelfBackgroundAnimator::GetTargetValues(
     ShelfBackgroundType background_type,
     AnimationValues* shelf_background_values) const {
-  // Fetches wallpaper color and darkens it.
-  auto darken_wallpaper = [&](int darkening_alpha) {
-    if (!wallpaper_controller_)
-      return kShelfDefaultBaseColor;
-    SkColor target_color =
-        wallpaper_controller_->GetProminentColor(GetShelfColorProfile());
-    if (target_color == kInvalidWallpaperColor)
-      return kShelfDefaultBaseColor;
-    return color_utils::GetResultingPaintColor(
-        SkColorSetA(kShelfDefaultBaseColor, darkening_alpha), target_color);
-  };
+  shelf_background_values->SetTargetValues(GetBackgroundColor(background_type));
+}
 
-  SkColor shelf_target_color = kShelfDefaultBaseColor;
+SkColor ShelfBackgroundAnimator::GetBackgroundColor(
+    ShelfBackgroundType background_type) const {
+  SkColor shelf_target_color = ShelfConfig::Get()->GetDefaultShelfColor();
   switch (background_type) {
-    case SHELF_BACKGROUND_DEFAULT:
-    case SHELF_BACKGROUND_APP_LIST:
-    case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
-    case SHELF_BACKGROUND_OVERVIEW:
-      shelf_target_color = darken_wallpaper(kShelfTranslucentColorDarkenAlpha);
+    case ShelfBackgroundType::kAppList:
+    case ShelfBackgroundType::kMaximizedWithAppList:
+      shelf_target_color = ShelfConfig::Get()->GetShelfWithAppListColor();
       break;
-    case SHELF_BACKGROUND_MAXIMIZED:
-      shelf_target_color = darken_wallpaper(kShelfOpaqueColorDarkenAlpha);
+    case ShelfBackgroundType::kDefaultBg:
+    case ShelfBackgroundType::kHomeLauncher:
+      shelf_target_color = ShelfConfig::Get()->GetDefaultShelfColor();
       break;
-    case SHELF_BACKGROUND_OOBE:
+    case ShelfBackgroundType::kMaximized:
+    case ShelfBackgroundType::kInApp:
+      shelf_target_color = ShelfConfig::Get()->GetMaximizedShelfColor();
+      break;
+    case ShelfBackgroundType::kOverview:
+      shelf_target_color =
+          (chromeos::switches::ShouldShowShelfHotseat() &&
+           Shell::Get()->tablet_mode_controller()->InTabletMode())
+              ? ShelfConfig::Get()->GetMaximizedShelfColor()
+              : ShelfConfig::Get()->GetDefaultShelfColor();
+      break;
+    case ShelfBackgroundType::kOobe:
       shelf_target_color = SK_ColorTRANSPARENT;
       break;
-    case SHELF_BACKGROUND_LOGIN:
+    case ShelfBackgroundType::kLogin:
       shelf_target_color = SK_ColorTRANSPARENT;
       break;
-    case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
-      shelf_target_color = login_constants::kDefaultBaseColor;
+    case ShelfBackgroundType::kLoginNonBlurredWallpaper:
+      shelf_target_color =
+          SkColorSetA(login_constants::kDefaultBaseColor,
+                      login_constants::kNonBlurredWallpaperBackgroundAlpha);
       break;
   }
-
-  shelf_background_values->SetTargetValues(SkColorSetA(
-      shelf_target_color, GetBackgroundAlphaValue(background_type)));
+  return shelf_target_color;
 }
 
 void ShelfBackgroundAnimator::SetAnimationValues(double t) {

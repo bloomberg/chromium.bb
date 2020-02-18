@@ -6,16 +6,17 @@ package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.animation.Animator;
 import android.content.Context;
-import android.support.annotation.Nullable;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 
 /**
  * Base abstract class for animating the Overlay Panel.
@@ -31,7 +32,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase {
     public static final long MAXIMUM_ANIMATION_DURATION_MS = 350;
 
     /** The minimum animation duration in milliseconds. */
-    private static final long MINIMUM_ANIMATION_DURATION_MS = Math.round(7 * 1000 / 60);
+    private static final long MINIMUM_ANIMATION_DURATION_MS = 7 * 1000 / 60;
 
     /** Average animation velocity in dps per second. */
     private static final float INITIAL_ANIMATION_VELOCITY_DP_PER_SECOND = 1750f;

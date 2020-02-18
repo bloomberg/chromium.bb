@@ -15,7 +15,8 @@ namespace blink {
 
 FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
                                           LocalFrame& frame,
-                                          bool same_document_navigation) {
+                                          bool same_document_navigation,
+                                          bool should_scroll) {
   DCHECK(frame.GetDocument());
 
   FragmentAnchor* anchor = nullptr;
@@ -24,27 +25,18 @@ FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
           frame.GetDocument());
 
   // The text fragment anchor will be created if we successfully parsed the
-  // targetText but we only do the text matching later on.
+  // text directive but we only do the text matching later on.
   bool text_fragment_anchor_created = false;
   if (text_fragment_identifiers_enabled) {
     anchor = TextFragmentAnchor::TryCreateFragmentDirective(
-        url, frame, same_document_navigation);
+        url, frame, same_document_navigation, should_scroll);
     text_fragment_anchor_created = anchor;
   }
 
-  // Count how often we see a # in the fragment (i.e. after the # delimiting
-  // the hash). We avoid counting cases with ##targetText since we're trying to
-  // determine how often this happens outside our feature so we don't want to
-  // pollute it with our own usage.
+  // Count cases of other delimiter candidates. We don't care about whether
+  // they're followed by a text directive since they've never been used with
+  // it.
   if (url.HasFragmentIdentifier()) {
-    size_t hash_pos = url.FragmentIdentifier().Find("#");
-    if (hash_pos != kNotFound) {
-      if (url.FragmentIdentifier().Find("#targetText=") == kNotFound)
-        UseCounter::Count(frame.GetDocument(), WebFeature::kFragmentDoubleHash);
-    }
-
-    // Count cases of other delimiter candidates. We don't care about whether
-    // they're followed by targetText since they've never been used with it.
     if (url.FragmentIdentifier().Find("~&~") != kNotFound) {
       UseCounter::Count(frame.GetDocument(),
                         WebFeature::kFragmentHasTildeAmpersandTilde);
@@ -69,19 +61,8 @@ FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
 
   bool element_id_anchor_found = false;
   if (!anchor) {
-    anchor = ElementFragmentAnchor::TryCreate(url, frame);
+    anchor = ElementFragmentAnchor::TryCreate(url, frame, should_scroll);
     element_id_anchor_found = anchor;
-  }
-
-  if (text_fragment_identifiers_enabled) {
-    FragmentAnchor* text_anchor =
-        TextFragmentAnchor::TryCreate(url, frame, same_document_navigation);
-    text_fragment_anchor_created |= static_cast<bool>(text_anchor);
-    // We parse the anchor to determine if we should report the UMA metric
-    // below but we should only use it if we didn't find an element-id based
-    // fragment.
-    if (!anchor)
-      anchor = text_anchor;
   }
 
   // Track how often we have a element fragment that we can't find. Only track

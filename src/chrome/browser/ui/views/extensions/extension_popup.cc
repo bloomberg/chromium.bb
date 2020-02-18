@@ -73,10 +73,6 @@ void ExtensionPopup::AddedToWidget() {
       gfx::Insets(contents_has_rounded_corners ? 0 : radius, 0)));
 }
 
-int ExtensionPopup::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
-}
-
 void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
   BubbleDialogDelegateView::OnWidgetActivationChanged(widget, active);
@@ -93,10 +89,6 @@ void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
     if (widget == anchor_widget() && active)
       CloseUnlessUnderInspection();
   }
-}
-
-bool ExtensionPopup::ShouldHaveRoundCorners() const {
-  return false;
 }
 
 #if defined(USE_AURA)
@@ -178,6 +170,9 @@ ExtensionPopup::ExtensionPopup(
                                views::BubbleBorder::SMALL_SHADOW),
       host_(std::move(host)),
       show_action_(show_action) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::set_use_round_corners(false);
+
   set_margins(gfx::Insets());
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(GetExtensionView());
@@ -191,7 +186,7 @@ ExtensionPopup::ExtensionPopup(
       this, extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       content::Source<content::BrowserContext>(host_->browser_context()));
   content::DevToolsAgentHost::AddObserver(this);
-  GetExtensionView()->GetBrowser()->tab_strip_model()->AddObserver(this);
+  host_->browser()->tab_strip_model()->AddObserver(this);
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.

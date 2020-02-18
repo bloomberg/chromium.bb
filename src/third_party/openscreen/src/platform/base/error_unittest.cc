@@ -91,6 +91,14 @@ TEST(ErrorOrTest, ErrorOrWithError) {
   EXPECT_EQ(error_or5.error().message(), "Parse Error Again");
 }
 
+TEST(ErrorOrTest, ErrorOrWithPrimitiveValue) {
+  ErrorOr<int> error_or_integer(1337);
+  EXPECT_TRUE(error_or_integer);
+  EXPECT_TRUE(error_or_integer.is_value());
+  EXPECT_FALSE(error_or_integer.is_error());
+  EXPECT_EQ(error_or_integer.value(), 1337);
+}
+
 TEST(ErrorOrTest, ErrorOrWithValue) {
   ErrorOr<Dummy> error_or1(Dummy("Winterfell"));
   ErrorOr<Dummy> error_or2(Dummy("Riverrun"));
@@ -99,13 +107,11 @@ TEST(ErrorOrTest, ErrorOrWithValue) {
   EXPECT_TRUE(error_or1.is_value());
   EXPECT_FALSE(error_or1.is_error());
   EXPECT_EQ(error_or1.value().message, "Winterfell");
-  EXPECT_EQ(error_or1.error(), Error::None());
 
   EXPECT_TRUE(error_or2);
   EXPECT_TRUE(error_or2.is_value());
   EXPECT_FALSE(error_or2.is_error());
   EXPECT_EQ(error_or2.value().message, "Riverrun");
-  EXPECT_EQ(error_or2.error(), Error::None());
 
   ErrorOr<Dummy> error_or3(std::move(error_or1));
   ErrorOr<Dummy> error_or4 = std::move(error_or2);
@@ -114,15 +120,13 @@ TEST(ErrorOrTest, ErrorOrWithValue) {
   EXPECT_TRUE(error_or3.is_value());
   EXPECT_FALSE(error_or3.is_error());
   EXPECT_EQ(error_or3.value().message, "Winterfell");
-  EXPECT_EQ(error_or3.error(), Error::None());
 
   EXPECT_TRUE(error_or4);
   EXPECT_TRUE(error_or4.is_value());
   EXPECT_FALSE(error_or4.is_error());
   EXPECT_EQ(error_or4.value().message, "Riverrun");
-  EXPECT_EQ(error_or4.error(), Error::None());
 
-  Dummy value = error_or4.MoveValue();
+  Dummy value = std::move(error_or4.value());
   EXPECT_EQ(value.message, "Riverrun");
 }
 

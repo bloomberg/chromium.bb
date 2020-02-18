@@ -6,7 +6,7 @@
 # mnissler@chromium.org, bartfab@chromium.org or atwilson@chromium.org.
 
 import sys
-import xml.dom.minidom
+from xml.dom import minidom
 
 def _GetPolicyTemplates(template_path):
   # Read list of policies in the template. eval() is used instead of a JSON
@@ -35,8 +35,42 @@ def _CheckPolicyTemplatesSyntax(input_api, output_api):
       device_policy_proto_path = input_api.os_path.join(
           local_path, '../proto/chrome_device_policy.proto')
       args = ["--device_policy_proto_path=" + device_policy_proto_path]
+
+      root = input_api.change.RepositoryRoot()
+
+      current_version = None
+      original_file_contents = None
+
+      # Check if there is a tag that allows us to bypass compatibility checks.
+      # This can be used in situations where there is a bug in the validation
+      # code or if a policy change needs to urgently be submitted.
+      if not input_api.change.tags.get('BYPASS_POLICY_COMPATIBILITY_CHECK'):
+        # Get the current version from the VERSION file so that we can check
+        # which policies are un-released and thus can be changed at will.
+        try:
+          version_path = input_api.os_path.join(
+          root, 'chrome', 'VERSION')
+          with open(version_path, "rb") as f:
+            current_version = int(f.readline().split("=")[1])
+            print ('Checking policies against current version: ' +
+              current_version)
+        except:
+          pass
+
+        # Get the original file contents of the policy file so that we can check
+        # the compatibility of template changes in it
+        template_path = input_api.os_path.join(
+          root, 'components', 'policy', 'resources', 'policy_templates.json')
+        affected_files = input_api.change.AffectedFiles()
+        template_affected_file = next(iter(f \
+          for f in affected_files if f.AbsoluteLocalPath() == template_path))
+        if template_affected_file is not None:
+          original_file_contents = \
+            '\n'.join(template_affected_file.OldContents())
+
       checker = syntax_check_policy_template_json.PolicyTemplateChecker()
-      if checker.Run(args, filepath) > 0:
+      if checker.Run(args, filepath,
+        original_file_contents, current_version) > 0:
         return [output_api.PresubmitError('Syntax error(s) in file:',
                                           [filepath])]
     finally:
@@ -77,7 +111,7 @@ def _CheckPolicyHistograms(input_api, output_api, policies):
   histograms = input_api.os_path.join(
       root, 'tools', 'metrics', 'histograms', 'enums.xml')
   with open(histograms) as f:
-    tree = xml.dom.minidom.parseString(f.read())
+    tree = minidom.parseString(f.read())
   enums = (tree.getElementsByTagName('histogram-configuration')[0]
                .getElementsByTagName('enums')[0]
                .getElementsByTagName('enum'))
@@ -117,7 +151,7 @@ def _CheckPolicyAtomicGroupsHistograms(input_api, output_api, atomic_groups):
   histograms = input_api.os_path.join(
       root, 'tools', 'metrics', 'histograms', 'enums.xml')
   with open(histograms) as f:
-    tree = xml.dom.minidom.parseString(f.read())
+    tree = minidom.parseString(f.read())
   enums = (tree.getElementsByTagName('histogram-configuration')[0]
                .getElementsByTagName('enums')[0]
                .getElementsByTagName('enum'))
@@ -153,11 +187,28 @@ def _CheckPolicyAtomicGroupsHistograms(input_api, output_api, atomic_groups):
     results.append(output_api.PresubmitError(error_extra % atomic_group_id))
   return results
 
+def _CheckMissingPlaceholders(input_api, output_api, template_path):
+  with open(template_path) as f:
+    template_data = eval(f.read(), {})
+
+  results = []
+  items = template_data['policy_definitions'] \
+          + [msg for msg in template_data['messages'].values()]
+  for item in items:
+    for key in ['desc', 'text']:
+      if not key in item:
+        continue
+      node = minidom.parseString('<msg>%s</msg>' % item[key]).childNodes[0]
+      for child in node.childNodes:
+        if child.nodeType == minidom.Node.TEXT_NODE and '$' in child.data:
+          warning = ('Character \'$\' found outside of a placeholder in "%s". '
+                     'Should it be in a placeholder ?') % item[key]
+          results.append(output_api.PresubmitPromptWarning(warning))
+  return results
+
 
 def _CommonChecks(input_api, output_api):
   results = []
-  results.extend(_CheckPolicyTemplatesSyntax(input_api, output_api))
-
   root = input_api.change.RepositoryRoot()
   template_path = template_path = input_api.os_path.join(
       root, 'components', 'policy', 'resources', 'policy_templates.json')
@@ -166,6 +217,8 @@ def _CommonChecks(input_api, output_api):
       root, 'chrome', 'test', 'data', 'policy', 'policy_test_cases.json')
   affected_files = input_api.change.AffectedFiles()
 
+  results.extend(_CheckMissingPlaceholders(input_api, output_api,
+      template_path))
   template_changed = any(f.AbsoluteLocalPath() == template_path \
     for f in affected_files)
   tests_changed = any(f.AbsoluteLocalPath() == test_cases_path \
@@ -179,6 +232,7 @@ def _CommonChecks(input_api, output_api):
       return results
     results.extend(_CheckPolicyTestCases(input_api, output_api, policies))
     if template_changed:
+      results.extend(_CheckPolicyTemplatesSyntax(input_api, output_api))
       results.extend(_CheckPolicyHistograms(input_api, output_api, policies))
 
   return results

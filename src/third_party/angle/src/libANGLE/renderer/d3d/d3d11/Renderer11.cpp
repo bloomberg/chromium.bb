@@ -62,7 +62,7 @@
 #include "libANGLE/renderer/renderer_utils.h"
 #include "libANGLE/trace.h"
 
-#ifdef ANGLE_ENABLE_WINDOWS_STORE
+#ifdef ANGLE_ENABLE_WINDOWS_UWP
 #    include "libANGLE/renderer/d3d/d3d11/winrt/NativeWindow11WinRT.h"
 #else
 #    include "libANGLE/renderer/d3d/d3d11/converged/CompositorNativeWindow11.h"
@@ -402,6 +402,7 @@ Renderer11::Renderer11(egl::Display *display)
     mRenderer11DeviceCaps.B5G5R5A1support                        = 0;
 
     mD3d11Module          = nullptr;
+    mD3d12Module          = nullptr;
     mDxgiModule           = nullptr;
     mDCompModule          = nullptr;
     mCreatedWithDeviceEXT = false;
@@ -513,7 +514,7 @@ egl::Error Renderer11::initialize()
 
     ANGLE_TRY(initializeD3DDevice());
 
-#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
+#if !defined(ANGLE_ENABLE_WINDOWS_UWP)
 #    if !ANGLE_SKIP_DXGI_1_2_CHECK
     {
         ANGLE_TRACE_EVENT0("gpu.angle", "Renderer11::initialize (DXGICheck)");
@@ -668,35 +669,119 @@ HRESULT Renderer11::callD3D11CreateDevice(PFN_D3D11_CREATE_DEVICE createDevice, 
         D3D11_SDK_VERSION, &mDevice, &(mRenderer11DeviceCaps.featureLevel), &mDeviceContext);
 }
 
+HRESULT Renderer11::callD3D11On12CreateDevice(PFN_D3D12_CREATE_DEVICE createDevice12,
+                                              PFN_D3D11ON12_CREATE_DEVICE createDevice11on12,
+                                              bool debug)
+{
+    angle::ComPtr<IDXGIFactory4> factory;
+    HRESULT result = CreateDXGIFactory1(IID_PPV_ARGS(&factory));
+    if (FAILED(result))
+    {
+        return result;
+    }
+
+    if (mRequestedDriverType == D3D_DRIVER_TYPE_WARP)
+    {
+        angle::ComPtr<IDXGIAdapter> warpAdapter;
+        result = factory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter));
+        if (SUCCEEDED(result))
+        {
+            result = createDevice12(warpAdapter.Get(), mAvailableFeatureLevels[0],
+                                    IID_PPV_ARGS(&mDevice12));
+        }
+    }
+    else
+    {
+        // Passing nullptr into pAdapter chooses the default adapter which will be the hardware
+        // adapter if it exists.
+        result = createDevice12(nullptr, mAvailableFeatureLevels[0], IID_PPV_ARGS(&mDevice12));
+    }
+
+    if (SUCCEEDED(result))
+    {
+        D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+        queueDesc.Flags                    = D3D12_COMMAND_QUEUE_FLAG_NONE;
+        queueDesc.Type                     = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        result = mDevice12->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue));
+    }
+
+    if (SUCCEEDED(result))
+    {
+        result = createDevice11on12(
+            mDevice12.Get(), debug ? D3D11_CREATE_DEVICE_DEBUG : 0, mAvailableFeatureLevels.data(),
+            static_cast<unsigned int>(mAvailableFeatureLevels.size()),
+            reinterpret_cast<IUnknown **>(mCommandQueue.GetAddressOf()), 1 /* NumQueues */,
+            0 /* NodeMask */, &mDevice, &mDeviceContext, &(mRenderer11DeviceCaps.featureLevel));
+    }
+
+    return result;
+}
+
 egl::Error Renderer11::initializeD3DDevice()
 {
-    HRESULT result = S_OK;
+    HRESULT result             = S_OK;
+    bool createD3D11on12Device = false;
 
     if (!mCreatedWithDeviceEXT)
     {
-#if !defined(ANGLE_ENABLE_WINDOWS_STORE)
-        PFN_D3D11_CREATE_DEVICE D3D11CreateDevice = nullptr;
+#if !defined(ANGLE_ENABLE_WINDOWS_UWP)
+        PFN_D3D11_CREATE_DEVICE D3D11CreateDevice         = nullptr;
+        PFN_D3D12_CREATE_DEVICE D3D12CreateDevice         = nullptr;
+        PFN_D3D11ON12_CREATE_DEVICE D3D11On12CreateDevice = nullptr;
         {
             ANGLE_TRACE_EVENT0("gpu.angle", "Renderer11::initialize (Load DLLs)");
             mDxgiModule  = LoadLibrary(TEXT("dxgi.dll"));
             mD3d11Module = LoadLibrary(TEXT("d3d11.dll"));
             mDCompModule = LoadLibrary(TEXT("dcomp.dll"));
 
-            if (mD3d11Module == nullptr || mDxgiModule == nullptr)
-            {
-                return egl::EglNotInitialized(D3D11_INIT_MISSING_DEP)
-                       << "Could not load D3D11 or DXGI library.";
-            }
-
             // create the D3D11 device
             ASSERT(mDevice == nullptr);
-            D3D11CreateDevice = reinterpret_cast<PFN_D3D11_CREATE_DEVICE>(
-                GetProcAddress(mD3d11Module, "D3D11CreateDevice"));
 
-            if (D3D11CreateDevice == nullptr)
+            const egl::AttributeMap &attributes = mDisplay->getAttributeMap();
+            createD3D11on12Device =
+                attributes.get(EGL_PLATFORM_ANGLE_D3D11ON12_ANGLE, EGL_FALSE) == EGL_TRUE;
+
+            if (createD3D11on12Device)
             {
-                return egl::EglNotInitialized(D3D11_INIT_MISSING_DEP)
-                       << "Could not retrieve D3D11CreateDevice address.";
+                mD3d12Module = LoadLibrary(TEXT("d3d12.dll"));
+                if (mD3d12Module == nullptr)
+                {
+                    return egl::EglNotInitialized(D3D11_INIT_MISSING_DEP)
+                           << "Could not load D3D12 library.";
+                }
+
+                D3D12CreateDevice = reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(
+                    GetProcAddress(mD3d12Module, "D3D12CreateDevice"));
+                if (D3D12CreateDevice == nullptr)
+                {
+                    return egl::EglNotInitialized(D3D11_INIT_MISSING_DEP)
+                           << "Could not retrieve D3D12CreateDevice address.";
+                }
+
+                D3D11On12CreateDevice = reinterpret_cast<PFN_D3D11ON12_CREATE_DEVICE>(
+                    GetProcAddress(mD3d11Module, "D3D11On12CreateDevice"));
+                if (D3D11On12CreateDevice == nullptr)
+                {
+                    return egl::EglNotInitialized(D3D11_INIT_MISSING_DEP)
+                           << "Could not retrieve D3D11On12CreateDevice address.";
+                }
+            }
+            else
+            {
+                if (mD3d11Module == nullptr || mDxgiModule == nullptr)
+                {
+                    return egl::EglNotInitialized(D3D11_INIT_MISSING_DEP)
+                           << "Could not load D3D11 or DXGI library.";
+                }
+
+                D3D11CreateDevice = reinterpret_cast<PFN_D3D11_CREATE_DEVICE>(
+                    GetProcAddress(mD3d11Module, "D3D11CreateDevice"));
+
+                if (D3D11CreateDevice == nullptr)
+                {
+                    return egl::EglNotInitialized(D3D11_INIT_MISSING_DEP)
+                           << "Could not retrieve D3D11CreateDevice address.";
+                }
             }
         }
 #endif
@@ -704,7 +789,14 @@ egl::Error Renderer11::initializeD3DDevice()
         if (mCreateDebugDevice)
         {
             ANGLE_TRACE_EVENT0("gpu.angle", "D3D11CreateDevice (Debug)");
-            result = callD3D11CreateDevice(D3D11CreateDevice, true);
+            if (createD3D11on12Device)
+            {
+                result = callD3D11On12CreateDevice(D3D12CreateDevice, D3D11On12CreateDevice, true);
+            }
+            else
+            {
+                result = callD3D11CreateDevice(D3D11CreateDevice, true);
+            }
 
             if (result == E_INVALIDARG && mAvailableFeatureLevels.size() > 1u &&
                 mAvailableFeatureLevels[0] == D3D_FEATURE_LEVEL_11_1)
@@ -713,7 +805,15 @@ egl::Error Renderer11::initializeD3DDevice()
                 // Try again without passing D3D_FEATURE_LEVEL_11_1 in case we have other feature
                 // levels to fall back on.
                 mAvailableFeatureLevels.erase(mAvailableFeatureLevels.begin());
-                result = callD3D11CreateDevice(D3D11CreateDevice, true);
+                if (createD3D11on12Device)
+                {
+                    result =
+                        callD3D11On12CreateDevice(D3D12CreateDevice, D3D11On12CreateDevice, true);
+                }
+                else
+                {
+                    result = callD3D11CreateDevice(D3D11CreateDevice, true);
+                }
             }
 
             if (!mDevice || FAILED(result))
@@ -725,8 +825,14 @@ egl::Error Renderer11::initializeD3DDevice()
         if (!mDevice || FAILED(result))
         {
             ANGLE_TRACE_EVENT0("gpu.angle", "D3D11CreateDevice");
-
-            result = callD3D11CreateDevice(D3D11CreateDevice, false);
+            if (createD3D11on12Device)
+            {
+                result = callD3D11On12CreateDevice(D3D12CreateDevice, D3D11On12CreateDevice, false);
+            }
+            else
+            {
+                result = callD3D11CreateDevice(D3D11CreateDevice, false);
+            }
 
             if (result == E_INVALIDARG && mAvailableFeatureLevels.size() > 1u &&
                 mAvailableFeatureLevels[0] == D3D_FEATURE_LEVEL_11_1)
@@ -735,7 +841,15 @@ egl::Error Renderer11::initializeD3DDevice()
                 // Try again without passing D3D_FEATURE_LEVEL_11_1 in case we have other feature
                 // levels to fall back on.
                 mAvailableFeatureLevels.erase(mAvailableFeatureLevels.begin());
-                result = callD3D11CreateDevice(D3D11CreateDevice, false);
+                if (createD3D11on12Device)
+                {
+                    result =
+                        callD3D11On12CreateDevice(D3D12CreateDevice, D3D11On12CreateDevice, false);
+                }
+                else
+                {
+                    result = callD3D11CreateDevice(D3D11CreateDevice, false);
+                }
             }
 
             // Cleanup done by destructor
@@ -755,7 +869,7 @@ egl::Error Renderer11::initializeD3DDevice()
 
         // We should use the inputted D3D11 device instead
         void *device = nullptr;
-        ANGLE_TRY(deviceD3D->getDevice(&device));
+        ANGLE_TRY(deviceD3D->getAttribute(mDisplay, EGL_D3D11_DEVICE_ANGLE, &device));
 
         ID3D11Device *d3dDevice = static_cast<ID3D11Device *>(device);
         if (FAILED(d3dDevice->GetDeviceRemovedReason()))
@@ -1131,8 +1245,8 @@ void Renderer11::generateDisplayExtensions(egl::DisplayExtensions *outExtensions
     // Contexts are virtualized so textures can be shared globally
     outExtensions->displayTextureShareGroup = true;
 
-    // getSyncValues requires direct composition.
-    outExtensions->getSyncValues = outExtensions->directComposition;
+    // syncControlCHROMIUM requires direct composition.
+    outExtensions->syncControlCHROMIUM = outExtensions->directComposition;
 
     // D3D11 can be used without a swap chain
     outExtensions->surfacelessContext = true;
@@ -1140,11 +1254,13 @@ void Renderer11::generateDisplayExtensions(egl::DisplayExtensions *outExtensions
     // All D3D feature levels support robust resource init
     outExtensions->robustResourceInitialization = true;
 
+#if !defined(ANGLE_ENABLE_WINDOWS_UWP)
     // Compositor Native Window capabilies require WinVer >= 1803
     if (CompositorNativeWindow11::IsSupportedWinRelease())
     {
         outExtensions->windowsUIComposition = true;
     }
+#endif
 }
 
 angle::Result Renderer11::flush(Context11 *context11)
@@ -1202,7 +1318,7 @@ bool Renderer11::isValidNativeWindow(EGLNativeWindowType window) const
     static_assert(sizeof(ABI::Windows::UI::Composition::SpriteVisual *) == sizeof(HWND),
                   "Pointer size must match Window Handle size");
 
-#ifdef ANGLE_ENABLE_WINDOWS_STORE
+#if defined(ANGLE_ENABLE_WINDOWS_UWP)
     return NativeWindow11WinRT::IsValidNativeWindow(window);
 #else
     if (NativeWindow11Win32::IsValidNativeWindow(window))
@@ -1218,6 +1334,9 @@ NativeWindowD3D *Renderer11::createNativeWindow(EGLNativeWindowType window,
                                                 const egl::Config *config,
                                                 const egl::AttributeMap &attribs) const
 {
+#if defined(ANGLE_ENABLE_WINDOWS_UWP)
+    return new NativeWindow11WinRT(window, config->alphaSize > 0);
+#else
     auto useWinUiComp = window != nullptr && !NativeWindow11Win32::IsValidNativeWindow(window);
 
     if (useWinUiComp)
@@ -1226,22 +1345,20 @@ NativeWindowD3D *Renderer11::createNativeWindow(EGLNativeWindowType window,
     }
     else
     {
-#ifdef ANGLE_ENABLE_WINDOWS_STORE
-        UNUSED_VARIABLE(attribs);
-        return new NativeWindow11WinRT(window, config->alphaSize > 0);
-#else
         return new NativeWindow11Win32(
             window, config->alphaSize > 0,
             attribs.get(EGL_DIRECT_COMPOSITION_ANGLE, EGL_FALSE) == EGL_TRUE);
-#endif
     }
+#endif
 }
 
 egl::Error Renderer11::getD3DTextureInfo(const egl::Config *configuration,
                                          IUnknown *texture,
+                                         const egl::AttributeMap &attribs,
                                          EGLint *width,
                                          EGLint *height,
-                                         EGLint *samples,
+                                         GLsizei *samples,
+                                         gl::Format *glFormat,
                                          const angle::Format **angleFormat) const
 {
     angle::ComPtr<ID3D11Texture2D> d3dTexture =
@@ -1258,7 +1375,7 @@ egl::Error Renderer11::getD3DTextureInfo(const egl::Config *configuration,
         return egl::EglBadParameter() << "Texture's device does not match.";
     }
 
-    D3D11_TEXTURE2D_DESC desc = {0};
+    D3D11_TEXTURE2D_DESC desc = {};
     d3dTexture->GetDesc(&desc);
 
     if (width)
@@ -1270,7 +1387,7 @@ egl::Error Renderer11::getD3DTextureInfo(const egl::Config *configuration,
         *height = static_cast<EGLint>(desc.Height);
     }
 
-    EGLint sampleCount = static_cast<EGLint>(desc.SampleDesc.Count);
+    GLsizei sampleCount = static_cast<GLsizei>(desc.SampleDesc.Count);
     if (configuration && (configuration->samples != sampleCount))
     {
         // Both the texture and EGL config sample count may not be the same when multi-sampling
@@ -1304,12 +1421,51 @@ egl::Error Renderer11::getD3DTextureInfo(const egl::Config *configuration,
 
         default:
             return egl::EglBadParameter()
-                   << "Unknown client buffer texture format: " << desc.Format;
+                   << "Invalid client buffer texture format: " << desc.Format;
+    }
+
+    const angle::Format *textureAngleFormat = &d3d11_angle::GetFormat(desc.Format);
+    ASSERT(textureAngleFormat);
+
+    GLenum sizedInternalFormat = textureAngleFormat->glInternalFormat;
+
+    if (attribs.contains(EGL_TEXTURE_INTERNAL_FORMAT_ANGLE))
+    {
+        const GLenum internalFormat =
+            static_cast<GLenum>(attribs.get(EGL_TEXTURE_INTERNAL_FORMAT_ANGLE));
+        switch (internalFormat)
+        {
+            case GL_RGBA:
+            case GL_BGRA_EXT:
+            case GL_RGB:
+                break;
+            default:
+                return egl::EglBadParameter()
+                       << "Invalid client buffer texture internal format: " << std::hex
+                       << internalFormat;
+        }
+
+        const GLenum type = gl::GetSizedInternalFormatInfo(sizedInternalFormat).type;
+
+        const auto format = gl::Format(internalFormat, type);
+        if (!format.valid())
+        {
+            return egl::EglBadParameter()
+                   << "Invalid client buffer texture internal format: " << std::hex
+                   << internalFormat;
+        }
+
+        sizedInternalFormat = format.info->sizedInternalFormat;
+    }
+
+    if (glFormat)
+    {
+        *glFormat = gl::Format(sizedInternalFormat);
     }
 
     if (angleFormat)
     {
-        *angleFormat = &d3d11_angle::GetFormat(desc.Format);
+        *angleFormat = textureAngleFormat;
     }
 
     return egl::NoError();
@@ -1341,7 +1497,7 @@ egl::Error Renderer11::validateShareHandle(const egl::Config *config,
                << "Failed to query ID3D11Texture2D object from share handle.";
     }
 
-    D3D11_TEXTURE2D_DESC desc = {0};
+    D3D11_TEXTURE2D_DESC desc = {};
     texture2D->GetDesc(&desc);
     SafeRelease(texture2D);
 
@@ -1435,7 +1591,8 @@ angle::Result Renderer11::drawArrays(const gl::Context *context,
                                      gl::PrimitiveMode mode,
                                      GLint firstVertex,
                                      GLsizei vertexCount,
-                                     GLsizei instanceCount)
+                                     GLsizei instanceCount,
+                                     GLuint baseInstance)
 {
     if (mStateManager.getCullEverything())
     {
@@ -1479,7 +1636,7 @@ angle::Result Renderer11::drawArrays(const gl::Context *context,
                 // D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST and DrawIndexedInstanced is called instead.
                 if (adjustedInstanceCount == 0)
                 {
-                    mDeviceContext->DrawIndexedInstanced(6, clampedVertexCount, 0, 0, 0);
+                    mDeviceContext->DrawIndexedInstanced(6, clampedVertexCount, 0, 0, baseInstance);
                     return angle::Result::Continue;
                 }
 
@@ -1493,7 +1650,7 @@ angle::Result Renderer11::drawArrays(const gl::Context *context,
                 {
                     ANGLE_TRY(mStateManager.updateVertexOffsetsForPointSpritesEmulation(
                         context, firstVertex, i));
-                    mDeviceContext->DrawIndexedInstanced(6, clampedVertexCount, 0, 0, 0);
+                    mDeviceContext->DrawIndexedInstanced(6, clampedVertexCount, 0, 0, baseInstance);
                 }
 
                 // This required by updateVertexOffsets... above but is outside of the loop for
@@ -1513,7 +1670,7 @@ angle::Result Renderer11::drawArrays(const gl::Context *context,
     }
     else
     {
-        mDeviceContext->DrawInstanced(clampedVertexCount, adjustedInstanceCount, 0, 0);
+        mDeviceContext->DrawInstanced(clampedVertexCount, adjustedInstanceCount, 0, baseInstance);
     }
     return angle::Result::Continue;
 }
@@ -1927,6 +2084,15 @@ void Renderer11::release()
         mDCompModule = nullptr;
     }
 
+    mDevice12.Reset();
+    mCommandQueue.Reset();
+
+    if (mD3d12Module)
+    {
+        FreeLibrary(mD3d12Module);
+        mD3d12Module = nullptr;
+    }
+
     mCompiler.release();
 
     mSupportsShareHandles.reset();
@@ -1965,7 +2131,7 @@ std::string Renderer11::getRendererDescription() const
 DeviceIdentifier Renderer11::getAdapterIdentifier() const
 {
     // Don't use the AdapterLuid here, since that doesn't persist across reboot.
-    DeviceIdentifier deviceIdentifier = {0};
+    DeviceIdentifier deviceIdentifier = {};
     deviceIdentifier.VendorId         = mAdapterDescription.VendorId;
     deviceIdentifier.DeviceId         = mAdapterDescription.DeviceId;
     deviceIdentifier.SubSysId         = mAdapterDescription.SubSysId;
@@ -2067,14 +2233,14 @@ bool Renderer11::getShareHandleSupport() const
 
     if (deviceType == d3d11::ANGLE_D3D11_DEVICE_TYPE_WARP)
     {
-#ifndef ANGLE_ENABLE_WINDOWS_STORE
+#if !defined(ANGLE_ENABLE_WINDOWS_UWP)
         if (!IsWindows8OrGreater())
         {
             // WARP on Windows 7 doesn't support shared handles
             mSupportsShareHandles = false;
             return false;
         }
-#endif  // ANGLE_ENABLE_WINDOWS_STORE
+#endif  // !defined(ANGLE_ENABLE_WINDOWS_UWP)
 
         // WARP on Windows 8.0+ supports shared handles when shared with another WARP device
         // TODO: allow applications to query for HARDWARE or WARP-specific share handles,
@@ -2185,8 +2351,8 @@ angle::Result Renderer11::copyImageInternal(const gl::Context *context,
     {
         TextureHelper11 tex;
         ANGLE_TRY(resolveMultisampledTexture(context, sourceRenderTarget,
-                                             colorAttachment->getDepthSize(),
-                                             colorAttachment->getStencilSize(), &tex));
+                                             colorAttachment->getDepthSize() > 0,
+                                             colorAttachment->getStencilSize() > 0, &tex));
 
         D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
         viewDesc.Format                    = sourceRenderTarget->getFormatSet().srvFormat;
@@ -2537,7 +2703,7 @@ angle::Result Renderer11::createRenderTarget(const gl::Context *context,
         desc.ArraySize          = 1;
         desc.Format             = formatInfo.texFormat;
         desc.SampleDesc.Count   = (supportedSamples == 0) ? 1 : supportedSamples;
-        desc.SampleDesc.Quality = 0;
+        desc.SampleDesc.Quality = (supportedSamples == 0) ? 0 : D3D11_STANDARD_MULTISAMPLE_PATTERN;
         desc.Usage              = D3D11_USAGE_DEFAULT;
         desc.CPUAccessFlags     = 0;
         desc.MiscFlags          = 0;
@@ -2699,7 +2865,7 @@ angle::Result Renderer11::loadExecutable(d3d::Context *context,
 
                 for (const auto &streamOutVarying : streamOutVaryings)
                 {
-                    D3D11_SO_DECLARATION_ENTRY entry = {0};
+                    D3D11_SO_DECLARATION_ENTRY entry = {};
                     entry.Stream                     = 0;
                     entry.SemanticName               = streamOutVarying.semanticName.c_str();
                     entry.SemanticIndex              = streamOutVarying.semanticIndex;
@@ -2942,7 +3108,7 @@ ExternalImageSiblingImpl *Renderer11::createExternalImageSibling(const gl::Conte
     switch (target)
     {
         case EGL_D3D11_TEXTURE_ANGLE:
-            return new ExternalImageSiblingImpl11(this, buffer);
+            return new ExternalImageSiblingImpl11(this, buffer, attribs);
 
         default:
             UNREACHABLE();
@@ -3392,7 +3558,8 @@ angle::Result Renderer11::blitRenderbufferRect(const gl::Context *context,
     bool partialDSBlit =
         (nativeFormat.depthBits > 0 && depthBlit) != (nativeFormat.stencilBits > 0 && stencilBlit);
 
-    if (readRenderTarget11->getFormatSet().formatID ==
+    if (drawRenderTarget->getSamples() == readRenderTarget->getSamples() &&
+        readRenderTarget11->getFormatSet().formatID ==
             drawRenderTarget11->getFormatSet().formatID &&
         !stretchRequired && !outOfBounds && !reversalRequired && !partialDSBlit &&
         !colorMaskingNeeded && (!(depthBlit || stencilBlit) || wholeBufferCopy))
@@ -3667,13 +3834,16 @@ void Renderer11::generateCaps(gl::Caps *outCaps,
                               gl::Extensions *outExtensions,
                               gl::Limitations *outLimitations) const
 {
-    d3d11_gl::GenerateCaps(mDevice, mDeviceContext, mRenderer11DeviceCaps, getFeatures(), outCaps,
-                           outTextureCaps, outExtensions, outLimitations);
+    d3d11_gl::GenerateCaps(mDevice, mDeviceContext, mRenderer11DeviceCaps, getFeatures(),
+                           mDescription, outCaps, outTextureCaps, outExtensions, outLimitations);
 }
 
 void Renderer11::initializeFeatures(angle::FeaturesD3D *features) const
 {
-    d3d11::InitializeFeatures(mRenderer11DeviceCaps, mAdapterDescription, features);
+    if (!mDisplay->getState().featuresAllDisabled)
+    {
+        d3d11::InitializeFeatures(mRenderer11DeviceCaps, mAdapterDescription, features);
+    }
     OverrideFeaturesWithDisplayState(features, mDisplay->getState());
 }
 

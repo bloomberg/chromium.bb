@@ -15,7 +15,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/small_map.h"
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
@@ -24,13 +23,13 @@
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display/external_use_client.h"
-#include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/resource_fence.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -75,6 +74,9 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
                           bool enable_shared_images = true);
   ~DisplayResourceProvider() override;
 
+  DisplayResourceProvider(const DisplayResourceProvider&) = delete;
+  DisplayResourceProvider& operator=(const DisplayResourceProvider&) = delete;
+
   bool IsSoftware() const { return mode_ == kSoftware; }
   void DidLoseContextProvider() { lost_context_provider_ = true; }
   size_t num_resources() const { return resources_.size(); }
@@ -83,7 +85,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-#if defined(OS_ANDROID)
   // Send an overlay promotion hint to all resources that requested it via
   // |requestor_set|.  |promotable_hints| contains all the resources that should
   // be told that they're promotable.  Others will be told that they're not.
@@ -94,15 +95,19 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // to the requestor; the resource might be overlayable except that nobody
   // tried to do it.
   void SendPromotionHints(
-      const OverlayCandidateList::PromotionHintInfoMap& promotion_hints,
+      const std::map<ResourceId, gfx::RectF>& promotion_hints,
       const ResourceIdSet& requestor_set);
 
+#if defined(OS_ANDROID)
   // Indicates if this resource is backed by an Android SurfaceTexture, and thus
   // can't really be promoted to an overlay.
   bool IsBackedBySurfaceTexture(ResourceId id);
 
   // Return the number of resources that request promotion hints.
   size_t CountPromotionHintRequestsForTesting();
+
+  // This should be called after WaitSyncToken in GLRenderer.
+  void InitializePromotionHintRequest(ResourceId id);
 #endif
 
   // Indicates if this resource wants to receive promotion hints.
@@ -134,6 +139,9 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
                      ResourceId resource_id);
     ~ScopedReadLockGL();
 
+    ScopedReadLockGL(const ScopedReadLockGL&) = delete;
+    ScopedReadLockGL& operator=(const ScopedReadLockGL&) = delete;
+
     GLuint texture_id() const { return texture_id_; }
     GLenum target() const { return target_; }
     const gfx::Size& size() const { return size_; }
@@ -147,8 +155,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     GLenum target_ = GL_TEXTURE_2D;
     gfx::Size size_;
     gfx::ColorSpace color_space_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
   };
 
   class VIZ_SERVICE_EXPORT ScopedSamplerGL {
@@ -162,6 +168,9 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
                     GLenum filter);
     ~ScopedSamplerGL();
 
+    ScopedSamplerGL(const ScopedSamplerGL&) = delete;
+    ScopedSamplerGL& operator=(const ScopedSamplerGL&) = delete;
+
     GLuint texture_id() const { return resource_lock_.texture_id(); }
     GLenum target() const { return target_; }
     const gfx::ColorSpace& color_space() const {
@@ -172,8 +181,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     const ScopedReadLockGL resource_lock_;
     const GLenum unit_;
     const GLenum target_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedSamplerGL);
   };
 
   class VIZ_SERVICE_EXPORT ScopedReadLockSkImage {
@@ -184,6 +191,10 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
                           GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin);
     ~ScopedReadLockSkImage();
 
+    ScopedReadLockSkImage(const ScopedReadLockSkImage&) = delete;
+    ScopedReadLockSkImage& operator=(const ScopedReadLockSkImage& other) =
+        delete;
+
     const SkImage* sk_image() const { return sk_image_.get(); }
     sk_sp<SkImage> TakeSkImage() { return std::move(sk_image_); }
 
@@ -193,8 +204,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     DisplayResourceProvider* const resource_provider_;
     const ResourceId resource_id_;
     sk_sp<SkImage> sk_image_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSkImage);
   };
 
  private:
@@ -202,20 +211,51 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   struct ChildResource;
 
  public:
+  // Lock the resource to make sure the shared image is alive when accessing
+  // SharedImage Mailbox.
+  class VIZ_SERVICE_EXPORT ScopedReadLockSharedImage {
+   public:
+    ScopedReadLockSharedImage(DisplayResourceProvider* resource_provider,
+                              ResourceId resource_id);
+    ~ScopedReadLockSharedImage();
+
+    ScopedReadLockSharedImage(ScopedReadLockSharedImage&& other);
+    ScopedReadLockSharedImage& operator=(ScopedReadLockSharedImage&& other);
+
+    const gpu::Mailbox& mailbox() const {
+      DCHECK(resource_);
+      return resource_->transferable.mailbox_holder.mailbox;
+    }
+    const gpu::SyncToken& sync_token() const {
+      DCHECK(resource_);
+      return resource_->sync_token();
+    }
+
+   private:
+    DisplayResourceProvider* resource_provider_;
+    ResourceId resource_id_;
+    ChildResource* resource_;
+  };
+
   // Maintains set of resources locked for external use by SkiaRenderer.
   class VIZ_SERVICE_EXPORT LockSetForExternalUse {
    public:
     // There should be at most one instance of this class per
     // |resource_provider|. Both |resource_provider| and |client| outlive this
     // class.
-    LockSetForExternalUse(DisplayResourceProvider* resource_provider,
+    LockSetForExternalUse(DisplayResourceProvider* resourcqe_provider,
                           ExternalUseClient* client);
     ~LockSetForExternalUse();
+
+    LockSetForExternalUse(const LockSetForExternalUse&) = delete;
+    LockSetForExternalUse& operator=(const LockSetForExternalUse& other) =
+        delete;
 
     // Lock a resource for external use. The return value was created by
     // |client| at some point in the past.
     ExternalUseClient::ImageContext* LockResource(ResourceId resource_id,
-                                                  bool is_video_plane = false);
+                                                  bool is_video_plane = false,
+                                                  float sdr_scale_factor = 1.f);
 
     // Unlock all locked resources with a |sync_token|.  The |sync_token| should
     // be waited on before reusing the resource's backing to ensure that any
@@ -226,8 +266,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
    private:
     DisplayResourceProvider* const resource_provider_;
     std::vector<std::pair<ResourceId, ChildResource*>> resources_;
-
-    DISALLOW_COPY_AND_ASSIGN(LockSetForExternalUse);
   };
 
   // All resources that are returned to children while an instance of this
@@ -240,13 +278,14 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
    private:
     DisplayResourceProvider* const resource_provider_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedBatchReturnResources);
   };
 
   class VIZ_SERVICE_EXPORT SynchronousFence : public ResourceFence {
    public:
     explicit SynchronousFence(gpu::gles2::GLES2Interface* gl);
+
+    SynchronousFence(const SynchronousFence&) = delete;
+    SynchronousFence& operator=(const SynchronousFence&) = delete;
 
     // ResourceFence implementation.
     void Set() override;
@@ -262,8 +301,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
     gpu::gles2::GLES2Interface* gl_;
     bool has_synchronized_;
-
-    DISALLOW_COPY_AND_ASSIGN(SynchronousFence);
   };
 
   // Sets the current read fence. If a resource is locked for read
@@ -375,6 +412,11 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
       return synchronization_state_ == NEEDS_WAIT;
     }
 
+    bool InUse() const {
+      return lock_for_read_count > 0 || locked_for_external_use ||
+             lock_for_overlay_count > 0;
+    }
+
     void SetLocallyUsed();
     void SetSynchronized();
     void UpdateSyncToken(const gpu::SyncToken& sync_token);
@@ -399,6 +441,8 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // When true, the resource is currently being used externally. This is a
     // parallel counter to |lock_for_read_count| which can only go to 1.
     bool locked_for_external_use = false;
+    // The number of active users using this resource as overlay content.
+    int lock_for_overlay_count = 0;
 
     // When the resource should be deleted until it is actually reaped.
     bool marked_for_deletion = false;
@@ -514,8 +558,6 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 #endif
 
   bool enable_shared_images_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayResourceProvider);
 };
 
 }  // namespace viz

@@ -16,9 +16,9 @@
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/data_url_loader_factory.h"
-#include "content/browser/file_url_loader_factory.h"
-#include "content/browser/fileapi/file_system_url_loader_factory.h"
+#include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
+#include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
@@ -37,9 +37,11 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_isolation_key.h"
 #include "services/network/loader_util.h"
@@ -96,14 +98,14 @@ void WorkerScriptFetchInitiator::Start(
   // chrome-extension:// URLs. One factory bundle is consumed by the browser
   // for WorkerScriptLoaderFactory, and one is sent to the renderer for
   // subresource loading.
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       factory_bundle_for_browser = CreateFactoryBundle(
-          worker_process_id, storage_partition, storage_domain,
-          constructor_uses_file_url, filesystem_url_support);
-  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          LoaderType::kMainResource, worker_process_id, storage_partition,
+          storage_domain, constructor_uses_file_url, filesystem_url_support);
+  std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       subresource_loader_factories = CreateFactoryBundle(
-          worker_process_id, storage_partition, storage_domain,
-          constructor_uses_file_url, filesystem_url_support);
+          LoaderType::kSubResource, worker_process_id, storage_partition,
+          storage_domain, constructor_uses_file_url, filesystem_url_support);
 
   // Create a resource request for initiating worker script fetch from the
   // browser process.
@@ -175,8 +177,9 @@ void WorkerScriptFetchInitiator::Start(
       std::move(url_loader_factory_override), std::move(callback));
 }
 
-std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
 WorkerScriptFetchInitiator::CreateFactoryBundle(
+    LoaderType loader_type,
     int worker_process_id,
     StoragePartitionImpl* storage_partition,
     const std::string& storage_domain,
@@ -196,22 +199,34 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
             worker_process_id, RenderFrameHost::kNoFrameTreeNodeId,
             storage_partition->GetFileSystemContext(), storage_domain);
   }
-  GetContentClient()
-      ->browser()
-      ->RegisterNonNetworkSubresourceURLLoaderFactories(
-          worker_process_id, MSG_ROUTING_NONE, &non_network_factories);
 
-  auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+  switch (loader_type) {
+    case LoaderType::kMainResource:
+      GetContentClient()
+          ->browser()
+          ->RegisterNonNetworkWorkerMainResourceURLLoaderFactories(
+              storage_partition->browser_context(), &non_network_factories);
+      break;
+    case LoaderType::kSubResource:
+      GetContentClient()
+          ->browser()
+          ->RegisterNonNetworkSubresourceURLLoaderFactories(
+              worker_process_id, MSG_ROUTING_NONE, &non_network_factories);
+      break;
+  }
+
+  auto factory_bundle =
+      std::make_unique<blink::PendingURLLoaderFactoryBundle>();
   for (auto& pair : non_network_factories) {
     const std::string& scheme = pair.first;
     std::unique_ptr<network::mojom::URLLoaderFactory> factory =
         std::move(pair.second);
 
-    network::mojom::URLLoaderFactoryPtr factory_ptr;
-    mojo::MakeStrongBinding(std::move(factory),
-                            mojo::MakeRequest(&factory_ptr));
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
+    mojo::MakeSelfOwnedReceiver(
+        std::move(factory), factory_remote.InitWithNewPipeAndPassReceiver());
     factory_bundle->pending_scheme_specific_factories().emplace(
-        scheme, factory_ptr.PassInterface());
+        scheme, std::move(factory_remote));
   }
 
   if (file_support) {
@@ -220,11 +235,12 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
         storage_partition->browser_context()->GetSharedCorsOriginAccessList(),
         // USER_VISIBLE because worker script fetch may affect the UI.
         base::TaskPriority::USER_VISIBLE);
-    network::mojom::URLLoaderFactoryPtr file_factory_ptr;
-    mojo::MakeStrongBinding(std::move(file_factory),
-                            mojo::MakeRequest(&file_factory_ptr));
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> file_factory_remote;
+    mojo::MakeSelfOwnedReceiver(
+        std::move(file_factory),
+        file_factory_remote.InitWithNewPipeAndPassReceiver());
     factory_bundle->pending_scheme_specific_factories().emplace(
-        url::kFileScheme, file_factory_ptr.PassInterface());
+        url::kFileScheme, std::move(file_factory_remote));
   }
 
   return factory_bundle;
@@ -261,9 +277,9 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
     RenderFrameHost* creator_render_frame_host,
     std::unique_ptr<network::ResourceRequest> resource_request,
     StoragePartitionImpl* storage_partition,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         factory_bundle_for_browser_info,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     ServiceWorkerNavigationHandle* service_worker_handle,
@@ -294,14 +310,19 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         default_header_client;
     bool bypass_redirect_checks = false;
+    network::mojom::URLLoaderFactoryOverridePtr factory_override;
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         storage_partition->browser_context(), creator_render_frame_host,
         worker_process_id,
         ContentBrowserClient::URLLoaderFactoryType::kWorkerMainResource,
-        *resource_request->request_initiator, &default_factory_receiver,
-        &default_header_client, &bypass_redirect_checks);
+        *resource_request->request_initiator, /*navigation_id=*/base::nullopt,
+        &default_factory_receiver, &default_header_client,
+        &bypass_redirect_checks, &factory_override);
     factory_bundle_for_browser_info->set_bypass_redirect_checks(
         bypass_redirect_checks);
+
+    // TODO(nhiroki): Handle |default_header_client| correctly.
+    // TODO(nhiroki): Handle |factory_override| correctly.
 
     // TODO(nhiroki): Call
     // devtools_instrumentation::WillCreateURLLoaderFactory() here.
@@ -310,7 +331,6 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
     // network service after a crash, but it's OK since it's used only for a
     // single request to fetch the worker's main script during startup. If the
     // network service crashes, worker startup should simply fail.
-    network::mojom::URLLoaderFactoryPtr network_factory_ptr;
     auto network_factory =
         storage_partition->GetURLLoaderFactoryForBrowserProcess();
     network_factory->Clone(std::move(default_factory_receiver));
@@ -352,7 +372,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
 
 void WorkerScriptFetchInitiator::DidCreateScriptLoader(
     CompletionCallback callback,
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     base::Optional<SubresourceLoaderParams> subresource_loader_params,

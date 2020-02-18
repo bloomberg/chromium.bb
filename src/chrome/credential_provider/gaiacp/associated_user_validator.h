@@ -98,6 +98,19 @@ class AssociatedUserValidator {
   // needs to complete before the function returns.
   bool IsTokenHandleValidForUser(const base::string16& sid);
 
+  enum EnforceAuthReason {
+    NOT_ENFORCED = 0,
+    NOT_ENROLLED_WITH_MDM,
+    MISSING_PASSWORD_RECOVERY_INFO,
+    INVALID_TOKEN_HANDLE,
+    ONLINE_LOGIN_STALE
+  };
+
+  // Returns the reason for enforcing authentication for the provided |sid|.
+  // This function is blocking and may fire off a query for a token handle that
+  // needs to complete before the function returns.
+  EnforceAuthReason GetAuthEnforceReason(const base::string16& sid);
+
   // Checks if user access blocking is enforced given the usage scenario (and
   // other registry based checks).
   bool IsUserAccessBlockingEnforced(
@@ -132,6 +145,10 @@ class AssociatedUserValidator {
 
   bool HasInternetConnection() const;
 
+  // Checks for the staleness of the last successful GCPW login for the input
+  // user.
+  bool IsOnlineLoginStale(const base::string16& sid) const;
+
  protected:
   // Returns the storage used for the instance pointer.
   static AssociatedUserValidator** GetInstanceStorage();
@@ -148,8 +165,6 @@ class AssociatedUserValidator {
   void ForceRefreshTokenHandlesForTesting();
 
  private:
-  bool IsTokenHandleValidForUserInternal(const base::string16& sid);
-
   void CheckTokenHandleValidity(
       const std::map<base::string16, base::string16>& handles_to_verify);
   void StartTokenValidityQuery(const base::string16& sid,

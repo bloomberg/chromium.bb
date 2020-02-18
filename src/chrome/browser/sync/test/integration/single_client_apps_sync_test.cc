@@ -24,6 +24,15 @@ class SingleClientAppsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientAppsSyncTest);
 };
 
+// crbug.com/1001437
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_InstallSomePlatformApps DISABLED_InstallSomePlatformApps
+#define MAYBE_InstallSomeApps DISABLED_InstallSomeApps
+#else
+#define MAYBE_InstallSomePlatformApps InstallSomePlatformApps
+#define MAYBE_InstallSomeApps InstallSomeApps
+#endif
+
 IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithNoApps) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameApps());
@@ -68,7 +77,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeLegacyApps) {
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomePlatformApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest,
+                       MAYBE_InstallSomePlatformApps) {
   ASSERT_TRUE(SetupSync());
 
   const int kNumApps = 5;
@@ -81,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomePlatformApps) {
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeApps) {
+IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, MAYBE_InstallSomeApps) {
   ASSERT_TRUE(SetupSync());
 
   int i = 0;

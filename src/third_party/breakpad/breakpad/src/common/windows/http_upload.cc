@@ -65,40 +65,6 @@ namespace {
     HINTERNET handle_;
   };
 
-  bool GetFileContents(const wstring &filename, vector<char> *contents) {
-    bool rv = false;
-    // The "open" method on pre-MSVC8 ifstream implementations doesn't accept a
-    // wchar_t* filename, so use _wfopen directly in that case.  For VC8 and
-    // later, _wfopen has been deprecated in favor of _wfopen_s, which does
-    // not exist in earlier versions, so let the ifstream open the file itself.
-    // GCC doesn't support wide file name and opening on FILE* requires ugly
-    // hacks, so fallback to multi byte file.
-#ifdef _MSC_VER
-    ifstream file;
-    file.open(filename.c_str(), ios::binary);
-#else // GCC
-    ifstream file(WideToMBCP(filename, CP_ACP).c_str(), ios::binary);
-#endif  // _MSC_VER >= 1400
-    if (file.is_open()) {
-      file.seekg(0, ios::end);
-      std::streamoff length = file.tellg();
-      // Check for loss of data when converting lenght from std::streamoff into
-      // std::vector<char>::size_type
-      std::vector<char>::size_type vector_size =
-        static_cast<std::vector<char>::size_type>(length);
-      if (static_cast<std::streamoff>(vector_size) == length) {
-        contents->resize(vector_size);
-        if (length != 0) {
-          file.seekg(0, ios::beg);
-          file.read(&((*contents)[0]), length);
-        }
-        rv = true;
-      }
-      file.close();
-    }
-    return rv;
-  }
-
   wstring UTF8ToWide(const string &utf8) {
     if (utf8.length() == 0) {
       return wstring();
@@ -139,6 +105,40 @@ namespace {
     string result(buf);
     delete[] buf;
     return result;
+  }
+
+  bool GetFileContents(const wstring &filename, vector<char> *contents) {
+    bool rv = false;
+    // The "open" method on pre-MSVC8 ifstream implementations doesn't accept a
+    // wchar_t* filename, so use _wfopen directly in that case.  For VC8 and
+    // later, _wfopen has been deprecated in favor of _wfopen_s, which does
+    // not exist in earlier versions, so let the ifstream open the file itself.
+    // GCC doesn't support wide file name and opening on FILE* requires ugly
+    // hacks, so fallback to multi byte file.
+#ifdef _MSC_VER
+    ifstream file;
+    file.open(filename.c_str(), ios::binary);
+#else // GCC
+    ifstream file(WideToMBCP(filename, CP_ACP).c_str(), ios::binary);
+#endif  // _MSC_VER >= 1400
+    if (file.is_open()) {
+      file.seekg(0, ios::end);
+      std::streamoff length = file.tellg();
+      // Check for loss of data when converting lenght from std::streamoff into
+      // std::vector<char>::size_type
+      std::vector<char>::size_type vector_size =
+        static_cast<std::vector<char>::size_type>(length);
+      if (static_cast<std::streamoff>(vector_size) == length) {
+        contents->resize(vector_size);
+        if (length != 0) {
+          file.seekg(0, ios::beg);
+          file.read(&((*contents)[0]), length);
+        }
+        rv = true;
+      }
+      file.close();
+    }
+    return rv;
   }
 
   bool CheckParameters(const map<wstring, wstring> &parameters) {

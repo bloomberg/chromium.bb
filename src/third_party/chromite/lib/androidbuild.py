@@ -9,11 +9,12 @@ from __future__ import print_function
 
 import os
 import pwd
-import urllib
 
-import apiclient
+import googleapiclient.discovery
+import googleapiclient.http
 import httplib2
 import oauth2client.client
+from six.moves import urllib
 
 
 # Locations where to look for credentials JSON files, relative to the user's
@@ -94,7 +95,7 @@ def LoadCredentials(json_credentials_path=None, scope_url=None):
   """Load the credentials from a local file.
 
   Returns a scoped credentials object which can be used to .authorize() an
-  httlib2.Http() instance used by an apiclient.
+  httlib2.Http() instance used by a googleapiclient.
 
   This method works both with service accounts (JSON generated from Pantheon's
   API manager under Credentials section), or with authenticated users (using a
@@ -108,7 +109,7 @@ def LoadCredentials(json_credentials_path=None, scope_url=None):
 
   Returns:
     A scoped oauth2client.client.Credentials object that can be used to
-    authorize an Http instance used by an apiclient object.
+    authorize an Http instance used by a googleapiclient object.
   """
   json_credentials_path = FindCredentialsFile(json_credentials_path)
 
@@ -136,7 +137,8 @@ def GetApiClient(creds, api_service_name=None, api_version=None):
         Defaults to 'v2beta1' (from DEFAULT_API_VERSION.)
 
   Returns:
-    An apiclient.discovery.Resource that supports the androidbuild API methods.
+    A googleapiclient.discovery.Resource that supports the androidbuild API
+    methods.
   """
   if api_service_name is None:
     api_service_name = DEFAULT_API_SERVICE_NAME
@@ -145,8 +147,8 @@ def GetApiClient(creds, api_service_name=None, api_version=None):
 
   base_http_client = httplib2.Http()
   auth_http_client = creds.authorize(base_http_client)
-  ab_client = apiclient.discovery.build(api_service_name, api_version,
-                                        http=auth_http_client)
+  ab_client = googleapiclient.discovery.build(api_service_name, api_version,
+                                              http=auth_http_client)
   return ab_client
 
 
@@ -162,7 +164,7 @@ def FetchArtifact(ab_client, branch, target, build_id, filepath, output=None):
     output: Path where to store the artifact. Defaults to filepath.
 
   Raises:
-    apiclient.errors.HttpError: If the requested artifact does not exist.
+    googleapiclient.errors.HttpError: If the requested artifact does not exist.
   """
   # The "branch" is unused, so silent pylint warnings about it:
   _ = branch
@@ -185,7 +187,7 @@ def FetchArtifact(ab_client, branch, target, build_id, filepath, output=None):
     os.makedirs(outdir)
 
   with open(output, 'wb') as f:
-    downloader = apiclient.http.MediaIoBaseDownload(
+    downloader = googleapiclient.http.MediaIoBaseDownload(
         f, media_id, chunksize=DEFAULT_MEDIA_IO_CHUNKSIZE)
     done = False
     while not done:
@@ -275,18 +277,16 @@ def SplitAbUrl(ab_url):
   Raises:
     ValueError: If the URL is not a valid ab://... URL.
   """
-  # splittype turns 'ab://bucket/path' into ('ab', '//bucket/path').
-  protocol, remainder = urllib.splittype(ab_url)
-  if protocol != 'ab':
+  o = urllib.parse.urlparse(ab_url)
+
+  if o.scheme != 'ab':
     raise ValueError('URL [%s] must start with ab:// protocol.' % ab_url)
 
-  # splithost turns '//bucket/path' into ('bucket', '/path').
-  bucket, remainder = urllib.splithost(remainder)
-  if bucket != 'android-build':
+  if o.hostname != 'android-build':
     raise ValueError('URL [%s] must use "android-build" bucket.' % ab_url)
 
   # Split the remaining fields of the path.
-  parts = remainder.split('/', 4)
+  parts = o.path.split('/', 4)
 
   if len(parts) < 3:
     raise ValueError(
@@ -294,8 +294,8 @@ def SplitAbUrl(ab_url):
 
   # First field will be empty.
   assert parts[0] == ''
-  branch = urllib.unquote(parts[1])
-  target = urllib.unquote(parts[2])
+  branch = urllib.parse.unquote(parts[1])
+  target = urllib.parse.unquote(parts[2])
 
   if not branch:
     raise ValueError('URL [%s] has an empty branch.' % ab_url)
@@ -305,7 +305,7 @@ def SplitAbUrl(ab_url):
 
   # Check if build_id is present. If present, it must be numeric.
   if len(parts) > 3:
-    build_id_str = urllib.unquote(parts[3])
+    build_id_str = urllib.parse.unquote(parts[3])
     if not build_id_str.isdigit():
       raise ValueError('URL [%s] has a non-numeric build_id component [%s].' %
                        (ab_url, build_id_str))
@@ -315,7 +315,7 @@ def SplitAbUrl(ab_url):
 
   # Last, use the remainder of the URL as the filepath.
   if len(parts) > 4:
-    filepath = urllib.unquote(parts[4])
+    filepath = urllib.parse.unquote(parts[4])
   else:
     filepath = None
 

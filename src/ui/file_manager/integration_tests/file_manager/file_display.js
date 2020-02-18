@@ -36,6 +36,52 @@ testcase.fileDisplayDownloads = () => {
 };
 
 /**
+ * Tests opening the files app navigating to a local folder. Uses
+ * platform_util::OpenItem, a call to an API distinct from the one commonly used
+ * in other tests for the same operation.
+ */
+testcase.fileDisplayLaunchOnLocalFolder = async () => {
+  // Add a file to Downloads.
+  await addEntries(['local'], [ENTRIES.photos]);
+
+  // Open Files app on the Downloads directory.
+  await sendTestMessage(
+      {name: 'launchAppOnLocalFolder', localPath: 'Downloads/photos'});
+
+  // Wait for app window to open.
+  const appId = await remoteCall.waitForWindow('files#');
+
+  // Check: the Downloads/photos folder should be selected.
+  await remoteCall.waitForElement(
+      appId, '#file-list [file-name="photos"][selected]');
+
+  // The API used to launch the Files app does not set the IN_TEST flag to true:
+  // error when attempting to retrieve Web Store access token.
+  return IGNORE_APP_ERRORS;
+};
+
+/**
+ * Tests opening the files app navigating to the My Drive folder. Uses
+ * platform_util::OpenItem, a call to an API distinct from the one commonly used
+ * in other tests for the same operation.
+ */
+testcase.fileDisplayLaunchOnDrive = async () => {
+  // Open Files app on the Drive directory.
+  await sendTestMessage({name: 'launchAppOnDrive'});
+
+  // Wait for app window to open.
+  const appId = await remoteCall.waitForWindow('files#');
+
+  // Check: the app should be open on My Drive.
+  await remoteCall.waitForElement(
+      appId, '#directory-tree .tree-item[selected] [volume-type-icon="drive"]');
+
+  // The API used to launch the Files app does not set the IN_TEST flag to true:
+  // error when attempting to retrieve Web Store access token.
+  return IGNORE_APP_ERRORS;
+};
+
+/**
  * Tests files display in Google Drive.
  */
 testcase.fileDisplayDrive = () => {
@@ -233,8 +279,63 @@ testcase.fileDisplayUsbPartition = async () => {
 };
 
 /**
- * Tests partitions display in the file table when root removable entry
- * is selected. Checks file system type is displayed.
+ * Tests that the file system type is properly displayed in the type
+ * column. Checks that the entries can be properly sorted by type.
+ * crbug.com/973743
+ */
+testcase.fileDisplayUsbPartitionSort = async () => {
+  const removableGroup = '#directory-tree [root-type-icon="removable"]';
+
+  // Open Files app on local downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Mount removable device with partitions.
+  await sendTestMessage({name: 'mountUsbWithMultiplePartitionTypes'});
+
+  // Wait and select the removable group by clicking the label.
+  await remoteCall.waitAndClickElement(appId, removableGroup);
+
+  // Wait for partitions to appear in the file table list.
+  let expectedRows = [
+    ['partition-3', '--', 'vfat'],
+    ['partition-2', '--', 'ext4'],
+    ['partition-1', '--', 'ntfs'],
+  ];
+  const options = {orderCheck: true, ignoreLastModifiedTime: true};
+  await remoteCall.waitForFiles(appId, expectedRows, options);
+
+  // Sort by type in ascending order.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(4)']);
+  await remoteCall.waitForElement(appId, '.table-header-sort-image-asc');
+
+  // Check that partitions are sorted in ascending order based on the partition
+  // type.
+  expectedRows = [
+    ['partition-2', '--', 'ext4'],
+    ['partition-1', '--', 'ntfs'],
+    ['partition-3', '--', 'vfat'],
+  ];
+  await remoteCall.waitForFiles(appId, expectedRows, options);
+
+  // Sort by type in descending order.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(4)']);
+  await remoteCall.waitForElement(appId, '.table-header-sort-image-desc');
+
+  // Check that partitions are sorted in descending order based on the partition
+  // type.
+  expectedRows = [
+    ['partition-3', '--', 'vfat'],
+    ['partition-1', '--', 'ntfs'],
+    ['partition-2', '--', 'ext4'],
+  ];
+  await remoteCall.waitForFiles(appId, expectedRows, options);
+};
+
+/**
+ * Tests display of partitions in file list after mounting a removable USB
+ * volume.
  */
 testcase.fileDisplayPartitionFileTable = async () => {
   const removableGroup = '#directory-tree [root-type-icon="removable"]';
@@ -259,7 +360,7 @@ testcase.fileDisplayPartitionFileTable = async () => {
 
   const partitionTwo = await remoteCall.waitForElement(
       appId, '#file-list [file-name="partition-2"] .type');
-  chrome.test.assertEq('ext4', partitionOne.text);
+  chrome.test.assertEq('ext4', partitionTwo.text);
 };
 
 /**
@@ -742,6 +843,32 @@ testcase.fileDisplayCheckNoReadOnlyIconOnDownloads = async () => {
   // Open files app on Downloads containing ENTRIES.hello.
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+  // Make sure read-only indicator on toolbar is NOT visible.
+  await remoteCall.waitForElement(appId, '#read-only-indicator[hidden]');
+};
+
+/**
+ * Tests to make sure read-only indicator is NOT visible when the current
+ * directory is the "Linux files" fake root.
+ */
+testcase.fileDisplayCheckNoReadOnlyIconOnLinuxFiles = async () => {
+  const fakeRoot = '#directory-tree [root-type-icon="crostini"]';
+
+  // Block mounts from progressing. This should cause the file manager to always
+  // show the loading bar for linux files.
+  await sendTestMessage({name: 'blockMounts'});
+
+  // Open files app on Downloads.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+  // Linux files fake root is shown.
+  await remoteCall.waitForElement(appId, fakeRoot);
+
+  // Click on Linux files.
+  await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [fakeRoot]);
+  await remoteCall.waitForElement(appId, 'paper-progress:not([hidden])');
 
   // Make sure read-only indicator on toolbar is NOT visible.
   await remoteCall.waitForElement(appId, '#read-only-indicator[hidden]');

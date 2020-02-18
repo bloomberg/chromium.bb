@@ -21,7 +21,7 @@ namespace blink {
 //    its owner element in another process.
 // 2. Trigger a load event on its owner element once it finishes a load.
 class CORE_EXPORT RemoteFrameOwner final
-    : public GarbageCollectedFinalized<RemoteFrameOwner>,
+    : public GarbageCollected<RemoteFrameOwner>,
       public FrameOwner {
   USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameOwner);
 
@@ -51,6 +51,7 @@ class CORE_EXPORT RemoteFrameOwner final
   int MarginWidth() const override { return margin_width_; }
   int MarginHeight() const override { return margin_height_; }
   bool AllowFullscreen() const override { return allow_fullscreen_; }
+  bool DisallowDocumentAccess() const override { return true; }
   bool AllowPaymentRequest() const override { return allow_payment_request_; }
   bool IsDisplayNone() const override { return is_display_none_; }
   AtomicString RequiredCsp() const override { return required_csp_; }

@@ -27,6 +27,10 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -890,33 +894,83 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, GetRestoreTabType) {
   EXPECT_EQ(sessions::TabRestoreService::TAB, service->entries().front()->type);
 }
 
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreGroupedTab) {
-  base::test::ScopedFeatureList feature_override;
-  feature_override.InitAndEnableFeature(features::kTabGroups);
+class TabRestoreTestWithTabGroupsEnabled : public TabRestoreTest {
+ public:
+  TabRestoreTestWithTabGroupsEnabled() {
+    feature_list_.InitAndEnableFeature(features::kTabGroups);
+  }
 
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Closing the last tab in a group then restoring will place the group back with
+// its metadata.
+IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
+                       RestoreSingleGroupedTab) {
   const int tab_count = AddSomeTabs(browser(), 1);
   ASSERT_LE(2, tab_count);
 
   const int grouped_tab_index = tab_count - 1;
-  browser()->tab_strip_model()->AddToNewGroup({grouped_tab_index});
+  TabGroupId group_id =
+      browser()->tab_strip_model()->AddToNewGroup({grouped_tab_index});
+  const TabGroupVisualData visual_data(base::ASCIIToUTF16("Foo"), SK_ColorCYAN);
+
+  TabGroup* group =
+      browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
+
+  group->SetVisualData(visual_data);
   CloseTab(grouped_tab_index);
 
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, grouped_tab_index));
   ASSERT_EQ(tab_count, browser()->tab_strip_model()->count());
 
-  // Make sure the tab is *not* grouped when restored. We have not yet decided
-  // how to handle groups with the same group ID in different browser
-  // windows. Until we figure this out, we don't have a good way to handle
-  // restoring individual grouped tabs. TODO(crbug.com/930991): resolve this and
-  // change this expectation.
-  EXPECT_EQ(base::nullopt,
-            browser()->tab_strip_model()->GetTabGroupForTab(grouped_tab_index));
+  group = browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
+
+  EXPECT_EQ(group_id, browser()
+                          ->tab_strip_model()
+                          ->GetTabGroupForTab(grouped_tab_index)
+                          .value());
+  const TabGroupVisualData* data = group->visual_data();
+  EXPECT_EQ(data->title(), visual_data.title());
+  EXPECT_EQ(data->color(), visual_data.color());
 }
 
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
-  base::test::ScopedFeatureList feature_override;
-  feature_override.InitAndEnableFeature(features::kTabGroups);
+// Closing a tab in a group then updating the metadata before restoring will
+// place the group back without updating the metadata.
+IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
+                       RestoreTabIntoGroup) {
+  const int tab_count = AddSomeTabs(browser(), 2);
+  ASSERT_LE(3, tab_count);
 
+  const int closed_tab_index = 1;
+
+  TabGroupId group_id = browser()->tab_strip_model()->AddToNewGroup({0, 1});
+  const TabGroupVisualData visual_data_1(base::ASCIIToUTF16("Foo1"),
+                                         SK_ColorCYAN);
+  const TabGroupVisualData visual_data_2(base::ASCIIToUTF16("Foo2"),
+                                         SK_ColorCYAN);
+  TabGroup* group =
+      browser()->tab_strip_model()->group_model()->GetTabGroup(group_id);
+
+  group->SetVisualData(visual_data_1);
+  CloseTab(closed_tab_index);
+  group->SetVisualData(visual_data_2);
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, closed_tab_index));
+  ASSERT_EQ(tab_count, browser()->tab_strip_model()->count());
+
+  EXPECT_EQ(group_id, browser()
+                          ->tab_strip_model()
+                          ->GetTabGroupForTab(closed_tab_index)
+                          .value());
+  const TabGroupVisualData* data = group->visual_data();
+  EXPECT_EQ(data->title(), visual_data_2.title());
+  EXPECT_EQ(data->color(), visual_data_2.color());
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
+                       RestoreWindowWithGroupedTabs) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL),
       WindowOpenDisposition::NEW_WINDOW,
@@ -924,10 +978,18 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
   ASSERT_EQ(2u, active_browser_list_->size());
 
   const int tab_count = AddSomeTabs(browser(), 3);
+
+  TabGroupModel* group_model = browser()->tab_strip_model()->group_model();
   TabGroupId group1 = browser()->tab_strip_model()->AddToNewGroup(
       {tab_count - 3, tab_count - 2});
+  TabGroupVisualData group1_data(base::ASCIIToUTF16("Foo"), SK_ColorRED);
+  group_model->GetTabGroup(group1)->SetVisualData(group1_data);
+
   TabGroupId group2 =
       browser()->tab_strip_model()->AddToNewGroup({tab_count - 1});
+  TabGroupVisualData group2_data(base::ASCIIToUTF16("Bar"), SK_ColorBLUE);
+  group_model->GetTabGroup(group2)->SetVisualData(group2_data);
+
   CloseBrowserSynchronously(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
 
@@ -935,6 +997,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
   ASSERT_EQ(2u, active_browser_list_->size());
 
   Browser* restored_window = GetBrowser(1);
+  TabGroupModel* restored_group_model =
+      restored_window->tab_strip_model()->group_model();
   ASSERT_EQ(tab_count, restored_window->tab_strip_model()->count());
   EXPECT_EQ(
       base::make_optional(group1),
@@ -945,11 +1009,21 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
   EXPECT_EQ(
       base::make_optional(group2),
       restored_window->tab_strip_model()->GetTabGroupForTab(tab_count - 1));
+
+  EXPECT_EQ(group1_data,
+            *restored_group_model->GetTabGroup(group1)->visual_data());
+  EXPECT_EQ(group2_data,
+            *restored_group_model->GetTabGroup(group2)->visual_data());
 }
 
 // Ensure tab groups aren't restored if |features::kTabGroups| is disabled.
 // Regression test for crbug.com/983962.
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, GroupsNotRestoredWhenFeatureDisabled) {
+//
+// NOTE: This test is currently disabled because it fundamentally relies on
+// manipulating the FeatureList state mid-test, which is NOT safe and not
+// allowed by the FeatureList API.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest,
+                       DISABLED_GroupsNotRestoredWhenFeatureDisabled) {
   auto feature_override = std::make_unique<base::test::ScopedFeatureList>();
   feature_override->InitAndEnableFeature(features::kTabGroups);
 

@@ -37,8 +37,8 @@
   # https://code.google.com/p/v8/issues/detail?id=9312
   'regress-9312': [FAIL],
 
-  # Slow tests.
-  'regress-903566': [PASS, SLOW],
+  # http://crbug/v8/9930
+  'date-format/format_range_hour_cycle': [FAIL],
 }],  # ALWAYS
 
 ['variant == no_wasm_traps', {
@@ -71,14 +71,4 @@
   'relative-time-format/resolved-options-nu-extended': [FAIL],
 }],  # 'system == android'
 
-##############################################################################
-['variant == stress', {
-  # Too slow.
-  'regress-903566': [SKIP],
-}],  # 'variant == stress'
-
-##############################################################################
-['variant == jitless and not embedded_builtins', {
-  '*': [SKIP],
-}], # variant == jitless and not embedded_builtins
 ]

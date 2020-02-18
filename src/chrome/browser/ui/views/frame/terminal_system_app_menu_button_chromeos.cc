@@ -13,19 +13,17 @@
 
 TerminalSystemAppMenuButton::TerminalSystemAppMenuButton(
     BrowserView* browser_view)
-    : HostedAppMenuButton(browser_view) {}
+    : WebAppMenuButton(browser_view) {}
 
 TerminalSystemAppMenuButton::~TerminalSystemAppMenuButton() {}
 
-void TerminalSystemAppMenuButton::OnMenuButtonClicked(views::Button* source,
-                                                      const gfx::Point& point,
-                                                      const ui::Event* event) {
+void TerminalSystemAppMenuButton::ButtonPressed(views::Button* source,
+                                                const ui::Event& event) {
   Browser* browser = browser_view()->browser();
   RunMenu(std::make_unique<TerminalSystemAppMenuModel>(browser_view(), browser),
           browser,
-          event && event->IsKeyEvent()
-              ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
-              : views::MenuRunner::NO_FLAGS,
+          event.IsKeyEvent() ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
+                             : views::MenuRunner::NO_FLAGS,
           /*alert_reopen_tab_items=*/false);
 
   base::RecordAction(

@@ -75,10 +75,10 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
     return;
   }
 
-  const auto file_path = download_dir_.AppendASCII(url.ExtractFileName());
+  file_path_ = download_dir_.AppendASCII(url.ExtractFileName());
   network_fetcher_ = network_fetcher_factory_->Create();
   network_fetcher_->DownloadToFile(
-      url, file_path,
+      url, file_path_,
       base::BindOnce(&UrlFetcherDownloader::OnResponseStarted,
                      base::Unretained(this)),
       base::BindRepeating(&UrlFetcherDownloader::OnDownloadProgress,
@@ -89,8 +89,7 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
   download_start_time_ = base::TimeTicks::Now();
 }
 
-void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path,
-                                                    int net_error,
+void UrlFetcherDownloader::OnNetworkFetcherComplete(int net_error,
                                                     int64_t content_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -104,22 +103,19 @@ void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path,
   // the request and avoid overloading the server in this case.
   // is not accepting requests for the moment.
   int error = -1;
-  if (!file_path.empty() && response_code_ == 200) {
-    DCHECK_EQ(0, net_error);
+  if (!net_error && response_code_ == 200)
     error = 0;
-  } else if (response_code_ != -1) {
+  else if (response_code_ != -1)
     error = response_code_;
-  } else {
+  else
     error = net_error;
-  }
 
   const bool is_handled = error == 0 || IsHttpServerError(error);
 
   Result result;
   result.error = error;
-  if (!error) {
-    result.response = file_path;
-  }
+  if (!error)
+    result.response = file_path_;
 
   DownloadMetrics download_metrics;
   download_metrics.url = url();
@@ -131,14 +127,15 @@ void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path,
   download_metrics.download_time_ms = download_time.InMilliseconds();
 
   VLOG(1) << "Downloaded " << content_size << " bytes in "
-          << download_time.InMilliseconds() << "ms from " << final_url_.spec()
+          << download_time.InMilliseconds() << "ms from " << url().spec()
           << " to " << result.response.value();
 
   // Delete the download directory in the error cases.
-  if (error && !download_dir_.empty())
-    base::PostTask(
-        FROM_HERE, kTaskTraits,
-        base::BindOnce(IgnoreResult(&base::DeleteFile), download_dir_, true));
+  if (error && !download_dir_.empty()) {
+    base::PostTask(FROM_HERE, kTaskTraits,
+                   base::BindOnce(IgnoreResult(&base::DeleteFileRecursively),
+                                  download_dir_));
+  }
 
   main_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&UrlFetcherDownloader::OnDownloadComplete,
@@ -147,14 +144,12 @@ void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path,
 }
 
 // This callback is used to indicate that a download has been started.
-void UrlFetcherDownloader::OnResponseStarted(const GURL& final_url,
-                                             int response_code,
+void UrlFetcherDownloader::OnResponseStarted(int response_code,
                                              int64_t content_length) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  VLOG(1) << "url fetcher response started for: " << final_url.spec();
+  VLOG(1) << "url fetcher response started for: " << url().spec();
 
-  final_url_ = final_url;
   response_code_ = response_code;
   total_bytes_ = content_length;
 }

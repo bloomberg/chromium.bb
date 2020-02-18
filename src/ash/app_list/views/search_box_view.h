@@ -18,7 +18,7 @@ class Textfield;
 class View;
 }  // namespace views
 
-namespace app_list {
+namespace ash {
 
 class AppListView;
 class AppListViewDelegate;
@@ -78,7 +78,9 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   // Updates the search box's layout based on the state of AppListModel.
   void UpdateLayout(double progress,
                     ash::AppListState current_state,
-                    ash::AppListState target_state);
+                    int current_state_height,
+                    ash::AppListState target_state,
+                    int target_state_height);
 
   // Returns background border corner radius in the given state.
   int GetSearchBoxBorderCornerRadiusForState(ash::AppListState state) const;
@@ -140,7 +142,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
 
   // Overridden from SearchBoxModelObserver:
   void HintTextChanged() override;
-  void SelectionModelChanged() override;
   void Update() override;
   void SearchEngineChanged() override;
   void ShowAssistantChanged() override;
@@ -171,7 +172,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   SearchModel* search_model_ = nullptr;  // Owned by the profile-keyed service.
 
   // Owned by views hierarchy.
-  app_list::AppListView* app_list_view_;
+  AppListView* app_list_view_;
   ContentsView* contents_view_ = nullptr;
 
   // True if app list search autocomplete is enabled.
@@ -182,6 +183,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   DISALLOW_COPY_AND_ASSIGN(SearchBoxView);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_VIEWS_SEARCH_BOX_VIEW_H_

@@ -1,4 +1,4 @@
-Alert: *** starting test ***
+Alert: *** starting test 1 ***
 Alert: PASS: AFDate_Format() threw AFDate_Format: Incorrect number of parameters passed to function.
 Alert: PASS: AFDate_Format(1, 2) threw AFDate_Format: Incorrect number of parameters passed to function.
 Alert: PASS: AFDate_Format(1) = 1/1/70
@@ -11,6 +11,8 @@ Alert: PASS: AFDate_FormatEx(1, 2) threw AFDate_FormatEx: Incorrect number of pa
 Alert: PASS: AFDate_FormatEx(2) = 2
 Alert: PASS: AFDate_FormatEx('blooey') = blooey
 Alert: PASS: AFDate_FormatEx('m/d') = 5/9
+Alert: PASS: AFDate_FormatEx('mm/dd/yyyy') = 12/02/2015
+Alert: PASS: AFDate_FormatEx('mm/dd/yyyy') = 05/09/2014
 Alert: **********************
 Alert: PASS: AFDate_Keystroke() threw AFDate_Keystroke: Incorrect number of parameters passed to function.
 Alert: PASS: AFDate_Keystroke(1, 2) threw AFDate_Keystroke: Incorrect number of parameters passed to function.
@@ -318,6 +320,13 @@ Alert: PASS: AFSimple_Calculate('PRD', ['Text2', 'Text3']) = 56088
 Alert: PASS: AFSimple_Calculate('MIN', ['Text2', 'Text3']) = 123
 Alert: PASS: AFSimple_Calculate('MAX', ['Text2', 'Text3']) = 456
 Alert: PASS: AFSimple_Calculate('AVG', 'Text2, Text3') = 289.5
+Alert: PASS: AFSimple_Calculate('AVG', ['Text4']) = 407.96
+Alert: PASS: AFSimple_Calculate('SUM', ['Text4']) = 407.96
+Alert: PASS: AFSimple_Calculate('MIN', ['Text4']) = 407.96
+Alert: PASS: AFSimple_Calculate('MAX', ['Text4']) = 407.96
+Alert: PASS: AFSimple_Calculate('AVG', ['Text2', 'Text4']) = 265.48
+Alert: PASS: AFSimple_Calculate('SUM', ['Text2', 'Text4']) = 530.96
+Alert: PASS: AFSimple_Calculate('PRD', ['Text2', 'Text4']) = 50179.08
 Alert: **********************
 Alert: PASS: AFSpecial_Format() threw AFSpecial_Format: Incorrect number of parameters passed to function.
 Alert: PASS: AFSpecial_Format(1, 2) threw AFSpecial_Format: Incorrect number of parameters passed to function.
@@ -360,4 +369,32 @@ Alert: **********************
 Alert: PASS: AFTime_KeystrokeEx() threw AFTime_KeystrokeEx: AFDate_KeystrokeEx's parameter size not correct
 Alert: PASS: AFTime_KeystrokeEx(1, 2) threw AFTime_KeystrokeEx: AFDate_KeystrokeEx's parameter size not correct
 Alert: PASS: AFTime_KeystrokeEx('blooey') = 12:04
-Alert: *** ending test ***
+Alert: *** ending test 1 ***
+Alert: *** starting test 2 ***
+Alert: PASS: AFDate_Keystroke() threw AFDate_Keystroke: Incorrect number of parameters passed to function.
+Alert: PASS: AFDate_Keystroke(1, 2) threw AFDate_Keystroke: Incorrect number of parameters passed to function.
+Alert: PASS: AFDate_Keystroke(2) = 04/19
+Alert: PASS: AFDate_Keystroke('blooey') = 04/19/15
+Alert: **********************
+Alert: PASS: AFNumber_Keystroke() threw AFNumber_Keystroke: Incorrect number of parameters passed to function.
+Alert: PASS: AFNumber_Keystroke(1) threw AFNumber_Keystroke: Incorrect number of parameters passed to function.
+Alert: FAIL: AFNumber_Keystroke(1, 2) = undefined, expected to throw
+Alert: PASS: AFNumber_Keystroke(1, 2) = 123
+Alert: PASS: AFNumber_Keystroke(1, 2, 3) = 123
+Alert: **********************
+Alert: PASS: AFSpecial_KeystrokeEx() threw AFSpecial_KeystrokeEx: Incorrect number of parameters passed to function.
+Alert: PASS: AFSpecial_KeystrokeEx('') = 12345
+Alert: PASS: AFSpecial_KeystrokeEx('9999') = 123
+[icon=3,type=0]: The input value is too long.
+Alert: PASS: AFSpecial_KeystrokeEx('9999') = 12345
+[icon=3,type=0]: The input value is too long.
+Alert: PASS: AFSpecial_KeystrokeEx('9999') = abcd
+[icon=3,type=0]: The input value is too long.
+Alert: PASS: AFSpecial_KeystrokeEx('9999') = 1234
+[icon=3,type=0]: The input value is too long.
+Alert: PASS: AFSpecial_KeystrokeEx('XXXX') = abcd
+Alert: **********************
+Alert: PASS: AFMergeChange() threw AFMergeChange: Incorrect number of parameters passed to function.
+Alert: PASS: AFMergeChange(1, 2) threw AFMergeChange: Incorrect number of parameters passed to function.
+Alert: PASS: AFMergeChange(undefined) = Aone
+Alert: *** ending test 2 ***

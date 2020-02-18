@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
@@ -36,6 +36,8 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/style/typography.h"
@@ -76,10 +78,7 @@ std::unique_ptr<views::ImageButton> CreateCloseButton(
       gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING))));
   close_button->SizeToPreferredSize();
 
-  // Use a circular ink drop.
-  auto highlight_path = std::make_unique<SkPath>();
-  highlight_path->addOval(gfx::RectToSkRect(gfx::Rect(close_button->size())));
-  close_button->SetProperty(views::kHighlightPathKey, highlight_path.release());
+  views::InstallCircleHighlightPathGenerator(close_button.get());
 
   return close_button;
 }
@@ -234,6 +233,10 @@ gfx::Rect CustomTabBarView::GetAnchorBoundsInScreen() const {
                          title_origin_view_->GetAnchorBoundsInScreen());
 }
 
+const char* CustomTabBarView::GetClassName() const {
+  return kViewClassName;
+}
+
 void CustomTabBarView::TabChangedAt(content::WebContents* contents,
                                     int index,
                                     TabChangeType change_type) {
@@ -377,10 +380,9 @@ bool CustomTabBarView::ShowPageInfoDialog() {
 
 SkColor CustomTabBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  OmniboxTint tint = color_utils::IsDark(background_color_)
-                         ? OmniboxTint::DARK
-                         : OmniboxTint::LIGHT;
-  return GetOmniboxSecurityChipColor(tint, security_level);
+  return GetOmniboxSecurityChipColor(
+      &ThemeService::GetThemeProviderForProfile(browser_->profile()),
+      security_level);
 }
 
 gfx::ImageSkia CustomTabBarView::GetLocationIcon(

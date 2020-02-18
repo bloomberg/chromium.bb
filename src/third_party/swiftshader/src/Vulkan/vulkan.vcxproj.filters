@@ -171,9 +171,9 @@
     <ClCompile Include="VkCommandPool.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="VkDebug.cpp">
-      <Filter>Source Files\Vulkan</Filter>
-    </ClCompile>
+    <clcompile include="vkdebug.cpp">
+      <filter>source files\vulkan</filter>
+    </clcompile>
     <ClCompile Include="VkDescriptorPool.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
@@ -240,13 +240,37 @@
     <ClCompile Include="VkShaderModule.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="VkStringify.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="..\Pipeline\SpirvShader.cpp">
+      <Filter>Source Files\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Pipeline\SpirvShaderArithmetic.cpp">
+      <Filter>Source Files\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Pipeline\SpirvShaderControlFlow.cpp">
+      <Filter>Source Files\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Pipeline\SpirvShaderEnumNames.cpp">
+      <Filter>Source Files\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Pipeline\SpirvShaderGLSLstd450.cpp">
+      <Filter>Source Files\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Pipeline\SpirvShaderGroup.cpp">
+      <Filter>Source Files\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Pipeline\SpirvShaderImage.cpp">
+      <Filter>Source Files\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Pipeline\SpirvShaderMemory.cpp">
       <Filter>Source Files\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="..\Pipeline\SpirvShaderSampling.cpp">
       <Filter>Source Files\Pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="..\Pipeline\SpirvShader_dbg.cpp">
+    <ClCompile Include="..\Pipeline\SpirvShaderSpec.cpp">
       <Filter>Source Files\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="..\WSI\VkSwapchainKHR.cpp">
@@ -503,13 +527,16 @@
     <ClInclude Include="..\System\Types.hpp">
       <Filter>Header Files\System</Filter>
     </ClInclude>
-    <ClInclude Include="VkDebug.hpp">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
+    <clinclude include="vkdebug.hpp">
+      <filter>header files\vulkan</filter>
+    </clinclude>
     <ClInclude Include="VkDestroy.h">
       <Filter>Header Files\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="VulkanPlatform.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="VkStringify.hpp">
       <Filter>Header Files\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="Version.h" />

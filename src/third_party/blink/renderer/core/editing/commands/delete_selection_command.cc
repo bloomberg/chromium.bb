@@ -58,7 +58,7 @@ static bool IsTableCellEmpty(Node* cell) {
 }
 
 static bool IsTableRowEmpty(Node* row) {
-  if (!IsHTMLTableRowElement(row))
+  if (!IsA<HTMLTableRowElement>(row))
     return false;
 
   row->GetDocument().UpdateStyleAndLayout();
@@ -252,10 +252,10 @@ void DeleteSelectionCommand::InitializePositionData(
   start_root_ = RootEditableElementOf(start);
   end_root_ = RootEditableElementOf(end);
 
-  start_table_row_ =
-      ToHTMLTableRowElement(EnclosingNodeOfType(start, &IsHTMLTableRowElement));
-  end_table_row_ =
-      ToHTMLTableRowElement(EnclosingNodeOfType(end, &IsHTMLTableRowElement));
+  start_table_row_ = To<HTMLTableRowElement>(
+      EnclosingNodeOfType(start, &IsA<HTMLTableRowElement>));
+  end_table_row_ = To<HTMLTableRowElement>(
+      EnclosingNodeOfType(end, &IsA<HTMLTableRowElement>));
 
   // Don't move content out of a table cell.
   // If the cell is non-editable, enclosingNodeOfType won't return it by
@@ -565,7 +565,7 @@ void DeleteSelectionCommand::
   Node* node = range->FirstNode();
   while (node && node != range->PastLastNode()) {
     Node* next_node = NodeTraversal::Next(*node);
-    if (IsHTMLStyleElement(*node) || IsHTMLLinkElement(*node)) {
+    if (IsA<HTMLStyleElement>(*node) || IsA<HTMLLinkElement>(*node)) {
       next_node = NodeTraversal::NextSkippingChildren(*node);
       Element* element = RootEditableElement(*node);
       if (element) {
@@ -598,7 +598,7 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
   // merge content in.
   if (start_node == start_block_.Get() && !start_offset &&
       CanHaveChildrenForEditing(start_node) &&
-      !IsHTMLTableElement(*start_node)) {
+      !IsA<HTMLTableElement>(*start_node)) {
     start_offset = 0;
     start_node = NodeTraversal::Next(*start_node);
     if (!start_node)
@@ -1036,6 +1036,8 @@ void DeleteSelectionCommand::ClearTransientState() {
 void DeleteSelectionCommand::RemoveRedundantBlocks(
     EditingState* editing_state) {
   Node* node = ending_position_.ComputeContainerNode();
+  if (!node)
+    return;
   Element* root_element = RootEditableElement(*node);
 
   while (node != root_element) {

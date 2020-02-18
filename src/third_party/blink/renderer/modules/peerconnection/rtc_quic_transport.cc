@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
@@ -90,7 +91,8 @@ RTCQuicTransport* RTCQuicTransport::Create(
     ExceptionState& exception_state) {
   return Create(context, transport, certificates, exception_state,
                 std::make_unique<DefaultP2PQuicTransportFactory>(
-                    Platform::Current()->GetWebRtcWorkerThread()));
+                    PeerConnectionDependencyFactory::GetInstance()
+                        ->GetWebRtcWorkerTaskRunner()));
 }
 
 RTCQuicTransport* RTCQuicTransport::Create(
@@ -153,7 +155,7 @@ RTCQuicTransport::RTCQuicTransport(
       key_(key),
       certificates_(certificates),
       p2p_quic_transport_factory_(std::move(p2p_quic_transport_factory)) {
-  DCHECK_GT(key_->ByteLength(), 0u);
+  DCHECK_GT(key_->ByteLengthAsSizeT(), 0u);
   transport->ConnectConsumer(this);
 }
 
@@ -182,7 +184,7 @@ String RTCQuicTransport::state() const {
 }
 
 DOMArrayBuffer* RTCQuicTransport::getKey() const {
-  return DOMArrayBuffer::Create(key_->Data(), key_->ByteLength());
+  return DOMArrayBuffer::Create(key_->Data(), key_->ByteLengthAsSizeT());
 }
 
 void RTCQuicTransport::connect(ExceptionState& exception_state) {
@@ -194,14 +196,14 @@ void RTCQuicTransport::connect(ExceptionState& exception_state) {
   }
   start_reason_ = StartReason::kClientConnecting;
   std::string pre_shared_key(static_cast<const char*>(key_->Data()),
-                             key_->ByteLength());
+                             key_->ByteLengthAsSizeT());
   StartConnection(quic::Perspective::IS_CLIENT,
                   P2PQuicTransport::StartConfig(pre_shared_key));
 }
 
 void RTCQuicTransport::listen(const DOMArrayPiece& remote_key,
                               ExceptionState& exception_state) {
-  if (remote_key.ByteLength() == 0u) {
+  if (remote_key.ByteLengthAsSizeT() == 0u) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Cannot listen with an empty key.");
     return;
@@ -214,7 +216,7 @@ void RTCQuicTransport::listen(const DOMArrayPiece& remote_key,
   }
   start_reason_ = StartReason::kServerListening;
   std::string pre_shared_key(static_cast<const char*>(remote_key.Data()),
-                             remote_key.ByteLength());
+                             remote_key.ByteLengthAsSizeT());
   StartConnection(quic::Perspective::IS_SERVER,
                   P2PQuicTransport::StartConfig(pre_shared_key));
 }
@@ -395,17 +397,17 @@ void RTCQuicTransport::sendDatagram(const DOMArrayPiece& data,
         "Cannot send datagram because not readyToSend()");
     return;
   }
-  if (data.ByteLength() > max_datagram_length_) {
+  if (data.ByteLengthAsSizeT() > max_datagram_length_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
-        "data of size " + String::Number(data.ByteLength()) +
+        "data of size " + String::Number(data.ByteLengthAsSizeT()) +
             " is too large to fit into a datagram of max size: " +
             String::Number(max_datagram_length_.value_or(0)));
     return;
   }
 
-  Vector<uint8_t> datagram(data.ByteLength());
-  memcpy(datagram.data(), data.Data(), data.ByteLength());
+  Vector<uint8_t> datagram(static_cast<wtf_size_t>(data.ByteLengthAsSizeT()));
+  memcpy(datagram.data(), data.Data(), data.ByteLengthAsSizeT());
   proxy_->SendDatagram(std::move(datagram));
   num_buffered_sent_datagrams_++;
 }

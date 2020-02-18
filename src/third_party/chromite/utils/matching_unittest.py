@@ -31,7 +31,7 @@ class GetMostLikelyMatchedObjectTest(cros_test_lib.TestCase):
 
     result = matching.GetMostLikelyMatchedObject(haystack, needle,
                                                  matched_score_threshold=0.6)
-    self.assertItemsEqual(['abce', 'aecd'], result)
+    self.assertCountEqual(['abce', 'aecd'], result)
 
   def testSimilarThreshold(self):
     """Test the threshold is correctly applied."""
@@ -71,13 +71,13 @@ class FindFilesMatchingTest(cros_test_lib.TempDirTestCase):
   def testFindMatching(self):
     """Simple find matching."""
     result = matching.FindFilesMatching('*.csv', target=self.tempdir, cwd='/')
-    self.assertItemsEqual(self.csvs, result)
+    self.assertCountEqual(self.csvs, result)
 
   def testExcludeDirs(self):
     """Test the excluded directories works."""
     result = matching.FindFilesMatching('*.txt', target=self.tempdir, cwd='/',
                                         exclude_dirs=(self.excluded,))
-    self.assertItemsEqual(self.txts, result)
+    self.assertCountEqual(self.txts, result)
 
   def testCwd(self):
     """Test the paths change relative to the cwd."""
@@ -86,4 +86,4 @@ class FindFilesMatchingTest(cros_test_lib.TempDirTestCase):
                                         cwd=self.tempdir)
     # Convert the csv paths to be relative to the tempdir.
     expected = [os.path.relpath(x, start=self.tempdir) for x in self.csvs]
-    self.assertItemsEqual(expected, result)
+    self.assertCountEqual(expected, result)

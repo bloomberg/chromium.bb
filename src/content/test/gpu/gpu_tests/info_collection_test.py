@@ -27,6 +27,8 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
             options.expected_device_id))
     yield ('InfoCollection_direct_composition', '_',
            ('_RunDirectCompositionTest', '_', '_'))
+    yield ('InfoCollection_dx12_vulkan', '_',
+           ('_RunDX12VulkanTest', '_', '_'))
 
   @classmethod
   def SetUpProcess(cls):
@@ -83,6 +85,29 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
         self.fail('GPU info does not have aux_attributes.')
       for field, expected in overlay_bot_config.iteritems():
         detected = aux_attributes.get(field, 'NONE')
+        if expected != detected:
+          self.fail('%s mismatch, expected %s but got %s.' %
+              (field, self._ValueToStr(expected), self._ValueToStr(detected)))
+
+  def _RunDX12VulkanTest(self, unused_arg_0, unused_arg_1, unused_arg_2):
+    os_name = self.browser.platform.GetOSName()
+    if os_name and os_name.lower() == 'win':
+      self.RestartBrowserIfNecessaryWithArgs([
+        '--no-delay-for-dx12-vulkan-info-collection'])
+      # Need to re-request system info for DX12/Vulkan bits.
+      system_info = self.browser.GetSystemInfo()
+      if not system_info:
+        self.fail("Browser doesn't support GetSystemInfo")
+      gpu = system_info.gpu
+      if gpu is None:
+        raise Exception("System Info doesn't have a gpu")
+      aux_attributes = gpu.aux_attributes
+      if not aux_attributes:
+        self.fail('GPU info does not have aux_attributes.')
+
+      dx12_vulkan_bot_config = self.GetDx12VulkanBotConfig()
+      for field, expected in dx12_vulkan_bot_config.iteritems():
+        detected = aux_attributes.get(field)
         if expected != detected:
           self.fail('%s mismatch, expected %s but got %s.' %
               (field, self._ValueToStr(expected), self._ValueToStr(detected)))

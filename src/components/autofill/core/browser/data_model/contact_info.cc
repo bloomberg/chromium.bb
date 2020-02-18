@@ -47,31 +47,6 @@ bool NameInfo::operator==(const NameInfo& other) const {
          family_ == other.family_ && full_ == other.full_;
 }
 
-bool NameInfo::ParsedNamesAreEqual(const NameInfo& info) const {
-  return given_ == info.given_ && middle_ == info.middle_ &&
-         family_ == info.family_;
-}
-
-void NameInfo::OverwriteName(const NameInfo& new_name) {
-  if (!new_name.given_.empty())
-    given_ = new_name.given_;
-
-  // For the middle name, don't overwrite a full middle name with an initial.
-  if (!new_name.middle_.empty() &&
-      (middle_.size() <= 1 || new_name.middle_.size() > 1))
-    middle_ = new_name.middle_;
-
-  if (!new_name.family_.empty())
-    family_ = new_name.family_;
-
-  if (!new_name.full_.empty())
-    full_ = new_name.full_;
-}
-
-bool NameInfo::NamePartsAreEmpty() const {
-  return given_.empty() && middle_.empty() && family_.empty();
-}
-
 base::string16 NameInfo::GetRawInfo(ServerFieldType type) const {
   DCHECK_EQ(NAME, AutofillType(type).group());
   switch (type) {
@@ -164,12 +139,6 @@ base::string16 NameInfo::MiddleInitial() const {
 
 void NameInfo::SetFullName(const base::string16& full) {
   full_ = full;
-
-  // If |full| is empty, leave the other name parts alone. This might occur
-  // due to a migrated database with an empty |full_name| value.
-  if (full.empty())
-    return;
-
   data_util::NameParts parts = data_util::SplitName(full);
   given_ = parts.given;
   middle_ = parts.middle;
@@ -250,15 +219,26 @@ void CompanyInfo::SetRawInfo(ServerFieldType type,
 }
 
 bool CompanyInfo::IsValidOrVerified(const base::string16& value) const {
-  if (!base::FeatureList::IsEnabled(
-          autofill::features::kAutofillRejectCompanyBirthyear))
+  if (profile_ && profile_->IsVerified()) {
     return true;
-
-  if (profile_ && profile_->IsVerified())
-    return true;
-
-  // Companies that are of the format of a four digit birth year are not valid.
-  return !MatchesPattern(value, base::UTF8ToUTF16("^(19|20)\\d{2}$"));
+  }
+  // |value| is a birthyear:
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillRejectCompanyBirthyear) &&
+      MatchesPattern(value, base::UTF8ToUTF16("^(19|20)\\d{2}$"))) {
+    return false;
+  }
+  // |value| is a social title:
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillRejectCompanySocialTitle) &&
+      MatchesPattern(value, base::UTF8ToUTF16(
+                                "^(Ms\\.?|Mrs\\.?|Mr\\.?|Miss|Mistress|Mister|"
+                                "Frau|Herr|"
+                                "Mlle|Mme|M\\.|"
+                                "Dr\\.?|Prof\\.?)$"))) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace autofill

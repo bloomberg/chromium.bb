@@ -4,9 +4,13 @@
 
 #include "content/browser/data_url_loader_factory.h"
 
+#include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
-#include "net/url_request/url_request_data_job.h"
+#include "net/base/data_url.h"
+#include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -14,7 +18,7 @@ namespace content {
 
 namespace {
 struct WriteData {
-  network::mojom::URLLoaderClientPtr client;
+  mojo::Remote<network::mojom::URLLoaderClient> client;
   std::string data;
   std::unique_ptr<mojo::DataPipeProducer> producer;
 };
@@ -40,18 +44,13 @@ DataURLLoaderFactory::~DataURLLoaderFactory() = default;
 DataURLLoaderFactory::DataURLLoaderFactory(const GURL& url) : url_(url) {}
 
 void DataURLLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  std::string mime_type;
-  std::string charset;
-  std::string data;
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
-
   const GURL* url = nullptr;
   if (!url_.is_empty() && request.url.is_empty()) {
     url = &url_;
@@ -59,33 +58,35 @@ void DataURLLoaderFactory::CreateLoaderAndStart(
     url = &request.url;
   }
 
-  int result = net::URLRequestDataJob::BuildResponse(
-      *url, request.method, &mime_type, &charset, &data, headers.get());
+  std::string data;
+  scoped_refptr<net::HttpResponseHeaders> headers;
+  network::ResourceResponseHead response;
+  net::Error result =
+      net::DataURL::BuildResponse(*url, request.method, &response.mime_type,
+                                  &response.charset, &data, &response.headers);
   url_ = GURL();  // Don't need it anymore.
 
+  mojo::Remote<network::mojom::URLLoaderClient> client_remote(
+      std::move(client));
   if (result != net::OK) {
-    client->OnComplete(network::URLLoaderCompletionStatus(result));
+    client_remote->OnComplete(network::URLLoaderCompletionStatus(result));
     return;
   }
 
-  network::ResourceResponseHead response;
-  response.mime_type = mime_type;
-  response.charset = charset;
-  response.headers = headers;
-  client->OnReceiveResponse(response);
+  client_remote->OnReceiveResponse(response);
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
   if (CreateDataPipe(nullptr, &producer, &consumer) != MOJO_RESULT_OK) {
-    client->OnComplete(
+    client_remote->OnComplete(
         network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
     return;
   }
 
-  client->OnStartLoadingResponseBody(std::move(consumer));
+  client_remote->OnStartLoadingResponseBody(std::move(consumer));
 
   auto write_data = std::make_unique<WriteData>();
-  write_data->client = std::move(client);
+  write_data->client = std::move(client_remote);
   write_data->data = std::move(data);
   write_data->producer =
       std::make_unique<mojo::DataPipeProducer>(std::move(producer));
@@ -100,8 +101,8 @@ void DataURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void DataURLLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest loader) {
-  bindings_.AddBinding(this, std::move(loader));
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) {
+  receivers_.Add(this, std::move(loader));
 }
 
 }  // namespace content

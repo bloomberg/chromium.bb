@@ -116,6 +116,32 @@ namespace compiler {
   V(IA32PushSimd128)               \
   V(IA32Poke)                      \
   V(IA32Peek)                      \
+  V(SSEF64x2Splat)                 \
+  V(AVXF64x2Splat)                 \
+  V(SSEF64x2ExtractLane)           \
+  V(AVXF64x2ExtractLane)           \
+  V(SSEF64x2ReplaceLane)           \
+  V(AVXF64x2ReplaceLane)           \
+  V(IA32F64x2Sqrt)                 \
+  V(IA32F64x2Add)                  \
+  V(IA32F64x2Sub)                  \
+  V(IA32F64x2Mul)                  \
+  V(IA32F64x2Div)                  \
+  V(IA32F64x2Min)                  \
+  V(IA32F64x2Max)                  \
+  V(IA32F64x2Eq)                   \
+  V(IA32F64x2Ne)                   \
+  V(IA32F64x2Lt)                   \
+  V(IA32F64x2Le)                   \
+  V(IA32I64x2SplatI32Pair)         \
+  V(IA32I64x2ReplaceLaneI32Pair)   \
+  V(IA32I64x2Neg)                  \
+  V(IA32I64x2Shl)                  \
+  V(IA32I64x2ShrS)                 \
+  V(IA32I64x2Add)                  \
+  V(IA32I64x2Sub)                  \
+  V(IA32I64x2Mul)                  \
+  V(IA32I64x2ShrU)                 \
   V(SSEF32x4Splat)                 \
   V(AVXF32x4Splat)                 \
   V(SSEF32x4ExtractLane)           \
@@ -129,6 +155,8 @@ namespace compiler {
   V(AVXF32x4Abs)                   \
   V(SSEF32x4Neg)                   \
   V(AVXF32x4Neg)                   \
+  V(SSEF32x4Sqrt)                  \
+  V(AVXF32x4Sqrt)                  \
   V(IA32F32x4RecipApprox)          \
   V(IA32F32x4RecipSqrtApprox)      \
   V(SSEF32x4Add)                   \
@@ -201,7 +229,8 @@ namespace compiler {
   V(SSEI32x4GeU)                   \
   V(AVXI32x4GeU)                   \
   V(IA32I16x8Splat)                \
-  V(IA32I16x8ExtractLane)          \
+  V(IA32I16x8ExtractLaneU)         \
+  V(IA32I16x8ExtractLaneS)         \
   V(SSEI16x8ReplaceLane)           \
   V(AVXI16x8ReplaceLane)           \
   V(IA32I16x8SConvertI8x16Low)     \
@@ -256,7 +285,8 @@ namespace compiler {
   V(SSEI16x8GeU)                   \
   V(AVXI16x8GeU)                   \
   V(IA32I8x16Splat)                \
-  V(IA32I8x16ExtractLane)          \
+  V(IA32I8x16ExtractLaneU)         \
+  V(IA32I8x16ExtractLaneS)         \
   V(SSEI8x16ReplaceLane)           \
   V(AVXI8x16ReplaceLane)           \
   V(SSEI8x16SConvertI16x8)         \
@@ -313,6 +343,7 @@ namespace compiler {
   V(AVXS128Xor)                    \
   V(SSES128Select)                 \
   V(AVXS128Select)                 \
+  V(IA32S8x16Swizzle)              \
   V(IA32S8x16Shuffle)              \
   V(IA32S32x4Swizzle)              \
   V(IA32S32x4Shuffle)              \

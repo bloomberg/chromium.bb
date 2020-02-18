@@ -18,10 +18,11 @@
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
 #include "third_party/blink/public/mojom/web_client_hints/web_client_hints_types.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
-#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
@@ -37,12 +38,10 @@ class WebDocumentLoader;
 class WebElement;
 class WebFormElement;
 class WebString;
-struct WebURLError;
 class WebWorkerFetchContext;
 }
 
 namespace network {
-struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
 }  // namespace network
 
@@ -72,14 +71,12 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void WasHidden() {}
   virtual void WasShown() {}
 
-  // Called when associated widget is about to close.
-  virtual void WidgetWillClose() {}
-
   // Navigation callbacks.
   //
   // Each navigation starts with a DidStartNavigation call. Then it may be
   // followed by a ReadyToCommitNavigation (if the navigation has succeeded),
   // and should always end with a DidFinishNavigation.
+  // TODO(dgozman): ReadyToCommitNavigation will be removed soon.
   //
   // Unfortunately, this is currently a mess. For example, some started
   // navigations which did not commit won't receive any further notifications.
@@ -98,8 +95,11 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
       const GURL& url,
       base::Optional<blink::WebNavigationType> navigation_type) {}
 
-  // Called when a navigation is about to be committed and |document_loader|
+  // Called when a navigation has just committed and |document_loader|
   // will start loading a new document in the RenderFrame.
+  // TODO(dgozman): the name does not match functionality anymore, we should
+  // merge this with DidCommitProvisionalLoad, which will become
+  // DidFinishNavigation.
   virtual void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) {}
 
@@ -109,7 +109,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // TODO(dgozman): replace next two methods with DidFinishNavigation.
   virtual void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                         ui::PageTransition transition) {}
-  virtual void DidFailProvisionalLoad(const blink::WebURLError& error) {}
+  virtual void DidFailProvisionalLoad() {}
   virtual void DidFinishLoad() {}
   virtual void DidFinishDocumentLoad() {}
   virtual void DidHandleOnloadEvents() {}
@@ -158,8 +158,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
 
   // Notification when the renderer uses a particular code path during a page
   // load. This is used for metrics collection.
-  virtual void DidObserveLoadingBehavior(
-      blink::WebLoadingBehaviorFlag behavior) {}
+  virtual void DidObserveLoadingBehavior(blink::LoadingBehaviorFlag behavior) {}
 
   // Notification when the renderer observes a new use counter usage during a
   // page load. This is used for UseCounter metrics.
@@ -192,7 +191,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidStartResponse(
       const GURL& response_url,
       int request_id,
-      const network::ResourceResponseHead& response_head,
+      const network::mojom::URLResponseHead& response_head,
       content::ResourceType resource_type,
       PreviewsState previews_state) {}
   virtual void DidCompleteResponse(

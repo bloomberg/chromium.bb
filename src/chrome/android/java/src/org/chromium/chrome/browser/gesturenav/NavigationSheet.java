@@ -9,7 +9,6 @@ import android.view.View;
 
 import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.NavigationHistory;
 
@@ -34,12 +33,6 @@ public interface NavigationSheet {
          * Navigates to the page associated with the given index.
          */
         void navigateToIndex(int index);
-
-        /**
-         * Sets a runnable to execute when the associated Tab is closed.
-         * @param runnable Runnable to execute.
-         */
-        void setTabCloseRunnable(Runnable runnable);
     }
 
     /**
@@ -71,9 +64,8 @@ public interface NavigationSheet {
      */
     public static boolean isInstanceShowing(BottomSheetController controller) {
         if (controller == null) return false;
-        BottomSheet sheet = controller.getBottomSheet();
-        return (sheet.getCurrentSheetContent() instanceof NavigationSheetCoordinator)
-                && sheet.isSheetOpen();
+        return (controller.getCurrentSheetContent() instanceof NavigationSheetCoordinator)
+                && controller.isSheetOpen();
     }
 
     /**
@@ -84,7 +76,12 @@ public interface NavigationSheet {
         public void start(boolean forward, boolean showCloseIndicator) {}
 
         @Override
-        public void startAndExpand(boolean forward, boolean animate) {}
+        public boolean startAndExpand(boolean forward, boolean animate) {
+            return false;
+        }
+
+        @Override
+        public void close(boolean animate) {}
 
         @Override
         public void onScroll(float delta, float overscroll, boolean willNavigate) {}
@@ -115,8 +112,15 @@ public interface NavigationSheet {
      * Fully expand the navigation sheet from the beginning.
      * @param forward {@code true} if this is for forward navigation.
      * @param animate {@code true} to enable animation.
+     * @return {@code true} if the sheet is opened as expected.
      */
-    void startAndExpand(boolean forward, boolean animate);
+    boolean startAndExpand(boolean forward, boolean animate);
+
+    /**
+     * Close the navigation sheet.
+     * @param animate {@code true} to enable animation.
+     */
+    void close(boolean animate);
 
     /**
      * Process swipe gesture and update the navigation sheet state.

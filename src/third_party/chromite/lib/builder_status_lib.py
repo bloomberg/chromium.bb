@@ -53,7 +53,7 @@ def CancelBuilds(buildbucket_ids, buildbucket_client,
         dryrun=debug)
     result_map = buildbucket_lib.GetResultMap(cancel_results)
     for buildbucket_id, result in result_map.items():
-      #Check for error messages
+      # Check for error messages
       if buildbucket_lib.GetNestedAttr(result, ['error']):
         # TODO(nxia): Get build url and log url in the warnings.
         logging.warning('Error cancelling build %s with reason: %s. '
@@ -355,7 +355,7 @@ class SlaveBuilderStatus(object):
     self.buildbucket_info_dict = self.GetAllSlaveBuildbucketInfo(
         self.buildbucket_client, scheduled_buildbucket_info_dict,
         dry_run=self.dry_run)
-    self.builders_array = self.buildbucket_info_dict.keys()
+    self.builders_array = list(self.buildbucket_info_dict)
 
     self.cidb_info_dict = self.GetAllSlaveCIDBStatusInfo(
         self.buildstore, self.master_build_identifier,
@@ -482,7 +482,7 @@ class SlaveBuilderStatus(object):
       BuildbucketInfos (The BuildbucketInfo of the most recently retried one of
       there're multiple retries for a slave build config).
     """
-    #TODO(nxia): consider replacing this with a more elaborate fix
+    # TODO(nxia): Consider replacing this with a more elaborate fix.
     if buildbucket_client is None:
       return {}
 
@@ -530,7 +530,7 @@ class SlaveBuilderStatus(object):
       map only contains slave builds which are associated with buildbucket_ids
       recorded in all_buildbucket_info_dict.
     """
-    # TODO(buildstore): make sure buildstore is BuildStore, not CIDBConnection.
+    # TODO(buildstore): Make sure buildstore is BuildStore, not CIDBConnection.
     all_cidb_status_dict = {}
     if buildstore is not None:
       buildbucket_ids = None if all_buildbucket_info_dict is None else [

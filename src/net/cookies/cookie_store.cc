@@ -9,7 +9,27 @@
 
 namespace net {
 
+CookieStore::CookieStore() = default;
+
 CookieStore::~CookieStore() = default;
+
+// Default implementation which returns a default vector of UNKNOWN
+// CookieAccessSemantics.
+void CookieStore::GetAllCookiesWithAccessSemanticsAsync(
+    GetAllCookiesWithAccessSemanticsCallback callback) {
+  GetAllCookiesCallback adapted_callback = base::BindOnce(
+      [](CookieStore::GetAllCookiesWithAccessSemanticsCallback
+             original_callback,
+         const CookieList& cookies) {
+        std::vector<CookieAccessSemantics> default_access_semantics_list;
+        default_access_semantics_list.assign(cookies.size(),
+                                             CookieAccessSemantics::UNKNOWN);
+        std::move(original_callback)
+            .Run(cookies, default_access_semantics_list);
+      },
+      std::move(callback));
+  GetAllCookiesAsync(std::move(adapted_callback));
+}
 
 void CookieStore::DeleteAllAsync(DeleteCallback callback) {
   DeleteAllCreatedInTimeRangeAsync(CookieDeletionInfo::TimeRange(),
@@ -18,6 +38,11 @@ void CookieStore::DeleteAllAsync(DeleteCallback callback) {
 
 void CookieStore::SetForceKeepSessionState() {
   // By default, do nothing.
+}
+
+void CookieStore::SetCookieAccessDelegate(
+    std::unique_ptr<CookieAccessDelegate> delegate) {
+  cookie_access_delegate_ = std::move(delegate);
 }
 
 void CookieStore::DumpMemoryStats(

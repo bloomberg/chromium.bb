@@ -7,7 +7,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 
 @protocol BrowserCoordinatorCommands;
 @class ManualFillInjectionHandler;
@@ -56,6 +56,9 @@ class WebStateList;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
+
+// This resets the input accessory to a clean state.
+- (void)reset;
 
 @end
 

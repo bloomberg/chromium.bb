@@ -50,15 +50,15 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
   void ModelReadyToSync(NigoriSyncBridge* bridge,
                         NigoriMetadataBatch nigori_metadata) override;
   void Put(std::unique_ptr<EntityData> entity_data) override;
+  bool IsEntityUnsynced() override;
   NigoriMetadataBatch GetMetadata() override;
   void ReportError(const ModelError& error) override;
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
+  bool IsTrackingMetadata() override;
 
   bool IsConnectedForTest() const;
 
  private:
-  bool IsTrackingMetadata();
-
   // Returns true if the handshake with sync thread is complete.
   bool IsConnected() const;
 

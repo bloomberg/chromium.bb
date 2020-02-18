@@ -4,6 +4,8 @@
 
 library chromium.cast;
 
+using fuchsia.web;
+
 /// Describes the configuration under which a Cast application should run.
 table ApplicationConfig {
   /// Cast application Id.
@@ -16,15 +18,19 @@ table ApplicationConfig {
   /// implementation.
   3: string web_url;
 
-  /// Touch input policy to be applied to the application.
-  /// If true, then touch input is forced on.
-  /// If false, then touch input is disabled.
-  /// If unset, then the caller is allowed to enable or disable input.
-  4: bool touch_enabled_policy;
+  4: reserved;
 
   // If true, enable remote debugging for this application.
   // if false or unset, remote debugging is disabled for this application.
   5: bool enable_remote_debugging;
+
+  /// List of directories whose contents are served via `fuchsia-dir://`
+  /// URLs. Networking will be disabled if any directories are set.
+  6: vector<fuchsia.web.ContentDirectoryProvider>
+      content_directories_for_isolated_application;
+
+  /// The URL of the agent to handle this application.
+  7: string agent_url;
 };
 
 /// Service interface for working with application configurations.

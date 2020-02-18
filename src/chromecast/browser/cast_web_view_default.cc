@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -14,7 +15,7 @@
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"
-#include "chromecast/browser/cast_web_contents_manager.h"
+#include "chromecast/browser/cast_web_service.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/media_session.h"
@@ -41,13 +42,8 @@ namespace {
 std::unique_ptr<content::WebContents> CreateWebContents(
     content::BrowserContext* browser_context,
     scoped_refptr<content::SiteInstance> site_instance) {
-  CHECK(display::Screen::GetScreen());
-  gfx::Size display_size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().size();
-
-  content::WebContents::CreateParams create_params(browser_context, NULL);
+  content::WebContents::CreateParams create_params(browser_context, nullptr);
   create_params.routing_id = MSG_ROUTING_NONE;
-  create_params.initial_size = display_size;
   create_params.site_instance = site_instance;
   return content::WebContents::Create(create_params);
 }
@@ -56,21 +52,26 @@ std::unique_ptr<content::WebContents> CreateWebContents(
 
 CastWebViewDefault::CastWebViewDefault(
     const CreateParams& params,
-    CastWebContentsManager* web_contents_manager,
+    CastWebService* web_service,
     content::BrowserContext* browser_context,
-    scoped_refptr<content::SiteInstance> site_instance)
-    : web_contents_manager_(web_contents_manager),
+    scoped_refptr<content::SiteInstance> site_instance,
+    std::unique_ptr<CastContentWindow> cast_content_window)
+    : CastWebView(params),
+      web_service_(web_service),
       browser_context_(browser_context),
       site_instance_(std::move(site_instance)),
-      delegate_(params.delegate),
+      activity_id_(params.activity_id),
+      session_id_(params.window_params.session_id),
+      sdk_version_(params.sdk_version),
       allow_media_access_(params.allow_media_access),
       log_prefix_(params.log_prefix),
       web_contents_(CreateWebContents(browser_context_, site_instance_)),
       cast_web_contents_(web_contents_.get(), params.web_contents_params),
-      window_(shell::CastContentWindow::Create(params.window_params)),
+      window_(cast_content_window
+                  ? std::move(cast_content_window)
+                  : web_service->CreateWindow(params.window_params)),
       resize_window_when_navigation_starts_(true) {
-  DCHECK(delegate_);
-  DCHECK(web_contents_manager_);
+  DCHECK(web_service_);
   DCHECK(browser_context_);
   DCHECK(window_);
   content::WebContentsObserver::Observe(web_contents_.get());
@@ -91,7 +92,7 @@ CastWebViewDefault::CastWebViewDefault(
 
 CastWebViewDefault::~CastWebViewDefault() {}
 
-shell::CastContentWindow* CastWebViewDefault::window() const {
+CastContentWindow* CastWebViewDefault::window() const {
   return window_.get();
 }
 
@@ -107,8 +108,7 @@ void CastWebViewDefault::LoadUrl(GURL url) {
   cast_web_contents_.LoadUrl(url);
 }
 
-void CastWebViewDefault::ClosePage(const base::TimeDelta& shutdown_delay) {
-  shutdown_delay_ = shutdown_delay;
+void CastWebViewDefault::ClosePage() {
   content::WebContentsObserver::Observe(nullptr);
   cast_web_contents_.ClosePage();
 }
@@ -116,25 +116,17 @@ void CastWebViewDefault::ClosePage(const base::TimeDelta& shutdown_delay) {
 void CastWebViewDefault::CloseContents(content::WebContents* source) {
   DCHECK_EQ(source, web_contents_.get());
   window_.reset();  // Window destructor requires live web_contents on Android.
-  if (!shutdown_delay_.is_zero()) {
-    // We need to delay the deletion of web_contents_ to give (and guarantee)
-    // the renderer enough time to finish 'onunload' handler (but we don't want
-    // to wait any longer than that to delay the starting of next app).
-    web_contents_manager_->DelayWebContentsDeletion(std::move(web_contents_),
-                                                    shutdown_delay_);
-  }
   // This will signal to the owner that |web_contents_| is no longer in use,
   // permitting the owner to tear down.
   cast_web_contents_.Stop(net::OK);
 }
 
-void CastWebViewDefault::InitializeWindow(CastWindowManager* window_manager,
-                                          CastWindowManager::WindowId z_order,
+void CastWebViewDefault::InitializeWindow(mojom::ZOrder z_order,
                                           VisibilityPriority initial_priority) {
-  DCHECK(window_manager);
-  DCHECK(window_);
-  window_->CreateWindowForWebContents(web_contents_.get(), window_manager,
-                                      z_order, initial_priority);
+  if (!window_)
+    return;
+  window_->CreateWindowForWebContents(&cast_web_contents_, z_order,
+                                      initial_priority);
   web_contents_->Focus();
 }
 
@@ -269,10 +261,24 @@ std::unique_ptr<content::BluetoothChooser>
 CastWebViewDefault::RunBluetoothChooser(
     content::RenderFrameHost* frame,
     const content::BluetoothChooser::EventHandler& event_handler) {
-  auto chooser = delegate_->RunBluetoothChooser(frame, event_handler);
+  std::unique_ptr<content::BluetoothChooser> chooser;
+  if (delegate_) {
+    chooser = delegate_->RunBluetoothChooser(frame, event_handler);
+  }
   return chooser
              ? std::move(chooser)
              : WebContentsDelegate::RunBluetoothChooser(frame, event_handler);
+}
+
+bool CastWebViewDefault::ShouldAllowRunningInsecureContent(
+    content::WebContents* /* web_contents */,
+    bool allowed_per_prefs,
+    const url::Origin& /* origin */,
+    const GURL& /* resource_url */) {
+  metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
+      activity_id_, session_id_, sdk_version_,
+      "Cast.Platform.AppRunningInsecureContent");
+  return allowed_per_prefs;
 }
 
 void CastWebViewDefault::DidStartNavigation(

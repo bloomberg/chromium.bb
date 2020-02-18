@@ -28,11 +28,11 @@ namespace dawn_wire {
         mImpl.reset();
     }
 
-    const char* WireServer::HandleCommands(const char* commands, size_t size) {
+    const volatile char* WireServer::HandleCommands(const volatile char* commands, size_t size) {
         return mImpl->HandleCommands(commands, size);
     }
 
-    bool WireServer::InjectTexture(DawnTexture texture, uint32_t id, uint32_t generation) {
+    bool WireServer::InjectTexture(WGPUTexture texture, uint32_t id, uint32_t generation) {
         return mImpl->InjectTexture(texture, id, generation);
     }
 

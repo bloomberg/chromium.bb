@@ -189,6 +189,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
     route_to_root_for_devtools_ = route;
   }
 
+  void SetAutoScrollInProgress(bool is_autoscroll_in_progress);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserSideFlingBrowserTest,
                            InertialGSUBubblingStopsWhenParentCannotScroll);
@@ -316,7 +318,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   void DispatchEventToTarget(
       RenderWidgetHostViewBase* root_view,
       RenderWidgetHostViewBase* target,
-      const blink::WebInputEvent& event,
+      blink::WebInputEvent* event,
       const ui::LatencyInfo& latency,
       const base::Optional<gfx::PointF>& target_location) override;
   // Notify whether the events in the queue are being flushed due to touch ack

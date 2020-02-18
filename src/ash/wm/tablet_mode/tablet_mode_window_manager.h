@@ -13,10 +13,10 @@
 
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
-#include "ash/shell_observer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_observer.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
@@ -41,7 +41,7 @@ class TabletModeWindowState;
 class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                                            public display::DisplayObserver,
                                            public OverviewObserver,
-                                           public ShellObserver,
+                                           public SplitViewObserver,
                                            public SessionObserver {
  public:
   // This should only be created or deleted by the creator
@@ -49,7 +49,12 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   TabletModeWindowManager();
   ~TabletModeWindowManager() override;
 
+  // Returns the top window on MRU window list, or null if the list
+  // is empty.
   static aura::Window* GetTopWindow();
+
+  // Returns whether the top window should be minimized on back action.
+  static bool ShouldMinimizeTopWindowOnBack();
 
   void Init();
 
@@ -82,8 +87,9 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // OverviewObserver:
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
-  // ShellObserver:
-  void OnSplitViewModeEnded() override;
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -170,6 +176,9 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   base::flat_set<AccountId> accounts_since_entering_tablet_;
 
   std::unique_ptr<TabletModeEventHandler> event_handler_;
+
+  // True when tablet mode is about to end.
+  bool is_exiting_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManager);
 };

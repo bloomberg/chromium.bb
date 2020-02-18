@@ -28,8 +28,8 @@
 #include <memory>
 
 #include "api/jsep_ice_candidate.h"
-#include "api/media_transport_interface.h"
 #include "api/rtc_event_log_output_file.h"
+#include "api/transport/media/media_transport_interface.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/numerics/safe_conversions.h"
 
@@ -236,11 +236,11 @@ void PeerConnectionDelegateAdapter::OnIceCandidatesRemoved(
 void PeerConnectionDelegateAdapter::OnIceSelectedCandidatePairChanged(
     const cricket::CandidatePairChangeEvent &event) {
   const auto &selected_pair = event.selected_candidate_pair;
-  auto local_candidate_wrapper = absl::make_unique<JsepIceCandidate>(
+  auto local_candidate_wrapper = std::make_unique<JsepIceCandidate>(
       selected_pair.local_candidate().transport_name(), -1, selected_pair.local_candidate());
   RTCIceCandidate *local_candidate =
       [[RTCIceCandidate alloc] initWithNativeCandidate:local_candidate_wrapper.release()];
-  auto remote_candidate_wrapper = absl::make_unique<JsepIceCandidate>(
+  auto remote_candidate_wrapper = std::make_unique<JsepIceCandidate>(
       selected_pair.remote_candidate().transport_name(), -1, selected_pair.remote_candidate());
   RTCIceCandidate *remote_candidate =
       [[RTCIceCandidate alloc] initWithNativeCandidate:remote_candidate_wrapper.release()];
@@ -563,7 +563,7 @@ void PeerConnectionDelegateAdapter::OnRemoveTrack(
                                                  rtc::saturated_cast<size_t>(maxSizeInBytes);
 
   _hasStartedRtcEventLog = _peerConnection->StartRtcEventLog(
-      absl::make_unique<webrtc::RtcEventLogOutputFile>(f, max_size));
+      std::make_unique<webrtc::RtcEventLogOutputFile>(f, max_size));
   return _hasStartedRtcEventLog;
 }
 

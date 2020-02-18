@@ -73,7 +73,7 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseValue(
     const String& string,
     bool important,
     const CSSParserContext* context) {
-  CSSParserImpl parser(context);
+  STACK_UNINITIALIZED CSSParserImpl parser(context);
   StyleRule::RuleType rule_type = StyleRule::kStyle;
   if (declaration->CssParserMode() == kCSSViewportRuleMode)
     rule_type = StyleRule::kViewport;
@@ -99,7 +99,7 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
     bool important,
     const CSSParserContext* context,
     bool is_animation_tainted) {
-  CSSParserImpl parser(context);
+  STACK_UNINITIALIZED CSSParserImpl parser(context);
   CSSTokenizer tokenizer(value);
   // TODO(crbug.com/661854): Use streams instead of ranges
   const auto tokens = tokenizer.TokenizeToEOF();
@@ -265,12 +265,15 @@ ParseSheetResult CSSParserImpl::ParseStyleSheet(
   ParseSheetResult result = ParseSheetResult::kSucceeded;
   bool first_rule_valid = parser.ConsumeRuleList(
       stream, kTopLevelRuleList,
-      [&style_sheet, &result, allow_import_rules](StyleRuleBase* rule) {
+      [&style_sheet, &result, allow_import_rules,
+       context](StyleRuleBase* rule) {
         if (rule->IsCharsetRule())
           return;
-        if (rule->IsImportRule() && !allow_import_rules) {
-          result = ParseSheetResult::kHasUnallowedImportRule;
-          return;
+        if (rule->IsImportRule()) {
+          if (!allow_import_rules || context->IsForMarkupSanitization()) {
+            result = ParseSheetResult::kHasUnallowedImportRule;
+            return;
+          }
         }
         style_sheet->ParserAppendRule(rule);
       });
@@ -525,8 +528,6 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
       return ConsumeViewportRule(prelude, prelude_offset, stream);
     case kCSSAtRuleFontFace:
       return ConsumeFontFaceRule(prelude, prelude_offset, stream);
-    case kCSSAtRuleFontFeatureValues:
-      return ConsumeFontFeatureValuesRule(prelude, prelude_offset, stream);
     case kCSSAtRuleWebkitKeyframes:
       return ConsumeKeyframesRule(true, prelude, prelude_offset, stream);
     case kCSSAtRuleKeyframes:
@@ -754,44 +755,6 @@ StyleRuleFontFace* CSSParserImpl::ConsumeFontFaceRule(
   ConsumeDeclarationList(stream, StyleRule::kFontFace);
   return MakeGarbageCollected<StyleRuleFontFace>(
       CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
-}
-
-StyleRuleFontFeatureValues* CSSParserImpl::ConsumeFontFeatureValuesRule(
-    CSSParserTokenRange prelude,
-    const RangeOffset& prelude_offset,
-    CSSParserTokenStream& block) {
-  if (!RuntimeEnabledFeatures::CSSFontFeatureValuesEnabled())
-    return nullptr;
-
-  const CSSValueList* font_family =
-      css_parsing_utils::ConsumeFontFamily(prelude);
-  if (!font_family || !prelude.AtEnd())
-    return nullptr;
-
-  if (observer_) {
-    observer_->StartRuleHeader(StyleRule::kFontFeatureValues,
-                               prelude_offset.start);
-    observer_->EndRuleHeader(prelude_offset.end);
-    observer_->StartRuleBody(block.Offset());
-  }
-
-  const CSSIdentifierValue* font_display = nullptr;
-  ConsumeRuleList(
-      block, kFontFeatureRuleList, [&font_display](StyleRuleBase* rule) {
-        const CSSValue* value =
-            To<StyleRuleFontFace>(rule)->Properties().GetPropertyCSSValue(
-                CSSPropertyID::kFontDisplay);
-        if (value)
-          font_display = To<CSSIdentifierValue>(value);
-      });
-
-  if (observer_)
-    observer_->EndRuleBody(block.Offset());
-
-  if (!block.AtEnd())
-    return nullptr;
-  return MakeGarbageCollected<StyleRuleFontFeatureValues>(font_family,
-                                                          font_display);
 }
 
 StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(

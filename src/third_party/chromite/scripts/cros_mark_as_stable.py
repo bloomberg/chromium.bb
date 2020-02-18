@@ -54,10 +54,10 @@ def CleanStalePackages(srcroot, boards, package_atoms):
   def _CleanStalePackages(board):
     if board:
       suffix = '-' + board
-      runcmd = cros_build_lib.RunCommand
+      runcmd = cros_build_lib.run
     else:
       suffix = ''
-      runcmd = cros_build_lib.SudoRunCommand
+      runcmd = cros_build_lib.sudo_run
 
     emerge, eclean = 'emerge' + suffix, 'eclean' + suffix
     if not osutils.FindMissingBinaries([emerge, eclean]):
@@ -66,7 +66,7 @@ def CleanStalePackages(srcroot, boards, package_atoms):
         result = runcmd([emerge, '-q', '--unmerge'] + list(package_atoms),
                         enter_chroot=True, extra_env={'CLEAN_DELAY': '0'},
                         error_code_ok=True, cwd=srcroot)
-        if not result.returncode in (0, 1):
+        if result.returncode not in (0, 1):
           raise cros_build_lib.RunCommandError('unexpected error', result)
       runcmd([eclean, '-d', 'packages'],
              cwd=srcroot, enter_chroot=True,
@@ -237,7 +237,7 @@ def GetParser():
                       help='Prints out debug info.')
   parser.add_argument('--staging_branch',
                       help='The staging branch to push changes')
-  parser.add_argument('command', choices=COMMAND_DICTIONARY.keys(),
+  parser.add_argument('command', choices=sorted(COMMAND_DICTIONARY),
                       help='Command to run.')
   return parser
 
@@ -532,6 +532,9 @@ def _WorkOnEbuild(overlay, ebuild, manifest, options, ebuild_paths_to_add,
 
       revved_packages.append(ebuild.package)
       new_package_atoms.append('=%s' % new_package)
+  except portage_util.EbuildVersionError as e:
+    logging.warning('Unable to rev %s: %s', ebuild.package, e)
+    raise
   except (OSError, IOError):
     logging.warning(
         'Cannot rev %s\n'

@@ -20,7 +20,7 @@ class ChrootTest(cros_test_lib.TempDirTestCase):
   def testGetEnterArgsEmpty(self):
     """Test empty instance behavior."""
     chroot = chroot_lib.Chroot()
-    self.assertFalse(chroot.GetEnterArgs())
+    self.assertFalse(chroot.get_enter_args())
 
   def testGetEnterArgsAll(self):
     """Test complete instance behavior."""
@@ -32,7 +32,7 @@ class ChrootTest(cros_test_lib.TempDirTestCase):
     chroot = chroot_lib.Chroot(path=path, cache_dir=cache_dir,
                                chrome_root=chrome_root)
 
-    self.assertItemsEqual(expected, chroot.GetEnterArgs())
+    self.assertCountEqual(expected, chroot.get_enter_args())
 
   def testEnv(self):
     """Test the env handling."""

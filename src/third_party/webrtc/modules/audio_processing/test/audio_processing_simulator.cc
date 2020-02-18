@@ -13,11 +13,11 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "absl/memory/memory.h"
 #include "api/audio/echo_canceller3_config_json.h"
 #include "api/audio/echo_canceller3_factory.h"
 #include "common_audio/include/audio_util.h"
@@ -139,7 +139,7 @@ AudioProcessingSimulator::AudioProcessingSimulator(
     std::unique_ptr<AudioProcessingBuilder> ap_builder)
     : settings_(settings),
       ap_builder_(ap_builder ? std::move(ap_builder)
-                             : absl::make_unique<AudioProcessingBuilder>()),
+                             : std::make_unique<AudioProcessingBuilder>()),
       analog_mic_level_(settings.initial_mic_level),
       fake_recording_device_(
           settings.initial_mic_level,
@@ -188,15 +188,12 @@ void AudioProcessingSimulator::ProcessStream(bool fixed_interface) {
     }
 
     // Notify the current mic level to AGC.
-    RTC_CHECK_EQ(AudioProcessing::kNoError,
-                 ap_->gain_control()->set_stream_analog_level(
-                     fake_recording_device_.MicLevel()));
+    ap_->set_stream_analog_level(fake_recording_device_.MicLevel());
   } else {
     // Notify the current mic level to AGC.
-    RTC_CHECK_EQ(AudioProcessing::kNoError,
-                 ap_->gain_control()->set_stream_analog_level(
-                     settings_.aec_dump_input_filename ? aec_dump_mic_level_
-                                                       : analog_mic_level_));
+    ap_->set_stream_analog_level(settings_.aec_dump_input_filename
+                                     ? aec_dump_mic_level_
+                                     : analog_mic_level_);
   }
 
   // Process the current audio frame.
@@ -218,7 +215,7 @@ void AudioProcessingSimulator::ProcessStream(bool fixed_interface) {
   // Store the mic level suggested by AGC.
   // Note that when the analog gain is simulated and an AEC dump is used as
   // input, |analog_mic_level_| will not be used with set_stream_analog_level().
-  analog_mic_level_ = ap_->gain_control()->stream_analog_level();
+  analog_mic_level_ = ap_->recommended_stream_analog_level();
   if (settings_.simulate_mic_gain) {
     fake_recording_device_.SetMicLevel(analog_mic_level_);
   }
@@ -228,6 +225,20 @@ void AudioProcessingSimulator::ProcessStream(bool fixed_interface) {
   } else if (buffer_file_writer_) {
     RTC_CHECK(!buffer_memory_writer_);
     buffer_file_writer_->Write(*out_buf_);
+  }
+
+  if (linear_aec_output_file_writer_) {
+    bool output_available = ap_->GetLinearAecOutput(linear_aec_output_buf_);
+    RTC_CHECK(output_available);
+    RTC_CHECK_GT(linear_aec_output_buf_.size(), 0);
+    RTC_CHECK_EQ(linear_aec_output_buf_[0].size(), 160);
+    for (size_t k = 0; k < linear_aec_output_buf_[0].size(); ++k) {
+      for (size_t ch = 0; ch < linear_aec_output_buf_.size(); ++ch) {
+        RTC_CHECK_EQ(linear_aec_output_buf_[ch].size(), 160);
+        linear_aec_output_file_writer_->WriteSamples(
+            &linear_aec_output_buf_[ch][k], 1);
+      }
+    }
   }
 
   if (residual_echo_likelihood_graph_writer_.is_open()) {
@@ -341,8 +352,23 @@ void AudioProcessingSimulator::SetupOutput() {
                       static_cast<size_t>(out_config_.num_channels())));
     buffer_file_writer_.reset(new ChannelBufferWavWriter(std::move(out_file)));
   } else if (settings_.aec_dump_input_string.has_value()) {
-    buffer_memory_writer_ = absl::make_unique<ChannelBufferVectorWriter>(
+    buffer_memory_writer_ = std::make_unique<ChannelBufferVectorWriter>(
         settings_.processed_capture_samples);
+  }
+
+  if (settings_.linear_aec_output_filename) {
+    std::string filename;
+    if (settings_.store_intermediate_output) {
+      filename = GetIndexedOutputWavFilename(
+          *settings_.linear_aec_output_filename, output_reset_counter_);
+    } else {
+      filename = *settings_.linear_aec_output_filename;
+    }
+
+    linear_aec_output_file_writer_.reset(
+        new WavWriter(filename, 16000, out_config_.num_channels()));
+
+    linear_aec_output_buf_.resize(out_config_.num_channels());
   }
 
   if (settings_.reverse_output_filename) {
@@ -377,6 +403,15 @@ void AudioProcessingSimulator::CreateAudioProcessor() {
   if (settings_.use_ts) {
     config.Set<ExperimentalNs>(new ExperimentalNs(*settings_.use_ts));
   }
+  if (settings_.multi_channel_render) {
+    apm_config.pipeline.multi_channel_render = *settings_.multi_channel_render;
+  }
+
+  if (settings_.multi_channel_capture) {
+    apm_config.pipeline.multi_channel_capture =
+        *settings_.multi_channel_capture;
+  }
+
   if (settings_.use_agc2) {
     apm_config.gain_controller2.enabled = *settings_.use_agc2;
     if (settings_.agc2_fixed_gain_db) {
@@ -408,6 +443,8 @@ void AudioProcessingSimulator::CreateAudioProcessor() {
     apm_config.echo_canceller.mobile_mode = use_aecm;
     apm_config.echo_canceller.use_legacy_aec = use_legacy_aec;
   }
+  apm_config.echo_canceller.export_linear_aec_output =
+      !!settings_.linear_aec_output_filename;
 
   RTC_CHECK(!(use_legacy_aec && settings_.aec_settings_filename))
       << "The legacy AEC cannot be configured using settings";
@@ -419,8 +456,13 @@ void AudioProcessingSimulator::CreateAudioProcessor() {
         std::cout << "Reading AEC Parameters from JSON input." << std::endl;
       }
       cfg = ReadAec3ConfigFromJsonFile(*settings_.aec_settings_filename);
-      echo_control_factory.reset(new EchoCanceller3Factory(cfg));
     }
+
+    if (settings_.linear_aec_output_filename) {
+      cfg.filter.export_linear_aec_output = true;
+    }
+
+    echo_control_factory.reset(new EchoCanceller3Factory(cfg));
 
     if (settings_.print_aec_parameter_values) {
       if (!settings_.use_quiet_output) {
@@ -450,6 +492,33 @@ void AudioProcessingSimulator::CreateAudioProcessor() {
     apm_config.high_pass_filter.enabled = *settings_.use_hpf;
   }
 
+  if (settings_.use_le) {
+    apm_config.level_estimation.enabled = *settings_.use_le;
+  }
+
+  if (settings_.use_vad) {
+    apm_config.voice_detection.enabled = *settings_.use_vad;
+  }
+
+  if (settings_.use_agc) {
+    apm_config.gain_controller1.enabled = *settings_.use_agc;
+  }
+  if (settings_.agc_mode) {
+    apm_config.gain_controller1.mode =
+        static_cast<webrtc::AudioProcessing::Config::GainController1::Mode>(
+            *settings_.agc_mode);
+  }
+  if (settings_.use_agc_limiter) {
+    apm_config.gain_controller1.enable_limiter = *settings_.use_agc_limiter;
+  }
+  if (settings_.agc_target_level) {
+    apm_config.gain_controller1.target_level_dbfs = *settings_.agc_target_level;
+  }
+  if (settings_.agc_compression_gain) {
+    apm_config.gain_controller1.compression_gain_db =
+        *settings_.agc_compression_gain;
+  }
+
   if (settings_.use_refined_adaptive_filter) {
     config.Set<RefinedAdaptiveFilter>(
         new RefinedAdaptiveFilter(*settings_.use_refined_adaptive_filter));
@@ -470,6 +539,28 @@ void AudioProcessingSimulator::CreateAudioProcessor() {
     apm_config.residual_echo_detector.enabled = *settings_.use_ed;
   }
 
+  if (settings_.maximum_internal_processing_rate) {
+    apm_config.pipeline.maximum_internal_processing_rate =
+        *settings_.maximum_internal_processing_rate;
+  }
+
+  const bool use_legacy_ns =
+      settings_.use_legacy_ns && *settings_.use_legacy_ns;
+  if (use_legacy_ns) {
+    apm_config.noise_suppression.use_legacy_ns = use_legacy_ns;
+  }
+
+  if (settings_.use_ns) {
+    apm_config.noise_suppression.enabled = *settings_.use_ns;
+  }
+  if (settings_.ns_level) {
+    const int level = *settings_.ns_level;
+    RTC_CHECK_GE(level, 0);
+    RTC_CHECK_LE(level, 3);
+    apm_config.noise_suppression.level =
+        static_cast<AudioProcessing::Config::NoiseSuppression::Level>(level);
+  }
+
   RTC_CHECK(ap_builder_);
   if (echo_control_factory) {
     ap_builder_->SetEchoControlFactory(std::move(echo_control_factory));
@@ -479,56 +570,6 @@ void AudioProcessingSimulator::CreateAudioProcessor() {
   RTC_CHECK(ap_);
 
   ap_->ApplyConfig(apm_config);
-
-  if (settings_.use_agc) {
-    RTC_CHECK_EQ(AudioProcessing::kNoError,
-                 ap_->gain_control()->Enable(*settings_.use_agc));
-  }
-  if (settings_.use_ns) {
-    RTC_CHECK_EQ(AudioProcessing::kNoError,
-                 ap_->noise_suppression()->Enable(*settings_.use_ns));
-  }
-  if (settings_.use_le) {
-    RTC_CHECK_EQ(AudioProcessing::kNoError,
-                 ap_->level_estimator()->Enable(*settings_.use_le));
-  }
-  if (settings_.use_vad) {
-    RTC_CHECK_EQ(AudioProcessing::kNoError,
-                 ap_->voice_detection()->Enable(*settings_.use_vad));
-  }
-  if (settings_.use_agc_limiter) {
-    RTC_CHECK_EQ(AudioProcessing::kNoError, ap_->gain_control()->enable_limiter(
-                                                *settings_.use_agc_limiter));
-  }
-  if (settings_.agc_target_level) {
-    RTC_CHECK_EQ(AudioProcessing::kNoError,
-                 ap_->gain_control()->set_target_level_dbfs(
-                     *settings_.agc_target_level));
-  }
-  if (settings_.agc_compression_gain) {
-    RTC_CHECK_EQ(AudioProcessing::kNoError,
-                 ap_->gain_control()->set_compression_gain_db(
-                     *settings_.agc_compression_gain));
-  }
-  if (settings_.agc_mode) {
-    RTC_CHECK_EQ(
-        AudioProcessing::kNoError,
-        ap_->gain_control()->set_mode(
-            static_cast<webrtc::GainControl::Mode>(*settings_.agc_mode)));
-  }
-
-  if (settings_.vad_likelihood) {
-    RTC_CHECK_EQ(AudioProcessing::kNoError,
-                 ap_->voice_detection()->set_likelihood(
-                     static_cast<webrtc::VoiceDetection::Likelihood>(
-                         *settings_.vad_likelihood)));
-  }
-  if (settings_.ns_level) {
-    RTC_CHECK_EQ(
-        AudioProcessing::kNoError,
-        ap_->noise_suppression()->set_level(
-            static_cast<NoiseSuppression::Level>(*settings_.ns_level)));
-  }
 
   if (settings_.use_ts) {
     ap_->set_stream_key_pressed(*settings_.use_ts);

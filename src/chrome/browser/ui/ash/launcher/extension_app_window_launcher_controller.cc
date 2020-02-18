@@ -32,7 +32,7 @@ namespace {
 // Get the ShelfID for a given |app_window|.
 ash::ShelfID GetShelfId(AppWindow* app_window) {
   if (IsCameraApp(app_window->extension_id()))
-    return ash::ShelfID(app_list::kInternalAppIdCamera);
+    return ash::ShelfID(ash::kInternalAppIdCamera);
 
   // Set launch_id default value to an empty string. If showInShelf parameter
   // is true and the window key is not empty, its value is appended to the
@@ -165,6 +165,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   const ash::ShelfID shelf_id = GetShelfId(app_window);
   DCHECK(!shelf_id.IsNull());
 
+  window->SetProperty(ash::kAppIDKey, shelf_id.app_id);
   window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
   // TODO(msw): Set shelf item types earlier to avoid ShelfWindowWatcher races.
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);

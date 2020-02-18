@@ -46,7 +46,6 @@ class CSSNumericLiteralValue;
 
 // The order of this enum should not change since its elements are used as
 // indices in the addSubtractResult matrix.
-// TODO(crbug.com/825895): Change it to |enum class CSSMathExpressionCategory|.
 enum CalculationCategory {
   kCalcNumber = 0,
   kCalcLength,
@@ -71,6 +70,7 @@ class CORE_EXPORT CSSMathExpressionNode
   static CSSMathExpressionNode* ParseCalc(const CSSParserTokenRange& tokens);
   static CSSMathExpressionNode* ParseMin(const CSSParserTokenRange& tokens);
   static CSSMathExpressionNode* ParseMax(const CSSParserTokenRange& tokens);
+  static CSSMathExpressionNode* ParseClamp(const CSSParserTokenRange& tokens);
 
   virtual bool IsNumericLiteral() const { return false; }
   virtual bool IsBinaryOperation() const { return false; }
@@ -93,6 +93,12 @@ class CORE_EXPORT CSSMathExpressionNode
       CSSPrimitiveValue::LengthTypeFlags& types) const = 0;
   virtual scoped_refptr<const CalculationExpressionNode>
   ToCalculationExpression(const CSSToLengthConversionData&) const = 0;
+  virtual base::Optional<PixelsAndPercent> ToPixelsAndPercent(
+      const CSSToLengthConversionData&) const = 0;
+
+  scoped_refptr<CalculationValue> ToCalcValue(
+      const CSSToLengthConversionData& conversion_data,
+      ValueRange range) const;
 
   // Evaluates the expression with type conversion (e.g., cm -> px) handled, and
   // returns the result value in the canonical unit of the corresponding
@@ -114,6 +120,11 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual bool IsComputationallyIndependent() const = 0;
 
   CalculationCategory Category() const { return category_; }
+  bool HasPercentage() const {
+    return category_ == kCalcPercent || category_ == kCalcPercentNumber ||
+           category_ == kCalcPercentLength ||
+           category_ == kCalcPercentLengthNumber;
+  }
 
   // Returns the unit type of the math expression *without doing any type
   // conversion* (e.g., 1px + 1em needs type conversion to resolve).
@@ -149,19 +160,24 @@ class CORE_EXPORT CSSMathExpressionNode
 class CORE_EXPORT CSSMathExpressionNumericLiteral final
     : public CSSMathExpressionNode {
  public:
-  static CSSMathExpressionNumericLiteral* Create(CSSNumericLiteralValue* value,
-                                                 bool is_integer = false);
+  static CSSMathExpressionNumericLiteral* Create(
+      const CSSNumericLiteralValue* value,
+      bool is_integer = false);
   static CSSMathExpressionNumericLiteral*
   Create(double value, CSSPrimitiveValue::UnitType type, bool is_integer);
 
-  CSSMathExpressionNumericLiteral(CSSNumericLiteralValue* value,
+  CSSMathExpressionNumericLiteral(const CSSNumericLiteralValue* value,
                                   bool is_integer);
+
+  const CSSNumericLiteralValue& GetValue() const { return *value_; }
 
   bool IsNumericLiteral() const final { return true; }
 
   bool IsZero() const final;
   String CustomCSSText() const final;
   scoped_refptr<const CalculationExpressionNode> ToCalculationExpression(
+      const CSSToLengthConversionData&) const final;
+  base::Optional<PixelsAndPercent> ToPixelsAndPercent(
       const CSSToLengthConversionData&) const final;
   double DoubleValue() const final;
   base::Optional<double> ComputeValueInCanonicalUnit() const final;
@@ -181,7 +197,7 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
 #endif
 
  private:
-  Member<CSSNumericLiteralValue> value_;
+  Member<const CSSNumericLiteralValue> value_;
 };
 
 template <>
@@ -194,16 +210,16 @@ struct DowncastTraits<CSSMathExpressionNumericLiteral> {
 class CORE_EXPORT CSSMathExpressionBinaryOperation final
     : public CSSMathExpressionNode {
  public:
-  static CSSMathExpressionNode* Create(CSSMathExpressionNode* left_side,
-                                       CSSMathExpressionNode* right_side,
+  static CSSMathExpressionNode* Create(const CSSMathExpressionNode* left_side,
+                                       const CSSMathExpressionNode* right_side,
                                        CSSMathOperator op);
   static CSSMathExpressionNode* CreateSimplified(
-      CSSMathExpressionNode* left_side,
-      CSSMathExpressionNode* right_side,
+      const CSSMathExpressionNode* left_side,
+      const CSSMathExpressionNode* right_side,
       CSSMathOperator op);
 
-  CSSMathExpressionBinaryOperation(CSSMathExpressionNode* left_side,
-                                   CSSMathExpressionNode* right_side,
+  CSSMathExpressionBinaryOperation(const CSSMathExpressionNode* left_side,
+                                   const CSSMathExpressionNode* right_side,
                                    CSSMathOperator op,
                                    CalculationCategory category);
 
@@ -217,6 +233,8 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
 
   bool IsZero() const final;
   scoped_refptr<const CalculationExpressionNode> ToCalculationExpression(
+      const CSSToLengthConversionData&) const final;
+  base::Optional<PixelsAndPercent> ToPixelsAndPercent(
       const CSSToLengthConversionData&) const final;
   double DoubleValue() const final;
   base::Optional<double> ComputeValueInCanonicalUnit() const final;
@@ -237,13 +255,9 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
 #endif
 
  private:
-  static CSSMathExpressionNode* GetNumberSide(
-      CSSMathExpressionNode* left_side,
-      CSSMathExpressionNode* right_side);
-
-  static String BuildCSSText(const String& left_expression,
-                             const String& right_expression,
-                             CSSMathOperator op);
+  static const CSSMathExpressionNode* GetNumberSide(
+      const CSSMathExpressionNode* left_side,
+      const CSSMathExpressionNode* right_side);
 
   double Evaluate(double left_side, double right_side) const {
     return EvaluateOperator(left_side, right_side, operator_);
@@ -253,8 +267,8 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
                                  double right_value,
                                  CSSMathOperator op);
 
-  const Member<CSSMathExpressionNode> left_side_;
-  const Member<CSSMathExpressionNode> right_side_;
+  const Member<const CSSMathExpressionNode> left_side_;
+  const Member<const CSSMathExpressionNode> right_side_;
   const CSSMathOperator operator_;
 };
 
@@ -267,7 +281,7 @@ struct DowncastTraits<CSSMathExpressionBinaryOperation> {
 
 class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
  public:
-  using Operands = HeapVector<Member<CSSMathExpressionNode>>;
+  using Operands = HeapVector<Member<const CSSMathExpressionNode>>;
 
   static CSSMathExpressionVariadicOperation* Create(Operands&& operands,
                                                     CSSMathOperator op);
@@ -282,9 +296,14 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
 
   bool IsVariadicOperation() const final { return true; }
 
+  void SetIsClamp() { is_clamp_ = true; }
+  String CSSTextAsClamp() const;
+
   bool IsZero() const final;
   String CustomCSSText() const final;
   scoped_refptr<const CalculationExpressionNode> ToCalculationExpression(
+      const CSSToLengthConversionData&) const final;
+  base::Optional<PixelsAndPercent> ToPixelsAndPercent(
       const CSSToLengthConversionData&) const final;
   double DoubleValue() const final;
   double ComputeLengthPx(
@@ -305,8 +324,8 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
 
  private:
   // Helper for iterating from the 2nd to the last operands
-  // TODO: Is this Oilpan-safe?
-  base::span<const Member<CSSMathExpressionNode>> SecondToLastOperands() const {
+  base::span<const Member<const CSSMathExpressionNode>> SecondToLastOperands()
+      const {
     return base::make_span(std::next(operands_.begin()), operands_.end());
   }
 
@@ -314,6 +333,7 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
 
   Operands operands_;
   const CSSMathOperator operator_;
+  bool is_clamp_ = false;
 };
 
 template <>

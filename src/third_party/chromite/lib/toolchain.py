@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import cStringIO
 import os
 
 from chromite.lib import constants
@@ -17,6 +16,7 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import toolchain_list
+from chromite.utils import key_value_store
 
 if cros_build_lib.IsInsideChroot():
   # Only import portage after we've checked that we're inside the chroot.
@@ -101,8 +101,8 @@ def GetToolchainTupleForBoard(board, buildroot=constants.SOURCE_ROOT):
     The tuples of toolchain targets ordered default, non-default for the board.
   """
   toolchains = GetToolchainsForBoard(board, buildroot)
-  return (FilterToolchains(toolchains, 'default', True).keys() +
-          FilterToolchains(toolchains, 'default', False).keys())
+  return (list(FilterToolchains(toolchains, 'default', True)) +
+          list(FilterToolchains(toolchains, 'default', False)))
 
 
 def FilterToolchains(targets, key, value):
@@ -140,9 +140,9 @@ def GetArchForTarget(target):
   Args:
     target: a toolchain.
   """
-  info = cros_build_lib.RunCommand(['crossdev', '--show-target-cfg', target],
-                                   capture_output=True, quiet=True).output
-  return cros_build_lib.LoadKeyValueFile(cStringIO.StringIO(info)).get('arch')
+  ret = cros_build_lib.run(['crossdev', '--show-target-cfg', target],
+                           capture_output=True, quiet=True, encoding='utf-8')
+  return key_value_store.LoadData(ret.stdout).get('arch')
 
 
 def InstallToolchain(sysroot, toolchain=None, force=False, configure=True):
@@ -158,7 +158,7 @@ def InstallToolchain(sysroot, toolchain=None, force=False, configure=True):
       cmd.append('--force')
     if not configure:
       cmd.append('--noconfigure')
-    cros_build_lib.RunCommand(cmd, enter_chroot=True)
+    cros_build_lib.run(cmd, enter_chroot=True)
   else:
     envvars = portage_util.PortageqEnvvars(['CHOST', 'PKGDIR'])
     installer = ToolchainInstaller(force, configure, envvars['CHOST'],
@@ -251,9 +251,9 @@ class ToolchainInstaller(object):
       cmd = ['emerge', '--oneshot', '--nodeps', '-k',
              '--root', sysroot.path, '=%s' % tc_info.libc_cpf]
       try:
-        cros_build_lib.SudoRunCommand(cmd)
+        cros_build_lib.sudo_run(cmd)
       except cros_build_lib.RunCommandError as e:
-        raise ToolchainInstallError(e.message, e.result, exception=e,
+        raise ToolchainInstallError(str(e), e.result, exception=e,
                                     tc_info=[tc_info.libc_cpv])
     else:
       # They do not match, install appropriate cross-toolchain variant package.
@@ -263,7 +263,7 @@ class ToolchainInstaller(object):
       if not os.path.exists(libc_path):
         # Install libc in chroot if it hasn't already been installed.
         cmd = ['emerge', '--nodeps', '-gf', '=%s' % tc_info.libc_cpf]
-        cros_build_lib.SudoRunCommand(cmd)
+        cros_build_lib.sudo_run(cmd)
 
       try:
         self._ExtractLibc(sysroot, tc_info.target, libc_path)
@@ -286,8 +286,8 @@ class ToolchainInstaller(object):
     with osutils.TempDir(sudo_rm=True) as tempdir:
       # Extract to the temporary directory.
       cmd = ['tar', '-I', compressor, '-xpf', libc_path, '-C', tempdir]
-      result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True,
-                                             combine_stdout_stderr=True)
+      result = cros_build_lib.sudo_run(cmd, error_code_ok=True,
+                                       combine_stdout_stderr=True)
       if result.returncode:
         raise ToolchainInstallError('Error extracting libc: %s' % result.output,
                                     result)
@@ -296,8 +296,8 @@ class ToolchainInstaller(object):
       # Trailing / on source to sync contents instead of the directory itself.
       source = os.path.join(tempdir, 'usr', board_chost)
       cmd = ['rsync', '--archive', '%s/' % source, '%s/' % sysroot.path]
-      result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True,
-                                             combine_stdout_stderr=True)
+      result = cros_build_lib.sudo_run(cmd, error_code_ok=True,
+                                       combine_stdout_stderr=True)
       if result.returncode:
         raise ToolchainInstallError('Error installing libc: %s' % result.output,
                                     result)
@@ -308,8 +308,8 @@ class ToolchainInstaller(object):
       # Sync the debug files to the debug directory.
       source = os.path.join(tempdir, 'usr/lib/debug/usr', board_chost)
       cmd = ['rsync', '--archive', '%s/' % source, '%s/' % debug_dir]
-      result = cros_build_lib.SudoRunCommand(cmd, error_code_ok=True,
-                                             combine_stdout_stderr=True)
+      result = cros_build_lib.sudo_run(cmd, error_code_ok=True,
+                                       combine_stdout_stderr=True)
       if result.returncode:
         logging.warning('libc debug info not copied: %s', result.output)
 

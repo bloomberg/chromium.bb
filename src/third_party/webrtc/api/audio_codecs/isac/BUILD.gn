@@ -68,7 +68,7 @@ config("isac_config") {
   }
 }
 
-rtc_static_library("audio_encoder_isac_fix") {
+rtc_library("audio_encoder_isac_fix") {
   visibility = [ "*" ]
   poisonous = [ "audio_codecs" ]
   sources = [
@@ -79,13 +79,13 @@ rtc_static_library("audio_encoder_isac_fix") {
     "..:audio_codecs_api",
     "../../../modules/audio_coding:isac_fix",
     "../../../rtc_base:rtc_base_approved",
-    "//third_party/abseil-cpp/absl/memory",
+    "../../../rtc_base/system:rtc_export",
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
 
-rtc_static_library("audio_decoder_isac_fix") {
+rtc_library("audio_decoder_isac_fix") {
   visibility = [ "*" ]
   poisonous = [ "audio_codecs" ]
   sources = [
@@ -96,13 +96,13 @@ rtc_static_library("audio_decoder_isac_fix") {
     "..:audio_codecs_api",
     "../../../modules/audio_coding:isac_fix",
     "../../../rtc_base:rtc_base_approved",
-    "//third_party/abseil-cpp/absl/memory",
+    "../../../rtc_base/system:rtc_export",
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
 
-rtc_static_library("audio_encoder_isac_float") {
+rtc_library("audio_encoder_isac_float") {
   visibility = [ "*" ]
   poisonous = [ "audio_codecs" ]
   sources = [
@@ -114,13 +114,12 @@ rtc_static_library("audio_encoder_isac_float") {
     "../../../modules/audio_coding:isac",
     "../../../rtc_base:rtc_base_approved",
     "../../../rtc_base/system:rtc_export",
-    "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
 
-rtc_static_library("audio_decoder_isac_float") {
+rtc_library("audio_decoder_isac_float") {
   visibility = [ "*" ]
   poisonous = [ "audio_codecs" ]
   sources = [
@@ -132,7 +131,6 @@ rtc_static_library("audio_decoder_isac_float") {
     "../../../modules/audio_coding:isac",
     "../../../rtc_base:rtc_base_approved",
     "../../../rtc_base/system:rtc_export",
-    "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]

@@ -24,6 +24,7 @@
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "chrome/chrome_cleaner/pup_data/test_uws.h"
+#include "chrome/chrome_cleaner/test/child_process_logger.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "chrome/chrome_cleaner/zip_archiver/sandboxed_zip_archiver.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
@@ -59,6 +60,10 @@ const std::vector<base::string16> kAllowedLogStringsForSanitizationCheck = {
 
     // IsFilePresentLocally in file_path_sanitization.cc fits Case 1.
     L"isfilepresentlocally failed to get attributes: ",
+
+    // The cleaner/reporter process spawned by this test spawns a sandbox with
+    // the test-logging-path flag pointing to a temporary directory.
+    L"--test-logging-path=",
 };
 
 // Parse to |report| the serialized report dumped by |executable_name|. Return
@@ -311,8 +316,14 @@ class CleanerTest
 
   void ExpectExitCode(const base::CommandLine& command_line,
                       int expected_exit_code) {
-    base::Process process(
-        base::LaunchProcess(command_line, base::LaunchOptions()));
+    chrome_cleaner::ChildProcessLogger logger;
+    ASSERT_TRUE(logger.Initialize());
+
+    base::LaunchOptions options;
+    logger.UpdateLaunchOptions(&options);
+    base::Process process(base::LaunchProcess(command_line, options));
+    if (!process.IsValid())
+      logger.DumpLogs();
     ASSERT_TRUE(process.IsValid());
 
     int exit_code = -1;
@@ -320,7 +331,8 @@ class CleanerTest
         base::TimeDelta::FromMinutes(10), &exit_code);
     EXPECT_TRUE(exited_within_timeout);
     EXPECT_EQ(expected_exit_code, exit_code);
-
+    if (!exited_within_timeout || expected_exit_code != exit_code)
+      logger.DumpLogs();
     if (!exited_within_timeout)
       process.Terminate(/*exit_code=*/-1, /*wait=*/false);
   }
@@ -330,7 +342,7 @@ class CleanerTest
       chrome_cleaner::ExecutionMode execution_mode =
           chrome_cleaner::ExecutionMode::kNone) {
     base::CommandLine command_line(executable_path);
-    chrome_cleaner::AppendTestSwitches(&command_line);
+    chrome_cleaner::AppendTestSwitches(temp_dir_, &command_line);
     command_line.AppendSwitchASCII(
         chrome_cleaner::kEngineSwitch,
         base::NumberToString(static_cast<int>(engine_)));
@@ -492,22 +504,22 @@ TEST_P(CleanerTest, NoUnsanitizedPaths) {
 }
 
 // Test all features with the TestOnly engine, which is quick.
-INSTANTIATE_TEST_CASE_P(AllFeatures,
-                        CleanerTest,
-                        Combine(ValuesIn(kAllTestFeatures),
-                                Values(Engine::TEST_ONLY)),
-                        chrome_cleaner::GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(AllFeatures,
+                         CleanerTest,
+                         Combine(ValuesIn(kAllTestFeatures),
+                                 Values(Engine::TEST_ONLY)),
+                         chrome_cleaner::GetParamNameForTest());
 
 #if BUILDFLAG(IS_INTERNAL_CHROME_CLEANER_BUILD)
 // The full scan with the ESET engine takes too long to test more than once so
 // don't enable any test features. In fact, don't test it in debug builds since
 // they are slower.
 #ifdef NDEBUG
-INSTANTIATE_TEST_CASE_P(EsetFeatures,
-                        CleanerTest,
-                        Combine(Values(TestFeatures::kNone),
-                                Values(Engine::ESET)),
-                        chrome_cleaner::GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(EsetFeatures,
+                         CleanerTest,
+                         Combine(Values(TestFeatures::kNone),
+                                 Values(Engine::ESET)),
+                         chrome_cleaner::GetParamNameForTest());
 #endif  // NDEBUG
 #endif  // BUILDFLAG(IS_INTERNAL_CHROME_CLEANER_BUILD)
 

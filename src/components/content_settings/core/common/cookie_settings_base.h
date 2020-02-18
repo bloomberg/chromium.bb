@@ -29,14 +29,19 @@ namespace content_settings {
 // Example:
 // https://a.com/index.html
 // <html>
-// <body>
-//   <iframe href="https://b.com/frame.html">
-//     <img href="https://a.com/img.jpg>
-//     <img href="https://b.com/img.jpg>
-//     <img href="https://c.com/img.jpg>
-//   </iframe>
-// </body>
-// </html>
+//  <body>
+//    <iframe href="https://b.com/frame.html">
+//      #document
+//      <html>
+//        <body>
+//          <img href="https://a.com/img.jpg>
+//          <img href="https://b.com/img.jpg>
+//          <img href="https://c.com/img.jpg>
+//        </body>
+//      </html>
+//    </iframe>
+//  </body>
+//</html>
 //
 // When each of these resources get fetched, |top_frame_origin| will always be
 // "https://a.com" and |site_for_cookies| is set the following:
@@ -108,17 +113,53 @@ class CookieSettingsBase {
                         ContentSetting* cookie_setting) const;
 
   // Returns the cookie access semantics (legacy or nonlegacy) to be applied for
-  // cookies on the given domain.
+  // cookies on the given domain. The |cookie_domain| can be provided as the
+  // direct output of CanonicalCookie::Domain(), i.e. any leading dot does not
+  // have to be removed.
   //
   // This may be called on any thread.
+  //
+  // Legacy access means we treat "SameSite unspecified" as if it were
+  // SameSite=None. Also, we don't require SameSite=None cookies to be Secure.
+  //
+  // If something is "Legacy" but explicitly says SameSite=Lax or
+  // SameSite=Strict, it will still be treated as SameSite=Lax or
+  // SameSite=Strict.
+  //
+  // Legacy behavior is based on the domain of the cookie itself, effectively
+  // the domain of the requested URL, which may be embedded in another domain.
   net::CookieAccessSemantics GetCookieAccessSemanticsForDomain(
-      const GURL& cookie_domain) const;
+      const std::string& cookie_domain) const;
 
   // Gets the setting that controls whether legacy access is allowed for a given
-  // cookie domain (provided as a URL).
+  // cookie domain. The |cookie_domain| can be provided as the direct output of
+  // CanonicalCookie::Domain(), i.e. any leading dot does not have to be
+  // removed.
   virtual void GetSettingForLegacyCookieAccess(
-      const GURL& cookie_domain,
+      const std::string& cookie_domain,
       ContentSetting* setting) const = 0;
+
+  // Returns whether a cookie should be attached regardless of its SameSite
+  // value vs the request context.
+  // This currently returns true if the |site_for_cookies| is a Chrome UI scheme
+  // URL and the |url| is secure.
+  //
+  // This bypass refers to all SameSite cookies (unspecified-defaulted-into-Lax,
+  // as well as explicitly specified Lax or Strict). This addresses cases where
+  // the context should be treated as "first party" even if URLs have different
+  // sites (or even different schemes).
+  //
+  // (One such situation is e.g. chrome://print embedding some content from
+  // https://accounts.google.com for Cloud Print login. Because we trust the
+  // chrome:// scheme, and the embedded content is https://, we can treat this
+  // as effectively first-party for the purposes of SameSite cookies.)
+  //
+  // This differs from "legacy SameSite behavior" because rather than the
+  // requested URL, this bypass is based on the site_for_cookies, i.e. the
+  // embedding context.
+  virtual bool ShouldIgnoreSameSiteRestrictions(
+      const GURL& url,
+      const GURL& site_for_cookies) const = 0;
 
   // Determines whether |setting| is a valid content setting for cookies.
   static bool IsValidSetting(ContentSetting setting);

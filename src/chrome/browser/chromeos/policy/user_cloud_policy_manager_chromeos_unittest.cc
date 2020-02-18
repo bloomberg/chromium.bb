@@ -27,12 +27,15 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/enterprise_reporting/report_scheduler.h"
+#include "chrome/browser/enterprise_reporting/request_timer.h"
 #include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -60,10 +63,6 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -104,6 +103,7 @@ constexpr char kOAuth2AccessTokenData[] = R"(
     })";
 constexpr char kOAuthToken[] = "5678";
 constexpr char kDMToken[] = "dmtoken123";
+constexpr char kDeviceId[] = "id987";
 
 // UserCloudPolicyManagerChromeOS test class that can be used with different
 // feature flags.
@@ -122,8 +122,6 @@ class UserCloudPolicyManagerChromeOSTest
                   PolicyEnforcement::kPolicyRequired);
     // The manager should already be initialized by this point.
     EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
-    InitAndConnectManager();
-    EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
   }
 
  protected:
@@ -194,6 +192,7 @@ class UserCloudPolicyManagerChromeOSTest
     ASSERT_TRUE(
         policy_proto.SerializeToString(policy_data_.mutable_policy_value()));
     policy_data_.set_policy_type(dm_protocol::kChromeUserPolicyType);
+    policy_data_.set_device_id(kDeviceId);
     policy_data_.set_request_token(kDMToken);
     policy_data_.set_device_id("id987");
     policy_data_.set_username("user@example.com");
@@ -268,13 +267,12 @@ class UserCloudPolicyManagerChromeOSTest
       GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
 
       network::URLLoaderCompletionStatus ok_completion_status(net::OK);
-      network::ResourceResponseHead ok_response =
-          network::CreateResourceResponseHead(net::HTTP_OK);
+      auto ok_response = network::CreateURLResponseHead(net::HTTP_OK);
       // Issue the access token.
       EXPECT_TRUE(
           test_system_url_loader_factory_.SimulateResponseForPendingRequest(
-              gaia_urls->oauth2_token_url(), ok_completion_status, ok_response,
-              kOAuth2AccessTokenData));
+              gaia_urls->oauth2_token_url(), ok_completion_status,
+              std::move(ok_response), kOAuth2AccessTokenData));
     } else {
       // Since the refresh token is available, IdentityManager was used
       // to request the access token and not UserCloudPolicyTokenForwarder.
@@ -358,7 +356,6 @@ class UserCloudPolicyManagerChromeOSTest
   PolicyBundle expected_bundle_;
 
   // Policy infrastructure.
-  net::TestURLFetcherFactory test_url_fetcher_factory_;
   TestingPrefServiceSimple prefs_;
   MockConfigurationPolicyObserver observer_;
   MockDeviceManagementService device_management_service_;
@@ -435,6 +432,10 @@ class UserCloudPolicyManagerChromeOSTest
 
   signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_profile_adaptor_->identity_test_env();
+  }
+
+  base::test::ScopedFeatureList* scoped_feature_list() {
+    return &scoped_feature_list_;
   }
 
  private:
@@ -570,7 +571,7 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, BlockingFetchOAuthError) {
       test_system_url_loader_factory()->SimulateResponseForPendingRequest(
           GaiaUrls::GetInstance()->oauth2_token_url(),
           network::URLLoaderCompletionStatus(net::OK),
-          network::CreateResourceResponseHead(net::HTTP_BAD_REQUEST),
+          network::CreateURLResponseHead(net::HTTP_BAD_REQUEST),
           "Error=BadAuthentication"));
 
   // Server check failed, so profile should not be initialized.
@@ -760,10 +761,6 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
   EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   EXPECT_FALSE(manager_->core()->client()->is_registered());
 
-  // The manager is waiting for the refresh token, and hasn't started any
-  // fetchers.
-  EXPECT_FALSE(test_url_fetcher_factory_.GetFetcherByID(0));
-
   AccountInfo account_info =
       identity_test_env()->MakePrimaryAccountAvailable(kEmail);
   EXPECT_TRUE(
@@ -814,6 +811,8 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, SynchronousLoadWithPreloadedStore) {
   // initializing a profile during a crash restart). The manager gets
   // initialized straight away after the construction.
   MakeManagerWithPreloadedStore(base::TimeDelta());
+  InitAndConnectManager();
+  EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
   EXPECT_TRUE(manager_->policies().Equals(expected_bundle_));
 }
 
@@ -858,6 +857,53 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, TestHasAppInstallEventLogUploader) {
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
       base::TimeDelta(), PolicyEnforcement::kPolicyRequired));
   EXPECT_TRUE(manager_->GetAppInstallEventLogUploader());
+}
+
+TEST_P(UserCloudPolicyManagerChromeOSTest, TestHasReportScheduler) {
+  // Open policy and feature flag to enable report scheduler.
+  g_browser_process->local_state()->SetBoolean(prefs::kCloudReportingEnabled,
+                                               true);
+  scoped_feature_list()->Reset();
+  scoped_feature_list()->InitAndEnableFeature(
+      features::kEnterpriseReportingInChromeOS);
+
+  // Before UserCloudPolicyManagerChromeOS is initialized, report scheduler is
+  // not existing.
+  MakeManagerWithPreloadedStore(base::TimeDelta());
+  EXPECT_FALSE(manager_->core()->service());
+  EXPECT_FALSE(manager_->core()->client());
+  EXPECT_FALSE(manager_->GetReportSchedulerForTesting());
+
+  // After UserCloudPolicyManagerChromeOS is initialized, report scheduler is
+  // created with valid |client_id| and |dm token|.
+  InitAndConnectManager();
+  EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
+  EXPECT_TRUE(manager_->core()->client()->is_registered());
+  EXPECT_EQ(kDeviceId, manager_->core()->client()->client_id());
+  EXPECT_EQ(kDMToken, manager_->core()->client()->dm_token());
+  EXPECT_TRUE(manager_->GetReportSchedulerForTesting());
+
+  // Make sure the |report_scheduler| submit the request to DM Server.
+  enterprise_reporting::RequestTimer* request_timer =
+      manager_->GetReportSchedulerForTesting()->GetRequestTimerForTesting();
+  EXPECT_TRUE(request_timer->IsFirstTimerRunning());
+  EXPECT_FALSE(request_timer->IsRepeatTimerRunning());
+}
+
+TEST_P(UserCloudPolicyManagerChromeOSTest,
+       EnterpriseReportingInChromeOSDisabled) {
+  // Open policy but close the feature flag for Chrome OS to disable report
+  // scheduler.
+  g_browser_process->local_state()->SetBoolean(prefs::kCloudReportingEnabled,
+                                               true);
+  scoped_feature_list()->Reset();
+  scoped_feature_list()->InitAndDisableFeature(
+      features::kEnterpriseReportingInChromeOS);
+
+  // Report scheduler won't be created.
+  MakeManagerWithPreloadedStore(base::TimeDelta());
+  InitAndConnectManager();
+  EXPECT_FALSE(manager_->GetReportSchedulerForTesting());
 }
 
 TEST_P(UserCloudPolicyManagerChromeOSTest, Reregistration) {
@@ -919,12 +965,11 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, Reregistration) {
   // Simulate OAuth token fetch.
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   network::URLLoaderCompletionStatus ok_completion_status(net::OK);
-  network::ResourceResponseHead ok_response =
-      network::CreateResourceResponseHead(net::HTTP_OK);
+  auto ok_response = network::CreateURLResponseHead(net::HTTP_OK);
   EXPECT_TRUE(
       test_system_url_loader_factory()->SimulateResponseForPendingRequest(
-          gaia_urls->oauth2_token_url(), ok_completion_status, ok_response,
-          kOAuth2AccessTokenData));
+          gaia_urls->oauth2_token_url(), ok_completion_status,
+          std::move(ok_response), kOAuth2AccessTokenData));
 
   // Validate that re-registration sends the correct parameters.
   EXPECT_TRUE(register_request.register_request().reregister());
@@ -1009,12 +1054,11 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, ReregistrationFails) {
   // Simulate OAuth token fetch.
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   network::URLLoaderCompletionStatus ok_completion_status(net::OK);
-  network::ResourceResponseHead ok_response =
-      network::CreateResourceResponseHead(net::HTTP_OK);
+  auto ok_response = network::CreateURLResponseHead(net::HTTP_OK);
   EXPECT_TRUE(
       test_system_url_loader_factory()->SimulateResponseForPendingRequest(
-          gaia_urls->oauth2_token_url(), ok_completion_status, ok_response,
-          kOAuth2AccessTokenData));
+          gaia_urls->oauth2_token_url(), ok_completion_status,
+          std::move(ok_response), kOAuth2AccessTokenData));
 
   // Validate re-registration state.
   ASSERT_TRUE(reregister_job);

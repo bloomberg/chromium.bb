@@ -36,6 +36,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/nacl_desc.h"
@@ -213,14 +214,14 @@ class FileTokenMessageFilter : public IPC::MessageFilter {
 };
 
 void NaClListener::Listen() {
+  NaClService service(io_thread_.task_runner());
   channel_ = IPC::SyncChannel::Create(this, io_thread_.task_runner().get(),
                                       base::ThreadTaskRunnerHandle::Get(),
                                       &shutdown_event_);
   filter_ = channel_->CreateSyncMessageFilter();
   channel_->AddFilter(new FileTokenMessageFilter());
-  mojo::ScopedMessagePipeHandle channel_handle;
-  auto service = CreateNaClService(io_thread_.task_runner(), &channel_handle);
-  channel_->Init(channel_handle.release(), IPC::Channel::MODE_CLIENT, true);
+  channel_->Init(service.TakeChannelPipe().release(), IPC::Channel::MODE_CLIENT,
+                 true);
   main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   base::RunLoop().Run();
 }
@@ -332,10 +333,10 @@ void NaClListener::OnStart(nacl::NaClStartParams params) {
       base::Bind(&NaClListener::ResolveFileToken, base::Unretained(this)),
       base::Bind(&NaClListener::OnOpenResource, base::Unretained(this)));
 
-  nacl::mojom::NaClRendererHostPtr renderer_host;
+  mojo::PendingRemote<nacl::mojom::NaClRendererHost> renderer_host;
   if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
           browser_handle, ppapi_renderer_handle,
-          MakeRequest(&renderer_host).PassMessagePipe().release(),
+          renderer_host.InitWithNewPipeAndPassReceiver().PassPipe().release(),
           manifest_service_handle, ro_shmem_region)))
     LOG(FATAL) << "Failed to send IPC channel handle to NaClProcessHost.";
 

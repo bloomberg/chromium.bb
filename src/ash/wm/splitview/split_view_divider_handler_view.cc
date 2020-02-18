@@ -14,20 +14,13 @@
 
 namespace ash {
 
-namespace {
-
-constexpr base::TimeDelta kWhiteBarSpawnDelay =
-    base::TimeDelta::FromMilliseconds(kSplitviewDividerSpawnDelayMs);
-
-}  // namespace
-
 class SplitViewDividerHandlerView::SelectionAnimation
     : public gfx::SlideAnimation,
       public gfx::AnimationDelegate {
  public:
   SelectionAnimation(SplitViewDividerHandlerView* white_handler_view)
       : gfx::SlideAnimation(this), white_handler_view_(white_handler_view) {
-    SetSlideDuration(kSplitviewDividerSelectionStatusChangeDurationMs);
+    SetSlideDuration(kSplitviewDividerSelectionStatusChangeDuration);
     SetTweenType(gfx::Tween::EASE_IN);
   }
 
@@ -67,7 +60,7 @@ class SplitViewDividerHandlerView::SpawningAnimation
                              (divider_signed_offset > 0
                                   ? kSplitviewWhiteBarSpawnUnsignedOffset
                                   : -kSplitviewWhiteBarSpawnUnsignedOffset)) {
-    SetSlideDuration(kSplitviewDividerSpawnDurationMs);
+    SetSlideDuration(kSplitviewDividerSpawnDuration);
     SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
   }
 
@@ -75,7 +68,7 @@ class SplitViewDividerHandlerView::SpawningAnimation
 
   void Activate() {
     white_handler_view_->SetVisible(false);
-    delay_timer_.Start(FROM_HERE, kWhiteBarSpawnDelay, this,
+    delay_timer_.Start(FROM_HERE, kSplitviewDividerSpawnDelay, this,
                        &SpawningAnimation::StartAnimation);
   }
 
@@ -127,11 +120,11 @@ void SplitViewDividerHandlerView::DoSpawningAnimation(
   spawning_animation_->Activate();
 }
 
-void SplitViewDividerHandlerView::Refresh() {
+void SplitViewDividerHandlerView::Refresh(bool is_resizing) {
   spawning_animation_.reset();
   SetVisible(true);
   selection_animation_->UpdateWhiteHandlerBounds();
-  if (Shell::Get()->split_view_controller()->is_resizing())
+  if (is_resizing)
     selection_animation_->Show();
   else
     selection_animation_->Hide();

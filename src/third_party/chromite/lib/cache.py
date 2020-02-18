@@ -11,7 +11,8 @@ import errno
 import os
 import shutil
 import tempfile
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -260,9 +261,9 @@ class RemoteCache(DiskCache):
       retry_util.RunCurl(['--fail', url, '-o', local_path],
                          debug_level=logging.DEBUG, capture_output=True)
 
-  def _Insert(self, key, url):
+  def _Insert(self, key, url):  # pylint: disable=arguments-differ
     """Insert a remote file into the cache."""
-    o = urlparse.urlparse(url)
+    o = urllib.parse.urlparse(url)
     if o.scheme in ('file', ''):
       DiskCache._Insert(self, key, o.path)
       return
@@ -275,14 +276,14 @@ class RemoteCache(DiskCache):
 
 def Untar(path, cwd, sudo=False):
   """Untar a tarball."""
-  functor = cros_build_lib.SudoRunCommand if sudo else cros_build_lib.RunCommand
+  functor = cros_build_lib.sudo_run if sudo else cros_build_lib.run
   functor(['tar', '-xpf', path], cwd=cwd, debug_level=logging.DEBUG)
 
 
 class TarballCache(RemoteCache):
   """Supports caching of extracted tarball contents."""
 
-  def _Insert(self, key, tarball_path):
+  def _Insert(self, key, tarball_path):  # pylint: disable=arguments-differ
     """Insert a tarball and its extracted contents into the cache.
 
     Download the tarball first if a URL is provided as tarball_path.
@@ -290,7 +291,7 @@ class TarballCache(RemoteCache):
     with osutils.TempDir(prefix='tarball-cache',
                          base_dir=self.staging_dir) as tempdir:
 
-      o = urlparse.urlsplit(tarball_path)
+      o = urllib.parse.urlsplit(tarball_path)
       if o.scheme == 'file':
         tarball_path = o.path
       elif o.scheme:
@@ -307,7 +308,7 @@ class TarballCache(RemoteCache):
     """Specialized DiskCache._KeyExits that ignores empty directories.
 
     The normal _KeyExists just checks to see if the key path exists in the cache
-    directory. Many tests mock out RunCommand then fetch a tarball. The mock
+    directory. Many tests mock out run then fetch a tarball. The mock
     blocks untarring into it. This leaves behind an empty dir which blocks
     future untarring in non-test scripts.
 

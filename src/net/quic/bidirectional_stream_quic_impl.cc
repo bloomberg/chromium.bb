@@ -76,6 +76,10 @@ void BidirectionalStreamQuicImpl::Start(
   DLOG_IF(WARNING, !session_->IsConnected())
       << "Trying to start request headers after session has been closed.";
 
+  net_log.AddEventReferencingSource(
+      NetLogEventType::BIDIRECTIONAL_STREAM_BOUND_TO_QUIC_SESSION,
+      session_->net_log().source());
+
   send_request_headers_automatically_ = send_request_headers_automatically;
   delegate_ = delegate;
   request_info_ = request_info;
@@ -212,7 +216,7 @@ int64_t BidirectionalStreamQuicImpl::GetTotalReceivedBytes() const {
   // When QPACK is enabled, headers are sent and received on the stream, so
   // the headers bytes do not need to be accounted for independently.
   int64_t total_received_bytes =
-      quic::VersionUsesQpack(session_->GetQuicVersion())
+      quic::VersionUsesHttp3(session_->GetQuicVersion().transport_version)
           ? 0
           : headers_bytes_received_;
   if (stream_) {
@@ -228,9 +232,10 @@ int64_t BidirectionalStreamQuicImpl::GetTotalReceivedBytes() const {
 int64_t BidirectionalStreamQuicImpl::GetTotalSentBytes() const {
   // When QPACK is enabled, headers are sent and received on the stream, so
   // the headers bytes do not need to be accounted for independently.
-  int64_t total_sent_bytes = quic::VersionUsesQpack(session_->GetQuicVersion())
-                                 ? 0
-                                 : headers_bytes_sent_;
+  int64_t total_sent_bytes =
+      quic::VersionUsesHttp3(session_->GetQuicVersion().transport_version)
+          ? 0
+          : headers_bytes_sent_;
   if (stream_) {
     total_sent_bytes += stream_->stream_bytes_written();
   } else {

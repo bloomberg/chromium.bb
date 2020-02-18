@@ -16,7 +16,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -80,11 +80,7 @@ class StorageHandler
   void HandleUpdateStorageInfo(const base::ListValue* unused_args);
   void HandleOpenDownloads(const base::ListValue* unused_args);
   void HandleOpenArcStorage(const base::ListValue* unused_args);
-  void HandleClearDriveCache(const base::ListValue* unused_args);
   void HandleUpdateExternalStorages(const base::ListValue* unused_args);
-
-  // Callback called when clearing Drive cache is done.
-  void OnClearDriveCacheDone(bool success);
 
   // Requests updating disk space information.
   void UpdateSizeStat();
@@ -97,12 +93,6 @@ class StorageHandler
 
   // Callback to update the UI about the size of Downloads directory.
   void OnGetDownloadsSize(int64_t size);
-
-  // Requests updating the size of Drive Cache.
-  void UpdateDriveCacheSize();
-
-  // Callback to update the UI about the size of Drive Cache.
-  void OnGetDriveCacheSize(int64_t size);
 
   // Requests updating the size of browsing data.
   void UpdateBrowsingDataSize();
@@ -166,7 +156,6 @@ class StorageHandler
 
   // Flags indicating fetch operations for storage sizes are ongoing.
   bool updating_downloads_size_;
-  bool updating_drive_cache_size_;
   bool updating_browsing_data_size_;
   bool updating_android_size_;
   bool updating_crostini_size_;

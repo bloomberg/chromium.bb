@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {BrowserProxy, changeFolderOpen, DragInfo, DropPosition} from 'chrome://bookmarks/bookmarks.js';
+import {middleOfNode, topLeftOfNode} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {TestBookmarksBrowserProxy} from 'chrome://test/bookmarks/test_browser_proxy.js';
+import {TestStore} from 'chrome://test/bookmarks/test_store.js';
+import {TestTimerProxy} from 'chrome://test/bookmarks/test_timer_proxy.js';
+import {createFolder, createItem, findFolderNode, getAllFoldersOpenState, normalizeIterable, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
+
 suite('drag and drop', function() {
   let app;
   let list;
@@ -30,7 +38,7 @@ suite('drag and drop', function() {
   }
 
   function dispatchDragEvent(type, node, xy) {
-    xy = xy || MockInteractions.middleOfNode(node);
+    xy = xy || middleOfNode(node);
     const props = {
       bubbles: true,
       cancelable: true,
@@ -68,12 +76,11 @@ suite('drag and drop', function() {
 
   function simulateDragStart(dragElement) {
     dispatchDragEvent('dragstart', dragElement);
-    move(dragElement, MockInteractions.topLeftOfNode(dragElement));
+    move(dragElement, topLeftOfNode(dragElement));
   }
 
   function move(target, dest) {
-    dispatchDragEvent(
-        'dragover', target, dest || MockInteractions.middleOfNode(target));
+    dispatchDragEvent('dragover', target, dest || middleOfNode(target));
   }
 
   function getDragIds() {
@@ -101,7 +108,7 @@ suite('drag and drop', function() {
               createFolder('15', []),
             ]),
         createFolder('2', []));
-    store = new bookmarks.TestStore({
+    store = new TestStore({
       nodes: nodes,
       folderOpenState: getAllFoldersOpenState(nodes),
       selectedFolder: '1',
@@ -114,17 +121,24 @@ suite('drag and drop', function() {
       dndManager.dragInfo_.setNativeDragData(createDragData(idList));
     };
 
+    const testBrowserProxy = new TestBookmarksBrowserProxy();
+    BrowserProxy.instance_ = testBrowserProxy;
     app = document.createElement('bookmarks-app');
     replaceBody(app);
     list = app.$$('bookmarks-list');
     rootFolderNode = app.$$('bookmarks-folder-node');
     dndManager = app.dndManager_;
-    dndManager.setTimerProxyForTesting(new bookmarks.TestTimerProxy());
-    Polymer.dom.flush();
+    dndManager.setTimerProxyForTesting(new TestTimerProxy());
+
+    // Wait for the API listener to call the browser proxy, since this
+    // indicates initialization is done.
+    return testBrowserProxy.whenCalled('getIncognitoAvailability').then(() => {
+      flush();
+    });
   });
 
   test('dragInfo isDraggingFolderToDescendant', function() {
-    const dragInfo = new bookmarks.DragInfo();
+    const dragInfo = new DragInfo();
     const nodes = store.data.nodes;
     dragInfo.setNativeDragData(createDragData(['11']));
     assertTrue(dragInfo.isDraggingFolderToDescendant('111', nodes));
@@ -146,7 +160,7 @@ suite('drag and drop', function() {
     assertDeepEquals(['13'], getDragIds());
 
     // Bookmark items cannot be dragged onto other items.
-    move(dragTarget, MockInteractions.topLeftOfNode(dragTarget));
+    move(dragTarget, topLeftOfNode(dragTarget));
     assertEquals(
         DropPosition.ABOVE,
         dndManager.calculateValidDropPositions_(dragTarget));
@@ -183,7 +197,7 @@ suite('drag and drop', function() {
         DropPosition.ON | DropPosition.ABOVE,
         dndManager.calculateValidDropPositions_(dragTarget));
 
-    move(dragTarget, MockInteractions.topLeftOfNode(dragTarget));
+    move(dragTarget, topLeftOfNode(dragTarget));
     assertDragStyle(dragTarget, DRAG_STYLE.ABOVE);
   });
 
@@ -283,7 +297,7 @@ suite('drag and drop', function() {
   test('drag multiple list items preserve displaying order', function() {
     // Dragging multiple items with different selection order.
     store.data.selection.items = new Set(['15', '13']);
-    let dragElement = getListItem('13');
+    const dragElement = getListItem('13');
     simulateDragStart(dragElement);
     assertDeepEquals(['13', '15'], getDragIds());
   });
@@ -312,7 +326,7 @@ suite('drag and drop', function() {
     simulateDragStart(dragElement);
     assertDeepEquals(['112'], getDragIds());
 
-    move(dragTarget, MockInteractions.topLeftOfNode(dragTarget));
+    move(dragTarget, topLeftOfNode(dragTarget));
     assertDragStyle(dragTarget, DRAG_STYLE.ABOVE);
 
     dispatchDragEvent('dragend', dragTarget);
@@ -327,7 +341,7 @@ suite('drag and drop', function() {
     // displayed lists.
     store.data.selectedFolder = '111';
     store.notifyObservers();
-    Polymer.dom.flush();
+    flush();
 
     dndManager.handleChromeDragEnter_(createDragData(['11']));
     assertEquals(
@@ -407,8 +421,7 @@ suite('drag and drop', function() {
     simulateDragStart(dragElement);
     assertDeepEquals(['13'], getDragIds());
 
-    dispatchDragEvent(
-        'dragover', dragTarget, MockInteractions.topLeftOfNode(dragTarget));
+    dispatchDragEvent('dragover', dragTarget, topLeftOfNode(dragTarget));
     assertDragStyle(dragTarget, DRAG_STYLE.ABOVE);
 
     dispatchDragEvent('drop', dragTarget);
@@ -420,7 +433,7 @@ suite('drag and drop', function() {
   });
 
   test('auto expander', function() {
-    const timerProxy = new bookmarks.TestTimerProxy();
+    const timerProxy = new TestTimerProxy();
     timerProxy.immediatelyResolveTimeouts = false;
 
     const autoExpander = dndManager.autoExpander_;
@@ -428,7 +441,7 @@ suite('drag and drop', function() {
 
     store.data.folderOpenState.set('11', false);
     store.notifyObservers();
-    Polymer.dom.flush();
+    flush();
 
     const dragElement = getFolderNode('14');
     let dragTarget = getFolderNode('15');
@@ -474,8 +487,7 @@ suite('drag and drop', function() {
 
     // Auto expands after expand delay.
     timerProxy.runTimeoutFn(autoExpander.debouncer_.timer_);
-    assertDeepEquals(
-        bookmarks.actions.changeFolderOpen('11', true), store.lastAction);
+    assertDeepEquals(changeFolderOpen('11', true), store.lastAction);
     assertEquals(null, autoExpander.lastElement_);
   });
 

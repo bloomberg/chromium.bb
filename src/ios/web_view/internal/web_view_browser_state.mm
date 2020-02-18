@@ -26,6 +26,7 @@
 #include "components/signin/ios/browser/active_state_manager.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync_device_info/device_info_prefs.h"
 #include "components/sync_sessions/session_sync_prefs.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -33,6 +34,7 @@
 #include "ios/web/public/thread/web_thread.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/application_context.h"
+#import "ios/web_view/internal/autofill/web_view_autofill_log_router_factory.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_cookie_settings_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
@@ -59,7 +61,8 @@
 #endif
 
 namespace {
-const char kPreferencesFilename[] = FILE_PATH_LITERAL("Preferences");
+const char kPreferencesFilename[] =
+    FILE_PATH_LITERAL("ChromeWebViewPreferences");
 }
 
 namespace ios_web_view {
@@ -86,7 +89,7 @@ WebViewBrowserState::WebViewBrowserState(
   CHECK(base::PathService::Get(base::DIR_APP_DATA, &path_));
 
   request_context_getter_ = new WebViewURLRequestContextGetter(
-      GetStatePath(), ApplicationContext::GetInstance()->GetNetLog(),
+      GetStatePath(), this, ApplicationContext::GetInstance()->GetNetLog(),
       base::CreateSingleThreadTaskRunner({web::WebThread::IO}));
 
   // Initialize prefs.
@@ -178,6 +181,7 @@ void WebViewBrowserState::RegisterPrefs(
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(pref_registry);
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(pref_registry);
   syncer::SyncPrefs::RegisterProfilePrefs(pref_registry);
+  syncer::DeviceInfoPrefs::RegisterProfilePrefs(pref_registry);
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
   // Instantiate all factories to setup dependency graph for pref registration.
@@ -187,6 +191,7 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewTranslateAcceptLanguagesFactory::GetInstance();
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
+  autofill::WebViewAutofillLogRouterFactory::GetInstance();
   WebViewPersonalDataManagerFactory::GetInstance();
   WebViewWebDataServiceWrapperFactory::GetInstance();
   WebViewPasswordManagerLogRouterFactory::GetInstance();

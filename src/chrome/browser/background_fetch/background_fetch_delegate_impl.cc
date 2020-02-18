@@ -21,6 +21,7 @@
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/download/public/background_service/download_params.h"
@@ -32,6 +33,8 @@
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
@@ -281,7 +284,7 @@ void BackgroundFetchDelegateImpl::GetPermissionForOrigin(
   // content setting.
   ContentSetting content_setting = host_content_settings_map->GetContentSetting(
       origin.GetURL(), origin.GetURL(),
-      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+      ContentSettingsType::AUTOMATIC_DOWNLOADS,
       std::string() /* resource_identifier */);
 
   // The set of valid settings for automatic downloads is set to
@@ -918,11 +921,12 @@ void BackgroundFetchDelegateImpl::DidGetUploadData(
   request_data.body_size_bytes = blob->size;
 
   // Use a Data Pipe to transfer the blob.
-  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-  blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
-  blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
+  mojo::PendingRemote<network::mojom::DataPipeGetter> data_pipe_getter_remote;
+  mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob->blob));
+  blob_remote->AsDataPipeGetter(
+      data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
   auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
-  request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  request_body->AppendDataPipe(std::move(data_pipe_getter_remote));
 
   std::move(callback).Run(request_body);
 }

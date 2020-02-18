@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -17,7 +18,6 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
@@ -26,6 +26,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
@@ -468,7 +469,7 @@ TEST_P(TabManagerStatsCollectorParameterizedTest, HistogramsTabCount) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     TabManagerStatsCollectorTabSwitchTest,
     ::testing::Values(std::make_pair(false,   // Session restore
                                      false),  // Background tab opening
@@ -476,7 +477,7 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_pair(false, true),
                       std::make_pair(true, true)));
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     TabManagerStatsCollectorParameterizedTest,
     ::testing::Values(std::make_pair(false,   // Session restore
                                      false),  // Background tab opening

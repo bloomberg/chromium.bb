@@ -10,12 +10,17 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/search_engines/template_url_data_util.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/favicon/favicon_service_factory.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/settings/cells/search_engine_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
@@ -62,7 +67,17 @@ class SearchEngineTableViewControllerTest
     test_cbs_builder.AddTestingFactory(
         ios::TemplateURLServiceFactory::GetInstance(),
         ios::TemplateURLServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        ios::FaviconServiceFactory::GetInstance(),
+        ios::FaviconServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        IOSChromeLargeIconServiceFactory::GetInstance(),
+        IOSChromeLargeIconServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        IOSChromeFaviconLoaderFactory::GetInstance(),
+        IOSChromeFaviconLoaderFactory::GetDefaultFactory());
     chrome_browser_state_ = test_cbs_builder.Build();
+    ASSERT_TRUE(chrome_browser_state_->CreateHistoryService(true));
     DefaultSearchManager::SetFallbackSearchEnginesDisabledForTesting(true);
     template_url_service_ = ios::TemplateURLServiceFactory::GetForBrowserState(
         chrome_browser_state_.get());
@@ -125,7 +140,8 @@ class SearchEngineTableViewControllerTest
                  const GURL& expected_url,
                  bool expected_checked,
                  int section,
-                 int row) {
+                 int row,
+                 bool enabled) {
     SearchEngineItem* item = base::mac::ObjCCastStrict<SearchEngineItem>(
         GetTableViewItem(section, row));
     EXPECT_NSEQ(expected_text, item.text);
@@ -134,6 +150,7 @@ class SearchEngineTableViewControllerTest
     EXPECT_EQ(expected_checked ? UITableViewCellAccessoryCheckmark
                                : UITableViewCellAccessoryNone,
               item.accessoryType);
+    EXPECT_EQ(enabled, item.enabled);
   }
 
   // Checks a SearchEngineItem with data from a fabricated TemplateURL. The
@@ -146,7 +163,8 @@ class SearchEngineTableViewControllerTest
                              const GURL& expected_searchable_url,
                              bool expected_checked,
                              int section,
-                             int row) {
+                             int row,
+                             bool enabled = true) {
     TemplateURLData data;
     data.SetURL(expected_searchable_url.possibly_invalid_spec());
     const std::string expected_url =
@@ -155,7 +173,7 @@ class SearchEngineTableViewControllerTest
             template_url_service_->search_terms_data());
     CheckItem(base::SysUTF8ToNSString(expected_text),
               base::SysUTF8ToNSString(expected_text), GURL(expected_url),
-              expected_checked, section, row);
+              expected_checked, section, row, enabled);
   }
 
   // Checks a SearchEngineItem with data from a fabricated TemplateURL. The
@@ -168,11 +186,12 @@ class SearchEngineTableViewControllerTest
                        const GURL& expected_searchable_url,
                        bool expected_checked,
                        int section,
-                       int row) {
+                       int row,
+                       bool enabled = true) {
     CheckItem(base::SysUTF8ToNSString(expected_text),
               base::SysUTF8ToNSString(expected_text),
               TemplateURL::GenerateFaviconURL(expected_searchable_url),
-              expected_checked, section, row);
+              expected_checked, section, row, enabled);
   }
 
   // Checks a SearchEngineItem with data from a real prepopulated
@@ -184,13 +203,24 @@ class SearchEngineTableViewControllerTest
   void CheckRealItem(const TemplateURL* turl,
                      bool expected_checked,
                      int section,
-                     int row) {
+                     int row,
+                     bool enabled = true) {
     CheckItem(base::SysUTF16ToNSString(turl->short_name()),
               base::SysUTF16ToNSString(turl->keyword()),
               GURL(turl->url_ref().ReplaceSearchTerms(
                   TemplateURLRef::SearchTermsArgs(base::string16()),
                   template_url_service_->search_terms_data())),
-              expected_checked, section, row);
+              expected_checked, section, row, enabled);
+  }
+
+  // Deletes items at |indexes| and wait util condition returns true or timeout.
+  bool DeleteItemsAndWait(NSArray<NSIndexPath*>* indexes,
+                          ConditionBlock condition) WARN_UNUSED_RESULT {
+    SearchEngineTableViewController* searchEngineController =
+        static_cast<SearchEngineTableViewController*>(controller());
+    [searchEngineController deleteItems:indexes];
+    return base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForUIElementTimeout, condition);
   }
 
   web::WebTaskEnvironment task_environment_;
@@ -316,7 +346,12 @@ TEST_F(SearchEngineTableViewControllerTest, TestUrlModifiedByService) {
 
 // Tests that when user change default search engine, all items can be displayed
 // correctly and the change can be synced to the prefs.
-TEST_F(SearchEngineTableViewControllerTest, TestChangeProvider) {
+// TODO(crbug.com/1036445): When selecting prepopulated search engines the test
+// relies on the assumption that setting search engine as default will leave it
+// intact. The actual behavior is that if search engine's prepopulated id
+// matches the one from the record in search engines table then the later one
+// will be used.
+TEST_F(SearchEngineTableViewControllerTest, DISABLED_TestChangeProvider) {
   // This test also needs to test the UMA, so load some real prepopulated search
   // engines to ensure the SearchEngineType is logged correctly. Don't use any
   // literal symbol(e.g. "google" or "AOL") from
@@ -432,6 +467,146 @@ TEST_F(SearchEngineTableViewControllerTest, TestChangeProvider) {
   EXPECT_TRUE(searchProviderDict->GetString(DefaultSearchManager::kShortName,
                                             &short_name));
   EXPECT_EQ(url_c1->short_name(), short_name);
+}
+
+// Tests that prepopulated engines are disabled with checkmark removed in
+// editing mode, and that toolbar is displayed as expected.
+TEST_F(SearchEngineTableViewControllerTest, EditingMode) {
+  AddPriorSearchEngine(kEngineP3Name, kEngineP3Url, 1003, false);
+  AddPriorSearchEngine(kEngineP1Name, kEngineP1Url, 1001, false);
+  AddPriorSearchEngine(kEngineP2Name, kEngineP2Url, 1002, true);
+
+  SearchEngineTableViewController* searchEngineController =
+      static_cast<SearchEngineTableViewController*>(controller());
+
+  // Edit button should be disabled since there is no custom engine.
+  EXPECT_FALSE([searchEngineController editButtonEnabled]);
+  EXPECT_TRUE([searchEngineController shouldHideToolbar]);
+
+  AddCustomSearchEngine(kEngineC2Name, kEngineC2Url,
+                        base::Time::Now() - base::TimeDelta::FromMinutes(10),
+                        false);
+  AddCustomSearchEngine(kEngineC1Name, kEngineC1Url,
+                        base::Time::Now() - base::TimeDelta::FromSeconds(10),
+                        false);
+
+  EXPECT_TRUE([searchEngineController editButtonEnabled]);
+  EXPECT_TRUE([searchEngineController shouldHideToolbar]);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 0);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, true, 0, 1);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
+  CheckCustomItem(kEngineC1Name, kEngineC1Url, false, 1, 0);
+  CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 1);
+
+  [searchEngineController setEditing:YES animated:NO];
+
+  // Toolbar should not be displayed unless selection happens.
+  EXPECT_TRUE([searchEngineController editButtonEnabled]);
+  EXPECT_TRUE([searchEngineController shouldHideToolbar]);
+
+  // Prepopulated engines should be disabled with checkmark removed.
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 0, false);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 1, false);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2, false);
+  CheckCustomItem(kEngineC1Name, kEngineC1Url, false, 1, 0);
+  CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 1);
+
+  // Select custom engine C1.
+  [controller().tableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:0
+                                                                  inSection:1]
+                                      animated:NO
+                                scrollPosition:UITableViewScrollPositionNone];
+
+  // Toolbar should be displayed.
+  EXPECT_TRUE([searchEngineController editButtonEnabled]);
+  EXPECT_FALSE([searchEngineController shouldHideToolbar]);
+
+  // Deselect custom engine C1.
+  [controller().tableView deselectRowAtIndexPath:[NSIndexPath indexPathForRow:0
+                                                                    inSection:1]
+                                        animated:NO];
+  [searchEngineController setEditing:NO animated:NO];
+
+  EXPECT_TRUE([searchEngineController editButtonEnabled]);
+  EXPECT_TRUE([searchEngineController shouldHideToolbar]);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 0);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, true, 0, 1);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
+  CheckCustomItem(kEngineC1Name, kEngineC1Url, false, 1, 0);
+  CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 1);
+}
+
+// Tests that custom search engines can be deleted, and if default engine is
+// deleted it will be reset to the first prepopulated engine.
+TEST_F(SearchEngineTableViewControllerTest, DeleteItems) {
+  AddPriorSearchEngine(kEngineP3Name, kEngineP3Url, 1003, false);
+  AddPriorSearchEngine(kEngineP1Name, kEngineP1Url, 1001, false);
+  AddPriorSearchEngine(kEngineP2Name, kEngineP2Url, 1002, false);
+
+  AddCustomSearchEngine(kEngineC4Name, kEngineC4Url,
+                        base::Time::Now() - base::TimeDelta::FromDays(1),
+                        false);
+  AddCustomSearchEngine(kEngineC1Name, kEngineC1Url,
+                        base::Time::Now() - base::TimeDelta::FromSeconds(10),
+                        false);
+  AddCustomSearchEngine(kEngineC3Name, kEngineC3Url,
+                        base::Time::Now() - base::TimeDelta::FromHours(10),
+                        true);
+  TemplateURL* url_c2 = AddCustomSearchEngine(
+      kEngineC2Name, kEngineC2Url,
+      base::Time::Now() - base::TimeDelta::FromMinutes(10), false);
+
+  CreateController();
+  CheckController();
+
+  ASSERT_EQ(2, NumberOfSections());
+  ASSERT_EQ(4, NumberOfItemsInSection(0));
+  ASSERT_EQ(3, NumberOfItemsInSection(1));
+
+  // Remove C3 from first list and C1 from second list.
+  ASSERT_TRUE(DeleteItemsAndWait(
+      @[
+        [NSIndexPath indexPathForRow:3 inSection:0],
+        [NSIndexPath indexPathForRow:0 inSection:1]
+      ],
+      ^{
+        return NumberOfItemsInSection(0) == 3;
+      }));
+  ASSERT_TRUE(NumberOfItemsInSection(1) == 2);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, true, 0, 0);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 1);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
+  CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 1, 0);
+  CheckCustomItem(kEngineC4Name, kEngineC4Url, false, 1, 1);
+
+  // Set C2 as default engine by |template_url_service_|. This will reload the
+  // table and move C2 to the first list.
+  template_url_service_->SetUserSelectedDefaultSearchProvider(url_c2);
+  // Select C4 as default engine by user interaction.
+  [controller() tableView:controller().tableView
+      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1]];
+
+  ASSERT_EQ(4, NumberOfItemsInSection(0));
+  ASSERT_EQ(1, NumberOfItemsInSection(1));
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, false, 0, 0);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 1);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
+  CheckCustomItem(kEngineC2Name, kEngineC2Url, false, 0, 3);
+  CheckCustomItem(kEngineC4Name, kEngineC4Url, true, 1, 0);
+
+  // Remove all custom search engines.
+  ASSERT_TRUE(DeleteItemsAndWait(
+      @[
+        [NSIndexPath indexPathForRow:3 inSection:0],
+        [NSIndexPath indexPathForRow:0 inSection:1]
+      ],
+      ^{
+        return NumberOfSections() == 1;
+      }));
+  ASSERT_TRUE(NumberOfItemsInSection(0) == 3);
+  CheckPrepopulatedItem(kEngineP1Name, kEngineP1Url, true, 0, 0);
+  CheckPrepopulatedItem(kEngineP2Name, kEngineP2Url, false, 0, 1);
+  CheckPrepopulatedItem(kEngineP3Name, kEngineP3Url, false, 0, 2);
 }
 
 }  // namespace

@@ -6,18 +6,17 @@ package org.chromium.chrome.browser.permissions;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.support.annotation.StringRes;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.StringRes;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.touchless.TouchlessDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
@@ -51,7 +50,7 @@ public class AndroidPermissionRequester {
             WindowAndroid windowAndroid, int[] contentSettingsTypes) {
         SparseArray<String[]> permissionsToRequest = new SparseArray<>();
         for (int i = 0; i < contentSettingsTypes.length; i++) {
-            String[] permissions = PrefServiceBridge.getAndroidPermissionsForContentSetting(
+            String[] permissions = WebsitePreferenceBridge.getAndroidPermissionsForContentSetting(
                     contentSettingsTypes[i]);
             if (permissions == null) continue;
             List<String> missingPermissions = new ArrayList<>();
@@ -128,24 +127,19 @@ public class AndroidPermissionRequester {
                 if (allRequestable && !deniedContentSettings.isEmpty() && activity != null) {
                     int deniedStringId = -1;
                     if (deniedContentSettings.size() == 2
+                            && deniedContentSettings.contains(ContentSettingsType.MEDIASTREAM_MIC)
                             && deniedContentSettings.contains(
-                                       ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
-                            && deniedContentSettings.contains(
-                                       ContentSettingsType
-                                               .CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
+                                    ContentSettingsType.MEDIASTREAM_CAMERA)) {
                         deniedStringId =
                                 R.string.infobar_missing_microphone_camera_permissions_text;
                     } else if (deniedContentSettings.size() == 1) {
-                        if (deniedContentSettings.contains(
-                                    ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION)) {
+                        if (deniedContentSettings.contains(ContentSettingsType.GEOLOCATION)) {
                             deniedStringId = R.string.infobar_missing_location_permission_text;
                         } else if (deniedContentSettings.contains(
-                                           ContentSettingsType
-                                                   .CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)) {
+                                           ContentSettingsType.MEDIASTREAM_MIC)) {
                             deniedStringId = R.string.infobar_missing_microphone_permission_text;
                         } else if (deniedContentSettings.contains(
-                                           ContentSettingsType
-                                                   .CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
+                                           ContentSettingsType.MEDIASTREAM_CAMERA)) {
                             deniedStringId = R.string.infobar_missing_camera_permission_text;
                         }
                     }
@@ -211,24 +205,17 @@ public class AndroidPermissionRequester {
                 }
             }
         };
-        PropertyModel dialogModel;
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            dialogModel = TouchlessDelegate.getMissingPermissionDialogModel(
-                    activity, controller, messageId);
-        } else {
-            View view =
-                    activity.getLayoutInflater().inflate(R.layout.update_permissions_dialog, null);
-            TextView dialogText = view.findViewById(R.id.text);
-            dialogText.setText(messageId);
-            dialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                                  .with(ModalDialogProperties.CUSTOM_VIEW, view)
-                                  .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
-                                  .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
-                                          activity.getString(
-                                                  R.string.infobar_update_permissions_button_text))
-                                  .with(ModalDialogProperties.CONTROLLER, controller)
-                                  .build();
-        }
+        View view = activity.getLayoutInflater().inflate(R.layout.update_permissions_dialog, null);
+        TextView dialogText = view.findViewById(R.id.text);
+        dialogText.setText(messageId);
+        PropertyModel dialogModel =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CUSTOM_VIEW, view)
+                        .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                                activity.getString(R.string.infobar_update_permissions_button_text))
+                        .with(ModalDialogProperties.CONTROLLER, controller)
+                        .build();
         modalDialogManager.showDialog(dialogModel, ModalDialogManager.ModalDialogType.APP);
     }
 }

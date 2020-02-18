@@ -9,6 +9,11 @@
 namespace network {
 namespace features {
 
+// When kCapReferrerToOriginOnCrossOrigin is enabled, HTTP referrers on cross-
+// origin requests are restricted to contain at most the source origin.
+const base::Feature kCapReferrerToOriginOnCrossOrigin{
+    "CapReferrerToOriginOnCrossOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Expect CT reporting, which sends reports for opted-in sites
 // that don't serve sufficient Certificate Transparency information.
 const base::Feature kExpectCTReporting{"ExpectCTReporting",
@@ -60,8 +65,8 @@ const base::Feature kFetchMetadata{"FetchMetadata",
 // The `Sec-Fetch-Dest` header is split out from the main "FetchMetadata"
 // feature so we can ship the broader feature without this specifific bit
 // while we continue discussion.
-const base::Feature kFetchMetadataDestination{
-    "FetchMetadataDestination", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFetchMetadataDestination{"FetchMetadataDestination",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When kRequestInitiatorSiteLock is enabled, then CORB, CORP and Sec-Fetch-Site
 // will validate network::ResourceRequest::request_initiator against
@@ -91,9 +96,12 @@ const base::Feature kProactivelyThrottleLowPriorityRequests{
     "ProactivelyThrottleLowPriorityRequests",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// This is for Cross-Origin-Opener-Policy (COOP) and
+// Cross-Origin-Embedder-Policy (COEP).
+// https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
 // https://github.com/mikewest/corpp
-const base::Feature kCrossOriginEmbedderPolicy{
-    "CrossOriginEmbedderPolicy", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCrossOriginIsolation{"CrossOriginIsolation",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When kBlockNonSecureExternalRequests is enabled, requests initiated from a
 // pubic network may only target a private network if the initiating context
@@ -110,7 +118,12 @@ const base::Feature kBlockNonSecureExternalRequests{
 // NetworkIsolationKey.
 const base::Feature kPrefetchMainResourceNetworkIsolationKey{
     "PrefetchMainResourceNetworkIsolationKey",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or defaults splittup up server (not proxy) entries in the
+// HttpAuthCache.
+const base::Feature kSplitAuthCacheByNetworkIsolationKey{
+    "SplitAuthCacheByNetworkIsolationKey", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable usage of hardcoded DoH upgrade mapping for use in automatic mode.
 const base::Feature kDnsOverHttpsUpgrade {
@@ -143,7 +156,19 @@ const base::FeatureParam<std::string>
 const base::Feature kDisableKeepaliveFetch{"DisableKeepaliveFetch",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool ShouldEnableOutOfBlinkCors() {
+// When kOutOfBlinkFrameAncestors is enabled, the frame-ancestors
+// directive is parsed from the Content-Security-Policy header in the network
+// service and enforced in the browser.
+const base::Feature kOutOfBlinkFrameAncestors{
+    "OutOfBlinkFrameAncestors", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Attach the origin of the destination URL to the "origin" header
+const base::Feature
+    kDeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess{
+        "DeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess",
+        base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool ShouldEnableOutOfBlinkCorsForTesting() {
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);
 }
 

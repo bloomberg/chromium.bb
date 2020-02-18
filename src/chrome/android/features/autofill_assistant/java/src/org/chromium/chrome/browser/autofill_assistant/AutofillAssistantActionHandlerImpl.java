@@ -6,17 +6,19 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A handler that provides Autofill Assistant actions for a specific activity.
@@ -36,19 +38,36 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
     }
 
     @Override
-    public void listActions(String userName, String experimentIds, Bundle arguments,
-            Callback<Set<String>> callback) {
+    public void fetchWebsiteActions(
+            String userName, String experimentIds, Bundle arguments, Callback<Boolean> callback) {
         if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
-            callback.onResult(Collections.emptySet());
+            callback.onResult(false);
             return;
         }
         AutofillAssistantClient client = getOrCreateClient();
         if (client == null) {
-            callback.onResult(Collections.emptySet());
+            callback.onResult(false);
             return;
         }
 
-        client.listDirectActions(userName, experimentIds, toArgumentMap(arguments), callback);
+        client.fetchWebsiteActions(userName, experimentIds, toArgumentMap(arguments), callback);
+    }
+
+    @Override
+    public boolean hasRunFirstCheck() {
+        if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) return false;
+        AutofillAssistantClient client = getOrCreateClient();
+        if (client == null) return false;
+        return client.hasRunFirstCheck();
+    }
+
+    @Override
+    public List<AutofillAssistantDirectAction> getActions() {
+        AutofillAssistantClient client = getOrCreateClient();
+        if (client == null) {
+            return Collections.emptyList();
+        }
+        return client.getDirectActions();
     }
 
     @Override
@@ -72,11 +91,6 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
 
         Callback<AssistantOnboardingCoordinator> afterOnboarding = (onboardingCoordinator) -> {
             Map<String, String> argumentMap = toArgumentMap(arguments);
-            if (name.isEmpty()) {
-                callback.onResult(client.start(/* initialUrl= */ "", argumentMap, experimentIds,
-                        Bundle.EMPTY, onboardingCoordinator));
-                return;
-            }
             callback.onResult(client.performDirectAction(
                     name, experimentIds, argumentMap, onboardingCoordinator));
         };
@@ -103,6 +117,7 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
      */
     @Nullable
     private AutofillAssistantClient getOrCreateClient() {
+        ThreadUtils.assertOnUiThread();
         Tab tab = mGetCurrentTab.get();
 
         if (tab == null || tab.getWebContents() == null) return null;

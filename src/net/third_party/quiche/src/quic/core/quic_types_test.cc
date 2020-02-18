@@ -13,9 +13,9 @@ namespace quic {
 namespace test {
 namespace {
 
-class QuicUtilsTest : public QuicTest {};
+class QuicTypesTest : public QuicTest {};
 
-TEST_F(QuicUtilsTest, QuicIetfTransportErrorCodeString) {
+TEST_F(QuicTypesTest, QuicIetfTransportErrorCodeString) {
   // QuicIetfTransportErrorCode out of bound.
   for (quic::QuicErrorCode error = quic::QUIC_ENCRYPTION_FAILURE;
        error < quic::QUIC_LAST_ERROR;
@@ -27,10 +27,6 @@ TEST_F(QuicUtilsTest, QuicIetfTransportErrorCodeString) {
           QuicIetfTransportErrorCodeString(mapping.transport_error_code_),
           QuicStrCat("Unknown Transport Error Code Value: ",
                      static_cast<uint16_t>(mapping.transport_error_code_)));
-    } else {
-      // Some QuicErrorCodes are no longer valid.
-      EXPECT_EQ(QuicIetfTransportErrorCodeString(mapping.transport_error_code_),
-                "NO_IETF_QUIC_ERROR");
     }
   }
 }

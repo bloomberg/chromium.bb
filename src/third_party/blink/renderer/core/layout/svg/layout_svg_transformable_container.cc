@@ -21,7 +21,7 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_transformable_container.h"
 
-#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/svg/svg_g_element.h"
 #include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
@@ -47,7 +47,7 @@ bool LayoutSVGTransformableContainer::IsChildAllowed(
     const ComputedStyle& style) const {
   DCHECK(GetElement());
   Node* child_node = child->GetNode();
-  if (IsSVGSwitchElement(*GetElement())) {
+  if (IsA<SVGSwitchElement>(*GetElement())) {
     // Reject non-SVG/non-valid elements.
     auto* svg_element = DynamicTo<SVGElement>(child_node);
     if (!svg_element || !svg_element->IsValid()) {
@@ -56,11 +56,11 @@ bool LayoutSVGTransformableContainer::IsChildAllowed(
     // Reject this child if it isn't the first valid node.
     if (HasValidPredecessor(child_node))
       return false;
-  } else if (IsSVGAElement(*GetElement())) {
+  } else if (IsA<SVGAElement>(*GetElement())) {
     // http://www.w3.org/2003/01/REC-SVG11-20030114-errata#linking-text-environment
     // The 'a' element may contain any element that its parent may contain,
     // except itself.
-    if (child_node && IsSVGAElement(*child_node))
+    if (child_node && IsA<SVGAElement>(*child_node))
       return false;
     if (Parent() && Parent()->IsSVG())
       return Parent()->IsChildAllowed(child, style);
@@ -77,11 +77,11 @@ void LayoutSVGTransformableContainer::SetNeedsTransformUpdate() {
 
 bool LayoutSVGTransformableContainer::IsUseElement() const {
   const SVGElement& element = *GetElement();
-  if (IsSVGUseElement(element))
+  if (IsA<SVGUseElement>(element))
     return true;
   // Nested <use> are replaced by <g> during shadow tree expansion.
-  if (IsSVGGElement(element) && ToSVGGElement(element).InUseShadowTree())
-    return IsSVGUseElement(element.CorrespondingElement());
+  if (IsA<SVGGElement>(element) && To<SVGGElement>(element).InUseShadowTree())
+    return IsA<SVGUseElement>(element.CorrespondingElement());
   return false;
 }
 

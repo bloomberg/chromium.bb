@@ -8,13 +8,15 @@ import android.app.Activity;
 import android.os.Build;
 import android.util.SparseArray;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.VerifiesOnN;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
@@ -205,9 +207,12 @@ public class TabWindowManager implements ActivityStateListener {
     }
 
     private static class DefaultTabModelSelectorFactory implements TabModelSelectorFactory {
+        // Do not inline since this uses some APIs only available on Android N versions, which cause
+        // verification errors.
+        @VerifiesOnN
         @Override
-        public TabModelSelector buildSelector(Activity activity,
-                TabCreatorManager tabCreatorManager, int selectorIndex) {
+        public TabModelSelector buildSelector(
+                Activity activity, TabCreatorManager tabCreatorManager, int selectorIndex) {
             // Merge tabs if this TabModelSelector is for a ChromeTabbedActivity created in
             // fullscreen mode and there are no TabModelSelector's currently alive. This indicates
             // that it is a cold start or process restart in fullscreen mode.

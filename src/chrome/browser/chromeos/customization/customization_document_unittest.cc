@@ -33,8 +33,6 @@
 #include "extensions/common/manifest.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -252,10 +250,10 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     GURL url(base::StringPrintf(ServicesCustomizationDocument::kManifestUrl,
                                 id.c_str()));
 
-    network::ResourceResponseHead response_head;
-    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    response_head.headers->AddHeader("Content-Type: application/json");
-    loader_factory_.AddResponse(url, response_head, manifest,
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    response_head->headers->AddHeader("Content-Type: application/json");
+    loader_factory_.AddResponse(url, std::move(response_head), manifest,
                                 network::URLLoaderCompletionStatus(net::OK));
     EXPECT_CALL(*interceptor_, Intercept).Times(Exactly(1));
   }
@@ -264,11 +262,11 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     GURL url(base::StringPrintf(ServicesCustomizationDocument::kManifestUrl,
                                 id.c_str()));
 
-    network::ResourceResponseHead response_head;
-    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    response_head.headers->AddHeader("Content-Type: application/json");
-    response_head.headers->ReplaceStatusLine("HTTP/1.1 404 Not found");
-    loader_factory_.AddResponse(url, response_head, std::string(),
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    response_head->headers->AddHeader("Content-Type: application/json");
+    response_head->headers->ReplaceStatusLine("HTTP/1.1 404 Not found");
+    loader_factory_.AddResponse(url, std::move(response_head), std::string(),
                                 network::URLLoaderCompletionStatus(net::OK));
     EXPECT_CALL(*interceptor_, Intercept).Times(Exactly(1));
   }

@@ -14,12 +14,11 @@ namespace quic {
 // Records a QUIC trace protocol buffer for a QuicConnection.  It's the
 // responsibility of the user of this visitor to process or store the resulting
 // trace, which can be accessed via trace().
-class QuicTraceVisitor : public QuicConnectionDebugVisitor {
+class QUIC_NO_EXPORT QuicTraceVisitor : public QuicConnectionDebugVisitor {
  public:
   explicit QuicTraceVisitor(const QuicConnection* connection);
 
   void OnPacketSent(const SerializedPacket& serialized_packet,
-                    QuicPacketNumber original_packet_number,
                     TransmissionType transmission_type,
                     QuicTime sent_time) override;
 

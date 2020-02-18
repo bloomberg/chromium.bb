@@ -20,11 +20,13 @@
 #include "dawn_native/Format.h"
 #include "dawn_native/RenderPipeline.h"
 #include "dawn_native/ValidationUtils_autogen.h"
+#include "dawn_platform/DawnPlatform.h"
+#include "dawn_platform/tracing/TraceEvent.h"
 
 namespace dawn_native {
 
     MaybeError ValidateColorAttachmentFormat(const DeviceBase* device,
-                                             dawn::TextureFormat textureFormat) {
+                                             wgpu::TextureFormat textureFormat) {
         DAWN_TRY(ValidateTextureFormat(textureFormat));
         const Format* format = nullptr;
         DAWN_TRY_ASSIGN(format, device->GetInternalFormat(textureFormat));
@@ -36,7 +38,7 @@ namespace dawn_native {
     }
 
     MaybeError ValidateDepthStencilAttachmentFormat(const DeviceBase* device,
-                                                    dawn::TextureFormat textureFormat) {
+                                                    wgpu::TextureFormat textureFormat) {
         DAWN_TRY(ValidateTextureFormat(textureFormat));
         const Format* format = nullptr;
         DAWN_TRY_ASSIGN(format, device->GetInternalFormat(textureFormat));
@@ -60,7 +62,7 @@ namespace dawn_native {
         }
 
         if (descriptor->colorFormatsCount == 0 &&
-            descriptor->depthStencilFormat == dawn::TextureFormat::Undefined) {
+            descriptor->depthStencilFormat == wgpu::TextureFormat::Undefined) {
             return DAWN_VALIDATION_ERROR("Should have at least one attachment format");
         }
 
@@ -68,58 +70,59 @@ namespace dawn_native {
             DAWN_TRY(ValidateColorAttachmentFormat(device, descriptor->colorFormats[i]));
         }
 
-        if (descriptor->depthStencilFormat != dawn::TextureFormat::Undefined) {
+        if (descriptor->depthStencilFormat != wgpu::TextureFormat::Undefined) {
             DAWN_TRY(ValidateDepthStencilAttachmentFormat(device, descriptor->depthStencilFormat));
         }
 
         return {};
     }
 
-    RenderBundleEncoderBase::RenderBundleEncoderBase(
-        DeviceBase* device,
-        const RenderBundleEncoderDescriptor* descriptor)
+    RenderBundleEncoder::RenderBundleEncoder(DeviceBase* device,
+                                             const RenderBundleEncoderDescriptor* descriptor)
         : RenderEncoderBase(device, &mEncodingContext),
           mEncodingContext(device, this),
           mAttachmentState(device->GetOrCreateAttachmentState(descriptor)) {
     }
 
-    RenderBundleEncoderBase::RenderBundleEncoderBase(DeviceBase* device, ErrorTag errorTag)
+    RenderBundleEncoder::RenderBundleEncoder(DeviceBase* device, ErrorTag errorTag)
         : RenderEncoderBase(device, &mEncodingContext, errorTag), mEncodingContext(device, this) {
     }
 
     // static
-    RenderBundleEncoderBase* RenderBundleEncoderBase::MakeError(DeviceBase* device) {
-        return new RenderBundleEncoderBase(device, ObjectBase::kError);
+    RenderBundleEncoder* RenderBundleEncoder::MakeError(DeviceBase* device) {
+        return new RenderBundleEncoder(device, ObjectBase::kError);
     }
 
-    const AttachmentState* RenderBundleEncoderBase::GetAttachmentState() const {
+    const AttachmentState* RenderBundleEncoder::GetAttachmentState() const {
         return mAttachmentState.Get();
     }
 
-    CommandIterator RenderBundleEncoderBase::AcquireCommands() {
+    CommandIterator RenderBundleEncoder::AcquireCommands() {
         return mEncodingContext.AcquireCommands();
     }
 
-    RenderBundleBase* RenderBundleEncoderBase::Finish(const RenderBundleDescriptor* descriptor) {
-        if (GetDevice()->ConsumedError(ValidateFinish(descriptor))) {
-            return RenderBundleBase::MakeError(GetDevice());
-        }
-        ASSERT(!IsError());
+    RenderBundleBase* RenderBundleEncoder::Finish(const RenderBundleDescriptor* descriptor) {
+        PassResourceUsage usages = mUsageTracker.AcquireResourceUsage();
 
-        return new RenderBundleBase(this, descriptor, mAttachmentState.Get(),
-                                    std::move(mResourceUsage));
+        DeviceBase* device = GetDevice();
+        // Even if mEncodingContext.Finish() validation fails, calling it will mutate the internal
+        // state of the encoding context. Subsequent calls to encode commands will generate errors.
+        if (device->ConsumedError(mEncodingContext.Finish()) ||
+            (device->IsValidationEnabled() &&
+             device->ConsumedError(ValidateFinish(mEncodingContext.GetIterator(), usages)))) {
+            return RenderBundleBase::MakeError(device);
+        }
+
+        ASSERT(!IsError());
+        return new RenderBundleBase(this, descriptor, mAttachmentState.Get(), std::move(usages));
     }
 
-    MaybeError RenderBundleEncoderBase::ValidateFinish(const RenderBundleDescriptor* descriptor) {
+    MaybeError RenderBundleEncoder::ValidateFinish(CommandIterator* commands,
+                                                   const PassResourceUsage& usages) const {
+        TRACE_EVENT0(GetDevice()->GetPlatform(), Validation, "RenderBundleEncoder::ValidateFinish");
         DAWN_TRY(GetDevice()->ValidateObject(this));
-
-        // Even if Finish() validation fails, calling it will mutate the internal state of the
-        // encoding context. Subsequent calls to encode commands will generate errors.
-        DAWN_TRY(mEncodingContext.Finish());
-
-        CommandIterator* commands = mEncodingContext.GetIterator();
-
-        DAWN_TRY(ValidateRenderBundle(commands, mAttachmentState.Get(), &mResourceUsage));
+        DAWN_TRY(ValidatePassResourceUsage(usages));
+        DAWN_TRY(ValidateRenderBundle(commands, mAttachmentState.Get()));
         return {};
     }
 

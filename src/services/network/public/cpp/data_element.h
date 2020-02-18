@@ -21,6 +21,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom-forward.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-forward.h"
@@ -157,7 +158,8 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
 
   // Sets TYPE_DATA_PIPE data. The data pipe consumer can safely wait for the
   // callback passed to Read() to be invoked before reading the request body.
-  void SetToDataPipe(mojom::DataPipeGetterPtr data_pipe_getter);
+  void SetToDataPipe(
+      mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter);
 
   // Sets TYPE_CHUNKED_DATA_PIPE data. The data pipe consumer must not wait
   // for the callback passed to GetSize() to be invoked before reading the
@@ -165,20 +167,21 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   // sent. This method triggers a chunked upload, which not all servers may
   // support, so SetToDataPipe should be used instead, unless talking with a
   // server known to support chunked uploads.
-  void SetToChunkedDataPipe(
-      mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter);
+  void SetToChunkedDataPipe(mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
+                                chunked_data_pipe_getter);
 
   // Takes ownership of the File, if this is of TYPE_RAW_FILE. The file is open
   // for reading (asynchronous reading on Windows).
   base::File ReleaseFile();
 
   // Takes ownership of the DataPipeGetter, if this is of TYPE_DATA_PIPE.
-  mojom::DataPipeGetterPtrInfo ReleaseDataPipeGetter();
-  mojom::DataPipeGetterPtr CloneDataPipeGetter() const;
+  mojo::PendingRemote<mojom::DataPipeGetter> ReleaseDataPipeGetter();
+  mojo::PendingRemote<mojom::DataPipeGetter> CloneDataPipeGetter() const;
 
   // Takes ownership of the DataPipeGetter, if this is of
   // TYPE_CHUNKED_DATA_PIPE.
-  mojom::ChunkedDataPipeGetterPtrInfo ReleaseChunkedDataPipeGetter();
+  mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
+  ReleaseChunkedDataPipeGetter();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobAsyncTransportStrategyTest, TestInvalidParams);
@@ -199,9 +202,9 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   // For TYPE_BLOB.
   std::string blob_uuid_;
   // For TYPE_DATA_PIPE.
-  mojom::DataPipeGetterPtrInfo data_pipe_getter_;
+  mojo::PendingRemote<mojom::DataPipeGetter> data_pipe_getter_;
   // For TYPE_CHUNKED_DATA_PIPE.
-  mojom::ChunkedDataPipeGetterPtrInfo chunked_data_pipe_getter_;
+  mojo::PendingRemote<mojom::ChunkedDataPipeGetter> chunked_data_pipe_getter_;
   uint64_t offset_;
   uint64_t length_;
   base::Time expected_modification_time_;

@@ -21,13 +21,16 @@ as many/few checkers as we want in this one module.
 from __future__ import print_function
 
 import collections
+import tokenize
 import os
 import re
 import sys
 
-from pylint.checkers import BaseChecker
+import pylint.checkers
 from pylint.config import ConfigurationMixIn
-from pylint.interfaces import IAstroidChecker
+import pylint.interfaces
+
+from chromite.utils import memoize
 
 
 _THIRD_PARTY = os.path.join(
@@ -116,7 +119,7 @@ def _PylintrcConfig(config_file, section, opts):
   return cfg
 
 
-class DocStringChecker(BaseChecker):
+class DocStringChecker(pylint.checkers.BaseChecker):
   """PyLint AST based checker to verify PEP 257 compliance
 
   See our style guide for more info:
@@ -126,7 +129,7 @@ class DocStringChecker(BaseChecker):
   # TODO: See about merging with the pep257 project:
   # https://github.com/GreenSteam/pep257
 
-  __implements__ = IAstroidChecker
+  __implements__ = pylint.interfaces.IAstroidChecker
 
   # pylint: disable=class-missing-docstring,multiple-statements
   class _MessageCP001(object): pass
@@ -150,7 +153,9 @@ class DocStringChecker(BaseChecker):
   # pylint: enable=class-missing-docstring,multiple-statements
 
   # All the sections we recognize (and in this order).
-  VALID_SECTIONS = ('Examples', 'Args', 'Returns', 'Yields', 'Raises')
+  VALID_FUNC_SECTIONS = ('Examples', 'Args', 'Returns', 'Yields', 'Raises')
+  VALID_CLASS_SECTIONS = ('Examples', 'Attributes')
+  ALL_VALID_SECTIONS = set(VALID_FUNC_SECTIONS + VALID_CLASS_SECTIONS)
 
   # This is the section name in the pylintrc file.
   name = 'doc_string_checker'
@@ -173,11 +178,9 @@ class DocStringChecker(BaseChecker):
       'C9006': ('Section names should be preceded by one blank line'
                 ': ' + MSG_ARGS,
                 ('docstring-section-newline'), _MessageCP006),
-      'C9007': ('Section names should be one of "%s": %s' %
-                (', '.join(VALID_SECTIONS), MSG_ARGS),
+      'C9007': ('Section names should be "%(section)s": ' + MSG_ARGS,
                 ('docstring-section-name'), _MessageCP007),
-      'C9008': ('Sections should be in the order: %s' %
-                (' '.join(VALID_SECTIONS),),
+      'C9008': ('Sections should be in the order: %(sections)s',
                 ('docstring-section-order'), _MessageCP008),
       'C9009': ('First line should be a short summary',
                 ('docstring-first-line'), _MessageCP009),
@@ -205,7 +208,7 @@ class DocStringChecker(BaseChecker):
   }
 
   def __init__(self, *args, **kwargs):
-    BaseChecker.__init__(self, *args, **kwargs)
+    pylint.checkers.BaseChecker.__init__(self, *args, **kwargs)
 
     if self.linter is None:
       # Unit tests don't set this up.
@@ -217,13 +220,13 @@ class DocStringChecker(BaseChecker):
       self._indent_string = cfg.option_value('indent-string')
     self._indent_len = len(self._indent_string)
 
-  def visit_function(self, node):
+  def visit_functiondef(self, node):
     """Verify function docstrings"""
     if node.doc:
       lines = node.doc.split('\n')
       self._check_common(node, lines)
       sections = self._parse_docstring_sections(node, lines)
-      self._check_section_lines(node, lines, sections)
+      self._check_section_lines(node, lines, sections, self.VALID_FUNC_SECTIONS)
       self._check_all_args_in_doc(node, lines, sections)
       self._check_func_signature(node)
     else:
@@ -240,10 +243,14 @@ class DocStringChecker(BaseChecker):
         return
       self.add_message('C9001', node=node)
 
-  def visit_class(self, node):
+  def visit_classdef(self, node):
     """Verify class docstrings"""
     if node.doc:
-      self._check_common(node)
+      lines = node.doc.split('\n')
+      self._check_common(node, lines)
+      sections = self._parse_docstring_sections(node, lines)
+      self._check_section_lines(node, lines, sections,
+                                self.VALID_CLASS_SECTIONS)
     else:
       self.add_message('C9002', node=node, line=node.fromlineno)
 
@@ -335,6 +342,30 @@ class DocStringChecker(BaseChecker):
         margs = {'offset': len(lines) - 2, 'line': lines[-2]}
         self.add_message('C9003', node=node, line=node.fromlineno, args=margs)
 
+  @memoize.MemoizedSingleCall
+  def _invalid_sections_map(self):
+    """Get a mapping from common invalid section names to the valid name."""
+    invalid_sections_sets = {
+        # Handle common misnamings.
+        'Examples': {'example', 'exaple', 'exaples', 'usage', 'example usage'},
+        'Attributes': {
+            'attr', 'attrs', 'attribute',
+            'prop', 'props', 'properties',
+            'member', 'members',
+        },
+        'Args': {'arg', 'argument', 'arguments'},
+        'Returns': {
+            'ret', 'rets', 'return', 'retrun', 'retruns', 'result', 'results',
+        },
+        'Yields': {'yield', 'yeild', 'yeilds'},
+        'Raises': {'raise', 'riase', 'riases', 'throw', 'throws'},
+    }
+
+    invalid_sections_map = {}
+    for key, value in invalid_sections_sets.items():
+      invalid_sections_map.update((v, key) for v in value)
+    return invalid_sections_map
+
   def _parse_docstring_sections(self, node, lines):
     """Find all the sections and return them
 
@@ -348,14 +379,7 @@ class DocStringChecker(BaseChecker):
       {'Args': [start_line_number, end_line_number], ...}
     """
     sections = collections.OrderedDict()
-    invalid_sections = (
-        # Handle common misnamings.
-        'example', 'usage', 'example usage',
-        'arg', 'argument', 'arguments',
-        'ret', 'rets', 'return', 'retrun', 'retruns', 'result', 'results',
-        'yield', 'yeild', 'yeilds',
-        'raise', 'riase', 'riases', 'throw', 'throws',
-    )
+    invalid_sections_map = self._invalid_sections_map()
     indent_len = self._docstring_indent(node)
 
     in_args_section = False
@@ -369,7 +393,11 @@ class DocStringChecker(BaseChecker):
       l = line.strip()
 
       # Catch semi-common javadoc style.
-      if l.startswith('@param') or l.startswith('@return'):
+      if l.startswith('@param'):
+        margs['section'] = 'Args'
+        self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
+      if l.startswith('@return'):
+        margs['section'] = 'Returns'
         self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
 
       # See if we can detect incorrect behavior.
@@ -385,9 +413,10 @@ class DocStringChecker(BaseChecker):
         # We only parse known invalid & valid sections here.  This avoids
         # picking up things that look like sections but aren't (e.g. "Note:"
         # lines), and avoids running checks on sections we don't yet support.
-        if section.lower() in invalid_sections:
+        if section.lower() in invalid_sections_map:
+          margs['section'] = invalid_sections_map[section.lower()]
           self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
-        elif section in self.VALID_SECTIONS:
+        elif section in self.ALL_VALID_SECTIONS:
           if section in sections:
             # We got the same section more than once?
             margs_copy = margs.copy()
@@ -404,7 +433,7 @@ class DocStringChecker(BaseChecker):
 
         # Detect whether we're in the Args section once we've processed the Args
         # section itself.
-        in_args_section = (section == 'Args')
+        in_args_section = (section in ('Args', 'Attributes'))
 
       if l == '' and last_section:
         last_section.lines = lines[last_section.lineno:lineno - 1]
@@ -412,14 +441,15 @@ class DocStringChecker(BaseChecker):
 
     return sections
 
-  def _check_section_lines(self, node, lines, sections):
-    """Verify each section (Args/Returns/Yields/Raises) is sane"""
+  def _check_section_lines(self, node, lines, sections, valid_sections):
+    """Verify each section (e.g. Args/Returns/etc...) is sane"""
     indent_len = self._docstring_indent(node)
 
     # Make sure the sections are in the right order.
-    found_sections = [x for x in self.VALID_SECTIONS if x in sections]
-    if found_sections != sections.keys():
-      self.add_message('C9008', node=node, line=node.fromlineno)
+    found_sections = [x for x in valid_sections if x in sections]
+    if found_sections != list(sections):
+      margs = {'sections': ', '.join(valid_sections)}
+      self.add_message('C9008', node=node, line=node.fromlineno, args=margs)
 
     for section in sections.values():
       # We're going to check the section line itself.
@@ -440,6 +470,7 @@ class DocStringChecker(BaseChecker):
 
       # Make sure it has a single trailing colon.
       if line.strip() != '%s:' % section.name:
+        margs['section'] = section.name
         self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
 
       # Verify blank line before it.  We use -2 because lineno counts from one,
@@ -502,7 +533,7 @@ class DocStringChecker(BaseChecker):
         m = arg_re.match(aline)
         if m:
           amsg = aline[m.end():]
-          if len(amsg) and len(amsg) - len(amsg.lstrip()) != 1:
+          if amsg and len(amsg) - len(amsg.lstrip()) != 1:
             margs = {'arg': l}
             self.add_message('C9012', node=node, line=node.fromlineno,
                              args=margs)
@@ -527,10 +558,10 @@ class DocStringChecker(BaseChecker):
       self.add_message('C9011', node=node, line=node.fromlineno, args=margs)
 
 
-class Py3kCompatChecker(BaseChecker):
+class Py3kCompatChecker(pylint.checkers.BaseChecker):
   """Make sure we enforce py3k compatible features"""
 
-  __implements__ = IAstroidChecker
+  __implements__ = pylint.interfaces.IAstroidChecker
 
   # pylint: disable=class-missing-docstring,multiple-statements
   class _MessageR9100(object): pass
@@ -565,7 +596,7 @@ class Py3kCompatChecker(BaseChecker):
         if name == 'print_function':
           self.seen_print_func = True
 
-  def visit_from(self, node):
+  def visit_importfrom(self, node):
     """Process 'from' statements"""
     self.saw_imports = True
     self._check_print_function(node)
@@ -575,10 +606,10 @@ class Py3kCompatChecker(BaseChecker):
     self.saw_imports = True
 
 
-class SourceChecker(BaseChecker):
+class SourceChecker(pylint.checkers.BaseChecker):
   """Make sure we enforce rules on the source."""
 
-  __implements__ = IAstroidChecker
+  __implements__ = pylint.interfaces.IAstroidChecker
 
   # pylint: disable=class-missing-docstring,multiple-statements
   class _MessageR9200(object): pass
@@ -587,7 +618,6 @@ class SourceChecker(BaseChecker):
   class _MessageR9203(object): pass
   class _MessageR9204(object): pass
   class _MessageR9205(object): pass
-  class _MessageR9210(object): pass
   # pylint: enable=class-missing-docstring,multiple-statements
 
   name = 'source_checker'
@@ -608,22 +638,19 @@ class SourceChecker(BaseChecker):
                 ('missing-file-encoding'), _MessageR9204),
       'R9205': ('File encoding should be "utf-8"',
                 ('bad-file-encoding'), _MessageR9205),
-      'R9210': ('Trailing new lines found at end of file',
-                ('excess-trailing-newlines'), _MessageR9210),
   }
   options = ()
 
   # Taken from PEP-263.
-  _ENCODING_RE = re.compile(r'^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
+  _ENCODING_RE = re.compile(br'^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)')
 
   def visit_module(self, node):
     """Called when the whole file has been read"""
-    stream = node.file_stream
-    st = os.fstat(stream.fileno())
-    self._check_shebang(node, stream, st)
-    self._check_encoding(node, stream, st)
-    self._check_module_name(node)
-    self._check_trailing_lines(node, stream, st)
+    with node.stream() as stream:
+      st = os.fstat(stream.fileno())
+      self._check_shebang(node, stream, st)
+      self._check_encoding(node, stream, st)
+      self._check_module_name(node)
 
   def _check_shebang(self, _node, stream, st):
     """Verify the shebang is version specific"""
@@ -633,7 +660,7 @@ class SourceChecker(BaseChecker):
     executable = bool(mode & 0o0111)
 
     shebang = stream.readline()
-    if shebang[0:2] != '#!':
+    if shebang[0:2] != b'#!':
       if executable:
         self.add_message('R9201')
       return
@@ -641,7 +668,7 @@ class SourceChecker(BaseChecker):
       self.add_message('R9202')
 
     if shebang.strip() not in (
-        '#!/usr/bin/env python2', '#!/usr/bin/env python3'):
+        b'#!/usr/bin/env python2', b'#!/usr/bin/env python3'):
       self.add_message('R9200')
 
   def _check_encoding(self, _node, stream, st):
@@ -658,13 +685,13 @@ class SourceChecker(BaseChecker):
     encoding = stream.readline()
 
     # If the first line is the shebang, then the encoding is the second line.
-    if encoding[0:2] == '#!':
+    if encoding[0:2] == b'#!':
       encoding = stream.readline()
 
     # See if the encoding matches the standard.
     m = self._ENCODING_RE.match(encoding)
     if m:
-      if m.group(1) != 'utf-8':
+      if m.group(1) != b'utf-8':
         self.add_message('R9205')
     else:
       self.add_message('R9204')
@@ -676,18 +703,50 @@ class SourceChecker(BaseChecker):
     if name.rsplit('_', 2)[-1] in ('unittests',):
       self.add_message('R9203')
 
-  def _check_trailing_lines(self, _node, stream, st):
-    """Reject trailing lines"""
-    if st.st_size > 1:
-      stream.seek(st.st_size - 2)
-      if not stream.read().strip('\n'):
-        self.add_message('R9210')
+
+class CommentChecker(pylint.checkers.BaseTokenChecker):
+  """Enforce our arbitrary rules on comments."""
+
+  __implements__ = pylint.interfaces.ITokenChecker
+
+  # pylint: disable=class-missing-docstring,multiple-statements
+  class _MessageR9250(object): pass
+  # pylint: enable=class-missing-docstring,multiple-statements
+
+  name = 'comment_checker'
+  priority = -1
+  MSG_ARGS = 'offset:%(offset)i: {%(line)s}'
+  msgs = {
+      'R9250': ('One space needed at start of comment: %(comment)s',
+                ('comment-missing-leading-space'), _MessageR9250),
+  }
+  options = ()
+
+  def _visit_comment(self, lineno, comment):
+    """Process |comment| at |lineno|."""
+    if comment == '#':
+      # Ignore standalone comments for spacing.
+      return
+
+    if lineno == 1 and comment.startswith('#!'):
+      # Ignore shebangs.
+      return
+
+    # We remove multiple leading # to support runs like ###.
+    if not comment.lstrip('#').startswith(' '):
+      self.add_message('R9250', line=lineno, args={'comment': comment})
+
+  def process_tokens(self, tokens):
+    """Process tokens and look for comments."""
+    for (tok_type, token, (start_row, _), _, _) in tokens:
+      if tok_type == tokenize.COMMENT:
+        self._visit_comment(start_row, token)
 
 
-class ChromiteLoggingChecker(BaseChecker):
+class ChromiteLoggingChecker(pylint.checkers.BaseChecker):
   """Make sure we enforce rules on importing logging."""
 
-  __implements__ = IAstroidChecker
+  __implements__ = pylint.interfaces.IAstroidChecker
 
   # pylint: disable=class-missing-docstring,multiple-statements
   class _MessageR9301(object): pass
@@ -719,8 +778,7 @@ def register(linter):
   # Walk all the classes in this module and register ours.
   this_module = sys.modules[__name__]
   for member in dir(this_module):
-    if (not member.endswith('Checker') or
-        member in ('BaseChecker', 'IAstroidChecker')):
+    if not member.endswith('Checker'):
       continue
     cls = getattr(this_module, member)
     linter.register_checker(cls(linter))

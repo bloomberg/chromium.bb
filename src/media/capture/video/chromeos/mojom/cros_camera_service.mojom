@@ -21,19 +21,20 @@ import "media/capture/video/chromeos/mojom/camera_common.mojom";
 interface CameraHalDispatcher {
   // A CameraHalServer calls RegisterServer to register itself with the
   // dispatcher.
-  RegisterServer@0(CameraHalServer server);
+  RegisterServer@0(pending_remote<CameraHalServer> server);
 
   // A CameraHalClient calls RegisterClient to register itself with the
   // dispatcher.
-  RegisterClient@1(CameraHalClient client);
+  RegisterClient@1(pending_remote<CameraHalClient> client);
 
   // Get JpegDecodeAccelerator from dispatcher.
   [MinVersion=1] GetJpegDecodeAccelerator@2(
-    chromeos_camera.mojom.MjpegDecodeAccelerator& jda_request);
+    pending_receiver<chromeos_camera.mojom.MjpegDecodeAccelerator>
+        jda_receiver);
 
   // Get JpegEncodeAccelerator from dispatcher.
   [MinVersion=2] GetJpegEncodeAccelerator@3(
-    chromeos_camera.mojom.JpegEncodeAccelerator& jea_request);
+    pending_receiver<chromeos_camera.mojom.JpegEncodeAccelerator> jea_receiver);
 };
 
 // The CrOS camera HAL v3 Mojo server.
@@ -44,7 +45,7 @@ interface CameraHalServer {
   // HAL v3 adapter.  Upon successfully binding of |camera_module_request|, the
   // caller will have a established Mojo channel to the camera HAL v3 adapter
   // process.
-  CreateChannel@0(CameraModule& camera_module_request);
+  CreateChannel@0(pending_receiver<CameraModule> camera_module_request);
 
   // Enable or disable tracing.
   [MinVersion=3]
@@ -62,5 +63,5 @@ interface CameraHalClient {
   // CameraHalServer which holds the original Mojo channel crashes,
   // CameraHalDispatcher will call SetUpChannel again once a new CameraHalServer
   // reconnects.
-  SetUpChannel@0(CameraModule camera_module_ptr);
+  SetUpChannel@0(pending_remote<CameraModule> camera_module_ptr);
 };

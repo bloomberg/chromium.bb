@@ -103,9 +103,9 @@ TaskHandle::~TaskHandle() {
   Cancel();
 }
 
-TaskHandle::TaskHandle(TaskHandle&&) noexcept = default;
+TaskHandle::TaskHandle(TaskHandle&&) = default;
 
-TaskHandle& TaskHandle::operator=(TaskHandle&& other) noexcept {
+TaskHandle& TaskHandle::operator=(TaskHandle&& other) {
   TaskHandle tmp(std::move(other));
   runner_.swap(tmp.runner_);
   return *this;
@@ -136,6 +136,35 @@ TaskHandle PostDelayedCancellableTask(base::SequencedTaskRunner& task_runner,
   scoped_refptr<TaskHandle::Runner> runner =
       base::AdoptRef(new TaskHandle::Runner(std::move(task)));
   task_runner.PostDelayedTask(
+      location,
+      WTF::Bind(&TaskHandle::Runner::Run, runner->AsWeakPtr(),
+                TaskHandle(runner)),
+      delay);
+  return TaskHandle(runner);
+}
+
+TaskHandle PostNonNestableCancellableTask(
+    base::SequencedTaskRunner& task_runner,
+    const base::Location& location,
+    base::OnceClosure task) {
+  DCHECK(task_runner.RunsTasksInCurrentSequence());
+  scoped_refptr<TaskHandle::Runner> runner =
+      base::AdoptRef(new TaskHandle::Runner(std::move(task)));
+  task_runner.PostNonNestableTask(
+      location, WTF::Bind(&TaskHandle::Runner::Run, runner->AsWeakPtr(),
+                          TaskHandle(runner)));
+  return TaskHandle(runner);
+}
+
+TaskHandle PostNonNestableDelayedCancellableTask(
+    base::SequencedTaskRunner& task_runner,
+    const base::Location& location,
+    base::OnceClosure task,
+    base::TimeDelta delay) {
+  DCHECK(task_runner.RunsTasksInCurrentSequence());
+  scoped_refptr<TaskHandle::Runner> runner =
+      base::AdoptRef(new TaskHandle::Runner(std::move(task)));
+  task_runner.PostNonNestableDelayedTask(
       location,
       WTF::Bind(&TaskHandle::Runner::Run, runner->AsWeakPtr(),
                 TaskHandle(runner)),

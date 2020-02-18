@@ -65,6 +65,10 @@ void ObservableWebView::ResourceLoadComplete(
     delegate_->OnMainFrameResourceLoadComplete(resource_load_info);
 }
 
+void ObservableWebView::ResetDelegate() {
+  delegate_ = nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, public:
 
@@ -268,10 +272,9 @@ std::string WebDialogView::GetDialogArgs() const {
   return std::string();
 }
 
-void WebDialogView::OnDialogShown(content::WebUI* webui,
-                                  content::RenderViewHost* render_view_host) {
+void WebDialogView::OnDialogShown(content::WebUI* webui) {
   if (delegate_)
-    delegate_->OnDialogShown(webui, render_view_host);
+    delegate_->OnDialogShown(webui);
 }
 
 void WebDialogView::OnDialogClosed(const std::string& json_retval) {
@@ -287,6 +290,8 @@ void WebDialogView::OnDialogClosed(const std::string& json_retval) {
   if (delegate_) {
     delegate_->OnDialogClosed(json_retval);
     delegate_ = nullptr;  // We will not communicate further with the delegate.
+    // Clear the copy of the delegate in |web_view_| too.
+    web_view_->ResetDelegate();
   }
 }
 
@@ -308,6 +313,12 @@ bool WebDialogView::ShouldShowDialogTitle() const {
   if (delegate_)
     return delegate_->ShouldShowDialogTitle();
   return true;
+}
+
+bool WebDialogView::ShouldCenterDialogTitleText() const {
+  if (delegate_)
+    return delegate_->ShouldCenterDialogTitleText();
+  return false;
 }
 
 bool WebDialogView::ShouldShowCloseButton() const {
@@ -391,22 +402,15 @@ void WebDialogView::BeforeUnloadFired(content::WebContents* tab,
   *proceed_to_fire_unload = proceed;
 }
 
-bool WebDialogView::ShouldCreateWebContents(
-    content::WebContents* web_contents,
-    content::RenderFrameHost* opener,
+bool WebDialogView::IsWebContentsCreationOverridden(
     content::SiteInstance* source_site_instance,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
     content::mojom::WindowContainerType window_container_type,
     const GURL& opener_url,
     const std::string& frame_name,
-    const GURL& target_url,
-    const std::string& partition_id,
-    content::SessionStorageNamespace* session_storage_namespace) {
+    const GURL& target_url) {
   if (delegate_)
-    return delegate_->HandleShouldCreateWebContents();
-  return true;
+    return delegate_->HandleShouldOverrideWebContentsCreation();
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

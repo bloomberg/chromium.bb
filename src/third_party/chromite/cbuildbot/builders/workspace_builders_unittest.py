@@ -99,7 +99,8 @@ class BuildspecBuilderTest(cros_test_lib.MockTempDirTestCase):
     self.chroot_path = os.path.join(self.tempdir, 'chroot')
 
     self._manager = parallel.Manager()
-    self._manager.__enter__()
+    # Pylint-1.9 has a false positive on this for some reason.
+    self._manager.__enter__()  # pylint: disable=no-value-for-parameter
 
     self.site_config = CreateMockSiteConfig()
 

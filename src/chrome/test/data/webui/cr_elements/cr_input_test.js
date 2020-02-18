@@ -5,7 +5,7 @@
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {eventToPromise, whenAttributeIs} from 'chrome://test/test_util.m.js';
+// #import {eventToPromise, whenAttributeIs} from '../test_util.m.js';
 // clang-format on
 
 suite('cr-input', function() {
@@ -45,6 +45,12 @@ suite('cr-input', function() {
       assertEquals(attr[2], input[attr[1]]);
       crInput.setAttribute(attr[0], attr[3]);
       assertEquals(attr[3], input[attr[1]]);
+    });
+  });
+
+  test('UnsupportedTypeThrows', function() {
+    assertThrows(function() {
+      crInput.type = 'checkbox';
     });
   });
 
@@ -221,7 +227,7 @@ suite('cr-input', function() {
     assertEquals(0, underline.offsetWidth);
     assertEquals('hidden', getComputedStyle(errorLabel).visibility);
 
-    let whenTransitionEnd =
+    const whenTransitionEnd =
         test_util.eventToPromise('transitionend', underline);
 
     crInput.invalid = true;

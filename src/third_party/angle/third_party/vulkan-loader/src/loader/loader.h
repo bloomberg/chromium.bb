@@ -1,8 +1,8 @@
 /*
  *
- * Copyright (c) 2014-2017 The Khronos Group Inc.
- * Copyright (c) 2014-2017 Valve Corporation
- * Copyright (c) 2014-2017 LunarG, Inc.
+ * Copyright (c) 2014-2019 The Khronos Group Inc.
+ * Copyright (c) 2014-2019 Valve Corporation
+ * Copyright (c) 2014-2019 LunarG, Inc.
  * Copyright (C) 2015 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@
  * Author: Chia-I Wu <olvaffe@gmail.com>
  * Author: Chia-I Wu <olv@lunarg.com>
  * Author: Mark Lobodzinski <mark@LunarG.com>
+ * Author: Lenny Komow <lenny@lunarg.com>
  *
  */
 
@@ -152,6 +153,8 @@ struct loader_layer_properties {
     bool has_expiration;
     struct loader_override_expiration expiration;
     bool keep;
+    uint32_t num_blacklist_layers;
+    char (*blacklist_layer_names)[MAX_STRING_SIZE];
 };
 
 struct loader_layer_list {
@@ -206,8 +209,10 @@ struct loader_device {
     struct {
         bool khr_swapchain_enabled;
         bool khr_display_swapchain_enabled;
+        bool khr_device_group_enabled;
         bool ext_debug_marker_enabled;
         bool ext_debug_utils_enabled;
+        bool ext_full_screen_exclusive_enabled;
     } extensions;
 
     struct loader_device *next;
@@ -326,6 +331,10 @@ struct loader_instance {
 #endif
 #ifdef VK_USE_PLATFORM_IOS_MVK
     bool wsi_ios_surface_enabled;
+#endif
+    bool wsi_headless_surface_enabled;
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+    bool wsi_metal_surface_enabled;
 #endif
     bool wsi_display_enabled;
     bool wsi_display_props2_enabled;
@@ -499,11 +508,19 @@ VkResult loader_create_instance_chain(const VkInstanceCreateInfo *pCreateInfo, c
 
 void loaderActivateInstanceLayerExtensions(struct loader_instance *inst, VkInstance created_inst);
 
-VkResult loader_create_device_chain(const struct loader_physical_device_tramp *pd, const VkDeviceCreateInfo *pCreateInfo,
-                                    const VkAllocationCallbacks *pAllocator, const struct loader_instance *inst,
-                                    struct loader_device *dev);
+VKAPI_ATTR VkResult VKAPI_CALL loader_layer_create_device(VkInstance instance, VkPhysicalDevice physicalDevice,
+                                                          const VkDeviceCreateInfo *pCreateInfo,
+                                                          const VkAllocationCallbacks *pAllocator, VkDevice *pDevice,
+                                                          PFN_vkGetInstanceProcAddr layerGIPA, PFN_vkGetDeviceProcAddr *nextGDPA);
+VKAPI_ATTR void VKAPI_CALL loader_layer_destroy_device(VkDevice device, const VkAllocationCallbacks *pAllocator,
+                                                       PFN_vkDestroyDevice destroyFunction);
 
-VkResult loader_validate_device_extensions(struct loader_physical_device_tramp *phys_dev,
+VkResult loader_create_device_chain(const VkPhysicalDevice pd, const VkDeviceCreateInfo *pCreateInfo,
+                                    const VkAllocationCallbacks *pAllocator, const struct loader_instance *inst,
+                                    struct loader_device *dev, PFN_vkGetInstanceProcAddr callingLayer,
+                                    PFN_vkGetDeviceProcAddr *layerNextGDPA);
+
+VkResult loader_validate_device_extensions(struct loader_instance *this_instance,
                                            const struct loader_layer_list *activated_device_layers,
                                            const struct loader_extension_list *icd_exts, const VkDeviceCreateInfo *pCreateInfo);
 

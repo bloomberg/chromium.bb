@@ -7,10 +7,12 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace password_manager {
 namespace {
@@ -18,13 +20,21 @@ namespace {
 using base::ASCIIToUTF16;
 using testing::ElementsAre;
 
-constexpr char kExampleSite[] = "https://example.com";
-constexpr char kExampleSiteAndroidApp[] = "android://3x4mpl3@com.example.app/";
+using IsPublicSuffixMatch = UiCredential::IsPublicSuffixMatch;
+using IsAffiliationBasedMatch = UiCredential::IsAffiliationBasedMatch;
 
-CredentialPair CreateCredentials(std::string username, std::string password) {
-  return CredentialPair(base::ASCIIToUTF16(std::move(username)),
-                        base::ASCIIToUTF16(std::move(password)),
-                        GURL(kExampleSite), /*is_psl_match=*/false);
+constexpr char kExampleSite[] = "https://example.com/";
+
+UiCredential MakeUiCredential(
+    base::StringPiece username,
+    base::StringPiece password,
+    base::StringPiece origin = kExampleSite,
+    IsPublicSuffixMatch is_public_suffix_match = IsPublicSuffixMatch(false),
+    IsAffiliationBasedMatch is_affiliation_based_match =
+        IsAffiliationBasedMatch(false)) {
+  return UiCredential(base::UTF8ToUTF16(username), base::UTF8ToUTF16(password),
+                      url::Origin::Create(GURL(origin)), is_public_suffix_match,
+                      is_affiliation_based_match);
 }
 
 }  // namespace
@@ -38,61 +48,54 @@ class OriginCredentialStoreTest : public testing::Test {
 };
 
 TEST_F(OriginCredentialStoreTest, StoresCredentials) {
-  store()->SaveCredentials({CreateCredentials("Berta", "30948"),
-                            CreateCredentials("Adam", "Pas83B"),
-                            CreateCredentials("Dora", "PakudC"),
-                            CreateCredentials("Carl", "P1238C")});
+  store()->SaveCredentials(
+      {MakeUiCredential("Berta", "30948"), MakeUiCredential("Adam", "Pas83B"),
+       MakeUiCredential("Dora", "PakudC"), MakeUiCredential("Carl", "P1238C")});
 
   EXPECT_THAT(store()->GetCredentials(),
-              ElementsAre(CreateCredentials("Berta", "30948"),
-                          CreateCredentials("Adam", "Pas83B"),
-                          CreateCredentials("Dora", "PakudC"),
-                          CreateCredentials("Carl", "P1238C")));
+              ElementsAre(MakeUiCredential("Berta", "30948"),
+                          MakeUiCredential("Adam", "Pas83B"),
+                          MakeUiCredential("Dora", "PakudC"),
+                          MakeUiCredential("Carl", "P1238C")));
 }
 
 TEST_F(OriginCredentialStoreTest, StoresOnlyNormalizedOrigins) {
   store()->SaveCredentials(
-      {CredentialPair(base::ASCIIToUTF16("Berta"), base::ASCIIToUTF16("30948"),
-                      GURL(kExampleSite), /*is_psl_match=*/false),
-       CredentialPair(base::ASCIIToUTF16("Adam"), base::ASCIIToUTF16("Pas83B"),
-                      GURL(kExampleSite).Resolve("/agbs"),
-                      /*is_psl_match=*/false),
-       CredentialPair(base::ASCIIToUTF16("Dora"), base::ASCIIToUTF16("PakudC"),
-                      GURL(kExampleSiteAndroidApp), /*is_psl_match=*/false)});
+      {MakeUiCredential("Berta", "30948", kExampleSite),
+       MakeUiCredential("Adam", "Pas83B", std::string(kExampleSite) + "path"),
+       MakeUiCredential("Dora", "PakudC", kExampleSite,
+                        IsPublicSuffixMatch(false),
+                        IsAffiliationBasedMatch(true))});
 
   EXPECT_THAT(store()->GetCredentials(),
               ElementsAre(
 
                   // The URL that equals an origin stays untouched.
-                  CredentialPair(base::ASCIIToUTF16("Berta"),
-                                 base::ASCIIToUTF16("30948"),
-                                 GURL(kExampleSite), /*is_psl_match=*/false),
+                  MakeUiCredential("Berta", "30948", kExampleSite),
 
                   // The longer URL is reduced to an origin.
-                  CredentialPair(base::ASCIIToUTF16("Adam"),
-                                 base::ASCIIToUTF16("Pas83B"),
-                                 GURL(kExampleSite), /*is_psl_match=*/false),
+                  MakeUiCredential("Adam", "Pas83B", kExampleSite),
 
-                  // The android origin stays untouched.
-                  CredentialPair(
-                      base::ASCIIToUTF16("Dora"), base::ASCIIToUTF16("PakudC"),
-                      GURL(kExampleSiteAndroidApp), /*is_psl_match=*/false)));
+                  // The android credential stays untouched.
+                  MakeUiCredential("Dora", "PakudC", kExampleSite,
+                                   IsPublicSuffixMatch(false),
+                                   IsAffiliationBasedMatch(true))));
 }
 
 TEST_F(OriginCredentialStoreTest, ReplacesCredentials) {
-  store()->SaveCredentials({CreateCredentials("Ben", "S3cur3")});
+  store()->SaveCredentials({MakeUiCredential("Ben", "S3cur3")});
   ASSERT_THAT(store()->GetCredentials(),
-              ElementsAre(CreateCredentials("Ben", "S3cur3")));
+              ElementsAre(MakeUiCredential("Ben", "S3cur3")));
 
-  store()->SaveCredentials({CreateCredentials(std::string(), "M1@u")});
+  store()->SaveCredentials({MakeUiCredential(std::string(), "M1@u")});
   EXPECT_THAT(store()->GetCredentials(),
-              ElementsAre(CreateCredentials(std::string(), "M1@u")));
+              ElementsAre(MakeUiCredential(std::string(), "M1@u")));
 }
 
 TEST_F(OriginCredentialStoreTest, ClearsCredentials) {
-  store()->SaveCredentials({CreateCredentials("Ben", "S3cur3")});
+  store()->SaveCredentials({MakeUiCredential("Ben", "S3cur3")});
   ASSERT_THAT(store()->GetCredentials(),
-              ElementsAre(CreateCredentials("Ben", "S3cur3")));
+              ElementsAre(MakeUiCredential("Ben", "S3cur3")));
 
   store()->ClearCredentials();
   EXPECT_EQ(store()->GetCredentials().size(), 0u);

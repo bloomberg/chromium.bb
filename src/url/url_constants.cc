@@ -20,11 +20,13 @@ const char kDataScheme[] = "data";
 const char kFileScheme[] = "file";
 const char kFileSystemScheme[] = "filesystem";
 const char kFtpScheme[] = "ftp";
-const char kGopherScheme[] = "gopher";
 const char kHttpScheme[] = "http";
 const char kHttpsScheme[] = "https";
 const char kJavaScriptScheme[] = "javascript";
 const char kMailToScheme[] = "mailto";
+// This is for QuicTransport (https://wicg.github.io/web-transport/).
+// See also: https://www.iana.org/assignments/uri-schemes/prov/quic-transport
+const char kQuicTransportScheme[] = "quic-transport";
 const char kTelScheme[] = "tel";
 const char kWsScheme[] = "ws";
 const char kWssScheme[] = "wss";

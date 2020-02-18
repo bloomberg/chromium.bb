@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Dårlig</translation>
 <translation id="1152528166145813711">Velg</translation>
 <translation id="1199593201721843963">Deaktiver eksterne tilkoblinger</translation>
+<translation id="1201402288615127009">Neste</translation>
 <translation id="1291443878853470558">Du må aktivere eksterne tilkoblinger hvis du ønsker å bruke Chromoting med denne datamaskinen.</translation>
 <translation id="1297009705180977556">Det oppsto en feil ved tilkobling til <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(Denne funksjonen er ikke tilgjengelig for datamaskinen din ennå.)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome Eksternt skrivebord er nå på nettet. Prøv <ph name="LINK_BEGIN" />nettprogrammet<ph name="LINK_END" /> vårt – det er raskt og gratis, og det har enda flere funksjoner – blant annet bedre støtte for flere skjermer.</translation>
 <translation id="1643640058022401035">Hvis du forlater denne siden, avsluttes Chromoting-økten din.</translation>
 <translation id="1654128982815600832">Slår på eksterne tilkoblinger for denne datamaskinen …</translation>
+<translation id="1697532407822776718">Da er alt klart!</translation>
 <translation id="170207782578677537">Kunne ikke registrere denne datamaskinen.</translation>
 <translation id="174018511426417793">Du har ikke registrert noen datamaskiner. For å aktivere ekstern tilkobling til en datamaskin må du installere Chrome Eksternt skrivebord på maskinen, og klikke på «<ph name="BUTTON_NAME" />».</translation>
 <translation id="1742469581923031760">Kobler til …</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Vertsprosess</translation>
 <translation id="20876857123010370">Styreflatemodus</translation>
 <translation id="2089514346391228378">Eksterne tilkoblinger for denne datamaskinen er slått på.</translation>
+<translation id="2198363917176605566">For å bruke <ph name="PRODUCT_NAME" /> må du innvilge «Skjermopptak»-tillatelsen, slik at skjerminnholdet på denne Macen kan sendes til den eksterne maskinen.
+
+For å innvilge denne tillatelsen, klikk på «<ph name="BUTTON_NAME" />» under for å åpne innstillingsfeltet for «Skjermopptak», og merk deretter av i boksen ved siden av «<ph name="SERVICE_SCRIPT_NAME" />».
+
+Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjerner du avmerkingen og merker av på nytt.</translation>
 <translation id="2208514473086078157">Innstillingene tillater ikke at denne datamaskinen deles som vert for Chrome Eksternt skrivebord. Ta kontakt med systemadministratoren for å få hjelp.</translation>
 <translation id="2220529011494928058">Rapportér et problem</translation>
 <translation id="2221097377466213233">Bruk høyre Ctrl som Win-tast (⌘ på Mac)</translation>
@@ -48,18 +55,17 @@
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" />-økten din har vært inaktiv en stund og kommer snart til å bli koblet fra.</translation>
 <translation id="2317666076142640974">Ta en sniktitt på det nye <ph name="LINK_BEGIN" />Chrome Eksternt skrivebord-nettprogrammet<ph name="LINK_END" />. Vi vil gjerne høre hva du synes.</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
-<translation id="2332192922827071008">Åpne Innstillinger</translation>
 <translation id="2353140552984634198">Du kan trygt bruke denne datamaskinen med Chromoting.</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2366718077645204424">Kunne ikke nå verten. Dette er sannsynligvis på grunn av innstillingene for nettverket du bruker.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Sist pålogget <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Denne appen støttes ikke lenger. For å sikre at du får de nyeste funksjonene og sikkerhetsoppdateringene, bør du bruke <ph name="LINK_BEGIN" />Chrome Eksternt skrivebord-nettprogrammet<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Hjelp oss med å forbedre Chrome Eksternt skrivebord ved å gi oss tillatelse til å samle bruksstatistikk og programstopprapporter.</translation>
+<translation id="2504109125669302160">Gi «Tilgjengelighet»-tillatelsen til <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Koblet til <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MERK: For å sikre at alle hurtigtastene er tilgjengelige, kan du konfigurere Chrome Eksternt skrivebord til «Åpne som vindu».</translation>
 <translation id="2540992418118313681">Har du lyst til å dele denne datamaskinen slik at en annen bruker kan se og kontrollere den?</translation>
-<translation id="254771646005658629">La eksterne brukere styre denne Macen</translation>
-<translation id="2579271889603567289">Verten kræsjet eller kunne ikke starte.</translation>
+<translation id="2579271889603567289">Verten krasjet eller kunne ikke starte.</translation>
 <translation id="2599300881200251572">Med denne tjenesten kan du motta innkommende tilkoblinger fra Chrome Eksternt skrivebord-klienter.</translation>
 <translation id="2647232381348739934">Chromoting-tjeneste</translation>
 <translation id="2676780859508944670">Behandler …</translation>
@@ -136,6 +142,8 @@
 <translation id="4405930547258349619">Core-bibliotek</translation>
 <translation id="4430435636878359009">Deaktiver eksterne tilkoblinger til denne datamaskinen.</translation>
 <translation id="4430915108080446161">Genererer tilgangskode …</translation>
+<translation id="443560535555262820">Åpne innstillinger for tilgjengelighet</translation>
+<translation id="4450893287417543264">Ikke vis igjen</translation>
 <translation id="4472575034687746823">Kom i gang</translation>
 <translation id="4481276415609939789">Du har ikke registrert noen datamaskiner. For å aktivere eksterne tilkoblinger til en datamaskin, må du installere Chromoting på maskinen, og klikke på «<ph name="BUTTON_NAME" />».</translation>
 <translation id="4513946894732546136">Google Feedback</translation>
@@ -151,7 +159,7 @@
 <translation id="4736223761657662401">Tilkoblingslogg</translation>
 <translation id="4741792197137897469">Autentiseringen mislyktes. Logg på Chrome på nytt.</translation>
 <translation id="477305884757156764">Appen er for langsom.</translation>
-<translation id="4784508858340177375">X-tjeneren kræsjet eller kunne ikke starte.</translation>
+<translation id="4784508858340177375">X-tjeneren krasjet eller kunne ikke starte.</translation>
 <translation id="4795786176190567663">Du har ikke tillatelse til å utføre denne handlingen.</translation>
 <translation id="4798680868612952294">Alternativer for mus</translation>
 <translation id="4804818685124855865">Koble fra</translation>
@@ -173,6 +181,7 @@
 <translation id="518094545883702183">Denne informasjonen brukes bare til å diagnostisere problemet du rapporterer om. Informasjonen er bare tilgjengelig for personer som går gjennom rapporten, og den slettes etter maksimalt 30 dager.</translation>
 <translation id="5204575267916639804">Vanlige spørsmål</translation>
 <translation id="5222676887888702881">Logg av</translation>
+<translation id="5234764350956374838">Lukk</translation>
 <translation id="5254120496627797685">Hvis du forlater denne siden, avsluttes Chrome Eksternt skrivebord-økten.</translation>
 <translation id="5308380583665731573">Koble til</translation>
 <translation id="5327248766486351172">Navn</translation>
@@ -183,11 +192,6 @@
 <translation id="5419185025274123272">Programmet kunne ikke tilbakestilles. Du kan likevel sende inn en feilrapport.</translation>
 <translation id="5419418238395129586">Sist på nett: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Verten har slått seg av.</translation>
-<translation id="5463789431147491241">For å bruke <ph name="PRODUCT_NAME" /> på denne Macen, følg disse trinnene:
-
-Velg «<ph name="BUTTON_NAME" />» nedenfor. I innstillinger for sikkerhet og personvern merker du av i boksen ved siden av «<ph name="SERVICE_SCRIPT_NAME" />».
-
-Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjern avmerkingen og merk deretter av på nytt.</translation>
 <translation id="5510035215749041527">Koble fra nå</translation>
 <translation id="5593560073513909978">Tjenesten er ikke tilgjengelig for øyeblikket. Prøv på nytt senere.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -218,12 +222,18 @@ Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjern 
 <translation id="6198252989419008588">Endre personlig kode</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (utdatert)</translation>
 <translation id="6221358653751391898">Du er ikke logget på Chrome. Logg på, og prøv på nytt.</translation>
+<translation id="6223301979382383752">Åpne innstillinger for skjermopptak</translation>
 <translation id="6227369581881558336">Chrome Eksternt skrivebord er nå på nettet, og det har nye funksjoner – blant annet filoverføring. Ta en titt på <ph name="LINK_BEGIN" />nettprogrammet<ph name="LINK_END" /> vårt.</translation>
 <translation id="6284412385303060032">Verten som kjører på skjermen for konsollpålogging, har blitt avsluttet for å støtte gardinmodus ved å bytte til en vert som kjører i en brukerspesifikk økt.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Klient</translation>
 <translation id="6381670701864002291">Noe annet.</translation>
 <translation id="6398765197997659313">Avslutt fullskjerm</translation>
+<translation id="6411861157501911556">For å bruke <ph name="PRODUCT_NAME" /> må du innvilge «Tilgjengelighet»-tillatelsen, slik at inndata fra den eksterne maskinen kan sendes til denne Macen.
+
+For å innvilge denne tillatelsen, klikk på «<ph name="BUTTON_NAME" />» under for å åpne innstillingsfeltet for «Tilgjengelighet», og merk deretter av i boksen ved siden av «<ph name="SERVICE_SCRIPT_NAME" />».
+
+Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjerner du avmerkingen og merker av på nytt.</translation>
 <translation id="6441316101718669559">Denne plattformen har ikke støtte for skrivebordsintegrasjon. Du kan fortsatt bruke programmet, men brukeropplevelsen blir redusert.</translation>
 <translation id="652218476070540101">PIN-koden for denne datamaskinen oppdateres …</translation>
 <translation id="6527303717912515753">Del</translation>
@@ -304,6 +314,7 @@ Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjern 
 <translation id="837021510621780684">Fra denne datamaskinen</translation>
 <translation id="8383794970363966105">Hvis du vil bruke Chromoting, må du legge til en Google-konto på enheten din.</translation>
 <translation id="8386846956409881180">Verten er konfigurert med ugyldig OAuth-legitimasjon.</translation>
+<translation id="8397385476380433240">Gi tillatelse til <ph name="PRODUCT_NAME" /></translation>
 <translation id="8406498562923498210">Velg økten du vil starte i Chrome Eksternt skrivebord-miljøet ditt. (Merk at enkelte økttyper kanskje ikke støtter samtidig kjøring på Chrome Eksternt skrivebord og på den lokale konsollen.)</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8445362773033888690">Se oppføringen i Google Play-butikken</translation>
@@ -315,7 +326,7 @@ Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjern 
 <translation id="8642984861538780905">Akseptabel</translation>
 <translation id="8712909229180978490">Jeg ser ikke de lagrede filene mine på nettet i Google Disk.</translation>
 <translation id="8743328882720071828">Vil du tillate at <ph name="CLIENT_USERNAME" /> kan se og kontrollere datamaskinen din?</translation>
-<translation id="8747048596626351634">Økten kræsjet eller kunne ikke starte. Hvis ~/.chrome-remote-desktop-session eksisterer på den eksterne datamaskinen, må du sørge for at den starter en prosess i forgrunnen som kjører lenge – for eksempel et skrivebordsmiljø eller en vindusbehandler.</translation>
+<translation id="8747048596626351634">Økten krasjet eller kunne ikke starte. Hvis ~/.chrome-remote-desktop-session eksisterer på den eksterne datamaskinen, må du sørge for at den starter en prosess i forgrunnen som kjører lenge – for eksempel et skrivebordsmiljø eller en vindusbehandler.</translation>
 <translation id="8759753423332885148">Finn ut mer</translation>
 <translation id="8791202241915690908">Last ned installasjonsprogrammet for Chromoting-verten</translation>
 <translation id="8804164990146287819">Personvernregler</translation>
@@ -330,6 +341,7 @@ Hvis det allerede er merket av for «<ph name="SERVICE_SCRIPT_NAME" />», fjern 
 <translation id="9149580767411232853">Hold hele det eksterne skrivebordet synlig</translation>
 <translation id="9149992051684092333">Kom i gang med deling av skrivebordet ved å gi adgangskoden nedenfor til personen som skal hjelpe deg.</translation>
 <translation id="916856682307586697">Start standard XSession</translation>
+<translation id="9187628920394877737">Gi «Skjermopptak»-tillatelsen til <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Godkjenn</translation>
 <translation id="9213184081240281106">Ugyldig vertskonfigurasjon.</translation>
 <translation id="951991426597076286">Avvis</translation>

@@ -199,21 +199,6 @@ std::unique_ptr<views::View> CreateItemView(const NotificationItem& item) {
   return view;
 }
 
-// Enum used to record click actions on the notification header.
-// Do not re-order or delete these entries; they are used in a UMA histogram.
-// Please edit NotificationHeaderClickAction in enums.xml if a value is added.
-enum class HeaderClickAction {
-  kNone = 0,
-  kExpanded = 1,
-  kCollapsed = 2,
-  kMaxValue = kCollapsed,
-};
-
-// static
-void RecordHeaderClickAction(HeaderClickAction action) {
-  UMA_HISTOGRAM_ENUMERATION("Notifications.HeaderClick", action);
-}
-
 }  // anonymous namespace
 
 // CompactTitleMessageView /////////////////////////////////////////////////////
@@ -738,8 +723,6 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   // |expand_button| can be focused by TAB.
   if (sender == header_row_) {
     if (IsExpandable() && content_row_->GetVisible()) {
-      RecordHeaderClickAction(IsExpanded() ? HeaderClickAction::kCollapsed
-                                           : HeaderClickAction::kExpanded);
       SetManuallyExpandedOrCollapsed(true);
       auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
       ToggleExpanded();
@@ -749,8 +732,6 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
         return;
       Layout();
       SchedulePaint();
-    } else {
-      RecordHeaderClickAction(HeaderClickAction::kNone);
     }
     return;
   }
@@ -1246,28 +1227,24 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
       list_items_count_ -
       (expanded ? item_views_.size() : kMaxLinesForMessageView));
 
-  right_content_->SetVisible(icon_view_ &&
-                             (!hide_icon_on_expanded_ || !expanded));
-  if (right_content_->GetVisible()) {
-    left_content_->SetBorder(
-        views::CreateEmptyBorder(kLeftContentPaddingWithIcon));
+  bool has_icon = icon_view_ && (!hide_icon_on_expanded_ || !expanded);
+  right_content_->SetVisible(has_icon);
+  left_content_->SetBorder(views::CreateEmptyBorder(
+      has_icon ? kLeftContentPaddingWithIcon : kLeftContentPadding));
 
-    // TODO(tetsui): Workaround https://crbug.com/682266 by explicitly setting
-    // the width.
-    // Ideally, we should fix the original bug, but it seems there's no obvious
-    // solution for the bug according to https://crbug.com/678337#c7, we should
-    // ensure that the change won't break any of the users of BoxLayout class.
-    if (title_view_)
-      title_view_->SizeToFit(kMessageViewWidthWithIcon);
-    if (message_view_)
-      message_view_->SizeToFit(kMessageViewWidthWithIcon);
-  } else {
-    left_content_->SetBorder(views::CreateEmptyBorder(kLeftContentPadding));
-    if (title_view_)
-      title_view_->SizeToFit(kMessageViewWidth);
-    if (message_view_)
-      message_view_->SizeToFit(kMessageViewWidth);
-  }
+  // TODO(tetsui): Workaround https://crbug.com/682266 by explicitly setting
+  // the width.
+  // Ideally, we should fix the original bug, but it seems there's no obvious
+  // solution for the bug according to https://crbug.com/678337#c7, we should
+  // ensure that the change won't break any of the users of BoxLayout class.
+  const int message_view_width =
+      (has_icon ? kMessageViewWidthWithIcon : kMessageViewWidth) -
+      GetInsets().width();
+  if (title_view_)
+    title_view_->SizeToFit(message_view_width);
+  if (message_view_)
+    message_view_->SizeToFit(message_view_width);
+
   content_row_->InvalidateLayout();
 }
 

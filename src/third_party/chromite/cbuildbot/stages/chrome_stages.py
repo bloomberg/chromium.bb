@@ -162,8 +162,8 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     in_chroot_path = path_util.ToChrootPath(self.archive_path)
     cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
            self._current_board, '--deps-only', '--package', constants.CHROME_CP]
-    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
-                              extra_env=extra_env)
+    cros_build_lib.run(cmd, cwd=self._build_root, enter_chroot=True,
+                       extra_env=extra_env)
     self._upload_queue.put([constants.CHROME_SYSROOT_TAR])
 
   def _ArchiveChromeEbuildEnv(self):
@@ -182,7 +182,7 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     with osutils.TempDir(prefix='chrome-sdk-stage') as tempdir:
       # Convert from bzip2 to tar format.
       bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
-      cros_build_lib.RunCommand(
+      cros_build_lib.run(
           [bzip2, '-d', env_bzip, '-c'],
           log_stdout_to_file=os.path.join(tempdir, constants.CHROME_ENV_FILE))
       env_tar = os.path.join(self.archive_path, constants.CHROME_ENV_TAR)

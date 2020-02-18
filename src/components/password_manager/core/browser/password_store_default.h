@@ -25,15 +25,6 @@ class PasswordStoreDefault : public PasswordStore {
 
   void ShutdownOnUIThread() override;
 
-#if defined(USE_X11)
-  // Dispose the current |login_db_| and use |login_db|. |login_db| is expected
-  // to have been initialised. A null value is equivalent to a database which
-  // can't be opened.
-  // TODO(crbug.com/571003) This is only used to migrate Linux to an encrypted
-  // LoginDatabase.
-  void SetLoginDB(std::unique_ptr<LoginDatabase> login_db);
-#endif  // defined(USE_X11)
-
   // To be used only for testing or in subclasses.
   LoginDatabase* login_db() const { return login_db_.get(); }
 
@@ -81,6 +72,22 @@ class PasswordStoreDefault : public PasswordStore {
   std::vector<InteractionsStats> GetAllSiteStatsImpl() override;
   std::vector<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) override;
+  void AddCompromisedCredentialsImpl(
+      const CompromisedCredentials& compromised_credentials) override;
+  void RemoveCompromisedCredentialsImpl(
+      const GURL& url,
+      const base::string16& username) override;
+  std::vector<CompromisedCredentials> GetAllCompromisedCredentialsImpl()
+      override;
+  void RemoveCompromisedCredentialsByUrlAndTimeImpl(
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
+      base::Time remove_begin,
+      base::Time remove_end) override;
+
+  void AddFieldInfoImpl(const FieldInfo& field_info) override;
+  std::vector<FieldInfo> GetAllFieldInfoImpl() override;
+  void RemoveFieldInfoByTimeImpl(base::Time remove_begin,
+                                 base::Time remove_end) override;
 
   // Implements PasswordStoreSync interface.
   bool BeginTransaction() override;

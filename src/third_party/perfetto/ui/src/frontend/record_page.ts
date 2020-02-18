@@ -20,10 +20,12 @@ import {Actions} from '../common/actions';
 import {MeminfoCounters, VmstatCounters} from '../common/protos';
 import {
   AdbRecordingTarget,
+  getDefaultRecordingTargets,
+  isAdbTarget,
   isAndroidTarget,
   isChromeTarget,
   isLinuxTarget,
-  TargetOs
+  RecordingTarget
 } from '../common/state';
 import {MAX_TIME, RecordMode} from '../common/state';
 import {AdbOverWebUsb} from '../controller/adb';
@@ -214,13 +216,6 @@ function GpuSettings(cssClass: string) {
         descr: 'Records gpu frequency via ftrace',
         setEnabled: (cfg, val) => cfg.gpuFreq = val,
         isEnabled: (cfg) => cfg.gpuFreq
-      } as ProbeAttrs),
-      m(Probe, {
-        title: 'GPU scheduling',
-        img: 'rec_cpu_wakeup.png',
-        descr: 'Records gpu scheduling via ftrace',
-        setEnabled: (cfg, val) => cfg.gpuSched = val,
-        isEnabled: (cfg) => cfg.gpuSched
       } as ProbeAttrs));
 }
 
@@ -276,6 +271,101 @@ function CpuSettings(cssClass: string) {
       } as ProbeAttrs));
 }
 
+function HeapSettings(cssClass: string) {
+  const valuesForMS = [
+    0,
+    1000,
+    10 * 1000,
+    30 * 1000,
+    60 * 1000,
+    5 * 60 * 1000,
+    10 * 60 * 1000,
+    30 * 60 * 1000,
+    60 * 60 * 1000
+  ];
+  const valuesForShMemBuff = [
+    0,
+    512,
+    1024,
+    2 * 1024,
+    4 * 1024,
+    8 * 1024,
+    16 * 1024,
+    32 * 1024,
+    64 * 1024,
+    128 * 1024,
+    256 * 1024,
+    512 * 1024,
+    1024 * 1024,
+    64 * 1024 * 1024,
+    128 * 1024 * 1024,
+    256 * 1024 * 1024,
+    512 * 1024 * 1024
+  ];
+
+  return m(
+      `.record-section${cssClass}`,
+      m(Textarea, {
+        title: 'Names or pids of the processes to track',
+        placeholder: 'One per line, e.g.:\n' +
+            'system_server\n' +
+            '1503',
+        set: (cfg, val) => cfg.hpProcesses = val,
+        get: (cfg) => cfg.hpProcesses
+      } as TextareaAttrs),
+      m(Slider, {
+        title: 'Sampling interval',
+        cssClass: '.thin',
+        values: [
+          0,     1,     2,      4,      8,      16,     32,   64,
+          128,   256,   512,    1024,   2048,   4096,   8192, 16384,
+          32768, 65536, 131072, 262144, 524288, 1048576
+        ],
+        unit: 'B',
+        min: 0,
+        set: (cfg, val) => cfg.hpSamplingIntervalBytes = val,
+        get: (cfg) => cfg.hpSamplingIntervalBytes
+      } as SliderAttrs),
+      m(Slider, {
+        title: 'Continuous dumps interval ',
+        description: 'Time between following dumps (0 = disabled)',
+        cssClass: '.thin',
+        values: valuesForMS,
+        unit: 'ms',
+        min: 0,
+        set: (cfg, val) => {
+          cfg.hpContinuousDumpsInterval = val;
+        },
+        get: (cfg) => cfg.hpContinuousDumpsInterval
+      } as SliderAttrs),
+      m(Slider, {
+        title: 'Continuous dumps phase',
+        description: 'Time before first dump',
+        cssClass: `.thin${
+            globals.state.recordConfig.hpContinuousDumpsInterval === 0 ?
+                '.greyed-out' :
+                ''}`,
+        values: valuesForMS,
+        unit: 'ms',
+        min: 0,
+        disabled: globals.state.recordConfig.hpContinuousDumpsInterval === 0,
+        set: (cfg, val) => cfg.hpContinuousDumpsPhase = val,
+        get: (cfg) => cfg.hpContinuousDumpsPhase
+      } as SliderAttrs),
+      m(Slider, {
+        title: `Shared memory buffer`,
+        cssClass: '.thin',
+        values: valuesForShMemBuff.filter(
+            value => value === 0 || value >= 8192 && value % 4096 === 0),
+        unit: 'B',
+        min: 0,
+        set: (cfg, val) => cfg.hpSharedMemoryBuffer = val,
+        get: (cfg) => cfg.hpSharedMemoryBuffer
+      } as SliderAttrs)
+      // TODO(taylori): Add advanced options.
+  );
+}
+
 function MemorySettings(cssClass: string) {
   const meminfoOpts = new Map<string, string>();
   for (const x in MeminfoCounters) {
@@ -293,6 +383,16 @@ function MemorySettings(cssClass: string) {
   }
   return m(
       `.record-section${cssClass}`,
+      m(Probe,
+        {
+          title: 'Heap profiling',
+          img: 'heap_profiler.png',
+          descr: `Track native heap allocations & deallocations of an Android
+               process. (Available on Android 10+)`,
+          setEnabled: (cfg, val) => cfg.heapProfiling = val,
+          isEnabled: (cfg) => cfg.heapProfiling
+        } as ProbeAttrs,
+        HeapSettings(cssClass)),
       m(Probe,
         {
           title: 'Kernel meminfo',
@@ -481,6 +581,13 @@ function ChromeSettings(cssClass: string) {
         setEnabled: (cfg, val) => cfg.navigationAndLoading = val,
         isEnabled: (cfg) => cfg.navigationAndLoading
       } as ProbeAttrs),
+      m(Probe, {
+        title: 'Chrome Logs',
+        img: null,
+        descr: `Records Chrome log messages`,
+        setEnabled: (cfg, val) => cfg.chromeLogs = val,
+        isEnabled: (cfg) => cfg.chromeLogs
+      } as ProbeAttrs),
       ChromeCategoriesSelection());
 }
 
@@ -494,14 +601,18 @@ function ChromeCategoriesSelection() {
   // Show "disabled-by-default" categories last.
   const categoriesMap = new Map<string, string>();
   const disabledByDefaultCategories: string[] = [];
+  const disabledPrefix = 'disabled-by-default-';
   categories.forEach(cat => {
-    if (cat.startsWith('disabled')) {
+    if (cat.startsWith(disabledPrefix)) {
       disabledByDefaultCategories.push(cat);
     } else {
       categoriesMap.set(cat, cat);
     }
   });
-  disabledByDefaultCategories.forEach(cat => categoriesMap.set(cat, cat));
+  disabledByDefaultCategories.forEach(cat => {
+    categoriesMap.set(
+        cat, `${cat.replace(disabledPrefix, '')} (high overhead)`);
+  });
   return m(Dropdown, {
     title: 'Additional Chrome categories',
     cssClass: '.multicolumn.two-columns.chrome-categories',
@@ -592,21 +703,20 @@ function RecordHeader() {
 function RecordingPlatformSelection() {
   if (globals.state.recordingInProgress) return [];
 
-  const baseTargets = [
-    m('option', {value: 'Q'}, 'Android Q+'),
-    m('option', {value: 'P'}, 'Android P'),
-    m('option', {value: 'O'}, 'Android O-'),
-    m('option', {value: 'C'}, 'Chrome'),
-    m('option', {value: 'L'}, 'Linux desktop')
-  ];
-  const availableAndroidDevices = globals.state.availableDevices;
-  const selected = globals.state.androidDeviceConnected;
-  const choices: m.Children[] =
-      availableAndroidDevices.map(d => m('option', {value: d.serial}, d.name));
+  const availableAndroidDevices = globals.state.availableAdbDevices;
+  const recordingTarget = globals.state.recordingTarget;
 
-  const selectedIndex = selected ? baseTargets.length +
-          availableAndroidDevices.findIndex(d => d.serial === selected.serial) :
-                                   undefined;
+  const targets = [];
+  for (const {os, name} of getDefaultRecordingTargets()) {
+    targets.push(m('option', {value: os}, name));
+  }
+  for (const d of availableAndroidDevices) {
+    targets.push(m('option', {value: d.serial}, d.name));
+  }
+
+  const selectedIndex = isAdbTarget(recordingTarget) ?
+      targets.findIndex(node => node.attrs.value === recordingTarget.serial) :
+      targets.findIndex(node => node.attrs.value === recordingTarget.os);
 
   return m(
       '.target',
@@ -615,8 +725,7 @@ function RecordingPlatformSelection() {
           'Target platform:',
           m('select',
             {onchange: m.withAttr('value', onTargetChange), selectedIndex},
-            ...baseTargets,
-            ...choices),
+            ...targets),
           ),
       m('.chip',
         {onclick: addAndroidDevice},
@@ -624,16 +733,14 @@ function RecordingPlatformSelection() {
         m('i.material-icons', 'add')));
 }
 
-// Target can be the targetOS or the android serial
+// |target| can be the TargetOs or the android serial.
 function onTargetChange(target: string) {
-  const adbDevice =
-      globals.state.availableDevices.find(d => d.serial === target);
-  globals.dispatch(Actions.setAndroidDevice({target: adbDevice}));
-
-  const traceCfg = produce(globals.state.recordConfig, draft => {
-    draft.targetOS = adbDevice ? adbDevice.os as TargetOs : target as TargetOs;
-  });
-  globals.dispatch(Actions.setRecordConfig({config: traceCfg}));
+  const recordingTarget: RecordingTarget =
+      globals.state.availableAdbDevices.find(d => d.serial === target) ||
+      getDefaultRecordingTargets().find(t => t.os === target) ||
+      getDefaultRecordingTargets()[0];
+  globals.dispatch(Actions.setRecordingTarget({target: recordingTarget}));
+  globals.rafScheduler.scheduleFullRedraw();
 }
 
 function Instructions(cssClass: string) {
@@ -642,6 +749,7 @@ function Instructions(cssClass: string) {
       m('header', 'Instructions'),
       RecordingSnippet(),
       BufferUsageProgressBar(),
+      m('.buttons', StopCancelButtons()),
       recordingLog());
 }
 
@@ -660,7 +768,7 @@ function BufferUsageProgressBar() {
 
 function RecordingNotes() {
   const docUrl = '//docs.perfetto.dev/#/build-instructions?id=get-the-code';
-  const extensionURL = `https://chrome.google.com/webstore/a/google.com/detail/
+  const extensionURL = `https://chrome.google.com/webstore/detail/
       perfetto-ui/lfmkphfpdbjijhpomgecfikhfohaoine`;
 
   const notes: m.Children = [];
@@ -693,7 +801,7 @@ function RecordingNotes() {
       output directory. `,
         doc);
 
-  switch (globals.state.recordConfig.targetOS) {
+  switch (globals.state.recordingTarget.os) {
     case 'Q':
       break;
     case 'P':
@@ -717,10 +825,10 @@ function RecordingNotes() {
 }
 
 function RecordingSnippet() {
-  const targetOs = globals.state.recordConfig.targetOS;
+  const target = globals.state.recordingTarget;
 
   // We don't need commands to start tracing on chrome
-  if (isChromeTarget(targetOs)) {
+  if (isChromeTarget(target)) {
     return globals.state.extensionInstalled ?
         m('div',
           m('label',
@@ -728,11 +836,10 @@ function RecordingSnippet() {
          'Start Recording'.`)) :
         [];
   }
-  return m(
-      CodeSnippet, {text: getRecordCommand(targetOs), hardWhitespace: true});
+  return m(CodeSnippet, {text: getRecordCommand(target), hardWhitespace: true});
 }
 
-function getRecordCommand(targetOs: TargetOs) {
+function getRecordCommand(target: RecordingTarget) {
   const data = globals.trackDataStore.get('config') as
           {commandline: string, pbtxt: string} |
       null;
@@ -752,8 +859,7 @@ function getRecordCommand(targetOs: TargetOs) {
     cmd += `(sleep 0.5 && adb shell screenrecord --time-limit ${time}`;
     cmd += ' "/sdcard/tracescr.mp4") &\\\n';
   }
-  cmd +=
-      isAndroidTarget(targetOs) ? 'adb shell perfetto \\\n' : 'perfetto \\\n';
+  cmd += isAndroidTarget(target) ? 'adb shell perfetto \\\n' : 'perfetto \\\n';
   cmd += '  -c - --txt \\\n';
   cmd += '  -o /data/misc/perfetto-traces/trace \\\n';
   cmd += '<<EOF\n\n';
@@ -765,14 +871,17 @@ function getRecordCommand(targetOs: TargetOs) {
 
 function recordingButtons() {
   const state = globals.state;
-  const realDeviceTarget = state.androidDeviceConnected !== undefined;
+  const target = state.recordingTarget;
   const recInProgress = state.recordingInProgress;
 
-  const startButton =
-      m(`button${recInProgress ? '.selected' : ''}`,
-        {onclick: onStartRecordingPressed},
+  const start =
+      m(`button`,
+        {
+          class: recInProgress ? '' : 'selected',
+          onclick: onStartRecordingPressed
+        },
         'Start Recording');
-  const showCmdButton =
+  const showCmd =
       m(`button`,
         {
           onclick: () => {
@@ -781,34 +890,45 @@ function recordingButtons() {
           }
         },
         'Show Command');
-  const stopButton =
-      m(`button${recInProgress ? '' : '.disabled'}`,
-        {onclick: () => globals.dispatch(Actions.stopRecording({}))},
-        'Stop Recording');
 
   const buttons: m.Children = [];
 
-  const targetOs = state.recordConfig.targetOS;
-  if (isAndroidTarget(targetOs)) {
-    buttons.push(showCmdButton);
-    if (realDeviceTarget) buttons.push(startButton);
-    // TODO(nicomazz): Support stop recording on Android devices.
-  } else if (isChromeTarget(targetOs) && state.extensionInstalled) {
-    buttons.push(startButton);
-    if (recInProgress) buttons.push(stopButton);
-  } else if (isLinuxTarget(targetOs)) {
-    buttons.push(showCmdButton);
+  if (isAndroidTarget(target)) {
+    if (!recInProgress) {
+      buttons.push(showCmd);
+      if (isAdbTarget(target)) buttons.push(start);
+    }
+  } else if (isChromeTarget(target) && state.extensionInstalled) {
+    buttons.push(start);
+  } else if (isLinuxTarget(target)) {
+    buttons.push(showCmd);
   }
 
   return m('.button', buttons);
+}
+
+function StopCancelButtons() {
+  if (!globals.state.recordingInProgress) return [];
+
+  const stop =
+      m(`button.selected`,
+        {onclick: () => globals.dispatch(Actions.stopRecording({}))},
+        'Stop');
+
+  const cancel =
+      m(`button`,
+        {onclick: () => globals.dispatch(Actions.cancelRecording({}))},
+        'Cancel');
+
+  return [stop, cancel];
 }
 
 function onStartRecordingPressed() {
   location.href = '#!/record?p=instructions';
   globals.rafScheduler.scheduleFullRedraw();
 
-  const targetOs = globals.state.recordConfig.targetOS;
-  if (isAndroidTarget(targetOs) || isChromeTarget(targetOs)) {
+  const target = globals.state.recordingTarget;
+  if (isAndroidTarget(target) || isChromeTarget(target)) {
     globals.dispatch(Actions.startRecording({}));
   }
 }
@@ -822,7 +942,7 @@ function RecordingStatusLabel() {
 function ErrorLabel() {
   const lastRecordingError = globals.state.lastRecordingError;
   if (!lastRecordingError) return [];
-  return m('label.error-label', `⚠️ Error:  ${lastRecordingError}`);
+  return m('label.error-label', `Error:  ${lastRecordingError}`);
 }
 
 function recordingLog() {
@@ -835,12 +955,19 @@ function recordingLog() {
 // be inserted in the state, and the worker will be able to connect to the
 // correct device.
 async function addAndroidDevice() {
-  const device = await new AdbOverWebUsb().findDevice();
+  let device: USBDevice;
+  try {
+    device = await new AdbOverWebUsb().findDevice();
+  } catch (e) {
+    console.error('No device found: ${e.name}: ${e.message}');
+    return;
+  }
 
   if (!device.serialNumber) {
     console.error('serial number undefined');
     return;
   }
+
   // After the user has selected a device with the chrome UI, it will be
   // available when listing all the available device from WebUSB. Therefore,
   // we update the list of available devices.
@@ -863,22 +990,55 @@ export async function updateAvailableAdbDevices() {
     }
   });
 
-  globals.dispatch(Actions.setAvailableDevices({devices: availableAdbDevices}));
+  globals.dispatch(
+      Actions.setAvailableAdbDevices({devices: availableAdbDevices}));
+  selectAndroidDeviceIfAvailable(availableAdbDevices);
+  globals.rafScheduler.scheduleFullRedraw();
   return availableAdbDevices;
 }
 
+function selectAndroidDeviceIfAvailable(
+    availableAdbDevices: AdbRecordingTarget[]) {
+  const recordingTarget = globals.state.recordingTarget;
+  const deviceConnected = isAdbTarget(recordingTarget);
+  const connectedDeviceDisconnected = deviceConnected &&
+      availableAdbDevices.find(
+          e => e.serial === (recordingTarget as AdbRecordingTarget).serial) ===
+          undefined;
+
+  // If there is an android device attached, but not selected (or the currently
+  // selected device was disconnected), select it by default.
+  if ((!deviceConnected || connectedDeviceDisconnected) &&
+      availableAdbDevices.length) {
+    globals.dispatch(
+        Actions.setRecordingTarget({target: availableAdbDevices[0]}));
+    return;
+  }
+
+  // If the currently selected device was disconnected, reset the recording
+  // target to the default one.
+  if (connectedDeviceDisconnected) {
+    globals.dispatch(
+        Actions.setRecordingTarget({target: getDefaultRecordingTargets()[0]}));
+  }
+}
+
 function recordMenu(routePage: string) {
-  const targetOS = globals.state.recordConfig.targetOS;
+  const target = globals.state.recordingTarget;
   const chromeProbe =
       m('a[href="#!/record?p=chrome"]',
         m(`li${routePage === 'chrome' ? '.active' : ''}`,
           m('i.material-icons', 'laptop_chromebook'),
           m('.title', 'Chrome'),
           m('.sub', 'Chrome traces')));
+  const recInProgress = globals.state.recordingInProgress;
 
   return m(
       '.record-menu',
-      {onclick: () => globals.rafScheduler.scheduleFullRedraw()},
+      {
+        class: recInProgress ? 'disabled' : '',
+        onclick: () => globals.rafScheduler.scheduleFullRedraw()
+      },
       m('header', 'Trace config'),
       m('ul',
         m('a[href="#!/record?p=buffers"]',
@@ -892,7 +1052,7 @@ function recordMenu(routePage: string) {
             m('.title', 'Instructions'),
             m('.sub', 'Generate config and instructions')))),
       m('header', 'Probes'),
-      m('ul', isChromeTarget(targetOS) ? [chromeProbe] : [
+      m('ul', isChromeTarget(target) ? [chromeProbe] : [
         m('a[href="#!/record?p=cpu"]',
           m(`li${routePage === 'cpu' ? '.active' : ''}`,
             m('i.material-icons', 'subtitles'),
@@ -902,7 +1062,7 @@ function recordMenu(routePage: string) {
           m(`li${routePage === 'gpu' ? '.active' : ''}`,
             m('i.material-icons', 'aspect_ratio'),
             m('.title', 'GPU'),
-            m('.sub', 'GPU frequency, scheduling'))),
+            m('.sub', 'GPU frequency'))),
         m('a[href="#!/record?p=power"]',
           m(`li${routePage === 'power' ? '.active' : ''}`,
             m('i.material-icons', 'battery_charging_full'),
@@ -954,6 +1114,7 @@ export const RecordPage = createPage({
 
     return m(
         '.record-page',
+        globals.state.recordingInProgress ? m('.hider') : [],
         m('.record-container', RecordHeader(), recordMenu(routePage), pages));
   }
 });

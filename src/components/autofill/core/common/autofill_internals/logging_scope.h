@@ -7,6 +7,8 @@
 
 namespace autofill {
 
+class LogBuffer;
+
 /////////////// Logging Scopes /////////////
 
 // Generator for source code related to logging scopes. Pass a template T which
@@ -16,12 +18,16 @@ namespace autofill {
   T(Context)                                                           \
   /* Log messages related to the discovery and parsing of forms. */    \
   T(Parsing)                                                           \
+  /* Log messages related to reasons to stop parsing a form. */        \
+  T(AbortParsing)                                                      \
   /* Log messages related to filling of forms. */                      \
   T(Filling)                                                           \
   /* Log messages related to the submission of forms. */               \
   T(Submission)                                                        \
   /* Log messages related to communication with autofill server. */    \
-  T(AutofillServer)
+  T(AutofillServer)                                                    \
+  /* Log messages related to metrics collection. */                    \
+  T(Metrics)
 
 // Define a bunch of logging scopes: kContext, kParsing, ...
 #define AUTOFILL_TEMPLATE(NAME) k##NAME,
@@ -32,6 +38,8 @@ enum class LoggingScope {
 
 // Returns the enum value of |scope| as a string (without the leading k).
 const char* LoggingScopeToString(LoggingScope scope);
+
+LogBuffer& operator<<(LogBuffer& buf, LoggingScope scope);
 
 }  // namespace autofill
 

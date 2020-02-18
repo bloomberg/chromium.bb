@@ -16,6 +16,7 @@
 
 #include "dawn_native/metal/CommandBufferMTL.h"
 #include "dawn_native/metal/DeviceMTL.h"
+#include "dawn_platform/DawnPlatform.h"
 #include "dawn_platform/tracing/TraceEvent.h"
 
 namespace dawn_native { namespace metal {
@@ -23,20 +24,19 @@ namespace dawn_native { namespace metal {
     Queue::Queue(Device* device) : QueueBase(device) {
     }
 
-    void Queue::SubmitImpl(uint32_t commandCount, CommandBufferBase* const* commands) {
+    MaybeError Queue::SubmitImpl(uint32_t commandCount, CommandBufferBase* const* commands) {
         Device* device = ToBackend(GetDevice());
         device->Tick();
         id<MTLCommandBuffer> commandBuffer = device->GetPendingCommandBuffer();
 
-        TRACE_EVENT_BEGIN0(GetDevice()->GetPlatform(), TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
-                           "CommandBufferMTL::FillCommands");
+        TRACE_EVENT_BEGIN0(GetDevice()->GetPlatform(), Recording, "CommandBufferMTL::FillCommands");
         for (uint32_t i = 0; i < commandCount; ++i) {
             ToBackend(commands[i])->FillCommands(commandBuffer);
         }
-        TRACE_EVENT_END0(GetDevice()->GetPlatform(), TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
-                         "CommandBufferMTL::FillCommands");
+        TRACE_EVENT_END0(GetDevice()->GetPlatform(), Recording, "CommandBufferMTL::FillCommands");
 
         device->SubmitPendingCommandBuffer();
+        return {};
     }
 
 }}  // namespace dawn_native::metal

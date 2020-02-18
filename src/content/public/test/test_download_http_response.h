@@ -32,17 +32,20 @@ class TestDownloadHttpResponse {
   static GURL GetNextURLForDownload();
 
   // OnPauseHandler can be used to pause the response until the enclosed
-  // callback is called.
-  using OnPauseHandler = base::Callback<void(const base::Closure&)>;
+  // callback is called. The OnPauseHandler is copyable for Parameters
+  // objects to be used repeatedly, though it will only be called once when
+  // given to a TestDownloadHttpResponse.
+  using OnPauseHandler = base::RepeatingCallback<void(base::OnceClosure)>;
 
   // Called when an injected error triggers.
-  using InjectErrorCallback = base::Callback<void(int64_t, int64_t)>;
+  using InjectErrorCallback = base::RepeatingCallback<void(int64_t, int64_t)>;
 
   struct HttpResponseData {
     HttpResponseData() = default;
     HttpResponseData(int64_t min_offset,
                      int64_t max_offset,
-                     const std::string& response);
+                     const std::string& response,
+                     bool is_transient);
     HttpResponseData(const HttpResponseData& other) = default;
 
     // The range for first byte position in range header to use this response.
@@ -50,6 +53,10 @@ class TestDownloadHttpResponse {
     int64_t max_offset = -1;
 
     std::string response;
+
+    // Whether the response data is transient and will be invalidated after
+    // sending once.
+    bool is_transient = false;
   };
 
   struct Parameters {
@@ -65,21 +72,24 @@ class TestDownloadHttpResponse {
     // Last-Modified header and the server supports byte range requests.
     Parameters();
 
-    // Parameters is expected to be copyable and moveable.
-    Parameters(Parameters&&);
     Parameters(const Parameters&);
-    Parameters& operator=(Parameters&&);
     Parameters& operator=(const Parameters&);
+
     ~Parameters();
 
     // Clears the errors in injected_errors.
     void ClearInjectedErrors();
 
     // Sets the response for range request when the starting offset of
-    // the request falls into [min_offset, max_offset].
+    // the request falls into [min_offset, max_offset]. If |is_transient|
+    // is true, |response| will only be sent once for the given range. And
+    // later responses will be calculated from the parameters. If
+    // |is_transient| is false, the |response| will be applied to the
+    // given range request forever.
     void SetResponseForRangeRequest(int64_t min_offset,
                                     int64_t max_offset,
-                                    const std::string& response);
+                                    const std::string& response,
+                                    bool is_transient = false);
 
     // Contents of the ETag header field of the response.  No Etag header is
     // sent if this field is empty.
@@ -166,8 +176,9 @@ class TestDownloadHttpResponse {
     // Callback to run when an injected error triggers.
     InjectErrorCallback inject_error_cb;
 
-    // If on_pause_handler is valid, it will be invoked when the
-    // |pause_condition| is reached.
+    // If on_pause_handler is valid, it will be invoked once when the
+    // |pause_condition| is reached. It is not a OnceCallback to allow
+    // Parameters to be reused.
     OnPauseHandler on_pause_handler;
 
     // Offset of body to pause the response sending. A -1 offset will pause
@@ -189,7 +200,7 @@ class TestDownloadHttpResponse {
 
   // Called when response are sent to the client.
   using OnResponseSentCallback =
-      base::Callback<void(std::unique_ptr<CompletedRequest>)>;
+      base::OnceCallback<void(std::unique_ptr<CompletedRequest>)>;
 
   // Generate a pseudo random pattern.
   //
@@ -230,10 +241,9 @@ class TestDownloadHttpResponse {
   static void StartServingStaticResponse(const std::string& headers,
                                          const GURL& url);
 
-  TestDownloadHttpResponse(
-      const net::test_server::HttpRequest& request,
-      const Parameters& parameters,
-      const OnResponseSentCallback& on_response_sent_callback);
+  TestDownloadHttpResponse(const net::test_server::HttpRequest& request,
+                           const Parameters& parameters,
+                           OnResponseSentCallback on_response_sent_callback);
   ~TestDownloadHttpResponse();
 
   // Creates a shim HttpResponse object for embedded test server. This life time
@@ -244,7 +254,7 @@ class TestDownloadHttpResponse {
   // operate on HTTP connection in embedded test server, and will out live the
   // shim HttpResponse object created by |CreateResponseForTestServer|.
   void SendResponse(const net::test_server::SendBytesCallback& send,
-                    const net::test_server::SendCompleteCallback& done);
+                    net::test_server::SendCompleteCallback done);
 
  private:
   // Parses the request headers.
@@ -287,7 +297,7 @@ class TestDownloadHttpResponse {
   // Will pause or throw error based on configuration in |paramters_|.
   void SendResponseBodyChunk();
   void SendBodyChunkInternal(const net::HttpByteRange& buffer_range,
-                             const base::RepeatingClosure& next);
+                             base::OnceClosure next);
   net::test_server::SendCompleteCallback SendNextBodyChunkClosure();
 
   // Generate CompletedRequest as result.
@@ -345,7 +355,7 @@ class TestDownloadHttpResponse {
 class TestDownloadResponseHandler {
  public:
   std::unique_ptr<net::test_server::HttpResponse> HandleTestDownloadRequest(
-      const TestDownloadHttpResponse::OnResponseSentCallback& callback,
+      TestDownloadHttpResponse::OnResponseSentCallback callback,
       const net::test_server::HttpRequest& request);
 
   TestDownloadResponseHandler();

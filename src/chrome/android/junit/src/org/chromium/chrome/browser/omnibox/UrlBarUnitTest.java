@@ -43,7 +43,7 @@ public class UrlBarUnitTest {
 
         Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
 
-        mUrlBar = new UrlBar(activity, null);
+        mUrlBar = new UrlBarApi26(activity, null);
         mUrlBar.setDelegate(mUrlBarDelegate);
     }
 
@@ -51,7 +51,7 @@ public class UrlBarUnitTest {
     @SmallTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @Feature("Omnibox")
-    public void testAutofillStructureReceivesFullURL() throws InterruptedException {
+    public void testAutofillStructureReceivesFullURL() {
         mUrlBar.setTextForAutofillServices("https://www.google.com");
         mUrlBar.setText("www.google.com");
         mUrlBar.onProvideAutofillStructure(mViewStructure, 0);

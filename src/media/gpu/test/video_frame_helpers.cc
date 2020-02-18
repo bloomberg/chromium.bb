@@ -7,11 +7,18 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_refptr.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "media/base/color_plane_layout.h"
+#include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/test/image.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -25,10 +32,19 @@ namespace test {
 
 namespace {
 
+#define ASSERT_TRUE_OR_RETURN(predicate, return_value) \
+  do {                                                 \
+    if (!(predicate)) {                                \
+      ADD_FAILURE();                                   \
+      return (return_value);                           \
+    }                                                  \
+  } while (0)
+
 bool ConvertVideoFrameToI420(const VideoFrame* src_frame,
                              VideoFrame* dst_frame) {
-  LOG_ASSERT(src_frame->visible_rect() == dst_frame->visible_rect());
-  LOG_ASSERT(dst_frame->format() == PIXEL_FORMAT_I420);
+  ASSERT_TRUE_OR_RETURN(src_frame->visible_rect() == dst_frame->visible_rect(),
+                        false);
+  ASSERT_TRUE_OR_RETURN(dst_frame->format() == PIXEL_FORMAT_I420, false);
 
   const auto& visible_rect = src_frame->visible_rect();
   const int width = visible_rect.width();
@@ -75,8 +91,9 @@ bool ConvertVideoFrameToI420(const VideoFrame* src_frame,
 
 bool ConvertVideoFrameToARGB(const VideoFrame* src_frame,
                              VideoFrame* dst_frame) {
-  LOG_ASSERT(src_frame->visible_rect() == dst_frame->visible_rect());
-  LOG_ASSERT(dst_frame->format() == PIXEL_FORMAT_ARGB);
+  ASSERT_TRUE_OR_RETURN(src_frame->visible_rect() == dst_frame->visible_rect(),
+                        false);
+  ASSERT_TRUE_OR_RETURN(dst_frame->format() == PIXEL_FORMAT_ARGB, false);
 
   const auto& visible_rect = src_frame->visible_rect();
   const int width = visible_rect.width();
@@ -120,15 +137,15 @@ bool ConvertVideoFrameToARGB(const VideoFrame* src_frame,
 // Copy memory based |src_frame| buffer to |dst_frame| buffer.
 bool CopyVideoFrame(const VideoFrame* src_frame,
                     scoped_refptr<VideoFrame> dst_frame) {
-  LOG_ASSERT(src_frame->IsMappable());
+  ASSERT_TRUE_OR_RETURN(src_frame->IsMappable(), false);
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   // If |dst_frame| is a Dmabuf-backed VideoFrame, we need to map its underlying
   // buffer into memory. We use a VideoFrameMapper to create a memory-based
   // VideoFrame that refers to the |dst_frame|'s buffer.
   if (dst_frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
-    auto video_frame_mapper =
-        VideoFrameMapperFactory::CreateMapper(dst_frame->format(), true);
-    LOG_ASSERT(video_frame_mapper);
+    auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper(
+        dst_frame->format(), VideoFrame::STORAGE_DMABUFS, true);
+    ASSERT_TRUE_OR_RETURN(video_frame_mapper, false);
     dst_frame = video_frame_mapper->Map(std::move(dst_frame));
     if (!dst_frame) {
       LOG(ERROR) << "Failed to map DMABuf video frame.";
@@ -136,13 +153,15 @@ bool CopyVideoFrame(const VideoFrame* src_frame,
     }
   }
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  LOG_ASSERT(dst_frame->IsMappable());
-  LOG_ASSERT(src_frame->format() == dst_frame->format());
+  ASSERT_TRUE_OR_RETURN(dst_frame->IsMappable(), false);
+  ASSERT_TRUE_OR_RETURN(src_frame->format() == dst_frame->format(), false);
 
   // Copy every plane's content from |src_frame| to |dst_frame|.
   const size_t num_planes = VideoFrame::NumPlanes(dst_frame->format());
-  LOG_ASSERT(dst_frame->layout().planes().size() == num_planes);
-  LOG_ASSERT(src_frame->layout().planes().size() == num_planes);
+  ASSERT_TRUE_OR_RETURN(dst_frame->layout().planes().size() == num_planes,
+                        false);
+  ASSERT_TRUE_OR_RETURN(src_frame->layout().planes().size() == num_planes,
+                        false);
   for (size_t i = 0; i < num_planes; ++i) {
     // |width| in libyuv::CopyPlane() is in bytes, not pixels.
     gfx::Size plane_size = VideoFrame::PlaneSize(dst_frame->format(), i,
@@ -158,8 +177,10 @@ bool CopyVideoFrame(const VideoFrame* src_frame,
 }  // namespace
 
 bool ConvertVideoFrame(const VideoFrame* src_frame, VideoFrame* dst_frame) {
-  LOG_ASSERT(src_frame->visible_rect() == dst_frame->visible_rect());
-  LOG_ASSERT(src_frame->IsMappable() && dst_frame->IsMappable());
+  ASSERT_TRUE_OR_RETURN(src_frame->visible_rect() == dst_frame->visible_rect(),
+                        false);
+  ASSERT_TRUE_OR_RETURN(src_frame->IsMappable() && dst_frame->IsMappable(),
+                        false);
 
   // Writing into non-owned memory might produce some unexpected side effects.
   if (dst_frame->storage_type() != VideoFrame::STORAGE_OWNED_MEMORY)
@@ -196,9 +217,11 @@ scoped_refptr<VideoFrame> ConvertVideoFrame(const VideoFrame* src_frame,
 }
 
 scoped_refptr<VideoFrame> CloneVideoFrame(
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     const VideoFrame* const src_frame,
     const VideoFrameLayout& dst_layout,
-    VideoFrame::StorageType dst_storage_type) {
+    VideoFrame::StorageType dst_storage_type,
+    base::Optional<gfx::BufferUsage> dst_buffer_usage) {
   if (!src_frame)
     return nullptr;
   if (!src_frame->IsMappable()) {
@@ -209,11 +232,17 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
   scoped_refptr<VideoFrame> dst_frame;
   switch (dst_storage_type) {
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+    case VideoFrame::STORAGE_GPU_MEMORY_BUFFER:
     case VideoFrame::STORAGE_DMABUFS:
+      if (!dst_buffer_usage) {
+        LOG(ERROR) << "Buffer usage is not specified for a graphic buffer";
+        return nullptr;
+      }
       dst_frame = CreatePlatformVideoFrame(
-          dst_layout.format(), dst_layout.coded_size(),
-          src_frame->visible_rect(), src_frame->visible_rect().size(),
-          src_frame->timestamp(), gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+          gpu_memory_buffer_factory, dst_layout.format(),
+          dst_layout.coded_size(), src_frame->visible_rect(),
+          src_frame->visible_rect().size(), src_frame->timestamp(),
+          *dst_buffer_usage);
       break;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     case VideoFrame::STORAGE_OWNED_MEMORY:
@@ -236,7 +265,54 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
     LOG(ERROR) << "Failed to copy VideoFrame";
     return nullptr;
   }
+
+  if (dst_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    // Here, the content in |src_frame| is already copied to |dst_frame|, which
+    // is a DMABUF based VideoFrame.
+    // Create GpuMemoryBuffer based VideoFrame from |dst_frame|.
+    dst_frame = CreateGpuMemoryBufferVideoFrame(
+        gpu_memory_buffer_factory, dst_frame.get(), *dst_buffer_usage);
+  }
+
   return dst_frame;
+}
+
+scoped_refptr<VideoFrame> CreateGpuMemoryBufferVideoFrame(
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+    const VideoFrame* const frame,
+    gfx::BufferUsage buffer_usage) {
+  gfx::GpuMemoryBufferHandle gmb_handle;
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+  gmb_handle = CreateGpuMemoryBufferHandle(frame);
+#endif
+  if (gmb_handle.is_null() || gmb_handle.type != gfx::NATIVE_PIXMAP) {
+    LOG(ERROR) << "Failed to create native GpuMemoryBufferHandle";
+    return nullptr;
+  }
+
+  base::Optional<gfx::BufferFormat> buffer_format =
+      VideoPixelFormatToGfxBufferFormat(frame->format());
+  if (!buffer_format) {
+    LOG(ERROR) << "Unexpected format: " << frame->format();
+    return nullptr;
+  }
+
+  // Create GpuMemoryBuffer from GpuMemoryBufferHandle.
+  gpu::GpuMemoryBufferSupport support;
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+      support.CreateGpuMemoryBufferImplFromHandle(
+          std::move(gmb_handle), frame->coded_size(), *buffer_format,
+          buffer_usage, base::DoNothing());
+  if (!gpu_memory_buffer) {
+    LOG(ERROR) << "Failed to create GpuMemoryBuffer from GpuMemoryBufferHandle";
+    return nullptr;
+  }
+
+  gpu::MailboxHolder dummy_mailbox[media::VideoFrame::kMaxPlanes];
+  return media::VideoFrame::WrapExternalGpuMemoryBuffer(
+      frame->visible_rect(), frame->natural_size(),
+      std::move(gpu_memory_buffer), dummy_mailbox,
+      base::DoNothing() /* mailbox_holder_release_cb_ */, frame->timestamp());
 }
 
 scoped_refptr<const VideoFrame> CreateVideoFrameFromImage(const Image& image) {
@@ -271,7 +347,7 @@ base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
                                                         const gfx::Size& size) {
   const size_t num_planes = VideoFrame::NumPlanes(format);
 
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<ColorPlaneLayout> planes(num_planes);
   const auto strides = VideoFrame::ComputeStrides(format, size);
   size_t offset = 0;
   for (size_t i = 0; i < num_planes; ++i) {
@@ -281,6 +357,41 @@ base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
     offset += planes[i].size;
   }
   return VideoFrameLayout::CreateWithPlanes(format, size, std::move(planes));
+}
+
+size_t CompareFramesWithErrorDiff(const VideoFrame& frame1,
+                                  const VideoFrame& frame2,
+                                  uint8_t tolerance) {
+  ASSERT_TRUE_OR_RETURN(frame1.format() == frame2.format(),
+                        std::numeric_limits<std::size_t>::max());
+  ASSERT_TRUE_OR_RETURN(frame1.visible_rect() == frame2.visible_rect(),
+                        std::numeric_limits<std::size_t>::max());
+  ASSERT_TRUE_OR_RETURN(frame1.visible_rect().origin() == gfx::Point(0, 0),
+                        std::numeric_limits<std::size_t>::max());
+  ASSERT_TRUE_OR_RETURN(frame1.IsMappable() && frame2.IsMappable(),
+                        std::numeric_limits<std::size_t>::max());
+  size_t diff_cnt = 0;
+
+  const VideoPixelFormat format = frame1.format();
+  const size_t num_planes = VideoFrame::NumPlanes(format);
+  const gfx::Size& visible_size = frame1.visible_rect().size();
+  for (size_t i = 0; i < num_planes; ++i) {
+    const uint8_t* data1 = frame1.data(i);
+    const int stride1 = frame1.stride(i);
+    const uint8_t* data2 = frame2.data(i);
+    const int stride2 = frame2.stride(i);
+    const size_t rows = VideoFrame::Rows(i, format, visible_size.height());
+    const int row_bytes = VideoFrame::RowBytes(i, format, visible_size.width());
+    for (size_t r = 0; r < rows; ++r) {
+      for (int c = 0; c < row_bytes; c++) {
+        uint8_t b1 = data1[(stride1 * r) + c];
+        uint8_t b2 = data2[(stride2 * r) + c];
+        uint8_t diff = std::max(b1, b2) - std::min(b1, b2);
+        diff_cnt += diff > tolerance;
+      }
+    }
+  }
+  return diff_cnt;
 }
 
 }  // namespace test

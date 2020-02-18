@@ -40,10 +40,13 @@ class GlobalEventHandlers {
 
  public:
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(abort, kAbort)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(animationend, kAnimationend)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(animationiteration,
+                                         kAnimationiteration)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(animationstart, kAnimationstart)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(activateinvisible, kActivateinvisible)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(auxclick, kAuxclick)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(blur, kBlur)
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(beforeactivate, kBeforeactivate)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(cancel, kCancel)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(canplay, kCanplay)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(canplaythrough, kCanplaythrough)
@@ -101,6 +104,8 @@ class GlobalEventHandlers {
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(pointerup, kPointerup)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(progress, kProgress)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(ratechange, kRatechange)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(rendersubtreeactivation,
+                                         kRendersubtreeactivation)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(reset, kReset)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(resize, kResize)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(scroll, kScroll)
@@ -113,6 +118,7 @@ class GlobalEventHandlers {
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(stalled, kStalled)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(submit, kSubmit)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(suspend, kSuspend)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(transitionend, kTransitionend)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(timeupdate, kTimeupdate)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(toggle, kToggle)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(touchcancel, kTouchcancel)

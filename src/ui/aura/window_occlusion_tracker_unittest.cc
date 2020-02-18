@@ -9,6 +9,8 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -16,6 +18,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/window_occlusion_tracker_test_api.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -73,6 +76,17 @@ class WindowOcclusionTrackerTest : public test::AuraTestBase {
  public:
   WindowOcclusionTrackerTest() = default;
 
+#if defined(OS_WIN)
+  void SetUp() override {
+    // Native Window Occlusion calculation runs in the background and can
+    // interfere with the expectations of these tests, so, disable it.
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kCalculateNativeWinOcclusion});
+    AuraTestBase::SetUp();
+  }
+#endif
+
   Window* CreateTrackedWindow(MockWindowDelegate* delegate,
                               const gfx::Rect& bounds,
                               Window* parent = nullptr,
@@ -102,6 +116,8 @@ class WindowOcclusionTrackerTest : public test::AuraTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(WindowOcclusionTrackerTest);
 };
 
@@ -2267,6 +2283,50 @@ TEST_F(WindowOcclusionTrackerTest, ScopedForceVisibleWithOccludedSibling) {
   parent_window->Show();
 }
 
+// Simulates a scenario in which a browser window is forced visible (e.g. while
+// projecting) and its parent container (e.g. a virtual desks container) was
+// hidden. Verifies that the browser window and its descendants remain visible
+// from an occlusion stand point.
+TEST_F(WindowOcclusionTrackerTest, ScopedForceVisibleHiddenContainer) {
+  std::unique_ptr<WindowOcclusionTracker::ScopedPause>
+      pause_occlusion_tracking =
+          std::make_unique<WindowOcclusionTracker::ScopedPause>();
+  MockWindowDelegate* root_delegate = new MockWindowDelegate();
+  Window* root = CreateTrackedWindow(root_delegate, gfx::Rect(0, 0, 100, 100));
+  MockWindowDelegate* container_delegate = new MockWindowDelegate();
+  Window* container =
+      CreateTrackedWindow(container_delegate, gfx::Rect(0, 0, 100, 100), root);
+  MockWindowDelegate* browser_delegate = new MockWindowDelegate();
+  Window* browser =
+      CreateTrackedWindow(browser_delegate, gfx::Rect(0, 0, 10, 10), container);
+  MockWindowDelegate* webcontents_delegate = new MockWindowDelegate();
+  Window* webcontents = CreateTrackedWindow(webcontents_delegate,
+                                            gfx::Rect(0, 0, 10, 10), browser);
+  root_delegate->set_expectation(Window::OcclusionState::VISIBLE);
+  container_delegate->set_expectation(Window::OcclusionState::VISIBLE);
+  browser_delegate->set_expectation(Window::OcclusionState::VISIBLE);
+  webcontents_delegate->set_expectation(Window::OcclusionState::VISIBLE);
+  pause_occlusion_tracking.reset();
+  EXPECT_FALSE(root_delegate->is_expecting_call());
+  EXPECT_FALSE(container_delegate->is_expecting_call());
+  EXPECT_FALSE(browser_delegate->is_expecting_call());
+  EXPECT_FALSE(webcontents_delegate->is_expecting_call());
+
+  WindowOcclusionTracker::ScopedForceVisible force_visible(browser);
+  container_delegate->set_expectation(Window::OcclusionState::HIDDEN);
+  container->Hide();
+  EXPECT_FALSE(root_delegate->is_expecting_call());
+  EXPECT_FALSE(container_delegate->is_expecting_call());
+  EXPECT_FALSE(browser_delegate->is_expecting_call());
+  EXPECT_FALSE(webcontents_delegate->is_expecting_call());
+
+  EXPECT_EQ(Window::OcclusionState::VISIBLE, webcontents->occlusion_state());
+  EXPECT_TRUE(webcontents->TargetVisibility());
+
+  container_delegate->set_expectation(Window::OcclusionState::VISIBLE);
+  container->Show();
+}
+
 TEST_F(WindowOcclusionTrackerTest, ComputeTargetOcclusionForWindow) {
   auto* window_a = CreateUntrackedWindow(gfx::Rect(0, 0, 10, 10));
   CreateUntrackedWindow(gfx::Rect(9, 9, 5, 5));
@@ -2593,11 +2653,11 @@ TEST_F(WindowOcclusionTrackerTest,
        SetOpaqueRegionsForOcclusionAffectsOcclusionOfOtherWindows) {
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
-  CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  CreateTrackedWindow(delegate_a, gfx::Rect(10, 10, 10, 10));
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
   delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
-  Window* window_b = CreateUntrackedWindow(gfx::Rect(0, 0, 10, 10));
+  Window* window_b = CreateUntrackedWindow(gfx::Rect(10, 10, 10, 10));
   EXPECT_FALSE(delegate_a->is_expecting_call());
 
   // Make |window_b| transparent, which should make it no longer affect

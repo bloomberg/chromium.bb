@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -219,7 +221,8 @@ class DummyTaskObserver : public TaskObserver {
 
   ~DummyTaskObserver() override = default;
 
-  void WillProcessTask(const PendingTask& pending_task) override {
+  void WillProcessTask(const PendingTask& pending_task,
+                       bool /* was_blocked_or_low_priority */) override {
     num_tasks_started_++;
     EXPECT_LE(num_tasks_started_, num_tasks_);
     EXPECT_EQ(num_tasks_started_, num_tasks_processed_ + 1);
@@ -1470,7 +1473,7 @@ TEST_P(MessageLoopTypedTest, IsIdleForTestingNonNestableTask) {
   EXPECT_TRUE(loop->IsIdleForTesting());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MessageLoopTypedTest,
                          ::testing::Values(MessagePumpType::DEFAULT,
                                            MessagePumpType::UI,
@@ -1505,29 +1508,6 @@ TEST_F(MessageLoopTest, WmQuitIsIgnored) {
   // Run the loop, and ensure that the posted task is processed before we quit.
   run_loop.Run();
   EXPECT_TRUE(task_was_run);
-}
-
-TEST_F(MessageLoopTest, WmQuitIsNotIgnoredWithEnableWmQuit) {
-  MessageLoop loop(MessagePumpType::UI);
-  static_cast<MessageLoopForUI*>(&loop)->EnableWmQuit();
-
-  // Post a WM_QUIT message to the current thread.
-  ::PostQuitMessage(0);
-
-  // Post a task to the current thread, with a small delay to make it less
-  // likely that we process the posted task before looking for WM_* messages.
-  RunLoop run_loop;
-  loop.task_runner()->PostDelayedTask(FROM_HERE,
-                                      BindOnce(
-                                          [](OnceClosure closure) {
-                                            ADD_FAILURE();
-                                            std::move(closure).Run();
-                                          },
-                                          run_loop.QuitClosure()),
-                                      TestTimeouts::tiny_timeout());
-
-  // Run the loop. It should not result in ADD_FAILURE() getting called.
-  run_loop.Run();
 }
 
 TEST_F(MessageLoopTest, PostDelayedTask_SharedTimer_SubPump) {
@@ -1586,6 +1566,7 @@ bool QuitOnSystemTimer(UINT message,
     ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                             BindOnce(&::PostQuitMessage, 0));
   }
+  *result = 0;
   return true;
 }
 
@@ -1600,6 +1581,7 @@ bool DelayedQuitOnSystemTimer(UINT message,
         FROM_HERE, BindOnce(&::PostQuitMessage, 0),
         TimeDelta::FromMilliseconds(10));
   }
+  *result = 0;
   return true;
 }
 

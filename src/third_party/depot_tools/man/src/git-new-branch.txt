@@ -52,7 +52,8 @@ depot-tools.upstream
 ~~~~~~~~~~~~~~~~~~~~
 
 This configures the default 'upstream' for all new branches. If it is unset, it
-defaults to 'origin/master'.  This is considered to be the 'root' branch.
+defaults to 'origin''s default branch or 'origin/master' if that can't be found.
+This is considered to be the 'root' branch.
 
 EXAMPLE
 -------

@@ -31,8 +31,10 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
+#include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/network_time/network_time_tracker.h"
@@ -72,6 +74,14 @@ constexpr base::TimeDelta kNotifyCycleTimeForTesting =
 
 // The number of days after which we identify a build/install as outdated.
 constexpr base::TimeDelta kOutdatedBuildAge = base::TimeDelta::FromDays(12 * 7);
+
+constexpr bool ShouldDetectOutdatedBuilds() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return true;
+#else   // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return false;
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+}
 
 // Return the string that was passed as a value for the
 // kCheckForUpdateIntervalSec switch.
@@ -185,7 +195,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::Clock* clock,
     // Also note that to test with a given time/date, until the network time
     // tracking moves off of the VariationsService, the "variations-server-url"
     // command line switch must also be specified for the service to be
-    // available on non GOOGLE_CHROME_BUILD.
+    // available on non GOOGLE_CHROME_BRANDING.
     std::string switch_name;
     if (cmd_line.HasSwitch(switches::kSimulateOutdatedNoAU)) {
       is_auto_update_enabled_ = false;
@@ -220,7 +230,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::Clock* clock,
 #if defined(OS_WIN)
 // Only enable upgrade notifications for Google Chrome builds. Chromium does not
 // use an auto-updater.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // There might be a policy/enterprise environment preventing updates, so
   // validate updatability and then call StartTimerForUpgradeCheck
   // appropriately. Skip this step if a past attempt has been made to enable
@@ -236,7 +246,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl(const base::Clock* clock,
         base::BindOnce(&UpgradeDetectorImpl::OnAutoupdatesEnabledResult,
                        weak_factory_.GetWeakPtr()));
   }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #else   // defined(OS_WIN)
 #if defined(OS_MACOSX)
   // Only enable upgrade notifications if the updater (Keystone) is present.
@@ -392,6 +402,13 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
   if (!base::FeatureList::IsEnabled(kOutdatedBuildDetector))
     return false;
 
+  // Don't detect outdated builds for obsolete operating systems when new builds
+  // are no longer available.
+  if (ObsoleteSystem::IsObsoleteNowOrSoon() &&
+      ObsoleteSystem::IsEndOfTheLine()) {
+    return false;
+  }
+
   // Don't show the bubble if we have a brand code that is NOT organic, unless
   // an outdated build is being simulated by command line switches.
   if (!simulating_outdated_) {
@@ -400,12 +417,16 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
       return false;
 
 #if defined(OS_WIN)
+    // TODO(crbug/1027107): Replace with a more generic CBCM check.
     // Don't show the update bubbles to enterprise users.
     if (base::IsMachineExternallyManaged() ||
-        !policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().empty()) {
+        policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid()) {
       return false;
     }
 #endif
+
+    if (!ShouldDetectOutdatedBuilds())
+      return false;
   }
 
   base::Time network_time;
@@ -558,14 +579,14 @@ void UpgradeDetectorImpl::OnRelaunchNotificationPeriodPrefChanged() {
     NotifyOnUpgrade();
 }
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN)
 void UpgradeDetectorImpl::OnAutoupdatesEnabledResult(
     bool auto_updates_enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_auto_update_enabled_ = auto_updates_enabled;
   StartTimerForUpgradeCheck();
 }
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN)
 
 void UpgradeDetectorImpl::NotifyOnUpgrade() {
   const base::TimeDelta time_passed = clock()->Now() - upgrade_detected_time();

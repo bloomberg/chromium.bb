@@ -15,7 +15,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_context_client_base.h"
 #include "content/public/browser/network_service_instance.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/net_buildflags.h"
 #include "services/network/network_context.h"
@@ -41,9 +43,11 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
 
   network::mojom::NetworkContext* GetNetworkContext() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (!network_context_ || network_context_.encountered_error()) {
+    if (!network_context_ || !network_context_.is_connected()) {
+      network_context_.reset();
       content::GetNetworkService()->CreateNetworkContext(
-          MakeRequest(&network_context_), CreateNetworkContextParams());
+          network_context_.BindNewPipeAndPassReceiver(),
+          CreateNetworkContextParams());
 
       mojo::PendingRemote<network::mojom::NetworkContextClient> client_remote;
       mojo::MakeSelfOwnedReceiver(
@@ -63,39 +67,42 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
 
  protected:
   // network::URLLoaderFactory implementation:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     GetURLLoaderFactory()->CreateLoaderAndStart(
         std::move(loader), routing_id, request_id, options, request,
         std::move(client), traffic_annotation);
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    GetURLLoaderFactory()->Clone(std::move(request));
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
+      override {
+    GetURLLoaderFactory()->Clone(std::move(receiver));
   }
 
   // network::SharedURLLoaderFactory implementation:
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override {
     NOTREACHED();
     return nullptr;
   }
 
   network::mojom::URLLoaderFactory* GetURLLoaderFactory() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (!url_loader_factory_ || url_loader_factory_.encountered_error()) {
+    if (!url_loader_factory_ || !url_loader_factory_.is_connected()) {
       network::mojom::URLLoaderFactoryParamsPtr params =
           network::mojom::URLLoaderFactoryParams::New();
       params->process_id = network::mojom::kBrowserProcessId;
       params->is_corb_enabled = false;
+      params->is_trusted = true;
       GetNetworkContext()->CreateURLLoaderFactory(
-          MakeRequest(&url_loader_factory_), std::move(params));
+          url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));
     }
     return url_loader_factory_.get();
   }
@@ -128,8 +135,8 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
 
   base::FilePath user_data_dir_;
   NetworkContextParamsFactory network_context_params_factory_;
-  network::mojom::NetworkContextPtr network_context_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::NetworkContext> network_context_;
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedURLLoaderFactory);
 };

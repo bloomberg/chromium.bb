@@ -12,18 +12,23 @@
 #include <string>
 #include <vector>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
@@ -34,6 +39,8 @@
 namespace metrics_util = password_manager::metrics_util;
 
 namespace {
+
+using Store = autofill::PasswordForm::Store;
 
 void CleanStatisticsForSite(Profile* profile, const GURL& origin) {
   DCHECK(profile);
@@ -211,11 +218,6 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   } else if (state_ == password_manager::ui::MANAGE_STATE) {
     local_credentials_ = DeepCopyForms(delegate_->GetCurrentForms());
     UpdateManageStateTitle();
-    // TODO(pbos): Remove manage_link_ + accessors when the cocoa dialog goes
-    // away. This temporarily uses the button label which is equivalent with
-    // the previous link.
-    manage_link_ =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON);
   }
 
   if (state_ == password_manager::ui::CONFIRMATION_STATE) {
@@ -390,6 +392,13 @@ void ManagePasswordsBubbleModel::OnSkipSignInClicked() {
       password_manager::prefs::kWasSignInPasswordPromoClicked, true);
 }
 
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+void ManagePasswordsBubbleModel::OnToggleAccountStore(bool is_checked) {
+  delegate_->GetPasswordFeatureManager()->SetDefaultPasswordStore(
+      is_checked ? Store::kAccountStore : Store::kProfileStore);
+}
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
+
 Profile* ManagePasswordsBubbleModel::GetProfile() const {
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
@@ -421,6 +430,25 @@ const base::string16& ManagePasswordsBubbleModel::GetCurrentUsername() const {
   return pending_password_.username_value;
 }
 
+int ManagePasswordsBubbleModel::GetTopIllustration(bool dark_mode) const {
+  if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
+      state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
+    int image = base::GetFieldTrialParamByFeatureAsInt(
+        password_manager::features::kPasswordSaveIllustration, "image", 0);
+    switch (image) {
+      case 1:
+        return dark_mode ? IDR_SAVE_PASSWORD1_DARK : IDR_SAVE_PASSWORD1;
+      case 2:
+        return dark_mode ? IDR_SAVE_PASSWORD2_DARK : IDR_SAVE_PASSWORD2;
+      case 3:
+        return dark_mode ? IDR_SAVE_PASSWORD3_DARK : IDR_SAVE_PASSWORD3;
+      default:
+        return 0;
+    }
+  }
+  return 0;
+}
+
 bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
   Profile* profile = GetProfile();
   if (!profile)
@@ -433,7 +461,7 @@ bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
           prefs, sync_service)) {
     interaction_keeper_->ReportInteractions(this);
     title_ =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE);
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SYNC_PROMO_TITLE);
     state_ = password_manager::ui::CHROME_SIGN_IN_PROMO_STATE;
     int show_count = prefs->GetInteger(
         password_manager::prefs::kNumberSignInPasswordPromoShown);
@@ -456,6 +484,13 @@ bool ManagePasswordsBubbleModel::RevealPasswords() {
     delegate_->OnPasswordsRevealed();
   return reveal_immediately;
 }
+
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+bool ManagePasswordsBubbleModel::IsUsingAccountStore() {
+  return delegate_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
+         Store::kAccountStore;
+}
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
 void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
   PasswordTitleType type =

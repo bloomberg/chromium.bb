@@ -9,11 +9,13 @@
 #include "base/test/task_environment.h"
 #include "base/timer/timer.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/cpp/mock_video_frame_handler.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
+#include "services/video_capture/public/mojom/video_frame_handler.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 #include "services/video_capture/video_capture_service_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,8 +65,8 @@ class VideoCaptureServiceLifecycleTest : public ::testing::Test {
 // having done anything other than obtaining a connection to the device factory.
 TEST_F(VideoCaptureServiceLifecycleTest,
        ServiceQuitsWhenSingleDeviceFactoryClientDisconnected) {
-  mojom::DeviceFactoryPtr factory;
-  service_remote_->ConnectToDeviceFactory(mojo::MakeRequest(&factory));
+  mojo::Remote<mojom::DeviceFactory> factory;
+  service_remote_->ConnectToDeviceFactory(factory.BindNewPipeAndPassReceiver());
   factory.reset();
   service_idle_wait_loop_.Run();
 }
@@ -74,9 +76,9 @@ TEST_F(VideoCaptureServiceLifecycleTest,
 // provider.
 TEST_F(VideoCaptureServiceLifecycleTest,
        ServiceQuitsWhenSingleVideoSourceProviderClientDisconnected) {
-  mojom::VideoSourceProviderPtr source_provider;
+  mojo::Remote<mojom::VideoSourceProvider> source_provider;
   service_remote_->ConnectToVideoSourceProvider(
-      mojo::MakeRequest(&source_provider));
+      source_provider.BindNewPipeAndPassReceiver());
   source_provider.reset();
   service_idle_wait_loop_.Run();
 }
@@ -84,9 +86,9 @@ TEST_F(VideoCaptureServiceLifecycleTest,
 // Tests that the service quits when the only client disconnects after
 // enumerating devices via the video source provider.
 TEST_F(VideoCaptureServiceLifecycleTest, ServiceQuitsAfterEnumeratingDevices) {
-  mojom::VideoSourceProviderPtr source_provider;
+  mojo::Remote<mojom::VideoSourceProvider> source_provider;
   service_remote_->ConnectToVideoSourceProvider(
-      mojo::MakeRequest(&source_provider));
+      source_provider.BindNewPipeAndPassReceiver());
 
   base::RunLoop wait_loop;
   EXPECT_CALL(device_info_receiver_, Run(_))
@@ -107,9 +109,9 @@ TEST_F(VideoCaptureServiceLifecycleTest, ServiceQuitsAfterEnumeratingDevices) {
 // reconnects via the video source provider.
 TEST_F(VideoCaptureServiceLifecycleTest, EnumerateDevicesAfterReconnect) {
   // Connect |source_provider|.
-  mojom::VideoSourceProviderPtr source_provider;
+  mojo::Remote<mojom::VideoSourceProvider> source_provider;
   service_remote_->ConnectToVideoSourceProvider(
-      mojo::MakeRequest(&source_provider));
+      source_provider.BindNewPipeAndPassReceiver());
 
   // Disconnect |source_provider| and wait for the disconnect to propagate to
   // the service.
@@ -123,7 +125,7 @@ TEST_F(VideoCaptureServiceLifecycleTest, EnumerateDevicesAfterReconnect) {
 
   // Reconnect |source_provider|.
   service_remote_->ConnectToVideoSourceProvider(
-      mojo::MakeRequest(&source_provider));
+      source_provider.BindNewPipeAndPassReceiver());
 
   // Enumerate devices.
   base::RunLoop wait_loop;
@@ -145,8 +147,8 @@ TEST_F(VideoCaptureServiceLifecycleTest, EnumerateDevicesAfterReconnect) {
 // device.
 TEST_F(VideoCaptureServiceLifecycleTest,
        ServiceQuitsWhenClientDisconnectsWhileUsingDevice) {
-  mojom::DeviceFactoryPtr factory;
-  service_remote_->ConnectToDeviceFactory(mojo::MakeRequest(&factory));
+  mojo::Remote<mojom::DeviceFactory> factory;
+  service_remote_->ConnectToDeviceFactory(factory.BindNewPipeAndPassReceiver());
 
   // Connect to and start first device (in this case a fake camera).
   media::VideoCaptureDeviceInfo fake_device_info;
@@ -162,21 +164,22 @@ TEST_F(VideoCaptureServiceLifecycleTest,
     factory->GetDeviceInfos(device_info_receiver_.Get());
     wait_loop.Run();
   }
-  mojom::DevicePtr fake_device;
+  mojo::Remote<mojom::Device> fake_device;
   factory->CreateDevice(
       std::move(fake_device_info.descriptor.device_id),
-      mojo::MakeRequest(&fake_device),
+      fake_device.BindNewPipeAndPassReceiver(),
       base::BindOnce([](mojom::DeviceAccessResultCode result_code) {
         ASSERT_EQ(mojom::DeviceAccessResultCode::SUCCESS, result_code);
       }));
   media::VideoCaptureParams requestable_settings;
   requestable_settings.requested_format = fake_device_info.supported_formats[0];
-  mojom::ReceiverPtr receiver_proxy;
-  MockReceiver mock_receiver(mojo::MakeRequest(&receiver_proxy));
-  fake_device->Start(requestable_settings, std::move(receiver_proxy));
+  mojo::PendingRemote<mojom::VideoFrameHandler> handler_remote;
+  MockVideoFrameHandler mock_video_frame_handler(
+      handler_remote.InitWithNewPipeAndPassReceiver());
+  fake_device->Start(requestable_settings, std::move(handler_remote));
   {
     base::RunLoop wait_loop;
-    EXPECT_CALL(mock_receiver, OnStarted()).WillOnce([&wait_loop]() {
+    EXPECT_CALL(mock_video_frame_handler, OnStarted()).WillOnce([&wait_loop]() {
       wait_loop.Quit();
     });
     wait_loop.Run();

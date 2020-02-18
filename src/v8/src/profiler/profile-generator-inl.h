@@ -7,6 +7,8 @@
 
 #include "src/profiler/profile-generator.h"
 
+#include <memory>
+
 namespace v8 {
 namespace internal {
 
@@ -42,10 +44,6 @@ ProfileNode::ProfileNode(ProfileTree* tree, CodeEntry* entry,
       parent_(parent),
       id_(tree->next_node_id()) {
   tree_->EnqueueNode(this);
-}
-
-inline unsigned ProfileNode::function_id() const {
-  return tree_->GetFunctionId(this);
 }
 
 inline CpuProfileNode::SourceType ProfileNode::source_type() const {

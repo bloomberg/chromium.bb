@@ -3,13 +3,11 @@
 <translationbundle lang="gu">
 <translation id="1276998909102132017">ગૅલેરી છબીઓ</translation>
 <translation id="1430915738399379752">પ્રિન્ટ</translation>
-<translation id="1462966117743110941">તમારો કૅમેરા હવે નવા મોડને સમર્થન આપે છે અને તમારા ફોટા અને વીડિયો તમારા ડાઉનલોડ ફોલ્ડર હેઠળ ઉપલબ્ધ થશે.</translation>
 <translation id="1620510694547887537">કૅમેરો</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">કંઈ રેકોર્ડ થયું નથી</translation>
 <translation id="1862930711583847113"><ph name="FILE" />ની નિકાસ કરવામાં નિષ્ફળ રહ્યા</translation>
 <translation id="1899697626337024495">ફોટો રિઝોલ્યુશન</translation>
-<translation id="2008689030244369546">એકદમ નવો દેખાવ</translation>
 <translation id="2036868001356139588">ટાઇમર અવધિ</translation>
 <translation id="2050339315714019657">પોર્ટ્રેટ</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> સક્રિય</translation>
@@ -24,6 +22,7 @@
 
         સ્ટોરેજ માટે પરવાનગી ધરાવતી ઍપ તમારા ફોટા તથા વીડિયોને ઍક્સેસ કરી શકશે.</translation>
 <translation id="3081586908890909590">વીડિયો રેકોર્ડ કરવા માટે સ્વિચ કરો</translation>
+<translation id="313467653172006084">30 FPS</translation>
 <translation id="3183731565330012717">ગ્રિડનો પ્રકાર</translation>
 <translation id="3227137524299004712">માઇક્રોફોન</translation>
 <translation id="3259149966178251584">કૅમેરાનું રિઝોલ્યુશન</translation>
@@ -44,9 +43,7 @@
 <translation id="5671277269877808209">ચોરસ</translation>
 <translation id="5775960006311140197">નિષ્ણાત મોડ</translation>
 <translation id="5869546221129391014">ગ્રિડ</translation>
-<translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="6073451960410192870">રેકોર્ડિંગ બંધ કરો</translation>
-<translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6197807149213783179">મેટાડેટા સાચવો</translation>
 <translation id="6233780560267770709">3 બાય 3</translation>
 <translation id="6243827288366940320">ગોલ્ડન રેશિયો</translation>
@@ -65,6 +62,8 @@
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7670511624014457267">60 FPS</translation>
 <translation id="8049189770492311300">ટાઇમર</translation>
+<translation id="8067883171444229417">વીડિયો ચલાવો</translation>
+<translation id="8131740175452115882">પુષ્ટિ કરો</translation>
 <translation id="8145038249676204903">ફોટો લેવા માટે સ્વિચ કરો</translation>
 <translation id="8261506727792406068">ડિલીટ કરો</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>

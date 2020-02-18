@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -32,6 +33,9 @@ namespace media {
 class MEDIA_GPU_EXPORT CodecImage
     : public gpu::StreamTextureSharedImageInterface {
  public:
+  // Whether RenderToTextureOwnerBackBuffer may block or not.
+  enum class BlockingMode { kForbidBlocking, kAllowBlocking };
+
   // Callback to notify that a codec image is now unused in the sense of not
   // being out for display.  This lets us signal interested folks once a video
   // frame is destroyed and the sync token clears, so that that CodecImage may
@@ -41,10 +45,7 @@ class MEDIA_GPU_EXPORT CodecImage
   // Also note that, presently, only destruction does this.  However, with
   // pooling, there will be a way to mark a CodecImage as unused without
   // destroying it.
-  using NowUnusedCB = base::OnceCallback<void(CodecImage*)>;
-
-  // A callback for observing CodecImage destruction.
-  using DestructionCB = base::OnceCallback<void(CodecImage*)>;
+  using UnusedCB = base::OnceCallback<void(CodecImage*)>;
 
   CodecImage();
 
@@ -57,12 +58,14 @@ class MEDIA_GPU_EXPORT CodecImage
       scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb);
 
-  void SetNowUnusedCB(NowUnusedCB now_unused_cb);
-  void SetDestructionCB(DestructionCB destruction_cb);
+  // Add a callback that will be called when we're marked as unused.  Does not
+  // replace previous callbacks.  Order of callbacks is not guaranteed.
+  void AddUnusedCB(UnusedCB unused_cb);
 
   // gl::GLImage implementation
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
+  unsigned GetDataType() override;
   BindOrCopy ShouldBindOrCopy() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
@@ -87,6 +90,7 @@ class MEDIA_GPU_EXPORT CodecImage
                     const std::string& dump_name) override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
+  gfx::Rect GetCropRect() override;
   // gpu::gles2::GLStreamTextureMatrix implementation
   void GetTextureMatrix(float xform[16]) override;
   // Currently this API is implemented by the NotifyOverlayPromotion, since this
@@ -96,6 +100,15 @@ class MEDIA_GPU_EXPORT CodecImage
                            int display_y,
                            int display_width,
                            int display_height) override;
+  // If we re-use one CodecImage with different output buffers, then we must
+  // not claim to have mutable state.  Otherwise, CopyTexImage is only called
+  // once.  For pooled shared images, this must return false.  For single-use
+  // images, it works either way.
+  bool HasMutableState() const override;
+
+  // Notify us that we're no longer in-use for display, and may be pointed at
+  // another output buffer via a call to Initialize.
+  void NotifyUnused();
 
   // gpu::StreamTextureSharedImageInterface implementation.
   void ReleaseResources() override;
@@ -141,7 +154,11 @@ class MEDIA_GPU_EXPORT CodecImage
   // Renders this image to the back buffer of its texture owner. Only valid if
   // is_texture_owner_backed(). Returns true if the buffer is in the back
   // buffer. Returns false if the buffer was invalidated.
-  bool RenderToTextureOwnerBackBuffer();
+  // |blocking_mode| indicates whether this should (a) wait for any previously
+  // pending rendered frame before rendering this one, or (b) fail if a wait
+  // is required.
+  bool RenderToTextureOwnerBackBuffer(
+      BlockingMode blocking_mode = BlockingMode::kAllowBlocking);
 
   // Release any codec buffer without rendering, if we have one.
   virtual void ReleaseCodecBuffer();
@@ -181,9 +198,7 @@ class MEDIA_GPU_EXPORT CodecImage
   // Callback to notify about promotion hints and overlay position.
   PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb_;
 
-  NowUnusedCB now_unused_cb_;
-
-  DestructionCB destruction_cb_;
+  std::vector<UnusedCB> unused_cbs_;
 
   bool was_tex_image_bound_ = false;
 

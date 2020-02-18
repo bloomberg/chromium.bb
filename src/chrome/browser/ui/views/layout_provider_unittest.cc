@@ -14,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/font_util.h"
 #include "ui/strings/grit/app_locale_settings.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
@@ -28,8 +29,8 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/display/win/dpi.h"
+#include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/system_fonts_win.h"
-#include "ui/gfx/win/direct_write.h"
 #endif
 
 namespace {
@@ -51,8 +52,8 @@ class LayoutProviderTest : public testing::Test {
   static void SetUpTestSuite() {
 #if defined(OS_WIN)
     base::win::EnableHighDPISupport();
-    gfx::win::InitializeDirectWrite();
 #endif
+    gfx::InitializeFonts();
   }
 
  private:
@@ -159,7 +160,15 @@ TEST_F(LayoutProviderTest, MAYBE_LegacyFontSizeConstants) {
   EXPECT_EQ(11, title_font.GetCapHeight());
 #endif
 
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(gfx::kPlatformFontSkiaOnWindows)) {
+    EXPECT_EQ(7, title_font.GetExpectedTextWidth(1));
+  } else {
+    EXPECT_EQ(8, title_font.GetExpectedTextWidth(1));
+  }
+#else
   EXPECT_EQ(8, title_font.GetExpectedTextWidth(1));
+#endif
 
   gfx::FontList small_font = rb.GetFontList(ui::ResourceBundle::SmallFont);
   gfx::FontList base_font = rb.GetFontList(ui::ResourceBundle::BaseFont);

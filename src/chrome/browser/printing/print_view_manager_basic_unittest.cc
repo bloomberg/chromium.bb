@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/print_view_manager_basic.h"
 
+#include <utility>
+
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_test_utils.h"
@@ -54,7 +56,7 @@ TEST_F(PrintViewManagerBasicTest, CancelJobDuringDestruction) {
   auto query = queue->CreatePrinterQuery(main_rfh()->GetProcess()->GetID(),
                                          main_rfh()->GetRoutingID());
   base::RunLoop runloop;
-  query->SetSettings(GetPrintTicket(printing::kLocalPrinter, false),
+  query->SetSettings(GetPrintTicket(printing::kLocalPrinter),
                      runloop.QuitClosure());
   runloop.Run();
   auto cookie = query->cookie();

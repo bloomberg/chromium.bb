@@ -6,6 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
+#include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/buildflags.h"
@@ -48,13 +49,11 @@ PageInfoBubbleViewBase::PageInfoBubbleViewBase(
   g_shown_bubble_type = type;
   g_page_info_bubble = this;
 
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   set_parent_window(parent_window);
   if (!anchor_view)
     SetAnchorRect(anchor_rect);
-}
-
-int PageInfoBubbleViewBase::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 base::string16 PageInfoBubbleViewBase::GetWindowTitle() const {
@@ -69,6 +68,11 @@ void PageInfoBubbleViewBase::OnWidgetDestroying(views::Widget* widget) {
   BubbleDialogDelegateView::OnWidgetDestroying(widget);
   g_shown_bubble_type = BUBBLE_NONE;
   g_page_info_bubble = nullptr;
+}
+
+PageInfoUI::SecurityDescriptionType
+PageInfoBubbleViewBase::GetSecurityDescriptionType() const {
+  return security_description_type_;
 }
 
 void PageInfoBubbleViewBase::RenderFrameDeleted(

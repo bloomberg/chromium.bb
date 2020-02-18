@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_id.h"
 
 namespace ui {
 
@@ -48,9 +49,11 @@ class AX_EXPORT AXNode final {
       ax::mojom::TextAffinity focus_affinity;
     };
 
-    // See AXTree.
+    // See AXTree::GetAXTreeID.
+    virtual AXTreeID GetAXTreeID() const = 0;
+    // See AXTree::GetTableInfo.
     virtual AXTableInfo* GetTableInfo(const AXNode* table_node) const = 0;
-    // See AXTree.
+    // See AXTree::GetFromId.
     virtual AXNode* GetFromId(int32_t id) const = 0;
 
     virtual int32_t GetPosInSet(const AXNode& node,
@@ -111,6 +114,7 @@ class AX_EXPORT AXNode final {
   AXNode* GetUnignoredChildAtIndex(size_t index) const;
   AXNode* GetUnignoredParent() const;
   size_t GetUnignoredIndexInParent() const;
+  size_t GetIndexInParent() const;
   AXNode* GetFirstUnignoredChild() const;
   AXNode* GetLastUnignoredChild() const;
   AXNode* GetDeepestFirstUnignoredChild() const;
@@ -367,6 +371,10 @@ class AX_EXPORT AXNode final {
 
   // Returns true if node has ignored state or ignored role.
   bool IsIgnored() const;
+
+  // Returns true if this current node is a list marker or if it's a descendant
+  // of a list marker node. Returns false otherwise.
+  bool IsInListMarker() const;
 
  private:
   // Computes the text offset where each line starts by traversing all child

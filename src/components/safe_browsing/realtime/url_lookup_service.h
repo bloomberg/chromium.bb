@@ -11,7 +11,9 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/realtimeapi.pb.h"
 #include "url/gurl.h"
 
@@ -21,6 +23,9 @@ class SharedURLLoaderFactory;
 }  // namespace network
 
 namespace safe_browsing {
+
+using RTLookupRequestCallback =
+    base::OnceCallback<void(std::unique_ptr<RTLookupRequest>)>;
 
 using RTLookupResponseCallback =
     base::OnceCallback<void(std::unique_ptr<RTLookupResponse>)>;
@@ -39,15 +44,28 @@ class RealTimeUrlLookupService {
   // Returns true if the real time lookups are currently in backoff mode due to
   // too many prior errors. If this happens, the checking falls back to
   // local hash-based method.
-  bool IsInBackoffMode();
+  bool IsInBackoffMode() const;
 
-  // Start the full URL lookup for |url| and call |callback| on the same thread
-  // when done.
-  void StartLookup(const GURL& url, RTLookupResponseCallback callback);
+  // Start the full URL lookup for |url|, call |request_callback| on the same
+  // thread when request is sent, call |response_callback| on the same thread
+  // when response is received.
+  void StartLookup(const GURL& url,
+                   RTLookupRequestCallback request_callback,
+                   RTLookupResponseCallback response_callback);
+
+  // Returns the SBThreatType for a given
+  // RTLookupResponse::ThreatInfo::ThreatType
+  static SBThreatType GetSBThreatTypeForRTThreatType(
+      RTLookupResponse::ThreatInfo::ThreatType rt_threat_type);
 
  private:
   using PendingRTLookupRequests =
       base::flat_map<network::SimpleURLLoader*, RTLookupResponseCallback>;
+
+  // Returns the duration of the next backoff. Starts at
+  // |kMinBackOffResetDurationInSeconds| and increases exponentially until it
+  // reaches |kMaxBackOffResetDurationInSeconds|.
+  size_t GetBackoffDurationInSeconds() const;
 
   // Called when the request to remote endpoint fails. May initiate or extend
   // backoff.
@@ -61,13 +79,15 @@ class RealTimeUrlLookupService {
   // |HandleLookupSuccess| for now.
   void ResetFailures();
 
-  // Called when the timer to end backoff mode fires. Resets error count.
-  void ExitBackoff();
-
   // Called when the response from the real-time lookup remote endpoint is
-  // received.
+  // received. |url_loader| is the unowned loader that was used to send the
+  // request. |request_start_time| is the time when the request was sent.
+  // |response_body| is the response received.
   void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
+                           base::TimeTicks request_start_time,
                            std::unique_ptr<std::string> response_body);
+
+  std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url);
 
   // Helper function to return a weak pointer.
   base::WeakPtr<RealTimeUrlLookupService> GetWeakPtr();
@@ -80,8 +100,18 @@ class RealTimeUrlLookupService {
   // timer fires.
   size_t consecutive_failures_ = 0;
 
-  // Started when we enter backoff. We exit the backoff mode when this fires.
-  base::OneShotTimer reset_backoff_timer_;
+  // If true, represents that one or more real time lookups did complete
+  // successfully since the last backoff or Chrome never entered the breakoff;
+  // if false and Chrome re-enters backoff period, the backoff duration is
+  // increased exponentially (capped at |kMaxBackOffResetDurationInSeconds|).
+  bool did_successful_lookup_since_last_backoff_ = true;
+
+  // The current duration of backoff. Increases exponentially until it reaches
+  // |kMaxBackOffResetDurationInSeconds|.
+  size_t next_backoff_duration_secs_ = 0;
+
+  // If this timer is running, backoff is in effect.
+  base::OneShotTimer backoff_timer_;
 
   // The URLLoaderFactory we use to issue network requests.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

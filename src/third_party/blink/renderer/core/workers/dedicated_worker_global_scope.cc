@@ -37,13 +37,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -64,6 +64,8 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
     base::TimeTicks time_origin) {
   std::unique_ptr<Vector<String>> outside_origin_trial_tokens =
       std::move(creation_params->origin_trial_tokens);
+  BeginFrameProviderParams begin_frame_provider_params =
+      creation_params->begin_frame_provider_params;
 
   // Off-the-main-thread worker script fetch:
   // Initialize() is called after script fetch.
@@ -71,7 +73,7 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
       OffMainThreadWorkerScriptFetchOption::kEnabled) {
     return MakeGarbageCollected<DedicatedWorkerGlobalScope>(
         std::move(creation_params), thread, time_origin,
-        std::move(outside_origin_trial_tokens));
+        std::move(outside_origin_trial_tokens), begin_frame_provider_params);
   }
 
   // Legacy on-the-main-thread worker script fetch (to be removed):
@@ -82,7 +84,7 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
       *creation_params->response_address_space;
   auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
       std::move(creation_params), thread, time_origin,
-      std::move(outside_origin_trial_tokens));
+      std::move(outside_origin_trial_tokens), begin_frame_provider_params);
   // Pass dummy CSP headers here as it is superseded by outside's CSP headers in
   // Initialize().
   // Pass dummy origin trial tokens here as it is already set to outside's
@@ -100,8 +102,15 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     DedicatedWorkerThread* thread,
     base::TimeTicks time_origin,
-    std::unique_ptr<Vector<String>> outside_origin_trial_tokens)
-    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
+    std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
+    const BeginFrameProviderParams& begin_frame_provider_params)
+    : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
+      animation_frame_provider_(
+          MakeGarbageCollected<WorkerAnimationFrameProvider>(
+              this,
+              begin_frame_provider_params)) {
+  CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(*this);
+
   // Dedicated workers don't need to pause after script fetch.
   ReadyToRunWorkerScript();
   // Inherit the outside's origin trial tokens.
@@ -199,8 +208,6 @@ void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
   // "worker" otherwise."
   mojom::RequestContextType destination = mojom::RequestContextType::WORKER;
 
-  Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
-
   // Step 13: "... Fetch a module worker script graph given url, outside
   // settings, destination, the value of the credentials member of options, and
   // inside settings."
@@ -208,7 +215,8 @@ void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
                     outside_resource_timing_notifier, destination,
                     credentials_mode,
                     ModuleScriptCustomFetchType::kWorkerConstructor,
-                    MakeGarbageCollected<WorkerModuleTreeClient>(modulator));
+                    MakeGarbageCollected<WorkerModuleTreeClient>(
+                        ScriptController()->GetScriptState()));
 }
 
 const String DedicatedWorkerGlobalScope::name() const {
@@ -217,7 +225,7 @@ const String DedicatedWorkerGlobalScope::name() const {
 
 void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
                                              const ScriptValue& message,
-                                             Vector<ScriptValue>& transfer,
+                                             HeapVector<ScriptValue>& transfer,
                                              ExceptionState& exception_state) {
   PostMessageOptions* options = PostMessageOptions::Create();
   if (!transfer.IsEmpty())
@@ -239,6 +247,8 @@ void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
   DCHECK(serialized_message);
   BlinkTransferableMessage transferable_message;
   transferable_message.message = serialized_message;
+  transferable_message.sender_origin =
+      GetExecutionContext()->GetSecurityOrigin()->IsolatedCopy();
   // Disentangle the port in preparation for sending it to the remote context.
   transferable_message.ports = MessagePort::DisentanglePorts(
       ExecutionContext::From(script_state), transferables.message_ports,
@@ -270,9 +280,17 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
   // Step 12. "If the algorithm asynchronously completes with null, then:"
   if (classic_script_loader->Failed()) {
     // Step 12.1. "Queue a task to fire an event named error at worker."
-    // Step 12.2. "Run the environment discarding steps for inside settings."
-    // Step 12.3. "Return."
+    // DidFailToFetchClassicScript() will asynchronously fire the event.
     ReportingProxy().DidFailToFetchClassicScript();
+
+    // Step 12.2. "Run the environment discarding steps for inside settings."
+    // Do nothing because the HTML spec doesn't define these steps for web
+    // workers.
+
+    // Schedule worker termination.
+    close();
+
+    // Step 12.3. "Return."
     return;
   }
   ReportingProxy().DidFetchScript();
@@ -304,12 +322,36 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
       classic_script_loader->ReleaseCachedMetadata(), stack_id);
 }
 
+int DedicatedWorkerGlobalScope::requestAnimationFrame(
+    V8FrameRequestCallback* callback,
+    ExceptionState& exception_state) {
+  auto* frame_callback =
+      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+          callback);
+  frame_callback->SetUseLegacyTimeBase(false);
+
+  int ret = animation_frame_provider_->RegisterCallback(frame_callback);
+
+  if (ret == WorkerAnimationFrameProvider::kInvalidCallbackId) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "requestAnimationFrame not supported in this Worker.");
+  }
+
+  return ret;
+}
+
+void DedicatedWorkerGlobalScope::cancelAnimationFrame(int id) {
+  animation_frame_provider_->CancelCallback(id);
+}
+
 DedicatedWorkerObjectProxy& DedicatedWorkerGlobalScope::WorkerObjectProxy()
     const {
   return static_cast<DedicatedWorkerThread*>(GetThread())->WorkerObjectProxy();
 }
 
 void DedicatedWorkerGlobalScope::Trace(blink::Visitor* visitor) {
+  visitor->Trace(animation_frame_provider_);
   WorkerGlobalScope::Trace(visitor);
 }
 

@@ -16,9 +16,10 @@
 
 #include "common/BitSetIterator.h"
 #include "dawn_native/BindGroup.h"
+#include "dawn_native/Buffer.h"
 #include "dawn_native/CommandBufferStateTracker.h"
 #include "dawn_native/Commands.h"
-#include "dawn_native/PassResourceUsageTracker.h"
+#include "dawn_native/PassResourceUsage.h"
 #include "dawn_native/RenderBundle.h"
 #include "dawn_native/RenderPipeline.h"
 
@@ -26,69 +27,11 @@ namespace dawn_native {
 
     namespace {
 
-        inline MaybeError PushDebugMarkerStack(unsigned int* counter) {
-            *counter += 1;
-            return {};
-        }
-
-        inline MaybeError PopDebugMarkerStack(unsigned int* counter) {
-            if (*counter == 0) {
-                return DAWN_VALIDATION_ERROR("Pop must be balanced by a corresponding Push.");
-            } else {
-                *counter -= 1;
-            }
-
-            return {};
-        }
-
-        inline MaybeError ValidateDebugGroups(const unsigned int counter) {
-            if (counter != 0) {
-                return DAWN_VALIDATION_ERROR("Each Push must be balanced by a corresponding Pop.");
-            }
-
-            return {};
-        }
-
-        void TrackBindGroupResourceUsage(BindGroupBase* group,
-                                         PassResourceUsageTracker* usageTracker) {
-            const auto& layoutInfo = group->GetLayout()->GetBindingInfo();
-
-            for (uint32_t i : IterateBitSet(layoutInfo.mask)) {
-                dawn::BindingType type = layoutInfo.types[i];
-
-                switch (type) {
-                    case dawn::BindingType::UniformBuffer: {
-                        BufferBase* buffer = group->GetBindingAsBufferBinding(i).buffer;
-                        usageTracker->BufferUsedAs(buffer, dawn::BufferUsage::Uniform);
-                    } break;
-
-                    case dawn::BindingType::StorageBuffer: {
-                        BufferBase* buffer = group->GetBindingAsBufferBinding(i).buffer;
-                        usageTracker->BufferUsedAs(buffer, dawn::BufferUsage::Storage);
-                    } break;
-
-                    case dawn::BindingType::SampledTexture: {
-                        TextureBase* texture = group->GetBindingAsTextureView(i)->GetTexture();
-                        usageTracker->TextureUsedAs(texture, dawn::TextureUsage::Sampled);
-                    } break;
-
-                    case dawn::BindingType::Sampler:
-                        break;
-
-                    case dawn::BindingType::StorageTexture:
-                    case dawn::BindingType::ReadonlyStorageBuffer:
-                        UNREACHABLE();
-                        break;
-                }
-            }
-        }
-
         inline MaybeError ValidateRenderBundleCommand(CommandIterator* commands,
                                                       Command type,
-                                                      PassResourceUsageTracker* usageTracker,
                                                       CommandBufferStateTracker* commandBufferState,
                                                       const AttachmentState* attachmentState,
-                                                      unsigned int* debugGroupStackSize,
+                                                      uint64_t* debugGroupStackSize,
                                                       const char* disallowedMessage) {
             switch (type) {
                 case Command::Draw: {
@@ -102,17 +45,13 @@ namespace dawn_native {
                 } break;
 
                 case Command::DrawIndirect: {
-                    DrawIndirectCmd* cmd = commands->NextCommand<DrawIndirectCmd>();
+                    commands->NextCommand<DrawIndirectCmd>();
                     DAWN_TRY(commandBufferState->ValidateCanDraw());
-                    usageTracker->BufferUsedAs(cmd->indirectBuffer.Get(),
-                                               dawn::BufferUsage::Indirect);
                 } break;
 
                 case Command::DrawIndexedIndirect: {
-                    DrawIndexedIndirectCmd* cmd = commands->NextCommand<DrawIndexedIndirectCmd>();
+                    commands->NextCommand<DrawIndexedIndirectCmd>();
                     DAWN_TRY(commandBufferState->ValidateCanDrawIndexed());
-                    usageTracker->BufferUsedAs(cmd->indirectBuffer.Get(),
-                                               dawn::BufferUsage::Indirect);
                 } break;
 
                 case Command::InsertDebugMarker: {
@@ -122,13 +61,14 @@ namespace dawn_native {
 
                 case Command::PopDebugGroup: {
                     commands->NextCommand<PopDebugGroupCmd>();
-                    DAWN_TRY(PopDebugMarkerStack(debugGroupStackSize));
+                    DAWN_TRY(ValidateCanPopDebugGroup(*debugGroupStackSize));
+                    *debugGroupStackSize -= 1;
                 } break;
 
                 case Command::PushDebugGroup: {
                     PushDebugGroupCmd* cmd = commands->NextCommand<PushDebugGroupCmd>();
                     commands->NextData<char>(cmd->length + 1);
-                    DAWN_TRY(PushDebugMarkerStack(debugGroupStackSize));
+                    *debugGroupStackSize += 1;
                 } break;
 
                 case Command::SetRenderPipeline: {
@@ -144,29 +84,20 @@ namespace dawn_native {
                 case Command::SetBindGroup: {
                     SetBindGroupCmd* cmd = commands->NextCommand<SetBindGroupCmd>();
                     if (cmd->dynamicOffsetCount > 0) {
-                        commands->NextData<uint64_t>(cmd->dynamicOffsetCount);
+                        commands->NextData<uint32_t>(cmd->dynamicOffsetCount);
                     }
 
-                    TrackBindGroupResourceUsage(cmd->group.Get(), usageTracker);
                     commandBufferState->SetBindGroup(cmd->index, cmd->group.Get());
                 } break;
 
                 case Command::SetIndexBuffer: {
-                    SetIndexBufferCmd* cmd = commands->NextCommand<SetIndexBufferCmd>();
-
-                    usageTracker->BufferUsedAs(cmd->buffer.Get(), dawn::BufferUsage::Index);
+                    commands->NextCommand<SetIndexBufferCmd>();
                     commandBufferState->SetIndexBuffer();
                 } break;
 
-                case Command::SetVertexBuffers: {
-                    SetVertexBuffersCmd* cmd = commands->NextCommand<SetVertexBuffersCmd>();
-                    auto buffers = commands->NextData<Ref<BufferBase>>(cmd->count);
-                    commands->NextData<uint64_t>(cmd->count);
-
-                    for (uint32_t i = 0; i < cmd->count; ++i) {
-                        usageTracker->BufferUsedAs(buffers[i].Get(), dawn::BufferUsage::Vertex);
-                    }
-                    commandBufferState->SetVertexBuffer(cmd->startSlot, cmd->count);
+                case Command::SetVertexBuffer: {
+                    SetVertexBufferCmd* cmd = commands->NextCommand<SetVertexBufferCmd>();
+                    commandBufferState->SetVertexBuffer(cmd->slot);
                 } break;
 
                 default:
@@ -178,65 +109,46 @@ namespace dawn_native {
 
     }  // namespace
 
+    MaybeError ValidateCanPopDebugGroup(uint64_t debugGroupStackSize) {
+        if (debugGroupStackSize == 0) {
+            return DAWN_VALIDATION_ERROR("Pop must be balanced by a corresponding Push.");
+        }
+        return {};
+    }
+
+    MaybeError ValidateFinalDebugGroupStackSize(uint64_t debugGroupStackSize) {
+        if (debugGroupStackSize != 0) {
+            return DAWN_VALIDATION_ERROR("Each Push must be balanced by a corresponding Pop.");
+        }
+        return {};
+    }
+
     MaybeError ValidateRenderBundle(CommandIterator* commands,
-                                    const AttachmentState* attachmentState,
-                                    PassResourceUsage* resourceUsage) {
-        PassResourceUsageTracker usageTracker;
+                                    const AttachmentState* attachmentState) {
         CommandBufferStateTracker commandBufferState;
-        unsigned int debugGroupStackSize = 0;
+        uint64_t debugGroupStackSize = 0;
 
         Command type;
         while (commands->NextCommandId(&type)) {
-            DAWN_TRY(ValidateRenderBundleCommand(commands, type, &usageTracker, &commandBufferState,
+            DAWN_TRY(ValidateRenderBundleCommand(commands, type, &commandBufferState,
                                                  attachmentState, &debugGroupStackSize,
                                                  "Command disallowed inside a render bundle"));
         }
 
-        DAWN_TRY(ValidateDebugGroups(debugGroupStackSize));
-        DAWN_TRY(usageTracker.ValidateRenderPassUsages());
-        ASSERT(resourceUsage != nullptr);
-        *resourceUsage = usageTracker.AcquireResourceUsage();
-
+        DAWN_TRY(ValidateFinalDebugGroupStackSize(debugGroupStackSize));
         return {};
     }
 
-    MaybeError ValidateRenderPass(CommandIterator* commands,
-                                  BeginRenderPassCmd* renderPass,
-                                  std::vector<PassResourceUsage>* perPassResourceUsages) {
-        PassResourceUsageTracker usageTracker;
+    MaybeError ValidateRenderPass(CommandIterator* commands, const BeginRenderPassCmd* renderPass) {
         CommandBufferStateTracker commandBufferState;
-        unsigned int debugGroupStackSize = 0;
-
-        // Track usage of the render pass attachments
-        for (uint32_t i : IterateBitSet(renderPass->attachmentState->GetColorAttachmentsMask())) {
-            RenderPassColorAttachmentInfo* colorAttachment = &renderPass->colorAttachments[i];
-            TextureBase* texture = colorAttachment->view->GetTexture();
-            usageTracker.TextureUsedAs(texture, dawn::TextureUsage::OutputAttachment);
-
-            TextureViewBase* resolveTarget = colorAttachment->resolveTarget.Get();
-            if (resolveTarget != nullptr) {
-                usageTracker.TextureUsedAs(resolveTarget->GetTexture(),
-                                           dawn::TextureUsage::OutputAttachment);
-            }
-        }
-
-        if (renderPass->attachmentState->HasDepthStencilAttachment()) {
-            TextureBase* texture = renderPass->depthStencilAttachment.view->GetTexture();
-            usageTracker.TextureUsedAs(texture, dawn::TextureUsage::OutputAttachment);
-        }
+        uint64_t debugGroupStackSize = 0;
 
         Command type;
         while (commands->NextCommandId(&type)) {
             switch (type) {
                 case Command::EndRenderPass: {
                     commands->NextCommand<EndRenderPassCmd>();
-
-                    DAWN_TRY(ValidateDebugGroups(debugGroupStackSize));
-
-                    DAWN_TRY(usageTracker.ValidateRenderPassUsages());
-                    ASSERT(perPassResourceUsages != nullptr);
-                    perPassResourceUsages->push_back(usageTracker.AcquireResourceUsage());
-
+                    DAWN_TRY(ValidateFinalDebugGroupStackSize(debugGroupStackSize));
                     return {};
                 } break;
 
@@ -248,15 +160,6 @@ namespace dawn_native {
                                           bundles[i]->GetAttachmentState())) {
                             return DAWN_VALIDATION_ERROR(
                                 "Render bundle is not compatible with render pass");
-                        }
-
-                        const PassResourceUsage& usages = bundles[i]->GetResourceUsage();
-                        for (uint32_t i = 0; i < usages.buffers.size(); ++i) {
-                            usageTracker.BufferUsedAs(usages.buffers[i], usages.bufferUsages[i]);
-                        }
-
-                        for (uint32_t i = 0; i < usages.textures.size(); ++i) {
-                            usageTracker.TextureUsedAs(usages.textures[i], usages.textureUsages[i]);
                         }
                     }
 
@@ -285,9 +188,8 @@ namespace dawn_native {
 
                 default:
                     DAWN_TRY(ValidateRenderBundleCommand(
-                        commands, type, &usageTracker, &commandBufferState,
-                        renderPass->attachmentState.Get(), &debugGroupStackSize,
-                        "Command disallowed inside a render pass"));
+                        commands, type, &commandBufferState, renderPass->attachmentState.Get(),
+                        &debugGroupStackSize, "Command disallowed inside a render pass"));
             }
         }
 
@@ -295,23 +197,16 @@ namespace dawn_native {
         return DAWN_VALIDATION_ERROR("Unfinished render pass");
     }
 
-    MaybeError ValidateComputePass(CommandIterator* commands,
-                                   std::vector<PassResourceUsage>* perPassResourceUsages) {
-        PassResourceUsageTracker usageTracker;
+    MaybeError ValidateComputePass(CommandIterator* commands) {
         CommandBufferStateTracker commandBufferState;
-        unsigned int debugGroupStackSize = 0;
+        uint64_t debugGroupStackSize = 0;
 
         Command type;
         while (commands->NextCommandId(&type)) {
             switch (type) {
                 case Command::EndComputePass: {
                     commands->NextCommand<EndComputePassCmd>();
-
-                    DAWN_TRY(ValidateDebugGroups(debugGroupStackSize));
-
-                    DAWN_TRY(usageTracker.ValidateComputePassUsages());
-                    ASSERT(perPassResourceUsages != nullptr);
-                    perPassResourceUsages->push_back(usageTracker.AcquireResourceUsage());
+                    DAWN_TRY(ValidateFinalDebugGroupStackSize(debugGroupStackSize));
                     return {};
                 } break;
 
@@ -321,10 +216,8 @@ namespace dawn_native {
                 } break;
 
                 case Command::DispatchIndirect: {
-                    DispatchIndirectCmd* cmd = commands->NextCommand<DispatchIndirectCmd>();
+                    commands->NextCommand<DispatchIndirectCmd>();
                     DAWN_TRY(commandBufferState.ValidateCanDispatch());
-                    usageTracker.BufferUsedAs(cmd->indirectBuffer.Get(),
-                                              dawn::BufferUsage::Indirect);
                 } break;
 
                 case Command::InsertDebugMarker: {
@@ -334,13 +227,14 @@ namespace dawn_native {
 
                 case Command::PopDebugGroup: {
                     commands->NextCommand<PopDebugGroupCmd>();
-                    DAWN_TRY(PopDebugMarkerStack(&debugGroupStackSize));
+                    DAWN_TRY(ValidateCanPopDebugGroup(debugGroupStackSize));
+                    debugGroupStackSize--;
                 } break;
 
                 case Command::PushDebugGroup: {
                     PushDebugGroupCmd* cmd = commands->NextCommand<PushDebugGroupCmd>();
                     commands->NextData<char>(cmd->length + 1);
-                    DAWN_TRY(PushDebugMarkerStack(&debugGroupStackSize));
+                    debugGroupStackSize++;
                 } break;
 
                 case Command::SetComputePipeline: {
@@ -352,10 +246,8 @@ namespace dawn_native {
                 case Command::SetBindGroup: {
                     SetBindGroupCmd* cmd = commands->NextCommand<SetBindGroupCmd>();
                     if (cmd->dynamicOffsetCount > 0) {
-                        commands->NextData<uint64_t>(cmd->dynamicOffsetCount);
+                        commands->NextData<uint32_t>(cmd->dynamicOffsetCount);
                     }
-
-                    TrackBindGroupResourceUsage(cmd->group.Get(), &usageTracker);
                     commandBufferState.SetBindGroup(cmd->index, cmd->group.Get());
                 } break;
 
@@ -366,6 +258,48 @@ namespace dawn_native {
 
         UNREACHABLE();
         return DAWN_VALIDATION_ERROR("Unfinished compute pass");
+    }
+
+    // Performs the per-pass usage validation checks
+    // This will eventually need to differentiate between render and compute passes.
+    // It will be valid to use a buffer both as uniform and storage in the same compute pass.
+    MaybeError ValidatePassResourceUsage(const PassResourceUsage& pass) {
+        // Buffers can only be used as single-write or multiple read.
+        for (size_t i = 0; i < pass.buffers.size(); ++i) {
+            const BufferBase* buffer = pass.buffers[i];
+            wgpu::BufferUsage usage = pass.bufferUsages[i];
+
+            if (usage & ~buffer->GetUsage()) {
+                return DAWN_VALIDATION_ERROR("Buffer missing usage for the pass");
+            }
+
+            bool readOnly = (usage & kReadOnlyBufferUsages) == usage;
+            bool singleUse = wgpu::HasZeroOrOneBits(usage);
+
+            if (!readOnly && !singleUse) {
+                return DAWN_VALIDATION_ERROR(
+                    "Buffer used as writable usage and another usage in pass");
+            }
+        }
+
+        // Textures can only be used as single-write or multiple read.
+        // TODO(cwallez@chromium.org): implement per-subresource tracking
+        for (size_t i = 0; i < pass.textures.size(); ++i) {
+            const TextureBase* texture = pass.textures[i];
+            wgpu::TextureUsage usage = pass.textureUsages[i];
+
+            if (usage & ~texture->GetUsage()) {
+                return DAWN_VALIDATION_ERROR("Texture missing usage for the pass");
+            }
+
+            // For textures the only read-only usage in a pass is Sampled, so checking the
+            // usage constraint simplifies to checking a single usage bit is set.
+            if (!wgpu::HasZeroOrOneBits(usage)) {
+                return DAWN_VALIDATION_ERROR("Texture used with more than one usage in pass");
+            }
+        }
+
+        return {};
     }
 
 }  // namespace dawn_native

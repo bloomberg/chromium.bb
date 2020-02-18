@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 
@@ -18,18 +19,17 @@ constexpr float kEdgeThreshold = 10.0f;
 }
 
 RenderFrameMetadataObserverImpl::RenderFrameMetadataObserverImpl(
-    mojom::RenderFrameMetadataObserverRequest request,
-    mojom::RenderFrameMetadataObserverClientPtrInfo client_info)
-    : request_(std::move(request)),
-      client_info_(std::move(client_info)),
-      render_frame_metadata_observer_binding_(this) {}
+    mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver,
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient> client_remote)
+    : receiver_(std::move(receiver)),
+      client_remote_(std::move(client_remote)) {}
 
 RenderFrameMetadataObserverImpl::~RenderFrameMetadataObserverImpl() {}
 
 void RenderFrameMetadataObserverImpl::BindToCurrentThread() {
-  DCHECK(request_.is_pending());
-  render_frame_metadata_observer_binding_.Bind(std::move(request_));
-  render_frame_metadata_observer_client_.Bind(std::move(client_info_));
+  DCHECK(receiver_.is_valid());
+  render_frame_metadata_observer_receiver_.Bind(std::move(receiver_));
+  render_frame_metadata_observer_client_.Bind(std::move(client_remote_));
 }
 
 void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
@@ -151,7 +151,9 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
       rfm1.viewport_size_in_pixels != rfm2.viewport_size_in_pixels ||
       rfm1.top_controls_height != rfm2.top_controls_height ||
       rfm1.top_controls_shown_ratio != rfm2.top_controls_shown_ratio ||
-      rfm1.local_surface_id_allocation != rfm2.local_surface_id_allocation) {
+      rfm1.local_surface_id_allocation != rfm2.local_surface_id_allocation ||
+      rfm2.new_vertical_scroll_direction !=
+          viz::VerticalScrollDirection::kNull) {
     *needs_activation_notification = true;
     return true;
   }

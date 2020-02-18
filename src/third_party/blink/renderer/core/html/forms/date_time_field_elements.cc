@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/date_time_field_elements.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_fields_state.h"
 #include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -32,20 +33,23 @@
 
 namespace blink {
 
-using blink::WebLocalizedString;
-
-static String QueryString(WebLocalizedString::Name name) {
-  return Locale::DefaultLocale().QueryString(name);
+static String QueryString(int resource_id) {
+  return Locale::DefaultLocale().QueryString(resource_id);
 }
 
 DateTimeAMPMFieldElement::DateTimeAMPMFieldElement(
     Document& document,
     FieldOwner& field_owner,
     const Vector<String>& ampm_labels)
-    : DateTimeSymbolicFieldElement(document, field_owner, ampm_labels, 0, 1) {
+    : DateTimeSymbolicFieldElement(document,
+                                   field_owner,
+                                   DateTimeField::kAMPM,
+                                   ampm_labels,
+                                   0,
+                                   1) {
   DEFINE_STATIC_LOCAL(AtomicString, ampm_pseudo_id,
                       ("-webkit-datetime-edit-ampm-field"));
-  Initialize(ampm_pseudo_id, QueryString(WebLocalizedString::kAXAMPMFieldText));
+  Initialize(ampm_pseudo_id, QueryString(IDS_AX_AM_PM_FIELD_TEXT));
 }
 
 void DateTimeAMPMFieldElement::PopulateDateTimeFieldsState(
@@ -78,13 +82,13 @@ DateTimeDayFieldElement::DateTimeDayFieldElement(Document& document,
                                                  const Range& range)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kDay,
                                   range,
                                   Range(1, 31),
                                   placeholder.IsEmpty() ? "--" : placeholder) {
   DEFINE_STATIC_LOCAL(AtomicString, day_pseudo_id,
                       ("-webkit-datetime-edit-day-field"));
-  Initialize(day_pseudo_id,
-             QueryString(WebLocalizedString::kAXDayOfMonthFieldText));
+  Initialize(day_pseudo_id, QueryString(IDS_AX_DAY_OF_MONTH_FIELD_TEXT));
 }
 
 void DateTimeDayFieldElement::PopulateDateTimeFieldsState(
@@ -123,6 +127,7 @@ DateTimeHourFieldElementBase::DateTimeHourFieldElementBase(
     const Step& step)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kHour,
                                   range,
                                   hard_limits,
                                   "--",
@@ -131,8 +136,8 @@ DateTimeHourFieldElementBase::DateTimeHourFieldElementBase(
 void DateTimeHourFieldElementBase::Initialize() {
   DEFINE_STATIC_LOCAL(AtomicString, hour_pseudo_id,
                       ("-webkit-datetime-edit-hour-field"));
-  DateTimeNumericFieldElement::Initialize(
-      hour_pseudo_id, QueryString(WebLocalizedString::kAXHourFieldText));
+  DateTimeNumericFieldElement::Initialize(hour_pseudo_id,
+                                          QueryString(IDS_AX_HOUR_FIELD_TEXT));
 }
 
 void DateTimeHourFieldElementBase::SetValueAsDate(const DateComponents& date) {
@@ -380,14 +385,14 @@ DateTimeMillisecondFieldElement::DateTimeMillisecondFieldElement(
     const Step& step)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kMillisecond,
                                   range,
                                   Range(0, 999),
                                   "---",
                                   step) {
   DEFINE_STATIC_LOCAL(AtomicString, millisecond_pseudo_id,
                       ("-webkit-datetime-edit-millisecond-field"));
-  Initialize(millisecond_pseudo_id,
-             QueryString(WebLocalizedString::kAXMillisecondFieldText));
+  Initialize(millisecond_pseudo_id, QueryString(IDS_AX_MILLISECOND_FIELD_TEXT));
 }
 
 void DateTimeMillisecondFieldElement::PopulateDateTimeFieldsState(
@@ -425,14 +430,14 @@ DateTimeMinuteFieldElement::DateTimeMinuteFieldElement(Document& document,
                                                        const Step& step)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kMinute,
                                   range,
                                   Range(0, 59),
                                   "--",
                                   step) {
   DEFINE_STATIC_LOCAL(AtomicString, minute_pseudo_id,
                       ("-webkit-datetime-edit-minute-field"));
-  Initialize(minute_pseudo_id,
-             QueryString(WebLocalizedString::kAXMinuteFieldText));
+  Initialize(minute_pseudo_id, QueryString(IDS_AX_MINUTE_FIELD_TEXT));
 }
 
 void DateTimeMinuteFieldElement::PopulateDateTimeFieldsState(
@@ -469,13 +474,13 @@ DateTimeMonthFieldElement::DateTimeMonthFieldElement(Document& document,
                                                      const Range& range)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kMonth,
                                   range,
                                   Range(1, 12),
                                   placeholder.IsEmpty() ? "--" : placeholder) {
   DEFINE_STATIC_LOCAL(AtomicString, month_pseudo_id,
                       ("-webkit-datetime-edit-month-field"));
-  Initialize(month_pseudo_id,
-             QueryString(WebLocalizedString::kAXMonthFieldText));
+  Initialize(month_pseudo_id, QueryString(IDS_AX_MONTH_FIELD_TEXT));
 }
 
 void DateTimeMonthFieldElement::PopulateDateTimeFieldsState(
@@ -512,14 +517,14 @@ DateTimeSecondFieldElement::DateTimeSecondFieldElement(Document& document,
                                                        const Step& step)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kSecond,
                                   range,
                                   Range(0, 59),
                                   "--",
                                   step) {
   DEFINE_STATIC_LOCAL(AtomicString, second_pseudo_id,
                       ("-webkit-datetime-edit-second-field"));
-  Initialize(second_pseudo_id,
-             QueryString(WebLocalizedString::kAXSecondFieldText));
+  Initialize(second_pseudo_id, QueryString(IDS_AX_SECOND_FIELD_TEXT));
 }
 
 void DateTimeSecondFieldElement::PopulateDateTimeFieldsState(
@@ -558,13 +563,13 @@ DateTimeSymbolicMonthFieldElement::DateTimeSymbolicMonthFieldElement(
     int maximum)
     : DateTimeSymbolicFieldElement(document,
                                    field_owner,
+                                   DateTimeField::kMonth,
                                    labels,
                                    minimum,
                                    maximum) {
   DEFINE_STATIC_LOCAL(AtomicString, month_pseudo_id,
                       ("-webkit-datetime-edit-month-field"));
-  Initialize(month_pseudo_id,
-             QueryString(WebLocalizedString::kAXMonthFieldText));
+  Initialize(month_pseudo_id, QueryString(IDS_AX_MONTH_FIELD_TEXT));
 }
 
 void DateTimeSymbolicMonthFieldElement::PopulateDateTimeFieldsState(
@@ -603,14 +608,14 @@ DateTimeWeekFieldElement::DateTimeWeekFieldElement(Document& document,
                                                    const Range& range)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kWeek,
                                   range,
                                   Range(DateComponents::kMinimumWeekNumber,
                                         DateComponents::kMaximumWeekNumber),
                                   "--") {
   DEFINE_STATIC_LOCAL(AtomicString, week_pseudo_id,
                       ("-webkit-datetime-edit-week-field"));
-  Initialize(week_pseudo_id,
-             QueryString(WebLocalizedString::kAXWeekOfYearFieldText));
+  Initialize(week_pseudo_id, QueryString(IDS_AX_WEEK_OF_YEAR_FIELD_TEXT));
 }
 
 void DateTimeWeekFieldElement::PopulateDateTimeFieldsState(
@@ -648,6 +653,7 @@ DateTimeYearFieldElement::DateTimeYearFieldElement(
     : DateTimeNumericFieldElement(
           document,
           field_owner,
+          DateTimeField::kYear,
           Range(parameters.minimum_year, parameters.maximum_year),
           Range(DateComponents::MinimumYear(), DateComponents::MaximumYear()),
           parameters.placeholder.IsEmpty() ? "----" : parameters.placeholder),
@@ -658,7 +664,7 @@ DateTimeYearFieldElement::DateTimeYearFieldElement(
 
   DEFINE_STATIC_LOCAL(AtomicString, year_pseudo_id,
                       ("-webkit-datetime-edit-year-field"));
-  Initialize(year_pseudo_id, QueryString(WebLocalizedString::kAXYearFieldText));
+  Initialize(year_pseudo_id, QueryString(IDS_AX_YEAR_FIELD_TEXT));
 }
 
 static int CurrentFullYear() {

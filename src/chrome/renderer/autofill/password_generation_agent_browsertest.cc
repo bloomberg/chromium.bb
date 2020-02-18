@@ -316,14 +316,16 @@ void PasswordGenerationAgentTest::SelectGenerationFallbackAndExpect(
 
 void PasswordGenerationAgentTest::BindPasswordManagerDriver(
     mojo::ScopedInterfaceEndpointHandle handle) {
-  fake_driver_.BindRequest(
-      mojom::PasswordManagerDriverAssociatedRequest(std::move(handle)));
+  fake_driver_.BindReceiver(
+      mojo::PendingAssociatedReceiver<mojom::PasswordManagerDriver>(
+          std::move(handle)));
 }
 
 void PasswordGenerationAgentTest::BindPasswordManagerClient(
     mojo::ScopedInterfaceEndpointHandle handle) {
-  fake_pw_client_.BindRequest(
-      mojom::PasswordGenerationDriverAssociatedRequest(std::move(handle)));
+  fake_pw_client_.BindReceiver(
+      mojo::PendingAssociatedReceiver<mojom::PasswordGenerationDriver>(
+          std::move(handle)));
 }
 
 class PasswordGenerationAgentTestForHtmlAnnotation
@@ -379,11 +381,6 @@ void PasswordGenerationAgentTestForHtmlAnnotation::TestAnnotateForm(
   blink::WebString form_signature_in_username = username_element.GetAttribute(
       blink::WebString::FromUTF8("form_signature"));
   EXPECT_EQ(kFormSignature, form_signature_in_username.Ascii());
-  EXPECT_EQ(
-      "username_element",
-      username_element
-          .GetAttribute(blink::WebString::FromUTF8("pm_parser_annotation"))
-          .Ascii());
 
   blink::WebElement password_element =
       document.GetElementById(blink::WebString::FromUTF8("first_password"));
@@ -395,14 +392,6 @@ void PasswordGenerationAgentTestForHtmlAnnotation::TestAnnotateForm(
   blink::WebString form_signature_in_password = password_element.GetAttribute(
       blink::WebString::FromUTF8("form_signature"));
   EXPECT_EQ(kFormSignature, form_signature_in_password.Ascii());
-  // The parser annotation is based on local heuristics, but not server side
-  // prediction. So, the new password element is classified as the current
-  // password.
-  EXPECT_EQ(
-      "password_element",
-      password_element
-          .GetAttribute(blink::WebString::FromUTF8("pm_parser_annotation"))
-          .Ascii());
 
   // Check the generation element is marked.
   blink::WebString generation_mark = password_element.GetAttribute(
@@ -412,14 +401,6 @@ void PasswordGenerationAgentTestForHtmlAnnotation::TestAnnotateForm(
 
   blink::WebElement confirmation_password_element =
       document.GetElementById(blink::WebString::FromUTF8("second_password"));
-  // The parser annotation is based on local heuristics, but not server side
-  // prediction. So, the confirmation password element is classified as the
-  // new password.
-  EXPECT_EQ(
-      "new_password_element",
-      confirmation_password_element
-          .GetAttribute(blink::WebString::FromUTF8("pm_parser_annotation"))
-          .Ascii());
 }
 
 TEST_F(PasswordGenerationAgentTest, HiddenSecondPasswordDetectionTest) {

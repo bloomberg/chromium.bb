@@ -64,7 +64,8 @@ class ProcessSummaryTrackController extends TrackController<Config, Data> {
     }
 
     // |resolution| is in s/px we want # ns for 10px window:
-    const bucketSizeNs = Math.round(resolution * 10 * 1e9);
+    // Max value with 1 so we don't end up with resolution 0.
+    const bucketSizeNs = Math.max(1, Math.round(resolution * 10 * 1e9));
     const windowStartNs = Math.floor(startNs / bucketSizeNs) * bucketSizeNs;
     const windowDurNs = Math.max(1, endNs - windowStartNs);
 
@@ -83,7 +84,8 @@ class ProcessSummaryTrackController extends TrackController<Config, Data> {
       bucketSizeNs: number): Promise<Data> {
     const startNs = toNs(start);
     const endNs = toNs(end);
-    const numBuckets = Math.ceil((endNs - startNs) / bucketSizeNs);
+    const numBuckets =
+        Math.min(Math.ceil((endNs - startNs) / bucketSizeNs), LIMIT);
 
     const query = `select
       quantum_ts as bucket,
@@ -99,13 +101,16 @@ class ProcessSummaryTrackController extends TrackController<Config, Data> {
       start,
       end,
       resolution,
-      length: numRows,
+      length: numBuckets,
       bucketSizeSeconds: fromNs(bucketSizeNs),
       utilizations: new Float64Array(numBuckets),
     };
     const cols = rawResult.columns;
     for (let row = 0; row < numRows; row++) {
       const bucket = +cols[0].longValues![row];
+      if (bucket > numBuckets) {
+        continue;
+      }
       summary.utilizations[bucket] = +cols[1].doubleValues![row];
     }
     return summary;

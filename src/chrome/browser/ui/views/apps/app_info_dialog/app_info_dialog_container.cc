@@ -28,7 +28,7 @@
 #include "ui/views/window/native_frame_view.h"
 #include "ui/views/window/non_client_view.h"
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/native_theme/native_theme.h"
@@ -46,7 +46,7 @@ const views::BubbleBorder::Shadow kShadowType =
     views::BubbleBorder::SMALL_SHADOW;
 #endif
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 // The background for App List dialogs, which appears as a rounded rectangle
 // with the same border radius and color as the app list contents.
 class AppListOverlayBackground : public views::Background {
@@ -63,8 +63,7 @@ class AppListOverlayBackground : public views::Background {
 
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(
-        app_list::AppListConfig::instance().contents_background_color());
+    flags.setColor(ash::AppListConfig::instance().contents_background_color());
     canvas->DrawRoundRect(view->GetContentsBounds(),
                           kAppListOverlayBorderRadius, flags);
   }
@@ -72,7 +71,7 @@ class AppListOverlayBackground : public views::Background {
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListOverlayBackground);
 };
-#endif  // ENABLE_APP_LIST
+#endif  // defined(OS_CHROMEOS)
 
 // Base container for modal dialogs. Encases a content view in a modal dialog
 // with an accelerator to close on escape.
@@ -81,32 +80,13 @@ class BaseDialogContainer : public views::DialogDelegateView {
   BaseDialogContainer(std::unique_ptr<views::View> dialog_body,
                       const base::Closure& close_callback)
       : dialog_body_(AddChildView(std::move(dialog_body))),
-        close_callback_(close_callback) {
-    // Since we are using a ClientView instead of a DialogClientView, we need to
-    // manually bind the escape key to close the dialog.
-    ui::Accelerator escape(ui::VKEY_ESCAPE, ui::EF_NONE);
-    AddAccelerator(escape);
-  }
+        close_callback_(close_callback) {}
   ~BaseDialogContainer() override {}
 
  protected:
   views::View* dialog_body() { return dialog_body_; }
 
  private:
-  // Overridden from views::View:
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override {
-    views::DialogDelegateView::ViewHierarchyChanged(details);
-    if (details.is_add && details.child == this)
-      GetFocusManager()->AdvanceFocus(false);
-  }
-
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
-    DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
-    GetWidget()->CloseWithReason(views::Widget::ClosedReason::kEscKeyPressed);
-    return true;
-  }
-
   // Overridden from views::DialogDelegate:
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
@@ -116,9 +96,6 @@ class BaseDialogContainer : public views::DialogDelegateView {
     if (!close_callback_.is_null())
       close_callback_.Run();
   }
-  views::ClientView* CreateClientView(views::Widget* widget) override {
-    return new views::ClientView(widget, GetContentsView());
-  }
 
   views::View* dialog_body_;
   const base::Closure close_callback_;
@@ -126,7 +103,7 @@ class BaseDialogContainer : public views::DialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(BaseDialogContainer);
 };
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 
 // The contents view for an App List Dialog, which covers the entire app list
 // and adds a close button.
@@ -176,7 +153,7 @@ class AppListDialogContainer : public BaseDialogContainer,
   DISALLOW_COPY_AND_ASSIGN(AppListDialogContainer);
 };
 
-#endif  // ENABLE_APP_LIST
+#endif  // defined(OS_CHROMEOS)
 
 // A BubbleFrameView that allows its client view to extend all the way to the
 // top of the dialog, overlapping the BubbleFrameView's close button. This
@@ -241,12 +218,12 @@ class NativeDialogContainer : public BaseDialogContainer {
 
 }  // namespace
 
-#if BUILDFLAG(ENABLE_APP_LIST)
+#if defined(OS_CHROMEOS)
 views::DialogDelegateView* CreateAppListContainerForView(
     std::unique_ptr<views::View> view) {
   return new AppListDialogContainer(std::move(view));
 }
-#endif  // ENABLE_APP_LIST
+#endif  // defined(OS_CHROMEOS)
 
 views::DialogDelegateView* CreateDialogContainerForView(
     std::unique_ptr<views::View> view,

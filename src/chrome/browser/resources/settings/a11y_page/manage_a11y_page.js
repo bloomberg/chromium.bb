@@ -10,7 +10,7 @@
 Polymer({
   is: 'settings-manage-a11y-page',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [WebUIListenerBehavior, settings.RouteOriginBehavior],
 
   properties: {
     /**
@@ -98,17 +98,6 @@ Polymer({
       },
     },
 
-    /**
-     * Whether to show experimental accessibility features.
-     * @private {boolean}
-     */
-    showExperimentalFeatures_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('showExperimentalA11yFeatures');
-      },
-    },
-
     showExperimentalSwitchAccess_: {
       type: Boolean,
       value: function() {
@@ -138,15 +127,34 @@ Polymer({
     },
 
     /**
-     * |hasKeyboard_|starts undefined so observers don't trigger
-     * until it has been populated.
+     * |hasKeyboard_|, |hasMouse_|, and |hasTouchpad_| start undefined so
+     * observers don't trigger until they have been populated.
      * @private
      */
     hasKeyboard_: Boolean,
+
+    /** @private */
+    hasMouse_: Boolean,
+
+    /** @private */
+    hasTouchpad_: Boolean,
   },
+
+  observers: [
+    'pointersChanged_(hasMouse_, hasTouchpad_)',
+  ],
+
+  /** settings.RouteOriginBehavior override */
+  route_: settings.routes.MANAGE_ACCESSIBILITY,
 
   /** @override */
   attached: function() {
+    this.addWebUIListener(
+        'has-mouse-changed', this.set.bind(this, 'hasMouse_'));
+    this.addWebUIListener(
+        'has-touchpad-changed', this.set.bind(this, 'hasTouchpad_'));
+    settings.DevicePageBrowserProxyImpl.getInstance().initializePointers();
+
     this.addWebUIListener(
         'has-hardware-keyboard', this.set.bind(this, 'hasKeyboard_'));
     chrome.send('initializeKeyboardWatcher');
@@ -158,6 +166,25 @@ Polymer({
         'startup-sound-enabled-updated',
         this.updateStartupSoundEnabled_.bind(this));
     chrome.send('getStartupSoundEnabled');
+
+    const r = settings.routes;
+    this.addFocusConfig_(r.MANAGE_TTS_SETTINGS, '#ttsSubpageButton');
+    this.addFocusConfig_(r.MANAGE_CAPTION_SETTINGS, '#captionsSubpageButton');
+    this.addFocusConfig_(
+        r.MANAGE_SWITCH_ACCESS_SETTINGS, '#switchAccessSubpageButton');
+    this.addFocusConfig_(r.DISPLAY, '#displaySubpageButton');
+    this.addFocusConfig_(r.APPEARANCE, '#appearanceSubpageButton');
+    this.addFocusConfig_(r.KEYBOARD, '#keyboardSubpageButton');
+    this.addFocusConfig_(r.POINTERS, '#pointerSubpageButton');
+  },
+
+  /**
+   * @param {boolean} hasMouse
+   * @param {boolean} hasTouchpad
+   * @private
+   */
+  pointersChanged_: function(hasMouse, hasTouchpad) {
+    this.$.pointerSubpageButton.hidden = !hasMouse && !hasTouchpad;
   },
 
   /**
@@ -203,6 +230,11 @@ Polymer({
   /** @private */
   onChromeVoxSettingsTap_: function() {
     chrome.send('showChromeVoxSettings');
+  },
+
+  /** @private */
+  onCaptionsClick_: function() {
+    settings.navigateTo(settings.routes.MANAGE_CAPTION_SETTINGS);
   },
 
   /** @private */

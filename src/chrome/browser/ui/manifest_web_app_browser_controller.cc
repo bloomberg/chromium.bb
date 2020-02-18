@@ -18,12 +18,13 @@
 
 ManifestWebAppBrowserController::ManifestWebAppBrowserController(
     Browser* browser)
-    : AppBrowserController(browser), app_launch_url_(GURL()) {}
+    : AppBrowserController(browser, /*app_id=*/base::nullopt),
+      app_launch_url_(GURL()) {}
 
 ManifestWebAppBrowserController::~ManifestWebAppBrowserController() = default;
 
-base::Optional<std::string> ManifestWebAppBrowserController::GetAppId() const {
-  return base::nullopt;
+bool ManifestWebAppBrowserController::HasMinimalUiButtons() const {
+  return false;
 }
 
 bool ManifestWebAppBrowserController::ShouldShowCustomTabBar() const {

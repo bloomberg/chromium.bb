@@ -44,10 +44,7 @@ std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
 CodecImage::CodecImage() = default;
 
 CodecImage::~CodecImage() {
-  if (now_unused_cb_)
-    std::move(now_unused_cb_).Run(this);
-  if (destruction_cb_)
-    std::move(destruction_cb_).Run(this);
+  NotifyUnused();
 }
 
 void CodecImage::Initialize(
@@ -61,12 +58,21 @@ void CodecImage::Initialize(
   promotion_hint_cb_ = std::move(promotion_hint_cb);
 }
 
-void CodecImage::SetNowUnusedCB(NowUnusedCB now_unused_cb) {
-  now_unused_cb_ = std::move(now_unused_cb);
+void CodecImage::AddUnusedCB(UnusedCB unused_cb) {
+  unused_cbs_.push_back(std::move(unused_cb));
 }
 
-void CodecImage::SetDestructionCB(DestructionCB destruction_cb) {
-  destruction_cb_ = std::move(destruction_cb);
+void CodecImage::NotifyUnused() {
+  // If we haven't done so yet, release the codec output buffer.  Also drop
+  // our reference to the TextureOwner (if any).  In other words, undo anything
+  // that we did in Initialize.
+  ReleaseCodecBuffer();
+  codec_buffer_wait_coordinator_.reset();
+  promotion_hint_cb_ = PromotionHintAggregator::NotifyPromotionHintCB();
+
+  for (auto& cb : unused_cbs_)
+    std::move(cb).Run(this);
+  unused_cbs_.clear();
 }
 
 gfx::Size CodecImage::GetSize() {
@@ -78,6 +84,10 @@ gfx::Size CodecImage::GetSize() {
 
 unsigned CodecImage::GetInternalFormat() {
   return GL_RGBA;
+}
+
+unsigned CodecImage::GetDataType() {
+  return GL_UNSIGNED_BYTE;
 }
 
 CodecImage::BindOrCopy CodecImage::ShouldBindOrCopy() {
@@ -140,6 +150,11 @@ bool CodecImage::ScheduleOverlayPlane(
 
 void CodecImage::NotifyOverlayPromotion(bool promotion,
                                         const gfx::Rect& bounds) {
+  // Use-after-release.  It happens if the renderer crashes before getting
+  // returns from viz.
+  if (!promotion_hint_cb_)
+    return;
+
   if (!codec_buffer_wait_coordinator_ && promotion) {
     // When |CodecImage| is already backed by SurfaceView, and it should be used
     // as overlay.
@@ -231,7 +246,7 @@ bool CodecImage::RenderToFrontBuffer() {
              : RenderToOverlay();
 }
 
-bool CodecImage::RenderToTextureOwnerBackBuffer() {
+bool CodecImage::RenderToTextureOwnerBackBuffer(BlockingMode blocking_mode) {
   DCHECK(codec_buffer_wait_coordinator_);
   DCHECK_NE(phase_, Phase::kInFrontBuffer);
   if (phase_ == Phase::kInBackBuffer)
@@ -241,8 +256,11 @@ bool CodecImage::RenderToTextureOwnerBackBuffer() {
 
   // Wait for a previous frame available so we don't confuse it with the one
   // we're about to release.
-  if (codec_buffer_wait_coordinator_->IsExpectingFrameAvailable())
+  if (codec_buffer_wait_coordinator_->IsExpectingFrameAvailable()) {
+    if (blocking_mode == BlockingMode::kForbidBlocking)
+      return false;
     codec_buffer_wait_coordinator_->WaitForFrameAvailable();
+  }
   if (!output_buffer_->ReleaseToSurface()) {
     phase_ = Phase::kInvalidated;
     return false;
@@ -326,10 +344,25 @@ void CodecImage::ReleaseCodecBuffer() {
 
 std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 CodecImage::GetAHardwareBuffer() {
-  DCHECK(codec_buffer_wait_coordinator_);
+  // It would be nice if this didn't happen, but we can be incorrectly marked
+  // as free when viz is still using us for drawing.  This can happen if the
+  // renderer crashes before receiving returns.  It's hard to catch elsewhere,
+  // so just handle it gracefully here.
+  if (!codec_buffer_wait_coordinator_)
+    return nullptr;
 
   RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestoreIfBound);
   return codec_buffer_wait_coordinator_->texture_owner()->GetAHardwareBuffer();
+}
+
+gfx::Rect CodecImage::GetCropRect() {
+  if (!codec_buffer_wait_coordinator_)
+    return gfx::Rect();
+  return codec_buffer_wait_coordinator_->texture_owner()->GetCropRect();
+}
+
+bool CodecImage::HasMutableState() const {
+  return false;
 }
 
 CodecImageHolder::CodecImageHolder(

@@ -2360,6 +2360,32 @@ TEST_F(GLES2FormatTest, MultiDrawArraysInstancedCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, MultiDrawArraysInstancedBaseInstanceCHROMIUM) {
+  cmds::MultiDrawArraysInstancedBaseInstanceCHROMIUM& cmd =
+      *GetBufferAs<cmds::MultiDrawArraysInstancedBaseInstanceCHROMIUM>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<uint32_t>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14),
+              static_cast<uint32_t>(15), static_cast<uint32_t>(16),
+              static_cast<uint32_t>(17), static_cast<uint32_t>(18),
+              static_cast<uint32_t>(19), static_cast<GLsizei>(20));
+  EXPECT_EQ(static_cast<uint32_t>(
+                cmds::MultiDrawArraysInstancedBaseInstanceCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.firsts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.firsts_shm_offset);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.counts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.counts_shm_offset);
+  EXPECT_EQ(static_cast<uint32_t>(16), cmd.instance_counts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(17), cmd.instance_counts_shm_offset);
+  EXPECT_EQ(static_cast<uint32_t>(18), cmd.baseinstances_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(19), cmd.baseinstances_shm_offset);
+  EXPECT_EQ(static_cast<GLsizei>(20), cmd.drawcount);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, MultiDrawElementsCHROMIUM) {
   cmds::MultiDrawElementsCHROMIUM& cmd =
       *GetBufferAs<cmds::MultiDrawElementsCHROMIUM>();
@@ -2401,6 +2427,39 @@ TEST_F(GLES2FormatTest, MultiDrawElementsInstancedCHROMIUM) {
   EXPECT_EQ(static_cast<uint32_t>(17), cmd.instance_counts_shm_id);
   EXPECT_EQ(static_cast<uint32_t>(18), cmd.instance_counts_shm_offset);
   EXPECT_EQ(static_cast<GLsizei>(19), cmd.drawcount);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest,
+       MultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM) {
+  cmds::MultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM& cmd =
+      *GetBufferAs<
+          cmds::MultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
+                           static_cast<uint32_t>(12), static_cast<uint32_t>(13),
+                           static_cast<GLenum>(14), static_cast<uint32_t>(15),
+                           static_cast<uint32_t>(16), static_cast<uint32_t>(17),
+                           static_cast<uint32_t>(18), static_cast<uint32_t>(19),
+                           static_cast<uint32_t>(20), static_cast<uint32_t>(21),
+                           static_cast<uint32_t>(22), static_cast<GLsizei>(23));
+  EXPECT_EQ(static_cast<uint32_t>(
+                cmds::MultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM::
+                    kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.counts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.counts_shm_offset);
+  EXPECT_EQ(static_cast<GLenum>(14), cmd.type);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.offsets_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(16), cmd.offsets_shm_offset);
+  EXPECT_EQ(static_cast<uint32_t>(17), cmd.instance_counts_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(18), cmd.instance_counts_shm_offset);
+  EXPECT_EQ(static_cast<uint32_t>(19), cmd.basevertices_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(20), cmd.basevertices_shm_offset);
+  EXPECT_EQ(static_cast<uint32_t>(21), cmd.baseinstances_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(22), cmd.baseinstances_shm_offset);
+  EXPECT_EQ(static_cast<GLsizei>(23), cmd.drawcount);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -4153,6 +4212,31 @@ TEST_F(GLES2FormatTest, DispatchComputeIndirect) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, DrawArraysIndirect) {
+  cmds::DrawArraysIndirect& cmd = *GetBufferAs<cmds::DrawArraysIndirect>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLuint>(12));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::DrawArraysIndirect::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, DrawElementsIndirect) {
+  cmds::DrawElementsIndirect& cmd = *GetBufferAs<cmds::DrawElementsIndirect>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
+                           static_cast<GLenum>(12), static_cast<GLuint>(13));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::DrawElementsIndirect::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<GLenum>(12), cmd.type);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, GetProgramInterfaceiv) {
   cmds::GetProgramInterfaceiv& cmd =
       *GetBufferAs<cmds::GetProgramInterfaceiv>();
@@ -4562,6 +4646,24 @@ TEST_F(GLES2FormatTest, DrawArraysInstancedANGLE) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, DrawArraysInstancedBaseInstanceANGLE) {
+  cmds::DrawArraysInstancedBaseInstanceANGLE& cmd =
+      *GetBufferAs<cmds::DrawArraysInstancedBaseInstanceANGLE>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
+                           static_cast<GLint>(12), static_cast<GLsizei>(13),
+                           static_cast<GLsizei>(14), static_cast<GLuint>(15));
+  EXPECT_EQ(
+      static_cast<uint32_t>(cmds::DrawArraysInstancedBaseInstanceANGLE::kCmdId),
+      cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.first);
+  EXPECT_EQ(static_cast<GLsizei>(13), cmd.count);
+  EXPECT_EQ(static_cast<GLsizei>(14), cmd.primcount);
+  EXPECT_EQ(static_cast<GLuint>(15), cmd.baseinstance);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, DrawElementsInstancedANGLE) {
   cmds::DrawElementsInstancedANGLE& cmd =
       *GetBufferAs<cmds::DrawElementsInstancedANGLE>();
@@ -4576,6 +4678,27 @@ TEST_F(GLES2FormatTest, DrawElementsInstancedANGLE) {
   EXPECT_EQ(static_cast<GLenum>(13), cmd.type);
   EXPECT_EQ(static_cast<GLuint>(14), cmd.index_offset);
   EXPECT_EQ(static_cast<GLsizei>(15), cmd.primcount);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, DrawElementsInstancedBaseVertexBaseInstanceANGLE) {
+  cmds::DrawElementsInstancedBaseVertexBaseInstanceANGLE& cmd =
+      *GetBufferAs<cmds::DrawElementsInstancedBaseVertexBaseInstanceANGLE>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
+                           static_cast<GLsizei>(12), static_cast<GLenum>(13),
+                           static_cast<GLuint>(14), static_cast<GLsizei>(15),
+                           static_cast<GLint>(16), static_cast<GLuint>(17));
+  EXPECT_EQ(static_cast<uint32_t>(
+                cmds::DrawElementsInstancedBaseVertexBaseInstanceANGLE::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.mode);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.count);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.type);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.index_offset);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.primcount);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.basevertex);
+  EXPECT_EQ(static_cast<GLuint>(17), cmd.baseinstance);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -5400,6 +5523,17 @@ TEST_F(GLES2FormatTest, ProgramPathFragmentInputGenCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, ContextVisibilityHintCHROMIUM) {
+  cmds::ContextVisibilityHintCHROMIUM& cmd =
+      *GetBufferAs<cmds::ContextVisibilityHintCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLboolean>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::ContextVisibilityHintCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLboolean>(11), cmd.visibility);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, CoverageModulationCHROMIUM) {
   cmds::CoverageModulationCHROMIUM& cmd =
       *GetBufferAs<cmds::CoverageModulationCHROMIUM>();
@@ -5416,17 +5550,6 @@ TEST_F(GLES2FormatTest, BlendBarrierKHR) {
   void* next_cmd = cmd.Set(&cmd);
   EXPECT_EQ(static_cast<uint32_t>(cmds::BlendBarrierKHR::kCmdId),
             cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(GLES2FormatTest, ApplyScreenSpaceAntialiasingCHROMIUM) {
-  cmds::ApplyScreenSpaceAntialiasingCHROMIUM& cmd =
-      *GetBufferAs<cmds::ApplyScreenSpaceAntialiasingCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd);
-  EXPECT_EQ(
-      static_cast<uint32_t>(cmds::ApplyScreenSpaceAntialiasingCHROMIUM::kCmdId),
-      cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }

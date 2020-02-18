@@ -7,17 +7,16 @@ package org.chromium.chrome.browser.banners;
 import android.content.Context;
 import android.text.TextUtils;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -28,7 +27,7 @@ import org.chromium.content_public.browser.WebContents;
  * removal of banners, among other things) is done by the native-side AppBannerManagerAndroid.
  */
 @JNINamespace("banners")
-public class AppBannerManager extends EmptyTabObserver {
+public class AppBannerManager {
     private static final String TAG = "AppBannerManager";
 
     /** Retrieves information about a given package. */
@@ -36,12 +35,6 @@ public class AppBannerManager extends EmptyTabObserver {
 
     /** Whether add to home screen is permitted by the system. */
     private static Boolean sIsSupported;
-
-    /** {@link Tab} this manager is associated with. */
-    private final Tab mTab;
-
-    /** Whether the tab to which this manager is attached to is permitted to show banners. */
-    private boolean mIsEnabledForTab;
 
     /** Pointer to the native side AppBannerManager. */
     private long mNativePointer;
@@ -65,7 +58,7 @@ public class AppBannerManager extends EmptyTabObserver {
      */
     @CalledByNative
     private boolean isEnabledForTab() {
-        return isSupported() && mIsEnabledForTab;
+        return isSupported();
     }
 
     /**
@@ -81,33 +74,18 @@ public class AppBannerManager extends EmptyTabObserver {
      * Constructs an AppBannerManager.
      * @param nativePointer the native-side object that owns this AppBannerManager.
      */
-    private AppBannerManager(Tab tab, long nativePointer) {
-        mTab = tab;
+    private AppBannerManager(long nativePointer) {
         mNativePointer = nativePointer;
-        if (mTab != null) {
-            mTab.addObserver(this);
-            mIsEnabledForTab = mTab.getDelegateFactory().canShowAppBanners();
-        } else {
-            mIsEnabledForTab = isSupported();
-        }
     }
 
     @CalledByNative
-    private static AppBannerManager create(Tab tab, long nativePointer) {
-        return new AppBannerManager(tab, nativePointer);
+    private static AppBannerManager create(long nativePointer) {
+        return new AppBannerManager(nativePointer);
     }
 
     @CalledByNative
     private void destroy() {
         mNativePointer = 0;
-        if (mTab != null) mTab.removeObserver(this);
-    }
-
-    // EmptyTabObserver
-
-    @Override
-    public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-        if (isAttached) mIsEnabledForTab = mTab.getDelegateFactory().canShowAppBanners();
     }
 
     /**
@@ -157,24 +135,6 @@ public class AppBannerManager extends EmptyTabObserver {
         return R.string.menu_add_to_homescreen;
     }
 
-    /** Returns the language option to use for app banners. */
-    // TODO(https://crbug.com/959086): Remove this as it's no longer used.
-    public static int getAppBannerLanguageOption() {
-        int languageOption = AppBannerManagerJni.get().getHomescreenLanguageOption();
-        if (languageOption == LanguageOption.ADD) {
-            return R.string.app_banner_add;
-        } else if (languageOption == LanguageOption.INSTALL) {
-            return R.string.app_banner_install;
-        }
-        return R.string.menu_add_to_homescreen;
-    }
-
-    @VisibleForTesting
-    public AddToHomescreenDialog getAddToHomescreenDialogForTesting() {
-        return AppBannerManagerJni.get().getAddToHomescreenDialogForTesting(
-                mNativePointer, AppBannerManager.this);
-    }
-
     /** Overrides whether the system supports add to home screen. Used in testing. */
     @VisibleForTesting
     public static void setIsSupported(boolean state) {
@@ -217,9 +177,6 @@ public class AppBannerManager extends EmptyTabObserver {
         boolean onAppDetailsRetrieved(long nativeAppBannerManagerAndroid, AppBannerManager caller,
                 AppData data, String title, String packageName, String imageUrl);
         // Testing methods.
-        AddToHomescreenDialog getAddToHomescreenDialogForTesting(
-                long nativeAppBannerManagerAndroid, AppBannerManager caller);
-
         boolean isRunningForTesting(long nativeAppBannerManagerAndroid, AppBannerManager caller);
         void setDaysAfterDismissAndIgnoreToTrigger(int dismissDays, int ignoreDays);
         void setTimeDeltaForTesting(int days);

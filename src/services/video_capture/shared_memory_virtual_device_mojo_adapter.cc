@@ -11,7 +11,8 @@
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/scoped_access_permission_media_to_mojo_adapter.h"
 
@@ -29,13 +30,14 @@ void OnNewBufferAcknowleged(
 namespace video_capture {
 
 SharedMemoryVirtualDeviceMojoAdapter::SharedMemoryVirtualDeviceMojoAdapter(
-    mojom::ProducerPtr producer,
+    mojo::Remote<mojom::Producer> producer,
     bool send_buffer_handles_to_producer_as_raw_file_descriptors)
     : producer_(std::move(producer)),
       send_buffer_handles_to_producer_as_raw_file_descriptors_(
           send_buffer_handles_to_producer_as_raw_file_descriptors),
       buffer_pool_(new media::VideoCaptureBufferPoolImpl(
           std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
+          media::VideoCaptureBufferType::kSharedMemory,
           max_buffer_pool_buffer_count())) {}
 
 SharedMemoryVirtualDeviceMojoAdapter::~SharedMemoryVirtualDeviceMojoAdapter() {
@@ -70,9 +72,10 @@ void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
                                 known_buffer_ids_.end(), buffer_id_to_drop);
     if (entry_iter != known_buffer_ids_.end()) {
       known_buffer_ids_.erase(entry_iter);
-      producer_->OnBufferRetired(buffer_id_to_drop);
-      if (receiver_.is_bound()) {
-        receiver_->OnBufferRetired(buffer_id_to_drop);
+      if (producer_.is_bound())
+        producer_->OnBufferRetired(buffer_id_to_drop);
+      if (video_frame_handler_.is_bound()) {
+        video_frame_handler_->OnBufferRetired(buffer_id_to_drop);
       }
     }
   }
@@ -84,12 +87,12 @@ void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
   }
 
   if (!base::Contains(known_buffer_ids_, buffer_id)) {
-    if (receiver_.is_bound()) {
+    if (video_frame_handler_.is_bound()) {
       media::mojom::VideoBufferHandlePtr buffer_handle =
           media::mojom::VideoBufferHandle::New();
       buffer_handle->set_shared_buffer_handle(
           buffer_pool_->DuplicateAsMojoBuffer(buffer_id));
-      receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
+      video_frame_handler_->OnNewBuffer(buffer_id, std::move(buffer_handle));
     }
     known_buffer_ids_.push_back(buffer_id);
 
@@ -109,9 +112,11 @@ void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
     // because the |producer_| and the |callback| are bound to different
     // message pipes, so the order for calls to |producer_| and |callback|
     // is not guaranteed.
-    producer_->OnNewBuffer(buffer_id, std::move(buffer_handle),
-                           base::BindOnce(&OnNewBufferAcknowleged,
-                                          base::Passed(&callback), buffer_id));
+    if (producer_.is_bound())
+      producer_->OnNewBuffer(
+          buffer_id, std::move(buffer_handle),
+          base::BindOnce(&OnNewBufferAcknowleged, base::Passed(&callback),
+                         buffer_id));
     return;
   }
   std::move(callback).Run(buffer_id);
@@ -127,32 +132,32 @@ void SharedMemoryVirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
   }
 
   // Notify receiver if there is one.
-  if (receiver_.is_bound()) {
+  if (video_frame_handler_.is_bound()) {
     buffer_pool_->HoldForConsumers(buffer_id, 1 /* num_clients */);
     auto access_permission = std::make_unique<
         media::ScopedBufferPoolReservation<media::ConsumerReleaseTraits>>(
         buffer_pool_, buffer_id);
-    mojom::ScopedAccessPermissionPtr access_permission_proxy;
-    mojo::MakeStrongBinding<mojom::ScopedAccessPermission>(
+    mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission_proxy;
+    mojo::MakeSelfOwnedReceiver<mojom::ScopedAccessPermission>(
         std::make_unique<ScopedAccessPermissionMediaToMojoAdapter>(
             std::move(access_permission)),
-        mojo::MakeRequest(&access_permission_proxy));
-    receiver_->OnFrameReadyInBuffer(buffer_id, 0 /* frame_feedback_id */,
-                                    std::move(access_permission_proxy),
-                                    std::move(frame_info));
+        access_permission_proxy.InitWithNewPipeAndPassReceiver());
+    video_frame_handler_->OnFrameReadyInBuffer(
+        buffer_id, 0 /* frame_feedback_id */,
+        std::move(access_permission_proxy), std::move(frame_info));
   }
   buffer_pool_->RelinquishProducerReservation(buffer_id);
 }
 
 void SharedMemoryVirtualDeviceMojoAdapter::Start(
     const media::VideoCaptureParams& requested_settings,
-    mojom::ReceiverPtr receiver) {
+    mojo::PendingRemote<mojom::VideoFrameHandler> handler) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  receiver.set_connection_error_handler(base::BindOnce(
+  video_frame_handler_.Bind(std::move(handler));
+  video_frame_handler_.set_disconnect_handler(base::BindOnce(
       &SharedMemoryVirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose,
       base::Unretained(this)));
-  receiver_ = std::move(receiver);
-  receiver_->OnStarted();
+  video_frame_handler_->OnStarted();
 
   // Notify receiver of known buffers */
   for (auto buffer_id : known_buffer_ids_) {
@@ -160,7 +165,7 @@ void SharedMemoryVirtualDeviceMojoAdapter::Start(
         media::mojom::VideoBufferHandle::New();
     buffer_handle->set_shared_buffer_handle(
         buffer_pool_->DuplicateAsMojoBuffer(buffer_id));
-    receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
+    video_frame_handler_->OnNewBuffer(buffer_id, std::move(buffer_handle));
   }
 }
 
@@ -191,15 +196,15 @@ void SharedMemoryVirtualDeviceMojoAdapter::TakePhoto(
 
 void SharedMemoryVirtualDeviceMojoAdapter::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!receiver_.is_bound())
+  if (!video_frame_handler_.is_bound())
     return;
   // Unsubscribe from connection error callbacks.
-  receiver_.set_connection_error_handler(base::OnceClosure());
+  video_frame_handler_.set_disconnect_handler(base::OnceClosure());
   // Send out OnBufferRetired events and OnStopped.
   for (auto buffer_id : known_buffer_ids_)
-    receiver_->OnBufferRetired(buffer_id);
-  receiver_->OnStopped();
-  receiver_.reset();
+    video_frame_handler_->OnBufferRetired(buffer_id);
+  video_frame_handler_->OnStopped();
+  video_frame_handler_.reset();
 }
 
 void SharedMemoryVirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose() {

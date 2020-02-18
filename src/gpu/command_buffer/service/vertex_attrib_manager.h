@@ -86,6 +86,16 @@ class GPU_GLES2_EXPORT VertexAttrib {
     return divisor_ ? ((primcount - 1) / divisor_) : max_vertex_accessed;
   }
 
+  // For performance issue we are having separate overloading functions
+  // which takes in basevertex and baseinstance
+  GLuint MaxVertexAccessed(GLsizei primcount,
+                           GLuint max_vertex_accessed,
+                           GLint basevertex,
+                           GLuint baseinstance) const {
+    return divisor_ ? ((primcount - 1) / divisor_) + baseinstance
+                    : max_vertex_accessed + basevertex;
+  }
+
   bool is_client_side_array() const {
     return is_client_side_array_;
   }
@@ -292,15 +302,16 @@ class GPU_GLES2_EXPORT VertexAttribManager
     return vertex_attribs_.size();
   }
 
-  bool ValidateBindings(
-      const char* function_name,
-      GLES2Decoder* decoder,
-      FeatureInfo* feature_info,
-      BufferManager* buffer_manager,
-      Program* current_program,
-      GLuint max_vertex_accessed,
-      bool instanced,
-      GLsizei primcount);
+  bool ValidateBindings(const char* function_name,
+                        GLES2Decoder* decoder,
+                        FeatureInfo* feature_info,
+                        BufferManager* buffer_manager,
+                        Program* current_program,
+                        GLuint max_vertex_accessed,
+                        bool instanced,
+                        GLsizei primcount,
+                        GLint basevertex,
+                        GLuint baseinstance);
 
   void SetIsBound(bool is_bound);
 

@@ -16,9 +16,9 @@ import json
 import os
 import pprint
 import tempfile
-import urlparse
 
-import six
+import httplib2
+from six.moves import urllib
 
 import chromite.lib.cros_logging as log
 from chromite.lib import cache
@@ -26,8 +26,6 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import cros_build_lib
 from chromite.utils import memoize
-
-import httplib2
 
 # pylint: disable=line-too-long
 # CIPD client to download.
@@ -73,7 +71,7 @@ def _ChromeInfraRequest(method, request):
   if resp.status != 200:
     raise Error('Got HTTP %d from CIPD %r: %s' % (resp.status, method, body))
   try:
-    return json.loads(body.lstrip(")]}'\n"))
+    return json.loads(body.lstrip(b")]}'\n"))
   except ValueError:
     raise Error('Bad response from CIPD server:\n%s' % (body,))
 
@@ -108,7 +106,7 @@ def _DownloadCIPD(instance_sha256):
     raise Error('Got a %d response from Google Storage.' % response.status)
 
   # Check SHA256 matches what server expects.
-  digest = six.text_type(hashlib.sha256(binary).hexdigest())
+  digest = hashlib.sha256(binary).hexdigest()
   for alias in resp['clientRefAliases']:
     if alias['hashAlgo'] == 'SHA256':
       if digest != alias['hexDigest']:
@@ -124,12 +122,12 @@ def _DownloadCIPD(instance_sha256):
 
 class CipdCache(cache.RemoteCache):
   """Supports caching of the CIPD download."""
-  def _Fetch(self, key, path):
-    instance_sha256 = urlparse.urlparse(key).netloc
+  def _Fetch(self, url, local_path):
+    instance_sha256 = urllib.parse.urlparse(url).netloc
     binary = _DownloadCIPD(instance_sha256)
     log.info('Fetched CIPD package %s:%s', CIPD_CLIENT_PACKAGE, instance_sha256)
-    osutils.WriteFile(path, binary)
-    os.chmod(path, 0o755)
+    osutils.WriteFile(local_path, binary, mode='wb')
+    os.chmod(local_path, 0o755)
 
 
 def GetCIPDFromCache():
@@ -162,9 +160,9 @@ def GetInstanceID(cipd_path, package, version, service_account_json=None):
   if service_account_json:
     service_account_flag = ['-service-account-json', service_account_json]
 
-  result = cros_build_lib.RunCommand(
+  result = cros_build_lib.run(
       [cipd_path, 'resolve', package, '-version', version] +
-      service_account_flag, capture_output=True)
+      service_account_flag, capture_output=True, encoding='utf-8')
   # An example output of resolve is like:
   #   Packages:\n package:instance_id
   return result.output.splitlines()[-1].split(':')[-1]
@@ -192,10 +190,10 @@ def InstallPackage(cipd_path, package, instance_id, destination,
     service_account_flag = ['-service-account-json', service_account_json]
 
   with tempfile.NamedTemporaryFile() as f:
-    f.write('%s %s' % (package, instance_id))
+    f.write(('%s %s' % (package, instance_id)).encode('utf-8'))
     f.flush()
 
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         [cipd_path, 'ensure', '-root', destination, '-list', f.name]
         + service_account_flag,
         capture_output=True)
@@ -227,7 +225,7 @@ def CreatePackage(cipd_path, package, in_dir, tags, refs,
   if cred_path:
     args.extend(['-service-account-json', cred_path])
 
-  cros_build_lib.RunCommand(args, capture_output=True)
+  cros_build_lib.run(args, capture_output=True)
 
 
 def BuildPackage(cipd_path, package, in_dir, outfile):
@@ -245,7 +243,7 @@ def BuildPackage(cipd_path, package, in_dir, outfile):
       '-in', in_dir,
       '-out', outfile,
   ]
-  cros_build_lib.RunCommand(args, capture_output=True)
+  cros_build_lib.run(args, capture_output=True)
 
 
 def RegisterPackage(cipd_path, package_file, tags, refs, cred_path=None):
@@ -265,4 +263,4 @@ def RegisterPackage(cipd_path, package_file, tags, refs, cred_path=None):
     args.extend(['-ref', ref])
   if cred_path:
     args.extend(['-service-account-json', cred_path])
-  cros_build_lib.RunCommand(args, capture_output=True)
+  cros_build_lib.run(args, capture_output=True)

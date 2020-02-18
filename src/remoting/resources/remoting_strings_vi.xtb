@@ -6,6 +6,7 @@
 <translation id="1050693411695664090">Kém</translation>
 <translation id="1152528166145813711">Chọn…</translation>
 <translation id="1199593201721843963">Tắt kết nối từ xa</translation>
+<translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1291443878853470558">Bạn phải bật kết nối từ xa nếu bạn muốn sử dụng Kết nối từ xa trên Chrome để truy cập vào máy tính này.</translation>
 <translation id="1297009705180977556">Lỗi khi kết nối với <ph name="HOSTNAME" /></translation>
 <translation id="1324095856329524885">(tính năng này chưa khả dụng đối với máy tính của bạn)</translation>
@@ -19,6 +20,7 @@
 <translation id="1624185583382384493">Chrome Remote Desktop hiện đã có trên web. Hãy dùng thử <ph name="LINK_BEGIN" />ứng dụng web<ph name="LINK_END" /> của chúng tôi — ứng dụng nhanh và miễn phí với nhiều tính năng hơn nữa, trong đó đã cải thiện khả năng hỗ trợ nhiều màn hình.</translation>
 <translation id="1643640058022401035">Thoát khỏi trang này sẽ kết thúc phiên Kết nối từ xa trên Chrome của bạn.</translation>
 <translation id="1654128982815600832">Đang bật kết nối từ xa cho máy tính này…</translation>
+<translation id="1697532407822776718">Bạn đã hoàn tất!</translation>
 <translation id="170207782578677537">Không thể đăng ký máy tính này.</translation>
 <translation id="174018511426417793">Bạn chưa đăng ký máy tính nào. Để bật kết nối từ xa với một máy tính, hãy cài đặt Chrome Remote Desktop trên máy tính đó và nhấp “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Đang kết nối...</translation>
@@ -37,6 +39,11 @@
 <translation id="2078880767960296260">Quá trình lưu trữ trên máy chủ</translation>
 <translation id="20876857123010370">Chế độ bàn di chuột</translation>
 <translation id="2089514346391228378">Kết nối từ xa cho máy tính này đã được bật.</translation>
+<translation id="2198363917176605566">Để sử dụng <ph name="PRODUCT_NAME" />, bạn cần cấp quyền 'Ghi màn hình' để có thể gửi nội dung trên màn hình của máy Mac này tới máy từ xa.
+
+Để cấp quyền này, hãy nhấp vào nút '<ph name="BUTTON_NAME" />' bên dưới để mở ngăn tùy chọn 'Ghi màn hình', sau đó chọn hộp bên cạnh '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Nếu đã chọn '<ph name="SERVICE_SCRIPT_NAME" />', hãy bỏ chọn rồi chọn lại hộp này.</translation>
 <translation id="2208514473086078157">Cài đặt chính sách không cho phép chia sẻ máy tính này dưới dạng máy chủ lưu trữ Chrome Remote Desktop. Liên hệ với quản trị viên hệ thống của bạn để được hỗ trợ.</translation>
 <translation id="2220529011494928058">Báo cáo sự cố</translation>
 <translation id="2221097377466213233">Sử dụng phím Ctrl bên phải cho phím Win (⌘ trên máy Mac)</translation>
@@ -48,17 +55,16 @@
 <translation id="2314101195544969792">Phiên <ph name="APPLICATION_NAME" /> của bạn đã không hoạt động một thời gian và sẽ sớm bị ngắt kết nối.</translation>
 <translation id="2317666076142640974">Hãy xem trước <ph name="LINK_BEGIN" />ứng dụng web Chrome Remote Desktop<ph name="LINK_END" /> mới. Chúng tôi rất mong nhận được ý kiến phản hồi của bạn.</translation>
 <translation id="2320166752086256636">Ẩn bàn phím</translation>
-<translation id="2332192922827071008">Mở Tùy chọn</translation>
 <translation id="2353140552984634198">Bạn có thể truy cập an toàn vào máy tính này bằng Kết nối từ xa trên Chrome.</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2366718077645204424">Không thể kết nối với máy chủ. Điều này có thể do cấu hình của mạng bạn đang sử dụng.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Nhìn thấy trực tuyến lần cuối <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ứng dụng này không được hỗ trợ nữa. Để đảm bảo bạn sẽ nhận được các tính năng và bản cập nhật bảo mật mới nhất, hãy sử dụng <ph name="LINK_BEGIN" />ứng dụng web Chrome Remote Desktop<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Giúp chúng tôi cải tiến Chrome Remote Desktop bằng cách cho phép chúng tôi thu thập số liệu thống kê sử dụng và báo cáo sự cố.</translation>
+<translation id="2504109125669302160">Cấp quyền 'Hỗ trợ tiếp cận' cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="2509394361235492552">Đã kết nối với <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">LƯU Ý: Nhằm đảm bảo rằng tất cả các phím tắt đều khả dụng, bạn có thể định cấu hình Chrome Remote Desktop để ‘Mở dưới dạng cửa sổ’.</translation>
 <translation id="2540992418118313681">Bạn có muốn chia sẻ máy tính này cho một người dùng khác xem và kiểm soát không?</translation>
-<translation id="254771646005658629">Cho phép người dùng từ xa điều khiển máy Mac này</translation>
 <translation id="2579271889603567289">Máy chủ đã bị lỗi hoặc không khởi động được.</translation>
 <translation id="2599300881200251572">Dịch vụ này kích hoạt các kết nối đến từ ứng dụng khách Chrome Remote Desktop.</translation>
 <translation id="2647232381348739934">Dịch vụ kết nối từ xa trên Chrome</translation>
@@ -136,6 +142,8 @@
 <translation id="4405930547258349619">Thư viện trung tâm</translation>
 <translation id="4430435636878359009">Tắt kết nối từ xa với máy tính này</translation>
 <translation id="4430915108080446161">Đang tạo mã truy cập…</translation>
+<translation id="443560535555262820">Mở tùy chọn Hỗ trợ tiếp cận</translation>
+<translation id="4450893287417543264">Không hiển thị lại</translation>
 <translation id="4472575034687746823">Bắt đầu</translation>
 <translation id="4481276415609939789">Bạn chưa đăng ký máy tính nào. Để bật kết nối từ xa với một máy tính, hãy cài đặt Kết nối từ xa trên Chrome trên máy tính đó và nhấp “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="4513946894732546136">Phản hồi</translation>
@@ -173,6 +181,7 @@
 <translation id="518094545883702183">Thông tin này chỉ được sử dụng để chẩn đoán sự cố bạn đang báo cáo, chỉ khả dụng đối với người điều tra báo cáo của bạn và được giữ lại tối đa 30 ngày.</translation>
 <translation id="5204575267916639804">Câu hỏi thường gặp</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
+<translation id="5234764350956374838">Loại bỏ</translation>
 <translation id="5254120496627797685">Thoát khỏi trang này sẽ kết thúc phiên Chrome Remote Desktop của bạn.</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="5327248766486351172">Tên</translation>
@@ -183,11 +192,6 @@
 <translation id="5419185025274123272">Không thể đặt lại ứng dụng. Bạn sẽ vẫn có thể gửi báo cáo lỗi.</translation>
 <translation id="5419418238395129586">Lần trực tuyến gần đây nhất: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Máy chủ đã tắt.</translation>
-<translation id="5463789431147491241">Để sử dụng <ph name="PRODUCT_NAME" /> trên máy Mac này, hãy làm theo các bước sau:
-
-Chọn nút '<ph name="BUTTON_NAME" />' dưới đây. Trong phần tùy chọn Bảo mật và quyền riêng tư, hãy chọn hộp bên cạnh '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Nếu bạn đã chọn '<ph name="SERVICE_SCRIPT_NAME" />', hãy bỏ chọn hộp này rồi chọn lại.</translation>
 <translation id="5510035215749041527">Ngắt kết nối ngay bây giờ</translation>
 <translation id="5593560073513909978">Dịch vụ tạm thời không khả dụng. Vui lòng thử lại sau.</translation>
 <translation id="5601503069213153581">Mã PIN</translation>
@@ -218,12 +222,18 @@ Nếu bạn đã chọn '<ph name="SERVICE_SCRIPT_NAME" />', hãy bỏ chọn h�
 <translation id="6198252989419008588">Thay đổi mã PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (lỗi thời)</translation>
 <translation id="6221358653751391898">Bạn chưa đăng nhập vào Chrome. Vui lòng đăng nhập và thử lại.</translation>
+<translation id="6223301979382383752">Mở tùy chọn Ghi màn hình</translation>
 <translation id="6227369581881558336">Chrome Remote Desktop hiện có trên web với nhiều tính năng mới, bao gồm cả tính năng truyền tệp! Hãy dùng thử <ph name="LINK_BEGIN" />ứng dụng web<ph name="LINK_END" /> của chúng tôi.</translation>
 <translation id="6284412385303060032">Máy chủ chạy trên màn hình logic của bảng điều khiển đã tắt để hỗ trợ chế độ màn bằng cách chuyển sang máy chủ chạy trong phiên dành riêng cho người dùng.</translation>
 <translation id="629730747756840877">Tài khoản</translation>
 <translation id="6304318647555713317">Ứng dụng khách</translation>
 <translation id="6381670701864002291">Vấn đề khác.</translation>
 <translation id="6398765197997659313">Thoát khỏi chế độ toàn màn hình</translation>
+<translation id="6411861157501911556">Để sử dụng <ph name="PRODUCT_NAME" />, bạn cần cấp quyền 'Hỗ trợ tiếp cận' để máy Mac này có thể nhận nội dung từ máy từ xa.
+
+Để cấp quyền này, hãy nhấp vào nút '<ph name="BUTTON_NAME" />' bên dưới để mở ngăn tùy chọn 'Hỗ trợ tiếp cận' rồi chọn hộp bên cạnh '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Nếu đã chọn '<ph name="SERVICE_SCRIPT_NAME" />', hãy bỏ chọn rồi chọn lại hộp này.</translation>
 <translation id="6441316101718669559">Tích hợp máy tính để bàn không được hỗ trợ trên nền tảng này. Bạn sẽ vẫn có thể sử dụng ứng dụng nhưng trải nghiệm người dùng sẽ bị giảm.</translation>
 <translation id="652218476070540101">Mã PIN cho máy tính này đang được cập nhật…</translation>
 <translation id="6527303717912515753">Chia sẻ</translation>
@@ -304,6 +314,7 @@ Nếu bạn đã chọn '<ph name="SERVICE_SCRIPT_NAME" />', hãy bỏ chọn h�
 <translation id="837021510621780684">Từ máy tính này</translation>
 <translation id="8383794970363966105">Để sử dụng Kết nối từ xa trên Chrome, bạn cần thêm một tài khoản Google cho thiết bị của mình.</translation>
 <translation id="8386846956409881180">Máy chủ được định cấu hình bằng thông tin xác thực OAuth không hợp lệ.</translation>
+<translation id="8397385476380433240">Cấp quyền cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="8406498562923498210">Chọn một phiên để chạy trong môi trường Chrome Remote Desktop. (Xin lưu ý rằng một số loại phiên có thể chưa chạy được đồng thời trong Chrome Remote Desktop và trên bảng điều khiển cục bộ.)</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8445362773033888690">Xem trong Cửa hàng Google Play</translation>
@@ -330,6 +341,7 @@ Nếu bạn đã chọn '<ph name="SERVICE_SCRIPT_NAME" />', hãy bỏ chọn h�
 <translation id="9149580767411232853">Duy trì hiển thị toàn bộ màn hình nền từ xa</translation>
 <translation id="9149992051684092333">Để bắt đầu chia sẻ máy tính của bạn, hãy cung cấp mã truy cập bên dưới cho người sẽ trợ giúp bạn.</translation>
 <translation id="916856682307586697">Chạy XSession mặc định</translation>
+<translation id="9187628920394877737">Cấp quyền 'Ghi màn hình' cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="9188433529406846933">Cho phép</translation>
 <translation id="9213184081240281106">Cấu hình máy chủ không hợp lệ.</translation>
 <translation id="951991426597076286">Từ chối</translation>

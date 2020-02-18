@@ -32,6 +32,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_RESOURCE_TIMING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_RESOURCE_TIMING_H_
 
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/timing/performance_mark_or_measure.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/performance_server_timing.h"
@@ -43,7 +47,9 @@ namespace blink {
 class ResourceLoadTiming;
 struct WebResourceTimingInfo;
 
-class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
+class CORE_EXPORT PerformanceResourceTiming
+    : public PerformanceEntry,
+      public mojom::blink::WorkerTimingContainer {
   DEFINE_WRAPPERTYPEINFO();
   friend class PerformanceResourceTimingTest;
 
@@ -54,9 +60,12 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
                             base::TimeTicks time_origin,
                             bool is_secure_context,
                             const WebVector<WebServerTimingInfo>&);
-  PerformanceResourceTiming(const WebResourceTimingInfo&,
-                            base::TimeTicks time_origin,
-                            const AtomicString& initiator_type);
+  PerformanceResourceTiming(
+      const WebResourceTimingInfo&,
+      base::TimeTicks time_origin,
+      const AtomicString& initiator_type,
+      mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
+          worker_timing_receiver);
   ~PerformanceResourceTiming() override;
 
   AtomicString entryType() const override;
@@ -81,7 +90,11 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   uint64_t encodedBodySize() const;
   uint64_t decodedBodySize() const;
   const HeapVector<Member<PerformanceServerTiming>>& serverTiming() const;
+  const HeapVector<Member<PerformanceEntry>>& workerTiming() const;
 
+  // Implements blink::mojom::blink::WorkerTimingContainer
+  void AddPerformanceEntry(
+      mojom::blink::PerformanceMarkOrMeasurePtr entry) override;
   void Trace(blink::Visitor*) override;
 
  protected:
@@ -113,15 +126,25 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   scoped_refptr<ResourceLoadTiming> timing_;
   base::TimeTicks last_redirect_end_time_;
   base::TimeTicks response_end_;
+  mojom::RequestContextType context_type_ =
+      mojom::RequestContextType::UNSPECIFIED;
   uint64_t transfer_size_ = 0;
   uint64_t encoded_body_size_ = 0;
   uint64_t decoded_body_size_ = 0;
   bool did_reuse_connection_ = false;
+  // Do not access allow_timing_details_ directly.  Instead use the
+  // AllowTimingDetails() method which is overridden by some sub-classes.
   bool allow_timing_details_ = false;
   bool allow_redirect_details_ = false;
   bool allow_negative_value_ = false;
   bool is_secure_context_ = false;
   HeapVector<Member<PerformanceServerTiming>> server_timing_;
+  HeapVector<Member<PerformanceEntry>> worker_timing_;
+
+  // Used for getting entries from a service worker to add to
+  // PerformanceResourceTiming#workerTiming. Null when no service worker handles
+  // a request for the resource.
+  mojo::Receiver<mojom::blink::WorkerTimingContainer> worker_timing_receiver_;
 };
 
 }  // namespace blink

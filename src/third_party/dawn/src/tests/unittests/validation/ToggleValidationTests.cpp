@@ -47,7 +47,7 @@ TEST_F(ToggleValidationTest, OverrideToggleUsage) {
         dawn_native::DeviceDescriptor descriptor;
         descriptor.forceEnabledToggles.push_back(kValidToggleName);
 
-        DawnDevice deviceWithToggle = adapter.CreateDevice(&descriptor);
+        WGPUDevice deviceWithToggle = adapter.CreateDevice(&descriptor);
         std::vector<const char*> toggleNames = dawn_native::GetTogglesUsed(deviceWithToggle);
         bool validToggleExists = false;
         for (const char* toggle : toggleNames) {
@@ -64,7 +64,7 @@ TEST_F(ToggleValidationTest, OverrideToggleUsage) {
         dawn_native::DeviceDescriptor descriptor;
         descriptor.forceEnabledToggles.push_back(kInvalidToggleName);
 
-        DawnDevice deviceWithToggle = adapter.CreateDevice(&descriptor);
+        WGPUDevice deviceWithToggle = adapter.CreateDevice(&descriptor);
         std::vector<const char*> toggleNames = dawn_native::GetTogglesUsed(deviceWithToggle);
         bool InvalidToggleExists = false;
         for (const char* toggle : toggleNames) {
@@ -74,5 +74,21 @@ TEST_F(ToggleValidationTest, OverrideToggleUsage) {
         }
         ASSERT_EQ(InvalidToggleExists, false);
     }
+}
+
+TEST_F(ToggleValidationTest, TurnOffVsyncWithToggle) {
+    const char* kValidToggleName = "turn_off_vsync";
+    dawn_native::DeviceDescriptor descriptor;
+    descriptor.forceEnabledToggles.push_back(kValidToggleName);
+
+    WGPUDevice deviceWithToggle = adapter.CreateDevice(&descriptor);
+    std::vector<const char*> toggleNames = dawn_native::GetTogglesUsed(deviceWithToggle);
+    bool validToggleExists = false;
+    for (const char* toggle : toggleNames) {
+        if (strcmp(toggle, kValidToggleName) == 0) {
+            validToggleExists = true;
+        }
+    }
+    ASSERT_EQ(validToggleExists, true);
 }
 }  // anonymous namespace

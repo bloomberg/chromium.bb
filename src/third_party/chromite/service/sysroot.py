@@ -78,7 +78,7 @@ class SetupBoardRunConfig(object):
     else:
       args += ['--nousepkg']
 
-    if self.jobs > 0:
+    if self.jobs:
       args += ['--jobs', str(self.jobs)]
 
     if not self.update_toolchain:
@@ -91,7 +91,7 @@ class BuildPackagesRunConfig(object):
   """Value object to hold build packages run configs."""
 
   def __init__(self, event_file=None, usepkg=True, install_debug_symbols=False,
-               packages=None, use_flags=None):
+               packages=None, use_flags=None, use_goma=False):
     """Init method.
 
     Args:
@@ -103,19 +103,26 @@ class BuildPackagesRunConfig(object):
       packages (list[str]|None): The list of packages to install, by default
         install all packages for the target.
       use_flags (list[str]|None): A list of use flags to set.
+      use_goma (bool): Whether to enable goma.
     """
     self.event_file = event_file
     self.usepkg = usepkg
     self.install_debug_symbols = install_debug_symbols
     self.packages = packages
     self.use_flags = use_flags
+    self.use_goma = use_goma
 
   def GetBuildPackagesArgs(self):
     """Get the build_packages script arguments."""
     # Defaults for the builder.
     # TODO(saklein): Parametrize/rework the defaults when build_packages is
     #   ported to chromite.
-    args = ['--accept_licenses', '@CHROMEOS', '--skip_chroot_upgrade']
+    args = [
+        '--accept_licenses',
+        '@CHROMEOS',
+        '--skip_chroot_upgrade',
+        '--nouse_any_chrome',
+    ]
 
     if self.event_file:
       args.append('--withevents')
@@ -128,6 +135,9 @@ class BuildPackagesRunConfig(object):
     if self.install_debug_symbols:
       args.append('--withdebugsymbols')
 
+    if self.use_goma:
+      args.append('--run_goma')
+
     if self.packages:
       args.extend(self.packages)
 
@@ -135,7 +145,7 @@ class BuildPackagesRunConfig(object):
 
   def HasUseFlags(self):
     """Check if we have use flags."""
-    return len(self.use_flags) > 0
+    return bool(self.use_flags)
 
   def GetUseFlags(self):
     """Get the use flags as a single string."""
@@ -151,6 +161,15 @@ class BuildPackagesRunConfig(object):
       return ' '.join(use_flags)
 
     return None
+
+  def GetEnv(self):
+    """Get the env from this config."""
+    env = {}
+    if self.HasUseFlags():
+      env['USE'] = self.GetUseFlags()
+
+    return env
+
 
 def SetupBoard(target, accept_licenses=None, run_configs=None):
   """Run the full process to setup a board's sysroot.
@@ -214,14 +233,14 @@ def Create(target, run_configs, accept_licenses):
                      '--toolchain_boards', target.name]
     update_chroot += run_configs.GetUpdateChrootArgs()
     try:
-      cros_build_lib.RunCommand(update_chroot)
+      cros_build_lib.run(update_chroot)
     except cros_build_lib.RunCommandError:
       raise UpdateChrootError('Error occurred while updating the chroot.'
                               'See the logs for more information.')
 
   # Delete old sysroot to force a fresh start if requested.
   if sysroot.Exists() and run_configs.force:
-    sysroot.Delete(async=True)
+    sysroot.Delete(background=True)
 
   # Step 1: Create folders.
   # Dependencies: None.
@@ -250,6 +269,29 @@ def Create(target, run_configs, accept_licenses):
 
   return sysroot
 
+
+def CreateSimpleChromeSysroot(target, use_flags):
+  """Create a sysroot for SimpleChrome to use.
+
+  Args:
+    target (build_target.BuildTarget): The build target being installed for the
+      sysroot being created.
+    use_flags (list[string]|None): Additional USE flags for building chrome.
+    output_directory (string): Where to put output files.
+
+  Returns:
+    Path to the sysroot tar file.
+  """
+  extra_env = {}
+  if use_flags:
+    extra_env['USE'] = ' '.join(use_flags)
+  with osutils.TempDir(delete=False) as tempdir:
+    cmd = ['cros_generate_sysroot', '--out-dir', tempdir, '--board',
+           target, '--deps-only', '--package', constants.CHROME_CP]
+    cros_build_lib.RunCommand(cmd, cwd=constants.SOURCE_ROOT, enter_chroot=True,
+                              extra_env=extra_env)
+    sysroot_tar_path = os.path.join(tempdir, constants.CHROME_SYSROOT_TAR)
+    return sysroot_tar_path
 
 def InstallToolchain(target, sysroot, run_configs):
   """Update the toolchain to a sysroot.
@@ -294,24 +336,20 @@ def BuildPackages(target, sysroot, run_configs):
          '--board', target.name, '--board_root', sysroot.path]
   cmd += run_configs.GetBuildPackagesArgs()
 
-  with osutils.TempDir(base_dir='/tmp') as tempdir:
-    extra_env = {
-        constants.CROS_METRICS_DIR_ENVVAR: tempdir,
-        'USE_NEW_PARALLEL_EMERGE': '1',
-    }
-
-    if run_configs.use_flags:
-      extra_env['USE'] = run_configs.GetUseFlags()
+  extra_env = run_configs.GetEnv()
+  extra_env['USE_NEW_PARALLEL_EMERGE'] = '1'
+  with osutils.TempDir() as tempdir:
+    extra_env[constants.CROS_METRICS_DIR_ENVVAR] = tempdir
 
     try:
       # REVIEW: discuss which dimensions to flatten into the metric
       # name other than target.name...
       with metrics.timer('service.sysroot.BuildPackages.RunCommand'):
-        cros_build_lib.RunCommand(cmd, extra_env=extra_env)
+        cros_build_lib.run(cmd, extra_env=extra_env)
     except cros_build_lib.RunCommandError as e:
       failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
       raise sysroot_lib.PackageInstallError(
-          e.message, e.result, exception=e, packages=failed_pkgs)
+          str(e), e.result, exception=e, packages=failed_pkgs)
 
 
 def _CreateSysrootSkeleton(sysroot):
@@ -402,7 +440,7 @@ def _RefreshWorkonSymlinks(target, sysroot):
 def _ChooseProfile(target, sysroot):
   """Helper function to execute cros_choose_profile.
 
-  TODO(saklein) Refactor cros_choose_profile to avoid needing the RunCommand
+  TODO(saklein) Refactor cros_choose_profile to avoid needing the run
   call here, and by extension this method all together.
 
   Args:
@@ -417,7 +455,7 @@ def _ChooseProfile(target, sysroot):
     # Chooses base by default, only override when we have a passed param.
     choose_profile += ['--profile', target.profile]
   try:
-    cros_build_lib.RunCommand(choose_profile, print_cmd=False)
+    cros_build_lib.run(choose_profile, print_cmd=False)
   except cros_build_lib.RunCommandError as e:
     logging.error('Selecting profile failed, removing incomplete board '
                   'directory!')

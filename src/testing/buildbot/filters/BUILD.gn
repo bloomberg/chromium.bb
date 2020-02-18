@@ -16,6 +16,14 @@
 # $ for i in $(ls -1 testing/buildbot/filters/*.browser_tests.*filter ); \
 #   do echo "    \"//$i\","; done | sort
 
+source_set("android_browsertests_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/bfcache.android_browsertests.filter",
+  ]
+}
+
 source_set("blink_web_tests_filter") {
   testonly = true
 
@@ -39,9 +47,21 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/bfcache.browser_tests.filter",
     "//testing/buildbot/filters/code_coverage.browser_tests.filter",
     "//testing/buildbot/filters/pixel_browser_tests.filter",
-    "//testing/buildbot/filters/skia_renderer.browser_tests.filter",
     "//testing/buildbot/filters/webrtc_functional.browser_tests.filter",
-    "//testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter",
+  ]
+}
+
+source_set("chrome_junit_tests_filters") {
+  testonly = true
+
+  data = []
+}
+
+source_set("chrome_public_test_apk_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/bfcache.chrome_public_test_apk.filter",
   ]
 }
 
@@ -52,15 +72,6 @@ source_set("chromeos_filters") {
     "//testing/buildbot/filters/chromeos.media_unittests.filter",
     "//testing/buildbot/filters/chromeos.services_unittests.filter",
     "//testing/buildbot/filters/chromeos.unit_tests.filter",
-  ]
-}
-
-source_set("content_unittests_filters") {
-  testonly = true
-
-  data = [
-    "//testing/buildbot/filters/bfcache.content_unittests.filter",
-    "//testing/buildbot/filters/webrtc.content_unittests.filter",
   ]
 }
 
@@ -78,9 +89,33 @@ source_set("content_browsertests_filters") {
   ]
 }
 
+source_set("content_junit_tests_filters") {
+  testonly = true
+
+  data = []
+}
+
+source_set("content_shell_test_apk_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/bfcache.content_shell_test_apk.filter",
+  ]
+}
+
+source_set("content_unittests_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/bfcache.content_unittests.filter",
+    "//testing/buildbot/filters/webrtc.content_unittests.filter",
+  ]
+}
+
 source_set("fuchsia_filters") {
   data = [
     "//testing/buildbot/filters/fuchsia.base_perftests.filter",
+    "//testing/buildbot/filters/fuchsia.components_unittests.filter",
     "//testing/buildbot/filters/fuchsia.content_unittests.filter",
     "//testing/buildbot/filters/fuchsia.mojo_unittests.filter",
     "//testing/buildbot/filters/fuchsia.net_perftests.filter",
@@ -90,11 +125,9 @@ source_set("fuchsia_filters") {
   ]
 }
 
-source_set("interactive_ui_tests_filters") {
-  testonly = true
-
+source_set("linux_trusty_rel_browser_tests_filters") {
   data = [
-    "//testing/buildbot/filters/webui_html_imports_polyfill_interactive_ui_tests.filter",
+    "//testing/buildbot/filters/linux_trusty_rel.browser_tests.filter",
   ]
 }
 
@@ -133,7 +166,20 @@ source_set("webview_instrumentation_test_apk_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/android.webview_instrumentation_tests_oreo.filter",
     "//testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter",
+  ]
+}
+
+source_set("linux_ozone_views_unittests_filters") {
+  data = [
+    "//testing/buildbot/filters/ozone-linux.x11_views_unittests.filter",
+  ]
+}
+
+source_set("e2e_sync_integration_tests_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/e2e.sync_integration_tests.filter",
   ]
 }

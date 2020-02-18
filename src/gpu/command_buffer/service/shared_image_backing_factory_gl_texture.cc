@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -30,6 +29,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -763,7 +763,7 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     info.allow_scanout = true;
     info.buffer_format = buffer_format;
     DCHECK_EQ(info.gl_format,
-              gpu::InternalFormatForGpuMemoryBufferFormat(buffer_format));
+              gl::BufferFormatToGLInternalFormat(buffer_format));
     if (base::Contains(gpu_preferences.texture_target_exception_list,
                        gfx::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
                                                  buffer_format)))
@@ -883,10 +883,20 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     image = image_factory_->CreateAnonymousImage(
         size, format_info.buffer_format, gfx::BufferUsage::SCANOUT,
         &is_cleared);
-    // A SCANOUT image should not require copy.
-    DCHECK(!image || image->ShouldBindOrCopy() == gl::GLImage::BIND);
-    if (!image || !image->BindTexImage(target)) {
-      LOG(ERROR) << "CreateSharedImage: Failed to create image";
+    // Scanout images have different constraints than GL images and might fail
+    // to allocate even if GL images can be created.
+    if (!image) {
+      // TODO(dcastagna): Use BufferUsage::GPU_READ_WRITE instead
+      // BufferUsage::GPU_READ once we add it.
+      image = image_factory_->CreateAnonymousImage(
+          size, format_info.buffer_format, gfx::BufferUsage::GPU_READ,
+          &is_cleared);
+    }
+    // The allocated image should not require copy.
+    if (!image || image->ShouldBindOrCopy() != gl::GLImage::BIND ||
+        !image->BindTexImage(target)) {
+      LOG(ERROR) << "CreateSharedImage: Failed to "
+                 << (image ? "bind" : "create") << " image";
       api->glDeleteTexturesFn(1, &service_id);
       return nullptr;
     }
@@ -943,7 +953,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
   if (!gpu_memory_buffer_formats_.Has(buffer_format)) {
-    LOG(ERROR) << "CreateSharedImage: unsupported buffer format";
+    LOG(ERROR) << "CreateSharedImage: unsupported buffer format "
+               << gfx::BufferFormatToString(buffer_format);
     return nullptr;
   }
 
@@ -1009,10 +1020,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
 
   GLuint internal_format =
       is_rgb_emulation ? GL_RGB : image->GetInternalFormat();
-  GLenum gl_format =
-      gles2::TextureManager::ExtractFormatFromStorageFormat(internal_format);
-  GLenum gl_type =
-      gles2::TextureManager::ExtractTypeFromStorageFormat(internal_format);
+  GLenum gl_format = is_rgb_emulation ? GL_RGB : image->GetDataFormat();
+  GLenum gl_type = image->GetDataType();
 
   return MakeBacking(use_passthrough_, mailbox, target, service_id, image,
                      image_state, internal_format, gl_format, gl_type, nullptr,
@@ -1090,8 +1099,11 @@ SharedImageBackingFactoryGLTexture::MakeBacking(
   if (passthrough) {
     scoped_refptr<gles2::TexturePassthrough> passthrough_texture =
         base::MakeRefCounted<gles2::TexturePassthrough>(service_id, target);
-    if (image)
+    if (image) {
       passthrough_texture->SetLevelImage(target, 0, image.get());
+      passthrough_texture->set_is_bind_pending(image_state ==
+                                               gles2::Texture::UNBOUND);
+    }
 
     // Get the texture size from ANGLE and set it on the passthrough texture.
     GLint texture_memory_size = 0;

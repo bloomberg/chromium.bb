@@ -10,13 +10,11 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/browser/ui/views/passwords/password_pending_view.h"
 #include "chrome/browser/ui/views/passwords/password_save_confirmation_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -36,32 +34,19 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
          !g_manage_passwords_bubble_->GetWidget()->IsVisible());
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  views::View* anchor_view = nullptr;
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableToolbarStatusChip)) {
-    anchor_view = browser_view->toolbar()->toolbar_page_action_container();
-  } else {
-    anchor_view = browser_view->toolbar_button_provider()->GetAnchorView();
-  }
+  ToolbarButtonProvider* button_provider =
+      browser_view->toolbar_button_provider();
+  views::View* anchor_view =
+      button_provider->GetAnchorView(PageActionIconType::kManagePasswords);
 
   PasswordBubbleViewBase* bubble =
       CreateBubble(web_contents, anchor_view, reason);
   DCHECK(bubble);
-  DCHECK(bubble == g_manage_passwords_bubble_);
+  DCHECK_EQ(bubble, g_manage_passwords_bubble_);
 
-  views::Button* highlighted_button;
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableToolbarStatusChip)) {
-    highlighted_button =
-        browser_view->toolbar()->toolbar_page_action_container()->GetIconView(
-            PageActionIconType::kManagePasswords);
-  } else {
-    highlighted_button =
-        browser_view->toolbar_button_provider()
-            ->GetOmniboxPageActionIconContainerView()
-            ->GetPageActionIconView(PageActionIconType::kManagePasswords);
-  }
-  g_manage_passwords_bubble_->SetHighlightedButton(highlighted_button);
+  g_manage_passwords_bubble_->SetHighlightedButton(
+      button_provider->GetPageActionIconView(
+          PageActionIconType::kManagePasswords));
 
   views::BubbleDialogDelegateView::CreateBubble(g_manage_passwords_bubble_);
 

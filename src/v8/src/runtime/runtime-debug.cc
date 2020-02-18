@@ -308,14 +308,14 @@ RUNTIME_FUNCTION(Runtime_GetGeneratorScopeCount) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
 
-  if (!args[0].IsJSGeneratorObject()) return Smi::kZero;
+  if (!args[0].IsJSGeneratorObject()) return Smi::zero();
 
   // Check arguments.
   CONVERT_ARG_HANDLE_CHECKED(JSGeneratorObject, gen, 0);
 
   // Only inspect suspended generator scopes.
   if (!gen->is_suspended()) {
-    return Smi::kZero;
+    return Smi::zero();
   }
 
   // Count the visible scopes.
@@ -491,8 +491,7 @@ int ScriptLinePosition(Handle<Script> script, int line) {
   if (line < 0) return -1;
 
   if (script->type() == Script::TYPE_WASM) {
-    return WasmModuleObject::cast(script->wasm_module_object())
-        .GetFunctionOffset(line);
+    return GetWasmFunctionOffset(script->wasm_native_module()->module(), line);
   }
 
   Script::InitLineEnds(script);
@@ -827,19 +826,6 @@ RUNTIME_FUNCTION(Runtime_LiveEditPatchScript) {
   return ReadOnlyRoots(isolate).undefined_value();
 }
 
-RUNTIME_FUNCTION(Runtime_PerformSideEffectCheckForObject) {
-  HandleScope scope(isolate);
-  DCHECK_EQ(1, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(JSReceiver, object, 0);
-
-  DCHECK_EQ(isolate->debug_execution_mode(), DebugInfo::kSideEffects);
-  if (!isolate->debug()->PerformSideEffectCheckForObject(object)) {
-    DCHECK(isolate->has_pending_exception());
-    return ReadOnlyRoots(isolate).exception();
-  }
-  return ReadOnlyRoots(isolate).undefined_value();
-}
-
 RUNTIME_FUNCTION(Runtime_ProfileCreateSnapshotDataBlob) {
   HandleScope scope(isolate);
   DCHECK_EQ(0, args.length());
@@ -858,10 +844,8 @@ RUNTIME_FUNCTION(Runtime_ProfileCreateSnapshotDataBlob) {
   // Track the embedded blob size as well.
   {
     int embedded_blob_size = 0;
-    if (FLAG_embedded_builtins) {
-      i::EmbeddedData d = i::EmbeddedData::FromBlob();
-      embedded_blob_size = static_cast<int>(d.size());
-    }
+    i::EmbeddedData d = i::EmbeddedData::FromBlob();
+    embedded_blob_size = static_cast<int>(d.size());
     PrintF("Embedded blob is %d bytes\n", embedded_blob_size);
   }
 

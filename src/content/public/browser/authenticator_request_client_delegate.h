@@ -75,7 +75,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // authenticators.
   virtual void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
-      base::Closure start_over_callback,
+      base::RepeatingClosure start_over_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
       base::RepeatingClosure bluetooth_adapter_power_on_callback,
       device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback);
@@ -125,6 +125,9 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // to advance to directly to guiding the user to check their phone as the site
   // is strongly indicating that it will work.
   //
+  // have_paired_phones is true if a previous call to |GetCablePairings|
+  // returned one or more caBLE pairings.
+  //
   // |qr_generator_key| is a random AES-256 key that can be used to
   // encrypt a coarse timestamp with |CableDiscoveryData::DeriveQRKeyMaterial|.
   // The UI may display a QR code with the resulting secret which, if
@@ -137,7 +140,15 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // handshakes is irrelevant if the UI is not displaying the QR codes.
   virtual bool SetCableTransportInfo(
       bool cable_extension_provided,
+      bool have_paired_phones,
       base::Optional<device::QRGeneratorKey> qr_generator_key);
+
+  // GetCablePairings returns any known caBLE pairing data. For example, the
+  // embedder may know of pairings because it configured the
+  // |FidoDiscoveryFactory| (using |CustomizeDiscoveryFactory|) to make a
+  // callback when a phone offered long-term pairing data. Additionally, it may
+  // know of pairings via some cloud-based service or sync feature.
+  virtual std::vector<device::CableDiscoveryData> GetCablePairings();
 
   // SelectAccount is called to allow the embedder to select between one or more
   // accounts. This is triggered when the web page requests an unspecified
@@ -218,6 +229,12 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
       base::Optional<int> attempts,
       base::OnceCallback<void(std::string)> provide_pin_cb) override;
   void FinishCollectPIN() override;
+
+ protected:
+  // CustomizeDiscoveryFactory may be overridden in order to configure
+  // |discovery_factory|.
+  virtual void CustomizeDiscoveryFactory(
+      device::FidoDiscoveryFactory* discovery_factory);
 
  private:
 #if !defined(OS_ANDROID)

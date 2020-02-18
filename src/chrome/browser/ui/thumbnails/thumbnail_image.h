@@ -12,18 +12,49 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "ui/gfx/image/image_skia.h"
+
+namespace base {
+class TimeTicks;
+}  // namespace base
 
 // Stores compressed thumbnail data for a tab and can vend that data as an
 // uncompressed image to observers.
 class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
  public:
-  // Observes uncompressed versions of the thumbnail image as they are
-  // available.
+  // Smart pointer to reference-counted compressed image data; in this case
+  // JPEG format.
+  using CompressedThumbnailData =
+      scoped_refptr<base::RefCountedData<std::vector<uint8_t>>>;
+
+  // Observes uncompressed and/or compressed versions of the thumbnail image as
+  // they are available.
   class Observer : public base::CheckedObserver {
    public:
-    virtual void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image) = 0;
+    // Receives uncompressed thumbnail image data. Default is no-op.
+    virtual void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image);
+
+    // Receives compressed thumbnail image data. Default is no-op.
+    virtual void OnCompressedThumbnailDataAvailable(
+        CompressedThumbnailData thumbnail_data);
+
+    // Provides a desired aspect ratio and minimum size that the observer will
+    // accept. If not specified, or if available thumbnail data is smaller in
+    // either dimension than this value, OnThumbnailImageAvailable will be
+    // called with an uncropped image. If this value is specified, and the
+    // available image is larger, the image passed to OnThumbnailImageAvailable
+    // will be cropped to the same aspect ratio (but otherwise unchanged,
+    // including scale).
+    //
+    // OnCompressedThumbnailDataAvailable is not affected by this value.
+    //
+    // This method is used to ensure that except for very small thumbnails, the
+    // image passed to OnThumbnailImageAvailable fits the needs of the observer
+    // for display purposes, without the observer having to further crop the
+    // image. The default is unspecified.
+    virtual base::Optional<gfx::Size> GetThumbnailSizeHint() const;
   };
 
   // Represents the endpoint
@@ -44,6 +75,8 @@ class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
 
   explicit ThumbnailImage(Delegate* delegate);
 
+  bool has_data() const { return data_.get(); }
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   bool HasObserver(const Observer* observer) const;
@@ -54,7 +87,12 @@ class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
   // Requests that a thumbnail image be made available to observers. Does not
   // guarantee that Observer::OnThumbnailImageAvailable() will be called, or how
   // long it will take, though in most cases it should happen very quickly.
-  virtual void RequestThumbnailImage();
+  void RequestThumbnailImage();
+
+  // Similar to RequestThumbnailImage() but requests only the compressed JPEG
+  // data. Users should listen for a call to
+  // Observer::OnCompressedThumbnailDataAvailable().
+  void RequestCompressedThumbnailData();
 
   void set_async_operation_finished_callback_for_testing(
       base::RepeatingClosure callback) {
@@ -63,17 +101,28 @@ class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
 
  private:
   friend class Delegate;
+  friend class ThumbnailImageTest;
   friend class base::RefCounted<ThumbnailImage>;
 
   virtual ~ThumbnailImage();
 
-  void AssignJPEGData(std::vector<uint8_t> data);
+  void AssignJPEGData(base::TimeTicks assign_sk_bitmap_time,
+                      std::vector<uint8_t> data);
   bool ConvertJPEGDataToImageSkiaAndNotifyObservers();
-  void NotifyObservers(gfx::ImageSkia image);
+  void NotifyUncompressedDataObservers(gfx::ImageSkia image);
+  void NotifyCompressedDataObservers(CompressedThumbnailData data);
+
+  static std::vector<uint8_t> CompressBitmap(SkBitmap bitmap);
+  static gfx::ImageSkia UncompressImage(CompressedThumbnailData compressed);
+
+  // Crops and returns a preview from a thumbnail of an entire web page. Uses
+  // logic appropriate for fixed-aspect previews (e.g. hover cards).
+  static gfx::ImageSkia CropPreviewImage(const gfx::ImageSkia& source_image,
+                                         const gfx::Size& minimum_size);
 
   Delegate* delegate_;
 
-  scoped_refptr<base::RefCountedData<std::vector<uint8_t>>> data_;
+  CompressedThumbnailData data_;
 
   base::ObserverList<Observer> observers_;
 

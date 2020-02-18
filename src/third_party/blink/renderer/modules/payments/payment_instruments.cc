@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/payments/basic_card_helper.h"
+#include "third_party/blink/renderer/modules/payments/image_object.h"
 #include "third_party/blink/renderer/modules/payments/payment_instrument.h"
 #include "third_party/blink/renderer/modules/payments/payment_manager.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
@@ -97,8 +98,8 @@ ScriptPromise RejectNotAllowedToUsePaymentFeatures(ScriptState* script_state) {
 // referenced by |PaymentInstrument| will not be traced through the callback and
 // can be prematurely destroyed.
 // TODO(keishi): Remove this conversion if IDLDictionaryBase situation changes.
-class PaymentInstrumentParameter
-    : public GarbageCollectedFinalized<PaymentInstrumentParameter> {
+class PaymentInstrumentParameter final
+    : public GarbageCollected<PaymentInstrumentParameter> {
  public:
   explicit PaymentInstrumentParameter(const PaymentInstrument* instrument)
       : has_icons_(instrument->hasIcons()),
@@ -124,7 +125,10 @@ class PaymentInstrumentParameter
   bool has_name() const { return has_name_; }
   const String& name() const { return name_; }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(icons_); }
+  void Trace(blink::Visitor* visitor) {
+    visitor->Trace(icons_);
+    visitor->Trace(capabilities_);
+  }
 
  private:
   bool has_icons_;
@@ -362,7 +366,8 @@ void PaymentInstruments::OnRequestPermission(
                                      "PaymentInstruments", "set");
       BasicCardHelper::ParseBasiccardData(
           details->capabilities(), instrument->supported_networks,
-          instrument->supported_types, exception_state);
+          instrument->supported_types, /*has_supported_card_types=*/nullptr,
+          exception_state);
       if (exception_state.HadException()) {
         resolver->Reject(exception_state);
         return;
@@ -424,7 +429,7 @@ void PaymentInstruments::onGetPaymentInstrument(
                                    ExceptionState::kGetterContext,
                                    "PaymentInstruments", "get");
     instrument->setCapabilities(
-        ScriptValue(resolver->GetScriptState(),
+        ScriptValue(resolver->GetScriptState()->GetIsolate(),
                     FromJSONString(resolver->GetScriptState()->GetIsolate(),
                                    resolver->GetScriptState()->GetContext(),
                                    stored_instrument->stringified_capabilities,

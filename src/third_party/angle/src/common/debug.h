@@ -253,6 +253,11 @@ std::ostream &FmtHex(std::ostream &os, T value)
 #    define EVENT(message, ...) (void(0))
 #endif
 
+// The state tracked by ANGLE will be validated with the driver state before each call
+#if defined(ANGLE_ENABLE_ASSERTS)
+#    define ANGLE_STATE_VALIDATION_ENABLED
+#endif
+
 #if defined(__GNUC__)
 #    define ANGLE_CRASH() __builtin_trap()
 #else
@@ -361,6 +366,25 @@ std::ostream &FmtHex(std::ostream &os, T value)
 #else
 #    define ANGLE_DISABLE_EXTRA_SEMI_WARNING
 #    define ANGLE_REENABLE_EXTRA_SEMI_WARNING
+#endif
+
+#if defined(__clang__)
+#    define ANGLE_DISABLE_SHADOWING_WARNING \
+        _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wshadow-field\"")
+#    define ANGLE_REENABLE_SHADOWING_WARNING _Pragma("clang diagnostic pop")
+#else
+#    define ANGLE_DISABLE_SHADOWING_WARNING
+#    define ANGLE_REENABLE_SHADOWING_WARNING
+#endif
+
+#if defined(__clang__)
+#    define ANGLE_DISABLE_DESTRUCTOR_OVERRIDE_WARNING \
+        _Pragma("clang diagnostic push")              \
+            _Pragma("clang diagnostic ignored \"-Winconsistent-missing-destructor-override\"")
+#    define ANGLE_REENABLE_DESTRUCTOR_OVERRIDE_WARNING _Pragma("clang diagnostic pop")
+#else
+#    define ANGLE_DISABLE_DESTRUCTOR_OVERRIDE_WARNING
+#    define ANGLE_REENABLE_DESTRUCTOR_OVERRIDE_WARNING
 #endif
 
 #endif  // COMMON_DEBUG_H_

@@ -14,17 +14,19 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/cups_wrapper.h"
+#include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
+#include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
+#include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -34,7 +36,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "printing/backend/cups_connection.h"
 #include "printing/printed_document.h"
 #include "printing/printing_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -51,7 +52,7 @@ const int kRetryMax = 6;
 const char kJobCompletedWithErrors[] = "job-completed-with-errors";
 
 using State = chromeos::CupsPrintJob::State;
-using ErrorCode = chromeos::CupsPrintJob::ErrorCode;
+using PrinterErrorCode = chromeos::PrinterErrorCode;
 
 using PrinterReason = printing::PrinterStatus::PrinterReason;
 
@@ -64,16 +65,6 @@ enum JobResultForHistogram {
   LOST = 4,            // final state never received
   FILTER_FAILED = 5,   // filter failed
   RESULT_MAX
-};
-
-// Container for results from CUPS queries.
-struct QueryResult {
-  QueryResult() = default;
-  QueryResult(const QueryResult& other) = default;
-  ~QueryResult() = default;
-
-  bool success;
-  std::vector<::printing::QueueStatus> queues;
 };
 
 // Returns the appropriate JobResultForHistogram for a given |state|.  Only
@@ -127,32 +118,6 @@ bool JobContainsReason(const ::printing::CupsJob& job,
   return base::Contains(job.state_reasons, reason);
 }
 
-// Extracts an ErrorCode from PrinterStatus#reasons.  Returns NO_ERROR if there
-// are no reasons which indicate an error.
-ErrorCode ErrorCodeFromReasons(const printing::PrinterStatus& printer_status) {
-  for (const auto& reason : printer_status.reasons) {
-    switch (reason.reason) {
-      case PrinterReason::MEDIA_EMPTY:
-      case PrinterReason::MEDIA_NEEDED:
-      case PrinterReason::MEDIA_LOW:
-        return ErrorCode::OUT_OF_PAPER;
-      case PrinterReason::MEDIA_JAM:
-        return ErrorCode::PAPER_JAM;
-      case PrinterReason::TONER_EMPTY:
-      case PrinterReason::TONER_LOW:
-        return ErrorCode::OUT_OF_INK;
-      case PrinterReason::TIMED_OUT:
-        return ErrorCode::PRINTER_UNREACHABLE;
-      case PrinterReason::DOOR_OPEN:
-      case PrinterReason::COVER_OPEN:
-        return ErrorCode::DOOR_OPEN;
-      default:
-        break;
-    }
-  }
-  return ErrorCode::NO_ERROR;
-}
-
 // Update the current printed page.  Returns true of the page has been updated.
 bool UpdateCurrentPage(const printing::CupsJob& job,
                        chromeos::CupsPrintJob* print_job) {
@@ -182,8 +147,10 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
   switch (job.state) {
     case ::printing::CupsJob::PROCESSING:
       pages_updated = UpdateCurrentPage(job, print_job);
-      if (ErrorCodeFromReasons(printer_status) != ErrorCode::NO_ERROR) {
-        print_job->set_error_code(ErrorCodeFromReasons(printer_status));
+      if (chromeos::PrinterErrorCodeFromPrinterStatusReasons(printer_status) !=
+          PrinterErrorCode::NO_ERROR) {
+        print_job->set_error_code(
+            chromeos::PrinterErrorCodeFromPrinterStatusReasons(printer_status));
         print_job->set_state(State::STATE_ERROR);
       } else {
         print_job->set_state(State::STATE_STARTED);
@@ -196,7 +163,7 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
     case ::printing::CupsJob::STOPPED:
       // If cups job STOPPED but with filter failure, treat as ERROR
       if (JobContainsReason(job, kJobCompletedWithErrors)) {
-        print_job->set_error_code(ErrorCode::FILTER_FAILED);
+        print_job->set_error_code(PrinterErrorCode::FILTER_FAILED);
         print_job->set_state(State::STATE_FAILED);
       } else {
         print_job->set_state(ConvertState(job.state));
@@ -204,7 +171,8 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
       break;
     case ::printing::CupsJob::ABORTED:
     case ::printing::CupsJob::CANCELED:
-      print_job->set_error_code(ErrorCodeFromReasons(printer_status));
+      print_job->set_error_code(
+          chromeos::PrinterErrorCodeFromPrinterStatusReasons(printer_status));
       FALLTHROUGH;
     default:
       print_job->set_state(ConvertState(job.state));
@@ -218,63 +186,11 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
 
 namespace chromeos {
 
-// A wrapper around the CUPS connection to ensure that it's always accessed on
-// the same sequence.
-class CupsWrapper {
- public:
-  CupsWrapper() : cups_connection_(GURL(), HTTP_ENCRYPT_NEVER, false) {
-    DETACH_FROM_SEQUENCE(sequence_checker_);
-  }
-
-  ~CupsWrapper() = default;
-
-  // Query CUPS for the current jobs for the given |printer_ids|.  Writes result
-  // to |result|.
-  void QueryCups(const std::vector<std::string>& printer_ids,
-                 QueryResult* result) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    base::ScopedBlockingCall scoped_blocking_call(
-        FROM_HERE, base::BlockingType::MAY_BLOCK);
-
-    result->success = cups_connection_.GetJobs(printer_ids, &result->queues);
-  }
-
-  // Cancel the print job on the blocking thread.
-  void CancelJobImpl(const std::string& printer_id, const int job_id) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    base::ScopedBlockingCall scoped_blocking_call(
-        FROM_HERE, base::BlockingType::MAY_BLOCK);
-
-    std::unique_ptr<::printing::CupsPrinter> printer =
-        cups_connection_.GetPrinter(printer_id);
-    if (!printer) {
-      LOG(WARNING) << "Printer not found: " << printer_id;
-      return;
-    }
-
-    if (!printer->CancelJob(job_id)) {
-      // This is not expected to fail but log it if it does.
-      LOG(WARNING) << "Cancelling job failed.  Job may be stuck in queue.";
-    }
-  }
-
- private:
-  ::printing::CupsConnection cups_connection_;
-  SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(CupsWrapper);
-};
-
 class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                                 public content::NotificationObserver {
  public:
   explicit CupsPrintJobManagerImpl(Profile* profile)
       : CupsPrintJobManager(profile),
-        query_runner_(base::CreateSequencedTaskRunner(base::TaskTraits{
-            base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-            base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-        cups_wrapper_(new CupsWrapper(),
-                      base::OnTaskRunnerDeleter(query_runner_)),
         weak_ptr_factory_(this) {
     timer_.SetTaskRunner(
         base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
@@ -318,14 +234,16 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     if (job_details->type() == ::printing::JobEventDetails::DOC_DONE) {
       const ::printing::PrintedDocument* document = job_details->document();
       DCHECK(document);
-      base::string16 title = printing::SimplifyDocumentTitle(document->name());
+      base::string16 title =
+          ::printing::SimplifyDocumentTitle(document->name());
       if (title.empty()) {
-        title = printing::SimplifyDocumentTitle(
+        title = ::printing::SimplifyDocumentTitle(
             l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE));
       }
       CreatePrintJob(base::UTF16ToUTF8(document->settings().device_name()),
                      base::UTF16ToUTF8(title), job_details->job_id(),
-                     document->page_count(), job->source(), job->source_id());
+                     document->page_count(), job->source(), job->source_id(),
+                     PrintSettingsToProto(document->settings()));
     }
   }
 
@@ -337,7 +255,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                       int job_id,
                       int total_page_number,
                       ::printing::PrintJob::Source source,
-                      const std::string& source_id) {
+                      const std::string& source_id,
+                      const printing::proto::PrintSettings& settings) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     Profile* profile = ProfileManager::GetPrimaryUserProfile();
@@ -368,8 +287,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                                20);
 
     // Create a new print job.
-    auto cpj = std::make_unique<CupsPrintJob>(
-        *printer, job_id, title, total_page_number, source, source_id);
+    auto cpj = std::make_unique<CupsPrintJob>(*printer, job_id, title,
+                                              total_page_number, source,
+                                              source_id, settings);
     std::string key = cpj->GetUniqueId();
     jobs_[key] = std::move(cpj);
 
@@ -399,10 +319,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     // Stop montioring jobs after we cancel them.  The user no longer cares.
     jobs_.erase(job->GetUniqueId());
 
-    query_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&CupsWrapper::CancelJobImpl,
-                                  base::Unretained(cups_wrapper_.get()),
-                                  printer_id, job_id));
+    cups_wrapper_.CancelJob(printer_id, job_id);
   }
 
   // Schedule a query of CUPS for print job status with a delay of |delay|.
@@ -412,8 +329,6 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
                                      weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // Schedule the CUPS query off the UI thread. Posts results back to UI thread
-  // to UpdateJobs.
   void PostQuery() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -424,23 +339,16 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     }
     std::vector<std::string> ids{printer_ids.begin(), printer_ids.end()};
 
-    auto result = std::make_unique<QueryResult>();
-    QueryResult* result_ptr = result.get();
-    // Runs a query on |query_runner_| which will rejoin this sequnece on
-    // completion.
-    query_runner_->PostTaskAndReply(
-        FROM_HERE,
-        base::BindOnce(&CupsWrapper::QueryCups,
-                       base::Unretained(cups_wrapper_.get()), ids, result_ptr),
-        base::BindOnce(&CupsPrintJobManagerImpl::UpdateJobs,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(result)));
+    cups_wrapper_.QueryCupsPrintJobs(
+        ids, base::BindOnce(&CupsPrintJobManagerImpl::UpdateJobs,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Process jobs from CUPS and perform notifications.
   // Use job information to update local job states.  Previously completed jobs
   // could be in |jobs| but those are ignored as we will not emit updates for
   // them after they are completed.
-  void UpdateJobs(std::unique_ptr<QueryResult> result) {
+  void UpdateJobs(std::unique_ptr<CupsWrapper::QueryResult> result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     // If the query failed, either retry or purge.
@@ -574,9 +482,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
 
   base::RepeatingTimer timer_;
   content::NotificationRegistrar registrar_;
-  // Task runner for queries to CUPS.
-  scoped_refptr<base::SequencedTaskRunner> query_runner_;
-  std::unique_ptr<CupsWrapper, base::OnTaskRunnerDeleter> cups_wrapper_;
+  CupsWrapper cups_wrapper_;
   base::WeakPtrFactory<CupsPrintJobManagerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrintJobManagerImpl);

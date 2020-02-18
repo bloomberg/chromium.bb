@@ -26,6 +26,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
+#include "chrome/test/chromedriver/constants/version.h"
 #include "chrome/test/chromedriver/element_util.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/util.h"
@@ -34,6 +35,10 @@
 const int kFlickTouchEventsPerSecond = 30;
 const std::set<std::string> textControlTypes = {"text", "search", "tel", "url",
                                                 "password"};
+const std::set<std::string> inputControlTypes = {
+    "text",           "search", "url",   "tel",   "email",
+    "password",       "date",   "month", "week",  "time",
+    "datetime-local", "number", "range", "color", "file"};
 
 namespace {
 
@@ -321,6 +326,56 @@ Status ExecuteClearElement(Session* session,
   Status status = CheckElement(element_id);
   if (status.IsError())
     return status;
+
+  std::string tag_name;
+  status = GetElementTagName(session, web_view, element_id, &tag_name);
+  if (status.IsError())
+    return status;
+  std::string element_type;
+  bool is_input_control = false;
+
+  if (tag_name == "input") {
+    std::unique_ptr<base::Value> get_element_type;
+    status = GetElementAttribute(session, web_view, element_id, "type",
+                                 &get_element_type);
+    if (status.IsError())
+      return status;
+    if (get_element_type->GetAsString(&element_type))
+      element_type = base::ToLowerASCII(element_type);
+
+    is_input_control =
+        inputControlTypes.find(element_type) != inputControlTypes.end();
+  }
+
+  bool is_text = tag_name == "textarea";
+  bool is_content_editable = false;
+  if (!is_text && !is_input_control) {
+    std::unique_ptr<base::Value> get_content_editable;
+    base::ListValue args;
+    args.Append(CreateElement(element_id));
+    status = web_view->CallFunction(session->GetCurrentFrameId(),
+                                    "element => element.isContentEditable",
+                                    args, &get_content_editable);
+    if (status.IsError())
+      return status;
+    get_content_editable->GetAsBoolean(&is_content_editable);
+  }
+
+  std::unique_ptr<base::Value> get_readonly;
+  bool is_readonly = false;
+  base::DictionaryValue params_readOnly;
+  if (!is_content_editable) {
+    params_readOnly.SetString("name", "readOnly");
+    status = ExecuteGetElementProperty(session, web_view, element_id,
+                                       params_readOnly, &get_readonly);
+    get_readonly->GetAsBoolean(&is_readonly);
+    if (status.IsError())
+      return status;
+  }
+  bool is_editable =
+      (is_input_control || is_text || is_content_editable) && !is_readonly;
+  if (!is_editable)
+    return Status(kInvalidElementState);
   // Scrolling to element is done by webdriver::atoms::CLEAR
   bool is_displayed = false;
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -338,12 +393,11 @@ Status ExecuteClearElement(Session* session,
   }
   static bool isClearWarningNotified = false;
   if (!isClearWarningNotified) {
-    std::string messageClearWarning =
-        "\n\t=== NOTE: ===\n"
-        "\tThe Clear command in ChromeDriver 2.43 and above\n"
-        "\thas been updated to conform to the current standard,\n"
-        "\tincluding raising blur event after clearing.\n";
-    VLOG(0) << messageClearWarning;
+    VLOG(0) << "\n\t=== NOTE: ===\n"
+            << "\tThe Clear command in " << kChromeDriverProductShortName
+            << " 2.43 and above\n"
+            << "\thas been updated to conform to the current standard,\n"
+            << "\tincluding raising blur event after clearing.\n";
     isClearWarningNotified = true;
   }
   base::ListValue args;

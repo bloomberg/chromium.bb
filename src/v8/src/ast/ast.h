@@ -97,7 +97,6 @@ namespace internal {
   V(NativeFunctionLiteral)      \
   V(OptionalChain)              \
   V(Property)                   \
-  V(ResolvedProperty)           \
   V(Spread)                     \
   V(StoreInArrayLiteral)        \
   V(SuperCallReference)         \
@@ -170,7 +169,7 @@ class AstNode: public ZoneObject {
   void* operator new(size_t size);
 
   int position_;
-  using NodeTypeField = BitField<NodeType, 0, 6>;
+  using NodeTypeField = base::BitField<NodeType, 0, 6>;
 
  protected:
   uint32_t bit_field_;
@@ -259,7 +258,7 @@ class Expression : public AstNode {
 
   bool IsPattern() {
     STATIC_ASSERT(kObjectLiteral + 1 == kArrayLiteral);
-    return IsInRange(node_type(), kObjectLiteral, kArrayLiteral);
+    return base::IsInRange(node_type(), kObjectLiteral, kArrayLiteral);
   }
 
   bool is_parenthesized() const {
@@ -724,11 +723,14 @@ class BreakStatement final : public JumpStatement {
 
 class ReturnStatement final : public JumpStatement {
  public:
-  enum Type { kNormal, kAsyncReturn };
+  enum Type { kNormal, kAsyncReturn, kSyntheticAsyncReturn };
   Expression* expression() const { return expression_; }
 
   Type type() const { return TypeField::decode(bit_field_); }
-  bool is_async_return() const { return type() == kAsyncReturn; }
+  bool is_async_return() const { return type() != kNormal; }
+  bool is_synthetic_async_return() const {
+    return type() == kSyntheticAsyncReturn;
+  }
 
   int end_position() const { return end_position_; }
 
@@ -745,7 +747,7 @@ class ReturnStatement final : public JumpStatement {
   Expression* expression_;
   int end_position_;
 
-  using TypeField = JumpStatement::NextBitField<Type, 1>;
+  using TypeField = JumpStatement::NextBitField<Type, 2>;
 };
 
 
@@ -915,6 +917,10 @@ class TryCatchStatement final : public TryStatement {
       HandlerTable::CatchPrediction outer_catch_prediction) const {
     return catch_prediction_ != HandlerTable::UNCAUGHT ||
            outer_catch_prediction != HandlerTable::UNCAUGHT;
+  }
+
+  bool is_try_catch_for_async() {
+    return catch_prediction_ == HandlerTable::ASYNC_AWAIT;
   }
 
  private:
@@ -1685,26 +1691,6 @@ class Property final : public Expression {
   Expression* key_;
 };
 
-// ResolvedProperty pairs a receiver field with a value field. It allows Call
-// to support arbitrary receivers while still taking advantage of TypeFeedback.
-class ResolvedProperty final : public Expression {
- public:
-  VariableProxy* object() const { return object_; }
-  VariableProxy* property() const { return property_; }
-
-  void set_object(VariableProxy* e) { object_ = e; }
-  void set_property(VariableProxy* e) { property_ = e; }
-
- private:
-  friend class AstNodeFactory;
-
-  ResolvedProperty(VariableProxy* obj, VariableProxy* property, int pos)
-      : Expression(pos, kResolvedProperty), object_(obj), property_(property) {}
-
-  VariableProxy* object_;
-  VariableProxy* property_;
-};
-
 class Call final : public Expression {
  public:
   Expression* expression() const { return expression_; }
@@ -1731,12 +1717,13 @@ class Call final : public Expression {
     WITH_CALL,
     NAMED_PROPERTY_CALL,
     KEYED_PROPERTY_CALL,
+    NAMED_OPTIONAL_CHAIN_PROPERTY_CALL,
+    KEYED_OPTIONAL_CHAIN_PROPERTY_CALL,
     NAMED_SUPER_PROPERTY_CALL,
     KEYED_SUPER_PROPERTY_CALL,
     PRIVATE_CALL,
     SUPER_CALL,
-    RESOLVED_PROPERTY_CALL,
-    OTHER_CALL
+    OTHER_CALL,
   };
 
   enum PossiblyEval {
@@ -2343,6 +2330,8 @@ class FunctionLiteral final : public Expression {
 
   bool requires_brand_initialization() const;
 
+  bool private_name_lookup_skips_outer_class() const;
+
   ProducedPreparseData* produced_preparse_data() const {
     return produced_preparse_data_;
   }
@@ -2481,10 +2470,10 @@ class ClassLiteral final : public Expression {
   using Property = ClassLiteralProperty;
 
   ClassScope* scope() const { return scope_; }
-  Variable* class_variable() const { return class_variable_; }
   Expression* extends() const { return extends_; }
   FunctionLiteral* constructor() const { return constructor_; }
-  ZonePtrList<Property>* properties() const { return properties_; }
+  ZonePtrList<Property>* public_members() const { return public_members_; }
+  ZonePtrList<Property>* private_members() const { return private_members_; }
   int start_position() const { return position(); }
   int end_position() const { return end_position_; }
   bool has_name_static_property() const {
@@ -2496,6 +2485,9 @@ class ClassLiteral final : public Expression {
 
   bool is_anonymous_expression() const {
     return IsAnonymousExpression::decode(bit_field_);
+  }
+  bool has_private_methods() const {
+    return HasPrivateMethods::decode(bit_field_);
   }
   bool IsAnonymousFunctionDefinition() const {
     return is_anonymous_expression();
@@ -2512,39 +2504,43 @@ class ClassLiteral final : public Expression {
  private:
   friend class AstNodeFactory;
 
-  ClassLiteral(ClassScope* scope, Variable* class_variable, Expression* extends,
-               FunctionLiteral* constructor, ZonePtrList<Property>* properties,
+  ClassLiteral(ClassScope* scope, Expression* extends,
+               FunctionLiteral* constructor,
+               ZonePtrList<Property>* public_members,
+               ZonePtrList<Property>* private_members,
                FunctionLiteral* static_fields_initializer,
                FunctionLiteral* instance_members_initializer_function,
                int start_position, int end_position,
                bool has_name_static_property, bool has_static_computed_names,
-               bool is_anonymous)
+               bool is_anonymous, bool has_private_methods)
       : Expression(start_position, kClassLiteral),
         end_position_(end_position),
         scope_(scope),
-        class_variable_(class_variable),
         extends_(extends),
         constructor_(constructor),
-        properties_(properties),
+        public_members_(public_members),
+        private_members_(private_members),
         static_fields_initializer_(static_fields_initializer),
         instance_members_initializer_function_(
             instance_members_initializer_function) {
     bit_field_ |= HasNameStaticProperty::encode(has_name_static_property) |
                   HasStaticComputedNames::encode(has_static_computed_names) |
-                  IsAnonymousExpression::encode(is_anonymous);
+                  IsAnonymousExpression::encode(is_anonymous) |
+                  HasPrivateMethods::encode(has_private_methods);
   }
 
   int end_position_;
   ClassScope* scope_;
-  Variable* class_variable_;
   Expression* extends_;
   FunctionLiteral* constructor_;
-  ZonePtrList<Property>* properties_;
+  ZonePtrList<Property>* public_members_;
+  ZonePtrList<Property>* private_members_;
   FunctionLiteral* static_fields_initializer_;
   FunctionLiteral* instance_members_initializer_function_;
   using HasNameStaticProperty = Expression::NextBitField<bool, 1>;
   using HasStaticComputedNames = HasNameStaticProperty::Next<bool, 1>;
   using IsAnonymousExpression = HasStaticComputedNames::Next<bool, 1>;
+  using HasPrivateMethods = IsAnonymousExpression::Next<bool, 1>;
 };
 
 
@@ -2885,6 +2881,12 @@ class AstNodeFactory final {
         expression, ReturnStatement::kAsyncReturn, pos, end_position);
   }
 
+  ReturnStatement* NewSyntheticAsyncReturnStatement(
+      Expression* expression, int pos, int end_position = kNoSourcePosition) {
+    return new (zone_) ReturnStatement(
+        expression, ReturnStatement::kSyntheticAsyncReturn, pos, end_position);
+  }
+
   WithStatement* NewWithStatement(Scope* scope,
                                   Expression* expression,
                                   Statement* statement,
@@ -3069,12 +3071,6 @@ class AstNodeFactory final {
     return new (zone_) Property(obj, key, pos, optional_chain);
   }
 
-  ResolvedProperty* NewResolvedProperty(VariableProxy* obj,
-                                        VariableProxy* property,
-                                        int pos = kNoSourcePosition) {
-    return new (zone_) ResolvedProperty(obj, property, pos);
-  }
-
   Call* NewCall(Expression* expression,
                 const ScopedPtrList<Expression>& arguments, int pos,
                 Call::PossiblyEval possibly_eval = Call::NOT_EVAL,
@@ -3244,18 +3240,19 @@ class AstNodeFactory final {
   }
 
   ClassLiteral* NewClassLiteral(
-      ClassScope* scope, Variable* variable, Expression* extends,
-      FunctionLiteral* constructor,
-      ZonePtrList<ClassLiteral::Property>* properties,
+      ClassScope* scope, Expression* extends, FunctionLiteral* constructor,
+      ZonePtrList<ClassLiteral::Property>* public_members,
+      ZonePtrList<ClassLiteral::Property>* private_members,
       FunctionLiteral* static_fields_initializer,
       FunctionLiteral* instance_members_initializer_function,
       int start_position, int end_position, bool has_name_static_property,
-      bool has_static_computed_names, bool is_anonymous) {
+      bool has_static_computed_names, bool is_anonymous,
+      bool has_private_methods) {
     return new (zone_) ClassLiteral(
-        scope, variable, extends, constructor, properties,
+        scope, extends, constructor, public_members, private_members,
         static_fields_initializer, instance_members_initializer_function,
         start_position, end_position, has_name_static_property,
-        has_static_computed_names, is_anonymous);
+        has_static_computed_names, is_anonymous, has_private_methods);
   }
 
   NativeFunctionLiteral* NewNativeFunctionLiteral(const AstRawString* name,

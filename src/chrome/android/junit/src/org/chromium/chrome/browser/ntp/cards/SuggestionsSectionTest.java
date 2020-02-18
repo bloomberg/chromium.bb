@@ -32,7 +32,6 @@ import static org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePage
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.createDummySuggestions;
 
 import org.junit.After;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,6 +45,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
@@ -62,13 +62,12 @@ import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.ListObservable.ListObserver;
 
@@ -110,15 +109,14 @@ public class SuggestionsSectionTest {
     private PrefServiceBridge mPrefServiceBridge;
     @Mock
     private SigninManager mSigninManager;
+    @Mock
+    private IdentityManager mIdentityManager;
 
     private FakeSuggestionsSource mSuggestionsSource;
     private FakeOfflinePageBridge mBridge;
 
     @Before
     public void setUp() {
-        // These tests fail on touchless builds, see https://crbug.com/981870.
-        Assume.assumeFalse(FeatureUtilities.isNoTouchModeEnabled());
-
         RecordUserAction.setDisabledForTests(true);
         MockitoAnnotations.initMocks(this);
 
@@ -139,7 +137,8 @@ public class SuggestionsSectionTest {
 
         // Set up a test account and initialize to the signed in state.
         NewTabPageTestUtils.setUpTestAccount();
-        when(mSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mSigninManager.getIdentityManager()).thenReturn(mIdentityManager);
+        when(mIdentityManager.hasPrimaryAccount()).thenReturn(false);
         when(mSigninManager.isSignInAllowed()).thenReturn(true);
     }
 

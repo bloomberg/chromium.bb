@@ -8,6 +8,7 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
+import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
@@ -21,8 +22,9 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
-import android.support.annotation.IdRes;
 import android.support.test.filters.MediumTest;
+
+import androidx.annotation.IdRes;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,10 +35,8 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,7 +76,7 @@ public class AssistantOnboardingCoordinatorTest {
     public void setUp() throws Exception {
         AutofillAssistantUiTestUtil.startOnBlankPage(mCustomTabActivityTestRule);
         mActivity = mCustomTabActivityTestRule.getActivity();
-        mBottomSheetController = ThreadUtils.runOnUiThreadBlocking(
+        mBottomSheetController = TestThreadUtils.runOnUiThreadBlocking(
                 () -> AutofillAssistantUiTestUtil.createBottomSheetController(mActivity));
         mTab = mActivity.getTabModelSelector().getCurrentTab();
     }
@@ -89,7 +90,6 @@ public class AssistantOnboardingCoordinatorTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/991938")
     @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testAcceptOnboarding() throws Exception {
         testOnboarding(R.id.button_init_ok, true);
@@ -97,7 +97,6 @@ public class AssistantOnboardingCoordinatorTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/991938")
     @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testRejectOnboarding() throws Exception {
         testOnboarding(R.id.button_init_not_ok, false);
@@ -109,21 +108,20 @@ public class AssistantOnboardingCoordinatorTest {
         AssistantOnboardingCoordinator coordinator = createCoordinator(mTab);
         showOnboardingAndWait(coordinator, mCallback);
 
-        assertTrue(ThreadUtils.runOnUiThreadBlocking(coordinator::isInProgress));
+        assertTrue(TestThreadUtils.runOnUiThreadBlocking(coordinator::isInProgress));
         onView(is(mActivity.getScrim())).check(matches(isDisplayed()));
         onView(withId(buttonToClick)).perform(click());
 
         verify(mCallback).onResult(expectAccept);
 
-        assertFalse(ThreadUtils.runOnUiThreadBlocking(coordinator::isInProgress));
+        assertFalse(TestThreadUtils.runOnUiThreadBlocking(coordinator::isInProgress));
         assertEquals(expectAccept, AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted());
     }
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/991938")
     @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
-    public void testOnboardingWithNoTabs() throws Exception {
+    public void testOnboardingWithNoTabs() {
         AssistantOnboardingCoordinator coordinator = createCoordinator(/* tab= */ null);
         showOnboardingAndWait(coordinator, mCallback);
 
@@ -134,9 +132,8 @@ public class AssistantOnboardingCoordinatorTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/991938")
     @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
-    public void testTransfertControls() throws Exception {
+    public void testTransferControls() throws Exception {
         AssistantOnboardingCoordinator coordinator = createCoordinator(mTab);
 
         List<AssistantOverlayCoordinator> capturedOverlays =
@@ -145,7 +142,7 @@ public class AssistantOnboardingCoordinatorTest {
                 (accepted) -> { capturedOverlays.add(coordinator.transferControls()); });
 
         onView(withId(R.id.button_init_ok)).perform(click());
-        assertFalse(ThreadUtils.runOnUiThreadBlocking(coordinator::isInProgress));
+        assertFalse(TestThreadUtils.runOnUiThreadBlocking(coordinator::isInProgress));
 
         // An overlay was captured, and it is still shown.
         onView(is(mActivity.getScrim())).check(matches(isDisplayed()));
@@ -156,14 +153,25 @@ public class AssistantOnboardingCoordinatorTest {
                 AssistantOverlayState.FULL, overlay.getModel().get(AssistantOverlayModel.STATE));
 
         // The bottom sheet content is still the assistant one.
-        assertThat(mBottomSheetController.getBottomSheet().getCurrentSheetContent(),
+        assertThat(mBottomSheetController.getCurrentSheetContent(),
                 instanceOf(AssistantBottomSheetContent.class));
     }
 
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/991938): re-enable
+    public void testShownFlag() throws Exception {
+        AssistantOnboardingCoordinator coordinator = createCoordinator(/* tab= */ null);
+        assertFalse(coordinator.getOnboardingShown());
+
+        showOnboardingAndWait(coordinator, mCallback);
+        assertTrue(coordinator.getOnboardingShown());
+    }
+
     /** Trigger onboarding and wait until it is fully displayed. */
-    private void showOnboardingAndWait(AssistantOnboardingCoordinator coordinator,
-            Callback<Boolean> callback) throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> coordinator.show(callback));
-        waitUntilViewMatchesCondition(withId(R.id.button_init_ok), isDisplayed());
+    private void showOnboardingAndWait(
+            AssistantOnboardingCoordinator coordinator, Callback<Boolean> callback) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> coordinator.show(callback));
+        waitUntilViewMatchesCondition(withId(R.id.button_init_ok), isCompletelyDisplayed());
     }
 }

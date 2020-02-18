@@ -14,6 +14,8 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +38,8 @@ class FakeServiceIPCServerClient : public ServiceIPCServer::Client {
   int shutdown_calls_ = 0;
   int update_available_calls_ = 0;
   int ipc_client_disconnect_calls_ = 0;
-  service_manager::mojom::InterfaceProviderPtr interface_provider_;
+  mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
+      interface_provider_;
 };
 
 void FakeServiceIPCServerClient::OnShutdown() {
@@ -57,7 +60,7 @@ bool FakeServiceIPCServerClient::OnIPCClientDisconnect() {
 
 mojo::ScopedMessagePipeHandle
 FakeServiceIPCServerClient::CreateChannelMessagePipe() {
-  return mojo::MakeRequest(&interface_provider_).PassMessagePipe();
+  return interface_provider_.InitWithNewPipeAndPassReceiver().PassPipe();
 }
 
 }  // namespace
@@ -84,7 +87,7 @@ class ServiceIPCServerTest : public ::testing::Test {
   base::WaitableEvent shutdown_event_;
   std::unique_ptr<ServiceIPCServer> server_;
   service_manager::InterfaceProvider remote_interfaces_;
-  chrome::mojom::ServiceProcessPtr service_process_;
+  mojo::Remote<chrome::mojom::ServiceProcess> service_process_;
 };
 
 ServiceIPCServerTest::ServiceIPCServerTest()
@@ -116,9 +119,8 @@ void ServiceIPCServerTest::TearDown() {
 
 void ServiceIPCServerTest::PumpLoops() {
   base::RunLoop run_loop;
-  io_thread_.task_runner()->PostTaskAndReply(FROM_HERE,
-                                             base::Bind(&PumpCurrentLoop),
-                                             run_loop.QuitClosure());
+  io_thread_.task_runner()->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&PumpCurrentLoop), run_loop.QuitClosure());
   run_loop.Run();
   PumpCurrentLoop();
 }
@@ -128,7 +130,8 @@ void ServiceIPCServerTest::ConnectClientChannel() {
   remote_interfaces_.Bind(
       std::move(service_process_client_.interface_provider_));
 
-  remote_interfaces_.GetInterface(&service_process_);
+  remote_interfaces_.GetInterface(
+      service_process_.BindNewPipeAndPassReceiver());
   service_process_->Hello(base::DoNothing());
   PumpLoops();
 }

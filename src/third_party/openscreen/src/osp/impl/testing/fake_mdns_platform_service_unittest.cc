@@ -9,6 +9,7 @@
 #include "gtest/gtest.h"
 
 namespace openscreen {
+namespace osp {
 namespace {
 
 platform::UdpSocket* const kDefaultSocket =
@@ -20,17 +21,24 @@ class FakeMdnsPlatformServiceTest : public ::testing::Test {
  protected:
   const uint8_t mac1_[6] = {11, 22, 33, 44, 55, 66};
   const uint8_t mac2_[6] = {12, 23, 34, 45, 56, 67};
+  const platform::IPSubnet subnet1_{IPAddress{192, 168, 3, 2}, 24};
+  const platform::IPSubnet subnet2_{
+      IPAddress{1, 2, 3, 4, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8}, 24};
   std::vector<MdnsPlatformService::BoundInterface> bound_interfaces_{
       MdnsPlatformService::BoundInterface{
-          platform::InterfaceInfo{1, mac1_, "eth0",
-                                  platform::InterfaceInfo::Type::kEthernet},
-          platform::IPSubnet{IPAddress{192, 168, 3, 2}, 24}, kDefaultSocket},
+          platform::InterfaceInfo{1,
+                                  mac1_,
+                                  "eth0",
+                                  platform::InterfaceInfo::Type::kEthernet,
+                                  {subnet1_}},
+          subnet1_, kDefaultSocket},
       MdnsPlatformService::BoundInterface{
-          platform::InterfaceInfo{2, mac2_, "eth1",
-                                  platform::InterfaceInfo::Type::kEthernet},
-          platform::IPSubnet{
-              IPAddress{1, 2, 3, 4, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8}, 24},
-          kSecondSocket}};
+          platform::InterfaceInfo{2,
+                                  mac2_,
+                                  "eth1",
+                                  platform::InterfaceInfo::Type::kEthernet,
+                                  {subnet2_}},
+          subnet2_, kSecondSocket}};
 };
 
 }  // namespace
@@ -99,4 +107,5 @@ TEST_F(FakeMdnsPlatformServiceTest, PartialDeregister) {
   platform_service.DeregisterInterfaces(eth1_only);
 }
 
+}  // namespace osp
 }  // namespace openscreen

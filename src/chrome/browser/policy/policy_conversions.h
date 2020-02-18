@@ -9,8 +9,9 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
 
 class Profile;
@@ -28,13 +29,13 @@ namespace policy {
 class PolicyErrorMap;
 class Schema;
 
-extern const LocalizedString kPolicySources[POLICY_SOURCE_COUNT];
+extern const webui::LocalizedString kPolicySources[POLICY_SOURCE_COUNT];
 
 // A convenience class to retrieve all policies values.
 class PolicyConversions {
  public:
   // Maps known policy names to their schema. If a policy is not present, it is
-  // not known (either through policy_templates.json or through an extenion's
+  // not known (either through policy_templates.json or through an extension's
   // managed storage schema).
   using PolicyToSchemaMap = base::flat_map<std::string, Schema>;
 
@@ -75,7 +76,7 @@ class PolicyConversions {
   // Returns policies for Chrome browser.
   virtual base::Value GetChromePolicies();
   // Returns policies for Chrome extensions.
-  virtual base::Value GetExtensionsPolicies();
+  virtual base::Value GetExtensionPolicies(PolicyDomain policy_domain);
 #if defined(OS_CHROMEOS)
   // Returns policies for ChromeOS device.
   virtual base::Value GetDeviceLocalAccountPolicies();
@@ -138,7 +139,7 @@ class DictionaryPolicyConversions : public PolicyConversions {
   base::Value ToValue() override;
 
  private:
-  base::Value GetExtensionsPolicies() override;
+  base::Value GetExtensionPolicies(PolicyDomain policy_domain) override;
 
 #if defined(OS_CHROMEOS)
   base::Value GetDeviceLocalAccountPolicies() override;

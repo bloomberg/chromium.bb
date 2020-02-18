@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "net/base/rand_callback.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
@@ -36,9 +37,9 @@ class Origin;
 
 namespace net {
 
+class NetworkIsolationKey;
 struct ReportingEndpoint;
 class ReportingGarbageCollector;
-class TestURLRequestContext;
 
 // A matcher for ReportingReports, which checks that the url of the report is
 // the given url.
@@ -48,6 +49,8 @@ class TestURLRequestContext;
 MATCHER_P(ReportUrlIs, url, "") {
   return arg.url == url;
 }
+
+RandIntCallback TestReportingRandIntCallback();
 
 // A test implementation of ReportingUploader that holds uploads for tests to
 // examine and complete with a specified outcome.
@@ -79,6 +82,7 @@ class TestReportingUploader : public ReportingUploader {
 
   void StartUpload(const url::Origin& report_origin,
                    const GURL& url,
+                   const NetworkIsolationKey& network_isolation_key,
                    const std::string& json,
                    int max_depth,
                    UploadCallback callback) override;
@@ -128,7 +132,6 @@ class TestReportingDelegate : public ReportingDelegate {
                     const GURL& endpoint) const override;
 
  private:
-  std::unique_ptr<TestURLRequestContext> test_request_context_;
   bool disallow_report_uploads_ = false;
   bool pause_permissions_check_ = false;
 
@@ -162,10 +165,6 @@ class TestReportingContext : public ReportingContext {
   }
 
  private:
-  int RandIntCallback(int min, int max);
-
-  int rand_counter_;
-
   // Owned by the DeliveryAgent and GarbageCollector, respectively, but
   // referenced here to preserve type:
 
@@ -250,9 +249,6 @@ class ReportingTestBase : public TestWithTaskEnvironment {
   TestReportingUploader* uploader() { return context_->test_uploader(); }
 
   ReportingCache* cache() { return context_->cache(); }
-  ReportingEndpointManager* endpoint_manager() {
-    return context_->endpoint_manager();
-  }
   ReportingDeliveryAgent* delivery_agent() {
     return context_->delivery_agent();
   }

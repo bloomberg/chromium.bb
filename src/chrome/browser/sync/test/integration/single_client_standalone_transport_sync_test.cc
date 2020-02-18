@@ -27,6 +27,9 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
                                      syncer::SECURITY_EVENTS,
                                      syncer::AUTOFILL_WALLET_DATA);
   allowed_types.PutAll(syncer::ControlTypes());
+  if (base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
+    allowed_types.Put(syncer::DEVICE_INFO);
+  }
   return allowed_types;
 }
 
@@ -41,13 +44,10 @@ class SyncDisabledByUserChecker : public SingleClientStatusChangeChecker {
   explicit SyncDisabledByUserChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
-  bool IsExitConditionSatisfied() override {
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for sync disabled by user";
     return service()->HasDisableReason(
         syncer::SyncService::DISABLE_REASON_USER_CHOICE);
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Sync Disabled by User";
   }
 };
 
@@ -190,9 +190,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   // involves clearing the server data so that the birthday gets incremented,
   // and also sending an appropriate error.
   GetFakeServer()->ClearServerData();
-  ASSERT_TRUE(GetFakeServer()->TriggerActionableError(
+  GetFakeServer()->TriggerActionableError(
       sync_pb::SyncEnums::NOT_MY_BIRTHDAY, "Reset Sync from Dashboard",
-      "https://chrome.google.com/sync", sync_pb::SyncEnums::UNKNOWN_ACTION));
+      "https://chrome.google.com/sync", sync_pb::SyncEnums::UNKNOWN_ACTION);
   EXPECT_TRUE(SyncDisabledByUserChecker(GetSyncService(0)).Wait());
   GetFakeServer()->ClearActionableError();
 
@@ -202,7 +202,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
       syncer::SyncService::DISABLE_REASON_USER_CHOICE));
 
 #if defined(OS_CHROMEOS)
-  // On ChromeOS, Sync should start up again in standalone transport mode.
+  // On ChromeOS, the primary account should remain, and Sync should start up
+  // again in standalone transport mode.
+  EXPECT_TRUE(GetSyncService(0)->IsAuthenticatedAccountPrimary());
   EXPECT_FALSE(GetSyncService(0)->HasDisableReason(
       syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
   EXPECT_NE(syncer::SyncService::TransportState::DISABLED,
@@ -213,13 +215,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
             GetSyncService(0)->GetTransportState());
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
 #else
-  // On non-ChromeOS platforms, the "Reset Sync" operation also signs the user
-  // out, so Sync should now be fully disabled. Note that this behavior may
-  // change in the future, see crbug.com/246839.
-  EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
-      syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
-            GetSyncService(0)->GetTransportState());
+  // On non-ChromeOS platforms, the "Reset Sync" operation should also remove
+  // the primary account. Note that this behavior may change in the future, see
+  // crbug.com/246839.
+  EXPECT_FALSE(GetSyncService(0)->IsAuthenticatedAccountPrimary());
+  // Note: In real life, the account would remain as an *unconsented* primary
+  // account, and so Sync would start up again in standalone transport mode.
+  // However, since we haven't set up cookies in this test, the account is *not*
+  // considered primary anymore (not even "unconsented").
 #endif  // defined(OS_CHROMEOS)
 }
 

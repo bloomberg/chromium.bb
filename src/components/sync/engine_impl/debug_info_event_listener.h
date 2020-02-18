@@ -58,12 +58,15 @@ class DebugInfoEventListener : public SyncManager::Observer,
       const KeyDerivationParams& key_derivation_params,
       const sync_pb::EncryptedData& pending_keys) override;
   void OnPassphraseAccepted() override;
+  void OnTrustedVaultKeyRequired() override;
+  void OnTrustedVaultKeyAccepted() override;
   void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
                                BootstrapTokenType type) override;
   void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                bool encrypt_everything) override;
   void OnEncryptionComplete() override;
-  void OnCryptographerStateChanged(Cryptographer* cryptographer) override;
+  void OnCryptographerStateChanged(Cryptographer* cryptographer,
+                                   bool has_pending_keys) override;
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time explicit_passphrase_time) override;
 
@@ -103,8 +106,9 @@ class DebugInfoEventListener : public SyncManager::Observer,
   // Cryptographer has keys that are not yet decrypted.
   bool cryptographer_has_pending_keys_;
 
-  // Cryptographer is initialized and does not have pending keys.
-  bool cryptographer_ready_;
+  // Cryptographer is able to encrypt data, which usually means it's initialized
+  // and does not have pending keys.
+  bool cryptographer_can_encrypt_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

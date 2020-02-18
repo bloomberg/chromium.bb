@@ -99,6 +99,8 @@ namespace sw
 		frontStencil = {};
 		backStencil = {};
 
+		robustBufferAccess = false;
+
 		rasterizerDiscard = false;
 
 		depthCompareMode = VK_COMPARE_OP_LESS;
@@ -108,6 +110,8 @@ namespace sw
 
 		cullMode = VK_CULL_MODE_FRONT_BIT;
 		frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		provokingVertexMode = VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT;
+		lineRasterizationMode = VK_LINE_RASTERIZATION_MODE_DEFAULT_EXT;
 
 		depthBias = 0.0f;
 		slopeDepthBias = 0.0f;

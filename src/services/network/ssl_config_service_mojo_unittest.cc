@@ -10,7 +10,7 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verifier.h"
@@ -156,10 +156,13 @@ class NetworkServiceSSLConfigServiceTest : public testing::Test {
   // stores it in |network_context_|.
   void SetUpNetworkContext(
       mojom::NetworkContextParamsPtr network_context_params) {
-    network_context_params->ssl_config_client_request =
-        mojo::MakeRequest(&ssl_config_client_);
+    ssl_config_client_.reset();
+    network_context_params->ssl_config_client_receiver =
+        ssl_config_client_.BindNewPipeAndPassReceiver();
+    network_context_remote_.reset();
     network_context_ = std::make_unique<NetworkContext>(
-        network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
+        network_service_.get(),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         std::move(network_context_params));
   }
 
@@ -261,8 +264,8 @@ class NetworkServiceSSLConfigServiceTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkService> network_service_;
-  mojom::SSLConfigClientPtr ssl_config_client_;
-  mojom::NetworkContextPtr network_context_ptr_;
+  mojo::Remote<mojom::SSLConfigClient> ssl_config_client_;
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
   std::unique_ptr<NetworkContext> network_context_;
 };
 
@@ -423,6 +426,16 @@ TEST_F(NetworkServiceSSLConfigServiceTest,
   mojom::SSLConfigPtr mojo_config = mojom::SSLConfig::New();
   mojo_config->disabled_cipher_suites =
       expected_net_config.disabled_cipher_suites;
+
+  RunConversionTests(*mojo_config, expected_net_config);
+}
+
+TEST_F(NetworkServiceSSLConfigServiceTest, InitialConfigTLS13Hardening) {
+  net::SSLContextConfig expected_net_config;
+  expected_net_config.tls13_hardening_for_local_anchors_enabled = true;
+
+  mojom::SSLConfigPtr mojo_config = mojom::SSLConfig::New();
+  mojo_config->tls13_hardening_for_local_anchors_enabled = true;
 
   RunConversionTests(*mojo_config, expected_net_config);
 }

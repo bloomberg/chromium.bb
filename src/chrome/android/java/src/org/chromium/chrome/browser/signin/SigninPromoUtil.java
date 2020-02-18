@@ -6,17 +6,22 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.content.Context;
 import android.support.v4.util.ArraySet;
 import android.text.TextUtils;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Supplier;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.Collections;
@@ -37,8 +42,8 @@ public class SigninPromoUtil {
     public static boolean launchSigninPromoIfNeeded(final Activity activity) {
         ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
         int currentMajorVersion = ChromeVersionInfo.getProductMajorVersion();
-        boolean wasSignedIn =
-                TextUtils.isEmpty(PrefServiceBridge.getInstance().getSyncLastAccountName());
+        boolean wasSignedIn = TextUtils.isEmpty(
+                PrefServiceBridge.getInstance().getString(Pref.SYNC_LAST_ACCOUNT_NAME));
 
         Supplier<Set<String>> accountNamesSupplier =
                 () -> new ArraySet<>(AccountManagerFacade.get().tryGetGoogleAccountNames());
@@ -47,7 +52,7 @@ public class SigninPromoUtil {
             return false;
         }
 
-        SigninActivity.startIfAllowed(activity, SigninAccessPoint.SIGNIN_PROMO);
+        startSigninActivityIfAllowed(activity, SigninAccessPoint.SIGNIN_PROMO);
         preferenceManager.setSigninPromoLastShownVersion(currentMajorVersion);
         preferenceManager.setSigninPromoLastAccountNames(
                 new ArraySet<>(AccountManagerFacade.get().tryGetGoogleAccountNames()));
@@ -115,6 +120,24 @@ public class SigninPromoUtil {
     }
 
     /**
+     * Launches the {@link SigninActivity} if signin is allowed.
+     * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.
+     * @return a boolean indicating if the SigninActivity is launched.
+     */
+    public static boolean startSigninActivityIfAllowed(
+            Context context, @SigninAccessPoint int accessPoint) {
+        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
+        if (signinManager.isSignInAllowed()) {
+            SigninActivityLauncher.get().launchActivity(context, accessPoint);
+            return true;
+        }
+        if (signinManager.isSigninDisabledByPolicy()) {
+            ManagedPreferencesUtils.showManagedByAdministratorToast(context);
+        }
+        return false;
+    }
+
+    /**
      * A convenience method to create an SigninActivity, passing the access point as an
      * intent extra.
      * @param window WindowAndroid from which to get the Activity/Context.
@@ -124,7 +147,7 @@ public class SigninPromoUtil {
     private static void openSigninActivityForPromo(WindowAndroid window, int accessPoint) {
         Activity activity = window.getActivity().get();
         if (activity != null) {
-            SigninActivity.startIfAllowed(activity, accessPoint);
+            startSigninActivityIfAllowed(activity, accessPoint);
         }
     }
 }

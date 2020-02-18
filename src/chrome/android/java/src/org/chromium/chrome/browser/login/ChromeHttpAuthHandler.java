@@ -9,9 +9,11 @@ import android.app.Activity;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -68,18 +70,21 @@ public class ChromeHttpAuthHandler extends EmptyTabObserver {
      * Cancel the authorization request.
      */
     public void cancel() {
-        nativeCancelAuth(mNativeChromeHttpAuthHandler);
+        ChromeHttpAuthHandlerJni.get().cancelAuth(
+                mNativeChromeHttpAuthHandler, ChromeHttpAuthHandler.this);
     }
 
     /**
      * Proceed with the authorization with the given credentials.
      */
     public void proceed(String username, String password) {
-        nativeSetAuth(mNativeChromeHttpAuthHandler, username, password);
+        ChromeHttpAuthHandlerJni.get().setAuth(
+                mNativeChromeHttpAuthHandler, ChromeHttpAuthHandler.this, username, password);
     }
 
     public String getMessageBody() {
-        return nativeGetMessageBody(mNativeChromeHttpAuthHandler);
+        return ChromeHttpAuthHandlerJni.get().getMessageBody(
+                mNativeChromeHttpAuthHandler, ChromeHttpAuthHandler.this);
     }
 
     /** Return whether the auth dialog is being shown. */
@@ -89,7 +94,7 @@ public class ChromeHttpAuthHandler extends EmptyTabObserver {
 
     @CalledByNative
     private void showDialog(Tab tab, WindowAndroid windowAndroid) {
-        if (tab == null || tab.isHidden() || windowAndroid == null) {
+        if (tab == null || ((TabImpl) tab).isHidden() || windowAndroid == null) {
             cancel();
             return;
         }
@@ -157,12 +162,12 @@ public class ChromeHttpAuthHandler extends EmptyTabObserver {
         }
     }
 
-    // ---------------------------------------------
-    // Native side calls
-    // ---------------------------------------------
+    @NativeMethods
+    interface Natives {
+        void setAuth(long nativeChromeHttpAuthHandler, ChromeHttpAuthHandler caller,
+                String username, String password);
 
-    private native void nativeSetAuth(
-            long nativeChromeHttpAuthHandler, String username, String password);
-    private native void nativeCancelAuth(long nativeChromeHttpAuthHandler);
-    private native String nativeGetMessageBody(long nativeChromeHttpAuthHandler);
+        void cancelAuth(long nativeChromeHttpAuthHandler, ChromeHttpAuthHandler caller);
+        String getMessageBody(long nativeChromeHttpAuthHandler, ChromeHttpAuthHandler caller);
+    }
 }

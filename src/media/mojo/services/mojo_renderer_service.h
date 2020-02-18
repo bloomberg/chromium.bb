@@ -21,7 +21,11 @@
 #include "media/base/renderer_client.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace media {
 
@@ -35,12 +39,12 @@ class Renderer;
 class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
                                               public RendererClient {
  public:
-  // Helper function to bind MojoRendererService with a StrongBinding,
-  // which is safely accessible via the returned StrongBindingPtr.
-  static mojo::StrongBindingPtr<mojom::Renderer> Create(
+  // Helper function to bind MojoRendererService with a SelfOwendReceiver,
+  // which is safely accessible via the returned SelfOwnedReceiverRef.
+  static mojo::SelfOwnedReceiverRef<mojom::Renderer> Create(
       MojoCdmServiceContext* mojo_cdm_service_context,
       std::unique_ptr<media::Renderer> renderer,
-      mojo::InterfaceRequest<mojom::Renderer> request);
+      mojo::PendingReceiver<mojom::Renderer> receiver);
 
   // |mojo_cdm_service_context| can be used to find the CDM to support
   // encrypted media. If null, encrypted media is not supported.
@@ -51,8 +55,9 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
 
   // mojom::Renderer implementation.
   void Initialize(
-      mojom::RendererClientAssociatedPtrInfo client,
-      base::Optional<std::vector<mojom::DemuxerStreamPtrInfo>> streams,
+      mojo::PendingAssociatedRemote<mojom::RendererClient> client,
+      base::Optional<std::vector<mojo::PendingRemote<mojom::DemuxerStream>>>
+          streams,
       mojom::MediaUrlParamsPtr media_url_params,
       InitializeCallback callback) final;
   void Flush(FlushCallback callback) final;
@@ -120,7 +125,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   base::RepeatingTimer time_update_timer_;
   base::TimeDelta last_media_time_;
 
-  mojom::RendererClientAssociatedPtr client_;
+  mojo::AssociatedRemote<mojom::RendererClient> client_;
 
   // Holds the CdmContextRef to keep the CdmContext alive for the lifetime of
   // the |renderer_|.

@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"crypto"
 	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/rsa"
 	"crypto/subtle"
@@ -18,8 +19,6 @@ import (
 	"math/big"
 	"net"
 	"time"
-
-	"boringssl.googlesource.com/boringssl/ssl/test/runner/ed25519"
 )
 
 type clientHandshakeState struct {
@@ -129,7 +128,6 @@ func (c *Conn) clientHandshake() error {
 		omitExtensions:          c.config.Bugs.OmitExtensions,
 		emptyExtensions:         c.config.Bugs.EmptyExtensions,
 		delegatedCredentials:    !c.config.Bugs.DisableDelegatedCredentials,
-		pqExperimentSignal:      c.config.PQExperimentSignal,
 	}
 
 	if maxVersion >= VersionTLS13 {
@@ -1460,7 +1458,7 @@ func (hs *clientHandshakeState) verifyCertificates(certMsg *certificateMsg) erro
 		}
 	}
 
-	leafPublicKey := getCertificatePublicKey(certs[0])
+	leafPublicKey := certs[0].PublicKey
 	switch leafPublicKey.(type) {
 	case *rsa.PublicKey, *ecdsa.PublicKey, ed25519.PublicKey:
 		break
@@ -1671,10 +1669,6 @@ func (hs *clientHandshakeState) processServerExtensions(serverExtensions *server
 			return errors.New("tls: server sent QUIC transport params for TLS version less than 1.3")
 		}
 		c.quicTransportParams = serverExtensions.quicTransportParams
-	}
-
-	if c.config.Bugs.ExpectPQExperimentSignal != serverExtensions.pqExperimentSignal {
-		return fmt.Errorf("tls: PQ experiment signal presence (%t) was not what was expected", serverExtensions.pqExperimentSignal)
 	}
 
 	return nil

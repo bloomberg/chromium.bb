@@ -667,22 +667,22 @@ hb_font_funcs_is_immutable (hb_font_funcs_t *ffuncs)
 
 
 #define HB_FONT_FUNC_IMPLEMENT(name) \
-                                                                         \
+									 \
 void                                                                     \
 hb_font_funcs_set_##name##_func (hb_font_funcs_t             *ffuncs,    \
-                                 hb_font_get_##name##_func_t  func,      \
-                                 void                        *user_data, \
-                                 hb_destroy_func_t            destroy)   \
+				 hb_font_get_##name##_func_t  func,      \
+				 void                        *user_data, \
+				 hb_destroy_func_t            destroy)   \
 {                                                                        \
   if (hb_object_is_immutable (ffuncs)) {                                 \
     if (destroy)                                                         \
       destroy (user_data);                                               \
     return;                                                              \
   }                                                                      \
-                                                                         \
+									 \
   if (ffuncs->destroy.name)                                              \
     ffuncs->destroy.name (ffuncs->user_data.name);                       \
-                                                                         \
+									 \
   if (func) {                                                            \
     ffuncs->get.f.name = func;                                           \
     ffuncs->user_data.name = user_data;                                  \
@@ -789,6 +789,29 @@ hb_font_get_nominal_glyph (hb_font_t *font,
 			   hb_codepoint_t *glyph)
 {
   return font->get_nominal_glyph (unicode, glyph);
+}
+
+/**
+ * hb_font_get_nominal_glyphs:
+ * @font: a font.
+ *
+ *
+ *
+ * Return value:
+ *
+ * Since: 2.6.3
+ **/
+unsigned int
+hb_font_get_nominal_glyphs (hb_font_t *font,
+			    unsigned int count,
+			    const hb_codepoint_t *first_unicode,
+			    unsigned int unicode_stride,
+			    hb_codepoint_t *first_glyph,
+			    unsigned int glyph_stride)
+{
+  return font->get_nominal_glyphs (count,
+				   first_unicode, unicode_stride,
+				   first_glyph, glyph_stride);
 }
 
 /**
@@ -1385,6 +1408,7 @@ hb_font_create_sub_font (hb_font_t *parent)
 
   font->x_scale = parent->x_scale;
   font->y_scale = parent->y_scale;
+  font->mults_changed ();
   font->x_ppem = parent->x_ppem;
   font->y_ppem = parent->y_ppem;
   font->ptem = parent->ptem;
@@ -1675,8 +1699,8 @@ hb_font_set_funcs (hb_font_t         *font,
  **/
 void
 hb_font_set_funcs_data (hb_font_t         *font,
-		        void              *font_data,
-		        hb_destroy_func_t  destroy)
+			void              *font_data,
+			hb_destroy_func_t  destroy)
 {
   /* Destroy user_data? */
   if (hb_object_is_immutable (font))

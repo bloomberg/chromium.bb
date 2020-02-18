@@ -3,11 +3,9 @@ include_rules = [
   "+cc/layers/layer.h",
   "+chrome/android/test_support_jni_headers",
   "+chrome/lib/image_fetcher/public/android/jni_headers",
-  "+chrome/lib/util/public/android/jni_headers",
   "+chrome_jni_registration/chrome_jni_registration.h",
   "+device/vr/buildflags/buildflags.h",
   "+media/gpu",
-  "+media/video",
   "+sandbox/linux/seccomp-bpf/sandbox_bpf.h",
   "+sandbox/linux/seccomp-bpf-helpers",
   "+sandbox/sandbox_buildflags.h",
@@ -17,9 +15,10 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  # Special-case where monochrome composes chrome+webview
+  # Special-case where monochrome composes chrome+webview+weblayer
   "monochrome_entry_point\.cc": [
     "+android_webview",
+    "+weblayer",
   ],
   # Allowed for test setup.
   "chrome_entry_point_for_test\.cc": [

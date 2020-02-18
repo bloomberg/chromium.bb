@@ -6,6 +6,8 @@
 
 #include <cstdint>
 #include <cstring>
+#include <forward_list>
+#include <utility>
 
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_framer.h"
@@ -16,7 +18,6 @@
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 
 namespace quic {
@@ -42,6 +43,8 @@ enum TransportParameters::TransportParameterId : uint16_t {
   kDisableMigration = 0xc,
   kPreferredAddress = 0xd,
   kActiveConnectionIdLimit = 0xe,
+
+  kMaxDatagramFrameSize = 0x20,
 
   kGoogleQuicParam = 18257,  // Used for non-standard Google-specific params.
   kGoogleQuicVersion =
@@ -94,6 +97,8 @@ std::string TransportParameterIdToString(
       return "preferred_address";
     case TransportParameters::kActiveConnectionIdLimit:
       return "active_connection_id_limit";
+    case TransportParameters::kMaxDatagramFrameSize:
+      return "max_datagram_frame_size";
     case TransportParameters::kGoogleQuicParam:
       return "google";
     case TransportParameters::kGoogleQuicVersion:
@@ -278,10 +283,15 @@ std::string TransportParameters::ToString() const {
           preferred_address->ToString();
   }
   rv += active_connection_id_limit.ToString(/*for_use_in_list=*/true);
+  rv += max_datagram_frame_size.ToString(/*for_use_in_list=*/true);
   if (google_quic_params) {
     rv += " " + TransportParameterIdToString(kGoogleQuicParam);
   }
   rv += "]";
+  for (const auto& kv : custom_parameters) {
+    rv += " 0x" + QuicTextUtils::Hex(static_cast<uint32_t>(kv.first));
+    rv += "=" + QuicTextUtils::HexEncode(kv.second);
+  }
   return rv;
 }
 
@@ -308,7 +318,8 @@ TransportParameters::TransportParameters()
                     0,
                     kMaxMaxAckDelayTransportParam),
       disable_migration(false),
-      active_connection_id_limit(kActiveConnectionIdLimit)
+      active_connection_id_limit(kActiveConnectionIdLimit),
+      max_datagram_frame_size(kMaxDatagramFrameSize)
 // Important note: any new transport parameters must be added
 // to TransportParameters::AreValid, SerializeTransportParameters and
 // ParseTransportParameters.
@@ -349,15 +360,15 @@ bool TransportParameters::AreValid() const {
     QUIC_BUG << "Preferred address family failure";
     return false;
   }
-  const bool ok = idle_timeout_milliseconds.IsValid() &&
-                  max_packet_size.IsValid() && initial_max_data.IsValid() &&
-                  initial_max_stream_data_bidi_local.IsValid() &&
-                  initial_max_stream_data_bidi_remote.IsValid() &&
-                  initial_max_stream_data_uni.IsValid() &&
-                  initial_max_streams_bidi.IsValid() &&
-                  initial_max_streams_uni.IsValid() &&
-                  ack_delay_exponent.IsValid() && max_ack_delay.IsValid() &&
-                  active_connection_id_limit.IsValid();
+  const bool ok =
+      idle_timeout_milliseconds.IsValid() && max_packet_size.IsValid() &&
+      initial_max_data.IsValid() &&
+      initial_max_stream_data_bidi_local.IsValid() &&
+      initial_max_stream_data_bidi_remote.IsValid() &&
+      initial_max_stream_data_uni.IsValid() &&
+      initial_max_streams_bidi.IsValid() && initial_max_streams_uni.IsValid() &&
+      ack_delay_exponent.IsValid() && max_ack_delay.IsValid() &&
+      active_connection_id_limit.IsValid() && max_datagram_frame_size.IsValid();
   if (!ok) {
     QUIC_DLOG(ERROR) << "Invalid transport parameters " << *this;
   }
@@ -440,7 +451,8 @@ bool SerializeTransportParameters(ParsedQuicVersion /*version*/,
       !in.initial_max_streams_uni.WriteToCbb(&params) ||
       !in.ack_delay_exponent.WriteToCbb(&params) ||
       !in.max_ack_delay.WriteToCbb(&params) ||
-      !in.active_connection_id_limit.WriteToCbb(&params)) {
+      !in.active_connection_id_limit.WriteToCbb(&params) ||
+      !in.max_datagram_frame_size.WriteToCbb(&params)) {
     QUIC_BUG << "Failed to write integers for " << in;
     return false;
   }
@@ -531,6 +543,23 @@ bool SerializeTransportParameters(ParsedQuicVersion /*version*/,
         QUIC_BUG << "Failed to write supported version for " << in;
         return false;
       }
+    }
+  }
+
+  auto custom_parameters = std::make_unique<CBB[]>(in.custom_parameters.size());
+  int i = 0;
+  for (const auto& kv : in.custom_parameters) {
+    CBB* custom_parameter = &custom_parameters[i++];
+    QUIC_BUG_IF(kv.first < 0xff00) << "custom_parameters should not be used "
+                                      "for non-private use parameters";
+    if (!CBB_add_u16(&params, kv.first) ||
+        !CBB_add_u16_length_prefixed(&params, custom_parameter) ||
+        !CBB_add_bytes(custom_parameter,
+                       reinterpret_cast<const uint8_t*>(kv.second.data()),
+                       kv.second.size())) {
+      QUIC_BUG << "Failed to write custom parameter "
+               << static_cast<int>(kv.first);
+      return false;
     }
   }
 
@@ -706,11 +735,14 @@ bool ParseTransportParameters(ParsedQuicVersion version,
         preferred_address.stateless_reset_token.assign(
             CBS_data(&value), CBS_data(&value) + CBS_len(&value));
         out->preferred_address =
-            QuicMakeUnique<TransportParameters::PreferredAddress>(
+            std::make_unique<TransportParameters::PreferredAddress>(
                 preferred_address);
       } break;
       case TransportParameters::kActiveConnectionIdLimit:
         parse_success = out->active_connection_id_limit.ReadFromCbs(&value);
+        break;
+      case TransportParameters::kMaxDatagramFrameSize:
+        parse_success = out->max_datagram_frame_size.ReadFromCbs(&value);
         break;
       case TransportParameters::kGoogleQuicParam: {
         if (out->google_quic_params) {
@@ -744,6 +776,10 @@ bool ParseTransportParameters(ParsedQuicVersion version,
           }
         }
       } break;
+      default:
+        out->custom_parameters[param_id] = std::string(
+            reinterpret_cast<const char*>(CBS_data(&value)), CBS_len(&value));
+        break;
     }
     if (!parse_success) {
       return false;

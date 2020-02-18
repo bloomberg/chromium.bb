@@ -15,11 +15,11 @@
 #include "tests/DawnTest.h"
 
 #include "utils/ComboRenderPipelineDescriptor.h"
-#include "utils/DawnHelpers.h"
+#include "utils/WGPUHelpers.h"
 
 class ViewportTest : public DawnTest {
   protected:
-    dawn::RenderPipeline CreatePipelineForTest(dawn::CompareFunction depthCompare) {
+    wgpu::RenderPipeline CreatePipelineForTest(wgpu::CompareFunction depthCompare) {
         utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
 
         // Draw two triangles:
@@ -30,12 +30,12 @@ class ViewportTest : public DawnTest {
         const char* vs =
             R"(#version 450
             layout(location = 0) out vec4 color;
-            const vec3 pos[6] = vec3[6](vec3(-1.0f, -1.0f, 1.0f),
-                                        vec3(-1.0f,  1.0f, 0.5f),
-                                        vec3( 1.0f, -1.0f, 0.5f),
-                                        vec3( 1.0f, -1.0f, 0.5f),
-                                        vec3(-1.0f,  1.0f, 0.5f),
-                                        vec3( 1.0f,  1.0f, 0.0f));
+            const vec3 pos[6] = vec3[6](vec3(-1.0f,  1.0f, 1.0f),
+                                        vec3(-1.0f, -1.0f, 0.5f),
+                                        vec3( 1.0f,  1.0f, 0.5f),
+                                        vec3( 1.0f,  1.0f, 0.5f),
+                                        vec3(-1.0f, -1.0f, 0.5f),
+                                        vec3( 1.0f, -1.0f, 0.0f));
             void main() {
                 gl_Position = vec4(pos[gl_VertexIndex], 1.0);
                 if (gl_VertexIndex < 3) {
@@ -63,12 +63,12 @@ class ViewportTest : public DawnTest {
         return device.CreateRenderPipeline(&pipelineDescriptor);
     }
 
-    dawn::Texture Create2DTextureForTest(dawn::TextureFormat format) {
-        dawn::TextureDescriptor textureDescriptor;
-        textureDescriptor.dimension = dawn::TextureDimension::e2D;
+    wgpu::Texture Create2DTextureForTest(wgpu::TextureFormat format) {
+        wgpu::TextureDescriptor textureDescriptor;
+        textureDescriptor.dimension = wgpu::TextureDimension::e2D;
         textureDescriptor.format = format;
         textureDescriptor.usage =
-            dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
+            wgpu::TextureUsage::OutputAttachment | wgpu::TextureUsage::CopySrc;
         textureDescriptor.arrayLayerCount = 1;
         textureDescriptor.mipLevelCount = 1;
         textureDescriptor.sampleCount = 1;
@@ -97,31 +97,31 @@ class ViewportTest : public DawnTest {
     };
 
     void DoTest(const TestInfo& info) {
-        dawn::CommandEncoder commandEncoder = device.CreateCommandEncoder();
+        wgpu::CommandEncoder commandEncoder = device.CreateCommandEncoder();
 
         // Create render targets for 2 render passes.
-        dawn::Texture colorTexture1 = Create2DTextureForTest(dawn::TextureFormat::RGBA8Unorm);
-        dawn::Texture depthStencilTexture1 =
-            Create2DTextureForTest(dawn::TextureFormat::Depth24PlusStencil8);
+        wgpu::Texture colorTexture1 = Create2DTextureForTest(wgpu::TextureFormat::RGBA8Unorm);
+        wgpu::Texture depthStencilTexture1 =
+            Create2DTextureForTest(wgpu::TextureFormat::Depth24PlusStencil8);
 
-        dawn::Texture colorTexture2 = Create2DTextureForTest(dawn::TextureFormat::RGBA8Unorm);
-        dawn::Texture depthStencilTexture2 =
-            Create2DTextureForTest(dawn::TextureFormat::Depth24PlusStencil8);
+        wgpu::Texture colorTexture2 = Create2DTextureForTest(wgpu::TextureFormat::RGBA8Unorm);
+        wgpu::Texture depthStencilTexture2 =
+            Create2DTextureForTest(wgpu::TextureFormat::Depth24PlusStencil8);
 
         // Create render pass 1
         // Note that we may explicitly call SetViewport() in this pass
         {
             utils::ComboRenderPassDescriptor renderPassDescriptor1(
                 {colorTexture1.CreateView()}, depthStencilTexture1.CreateView());
-            renderPassDescriptor1.cColorAttachmentsInfoPtr[0]->clearColor = {0.0, 0.0, 1.0, 1.0};
-            renderPassDescriptor1.cColorAttachmentsInfoPtr[0]->loadOp = dawn::LoadOp::Clear;
+            renderPassDescriptor1.cColorAttachments[0].clearColor = {0.0, 0.0, 1.0, 1.0};
+            renderPassDescriptor1.cColorAttachments[0].loadOp = wgpu::LoadOp::Clear;
 
             renderPassDescriptor1.cDepthStencilAttachmentInfo.clearDepth = info.clearDepth;
-            renderPassDescriptor1.cDepthStencilAttachmentInfo.depthLoadOp = dawn::LoadOp::Clear;
+            renderPassDescriptor1.cDepthStencilAttachmentInfo.depthLoadOp = wgpu::LoadOp::Clear;
 
-            dawn::RenderPassEncoder renderPass1 =
+            wgpu::RenderPassEncoder renderPass1 =
                 commandEncoder.BeginRenderPass(&renderPassDescriptor1);
-            renderPass1.SetPipeline(CreatePipelineForTest(dawn::CompareFunction::Less));
+            renderPass1.SetPipeline(CreatePipelineForTest(wgpu::CompareFunction::Less));
             if (info.setViewport) {
                 ViewportParams viewport = info.viewport;
                 renderPass1.SetViewport(viewport.x, viewport.y, viewport.width, viewport.height,
@@ -138,27 +138,27 @@ class ViewportTest : public DawnTest {
         {
             utils::ComboRenderPassDescriptor renderPassDescriptor2(
                 {colorTexture2.CreateView()}, depthStencilTexture2.CreateView());
-            renderPassDescriptor2.cColorAttachmentsInfoPtr[0]->clearColor = {0.0, 0.0, 1.0, 1.0};
-            renderPassDescriptor2.cColorAttachmentsInfoPtr[0]->loadOp = dawn::LoadOp::Clear;
+            renderPassDescriptor2.cColorAttachments[0].clearColor = {0.0, 0.0, 1.0, 1.0};
+            renderPassDescriptor2.cColorAttachments[0].loadOp = wgpu::LoadOp::Clear;
 
             renderPassDescriptor2.cDepthStencilAttachmentInfo.clearDepth = 0.5;
-            renderPassDescriptor2.cDepthStencilAttachmentInfo.depthLoadOp = dawn::LoadOp::Clear;
+            renderPassDescriptor2.cDepthStencilAttachmentInfo.depthLoadOp = wgpu::LoadOp::Clear;
 
-            dawn::RenderPassEncoder renderPass2 =
+            wgpu::RenderPassEncoder renderPass2 =
                 commandEncoder.BeginRenderPass(&renderPassDescriptor2);
-            renderPass2.SetPipeline(CreatePipelineForTest(dawn::CompareFunction::Greater));
+            renderPass2.SetPipeline(CreatePipelineForTest(wgpu::CompareFunction::Greater));
             renderPass2.Draw(6, 1, 0, 0);
             renderPass2.EndPass();
         }
 
-        dawn::CommandBuffer commandBuffer = commandEncoder.Finish();
-        dawn::Queue queue = device.CreateQueue();
+        wgpu::CommandBuffer commandBuffer = commandEncoder.Finish();
+        wgpu::Queue queue = device.CreateQueue();
         queue.Submit(1, &commandBuffer);
 
-        constexpr RGBA8 kColor[ColorTypeCount] = {
-            RGBA8(255, 0, 0, 255),  // top-left triangle is red
-            RGBA8(0, 255, 0, 255),  // bottom-right triangle is green
-            RGBA8(0, 0, 255, 255),  // background is blue
+        const RGBA8 kColor[ColorTypeCount] = {
+            RGBA8::kRed,    // top-left triangle is red
+            RGBA8::kGreen,  // bottom-right triangle is green
+            RGBA8::kBlue,   // background is blue
         };
 
         EXPECT_PIXEL_RGBA8_EQ(kColor[info.topLeftPoint], colorTexture1, 0, 0);
@@ -383,9 +383,11 @@ TEST_P(ViewportTest, DoNotTruncateXAndY2) {
 // Width and height have fractions and they are greater than 3.5, which is the center of
 // point(3, 3). So point(3, 3) is covered by the bottom right triangle as usual.
 TEST_P(ViewportTest, DoNotTruncateWidthAndHeight) {
-    // Test failing on Intel devices (D3D, Vulkan and Metal) and D3D12.
+    // Test failing on many D3D12 backend and Intel devices.
+    // It also fails on Vulkan and GL backend on some devices.
     // See https://bugs.chromium.org/p/dawn/issues/detail?id=205
-    DAWN_SKIP_TEST_IF(IsIntel() || IsD3D12());
+    // See https://bugs.chromium.org/p/dawn/issues/detail?id=257
+    DAWN_SKIP_TEST_IF(IsIntel() || !IsMetal());
     ViewportParams viewport = {0.0, 0.0, 3.51, 3.51, 0.0, 1.0};
     TestInfo info = {viewport, TopLeftTriangleColor, BottomRightTriangleColor};
     DoTest(info);

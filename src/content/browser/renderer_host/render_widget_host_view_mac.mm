@@ -169,14 +169,11 @@ id RenderWidgetHostViewMac::GetAccessibilityFocusedUIElement() {
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, public:
 
-RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
-                                                 bool is_guest_view_hack)
+RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : RenderWidgetHostViewBase(widget),
       page_at_minimum_scale_(true),
       mouse_wheel_phase_handler_(this),
-      remote_ns_view_client_binding_(this),
       is_loading_(false),
-      is_guest_view_hack_(is_guest_view_hack),
       popup_parent_host_view_(nullptr),
       popup_child_host_view_(nullptr),
       gesture_provider_(ui::GetGestureProviderConfig(
@@ -195,16 +192,13 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   display_ =
       display::Screen::GetScreen()->GetDisplayNearestWindow([NSApp keyWindow]);
 
-  viz::FrameSinkId frame_sink_id = is_guest_view_hack_
-                                       ? AllocateFrameSinkIdForGuestViewHack()
-                                       : host()->GetFrameSinkId();
+  viz::FrameSinkId frame_sink_id = host()->GetFrameSinkId();
 
   browser_compositor_.reset(new BrowserCompositorMac(
       this, this, host()->is_hidden(), display_, frame_sink_id));
   DCHECK(![GetInProcessNSView() window]);
 
-  if (!is_guest_view_hack_)
-    host()->SetView(this);
+  host()->SetView(this);
 
   // Let the page-level input event router know about our surface ID
   // namespace for surface-based hit testing.
@@ -248,10 +242,10 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
   remote_window_accessible_.reset();
 
   // Disconnect from the previous bridge (this will have the effect of
-  // destroying the associated bridge), and close the binding (to allow it
+  // destroying the associated bridge), and close the receiver (to allow it
   // to be re-bound). Note that |in_process_ns_view_bridge_| remains valid.
-  remote_ns_view_client_binding_.Close();
-  remote_ns_view_ptr_.reset();
+  remote_ns_view_client_receiver_.reset();
+  remote_ns_view_.reset();
 
   // Enable accessibility focus overriding for remote NSViews.
   accessibility_focus_overrider_.SetAppIsRemote(remote_cocoa_application !=
@@ -263,26 +257,25 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
     return;
   }
 
-  remote_cocoa::mojom::RenderWidgetHostNSViewHostAssociatedPtr client;
-  remote_ns_view_client_binding_.Bind(mojo::MakeRequest(&client));
-  remote_cocoa::mojom::RenderWidgetHostNSViewAssociatedRequest bridge_request =
-      mojo::MakeRequest(&remote_ns_view_ptr_);
+  mojo::PendingAssociatedRemote<remote_cocoa::mojom::RenderWidgetHostNSViewHost>
+      client = remote_ns_view_client_receiver_.BindNewEndpointAndPassRemote();
+  mojo::PendingAssociatedReceiver<remote_cocoa::mojom::RenderWidgetHostNSView>
+      view_receiver = remote_ns_view_.BindNewEndpointAndPassReceiver();
 
-  // Cast from mojom::RenderWidgetHostNSViewHostPtr and
-  // mojom::RenderWidgetHostNSViewBridgeRequest to the public interfaces
-  // accepted by the application.
+  // Cast from PendingAssociatedRemote<mojom::RenderWidgetHostNSViewHost> and
+  // mojo::PendingAssociatedReceiver<mojom::RenderWidgetHostNSView> to the
+  // public interfaces accepted by the application.
   // TODO(ccameron): Remove the need for this cast.
   // https://crbug.com/888290
-  mojo::AssociatedInterfacePtrInfo<remote_cocoa::mojom::StubInterface>
-      stub_client(client.PassInterface().PassHandle(), 0);
-  remote_cocoa::mojom::StubInterfaceAssociatedRequest stub_bridge_request(
-      bridge_request.PassHandle());
-
+  mojo::PendingAssociatedRemote<remote_cocoa::mojom::StubInterface> stub_client(
+      client.PassHandle(), 0);
+  mojo::PendingAssociatedReceiver<remote_cocoa::mojom::StubInterface>
+      stub_bridge_receiver(view_receiver.PassHandle());
   remote_cocoa_application->CreateRenderWidgetHostNSView(
-      std::move(stub_client), std::move(stub_bridge_request));
+      std::move(stub_client), std::move(stub_bridge_receiver));
 
-  ns_view_ = remote_ns_view_ptr_.get();
-  remote_ns_view_ptr_->SetParentWebContentsNSView(parent_ns_view_id);
+  ns_view_ = remote_ns_view_.get();
+  remote_ns_view_->SetParentWebContentsNSView(parent_ns_view_id);
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
@@ -376,13 +369,8 @@ void RenderWidgetHostViewMac::InitAsFullscreen(
 RenderWidgetHostViewBase*
 RenderWidgetHostViewMac::GetFocusedViewForTextSelection() {
   // We obtain the TextSelection from focused RWH which is obtained from the
-  // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
-  // and the focused RWH will be that of the embedder which is incorrect. In
-  // this case we should use TextSelection for |this| since RWHV for guest
-  // forwards text selection information to its platform view.
-  return is_guest_view_hack_
-             ? this
-             : GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
+  // frame tree.
+  return GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
 }
 
 RenderWidgetHostDelegate*
@@ -508,6 +496,10 @@ gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewMac::Focus() {
+  // Ignore redundant calls, as they can cause unending loops of focus-setting.
+  // https://crbug.com/998123
+  if (is_first_responder_)
+    return;
   ns_view_->MakeFirstResponder();
 }
 
@@ -637,8 +629,8 @@ void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
   // Create a rectangle for the edge of the selection focus, which will be
   // the same as the caret position if the selection is collapsed. That's
   // what we want to try to keep centered on-screen if possible.
-  gfx::Rect gfx_caret_rect(region->focus.edge_top_rounded().x(),
-                           region->focus.edge_top_rounded().y(), 1,
+  gfx::Rect gfx_caret_rect(region->focus.edge_start_rounded().x(),
+                           region->focus.edge_start_rounded().y(), 1,
                            region->focus.GetHeight());
   gfx_caret_rect += view_bounds_in_window_dip_.OffsetFromOrigin();
   gfx_caret_rect += window_frame_in_screen_dip_.OffsetFromOrigin();
@@ -701,8 +693,8 @@ void RenderWidgetHostViewMac::Destroy() {
   // the other side of |ns_view_| may outlive us due to other retains.
   ns_view_ = nullptr;
   in_process_ns_view_bridge_.reset();
-  remote_ns_view_client_binding_.Close();
-  remote_ns_view_ptr_.reset();
+  remote_ns_view_client_receiver_.reset();
+  remote_ns_view_.reset();
 
   // Delete the delegated frame state, which will reach back into
   // host().
@@ -878,8 +870,6 @@ void RenderWidgetHostViewMac::TakeFallbackContentFrom(
     RenderWidgetHostView* view) {
   DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
               ->IsRenderWidgetHostViewChildFrame());
-  DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
-              ->IsRenderWidgetHostViewGuest());
   RenderWidgetHostViewMac* view_mac =
       static_cast<RenderWidgetHostViewMac*>(view);
   ScopedCAActionDisabler disabler;
@@ -1394,14 +1384,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     password_input_enabler_.reset(new ui::ScopedPasswordInputEnabler());
   else
     password_input_enabler_.reset();
-}
-
-// static
-viz::FrameSinkId
-RenderWidgetHostViewMac::AllocateFrameSinkIdForGuestViewHack() {
-  return ImageTransportFactory::GetInstance()
-      ->GetContextFactoryPrivate()
-      ->AllocateFrameSinkId();
 }
 
 MouseWheelPhaseHandler* RenderWidgetHostViewMac::GetMouseWheelPhaseHandler() {

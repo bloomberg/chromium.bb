@@ -6,16 +6,19 @@
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_MANAGER_H_
 
 #include <unordered_map>
+#include <utility>
 
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/permissions/notification_permission_ui_selector.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 enum class PermissionAction;
+enum class PermissionPromptDisposition;
 class PermissionRequest;
 
 namespace test {
@@ -54,6 +57,9 @@ class PermissionRequestManager
     DISMISS
   };
 
+  using UiToUse = NotificationPermissionUiSelector::UiToUse;
+  using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
+
   ~PermissionRequestManager() override;
 
   // Adds a new request to the permission bubble. Ownership of the request
@@ -68,10 +74,6 @@ class PermissionRequestManager
   // Will reposition the bubble (may change parent if necessary).
   void UpdateAnchorPosition();
 
-  // True if a permission bubble is currently visible.
-  // TODO(hcarmona): Remove this as part of the bubble API work.
-  bool IsBubbleVisible();
-
   // Get the native window of the bubble.
   // TODO(hcarmona): Remove this as part of the bubble API work.
   gfx::NativeWindow GetBubbleWindow();
@@ -80,7 +82,16 @@ class PermissionRequestManager
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  bool ShouldShowQuietPermissionPrompt();
+  // Notification permission requests might use a quiet UI when the
+  // "quiet-notification-prompts" feature is enabled. This is done either
+  // directly by the user in notifications settings, or via automatic logic that
+  // might trigger the current request to use the quiet UI.
+  bool ShouldCurrentRequestUseQuietUI() const;
+  // If |ShouldCurrentRequestUseQuietUI| return true, this will provide a reason
+  // as to why the quiet UI needs to be used.
+  QuietUiReason ReasonForUsingQuietUi() const;
+
+  bool IsRequestInProgress() const;
 
   // Do NOT use this methods in production code. Use this methods in browser
   // tests that need to accept or deny permissions when requested in
@@ -96,8 +107,7 @@ class PermissionRequestManager
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DocumentOnLoadCompletedInMainFrame() override;
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override;
+  void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
 
@@ -107,6 +117,12 @@ class PermissionRequestManager
   void Accept() override;
   void Deny() override;
   void Closing() override;
+
+  // For testing only, used to override the default UI selector.
+  void set_notification_permission_ui_selector_for_testing(
+      std::unique_ptr<NotificationPermissionUiSelector> selector) {
+    notification_permission_ui_selector_ = std::move(selector);
+  }
 
  private:
   friend class test::PermissionRequestManagerTestApi;
@@ -123,15 +139,23 @@ class PermissionRequestManager
 
   explicit PermissionRequestManager(content::WebContents* web_contents);
 
-  // Posts a task which will allow the bubble to become visible if it is needed.
+  // Posts a task which will allow the bubble to become visible.
   void ScheduleShowBubble();
 
-  // If we aren't already showing a bubble, dequeue and show a pending request.
-  void DequeueRequestsAndShowBubble();
+  // If a request isn't already in progress, deque and schedule showing the
+  // request.
+  void DequeueRequestIfNeeded();
+
+  // Schedule a call to dequeue request. Is needed to ensure requests that can
+  // be grouped together have time to all be added to the queue.
+  void ScheduleDequeueRequestIfNeeded();
+
+  // Will determine if it's possible and necessary to dequeue a new request.
+  bool ShouldDequeueNewRequest();
 
   // Shows the bubble for a request that has just been dequeued, or re-show a
   // bubble after switching tabs away and back.
-  void ShowBubble(bool is_reshow);
+  void ShowBubble();
 
   // Delete the view object
   void DeleteBubble();
@@ -163,6 +187,12 @@ class PermissionRequestManager
   void NotifyBubbleAdded();
   void NotifyBubbleRemoved();
 
+  void OnSelectedUiToUseForNotifications(
+      UiToUse ui_to_use,
+      base::Optional<QuietUiReason> quiet_ui_reason);
+
+  PermissionPromptDisposition DetermineCurrentRequestUIDispositionForUMA();
+
   void DoAutoResponseForTesting();
 
   // Factory to be used to create views when needed.
@@ -173,10 +203,12 @@ class PermissionRequestManager
   // the object alive. The infobar system hides the actual infobar UI and modals
   // prevent tab switching.
   std::unique_ptr<PermissionPrompt> view_;
-  // We only show new prompts when both of these are true.
-  bool main_frame_has_fully_loaded_;
+  // We only show new prompts when |tab_is_hidden_| is false.
   bool tab_is_hidden_;
 
+  // The request (or requests) that the user is currently being prompted for.
+  // When this is non-empty, the |view_| is generally non-null as long as the
+  // tab is visible.
   std::vector<PermissionRequest*> requests_;
   base::circular_deque<PermissionRequest*> queued_requests_;
   // Maps from the first request of a kind to subsequent requests that were
@@ -190,6 +222,25 @@ class PermissionRequestManager
   // Suppress notification permission prompts in this tab, regardless of the
   // origin requesting the permission.
   bool is_notification_prompt_cooldown_active_ = false;
+
+  // Decides if the quiet prompt UI should be used to display notification
+  // permission requests.
+  std::unique_ptr<NotificationPermissionUiSelector>
+      notification_permission_ui_selector_;
+
+  // Whether the view for the current |requests_| has been shown to the user at
+  // least once.
+  bool current_request_view_shown_to_user_ = false;
+
+  // Whether to use the normal or quiet UI to display the current permission
+  // |requests_|, or nullopt if  we are still waiting on the result from the
+  // |notification_permission_ui_selector_|.
+  base::Optional<UiToUse> current_request_ui_to_use_;
+
+  // The reason for using the quiet UI to display the current permission
+  // |requests_|, or nullopt if we are still waiting for the response from the
+  // |notification_permission_ui_selector_| or we are using the normal UI.
+  base::Optional<QuietUiReason> current_request_quiet_ui_reason_;
 
   base::WeakPtrFactory<PermissionRequestManager> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();

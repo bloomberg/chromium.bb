@@ -5,6 +5,7 @@
 #include "weblayer/browser/navigation_impl.h"
 
 #include "content/public/browser/navigation_handle.h"
+#include "net/base/net_errors.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_array.h"
@@ -45,7 +46,7 @@ ScopedJavaLocalRef<jstring> NavigationImpl::GetUri(
       base::android::ConvertUTF8ToJavaString(env, GetURL().spec()));
 }
 
-ScopedJavaLocalRef<jobject> NavigationImpl::GetRedirectChain(
+ScopedJavaLocalRef<jobjectArray> NavigationImpl::GetRedirectChain(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   std::vector<std::string> jni_redirects;
@@ -53,6 +54,7 @@ ScopedJavaLocalRef<jobject> NavigationImpl::GetRedirectChain(
     jni_redirects.push_back(redirect.spec());
   return base::android::ToJavaArrayOfStrings(env, jni_redirects);
 }
+
 #endif
 
 GURL NavigationImpl::GetURL() {
@@ -63,9 +65,49 @@ const std::vector<GURL>& NavigationImpl::GetRedirectChain() {
   return navigation_handle_->GetRedirectChain();
 }
 
-Navigation::State NavigationImpl::GetState() {
-  NOTIMPLEMENTED() << "TODO: properly implement this";
-  return Navigation::State::kWaitingResponse;
+NavigationState NavigationImpl::GetState() {
+  if (navigation_handle_->IsErrorPage())
+    return NavigationState::kFailed;
+  if (navigation_handle_->HasCommitted())
+    return NavigationState::kComplete;
+  if (navigation_handle_->GetResponseHeaders())
+    return NavigationState::kReceivingBytes;
+  return NavigationState::kWaitingResponse;
+}
+
+int NavigationImpl::GetHttpStatusCode() {
+  auto* response_headers = navigation_handle_->GetResponseHeaders();
+  return response_headers ? response_headers->response_code() : 0;
+}
+
+bool NavigationImpl::IsSameDocument() {
+  return navigation_handle_->IsSameDocument();
+}
+
+bool NavigationImpl::IsErrorPage() {
+  return navigation_handle_->IsErrorPage();
+}
+
+Navigation::LoadError NavigationImpl::GetLoadError() {
+  auto error_code = navigation_handle_->GetNetErrorCode();
+  if (auto* response_headers = navigation_handle_->GetResponseHeaders()) {
+    auto response_code = response_headers->response_code();
+    if (response_code >= 400 && response_code < 500)
+      return kHttpClientError;
+    if (response_code >= 500 && response_code < 600)
+      return kHttpServerError;
+  }
+
+  if (error_code == net::OK)
+    return kNoError;
+
+  if (net::IsCertificateError(error_code))
+    return kSSLError;
+
+  if (error_code <= -100 && error_code > -200)
+    return kConnectivityError;
+
+  return kOtherError;
 }
 
 }  // namespace weblayer

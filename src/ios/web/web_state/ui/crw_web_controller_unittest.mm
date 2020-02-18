@@ -46,7 +46,7 @@
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
-#include "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/public/web_state_observer.h"
 #import "ios/web/security/wk_web_view_security_util.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
 #import "ios/web/test/fakes/crw_fake_wk_frame_info.h"
@@ -76,6 +76,46 @@
 
 using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
+
+// Subclass of WKWebView to check that the observers are removed when the web
+// state is destroyed.
+@interface CRWFakeWKWebViewObserverCount : WKWebView
+
+// Array storing the different key paths observed.
+@property(nonatomic, strong) NSMutableArray<NSString*>* keyPaths;
+// Whether there was observers when the WebView was stopped.
+@property(nonatomic, assign) BOOL hadObserversWhenStopping;
+
+@end
+
+@implementation CRWFakeWKWebViewObserverCount
+
+- (void)stopLoading {
+  [super stopLoading];
+  self.hadObserversWhenStopping =
+      self.hadObserversWhenStopping || self.keyPaths.count > 0;
+}
+
+- (void)removeObserver:(NSObject*)observer forKeyPath:(NSString*)keyPath {
+  [super removeObserver:observer forKeyPath:keyPath];
+  [self.keyPaths removeObject:keyPath];
+}
+
+- (void)addObserver:(NSObject*)observer
+         forKeyPath:(NSString*)keyPath
+            options:(NSKeyValueObservingOptions)options
+            context:(void*)context {
+  [super addObserver:observer
+          forKeyPath:keyPath
+             options:options
+             context:context];
+  if (!self.keyPaths) {
+    self.keyPaths = [[NSMutableArray alloc] init];
+  }
+  [self.keyPaths addObject:keyPath];
+}
+
+@end
 
 namespace web {
 namespace {
@@ -314,50 +354,6 @@ TEST_P(CRWWebControllerTest, CancelCommittedNavigation) {
             item->error_retry_state_machine().state());
 }
 
-// Tests that when a placeholder navigation is preempted by another navigation,
-// WebStateObservers get neither a DidStartNavigation nor a DidFinishNavigation
-// call for the corresponding native URL navigation.
-TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
-  // The legacy navigation manager doesn't have the concept of placeholder
-  // navigations.
-  if (!GetWebClient()->IsSlimNavigationManagerEnabled())
-    return;
-  GURL native_url(
-      url::SchemeHostPort(kTestNativeContentScheme, "ui", 0).Serialize());
-  NSString* placeholder_url = [NSString
-      stringWithFormat:@"%s%s", "about:blank?for=", native_url.spec().c_str()];
-  TestWebStateObserver observer(web_state());
-
-  WKNavigation* navigation =
-      static_cast<WKNavigation*>([[NSObject alloc] init]);
-  [static_cast<WKWebView*>([[mock_web_view_ stub] andReturn:navigation])
-      loadRequest:OCMOCK_ANY];
-  TestNativeContentProvider* mock_native_provider =
-      [[TestNativeContentProvider alloc] init];
-  TestNativeContent* content =
-      [[TestNativeContent alloc] initWithURL:native_url virtualURL:native_url];
-  [mock_native_provider setController:content forURL:native_url];
-  [[web_controller() nativeContentHolder]
-      setNativeProvider:mock_native_provider];
-
-  AddPendingItem(native_url, ui::PAGE_TRANSITION_TYPED);
-
-  // Trigger a placeholder navigation.
-  [web_controller() loadCurrentURLWithRendererInitiatedNavigation:NO];
-
-  // Simulate the WKNavigationDelegate callbacks for the placeholder navigation
-  // arriving after another pending item has already been created.
-  AddPendingItem(GURL(kTestURLString), ui::PAGE_TRANSITION_TYPED);
-  SetWebViewURL(placeholder_url);
-  [navigation_delegate_ webView:mock_web_view_
-      didStartProvisionalNavigation:navigation];
-  [navigation_delegate_ webView:mock_web_view_ didCommitNavigation:navigation];
-  [navigation_delegate_ webView:mock_web_view_ didFinishNavigation:navigation];
-
-  EXPECT_FALSE(observer.did_start_navigation_info());
-  EXPECT_FALSE(observer.did_finish_navigation_info());
-}
-
 // Tests returning pending item stored in navigation context.
 TEST_P(CRWWebControllerTest, TestPendingItem) {
   ASSERT_FALSE([web_controller() pendingItemForSessionController:nil]);
@@ -417,6 +413,14 @@ TEST_P(CRWWebControllerTest, BackForwardWithPendingNavigation) {
                         web::NavigationInitiationType::BROWSER_INITIATED
                                                       hasUserGesture:YES];
   EXPECT_EQ(web::WKNavigationState::FINISHED, web_controller().navigationState);
+}
+
+// Tests that a web view is created after calling -[ensureWebViewCreated].
+TEST_P(CRWWebControllerTest, WebViewCreatedAfterEnsureWebViewCreated) {
+  [web_controller() removeWebView];
+  WKWebView* web_view = [web_controller() ensureWebViewCreated];
+  EXPECT_TRUE(web_view);
+  EXPECT_NSEQ(web_view, web_controller().jsInjector.webView);
 }
 
 INSTANTIATE_TEST_SUITES(CRWWebControllerTest);
@@ -704,6 +708,7 @@ TEST_P(CRWWebControllerResponseTest,
   EXPECT_EQ(-1, task->GetTotalBytes());
   EXPECT_TRUE(task->GetContentDisposition().empty());
   EXPECT_TRUE(task->GetMimeType().empty());
+  EXPECT_NSEQ(@"GET", task->GetHttpMethod());
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       task->GetTransitionType(),
       ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
@@ -730,6 +735,37 @@ TEST_P(CRWWebControllerResponseTest,
 
   // Verify that download task was not created for html response.
   ASSERT_TRUE(download_delegate_.alive_download_tasks().empty());
+}
+
+// Tests that webView:decidePolicyForNavigationResponse:decisionHandler:
+// correctly uses POST HTTP method for post requests.
+TEST_P(CRWWebControllerResponseTest, DownloadForPostRequest) {
+  // Simulate regular navigation response for post request with text/html MIME
+  // type.
+  GURL url(kTestURLString);
+  AddPendingItem(url, ui::PAGE_TRANSITION_TYPED);
+  web_controller()
+      .webStateImpl->GetNavigationManagerImpl()
+      .GetPendingItemInCurrentOrRestoredSession()
+      ->SetPostData([NSData data]);
+  [web_controller() loadCurrentURLWithRendererInitiatedNavigation:NO];
+  NSURLResponse* response = [[NSHTTPURLResponse alloc]
+       initWithURL:[NSURL URLWithString:@(kTestURLString)]
+        statusCode:200
+       HTTPVersion:nil
+      headerFields:nil];
+  WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
+  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
+      response, /*for_main_frame=*/YES, /*can_show_mime_type=*/NO, &policy));
+  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
+
+  // Verify that download task was created with POST method (crbug.com/.
+  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  DownloadTask* task =
+      download_delegate_.alive_download_tasks()[0].second.get();
+  ASSERT_TRUE(task);
+  EXPECT_TRUE(task->GetIndentifier());
+  EXPECT_NSEQ(@"POST", task->GetHttpMethod());
 }
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: creates
@@ -1391,6 +1427,42 @@ TEST_P(CRWWebControllerWebProcessTest, Eviction) {
 }
 
 INSTANTIATE_TEST_SUITES(CRWWebControllerWebProcessTest);
+
+// Fixture class to test WKWebView crashes.
+class CRWWebControllerWebViewTest
+    : public ProgrammaticWebTestWithWebController {
+ protected:
+  void SetUp() override {
+    ProgrammaticWebTestWithWebController::SetUp();
+    web::TestBrowserState browser_state;
+    web_view_ = [[CRWFakeWKWebViewObserverCount alloc] init];
+    TestWebViewContentView* webViewContentView = [[TestWebViewContentView alloc]
+        initWithMockWebView:web_view_
+                 scrollView:web_view_.scrollView];
+    [web_controller() injectWebViewContentView:webViewContentView];
+  }
+  CRWFakeWKWebViewObserverCount* web_view_;
+};
+
+// Tests that the KVO for the WebView are removed when the WebState is
+// destroyed. See crbug.com/1002786.
+TEST_P(CRWWebControllerWebViewTest, CheckNoKVOWhenWebStateDestroyed) {
+  // Load a first URL.
+  NSURL* URL = [NSURL URLWithString:@"about:blank"];
+  NSURLRequest* request = [NSURLRequest requestWithURL:URL];
+  [web_view_ loadRequest:request];
+  base::test::ios::WaitUntilCondition(^bool() {
+    return !web_view_.loading;
+  });
+
+  // Destroying the WebState should call stop at a point where all observers are
+  // supposed to be removed.
+  DestroyWebState();
+
+  EXPECT_FALSE(web_view_.hadObserversWhenStopping);
+}
+
+INSTANTIATE_TEST_SUITES(CRWWebControllerWebViewTest);
 
 #undef INSTANTIATE_TEST_SUITES
 

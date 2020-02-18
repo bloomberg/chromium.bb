@@ -12,12 +12,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/arc/arc_service_launcher.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_cryptohome_remover.h"
+#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
+#include "chrome/browser/chromeos/child_accounts/child_status_reporting_service_factory.h"
+#include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
@@ -36,12 +38,14 @@
 #include "chrome/browser/chromeos/tether/tether_service.h"
 #include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
 #include "chrome/browser/chromeos/u2f_notification.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -65,8 +69,10 @@ namespace {
 // Whether kiosk auto launch should be started.
 bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line) {
   KioskAppManager* app_manager = KioskAppManager::Get();
+  WebKioskAppManager* web_app_manager = WebKioskAppManager::Get();
   return command_line.HasSwitch(switches::kLoginManager) &&
-         app_manager->IsAutoLaunchEnabled() &&
+         (app_manager->IsAutoLaunchEnabled() ||
+          web_app_manager->GetAutoLaunchAccountId().is_valid()) &&
          KioskAppLaunchError::Get() == KioskAppLaunchError::NONE &&
          // IsOobeCompleted() is needed to prevent kiosk session start in case
          // of enterprise rollback, when keeping the enrollment, policy, not
@@ -166,7 +172,8 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
         user_profile);
 
     if (user->GetType() == user_manager::USER_TYPE_CHILD) {
-      ConsumerStatusReportingServiceFactory::GetForBrowserContext(user_profile);
+      ChildStatusReportingServiceFactory::GetForBrowserContext(user_profile);
+      ChildUserServiceFactory::GetForBrowserContext(user_profile);
       ScreenTimeControllerFactory::GetForBrowserContext(user_profile);
     }
 
@@ -204,7 +211,10 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     AppListClientImpl::GetInstance()->UpdateProfile();
   }
 
-  UserSessionManager::GetInstance()->CheckEolStatus(user_profile);
+  if (base::FeatureList::IsEnabled(features::kEolWarningNotifications) &&
+      !user_profile->GetProfilePolicyConnector()->IsManaged())
+    UserSessionManager::GetInstance()->CheckEolInfo(user_profile);
+
   tpm_firmware_update::ShowNotificationIfNeeded(user_profile);
   UserSessionManager::GetInstance()->MaybeShowU2FNotification();
   UserSessionManager::GetInstance()->MaybeShowReleaseNotesNotification(
@@ -240,8 +250,7 @@ void ChromeSessionManager::Initialize(
   const AccountId login_account_id(
       cryptohome::Identification::FromString(cryptohome_id).GetAccountId());
 
-  KioskAppManager::RemoveObsoleteCryptohomes();
-  ArcKioskAppManager::RemoveObsoleteCryptohomes();
+  KioskCryptohomeRemover::RemoveObsoleteCryptohomes();
 
   if (ShouldAutoLaunchKioskApp(parsed_command_line)) {
     VLOG(1) << "Starting Chrome with kiosk auto launch.";
@@ -258,21 +267,6 @@ void ChromeSessionManager::Initialize(
     return;
   } else if (is_running_test) {
     oobe_configuration_->CheckConfiguration();
-  }
-
-  if (login_account_id == user_manager::StubAccountId()) {
-    // Start a user session with stub user. This also happens on a dev machine
-    // when running Chrome w/o login flow. See PreEarlyInitialization().
-    // In these contexts, emulate as if sync has been initialized.
-    VLOG(1) << "Starting Chrome with stub login.";
-
-    std::string login_user_id = login_account_id.GetUserEmail();
-    IdentityManagerFactory::GetForProfile(profile)
-        ->GetPrimaryAccountMutator()
-        ->DeprecatedSetPrimaryAccountAndUpdateAccountInfo(login_user_id,
-                                                          login_user_id);
-    StartUserSession(profile, login_user_id);
-    return;
   }
 
   VLOG(1) << "Starting Chrome with a user session.";

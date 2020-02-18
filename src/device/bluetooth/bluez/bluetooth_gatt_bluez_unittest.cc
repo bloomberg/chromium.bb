@@ -84,6 +84,13 @@ bool ValuesEqual(const std::vector<uint8_t>& value0,
   return true;
 }
 
+void AddDeviceFilterWithUUID(BluetoothDiscoveryFilter* filter,
+                             BluetoothUUID uuid) {
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(uuid);
+  filter->AddDeviceFilter(device_filter);
+}
+
 }  // namespace
 
 class BluetoothGattBlueZTest : public testing::Test {
@@ -132,7 +139,7 @@ class BluetoothGattBlueZTest : public testing::Test {
   }
 
   void TearDown() override {
-    adapter_ = NULL;
+    adapter_.reset();
     update_sessions_.clear();
     gatt_conn_.reset();
     bluez::BluezDBusManager::Shutdown();
@@ -287,7 +294,7 @@ class BluetoothGattBlueZTest : public testing::Test {
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
   bluez::FakeBluetoothGattServiceClient* fake_bluetooth_gatt_service_client_;
@@ -324,7 +331,7 @@ TEST_F(BluetoothGattBlueZTest,
   AddDualDevice();
 
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
-  discovery_filter.AddUUID(kBatteryServiceUUID);
+  AddDeviceFilterWithUUID(&discovery_filter, kBatteryServiceUUID);
 
   DeviceToUUIDs result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
@@ -340,7 +347,9 @@ TEST_F(
   BluetoothDevice* dual = AddDualDevice();
 
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
-  discovery_filter.AddUUID(kGenericAccessServiceUUID);
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(kGenericAccessServiceUUID);
+  discovery_filter.AddDeviceFilter(device_filter);
 
   DeviceToUUIDs result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
@@ -357,7 +366,7 @@ TEST_F(
   BluetoothDevice* dual = AddDualDevice();
 
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
-  discovery_filter.AddUUID(kHeartRateServiceUUID);
+  AddDeviceFilterWithUUID(&discovery_filter, kHeartRateServiceUUID);
 
   DeviceToUUIDs result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
@@ -374,8 +383,8 @@ TEST_F(BluetoothGattBlueZTest,
   BluetoothDevice* dual = AddDualDevice();
 
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
-  discovery_filter.AddUUID(kGenericAccessServiceUUID);
-  discovery_filter.AddUUID(kHeartRateServiceUUID);
+  AddDeviceFilterWithUUID(&discovery_filter, kGenericAccessServiceUUID);
+  AddDeviceFilterWithUUID(&discovery_filter, kHeartRateServiceUUID);
 
   DeviceToUUIDs result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
@@ -393,8 +402,12 @@ TEST_F(
   AddLeDevice();
   BluetoothDevice* dual = AddDualDevice();
   BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
-  discovery_filter.AddUUID(kGenericAccessServiceUUID);
-  discovery_filter.AddUUID(kBatteryServiceUUID);
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(kGenericAccessServiceUUID);
+  device::BluetoothDiscoveryFilter::DeviceInfoFilter device_filter2;
+  device_filter2.uuids.insert(kBatteryServiceUUID);
+  discovery_filter.AddDeviceFilter(device_filter);
+  discovery_filter.AddDeviceFilter(device_filter2);
 
   DeviceToUUIDs result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
@@ -576,7 +589,7 @@ TEST_F(BluetoothGattBlueZTest, GattServiceAddedAndRemoved) {
 TEST_F(BluetoothGattBlueZTest, ServicesDiscoveredBeforeAdapterIsCreated) {
   // Tests that all GATT objects are created for a device whose D-Bus objects
   // were already exposed and for which services have been resolved.
-  adapter_ = NULL;
+  adapter_.reset();
   ASSERT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
 
   // Create the fake D-Bus objects.
@@ -672,7 +685,7 @@ TEST_F(BluetoothGattBlueZTest, DiscoverCachedServices) {
   // This unit test tests that all remote GATT objects are created for D-Bus
   // objects that were already exposed and all relevant events have been
   // dispatched.
-  adapter_ = NULL;
+  adapter_.reset();
   ASSERT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
 
   // Create the fake D-Bus objects.
@@ -761,7 +774,7 @@ TEST_F(BluetoothGattBlueZTest, DiscoverNewServices) {
 TEST_F(BluetoothGattBlueZTest, DiscoverCachedAndNewServices) {
   // This unit test tests that all remote GATT objects are created for D-Bus
   // objects that were already exposed and for new GATT Objects.
-  adapter_ = NULL;
+  adapter_.reset();
   ASSERT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
 
   // Create the fake D-Bus objects.

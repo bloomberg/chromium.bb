@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.search_engines;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.search_engines.TemplateUrlService;
 
 /**
@@ -23,13 +25,13 @@ public class TemplateUrlServiceFactory {
     public static TemplateUrlService get() {
         ThreadUtils.assertOnUiThread();
         if (sTemplateUrlService == null) {
-            sTemplateUrlService = nativeGetTemplateUrlService();
+            sTemplateUrlService = TemplateUrlServiceFactoryJni.get().getTemplateUrlService();
         }
         return sTemplateUrlService;
     }
 
     @VisibleForTesting
-    static void setInstanceForTesting(TemplateUrlService service) {
+    public static void setInstanceForTesting(TemplateUrlService service) {
         sTemplateUrlService = service;
     }
 
@@ -37,9 +39,14 @@ public class TemplateUrlServiceFactory {
      * TODO(crbug.com/968156): Move to TemplateUrlServiceHelper.
      */
     public static boolean doesDefaultSearchEngineHaveLogo() {
-        return nativeDoesDefaultSearchEngineHaveLogo();
+        return TemplateUrlServiceFactoryJni.get().doesDefaultSearchEngineHaveLogo();
     }
 
-    private static native TemplateUrlService nativeGetTemplateUrlService();
-    private static native boolean nativeDoesDefaultSearchEngineHaveLogo();
+    // Natives interface is public to allow mocking in tests outside of
+    // org.chromium.chrome.browser.search_engines package.
+    @NativeMethods
+    public interface Natives {
+        TemplateUrlService getTemplateUrlService();
+        boolean doesDefaultSearchEngineHaveLogo();
+    }
 }

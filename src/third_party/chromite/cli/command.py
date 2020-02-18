@@ -16,7 +16,6 @@ ListCommands() function.
 
 from __future__ import print_function
 
-import glob
 import os
 
 from chromite.lib import constants
@@ -44,50 +43,47 @@ def UseProgressBar():
   return logging.getLogger().getEffectiveLevel() == logging.NOTICE
 
 
-def _FindModules(subdir_path):
-  """Returns a list of subcommand python modules in |subdir_path|.
+def ImportCommand(name):
+  """Directly import the specified subcommand.
+
+  This method imports the module which must contain the single subcommand.  When
+  the module is loaded, the declared command (those that use CommandDecorator)
+  will automatically get added to |_commands|.
 
   Args:
-    subdir_path: directory (string) to search for modules in.
+    name: The subcommand to load.
 
   Returns:
-    List of filenames (strings).
+    A reference to the subcommand class.
   """
-  modules = []
-  glob_path = os.path.join(subdir_path, '%s*.py' % _SUBCOMMAND_MODULE_PREFIX)
-  for file_path in glob.glob(glob_path):
-    if not file_path.endswith('_unittest.py'):
-      modules.append(file_path)
-  return modules
-
-
-def _ImportCommands():
-  """Directly imports all subcommand python modules.
-
-  This method imports the modules which may contain subcommands. When
-  these modules are loaded, declared commands (those that use
-  CommandDecorator) will automatically get added to |_commands|.
-  """
-  for file_path in _FindModules(_SUBCOMMAND_MODULE_DIRECTORY):
-    module_path = os.path.splitext(file_path)[0]
-    import_path = os.path.relpath(os.path.realpath(module_path),
-                                  os.path.dirname(constants.CHROMITE_DIR))
-    cros_import.ImportModule(import_path.split(os.path.sep))
+  module_path = os.path.join(_SUBCOMMAND_MODULE_DIRECTORY,
+                             'cros_%s' % (name.replace('-', '_'),))
+  import_path = os.path.relpath(os.path.realpath(module_path),
+                                os.path.dirname(constants.CHROMITE_DIR))
+  cros_import.ImportModule(import_path.split(os.path.sep))
+  return _commands[name]
 
 
 def ListCommands():
-  """Return a dictionary mapping command names to classes.
+  """Return the set of available subcommands.
 
-  Returns:
-    A dictionary mapping names (strings) to commands (classes).
+  We assume that there is a direct one-to-one relationship between the module
+  name on disk and the command that module implements.  We assume this as a
+  performance requirement (to avoid importing every subcommand every time even
+  though we'd only ever run a single one), and to avoid 3rd party module usage
+  in one subcommand breaking all other subcommands (not a great solution).
   """
-  _ImportCommands()
-  return _commands.copy()
+  # Filenames use underscores due to python naming limitations, but subcommands
+  # use dashes as they're easier for humans to type.
+  # Strip off the leading "cros_" and the trailing ".py".
+  return set(x[5:-3].replace('_', '-')
+             for x in os.listdir(_SUBCOMMAND_MODULE_DIRECTORY)
+             if (x.startswith(_SUBCOMMAND_MODULE_PREFIX) and x.endswith('.py')
+                 and not x.endswith('_unittest.py')))
 
 
 class InvalidCommandError(Exception):
   """Error that occurs when command class fails sanity checks."""
-  pass
 
 
 def CommandDecorator(command_name):

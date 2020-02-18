@@ -63,13 +63,6 @@ cr.define('login', function() {
   var POD_SWITCH_ANIMATION_DURATION_MS = 180;
 
   /**
-   * Public session help topic identifier.
-   * @type {number}
-   * @const
-   */
-  var HELP_TOPIC_PUBLIC_SESSION = 3041033;
-
-  /**
    * Tab order for user pods. Update these when adding new controls.
    * @enum {number}
    * @const
@@ -92,10 +85,9 @@ cr.define('login', function() {
   var AUTH_TYPE = {
     OFFLINE_PASSWORD: 0,
     ONLINE_SIGN_IN: 1,
-    NUMERIC_PIN: 2,
-    USER_CLICK: 3,
-    EXPAND_THEN_USER_CLICK: 4,
-    FORCE_OFFLINE_PASSWORD: 5
+    USER_CLICK: 2,
+    EXPAND_THEN_USER_CLICK: 3,
+    FORCE_OFFLINE_PASSWORD: 4
   };
 
   /**
@@ -104,10 +96,9 @@ cr.define('login', function() {
   var AUTH_TYPE_NAMES = {
     0: 'offlinePassword',
     1: 'onlineSignIn',
-    2: 'numericPin',
-    3: 'userClick',
-    4: 'expandThenUserClick',
-    5: 'forceOfflinePassword'
+    2: 'userClick',
+    3: 'expandThenUserClick',
+    4: 'forceOfflinePassword'
   };
 
   /**
@@ -2469,11 +2460,6 @@ cr.define('login', function() {
         }
       }).bind(this));
 
-      var learnMore = this.querySelector('.learn-more');
-      learnMore.addEventListener('mousedown', stopEventPropagation);
-      learnMore.addEventListener('click', this.handleLearnMoreEvent);
-      learnMore.addEventListener('keydown', this.handleLearnMoreEvent);
-
       var languageSelect = this.querySelector('.language-select');
       languageSelect.tabIndex = UserPodTabOrder.POD_INPUT;
       languageSelect.manuallyChanged = false;
@@ -2590,34 +2576,6 @@ cr.define('login', function() {
     setDisplayName: function(displayName) {
       this.user_.displayName = displayName;
       this.update();
-    },
-
-    /**
-     * Handle mouse and keyboard events for the learn more button. Triggering
-     * the button causes information about public sessions to be shown.
-     * @param {Event} event Mouse or keyboard event.
-     */
-    handleLearnMoreEvent: function(event) {
-      switch (event.type) {
-        // Show informaton on left click. Let any other clicks propagate.
-        case 'click':
-          if (event.button != 0)
-            return;
-          break;
-        // Show informaton when <Return> or <Space> is pressed. Let any other
-        // key presses propagate.
-        case 'keydown':
-          switch (event.keyCode) {
-            case 13:  // Return.
-            case 32:  // Space.
-              break;
-            default:
-              return;
-          }
-          break;
-      }
-      chrome.send('launchHelpApp', [HELP_TOPIC_PUBLIC_SESSION]);
-      stopEventPropagation(event);
     },
 
     /**

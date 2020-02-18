@@ -117,6 +117,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kDefault,
     kLight,
     kDark,
+    kPlatformHighContrast,  // When the platform is providing HC colors (eg.
+                            // Win)
   };
 
   // Each structure below holds extra information needed when painting a given
@@ -130,6 +132,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     bool has_border;
     int classic_state;  // Used on Windows when uxtheme is not available.
     SkColor background_color;
+    float zoom;
   };
 
   struct FrameTopAreaExtraParams {
@@ -229,6 +232,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     bool in_drag;
     int thumb_x;
     int thumb_y;
+    float zoom;
   };
 
   struct TextFieldExtraParams {
@@ -313,6 +317,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_WindowBackground,
     // Dialogs
     kColorId_DialogBackground,
+    kColorId_DialogForeground,
     kColorId_BubbleBackground,
     kColorId_BubbleFooterBackground,
     // FocusableBorder
@@ -321,33 +326,30 @@ class NATIVE_THEME_EXPORT NativeTheme {
     // Button
     kColorId_ButtonEnabledColor,
     kColorId_ButtonDisabledColor,
-    kColorId_ButtonHoverColor,
     kColorId_ButtonPressedShade,
+    kColorId_ButtonUncheckedColor,
     kColorId_ProminentButtonColor,
     kColorId_ProminentButtonFocusedColor,
     kColorId_ProminentButtonDisabledColor,
     kColorId_TextOnProminentButtonColor,
     kColorId_ButtonBorderColor,
     // MenuItem
-    kColorId_TouchableMenuItemLabelColor,
-    kColorId_ActionableSubmenuVerticalSeparatorColor,
     kColorId_EnabledMenuItemForegroundColor,
     kColorId_DisabledMenuItemForegroundColor,
     kColorId_SelectedMenuItemForegroundColor,
     kColorId_FocusedMenuItemBackgroundColor,
+    kColorId_MenuDropIndicator,
     kColorId_MenuItemMinorTextColor,
     kColorId_MenuSeparatorColor,
     kColorId_MenuBackgroundColor,
     kColorId_MenuBorderColor,
     kColorId_HighlightedMenuItemBackgroundColor,
     kColorId_HighlightedMenuItemForegroundColor,
-    kColorId_MenuItemAlertBackgroundColorMax,  // Animation color at max
-                                               // intensity
-    kColorId_MenuItemAlertBackgroundColorMin,  // Animation color at min
-                                               // intensity
+    kColorId_MenuItemAlertBackgroundColor,
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,
+    kColorId_LabelSecondaryColor,
     kColorId_LabelTextSelectionColor,
     kColorId_LabelTextSelectionBackgroundFocused,
     // Link
@@ -462,9 +464,12 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Returns the system's caption style.
   virtual base::Optional<CaptionStyle> GetSystemCaptionStyle() const;
 
-  ColorScheme GetSystemColorScheme() const;
+  virtual ColorScheme GetDefaultSystemColorScheme() const;
 
   virtual const std::map<SystemThemeColor, SkColor>& GetSystemColors() const;
+
+  base::Optional<SkColor> GetSystemThemeColor(
+      SystemThemeColor theme_color) const;
 
   bool HasDifferentSystemColors(
       const std::map<SystemThemeColor, SkColor>& colors) const;
@@ -481,7 +486,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   void set_system_colors(const std::map<SystemThemeColor, SkColor>& colors);
 
-  void UpdateSystemColorInfo(
+  // Updates the state of dark mode, high contrast, preferred color scheme,
+  // and the map of system colors. Returns true if NativeTheme was updated
+  // as a result, or false if the state of NativeTheme was untouched.
+  bool UpdateSystemColorInfo(
       bool is_dark_mode,
       bool is_high_contrast,
       PreferredColorScheme preferred_color_scheme,

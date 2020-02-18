@@ -11,8 +11,7 @@
 
 namespace device {
 
-VRDeviceBase::VRDeviceBase(mojom::XRDeviceId id)
-    : id_(id), runtime_binding_(this) {}
+VRDeviceBase::VRDeviceBase(mojom::XRDeviceId id) : id_(id) {}
 
 VRDeviceBase::~VRDeviceBase() = default;
 
@@ -28,13 +27,25 @@ mojom::VRDisplayInfoPtr VRDeviceBase::GetVRDisplayInfo() {
   return display_info_.Clone();
 }
 
+void VRDeviceBase::ShutdownSession(base::OnceClosure on_completed) {
+  DVLOG(2) << __func__;
+  // TODO(https://crbug.com/1015594): The default implementation of running the
+  // callback immediately is backwards compatible, but runtimes should be
+  // updated to override this, calling the callback at the appropriate time
+  // after any necessary cleanup has been completed. Once that's done, make this
+  // method abstract.
+  std::move(on_completed).Run();
+}
+
 void VRDeviceBase::OnExitPresent() {
+  DVLOG(2) << __func__ << ": !!listener_=" << !!listener_;
   if (listener_)
     listener_->OnExitPresent();
   presenting_ = false;
 }
 
 void VRDeviceBase::OnStartPresenting() {
+  DVLOG(2) << __func__;
   presenting_ = true;
 }
 
@@ -43,7 +54,7 @@ bool VRDeviceBase::HasExclusiveSession() {
 }
 
 void VRDeviceBase::ListenToDeviceChanges(
-    mojom::XRRuntimeEventListenerAssociatedPtrInfo listener_info,
+    mojo::PendingAssociatedRemote<mojom::XRRuntimeEventListener> listener_info,
     mojom::XRRuntime::ListenToDeviceChangesCallback callback) {
   listener_.Bind(std::move(listener_info));
   std::move(callback).Run(display_info_.Clone());
@@ -58,26 +69,15 @@ void VRDeviceBase::SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info) {
     listener_->OnDisplayInfoChanged(display_info_.Clone());
 }
 
-void VRDeviceBase::OnActivate(mojom::VRDisplayEventReason reason,
-                              base::Callback<void(bool)> on_handled) {
+void VRDeviceBase::OnVisibilityStateChanged(
+    mojom::XRVisibilityState visibility_state) {
   if (listener_)
-    listener_->OnDeviceActivated(reason, std::move(on_handled));
+    listener_->OnVisibilityStateChanged(visibility_state);
 }
 
-mojom::XRRuntimePtr VRDeviceBase::BindXRRuntimePtr() {
-  mojom::XRRuntimePtr runtime;
-  runtime_binding_.Bind(mojo::MakeRequest(&runtime));
-  return runtime;
-}
-
-void VRDeviceBase::OnListeningForActivate(bool listening) {}
-
-void VRDeviceBase::SetListeningForActivate(bool is_listening) {
-  OnListeningForActivate(is_listening);
-}
-
-void VRDeviceBase::EnsureInitialized(EnsureInitializedCallback callback) {
-  std::move(callback).Run();
+mojo::PendingRemote<mojom::XRRuntime> VRDeviceBase::BindXRRuntime() {
+  DVLOG(2) << __func__;
+  return runtime_receiver_.BindNewPipeAndPassRemote();
 }
 
 void VRDeviceBase::SetInlinePosesEnabled(bool enable) {

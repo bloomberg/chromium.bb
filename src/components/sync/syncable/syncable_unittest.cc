@@ -135,7 +135,7 @@ TestDirectory::~TestDirectory() {}
 #define MAYBE_FailInitialWrite FailInitialWrite
 #endif
 TEST(OnDiskSyncableDirectory, MAYBE_FailInitialWrite) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   FakeEncryptor encryptor;
   TestUnrecoverableErrorHandler handler;
   base::ScopedTempDir temp_dir;
@@ -525,7 +525,7 @@ class SyncableDirectoryManagement : public testing::Test {
   void TearDown() override {}
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
@@ -550,7 +550,7 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
   }
 
   // Destroying the directory should have released the backing database file.
-  ASSERT_TRUE(base::DeleteFile(path, true));
+  ASSERT_TRUE(base::DeleteFileRecursively(path));
 }
 
 class SyncableClientTagTest : public SyncableDirectoryTest {

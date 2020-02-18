@@ -41,8 +41,6 @@
 
 namespace blink {
 
-using namespace vector_math;
-
 const int kInputBufferSize = 8 * 16384;
 
 // We only process the leading portion of the impulse response in the real-time
@@ -140,8 +138,8 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulse_response,
   // FIXME: would be better to up the thread priority here.  It doesn't need to
   // be real-time, but higher than the default...
   if (use_background_threads && background_stages_.size() > 0) {
-    background_thread_ = Platform::Current()->CreateThread(ThreadCreationParams(
-        WebThreadType::kReverbConvolutionBackgroundThread));
+    background_thread_ = Platform::Current()->CreateThread(
+        ThreadCreationParams(ThreadType::kReverbConvolutionBackgroundThread));
   }
 }
 

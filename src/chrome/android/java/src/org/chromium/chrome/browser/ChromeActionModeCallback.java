@@ -9,8 +9,9 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -18,6 +19,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -77,7 +79,8 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
             Callback<Boolean> callback = result -> {
                 if (result != null && result) search(selectedText);
             };
-            LocaleManager.getInstance().showSearchEnginePromoIfNeeded(mTab.getActivity(), callback);
+            LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
+                    ((TabImpl) mTab).getActivity(), callback);
             mHelper.finishActionMode();
         } else {
             return mHelper.onActionItemClicked(mode, item);
@@ -93,7 +96,7 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
 
     private void notifyContextualActionBarVisibilityChanged(boolean show) {
         if (!mHelper.supportsFloatingActionMode()) {
-            mTab.notifyContextualActionBarVisibilityChanged(show);
+            ((TabImpl) mTab).notifyContextualActionBarVisibilityChanged(show);
         }
     }
 
@@ -120,7 +123,7 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
                 searchText, ActionModeCallbackHelper.MAX_SEARCH_QUERY_LENGTH);
         if (TextUtils.isEmpty(query)) return;
 
-        TrackerFactory.getTrackerForProfile(mTab.getProfile())
+        TrackerFactory.getTrackerForProfile(((TabImpl) mTab).getProfile())
                 .notifyEvent(EventConstants.WEB_SEARCH_PERFORMED);
         selector.openNewTab(generateUrlParamsForSearch(query),
                 TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, mTab.isIncognito());

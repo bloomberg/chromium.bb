@@ -5,7 +5,6 @@
 import base64
 import collections
 import copy
-import httplib
 import json
 import logging
 import re
@@ -14,6 +13,8 @@ import time
 
 import httplib2
 import oauth2client.client
+import six
+from six.moves import http_client as httplib
 
 from googleapiclient import errors
 from infra_libs.ts_mon.common import http_metrics
@@ -254,7 +255,7 @@ class HttpMock(object):
       new_headers = copy.copy(headers)
       new_headers['status'] = int(new_headers['status'])
 
-      if not isinstance(body, basestring):
+      if not isinstance(body, six.string_types):
         raise TypeError("'body' must be a string, got %s" % type(body))
       self._uris.append((compiled_uri, new_headers, body))
 

@@ -41,7 +41,7 @@ MaybeHandle<Object> Runtime::GetObjectProperty(Isolate* isolate,
 
   if (!it.IsFound() && key->IsSymbol() &&
       Symbol::cast(*key).is_private_name()) {
-    Handle<Object> name_string(Symbol::cast(*key).name(), isolate);
+    Handle<Object> name_string(Symbol::cast(*key).description(), isolate);
     DCHECK(name_string->IsString());
     THROW_NEW_ERROR(isolate,
                     NewTypeError(MessageTemplate::kInvalidPrivateMemberRead,
@@ -91,7 +91,7 @@ bool DeleteObjectPropertyFast(Isolate* isolate, Handle<JSReceiver> receiver,
   // (2) The property to be deleted must be the last property.
   int nof = receiver_map->NumberOfOwnDescriptors();
   if (nof == 0) return false;
-  int descriptor = nof - 1;
+  InternalIndex descriptor(nof - 1);
   Handle<DescriptorArray> descriptors(receiver_map->instance_descriptors(),
                                       isolate);
   if (descriptors->GetKey(descriptor) != *key) return false;
@@ -132,8 +132,12 @@ bool DeleteObjectPropertyFast(Isolate* isolate, Handle<JSReceiver> receiver,
   // for properties stored in the descriptor array.
   if (details.location() == kField) {
     DisallowHeapAllocation no_allocation;
-    isolate->heap()->NotifyObjectLayoutChange(
-        *receiver, receiver_map->instance_size(), no_allocation);
+
+    // Invalidate slots manually later in case we delete an in-object tagged
+    // property. In this case we might later store an untagged value in the
+    // recorded slot.
+    isolate->heap()->NotifyObjectLayoutChange(*receiver, no_allocation,
+                                              InvalidateRecordedSlots::kNo);
     FieldIndex index =
         FieldIndex::ForPropertyIndex(*receiver_map, details.field_index());
     // Special case deleting the last out-of object property.
@@ -149,8 +153,13 @@ bool DeleteObjectPropertyFast(Isolate* isolate, Handle<JSReceiver> receiver,
       // Slot clearing is the reason why this entire function cannot currently
       // be implemented in the DeleteProperty stub.
       if (index.is_inobject() && !receiver_map->IsUnboxedDoubleField(index)) {
+        // We need to clear the recorded slot in this case because in-object
+        // slack tracking might not be finished. This ensures that we don't
+        // have recorded slots in free space.
         isolate->heap()->ClearRecordedSlot(*receiver,
                                            receiver->RawField(index.offset()));
+        MemoryChunk* chunk = MemoryChunk::FromHeapObject(*receiver);
+        chunk->InvalidateRecordedSlots(*receiver);
       }
     }
   }
@@ -261,21 +270,23 @@ RUNTIME_FUNCTION(Runtime_ObjectHasOwnProperty) {
   HandleScope scope(isolate);
   Handle<Object> property = args.at(1);
 
+  // The spec says we must look at the key first, which is why we can't
+  // use LookupIterator::PropertyOrElement here but have to duplicate its
+  // functionality instead.
   Handle<Name> key;
-  uint32_t index;
-  bool key_is_array_index = property->ToArrayIndex(&index);
-
-  if (!key_is_array_index) {
+  size_t index;
+  bool key_is_index = property->ToIntegerIndex(&index);
+  if (!key_is_index) {
     ASSIGN_RETURN_FAILURE_ON_EXCEPTION(isolate, key,
                                        Object::ToName(isolate, property));
-    key_is_array_index = key->AsArrayIndex(&index);
+    key_is_index = key->AsIntegerIndex(&index);
   }
 
   Handle<Object> object = args.at(0);
 
   if (object->IsJSModuleNamespace()) {
     if (key.is_null()) {
-      DCHECK(key_is_array_index);
+      DCHECK(key_is_index);
       // Namespace objects can't have indexed properties.
       return ReadOnlyRoots(isolate).false_value();
     }
@@ -295,8 +306,8 @@ RUNTIME_FUNCTION(Runtime_ObjectHasOwnProperty) {
     {
       LookupIterator::Configuration c = LookupIterator::OWN_SKIP_INTERCEPTOR;
       LookupIterator it =
-          key_is_array_index ? LookupIterator(isolate, js_obj, index, js_obj, c)
-                             : LookupIterator(js_obj, key, js_obj, c);
+          key_is_index ? LookupIterator(isolate, js_obj, index, js_obj, c)
+                       : LookupIterator(js_obj, key, js_obj, c);
       Maybe<bool> maybe = JSReceiver::HasProperty(&it);
       if (maybe.IsNothing()) return ReadOnlyRoots(isolate).exception();
       DCHECK(!isolate->has_pending_exception());
@@ -305,14 +316,15 @@ RUNTIME_FUNCTION(Runtime_ObjectHasOwnProperty) {
 
     Map map = js_obj->map();
     if (!map.IsJSGlobalProxyMap() &&
-        (key_is_array_index ? !map.has_indexed_interceptor()
-                            : !map.has_named_interceptor())) {
+        (key_is_index && index <= JSArray::kMaxArrayIndex
+             ? !map.has_indexed_interceptor()
+             : !map.has_named_interceptor())) {
       return ReadOnlyRoots(isolate).false_value();
     }
 
     // Slow case.
     LookupIterator::Configuration c = LookupIterator::OWN;
-    LookupIterator it = key_is_array_index
+    LookupIterator it = key_is_index
                             ? LookupIterator(isolate, js_obj, index, js_obj, c)
                             : LookupIterator(js_obj, key, js_obj, c);
 
@@ -323,10 +335,9 @@ RUNTIME_FUNCTION(Runtime_ObjectHasOwnProperty) {
 
   } else if (object->IsJSProxy()) {
     if (key.is_null()) {
-      DCHECK(key_is_array_index);
-      key = isolate->factory()->Uint32ToString(index);
+      DCHECK(key_is_index);
+      key = isolate->factory()->SizeToString(index);
     }
-
     Maybe<bool> result =
         JSReceiver::HasOwnProperty(Handle<JSProxy>::cast(object), key);
     if (result.IsNothing()) return ReadOnlyRoots(isolate).exception();
@@ -334,8 +345,8 @@ RUNTIME_FUNCTION(Runtime_ObjectHasOwnProperty) {
 
   } else if (object->IsString()) {
     return isolate->heap()->ToBoolean(
-        key_is_array_index
-            ? index < static_cast<uint32_t>(String::cast(*object).length())
+        key_is_index
+            ? index < static_cast<size_t>(String::cast(*object).length())
             : key->Equals(ReadOnlyRoots(isolate).length_string()));
   } else if (object->IsNullOrUndefined(isolate)) {
     THROW_NEW_ERROR_RETURN_FAILURE(
@@ -408,7 +419,7 @@ MaybeHandle<Object> Runtime::SetObjectProperty(
 
   if (!it.IsFound() && key->IsSymbol() &&
       Symbol::cast(*key).is_private_name()) {
-    Handle<Object> name_string(Symbol::cast(*key).name(), isolate);
+    Handle<Object> name_string(Symbol::cast(*key).description(), isolate);
     DCHECK(name_string->IsString());
     THROW_NEW_ERROR(isolate,
                     NewTypeError(MessageTemplate::kInvalidPrivateMemberWrite,
@@ -608,8 +619,8 @@ RUNTIME_FUNCTION(Runtime_GetProperty) {
         // Attempt dictionary lookup.
         GlobalDictionary dictionary =
             JSGlobalObject::cast(*receiver).global_dictionary();
-        int entry = dictionary.FindEntry(isolate, key);
-        if (entry != GlobalDictionary::kNotFound) {
+        InternalIndex entry = dictionary.FindEntry(isolate, key);
+        if (entry.is_found()) {
           PropertyCell cell = dictionary.CellAt(entry);
           if (cell.property_details().kind() == kData) {
             Object value = cell.value();
@@ -620,8 +631,8 @@ RUNTIME_FUNCTION(Runtime_GetProperty) {
       } else if (!receiver->HasFastProperties()) {
         // Attempt dictionary lookup.
         NameDictionary dictionary = receiver->property_dictionary();
-        int entry = dictionary.FindEntry(isolate, key);
-        if ((entry != NameDictionary::kNotFound) &&
+        InternalIndex entry = dictionary.FindEntry(isolate, key);
+        if ((entry.is_found()) &&
             (dictionary.DetailsAt(entry).kind() == kData)) {
           return dictionary.ValueAt(entry);
         }
@@ -747,7 +758,7 @@ RUNTIME_FUNCTION(Runtime_ShrinkPropertyDictionary) {
   Handle<NameDictionary> new_properties =
       NameDictionary::Shrink(isolate, dictionary);
   receiver->SetProperties(*new_properties);
-  return Smi::kZero;
+  return Smi::zero();
 }
 
 // ES6 section 12.9.3, operator in.
@@ -843,15 +854,15 @@ RUNTIME_FUNCTION(Runtime_TryMigrateInstance) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_HANDLE_CHECKED(Object, object, 0);
-  if (!object->IsJSObject()) return Smi::kZero;
+  if (!object->IsJSObject()) return Smi::zero();
   Handle<JSObject> js_object = Handle<JSObject>::cast(object);
   // It could have been a DCHECK but we call this function directly from tests.
-  if (!js_object->map().is_deprecated()) return Smi::kZero;
+  if (!js_object->map().is_deprecated()) return Smi::zero();
   // This call must not cause lazy deopts, because it's called from deferred
   // code where we can't handle lazy deopts for lack of a suitable bailout
   // ID. So we just try migration and signal failure if necessary,
   // which will also trigger a deopt.
-  if (!JSObject::TryMigrateInstance(isolate, js_object)) return Smi::kZero;
+  if (!JSObject::TryMigrateInstance(isolate, js_object)) return Smi::zero();
   return *object;
 }
 

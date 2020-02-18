@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
@@ -39,14 +40,13 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                                HttpRequestHeaders* headers) override {
     return OK;
   }
-  void OnStartTransaction(URLRequest* request,
-                          const HttpRequestHeaders& headers) override {}
   int OnHeadersReceived(
       URLRequest* request,
       CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
-      GURL* allowed_unsafe_redirect_url) override {
+      const net::IPEndPoint& endpoint,
+      base::Optional<GURL>* preserve_fragment_on_redirect_url) override {
     return OK;
   }
   void OnBeforeRedirect(URLRequest* request,
@@ -58,12 +58,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   void OnPACScriptError(int line_number, const base::string16& error) override {
     got_pac_error_ = true;
   }
-  AuthRequiredResponse OnAuthRequired(URLRequest* request,
-                                      const AuthChallengeInfo& auth_info,
-                                      AuthCallback callback,
-                                      AuthCredentials* credentials) override {
-    return AUTH_REQUIRED_RESPONSE_NO_ACTION;
-  }
   bool OnCanGetCookies(const URLRequest& request,
                        const CookieList& cookie_list,
                        bool allowed_from_caller) override {
@@ -74,11 +68,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                       CookieOptions* options,
                       bool allowed_from_caller) override {
     return allowed_from_caller;
-  }
-  bool OnCanAccessFile(const URLRequest& request,
-                       const base::FilePath& original_path,
-                       const base::FilePath& absolute_path) const override {
-    return true;
   }
 
   bool got_pac_error_;

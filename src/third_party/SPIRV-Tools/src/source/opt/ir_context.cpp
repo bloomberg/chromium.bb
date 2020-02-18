@@ -94,6 +94,14 @@ void IRContext::InvalidateAnalyses(IRContext::Analysis analyses_to_invalidate) {
   if (analyses_to_invalidate & kAnalysisTypes) {
     analyses_to_invalidate |= kAnalysisConstants;
   }
+
+  // The dominator analysis hold the psuedo entry and exit nodes from the CFG.
+  // Also if the CFG change the dominators many changed as well, so the
+  // dominator analysis should be invalidated as well.
+  if (analyses_to_invalidate & kAnalysisCFG) {
+    analyses_to_invalidate |= kAnalysisDominatorAnalysis;
+  }
+
   if (analyses_to_invalidate & kAnalysisDefUse) {
     def_use_mgr_.reset(nullptr);
   }
@@ -262,6 +270,14 @@ bool IRContext::IsConsistent() {
     analysis::DefUseManager new_def_use(module());
     if (*get_def_use_mgr() != new_def_use) {
       return false;
+    }
+  }
+
+  if (AreAnalysesValid(kAnalysisIdToFuncMapping)) {
+    for (auto& fn : *module_) {
+      if (id_to_func_[fn.result_id()] != &fn) {
+        return false;
+      }
     }
   }
 
@@ -810,6 +826,7 @@ bool IRContext::ProcessCallTreeFromRoots(ProcessFunction& pfn,
     roots->pop();
     if (done.insert(fi).second) {
       Function* fn = GetFunction(fi);
+      assert(fn && "Trying to process a function that does not exist.");
       modified = pfn(fn) || modified;
       AddCalls(fn, roots);
     }

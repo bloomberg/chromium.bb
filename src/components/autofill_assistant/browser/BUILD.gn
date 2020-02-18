@@ -2,29 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/android/rules.gni")
 import("//build/config/jumbo.gni")
 import("//third_party/protobuf/proto_library.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 proto_library("proto") {
   sources = [
+    "generic_ui.proto",
     "service.proto",
-  ]
-}
-
-proto_java_library("proto_java") {
-  proto_path = "//components/autofill_assistant/browser/"
-  sources = [
-    "$proto_path/service.proto",
-  ]
-}
-
-java_cpp_enum("autofill_assistant_enums_java") {
-  sources = [
-    "metrics.h",
-    "overlay_state.h",
-    "user_data.h",
-    "viewport_mode.h",
   ]
 }
 
@@ -34,8 +22,6 @@ jumbo_static_library("browser") {
     "actions/action.cc",
     "actions/action.h",
     "actions/action_delegate.h",
-    "actions/autofill_action.cc",
-    "actions/autofill_action.h",
     "actions/click_action.cc",
     "actions/click_action.h",
     "actions/collect_user_data_action.cc",
@@ -54,6 +40,8 @@ jumbo_static_library("browser") {
     "actions/popup_message_action.h",
     "actions/prompt_action.cc",
     "actions/prompt_action.h",
+    "actions/required_fields_fallback_handler.cc",
+    "actions/required_fields_fallback_handler.h",
     "actions/reset_action.cc",
     "actions/reset_action.h",
     "actions/select_option_action.cc",
@@ -78,6 +66,10 @@ jumbo_static_library("browser") {
     "actions/unsupported_action.h",
     "actions/upload_dom_action.cc",
     "actions/upload_dom_action.h",
+    "actions/use_address_action.cc",
+    "actions/use_address_action.h",
+    "actions/use_credit_card_action.cc",
+    "actions/use_credit_card_action.h",
     "actions/wait_for_document_action.cc",
     "actions/wait_for_document_action.h",
     "actions/wait_for_dom_action.cc",
@@ -101,6 +93,8 @@ jumbo_static_library("browser") {
     "controller_observer.h",
     "details.cc",
     "details.h",
+    "device_context.cc",
+    "device_context.h",
     "direct_action.cc",
     "direct_action.h",
     "element_area.cc",
@@ -148,6 +142,8 @@ jumbo_static_library("browser") {
     "user_action.h",
     "user_data.cc",
     "user_data.h",
+    "user_data_util.cc",
+    "user_data_util.h",
     "viewport_mode.h",
     "web/element_finder.cc",
     "web/element_finder.h",
@@ -185,7 +181,6 @@ jumbo_static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "actions/autofill_action_unittest.cc",
     "actions/collect_user_data_action_unittest.cc",
     "actions/configure_bottom_sheet_action_unittest.cc",
     "actions/mock_action_delegate.cc",
@@ -194,6 +189,9 @@ source_set("unit_tests") {
     "actions/prompt_action_unittest.cc",
     "actions/set_form_field_value_action_unittest.cc",
     "actions/show_details_action_unittest.cc",
+    "actions/tell_action_unittest.cc",
+    "actions/use_address_action_unittest.cc",
+    "actions/use_credit_card_action_unittest.cc",
     "actions/wait_for_document_action_unittest.cc",
     "actions/wait_for_dom_action_unittest.cc",
     "batch_element_checker_unittest.cc",
@@ -219,6 +217,7 @@ source_set("unit_tests") {
     "selector_unittest.cc",
     "string_conversions_util_unittest.cc",
     "trigger_context_unittest.cc",
+    "user_data_util_unittest.cc",
     "web/mock_web_controller.cc",
     "web/mock_web_controller.h",
   ]
@@ -237,18 +236,37 @@ source_set("unit_tests") {
   ]
 }
 
-static_library("test_support") {
-  testonly = true
-  sources = [
-    "java_service.cc",
-    "java_service.h",
-  ]
+if (is_android) {
+  proto_java_library("proto_java") {
+    proto_path = "//components/autofill_assistant/browser/"
+    sources = [
+      "$proto_path/generic_ui.proto",
+      "$proto_path/service.proto",
+    ]
+  }
 
-  deps = [
-    ":browser",
-    ":proto",
-    "//base",
-    "//chrome/android/features/autofill_assistant:test_support_jni_headers",
-    "//url:url",
-  ]
+  java_cpp_enum("autofill_assistant_enums_java") {
+    sources = [
+      "metrics.h",
+      "overlay_state.h",
+      "user_data.h",
+      "viewport_mode.h",
+    ]
+  }
+
+  static_library("test_support") {
+    testonly = true
+    sources = [
+      "java_service.cc",
+      "java_service.h",
+    ]
+
+    deps = [
+      ":browser",
+      ":proto",
+      "//base",
+      "//chrome/android/features/autofill_assistant:test_support_jni_headers",
+      "//url:url",
+    ]
+  }
 }

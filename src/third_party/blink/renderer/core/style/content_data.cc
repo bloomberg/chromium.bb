@@ -34,26 +34,6 @@
 
 namespace blink {
 
-ContentData* ContentData::Create(StyleImage* image) {
-  return MakeGarbageCollected<ImageContentData>(image);
-}
-
-ContentData* ContentData::Create(const String& text) {
-  return MakeGarbageCollected<TextContentData>(text);
-}
-
-ContentData* ContentData::Create(std::unique_ptr<CounterContent> counter) {
-  return MakeGarbageCollected<CounterContentData>(std::move(counter));
-}
-
-ContentData* ContentData::Create(QuoteType quote) {
-  return MakeGarbageCollected<QuoteContentData>(quote);
-}
-
-ContentData* ContentData::CreateAltText(const String& text) {
-  return MakeGarbageCollected<AltTextContentData>(text);
-}
-
 ContentData* ContentData::Clone() const {
   ContentData* result = CloneInternal();
 
@@ -77,7 +57,7 @@ LayoutObject* ImageContentData::CreateLayoutObject(
     const ComputedStyle& pseudo_style,
     LegacyLayout) const {
   LayoutImage* image = LayoutImage::CreateAnonymous(pseudo);
-  image->SetPseudoStyle(&pseudo_style);
+  image->SetPseudoElementStyle(&pseudo_style);
   if (image_) {
     image->SetImageResource(
         MakeGarbageCollected<LayoutImageResourceStyleImage>(image_.Get()));
@@ -98,7 +78,7 @@ LayoutObject* TextContentData::CreateLayoutObject(
     LegacyLayout legacy) const {
   LayoutObject* layout_object =
       LayoutTextFragment::CreateAnonymous(pseudo, text_.Impl(), legacy);
-  layout_object->SetPseudoStyle(&pseudo_style);
+  layout_object->SetPseudoElementStyle(&pseudo_style);
   return layout_object;
 }
 
@@ -117,7 +97,7 @@ LayoutObject* CounterContentData::CreateLayoutObject(
     const ComputedStyle& pseudo_style,
     LegacyLayout) const {
   LayoutObject* layout_object = new LayoutCounter(pseudo, *counter_);
-  layout_object->SetPseudoStyle(&pseudo_style);
+  layout_object->SetPseudoElementStyle(&pseudo_style);
   return layout_object;
 }
 
@@ -126,7 +106,7 @@ LayoutObject* QuoteContentData::CreateLayoutObject(
     const ComputedStyle& pseudo_style,
     LegacyLayout) const {
   LayoutObject* layout_object = new LayoutQuote(pseudo, quote_);
-  layout_object->SetPseudoStyle(&pseudo_style);
+  layout_object->SetPseudoElementStyle(&pseudo_style);
   return layout_object;
 }
 

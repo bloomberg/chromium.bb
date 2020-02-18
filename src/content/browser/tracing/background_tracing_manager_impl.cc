@@ -33,7 +33,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/tracing_delegate.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -352,7 +351,7 @@ void BackgroundTracingManagerImpl::OnRuleTriggered(
   // validation and the rule was triggered just before validation. If validation
   // kicked in after this point, we still check before uploading.
   if (active_scenario_) {
-    active_scenario_->OnRuleTriggered(triggered_rule, callback);
+    active_scenario_->OnRuleTriggered(triggered_rule, std::move(callback));
   }
 }
 

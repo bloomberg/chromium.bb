@@ -14,6 +14,20 @@ import zipfile
 from util import build_utils
 from util import diff_utils
 
+_API_LEVEL_VERSION_CODE = [
+    (21, 'L'),
+    (22, 'LolliopoMR1'),
+    (23, 'M'),
+    (24, 'N'),
+    (25, 'NMR1'),
+    (26, 'O'),
+    (27, 'OMR1'),
+    (28, 'P'),
+    (29, 'Q'),
+]
+_CHECKDISCARD_RE = re.compile(r'-checkdiscard[\s\S]*?}')
+_DIRECTIVE_RE = re.compile(r'^-', re.MULTILINE)
+
 
 class _ProguardOutputFilter(object):
   """ProGuard outputs boring stuff to stdout (ProGuard version, jar path, etc)
@@ -49,6 +63,45 @@ class _ProguardOutputFilter(object):
     return ''.join(ret)
 
 
+class ProguardProcessError(build_utils.CalledProcessError):
+  """Wraps CalledProcessError and enables adding extra output to failures."""
+
+  def __init__(self, cpe, output):
+    super(ProguardProcessError, self).__init__(cpe.cwd, cpe.args,
+                                               cpe.output + output)
+
+
+def _ValidateAndFilterCheckDiscards(configs):
+  """Check for invalid -checkdiscard rules and filter out -checkdiscards.
+
+  -checkdiscard assertions often don't work for test APKs and are not actually
+  helpful. Additionally, test APKs may pull in dependency proguard configs which
+  makes filtering out these rules difficult in GN. Instead, we enforce that
+  configs that use -checkdiscard do not contain any other rules so that we can
+  filter out the undesired -checkdiscard rule files here.
+
+  Args:
+    configs: List of paths to proguard configuration files.
+
+  Returns:
+    A list of configs with -checkdiscard-containing-configs removed.
+  """
+  valid_configs = []
+  for config_path in configs:
+    with open(config_path) as f:
+      contents = f.read()
+      if _CHECKDISCARD_RE.search(contents):
+        contents = _CHECKDISCARD_RE.sub('', contents)
+        if _DIRECTIVE_RE.search(contents):
+          raise Exception('Proguard configs containing -checkdiscards cannot '
+                          'contain other directives so that they can be '
+                          'disabled in test APKs ({}).'.format(config_path))
+      else:
+        valid_configs.append(config_path)
+
+  return valid_configs
+
+
 def _ParseOptions():
   args = build_utils.ExpandFileArgs(sys.argv[1:])
   parser = argparse.ArgumentParser()
@@ -81,10 +134,9 @@ def _ParseOptions():
       '--expected-configs-file',
       help='Path to a file containing the expected merged ProGuard configs')
   parser.add_argument(
-      '--verify-expected-configs',
-      action='store_true',
-      help='Fail if the expected merged ProGuard configs differ from the '
-      'generated merged ProGuard configs.')
+      '--proguard-expectations-failure-file',
+      help='Path to file written to if the expected merged ProGuard configs '
+      'differ from the generated merged ProGuard configs.')
   parser.add_argument(
       '--classpath',
       action='append',
@@ -99,12 +151,15 @@ def _ParseOptions():
   parser.add_argument(
       '--verbose', '-v', action='store_true', help='Print all ProGuard output')
   parser.add_argument(
-      '--repackage-classes',
-      help='Unique package name given to an asynchronously proguarded module')
+      '--repackage-classes', help='Package all optimized classes are put in.')
   parser.add_argument(
       '--disable-outlining',
       action='store_true',
       help='Disable the outlining optimization provided by R8.')
+  parser.add_argument(
+      '--disable-checkdiscard',
+      action='store_true',
+      help='Disable -checkdiscard directives')
 
   options = parser.parse_args(args)
 
@@ -123,24 +178,25 @@ def _ParseOptions():
   options.extra_mapping_output_paths = build_utils.ParseGnList(
       options.extra_mapping_output_paths)
 
-  if options.apply_mapping:
-    options.apply_mapping = os.path.abspath(options.apply_mapping)
-
   return options
 
 
-def _VerifyExpectedConfigs(expected_path, actual_path, fail_on_exit):
+def _VerifyExpectedConfigs(expected_path, actual_path, failure_file_path):
   msg = diff_utils.DiffFileContents(expected_path, actual_path)
   if not msg:
     return
 
-  sys.stderr.write("""\
+  msg_header = """\
 ProGuard flag expectations file needs updating. For details see:
 https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
-""")
+"""
+  sys.stderr.write(msg_header)
   sys.stderr.write(msg)
-  if fail_on_exit:
-    sys.exit(1)
+  if failure_file_path:
+    build_utils.MakeDirectory(os.path.dirname(failure_file_path))
+    with open(failure_file_path, 'w') as f:
+      f.write(msg_header)
+      f.write(msg)
 
 
 def _OptimizeWithR8(options,
@@ -168,7 +224,7 @@ def _OptimizeWithR8(options,
       os.mkdir(tmp_output)
 
     cmd = [
-        'java',
+        build_utils.JAVA_PATH,
         '-jar',
         options.r8_path,
         '--no-desugaring',
@@ -194,14 +250,20 @@ def _OptimizeWithR8(options,
 
     cmd += options.input_paths
 
-    stderr_filter = None
     env = os.environ.copy()
+    stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)
+    env['_JAVA_OPTIONS'] = '-Dcom.android.tools.r8.allowTestProguardOptions=1'
     if options.disable_outlining:
-      stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)
-      env['_JAVA_OPTIONS'] = '-Dcom.android.tools.r8.disableOutlining=1'
+      env['_JAVA_OPTIONS'] += ' -Dcom.android.tools.r8.disableOutlining=1'
 
-    build_utils.CheckOutput(
-        cmd, env=env, print_stdout=print_stdout, stderr_filter=stderr_filter)
+    try:
+      build_utils.CheckOutput(
+          cmd, env=env, print_stdout=print_stdout, stderr_filter=stderr_filter)
+    except build_utils.CalledProcessError as err:
+      debugging_link = ('R8 failed. Please see {}.'.format(
+          'https://chromium.googlesource.com/chromium/src/+/HEAD/build/'
+          'android/docs/java_optimization.md#Debugging-common-failures\n'))
+      raise ProguardProcessError(err, debugging_link)
 
     if not output_is_zipped:
       found_files = os.listdir(tmp_output)
@@ -238,7 +300,7 @@ def _OptimizeWithProguard(options,
 
     if options.proguard_path.endswith('.jar'):
       cmd = [
-          'java', '-jar', options.proguard_path, '-include',
+          build_utils.JAVA_PATH, '-jar', options.proguard_path, '-include',
           combined_proguard_configs_path
       ]
     else:
@@ -293,6 +355,7 @@ def _CombineConfigs(configs, dynamic_config_data, exclude_generated=False):
     add_header(config)
     with open(config) as config_file:
       contents = config_file.read().rstrip()
+
     # Fix up line endings (third_party configs can have windows endings).
     contents = contents.replace('\r', '')
     # Remove numbers from generated rule comments to make file more
@@ -319,9 +382,23 @@ def _CreateDynamicConfig(options):
 }""" % options.min_api)
 
   if options.apply_mapping:
-    ret.append("-applymapping '%s'" % options.apply_mapping)
+    ret.append("-applymapping '%s'" % os.path.abspath(options.apply_mapping))
   if options.repackage_classes:
     ret.append("-repackageclasses '%s'" % options.repackage_classes)
+
+  _min_api = int(options.min_api) if options.min_api else 0
+  for api_level, version_code in _API_LEVEL_VERSION_CODE:
+    annotation_name = 'org.chromium.base.annotations.VerifiesOn' + version_code
+    if api_level > _min_api:
+      ret.append('-keep @interface %s' % annotation_name)
+      ret.append("""\
+-keep,allowobfuscation,allowoptimization @%s class ** {
+  <methods>;
+}""" % annotation_name)
+      ret.append("""\
+-keepclassmembers,allowobfuscation,allowoptimization class ** {
+  @%s <methods>;
+}""" % annotation_name)
   return '\n'.join(ret)
 
 
@@ -341,6 +418,11 @@ Embedded configs are not permitted (https://crbug.com/989505)
     sys.exit(1)
 
 
+def _ContainsDebuggingConfig(config_str):
+  debugging_configs = ('-whyareyoukeeping', '-whyareyounotinlining')
+  return any(config in config_str for config in debugging_configs)
+
+
 def main():
   options = _ParseOptions()
 
@@ -352,13 +434,17 @@ def main():
 
   _VerifyNoEmbeddedConfigs(options.input_paths + libraries)
 
+  proguard_configs = options.proguard_configs
+  if options.disable_checkdiscard:
+    proguard_configs = _ValidateAndFilterCheckDiscards(proguard_configs)
+
   # ProGuard configs that are derived from flags.
   dynamic_config_data = _CreateDynamicConfig(options)
 
   # ProGuard configs that are derived from flags.
   merged_configs = _CombineConfigs(
-      options.proguard_configs, dynamic_config_data, exclude_generated=True)
-  print_stdout = '-whyareyoukeeping' in merged_configs or options.verbose
+      proguard_configs, dynamic_config_data, exclude_generated=True)
+  print_stdout = _ContainsDebuggingConfig(merged_configs) or options.verbose
 
   # Writing the config output before we know ProGuard is going to succeed isn't
   # great, since then a failure will result in one of the outputs being updated.
@@ -372,13 +458,13 @@ def main():
     if options.expected_configs_file:
       _VerifyExpectedConfigs(options.expected_configs_file,
                              options.output_config,
-                             options.verify_expected_configs)
+                             options.proguard_expectations_failure_file)
 
   if options.r8_path:
-    _OptimizeWithR8(options, options.proguard_configs, libraries,
-                    dynamic_config_data, print_stdout)
+    _OptimizeWithR8(options, proguard_configs, libraries, dynamic_config_data,
+                    print_stdout)
   else:
-    _OptimizeWithProguard(options, options.proguard_configs, libraries,
+    _OptimizeWithProguard(options, proguard_configs, libraries,
                           dynamic_config_data, print_stdout)
 
   # After ProGuard / R8 has run:
@@ -387,7 +473,7 @@ def main():
 
   inputs = options.proguard_configs + options.input_paths + libraries
   if options.apply_mapping:
-    inputs += options.apply_mapping
+    inputs.append(options.apply_mapping)
 
   build_utils.WriteDepfile(
       options.depfile, options.output_path, inputs=inputs, add_pydeps=False)

@@ -5,6 +5,7 @@
 #ifndef UI_GL_GL_CONTEXT_H_
 #define UI_GL_GL_CONTEXT_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
@@ -36,9 +37,10 @@ class GLContextVirtual;
 namespace gl {
 
 struct CurrentGL;
-class DebugGLApi;
+class LogGLApi;
 struct DriverGL;
 class GLApi;
+class GLFence;
 class GLSurface;
 class GPUTiming;
 class GPUTimingClient;
@@ -143,6 +145,10 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Indicate that the real context switches should unbind the FBO first
   // (For an Android work-around only).
   virtual void SetUnbindFboOnMakeCurrent();
+
+  // Indicate that the context has become visible/invisible. This can be due to
+  // tab-switching, window minimization, etc.
+  virtual void SetVisibility(bool visibility) {}
 
   // Returns whether the current context supports the named extension. The
   // context must be current.
@@ -252,6 +258,13 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   GLApi* gl_api() { return gl_api_.get(); }
 
+#if defined(OS_MACOSX)
+  // Child classes are responsible for calling DestroyBackpressureFences during
+  // their destruction while a context is current.
+  bool HasBackpressureFences() const;
+  void DestroyBackpressureFences();
+#endif
+
  private:
   friend class base::RefCounted<GLContext>;
 
@@ -274,7 +287,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   std::unique_ptr<DriverGL> driver_gl_;
   std::unique_ptr<GLApi> gl_api_;
   std::unique_ptr<TraceGLApi> trace_gl_api_;
-  std::unique_ptr<DebugGLApi> debug_gl_api_;
+  std::unique_ptr<LogGLApi> log_gl_api_;
   std::unique_ptr<CurrentGL> current_gl_;
 
   // Copy of the real API (if one was created) for dynamic initialization
@@ -285,6 +298,11 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   bool state_dirtied_externally_ = false;
   std::unique_ptr<GLStateRestorer> state_restorer_;
   std::unique_ptr<GLVersionInfo> version_info_;
+
+#if defined(OS_MACOSX)
+  std::map<uint64_t, std::unique_ptr<GLFence>> backpressure_fences_;
+  uint64_t next_backpressure_fence_ = 0;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(GLContext);
 };

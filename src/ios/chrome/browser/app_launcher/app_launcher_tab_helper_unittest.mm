@@ -8,13 +8,11 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/default_clock.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
-#include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_util.h"
@@ -295,6 +293,28 @@ TEST_F(AppLauncherTabHelperTest, InvalidUrls) {
   EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
 }
 
+// Tests that when the last committed URL is invalid, the URL is only opened
+// when the last committed item is nil.
+TEST_F(AppLauncherTabHelperTest, ValidUrlInvalidCommittedURL) {
+  NSString* url_string = @"itms-apps://itunes.apple.com/us/app/appname/id123";
+  web_state_.SetCurrentURL(GURL());
+
+  std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
+  item->SetURL(GURL());
+
+  navigation_manager_->SetLastCommittedItem(item.get());
+  EXPECT_FALSE(TestShouldAllowRequest(url_string,
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
+
+  navigation_manager_->SetLastCommittedItem(nullptr);
+  EXPECT_FALSE(TestShouldAllowRequest(url_string,
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
+}
+
 // Tests that URLs with schemes that might be a security risk are blocked.
 TEST_F(AppLauncherTabHelperTest, InsecureUrls) {
   EXPECT_FALSE(TestShouldAllowRequest(@"app-settings://",
@@ -305,8 +325,8 @@ TEST_F(AppLauncherTabHelperTest, InsecureUrls) {
 
 // Tests that URLs with U2F schemes are handled correctly.
 // This test is using https://chromeiostesting-dot-u2fdemo.appspot.com URL which
-// is a whitelisted URL for the purpose of testing, but the test doesn't send
-// any request to the server.
+// is a URL allowed for the purpose of testing, but the test doesn't send any
+// requests to the server.
 TEST_F(AppLauncherTabHelperTest, U2FUrls) {
   // Add required tab helpers for the U2F check.
   TabIdTabHelper::CreateForWebState(&web_state_);
@@ -363,38 +383,10 @@ TEST_F(AppLauncherTabHelperTest, ChromeBundleUrlScheme) {
   EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
 }
 
-// Tests that ShouldAllowRequest updates the reading list correctly, when there
-// is a valid app URL to be launches successfully.
-// TODO(crbug.com/850760): Remove this test, once the new AppLauncherRefresh
-// logic is always enabled.
-TEST_F(AppLauncherTabHelperTest, UpdatingTheReadingList) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kAppLauncherRefresh);
-  // Reading list isn't expected to be updated if there was no app launch.
-  EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/true,
-                                    /*is_link_transition*/ false,
-                                    /*expected_read_status*/ false));
-  EXPECT_EQ(0U, delegate_.countOfAppsLaunched);
-
-  // Reading list to be updated when app launch is successful.
-  EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/false,
-                                    /*is_link_transition*/ false,
-                                    /*expected_read_status*/ true));
-  EXPECT_EQ(1U, delegate_.countOfAppsLaunched);
-
-  // Transition type doesn't affect the reading list status
-  EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/false,
-                                    /*is_link_transition*/ true,
-                                    /*expected_read_status*/ true));
-  EXPECT_EQ(2U, delegate_.countOfAppsLaunched);
-}
-
 // Tests that ShouldAllowRequest updates the reading list correctly for non-link
 // transitions regardless of the app launching success when AppLauncherRefresh
 // flag is enabled.
-TEST_F(AppLauncherTabHelperTest, UpdatingTheReadingListWithAppLauncherRefresh) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kAppLauncherRefresh);
+TEST_F(AppLauncherTabHelperTest, UpdatingTheReadingList) {
   // Update reading list if the transition is not a link transition.
   EXPECT_TRUE(TestReadingListUpdate(/*is_app_blocked=*/true,
                                     /*is_link_transition*/ false,

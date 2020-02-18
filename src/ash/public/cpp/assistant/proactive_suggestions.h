@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/hash/hash.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
@@ -23,13 +22,17 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions
   static const int kCategoryUnknown = 0;
 
   // Constructs an instance with the specified |category|, |description|,
-  // |search_query|, and renderable |html| content. Note that |category| is an
-  // opaque int that is provided by the proactive suggestions server to
-  // represent the category of the associated content (e.g. news, shopping).
+  // |search_query|, renderable |html| content, and |rich_entry_point_html|.
+  // Note that |category| is an opaque int that is provided by the proactive
+  // suggestions server to represent the category of the associated content
+  // (e.g. news, shopping). Also note that |rich_entry_point_html| may be empty
+  // and is only used when the rich entry point for the proactive suggestions
+  // feature is enabled.
   ProactiveSuggestions(int category,
                        std::string&& description,
                        std::string&& search_query,
-                       std::string&& html);
+                       std::string&& html,
+                       std::string&& rich_entry_point_html);
 
   // Returns true if |a| is considered equivalent to |b|.
   static bool AreEqual(const ProactiveSuggestions* a,
@@ -38,20 +41,26 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions
   // Returns a fast hash representation of the given |proactive_suggestions|.
   static size_t ToHash(const ProactiveSuggestions* proactive_suggestions);
 
+  size_t hash() const { return hash_; }
   int category() const { return category_; }
   const std::string& description() const { return description_; }
   const std::string& search_query() const { return search_query_; }
   const std::string& html() const { return html_; }
+  const std::string& rich_entry_point_html() const {
+    return rich_entry_point_html_;
+  }
 
  private:
   // Destruction only allowed by base::RefCounted<ProactiveSuggestions>.
   friend class base::RefCounted<ProactiveSuggestions>;
   ~ProactiveSuggestions();
 
+  const size_t hash_;
   const int category_;
   const std::string description_;
   const std::string search_query_;
   const std::string html_;
+  const std::string rich_entry_point_html_;
 
   DISALLOW_COPY_AND_ASSIGN(ProactiveSuggestions);
 };
@@ -67,13 +76,7 @@ template <>
 struct hash<::ash::ProactiveSuggestions> {
   size_t operator()(
       const ::ash::ProactiveSuggestions& proactive_suggestions) const {
-    size_t description = base::FastHash(proactive_suggestions.description());
-    size_t search_query = base::FastHash(proactive_suggestions.search_query());
-    size_t html = base::FastHash(proactive_suggestions.html());
-
-    size_t hash = base::HashInts(proactive_suggestions.category(), description);
-    hash = base::HashInts(hash, search_query);
-    return base::HashInts(hash, html);
+    return proactive_suggestions.hash();
   }
 };
 

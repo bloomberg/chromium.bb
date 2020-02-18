@@ -1,12 +1,12 @@
 # heapprofd - Android Heap Profiler
 
-**heapprofd requires Android Q.**
+**heapprofd requires Android 10.**
 
 heapprofd is a tool that tracks native heap allocations & deallocations of an
 Android process within a given time period. The resulting profile can be used
 to attribute memory usage to particular function callstacks, supporting a mix
-of both native and java code. The tool should be useful to Android platform
-developers, and app developers investigating memory issues.
+of both native and java code. The tool can be used by Android platform and app
+developers to investigate memory issues.
 
 On debug Android builds, you can profile all apps and most system services.
 On "user" builds, you can only use it on apps with the debuggable or
@@ -16,8 +16,9 @@ profileable manifest flag.
 
 <!-- This uses github because gitiles does not allow to get the raw file. -->
 
-Use the `tools/heap_profile` script to heap profile a process. If you are
-having trouble make sure you are using the [latest version](
+On Linux / MacOS, use the `tools/heap_profile` script to heap profile a
+process. If you are having trouble make sure you are using the
+[latest version](
 https://raw.githubusercontent.com/catapult-project/perfetto/master/tools/heap_profile).
 
 See all the arguments using `tools/heap_profile -h`, or use the defaults
@@ -31,6 +32,12 @@ These can be viewed using pprof. Googlers: head to pprof/ and upload them.
 ```
 
 This will create a pprof-compatible heap dump when Ctrl+C is pressed.
+
+You can also use the [Perfetto UI](https://ui.perfetto.dev/#!/record?p=memory)
+to record heapprofd profiles. Tick "Heap profiling" in the trace configuration,
+enter the processes you want to target, click "Add Device" to pair your phone,
+and record profiles straight from your browser. This is also possible on
+Windows.
 
 ## Viewing the data
 
@@ -52,9 +59,13 @@ The resulting profile proto contains four views on the data
 visualization. *Tip: you might want to put `libart.so` as a "Hide regex" when
 profiling apps.*
 
-[Speedscope](https://speedscope.app) can also be used to visualize the heap
-dump, but will only show the space view. *Tip: Click Left Heavy on the top
-left for a good visualisation.*
+You can use the [Perfetto UI](https://ui.perfetto.dev) to visualize heap dumps.
+Upload the `raw-trace` file in your output directory. You will see all heap
+dumps as diamonds on the timeline, click any of them to get a flamegraph.
+
+Alternatively [Speedscope](https://speedscope.app) can be used to visualize
+the gzipped protos, but will only show the space view.
+*Tip: Click Left Heavy on the top left for a good visualisation.*
 
 ## Sampling interval
 heapprofd samples heap allocations. Given a sampling interval of n bytes,
@@ -169,7 +180,7 @@ will read symbol information from these files.
 You can save the symbolized version by issuing the `proto` command in pprof.
 
 ## Idle page tracking
-This is only available in Android versions newer than Q.
+This is only available in Android versions newer than 10.
 
 Idle page tracking allows you to analyze which allocations made by your
 program are being used by a workload. This can be useful for finding leaks
@@ -230,6 +241,7 @@ sure no [DEDUPED frames](#deduped-frames) are involved.
 
 ## Known Issues
 
+### Android 10
 * Does not work on x86 platforms (including the Android cuttlefish emulator).
 * If heapprofd is run standalone (by running `heapprofd` in a root shell, rather
   than through init), `/dev/socket/heapprofd` get assigned an incorrect SELinux

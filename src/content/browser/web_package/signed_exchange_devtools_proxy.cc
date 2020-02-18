@@ -21,13 +21,13 @@ namespace content {
 
 SignedExchangeDevToolsProxy::SignedExchangeDevToolsProxy(
     const GURL& outer_request_url,
-    const network::ResourceResponseHead& outer_response,
-    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+    network::mojom::URLResponseHeadPtr outer_response,
+    int frame_tree_node_id,
     base::Optional<const base::UnguessableToken> devtools_navigation_token,
     bool report_raw_headers)
     : outer_request_url_(outer_request_url),
-      outer_response_(outer_response),
-      frame_tree_node_id_getter_(frame_tree_node_id_getter),
+      outer_response_(std::move(outer_response)),
+      frame_tree_node_id_(frame_tree_node_id),
       devtools_navigation_token_(devtools_navigation_token),
       devtools_enabled_(report_raw_headers) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -43,7 +43,7 @@ void SignedExchangeDevToolsProxy::ReportError(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   errors_.push_back(SignedExchangeError(message, std::move(error_field)));
   WebContents* web_contents =
-      WebContents::FromFrameTreeNodeId(frame_tree_node_id_getter_.Run());
+      WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
   if (!web_contents)
     return;
   web_contents->GetMainFrame()->AddMessageToConsole(
@@ -57,7 +57,7 @@ void SignedExchangeDevToolsProxy::CertificateRequestSent(
     return;
 
   FrameTreeNode* frame_tree_node =
-      FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter_.Run());
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
   if (!frame_tree_node)
     return;
 
@@ -70,12 +70,12 @@ void SignedExchangeDevToolsProxy::CertificateRequestSent(
 void SignedExchangeDevToolsProxy::CertificateResponseReceived(
     const base::UnguessableToken& request_id,
     const GURL& url,
-    const network::ResourceResponseHead& head) {
+    const network::mojom::URLResponseHead& head) {
   if (!devtools_enabled_)
     return;
 
   FrameTreeNode* frame_tree_node =
-      FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter_.Run());
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
   if (!frame_tree_node)
     return;
 
@@ -92,7 +92,7 @@ void SignedExchangeDevToolsProxy::CertificateRequestCompleted(
     return;
 
   FrameTreeNode* frame_tree_node =
-      FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter_.Run());
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
   if (!frame_tree_node)
     return;
 
@@ -112,13 +112,14 @@ void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
     ssl_info_opt = *ssl_info;
 
   FrameTreeNode* frame_tree_node =
-      FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter_.Run());
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
   if (!frame_tree_node)
     return;
 
   devtools_instrumentation::OnSignedExchangeReceived(
       frame_tree_node, devtools_navigation_token_, outer_request_url_,
-      outer_response_, envelope, certificate, ssl_info_opt, std::move(errors_));
+      *outer_response_, envelope, certificate, ssl_info_opt,
+      std::move(errors_));
 }
 
 }  // namespace content

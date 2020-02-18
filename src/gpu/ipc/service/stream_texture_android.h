@@ -16,7 +16,7 @@
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/stream_texture_shared_image_interface.h"
-#include "gpu/ipc/common/android/texture_owner.h"
+#include "gpu/command_buffer/service/texture_owner.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ui/gl/android/surface_texture.h"
@@ -56,6 +56,7 @@ class StreamTexture : public StreamTextureSharedImageInterface,
   // gl::GLImage implementation:
   gfx::Size GetSize() override;
   unsigned GetInternalFormat() override;
+  unsigned GetDataType() override;
   BindOrCopy ShouldBindOrCopy() override;
   bool BindTexImage(unsigned target) override;
   void ReleaseTexImage(unsigned target) override;
@@ -134,6 +135,10 @@ class StreamTexture : public StreamTextureSharedImageInterface,
   scoped_refptr<SharedContextState> context_state_;
   SequenceId sequence_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
+
+  // This indicates whether ycbcr info is already sent from gpu process to the
+  // renderer.
+  bool ycbcr_info_sent_ = false;
 
   base::WeakPtrFactory<StreamTexture> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(StreamTexture);

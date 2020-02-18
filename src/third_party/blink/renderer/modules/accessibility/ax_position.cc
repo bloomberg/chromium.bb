@@ -26,7 +26,7 @@ namespace blink {
 const AXPosition AXPosition::CreatePositionBeforeObject(
     const AXObject& child,
     const AXPositionAdjustmentBehavior adjustment_behavior) {
-  if (child.IsDetached())
+  if (child.IsDetached() || !child.AccessibilityIsIncludedInTree())
     return {};
 
   // If |child| is a text object, but not a text control, make behavior the same
@@ -37,6 +37,10 @@ const AXPosition AXPosition::CreatePositionBeforeObject(
     return CreateFirstPositionInObject(child, adjustment_behavior);
 
   const AXObject* parent = child.ParentObjectIncludedInTree();
+
+  if (!parent || parent->IsDetached())
+    return {};
+
   DCHECK(parent);
   AXPosition position(*parent);
   position.text_offset_or_child_index_ = child.IndexInParent();
@@ -51,7 +55,7 @@ const AXPosition AXPosition::CreatePositionBeforeObject(
 const AXPosition AXPosition::CreatePositionAfterObject(
     const AXObject& child,
     const AXPositionAdjustmentBehavior adjustment_behavior) {
-  if (child.IsDetached())
+  if (child.IsDetached() || !child.AccessibilityIsIncludedInTree())
     return {};
 
   // If |child| is a text object, but not a text control, make behavior the same
@@ -62,6 +66,10 @@ const AXPosition AXPosition::CreatePositionAfterObject(
     return CreateLastPositionInObject(child, adjustment_behavior);
 
   const AXObject* parent = child.ParentObjectIncludedInTree();
+
+  if (!parent || parent->IsDetached())
+    return {};
+
   DCHECK(parent);
   AXPosition position(*parent);
   position.text_offset_or_child_index_ = child.IndexInParent() + 1;
@@ -814,8 +822,11 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity(
   const auto last_position = Position::LastPositionInNode(*container_node);
   CharacterIterator character_iterator(first_position, last_position,
                                        text_iterator_behavior);
+  unsigned text_offset_in_container =
+      adjusted_position.container_object_->TextOffsetInContainer(
+          adjusted_position.TextOffset());
   const EphemeralRange range = character_iterator.CalculateCharacterSubrange(
-      0, adjusted_position.text_offset_or_child_index_);
+      0, text_offset_in_container);
   return PositionWithAffinity(range.EndPosition(), affinity_);
 }
 

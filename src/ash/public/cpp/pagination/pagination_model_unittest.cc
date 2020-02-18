@@ -61,7 +61,8 @@ class TestPaginationModelObserver : public PaginationModelObserver {
   }
 
   // PaginationModelObserver overrides:
-  void TotalPagesChanged() override {}
+  void TotalPagesChanged(int previous_page_count, int new_page_count) override {
+  }
   void SelectedPageChanged(int old_selected, int new_selected) override {
     AppendSelectedPage(new_selected);
     ++selection_count_;
@@ -122,7 +123,8 @@ class PaginationModelTest : public views::test::WidgetTest {
     widget_.reset(CreateTopLevelPlatformWidget());
     pagination_ = std::make_unique<PaginationModel>(widget_->GetContentsView());
     pagination_->SetTotalPages(5);
-    pagination_->SetTransitionDurations(1, 1);
+    pagination_->SetTransitionDurations(base::TimeDelta::FromMilliseconds(1),
+                                        base::TimeDelta::FromMilliseconds(1));
     observer_.set_model(pagination_.get());
     pagination_->AddObserver(&observer_);
   }

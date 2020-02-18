@@ -21,6 +21,7 @@
 #include "testing/fake_file_access.h"
 #include "testing/free_deleter.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/base/span.h"
 
 class TestLoader;
 
@@ -105,6 +106,11 @@ class EmbedderTest : public ::testing::Test,
                                 const char* password);
   bool OpenDocumentWithoutJavaScript(const std::string& filename);
 
+  // Close the document from a previous OpenDocument() call. This happens
+  // automatically at tear-down, and is usually not explicitly required,
+  // unless testing multiple documents or duplicate destruction.
+  void CloseDocument();
+
   // Perform JavaScript actions that are to run at document open time.
   void DoOpenActions();
 
@@ -168,8 +174,8 @@ class EmbedderTest : public ::testing::Test,
                                                        int flags);
 
   // Get the PostScript data from |emf_data|.
-  static std::string GetPostScriptFromEmf(const std::vector<uint8_t>& emf_data);
-#endif
+  static std::string GetPostScriptFromEmf(pdfium::span<const uint8_t> emf_data);
+#endif  // defined(OS_WIN)
 
  protected:
   using PageNumberToHandleMap = std::map<int, FPDF_PAGE>;

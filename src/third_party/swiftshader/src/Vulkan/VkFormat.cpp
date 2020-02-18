@@ -127,6 +127,7 @@ bool Format::isUnsignedNonNormalizedInteger() const
 	case VK_FORMAT_R64G64_UINT:
 	case VK_FORMAT_R64G64B64_UINT:
 	case VK_FORMAT_R64G64B64A64_UINT:
+	case VK_FORMAT_S8_UINT:
 		return true;
 	default:
 		return false;
@@ -196,6 +197,7 @@ Format Format::getAspectFormat(VkImageAspectFlags aspect) const
 	case VK_IMAGE_ASPECT_STENCIL_BIT:
 		switch(format)
 		{
+		case VK_FORMAT_S8_UINT:
 		case VK_FORMAT_D16_UNORM_S8_UINT:
 		case VK_FORMAT_D24_UNORM_S8_UINT:
 		case VK_FORMAT_D32_SFLOAT_S8_UINT:
@@ -211,6 +213,7 @@ Format Format::getAspectFormat(VkImageAspectFlags aspect) const
 	case VK_IMAGE_ASPECT_PLANE_0_BIT:
 		switch(format)
 		{
+		case VK_FORMAT_R8_UNORM:
 		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
 		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
 			return VK_FORMAT_R8_UNORM;
@@ -223,8 +226,10 @@ Format Format::getAspectFormat(VkImageAspectFlags aspect) const
 	case VK_IMAGE_ASPECT_PLANE_1_BIT:
 		switch(format)
 		{
+		case VK_FORMAT_R8_UNORM:
 		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
 			return VK_FORMAT_R8_UNORM;
+		case VK_FORMAT_R8G8_UNORM:
 		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
 			return VK_FORMAT_R8G8_UNORM;
 		default:
@@ -236,6 +241,7 @@ Format Format::getAspectFormat(VkImageAspectFlags aspect) const
 	case VK_IMAGE_ASPECT_PLANE_2_BIT:
 		switch(format)
 		{
+		case VK_FORMAT_R8_UNORM:
 		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
 			return VK_FORMAT_R8_UNORM;
 		default:
@@ -283,28 +289,6 @@ bool Format::isDepth() const
 	case VK_FORMAT_S8_UINT:
 	default:
 		return false;
-	}
-}
-
-bool Format::hasQuadLayout() const
-{
-	switch(format)
-	{
-	case VK_FORMAT_S8_UINT:
-		return true;
-	default:
-		return false;
-	}
-}
-
-VkFormat Format::getNonQuadLayoutFormat() const
-{
-	switch(format)
-	{
-	case VK_FORMAT_S8_UINT:
-		return VK_FORMAT_R8_UINT;
-	default:
-		return format;
 	}
 }
 
@@ -1973,6 +1957,7 @@ bool Format::has16bitTextureFormat() const
 	case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
 	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
 	case VK_FORMAT_D16_UNORM:
+	case VK_FORMAT_S8_UINT:
 		return false;
 	default:
 		UNIMPLEMENTED("Format: %d", int(format));
@@ -2004,6 +1989,7 @@ bool Format::has8bitTextureComponents() const
 	case VK_FORMAT_R8G8_UINT:
 	case VK_FORMAT_R8G8B8A8_SINT:
 	case VK_FORMAT_R8G8B8A8_UINT:
+	case VK_FORMAT_S8_UINT:
 		return true;
 	case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
 	case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
@@ -2087,6 +2073,7 @@ bool Format::has16bitTextureComponents() const
 	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
 	case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
 	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
+	case VK_FORMAT_S8_UINT:
 		return false;
 	case VK_FORMAT_R16_UNORM:
 	case VK_FORMAT_R16_SNORM:
@@ -2161,6 +2148,7 @@ bool Format::has32bitIntegerTextureComponents() const
 	case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
 	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
 	case VK_FORMAT_D16_UNORM:
+	case VK_FORMAT_S8_UINT:
 		return false;
 	case VK_FORMAT_R32_SINT:
 	case VK_FORMAT_R32_UINT:
@@ -2234,6 +2222,7 @@ bool Format::isRGBComponent(int component) const
 		return component < 3;
 	case VK_FORMAT_D32_SFLOAT:
 	case VK_FORMAT_D16_UNORM:
+	case VK_FORMAT_S8_UINT:
 		return false;
 	default:
 		UNIMPLEMENTED("Format: %d", int(format));

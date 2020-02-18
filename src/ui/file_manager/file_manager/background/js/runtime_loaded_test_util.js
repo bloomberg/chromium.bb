@@ -75,14 +75,14 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
  */
 test.util.sync.getWindows = () => {
   const windows = {};
-  for (var id in window.appWindows) {
+  for (const id in window.appWindows) {
     const windowWrapper = window.appWindows[id];
     windows[id] = {
       outerWidth: windowWrapper.contentWindow.outerWidth,
       outerHeight: windowWrapper.contentWindow.outerHeight
     };
   }
-  for (var id in window.background.dialogs) {
+  for (const id in window.background.dialogs) {
     windows[id] = {
       outerWidth: window.background.dialogs[id].outerWidth,
       outerHeight: window.background.dialogs[id].outerHeight
@@ -341,8 +341,8 @@ test.util.sync.setScrollTop = (contentWindow, query, position) => {
  */
 test.util.sync.setElementStyles = (contentWindow, query, properties) => {
   const element = contentWindow.document.querySelector(query);
-  for (let [prop, value] of Object.entries(properties)) {
-    element.style[prop] = value;
+  for (const [key, value] of Object.entries(properties)) {
+    element.style[key] = value;
   }
 };
 
@@ -370,10 +370,10 @@ test.util.sync.sendEvent = (contentWindow, targetQuery, event) => {
   } else if (typeof targetQuery === 'string') {
     target = contentWindow.document.querySelector(targetQuery);
   } else if (Array.isArray(targetQuery)) {
-    let elems = test.util.sync.deepQuerySelectorAll_(
+    const elements = test.util.sync.deepQuerySelectorAll_(
         contentWindow.document, targetQuery);
-    if (elems.length > 0) {
-      target = elems[0];
+    if (elements.length > 0) {
+      target = elements[0];
     }
   }
 
@@ -759,6 +759,18 @@ test.util.sync.fakeDragAndDrop =
     };
 
 /**
+ * Sends a resize event to the content window.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @return {boolean} True if the event was sent to the contentWindow.
+ */
+test.util.sync.fakeResizeEvent = (contentWindow) => {
+  const resize = contentWindow.document.createEvent('Event');
+  resize.initEvent('resize', false, false);
+  return contentWindow.dispatchEvent(resize);
+};
+
+/**
  * Focuses to the element specified by |targetQuery|. This method does not
  * provide any guarantee whether the element is actually focused or not.
  *
@@ -986,17 +998,6 @@ test.util.sync.setPreferences = preferences => {
 };
 
 /**
- * Returns the root access allowed state of the Crostini |vmName|.
- *
- * @param {!ForegroundWindow} contentWindow Window to be tested.
- * @param {string} vmName Crostini virtual machine name e.g., 'termina'.
- * @return {boolean}
- */
-test.util.sync.getCrostiniRootAccessAllowed = (contentWindow, vmName) => {
-  return contentWindow.fileManager.crostini.isRootAccessAllowed(vmName);
-};
-
-/**
  * Reports an enum metric.
  * @param {string} name The metric name.
  * @param {string} value The metric enumerator to record.
@@ -1015,4 +1016,11 @@ test.util.sync.recordEnumMetric = (name, value, validValues) => {
  */
 test.util.sync.reload = () => {
   chrome.runtime.reload();
+};
+
+/**
+ * Tells background page progress center to never notify a completed operation.
+ */
+test.util.sync.progressCenterNeverNotifyCompleted = () => {
+  window.background.progressCenter.neverNotifyCompleted();
 };

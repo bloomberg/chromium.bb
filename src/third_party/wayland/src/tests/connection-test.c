@@ -142,7 +142,7 @@ va_list_wrapper(const char *signature, union wl_argument *args, int count, ...)
 TEST(argument_from_va_list)
 {
 	union wl_argument args[WL_CLOSURE_MAX_ARGS];
-	struct wl_object fake_object;
+	struct wl_object fake_object, fake_new_object;
 	struct wl_array fake_array;
 
 	va_list_wrapper("i", args, 1, 100);
@@ -154,13 +154,13 @@ TEST(argument_from_va_list)
 
 	va_list_wrapper("?iuf?sonah", args, 8,
 			102, 103, wl_fixed_from_int(104), "value",
-			&fake_object, 105, &fake_array, 106);
+			&fake_object, &fake_new_object, &fake_array, 106);
 	assert(args[0].i == 102);
 	assert(args[1].u == 103);
 	assert(args[2].f == wl_fixed_from_int(104));
 	assert(strcmp(args[3].s, "value") == 0);
 	assert(args[4].o == &fake_object);
-	assert(args[5].n == 105);
+	assert(args[5].o == &fake_new_object);
 	assert(args[6].a == &fake_array);
 	assert(args[7].h == 106);
 }
@@ -533,6 +533,69 @@ TEST(connection_marshal_demarshal)
 	release_marshal_data(&data);
 }
 
+static void
+expected_fail_demarshal(struct marshal_data *data, const char *format,
+                        const uint32_t *msg, int expected_error)
+{
+	struct wl_message message = { "test", format, NULL };
+	struct wl_closure *closure;
+	struct wl_map objects;
+	int size = (msg[1] >> 16);
+
+	assert(write(data->s[1], msg, size) == size);
+	assert(wl_connection_read(data->read_connection) == size);
+
+	wl_map_init(&objects, WL_MAP_SERVER_SIDE);
+	closure = wl_connection_demarshal(data->read_connection,
+					    size, &objects, &message);
+
+	assert(closure == NULL);
+	assert(errno == expected_error);
+}
+
+/* These tests are verifying that the demarshaling code will gracefuly handle
+ * clients lying about string and array lengths and giving values near
+ * UINT32_MAX. Before fixes f7fdface and f5b9e3b9 this test would crash on
+ * 32bit systems.
+ */
+TEST(connection_demarshal_failures)
+{
+	struct marshal_data data;
+	unsigned int i;
+	uint32_t msg[3];
+
+	const uint32_t overflowing_values[] = {
+		/* Values very close to UINT32_MAX. Before f5b9e3b9 these
+		 * would cause integer overflow in DIV_ROUNDUP. */
+		0xffffffff, 0xfffffffe, 0xfffffffd, 0xfffffffc,
+
+		/* Values at various offsets from UINT32_MAX. Before f7fdface
+		 * these would overflow the "p" pointer on 32bit systems,
+		 * effectively subtracting the offset from it. It had good
+		 * chance to cause crash depending on what was stored at that
+		 * offset before "p". */
+		0xfffff000, 0xffffd000, 0xffffc000, 0xffffb000
+	};
+
+	setup_marshal_data(&data);
+
+	/* sender_id, does not matter */
+	msg[0] = 0;
+
+	/* (size << 16 | opcode), opcode is 0, does not matter */
+	msg[1] = sizeof(msg) << 16;
+
+	for (i = 0; i < ARRAY_LENGTH(overflowing_values); i++) {
+		/* length of the string or array */
+		msg[2] = overflowing_values[i];
+
+		expected_fail_demarshal(&data, "s", msg, EINVAL);
+		expected_fail_demarshal(&data, "a", msg, EINVAL);
+	}
+
+	release_marshal_data(&data);
+}
+
 TEST(connection_marshal_alot)
 {
 	struct marshal_data data;
@@ -603,8 +666,8 @@ suu_handler(void *data, struct wl_object *object,
 	int *done = data;
 
 	assert(strcmp(s, "foo") == 0);
-	assert(u1 = 500);
-	assert(u2 = 404040);
+	assert(u1 == 500);
+	assert(u2 == 404040);
 	*done = 1;
 }
 
@@ -688,4 +751,91 @@ TEST(closure_leaks_after_error)
 	display_resume(d);
 
 	display_destroy(d);
+}
+
+/** Raw read from socket expecting wl_display.error
+ *
+ * \param sockfd The socket to read from.
+ * \param expected_error The expected wl_display error code.
+ *
+ * Reads the socket and manually parses one message, expecting it to be a
+ * wl_display.error with the wl_display as the originating object.
+ * Asserts that the received error code is expected_error.
+ */
+static void
+expect_error_recv(int sockfd, uint32_t expected_error)
+{
+	uint32_t buf[1024];
+	ssize_t slen;
+	uint32_t opcode;
+	int str_len;
+
+	slen = recv(sockfd, buf, sizeof buf, 0);
+	assert(slen >= 2 * (ssize_t)sizeof (uint32_t));
+	opcode = buf[1] & 0xffff;
+	fprintf(stderr, "Received %zd bytes, object %u, opcode %u\n",
+		slen, buf[0], opcode);
+
+	/* check error event */
+	assert(buf[0] == 1);
+	assert(opcode == WL_DISPLAY_ERROR);
+
+	str_len = buf[4];
+	assert(str_len > 0);
+	assert(str_len <= slen - 5 * (ssize_t)sizeof (uint32_t));
+	fprintf(stderr, "Error event on object %u, code %u, message \"%*s\"\n",
+		buf[2], buf[3], str_len, (const char *)&buf[5]);
+
+	assert(buf[3] == expected_error);
+}
+
+/* A test for https://gitlab.freedesktop.org/wayland/wayland/issues/52
+ * trying to provoke a read from uninitialized memory in
+ * wl_connection_demarshal() for sender_id and opcode.
+ *
+ * This test might not fail as is even with #52 unfixed, since there is no way
+ * to detect what happens and the crash with zero size depends on stack content.
+ * However, running under Valgrind would point out invalid reads and use of
+ * uninitialized values.
+ */
+TEST(request_bogus_size)
+{
+	struct wl_display *display;
+	struct wl_client *client;
+	int s[2];
+	uint32_t msg[3];
+	int bogus_size;
+
+	test_set_timeout(1);
+
+	/*
+	 * The manufactured message has real size 12. Test all bogus sizes
+	 * smaller than that, and zero as the last one since wl_closure_init
+	 * handles zero specially and having garbage in the stack makes it more
+	 * likely to crash in wl_connection_demarshal.
+	 */
+	for (bogus_size = 11; bogus_size >= 0; bogus_size--) {
+		fprintf(stderr, "* bogus size %d\n", bogus_size);
+
+		assert(socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, s) == 0);
+		display = wl_display_create();
+		assert(display);
+		client = wl_client_create(display, s[0]);
+		assert(client);
+
+		/* manufacture a request that lies about its size */
+		msg[0] = 1; /* sender id: wl_display */
+		msg[1] = (bogus_size << 16) | WL_DISPLAY_SYNC; /* size and opcode */
+		msg[2] = 2; /* sync argument: new_id for wl_callback */
+
+		assert(send(s[1], msg, sizeof msg, 0) == sizeof msg);
+
+		wl_event_loop_dispatch(wl_display_get_event_loop(display), 0);
+
+		expect_error_recv(s[1], WL_DISPLAY_ERROR_INVALID_METHOD);
+
+		/* Do not wl_client_destroy, the error already caused it. */
+		close(s[1]);
+		wl_display_destroy(display);
+	}
 }

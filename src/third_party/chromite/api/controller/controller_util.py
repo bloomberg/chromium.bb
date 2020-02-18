@@ -8,7 +8,7 @@
 from __future__ import print_function
 
 from chromite.api.gen.chromiumos import common_pb2
-
+from chromite.cbuildbot import goma_util
 from chromite.lib import portage_util
 from chromite.lib.build_target_util import BuildTarget
 from chromite.lib.chroot_lib import Chroot
@@ -47,13 +47,33 @@ def ParseChroot(chroot_message):
   if use_flags:
     env['USE'] = ' '.join(use_flags)
 
+  # Make sure it'll use the local source to build chrome when we have it.
+  if chrome_root:
+    env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
+
   # TODO(saklein) Remove the default when fully integrated in recipes.
   env['FEATURES'] = 'separatedebug'
   if features:
     env['FEATURES'] = ' '.join(features)
 
+  goma = None
+  if chroot_message.goma.goma_dir:
+    chromeos_goma_dir = chroot_message.goma.chromeos_goma_dir or None
+    goma_approach = None
+    if chroot_message.goma.goma_approach == common_pb2.GomaConfig.RBE_PROD:
+      goma_approach = goma_util.GomaApproach('?prod', 'goma.chromium.org', True)
+    elif chroot_message.goma.goma_approach == common_pb2.GomaConfig.RBE_STAGING:
+      goma_approach = goma_util.GomaApproach('?staging',
+                                             'staging-goma.chromium.org', True)
+    goma = goma_util.Goma(chroot_message.goma.goma_dir,
+                          chroot_message.goma.goma_client_json,
+                          stage_name='BuildAPI',
+                          chromeos_goma_dir=chromeos_goma_dir,
+                          chroot_dir=path,
+                          goma_approach=goma_approach)
+
   return Chroot(path=path, cache_dir=cache_dir, chrome_root=chrome_root,
-                env=env)
+                env=env, goma=goma)
 
 
 def ParseBuildTarget(build_target_message):

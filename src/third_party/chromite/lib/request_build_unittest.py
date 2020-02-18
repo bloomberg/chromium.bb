@@ -242,7 +242,7 @@ class RequestBuildHelperTestsNetork(RequestBuildHelperTestsBase):
 
     self.assertEqual(request['build']['id'], buildbucket_id)
     self.assertEqual(request['build']['bucket'], expected_bucket)
-    self.assertItemsEqual(request['build']['tags'], expected_tags)
+    self.assertCountEqual(request['build']['tags'], expected_tags)
 
     request_parameters = json.loads(request['build']['parameters_json'])
     self.assertEqual(request_parameters, expected_parameters)

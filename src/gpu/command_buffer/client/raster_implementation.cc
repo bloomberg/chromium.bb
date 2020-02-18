@@ -543,9 +543,20 @@ unsigned int RasterImplementation::GetTransferBufferFreeSize() const {
   return transfer_buffer_->GetFreeSize();
 }
 
+bool RasterImplementation::IsJpegDecodeAccelerationSupported() const {
+  return image_decode_accelerator_ &&
+         image_decode_accelerator_->IsJpegDecodeAccelerationSupported();
+}
+
+bool RasterImplementation::IsWebPDecodeAccelerationSupported() const {
+  return image_decode_accelerator_ &&
+         image_decode_accelerator_->IsWebPDecodeAccelerationSupported();
+}
+
 bool RasterImplementation::CanDecodeWithHardwareAcceleration(
-    base::span<const uint8_t> encoded_data) const {
-  return image_decode_accelerator_->IsImageSupported(encoded_data);
+    const cc::ImageHeaderMetadata* image_metadata) const {
+  return image_decode_accelerator_ &&
+         image_decode_accelerator_->IsImageSupported(image_metadata);
 }
 
 const std::string& RasterImplementation::GetLogPrefix() const {
@@ -1194,7 +1205,7 @@ void RasterImplementation::IssueImageDecodeCacheEntryCreation(
 }
 
 GLuint RasterImplementation::CreateAndConsumeForGpuRaster(
-    const GLbyte* mailbox) {
+    const gpu::Mailbox& mailbox) {
   NOTREACHED();
   return 0;
 }
@@ -1207,6 +1218,15 @@ void RasterImplementation::BeginGpuRaster() {
   NOTREACHED();
 }
 void RasterImplementation::EndGpuRaster() {
+  NOTREACHED();
+}
+
+void RasterImplementation::BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
+                                                                GLenum mode) {
+  NOTREACHED();
+}
+
+void RasterImplementation::EndSharedImageAccessDirectCHROMIUM(GLuint texture) {
   NOTREACHED();
 }
 

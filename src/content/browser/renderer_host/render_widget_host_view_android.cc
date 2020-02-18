@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -65,6 +66,7 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
+#include "content/public/android/content_jni_headers/RenderWidgetHostViewImpl_jni.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -76,7 +78,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "content/public/android/content_jni_headers/RenderWidgetHostViewImpl_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -131,9 +132,18 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
 }
 
 gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
-  gfx::RectF rect = controller.GetRectBetweenBounds();
-  if (rect.IsEmpty())
-    return rect;
+  // When the touch handles are on the same line, the rect may become simply a
+  // one-dimensional rect, and still need to union the handle rect to avoid the
+  // context menu covering the touch handle. See detailed comments in
+  // TouchSelectionController::GetRectBetweenBounds(). Ensure that the |rect| is
+  // not empty by adding a pixel width or height to avoid the wrong menu
+  // position.
+  gfx::RectF rect = controller.GetVisibleRectBetweenBounds();
+  if (rect.IsEmpty()) {
+    gfx::SizeF size = rect.size();
+    size.SetToMax(gfx::SizeF(1.0f, 1.0f));
+    rect.set_size(size);
+  }
 
   rect.Union(controller.GetStartHandleRect());
   rect.Union(controller.GetEndHandleRect());
@@ -218,6 +228,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
                         this),
       stylus_text_selector_(this),
       using_browser_compositor_(CompositorImpl::IsInitialized()),
+      using_viz_for_webview_(features::IsUsingVizForWebView()),
       synchronous_compositor_client_(nullptr),
       observing_root_window_(false),
       fallback_cursor_mode_enabled_(
@@ -240,7 +251,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   if (is_showing_)
     local_surface_id_allocator_.GenerateId();
 
-  if (using_browser_compositor_) {
+  if (using_browser_compositor_ || using_viz_for_webview_) {
     delegated_frame_host_client_ =
         std::make_unique<DelegatedFrameHostClientAndroid>(this);
     delegated_frame_host_ = std::make_unique<ui::DelegatedFrameHostAndroid>(
@@ -395,7 +406,7 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
 
   if (!using_browser_compositor_) {
     // DevTools ScreenCast support for Android WebView.
-    last_devtools_frame_metadata_.emplace(metadata);
+    last_render_frame_metadata_ = metadata;
     // Android WebView ignores transparent background.
     is_transparent = false;
   }
@@ -526,14 +537,11 @@ void RenderWidgetHostViewAndroid::ShowContextMenuAtTouchHandle(
   }
 }
 
-void RenderWidgetHostViewAndroid::InsetViewportBottom(
+void RenderWidgetHostViewAndroid::OnViewportInsetBottomChanged(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    jint bottom_adjust_px) {
-  int pinned_bottom_adjust_dps =
-      std::max(0, (int)(bottom_adjust_px / view_.GetDipScale()));
-  gfx::Insets insets(0, 0, pinned_bottom_adjust_dps, 0);
-  SetInsets(insets);
+    const base::android::JavaParamRef<jobject>& obj) {
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                              base::nullopt);
 }
 
 void RenderWidgetHostViewAndroid::WriteContentBitmapToDiskAsync(
@@ -639,17 +647,15 @@ gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() {
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetVisibleViewportSize() {
+  int pinned_bottom_adjust_dps =
+      std::max(0, (int)(view_.GetViewportInsetBottom() / view_.GetDipScale()));
   gfx::Rect requested_rect(GetRequestedRendererSize());
-  requested_rect.Inset(insets_);
+  requested_rect.Inset(gfx::Insets(0, 0, pinned_bottom_adjust_dps, 0));
   return requested_rect.size();
 }
 
 void RenderWidgetHostViewAndroid::SetInsets(const gfx::Insets& insets) {
-  if (insets != insets_) {
-    insets_ = insets;
-    SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                base::nullopt);
-  }
+  NOTREACHED();
 }
 
 gfx::Size RenderWidgetHostViewAndroid::GetCompositorViewportPixelSize() {
@@ -1148,11 +1154,11 @@ void RenderWidgetHostViewAndroid::FrameTokenChangedForSynchronousCompositor(
     if (!in_sync_copy_contents_) {
       RenderFrameHost* frame_host =
           RenderViewHost::From(host())->GetMainFrame();
-      if (frame_host && last_devtools_frame_metadata_) {
+      if (frame_host && last_render_frame_metadata_) {
         // Update our |root_scroll_offset|, as changes to this value do not
         // trigger a new RenderFrameMetadata, and it may be out of date. This
         // is needed for devtools DOM node selection.
-        DevToolsFrameMetadata updated_metadata = *last_devtools_frame_metadata_;
+        cc::RenderFrameMetadata updated_metadata = *last_render_frame_metadata_;
         updated_metadata.root_scroll_offset =
             gfx::ScrollOffsetToVector2dF(root_scroll_offset);
         RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
@@ -1370,6 +1376,10 @@ void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                               metadata.local_surface_id_allocation);
+  if (delegated_frame_host_) {
+    delegated_frame_host_->SetTopControlsVisibleHeight(
+        metadata.top_controls_height * metadata.top_controls_shown_ratio);
+  }
   // We've just processed new RenderFrameMetadata and potentially embedded a
   // new surface for that data. Check if we need to evict it.
   EvictFrameIfNecessary();
@@ -1529,7 +1539,7 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   SendBeginFramePaused();
   view_.GetWindowAndroid()->AddObserver(this);
   // When using browser compositor, DelegatedFrameHostAndroid provides the BFS.
-  if (!using_browser_compositor_)
+  if (!using_browser_compositor_ && !using_viz_for_webview_)
     SetBeginFrameSource(view_.GetWindowAndroid()->GetBeginFrameSource());
 
   ui::WindowAndroidCompositor* compositor =
@@ -1710,14 +1720,6 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
                              false /* force_create */, base::Bind(&WakeUpGpu));
   }
 
-  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-}
-
-InputEventAckState RenderWidgetHostViewAndroid::FilterChildGestureEvent(
-    const blink::WebGestureEvent& gesture_event) {
-  if (overscroll_controller_ &&
-      overscroll_controller_->WillHandleGestureEvent(gesture_event))
-    return INPUT_EVENT_ACK_STATE_CONSUMED;
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
@@ -2231,7 +2233,7 @@ bool RenderWidgetHostViewAndroid::WantsAnimateOnlyBeginFrames() const {
 void RenderWidgetHostViewAndroid::SendBeginFramePaused() {
   bool paused = begin_frame_paused_ || !observing_root_window_;
 
-  if (!using_browser_compositor_) {
+  if (!using_browser_compositor_ && !using_viz_for_webview_) {
     if (sync_compositor_)
       sync_compositor_->SetBeginFramePaused(paused);
   } else if (renderer_compositor_frame_sink_) {
@@ -2361,9 +2363,6 @@ void RenderWidgetHostViewAndroid::ComputeEventLatencyOSTouchHistograms(
 }
 
 void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
-#if defined(DISABLE_OVERSCROLL)
-  return;
-#else
   // an OverscrollController is already set
   if (overscroll_controller_)
     return;
@@ -2399,7 +2398,6 @@ void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
 
   overscroll_controller_ = std::make_unique<OverscrollControllerAndroid>(
       overscroll_refresh_handler, compositor, view_.GetDipScale());
-#endif
 }
 
 void RenderWidgetHostViewAndroid::SetOverscrollControllerForTesting(
@@ -2413,8 +2411,6 @@ void RenderWidgetHostViewAndroid::TakeFallbackContentFrom(
     RenderWidgetHostView* view) {
   DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
               ->IsRenderWidgetHostViewChildFrame());
-  DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
-              ->IsRenderWidgetHostViewGuest());
   base::Optional<SkColor> color = view->GetBackgroundColor();
   if (color)
     SetBackgroundColor(*color);
@@ -2485,8 +2481,15 @@ void RenderWidgetHostViewAndroid::GetScreenInfo(ScreenInfo* screen_info) {
                                    window->GetDisplayWithWindowColorSpace());
 }
 
-void RenderWidgetHostViewAndroid::CancelActiveTouches() {
+std::vector<std::unique_ptr<ui::TouchEvent>>
+RenderWidgetHostViewAndroid::ExtractAndCancelActiveTouches() {
   ResetGestureDetection();
+  return {};
+}
+
+void RenderWidgetHostViewAndroid::TransferTouches(
+    const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) {
+  // Touch transfer for Android is not implemented in content/.
 }
 
 void RenderWidgetHostViewAndroid::WasEvicted() {

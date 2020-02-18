@@ -43,10 +43,87 @@ enum {
 	WL_EVENT_ERROR    = 0x08
 };
 
+/** File descriptor dispatch function type
+ *
+ * Functions of this type are used as callbacks for file descriptor events.
+ *
+ * \param fd The file descriptor delivering the event.
+ * \param mask Describes the kind of the event as a bitwise-or of:
+ * \c WL_EVENT_READABLE, \c WL_EVENT_WRITABLE, \c WL_EVENT_HANGUP,
+ * \c WL_EVENT_ERROR.
+ * \param data The user data argument of the related wl_event_loop_add_fd()
+ * call.
+ * \return If the event source is registered for re-check with
+ * wl_event_source_check(): 0 for all done, 1 for needing a re-check.
+ * If not registered, the return value is ignored and should be zero.
+ *
+ * \sa wl_event_loop_add_fd()
+ * \memberof wl_event_source
+ */
 typedef int (*wl_event_loop_fd_func_t)(int fd, uint32_t mask, void *data);
+
+/** Timer dispatch function type
+ *
+ * Functions of this type are used as callbacks for timer expiry.
+ *
+ * \param data The user data argument of the related wl_event_loop_add_timer()
+ * call.
+ * \return If the event source is registered for re-check with
+ * wl_event_source_check(): 0 for all done, 1 for needing a re-check.
+ * If not registered, the return value is ignored and should be zero.
+ *
+ * \sa wl_event_loop_add_timer()
+ * \memberof wl_event_source
+ */
 typedef int (*wl_event_loop_timer_func_t)(void *data);
+
+/** Signal dispatch function type
+ *
+ * Functions of this type are used as callbacks for (POSIX) signals.
+ *
+ * \param signal_number
+ * \param data The user data argument of the related wl_event_loop_add_signal()
+ * call.
+ * \return If the event source is registered for re-check with
+ * wl_event_source_check(): 0 for all done, 1 for needing a re-check.
+ * If not registered, the return value is ignored and should be zero.
+ *
+ * \sa wl_event_loop_add_signal()
+ * \memberof wl_event_source
+ */
 typedef int (*wl_event_loop_signal_func_t)(int signal_number, void *data);
+
+/** Idle task function type
+ *
+ * Functions of this type are used as callbacks before blocking in
+ * wl_event_loop_dispatch().
+ *
+ * \param data The user data argument of the related wl_event_loop_add_idle()
+ * call.
+ *
+ * \sa wl_event_loop_add_idle() wl_event_loop_dispatch()
+ * \memberof wl_event_source
+ */
 typedef void (*wl_event_loop_idle_func_t)(void *data);
+
+/** \struct wl_event_loop
+ *
+ * \brief An event loop context
+ *
+ * Usually you create an event loop context, add sources to it, and call
+ * wl_event_loop_dispatch() in a loop to process events.
+ *
+ * \sa wl_event_source
+ */
+
+/** \struct wl_event_source
+ *
+ * \brief An abstract event source
+ *
+ * This is the generic type for fd, timer, signal, and idle sources.
+ * Functions that operate on specific source types must not be used with
+ * a different type, even if the function signature allows it.
+ */
 
 struct wl_event_loop *
 wl_event_loop_create(void);
@@ -136,6 +213,9 @@ wl_display_run(struct wl_display *display);
 
 void
 wl_display_flush_clients(struct wl_display *display);
+
+void
+wl_display_destroy_clients(struct wl_display *display);
 
 struct wl_client;
 
@@ -243,6 +323,10 @@ wl_client_get_object(struct wl_client *client, uint32_t id);
 
 void
 wl_client_post_no_memory(struct wl_client *client);
+
+void
+wl_client_post_implementation_error(struct wl_client *client,
+                                    const char* msg, ...) WL_PRINTF(2,3);
 
 void
 wl_client_add_resource_created_listener(struct wl_client *client,

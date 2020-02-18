@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.omaha;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.IntDef;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+
+import androidx.annotation.IntDef;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -168,20 +169,6 @@ public class OmahaBaseTest {
         int TIMES_OUT = 1;
     }
 
-    @IntDef({InstallEvent.SEND, InstallEvent.DONT_SEND})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface InstallEvent {
-        int SEND = 0;
-        int DONT_SEND = 1;
-    }
-
-    @IntDef({PostStatus.DUE, PostStatus.NOT_DUE})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface PostStatus {
-        int DUE = 0;
-        int NOT_DUE = 1;
-    }
-
     private AdvancedMockContext mContext;
     private MockOmahaDelegate mDelegate;
     private MockOmahaBase mOmahaBase;
@@ -198,14 +185,14 @@ public class OmahaBaseTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         Context targetContext = InstrumentationRegistry.getTargetContext();
         OmahaBase.setIsDisabledForTesting(false);
         mContext = new AdvancedMockContext(targetContext);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         OmahaBase.setIsDisabledForTesting(true);
     }
 
@@ -254,7 +241,7 @@ public class OmahaBaseTest {
         }
 
         @Override
-        protected HttpURLConnection createConnection() throws RequestFailureException {
+        protected HttpURLConnection createConnection() {
             MockConnection connection = null;
             try {
                 URL url = new URL(mDelegate.getRequestGenerator().getServerUrl());

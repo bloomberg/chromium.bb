@@ -4,8 +4,9 @@
 
 package org.chromium.android_webview;
 
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.TraceRecordMode;
 import org.chromium.base.annotations.CalledByNative;
@@ -25,7 +26,7 @@ import java.util.List;
  */
 @JNINamespace("android_webview")
 public class AwTracingController {
-    private static final String TAG = "cr.AwTracingController";
+    private static final String TAG = "AwTracingController";
 
     public static final int RESULT_SUCCESS = 0;
     public static final int RESULT_ALREADY_TRACING = 1;

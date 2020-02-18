@@ -8,7 +8,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/device_service.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
@@ -42,7 +43,7 @@ void CheckSuccess(base::OnceClosure quit_closure,
 
 class TestSensorClient : public mojom::SensorClient {
  public:
-  TestSensorClient(SensorType type) : client_binding_(this), type_(type) {}
+  TestSensorClient(SensorType type) : type_(type) {}
 
   // Implements mojom::SensorClient:
   void SensorReadingChanged() override {
@@ -76,7 +77,7 @@ class TestSensorClient : public mojom::SensorClient {
     ASSERT_TRUE(shared_buffer_);
 
     sensor_.Bind(std::move(params->sensor));
-    client_binding_.Bind(std::move(params->client_request));
+    client_receiver_.Bind(std::move(params->client_receiver));
     std::move(quit_closure).Run();
   }
 
@@ -100,7 +101,8 @@ class TestSensorClient : public mojom::SensorClient {
     check_value_ = std::move(callback);
   }
 
-  mojom::SensorPtr& sensor() { return sensor_; }
+  mojom::Sensor* sensor() { return sensor_.get(); }
+  void ResetSensor() { sensor_.reset(); }
 
  private:
   void UpdateReadingData() {
@@ -127,8 +129,8 @@ class TestSensorClient : public mojom::SensorClient {
     return true;
   }
 
-  mojom::SensorPtr sensor_;
-  mojo::Binding<mojom::SensorClient> client_binding_;
+  mojo::Remote<mojom::Sensor> sensor_;
+  mojo::Receiver<mojom::SensorClient> client_receiver_{this};
   mojo::ScopedSharedBufferMapping shared_buffer_;
   SensorReading reading_data_;
 
@@ -157,10 +159,11 @@ class GenericSensorServiceTest : public DeviceServiceTestBase {
     fake_platform_sensor_provider_ = new FakePlatformSensorProvider();
     device_service()->SetPlatformSensorProviderForTesting(
         base::WrapUnique(fake_platform_sensor_provider_));
-    connector()->BindInterface(mojom::kServiceName, &sensor_provider_);
+    connector()->Connect(mojom::kServiceName,
+                         sensor_provider_.BindNewPipeAndPassReceiver());
   }
 
-  mojom::SensorProviderPtr sensor_provider_;
+  mojo::Remote<mojom::SensorProvider> sensor_provider_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   // This object is owned by the DeviceService instance.
@@ -321,7 +324,7 @@ TEST_F(GenericSensorServiceTest, ClientMojoConnectionBrokenTest) {
   }
 
   // Breaks mojo connection of client_1.
-  client_1->sensor().reset();
+  client_1->ResetSensor();
 
   {
     base::RunLoop run_loop;

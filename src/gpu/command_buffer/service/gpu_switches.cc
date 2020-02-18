@@ -62,6 +62,12 @@ const char kGLShaderIntermOutput[] = "gl-shader-interm-output";
 // round intermediate values in ANGLE.
 const char kEmulateShaderPrecision[] = "emulate-shader-precision";
 
+// Selects the type of the GrContext.
+const char kGrContextType[] = "gr-context-type";
+const char kGrContextTypeGL[] = "gl";
+const char kGrContextTypeVulkan[] = "vulkan";
+const char kGrContextTypeMetal[] = "metal";
+const char kGrContextTypeDawn[] = "dawn";
 // Enable Vulkan support and select Vulkan implementation, must also have
 // ENABLE_VULKAN defined.
 const char kUseVulkan[] = "use-vulkan";

@@ -162,7 +162,7 @@ void WidgetInputHandlerManager::InitInputHandler() {
   uses_input_handler_ = true;
   base::OnceClosure init_closure = base::BindOnce(
       &WidgetInputHandlerManager::InitOnInputHandlingThread, this,
-      render_widget_->layer_tree_view()->GetInputHandler(),
+      render_widget_->layer_tree_host()->GetInputHandler(),
       render_widget_->compositor_deps()->IsScrollAnimatorEnabled(),
       sync_compositing);
   InputThreadTaskRunner()->PostTask(FROM_HERE, std::move(init_closure));
@@ -356,7 +356,7 @@ void WidgetInputHandlerManager::DispatchEvent(
   // move event.
   // We don't want users interacting with stuff they can't see, so we drop it.
   // We allow moves because we need to keep the current pointer location up
-  // to date. Tests can allow pre-commit input through the
+  // to date. Tests and other code can allow pre-commit input through the
   // "allow-pre-commit-input" command line flag.
   // TODO(schenney): Also allow scrolls? This would make some tests not flaky,
   // it seems, because they sometimes crash on seeing a scroll update/end
@@ -567,8 +567,7 @@ void WidgetInputHandlerManager::HandleInputEvent(
     const ui::WebScopedInputEvent& event,
     const ui::LatencyInfo& latency,
     mojom::WidgetInputHandler::DispatchEventCallback callback) {
-  if (!render_widget_ || render_widget_->is_frozen() ||
-      render_widget_->is_closing()) {
+  if (!render_widget_ || render_widget_->IsUndeadOrProvisional()) {
     if (callback) {
       std::move(callback).Run(InputEventAckSource::MAIN_THREAD, latency,
                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt,
@@ -590,6 +589,10 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
     ui::WebScopedInputEvent input_event,
     const ui::LatencyInfo& latency_info,
     std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
+  TRACE_EVENT1("input",
+               "WidgetInputHandlerManager::DidHandleInputEventAndOverscroll",
+               "Disposition", event_disposition);
+
   InputEventAckState ack_state = InputEventDispositionToAck(event_disposition);
   if (ack_state == INPUT_EVENT_ACK_STATE_CONSUMED) {
     main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
@@ -636,6 +639,9 @@ void WidgetInputHandlerManager::HandledInputEvent(
   if (!callback)
     return;
 
+  TRACE_EVENT1("input", "WidgetInputHandlerManager::HandledInputEvent",
+               "ack_state", ack_state);
+
   if (!touch_action.has_value()) {
     touch_action = white_listed_touch_action_;
     white_listed_touch_action_.reset();
@@ -647,6 +653,8 @@ void WidgetInputHandlerManager::HandledInputEvent(
   // If there is a compositor task runner and the current thread isn't the
   // compositor thread proxy it over to the compositor thread.
   if (compositor_task_runner_ && !is_compositor_thread) {
+    TRACE_EVENT_INSTANT0("input", "PostingToCompositor",
+                         TRACE_EVENT_SCOPE_THREAD);
     compositor_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(CallCallback, std::move(callback), ack_state,
                                   latency_info, std::move(overscroll_params),

@@ -102,6 +102,7 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
     RateLimiter* retransmission_rate_limiter = nullptr;
     OverheadObserver* overhead_observer = nullptr;
     RtcpAckObserver* ack_observer = nullptr;
+    StreamDataCountersCallback* rtp_stats_callback = nullptr;
 
     int rtcp_report_interval_ms = 0;
 
@@ -122,7 +123,7 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
 
     // SSRCs for media and retransmission, respectively.
     // FlexFec SSRC is fetched from |flexfec_sender|.
-    absl::optional<uint32_t> local_media_ssrc;
+    uint32_t local_media_ssrc = 0;
     absl::optional<uint32_t> rtx_send_ssrc;
 
    private:
@@ -164,12 +165,14 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
 
   // (De)registers RTP header extension type and id.
   // Returns -1 on failure else 0.
-  virtual int32_t RegisterSendRtpHeaderExtension(RTPExtensionType type,
-                                                 uint8_t id) = 0;
-  // Register extension by uri, returns false on failure.
-  virtual bool RegisterRtpHeaderExtension(const std::string& uri, int id) = 0;
+  RTC_DEPRECATED virtual int32_t RegisterSendRtpHeaderExtension(
+      RTPExtensionType type,
+      uint8_t id) = 0;
+  // Register extension by uri, triggers CHECK on falure.
+  virtual void RegisterRtpHeaderExtension(absl::string_view uri, int id) = 0;
 
   virtual int32_t DeregisterSendRtpHeaderExtension(RTPExtensionType type) = 0;
+  virtual void DeregisterSendRtpHeaderExtension(absl::string_view uri) = 0;
 
   // Returns true if RTP module is send media, and any of the extensions
   // required for bandwidth estimation is registered.
@@ -198,11 +201,7 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
   virtual RtpState GetRtxState() const = 0;
 
   // Returns SSRC.
-  uint32_t SSRC() const override = 0;
-
-  // Sets SSRC, default is a random number.
-  // TODO(bugs.webrtc.org/10774): Remove.
-  virtual void SetSSRC(uint32_t ssrc) = 0;
+  virtual uint32_t SSRC() const = 0;
 
   // Sets the value for sending in the RID (and Repaired) RTP header extension.
   // RIDs are used to identify an RTP stream if SSRCs are not negotiated.
@@ -227,10 +226,8 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
   // a combination of values of the enumerator RtxMode.
   virtual int RtxSendStatus() const = 0;
 
-  // Sets the SSRC to use when sending RTX packets. This doesn't enable RTX,
-  // only the SSRC is set.
-  // TODO(bugs.webrtc.org/10774): Remove.
-  virtual void SetRtxSsrc(uint32_t ssrc) = 0;
+  // Returns the SSRC used for RTX if set, otherwise a nullopt.
+  virtual absl::optional<uint32_t> RtxSsrc() const = 0;
 
   // Sets the payload type to use when sending RTX packets. Note that this
   // doesn't enable RTX, only the payload type is set.
@@ -252,6 +249,9 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
 
   // Returns current media sending status.
   virtual bool SendingMedia() const = 0;
+
+  // Returns whether audio is configured (i.e. Configuration::audio = true).
+  virtual bool IsAudioConfigured() const = 0;
 
   // Indicate that the packets sent by this module should be counted towards the
   // bitrate estimate since the stream participates in the bitrate allocation.
@@ -279,14 +279,11 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
   virtual bool TrySendPacket(RtpPacketToSend* packet,
                              const PacedPacketInfo& pacing_info) = 0;
 
+  virtual void OnPacketsAcknowledged(
+      rtc::ArrayView<const uint16_t> sequence_numbers) = 0;
+
   virtual std::vector<std::unique_ptr<RtpPacketToSend>> GeneratePadding(
       size_t target_size_bytes) = 0;
-
-  // Called on generation of new statistics after an RTP send.
-  virtual void RegisterSendChannelRtpStatisticsCallback(
-      StreamDataCountersCallback* callback) = 0;
-  virtual StreamDataCountersCallback* GetSendChannelRtpStatisticsCallback()
-      const = 0;
 
   // **************************************************************************
   // RTCP
@@ -422,9 +419,6 @@ class RtpRtcp : public Module, public RtcpFeedbackSenderInterface {
   // construction, remove this setter.
   virtual void SetReportBlockDataObserver(
       ReportBlockDataObserver* observer) = 0;
-  // BWE feedback packets.
-  bool SendFeedbackPacket(const rtcp::TransportFeedback& packet) override = 0;
-
   virtual void SetVideoBitrateAllocation(
       const VideoBitrateAllocation& bitrate) = 0;
 

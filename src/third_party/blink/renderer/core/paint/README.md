@@ -579,15 +579,15 @@ IsolationPiercing vs IsolationBlocked subtree update reasons.
 #### Fragments
 
 In the absence of multicolumn/pagination, there is a 1:1 correspondence between
-self-painting `PaintLayer`s and `FragmentData`. If there is
-multicolumn/pagination, there may be more `FragmentData`s.. If a `PaintLayer`
-has a property node, each of its fragments will have one. The parent of a
-fragment's property node is the property node that belongs to the ancestor
-`PaintLayer` which is part of the same column. For example, if there are 3
-columns and both a parent and child `PaintLayer` have a transform, there will be
-3 `FragmentData` objects for the parent, 3 for the child, each `FragmentData`
-will have its own `TransformPaintPropertyNode`, and the child's ith fragment's
-transform will point to the ith parent's transform.
+`LayoutObject`s and `FragmentData`. If there is multicolumn/pagination,
+there may be more `FragmentData`s. If a `LayoutObject` has a property node,
+each of its fragments will have one. The parent of a fragment's property node is
+the property node that belongs to the ancestor `LayoutObject` which is part of
+the same column. For example, if there are 3 columns and both a parent and child
+`LayoutObject` have a transform, there will be 3 `FragmentData` objects for
+the parent, 3 for the child, each `FragmentData` will have its own
+`TransformPaintPropertyNode`, and the child's ith fragment's transform will
+point to the ith parent's transform.
 
 Each `FragmentData` receives its own `ClipPaintPropertyNode`. They
 also store a unique `PaintOffset, `PaginationOffset and
@@ -693,6 +693,28 @@ There are two types of hit test painting:
 
     This is also used for CompositeAfterPaint to force a special cc::Layer that
     is marked as being scrollable.
+
+### Scrollbar painting
+
+For now in pre-CompositeAfterPaint, we have distinct paths for composited
+scrollbars and non-composited scrollbars. For a composited scrollbar,
+PaintArtifactCompositor creates a GraphicsLayer, then ScrollingCoordinator
+creates the cc scrollbar layer which is set as the content layer of the
+GraphicsLayer. For a non-composited scrollbar, ScrollableAreaPainter paints
+the scrollbar into various drawing display items.
+
+In CompositeAfterPaint, during painting, for a non-custom scrollbar we create a
+[ScrollbarDisplayItem](../../platform/graphics/paint/scrollbar_display_item.h)
+which contains a [cc::Scrollbar](../../../../cc/input/scrollbar.h) and other
+information that are needed to actually paint the scrollbar into a paint record
+or to create a cc scrollbar layer. During PaintArtifactCompositor update,
+we decide whether to composite the scrollbar and, if not composited, actually
+paint the scrollbar as a paint record, otherwise create a cc scrollbar layer
+of type cc::SolidColorScrollbarLayer, cc::PaintedScrollbarLayer or
+cc::PaintedOverlayScrollbarLayer depending on the type of the scrollbar.
+
+In CompositeAfterPaint, custom scrollbars are still painted into drawing
+display items directly.
 
 ### PaintNG
 

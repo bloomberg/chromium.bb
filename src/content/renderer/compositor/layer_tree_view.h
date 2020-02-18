@@ -21,8 +21,6 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
 
-class GURL;
-
 namespace blink {
 namespace scheduler {
 class WebThreadScheduler;
@@ -31,34 +29,19 @@ class WebThreadScheduler;
 
 namespace cc {
 class AnimationHost;
-class InputHandler;
-class Layer;
 class LayerTreeFrameSink;
 class LayerTreeHost;
 class LayerTreeSettings;
-class RenderFrameMetadataObserver;
 class TaskGraphRunner;
 class UkmRecorderFactory;
 }  // namespace cc
 
-namespace gfx {
-class ColorSpace;
-}  // namespace gfx
-
-namespace ui {
-class LatencyInfo;
-}
-
-namespace viz {
-class LocalSurfaceIdAllocation;
-}
-
 namespace content {
 class LayerTreeViewDelegate;
 
-class CONTENT_EXPORT LayerTreeView
-    : public cc::LayerTreeHostClient,
-      public cc::LayerTreeHostSingleThreadClient {
+class CONTENT_EXPORT LayerTreeView : public cc::LayerTreeHostClient,
+                                     public cc::LayerTreeHostSingleThreadClient,
+                                     public cc::LayerTreeHostSchedulingClient {
  public:
   // The |main_thread| is the task runner that the compositor will use for the
   // main thread (where it is constructed). The |compositor_thread| is the task
@@ -76,53 +59,13 @@ class CONTENT_EXPORT LayerTreeView
   void Initialize(const cc::LayerTreeSettings& settings,
                   std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
 
+  // Drops any references back to the delegate in preparation for being
+  // destroyed.
+  void Disconnect();
+
   cc::AnimationHost* animation_host() { return animation_host_.get(); }
 
   void SetVisible(bool visible);
-  const base::WeakPtr<cc::InputHandler>& GetInputHandler();
-  void SetNeedsDisplayOnAllLayers();
-  void SetRasterizeOnlyVisibleContent();
-  void SetNeedsRedrawRect(gfx::Rect damage_rect);
-
-  // Indicates that blink needs a BeginFrame, but that nothing might actually be
-  // dirty. Calls to this should never be done directly, but should go through
-  // WebWidgetClient::ScheduleAnimate() instead, or they can bypass test
-  // overrides.
-  void SetNeedsBeginFrame();
-  // Calling CreateLatencyInfoSwapPromiseMonitor() to get a scoped
-  // LatencyInfoSwapPromiseMonitor. During the life time of the
-  // LatencyInfoSwapPromiseMonitor, if SetNeedsCommit() or
-  // SetNeedsUpdateLayers() is called on LayerTreeHost, the original latency
-  // info will be turned into a LatencyInfoSwapPromise.
-  std::unique_ptr<cc::SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
-      ui::LatencyInfo* latency);
-  int GetSourceFrameNumber() const;
-  const cc::Layer* GetRootLayer() const;
-  int ScheduleMicroBenchmark(
-      const std::string& name,
-      std::unique_ptr<base::Value> value,
-      base::OnceCallback<void(std::unique_ptr<base::Value>)> callback);
-  bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
-  void SetRasterColorSpace(const gfx::ColorSpace& color_space);
-  void SetExternalPageScaleFactor(float page_scale_factor,
-                                  bool is_external_pinch_gesture_active);
-  void ClearCachesOnNextCommit();
-  void SetViewportRectAndScale(
-      const gfx::Rect& device_viewport_rect,
-      float device_scale_factor,
-      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
-  void RequestNewLocalSurfaceId();
-  void RequestForceSendMetadata();
-  void SetViewportVisibleRect(const gfx::Rect& visible_rect);
-  void SetSourceURL(ukm::SourceId source_id, const GURL& url);
-  // Call this if the compositor is becoming non-visible in a way that it won't
-  // be used any longer. In this case, becoming visible is longer but this
-  // releases more resources (such as its use of the GpuChannel).
-  // TODO(crbug.com/419087): This is to support a swapped out RenderWidget which
-  // should just be destroyed instead.
-  void ReleaseLayerTreeFrameSink();
-
-  void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
 
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame() override;
@@ -155,17 +98,16 @@ class CONTENT_EXPORT LayerTreeView
       const gfx::PresentationFeedback& feedback) override;
   void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
+  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
+      override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override;
 
-  const cc::LayerTreeSettings& GetLayerTreeSettings() const;
-
-  // Sets the RenderFrameMetadataObserver, which is sent to the compositor
-  // thread for binding.
-  void SetRenderFrameObserver(
-      std::unique_ptr<cc::RenderFrameMetadataObserver> observer);
+  // cc::LayerTreeHostSchedulingClient implementation.
+  void DidScheduleBeginMainFrame() override;
+  void DidRunBeginMainFrame() override;
 
   void AddPresentationCallback(
       uint32_t frame_token,
@@ -183,14 +125,21 @@ class CONTENT_EXPORT LayerTreeView
   void SetLayerTreeFrameSink(
       std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink);
 
-  LayerTreeViewDelegate* const delegate_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_;
   cc::TaskGraphRunner* const task_graph_runner_;
   blink::scheduler::WebThreadScheduler* const web_main_thread_scheduler_;
   const std::unique_ptr<cc::AnimationHost> animation_host_;
+
+  // The delegate_ becomes null when Disconnect() is called. After that, the
+  // class should do nothing in calls from the LayerTreeHost, and just wait to
+  // be destroyed. It is not expected to be used at all after Disconnect()
+  // outside of handling/dropping LayerTreeHost client calls.
+  LayerTreeViewDelegate* delegate_;
   std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
 
+  // This class should do nothing and access no pointers once this value becomes
+  // true.
   bool layer_tree_frame_sink_request_failed_while_invisible_ = false;
 
   base::circular_deque<

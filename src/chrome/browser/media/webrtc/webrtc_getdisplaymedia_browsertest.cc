@@ -13,6 +13,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace {
 
 static const char kMainHtmlPage[] = "/webrtc/webrtc_getdisplaymedia_test.html";
@@ -33,13 +37,23 @@ class WebRtcGetDisplayMediaBrowserTest : public WebRtcTestBase {
   }
 
   void RunGetDisplayMedia(content::WebContents* tab,
-                          const std::string& constraints) {
+                          const std::string& constraints,
+                          bool is_fake_ui = false) {
     std::string result;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
         tab->GetMainFrame(),
         base::StringPrintf("runGetDisplayMedia(%s);", constraints.c_str()),
         &result));
+#if defined(OS_MACOSX)
+    // Starting from macOS 10.15, screen capture requires system permissions
+    // that are disabled by default. The permission is reported as granted
+    // if the fake UI is used.
+    EXPECT_EQ(result, base::mac::IsAtMostOS10_14() || is_fake_ui
+                          ? "getdisplaymedia-success"
+                          : "getdisplaymedia-failure");
+#else
     EXPECT_EQ(result, "getdisplaymedia-success");
+#endif
   }
 };
 
@@ -122,7 +136,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
 
   content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
   std::string constraints("{video:true}");
-  RunGetDisplayMedia(tab, constraints);
+  RunGetDisplayMedia(tab, constraints, /*is_fake_ui=*/true);
 
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -144,7 +158,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
 
   content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
   std::string constraints("{video:true, audio:true}");
-  RunGetDisplayMedia(tab, constraints);
+  RunGetDisplayMedia(tab, constraints, /*is_fake_ui=*/true);
 
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -162,7 +176,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
   const std::string& constraints =
       base::StringPrintf("{video: {width: {max: %d}, frameRate: {max: %d}}}",
                          kMaxWidth, kMaxFrameRate);
-  RunGetDisplayMedia(tab, constraints);
+  RunGetDisplayMedia(tab, constraints, /*is_fake_ui=*/true);
 
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
@@ -174,7 +188,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
   EXPECT_EQ(result, base::StringPrintf("%d", kMaxFrameRate));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebRtcGetDisplayMediaBrowserTestWithFakeUI,
                          testing::Values(TestConfig{"monitor", "true", "never"},
                                          TestConfig{"window", "true", "never"},

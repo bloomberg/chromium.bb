@@ -298,7 +298,7 @@ In the end, this boils down to good concurrent programming. You have to make
 sure that there is no race conditions or dead locks in your program. No silver
 bullet - sorry!
 
-## Should I use the constructor/destructor of the test fixture or SetUp()/TearDown()?
+## Should I use the constructor/destructor of the test fixture or SetUp()/TearDown()? {#CtorVsSetUp}
 
 The first thing to remember is that googletest does **not** reuse the same test
 fixture object across multiple tests. For each `TEST_F`, googletest will create
@@ -531,8 +531,8 @@ There are several good reasons:
 
 ## What can the statement argument in ASSERT_DEATH() be?
 
-`ASSERT_DEATH(*statement*, *regex*)` (or any death assertion macro) can be used
-wherever `*statement*` is valid. So basically `*statement*` can be any C++
+`ASSERT_DEATH(statement, matcher)` (or any death assertion macro) can be used
+wherever *`statement`* is valid. So basically *`statement`* can be any C++
 statement that makes sense in the current context. In particular, it can
 reference global and/or local variables, and can be:
 

@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import cStringIO
 import os
+
+from six.moves import StringIO
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -30,18 +31,6 @@ class _Package(object):
 
   def __init__(self, package):
     self.package = package
-
-
-class _DummyCommandResult(object):
-  """Create mock RunCommand results."""
-
-  def __init__(self, output):
-    # Members other than 'output' are expected to be unused, so
-    # we omit them here.
-    #
-    # All shell output will be newline terminated; we add the
-    # newline here for convenience.
-    self.output = output + '\n'
 
 
 class EBuildTest(cros_test_lib.MockTempDirTestCase):
@@ -118,19 +107,19 @@ inherit cros-workon superpower
     fake_ebuild_path = os.path.join(basedir, 'test_package-0.0.1-r1.ebuild')
     fake_ebuild = self._MakeFakeEbuild(fake_ebuild_path)
 
-    self.assertEquals(fake_ebuild.category, 'cat')
-    self.assertEquals(fake_ebuild.pkgname, 'test_package')
-    self.assertEquals(fake_ebuild.version_no_rev, '0.0.1')
-    self.assertEquals(fake_ebuild.current_revision, 1)
-    self.assertEquals(fake_ebuild.version, '0.0.1-r1')
-    self.assertEquals(fake_ebuild.package, 'cat/test_package')
-    self.assertEquals(fake_ebuild._ebuild_path_no_version,
-                      os.path.join(basedir, 'test_package'))
-    self.assertEquals(fake_ebuild.ebuild_path_no_revision,
-                      os.path.join(basedir, 'test_package-0.0.1'))
-    self.assertEquals(fake_ebuild._unstable_ebuild_path,
-                      os.path.join(basedir, 'test_package-9999.ebuild'))
-    self.assertEquals(fake_ebuild.ebuild_path, fake_ebuild_path)
+    self.assertEqual(fake_ebuild.category, 'cat')
+    self.assertEqual(fake_ebuild.pkgname, 'test_package')
+    self.assertEqual(fake_ebuild.version_no_rev, '0.0.1')
+    self.assertEqual(fake_ebuild.current_revision, 1)
+    self.assertEqual(fake_ebuild.version, '0.0.1-r1')
+    self.assertEqual(fake_ebuild.package, 'cat/test_package')
+    self.assertEqual(fake_ebuild._ebuild_path_no_version,
+                     os.path.join(basedir, 'test_package'))
+    self.assertEqual(fake_ebuild.ebuild_path_no_revision,
+                     os.path.join(basedir, 'test_package-0.0.1'))
+    self.assertEqual(fake_ebuild._unstable_ebuild_path,
+                     os.path.join(basedir, 'test_package-9999.ebuild'))
+    self.assertEqual(fake_ebuild.ebuild_path, fake_ebuild_path)
 
   def testParseEBuildPathNoRevisionNumber(self):
     """Test with ebuild without revision number."""
@@ -138,19 +127,19 @@ inherit cros-workon superpower
     fake_ebuild_path = os.path.join(basedir, 'test_package-9999.ebuild')
     fake_ebuild = self._MakeFakeEbuild(fake_ebuild_path)
 
-    self.assertEquals(fake_ebuild.category, 'cat')
-    self.assertEquals(fake_ebuild.pkgname, 'test_package')
-    self.assertEquals(fake_ebuild.version_no_rev, '9999')
-    self.assertEquals(fake_ebuild.current_revision, 0)
-    self.assertEquals(fake_ebuild.version, '9999')
-    self.assertEquals(fake_ebuild.package, 'cat/test_package')
-    self.assertEquals(fake_ebuild._ebuild_path_no_version,
-                      os.path.join(basedir, 'test_package'))
-    self.assertEquals(fake_ebuild.ebuild_path_no_revision,
-                      os.path.join(basedir, 'test_package-9999'))
-    self.assertEquals(fake_ebuild._unstable_ebuild_path,
-                      os.path.join(basedir, 'test_package-9999.ebuild'))
-    self.assertEquals(fake_ebuild.ebuild_path, fake_ebuild_path)
+    self.assertEqual(fake_ebuild.category, 'cat')
+    self.assertEqual(fake_ebuild.pkgname, 'test_package')
+    self.assertEqual(fake_ebuild.version_no_rev, '9999')
+    self.assertEqual(fake_ebuild.current_revision, 0)
+    self.assertEqual(fake_ebuild.version, '9999')
+    self.assertEqual(fake_ebuild.package, 'cat/test_package')
+    self.assertEqual(fake_ebuild._ebuild_path_no_version,
+                     os.path.join(basedir, 'test_package'))
+    self.assertEqual(fake_ebuild.ebuild_path_no_revision,
+                     os.path.join(basedir, 'test_package-9999'))
+    self.assertEqual(fake_ebuild._unstable_ebuild_path,
+                     os.path.join(basedir, 'test_package-9999.ebuild'))
+    self.assertEqual(fake_ebuild.ebuild_path, fake_ebuild_path)
 
   def testGetCommitId(self):
     fake_hash = '24ab3c9f6d6b5c744382dba2ca8fb444b9808e9f'
@@ -159,9 +148,11 @@ inherit cros-workon superpower
     fake_ebuild = self._MakeFakeEbuild(fake_ebuild_path)
 
     # git rev-parse HEAD
-    self.PatchObject(git, 'RunGit', return_value=_DummyCommandResult(fake_hash))
+    self.PatchObject(
+        git, 'RunGit',
+        return_value=cros_build_lib.CommandResult(stdout=fake_hash + '\n'))
     test_hash = fake_ebuild.GetCommitId(self.tempdir)
-    self.assertEquals(test_hash, fake_hash)
+    self.assertEqual(test_hash, fake_hash)
 
   def testEBuildStable(self):
     """Test ebuild w/keyword variations"""
@@ -179,7 +170,7 @@ inherit cros-workon superpower
     for keywords, stable in datasets:
       fake_ebuild = self._MakeFakeEbuild(
           fake_ebuild_path, fake_ebuild_content=['KEYWORDS="%s"\n' % keywords])
-      self.assertEquals(fake_ebuild.is_stable, stable)
+      self.assertEqual(fake_ebuild.is_stable, stable)
 
   def testEBuildBlacklisted(self):
     """Test blacklisted ebuild"""
@@ -187,11 +178,11 @@ inherit cros-workon superpower
     fake_ebuild_path = os.path.join(basedir, 'test_package-9999.ebuild')
 
     fake_ebuild = self._MakeFakeEbuild(fake_ebuild_path)
-    self.assertEquals(fake_ebuild.is_blacklisted, False)
+    self.assertEqual(fake_ebuild.is_blacklisted, False)
 
     fake_ebuild = self._MakeFakeEbuild(
         fake_ebuild_path, fake_ebuild_content=['CROS_WORKON_BLACKLIST="1"\n'])
-    self.assertEquals(fake_ebuild.is_blacklisted, True)
+    self.assertEqual(fake_ebuild.is_blacklisted, True)
 
   def testHasTest(self):
     """Tests that we detect test stanzas correctly."""
@@ -227,7 +218,7 @@ inherit cros-workon superpower
 
     def run_case(tests_str, results):
       settings = {'IUSE_TESTS' : tests_str}
-      self.assertEquals(
+      self.assertEqual(
           portage_util.EBuild._GetAutotestTestsFromSettings(settings), results)
 
     run_case(self._AUTOTEST_NORMAL[0], list(self._AUTOTEST_NORMAL[1]))
@@ -251,6 +242,68 @@ inherit cros-workon superpower
         AlmostSameEBuilds(self._EBUILD_BASE, self._EBUILD_DIFFERENT_TREE))
     self.assertFalse(
         AlmostSameEBuilds(self._EBUILD_BASE, self._EBUILD_DIFFERENT_CONTENT))
+
+  def testClassifySimple(self):
+    """Test Classify on a simple ebuild."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    osutils.WriteFile(ebuild_path, '')
+    attrs = portage_util.EBuild.Classify(ebuild_path)
+    self.assertFalse(attrs.is_workon)
+    self.assertFalse(attrs.is_stable)
+    self.assertFalse(attrs.is_blacklisted)
+    self.assertFalse(attrs.has_test)
+
+  def testClassifyUnstable(self):
+    """Test Classify handling of non-stable KEYWORDS."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    TESTS = (
+        'KEYWORDS=',
+        'KEYWORDS= # Yep.',
+        'KEYWORDS="-*"',
+        'KEYWORDS="-* ~arm"',
+        'KEYWORDS="~*"',
+    )
+    for keywords in TESTS:
+      osutils.WriteFile(ebuild_path, keywords)
+      attrs = portage_util.EBuild.Classify(ebuild_path)
+      self.assertFalse(attrs.is_stable, msg='Failing: %s' % (keywords,))
+
+  def testClassifyStable(self):
+    """Test Classify handling of stable KEYWORDS."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    TESTS = (
+        'KEYWORDS="*"',
+        'KEYWORDS="*" # Yep.',
+        'KEYWORDS="-* arm"',
+    )
+    for keywords in TESTS:
+      osutils.WriteFile(ebuild_path, keywords)
+      attrs = portage_util.EBuild.Classify(ebuild_path)
+      self.assertTrue(attrs.is_stable, msg='Failing: %s' % (keywords,))
+
+  def testClassifyEncodingASCII(self):
+    """Test Classify with ASCII file encodings."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    # Generate a valid shell script with all possible ASCII values.
+    osutils.WriteFile(
+        ebuild_path,
+        'cat <<\\EOF\n%s\nEOF\n' % (''.join(chr(x) for x in range(0, 128)),))
+    # Just check that we don't throw an exception.
+    portage_util.EBuild.Classify(ebuild_path)
+
+  def testClassifyEncodingUTF8(self):
+    """Test Classify with UTF-8 file encodings."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    osutils.WriteFile(ebuild_path, u'# FöÖßbäłł')
+    # Just check that we don't throw an exception.
+    portage_util.EBuild.Classify(ebuild_path)
+
+  def testClassifyEncodingLatin1(self):
+    """Test Classify with ISO 8859-1 file encodings."""
+    ebuild_path = os.path.join(self.tempdir, 'foo-1.ebuild')
+    osutils.WriteFile(ebuild_path, b'# This is \xa0 bad UTF-8', mode='wb')
+    with self.assertRaises(UnicodeDecodeError):
+      portage_util.EBuild.Classify(ebuild_path)
 
 
 class ProjectAndPathTest(cros_test_lib.MockTempDirTestCase):
@@ -313,10 +366,10 @@ CROS_WORKON_LOCALNAME=%s
     """ % (fake_project, fake_localname)
     info = self._MockParseWorkonVariables(
         [fake_project], [], [fake_localname], fake_ebuild_contents)
-    self.assertEquals(info.projects, [fake_project])
-    self.assertEquals(info.srcdirs, [os.path.join(
+    self.assertEqual(info.projects, [fake_project])
+    self.assertEqual(info.srcdirs, [os.path.join(
         self.tempdir, 'platform', fake_localname)])
-    self.assertEquals(info.subtrees, [os.path.join(
+    self.assertEqual(info.subtrees, [os.path.join(
         self.tempdir, 'platform', fake_localname)])
 
   def testParseAlwaysLive(self):
@@ -330,10 +383,10 @@ CROS_WORKON_ALWAYS_LIVE=1
     """ % (fake_project, fake_localname)
     info = self._MockParseWorkonVariables(
         [fake_project], [], [fake_localname], fake_ebuild_contents)
-    self.assertEquals(info.projects, [])
-    self.assertEquals(info.srcdirs, [])
-    self.assertEquals(info.srcdirs, [])
-    self.assertEquals(info.subtrees, [])
+    self.assertEqual(info.projects, [])
+    self.assertEqual(info.srcdirs, [])
+    self.assertEqual(info.srcdirs, [])
+    self.assertEqual(info.subtrees, [])
 
   def testParseArrayWorkonVariables(self):
     """Tests if ebuilds in an array format are correctly parsed."""
@@ -349,13 +402,13 @@ CROS_WORKON_LOCALNAME=%s
            portage_util.EBuild.FormatBashArray(fake_localnames))
     info = self._MockParseWorkonVariables(
         fake_projects, [], fake_localnames, fake_ebuild_contents)
-    self.assertEquals(info.projects, fake_projects)
+    self.assertEqual(info.projects, fake_projects)
     fake_paths = [
         os.path.realpath(os.path.join(self.tempdir, 'platform', x))
         for x in fake_localnames
     ]
-    self.assertEquals(info.srcdirs, fake_paths)
-    self.assertEquals(info.subtrees, fake_paths)
+    self.assertEqual(info.srcdirs, fake_paths)
+    self.assertEqual(info.subtrees, fake_paths)
 
   def testParseArrayWorkonVariablesWithSrcpaths(self):
     """Tests if ebuilds with CROS_WORKON_SRCPATH are handled correctly."""
@@ -374,7 +427,7 @@ CROS_WORKON_LOCALNAME=%s
            portage_util.EBuild.FormatBashArray(fake_localnames))
     info = self._MockParseWorkonVariables(
         fake_projects, fake_srcpaths, fake_localnames, fake_ebuild_contents)
-    self.assertEquals(info.projects, fake_projects)
+    self.assertEqual(info.projects, fake_projects)
     fake_paths = []
     for srcpath, localname in zip(fake_srcpaths, fake_localnames):
       if srcpath:
@@ -384,8 +437,8 @@ CROS_WORKON_LOCALNAME=%s
             self.tempdir, 'platform', localname))
       fake_paths.append(path)
 
-    self.assertEquals(info.srcdirs, fake_paths)
-    self.assertEquals(info.subtrees, fake_paths)
+    self.assertEqual(info.srcdirs, fake_paths)
+    self.assertEqual(info.subtrees, fake_paths)
 
   def testParseArrayWorkonVariablesWithSubtrees(self):
     """Tests if ebuilds with CROS_WORKON_SUBTREE are handled correctly."""
@@ -402,10 +455,10 @@ CROS_WORKON_SUBTREE="%s"
     """ % (fake_project, fake_localname, fake_subtrees)
     info = self._MockParseWorkonVariables(
         [fake_project], [], [fake_localname], fake_ebuild_contents)
-    self.assertEquals(info.projects, [fake_project])
-    self.assertEquals(info.srcdirs, [os.path.join(
+    self.assertEqual(info.projects, [fake_project])
+    self.assertEqual(info.srcdirs, [os.path.join(
         self.tempdir, 'platform', fake_localname)])
-    self.assertEquals(info.subtrees, [
+    self.assertEqual(info.subtrees, [
         os.path.join(self.tempdir, 'platform', 'foo/bar/test'),
         os.path.join(self.tempdir, 'platform', 'foo/bar/baz/quz')])
 
@@ -421,13 +474,13 @@ class StubEBuild(portage_util.EBuild):
   def _ReadEBuild(self, path):
     pass
 
-  def GetCommitId(self, srcpath):
+  def GetCommitId(self, srcdir):
     id_map = {
         'p1_path1': 'my_id1',
         'p1_path2': 'my_id2'
     }
-    if srcpath in id_map:
-      return id_map[srcpath]
+    if srcdir in id_map:
+      return id_map[srcdir]
     else:
       return 'you_lose'
 
@@ -483,7 +536,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     ebuild_path = package_name + '-r1.ebuild'
     self.m_ebuild = StubEBuild(ebuild_path, False)
     self.revved_ebuild_path = package_name + '-r2.ebuild'
-    self._m_file = cStringIO.StringIO()
+    self._m_file = StringIO()
     self.git_files_changed = []
 
   def createRevWorkOnMocks(self, ebuild_content, rev, multi=False):
@@ -554,7 +607,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
       (result, revved_ebuild) where result is the result from the called
       function, and revved_ebuild is the content of the revved ebuild.
     """
-    m_file = cStringIO.StringIO()
+    m_file = StringIO()
     kwargs['redirect_file'] = m_file
     result = self.m_ebuild.RevWorkOnEBuild(*args, **kwargs)
     return result, m_file.getvalue()
@@ -732,7 +785,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      return_value=cros_build_lib.CommandResult(
                          returncode=0, output='1122', error='STDERR'))
     self.assertEqual('1122', self.m_ebuild.GetVersion(None, None, '1234'))
@@ -745,7 +798,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    run = self.PatchObject(cros_build_lib, 'RunCommand')
+    run = self.PatchObject(cros_build_lib, 'run')
 
     # Reject no output.
     run.return_value = cros_build_lib.CommandResult(
@@ -779,7 +832,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      return_value=cros_build_lib.CommandResult(
                          returncode=0, output='999999', error='STDERR'))
     self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')
@@ -792,10 +845,28 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
                          projects=None, srcdirs=[], subdirs=[], subtrees=[]))
-    self.PatchObject(cros_build_lib, 'RunCommand',
+    self.PatchObject(cros_build_lib, 'run',
                      return_value=cros_build_lib.CommandResult(
                          returncode=0, output='abcd', error='STDERR'))
     self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')
+    # Sanity check.
+    self.assertEqual(exists.call_count, 1)
+
+  def testVersionScriptInvalidVersionPostfix(self):
+    """Reject scripts that output bad version numbers."""
+    exists = self.PatchObject(os.path, 'exists', return_value=True)
+    self.PatchObject(
+        portage_util.EBuild,
+        'GetSourceInfo',
+        return_value=portage_util.SourceInfo(
+            projects=None, srcdirs=[], subdirs=[], subtrees=[]))
+    self.PatchObject(
+        cros_build_lib,
+        'run',
+        return_value=cros_build_lib.CommandResult(
+            returncode=0, output='4.4.21_baseline', error='STDERR'))
+    with self.assertRaises(portage_util.EbuildVersionError):
+      self.m_ebuild.GetVersion(None, None, '1234')
     # Sanity check.
     self.assertEqual(exists.call_count, 1)
 
@@ -1063,8 +1134,8 @@ CROS_WORKON_SRCDIR=("%s")
              '" "'.join(fake_srcdirs))
       result = portage_util.GetRepositoryFromEbuildInfo(fake_ebuild_contents)
       result_srcdirs, result_projects = zip(*result)
-      self.assertEquals(fake_projects, list(result_projects))
-      self.assertEquals(fake_srcdirs, list(result_srcdirs))
+      self.assertEqual(fake_projects, list(result_projects))
+      self.assertEqual(fake_srcdirs, list(result_srcdirs))
 
     _runTestGetRepositoryFromEbuildInfo(['a', 'b'], ['src_a', 'src_b'])
     _runTestGetRepositoryFromEbuildInfo(['a'], ['src_a'])
@@ -1104,8 +1175,8 @@ class GetOverlayEBuildsTest(cros_test_lib.MockTempDirTestCase):
 
   def _assertFoundPackages(self, ebuilds, packages):
     """Succeeds iff the packages discovered were packages."""
-    self.assertEquals([e.package for e in ebuilds],
-                      packages)
+    self.assertEqual([e.package for e in ebuilds],
+                     packages)
 
   def testWantedPackage(self):
     """Test that we can find a specific package."""
@@ -1160,18 +1231,18 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     ebuild_path = 'chromeos-base/platform2/platform2-9999.ebuild'
     components = ['chromeos-base', 'platform2', 'platform2-9999']
     for path in (ebuild_path, './' + ebuild_path, 'foo.bar/' + ebuild_path):
-      self.assertEquals(components, portage_util.SplitEbuildPath(path))
+      self.assertEqual(components, portage_util.SplitEbuildPath(path))
 
   def testSplitPV(self):
     """Test splitting PVs into package and version components."""
     pv = 'bar-1.2.3_rc1-r5'
     package, version_no_rev, rev = tuple(pv.split('-'))
     split_pv = portage_util.SplitPV(pv)
-    self.assertEquals(split_pv.pv, pv)
-    self.assertEquals(split_pv.package, package)
-    self.assertEquals(split_pv.version_no_rev, version_no_rev)
-    self.assertEquals(split_pv.rev, rev)
-    self.assertEquals(split_pv.version, '%s-%s' % (version_no_rev, rev))
+    self.assertEqual(split_pv.pv, pv)
+    self.assertEqual(split_pv.package, package)
+    self.assertEqual(split_pv.version_no_rev, version_no_rev)
+    self.assertEqual(split_pv.rev, rev)
+    self.assertEqual(split_pv.version, '%s-%s' % (version_no_rev, rev))
 
   def testSplitCPV(self):
     """Test splitting CPV into components."""
@@ -1183,12 +1254,12 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     split_pv = portage_util.SplitPV(pv)
     split_cpv = portage_util.SplitCPV(cpv)
 
-    self.assertEquals(split_cpv.category, cat)
+    self.assertEqual(split_cpv.category, cat)
     self.assertEqual(cp, split_cpv.cp)
     self.assertEqual('%s-%s' % (cp, ver), split_cpv.cpv)
     self.assertEqual('%s-%s-%s' % (cp, ver, rev), split_cpv.cpf)
     for k, v in split_pv._asdict().items():
-      self.assertEquals(getattr(split_cpv, k), v)
+      self.assertEqual(getattr(split_cpv, k), v)
 
     # Test 2: No category, valid pvr.
     cpv = 'bar-pkg-1.2.3_rc4-r5'
@@ -1254,8 +1325,8 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     ]
     if portage_util.FindOverlays(constants.BOTH_OVERLAYS):
       for packages, projects in matches:
-        self.assertEquals(projects,
-                          portage_util.FindWorkonProjects(packages))
+        self.assertEqual(projects,
+                         portage_util.FindWorkonProjects(packages))
 
 
 class PortageDBTest(cros_test_lib.TempDirTestCase):
@@ -1328,7 +1399,26 @@ class PortageDBTest(cros_test_lib.TempDirTestCase):
     # Sort the lists, because the filesystem might reorder the entries for us.
     packages.sort()
     self.fake_packages.sort()
-    self.assertEquals(self.fake_packages, packages)
+    self.assertEqual(self.fake_packages, packages)
+
+  def testGeneratePackageSizes(self):
+    """Test if calculating installed package sizes works."""
+    fake_data = 'FAKE DATA'
+    expected_size = 0
+    for fake_file in self.fake_files:
+      if fake_file[0] == 'obj':
+        fake_filename = os.path.join(self.fake_chroot,
+                                     os.path.relpath(fake_file[1], '/'))
+        osutils.WriteFile(fake_filename, fake_data, makedirs=True)
+        expected_size += len(fake_data)
+
+    portage_db = portage_util.PortageDB(self.fake_chroot)
+    installed_packages = portage_db.InstalledPackages()
+    package_size_pairs = portage_util.GeneratePackageSizes(portage_db,
+                                                           'fake_chroot',
+                                                           installed_packages)
+    total_size = sum(x for _, x in package_size_pairs)
+    self.assertEqual(total_size, expected_size)
 
   def testIsPackageInstalled(self):
     """Test if checking the existence of an installed package works."""
@@ -1348,7 +1438,7 @@ class PortageDBTest(cros_test_lib.TempDirTestCase):
 
     # Check ListContents filters out the garbage we added to the list of files.
     fake_files = [f for f in self.fake_files if f[0] in ('sym', 'obj', 'dir')]
-    self.assertEquals(len(fake_files), len(lst))
+    self.assertEqual(len(fake_files), len(lst))
 
     # Check the paths are all relative.
     self.assertTrue(all(not f[1].startswith('/') for f in lst))
@@ -1356,7 +1446,7 @@ class PortageDBTest(cros_test_lib.TempDirTestCase):
     # Check all the files are present. We only consider file type and path, and
     # convert the path to a relative path.
     fake_files = [(f[0], f[1].lstrip('/')) for f in fake_files]
-    self.assertEquals(fake_files, lst)
+    self.assertEqual(fake_files, lst)
 
 
 class InstalledPackageTest(cros_test_lib.TempDirTestCase):
@@ -1370,8 +1460,8 @@ class InstalledPackageTest(cros_test_lib.TempDirTestCase):
   def testOutOfDBPackage(self):
     """Tests an InstalledPackage instance can be created without a PortageDB."""
     pkg = portage_util.InstalledPackage(None, self.tempdir)
-    self.assertEquals('package-1', pkg.pf)
-    self.assertEquals('category-1', pkg.category)
+    self.assertEqual('package-1', pkg.pf)
+    self.assertEqual('category-1', pkg.category)
 
   def testIncompletePackage(self):
     """Tests an incomplete or otherwise invalid package raises an exception."""
@@ -1382,7 +1472,41 @@ class InstalledPackageTest(cros_test_lib.TempDirTestCase):
 
     # Check that doesn't fail when the package name is provided.
     pkg = portage_util.InstalledPackage(None, self.tempdir, pf='package-1')
-    self.assertEquals('package-1', pkg.pf)
+    self.assertEqual('package-1', pkg.pf)
+
+
+class HasPrebuiltTest(cros_test_lib.RunCommandTestCase):
+  """HasPrebuilt tests."""
+
+  def setUp(self):
+    self.atom = 'chromeos-base/chromeos-chrome'
+    self.r1_cpf = 'chromeos-base/chromeos-chrome-78.0.3900.0_rc-r1'
+    self.r2_cpf = 'chromeos-base/chromeos-chrome-78.0.3900.0_rc-r2'
+    self.r1_cpv = portage_util.SplitCPV(self.r1_cpf)
+    self.r2_cpv = portage_util.SplitCPV(self.r2_cpf)
+
+    def _check_pkg(cmd, *_args, **_kwargs):
+      rc = 0 if '=%s' % self.r1_cpf in cmd else 1
+      return cros_build_lib.CommandResult(cmd=cmd, returncode=rc)
+    self.rc.SetDefaultCmdResult(side_effect=_check_pkg)
+
+  def testHasPrebuilt(self):
+    """Test a package with a matching prebuilt."""
+    self.PatchObject(portage_util, 'PortageqBestVisible',
+                     return_value=self.r1_cpv)
+    self.rc.SetDefaultCmdResult(returncode=0)
+
+    self.assertTrue(portage_util.HasPrebuilt(self.atom))
+    self.rc.assertCommandContains(('=%s' % self.r1_cpf,))
+
+  def testNoPrebuilt(self):
+    """Test a package without a matching prebuilt."""
+    self.PatchObject(portage_util, 'PortageqBestVisible',
+                     return_value=self.r2_cpv)
+    self.rc.SetDefaultCmdResult(returncode=1)
+
+    self.assertFalse(portage_util.HasPrebuilt(self.atom))
+    self.rc.assertCommandContains(('=%s' % self.r2_cpf,))
 
 
 class PortageqBestVisibleTest(cros_test_lib.MockTestCase):

@@ -9,8 +9,9 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 class DeviceActions : public ash::AndroidIntentHelper,
                       public chromeos::assistant::mojom::DeviceActions,
@@ -19,7 +20,7 @@ class DeviceActions : public ash::AndroidIntentHelper,
   DeviceActions();
   ~DeviceActions() override;
 
-  chromeos::assistant::mojom::DeviceActionsPtr AddBinding();
+  mojo::PendingRemote<chromeos::assistant::mojom::DeviceActions> AddReceiver();
 
   // mojom::DeviceActions overrides:
   void SetWifiEnabled(bool enabled) override;
@@ -35,8 +36,12 @@ class DeviceActions : public ash::AndroidIntentHelper,
       VerifyAndroidAppCallback callback) override;
   void LaunchAndroidIntent(const std::string& intent) override;
   void AddAppListEventSubscriber(
-      chromeos::assistant::mojom::AppListEventSubscriberPtr subscriber)
-      override;
+      mojo::PendingRemote<chromeos::assistant::mojom::AppListEventSubscriber>
+          subscriber) override;
+
+  // ash::AndroidIntentHelper overrides:
+  base::Optional<std::string> GetAndroidAppLaunchIntent(
+      chromeos::assistant::mojom::AndroidAppInfoPtr app_info) override;
 
  private:
   // ArcAppListPrefs::Observer overrides.
@@ -45,9 +50,10 @@ class DeviceActions : public ash::AndroidIntentHelper,
                        const ArcAppListPrefs::AppInfo& app_info) override;
   void OnAppRemoved(const std::string& id) override;
 
-  ScopedObserver<ArcAppListPrefs, DeviceActions> scoped_prefs_observer_;
-  mojo::BindingSet<chromeos::assistant::mojom::DeviceActions> bindings_;
-  mojo::InterfacePtrSet<chromeos::assistant::mojom::AppListEventSubscriber>
+  ScopedObserver<ArcAppListPrefs, ArcAppListPrefs::Observer>
+      scoped_prefs_observer_{this};
+  mojo::ReceiverSet<chromeos::assistant::mojom::DeviceActions> receivers_;
+  mojo::RemoteSet<chromeos::assistant::mojom::AppListEventSubscriber>
       app_list_subscribers_;
   DISALLOW_COPY_AND_ASSIGN(DeviceActions);
 };

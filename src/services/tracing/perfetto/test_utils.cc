@@ -12,7 +12,6 @@
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
-#include "third_party/perfetto/protos/perfetto/common/commit_data_request.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/test_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
@@ -153,11 +152,7 @@ void MockProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
   // might send two commits from different threads (one always empty),
   // which causes TSan to complain.
   if (commit.chunks_to_patch_size() || commit.chunks_to_move_size()) {
-    perfetto::protos::CommitDataRequest proto;
-    commit.ToProto(&proto);
-    std::string proto_string;
-    CHECK(proto.SerializeToString(&proto_string));
-    all_client_commit_data_requests_ += proto_string;
+    all_client_commit_data_requests_.push_back(commit.SerializeAsString());
   }
   ProducerClient::CommitData(commit, callback);
 }
@@ -189,8 +184,7 @@ MockConsumer::MockConsumer(std::vector<std::string> data_source_names,
   for (const auto& source : data_source_names) {
     data_sources_.emplace_back(DataSourceStatus{
         source,
-        perfetto::ObservableEvents::DataSourceInstanceStateChange::
-            DataSourceInstanceState::DATA_SOURCE_INSTANCE_STATE_STOPPED});
+        perfetto::ObservableEvents::DATA_SOURCE_INSTANCE_STATE_STOPPED});
   }
   CHECK(!data_sources_.empty());
   consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
@@ -232,7 +226,7 @@ void MockConsumer::OnTraceData(std::vector<perfetto::TracePacket> packets,
                                bool has_more) {
   for (auto& encoded_packet : packets) {
     perfetto::protos::TracePacket packet;
-    EXPECT_TRUE(encoded_packet.Decode(&packet));
+    EXPECT_TRUE(packet.ParseFromString(encoded_packet.GetRawBytesForTesting()));
     ++received_packets_;
     if (packet.for_testing().str() == kPerfettoTestString) {
       ++received_test_packets_;
@@ -282,8 +276,7 @@ void MockConsumer::WaitForAllDataSourcesStopped() {
 void MockConsumer::CheckForAllDataSourcesStarted() {
   for (auto& data_source_status : data_sources_) {
     if (data_source_status.state !=
-        perfetto::ObservableEvents::DataSourceInstanceStateChange::
-            DATA_SOURCE_INSTANCE_STATE_STARTED) {
+        perfetto::ObservableEvents::DATA_SOURCE_INSTANCE_STATE_STARTED) {
       return;
     }
   }
@@ -296,8 +289,7 @@ void MockConsumer::CheckForAllDataSourcesStarted() {
 void MockConsumer::CheckForAllDataSourcesStopped() {
   for (auto& data_source_status : data_sources_) {
     if (data_source_status.state !=
-        perfetto::ObservableEvents::DataSourceInstanceStateChange::
-            DATA_SOURCE_INSTANCE_STATE_STOPPED) {
+        perfetto::ObservableEvents::DATA_SOURCE_INSTANCE_STATE_STOPPED) {
       return;
     }
   }
@@ -316,13 +308,13 @@ MockProducerHost::MockProducerHost(
     : producer_name_(producer_name),
       datasource_registered_callback_(
           std::move(datasource_registered_callback)) {
-  mojom::ProducerClientPtr client;
-  mojom::ProducerHostPtrInfo host_info;
-  auto client_request = mojo::MakeRequest(&client);
+  mojo::PendingRemote<mojom::ProducerClient> client;
+  mojo::PendingRemote<mojom::ProducerHost> host_remote;
+  auto client_receiver = client.InitWithNewPipeAndPassReceiver();
   Initialize(std::move(client), service, producer_name_);
-  binding_.Bind(mojo::MakeRequest(&host_info));
-  producer_client->BindClientAndHostPipesForTesting(std::move(client_request),
-                                                    std::move(host_info));
+  receiver_.Bind(host_remote.InitWithNewPipeAndPassReceiver());
+  producer_client->BindClientAndHostPipesForTesting(std::move(client_receiver),
+                                                    std::move(host_remote));
   producer_client->SetupDataSource(data_source_name);
 }
 
@@ -349,11 +341,8 @@ void MockProducerHost::OnCommit(
     return;
   }
 
-  perfetto::protos::CommitDataRequest proto;
-  commit_data_request.ToProto(&proto);
-  std::string proto_string;
-  CHECK(proto.SerializeToString(&proto_string));
-  all_host_commit_data_requests_ += proto_string;
+  all_host_commit_data_requests_.push_back(
+      commit_data_request.SerializeAsString());
 }
 
 MockProducer::MockProducer(const std::string& producer_name,

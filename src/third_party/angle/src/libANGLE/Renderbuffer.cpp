@@ -64,7 +64,7 @@ void RenderbufferState::update(GLsizei width,
 
 // Renderbuffer implementation.
 Renderbuffer::Renderbuffer(rx::GLImplFactory *implFactory, RenderbufferID id)
-    : RefCountObject(id.value),
+    : RefCountObject(id),
       mState(),
       mImplementation(implFactory->createRenderbuffer(mState)),
       mLabel()
@@ -114,6 +114,14 @@ angle::Result Renderbuffer::setStorageMultisample(const Context *context,
                                                   size_t height)
 {
     ANGLE_TRY(orphanImages(context));
+    // TODO (ianelliott): Ensure that the following spec language is correctly implemented:
+    //
+    //   the resulting value for RENDERBUFFER_SAMPLES is guaranteed to be greater than or equal to
+    //   samples and no more than the next larger sample count supported by the implementation.
+    //
+    // For example, if 2, 4, and 8 samples are supported, and if 5 samples are requested, ANGLE
+    // should use 8 samples, and return 8 when GL_RENDERBUFFER_SAMPLES is queried.
+    // http://anglebug.com/4196
     ANGLE_TRY(
         mImplementation->setStorageMultisample(context, samples, internalformat, width, height));
 
@@ -223,7 +231,7 @@ void Renderbuffer::onDetach(const Context *context)
 
 GLuint Renderbuffer::getId() const
 {
-    return id();
+    return id().value;
 }
 
 Extents Renderbuffer::getAttachmentSize(const gl::ImageIndex & /*imageIndex*/) const
@@ -280,4 +288,24 @@ rx::FramebufferAttachmentObjectImpl *Renderbuffer::getAttachmentImpl() const
     return mImplementation.get();
 }
 
+GLenum Renderbuffer::getImplementationColorReadFormat(const Context *context) const
+{
+    return mImplementation->getColorReadFormat(context);
+}
+
+GLenum Renderbuffer::getImplementationColorReadType(const Context *context) const
+{
+    return mImplementation->getColorReadType(context);
+}
+
+angle::Result Renderbuffer::getRenderbufferImage(const Context *context,
+                                                 const PixelPackState &packState,
+                                                 Buffer *packBuffer,
+                                                 GLenum format,
+                                                 GLenum type,
+                                                 void *pixels) const
+{
+    return mImplementation->getRenderbufferImage(context, packState, packBuffer, format, type,
+                                                 pixels);
+}
 }  // namespace gl

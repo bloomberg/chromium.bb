@@ -11,12 +11,13 @@ import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PiiElider;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.components.crash.CrashKeys;
@@ -180,9 +181,7 @@ public class PureJavaExceptionReporter {
         if (ChromeVersionInfo.isBetaBuild()) {
             return "beta";
         }
-        if (ChromeVersionInfo.isStableBuild()) {
-            return "stable";
-        }
+        // An empty string indicates the stable channel.
         return "";
     }
 

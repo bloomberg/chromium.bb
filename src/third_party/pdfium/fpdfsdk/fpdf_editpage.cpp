@@ -136,10 +136,6 @@ bool PageObjectContainsMark(CPDF_PageObject* pPageObj,
   return pMarkItem && pPageObj->m_ContentMarks.ContainsItem(pMarkItem);
 }
 
-unsigned int GetUnsignedAlpha(float alpha) {
-  return static_cast<unsigned int>(alpha * 255.f + 0.5f);
-}
-
 CPDF_FormObject* CPDFFormObjectFromFPDFPageObject(FPDF_PAGEOBJECT page_object) {
   auto* pPageObj = CPDFPageObjectFromFPDFPageObject(page_object);
   return pPageObj ? pPageObj->AsForm() : nullptr;
@@ -707,11 +703,14 @@ FPDFPageObj_GetFillColor(FPDF_PAGEOBJECT page_object,
   if (!pPageObj || !R || !G || !B || !A)
     return false;
 
-  FX_COLORREF fillColor = pPageObj->m_ColorState.GetFillColorRef();
-  *R = FXSYS_GetRValue(fillColor);
-  *G = FXSYS_GetGValue(fillColor);
-  *B = FXSYS_GetBValue(fillColor);
-  *A = GetUnsignedAlpha(pPageObj->m_GeneralState.GetFillAlpha());
+  if (!pPageObj->m_ColorState.HasRef())
+    return false;
+
+  FX_COLORREF fill_color = pPageObj->m_ColorState.GetFillColorRef();
+  *R = FXSYS_GetRValue(fill_color);
+  *G = FXSYS_GetGValue(fill_color);
+  *B = FXSYS_GetBValue(fill_color);
+  *A = FXSYS_GetUnsignedAlpha(pPageObj->m_GeneralState.GetFillAlpha());
   return true;
 }
 
@@ -761,11 +760,14 @@ FPDFPageObj_GetStrokeColor(FPDF_PAGEOBJECT page_object,
   if (!pPageObj || !R || !G || !B || !A)
     return false;
 
-  FX_COLORREF strokeColor = pPageObj->m_ColorState.GetStrokeColorRef();
-  *R = FXSYS_GetRValue(strokeColor);
-  *G = FXSYS_GetGValue(strokeColor);
-  *B = FXSYS_GetBValue(strokeColor);
-  *A = GetUnsignedAlpha(pPageObj->m_GeneralState.GetStrokeAlpha());
+  if (!pPageObj->m_ColorState.HasRef())
+    return false;
+
+  FX_COLORREF stroke_color = pPageObj->m_ColorState.GetStrokeColorRef();
+  *R = FXSYS_GetRValue(stroke_color);
+  *G = FXSYS_GetGValue(stroke_color);
+  *B = FXSYS_GetBValue(stroke_color);
+  *A = FXSYS_GetUnsignedAlpha(pPageObj->m_GeneralState.GetStrokeAlpha());
   return true;
 }
 

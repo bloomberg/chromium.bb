@@ -16,60 +16,40 @@ class TaskAttributionTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Used when the LongTaskV2 flag is enabled.
   static TaskAttributionTiming* Create(const AtomicString& type,
-                                       const String& container_type,
-                                       const String& container_src,
-                                       const String& container_id,
-                                       const String& container_name,
-                                       double start_time,
-                                       double finish_time,
-                                       const String& script_url) {
-    return MakeGarbageCollected<TaskAttributionTiming>(
-        type, container_type, container_src, container_id, container_name,
-        start_time, finish_time, script_url);
-  }
-
-  // Used when the LongTaskV2 flag is disabled.
-  static TaskAttributionTiming* Create(const AtomicString& type,
-                                       const String& container_type,
+                                       const AtomicString& container_type,
                                        const String& container_src,
                                        const String& container_id,
                                        const String& container_name) {
     return MakeGarbageCollected<TaskAttributionTiming>(
-        type, container_type, container_src, container_id, container_name, 0.0,
-        0.0, g_empty_string);
+        type, container_type, container_src, container_id, container_name);
   }
 
   AtomicString entryType() const override;
   PerformanceEntryType EntryTypeEnum() const override;
 
-  String containerType() const;
+  AtomicString containerType() const;
   String containerSrc() const;
   String containerId() const;
   String containerName() const;
-  String scriptURL() const;
 
   void Trace(blink::Visitor*) override;
 
   TaskAttributionTiming(const AtomicString& type,
-                        const String& container_type,
+                        const AtomicString& container_type,
                         const String& container_src,
                         const String& container_id,
-                        const String& container_name,
-                        double start_time,
-                        double finish_time,
-                        const String& script_url);
+                        const String& container_name);
   ~TaskAttributionTiming() override;
 
  private:
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
-  String container_type_;
+  AtomicString container_type_;
+  // TODO(crbug.com/1030396): change the members below to AtomicString.
   String container_src_;
   String container_id_;
   String container_name_;
-  String script_url_;
 };
 
 }  // namespace blink

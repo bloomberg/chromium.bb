@@ -17,6 +17,8 @@
 #include "chrome/browser/vr/service/vr_ui_host.h"
 #include "components/bubble/bubble_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
 
 namespace vr {
@@ -32,13 +34,13 @@ class VRUiHostImpl : public VRUiHost,
                      public DesktopMediaPickerManager::DialogObserver {
  public:
   VRUiHostImpl(device::mojom::XRDeviceId device_id,
-               device::mojom::XRCompositorHostPtr compositor);
+               mojo::PendingRemote<device::mojom::XRCompositorHost> compositor);
   ~VRUiHostImpl() override;
 
   // Factory for use with VRUiHost::{Set,Get}Factory
   static std::unique_ptr<VRUiHost> Create(
       device::mojom::XRDeviceId device_id,
-      device::mojom::XRCompositorHostPtr compositor);
+      mojo::PendingRemote<device::mojom::XRCompositorHost> compositor);
 
  private:
   // This class manages the transience of each of a CapturingStateModel's flags.
@@ -72,6 +74,7 @@ class VRUiHostImpl : public VRUiHost,
   // BrowserXRRuntimeObserver implementation.
   void SetWebXRWebContents(content::WebContents* contents) override;
   void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr display_info) override;
+  void SetFramesThrottled(bool throttled) override;
 
   // Internal methods used to start/stop the UI rendering thread that is used
   // for drawing browser UI (such as permission prompts) for display in VR.
@@ -100,7 +103,7 @@ class VRUiHostImpl : public VRUiHost,
   void InitCapturingStates();
   void PollCapturingState();
 
-  device::mojom::XRCompositorHostPtr compositor_;
+  mojo::Remote<device::mojom::XRCompositorHost> compositor_;
   std::unique_ptr<VRBrowserRendererThreadWin> ui_rendering_thread_;
   device::mojom::VRDisplayInfoPtr info_;
   content::WebContents* web_contents_ = nullptr;
@@ -119,8 +122,9 @@ class VRUiHostImpl : public VRUiHost,
   base::Time indicators_shown_start_time_;
   bool indicators_visible_ = false;
   bool indicators_showing_first_time_ = true;
+  bool frames_throttled_ = false;
 
-  device::mojom::GeolocationConfigPtr geolocation_config_;
+  mojo::Remote<device::mojom::GeolocationConfig> geolocation_config_;
   base::CancelableClosure poll_capturing_state_task_;
 
   THREAD_CHECKER(thread_checker_);

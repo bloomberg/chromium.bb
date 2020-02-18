@@ -1,21 +1,24 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 
 """Tests for git_footers."""
 
 import json
 import os
-import StringIO
 import sys
 import tempfile
 import unittest
 
+if sys.version_info.major == 2:
+  from StringIO import StringIO
+else:
+  from io import StringIO
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from testing_support.auto_stub import TestCase
-
+from third_party import mock
 import git_footers
 
-class GitFootersTest(TestCase):
+class GitFootersTest(unittest.TestCase):
   _message = """
 This is my commit message. There are many like it, but this one is mine.
 
@@ -237,23 +240,27 @@ My commit message is my best friend. It is my life. I must master it.
         'message\n\nSome: footer')
 
 
+  @mock.patch('sys.stdout', StringIO())
+  @mock.patch(
+      'sys.stdin',
+      StringIO('line\r\notherline\r\n\r\n\r\nFoo: baz\r\nStill: footer'))
   def testReadStdin(self):
-    self.mock(git_footers.sys, 'stdin', StringIO.StringIO(
-        'line\r\notherline\r\n\r\n\r\nFoo: baz\r\nStill: footer'))
-
-    stdout = StringIO.StringIO()
-    self.mock(git_footers.sys, 'stdout', stdout)
-
     self.assertEqual(git_footers.main([]), 0)
-    self.assertEqual(stdout.getvalue(), 'Still: footer\nFoo: baz\n')
+    self.assertEqual(sys.stdout.getvalue(), 'Still: footer\nFoo: baz\n')
 
+  @mock.patch(
+      'sys.stdin',
+      StringIO('line\r\nany spaces\r\n\r\n\r\nFoo: 1\nBar: 2\nFoo: 3'))
   def testToJson(self):
-    self.mock(git_footers.sys, 'stdin', StringIO.StringIO(
-        'line\r\nany spaces\r\n\r\n\r\nFoo: 1\nBar: 2\nFoo: 3'))
-
-    with tempfile.NamedTemporaryFile() as tmp:
-      self.assertEqual(git_footers.main(['--json', tmp.name]), 0)
-      js = json.load(open(tmp.name))
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+      try:
+        # NamedTemporaryFiles must be closed on Windows before being opened
+        # again.
+        tmp.close()
+        self.assertEqual(git_footers.main(['--json', tmp.name]), 0)
+        js = json.load(open(tmp.name))
+      finally:
+        os.remove(tmp.name)
     self.assertEqual(js, {'Foo': ['3', '1'], 'Bar': ['2']})
 
 

@@ -18,13 +18,13 @@ import functools
 import json
 import operator
 import os
-import sys
-import urlparse
+
+from google.protobuf import json_format
+from six.moves import urllib
 
 from chromite.api.gen.chromite.api import test_metadata_pb2
 from chromite.api.gen.test_platform import request_pb2
 from chromite.cbuildbot import commands
-from chromite.lib import constants
 from chromite.lib import config_lib
 from chromite.lib import failures_lib
 from chromite.lib import cros_build_lib
@@ -35,28 +35,9 @@ from chromite.lib import retry_util
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_payload_lib
+from chromite.lib.paygen import test_control
+from chromite.lib.paygen import test_params
 from chromite.lib.paygen import utils
-
-from google.protobuf import json_format
-
-# For crostools access.
-sys.path.insert(0, constants.SOURCE_ROOT)
-
-AUTOTEST_DIR = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
-                            'autotest', 'files')
-sys.path.insert(0, AUTOTEST_DIR)
-
-# If we are an external only checkout, or a bootstrap environemnt these imports
-# will fail. We quietly ignore the failure, but leave bombs around that will
-# explode if people try to really use this library.
-try:
-  # pylint: disable=import-error
-  from site_utils.autoupdate.lib import test_params
-  from site_utils.autoupdate.lib import test_control
-
-except ImportError:
-  test_params = None
-  test_control = None
 
 
 # The oldest release milestone for which run_suite should be attempted.
@@ -70,6 +51,15 @@ PAYGEN_URI = 'gs://chromeos-build-release-console/paygen.json'
 
 # Sleep time used in _DiscoverRequiredPayloads. Export so tests can change.
 BUILD_DISCOVER_RETRY_SLEEP = 90
+
+# Types of updates that generate payloads.
+PAYLOAD_TYPE_N2N = 'N2N'
+PAYLOAD_TYPE_FSI = 'FSI'
+PAYLOAD_TYPE_OMAHA = 'OMAHA'
+PAYLOAD_TYPE_MILESTONE = 'MILESTONE'
+PAYLOAD_TYPE_STEPPING_STONE = 'STEPPING_STONE'
+PAYLOAD_TYPES = [PAYLOAD_TYPE_N2N, PAYLOAD_TYPE_FSI, PAYLOAD_TYPE_OMAHA,
+                 PAYLOAD_TYPE_MILESTONE, PAYLOAD_TYPE_STEPPING_STONE]
 
 class Error(Exception):
   """Exception base class for this module."""
@@ -316,7 +306,7 @@ class PayloadTest(utils.RestrictedAttrDict):
   You must either use a delta payload, or specify both the src_channel and
   src_version.
 
-  Attrs:
+  Attributes:
     payload: A gspaths.Payload object describing the payload to be tested.
 
     src_channel: The channel of the image to test updating from. Required
@@ -325,11 +315,16 @@ class PayloadTest(utils.RestrictedAttrDict):
     src_version: The version of the image to test updating from. Required
                  if the payload is a full payload, required to be None if
                  it's a delta.
+    payload_type: The type of update we are doing with this payload. Possible
+                  types are in PAYLOAD_TYPES.
+    applicable_models: A list of models that a paygen test should run against.
   """
-  _slots = ('payload', 'src_channel', 'src_version')
+  _slots = ('payload', 'src_channel', 'src_version', 'payload_type',
+            'applicable_models')
   _name = 'Payload Test'
 
-  def __init__(self, payload, src_channel=None, src_version=None):
+  def __init__(self, payload, src_channel=None, src_version=None,
+               payload_type=PAYLOAD_TYPE_N2N, applicable_models=None):
     assert bool(src_channel) == bool(src_version), (
         'src_channel(%s), src_version(%s) must both be set, or not set' %
         (src_channel, src_version))
@@ -342,9 +337,13 @@ class PayloadTest(utils.RestrictedAttrDict):
     src_channel = src_channel or payload.src_image.build.channel
     src_version = src_version or payload.src_image.build.version
 
+    assert payload_type is not None and payload_type in PAYLOAD_TYPES
+
     super(PayloadTest, self).__init__(payload=payload,
                                       src_channel=src_channel,
-                                      src_version=src_version)
+                                      src_version=src_version,
+                                      payload_type=payload_type,
+                                      applicable_models=applicable_models)
 
 
 class PaygenBuild(object):
@@ -459,7 +458,7 @@ class PaygenBuild(object):
     archive_board_candidates = set([
         archive_board for archive_board in self._site_config.GetBoards()
         if archive_board.replace('_', '-') == board])
-    if len(archive_board_candidates) == 0:
+    if not archive_board_candidates:
       raise ArchiveError('could not find build board name for %s' % board)
     elif len(archive_board_candidates) > 1:
       raise ArchiveError('found multiple build board names for %s: %s' %
@@ -476,13 +475,13 @@ class PaygenBuild(object):
                          archive_build_search_uri)
 
     # Use the first search result.
-    uri_parts = urlparse.urlsplit(archive_build_file_uri_list[0])
+    uri_parts = urllib.parse.urlsplit(archive_build_file_uri_list[0])
     archive_build_path = os.path.dirname(uri_parts.path)
     archive_build = archive_build_path.strip('/')
-    archive_build_uri = urlparse.urlunsplit((uri_parts.scheme,
-                                             uri_parts.netloc,
-                                             archive_build_path,
-                                             '', ''))
+    archive_build_uri = urllib.parse.urlunsplit((uri_parts.scheme,
+                                                 uri_parts.netloc,
+                                                 archive_build_path,
+                                                 '', ''))
 
     return archive_board, archive_build, archive_build_uri
 
@@ -781,6 +780,7 @@ class PaygenBuild(object):
       _LogList('Images found (source)', (source_images + [source_test_image] +
                                          source_dlc_module_images))
 
+      applicable_models = source.get('applicable_models', None)
       if not self._skip_delta_payloads and source['generate_delta']:
         # Generate the signed deltas.
         payloads.extend(self._DiscoverRequiredDeltasBuildToBuild(
@@ -796,12 +796,16 @@ class PaygenBuild(object):
         payloads.append(test_payload)
 
         if source['delta_payload_tests']:
-          payload_tests.append(PayloadTest(test_payload))
+          payload_tests.append(PayloadTest(test_payload,
+                                           payload_type=source['delta_type'],
+                                           applicable_models=applicable_models))
 
       if source['full_payload_tests']:
         # Test the full payload against this source version.
         payload_tests.append(PayloadTest(
-            full_test_payload, source_build.channel, source_build.version))
+            full_test_payload, source_build.channel, source_build.version,
+            payload_type=source['delta_type'],
+            applicable_models=applicable_models))
 
     for p in payloads:
       p.build = self._payload_build
@@ -846,11 +850,12 @@ class PaygenBuild(object):
     # for signers, signing payload, etc). The only part that requires special
     # attention is generating an unsigned payload which internally has a
     # massively parallel implementation. So, here we allow multiple processes to
-    # run simultenously and we restrict the number of processes that do the
-    # unsigned payload generation to only two (look at _semaphore in
-    # paygen_payload_lib.py).
+    # run simultaneously and we restrict the number of processes that do the
+    # unsigned payload generation by looking at the available memory and seeing
+    # if additional runs would exceed allowed memory use thresholds (look at
+    # the MemoryConsumptionSemaphore in utils.py).
     parallel.RunTasksInProcessPool(paygen_payload_lib.CreateAndUploadPayload,
-                                   payloads_args, processes=8)
+                                   payloads_args)
 
   def _FindFullTestPayloads(self, channel, version):
     """Returns a list of full test payloads for a given version.
@@ -945,7 +950,9 @@ class PaygenBuild(object):
         src_payload_uri,
         payload.uri,
         suite_name=suite_name,
-        source_archive_uri=release_archive_uri)
+        source_archive_uri=release_archive_uri,
+        payload_type=payload_test.payload_type,
+        applicable_models=payload_test.applicable_models)
 
 
   def _EmitControlFile(self, payload_test_config, control_dump_dir):

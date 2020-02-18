@@ -24,9 +24,6 @@
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -45,7 +42,7 @@ using testing::StrictMock;
 
 namespace {
 
-const char kEmail[] = "foo_email";
+const char kEmail[] = "foo_email@gmail.com";
 const char kSuggestionsUrlPath[] = "/chromesuggestions";
 const char kBlacklistUrlPath[] = "/chromesuggestions/blacklist";
 const char kBlacklistClearUrlPath[] = "/chromesuggestions/blacklist/clear";
@@ -170,7 +167,7 @@ class SuggestionsServiceTest : public testing::Test {
                       int net_error = net::OK) {
     bool rv = url_loader_factory()->SimulateResponseForPendingRequest(
         url, network::URLLoaderCompletionStatus(net_error),
-        network::CreateResourceResponseHead(response_code), response_body);
+        network::CreateURLResponseHead(response_code), response_body);
     task_environment_.RunUntilIdle();
     return rv;
   }

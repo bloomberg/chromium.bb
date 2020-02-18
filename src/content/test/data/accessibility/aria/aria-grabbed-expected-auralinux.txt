@@ -1,14 +1,17 @@
 [document web]
 ++[list]
 ++++[list item] grabbed:true
-++++++[static] name='• '
-++++++[text] name='grabbed-true '
+++++++[panel]
+++++++++[static] name='• '
+++++++[static] name='grabbed-true '
 ++++++[image] name='blue'
 ++++[list item] grabbed:false
-++++++[static] name='• '
-++++++[text] name='grabbed-false '
+++++++[panel]
+++++++++[static] name='• '
+++++++[static] name='grabbed-false '
 ++++++[image] name='blue'
 ++++[list item]
-++++++[static] name='• '
-++++++[text] name='grabbed-undefined '
+++++++[panel]
+++++++++[static] name='• '
+++++++[static] name='grabbed-undefined '
 ++++++[image] name='blue'

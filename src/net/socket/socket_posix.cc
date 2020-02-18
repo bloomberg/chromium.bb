@@ -130,7 +130,10 @@ int SocketPosix::AdoptUnconnectedSocket(SocketDescriptor socket) {
 }
 
 SocketDescriptor SocketPosix::ReleaseConnectedSocket() {
-  StopWatchingAndCleanUp();
+  // It's not safe to release a socket with a pending write.
+  DCHECK(!write_buf_);
+
+  StopWatchingAndCleanUp(false /* close_socket */);
   SocketDescriptor socket_fd = socket_fd_;
   socket_fd_ = kInvalidSocket;
   return socket_fd;
@@ -400,13 +403,7 @@ bool SocketPosix::HasPeerAddress() const {
 void SocketPosix::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  StopWatchingAndCleanUp();
-
-  if (socket_fd_ != kInvalidSocket) {
-    if (IGNORE_EINTR(close(socket_fd_)) < 0)
-      PLOG(ERROR) << "close() failed";
-    socket_fd_ = kInvalidSocket;
-  }
+  StopWatchingAndCleanUp(true /* close_socket */);
 }
 
 void SocketPosix::DetachFromThread() {
@@ -539,12 +536,12 @@ void SocketPosix::WriteCompleted() {
 
   bool ok = write_socket_watcher_.StopWatchingFileDescriptor();
   DCHECK(ok);
-  write_buf_ = NULL;
+  write_buf_.reset();
   write_buf_len_ = 0;
   std::move(write_callback_).Run(rv);
 }
 
-void SocketPosix::StopWatchingAndCleanUp() {
+void SocketPosix::StopWatchingAndCleanUp(bool close_socket) {
   bool ok = accept_socket_watcher_.StopWatchingFileDescriptor();
   DCHECK(ok);
   ok = read_socket_watcher_.StopWatchingFileDescriptor();
@@ -552,13 +549,23 @@ void SocketPosix::StopWatchingAndCleanUp() {
   ok = write_socket_watcher_.StopWatchingFileDescriptor();
   DCHECK(ok);
 
+  // These needs to be done after the StopWatchingFileDescriptor() calls, but
+  // before deleting the write buffer.
+  if (close_socket) {
+    if (socket_fd_ != kInvalidSocket) {
+      if (IGNORE_EINTR(close(socket_fd_)) < 0)
+        DPLOG(ERROR) << "close() failed";
+      socket_fd_ = kInvalidSocket;
+    }
+  }
+
   if (!accept_callback_.is_null()) {
     accept_socket_ = NULL;
     accept_callback_.Reset();
   }
 
   if (!read_callback_.is_null()) {
-    read_buf_ = NULL;
+    read_buf_.reset();
     read_buf_len_ = 0;
     read_callback_.Reset();
   }
@@ -566,7 +573,7 @@ void SocketPosix::StopWatchingAndCleanUp() {
   read_if_ready_callback_.Reset();
 
   if (!write_callback_.is_null()) {
-    write_buf_ = NULL;
+    write_buf_.reset();
     write_buf_len_ = 0;
     write_callback_.Reset();
   }

@@ -49,6 +49,22 @@ def CheckChangeHasBugField(input_api, output_api):
     return [output_api.PresubmitNotifyResult(
         'If this change has an associated bug, add Bug: [bug number].')]
 
+def CheckChangeHasNoUnwantedTags(input_api, output_api):
+  UNWANTED_TAGS = {
+      'FIXED': {
+          'why': 'is not supported',
+          'instead': 'Use "Fixed:" instead.'
+      },
+      # TODO: BUG, ISSUE
+  }
+
+  errors = []
+  for tag, desc in UNWANTED_TAGS.items():
+    if tag in input_api.change.tags:
+      subs = tag, desc['why'], desc.get('instead', '')
+      errors.append(('%s= %s. %s' % subs).rstrip())
+
+  return [output_api.PresubmitError('\n'.join(errors))] if errors else []
 
 def CheckDoNotSubmitInDescription(input_api, output_api):
   """Checks that the user didn't add 'DO NOT ''SUBMIT' to the CL description.
@@ -124,8 +140,14 @@ def CheckDoNotSubmitInFiles(input_api, output_api):
   # We want to check every text file, not just source files.
   file_filter = lambda x : x
   keyword = 'DO NOT ''SUBMIT'
-  errors = _FindNewViolationsOfRule(lambda _, line : keyword not in line,
-                                    input_api, file_filter)
+  def DoNotSubmitRule(extension, line):
+    try:
+      return keyword not in line
+    # Fallback to True for non-text content
+    except UnicodeDecodeError:
+      return True
+
+  errors = _FindNewViolationsOfRule(DoNotSubmitRule, input_api, file_filter)
   text = '\n'.join('Found %s in %s' % (keyword, loc) for loc in errors)
   if text:
     return [output_api.PresubmitError(text)]
@@ -229,7 +251,7 @@ def CheckGenderNeutral(input_api, output_api, source_file_filter=None):
   submitted.
   """
   gendered_re = input_api.re.compile(
-      '(^|\s|\(|\[)([Hh]e|[Hh]is|[Hh]ers?|[Hh]im|[Ss]he|[Gg]uys?)\\b')
+      r'(^|\s|\(|\[)([Hh]e|[Hh]is|[Hh]ers?|[Hh]im|[Ss]he|[Gg]uys?)\\b')
 
   errors = []
   for f in input_api.AffectedFiles(include_deletes=False,
@@ -554,7 +576,7 @@ def CheckTreeIsOpen(input_api, output_api,
     return []
   try:
     if json_url:
-      connection = input_api.urllib2.urlopen(json_url)
+      connection = input_api.urllib_request.urlopen(json_url)
       status = input_api.json.loads(connection.read())
       connection.close()
       if not status['can_commit_freely']:
@@ -563,7 +585,7 @@ def CheckTreeIsOpen(input_api, output_api,
         return [output_api.PresubmitError(short_text, long_text=long_text)]
     else:
       # TODO(bradnelson): drop this once all users are gone.
-      connection = input_api.urllib2.urlopen(url)
+      connection = input_api.urllib_request.urlopen(url)
       status = connection.read()
       connection.close()
       if input_api.re.match(closed, status):
@@ -727,6 +749,9 @@ def GetPythonUnitTests(input_api, output_api, unit_tests):
       backpath = [
           '.', input_api.os_path.pathsep.join(['..'] * (cwd.count('/') + 1))
         ]
+      # We convert to str, since on Windows on Python 2 only strings are allowed
+      # as environment variables, but literals are unicode since we're importing
+      # unicode_literals from __future__.
       if env.get('PYTHONPATH'):
         backpath.append(env.get('PYTHONPATH'))
       env['PYTHONPATH'] = input_api.os_path.pathsep.join((backpath))
@@ -805,7 +830,7 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
 
   The default white_list enforces looking only at *.py files.
   """
-  white_list = tuple(white_list or ('.*\.py$',))
+  white_list = tuple(white_list or (r'.*\.py$',))
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
   extra_paths_list = extra_paths_list or []
 
@@ -851,8 +876,7 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
   input_api.logging.info('Running pylint on %d files', len(files))
   input_api.logging.debug('Running pylint on: %s', files)
   env = input_api.environ.copy()
-  env['PYTHONPATH'] = input_api.os_path.pathsep.join(
-    extra_paths_list).encode('utf8')
+  env['PYTHONPATH'] = input_api.os_path.pathsep.join(extra_paths_list)
   env.pop('VPYTHON_CLEAR_PYTHONPATH', None)
   input_api.logging.debug('  with extra PYTHONPATH: %r', extra_paths_list)
 
@@ -920,7 +944,7 @@ def RunPylint(input_api, *args, **kwargs):
 def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
     ignored):
   try:
-    connection = input_api.urllib2.urlopen(url)
+    connection = input_api.urllib_request.urlopen(url)
     raw_data = connection.read()
     connection.close()
   except IOError:
@@ -933,7 +957,7 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
                                              'looking up buildbot status')]
 
   out = []
-  for (builder_name, builder) in data.iteritems():
+  for (builder_name, builder) in data.items():
     if builder_name in ignored:
       continue
     if builder.get('state', '') == 'offline':
@@ -971,7 +995,27 @@ def CheckOwnersFormat(input_api, output_api):
 def CheckOwners(input_api, output_api, source_file_filter=None):
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(file_filter=source_file_filter)])
-  affects_owners = any('OWNERS' in name for name in affected_files)
+  owners_db = input_api.owners_db
+  owners_db.override_files = input_api.change.OriginalOwnersFiles()
+  owner_email, reviewers = GetCodereviewOwnerAndReviewers(
+      input_api,
+      owners_db.email_regexp,
+      approval_needed=input_api.is_committing)
+
+  owner_email = owner_email or input_api.change.author_email
+
+  finder = input_api.owners_finder(
+      affected_files,
+      input_api.change.RepositoryRoot(),
+      owner_email,
+      reviewers,
+      fopen=open,
+      os_path=input_api.os_path,
+      email_postfix='',
+      disable_color=True,
+      override_files=input_api.change.OriginalOwnersFiles())
+  missing_files = finder.unreviewed_files
+  affects_owners = any('OWNERS' in name for name in missing_files)
 
   if input_api.is_committing:
     if input_api.tbr and not affects_owners:
@@ -992,29 +1036,12 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     needed = 'OWNER reviewers'
     output_fn = output_api.PresubmitNotifyResult
 
-  owners_db = input_api.owners_db
-  owners_db.override_files = input_api.change.OriginalOwnersFiles()
-  owner_email, reviewers = GetCodereviewOwnerAndReviewers(
-      input_api,
-      owners_db.email_regexp,
-      approval_needed=input_api.is_committing)
-
-  owner_email = owner_email or input_api.change.author_email
-
-  finder = input_api.owners_finder(
-      affected_files, input_api.change.RepositoryRoot(),
-      owner_email, reviewers, fopen=file, os_path=input_api.os_path,
-      email_postfix='', disable_color=True,
-      override_files=input_api.change.OriginalOwnersFiles())
-  missing_files = finder.unreviewed_files
-
   if missing_files:
     output_list = [
         output_fn('Missing %s for these files:\n    %s' %
                   (needed, '\n    '.join(sorted(missing_files))))]
     if input_api.tbr and affects_owners:
-      output_list.append(output_fn('The CL affects an OWNERS file, so TBR will '
-                                   'be ignored.'))
+      output_list.append(output_fn('TBR for OWNERS files are ignored.'))
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
       owners_with_comments = []
@@ -1107,7 +1134,7 @@ def PanProjectChecks(input_api, output_api,
   # 2006-20xx string used on the oldest files. 2006-20xx is deprecated, but
   # tolerated on old files.
   current_year = int(input_api.time.strftime('%Y'))
-  allowed_years = (str(s) for s in reversed(xrange(2006, current_year + 1)))
+  allowed_years = (str(s) for s in reversed(range(2006, current_year + 1)))
   years_re = '(' + '|'.join(allowed_years) + '|2006-2008|2006-2009|2006-2010)'
 
   # The (c) is deprecated, but tolerate it until it's removed from all files.
@@ -1136,7 +1163,10 @@ def PanProjectChecks(input_api, output_api,
   snapshot_memory = []
   def snapshot(msg):
     """Measures & prints performance warning if a rule is running slow."""
-    dt2 = input_api.time.clock()
+    if input_api.sys.version_info.major == 2:
+      dt2 = input_api.time.clock()
+    else:
+      dt2 = input_api.time.process_time()
     if snapshot_memory:
       delta_ms = int(1000*(dt2 - snapshot_memory[0]))
       if delta_ms > 500:
@@ -1307,7 +1337,7 @@ def CheckCIPDPackages(input_api, output_api, platforms, packages):
   manifest = []
   for p in platforms:
     manifest.append('$VerifiedPlatform %s' % (p,))
-  for k, v in packages.iteritems():
+  for k, v in packages.items():
     manifest.append('%s %s' % (k, v))
   return CheckCIPDManifest(input_api, output_api, content='\n'.join(manifest))
 
@@ -1369,7 +1399,6 @@ def CheckChangedLUCIConfigs(input_api, output_api):
   import base64
   import json
   import logging
-  import urllib2
 
   import auth
   import git_cl
@@ -1398,26 +1427,24 @@ def CheckChangedLUCIConfigs(input_api, output_api):
 
   # authentication
   try:
-    authenticator = auth.get_authenticator_for_host(
-        LUCI_CONFIG_HOST_NAME, auth.make_auth_config())
-    acc_tkn = authenticator.get_access_token()
-  except auth.AuthenticationError as e:
+    acc_tkn = auth.Authenticator().get_access_token()
+  except auth.LoginRequiredError as e:
     return [output_api.PresubmitError(
         'Error in authenticating user.', long_text=str(e))]
 
   def request(endpoint, body=None):
     api_url = ('https://%s/_ah/api/config/v1/%s'
                % (LUCI_CONFIG_HOST_NAME, endpoint))
-    req = urllib2.Request(api_url)
+    req = input_api.urllib_request.Request(api_url)
     req.add_header('Authorization', 'Bearer %s' % acc_tkn.token)
     if body is not None:
       req.add_header('Content-Type', 'application/json')
       req.add_data(json.dumps(body))
-    return json.load(urllib2.urlopen(req))
+    return json.load(input_api.urllib_request.urlopen(req))
 
   try:
     config_sets = request('config-sets').get('config_sets')
-  except urllib2.HTTPError as e:
+  except input_api.urllib_error.HTTPError as e:
     return [output_api.PresubmitError(
         'Config set request to luci-config failed', long_text=str(e))]
   if not config_sets:
@@ -1450,20 +1477,20 @@ def CheckChangedLUCIConfigs(input_api, output_api):
     # windows
     file_path = f.LocalPath().replace(_os.sep, '/')
     logging.debug('Affected file path: %s', file_path)
-    for dr, cs in dir_to_config_set.iteritems():
+    for dr, cs in dir_to_config_set.items():
       if dr == '/' or file_path.startswith(dr):
         cs_to_files[cs].append({
           'path': file_path[len(dr):] if dr != '/' else file_path,
           'content': base64.b64encode(
-              '\n'.join(f.NewContents()).encode('utf-8'))
+              '\n'.join(f.NewContents()).encode('utf-8')).decode('utf-8')
         })
   outputs = []
-  for cs, f in cs_to_files.iteritems():
+  for cs, f in cs_to_files.items():
     try:
       # TODO(myjang): parallelize
       res = request(
           'validate-config', body={'config_set': cs, 'files': f})
-    except urllib2.HTTPError as e:
+    except input_api.urllib_error.HTTPError as e:
       return [output_api.PresubmitError(
           'Validation request to luci-config failed', long_text=str(e))]
     for msg in res.get('messages', []):

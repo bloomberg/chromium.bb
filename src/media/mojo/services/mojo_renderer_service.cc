@@ -20,10 +20,11 @@ namespace media {
 
 namespace {
 
-void CloseBindingOnBadMessage(mojo::StrongBindingPtr<mojom::Renderer> binding) {
+void CloseReceiverOnBadMessage(
+    mojo::SelfOwnedReceiverRef<mojom::Renderer> receiver) {
   LOG(ERROR) << __func__;
-  DCHECK(binding);
-  binding->Close();
+  DCHECK(receiver);
+  receiver->Close();
 }
 
 }  // namespace
@@ -32,20 +33,21 @@ void CloseBindingOnBadMessage(mojo::StrongBindingPtr<mojom::Renderer> binding) {
 const int kTimeUpdateIntervalMs = 50;
 
 // static
-mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
+mojo::SelfOwnedReceiverRef<mojom::Renderer> MojoRendererService::Create(
     MojoCdmServiceContext* mojo_cdm_service_context,
     std::unique_ptr<media::Renderer> renderer,
-    mojo::InterfaceRequest<mojom::Renderer> request) {
+    mojo::PendingReceiver<mojom::Renderer> receiver) {
   MojoRendererService* service =
       new MojoRendererService(mojo_cdm_service_context, std::move(renderer));
 
-  mojo::StrongBindingPtr<mojom::Renderer> binding =
-      mojo::MakeStrongBinding<mojom::Renderer>(base::WrapUnique(service),
-                                               std::move(request));
+  mojo::SelfOwnedReceiverRef<mojom::Renderer> self_owned_receiver =
+      mojo::MakeSelfOwnedReceiver<mojom::Renderer>(base::WrapUnique(service),
+                                                   std::move(receiver));
 
-  service->set_bad_message_cb(base::Bind(&CloseBindingOnBadMessage, binding));
+  service->set_bad_message_cb(
+      base::Bind(&CloseReceiverOnBadMessage, self_owned_receiver));
 
-  return binding;
+  return self_owned_receiver;
 }
 
 MojoRendererService::MojoRendererService(
@@ -64,8 +66,9 @@ MojoRendererService::MojoRendererService(
 MojoRendererService::~MojoRendererService() = default;
 
 void MojoRendererService::Initialize(
-    mojom::RendererClientAssociatedPtrInfo client,
-    base::Optional<std::vector<mojom::DemuxerStreamPtrInfo>> streams,
+    mojo::PendingAssociatedRemote<mojom::RendererClient> client,
+    base::Optional<std::vector<mojo::PendingRemote<mojom::DemuxerStream>>>
+        streams,
     mojom::MediaUrlParamsPtr media_url_params,
     InitializeCallback callback) {
   DVLOG(1) << __func__;
@@ -89,8 +92,8 @@ void MojoRendererService::Initialize(
       media_url_params->is_hls));
   renderer_->Initialize(
       media_resource_.get(), this,
-      base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,
-                 base::Passed(&callback)));
+      base::BindOnce(&MojoRendererService::OnRendererInitializeDone, weak_this_,
+                     base::Passed(&callback)));
 }
 
 void MojoRendererService::Flush(FlushCallback callback) {
@@ -99,8 +102,8 @@ void MojoRendererService::Flush(FlushCallback callback) {
 
   state_ = STATE_FLUSHING;
   CancelPeriodicMediaTimeUpdates();
-  renderer_->Flush(base::Bind(&MojoRendererService::OnFlushCompleted,
-                              weak_this_, base::Passed(&callback)));
+  renderer_->Flush(base::BindOnce(&MojoRendererService::OnFlushCompleted,
+                                  weak_this_, base::Passed(&callback)));
 }
 
 void MojoRendererService::StartPlayingFrom(base::TimeDelta time_delta) {
@@ -202,8 +205,8 @@ void MojoRendererService::OnStreamReady(
 
   renderer_->Initialize(
       media_resource_.get(), this,
-      base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,
-                 base::Passed(&callback)));
+      base::BindOnce(&MojoRendererService::OnRendererInitializeDone, weak_this_,
+                     base::Passed(&callback)));
 }
 
 void MojoRendererService::OnRendererInitializeDone(

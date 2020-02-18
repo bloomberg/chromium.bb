@@ -98,6 +98,22 @@ Polymer({
       type: Boolean,
       value: true,
     },
+
+    /**
+     * Device attribute : Asset ID.
+     */
+    assetId_: {
+      type: String,
+      value: '',
+    },
+
+    /**
+     * Device attribute : Location.
+     */
+    deviceLocation_: {
+      type: String,
+      value: '',
+    },
   },
 
   /**
@@ -232,13 +248,11 @@ Polymer({
     this.authenticator_.addEventListener(
         'dialogShown', (function(e) {
                          this.authenticatorDialogDisplayed_ = true;
-                         // TODO(alemate): update the visual style.
                        }).bind(this));
 
     this.authenticator_.addEventListener(
         'dialogHidden', (function(e) {
                           this.authenticatorDialogDisplayed_ = false;
-                          // TODO(alemate): update the visual style.
                         }).bind(this));
 
     this.authenticator_.insecureContentBlockedCallback =
@@ -330,8 +344,8 @@ Polymer({
    * location.
    */
   showAttributePromptStep: function(annotatedAssetId, annotatedLocation) {
-    this.$['oauth-enroll-asset-id'].value = annotatedAssetId;
-    this.$['oauth-enroll-location'].value = annotatedLocation;
+    this.assetId_ = annotatedAssetId;
+    this.deviceLocation_ = annotatedLocation;
     this.showStep(ENROLLMENT_STEP.ATTRIBUTE_PROMPT);
   },
 
@@ -399,6 +413,9 @@ Polymer({
     this.isCancelDisabled =
         (step == ENROLLMENT_STEP.SIGNIN && !this.isManualEnrollment_) ||
         step == ENROLLMENT_STEP.AD_JOIN || step == ENROLLMENT_STEP.WORKING;
+
+    this.currentStep_ = step;
+
     if (this.isErrorStep_(step)) {
       this.$['oauth-enroll-error-card'].submitButton.focus();
     } else if (step == ENROLLMENT_STEP.SIGNIN) {
@@ -415,7 +432,6 @@ Polymer({
       this.offlineAdUi_.focus();
     }
 
-    this.currentStep_ = step;
     this.lastBackMessageValue_ = false;
     this.updateControlsState();
   },
@@ -494,8 +510,7 @@ Polymer({
    * |chrome| and launches the device attribute update negotiation.
    */
   submitAttributes_: function() {
-    this.screen.onAttributesEntered_(this.$['oauth-enroll-asset-id'].value,
-        this.$['oauth-enroll-location'].value);
+    this.screen.onAttributesEntered_(this.assetId_, this.deviceLocation_);
   },
 
   /**
@@ -543,8 +558,12 @@ Polymer({
     this.screen.closeEnrollment_('done');
   },
 
+  /*
+   * Executed on language change.
+   */
   updateLocalizedContent: function() {
     this.offlineAdUi_.i18nUpdateLocale();
+    this.i18nUpdateLocale();
   },
 
   onErrorButtonPressed_: function () {

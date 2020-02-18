@@ -4,11 +4,14 @@
 
 #include "net/third_party/quiche/src/quic/quartc/quartc_endpoint.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_crypto_helpers.h"
 #include "net/third_party/quiche/src/quic/quartc/quartc_fakes.h"
 #include "net/third_party/quiche/src/quic/quartc/simulated_packet_transport.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/link.h"
 #include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
 
@@ -32,7 +35,7 @@ class QuartcEndpointTest : public QuicTest {
                             QuicTime::Delta::FromMilliseconds(1)),
         server_endpoint_delegate_(&server_stream_delegate_,
                                   simulator_.GetClock()),
-        server_endpoint_(QuicMakeUnique<QuartcServerEndpoint>(
+        server_endpoint_(std::make_unique<QuartcServerEndpoint>(
             simulator_.GetAlarmFactory(),
             simulator_.GetClock(),
             simulator_.GetRandomGenerator(),
@@ -40,7 +43,7 @@ class QuartcEndpointTest : public QuicTest {
             QuartcSessionConfig())),
         client_endpoint_delegate_(&client_stream_delegate_,
                                   simulator_.GetClock()),
-        client_endpoint_(QuicMakeUnique<QuartcClientEndpoint>(
+        client_endpoint_(std::make_unique<QuartcClientEndpoint>(
             simulator_.GetAlarmFactory(),
             simulator_.GetClock(),
             simulator_.GetRandomGenerator(),
@@ -85,21 +88,21 @@ TEST_F(QuartcEndpointTest,
   ParsedQuicVersionVector client_versions;
   client_versions.push_back({PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_46});
   client_versions.push_back({PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43});
-  client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
+  client_endpoint_ = std::make_unique<QuartcClientEndpoint>(
       simulator_.GetAlarmFactory(), simulator_.GetClock(),
       simulator_.GetRandomGenerator(), &client_endpoint_delegate_,
       QuartcSessionConfig(),
       /*serialized_server_config=*/"",
-      QuicMakeUnique<QuicVersionManager>(client_versions));
+      std::make_unique<QuicVersionManager>(client_versions));
 
   // Reset the server endpoint to only speak version 43.
   ParsedQuicVersionVector server_versions;
   server_versions.push_back({PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43});
-  server_endpoint_ = QuicMakeUnique<QuartcServerEndpoint>(
+  server_endpoint_ = std::make_unique<QuartcServerEndpoint>(
       simulator_.GetAlarmFactory(), simulator_.GetClock(),
       simulator_.GetRandomGenerator(), &server_endpoint_delegate_,
       QuartcSessionConfig(),
-      QuicMakeUnique<QuicVersionManager>(server_versions));
+      std::make_unique<QuicVersionManager>(server_versions));
 
   // The endpoints should be able to establish a connection using version 46.
   server_endpoint_->Connect(&server_transport_);
@@ -124,23 +127,23 @@ TEST_F(QuartcEndpointTest,
   // Reset the client endpoint to only speak version 43.
   ParsedQuicVersionVector client_versions;
   client_versions.push_back({PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43});
-  client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
+  client_endpoint_ = std::make_unique<QuartcClientEndpoint>(
       simulator_.GetAlarmFactory(), simulator_.GetClock(),
       simulator_.GetRandomGenerator(), &client_endpoint_delegate_,
       QuartcSessionConfig(),
       /*serialized_server_config=*/"",
-      QuicMakeUnique<QuicVersionManager>(client_versions));
+      std::make_unique<QuicVersionManager>(client_versions));
 
   // Reset the server endpoint to prefer version 46 but also be capable of
   // speaking version 43.
   ParsedQuicVersionVector server_versions;
   server_versions.push_back({PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_46});
   server_versions.push_back({PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43});
-  server_endpoint_ = QuicMakeUnique<QuartcServerEndpoint>(
+  server_endpoint_ = std::make_unique<QuartcServerEndpoint>(
       simulator_.GetAlarmFactory(), simulator_.GetClock(),
       simulator_.GetRandomGenerator(), &server_endpoint_delegate_,
       QuartcSessionConfig(),
-      QuicMakeUnique<QuicVersionManager>(server_versions));
+      std::make_unique<QuicVersionManager>(server_versions));
 
   // The endpoints should be able to establish a connection using version 46.
   server_endpoint_->Connect(&server_transport_);
@@ -165,21 +168,21 @@ TEST_F(QuartcEndpointTest,
   // Reset the client endpoint to only speak version 43.
   ParsedQuicVersionVector client_versions;
   client_versions.push_back({PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43});
-  client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
+  client_endpoint_ = std::make_unique<QuartcClientEndpoint>(
       simulator_.GetAlarmFactory(), simulator_.GetClock(),
       simulator_.GetRandomGenerator(), &client_endpoint_delegate_,
       QuartcSessionConfig(),
       /*serialized_server_config=*/"",
-      QuicMakeUnique<QuicVersionManager>(client_versions));
+      std::make_unique<QuicVersionManager>(client_versions));
 
   // Reset the server endpoint to only speak version 46.
   ParsedQuicVersionVector server_versions;
   server_versions.push_back({PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_46});
-  server_endpoint_ = QuicMakeUnique<QuartcServerEndpoint>(
+  server_endpoint_ = std::make_unique<QuartcServerEndpoint>(
       simulator_.GetAlarmFactory(), simulator_.GetClock(),
       simulator_.GetRandomGenerator(), &server_endpoint_delegate_,
       QuartcSessionConfig(),
-      QuicMakeUnique<QuicVersionManager>(server_versions));
+      std::make_unique<QuicVersionManager>(server_versions));
 
   // The endpoints should be unable to establish a connection.
   server_endpoint_->Connect(&server_transport_);
@@ -193,7 +196,8 @@ TEST_F(QuartcEndpointTest,
     return client_endpoint_delegate_.session() != nullptr &&
            client_endpoint_delegate_.session()->error() != QUIC_NO_ERROR;
   }));
-  EXPECT_EQ(client_endpoint_delegate_.session()->error(), QUIC_INVALID_VERSION);
+  EXPECT_THAT(client_endpoint_delegate_.session()->error(),
+              test::IsError(QUIC_INVALID_VERSION));
 }
 
 // Tests that the client endpoint can create a new session in order to continue
@@ -205,21 +209,21 @@ TEST_F(QuartcEndpointTest,
   ParsedQuicVersionVector client_versions;
   client_versions.push_back({PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_46});
   client_versions.push_back({PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43});
-  client_endpoint_ = QuicMakeUnique<QuartcClientEndpoint>(
+  client_endpoint_ = std::make_unique<QuartcClientEndpoint>(
       simulator_.GetAlarmFactory(), simulator_.GetClock(),
       simulator_.GetRandomGenerator(), &client_endpoint_delegate_,
       QuartcSessionConfig(),
       /*serialized_server_config=*/"",
-      QuicMakeUnique<QuicVersionManager>(client_versions));
+      std::make_unique<QuicVersionManager>(client_versions));
 
   // Reset the server endpoint to only speak version 43.
   ParsedQuicVersionVector server_versions;
   server_versions.push_back({PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43});
-  server_endpoint_ = QuicMakeUnique<QuartcServerEndpoint>(
+  server_endpoint_ = std::make_unique<QuartcServerEndpoint>(
       simulator_.GetAlarmFactory(), simulator_.GetClock(),
       simulator_.GetRandomGenerator(), &server_endpoint_delegate_,
       QuartcSessionConfig(),
-      QuicMakeUnique<QuicVersionManager>(server_versions));
+      std::make_unique<QuicVersionManager>(server_versions));
 
   // The endpoints should be able to establish a connection using version 46.
   server_endpoint_->Connect(&server_transport_);

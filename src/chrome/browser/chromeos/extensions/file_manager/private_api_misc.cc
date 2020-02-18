@@ -23,8 +23,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
@@ -56,7 +56,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/services/file_util/public/cpp/zip_file_creator.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
@@ -72,10 +71,9 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "google_apis/drive/auth_service.h"
-#include "net/base/hex_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_types.h"
+#include "storage/common/file_system/file_system_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
@@ -192,10 +190,6 @@ bool IsAllowedSource(storage::FileSystemType type,
 
     case api::file_manager_private::SOURCE_RESTRICTION_NATIVE_SOURCE:
       return type == storage::kFileSystemTypeNativeLocal;
-
-    case api::file_manager_private::SOURCE_RESTRICTION_NATIVE_OR_DRIVE_SOURCE:
-      return type == storage::kFileSystemTypeNativeLocal ||
-             type == storage::kFileSystemTypeDrive;
   }
 }
 
@@ -307,11 +301,6 @@ FileManagerPrivateInternalZipSelectionFunction::Run() {
   // Third param is the name of the output zip file.
   if (params->dest_name.empty())
     return RespondNow(Error("Empty output file name."));
-
-  // Check if the dir path is under Drive mount point.
-  // TODO(hshi): support create zip file on Drive (crbug.com/158690).
-  if (drive::util::IsUnderDriveMountPoint(src_dir))
-    return RespondNow(Error("Unable to zip Drive files."));
 
   base::FilePath dest_file = src_dir.Append(params->dest_name);
   std::vector<base::FilePath> src_relative_paths;
@@ -528,18 +517,6 @@ void FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType(
   Respond(OneArgument(std::make_unique<base::Value>(mimeType)));
 }
 
-ExtensionFunction::ResponseAction
-FileManagerPrivateIsPiexLoaderEnabledFunction::Run() {
-#if defined(OFFICIAL_BUILD)
-  bool piex_nacl_enabled = !base::FeatureList::IsEnabled(
-      chromeos::features::kEnableFileManagerPiexWasm);
-  return RespondNow(
-      OneArgument(std::make_unique<base::Value>(piex_nacl_enabled)));
-#else
-  return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
-#endif
-}
-
 FileManagerPrivateGetProvidersFunction::FileManagerPrivateGetProvidersFunction()
     : chrome_details_(this) {}
 
@@ -681,7 +658,7 @@ FileManagerPrivateMountCrostiniFunction::Run() {
   // files into Linux files should still work.
   Profile* profile =
       Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
-  DCHECK(crostini::IsCrostiniEnabled(profile));
+  DCHECK(crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
       crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
       base::BindOnce(&FileManagerPrivateMountCrostiniFunction::RestartCallback,
@@ -1098,7 +1075,10 @@ FileManagerPrivateDetectCharacterEncodingFunction::Run() {
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  std::string input = net::HexDecode(params->bytes);
+  std::string input;
+  if (!base::HexStringToString(params->bytes, &input))
+    input.clear();
+
   std::string encoding;
   bool success = base::DetectEncoding(input, &encoding);
   return RespondNow(OneArgument(std::make_unique<base::Value>(

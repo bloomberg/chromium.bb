@@ -9,14 +9,15 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "media/media_buildflags.h"
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 #include "base/bind.h"
 #include "media/mojo/mojom/constants.mojom.h"      // nogncheck
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_CDM_PROXY)
 #include "content/public/gpu/content_gpu_client.h"
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 
 namespace content {
@@ -26,6 +27,7 @@ GpuServiceFactory::GpuServiceFactory(
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     const gpu::GpuFeatureInfo& gpu_feature_info,
     base::WeakPtr<media::MediaGpuChannelManager> media_gpu_channel_manager,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     media::AndroidOverlayMojoFactoryCB android_overlay_factory_cb) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   gpu_preferences_ = gpu_preferences;
@@ -33,6 +35,7 @@ GpuServiceFactory::GpuServiceFactory(
   gpu_feature_info_ = gpu_feature_info;
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   media_gpu_channel_manager_ = std::move(media_gpu_channel_manager);
+  gpu_memory_buffer_factory_ = gpu_memory_buffer_factory;
   android_overlay_factory_cb_ = std::move(android_overlay_factory_cb);
 #endif
 }
@@ -46,11 +49,11 @@ void GpuServiceFactory::RunService(
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   if (service_name == media::mojom::kMediaServiceName) {
     media::CdmProxyFactoryCB cdm_proxy_factory_cb;
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_CDM_PROXY)
     cdm_proxy_factory_cb =
         base::BindRepeating(&ContentGpuClient::CreateCdmProxy,
                             base::Unretained(GetContentClient()->gpu()));
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
     // This service will host audio/video decoders, and if these decoding
     // operations are blocked, user may hear audio glitch or see video freezing,
@@ -70,8 +73,8 @@ void GpuServiceFactory::RunService(
     FactoryCallback factory = base::BindOnce(
         &media::CreateGpuMediaService, std::move(request), gpu_preferences_,
         gpu_workarounds_, gpu_feature_info_, task_runner_,
-        media_gpu_channel_manager_, android_overlay_factory_cb_,
-        std::move(cdm_proxy_factory_cb));
+        media_gpu_channel_manager_, gpu_memory_buffer_factory_,
+        android_overlay_factory_cb_, std::move(cdm_proxy_factory_cb));
     task_runner->PostTask(
         FROM_HERE, base::BindOnce(
                        [](FactoryCallback factory) {

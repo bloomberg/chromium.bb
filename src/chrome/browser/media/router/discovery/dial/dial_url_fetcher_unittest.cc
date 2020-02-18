@@ -16,8 +16,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,22 +57,22 @@ TEST_F(DialURLFetcherTest, FetchSuccessful) {
   EXPECT_CALL(*this, OnSuccess(body));
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = body.size();
-  loader_factory_.AddResponse(url_, network::ResourceResponseHead(), body,
-                              status);
+  loader_factory_.AddResponse(url_, network::mojom::URLResponseHead::New(),
+                              body, status);
   StartGetRequest();
 }
 
 TEST_F(DialURLFetcherTest, FetchFailsOnMissingAppInfo) {
   EXPECT_CALL(*this, OnError(404, HasSubstr("404")));
   loader_factory_.AddResponse(
-      url_, network::ResourceResponseHead(), "",
+      url_, network::mojom::URLResponseHead::New(), "",
       network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
   StartGetRequest();
 }
 
 TEST_F(DialURLFetcherTest, FetchFailsOnEmptyAppInfo) {
   EXPECT_CALL(*this, OnError(_, HasSubstr("Missing or empty response")));
-  loader_factory_.AddResponse(url_, network::ResourceResponseHead(), "",
+  loader_factory_.AddResponse(url_, network::mojom::URLResponseHead::New(), "",
                               network::URLLoaderCompletionStatus());
   StartGetRequest();
 }
@@ -84,8 +82,8 @@ TEST_F(DialURLFetcherTest, FetchFailsOnBadAppInfo) {
   std::string body("\xfc\x9c\xbf\x80\xbf\x80");
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = body.size();
-  loader_factory_.AddResponse(url_, network::ResourceResponseHead(), body,
-                              status);
+  loader_factory_.AddResponse(url_, network::mojom::URLResponseHead::New(),
+                              body, status);
   StartGetRequest();
 }
 

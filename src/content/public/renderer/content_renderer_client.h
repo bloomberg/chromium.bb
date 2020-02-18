@@ -46,7 +46,6 @@ class WebLocalFrame;
 class WebPlugin;
 class WebPrescientNetworking;
 class WebServiceWorkerContextProxy;
-class WebMediaStreamRendererFactory;
 class WebThemeEngine;
 class WebURL;
 class WebURLRequest;
@@ -56,6 +55,10 @@ struct WebURLError;
 
 namespace media {
 class KeySystemProperties;
+}
+
+namespace mojo {
+class BinderMap;
 }
 
 namespace content {
@@ -71,6 +74,11 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Notifies us that the RenderThread has been created.
   virtual void RenderThreadStarted() {}
+
+  // Allows the embedder to make Mojo interfaces available to the browser
+  // process. Binders can be added to |*binders| to service incoming interface
+  // binding requests from RenderProcessHost::BindReceiver().
+  virtual void ExposeInterfacesToBrowser(mojo::BinderMap* binders) {}
 
   // Notifies that a new RenderFrame has been created.
   virtual void RenderFrameCreated(RenderFrame* render_frame) {}
@@ -141,18 +149,15 @@ class CONTENT_EXPORT ContentRendererClient {
   // Note that |error_html| may be not written to in certain cases
   // (lack of information on the error code) so the caller should take care to
   // initialize it with a safe default before the call.
-  // TODO(dgozman): |ignoring_cache| is always false in these two methods.
   virtual void PrepareErrorPage(content::RenderFrame* render_frame,
                                 const blink::WebURLError& error,
                                 const std::string& http_method,
-                                bool ignoring_cache,
                                 std::string* error_html) {}
 
   virtual void PrepareErrorPageForHttpStatusError(
       content::RenderFrame* render_frame,
       const GURL& unreachable_url,
       const std::string& http_method,
-      bool ignoring_cache,
       int http_status,
       std::string* error_html) {}
 
@@ -226,12 +231,17 @@ class CONTENT_EXPORT ContentRendererClient {
   // |url|. If the function returns a valid |new_url|, the request must be
   // updated to use it. The |attach_same_site_cookies| output parameter
   // determines whether SameSite cookies should be attached to the request.
+  // The |site_for_cookies| is the site_for_cookies of the request. (This is
+  // approximately the URL of the main frame. It is empty in the case of
+  // cross-site iframes.)
+  //
   // TODO(nasko): When moved over to Network Service, find a way to perform
   // this check on the browser side, so untrusted renderer processes cannot
   // influence whether SameSite cookies are attached.
   virtual void WillSendRequest(blink::WebLocalFrame* frame,
                                ui::PageTransition transition_type,
                                const blink::WebURL& url,
+                               const blink::WebURL& site_for_cookies,
                                const url::Origin* initiator_origin,
                                GURL* new_url,
                                bool* attach_same_site_cookies);
@@ -244,7 +254,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // See blink::Platform.
   virtual uint64_t VisitedLinkHash(const char* canonical_url, size_t length);
   virtual bool IsLinkVisited(uint64_t link_hash);
-  virtual blink::WebPrescientNetworking* GetPrescientNetworking();
+
+  // Creates a WebPrescientNetworking instance for |render_frame|. The returned
+  // instance is owned by the frame. May return null.
+  virtual std::unique_ptr<blink::WebPrescientNetworking>
+  CreatePrescientNetworking(RenderFrame* render_frame);
 
   // Returns true if the given Pepper plugin is external (requiring special
   // startup steps).
@@ -255,10 +269,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // worthwhile precaution when the plugin provides an active scripting
   // language.
   virtual bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path);
-
-  // Allows an embedder to provide a blink::WebMediaStreamRendererFactory.
-  virtual std::unique_ptr<blink::WebMediaStreamRendererFactory>
-  CreateMediaStreamRendererFactory();
 
   // Allows embedder to register the key system(s) it supports by populating
   // |key_systems|.
@@ -327,6 +337,15 @@ class CONTENT_EXPORT ContentRendererClient {
   // function is called from the worker thread.
   virtual void WillInitializeServiceWorkerContextOnWorkerThread() {}
 
+  // Notifies that a service worker context has been created. This function is
+  // called from the worker thread.
+  // |context_proxy| is valid until
+  // WillDestroyServiceWorkerContextOnWorkerThread() is called.
+  virtual void DidInitializeServiceWorkerContextOnWorkerThread(
+      blink::WebServiceWorkerContextProxy* context_proxy,
+      const GURL& service_worker_scope,
+      const GURL& script_url) {}
+
   // Notifies that the main script of a service worker is about to evaluate.
   // This function is called from the worker thread.
   // |context_proxy| is valid until
@@ -385,12 +404,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // suspended after a period of inactivity.
   virtual bool IsIdleMediaSuspendEnabled();
 
-  // Returns true to suppress the warning for deprecated TLS versions.
-  //
-  // This is a workaround for an outdated test server used by Blink tests on
-  // macOS. See https://crbug.com/936515.
-  virtual bool SuppressLegacyTLSVersionConsoleMessage();
-
   // Allows the embedder to return a (possibly null) URLLoaderThrottleProvider
   // for a frame or worker. For frames this is called on the main thread, and
   // for workers it's called on the worker thread.
@@ -410,11 +423,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // most once.
   virtual void DidSetUserAgent(const std::string& user_agent);
 
-  // Returns true if |url| still requires native HTML imports. Used for Web UI
-  // pages.
-  // TODO(https://crbug.com/937747): Remove this function, when all WebUIs have
-  // been migrated to use the HTML Imports Polyfill.
-  virtual bool RequiresHtmlImports(const GURL& url);
+  // Returns true if |url| still requires native Web Components v0 features.
+  // Used for Web UI pages.
+  // TODO(937747): Remove this function when all WebUIs can function without
+  // Web Components v0.
+  virtual bool RequiresWebComponentsV0(const GURL& url);
 
   // Optionally returns audio renderer algorithm parameters.
   virtual base::Optional<::media::AudioRendererAlgorithmParameters>

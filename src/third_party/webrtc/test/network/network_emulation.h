@@ -35,6 +35,8 @@ namespace webrtc {
 
 struct EmulatedIpPacket {
  public:
+  static constexpr int kUdpHeaderSize = 8;
+
   EmulatedIpPacket(const rtc::SocketAddress& from,
                    const rtc::SocketAddress& to,
                    rtc::CopyOnWriteBuffer data,
@@ -50,9 +52,14 @@ struct EmulatedIpPacket {
   size_t size() const { return data.size(); }
   const uint8_t* cdata() const { return data.cdata(); }
 
+  size_t ip_packet_size() const {
+    return size() + kUdpHeaderSize + ip_header_size;
+  }
   rtc::SocketAddress from;
   rtc::SocketAddress to;
+  // Holds the UDP payload.
   rtc::CopyOnWriteBuffer data;
+  int ip_header_size;
   Timestamp arrival_time;
 };
 
@@ -82,7 +89,6 @@ class LinkEmulation : public EmulatedNetworkReceiverInterface {
     bool removed;
   };
   void Process(Timestamp at_time) RTC_RUN_ON(task_queue_);
-  void HandlePacketReceived(EmulatedIpPacket packet) RTC_RUN_ON(task_queue_);
 
   Clock* const clock_;
   rtc::TaskQueue* const task_queue_;
@@ -171,7 +177,7 @@ class EmulatedEndpoint : public EmulatedNetworkReceiverInterface {
   // on destination endpoint.
   void SendPacket(const rtc::SocketAddress& from,
                   const rtc::SocketAddress& to,
-                  rtc::CopyOnWriteBuffer packet);
+                  rtc::CopyOnWriteBuffer packet_data);
 
   // Binds receiver to this endpoint to send and receive data.
   // |desired_port| is a port that should be used. If it is equal to 0,
@@ -203,7 +209,6 @@ class EmulatedEndpoint : public EmulatedNetworkReceiverInterface {
  private:
   static constexpr uint16_t kFirstEphemeralPort = 49152;
   uint16_t NextPort() RTC_EXCLUSIVE_LOCKS_REQUIRED(receiver_lock_);
-  void UpdateSendStats(const EmulatedIpPacket& packet);
   void UpdateReceiveStats(const EmulatedIpPacket& packet);
 
   rtc::CriticalSection receiver_lock_;
@@ -262,6 +267,8 @@ class FakePacketRoute : public EmulatedNetworkReceiverInterface {
         send_addr_(route_->from->GetPeerLocalAddress(), 0),
         recv_addr_(route_->to->GetPeerLocalAddress(),
                    *route_->to->BindReceiver(0, this)) {}
+
+  ~FakePacketRoute() { route_->to->UnbindReceiver(recv_addr_.port()); }
 
   void SendPacket(size_t size, FakePacketType packet) {
     RTC_CHECK_GE(size, sizeof(int));

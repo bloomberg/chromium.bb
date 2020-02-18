@@ -9,7 +9,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_interfaces.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -79,11 +80,11 @@ class PrivetTrafficDetector
     // Only accessed on the IO thread.
     net::NetworkInterfaceList networks_;
     net::IPEndPoint recv_addr_;
-    network::mojom::UDPSocketPtr socket_;
+    mojo::Remote<network::mojom::UDPSocket> socket_;
 
     // Implementation of socket listener callback.
     // Initialized on the UI thread, but only accessed on the IO thread.
-    mojo::Binding<network::mojom::UDPSocketListener> listener_binding_;
+    mojo::Receiver<network::mojom::UDPSocketListener> listener_receiver_{this};
 
     base::WeakPtrFactory<Helper> weak_ptr_factory_{this};
 

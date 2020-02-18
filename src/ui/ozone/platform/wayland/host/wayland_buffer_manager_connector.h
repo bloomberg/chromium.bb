@@ -7,6 +7,7 @@
 
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/ozone/public/mojom/wayland/wayland_buffer_manager.mojom.h"
 
 namespace ui {
@@ -19,7 +20,7 @@ class WaylandBufferManagerHost;
 class WaylandBufferManagerConnector : public GpuPlatformSupportHost {
  public:
   explicit WaylandBufferManagerConnector(
-      WaylandBufferManagerHost* buffer_manager);
+      WaylandBufferManagerHost* buffer_manager_host);
   ~WaylandBufferManagerConnector() override;
 
   // GpuPlatformSupportHost:
@@ -39,13 +40,14 @@ class WaylandBufferManagerConnector : public GpuPlatformSupportHost {
 
  private:
   void OnBufferManagerHostPtrBinded(
-      ozone::mojom::WaylandBufferManagerHostPtr buffer_manager_host_ptr) const;
+      mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
+          buffer_manager_host) const;
 
   void OnTerminateGpuProcess(std::string message);
 
-  // Non-owning pointer, which is used to bind a mojo pointer to the
+  // Non-owned pointer, which is used to bind a mojo pointer to the
   // WaylandBufferManagerHost.
-  WaylandBufferManagerHost* const buffer_manager_;
+  WaylandBufferManagerHost* const buffer_manager_host_;
 
   GpuHostBindInterfaceCallback binder_;
   GpuHostTerminateCallback terminate_callback_;

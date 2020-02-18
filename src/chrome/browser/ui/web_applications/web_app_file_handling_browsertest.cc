@@ -11,6 +11,7 @@
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/common/web_application_info.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -48,17 +49,13 @@ class WebAppFileHandlingBrowserTest
     web_app_info->app_url = url;
     web_app_info->scope = url.GetWithoutFilename();
     web_app_info->title = base::ASCIIToUTF16("A Hosted App");
-    web_app_info->file_handler = blink::Manifest::FileHandler();
-    web_app_info->file_handler->action = GetFileHandlerActionURL();
 
-    {
-      std::vector<blink::Manifest::FileFilter> filters;
-      blink::Manifest::FileFilter text = {
-          base::ASCIIToUTF16("text"),
-          {base::ASCIIToUTF16(".txt"), base::ASCIIToUTF16("text/*")}};
-      filters.push_back(text);
-      web_app_info->file_handler->files = std::move(filters);
-    }
+    blink::Manifest::FileHandler entry;
+    entry.action = GetFileHandlerActionURL();
+    entry.name = base::ASCIIToUTF16("text");
+    entry.accept[base::ASCIIToUTF16("text/*")].push_back(
+        base::ASCIIToUTF16(".txt"));
+    web_app_info->file_handlers.push_back(std::move(entry));
 
     return WebAppControllerBrowserTest::InstallWebApp(std::move(web_app_info));
   }
@@ -66,10 +63,10 @@ class WebAppFileHandlingBrowserTest
   content::WebContents* LaunchWithFiles(
       const std::string& app_id,
       const std::vector<base::FilePath>& files) {
-    AppLaunchParams params(browser()->profile(), app_id,
-                           apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                           WindowOpenDisposition::NEW_WINDOW,
-                           apps::mojom::AppLaunchSource::kSourceFileHandler);
+    apps::AppLaunchParams params(
+        app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+        WindowOpenDisposition::NEW_WINDOW,
+        apps::mojom::AppLaunchSource::kSourceFileHandler);
     params.launch_files = files;
 
     content::TestNavigationObserver navigation_observer(
@@ -81,6 +78,13 @@ class WebAppFileHandlingBrowserTest
         apps::LaunchService::Get(profile())->OpenApplication(params);
 
     navigation_observer.Wait();
+
+    // Attach the launchParams to the window so we can inspect them easily.
+    auto result = content::EvalJs(web_contents,
+                                  "launchQueue.setConsumer(launchParams => {"
+                                  "  window.launchParams = launchParams;"
+                                  "});");
+
     return web_contents;
   }
 
@@ -93,7 +97,7 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest, PWAsCanViewLaunchParams) {
 
   const std::string app_id = InstallFileHandlingPWA();
   content::WebContents* web_contents = LaunchWithFiles(app_id, {});
-  EXPECT_EQ(0, content::EvalJs(web_contents, "launchParams.files.length"));
+  EXPECT_EQ(false, content::EvalJs(web_contents, "!!window.launchParams"));
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
@@ -105,9 +109,10 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
   content::WebContents* web_contents =
       LaunchWithFiles(app_id, {test_file_path});
 
-  EXPECT_EQ(1, content::EvalJs(web_contents, "launchParams.files.length"));
+  EXPECT_EQ(1,
+            content::EvalJs(web_contents, "window.launchParams.files.length"));
   EXPECT_EQ(test_file_path.BaseName().value(),
-            content::EvalJs(web_contents, "launchParams.files[0].name"));
+            content::EvalJs(web_contents, "window.launchParams.files[0].name"));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -115,4 +120,6 @@ INSTANTIATE_TEST_SUITE_P(
     WebAppFileHandlingBrowserTest,
     ::testing::Values(
         web_app::ControllerType::kHostedAppController,
-        web_app::ControllerType::kUnifiedControllerWithBookmarkApp));
+        web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
+        web_app::ControllerType::kUnifiedControllerWithWebApp),
+    web_app::ControllerTypeParamToString);

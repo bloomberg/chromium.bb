@@ -25,6 +25,10 @@ int CdmContext::GetCdmId() const {
   return kInvalidCdmId;
 }
 
+bool CdmContext::RequiresMediaFoundationRenderer() {
+  return false;
+}
+
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 CdmProxyContext* CdmContext::GetCdmProxyContext() {
   return nullptr;
@@ -33,6 +37,12 @@ CdmProxyContext* CdmContext::GetCdmProxyContext() {
 
 #if defined(OS_ANDROID)
 MediaCryptoContext* CdmContext::GetMediaCryptoContext() {
+  return nullptr;
+}
+#endif
+
+#if defined(OS_FUCHSIA)
+FuchsiaCdmContext* CdmContext::GetFuchsiaCdmContext() {
   return nullptr;
 }
 #endif

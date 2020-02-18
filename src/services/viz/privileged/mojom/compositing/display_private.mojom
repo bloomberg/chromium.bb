@@ -72,10 +72,7 @@ interface DisplayPrivate {
   // adding a new use case VSyncParameterListener needs to be extended to
   // support multiple observers.
   AddVSyncParameterObserver(
-    VSyncParameterObserver observer);
-
-  // Notifies the Display of the current screen rotation.
-  SetDisplayTransformHint(gfx.mojom.OverlayTransform transform);
+    pending_remote<VSyncParameterObserver> observer);
 };
 
 interface DisplayClient {
@@ -85,7 +82,7 @@ interface DisplayClient {
   // Creates a LayeredWindowUpdater implementation to draw into a layered
   // window.
   [EnableIf=is_win]
-  CreateLayeredWindowUpdater(LayeredWindowUpdater& layered_window_updater);
+  CreateLayeredWindowUpdater(pending_receiver<LayeredWindowUpdater> receiver);
 
   // Notifies that a swap has occurred and provides information about the pixel
   // size of the swapped frame.
@@ -93,7 +90,7 @@ interface DisplayClient {
   DidCompleteSwapWithSize(gfx.mojom.Size size);
 
   // Notifies that a swap has occurred with a new size.
-  [EnableIf=use_x11]
+  [EnableIf=is_linux]
   DidCompleteSwapWithNewSize(gfx.mojom.Size size);
 
   // Notifies the client of the result of context creation attempt. On Android we can't

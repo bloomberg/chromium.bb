@@ -10,7 +10,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/geolocation/geolocation_provider.h"
 #include "services/device/geolocation/geolocation_provider_impl.h"
@@ -138,47 +137,62 @@ class DeviceService : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  void BindFingerprintRequest(mojom::FingerprintRequest request);
-  void BindGeolocationConfigRequest(mojom::GeolocationConfigRequest request);
-  void BindGeolocationContextRequest(mojom::GeolocationContextRequest request);
-  void BindGeolocationControlRequest(mojom::GeolocationControlRequest request);
+  void BindFingerprintReceiver(
+      mojo::PendingReceiver<mojom::Fingerprint> receiver);
+  void BindGeolocationConfigReceiver(
+      mojo::PendingReceiver<mojom::GeolocationConfig> receiver);
+  void BindGeolocationContextReceiver(
+      mojo::PendingReceiver<mojom::GeolocationContext> receiver);
+  void BindGeolocationControlReceiver(
+      mojo::PendingReceiver<mojom::GeolocationControl> receiver);
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
-  void BindInputDeviceManagerRequest(mojom::InputDeviceManagerRequest request);
+  void BindInputDeviceManagerReceiver(
+      mojo::PendingReceiver<mojom::InputDeviceManager> receiver);
 #endif
 
 #if !defined(OS_ANDROID)
-  void BindBatteryMonitorRequest(mojom::BatteryMonitorRequest request);
-  void BindHidManagerRequest(mojom::HidManagerRequest request);
-  void BindNFCProviderRequest(mojom::NFCProviderRequest request);
-  void BindVibrationManagerRequest(mojom::VibrationManagerRequest request);
+  void BindBatteryMonitorReceiver(
+      mojo::PendingReceiver<mojom::BatteryMonitor> receiver);
+  void BindHidManagerReceiver(
+      mojo::PendingReceiver<mojom::HidManager> receiver);
+  void BindNFCProviderReceiver(
+      mojo::PendingReceiver<mojom::NFCProvider> receiver);
+  void BindVibrationManagerReceiver(
+      mojo::PendingReceiver<mojom::VibrationManager> receiver);
 #endif
 
 #if defined(OS_CHROMEOS)
-  void BindBluetoothSystemFactoryRequest(
-      mojom::BluetoothSystemFactoryRequest request);
-  void BindMtpManagerRequest(mojom::MtpManagerRequest request);
+  void BindBluetoothSystemFactoryReceiver(
+      mojo::PendingReceiver<mojom::BluetoothSystemFactory> receiver);
+  void BindMtpManagerReceiver(
+      mojo::PendingReceiver<mojom::MtpManager> receiver);
 #endif
 
-  void BindPowerMonitorRequest(mojom::PowerMonitorRequest request);
+  void BindPowerMonitorReceiver(
+      mojo::PendingReceiver<mojom::PowerMonitor> receiver);
 
-  void BindPublicIpAddressGeolocationProviderRequest(
-      mojom::PublicIpAddressGeolocationProviderRequest request);
+  void BindPublicIpAddressGeolocationProviderReceiver(
+      mojo::PendingReceiver<mojom::PublicIpAddressGeolocationProvider>
+          receiver);
 
-  void BindScreenOrientationListenerRequest(
-      mojom::ScreenOrientationListenerRequest request);
+  void BindScreenOrientationListenerReceiver(
+      mojo::PendingReceiver<mojom::ScreenOrientationListener> receiver);
 
-  void BindSensorProviderRequest(mojom::SensorProviderRequest request);
+  void BindSensorProviderReceiver(
+      mojo::PendingReceiver<mojom::SensorProvider> receiver);
 
-  void BindTimeZoneMonitorRequest(mojom::TimeZoneMonitorRequest request);
+  void BindTimeZoneMonitorReceiver(
+      mojo::PendingReceiver<mojom::TimeZoneMonitor> receiver);
 
   void BindWakeLockProviderReceiver(
       mojo::PendingReceiver<mojom::WakeLockProvider> receiver);
 
-  void BindUsbDeviceManagerRequest(mojom::UsbDeviceManagerRequest request);
+  void BindUsbDeviceManagerReceiver(
+      mojo::PendingReceiver<mojom::UsbDeviceManager> receiver);
 
-  void BindUsbDeviceManagerTestRequest(
-      mojom::UsbDeviceManagerTestRequest request);
+  void BindUsbDeviceManagerTestReceiver(
+      mojo::PendingReceiver<mojom::UsbDeviceManagerTest> receiver);
 
   service_manager::ServiceBinding service_binding_;
   std::unique_ptr<PowerMonitorMessageBroadcaster>

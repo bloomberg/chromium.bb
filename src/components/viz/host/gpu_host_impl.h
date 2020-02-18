@@ -73,9 +73,10 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     virtual void RecordLogMessage(int32_t severity,
                                   const std::string& header,
                                   const std::string& message) = 0;
-    virtual void BindDiscardableMemoryRequest(
-        discardable_memory::mojom::DiscardableSharedMemoryManagerRequest
-            request) = 0;
+    virtual void BindDiscardableMemoryReceiver(
+        mojo::PendingReceiver<
+            discardable_memory::mojom::DiscardableSharedMemoryManager>
+            receiver) = 0;
     virtual void BindInterface(
         const std::string& interface_name,
         mojo::ScopedMessagePipeHandle interface_pipe) = 0;
@@ -101,9 +102,6 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
     // An ID that changes for each GPU restart.
     int restart_id = -1;
-
-    // Whether GPU is running in-process or not.
-    bool in_process = false;
 
     // Whether caching GPU shader on disk is disabled or not.
     bool disable_gpu_shader_disk_cache = false;
@@ -141,7 +139,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   static void InitFontRenderParams(const gfx::FontRenderParams& params);
   static void ResetFontRenderParams();
 
-  void OnProcessLaunched(base::ProcessId pid);
+  void SetProcessId(base::ProcessId pid);
   void OnProcessCrashed();
 
   // Adds a connection error handler for the GpuService.
@@ -150,8 +148,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   void BlockLiveOffscreenContexts();
 
   // Connects to FrameSinkManager running in the Viz service.
-  void ConnectFrameSinkManager(mojom::FrameSinkManagerRequest request,
-                               mojom::FrameSinkManagerClientPtrInfo client);
+  void ConnectFrameSinkManager(
+      mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
+      mojo::PendingRemote<mojom::FrameSinkManagerClient> client);
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
   // Connects to Viz DevTools running in the Viz service.

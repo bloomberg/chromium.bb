@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.sync;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
@@ -21,12 +22,12 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.components.sync.Passphrase;
+import org.chromium.components.sync.PassphraseType;
 
 /**
  * {@link SyncNotificationController} provides functionality for displaying Android notifications
@@ -61,20 +62,34 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                     GoogleServiceAuthError.getMessageID(mProfileSyncService.getAuthError()),
                     createSettingsIntent());
         } else if (mProfileSyncService.isEngineInitialized()
-                && mProfileSyncService.isPassphraseRequiredForDecryption()) {
+                && mProfileSyncService.isPassphraseRequiredForPreferredDataTypes()) {
+            assert (!mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes());
+
             if (mProfileSyncService.isPassphrasePrompted()) {
                 return;
             }
             switch (mProfileSyncService.getPassphraseType()) {
-                case Passphrase.Type.IMPLICIT: // Falling through intentionally.
-                case Passphrase.Type.FROZEN_IMPLICIT: // Falling through intentionally.
-                case Passphrase.Type.CUSTOM:
+                case PassphraseType.IMPLICIT_PASSPHRASE: // Falling through intentionally.
+                case PassphraseType.FROZEN_IMPLICIT_PASSPHRASE: // Falling through intentionally.
+                case PassphraseType.CUSTOM_PASSPHRASE:
                     showSyncNotification(R.string.sync_need_passphrase, createPasswordIntent());
                     break;
-                case Passphrase.Type.KEYSTORE: // Falling through intentionally.
+                case PassphraseType.TRUSTED_VAULT_PASSPHRASE:
+                    assert false : "Passphrase cannot be required with trusted vault passphrase";
+                    return;
+                case PassphraseType.KEYSTORE_PASSPHRASE: // Falling through intentionally.
                 default:
                     mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_SYNC);
                     return;
+            }
+        } else if (mProfileSyncService.isEngineInitialized()
+                && mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()) {
+            Intent intent = TrustedVaultClient.createKeyRetrievalIntent();
+            if (intent != null) {
+                showSyncNotification(mProfileSyncService.isEncryptEverythingEnabled()
+                                ? R.string.sync_error_card_title
+                                : R.string.sync_passwords_error_card_title,
+                        intent);
             }
         } else {
             mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_SYNC);
@@ -90,9 +105,18 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      */
     private void showSyncNotification(int message, Intent intent) {
         Context applicationContext = ContextUtils.getApplicationContext();
-        String title = applicationContext.getString(R.string.app_name);
-        String text = applicationContext.getString(R.string.sign_in_sync) + ": "
-                + applicationContext.getString(message);
+        String title = null;
+        String text = null;
+        // From Android N, notification by default has the app name and title should not be the same
+        // as app name.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            title = applicationContext.getString(R.string.sign_in_sync);
+            text = applicationContext.getString(message);
+        } else {
+            title = applicationContext.getString(R.string.app_name);
+            text = applicationContext.getString(R.string.sign_in_sync) + ": "
+                    + applicationContext.getString(message);
+        }
 
         PendingIntentProvider contentIntent =
                 PendingIntentProvider.getActivity(applicationContext, 0, intent, 0);

@@ -16,28 +16,30 @@ are part of the prebuilt package.
 from __future__ import print_function
 
 import argparse
+import functools
+import multiprocessing
 import os
 import pickle
-import sys
 import tempfile
-import urlparse
+
+from six.moves import urllib
 
 from chromite.lib import binpkg
 from chromite.lib import cache
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import gs
+from chromite.utils import outcap
 
 if cros_build_lib.IsInsideChroot():
   # pylint: disable=import-error
   from portage import create_trees
 
-
 DEBUG_SYMS_EXT = '.debug.tbz2'
-
 
 # We cache the package indexes. When the format of what we store changes,
 # bump the cache version to avoid problems.
@@ -45,31 +47,24 @@ CACHE_VERSION = '1'
 
 
 class DebugSymbolsInstaller(object):
-  """Container for enviromnent objects, needed to make multiprocessing work.
-
-  This also redirects stdout to null when stdout_to_null=True to avoid
-  polluting the output with portage QA warnings.
-  """
-  _old_stdout = None
-  _null = None
+  """Container for enviromnent objects, needed to make multiprocessing work."""
 
   def __init__(self, vartree, gs_context, sysroot, stdout_to_null):
     self._vartree = vartree
     self._gs_context = gs_context
     self._sysroot = sysroot
     self._stdout_to_null = stdout_to_null
+    self._capturer = outcap.OutputCapturer()
 
   def __enter__(self):
     if self._stdout_to_null:
-      self._old_stdout = sys.stdout
-      self._null = open(os.devnull, 'w')
-      sys.stdout = self._null
+      self._capturer.StartCapturing()
+
     return self
 
   def __exit__(self, _exc_type, _exc_val, _exc_tb):
     if self._stdout_to_null:
-      sys.stdout = self._old_stdout
-      self._null.close()
+      self._capturer.StopCapturing()
 
   def Install(self, cpv, url):
     """Install the debug symbols for |cpv|.
@@ -87,7 +82,7 @@ class DebugSymbolsInstaller(object):
                            cpv + DEBUG_SYMS_EXT)
     # GsContext does not understand file:// scheme so we need to extract the
     # path ourselves.
-    parsed_url = urlparse.urlsplit(url)
+    parsed_url = urllib.parse.urlsplit(url)
     if not parsed_url.scheme or parsed_url.scheme == 'file':
       url = parsed_url.path
 
@@ -95,8 +90,8 @@ class DebugSymbolsInstaller(object):
       self._gs_context.Copy(url, archive, debug_level=logging.DEBUG)
 
     with osutils.TempDir(sudo_rm=True) as tempdir:
-      cros_build_lib.SudoRunCommand(['tar', '-I', 'bzip2 -q', '-xf', archive,
-                                     '-C', tempdir], quiet=True)
+      cros_build_lib.sudo_run(
+          ['tar', '-I', 'bzip2 -q', '-xf', archive, '-C', tempdir], quiet=True)
 
       with open(self._vartree.getpath(cpv, filename='CONTENTS'),
                 'a') as content_file:
@@ -104,37 +99,6 @@ class DebugSymbolsInstaller(object):
         # pylint: disable=protected-access
         link = self._vartree.dbapi._dblink(cpv)
         link.mergeme(tempdir, self._sysroot, content_file, None, '', {}, None)
-
-
-def ParseArgs(argv):
-  """Parse arguments and initialize field.
-
-  Args:
-    argv: arguments passed to the script.
-  """
-  parser = commandline.ArgumentParser(description=__doc__)
-  parser.add_argument('--board', help='Board name (required).', required=True)
-  parser.add_argument('--all', dest='all', action='store_true',
-                      help='Install the debug symbols for all installed '
-                      'packages', default=False)
-  parser.add_argument('packages', nargs=argparse.REMAINDER,
-                      help='list of packages that need the debug symbols.')
-
-  advanced = parser.add_argument_group('Advanced options')
-  advanced.add_argument('--nocachebinhost', dest='cachebinhost', default=True,
-                        action='store_false', help="Don't cache the list of"
-                        ' files contained in binhosts. (Default: cache)')
-  advanced.add_argument('--clearcache', dest='clearcache', action='store_true',
-                        default=False, help='Clear the binhost cache.')
-  advanced.add_argument('--jobs', default=None, type=int,
-                        help='Number of processes to run in parallel.')
-
-  options = parser.parse_args(argv)
-  options.Freeze()
-
-  if options.all and options.packages:
-    cros_build_lib.Die('Cannot use --all with a list of packages')
-  return options
 
 
 def ShouldGetSymbols(cpv, vardb, remote_symbols):
@@ -153,8 +117,8 @@ def ShouldGetSymbols(cpv, vardb, remote_symbols):
   """
   features, contents = vardb.aux_get(cpv, ['FEATURES', 'CONTENTS'])
 
-  return ('separatedebug' in features and not '/usr/lib/debug/' in contents
-          and cpv in remote_symbols)
+  return ('separatedebug' in features and not '/usr/lib/debug/' in contents and
+          cpv in remote_symbols)
 
 
 def RemoteSymbols(vartree, binhost_cache=None):
@@ -197,7 +161,7 @@ def GetPackageIndex(binhost, binhost_cache=None):
     with open(binhost_cache.Lookup(key).path) as f:
       return pickle.load(f)
 
-  pkgindex = binpkg.GrabRemotePackageIndex(binhost)
+  pkgindex = binpkg.GrabRemotePackageIndex(binhost, quiet=True)
   if pkgindex and binhost_cache:
     # Only cache remote binhosts as local binhosts can change.
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
@@ -205,7 +169,7 @@ def GetPackageIndex(binhost, binhost_cache=None):
       temp_file.file.close()
       binhost_cache.Lookup(key).Assign(temp_file.name)
   elif pkgindex is None:
-    urlparts = urlparse.urlsplit(binhost)
+    urlparts = urllib.parse.urlsplit(binhost)
     if urlparts.scheme not in ('file', ''):
       # Don't fail the build on network errors. Print a warning message and
       # continue.
@@ -270,26 +234,21 @@ def GetMatchingCPV(package, vardb):
   return matches[0]
 
 
-def main(argv):
-  options = ParseArgs(argv)
+def GetVartree(sysroot):
+  """Get the portage vartree.
 
-  if not cros_build_lib.IsInsideChroot():
-    raise commandline.ChrootRequiredError(argv)
-
-  if os.geteuid() != 0:
-    cros_build_lib.SudoRunCommand(sys.argv)
-    return
-
-  # sysroot must have a trailing / as the tree dictionary produced by
-  # create_trees in indexed with a trailing /.
-  sysroot = cros_build_lib.GetSysroot(options.board) + '/'
+  This must be called in subprocesses only. The vartree is not serializable,
+  and is implemented as a singleton in portage, so it always breaks the
+  parallel call when initialized before it is called.
+  """
   trees = create_trees(target_root=sysroot, config_root=sysroot)
+  return trees[sysroot]['vartree']
 
-  vartree = trees[sysroot]['vartree']
 
+def GetBinhostCache(options):
+  """Get and optionally clear the binhost cache."""
   cache_dir = os.path.join(path_util.FindCacheDir(),
                            'cros_install_debug_syms-v' + CACHE_VERSION)
-
   if options.clearcache:
     osutils.RmDir(cache_dir, ignore_missing=True)
 
@@ -297,34 +256,145 @@ def main(argv):
   if options.cachebinhost:
     binhost_cache = cache.DiskCache(cache_dir)
 
-  boto_file = vartree.settings['BOTO_CONFIG']
-  if boto_file:
-    os.environ['BOTO_CONFIG'] = boto_file
+  return binhost_cache
 
-  gs_context = gs.GSContext()
-  symbols_mapping = RemoteSymbols(vartree, binhost_cache)
+
+def GetInstallArgs(options, sysroot):
+  """Resolve the packages that are to have their debug symbols installed.
+
+  This function must be called in subprocesses only since it requires the
+  portage vartree.
+  See: GetVartree
+
+  Returns:
+    list[(pkg, binhost_url)]
+  """
+  vartree = GetVartree(sysroot)
+  symbols_mapping = RemoteSymbols(vartree, GetBinhostCache(options))
 
   if options.all:
     to_install = vartree.dbapi.cpv_all()
   else:
     to_install = [GetMatchingCPV(p, vartree.dbapi) for p in options.packages]
 
-  to_install = [p for p in to_install
-                if ShouldGetSymbols(p, vartree.dbapi, symbols_mapping)]
+  to_install = [
+      p for p in to_install
+      if ShouldGetSymbols(p, vartree.dbapi, symbols_mapping)
+  ]
 
-  if not to_install:
-    logging.info('nothing to do, exit')
+  return [(p, symbols_mapping[p]) for p in to_install]
+
+
+def ListInstallArgs(options, sysroot):
+  """List the args for the calling process."""
+  lines = ['%s %s' % arg for arg in GetInstallArgs(options, sysroot)]
+  print('\n'.join(lines))
+
+
+def GetInstallArgsList(argv):
+  """Get the install args from the --list reexec of the command."""
+  cmd = argv + ['--list']
+  result = cros_build_lib.RunCommand(cmd, capture_output=True)
+  lines = result.output.splitlines()
+  return [line.split() for line in lines if line]
+
+
+def _InstallOne(sysroot, debug, args):
+  """Parallelizable wrapper for the DebugSymbolsInstaller.Install method."""
+  vartree = GetVartree(sysroot)
+  gs_context = gs.GSContext(boto_file=vartree.settings['BOTO_CONFIG'])
+  with DebugSymbolsInstaller(vartree, gs_context, sysroot,
+                             not debug) as installer:
+    installer.Install(*args)
+
+
+def GetParser():
+  """Build the argument parser."""
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('--board', help='Board name (required).', required=True)
+  parser.add_argument(
+      '--all',
+      action='store_true',
+      default=False,
+      help='Install the debug symbols for all installed packages')
+  parser.add_argument(
+      'packages',
+      nargs=argparse.REMAINDER,
+      help='list of packages that need the debug symbols.')
+
+  advanced = parser.add_argument_group('Advanced options')
+  advanced.add_argument(
+      '--nocachebinhost',
+      dest='cachebinhost',
+      default=True,
+      action='store_false',
+      help="Don't cache the list of files contained in binhosts. "
+           '(Default: cache)')
+  advanced.add_argument(
+      '--clearcache',
+      action='store_true',
+      default=False,
+      help='Clear the binhost cache.')
+  advanced.add_argument(
+      '-j',
+      '--jobs',
+      default=multiprocessing.cpu_count(),
+      type=int,
+      help='Number of processes to run in parallel.')
+  advanced.add_argument(
+      '--list',
+      action='store_true',
+      default=False,
+      help='List the packages whose debug symbols would be installed and '
+           'their binhost path.')
+
+  return parser
+
+
+def ParseArgs(argv):
+  """Parse and validate arguments."""
+  parser = GetParser()
+
+  options = parser.parse_args(argv)
+  if options.all and options.packages:
+    parser.error('Cannot use --all with a list of packages')
+
+  options.Freeze()
+
+  return options
+
+
+def main(argv):
+  if not cros_build_lib.IsInsideChroot():
+    raise commandline.ChrootRequiredError(argv)
+
+  cmd = [os.path.join(constants.CHROMITE_BIN_DIR,
+                      'cros_install_debug_syms')] + argv
+  if os.geteuid() != 0:
+    cros_build_lib.sudo_run(cmd)
     return
 
-  with DebugSymbolsInstaller(vartree, gs_context, sysroot,
-                             not options.debug) as installer:
-    args = [(p, symbols_mapping[p]) for p in to_install]
-    # TODO(crbug.com/917405) revert the hack and restore parallel functionality
-    # parallel.RunTasksInProcessPool(installer.Install, args,
-    #                                processes=options.jobs)
-    for arg in args:
-      installer.Install(*arg)
+  options = ParseArgs(argv)
 
+  # sysroot must have a trailing / as the tree dictionary produced by
+  # create_trees in indexed with a trailing /.
+  sysroot = cros_build_lib.GetSysroot(options.board) + '/'
+
+  if options.list:
+    ListInstallArgs(options, sysroot)
+    return
+
+  args = GetInstallArgsList(cmd)
+
+  if not args:
+    logging.info('No packages found needing debug symbols.')
+    return
+
+  # Partial to simplify the arguments to parallel since the first two are the
+  # same for every call.
+  partial_install = functools.partial(_InstallOne, sysroot, options.debug)
+  pool = multiprocessing.Pool(processes=options.jobs)
+  pool.map(partial_install, args)
 
   logging.debug('installation done, updating packages index file')
   packages_dir = os.path.join(sysroot, 'packages')

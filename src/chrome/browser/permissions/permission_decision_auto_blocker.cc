@@ -25,6 +25,8 @@ namespace {
 
 constexpr int kDefaultDismissalsBeforeBlock = 3;
 constexpr int kDefaultIgnoresBeforeBlock = 4;
+constexpr int kDefaultDismissalsBeforeBlockWithQuietUi = 1;
+constexpr int kDefaultIgnoresBeforeBlockWithQuietUi = 2;
 constexpr int kDefaultEmbargoDays = 7;
 
 // The number of times that users may explicitly dismiss a permission prompt
@@ -34,6 +36,16 @@ int g_dismissals_before_block = kDefaultDismissalsBeforeBlock;
 // The number of times that users may ignore a permission prompt from an origin
 // before it is automatically blocked.
 int g_ignores_before_block = kDefaultIgnoresBeforeBlock;
+
+// The number of times that users may dismiss a permission prompt that uses the
+// quiet UI from an origin before it is automatically blocked.
+int g_dismissals_before_block_with_quiet_ui =
+    kDefaultDismissalsBeforeBlockWithQuietUi;
+
+// The number of times that users may ignore a permission prompt that uses the
+// quiet UI from an origin before it is automatically blocked.
+int g_ignores_before_block_with_quiet_ui =
+    kDefaultIgnoresBeforeBlockWithQuietUi;
 
 // The number of days that an origin will stay under embargo for a requested
 // permission due to repeated dismissals.
@@ -48,7 +60,7 @@ std::unique_ptr<base::DictionaryValue> GetOriginAutoBlockerData(
     const GURL& origin_url) {
   std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(settings->GetWebsiteSetting(
-          origin_url, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
+          origin_url, GURL(), ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
           std::string(), nullptr));
   if (!dict)
     return std::make_unique<base::DictionaryValue>();
@@ -84,7 +96,7 @@ int RecordActionInWebsiteSettings(const GURL& url,
   permission_dict->SetKey(key, base::Value(++current_count));
 
   map->SetWebsiteSettingDefaultScope(
-      url, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
+      url, GURL(), ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
       std::string(), std::move(dict));
 
   return current_count;
@@ -179,6 +191,14 @@ const char PermissionDecisionAutoBlocker::kPromptIgnoreCountKey[] =
     "ignore_count";
 
 // static
+const char PermissionDecisionAutoBlocker::kPromptDismissCountWithQuietUiKey[] =
+    "dismiss_count_quiet_ui";
+
+// static
+const char PermissionDecisionAutoBlocker::kPromptIgnoreCountWithQuietUiKey[] =
+    "ignore_count_quiet_ui";
+
+// static
 const char PermissionDecisionAutoBlocker::kPermissionDismissalEmbargoKey[] =
     "dismissal_embargo_days";
 
@@ -230,6 +250,14 @@ void PermissionDecisionAutoBlocker::UpdateFromVariations() {
   std::string ignores_before_block_value =
       variations::GetVariationParamValueByFeature(
           features::kBlockPromptsIfIgnoredOften, kPromptIgnoreCountKey);
+  std::string dismissals_before_block_value_with_quiet_ui =
+      variations::GetVariationParamValueByFeature(
+          features::kBlockPromptsIfDismissedOften,
+          kPromptDismissCountWithQuietUiKey);
+  std::string ignores_before_block_value_with_quiet_ui =
+      variations::GetVariationParamValueByFeature(
+          features::kBlockPromptsIfIgnoredOften,
+          kPromptIgnoreCountWithQuietUiKey);
   std::string dismissal_embargo_days_value =
       variations::GetVariationParamValueByFeature(
           features::kBlockPromptsIfDismissedOften,
@@ -244,6 +272,12 @@ void PermissionDecisionAutoBlocker::UpdateFromVariations() {
                            kDefaultDismissalsBeforeBlock);
   UpdateValueFromVariation(ignores_before_block_value, &g_ignores_before_block,
                            kDefaultIgnoresBeforeBlock);
+  UpdateValueFromVariation(dismissals_before_block_value_with_quiet_ui,
+                           &g_dismissals_before_block_with_quiet_ui,
+                           kDefaultDismissalsBeforeBlockWithQuietUi);
+  UpdateValueFromVariation(ignores_before_block_value_with_quiet_ui,
+                           &g_ignores_before_block_with_quiet_ui,
+                           kDefaultIgnoresBeforeBlockWithQuietUi);
   UpdateValueFromVariation(dismissal_embargo_days_value,
                            &g_dismissal_embargo_days, kDefaultEmbargoDays);
   UpdateValueFromVariation(ignore_embargo_days_value, &g_ignore_embargo_days,
@@ -272,9 +306,16 @@ int PermissionDecisionAutoBlocker::GetIgnoreCount(
 
 bool PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
     const GURL& url,
-    ContentSettingsType permission) {
+    ContentSettingsType permission,
+    bool dismissed_prompt_was_quiet) {
   int current_dismissal_count = RecordActionInWebsiteSettings(
       url, permission, kPromptDismissCountKey, profile_);
+
+  int current_dismissal_count_with_quiet_ui =
+      dismissed_prompt_was_quiet
+          ? RecordActionInWebsiteSettings(
+                url, permission, kPromptDismissCountWithQuietUiKey, profile_)
+          : -1;
 
   // TODO(dominickn): ideally we would have a method
   // PermissionContextBase::ShouldEmbargoAfterRepeatedDismissals() to specify
@@ -286,26 +327,50 @@ bool PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
   // For now, only plugins are explicitly opted out. We should think about how
   // to make this nicer once PermissionQueueController is removed.
   if (base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften) &&
-      permission != CONTENT_SETTINGS_TYPE_PLUGINS &&
-      current_dismissal_count >= g_dismissals_before_block) {
-    PlaceUnderEmbargo(url, permission, kPermissionDismissalEmbargoKey);
-    return true;
+      permission != ContentSettingsType::PLUGINS) {
+    if (current_dismissal_count >= g_dismissals_before_block) {
+      PlaceUnderEmbargo(url, permission, kPermissionDismissalEmbargoKey);
+      return true;
+    }
+
+    if (current_dismissal_count_with_quiet_ui >=
+        g_dismissals_before_block_with_quiet_ui) {
+      DCHECK_EQ(permission, ContentSettingsType::NOTIFICATIONS);
+      PlaceUnderEmbargo(url, permission, kPermissionDismissalEmbargoKey);
+      return true;
+    }
   }
   return false;
 }
 
 bool PermissionDecisionAutoBlocker::RecordIgnoreAndEmbargo(
     const GURL& url,
-    ContentSettingsType permission) {
+    ContentSettingsType permission,
+    bool ignored_prompt_was_quiet) {
   int current_ignore_count = RecordActionInWebsiteSettings(
       url, permission, kPromptIgnoreCountKey, profile_);
 
+  int current_ignore_count_with_quiet_ui =
+      ignored_prompt_was_quiet
+          ? RecordActionInWebsiteSettings(
+                url, permission, kPromptIgnoreCountWithQuietUiKey, profile_)
+          : -1;
+
   if (base::FeatureList::IsEnabled(features::kBlockPromptsIfIgnoredOften) &&
-      permission != CONTENT_SETTINGS_TYPE_PLUGINS &&
-      current_ignore_count >= g_ignores_before_block) {
-    PlaceUnderEmbargo(url, permission, kPermissionIgnoreEmbargoKey);
-    return true;
+      permission != ContentSettingsType::PLUGINS) {
+    if (current_ignore_count >= g_ignores_before_block) {
+      PlaceUnderEmbargo(url, permission, kPermissionIgnoreEmbargoKey);
+      return true;
+    }
+
+    if (current_ignore_count_with_quiet_ui >=
+        g_ignores_before_block_with_quiet_ui) {
+      DCHECK_EQ(permission, ContentSettingsType::NOTIFICATIONS);
+      PlaceUnderEmbargo(url, permission, kPermissionIgnoreEmbargoKey);
+      return true;
+    }
   }
+
   return false;
 }
 
@@ -317,8 +382,10 @@ void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
 
   // Don't proceed if |permission| was not under embargo for |url|.
   PermissionResult result = GetEmbargoResult(url, permission);
-  if (result.source != PermissionStatusSource::MULTIPLE_DISMISSALS)
+  if (result.source != PermissionStatusSource::MULTIPLE_DISMISSALS &&
+      result.source != PermissionStatusSource::MULTIPLE_IGNORES) {
     return;
+  }
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
@@ -327,12 +394,19 @@ void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
   base::Value* permission_dict = GetOrCreatePermissionDict(
       dict.get(), PermissionUtil::GetPermissionString(permission));
 
-  const bool dismissal_key_deleted =
-      permission_dict->RemoveKey(kPermissionDismissalEmbargoKey);
-  DCHECK(dismissal_key_deleted);
+  if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS) {
+    const bool dismissal_key_deleted =
+        permission_dict->RemoveKey(kPermissionDismissalEmbargoKey);
+    DCHECK(dismissal_key_deleted);
+  } else {
+    DCHECK_EQ(result.source, PermissionStatusSource::MULTIPLE_IGNORES);
+    const bool ignores_key_deleted =
+        permission_dict->RemoveKey(kPermissionIgnoreEmbargoKey);
+    DCHECK(ignores_key_deleted);
+  }
 
   map->SetWebsiteSettingDefaultScope(
-      url, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
+      url, GURL(), ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
       std::string(), std::move(dict));
 }
 
@@ -343,7 +417,7 @@ void PermissionDecisionAutoBlocker::RemoveCountsByUrl(
 
   std::unique_ptr<ContentSettingsForOneType> settings(
       new ContentSettingsForOneType);
-  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
+  map->GetSettingsForOneType(ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
                              std::string(), settings.get());
 
   for (const auto& site : *settings) {
@@ -351,7 +425,7 @@ void PermissionDecisionAutoBlocker::RemoveCountsByUrl(
 
     if (origin.is_valid() && filter.Run(origin)) {
       map->SetWebsiteSettingDefaultScope(
-          origin, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
+          origin, GURL(), ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
           std::string(), nullptr);
     }
   }
@@ -375,7 +449,7 @@ void PermissionDecisionAutoBlocker::PlaceUnderEmbargo(
   permission_dict->SetKey(
       key, base::Value(static_cast<double>(clock_->Now().ToInternalValue())));
   map->SetWebsiteSettingDefaultScope(
-      request_origin, GURL(), CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
+      request_origin, GURL(), ContentSettingsType::PERMISSION_AUTOBLOCKER_DATA,
       std::string(), std::move(dict));
 }
 

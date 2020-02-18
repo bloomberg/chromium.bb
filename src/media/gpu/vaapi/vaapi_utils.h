@@ -29,6 +29,8 @@ class Vp8ReferenceFrameVector;
 struct VAContextAndScopedVASurfaceDeleter;
 struct Vp8FrameHeader;
 
+constexpr uint32_t kInvalidVaFourcc = 0u;
+
 // Class to map a given VABuffer, identified by |buffer_id|, for its lifetime.
 // This class must operate under |lock_| acquired.
 class ScopedVABufferMapping {
@@ -121,7 +123,6 @@ bool FillVP8DataStructures(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
                            VASurfaceID va_surface_id,
                            const Vp8FrameHeader& frame_header,
                            const Vp8ReferenceFrameVector& reference_frames);
-
 }  // namespace media
 
 #endif  // MEDIA_GPU_VAAPI_VAAPI_UTILS_H_

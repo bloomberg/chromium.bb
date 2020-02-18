@@ -18,15 +18,16 @@
 #include "common/HashUtils.h"
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/TextureVk.h"
+#include "dawn_native/vulkan/VulkanError.h"
 
 namespace dawn_native { namespace vulkan {
 
     namespace {
-        VkAttachmentLoadOp VulkanAttachmentLoadOp(dawn::LoadOp op) {
+        VkAttachmentLoadOp VulkanAttachmentLoadOp(wgpu::LoadOp op) {
             switch (op) {
-                case dawn::LoadOp::Load:
+                case wgpu::LoadOp::Load:
                     return VK_ATTACHMENT_LOAD_OP_LOAD;
-                case dawn::LoadOp::Clear:
+                case wgpu::LoadOp::Clear:
                     return VK_ATTACHMENT_LOAD_OP_CLEAR;
                 default:
                     UNREACHABLE();
@@ -37,8 +38,8 @@ namespace dawn_native { namespace vulkan {
     // RenderPassCacheQuery
 
     void RenderPassCacheQuery::SetColor(uint32_t index,
-                                        dawn::TextureFormat format,
-                                        dawn::LoadOp loadOp,
+                                        wgpu::TextureFormat format,
+                                        wgpu::LoadOp loadOp,
                                         bool hasResolveTarget) {
         colorMask.set(index);
         colorFormats[index] = format;
@@ -46,9 +47,9 @@ namespace dawn_native { namespace vulkan {
         resolveTargetMask[index] = hasResolveTarget;
     }
 
-    void RenderPassCacheQuery::SetDepthStencil(dawn::TextureFormat format,
-                                               dawn::LoadOp depthLoadOp,
-                                               dawn::LoadOp stencilLoadOp) {
+    void RenderPassCacheQuery::SetDepthStencil(wgpu::TextureFormat format,
+                                               wgpu::LoadOp depthLoadOp,
+                                               wgpu::LoadOp stencilLoadOp) {
         hasDepthStencil = true;
         depthStencilFormat = format;
         this->depthLoadOp = depthLoadOp;
@@ -71,18 +72,19 @@ namespace dawn_native { namespace vulkan {
         mCache.clear();
     }
 
-    VkRenderPass RenderPassCache::GetRenderPass(const RenderPassCacheQuery& query) {
+    ResultOrError<VkRenderPass> RenderPassCache::GetRenderPass(const RenderPassCacheQuery& query) {
         auto it = mCache.find(query);
         if (it != mCache.end()) {
-            return it->second;
+            return VkRenderPass(it->second);
         }
 
-        VkRenderPass renderPass = CreateRenderPassForQuery(query);
+        VkRenderPass renderPass;
+        DAWN_TRY_ASSIGN(renderPass, CreateRenderPassForQuery(query));
         mCache.emplace(query, renderPass);
         return renderPass;
     }
 
-    VkRenderPass RenderPassCache::CreateRenderPassForQuery(
+    ResultOrError<VkRenderPass> RenderPassCache::CreateRenderPassForQuery(
         const RenderPassCacheQuery& query) const {
         // The Vulkan subpasses want to know the layout of the attachments with VkAttachmentRef.
         // Precompute them as they must be pointer-chained in VkSubpassDescription
@@ -189,11 +191,9 @@ namespace dawn_native { namespace vulkan {
 
         // Create the render pass from the zillion parameters
         VkRenderPass renderPass;
-        if (mDevice->fn.CreateRenderPass(mDevice->GetVkDevice(), &createInfo, nullptr,
-                                         &renderPass) != VK_SUCCESS) {
-            ASSERT(false);
-        }
-
+        DAWN_TRY(CheckVkSuccess(
+            mDevice->fn.CreateRenderPass(mDevice->GetVkDevice(), &createInfo, nullptr, &renderPass),
+            "CreateRenderPass"));
         return renderPass;
     }
 

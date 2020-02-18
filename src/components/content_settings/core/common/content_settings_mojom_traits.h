@@ -130,11 +130,6 @@ struct StructTraits<
     return r.script_rules;
   }
 
-  static const std::vector<ContentSettingPatternSource>& autoplay_rules(
-      const RendererContentSettingRules& r) {
-    return r.autoplay_rules;
-  }
-
   static const std::vector<ContentSettingPatternSource>& client_hints_rules(
       const RendererContentSettingRules& r) {
     return r.client_hints_rules;
@@ -143,6 +138,11 @@ struct StructTraits<
   static const std::vector<ContentSettingPatternSource>& popup_redirect_rules(
       const RendererContentSettingRules& r) {
     return r.popup_redirect_rules;
+  }
+
+  static const std::vector<ContentSettingPatternSource>& mixed_content_rules(
+      const RendererContentSettingRules& r) {
+    return r.mixed_content_rules;
   }
 
   static bool Read(

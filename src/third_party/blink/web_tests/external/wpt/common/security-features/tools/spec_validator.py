@@ -101,9 +101,11 @@ def validate(spec_json, details):
 
     valid_test_expansion_fields = ['name'] + test_expansion_schema.keys()
 
+    # Should be consistent with `sourceContextMap` in
+    # `/common/security-features/resources/common.sub.js`.
     valid_source_context_names = [
-        "top", "iframe", "srcdoc", "worker-classic", "worker-module",
-        "worker-classic-data", "worker-module-data"
+        "top", "iframe", "iframe-blank", "srcdoc", "worker-classic",
+        "worker-module", "worker-classic-data", "worker-module-data"
     ]
 
     valid_subresource_names = [
@@ -205,15 +207,20 @@ def validate(spec_json, details):
         test_expansion_schema, 'source_context_list',
         spec_json['source_context_list_schema'].keys())
 
+    # Should be consistent with `preprocess_redirection` in
+    # `/common/security-features/subresource/subresource.py`.
     assert_atom_or_list_items_from(test_expansion_schema, 'redirection', [
         'no-redirect', 'keep-origin', 'swap-origin', 'keep-scheme',
-        'swap-scheme'
+        'swap-scheme', 'downgrade'
     ])
     for subresource in leaf_values(test_expansion_schema['subresource']):
         assert subresource in valid_subresource_names, "Invalid subresource %s" % subresource
+    # Should be consistent with getSubresourceOrigin() in
+    # `/common/security-features/resources/common.sub.js`.
     assert_atom_or_list_items_from(test_expansion_schema, 'origin', [
         'same-http', 'same-https', 'same-ws', 'same-wss', 'cross-http',
-        'cross-https', 'cross-ws', 'cross-wss'
+        'cross-https', 'cross-ws', 'cross-wss', 'same-http-downgrade',
+        'cross-http-downgrade', 'same-ws-downgrade', 'cross-ws-downgrade'
     ])
 
     # Validate excluded tests.

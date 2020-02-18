@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
 #include "chrome/browser/installable/installable_logging.h"
@@ -22,8 +21,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
 enum class WebappInstallSource;
@@ -53,15 +52,8 @@ class AppBannerManager : public content::WebContentsObserver,
  public:
   class Observer : public base::CheckedObserver {
    public:
-    Observer();
-    ~Observer() override;
-
-    void ObserveAppBannerManager(AppBannerManager* manager);
-
+    virtual void OnAppBannerManagerChanged(AppBannerManager* new_manager) = 0;
     virtual void OnInstallableWebAppStatusUpdated() = 0;
-
-   private:
-    ScopedObserver<AppBannerManager, Observer> scoped_observer_{this};
   };
 
   // A StatusReporter handles the reporting of |InstallableStatusCode|s.
@@ -154,7 +146,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // redundant for the beforeinstallprompt event's promise being resolved, but
   // is required by the install event spec.
   // This is virtual for testing.
-  virtual void OnInstall(blink::WebDisplayMode display);
+  virtual void OnInstall(blink::mojom::DisplayMode display);
 
   // Sends a message to the renderer that the user accepted the banner.
   void SendBannerAccepted();
@@ -176,6 +168,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // install the site.
   bool IsPromptAvailableForTesting() const;
 
+  InstallableWebAppCheckResult GetInstallableWebAppCheckResultForTesting();
+
  protected:
   explicit AppBannerManager(content::WebContents* web_contents);
   ~AppBannerManager() override;
@@ -184,9 +178,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // been shown too recently, or if the app has already been installed.
   // GetAppIdentifier() must return a valid value for this method to work.
   bool CheckIfShouldShowBanner();
-
-  // Returns whether the site is already installed as a web app.
-  bool CheckIfInstalled();
 
   // Returns whether the site would prefer a related application be installed
   // instead of the PWA or a related application is already installed.
@@ -219,13 +210,14 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual bool IsRelatedAppInstalled(
       const blink::Manifest::RelatedApplication& related_app) const = 0;
 
-  // Returns true if the web app at |start_url| has already been installed, or
+  // Returns whether the current page is already installed as a web app, or
   // should be considered installed. On Android, we rely on a heuristic that
   // may yield false negatives or false positives (crbug.com/786268).
-  virtual bool IsWebAppConsideredInstalled(content::WebContents* web_contents,
-                                           const GURL& validated_url,
-                                           const GURL& start_url,
-                                           const GURL& manifest_url);
+  virtual bool IsWebAppConsideredInstalled();
+
+  // Returns whether the installed web app at the current page can be
+  // reinstalled over the top of the existing installation.
+  virtual bool ShouldAllowWebAppReplacementInstall();
 
   // Callback invoked by the InstallableManager once it has fetched the page's
   // manifest.
@@ -249,9 +241,8 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual void OnDidPerformInstallableWebAppCheck(
       const InstallableData& result);
 
-  // Records that a banner was shown. The |event_name| corresponds to the RAPPOR
-  // metric being recorded.
-  void RecordDidShowBanner(const std::string& event_name);
+  // Records that a banner was shown.
+  void RecordDidShowBanner();
 
   // Reports |code| via a UMA histogram or logs it to the console.
   void ReportStatus(InstallableStatusCode code);
@@ -284,7 +275,6 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual void UpdateState(State state);
 
   // content::WebContentsObserver overrides.
-  void DidStartNavigation(content::NavigationHandle* handle) override;
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;

@@ -10,7 +10,7 @@
 #include "platform/base/error.h"
 
 namespace openscreen {
-namespace mdns {
+namespace osp {
 
 namespace {
 
@@ -21,7 +21,7 @@ ErrorOr<DomainName> FromLabels(const std::vector<std::string>& labels) {
 template <typename T>
 T UnpackErrorOr(ErrorOr<T> error_or) {
   EXPECT_TRUE(error_or);
-  return error_or.MoveValue();
+  return std::move(error_or.value());
 }
 
 }  // namespace
@@ -190,5 +190,5 @@ TEST(DomainNameTest, StreamEscaping) {
   }
 }
 
-}  // namespace mdns
+}  // namespace osp
 }  // namespace openscreen

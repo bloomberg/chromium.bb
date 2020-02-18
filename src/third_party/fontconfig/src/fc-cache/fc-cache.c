@@ -156,7 +156,7 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	    printf ("%s: ", dir);
 	    fflush (stdout);
 	}
-	
+
 	if (FcStrSetMember (processed_dirs, dir))
 	{
 	    if (verbose)
@@ -164,7 +164,16 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	    continue;
 	}
 
-	if (stat ((char *) dir, &statb) == -1)
+    FcChar8 *rooted_dir = NULL;
+    if (sysroot)
+    {
+        rooted_dir = FcStrPlus(sysroot, dir);
+    }
+    else {
+        rooted_dir = FcStrCopy(dir);
+    }
+
+	if (stat ((char *) rooted_dir, &statb) == -1)
 	{
 	    switch (errno) {
 	    case ENOENT:
@@ -178,8 +187,13 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 		ret++;
 		break;
 	    }
+	    FcStrFree (rooted_dir);
+	    rooted_dir = NULL;
 	    continue;
 	}
+
+    FcStrFree(rooted_dir);
+    rooted_dir = NULL;
 
 	if (!S_ISDIR (statb.st_mode))
 	{
@@ -191,7 +205,6 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	if (really_force)
 	{
 	    FcDirCacheUnlink (dir, config);
-	    FcDirCacheCreateUUID ((FcChar8 *) dir, FcTrue, config);
 	}
 
 	cache = NULL;
@@ -259,6 +272,7 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	ret += scanDirs (sublist, config, force, really_force, verbose, error_on_no_fonts, changed);
 	FcStrListDone (sublist);
     }
+
     if (error_on_no_fonts && !was_processed)
 	ret++;
     return ret;
@@ -392,6 +406,17 @@ main (int argc, char **argv)
 	return 1;
     }
 
+    if (verbose)
+    {
+	const FcChar8 *dir;
+
+	printf ("Font directories:\n");
+	while ((dir = FcStrListNext (list)))
+	{
+	    printf ("\t%s\n", dir);
+	}
+	FcStrListFirst(list);
+    }
     changed = 0;
     ret = scanDirs (list, config, force, really_force, verbose, error_on_no_fonts, &changed);
     FcStrListDone (list);

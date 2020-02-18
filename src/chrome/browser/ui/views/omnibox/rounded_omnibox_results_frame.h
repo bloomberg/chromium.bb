@@ -17,7 +17,7 @@ class LocationBarView;
 class RoundedOmniboxResultsFrame : public views::View {
  public:
   RoundedOmniboxResultsFrame(views::View* contents,
-                             const LocationBarView* location_bar);
+                             LocationBarView* location_bar);
   ~RoundedOmniboxResultsFrame() override;
 
   // Hook to customize Widget initialization.
@@ -43,8 +43,6 @@ class RoundedOmniboxResultsFrame : public views::View {
 #endif  // !USE_AURA
 
  private:
-  std::unique_ptr<ui::LayerOwner> contents_mask_;
-
   views::View* top_background_ = nullptr;
   views::View* contents_host_ = nullptr;
   views::View* contents_;

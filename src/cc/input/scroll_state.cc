@@ -6,13 +6,11 @@
 
 #include <utility>
 
-#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scroll_node.h"
 
 namespace cc {
 
-ScrollState::ScrollState(ScrollStateData data)
-    : data_(data), layer_tree_impl_(nullptr) {}
+ScrollState::ScrollState(ScrollStateData data) : data_(data) {}
 
 ScrollState::ScrollState(const ScrollState& other) = default;
 
@@ -24,16 +22,6 @@ void ScrollState::ConsumeDelta(double x, double y) {
 
   if (x || y)
     data_.delta_consumed_for_scroll_sequence = true;
-}
-
-void ScrollState::DistributeToScrollChainDescendant() {
-  if (!scroll_chain_.empty()) {
-    ScrollNode* next = scroll_chain_.front();
-    scroll_chain_.pop_front();
-
-    ScrollTree& scroll_tree = layer_tree_impl_->property_trees()->scroll_tree;
-    scroll_tree.DistributeScroll(next, this);
-  }
 }
 
 }  // namespace cc

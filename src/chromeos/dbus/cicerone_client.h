@@ -83,6 +83,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
     virtual void OnPendingAppListUpdates(
         const vm_tools::cicerone::PendingAppListUpdatesSignal& signal) = 0;
 
+    // This is signaled from the container while a playbook is being applied
+    // via ApplyAnsiblePlaybook.
+    virtual void OnApplyAnsiblePlaybookProgress(
+        const vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal&
+            signal) = 0;
+
+    // This is signaled from Cicerone while a container is being upgraded
+    // via UpgradeContainer.
+    virtual void OnUpgradeContainerProgress(
+        const vm_tools::cicerone::UpgradeContainerProgressSignal& signal) = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -136,6 +147,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
   // This should be true before expecting to recieve
   // PendingAppListUpdatesSignal.
   virtual bool IsPendingAppListUpdatesSignalConnected() = 0;
+
+  // This should be true prior to calling ApplyAnsiblePlaybook.
+  virtual bool IsApplyAnsiblePlaybookProgressSignalConnected() = 0;
+
+  // This should be true prior to calling UpgradeContainer.
+  virtual bool IsUpgradeContainerProgressSignalConnected() = 0;
 
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.
@@ -236,6 +253,27 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
   virtual void CancelImportLxdContainer(
       const vm_tools::cicerone::CancelImportLxdContainerRequest& request,
       DBusMethodCallback<vm_tools::cicerone::CancelImportLxdContainerResponse>
+          callback) = 0;
+
+  // Applies Ansible playbook.
+  // |callback| is called after the method call finishes.
+  virtual void ApplyAnsiblePlaybook(
+      const vm_tools::cicerone::ApplyAnsiblePlaybookRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
+          callback) = 0;
+
+  // Upgrades the container.
+  // |callback| is called when the method completes.
+  virtual void UpgradeContainer(
+      const vm_tools::cicerone::UpgradeContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::UpgradeContainerResponse>
+          callback) = 0;
+
+  // Cancels the in progress container upgrade.
+  // |callback| is called when the method completes.
+  virtual void CancelUpgradeContainer(
+      const vm_tools::cicerone::CancelUpgradeContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::CancelUpgradeContainerResponse>
           callback) = 0;
 
   // Registers |callback| to run when the Cicerone service becomes available.

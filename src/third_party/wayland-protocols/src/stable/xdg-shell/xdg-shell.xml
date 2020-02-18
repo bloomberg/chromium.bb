@@ -101,7 +101,7 @@
       <description summary="check if the client is alive">
 	The ping event asks the client if it's still alive. Pass the
 	serial specified in the event back to the compositor by sending
-	a "pong" request back with the specified serial. See xdg_wm_base.ping.
+	a "pong" request back with the specified serial. See xdg_wm_base.pong.
 
 	Compositors can use this to determine if the client is still
 	alive. It's unspecified what will happen if the client doesn't
@@ -603,6 +603,9 @@
 	ID's that match the basename of the application's .desktop file.
 	For example, "org.freedesktop.FooViewer" where the .desktop file is
 	"org.freedesktop.FooViewer.desktop".
+
+	Like other properties, a set_app_id request can be sent after the
+	xdg_toplevel has been mapped to update the property.
 
 	See the desktop-entry specification [0] for more details on
 	application identifiers and how they relate to well-known D-Bus

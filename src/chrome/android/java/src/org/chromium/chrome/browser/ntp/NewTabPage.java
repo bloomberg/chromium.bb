@@ -9,19 +9,20 @@ import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.Log;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
+import org.chromium.chrome.browser.omnibox.LocationBar.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -55,7 +57,7 @@ import org.chromium.chrome.browser.suggestions.tile.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
@@ -65,7 +67,6 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
-import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
@@ -122,13 +123,16 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     public void onContentOffsetChanged(int offset) {}
 
     @Override
-    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {}
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {
+        updateMargins();
+    }
 
     @Override
     public void onToggleOverlayVideoMode(boolean enabled) {}
 
     @Override
-    public void onBottomControlsHeightChanged(int bottomControlsHeight) {
+    public void onBottomControlsHeightChanged(
+            int bottomControlsHeight, int bottomControlsMinHeight) {
         updateMargins();
     }
 
@@ -146,30 +150,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
          * @param scrollPercentage The percentage the search box has been scrolled off the page.
          */
         void onNtpScrollChanged(float scrollPercentage);
-    }
-
-    /**
-     * Handles user interaction with the fakebox (the URL bar in the NTP).
-     */
-    public interface FakeboxDelegate {
-        /**
-         * @return Whether the URL bar is currently focused.
-         */
-        boolean isUrlBarFocused();
-
-        /**
-         * Focuses the URL bar when the user taps the fakebox, types in the fakebox, or pastes text
-         * into the fakebox.
-         *
-         * @param pastedText The text that was pasted or typed into the fakebox, or null if the user
-         *                   just tapped the fakebox.
-         */
-        void requestUrlFocusFromFakebox(String pastedText);
-
-        /**
-         * @return whether the provided native page is the one currently displayed to the user.
-         */
-        boolean isCurrentPage(NativePage nativePage);
     }
 
     /**
@@ -229,7 +209,9 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 mVoiceRecognitionHandler.startVoiceRecognition(
                         LocationBarVoiceRecognitionHandler.VoiceInteractionSource.NTP);
             } else if (mFakeboxDelegate != null) {
-                mFakeboxDelegate.requestUrlFocusFromFakebox(pastedText);
+                mFakeboxDelegate.setUrlBarFocus(true, pastedText,
+                        pastedText == null ? OmniboxFocusReason.FAKE_BOX_TAP
+                                           : OmniboxFocusReason.FAKE_BOX_LONG_PRESS);
             }
         }
 
@@ -249,7 +231,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             mIsLoaded = true;
             NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
             // If not visible when loading completes, wait until onShown is received.
-            if (!mTab.isHidden()) recordNTPShown();
+            if (!((TabImpl) mTab).isHidden()) recordNTPShown();
         }
     }
 
@@ -302,7 +284,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mActivityTabProvider = activityTabProvider;
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mTab = nativePageHost.getActiveTab();
-        Profile profile = mTab.getProfile();
+        Profile profile = ((TabImpl) mTab).getProfile();
 
         SuggestionsDependencyFactory depsFactory = SuggestionsDependencyFactory.getInstance();
         SuggestionsSource suggestionsSource = depsFactory.createSuggestionSource(profile);
@@ -338,11 +320,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
                 saveLastScrollPosition();
-            }
-
-            @Override
-            public void onBrowserControlsConstraintsUpdated(Tab tab, int constraints) {
-                updateMargins();
             }
         };
         mTab.addObserver(mTabObserver);
@@ -453,10 +430,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 ((ViewGroup.MarginLayoutParams) view.getLayoutParams());
         if (layoutParams == null) return;
 
-        final @BrowserControlsState int constraints = TabBrowserControlsState.getConstraints(mTab);
-        layoutParams.bottomMargin = (constraints != BrowserControlsState.HIDDEN)
-                ? mFullscreenManager.getBottomControlsHeight()
-                : 0;
+        layoutParams.bottomMargin = mFullscreenManager.getBottomControlsHeight()
+                - mFullscreenManager.getBottomControlOffset();
 
         view.setLayoutParams(layoutParams);
 
@@ -570,6 +545,13 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     }
 
     /**
+     * @return Whether the location bar has been scrolled to top in the NTP.
+     */
+    public boolean isLocationBarScrolledToTopInNtp() {
+        return mNewTabPageLayout.getToolbarTransitionPercentage() == 1;
+    }
+
+    /**
      * Sets the listener for search box scroll changes.
      * @param listener The listener to be notified on changes.
      */
@@ -590,14 +572,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             mNewTabPageLayout.setUrlFocusChangeAnimationPercent(
                     fakeboxDelegate.isUrlBarFocused() ? 1f : 0f);
         }
-    }
 
-    /**
-     * Sets the {@link LocationBarVoiceRecognitionHandler} this page interacts with.
-     */
-    public void setVoiceRecognitionHandler(
-            LocationBarVoiceRecognitionHandler voiceRecognitionHandler) {
-        mVoiceRecognitionHandler = voiceRecognitionHandler;
+        mVoiceRecognitionHandler = mFakeboxDelegate.getLocationBarVoiceRecognitionHandler();
         if (mVoiceRecognitionHandler != null) {
             mNewTabPageLayout.updateVoiceSearchButtonVisibility();
         }
@@ -700,7 +676,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         assert !mIsDestroyed;
         assert !ViewCompat
                 .isAttachedToWindow(getView()) : "Destroy called before removed from window";
-        if (mIsLoaded && !mTab.isHidden()) recordNTPHidden();
+        if (mIsLoaded && !((TabImpl) mTab).isHidden()) recordNTPHidden();
 
         mNewTabPageManager.onDestroy();
         mTileGroupDelegate.destroy();

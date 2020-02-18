@@ -35,7 +35,6 @@
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search/search.h"
-#include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -71,9 +70,6 @@ enum SuggestRequestsHistogramValue {
   REPLY_RECEIVED,
   MAX_SUGGEST_REQUEST_HISTOGRAM_VALUE
 };
-
-// The verbatim score for an input which is not an URL.
-const int kNonURLVerbatimRelevance = 1300;
 
 // Increments the appropriate value in the histogram by one.
 void LogOmniboxSuggestRequest(
@@ -146,8 +142,7 @@ SearchProvider::SearchProvider(AutocompleteProviderClient* client,
     : BaseSearchProvider(AutocompleteProvider::TYPE_SEARCH, client),
       listener_(listener),
       providers_(client->GetTemplateURLService()),
-      answers_cache_(10),
-      observer_(this) {
+      answers_cache_(10) {
   TemplateURLService* template_url_service = client->GetTemplateURLService();
 
   // |template_url_service| can be null in tests.
@@ -691,6 +686,8 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
 }
 
 base::TimeDelta SearchProvider::GetSuggestQueryDelay() const {
+  // TODO(manukh): Reuse AutocompleteProviderDebouncer which duplicates all
+  //  this logic and would avoid polling field trial params repeatedly.
   bool from_last_keystroke;
   int polling_delay_ms;
   OmniboxFieldTrial::GetSuggestPollingStrategy(&from_last_keystroke,
@@ -1389,11 +1386,12 @@ int SearchProvider::GetVerbatimRelevance(bool* relevance_from_server) const {
 bool SearchProvider::ShouldCurbDefaultSuggestions() const {
   // Only curb if the global experimental keyword feature is enabled, we're
   // in keyword mode and we believe the user selected the mode explicitly.
-  if (providers_.has_keyword_provider())
+  if (providers_.has_keyword_provider()) {
     return InExplicitExperimentalKeywordMode(input_,
                                              providers_.keyword_provider());
-  else
+  } else {
     return false;
+  }
 }
 
 int SearchProvider::CalculateRelevanceForVerbatim() const {

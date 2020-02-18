@@ -45,8 +45,8 @@ class ChrootSdkBuilder(simple_builders.SimpleBuilder):
     # we re-enable it, make sure we fix that first.  For example:
     # gs://chromiumos-sdk/2015/06/...
     #   .../cros-sdk-overlay-toolchains-aarch64-cros-linux-gnu-$VER.tar.xz
-    #self._RunStage(sdk_stages.SDKPackageToolchainOverlaysStage,
-    #               version=version)
+    # self._RunStage(sdk_stages.SDKPackageToolchainOverlaysStage,
+    #                version=version)
 
     self._RunStage(sdk_stages.SDKTestStage)
     # manojgupta: The comment in para below is not valid right now. Need to

@@ -40,6 +40,7 @@ void FakeServiceWorker::InitializeGlobalScope(
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerHost>
         service_worker_host,
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info,
+    blink::mojom::ServiceWorkerObjectInfoPtr service_worker_info,
     blink::mojom::FetchHandlerExistence fetch_handler_existence) {
   host_.Bind(std::move(service_worker_host));
 
@@ -59,7 +60,13 @@ void FakeServiceWorker::InitializeGlobalScope(
         registration_info->active->receiver.PassHandle());
   }
 
+  if (service_worker_info) {
+    mojo::AssociateWithDisconnectedPipe(
+        service_worker_info->receiver.PassHandle());
+  }
+
   registration_info_ = std::move(registration_info);
+  service_worker_info_ = std::move(service_worker_info);
   if (quit_closure_for_initialize_global_scope_)
     std::move(quit_closure_for_initialize_global_scope_).Run();
 
@@ -102,8 +109,7 @@ void FakeServiceWorker::DispatchBackgroundFetchSuccessEvent(
 }
 
 void FakeServiceWorker::DispatchCookieChangeEvent(
-    const net::CanonicalCookie& cookie,
-    ::network::mojom::CookieChangeCause cause,
+    const net::CookieChangeInfo& change,
     DispatchCookieChangeEventCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
@@ -203,13 +209,6 @@ void FakeServiceWorker::DispatchPaymentRequestEvent(
 void FakeServiceWorker::DispatchExtendableMessageEvent(
     blink::mojom::ExtendableMessageEventPtr event,
     DispatchExtendableMessageEventCallback callback) {
-  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-}
-
-void FakeServiceWorker::DispatchExtendableMessageEventWithCustomTimeout(
-    blink::mojom::ExtendableMessageEventPtr event,
-    base::TimeDelta timeout,
-    DispatchExtendableMessageEventWithCustomTimeoutCallback callback) {
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 

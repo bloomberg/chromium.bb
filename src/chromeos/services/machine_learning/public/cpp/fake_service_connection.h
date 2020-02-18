@@ -13,7 +13,8 @@
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace chromeos {
 namespace machine_learning {
@@ -30,16 +31,21 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   FakeServiceConnectionImpl();
   ~FakeServiceConnectionImpl() override;
 
-  // It's safe to execute LoadModel for multi times, but all the requests will
-  // be bound to the same instance.
-  void LoadModel(
-      mojom::ModelSpecPtr spec,
-      mojom::ModelRequest request,
-      mojom::MachineLearningService::LoadModelCallback callback) override;
+  // It's safe to execute LoadBuiltinModel and LoadFlatBufferModel for multi
+  // times, but all the receivers will be bound to the same instance.
+  void LoadBuiltinModel(mojom::BuiltinModelSpecPtr spec,
+                        mojo::PendingReceiver<mojom::Model> receiver,
+                        mojom::MachineLearningService::LoadBuiltinModelCallback
+                            callback) override;
+  void LoadFlatBufferModel(
+      mojom::FlatBufferModelSpecPtr spec,
+      mojo::PendingReceiver<mojom::Model> receiver,
+      mojom::MachineLearningService::LoadFlatBufferModelCallback callback)
+      override;
 
   // mojom::Model:
   void CreateGraphExecutor(
-      mojom::GraphExecutorRequest request,
+      mojo::PendingReceiver<mojom::GraphExecutor> receiver,
       mojom::Model::CreateGraphExecutorCallback callback) override;
 
   // mojom::GraphExecutor:
@@ -53,8 +59,8 @@ class FakeServiceConnectionImpl : public ServiceConnection,
                       const std::vector<double>& value);
 
  private:
-  mojo::BindingSet<mojom::Model> model_bindings_;
-  mojo::BindingSet<mojom::GraphExecutor> graph_bindings_;
+  mojo::ReceiverSet<mojom::Model> model_receivers_;
+  mojo::ReceiverSet<mojom::GraphExecutor> graph_receivers_;
   mojom::TensorPtr execute_result_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServiceConnectionImpl);

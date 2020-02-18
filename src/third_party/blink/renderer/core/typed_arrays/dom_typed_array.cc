@@ -20,8 +20,8 @@
 
 namespace blink {
 
-template <typename WTFTypedArray, typename V8TypedArray>
-v8::Local<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::Wrap(
+template <typename TypedArray, typename V8TypedArray>
+v8::Local<v8::Object> DOMTypedArray<TypedArray, V8TypedArray>::Wrap(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context) {
   DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));
@@ -36,10 +36,10 @@ v8::Local<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::Wrap(
   v8::Local<v8::Object> wrapper;
   if (IsShared()) {
     wrapper = V8TypedArray::New(v8_buffer.As<v8::SharedArrayBuffer>(),
-                                byteOffset(), length());
+                                byteOffsetAsSizeT(), lengthAsSizeT());
   } else {
-    wrapper = V8TypedArray::New(v8_buffer.As<v8::ArrayBuffer>(), byteOffset(),
-                                length());
+    wrapper = V8TypedArray::New(v8_buffer.As<v8::ArrayBuffer>(),
+                                byteOffsetAsSizeT(), lengthAsSizeT());
   }
 
   return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
@@ -68,34 +68,34 @@ DEFINE_DOMTYPEDARRAY_TRAITS(DOMBigUint64Array, V8BigUint64Array);
 DEFINE_DOMTYPEDARRAY_TRAITS(DOMFloat32Array, V8Float32Array);
 DEFINE_DOMTYPEDARRAY_TRAITS(DOMFloat64Array, V8Float64Array);
 
-template <typename WTFTypedArray, typename V8TypedArray>
+template <typename TypedArray, typename V8TypedArray>
 const WrapperTypeInfo*
-DOMTypedArray<WTFTypedArray, V8TypedArray>::GetWrapperTypeInfo() const {
+DOMTypedArray<TypedArray, V8TypedArray>::GetWrapperTypeInfo() const {
   return DOMTypedArrayTraits<
-      DOMTypedArray<WTFTypedArray, V8TypedArray>>::Type::GetWrapperTypeInfo();
+      DOMTypedArray<TypedArray, V8TypedArray>>::Type::GetWrapperTypeInfo();
 }
 
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<WTF::Int8Array, v8::Int8Array>;
+    DOMTypedArray<TypedArray<int8_t>, v8::Int8Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<WTF::Int16Array, v8::Int16Array>;
+    DOMTypedArray<TypedArray<int16_t>, v8::Int16Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<WTF::Int32Array, v8::Int32Array>;
+    DOMTypedArray<TypedArray<int32_t>, v8::Int32Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<WTF::Uint8Array, v8::Uint8Array>;
+    DOMTypedArray<TypedArray<uint8_t>, v8::Uint8Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<WTF::Uint8ClampedArray, v8::Uint8ClampedArray>;
+    DOMTypedArray<TypedArray<uint8_t, /*clamped=*/true>, v8::Uint8ClampedArray>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<WTF::Uint16Array, v8::Uint16Array>;
+    DOMTypedArray<TypedArray<uint16_t>, v8::Uint16Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<WTF::Uint32Array, v8::Uint32Array>;
+    DOMTypedArray<TypedArray<uint32_t>, v8::Uint32Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<WTF::BigInt64Array, v8::BigInt64Array>;
+    DOMTypedArray<TypedArray<int64_t>, v8::BigInt64Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<WTF::BigUint64Array, v8::BigUint64Array>;
+    DOMTypedArray<TypedArray<uint64_t>, v8::BigUint64Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<WTF::Float32Array, v8::Float32Array>;
+    DOMTypedArray<TypedArray<float>, v8::Float32Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<WTF::Float64Array, v8::Float64Array>;
+    DOMTypedArray<TypedArray<double>, v8::Float64Array>;
 
 }  // namespace blink

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -17,11 +18,13 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
@@ -30,6 +33,8 @@ namespace network {
 namespace cors {
 
 namespace {
+
+using WithTrustedHeaderClient = PreflightController::WithTrustedHeaderClient;
 
 TEST(PreflightControllerCreatePreflightRequestTest, LexicographicalOrder) {
   ResourceRequest request;
@@ -218,26 +223,57 @@ TEST(PreflightControllerCreatePreflightRequestTest, RenderFrameId) {
   EXPECT_EQ(request.render_frame_id, preflight->render_frame_id);
 }
 
+TEST(PreflightControllerOptionsTest, CheckOptions) {
+  base::test::TaskEnvironment task_environment_(
+      base::test::TaskEnvironment::MainThreadType::IO);
+  TestURLLoaderFactory url_loader_factory;
+  PreflightController preflight_controller(
+      {} /* extra_safelisted_header_names */);
+
+  network::ResourceRequest request;
+  request.url = GURL("https://example.com/");
+  request.request_initiator = url::Origin();
+  preflight_controller.PerformPreflightCheck(
+      base::BindOnce([](int, base::Optional<CorsErrorStatus>) {}), request,
+      WithTrustedHeaderClient(false), false /* tainted */,
+      TRAFFIC_ANNOTATION_FOR_TESTS, &url_loader_factory);
+
+  preflight_controller.PerformPreflightCheck(
+      base::BindOnce([](int, base::Optional<CorsErrorStatus>) {}), request,
+      WithTrustedHeaderClient(true), false /* tainted */,
+      TRAFFIC_ANNOTATION_FOR_TESTS, &url_loader_factory);
+
+  ASSERT_EQ(2, url_loader_factory.NumPending());
+  EXPECT_EQ(mojom::kURLLoadOptionAsCorsPreflight,
+            url_loader_factory.GetPendingRequest(0)->options);
+  EXPECT_EQ(mojom::kURLLoadOptionAsCorsPreflight |
+                mojom::kURLLoadOptionUseHeaderClient,
+            url_loader_factory.GetPendingRequest(1)->options);
+}
+
 class PreflightControllerTest : public testing::Test {
  public:
   PreflightControllerTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
-    mojom::NetworkServicePtr network_service_ptr;
-    mojom::NetworkServiceRequest network_service_request =
-        mojo::MakeRequest(&network_service_ptr);
+    CorsURLLoaderFactory::SetAllowExternalPreflightsForTesting(true);
+    mojo::Remote<mojom::NetworkService> network_service_remote;
     network_service_ = NetworkService::Create(
-        std::move(network_service_request), nullptr /* net_log */);
+        network_service_remote.BindNewPipeAndPassReceiver());
 
-    network_service_ptr->CreateNetworkContext(
-        mojo::MakeRequest(&network_context_ptr_),
+    network_service_remote->CreateNetworkContext(
+        network_context_remote_.BindNewPipeAndPassReceiver(),
         mojom::NetworkContextParams::New());
 
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
-    network_context_ptr_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_ptr_), std::move(params));
+    network_context_remote_->CreateURLLoaderFactory(
+        url_loader_factory_remote_.BindNewPipeAndPassReceiver(),
+        std::move(params));
+  }
+  ~PreflightControllerTest() override {
+    CorsURLLoaderFactory::SetAllowExternalPreflightsForTesting(false);
   }
 
  protected:
@@ -257,8 +293,8 @@ class PreflightControllerTest : public testing::Test {
     preflight_controller_->PerformPreflightCheck(
         base::BindOnce(&PreflightControllerTest::HandleRequestCompletion,
                        base::Unretained(this)),
-        request, tainted, TRAFFIC_ANNOTATION_FOR_TESTS,
-        url_loader_factory_ptr_.get());
+        request, WithTrustedHeaderClient(false), tainted,
+        TRAFFIC_ANNOTATION_FOR_TESTS, url_loader_factory_remote_.get());
     run_loop_->Run();
   }
 
@@ -312,8 +348,8 @@ class PreflightControllerTest : public testing::Test {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   std::unique_ptr<mojom::NetworkService> network_service_;
-  mojom::NetworkContextPtr network_context_ptr_;
-  mojom::URLLoaderFactoryPtr url_loader_factory_ptr_;
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
+  mojo::Remote<mojom::URLLoaderFactory> url_loader_factory_remote_;
 
   net::test_server::EmbeddedTestServer test_server_;
   size_t access_count_ = 0;
@@ -389,7 +425,7 @@ TEST_F(PreflightControllerTest, CheckTaintedRequest) {
 
 TEST_F(PreflightControllerTest, CheckResponseWithNullHeaders) {
   GURL url = GURL("https://google.com/finullurl");
-  const ResourceResponseHead response_head;
+  const mojom::URLResponseHead response_head;
   ResourceRequest request;
   request.url = url;
   request.request_initiator = url::Origin::Create(request.url);

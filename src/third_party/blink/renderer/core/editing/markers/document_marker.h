@@ -36,8 +36,7 @@ namespace blink {
 // A range of a node within a document that is "marked", such as the range of a
 // misspelled word. It optionally includes a description that could be displayed
 // in the user interface.
-class CORE_EXPORT DocumentMarker
-    : public GarbageCollectedFinalized<DocumentMarker> {
+class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
  public:
   enum MarkerTypeIndex {
     kSpellingMarkerIndex = 0,
@@ -46,6 +45,7 @@ class CORE_EXPORT DocumentMarker
     kCompositionMarkerIndex,
     kActiveSuggestionMarkerIndex,
     kSuggestionMarkerIndex,
+    kTextFragmentMarkerIndex,
     kMarkerTypeIndexesCount
   };
 
@@ -56,6 +56,7 @@ class CORE_EXPORT DocumentMarker
     kComposition = 1 << kCompositionMarkerIndex,
     kActiveSuggestion = 1 << kActiveSuggestionMarkerIndex,
     kSuggestion = 1 << kSuggestionMarkerIndex,
+    kTextFragment = 1 << kTextFragmentMarkerIndex,
   };
 
   class MarkerTypesIterator
@@ -123,6 +124,7 @@ class CORE_EXPORT DocumentMarker
     static MarkerTypes Spelling() { return MarkerTypes(kSpelling); }
     static MarkerTypes TextMatch() { return MarkerTypes(kTextMatch); }
     static MarkerTypes Suggestion() { return MarkerTypes(kSuggestion); }
+    static MarkerTypes TextFragment() { return MarkerTypes(kTextFragment); }
 
     bool Contains(MarkerType type) const { return mask_ & type; }
     bool Intersects(const MarkerTypes& types) const {

@@ -14,11 +14,22 @@ from recipe_engine import recipe_api
 # TODO(iannucci): replace this with something sane when PROPERTIES is
 # implemented with a proto message.
 _PROPERTY_DEFAULTS = {
-  'sdk_version': '9c40b',
-
   'toolchain_pkg': 'infra/tools/mac_toolchain/${platform}',
-  'toolchain_ver': 'git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a',
+  'toolchain_ver': 'git_revision:9a1adc55bf4a1173784da3ba2f8cb06421606748',
 }
+
+# Rationalized from https://en.wikipedia.org/wiki/Xcode.
+#
+# Maps from OS version to the maximum supported version of Xcode for that OS.
+#
+# Keep this sorted by OS version.
+_DEFAULT_VERSION_MAP = [
+  ('10.12.6', '9c40b'),
+  ('10.13.2', '9f2000'),
+  ('10.13.6', '10b61'),
+  ('10.14.3', '10g8'),
+  ('10.14.4', '11b52'),
+]
 
 
 class OSXSDKApi(recipe_api.RecipeApi):
@@ -26,13 +37,26 @@ class OSXSDKApi(recipe_api.RecipeApi):
 
   def __init__(self, sdk_properties, *args, **kwargs):
     super(OSXSDKApi, self).__init__(*args, **kwargs)
+    self._sdk_properties = _PROPERTY_DEFAULTS.copy()
+    self._sdk_properties.update(sdk_properties)
+    self._sdk_version = None
+    self._tool_pkg = self._sdk_properties['toolchain_pkg']
+    self._tool_ver = self._sdk_properties['toolchain_ver']
 
-    actual_props = _PROPERTY_DEFAULTS.copy()
-    actual_props.update(sdk_properties)
+  def initialize(self):
+    if not self.m.platform.is_mac:
+      return
 
-    self._sdk_version = actual_props['sdk_version'].lower()
-    self._tool_pkg = actual_props['toolchain_pkg']
-    self._tool_ver = actual_props['toolchain_ver']
+    if 'sdk_version' in self._sdk_properties:
+      self._sdk_version = self._sdk_properties['sdk_version'].lower()
+    else:
+      cur_os = self.m.platform.mac_release
+      for target_os, xcode in reversed(_DEFAULT_VERSION_MAP):
+        if cur_os >= self.m.version.parse(target_os):
+          self._sdk_version = xcode
+          break
+      else:
+        self._sdk_version = _DEFAULT_VERSION_MAP[0][-1]
 
   @contextmanager
   def __call__(self, kind):

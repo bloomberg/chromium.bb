@@ -50,7 +50,6 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
           compositor_request);
 
   // ui::SynchronousInputHandler overrides.
-  void SetNeedsSynchronousAnimateInput() final;
   void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
                             const gfx::ScrollOffset& max_scroll_offset,
                             const gfx::SizeF& scrollable_size,
@@ -62,7 +61,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   void DidActivatePendingTree() final;
   void Invalidate(bool needs_draw) final;
   void SubmitCompositorFrame(uint32_t layer_tree_frame_sink_id,
-                             viz::CompositorFrame frame) final;
+                             base::Optional<viz::CompositorFrame> frame) final;
   void SetNeedsBeginFrames(bool needs_begin_frames) final;
   void SinkDestroyed() final;
 
@@ -70,10 +69,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
       SynchronousLayerTreeFrameSink* layer_tree_frame_sink);
   void PopulateCommonParams(SyncCompositorCommonRendererParams* params);
 
-  void SendSetNeedsBeginFramesIfNeeded();
-
   // mojom::SynchronousCompositor overrides.
-  void ComputeScroll(base::TimeTicks animation_time) final;
   void DemandDrawHwAsync(
       const SyncCompositorDemandDrawHwParams& draw_params) final;
   void DemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
@@ -95,7 +91,6 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   void SetBeginFrameSourcePaused(bool paused) final;
 
  protected:
-  void SendSetNeedsBeginFrames(bool needs_begin_frames);
   void SendAsyncRendererStateIfNeeded();
   void LayerTreeFrameSinkCreated();
   void SendBeginFrameResponse(
@@ -115,6 +110,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
  private:
   void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
   uint32_t NextMetadataVersion();
+  void HostDisconnected();
 
   struct SharedMemoryWithSize;
 
@@ -124,11 +120,9 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   mojo::AssociatedReceiver<mojom::SynchronousCompositor> receiver_{this};
   const bool use_in_process_zero_copy_software_draw_;
 
-  bool compute_scroll_called_via_ipc_ = false;
-  bool browser_needs_begin_frame_state_ = false;
-  bool needs_begin_frame_ = false;
-  bool needs_begin_frame_for_frame_sink_ = false;
-  bool needs_begin_frame_for_animate_input_ = false;
+  const bool using_viz_for_webview_;
+
+  bool needs_begin_frames_ = false;
 
   // From browser.
   std::unique_ptr<SharedMemoryWithSize> software_draw_shm_;
@@ -143,7 +137,6 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   float page_scale_factor_;
   float min_page_scale_factor_;
   float max_page_scale_factor_;
-  bool need_animate_scroll_;
   uint32_t need_invalidate_count_;
   bool invalidate_needs_draw_;
   uint32_t did_activate_pending_tree_count_;

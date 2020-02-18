@@ -101,6 +101,11 @@ HatsBubbleView::HatsBubbleView(Browser* browser,
       consent_callback_(std::move(consent_callback)) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HATS_BUBBLE);
 
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_OK_LABEL));
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   l10n_util::GetStringUTF16(IDS_NO_THANKS));
   set_close_on_deactivate(false);
   set_parent_window(parent_view);
 
@@ -138,13 +143,6 @@ bool HatsBubbleView::ShouldShowWindowIcon() const {
   return true;
 }
 
-base::string16 HatsBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_OK
-             ? l10n_util::GetStringUTF16(IDS_HATS_BUBBLE_OK_LABEL)
-             : l10n_util::GetStringUTF16(IDS_NO_THANKS);
-}
-
 bool HatsBubbleView::Cancel() {
   if (consent_callback_)
     std::move(consent_callback_).Run(false);
@@ -172,15 +170,17 @@ void HatsBubbleView::OnWidgetDestroying(views::Widget* widget) {
   instance_ = nullptr;
 }
 
-void HatsBubbleView::Layout() {
+void HatsBubbleView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   auto* frame_view = GetBubbleFrameView();
   if (frame_view && frame_view->title()) {
     // Align bubble content to the beginning of the title text.
     gfx::Point point(frame_view->title()->x(), 0);
     views::View::ConvertPointToTarget(frame_view, GetWidget()->client_view(),
                                       &point);
-    SetX(point.x());
+    auto dialog_margins = margins();
+    dialog_margins.set_left(point.x());
+    set_margins(dialog_margins);
   }
 
-  views::BubbleDialogDelegateView::Layout();
+  views::BubbleDialogDelegateView::OnBoundsChanged(previous_bounds);
 }

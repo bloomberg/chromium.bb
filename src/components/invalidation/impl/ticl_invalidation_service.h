@@ -21,6 +21,7 @@
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
@@ -43,6 +44,8 @@ class GCMInvalidationBridge;
 
 // This InvalidationService wraps the C++ Invalidation Client (TICL) library.
 // It provides invalidations for desktop platforms (Win, Mac, Linux).
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class TiclInvalidationService : public InvalidationService,
                                 public IdentityProvider::Observer,
                                 public syncer::InvalidationHandler {
@@ -53,9 +56,9 @@ class TiclInvalidationService : public InvalidationService,
       gcm::GCMDriver* gcm_driver,
       // |get_socket_factory_callback| will be safe to call on the IO thread,
       // but will check its WeakPtr parameter on the UI thread.
-      base::RepeatingCallback<
-          void(base::WeakPtr<TiclInvalidationService>,
-               network::mojom::ProxyResolvingSocketFactoryRequest)>
+      base::RepeatingCallback<void(
+          base::WeakPtr<TiclInvalidationService>,
+          mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
           get_socket_factory_callback,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -136,7 +139,7 @@ class TiclInvalidationService : public InvalidationService,
   gcm::GCMDriver* gcm_driver_;
   std::unique_ptr<GCMInvalidationBridge> gcm_invalidation_bridge_;
   base::RepeatingCallback<void(
-      network::mojom::ProxyResolvingSocketFactoryRequest)>
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
       get_socket_factory_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

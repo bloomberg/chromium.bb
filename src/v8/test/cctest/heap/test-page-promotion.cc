@@ -43,8 +43,7 @@ v8::Isolate* NewIsolateForPagePromotion(int min_semi_space_size = 8,
   return isolate;
 }
 
-Page* FindLastPageInNewSpace(
-    std::vector<Handle<FixedArray>>& handles) {  // NOLINT(runtime/references)
+Page* FindLastPageInNewSpace(const std::vector<Handle<FixedArray>>& handles) {
   for (auto rit = handles.rbegin(); rit != handles.rend(); ++rit) {
     // One deref gets the Handle, the second deref gets the FixedArray.
     Page* candidate = Page::FromHeapObject(**rit);
@@ -102,7 +101,7 @@ UNINITIALIZED_TEST(PagePromotion_NewToOld) {
 }
 
 UNINITIALIZED_TEST(PagePromotion_NewToNew) {
-  if (!i::FLAG_page_promotion) return;
+  if (!i::FLAG_page_promotion || FLAG_always_promote_young_mc) return;
 
   v8::Isolate* isolate = NewIsolateForPagePromotion();
   Isolate* i_isolate = reinterpret_cast<Isolate*>(isolate);
@@ -130,7 +129,7 @@ UNINITIALIZED_TEST(PagePromotion_NewToNew) {
 }
 
 UNINITIALIZED_TEST(PagePromotion_NewToNewJSArrayBuffer) {
-  if (!i::FLAG_page_promotion) return;
+  if (!i::FLAG_page_promotion || FLAG_always_promote_young_mc) return;
 
   // Test makes sure JSArrayBuffer backing stores are still tracked after
   // new-to-new promotion.
@@ -146,8 +145,10 @@ UNINITIALIZED_TEST(PagePromotion_NewToNewJSArrayBuffer) {
     heap::FillCurrentPage(heap->new_space());
     // Allocate a buffer we would like to check against.
     Handle<JSArrayBuffer> buffer =
-        i_isolate->factory()->NewJSArrayBuffer(SharedFlag::kNotShared);
-    CHECK(JSArrayBuffer::SetupAllocatingData(buffer, i_isolate, 100));
+        i_isolate->factory()
+            ->NewJSArrayBufferAndBackingStore(100,
+                                              InitializedFlag::kZeroInitialized)
+            .ToHandleChecked();
     std::vector<Handle<FixedArray>> handles;
     // Simulate a full space, filling the interesting page with live objects.
     heap::SimulateFullSpace(heap->new_space(), &handles);
@@ -188,8 +189,10 @@ UNINITIALIZED_TEST(PagePromotion_NewToOldJSArrayBuffer) {
     heap::FillCurrentPage(heap->new_space());
     // Allocate a buffer we would like to check against.
     Handle<JSArrayBuffer> buffer =
-        i_isolate->factory()->NewJSArrayBuffer(SharedFlag::kNotShared);
-    CHECK(JSArrayBuffer::SetupAllocatingData(buffer, i_isolate, 100));
+        i_isolate->factory()
+            ->NewJSArrayBufferAndBackingStore(100,
+                                              InitializedFlag::kZeroInitialized)
+            .ToHandleChecked();
     std::vector<Handle<FixedArray>> handles;
     // Simulate a full space, filling the interesting page with live objects.
     heap::SimulateFullSpace(heap->new_space(), &handles);
@@ -215,7 +218,7 @@ UNINITIALIZED_TEST(PagePromotion_NewToOldJSArrayBuffer) {
 }
 
 UNINITIALIZED_HEAP_TEST(Regress658718) {
-  if (!i::FLAG_page_promotion) return;
+  if (!i::FLAG_page_promotion || FLAG_always_promote_young_mc) return;
 
   v8::Isolate* isolate = NewIsolateForPagePromotion(4, 8);
   Isolate* i_isolate = reinterpret_cast<Isolate*>(isolate);

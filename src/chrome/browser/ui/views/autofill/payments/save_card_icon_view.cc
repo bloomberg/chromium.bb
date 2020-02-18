@@ -12,25 +12,29 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_bubble_views.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 namespace autofill {
 
 SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
-                                   PageActionIconView::Delegate* delegate,
-                                   const gfx::FontList& font_list)
+                                   PageActionIconView::Delegate* delegate)
     : PageActionIconView(command_updater,
                          IDC_SAVE_CREDIT_CARD_FOR_PAGE,
-                         delegate,
-                         font_list) {
+                         delegate) {
   DCHECK(delegate);
   SetID(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
 
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardUploadFeedback)) {
+    InstallLoadingIndicator();
+  }
   SetUpForInOutAnimation();
 }
 
-SaveCardIconView::~SaveCardIconView() {}
+SaveCardIconView::~SaveCardIconView() = default;
 
 views::BubbleDialogDelegateView* SaveCardIconView::GetBubble() const {
   SaveCardBubbleController* controller = GetController();
@@ -41,23 +45,28 @@ views::BubbleDialogDelegateView* SaveCardIconView::GetBubble() const {
       controller->GetSaveCardBubbleView());
 }
 
-bool SaveCardIconView::Update() {
+void SaveCardIconView::UpdateImpl() {
   if (!GetWebContents())
-    return false;
-
-  const bool was_visible = GetVisible();
+    return;
 
   // |controller| may be nullptr due to lazy initialization.
   SaveCardBubbleController* controller = GetController();
-  bool enabled = controller && controller->IsIconVisible();
 
-  enabled &= SetCommandEnabled(enabled);
-  SetVisible(enabled);
+  bool command_enabled =
+      SetCommandEnabled(controller && controller->IsIconVisible());
+  SetVisible(command_enabled);
 
-  if (enabled && controller->ShouldShowCardSavedAnimation())
+  if (command_enabled && controller->ShouldShowSavingCardAnimation()) {
+    SetEnabled(false);
+    SetIsLoading(/*is_loading=*/true);
+  } else {
+    SetIsLoading(/*is_loading=*/false);
+    UpdateIconImage();
+    SetEnabled(true);
+  }
+
+  if (command_enabled && controller->ShouldShowCardSavedLabelAnimation())
     AnimateIn(IDS_AUTOFILL_CARD_SAVED);
-
-  return was_visible != GetVisible();
 }
 
 void SaveCardIconView::OnExecuting(
@@ -67,8 +76,22 @@ const gfx::VectorIcon& SaveCardIconView::GetVectorIcon() const {
   return kCreditCardIcon;
 }
 
+const gfx::VectorIcon& SaveCardIconView::GetVectorIconBadge() const {
+  SaveCardBubbleController* controller = GetController();
+  if (controller && controller->ShouldShowSaveFailureBadge())
+    return kBlockedBadgeIcon;
+
+  return gfx::kNoneIcon;
+}
+
 base::string16 SaveCardIconView::GetTextForTooltipAndAccessibleName() const {
-  return l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD);
+  SaveCardBubbleController* controller = GetController();
+  if (!controller) {
+    // The controller can be null in unit tests only.
+    return base::string16();
+  }
+
+  return controller->GetSaveCardIconTooltipText();
 }
 
 SaveCardBubbleController* SaveCardIconView::GetController() const {

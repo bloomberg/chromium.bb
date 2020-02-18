@@ -137,9 +137,6 @@ namespace compiler {
   V(X64MovqDecompressTaggedPointer)       \
   V(X64MovqDecompressAnyTagged)           \
   V(X64MovqCompressTagged)                \
-  V(X64DecompressSigned)                  \
-  V(X64DecompressPointer)                 \
-  V(X64DecompressAny)                     \
   V(X64Movq)                              \
   V(X64Movsd)                             \
   V(X64Movss)                             \
@@ -158,8 +155,11 @@ namespace compiler {
   V(X64F64x2Splat)                        \
   V(X64F64x2ExtractLane)                  \
   V(X64F64x2ReplaceLane)                  \
+  V(X64F64x2SConvertI64x2)                \
+  V(X64F64x2UConvertI64x2)                \
   V(X64F64x2Abs)                          \
   V(X64F64x2Neg)                          \
+  V(X64F64x2Sqrt)                         \
   V(X64F64x2Add)                          \
   V(X64F64x2Sub)                          \
   V(X64F64x2Mul)                          \
@@ -170,6 +170,8 @@ namespace compiler {
   V(X64F64x2Ne)                           \
   V(X64F64x2Lt)                           \
   V(X64F64x2Le)                           \
+  V(X64F64x2Qfma)                         \
+  V(X64F64x2Qfms)                         \
   V(X64F32x4Splat)                        \
   V(X64F32x4ExtractLane)                  \
   V(X64F32x4ReplaceLane)                  \
@@ -177,6 +179,7 @@ namespace compiler {
   V(X64F32x4UConvertI32x4)                \
   V(X64F32x4Abs)                          \
   V(X64F32x4Neg)                          \
+  V(X64F32x4Sqrt)                         \
   V(X64F32x4RecipApprox)                  \
   V(X64F32x4RecipSqrtApprox)              \
   V(X64F32x4Add)                          \
@@ -190,6 +193,8 @@ namespace compiler {
   V(X64F32x4Ne)                           \
   V(X64F32x4Lt)                           \
   V(X64F32x4Le)                           \
+  V(X64F32x4Qfma)                         \
+  V(X64F32x4Qfms)                         \
   V(X64I64x2Splat)                        \
   V(X64I64x2ExtractLane)                  \
   V(X64I64x2ReplaceLane)                  \
@@ -238,7 +243,8 @@ namespace compiler {
   V(X64I32x4GtU)                          \
   V(X64I32x4GeU)                          \
   V(X64I16x8Splat)                        \
-  V(X64I16x8ExtractLane)                  \
+  V(X64I16x8ExtractLaneU)                 \
+  V(X64I16x8ExtractLaneS)                 \
   V(X64I16x8ReplaceLane)                  \
   V(X64I16x8SConvertI8x16Low)             \
   V(X64I16x8SConvertI8x16High)            \
@@ -269,7 +275,8 @@ namespace compiler {
   V(X64I16x8GtU)                          \
   V(X64I16x8GeU)                          \
   V(X64I8x16Splat)                        \
-  V(X64I8x16ExtractLane)                  \
+  V(X64I8x16ExtractLaneU)                 \
+  V(X64I8x16ExtractLaneS)                 \
   V(X64I8x16ReplaceLane)                  \
   V(X64I8x16SConvertI16x8)                \
   V(X64I8x16Neg)                          \
@@ -300,7 +307,18 @@ namespace compiler {
   V(X64S128Or)                            \
   V(X64S128Xor)                           \
   V(X64S128Select)                        \
+  V(X64S8x16Swizzle)                      \
   V(X64S8x16Shuffle)                      \
+  V(X64S8x16LoadSplat)                    \
+  V(X64S16x8LoadSplat)                    \
+  V(X64S32x4LoadSplat)                    \
+  V(X64S64x2LoadSplat)                    \
+  V(X64I16x8Load8x8S)                     \
+  V(X64I16x8Load8x8U)                     \
+  V(X64I32x4Load16x4S)                    \
+  V(X64I32x4Load16x4U)                    \
+  V(X64I64x2Load32x2S)                    \
+  V(X64I64x2Load32x2U)                    \
   V(X64S32x4Swizzle)                      \
   V(X64S32x4Shuffle)                      \
   V(X64S16x8Blend)                        \

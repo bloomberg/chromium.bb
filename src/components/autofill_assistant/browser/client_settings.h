@@ -6,10 +6,11 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CLIENT_SETTINGS_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
-class ClientSettingsProto;
 
 // Global settings for the Autofill Assistant client.
 //
@@ -20,6 +21,7 @@ class ClientSettingsProto;
 // pointer to the single ClientSettings instance instead of making a copy.
 struct ClientSettings {
   ClientSettings();
+  ~ClientSettings();
 
   // Time between two periodic script precondition checks.
   base::TimeDelta periodic_script_check_interval =
@@ -61,14 +63,6 @@ struct ClientSettings {
   // ready.
   int document_ready_check_count = 50;
 
-  // Whether graceful shutdown should be enabled. If false, the UI stays
-  // up until it's dismissed.
-  bool enable_graceful_shutdown = true;
-
-  // How long to wait before shutting down during graceful shutdown. If 0
-  // shutdown happens immediately.
-  base::TimeDelta graceful_shutdown_delay = base::TimeDelta::FromSeconds(5);
-
   // How much time to give users to tap undo when they tap a cancel button.
   base::TimeDelta cancel_delay = base::TimeDelta::FromSeconds(5);
 
@@ -83,6 +77,9 @@ struct ClientSettings {
   // How much time to give users to tap undo when after |tap_count| unexpected
   // taps where
   base::TimeDelta tap_shutdown_delay = base::TimeDelta::FromSeconds(5);
+
+  // Optional image drawn on top of overlays.
+  base::Optional<OverlayImageProto> overlay_image;
 
   void UpdateFromProto(const ClientSettingsProto& proto);
 

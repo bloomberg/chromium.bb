@@ -7,6 +7,8 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{pred minútou}few{pred # minútami}many{pred # minútami}other{pred # minútami}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
+<translation id="1201402288615127009">Ďalej</translation>
+<translation id="1218444235442067213"><ph name="APP_NAME" />, aplikácia Obchodu Play</translation>
 <translation id="1243314992276662751">Nahrať</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> sa nepodarilo zdieľať</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -17,7 +19,7 @@
 <translation id="1368832886055348810">Zľava doprava</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="1398853756734560583">Maximalizovať</translation>
-<translation id="1409544243779336081">Odporúčanie aplikácie</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />, nainštalovaná aplikácia</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> sa nedá zdieľať</translation>
 <translation id="1498028757988366001">Toto ste už vyhľadávali. Odstránením dopytu <ph name="QUERY" /> z histórie ho natrvalo vymažete zo svojho účtu vo všetkých zariadeniach.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minúta a }few{# minúty a }many{# minúty a }other{# minút a }}</translation>
@@ -26,11 +28,11 @@
 <translation id="1710340000377843106">teraz</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minúta}few{# minúty}many{# minúty}other{# minút}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
-<translation id="1801827354178857021">Bodka</translation>
+<translation id="1801827354178857021">.</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mesiac}few{# mesiace}many{# mesiaca}other{# mesiacov}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1812519734428420144">Hodnotenie: <ph name="RATING_SCORE" /> hviezd.</translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{Pred 1 hodinou a }few{Pred # hodinami a }many{Pred # hodinou a }other{Pred # hodinami a }}</translation>
+<translation id="1830308660060964064">Položka <ph name="ITEM_TITLE" /> bola odopnutá</translation>
 <translation id="1842960171412779397">vybrať</translation>
 <translation id="1859234291848436338">Smer písania</translation>
 <translation id="1860796786778352021">Zavrieť upozornenie</translation>
@@ -40,6 +42,7 @@
 <translation id="1938451708255335766">Ak chcete upraviť hustotu zobrazenia okien, reštartujte aplikáciu.</translation>
 <translation id="2006524834898217237">Skontrolujte, či je toto zariadenie pripojené k internetu.</translation>
 <translation id="208586643495776849">Skúste to znova</translation>
+<translation id="2090963878406559571">Ak chcete zo zariadenia <ph name="ORIGIN" /> odoslať číslo do telefónu s Androidom, <ph name="TROUBLESHOOT_LINK" /> pre obidve zariadenia v nastaveniach.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d.}few{# d.}many{# d.}other{# d.}}</translation>
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2161656808144014275">Text</translation>
@@ -51,6 +54,7 @@
 <translation id="2289052229480071835">Klepnite na dotykové ciele na obrazovke.</translation>
 <translation id="2295140143284145483">Prieskum</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2353636109065292463">Kontroluje sa internetové pripojenie</translation>
 <translation id="2388990488038464401">Chcete zavolať na toto číslo z telefónu?</translation>
 <translation id="24452542372838207">Rozbaliť upozornenie</translation>
 <translation id="2445449901874883781">Použiť vysokú hustotu</translation>
@@ -65,10 +69,12 @@
 <translation id="2666092431469916601">Vrch</translation>
 <translation id="2701330563083355633">Zdieľané zo zariadenia <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">Kopírovať do schránky</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">Otvoriť priečinok</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{pred rokom}few{pred # rokmi}many{pred # rokom}other{pred # rokmi}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{o 1 d.}few{o # d.}many{o # d.}other{o # d.}}</translation>
 <translation id="2931838996092594335">kliknutie</translation>
+<translation id="2981684127883932071">Zobrazujú sa návrhy</translation>
 <translation id="3036649622769666520">Otvoriť súbory</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3068711042108640621">Polička naľavo</translation>
@@ -81,9 +87,9 @@
 <translation id="3295886253693811851">Zavolajte pomocou zariadenia</translation>
 <translation id="335581015389089642">Reč</translation>
 <translation id="3389286852084373014">Text je príliš veľký</translation>
-<translation id="3443810440409579745">Karta bola prijatá.</translation>
 <translation id="3479552764303398839">Teraz nie</translation>
 <translation id="348799646910989694">Polička sa bude automaticky skrývať</translation>
+<translation id="3554637740840164787">Položka <ph name="ITEM_TITLE" /> bola pripnutá</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Zostáva 1 deň}few{Zostávajú # dni}many{Zostáva # dňa}other{Zostáva # dní}}</translation>
 <translation id="3600969208114796418">Súbor <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" /> a viac</translation>
@@ -105,20 +111,21 @@
 <translation id="4250229828105606438">Snímka obrazovky</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{pred mesiacom}few{pred # mesiacmi}many{pred # mesiacom}other{pred # mesiacmi}}</translation>
 <translation id="4289300219472526559">Začať hovoriť</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> bola presunutá do priečinka <ph name="FOLDER_NAME" />.</translation>
 <translation id="4316910396681052118">VŠETKY APLIKÁCIE</translation>
 <translation id="4588090240171750605">Rolovať doprava</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, hodnotenie hviezdičkami <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />, odporúčanie aplikácie</translation>
 <translation id="4690510401873698237">Polička dolu</translation>
 <translation id="4724120544754982507">Centrum upozornení – počet neprečítaných upozornení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ČASTO POUŽÍVANÉ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{zostáva 1 mesiac}few{zostávajú # mesiace}many{zostáva # mesiaca}other{zostáva # mesiacov}}</translation>
-<translation id="4841881773802181781">Vloženie</translation>
-<translation id="4881695831933465202">Otvoriť</translation>
 <translation id="4888938634149558681">Volať</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunda}few{# sekundy}many{# sekundy}other{# sekúnd}}</translation>
 <translation id="4971687151119236543">Média – predchádzajúca stopa</translation>
 <translation id="5046499563572181734">Klepnite tu</translation>
 <translation id="5076340679995252485">&amp;Prilepiť</translation>
-<translation id="5137751499640340777">Spustiť Asistenta Google</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> spolu s aplikáciou <ph name="IN_PLACE_APP" /> vytvorili nový priečinok.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5266161281976477809">Trojuholníkové tlačidlo na zobrazenie skrytého obsahu</translation>
 <translation id="5278860589123563674">Nepodarilo sa odoslať</translation>
@@ -132,6 +139,7 @@
 <translation id="5574202486608032840">Systém <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Šípka doľava</translation>
+<translation id="5675363643668471212">Položka na poličke</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{Aktívne dnes}=1{Aktívne včera}few{Aktívne pred # dňami}many{Aktívne pred # dňa}other{Aktívne pred # dňami}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 deň a }few{# dni a }many{# dňa a }other{# dní a }}</translation>
@@ -155,6 +163,7 @@
 <translation id="6394627529324717982">Čiarka</translation>
 <translation id="6397363302884558537">Prestať hovoriť</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Pred 1 s}few{Pred # s}many{Pred # s}other{Pred # s}}</translation>
+<translation id="6417265370957905582">Asistent Google</translation>
 <translation id="6430678249303439055">Blokovať všetky upozornenia z tejto aplikácie</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{pred sekundou}few{pred # sekundami}many{pred # sekundami}other{pred # sekundami}}</translation>
 <translation id="6539092367496845964">Vyskytol sa problém. Skúste to znova neskôr.</translation>
@@ -165,7 +174,7 @@
 <translation id="6620110761915583480">Uložiť súbor</translation>
 <translation id="6656912866303152668">Skontrolujte, či má <ph name="TARGET_DEVICE_NAME" /> v Chrome zapnutú synchronizáciu, a skúste to odoslať znova.</translation>
 <translation id="6699343763173986273">Média – ďalšia stopa</translation>
-<translation id="673773751041746814">Odstránenie</translation>
+<translation id="6710213216561001401">Dozadu</translation>
 <translation id="6779314412797872738">Ak chcete odtiaľto odoslať číslo do telefónu s Androidom, <ph name="TROUBLESHOOT_LINK" /> pre obidve zariadenia v nastaveniach.</translation>
 <translation id="6786750046913594791">Zatvoriť priečinok</translation>
 <translation id="6808150112686056157">Médiá – zastaviť</translation>
@@ -183,6 +192,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Zostáva 1 min}few{Zostávajú # min}many{Zostáva # min}other{Zostáva # min}}</translation>
 <translation id="7319740667687257810">Launcher, čiastočné zobrazenie</translation>
+<translation id="7352651011704765696">Vyskytla sa chyba</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pred 1 min}few{Pred # min}many{Pred # min}other{Pred # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Zostáva 1 minúta}few{Zostávajú # minúty}many{Zostáva # minúty}other{Zostáva # minút}}</translation>
@@ -192,21 +202,24 @@
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7781829728241885113">Včera</translation>
 <translation id="7814458197256864873">&amp;Kopírovať</translation>
+<translation id="7848989271541991537">Prechod na <ph name="PAGE_NUMBER" />. stránku, <ph name="ROW_NUMBER" />. riadok,<ph name="COLUMN_NUMBER" />. stĺpec.</translation>
 <translation id="7879499977785298635">Neblokovať</translation>
 <translation id="7907591526440419938">Otvoriť súbor</translation>
 <translation id="7969046989155602842">Príkaz</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Viac ako 1 neprečítané upozornenie}few{Viac ako # neprečítané upozornenia}many{More than # unread notifications}other{Viac ako # neprečítaných upozornení}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{o 1 mes.}few{o # mes.}many{o # mes.}other{o # mes.}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">Spustiť hlasový dopyt v Asistentovi Google</translation>
+<translation id="8090736967111090568">Číslo zo zdroja <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Pred 1 hodinou}few{Pred # hodinami}many{Pred # hodinou}other{Pred # hodinami}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Zostáva 1 s}few{Zostávajú # s}many{Zostáva # s}other{Zostáva # s}}</translation>
+<translation id="8134065097954893699">Táto stránka sa znova načítava</translation>
 <translation id="8144660977431427332">Vaše vyhľadávania využívajú technológiu Asistenta Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatické dopĺňanie</translation>
 <translation id="815598010540052116">Rolovať nadol</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Stránkovať nadol</translation>
 <translation id="8245914219290430011">Tab</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />, aplikácia</translation>
 <translation id="8259556432390118667">Hodnota farby v šestnástkovej sústave</translation>
 <translation id="8328145009876646418">Ľavý okraj</translation>
 <translation id="8331626408530291785">Rolovať nahor</translation>
@@ -231,12 +244,13 @@
 <translation id="8926951137623668982">Polička je vždy skrytá</translation>
 <translation id="8996630695507351249">Skontrolujte, či je zariadenie <ph name="TARGET_DEVICE_NAME" /> pripojené k internetu.</translation>
 <translation id="9002566407876343676">otvorenie</translation>
-<translation id="9039076430527029379">Prejsť na <ph name="PAGE_NUMBER" />. stranu, <ph name="ROW_NUMBER" />. riadok, <ph name="COLUMN_NUMBER" />. stĺpec.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}few{# s}many{# s}other{# s}}</translation>
 <translation id="9059834730836941392">Zbaliť upozornenie</translation>
 <translation id="9150735707954472829">Karta</translation>
 <translation id="9161053988251441839">ODPORÚČANÉ APLIKÁCIE</translation>
 <translation id="9170848237812810038">&amp;Naspäť</translation>
+<translation id="9178475906033259337">Zobrazuje sa jeden výsledok pre <ph name="QUERY" /></translation>
 <translation id="932327136139879170">Domov</translation>
 <translation id="944069440740578670">Neprečítané upozornenia</translation>
+<translation id="974545358917229949">Zobrazujú sa výsledky (<ph name="RESULT_COUNT" />) pre <ph name="QUERY" /></translation>
 </translationbundle>

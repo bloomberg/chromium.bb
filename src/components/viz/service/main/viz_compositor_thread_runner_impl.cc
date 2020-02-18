@@ -195,8 +195,7 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
   frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>(init_params);
   frame_sink_manager_->BindAndSetClient(
       std::move(params->frame_sink_manager), nullptr,
-      mojom::FrameSinkManagerClientPtr(
-          std::move(params->frame_sink_manager_client)));
+      std::move(params->frame_sink_manager_client));
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
   if (pending_viz_dev_tools_params_)
@@ -219,8 +218,7 @@ void VizCompositorThreadRunnerImpl::InitVizDevToolsOnCompositorThread(
     mojom::VizDevToolsParamsPtr params) {
   DCHECK(frame_sink_manager_);
   devtools_server_ = ui_devtools::UiDevToolsServer::CreateForViz(
-      network::mojom::TCPServerSocketPtr(std::move(params->server_socket)),
-      params->server_port);
+      std::move(params->server_socket), params->server_port);
   auto dom_agent =
       std::make_unique<ui_devtools::DOMAgentViz>(frame_sink_manager_.get());
   auto css_agent = std::make_unique<ui_devtools::CSSAgent>(dom_agent.get());

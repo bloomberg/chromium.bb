@@ -5,8 +5,8 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_DEVICE_HANDLER_IMPL_H_
 #define CHROMEOS_NETWORK_NETWORK_DEVICE_HANDLER_IMPL_H_
 
-#include <map>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
@@ -39,11 +39,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
       const std::string& device_path,
       const std::string& property_name,
       const base::Value& value,
-      const base::Closure& callback,
-      const network_handler::ErrorCallback& error_callback) override;
-
-  void RequestRefreshIPConfigs(
-      const std::string& device_path,
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) override;
 
@@ -82,6 +77,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
 
   void SetMACAddressRandomizationEnabled(bool enabled) override;
 
+  void SetUsbEthernetMacAddressSource(const std::string& source) override;
+
   void SetWifiTDLSEnabled(
       const std::string& ip_or_mac_address,
       bool enabled,
@@ -119,6 +116,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
 
   // NetworkStateHandlerObserver overrides
   void DeviceListChanged() override;
+  void DevicePropertiesUpdated(const DeviceState* device) override;
 
  private:
   friend class NetworkHandler;
@@ -141,13 +139,39 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
 
   void Init(NetworkStateHandler* network_state_handler);
 
-  // Apply the current value of |cellular_allow_roaming_| to all existing
+  // Applies the current value of |cellular_allow_roaming_| to all existing
   // cellular devices of Shill.
   void ApplyCellularAllowRoamingToShill();
 
-  // Apply the current value of |mac_addr_randomization_enabled_| to wifi
+  // Applies the current value of |mac_addr_randomization_enabled_| to wifi
   // devices.
   void ApplyMACAddressRandomizationToShill();
+
+  // Applies the current value of |usb_ethernet_mac_address_source_| to primary
+  // enabled USB Ethernet device. Does nothing if MAC address source is not
+  // specified yet.
+  void ApplyUsbEthernetMacAddressSourceToShill();
+
+  // Callback to be called on MAC address source change request failure.
+  // The request was called on device with |device_path| path and
+  // |device_mac_address| MAC address to change MAC address source to the new
+  // |mac_address_source| value.
+  void OnSetUsbEthernetMacAddressSourceError(
+      const std::string& device_path,
+      const std::string& device_mac_address,
+      const std::string& mac_address_source,
+      const network_handler::ErrorCallback& error_callback,
+      const std::string& shill_error_name,
+      const std::string& shill_error_message);
+
+  // Checks whether Device is enabled USB Ethernet adapter.
+  bool IsUsbEnabledDevice(const DeviceState* device_state) const;
+
+  // Updates the primary enabled USB Ethernet device path.
+  void UpdatePrimaryEnabledUsbEthernetDevice();
+
+  // Resets MAC address source property for secondary USB Ethernet devices.
+  void ResetMacAddressSourceForSecondaryUsbEthernetDevices() const;
 
   // Sets the value of |mac_addr_randomization_supported_| based on
   // whether shill thinks it is supported on the wifi device. If it is
@@ -165,6 +189,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   MACAddressRandomizationSupport mac_addr_randomization_supported_ =
       MACAddressRandomizationSupport::NOT_REQUESTED;
   bool mac_addr_randomization_enabled_ = false;
+
+  std::string usb_ethernet_mac_address_source_;
+  bool usb_ethernet_mac_address_source_needs_update_ = false;
+  std::string primary_enabled_usb_ethernet_device_path_;
+  // Set of device's MAC addresses that do not support MAC address source change
+  // to |usb_ethernet_mac_address_source_|. Use MAC address as unique device
+  // identifier, because link name can change.
+  std::unordered_set<std::string> mac_address_change_not_supported_;
+
   base::WeakPtrFactory<NetworkDeviceHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandlerImpl);

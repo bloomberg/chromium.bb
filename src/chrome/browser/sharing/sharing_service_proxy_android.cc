@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sharing/sharing_constants.h"
+#include "chrome/browser/sharing/sharing_device_source.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -40,6 +41,7 @@ SharingServiceProxyAndroid::~SharingServiceProxyAndroid() {
 void SharingServiceProxyAndroid::SendSharedClipboardMessage(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& j_guid,
+    const jlong j_last_updated_timestamp_millis,
     const base::android::JavaParamRef<jstring>& j_text,
     const base::android::JavaParamRef<jobject>& j_runnable) {
   std::string guid = base::android::ConvertJavaStringToUTF8(env, j_guid);
@@ -49,14 +51,25 @@ void SharingServiceProxyAndroid::SendSharedClipboardMessage(
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_shared_clipboard_message()->set_text(std::move(text));
 
+  syncer::DeviceInfo device(
+      guid,
+      /*client_name=*/std::string(),
+      /*chrome_version=*/std::string(),
+      /*sync_user_agent=*/std::string(), sync_pb::SyncEnums::TYPE_UNSET,
+      /*signin_scoped_device_id=*/std::string(), base::SysInfo::HardwareInfo(),
+      base::Time::FromJavaTime(j_last_updated_timestamp_millis),
+      /*send_tab_to_self_receiving_enabled=*/false,
+      /*sharing_info=*/base::nullopt);
   auto callback =
       base::BindOnce(base::android::RunIntCallbackAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_runnable));
   sharing_service_->SendMessageToDevice(
-      guid, kSendMessageTimeout, std::move(sharing_message),
+      device, kSendMessageTimeout, std::move(sharing_message),
       base::BindOnce(
           [](base::OnceCallback<void(int)> callback,
-             SharingSendMessageResult result) {
+             SharingSendMessageResult result,
+             std::unique_ptr<chrome_browser_sharing::ResponseMessage>
+                 response) {
             std::move(callback).Run(static_cast<int>(result));
           },
           std::move(callback)));
@@ -65,9 +78,10 @@ void SharingServiceProxyAndroid::SendSharedClipboardMessage(
 void SharingServiceProxyAndroid::GetDeviceCandidates(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_device_info,
-    jint j_capabilities) {
-  auto device_candidates =
-      sharing_service_->GetDeviceCandidates(j_capabilities);
+    jint j_required_feature) {
+  auto device_candidates = sharing_service_->GetDeviceCandidates(
+      static_cast<sync_pb::SharingSpecificFields::EnabledFeatures>(
+          j_required_feature));
   for (const auto& device_info : device_candidates) {
     Java_SharingServiceProxy_createDeviceInfoAndAppendToList(
         env, j_device_info,
@@ -81,7 +95,7 @@ void SharingServiceProxyAndroid::GetDeviceCandidates(
 void SharingServiceProxyAndroid::AddDeviceCandidatesInitializedObserver(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_runnable) {
-  sharing_service_->AddDeviceCandidatesInitializedObserver(
+  sharing_service_->GetDeviceSource()->AddReadyCallback(
       base::BindOnce(base::android::RunRunnableAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_runnable)));
 }

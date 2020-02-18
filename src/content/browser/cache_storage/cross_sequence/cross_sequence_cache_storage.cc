@@ -24,8 +24,11 @@ class CrossSequenceCacheStorage::Inner {
 
   Inner(const url::Origin& origin,
         CacheStorageOwner owner,
-        scoped_refptr<CacheStorageContextWithManager> context)
-      : handle_(context->CacheManager()->OpenCacheStorage(origin, owner)) {}
+        scoped_refptr<CacheStorageContextWithManager> context) {
+    scoped_refptr<CacheStorageManager> manager = context->CacheManager();
+    if (manager)
+      handle_ = manager->OpenCacheStorage(origin, owner);
+  }
 
   void OpenCache(scoped_refptr<CrossSequenceCacheStorageCache> cache_wrapper,
                  const std::string& cache_name,
@@ -96,6 +99,7 @@ class CrossSequenceCacheStorage::Inner {
   void MatchCache(const std::string& cache_name,
                   blink::mojom::FetchAPIRequestPtr request,
                   blink::mojom::CacheQueryOptionsPtr match_options,
+                  CacheStorageSchedulerPriority priority,
                   int64_t trace_id,
                   CacheStorageCache::ResponseCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -105,12 +109,13 @@ class CrossSequenceCacheStorage::Inner {
       return;
     }
     handle_.value()->MatchCache(cache_name, std::move(request),
-                                std::move(match_options), trace_id,
+                                std::move(match_options), priority, trace_id,
                                 std::move(callback));
   }
 
   void MatchAllCaches(blink::mojom::FetchAPIRequestPtr request,
                       blink::mojom::CacheQueryOptionsPtr match_options,
+                      CacheStorageSchedulerPriority priority,
                       int64_t trace_id,
                       CacheStorageCache::ResponseCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -120,8 +125,8 @@ class CrossSequenceCacheStorage::Inner {
       return;
     }
     handle_.value()->MatchAllCaches(std::move(request),
-                                    std::move(match_options), trace_id,
-                                    std::move(callback));
+                                    std::move(match_options), priority,
+                                    trace_id, std::move(callback));
   }
 
   void WriteToCache(const std::string& cache_name,
@@ -141,7 +146,7 @@ class CrossSequenceCacheStorage::Inner {
   }
 
  private:
-  const CacheStorageHandle handle_;
+  CacheStorageHandle handle_;
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
@@ -250,22 +255,24 @@ void CrossSequenceCacheStorage::MatchCache(
     const std::string& cache_name,
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr match_options,
+    CacheStorageSchedulerPriority priority,
     int64_t trace_id,
     CacheStorageCache::ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   inner_.Post(FROM_HERE, &Inner::MatchCache, cache_name, std::move(request),
-              std::move(match_options), trace_id,
+              std::move(match_options), priority, trace_id,
               WrapCallbackForCurrentSequence(std::move(callback)));
 }
 
 void CrossSequenceCacheStorage::MatchAllCaches(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr match_options,
+    CacheStorageSchedulerPriority priority,
     int64_t trace_id,
     CacheStorageCache::ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   inner_.Post(FROM_HERE, &Inner::MatchAllCaches, std::move(request),
-              std::move(match_options), trace_id,
+              std::move(match_options), priority, trace_id,
               WrapCallbackForCurrentSequence(std::move(callback)));
 }
 

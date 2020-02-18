@@ -31,9 +31,6 @@ const mockTaskHistory = /** @type {!TaskHistory} */ ({
 // Set up test components.
 function setUp() {
   // Mock LoadTimeData strings.
-  window.loadTimeData.data = {
-    DRIVE_FS_ENABLED: false,
-  };
   window.loadTimeData.getString = id => id;
 
   const mockTask = /** @type {!chrome.fileManagerPrivate.FileTask} */ ({
@@ -50,6 +47,16 @@ function setUp() {
       },
     },
     fileManagerPrivate: {
+      DriveConnectionStateType: {
+        ONLINE: 'ONLINE',
+        OFFLINE: 'OFFLINE',
+        METERED: 'METERED',
+      },
+      DriveOfflineReason: {
+        NOT_READY: 'NOT_READY',
+        NO_NETWORK: 'NO_NETWORK',
+        NO_SERVICE: 'NO_SERVICE',
+      },
       getFileTasks: function(entries, callback) {
         setTimeout(callback.bind(null, [mockTask]), 0);
       },
@@ -95,7 +102,7 @@ function getMockFileManager() {
         };
       },
       getDriveConnectionState: function() {
-        return VolumeManagerCommon.DriveConnectionType.ONLINE;
+        return chrome.fileManagerPrivate.DriveConnectionStateType;
       },
       getVolumeInfo: function(entry) {
         return {
@@ -239,7 +246,7 @@ function showImportCrostiniImageDialogIsCalled(entries) {
  */
 function testToOpenExeFile(callback) {
   const mockFileSystem = new MockFileSystem('volumeId');
-  const mockEntry = new MockFileEntry(mockFileSystem, '/test.exe');
+  const mockEntry = MockFileEntry.create(mockFileSystem, '/test.exe');
 
   reportPromise(
       showHtmlOfAlertDialogIsCalled(
@@ -252,7 +259,7 @@ function testToOpenExeFile(callback) {
  */
 function testToOpenDmgFile(callback) {
   const mockFileSystem = new MockFileSystem('volumeId');
-  const mockEntry = new MockFileEntry(mockFileSystem, '/test.dmg');
+  const mockEntry = MockFileEntry.create(mockFileSystem, '/test.dmg');
 
   reportPromise(
       showHtmlOfAlertDialogIsCalled([mockEntry], 'test.dmg', 'NO_TASK_FOR_DMG'),
@@ -264,7 +271,7 @@ function testToOpenDmgFile(callback) {
  */
 function testToOpenCrxFile(callback) {
   const mockFileSystem = new MockFileSystem('volumeId');
-  const mockEntry = new MockFileEntry(mockFileSystem, '/test.crx');
+  const mockEntry = MockFileEntry.create(mockFileSystem, '/test.crx');
 
   reportPromise(
       showHtmlOfAlertDialogIsCalled(
@@ -277,7 +284,7 @@ function testToOpenCrxFile(callback) {
  */
 function testToOpenRtfFile(callback) {
   const mockFileSystem = new MockFileSystem('volumeId');
-  const mockEntry = new MockFileEntry(mockFileSystem, '/test.rtf');
+  const mockEntry = MockFileEntry.create(mockFileSystem, '/test.rtf');
 
   reportPromise(
       openSuggestAppsDialogIsCalled([mockEntry], ['application/rtf']),
@@ -290,7 +297,7 @@ function testToOpenRtfFile(callback) {
 function testOpenSuggestAppsDialogWithMetadata(callback) {
   const showByExtensionAndMimeIsCalled = new Promise((resolve, reject) => {
     const mockFileSystem = new MockFileSystem('volumeId');
-    const mockEntry = new MockFileEntry(mockFileSystem, '/test.rtf');
+    const mockEntry = MockFileEntry.create(mockFileSystem, '/test.rtf');
     const fileManager = getMockFileManager();
 
     FileTasks
@@ -327,7 +334,7 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
 function testOpenSuggestAppsDialogFailure(callback) {
   const onFailureIsCalled = new Promise((resolve, reject) => {
     const mockFileSystem = new MockFileSystem('volumeId');
-    const mockEntry = new MockFileEntry(mockFileSystem, '/test');
+    const mockEntry = MockFileEntry.create(mockFileSystem, '/test');
     const fileManager = getMockFileManager();
 
     FileTasks
@@ -370,7 +377,7 @@ function testOpenTaskPicker(callback) {
   };
 
   const mockFileSystem = new MockFileSystem('volumeId');
-  const mockEntry = new MockFileEntry(mockFileSystem, '/test.tiff');
+  const mockEntry = MockFileEntry.create(mockFileSystem, '/test.tiff');
 
   reportPromise(
       showDefaultTaskDialogCalled([mockEntry], ['image/tiff']), callback);
@@ -434,7 +441,7 @@ function testOpenWithMostRecentlyExecuted(callback) {
       };
 
   const mockFileSystem = new MockFileSystem('volumeId');
-  const mockEntry = new MockFileEntry(mockFileSystem, '/test.tiff');
+  const mockEntry = MockFileEntry.create(mockFileSystem, '/test.tiff');
 
   const promise = new Promise((resolve, reject) => {
     const fileManager = getMockFileManager();
@@ -506,7 +513,7 @@ function testOpenZipWithZipArchiver(callback) {
       };
 
   const mockFileSystem = new MockFileSystem('volumeId');
-  const mockEntry = new MockFileEntry(mockFileSystem, '/test.zip');
+  const mockEntry = MockFileEntry.create(mockFileSystem, '/test.zip');
 
   const promise = new Promise((resolve, reject) => {
     const fileManager = getMockFileManager();
@@ -557,45 +564,14 @@ function setUpInstallLinuxPackage() {
  */
 function testOpenInstallLinuxPackageDialog(callback) {
   const fileManager = setUpInstallLinuxPackage();
-  fileManager.crostini.setRootAccessAllowed('termina', true);
   const mockFileSystem = new MockFileSystem('volumeId');
-  const mockEntry = new MockFileEntry(mockFileSystem, '/test.deb');
+  const mockEntry = MockFileEntry.create(mockFileSystem, '/test.deb');
 
   const promise = new Promise((resolve, reject) => {
     fileManager.ui.installLinuxPackageDialog = {
       showInstallLinuxPackageDialog: function(entry) {
         resolve();
       },
-    };
-
-    FileTasks
-        .create(
-            fileManager.volumeManager, fileManager.metadataModel,
-            fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            mockTaskHistory, fileManager.namingController, fileManager.crostini)
-        .then(tasks => {
-          tasks.executeDefault();
-        });
-  });
-
-  reportPromise(promise, callback);
-}
-
-/**
- * Tests opening a .deb file. Since root access is denied, the crostini
- * linux package install dialog is not shown.  The default action is taken.
- */
-function testInstallLinuxPackageNotAllowedNoRootAccess(callback) {
-  const fileManager = setUpInstallLinuxPackage();
-  fileManager.crostini.setRootAccessAllowed('termina', false);
-  const mockFileSystem = new MockFileSystem('volumeId');
-  const mockEntry = new MockFileEntry(mockFileSystem, '/test.deb');
-
-  const promise = new Promise((resolve, reject) => {
-    // The Install Linux dialog is not shown,
-    // chrome.fileManagerPrivate.executeTask is called as the default action.
-    window.chrome.fileManagerPrivate.executeTask = () => {
-      resolve();
     };
 
     FileTasks
@@ -631,7 +607,7 @@ function testToOpenTiniFileOpensImportCrostiniImageDialog(callback) {
   };
 
   const mockEntry =
-      new MockFileEntry(new MockFileSystem('testfilesystem'), '/test.tini');
+      MockFileEntry.create(new MockFileSystem('testfilesystem'), '/test.tini');
 
   reportPromise(showImportCrostiniImageDialogIsCalled([mockEntry]), callback);
 }

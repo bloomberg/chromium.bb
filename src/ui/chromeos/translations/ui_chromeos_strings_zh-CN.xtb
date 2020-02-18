@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">企鹅</translation>
 <translation id="183183971458492120">正在加载信息…</translation>
 <translation id="1838709767668011582">Google 网站</translation>
-<translation id="1839704667838141620">更改此文件的分享方式</translation>
 <translation id="1844692022597038441">此文件无法在离线模式下播放。</translation>
 <translation id="184633654410729720">泰语键盘(Kedmanee)</translation>
 <translation id="1847880352285315359">已保存</translation>
-<translation id="1864676585353837027">更改这些文件的分享方式</translation>
 <translation id="1864756863218646478">找不到该文件。</translation>
 <translation id="1921986354447415460">土耳其语 F 键盘</translation>
 <translation id="1931134289871235022">斯洛伐克语</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">安装新服务</translation>
 <translation id="1947424002851288782">德语键盘</translation>
 <translation id="1972984168337863910">展开文件反馈面板</translation>
-<translation id="197560921582345123">可以修改</translation>
 <translation id="1984603991036629094">亚美尼亚语拼音键盘</translation>
 <translation id="2001796770603320721">在云端硬盘中管理</translation>
 <translation id="2009067268969781306">将驱动器格式化会删除其中存储的所有数据。此操作无法撤消。</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">取消固定文件夹</translation>
 <translation id="3678559383040232393">马耳他语键盘</translation>
 <translation id="3685122418104378273">当您使用移动数据网络时，Google 云端硬盘同步功能默认情况下处于停用状态。</translation>
+<translation id="3689865792480713551">取消<ph name="ACTIVITY_DESCRIPTION" />。</translation>
 <translation id="3726463242007121105">系统不支持此设备的文件系统，因此无法打开此设备。</translation>
 <translation id="3741243925913727067">将您的媒体设备上的照片和视频备份到 Google 云端硬盘。</translation>
 <translation id="3749289110408117711">文件名</translation>
@@ -286,7 +284,6 @@
 <translation id="4522570452068850558">详细信息</translation>
 <translation id="4552678318981539154">购买更多存储空间</translation>
 <translation id="4559767610552730302">焦外成像</translation>
-<translation id="4568854179928172494">修改时间</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 文件</translation>
 <translation id="457386861538956877">更多...</translation>
 <translation id="4579744207439506346">已将<ph name="ENTRY_NAME" />增加到已选项。</translation>
@@ -462,6 +459,7 @@
 <translation id="6339145975392024142">美式国际 (PC) 键盘</translation>
 <translation id="6346310558342052870">访问权限受限</translation>
 <translation id="6353618411602605519">克罗地亚语键盘</translation>
+<translation id="6356685157277930264">文件反馈窗口</translation>
 <translation id="6358884629796491903">龙</translation>
 <translation id="637062427944097960">此文件已在其他桌面打开。请转至<ph name="USER_NAME" />(<ph name="MAIL_ADDRESS" />)查看此文件。</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> 项内容</translation>
@@ -561,6 +559,7 @@
 <translation id="7589661784326793847">请稍候</translation>
 <translation id="7603724359189955920">网格</translation>
 <translation id="7627790789328695202">糟糕，<ph name="FILE_NAME" />已存在。请改用其他名称并重试。</translation>
+<translation id="7628656427739290098">已完成 <ph name="PERCENT" />%。</translation>
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7654209398114106148">正在移动 <ph name="NUMBER_OF_ITEMS" /> 项内容…</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -587,7 +586,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">抓取这些文件将使用约 <ph name="FILE_SIZE" /> 移动数据。</translation>
 <translation id="7846076177841592234">取消选择</translation>
-<translation id="7850851215703745691">这些云端硬盘文件尚未共享</translation>
 <translation id="7853966320808728790">法语 BÉPO</translation>
 <translation id="7864662577698025113">添加新服务</translation>
 <translation id="7873831373602885875">无法保存到<ph name="FOLDER_NAME" />。所有修改都会保存到“下载内容”文件夹中的<ph name="DOWNLOADS_FOLDER" />。</translation>
@@ -603,7 +601,6 @@
 <translation id="7969525169268594403">斯洛维尼亚语</translation>
 <translation id="7982283708762922719">高度</translation>
 <translation id="7987485481246785146">索拉尼库尔德语（阿拉伯语字母）键盘</translation>
-<translation id="799923393800005025">可以查看</translation>
 <translation id="8008366997883261463">杰克罗素梗犬</translation>
 <translation id="8028993641010258682">大小</translation>
 <translation id="8031722894461705849">斯洛伐克语键盘</translation>
@@ -665,8 +662,6 @@
 <translation id="8600173386174225982">文件列表已切换到缩略图视图。</translation>
 <translation id="8601932370724196034">Crostini 映像文件</translation>
 <translation id="8669949407341943408">正在移动…</translation>
-<translation id="8671210955687109937">可以评论</translation>
-<translation id="8686213429977032554">此云端硬盘文件尚未共享</translation>
 <translation id="8698464937041809063">Google 绘图</translation>
 <translation id="8714406895390098252">自行车</translation>
 <translation id="8719721339511222681">已选择<ph name="ENTRY_NAME" />。</translation>

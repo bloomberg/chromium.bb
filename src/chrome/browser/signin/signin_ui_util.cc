@@ -7,18 +7,25 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/supports_user_data.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -39,15 +46,86 @@
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 namespace {
+
+// Key for storing animated identity per-profile data.
+const char kAnimatedIdentityKeyName[] = "animated_identity_user_data";
+
+constexpr base::TimeDelta kDelayForCrossWindowAnimationReplay =
+    base::TimeDelta::FromSeconds(5);
+
+// UserData attached to the user profile, keeping track of the last time the
+// animation was shown to the user.
+class AvatarButtonUserData : public base::SupportsUserData::Data {
+ public:
+  ~AvatarButtonUserData() override = default;
+
+  // Returns the  last time the animated identity was shown. Returns the null
+  // time if it was never shown.
+  static base::TimeTicks GetAnimatedIdentityLastShown(Profile* profile) {
+    DCHECK(profile);
+    AvatarButtonUserData* data = GetForProfile(profile);
+    if (!data)
+      return base::TimeTicks();
+    return data->animated_identity_last_shown_;
+  }
+
+  // Sets the time when the animated identity was shown.
+  static void SetAnimatedIdentityLastShown(Profile* profile,
+                                           base::TimeTicks time) {
+    DCHECK(!time.is_null());
+    GetOrCreateForProfile(profile)->animated_identity_last_shown_ = time;
+  }
+
+  // Returns the last time the avatar was highlighted. Returns the null time if
+  // it was never shown.
+  static base::TimeTicks GetAvatarLastHighlighted(Profile* profile) {
+    DCHECK(profile);
+    AvatarButtonUserData* data = GetForProfile(profile);
+    if (!data)
+      return base::TimeTicks();
+    return data->avatar_last_highlighted_;
+  }
+
+  // Sets the time when the avatar was highlighted.
+  static void SetAvatarLastHighlighted(Profile* profile, base::TimeTicks time) {
+    DCHECK(!time.is_null());
+    GetOrCreateForProfile(profile)->avatar_last_highlighted_ = time;
+  }
+
+ private:
+  // Returns nullptr if there is no AvatarButtonUserData attached to the
+  // profile.
+  static AvatarButtonUserData* GetForProfile(Profile* profile) {
+    return static_cast<AvatarButtonUserData*>(
+        profile->GetUserData(kAnimatedIdentityKeyName));
+  }
+
+  // Never returns nullptr.
+  static AvatarButtonUserData* GetOrCreateForProfile(Profile* profile) {
+    DCHECK(profile);
+    AvatarButtonUserData* existing_data = GetForProfile(profile);
+    if (existing_data)
+      return existing_data;
+
+    auto new_data = std::make_unique<AvatarButtonUserData>();
+    auto* new_data_ptr = new_data.get();
+    profile->SetUserData(kAnimatedIdentityKeyName, std::move(new_data));
+    return new_data_ptr;
+  }
+
+  base::TimeTicks animated_identity_last_shown_;
+  base::TimeTicks avatar_last_highlighted_;
+};
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void CreateDiceTurnSyncOnHelper(
     Profile* profile,
     Browser* browser,
     signin_metrics::AccessPoint signin_access_point,
     signin_metrics::PromoAction signin_promo_action,
     signin_metrics::Reason signin_reason,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
   // DiceTurnSyncOnHelper is suicidal (it will delete itself once it finishes
   // enabling sync).
@@ -55,8 +133,9 @@ void CreateDiceTurnSyncOnHelper(
                            signin_promo_action, signin_reason, account_id,
                            signin_aborted_mode);
 }
-}  // namespace
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+}  // namespace
 
 namespace signin_ui_util {
 
@@ -122,7 +201,7 @@ void EnableSyncFromPromo(
              signin_metrics::AccessPoint signin_access_point,
              signin_metrics::PromoAction signin_promo_action,
              signin_metrics::Reason signin_reason,
-             const std::string& account_id,
+             const CoreAccountId& account_id,
              DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode)>
         create_dice_turn_sync_on_helper_callback) {
   DCHECK(browser);
@@ -172,23 +251,6 @@ void EnableSyncFromPromo(
 }
 }  // namespace internal
 
-std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
-  std::string email =
-      identity_manager
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id)
-          ->email;
-  if (email.empty()) {
-    DCHECK_EQ(
-        signin::IdentityManager::AccountIdMigrationState::MIGRATION_NOT_STARTED,
-        identity_manager->GetAccountIdMigrationState());
-    return account_id;
-  }
-  return email;
-}
-
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   // Fetch account ids for accounts that have a token.
   signin::IdentityManager* identity_manager =
@@ -197,7 +259,7 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
       identity_manager->GetExtendedAccountInfoForAccountsWithRefreshToken();
 
   // Compute the default account.
-  std::string default_account_id;
+  CoreAccountId default_account_id;
   if (identity_manager->HasPrimaryAccount()) {
     default_account_id = identity_manager->GetPrimaryAccountId();
   } else {
@@ -233,6 +295,30 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
+base::string16 GetShortProfileIdentityToDisplay(
+    const ProfileAttributesEntry& profile_attributes_entry,
+    Profile* profile) {
+  DCHECK(profile);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  CoreAccountInfo core_info =
+      identity_manager->GetUnconsentedPrimaryAccountInfo();
+  // If there's no unconsented primary account, simply return the name of the
+  // profile according to profile attributes.
+  if (core_info.IsEmpty())
+    return profile_attributes_entry.GetName();
+
+  base::Optional<AccountInfo> extended_info =
+      identity_manager
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              core_info.account_id);
+  // If there's no given name available, return the user email.
+  if (!extended_info.has_value() || extended_info->given_name.empty())
+    return base::UTF8ToUTF16(core_info.email);
+
+  return base::UTF8ToUTF16(extended_info->given_name);
+}
+
 std::string GetAllowedDomain(std::string signin_pattern) {
   std::vector<std::string> splitted_signin_pattern = base::SplitString(
       signin_pattern, "@", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -258,6 +344,84 @@ std::string GetAllowedDomain(std::string signin_pattern) {
     return std::string();
 
   return domain;
+}
+
+bool ShouldShowAnimatedIdentityOnOpeningWindow(
+    const ProfileAttributesStorage& profile_attributes_storage,
+    Profile* profile) {
+  DCHECK(profile);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  DCHECK(identity_manager->AreRefreshTokensLoaded());
+
+  base::TimeTicks animation_last_shown =
+      AvatarButtonUserData::GetAnimatedIdentityLastShown(profile);
+  // When a new window is created, only show the animation if it was never shown
+  // for this profile, or if it was shown in another window in the last few
+  // seconds (because the user may have missed it).
+  if (!animation_last_shown.is_null() &&
+      base::TimeTicks::Now() - animation_last_shown >
+          kDelayForCrossWindowAnimationReplay) {
+    return false;
+  }
+
+  // Show the user identity for users with multiple profiles.
+  if (profile_attributes_storage.GetNumberOfProfiles() > 1) {
+    return true;
+  }
+
+  // Show the user identity for users with multiple signed-in accounts.
+  return identity_manager->GetAccountsWithRefreshTokens().size() > 1;
+}
+
+void RecordAnimatedIdentityTriggered(Profile* profile) {
+  AvatarButtonUserData::SetAnimatedIdentityLastShown(profile,
+                                                     base::TimeTicks::Now());
+}
+
+void RecordAvatarIconHighlighted(Profile* profile) {
+  base::RecordAction(base::UserMetricsAction("AvatarToolbarButtonHighlighted"));
+  AvatarButtonUserData::SetAvatarLastHighlighted(profile,
+                                                 base::TimeTicks::Now());
+}
+
+void RecordProfileMenuViewShown(Profile* profile) {
+  base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened"));
+  if (profile->IsRegularProfile()) {
+    base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened_Regular"));
+  } else if (profile->IsGuestSession()) {
+    base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened_Guest"));
+  } else if (profile->IsIncognitoProfile()) {
+    base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened_Incognito"));
+  }
+
+  base::TimeTicks last_shown =
+      AvatarButtonUserData::GetAnimatedIdentityLastShown(profile);
+  if (!last_shown.is_null()) {
+    base::UmaHistogramLongTimes("Profile.Menu.OpenedAfterAvatarAnimation",
+                                base::TimeTicks::Now() - last_shown);
+  }
+
+  last_shown = AvatarButtonUserData::GetAvatarLastHighlighted(profile);
+  if (!last_shown.is_null()) {
+    base::UmaHistogramLongTimes("Profile.Menu.OpenedAfterAvatarHighlight",
+                                base::TimeTicks::Now() - last_shown);
+  }
+}
+
+void RecordProfileMenuClick(Profile* profile) {
+  base::RecordAction(
+      base::UserMetricsAction("ProfileMenu_ActionableItemClicked"));
+  if (profile->IsRegularProfile()) {
+    base::RecordAction(
+        base::UserMetricsAction("ProfileMenu_ActionableItemClicked_Regular"));
+  } else if (profile->IsGuestSession()) {
+    base::RecordAction(
+        base::UserMetricsAction("ProfileMenu_ActionableItemClicked_Guest"));
+  } else if (profile->IsIncognitoProfile()) {
+    base::RecordAction(
+        base::UserMetricsAction("ProfileMenu_ActionableItemClicked_Incognito"));
+  }
 }
 
 }  // namespace signin_ui_util

@@ -25,13 +25,13 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
-#include "storage/browser/fileapi/async_file_util.h"
-#include "storage/browser/fileapi/async_file_util_adapter.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/isolated_context.h"
-#include "storage/browser/fileapi/obfuscated_file_util.h"
+#include "storage/browser/file_system/async_file_util.h"
+#include "storage/browser/file_system/async_file_util_adapter.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/isolated_context.h"
+#include "storage/browser/file_system/obfuscated_file_util.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "storage/common/fileapi/file_system_util.h"
+#include "storage/common/file_system/file_system_util.h"
 
 namespace content {
 
@@ -388,7 +388,7 @@ void PluginPrivateDataDeletionHelper::DecrementTaskCount(
 void ClearPluginPrivateDataOnFileTaskRunner(
     scoped_refptr<storage::FileSystemContext> filesystem_context,
     const GURL& storage_origin,
-    const StoragePartition::OriginMatcherFunction& origin_matcher,
+    StoragePartition::OriginMatcherFunction origin_matcher,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const base::Time begin,
     const base::Time end,
@@ -416,8 +416,8 @@ void ClearPluginPrivateDataOnFileTaskRunner(
   // If a specific origin is provided, then check that it is in the list
   // returned and remove all the other origins.
   if (!storage_origin.is_empty()) {
-    DCHECK(origin_matcher.is_null()) << "Only 1 of |storage_origin| and "
-                                        "|origin_matcher| should be specified.";
+    DCHECK(!origin_matcher) << "Only 1 of |storage_origin| and "
+                               "|origin_matcher| should be specified.";
     if (!base::Contains(origins, storage_origin)) {
       // Nothing matches, so nothing to do.
       callback.Run();
@@ -430,7 +430,7 @@ void ClearPluginPrivateDataOnFileTaskRunner(
   }
 
   // If a filter is provided, determine which origins match.
-  if (!origin_matcher.is_null()) {
+  if (origin_matcher) {
     DCHECK(storage_origin.is_empty())
         << "Only 1 of |storage_origin| and |origin_matcher| should be "
            "specified.";

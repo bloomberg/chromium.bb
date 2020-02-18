@@ -353,6 +353,97 @@ class Array {
   size_t size_ = 0;
 };
 
+// GrowableArray<T> is an array that owns elements of |T|, backed by an
+// Array<T>. When necessary, pushing will automatically trigger a resize.
+//
+// Note, for simplicity, this class currently differs from |std::vector| in that
+// |T| must be efficiently default-constructible. Allocated elements beyond the
+// end of the array are constructed and destructed.
+template <typename T>
+class GrowableArray {
+ public:
+  GrowableArray() = default;
+  GrowableArray(const GrowableArray &) = delete;
+  GrowableArray(GrowableArray &&other) { *this = std::move(other); }
+  ~GrowableArray() {}
+
+  GrowableArray &operator=(const GrowableArray &) = delete;
+  GrowableArray &operator=(GrowableArray &&other) {
+    size_ = other.size_;
+    other.size_ = 0;
+    array_ = std::move(other.array_);
+    return *this;
+  }
+
+  size_t size() const { return size_; }
+  bool empty() const { return size_ == 0; }
+
+  const T &operator[](size_t i) const { return array_[i]; }
+  T &operator[](size_t i) { return array_[i]; }
+
+  T *begin() { return array_.data(); }
+  const T *cbegin() const { return array_.data(); }
+  T *end() { return array_.data() + size_; }
+  const T *cend() const { return array_.data() + size_; }
+
+  // Push adds |elem| at the end of the internal array, growing if necessary. It
+  // returns false when allocation fails.
+  bool Push(T elem) {
+    if (!MaybeGrow()) {
+      return false;
+    }
+    array_[size_] = std::move(elem);
+    size_++;
+    return true;
+  }
+
+  // CopyFrom replaces the contents of the array with a copy of |in|. It returns
+  // true on success and false on allocation error.
+  bool CopyFrom(Span<const T> in) {
+    if (!array_.CopyFrom(in)) {
+      return false;
+    }
+    size_ = in.size();
+    return true;
+  }
+
+ private:
+  // If there is no room for one more element, creates a new backing array with
+  // double the size of the old one and copies elements over.
+  bool MaybeGrow() {
+    if (array_.size() == 0) {
+      return array_.Init(kDefaultSize);
+    }
+    // No need to grow if we have room for one more T.
+    if (size_ < array_.size()) {
+      return true;
+    }
+    // Double the array's size if it's safe to do so.
+    if (array_.size() > std::numeric_limits<size_t>::max() / 2) {
+      OPENSSL_PUT_ERROR(SSL, ERR_R_OVERFLOW);
+      return false;
+    }
+    Array<T> new_array;
+    if (!new_array.Init(array_.size() * 2)) {
+      return false;
+    }
+    for (size_t i = 0; i < array_.size(); i++) {
+      new_array[i] = std::move(array_[i]);
+    }
+    array_ = std::move(new_array);
+
+    return true;
+  }
+
+  // |size_| is the number of elements stored in this GrowableArray.
+  size_t size_ = 0;
+  // |array_| is the backing array. Note that |array_.size()| is this
+  // GrowableArray's current capacity and that |size_ <= array_.size()|.
+  Array<T> array_;
+  // |kDefaultSize| is the default initial size of the backing array.
+  static constexpr size_t kDefaultSize = 16;
+};
+
 // CBBFinishArray behaves like |CBB_finish| but stores the result in an Array.
 OPENSSL_EXPORT bool CBBFinishArray(CBB *cbb, Array<uint8_t> *out);
 
@@ -1148,6 +1239,11 @@ class SSLBuffer {
   uint16_t size_ = 0;
   // cap_ is how much memory beyond |buf_| + |offset_| is available.
   uint16_t cap_ = 0;
+  // inline_buf_ is a static buffer for short reads.
+  uint8_t inline_buf_[SSL3_RT_HEADER_LENGTH];
+  // buf_allocated_ is true if |buf_| points to allocated data and must be freed
+  // or false if it points into |inline_buf_|.
+  bool buf_allocated_ = false;
 };
 
 // ssl_read_buffer_extend_to extends the read buffer to the desired length. For
@@ -1265,9 +1361,17 @@ bool tls13_set_traffic_key(SSL *ssl, enum ssl_encryption_level_t level,
                            enum evp_aead_direction_t direction,
                            Span<const uint8_t> traffic_secret);
 
-// tls13_derive_early_secrets derives the early traffic secret. It returns true
-// on success and false on error.
-bool tls13_derive_early_secrets(SSL_HANDSHAKE *hs);
+// tls13_derive_early_secret derives the early traffic secret. It returns true
+// on success and false on error. Unlike with other traffic secrets, this
+// function does not pass the keys to QUIC. Call
+// |tls13_set_early_secret_for_quic| to do so. This is done to due to an
+// ordering complication around resolving HelloRetryRequest on the server.
+bool tls13_derive_early_secret(SSL_HANDSHAKE *hs);
+
+// tls13_set_early_secret_for_quic passes the early traffic secrets, as
+// derived by |tls13_derive_early_secret|, to QUIC. It returns true on success
+// and false on error.
+bool tls13_set_early_secret_for_quic(SSL_HANDSHAKE *hs);
 
 // tls13_derive_handshake_secrets derives the handshake traffic secret. It
 // returns true on success and false on error.
@@ -1371,6 +1475,24 @@ enum tls12_server_hs_state_t {
   state12_send_server_finished,
   state12_finish_server_handshake,
   state12_done,
+};
+
+enum tls13_server_hs_state_t {
+  state13_select_parameters = 0,
+  state13_select_session,
+  state13_send_hello_retry_request,
+  state13_read_second_client_hello,
+  state13_send_server_hello,
+  state13_send_server_certificate_verify,
+  state13_send_server_finished,
+  state13_read_second_client_flight,
+  state13_process_end_of_early_data,
+  state13_read_client_certificate,
+  state13_read_client_certificate_verify,
+  state13_read_channel_id,
+  state13_read_client_finished,
+  state13_send_new_session_ticket,
+  state13_done,
 };
 
 // handback_t lists the points in the state machine where a handback can occur.
@@ -1594,9 +1716,6 @@ struct SSL_HANDSHAKE {
   // be filled in.
   bool needs_psk_binder : 1;
 
-  bool received_hello_retry_request : 1;
-  bool sent_hello_retry_request : 1;
-
   // handshake_finalized is true once the handshake has completed, at which
   // point accessors should use the established state.
   bool handshake_finalized : 1;
@@ -1815,7 +1934,8 @@ int ssl_parse_extensions(const CBS *cbs, uint8_t *out_alert,
 enum ssl_verify_result_t ssl_verify_peer_cert(SSL_HANDSHAKE *hs);
 // ssl_reverify_peer_cert verifies the peer certificate for |hs| when resuming a
 // session.
-enum ssl_verify_result_t ssl_reverify_peer_cert(SSL_HANDSHAKE *hs);
+enum ssl_verify_result_t ssl_reverify_peer_cert(SSL_HANDSHAKE *hs,
+                                                bool send_alert);
 
 enum ssl_hs_wait_t ssl_get_finished(SSL_HANDSHAKE *hs);
 bool ssl_send_finished(SSL_HANDSHAKE *hs);
@@ -2147,8 +2267,6 @@ BSSL_NAMESPACE_END
 
 DEFINE_LHASH_OF(SSL_SESSION)
 
-DEFINE_NAMED_STACK_OF(CertCompressionAlg, bssl::CertCompressionAlg)
-
 BSSL_NAMESPACE_BEGIN
 
 // An ssl_shutdown_t describes the shutdown state of one end of the connection,
@@ -2279,12 +2397,16 @@ struct SSL3_STATE {
   // token_binding_negotiated is set if Token Binding was negotiated.
   bool token_binding_negotiated : 1;
 
-  // pq_experimental_signal_seen is true if the peer was observed
-  // sending/echoing the post-quantum experiment signal.
-  bool pq_experiment_signal_seen : 1;
-
   // alert_dispatch is true there is an alert in |send_alert| to be sent.
   bool alert_dispatch : 1;
+
+  // renegotiate_pending is whether the read half of the channel is blocked on a
+  // HelloRequest.
+  bool renegotiate_pending : 1;
+
+  // used_hello_retry_request is whether the handshake used a TLS 1.3
+  // HelloRetryRequest message.
+  bool used_hello_retry_request : 1;
 
   // hs_buf is the buffer of handshake data to process.
   UniquePtr<BUF_MEM> hs_buf;
@@ -3129,7 +3251,7 @@ struct ssl_ctx_st {
   bssl::UniquePtr<STACK_OF(SRTP_PROTECTION_PROFILE)> srtp_profiles;
 
   // Defined compression algorithms for certificates.
-  bssl::UniquePtr<STACK_OF(CertCompressionAlg)> cert_compression_algs;
+  bssl::GrowableArray<bssl::CertCompressionAlg> cert_compression_algs;
 
   // Supported group values inherited by SSL structure
   bssl::Array<uint16_t> supported_group_list;
@@ -3213,11 +3335,6 @@ struct ssl_ctx_st {
 
   // If enable_early_data is true, early data can be sent and accepted.
   bool enable_early_data : 1;
-
-  // pq_experiment_signal indicates that an empty extension should be sent
-  // (for clients) or echoed (for servers) to indicate participation in an
-  // experiment of post-quantum key exchanges.
-  bool pq_experiment_signal : 1;
 
  private:
   ~ssl_ctx_st();

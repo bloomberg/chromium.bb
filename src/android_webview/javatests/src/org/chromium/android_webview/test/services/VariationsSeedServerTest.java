@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.android_webview.services.IVariationsSeedServer;
+import org.chromium.android_webview.common.services.IVariationsSeedServer;
 import org.chromium.android_webview.services.VariationsSeedServer;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
@@ -48,7 +48,7 @@ public class VariationsSeedServerTest {
     }
 
     @After
-    public void tearDown() throws IOException {
+    public void tearDown() {
         Assert.assertTrue("Failed to delete \"" + mTempFile + "\"", mTempFile.delete());
     }
 

@@ -10,6 +10,7 @@
 #include "test_utils/gl_raii.h"
 
 #include "util/random_utils.h"
+#include "util/test_utils.h"
 
 using namespace angle;
 
@@ -157,7 +158,7 @@ class ParallelShaderCompileTest : public ANGLETest
                     }
                     ++i;
                 }
-                Sleep(kPollInterval);
+                angle::Sleep(kPollInterval);
             }
 
             while (!linkTasks.empty())
@@ -174,7 +175,7 @@ class ParallelShaderCompileTest : public ANGLETest
                     }
                     ++i;
                 }
-                Sleep(kPollInterval);
+                angle::Sleep(kPollInterval);
             }
         }
     };
@@ -388,13 +389,8 @@ TEST_P(ParallelShaderCompileTestES31, LinkAndDispatchManyPrograms)
     runner.run(this);
 }
 
-ANGLE_INSTANTIATE_TEST(ParallelShaderCompileTest,
-                       ES2_D3D9(),
-                       ES2_D3D11(),
-                       ES2_OPENGL(),
-                       ES2_OPENGLES(),
-                       ES2_VULKAN());
+ANGLE_INSTANTIATE_TEST_ES2(ParallelShaderCompileTest);
 
-ANGLE_INSTANTIATE_TEST(ParallelShaderCompileTestES31, ES31_OPENGL(), ES31_OPENGLES(), ES31_D3D11());
+ANGLE_INSTANTIATE_TEST_ES31(ParallelShaderCompileTestES31);
 
 }  // namespace

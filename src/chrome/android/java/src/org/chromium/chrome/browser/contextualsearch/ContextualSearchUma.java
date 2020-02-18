@@ -4,16 +4,16 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.support.annotation.IntDef;
 import android.text.format.DateUtils;
 import android.util.Pair;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.components.sync.AndroidSyncSettings;
 
 import java.lang.annotation.Retention;
@@ -275,15 +275,6 @@ public class ContextualSearchUma {
     private @interface ResolvedGranularity {
         int SINGLE_WORD = 0;
         int MULTI_WORD = 1;
-        int NUM_ENTRIES = 2;
-    }
-
-    // Constants used to log UMA "enum" histograms for triggering the Translate Onebox.
-    @IntDef({ForceTranslate.DID_FORCE, ForceTranslate.WOULD_FORCE})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ForceTranslate {
-        int DID_FORCE = 0;
-        int WOULD_FORCE = 1;
         int NUM_ENTRIES = 2;
     }
 
@@ -1582,10 +1573,9 @@ public class ContextualSearchUma {
      * @return The code for the Contextual Search preference.
      */
     private static int getPreferenceValue() {
-        PrefServiceBridge preferences = PrefServiceBridge.getInstance();
-        if (preferences.isContextualSearchUninitialized()) {
+        if (ContextualSearchManager.isContextualSearchUninitialized()) {
             return Preference.UNINITIALIZED;
-        } else if (preferences.isContextualSearchDisabled()) {
+        } else if (ContextualSearchManager.isContextualSearchDisabled()) {
             return Preference.DISABLED;
         }
         return Preference.ENABLED;

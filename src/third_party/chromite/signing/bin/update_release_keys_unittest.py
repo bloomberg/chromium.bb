@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # Copyright 2019 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -129,7 +128,7 @@ class TestRepoYaml(cros_test_lib.MockTempDirTestCase):
 
   def test_ReadsRepoYaml(self):
     """Test missing file case."""
-    osutils.WriteFile(os.path.join(self.base, 'repo.yaml'),
+    osutils.WriteFile(os.path.join(self.base, 'contents.yaml'),
                       'metadata-version: 0\nmp-keysets: [foo-mp]\n')
     options = update_release_keys.ParseArgs(self.argv)
     kd = update_release_keys.KeyringData(
@@ -146,12 +145,12 @@ class TestRepoYaml(cros_test_lib.MockTempDirTestCase):
 
   def test_ReadAssertsProperly(self):
     """Test bad file case."""
-    osutils.WriteFile(os.path.join(self.base, 'repo.yaml'), '\n')
+    osutils.WriteFile(os.path.join(self.base, 'contents.yaml'), '\n')
     options = update_release_keys.ParseArgs(self.argv)
     self.assertRaises(update_release_keys.KeyimportError,
                       update_release_keys.KeyringData,
                       self.prod, self.base, options, self.config)
-    osutils.WriteFile(os.path.join(self.base, 'repo.yaml'),
+    osutils.WriteFile(os.path.join(self.base, 'contents.yaml'),
                       'metadata-version: 9\n')
     options = update_release_keys.ParseArgs(self.argv)
     self.assertRaises(update_release_keys.KeyimportError,
@@ -163,8 +162,8 @@ class TestRepoYaml(cros_test_lib.MockTempDirTestCase):
     options = update_release_keys.ParseArgs(self.argv)
     kd = update_release_keys.KeyringData(
         self.prod, self.base, options, self.config)
-    self.assertEqual(kd.repo_yaml, os.path.join(self.base, 'repo.yaml'))
+    self.assertEqual(kd.contents_yaml, os.path.join(self.base, 'contents.yaml'))
     kd.keysets = {'metadata-version': 0, 'mp-keysets': ['foo-mp']}
     kd.WriteRepoYaml()
-    self.assertEqual(osutils.ReadFile(kd.repo_yaml),
+    self.assertEqual(osutils.ReadFile(kd.contents_yaml),
                      'metadata-version: 0\nmp-keysets:\n- foo-mp\n')

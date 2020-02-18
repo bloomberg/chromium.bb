@@ -30,6 +30,7 @@
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/models/menu_model.h"
@@ -46,16 +47,16 @@ class ExtensionContextMenuBrowserTest
  public:
   void SetUp() override {
     extensions::ExtensionBrowserTest::SetUp();
-    // Service Workers are currently only available on the trunk, so set
+    // Service Workers are currently only available on certain channels, so set
     // the channel for those tests.
     if (GetParam() == ContextType::kServiceWorker) {
-      current_channel_ = std::make_unique<extensions::ScopedCurrentChannel>(
-          version_info::Channel::UNKNOWN);
+      current_channel_ =
+          std::make_unique<extensions::ScopedWorkerBasedExtensionsChannel>();
     }
   }
 
   std::string GetExtensionDirectory(base::StringPiece root) {
-    if (GetParam() == ContextType::kEventPage)
+    if (GetParam() == ContextType::kPersistentBackground)
       return std::string(root);
     DCHECK_EQ(ContextType::kServiceWorker, GetParam());
     return base::StrCat({root, "/service_worker"});
@@ -273,7 +274,8 @@ class ExtensionContextMenuBrowserTest
     EXPECT_EQ(should_be_checked, menu->IsCommandIdChecked(command_id));
   }
 
-  std::unique_ptr<extensions::ScopedCurrentChannel> current_channel_;
+  std::unique_ptr<extensions::ScopedWorkerBasedExtensionsChannel>
+      current_channel_;
 };
 
 // Tests adding a simple context menu item.
@@ -304,6 +306,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuBrowserTest, Simple) {
 // Tests that previous onclick is not fired after updating the menu's onclick,
 // and whether setting onclick to null removes the handler.
 IN_PROC_BROWSER_TEST_P(ExtensionContextMenuBrowserTest, UpdateOnclick) {
+  // The onclick property is not supported for service worker-based
+  // extensions.
+  if (GetParam() == ContextType::kServiceWorker)
+    return;
   ExtensionTestMessageListener listener_error1("onclick1-unexpected", false);
   ExtensionTestMessageListener listener_error2("onclick2-unexpected", false);
   ExtensionTestMessageListener listener_update1("update1", true);
@@ -930,13 +936,13 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuBrowserTest, UpdateCheckboxes) {
                                 false);
 }
 
-INSTANTIATE_TEST_SUITE_P(EventPage,
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
                          ExtensionContextMenuBrowserTest,
-                         ::testing::Values(ContextType::kEventPage));
+                         ::testing::Values(ContextType::kPersistentBackground));
 INSTANTIATE_TEST_SUITE_P(ServiceWorker,
                          ExtensionContextMenuBrowserTest,
                          ::testing::Values(ContextType::kServiceWorker));
 // TODO(crbug.com/939664): Enable this test for service workers?
-INSTANTIATE_TEST_SUITE_P(EventPage,
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
                          ExtensionContextMenuBrowserLazyTest,
-                         ::testing::Values(ContextType::kEventPage));
+                         ::testing::Values(ContextType::kPersistentBackground));

@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -194,7 +196,7 @@ class PasswordAutofillManagerTest : public testing::Test {
 
   // The TestAutofillDriver uses a SequencedWorkerPool which expects the
   // existence of a MessageLoop.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(PasswordAutofillManagerTest, FillSuggestion) {
@@ -299,9 +301,10 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
     EXPECT_CALL(*autofill_client, HideAutofillPopup());
     base::HistogramTester histograms;
     password_autofill_manager_->DidAcceptSuggestion(
-        test_username_, is_suggestion_on_password_field
-                            ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
-                            : autofill::POPUP_ITEM_ID_USERNAME_ENTRY,
+        test_username_,
+        is_suggestion_on_password_field
+            ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
+            : autofill::POPUP_ITEM_ID_USERNAME_ENTRY,
         1);
     histograms.ExpectUniqueSample(
         kDropdownSelectedHistogram,
@@ -323,7 +326,7 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
   data.password_field.value = test_password_;
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
   data.additional_logins[additional_username] = additional;
@@ -383,7 +386,7 @@ TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
   data.username_field.value = test_username_;
   data.preferred_realm = "android://hash@com.example1.android/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "android://hash@com.example2.android/";
   base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
   data.additional_logins[additional_username] = additional;
@@ -414,7 +417,7 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
   data.password_field.value = test_password_;
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
   data.additional_logins[additional_username] = additional;
@@ -451,7 +454,7 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   data.password_field.value = base::ASCIIToUTF16("foobar");
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
@@ -487,7 +490,7 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
   data.password_field.value = base::ASCIIToUTF16("foobar");
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
@@ -520,7 +523,7 @@ TEST_F(PasswordAutofillManagerTest,
   data.password_field.value = base::ASCIIToUTF16("foobar");
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
@@ -559,7 +562,7 @@ TEST_F(PasswordAutofillManagerTest,
   data.password_field.value = base::ASCIIToUTF16("foobar");
   data.preferred_realm = "http://foo.com/";
 
-  autofill::PasswordAndRealm additional;
+  autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   data.additional_logins[additional_username] = additional;
@@ -735,7 +738,8 @@ TEST_F(PasswordAutofillManagerTest,
   gfx::RectF element_bounds;
   EXPECT_FALSE(
       password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
-          element_bounds, base::i18n::RIGHT_TO_LEFT));
+          element_bounds, base::i18n::RIGHT_TO_LEFT,
+          /*show_password_suggestions=*/true));
 }
 
 TEST_F(PasswordAutofillManagerTest,
@@ -770,7 +774,8 @@ TEST_F(PasswordAutofillManagerTest,
           false, PopupType::kPasswords, _));
   EXPECT_TRUE(
       password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
-          element_bounds, base::i18n::RIGHT_TO_LEFT));
+          element_bounds, base::i18n::RIGHT_TO_LEFT,
+          /*show_password_suggestions=*/true));
   histograms.ExpectUniqueSample(
       kDropdownShownHistogram,
       metrics_util::PasswordDropdownState::kStandardGenerate, 1);
@@ -783,6 +788,69 @@ TEST_F(PasswordAutofillManagerTest,
   histograms.ExpectUniqueSample(
       kDropdownSelectedHistogram,
       metrics_util::PasswordDropdownSelectedOption::kGenerate, 1);
+}
+
+TEST_F(PasswordAutofillManagerTest,
+       MaybeShowPasswordSuggestionsWithOmittedCredentials) {
+  auto client = std::make_unique<TestPasswordManagerClient>();
+  auto autofill_client = std::make_unique<MockAutofillClient>();
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  data.username_field.value = test_username_;
+  data.password_field.value = test_password_;
+  data.origin = GURL("https://foo.test");
+
+  favicon::MockFaviconService favicon_service;
+  EXPECT_CALL(*client, GetFaviconService()).WillOnce(Return(&favicon_service));
+  EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _));
+  password_autofill_manager_->OnAddPasswordFillData(data);
+
+  base::string16 generation_string =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD);
+
+  EXPECT_CALL(
+      *autofill_client,
+      ShowAutofillPopup(
+          element_bounds, base::i18n::RIGHT_TO_LEFT,
+          AllOf(SuggestionVectorValuesAre(
+                    ElementsAreArray(GetSuggestionList({generation_string}))),
+                SuggestionVectorIconsAre(
+                    ElementsAreArray(GetIconsList({"keyIcon"})))),
+          false, PopupType::kPasswords, _));
+
+  EXPECT_TRUE(
+      password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
+          element_bounds, base::i18n::RIGHT_TO_LEFT,
+          /*show_password_suggestions=*/false));
+}
+
+TEST_F(PasswordAutofillManagerTest, DisplayAccountSuggestionsIndicatorIcon) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);
+
+  std::unique_ptr<TestPasswordManagerClient> client(
+      new TestPasswordManagerClient);
+  std::unique_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  data.username_field.value = test_username_;
+  data.password_field.value = base::ASCIIToUTF16("foobar");
+  data.uses_account_store = true;
+
+  password_autofill_manager_->OnAddPasswordFillData(data);
+
+  std::vector<autofill::Suggestion> suggestions;
+  EXPECT_CALL(*autofill_client, ShowAutofillPopup(element_bounds, _, _, false,
+                                                  PopupType::kPasswords, _))
+      .WillOnce(testing::SaveArg<2>(&suggestions));
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      base::i18n::RIGHT_TO_LEFT, base::string16(), false, element_bounds);
+  ASSERT_THAT(suggestions.size(), testing::Ge(1u));  // No footer on Android.
+  EXPECT_THAT(suggestions[0].store_indicator_icon, "google");
 }
 
 }  // namespace password_manager

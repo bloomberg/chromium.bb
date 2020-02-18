@@ -17,7 +17,7 @@
 #include "content/browser/devtools/browser_devtools_agent_host.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -91,6 +91,10 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
       return "failed to launch";
     case base::TERMINATION_STATUS_OOM:
       return "oom";
+#if defined(OS_WIN)
+    case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
+      return "integrity failure";
+#endif
     case base::TERMINATION_STATUS_MAX_ENUM:
       break;
   }
@@ -267,6 +271,11 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
                             bool waiting_for_debugger,
                             bool flatten_protocol) {
     std::string id = base::UnguessableToken::Create().ToString();
+    // We don't support or allow the non-flattened protocol when in binary mode.
+    // So, we coerce the setting to true, as the non-flattened mode is
+    // deprecated anyway.
+    if (handler->root_session_->client()->UsesBinaryProtocol())
+      flatten_protocol = true;
     Session* session = new Session(handler, agent_host, id, flatten_protocol);
     handler->attached_sessions_[id].reset(session);
     DevToolsAgentHostImpl* agent_host_impl =
@@ -316,14 +325,19 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   }
 
   void SendMessageToAgentHost(const std::string& message) {
+    // This method is only used in the non-flat mode, it's the implementation
+    // for Target.SendMessageToTarget. And since the binary mode implies
+    // flatten_protocol_ (we force the flag to true), we can assume in this
+    // method that |message| is JSON.
+    DCHECK(!flatten_protocol_);
+
     if (throttle_) {
-      auto* client = handler_->root_session_->client();
-      std::unique_ptr<protocol::DictionaryValue> value =
-          protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
-              message, client->UsesBinaryProtocol()));
-      std::string method;
-      if (value->getString(kMethod, &method) && method == kResumeMethod)
-        ResumeIfThrottled();
+      base::Optional<base::Value> value = base::JSONReader::Read(message);
+      const std::string* method;
+      if (value.has_value() && (method = value->FindStringKey(kMethod)) &&
+          *method == kResumeMethod) {
+        throttle_->Clear();
+      }
     }
 
     agent_host_->DispatchProtocolMessage(this, message);
@@ -334,10 +348,8 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   }
 
   bool UsesBinaryProtocol() override {
-    if (flatten_protocol_)
-      return true;
-    auto* client = handler_->root_session_->client();
-    return client->UsesBinaryProtocol();
+    return flatten_protocol_ ||
+           handler_->root_session_->client()->UsesBinaryProtocol();
   }
 
  private:
@@ -417,7 +429,7 @@ NavigationThrottle::ThrottleCheckResult TargetHandler::Throttle::MaybeAttach() {
   if (!target_handler_)
     return PROCEED;
   agent_host_ = target_handler_->auto_attacher_.AutoAttachToFrame(
-      static_cast<NavigationHandleImpl*>(navigation_handle()));
+      NavigationRequest::From(navigation_handle()));
   if (!agent_host_.get())
     return PROCEED;
   target_handler_->auto_attached_sessions_[agent_host_.get()]->SetThrottle(
@@ -472,7 +484,7 @@ void TargetHandler::SetRenderer(int process_host_id,
 }
 
 Response TargetHandler::Disable() {
-  SetAutoAttachInternal(false, false, false, base::DoNothing());
+  SetAutoAttachInternal(false, false, false, false, base::DoNothing());
   SetDiscoverTargets(false);
   auto_attached_sessions_.clear();
   attached_sessions_.clear();
@@ -486,6 +498,11 @@ void TargetHandler::DidFinishNavigation() {
 std::unique_ptr<NavigationThrottle> TargetHandler::CreateThrottleForNavigation(
     NavigationHandle* navigation_handle) {
   if (!auto_attacher_.ShouldThrottleFramesNavigation())
+    return nullptr;
+  FrameTreeNode* frame_tree_node =
+      NavigationRequest::From(navigation_handle)->frame_tree_node();
+  bool is_window_open = frame_tree_node->original_opener();
+  if (is_window_open && !attach_to_window_open_)
     return nullptr;
   return std::make_unique<Throttle>(weak_factory_.GetWeakPtr(),
                                     navigation_handle);
@@ -505,8 +522,10 @@ void TargetHandler::ClearThrottles() {
 void TargetHandler::SetAutoAttachInternal(bool auto_attach,
                                           bool wait_for_debugger_on_start,
                                           bool flatten,
+                                          bool window_open,
                                           base::OnceClosure callback) {
   flatten_auto_attach_ = flatten;
+  attach_to_window_open_ = window_open;
   auto_attacher_.SetAutoAttach(auto_attach, wait_for_debugger_on_start,
                                std::move(callback));
   if (!auto_attacher_.ShouldThrottleFramesNavigation())
@@ -574,9 +593,11 @@ void TargetHandler::SetAutoAttach(
     bool auto_attach,
     bool wait_for_debugger_on_start,
     Maybe<bool> flatten,
+    Maybe<bool> window_open,
     std::unique_ptr<SetAutoAttachCallback> callback) {
   SetAutoAttachInternal(
       auto_attach, wait_for_debugger_on_start, flatten.fromMaybe(false),
+      window_open.fromMaybe(false),
       base::BindOnce(&SetAutoAttachCallback::sendSuccess, std::move(callback)));
 }
 

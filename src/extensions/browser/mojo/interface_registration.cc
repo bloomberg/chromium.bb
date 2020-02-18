@@ -13,7 +13,6 @@
 #include "content/public/browser/site_instance.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/mojo/keep_alive_impl.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
@@ -51,16 +50,11 @@ void RegisterInterfacesForExtension(service_manager::BinderRegistryWithArgs<
                                     const Extension* extension) {
   DCHECK(extension);
 
-  registry->AddInterface(
-      base::Bind(KeepAliveImpl::Create,
-                 render_frame_host->GetProcess()->GetBrowserContext(),
-                 base::RetainedRef(extension)));
-
 #if BUILDFLAG(ENABLE_WIFI_DISPLAY)
   if (ExtensionHasPermission(extension, render_frame_host->GetProcess(),
                              "displaySource")) {
     registry->AddInterface(
-        base::Bind(WiFiDisplaySessionServiceImpl::BindToRequest,
+        base::Bind(WiFiDisplaySessionServiceImpl::BindToReceiver,
                    render_frame_host->GetProcess()->GetBrowserContext()));
     registry->AddInterface(
         base::Bind(WiFiDisplayMediaServiceImpl::BindToRequest));

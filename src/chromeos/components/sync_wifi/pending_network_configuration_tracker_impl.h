@@ -12,6 +12,8 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace chromeos {
+
 namespace sync_wifi {
 
 // Keeps track of in flight updates to the local network stack and persists
@@ -19,26 +21,25 @@ namespace sync_wifi {
 class PendingNetworkConfigurationTrackerImpl
     : public PendingNetworkConfigurationTracker {
  public:
-  PendingNetworkConfigurationTrackerImpl(PrefService* pref_service);
+  explicit PendingNetworkConfigurationTrackerImpl(PrefService* pref_service);
   ~PendingNetworkConfigurationTrackerImpl() override;
 
   // Registers preferences used by this class in the provided |registry|.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // sync_wifi::PendingNetworkConfigurationTracker::
-  void TrackPendingUpdate(
-      const std::string& change_guid,
-      const std::string& ssid,
+  std::string TrackPendingUpdate(
+      const NetworkIdentifier& id,
       const base::Optional<sync_pb::WifiConfigurationSpecificsData>& specifics)
       override;
   void MarkComplete(const std::string& change_guid,
-                    const std::string& ssid) override;
+                    const NetworkIdentifier& id) override;
   void IncrementCompletedAttempts(const std::string& change_guid,
-                                  const std::string& ssid) override;
+                                  const NetworkIdentifier& id) override;
   std::vector<PendingNetworkConfigurationUpdate> GetPendingUpdates() override;
   base::Optional<PendingNetworkConfigurationUpdate> GetPendingUpdate(
       const std::string& change_guid,
-      const std::string& ssid) override;
+      const NetworkIdentifier& id) override;
 
  private:
   PrefService* pref_service_;
@@ -48,5 +49,7 @@ class PendingNetworkConfigurationTrackerImpl
 };
 
 }  // namespace sync_wifi
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_COMPONENTS_SYNC_WIFI_PENDING_NETWORK_CONFIGURATION_TRACKER_IMPL_H_

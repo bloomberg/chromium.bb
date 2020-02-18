@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree.h"
@@ -41,10 +42,6 @@ class AXPlatformNodeTest : public testing::Test, public AXTreeManager {
   // AXTreeManager implementation.
   AXNode* GetNodeFromTree(const ui::AXTreeID tree_id,
                           const int32_t node_id) const override;
-  AXPlatformNodeDelegate* GetDelegate(const AXTreeID tree_id,
-                                      const int32_t node_id) const override;
-  AXPlatformNodeDelegate* GetRootDelegate(
-      const AXTreeID tree_id) const override;
   AXTreeID GetTreeID() const override;
   AXTreeID GetParentTreeID() const override;
   ui::AXNode* GetRootAsAXNode() const override;
@@ -61,11 +58,10 @@ class AXPlatformNodeTest : public testing::Test, public AXTreeManager {
   AXTreeUpdate Build3X3Table();
   AXTreeUpdate BuildAriaColumnAndRowCountGrids();
 
-  AXTreeUpdate BuildListBox(
-      bool option_1_is_selected,
-      bool option_2_is_selected,
-      bool option_3_is_selected,
-      ax::mojom::State additional_state = ax::mojom::State::kNone);
+  AXTreeUpdate BuildListBox(bool option_1_is_selected,
+                            bool option_2_is_selected,
+                            bool option_3_is_selected,
+                            ax::mojom::State additional_state);
 
   std::unique_ptr<AXTree> tree_;
 };

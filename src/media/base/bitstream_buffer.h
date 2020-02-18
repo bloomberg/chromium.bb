@@ -50,16 +50,6 @@ class MEDIA_EXPORT BitstreamBuffer {
                   off_t offset = 0,
                   base::TimeDelta presentation_timestamp = kNoTimestamp);
 
-  // As above, but creates by duplicating a SharedMemoryHandle.
-  // TODO(https://crbug.com/793446): remove once legacy shared memory has been
-  // converted.
-  BitstreamBuffer(int32_t id,
-                  base::SharedMemoryHandle handle,
-                  bool read_only,
-                  size_t size,
-                  off_t offset = 0,
-                  base::TimeDelta presentation_timestamp = kNoTimestamp);
-
   // Move operations are allowed.
   BitstreamBuffer(BitstreamBuffer&&);
   BitstreamBuffer& operator=(BitstreamBuffer&&);
@@ -76,7 +66,7 @@ class MEDIA_EXPORT BitstreamBuffer {
   scoped_refptr<DecoderBuffer> ToDecoderBuffer();
 
   // TODO(crbug.com/813845): As this is only used by Android, include
-  // EncryptionMode and optional EncryptionPattern when updating for Android.
+  // EncryptionScheme and optional EncryptionPattern when updating for Android.
   void SetDecryptionSettings(const std::string& key_id,
                              const std::string& iv,
                              const std::vector<SubsampleEntry>& subsamples);

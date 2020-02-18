@@ -28,6 +28,10 @@ namespace infobars {
 class InfoBarDelegate;
 }
 
+namespace web {
+class WebState;
+}  // namespace web
+
 enum class InfobarBannerPresentationState;
 
 // Must be subclassed. Defines common behavior for all Infobars.
@@ -35,8 +39,14 @@ enum class InfobarBannerPresentationState;
                                                    InfobarBannerDelegate,
                                                    InfobarModalDelegate>
 
+// Designated Initializer. |infoBarDelegate| is used to configure the Infobar
+// and subsequently perform related actions. |badgeSupport| should be YES if the
+// Infobar will add a Badge and support a Modal. |infobarType| is the unique
+// identifier for each Infobar, there can't be more than one infobar with the
+// same type added to the InfobarManager.
 - (instancetype)initWithInfoBarDelegate:
                     (infobars::InfoBarDelegate*)infoBarDelegate
+                           badgeSupport:(BOOL)badgeSupport
                                    type:(InfobarType)infobarType
     NS_DESIGNATED_INITIALIZER;
 
@@ -56,10 +66,6 @@ enum class InfobarBannerPresentationState;
 // Present the InfobarModal using |self.baseViewController|.
 - (void)presentInfobarModal;
 
-// Dismisses the InfobarBanner after the user is no longer interacting with it.
-// e.g. No in progress touch gestures,etc. The dismissal will be animated.
-- (void)dismissInfobarBannerAfterInteraction;
-
 // Dismisses the InfobarBanner immediately, if none is being presented
 // |completion| will still run.
 - (void)dismissInfobarBannerAnimated:(BOOL)animated
@@ -77,13 +83,17 @@ enum class InfobarBannerPresentationState;
 // ModalViewController owned by this Coordinator. Can be nil.
 @property(nonatomic, strong, readonly) UIViewController* modalViewController;
 
-// Handles any followup actions to Infobar UI events.
+// Handles any followup actions to Infobar UI events. Should be nil if the
+// Coordinator doesn't support a badge.
 @property(nonatomic, weak) id<InfobarBadgeUIDelegate> badgeDelegate;
 
 // The ChromeBrowserState owned by the Coordinator.
 // TODO(crbug.com/927064): Once we create the coordinators in the UI Hierarchy
 // browserState will be set on init.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+
+// The WebState that the InfobarCoordinator is associated with. Can be nil.
+@property(nonatomic, assign) web::WebState* webState;
 
 // The ChromeBrowserState owned by the Coordinator.
 // TODO(crbug.com/927064): Once we create the coordinators in the UI Hierarchy
@@ -101,6 +111,13 @@ enum class InfobarBannerPresentationState;
 
 // YES if the banner has ever been presented for this Coordinator.
 @property(nonatomic, assign, readonly) BOOL bannerWasPresented;
+
+// If YES this Coordinator's banner will have a higher presentation priority
+// than other InfobarCoordinators with this property set to NO. The parent
+// Coordinator will define what this means e.g. Longer presentation time before
+// auto-dismiss and/or jumping the queue and being the next banner to present,
+// etc.
+@property(nonatomic, assign) BOOL highPriorityPresentation;
 
 @end
 

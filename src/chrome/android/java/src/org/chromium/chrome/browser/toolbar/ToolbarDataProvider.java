@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.res.ColorStateList;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
+
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -127,7 +128,7 @@ public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
     default int getSecurityIconContentDescription() {
         switch (getSecurityLevel()) {
             case ConnectionSecurityLevel.NONE:
-            case ConnectionSecurityLevel.HTTP_SHOW_WARNING:
+            case ConnectionSecurityLevel.WARNING:
                 return R.string.accessibility_security_btn_warn;
             case ConnectionSecurityLevel.DANGEROUS:
                 return R.string.accessibility_security_btn_dangerous;
@@ -156,7 +157,7 @@ public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
      */
     @Nullable
     @Override
-    default public String getDisplaySearchTerms() {
+    public default String getDisplaySearchTerms() {
         return null;
     }
 }

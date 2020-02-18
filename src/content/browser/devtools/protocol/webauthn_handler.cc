@@ -16,7 +16,6 @@
 #include "content/browser/webauth/virtual_authenticator.h"
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/virtual_fido_device.h"
 #include "device/fido/virtual_u2f_device.h"
@@ -152,12 +151,15 @@ Response WebAuthnHandler::AddVirtualAuthenticator(
       transport == device::FidoTransportProtocol::kInternal
           ? device::AuthenticatorAttachment::kPlatform
           : device::AuthenticatorAttachment::kCrossPlatform,
-      options->GetHasResidentKey(), options->GetHasUserVerification());
+      options->GetHasResidentKey(false /* default */),
+      options->GetHasUserVerification(false /* default */));
   if (!authenticator)
     return Response::Error(kErrorCreatingAuthenticator);
 
   authenticator->SetUserPresence(
       options->GetAutomaticPresenceSimulation(true /* default */));
+  authenticator->set_user_verified(
+      options->GetIsUserVerified(false /* default */));
 
   *out_authenticator_id = authenticator->unique_id();
   return Response::OK();
@@ -192,7 +194,6 @@ Response WebAuthnHandler::AddCredential(
 
   if (!credential->HasRpId())
     return Response::InvalidParams(kRpIdRequired);
-  std::string rp_id = credential->GetRpId("");
 
   bool credential_created;
   if (credential->GetIsResidentCredential()) {
@@ -203,14 +204,14 @@ Response WebAuthnHandler::AddCredential(
       return Response::InvalidParams(kHandleRequiredForResidentCredential);
 
     credential_created = authenticator->AddResidentRegistration(
-        CopyBinaryToVector(credential->GetCredentialId()), rp_id,
+        CopyBinaryToVector(credential->GetCredentialId()),
+        credential->GetRpId(""),
         CopyBinaryToVector(credential->GetPrivateKey()),
         credential->GetSignCount(), CopyBinaryToVector(user_handle));
   } else {
     credential_created = authenticator->AddRegistration(
         CopyBinaryToVector(credential->GetCredentialId()),
-        base::make_span<uint8_t, device::kRpIdHashLength>(
-            device::fido_parsing_utils::CreateSHA256Hash(rp_id)),
+        credential->GetRpId(""),
         CopyBinaryToVector(credential->GetPrivateKey()),
         credential->GetSignCount());
   }

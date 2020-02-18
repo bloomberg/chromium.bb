@@ -6,7 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PREFETCHED_SIGNED_EXCHANGE_MANAGER_H_
 
 #include "base/macros.h"
-#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -25,8 +26,8 @@ class WebURLRequest;
 // For SignedExchangeSubresourcePrefetch feature. This class holds the
 // prefetched signed exchange info and will returns loaders for matching
 // requests.
-class PrefetchedSignedExchangeManager
-    : public GarbageCollectedFinalized<PrefetchedSignedExchangeManager> {
+class PrefetchedSignedExchangeManager final
+    : public GarbageCollected<PrefetchedSignedExchangeManager> {
  public:
   // If threre are no "allowed-alt-sxg" link headers in |inner_link_header|,
   // or |prefetched_signed_exchanges| is empty, returns null.
@@ -84,7 +85,8 @@ class PrefetchedSignedExchangeManager
       const WebURLRequest& request);
   std::unique_ptr<WebURLLoader> CreatePrefetchedSignedExchangeURLLoader(
       const WebURLRequest& request,
-      network::mojom::blink::URLLoaderFactoryPtr loader_factory);
+      mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+          loader_factory);
 
   Member<LocalFrame> frame_;
   std::unique_ptr<AlternateSignedExchangeResourceInfo> alternative_resources_;

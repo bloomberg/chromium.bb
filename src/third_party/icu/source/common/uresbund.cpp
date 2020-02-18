@@ -31,6 +31,7 @@
 #include "ucln_cmn.h"
 #include "cmemory.h"
 #include "cstring.h"
+#include "mutex.h"
 #include "uhash.h"
 #include "unicode/uenum.h"
 #include "uenumimp.h"
@@ -48,12 +49,9 @@ TODO: This cache should probably be removed when the deprecated code is
       completely removed.
 */
 static UHashtable *cache = NULL;
-static icu::UInitOnce gCacheInitOnce;
+static icu::UInitOnce gCacheInitOnce = U_INITONCE_INITIALIZER;
 
-static UMutex *resbMutex() {
-    static UMutex *m = new UMutex();
-    return m;
-}
+static UMutex resbMutex;
 
 /* INTERNAL: hashes an entry  */
 static int32_t U_CALLCONV hashEntry(const UHashTok parm) {
@@ -97,13 +95,12 @@ static UBool chopLocale(char *name) {
  *  Internal function
  */
 static void entryIncrease(UResourceDataEntry *entry) {
-    umtx_lock(resbMutex());
+    Mutex lock(&resbMutex);
     entry->fCountExisting++;
     while(entry->fParent != NULL) {
       entry = entry->fParent;
       entry->fCountExisting++;
     }
-    umtx_unlock(resbMutex());
 }
 
 /**
@@ -185,9 +182,8 @@ static int32_t ures_flushCache()
     /*if shared data hasn't even been lazy evaluated yet
     * return 0
     */
-    umtx_lock(resbMutex());
+    Mutex lock(&resbMutex);
     if (cache == NULL) {
-        umtx_unlock(resbMutex());
         return 0;
     }
 
@@ -219,7 +215,6 @@ static int32_t ures_flushCache()
          * got decremented by free_entry().
          */
     } while(deletedMore);
-    umtx_unlock(resbMutex());
 
     return rbDeletedNum;
 }
@@ -233,9 +228,8 @@ U_CAPI UBool U_EXPORT2 ures_dumpCacheContents(void) {
   const UHashElement *e;
   UResourceDataEntry *resB;
   
-    umtx_lock(resbMutex());
+    Mutex lock(&resbMutex);
     if (cache == NULL) {
-      umtx_unlock(resbMutex());
       fprintf(stderr,"%s:%d: RB Cache is NULL.\n", __FILE__, __LINE__);
       return FALSE;
     }
@@ -254,9 +248,6 @@ U_CAPI UBool U_EXPORT2 ures_dumpCacheContents(void) {
     }
     
     fprintf(stderr,"%s:%d: RB Cache still contains %d items.\n", __FILE__, __LINE__, uhash_count(cache));
-
-    umtx_unlock(resbMutex());
-    
     return cacheNotEmpty;
 }
 
@@ -669,107 +660,105 @@ static UResourceDataEntry *entryOpen(const char* path, const char* localeID,
         }
     }
  
-    umtx_lock(resbMutex());
-    { /* umtx_lock */
-        /* We're going to skip all the locales that do not have any data */
-        r = findFirstExisting(path, name, &isRoot, &hasChopped, &isDefault, &intStatus);
+    Mutex lock(&resbMutex);    // Lock resbMutex until the end of this function.
 
+    /* We're going to skip all the locales that do not have any data */
+    r = findFirstExisting(path, name, &isRoot, &hasChopped, &isDefault, &intStatus);
+
+    // If we failed due to out-of-memory, report the failure and exit early.
+    if (intStatus == U_MEMORY_ALLOCATION_ERROR) {
+        *status = intStatus;
+        goto finish;
+    }
+
+    if(r != NULL) { /* if there is one real locale, we can look for parents. */
+        t1 = r;
+        hasRealData = TRUE;
+        if ( usingUSRData ) {  /* This code inserts user override data into the inheritance chain */
+            UErrorCode usrStatus = U_ZERO_ERROR;
+            UResourceDataEntry *u1 = init_entry(t1->fName, usrDataPath, &usrStatus);
+            // If we failed due to out-of-memory, report the failure and exit early.
+            if (intStatus == U_MEMORY_ALLOCATION_ERROR) {
+                *status = intStatus;
+                goto finish;
+            }
+            if ( u1 != NULL ) {
+                if(u1->fBogus == U_ZERO_ERROR) {
+                    u1->fParent = t1;
+                    r = u1;
+                } else {
+                    /* the USR override data wasn't found, set it to be deleted */
+                    u1->fCountExisting = 0;
+                }
+            }
+        }
+        if (hasChopped && !isRoot) {
+            if (!loadParentsExceptRoot(t1, name, UPRV_LENGTHOF(name), usingUSRData, usrDataPath, status)) {
+                goto finish;
+            }
+        }
+    }
+
+    /* we could have reached this point without having any real data */
+    /* if that is the case, we need to chain in the default locale   */
+    if(r==NULL && openType == URES_OPEN_LOCALE_DEFAULT_ROOT && !isDefault && !isRoot) {
+        /* insert default locale */
+        uprv_strcpy(name, uloc_getDefault());
+        r = findFirstExisting(path, name, &isRoot, &hasChopped, &isDefault, &intStatus);
         // If we failed due to out-of-memory, report the failure and exit early.
         if (intStatus == U_MEMORY_ALLOCATION_ERROR) {
             *status = intStatus;
-            goto finishUnlock;
+            goto finish;
         }
-
-        if(r != NULL) { /* if there is one real locale, we can look for parents. */
+        intStatus = U_USING_DEFAULT_WARNING;
+        if(r != NULL) { /* the default locale exists */
             t1 = r;
             hasRealData = TRUE;
-            if ( usingUSRData ) {  /* This code inserts user override data into the inheritance chain */
-                UErrorCode usrStatus = U_ZERO_ERROR;
-                UResourceDataEntry *u1 = init_entry(t1->fName, usrDataPath, &usrStatus);
-                // If we failed due to out-of-memory, report the failure and exit early.
-                if (intStatus == U_MEMORY_ALLOCATION_ERROR) {
-                    *status = intStatus;
-                    goto finishUnlock;
-                }
-                if ( u1 != NULL ) {
-                    if(u1->fBogus == U_ZERO_ERROR) {
-                        u1->fParent = t1;
-                        r = u1;
-                    } else {
-                        /* the USR override data wasn't found, set it to be deleted */
-                        u1->fCountExisting = 0;
-                    }
-                }
-            }
+            isDefault = TRUE;
+            // TODO: Why not if (usingUSRData) { ... } like in the non-default-locale code path?
             if (hasChopped && !isRoot) {
                 if (!loadParentsExceptRoot(t1, name, UPRV_LENGTHOF(name), usingUSRData, usrDataPath, status)) {
-                    goto finishUnlock;
+                    goto finish;
                 }
             }
         }
+    }
 
-        /* we could have reached this point without having any real data */
-        /* if that is the case, we need to chain in the default locale   */
-        if(r==NULL && openType == URES_OPEN_LOCALE_DEFAULT_ROOT && !isDefault && !isRoot) {
-            /* insert default locale */
-            uprv_strcpy(name, uloc_getDefault());
-            r = findFirstExisting(path, name, &isRoot, &hasChopped, &isDefault, &intStatus);
-            // If we failed due to out-of-memory, report the failure and exit early.
-            if (intStatus == U_MEMORY_ALLOCATION_ERROR) {
-                *status = intStatus;
-                goto finishUnlock;
-            }
+    /* we could still have r == NULL at this point - maybe even default locale is not */
+    /* present */
+    if(r == NULL) {
+        uprv_strcpy(name, kRootLocaleName);
+        r = findFirstExisting(path, name, &isRoot, &hasChopped, &isDefault, &intStatus);
+        // If we failed due to out-of-memory, report the failure and exit early.
+        if (intStatus == U_MEMORY_ALLOCATION_ERROR) {
+            *status = intStatus;
+            goto finish;
+        }
+        if(r != NULL) {
+            t1 = r;
             intStatus = U_USING_DEFAULT_WARNING;
-            if(r != NULL) { /* the default locale exists */
-                t1 = r;
-                hasRealData = TRUE;
-                isDefault = TRUE;
-                // TODO: Why not if (usingUSRData) { ... } like in the non-default-locale code path?
-                if (hasChopped && !isRoot) {
-                    if (!loadParentsExceptRoot(t1, name, UPRV_LENGTHOF(name), usingUSRData, usrDataPath, status)) {
-                        goto finishUnlock;
-                    }
-                }
-            } 
+            hasRealData = TRUE;
+        } else { /* we don't even have the root locale */
+            *status = U_MISSING_RESOURCE_ERROR;
+            goto finish;
         }
-
-        /* we could still have r == NULL at this point - maybe even default locale is not */
-        /* present */
-        if(r == NULL) {
-            uprv_strcpy(name, kRootLocaleName);
-            r = findFirstExisting(path, name, &isRoot, &hasChopped, &isDefault, &intStatus);
-            // If we failed due to out-of-memory, report the failure and exit early.
-            if (intStatus == U_MEMORY_ALLOCATION_ERROR) {
-                *status = intStatus;
-                goto finishUnlock;
-            }
-            if(r != NULL) {
-                t1 = r;
-                intStatus = U_USING_DEFAULT_WARNING;
-                hasRealData = TRUE;
-            } else { /* we don't even have the root locale */
-                *status = U_MISSING_RESOURCE_ERROR;
-                goto finishUnlock;
-            }
-        } else if(!isRoot && uprv_strcmp(t1->fName, kRootLocaleName) != 0 &&
-                t1->fParent == NULL && !r->fData.noFallback) {
-            if (!insertRootBundle(t1, status)) {
-                goto finishUnlock;
-            }
-            if(!hasRealData) {
-                r->fBogus = U_USING_DEFAULT_WARNING;
-            }
+    } else if(!isRoot && uprv_strcmp(t1->fName, kRootLocaleName) != 0 &&
+            t1->fParent == NULL && !r->fData.noFallback) {
+        if (!insertRootBundle(t1, status)) {
+            goto finish;
         }
-
-        // TODO: Does this ever loop?
-        while(r != NULL && !isRoot && t1->fParent != NULL) {
-            t1->fParent->fCountExisting++;
-            t1 = t1->fParent;
+        if(!hasRealData) {
+            r->fBogus = U_USING_DEFAULT_WARNING;
         }
-    } /* umtx_lock */
-finishUnlock:
-    umtx_unlock(resbMutex());
+    }
 
+    // TODO: Does this ever loop?
+    while(r != NULL && !isRoot && t1->fParent != NULL) {
+        t1->fParent->fCountExisting++;
+        t1 = t1->fParent;
+    }
+
+finish:
     if(U_SUCCESS(*status)) {
         if(intStatus != U_ZERO_ERROR) {
             *status = intStatus;  
@@ -793,7 +782,7 @@ entryOpenDirect(const char* path, const char* localeID, UErrorCode* status) {
         return NULL;
     }
 
-    umtx_lock(resbMutex());
+    Mutex lock(&resbMutex);
     // findFirstExisting() without fallbacks.
     UResourceDataEntry *r = init_entry(localeID, path, status);
     if(U_SUCCESS(*status)) {
@@ -831,7 +820,6 @@ entryOpenDirect(const char* path, const char* localeID, UErrorCode* status) {
             t1 = t1->fParent;
         }
     }
-    umtx_unlock(resbMutex());
     return r;
 }
 
@@ -874,9 +862,8 @@ static void entryCloseInt(UResourceDataEntry *resB) {
  */
 
 static void entryClose(UResourceDataEntry *resB) {
-  umtx_lock(resbMutex());
+  Mutex lock(&resbMutex);
   entryCloseInt(resB);
-  umtx_unlock(resbMutex());
 }
 
 /*
@@ -1180,6 +1167,7 @@ static UResourceBundle *init_resb_result(const ResourceData *rdata, Resource r,
                     if(mainRes != result) {
                         ures_close(mainRes);
                     }
+                    ResourceTracer(resB).maybeTrace("getalias");
                     return result;
                 }
             } else {
@@ -1259,6 +1247,7 @@ static UResourceBundle *init_resb_result(const ResourceData *rdata, Resource r,
     /*resB->fParent = parent->fRes;*/
     uprv_memmove(&resB->fResData, rdata, sizeof(ResourceData));
     resB->fSize = res_countArrayItems(&(resB->fResData), resB->fRes);
+    ResourceTracer(resB).trace("get");
     return resB;
 }
 
@@ -2336,6 +2325,8 @@ ures_openWithType(UResourceBundle *r, const char* path, const char* localeID,
     r->fRes = r->fResData.rootRes;
     r->fSize = res_countArrayItems(&(r->fResData), r->fRes);
     r->fIndex = -1;
+
+    ResourceTracer(r).traceOpen();
 
     return r;
 }

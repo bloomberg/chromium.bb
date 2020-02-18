@@ -28,10 +28,10 @@
 #include "third_party/blink/renderer/platform/scheduler/common/pollable_thread_safe_flag.h"
 #include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/agent_interference_recorder.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/compositor_priority_experiments.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/deadline_task_runner.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_interference_recorder.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/idle_time_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_metrics_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_helper.h"
@@ -191,6 +191,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
   void DidAnimateForInputOnCompositorThread() override;
+  void DidScheduleBeginMainFrame() override;
+  void DidRunBeginMainFrame() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
   void SetSchedulerKeepActive(bool keep_active) override;
@@ -213,10 +215,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void AddRAILModeObserver(RAILModeObserver* observer) override;
   void RemoveRAILModeObserver(RAILModeObserver const* observer) override;
   void SetRendererProcessType(WebRendererProcessType type) override;
-  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
-      const char* name,
-      WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
   PendingUserInputInfo GetPendingUserInputInfo() const override;
+  bool IsBeginMainFrameScheduled() const override;
 
   // ThreadScheduler implementation:
   void PostIdleTask(const base::Location&, Thread::IdleTask) override;
@@ -422,6 +422,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   bool should_prioritize_loading_with_compositing() const {
     return main_thread_only()
         .current_policy.should_prioritize_loading_with_compositing();
+  }
+
+  bool main_thread_compositing_is_fast() const {
+    return main_thread_only().main_thread_compositing_is_fast;
   }
 
  protected:
@@ -739,6 +743,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // trigger a priority update.
   bool ShouldUpdateTaskQueuePriorities(Policy new_policy) const;
 
+  // Computes the priority for compositing based on the current use case.
+  // Returns nullopt if the use case does not need to set the priority.
+  base::Optional<TaskQueue::QueuePriority>
+  ComputeCompositorPriorityFromUseCase() const;
+
   static void RunIdleTask(Thread::IdleTask, base::TimeTicks deadline);
 
   // Probabilistically record all task metadata for the current task.
@@ -827,7 +836,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
 
   QueueingTimeEstimator queueing_time_estimator_;
-  FrameInterferenceRecorder frame_interference_recorder_;
+  AgentInterferenceRecorder agent_interference_recorder_;
 
   // We have decided to improve thread safety at the cost of some boilerplate
   // (the accessors) for the following data members.
@@ -853,7 +862,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         renderer_pause_count;  // Renderer is paused if non-zero.
     TraceableState<RAILMode, TracingCategoryName::kInfo>
         rail_mode_for_tracing;  // Don't use except for tracing.
-    TraceableState<bool, TracingCategoryName::kDebug> renderer_hidden;
+    TraceableState<bool, TracingCategoryName::kTopLevel> renderer_hidden;
     TraceableState<bool, TracingCategoryName::kTopLevel> renderer_backgrounded;
     TraceableState<bool, TracingCategoryName::kDefault>
         keep_active_fetch_or_worker;
@@ -932,6 +941,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
     // Compositing priority experiments (crbug.com/966177).
     CompositorPriorityExperiments compositor_priority_experiments;
+
+    bool main_thread_compositing_is_fast;
   };
 
   struct AnyThread {
@@ -958,6 +969,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         waiting_for_meaningful_paint;
     TraceableState<bool, TracingCategoryName::kInfo>
         have_seen_input_since_navigation;
+    TraceableCounter<uint32_t, TracingCategoryName::kInfo>
+        begin_main_frame_scheduled_count;
   };
 
   struct CompositorThreadOnly {

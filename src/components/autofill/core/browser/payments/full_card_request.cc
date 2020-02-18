@@ -13,6 +13,8 @@
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 
 namespace autofill {
 namespace payments {
@@ -110,10 +112,6 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
   }
 }
 
-bool FullCardRequest::IsGettingFullCard() const {
-  return !!request_;
-}
-
 void FullCardRequest::OnUnmaskPromptAccepted(
     const UserProvidedUnmaskDetails& user_response) {
   if (!user_response.exp_month.empty())
@@ -155,12 +153,13 @@ void FullCardRequest::OnUnmaskPromptClosed() {
 void FullCardRequest::OnDidGetUnmaskRiskData(const std::string& risk_data) {
   request_->risk_data = risk_data;
   if (!request_->user_response.cvc.empty() ||
-      !request_->fido_assertion_info.is_none())
+      !request_->fido_assertion_info.is_none()) {
     SendUnmaskCardRequest();
+  }
 }
 
 void FullCardRequest::SendUnmaskCardRequest() {
-  real_pan_request_timestamp_ = AutofillClock::Now();
+  real_pan_request_timestamp_ = AutofillTickClock::NowTicks();
   payments_client_->UnmaskCard(*request_,
                                base::BindOnce(&FullCardRequest::OnDidGetRealPan,
                                               weak_ptr_factory_.GetWeakPtr()));
@@ -169,8 +168,18 @@ void FullCardRequest::SendUnmaskCardRequest() {
 void FullCardRequest::OnDidGetRealPan(
     AutofillClient::PaymentsRpcResult result,
     payments::PaymentsClient::UnmaskResponseDetails& response_details) {
-  AutofillMetrics::LogRealPanDuration(
-      AutofillClock::Now() - real_pan_request_timestamp_, result);
+  // If the CVC field is populated, that means the user performed a CVC check.
+  // If FIDO AssertionInfo is populated, then the user must have performed FIDO
+  // authentication. Exactly one of these fields must be populated.
+  DCHECK_NE(request_->user_response.cvc.empty(),
+            request_->fido_assertion_info.is_none());
+  if (!request_->user_response.cvc.empty()) {
+    AutofillMetrics::LogRealPanDuration(
+        AutofillTickClock::NowTicks() - real_pan_request_timestamp_, result);
+  } else if (!request_->fido_assertion_info.is_none()) {
+    AutofillMetrics::LogCardUnmaskDurationAfterWebauthn(
+        AutofillTickClock::NowTicks() - real_pan_request_timestamp_, result);
+  }
 
   if (ui_delegate_)
     ui_delegate_->OnUnmaskVerificationResult(result);
@@ -204,9 +213,16 @@ void FullCardRequest::OnDidGetRealPan(
       // |response_details_| if |user_response.fido_opt_in| was not set to true
       // to avoid an unwanted registration prompt.
       unmask_response_details_ = response_details;
+
+      const base::string16 cvc =
+          base::FeatureList::IsEnabled(
+              features::kAutofillAlwaysReturnCloudTokenizedCard) &&
+                  !response_details.dcvv.empty()
+              ? base::UTF8ToUTF16(response_details.dcvv)
+              : request_->user_response.cvc;
       if (result_delegate_)
-        result_delegate_->OnFullCardRequestSucceeded(
-            *this, request_->card, request_->user_response.cvc);
+        result_delegate_->OnFullCardRequestSucceeded(*this, request_->card,
+                                                     cvc);
       Reset();
       break;
     }
@@ -215,6 +231,10 @@ void FullCardRequest::OnDidGetRealPan(
       NOTREACHED();
       break;
   }
+}
+
+void FullCardRequest::OnFIDOVerificationCancelled() {
+  Reset();
 }
 
 void FullCardRequest::Reset() {

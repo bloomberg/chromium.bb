@@ -21,14 +21,15 @@
 #include "api/call/call_factory_interface.h"
 #include "api/fec_controller.h"
 #include "api/function_view.h"
-#include "api/media_transport_interface.h"
 #include "api/peer_connection_interface.h"
 #include "api/rtc_event_log/rtc_event_log_factory_interface.h"
 #include "api/task_queue/task_queue_factory.h"
 #include "api/test/audio_quality_analyzer_interface.h"
+#include "api/test/frame_generator_interface.h"
 #include "api/test/simulated_network.h"
 #include "api/test/stats_observer_interface.h"
 #include "api/test/video_quality_analyzer_interface.h"
+#include "api/transport/media/media_transport_interface.h"
 #include "api/transport/network_control.h"
 #include "api/units/time_delta.h"
 #include "api/video_codecs/video_decoder_factory.h"
@@ -110,6 +111,9 @@ class PeerConnectionE2EQualityTestFixture {
     // must be equal to |kDefaultSlidesWidth| and
     // |ScrollingParams::source_height| must be equal to |kDefaultSlidesHeight|.
     std::vector<std::string> slides_yuv_file_names;
+    // If true will set VideoTrackInterface::ContentHint::kText for current
+    // video track.
+    bool use_text_content_hint = true;
   };
 
   enum VideoGeneratorType { kDefault, kI420A, kI010 };
@@ -164,9 +168,14 @@ class PeerConnectionE2EQualityTestFixture {
     // Have to be unique among all specified configs for all peers in the call.
     // Will be auto generated if omitted.
     absl::optional<std::string> stream_label;
-    // Only 1 from |generator|, |input_file_name| and |screen_share_config| can
-    // be specified. If none of them are specified, then |generator| will be set
-    // to VideoGeneratorType::kDefault.
+    // You can specify one of |generator|, |input_file_name|,
+    // |screen_share_config| and |capturing_device_index|.
+    // If none of them are specified:
+    // * If config is added to the PeerConfigurer without specifying any video
+    //   source, then |generator| will be set to VideoGeneratorType::kDefault.
+    // * If config is added with own video source implementation, then that
+    //   video source will be used.
+
     // If specified generator of this type will be used to produce input video.
     absl::optional<VideoGeneratorType> generator;
     // If specified this file will be used as input. Input video will be played
@@ -174,6 +183,12 @@ class PeerConnectionE2EQualityTestFixture {
     absl::optional<std::string> input_file_name;
     // If specified screen share video stream will be created as input.
     absl::optional<ScreenShareConfig> screen_share_config;
+    // If specified this capturing device will be used to get input video. The
+    // |capturing_device_index| is the index of required capturing device in OS
+    // provided list of video devices. On Linux and Windows the list will be
+    // obtained via webrtc::VideoCaptureModule::DeviceInfo, on Mac OS via
+    // [RTCCameraVideoCapturer captureDevices].
+    absl::optional<size_t> capturing_device_index;
     // If presented video will be transfered in simulcast/SVC mode depending on
     // which encoder is used.
     //
@@ -187,6 +202,17 @@ class PeerConnectionE2EQualityTestFixture {
     // each RtpEncodingParameters of RtpParameters of corresponding
     // RtpSenderInterface for this video stream.
     absl::optional<int> temporal_layers_count;
+    // Sets the maxiumum encode bitrate in bps. If this value is not set, the
+    // encoder will be capped at an internal maximum value around 2 Mbps
+    // depending on the resolution. This means that it will never be able to
+    // utilize a high bandwidth link.
+    absl::optional<int> max_encode_bitrate_bps;
+    // Sets the minimum encode bitrate in bps. If this value is not set, the
+    // encoder will use an internal minimum value. Please note that if this
+    // value is set higher than the bandwidth of the link, the encoder will
+    // generate more data than the link can handle regardless of the bandwidth
+    // estimation.
+    absl::optional<int> min_encode_bitrate_bps;
     // If specified the input stream will be also copied to specified file.
     // It is actually one of the test's output file, which contains copy of what
     // was captured during the test for this video stream on sender side.
@@ -197,6 +223,8 @@ class PeerConnectionE2EQualityTestFixture {
     // output files will be appended with indexes. The produced files contains
     // what was rendered for this video stream on receiver side.
     absl::optional<std::string> output_dump_file_name;
+    // If true will display input and output video on the user's screen.
+    bool show_on_screen = false;
   };
 
   // Contains properties for audio in the call.
@@ -263,6 +291,11 @@ class PeerConnectionE2EQualityTestFixture {
 
     // Add new video stream to the call that will be sent from this peer.
     virtual PeerConfigurer* AddVideoConfig(VideoConfig config) = 0;
+    // Add new video stream to the call that will be sent from this peer with
+    // provided own implementation of video frames generator.
+    virtual PeerConfigurer* AddVideoConfig(
+        VideoConfig config,
+        std::unique_ptr<test::FrameGeneratorInterface> generator) = 0;
     // Set the audio stream for the call from this peer. If this method won't
     // be invoked, this peer will send no audio.
     virtual PeerConfigurer* SetAudioConfig(AudioConfig config) = 0;

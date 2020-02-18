@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -104,8 +103,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       ui_status_(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT),
       origin_(url::Origin::Create(contents->GetVisibleURL())),
       download_count_(0),
-      download_seen_(false),
-      observer_(this) {
+      download_seen_(false) {
   observer_.Add(GetContentSettings(contents));
   NavigationEntry* last_entry =
       contents->GetController().GetLastCommittedEntry();
@@ -260,8 +258,8 @@ void DownloadRequestLimiter::TabDownloadState::SetContentSetting(
   if (!settings)
     return;
   settings->SetContentSettingDefaultScope(
-      request_origin.GetURL(), GURL(),
-      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, std::string(), setting);
+      request_origin.GetURL(), GURL(), ContentSettingsType::AUTOMATIC_DOWNLOADS,
+      std::string(), setting);
 }
 
 void DownloadRequestLimiter::TabDownloadState::Cancel(
@@ -341,7 +339,7 @@ void DownloadRequestLimiter::TabDownloadState::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const std::string& resource_identifier) {
-  if (content_type != CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS)
+  if (content_type != ContentSettingsType::AUTOMATIC_DOWNLOADS)
     return;
 
   if (origin_.opaque())
@@ -374,7 +372,7 @@ void DownloadRequestLimiter::TabDownloadState::OnContentSettingChanged(
     return;
 
   ContentSetting setting = content_settings->GetContentSetting(
-      origin, origin, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, std::string());
+      origin, origin, ContentSettingsType::AUTOMATIC_DOWNLOADS, std::string());
 
   // Update the internal state to match if necessary.
   SetDownloadStatusAndNotifyImpl(origin_, GetDownloadStatusFromSetting(setting),
@@ -579,7 +577,7 @@ ContentSetting DownloadRequestLimiter::GetAutoDownloadContentSetting(
   if (content_settings) {
     setting = content_settings->GetContentSetting(
         request_initiator, request_initiator,
-        CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, std::string());
+        ContentSettingsType::AUTOMATIC_DOWNLOADS, std::string());
   }
   return setting;
 }

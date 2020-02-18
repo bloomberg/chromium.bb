@@ -247,34 +247,35 @@ void FakeShillManagerClient::RemovePropertyChangedObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-void FakeShillManagerClient::GetProperties(
-    const DictionaryValueCallback& callback) {
+void FakeShillManagerClient::GetProperties(DictionaryValueCallback callback) {
   VLOG(1) << "Manager.GetProperties";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeShillManagerClient::PassStubProperties,
-                                weak_ptr_factory_.GetWeakPtr(), callback));
+      FROM_HERE,
+      base::BindOnce(&FakeShillManagerClient::PassStubProperties,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void FakeShillManagerClient::GetNetworksForGeolocation(
-    const DictionaryValueCallback& callback) {
+    DictionaryValueCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeShillManagerClient::PassStubGeoNetworks,
-                                weak_ptr_factory_.GetWeakPtr(), callback));
+      FROM_HERE,
+      base::BindOnce(&FakeShillManagerClient::PassStubGeoNetworks,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void FakeShillManagerClient::SetProperty(const std::string& name,
                                          const base::Value& value,
-                                         const base::Closure& callback,
-                                         const ErrorCallback& error_callback) {
+                                         base::OnceClosure callback,
+                                         ErrorCallback error_callback) {
   VLOG(2) << "SetProperty: " << name;
   stub_properties_.SetKey(name, value.Clone());
   CallNotifyObserversPropertyChanged(name);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void FakeShillManagerClient::RequestScan(const std::string& type,
-                                         const base::Closure& callback,
-                                         const ErrorCallback& error_callback) {
+                                         base::OnceClosure callback,
+                                         ErrorCallback error_callback) {
   VLOG(1) << "RequestScan: " << type;
   // For Stub purposes, default to a Wifi scan.
   std::string device_type = type.empty() ? shill::kTypeWifi : type;
@@ -289,7 +290,7 @@ void FakeShillManagerClient::RequestScan(const std::string& type,
       device_client->AddCellularFoundNetwork(device_path);
   }
   // Trigger |callback| immediately to indicate that the scan started.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeShillManagerClient::ScanCompleted,
@@ -297,56 +298,57 @@ void FakeShillManagerClient::RequestScan(const std::string& type,
       interactive_delay_);
 }
 
-void FakeShillManagerClient::EnableTechnology(
-    const std::string& type,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+void FakeShillManagerClient::EnableTechnology(const std::string& type,
+                                              base::OnceClosure callback,
+                                              ErrorCallback error_callback) {
   base::ListValue* enabled_list = nullptr;
   if (!stub_properties_.GetListWithoutPathExpansion(
           shill::kAvailableTechnologiesProperty, &enabled_list)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(error_callback, "StubError", "Property not found"));
+        FROM_HERE, base::BindOnce(std::move(error_callback), "StubError",
+                                  "Property not found"));
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeShillManagerClient::SetTechnologyEnabled,
-                     weak_ptr_factory_.GetWeakPtr(), type, callback, true),
+                     weak_ptr_factory_.GetWeakPtr(), type, std::move(callback),
+                     true),
       interactive_delay_);
 }
 
-void FakeShillManagerClient::DisableTechnology(
-    const std::string& type,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+void FakeShillManagerClient::DisableTechnology(const std::string& type,
+                                               base::OnceClosure callback,
+                                               ErrorCallback error_callback) {
   base::ListValue* enabled_list = nullptr;
   if (!stub_properties_.GetListWithoutPathExpansion(
           shill::kAvailableTechnologiesProperty, &enabled_list)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(error_callback, "StubError", "Property not found"));
+        FROM_HERE, base::BindOnce(std::move(error_callback), "StubError",
+                                  "Property not found"));
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeShillManagerClient::SetTechnologyEnabled,
-                     weak_ptr_factory_.GetWeakPtr(), type, callback, false),
+                     weak_ptr_factory_.GetWeakPtr(), type, std::move(callback),
+                     false),
       interactive_delay_);
 }
 
 void FakeShillManagerClient::ConfigureService(
     const base::DictionaryValue& properties,
-    const ObjectPathCallback& callback,
-    const ErrorCallback& error_callback) {
+    ObjectPathCallback callback,
+    ErrorCallback error_callback) {
   switch (simulate_configuration_result_) {
     case FakeShillSimulatedResult::kSuccess:
       break;
     case FakeShillSimulatedResult::kFailure:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(error_callback, "Error", "Simulated failure"));
+          FROM_HERE, base::BindOnce(std::move(error_callback), "Error",
+                                    "Simulated failure"));
       return;
     case FakeShillSimulatedResult::kTimeout:
       // No callbacks get executed and the caller should eventually timeout.
@@ -365,12 +367,24 @@ void FakeShillManagerClient::ConfigureService(
     // If the properties aren't filled out completely, then just return an empty
     // object path.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, dbus::ObjectPath()));
+        FROM_HERE, base::BindOnce(std::move(callback), dbus::ObjectPath()));
     return;
   }
 
-  if (type == shill::kTypeWifi)
+  if (type == shill::kTypeWifi) {
     properties.GetString(shill::kSSIDProperty, &name);
+
+    if (name.empty()) {
+      std::string hex_name;
+      properties.GetString(shill::kWifiHexSsid, &hex_name);
+      if (!hex_name.empty()) {
+        std::vector<uint8_t> bytes;
+        if (base::HexStringToBytes(hex_name, &bytes)) {
+          name.assign(reinterpret_cast<const char*>(&bytes[0]), bytes.size());
+        }
+      }
+    }
+  }
   if (name.empty())
     properties.GetString(shill::kNameProperty, &name);
   if (name.empty())
@@ -417,38 +431,40 @@ void FakeShillManagerClient::ConfigureService(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, dbus::ObjectPath(service_path)));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), dbus::ObjectPath(service_path)));
 }
 
 void FakeShillManagerClient::ConfigureServiceForProfile(
     const dbus::ObjectPath& profile_path,
     const base::DictionaryValue& properties,
-    const ObjectPathCallback& callback,
-    const ErrorCallback& error_callback) {
+    ObjectPathCallback callback,
+    ErrorCallback error_callback) {
   std::string profile_property;
   properties.GetStringWithoutPathExpansion(shill::kProfileProperty,
                                            &profile_property);
   CHECK(profile_property == profile_path.value());
-  ConfigureService(properties, callback, error_callback);
+  ConfigureService(properties, std::move(callback), std::move(error_callback));
 }
 
 void FakeShillManagerClient::GetService(const base::DictionaryValue& properties,
-                                        const ObjectPathCallback& callback,
-                                        const ErrorCallback& error_callback) {
+                                        ObjectPathCallback callback,
+                                        ErrorCallback error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, dbus::ObjectPath()));
+      FROM_HERE, base::BindOnce(std::move(callback), dbus::ObjectPath()));
 }
 
 void FakeShillManagerClient::ConnectToBestServices(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
   if (best_service_.empty()) {
     VLOG(1) << "No 'best' service set.";
     return;
   }
 
-  ShillServiceClient::Get()->Connect(dbus::ObjectPath(best_service_), callback,
-                                     error_callback);
+  ShillServiceClient::Get()->Connect(dbus::ObjectPath(best_service_),
+                                     std::move(callback),
+                                     std::move(error_callback));
 }
 
 ShillManagerClient::TestInterface* FakeShillManagerClient::GetTestInterface() {
@@ -528,7 +544,7 @@ void FakeShillManagerClient::AddGeoNetwork(
     list_value = stub_geo_networks_.SetKey(
         technology, base::Value(base::Value::Type::LIST));
   }
-  list_value->GetList().push_back(network.Clone());
+  list_value->Append(network.Clone());
 }
 
 void FakeShillManagerClient::AddProfile(const std::string& profile_path) {
@@ -545,7 +561,7 @@ void FakeShillManagerClient::ClearProperties() {
 
 void FakeShillManagerClient::SetManagerProperty(const std::string& key,
                                                 const base::Value& value) {
-  SetProperty(key, value, base::DoNothing(), base::Bind(&LogErrorCallback));
+  SetProperty(key, value, base::DoNothing(), base::BindOnce(&LogErrorCallback));
 }
 
 void FakeShillManagerClient::AddManagerService(const std::string& service_path,
@@ -632,11 +648,11 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
   complete_path_list->GetList().clear();
   for (const base::Value& dict : complete_dict_list) {
     std::string service_path = GetStringValue(dict, kPathKey);
-    complete_path_list->GetList().push_back(base::Value(service_path));
+    complete_path_list->Append(base::Value(service_path));
   }
   // Append disabled networks to the end of the complete path list.
   for (const std::string& path : disabled_path_list)
-    complete_path_list->GetList().push_back(base::Value(path));
+    complete_path_list->Append(base::Value(path));
 
   // Notify observers if the order changed.
   if (notify && *complete_path_list != prev_complete_path_list)
@@ -677,10 +693,10 @@ FakeShillManagerClient::GetNetworkThrottlingStatus() {
 
 void FakeShillManagerClient::SetNetworkThrottlingStatus(
     const NetworkThrottlingStatus& status,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
   network_throttling_status_ = status;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 bool FakeShillManagerClient::GetFastTransitionStatus() {
@@ -834,7 +850,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                                    base::Value(shill::kSecurityNone));
       services->SetConnectBehavior(
           kPortaledWifiPath,
-          base::Bind(&UpdatePortaledWifiState, kPortaledWifiPath));
+          base::BindRepeating(&UpdatePortaledWifiState, kPortaledWifiPath));
       services->SetServiceProperty(
           kPortaledWifiPath, shill::kConnectableProperty, base::Value(true));
       profiles->AddService(shared_profile, kPortaledWifiPath);
@@ -998,18 +1014,18 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 // Private methods
 
 void FakeShillManagerClient::PassStubProperties(
-    const DictionaryValueCallback& callback) const {
+    DictionaryValueCallback callback) const {
   std::unique_ptr<base::DictionaryValue> stub_properties(
       stub_properties_.DeepCopy());
   stub_properties->SetWithoutPathExpansion(
       shill::kServiceCompleteListProperty,
       GetEnabledServiceList(shill::kServiceCompleteListProperty));
-  callback.Run(DBUS_METHOD_CALL_SUCCESS, *stub_properties);
+  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, *stub_properties);
 }
 
 void FakeShillManagerClient::PassStubGeoNetworks(
-    const DictionaryValueCallback& callback) const {
-  callback.Run(DBUS_METHOD_CALL_SUCCESS, stub_geo_networks_);
+    DictionaryValueCallback callback) const {
+  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, stub_geo_networks_);
 }
 
 void FakeShillManagerClient::CallNotifyObserversPropertyChanged(
@@ -1070,7 +1086,7 @@ bool FakeShillManagerClient::TechnologyEnabled(const std::string& type) const {
 }
 
 void FakeShillManagerClient::SetTechnologyEnabled(const std::string& type,
-                                                  const base::Closure& callback,
+                                                  base::OnceClosure callback,
                                                   bool enabled) {
   base::ListValue* enabled_list =
       GetListProperty(shill::kEnabledTechnologiesProperty);
@@ -1079,7 +1095,7 @@ void FakeShillManagerClient::SetTechnologyEnabled(const std::string& type,
   else
     enabled_list->Remove(base::Value(type), nullptr);
   CallNotifyObserversPropertyChanged(shill::kEnabledTechnologiesProperty);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
   // May affect available services.
   SortManagerServices(true);
 }

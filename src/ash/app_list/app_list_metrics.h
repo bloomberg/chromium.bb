@@ -9,7 +9,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ui/events/event.h"
 
-namespace app_list {
+namespace ash {
 
 class AppListModel;
 class SearchModel;
@@ -73,6 +73,12 @@ constexpr char kAppListResultLaunchIndexAndQueryLength[] =
 constexpr char kAppListTileLaunchIndexAndQueryLength[] =
     "Apps.AppListTileLaunchIndexAndQueryLength";
 
+// The UMA histogram that logs the presence or absence of Drive QuickAccess
+// search results in the zero-state results list. Differentiates between results
+// existing in the model's results list, but not being displayed in the view.
+constexpr char kDriveQuickAccessResultPresence[] =
+    "Apps.AppListDriveQuickAccessProvider.ResultPresence";
+
 // The UMA histogram that logs which page gets opened by the user.
 constexpr char kPageOpenedHistogram[] = "Apps.AppListPageOpened";
 
@@ -112,6 +118,16 @@ constexpr char kSearchQueryLengthInTablet[] =
 // search results to the selected result.
 constexpr char kSearchResultDistanceFromOrigin[] =
     "Apps.AppListSearchResultDistanceFromOrigin";
+
+// The different ways to create a new page in the apps grid. These values are
+// written to logs. New enum values can be added, but existing enums must never
+// be renumbered or deleted and reused.
+enum class AppListPageCreationType {
+  kDraggingApp = 0,
+  kMovingAppWithKeyboard = 1,
+  kSyncOrInstall = 2,
+  kMaxValue = kSyncOrInstall,
+};
 
 // These are used in histograms, do not remove/renumber entries. If you're
 // adding to this enum with the intention that it will be logged, update the
@@ -156,7 +172,8 @@ enum AppListShowSource {
   kSearchKeyFullscreen = 4,
   kShelfButtonFullscreen = 5,
   kAssistantEntryPoint = 6,
-  kMaxValue = kAssistantEntryPoint,
+  kScrollFromShelf = 7,
+  kMaxValue = kScrollFromShelf,
 };
 
 // The two versions of folders. These values are written to logs.  New enum
@@ -219,6 +236,16 @@ enum AppListAppMovingType {
   kMaxAppListAppMovingType = 9,
 };
 
+// The presence of Drive QuickAccess search results when updating the zero-state
+// results list. These values are persisted to logs. Entries should not be
+// renumbered and numeric values should never be reused.
+enum class DriveQuickAccessResultPresence {
+  kPresentAndShown = 0,
+  kPresentAndNotShown = 1,
+  kAbsent = 2,
+  kMaxValue = kAbsent
+};
+
 // Different places a search result can be launched from. These values do not
 // persist to logs, so can be changed as-needed. However, changes should be
 // reflected in RecordSearchLaunchIndexAndQueryLength().
@@ -251,7 +278,15 @@ enum TabletModeAnimationTransition {
   kEnterFullscreenAllApps,
 
   // Enter the kFullscreenSearch state (usually by activating the search box).
-  kEnterFullscreenSearch
+  kEnterFullscreenSearch,
+
+  // Enter the overview mode in tablet, with overview fading in instead of
+  // sliding (as is the case with kEnterOverviewMode).
+  kFadeInOverview,
+
+  // Exit the overview mode in tablet, with overview fading out instead of
+  // sliding (as is the case with kExitOverviewMode).
+  kFadeOutOverview,
 };
 
 // Parameters to call RecordAppListAppLaunched. Passed to code that does not
@@ -267,17 +302,17 @@ struct AppLaunchedMetricParams {
 };
 
 void RecordFolderShowHideAnimationSmoothness(int actual_frames,
-                                             int ideal_duration_ms,
+                                             base::TimeDelta ideal_duration,
                                              float refresh_rate);
 
-void RecordPageSwitcherSourceByEventType(ui::EventType type,
-                                         bool is_tablet_mode);
+void AppListRecordPageSwitcherSourceByEventType(ui::EventType type,
+                                                bool is_tablet_mode);
 
 void RecordPageSwitcherSource(AppListPageSwitcherSource source,
                               bool is_tablet_mode);
 
 void RecordPaginationAnimationSmoothness(int actual_frames,
-                                         int ideal_duration_ms,
+                                         base::TimeDelta ideal_duration,
                                          float refresh_rate,
                                          bool is_tablet_mode);
 
@@ -308,6 +343,6 @@ APP_LIST_EXPORT void RecordAppListAppLaunched(
 
 APP_LIST_EXPORT bool IsCommandIdAnAppLaunch(int command_id);
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_METRICS_H_

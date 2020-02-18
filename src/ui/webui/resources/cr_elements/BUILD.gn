@@ -24,6 +24,7 @@ group("closure_compile") {
     "cr_radio_group:closure_compile",
     "cr_search_field:closure_compile",
     "cr_slider:closure_compile",
+    "cr_splitter:closure_compile",
     "cr_tabs:closure_compile",
     "cr_toast:closure_compile",
     "cr_toggle:closure_compile",
@@ -32,19 +33,26 @@ group("closure_compile") {
 
     # Targets for auto-generated Polymer 3 JS Modules
     ":cr_elements_module_resources",
+    "cr_action_menu:closure_compile_module",
     "cr_button:closure_compile_module",
     "cr_checkbox:closure_compile_module",
     "cr_dialog:closure_compile_module",
     "cr_drawer:closure_compile_module",
+    "cr_expand_button:closure_compile_module",
     "cr_icon_button:closure_compile_module",
     "cr_input:closure_compile_module",
+    "cr_lazy_render:closure_compile_module",
+    "cr_link_row:closure_compile_module",
     "cr_radio_button:closure_compile_module",
     "cr_radio_group:closure_compile_module",
     "cr_search_field:closure_compile_module",
+    "cr_splitter:closure_compile_module",
     "cr_tabs:closure_compile_module",
     "cr_toast:closure_compile_module",
     "cr_toggle:closure_compile_module",
+    "cr_toolbar:closure_compile_module",
     "cr_view_manager:closure_compile_module",
+    "policy:closure_compile_module",
   ]
 
   if (is_chromeos) {
@@ -78,6 +86,18 @@ js_library("cr_container_shadow_behavior") {
 }
 
 # Targets for auto-generating Polymer 3 JS Modules.
+
+polymer_modulizer("action_link_css") {
+  js_file = "action_link_css.m.js"
+  html_file = "action_link_css.html"
+  html_type = "style-module"
+}
+
+polymer_modulizer("cr_page_host_style_css") {
+  js_file = "cr_page_host_style_css.m.js"
+  html_file = "cr_page_host_style_css.html"
+  html_type = "style-module"
+}
 
 polymer_modulizer("shared_vars_css") {
   js_file = "shared_vars_css.m.js"
@@ -115,6 +135,12 @@ polymer_modulizer("icons") {
   html_type = "iron-iconset"
 }
 
+polymer_modulizer("search_highlight_style_css") {
+  js_file = "search_highlight_style_css.m.js"
+  html_file = "search_highlight_style_css.html"
+  html_type = "style-module"
+}
+
 js_modulizer("modulize") {
   input_files = [ "cr_container_shadow_behavior.js" ]
   deps = []
@@ -122,34 +148,48 @@ js_modulizer("modulize") {
 
 group("polymer3_elements") {
   deps = [
+    ":action_link_css_module",
     ":cr_icons_css_module",
+    ":cr_page_host_style_css_module",
     ":hidden_style_css_module",
     ":icons_module",
     ":md_select_css_module",
     ":modulize",
+    ":search_highlight_style_css_module",
     ":shared_style_css_module",
     ":shared_vars_css_module",
+    "cr_action_menu:cr_action_menu_module",
     "cr_button:cr_button_module",
     "cr_checkbox:cr_checkbox_module",
     "cr_dialog:cr_dialog_module",
     "cr_drawer:cr_drawer_module",
+    "cr_expand_button:cr_expand_button_module",
     "cr_icon_button:cr_icon_button_module",
     "cr_input:cr_input_module",
     "cr_input:cr_input_style_css_module",
+    "cr_lazy_render:cr_lazy_render_module",
+    "cr_link_row:cr_link_row_module",
     "cr_radio_button:cr_radio_button_module",
     "cr_radio_button:cr_radio_button_style_css_module",
     "cr_radio_button:modulize",
     "cr_radio_group:cr_radio_group_module",
     "cr_search_field:cr_search_field_module",
     "cr_search_field:modulize",
+    "cr_splitter:cr_splitter_module",
     "cr_tabs:cr_tabs_module",
+    "cr_toast:cr_toast_manager_module",
     "cr_toast:cr_toast_module",
     "cr_toggle:cr_toggle_module",
+    "cr_toolbar:cr_toolbar_module",
+    "cr_toolbar:cr_toolbar_search_field_module",
+    "cr_toolbar:cr_toolbar_selection_overlay_module",
     "cr_view_manager:cr_view_manager_module",
+    "policy:cr_tooltip_icon_module",
   ]
 }
 
 js_type_check("cr_elements_module_resources") {
+  uses_js_modules = true
   deps = [
     ":cr_container_shadow_behavior.m",
   ]

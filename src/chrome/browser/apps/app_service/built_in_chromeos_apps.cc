@@ -10,12 +10,11 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
-#include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -60,6 +59,7 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
                             ? apps::mojom::OptionalBool::kTrue
                             : apps::mojom::OptionalBool::kFalse;
   app->show_in_management = apps::mojom::OptionalBool::kFalse;
+  app->paused = apps::mojom::OptionalBool::kFalse;
 
   return app;
 }
@@ -68,20 +68,17 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
 
 namespace apps {
 
-BuiltInChromeOsApps::BuiltInChromeOsApps()
-    : binding_(this), profile_(nullptr) {}
+BuiltInChromeOsApps::BuiltInChromeOsApps(
+    const mojo::Remote<apps::mojom::AppService>& app_service,
+    Profile* profile)
+    : profile_(profile) {
+  Initialize(app_service);
+}
 
 BuiltInChromeOsApps::~BuiltInChromeOsApps() = default;
 
-void BuiltInChromeOsApps::Initialize(
-    const apps::mojom::AppServicePtr& app_service,
-    Profile* profile) {
-  apps::mojom::PublisherPtr publisher;
-  binding_.Bind(mojo::MakeRequest(&publisher));
-  app_service->RegisterPublisher(std::move(publisher),
-                                 apps::mojom::AppType::kBuiltIn);
-
-  profile_ = profile;
+void BuiltInChromeOsApps::FlushMojoCallsForTesting() {
+  receiver_.FlushForTesting();
 }
 
 bool BuiltInChromeOsApps::hide_settings_app_for_testing_ = false;
@@ -93,39 +90,37 @@ bool BuiltInChromeOsApps::SetHideSettingsAppForTesting(bool hide) {
   return old_value;
 }
 
-void BuiltInChromeOsApps::Connect(apps::mojom::SubscriberPtr subscriber,
-                                  apps::mojom::ConnectOptionsPtr opts) {
+void BuiltInChromeOsApps::Initialize(
+    const mojo::Remote<apps::mojom::AppService>& app_service) {
+  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
+                                 apps::mojom::AppType::kBuiltIn);
+}
+
+void BuiltInChromeOsApps::Connect(
+    mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
+    apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
   if (profile_) {
     // TODO(crbug.com/826982): move source of truth for built-in apps from
     // ui/app_list to here when the AppService feature is enabled by default.
     for (const auto& internal_app : app_list::GetInternalAppList(profile_)) {
-      // TODO(crbug.com/826982): support the "continue reading" app? Or leave
-      // it specifically to the chrome/browser/ui/app_list/search code? If
-      // moved here, it might mean calling sync_sessions::SessionSyncService's
-      // SubscribeToForeignSessionsChanged. See also app_search_provider.cc's
-      // InternalDataSource.
-      if (internal_app.internal_app_name ==
-          app_list::InternalAppName::kContinueReading) {
-        continue;
-      }
-
       apps::mojom::AppPtr app = Convert(internal_app);
       if (!app.is_null()) {
         if (hide_settings_app_for_testing_ &&
-            (internal_app.internal_app_name ==
-             app_list::InternalAppName::kSettings)) {
+            (internal_app.internal_app_name == BuiltInAppName::kSettings)) {
           app->show_in_search = apps::mojom::OptionalBool::kFalse;
         }
         apps.push_back(std::move(app));
       }
     }
   }
+  mojo::Remote<apps::mojom::Subscriber> subscriber(
+      std::move(subscriber_remote));
   subscriber->OnApps(std::move(apps));
 
   // Unlike other apps::mojom::Publisher implementations, we don't need to
   // retain the subscriber (e.g. add it to a
-  // mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_) after this
+  // mojo::RemoteSet<apps::mojom::Subscriber> subscribers_) after this
   // function returns. The list of built-in Chrome OS apps is fixed for the
   // lifetime of the Chrome OS session. There won't be any further updates.
 }
@@ -154,24 +149,15 @@ void BuiltInChromeOsApps::Launch(const std::string& app_id,
                                  int32_t event_flags,
                                  apps::mojom::LaunchSource launch_source,
                                  int64_t display_id) {
-  switch (launch_source) {
-    case apps::mojom::LaunchSource::kUnknown:
-    case apps::mojom::LaunchSource::kFromParentalControls:
-      break;
-    case apps::mojom::LaunchSource::kFromAppListGrid:
-    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
-      InternalAppItem::RecordActiveHistogram(app_id);
-      break;
-    case apps::mojom::LaunchSource::kFromAppListQuery:
-    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
-      app_list::InternalAppResult::RecordOpenHistogram(app_id);
-      break;
-    case apps::mojom::LaunchSource::kFromAppListRecommendation:
-      app_list::InternalAppResult::RecordOpenHistogram(app_id);
-      break;
-  }
-
   app_list::OpenInternalApp(app_id, profile_, event_flags);
+}
+
+void BuiltInChromeOsApps::LaunchAppWithIntent(
+    const std::string& app_id,
+    apps::mojom::IntentPtr intent,
+    apps::mojom::LaunchSource launch_source,
+    int64_t display_id) {
+  NOTIMPLEMENTED();
 }
 
 void BuiltInChromeOsApps::SetPermission(const std::string& app_id,
@@ -179,12 +165,35 @@ void BuiltInChromeOsApps::SetPermission(const std::string& app_id,
   NOTIMPLEMENTED();
 }
 
-void BuiltInChromeOsApps::Uninstall(const std::string& app_id) {
+void BuiltInChromeOsApps::PromptUninstall(const std::string& app_id) {
+  constexpr bool kClearSiteData = false;
+  constexpr bool kReportAbuse = false;
+  Uninstall(app_id, kClearSiteData, kReportAbuse);
+}
+
+void BuiltInChromeOsApps::Uninstall(const std::string& app_id,
+                                    bool clear_site_data,
+                                    bool report_abuse) {
   LOG(ERROR) << "Uninstall failed, could not remove built-in app with id "
              << app_id;
 }
 
+void BuiltInChromeOsApps::PauseApp(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void BuiltInChromeOsApps::UnpauseApps(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
 void BuiltInChromeOsApps::OpenNativeSettings(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void BuiltInChromeOsApps::OnPreferredAppSet(
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter,
+    apps::mojom::IntentPtr intent) {
   NOTIMPLEMENTED();
 }
 

@@ -19,8 +19,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.io.IOException;
-
 /**
  * Simple test to demonstrate use of ScreenShooter rule.
  */
@@ -30,25 +28,23 @@ import java.io.IOException;
 public class ExampleUiCaptureTest {
     @Rule
     public ChromeActivityTestRule<? extends ChromeActivity> mActivityTestRule =
-            ChromeActivityTestRule.forMainActivity();
+            new ChromeActivityTestRule(ChromeTabbedActivity.class);
 
     @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() {
         mActivityTestRule.startMainActivityFromLauncher();
     }
 
     /**
      * Capture the New Tab Page and the tab switcher.
-     * @throws IOException
-     * @throws InterruptedException
      */
     @Test
     @SmallTest
     @Feature({"UiCatalogue"})
-    public void testCaptureNewTabPage() throws IOException, InterruptedException {
+    public void testCaptureNewTabPage() {
         mScreenShooter.shoot("NTP", ScreenShooter.TagsEnum.UiCatalogueExample);
     }
 }

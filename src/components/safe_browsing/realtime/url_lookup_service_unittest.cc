@@ -28,15 +28,36 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
         std::make_unique<RealTimeUrlLookupService>(test_shared_loader_factory_);
   }
 
+  bool CanCheckUrl(const GURL& url) { return rt_service_->CanCheckUrl(url); }
   void HandleLookupError() { rt_service_->HandleLookupError(); }
   void HandleLookupSuccess() { rt_service_->HandleLookupSuccess(); }
   bool IsInBackoffMode() { return rt_service_->IsInBackoffMode(); }
+  std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url) {
+    return rt_service_->FillRequestProto(url);
+  }
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<RealTimeUrlLookupService> rt_service_;
   content::BrowserTaskEnvironment task_environment_;
 };
+
+TEST_F(RealTimeUrlLookupServiceTest, TestFillRequestProto) {
+  struct SanitizeUrlCase {
+    const char* url;
+    const char* expected_url;
+  } sanitize_url_cases[] = {
+      {"http://example.com/", "http://example.com/"},
+      {"http://user:pass@example.com/", "http://example.com/"},
+      {"http://%123:bar@example.com/", "http://example.com/"},
+      {"http://example.com#123", "http://example.com/"}};
+  for (size_t i = 0; i < base::size(sanitize_url_cases); i++) {
+    GURL url(sanitize_url_cases[i].url);
+    auto result = FillRequestProto(url);
+    EXPECT_EQ(sanitize_url_cases[i].expected_url, result->url());
+    EXPECT_EQ(RTLookupRequest::NAVIGATION, result->lookup_type());
+  }
+}
 
 TEST_F(RealTimeUrlLookupServiceTest, TestBackoffAndTimerReset) {
   // Not in backoff at the beginning.
@@ -106,6 +127,252 @@ TEST_F(RealTimeUrlLookupServiceTest, TestBackoffAndLookupSuccessReset) {
   // Lookup success resets the backoff counter.
   HandleLookupSuccess();
   EXPECT_FALSE(IsInBackoffMode());
+}
+
+TEST_F(RealTimeUrlLookupServiceTest, TestExponentialBackoff) {
+  ///////////////////////////////
+  // Initial backoff: 300 seconds
+  ///////////////////////////////
+
+  // Not in backoff at the beginning.
+  ASSERT_FALSE(IsInBackoffMode());
+
+  // Failure 1: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 2: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 3: Entered backoff.
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 299 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(298));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 300 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  /////////////////////////////////////
+  // Exponential backoff 1: 600 seconds
+  /////////////////////////////////////
+
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 599 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(598));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 600 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  //////////////////////////////////////
+  // Exponential backoff 2: 1200 seconds
+  //////////////////////////////////////
+
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1199 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1198));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 1200 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  ///////////////////////////////////////////////////
+  // Exponential backoff 3: 1800 seconds (30 minutes)
+  ///////////////////////////////////////////////////
+
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1799 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1798));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 1800 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  ///////////////////////////////////////////////////
+  // Exponential backoff 4: 1800 seconds (30 minutes)
+  ///////////////////////////////////////////////////
+
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1799 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1798));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 1800 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+}
+
+TEST_F(RealTimeUrlLookupServiceTest, TestExponentialBackoffWithResetOnSuccess) {
+  ///////////////////////////////
+  // Initial backoff: 300 seconds
+  ///////////////////////////////
+
+  // Not in backoff at the beginning.
+  ASSERT_FALSE(IsInBackoffMode());
+
+  // Failure 1: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 2: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 3: Entered backoff.
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 299 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(298));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 300 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  /////////////////////////////////////
+  // Exponential backoff 1: 600 seconds
+  /////////////////////////////////////
+
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 599 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(598));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 600 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // The next lookup is a success. This should reset the backoff duration to
+  // |kMinBackOffResetDurationInSeconds|
+  HandleLookupSuccess();
+
+  // Failure 1: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 2: No backoff.
+  HandleLookupError();
+  EXPECT_FALSE(IsInBackoffMode());
+
+  // Failure 3: Entered backoff.
+  HandleLookupError();
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 1 second.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff not reset after 299 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(298));
+  EXPECT_TRUE(IsInBackoffMode());
+
+  // Backoff should have been reset after 300 seconds.
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsInBackoffMode());
+}
+
+TEST_F(RealTimeUrlLookupServiceTest, TestGetSBThreatTypeForRTThreatType) {
+  EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
+            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+                RTLookupResponse::ThreatInfo::WEB_MALWARE));
+  EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING,
+            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+                RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING));
+  EXPECT_EQ(SB_THREAT_TYPE_URL_UNWANTED,
+            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+                RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE));
+  EXPECT_EQ(SB_THREAT_TYPE_BILLING,
+            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+                RTLookupResponse::ThreatInfo::UNCLEAR_BILLING));
+}
+
+TEST_F(RealTimeUrlLookupServiceTest, TestCanCheckUrl) {
+  struct CanCheckUrlCases {
+    const char* url;
+    bool can_check;
+  } can_check_url_cases[] = {{"ftp://example.test/path", false},
+                             {"http://localhost/path", false},
+                             {"http://localhost.localdomain/path", false},
+                             {"http://127.0.0.1/path", false},
+                             {"http://127.0.0.1:2222/path", false},
+                             {"http://192.168.1.1/path", false},
+                             {"http://172.16.2.2/path", false},
+                             {"http://10.1.1.1/path", false},
+                             {"http://10.1.1.1.1/path", true},
+                             {"http://example.test/path", true},
+                             {"https://example.test/path", true}};
+  for (size_t i = 0; i < base::size(can_check_url_cases); i++) {
+    GURL url(can_check_url_cases[i].url);
+    bool expected_can_check = can_check_url_cases[i].can_check;
+    EXPECT_EQ(expected_can_check, CanCheckUrl(url));
+  }
 }
 
 }  // namespace safe_browsing

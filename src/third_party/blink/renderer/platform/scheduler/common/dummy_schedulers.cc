@@ -31,7 +31,7 @@ class DummyFrameScheduler : public FrameScheduler {
 
   PageScheduler* GetPageScheduler() const override { return page_scheduler_; }
 
-  void SetPausedForCooperativeScheduling(Paused) override {}
+  void SetPreemptedForCooperativeScheduling(Preempted) override {}
   void SetFrameVisible(bool) override {}
   bool IsFrameVisible() const override { return true; }
   bool IsPageVisible() const override { return true; }
@@ -121,6 +121,11 @@ class DummyPageScheduler : public PageScheduler {
     return false;
   }
   bool RequestBeginMainFrameNotExpected(bool) override { return false; }
+  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      const String& name,
+      WebScopedVirtualTimePauser::VirtualTaskDuration) override {
+    return WebScopedVirtualTimePauser();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyPageScheduler);

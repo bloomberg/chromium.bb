@@ -273,6 +273,15 @@ function _makeIconTemplateGetter() {
     o: _icons.querySelector('.othericon'), // used as default icon
   };
 
+  const _statuses = document.getElementById('symbol-diff-status-icons');
+  const statusIcons = {
+    added: _statuses.querySelector('.addedicon'),
+    removed: _statuses.querySelector('.removedicon'),
+    changed: _statuses.querySelector('.changedicon'),
+    unchanged: _statuses.querySelector('.unchangedicon'),
+  };
+
+
   /** @type {Map<string, {color:string,description:string}>} */
   const iconInfoCache = new Map();
 
@@ -306,7 +315,37 @@ function _makeIconTemplateGetter() {
     return info;
   }
 
-  return {getIconTemplate, getIconStyle};
+  /**
+   * Returns the SVG status icon template element corresponding to the diff
+   * status of the node. Only valid for leaf nodes.
+   * @param {TreeNode} node Leaf node whose diff status is used to select
+   * template.
+   * @param {boolean} readonly If true, the original template is returned.
+   * If false, a copy is returned that can be modified.
+   * @returns {SVGSVGElement}
+   */
+  function getDiffStatusTemplate(node) {
+    const isLeaf = node.children && node.children.length === 0;
+    const entries = Object.entries(node.childStats);
+    let key = 'unchanged';
+    if (isLeaf && entries.length != 0) {
+      const statsEntry = entries[0][1];
+      if (statsEntry.added) {
+        key = 'added';
+      } else if (statsEntry.removed) {
+        key = 'removed';
+      } else if (statsEntry.changed) {
+        key = 'changed';
+      }
+    } else if (node.diffStatus == _DIFF_STATUSES.ADDED) {
+      key = 'added';
+    } else if (node.diffStatus == _DIFF_STATUSES.REMOVED) {
+      key = 'removed';
+    }
+    return statusIcons[key].cloneNode(true);
+  }
+
+  return {getIconTemplate, getIconStyle, getDiffStatusTemplate};
 }
 
 function _makeSizeTextGetter() {
@@ -392,6 +431,7 @@ function _makeSizeTextGetter() {
 
 /** Utilities for working with the state */
 const state = _initState();
-const {getIconTemplate, getIconStyle} = _makeIconTemplateGetter();
+const {getIconTemplate, getIconStyle, getDiffStatusTemplate} =
+    _makeIconTemplateGetter();
 const {getSizeContents, setSizeClasses} = _makeSizeTextGetter();
 _startListeners();

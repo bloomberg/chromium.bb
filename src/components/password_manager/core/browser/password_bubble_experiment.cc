@@ -8,19 +8,17 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/variations/variations_associated_data.h"
 
 namespace password_bubble_experiment {
-
-const char kSmartBubbleExperimentName[] = "PasswordSmartBubble";
-const char kSmartBubbleThresholdParam[] = "dismissal_count";
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
@@ -28,14 +26,13 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterIntegerPref(
       password_manager::prefs::kNumberSignInPasswordPromoShown, 0);
+
+  registry->RegisterBooleanPref(
+      password_manager::prefs::kSignInPasswordPromoRevive, false);
 }
 
 int GetSmartBubbleDismissalThreshold() {
-  std::string param = variations::GetVariationParamValue(
-      kSmartBubbleExperimentName, kSmartBubbleThresholdParam);
-  int threshold = 0;
-  // 3 is the default magic number that proved to show the best result.
-  return base::StringToInt(param, &threshold) ? threshold : 3;
+  return 3;
 }
 
 bool IsSmartLockUser(const syncer::SyncService* sync_service) {
@@ -61,6 +58,12 @@ void TurnOffAutoSignin(PrefService* prefs) {
 bool ShouldShowChromeSignInPasswordPromo(
     PrefService* prefs,
     const syncer::SyncService* sync_service) {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  if (!prefs->GetBoolean(prefs::kSigninAllowed))
+    return false;
+
   if (!sync_service ||
       sync_service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE) ||
@@ -69,6 +72,13 @@ bool ShouldShowChromeSignInPasswordPromo(
       sync_service->GetUserSettings()->IsFirstSetupComplete()) {
     return false;
   }
+  if (!prefs->GetBoolean(password_manager::prefs::kSignInPasswordPromoRevive)) {
+    // Reset the counters so that the promo is shown again.
+    prefs->SetBoolean(password_manager::prefs::kSignInPasswordPromoRevive,
+                      true);
+    prefs->ClearPref(password_manager::prefs::kWasSignInPasswordPromoClicked);
+    prefs->ClearPref(password_manager::prefs::kNumberSignInPasswordPromoShown);
+  }
   // Don't show the promo more than 3 times.
   constexpr int kThreshold = 3;
   return !prefs->GetBoolean(
@@ -76,6 +86,7 @@ bool ShouldShowChromeSignInPasswordPromo(
          prefs->GetInteger(
              password_manager::prefs::kNumberSignInPasswordPromoShown) <
              kThreshold;
+#endif  // defined(OS_CHROMEOS)
 }
 
 }  // namespace password_bubble_experiment

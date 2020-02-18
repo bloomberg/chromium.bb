@@ -58,8 +58,8 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
       int routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       SyncLoadResponse* response,
       base::WaitableEvent* completed_event,
@@ -78,7 +78,8 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
 
   SyncLoadContext(
       network::ResourceRequest* request,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          url_loader_factory,
       SyncLoadResponse* response,
       base::WaitableEvent* completed_event,
       base::WaitableEvent* abort_event,
@@ -88,8 +89,8 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
-                          const network::ResourceResponseInfo& info) override;
-  void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
+                          network::mojom::URLResponseHeadPtr head) override;
+  void OnReceivedResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;

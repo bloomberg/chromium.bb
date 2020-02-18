@@ -15,6 +15,7 @@ import os
 import string
 
 import mock
+import six
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -197,25 +198,25 @@ class VersionTest(AbstractGSContextTest):
     """Simple gsutil_version fetch test from stdout."""
     self.gs_mock.AddCmdResult(partial_mock.In('version'), returncode=0,
                               output='gsutil version 3.35\n')
-    self.assertEquals('3.35', self.ctx.gsutil_version)
+    self.assertEqual('3.35', self.ctx.gsutil_version)
 
   def testGetVersionStderr(self):
     """Simple gsutil_version fetch test from stderr."""
     self.gs_mock.AddCmdResult(partial_mock.In('version'), returncode=0,
                               error='gsutil version 3.36\n')
-    self.assertEquals('3.36', self.ctx.gsutil_version)
+    self.assertEqual('3.36', self.ctx.gsutil_version)
 
   def testGetVersionCached(self):
     """Simple gsutil_version fetch test from cache."""
     # pylint: disable=protected-access
     self.ctx._gsutil_version = '3.37'
-    self.assertEquals('3.37', self.ctx.gsutil_version)
+    self.assertEqual('3.37', self.ctx.gsutil_version)
 
   def testGetVersionNewFormat(self):
     """Simple gsutil_version fetch test for new gsutil output format."""
     self.gs_mock.AddCmdResult(partial_mock.In('version'), returncode=0,
                               output='gsutil version: 4.5\n')
-    self.assertEquals('4.5', self.ctx.gsutil_version)
+    self.assertEqual('4.5', self.ctx.gsutil_version)
 
   def testGetVersionBadOutput(self):
     """Simple gsutil_version fetch test from cache."""
@@ -602,12 +603,12 @@ class UnmockedCopyTest(cros_test_lib.TempDirTestCase):
                         local_src_file, tempuri, version=0)
 
       # Sanity check the content is unchanged.
-      self.assertEquals(ctx.Cat(tempuri), 'gen0')
+      self.assertEqual(ctx.Cat(tempuri), 'gen0')
 
       # Upload the file, but with the right generation.
       osutils.WriteFile(local_src_file, 'gen-new')
       gen = ctx.Copy(local_src_file, tempuri, version=gen)
-      self.assertEquals(ctx.Cat(tempuri), 'gen-new')
+      self.assertEqual(ctx.Cat(tempuri), 'gen-new')
 
 
 class CopyIntoTest(CopyTest):
@@ -617,8 +618,8 @@ class CopyIntoTest(CopyTest):
   GIVEN_REMOTE = 'gs://test/path/file'
   EXPECTED_REMOTE = '%s/%s' % (GIVEN_REMOTE, FILE)
 
-  def _Copy(self, ctx, *args, **kwargs):
-    return ctx.CopyInto(*args, filename=self.FILE, **kwargs)
+  def _Copy(self, ctx, src, dst, **kwargs):
+    return ctx.CopyInto(src, dst, filename=self.FILE, **kwargs)
 
 
 class RemoveTest(AbstractGSContextTest):
@@ -730,7 +731,7 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
 
   def testInitGsutilBin(self):
     """Test we use the given gsutil binary, erroring where appropriate."""
-    self.assertEquals(gs.GSContext().gsutil_bin, self.gsutil_bin)
+    self.assertEqual(gs.GSContext().gsutil_bin, self.gsutil_bin)
     self.assertRaises(gs.GSContextException,
                       gs.GSContext, gsutil_bin=self.bad_path)
 
@@ -750,7 +751,7 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
 
   def testInitBotoFileEnvError(self):
     """Boto file through env var error."""
-    self.assertEquals(gs.GSContext().boto_file, self.boto_file)
+    self.assertEqual(gs.GSContext().boto_file, self.boto_file)
     # Check env usage next; no need to cleanup, teardown handles it,
     # and we want the env var to persist for the next part of this test.
     os.environ['BOTO_CONFIG'] = self.bad_path
@@ -817,10 +818,10 @@ class GSDoCommandTest(cros_test_lib.TestCase):
 
   This test class inherits from cros_test_lib.TestCase instead of from
   AbstractGSContextTest, because the latter unnecessarily mocks out
-  cros_build_lib.RunCommand, in a way that breaks _testDoCommand (changing
-  cros_build_lib.RunCommand to refer to a mock instance after the
+  cros_build_lib.run, in a way that breaks _testDoCommand (changing
+  cros_build_lib.run to refer to a mock instance after the
   GenericRetry mock has already been set up to expect a reference to the
-  original RunCommand).
+  original run).
   """
 
   def setUp(self):
@@ -847,10 +848,11 @@ class GSDoCommandTest(cros_test_lib.TestCase):
       retry_stats.RetryWithStats.assert_called_once_with(
           retry_stats.GSUTIL,
           ctx._RetryFilter, retries,
-          cros_build_lib.RunCommand,
+          cros_build_lib.run,
           cmd, sleep=sleep,
           redirect_stderr=True,
           capture_output=True,
+          encoding='utf-8',
           extra_env=mock.ANY)
 
   def testDoCommandDefault(self):
@@ -1305,7 +1307,7 @@ class StatTest(AbstractGSContextTest):
   """Tests Stat functionality."""
 
   # Convenient constant for mocking Stat results.
-  STAT_OUTPUT = """gs://abc/1:
+  STAT_OUTPUT = b"""gs://abc/1:
         Creation time:    Sat, 23 Aug 2014 06:53:20 GMT
         Content-Language: en
         Content-Length:   74
@@ -1318,7 +1320,7 @@ class StatTest(AbstractGSContextTest):
       """
 
   # Stat output can vary based on how/when the file was created.
-  STAT_OUTPUT_OLDER = """gs://abc/1:
+  STAT_OUTPUT_OLDER = b"""gs://abc/1:
         Creation time:    Sat, 23 Aug 2014 06:53:20 GMT
         Content-Length:   74
         Content-Type:   application/octet-stream
@@ -1331,7 +1333,7 @@ class StatTest(AbstractGSContextTest):
 
   # Stat output with no MD5 (this is not guaranteed by GS, and
   # can be omitted if files are uploaded as composite objects).
-  STAT_OUTPUT_NO_MD5 = """gs://abc/1:
+  STAT_OUTPUT_NO_MD5 = b"""gs://abc/1:
         Creation time:    Sat, 23 Aug 2014 06:53:20 GMT
         Content-Language: en
         Content-Length:   74
@@ -1343,7 +1345,7 @@ class StatTest(AbstractGSContextTest):
       """
 
   # When stat throws an error.  It's a special snow flake.
-  STAT_ERROR_OUTPUT = 'No URLs matched gs://abc/1'
+  STAT_ERROR_OUTPUT = b'No URLs matched gs://abc/1'
 
   def testStat(self):
     """Test ability to get the generation of a file."""
@@ -1433,7 +1435,7 @@ class UnmockedStatTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(result.content_type, 'application/octet-stream')
     self.assertEqual(result.hash_crc32c, 'wUc4sQ==')
     self.assertEqual(result.hash_md5, 'iRvNNwBhmvUVG/lbg2/5sQ==')
-    self.assertIsInstance(result.etag, str)
+    self.assertIsInstance(result.etag, six.string_types)
     self.assertIsInstance(result.generation, int)
     self.assertEqual(result.metageneration, 1)
 
@@ -1515,9 +1517,9 @@ class CatTest(cros_test_lib.TempDirTestCase):
 
       result = ctx.StreamingCat(url)
       # Get the 1st chunk.
-      self.assertEquals(next(result), first_chunk)
+      self.assertEqual(next(result), first_chunk)
       # Then the second chunk.
-      self.assertEquals(next(result), second_chunk)
+      self.assertEqual(next(result), second_chunk)
       # At last, no more.
       with self.assertRaises(StopIteration):
         next(result)

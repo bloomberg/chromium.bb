@@ -180,8 +180,10 @@ bool ValidatePartialKeyframes(const StringKeyframeVector& keyframes) {
 EffectModel::CompositeOperation ResolveCompositeOperationForKeyframe(
     EffectModel::CompositeOperation composite,
     StringKeyframe* keyframe) {
+  bool additive_composite = composite == EffectModel::kCompositeAdd ||
+                            composite == EffectModel::kCompositeAccumulate;
   if (!RuntimeEnabledFeatures::CSSAdditiveAnimationsEnabled() &&
-      keyframe->HasCssProperty() && composite == EffectModel::kCompositeAdd) {
+      keyframe->HasCssProperty() && additive_composite) {
     return EffectModel::kCompositeReplace;
   }
   return composite;
@@ -226,8 +228,8 @@ void AddPropertyValuePairsForKeyframe(
 
   v8::TryCatch try_catch(isolate);
   for (const auto& property : keyframe_properties) {
-    if (property == "offset" || property == "composite" ||
-        property == "easing") {
+    if (property == "offset" || property == "float" ||
+        property == "composite" || property == "easing") {
       continue;
     }
 
@@ -261,11 +263,10 @@ void AddPropertyValuePairsForKeyframe(
 
 StringKeyframeVector ConvertArrayForm(Element* element,
                                       Document& document,
-                                      const v8::Local<v8::Object>& iterator_obj,
+                                      ScriptIterator iterator,
                                       ScriptState* script_state,
                                       ExceptionState& exception_state) {
   v8::Isolate* isolate = script_state->GetIsolate();
-  ScriptIterator iterator(iterator_obj, isolate);
 
   // This loop captures step 5 of the procedure to process a keyframes argument,
   // in the case where the argument is iterable.
@@ -488,8 +489,8 @@ StringKeyframeVector ConvertObjectForm(Element* element,
             WTF::CodeUnitCompareLessThan);
 
   for (const auto& property : keyframe_properties) {
-    if (property == "offset" || property == "composite" ||
-        property == "easing") {
+    if (property == "offset" || property == "float" ||
+        property == "composite" || property == "easing") {
       continue;
     }
 
@@ -642,8 +643,10 @@ bool HasAdditiveCompositeCSSKeyframe(
     if (!property.IsCSSProperty())
       continue;
     for (const auto& keyframe : keyframe_group.value->Keyframes()) {
-      if (keyframe->Composite() == EffectModel::kCompositeAdd)
+      if (keyframe->Composite() == EffectModel::kCompositeAdd ||
+          keyframe->Composite() == EffectModel::kCompositeAccumulate) {
         return true;
+      }
     }
   }
   return false;
@@ -689,8 +692,8 @@ StringKeyframeVector EffectInput::ParseKeyframesArgument(
 
   // 3. Let method be the result of GetMethod(object, @@iterator).
   v8::Isolate* isolate = script_state->GetIsolate();
-  v8::Local<v8::Function> iterator_method =
-      GetEsIteratorMethod(isolate, keyframes_obj, exception_state);
+  auto script_iterator =
+      ScriptIterator::FromIterable(isolate, keyframes_obj, exception_state);
   if (exception_state.HadException())
     return {};
 
@@ -700,16 +703,13 @@ StringKeyframeVector EffectInput::ParseKeyframesArgument(
               : *To<Document>(ExecutionContext::From(script_state));
 
   StringKeyframeVector parsed_keyframes;
-  if (iterator_method.IsEmpty()) {
+  if (script_iterator.IsNull()) {
     parsed_keyframes = ConvertObjectForm(element, document, keyframes_obj,
                                          script_state, exception_state);
   } else {
-    v8::Local<v8::Object> iterator = GetEsIteratorWithMethod(
-        isolate, iterator_method, keyframes_obj, exception_state);
-    if (exception_state.HadException())
-      return {};
-    parsed_keyframes = ConvertArrayForm(element, document, iterator,
-                                        script_state, exception_state);
+    parsed_keyframes =
+        ConvertArrayForm(element, document, std::move(script_iterator),
+                         script_state, exception_state);
   }
 
   if (!ValidatePartialKeyframes(parsed_keyframes)) {

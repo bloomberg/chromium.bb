@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
-#include <xdg-shell-unstable-v5-client-protocol.h>
+#include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 #include <memory>
 
@@ -22,18 +22,18 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
+#include "ui/ozone/platform/wayland/host/wayland_drm.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
 
-static_assert(XDG_SHELL_VERSION_CURRENT == 5, "Unsupported xdg-shell version");
-
 namespace ui {
 
 namespace {
 constexpr uint32_t kMaxCompositorVersion = 4;
+constexpr uint32_t kMaxGtkPrimarySelectionDeviceManagerVersion = 1;
 constexpr uint32_t kMaxLinuxDmabufVersion = 3;
 constexpr uint32_t kMaxSeatVersion = 4;
 constexpr uint32_t kMaxShmVersion = 1;
@@ -41,6 +41,7 @@ constexpr uint32_t kMaxXdgShellVersion = 1;
 constexpr uint32_t kMaxDeviceManagerVersion = 3;
 constexpr uint32_t kMaxWpPresentationVersion = 1;
 constexpr uint32_t kMaxTextInputManagerVersion = 1;
+constexpr uint32_t kMinWlDrmVersion = 2;
 constexpr uint32_t kMinWlOutputVersion = 2;
 }  // namespace
 
@@ -87,7 +88,7 @@ bool WaylandConnection::Initialize() {
     return false;
   }
   if (!shell_v6_ && !shell_) {
-    LOG(ERROR) << "No xdg_shell object";
+    LOG(ERROR) << "No Wayland shell found";
     return false;
   }
 
@@ -144,12 +145,6 @@ int WaylandConnection::GetKeyboardModifiers() const {
   return modifiers;
 }
 
-std::vector<gfx::BufferFormat> WaylandConnection::GetSupportedBufferFormats() {
-  if (zwp_dmabuf_)
-    return zwp_dmabuf_->supported_buffer_formats();
-  return std::vector<gfx::BufferFormat>();
-}
-
 void WaylandConnection::StartDrag(const ui::OSExchangeData& data,
                                   int operation) {
   if (!dragdrop_data_source_)
@@ -174,7 +169,7 @@ void WaylandConnection::DeliverDragData(const std::string& mime_type,
 
 void WaylandConnection::RequestDragData(
     const std::string& mime_type,
-    base::OnceCallback<void(const std::string&)> callback) {
+    base::OnceCallback<void(const std::vector<uint8_t>&)> callback) {
   data_device_->RequestDragData(mime_type, std::move(callback));
 }
 
@@ -240,8 +235,15 @@ void WaylandConnection::EnsureDataDevice() {
   DCHECK(!data_device_);
   wl_data_device* data_device = data_device_manager_->GetDevice();
   data_device_ = std::make_unique<WaylandDataDevice>(this, data_device);
-  clipboard_ = std::make_unique<WaylandClipboard>(data_device_manager_.get(),
-                                                  data_device_.get());
+
+  if (primary_selection_device_manager_) {
+    primary_selection_device_ = std::make_unique<GtkPrimarySelectionDevice>(
+        this, primary_selection_device_manager_->GetDevice());
+  }
+
+  clipboard_ = std::make_unique<WaylandClipboard>(
+      data_device_manager_.get(), data_device_.get(),
+      primary_selection_device_manager_.get(), primary_selection_device_.get());
 }
 
 bool WaylandConnection::BeginWatchingFd(
@@ -268,7 +270,7 @@ void WaylandConnection::Global(void* data,
       &WaylandConnection::Capabilities,
       &WaylandConnection::Name,
   };
-  static const xdg_shell_listener shell_listener = {
+  static const xdg_wm_base_listener shell_listener = {
       &WaylandConnection::Ping,
   };
   static const zxdg_shell_v6_listener shell_v6_listener = {
@@ -307,23 +309,21 @@ void WaylandConnection::Global(void* data,
     connection->shell_v6_ = wl::Bind<zxdg_shell_v6>(
         registry, name, std::min(version, kMaxXdgShellVersion));
     if (!connection->shell_v6_) {
-      LOG(ERROR) << "Failed to  bind to zxdg_shell_v6 global";
+      LOG(ERROR) << "Failed to bind to zxdg_shell_v6 global";
       return;
     }
     zxdg_shell_v6_add_listener(connection->shell_v6_.get(), &shell_v6_listener,
                                connection);
   } else if (!connection->shell_v6_ && !connection->shell_ &&
-             strcmp(interface, "xdg_shell") == 0) {
-    connection->shell_ = wl::Bind<xdg_shell>(
+             strcmp(interface, "xdg_wm_base") == 0) {
+    connection->shell_ = wl::Bind<xdg_wm_base>(
         registry, name, std::min(version, kMaxXdgShellVersion));
     if (!connection->shell_) {
-      LOG(ERROR) << "Failed to  bind to xdg_shell global";
+      LOG(ERROR) << "Failed to bind to xdg_wm_base global";
       return;
     }
-    xdg_shell_add_listener(connection->shell_.get(), &shell_listener,
-                           connection);
-    xdg_shell_use_unstable_version(connection->shell_.get(),
-                                   XDG_SHELL_VERSION_CURRENT);
+    xdg_wm_base_add_listener(connection->shell_.get(), &shell_listener,
+                             connection);
   } else if (base::EqualsCaseInsensitiveASCII(interface, "wl_output")) {
     if (version < kMinWlOutputVersion) {
       LOG(ERROR)
@@ -358,6 +358,14 @@ void WaylandConnection::Global(void* data,
         std::make_unique<WaylandDataDeviceManager>(
             data_device_manager.release(), connection);
     connection->EnsureDataDevice();
+  } else if (!connection->primary_selection_device_manager_ &&
+             strcmp(interface, "gtk_primary_selection_device_manager") == 0) {
+    wl::Object<gtk_primary_selection_device_manager> manager =
+        wl::Bind<gtk_primary_selection_device_manager>(
+            registry, name, kMaxGtkPrimarySelectionDeviceManagerVersion);
+    connection->primary_selection_device_manager_ =
+        std::make_unique<GtkPrimarySelectionDeviceManager>(manager.release(),
+                                                           connection);
   } else if (!connection->zwp_dmabuf_ &&
              (strcmp(interface, "zwp_linux_dmabuf_v1") == 0)) {
     wl::Object<zwp_linux_dmabuf_v1> zwp_linux_dmabuf =
@@ -377,6 +385,11 @@ void WaylandConnection::Global(void* data,
       LOG(ERROR) << "Failed to bind to zwp_text_input_manager_v1 global";
       return;
     }
+  } else if (!connection->drm_ && (strcmp(interface, "wl_drm") == 0) &&
+             version >= kMinWlDrmVersion) {
+    auto wayland_drm = wl::Bind<struct wl_drm>(registry, name, version);
+    connection->drm_ =
+        std::make_unique<WaylandDrm>(wayland_drm.release(), connection);
   }
 
   connection->ScheduleFlush();
@@ -468,9 +481,9 @@ void WaylandConnection::PingV6(void* data,
 }
 
 // static
-void WaylandConnection::Ping(void* data, xdg_shell* shell, uint32_t serial) {
+void WaylandConnection::Ping(void* data, xdg_wm_base* shell, uint32_t serial) {
   WaylandConnection* connection = static_cast<WaylandConnection*>(data);
-  xdg_shell_pong(shell, serial);
+  xdg_wm_base_pong(shell, serial);
   connection->ScheduleFlush();
 }
 

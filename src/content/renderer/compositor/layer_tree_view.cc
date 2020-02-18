@@ -27,7 +27,6 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer.h"
-#include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/render_frame_metadata_observer.h"
@@ -59,22 +58,24 @@ LayerTreeView::LayerTreeView(
     scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
     cc::TaskGraphRunner* task_graph_runner,
     blink::scheduler::WebThreadScheduler* scheduler)
-    : delegate_(delegate),
-      main_thread_(std::move(main_thread)),
+    : main_thread_(std::move(main_thread)),
       compositor_thread_(std::move(compositor_thread)),
       task_graph_runner_(task_graph_runner),
       web_main_thread_scheduler_(scheduler),
-      animation_host_(cc::AnimationHost::CreateMainInstance()) {}
+      animation_host_(cc::AnimationHost::CreateMainInstance()),
+      delegate_(delegate) {}
 
 LayerTreeView::~LayerTreeView() = default;
 
 void LayerTreeView::Initialize(
     const cc::LayerTreeSettings& settings,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+  DCHECK(delegate_);
   const bool is_threaded = !!compositor_thread_;
 
   cc::LayerTreeHost::InitParams params;
   params.client = this;
+  params.scheduling_client = this;
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner_;
   params.main_task_runner = main_thread_;
@@ -99,90 +100,26 @@ void LayerTreeView::Initialize(
   }
 }
 
+void LayerTreeView::Disconnect() {
+  DCHECK(delegate_);
+  // Drop compositor resources immediately, while keeping the compositor alive
+  // until after this class is destroyed.
+  layer_tree_host_->SetVisible(false);
+  layer_tree_host_->ReleaseLayerTreeFrameSink();
+  delegate_ = nullptr;
+}
+
 void LayerTreeView::SetVisible(bool visible) {
+  DCHECK(delegate_);
   layer_tree_host_->SetVisible(visible);
 
   if (visible && layer_tree_frame_sink_request_failed_while_invisible_)
     DidFailToInitializeLayerTreeFrameSink();
 }
 
-const base::WeakPtr<cc::InputHandler>& LayerTreeView::GetInputHandler() {
-  return layer_tree_host_->GetInputHandler();
-}
-
-void LayerTreeView::SetNeedsDisplayOnAllLayers() {
-  layer_tree_host_->SetNeedsDisplayOnAllLayers();
-}
-
-void LayerTreeView::SetRasterizeOnlyVisibleContent() {
-  cc::LayerTreeDebugState current = layer_tree_host_->GetDebugState();
-  current.rasterize_only_visible_content = true;
-  layer_tree_host_->SetDebugState(current);
-}
-
-void LayerTreeView::SetNeedsRedrawRect(gfx::Rect damage_rect) {
-  layer_tree_host_->SetNeedsRedrawRect(damage_rect);
-}
-
-std::unique_ptr<cc::SwapPromiseMonitor>
-LayerTreeView::CreateLatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency) {
-  return std::make_unique<cc::LatencyInfoSwapPromiseMonitor>(
-      latency, layer_tree_host_->GetSwapPromiseManager(), nullptr);
-}
-
-int LayerTreeView::GetSourceFrameNumber() const {
-  return layer_tree_host_->SourceFrameNumber();
-}
-
-const cc::Layer* LayerTreeView::GetRootLayer() const {
-  return layer_tree_host_->root_layer();
-}
-
-int LayerTreeView::ScheduleMicroBenchmark(
-    const std::string& name,
-    std::unique_ptr<base::Value> value,
-    base::OnceCallback<void(std::unique_ptr<base::Value>)> callback) {
-  return layer_tree_host_->ScheduleMicroBenchmark(name, std::move(value),
-                                                  std::move(callback));
-}
-
-bool LayerTreeView::SendMessageToMicroBenchmark(
-    int id,
-    std::unique_ptr<base::Value> value) {
-  return layer_tree_host_->SendMessageToMicroBenchmark(id, std::move(value));
-}
-
-void LayerTreeView::SetViewportRectAndScale(
-    const gfx::Rect& device_viewport_rect,
-    float device_scale_factor,
-    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
-  layer_tree_host_->SetViewportRectAndScale(
-      device_viewport_rect, device_scale_factor, local_surface_id_allocation);
-}
-
-void LayerTreeView::RequestNewLocalSurfaceId() {
-  layer_tree_host_->RequestNewLocalSurfaceId();
-}
-
-void LayerTreeView::RequestForceSendMetadata() {
-  layer_tree_host_->RequestForceSendMetadata();
-}
-
-void LayerTreeView::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
-  layer_tree_host_->SetViewportVisibleRect(visible_rect);
-}
-
-void LayerTreeView::SetNonBlinkManagedRootLayer(
-    scoped_refptr<cc::Layer> layer) {
-  layer_tree_host_->SetNonBlinkManagedRootLayer(std::move(layer));
-}
-
-void LayerTreeView::SetNeedsBeginFrame() {
-  layer_tree_host_->SetNeedsAnimate();
-}
-
 void LayerTreeView::SetLayerTreeFrameSink(
     std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink) {
+  DCHECK(delegate_);
   if (!layer_tree_frame_sink) {
     DidFailToInitializeLayerTreeFrameSink();
     return;
@@ -191,18 +128,26 @@ void LayerTreeView::SetLayerTreeFrameSink(
 }
 
 void LayerTreeView::WillBeginMainFrame() {
+  if (!delegate_)
+    return;
   delegate_->WillBeginCompositorFrame();
 }
 
 void LayerTreeView::DidBeginMainFrame() {
+  if (!delegate_)
+    return;
   delegate_->DidBeginMainFrame();
 }
 
 void LayerTreeView::WillUpdateLayers() {
+  if (!delegate_)
+    return;
   delegate_->BeginUpdateLayers();
 }
 
 void LayerTreeView::DidUpdateLayers() {
+  if (!delegate_)
+    return;
   delegate_->EndUpdateLayers();
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_view=3
@@ -214,52 +159,74 @@ void LayerTreeView::DidUpdateLayers() {
 }
 
 void LayerTreeView::BeginMainFrame(const viz::BeginFrameArgs& args) {
+  if (!delegate_)
+    return;
   web_main_thread_scheduler_->WillBeginFrame(args);
   delegate_->BeginMainFrame(args.frame_time);
 }
 
 void LayerTreeView::OnDeferMainFrameUpdatesChanged(bool status) {
+  if (!delegate_)
+    return;
   delegate_->OnDeferMainFrameUpdatesChanged(status);
 }
 
 void LayerTreeView::OnDeferCommitsChanged(bool status) {
+  if (!delegate_)
+    return;
   delegate_->OnDeferCommitsChanged(status);
 }
 
 void LayerTreeView::BeginMainFrameNotExpectedSoon() {
+  if (!delegate_)
+    return;
   web_main_thread_scheduler_->BeginFrameNotExpectedSoon();
 }
 
 void LayerTreeView::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
+  if (!delegate_)
+    return;
   web_main_thread_scheduler_->BeginMainFrameNotExpectedUntil(time);
 }
 
 void LayerTreeView::UpdateLayerTreeHost() {
+  if (!delegate_)
+    return;
   delegate_->UpdateVisualState();
 }
 
 void LayerTreeView::ApplyViewportChanges(
     const cc::ApplyViewportChangesArgs& args) {
+  if (!delegate_)
+    return;
   delegate_->ApplyViewportChanges(args);
 }
 
 void LayerTreeView::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
+  if (!delegate_)
+    return;
   delegate_->RecordManipulationTypeCounts(info);
 }
 
 void LayerTreeView::SendOverscrollEventFromImplSide(
     const gfx::Vector2dF& overscroll_delta,
     cc::ElementId scroll_latched_element_id) {
+  if (!delegate_)
+    return;
   delegate_->SendOverscrollEventFromImplSide(overscroll_delta,
                                              scroll_latched_element_id);
 }
 
 void LayerTreeView::SendScrollEndEventFromImplSide(
     cc::ElementId scroll_latched_element_id) {
+  if (!delegate_)
+    return;
   delegate_->SendScrollEndEventFromImplSide(scroll_latched_element_id);
 }
 
 void LayerTreeView::RequestNewLayerTreeFrameSink() {
+  if (!delegate_)
+    return;
   // When the compositor is not visible it would not request a
   // LayerTreeFrameSink so this is a race where it requested one then became
   // not-visible. In that case, we can wait for it to become visible again
@@ -292,6 +259,8 @@ void LayerTreeView::RequestNewLayerTreeFrameSink() {
 void LayerTreeView::DidInitializeLayerTreeFrameSink() {}
 
 void LayerTreeView::DidFailToInitializeLayerTreeFrameSink() {
+  if (!delegate_)
+    return;
   if (!layer_tree_host_->IsVisible()) {
     layer_tree_frame_sink_request_failed_while_invisible_ = true;
     return;
@@ -303,25 +272,35 @@ void LayerTreeView::DidFailToInitializeLayerTreeFrameSink() {
 }
 
 void LayerTreeView::WillCommit() {
+  if (!delegate_)
+    return;
   delegate_->WillCommitCompositorFrame();
 }
 
 void LayerTreeView::DidCommit() {
+  if (!delegate_)
+    return;
   delegate_->DidCommitCompositorFrame();
   web_main_thread_scheduler_->DidCommitFrameToCompositor();
 }
 
 void LayerTreeView::DidCommitAndDrawFrame() {
+  if (!delegate_)
+    return;
   delegate_->DidCommitAndDrawCompositorFrame();
 }
 
 void LayerTreeView::DidCompletePageScaleAnimation() {
+  if (!delegate_)
+    return;
   delegate_->DidCompletePageScaleAnimation();
 }
 
 void LayerTreeView::DidPresentCompositorFrame(
     uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
+  if (!delegate_)
+    return;
   DCHECK(layer_tree_host_->GetTaskRunnerProvider()
              ->MainThreadTaskRunner()
              ->RunsTasksInCurrentSequence());
@@ -336,44 +315,44 @@ void LayerTreeView::DidPresentCompositorFrame(
 }
 
 void LayerTreeView::RecordStartOfFrameMetrics() {
+  if (!delegate_)
+    return;
   delegate_->RecordStartOfFrameMetrics();
 }
 
 void LayerTreeView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
+  if (!delegate_)
+    return;
   delegate_->RecordEndOfFrameMetrics(frame_begin_time);
+}
+
+std::unique_ptr<cc::BeginMainFrameMetrics>
+LayerTreeView::GetBeginMainFrameMetrics() {
+  if (!delegate_)
+    return nullptr;
+  return delegate_->GetBeginMainFrameMetrics();
+}
+
+void LayerTreeView::DidScheduleBeginMainFrame() {
+  if (!delegate_)
+    return;
+  web_main_thread_scheduler_->DidScheduleBeginMainFrame();
+}
+
+void LayerTreeView::DidRunBeginMainFrame() {
+  if (!delegate_)
+    return;
+  web_main_thread_scheduler_->DidRunBeginMainFrame();
 }
 
 void LayerTreeView::DidSubmitCompositorFrame() {}
 
 void LayerTreeView::DidLoseLayerTreeFrameSink() {}
 
-void LayerTreeView::SetRasterColorSpace(const gfx::ColorSpace& color_space) {
-  layer_tree_host_->SetRasterColorSpace(color_space);
-}
-
-void LayerTreeView::SetExternalPageScaleFactor(
-    float page_scale_factor,
-    bool is_external_pinch_gesture_active) {
-  layer_tree_host_->SetExternalPageScaleFactor(
-      page_scale_factor, is_external_pinch_gesture_active);
-}
-
-void LayerTreeView::ClearCachesOnNextCommit() {
-  layer_tree_host_->ClearCachesOnNextCommit();
-}
-
-const cc::LayerTreeSettings& LayerTreeView::GetLayerTreeSettings() const {
-  return layer_tree_host_->GetSettings();
-}
-
-void LayerTreeView::SetRenderFrameObserver(
-    std::unique_ptr<cc::RenderFrameMetadataObserver> observer) {
-  layer_tree_host_->SetRenderFrameObserver(std::move(observer));
-}
-
 void LayerTreeView::AddPresentationCallback(
     uint32_t frame_token,
     base::OnceCallback<void(base::TimeTicks)> callback) {
+  DCHECK(delegate_);
   if (!presentation_callbacks_.empty()) {
     auto& previous = presentation_callbacks_.back();
     uint32_t previous_frame_token = previous.first;
@@ -388,14 +367,6 @@ void LayerTreeView::AddPresentationCallback(
   callbacks.push_back(std::move(callback));
   presentation_callbacks_.push_back({frame_token, std::move(callbacks)});
   DCHECK_LE(presentation_callbacks_.size(), 25u);
-}
-
-void LayerTreeView::SetSourceURL(ukm::SourceId source_id, const GURL& url) {
-  layer_tree_host_->SetSourceURL(source_id, url);
-}
-
-void LayerTreeView::ReleaseLayerTreeFrameSink() {
-  layer_tree_host_->ReleaseLayerTreeFrameSink();
 }
 
 }  // namespace content

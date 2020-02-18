@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,6 +27,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/pref_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -256,6 +258,12 @@ IN_PROC_BROWSER_TEST_F(AutofillAutocompleteTest,
   // Navigate to a file and wait, this will make sure we instantiate
   // AutocompleteHistoryManager.
   NavigateToFile(kSimpleFormFileName);
+
+  // The checkup is executed asynchronsouly on startup and may not have
+  // finished, yet.
+  WaitForPrefValue(pref_service(),
+                   prefs::kAutocompleteLastVersionRetentionPolicy,
+                   base::Value(CHROME_VERSION_MAJOR));
 
   int saved_version = pref_service()->GetInteger(
       prefs::kAutocompleteLastVersionRetentionPolicy);

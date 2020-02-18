@@ -29,6 +29,10 @@ bool TestAutofillDriver::IsInMainFrame() const {
   return is_in_main_frame_;
 }
 
+bool TestAutofillDriver::CanShowAutofillUi() const {
+  return true;
+}
+
 ui::AXTreeID TestAutofillDriver::GetAxTreeId() const {
   NOTIMPLEMENTED() << "See https://crbug.com/985933";
   return ui::AXTreeIDUnknown();
@@ -57,6 +61,9 @@ void TestAutofillDriver::PropagateAutofillPredictions(
     const std::vector<FormStructure*>& forms) {
 }
 
+void TestAutofillDriver::HandleParsedForms(
+    const std::vector<FormStructure*>& forms) {}
+
 void TestAutofillDriver::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
 }
@@ -79,7 +86,7 @@ void TestAutofillDriver::RendererShouldPreviewFieldWithValue(
 }
 
 void TestAutofillDriver::RendererShouldSetSuggestionAvailability(
-    bool available) {}
+    const mojom::AutofillState state) {}
 
 void TestAutofillDriver::PopupHidden() {
 }
@@ -89,12 +96,21 @@ gfx::RectF TestAutofillDriver::TransformBoundingBoxToViewportCoordinates(
   return bounding_box;
 }
 
+net::NetworkIsolationKey TestAutofillDriver::NetworkIsolationKey() {
+  return network_isolation_key_;
+}
+
 void TestAutofillDriver::SetIsIncognito(bool is_incognito) {
   is_incognito_ = is_incognito;
 }
 
 void TestAutofillDriver::SetIsInMainFrame(bool is_in_main_frame) {
   is_in_main_frame_ = is_in_main_frame;
+}
+
+void TestAutofillDriver::SetNetworkIsolationKey(
+    const net::NetworkIsolationKey& network_isolation_key) {
+  network_isolation_key_ = network_isolation_key;
 }
 
 void TestAutofillDriver::SetSharedURLLoaderFactory(

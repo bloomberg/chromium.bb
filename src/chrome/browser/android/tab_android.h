@@ -38,10 +38,6 @@ class DevToolsAgentHost;
 class WebContents;
 }
 
-namespace prerender {
-class PrerenderManager;
-}
-
 class TabAndroid {
  public:
   // A Java counterpart will be generated for this enum.
@@ -105,13 +101,6 @@ class TabAndroid {
   void SetWindowSessionID(SessionID window_id);
   void SetSyncId(int sync_id);
 
-  bool HasPrerenderedUrl(GURL gurl);
-
-  // Returns true if this tab is currently presented in the context of custom
-  // tabs. Tabs can be moved between different activities so the returned value
-  // might change over the lifetime of the tab.
-  bool IsCurrentlyACustomTab();
-
   // Methods called from Java via JNI -----------------------------------------
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -139,9 +128,6 @@ class TabAndroid {
       const base::android::JavaParamRef<jobject>& jweb_contents,
       jint width,
       jint height);
-  base::android::ScopedJavaLocalRef<jobject> GetProfileAndroid(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   TabLoadStatus LoadUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -170,42 +156,19 @@ class TabAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  void CreateHistoricalTab(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj);
-
-  static void CreateHistoricalTabFromContents(
-      content::WebContents* web_contents);
-
   void LoadOriginalImage(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
-
-  jlong GetBookmarkId(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj,
-                      jboolean only_editable);
 
   void SetInterceptNavigationDelegate(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& delegate);
 
-  bool HasPrerenderedUrl(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj,
-                         const base::android::JavaParamRef<jstring>& url);
-
   scoped_refptr<content::DevToolsAgentHost> GetDevToolsAgentHost();
 
   void SetDevToolsAgentHost(scoped_refptr<content::DevToolsAgentHost> host);
 
-  void AttachDetachedTab(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj);
-
-  bool AreRendererInputEventsIgnored(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
  private:
-  prerender::PrerenderManager* GetPrerenderManager() const;
-
   JavaObjectWeakGlobalRef weak_java_tab_;
 
   // Identifier of the window the tab is in.

@@ -14,12 +14,11 @@
 namespace blink {
 namespace {
 
-// TODO(gilmanmh): Add expectations for image inversion to each test.
 TEST(DarkModeFilterTest, DoNotApplyFilterWhenDarkModeIsOff) {
   DarkModeFilter filter;
 
   DarkModeSettings settings;
-  settings.mode = DarkMode::kOff;
+  settings.mode = DarkModeInversionAlgorithm::kOff;
   filter.UpdateSettings(settings);
 
   EXPECT_EQ(Color::kWhite,
@@ -32,13 +31,15 @@ TEST(DarkModeFilterTest, DoNotApplyFilterWhenDarkModeIsOff) {
   EXPECT_EQ(base::nullopt,
             filter.ApplyToFlagsIfNeeded(
                 cc::PaintFlags(), DarkModeFilter::ElementRole::kBackground));
+
+  EXPECT_EQ(nullptr, filter.GetImageFilterForTesting());
 }
 
 TEST(DarkModeFilterTest, ApplyDarkModeToColorsAndFlags) {
   DarkModeFilter filter;
 
   DarkModeSettings settings;
-  settings.mode = DarkMode::kSimpleInvertForTesting;
+  settings.mode = DarkModeInversionAlgorithm::kSimpleInvertForTesting;
   filter.UpdateSettings(settings);
 
   EXPECT_EQ(Color::kBlack,
@@ -48,12 +49,21 @@ TEST(DarkModeFilterTest, ApplyDarkModeToColorsAndFlags) {
             filter.InvertColorIfNeeded(
                 Color::kBlack, DarkModeFilter::ElementRole::kBackground));
 
+  EXPECT_EQ(Color::kWhite,
+            filter.InvertColorIfNeeded(Color::kWhite,
+                                       DarkModeFilter::ElementRole::kSVG));
+  EXPECT_EQ(Color::kBlack,
+            filter.InvertColorIfNeeded(Color::kBlack,
+                                       DarkModeFilter::ElementRole::kSVG));
+
   cc::PaintFlags flags;
   flags.setColor(SK_ColorWHITE);
   auto flags_or_nullopt = filter.ApplyToFlagsIfNeeded(
       flags, DarkModeFilter::ElementRole::kBackground);
   ASSERT_NE(flags_or_nullopt, base::nullopt);
   EXPECT_EQ(SK_ColorBLACK, flags_or_nullopt.value().getColor());
+
+  EXPECT_NE(nullptr, filter.GetImageFilterForTesting());
 }
 
 }  // namespace

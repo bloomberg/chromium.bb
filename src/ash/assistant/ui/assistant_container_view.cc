@@ -332,16 +332,17 @@ void AssistantContainerView::Init() {
   layer()->SetFillsBoundsOpaquely(false);
 
   // Main view.
-  assistant_main_view_ = new AssistantMainView(delegate_);
-  AddChildView(assistant_main_view_);
+  assistant_main_view_ =
+      AddChildView(std::make_unique<AssistantMainViewDeprecated>(delegate_));
 
   // Mini view.
-  assistant_mini_view_ = new AssistantMiniView(delegate_);
-  AddChildView(assistant_mini_view_);
+  assistant_mini_view_ =
+      AddChildView(std::make_unique<AssistantMiniView>(delegate_));
 
   // Web view.
-  assistant_web_view_ = new AssistantWebView(delegate_);
-  AddChildView(assistant_web_view_);
+  assistant_web_view_ = AddChildView(std::make_unique<AssistantWebView>(
+      delegate_,
+      /*web_container_view_delegate=*/nullptr));
 
   // Update the view state based on the current UI mode.
   OnUiModeChanged(delegate_->GetUiModel()->ui_mode(),
@@ -365,6 +366,7 @@ void AssistantContainerView::RequestFocus() {
       if (assistant_web_view_)
         assistant_web_view_->RequestFocus();
       break;
+    case AssistantUiMode::kAmbientUi:
     case AssistantUiMode::kLauncherEmbeddedUi:
       NOTREACHED();
       break;
@@ -397,6 +399,7 @@ void AssistantContainerView::OnUiModeChanged(AssistantUiMode ui_mode,
     case AssistantUiMode::kWebUi:
       assistant_web_view_->SetVisible(true);
       break;
+    case AssistantUiMode::kAmbientUi:
     case AssistantUiMode::kLauncherEmbeddedUi:
       NOTREACHED();
       break;
@@ -430,6 +433,7 @@ views::View* AssistantContainerView::FindFirstFocusableView() {
     case AssistantUiMode::kWebUi:
       // Default views::FocusSearch behavior is acceptable.
       return nullptr;
+    case AssistantUiMode::kAmbientUi:
     case AssistantUiMode::kLauncherEmbeddedUi:
       NOTREACHED();
       return nullptr;
@@ -450,6 +454,12 @@ void AssistantContainerView::SetCornerRadius(int corner_radius) {
 
 ui::Layer* AssistantContainerView::GetNonClientViewLayer() {
   return GetBubbleFrameView()->layer();
+}
+
+void AssistantContainerView::OpenUrl(const GURL& url) {
+  // This should only be called when in Assistant kWebUi mode.
+  DCHECK_EQ(AssistantUiMode::kWebUi, delegate_->GetUiModel()->ui_mode());
+  assistant_web_view_->OpenUrl(url);
 }
 
 }  // namespace ash

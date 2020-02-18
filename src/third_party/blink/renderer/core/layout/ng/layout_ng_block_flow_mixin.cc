@@ -9,6 +9,9 @@
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
@@ -86,6 +89,9 @@ const NGPhysicalBoxFragment* LayoutNGBlockFlowMixin<Base>::CurrentFragment()
 
 template <typename Base>
 void LayoutNGBlockFlowMixin<Base>::AddLayoutOverflowFromChildren() {
+  if (Base::LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
+    return;
+
   // |ComputeOverflow()| calls this, which is called from
   // |CopyFragmentDataToLayoutBox()| and |RecalcOverflow()|.
   // Add overflow from the last layout cycle.
@@ -98,72 +104,83 @@ void LayoutNGBlockFlowMixin<Base>::AddLayoutOverflowFromChildren() {
 
 template <typename Base>
 void LayoutNGBlockFlowMixin<Base>::AddScrollingOverflowFromChildren() {
-  bool children_inline = Base::ChildrenInline();
 
   const NGPhysicalBoxFragment* physical_fragment = CurrentFragment();
   DCHECK(physical_fragment);
-  // inline-end LayoutOverflow padding spec is still undecided:
+  if (physical_fragment->Children().empty())
+    return;
+
+  const ComputedStyle& style = Base::StyleRef();
+  const WritingMode writing_mode = style.GetWritingMode();
+  const TextDirection direction = style.Direction();
+  const LayoutUnit border_inline_start = LayoutUnit(style.BorderStartWidth());
+  const LayoutUnit border_block_start = LayoutUnit(style.BorderBeforeWidth());
+  const PhysicalSize& size = physical_fragment->Size();
+
+  // End and under padding are added to scroll overflow of inline children.
   // https://github.com/w3c/csswg-drafts/issues/129
-  // For backwards compatibility, if container clips overflow,
-  // padding is added to the inline-end for inline children.
   base::Optional<NGPhysicalBoxStrut> padding_strut;
   if (Base::HasOverflowClip()) {
-    padding_strut =
-        NGBoxStrut(LayoutUnit(), Base::PaddingEnd(), LayoutUnit(), LayoutUnit())
-            .ConvertToPhysical(Base::StyleRef().GetWritingMode(),
-                               Base::StyleRef().Direction());
+    padding_strut = NGBoxStrut(LayoutUnit(), Base::PaddingEnd(), LayoutUnit(),
+                               Base::PaddingUnder())
+                        .ConvertToPhysical(writing_mode, direction);
   }
 
-  PhysicalRect children_overflow;
+  // Rectangles not reachable by scroll should not be added to overflow.
+  auto IsRectReachableByScroll = [&border_inline_start, &border_block_start,
+                                  &writing_mode, &direction,
+                                  &size](const PhysicalRect& rect) {
+    LogicalOffset rect_logical_end =
+        rect.offset.ConvertToLogical(writing_mode, direction, size, rect.size) +
+        rect.size.ConvertToLogical(writing_mode);
+    return (rect_logical_end.inline_offset > border_inline_start &&
+            rect_logical_end.block_offset > border_block_start);
+  };
 
+  bool children_inline = Base::ChildrenInline();
+  PhysicalRect children_overflow;
+  base::Optional<PhysicalRect> lineboxes_enclosing_rect;
   // Only add overflow for fragments NG has not reflected into Legacy.
   // These fragments are:
   // - inline fragments,
   // - out of flow fragments whose css container is inline box.
   // TODO(layout-dev) Transforms also need to be applied to compute overflow
   // correctly. NG is not yet transform-aware. crbug.com/855965
-  if (!physical_fragment->Children().empty()) {
-    LayoutUnit border_inline_start =
-        LayoutUnit(Base::StyleRef().BorderStartWidth());
-    LayoutUnit border_block_start =
-        LayoutUnit(Base::StyleRef().BorderBeforeWidth());
-    for (const auto& child : physical_fragment->Children()) {
-      PhysicalRect child_scrollable_overflow;
-      if (child->IsFloatingOrOutOfFlowPositioned()) {
-        child_scrollable_overflow =
-            child->ScrollableOverflowForPropagation(this);
-        child_scrollable_overflow.offset += ComputeRelativeOffset(
-            child->Style(), Base::StyleRef().GetWritingMode(),
-            Base::StyleRef().Direction(), physical_fragment->Size());
-      } else if (children_inline && child->IsLineBox()) {
-        DCHECK(child->IsLineBox());
-        child_scrollable_overflow =
-            To<NGPhysicalLineBoxFragment>(*child).ScrollableOverflow(
-                this, Base::Style(), physical_fragment->Size());
-        if (padding_strut)
-          child_scrollable_overflow.Expand(*padding_strut);
-      } else {
-        continue;
+  for (const auto& child : physical_fragment->Children()) {
+    PhysicalRect child_scrollable_overflow;
+    if (child->IsFloatingOrOutOfFlowPositioned()) {
+      child_scrollable_overflow = child->ScrollableOverflowForPropagation(this);
+      child_scrollable_overflow.offset +=
+          ComputeRelativeOffset(child->Style(), writing_mode, direction, size);
+    } else if (children_inline && child->IsLineBox()) {
+      DCHECK(child->IsLineBox());
+      child_scrollable_overflow =
+          To<NGPhysicalLineBoxFragment>(*child).ScrollableOverflow(this, &style,
+                                                                   size);
+      if (padding_strut) {
+        PhysicalRect linebox_rect(child.Offset(), child->Size());
+        if (lineboxes_enclosing_rect)
+          lineboxes_enclosing_rect->Unite(linebox_rect);
+        else
+          lineboxes_enclosing_rect = linebox_rect;
       }
-      child_scrollable_overflow.offset += child.Offset();
-
-      // Do not add overflow if fragment is not reachable by scrolling.
-      WritingMode writing_mode = Base::StyleRef().GetWritingMode();
-      LogicalOffset child_logical_end =
-          child_scrollable_overflow.offset.ConvertToLogical(
-              writing_mode, Base::StyleRef().Direction(),
-              physical_fragment->Size(), child_scrollable_overflow.size) +
-          child_scrollable_overflow.size.ConvertToLogical(writing_mode);
-
-      if (child_logical_end.inline_offset > border_inline_start &&
-          child_logical_end.block_offset > border_block_start)
-        children_overflow.Unite(child_scrollable_overflow);
+    } else {
+      continue;
     }
+    child_scrollable_overflow.offset += child.Offset();
+    // Do not add overflow if fragment is not reachable by scrolling.
+    if (IsRectReachableByScroll(child_scrollable_overflow))
+      children_overflow.Unite(child_scrollable_overflow);
+  }
+  if (lineboxes_enclosing_rect) {
+    lineboxes_enclosing_rect->Expand(*padding_strut);
+    if (IsRectReachableByScroll(*lineboxes_enclosing_rect))
+      children_overflow.Unite(*lineboxes_enclosing_rect);
   }
 
   // LayoutOverflow takes flipped blocks coordinates, adjust as needed.
-  LayoutRect children_flipped_overflow = children_overflow.ToLayoutFlippedRect(
-      physical_fragment->Style(), physical_fragment->Size());
+  LayoutRect children_flipped_overflow =
+      children_overflow.ToLayoutFlippedRect(style, size);
   Base::AddLayoutOverflow(children_flipped_overflow);
 }
 
@@ -173,8 +190,9 @@ void LayoutNGBlockFlowMixin<Base>::AddOutlineRects(
     const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   if (PaintFragment()) {
-    PaintFragment()->AddSelfOutlineRects(&rects, additional_offset,
-                                         include_block_overflows);
+    To<NGPhysicalBoxFragment>(PaintFragment()->PhysicalFragment())
+        .AddSelfOutlineRects(additional_offset, include_block_overflows,
+                             &rects);
   } else {
     Base::AddOutlineRects(rects, additional_offset, include_block_overflows);
   }
@@ -186,6 +204,9 @@ bool LayoutNGBlockFlowMixin<
   // LayoutNGBlockFlowMixin is in charge of paint invalidation of the first
   // line.
   if (PaintFragment())
+    return false;
+
+  if (Base::StyleRef().HasColumnRule())
     return false;
 
   return Base::PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
@@ -257,6 +278,14 @@ void LayoutNGBlockFlowMixin<Base>::SetPaintFragment(
 
 template <typename Base>
 void LayoutNGBlockFlowMixin<Base>::Paint(const PaintInfo& paint_info) const {
+  // Avoid painting dirty objects because descendants maybe already destroyed.
+  if (UNLIKELY(Base::NeedsLayout() &&
+               !Base::LayoutBlockedByDisplayLock(
+                   DisplayLockLifecycleTarget::kChildren))) {
+    NOTREACHED();
+    return;
+  }
+
   if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
     if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
       if (fragment->HasItems()) {
@@ -266,10 +295,19 @@ void LayoutNGBlockFlowMixin<Base>::Paint(const PaintInfo& paint_info) const {
     }
   }
 
-  if (const NGPaintFragment* paint_fragment = PaintFragment())
+  if (const NGPaintFragment* paint_fragment = PaintFragment()) {
     NGBoxFragmentPainter(*paint_fragment).Paint(paint_info);
-  else
-    LayoutBlockFlow::Paint(paint_info);
+    return;
+  }
+
+  if (RuntimeEnabledFeatures::LayoutNGFragmentPaintEnabled()) {
+    if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+      NGBoxFragmentPainter(*fragment).Paint(paint_info);
+      return;
+    }
+  }
+
+  Base::Paint(paint_info);
 }
 
 template <typename Base>
@@ -278,29 +316,37 @@ bool LayoutNGBlockFlowMixin<Base>::NodeAtPoint(
     const HitTestLocation& hit_test_location,
     const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
-  const NGPaintFragment* paint_fragment = PaintFragment();
-  if (!paint_fragment) {
-    return LayoutBlockFlow::NodeAtPoint(result, hit_test_location,
-                                        accumulated_offset, action);
+  if (const NGPaintFragment* paint_fragment = PaintFragment()) {
+    if (!this->IsEffectiveRootScroller()) {
+      // Check if we need to do anything at all.
+      // If we have clipping, then we can't have any spillout.
+      PhysicalRect overflow_box = Base::HasOverflowClip()
+                                      ? Base::PhysicalBorderBoxRect()
+                                      : Base::PhysicalVisualOverflowRect();
+      overflow_box.Move(accumulated_offset);
+      if (!hit_test_location.Intersects(overflow_box))
+        return false;
+    }
+    if (Base::IsInSelfHitTestingPhase(action) && Base::HasOverflowClip() &&
+        Base::HitTestOverflowControl(result, hit_test_location,
+                                     accumulated_offset))
+      return true;
+
+    return NGBoxFragmentPainter(*paint_fragment)
+        .NodeAtPoint(result, hit_test_location, accumulated_offset, action);
   }
 
-  if (!this->IsEffectiveRootScroller()) {
-    // Check if we need to do anything at all.
-    // If we have clipping, then we can't have any spillout.
-    PhysicalRect overflow_box = Base::HasOverflowClip()
-                                    ? Base::PhysicalBorderBoxRect()
-                                    : Base::PhysicalVisualOverflowRect();
-    overflow_box.Move(accumulated_offset);
-    if (!hit_test_location.Intersects(overflow_box))
-      return false;
+  if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
+    if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+      if (fragment->HasItems()) {
+        return NGBoxFragmentPainter(*fragment).NodeAtPoint(
+            result, hit_test_location, accumulated_offset, action);
+      }
+    }
   }
-  if (Base::IsInSelfHitTestingPhase(action) && Base::HasOverflowClip() &&
-      Base::HitTestOverflowControl(result, hit_test_location,
-                                   accumulated_offset))
-    return true;
 
-  return NGBoxFragmentPainter(*paint_fragment)
-      .NodeAtPoint(result, hit_test_location, accumulated_offset, action);
+  return LayoutBlockFlow::NodeAtPoint(result, hit_test_location,
+                                      accumulated_offset, action);
 }
 
 template <typename Base>
@@ -316,17 +362,25 @@ PositionWithAffinity LayoutNGBlockFlowMixin<Base>::PositionForPoint(
   if (!Base::ChildrenInline())
     return LayoutBlock::PositionForPoint(point);
 
-  if (!PaintFragment())
-    return Base::CreatePositionWithAffinity(0);
+  if (const NGPaintFragment* paint_fragment = PaintFragment()) {
+    // The given offset is relative to this |LayoutBlockFlow|. Convert to the
+    // contents offset.
+    PhysicalOffset point_in_contents = point;
+    Base::OffsetForContents(point_in_contents);
+    if (const PositionWithAffinity position =
+            paint_fragment->PositionForPoint(point_in_contents))
+      return position;
+  } else if (const NGFragmentItems* items = Base::FragmentItems()) {
+    // The given offset is relative to this |LayoutBlockFlow|. Convert to the
+    // contents offset.
+    PhysicalOffset point_in_contents = point;
+    Base::OffsetForContents(point_in_contents);
+    NGInlineCursor cursor(*items);
+    if (const PositionWithAffinity position =
+            cursor.PositionForPoint(point_in_contents))
+      return position;
+  }
 
-  // The given offset is relative to this |LayoutBlockFlow|. Convert to the
-  // contents offset.
-  PhysicalOffset point_in_contents = point;
-  Base::OffsetForContents(point_in_contents);
-  const PositionWithAffinity ng_position =
-      PaintFragment()->PositionForPoint(point_in_contents);
-  if (ng_position.IsNotNull())
-    return ng_position;
   return Base::CreatePositionWithAffinity(0);
 }
 
@@ -343,8 +397,55 @@ void LayoutNGBlockFlowMixin<Base>::DirtyLinesFromChangedChild(
     NGPaintFragment::DirtyLinesFromChangedChild(child);
 }
 
+template <typename Base>
+void LayoutNGBlockFlowMixin<Base>::UpdateNGBlockLayout() {
+  LayoutAnalyzer::BlockScope analyzer(*this);
+
+  if (Base::IsOutOfFlowPositioned()) {
+    this->UpdateOutOfFlowBlockLayout();
+    return;
+  }
+
+  NGConstraintSpace constraint_space =
+      NGConstraintSpace::CreateFromLayoutObject(
+          *this, !Base::View()->GetLayoutState()->Next() /* is_layout_root */);
+
+  scoped_refptr<const NGLayoutResult> result =
+      NGBlockNode(this).Layout(constraint_space);
+
+  for (const auto& descendant :
+       result->PhysicalFragment().OutOfFlowPositionedDescendants())
+    descendant.node.UseLegacyOutOfFlowPositioning();
+  this->UpdateMargins(constraint_space);
+}
+
+template <typename Base>
+void LayoutNGBlockFlowMixin<Base>::UpdateMargins(
+    const NGConstraintSpace& space) {
+  const LayoutBlock* containing_block = Base::ContainingBlock();
+  if (!containing_block || !containing_block->IsLayoutBlockFlow())
+    return;
+
+  // In the legacy engine, for regular block container layout, children
+  // calculate and store margins on themselves, while in NG that's done by the
+  // container. Since this object is a LayoutNG entry-point, we'll have to do it
+  // on ourselves, since that's what the legacy container expects.
+  const ComputedStyle& style = Base::StyleRef();
+  const ComputedStyle& cb_style = containing_block->StyleRef();
+  const auto writing_mode = cb_style.GetWritingMode();
+  const auto direction = cb_style.Direction();
+  LayoutUnit percentage_resolution_size =
+      space.PercentageResolutionInlineSizeForParentWritingMode();
+  NGBoxStrut margins = ComputePhysicalMargins(style, percentage_resolution_size)
+                           .ConvertToLogical(writing_mode, direction);
+  ResolveInlineMargins(style, cb_style, space.AvailableSize().inline_size,
+                       Base::LogicalWidth(), &margins);
+  this->SetMargin(margins.ConvertToPhysical(writing_mode, direction));
+}
+
+template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutBlockFlow>;
+template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutProgress>;
 template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutTableCaption>;
 template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutTableCell>;
-template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutBlockFlow>;
 
 }  // namespace blink

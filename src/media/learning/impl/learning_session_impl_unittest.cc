@@ -40,10 +40,13 @@ class LearningSessionImplTest : public testing::Test {
       }
     }
 
-    void BeginObservation(base::UnguessableToken id,
-                          const FeatureVector& features) override {
+    void BeginObservation(
+        base::UnguessableToken id,
+        const FeatureVector& features,
+        const base::Optional<TargetValue>& default_target) override {
       id_ = id;
       features_ = features;
+      default_target_ = default_target;
     }
 
     void CompleteObservation(base::UnguessableToken id,
@@ -58,6 +61,14 @@ class LearningSessionImplTest : public testing::Test {
       cancelled_id_ = id;
     }
 
+    void UpdateDefaultTarget(
+        base::UnguessableToken id,
+        const base::Optional<TargetValue>& default_target) override {
+      // Should not be called, since LearningTaskControllerImpl doesn't support
+      // default values.
+      updated_id_ = id;
+    }
+
     const LearningTask& GetLearningTask() override {
       NOTREACHED();
       return LearningTask::Empty();
@@ -66,10 +77,14 @@ class LearningSessionImplTest : public testing::Test {
     SequenceBoundFeatureProvider feature_provider_;
     base::UnguessableToken id_;
     FeatureVector features_;
+    base::Optional<TargetValue> default_target_;
     LabelledExample example_;
 
     // Most recently cancelled id.
     base::UnguessableToken cancelled_id_;
+
+    // Id of most recently changed default target value.
+    base::Optional<base::UnguessableToken> updated_id_;
   };
 
   class FakeFeatureProvider : public FeatureProvider {
@@ -228,6 +243,78 @@ TEST_F(LearningSessionImplTest, DestroyingControllerCancelsObservations) {
   controller.reset();
   task_environment_.RunUntilIdle();
   EXPECT_EQ(task_controllers_[0]->cancelled_id_, id);
+}
+
+TEST_F(LearningSessionImplTest,
+       DestroyingControllerCompletesObservationsWithDefaultValues) {
+  // Also verifies that we don't send the default to the underlying controller,
+  // because LearningTaskControllerImpl doesn't support it.
+  session_->RegisterTask(task_0_);
+
+  std::unique_ptr<LearningTaskController> controller =
+      session_->GetController(task_0_.name);
+  task_environment_.RunUntilIdle();
+
+  // Start an observation and verify that it doesn't forward the default target.
+  base::UnguessableToken id = base::UnguessableToken::Create();
+  TargetValue default_target(123);
+  controller->BeginObservation(id, FeatureVector(), default_target);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(task_controllers_[0]->id_, id);
+  EXPECT_FALSE(task_controllers_[0]->default_target_);
+
+  // Should complete the observation.
+  controller.reset();
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(task_controllers_[0]->example_.target_value, default_target);
+}
+
+TEST_F(LearningSessionImplTest, ChangeDefaultTargetToValue) {
+  session_->RegisterTask(task_0_);
+
+  std::unique_ptr<LearningTaskController> controller =
+      session_->GetController(task_0_.name);
+  task_environment_.RunUntilIdle();
+
+  // Start an observation without a default, then add one.
+  base::UnguessableToken id = base::UnguessableToken::Create();
+  controller->BeginObservation(id, FeatureVector(), base::nullopt);
+  TargetValue default_target(123);
+  controller->UpdateDefaultTarget(id, default_target);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(task_controllers_[0]->id_, id);
+
+  // Should complete the observation.
+  controller.reset();
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(task_controllers_[0]->example_.target_value, default_target);
+
+  // Shouldn't notify the underlying controller.
+  EXPECT_FALSE(task_controllers_[0]->updated_id_);
+}
+
+TEST_F(LearningSessionImplTest, ChangeDefaultTargetToNoValue) {
+  session_->RegisterTask(task_0_);
+
+  std::unique_ptr<LearningTaskController> controller =
+      session_->GetController(task_0_.name);
+  task_environment_.RunUntilIdle();
+
+  // Start an observation with a default, then remove it.
+  base::UnguessableToken id = base::UnguessableToken::Create();
+  TargetValue default_target(123);
+  controller->BeginObservation(id, FeatureVector(), default_target);
+  controller->UpdateDefaultTarget(id, base::nullopt);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(task_controllers_[0]->id_, id);
+
+  // Should cancel the observation.
+  controller.reset();
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(task_controllers_[0]->cancelled_id_, id);
+
+  // Shouldn't notify the underlying controller.
+  EXPECT_FALSE(task_controllers_[0]->updated_id_);
 }
 
 }  // namespace learning

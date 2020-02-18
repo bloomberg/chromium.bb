@@ -15,9 +15,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
@@ -37,6 +38,7 @@ import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -140,7 +142,7 @@ public class SearchActivity extends AsyncInitializationActivity
 
     @Override
     protected void triggerLayoutInflation() {
-        mSnackbarManager = new SnackbarManager(this, null);
+        mSnackbarManager = new SnackbarManager(this, findViewById(android.R.id.content), null);
         mSearchBoxDataProvider = new SearchBoxDataProvider(getResources());
 
         mContentView = createContentView();
@@ -172,10 +174,6 @@ public class SearchActivity extends AsyncInitializationActivity
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
 
-        mTab = new TabBuilder()
-                       .setWindow(getWindowAndroid())
-                       .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
-                       .build();
         TabDelegateFactory factory = new TabDelegateFactory() {
             @Override
             public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
@@ -194,6 +192,11 @@ public class SearchActivity extends AsyncInitializationActivity
 
                     @Override
                     protected void setOverlayMode(boolean useOverlayMode) {}
+
+                    @Override
+                    public boolean canShowAppBanners() {
+                        return false;
+                    }
                 };
             }
 
@@ -208,18 +211,17 @@ public class SearchActivity extends AsyncInitializationActivity
             }
 
             @Override
-            public boolean canShowAppBanners() {
-                return false;
-            }
-
-            @Override
             public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(
                     Tab tab) {
                 return null;
             }
         };
-        mTab.initialize(
-                WebContentsFactory.createWebContents(false, false), factory, false, null, false);
+        mTab = new TabBuilder()
+                       .setWindow(getWindowAndroid())
+                       .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
+                       .setWebContents(WebContentsFactory.createWebContents(false, false))
+                       .setDelegateFactory(factory)
+                       .build();
         mTab.loadUrl(new LoadUrlParams(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL));
 
         mSearchBoxDataProvider.onNativeLibraryReady(mTab);
@@ -297,7 +299,7 @@ public class SearchActivity extends AsyncInitializationActivity
 
     @Override
     protected void onDestroy() {
-        if (mTab != null && mTab.isInitialized()) mTab.destroy();
+        if (mTab != null && ((TabImpl) mTab).isInitialized()) ((TabImpl) mTab).destroy();
         super.onDestroy();
     }
 

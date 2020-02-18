@@ -13,17 +13,15 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
-#include "chrome/browser/ui/media_router/cast_dialog_controller.h"
-#include "chrome/browser/ui/media_router/cast_dialog_model.h"
-
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
+#include "chrome/browser/ui/media_router/cast_dialog_controller.h"
+#include "chrome/browser/ui/media_router/cast_dialog_model.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/media_router/media_router_file_dialog.h"
 #include "chrome/browser/ui/media_router/media_router_ui_helper.h"
@@ -115,10 +113,6 @@ class MediaRouterViewsUI
 
   // Calls MediaRouter to terminate the given route.
   void TerminateRoute(const MediaRoute::Id& route_id);
-
-  // Logs a UMA stat for the source that was cast if the result is successful.
-  void MaybeReportCastingSource(MediaCastMode cast_mode,
-                                const RouteRequestResult& result);
 
   // Returns a subset of |sinks_| that should be listed in the dialog. This
   // excludes the wired display that the initiator WebContents is on.
@@ -408,7 +402,7 @@ class MediaRouterViewsUI
   base::WeakPtr<PresentationServiceDelegateImpl> presentation_service_delegate_;
 
   // WebContents for the tab for which the Cast dialog is shown.
-  content::WebContents* initiator_;
+  content::WebContents* initiator_ = nullptr;
 
   // The dialog that handles opening the file dialog and validating and
   // returning the results.

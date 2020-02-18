@@ -2,22 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/content_security_policy.h"
+#include "services/network/public/cpp/content_security_policy.h"
 
 #include <string>
 
+#include "base/at_exit.h"
+#include "base/i18n/icu_util.h"
 #include "net/http/http_response_headers.h"
 #include "testing/libfuzzer/libfuzzer_exports.h"
+#include "url/gurl.h"
+
+namespace {
+
+// This is a workaround for https://crbug.com/778929.
+struct IcuEnvironment {
+  IcuEnvironment() { CHECK(base::i18n::InitializeICU()); }
+  // used by ICU integration.
+  base::AtExitManager at_exit_manager;
+};
+
+}  // namespace
 
 namespace network {
 
 int LLVMFuzzerInitialize(int* argc, char*** argv) {
+  static IcuEnvironment env;
+
   return 0;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   ContentSecurityPolicy policy;
-  policy.Parse(std::string(reinterpret_cast<const char*>(data), size));
+  policy.Parse(GURL("https://example.com/"),
+               std::string(reinterpret_cast<const char*>(data), size));
 
   return 0;
 }

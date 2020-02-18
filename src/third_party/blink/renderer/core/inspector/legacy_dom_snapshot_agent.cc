@@ -241,10 +241,10 @@ int LegacyDOMSnapshotAgent::VisitNode(Node* node,
         value->setFrameId(IdentifiersFactory::FrameId(frame));
     }
 
-    if (auto* textarea_element = ToHTMLTextAreaElementOrNull(*element))
+    if (auto* textarea_element = DynamicTo<HTMLTextAreaElement>(*element))
       value->setTextValue(textarea_element->value());
 
-    if (auto* input_element = ToHTMLInputElementOrNull(*element)) {
+    if (auto* input_element = DynamicTo<HTMLInputElement>(*element)) {
       value->setInputValue(input_element->value());
       if ((input_element->type() == input_type_names::kRadio) ||
           (input_element->type() == input_type_names::kCheckbox)) {
@@ -252,7 +252,7 @@ int LegacyDOMSnapshotAgent::VisitNode(Node* node,
       }
     }
 
-    if (auto* option_element = ToHTMLOptionElementOrNull(*element))
+    if (auto* option_element = DynamicTo<HTMLOptionElement>(*element))
       value->setOptionSelected(option_element->Selected());
 
     if (element->GetPseudoId()) {
@@ -267,7 +267,7 @@ int LegacyDOMSnapshotAgent::VisitNode(Node* node,
                               include_user_agent_shadow_tree));
     }
 
-    HTMLImageElement* image_element = ToHTMLImageElementOrNull(node);
+    auto* image_element = DynamicTo<HTMLImageElement>(node);
     if (image_element)
       value->setCurrentSourceURL(image_element->currentSrc());
   } else if (auto* document = DynamicTo<Document>(node)) {

@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/url_request_context_owner.h"
@@ -42,12 +43,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
   // Sets Mojo factory used to create ProxyResolvers. If not set, falls back to
   // URLRequestContext's default behavior.
   void SetMojoProxyResolverFactory(
-      proxy_resolver::mojom::ProxyResolverFactoryPtr
+      mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
           mojo_proxy_resolver_factory);
 
 #if defined(OS_CHROMEOS)
   void SetDhcpWpadUrlClient(
-      network::mojom::DhcpWpadUrlClientPtr dhcp_wpad_url_client);
+      mojo::PendingRemote<network::mojom::DhcpWpadUrlClient>
+          dhcp_wpad_url_client);
 #endif  // defined(OS_CHROMEOS)
 
  private:
@@ -64,10 +66,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
 #if defined(OS_CHROMEOS)
   // If set, handles calls to get the PAC script URL from the browser process.
   // Only used if |mojo_proxy_resolver_factory_| is set.
-  network::mojom::DhcpWpadUrlClientPtr dhcp_wpad_url_client_;
+  mojo::PendingRemote<network::mojom::DhcpWpadUrlClient> dhcp_wpad_url_client_;
 #endif  // defined(OS_CHROMEOS)
 
-  proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_resolver_factory_;
+  mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
+      mojo_proxy_resolver_factory_;
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilderMojo);
 };
 

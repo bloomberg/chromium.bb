@@ -27,10 +27,8 @@ class FileManagerUITest : public InProcessBrowserTest {
     // components migration from the old web APIs.
     // After completion of the migration, we should remove this.
     // See crbug.com/924873 for detail.
-    command_line->AppendSwitchASCII("disable-blink-features", "ShadowDOMV0");
-    command_line->AppendSwitchASCII("disable-blink-features",
-                                    "CustomElementsV0");
-    command_line->AppendSwitchASCII("disable-blink-features", "HTMLImports");
+    command_line->AppendSwitchASCII(switches::kDisableBlinkFeatures,
+                                    "ShadowDOMV0,CustomElementsV0,HTMLImports");
   }
 
   void RunTest(std::string test_scope) {
@@ -93,10 +91,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerUITest, PluginVm) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerUITest, PluginVmShare) {
   RunTest("pluginVmShare");
-}
-
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, ProgressCenter) {
-  RunTest("progressCenter");
 }
 
 }  // namespace file_manager

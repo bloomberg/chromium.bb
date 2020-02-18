@@ -5,6 +5,7 @@
 #include "src/debug/debug.h"
 #include "src/execution/arguments-inl.h"
 #include "src/execution/isolate-inl.h"
+#include "src/execution/protectors-inl.h"
 #include "src/heap/factory.h"
 #include "src/heap/heap-inl.h"  // For ToBoolean. TODO(jkummerow): Drop.
 #include "src/heap/heap-write-barrier-inl.h"
@@ -136,8 +137,8 @@ RUNTIME_FUNCTION(Runtime_NewArray) {
       // just flip the bit on the global protector cell instead.
       // TODO(bmeurer): Find a better way to mark this. Global protectors
       // tend to back-fire over time...
-      if (isolate->IsArrayConstructorIntact()) {
-        isolate->InvalidateArrayConstructorProtector();
+      if (Protectors::IsArrayConstructorIntact(isolate)) {
+        Protectors::InvalidateArrayConstructor(isolate);
       }
     }
   }
@@ -161,16 +162,26 @@ RUNTIME_FUNCTION(Runtime_GrowArrayElements) {
   HandleScope scope(isolate);
   DCHECK_EQ(2, args.length());
   CONVERT_ARG_HANDLE_CHECKED(JSObject, object, 0);
-  CONVERT_NUMBER_CHECKED(int, key, Int32, args[1]);
-
-  if (key < 0) return Smi::kZero;
+  CONVERT_ARG_HANDLE_CHECKED(Object, key, 1);
+  uint32_t index;
+  if (key->IsSmi()) {
+    int value = Smi::ToInt(*key);
+    if (value < 0) return Smi::zero();
+    index = static_cast<uint32_t>(value);
+  } else {
+    CHECK(key->IsHeapNumber());
+    double value = HeapNumber::cast(*key).value();
+    if (value < 0 || value > std::numeric_limits<uint32_t>::max()) {
+      return Smi::zero();
+    }
+    index = static_cast<uint32_t>(value);
+  }
 
   uint32_t capacity = static_cast<uint32_t>(object->elements().length());
-  uint32_t index = static_cast<uint32_t>(key);
 
   if (index >= capacity) {
     if (!object->GetElementsAccessor()->GrowCapacity(object, index)) {
-      return Smi::kZero;
+      return Smi::zero();
     }
   }
 
@@ -277,9 +288,8 @@ RUNTIME_FUNCTION(Runtime_ArrayIncludes_Slow) {
       JSObject::PrototypeHasNoElements(isolate, JSObject::cast(*object))) {
     Handle<JSObject> obj = Handle<JSObject>::cast(object);
     ElementsAccessor* elements = obj->GetElementsAccessor();
-    Maybe<bool> result = elements->IncludesValue(isolate, obj, search_element,
-                                                 static_cast<uint32_t>(index),
-                                                 static_cast<uint32_t>(len));
+    Maybe<bool> result =
+        elements->IncludesValue(isolate, obj, search_element, index, len);
     MAYBE_RETURN(result, ReadOnlyRoots(isolate).exception());
     return *isolate->factory()->ToBoolean(result.FromJust());
   }

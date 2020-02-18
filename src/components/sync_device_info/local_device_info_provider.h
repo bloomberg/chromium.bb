@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_list.h"
+#include "base/system/sys_info.h"
 #include "components/version_info/version_info.h"
 
 namespace syncer {
@@ -42,8 +43,13 @@ class LocalDeviceInfoProvider {
 class MutableLocalDeviceInfoProvider : public LocalDeviceInfoProvider {
  public:
   virtual void Initialize(const std::string& cache_guid,
-                          const std::string& session_name) = 0;
+                          const std::string& client_name,
+                          const base::SysInfo::HardwareInfo& hardware_info) = 0;
   virtual void Clear() = 0;
+
+  // Updates the local device's client name. Initialize() must be called before
+  // calling this function.
+  virtual void UpdateClientName(const std::string& client_name) = 0;
 };
 
 }  // namespace syncer

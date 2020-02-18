@@ -36,6 +36,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -95,7 +96,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
     prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
     prefs::kDictationAcceleratorDialogHasBeenAccepted,
-    prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted,
+    prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2,
 };
 
 // Returns true if |pref_service| is the one used for the signin screen.
@@ -254,6 +255,43 @@ std::string PrefKeyForSwitchAccessCommand(SwitchAccessCommand command) {
   }
 }
 
+std::string UmaNameForSwitchAccessCommand(SwitchAccessCommand command) {
+  switch (command) {
+    case SwitchAccessCommand::kSelect:
+      return "Accessibility.CrosSwitchAccess.SelectKeyCode";
+    case SwitchAccessCommand::kNext:
+      return "Accessibility.CrosSwitchAccess.NextKeyCode";
+    case SwitchAccessCommand::kPrevious:
+      return "Accessibility.CrosSwitchAccess.PreviousKeyCode";
+    case SwitchAccessCommand::kNone:
+      NOTREACHED();
+      return "";
+  }
+}
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SwitchAccessCommandKeyCode {
+  kUnknown = 0,
+  kNone = 1,
+  kSpace = 2,
+  kEnter = 3,
+  kMaxValue = kEnter,
+};
+
+SwitchAccessCommandKeyCode UmaValueForKeyCode(int key_code) {
+  switch (key_code) {
+    case 0:
+      return SwitchAccessCommandKeyCode::kNone;
+    case 13:
+      return SwitchAccessCommandKeyCode::kEnter;
+    case 32:
+      return SwitchAccessCommandKeyCode::kSpace;
+    default:
+      return SwitchAccessCommandKeyCode::kUnknown;
+  }
+}
+
 }  // namespace
 
 AccessibilityControllerImpl::AccessibilityControllerImpl()
@@ -262,101 +300,136 @@ AccessibilityControllerImpl::AccessibilityControllerImpl()
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
-AccessibilityControllerImpl::~AccessibilityControllerImpl() {
-  if (Shell::Get()->tablet_mode_controller())
-    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->session_controller()->RemoveObserver(this);
-}
+AccessibilityControllerImpl::~AccessibilityControllerImpl() = default;
 
 // static
 void AccessibilityControllerImpl::RegisterProfilePrefs(
-    PrefRegistrySimple* registry,
-    bool for_test) {
-  if (for_test) {
-    // In tests there is no remote pref service. Make ash own the prefs.
-    registry->RegisterBooleanPref(prefs::kAccessibilityAutoclickEnabled, false);
-    registry->RegisterIntegerPref(
-        prefs::kAccessibilityAutoclickDelayMs,
-        static_cast<int>(
-            AutoclickController::GetDefaultAutoclickDelay().InMilliseconds()));
-    registry->RegisterIntegerPref(prefs::kAccessibilityAutoclickEventType,
-                                  static_cast<int>(kDefaultAutoclickEventType));
-    registry->RegisterBooleanPref(
-        prefs::kAccessibilityAutoclickRevertToLeftClick, true);
-    registry->RegisterBooleanPref(
-        prefs::kAccessibilityAutoclickStabilizePosition, false);
-    registry->RegisterIntegerPref(
-        prefs::kAccessibilityAutoclickMovementThreshold,
-        kDefaultAutoclickMovementThreshold);
-    registry->RegisterIntegerPref(
-        prefs::kAccessibilityAutoclickMenuPosition,
-        static_cast<int>(kDefaultAutoclickMenuPosition));
-    registry->RegisterBooleanPref(prefs::kAccessibilityCaretHighlightEnabled,
-                                  false);
-    registry->RegisterBooleanPref(prefs::kAccessibilityCursorHighlightEnabled,
-                                  false);
-    registry->RegisterBooleanPref(prefs::kAccessibilityDictationEnabled, false);
-    registry->RegisterBooleanPref(prefs::kAccessibilityFocusHighlightEnabled,
-                                  false);
-    registry->RegisterBooleanPref(prefs::kAccessibilityHighContrastEnabled,
-                                  false);
-    registry->RegisterBooleanPref(prefs::kAccessibilityLargeCursorEnabled,
-                                  false);
-    registry->RegisterIntegerPref(prefs::kAccessibilityLargeCursorDipSize,
-                                  kDefaultLargeCursorSize);
-    registry->RegisterBooleanPref(prefs::kAccessibilityMonoAudioEnabled, false);
-    registry->RegisterBooleanPref(prefs::kAccessibilityScreenMagnifierEnabled,
-                                  false);
-    registry->RegisterDoublePref(prefs::kAccessibilityScreenMagnifierScale,
-                                 1.0);
-    registry->RegisterBooleanPref(prefs::kAccessibilitySpokenFeedbackEnabled,
-                                  false);
-    registry->RegisterBooleanPref(prefs::kAccessibilitySelectToSpeakEnabled,
-                                  false);
-    registry->RegisterBooleanPref(prefs::kAccessibilityStickyKeysEnabled,
-                                  false);
-    registry->RegisterBooleanPref(prefs::kAccessibilitySwitchAccessEnabled,
-                                  false);
-    registry->RegisterListPref(prefs::kAccessibilitySwitchAccessSelectKeyCodes,
-                               base::Value(std::vector<base::Value>()));
-    registry->RegisterIntegerPref(
-        prefs::kAccessibilitySwitchAccessSelectSetting,
-        kSwitchAccessAssignmentNone);
-    registry->RegisterListPref(prefs::kAccessibilitySwitchAccessNextKeyCodes,
-                               base::Value(std::vector<base::Value>()));
-    registry->RegisterIntegerPref(prefs::kAccessibilitySwitchAccessNextSetting,
-                                  kSwitchAccessAssignmentNone);
-    registry->RegisterListPref(
-        prefs::kAccessibilitySwitchAccessPreviousKeyCodes,
-        base::Value(std::vector<base::Value>()));
-    registry->RegisterIntegerPref(
-        prefs::kAccessibilitySwitchAccessPreviousSetting,
-        kSwitchAccessAssignmentNone);
-    registry->RegisterBooleanPref(
-        prefs::kAccessibilitySwitchAccessAutoScanEnabled, false);
-    registry->RegisterIntegerPref(
-        prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
-        kDefaultSwitchAccessAutoScanSpeed.InMilliseconds());
-    registry->RegisterIntegerPref(
-        prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs,
-        kDefaultSwitchAccessAutoScanSpeed.InMilliseconds());
-    registry->RegisterBooleanPref(prefs::kAccessibilityVirtualKeyboardEnabled,
-                                  false);
-    registry->RegisterBooleanPref(
-        prefs::kHighContrastAcceleratorDialogHasBeenAccepted, false);
-    registry->RegisterBooleanPref(
-        prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted, false);
-    registry->RegisterBooleanPref(
-        prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted, false);
-    registry->RegisterBooleanPref(
-        prefs::kDictationAcceleratorDialogHasBeenAccepted, false);
-    registry->RegisterBooleanPref(
-        prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, false);
-    return;
-  }
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityAutoclickEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilityAutoclickDelayMs, kDefaultAutoclickDelayMs,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilityAutoclickEventType,
+      static_cast<int>(kDefaultAutoclickEventType),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityAutoclickRevertToLeftClick, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityAutoclickStabilizePosition, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilityAutoclickMovementThreshold,
+      kDefaultAutoclickMovementThreshold,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilityAutoclickMenuPosition,
+      static_cast<int>(kDefaultAutoclickMenuPosition),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityCaretHighlightEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityCursorHighlightEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityDictationEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityFocusHighlightEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityHighContrastEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityLargeCursorEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(prefs::kAccessibilityLargeCursorDipSize,
+                                kDefaultLargeCursorSize);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityMonoAudioEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityScreenMagnifierCenterFocus, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityScreenMagnifierEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterDoublePref(prefs::kAccessibilityScreenMagnifierScale,
+                               std::numeric_limits<double>::min());
+  registry->RegisterBooleanPref(prefs::kAccessibilitySpokenFeedbackEnabled,
+                                false);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilitySelectToSpeakEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityStickyKeysEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilitySwitchAccessEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterListPref(
+      prefs::kAccessibilitySwitchAccessSelectKeyCodes,
+      base::Value(std::vector<base::Value>()),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilitySwitchAccessSelectSetting,
+      kSwitchAccessAssignmentNone,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterListPref(
+      prefs::kAccessibilitySwitchAccessNextKeyCodes,
+      base::Value(std::vector<base::Value>()),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilitySwitchAccessNextSetting, kSwitchAccessAssignmentNone,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterListPref(
+      prefs::kAccessibilitySwitchAccessPreviousKeyCodes,
+      base::Value(std::vector<base::Value>()),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilitySwitchAccessPreviousSetting,
+      kSwitchAccessAssignmentNone,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilitySwitchAccessAutoScanEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
+      kDefaultSwitchAccessAutoScanSpeed.InMilliseconds(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs,
+      kDefaultSwitchAccessAutoScanSpeed.InMilliseconds(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccessibilityVirtualKeyboardEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kHighContrastAcceleratorDialogHasBeenAccepted, false);
+  registry->RegisterBooleanPref(
+      prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted, false);
+  registry->RegisterBooleanPref(
+      prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted, false);
+  registry->RegisterBooleanPref(
+      prefs::kDictationAcceleratorDialogHasBeenAccepted, false);
+  registry->RegisterBooleanPref(
+      prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2, false);
 
-  // In production the prefs are owned by chrome.
-  // TODO(jamescook): Move ownership to ash.
+  registry->RegisterBooleanPref(
+      prefs::kShouldAlwaysShowAccessibilityMenu, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+}
+
+void AccessibilityControllerImpl::Shutdown() {
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
+
+  for (auto& observer : observers_)
+    observer.OnAccessibilityControllerShutdown();
 }
 
 void AccessibilityControllerImpl::SetHighContrastAcceleratorDialogAccepted() {
@@ -403,7 +476,7 @@ bool AccessibilityControllerImpl::
     HasDisplayRotationAcceleratorDialogBeenAccepted() const {
   return active_user_prefs_ &&
          active_user_prefs_->GetBoolean(
-             prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted);
+             prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2);
 }
 
 void AccessibilityControllerImpl::
@@ -411,7 +484,7 @@ void AccessibilityControllerImpl::
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetBoolean(
-      prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, true);
+      prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2, true);
   active_user_prefs_->CommitPendingWrite();
 }
 
@@ -545,7 +618,8 @@ void AccessibilityControllerImpl::SetDictationEnabled(bool enabled) {
           controller->SetDictationAcceleratorDialogAccepted();
           // If they accept, try again to set dictation_enabled to true
           controller->SetDictationEnabled(true);
-        }));
+        }),
+        base::DoNothing());
     return;
   }
   active_user_prefs_->SetBoolean(prefs::kAccessibilityDictationEnabled,
@@ -780,6 +854,11 @@ void AccessibilityControllerImpl::
   switch_access_event_handler_->set_ignore_virtual_key_events(should_ignore);
 }
 
+void AccessibilityControllerImpl::
+    DisablePolicyRecommendationRestorerForTesting() {
+  Shell::Get()->policy_recommendation_restorer()->DisableForTesting();
+}
+
 void AccessibilityControllerImpl::ForwardKeyEventsToSwitchAccess(
     bool should_forward) {
   switch_access_event_handler_->set_forward_key_events(should_forward);
@@ -878,6 +957,7 @@ void AccessibilityControllerImpl::ToggleDictationFromSource(
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Dictation"));
   UserMetricsRecorder::RecordUserToggleDictation(source);
 
+  SetDictationEnabled(true);
   ToggleDictation();
 }
 
@@ -1119,6 +1199,21 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
       base::BindRepeating(
           &AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref,
           base::Unretained(this), SwitchAccessCommand::kPrevious));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessAutoScanEnabled,
+      base::BindRepeating(&AccessibilityControllerImpl::
+                              UpdateSwitchAccessAutoScanEnabledFromPref,
+                          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::UpdateSwitchAccessAutoScanSpeedFromPref,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs,
+      base::BindRepeating(&AccessibilityControllerImpl::
+                              UpdateSwitchAccessAutoScanKeyboardSpeedFromPref,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityVirtualKeyboardEnabled,
       base::BindRepeating(
@@ -1480,9 +1575,6 @@ void AccessibilityControllerImpl::UpdateSwitchAccessFromPref() {
 
 void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
     SwitchAccessCommand command) {
-  if (!switch_access_event_handler_)
-    return;
-
   DCHECK(active_user_prefs_);
 
   std::string pref_key = PrefKeyForSwitchAccessCommand(command);
@@ -1493,7 +1585,49 @@ void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
     key_codes.insert(key_code);
   }
 
+  std::string uma_name = UmaNameForSwitchAccessCommand(command);
+  if (key_codes.size() == 0) {
+    SwitchAccessCommandKeyCode uma_value = UmaValueForKeyCode(0);
+    base::UmaHistogramEnumeration(uma_name, uma_value);
+  }
+  for (int key_code : key_codes) {
+    SwitchAccessCommandKeyCode uma_value = UmaValueForKeyCode(key_code);
+    base::UmaHistogramEnumeration(uma_name, uma_value);
+  }
+
+  if (!switch_access_event_handler_)
+    return;
+
   switch_access_event_handler_->SetKeyCodesForCommand(key_codes, command);
+}
+
+void AccessibilityControllerImpl::UpdateSwitchAccessAutoScanEnabledFromPref() {
+  DCHECK(active_user_prefs_);
+  const bool enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilitySwitchAccessAutoScanEnabled);
+
+  base::UmaHistogramBoolean("Accessibility.CrosSwitchAccess.AutoScan", enabled);
+}
+
+void AccessibilityControllerImpl::UpdateSwitchAccessAutoScanSpeedFromPref() {
+  DCHECK(active_user_prefs_);
+  const int speed_ms = active_user_prefs_->GetInteger(
+      prefs::kAccessibilitySwitchAccessAutoScanSpeedMs);
+
+  base::UmaHistogramCustomCounts(
+      "Accessibility.CrosSwitchAccess.AutoScan.SpeedMs", speed_ms, 1 /* min */,
+      10000 /* max */, 100 /* buckets */);
+}
+
+void AccessibilityControllerImpl::
+    UpdateSwitchAccessAutoScanKeyboardSpeedFromPref() {
+  DCHECK(active_user_prefs_);
+  const int speed_ms = active_user_prefs_->GetInteger(
+      prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs);
+
+  base::UmaHistogramCustomCounts(
+      "Accessibility.CrosSwitchAccess.AutoScan.KeyboardSpeedMs", speed_ms,
+      1 /* min */, 10000 /* max */, 100 /* buckets */);
 }
 
 void AccessibilityControllerImpl::MaybeCreateSwitchAccessEventHandler() {
@@ -1537,7 +1671,8 @@ void AccessibilityControllerImpl::UpdateVirtualKeyboardFromPref() {
 
 base::string16 AccessibilityControllerImpl::GetBatteryDescription() const {
   // Pass battery status as string to callback function.
-  return PowerStatus::Get()->GetAccessibleNameString(/*full_description=*/true);
+  return PowerStatus::Get()->GetAccessibleNameString(
+      /*full_description=*/true);
 }
 
 void AccessibilityControllerImpl::SetVirtualKeyboardVisible(bool is_visible) {

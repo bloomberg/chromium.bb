@@ -15,68 +15,37 @@
 #include "src/core/SkMathPriv.h"
 #include "src/gpu/SkGr.h"
 
-size_t GrSurface::WorstCaseSize(const GrSurfaceDesc& desc, GrRenderable renderable,
-                                int renderTargetSampleCnt, bool binSize) {
-    size_t size;
-
-    int width  = binSize ? GrResourceProvider::MakeApprox(desc.fWidth)  : desc.fWidth;
-    int height = binSize ? GrResourceProvider::MakeApprox(desc.fHeight) : desc.fHeight;
-
-    if (renderable == GrRenderable::kYes) {
-        // We own one color value for each MSAA sample.
-        SkASSERT(renderTargetSampleCnt >= 1);
-        int colorValuesPerPixel = renderTargetSampleCnt;
-        if (renderTargetSampleCnt > 1) {
-            // Worse case, we own the resolve buffer so that is one more sample per pixel.
-            colorValuesPerPixel += 1;
-        }
-        SkASSERT(kUnknown_GrPixelConfig != desc.fConfig);
-        SkASSERT(!GrPixelConfigIsCompressed(desc.fConfig));
-        size_t colorBytes = (size_t) width * height * GrBytesPerPixel(desc.fConfig);
-
-        // This would be a nice assert to have (i.e., we aren't creating 0 width/height surfaces).
-        // Unfortunately Chromium seems to want to do this.
-        //SkASSERT(colorBytes > 0);
-
-        size = colorValuesPerPixel * colorBytes;
-        size += colorBytes/3; // in case we have to mipmap
-    } else {
-        SkASSERT(renderTargetSampleCnt == 1);
-        if (GrPixelConfigIsCompressed(desc.fConfig)) {
-            size = GrCompressedFormatDataSize(desc.fConfig, width, height);
-        } else {
-            size = (size_t)width * height * GrBytesPerPixel(desc.fConfig);
-        }
-
-        size += size/3;  // in case we have to mipmap
-    }
-
-    return size;
-}
-
-size_t GrSurface::ComputeSize(GrPixelConfig config,
-                              int width,
-                              int height,
+size_t GrSurface::ComputeSize(const GrCaps& caps,
+                              const GrBackendFormat& format,
+                              SkISize dimensions,
                               int colorSamplesPerPixel,
                               GrMipMapped mipMapped,
                               bool binSize) {
+    // For external formats we do not actually know the real size of the resource so we just return
+    // 0 here to indicate this.
+    if (format.textureType() == GrTextureType::kExternal) {
+        return 0;
+    }
+
     size_t colorSize;
 
-    width  = binSize ? GrResourceProvider::MakeApprox(width)  : width;
-    height = binSize ? GrResourceProvider::MakeApprox(height) : height;
+    if (binSize) {
+        dimensions = GrResourceProvider::MakeApprox(dimensions);
+    }
 
-    SkASSERT(kUnknown_GrPixelConfig != config);
-    if (GrPixelConfigIsCompressed(config)) {
-        colorSize = GrCompressedFormatDataSize(config, width, height);
+    // Just setting a defualt value here to appease warnings on uninitialized object.
+    SkImage::CompressionType compressionType = SkImage::kETC1_CompressionType;
+    if (caps.isFormatCompressed(format, &compressionType)) {
+        colorSize = GrCompressedFormatDataSize(compressionType, dimensions);
     } else {
-        colorSize = (size_t)width * height * GrBytesPerPixel(config);
+        colorSize = (size_t)dimensions.width() * dimensions.height() * caps.bytesPerPixel(format);
     }
     SkASSERT(colorSize > 0);
 
     size_t finalSize = colorSamplesPerPixel * colorSize;
 
     if (GrMipMapped::kYes == mipMapped) {
-        // We don't have to worry about the mipmaps being a different size than
+        // We don't have to worry about the mipmaps being a different dimensions than
         // we'd expect because we never change fDesc.fWidth/fHeight.
         finalSize += colorSize/3;
     }
@@ -84,42 +53,6 @@ size_t GrSurface::ComputeSize(GrPixelConfig config,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-
-bool GrSurface::hasPendingRead() const {
-    const GrTexture* thisTex = this->asTexture();
-    if (thisTex && thisTex->internalHasPendingRead()) {
-        return true;
-    }
-    const GrRenderTarget* thisRT = this->asRenderTarget();
-    if (thisRT && thisRT->internalHasPendingRead()) {
-        return true;
-    }
-    return false;
-}
-
-bool GrSurface::hasPendingWrite() const {
-    const GrTexture* thisTex = this->asTexture();
-    if (thisTex && thisTex->internalHasPendingWrite()) {
-        return true;
-    }
-    const GrRenderTarget* thisRT = this->asRenderTarget();
-    if (thisRT && thisRT->internalHasPendingWrite()) {
-        return true;
-    }
-    return false;
-}
-
-bool GrSurface::hasPendingIO() const {
-    const GrTexture* thisTex = this->asTexture();
-    if (thisTex && thisTex->internalHasPendingIO()) {
-        return true;
-    }
-    const GrRenderTarget* thisRT = this->asRenderTarget();
-    if (thisRT && thisRT->internalHasPendingIO()) {
-        return true;
-    }
-    return false;
-}
 
 void GrSurface::onRelease() {
     this->invokeReleaseProc();

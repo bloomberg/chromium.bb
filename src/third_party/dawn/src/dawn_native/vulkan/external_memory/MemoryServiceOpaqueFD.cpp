@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "common/Assert.h"
 #include "dawn_native/vulkan/AdapterVk.h"
 #include "dawn_native/vulkan/BackendVk.h"
 #include "dawn_native/vulkan/DeviceVk.h"
+#include "dawn_native/vulkan/TextureVk.h"
 #include "dawn_native/vulkan/VulkanError.h"
 #include "dawn_native/vulkan/external_memory/MemoryService.h"
 
@@ -32,11 +34,11 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
 
     Service::~Service() = default;
 
-    bool Service::Supported(VkFormat format,
-                            VkImageType type,
-                            VkImageTiling tiling,
-                            VkImageUsageFlags usage,
-                            VkImageCreateFlags flags) {
+    bool Service::SupportsImportMemory(VkFormat format,
+                                       VkImageType type,
+                                       VkImageTiling tiling,
+                                       VkImageUsageFlags usage,
+                                       VkImageCreateFlags flags) {
         // Early out before we try using extension functions
         if (!mSupported) {
             return false;
@@ -79,11 +81,37 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
                !(memoryFlags & VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT_KHR);
     }
 
+    bool Service::SupportsCreateImage(const ExternalImageDescriptor* descriptor,
+                                      VkFormat format,
+                                      VkImageUsageFlags usage) {
+        return mSupported;
+    }
+
+    ResultOrError<MemoryImportParams> Service::GetMemoryImportParams(
+        const ExternalImageDescriptor* descriptor,
+        VkImage image) {
+        if (descriptor->type != ExternalImageDescriptorType::OpaqueFD) {
+            return DAWN_VALIDATION_ERROR("ExternalImageDescriptor is not an OpaqueFD descriptor");
+        }
+        const ExternalImageDescriptorOpaqueFD* opaqueFDDescriptor =
+            static_cast<const ExternalImageDescriptorOpaqueFD*>(descriptor);
+
+        MemoryImportParams params = {opaqueFDDescriptor->allocationSize,
+                                     opaqueFDDescriptor->memoryTypeIndex};
+        return params;
+    }
+
     ResultOrError<VkDeviceMemory> Service::ImportMemory(ExternalMemoryHandle handle,
-                                                        VkDeviceSize allocationSize,
-                                                        uint32_t memoryTypeIndex) {
+                                                        const MemoryImportParams& importParams,
+                                                        VkImage image) {
         if (handle < 0) {
             return DAWN_VALIDATION_ERROR("Trying to import memory with invalid handle");
+        }
+
+        VkMemoryRequirements requirements;
+        mDevice->fn.GetImageMemoryRequirements(mDevice->GetVkDevice(), image, &requirements);
+        if (requirements.size > importParams.allocationSize) {
+            return DAWN_VALIDATION_ERROR("Requested allocation size is too small for image");
         }
 
         VkImportMemoryFdInfoKHR importMemoryFdInfo;
@@ -95,14 +123,30 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         VkMemoryAllocateInfo allocateInfo;
         allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocateInfo.pNext = &importMemoryFdInfo;
-        allocateInfo.allocationSize = allocationSize;
-        allocateInfo.memoryTypeIndex = memoryTypeIndex;
+        allocateInfo.allocationSize = importParams.allocationSize;
+        allocateInfo.memoryTypeIndex = importParams.memoryTypeIndex;
 
         VkDeviceMemory allocatedMemory = VK_NULL_HANDLE;
         DAWN_TRY(CheckVkSuccess(mDevice->fn.AllocateMemory(mDevice->GetVkDevice(), &allocateInfo,
                                                            nullptr, &allocatedMemory),
                                 "vkAllocateMemory"));
         return allocatedMemory;
+    }
+
+    ResultOrError<VkImage> Service::CreateImage(const ExternalImageDescriptor* descriptor,
+                                                const VkImageCreateInfo& baseCreateInfo) {
+        VkImageCreateInfo createInfo = baseCreateInfo;
+        createInfo.flags = VK_IMAGE_CREATE_ALIAS_BIT_KHR;
+        createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+        ASSERT(IsSampleCountSupported(mDevice, createInfo));
+
+        VkImage image;
+        DAWN_TRY(CheckVkSuccess(
+            mDevice->fn.CreateImage(mDevice->GetVkDevice(), &createInfo, nullptr, &image),
+            "CreateImage"));
+        return image;
     }
 
 }}}  // namespace dawn_native::vulkan::external_memory

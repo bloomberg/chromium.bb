@@ -17,6 +17,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import cros_test
+from chromite.utils import outcap
 
 
 # pylint: disable=protected-access
@@ -191,11 +192,15 @@ class CrOSTesterMiscTests(CrOSTesterBase):
   def testHostCmd(self):
     """Verify running a host command."""
     self._tester.host_cmd = True
+    self._tester.build_dir = '/some/chromium/dir'
     self._tester.args = ['tast', 'run', 'localhost:9222', 'ui.ChromeLogin']
     self._tester.Run()
-    # Ensure command is run and an exception is not raised if it fails.
-    self.assertCommandCalled(['tast', 'run', 'localhost:9222',
-                              'ui.ChromeLogin'], error_code_ok=True)
+    # Ensure command is run with an env var for the build dir, and ensure an
+    # exception is not raised if it fails.
+    self.assertCommandCalled(
+        ['tast', 'run', 'localhost:9222', 'ui.ChromeLogin'],
+        error_code_ok=True,
+        extra_env={'CHROMIUM_OUTPUT_DIR': '/some/chromium/dir'})
     # Ensure that --host-cmd does not invoke ssh since it runs on the host.
     self.assertCommandContains(['ssh', 'tast'], expected=False)
 
@@ -267,7 +272,7 @@ class CrOSTesterAutotest(CrOSTesterBase):
     self._tester.autotest = ['accessibility_Sanity']
     # Capture the run command. This is necessary beacuse the mock doesn't
     # capture the cros_sdk wrapper.
-    with cros_build_lib.OutputCapturer() as output:
+    with outcap.OutputCapturer() as output:
       self._tester._RunAutotest()
     # Check that we enter the chroot before running test_that.
     self.assertIn(
@@ -472,10 +477,10 @@ class CrOSTesterParser(CrOSTesterBase):
     # Recreate args as a list if it is given as a string.
     if isinstance(args, str):
       args = [args]
-    # Putting cros_build_lib.OutputCapturer() before assertRaises(SystemExit)
+    # Putting outcap.OutputCapturer() before assertRaises(SystemExit)
     # swallows SystemExit exception check.
     with self.assertRaises(SystemExit):
-      with cros_build_lib.OutputCapturer() as output:
+      with outcap.OutputCapturer() as output:
         cros_test.ParseCommandLine(args)
     self.assertIn(error_msg, output.GetStderr())
 

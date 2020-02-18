@@ -17,14 +17,13 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
+#include "base/numerics/ranges.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
 #include "mojo/core/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
@@ -48,11 +47,11 @@
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/dns_config_change_manager.h"
 #include "services/network/http_auth_cache_copier.h"
-#include "services/network/initiator_lock_compatibility.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_context.h"
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/url_loader.h"
@@ -81,36 +80,20 @@ namespace {
 
 NetworkService* g_network_service = nullptr;
 
-net::NetLog* GetNetLog() {
-  static base::NoDestructor<net::NetLog> instance;
-  return instance.get();
-}
-
 // The interval for calls to NetworkService::UpdateLoadStates
 constexpr auto kUpdateLoadStatesInterval =
     base::TimeDelta::FromMilliseconds(250);
 
 std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     net::NetworkChangeNotifier::ConnectionType initial_connection_type,
-    net::NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype) {
+    net::NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype,
+    bool mock_network_change_notifier) {
   // There is a global singleton net::NetworkChangeNotifier if NetworkService
   // is running inside of the browser process.
-  if (!net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    // On Android and ChromeOS, network change events are synced from the
-    // browser process.
-    return std::make_unique<net::NetworkChangeNotifierPosix>(
-        initial_connection_type, initial_connection_subtype);
-#elif defined(OS_IOS)
-    // iOS doesn't embed //content.
-    // TODO(xunjieli): Figure out what to do for iOS.
-    NOTIMPLEMENTED();
-    return nullptr;
-#else
-    return net::NetworkChangeNotifier::Create();
-#endif
-  }
-  return nullptr;
+  if (mock_network_change_notifier)
+    return net::NetworkChangeNotifier::CreateMockIfNeeded();
+  return net::NetworkChangeNotifier::CreateIfNeeded(initial_connection_type,
+                                                    initial_connection_subtype);
 }
 
 void OnGetNetworkList(std::unique_ptr<net::NetworkInterfaceList> networks,
@@ -126,14 +109,14 @@ void OnGetNetworkList(std::unique_ptr<net::NetworkInterfaceList> networks,
 #if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
 // Used for Negotiate authentication on Android, which needs to generate tokens
 // in the browser process.
-class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
+class NetworkServiceAuthNegotiateAndroid : public net::HttpAuthMechanism {
  public:
   NetworkServiceAuthNegotiateAndroid(NetworkContext* network_context,
                                      const net::HttpAuthPreferences* prefs)
       : network_context_(network_context), auth_negotiate_(prefs) {}
   ~NetworkServiceAuthNegotiateAndroid() override = default;
 
-  // HttpNegotiateAuthSystem implementation:
+  // HttpAuthMechanism implementation:
   bool Init(const net::NetLogWithSource& net_log) override {
     return auth_negotiate_.Init(net_log);
   }
@@ -184,7 +167,7 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
   base::WeakPtrFactory<NetworkServiceAuthNegotiateAndroid> weak_factory_{this};
 };
 
-std::unique_ptr<net::HttpNegotiateAuthSystem> CreateAuthSystem(
+std::unique_ptr<net::HttpAuthMechanism> CreateAuthSystem(
     NetworkContext* network_context,
     const net::HttpAuthPreferences* prefs) {
   return std::make_unique<NetworkServiceAuthNegotiateAndroid>(network_context,
@@ -205,37 +188,81 @@ void HandleBadMessage(const std::string& error) {
 
 }  // namespace
 
+// static
+const base::TimeDelta NetworkService::kInitialDohProbeTimeout =
+    base::TimeDelta::FromSeconds(5);
+
+// Handler of delaying calls to NetworkContext::ActivateDohProbes() until after
+// an initial service startup delay.
+class NetworkService::DelayedDohProbeActivator {
+ public:
+  explicit DelayedDohProbeActivator(NetworkService* network_service)
+      : network_service_(network_service) {
+    DCHECK(network_service_);
+
+    // Delay initial DoH probes to prevent interference with startup tasks.
+    doh_probes_timer_.Start(
+        FROM_HERE, NetworkService::kInitialDohProbeTimeout,
+        base::BindOnce(&DelayedDohProbeActivator::ActivateAllDohProbes,
+                       base::Unretained(this)));
+  }
+
+  DelayedDohProbeActivator(const DelayedDohProbeActivator&) = delete;
+  DelayedDohProbeActivator& operator=(const DelayedDohProbeActivator&) = delete;
+
+  // Activates DoH probes for |network_context| iff the initial startup delay
+  // has expired. Intended to be called on registration of contexts to activate
+  // probes for contexts created and registered after the initial delay has
+  // expired.
+  void MaybeActivateDohProbes(NetworkContext* network_context) {
+    // If timer is still running, probes will be started on completion.
+    if (doh_probes_timer_.IsRunning())
+      return;
+
+    network_context->ActivateDohProbes();
+  }
+
+  // Attempts to activate DoH probes for all contexts registered with the
+  // service. Intended to be called on expiration of |doh_probes_timer_| to
+  // activate probes for contexts registered during the initial delay.
+  void ActivateAllDohProbes() {
+    for (auto* network_context : network_service_->network_contexts_) {
+      MaybeActivateDohProbes(network_context);
+    }
+  }
+
+ private:
+  NetworkService* const network_service_;
+
+  // If running, DoH probes will be started on completion. If not running, DoH
+  // probes may be started at any time.
+  base::OneShotTimer doh_probes_timer_;
+};
+
 NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry,
-    mojom::NetworkServiceRequest request,
-    service_manager::mojom::ServiceRequest service_request,
+    mojo::PendingReceiver<mojom::NetworkService> receiver,
     bool delay_initialization_until_set_client)
-    : net_log_(GetNetLog()), registry_(std::move(registry)), binding_(this) {
+    : net_log_(net::NetLog::Get()), registry_(std::move(registry)) {
   DCHECK(!g_network_service);
   g_network_service = this;
-
-  // In testing environments, |service_request| may not be provided.
-  if (service_request.is_pending())
-    service_binding_.Bind(std::move(service_request));
 
   // |registry_| is nullptr when an in-process NetworkService is
   // created directly, like in most unit tests.
   if (registry_) {
     mojo::core::SetDefaultProcessErrorCallback(
         base::BindRepeating(&HandleBadMessage));
-
-    DCHECK(!request.is_pending());
-    registry_->AddInterface<mojom::NetworkService>(
-        base::BindRepeating(&NetworkService::Bind, base::Unretained(this)));
-  } else if (request.is_pending()) {
-    Bind(std::move(request));
   }
+
+  if (receiver.is_valid())
+    Bind(std::move(receiver));
 
   if (!delay_initialization_until_set_client)
     Initialize(mojom::NetworkServiceParams::New());
 }
 
-void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
+void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
+                                bool mock_network_change_notifier) {
   if (initialized_)
     return;
 
@@ -276,7 +303,8 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
           net::NetworkChangeNotifier::ConnectionType(
               params->initial_connection_type),
           net::NetworkChangeNotifier::ConnectionSubtype(
-              params->initial_connection_subtype)));
+              params->initial_connection_subtype),
+          mock_network_change_notifier));
 
   trace_net_log_observer_.WatchForTraceStart(net_log_);
 
@@ -301,10 +329,15 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
   http_auth_cache_copier_ = std::make_unique<HttpAuthCacheCopier>();
 
   crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
+
+  doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
 }
 
 NetworkService::~NetworkService() {
   DCHECK_EQ(this, g_network_service);
+
+  doh_probe_activator_.reset();
+
   g_network_service = nullptr;
   // Destroy owned network contexts.
   DestroyNetworkContexts();
@@ -327,21 +360,13 @@ void NetworkService::set_os_crypt_is_configured() {
 }
 
 std::unique_ptr<NetworkService> NetworkService::Create(
-    mojom::NetworkServiceRequest request,
-    service_manager::mojom::ServiceRequest service_request) {
-  return std::make_unique<NetworkService>(nullptr, std::move(request),
-                                          std::move(service_request));
+    mojo::PendingReceiver<mojom::NetworkService> receiver) {
+  return std::make_unique<NetworkService>(nullptr, std::move(receiver));
 }
 
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
-  return CreateForTesting(nullptr);
-}
-
-std::unique_ptr<NetworkService> NetworkService::CreateForTesting(
-    service_manager::mojom::ServiceRequest service_request) {
   return std::make_unique<NetworkService>(
-      std::make_unique<service_manager::BinderRegistry>(),
-      nullptr /* request */, std::move(service_request));
+      std::make_unique<service_manager::BinderRegistry>());
 }
 
 void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
@@ -354,6 +379,18 @@ void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
   network_contexts_.insert(network_context);
   if (quic_disabled_)
     network_context->DisableQuic();
+
+  // The params may already be present, so we propagate it
+  // to this new network_context. When params gets changed
+  // via ConfigureHttpAuthPrefs method, we propagate the change
+  // to all NetworkContexts in |network_contexts_|
+  if (http_auth_dynamic_network_service_params_) {
+    network_context->OnHttpAuthDynamicParamsChanged(
+        http_auth_dynamic_network_service_params_.get());
+  }
+
+  if (doh_probe_activator_)
+    doh_probe_activator_->MaybeActivateDohProbes(network_context);
 }
 
 void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
@@ -395,9 +432,10 @@ void NetworkService::CreateNetLogEntriesForActiveObjects(
   return net::CreateNetLogEntriesForActiveObjects(contexts, observer);
 }
 
-void NetworkService::SetClient(mojom::NetworkServiceClientPtr client,
-                               mojom::NetworkServiceParamsPtr params) {
-  client_ = std::move(client);
+void NetworkService::SetClient(
+    mojo::PendingRemote<mojom::NetworkServiceClient> client,
+    mojom::NetworkServiceParamsPtr params) {
+  client_.Bind(std::move(client));
   Initialize(std::move(params));
 }
 
@@ -443,14 +481,6 @@ void NetworkService::ConfigureStubHostResolver(
   host_resolver_manager_->SetInsecureDnsClientEnabled(
       insecure_dns_client_enabled);
 
-  for (auto* network_context : network_contexts_) {
-    if (!network_context->IsPrimaryNetworkContext())
-      continue;
-
-    host_resolver_manager_->SetRequestContextForProbes(
-        network_context->url_request_context());
-  }
-
   // Configure DNS over HTTPS.
   net::DnsConfigOverrides overrides;
   if (dns_over_https_servers && !dns_over_https_servers.value().empty()) {
@@ -479,37 +509,24 @@ void NetworkService::DisableQuic() {
 
 void NetworkService::SetUpHttpAuth(
     mojom::HttpAuthStaticParamsPtr http_auth_static_params) {
-  DCHECK(!http_auth_static_params_);
-  http_auth_static_params_ = std::move(http_auth_static_params);
+  DCHECK(!http_auth_static_network_service_params_);
+  DCHECK(network_contexts_.empty());
+  http_auth_static_network_service_params_ = std::move(http_auth_static_params);
 }
 
 void NetworkService::ConfigureHttpAuthPrefs(
     mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_params) {
-  http_auth_preferences_.SetServerAllowlist(
-      http_auth_dynamic_params->server_allowlist);
-  http_auth_preferences_.SetDelegateAllowlist(
-      http_auth_dynamic_params->delegate_allowlist);
-  http_auth_preferences_.set_delegate_by_kdc_policy(
-      http_auth_dynamic_params->delegate_by_kdc_policy);
-  http_auth_preferences_.set_negotiate_disable_cname_lookup(
-      http_auth_dynamic_params->negotiate_disable_cname_lookup);
-  http_auth_preferences_.set_negotiate_enable_port(
-      http_auth_dynamic_params->enable_negotiate_port);
+  // We need to store it as a member variable because the method
+  // NetworkService::RegisterNetworkContext(NetworkContext *network_context)
+  // uses it to populate the HttpAuthPreferences of the incoming network_context
+  // with the latest dynamic params of the NetworkService.
+  http_auth_dynamic_network_service_params_ =
+      std::move(http_auth_dynamic_params);
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
-  http_auth_preferences_.set_ntlm_v2_enabled(
-      http_auth_dynamic_params->ntlm_v2_enabled);
-#endif
-
-#if defined(OS_ANDROID)
-  http_auth_preferences_.set_auth_android_negotiate_account_type(
-      http_auth_dynamic_params->android_negotiate_account_type);
-#endif
-
-#if defined(OS_CHROMEOS)
-  http_auth_preferences_.set_allow_gssapi_library_load(
-      http_auth_dynamic_params->allow_gssapi_library_load);
-#endif
+  for (NetworkContext* network_context : network_contexts_) {
+    network_context->OnHttpAuthDynamicParamsChanged(
+        http_auth_dynamic_network_service_params_.get());
+  }
 }
 
 void NetworkService::SetRawHeadersAccess(
@@ -533,7 +550,7 @@ void NetworkService::SetMaxConnectionsPerProxy(int32_t max_connections) {
   int max_limit = 99;
   int min_limit = net::ClientSocketPoolManager::max_sockets_per_group(
       net::HttpNetworkSession::NORMAL_SOCKET_POOL);
-  new_limit = std::max(std::min(new_limit, max_limit), min_limit);
+  new_limit = base::ClampToRange(new_limit, min_limit, max_limit);
 
   // Assign the global limit.
   net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
@@ -556,18 +573,18 @@ net::NetLog* NetworkService::net_log() const {
 }
 
 void NetworkService::GetNetworkChangeManager(
-    mojom::NetworkChangeManagerRequest request) {
-  network_change_manager_->AddRequest(std::move(request));
+    mojo::PendingReceiver<mojom::NetworkChangeManager> receiver) {
+  network_change_manager_->AddReceiver(std::move(receiver));
 }
 
 void NetworkService::GetNetworkQualityEstimatorManager(
-    mojom::NetworkQualityEstimatorManagerRequest request) {
-  network_quality_estimator_manager_->AddRequest(std::move(request));
+    mojo::PendingReceiver<mojom::NetworkQualityEstimatorManager> receiver) {
+  network_quality_estimator_manager_->AddReceiver(std::move(receiver));
 }
 
 void NetworkService::GetDnsConfigChangeManager(
-    mojom::DnsConfigChangeManagerRequest request) {
-  dns_config_change_manager_->AddBinding(std::move(request));
+    mojo::PendingReceiver<mojom::DnsConfigChangeManager> receiver) {
+  dns_config_change_manager_->AddReceiver(std::move(receiver));
 }
 
 void NetworkService::GetTotalNetworkUsages(
@@ -612,11 +629,11 @@ void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
 }
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
 void NetworkService::SetEncryptionKey(const std::string& encryption_key) {
   OSCrypt::SetRawEncryptionKey(encryption_key);
 }
-#endif  // OS_MACOSX
+#endif
 
 void NetworkService::AddCorbExceptionForPlugin(uint32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
@@ -631,14 +648,6 @@ void NetworkService::RemoveCorbExceptionForPlugin(uint32_t process_id) {
 void NetworkService::AddExtraMimeTypesForCorb(
     const std::vector<std::string>& mime_types) {
   CrossOriginReadBlocking::AddExtraMimeTypesForCorb(mime_types);
-}
-
-void NetworkService::ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-    const std::string& scheme,
-    mojom::NetworkService::
-        ExcludeSchemeFromRequestInitiatorSiteLockChecksCallback callback) {
-  network::ExcludeSchemeFromRequestInitiatorSiteLockChecks(scheme);
-  std::move(callback).Run();
 }
 
 void NetworkService::OnMemoryPressure(
@@ -678,23 +687,32 @@ void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {
 }
 #endif
 
+void NetworkService::BindTestInterface(
+    mojo::PendingReceiver<mojom::NetworkServiceTest> receiver) {
+  if (registry_) {
+    auto pipe = receiver.PassPipe();
+    registry_->TryBindInterface(mojom::NetworkServiceTest::Name_, &pipe);
+  }
+}
+
 std::unique_ptr<net::HttpAuthHandlerFactory>
 NetworkService::CreateHttpAuthHandlerFactory(NetworkContext* network_context) {
-  if (!http_auth_static_params_) {
+  if (!http_auth_static_network_service_params_) {
     return net::HttpAuthHandlerFactory::CreateDefault(
-        &http_auth_preferences_
+        network_context->GetHttpAuthPreferences()
 #if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
-        ,
+            ,
         base::BindRepeating(&CreateAuthSystem, network_context)
 #endif
     );
   }
 
   return net::HttpAuthHandlerRegistryFactory::Create(
-      &http_auth_preferences_, http_auth_static_params_->supported_schemes
+      network_context->GetHttpAuthPreferences(),
+      http_auth_static_network_service_params_->supported_schemes
 #if BUILDFLAG(USE_EXTERNAL_GSSAPI)
       ,
-      http_auth_static_params_->gssapi_library_name
+      http_auth_static_network_service_params_->gssapi_library_name
 #endif
 #if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
       ,
@@ -705,13 +723,6 @@ NetworkService::CreateHttpAuthHandlerFactory(NetworkContext* network_context) {
 
 void NetworkService::OnBeforeURLRequest() {
   MaybeStartUpdateLoadInfoTimer();
-}
-
-void NetworkService::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
 void NetworkService::DestroyNetworkContexts() {
@@ -827,9 +838,10 @@ void NetworkService::AckUpdateLoadInfo() {
   MaybeStartUpdateLoadInfoTimer();
 }
 
-void NetworkService::Bind(mojom::NetworkServiceRequest request) {
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
+void NetworkService::Bind(
+    mojo::PendingReceiver<mojom::NetworkService> receiver) {
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver));
 }
 
 // static

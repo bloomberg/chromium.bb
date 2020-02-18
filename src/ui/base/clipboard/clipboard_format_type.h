@@ -17,11 +17,13 @@
 #include <objidl.h>
 #endif
 
+#if defined(OS_MACOSX)
 #ifdef __OBJC__
 @class NSString;
 #else
 class NSString;
 #endif
+#endif  // defined(OS_MACOSX)
 
 namespace ui {
 
@@ -37,7 +39,10 @@ struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
 
   // Gets the ClipboardFormatType corresponding to an arbitrary format string,
   // registering it with the system if needed. Due to Windows/Linux
-  // limitations, |format_string| must never be controlled by the user.
+  // limitations, please place limits on the amount of GetType calls with unique
+  // |format_string| arguments, when ingesting |format_string| from
+  // untrusted sources, such as renderer processes. In Windows, a failure will
+  // return an invalid format with Deserialize()'ed value of "0".
   static ClipboardFormatType GetType(const std::string& format_string);
 
   // Get format identifiers for various types.

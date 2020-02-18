@@ -22,6 +22,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import toolchain
+from chromite.utils import key_value_store
 
 # Needs to be after chromite imports.
 import lddtree
@@ -70,7 +71,6 @@ HOST_PACKAGES = (
 # build), so we have to delay their installation.
 HOST_POST_CROSS_PACKAGES = (
     'dev-lang/rust',
-    'dev-util/cargo',
     'virtual/target-sdk-post-cross',
     'dev-embedded/coreboot-sdk',
 )
@@ -155,7 +155,8 @@ class Crossdev(object):
     script = os.path.abspath(__file__)
     if script.endswith('.pyc'):
       script = script[:-1]
-    setup_toolchains_hash = hashlib.md5(osutils.ReadFile(script)).hexdigest()
+    setup_toolchains_hash = hashlib.md5(
+        osutils.ReadFile(script, mode='rb')).hexdigest()
 
     cls._CACHE = {
         'crossdev_version': crossdev_version,
@@ -226,8 +227,9 @@ class Crossdev(object):
             cmd.extend(LLVM_PKGS_TABLE[pkg])
         cmd.extend(['-t', target])
         # Catch output of crossdev.
-        out = cros_build_lib.RunCommand(
-            cmd, print_cmd=False, redirect_stdout=True).output.splitlines()
+        out = cros_build_lib.run(
+            cmd, print_cmd=False, redirect_stdout=True,
+            encoding='utf-8').stdout.splitlines()
         # List of tuples split at the first '=', converted into dict.
         conf = dict((k, cros_build_lib.ShellUnquote(v))
                     for k, v in (x.split('=', 1) for x in out))
@@ -301,9 +303,9 @@ class Crossdev(object):
       if config_only:
         # In this case we want to just quietly reinit
         cmd.append('--init-target')
-        cros_build_lib.RunCommand(cmd, print_cmd=False, redirect_stdout=True)
+        cros_build_lib.run(cmd, print_cmd=False, redirect_stdout=True)
       else:
-        cros_build_lib.RunCommand(cmd)
+        cros_build_lib.run(cmd)
 
       configured_targets.append(target)
 
@@ -501,7 +503,7 @@ def RebuildLibtool(root='/'):
     if root != '/':
       cmd.extend(['--sysroot=%s' % root, '--root=%s' % root])
     cmd.append('sys-devel/libtool')
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.run(cmd)
   else:
     logging.debug('Libtool is up-to-date; no need to rebuild')
 
@@ -551,7 +553,7 @@ def UpdateTargets(targets, usepkg, root='/'):
     cmd.extend(['--sysroot=%s' % root, '--root=%s' % root])
 
   cmd.extend(packages)
-  cros_build_lib.RunCommand(cmd)
+  cros_build_lib.run(cmd)
   return True
 
 
@@ -596,7 +598,7 @@ def CleanTargets(targets, root='/'):
     if root != '/':
       cmd.extend(['--sysroot=%s' % root, '--root=%s' % root])
     cmd.extend(packages)
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.run(cmd)
   else:
     logging.info('Nothing to clean!')
 
@@ -640,15 +642,16 @@ def SelectActiveToolchains(targets, suffixes, root='/'):
       if root != '/':
         extra_env['ROOT'] = root
       cmd = ['%s-config' % package, '-c', target]
-      result = cros_build_lib.RunCommand(
-          cmd, print_cmd=False, redirect_stdout=True, extra_env=extra_env)
+      result = cros_build_lib.run(
+          cmd, print_cmd=False, redirect_stdout=True, encoding='utf-8',
+          extra_env=extra_env)
       current = result.output.splitlines()[0]
 
       # Do not reconfig when the current is live or nothing needs to be done.
       extra_env = {'ROOT': root} if root != '/' else None
       if current != desired and current != '9999':
         cmd = [package + '-config', desired]
-        cros_build_lib.RunCommand(cmd, print_cmd=False, extra_env=extra_env)
+        cros_build_lib.run(cmd, print_cmd=False, extra_env=extra_env)
 
 
 def ExpandTargets(targets_wanted):
@@ -678,7 +681,7 @@ def ExpandTargets(targets_wanted):
   # Verify user input.
   nonexistent = targets_wanted.difference(all_targets)
   if nonexistent:
-    raise ValueError('Invalid targets: %s', ','.join(nonexistent))
+    raise ValueError('Invalid targets: %s' % (','.join(nonexistent),))
   return {t: all_targets[t] for t in targets_wanted}
 
 
@@ -751,8 +754,8 @@ def ShowConfig(name):
   # Make sure we display the default toolchain first.
   # Note: Do not use logging here as this is meant to be used by other tools.
   print(','.join(
-      toolchain.FilterToolchains(toolchains, 'default', True).keys() +
-      toolchain.FilterToolchains(toolchains, 'default', False).keys()))
+      list(toolchain.FilterToolchains(toolchains, 'default', True)) +
+      list(toolchain.FilterToolchains(toolchains, 'default', False))))
 
 
 def GeneratePathWrapper(root, wrappath, path):
@@ -848,13 +851,13 @@ def FileIsCrosSdkElf(elf):
   Returns:
     True if we think |elf| is a native ELF
   """
-  with open(elf) as f:
+  with open(elf, 'rb') as f:
     data = f.read(20)
     # Check the magic number, EI_CLASS, EI_DATA, and e_machine.
-    return (data[0:4] == '\x7fELF' and
-            data[4] == '\x02' and
-            data[5] == '\x01' and
-            data[18] == '\x3e')
+    return (data[0:4] == b'\x7fELF' and
+            data[4] == b'\x02' and
+            data[5] == b'\x01' and
+            data[18] == b'\x3e')
 
 
 def IsPathPackagable(ptype, path):
@@ -969,7 +972,9 @@ def _GetFilesForTarget(target, root='/'):
       if ptype == 'obj':
         # For native ELFs, we need to pull in their dependencies too.
         if FileIsCrosSdkElf(obj):
+          logging.debug('Adding ELF %s', obj)
           elfs.add(obj)
+      logging.debug('Adding path %s', obj)
       paths.add(obj)
 
   return paths, elfs
@@ -993,6 +998,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
   sym_paths = {}
   for path in paths:
     new_path = path_rewrite_func(path)
+    logging.debug('Transformed %s to %s', path, new_path)
     dst = output_dir + new_path
     osutils.SafeMakedirs(os.path.dirname(dst))
 
@@ -1011,6 +1017,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
           os.symlink(tgt, dst)
           continue
 
+    logging.debug('Linking path %s -> %s', src, dst)
     os.link(src, dst)
 
   # Locate all the dependencies for all the ELFs.  Stick them all in the
@@ -1023,6 +1030,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
   glibc_re = re.compile(r'/lib(c|pthread)-[0-9.]+\.so$')
   for elf in elfs:
     e = lddtree.ParseELF(elf, root=root, ldpaths=ldpaths)
+    logging.debug('Parsed elf %s data: %s', elf, e)
     interp = e['interp']
     # Do not create wrapper for libc. crbug.com/766827
     if interp and not glibc_re.search(elf):
@@ -1055,6 +1063,7 @@ def _BuildInitialPackageRoot(output_dir, paths, elfs, ldpaths,
       dst = os.path.join(libdir, os.path.basename(path))
       src = ReadlinkRoot(src, root)
 
+      logging.debug('Linking lib %s -> %s', root + src, dst)
       os.link(root + src, dst)
 
 
@@ -1071,7 +1080,7 @@ def _EnvdGetVar(envd, var):
   envds = glob.glob(envd)
   assert len(envds) == 1, '%s: should have exactly 1 env.d file' % envd
   envd = envds[0]
-  return cros_build_lib.LoadKeyValueFile(envd)[var]
+  return key_value_store.LoadFile(envd)[var]
 
 
 def _ProcessBinutilsConfig(target, output_dir):
@@ -1157,7 +1166,6 @@ def _ProcessSysrootWrappers(_target, output_dir, srcpath):
   """Remove chroot-specific things from our sysroot wrappers"""
   # Disable ccache since we know it won't work outside of chroot.
 
-  # Update the new go wrapper.
   # Use the version of the wrapper that does not use ccache.
   for sysroot_wrapper in glob.glob(os.path.join(
       output_dir + srcpath, 'sysroot_wrapper*.ccache')):
@@ -1165,35 +1173,7 @@ def _ProcessSysrootWrappers(_target, output_dir, srcpath):
     # but only the extracted toolchain.
     os.unlink(sysroot_wrapper)
     shutil.copy(sysroot_wrapper[:-6] + 'noccache', sysroot_wrapper)
-
-  # Update the old python wrapper
-  # TODO(crbug/773875): Remove this logic once the go wrapper
-  # is rolled out.
-  old_wrapper_paths = [os.path.join(output_dir + srcpath,
-                                    'sysroot_wrapper'),
-                       os.path.join(output_dir + srcpath,
-                                    'sysroot_wrapper.hardened')]
-  for sysroot_wrapper in old_wrapper_paths:
-    if not os.path.exists(sysroot_wrapper):
-      continue
-    contents = osutils.ReadFile(sysroot_wrapper).splitlines()
-
-    # In order to optimize startup time in the chroot we run python a little
-    # differently there.  Put it back to the more portable way here.
-    # See https://crbug.com/773138 for some details.
-    if contents[0] == '#!/usr/bin/python2 -S':
-      contents[0] = '#!/usr/bin/env python2'
-
-    for num, line in enumerate(contents):
-      if '@CCACHE_DEFAULT@' in line:
-        assert 'True' in line
-        contents[num] = line.replace('True', 'False')
-        break
-    # Can't update the wrapper in place to not affect the chroot,
-    # but only the extracted toolchain.
-    os.unlink(sysroot_wrapper)
-    osutils.WriteFile(sysroot_wrapper, '\n'.join(contents))
-    os.chmod(sysroot_wrapper, 0o755)
+    shutil.copy(sysroot_wrapper[:-6] + 'noccache.elf', sysroot_wrapper + '.elf')
 
 
 def _CreateMainLibDir(target, output_dir):

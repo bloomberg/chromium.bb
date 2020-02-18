@@ -265,10 +265,17 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Use buffer backed by dmabuf file descriptors in |passed_dmabuf_fds| for the
   // OutputRecord associated with |picture_buffer_id|, taking ownership of the
-  // file descriptors.
-  void ImportBufferForPictureTask(
-      int32_t picture_buffer_id,
-      std::vector<base::ScopedFD> passed_dmabuf_fds);
+  // file descriptors. |stride| is the number of bytes from one row of pixels
+  // to the next row.
+  void ImportBufferForPictureTask(int32_t picture_buffer_id,
+                                  std::vector<base::ScopedFD> passed_dmabuf_fds,
+                                  int32_t stride);
+
+  // Check that |planes| and |dmabuf_fds| are valid in import mode and call
+  // ImportBufferForPictureTask.
+  void ImportBufferForPictureForImportTask(int32_t picture_buffer_id,
+                                           VideoPixelFormat pixel_format,
+                                           gfx::NativePixmapHandle handle);
 
   // Create a GLImage for the buffer associated with V4L2 |buffer_index| and
   // for |picture_buffer_id|, backed by dmabuf file descriptors in
@@ -283,19 +290,16 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
                         uint32_t fourcc);
 
   // Performed on decoder_thread_ as a consequence of poll() on decoder_thread_
-  // returning an event.
-  void ServiceDeviceTask();
-
-  // Schedule poll if we have any buffers queued and the poll thread
-  // is not stopped (on surface set change).
-  void SchedulePollIfNeeded();
+  // returning an event. Typically this means that there are output or capture
+  // buffers that are ready to be dequeued.
+  // |event| is set to true by the poller if a V4L2 event should be dequeued
+  // using VIDIOC_DQEVENT, but this should never happen for the slice API.
+  void ServiceDeviceTask(bool event);
 
   // Attempt to start/stop device_poll_thread_.
   bool StartDevicePoll();
   bool StopDevicePoll();
-
-  // Ran on device_poll_thread_ to wait for device events.
-  void DevicePollTask(bool poll_device);
+  void OnPollError();
 
   // Buffer id for flush buffer, queued by FlushTask().
   const int kFlushBufferId = -2;
@@ -354,6 +358,12 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
                       size_t ip_buffer_index,
                       scoped_refptr<VideoFrame> frame);
 
+  // Returns whether |profile| is supported by a v4l2 decoder driver.
+  bool IsSupportedProfile(VideoCodecProfile profile);
+
+  // VideoCodecProfiles supported by a v4l2 decoder driver.
+  std::vector<VideoCodecProfile> supported_profiles_;
+
   size_t input_planes_count_;
   size_t output_planes_count_;
 
@@ -382,9 +392,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Thread to communicate with the device on.
   base::Thread decoder_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> decoder_thread_task_runner_;
-
-  // Thread used to poll the device for events.
-  base::Thread device_poll_thread_;
 
   scoped_refptr<V4L2Queue> input_queue_;
   // Set to true by CreateInputBuffers() if the codec driver supports requests
@@ -498,6 +505,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   gfx::Size gl_image_size_;
   // Number of planes for GLImage.
   size_t gl_image_planes_count_;
+
+  // Reference to request queue to get free requests.
+  V4L2RequestsQueue* requests_queue_;
 
   // The WeakPtrFactory for |weak_this_|.
   base::WeakPtrFactory<V4L2SliceVideoDecodeAccelerator> weak_this_factory_;

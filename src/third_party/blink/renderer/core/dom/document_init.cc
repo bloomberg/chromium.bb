@@ -65,7 +65,8 @@ DocumentInit DocumentInit::CreateWithImportsController(
 
 DocumentInit::DocumentInit(HTMLImportsController* imports_controller)
     : imports_controller_(imports_controller),
-      create_new_registration_context_(false) {}
+      create_new_registration_context_(false),
+      content_security_policy_from_context_doc_(false) {}
 
 DocumentInit::DocumentInit(const DocumentInit&) = default;
 
@@ -94,19 +95,15 @@ DocumentLoader* DocumentInit::MasterDocumentLoader() const {
 }
 
 WebSandboxFlags DocumentInit::GetSandboxFlags() const {
-  DocumentLoader* loader = MasterDocumentLoader();
   WebSandboxFlags flags = sandbox_flags_;
-  if (loader) {
+  if (DocumentLoader* loader = MasterDocumentLoader())
     flags |= loader->GetFrame()->Loader().EffectiveSandboxFlags();
-
-    // If the load was blocked by CSP, force the Document's origin to be unique,
-    // so that the blocked document appears to be a normal cross-origin
-    // document's load per CSP spec:
-    // https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
-    if (loader->WasBlockedAfterCSP()) {
-      flags |= WebSandboxFlags::kOrigin;
-    }
-  }
+  // If the load was blocked by CSP, force the Document's origin to be unique,
+  // so that the blocked document appears to be a normal cross-origin
+  // document's load per CSP spec:
+  // https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
+  if (blocked_by_csp_)
+    flags |= WebSandboxFlags::kOrigin;
   return flags;
 }
 
@@ -214,6 +211,17 @@ DocumentInit& DocumentInit::WithSrcdocDocument(bool is_srcdoc_document) {
   return *this;
 }
 
+DocumentInit& DocumentInit::WithBlockedByCSP(bool blocked_by_csp) {
+  blocked_by_csp_ = blocked_by_csp;
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithGrantLoadLocalResources(
+    bool grant_load_local_resources) {
+  grant_load_local_resources_ = grant_load_local_resources;
+  return *this;
+}
+
 DocumentInit& DocumentInit::WithRegistrationContext(
     V0CustomElementRegistrationContext* registration_context) {
   DCHECK(!create_new_registration_context_);
@@ -265,6 +273,25 @@ DocumentInit& DocumentInit::WithSandboxFlags(WebSandboxFlags flags) {
 DocumentInit& DocumentInit::WithContentSecurityPolicy(
     ContentSecurityPolicy* policy) {
   content_security_policy_ = policy;
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithContentSecurityPolicyFromContextDoc() {
+  content_security_policy_from_context_doc_ = true;
+  return *this;
+}
+
+ContentSecurityPolicy* DocumentInit::GetContentSecurityPolicy() const {
+  DCHECK(
+      !(content_security_policy_ && content_security_policy_from_context_doc_));
+  if (context_document_ && content_security_policy_from_context_doc_)
+    return context_document_->GetContentSecurityPolicy();
+  return content_security_policy_;
+}
+
+DocumentInit& DocumentInit::WithFramePolicy(
+    const base::Optional<FramePolicy>& frame_policy) {
+  frame_policy_ = frame_policy;
   return *this;
 }
 

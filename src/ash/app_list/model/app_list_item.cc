@@ -7,7 +7,7 @@
 #include "ash/app_list/model/app_list_item_observer.h"
 #include "base/logging.h"
 
-namespace app_list {
+namespace ash {
 
 AppListItem::AppListItem(const std::string& id)
     : metadata_(std::make_unique<ash::AppListItemMetadata>()),
@@ -78,7 +78,7 @@ const char* AppListItem::GetItemType() const {
 }
 
 AppListItem* AppListItem::FindChildItem(const std::string& id) {
-  return NULL;
+  return nullptr;
 }
 
 size_t AppListItem::ChildItemCount() const {
@@ -111,4 +111,4 @@ void AppListItem::SetNameAndShortName(const std::string& name,
     observer.ItemNameChanged();
 }
 
-}  // namespace app_list
+}  // namespace ash

@@ -81,6 +81,8 @@ inline std::string OpToString(int op) {
       return "<=";
     case SQLITE_INDEX_CONSTRAINT_LT:
       return "<";
+    case SQLITE_INDEX_CONSTRAINT_LIKE:
+      return "like";
     default:
       PERFETTO_FATAL("Operator to string conversion not impemented for %d", op);
   }
@@ -407,7 +409,10 @@ inline std::vector<SqliteTable::Column> GetColumnsForTable(
 
   sqlite3_stmt* raw_stmt = nullptr;
   int err = sqlite3_prepare_v2(db, sql, n, &raw_stmt, nullptr);
-
+  if (err != SQLITE_OK) {
+    PERFETTO_ELOG("Preparing database failed");
+    return {};
+  }
   ScopedStmt stmt(raw_stmt);
   PERFETTO_DCHECK(sqlite3_column_count(*stmt) == 2);
 

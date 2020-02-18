@@ -56,8 +56,8 @@ class Point;
 }
 
 namespace blink {
-struct WebMediaPlayerAction;
-struct WebPluginAction;
+struct PluginAction;
+struct MediaPlayerAction;
 }
 
 class RenderViewContextMenu : public RenderViewContextMenuBase {
@@ -174,7 +174,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendEditableItems();
   void AppendLanguageSettings();
   void AppendSpellingSuggestionItems();
-  void AppendSharedClipboardItems();
   // Returns true if the items were appended. This might not happen in all
   // cases, e.g. these are only appended if a screen reader is enabled.
   bool AppendAccessibilityLabelsItems();
@@ -188,7 +187,9 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendProtocolHandlerSubMenu();
   void AppendPasswordItems();
   void AppendPictureInPictureItem();
-  void MaybeAppendClickToCallItem();
+  void AppendSharingItems();
+  void AppendClickToCallItem();
+  void AppendSharedClipboardItem();
 
   // Command enabled query functions.
   bool IsReloadEnabled() const;
@@ -234,9 +235,9 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void ExecPictureInPicture();
 
   void MediaPlayerActionAt(const gfx::Point& location,
-                           const blink::WebMediaPlayerAction& action);
+                           const blink::MediaPlayerAction& action);
   void PluginActionAt(const gfx::Point& location,
-                      const blink::WebPluginAction& action);
+                      const blink::PluginAction& action);
 
   // Returns a list of registered ProtocolHandlers that can handle the clicked
   // on URL.

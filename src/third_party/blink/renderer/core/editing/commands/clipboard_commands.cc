@@ -359,12 +359,8 @@ ClipboardCommands::GetFragmentFromClipboard(LocalFrame& frame) {
     KURL url;
     const String markup = SystemClipboard::GetInstance().ReadHTML(
         url, fragment_start, fragment_end);
-    if (!markup.IsEmpty()) {
-      DCHECK(frame.GetDocument());
-      fragment = CreateFragmentFromMarkupWithContext(
-          *frame.GetDocument(), markup, fragment_start, fragment_end, url,
-          kDisallowScriptingAndPluginContent);
-    }
+    fragment = CreateSanitizedFragmentFromMarkupWithContext(
+        *frame.GetDocument(), markup, fragment_start, fragment_end, url);
   }
   if (fragment)
     return std::make_pair(fragment, false);

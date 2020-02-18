@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
 
@@ -19,41 +20,40 @@ class HostChildURLLoaderFactoryBundle;
 
 // Holds the internal state of a |TrackedChildURLLoaderFactoryBundle| in a form
 // that is safe to pass across sequences.
-// TODO(domfarolino, crbug.com/955171): This class should be renamed to not
-// include "Info".
-class CONTENT_EXPORT TrackedChildURLLoaderFactoryBundleInfo
-    : public ChildURLLoaderFactoryBundleInfo {
+class CONTENT_EXPORT TrackedChildPendingURLLoaderFactoryBundle
+    : public ChildPendingURLLoaderFactoryBundle {
  public:
   using HostPtrAndTaskRunner =
       std::pair<base::WeakPtr<HostChildURLLoaderFactoryBundle>,
                 scoped_refptr<base::SequencedTaskRunner>>;
 
-  TrackedChildURLLoaderFactoryBundleInfo();
-  TrackedChildURLLoaderFactoryBundleInfo(
+  TrackedChildPendingURLLoaderFactoryBundle();
+  TrackedChildPendingURLLoaderFactoryBundle(
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_default_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_appcache_factory,
       SchemeMap pending_scheme_specific_factories,
-      OriginMap pending_initiator_specific_factories,
-      network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info,
+      OriginMap pending_isolated_world_factories,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          direct_network_factory_remote,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_prefetch_loader_factory,
       std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle,
       bool bypass_redirect_checks);
-  ~TrackedChildURLLoaderFactoryBundleInfo() override;
+  ~TrackedChildPendingURLLoaderFactoryBundle() override;
 
   std::unique_ptr<HostPtrAndTaskRunner>& main_thread_host_bundle() {
     return main_thread_host_bundle_;
   }
 
  protected:
-  // ChildURLLoaderFactoryBundleInfo overrides.
+  // ChildPendingURLLoaderFactoryBundle overrides.
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrackedChildURLLoaderFactoryBundleInfo);
+  DISALLOW_COPY_AND_ASSIGN(TrackedChildPendingURLLoaderFactoryBundle);
 };
 
 // This class extends |ChildURLLoaderFactoryBundle| to support a host/observer
@@ -75,12 +75,12 @@ class CONTENT_EXPORT TrackedChildURLLoaderFactoryBundle
 
   // Posts a task to the host bundle on main thread to start tracking |this|.
   explicit TrackedChildURLLoaderFactoryBundle(
-      std::unique_ptr<TrackedChildURLLoaderFactoryBundleInfo>
+      std::unique_ptr<TrackedChildPendingURLLoaderFactoryBundle>
           pending_factories);
 
   // ChildURLLoaderFactoryBundle overrides.
-  // Returns |std::unique_ptr<TrackedChildURLLoaderFactoryBundleInfo>|.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
+  // Returns |std::unique_ptr<TrackedChildPendingURLLoaderFactoryBundle>|.
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override;
 
  private:
   friend class HostChildURLLoaderFactoryBundle;
@@ -97,7 +97,7 @@ class CONTENT_EXPORT TrackedChildURLLoaderFactoryBundle
   void RemoveObserverOnMainThread();
 
   // Callback method to receive updates from the host bundle.
-  void OnUpdate(std::unique_ptr<network::SharedURLLoaderFactoryInfo> info);
+  void OnUpdate(std::unique_ptr<network::PendingSharedURLLoaderFactory> info);
 
   // |WeakPtr| and |TaskRunner| of the host bundle. Can be copied and passed
   // across sequences.
@@ -125,9 +125,9 @@ class CONTENT_EXPORT HostChildURLLoaderFactoryBundle
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // ChildURLLoaderFactoryBundle overrides.
-  // Returns |std::unique_ptr<TrackedChildURLLoaderFactoryBundleInfo>|.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+  // Returns |std::unique_ptr<TrackedChildPendingURLLoaderFactoryBundle>|.
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> Clone() override;
+  std::unique_ptr<network::PendingSharedURLLoaderFactory>
   CloneWithoutAppCacheFactory() override;
   bool IsHostChildURLLoaderFactoryBundle() const override;
 
@@ -135,7 +135,7 @@ class CONTENT_EXPORT HostChildURLLoaderFactoryBundle
   // Note: We don't need to worry about |direct_network_factory_| since it's
   // only used by |RendererBlinkPlatformImpl| and doesn't rely on this codepath.
   void UpdateThisAndAllClones(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> pending_factories);
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle> pending_factories);
 
  private:
   friend class TrackedChildURLLoaderFactoryBundle;
@@ -158,7 +158,7 @@ class CONTENT_EXPORT HostChildURLLoaderFactoryBundle
   // tracked bundle has been destroyed.
   void NotifyUpdateOnMainOrWorkerThread(
       ObserverPtrAndTaskRunner* observer_bundle,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo> update_info);
+      std::unique_ptr<network::PendingSharedURLLoaderFactory> update_info);
 
   // Contains |WeakPtr| and |TaskRunner| to tracked bundles.
   std::unique_ptr<ObserverList> observer_list_ = nullptr;

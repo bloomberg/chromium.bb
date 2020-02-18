@@ -37,7 +37,7 @@
 #include "crypto/scoped_test_nss_db.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database_chromeos.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
@@ -84,7 +84,7 @@ std::unique_ptr<onc::OncParsedCertificates> OncParsedCertificatesForPkcs12File(
   onc_certificate.SetKey("Type", base::Value("Client"));
   onc_certificate.SetKey("PKCS12", base::Value(pkcs12_base64_encoded));
   base::Value onc_certificates(base::Value::Type::LIST);
-  onc_certificates.GetList().push_back(std::move(onc_certificate));
+  onc_certificates.Append(std::move(onc_certificate));
   return std::make_unique<onc::OncParsedCertificates>(onc_certificates);
 }
 

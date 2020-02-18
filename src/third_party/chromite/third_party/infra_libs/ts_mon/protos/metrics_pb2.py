@@ -14,10 +14,10 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
-import any_pb2
-import timestamp_pb2
-import acquisition_network_device_pb2
-import acquisition_task_pb2
+from . import any_pb2
+from . import timestamp_pb2
+from . import acquisition_network_device_pb2
+from . import acquisition_task_pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

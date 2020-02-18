@@ -60,6 +60,12 @@ namespace internal {
 // TODO(sigurds): Change this value once we use relative jumps.
 constexpr size_t kMaxPCRelativeCodeRangeInMB = 0;
 
+// Used to encode a boolean value when emitting 32 bit
+// opcodes which will indicate the presence of function descriptors
+constexpr int kHasFunctionDescriptorBitShift = 9;
+constexpr int kHasFunctionDescriptorBitMask = 1
+                                              << kHasFunctionDescriptorBitShift;
+
 // Number of registers
 const int kNumRegisters = 32;
 
@@ -2985,5 +2991,10 @@ class DoubleRegisters {
 };
 }  // namespace internal
 }  // namespace v8
+
+static constexpr int kR0DwarfCode = 0;
+static constexpr int kFpDwarfCode = 31;  // frame-pointer
+static constexpr int kLrDwarfCode = 65;  // return-address(lr)
+static constexpr int kSpDwarfCode = 1;   // stack-pointer (sp)
 
 #endif  // V8_CODEGEN_PPC_CONSTANTS_PPC_H_

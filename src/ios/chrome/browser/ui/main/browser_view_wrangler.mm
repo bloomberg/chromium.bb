@@ -24,7 +24,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -58,7 +58,11 @@
 }
 
 - (TabModel*)tabModel {
-  return self.coordinator.tabModel;
+  return self.coordinator.browser->GetTabModel();
+}
+
+- (Browser*)browser {
+  return self.coordinator.browser;
 }
 
 - (ios::ChromeBrowserState*)browserState {
@@ -252,13 +256,13 @@
 - (void)setMainBrowser:(std::unique_ptr<Browser>)mainBrowser {
   if (_mainBrowser.get()) {
     TabModel* tabModel = self.mainBrowser->GetTabModel();
-    breakpad::StopMonitoringTabStateForWebStateList(tabModel.webStateList);
-    breakpad::StopMonitoringURLsForWebStateList(tabModel.webStateList);
-    [tabModel browserStateDestroyed];
-    _activeWebStateObservationForwarders[tabModel.webStateList] = nullptr;
-    tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
-    tabModel.webStateList->RemoveObserver(
-        _webStateListForwardingObserver.get());
+    WebStateList* webStateList = self.mainBrowser->GetWebStateList();
+    breakpad::StopMonitoringTabStateForWebStateList(webStateList);
+    breakpad::StopMonitoringURLsForWebStateList(webStateList);
+    [tabModel disconnect];
+    _activeWebStateObservationForwarders[webStateList] = nullptr;
+    webStateList->RemoveObserver(_webStateListObserver.get());
+    webStateList->RemoveObserver(_webStateListForwardingObserver.get());
   }
 
   _mainBrowser = std::move(mainBrowser);
@@ -267,12 +271,12 @@
 - (void)setOtrBrowser:(std::unique_ptr<Browser>)otrBrowser {
   if (_otrBrowser.get()) {
     TabModel* tabModel = self.otrBrowser->GetTabModel();
-    breakpad::StopMonitoringTabStateForWebStateList(tabModel.webStateList);
-    [tabModel browserStateDestroyed];
-    _activeWebStateObservationForwarders[tabModel.webStateList] = nullptr;
-    tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
-    tabModel.webStateList->RemoveObserver(
-        _webStateListForwardingObserver.get());
+    WebStateList* webStateList = self.otrBrowser->GetWebStateList();
+    breakpad::StopMonitoringTabStateForWebStateList(webStateList);
+    [tabModel disconnect];
+    _activeWebStateObservationForwarders[webStateList] = nullptr;
+    webStateList->RemoveObserver(_webStateListObserver.get());
+    webStateList->RemoveObserver(_webStateListForwardingObserver.get());
   }
 
   _otrBrowser = std::move(otrBrowser);

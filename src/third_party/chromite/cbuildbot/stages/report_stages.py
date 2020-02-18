@@ -17,29 +17,25 @@ from infra_libs import ts_mon
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import goma_util
-from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
-from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import metadata_lib
 from chromite.lib import metrics
 from chromite.lib import osutils
-from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
 from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
-from chromite.lib import triage_lib
 from chromite.lib import uri_lib
+from chromite.utils import key_value_store
 
 
 def WriteBasicMetadata(builder_run):
@@ -115,16 +111,16 @@ def WriteTagMetadata(builder_run):
 
   # Look up the git version.
   try:
-    cmd_result = cros_build_lib.RunCommand(['git', '--version'],
-                                           capture_output=True)
+    cmd_result = cros_build_lib.run(['git', '--version'], capture_output=True,
+                                    encoding='utf-8')
     tags['git_version'] = cmd_result.output.strip()
   except cros_build_lib.RunCommandError:
     pass  # If we fail, just don't include the tag.
 
   # Look up the repo version.
   try:
-    cmd_result = cros_build_lib.RunCommand(['repo', '--version'],
-                                           capture_output=True)
+    cmd_result = cros_build_lib.run(['repo', '--version'], capture_output=True,
+                                    encoding='utf-8')
 
     # Convert the following output into 'v1.12.17-cr3':
     #
@@ -390,7 +386,8 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
         if build['status'] == constants.BUILDER_STATUS_PASSED:
           continue
         for suite_config in self._run.config.hw_tests:
-          if not suite_config.async:
+          # Python 3.7+ made async a reserved keyword.
+          if not getattr(suite_config, 'async'):
             if self._run.config.enable_skylab_hw_tests:
               commands.AbortSkylabHWTests(
                   build='%s/%s' % (self._run.config.name, old_version),
@@ -422,7 +419,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     child_configs = GetChildConfigListMetadata(
         child_configs=config['child_configs'], config_status_map=None)
 
-    sdk_verinfo = cros_build_lib.LoadKeyValueFile(
+    sdk_verinfo = key_value_store.LoadFile(
         os.path.join(build_root, constants.SDK_VERSION_FILE),
         ignore_missing=True)
 
@@ -465,7 +462,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
           board, buildroot=build_root)
       toolchains |= set(toolchain_tuple)
       toolchain_tuples.append(','.join(toolchain_tuple))
-      if len(toolchain_tuple):
+      if toolchain_tuple:
         primary_toolchains.append(toolchain_tuple[0])
 
     # Update 'version' separately to avoid overwriting the existing
@@ -789,7 +786,7 @@ class ReportStage(generic_stages.BuilderStage,
 
     # Gather information about this build from CIDB.
     statuses = self.buildstore.GetSlaveStatuses(build_identifier)
-    if statuses is None or len(statuses) == 0:
+    if not statuses:
       return None
     # Slaves may be started at slightly different times, but what matters most
     # is which slave is the bottleneck - namely, which slave finishes last.
@@ -947,8 +944,8 @@ class ReportStage(generic_stages.BuilderStage,
     for board in self._run.config['boards']:
       toolchains = toolchain.GetToolchainsForBoard(
           board, buildroot=src_root)
-      default = toolchain.FilterToolchains(toolchains, 'default', True).keys()
-      if len(default):
+      default = list(toolchain.FilterToolchains(toolchains, 'default', True))
+      if default:
         try:
           arches.append(toolchain.GetArchForTarget(default[0]))
         except cros_build_lib.RunCommandError as e:
@@ -1081,129 +1078,3 @@ class ReportStage(generic_stages.BuilderStage,
       return self._HandleExceptionAsWarning(exc_info)
 
     return super(ReportStage, self)._HandleStageException(exc_info)
-
-
-class DetectRelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
-  """Stage to detect irrelevant changes for slave per board base.
-
-  This stage will get the irrelevant changes for the current board of the build,
-  and record the irrelevant changes and the subsystem of the relevant changes
-  test to board_metadata.
-
-  Changes relevant to this build will be logged to create links to them
-  in the builder output.
-  """
-
-  category = constants.CI_INFRA_STAGE
-
-  def __init__(self,
-               builder_run,
-               buildstore,
-               board,
-               changes,
-               suffix=None,
-               **kwargs):
-    super(DetectRelevantChangesStage, self).__init__(
-        builder_run, buildstore, board, suffix=suffix, **kwargs)
-    # changes is a list of GerritPatch instances.
-    self.changes = changes
-
-  def _GetIrrelevantChangesBoardBase(self, changes):
-    """Calculates irrelevant changes to the current board.
-
-    Returns:
-      A subset of |changes| which are irrelevant to current board.
-    """
-    manifest = git.ManifestCheckout.Cached(self._build_root)
-    packages = self._GetPackagesUnderTestForCurrentBoard()
-
-    irrelevant_changes = triage_lib.CategorizeChanges.GetIrrelevantChanges(
-        changes, self._run.config, self._build_root, manifest, packages)
-    return irrelevant_changes
-
-  def _GetPackagesUnderTestForCurrentBoard(self):
-    """Get a list of packages used in this build for current board.
-
-    Returns:
-      A set of packages used in this build. E.g.,
-      set(['chromeos-base/chromite-0.0.1-r1258']); returns None if
-      the information is missing for any board in the current config.
-    """
-    packages_under_test = set()
-
-    for run in [self._run] + self._run.GetChildren():
-      board_runattrs = run.GetBoardRunAttrs(self._current_board)
-      if not board_runattrs.HasParallel('packages_under_test'):
-        logging.warning('Packages under test were not recorded correctly')
-        return None
-      packages_under_test.update(
-          board_runattrs.GetParallel('packages_under_test'))
-
-    return packages_under_test
-
-  def _RecordActionForChanges(self, changes, action):
-    """Records |changes| action to the slave build into cidb.
-
-    Args:
-      builder_run: BuilderRun instance for this build.
-      changes: A set of changes to record.
-      action: The action for the changes to record (must be one of
-        constants.CL_ACTIONS).
-    """
-    build_identifier, db = self._run.GetCIDBHandle()
-    build_id = build_identifier.cidb_id
-    if db:
-      cl_actions = [clactions.CLAction.FromGerritPatchAndAction(
-          change, action) for change in changes]
-      db.InsertCLActions(build_id, cl_actions)
-
-  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
-  def PerformStage(self):
-    """Run DetectRelevantChangesStage."""
-    irrelevant_changes = set()
-    relevant_changes = set(self.changes)
-
-    if not self._run.config.master:
-      # Slave writes the irrelevant changes to current board to metadata.
-      irrelevant_changes = self._GetIrrelevantChangesBoardBase(self.changes)
-      relevant_changes = relevant_changes - irrelevant_changes
-      change_dict_list = [c.GetAttributeDict() for c in irrelevant_changes]
-      change_dict_list = sorted(change_dict_list,
-                                key=lambda x: (x[cros_patch.ATTR_GERRIT_NUMBER],
-                                               x[cros_patch.ATTR_PATCH_NUMBER],
-                                               x[cros_patch.ATTR_REMOTE]))
-
-      self._run.attrs.metadata.UpdateBoardDictWithDict(
-          self._current_board, {'irrelevant_changes': change_dict_list})
-
-      if (not self._run.config.do_not_apply_cq_patches and
-          config_lib.IsCQType(self._run.config.build_type)):
-        # As each CQ build config has only one board, it's safe to record
-        # irrelevant changes in this stage. For builds with multiple board
-        # configurations, irrelevant changes have to be sorted and reocrded in
-        # Completion stage which means each board has detected and recorded its
-        # irrelevant changes to metadata in the DetectRelevantChanges stage.
-
-        # Record the irrelevant changes to CIDB.
-        self._RecordActionForChanges(
-            irrelevant_changes, constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
-
-        if not irrelevant_changes:
-          logging.info('No changes are considered irrelevant to this build.')
-        else:
-          logging.info('The following changes are irrelevant to this build: %s',
-                       cros_patch.GetChangesAsString(irrelevant_changes))
-
-        # Record the relevant changes to CIDB.
-        self._RecordActionForChanges(
-            relevant_changes, constants.CL_ACTION_RELEVANT_TO_SLAVE)
-
-    if relevant_changes:
-      validation_pool.ValidationPool.PrintLinksToChanges(list(relevant_changes))
-    else:
-      logging.info('No changes are relevant for board: %s.',
-                   self._current_board)
-
-    # Record subsystems to metadata
-    self._run.attrs.metadata.UpdateBoardDictWithDict(
-        self._current_board, {'subsystems_to_test': []})

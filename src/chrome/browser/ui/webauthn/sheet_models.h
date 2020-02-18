@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
+#include "chrome/browser/ui/webauthn/transport_hover_list_model.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 
 namespace gfx {
@@ -60,33 +61,17 @@ class AuthenticatorSheetModelBase
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorSheetModelBase);
 };
 
-// The initial sheet shown when the UX flow starts.
-class AuthenticatorWelcomeSheetModel : public AuthenticatorSheetModelBase {
- public:
-  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
-
- private:
-  // AuthenticatorSheetModelBase:
-  const gfx::VectorIcon& GetStepIllustration(
-      ImageColorScheme color_scheme) const override;
-  base::string16 GetStepTitle() const override;
-  base::string16 GetStepDescription() const override;
-  bool IsAcceptButtonVisible() const override;
-  bool IsAcceptButtonEnabled() const override;
-  base::string16 GetAcceptButtonLabel() const override;
-  void OnAccept() override;
-};
-
 // The sheet shown for selecting the transport over which the security key
 // should be accessed.
 class AuthenticatorTransportSelectorSheetModel
-    : public AuthenticatorSheetModelBase {
+    : public AuthenticatorSheetModelBase,
+      public TransportHoverListModel::Delegate {
  public:
   using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
 
-  // Initiates the step-by-step flow with the the transport at the given |index|
-  // selected by the user.
-  void OnTransportSelected(AuthenticatorTransport transport);
+  // TransportHoverListModel::Delegate:
+  void OnTransportSelected(AuthenticatorTransport transport) override;
+  void StartPhonePairing() override;
 
  private:
   // AuthenticatorSheetModelBase:
@@ -199,7 +184,6 @@ class AuthenticatorInternalUnrecognizedErrorSheetModel
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
-  void OnBack() override;
   void OnAccept() override;
 };
 
@@ -412,7 +396,6 @@ class AuthenticatorClientPinEntrySheetModel
   bool IsAcceptButtonVisible() const override;
   bool IsAcceptButtonEnabled() const override;
   base::string16 GetAcceptButtonLabel() const override;
-  void OnBack() override;
   void OnAccept() override;
 
   base::string16 pin_code_;
@@ -436,7 +419,6 @@ class AuthenticatorClientPinTapAgainSheetModel
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
   base::Optional<base::string16> GetAdditionalDescription() const override;
-  void OnBack() override;
 };
 
 // Generic error dialog that can only be dismissed. Backwards navigation is

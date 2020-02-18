@@ -125,7 +125,7 @@ class SVGCurrentTranslateTearOff : public SVGPointTearOff {
 
   void CommitChange() override {
     DCHECK(ContextElement());
-    ToSVGSVGElement(ContextElement())->UpdateUserTransform();
+    To<SVGSVGElement>(ContextElement())->UpdateUserTransform();
   }
 };
 
@@ -200,13 +200,6 @@ bool SVGSVGElement::IsPresentationAttribute(const QualifiedName& name) const {
       !IsOutermostSVGSVGElement())
     return false;
   return SVGGraphicsElement::IsPresentationAttribute(name);
-}
-
-bool SVGSVGElement::IsPresentationAttributeWithSVGDOM(
-    const QualifiedName& attr_name) const {
-  if (attr_name == svg_names::kWidthAttr || attr_name == svg_names::kHeightAttr)
-    return false;
-  return SVGGraphicsElement::IsPresentationAttributeWithSVGDOM(attr_name);
 }
 
 void SVGSVGElement::CollectStyleForPresentationAttribute(
@@ -306,7 +299,7 @@ static bool IntersectsAllowingEmpty(const FloatRect& r1, const FloatRect& r2) {
 static bool IsIntersectionOrEnclosureTarget(LayoutObject* layout_object) {
   return layout_object->IsSVGShape() || layout_object->IsSVGText() ||
          layout_object->IsSVGImage() ||
-         IsSVGUseElement(*layout_object->GetNode());
+         IsA<SVGUseElement>(*layout_object->GetNode());
 }
 
 bool SVGSVGElement::CheckIntersectionOrEnclosure(
@@ -559,13 +552,12 @@ bool SVGSVGElement::animationsPaused() const {
 }
 
 float SVGSVGElement::getCurrentTime() const {
-  return clampTo<float>(time_container_->Elapsed());
+  return clampTo<float>(time_container_->Elapsed().InSecondsF());
 }
 
 void SVGSVGElement::setCurrentTime(float seconds) {
   DCHECK(std::isfinite(seconds));
-  seconds = max(seconds, 0.0f);
-  time_container_->SetElapsed(seconds);
+  time_container_->SetElapsed(SMILTime::FromSecondsD(std::max(seconds, 0.0f)));
 }
 
 bool SVGSVGElement::SelfHasRelativeLengths() const {
@@ -707,14 +699,14 @@ void SVGSVGElement::SetupInitialView(const String& fragment_identifier,
       return;
     }
   }
-  if (IsSVGViewElement(anchor_node)) {
+  if (auto* svg_view_element = DynamicTo<SVGViewElement>(anchor_node)) {
     // Spec: If the SVG fragment identifier addresses a 'view' element within an
     // SVG document (e.g., MyDrawing.svg#MyView) then the root 'svg' element is
     // displayed in the SVG viewport. Any view specification attributes included
     // on the given 'view' element override the corresponding view specification
     // attributes on the root 'svg' element.
     SVGViewSpec* view_spec =
-        SVGViewSpec::CreateForViewElement(ToSVGViewElement(*anchor_node));
+        SVGViewSpec::CreateForViewElement(*svg_view_element);
     UseCounter::Count(GetDocument(),
                       WebFeature::kSVGSVGElementFragmentSVGViewElement);
     SetViewSpec(view_spec);

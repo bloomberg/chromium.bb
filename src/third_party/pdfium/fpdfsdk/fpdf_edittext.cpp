@@ -73,7 +73,7 @@ CPDF_Dictionary* LoadFontDesc(CPDF_Document* pDoc,
   if (FXFT_Is_Face_Italic(pFont->GetFaceRec()))
     flags |= FXFONT_ITALIC;
   if (FXFT_Is_Face_Bold(pFont->GetFaceRec()))
-    flags |= FXFONT_BOLD;
+    flags |= FXFONT_FORCE_BOLD;
 
   // TODO(npm): How do I know if a  font is symbolic, script, allcap, smallcap
   flags |= FXFONT_NONSYMBOLIC;
@@ -490,7 +490,7 @@ FPDF_EXPORT FPDF_FONT FPDF_CALLCONV FPDFText_LoadFont(FPDF_DOCUMENT document,
   // TODO(npm): Maybe use FT_Get_X11_Font_Format to check format? Otherwise, we
   // are allowing giving any font that can be loaded on freetype and setting it
   // as any font type.
-  if (!pFont->LoadEmbedded(span))
+  if (!pFont->LoadEmbedded(span, false))
     return nullptr;
 
   // Caller takes ownership.
@@ -510,13 +510,13 @@ FPDFText_LoadStandardFont(FPDF_DOCUMENT document, FPDF_BYTESTRING font) {
       CPDF_Font::GetStockFont(pDoc, ByteStringView(font)).Leak());
 }
 
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFText_GetMatrix(FPDF_PAGEOBJECT text,
-                                                       double* a,
-                                                       double* b,
-                                                       double* c,
-                                                       double* d,
-                                                       double* e,
-                                                       double* f) {
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFTextObj_GetMatrix(FPDF_PAGEOBJECT text,
+                                                          double* a,
+                                                          double* b,
+                                                          double* c,
+                                                          double* d,
+                                                          double* e,
+                                                          double* f) {
   if (!a || !b || !c || !d || !e || !f)
     return false;
 
@@ -542,9 +542,6 @@ FPDFTextObj_GetFontName(FPDF_PAGEOBJECT text,
     return 0;
 
   RetainPtr<CPDF_Font> pPdfFont = pTextObj->GetFont();
-  if (!pPdfFont)
-    return 0;
-
   CFX_Font* pFont = pPdfFont->GetFont();
   ByteString name = pFont->GetFamilyName();
   unsigned long dwStringLen = name.GetLength() + 1;
@@ -593,7 +590,10 @@ FPDFPageObj_CreateTextObj(FPDF_DOCUMENT document,
   return FPDFPageObjectFromCPDFPageObject(pTextObj.release());
 }
 
-FPDF_EXPORT int FPDF_CALLCONV FPDFText_GetTextRenderMode(FPDF_PAGEOBJECT text) {
+FPDF_EXPORT FPDF_TEXT_RENDERMODE FPDF_CALLCONV
+FPDFTextObj_GetTextRenderMode(FPDF_PAGEOBJECT text) {
   CPDF_TextObject* pTextObj = CPDFTextObjectFromFPDFPageObject(text);
-  return pTextObj ? static_cast<int>(pTextObj->m_TextState.GetTextMode()) : -1;
+  if (!pTextObj)
+    return -1;
+  return static_cast<FPDF_TEXT_RENDERMODE>(pTextObj->m_TextState.GetTextMode());
 }

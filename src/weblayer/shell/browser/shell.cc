@@ -16,8 +16,8 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "url/gurl.h"
-#include "weblayer/public/browser_controller.h"
 #include "weblayer/public/navigation_controller.h"
+#include "weblayer/public/tab.h"
 
 namespace weblayer {
 
@@ -29,14 +29,20 @@ const int kDefaultTestWindowHeightDip = 700;
 
 std::vector<Shell*> Shell::windows_;
 
-Shell::Shell(std::unique_ptr<BrowserController> browser_controller)
-    : browser_controller_(std::move(browser_controller)), window_(nullptr) {
+Shell::Shell(std::unique_ptr<Tab> tab)
+    : tab_(std::move(tab)), window_(nullptr) {
   windows_.push_back(this);
-  browser_controller_->AddObserver(this);
+  if (tab_) {
+    tab_->AddObserver(this);
+    tab_->GetNavigationController()->AddObserver(this);
+  }
 }
 
 Shell::~Shell() {
-  browser_controller_->RemoveObserver(this);
+  if (tab_) {
+    tab_->GetNavigationController()->RemoveObserver(this);
+    tab_->RemoveObserver(this);
+  }
   PlatformCleanUp();
 
   for (size_t i = 0; i < windows_.size(); ++i) {
@@ -49,7 +55,7 @@ Shell::~Shell() {
   // Always destroy WebContents before calling PlatformExit(). WebContents
   // destruction sequence may depend on the resources destroyed in
   // PlatformExit() (e.g. the display::Screen singleton).
-  browser_controller_.reset();
+  tab_.reset();
 
   if (windows_.empty()) {
     if (*g_quit_main_message_loop)
@@ -57,9 +63,9 @@ Shell::~Shell() {
   }
 }
 
-Shell* Shell::CreateShell(std::unique_ptr<BrowserController> browser_controller,
+Shell* Shell::CreateShell(std::unique_ptr<Tab> tab,
                           const gfx::Size& initial_size) {
-  Shell* shell = new Shell(std::move(browser_controller));
+  Shell* shell = new Shell(std::move(tab));
   shell->PlatformCreateWindow(initial_size.width(), initial_size.height());
 
   shell->PlatformSetContents();
@@ -89,24 +95,37 @@ void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {
   *g_quit_main_message_loop = std::move(quit_closure);
 }
 
+Tab* Shell::tab() {
+#if defined(OS_ANDROID)
+  // TODO(jam): this won't work if we need more than one Shell in a test.
+  return Tab::GetLastTabForTesting();
+#else
+  return tab_.get();
+#endif
+}
+
 void Shell::Initialize() {
   PlatformInitialize(GetShellDefaultSize());
 }
 
-void Shell::LoadingStateChanged(bool is_loading, bool to_different_document) {
-  int current_index = browser_controller_->GetNavigationController()
-                          ->GetNavigationListCurrentIndex();
-  int max_index =
-      browser_controller_->GetNavigationController()->GetNavigationListSize() -
-      1;
-
-  PlatformEnableUIControl(BACK_BUTTON, current_index > 0);
-  PlatformEnableUIControl(FORWARD_BUTTON, current_index < max_index);
-  PlatformEnableUIControl(STOP_BUTTON, to_different_document && is_loading);
+void Shell::DisplayedUrlChanged(const GURL& url) {
+  PlatformSetAddressBarURL(url);
 }
 
-void Shell::DisplayedURLChanged(const GURL& url) {
-  PlatformSetAddressBarURL(url);
+void Shell::LoadStateChanged(bool is_loading, bool to_different_document) {
+  NavigationController* navigation_controller = tab_->GetNavigationController();
+
+  PlatformEnableUIControl(STOP_BUTTON, is_loading && to_different_document);
+
+  // TODO(estade): These should be updated in callbacks that correspond to the
+  // back/forward list changing, such as NavigationEntriesDeleted.
+  PlatformEnableUIControl(BACK_BUTTON, navigation_controller->CanGoBack());
+  PlatformEnableUIControl(FORWARD_BUTTON,
+                          navigation_controller->CanGoForward());
+}
+
+void Shell::LoadProgressChanged(double progress) {
+  PlatformSetLoadProgress(progress);
 }
 
 gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
@@ -118,35 +137,37 @@ gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
 Shell* Shell::CreateNewWindow(weblayer::Profile* web_profile,
                               const GURL& url,
                               const gfx::Size& initial_size) {
-  auto adjusted_size = AdjustWindowSize(initial_size);
-  auto browser_controller =
-      BrowserController::Create(web_profile, adjusted_size);
+#if defined(OS_ANDROID)
+  std::unique_ptr<Tab> tab;
+#else
+  auto tab = Tab::Create(web_profile);
+#endif
 
-  Shell* shell = CreateShell(std::move(browser_controller), adjusted_size);
+  Shell* shell = CreateShell(std::move(tab), AdjustWindowSize(initial_size));
   if (!url.is_empty())
     shell->LoadURL(url);
   return shell;
 }
 
 void Shell::LoadURL(const GURL& url) {
-  browser_controller_->GetNavigationController()->Navigate(url);
+  tab()->GetNavigationController()->Navigate(url);
 }
 
 void Shell::GoBackOrForward(int offset) {
   if (offset == -1)
-    browser_controller_->GetNavigationController()->GoBack();
+    tab()->GetNavigationController()->GoBack();
   else if (offset == 1)
-    browser_controller_->GetNavigationController()->GoForward();
+    tab()->GetNavigationController()->GoForward();
 }
 
 void Shell::Reload() {
-  browser_controller_->GetNavigationController()->Reload();
+  tab()->GetNavigationController()->Reload();
 }
 
 void Shell::ReloadBypassingCache() {}
 
 void Shell::Stop() {
-  browser_controller_->GetNavigationController()->Stop();
+  tab()->GetNavigationController()->Stop();
 }
 
 gfx::Size Shell::GetShellDefaultSize() {

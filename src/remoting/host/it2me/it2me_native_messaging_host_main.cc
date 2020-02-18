@@ -26,6 +26,7 @@
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/policy_watcher.h"
 #include "remoting/host/resources.h"
+#include "remoting/host/switches.h"
 #include "remoting/host/usage_stats_consent.h"
 
 #if defined(OS_LINUX)
@@ -36,7 +37,10 @@
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "remoting/host/desktop_capturer_checker.h"
+#include "remoting/host/mac/permission_utils.h"
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
@@ -204,9 +208,26 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   base::RunLoop run_loop;
 
+#if defined(OS_MACOSX)
+  auto* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(kCheckAccessibilityPermissionSwitchName)) {
+    return mac::CanInjectInput() ? EXIT_SUCCESS : EXIT_FAILURE;
+  }
+  if (cmd_line->HasSwitch(kCheckScreenRecordingPermissionSwitchName)) {
+    // Trigger screen-capture, even if CanRecordScreen() returns true. It uses a
+    // heuristic that might not be 100% reliable, but it is critically
+    // important to add the host bundle to the list of apps under
+    // Security & Privacy -> Screen Recording.
+    if (base::mac::IsAtLeastOS10_15()) {
+      DesktopCapturerChecker().TriggerSingleCapture();
+    }
+    return mac::CanRecordScreen() ? EXIT_SUCCESS : EXIT_FAILURE;
+  }
+#endif  // defined(OS_MACOSX)
+
   // NetworkChangeNotifier must be initialized after SingleThreadTaskExecutor.
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
-      net::NetworkChangeNotifier::Create());
+      net::NetworkChangeNotifier::CreateIfNeeded());
 
   std::unique_ptr<It2MeHostFactory> factory(new It2MeHostFactory());
 
@@ -216,6 +237,10 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   // Set up the native messaging channel.
   std::unique_ptr<extensions::NativeMessagingChannel> channel(
       new PipeMessagingChannel(std::move(read_file), std::move(write_file)));
+
+#if defined(OS_POSIX)
+  PipeMessagingChannel::ReopenStdinStdout();
+#endif  // defined(OS_POSIX)
 
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new remoting::AutoThreadTaskRunner(

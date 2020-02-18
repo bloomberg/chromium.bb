@@ -7,7 +7,8 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "base/command_line.h"');
-GEN('#include "chrome/test/data/webui/signin_browsertest.h"');
+GEN('#include "build/branding_buildflags.h"');
+GEN('#include "services/network/public/cpp/features.h"');
 
 /**
  * Test fixture for
@@ -17,40 +18,24 @@ GEN('#include "chrome/test/data/webui/signin_browsertest.h"');
 // eslint-disable-next-line no-var
 var SigninSyncConfirmationTest = class extends PolymerTest {
   /** @override */
-  get typedefCppFixture() {
-    return 'SigninBrowserTest';
-  }
-
-  /** @override */
-  testGenPreamble() {
-    GEN('  EnableUnity();');
-  }
-
-  /** @override */
   get browsePreload() {
-    return 'chrome://sync-confirmation/sync_confirmation_app.html';
+    return 'chrome://sync-confirmation/test_loader.html?module=signin/sync_confirmation_test.js';
   }
 
   /** @override */
   get extraLibraries() {
     return [
-      ...super.extraLibraries,
-      '//chrome/test/data/webui/test_browser_proxy.js',
-      '//chrome/browser/resources/signin/sync_confirmation/' +
-          'sync_confirmation_browser_proxy.js',
-      'test_sync_confirmation_browser_proxy.js',
-      'sync_confirmation_test.js',
+      '//third_party/mocha/mocha.js',
+      '//chrome/test/data/webui/mocha_adapter.js',
     ];
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 };
 
-// TODO(https://crbug.com/862573): Re-enable when no longer failing when
-// is_chrome_branded is true.
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
-GEN('#define MAYBE_DialogWithDice DISABLED_DialogWithDice');
-GEN('#else');
-GEN('#define MAYBE_DialogWithDice');
-GEN('#endif');
-TEST_F('SigninSyncConfirmationTest', 'MAYBE_DialogWithDice', function() {
+TEST_F('SigninSyncConfirmationTest', 'Dialog', function() {
   mocha.run();
 });

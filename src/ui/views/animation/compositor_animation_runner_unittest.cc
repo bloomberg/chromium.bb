@@ -8,25 +8,20 @@
 #include "base/timer/timer.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/views/animation/animation_delegate_views.h"
+#include "ui/views/buildflags.h"
 #include "ui/views/test/widget_test.h"
 
 namespace views {
 namespace test {
+namespace {
+constexpr base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(100);
+}
 
 using CompositorAnimationRunnerTest = WidgetTest;
 
-// TODO(crbug.com/969788): Re-enable CompositorAnimationRunner with better
-// ui::Compositor switching support.
-#if defined(OS_CHROMEOS)
-#define MAYBE_BasicCoverageTest DISABLED_BasicCoverageTest
-#else
-#define MAYBE_BasicCoverageTest BasicCoverageTest
-#endif
-TEST_F(CompositorAnimationRunnerTest, MAYBE_BasicCoverageTest) {
+TEST_F(CompositorAnimationRunnerTest, BasicCoverageTest) {
   WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   widget->Show();
-
-  constexpr base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(100);
 
   AnimationDelegateViews delegate(widget->GetContentsView());
   gfx::LinearAnimation animation(
@@ -49,6 +44,68 @@ TEST_F(CompositorAnimationRunnerTest, MAYBE_BasicCoverageTest) {
 
   run_loop.Run();
 }
+
+// No DesktopAura on ChromeOS.
+// Each widget on MACOSX has its own ui::Compositor.
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
+using CompositorAnimationRunnerDesktopTest = DesktopWidgetTest;
+
+TEST_F(CompositorAnimationRunnerDesktopTest, SwitchCompositor) {
+  WidgetAutoclosePtr widget1(CreateTopLevelNativeWidget());
+  widget1->Show();
+
+  WidgetAutoclosePtr widget2(CreateTopLevelNativeWidget());
+  widget2->Show();
+
+  ASSERT_NE(widget1->GetCompositor(), widget2->GetCompositor());
+
+  Widget* child = CreateChildNativeWidgetWithParent(widget1.get());
+  child->Show();
+  AnimationDelegateViews delegate(child->GetContentsView());
+  gfx::LinearAnimation animation(
+      kDuration, gfx::LinearAnimation::kDefaultFrameRate, &delegate);
+
+  base::RepeatingTimer interval_timer;
+
+  animation.Start();
+  EXPECT_TRUE(animation.is_animating());
+  EXPECT_TRUE(delegate.container()->has_custom_animation_runner());
+  {
+    base::RunLoop run_loop;
+    interval_timer.Start(FROM_HERE, kDuration,
+                         base::BindLambdaForTesting([&]() {
+                           if (animation.is_animating())
+                             return;
+                           interval_timer.Stop();
+                           run_loop.Quit();
+                         }));
+    run_loop.Run();
+  }
+
+  EXPECT_FALSE(animation.is_animating());
+
+  Widget::ReparentNativeView(child->GetNativeView(), widget2->GetNativeView());
+  widget1.reset();
+
+  animation.Start();
+  EXPECT_TRUE(animation.is_animating());
+  EXPECT_TRUE(delegate.container()->has_custom_animation_runner());
+
+  {
+    base::RunLoop run_loop;
+    interval_timer.Start(FROM_HERE, kDuration,
+                         base::BindLambdaForTesting([&]() {
+                           if (animation.is_animating())
+                             return;
+
+                           interval_timer.Stop();
+                           run_loop.Quit();
+                         }));
+
+    run_loop.Run();
+  }
+}
+#endif
 
 }  // namespace test
 }  // namespace views

@@ -19,7 +19,9 @@ using ::testing::ReturnRef;
 
 class DownloadItemRequestTest : public ::testing::Test {
  public:
-  DownloadItemRequestTest() : item_(), request_(&item_, base::DoNothing()) {}
+  DownloadItemRequestTest()
+      : item_(),
+        request_(&item_, /*read_immediately=*/false, base::DoNothing()) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -42,7 +44,7 @@ class DownloadItemRequestTest : public ::testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   download::MockDownloadItem item_;
   DownloadItemRequest request_;
   base::ScopedTempDir temp_dir_;
@@ -51,18 +53,15 @@ class DownloadItemRequestTest : public ::testing::Test {
   std::string download_contents_;
 };
 
-TEST_F(DownloadItemRequestTest, GetsSize) {
-  EXPECT_EQ(request_.GetFileSize(), download_contents_.size());
-}
-
 TEST_F(DownloadItemRequestTest, GetsContentsWaitsUntilRename) {
   ON_CALL(item_, GetFullPath())
       .WillByDefault(ReturnRef(download_temporary_path_));
 
   std::string download_contents = "";
-  request_.GetFileContents(base::BindOnce(
-      [](std::string* target_contents, const std::string& contents) {
-        *target_contents = contents;
+  request_.GetRequestData(base::BindOnce(
+      [](std::string* target_contents, BinaryUploadService::Result result,
+         const BinaryUploadService::Request::Data& data) {
+        *target_contents = data.contents;
       },
       &download_contents));
   content::RunAllTasksUntilIdle();

@@ -26,9 +26,9 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/animation_frame/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
-#include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -39,7 +39,10 @@ CanvasRenderingContext::CanvasRenderingContext(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs)
     : host_(host),
-      color_params_(kSRGBCanvasColorSpace, kRGBA8CanvasPixelFormat, kNonOpaque),
+      color_params_(CanvasColorSpace::kSRGB,
+                    CanvasPixelFormat::kRGBA8,
+                    kNonOpaque,
+                    CanvasForceRGBA::kNotForced),
       creation_attributes_(attrs) {
   // Supported color spaces and pixel formats: sRGB in uint8, e-sRGB in f16,
   // linear sRGB and p3 and rec2020 with linear gamma transfer function in f16.
@@ -47,13 +50,13 @@ CanvasRenderingContext::CanvasRenderingContext(
   // storage. Otherwise, we fall back to sRGB in uint8. Invalid requests fall
   // back to sRGB in uint8 too.
   if (creation_attributes_.pixel_format == kF16CanvasPixelFormatName) {
-    color_params_.SetCanvasPixelFormat(kF16CanvasPixelFormat);
+    color_params_.SetCanvasPixelFormat(CanvasPixelFormat::kF16);
     if (creation_attributes_.color_space == kLinearRGBCanvasColorSpaceName)
-      color_params_.SetCanvasColorSpace(kLinearRGBCanvasColorSpace);
+      color_params_.SetCanvasColorSpace(CanvasColorSpace::kLinearRGB);
     if (creation_attributes_.color_space == kRec2020CanvasColorSpaceName)
-      color_params_.SetCanvasColorSpace(kRec2020CanvasColorSpace);
+      color_params_.SetCanvasColorSpace(CanvasColorSpace::kRec2020);
     else if (creation_attributes_.color_space == kP3CanvasColorSpaceName)
-      color_params_.SetCanvasColorSpace(kP3CanvasColorSpace);
+      color_params_.SetCanvasColorSpace(CanvasColorSpace::kP3);
   }
 
   if (!creation_attributes_.alpha)
@@ -67,13 +70,13 @@ CanvasRenderingContext::CanvasRenderingContext(
 
 WTF::String CanvasRenderingContext::ColorSpaceAsString() const {
   switch (color_params_.ColorSpace()) {
-    case kSRGBCanvasColorSpace:
+    case CanvasColorSpace::kSRGB:
       return kSRGBCanvasColorSpaceName;
-    case kLinearRGBCanvasColorSpace:
+    case CanvasColorSpace::kLinearRGB:
       return kLinearRGBCanvasColorSpaceName;
-    case kRec2020CanvasColorSpace:
+    case CanvasColorSpace::kRec2020:
       return kRec2020CanvasColorSpaceName;
-    case kP3CanvasColorSpace:
+    case CanvasColorSpace::kP3:
       return kP3CanvasColorSpaceName;
   };
   CHECK(false);
@@ -82,9 +85,9 @@ WTF::String CanvasRenderingContext::ColorSpaceAsString() const {
 
 WTF::String CanvasRenderingContext::PixelFormatAsString() const {
   switch (color_params_.PixelFormat()) {
-    case kRGBA8CanvasPixelFormat:
+    case CanvasPixelFormat::kRGBA8:
       return kRGBA8CanvasPixelFormatName;
-    case kF16CanvasPixelFormat:
+    case CanvasPixelFormat::kF16:
       return kF16CanvasPixelFormatName;
   };
   CHECK(false);
@@ -116,27 +119,23 @@ void CanvasRenderingContext::DidDraw() {
   StartListeningForDidProcessTask();
 }
 
-void CanvasRenderingContext::NeedsFinalizeFrame() {
-  StartListeningForDidProcessTask();
-}
-
 void CanvasRenderingContext::DidProcessTask(
     const base::PendingTask& /* pending_task */) {
   StopListeningForDidProcessTask();
 
-  // Call FinalizeFrame() on self first before informing host so that we can
-  // present swap chain before exporting it.
-  FinalizeFrame();
   // The end of a script task that drew content to the canvas is the point
   // at which the current frame may be considered complete.
   if (Host())
-    Host()->FinalizeFrame();
+    Host()->PreFinalizeFrame();
+  FinalizeFrame();
+  if (Host())
+    Host()->PostFinalizeFrame();
 }
 
 CanvasRenderingContext::ContextType CanvasRenderingContext::ContextTypeFromId(
     const String& id) {
   if (id == "2d")
-    return kContext2d;
+    return kContext2D;
   if (id == "experimental-webgl")
     return kContextExperimentalWebgl;
   if (id == "webgl")

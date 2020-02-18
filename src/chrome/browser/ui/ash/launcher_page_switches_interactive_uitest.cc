@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_P(LauncherPageSwitchesTest, SwitchToFarPage) {
   waiter.Wait();
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LauncherPageSwitchesTest,
                          /*tablet_mode=*/::testing::Bool());
 
@@ -179,14 +179,13 @@ IN_PROC_BROWSER_TEST_F(LauncherPageDragTest, Run) {
   gfx::Point start_point = display_bounds.CenterPoint();
   gfx::Point end_point(start_point);
   end_point.set_y(10);
-  ui_test_utils::DragEventGenerator generator(
+  auto generator = ui_test_utils::DragEventGenerator::CreateForTouch(
       std::make_unique<ui_test_utils::InterpolatedProducer>(
-          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)),
-      /*touch=*/true);
+          start_point, end_point, base::TimeDelta::FromMilliseconds(1000)));
 
   ash::PaginationModel* model = ash::ShellTestApi().GetAppListPaginationModel();
   ASSERT_TRUE(model);
   PageSwitchWaiter waiter(model);
-  generator.Wait();
+  generator->Wait();
   waiter.Wait();
 }

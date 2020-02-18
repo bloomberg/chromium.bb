@@ -18,8 +18,10 @@
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/video_capture_device_factory.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
 
 namespace base {
@@ -32,12 +34,13 @@ class WaitableEvent;
 namespace media {
 
 using MojoJpegEncodeAcceleratorFactoryCB = base::RepeatingCallback<void(
-    chromeos_camera::mojom::JpegEncodeAcceleratorRequest)>;
+    mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>)>;
 
 class CAPTURE_EXPORT CameraClientObserver {
  public:
   virtual ~CameraClientObserver();
-  virtual void OnChannelCreated(cros::mojom::CameraModulePtr camera_module) = 0;
+  virtual void OnChannelCreated(
+      mojo::PendingRemote<cros::mojom::CameraModule> camera_module) = 0;
 };
 
 // The CameraHalDispatcherImpl hosts and waits on the unix domain socket
@@ -64,12 +67,16 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   bool IsStarted();
 
   // CameraHalDispatcher implementations.
-  void RegisterServer(cros::mojom::CameraHalServerPtr server) final;
-  void RegisterClient(cros::mojom::CameraHalClientPtr client) final;
+  void RegisterServer(
+      mojo::PendingRemote<cros::mojom::CameraHalServer> server) final;
+  void RegisterClient(
+      mojo::PendingRemote<cros::mojom::CameraHalClient> client) final;
   void GetJpegDecodeAccelerator(
-      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) final;
+      mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
+          jda_receiver) final;
   void GetJpegEncodeAccelerator(
-      chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request) final;
+      mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
+          jea_receiver) final;
 
   // base::trace_event::TraceLog::EnabledStateObserver implementation.
   void OnTraceLogEnabled() final;
@@ -93,6 +100,8 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   // Runs on |blocking_io_thread_|.
   void StartServiceLoop(base::ScopedFD socket_fd, base::WaitableEvent* started);
 
+  void RegisterClientOnProxyThread(
+      mojo::PendingRemote<cros::mojom::CameraHalClient> client);
   void AddClientObserverOnProxyThread(
       std::unique_ptr<CameraClientObserver> observer);
 
@@ -118,9 +127,9 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   scoped_refptr<base::SingleThreadTaskRunner> proxy_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> blocking_io_task_runner_;
 
-  mojo::BindingSet<cros::mojom::CameraHalDispatcher> binding_set_;
+  mojo::ReceiverSet<cros::mojom::CameraHalDispatcher> receiver_set_;
 
-  cros::mojom::CameraHalServerPtr camera_hal_server_;
+  mojo::Remote<cros::mojom::CameraHalServer> camera_hal_server_;
 
   std::set<std::unique_ptr<CameraClientObserver>, base::UniquePtrComparator>
       client_observers_;

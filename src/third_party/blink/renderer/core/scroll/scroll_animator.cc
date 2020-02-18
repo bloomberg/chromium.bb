@@ -34,7 +34,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
-#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -43,14 +42,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
-
-namespace {
-
-cc::PictureLayer* ToCcLayer(GraphicsLayer* layer) {
-  return layer ? layer->CcLayer() : nullptr;
-}
-
-}  // namespace
 
 ScrollAnimatorBase* ScrollAnimatorBase::Create(
     ScrollableArea* scrollable_area) {
@@ -275,14 +266,6 @@ void ScrollAnimator::TickAnimation(double monotonic_time) {
   NotifyOffsetChanged();
 }
 
-void ScrollAnimator::PostAnimationCleanupAndReset() {
-  // Remove the temporary main thread scrolling reason that was added while
-  // main thread had scheduled an animation.
-  RemoveMainThreadScrollingReason();
-
-  ResetAnimationState();
-}
-
 bool ScrollAnimator::SendAnimationToCompositor() {
   if (scrollable_area_->ShouldScrollOnMainThread())
     return false;
@@ -297,26 +280,23 @@ bool ScrollAnimator::SendAnimationToCompositor() {
   // using the current time on main thread.
   animation->SetStartTime(start_time_);
 
-  int animation_id = animation->Id();
-  int animation_group_id = animation->Group();
-
   bool sent_to_compositor = AddAnimation(std::move(animation));
-  if (sent_to_compositor) {
+  if (sent_to_compositor)
     run_state_ = RunState::kRunningOnCompositor;
-    compositor_animation_id_ = animation_id;
-    compositor_animation_group_id_ = animation_group_id;
-  }
 
   return sent_to_compositor;
 }
 
 void ScrollAnimator::CreateAnimationCurve() {
   DCHECK(!animation_curve_);
+  // It is not correct to assume the input type from the granularity, but we've
+  // historically determined animation parameters from granularity.
+  CompositorScrollOffsetAnimationCurve::ScrollType scroll_type =
+      (last_granularity_ == ScrollGranularity::kScrollByPixel)
+          ? CompositorScrollOffsetAnimationCurve::ScrollType::kMouseWheel
+          : CompositorScrollOffsetAnimationCurve::ScrollType::kKeyboard;
   animation_curve_ = std::make_unique<CompositorScrollOffsetAnimationCurve>(
-      CompositorOffsetFromBlinkOffset(target_offset_),
-      last_granularity_ == ScrollGranularity::kScrollByPixel
-          ? CompositorScrollOffsetAnimationCurve::kScrollDurationInverseDelta
-          : CompositorScrollOffsetAnimationCurve::kScrollDurationConstant);
+      CompositorOffsetFromBlinkOffset(target_offset_), scroll_type);
   animation_curve_->SetInitialValue(
       CompositorOffsetFromBlinkOffset(CurrentOffset()));
 }
@@ -325,14 +305,14 @@ void ScrollAnimator::UpdateCompositorAnimations() {
   ScrollAnimatorCompositorCoordinator::UpdateCompositorAnimations();
 
   if (run_state_ == RunState::kPostAnimationCleanup) {
-    PostAnimationCleanupAndReset();
+    ResetAnimationState();
     return;
   }
 
   if (run_state_ == RunState::kWaitingToCancelOnCompositor) {
-    DCHECK(compositor_animation_id_);
+    DCHECK(compositor_animation_id());
     AbortAnimation();
-    PostAnimationCleanupAndReset();
+    ResetAnimationState();
     return;
   }
 
@@ -342,7 +322,7 @@ void ScrollAnimator::UpdateCompositorAnimations() {
     // because a main thread scrolling reason is added, and simply trying
     // to ::sendAnimationToCompositor will fail and we will run on the main
     // thread.
-    ResetAnimationIds();
+    RemoveAnimation();
     run_state_ = RunState::kWaitingToSendToCompositor;
   }
 
@@ -352,7 +332,6 @@ void ScrollAnimator::UpdateCompositorAnimations() {
     // Abort the running animation before a new one with an updated
     // target is added.
     AbortAnimation();
-    ResetAnimationIds();
 
     if (run_state_ != RunState::kRunningOnCompositorButNeedsAdjustment) {
       // When in RunningOnCompositorButNeedsAdjustment, the call to
@@ -386,33 +365,6 @@ void ScrollAnimator::UpdateCompositorAnimations() {
       if (running_on_main_thread)
         run_state_ = RunState::kRunningOnMainThread;
     }
-
-    // Main thread should deal with the scroll animations it started.
-    if (sent_to_compositor || running_on_main_thread)
-      AddMainThreadScrollingReason();
-    else
-      RemoveMainThreadScrollingReason();
-  }
-}
-
-void ScrollAnimator::AddMainThreadScrollingReason() {
-  // Usually main thread scrolling reasons should be updated from
-  // one frame to all its descendants. khandlingScrollFromMainThread
-  // is a special case because its subframes cannot be scrolled
-  // when the reason is set. When the subframes are ready to scroll
-  // the reason has benn reset.
-  if (cc::Layer* scroll_layer =
-          ToCcLayer(GetScrollableArea()->LayerForScrolling())) {
-    scroll_layer->AddMainThreadScrollingReasons(
-        cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
-  }
-}
-
-void ScrollAnimator::RemoveMainThreadScrollingReason() {
-  if (cc::Layer* scroll_layer =
-          ToCcLayer(GetScrollableArea()->LayerForScrolling())) {
-    scroll_layer->ClearMainThreadScrollingReasons(
-        cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
   }
 }
 
@@ -437,17 +389,12 @@ void ScrollAnimator::CancelAnimation() {
 }
 
 void ScrollAnimator::TakeOverCompositorAnimation() {
-  if (run_state_ == RunState::kRunningOnCompositor ||
-      run_state_ == RunState::kRunningOnCompositorButNeedsUpdate)
-    RemoveMainThreadScrollingReason();
-
   ScrollAnimatorCompositorCoordinator::TakeOverCompositorAnimation();
 }
 
 void ScrollAnimator::LayerForCompositedScrollingDidChange(
     CompositorAnimationTimeline* timeline) {
-  if (ReattachCompositorAnimationIfNeeded(timeline) && animation_curve_)
-    AddMainThreadScrollingReason();
+  ReattachCompositorAnimationIfNeeded(timeline);
 }
 
 bool ScrollAnimator::RegisterAndScheduleAnimation() {

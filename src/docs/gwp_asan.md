@@ -5,6 +5,11 @@ samples allocations to a debug allocator, similar to ElectricFence or Page Heap,
 causing memory errors to crash and report additional debugging context about
 the error.
 
+It is also known by its recursive backronym, GWP-ASan Will Provide Allocation
+Sanity.
+
+To read a more in-depth explanation of GWP-ASan see [this post](https://sites.google.com/a/chromium.org/dev/Home/chromium-security/articles/gwp-asan).
+
 ## Allocator
 
 The GuardedPageAllocator returns allocations on pages buffered on both sides by
@@ -47,10 +52,9 @@ validate the allocator internals before reasoning about them.
 
 ## Status
 
-GWP-ASan is implemented for malloc and PartitionAlloc, but not for Oilpan or v8,
-on Windows and macOS. It is currently enabled by default for malloc. The
-allocator parameters can be manually modified by using an invocation like the
-following:
+GWP-ASan is implemented for malloc and PartitionAlloc. It is enabled by default
+on Windows and macOS. The allocator parameters can be manually modified by using
+an invocation like the following:
 
 ```shell
 chrome --enable-features="GwpAsanMalloc<Study" \
@@ -63,8 +67,8 @@ catch newly introduced bugs, and for specific processes depending on the
 particular allocator.
 
 A [hotlist of bugs discovered by by GWP-ASan](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=Hotlist%3DGWP-ASan)
-exists, though GWP-ASan crashes are filed without external visibility by
-default.
+exists, though GWP-ASan crashes are filed Bug-Security, e.g. without external
+visibility, by default.
 
 ## Limitations
 
@@ -81,6 +85,10 @@ default.
 - GWP-ASan does not hook PDFium's fork of PartitionAlloc.
 - Right-aligned allocations to catch overflows are not perfectly right-aligned,
   so small out-of-bounds accesses may be missed.
+- GWP-ASan does not sample some early allocations that occur before field trial
+  initialization.
+- Depending on the platform, GWP-ASan may or may not hook malloc allocations
+  that occur in code not linked directly against Chrome.
 
 ## Testing
 

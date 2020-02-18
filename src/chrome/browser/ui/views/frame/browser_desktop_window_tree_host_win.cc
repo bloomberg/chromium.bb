@@ -32,6 +32,7 @@
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/gfx/image/image_family.h"
 #include "ui/views/controls/menu/native_menu_win.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,8 +46,7 @@ BrowserDesktopWindowTreeHostWin::BrowserDesktopWindowTreeHostWin(
     : DesktopWindowTreeHostWin(native_widget_delegate,
                                desktop_native_widget_aura),
       browser_view_(browser_view),
-      browser_frame_(browser_frame),
-      profile_observer_(this) {
+      browser_frame_(browser_frame) {
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 }
@@ -393,9 +393,9 @@ void BrowserDesktopWindowTreeHostWin::OnProfileWasRemoved(
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostWin, private:
 bool BrowserDesktopWindowTreeHostWin::IsOpaqueHostedAppFrame() const {
-  // TODO(https://crbug.com/868239): Support Windows 7 Aero glass for hosted app
+  // TODO(https://crbug.com/868239): Support Windows 7 Aero glass for web-app
   // window titlebar controls.
-  return browser_view_->IsBrowserTypeHostedApp() &&
+  return browser_view_->IsBrowserTypeWebApp() &&
          base::win::GetVersion() < base::win::Version::WIN10;
 }
 

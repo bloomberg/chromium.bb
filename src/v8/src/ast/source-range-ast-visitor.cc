@@ -25,10 +25,23 @@ void SourceRangeAstVisitor::VisitBlock(Block* stmt) {
   }
 }
 
+void SourceRangeAstVisitor::VisitSwitchStatement(SwitchStatement* stmt) {
+  AstTraversalVisitor::VisitSwitchStatement(stmt);
+  ZonePtrList<CaseClause>* clauses = stmt->cases();
+  for (CaseClause* clause : *clauses) {
+    MaybeRemoveLastContinuationRange(clause->statements());
+  }
+}
+
 void SourceRangeAstVisitor::VisitFunctionLiteral(FunctionLiteral* expr) {
   AstTraversalVisitor::VisitFunctionLiteral(expr);
   ZonePtrList<Statement>* stmts = expr->body();
   MaybeRemoveLastContinuationRange(stmts);
+}
+
+void SourceRangeAstVisitor::VisitTryCatchStatement(TryCatchStatement* stmt) {
+  AstTraversalVisitor::VisitTryCatchStatement(stmt);
+  MaybeRemoveContinuationRangeOfAsyncReturn(stmt);
 }
 
 bool SourceRangeAstVisitor::VisitNode(AstNode* node) {
@@ -51,11 +64,8 @@ bool SourceRangeAstVisitor::VisitNode(AstNode* node) {
   return true;
 }
 
-void SourceRangeAstVisitor::MaybeRemoveLastContinuationRange(
-    ZonePtrList<Statement>* statements) {
-  if (statements->is_empty()) return;
-
-  Statement* last_statement = statements->last();
+void SourceRangeAstVisitor::MaybeRemoveContinuationRange(
+    Statement* last_statement) {
   AstNodeSourceRanges* last_range = nullptr;
 
   if (last_statement->IsExpressionStatement() &&
@@ -72,6 +82,39 @@ void SourceRangeAstVisitor::MaybeRemoveLastContinuationRange(
 
   if (last_range->HasRange(SourceRangeKind::kContinuation)) {
     last_range->RemoveContinuationRange();
+  }
+}
+
+void SourceRangeAstVisitor::MaybeRemoveLastContinuationRange(
+    ZonePtrList<Statement>* statements) {
+  if (statements->is_empty()) return;
+  MaybeRemoveContinuationRange(statements->last());
+}
+
+namespace {
+Statement* FindLastNonSyntheticReturn(ZonePtrList<Statement>* statements) {
+  for (int i = statements->length() - 1; i >= 0; --i) {
+    Statement* stmt = statements->at(i);
+    if (!stmt->IsReturnStatement()) break;
+    if (stmt->AsReturnStatement()->is_synthetic_async_return()) continue;
+    return stmt;
+  }
+  return nullptr;
+}
+}  // namespace
+
+void SourceRangeAstVisitor::MaybeRemoveContinuationRangeOfAsyncReturn(
+    TryCatchStatement* try_catch_stmt) {
+  // Detect try-catch inserted by NewTryCatchStatementForAsyncAwait in the
+  // parser (issued for async functions, including async generators), and
+  // remove the continuation ranges of return statements corresponding to
+  // returns at function end in the untransformed source.
+  if (try_catch_stmt->is_try_catch_for_async()) {
+    Statement* last_non_synthetic =
+        FindLastNonSyntheticReturn(try_catch_stmt->try_block()->statements());
+    if (last_non_synthetic) {
+      MaybeRemoveContinuationRange(last_non_synthetic);
+    }
   }
 }
 

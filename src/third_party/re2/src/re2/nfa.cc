@@ -31,13 +31,13 @@
 #include <utility>
 #include <vector>
 
+#include "util/logging.h"
+#include "util/strutil.h"
+#include "re2/pod_array.h"
 #include "re2/prog.h"
 #include "re2/regexp.h"
-#include "util/logging.h"
-#include "util/pod_array.h"
-#include "util/sparse_array.h"
-#include "util/sparse_set.h"
-#include "util/strutil.h"
+#include "re2/sparse_array.h"
+#include "re2/sparse_set.h"
 
 namespace re2 {
 
@@ -382,10 +382,15 @@ int NFA::Step(Threadq* runq, Threadq* nextq, int c, const StringPiece& context,
         break;
 
       case kInstMatch: {
-        // Avoid invoking undefined behavior when p happens
-        // to be null - and p-1 would be meaningless anyway.
-        if (p == NULL)
+        // Avoid invoking undefined behavior (arithmetic on a null pointer)
+        // by storing p instead of p-1. (What would the latter even mean?!)
+        // This complements the special case in NFA::Search().
+        if (p == NULL) {
+          CopyCapture(match_, t->capture);
+          match_[1] = p;
+          matched_ = true;
           break;
+        }
 
         if (endmatch_ && p-1 != etext_)
           break;
@@ -431,12 +436,12 @@ std::string NFA::FormatCapture(const char** capture) {
     if (capture[i] == NULL)
       s += "(?,?)";
     else if (capture[i+1] == NULL)
-      s += StringPrintf("(%d,?)",
-                        (int)(capture[i] - btext_));
+      s += StringPrintf("(%td,?)",
+                        capture[i] - btext_);
     else
-      s += StringPrintf("(%d,%d)",
-                        (int)(capture[i] - btext_),
-                        (int)(capture[i+1] - btext_));
+      s += StringPrintf("(%td,%td)",
+                        capture[i] - btext_,
+                        capture[i+1] - btext_);
   }
   return s;
 }
@@ -448,7 +453,7 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
     return false;
 
   StringPiece context = const_context;
-  if (context.begin() == NULL)
+  if (context.data() == NULL)
     context = text;
 
   // Sanity check: make sure that text lies within context.
@@ -465,7 +470,6 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
   if (prog_->anchor_end()) {
     longest = true;
     endmatch_ = true;
-    etext_ = text.end();
   }
 
   if (nsubmatch < 0) {
@@ -488,12 +492,13 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
   matched_ = false;
 
   // For debugging prints.
-  btext_ = context.begin();
+  btext_ = context.data();
+  // For convenience.
+  etext_ = text.data() + text.size();
 
   if (ExtraDebug)
     fprintf(stderr, "NFA::Search %s (context: %s) anchored=%d longest=%d\n",
-            std::string(text).c_str(), std::string(context).c_str(), anchored,
-            longest);
+            std::string(text).c_str(), std::string(context).c_str(), anchored, longest);
 
   // Set up search.
   Threadq* runq = &q0_;
@@ -503,14 +508,14 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
   memset(&match_[0], 0, ncapture_*sizeof match_[0]);
 
   // Loop over the text, stepping the machine.
-  for (const char* p = text.begin();; p++) {
+  for (const char* p = text.data();; p++) {
     if (ExtraDebug) {
       int c = 0;
-      if (p == context.begin())
+      if (p == btext_)
         c = '^';
-      else if (p > text.end())
+      else if (p > etext_)
         c = '$';
-      else if (p < text.end())
+      else if (p < etext_)
         c = p[0] & 0xFF;
 
       fprintf(stderr, "%c:", c);
@@ -524,14 +529,14 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
     }
 
     // This is a no-op the first time around the loop because runq is empty.
-    int id = Step(runq, nextq, p < text.end() ? p[0] & 0xFF : -1, context, p);
+    int id = Step(runq, nextq, p < etext_ ? p[0] & 0xFF : -1, context, p);
     DCHECK_EQ(runq->size(), 0);
     using std::swap;
     swap(nextq, runq);
     nextq->clear();
     if (id != 0) {
       // We're done: full match ahead.
-      p = text.end();
+      p = etext_;
       for (;;) {
         Prog::Inst* ip = prog_->inst(id);
         switch (ip->opcode()) {
@@ -559,30 +564,30 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
       break;
     }
 
-    if (p > text.end())
+    if (p > etext_)
       break;
 
     // Start a new thread if there have not been any matches.
     // (No point in starting a new thread if there have been
     // matches, since it would be to the right of the match
     // we already found.)
-    if (!matched_ && (!anchored || p == text.begin())) {
+    if (!matched_ && (!anchored || p == text.data())) {
       // If there's a required first byte for an unanchored search
       // and we're not in the middle of any possible matches,
       // use memchr to search for the byte quickly.
       int fb = prog_->first_byte();
       if (!anchored && runq->size() == 0 &&
-          fb >= 0 && p < text.end() && (p[0] & 0xFF) != fb) {
-        p = reinterpret_cast<const char*>(memchr(p, fb, text.end() - p));
+          fb >= 0 && p < etext_ && (p[0] & 0xFF) != fb) {
+        p = reinterpret_cast<const char*>(memchr(p, fb, etext_ - p));
         if (p == NULL) {
-          p = text.end();
+          p = etext_;
         }
       }
 
       Thread* t = AllocThread();
       CopyCapture(t->capture, match_);
       t->capture[0] = p;
-      AddToThreadq(runq, start_, p < text.end() ? p[0] & 0xFF : -1, context, p,
+      AddToThreadq(runq, start_, p < etext_ ? p[0] & 0xFF : -1, context, p,
                    t);
       Decref(t);
     }
@@ -591,6 +596,18 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
     if (runq->size() == 0) {
       if (ExtraDebug)
         fprintf(stderr, "dead\n");
+      break;
+    }
+
+    // Avoid invoking undefined behavior (arithmetic on a null pointer)
+    // by simply not continuing the loop.
+    // This complements the special case in NFA::Step().
+    if (p == NULL) {
+      (void)Step(runq, nextq, p < etext_ ? p[0] & 0xFF : -1, context, p);
+      DCHECK_EQ(runq->size(), 0);
+      using std::swap;
+      swap(nextq, runq);
+      nextq->clear();
       break;
     }
   }
@@ -605,7 +622,8 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
                       static_cast<size_t>(match_[2 * i + 1] - match_[2 * i]));
     if (ExtraDebug)
       fprintf(stderr, "match (%td,%td)\n",
-              match_[0] - btext_, match_[1] - btext_);
+              match_[0] - btext_,
+              match_[1] - btext_);
     return true;
   }
   return false;

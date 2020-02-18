@@ -6,10 +6,10 @@
 
 #include "base/test/task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_badge_model.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
@@ -17,7 +17,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state_user_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -38,16 +38,17 @@ class FakeInfobarBadgeTabHelper : public InfobarBadgeTabHelper {
   }
 
   void AddInfobar(InfobarType infobar_type) {
+    NSNumber* infobar_type_key = [NSNumber numberWithInt:(int)infobar_type];
     InfobarBadgeModel* new_badge =
-        [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type
-                                              accepted:NO];
-    infobar_badge_models_[infobar_type] = new_badge;
-    [delegate_ addInfobarBadge:new_badge];
+        [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type];
+    infobar_badge_models_[infobar_type_key] = new_badge;
+    [delegate_ addInfobarBadge:new_badge forWebState:web_state_];
   }
   void RemoveInfobar(InfobarType infobar_type) {
-    InfobarBadgeModel* removed_badge = infobar_badge_models_[infobar_type];
-    infobar_badge_models_.erase(infobar_type);
-    [delegate_ removeInfobarBadge:removed_badge];
+    NSNumber* infobar_type_key = [NSNumber numberWithInt:(int)infobar_type];
+    InfobarBadgeModel* removed_badge = infobar_badge_models_[infobar_type_key];
+    [infobar_badge_models_ removeObjectForKey:infobar_type_key];
+    [delegate_ removeInfobarBadge:removed_badge forWebState:web_state_];
   }
 
  private:
@@ -60,6 +61,7 @@ class FakeInfobarBadgeTabHelper : public InfobarBadgeTabHelper {
 @interface FakeBadgeConsumer : NSObject <BadgeConsumer>
 @property(nonatomic, strong) id<BadgeItem> displayedBadge;
 @property(nonatomic, assign) BOOL hasIncognitoBadge;
+@property(nonatomic, assign) BOOL hasUnreadBadge;
 @end
 
 @implementation FakeBadgeConsumer
@@ -72,6 +74,9 @@ class FakeInfobarBadgeTabHelper : public InfobarBadgeTabHelper {
              fullScreenBadge:(id<BadgeItem>)fullscreenBadgeItem {
   self.hasIncognitoBadge = fullscreenBadgeItem != nil;
   self.displayedBadge = displayedBadgeItem;
+}
+- (void)markDisplayedBadgeAsRead:(BOOL)read {
+  self.hasUnreadBadge = !read;
 }
 @end
 
@@ -120,6 +125,13 @@ class BadgeMediatorTest : public PlatformTest {
         InfobarType::kInfobarTypePasswordUpdate);
   }
 
+  // Inform InfobarBadgeTabHelper that the infobar added in AddSecondInfobar()
+  // is accepted.
+  void MarkSecondInfobarAccepted() {
+    GetFakeInfobarBadgeTabHelper()->UpdateBadgeForInfobarAccepted(
+        InfobarType::kInfobarTypePasswordUpdate);
+  }
+
   // Removes the Infobar created in AddSecondInfobar() to the
   // FakeInfoBarBadgeTabHelper.
   void RemoveInfobar() {
@@ -142,6 +154,14 @@ class BadgeMediatorTest : public PlatformTest {
   FakeWebStateListDelegate web_state_list_delegate_;
 };
 
+// Test that the BadgeMediator responds with no displayed and fullscreen badge
+// when there are no Infobars added and the BrowserState is not OffTheRecord.
+TEST_F(BadgeMediatorTest, BadgeMediatorTestNoInfobar) {
+  AddAndActivateWebState(0, false);
+  EXPECT_FALSE(badge_consumer_.displayedBadge);
+  EXPECT_FALSE(badge_consumer_.hasIncognitoBadge);
+}
+
 // Test that the BadgeMediator responds with one new badge when an infobar is
 // added
 TEST_F(BadgeMediatorTest, BadgeMediatorTestAddInfobar) {
@@ -159,11 +179,27 @@ TEST_F(BadgeMediatorTest, BadgeMediatorTestRemoveInfobar) {
   AddInfobar();
   AddSecondInfobar();
   EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,
-            BadgeType::kBadgeTypePasswordUpdate);
+            BadgeType::kBadgeTypeOverflow);
   RemoveInfobar();
   ASSERT_TRUE(badge_consumer_.displayedBadge);
   EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,
             BadgeType::kBadgeTypePasswordSave);
+}
+
+TEST_F(BadgeMediatorTest, BadgeMediatorTestMarkAsRead) {
+  AddAndActivateWebState(/*index=*/0, /*incognito=*/false);
+  AddInfobar();
+  // Since there is only one badge, it should be marked as read.
+  EXPECT_FALSE(badge_consumer_.hasUnreadBadge);
+  AddSecondInfobar();
+  ASSERT_EQ(BadgeType::kBadgeTypeOverflow,
+            badge_consumer_.displayedBadge.badgeType);
+  // Second badge should be unread since the overflow badge is being shown as
+  // the displayed badge.
+  EXPECT_TRUE(badge_consumer_.hasUnreadBadge);
+  MarkSecondInfobarAccepted();
+  // Second badge should be read since its infobar is accepted.
+  EXPECT_FALSE(badge_consumer_.hasUnreadBadge);
 }
 
 // Test that the BadgeMediator updates the current badges to none when switching
@@ -183,11 +219,11 @@ TEST_F(BadgeMediatorTest, BadgeMediatorTestAcceptedBadge) {
   AddAndActivateWebState(0, false);
   AddInfobar();
   ASSERT_TRUE(badge_consumer_.displayedBadge);
-  EXPECT_FALSE(badge_consumer_.displayedBadge.accepted);
+  EXPECT_FALSE(badge_consumer_.displayedBadge.badgeState &= BadgeStateAccepted);
 
   GetFakeInfobarBadgeTabHelper()->UpdateBadgeForInfobarAccepted(
       InfobarType::kInfobarTypePasswordSave);
-  EXPECT_TRUE(badge_consumer_.displayedBadge.accepted);
+  EXPECT_TRUE(badge_consumer_.displayedBadge.badgeState &= BadgeStateAccepted);
 }
 
 // Test that the BadgeMediator adds an incognito badge when the webstatelist

@@ -5,6 +5,7 @@
 #include "net/third_party/quiche/src/quic/core/http/quic_receive_control_stream.h"
 
 #include "net/third_party/quiche/src/quic/core/http/http_constants.h"
+#include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
@@ -17,29 +18,41 @@ namespace test {
 
 namespace {
 using ::testing::_;
-using ::testing::AtLeast;
 using ::testing::StrictMock;
 
 struct TestParams {
   TestParams(const ParsedQuicVersion& version, Perspective perspective)
       : version(version), perspective(perspective) {
-    QUIC_LOG(INFO) << "TestParams: version: "
-                   << ParsedQuicVersionToString(version)
-                   << ", perspective: " << perspective;
+    QUIC_LOG(INFO) << "TestParams: " << *this;
   }
 
   TestParams(const TestParams& other)
       : version(other.version), perspective(other.perspective) {}
 
+  friend std::ostream& operator<<(std::ostream& os, const TestParams& tp) {
+    os << "{ version: " << ParsedQuicVersionToString(tp.version)
+       << ", perspective: "
+       << (tp.perspective == Perspective::IS_CLIENT ? "client" : "server")
+       << "}";
+    return os;
+  }
+
   ParsedQuicVersion version;
   Perspective perspective;
 };
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const TestParams& tp) {
+  return QuicStrCat(
+      ParsedQuicVersionToString(tp.version), "_",
+      (tp.perspective == Perspective::IS_CLIENT ? "client" : "server"));
+}
 
 std::vector<TestParams> GetTestParams() {
   std::vector<TestParams> params;
   ParsedQuicVersionVector all_supported_versions = AllSupportedVersions();
   for (const auto& version : AllSupportedVersions()) {
-    if (!VersionHasStreamType(version.transport_version)) {
+    if (!VersionUsesHttp3(version.transport_version)) {
       continue;
     }
     for (Perspective p : {Perspective::IS_SERVER, Perspective::IS_CLIENT}) {
@@ -90,18 +103,16 @@ class QuicReceiveControlStreamTest : public QuicTestWithParam<TestParams> {
   Perspective perspective() const { return GetParam().perspective; }
 
   std::string EncodeSettings(const SettingsFrame& settings) {
-    HttpEncoder encoder;
     std::unique_ptr<char[]> buffer;
     QuicByteCount settings_frame_length =
-        encoder.SerializeSettingsFrame(settings, &buffer);
+        HttpEncoder::SerializeSettingsFrame(settings, &buffer);
     return std::string(buffer.get(), settings_frame_length);
   }
 
   std::string PriorityFrame(const PriorityFrame& frame) {
-    HttpEncoder encoder;
     std::unique_ptr<char[]> priority_buffer;
     QuicByteCount priority_frame_length =
-        encoder.SerializePriorityFrame(frame, &priority_buffer);
+        HttpEncoder::SerializePriorityFrame(frame, &priority_buffer);
     return std::string(priority_buffer.get(), priority_frame_length);
   }
 
@@ -120,7 +131,8 @@ class QuicReceiveControlStreamTest : public QuicTestWithParam<TestParams> {
 
 INSTANTIATE_TEST_SUITE_P(Tests,
                          QuicReceiveControlStreamTest,
-                         ::testing::ValuesIn(GetTestParams()));
+                         ::testing::ValuesIn(GetTestParams()),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(QuicReceiveControlStreamTest, ResetControlStream) {
   EXPECT_TRUE(receive_control_stream_->is_static());
@@ -200,11 +212,11 @@ TEST_P(QuicReceiveControlStreamTest, ReceiveSettingsFragments) {
 }
 
 TEST_P(QuicReceiveControlStreamTest, ReceiveWrongFrame) {
-  GoAwayFrame goaway;
-  goaway.stream_id = 0x1;
-  HttpEncoder encoder;
+  DuplicatePushFrame dup;
+  dup.push_id = 0x1;
   std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length = encoder.SerializeGoAwayFrame(goaway, &buffer);
+  QuicByteCount header_length =
+      HttpEncoder::SerializeDuplicatePushFrame(dup, &buffer);
   std::string data = std::string(buffer.get(), header_length);
 
   QuicStreamFrame frame(receive_control_stream_->id(), false, 1, data);
@@ -216,6 +228,7 @@ TEST_P(QuicReceiveControlStreamTest, ReceivePriorityFrame) {
   if (perspective() == Perspective::IS_CLIENT) {
     return;
   }
+  SetQuicFlag(FLAGS_quic_allow_http3_priority, true);
   struct PriorityFrame frame;
   frame.prioritized_type = REQUEST_STREAM;
   frame.dependency_type = ROOT_OF_TREE;
@@ -230,19 +243,43 @@ TEST_P(QuicReceiveControlStreamTest, ReceivePriorityFrame) {
   EXPECT_EQ(1u, stream_->precedence().spdy3_priority());
 }
 
+TEST_P(QuicReceiveControlStreamTest, ReceiveGoAwayFrame) {
+  GoAwayFrame goaway;
+  goaway.stream_id = 0x00;
+
+  std::unique_ptr<char[]> buffer;
+  QuicByteCount header_length =
+      HttpEncoder::SerializeGoAwayFrame(goaway, &buffer);
+  std::string data = std::string(buffer.get(), header_length);
+
+  QuicStreamFrame frame(receive_control_stream_->id(), false, 1, data);
+  EXPECT_FALSE(session_.http3_goaway_received());
+
+  if (perspective() == Perspective::IS_SERVER) {
+    EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_DECODER_ERROR, _, _));
+  }
+
+  receive_control_stream_->OnStreamFrame(frame);
+  if (perspective() == Perspective::IS_CLIENT) {
+    EXPECT_TRUE(session_.http3_goaway_received());
+  }
+}
+
 TEST_P(QuicReceiveControlStreamTest, PushPromiseOnControlStreamShouldClose) {
   PushPromiseFrame push_promise;
   push_promise.push_id = 0x01;
   push_promise.headers = "Headers";
   std::unique_ptr<char[]> buffer;
-  HttpEncoder encoder;
-  uint64_t length =
-      encoder.SerializePushPromiseFrameWithOnlyPushId(push_promise, &buffer);
+  uint64_t length = HttpEncoder::SerializePushPromiseFrameWithOnlyPushId(
+      push_promise, &buffer);
   QuicStreamFrame frame(receive_control_stream_->id(), false, 1, buffer.get(),
                         length);
   // TODO(lassey) Check for HTTP_WRONG_STREAM error code.
   EXPECT_CALL(*connection_, CloseConnection(QUIC_HTTP_DECODER_ERROR, _, _))
-      .Times(AtLeast(1));
+      .WillOnce(
+          Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  EXPECT_CALL(*connection_, SendConnectionClosePacket(_, _));
+  EXPECT_CALL(session_, OnConnectionClosed(_, _));
   receive_control_stream_->OnStreamFrame(frame);
 }
 

@@ -11,7 +11,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
@@ -30,8 +29,6 @@ namespace ash {
 
 VirtualKeyboardTray::VirtualKeyboardTray(Shelf* shelf)
     : TrayBackgroundView(shelf), icon_(new views::ImageView), shelf_(shelf) {
-  SetInkDropMode(InkDropMode::ON);
-
   UpdateIcon();
   tray_container()->AddChildView(icon_);
 
@@ -93,7 +90,7 @@ bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
 void VirtualKeyboardTray::OnAccessibilityStatusChanged() {
   bool new_enabled =
       Shell::Get()->accessibility_controller()->virtual_keyboard_enabled();
-  SetVisible(new_enabled);
+  SetVisiblePreferred(new_enabled);
 }
 
 void VirtualKeyboardTray::OnKeyboardVisibilityChanged(const bool is_visible) {

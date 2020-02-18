@@ -21,7 +21,6 @@ enum VideoCapturePixelFormat {
   I444,
   NV12,
   NV21,
-  UYVY,
   YUY2,
   ARGB,
   XRGB,
@@ -40,6 +39,9 @@ enum VideoCapturePixelFormat {
   ABGR,
   XBGR,
   P016LE,
+  XR30,
+  XB30,
+  BGRA,
 };
 
 enum ResolutionChangePolicy {

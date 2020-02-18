@@ -54,6 +54,80 @@ or perhaps:
   use_swarming_to_run(type, isolate)
 ```
 
+## The easy way
+
+A lot of the steps described in this doc have been bundled up into 2
+tools. Before using either of these you will need to
+[authenticate](#authenticating).
+
+### run-swarmed.py
+
+A lot of the logic below is wrapped up in `tools/run-swarmed.py`, which you can run
+like this:
+
+```
+$ tools/run-swarmed.py $outdir $target
+```
+
+See the `--help` option of `run-swarmed.py` for more details about that script.
+
+### mb.py run
+
+Similar to `tools/run_swarmed.py`, `mb.py run` bundles much of the logic into a
+single command line. Unlike `tools/run_swarmed.py`, `mb.py run` allows the user
+to specify extra arguments to pass to the test, but has a messier command line.
+
+To use it, run:
+```
+$ tools/mb/mb.py run \
+    -s --no-default-dimensions \
+    -d pool $pool \
+    $criteria \
+    $outdir $target \
+    -- $extra_args
+```
+
+## A concrete example
+
+Here's how to run `chrome_public_test_apk` on a bot with a Nexus 5 running KitKat.
+
+```sh
+$ tools/mb/mb.py run \
+    -s --no-default-dimensions \
+    -d pool chromium.tests \
+    -d device_os_type userdebug -d device_os KTU84P -d device_type hammerhead \
+    out/Android-arm-dbg chrome_public_test_apk
+```
+
+This assumes you have an `out/Android-arm-dbg/args.gn` like
+
+```
+ffmpeg_branding = "Chrome"
+is_component_build = false
+is_debug = true
+proprietary_codecs = true
+strip_absolute_paths_from_debug_symbols = true
+symbol_level = 1
+system_webview_package_name = "com.google.android.webview"
+target_os = "android"
+use_goma = true
+```
+
+## Bot selection criteria
+
+The examples in this doc use `$criteria`. To figure out what values to use, you
+can go to an existing swarming run
+([recent tasks page](https://chromium-swarm.appspot.com/tasklist)) and
+look at the `Dimensions` section. Each of these becomes a `-d dimension_name
+dimension_value` in your `$criteria`. Click on `bots` (or go
+[here](https://chromium-swarm.appspot.com/botlist)) to be taken to a UI that
+allows you to try out the criteria interactively, so that you can be sure that
+there are bots matching your criteria. Sometimes the web page shows a
+human-friendly name rather than the name required on the commandline. [This
+file](https://cs.chromium.org/chromium/infra/luci/appengine/swarming/ui2/modules/alias.js)
+contains the mapping to human-friendly names. You can test your commandline by
+entering `dimension_name:dimension_value` in the interactive UI.
+
 ## Building an isolate
 
 At the moment, you can only build an isolate locally, like so (commands you type
@@ -64,10 +138,26 @@ $ tools/mb/mb.py isolate //$outdir $target
 ```
 
 This will produce some files in $outdir. The most pertinent two are
-`$outdir/$target.isolate` and $outdir/target.isolated`.
+`$outdir/$target.isolate` and `$outdir/target.isolated`. If you've already built
+$target, you can save some CPU time and run `tools/mb/mb.py` with `--no-build`:
+
+```
+$ tools/mb/mb.py isolate --no-build //$outdir $target
+```
 
 Support for building an isolate using swarming, which would allow you to build
 for a platform you can't build for locally, does not yet exist.
+
+## Authenticating
+
+You may need to log in to `https://isolateserver.appspot.com` to do this:
+
+```
+$ python tools/swarming_client/auth.py login \
+      --service=https://isolateserver.appspot.com
+```
+
+Use your google.com account for this.
 
 ## Uploading an isolate
 
@@ -80,21 +170,14 @@ $ tools/swarming_client/isolate.py archive \
       -s $outdir/$target.isolated
 ```
 
-You may need to log in to `https://isolateserver.appspot.com` to do this:
-
-```
-$ python tools/swarming_client/auth.py login \
-      --service=https://isolateserver.appspot.com
-```
-
 The `isolate.py` tool will emit something like this:
 
 ```
 e625130b712096e3908266252c8cd779d7f442f1  unit_tests
 ```
 
-Do not ctrl-c it after it does this, even if it seems to be hanging for a minute
-- just let it finish.
+Do not ctrl-c it after it does this, even if it seems to be hanging for a
+minute - just let it finish.
 
 ## Running an isolate
 
@@ -111,8 +194,8 @@ $ tools/swarming_client/swarming.py trigger \
 ```
 
 There are two more things you need to fill in here. The first is the pool name;
-you should pick "Chrome" unless you know otherwise. The pool is the collection
-of hosts from which swarming will try to pick bots to run your tasks.
+you should pick "chromium.tests" unless you know otherwise. The pool is the
+collection of hosts from which swarming will try to pick bots to run your tasks.
 
 The second is the criteria, which is how you specify which bot(s) you want your
 task scheduled on. These are specified via "dimensions", which are specified
@@ -128,12 +211,16 @@ other dimensions include:
 The [swarming bot list] allows you to see all the dimensions and the values they
 can take on.
 
+If you need to pass additional arguments to the test, simply add
+`-- $extra_args` to the end of the `swarming.py trigger` command line - anything
+after the `--` will be passed directly to the test.
+
 When you invoke `swarming.py trigger`, it will emit two pieces of information: a
 URL for the task it created, and a command you can run to collect the results of
 that task. For example:
 
 ```
-Triggered task: ellyjones@chromium.org/os=Linux_pool=Chrome/e625130b712096e3908266252c8cd779d7f442f1
+Triggered task: ellyjones@chromium.org/os=Linux_pool=chromium.tests/e625130b712096e3908266252c8cd779d7f442f1
 To collect results, use:
   tools/swarming_client/swarming.py collect -S https://chromium-swarm.appspot.com 46fc393777163310
 Or visit:
@@ -143,17 +230,6 @@ Or visit:
 The 'collect' command given there will block until the task is complete, then
 produce the task's results, or you can load that URL and watch the task's
 progress.
-
-## run-swarmed.py
-
-A lot of this logic is wrapped up in `tools/run-swarmed.py`, which you can run
-like this:
-
-```
-$ tools/run-swarmed.py -t $target --out-dir=$outdir
-```
-
-See the `--help` option of `run-swarmed.py` for more details about that script.
 
 ## Other notes
 

@@ -52,6 +52,49 @@ const int kMaxKeepAliveTimeMs = 200;
 #endif
 }
 
+GpuChannelManager::GpuPeakMemoryMonitor::GpuPeakMemoryMonitor()
+    : weak_factory_(this) {}
+
+GpuChannelManager::GpuPeakMemoryMonitor::~GpuPeakMemoryMonitor() {}
+
+uint64_t GpuChannelManager::GpuPeakMemoryMonitor::GetPeakMemoryUsage(
+    uint32_t sequence_num) {
+  auto sequence = sequence_trackers_.find(sequence_num);
+  if (sequence != sequence_trackers_.end())
+    return sequence->second;
+  return 0u;
+}
+
+void GpuChannelManager::GpuPeakMemoryMonitor::StartGpuMemoryTracking(
+    uint32_t sequence_num) {
+  sequence_trackers_.emplace(sequence_num, current_memory_);
+}
+
+void GpuChannelManager::GpuPeakMemoryMonitor::StopGpuMemoryTracking(
+    uint32_t sequence_num) {
+  sequence_trackers_.erase(sequence_num);
+}
+
+void GpuChannelManager::GpuPeakMemoryMonitor::OnMemoryAllocatedChange(
+    CommandBufferId id,
+    uint64_t old_size,
+    uint64_t new_size) {
+  current_memory_ += new_size - old_size;
+  if (old_size < new_size) {
+    // When memory has increased, iterate over the sequences to update their
+    // peak.
+    // TODO(jonross): This should be fine if we typically have 1-2 sequences.
+    // However if that grows we may end up iterating many times are memory
+    // approaches peak. If that is the case we should track a
+    // |peak_since_last_sequence_update_| on the the memory changes. Then only
+    // update the sequences with a new one is added, or the peak is requested.
+    for (auto& sequence : sequence_trackers_) {
+      if (current_memory_ > sequence.second)
+        sequence.second = current_memory_;
+    }
+  }
+}
+
 GpuChannelManager::GpuChannelManager(
     const GpuPreferences& gpu_preferences,
     GpuChannelManagerDelegate* delegate,
@@ -67,7 +110,8 @@ GpuChannelManager::GpuChannelManager(
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
     ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
     viz::VulkanContextProvider* vulkan_context_provider,
-    viz::MetalContextProvider* metal_context_provider)
+    viz::MetalContextProvider* metal_context_provider,
+    viz::DawnContextProvider* dawn_context_provider)
     : task_runner_(task_runner),
       io_task_runner_(io_task_runner),
       gpu_preferences_(gpu_preferences),
@@ -90,7 +134,8 @@ GpuChannelManager::GpuChannelManager(
           base::BindRepeating(&GpuChannelManager::HandleMemoryPressure,
                               base::Unretained(this))),
       vulkan_context_provider_(vulkan_context_provider),
-      metal_context_provider_(metal_context_provider) {
+      metal_context_provider_(metal_context_provider),
+      dawn_context_provider_(dawn_context_provider) {
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
   DCHECK(scheduler);
@@ -241,6 +286,9 @@ void GpuChannelManager::GetVideoMemoryUsageStats(
         .video_memory += size;
   }
 
+  if (shared_context_state_ && !shared_context_state_->context_lost())
+    total_size += shared_context_state_->GetMemoryUsage();
+
   // Assign the total across all processes in the GPU process
   video_memory_usage_stats->process_map[base::GetCurrentProcId()].video_memory =
       total_size;
@@ -248,6 +296,16 @@ void GpuChannelManager::GetVideoMemoryUsageStats(
       .has_duplicates = true;
 
   video_memory_usage_stats->bytes_allocated = total_size;
+}
+
+void GpuChannelManager::StartPeakMemoryMonitor(uint32_t sequence_num) {
+  peak_memory_monitor_.StartGpuMemoryTracking(sequence_num);
+}
+
+uint64_t GpuChannelManager::GetPeakMemoryUsage(uint32_t sequence_num) {
+  uint64_t total_memory = peak_memory_monitor_.GetPeakMemoryUsage(sequence_num);
+  peak_memory_monitor_.StopGpuMemoryTracking(sequence_num);
+  return total_memory;
 }
 
 #if defined(OS_ANDROID)
@@ -385,6 +443,10 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   scoped_refptr<gl::GLContext> context =
       use_virtualized_gl_contexts ? share_group->GetSharedContext(surface.get())
                                   : nullptr;
+  if (context && (!context->MakeCurrent(surface.get()) ||
+                  context->CheckStickyGraphicsResetStatus() != GL_NO_ERROR)) {
+    context = nullptr;
+  }
   if (!context) {
     gl::GLContextAttribs attribs = gles2::GenerateGLContextAttribs(
         ContextCreationAttribs(), use_passthrough_decoder);
@@ -428,7 +490,8 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
       use_virtualized_gl_contexts,
       base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
                      /*synthetic_loss=*/false),
-      vulkan_context_provider_, metal_context_provider_);
+      gpu_preferences_.gr_context_type, vulkan_context_provider_,
+      metal_context_provider_, dawn_context_provider_, peak_memory_monitor());
 
   // OOP-R needs GrContext for raster tiles.
   bool need_gr_context =
@@ -439,7 +502,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   need_gr_context |= features::IsUsingSkiaRenderer();
 
   if (need_gr_context) {
-    if (!vulkan_context_provider_ && !metal_context_provider_) {
+    if (gpu_preferences_.gr_context_type == gpu::GrContextType::kGL) {
       auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
           gpu_driver_bug_workarounds(), gpu_feature_info());
       if (!shared_context_state_->InitializeGL(gpu_preferences_,
@@ -463,16 +526,16 @@ void GpuChannelManager::OnContextLost(bool synthetic_loss) {
   if (synthetic_loss)
     return;
 
-  // Work around issues with recovery by allowing a new GPU process to launch.
-  if (gpu_driver_bug_workarounds_.exit_on_context_lost)
-    delegate_->MaybeExitOnContextLost();
-
   // Lose all other contexts.
   if (gl::GLContext::LosesAllContextsOnContextLost() ||
       (shared_context_state_ &&
        shared_context_state_->use_virtualized_gl_contexts())) {
     delegate_->LoseAllContexts();
   }
+
+  // Work around issues with recovery by allowing a new GPU process to launch.
+  if (gpu_driver_bug_workarounds_.exit_on_context_lost)
+    delegate_->MaybeExitOnContextLost();
 }
 
 void GpuChannelManager::ScheduleGrContextCleanup() {

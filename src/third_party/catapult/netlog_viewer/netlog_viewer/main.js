@@ -20,6 +20,7 @@ let QuicError = null;
 let QuicRstStreamError = null;
 let LoadFlag = null;
 let CertStatusFlag = null;
+let CertVerifierFlags = null;
 let LoadState = null;
 let AddressFamily = null;
 let DataReductionProxyBypassEventType = null;
@@ -90,11 +91,6 @@ const MainView = (function() {
     // No log file loaded yet so set the status bar to that state.
     this.topBarView_.switchToSubView('loaded').setFileName(
         'No log to display.');
-
-    // TODO(rayraymond): Follow-up is to completely remove all code from
-    // g_browser that interacts with sending/receiving messages from
-    // browser.
-    g_browser.disable();
   }
 
   cr.addSingletonGetter(MainView);
@@ -135,12 +131,6 @@ const MainView = (function() {
         // file's name in the status bar.
         this.topBarView_.switchToSubView('loaded').setFileName(opt_fileName);
       }
-    },
-
-    switchToViewOnlyMode() {
-      // Since this won't be dumped to a file, we don't want to remove
-      // cookies and credentials.
-      log_util.createLogDumpAsync('', log_util.loadLogFile, false);
     },
 
     initTabs_() {
@@ -184,9 +174,7 @@ const MainView = (function() {
       addTab(ReportingView);
       addTab(HttpCacheView);
       addTab(ModulesView);
-      addTab(BandwidthView);
       addTab(PrerenderView);
-      addTab(CrosView);
 
       // Tab links start off hidden (besides import) since a log file has not
       // been loaded yet. This must be done after all the tabs are added so
@@ -196,8 +184,6 @@ const MainView = (function() {
           this.tabSwitcher_.showTabLink(tabId, false);
         }
       }
-
-      this.tabSwitcher_.showTabLink(CrosView.TAB_ID, cr.isChromeOS);
     },
 
     /**
@@ -206,12 +192,6 @@ const MainView = (function() {
      * so the back can be used to return to previous view.
      */
     onTabSwitched_(oldTabId, newTabId) {
-      // Update data needed by newly active tab, as it may be
-      // significantly out of date.
-      if (g_browser) {
-        g_browser.checkForUpdatedInfo();
-      }
-
       // Change the URL to match the new tab.
 
       const newTabHash = this.tabIdToHash_[newTabId];
@@ -317,6 +297,7 @@ ConstantsObserver.prototype.onReceivedConstants = function(receivedConstants) {
   } else {
     CertStatusFlag = {};
   }
+  CertVerifierFlags = Constants.certVerifierFlags;
 
   timeutil.setTimeTickOffset(Constants.timeTickOffset);
 };

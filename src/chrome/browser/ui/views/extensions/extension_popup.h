@@ -74,9 +74,7 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
-  int GetDialogButtons() const override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
-  bool ShouldHaveRoundCorners() const override;
 #if defined(USE_AURA)
   void OnWidgetDestroying(views::Widget* widget) override;
 

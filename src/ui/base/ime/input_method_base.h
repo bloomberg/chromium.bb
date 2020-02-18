@@ -92,13 +92,14 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
       uint32_t before,
       uint32_t after,
       const std::vector<ui::ImeTextSpan>& text_spans) override;
+  bool SetSelectionRange(uint32_t start, uint32_t end) override;
 #endif
 
   void DeleteSurroundingText(int32_t offset, uint32_t length) override;
   SurroundingTextInfo GetSurroundingTextInfo() override;
   void SendKeyEvent(KeyEvent* event) override;
   InputMethod* GetInputMethod() override;
-  void ConfirmCompositionText(bool reset_engine) override;
+  void ConfirmCompositionText(bool reset_engine, bool keep_selection) override;
   bool HasCompositionText() override;
 
   // Sends a fake key event for IME composing without physical key events.
@@ -131,16 +132,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   // Gets the bounds of the composition text or cursor in |client|.
   std::vector<gfx::Rect> GetCompositionBounds(const TextInputClient* client);
 
-  bool sending_key_event() const { return sending_key_event_; }
   internal::InputMethodDelegate* delegate() const { return delegate_; }
 
   static IMEEngineHandlerInterface* GetEngine();
 
  private:
-  // Indicates whether the IME extension is currently sending a fake key event.
-  // This is used in SendKeyEvent.
-  bool sending_key_event_ = false;
-
   internal::InputMethodDelegate* delegate_;
 
   // InputMethod:

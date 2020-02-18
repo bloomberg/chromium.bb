@@ -41,7 +41,9 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "url/gurl.h"
 
@@ -311,6 +313,11 @@ void CreditCardSaveManager::OnDidUploadCard(
     // removed.
     GetCreditCardSaveStrikeDatabase()->ClearStrikes(
         base::UTF16ToUTF8(upload_request_.card.LastFourDigits()));
+
+    // After a card is successfully saved to server, notifies the
+    // |personal_data_manager_|. PDM uses this information to update the avatar
+    // button UI.
+    personal_data_manager_->OnCreditCardSaved(/*is_local_card=*/false);
   } else if (show_save_prompt_.has_value() && show_save_prompt_.value()) {
     // If the upload failed and the bubble was actually shown (NOT just the
     // icon), count that as a strike against offering upload in the future.
@@ -322,6 +329,9 @@ void CreditCardSaveManager::OnDidUploadCard(
 
   // Show credit card upload feedback.
   client_->CreditCardUploadCompleted(result == AutofillClient::SUCCESS);
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnShowCardSavedFeedback();
 }
 
 CreditCardSaveStrikeDatabase*
@@ -352,6 +362,23 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
   if (observer_for_testing_)
     observer_for_testing_->OnReceivedGetUploadDetailsResponse();
   if (result == AutofillClient::SUCCESS) {
+    LegalMessageLine::Parse(*legal_message, &legal_message_lines_,
+                            /*escape_apostrophes=*/true);
+
+    if (legal_message_lines_.empty()) {
+      // Parsing legal messages failed, so upload should not be offered.
+      // Offer local card save if card is not already saved locally.
+      if (!uploading_local_card_) {
+        AttemptToOfferCardLocalSave(from_dynamic_change_form_,
+                                    has_non_focusable_field_,
+                                    upload_request_.card);
+      }
+      upload_decision_metrics_ |=
+          AutofillMetrics::UPLOAD_NOT_OFFERED_INVALID_LEGAL_MESSAGE;
+      LogCardUploadDecisions(upload_decision_metrics_);
+      return;
+    }
+
     // Do *not* call payments_client_->Prepare() here. We shouldn't send
     // credentials until the user has explicitly accepted a prompt to upload.
     if (!supported_card_bin_ranges.empty() &&
@@ -369,7 +396,6 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
       return;
     }
     upload_request_.context_token = context_token;
-    legal_message_ = base::DictionaryValue::From(std::move(legal_message));
     OfferCardUploadSave();
   } else {
     // If the upload details request failed and we *know* we have all possible
@@ -449,7 +475,7 @@ void CreditCardSaveManager::OfferCardUploadSave() {
   if (!is_mobile_build || show_save_prompt_.value_or(true)) {
     user_did_accept_upload_prompt_ = false;
     client_->ConfirmSaveCreditCardToCloud(
-        upload_request_.card, std::move(legal_message_),
+        upload_request_.card, legal_message_lines_,
         AutofillClient::SaveCreditCardOptions()
             .with_from_dynamic_change_form(from_dynamic_change_form_)
             .with_has_non_focusable_field(has_non_focusable_field_)
@@ -502,12 +528,10 @@ void CreditCardSaveManager::OnUserDidDecideOnLocalSave(
       // removed.
       GetCreditCardSaveStrikeDatabase()->ClearStrikes(
           base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits()));
-      if (base::FeatureList::IsEnabled(
-              features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
-        GetLocalCardMigrationStrikeDatabase()->RemoveStrikes(
-            LocalCardMigrationStrikeDatabase::
-                kStrikesToRemoveWhenLocalCardAdded);
-      }
+      // Clear some local card migration strikes, as there is now a new card
+      // eligible for migration.
+      GetLocalCardMigrationStrikeDatabase()->RemoveStrikes(
+          LocalCardMigrationStrikeDatabase::kStrikesToRemoveWhenLocalCardAdded);
 
       personal_data_manager_->OnAcceptedLocalCreditCardSave(
           local_card_save_candidate_);
@@ -750,13 +774,13 @@ void CreditCardSaveManager::OnUserDidDecideOnUploadSave(
     const AutofillClient::UserProvidedCardDetails& user_provided_card_details) {
   switch (user_decision) {
     case AutofillClient::ACCEPTED:
-// On Android, requesting cardholder name or expiration date is a two step
-// flow.
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
+      // On mobile, requesting cardholder name is a two step flow.
       if (should_request_name_from_user_) {
         client_->ConfirmAccountNameFixFlow(base::BindOnce(
             &CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow,
             weak_ptr_factory_.GetWeakPtr()));
+        // On mobile, requesting expiration date is a two step flow.
       } else if (should_request_expiration_date_from_user_) {
         client_->ConfirmExpirationDateFixFlow(
             upload_request_.card,
@@ -768,7 +792,7 @@ void CreditCardSaveManager::OnUserDidDecideOnUploadSave(
       }
 #else
       OnUserDidAcceptUploadHelper(user_provided_card_details);
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
       break;
 
     case AutofillClient::DECLINED:
@@ -780,7 +804,7 @@ void CreditCardSaveManager::OnUserDidDecideOnUploadSave(
   personal_data_manager_->OnUserAcceptedUpstreamOffer();
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 void CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow(
     const base::string16& cardholder_name) {
   DCHECK(should_request_name_from_user_);
@@ -796,7 +820,7 @@ void CreditCardSaveManager::OnUserDidAcceptExpirationDateFixFlow(
   OnUserDidAcceptUploadHelper(
       {/*cardholder_name=*/base::string16(), month, year});
 }
-#endif
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 void CreditCardSaveManager::OnUserDidAcceptUploadHelper(
     const AutofillClient::UserProvidedCardDetails& user_provided_card_details) {

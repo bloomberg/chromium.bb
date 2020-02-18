@@ -90,7 +90,9 @@ static_assert(MAX_FAILURE_REASON <= 32, "failure reason out of sync");
 // A CrypterPair contains the encrypter and decrypter for an encryption level.
 struct QUIC_EXPORT_PRIVATE CrypterPair {
   CrypterPair();
+  CrypterPair(CrypterPair&&) = default;
   ~CrypterPair();
+
   std::unique_ptr<QuicEncrypter> encrypter;
   std::unique_ptr<QuicDecrypter> decrypter;
 };
@@ -144,6 +146,12 @@ struct QUIC_EXPORT_PRIVATE QuicCryptoNegotiatedParameters
   // Default to false; set to true if the client indicates that it supports sct
   // by sending CSCT tag with an empty value in client hello.
   bool sct_supported_by_client;
+
+  // Parameters only populated for TLS handshakes. These will be 0 for
+  // connections not using TLS, or if the TLS handshake is not finished yet.
+  uint16_t cipher_suite = 0;
+  uint16_t key_exchange_group = 0;
+  uint16_t peer_signature_algorithm = 0;
 
  protected:
   ~QuicCryptoNegotiatedParameters() override;

@@ -109,10 +109,6 @@ void ViewPainterTest::RunFixedBackgroundTest(
 }
 
 TEST_P(ViewPainterTest, DocumentFixedBackgroundLowDPI) {
-  // This test needs the |FastMobileScrolling| feature to be disabled
-  // although it is stable on Android.
-  ScopedFastMobileScrollingForTest fast_mobile_scrolling(false);
-
   RunFixedBackgroundTest(false);
 }
 
@@ -149,8 +145,7 @@ TEST_P(ViewPainterScrollHitTestTest, DocumentBackgroundWithScroll) {
         ElementsAre(
             IsPaintChunk(
                 0, 1,
-                PaintChunk::Id(*GetLayoutView().Layer(),
-                               DisplayItem::kLayerChunkBackground),
+                PaintChunk::Id(GetLayoutView(), DisplayItem::kScrollHitTest),
                 GetLayoutView().FirstFragment().LocalBorderBoxProperties(),
                 scroll_hit_test_data),
             IsPaintChunk(1, 2,
@@ -210,8 +205,7 @@ TEST_P(ViewPainterScrollHitTestTest, FrameScrollHitTestProperties) {
       ElementsAre(
           IsPaintChunk(
               0, 1,
-              PaintChunk::Id(*GetLayoutView().Layer(),
-                             DisplayItem::kLayerChunkBackground),
+              PaintChunk::Id(GetLayoutView(), DisplayItem::kScrollHitTest),
               GetLayoutView().FirstFragment().LocalBorderBoxProperties(),
               scroll_hit_test_data),
           IsPaintChunk(1, 2,

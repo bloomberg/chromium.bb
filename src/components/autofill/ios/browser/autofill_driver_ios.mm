@@ -72,6 +72,10 @@ bool AutofillDriverIOS::IsInMainFrame() const {
   return web_frame ? web_frame->IsMainFrame() : true;
 }
 
+bool AutofillDriverIOS::CanShowAutofillUi() const {
+  return true;
+}
+
 ui::AXTreeID AutofillDriverIOS::GetAxTreeId() const {
   NOTIMPLEMENTED() << "See https://crbug.com/985933";
   return ui::AXTreeIDUnknown();
@@ -103,6 +107,15 @@ void AutofillDriverIOS::PropagateAutofillPredictions(
   autofill_manager_.client()->PropagateAutofillPredictions(nullptr, forms);
 }
 
+void AutofillDriverIOS::HandleParsedForms(
+    const std::vector<FormStructure*>& forms) {
+  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
+  if (!web_frame) {
+    return;
+  }
+  [bridge_ handleParsedForms:forms inFrame:web_frame];
+}
+
 void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
   web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
@@ -131,7 +144,7 @@ void AutofillDriverIOS::RendererShouldPreviewFieldWithValue(
 }
 
 void AutofillDriverIOS::RendererShouldSetSuggestionAvailability(
-    bool available) {}
+    const mojom::AutofillState state) {}
 
 void AutofillDriverIOS::PopupHidden() {
 }
@@ -139,6 +152,22 @@ void AutofillDriverIOS::PopupHidden() {
 gfx::RectF AutofillDriverIOS::TransformBoundingBoxToViewportCoordinates(
     const gfx::RectF& bounding_box) {
   return bounding_box;
+}
+
+net::NetworkIsolationKey AutofillDriverIOS::NetworkIsolationKey() {
+  std::string main_web_frame_id = web::GetMainWebFrameId(web_state_);
+  web::WebFrame* main_web_frame =
+      web::GetWebFrameWithId(web_state_, main_web_frame_id);
+  if (!main_web_frame)
+    return net::NetworkIsolationKey();
+
+  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
+  if (!web_frame)
+    return net::NetworkIsolationKey();
+
+  return net::NetworkIsolationKey(
+      url::Origin::Create(main_web_frame->GetSecurityOrigin()),
+      url::Origin::Create(web_frame->GetSecurityOrigin()));
 }
 
 }  // namespace autofill

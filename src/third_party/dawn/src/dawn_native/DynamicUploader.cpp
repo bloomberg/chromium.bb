@@ -19,14 +19,8 @@
 namespace dawn_native {
 
     DynamicUploader::DynamicUploader(DeviceBase* device) : mDevice(device) {
-    }
-
-    ResultOrError<std::unique_ptr<StagingBufferBase>> DynamicUploader::CreateStagingBuffer(
-        size_t size) {
-        std::unique_ptr<StagingBufferBase> stagingBuffer;
-        DAWN_TRY_ASSIGN(stagingBuffer, mDevice->CreateStagingBuffer(size));
-        DAWN_TRY(stagingBuffer->Initialize());
-        return stagingBuffer;
+        mRingBuffers.emplace_back(std::unique_ptr<RingBuffer>(
+            new RingBuffer{nullptr, RingBufferAllocator(kRingBufferSize)}));
     }
 
     void DynamicUploader::ReleaseStagingBuffer(std::unique_ptr<StagingBufferBase> stagingBuffer) {
@@ -34,73 +28,84 @@ namespace dawn_native {
                                         mDevice->GetPendingCommandSerial());
     }
 
-    MaybeError DynamicUploader::CreateAndAppendBuffer(size_t size) {
-        std::unique_ptr<RingBuffer> ringBuffer = std::make_unique<RingBuffer>(mDevice, size);
-        DAWN_TRY(ringBuffer->Initialize());
-        mRingBuffers.emplace_back(std::move(ringBuffer));
-        return {};
-    }
+    ResultOrError<UploadHandle> DynamicUploader::Allocate(uint64_t allocationSize, Serial serial) {
+        // Disable further sub-allocation should the request be too large.
+        if (allocationSize > kRingBufferSize) {
+            std::unique_ptr<StagingBufferBase> stagingBuffer;
+            DAWN_TRY_ASSIGN(stagingBuffer, mDevice->CreateStagingBuffer(allocationSize));
 
-    ResultOrError<UploadHandle> DynamicUploader::Allocate(uint32_t size) {
+            UploadHandle uploadHandle;
+            uploadHandle.mappedBuffer = static_cast<uint8_t*>(stagingBuffer->GetMappedPointer());
+            uploadHandle.stagingBuffer = stagingBuffer.get();
+
+            ReleaseStagingBuffer(std::move(stagingBuffer));
+            return uploadHandle;
+        }
+
         // Note: Validation ensures size is already aligned.
         // First-fit: find next smallest buffer large enough to satisfy the allocation request.
-        RingBuffer* targetRingBuffer = GetLargestBuffer();
+        RingBuffer* targetRingBuffer = mRingBuffers.back().get();
         for (auto& ringBuffer : mRingBuffers) {
+            const RingBufferAllocator& ringBufferAllocator = ringBuffer->mAllocator;
             // Prevent overflow.
-            ASSERT(ringBuffer->GetSize() >= ringBuffer->GetUsedSize());
-            const size_t remainingSize = ringBuffer->GetSize() - ringBuffer->GetUsedSize();
-            if (size <= remainingSize) {
+            ASSERT(ringBufferAllocator.GetSize() >= ringBufferAllocator.GetUsedSize());
+            const uint64_t remainingSize =
+                ringBufferAllocator.GetSize() - ringBufferAllocator.GetUsedSize();
+            if (allocationSize <= remainingSize) {
                 targetRingBuffer = ringBuffer.get();
                 break;
             }
         }
 
-        UploadHandle uploadHandle = UploadHandle{};
+        uint64_t startOffset = RingBufferAllocator::kInvalidOffset;
         if (targetRingBuffer != nullptr) {
-            uploadHandle = targetRingBuffer->SubAllocate(size);
+            startOffset = targetRingBuffer->mAllocator.Allocate(allocationSize, serial);
         }
 
-        // Upon failure, append a newly created (and much larger) ring buffer to fulfill the
+        // Upon failure, append a newly created ring buffer to fulfill the
         // request.
-        if (uploadHandle.mappedBuffer == nullptr) {
-            // Compute the new max size (in powers of two to preserve alignment).
-            size_t newMaxSize = targetRingBuffer->GetSize() * 2;
-            while (newMaxSize < size) {
-                newMaxSize *= 2;
-            }
+        if (startOffset == RingBufferAllocator::kInvalidOffset) {
+            mRingBuffers.emplace_back(std::unique_ptr<RingBuffer>(
+                new RingBuffer{nullptr, RingBufferAllocator(kRingBufferSize)}));
 
-            // TODO(bryan.bernhart@intel.com): Fall-back to no sub-allocations should this fail.
-            DAWN_TRY(CreateAndAppendBuffer(newMaxSize));
-            targetRingBuffer = GetLargestBuffer();
-            uploadHandle = targetRingBuffer->SubAllocate(size);
+            targetRingBuffer = mRingBuffers.back().get();
+            startOffset = targetRingBuffer->mAllocator.Allocate(allocationSize, serial);
         }
 
-        uploadHandle.stagingBuffer = targetRingBuffer->GetStagingBuffer();
+        ASSERT(startOffset != RingBufferAllocator::kInvalidOffset);
+
+        // Allocate the staging buffer backing the ringbuffer.
+        // Note: the first ringbuffer will be lazily created.
+        if (targetRingBuffer->mStagingBuffer == nullptr) {
+            std::unique_ptr<StagingBufferBase> stagingBuffer;
+            DAWN_TRY_ASSIGN(stagingBuffer,
+                            mDevice->CreateStagingBuffer(targetRingBuffer->mAllocator.GetSize()));
+            targetRingBuffer->mStagingBuffer = std::move(stagingBuffer);
+        }
+
+        ASSERT(targetRingBuffer->mStagingBuffer != nullptr);
+
+        UploadHandle uploadHandle;
+        uploadHandle.stagingBuffer = targetRingBuffer->mStagingBuffer.get();
+        uploadHandle.mappedBuffer =
+            static_cast<uint8_t*>(uploadHandle.stagingBuffer->GetMappedPointer()) + startOffset;
+        uploadHandle.startOffset = startOffset;
 
         return uploadHandle;
     }
 
-    void DynamicUploader::Tick(Serial lastCompletedSerial) {
+    void DynamicUploader::Deallocate(Serial lastCompletedSerial) {
         // Reclaim memory within the ring buffers by ticking (or removing requests no longer
         // in-flight).
         for (size_t i = 0; i < mRingBuffers.size(); ++i) {
-            mRingBuffers[i]->Tick(lastCompletedSerial);
+            mRingBuffers[i]->mAllocator.Deallocate(lastCompletedSerial);
 
             // Never erase the last buffer as to prevent re-creating smaller buffers
             // again. The last buffer is the largest.
-            if (mRingBuffers[i]->Empty() && i < mRingBuffers.size() - 1) {
+            if (mRingBuffers[i]->mAllocator.Empty() && i < mRingBuffers.size() - 1) {
                 mRingBuffers.erase(mRingBuffers.begin() + i);
             }
         }
         mReleasedStagingBuffers.ClearUpTo(lastCompletedSerial);
-    }
-
-    RingBuffer* DynamicUploader::GetLargestBuffer() {
-        ASSERT(!mRingBuffers.empty());
-        return mRingBuffers.back().get();
-    }
-
-    bool DynamicUploader::IsEmpty() const {
-        return mRingBuffers.empty();
     }
 }  // namespace dawn_native

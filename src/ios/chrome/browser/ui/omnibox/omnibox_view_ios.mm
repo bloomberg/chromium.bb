@@ -66,95 +66,6 @@ UIColor* IncognitoSecureTextColor() {
 
 }  // namespace
 
-#pragma mark - AutocompleteTextFieldDelegate
-
-// Simple Obj-C object to forward UITextFieldDelegate method calls back to the
-// OmniboxViewIOS.
-@interface AutocompleteTextFieldDelegate : NSObject<OmniboxTextFieldDelegate> {
- @private
-  OmniboxViewIOS* editView_;  // weak, owns us
-
-  // YES if we are already forwarding an OnDidChange() message to the edit view.
-  // Needed to prevent infinite recursion.
-  // TODO(rohitrao): There must be a better way.
-  BOOL forwardingOnDidChange_;
-
-  // YES if this text field is currently processing a user-initiated event,
-  // such as typing in the omnibox or pressing the clear button.  Used to
-  // distinguish between calls to textDidChange that are triggered by the user
-  // typing vs by calls to setText.
-  BOOL processingUserEvent_;
-}
-@end
-
-@implementation AutocompleteTextFieldDelegate
-- (id)initWithEditView:(OmniboxViewIOS*)editView {
-  if ((self = [super init])) {
-    editView_ = editView;
-    forwardingOnDidChange_ = NO;
-    processingUserEvent_ = NO;
-  }
-  return self;
-}
-
-- (BOOL)textField:(UITextField*)textField
-    shouldChangeCharactersInRange:(NSRange)range
-                replacementString:(NSString*)newText {
-  processingUserEvent_ = editView_->OnWillChange(range, newText);
-  return processingUserEvent_;
-}
-
-- (void)textFieldDidChange:(id)sender {
-  if (forwardingOnDidChange_)
-    return;
-
-  BOOL savedProcessingUserEvent = processingUserEvent_;
-  processingUserEvent_ = NO;
-  forwardingOnDidChange_ = YES;
-  editView_->OnDidChange(savedProcessingUserEvent);
-  forwardingOnDidChange_ = NO;
-}
-
-// Delegate method for UITextField, called when user presses the "go" button.
-- (BOOL)textFieldShouldReturn:(UITextField*)textField {
-  editView_->OnAccept();
-  return NO;
-}
-
-// Always update the text field colors when we start editing.  It's possible
-// for this method to be called when we are already editing (popup focus
-// change).  In this case, OnDidBeginEditing will be called multiple times.
-// If that becomes an issue a boolean should be added to track editing state.
-- (void)textFieldDidBeginEditing:(UITextField*)textField {
-  editView_->OnDidBeginEditing();
-}
-
-- (BOOL)textFieldShouldEndEditing:(UITextField*)textField {
-  editView_->OnWillEndEditing();
-  return YES;
-}
-
-// When editing, forward the message on to |editView_|.
-- (BOOL)textFieldShouldClear:(UITextField*)textField {
-  editView_->ClearText();
-  processingUserEvent_ = YES;
-  return YES;
-}
-
-- (BOOL)onCopy {
-  return editView_->OnCopy();
-}
-
-- (void)willPaste {
-  editView_->WillPaste();
-}
-
-- (void)onDeleteBackward {
-  editView_->OnDeleteBackward();
-}
-
-@end
-
 #pragma mark - OminboxViewIOS
 
 OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
@@ -176,27 +87,12 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
       attributing_display_string_(nil),
       popup_provider_(nullptr) {
   DCHECK(field_);
-  field_delegate_ =
-      [[AutocompleteTextFieldDelegate alloc] initWithEditView:this];
 
   paste_delegate_ = [[OmniboxTextFieldPasteDelegate alloc] init];
   [field_ setPasteDelegate:paste_delegate_];
 
-  [field_ setDelegate:field_delegate_];
-  [field_ addTarget:field_delegate_
-                action:@selector(textFieldDidChange:)
-      forControlEvents:UIControlEventEditingChanged];
   use_strikethrough_workaround_ = base::ios::IsRunningOnOrLater(10, 3, 0) &&
                                   !base::ios::IsRunningOnOrLater(11, 2, 0);
-}
-
-OmniboxViewIOS::~OmniboxViewIOS() {
-  // |field_| outlives this object.
-  [field_ setDelegate:nil];
-
-  [field_ removeTarget:field_delegate_
-                action:@selector(textFieldDidChange:)
-      forControlEvents:UIControlEventEditingChanged];
 }
 
 void OmniboxViewIOS::OpenMatch(const AutocompleteMatch& match,
@@ -366,8 +262,6 @@ gfx::NativeView OmniboxViewIOS::GetRelativeWindowForPopup() const {
 }
 
 void OmniboxViewIOS::OnDidBeginEditing() {
-  // Reset the changed flag.
-  omnibox_interacted_while_focused_ = NO;
 
   // If Open from Clipboard offers a suggestion, the popup may be opened when
   // |OnSetFocus| is called on the model. The state of the popup is saved early
@@ -394,7 +288,8 @@ void OmniboxViewIOS::OnDidBeginEditing() {
       model()->set_focus_source(OmniboxFocusSource::OMNIBOX);
     }
 
-    model()->OnSetFocus(false);
+    model()->OnSetFocus(/*control_down=*/false,
+                        /*suppress_on_focus_suggestions=*/false);
   }
 
   // If the omnibox is displaying a URL and the popup is not showing, set the
@@ -442,9 +337,7 @@ bool OmniboxViewIOS::OnWillChange(NSRange range, NSString* new_text) {
     // as if the pre-edit fake selection was real.
     [field_ exitPreEditState];
 
-    field_.selectedTextRange =
-        [field_ textRangeFromPosition:field_.beginningOfDocument
-                           toPosition:field_.endOfDocument];
+    field_.text = @"";
 
     // Reset |range| to be of zero-length at location zero, as the field will be
     // now cleared.
@@ -509,8 +402,6 @@ bool OmniboxViewIOS::OnWillChange(NSRange range, NSString* new_text) {
 }
 
 void OmniboxViewIOS::OnDidChange(bool processing_user_event) {
-  omnibox_interacted_while_focused_ = YES;
-
   // Sanitize pasted text.
   if (model() && model()->is_pasting()) {
     base::string16 pastedText = base::SysNSStringToUTF16([field_ text]);
@@ -585,8 +476,7 @@ void OmniboxViewIOS::OnClear() {
   [field_ exitPreEditState];
 }
 
-bool OmniboxViewIOS::OnCopy() {
-  omnibox_interacted_while_focused_ = YES;
+void OmniboxViewIOS::OnCopy() {
   UIPasteboard* board = [UIPasteboard generalPasteboard];
   NSString* selectedText = nil;
   NSInteger start_location = 0;
@@ -624,7 +514,6 @@ bool OmniboxViewIOS::OnCopy() {
     [item setObject:net::NSURLWithGURL(url) forKey:(NSString*)kUTTypeURL];
 
   board.items = [NSArray arrayWithObject:item];
-  return true;
 }
 
 void OmniboxViewIOS::WillPaste() {
@@ -762,11 +651,6 @@ void OmniboxViewIOS::EndEditing() {
     // Blow away any in-progress edits.
     RevertAll();
     DCHECK(![field_ hasAutocompleteText]);
-
-    if (!omnibox_interacted_while_focused_) {
-      RecordAction(
-          UserMetricsAction("Mobile_FocusedDefocusedOmnibox_WithNoAction"));
-    }
   }
 }
 
@@ -816,13 +700,18 @@ void OmniboxViewIOS::EmphasizeURLComponents() {
 
 #pragma mark - OmniboxPopupViewSuggestionsDelegate
 
-void OmniboxViewIOS::OnTopmostSuggestionImageChanged(
+void OmniboxViewIOS::OnSelectedMatchImageChanged(
+    bool has_match,
     AutocompleteMatchType::Type match_type,
     base::Optional<SuggestionAnswer::AnswerType> answer_type,
     GURL favicon_url) {
-  [left_image_consumer_ setLeftImageForAutocompleteType:match_type
-                                             answerType:answer_type
-                                             faviconURL:favicon_url];
+  if (has_match) {
+    [left_image_consumer_ setLeftImageForAutocompleteType:match_type
+                                               answerType:answer_type
+                                               faviconURL:favicon_url];
+  } else {
+    [left_image_consumer_ setDefaultLeftImage];
+  }
 }
 
 void OmniboxViewIOS::OnResultsChanged(const AutocompleteResult& result) {

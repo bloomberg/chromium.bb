@@ -23,6 +23,7 @@ libappindicator3-1 \
 libasound2 \
 libatk-bridge2.0-0 \
 libatspi2.0-0 \
+libavahi-client3 \
 libcairo2 \
 libcap2 \
 libcups2 \
@@ -42,6 +43,8 @@ libgtk-3-0 \
 libgtk2.0-bin \
 libido3-0.1-0 \
 libindicator3-7 \
+libjasper1 \
+libjpeg-turbo8 \
 libnspr4 \
 libp11-kit0 \
 libpci3 \
@@ -60,6 +63,7 @@ libxext6 \
 libxfixes3 \
 libxi6 \
 libxinerama1 \
+libxkbcommon0 \
 libxrandr2 \
 libxrender1 \
 libxss1 \

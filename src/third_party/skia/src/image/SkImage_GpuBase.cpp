@@ -14,6 +14,7 @@
 #include "src/core/SkTLList.h"
 #include "src/gpu/GrClip.h"
 #include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrTextureAdjuster.h"
@@ -22,12 +23,10 @@
 #include "src/image/SkImage_GpuBase.h"
 #include "src/image/SkReadPixelsRec.h"
 
-SkImage_GpuBase::SkImage_GpuBase(sk_sp<GrContext> context, int width, int height, uint32_t uniqueID,
+SkImage_GpuBase::SkImage_GpuBase(sk_sp<GrContext> context, SkISize size, uint32_t uniqueID,
                                  SkColorType ct, SkAlphaType at, sk_sp<SkColorSpace> cs)
-        : INHERITED(SkImageInfo::Make(width, height, ct, at, std::move(cs)), uniqueID)
+        : INHERITED(SkImageInfo::Make(size, ct, at, std::move(cs)), uniqueID)
         , fContext(std::move(context)) {}
-
-SkImage_GpuBase::~SkImage_GpuBase() {}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -117,9 +116,9 @@ sk_sp<SkImage> SkImage_GpuBase::onMakeSubset(GrRecordingContext* context,
 
     sk_sp<GrSurfaceProxy> proxy = this->asTextureProxyRef(context);
 
-    sk_sp<GrTextureProxy> copyProxy = GrSurfaceProxy::Copy(
-            context, proxy.get(), GrMipMapped::kNo, subset, SkBackingFit::kExact,
-            proxy->isBudgeted());
+    sk_sp<GrTextureProxy> copyProxy =
+            GrSurfaceProxy::Copy(context, proxy.get(), GrMipMapped::kNo, subset,
+                                 SkBackingFit::kExact, proxy->isBudgeted());
 
     if (!copyProxy) {
         return nullptr;
@@ -165,8 +164,7 @@ sk_sp<GrTextureProxy> SkImage_GpuBase::asTextureProxyRef(GrRecordingContext* con
     }
 
     GrTextureAdjuster adjuster(fContext.get(), this->asTextureProxyRef(context),
-                               SkColorTypeToGrColorType(this->colorType()), this->alphaType(),
-                               this->uniqueID(), this->colorSpace());
+                               this->imageInfo().colorInfo(), this->uniqueID());
     return adjuster.refTextureProxyForParams(params, scaleAdjust);
 }
 
@@ -393,8 +391,15 @@ sk_sp<GrTextureProxy> SkImage_GpuBase::MakePromiseImageLazyProxy(
 
         ~PromiseLazyInstantiateCallback() {
             // Our destructor can run on any thread. We trigger the unref of fTexture by message.
+            // This unreffed texture pointer is a real problem! When the context has been
+            // abandoned, the GrTexture pointed to by this pointer is deleted! Due to virtual
+            // inheritance any manipulation of this pointer at that point will cause a crash.
+            // For now we "work around" the problem by just passing it, untouched, into the
+            // message bus but this very fragile.
+            // In the future the GrSurface class hierarchy refactoring should eliminate this
+            // difficulty by removing the virtual inheritance.
             if (fTexture) {
-                SkMessageBus<GrGpuResourceFreedMessage>::Post({fTexture, fTextureContextID});
+                SkMessageBus<GrTextureFreedMessage>::Post({fTexture, fTextureContextID});
             }
         }
 
@@ -469,7 +474,7 @@ sk_sp<GrTextureProxy> SkImage_GpuBase::MakePromiseImageLazyProxy(
             // let the cache know it is waiting on an unref message. We will send that message from
             // our destructor.
             GrContext* context = fTexture->getContext();
-            context->priv().getResourceCache()->insertDelayedResourceUnref(fTexture);
+            context->priv().getResourceCache()->insertDelayedTextureUnref(fTexture);
             fTextureContextID = context->priv().contextID();
             return {std::move(tex), kReleaseCallbackOnInstantiation, kKeySyncMode};
         }

@@ -82,8 +82,8 @@ class ShillClientUnittestBase : public testing::Test {
 
  protected:
   // A callback to intercept and check the method call arguments.
-  typedef base::Callback<void(dbus::MessageReader* reader)>
-      ArgumentCheckCallback;
+  using ArgumentCheckCallback =
+      base::RepeatingCallback<void(dbus::MessageReader* reader)>;
 
   // Sets expectations for called method name and arguments, and sets response.
   void PrepareForMethodCall(const std::string& method_name,
@@ -173,7 +173,7 @@ class ShillClientUnittestBase : public testing::Test {
       const base::DictionaryValue& result);
 
   // A message loop to emulate asynchronous behavior.
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   // The mock bus.
   scoped_refptr<dbus::MockBus> mock_bus_;
 

@@ -148,18 +148,6 @@ void PasswordUIViewAndroid::HandleRemoveSavedPasswordException(
   password_manager_presenter_.RemovePasswordException(index);
 }
 
-void PasswordUIViewAndroid::HandleChangeSavedPasswordEntry(
-    JNIEnv* env,
-    const base::android::JavaRef<jobject>&,
-    int index,
-    const JavaRef<jstring>& new_username,
-    const JavaRef<jstring>& new_password) {
-  DCHECK_EQ(State::ALIVE, state_);
-  password_manager_presenter_.ChangeSavedPassword(
-      index, ConvertJavaStringToUTF16(env, new_username),
-      ConvertJavaStringToUTF16(env, new_password));
-}
-
 void PasswordUIViewAndroid::HandleSerializePasswords(
     JNIEnv* env,
     const JavaRef<jobject>&,
@@ -208,11 +196,9 @@ void PasswordUIViewAndroid::HandleShowPasswordEntryEditingView(
     const JavaParamRef<jobject>& context,
     int index) {
   PasswordEditingBridge::LaunchPasswordEntryEditor(
-      env, context,
-      PasswordStoreFactory::GetForProfile(GetProfile(),
-                                          ServiceAccessType::EXPLICIT_ACCESS)
-          .get(),
-      *password_manager_presenter_.GetPassword(index));
+      env, context, GetProfile(),
+      password_manager_presenter_.GetPasswords(index),
+      password_manager_presenter_.GetUsernamesForRealm(index));
 }
 
 ScopedJavaLocalRef<jstring> JNI_PasswordUIView_GetAccountDashboardURL(

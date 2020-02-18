@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/fallback_view_controller.h"
 
 #include "base/ios/ios_util.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_action_cell.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -37,6 +37,12 @@ constexpr CGFloat PopoverLoadingHeight = 185.5;
 // If the loading indicator was shown, it will be on screen for at least this
 // amount of seconds.
 constexpr CGFloat kMinimumLoadingTime = 0.5;
+
+// Height of the section header.
+constexpr CGFloat kSectionHeaderHeight = 6;
+
+// Height of the section footer.
+constexpr CGFloat kSectionFooterHeight = 8;
 
 }  // namespace
 
@@ -83,8 +89,8 @@ constexpr CGFloat kMinimumLoadingTime = 0.5;
   [super viewDidLoad];
 
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-  self.tableView.sectionHeaderHeight = 0;
-  self.tableView.sectionFooterHeight = 20.0;
+  self.tableView.sectionHeaderHeight = kSectionHeaderHeight;
+  self.tableView.sectionFooterHeight = kSectionFooterHeight;
   self.tableView.estimatedRowHeight = 1;
   self.tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0);
   self.tableView.allowsSelection = NO;

@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFavicon;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.LocalizationUtils;
@@ -126,13 +127,14 @@ public class LayerTitleCache implements TitleCache {
     private String getUpdatedTitleInternal(Tab tab, String titleString,
             boolean fetchFaviconFromHistory) {
         final int tabId = tab.getId();
-        boolean isHTSEnabled = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(tab.getActivity())
+        boolean isHTSEnabled =
+                !DeviceFormFactor.isNonMultiDisplayContextOnTablet(((TabImpl) tab).getActivity())
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
         boolean isDarkTheme = tab.isIncognito() && !isHTSEnabled;
         Bitmap originalFavicon = TabFavicon.getBitmap(tab);
         if (originalFavicon == null) {
             originalFavicon = mDefaultFaviconHelper.getDefaultFaviconBitmap(
-                    mContext, tab.getUrl(), !isDarkTheme);
+                    mContext.getResources(), tab.getUrl(), !isDarkTheme);
         }
 
         TitleBitmapFactory titleBitmapFactory =
@@ -199,7 +201,7 @@ public class LayerTitleCache implements TitleCache {
     }
 
     private void updateFaviconFromHistory(Tab tab, Bitmap faviconBitmap) {
-        if (!tab.isInitialized()) return;
+        if (!((TabImpl) tab).isInitialized()) return;
 
         int tabId = tab.getId();
         Title title = mTitles.get(tabId);

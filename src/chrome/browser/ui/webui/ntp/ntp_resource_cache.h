@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_NTP_NTP_RESOURCE_CACHE_H_
 #define CHROME_BROWSER_UI_WEBUI_NTP_NTP_RESOURCE_CACHE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -13,6 +15,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
 
 class Profile;
@@ -26,8 +29,8 @@ namespace content {
 class RenderProcessHost;
 }
 
-namespace ui {
-class NativeTheme;
+namespace policy {
+class PolicyChangeRegistrar;
 }
 
 // This class keeps a cache of NTP resources (HTML and CSS) so we don't have to
@@ -64,6 +67,8 @@ class NTPResourceCache : public content::NotificationObserver,
 
   void OnPreferenceChanged();
 
+  void OnPolicyChanged(const base::Value* previous, const base::Value* current);
+
   // Invalidates the NTPResourceCache.
   void Invalidate();
 
@@ -97,7 +102,10 @@ class NTPResourceCache : public content::NotificationObserver,
   // Set based on platform_util::IsSwipeTrackingFromScrollEventsEnabled.
   bool is_swipe_tracking_from_scroll_events_enabled_;
 
-  ScopedObserver<ui::NativeTheme, NTPResourceCache> theme_observer_;
+  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> theme_observer_{
+      this};
+
+  std::unique_ptr<policy::PolicyChangeRegistrar> policy_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };

@@ -34,9 +34,8 @@ namespace dawn_native {
     AttachmentStateBlueprint::AttachmentStateBlueprint(const RenderPipelineDescriptor* descriptor)
         : mSampleCount(descriptor->sampleCount) {
         for (uint32_t i = 0; i < descriptor->colorStateCount; ++i) {
-            ASSERT(descriptor->colorStates[i] != nullptr);
             mColorAttachmentsSet.set(i);
-            mColorFormats[i] = descriptor->colorStates[i]->format;
+            mColorFormats[i] = descriptor->colorStates[i].format;
         }
         if (descriptor->depthStencilState != nullptr) {
             mDepthStencilFormat = descriptor->depthStencilState->format;
@@ -45,7 +44,7 @@ namespace dawn_native {
 
     AttachmentStateBlueprint::AttachmentStateBlueprint(const RenderPassDescriptor* descriptor) {
         for (uint32_t i = 0; i < descriptor->colorAttachmentCount; ++i) {
-            TextureViewBase* attachment = descriptor->colorAttachments[i]->attachment;
+            TextureViewBase* attachment = descriptor->colorAttachments[i].attachment;
             mColorAttachmentsSet.set(i);
             mColorFormats[i] = attachment->GetFormat().format;
             if (mSampleCount == 0) {
@@ -117,27 +116,27 @@ namespace dawn_native {
     }
 
     AttachmentState::AttachmentState(DeviceBase* device, const AttachmentStateBlueprint& blueprint)
-        : AttachmentStateBlueprint(blueprint), RefCounted(), mDevice(device) {
+        : AttachmentStateBlueprint(blueprint), CachedObject(device) {
     }
 
     AttachmentState::~AttachmentState() {
-        mDevice->UncacheAttachmentState(this);
+        GetDevice()->UncacheAttachmentState(this);
     }
 
     std::bitset<kMaxColorAttachments> AttachmentState::GetColorAttachmentsMask() const {
         return mColorAttachmentsSet;
     }
 
-    dawn::TextureFormat AttachmentState::GetColorAttachmentFormat(uint32_t index) const {
+    wgpu::TextureFormat AttachmentState::GetColorAttachmentFormat(uint32_t index) const {
         ASSERT(mColorAttachmentsSet[index]);
         return mColorFormats[index];
     }
 
     bool AttachmentState::HasDepthStencilAttachment() const {
-        return mDepthStencilFormat != dawn::TextureFormat::Undefined;
+        return mDepthStencilFormat != wgpu::TextureFormat::Undefined;
     }
 
-    dawn::TextureFormat AttachmentState::GetDepthStencilFormat() const {
+    wgpu::TextureFormat AttachmentState::GetDepthStencilFormat() const {
         ASSERT(HasDepthStencilAttachment());
         return mDepthStencilFormat;
     }

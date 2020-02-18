@@ -25,29 +25,31 @@ class SiteInstance;
 
 namespace chromecast {
 
-class CastWebContentsManager;
-class CastWindowManager;
+class CastWebService;
 
 // A simplified interface for loading and displaying WebContents in cast_shell.
 class CastWebViewDefault : public CastWebView,
                            content::WebContentsObserver,
                            content::WebContentsDelegate {
  public:
-  // |web_contents_manager| and |browser_context| should outlive this object.
-  CastWebViewDefault(const CreateParams& params,
-                     CastWebContentsManager* web_contents_manager,
-                     content::BrowserContext* browser_context,
-                     scoped_refptr<content::SiteInstance> site_instance);
+  // |web_service| and |browser_context| should outlive this object. If
+  // |cast_content_window| is not provided, an instance will be constructed from
+  // |web_service|.
+  CastWebViewDefault(
+      const CreateParams& params,
+      CastWebService* web_service,
+      content::BrowserContext* browser_context,
+      scoped_refptr<content::SiteInstance> site_instance,
+      std::unique_ptr<CastContentWindow> cast_content_window = nullptr);
   ~CastWebViewDefault() override;
 
   // CastWebView implementation:
-  shell::CastContentWindow* window() const override;
+  CastContentWindow* window() const override;
   content::WebContents* web_contents() const override;
   CastWebContents* cast_web_contents() override;
   void LoadUrl(GURL url) override;
-  void ClosePage(const base::TimeDelta& shutdown_delay) override;
-  void InitializeWindow(CastWindowManager* window_manager,
-                        CastWindowManager::WindowId z_order,
+  void ClosePage() override;
+  void InitializeWindow(mojom::ZOrder z_order,
                         VisibilityPriority initial_priority) override;
   void GrantScreenAccess() override;
   void RevokeScreenAccess() override;
@@ -78,20 +80,25 @@ class CastWebViewDefault : public CastWebView,
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
+  bool ShouldAllowRunningInsecureContent(content::WebContents* web_contents,
+                                         bool allowed_per_prefs,
+                                         const url::Origin& origin,
+                                         const GURL& resource_url) override;
 
-  CastWebContentsManager* const web_contents_manager_;
+  CastWebService* const web_service_;
   content::BrowserContext* const browser_context_;
   const scoped_refptr<content::SiteInstance> site_instance_;
 
-  Delegate* const delegate_;
+  const std::string activity_id_;
+  const std::string session_id_;
+  const std::string sdk_version_;
   const bool allow_media_access_;
   const std::string log_prefix_;
 
   std::unique_ptr<content::WebContents> web_contents_;
   CastWebContentsImpl cast_web_contents_;
-  std::unique_ptr<shell::CastContentWindow> window_;
+  std::unique_ptr<CastContentWindow> window_;
   bool resize_window_when_navigation_starts_;
-  base::TimeDelta shutdown_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWebViewDefault);
 };

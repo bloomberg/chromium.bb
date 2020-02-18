@@ -7,12 +7,14 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/test/fake_network_url_loader_factory.h"
+#include "net/base/network_isolation_key.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -45,9 +47,10 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
     // Set up the network factory.
     network_loader_factory_instance_ =
         std::make_unique<FakeNetworkURLLoaderFactory>();
-    network::mojom::URLLoaderFactoryPtrInfo factory;
-    network_loader_factory_instance_->Clone(mojo::MakeRequest(&factory));
-    auto info = std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> factory;
+    network_loader_factory_instance_->Clone(
+        factory.InitWithNewPipeAndPassReceiver());
+    auto info = std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(
         std::move(factory));
     network_loader_factory_ =
         network::SharedURLLoaderFactory::Create(std::move(info));
@@ -58,19 +61,23 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
   }
 
  protected:
-  network::mojom::URLLoaderPtr CreateTestLoaderAndStart(
+  mojo::PendingRemote<network::mojom::URLLoader> CreateTestLoaderAndStart(
       const GURL& url,
       WorkerScriptLoaderFactory* factory,
       network::TestURLLoaderClient* client) {
-    network::mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<network::mojom::URLLoader> loader;
     network::ResourceRequest resource_request;
     resource_request.url = url;
+    resource_request.trusted_params = network::ResourceRequest::TrustedParams();
+    resource_request.trusted_params->network_isolation_key =
+        net::NetworkIsolationKey(url::Origin::Create(url),
+                                 url::Origin::Create(url));
     resource_request.resource_type =
         static_cast<int>(ResourceType::kSharedWorker);
     factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        network::mojom::kURLLoadOptionNone, resource_request,
-        client->CreateInterfacePtr(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, network::mojom::kURLLoadOptionNone,
+        resource_request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     return loader;
   }
@@ -94,17 +101,17 @@ TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerProviderHost) {
   // Load the script.
   GURL url("https://www.example.com/worker.js");
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader =
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
       CreateTestLoaderAndStart(url, factory.get(), &client);
   client.RunUntilComplete();
   EXPECT_EQ(net::OK, client.completion_status().error_code);
 
-  // The provider host should be set up.
-  base::WeakPtr<ServiceWorkerProviderHost> host =
-      service_worker_handle_->core()->provider_host();
-  EXPECT_TRUE(host->is_response_committed());
-  EXPECT_TRUE(host->is_execution_ready());
-  EXPECT_EQ(url, host->url());
+  // The container host should be set up.
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      service_worker_handle_->core()->container_host();
+  EXPECT_TRUE(container_host->is_response_committed());
+  EXPECT_TRUE(container_host->is_execution_ready());
+  EXPECT_EQ(url, container_host->url());
 }
 
 // Test a null service worker handle. This typically only happens during
@@ -123,7 +130,7 @@ TEST_F(WorkerScriptLoaderFactoryTest, NullServiceWorkerHandle) {
   // Load the script.
   GURL url("https://www.example.com/worker.js");
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader =
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
       CreateTestLoaderAndStart(url, factory.get(), &client);
   client.RunUntilComplete();
   EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
@@ -144,7 +151,7 @@ TEST_F(WorkerScriptLoaderFactoryTest, NullBrowserContext) {
   // Load the script.
   GURL url("https://www.example.com/worker.js");
   network::TestURLLoaderClient client;
-  network::mojom::URLLoaderPtr loader =
+  mojo::PendingRemote<network::mojom::URLLoader> loader =
       CreateTestLoaderAndStart(url, factory.get(), &client);
   client.RunUntilComplete();
   EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);

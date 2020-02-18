@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_encoder.h"
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_bind_group.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pipeline.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 
@@ -13,15 +14,15 @@ namespace blink {
 // static
 GPUComputePassEncoder* GPUComputePassEncoder::Create(
     GPUDevice* device,
-    DawnComputePassEncoder compute_pass_encoder) {
+    WGPUComputePassEncoder compute_pass_encoder) {
   return MakeGarbageCollected<GPUComputePassEncoder>(device,
                                                      compute_pass_encoder);
 }
 
 GPUComputePassEncoder::GPUComputePassEncoder(
     GPUDevice* device,
-    DawnComputePassEncoder compute_pass_encoder)
-    : DawnObject<DawnComputePassEncoder>(device, compute_pass_encoder) {}
+    WGPUComputePassEncoder compute_pass_encoder)
+    : DawnObject<WGPUComputePassEncoder>(device, compute_pass_encoder) {}
 
 GPUComputePassEncoder::~GPUComputePassEncoder() {
   if (IsDawnControlClientDestroyed()) {
@@ -33,10 +34,31 @@ GPUComputePassEncoder::~GPUComputePassEncoder() {
 void GPUComputePassEncoder::setBindGroup(
     uint32_t index,
     GPUBindGroup* bindGroup,
-    const Vector<uint64_t>& dynamicOffsets) {
+    const Vector<uint32_t>& dynamicOffsets) {
   GetProcs().computePassEncoderSetBindGroup(
       GetHandle(), index, bindGroup->GetHandle(), dynamicOffsets.size(),
       dynamicOffsets.data());
+}
+
+void GPUComputePassEncoder::setBindGroup(
+    uint32_t index,
+    GPUBindGroup* bind_group,
+    const FlexibleUint32ArrayView& dynamic_offsets_data,
+    uint64_t dynamic_offsets_data_start,
+    uint32_t dynamic_offsets_data_length,
+    ExceptionState& exception_state) {
+  if (!ValidateSetBindGroupDynamicOffsets(
+          dynamic_offsets_data, dynamic_offsets_data_start,
+          dynamic_offsets_data_length, exception_state)) {
+    return;
+  }
+
+  const uint32_t* data =
+      dynamic_offsets_data.DataMaybeOnStack() + dynamic_offsets_data_start;
+
+  GetProcs().computePassEncoderSetBindGroup(GetHandle(), index,
+                                            bind_group->GetHandle(),
+                                            dynamic_offsets_data_length, data);
 }
 
 void GPUComputePassEncoder::pushDebugGroup(String groupLabel) {

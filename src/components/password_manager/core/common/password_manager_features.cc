@@ -20,20 +20,29 @@ const base::Feature kEditPasswordsInDesktopSettings = {
 const base::Feature kDeleteCorruptedPasswords = {
     "DeleteCorruptedPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the overwriting of prefilled username fields if the server predicted
+// the field to contain a placeholder value.
+const base::Feature kEnableOverwritingPlaceholderUsernames{
+    "EnableOverwritingPlaceholderUsernames", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables a second, Gaia-account-scoped password store for users who are signed
 // in but not syncing.
 const base::Feature kEnablePasswordsAccountStorage = {
     "EnablePasswordsAccountStorage", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Provides the UI to save Gaia-account-scoped passwords. Relies on the feature
+// "EnablePasswordsAccountStorage" to be active.
+const base::Feature kEnablePasswordsAccountStorageSavingUi = {
+    "EnablePasswordsAccountStorageSavingUi", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature KEnablePasswordGenerationForClearTextFields = {
+    "EnablePasswordGenerationForClearTextFields",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the experiment for the password manager to only fill on account
-// selection when the password form was served over HTTP.
-const base::Feature kFillOnAccountSelectHttp = {
-    "FillOnAccountSelectHttp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Forces password generation to ask user to update the password instead of
 // overwriting silently.
@@ -48,10 +57,14 @@ const base::Feature kGooglePasswordManager = {
 const base::Feature kLeakDetection = {"PasswordLeakDetection",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables storing leaked credentials in the database.
+const base::Feature kLeakHistory = {"PasswordLeakHistory",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to offer manual password generation in the accessory sheet
 // on Android.
 const base::Feature kManualPasswordGenerationAndroid{
-    "ManualPasswordGenerationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ManualPasswordGenerationAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables editing saved passwords for Android.
 const base::Feature kPasswordEditingAndroid = {
@@ -66,14 +79,10 @@ const base::Feature kPasswordImport = {"PasswordImport",
 const base::Feature kPasswordManagerOnboardingAndroid = {
     "PasswordManagerOnboardingAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Deletes entries from local database on Mac which cannot be decrypted when
-// merging data with Sync.
-const base::Feature kRecoverPasswordsForSyncUsers = {
-    "RecoverPasswordsForSyncUsers", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables the touch to fill feature for Android.
-const base::Feature kTouchToFillAndroid = {"TouchToFillAndroid",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+// Controlls whether the password bubble on desktop contains an illustration and
+// which illustration.
+const base::Feature kPasswordSaveIllustration = {
+    "SavePasswordIllustration", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables support of filling and saving on username first flow.
 const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
@@ -84,24 +93,24 @@ const base::Feature kStickyBubble{"PasswordManagerStickyBubble",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Field trial identifier for password generation requirements.
-const char* kGenerationRequirementsFieldTrial =
+const char kGenerationRequirementsFieldTrial[] =
     "PasswordGenerationRequirements";
 
 // The file version number of password requirements files. If the prefix length
 // changes, this version number needs to be updated.
 // Default to 0 in order to get an empty requirements file.
-const char* kGenerationRequirementsVersion = "version";
+const char kGenerationRequirementsVersion[] = "version";
 
 // Length of a hash prefix of domain names. This is used to shard domains
 // across multiple files.
 // Default to 0 in order to put all domain names into the same shard.
-const char* kGenerationRequirementsPrefixLength = "prefix_length";
+const char kGenerationRequirementsPrefixLength[] = "prefix_length";
 
 // Timeout (in milliseconds) for password requirements lookups. As this is a
 // network request in the background that does not block the UI, the impact of
 // high values is not strong.
 // Default to 5000 ms.
-const char* kGenerationRequirementsTimeout = "timeout";
+const char kGenerationRequirementsTimeout[] = "timeout";
 
 }  // namespace features
 

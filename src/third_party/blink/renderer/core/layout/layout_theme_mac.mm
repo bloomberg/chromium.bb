@@ -29,6 +29,7 @@
 #import "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #import "third_party/blink/public/platform/platform.h"
 #import "third_party/blink/public/resources/grit/blink_resources.h"
+#import "third_party/blink/public/strings/grit/blink_strings.h"
 #import "third_party/blink/renderer/core/css_value_keywords.h"
 #import "third_party/blink/renderer/core/fileapi/file_list.h"
 #import "third_party/blink/renderer/core/html_names.h"
@@ -222,27 +223,33 @@ LayoutThemeMac::~LayoutThemeMac() {
   [[NSNotificationCenter defaultCenter] removeObserver:notification_observer_];
 }
 
-Color LayoutThemeMac::PlatformActiveSelectionBackgroundColor() const {
+Color LayoutThemeMac::PlatformActiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return GetSystemColor(MacSystemColorID::kSelectedTextBackground);
 }
 
-Color LayoutThemeMac::PlatformInactiveSelectionBackgroundColor() const {
+Color LayoutThemeMac::PlatformInactiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return GetSystemColor(MacSystemColorID::kSecondarySelectedControl);
 }
 
-Color LayoutThemeMac::PlatformActiveSelectionForegroundColor() const {
+Color LayoutThemeMac::PlatformActiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   return Color::kBlack;
 }
 
-Color LayoutThemeMac::PlatformActiveListBoxSelectionBackgroundColor() const {
+Color LayoutThemeMac::PlatformActiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   return GetSystemColor(MacSystemColorID::kAlternateSelectedControl);
 }
 
-Color LayoutThemeMac::PlatformActiveListBoxSelectionForegroundColor() const {
+Color LayoutThemeMac::PlatformActiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   return Color::kWhite;
 }
 
-Color LayoutThemeMac::PlatformInactiveListBoxSelectionForegroundColor() const {
+Color LayoutThemeMac::PlatformInactiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   return Color::kBlack;
 }
 
@@ -264,8 +271,9 @@ Color LayoutThemeMac::PlatformFocusRingColor() const {
                      ComputedStyle::InitialStyle().UsedColorScheme());
 }
 
-Color LayoutThemeMac::PlatformInactiveListBoxSelectionBackgroundColor() const {
-  return PlatformInactiveSelectionBackgroundColor();
+Color LayoutThemeMac::PlatformInactiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveSelectionBackgroundColor(color_scheme);
 }
 
 static FontSelectionValue ToFontWeight(NSInteger app_kit_font_weight) {
@@ -371,6 +379,12 @@ Color LayoutThemeMac::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kCaptiontext:
       color = GetSystemColor(MacSystemColorID::kText);
       break;
+    case CSSValueID::kField:
+      color = GetSystemColor(MacSystemColorID::kControlBackground);
+      break;
+    case CSSValueID::kFieldtext:
+      color = GetSystemColor(MacSystemColorID::kText);
+      break;
     case CSSValueID::kGraytext:
       color = GetSystemColor(MacSystemColorID::kDisabledControlText);
       break;
@@ -431,12 +445,14 @@ Color LayoutThemeMac::SystemColor(CSSValueID css_value_id,
       color = GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
       break;
     case CSSValueID::kWindow:
+    case CSSValueID::kCanvas:
       color = GetSystemColor(MacSystemColorID::kWindowBackground);
       break;
     case CSSValueID::kWindowframe:
       color = GetSystemColor(MacSystemColorID::kWindowFrame);
       break;
     case CSSValueID::kWindowtext:
+    case CSSValueID::kCanvastext:
       color = GetSystemColor(MacSystemColorID::kWindowFrameText);
       break;
     default:
@@ -744,7 +760,7 @@ int LayoutThemeMac::PopupInternalPaddingStart(
   return 0;
 }
 
-int LayoutThemeMac::PopupInternalPaddingEnd(const ChromeClient*,
+int LayoutThemeMac::PopupInternalPaddingEnd(LocalFrame*,
                                             const ComputedStyle& style) const {
   if (style.EffectiveAppearance() == kMenulistPart)
     return PopupButtonPadding(ControlSizeForFont(style))[kRightMargin] *
@@ -996,8 +1012,7 @@ String LayoutThemeMac::FileListNameForWidth(Locale& locale,
 
   String str_to_truncate;
   if (file_list->IsEmpty()) {
-    str_to_truncate =
-        locale.QueryString(WebLocalizedString::kFileButtonNoFileSelectedLabel);
+    str_to_truncate = locale.QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
   } else if (file_list->length() == 1) {
     File* file = file_list->item(0);
     if (file->GetUserVisibility() == File::kIsUserVisible)
@@ -1007,7 +1022,7 @@ String LayoutThemeMac::FileListNameForWidth(Locale& locale,
       str_to_truncate = file->name();
   } else {
     return StringTruncator::RightTruncate(
-        locale.QueryString(WebLocalizedString::kMultipleFileUploadText,
+        locale.QueryString(IDS_FORM_FILE_MULTIPLE_UPLOAD,
                            locale.ConvertToLocalizedNumber(
                                String::Number(file_list->length()))),
         width, font);

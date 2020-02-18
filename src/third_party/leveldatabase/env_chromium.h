@@ -87,9 +87,19 @@ enum LevelDBStatusValue {
 LEVELDB_EXPORT LevelDBStatusValue
 GetLevelDBStatusUMAValue(const leveldb::Status& s);
 
+using DatabaseErrorReportingCallback =
+    base::RepeatingCallback<void(const leveldb::Status&)>;
+
 // Create the default leveldb options object suitable for leveldb operations.
 struct LEVELDB_EXPORT Options : public leveldb::Options {
   Options();
+
+  // Called when there is a error during the Get() call. Intended for metrics
+  // reporting.
+  DatabaseErrorReportingCallback on_get_error;
+  // Called when there is a error during the Write() call, which is called for
+  // Write(), Put() and Delete(). Intended for metrics reporting.
+  DatabaseErrorReportingCallback on_write_error;
 };
 
 LEVELDB_EXPORT const char* MethodIDToString(MethodID method);
@@ -307,7 +317,7 @@ class LEVELDB_EXPORT DBTracker {
   // memory-infra and is enumerated by VisitDatabases() method.
   // This function is an implementation detail of leveldb_env::OpenDB(), and
   // has similar guarantees regarding |dbptr| argument.
-  leveldb::Status OpenDatabase(const leveldb::Options& options,
+  leveldb::Status OpenDatabase(const leveldb_env::Options& options,
                                const std::string& name,
                                TrackedDB** dbptr);
 
@@ -372,6 +382,7 @@ LEVELDB_EXPORT leveldb::Status RewriteDB(const leveldb_env::Options& options,
 
 LEVELDB_EXPORT base::StringPiece MakeStringPiece(const leveldb::Slice& s);
 LEVELDB_EXPORT leveldb::Slice MakeSlice(const base::StringPiece& s);
+LEVELDB_EXPORT leveldb::Slice MakeSlice(base::span<const uint8_t> s);
 
 }  // namespace leveldb_env
 

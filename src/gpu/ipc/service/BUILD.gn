@@ -10,6 +10,10 @@ if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
 
+declare_args() {
+  subpixel_font_rendering_disabled = false
+}
+
 jumbo_component("service") {
   output_name = "gpu_ipc_service"
   sources = [
@@ -52,9 +56,13 @@ jumbo_component("service") {
   if (is_chromecast) {
     defines += [ "IS_CHROMECAST" ]
   }
+  if (subpixel_font_rendering_disabled) {
+    defines += [ "SUBPIXEL_FONT_RENDERING_DISABLED" ]
+  }
   public_deps = [
     "//base",
     "//components/viz/common",
+    "//gpu/config",
     "//ipc",
     "//ui/base",
     "//ui/display",
@@ -115,10 +123,6 @@ jumbo_component("service") {
       "stream_texture_android.h",
     ]
     libs += [ "android" ]
-    deps += [
-      "//gpu/command_buffer/service:shared_image_video",
-      "//gpu/ipc/common:android_texture_owner",
-    ]
   }
   if (is_linux) {
     sources += [ "image_transport_surface_linux.cc" ]
@@ -154,6 +158,7 @@ source_set("test_support") {
     "//testing/gtest:gtest",
   ]
   deps = [
+    "//base/test:test_support",
     "//gpu/ipc/common",
     "//ui/gl:test_support",
   ]

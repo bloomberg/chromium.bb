@@ -79,7 +79,7 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   SafeBrowsingUIManagerTest()
       : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {
-    ui_manager_ = new SafeBrowsingUIManager(NULL);
+    ui_manager_ = new SafeBrowsingUIManager(nullptr);
   }
 
   ~SafeBrowsingUIManagerTest() override {}
@@ -96,9 +96,8 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
     g_browser_process->safe_browsing_service()->Initialize();
     // A profile was created already but SafeBrowsingService wasn't around to
     // get notified of it, so include that notification now.
-    safe_browsing_service->AddPrefService(
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
-            ->GetPrefs());
+    safe_browsing_service->OnProfileAdded(
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
     content::BrowserThread::RunAllPendingTasksOnThreadForTesting(
         content::BrowserThread::IO);
   }
@@ -448,14 +447,15 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
             unsafe_resources,
             BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
                 BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources),
-                false,                   // is_extended_reporting_opt_in_allowed
-                false,                   // is_off_the_record
-                false,                   // is_extended_reporting_enabled
-                false,                   // is_extended_reporting_policy_managed
-                false,                   // is_proceed_anyway_disabled
-                true,                    // should_open_links_in_new_tab
-                true,                    // always_show_back_to_safety
-                "cpn_safe_browsing")) {  // help_center_article_link
+                false,                 // is_extended_reporting_opt_in_allowed
+                false,                 // is_off_the_record
+                false,                 // is_extended_reporting_enabled
+                false,                 // is_extended_reporting_policy_managed
+                false,                 // is_proceed_anyway_disabled
+                true,                  // should_open_links_in_new_tab
+                true,                  // always_show_back_to_safety
+                "cpn_safe_browsing"),  // help_center_article_link
+            true) {                    // should_trigger_reporting
     // Don't delay details at all for the unittest.
     SetThreatDetailsProceedDelayForTesting(0);
     DontCreateViewForTesting();
@@ -473,8 +473,8 @@ class TestSafeBrowsingBlockingPageFactory
       BaseUIManager* delegate,
       content::WebContents* web_contents,
       const GURL& main_frame_url,
-      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
-      override {
+      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources,
+      bool should_trigger_reporting) override {
     return new TestSafeBrowsingBlockingPage(delegate, web_contents,
                                             main_frame_url, unsafe_resources);
   }

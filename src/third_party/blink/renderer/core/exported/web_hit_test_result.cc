@@ -37,8 +37,8 @@
 
 namespace blink {
 
-class WebHitTestResultPrivate
-    : public GarbageCollectedFinalized<WebHitTestResultPrivate> {
+class WebHitTestResultPrivate final
+    : public GarbageCollected<WebHitTestResultPrivate> {
  public:
   WebHitTestResultPrivate(const HitTestResult&);
   WebHitTestResultPrivate(const WebHitTestResultPrivate&);

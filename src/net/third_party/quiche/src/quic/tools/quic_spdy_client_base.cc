@@ -4,12 +4,13 @@
 
 #include "net/third_party/quiche/src/quic/tools/quic_spdy_client_base.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 
 using spdy::SpdyHeaderBlock;
@@ -36,17 +37,20 @@ QuicSpdyClientBase::QuicSpdyClientBase(
     QuicConnectionHelperInterface* helper,
     QuicAlarmFactory* alarm_factory,
     std::unique_ptr<NetworkHelper> network_helper,
-    std::unique_ptr<ProofVerifier> proof_verifier)
+    std::unique_ptr<ProofVerifier> proof_verifier,
+    std::unique_ptr<SessionCache> session_cache)
     : QuicClientBase(server_id,
                      supported_versions,
                      config,
                      helper,
                      alarm_factory,
                      std::move(network_helper),
-                     std::move(proof_verifier)),
+                     std::move(proof_verifier),
+                     std::move(session_cache)),
       store_response_(false),
       latest_response_code_(-1),
-      max_allowed_push_id_(0) {}
+      max_allowed_push_id_(0),
+      disable_qpack_dynamic_table_(false) {}
 
 QuicSpdyClientBase::~QuicSpdyClientBase() {
   // We own the push promise index. We need to explicitly kill
@@ -59,10 +63,14 @@ QuicSpdyClientSession* QuicSpdyClientBase::client_session() {
 }
 
 void QuicSpdyClientBase::InitializeSession() {
+  if (disable_qpack_dynamic_table_) {
+    client_session()->set_qpack_maximum_dynamic_table_capacity(0);
+    client_session()->set_qpack_maximum_blocked_streams(0);
+  }
   client_session()->Initialize();
   client_session()->CryptoConnect();
   if (max_allowed_push_id_ > 0) {
-    client_session()->set_max_allowed_push_id(max_allowed_push_id_);
+    client_session()->SetMaxAllowedPushId(max_allowed_push_id_);
   }
 }
 
@@ -99,7 +107,7 @@ void QuicSpdyClientBase::OnClose(QuicSpdyStream* stream) {
 std::unique_ptr<QuicSession> QuicSpdyClientBase::CreateQuicClientSession(
     const quic::ParsedQuicVersionVector& supported_versions,
     QuicConnection* connection) {
-  return QuicMakeUnique<QuicSpdyClientSession>(
+  return std::make_unique<QuicSpdyClientSession>(
       *config(), supported_versions, connection, server_id(), crypto_config(),
       &push_promise_index_);
 }

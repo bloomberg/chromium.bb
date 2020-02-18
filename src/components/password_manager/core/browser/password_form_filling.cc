@@ -41,7 +41,7 @@ bool ContainsAndroidCredentials(const PasswordFormFillData& fill_data) {
   return PreferredRealmIsFromAndroid(fill_data);
 }
 
-bool ShouldShowInitialPasswordAccountSuggestions() {
+bool IsFillOnAccountSelectFeatureEnabled() {
   return base::FeatureList::IsEnabled(
       password_manager::features::kFillOnAccountSelect);
 }
@@ -49,7 +49,7 @@ bool ShouldShowInitialPasswordAccountSuggestions() {
 void Autofill(PasswordManagerClient* client,
               PasswordManagerDriver* driver,
               const PasswordForm& form_for_autofill,
-              const std::map<base::string16, const PasswordForm*>& best_matches,
+              const std::vector<const PasswordForm*>& best_matches,
               const std::vector<const PasswordForm*>& federated_matches,
               const PasswordForm& preferred_match,
               bool wait_for_username) {
@@ -77,41 +77,28 @@ void Autofill(PasswordManagerClient* client,
                                 &federated_matches);
 }
 
-void ShowInitialPasswordAccountSuggestions(
-    const PasswordManagerClient& client,
-    PasswordManagerDriver* driver,
-    const PasswordForm& form_for_autofill,
-    const std::map<base::string16, const PasswordForm*>& best_matches,
-    const PasswordForm& preferred_match,
-    bool wait_for_username) {
-  DCHECK_EQ(PasswordForm::Scheme::kHtml, preferred_match.scheme);
-
-  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (password_manager_util::IsLoggingActive(&client)) {
-    logger.reset(new BrowserSavePasswordProgressLogger(client.GetLogManager()));
-    logger->LogMessage(
-        Logger::
-            STRING_PASSWORDMANAGER_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS);
-  }
-
-  if (logger)
-    logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
-  driver->ShowInitialPasswordAccountSuggestions(PasswordFormFillData(
-      form_for_autofill, best_matches, preferred_match, wait_for_username));
-}
-
 }  // namespace
 
 LikelyFormFilling SendFillInformationToRenderer(
     PasswordManagerClient* client,
     PasswordManagerDriver* driver,
     const PasswordForm& observed_form,
-    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const std::vector<const PasswordForm*>& best_matches,
     const std::vector<const PasswordForm*>& federated_matches,
     const PasswordForm* preferred_match,
     PasswordFormMetricsRecorder* metrics_recorder) {
   DCHECK(driver);
   DCHECK_EQ(PasswordForm::Scheme::kHtml, observed_form.scheme);
+
+  if (autofill::IsShowAutofillSignaturesEnabled()) {
+    driver->AnnotateFieldsWithParsingResult(
+        {.username_renderer_id = observed_form.username_element_renderer_id,
+         .password_renderer_id = observed_form.password_element_renderer_id,
+         .new_password_renderer_id =
+             observed_form.new_password_element_renderer_id,
+         .confirm_password_renderer_id =
+             observed_form.confirmation_password_element_renderer_id});
+  }
 
   if (best_matches.empty()) {
     driver->InformNoSavedCredentials();
@@ -128,21 +115,12 @@ LikelyFormFilling SendFillInformationToRenderer(
   const bool no_sign_in_form =
       !observed_form.HasPasswordElement() && !observed_form.IsSingleUsername();
 
-  // Wait for the username before filling passwords in case the
-  // FillOnAccountSelectHttp feature is active and the main frame is
-  // insecure.
-  const bool enable_foas_on_http =
-      base::FeatureList::IsEnabled(features::kFillOnAccountSelectHttp) &&
-      !client->IsMainFrameSecure();
-
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
   // (1) we are in Incognito mode, or
   // (2) if it matched using public suffix domain matching, or
   // (3) it would result in unexpected filling in a form with new password
   //     fields.
-  // (4) the current main frame origin is insecure and the FOAS on HTTP feature
-  //     is active.
   using WaitForUsernameReason =
       PasswordFormMetricsRecorder::WaitForUsernameReason;
   WaitForUsernameReason wait_for_username_reason =
@@ -154,10 +132,12 @@ LikelyFormFilling SendFillInformationToRenderer(
   } else if (no_sign_in_form) {
     // If the parser did not find a current password element, don't fill.
     wait_for_username_reason = WaitForUsernameReason::kFormNotGoodForFilling;
-  } else if (enable_foas_on_http) {
-    wait_for_username_reason = WaitForUsernameReason::kFoasOnHTTP;
+  } else if (!client->IsMainFrameSecure()) {
+    wait_for_username_reason = WaitForUsernameReason::kInsecureOrigin;
   } else if (autofill::IsTouchToFillEnabled()) {
     wait_for_username_reason = WaitForUsernameReason::kTouchToFill;
+  } else if (IsFillOnAccountSelectFeatureEnabled()) {
+    wait_for_username_reason = WaitForUsernameReason::kFoasFeature;
   }
 
   // Record no "FirstWaitForUsernameReason" metrics for a form that is not meant
@@ -182,19 +162,9 @@ LikelyFormFilling SendFillInformationToRenderer(
         PasswordFormMetricsRecorder::kManagerFillEventAutofilled);
     base::RecordAction(base::UserMetricsAction("PasswordManager_Autofilled"));
   }
-  if (ShouldShowInitialPasswordAccountSuggestions()) {
-    // This is for the fill-on-account-select experiment. Instead of autofilling
-    // found usernames and passwords on load, this instructs the renderer to
-    // return with any found password forms so a list of password account
-    // suggestions can be drawn.
-    ShowInitialPasswordAccountSuggestions(*client, driver, observed_form,
-                                          best_matches, *preferred_match,
-                                          wait_for_username);
-    return LikelyFormFilling::kShowInitialAccountSuggestions;
-  }
 
-  // If fill-on-account-select is not enabled, continue with autofilling any
-  // password forms as traditionally has been done.
+  // Continue with autofilling any password forms as traditionally has been
+  // done.
   Autofill(client, driver, observed_form, best_matches, federated_matches,
            *preferred_match, wait_for_username);
   return wait_for_username ? LikelyFormFilling::kFillOnAccountSelect

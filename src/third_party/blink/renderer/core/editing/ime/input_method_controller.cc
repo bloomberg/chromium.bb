@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/markers/suggestion_marker_properties.h"
 #include "third_party/blink/renderer/core/editing/reveal_selection_scope.h"
@@ -46,15 +47,14 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/state_machines/backward_code_point_state_machine.h"
 #include "third_party/blink/renderer/core/editing/state_machines/forward_code_point_state_machine.h"
-#include "third_party/blink/renderer/core/enter_key_hint_names.h"
 #include "third_party/blink/renderer/core/events/composition_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
-#include "third_party/blink/renderer/core/input_mode_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/keywords.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -196,9 +196,9 @@ AtomicString GetInputModeAttribute(Element* element) {
     return AtomicString();
 
   bool query_attribute = false;
-  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     query_attribute = input->SupportsInputModeAttribute();
-  } else if (IsHTMLTextAreaElement(*element)) {
+  } else if (IsA<HTMLTextAreaElement>(*element)) {
     query_attribute = true;
   } else {
     element->GetDocument().UpdateStyleAndLayoutTree();
@@ -219,9 +219,9 @@ AtomicString GetEnterKeyHintAttribute(Element* element) {
     return AtomicString();
 
   bool query_attribute = false;
-  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     query_attribute = input->SupportsInputModeAttribute();
-  } else if (IsHTMLTextAreaElement(*element)) {
+  } else if (IsA<HTMLTextAreaElement>(*element)) {
     query_attribute = true;
   } else {
     element->GetDocument().UpdateStyleAndLayoutTree();
@@ -344,7 +344,7 @@ int ComputeAutocapitalizeFlags(const Element* element) {
   // We set the autocapitalization flag corresponding to the "used
   // autocapitalization hint" for the focused element:
   // https://html.spec.whatwg.org/C/#used-autocapitalization-hint
-  if (auto* input = ToHTMLInputElementOrNull(*html_element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*html_element)) {
     const AtomicString& input_type = input->type();
     if (input_type == input_type_names::kEmail ||
         input_type == input_type_names::kUrl ||
@@ -425,6 +425,7 @@ void InputMethodController::Clear() {
 void InputMethodController::ContextDestroyed(Document*) {
   Clear();
   composition_range_ = nullptr;
+  active_edit_context_ = nullptr;
 }
 
 void InputMethodController::DidAttachDocument(Document* document) {
@@ -453,9 +454,9 @@ bool IsTextTooLongAt(const Position& position) {
   const Element* element = EnclosingTextControl(position);
   if (!element)
     return false;
-  if (auto* input = ToHTMLInputElementOrNull(element))
+  if (auto* input = DynamicTo<HTMLInputElement>(element))
     return input->TooLong();
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(element))
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(element))
     return textarea->TooLong();
   return false;
 }
@@ -1384,14 +1385,14 @@ int InputMethodController::TextInputFlags() const {
   int flags = 0;
 
   const AtomicString& autocomplete =
-      element->getAttribute(html_names::kAutocompleteAttr);
+      element->FastGetAttribute(html_names::kAutocompleteAttr);
   if (autocomplete == "on")
     flags |= kWebTextInputFlagAutocompleteOn;
   else if (autocomplete == "off")
     flags |= kWebTextInputFlagAutocompleteOff;
 
   const AtomicString& autocorrect =
-      element->getAttribute(html_names::kAutocorrectAttr);
+      element->FastGetAttribute(html_names::kAutocorrectAttr);
   if (autocorrect == "on")
     flags |= kWebTextInputFlagAutocorrectOn;
   else if (autocorrect == "off")
@@ -1405,7 +1406,7 @@ int InputMethodController::TextInputFlags() const {
 
   flags |= ComputeAutocapitalizeFlags(element);
 
-  if (HTMLInputElement* input = ToHTMLInputElementOrNull(element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(element)) {
     if (input->HasBeenPasswordField())
       flags |= kWebTextInputFlagHasBeenPasswordField;
   }
@@ -1446,19 +1447,19 @@ ui::TextInputAction InputMethodController::InputActionOfFocusedElement() const {
 
   if (action.IsEmpty())
     return ui::TextInputAction::kDefault;
-  if (action == enter_key_hint_names::kEnter)
+  if (action == keywords::kEnter)
     return ui::TextInputAction::kEnter;
-  if (action == enter_key_hint_names::kDone)
+  if (action == keywords::kDone)
     return ui::TextInputAction::kDone;
-  if (action == enter_key_hint_names::kGo)
+  if (action == keywords::kGo)
     return ui::TextInputAction::kGo;
-  if (action == enter_key_hint_names::kNext)
+  if (action == keywords::kNext)
     return ui::TextInputAction::kNext;
-  if (action == enter_key_hint_names::kPrevious)
+  if (action == keywords::kPrevious)
     return ui::TextInputAction::kPrevious;
-  if (action == enter_key_hint_names::kSearch)
+  if (action == keywords::kSearch)
     return ui::TextInputAction::kSearch;
-  if (action == enter_key_hint_names::kSend)
+  if (action == keywords::kSend)
     return ui::TextInputAction::kSend;
   return ui::TextInputAction::kDefault;
 }
@@ -1468,21 +1469,21 @@ WebTextInputMode InputMethodController::InputModeOfFocusedElement() const {
 
   if (mode.IsEmpty())
     return kWebTextInputModeDefault;
-  if (mode == input_mode_names::kNone)
+  if (mode == keywords::kNone)
     return kWebTextInputModeNone;
-  if (mode == input_mode_names::kText)
+  if (mode == keywords::kText)
     return kWebTextInputModeText;
-  if (mode == input_mode_names::kTel)
+  if (mode == keywords::kTel)
     return kWebTextInputModeTel;
-  if (mode == input_mode_names::kUrl)
+  if (mode == keywords::kUrl)
     return kWebTextInputModeUrl;
-  if (mode == input_mode_names::kEmail)
+  if (mode == keywords::kEmail)
     return kWebTextInputModeEmail;
-  if (mode == input_mode_names::kNumeric)
+  if (mode == keywords::kNumeric)
     return kWebTextInputModeNumeric;
-  if (mode == input_mode_names::kDecimal)
+  if (mode == keywords::kDecimal)
     return kWebTextInputModeDecimal;
-  if (mode == input_mode_names::kSearch)
+  if (mode == keywords::kSearch)
     return kWebTextInputModeSearch;
   return kWebTextInputModeDefault;
 }
@@ -1506,7 +1507,7 @@ WebTextInputType InputMethodController::TextInputType() const {
   if (!element)
     return kWebTextInputTypeNone;
 
-  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+  if (auto* input = DynamicTo<HTMLInputElement>(*element)) {
     const AtomicString& type = input->type();
 
     if (input->IsDisabledOrReadOnly())
@@ -1530,7 +1531,7 @@ WebTextInputType InputMethodController::TextInputType() const {
     return kWebTextInputTypeNone;
   }
 
-  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element)) {
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element)) {
     if (textarea->IsDisabledOrReadOnly())
       return kWebTextInputTypeNone;
     return kWebTextInputTypeTextArea;
@@ -1555,6 +1556,7 @@ void InputMethodController::WillChangeFocus() {
 void InputMethodController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(composition_range_);
+  visitor->Trace(active_edit_context_);
   DocumentShutdownObserver::Trace(visitor);
 }
 

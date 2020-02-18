@@ -27,37 +27,23 @@ PwaInstallView::PwaInstallView(CommandUpdater* command_updater,
 
 PwaInstallView::~PwaInstallView() {}
 
-bool PwaInstallView::Update() {
+void PwaInstallView::UpdateImpl() {
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
-    return false;
+    return;
 
   auto* manager = banners::AppBannerManager::FromWebContents(web_contents);
   // May not be present e.g. in incognito mode.
   if (!manager)
-    return false;
-
-  bool show_install_button = false;
+    return;
 
   bool is_probably_promotable = manager->IsProbablyPromotableWebApp();
   if (is_probably_promotable && manager->MaybeConsumeInstallAnimation())
     AnimateIn(base::nullopt);
   else
     ResetSlideAnimation(false);
-  if (is_probably_promotable)
-    show_install_button = true;
 
-  auto* web_app_tab_helper =
-      web_app::WebAppTabHelper::FromWebContents(web_contents);
-  if (web_app_tab_helper && web_app_tab_helper->HasAssociatedApp())
-    show_install_button = false;
-
-  if (PWAConfirmationBubbleView::IsShowing())
-    show_install_button = true;
-
-  bool was_visible = GetVisible();
-  SetVisible(show_install_button);
-  return GetVisible() != was_visible;
+  SetVisible(is_probably_promotable || PWAConfirmationBubbleView::IsShowing());
 }
 
 void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {

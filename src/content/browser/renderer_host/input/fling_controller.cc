@@ -96,17 +96,22 @@ bool FlingController::ObserveAndFilterForTapSuppression(
 
 bool FlingController::ObserveAndMaybeConsumeGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
+  TRACE_EVENT0("input", "FlingController::ObserveAndMaybeConsumeGestureEvent");
   // FlingCancel events arrive when a finger is touched down regardless of
   // whether there is an ongoing fling. These can affect state so if there's no
   // on-going fling we should just discard these without letting the rest of
   // the fling system see it.
   if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingCancel &&
       !fling_curve_) {
+    TRACE_EVENT_INSTANT0("input", "NoActiveFling", TRACE_EVENT_SCOPE_THREAD);
     return true;
   }
 
-  if (ObserveAndFilterForTapSuppression(gesture_event))
+  if (ObserveAndFilterForTapSuppression(gesture_event)) {
+    TRACE_EVENT_INSTANT0("input", "FilterTapSuppression",
+                         TRACE_EVENT_SCOPE_THREAD);
     return true;
+  }
 
   if (gesture_event.event.GetType() == WebInputEvent::kGestureScrollUpdate) {
     last_seen_scroll_update_ = gesture_event.event.TimeStamp();
@@ -257,9 +262,10 @@ void FlingController::GenerateAndSendWheelEvents(
   MouseWheelEventWithLatencyInfo synthetic_wheel(
       WebInputEvent::kMouseWheel, current_fling_parameters_.modifiers,
       clock_->NowTicks(), ui::LatencyInfo(ui::SourceEventType::WHEEL));
+  synthetic_wheel.event.delta_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   synthetic_wheel.event.delta_x = delta.x();
   synthetic_wheel.event.delta_y = delta.y();
-  synthetic_wheel.event.has_precise_scrolling_deltas = true;
   synthetic_wheel.event.momentum_phase = phase;
   synthetic_wheel.event.has_synthetic_phase = true;
   synthetic_wheel.event.SetPositionInWidget(current_fling_parameters_.point);
@@ -385,12 +391,24 @@ bool FlingController::UpdateCurrentFlingState(
     return false;
   }
 
+  gfx::Size root_widget_viewport_size =
+      event_sender_client_->GetRootWidgetViewportSize();
+  // If the view is destroyed while FlingController is generating fling curve,
+  // |GetRootWidgetViewportSize()| will return empty size. Reset the
+  // state of fling_booster_ and return false.
+  if (root_widget_viewport_size.IsEmpty()) {
+    fling_booster_.Reset();
+    EndCurrentFling();
+    return false;
+  }
+
   fling_curve_ = std::unique_ptr<blink::WebGestureCurve>(
       ui::WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
           current_fling_parameters_.source_device,
           current_fling_parameters_.velocity,
           gfx::Vector2dF() /*initial_offset*/, false /*on_main_thread*/,
-          GetContentClient()->browser()->ShouldUseMobileFlingCurve()));
+          GetContentClient()->browser()->ShouldUseMobileFlingCurve(),
+          current_fling_parameters_.global_point, root_widget_viewport_size));
   return true;
 }
 

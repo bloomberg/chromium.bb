@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class ArcAppListPrefs;
@@ -61,6 +62,11 @@ class ApkWebAppService : public KeyedService,
   // ApkWebAppInstaller::Install().
   void UninstallWebApp(const web_app::AppId& web_app_id);
 
+  // If the app has updated from a web app to Android app or vice-versa,
+  // this function pins the new app in the old app's place on the shelf if it
+  // was pinned prior to the update.
+  void UpdateShelfPin(const arc::mojom::ArcPackageInfo* package_info);
+
   // KeyedService:
   void Shutdown() override;
 
@@ -91,7 +97,7 @@ class ApkWebAppService : public KeyedService,
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      observer_;
+      observer_{this};
 
   // Must go last.
   base::WeakPtrFactory<ApkWebAppService> weak_ptr_factory_{this};

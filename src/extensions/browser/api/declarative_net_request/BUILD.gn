@@ -12,6 +12,8 @@ source_set("declarative_net_request") {
     "constants.h",
     "declarative_net_request_api.cc",
     "declarative_net_request_api.h",
+    "extension_url_pattern_index_matcher.cc",
+    "extension_url_pattern_index_matcher.h",
     "file_sequence_helper.cc",
     "file_sequence_helper.h",
     "flat_ruleset_indexer.cc",
@@ -20,12 +22,20 @@ source_set("declarative_net_request") {
     "indexed_rule.h",
     "parse_info.cc",
     "parse_info.h",
+    "regex_rules_matcher.cc",
+    "regex_rules_matcher.h",
+    "request_action.cc",
+    "request_action.h",
+    "request_params.cc",
+    "request_params.h",
     "rules_monitor_service.cc",
     "rules_monitor_service.h",
     "ruleset_manager.cc",
     "ruleset_manager.h",
     "ruleset_matcher.cc",
     "ruleset_matcher.h",
+    "ruleset_matcher_base.cc",
+    "ruleset_matcher_base.h",
     "ruleset_source.cc",
     "ruleset_source.h",
     "utils.cc",
@@ -33,8 +43,10 @@ source_set("declarative_net_request") {
   ]
 
   public_deps = [
+    "//components/url_matcher",
     "//components/url_pattern_index",
     "//extensions/browser/api/declarative_net_request/flat:extension_ruleset",
+    "//third_party/re2",
   ]
 
   deps = [
@@ -62,5 +74,6 @@ source_set("test_support") {
     ":declarative_net_request",
     "//base",
     "//extensions/common",
+    "//testing/gtest",
   ]
 }

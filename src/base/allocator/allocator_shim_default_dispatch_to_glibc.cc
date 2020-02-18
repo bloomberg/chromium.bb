@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/allocator/allocator_shim.h"
+#include "base/compiler_specific.h"
 
 #include <dlfcn.h>
 #include <malloc.h>
@@ -52,6 +53,7 @@ void GlibcFree(const AllocatorDispatch*, void* address, void* context) {
   __libc_free(address);
 }
 
+NO_SANITIZE("cfi-icall")
 size_t GlibcGetSizeEstimate(const AllocatorDispatch*,
                             void* address,
                             void* context) {

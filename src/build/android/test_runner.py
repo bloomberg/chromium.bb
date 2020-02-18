@@ -310,13 +310,21 @@ def AddEmulatorOptions(parser):
   parser = parser.add_argument_group('emulator arguments')
 
   parser.add_argument(
-      '--avd-name',
-      help='Run and manage the lifetime of an AVD with the given name.')
-  parser.add_argument(
-      '--emulator-home',
+      '--avd-config',
       type=os.path.realpath,
-      help='Emulator home directory '
-      '(see ANDROID_EMULATOR_HOME: http://bit.ly/2K32oEy)')
+      help='Path to the avd config textpb. '
+      '(See //tools/android/avd/proto/ for message definition'
+      ' and existing textpb files.)')
+  parser.add_argument(
+      '--emulator-count',
+      type=int,
+      default=1,
+      help='Number of emulators to use.')
+  parser.add_argument(
+      '--emulator-window',
+      action='store_true',
+      default=False,
+      help='Enable graphical window display on the emulator.')
 
 
 def AddGTestOptions(parser):
@@ -413,6 +421,18 @@ def AddInstrumentationTestOptions(parser):
   parser.add_argument(
       '--apk-under-test',
       help='Path or name of the apk under test.')
+  parser.add_argument(
+      '--module',
+      action='append',
+      dest='modules',
+      help='Specify Android App Bundle modules to install in addition to the '
+      'base module.')
+  parser.add_argument(
+      '--fake-module',
+      action='append',
+      dest='fake_modules',
+      help='Specify Android App Bundle modules to fake install in addition to '
+      'the real modules.')
   parser.add_argument(
       '--coverage-dir',
       type=os.path.realpath,

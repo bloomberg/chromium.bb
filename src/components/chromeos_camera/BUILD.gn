@@ -163,10 +163,10 @@ if (use_v4l2_codec || use_vaapi) {
       "//base",
       "//base/test:test_support",
       "//media:test_support",
-      "//media/capture:chromeos_test_utils",
       "//media/gpu:buildflags",
       "//media/gpu/linux:video_frame_mapper",
       "//media/gpu/test:helpers",
+      "//media/gpu/test:local_gpu_memory_buffer_manager",
       "//media/parsers",
       "//mojo/core/embedder",
       "//testing/gtest",
@@ -186,6 +186,9 @@ if (use_v4l2_codec || use_vaapi) {
     if (use_vaapi) {
       deps += [ "//media/gpu/vaapi" ]
     }
+
+    # TODO(crbug.com/1029942): consider removing use_x11 support here. This is
+    # no longer needed.
     if (use_x11) {
       deps += [ "//ui/gfx/x" ]
     }
@@ -195,16 +198,28 @@ if (use_v4l2_codec || use_vaapi) {
   }
 }
 
+source_set("camera_app_helper") {
+  sources = [
+    "camera_app_helper_impl.cc",
+    "camera_app_helper_impl.h",
+  ]
+
+  deps = [
+    "common:camera_app_helper",
+    "//ash/public/cpp",
+  ]
+}
+
 test("jpeg_decode_accelerator_unittest") {
   deps = [
     ":mjpeg_decode_accelerator",
     ":mjpeg_decode_accelerator_service",
     "//base",
     "//media:test_support",
-    "//media/capture:chromeos_test_utils",
     "//media/gpu",
     "//media/gpu:buildflags",
     "//media/gpu/test:helpers",
+    "//media/gpu/test:local_gpu_memory_buffer_manager",
     "//media/parsers",
     "//mojo/core/embedder",
     "//testing/gtest",
@@ -222,24 +237,13 @@ test("jpeg_decode_accelerator_unittest") {
   ]
   data = [
     "//media/test/data/peach_pi-1280x720.jpg",
-    "//media/test/data/peach_pi-40x23.jpg",
-    "//media/test/data/peach_pi-41x22.jpg",
-    "//media/test/data/peach_pi-41x23.jpg",
   ]
   if (use_vaapi) {
-    deps += [
-      "//media/gpu/vaapi",
-      "//media/gpu/vaapi:jpeg_decoder_unit_test",
-
-      # TODO(crbug.com/986074): we should move this to its own executable, but
-      # this would imply creating a new Tast wrapper in Chrome OS. So, for
-      # convenience, we make the WebP tests run with the
-      # jpeg_decode_accelerator_unittest binary.
-      "//media/gpu/vaapi:webp_decoder_unit_test",
-    ]
-
-    data += [ "//media/test/data/pixel-1280x720.jpg" ]
+    deps += [ "//media/gpu/vaapi" ]
   }
+
+  # TODO(crbug.com/1029942): consider removing use_x11 support here. This is no
+  # longer needed.
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
   }

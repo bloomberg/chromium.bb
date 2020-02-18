@@ -75,7 +75,8 @@ void TextFinder::FindMatch::Trace(Visitor* visitor) {
 static void ScrollToVisible(Range* match) {
   const Node& first_node = *match->FirstNode();
   if (RuntimeEnabledFeatures::InvisibleDOMEnabled() ||
-      RuntimeEnabledFeatures::DisplayLockingEnabled()) {
+      RuntimeEnabledFeatures::DisplayLockingEnabled(
+          first_node.GetExecutionContext())) {
     const EphemeralRangeInFlatTree range(match);
     if (InvisibleDOM::ActivateRangeIfNeeded(range) ||
         DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range))
@@ -248,7 +249,7 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
   Node* node = active_match->FirstNode();
   if (node && node->IsInShadowTree()) {
     if (Node* host = node->OwnerShadowHost()) {
-      if (IsHTMLInputElement(*host) || IsHTMLTextAreaElement(*host))
+      if (IsA<HTMLInputElement>(*host) || IsA<HTMLTextAreaElement>(*host))
         node = host;
     }
   }
@@ -472,7 +473,7 @@ void TextFinder::IncreaseMatchCount(int identifier, int count) {
 
   // Update the UI with the latest findings.
   OwnerFrame().GetFindInPage()->ReportFindInPageMatchCount(
-      identifier, total_match_count_, !frame_scoping_ || !total_match_count_);
+      identifier, total_match_count_, !frame_scoping_);
 }
 
 void TextFinder::ReportFindInPageSelection(const WebRect& selection_rect,

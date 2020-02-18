@@ -33,7 +33,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -50,6 +50,7 @@
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/policy/core/common/policy_details.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_scheduler.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
@@ -211,8 +212,10 @@ void GetUserAffiliationStatus(base::DictionaryValue* dict, Profile* profile) {
 void GetOffHoursStatus(base::DictionaryValue* dict) {
   policy::off_hours::DeviceOffHoursController* off_hours_controller =
       chromeos::DeviceSettingsService::Get()->device_off_hours_controller();
-  if (off_hours_controller)
-    dict->SetBoolean("isOffHoursActive", off_hours_controller->is_off_hours_mode());
+  if (off_hours_controller) {
+    dict->SetBoolean("isOffHoursActive",
+                     off_hours_controller->is_off_hours_mode());
+  }
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -712,10 +715,9 @@ PolicyUIHandler::~PolicyUIHandler() {
 
 void PolicyUIHandler::AddCommonLocalizedStringsToSource(
     content::WebUIDataSource* source) {
-  AddLocalizedStringsBulk(source, policy::kPolicySources,
-                          policy::POLICY_SOURCE_COUNT);
+  AddLocalizedStringsBulk(source, policy::kPolicySources);
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"conflict", IDS_POLICY_LABEL_CONFLICT},
       {"headerLevel", IDS_POLICY_HEADER_LEVEL},
       {"headerName", IDS_POLICY_HEADER_NAME},
@@ -737,7 +739,7 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       {"unset", IDS_POLICY_UNSET},
       {"value", IDS_POLICY_LABEL_VALUE},
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   source->UseStringsJs();
 }
@@ -885,7 +887,7 @@ base::Value PolicyUIHandler::GetPolicyNames() const {
   const policy::Schema* chrome_schema = schema_map->GetSchema(chrome_ns);
   for (auto it = chrome_schema->GetPropertiesIterator(); !it.IsAtEnd();
        it.Advance()) {
-    chrome_policy_names->GetList().push_back(base::Value(it.key()));
+    chrome_policy_names->Append(base::Value(it.key()));
   }
   auto chrome_values = std::make_unique<base::DictionaryValue>();
   chrome_values->SetString("name", "Chrome Policies");
@@ -894,29 +896,12 @@ base::Value PolicyUIHandler::GetPolicyNames() const {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Add extension policy names.
-  for (const scoped_refptr<const extensions::Extension>& extension :
-       extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
-    // Skip this extension if it's not an enterprise extension.
-    if (!extension->manifest()->HasPath(
-            extensions::manifest_keys::kStorageManagedSchema))
-      continue;
-    auto extension_value = std::make_unique<base::DictionaryValue>();
-    extension_value->SetString("name", extension->name());
-    const policy::Schema* schema =
-        schema_map->GetSchema(policy::PolicyNamespace(
-            policy::POLICY_DOMAIN_EXTENSIONS, extension->id()));
-    auto policy_names = std::make_unique<base::ListValue>();
-    if (schema && schema->valid()) {
-      // Get policy names from the extension's policy schema.
-      // Store in a map, not an array, for faster lookup on JS side.
-      for (auto prop = schema->GetPropertiesIterator(); !prop.IsAtEnd();
-           prop.Advance()) {
-        policy_names->GetList().push_back(base::Value(prop.key()));
-      }
-    }
-    extension_value->Set("policyNames", std::move(policy_names));
-    names.Set(extension->id(), std::move(extension_value));
-  }
+  AddExtensionPolicyNames(&names, policy::POLICY_DOMAIN_EXTENSIONS);
+
+#if defined(OS_CHROMEOS)
+  AddExtensionPolicyNames(&names, policy::POLICY_DOMAIN_SIGNIN_EXTENSIONS);
+#endif  // defined(OS_CHROMEOS)
+
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   return std::move(names);
@@ -927,6 +912,57 @@ base::Value PolicyUIHandler::GetPolicyValues() const {
       .WithBrowserContext(web_ui()->GetWebContents()->GetBrowserContext())
       .EnableConvertValues(true)
       .ToValue();
+}
+
+void PolicyUIHandler::AddExtensionPolicyNames(
+    base::DictionaryValue* names,
+    policy::PolicyDomain policy_domain) const {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if defined(OS_CHROMEOS)
+  Profile* extension_profile =
+      policy_domain == policy::POLICY_DOMAIN_SIGNIN_EXTENSIONS
+          ? chromeos::ProfileHelper::GetSigninProfile()
+          : Profile::FromWebUI(web_ui());
+#else   // defined(OS_CHROMEOS)
+  Profile* extension_profile = Profile::FromWebUI(web_ui());
+#endif  // defined(OS_CHROMEOS)
+
+  scoped_refptr<policy::SchemaMap> schema_map =
+      extension_profile->GetOriginalProfile()
+          ->GetPolicySchemaRegistryService()
+          ->registry()
+          ->schema_map();
+
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(extension_profile);
+  std::unique_ptr<extensions::ExtensionSet> extension_set =
+      registry->GenerateInstalledExtensionsSet();
+
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       *extension_set) {
+    // Skip this extension if it's not an enterprise extension.
+    if (!extension->manifest()->HasPath(
+            extensions::manifest_keys::kStorageManagedSchema)) {
+      continue;
+    }
+    auto extension_value = std::make_unique<base::DictionaryValue>();
+    extension_value->SetString("name", extension->name());
+    const policy::Schema* schema = schema_map->GetSchema(
+        policy::PolicyNamespace(policy_domain, extension->id()));
+    auto policy_names = std::make_unique<base::ListValue>();
+    if (schema && schema->valid()) {
+      // Get policy names from the extension's policy schema.
+      // Store in a map, not an array, for faster lookup on JS side.
+      for (auto prop = schema->GetPropertiesIterator(); !prop.IsAtEnd();
+           prop.Advance()) {
+        policy_names->Append(base::Value(prop.key()));
+      }
+    }
+    extension_value->Set("policyNames", std::move(policy_names));
+    names->Set(extension->id(), std::move(extension_value));
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
 void PolicyUIHandler::SendStatus() {

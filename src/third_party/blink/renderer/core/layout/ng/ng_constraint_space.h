@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGConstraintSpace_h
-#define NGConstraintSpace_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_H_
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -86,7 +87,7 @@ class CORE_EXPORT NGConstraintSpace final {
     else
       bfc_offset_ = other.bfc_offset_;
   }
-  NGConstraintSpace(NGConstraintSpace&& other) noexcept
+  NGConstraintSpace(NGConstraintSpace&& other)
       : available_size_(other.available_size_),
         exclusion_space_(std::move(other.exclusion_space_)),
         bitfields_(other.bitfields_) {
@@ -110,7 +111,7 @@ class CORE_EXPORT NGConstraintSpace final {
     bitfields_ = other.bitfields_;
     return *this;
   }
-  NGConstraintSpace& operator=(NGConstraintSpace&& other) noexcept {
+  NGConstraintSpace& operator=(NGConstraintSpace&& other) {
     available_size_ = other.available_size_;
     if (HasRareData())
       delete rare_data_;
@@ -254,14 +255,34 @@ class CORE_EXPORT NGConstraintSpace final {
                          : kIndefiniteSize;
   }
 
-  // Return the block space that was available in the current fragmentainer at
-  // the start of the current block formatting context. Note that if the start
-  // of the current block formatting context is in a previous fragmentainer, the
-  // size of the current fragmentainer is returned instead.
-  LayoutUnit FragmentainerSpaceAtBfcStart() const {
+  // Return true if we're column-balancing, and are in the initial pass where
+  // we're calculating the initial minimal column block-size.
+  bool IsInitialColumnBalancingPass() const {
+    return BlockFragmentationType() == kFragmentColumn &&
+           FragmentainerBlockSize() == kIndefiniteSize;
+  }
+
+  // Return true if we're block-fragmented and know our fragmentainer
+  // block-size.
+  bool HasKnownFragmentainerBlockSize() const {
+    if (!HasBlockFragmentation() || IsInitialColumnBalancingPass())
+      return false;
+    // The only case where we allow an unknown fragmentainer block-size is if
+    // we're in the initial column balancing pass.
+    DCHECK(FragmentainerBlockSize() != kIndefiniteSize);
+    return true;
+  }
+
+  // Return the block-offset from the block-start of the fragmentainer
+  // relative to the block-start of the current block formatting context in
+  // the current fragmentainer. Note that if the current block formatting
+  // context starts in a previous fragmentainer, we'll return the block-offset
+  // relative to the current fragmentainer.
+  LayoutUnit FragmentainerOffsetAtBfc() const {
     DCHECK(HasBlockFragmentation());
-    return HasRareData() ? rare_data_->fragmentainer_space_at_bfc_start
-                         : kIndefiniteSize;
+    if (HasRareData())
+      return rare_data_->fragmentainer_offset_at_bfc;
+    return LayoutUnit();
   }
 
   // Whether the current constraint space is for the newly established
@@ -272,6 +293,12 @@ class CORE_EXPORT NGConstraintSpace final {
 
   // Whether the current node is a table-cell.
   bool IsTableCell() const { return bitfields_.is_table_cell; }
+
+  // Whether the table-cell fragment should be hidden (not painted) if it has
+  // no children.
+  bool HideTableCellIfEmpty() const {
+    return HasRareData() && rare_data_->hide_table_cell_if_empty;
+  }
 
   // Whether the fragment produced from layout should be anonymous, (e.g. it
   // may be a column in a multi-column layout). In such cases it shouldn't have
@@ -315,13 +342,6 @@ class CORE_EXPORT NGConstraintSpace final {
   // (ie. fit-content). This is used for inline-block, floats, etc.
   bool IsShrinkToFit() const { return bitfields_.is_shrink_to_fit; }
 
-  // Whether this constraint space is used for an intermediate layout in a
-  // multi-pass layout. In such a case, we should not copy back the resulting
-  // layout data to the legacy tree or create a paint fragment from it.
-  bool IsIntermediateLayout() const {
-    return bitfields_.is_intermediate_layout;
-  }
-
   // If specified a layout should produce a Fragment which fragments at the
   // blockSize if possible.
   NGFragmentationType BlockFragmentationType() const {
@@ -346,6 +366,15 @@ class CORE_EXPORT NGConstraintSpace final {
   // the one established by the nearest ancestor multicol container.
   bool IsInColumnBfc() const {
     return HasRareData() && rare_data_->is_in_column_bfc;
+  }
+
+  // Get the appeal of the best breakpoint found so far. When progressing
+  // through layout, we know that we don't need to consider less appealing
+  // breakpoints than this.
+  NGBreakAppeal EarlyBreakAppeal() const {
+    if (!HasRareData())
+      return kBreakAppealLastResort;
+    return static_cast<NGBreakAppeal>(rare_data_->early_break_appeal);
   }
 
   // Returns if this node is a table cell child, and which table layout mode
@@ -558,23 +587,26 @@ class CORE_EXPORT NGConstraintSpace final {
     explicit RareData(const NGBfcOffset bfc_offset)
         : bfc_offset(bfc_offset),
           data_union_type(static_cast<unsigned>(kNone)),
+          hide_table_cell_if_empty(false),
           block_direction_fragmentation_type(
               static_cast<unsigned>(kFragmentNone)),
           is_inside_balanced_columns(false),
-          is_in_column_bfc(false) {}
+          is_in_column_bfc(false),
+          early_break_appeal(kBreakAppealLastResort) {}
     RareData(const RareData& other)
         : percentage_resolution_size(other.percentage_resolution_size),
           replaced_percentage_resolution_block_size(
               other.replaced_percentage_resolution_block_size),
           bfc_offset(other.bfc_offset),
           fragmentainer_block_size(other.fragmentainer_block_size),
-          fragmentainer_space_at_bfc_start(
-              other.fragmentainer_space_at_bfc_start),
+          fragmentainer_offset_at_bfc(other.fragmentainer_offset_at_bfc),
           data_union_type(other.data_union_type),
+          hide_table_cell_if_empty(other.hide_table_cell_if_empty),
           block_direction_fragmentation_type(
               other.block_direction_fragmentation_type),
           is_inside_balanced_columns(other.is_inside_balanced_columns),
-          is_in_column_bfc(other.is_in_column_bfc) {
+          is_in_column_bfc(other.is_in_column_bfc),
+          early_break_appeal(other.early_break_appeal) {
       switch (data_union_type) {
         case kNone:
           break;
@@ -623,22 +655,25 @@ class CORE_EXPORT NGConstraintSpace final {
     NGBfcOffset bfc_offset;
 
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;
-    LayoutUnit fragmentainer_space_at_bfc_start = kIndefiniteSize;
+    LayoutUnit fragmentainer_offset_at_bfc;
 
     unsigned data_union_type : 2;
+    unsigned hide_table_cell_if_empty : 1;
     unsigned block_direction_fragmentation_type : 2;
     unsigned is_inside_balanced_columns : 1;
     unsigned is_in_column_bfc : 1;
+    unsigned early_break_appeal : 2;  // NGBreakAppeal
 
     bool MaySkipLayout(const RareData& other) const {
       if (fragmentainer_block_size != other.fragmentainer_block_size ||
-          fragmentainer_space_at_bfc_start !=
-              other.fragmentainer_space_at_bfc_start ||
+          fragmentainer_offset_at_bfc != other.fragmentainer_offset_at_bfc ||
           data_union_type != other.data_union_type ||
+          hide_table_cell_if_empty != other.hide_table_cell_if_empty ||
           block_direction_fragmentation_type !=
               other.block_direction_fragmentation_type ||
           is_inside_balanced_columns != other.is_inside_balanced_columns ||
-          is_in_column_bfc != other.is_in_column_bfc)
+          is_in_column_bfc != other.is_in_column_bfc ||
+          early_break_appeal != other.early_break_appeal)
         return false;
 
       if (data_union_type == kNone)
@@ -657,9 +692,10 @@ class CORE_EXPORT NGConstraintSpace final {
     // Must be kept in sync with members checked within |MaySkipLayout|.
     bool IsInitialForMaySkipLayout() const {
       if (fragmentainer_block_size != kIndefiniteSize ||
-          fragmentainer_space_at_bfc_start != kIndefiniteSize ||
+          fragmentainer_offset_at_bfc || hide_table_cell_if_empty ||
           block_direction_fragmentation_type != kFragmentNone ||
-          is_inside_balanced_columns || is_in_column_bfc)
+          is_inside_balanced_columns || is_in_column_bfc ||
+          early_break_appeal != kBreakAppealLastResort)
         return false;
 
       if (data_union_type == kNone)
@@ -840,7 +876,6 @@ class CORE_EXPORT NGConstraintSpace final {
           is_anonymous(false),
           is_new_formatting_context(false),
           is_orthogonal_writing_mode_root(false),
-          is_intermediate_layout(false),
           is_fixed_block_size_indefinite(false),
           is_restricted_block_size_table_cell(false),
           use_first_line_style(false),
@@ -863,7 +898,6 @@ class CORE_EXPORT NGConstraintSpace final {
              is_new_formatting_context == other.is_new_formatting_context &&
              is_orthogonal_writing_mode_root ==
                  other.is_orthogonal_writing_mode_root &&
-             is_intermediate_layout == other.is_intermediate_layout &&
              is_fixed_block_size_indefinite ==
                  other.is_fixed_block_size_indefinite &&
              is_restricted_block_size_table_cell ==
@@ -890,7 +924,6 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_anonymous : 1;
     unsigned is_new_formatting_context : 1;
     unsigned is_orthogonal_writing_mode_root : 1;
-    unsigned is_intermediate_layout : 1;
 
     unsigned is_fixed_block_size_indefinite : 1;
     unsigned is_restricted_block_size_table_cell : 1;
@@ -941,4 +974,4 @@ inline std::ostream& operator<<(std::ostream& stream,
 
 }  // namespace blink
 
-#endif  // NGConstraintSpace_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_CONSTRAINT_SPACE_H_

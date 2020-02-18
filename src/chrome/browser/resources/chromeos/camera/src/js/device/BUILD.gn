@@ -9,11 +9,13 @@ js_type_check("closure_compile") {
     ":camera3_device_info",
     ":constraints_preferrer",
     ":device_info_updater",
+    ":error",
   ]
 }
 
 js_library("camera3_device_info") {
   deps = [
+    "..:type",
     "../mojo:image_capture",
   ]
 }
@@ -21,8 +23,8 @@ js_library("camera3_device_info") {
 js_library("constraints_preferrer") {
   deps = [
     ":camera3_device_info",
-    "..:resolution_event_broker",
     "..:state",
+    "..:type",
     "../browser_proxy:browser_proxy",
   ]
 }
@@ -31,6 +33,11 @@ js_library("device_info_updater") {
   deps = [
     ":camera3_device_info",
     ":constraints_preferrer",
+    ":error",
     "..:state",
+    "..:type",
   ]
+}
+
+js_library("error") {
 }

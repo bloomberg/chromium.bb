@@ -26,9 +26,9 @@ sync_pb::NigoriKey NigoriToProto(const Nigori& nigori,
   DCHECK_EQ(key_name, ComputeNigoriName(nigori));
 
   sync_pb::NigoriKey proto;
-  proto.set_name(key_name);
-  nigori.ExportKeys(proto.mutable_user_key(), proto.mutable_encryption_key(),
-                    proto.mutable_mac_key());
+  proto.set_deprecated_name(key_name);
+  nigori.ExportKeys(proto.mutable_deprecated_user_key(),
+                    proto.mutable_encryption_key(), proto.mutable_mac_key());
   return proto;
 }
 
@@ -55,17 +55,11 @@ NigoriKeyBag NigoriKeyBag::CreateEmpty() {
 NigoriKeyBag NigoriKeyBag::CreateFromProto(const sync_pb::NigoriKeyBag& proto) {
   NigoriKeyBag output;
   for (const sync_pb::NigoriKey& key : proto.key()) {
-    std::unique_ptr<Nigori> nigori = Nigori::CreateByImport(
-        key.user_key(), key.encryption_key(), key.mac_key());
-    if (!nigori) {
+    if (output.AddKeyFromProto(key).empty()) {
       // TODO(crbug.com/922900): Consider propagating this error to callers such
       // that they can do smarter handling.
       DLOG(ERROR) << "Invalid NigoriKey protocol buffer message.";
-      continue;
     }
-    // TODO(crbug.com/967417): We shouldn't trust the name in the proto and
-    // instead should compute ComputeNigoriName(*nigori).
-    output.nigori_map_[key.name()] = std::move(nigori);
   }
   return output;
 }
@@ -104,7 +98,12 @@ bool NigoriKeyBag::HasKey(const std::string& key_name) const {
 
 sync_pb::NigoriKey NigoriKeyBag::ExportKey(const std::string& key_name) const {
   DCHECK(HasKey(key_name));
-  return NigoriToProto(*nigori_map_.find(key_name)->second, key_name);
+  sync_pb::NigoriKey key =
+      NigoriToProto(*nigori_map_.find(key_name)->second, key_name);
+  // For exported keys, clients never consumed the key name, so it's safe to
+  // clear the deprecated field.
+  key.clear_deprecated_name();
+  return key;
 }
 
 std::string NigoriKeyBag::AddKey(std::unique_ptr<Nigori> nigori) {
@@ -115,6 +114,22 @@ std::string NigoriKeyBag::AddKey(std::unique_ptr<Nigori> nigori) {
     return key_name;
   }
   nigori_map_.emplace(key_name, std::move(nigori));
+  return key_name;
+}
+
+std::string NigoriKeyBag::AddKeyFromProto(const sync_pb::NigoriKey& key) {
+  std::unique_ptr<Nigori> nigori = Nigori::CreateByImport(
+      key.deprecated_user_key(), key.encryption_key(), key.mac_key());
+  if (!nigori) {
+    return std::string();
+  }
+
+  const std::string key_name = ComputeNigoriName(*nigori);
+  if (key_name.empty()) {
+    return std::string();
+  }
+
+  nigori_map_[key_name] = std::move(nigori);
   return key_name;
 }
 
@@ -145,6 +160,11 @@ bool NigoriKeyBag::EncryptWithKey(
   return true;
 }
 
+bool NigoriKeyBag::CanDecrypt(
+    const sync_pb::EncryptedData& encrypted_input) const {
+  return HasKey(encrypted_input.key_name());
+}
+
 bool NigoriKeyBag::Decrypt(const sync_pb::EncryptedData& encrypted_input,
                            std::string* decrypted_output) const {
   DCHECK(decrypted_output);
@@ -155,7 +175,6 @@ bool NigoriKeyBag::Decrypt(const sync_pb::EncryptedData& encrypted_input,
   if (it == nigori_map_.end()) {
     // The key used to encrypt the blob is not part of the set of installed
     // nigoris.
-    DLOG(ERROR) << "Cannot decrypt message";
     return false;
   }
 

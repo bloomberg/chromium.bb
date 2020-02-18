@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/gfx/geometry/insets.h"
@@ -18,12 +19,15 @@ namespace ash {
 TrayContainer::TrayContainer(Shelf* shelf) : shelf_(shelf) {
   DCHECK(shelf_);
 
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
   UpdateLayout();
 }
 
-TrayContainer::~TrayContainer() = default;
+TrayContainer::~TrayContainer() {
+}
 
-void TrayContainer::UpdateAfterShelfAlignmentChange() {
+void TrayContainer::UpdateAfterShelfChange() {
   UpdateLayout();
 }
 
@@ -73,9 +77,11 @@ void TrayContainer::UpdateLayout() {
       is_horizontal ? views::BoxLayout::Orientation::kHorizontal
                     : views::BoxLayout::Orientation::kVertical;
 
-  gfx::Insets insets(is_horizontal
-                         ? gfx::Insets(0, TrayConstants::hit_region_padding())
-                         : gfx::Insets(TrayConstants::hit_region_padding(), 0));
+  gfx::Insets insets(
+      is_horizontal
+          ? gfx::Insets(0, ShelfConfig::Get()->status_area_hit_region_padding())
+          : gfx::Insets(ShelfConfig::Get()->status_area_hit_region_padding(),
+                        0));
   SetBorder(views::CreateEmptyBorder(insets));
 
   int horizontal_margin = main_axis_margin_;

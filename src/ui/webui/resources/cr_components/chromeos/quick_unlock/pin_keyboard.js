@@ -41,15 +41,38 @@ const INITIAL_BACKSPACE_DELAY_MS = 500;
 
 /**
  * The key codes of the keys allowed to be used on the pin input, in addition to
- * number keys. Currently we allow backspace(8), tab(9), left(37) and right(39).
- * @type {Array<number>}
+ * number keys. We allow some editing keys. We also allow system keys, otherwise
+ * preventDefault() will prevent the user from changing screen brightness,
+ * taking screenshots, etc. https://crbug.com/1002863
+ * @type {!Set<number>}
  * @const
  */
-const PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES = [8, 9, 37, 39];
+const PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES = new Set([
+  8,   // backspace
+  9,   // tab
+  37,  // left
+  39,  // right
+  // We don't allow back, forward, or refresh.
+  183,  // ZoomToggle, aka fullscreen
+  182,  // LaunchApplication1, aka overview mode
+  216,  // BrightnessDown
+  217,  // BrightnessUp
+  179,  // MediaPlayPause
+  173,  // AudioVolumeMute
+  174,  // AudioVolumeDown
+  175,  // AudioVolumeUp
+  154,  // LaunchControlPanel, aka system tray menu
+]);
 
-/** @return {boolean} */
-function receivedFocusFromKeyboard() {
-  return !!document.querySelector('html.focus-outline-visible');
+/**
+ * @param {!Event} event
+ * @return {boolean}
+ */
+function receivedEventFromKeyboard(event) {
+  if (!event.detail || !event.detail.sourceEvent) {
+    return false;
+  }
+  return event.detail.sourceEvent.detail === 0;
 }
 
 Polymer({
@@ -70,6 +93,11 @@ Polymer({
     },
 
     hasError: Boolean,
+
+    disabled: {
+      type: Boolean,
+      value: false,
+    },
 
     /**
      * The password element the pin keyboard is associated with. If this is not
@@ -109,7 +137,7 @@ Polymer({
     /**
      * @private
      */
-    forceUnderline_: {
+    focused_: {
       type: Boolean,
       value: false,
     },
@@ -131,12 +159,10 @@ Polymer({
     },
 
     /**
-     * Turns on "incognito mode". (FIXME after https://crbug.com/900351 is
-     * fixed).
+     * The aria label to be used for the input element.
      */
-    isIncognitoUi: {
-      type: Boolean,
-      value: false,
+    ariaLabel: {
+      type: String,
     },
   },
 
@@ -216,17 +242,17 @@ Polymer({
 
   /** @private */
   onFocus_: function() {
-    this.forceUnderline_ = true;
+    this.focused_ = true;
   },
 
   /** @private */
   onBlur_: function() {
-    this.forceUnderline_ = false;
+    this.focused_ = false;
   },
 
   /**
    * Called when a keypad number has been tapped.
-   * @param {Event} event The event object.
+   * @param {!Event} event The event object.
    * @private
    */
   onNumberTap_: function(event) {
@@ -242,7 +268,7 @@ Polymer({
     // button, therefore we transfer focus back to the input, but if a number
     // button is tabbed into, it should keep focus, so users can use tab and
     // spacebar/return to enter their PIN.
-    if (!receivedFocusFromKeyboard()) {
+    if (!receivedEventFromKeyboard(event)) {
       this.focusInput(selectionStart + 1, selectionStart + 1);
     }
     event.stopImmediatePropagation();
@@ -295,11 +321,11 @@ Polymer({
    * onBackspacePointerUp_ will handle the events if they come from mouse or
    * touch. Note: This does not support repeatedly backspacing by holding down
    * the space or enter key like touch or mouse does.
-   * @param {Event} event The event object.
+   * @param {!Event} event The event object.
    * @private
    */
   onBackspaceTap_: function(event) {
-    if (!receivedFocusFromKeyboard()) {
+    if (!receivedEventFromKeyboard(event)) {
       return;
     }
 
@@ -312,7 +338,7 @@ Polymer({
    * Called when the user presses or touches the backspace button. Starts a
    * timer which starts an interval to repeatedly backspace the pin value until
    * the interval is cleared.
-   * @param {Event} event The event object.
+   * @param {!Event} event The event object.
    * @private
    */
   onBackspacePointerDown_: function(event) {
@@ -321,7 +347,7 @@ Polymer({
           setInterval(this.onPinClear_.bind(this), REPEAT_BACKSPACE_DELAY_MS);
     }.bind(this), INITIAL_BACKSPACE_DELAY_MS);
 
-    if (!receivedFocusFromKeyboard()) {
+    if (!receivedEventFromKeyboard(event)) {
       this.focusInput(this.selectionStart_, this.selectionEnd_);
     }
     event.stopImmediatePropagation();
@@ -342,7 +368,7 @@ Polymer({
    * Called when the user unpresses or untouches the backspace button. Stops the
    * interval callback and fires a backspace event if there is no interval
    * running.
-   * @param {Event} event The event object.
+   * @param {!Event} event The event object.
    * @private
    */
   onBackspacePointerUp_: function(event) {
@@ -357,7 +383,7 @@ Polymer({
     // virtual keyboard, even if focusInput() is wrapped in a setTimeout. Blur
     // the input element first to workaround this.
     this.blur();
-    if (!receivedFocusFromKeyboard()) {
+    if (!receivedEventFromKeyboard(event)) {
       this.focusInput(this.selectionStart_, this.selectionEnd_);
     }
     event.stopImmediatePropagation();
@@ -377,7 +403,7 @@ Polymer({
 
     // Valid if the key is one of the selected special keys defined in
     // |PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES|.
-    if (PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES.indexOf(event.keyCode) > -1) {
+    if (PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES.has(event.keyCode)) {
       return true;
     }
 
@@ -422,11 +448,19 @@ Polymer({
   },
 
   /**
-   * Disables the backspace button if nothing is entered.
+   * Indicates if something is entered.
    * @private
    */
-  hasInput_: function() {
-    return this.value.length > 0;
+  hasInput_: function(value) {
+    return value.length > 0;
+  },
+
+  /**
+   * Determines if the pin input should be contrasted.
+   * @private
+   */
+  hasInputOrFocus_: function(value, focused) {
+    return this.hasInput_(value) || focused;
   },
 
   /**
@@ -462,12 +496,20 @@ Polymer({
   },
 
   /**
-   * Catch and stop propagation of context menu events since we the backspace
-   * button can be held down on touch.
-   * @param {!Event} e
+   * @param {!MouseEvent} e
    * @private
    */
-  onContextMenu_: function(e) {
+  onBackspaceContextMenu_: function(e) {
+    // Note: If e.which is 0, this represents "no button" (i.e., a long-press).
+    // If this event was triggered by another value (e.g., right click - 3),
+    // return early and allow the context menu to be shown.
+    if (e.which) {
+      return;
+    }
+
+    // If the user was long-pressing the backspace button, that user likely was
+    // trying to remove several numbers from the PIN text field rapidly, so
+    // don't show the context menu.
     e.preventDefault();
     e.stopPropagation();
   },

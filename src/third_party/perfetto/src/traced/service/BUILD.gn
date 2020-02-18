@@ -30,6 +30,7 @@ executable("traced") {
   sources = [
     "main.cc",
   ]
+  assert_no_deps = [ "//gn:protobuf_lite" ]
 }
 
 # Contains all the implementation but not the main() entry point. This target
@@ -44,6 +45,9 @@ source_set("service") {
     "../../tracing",
     "../../tracing:ipc",
   ]
+  if (enable_perfetto_version_gen) {
+    deps += [ "//gn/standalone:gen_git_revision" ]
+  }
   sources = [
     "builtin_producer.cc",
     "builtin_producer.h",

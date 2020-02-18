@@ -15,6 +15,8 @@
 #include "content/common/frame_proxy.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
 
@@ -22,6 +24,7 @@ struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_PostMessage_Params;
 
 namespace blink {
+class AssociatedInterfaceProvider;
 struct WebScrollIntoViewParams;
 }
 
@@ -66,7 +69,8 @@ class RenderWidgetHostView;
 // complete, the RenderFrameHost is deleted.
 class RenderFrameProxyHost : public IPC::Listener,
                              public IPC::Sender,
-                             public mojom::RenderFrameProxyHost {
+                             public mojom::RenderFrameProxyHost,
+                             public blink::mojom::RemoteFrameHost {
  public:
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
 
@@ -75,21 +79,15 @@ class RenderFrameProxyHost : public IPC::Listener,
                        FrameTreeNode* frame_tree_node);
   ~RenderFrameProxyHost() override;
 
-  RenderProcessHost* GetProcess() {
-    return process_;
-  }
+  RenderProcessHost* GetProcess() { return process_; }
 
   // Initializes the object and creates the RenderFrameProxy in the process
   // for the SiteInstance.
   bool InitRenderFrameProxy();
 
-  int GetRoutingID() {
-    return routing_id_;
-  }
+  int GetRoutingID() { return routing_id_; }
 
-  SiteInstance* GetSiteInstance() {
-    return site_instance_.get();
-  }
+  SiteInstance* GetSiteInstance() { return site_instance_.get(); }
 
   FrameTreeNode* frame_tree_node() const { return frame_tree_node_; }
 
@@ -143,6 +141,15 @@ class RenderFrameProxyHost : public IPC::Listener,
   // Returns if the RenderFrameProxy for this host is alive.
   bool is_render_frame_proxy_live() { return render_frame_proxy_created_; }
 
+  // Returns associated remote for the blink::mojom::RemoteFrame Mojo interface.
+  const mojo::AssociatedRemote<blink::mojom::RemoteFrame>&
+  GetAssociatedRemoteFrame();
+
+  // blink::mojom::RemoteFrameHost
+  void SetInheritedEffectiveTouchAction(cc::TouchAction touch_action) override;
+  void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
+  void DidFocusFrame() override;
+
  private:
   // IPC Message handlers.
   void OnDetach();
@@ -158,8 +165,7 @@ class RenderFrameProxyHost : public IPC::Listener,
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
-  // mojom::RenderFrameProxyHost
-  void FrameFocused() override;
+  blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces();
 
   // This RenderFrameProxyHost's routing id.
   int routing_id_;
@@ -194,13 +200,22 @@ class RenderFrameProxyHost : public IPC::Listener,
   // some form of page context.
   scoped_refptr<RenderViewHostImpl> render_view_host_;
 
-  // Mojo binding to this RenderFrameProxyHost.
-  mojo::AssociatedBinding<mojom::RenderFrameProxyHost>
-      frame_proxy_host_associated_binding_;
+  std::unique_ptr<blink::AssociatedInterfaceProvider>
+      remote_associated_interfaces_;
+
+  // Mojo receiver to this RenderFrameProxyHost.
+  mojo::AssociatedReceiver<mojom::RenderFrameProxyHost>
+      frame_proxy_host_associated_receiver_{this};
+
+  // Holder of Mojo connection with the Frame service in Blink.
+  mojo::AssociatedRemote<blink::mojom::RemoteFrame> remote_frame_;
+
+  mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>
+      remote_frame_host_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };
 
-}  // namespace
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_PROXY_HOST_H_

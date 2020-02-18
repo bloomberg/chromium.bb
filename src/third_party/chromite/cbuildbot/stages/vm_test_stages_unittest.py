@@ -40,7 +40,8 @@ class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
   RELEASE_TAG = ''
 
   def setUp(self):
-    for cmd in ('CreateTestRoot', 'GenerateStackTraces', 'ArchiveFile',
+    self.PatchObject(commands, 'CreateTestRoot', return_value=self.tempdir)
+    for cmd in ('GenerateStackTraces', 'ArchiveFile',
                 'UploadArchivedFile', 'BuildAndArchiveTestResultsTarball'):
       self.PatchObject(commands, cmd, autospec=True)
     for cmd in (
@@ -112,7 +113,8 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   RELEASE_TAG = ''
 
   def setUp(self):
-    for cmd in ('CreateTestRoot', 'GenerateStackTraces', 'ArchiveFile',
+    self.PatchObject(commands, 'CreateTestRoot', return_value=self.tempdir)
+    for cmd in ('GenerateStackTraces', 'ArchiveFile',
                 'UploadArchivedFile', 'BuildAndArchiveTestResultsTarball'):
       self.PatchObject(commands, cmd, autospec=True)
     for cmd in (
@@ -150,13 +152,6 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         os.path.join(image_dir, constants.TEST_KEY_PRIVATE), makedirs=True)
     return stage
 
-  def testFullTests(self):
-    """Tests if full unit and cros_au_test_harness tests are run correctly."""
-    self._run.config['vm_tests'] = [
-        config_lib.VMTestConfig(constants.FULL_AU_TEST_TYPE)
-    ]
-    self.RunStage()
-
   def testQuickTests(self):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
     self._run.config['vm_tests'] = [
@@ -192,7 +187,7 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testReportTestResults(self):
     """Test trybot with reporting function."""
     self._run.config['vm_tests'] = [
-        config_lib.VMTestConfig(constants.FULL_AU_TEST_TYPE)
+        config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)
     ]
     self._run.config['vm_test_report_to_dashboards'] = True
     self.RunStage()
@@ -238,7 +233,7 @@ class MoblabVMTestStageTestCase(
 ):
   """Does what it says above."""
 
-  BOT_ID = 'moblab-generic-vm-paladin'
+  BOT_ID = 'moblab-generic-vm-full'
   RELEASE_TAG = ''
 
   def setUp(self):
@@ -303,7 +298,7 @@ class MoblabVMTestStageTestCase(
     mock_qp_payloads = self.PatchObject(commands,
                                         'GenerateQuickProvisionPayloads')
     self.PatchObject(commands, 'BuildAutotestTarballsForHWTest')
-    #self.PatchObject(vm_test_stages, 'StageArtifactsOnMoblab', autospec=True)
+    # self.PatchObject(vm_test_stages, 'StageArtifactsOnMoblab', autospec=True)
     mock_run_moblab_tests = self.PatchObject(
         vm_test_stages, 'RunMoblabTests', autospec=True)
     mock_validate_results = self.PatchObject(
@@ -427,7 +422,6 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
         self.TEST_BOARD,
         self.TEST_IMAGE_OUTSIDE_CHROOT,
         self.RESULTS_DIR,
-        archive_dir=self.BUILD_ROOT,
         whitelist_chrome_crashes=whitelist_chrome_crashes,
         test_config=test_config,
         ssh_private_key=self.PRIVATE_KEY_OUTSIDE_CHROOT,
@@ -436,9 +430,10 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
     if test_config.use_ctest:
       self.assertCommandContains([
           os.path.join(self.BUILD_ROOT, 'src', 'platform', 'crostestutils',
-                       'ctest', 'ctest.py'),
+                       'au_test_harness', 'cros_au_test_harness.py'),
           '--no_graphics', '--verbose',
           '--target_image=%s' % self.TEST_IMAGE_OUTSIDE_CHROOT,
+          '--test_prefix=SimpleTestVerify',
           '--ssh_private_key=%s' % self.PRIVATE_KEY_OUTSIDE_CHROOT
       ])
       self.assertCommandContains(enter_chroot=True, expected=False)
@@ -452,43 +447,36 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
       self.assertCommandContains(enter_chroot=True)
       self.assertCommandContains(error_code_ok=True)
 
-  def testFull(self):
-    """Test running FULL config."""
-    config = config_lib.VMTestConfig(constants.FULL_AU_TEST_TYPE)
-    self._RunTestSuite(config)
-    self.assertCommandContains(['--quick'], expected=False)
-    self.assertCommandContains(['--only_verify'], expected=False)
-
   def testSimple(self):
     """Test SIMPLE config."""
     config = config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)
     self._RunTestSuite(config)
-    self.assertCommandContains(['--quick_update'])
+    self.assertCommandContains(['--test_prefix=SimpleTestVerify'])
 
   def testSmoke(self):
     """Test SMOKE config."""
     config = config_lib.VMTestConfig(
         constants.VM_SUITE_TEST_TYPE, test_suite='smoke')
     self._RunTestSuite(config)
-    self.assertCommandContains(['--only_verify'])
+    self.assertCommandContains(['--verify_suite_name=smoke'])
 
   def testGceSmokeTestType(self):
     """Test GCE test with gce-smoke suite."""
     config = config_lib.GCETestConfig(
         constants.GCE_SUITE_TEST_TYPE, test_suite='gce-smoke')
     self._RunTestSuite(config)
-    self.assertCommandContains(['--only_verify'])
+    self.assertCommandContains(['--test_prefix=SimpleTestVerify'])
     self.assertCommandContains(['--type=gce'])
-    self.assertCommandContains(['--suite=gce-smoke'])
+    self.assertCommandContains(['--verify_suite_name=gce-smoke'])
 
   def testGceSanityTestType(self):
     """Test GCE test with gce-sanity suite."""
     config = config_lib.GCETestConfig(
         constants.GCE_SUITE_TEST_TYPE, test_suite='gce-sanity')
     self._RunTestSuite(config)
-    self.assertCommandContains(['--only_verify'])
+    self.assertCommandContains(['--test_prefix=SimpleTestVerify'])
     self.assertCommandContains(['--type=gce'])
-    self.assertCommandContains(['--suite=gce-sanity'])
+    self.assertCommandContains(['--verify_suite_name=gce-sanity'])
 
   def testSmokeChromite(self):
     """Test SMOKE config using chromite VM code path."""
@@ -543,7 +531,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
         test_report_2,
         makedirs=True)
 
-    self.assertEquals(
+    self.assertEqual(
         vm_test_stages.ListTests(results_path, show_passed=False),
         [('has_cheese', 'taste_tests/all/results-02-has_cheese')])
 
@@ -624,4 +612,4 @@ Some random stuff.
     expected_result = [
         os.path.join(test_path_archive_output, 'chromiumos_qemu_mem.bin.tar')
     ]
-    self.assertEquals(result, expected_result)
+    self.assertEqual(result, expected_result)

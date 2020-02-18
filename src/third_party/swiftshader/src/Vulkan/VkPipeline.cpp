@@ -18,11 +18,12 @@
 #include "VkPipelineCache.hpp"
 #include "VkPipelineLayout.hpp"
 #include "VkShaderModule.hpp"
+#include "VkStringify.hpp"
 #include "VkRenderPass.hpp"
 #include "Pipeline/ComputeProgram.hpp"
 #include "Pipeline/SpirvShader.hpp"
 
-#include "Yarn/Trace.hpp"
+#include "marl/trace.h"
 
 #include "spirv-tools/optimizer.hpp"
 
@@ -193,39 +194,7 @@ std::vector<uint32_t> preprocessSpirv(
 	}
 
 	// Full optimization list taken from spirv-opt.
-	opt.RegisterPass(spvtools::CreateDeadBranchElimPass())
-		.RegisterPass(spvtools::CreateMergeReturnPass())
-		.RegisterPass(spvtools::CreateInlineExhaustivePass())
-		.RegisterPass(spvtools::CreateAggressiveDCEPass())
-		.RegisterPass(spvtools::CreatePrivateToLocalPass())
-		.RegisterPass(spvtools::CreateLocalSingleBlockLoadStoreElimPass())
-		.RegisterPass(spvtools::CreateLocalSingleStoreElimPass())
-		.RegisterPass(spvtools::CreateAggressiveDCEPass())
-		.RegisterPass(spvtools::CreateScalarReplacementPass())
-		.RegisterPass(spvtools::CreateLocalAccessChainConvertPass())
-		.RegisterPass(spvtools::CreateLocalSingleBlockLoadStoreElimPass())
-		.RegisterPass(spvtools::CreateLocalSingleStoreElimPass())
-		.RegisterPass(spvtools::CreateAggressiveDCEPass())
-		.RegisterPass(spvtools::CreateLocalMultiStoreElimPass())
-		.RegisterPass(spvtools::CreateAggressiveDCEPass())
-		.RegisterPass(spvtools::CreateCCPPass())
-		.RegisterPass(spvtools::CreateAggressiveDCEPass())
-		.RegisterPass(spvtools::CreateRedundancyEliminationPass())
-		.RegisterPass(spvtools::CreateCombineAccessChainsPass())
-		.RegisterPass(spvtools::CreateSimplificationPass())
-		.RegisterPass(spvtools::CreateVectorDCEPass())
-		.RegisterPass(spvtools::CreateDeadInsertElimPass())
-		.RegisterPass(spvtools::CreateDeadBranchElimPass())
-		.RegisterPass(spvtools::CreateSimplificationPass())
-		.RegisterPass(spvtools::CreateIfConversionPass())
-		.RegisterPass(spvtools::CreateCopyPropagateArraysPass())
-		.RegisterPass(spvtools::CreateReduceLoadSizePass())
-		.RegisterPass(spvtools::CreateAggressiveDCEPass())
-		.RegisterPass(spvtools::CreateBlockMergePass())
-		.RegisterPass(spvtools::CreateRedundancyEliminationPass())
-		.RegisterPass(spvtools::CreateDeadBranchElimPass())
-		.RegisterPass(spvtools::CreateBlockMergePass())
-		.RegisterPass(spvtools::CreateSimplificationPass());
+	opt.RegisterPerformancePasses();
 
 	std::vector<uint32_t> optimized;
 	opt.Run(code.data(), code.size(), &optimized);
@@ -259,7 +228,7 @@ std::shared_ptr<sw::SpirvShader> createShader(const vk::PipelineCache::SpirvShad
 
 std::shared_ptr<sw::ComputeProgram> createProgram(const vk::PipelineCache::ComputeProgramKey& key)
 {
-	YARN_SCOPED_EVENT("createProgram");
+	MARL_SCOPED_EVENT("createProgram");
 
 	vk::DescriptorSet::Bindings descriptorSets;  // FIXME(b/129523279): Delay code generation until invoke time.
 	// TODO(b/119409619): use allocator.
@@ -283,6 +252,8 @@ Pipeline::Pipeline(PipelineLayout const *layout, const Device *device)
 GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateInfo, void* mem, const Device *device)
 	: Pipeline(vk::Cast(pCreateInfo->layout), device)
 {
+	context.robustBufferAccess = robustBufferAccess;
+
 	if(((pCreateInfo->flags &
 		~(VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT |
 	      VK_PIPELINE_CREATE_DERIVATIVE_BIT |
@@ -393,6 +364,35 @@ GraphicsPipeline::GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateIn
 	context.polygonMode = rasterizationState->polygonMode;
 	context.depthBias = (rasterizationState->depthBiasEnable != VK_FALSE) ? rasterizationState->depthBiasConstantFactor : 0.0f;
 	context.slopeDepthBias = (rasterizationState->depthBiasEnable != VK_FALSE) ? rasterizationState->depthBiasSlopeFactor : 0.0f;
+
+	const VkBaseInStructure* extensionCreateInfo = reinterpret_cast<const VkBaseInStructure*>(rasterizationState->pNext);
+	while(extensionCreateInfo)
+	{
+		// Casting to a long since some structures, such as
+		// VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT
+		// are not enumerated in the official Vulkan header
+		switch((long)(extensionCreateInfo->sType))
+		{
+		case VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_LINE_STATE_CREATE_INFO_EXT:
+		{
+			const VkPipelineRasterizationLineStateCreateInfoEXT* lineStateCreateInfo = reinterpret_cast<const VkPipelineRasterizationLineStateCreateInfoEXT*>(extensionCreateInfo);
+			context.lineRasterizationMode = lineStateCreateInfo->lineRasterizationMode;
+		}
+		break;
+		case VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT:
+		{
+			const VkPipelineRasterizationProvokingVertexStateCreateInfoEXT* provokingVertexModeCreateInfo =
+				reinterpret_cast<const VkPipelineRasterizationProvokingVertexStateCreateInfoEXT*>(extensionCreateInfo);
+			context.provokingVertexMode = provokingVertexModeCreateInfo->provokingVertexMode;
+		}
+		break;
+		default:
+			WARN("pCreateInfo->pRasterizationState->pNext sType = %s", vk::Stringify(extensionCreateInfo->sType).c_str());
+			break;
+		}
+
+		extensionCreateInfo = extensionCreateInfo->pNext;
+	}
 
 	const VkPipelineMultisampleStateCreateInfo* multisampleState = pCreateInfo->pMultisampleState;
 	if(multisampleState)

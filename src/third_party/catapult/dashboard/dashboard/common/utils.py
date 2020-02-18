@@ -36,7 +36,7 @@ _DEFAULT_CUSTOM_METRIC_VAL = 1
 OAUTH_SCOPES = (
     'https://www.googleapis.com/auth/userinfo.email',
 )
-OAUTH_ENDPOINTS = ['/api/', '/add_histograms']
+OAUTH_ENDPOINTS = ['/api/', '/add_histograms', '/add_point']
 
 _AUTOROLL_DOMAINS = (
     'chops-service-accounts.iam.gserviceaccount.com',
@@ -81,6 +81,7 @@ def GetEmail():
   return user.email() if user else None
 
 
+@ndb.transactional(propagation=ndb.TransactionOptions.INDEPENDENT, xg=True)
 def TickMonitoringCustomMetric(metric_name):
   """Increments the stackdriver custom metric with the given name.
 
@@ -293,14 +294,14 @@ class ParseTelemetryMetricFailed(Exception):
 
 
 def ParseTelemetryMetricParts(test_path):
-  """Parses a test path and returns the tir_label, measurement, and story.
+  """Parses a test path and returns the grouping_label, measurement, and story.
 
   Args:
     test_path_parts: A test path.
 
   Returns:
-    A tuple of (tir_label, measurement, story), or None if this doesn't appear
-    to be a telemetry test.
+    A tuple of (grouping_label, measurement, story), or None if this doesn't
+    appear to be a telemetry test.
   """
   test_path_parts = test_path.split('/')
   metric_parts = test_path_parts[3:]
@@ -312,7 +313,7 @@ def ParseTelemetryMetricParts(test_path):
   if len(metric_parts) == 2:
     return '', metric_parts[0], metric_parts[1]
 
-  # 3 part structure, so there's a TIR label in there.
+  # 3 part structure, so there's a grouping label in there.
   # ie. M/B/S/timeToFirstMeaningfulPaint_avg/load_tools/load_tools_weather
   if len(metric_parts) == 3:
     return metric_parts[1], metric_parts[0], metric_parts[2]
@@ -479,7 +480,7 @@ def GetCachedIsInternalUser(email):
 
 
 def SetCachedIsInternalUser(email, value):
-  memcache.add(_IsInternalUserCacheKey(email), value, time=60 * 60 * 24)
+  memcache.set(_IsInternalUserCacheKey(email), value, time=60 * 60 * 24)
 
 
 def GetCachedIsAdministrator(email):
@@ -487,7 +488,7 @@ def GetCachedIsAdministrator(email):
 
 
 def SetCachedIsAdministrator(email, value):
-  memcache.add(_IsAdministratorUserCacheKey(email), value, time=60 * 60 * 24)
+  memcache.set(_IsAdministratorUserCacheKey(email), value, time=60 * 60 * 24)
 
 
 def _IsInternalUserCacheKey(email):
@@ -532,13 +533,14 @@ def GetCachedIsGroupMember(identity, group):
 
 
 def SetCachedIsGroupMember(identity, group, value):
-  memcache.add(_IsGroupMemberCacheKey(identity, group), value, time=60*60*24)
+  memcache.set(_IsGroupMemberCacheKey(identity, group), value, time=60*60*24)
 
 
 def _IsGroupMemberCacheKey(identity, group):
   return 'is_group_member_%s_%s' % (identity, group)
 
 
+@ndb.transactional(propagation=ndb.TransactionOptions.INDEPENDENT, xg=True)
 def ServiceAccountHttp(scope=EMAIL_SCOPE, timeout=None):
   """Returns the Credentials of the service account if available."""
   account_details = stored_object.Get(SERVICE_ACCOUNT_KEY)
@@ -558,6 +560,7 @@ def ServiceAccountHttp(scope=EMAIL_SCOPE, timeout=None):
   return http
 
 
+@ndb.transactional(propagation=ndb.TransactionOptions.INDEPENDENT, xg=True)
 def IsValidSheriffUser():
   """Checks whether the user should be allowed to triage alerts."""
   email = GetEmail()
@@ -576,6 +579,7 @@ def IsTryjobUser():
       identity=email, group='project-chromium-tryjob-access')
 
 
+@ndb.transactional(propagation=ndb.TransactionOptions.INDEPENDENT, xg=True)
 def GetIpWhitelist():
   """Returns a list of IP address strings in the whitelist."""
   return stored_object.Get(IP_WHITELIST_KEY)

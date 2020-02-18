@@ -16,28 +16,18 @@ def _CheckDeps(input_api, output_api):
   finally:
     sys.path = original_sys_path
 
-  added_includes = []
-  for f in input_api.AffectedFiles():
-    if CppChecker.IsCppFile(f.LocalPath()):
-      changed_lines = [line for _, line in f.ChangedContents()]
-      added_includes.append([f.AbsoluteLocalPath(), changed_lines])
-
   deps_checker = checkdeps.DepsChecker(input_api.PresubmitLocalPath())
-  violations = deps_checker.CheckAddedCppIncludes(added_includes)
-  for path, rule_type, rule_description in violations:
-    relpath = input_api.os_path.relpath(path, input_api.PresubmitLocalPath())
-    error_description = '%s\n    %s' % (relpath, rule_description)
-    if rule_type == Rule.DISALLOW:
-      results.append(output_api.PresubmitError(error_description))
-    else:
-      results.append(output_api.PresubmitPromptWarning(error_description))
+  deps_checker.CheckDirectory(input_api.PresubmitLocalPath())
+  deps_results = deps_checker.results_formatter.GetResults()
+  for violation in deps_results:
+    results.append(output_api.PresubmitError(violation))
   return results
 
 
 def _CommonChecks(input_api, output_api):
   results = []
-  # TODO(issues/43): Probably convert this to python so we can give more
-  # detailed errors.
+  # TODO(crbug.com/openscreen/43): Probably convert this to python so we can
+  # give more detailed errors.
   presubmit_sh_result = input_api.subprocess.call(
       input_api.PresubmitLocalPath() + '/PRESUBMIT.sh')
   if presubmit_sh_result != 0:

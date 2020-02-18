@@ -20,9 +20,8 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/image_annotation/image_annotation_metrics.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace image_annotation {
@@ -318,7 +317,7 @@ static_assert(Annotator::kDescMaxAspectRatio > 0.0,
               "Description engine must accept images of some aspect ratios.");
 
 Annotator::ClientRequestInfo::ClientRequestInfo(
-    mojom::ImageProcessorPtr in_image_processor,
+    mojo::PendingRemote<mojom::ImageProcessor> in_image_processor,
     AnnotateImageCallback in_callback)
     : image_processor(std::move(in_image_processor)),
       callback(std::move(in_callback)) {}
@@ -347,9 +346,9 @@ Annotator::Annotator(
     const int batch_size,
     const double min_ocr_confidence,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    service_manager::Connector* const connector)
-    : url_loader_factory_(std::move(url_loader_factory)),
-      connector_(connector),
+    std::unique_ptr<Client> client)
+    : client_(std::move(client)),
+      url_loader_factory_(std::move(url_loader_factory)),
       server_request_timer_(
           FROM_HERE,
           throttle,
@@ -358,9 +357,7 @@ Annotator::Annotator(
       server_url_(std::move(server_url)),
       api_key_(std::move(api_key)),
       batch_size_(batch_size),
-      min_ocr_confidence_(min_ocr_confidence) {
-  DCHECK(connector_);
-}
+      min_ocr_confidence_(min_ocr_confidence) {}
 
 Annotator::~Annotator() {
   // Report any clients still connected at service shutdown.
@@ -372,14 +369,15 @@ Annotator::~Annotator() {
   }
 }
 
-void Annotator::BindRequest(mojom::AnnotatorRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void Annotator::BindReceiver(mojo::PendingReceiver<mojom::Annotator> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
-void Annotator::AnnotateImage(const std::string& source_id,
-                              const std::string& description_language_tag,
-                              mojom::ImageProcessorPtr image_processor,
-                              AnnotateImageCallback callback) {
+void Annotator::AnnotateImage(
+    const std::string& source_id,
+    const std::string& description_language_tag,
+    mojo::PendingRemote<mojom::ImageProcessor> image_processor,
+    AnnotateImageCallback callback) {
   const RequestKey request_key(source_id, description_language_tag);
 
   // Return cached results if they exist.
@@ -398,7 +396,7 @@ void Annotator::AnnotateImage(const std::string& source_id,
   // If the image processor dies: automatically delete the request info and
   // reassign local processing (for other interested clients) if the dead image
   // processor was responsible for some ongoing work.
-  request_info_list.back().image_processor.set_connection_error_handler(
+  request_info_list.back().image_processor.set_disconnect_handler(
       base::BindOnce(&Annotator::RemoveRequestInfo, base::Unretained(this),
                      request_key, --request_info_list.end(),
                      true /* canceled */));
@@ -454,7 +452,7 @@ std::string Annotator::FormatJsonRequest(
                              base::Value(base::Value::Type::DICTIONARY));
 
     base::Value engine_params_list(base::Value::Type::LIST);
-    engine_params_list.GetList().push_back(std::move(ocr_engine_params));
+    engine_params_list.Append(std::move(ocr_engine_params));
 
     // Also add a description annotations request if the image is within model
     // policy.
@@ -464,7 +462,7 @@ std::string Annotator::FormatJsonRequest(
       // Add preferred description language if it has been specified.
       if (!it->desc_lang_tag.empty()) {
         base::Value desc_lang_list(base::Value::Type::LIST);
-        desc_lang_list.GetList().push_back(base::Value(it->desc_lang_tag));
+        desc_lang_list.Append(base::Value(it->desc_lang_tag));
 
         desc_params.SetKey("preferredLanguages", std::move(desc_lang_list));
       }
@@ -472,7 +470,7 @@ std::string Annotator::FormatJsonRequest(
       base::Value engine_params(base::Value::Type::DICTIONARY);
       engine_params.SetKey("descriptionParameters", std::move(desc_params));
 
-      engine_params_list.GetList().push_back(std::move(engine_params));
+      engine_params_list.Append(std::move(engine_params));
     }
     ReportImageRequestIncludesDesc(it->desc_requested);
 
@@ -482,7 +480,7 @@ std::string Annotator::FormatJsonRequest(
     image_request.SetKey("imageBytes", base::Value(std::move(base64_data)));
     image_request.SetKey("engineParameters", std::move(engine_params_list));
 
-    image_request_list.GetList().push_back(std::move(image_request));
+    image_request_list.Append(std::move(image_request));
   }
 
   base::Value request(base::Value::Type::DICTIONARY);
@@ -624,7 +622,7 @@ void Annotator::OnServerResponseReceived(
     const std::unique_ptr<std::string> json_response) {
   ReportServerNetError(server_request_it->get()->NetError());
 
-  if (const network::ResourceResponseInfo* const response_info =
+  if (const network::mojom::URLResponseHead* const response_info =
           server_request_it->get()->ResponseInfo()) {
     ReportServerResponseCode(response_info->headers->response_code());
     ReportServerLatency(response_info->response_time -
@@ -642,9 +640,9 @@ void Annotator::OnServerResponseReceived(
   ReportServerResponseSizeBytes(json_response->size());
 
   // Send JSON string to a dedicated service for safe parsing.
-  GetJsonParser().Parse(*json_response,
-                        base::BindOnce(&Annotator::OnResponseJsonParsed,
-                                       base::Unretained(this), request_keys));
+  GetJsonParser()->Parse(*json_response,
+                         base::BindOnce(&Annotator::OnResponseJsonParsed,
+                                        base::Unretained(this), request_keys));
 }
 
 void Annotator::OnResponseJsonParsed(
@@ -708,16 +706,13 @@ void Annotator::ProcessResults(
   }
 }
 
-data_decoder::mojom::JsonParser& Annotator::GetJsonParser() {
+data_decoder::mojom::JsonParser* Annotator::GetJsonParser() {
   if (!json_parser_) {
-    connector_->BindInterface(data_decoder::mojom::kServiceName,
-                              mojo::MakeRequest(&json_parser_));
-    json_parser_.set_connection_error_handler(base::BindOnce(
-        [](Annotator* const annotator) { annotator->json_parser_.reset(); },
-        base::Unretained(this)));
+    client_->BindJsonParser(json_parser_.BindNewPipeAndPassReceiver());
+    json_parser_.reset_on_disconnect();
   }
 
-  return *json_parser_;
+  return json_parser_.get();
 }
 
 void Annotator::RemoveRequestInfo(

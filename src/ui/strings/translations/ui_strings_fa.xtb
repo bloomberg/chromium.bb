@@ -7,6 +7,8 @@
 <translation id="1156623771253174079">{SECONDS,plural, =1{۱ دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{۱ دقیقه}one{# دقیقه}other{# دقیقه}}</translation>
 <translation id="1181037720776840403">حذف</translation>
+<translation id="1201402288615127009">بعدی</translation>
+<translation id="1218444235442067213">‏<ph name="APP_NAME" />، برنامه فروشگاه Play</translation>
 <translation id="1243314992276662751">بارگذاری</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> هم‌رسانی نشد</translation>
 <translation id="1269641567813814718">Win</translation>
@@ -17,7 +19,7 @@
 <translation id="1368832886055348810">چپ به راست</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1398853756734560583">بزرگ کردن</translation>
-<translation id="1409544243779336081">توصیه برنامه</translation>
+<translation id="1414271762428216854"><ph name="APP_NAME" />، برنامه نصب‌شده</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> هم‌رسانی نشد</translation>
 <translation id="1498028757988366001">قبلاً این را جستجو کردید. اگر «<ph name="QUERY" />» را از سابقه‌تان حذف کنید، این پرسمان در همه دستگاه‌ها از حسابتان به‌طور دائم برداشته خواهد شد.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{۱ دقیقه و }one{# دقیقه و }other{# دقیقه و }}</translation>
@@ -29,8 +31,8 @@
 <translation id="1801827354178857021">نقطه</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{۱ ماه}one{# ماه}other{# ماه}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> مگابایت/ثانیه</translation>
-<translation id="1812519734428420144">رتبه‌بندی ستاره‌ای <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{۱ ساعت و }one{# ساعت و }other{# ساعت و }}</translation>
+<translation id="1830308660060964064">پین <ph name="ITEM_TITLE" /> برداشته شد</translation>
 <translation id="1842960171412779397">انتخاب</translation>
 <translation id="1859234291848436338">جهت نوشتن</translation>
 <translation id="1860796786778352021">بستن اعلان</translation>
@@ -40,6 +42,7 @@
 <translation id="1938451708255335766">برای تنظیم تراکم نمایشگر پنجره، برنامه را بازراه‌اندازی کنید.</translation>
 <translation id="2006524834898217237">مطمئن شوید دستگاه به اینترنت متصل باشد.</translation>
 <translation id="208586643495776849">لطفاً دوباره امتحان کنید</translation>
+<translation id="2090963878406559571">‏برای ارسال شماره‌ای از <ph name="ORIGIN" /> به تلفن Android خود، برای هر دو دستگاه در «تنظیمات» <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{۱ روز}one{# روز}other{# روز}}</translation>
 <translation id="2148716181193084225">امروز</translation>
 <translation id="2161656808144014275">نوشتار</translation>
@@ -51,6 +54,7 @@
 <translation id="2289052229480071835">روی اهداف لمسی در صفحه‌تان ضربه بزنید.</translation>
 <translation id="2295140143284145483">نظرسنجی</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ترابایت/ثانیه</translation>
+<translation id="2353636109065292463">بررسی اتصال اینترنت</translation>
 <translation id="2388990488038464401">با این شماره از تلفنتان تماس می‌گیرید؟</translation>
 <translation id="24452542372838207">بزرگ کردن اعلان</translation>
 <translation id="2445449901874883781">استفاده از تراکم بالا</translation>
@@ -65,10 +69,12 @@
 <translation id="2666092431469916601">بالا</translation>
 <translation id="2701330563083355633">هم‌رسانی‌شده از <ph name="DEVICE_NAME" /></translation>
 <translation id="2743387203779672305">کپی در بریده‌دان</translation>
+<translation id="2749082172777216925"><ph name="APP_NAME_INFO" />، <ph name="PRICE" /></translation>
 <translation id="2803313416453193357">بازکردن پوشه</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{۱ سال قبل}one{# سال قبل}other{# سال قبل}}</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{تا ۱ روز دیگر}one{تا # روز دیگر}other{تا # روز دیگر}}</translation>
 <translation id="2931838996092594335">کلیک کنید</translation>
+<translation id="2981684127883932071">نمایش پیشنهادها</translation>
 <translation id="3036649622769666520">باز کردن فایل‌ها</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> مگابایت</translation>
 <translation id="3068711042108640621">قفسه در سمت راست است</translation>
@@ -81,9 +87,9 @@
 <translation id="3295886253693811851">برقراری تماس از</translation>
 <translation id="335581015389089642">صدا</translation>
 <translation id="3389286852084373014">نوشتار خیلی بزرگ است</translation>
-<translation id="3443810440409579745">برگه دریافت شد.</translation>
 <translation id="3479552764303398839">اکنون نه</translation>
 <translation id="348799646910989694">پنهان شدن خودکار قفسه</translation>
+<translation id="3554637740840164787"><ph name="ITEM_TITLE" /> پین شد</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{۱ روز باقی مانده است}one{# روز باقی مانده است}other{# روز باقی مانده است}}</translation>
 <translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> فایل</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" /> یا بیشتر</translation>
@@ -105,20 +111,21 @@
 <translation id="4250229828105606438">عکس صفحه‌نمایش</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{۱ ماه قبل}one{# ماه قبل}other{# ماه قبل}}</translation>
 <translation id="4289300219472526559">شروع صحبت</translation>
+<translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> به پوشه <ph name="FOLDER_NAME" /> منتقل شد.</translation>
 <translation id="4316910396681052118">همه برنامه‌ها</translation>
 <translation id="4588090240171750605">پیمایش به راست</translation>
+<translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />، رتبه‌بندی با ستاره <ph name="RATING_SCORE" /></translation>
+<translation id="4648249871170053485"><ph name="APP_NAME" />، توصیه برنامه</translation>
 <translation id="4690510401873698237">قفسه در پایین است</translation>
 <translation id="4724120544754982507">مرکز اعلان، <ph name="UNREAD_NOTIFICATION_COUNT" /> اعلان خوانده‌نشده</translation>
 <translation id="4730374152663651037">مکرراً استفاده‌شده</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{۱ ماه باقی مانده است}one{# ماه باقی مانده است}other{# ماه باقی مانده است}}</translation>
-<translation id="4841881773802181781">درج</translation>
-<translation id="4881695831933465202">باز کردن</translation>
 <translation id="4888938634149558681">برقراری تماس</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{۱ ثانیه}one{# ثانیه}other{# ثانیه}}</translation>
 <translation id="4971687151119236543">آهنگ قبلی رسانه</translation>
 <translation id="5046499563572181734">در اینجا ضربه بزنید</translation>
 <translation id="5076340679995252485">&amp;جاگذاری</translation>
-<translation id="5137751499640340777">‏شروع به کار «دستیار Google»</translation>
+<translation id="5198715732953550718"><ph name="MOVED_APP_NAME" /> با <ph name="IN_PLACE_APP" /> ترکیب شد تا پوشه جدیدی ایجاد شود.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> پتابایت</translation>
 <translation id="5266161281976477809">مثلث افشا</translation>
 <translation id="5278860589123563674">ارسال نشد</translation>
@@ -132,6 +139,7 @@
 <translation id="5574202486608032840">سیستم <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">پیکان چپ</translation>
+<translation id="5675363643668471212">مورد قفسه</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{۱ دقیقه}one{# دقیقه}other{# دقیقه}}</translation>
 <translation id="5763338081255973061">{DAYS,plural, =0{آخرین فعالیت: امروز}=1{آخرین فعالیت: ۱ روز قبل}one{آخرین فعالیت: # روز قبل}other{آخرین فعالیت: # روز قبل}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{۱ روز و }one{# روز و }other{# روز و }}</translation>
@@ -155,6 +163,7 @@
 <translation id="6394627529324717982">کاما</translation>
 <translation id="6397363302884558537">توقف صحبت</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{۱ ثانیه قبل}one{# ثانیه قبل}other{# ثانیه قبل}}</translation>
+<translation id="6417265370957905582">‏دستیار Google</translation>
 <translation id="6430678249303439055">مسدود کردن همه اعلان‌های این برنامه</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{۱ ثانیه قبل}one{# ثانیه قبل}other{# ثانیه قبل}}</translation>
 <translation id="6539092367496845964">مشکلی پیش آمد. بعداً دوباره امتحان کنید.</translation>
@@ -165,7 +174,7 @@
 <translation id="6620110761915583480">ذخیره کردن فایل</translation>
 <translation id="6656912866303152668">‏مطمئن شوید همگام‌سازی برای <ph name="TARGET_DEVICE_NAME" /> در Chrome روشن باشد و سپس دوباره ارسال کنید.</translation>
 <translation id="6699343763173986273">آهنگ بعدی رسانه</translation>
-<translation id="673773751041746814">حذف</translation>
+<translation id="6710213216561001401">قبلی</translation>
 <translation id="6779314412797872738">‏برای ارسال شماره‌ای از اینجا به تلفن Android خود، برای هر دو دستگاه در «تنظیمات» <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">بستن پوشه</translation>
 <translation id="6808150112686056157">توقف رسانه</translation>
@@ -183,6 +192,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{۱ دقیقه باقی مانده است}one{# دقیقه باقی مانده است}other{# دقیقه باقی مانده است}}</translation>
 <translation id="7319740667687257810">راه‌انداز، نمای جزئی</translation>
+<translation id="7352651011704765696">مشکلی پیش آمد</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{۱ دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{۱ دقیقه باقی مانده است}one{# دقیقه باقی مانده است}other{# دقیقه باقی مانده است}}</translation>
@@ -192,21 +202,24 @@
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7781829728241885113">دیروز</translation>
 <translation id="7814458197256864873">&amp;کپی</translation>
+<translation id="7848989271541991537">به صفحه <ph name="PAGE_NUMBER" />، ردیف <ph name="ROW_NUMBER" />، ستون <ph name="COLUMN_NUMBER" />.منتقل شد.</translation>
 <translation id="7879499977785298635">مسدود نکنید</translation>
 <translation id="7907591526440419938">باز کردن فایل</translation>
 <translation id="7969046989155602842">فرمان</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{بیش از ۱ اعلان خوانده‌نشده}one{بیش از # اعلان خوانده‌نشده}other{بیش از # اعلان خوانده‌نشده}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{تا ۱ دقیقه دیگر}one{تا # دقیقه دیگر}other{تا # دقیقه دیگر}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
-<translation id="8098075892845277643">‏شروع پُرسمان صوتی «دستیار Google»</translation>
+<translation id="8090736967111090568">شماره از <ph name="ORIGIN" /></translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{۱ ثانیه باقی مانده است}one{# ثانیه باقی مانده است}other{# ثانیه باقی مانده است}}</translation>
+<translation id="8134065097954893699">درحال تازه‌سازی این صفحه</translation>
 <translation id="8144660977431427332">‏جستجوهایتان را «دستیار Google» انجام می‌دهد. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />، تکمیل خودکار</translation>
 <translation id="815598010540052116">پیمایش به پایین</translation>
 <translation id="8179976553408161302">ورود</translation>
 <translation id="8210608804940886430">صفحه پایین</translation>
 <translation id="8245914219290430011">Tab</translation>
+<translation id="8247998213073982446"><ph name="APP_NAME" />، برنامه</translation>
 <translation id="8259556432390118667">مقدار رنگ در مبنای شانزده</translation>
 <translation id="8328145009876646418">حاشیه چپ</translation>
 <translation id="8331626408530291785">پیمایش به بالا</translation>
@@ -231,12 +244,13 @@
 <translation id="8926951137623668982">قفسه همیشه پنهان می‌شود</translation>
 <translation id="8996630695507351249">مطمئن شوید <ph name="TARGET_DEVICE_NAME" /> به اینترنت متصل باشد.</translation>
 <translation id="9002566407876343676">باز کنید</translation>
-<translation id="9039076430527029379">انتقال به صفحه <ph name="PAGE_NUMBER" />، ردیف <ph name="ROW_NUMBER" />، ستون <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{۱ ثانیه}one{# ثانیه}other{# ثانیه}}</translation>
 <translation id="9059834730836941392">کوچک کردن اعلان</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9161053988251441839">برنامه‌های پیشنهادشده</translation>
 <translation id="9170848237812810038">&amp;واگرد</translation>
+<translation id="9178475906033259337">نمایش ۱ نتیجه برای <ph name="QUERY" /></translation>
 <translation id="932327136139879170">منزل</translation>
 <translation id="944069440740578670">اعلان‌های خوانده‌نشده</translation>
+<translation id="974545358917229949">نمایش <ph name="RESULT_COUNT" /> نتیجه برای <ph name="QUERY" /></translation>
 </translationbundle>

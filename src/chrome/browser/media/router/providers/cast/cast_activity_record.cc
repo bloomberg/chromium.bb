@@ -24,13 +24,8 @@ CastActivityRecord::CastActivityRecord(
     MediaSinkServiceBase* media_sink_service,
     cast_channel::CastMessageHandler* message_handler,
     CastSessionTracker* session_tracker,
-    DataDecoder* data_decoder,
     CastActivityManagerBase* owner)
-    : ActivityRecord(route,
-                     app_id,
-                     message_handler,
-                     session_tracker,
-                     data_decoder),
+    : ActivityRecord(route, app_id, message_handler, session_tracker),
       media_sink_service_(media_sink_service),
       activity_manager_(owner) {
   route_.set_controller_type(RouteControllerType::kGeneric);
@@ -48,9 +43,8 @@ mojom::RoutePresentationConnectionPtr CastActivityRecord::AddClient(
       client_factory_for_test_
           ? client_factory_for_test_->MakeClientForTest(client_id, origin,
                                                         tab_id)
-          : std::make_unique<CastSessionClientImpl>(client_id, origin, tab_id,
-                                                    source.auto_join_policy(),
-                                                    data_decoder_, this);
+          : std::make_unique<CastSessionClientImpl>(
+                client_id, origin, tab_id, source.auto_join_policy(), this);
   auto presentation_connection = client->Init();
   connected_clients_.emplace(client_id, std::move(client));
 
@@ -205,8 +199,8 @@ void CastActivityRecord::TerminatePresentationConnections() {
 }
 
 void CastActivityRecord::CreateMediaController(
-    mojom::MediaControllerRequest media_controller,
-    mojom::MediaStatusObserverPtr observer) {
+    mojo::PendingReceiver<mojom::MediaController> media_controller,
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer) {
   media_controller_ = std::make_unique<CastMediaController>(
       this, std::move(media_controller), std::move(observer));
 
@@ -224,7 +218,7 @@ void CastActivityRecord::CreateMediaController(
 }
 
 void CastActivityRecord::OnAppMessage(
-    const cast_channel::CastMessage& message) {
+    const cast::channel::CastMessage& message) {
   if (!session_id_) {
     DVLOG(2) << "No session associated with activity!";
     return;

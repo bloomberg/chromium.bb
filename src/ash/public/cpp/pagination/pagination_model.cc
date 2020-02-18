@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
+#include "base/numerics/ranges.h"
 #include "ui/gfx/animation/slide_animation.h"
 
 namespace ash {
@@ -21,9 +22,7 @@ PaginationModel::PaginationModel(views::View* view)
       total_pages_(-1),
       selected_page_(-1),
       transition_(-1, 0),
-      pending_selected_page_(-1),
-      transition_duration_ms_(0),
-      overscroll_transition_duration_ms_(0) {}
+      pending_selected_page_(-1) {}
 
 PaginationModel::~PaginationModel() {}
 
@@ -31,13 +30,14 @@ void PaginationModel::SetTotalPages(int total_pages) {
   if (total_pages == total_pages_)
     return;
 
+  int previous_pages = total_pages_;
   total_pages_ = total_pages;
   if (selected_page_ < 0)
     SelectPage(0, false /* animate */);
   if (selected_page_ >= total_pages_)
     SelectPage(std::max(total_pages_ - 1, 0), false /* animate */);
   for (auto& observer : observers_)
-    observer.TotalPagesChanged();
+    observer.TotalPagesChanged(previous_pages, total_pages);
 }
 
 void PaginationModel::SelectPage(int page, bool animate) {
@@ -114,10 +114,11 @@ void PaginationModel::SetTransition(const Transition& transition) {
   NotifyTransitionChanged();
 }
 
-void PaginationModel::SetTransitionDurations(int duration_ms,
-                                             int overscroll_duration_ms) {
-  transition_duration_ms_ = duration_ms;
-  overscroll_transition_duration_ms_ = overscroll_duration_ms;
+void PaginationModel::SetTransitionDurations(
+    base::TimeDelta duration,
+    base::TimeDelta overscroll_duration) {
+  transition_duration_ = duration;
+  overscroll_transition_duration_ = overscroll_duration;
 }
 
 void PaginationModel::StartScroll() {
@@ -245,12 +246,11 @@ int PaginationModel::CalculateTargetPage(int delta) const {
   else if (target_page > end_page && selected_page_ == end_page)
     end_page = total_pages_;
 
-  return std::max(start_page, std::min(end_page, target_page));
+  return base::ClampToRange(target_page, start_page, end_page);
 }
 
 base::TimeDelta PaginationModel::GetTransitionAnimationSlideDuration() const {
-  return transition_animation_ ? base::TimeDelta::FromMillisecondsD(
-                                     transition_animation_->GetSlideDuration())
+  return transition_animation_ ? transition_animation_->GetSlideDuration()
                                : base::TimeDelta();
 }
 
@@ -265,10 +265,10 @@ void PaginationModel::StartTransitionAnimation(const Transition& transition) {
   transition_animation_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   transition_animation_->Reset(transition_.progress);
 
-  const int duration = is_valid_page(transition_.target_page)
-                           ? transition_duration_ms_
-                           : overscroll_transition_duration_ms_;
-  if (duration)
+  const base::TimeDelta duration = is_valid_page(transition_.target_page)
+                                       ? transition_duration_
+                                       : overscroll_transition_duration_;
+  if (!duration.is_zero())
     transition_animation_->SetSlideDuration(duration);
 
   NotifyTransitionStarted();

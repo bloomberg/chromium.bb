@@ -71,12 +71,9 @@ SkBitmap CreateSquareBitmapWithColor(int size, SkColor color) {
   return bitmap;
 }
 
-WebApplicationInfo::IconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
-  WebApplicationInfo::IconInfo icon_info;
-  icon_info.width = size;
-  icon_info.height = size;
-  icon_info.data = CreateSquareBitmapWithColor(size, color);
-  return icon_info;
+void SetAppIcon(WebApplicationInfo* web_app, int size, SkColor color) {
+  web_app->icon_bitmaps.clear();
+  web_app->icon_bitmaps[size] = CreateSquareBitmapWithColor(size, color);
 }
 
 void TestAcceptDialogCallback(
@@ -99,13 +96,6 @@ class BookmarkAppInstallFinalizerInstallOnly
   ~BookmarkAppInstallFinalizerInstallOnly() override = default;
 
   // InstallFinalizer:
-  void CreateOsShortcuts(const web_app::AppId& app_id,
-                         bool add_to_desktop,
-                         CreateOsShortcutsCallback callback) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), true /*shortcuts_created*/));
-  }
   void AddAppToQuickLaunchBar(const web_app::AppId& app_id) override {}
   void ReparentTab(const web_app::AppId& app_id,
                    bool shortcut_created,
@@ -267,7 +257,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
 
     run_loop.Run();
 
-    const Extension* extension = service_->GetInstalledExtension(app_id);
+    const Extension* extension = registry()->GetInstalledExtension(app_id);
     DCHECK(extension);
     return extension;
   }
@@ -278,6 +268,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
           web_app::InstallManager::InstallParams{}) {
     base::RunLoop run_loop;
     web_app::AppId app_id;
+    install_params.fallback_start_url = GURL("https://example.com/fallback");
 
     auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
 
@@ -292,7 +283,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
 
     run_loop.Run();
 
-    const Extension* extension = service_->GetInstalledExtension(app_id);
+    const Extension* extension = registry()->GetInstalledExtension(app_id);
     DCHECK(extension);
     return extension;
   }
@@ -536,7 +527,7 @@ TEST_F(InstallManagerBookmarkAppTest,
                                            /*is_installable=*/true);
 
     web_app::InstallManager::InstallParams params;
-    params.launch_container = web_app::LaunchContainer::kTab;
+    params.user_display_mode = web_app::DisplayMode::kBrowser;
 
     const Extension* extension =
         InstallWebAppWithParams(WebappInstallSource::INTERNAL_DEFAULT, params);
@@ -549,7 +540,7 @@ TEST_F(InstallManagerBookmarkAppTest,
                                            /*is_installable=*/false);
 
     web_app::InstallManager::InstallParams params;
-    params.launch_container = web_app::LaunchContainer::kWindow;
+    params.user_display_mode = web_app::DisplayMode::kStandalone;
 
     const Extension* extension =
         InstallWebAppWithParams(WebappInstallSource::INTERNAL_DEFAULT, params);
@@ -588,8 +579,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
   web_app_info->scope = kAppScope;
-  web_app_info->icons.push_back(
-      CreateIconInfoWithBitmap(kIconSizeTiny, SK_ColorRED));
+  SetAppIcon(web_app_info.get(), kIconSizeTiny, SK_ColorRED);
 
   base::RunLoop run_loop;
   web_app::AppId app_id;
@@ -608,7 +598,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
 
   run_loop.Run();
 
-  const Extension* extension = service_->GetInstalledExtension(app_id);
+  const Extension* extension = registry()->GetInstalledExtension(app_id);
   ASSERT_TRUE(extension);
 
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
@@ -634,7 +624,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
                    .empty());
 }
 
-TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
+TEST_F(InstallManagerBookmarkAppTest, InstallWebAppFromSync) {
   CreateEmptyDataRetriever();
 
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
@@ -644,13 +634,11 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
   web_app_info->scope = GURL(kAppScope);
-  web_app_info->icons.push_back(
-      CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED));
+  SetAppIcon(web_app_info.get(), kIconSizeSmall, SK_ColorRED);
 
   auto web_app_info2 = std::make_unique<WebApplicationInfo>(*web_app_info);
   web_app_info2->title = base::UTF8ToUTF16(kAlternativeAppTitle);
-  web_app_info2->icons[0] =
-      CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorRED);
+  SetAppIcon(web_app_info2.get(), kIconSizeLarge, SK_ColorRED);
   web_app_info2->scope = GURL(kAppAlternativeScope);
 
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
@@ -662,7 +650,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
   {
     base::RunLoop run_loop;
 
-    provider->install_manager().InstallOrUpdateWebAppFromSync(
+    provider->install_manager().InstallWebAppFromSync(
         app_id, std::move(web_app_info),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
@@ -708,11 +696,11 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
   {
     base::RunLoop run_loop;
 
-    provider->install_manager().InstallOrUpdateWebAppFromSync(
+    provider->install_manager().InstallWebAppFromSync(
         app_id, std::move(web_app_info2),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessAlreadyInstalled, code);
           EXPECT_EQ(app_id, installed_app_id);
           run_loop.Quit();
         }));
@@ -721,15 +709,16 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
   }
 
   {
+    // New fields from sync are not deployed as they are now managed by the
+    // ManifestUpdateManager.
     EXPECT_EQ(1u, registry()->enabled_extensions().size());
     const Extension* extension =
         registry()->enabled_extensions().begin()->get();
     EXPECT_TRUE(extension->from_bookmark());
-    EXPECT_EQ(kAlternativeAppTitle, extension->name());
+    EXPECT_EQ(kAppTitle, extension->name());
     EXPECT_EQ(kAppDescription, extension->description());
     EXPECT_EQ(kAppUrl, AppLaunchInfo::GetLaunchWebURL(extension));
-    EXPECT_EQ(GURL(kAppAlternativeScope),
-              GetScopeURLFromBookmarkApp(extension));
+    EXPECT_EQ(GURL(kAppScope), GetScopeURLFromBookmarkApp(extension));
     EXPECT_FALSE(extensions::IconsInfo::GetIconResource(
                      extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY)
                      .empty());

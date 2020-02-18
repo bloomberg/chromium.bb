@@ -17,7 +17,7 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/graph.h"
 #include "content/public/browser/browser_context.h"
 
 namespace content {
@@ -27,10 +27,12 @@ class BrowserContext;
 namespace performance_manager {
 
 class SiteDataCacheInspector;
+class SiteDataCacheImpl;
 
 // This class is responsible for tracking the SiteDataCache instances associated
 // with each browser context. It is meant to be used as a bridge between the
-// browser contexts living on the UI thread and the PerformanceManager sequence.
+// browser contexts living on the UI thread and the PerformanceManager
+// sequence.
 //
 // This can be created on any sequence but it then should be passed to the
 // graph and used on the PerformanceManager sequence.
@@ -93,6 +95,9 @@ class SiteDataCacheFactory : public GraphOwnedDefaultImpl {
   // only on the UI thread.
   void IsDataCacheRecordingForTesting(const std::string& browser_context_id,
                                       base::OnceCallback<void(bool)> cb);
+
+  void ReplaceCacheForTesting(const std::string& browser_context_id,
+                              std::unique_ptr<SiteDataCacheImpl> cache);
 
  private:
   // Implementation of the corresponding *OnUIThread public static functions

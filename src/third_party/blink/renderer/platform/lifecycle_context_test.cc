@@ -29,7 +29,9 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -39,7 +41,7 @@ namespace blink {
 class TestingObserver;
 
 class DummyContext final
-    : public GarbageCollectedFinalized<DummyContext>,
+    : public GarbageCollected<DummyContext>,
       public LifecycleNotifier<DummyContext, TestingObserver> {
   USING_GARBAGE_COLLECTED_MIXIN(DummyContext);
 
@@ -143,12 +145,14 @@ TEST(LifecycleContextTest, ObserverRemovedDuringNotifyDestroyed) {
 // This is a regression test for http://crbug.com/854639.
 TEST(LifecycleContextTest, ShouldNotHitCFICheckOnIncrementalMarking) {
   base::test::ScopedFeatureList scoped_feature_list;
-  // Disable concurrent sweeping as worker_pool task environment is not set.
+  // Disable concurrent marking and concurrent sweeping as worker_pool task
+  // environment is not set.
   scoped_feature_list.InitWithFeatures(
       {blink::features::kBlinkHeapIncrementalMarking},
-      {blink::features::kBlinkHeapConcurrentSweeping});
-  ThreadState* thread_state = ThreadState::Current();
-  thread_state->IncrementalMarkingStart(BlinkGC::GCReason::kForcedGCForTesting);
+      {blink::features::kBlinkHeapConcurrentMarking,
+       blink::features::kBlinkHeapConcurrentSweeping});
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.Start();
 
   auto* context = MakeGarbageCollected<DummyContext>();
 
@@ -161,10 +165,7 @@ TEST(LifecycleContextTest, ShouldNotHitCFICheckOnIncrementalMarking) {
   EXPECT_TRUE(observer->ContextDestroyedCalled());
   context = nullptr;
 
-  while (thread_state->GetGCState() ==
-         ThreadState::kIncrementalMarkingStepScheduled)
-    thread_state->IncrementalMarkingStep(BlinkGC::kNoHeapPointersOnStack);
-  thread_state->IncrementalMarkingFinalize();
+  driver.FinishGC();
 }
 
 TEST(LifecycleContextTest, ForEachObserver) {

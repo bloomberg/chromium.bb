@@ -83,7 +83,7 @@ class MockTest : public testing::Test {
 
  protected:
   std::string response_string_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   scoped_refptr<MockBus> mock_bus_;
   scoped_refptr<MockObjectProxy> mock_proxy_;
@@ -202,10 +202,9 @@ TEST_F(MockTest, CallMethod) {
 
   // Call the method.
   run_loop_.reset(new base::RunLoop);
-  proxy->CallMethod(&method_call,
-                    ObjectProxy::TIMEOUT_USE_DEFAULT,
-                    base::Bind(&MockTest::OnResponse,
-                               base::Unretained(this)));
+  proxy->CallMethod(
+      &method_call, ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::BindOnce(&MockTest::OnResponse, base::Unretained(this)));
   // Run the message loop to let OnResponse be called.
   run_loop_->Run();
 

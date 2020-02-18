@@ -32,7 +32,7 @@
 
 #include <memory>
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
@@ -60,36 +60,20 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
     return *worker_backing_thread_;
   }
   void ClearWorkerBackingThread() override;
-  InstalledScriptsManager* GetInstalledScriptsManager() override;
   void TerminateForTesting() override;
-
-  void RunInstalledClassicScript(const KURL& script_url,
-                                 const v8_inspector::V8StackTraceId& stack_id);
-  void RunInstalledModuleScript(
-      const KURL& module_url_record,
-      std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
-          outside_settings_object_data,
-      network::mojom::CredentialsMode);
 
  private:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams>) override;
 
-  WebThreadType GetThreadType() const override {
-    return WebThreadType::kServiceWorkerThread;
+  ThreadType GetThreadType() const override {
+    return ThreadType::kServiceWorkerThread;
   }
-
-  void RunInstalledClassicScriptOnWorkerThread(
-      const KURL& script_url,
-      const v8_inspector::V8StackTraceId& stack_id);
-  void RunInstalledModuleScriptOnWorkerThread(
-      const KURL& module_url_record,
-      std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
-          outside_settings_object,
-      network::mojom::CredentialsMode);
 
   std::unique_ptr<ServiceWorkerGlobalScopeProxy> global_scope_proxy_;
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
+
+  // Ownership of these members is moved out in CreateWorkerGlobalScope().
   std::unique_ptr<ServiceWorkerInstalledScriptsManager>
       installed_scripts_manager_;
   mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote_;

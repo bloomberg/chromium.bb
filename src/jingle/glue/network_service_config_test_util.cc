@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace jingle_glue {
 
@@ -24,7 +25,7 @@ NetworkServiceConfigTestUtil::NetworkServiceConfigTestUtil(
   mojo_runner_ = base::SequencedTaskRunnerHandle::Get();
   if (net_runner_->BelongsToCurrentThread()) {
     CreateNetworkContextOnNetworkRunner(
-        mojo::MakeRequest(&network_context_ptr_), nullptr);
+        network_context_remote_.BindNewPipeAndPassReceiver(), nullptr);
   } else {
     base::ScopedAllowBaseSyncPrimitivesForTesting permission;
     base::WaitableEvent wait_for_create;
@@ -32,7 +33,8 @@ NetworkServiceConfigTestUtil::NetworkServiceConfigTestUtil(
         FROM_HERE,
         base::BindOnce(
             &NetworkServiceConfigTestUtil::CreateNetworkContextOnNetworkRunner,
-            base::Unretained(this), mojo::MakeRequest(&network_context_ptr_),
+            base::Unretained(this),
+            network_context_remote_.BindNewPipeAndPassReceiver(),
             &wait_for_create));
     // Block for creation to avoid needing to worry about
     // CreateNetworkContextOnNetworkRunner
@@ -79,25 +81,27 @@ void NetworkServiceConfigTestUtil::RequestSocket(
     base::WeakPtr<NetworkServiceConfigTestUtil> instance,
     scoped_refptr<base::SequencedTaskRunner> mojo_runner,
     scoped_refptr<base::SequencedTaskRunner> net_runner,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   DCHECK(net_runner->RunsTasksInCurrentSequence());
   mojo_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&NetworkServiceConfigTestUtil::RequestSocketOnMojoRunner,
-                     std::move(instance), std::move(request)));
+                     std::move(instance), std::move(receiver)));
 }
 
 void NetworkServiceConfigTestUtil::RequestSocketOnMojoRunner(
     base::WeakPtr<NetworkServiceConfigTestUtil> instance,
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   if (!instance)
     return;
   if (instance->network_context_getter_) {
     instance->network_context_getter_.Run()->CreateProxyResolvingSocketFactory(
-        std::move(request));
+        std::move(receiver));
   } else {
-    instance->network_context_ptr_->CreateProxyResolvingSocketFactory(
-        std::move(request));
+    instance->network_context_remote_->CreateProxyResolvingSocketFactory(
+        std::move(receiver));
   }
 }
 

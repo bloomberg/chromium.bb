@@ -37,8 +37,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
-#include "third_party/blink/public/mojom/csp/content_security_policy.mojom-blink.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_reporting_proxy.h"
@@ -71,12 +71,11 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
       const WebString& name,
       const WebString& user_agent,
       const WebString& content_security_policy,
-      mojom::ContentSecurityPolicyType,
+      network::mojom::ContentSecurityPolicyType,
       network::mojom::IPAddressSpace,
       const base::UnguessableToken& appcache_host_id,
       const base::UnguessableToken& devtools_worker_token,
       mojo::ScopedMessagePipeHandle content_settings_handle,
-      mojo::ScopedMessagePipeHandle interface_provider,
       mojo::ScopedMessagePipeHandle browser_interface_broker,
       bool pause_worker_context_on_start) override;
   void Connect(MessagePortChannel) override;
@@ -95,8 +94,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
 
   // Shuts down the worker thread. This may synchronously destroy |this|.
   void TerminateWorkerThread();
-
-  WorkerClients* CreateWorkerClients();
 
   void ConnectTaskOnWorkerThread(MessagePortChannel);
 

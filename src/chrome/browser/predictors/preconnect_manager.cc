@@ -20,10 +20,9 @@ namespace predictors {
 
 const bool kAllowCredentialsOnPreconnectByDefault = true;
 
-PreconnectedRequestStats::PreconnectedRequestStats(const GURL& origin,
+PreconnectedRequestStats::PreconnectedRequestStats(const url::Origin& origin,
                                                    bool was_preconnected)
-    : origin(origin),
-      was_preconnected(was_preconnected) {}
+    : origin(origin), was_preconnected(was_preconnected) {}
 
 PreconnectedRequestStats::PreconnectedRequestStats(
     const PreconnectedRequestStats& other) = default;
@@ -57,7 +56,7 @@ PreresolveJob::PreresolveJob(const GURL& url,
 
 PreresolveJob::PreresolveJob(PreconnectRequest preconnect_request,
                              PreresolveInfo* info)
-    : url(std::move(preconnect_request.origin)),
+    : url(preconnect_request.origin.GetURL()),
       num_sockets(preconnect_request.num_sockets),
       allow_credentials(preconnect_request.allow_credentials),
       network_isolation_key(
@@ -93,7 +92,6 @@ void PreconnectManager::Start(const GURL& url,
 
   for (auto request_it = requests.begin(); request_it != requests.end();
        ++request_it) {
-    DCHECK(request_it->origin.GetOrigin() == request_it->origin);
     PreresolveJobId job_id = preresolve_jobs_.Add(
         std::make_unique<PreresolveJob>(std::move(*request_it), info));
     queued_jobs_.push_back(job_id);
@@ -102,27 +100,30 @@ void PreconnectManager::Start(const GURL& url,
   TryToLaunchPreresolveJobs();
 }
 
-void PreconnectManager::StartPreresolveHost(const GURL& url) {
+void PreconnectManager::StartPreresolveHost(
+    const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
   PreresolveJobId job_id = preresolve_jobs_.Add(std::make_unique<PreresolveJob>(
       url.GetOrigin(), 0, kAllowCredentialsOnPreconnectByDefault,
-      net::NetworkIsolationKey(), nullptr));
+      network_isolation_key, nullptr));
   queued_jobs_.push_front(job_id);
 
   TryToLaunchPreresolveJobs();
 }
 
 void PreconnectManager::StartPreresolveHosts(
-    const std::vector<std::string>& hostnames) {
+    const std::vector<std::string>& hostnames,
+    const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Push jobs in front of the queue due to higher priority.
   for (auto it = hostnames.rbegin(); it != hostnames.rend(); ++it) {
     PreresolveJobId job_id =
         preresolve_jobs_.Add(std::make_unique<PreresolveJob>(
             GURL("http://" + *it), 0, kAllowCredentialsOnPreconnectByDefault,
-            net::NetworkIsolationKey(), nullptr));
+            network_isolation_key, nullptr));
     queued_jobs_.push_front(job_id);
   }
 
@@ -174,6 +175,7 @@ void PreconnectManager::PreconnectUrl(
 
 std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     ResolveHostCallback callback) const {
   DCHECK(url.GetOrigin() == url);
   DCHECK(url.SchemeIsHTTPOrHTTPS());
@@ -189,12 +191,13 @@ std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(
     return nullptr;
   }
 
-  return std::make_unique<ResolveHostClientImpl>(url, std::move(callback),
-                                                 network_context);
+  return std::make_unique<ResolveHostClientImpl>(
+      url, network_isolation_key, std::move(callback), network_context);
 }
 
 std::unique_ptr<ProxyLookupClientImpl> PreconnectManager::LookupProxyForUrl(
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     ProxyLookupCallback callback) const {
   DCHECK(url.GetOrigin() == url);
   DCHECK(url.SchemeIsHTTPOrHTTPS());
@@ -205,8 +208,8 @@ std::unique_ptr<ProxyLookupClientImpl> PreconnectManager::LookupProxyForUrl(
     return nullptr;
   }
 
-  return std::make_unique<ProxyLookupClientImpl>(url, std::move(callback),
-                                                 network_context);
+  return std::make_unique<ProxyLookupClientImpl>(
+      url, network_isolation_key, std::move(callback), network_context);
 }
 
 void PreconnectManager::TryToLaunchPreresolveJobs() {
@@ -225,8 +228,9 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
       // configuration is in place, which improves efficiency, and is also
       // important if the unproxied DNS may contain incorrect entries.
       job->proxy_lookup_client = LookupProxyForUrl(
-          job->url, base::BindOnce(&PreconnectManager::OnProxyLookupFinished,
-                                   weak_factory_.GetWeakPtr(), job_id));
+          job->url, job->network_isolation_key,
+          base::BindOnce(&PreconnectManager::OnProxyLookupFinished,
+                         weak_factory_.GetWeakPtr(), job_id));
       if (info)
         ++info->inflight_count;
       ++inflight_preresolves_count_;
@@ -263,16 +267,19 @@ void PreconnectManager::OnProxyLookupFinished(PreresolveJobId job_id,
   PreresolveJob* job = preresolve_jobs_.Lookup(job_id);
   DCHECK(job);
 
-  if (observer_)
-    observer_->OnProxyLookupFinished(job->url, success);
+  if (observer_) {
+    observer_->OnProxyLookupFinished(job->url, job->network_isolation_key,
+                                     success);
+  }
 
   job->proxy_lookup_client = nullptr;
   if (success) {
     FinishPreresolveJob(job_id, success);
   } else {
-    job->resolve_host_client = PreresolveUrl(
-        job->url, base::BindOnce(&PreconnectManager::OnPreresolveFinished,
-                                 weak_factory_.GetWeakPtr(), job_id));
+    job->resolve_host_client =
+        PreresolveUrl(job->url, job->network_isolation_key,
+                      base::BindOnce(&PreconnectManager::OnPreresolveFinished,
+                                     weak_factory_.GetWeakPtr(), job_id));
   }
 }
 
@@ -289,8 +296,10 @@ void PreconnectManager::FinishPreresolveJob(PreresolveJobId job_id,
   }
 
   PreresolveInfo* info = job->info;
-  if (info)
-    info->stats->requests_stats.emplace_back(job->url, need_preconnect);
+  if (info) {
+    info->stats->requests_stats.emplace_back(url::Origin::Create(job->url),
+                                             need_preconnect);
+  }
   preresolve_jobs_.Remove(job_id);
   --inflight_preresolves_count_;
   if (info) {

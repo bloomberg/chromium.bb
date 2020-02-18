@@ -18,7 +18,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
@@ -36,12 +35,12 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
-#include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/navigation_correction_tab_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -53,6 +52,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
@@ -557,6 +557,7 @@ class TabActivationWaiter : public TabStripModelObserver {
 class CaptivePortalBrowserTest : public InProcessBrowserTest {
  public:
   CaptivePortalBrowserTest();
+  ~CaptivePortalBrowserTest() override;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
@@ -841,10 +842,10 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
         ->GetURLLoaderFactoryForBrowserProcess()
-        ->CreateLoaderAndStart(std::move(job.request), job.routing_id,
+        ->CreateLoaderAndStart(std::move(job.receiver), job.routing_id,
                                job.request_id, job.options,
-                               std::move(job.url_request),
-                               std::move(job.client), job.traffic_annotation);
+                               std::move(job.url_request), job.client.Unbind(),
+                               job.traffic_annotation);
   }
 
   // Abandon all active kMockHttps* requests.  |expected_num_jobs|
@@ -860,7 +861,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_num_jobs,
               static_cast<int>(ongoing_mock_requests_.size()));
     for (auto& job : ongoing_mock_requests_)
-      ignore_result(job.client.PassInterface().PassHandle().release());
+      ignore_result(job.client.Unbind().PassPipe().release());
     ongoing_mock_requests_.clear();
   }
 
@@ -896,7 +897,13 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 };
 
 CaptivePortalBrowserTest::CaptivePortalBrowserTest()
-    : behind_captive_portal_(true) {}
+    : behind_captive_portal_(true) {
+  NavigationCorrectionTabObserver::SetAllowEnableCorrectionsForTesting(true);
+}
+
+CaptivePortalBrowserTest::~CaptivePortalBrowserTest() {
+  NavigationCorrectionTabObserver::SetAllowEnableCorrectionsForTesting(false);
+}
 
 void CaptivePortalBrowserTest::SetUpOnMainThread() {
   url_loader_interceptor_ =
@@ -966,11 +973,11 @@ bool CaptivePortalBrowserTest::OnIntercept(
       net::HttpResponseInfo info;
       info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
           net::HttpUtil::AssembleRawHeaders(headers));
-      network::ResourceResponseHead response;
-      response.headers = info.headers;
-      response.headers->GetMimeType(&response.mime_type);
-      response.encoded_data_length = 0;
-      params->client->OnReceiveRedirect(redirect_info, response);
+      auto response = network::mojom::URLResponseHead::New();
+      response->headers = info.headers;
+      response->headers->GetMimeType(&response->mime_type);
+      response->encoded_data_length = 0;
+      params->client->OnReceiveRedirect(redirect_info, std::move(response));
     }
 
     if (behind_captive_portal_) {

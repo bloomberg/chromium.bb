@@ -32,8 +32,6 @@
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/drive/chromeos/dummy_file_system.h"
-#include "components/drive/service/dummy_drive_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/user_manager/user.h"
@@ -204,18 +202,16 @@ class VolumeManagerTest : public testing::Test {
               std::make_unique<drive::DriveIntegrationService>(
                   profile_.get(),
                   nullptr,
-                  new drive::DummyDriveService(),
                   std::string(),
-                  base::FilePath(),
-                  new drive::DummyFileSystem())),
+                  base::FilePath())),
           volume_manager_(std::make_unique<VolumeManager>(
               profile_.get(),
               drive_integration_service_.get(),  // DriveIntegrationService
               power_manager_client,
               disk_manager,
               file_system_provider_service_.get(),
-              base::Bind(&ProfileEnvironment::GetFakeMtpStorageInfo,
-                         base::Unretained(this)))),
+              base::BindRepeating(&ProfileEnvironment::GetFakeMtpStorageInfo,
+                                  base::Unretained(this)))),
           account_id_(
               AccountId::FromUserEmailGaiaId(profile_->GetProfileUserName(),
                                              "id")),
@@ -478,10 +474,7 @@ TEST_F(VolumeManagerTest, OnDiskAutoMountableEvent_Removed) {
   EXPECT_EQ("device1", event.device_path);
 
   ASSERT_EQ(1U, disk_mount_manager_->unmount_requests().size());
-  const FakeDiskMountManager::UnmountRequest& unmount_request =
-      disk_mount_manager_->unmount_requests()[0];
-  EXPECT_EQ("mount_path", unmount_request.mount_path);
-  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_LAZY, unmount_request.options);
+  EXPECT_EQ("mount_path", disk_mount_manager_->unmount_requests()[0]);
 
   volume_manager()->RemoveObserver(&observer);
 }
@@ -807,8 +800,8 @@ TEST_F(VolumeManagerTest, OnExternalStorageDisabledChanged) {
       "failed_unmount",
   };
   for (const auto& request : disk_mount_manager_->unmount_requests()) {
-    EXPECT_TRUE(base::Contains(expected_unmount_requests, request.mount_path));
-    expected_unmount_requests.erase(request.mount_path);
+    EXPECT_TRUE(base::Contains(expected_unmount_requests, request));
+    expected_unmount_requests.erase(request);
   }
   EXPECT_TRUE(expected_unmount_requests.empty());
 }

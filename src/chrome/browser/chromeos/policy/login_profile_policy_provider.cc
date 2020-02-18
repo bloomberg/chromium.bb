@@ -40,6 +40,23 @@ const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
     {key::kDeviceLoginScreenAutoSelectCertificateForUrls,
      key::kAutoSelectCertificateForUrls},
     {key::kDeviceLoginScreenLargeCursorEnabled, key::kLargeCursorEnabled},
+    {key::kDeviceLoginScreenSpokenFeedbackEnabled, key::kSpokenFeedbackEnabled},
+    {key::kDeviceLoginScreenHighContrastEnabled, key::kHighContrastEnabled},
+    {key::kDeviceLoginScreenVirtualKeyboardEnabled,
+     key::kVirtualKeyboardEnabled},
+    {key::kDeviceLoginScreenDictationEnabled, key::kDictationEnabled},
+    {key::kDeviceLoginScreenSelectToSpeakEnabled, key::kSelectToSpeakEnabled},
+    {key::kDeviceLoginScreenCursorHighlightEnabled,
+     key::kCursorHighlightEnabled},
+    {key::kDeviceLoginScreenCaretHighlightEnabled, key::kCaretHighlightEnabled},
+    {key::kDeviceLoginScreenMonoAudioEnabled, key::kMonoAudioEnabled},
+    {key::kDeviceLoginScreenAutoclickEnabled, key::kAutoclickEnabled},
+    {key::kDeviceLoginScreenStickyKeysEnabled, key::kStickyKeysEnabled},
+    {key::kDeviceLoginScreenKeyboardFocusHighlightEnabled,
+     key::kKeyboardFocusHighlightEnabled},
+    {key::kDeviceLoginScreenScreenMagnifierType, key::kScreenMagnifierType},
+    {key::kDeviceLoginScreenShowOptionsInSystemTrayMenu,
+     key::kShowAccessibilityOptionsInSystemTrayMenu},
 };
 
 const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {

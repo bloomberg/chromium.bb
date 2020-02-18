@@ -66,10 +66,10 @@ public class RenderWidgetHostViewImpl implements RenderWidgetHostView {
     }
 
     @Override
-    public void insetViewportBottom(int bottomAdjustPx) {
+    public void onViewportInsetBottomChanged() {
         checkNotDestroyed();
-        RenderWidgetHostViewImplJni.get().insetViewportBottom(
-                getNativePtr(), RenderWidgetHostViewImpl.this, bottomAdjustPx);
+        RenderWidgetHostViewImplJni.get().onViewportInsetBottomChanged(
+                getNativePtr(), RenderWidgetHostViewImpl.this);
     }
 
     @Override
@@ -113,8 +113,8 @@ public class RenderWidgetHostViewImpl implements RenderWidgetHostView {
                 long nativeRenderWidgetHostViewAndroid, RenderWidgetHostViewImpl caller);
         void showContextMenuAtTouchHandle(long nativeRenderWidgetHostViewAndroid,
                 RenderWidgetHostViewImpl caller, int x, int y);
-        void insetViewportBottom(long nativeRenderWidgetHostViewAndroid,
-                RenderWidgetHostViewImpl caller, int bottomAdjustPx);
+        void onViewportInsetBottomChanged(
+                long nativeRenderWidgetHostViewAndroid, RenderWidgetHostViewImpl caller);
         void writeContentBitmapToDiskAsync(long nativeRenderWidgetHostViewAndroid,
                 RenderWidgetHostViewImpl caller, int width, int height, String path,
                 Callback<String> callback);

@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
-#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom-blink.h"
 #include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -30,12 +30,12 @@ class ResourceResponse;
 // the ManifestParser in order to do so.
 //
 // Consumers should use the mojo ManifestManager interface to use this class.
-class MODULES_EXPORT ManifestManager
-    : public GarbageCollectedFinalized<ManifestManager>,
-      public Supplement<LocalFrame>,
-      public mojom::blink::ManifestManager,
-      public ContextLifecycleObserver {
+class MODULES_EXPORT ManifestManager : public GarbageCollected<ManifestManager>,
+                                       public Supplement<LocalFrame>,
+                                       public mojom::blink::ManifestManager,
+                                       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ManifestManager);
+  USING_PRE_FINALIZER(ManifestManager, Prefinalize);
 
  public:
   static const char kSupplementName[];
@@ -85,7 +85,7 @@ class MODULES_EXPORT ManifestManager
   void BindReceiver(
       mojo::PendingReceiver<mojom::blink::ManifestManager> receiver);
 
-  void Dispose();
+  void Prefinalize();
 
   friend class ManifestManagerTest;
 

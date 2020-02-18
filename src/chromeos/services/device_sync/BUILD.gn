@@ -4,23 +4,34 @@
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
+static_library("feature_status_change") {
+  sources = [
+    "feature_status_change.h",
+  ]
+}
+
 static_library("device_sync") {
   sources = [
     "async_execution_time_metrics_logger.cc",
     "async_execution_time_metrics_logger.h",
     "cryptauth_api_call_flow.cc",
     "cryptauth_api_call_flow.h",
-    "cryptauth_better_together_feature_types.cc",
-    "cryptauth_better_together_feature_types.h",
     "cryptauth_client.h",
     "cryptauth_client_impl.cc",
     "cryptauth_client_impl.h",
     "cryptauth_device.cc",
     "cryptauth_device.h",
+    "cryptauth_device_activity_getter.cc",
+    "cryptauth_device_activity_getter.h",
+    "cryptauth_device_activity_getter_impl.cc",
+    "cryptauth_device_activity_getter_impl.h",
     "cryptauth_device_manager.cc",
     "cryptauth_device_manager.h",
     "cryptauth_device_manager_impl.cc",
     "cryptauth_device_manager_impl.h",
+    "cryptauth_device_notifier.h",
+    "cryptauth_device_notifier_impl.cc",
+    "cryptauth_device_notifier_impl.h",
     "cryptauth_device_registry.cc",
     "cryptauth_device_registry.h",
     "cryptauth_device_registry_impl.cc",
@@ -52,6 +63,9 @@ static_library("device_sync") {
     "cryptauth_feature_status_getter.h",
     "cryptauth_feature_status_getter_impl.cc",
     "cryptauth_feature_status_getter_impl.h",
+    "cryptauth_feature_status_setter.h",
+    "cryptauth_feature_status_setter_impl.cc",
+    "cryptauth_feature_status_setter_impl.h",
     "cryptauth_feature_type.cc",
     "cryptauth_feature_type.h",
     "cryptauth_gcm_manager.cc",
@@ -101,8 +115,6 @@ static_library("device_sync") {
     "device_sync_base.h",
     "device_sync_impl.cc",
     "device_sync_impl.h",
-    "device_sync_service.cc",
-    "device_sync_service.h",
     "device_sync_type_converters.cc",
     "device_sync_type_converters.h",
     "network_request_error.cc",
@@ -115,6 +127,9 @@ static_library("device_sync") {
     "remote_device_provider.h",
     "remote_device_provider_impl.cc",
     "remote_device_provider_impl.h",
+    "remote_device_v2_loader.h",
+    "remote_device_v2_loader_impl.cc",
+    "remote_device_v2_loader_impl.h",
     "software_feature_manager.h",
     "software_feature_manager_impl.cc",
     "software_feature_manager_impl.h",
@@ -129,6 +144,7 @@ static_library("device_sync") {
   ]
 
   public_deps = [
+    ":feature_status_change",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice/logging",
     "//chromeos/services/device_sync/public/mojom",
@@ -147,8 +163,8 @@ static_library("device_sync") {
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
     "//components/gcm_driver",
+    "//components/prefs",
     "//net",
-    "//services/preferences/public/cpp",
   ]
 
   visibility = [
@@ -167,6 +183,8 @@ static_library("test_support") {
     "cryptauth_v2_device_sync_test_devices.h",
     "fake_cryptauth_device_manager.cc",
     "fake_cryptauth_device_manager.h",
+    "fake_cryptauth_device_notifier.cc",
+    "fake_cryptauth_device_notifier.h",
     "fake_cryptauth_device_syncer.cc",
     "fake_cryptauth_device_syncer.h",
     "fake_cryptauth_ecies_encryptor.cc",
@@ -175,6 +193,8 @@ static_library("test_support") {
     "fake_cryptauth_enrollment_manager.h",
     "fake_cryptauth_feature_status_getter.cc",
     "fake_cryptauth_feature_status_getter.h",
+    "fake_cryptauth_feature_status_setter.cc",
+    "fake_cryptauth_feature_status_setter.h",
     "fake_cryptauth_gcm_manager.cc",
     "fake_cryptauth_gcm_manager.h",
     "fake_cryptauth_group_private_key_sharer.cc",
@@ -187,6 +207,8 @@ static_library("test_support") {
     "fake_cryptauth_metadata_syncer.h",
     "fake_cryptauth_scheduler.cc",
     "fake_cryptauth_scheduler.h",
+    "fake_cryptauth_v2_device_manager.cc",
+    "fake_cryptauth_v2_device_manager.h",
     "fake_cryptauth_v2_enroller.cc",
     "fake_cryptauth_v2_enroller.h",
     "fake_device_sync.cc",
@@ -197,6 +219,8 @@ static_library("test_support") {
     "fake_ecies_encryption.h",
     "fake_remote_device_provider.cc",
     "fake_remote_device_provider.h",
+    "fake_remote_device_v2_loader.cc",
+    "fake_remote_device_v2_loader.h",
     "fake_software_feature_manager.cc",
     "fake_software_feature_manager.h",
     "mock_cryptauth_client.cc",
@@ -215,6 +239,7 @@ static_library("test_support") {
     "//chromeos/services/device_sync/proto:test_support",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
+    "//chromeos/services/device_sync/public/mojom:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -226,7 +251,9 @@ source_set("unit_tests") {
   sources = [
     "cryptauth_api_call_flow_unittest.cc",
     "cryptauth_client_impl_unittest.cc",
+    "cryptauth_device_activity_getter_impl_unittest.cc",
     "cryptauth_device_manager_impl_unittest.cc",
+    "cryptauth_device_notifier_impl_unittest.cc",
     "cryptauth_device_registry_impl_unittest.cc",
     "cryptauth_device_syncer_impl_unittest.cc",
     "cryptauth_device_unittest.cc",
@@ -234,6 +261,8 @@ source_set("unit_tests") {
     "cryptauth_enroller_impl_unittest.cc",
     "cryptauth_enrollment_manager_impl_unittest.cc",
     "cryptauth_feature_status_getter_impl_unittest.cc",
+    "cryptauth_feature_status_setter_impl_unittest.cc",
+    "cryptauth_feature_type_unittest.cc",
     "cryptauth_gcm_manager_impl_unittest.cc",
     "cryptauth_group_private_key_sharer_impl_unittest.cc",
     "cryptauth_key_bundle_unittest.cc",
@@ -249,12 +278,14 @@ source_set("unit_tests") {
     "device_sync_service_unittest.cc",
     "remote_device_loader_unittest.cc",
     "remote_device_provider_impl_unittest.cc",
+    "remote_device_v2_loader_impl_unittest.cc",
     "software_feature_manager_impl_unittest.cc",
     "sync_scheduler_impl_unittest.cc",
   ]
 
   deps = [
     ":device_sync",
+    ":feature_status_change",
     ":test_support",
     "//base",
     "//base/test:test_support",

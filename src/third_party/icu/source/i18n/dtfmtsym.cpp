@@ -1246,9 +1246,9 @@ const UnicodeString**
 DateFormatSymbols::getZoneStrings(int32_t& rowCount, int32_t& columnCount) const
 {
     const UnicodeString **result = NULL;
-    static UMutex *LOCK = new UMutex();
+    static UMutex LOCK;
 
-    umtx_lock(LOCK);
+    umtx_lock(&LOCK);
     if (fZoneStrings == NULL) {
         if (fLocaleZoneStrings == NULL) {
             ((DateFormatSymbols*)this)->initZoneStringsArray();
@@ -1259,7 +1259,7 @@ DateFormatSymbols::getZoneStrings(int32_t& rowCount, int32_t& columnCount) const
     }
     rowCount = fZoneStringsRowCount;
     columnCount = fZoneStringsColCount;
-    umtx_unlock(LOCK);
+    umtx_unlock(&LOCK);
 
     return result;
 }
@@ -2177,16 +2177,16 @@ DateFormatSymbols::initializeData(const Locale& locale, const char *type, UError
             // The ordering of the following statements is important.
             if (fLeapMonthPatterns[kLeapMonthPatternFormatAbbrev].isEmpty()) {
                 fLeapMonthPatterns[kLeapMonthPatternFormatAbbrev].setTo(fLeapMonthPatterns[kLeapMonthPatternFormatWide]);
-            };
+            }
             if (fLeapMonthPatterns[kLeapMonthPatternFormatNarrow].isEmpty()) {
                 fLeapMonthPatterns[kLeapMonthPatternFormatNarrow].setTo(fLeapMonthPatterns[kLeapMonthPatternStandaloneNarrow]);
-            };
+            }
             if (fLeapMonthPatterns[kLeapMonthPatternStandaloneWide].isEmpty()) {
                 fLeapMonthPatterns[kLeapMonthPatternStandaloneWide].setTo(fLeapMonthPatterns[kLeapMonthPatternFormatWide]);
-            };
+            }
             if (fLeapMonthPatterns[kLeapMonthPatternStandaloneAbbrev].isEmpty()) {
                 fLeapMonthPatterns[kLeapMonthPatternStandaloneAbbrev].setTo(fLeapMonthPatterns[kLeapMonthPatternFormatAbbrev]);
-            };
+            }
             // end of hack
             fLeapMonthPatternsCount = kMonthPatternsCount;
         } else {
@@ -2338,11 +2338,21 @@ DateFormatSymbols::initializeData(const Locale& locale, const char *type, UError
         assignArray(fStandaloneNarrowMonths, fStandaloneNarrowMonthsCount, fShortMonths, fShortMonthsCount);
     }
 
-    // Load AM/PM markers
+    // Load AM/PM markers; if wide or narrow not available, use short
+    UErrorCode ampmStatus = U_ZERO_ERROR;
     initField(&fAmPms, fAmPmsCount, calendarSink,
-              buildResourcePath(path, gAmPmMarkersTag, status), status);
+              buildResourcePath(path, gAmPmMarkersTag, ampmStatus), ampmStatus);
+    if (U_FAILURE(ampmStatus)) {
+        initField(&fAmPms, fAmPmsCount, calendarSink,
+                  buildResourcePath(path, gAmPmMarkersAbbrTag, status), status);
+    }
+    ampmStatus = U_ZERO_ERROR;
     initField(&fNarrowAmPms, fNarrowAmPmsCount, calendarSink,
-              buildResourcePath(path, gAmPmMarkersNarrowTag, status), status);
+              buildResourcePath(path, gAmPmMarkersNarrowTag, ampmStatus), ampmStatus);
+    if (U_FAILURE(ampmStatus)) {
+        initField(&fNarrowAmPms, fNarrowAmPmsCount, calendarSink,
+                  buildResourcePath(path, gAmPmMarkersAbbrTag, status), status);
+    }
 
     // Load quarters
     initField(&fQuarters, fQuartersCount, calendarSink,

@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/test/fake_network_dispatcher.h"
-#include "third_party/webrtc/p2p/base/packet_socket_factory.h"
+#include "third_party/webrtc/api/packet_socket_factory.h"
 
 namespace remoting {
 
@@ -81,7 +81,7 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory,
       const rtc::SocketAddress& remote_address,
       const rtc::ProxyInfo& proxy_info,
       const std::string& user_agent,
-      int opts) override;
+      const rtc::PacketSocketTcpOptions& opts) override;
   rtc::AsyncResolverInterface* CreateAsyncResolver() override;
 
   // FakeNetworkDispatcher::Node interface.

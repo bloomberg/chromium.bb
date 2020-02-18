@@ -6,10 +6,9 @@
 
 #include <memory>
 #include <utility>
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_property_bag.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -89,9 +88,7 @@ class NavigatorShareTest : public testing::Test {
   }
 
   void Share(const ShareData& share_data) {
-    std::unique_ptr<UserGestureIndicator> gesture =
-        LocalFrame::NotifyUserActivation(&GetFrame(),
-                                         UserGestureToken::kNewGesture);
+    LocalFrame::NotifyUserActivation(&GetFrame());
     Navigator* navigator = GetFrame().DomWindow()->navigator();
     ScriptPromise promise =
         NavigatorShare::share(GetScriptState(), *navigator, &share_data);
@@ -112,12 +109,18 @@ class NavigatorShareTest : public testing::Test {
         nullptr /* extra_data */);
     test::RunPendingTasks();
 
-    service_manager::InterfaceProvider::TestApi test_api(
-        &GetFrame().GetInterfaceProvider());
-    test_api.SetBinderForName(
+    GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
         ShareService::Name_,
         WTF::BindRepeating(&MockShareService::Bind,
                            WTF::Unretained(&mock_share_service_)));
+  }
+
+  void TearDown() override {
+    // Remove the testing binder to avoid crashes between tests caused by
+    // MockShareService rebinding an already-bound Binding.
+    // See https://crbug.com/1010116 for more information.
+    GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
+        ShareService::Name_, {});
   }
 
  public:

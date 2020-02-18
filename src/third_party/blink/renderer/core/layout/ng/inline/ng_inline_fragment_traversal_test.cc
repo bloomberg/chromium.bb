@@ -24,15 +24,6 @@ class NGInlineFragmentTraversalTest : public NGLayoutTest {
     DCHECK(To<LayoutBlockFlow>(layout_object)->CurrentFragment()) << element;
     return *To<LayoutBlockFlow>(layout_object)->CurrentFragment();
   }
-
-  const NGPhysicalFragment& GetFragmentOfNode(
-      const NGPhysicalContainerFragment& container,
-      const Node* node) const {
-    const LayoutObject* layout_object = node->GetLayoutObject();
-    auto fragments =
-        NGInlineFragmentTraversal::SelfFragmentsOf(container, layout_object);
-    return *fragments.front().fragment;
-  }
 };
 
 #define EXPECT_NEXT_BOX(iter, id)                                           \
@@ -73,21 +64,6 @@ TEST_F(NGInlineFragmentTraversalTest, DescendantsOf) {
   EXPECT_NEXT_TEXT(iter, "\n");
   EXPECT_NEXT_LINE_BOX(iter);
   EXPECT_NEXT_TEXT(iter, "baz");
-  EXPECT_EQ(iter, descendants.end());
-}
-
-TEST_F(NGInlineFragmentTraversalTest, SelfFragmentsOf) {
-  SetBodyInnerHTML(
-      "<style>* { border: 1px solid}</style>"
-      "<div id=t>foo<b id=filter>bar<br>baz</b>bla</div>");
-  const auto descendants = NGInlineFragmentTraversal::SelfFragmentsOf(
-      GetRootFragmentById("t"), GetLayoutObjectByElementId("filter"));
-
-  auto* iter = descendants.begin();
-
-  // <b> generates two box fragments since its content is in two lines.
-  EXPECT_NEXT_BOX(iter, "filter");
-  EXPECT_NEXT_BOX(iter, "filter");
   EXPECT_EQ(iter, descendants.end());
 }
 

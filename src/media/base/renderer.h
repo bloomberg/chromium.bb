@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "media/base/buffering_state.h"
 #include "media/base/cdm_context.h"
@@ -34,17 +35,25 @@ class MEDIA_EXPORT Renderer {
   // be run only prior to returning.
   virtual void Initialize(MediaResource* media_resource,
                           RendererClient* client,
-                          const PipelineStatusCB& init_cb) = 0;
+                          PipelineStatusCallback init_cb) = 0;
 
   // Associates the |cdm_context| with this Renderer for decryption (and
   // decoding) of media data, then fires |cdm_attached_cb| with the result.
   virtual void SetCdm(CdmContext* cdm_context,
-                      const CdmAttachedCB& cdm_attached_cb) = 0;
+                      CdmAttachedCB cdm_attached_cb) = 0;
+
+  // Specifies a latency hint from the site. Renderers should clamp the hint
+  // value to reasonable min and max and use the resulting value as a target
+  // latency such that the buffering state reaches HAVE_ENOUGH when this amount
+  // of decoded data is buffered. A nullopt hint indicates the user is clearing
+  // their preference and the renderer should restore its default buffering
+  // thresholds.
+  virtual void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) = 0;
 
   // The following functions must be called after Initialize().
 
   // Discards any buffered data, executing |flush_cb| when completed.
-  virtual void Flush(const base::Closure& flush_cb) = 0;
+  virtual void Flush(base::OnceClosure flush_cb) = 0;
 
   // Starts rendering from |time|.
   virtual void StartPlayingFrom(base::TimeDelta time) = 0;

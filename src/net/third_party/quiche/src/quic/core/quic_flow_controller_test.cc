@@ -5,9 +5,9 @@
 #include "net/third_party/quiche/src/quic/core/quic_flow_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
@@ -39,8 +39,8 @@ class QuicFlowControllerTest : public QuicTest {
   void Initialize() {
     connection_ = new MockQuicConnection(&helper_, &alarm_factory_,
                                          Perspective::IS_CLIENT);
-    session_ = QuicMakeUnique<MockQuicSession>(connection_);
-    flow_controller_ = QuicMakeUnique<QuicFlowController>(
+    session_ = std::make_unique<MockQuicSession>(connection_);
+    flow_controller_ = std::make_unique<QuicFlowController>(
         session_.get(), stream_id_, /*is_connection_flow_controller*/ false,
         send_window_, receive_window_, kStreamReceiveWindowLimit,
         should_auto_tune_receive_window_, &session_flow_controller_);

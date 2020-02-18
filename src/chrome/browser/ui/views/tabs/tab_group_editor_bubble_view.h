@@ -7,8 +7,11 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 
 class TabController;
 
@@ -19,28 +22,66 @@ class Size;
 class ColorPickerView;
 
 // A dialog for changing a tab group's visual parameters.
-//
-// TODO(crbug.com/989174): polish this UI. It is currently sufficient for
-// testing, but it is not ready to be launched.
 class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
  public:
-  static void Show(views::View* anchor_view,
-                   TabController* tab_controller,
-                   TabGroupId group);
+  // Shows the editor for |group|. Returns an *unowned* pointer to the
+  // bubble's widget.
+  static views::Widget* Show(TabGroupHeader* anchor_view,
+                             TabController* tab_controller,
+                             TabGroupId group);
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
-  base::string16 GetWindowTitle() const override;
-  bool Accept() override;
+  ui::ModalType GetModalType() const override;
+  views::View* GetInitiallyFocusedView() override;
 
  private:
-  TabGroupEditorBubbleView(views::View* anchor_view,
+  TabGroupEditorBubbleView(TabGroupHeader* anchor_view,
                            TabController* tab_controller,
                            TabGroupId group);
   ~TabGroupEditorBubbleView() override;
 
+  void UpdateGroup();
+
+  SkColor background_color() const { return color(); }
+
   TabController* const tab_controller_;
   const TabGroupId group_;
+
+  class TitleFieldController : public views::TextfieldController {
+   public:
+    explicit TitleFieldController(TabGroupEditorBubbleView* parent)
+        : parent_(parent) {}
+    ~TitleFieldController() override = default;
+
+    // views::TextfieldController:
+    void ContentsChanged(views::Textfield* sender,
+                         const base::string16& new_contents) override;
+    bool HandleKeyEvent(views::Textfield* sender,
+                        const ui::KeyEvent& key_event) override;
+
+   private:
+    TabGroupEditorBubbleView* const parent_;
+  };
+
+  TitleFieldController title_field_controller_;
+
+  class ButtonListener : public views::ButtonListener {
+   public:
+    explicit ButtonListener(TabController* tab_controller,
+                            TabGroupHeader* anchor_view,
+                            TabGroupId group);
+
+    // views::ButtonListener:
+    void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+   private:
+    TabController* const tab_controller_;
+    TabGroupHeader* anchor_view_;
+    const TabGroupId group_;
+  };
+
+  ButtonListener button_listener_;
 
   views::Textfield* title_field_;
 

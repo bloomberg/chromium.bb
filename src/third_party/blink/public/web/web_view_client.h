@@ -156,10 +156,6 @@ class WebViewClient {
   // Called when the View acquires focus.
   virtual void DidFocus(WebLocalFrame* calling_frame) {}
 
-  // Returns information about the screen where this view's widgets are being
-  // displayed.
-  virtual WebScreenInfo GetScreenInfo() = 0;
-
   // Session history -----------------------------------------------------
 
   // Returns the number of history items before/after the current
@@ -177,10 +173,6 @@ class WebViewClient {
                                          const WebString& value) {}
 
   // Zoom ----------------------------------------------------------------
-
-  // Informs the browser that the zoom levels for this frame have changed from
-  // the default values.
-  virtual void ZoomLimitsChanged(double minimum_level, double maximum_level) {}
 
   // Informs the browser that the page scale has changed and/or a pinch gesture
   // has started or ended.

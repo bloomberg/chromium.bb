@@ -8,8 +8,8 @@ import("//extensions/buildflags/buildflags.gni")
 
 jumbo_static_library("safe_browsing") {
   sources = [
-    "safe_browsing_controller_client.cc",
-    "safe_browsing_controller_client.h",
+    "chrome_controller_client.cc",
+    "chrome_controller_client.h",
     "safe_browsing_tab_observer.cc",
     "safe_browsing_tab_observer.h",
     "url_checker_delegate_impl.cc",
@@ -137,10 +137,18 @@ jumbo_static_library("safe_browsing") {
         "client_side_detection_service.h",
         "client_side_model_loader.cc",
         "client_side_model_loader.h",
-        "download_protection/binary_fcm_service.cc",
-        "download_protection/binary_fcm_service.h",
-        "download_protection/binary_upload_service.cc",
-        "download_protection/binary_upload_service.h",
+        "cloud_content_scanning/binary_fcm_service.cc",
+        "cloud_content_scanning/binary_fcm_service.h",
+        "cloud_content_scanning/binary_upload_service.cc",
+        "cloud_content_scanning/binary_upload_service.h",
+        "cloud_content_scanning/deep_scanning_dialog_delegate.cc",
+        "cloud_content_scanning/deep_scanning_dialog_delegate.h",
+        "cloud_content_scanning/deep_scanning_utils.cc",
+        "cloud_content_scanning/deep_scanning_utils.h",
+        "cloud_content_scanning/multipart_uploader.cc",
+        "cloud_content_scanning/multipart_uploader.h",
+        "dm_token_utils.cc",
+        "dm_token_utils.h",
         "download_protection/check_client_download_request.cc",
         "download_protection/check_client_download_request.h",
         "download_protection/check_client_download_request_base.cc",
@@ -157,12 +165,12 @@ jumbo_static_library("safe_browsing") {
         "download_protection/download_protection_service.h",
         "download_protection/download_protection_util.cc",
         "download_protection/download_protection_util.h",
+        "download_protection/download_reporter.cc",
+        "download_protection/download_reporter.h",
         "download_protection/download_url_sb_client.cc",
         "download_protection/download_url_sb_client.h",
         "download_protection/file_analyzer.cc",
         "download_protection/file_analyzer.h",
-        "download_protection/multipart_uploader.cc",
-        "download_protection/multipart_uploader.h",
         "download_protection/path_sanitizer.cc",
         "download_protection/path_sanitizer.h",
         "download_protection/ppapi_download_request.cc",
@@ -241,7 +249,7 @@ jumbo_static_library("safe_browsing") {
       }
     } else if (safe_browsing_mode == 2) {
       sources += [
-        "android/file_type_policies.cc",
+        "android/safe_browsing_bridge.cc",
         "android/services_delegate_android.cc",
         "android/services_delegate_android.h",
         "telemetry/android/android_telemetry_service.cc",
@@ -251,18 +259,6 @@ jumbo_static_library("safe_browsing") {
         "//chrome/android:jni_headers",
         "//components/safe_browsing:buildflags",
         "//components/safe_browsing/android:safe_browsing_mobile",
-      ]
-    } else if (safe_browsing_mode == 3) {
-      sources += [
-        "android/file_type_policies.cc",
-        "android/services_delegate_android.cc",
-        "android/services_delegate_android.h",
-        "telemetry/android/android_telemetry_service.cc",
-        "telemetry/android/android_telemetry_service.h",
-      ]
-      deps += [
-        "//chrome/android:jni_headers",
-        "//components/safe_browsing/db:db",
       ]
     }
   }
@@ -301,6 +297,13 @@ source_set("test_support") {
       "//components/safe_browsing/db:test_database_manager",
       "//components/safe_browsing/db:v4_protocol_manager_util",
       "//content/public/browser",
+    ]
+  }
+
+  if (safe_browsing_mode == 1) {
+    sources += [
+      "cloud_content_scanning/test_binary_upload_service.cc",
+      "cloud_content_scanning/test_binary_upload_service.h",
     ]
   }
 }

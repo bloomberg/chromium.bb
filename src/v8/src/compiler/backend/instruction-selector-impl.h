@@ -29,8 +29,8 @@ inline bool operator<(const CaseInfo& l, const CaseInfo& r) {
 // Helper struct containing data about a table or lookup switch.
 class SwitchInfo {
  public:
-  SwitchInfo(ZoneVector<CaseInfo>& cases,  // NOLINT(runtime/references)
-             int32_t min_value, int32_t max_value, BasicBlock* default_branch)
+  SwitchInfo(ZoneVector<CaseInfo> const& cases, int32_t min_value,
+             int32_t max_value, BasicBlock* default_branch)
       : cases_(cases),
         min_value_(min_value),
         max_value_(max_value),
@@ -193,17 +193,6 @@ class OperandGenerator {
                                         reg.code(), GetVReg(node)));
   }
 
-  InstructionOperand UseExplicit(LinkageLocation location) {
-    MachineRepresentation rep = InstructionSequence::DefaultRepresentation();
-    if (location.IsRegister()) {
-      return ExplicitOperand(LocationOperand::REGISTER, rep,
-                             location.AsRegister());
-    } else {
-      return ExplicitOperand(LocationOperand::STACK_SLOT, rep,
-                             location.GetLocation());
-    }
-  }
-
   InstructionOperand UseImmediate(int immediate) {
     return sequence()->AddImmediate(Constant(immediate));
   }
@@ -252,6 +241,19 @@ class OperandGenerator {
                               UnallocatedOperand::USED_AT_START, vreg);
   }
 
+  // The kind of register generated for memory operands. kRegister is alive
+  // until the start of the operation, kUniqueRegister until the end.
+  enum RegisterMode {
+    kRegister,
+    kUniqueRegister,
+  };
+
+  InstructionOperand UseRegisterWithMode(Node* node,
+                                         RegisterMode register_mode) {
+    return register_mode == kRegister ? UseRegister(node)
+                                      : UseUniqueRegister(node);
+  }
+
   InstructionOperand TempDoubleRegister() {
     UnallocatedOperand op = UnallocatedOperand(
         UnallocatedOperand::MUST_HAVE_REGISTER,
@@ -273,6 +275,16 @@ class OperandGenerator {
   InstructionOperand TempRegister(Register reg) {
     return UnallocatedOperand(UnallocatedOperand::FIXED_REGISTER, reg.code(),
                               InstructionOperand::kInvalidVirtualRegister);
+  }
+
+  template <typename FPRegType>
+  InstructionOperand TempFpRegister(FPRegType reg) {
+    UnallocatedOperand op =
+        UnallocatedOperand(UnallocatedOperand::FIXED_FP_REGISTER, reg.code(),
+                           sequence()->NextVirtualRegister());
+    sequence()->MarkAsRepresentation(MachineRepresentation::kSimd128,
+                                     op.virtual_register());
+    return op;
   }
 
   InstructionOperand TempImmediate(int32_t imm) {
@@ -334,7 +346,6 @@ class OperandGenerator {
           case MachineRepresentation::kTaggedSigned:
           case MachineRepresentation::kTaggedPointer:
           case MachineRepresentation::kCompressed:
-          case MachineRepresentation::kCompressedSigned:
           case MachineRepresentation::kCompressedPointer:
             return Constant(static_cast<int32_t>(0));
           case MachineRepresentation::kFloat64:

@@ -86,7 +86,7 @@ String ServiceWorkerClient::lifecycleState() const {
 
 void ServiceWorkerClient::postMessage(ScriptState* script_state,
                                       const ScriptValue& message,
-                                      Vector<ScriptValue>& transfer,
+                                      HeapVector<ScriptValue>& transfer,
                                       ExceptionState& exception_state) {
   PostMessageOptions* options = PostMessageOptions::Create();
   if (!transfer.IsEmpty())
@@ -111,10 +111,17 @@ void ServiceWorkerClient::postMessage(ScriptState* script_state,
 
   BlinkTransferableMessage msg;
   msg.message = serialized_message;
+  msg.sender_origin = context->GetSecurityOrigin()->IsolatedCopy();
   msg.ports = MessagePort::DisentanglePorts(
       context, transferables.message_ports, exception_state);
   if (exception_state.HadException())
     return;
+
+  if (msg.message->IsLockedToAgentCluster()) {
+    msg.locked_agent_cluster_id = context->GetAgentClusterID();
+  } else {
+    msg.locked_agent_cluster_id = base::nullopt;
+  }
 
   To<ServiceWorkerGlobalScope>(context)
       ->GetServiceWorkerHost()

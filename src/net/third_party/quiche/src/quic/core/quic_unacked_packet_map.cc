@@ -28,10 +28,10 @@ QuicUnackedPacketMap::QuicUnackedPacketMap(Perspective perspective)
     : perspective_(perspective),
       least_unacked_(FirstSendingPacketNumber()),
       bytes_in_flight_(0),
-      pending_crypto_packet_count_(0),
+      packets_in_flight_(0),
+      last_inflight_packet_sent_time_(QuicTime::Zero()),
       last_crypto_packet_sent_time_(QuicTime::Zero()),
       session_notifier_(nullptr),
-      session_decides_what_to_write_(false),
       supports_multiple_packet_number_spaces_(false) {}
 
 QuicUnackedPacketMap::~QuicUnackedPacketMap() {
@@ -41,7 +41,6 @@ QuicUnackedPacketMap::~QuicUnackedPacketMap() {
 }
 
 void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
-                                         QuicPacketNumber old_packet_number,
                                          TransmissionType transmission_type,
                                          QuicTime sent_time,
                                          bool set_in_flight) {
@@ -59,15 +58,11 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
 
   const bool has_crypto_handshake =
       packet->has_crypto_handshake == IS_HANDSHAKE;
-  QuicTransmissionInfo info(
-      packet->encryption_level, packet->packet_number_length, transmission_type,
-      sent_time, bytes_sent, has_crypto_handshake, packet->num_padding_bytes);
+  QuicTransmissionInfo info(packet->encryption_level, transmission_type,
+                            sent_time, bytes_sent, has_crypto_handshake,
+                            packet->num_padding_bytes);
   info.largest_acked = packet->largest_acked;
   largest_sent_largest_acked_.UpdateMax(packet->largest_acked);
-  if (old_packet_number.IsInitialized()) {
-    TransferRetransmissionInfo(old_packet_number, packet_number,
-                               transmission_type, &info);
-  }
 
   largest_sent_packet_ = packet_number;
   if (supports_multiple_packet_number_spaces_) {
@@ -76,22 +71,23 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
   }
   if (set_in_flight) {
     bytes_in_flight_ += bytes_sent;
+    ++packets_in_flight_;
     info.in_flight = true;
     largest_sent_retransmittable_packets_[GetPacketNumberSpace(
         info.encryption_level)] = packet_number;
+    // TODO(ianswett): Should this field be per packet number space or should
+    // GetInFlightPacketSentTime() use largest_sent_retransmittable_packets_?
+    last_inflight_packet_sent_time_ = sent_time;
   }
   unacked_packets_.push_back(info);
   // Swap the retransmittable frames to avoid allocations.
   // TODO(ianswett): Could use emplace_back when Chromium can.
-  if (!old_packet_number.IsInitialized()) {
-    if (has_crypto_handshake) {
-      ++pending_crypto_packet_count_;
-      last_crypto_packet_sent_time_ = sent_time;
-    }
-
-    packet->retransmittable_frames.swap(
-        unacked_packets_.back().retransmittable_frames);
+  if (has_crypto_handshake) {
+    last_crypto_packet_sent_time_ = sent_time;
   }
+
+  packet->retransmittable_frames.swap(
+      unacked_packets_.back().retransmittable_frames);
 }
 
 void QuicUnackedPacketMap::RemoveObsoletePackets() {
@@ -99,60 +95,10 @@ void QuicUnackedPacketMap::RemoveObsoletePackets() {
     if (!IsPacketUseless(least_unacked_, unacked_packets_.front())) {
       break;
     }
-    if (session_decides_what_to_write_) {
-      DeleteFrames(&unacked_packets_.front().retransmittable_frames);
-    }
+    DeleteFrames(&unacked_packets_.front().retransmittable_frames);
     unacked_packets_.pop_front();
     ++least_unacked_;
   }
-}
-
-void QuicUnackedPacketMap::TransferRetransmissionInfo(
-    QuicPacketNumber old_packet_number,
-    QuicPacketNumber new_packet_number,
-    TransmissionType transmission_type,
-    QuicTransmissionInfo* info) {
-  if (old_packet_number < least_unacked_) {
-    // This can happen when a retransmission packet is queued because of write
-    // blocked socket, and the original packet gets acked before the
-    // retransmission gets sent.
-    return;
-  }
-  if (old_packet_number > largest_sent_packet_) {
-    QUIC_BUG << "Old QuicTransmissionInfo never existed for :"
-             << old_packet_number << " largest_sent:" << largest_sent_packet_;
-    return;
-  }
-  DCHECK_GE(new_packet_number, least_unacked_ + unacked_packets_.size());
-  DCHECK_NE(NOT_RETRANSMISSION, transmission_type);
-
-  QuicTransmissionInfo* transmission_info =
-      &unacked_packets_.at(old_packet_number - least_unacked_);
-  QuicFrames* frames = &transmission_info->retransmittable_frames;
-  if (session_notifier_ != nullptr) {
-    for (const QuicFrame& frame : *frames) {
-      if (frame.type == STREAM_FRAME) {
-        session_notifier_->OnStreamFrameRetransmitted(frame.stream_frame);
-      }
-    }
-  }
-
-  // Swap the frames and preserve num_padding_bytes and has_crypto_handshake.
-  frames->swap(info->retransmittable_frames);
-  info->has_crypto_handshake = transmission_info->has_crypto_handshake;
-  transmission_info->has_crypto_handshake = false;
-  info->num_padding_bytes = transmission_info->num_padding_bytes;
-
-  // Don't link old transmissions to new ones when version or
-  // encryption changes.
-  if (transmission_type == ALL_INITIAL_RETRANSMISSION ||
-      transmission_type == ALL_UNACKED_RETRANSMISSION) {
-    transmission_info->state = UNACKABLE;
-  } else {
-    transmission_info->retransmission = new_packet_number;
-  }
-  // Proactively remove obsolete packets so the least unacked can be raised.
-  RemoveObsoletePackets();
 }
 
 bool QuicUnackedPacketMap::HasRetransmittableFrames(
@@ -165,10 +111,6 @@ bool QuicUnackedPacketMap::HasRetransmittableFrames(
 
 bool QuicUnackedPacketMap::HasRetransmittableFrames(
     const QuicTransmissionInfo& info) const {
-  if (!session_decides_what_to_write_) {
-    return !info.retransmittable_frames.empty();
-  }
-
   if (!QuicUtils::IsAckable(info.state)) {
     return false;
   }
@@ -183,24 +125,8 @@ bool QuicUnackedPacketMap::HasRetransmittableFrames(
 
 void QuicUnackedPacketMap::RemoveRetransmittability(
     QuicTransmissionInfo* info) {
-  if (session_decides_what_to_write_) {
-    DeleteFrames(&info->retransmittable_frames);
-    info->retransmission.Clear();
-    return;
-  }
-  while (info->retransmission.IsInitialized()) {
-    const QuicPacketNumber retransmission = info->retransmission;
-    info->retransmission.Clear();
-    info = &unacked_packets_[retransmission - least_unacked_];
-  }
-
-  if (info->has_crypto_handshake) {
-    DCHECK(HasRetransmittableFrames(*info));
-    DCHECK_LT(0u, pending_crypto_packet_count_);
-    --pending_crypto_packet_count_;
-    info->has_crypto_handshake = false;
-  }
   DeleteFrames(&info->retransmittable_frames);
+  info->retransmission.Clear();
 }
 
 void QuicUnackedPacketMap::RemoveRetransmittability(
@@ -241,16 +167,6 @@ bool QuicUnackedPacketMap::IsPacketUsefulForCongestionControl(
 
 bool QuicUnackedPacketMap::IsPacketUsefulForRetransmittableData(
     const QuicTransmissionInfo& info) const {
-  if (!session_decides_what_to_write_) {
-    // Packet may have retransmittable frames, or the data may have been
-    // retransmitted with a new packet number.
-    // Allow for an extra 1 RTT before stopping to track old packets.
-    return (info.retransmission.IsInitialized() &&
-            (!largest_acked_.IsInitialized() ||
-             info.retransmission > largest_acked_)) ||
-           HasRetransmittableFrames(info);
-  }
-
   // Wait for 1 RTT before giving up on the lost packet.
   return info.retransmission.IsInitialized() &&
          (!largest_acked_.IsInitialized() ||
@@ -277,7 +193,9 @@ bool QuicUnackedPacketMap::IsUnacked(QuicPacketNumber packet_number) const {
 void QuicUnackedPacketMap::RemoveFromInFlight(QuicTransmissionInfo* info) {
   if (info->in_flight) {
     QUIC_BUG_IF(bytes_in_flight_ < info->bytes_sent);
+    QUIC_BUG_IF(packets_in_flight_ == 0);
     bytes_in_flight_ -= info->bytes_sent;
+    --packets_in_flight_;
     info->in_flight = false;
   }
 }
@@ -288,23 +206,6 @@ void QuicUnackedPacketMap::RemoveFromInFlight(QuicPacketNumber packet_number) {
   QuicTransmissionInfo* info =
       &unacked_packets_[packet_number - least_unacked_];
   RemoveFromInFlight(info);
-}
-
-void QuicUnackedPacketMap::CancelRetransmissionsForStream(
-    QuicStreamId stream_id) {
-  DCHECK(!session_decides_what_to_write_);
-  QuicPacketNumber packet_number = least_unacked_;
-  for (auto it = unacked_packets_.begin(); it != unacked_packets_.end();
-       ++it, ++packet_number) {
-    QuicFrames* frames = &it->retransmittable_frames;
-    if (frames->empty()) {
-      continue;
-    }
-    RemoveFramesForStream(frames, stream_id);
-    if (frames->empty()) {
-      RemoveRetransmittability(packet_number);
-    }
-  }
 }
 
 bool QuicUnackedPacketMap::HasInFlightPackets() const {
@@ -321,18 +222,8 @@ QuicTransmissionInfo* QuicUnackedPacketMap::GetMutableTransmissionInfo(
   return &unacked_packets_[packet_number - least_unacked_];
 }
 
-QuicTime QuicUnackedPacketMap::GetLastPacketSentTime() const {
-  auto it = unacked_packets_.rbegin();
-  while (it != unacked_packets_.rend()) {
-    if (it->in_flight) {
-      QUIC_BUG_IF(it->sent_time == QuicTime::Zero())
-          << "Sent time can never be zero for a packet in flight.";
-      return it->sent_time;
-    }
-    ++it;
-  }
-  QUIC_BUG << "GetLastPacketSentTime requires in flight packets.";
-  return QuicTime::Zero();
+QuicTime QuicUnackedPacketMap::GetLastInFlightPacketSentTime() const {
+  return last_inflight_packet_sent_time_;
 }
 
 QuicTime QuicUnackedPacketMap::GetLastCryptoPacketSentTime() const {
@@ -369,9 +260,6 @@ bool QuicUnackedPacketMap::HasMultipleInFlightPackets() const {
 }
 
 bool QuicUnackedPacketMap::HasPendingCryptoPackets() const {
-  if (!session_decides_what_to_write_) {
-    return pending_crypto_packet_count_ > 0;
-  }
   return session_notifier_->HasUnackedCryptoData();
 }
 
@@ -411,7 +299,6 @@ bool QuicUnackedPacketMap::NotifyFramesAcked(const QuicTransmissionInfo& info,
 
 void QuicUnackedPacketMap::NotifyFramesLost(const QuicTransmissionInfo& info,
                                             TransmissionType /*type*/) {
-  DCHECK(session_decides_what_to_write_);
   for (const QuicFrame& frame : info.retransmittable_frames) {
     session_notifier_->OnFrameLost(frame);
   }
@@ -419,7 +306,6 @@ void QuicUnackedPacketMap::NotifyFramesLost(const QuicTransmissionInfo& info,
 
 void QuicUnackedPacketMap::RetransmitFrames(const QuicTransmissionInfo& info,
                                             TransmissionType type) {
-  DCHECK(session_decides_what_to_write_);
   session_notifier_->RetransmitFrames(info.retransmittable_frames, type);
 }
 
@@ -523,15 +409,6 @@ QuicUnackedPacketMap::GetLargestSentRetransmittableOfPacketNumberSpace(
     return QuicPacketNumber();
   }
   return largest_sent_retransmittable_packets_[packet_number_space];
-}
-
-void QuicUnackedPacketMap::SetSessionDecideWhatToWrite(
-    bool session_decides_what_to_write) {
-  if (largest_sent_packet_.IsInitialized()) {
-    QUIC_BUG << "Cannot change session_decide_what_to_write with packets sent.";
-    return;
-  }
-  session_decides_what_to_write_ = session_decides_what_to_write;
 }
 
 void QuicUnackedPacketMap::EnableMultiplePacketNumberSpacesSupport() {

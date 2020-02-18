@@ -100,13 +100,10 @@ class FileTasks {
 
         // Linux package installation is currently only supported for a single
         // file which is inside the Linux container, or in a shareable volume.
-        // Furthermore, linux package installation is only allowed if user has
-        // root access to the Linux container.
         // TODO(timloh): Instead of filtering these out, we probably should
         // show a dialog with an error message, similar to when attempting to
         // run Crostini tasks with non-Crostini entries.
         if (entries.length !== 1 ||
-            !crostini.isRootAccessAllowed(constants.DEFAULT_CROSTINI_VM) ||
             !(FileTasks.isCrostiniEntry(entries[0], volumeManager) ||
               crostini.canSharePath(
                   constants.DEFAULT_CROSTINI_VM, entries[0],
@@ -219,9 +216,10 @@ class FileTasks {
    */
   static isOffline_(volumeManager) {
     const connection = volumeManager.getDriveConnectionState();
-    return connection.type == VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+    return connection.type ==
+        chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE &&
         connection.reason ==
-        VolumeManagerCommon.DriveConnectionReason.NO_NETWORK;
+        chrome.fileManagerPrivate.DriveOfflineReason.NO_NETWORK;
   }
 
   /**
@@ -390,18 +388,10 @@ class FileTasks {
           task.title = loadTimeData.getString('TASK_IMPORT_CROSTINI_IMAGE');
           task.verb = undefined;
         } else if (taskParts[2] === 'view-swf') {
-          // Do not render this task if disabled.
-          if (!loadTimeData.getBoolean('SWF_VIEW_ENABLED')) {
-            continue;
-          }
           task.iconType = 'generic';
           task.title = loadTimeData.getString('TASK_VIEW');
           task.verb = undefined;
         } else if (taskParts[2] === 'view-pdf') {
-          // Do not render this task if disabled.
-          if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED')) {
-            continue;
-          }
           task.iconType = 'pdf';
           task.title = loadTimeData.getString('TASK_VIEW');
           task.verb = undefined;
@@ -700,7 +690,7 @@ class FileTasks {
 
     const isDriveOffline =
         this.volumeManager_.getDriveConnectionState().type ===
-        VolumeManagerCommon.DriveConnectionType.OFFLINE;
+        chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE;
 
     if (isDriveOffline) {
       this.metadataModel_.get(this.entries_, ['availableOffline', 'hosted'])
@@ -727,7 +717,7 @@ class FileTasks {
     }
 
     const isOnMetered = this.volumeManager_.getDriveConnectionState().type ===
-        VolumeManagerCommon.DriveConnectionType.METERED;
+        chrome.fileManagerPrivate.DriveConnectionStateType.METERED;
 
     if (isOnMetered) {
       this.metadataModel_.get(this.entries_, ['availableWhenMetered', 'size'])

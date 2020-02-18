@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_callbacks.h"
@@ -26,9 +26,8 @@ class KURL;
 class PushSubscriptionOptions;
 class ServiceWorkerRegistration;
 
-class PushMessagingClient final
-    : public GarbageCollectedFinalized<PushMessagingClient>,
-      public Supplement<LocalFrame> {
+class PushMessagingClient final : public GarbageCollected<PushMessagingClient>,
+                                  public Supplement<LocalFrame> {
   USING_GARBAGE_COLLECTED_MIXIN(PushMessagingClient);
 
  public:

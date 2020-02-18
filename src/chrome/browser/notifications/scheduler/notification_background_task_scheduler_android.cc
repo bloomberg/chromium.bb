@@ -21,7 +21,6 @@ void JNI_NotificationSchedulerTask_OnStartTask(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_caller,
     const base::android::JavaParamRef<jobject>& j_profile,
-    jint j_task_time,
     const base::android::JavaParamRef<jobject>& j_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   auto* service =
@@ -30,25 +29,20 @@ void JNI_NotificationSchedulerTask_OnStartTask(
   auto callback =
       base::BindOnce(&base::android::RunBooleanCallbackAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_callback));
-  handler->OnStartTask(
-      static_cast<notifications::SchedulerTaskTime>(j_task_time),
-      std::move(callback));
+  handler->OnStartTask(std::move(callback));
 }
 
 // static
 jboolean JNI_NotificationSchedulerTask_OnStopTask(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_caller,
-    const base::android::JavaParamRef<jobject>& j_profile,
-    jint j_task_time) {
+    const base::android::JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   auto* service =
       NotificationScheduleServiceFactory::GetForBrowserContext(profile);
   auto* handler = service->GetBackgroundTaskSchedulerHandler();
-  handler->OnStopTask(
-      static_cast<notifications::SchedulerTaskTime>(j_task_time));
-  // TODO(Hesen): Handle the return value and stoptask.
-  return true;
+  handler->OnStopTask();
+  return false;
 }
 
 NotificationBackgroundTaskSchedulerAndroid::
@@ -58,13 +52,11 @@ NotificationBackgroundTaskSchedulerAndroid::
     ~NotificationBackgroundTaskSchedulerAndroid() = default;
 
 void NotificationBackgroundTaskSchedulerAndroid::Schedule(
-    notifications::SchedulerTaskTime scheduler_task_time,
     base::TimeDelta window_start,
     base::TimeDelta window_end) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_NotificationSchedulerTask_schedule(
-      env, static_cast<jint>(scheduler_task_time),
-      base::saturated_cast<jlong>(window_start.InMilliseconds()),
+      env, base::saturated_cast<jlong>(window_start.InMilliseconds()),
       base::saturated_cast<jlong>(window_end.InMilliseconds()));
 }
 

@@ -22,6 +22,7 @@
 #include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
 #import "ios/web/test/fakes/crw_fake_session_controller_delegate.h"
@@ -79,6 +80,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   }
 
   void SetWKWebView(id web_view) { mock_web_view_ = web_view; }
+  void SetWebState(WebState* web_state) { web_state_ = web_state; }
 
   MOCK_METHOD0(ClearTransientContent, void());
   MOCK_METHOD0(ClearDialogs, void());
@@ -100,7 +102,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   MOCK_METHOD0(GetPendingItem, NavigationItemImpl*());
 
  private:
-  WebState* GetWebState() override { return nullptr; }
+  WebState* GetWebState() override { return web_state_; }
 
   id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override {
     return mock_web_view_;
@@ -108,6 +110,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
 
   CRWSessionController* session_controller_;
   id mock_web_view_;
+  WebState* web_state_ = nullptr;
 };
 
 }  // namespace
@@ -192,8 +195,9 @@ class NavigationManagerTest
   base::HistogramTester histogram_tester_;
   CRWFakeSessionControllerDelegate* session_controller_delegate_ = nil;
 
- private:
+ protected:
   TestBrowserState browser_state_;
+  TestWebState web_state_;
   MockNavigationManagerDelegate delegate_;
   std::unique_ptr<NavigationManagerImpl> manager_;
   CRWSessionController* controller_;
@@ -1321,7 +1325,8 @@ TEST_P(NavigationManagerTest, OverrideUserAgentWithMobile) {
 
   NavigationItem* last_committed_item =
       navigation_manager()->GetLastCommittedItem();
-  last_committed_item->SetUserAgentType(UserAgentType::DESKTOP);
+  last_committed_item->SetUserAgentType(UserAgentType::DESKTOP,
+                                        /*update_inherited_user_agent =*/true);
   EXPECT_EQ(UserAgentType::DESKTOP, last_committed_item->GetUserAgentType());
 
   navigation_manager()->AddPendingItem(
@@ -1482,7 +1487,8 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
 
   // Update |item2|'s UA type to DESKTOP and add a third non-native navigation,
   // once again separated by a native one.
-  item2->SetUserAgentType(web::UserAgentType::DESKTOP);
+  item2->SetUserAgentType(web::UserAgentType::DESKTOP,
+                          /*update_inherited_user_agent =*/true);
   ASSERT_EQ(web::UserAgentType::DESKTOP, item2->GetUserAgentType());
 
   GURL item3_url = item2->GetURL().ReplaceComponents(native_scheme_replacement);
@@ -1518,7 +1524,8 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
 }
 
 // Tests that adding transient item for a pending item with mobile user agent
-// type results in a transient item with mobile user agent type.
+// type results in a transient item with mobile user agent type when the type is
+// forcing the inheritance.
 TEST_P(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1526,7 +1533,7 @@ TEST_P(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   ASSERT_TRUE(navigation_manager()->GetPendingItem());
   navigation_manager()->GetPendingItem()->SetUserAgentType(
-      UserAgentType::MOBILE);
+      UserAgentType::MOBILE, /*update_inherited_user_agent =*/true);
 
   navigation_manager()->AddTransientItem(GURL("http://www.url.com"));
   ASSERT_TRUE(navigation_manager()->GetTransientItem());
@@ -1534,10 +1541,21 @@ TEST_P(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
             navigation_manager()->GetTransientItem()->GetUserAgentType());
   EXPECT_EQ(UserAgentType::MOBILE,
             navigation_manager()->GetPendingItem()->GetUserAgentType());
+
+  // Don't update the inherited user agent.
+  navigation_manager()->GetPendingItem()->SetUserAgentType(
+      UserAgentType::DESKTOP, /*update_inherited_user_agent =*/false);
+  navigation_manager()->AddTransientItem(GURL("http://www.url2.com"));
+  ASSERT_TRUE(navigation_manager()->GetTransientItem());
+  EXPECT_EQ(UserAgentType::MOBILE,
+            navigation_manager()->GetTransientItem()->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::DESKTOP,
+            navigation_manager()->GetPendingItem()->GetUserAgentType());
 }
 
 // Tests that adding transient item for a pending item with desktop user agent
-// type results in a transient item with desktop user agent type.
+// type results in a transient item with desktop user agent type when the type
+// is forcing the inheritance.
 TEST_P(NavigationManagerTest, AddTransientItemForDesktopPendingItem) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1545,13 +1563,23 @@ TEST_P(NavigationManagerTest, AddTransientItemForDesktopPendingItem) {
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   ASSERT_TRUE(navigation_manager()->GetPendingItem());
   navigation_manager()->GetPendingItem()->SetUserAgentType(
-      UserAgentType::DESKTOP);
+      UserAgentType::DESKTOP, /*update_inherited_user_agent =*/true);
 
   navigation_manager()->AddTransientItem(GURL("http://www.url.com"));
   ASSERT_TRUE(navigation_manager()->GetTransientItem());
   EXPECT_EQ(UserAgentType::DESKTOP,
             navigation_manager()->GetTransientItem()->GetUserAgentType());
   EXPECT_EQ(UserAgentType::DESKTOP,
+            navigation_manager()->GetPendingItem()->GetUserAgentType());
+
+  // Don't update the inherited user agent.
+  navigation_manager()->GetPendingItem()->SetUserAgentType(
+      UserAgentType::MOBILE, /*update_inherited_user_agent =*/false);
+  navigation_manager()->AddTransientItem(GURL("http://www.url2.com"));
+  ASSERT_TRUE(navigation_manager()->GetTransientItem());
+  EXPECT_EQ(UserAgentType::DESKTOP,
+            navigation_manager()->GetTransientItem()->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::MOBILE,
             navigation_manager()->GetPendingItem()->GetUserAgentType());
 }
 
@@ -1871,6 +1899,9 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentType) {
 
 // Tests that ReloadWithUserAgentType does not expose internal URLs.
 TEST_P(NavigationManagerTest, ReloadWithUserAgentTypeOnIntenalUrl) {
+  delegate_.SetWebState(&web_state_);
+  web_state_.SetLoading(true);
+
   GURL url = wk_navigation_util::CreateRedirectUrl(GURL("http://www.1.com"));
   navigation_manager()->AddPendingItem(
       url, Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1900,7 +1931,7 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentTypeOnIntenalUrl) {
 }
 
 // Tests that app-specific URLs are not rewritten for renderer-initiated loads
-// unless requested by a page with app-specific url.
+// or reloads unless requested by a page with app-specific url.
 TEST_P(NavigationManagerTest, RewritingAppSpecificUrls) {
   // URL should not be rewritten as there is no committed URL.
   GURL url1(url::SchemeHostPort(kSchemeToRewrite, "test", 0).Serialize());
@@ -1920,6 +1951,15 @@ TEST_P(NavigationManagerTest, RewritingAppSpecificUrls) {
       web::NavigationInitiationType::RENDERER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   EXPECT_EQ(url2, navigation_manager()->GetPendingItem()->GetURL());
+
+  // URL should not be rewritten for user initiated reload navigations.
+  GURL url_reload(
+      url::SchemeHostPort(kSchemeToRewrite, "test-reload", 0).Serialize());
+  navigation_manager()->AddPendingItem(
+      url_reload, Referrer(), ui::PAGE_TRANSITION_RELOAD,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  EXPECT_EQ(url_reload, navigation_manager()->GetPendingItem()->GetURL());
 
   // URL should be rewritten for user initiated navigations.
   GURL url3(url::SchemeHostPort(kSchemeToRewrite, "test3", 0).Serialize());
@@ -2218,6 +2258,9 @@ TEST_P(NavigationManagerTest, VisibleItemIsTransientItemIfPresent) {
 }
 
 TEST_P(NavigationManagerTest, PendingItemIsVisibleIfNewAndUserInitiated) {
+  delegate_.SetWebState(&web_state_);
+  web_state_.SetLoading(true);
+
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::BROWSER_INITIATED,
@@ -2243,6 +2286,9 @@ TEST_P(NavigationManagerTest, PendingItemIsVisibleIfNewAndUserInitiated) {
 }
 
 TEST_P(NavigationManagerTest, PendingItemIsNotVisibleIfNotUserInitiated) {
+  delegate_.SetWebState(&web_state_);
+  web_state_.SetLoading(true);
+
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::RENDERER_INITIATED,
@@ -2287,6 +2333,8 @@ TEST_P(NavigationManagerTest, PendingItemIsNotVisibleIfNotNewNavigation) {
   }
   ASSERT_EQ(0, navigation_manager()->GetPendingItemIndex());
 
+  delegate_.SetWebState(&web_state_);
+  web_state_.SetLoading(true);
   OCMExpect([mock_web_view_ URL])
       .andReturn([[NSURL alloc] initWithString:@"http://www.url.com/0"]);
   ASSERT_TRUE(navigation_manager()->GetVisibleItem());
@@ -2297,6 +2345,9 @@ TEST_P(NavigationManagerTest, PendingItemIsNotVisibleIfNotNewNavigation) {
 }
 
 TEST_P(NavigationManagerTest, VisibleItemDefaultsToLastCommittedItem) {
+  delegate_.SetWebState(&web_state_);
+  web_state_.SetLoading(true);
+
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::RENDERER_INITIATED,

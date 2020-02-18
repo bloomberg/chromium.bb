@@ -17,6 +17,7 @@
 #include "platform/base/macros.h"
 
 namespace openscreen {
+namespace osp {
 
 // Embedder's view of the network service that initiates OSP connections to OSP
 // receivers.
@@ -117,6 +118,7 @@ class ProtocolConnectionClient {
 std::ostream& operator<<(std::ostream& os,
                          ProtocolConnectionClient::State state);
 
+}  // namespace osp
 }  // namespace openscreen
 
 #endif  // OSP_PUBLIC_PROTOCOL_CONNECTION_CLIENT_H_

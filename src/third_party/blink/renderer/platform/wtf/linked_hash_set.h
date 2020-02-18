@@ -121,7 +121,7 @@ class LinkedHashSetNodeBase {
   LinkedHashSetNodeBase(const LinkedHashSetNodeBase& other)
       : prev_(nullptr), next_(nullptr) {}
 
-  LinkedHashSetNodeBase(LinkedHashSetNodeBase&& other) noexcept
+  LinkedHashSetNodeBase(LinkedHashSetNodeBase&& other)
       : prev_(other.prev_), next_(other.next_) {
     other.prev_ = nullptr;
     other.next_ = nullptr;
@@ -136,7 +136,7 @@ class LinkedHashSetNodeBase {
   LinkedHashSetNodeBase& operator=(const LinkedHashSetNodeBase& other) = delete;
 };
 
-template <typename ValueArg, typename Allocator>
+template <typename ValueArg>
 class LinkedHashSetNode : public LinkedHashSetNodeBase {
   DISALLOW_NEW();
 
@@ -151,7 +151,7 @@ class LinkedHashSetNode : public LinkedHashSetNodeBase {
                     LinkedHashSetNodeBase* next)
       : LinkedHashSetNodeBase(prev, next), value_(std::move(value)) {}
 
-  LinkedHashSetNode(LinkedHashSetNode&& other) noexcept
+  LinkedHashSetNode(LinkedHashSetNode&& other)
       : LinkedHashSetNodeBase(std::move(other)),
         value_(std::move(other.value_)) {}
 
@@ -160,6 +160,10 @@ class LinkedHashSetNode : public LinkedHashSetNodeBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(LinkedHashSetNode);
 };
+
+template <typename T>
+struct IsWeak<LinkedHashSetNode<T>>
+    : std::integral_constant<bool, IsWeak<T>::value> {};
 
 template <typename ValueArg,
           typename HashFunctions = typename DefaultHash<ValueArg>::Hash,
@@ -171,7 +175,7 @@ class LinkedHashSet {
  private:
   typedef ValueArg Value;
   typedef TraitsArg Traits;
-  typedef LinkedHashSetNode<Value, Allocator> Node;
+  typedef LinkedHashSetNode<Value> Node;
   typedef LinkedHashSetNodeBase NodeBase;
   typedef LinkedHashSetTranslator<Value, HashFunctions, Allocator>
       NodeHashFunctions;
@@ -214,9 +218,9 @@ class LinkedHashSet {
 
   LinkedHashSet();
   LinkedHashSet(const LinkedHashSet&);
-  LinkedHashSet(LinkedHashSet&&) noexcept;
+  LinkedHashSet(LinkedHashSet&&);
   LinkedHashSet& operator=(const LinkedHashSet&);
-  LinkedHashSet& operator=(LinkedHashSet&&) noexcept;
+  LinkedHashSet& operator=(LinkedHashSet&&);
 
   // Needs finalization. The anchor needs to unlink itself from the chain.
   ~LinkedHashSet();
@@ -361,7 +365,7 @@ class LinkedHashSet {
 template <typename Value, typename HashFunctions, typename Allocator>
 struct LinkedHashSetTranslator {
   STATIC_ONLY(LinkedHashSetTranslator);
-  typedef LinkedHashSetNode<Value, Allocator> Node;
+  typedef LinkedHashSetNode<Value> Node;
   typedef LinkedHashSetNodeBase NodeBase;
   typedef typename HashTraits<Value>::PeekInType ValuePeekInType;
   static unsigned GetHash(const Node& node) {
@@ -394,16 +398,16 @@ struct LinkedHashSetTranslator {
 template <typename Value, typename Allocator>
 struct LinkedHashSetExtractor {
   STATIC_ONLY(LinkedHashSetExtractor);
-  static const Value& Extract(const LinkedHashSetNode<Value, Allocator>& node) {
+  static const Value& Extract(const LinkedHashSetNode<Value>& node) {
     return node.value_;
   }
 };
 
 template <typename Value, typename ValueTraitsArg, typename Allocator>
 struct LinkedHashSetTraits
-    : public SimpleClassHashTraits<LinkedHashSetNode<Value, Allocator>> {
+    : public SimpleClassHashTraits<LinkedHashSetNode<Value>> {
   STATIC_ONLY(LinkedHashSetTraits);
-  using Node = LinkedHashSetNode<Value, Allocator>;
+  using Node = LinkedHashSetNode<Value>;
   using NodeBase = LinkedHashSetNodeBase;
   typedef ValueTraitsArg ValueTraits;
 
@@ -434,8 +438,6 @@ struct LinkedHashSetTraits
     static const bool value =
         ValueTraits::template IsTraceableInCollection<>::value;
   };
-  static const WeakHandlingFlag kWeakHandlingFlag =
-      ValueTraits::kWeakHandlingFlag;
 
   static constexpr bool kHasMovingCallback = true;
 
@@ -748,7 +750,7 @@ inline LinkedHashSet<T, U, V, W>::LinkedHashSet(const LinkedHashSet& other)
 }
 
 template <typename T, typename U, typename V, typename W>
-inline LinkedHashSet<T, U, V, W>::LinkedHashSet(LinkedHashSet&& other) noexcept
+inline LinkedHashSet<T, U, V, W>::LinkedHashSet(LinkedHashSet&& other)
     : anchor_() {
   Swap(other);
 }
@@ -763,7 +765,7 @@ inline LinkedHashSet<T, U, V, W>& LinkedHashSet<T, U, V, W>::operator=(
 
 template <typename T, typename U, typename V, typename W>
 inline LinkedHashSet<T, U, V, W>& LinkedHashSet<T, U, V, W>::operator=(
-    LinkedHashSet&& other) noexcept {
+    LinkedHashSet&& other) {
   Swap(other);
   return *this;
 }
@@ -961,8 +963,7 @@ inline void LinkedHashSet<T, U, V, W>::erase(ValuePeekInType value) {
 }
 
 template <typename T, typename Allocator>
-inline void swap(LinkedHashSetNode<T, Allocator>& a,
-                 LinkedHashSetNode<T, Allocator>& b) {
+inline void swap(LinkedHashSetNode<T>& a, LinkedHashSetNode<T>& b) {
   typedef LinkedHashSetNodeBase Base;
   // The key and value cannot be swapped atomically, and it would be
   // wrong to have a GC when only one was swapped and the other still

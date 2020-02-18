@@ -60,6 +60,9 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   // focusable or clickable aren't interesting.
   bool IsInterestingOnAndroid() const;
 
+  // Is a heading whose only child is a link.
+  bool IsHeadingLink() const;
+
   // If this node is interesting (IsInterestingOnAndroid() returns true),
   // returns |this|. If not, it recursively checks all of the
   // platform children of this node, and if just a single one is
@@ -150,6 +153,15 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   void GetWordBoundaries(std::vector<int32_t>* word_starts,
                          std::vector<int32_t>* word_ends,
                          int offset);
+
+  // Return the target of a link or the source of an image.
+  base::string16 GetTargetUrl() const;
+
+  // On Android, spelling errors are returned as "suggestions". Retreive
+  // all of the suggestions for a given text field as vectors of start
+  // and end offsets.
+  void GetSuggestions(std::vector<int>* suggestion_starts,
+                      std::vector<int>* suggestion_ends) const;
 
   // Used to keep track of when to stop reporting content_invalid.
   // Timer only applies if node has focus.

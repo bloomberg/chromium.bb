@@ -64,7 +64,6 @@ def main(args):
   mbw = MetaBuildWrapper()
   return mbw.Main(args)
 
-
 class MetaBuildWrapper(object):
   def __init__(self):
     self.chromium_src_dir = CHROMIUM_SRC_DIR
@@ -170,8 +169,10 @@ class MetaBuildWrapper(object):
                             description='Generate a new set of build files.')
     AddCommonOptions(subp)
     subp.add_argument('--swarming-targets-file',
-                      help='save runtime dependencies for targets listed '
-                           'in file.')
+                      help='generates runtime dependencies for targets listed '
+                           'in file as .isolate and .isolated.gen.json files. '
+                           'Targets should be listed by name, separated by '
+                           'newline.')
     subp.add_argument('--json-output',
                       help='Write errors to json.output')
     subp.add_argument('path',
@@ -213,6 +214,17 @@ class MetaBuildWrapper(object):
                       help='Lookup arguments from imported files, '
                            'implies --quiet')
     subp.set_defaults(func=self.CmdLookup)
+
+    subp = subps.add_parser('try',
+                            description='Try your change on a remote builder')
+    AddCommonOptions(subp)
+    subp.add_argument('target',
+                      help='ninja target to build and run')
+    subp.add_argument('--force', default=False, action='store_true',
+                      help='Force the job to run. Ignores local checkout state;'
+                      ' by default, the tool doesn\'t trigger jobs if there are'
+                      ' local changes which are not present on Gerrit.')
+    subp.set_defaults(func=self.CmdTry)
 
     subp = subps.add_parser(
       'run', formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -377,6 +389,62 @@ class MetaBuildWrapper(object):
       self.PrintCmd(cmd, env)
     return 0
 
+  def CmdTry(self):
+    ninja_target = self.args.target
+    if ninja_target.startswith('//'):
+      self.Print("Expected a ninja target like base_unittests, got %s" % (
+        ninja_target))
+      return 1
+
+    _, out, _ = self.Run(['git', 'cl', 'diff', '--stat'], force_verbose=False)
+    if out:
+      self.Print("Your checkout appears to local changes which are not uploaded"
+                 " to Gerrit. Changes must be committed and uploaded to Gerrit"
+                 " to be tested using this tool.")
+      if not self.args.force:
+        return 1
+
+    json_path = self.PathJoin(self.chromium_src_dir, 'out.json')
+    try:
+      ret, out, err = self.Run(
+        ['git', 'cl', 'issue', '--json=out.json'], force_verbose=False)
+      if ret != 0:
+        self.Print(
+          "Unable to fetch current issue. Output and error:\n%s\n%s" % (
+            out, err
+        ))
+        return ret
+      with open(json_path) as f:
+        issue_data = json.load(f)
+    finally:
+      if self.Exists(json_path):
+        os.unlink(json_path)
+
+    if not issue_data['issue']:
+      self.Print("Missing issue data. Upload your CL to Gerrit and try again.")
+      return 1
+
+    def run_cmd(previous_res, cmd):
+      res, out, err = self.Run(cmd, force_verbose=False, stdin=previous_res)
+      if res != 0:
+        self.Print("Err while running", cmd)
+        self.Print("Output", out)
+        raise Exception(err)
+      return out
+
+    result = LedResult(None, run_cmd).then(
+      # TODO(martiniss): maybe don't always assume the bucket?
+      'led', 'get-builder', 'luci.chromium.try:%s' % self.args.builder).then(
+      'led', 'edit', '-r', 'chromium_trybot_experimental',
+        '-p', 'tests=["%s"]' % ninja_target).then(
+      'led', 'edit-system', '--tag=purpose:user-debug-mb-try').then(
+      'led', 'edit-cr-cl', issue_data['issue_url']).then(
+      'led', 'launch').result
+
+    swarming_data = json.loads(result)['swarming']
+    self.Print("Launched task at https://%s/task?id=%s" % (
+      swarming_data['host_name'], swarming_data['task_id']))
+
   def CmdRun(self):
     vals = self.GetConfig()
     if not vals:
@@ -399,34 +467,32 @@ class MetaBuildWrapper(object):
       return self._RunLocallyIsolated(self.args.path, self.args.target)
 
   def CmdZip(self):
-      ret = self.CmdIsolate()
-      if ret:
-          return ret
+    ret = self.CmdIsolate()
+    if ret:
+      return ret
 
-      zip_dir = None
-      try:
-          zip_dir = self.TempDir()
-          remap_cmd = [
-            self.executable,
-            self.PathJoin(self.chromium_src_dir, 'tools', 'swarming_client',
-                          'isolate.py'),
-            'remap',
-            '--collapse_symlinks',
-            '-s', self.PathJoin(self.args.path, self.args.target + '.isolated'),
-            '-o', zip_dir
-          ]
-          self.Run(remap_cmd)
+    zip_dir = None
+    try:
+      zip_dir = self.TempDir()
+      remap_cmd = [
+          self.executable,
+          self.PathJoin(self.chromium_src_dir, 'tools', 'swarming_client',
+                        'isolate.py'), 'remap', '--collapse_symlinks', '-s',
+          self.PathJoin(self.args.path, self.args.target + '.isolated'), '-o',
+          zip_dir
+      ]
+      self.Run(remap_cmd)
 
-          zip_path = self.args.zip_path
-          with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED,
-                               allowZip64=True) as fp:
-              for root, _, files in os.walk(zip_dir):
-                  for filename in files:
-                      path = self.PathJoin(root, filename)
-                      fp.write(path, self.RelPath(path, zip_dir))
-      finally:
-          if zip_dir:
-              self.RemoveDirectory(zip_dir)
+      zip_path = self.args.zip_path
+      with zipfile.ZipFile(
+          zip_path, 'w', zipfile.ZIP_DEFLATED, allowZip64=True) as fp:
+        for root, _, files in os.walk(zip_dir):
+          for filename in files:
+            path = self.PathJoin(root, filename)
+            fp.write(path, self.RelPath(path, zip_dir))
+    finally:
+      if zip_dir:
+        self.RemoveDirectory(zip_dir)
 
   @staticmethod
   def _AddBaseSoftware(cmd):
@@ -443,9 +509,9 @@ class MetaBuildWrapper(object):
       ('infra/tools/luci/logdog/butler/${platform}',
        'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'),
       ('infra/tools/luci/vpython-native/${platform}',
-       'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'),
+       'git_revision:e317c7d2c17d4c3460ee37524dfce4e1dee4306a'),
       ('infra/tools/luci/vpython/${platform}',
-       'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'),
+       'git_revision:e317c7d2c17d4c3460ee37524dfce4e1dee4306a'),
     ]
     for pkg, vers in cipd_packages:
       cmd.append('--cipd-package=.swarming_module:%s:%s' % (pkg, vers))
@@ -514,6 +580,7 @@ class MetaBuildWrapper(object):
           '-I', isolate_server,
           '--namespace', namespace,
           '-S', swarming_server,
+          '--tags=purpose:user-debug-mb',
       ] + dimensions
     self._AddBaseSoftware(cmd)
     if self.args.extra_args:
@@ -549,7 +616,7 @@ class MetaBuildWrapper(object):
     else:
       raise MBErr('unrecognized platform string "%s"' % self.platform)
 
-    return [('pool', 'Chrome'),
+    return [('pool', 'chromium.tests'),
             ('cpu', 'x86-64'),
             os_dim]
 
@@ -805,8 +872,8 @@ class MetaBuildWrapper(object):
         vals['cros_passthrough'] = mixin_vals['cros_passthrough']
       if 'args_file' in mixin_vals:
         if vals['args_file']:
-            raise MBErr('args_file specified multiple times in mixins '
-                        'for %s on %s' % (self.args.builder, self.args.master))
+          raise MBErr('args_file specified multiple times in mixins '
+                      'for %s on %s' % (self.args.builder, self.args.master))
         vals['args_file'] = mixin_vals['args_file']
       if 'gn_args' in mixin_vals:
         if vals['gn_args']:
@@ -887,10 +954,10 @@ class MetaBuildWrapper(object):
     ret, output, _ = self.Run(self.GNCmd('ls', build_dir),
                               force_verbose=False)
     if ret:
-        # If `gn ls` failed, we should exit early rather than trying to
-        # generate isolates.
-        self.Print('GN ls failed: %d' % ret)
-        return ret
+      # If `gn ls` failed, we should exit early rather than trying to
+      # generate isolates.
+      self.Print('GN ls failed: %d' % ret)
+      return ret
 
     # Create a reverse map from isolate label to isolate dict.
     isolate_map = self.ReadIsolateMap()
@@ -1115,7 +1182,7 @@ class MetaBuildWrapper(object):
       # Skip a few configs that need extra cleanup for now.
       # TODO(https://crbug.com/912946): Fix everything on all platforms and
       # enable check everywhere.
-      if is_android or is_cros or is_mac:
+      if is_android:
         break
 
       # Skip a few existing violations that need to be cleaned up. Each of
@@ -1126,7 +1193,41 @@ class MetaBuildWrapper(object):
           f == 'mr_extension/' or # https://crbug.com/997947
           f == 'locales/' or
           f.startswith('nacl_test_data/') or
-          f.startswith('ppapi_nacl_tests_libs/')):
+          f.startswith('ppapi_nacl_tests_libs/') or
+          (is_cros and f in (  # https://crbug.com/1002509
+              'chromevox_test_data/',
+              'gen/ui/file_manager/file_manager/',
+              'resources/chromeos/',
+              'resources/chromeos/accessibility/autoclick/',
+              'resources/chromeos/accessibility/chromevox/',
+              'resources/chromeos/accessibility/select_to_speak/',
+              'test_data/chrome/browser/resources/chromeos/accessibility/'
+                  'autoclick/',
+              'test_data/chrome/browser/resources/chromeos/accessibility/'
+                  'chromevox/',
+              'test_data/chrome/browser/resources/chromeos/accessibility/'
+                  'select_to_speak/',
+          )) or
+          (is_mac and f in (  # https://crbug.com/1000667
+              'AlertNotificationService.xpc/',
+              'Chromium Framework.framework/',
+              'Chromium Helper.app/',
+              'Chromium.app/',
+              'Content Shell.app/',
+              'Google Chrome Framework.framework/',
+              'Google Chrome Helper (GPU).app/',
+              'Google Chrome Helper (Plugin).app/',
+              'Google Chrome Helper (Renderer).app/',
+              'Google Chrome Helper.app/',
+              'Google Chrome.app/',
+              'blink_deprecated_test_plugin.plugin/',
+              'blink_test_plugin.plugin/',
+              'corb_test_plugin.plugin/',
+              'obj/tools/grit/brotli_mac_asan_workaround/',
+              'power_saver_test_plugin.plugin/',
+              'ppapi_tests.plugin/',
+              'ui_unittests Framework.framework/',
+          ))):
         continue
 
       # This runs before the build, so we can't use isdir(f). But
@@ -1275,17 +1376,23 @@ class MetaBuildWrapper(object):
     msan = 'is_msan=true' in vals['gn_args']
     tsan = 'is_tsan=true' in vals['gn_args']
     cfi_diag = 'use_cfi_diag=true' in vals['gn_args']
-    java_coverage = 'jacoco_coverage=true' in vals['gn_args']
+    clang_coverage = 'use_clang_coverage=true' in vals['gn_args']
+    java_coverage = 'use_jacoco_coverage=true' in vals['gn_args']
 
     test_type = isolate_map[target]['type']
+    use_python3 = isolate_map[target].get('use_python3', False)
 
     executable = isolate_map[target].get('executable', target)
     executable_suffix = isolate_map[target].get(
         'executable_suffix', '.exe' if is_win else '')
 
-    cmdline = []
-    extra_files = [
-      '../../.vpython',
+    if use_python3:
+      cmdline = [ 'vpython3' ]
+      extra_files = [ '../../.vpython3' ]
+    else:
+      cmdline = [ 'vpython' ]
+      extra_files = [ '../../.vpython' ]
+    extra_files += [
       '../../testing/test_env.py',
     ]
 
@@ -1297,19 +1404,18 @@ class MetaBuildWrapper(object):
       script = isolate_map[target]['script']
       if self.platform == 'win32':
         script += '.bat'
-      cmdline = [
+      cmdline += [
           '../../testing/test_env.py',
           script,
       ]
     elif test_type == 'fuzzer':
-      cmdline = [
+      cmdline += [
         '../../testing/test_env.py',
         '../../tools/code_coverage/run_fuzz_target.py',
         '--fuzzer', './' + target,
         '--output-dir', '${ISOLATED_OUTDIR}',
         '--timeout', '3600']
     elif is_android and test_type != "script":
-      cmdline = []
       if asan:
         cmdline += [os.path.join('bin', 'run_with_asan'), '--']
       cmdline += [
@@ -1318,23 +1424,23 @@ class MetaBuildWrapper(object):
           '--target', target,
           '--logdog-bin-cmd', '../../bin/logdog_butler',
           '--store-tombstones']
-      if java_coverage:
+      if clang_coverage or java_coverage:
         cmdline += ['--coverage-dir', '${ISOLATED_OUTDIR}']
     elif is_fuchsia and test_type != 'script':
-      cmdline = [
+      cmdline += [
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
           '--test-launcher-bot-mode',
           '--system-log-file', '${ISOLATED_OUTDIR}/system_log'
       ]
     elif is_simplechrome and test_type != 'script':
-      cmdline = [
+      cmdline += [
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
       ]
     elif use_xvfb and test_type == 'windowed_test_launcher':
       extra_files.append('../../testing/xvfb.py')
-      cmdline = [
+      cmdline += [
           '../../testing/xvfb.py',
           './' + str(executable) + executable_suffix,
           '--test-launcher-bot-mode',
@@ -1349,7 +1455,7 @@ class MetaBuildWrapper(object):
           '--cfi-diag=%d' % cfi_diag,
       ]
     elif test_type in ('windowed_test_launcher', 'console_test_launcher'):
-      cmdline = [
+      cmdline += [
           '../../testing/test_env.py',
           './' + str(executable) + executable_suffix,
           '--test-launcher-bot-mode',
@@ -1364,7 +1470,6 @@ class MetaBuildWrapper(object):
           '--cfi-diag=%d' % cfi_diag,
       ]
     elif test_type == 'script':
-      cmdline = []
       # If we're testing a CrOS simplechrome build, assume we need to prepare a
       # DUT for testing. So prepend the command to run with the test wrapper.
       if is_simplechrome:
@@ -1625,14 +1730,16 @@ class MetaBuildWrapper(object):
     ret, _, _ = self.Run(ninja_cmd, buffer_output=False)
     return ret
 
-  def Run(self, cmd, env=None, force_verbose=True, buffer_output=True):
+  def Run(self, cmd, env=None, force_verbose=True, buffer_output=True,
+          stdin=None):
     # This function largely exists so it can be overridden for testing.
     if self.args.dryrun or self.args.verbose or force_verbose:
       self.PrintCmd(cmd, env)
     if self.args.dryrun:
       return 0, '', ''
 
-    ret, out, err = self.Call(cmd, env=env, buffer_output=buffer_output)
+    ret, out, err = self.Call(cmd, env=env, buffer_output=buffer_output,
+                              stdin=stdin)
     if self.args.verbose or force_verbose:
       if ret:
         self.Print('  -> returned %d' % ret)
@@ -1643,12 +1750,12 @@ class MetaBuildWrapper(object):
         self.Print(err, end='', file=sys.stderr)
     return ret, out, err
 
-  def Call(self, cmd, env=None, buffer_output=True):
+  def Call(self, cmd, env=None, buffer_output=True, stdin=None):
     if buffer_output:
       p = subprocess.Popen(cmd, shell=False, cwd=self.chromium_src_dir,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                           env=env)
-      out, err = p.communicate()
+                           env=env, stdin=subprocess.PIPE)
+      out, err = p.communicate(input=stdin)
     else:
       p = subprocess.Popen(cmd, shell=False, cwd=self.chromium_src_dir,
                            env=env)
@@ -1726,6 +1833,28 @@ class MetaBuildWrapper(object):
       self.Print('\nWriting """\\\n%s""" to %s.\n' % (contents, path))
     with open(path, 'w') as fp:
       return fp.write(contents)
+
+
+class LedResult(object):
+  """Holds the result of a led operation. Can be chained using |then|."""
+
+  def __init__(self, result, run_cmd):
+    self._result = result
+    self._run_cmd = run_cmd
+
+  @property
+  def result(self):
+    """The mutable result data of the previous led call as decoded JSON."""
+    return self._result
+
+  def then(self, *cmd):
+    """Invoke led, passing it the current `result` data as input.
+
+    Returns another LedResult object with the output of the command.
+    """
+    return self.__class__(
+        self._run_cmd(self._result, cmd), self._run_cmd)
+
 
 
 class MBErr(Exception):

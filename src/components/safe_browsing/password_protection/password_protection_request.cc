@@ -152,6 +152,9 @@ void PasswordProtectionRequest::OnWhitelistCheckDoneOnIO(
 void PasswordProtectionRequest::OnWhitelistCheckDone(bool match_whitelist) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (match_whitelist) {
+    if (password_protection_service_->CanSendSamplePing()) {
+      FillRequestProto(/*is_sampled_ping=*/true);
+    }
     Finish(RequestOutcome::MATCHED_WHITELIST, nullptr);
   } else {
     // In case the request to Safe Browsing takes too long,
@@ -175,29 +178,50 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
       password_protection_service_
           ->GetPasswordProtectionReusedPasswordAccountType(password_type_,
                                                            username_);
+
   auto verdict = password_protection_service_->GetCachedVerdict(
       main_frame_url_, trigger_type_, password_account_type,
       cached_response.get());
+
   if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED) {
     set_request_outcome(RequestOutcome::RESPONSE_ALREADY_CACHED);
     Finish(RequestOutcome::RESPONSE_ALREADY_CACHED, std::move(cached_response));
   } else {
-    FillRequestProto();
+    FillRequestProto(/*is_sampled_ping=*/false);
   }
 }
 
-void PasswordProtectionRequest::FillRequestProto() {
+void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
   request_proto_->set_page_url(main_frame_url_.spec());
-  password_protection_service_->FillUserPopulation(trigger_type_,
-                                                   request_proto_.get());
-  request_proto_->set_stored_verdict_cnt(
-      password_protection_service_->GetStoredVerdictCount(trigger_type_));
   LoginReputationClientRequest::Frame* main_frame =
       request_proto_->add_frames();
   main_frame->set_url(main_frame_url_.spec());
   main_frame->set_frame_index(0 /* main frame */);
   password_protection_service_->FillReferrerChain(
       main_frame_url_, SessionID::InvalidValue(), main_frame);
+
+  // If a sample ping is send, only the URL and referrer chain is sent in the
+  // request.
+  if (is_sampled_ping) {
+    LogPasswordProtectionSampleReportSent();
+    request_proto_->set_report_type(
+        LoginReputationClientRequest::SAMPLE_REPORT);
+    request_proto_->clear_trigger_type();
+    if (main_frame->referrer_chain_size() > 0) {
+      password_protection_service_->SanitizeReferrerChain(
+          main_frame->mutable_referrer_chain());
+    }
+    SendRequest();
+    return;
+  } else {
+    request_proto_->set_report_type(LoginReputationClientRequest::FULL_REPORT);
+  }
+
+  password_protection_service_->FillUserPopulation(trigger_type_,
+                                                   request_proto_.get());
+  request_proto_->set_stored_verdict_cnt(
+      password_protection_service_->GetStoredVerdictCount(trigger_type_));
+
   bool clicked_through_interstitial =
       password_protection_service_->UserClickedThroughSBInterstitial(
           web_contents_);
@@ -246,7 +270,8 @@ void PasswordProtectionRequest::FillRequestProto() {
             password_protection_service_->GetSyncAccountType());
         LogSyncAccountType(reuse_event->sync_account_type());
       }
-      if (password_protection_service_->IsExtendedReporting() &&
+
+      if ((password_protection_service_->IsExtendedReporting()) &&
           !password_protection_service_->IsIncognito()) {
         for (const auto& domain : matching_domains_) {
           reuse_event->add_domains_matching_password(domain);
@@ -292,9 +317,18 @@ void PasswordProtectionRequest::FillRequestProto() {
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-void PasswordProtectionRequest::OnGetDomFeatures(const std::string& verdict) {
+void PasswordProtectionRequest::OnGetDomFeatures(
+    mojom::PhishingDetectorResult result,
+    const std::string& verdict) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (dom_features_collection_complete_)
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION("PasswordProtection.RendererDomFeatureResult",
+                            result);
+
+  if (result != mojom::PhishingDetectorResult::SUCCESS &&
+      result != mojom::PhishingDetectorResult::INVALID_SCORE)
     return;
 
   dom_features_collection_complete_ = true;
@@ -515,7 +549,9 @@ void PasswordProtectionRequest::Finish(
     } else {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
       LogPasswordEntryRequestOutcome(outcome, password_account_type);
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
       if (password_type_ == PasswordType::PRIMARY_ACCOUNT_PASSWORD) {
         password_protection_service_->MaybeLogPasswordReuseLookupEvent(
             web_contents_, outcome, password_type_, response.get());

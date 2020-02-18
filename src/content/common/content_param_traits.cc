@@ -17,13 +17,15 @@
 #include "content/common/tab_switch_time_recorder.h"
 #include "ipc/ipc_mojo_message_helper.h"
 #include "ipc/ipc_mojo_param_traits.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_endpoint.h"
+#include "services/network/public/cpp/net_ipc_param_traits.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "ui/accessibility/ax_mode.h"
-#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 namespace IPC {
@@ -57,51 +59,6 @@ bool ParamTraits<content::WebCursor>::Read(const base::Pickle* m,
 
 void ParamTraits<content::WebCursor>::Log(const param_type& p, std::string* l) {
   l->append("<WebCursor>");
-}
-
-void ParamTraits<WebInputEventPointer>::Write(base::Pickle* m,
-                                              const param_type& p) {
-  m->WriteData(reinterpret_cast<const char*>(p), p->size());
-}
-
-bool ParamTraits<WebInputEventPointer>::Read(const base::Pickle* m,
-                                             base::PickleIterator* iter,
-                                             param_type* r) {
-  const char* data;
-  int data_length;
-  if (!iter->ReadData(&data, &data_length)) {
-    NOTREACHED();
-    return false;
-  }
-  if (data_length < static_cast<int>(sizeof(blink::WebInputEvent))) {
-    NOTREACHED();
-    return false;
-  }
-  param_type event = reinterpret_cast<param_type>(data);
-  // Check that the data size matches that of the event.
-  if (data_length != static_cast<int>(event->size())) {
-    NOTREACHED();
-    return false;
-  }
-  const size_t expected_size_for_type =
-      ui::WebInputEventTraits::GetSize(event->GetType());
-  if (data_length != static_cast<int>(expected_size_for_type)) {
-    NOTREACHED();
-    return false;
-  }
-  *r = event;
-  return true;
-}
-
-void ParamTraits<WebInputEventPointer>::Log(const param_type& p,
-                                            std::string* l) {
-  l->append("(");
-  LogParam(p->size(), l);
-  l->append(", ");
-  LogParam(p->GetType(), l);
-  l->append(", ");
-  LogParam(p->TimeStamp(), l);
-  l->append(")");
 }
 
 void ParamTraits<blink::MessagePortChannel>::Write(base::Pickle* m,
@@ -223,7 +180,7 @@ struct ParamTraits<blink::mojom::SerializedBlobPtr> {
     WriteParam(m, p->uuid);
     WriteParam(m, p->content_type);
     WriteParam(m, p->size);
-    WriteParam(m, p->blob.PassHandle().release());
+    WriteParam(m, p->blob.PassPipe().release());
   }
 
   static bool Read(const base::Pickle* m,
@@ -236,8 +193,33 @@ struct ParamTraits<blink::mojom::SerializedBlobPtr> {
         !ReadParam(m, iter, &(*r)->size) || !ReadParam(m, iter, &handle)) {
       return false;
     }
-    (*r)->blob = blink::mojom::BlobPtrInfo(
+    (*r)->blob = mojo::PendingRemote<blink::mojom::Blob>(
         mojo::ScopedMessagePipeHandle(handle), blink::mojom::Blob::Version_);
+    return true;
+  }
+};
+
+template <>
+struct ParamTraits<
+    mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>> {
+  using param_type =
+      mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>;
+  static void Write(base::Pickle* m, const param_type& p) {
+    // Move the Mojo pipe to serialize the
+    // PendingRemote<NativeFileSystemTransferToken> for a postMessage() target.
+    WriteParam(m, const_cast<param_type&>(p).PassPipe().release());
+  }
+
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r) {
+    mojo::MessagePipeHandle handle;
+    if (!ReadParam(m, iter, &handle)) {
+      return false;
+    }
+    *r = mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>(
+        mojo::ScopedMessagePipeHandle(handle),
+        blink::mojom::NativeFileSystemTransferToken::Version_);
     return true;
   }
 };
@@ -250,11 +232,14 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, p->data.stack_trace_id);
   WriteParam(m, p->data.stack_trace_debugger_id_first);
   WriteParam(m, p->data.stack_trace_debugger_id_second);
+  WriteParam(m, p->data.stack_trace_should_pause);
   WriteParam(m, p->data.ports);
   WriteParam(m, p->data.stream_channels);
   WriteParam(m, !!p->data.user_activation);
   WriteParam(m, p->data.transfer_user_activation);
   WriteParam(m, p->data.allow_autoplay);
+  WriteParam(m, p->data.sender_origin);
+  WriteParam(m, p->data.native_file_system_tokens);
   if (p->data.user_activation) {
     WriteParam(m, p->data.user_activation->has_been_active);
     WriteParam(m, p->data.user_activation->was_active);
@@ -282,11 +267,14 @@ bool ParamTraits<
       !ReadParam(m, iter, &(*r)->data.stack_trace_id) ||
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_first) ||
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_second) ||
+      !ReadParam(m, iter, &(*r)->data.stack_trace_should_pause) ||
       !ReadParam(m, iter, &(*r)->data.ports) ||
       !ReadParam(m, iter, &(*r)->data.stream_channels) ||
       !ReadParam(m, iter, &has_activation) ||
       !ReadParam(m, iter, &(*r)->data.transfer_user_activation) ||
-      !ReadParam(m, iter, &(*r)->data.allow_autoplay)) {
+      !ReadParam(m, iter, &(*r)->data.allow_autoplay) ||
+      !ReadParam(m, iter, &(*r)->data.sender_origin) ||
+      !ReadParam(m, iter, &(*r)->data.native_file_system_tokens)) {
     return false;
   }
 

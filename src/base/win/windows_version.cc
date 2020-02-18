@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -34,8 +33,8 @@ namespace {
 
 // The values under the CurrentVersion registry hive are mirrored under
 // the corresponding Wow6432 hive.
-constexpr char16 kRegKeyWindowsNTCurrentVersion[] =
-    STRING16_LITERAL("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
+constexpr wchar_t kRegKeyWindowsNTCurrentVersion[] =
+    L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
 
 // Returns the "UBR" (Windows 10 patch number) and "ReleaseId" (Windows 10
 // release number) from the registry. "UBR" is an undocumented value and will be
@@ -43,16 +42,16 @@ constexpr char16 kRegKeyWindowsNTCurrentVersion[] =
 // value is not found.
 std::pair<int, std::string> GetVersionData() {
   DWORD ubr = 0;
-  string16 release_id;
+  std::wstring release_id;
   RegKey key;
 
   if (key.Open(HKEY_LOCAL_MACHINE, kRegKeyWindowsNTCurrentVersion,
                KEY_QUERY_VALUE) == ERROR_SUCCESS) {
-    key.ReadValueDW(STRING16_LITERAL("UBR"), &ubr);
-    key.ReadValue(STRING16_LITERAL("ReleaseId"), &release_id);
+    key.ReadValueDW(L"UBR", &ubr);
+    key.ReadValue(L"ReleaseId", &release_id);
   }
 
-  return std::make_pair(static_cast<int>(ubr), UTF16ToUTF8(release_id));
+  return std::make_pair(static_cast<int>(ubr), WideToUTF8(release_id));
 }
 
 const _SYSTEM_INFO& GetSystemInfoStorage() {
@@ -199,6 +198,19 @@ Version OSInfo::Kernel32Version() const {
   return kernel32_version;
 }
 
+Version OSInfo::UcrtVersion() const {
+  auto ucrt_version_info = FileVersionInfoWin::CreateFileVersionInfoWin(
+      FilePath(FILE_PATH_LITERAL("ucrtbase.dll")));
+  if (ucrt_version_info) {
+    auto ucrt_components = ucrt_version_info->GetFileVersion().components();
+    if (ucrt_components.size() == 4) {
+      return MajorMinorBuildToVersion(ucrt_components[0], ucrt_components[1],
+                                      ucrt_components[2]);
+    }
+  }
+  return Version();
+}
+
 // Retrieve a version from kernel32. This is useful because when running in
 // compatibility mode for a down-level version of the OS, the file version of
 // kernel32 will still be the "real" version.
@@ -215,27 +227,19 @@ base::Version OSInfo::Kernel32BaseVersion() const {
           FilePath(FILE_PATH_LITERAL("kernelbase.dll")));
     }
     CHECK(file_version_info);
-    const int major =
-        HIWORD(file_version_info->fixed_file_info()->dwFileVersionMS);
-    const int minor =
-        LOWORD(file_version_info->fixed_file_info()->dwFileVersionMS);
-    const int build =
-        HIWORD(file_version_info->fixed_file_info()->dwFileVersionLS);
-    const int patch =
-        LOWORD(file_version_info->fixed_file_info()->dwFileVersionLS);
-    return base::Version(std::vector<uint32_t>{major, minor, build, patch});
+    return file_version_info->GetFileVersion();
   }());
   return *version;
 }
 
 std::string OSInfo::processor_model_name() {
   if (processor_model_name_.empty()) {
-    const char16 kProcessorNameString[] =
-        STRING16_LITERAL("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0");
+    const wchar_t kProcessorNameString[] =
+        L"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0";
     RegKey key(HKEY_LOCAL_MACHINE, kProcessorNameString, KEY_READ);
-    string16 value;
-    key.ReadValue(STRING16_LITERAL("ProcessorNameString"), &value);
-    processor_model_name_ = UTF16ToUTF8(value);
+    std::wstring value;
+    key.ReadValue(L"ProcessorNameString", &value);
+    processor_model_name_ = WideToUTF8(value);
   }
   return processor_model_name_;
 }

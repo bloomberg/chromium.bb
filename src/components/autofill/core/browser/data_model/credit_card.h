@@ -16,6 +16,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/data_model/autofill_data_model.h"
+#include "components/sync/protocol/sync.pb.h"
 
 namespace autofill {
 
@@ -190,6 +191,9 @@ class CreditCard : public AutofillDataModel {
   // not complete.
   bool HasValidCardNumber() const;
 
+  // Returns true if credit card has valid expiration year.
+  bool HasValidExpirationYear() const;
+
   // Returns true if credit card has valid expiration date.
   bool HasValidExpirationDate() const;
 
@@ -204,13 +208,6 @@ class CreditCard : public AutofillDataModel {
 
   // Logs the number of days since the card was last used and records its use.
   void RecordAndLogUse();
-
-  // Converts a string representation of a month (such as "February" or "feb."
-  // or "2") into a numeric value in [1, 12]. Returns true on successful
-  // conversion or false if a month was not recognized.
-  static bool ConvertMonth(const base::string16& month,
-                           const std::string& app_locale,
-                           int* num);
 
   // Returns whether the card is expired based on |current_time|.
   bool IsExpired(const base::Time& current_time) const;
@@ -230,7 +227,8 @@ class CreditCard : public AutofillDataModel {
 
   // Sets |expiration_year_| to the integer conversion of |text|. Will handle
   // 4-digit year or 2-digit year (eventually converted to 4-digit year).
-  void SetExpirationYearFromString(const base::string16& text);
+  // Returns whether the operation was successful.
+  bool SetExpirationYearFromString(const base::string16& text);
 
   // Sets |expiration_year_| and |expiration_month_| to the integer conversion
   // of |text|. Will handle mmyy, mmyyyy, mm-yyyy and mm-yy as well as single
@@ -275,7 +273,7 @@ class CreditCard : public AutofillDataModel {
   // Formatted expiration date (e.g., 05/2020).
   base::string16 ExpirationDateForDisplay() const;
   // Expiration functions.
-  base::string16 ExpirationMonthAsString() const;
+  base::string16 Expiration2DigitMonthAsString() const;
   base::string16 Expiration4DigitYearAsString() const;
 
   // Whether the cardholder name was created from separate first name and last
@@ -302,10 +300,6 @@ class CreditCard : public AutofillDataModel {
 
   // The issuer network of the card to fill in to the page, e.g. 'Mastercard'.
   base::string16 NetworkForFill() const;
-
-  // The month and year are zero if not present.
-  int Expiration4DigitYear() const { return expiration_year_; }
-  int Expiration2DigitYear() const { return expiration_year_ % 100; }
 
   // A label for this card formatted as 'BankName - 2345'.
   base::string16 BankNameAndLastFourDigits() const;
@@ -351,6 +345,9 @@ class CreditCard : public AutofillDataModel {
   // since we only store the full name.
   base::string16 temp_card_first_name_;
   base::string16 temp_card_last_name_;
+
+  // Info of tokenizized credit card if available.
+  sync_pb::CloudTokenData cloud_token_data_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().

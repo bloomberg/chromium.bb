@@ -15,7 +15,8 @@
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/loader/request_extra_data.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -233,20 +234,23 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
       case network::mojom::DataElementType::kBytes:
         http_body.AppendData(WebData(element.bytes(), element.length()));
         break;
-      case network::mojom::DataElementType::kFile:
+      case network::mojom::DataElementType::kFile: {
+        base::Optional<base::Time> modification_time;
+        if (!element.expected_modification_time().is_null())
+          modification_time = element.expected_modification_time();
         http_body.AppendFileRange(
             blink::FilePathToWebString(element.path()), element.offset(),
             (element.length() != std::numeric_limits<uint64_t>::max())
                 ? element.length()
                 : -1,
-            element.expected_modification_time().ToDoubleT());
+            modification_time);
         break;
+      }
       case network::mojom::DataElementType::kBlob:
           http_body.AppendBlob(WebString::FromASCII(element.blob_uuid()));
         break;
       case network::mojom::DataElementType::kDataPipe: {
-        http_body.AppendDataPipe(
-            element.CloneDataPipeGetter().PassInterface().PassHandle());
+        http_body.AppendDataPipe(element.CloneDataPipeGetter().PassPipe());
         break;
       }
       case network::mojom::DataElementType::kUnknown:
@@ -295,36 +299,39 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
               blink::WebStringToFilePath(element.file_path),
               static_cast<uint64_t>(element.file_start),
               static_cast<uint64_t>(element.file_length),
-              base::Time::FromDoubleT(element.modification_time));
+              element.modification_time.value_or(base::Time()));
         }
         break;
       case WebHTTPBody::Element::kTypeBlob: {
         DCHECK(element.optional_blob_handle.is_valid());
-        blink::mojom::BlobPtr blob_ptr(
-            blink::mojom::BlobPtrInfo(std::move(element.optional_blob_handle),
-                                      blink::mojom::Blob::Version_));
+        mojo::Remote<blink::mojom::Blob> blob_remote(
+            mojo::PendingRemote<blink::mojom::Blob>(
+                std::move(element.optional_blob_handle),
+                blink::mojom::Blob::Version_));
 
-        network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-        blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
+        mojo::PendingRemote<network::mojom::DataPipeGetter>
+            data_pipe_getter_remote;
+        blob_remote->AsDataPipeGetter(
+            data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
 
-        request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+        request_body->AppendDataPipe(std::move(data_pipe_getter_remote));
         break;
       }
       case WebHTTPBody::Element::kTypeDataPipe: {
-        // Convert the raw message pipe to network::mojom::DataPipeGetterPtr.
-        network::mojom::DataPipeGetterPtr data_pipe_getter;
-        data_pipe_getter.Bind(network::mojom::DataPipeGetterPtrInfo(
-            std::move(element.data_pipe_getter), 0u));
+        // Convert the raw message pipe to
+        // mojo::Remote<network::mojom::DataPipeGetter> data_pipe_getter.
+        mojo::Remote<network::mojom::DataPipeGetter> data_pipe_getter(
+            mojo::PendingRemote<network::mojom::DataPipeGetter>(
+                std::move(element.data_pipe_getter), 0u));
 
         // Set the cloned DataPipeGetter to the output |request_body|, while
         // keeping the original message pipe back in the input |httpBody|. This
         // way the consumer of the |httpBody| can retrieve the data pipe
         // multiple times (e.g. during redirects) until the request is finished.
-        network::mojom::DataPipeGetterPtr cloned_getter;
-        data_pipe_getter->Clone(mojo::MakeRequest(&cloned_getter));
+        mojo::PendingRemote<network::mojom::DataPipeGetter> cloned_getter;
+        data_pipe_getter->Clone(cloned_getter.InitWithNewPipeAndPassReceiver());
         request_body->AppendDataPipe(std::move(cloned_getter));
-        element.data_pipe_getter =
-            data_pipe_getter.PassInterface().PassHandle();
+        element.data_pipe_getter = data_pipe_getter.Unbind().PassPipe();
         break;
       }
     }
@@ -350,15 +357,9 @@ blink::mojom::RequestContextType GetRequestContextTypeForWebURLRequest(
 
 blink::WebMixedContentContextType GetMixedContentContextTypeForWebURLRequest(
     const WebURLRequest& request) {
-  bool block_mixed_plugin_content = false;
-  if (request.GetExtraData()) {
-    RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.GetExtraData());
-    block_mixed_plugin_content = extra_data->block_mixed_plugin_content();
-  }
-
   return blink::WebMixedContent::ContextTypeFromRequestContext(
-      request.GetRequestContext(), block_mixed_plugin_content);
+      request.GetRequestContext(),
+      /*strict_mixed_content_checking_for_plugin=*/false);
 }
 
 #undef STATIC_ASSERT_ENUM

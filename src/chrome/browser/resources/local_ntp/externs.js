@@ -27,13 +27,14 @@ let MostVisitedData;
  * chrome/browser/search/local_ntp_source.cc:
  *     LocalNtpSource::SearchConfigurationProvider::UpdateConfigData()
  * @typedef {{chromeColors: boolean,
- *            enableShortcutsGrid: boolean,
  *            googleBaseUrl: string,
  *            isAccessibleBrowser: boolean,
  *            isGooglePage: boolean,
+ *            realboxEnabled: boolean,
+ *            realboxMatchOmniboxTheme: boolean,
  *            richerPicker: boolean,
- *            showFakeboxPlaceholderOnFocus: boolean,
- *            translatedStrings: Array<string>}}
+ *            suggestionTransparencyEnabled: boolean,
+ *            translatedStrings: Object<string>}}
  */
 let configData;
 
@@ -108,8 +109,9 @@ let og;
  * The type of the middle-slot promo data object. The definition is based on
  * chrome/browser/search/local_ntp_source.cc:
  *     ConvertPromoDataToDict()
- * @typedef {{promoHtml: string,
- *            promoLogUrl: string}}
+ * @typedef {{promoHtml: (string|undefined),
+ *            promoLogUrl: (string|undefined),
+ *            promoId: (string|undefined)}}
  */
 let promo;
 
@@ -316,6 +318,7 @@ window.chrome.embeddedSearch.newTabPage.setBackgroundInfo;
  *   colorLight: (!Array<number>|undefined),
  *   colorPicked: (!Array<number>|undefined),
  *   customBackgroundConfigured: boolean,
+ *   customBackgroundDisabledByPolicy: boolean,
  *   iconBackgroundColor: !Array<number>,
  *   imageHorizontalAlignment: (string|undefined),
  *   imageTiling: (string|undefined),
@@ -323,6 +326,18 @@ window.chrome.embeddedSearch.newTabPage.setBackgroundInfo;
  *   imageVerticalAlignment: (string|undefined),
  *   isNtpBackgroundDark: boolean,
  *   logoColor: (!Array<number>|undefined),
+ *   searchBox: (!{
+ *     bg: !Array<number>,
+ *     icon: !Array<number>,
+ *     placeholder: !Array<number>,
+ *     resultsBg: !Array<number>,
+ *     resultsBgHovered: !Array<number>,
+ *     resultsBgSelected: !Array<number>,
+ *     resultsDim: !Array<number>,
+ *     resultsText: !Array<number>,
+ *     resultsUrl: !Array<number>,
+ *     text: !Array<number>,
+ *   }|undefined),
  *   textColorLightRgba: !Array<number>,
  *   textColorRgba: !Array<number>,
  *   themeId: (string|undefined),
@@ -332,10 +347,10 @@ window.chrome.embeddedSearch.newTabPage.setBackgroundInfo;
  *   usingDefaultTheme: boolean,
  * }}
  */
-let ThemeBackgroundInfo;
+let NtpTheme;
 
-/** @type {?ThemeBackgroundInfo} */
-window.chrome.embeddedSearch.newTabPage.themeBackgroundInfo;
+/** @type {?NtpTheme} */
+window.chrome.embeddedSearch.newTabPage.ntpTheme;
 
 /**
  * No params.
@@ -373,18 +388,74 @@ window.chrome.embeddedSearch.newTabPage.undoMostVisitedDeletion;
  */
 window.chrome.embeddedSearch.newTabPage.updateCustomLink;
 
+/** @param {string} promoId */
+window.chrome.embeddedSearch.newTabPage.blocklistPromo;
+
 /**
  * Embedded Search API methods defined in
  * chrome/renderer/searchbox/searchbox_extension.cc:
  *  SearchBoxBindings::GetObjectTemplateBuilder()
  */
 window.chrome.embeddedSearch.searchBox;
+/** @param {number} line */
+window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch;
 window.chrome.embeddedSearch.searchBox.isKeyCaptureEnabled;
 window.chrome.embeddedSearch.searchBox.paste;
 window.chrome.embeddedSearch.searchBox.rtl;
 window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes;
 window.chrome.embeddedSearch.searchBox.stopCapturingKeyStrokes;
+/**
+ * @param {string} input
+ * @param {boolean} preventInlineAutocomplete
+ */
+window.chrome.embeddedSearch.searchBox.queryAutocomplete;
+/** @param {boolean} clearResult */
+window.chrome.embeddedSearch.searchBox.stopAutocomplete;
 
+/** @typedef {{offset: number, style: number}} */
+let ACMatchClassification;
+
+/**
+ * @typedef {{
+ *   allowedToBeDefaultMatch: boolean,
+ *   contents: string,
+ *   contentsClass: !Array<!ACMatchClassification>,
+ *   description: string,
+ *   descriptionClass: !Array<!ACMatchClassification>,
+ *   destinationUrl: string,
+ *   inlineAutocompletion: string,
+ *   isSearchType: boolean,
+ *   fillIntoEdit: string,
+ *   supportsDeletion: boolean,
+ *   swapContentsAndDescription: boolean,
+ *   type: string,
+ * }}
+ */
+let AutocompleteMatch;
+
+/**
+ * @typedef {{
+ *   input: string,
+ *   matches: !Array<!AutocompleteMatch>,
+ * }}
+ */
+let AutocompleteResult;
+
+/** @type {function(!AutocompleteResult):void} */
+window.chrome.embeddedSearch.searchBox.autocompleteresultchanged;
+
+/**
+ * @param {number} line
+ * @param {string} url
+ * @param {boolean} areMatchesShowing
+ * @param {number} timeElapsedSinceLastFocus
+ * @param {number} button
+ * @param {boolean} altKey
+ * @param {boolean} ctrlKey
+ * @param {boolean} metaKey
+ * @param {boolean} shiftKey
+ */
+window.chrome.embeddedSearch.searchBox.openAutocompleteMatch;
 
 /**************************** Translated Strings *****************************/
 
@@ -393,7 +464,6 @@ window.chrome.embeddedSearch.searchBox.stopCapturingKeyStrokes;
  * chrome/browser/search/local_ntp_source.cc:
  *  GetTranslatedStrings()
  */
-
 configData.translatedStrings.addLinkTitle;
 configData.translatedStrings.addLinkTooltip;
 configData.translatedStrings.attributionIntro;
@@ -407,6 +477,7 @@ configData.translatedStrings.copyLink;
 configData.translatedStrings.customizeThisPage;
 configData.translatedStrings.defaultWallpapers;
 configData.translatedStrings.details;
+configData.translatedStrings.dismissPromo;
 configData.translatedStrings.editLinkTitle;
 configData.translatedStrings.editLinkTooltip;
 configData.translatedStrings.fakeboxMicrophoneTooltip;
@@ -432,6 +503,8 @@ configData.translatedStrings.noVoice;
 configData.translatedStrings.otherError;
 configData.translatedStrings.permissionError;
 configData.translatedStrings.ready;
+configData.translatedStrings.realboxSeparator;
+configData.translatedStrings.removeSuggestion;
 configData.translatedStrings.removeThumbnailTooltip;
 configData.translatedStrings.restoreDefaultBackground;
 configData.translatedStrings.restoreDefaultLinks;

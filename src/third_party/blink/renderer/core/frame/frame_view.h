@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_
 
-#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
+#include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -56,8 +56,9 @@ class CORE_EXPORT FrameView : public EmbeddedContentView {
   bool RectInParentIsStable(const base::TimeTicks& timestamp) const;
 
  protected:
-  virtual void SetViewportIntersection(const IntRect& viewport_intersection,
-                                       FrameOcclusionState occlusion_state) = 0;
+  virtual bool NeedsViewportOffset() const { return false; }
+  virtual void SetViewportIntersection(
+      const ViewportIntersectionState& intersection_state) = 0;
   virtual void VisibilityForThrottlingChanged() = 0;
   virtual bool LifecycleUpdatesThrottled() const { return false; }
   void UpdateViewportIntersection(unsigned, bool);
@@ -66,6 +67,8 @@ class CORE_EXPORT FrameView : public EmbeddedContentView {
   void UpdateFrameVisibility(bool);
 
   bool DisplayLockedInParentFrame();
+
+  virtual void VisibilityChanged(blink::mojom::FrameVisibility visibilty) = 0;
 
  private:
   PhysicalRect rect_in_parent_;

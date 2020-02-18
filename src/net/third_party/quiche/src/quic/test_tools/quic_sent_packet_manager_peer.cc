@@ -86,18 +86,9 @@ bool QuicSentPacketManagerPeer::IsRetransmission(
   if (!HasRetransmittableFrames(sent_packet_manager, packet_number)) {
     return false;
   }
-  if (sent_packet_manager->session_decides_what_to_write()) {
-    return sent_packet_manager->unacked_packets_
-               .GetTransmissionInfo(QuicPacketNumber(packet_number))
-               .transmission_type != NOT_RETRANSMISSION;
-  }
-  for (auto transmission_info : sent_packet_manager->unacked_packets_) {
-    if (transmission_info.retransmission.IsInitialized() &&
-        transmission_info.retransmission == QuicPacketNumber(packet_number)) {
-      return true;
-    }
-  }
-  return false;
+  return sent_packet_manager->unacked_packets_
+             .GetTransmissionInfo(QuicPacketNumber(packet_number))
+             .transmission_type != NOT_RETRANSMISSION;
 }
 
 // static
@@ -207,6 +198,27 @@ void QuicSentPacketManagerPeer::SetNextPacedPacketTime(
     QuicSentPacketManager* sent_packet_manager,
     QuicTime time) {
   sent_packet_manager->pacing_sender_.ideal_next_packet_send_time_ = time;
+}
+
+// static
+int QuicSentPacketManagerPeer::GetReorderingShift(
+    QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->uber_loss_algorithm_.general_loss_algorithms_[0]
+      .reordering_shift();
+}
+
+// static
+bool QuicSentPacketManagerPeer::AdaptiveReorderingThresholdEnabled(
+    QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->uber_loss_algorithm_.general_loss_algorithms_[0]
+      .use_adaptive_reordering_threshold();
+}
+
+// static
+bool QuicSentPacketManagerPeer::AdaptiveTimeThresholdEnabled(
+    QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->uber_loss_algorithm_.general_loss_algorithms_[0]
+      .use_adaptive_time_threshold();
 }
 
 }  // namespace test

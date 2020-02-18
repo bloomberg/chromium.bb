@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
@@ -33,7 +33,7 @@ void ShowCrostiniAppUninstallerView(Profile* profile,
 // static
 void CrostiniAppUninstallerView::Show(Profile* profile,
                                       const std::string& app_id) {
-  DCHECK(crostini::IsCrostiniUIAllowedForProfile(profile));
+  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
   views::DialogDelegate::CreateDialogWidget(
       new CrostiniAppUninstallerView(profile, app_id), nullptr, nullptr)
       ->Show();
@@ -41,15 +41,6 @@ void CrostiniAppUninstallerView::Show(Profile* profile,
 
 int CrostiniAppUninstallerView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
-base::string16 CrostiniAppUninstallerView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(
-        IDS_CROSTINI_APPLICATION_UNINSTALL_UNINSTALL_BUTTON);
-  DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-  return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
 }
 
 base::string16 CrostiniAppUninstallerView::GetWindowTitle() const {
@@ -71,7 +62,7 @@ bool CrostiniAppUninstallerView::Accept() {
 
 gfx::Size CrostiniAppUninstallerView::CalculatePreferredSize() const {
   const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                               DISTANCE_STANDALONE_BUBBLE_PREFERRED_WIDTH) -
                            margins().width();
   return gfx::Size(dialog_width, GetHeightForWidth(dialog_width));
 }
@@ -80,13 +71,16 @@ CrostiniAppUninstallerView::CrostiniAppUninstallerView(
     Profile* profile,
     const std::string& app_id)
     : profile_(profile), app_id_(app_id) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          IDS_CROSTINI_APPLICATION_UNINSTALL_UNINSTALL_BUTTON));
+
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
       provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  set_margins(provider->GetDialogInsetsForContentType(
-      views::DialogContentType::TEXT, views::DialogContentType::TEXT));
 
   crostini::CrostiniRegistryService* registry =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);

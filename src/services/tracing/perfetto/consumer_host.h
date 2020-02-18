@@ -6,45 +6,50 @@
 #define SERVICES_TRACING_PERFETTO_CONSUMER_HOST_H_
 
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "base/threading/sequence_bound.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/consumer.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/tracing_service.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}  // namespace service_manager
+namespace perfetto {
+namespace trace_processor {
+class TraceProcessorStorage;
+}  // namespace trace_processor
+}  // namespace perfetto
 
 namespace tracing {
 
-class JSONTraceExporter;
 class PerfettoService;
 
 // This is a Mojo interface which enables any client
 // to act as a Perfetto consumer.
 class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
  public:
-  static void BindConsumerRequest(
+  static void BindConsumerReceiver(
       PerfettoService* service,
-      mojom::ConsumerHostRequest request,
-      const service_manager::BindSourceInfo& source_info);
+      mojo::PendingReceiver<mojom::ConsumerHost> receiver);
 
   class StreamWriter;
   class TracingSession : public mojom::TracingSessionHost {
    public:
-    TracingSession(ConsumerHost* host,
-                   mojom::TracingSessionHostRequest tracing_session_host,
-                   mojom::TracingSessionClientPtr tracing_session_client,
-                   const perfetto::TraceConfig& trace_config,
-                   mojom::TracingClientPriority priority);
+    TracingSession(
+        ConsumerHost* host,
+        mojo::PendingReceiver<mojom::TracingSessionHost> tracing_session_host,
+        mojo::PendingRemote<mojom::TracingSessionClient> tracing_session_client,
+        const perfetto::TraceConfig& trace_config,
+        mojom::TracingClientPriority priority);
     ~TracingSession() override;
 
     void OnPerfettoEvents(const perfetto::ObservableEvents&);
@@ -76,23 +81,25 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
     void DisableTracingAndEmitJson(
         const std::string& agent_label_filter,
         mojo::ScopedDataPipeProducerHandle stream,
+        bool privacy_filtering_enabled,
         DisableTracingAndEmitJsonCallback callback) override;
 
    private:
-    void OnJSONTraceData(std::string* json,
-                         base::DictionaryValue* metadata,
-                         bool has_more);
+    void ExportJson();
+    void OnJSONTraceData(std::string json, bool has_more);
     void OnEnableTracingTimeout();
     void MaybeSendEnableTracingAck();
     bool IsExpectedPid(base::ProcessId pid) const;
 
     ConsumerHost* const host_;
-    mojom::TracingSessionClientPtr tracing_session_client_;
-    mojo::Binding<mojom::TracingSessionHost> binding_;
+    mojo::Remote<mojom::TracingSessionClient> tracing_session_client_;
+    mojo::Receiver<mojom::TracingSessionHost> receiver_;
     bool privacy_filtering_enabled_ = false;
     base::SequenceBound<StreamWriter> read_buffers_stream_writer_;
     RequestBufferUsageCallback request_buffer_usage_callback_;
-    std::unique_ptr<JSONTraceExporter> json_trace_exporter_;
+    std::unique_ptr<perfetto::trace_processor::TraceProcessorStorage>
+        trace_processor_;
+    std::string json_agent_label_filter_;
     base::OnceCallback<void(bool)> flush_callback_;
     const mojom::TracingClientPriority tracing_priority_;
     base::OnceClosure on_disabled_callback_;
@@ -121,10 +128,11 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
   }
 
   // mojom::ConsumerHost implementation.
-  void EnableTracing(mojom::TracingSessionHostRequest tracing_session_host,
-                     mojom::TracingSessionClientPtr tracing_session_client,
-                     const perfetto::TraceConfig& config,
-                     mojom::TracingClientPriority priority) override;
+  void EnableTracing(
+      mojo::PendingReceiver<mojom::TracingSessionHost> tracing_session_host,
+      mojo::PendingRemote<mojom::TracingSessionClient> tracing_session_client,
+      const perfetto::TraceConfig& config,
+      mojom::TracingClientPriority priority) override;
 
   // perfetto::Consumer implementation.
   // This gets called by the Perfetto service as control signals,

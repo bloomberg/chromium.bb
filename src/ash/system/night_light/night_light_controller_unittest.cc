@@ -9,6 +9,7 @@
 
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/root_window_controller.h"
@@ -24,7 +25,9 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/strings/pattern.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/fake/fake_display_snapshot.h"
@@ -32,6 +35,8 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/test/action_logger_util.h"
 #include "ui/display/manager/test/test_native_display_delegate.h"
+#include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace ash {
 
@@ -44,9 +49,9 @@ NightLightControllerImpl* GetController() {
   return Shell::Get()->night_light_controller();
 }
 
-// Tests that the given display with |display_id| has the expected color matrix
-// on its compositor that corresponds to the given |temperature|.
-void TestDisplayCompositorTemperature(int64_t display_id, float temperature) {
+// Returns RGB scaling factors already applied on the display's compositor in a
+// Vector3df given a |display_id|.
+gfx::Vector3dF GetDisplayCompositorRGBScaleFactors(int64_t display_id) {
   WindowTreeHostManager* wth_manager = Shell::Get()->window_tree_host_manager();
   aura::Window* root_window =
       wth_manager->GetRootWindowForDisplayId(display_id);
@@ -57,8 +62,27 @@ void TestDisplayCompositorTemperature(int64_t display_id, float temperature) {
   DCHECK(compositor);
 
   const SkMatrix44& matrix = compositor->display_color_matrix();
-  const float blue_scale = matrix.get(2, 2);
-  const float green_scale = matrix.get(1, 1);
+  return gfx::Vector3dF(matrix.get(0, 0), matrix.get(1, 1), matrix.get(2, 2));
+}
+
+// Returns a vector with a Vector3dF for each compositor.
+// Each element contains RGB scaling factors.
+std::vector<gfx::Vector3dF> GetAllDisplaysCompositorsRGBScaleFactors() {
+  std::vector<gfx::Vector3dF> scale_factors;
+  for (int64_t display_id :
+       Shell::Get()->display_manager()->GetCurrentDisplayIdList()) {
+    scale_factors.push_back(GetDisplayCompositorRGBScaleFactors(display_id));
+  }
+  return scale_factors;
+}
+
+// Tests that the given display with |display_id| has the expected color matrix
+// on its compositor that corresponds to the given |temperature|.
+void TestDisplayCompositorTemperature(int64_t display_id, float temperature) {
+  const gfx::Vector3dF& scaling_factors =
+      GetDisplayCompositorRGBScaleFactors(display_id);
+  const float blue_scale = scaling_factors.z();
+  const float green_scale = scaling_factors.y();
   EXPECT_FLOAT_EQ(
       blue_scale,
       NightLightControllerImpl::BlueColorScaleFromTemperature(temperature));
@@ -144,7 +168,7 @@ class TestDelegate : public NightLightControllerImpl::Delegate {
 
 class NightLightTest : public NoSessionAshTestBase {
  public:
-  NightLightTest() = default;
+  NightLightTest() : delegate_(new TestDelegate) {}
   ~NightLightTest() override = default;
 
   PrefService* user1_pref_service() {
@@ -162,13 +186,15 @@ class NightLightTest : public NoSessionAshTestBase {
   // AshTestBase:
   void SetUp() override {
     NoSessionAshTestBase::SetUp();
+    GetController()->SetDelegateForTesting(base::WrapUnique(delegate_));
+
     CreateTestUserSessions();
 
     // Simulate user 1 login.
     SwitchActiveUser(kUser1Email);
 
-    delegate_ = new TestDelegate;
-    GetController()->SetDelegateForTesting(base::WrapUnique(delegate_));
+    // Start with ambient color pref disabled.
+    SetAmbientColorPrefEnabled(false);
   }
 
   void CreateTestUserSessions() {
@@ -187,8 +213,34 @@ class NightLightTest : public NoSessionAshTestBase {
         enabled, NightLightControllerImpl::AnimationDuration::kShort);
   }
 
+  void SetAmbientColorPrefEnabled(bool enabled) {
+    GetController()->SetAmbientColorEnabled(enabled);
+  }
+
+  // Simulate powerd sending multiple times an ambient temperature of
+  // |powerd_temperature|. The remapped ambient temperature should eventually
+  // reach |target_remapped_temperature|.
+  float SimulateAmbientColorFromPowerd(int32_t powerd_temperature,
+                                       float target_remapped_temperature) {
+    auto* controller = GetController();
+    int max_steps = 1000;
+    float ambient_temperature = 0.0f;
+    const float initial_difference =
+        controller->ambient_temperature() - target_remapped_temperature;
+    do {
+      controller->AmbientColorChanged(powerd_temperature);
+      ambient_temperature = controller->ambient_temperature();
+    } while (max_steps-- &&
+             ((ambient_temperature - target_remapped_temperature) *
+              initial_difference) > 0.0f);
+    // We should reach the expected remapped temperature.
+    EXPECT_GT(max_steps, 0);
+
+    return ambient_temperature;
+  }
+
  private:
-  TestDelegate* delegate_ = nullptr;
+  TestDelegate* delegate_ = nullptr;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(NightLightTest);
 };
@@ -585,7 +637,7 @@ TEST_F(NightLightTest, TestSunsetSunriseGeoposition) {
   //       now        sunset            sunrise
   //
   NightLightControllerImpl* controller = GetController();
-  delegate()->SetFakeNow(TimeOfDay(16 * 60));  // 4:00 PM.
+  delegate()->SetFakeNow(TimeOfDay(16 * 60));  // 4:00PM.
   controller->SetCurrentGeoposition(NightLightController::SimpleGeoposition{
       kFakePosition1_Latitude, kFakePosition1_Longitude});
 
@@ -639,6 +691,86 @@ TEST_F(NightLightTest, TestSunsetSunriseGeoposition) {
   // Timer is running scheduling the start at the next sunset.
   EXPECT_TRUE(controller->timer()->IsRunning());
   EXPECT_EQ(base::TimeDelta::FromHours(14),
+            controller->timer()->GetCurrentDelay());
+}
+
+// Tests the behavior when the client sets the geoposition while in custom
+// schedule setting. Current time is simulated to be updated accordingly. The
+// current time change should bring the controller into or take it out of the
+// night light mode accordingly if necessary, based on the settings.
+TEST_F(NightLightTest, TestCustomScheduleGeopositionChanges) {
+  constexpr int kCustom_Start = 19 * 60;
+  constexpr int kCustom_End = 2 * 60;
+
+  // Returns the positive difference in minutes given t1 and t2 in minutes
+  auto time_diff = [](int t1, int t2) {
+    int t = t2 - t1;
+    return t < 0 ? 24 * 60 + t : t;
+  };
+
+  NightLightControllerImpl* controller = GetController();
+  controller->SetCustomStartTime(TimeOfDay(kCustom_Start));
+  controller->SetCustomEndTime(TimeOfDay(kCustom_End));
+
+  // Position 1 current time and custom start and end time.
+  //
+  //      16:00       19:00             2:00
+  // <----- + --------- + --------------- + ------------->
+  //        |           |                 |
+  //       now     custom start      custom end
+  //
+
+  int fake_now = 16 * 60;
+  delegate()->SetFakeNow(TimeOfDay(fake_now));
+  controller->SetCurrentGeoposition(NightLightController::SimpleGeoposition{
+      kFakePosition1_Latitude, kFakePosition1_Longitude});
+
+  // Expect that timer is running and is scheduled at next custom start time.
+  controller->SetScheduleType(NightLightController::ScheduleType::kCustom);
+  EXPECT_FALSE(controller->GetEnabled());
+  TestCompositorsTemperature(0.0f);
+  EXPECT_TRUE(controller->timer()->IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(time_diff(fake_now, kCustom_Start)),
+            controller->timer()->GetCurrentDelay());
+
+  // Simulate a timezone change by changing geoposition.
+  // Current time updates to 9PM.
+  //      19:00       21:00       2:00
+  // <----- + --------- + -------- + --------------------->
+  //        |           |          |
+  //   custom start    now      custom end
+  //
+  fake_now = 21 * 60;
+  delegate()->SetFakeNow(TimeOfDay(fake_now));
+  controller->timer()->FireNow();
+  controller->SetCurrentGeoposition(NightLightController::SimpleGeoposition{
+      kFakePosition2_Latitude, kFakePosition2_Longitude});
+
+  // Expect the controller to enter night light mode and  the scheduled end
+  // delay has been updated.
+  EXPECT_TRUE(controller->GetEnabled());
+  TestCompositorsTemperature(controller->GetColorTemperature());
+  EXPECT_EQ(NightLightControllerImpl::AnimationDuration::kShort,
+            controller->last_animation_duration());
+  EXPECT_TRUE(controller->timer()->IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(time_diff(fake_now, kCustom_End)),
+            controller->timer()->GetCurrentDelay());
+
+  // Simulate user changing position back to location 1 and current time goes
+  // back to 4PM.
+  fake_now = 16 * 60;
+  delegate()->SetFakeNow(TimeOfDay(fake_now));
+  controller->timer()->FireNow();
+
+  controller->SetCurrentGeoposition(NightLightController::SimpleGeoposition{
+      kFakePosition1_Latitude, kFakePosition1_Longitude});
+  EXPECT_FALSE(controller->GetEnabled());
+  TestCompositorsTemperature(0.0f);
+  EXPECT_EQ(NightLightControllerImpl::AnimationDuration::kShort,
+            controller->last_animation_duration());
+  // Timer is running and is scheduled at next custom start time.
+  EXPECT_TRUE(controller->timer()->IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromMinutes(time_diff(fake_now, kCustom_Start)),
             controller->timer()->GetCurrentDelay());
 }
 
@@ -857,6 +989,126 @@ TEST_F(NightLightTest, TestCustomScheduleInvertedStartAndEndTimesCase3) {
   // NightLight should end in 5 hours.
   EXPECT_EQ(base::TimeDelta::FromHours(5),
             controller->timer()->GetCurrentDelay());
+}
+
+TEST_F(NightLightTest, TestAmbientLightEnabledSetting_FeatureOn) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAllowAmbientEQ);
+
+  // Feature enabled, Pref disabled -> disabled
+  SetAmbientColorPrefEnabled(false);
+  EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
+
+  // Feature enabled, Pref enabled -> enabled
+  SetAmbientColorPrefEnabled(true);
+  EXPECT_TRUE(GetController()->GetAmbientColorEnabled());
+}
+
+TEST_F(NightLightTest, TestAmbientLightEnabledSetting_FeatureOff) {
+  // With the feature disabled it should always be disabled.
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(features::kAllowAmbientEQ);
+
+  // Feature disabled, Pref disabled -> disabled
+  SetAmbientColorPrefEnabled(false);
+  EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
+
+  // Feature disabled, Pref enabled -> disabled
+  SetAmbientColorPrefEnabled(true);
+  EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
+}
+
+TEST_F(NightLightTest, TestAmbientLightRemappingTemperature) {
+  NightLightControllerImpl* controller = GetController();
+
+  // Test that at the beginning the ambient temperature is neutral.
+  constexpr float kNeutralColorTemperatureInKelvin = 6500;
+  EXPECT_EQ(kNeutralColorTemperatureInKelvin,
+            controller->ambient_temperature());
+
+  controller->SetAmbientColorEnabled(true);
+  EXPECT_EQ(kNeutralColorTemperatureInKelvin,
+            controller->ambient_temperature());
+
+  // Simulate powerd sending multiple times an ambient temperature of 8000.
+  // The remapped ambient temperature should grow and eventually reach ~7400.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7400.0f);
+
+  // If powerd sends the same temperature, the remapped temperature should not
+  // change.
+  controller->AmbientColorChanged(8000);
+  EXPECT_EQ(ambient_temperature, controller->ambient_temperature());
+
+  // Simulate powerd sending multiple times an ambient temperature of 2700.
+  // The remapped ambient temperature should grow and eventually reach 4500.
+  ambient_temperature = SimulateAmbientColorFromPowerd(2700, 4500.0f);
+
+  // Disabling ambient color should not affect the returned temperature.
+  controller->SetAmbientColorEnabled(false);
+  EXPECT_EQ(ambient_temperature, controller->ambient_temperature());
+
+  // Re-enabling should still keep the same temperature.
+  controller->SetAmbientColorEnabled(true);
+  EXPECT_EQ(ambient_temperature, controller->ambient_temperature());
+}
+
+TEST_F(NightLightTest, TestAmbientColorMatrix) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAllowAmbientEQ);
+  SetNightLightEnabled(false);
+  SetAmbientColorPrefEnabled(true);
+  auto scaling_factors = GetAllDisplaysCompositorsRGBScaleFactors();
+  // If no temperature is set, we expect 1.0 for each scaling factor.
+  for (const gfx::Vector3dF& rgb : scaling_factors) {
+    EXPECT_TRUE((rgb - gfx::Vector3dF(1.0f, 1.0f, 1.0f)).IsZero());
+  }
+
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+
+  scaling_factors = GetAllDisplaysCompositorsRGBScaleFactors();
+  // A cool temperature should affect only red and green.
+  for (const gfx::Vector3dF& rgb : scaling_factors) {
+    EXPECT_LT(rgb.x(), 1.0f);
+    EXPECT_LT(rgb.y(), 1.0f);
+    EXPECT_EQ(rgb.z(), 1.0f);
+  }
+
+  ambient_temperature = SimulateAmbientColorFromPowerd(2700, 5800.0f);
+
+  scaling_factors = GetAllDisplaysCompositorsRGBScaleFactors();
+  // A warm temperature should affect only green and blue.
+  for (const gfx::Vector3dF& rgb : scaling_factors) {
+    EXPECT_EQ(rgb.x(), 1.0f);
+    EXPECT_LT(rgb.y(), 1.0f);
+    EXPECT_LT(rgb.z(), 1.0f);
+  }
+}
+
+TEST_F(NightLightTest, TestNightLightAndAmbientColorInteraction) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAllowAmbientEQ);
+
+  SetNightLightEnabled(true);
+
+  auto night_light_rgb = GetAllDisplaysCompositorsRGBScaleFactors().front();
+
+  SetAmbientColorPrefEnabled(true);
+
+  auto night_light_and_ambient_rgb =
+      GetAllDisplaysCompositorsRGBScaleFactors().front();
+  // Ambient color with neutral temperature should not affect night light.
+  EXPECT_TRUE((night_light_rgb - night_light_and_ambient_rgb).IsZero());
+
+  SimulateAmbientColorFromPowerd(2700, 5800.0f);
+
+  night_light_and_ambient_rgb =
+      GetAllDisplaysCompositorsRGBScaleFactors().front();
+
+  // Red should not be affected by a warmed ambient temperature.
+  EXPECT_EQ(night_light_and_ambient_rgb.x(), night_light_rgb.x());
+  // Green and blue should be lowered instead.
+  EXPECT_LT(night_light_and_ambient_rgb.y(), night_light_rgb.y());
+  EXPECT_LT(night_light_and_ambient_rgb.z(), night_light_rgb.z());
 }
 
 // Fixture for testing behavior of Night Light when displays support hardware
@@ -1189,6 +1441,284 @@ TEST_F(NightLightCrtcTest, TestNoDoubleNightLightEffect) {
   logger_actions = GetLoggerActionsAndClear();
   EXPECT_TRUE(VerifyCrtcMatrix(kId1, temperature, true, logger_actions));
   EXPECT_TRUE(VerifyCrtcMatrix(kId2, temperature, true, logger_actions));
+}
+
+// The following tests are for ambient color temperature conversions
+// needed to go from a powerd ambient temperature reading in Kelvin to three
+// RGB factors that can be used for a CTM to match the ambient color
+// temperature.
+// The table for the mapping was created with internal user studies, refer to
+// kTable in
+// NightLightControllerImpl::RemapAmbientColorTemperature to
+// verify the assertion in the following tests.
+TEST(AmbientTemperature, RemapAmbientColorTemperature) {
+  // Neutral temperature
+  float temperature =
+      NightLightControllerImpl::RemapAmbientColorTemperature(6500);
+  EXPECT_GT(temperature, 6000);
+  EXPECT_LT(temperature, 7000);
+
+  // Warm color temperature
+  temperature = NightLightControllerImpl::RemapAmbientColorTemperature(3000);
+  EXPECT_GT(temperature, 4500);
+  EXPECT_LT(temperature, 5000);
+
+  // Daylight color temperature
+  temperature = NightLightControllerImpl::RemapAmbientColorTemperature(7500);
+  EXPECT_GT(temperature, 6800);
+  EXPECT_LT(temperature, 7500);
+
+  // Extremely high color temperature
+  temperature = NightLightControllerImpl::RemapAmbientColorTemperature(20000);
+  EXPECT_GT(temperature, 7000);
+  EXPECT_LT(temperature, 8000);
+}
+
+// The following tests Kelvin temperatures to RGB scale factors.
+// The values are from the calculation of white point based on Planckian locus.
+// For each RGB vector we compute the distance from the expected value
+// and check it's within a threshold of 0.01f;
+TEST(AmbientTemperature, AmbientTemperatureToRGBScaleFactors) {
+  constexpr float allowed_difference = 0.01f;
+  // Netural temperature
+  gfx::Vector3dF vec =
+      NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(6500);
+  EXPECT_LT((vec - gfx::Vector3dF(1.0f, 1.0f, 1.0f)).Length(),
+            allowed_difference);
+  // Warm
+  vec =
+      NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(5800);
+  EXPECT_LT((vec - gfx::Vector3dF(1.0f, 0.968f, 0.924f)).Length(),
+            allowed_difference);
+  // Daylight
+  vec =
+      NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(7000);
+  EXPECT_LT((vec - gfx::Vector3dF(0.949f, 0.971f, 1.0f)).Length(),
+            allowed_difference);
+}
+
+class AutoNightLightTest : public NightLightTest {
+ public:
+  AutoNightLightTest() = default;
+  ~AutoNightLightTest() override = default;
+  AutoNightLightTest(const AutoNightLightTest& other) = delete;
+  AutoNightLightTest& operator=(const AutoNightLightTest& rhs) = delete;
+
+  // NightLightTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kAutoNightLight);
+
+    delegate()->SetFakeNow(TimeOfDay(fake_now_));
+    delegate()->SetFakeSunset(TimeOfDay(20 * 60));  // 8:00 PM.
+    delegate()->SetFakeSunrise(TimeOfDay(5 * 60));  // 5:00 AM.
+
+    NightLightTest::SetUp();
+  }
+
+ protected:
+  // Now is at 4 PM.
+  //
+  //      16:00               20:00                      5:00
+  // <----- + ----------------- + ----------------------- + ------->
+  //        |                   |                         |
+  //       now                sunset                   sunrise
+  //
+  int fake_now_ = 16 * 60;  // 4:00 PM.
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(AutoNightLightTest, Notification) {
+  // Unblock the user session in order to be able to stop showing the Auto Night
+  // Light notification.
+  GetSessionControllerClient()->UnlockScreen();
+
+  // Since Auto Night Light is enabled, the schedule should be automatically set
+  // to sunset-to-sunrise, even though the user never set that pref.
+  NightLightControllerImpl* controller = GetController();
+  EXPECT_EQ(NightLightController::kSunsetToSunrise,
+            controller->GetScheduleType());
+  EXPECT_FALSE(
+      user1_pref_service()->HasPrefPath(prefs::kNightLightScheduleType));
+
+  // Simulate reaching sunset.
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));  // Now is 8:00 PM.
+  controller->timer()->FireNow();
+  EXPECT_TRUE(controller->GetEnabled());
+  auto* notification = controller->GetAutoNightLightNotificationForTesting();
+  ASSERT_TRUE(notification);
+  ASSERT_TRUE(notification->delegate());
+
+  // Simulate the user clicking the notification button, Night Light should now
+  // be disabled, and the notification should be dismissed.
+  notification->delegate()->Click(base::make_optional<int>(0), base::nullopt);
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
+
+  // Simulate reaching next sunset. The notification should no longer show.
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));  // Now is 8:00 PM.
+  controller->timer()->FireNow();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
+}
+
+TEST_F(AutoNightLightTest, CannotDisableNotificationWhenSessionIsBlocked) {
+  EXPECT_TRUE(Shell::Get()->session_controller()->IsUserSessionBlocked());
+
+  // Simulate reaching sunset.
+  NightLightControllerImpl* controller = GetController();
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));  // Now is 8:00 PM.
+  controller->timer()->FireNow();
+  EXPECT_TRUE(controller->GetEnabled());
+  auto* notification = controller->GetAutoNightLightNotificationForTesting();
+  ASSERT_TRUE(notification);
+  ASSERT_TRUE(notification->delegate());
+
+  // Simulate user closing the notification.
+  notification->delegate()->Close(/*by_user=*/true);
+  EXPECT_FALSE(user1_pref_service()->GetBoolean(
+      prefs::kAutoNightLightNotificationDismissed));
+}
+
+TEST_F(AutoNightLightTest, OverriddenByUser) {
+  // Once the user sets the schedule to anything, even sunset-to-sunrise, the
+  // auto-night light will never show.
+  NightLightControllerImpl* controller = GetController();
+  controller->SetScheduleType(NightLightController::kSunsetToSunrise);
+
+  // Simulate reaching sunset.
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));  // Now is 8:00 PM.
+  controller->timer()->FireNow();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
+}
+
+TEST_F(AutoNightLightTest, NoNotificationWhenManuallyEnabledFromSettings) {
+  NightLightControllerImpl* controller = GetController();
+  EXPECT_FALSE(controller->GetEnabled());
+  user1_pref_service()->SetBoolean(prefs::kNightLightEnabled, true);
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
+}
+
+TEST_F(AutoNightLightTest, NoNotificationWhenManuallyEnabledFromSystemMenu) {
+  NightLightControllerImpl* controller = GetController();
+  EXPECT_FALSE(controller->GetEnabled());
+  controller->Toggle();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
+}
+
+// Now is at 11 PM.
+//
+//      20:00               23:00                      5:00
+// <----- + ----------------- + ----------------------- + ------->
+//        |                   |                         |
+//      sunset               now                     sunrise
+//
+// Tests that when the user logs in for the first time between sunset and
+// sunrise with Auto Night Light enabled, and the notification has never been
+// dismissed before, the notification should be shown.
+class AutoNightLightOnFirstLogin : public AutoNightLightTest {
+ public:
+  AutoNightLightOnFirstLogin() { fake_now_ = 23 * 60; }
+  ~AutoNightLightOnFirstLogin() override = default;
+  AutoNightLightOnFirstLogin(const AutoNightLightOnFirstLogin& other) = delete;
+  AutoNightLightOnFirstLogin& operator=(const AutoNightLightOnFirstLogin& rhs) =
+      delete;
+};
+
+TEST_F(AutoNightLightOnFirstLogin, NotifyOnFirstLogin) {
+  NightLightControllerImpl* controller = GetController();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_TRUE(controller->GetAutoNightLightNotificationForTesting());
+}
+
+// Fixture for testing Ambient EQ.
+class AmbientEQTest : public NightLightTest {
+ public:
+  AmbientEQTest() = default;
+  ~AmbientEQTest() override = default;
+  AmbientEQTest(const AmbientEQTest& other) = delete;
+  AmbientEQTest& operator=(const AmbientEQTest& rhs) = delete;
+
+  static constexpr gfx::Vector3dF kDefaultScalingFactors{1.0f, 1.0f, 1.0f};
+
+  // NightLightTest:
+  void SetUp() override {
+    NightLightTest::SetUp();
+    features_.InitAndEnableFeature(features::kAllowAmbientEQ);
+    controller_ = GetController();
+  }
+
+ protected:
+  base::test::ScopedFeatureList features_;
+  NightLightControllerImpl* controller_;  // Not owned.
+};
+
+// static
+constexpr gfx::Vector3dF AmbientEQTest::kDefaultScalingFactors;
+
+TEST_F(AmbientEQTest, TestAmbientRgbScalingUpdatesOnPrefChanged) {
+  // Start with the pref disabled.
+  controller_->SetAmbientColorEnabled(false);
+
+  // Shift to the coolest temperature and the temperature updates even with the
+  // pref disabled but the scaling factors don't.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
+
+  // Enabling the pref and the scaling factors update.
+  controller_->SetAmbientColorEnabled(true);
+  const auto coolest_scaling_factors =
+      controller_->ambient_rgb_scaling_factors();
+  EXPECT_NE(kDefaultScalingFactors, coolest_scaling_factors);
+
+  // Shift to the warmest temp and the the scaling factors should update along
+  // with the temperature while the pref is enabled.
+  ambient_temperature = SimulateAmbientColorFromPowerd(2700, 5800.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  const auto warmest_scaling_factors =
+      controller_->ambient_rgb_scaling_factors();
+  EXPECT_NE(warmest_scaling_factors, coolest_scaling_factors);
+  EXPECT_NE(warmest_scaling_factors, kDefaultScalingFactors);
+}
+
+TEST_F(AmbientEQTest, TestAmbientRgbScalingUpdatesOnUserChangedToEnabled) {
+  // Start with user1 logged in with pref disabled.
+  controller_->SetAmbientColorEnabled(false);
+
+  // Shift to the coolest temperature and the temperature updates even with the
+  // pref disabled but the scaling factors don't.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
+
+  // Enable the pref for user 2 then switch to user2 and the factors update.
+  user2_pref_service()->SetBoolean(prefs::kAmbientColorEnabled, true);
+  SwitchActiveUser(kUser2Email);
+  const auto coolest_scaling_factors =
+      controller_->ambient_rgb_scaling_factors();
+  EXPECT_NE(kDefaultScalingFactors, coolest_scaling_factors);
+}
+
+TEST_F(AmbientEQTest, TestAmbientRgbScalingUpdatesOnUserChangedBothDisabled) {
+  // Start with user1 logged in with pref disabled.
+  controller_->SetAmbientColorEnabled(false);
+
+  // Shift to the coolest temperature and the temperature updates even with the
+  // pref disabled but the scaling factors don't.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
+
+  // Disable the pref for user 2 then switch to user2 and the factors still
+  // shouldn't update.
+  user2_pref_service()->SetBoolean(prefs::kAmbientColorEnabled, false);
+  SwitchActiveUser(kUser2Email);
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
 }
 
 }  // namespace

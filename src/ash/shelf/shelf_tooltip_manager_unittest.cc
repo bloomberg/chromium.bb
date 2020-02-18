@@ -31,9 +31,10 @@ class ShelfTooltipManagerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
-    ShelfViewTestAPI test_api(shelf_view_);
-    test_api.AddItem(TYPE_PINNED_APP);
-    tooltip_manager_ = test_api.tooltip_manager();
+    test_api_ = std::make_unique<ShelfViewTestAPI>(shelf_view_);
+    test_api_->AddItem(TYPE_PINNED_APP);
+    test_api_->RunMessageLoopUntilAnimationsDone();
+    tooltip_manager_ = test_api_->tooltip_manager();
     tooltip_manager_->set_timer_delay_for_test(0);
   }
 
@@ -49,6 +50,7 @@ class ShelfTooltipManagerTest : public AshTestBase {
  protected:
   ShelfView* shelf_view_;
   ShelfTooltipManager* tooltip_manager_;
+  std::unique_ptr<ShelfViewTestAPI> test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfTooltipManagerTest);
@@ -89,8 +91,12 @@ TEST_F(ShelfTooltipManagerTest, DoNotShowForInvalidView) {
   item.id = ShelfID("foo");
   item.type = TYPE_PINNED_APP;
   const int index = model->Add(item);
-  // Note: There's no easy way to correlate shelf a model index/id to its view.
-  tooltip_manager_->ShowTooltipWithDelay(shelf_view_->children().back());
+  ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting())
+      .RunMessageLoopUntilAnimationsDone();
+
+  // The index of a ShelfItem in the model should be the same as its index
+  // within the |shelf_view_|'s list of children.
+  tooltip_manager_->ShowTooltipWithDelay(shelf_view_->children().at(index));
   EXPECT_TRUE(IsTimerRunning());
 
   // Removing the view won't stop the timer, but the tooltip shouldn't be shown.
@@ -179,6 +185,7 @@ TEST_F(ShelfTooltipManagerTest, HideForEvents) {
   generator->MoveMouseTo(shelf_bounds.CenterPoint());
   generator->PressLeftButton();
   EXPECT_FALSE(tooltip_manager_->IsVisible());
+  generator->ReleaseLeftButton();
 
   // Should hide for touch events in the shelf.
   ShowTooltipForFirstAppIcon();
@@ -243,6 +250,18 @@ TEST_F(ShelfTooltipManagerTest, ShelfTooltipDoesNotAffectPipWindow) {
             CollisionDetectionUtils::GetRestingPosition(
                 display, tooltip_bounds,
                 CollisionDetectionUtils::RelativePriority::kPictureInPicture));
+}
+
+TEST_F(ShelfTooltipManagerTest, ShelfTooltipClosesIfScroll) {
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  ShowTooltipForFirstAppIcon();
+  ASSERT_TRUE(tooltip_manager_->IsVisible());
+  gfx::Point cursor_position_in_screen =
+      display::Screen::GetScreen()->GetCursorScreenPoint();
+  generator->ScrollSequence(cursor_position_in_screen, base::TimeDelta(), 0, 3,
+                            10, 1);
+  EXPECT_FALSE(tooltip_manager_->IsVisible());
 }
 
 }  // namespace ash

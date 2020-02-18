@@ -21,13 +21,6 @@ CrSettingsInteractiveUITest.prototype = {
   get browsePreload() {
     throw 'this is abstract and should be overriden by subclasses';
   },
-
-  /** @override */
-  setUp: function() {
-    PolymerTest.prototype.setUp.call(this);
-    // We aren't loading the main document.
-    this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
-  },
 };
 
 
@@ -46,6 +39,8 @@ CrSettingsSyncPageTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'test_sync_browser_proxy.js',
     'people_page_sync_page_interactive_test.js',
   ]),
 };

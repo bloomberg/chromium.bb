@@ -82,11 +82,11 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
             "test");
 
     content::BackgroundTracingManager::StartedFinalizingCallback
-        started_finalizing_callback =
-            base::Bind(&ChromeTracingDelegateBrowserTest::OnStartedFinalizing,
-                       base::Unretained(this));
+        started_finalizing_callback = base::BindOnce(
+            &ChromeTracingDelegateBrowserTest::OnStartedFinalizing,
+            base::Unretained(this));
     content::BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
-        trigger_handle_, started_finalizing_callback);
+        trigger_handle_, std::move(started_finalizing_callback));
   }
 
   int get_receive_count() const { return receive_count_; }
@@ -98,8 +98,7 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  void OnUpload(const scoped_refptr<base::RefCountedString>& file_contents,
-                std::unique_ptr<const base::DictionaryValue> metadata,
+  void OnUpload(std::unique_ptr<std::string> file_contents,
                 content::BackgroundTracingManager::FinishedProcessingCallback
                     done_callback) {
     receive_count_ += 1;

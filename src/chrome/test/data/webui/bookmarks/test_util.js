@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {normalizeNodes} from 'chrome://bookmarks/bookmarks.js';
+import {isMac} from 'chrome://resources/js/cr.m.js';
+
 /**
  * Replace the current body of the test with a new element.
  * @param {Element} element
  */
-function replaceBody(element) {
+export function replaceBody(element) {
   PolymerTest.clearBody();
 
   window.history.replaceState({}, '', '/');
@@ -20,9 +23,8 @@ function replaceBody(element) {
  * @param {...BookmarkTreeNode} nodes
  * @return {NodeMap}
  */
-function testTree(nodes) {
-  return bookmarks.util.normalizeNodes(
-      createFolder('0', Array.from(arguments)));
+export function testTree(nodes) {
+  return normalizeNodes(createFolder('0', Array.from(arguments)));
 }
 
 /**
@@ -32,7 +34,7 @@ function testTree(nodes) {
  * @param {Object=} config
  * @return {BookmarkTreeNode}
  */
-function createFolder(id, children, config) {
+export function createFolder(id, children, config) {
   const newFolder = {
     id: id,
     children: children,
@@ -58,7 +60,7 @@ function createFolder(id, children, config) {
  * @param {BookmarkTreeNode} tree
  * @param {number} index
  */
-function removeChild(tree, index) {
+export function removeChild(tree, index) {
   tree.children.splice(index, 1);
   for (let i = index; i < tree.children.length; i++) {
     tree.children[i].index = i;
@@ -71,7 +73,7 @@ function removeChild(tree, index) {
  * @param {Object=} config
  * @return {BookmarkTreeNode}
  */
-function createItem(id, config) {
+export function createItem(id, config) {
   const newItem = {
     id: id,
     title: '',
@@ -90,7 +92,7 @@ function createItem(id, config) {
  * @return {Array<T>}
  * @template T
  */
-function normalizeIterable(iterable) {
+export function normalizeIterable(iterable) {
   return Array.from(iterable).sort();
 }
 
@@ -98,7 +100,7 @@ function normalizeIterable(iterable) {
  * @param {NodeState} nodes
  * @return {FolderOpenState}
  */
-function getAllFoldersOpenState(nodes) {
+export function getAllFoldersOpenState(nodes) {
   const folderOpenState = new Map();
   Object.keys(nodes).forEach((n) => folderOpenState.set(n, true));
   return folderOpenState;
@@ -111,7 +113,7 @@ function getAllFoldersOpenState(nodes) {
  * @param {Object=} config
  * @param {string=} eventName
  */
-function customClick(element, config, eventName) {
+export function customClick(element, config, eventName) {
   eventName = eventName || 'click';
   const props = {
     bubbles: true,
@@ -130,7 +132,7 @@ function customClick(element, config, eventName) {
     }
   }
 
-  if (cr.isMac && props.ctrlKey) {
+  if (isMac && props.ctrlKey) {
     props.ctrlKey = false;
     props.metaKey = true;
   }
@@ -149,7 +151,7 @@ function customClick(element, config, eventName) {
  * @param {string} id
  * @return {BookmarksFolderNodeElement}
  */
-function findFolderNode(rootNode, id) {
+export function findFolderNode(rootNode, id) {
   const nodes = [rootNode];
   let node;
   while (nodes.length) {
@@ -169,8 +171,8 @@ function findFolderNode(rootNode, id) {
  * ExtensionAPITests.
  * @return {Object}
  */
-function simulateChromeExtensionAPITest() {
-  let promises = [];
+export function simulateChromeExtensionAPITest() {
+  const promises = [];
   function pass(callback) {
     let resolve;
     assertEquals(undefined, chrome.runtime.lastError);

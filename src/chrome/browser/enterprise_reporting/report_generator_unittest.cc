@@ -11,7 +11,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/enterprise_reporting/report_request_definition.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -28,7 +30,6 @@ namespace em = enterprise_management;
 namespace enterprise_reporting {
 namespace {
 
-#if !defined(OS_CHROMEOS)
 constexpr char kProfile[] = "Profile";
 
 const char kPluginName[] = "plugin";
@@ -36,6 +37,7 @@ const char kPluginVersion[] = "1.0";
 const char kPluginDescription[] = "This is a plugin.";
 const char kPluginFileName[] = "file_name";
 
+#if !defined(OS_CHROMEOS)
 // We only upload serial number on Windows.
 void VerifySerialNumber(const std::string& serial_number) {
 #if defined(OS_WIN)
@@ -44,6 +46,7 @@ void VerifySerialNumber(const std::string& serial_number) {
   EXPECT_EQ(std::string(), serial_number);
 #endif
 }
+#endif
 
 // Controls the way of Profile creation which affects report.
 enum ProfileStatus {
@@ -75,12 +78,12 @@ void AddExtensionToProfile(TestingProfile* profile) {
                                      .Build());
 }
 
-#endif
 }  // namespace
 
-#if !defined(OS_CHROMEOS)
 class ReportGeneratorTest : public ::testing::Test {
  public:
+  using ReportRequest = definition::ReportRequest;
+
   ReportGeneratorTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   ~ReportGeneratorTest() override = default;
@@ -111,7 +114,7 @@ class ReportGeneratorTest : public ::testing::Test {
           profile_manager_.profile_attributes_storage()->AddProfile(
               profile_manager()->profiles_dir().AppendASCII(profile_name),
               base::ASCIIToUTF16(profile_name), std::string(), base::string16(),
-              0, std::string(), EmptyAccountId());
+              false, 0, std::string(), EmptyAccountId());
           break;
         case kActive:
           profile_manager_.CreateTestingProfile(profile_name);
@@ -140,12 +143,12 @@ class ReportGeneratorTest : public ::testing::Test {
     plugin_service->RefreshPlugins();
   }
 
-  std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>
-  GenerateRequests() {
+  std::vector<std::unique_ptr<ReportRequest>> GenerateRequests() {
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
     base::RunLoop run_loop;
-    std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>> rets;
+    std::vector<std::unique_ptr<ReportRequest>> rets;
     generator_.Generate(base::BindLambdaForTesting(
-        [&run_loop, &rets](ReportGenerator::Requests requests) {
+        [&run_loop, &rets](ReportGenerator::ReportRequests requests) {
           while (!requests.empty()) {
             rets.push_back(std::move(requests.front()));
             requests.pop();
@@ -153,6 +156,7 @@ class ReportGeneratorTest : public ::testing::Test {
           run_loop.Quit();
         }));
     run_loop.Run();
+    VerifyMetrics(rets);
     return rets;
   }
 
@@ -190,14 +194,24 @@ class ReportGeneratorTest : public ::testing::Test {
     }
   }
 
+  void VerifyMetrics(std::vector<std::unique_ptr<ReportRequest>>& rets) {
+    histogram_tester_->ExpectUniqueSample(
+        "Enterprise.CloudReportingRequestCount", rets.size(), 1);
+    histogram_tester_->ExpectUniqueSample(
+        "Enterprise.CloudReportingBasicRequestSize",
+        /*basic request size floor to KB*/ 0, 1);
+  }
+
   TestingProfileManager* profile_manager() { return &profile_manager_; }
   ReportGenerator* generator() { return &generator_; }
+  base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
  private:
   ReportGenerator generator_;
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportGeneratorTest);
 };
@@ -210,6 +224,10 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   EXPECT_EQ(1u, requests.size());
 
   auto* basic_request = requests[0].get();
+
+  // In the ChromeOsUserReportRequest for Chrome OS, these fields are not
+  // existing. Therefore, they are skipped according to current environment.
+#if !defined(OS_CHROMEOS)
   EXPECT_NE(std::string(), basic_request->computer_name());
   EXPECT_NE(std::string(), basic_request->os_user_name());
   VerifySerialNumber(basic_request->serial_number());
@@ -219,6 +237,7 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   EXPECT_NE(std::string(), os_report.name());
   EXPECT_NE(std::string(), os_report.arch());
   EXPECT_NE(std::string(), os_report.version());
+#endif
 
   EXPECT_TRUE(basic_request->has_browser_report());
   auto& browser_report = basic_request->browser_report();
@@ -236,79 +255,5 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   VerifyProfileReport(/*active_profile_names*/ std::set<std::string>(),
                       profile_names, browser_report);
 }
-
-TEST_F(ReportGeneratorTest, GenerateActiveProfiles) {
-  auto inactive_profiles_names = CreateProfiles(/*number*/ 2, kIdle);
-  auto active_profiles_names =
-      CreateProfiles(/*number*/ 2, kActive, /*start_index*/ 2);
-
-  auto requests = GenerateRequests();
-  EXPECT_EQ(1u, requests.size());
-
-  VerifyProfileReport(active_profiles_names, inactive_profiles_names,
-                      requests[0]->browser_report());
-}
-
-TEST_F(ReportGeneratorTest, BasicReportIsTooBig) {
-  CreateProfiles(/*number*/ 2, kIdle);
-
-  // Set a super small limitation.
-  generator()->SetMaximumReportSizeForTesting(5);
-
-  // Because the limitation is so small, no request can be created.
-  auto requests = GenerateRequests();
-  EXPECT_EQ(0u, requests.size());
-}
-
-TEST_F(ReportGeneratorTest, ReportSeparation) {
-  auto profile_names =
-      CreateProfiles(/*number*/ 2, kActiveWithContent, /*start_index*/ 0);
-
-  // Set the limitation just below the size of the report so that it needs to be
-  // separated into two requests later.
-  auto requests = GenerateRequests();
-  EXPECT_EQ(1u, requests.size());
-  generator()->SetMaximumReportSizeForTesting(requests[0]->ByteSizeLong() - 30);
-
-  std::set<std::string> first_request_profiles, second_request_profiles;
-  first_request_profiles.insert(
-      requests[0]->browser_report().chrome_user_profile_infos(0).name());
-  second_request_profiles.insert(
-      requests[0]->browser_report().chrome_user_profile_infos(1).name());
-
-  requests = GenerateRequests();
-
-  // The first profile is activated in the first request only while the second
-  // profile is activated in the second request.
-  EXPECT_EQ(2u, requests.size());
-  VerifyProfileReport(first_request_profiles, second_request_profiles,
-                      requests[0]->browser_report());
-  VerifyProfileReport(second_request_profiles, first_request_profiles,
-                      requests[1]->browser_report());
-}
-
-TEST_F(ReportGeneratorTest, ProfileReportIsTooBig) {
-  std::set<std::string> first_profile_name =
-      CreateProfiles(/*number*/ 1, kActiveWithContent, /*start_index*/ 0);
-
-  // Set the limitation just below the size of the report.
-  auto requests = GenerateRequests();
-  EXPECT_EQ(1u, requests.size());
-  generator()->SetMaximumReportSizeForTesting(requests[0]->ByteSizeLong() - 30);
-
-  // Add a smaller Profile.
-  auto second_profile_name =
-      CreateProfiles(/*number*/ 1, kActive, /*start_index*/ 1);
-
-  requests = GenerateRequests();
-
-  EXPECT_EQ(1u, requests.size());
-  // Only the second Profile is activated while the first one is too big to be
-  // reported.
-  VerifyProfileReport(second_profile_name, first_profile_name,
-                      requests[0]->browser_report());
-}
-
-#endif
 
 }  // namespace enterprise_reporting

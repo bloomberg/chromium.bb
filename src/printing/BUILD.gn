@@ -30,6 +30,23 @@ source_set("printing_export") {
   ]
 }
 
+attributes_path = "backend/tools/ipp-registrations-2.csv"
+ipp_handler_map_path = "$target_gen_dir/backend/ipp_handler_map.cc"
+
+action("ipp_code_generate") {
+  script = "backend/tools/code_generator.py"
+  inputs = [
+    attributes_path,
+  ]
+  outputs = [
+    ipp_handler_map_path,
+  ]
+  args = [
+    "--attributes-file=" + rebase_path(attributes_path, root_build_dir),
+    "--ipp-handler-map=" + rebase_path(ipp_handler_map_path, root_build_dir),
+  ]
+}
+
 component("printing") {
   sources = [
     "backend/print_backend.cc",
@@ -90,6 +107,7 @@ component("printing") {
     "//printing/buildflags",
   ]
   deps = [
+    ":ipp_code_generate",
     ":printing_export",
     "//base",
     "//base:i18n",
@@ -151,29 +169,14 @@ component("printing") {
     configs += [ ":cups" ]
 
     if (is_linux) {
-      # rebase_path does not accept an empty string
-      if (use_sysroot) {
-        cups_sysroot = rebase_path(sysroot)
-      } else {
-        cups_sysroot = ""
-      }
-      cups_version = exec_script("cups_config_helper.py",
-                                 [
-                                   "--api-version",
-                                   cups_sysroot,
-                                 ],
-                                 "trim string")
-
-      if (cups_version == "1.6" || cups_version == "1.7") {
-        cflags += [
-          # CUPS 1.6 deprecated the PPD APIs, but we will stay with this
-          # API for now as supported Linux and Mac OS'es are still using
-          # older versions of CUPS. More info: crbug.com/226176
-          "-Wno-deprecated-declarations",
-          # CUPS 1.7 deprecates httpConnectEncrypt(), see the mac section
-          # below.
-        ]
-      }
+      cflags += [
+        # CUPS 1.6 deprecated the PPD APIs, but we will stay with this
+        # API for now as supported Linux and Mac OS'es are still using
+        # older versions of CUPS. More info: crbug.com/226176
+        "-Wno-deprecated-declarations",
+        # CUPS 1.7 deprecates httpConnectEncrypt(), see the mac section
+        # below.
+      ]
     }
 
     if (is_mac) {
@@ -199,16 +202,22 @@ component("printing") {
         "backend/cups_connection.h",
         "backend/cups_deleters.cc",
         "backend/cups_deleters.h",
+        "backend/cups_ipp_constants.cc",
+        "backend/cups_ipp_constants.h",
         "backend/cups_ipp_util.cc",
         "backend/cups_ipp_util.h",
         "backend/cups_jobs.cc",
         "backend/cups_jobs.h",
         "backend/cups_printer.cc",
         "backend/cups_printer.h",
+        "backend/ipp_handler_map.h",
+        "backend/ipp_handlers.cc",
+        "backend/ipp_handlers.h",
         "backend/print_backend_cups_ipp.cc",
         "backend/print_backend_cups_ipp.h",
         "printing_context_chromeos.cc",
         "printing_context_chromeos.h",
+        ipp_handler_map_path,
       ]
     } else {
       sources += [
@@ -221,6 +230,8 @@ component("printing") {
       # We still build the utils for fuzzing.
       if (use_fuzzing_engine) {
         sources += [
+          "backend/cups_ipp_constants.cc",
+          "backend/cups_ipp_constants.h",
           "backend/cups_ipp_util.cc",
           "backend/cups_ipp_util.h",
         ]
@@ -376,6 +387,7 @@ if (is_android) {
   android_library("printing_java") {
     deps = [
       "//base:base_java",
+      "//base:jni_java",
       "//ui/android:ui_java",
     ]
     java_files = [
@@ -387,5 +399,6 @@ if (is_android) {
       "android/java/src/org/chromium/printing/PrintingController.java",
       "android/java/src/org/chromium/printing/PrintingControllerImpl.java",
     ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
 }

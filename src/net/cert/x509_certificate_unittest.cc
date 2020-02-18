@@ -19,7 +19,7 @@
 #include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_certificate_data.h"
@@ -1151,7 +1151,7 @@ TEST_P(X509CertificateParseTest, CanParseFormat) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          X509CertificateParseTest,
                          testing::ValuesIn(kFormatTestData));
 
@@ -1337,11 +1337,10 @@ TEST_P(X509CertificateNameVerifyTest, VerifyHostname) {
       ASSERT_NE(0U, addr_ascii.length());
       if (addr_ascii[0] == 'x') {  // Hex encoded address
         addr_ascii.erase(0, 1);
-        std::vector<uint8_t> bytes;
-        EXPECT_TRUE(base::HexStringToBytes(addr_ascii, &bytes))
+        std::string bytes;
+        EXPECT_TRUE(base::HexStringToString(addr_ascii, &bytes))
             << "Could not parse hex address " << addr_ascii << " i = " << i;
-        ip_addressses.push_back(std::string(reinterpret_cast<char*>(&bytes[0]),
-                                            bytes.size()));
+        ip_addressses.push_back(std::move(bytes));
         ASSERT_EQ(16U, ip_addressses.back().size()) << i;
       } else {  // Decimal groups
         std::vector<std::string> decimals_ascii = base::SplitString(
@@ -1366,7 +1365,7 @@ TEST_P(X509CertificateNameVerifyTest, VerifyHostname) {
                                             ip_addressses));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          X509CertificateNameVerifyTest,
                          testing::ValuesIn(kNameVerifyTestData));
 
@@ -1406,7 +1405,7 @@ TEST_P(X509CertificatePublicKeyInfoTest, GetPublicKeyInfo) {
   EXPECT_EQ(data.expected_type, actual_type);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          X509CertificatePublicKeyInfoTest,
                          testing::ValuesIn(kPublicKeyInfoTestData));
 

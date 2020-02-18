@@ -21,7 +21,6 @@
 #include "test/gtest.h"
 
 #if defined(USE_X11)
-#include "absl/memory/memory.h"
 #include "modules/desktop_capture/linux/shared_x_display.h"
 #include "modules/desktop_capture/linux/x_atom_cache.h"
 #endif
@@ -64,21 +63,30 @@ TEST(WindowFinderTest, FindConsoleWindow) {
   // Moves the window to the top-left of the display.
   MoveWindow(console_window, 0, 0, kMaxSize, kMaxSize, true);
 
+  bool should_restore_notopmost =
+      (GetWindowLong(console_window, GWL_EXSTYLE) & WS_EX_TOPMOST) == 0;
+
   // Brings console window to top.
   SetWindowPos(console_window, HWND_TOPMOST, 0, 0, 0, 0,
                SWP_NOMOVE | SWP_NOSIZE);
   BringWindowToTop(console_window);
 
+  bool success = false;
   WindowFinderWin finder;
   for (int i = 0; i < kMaxSize; i++) {
     const DesktopVector spot(i, i);
     const HWND id = reinterpret_cast<HWND>(finder.GetWindowUnderPoint(spot));
     if (id == console_window) {
-      return;
+      success = true;
+      break;
     }
   }
+  if (should_restore_notopmost)
+    SetWindowPos(console_window, HWND_NOTOPMOST, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-  FAIL();
+  if (!success)
+    FAIL();
 }
 
 #else
@@ -88,7 +96,7 @@ TEST(WindowFinderTest, FindDrawerWindow) {
   std::unique_ptr<XAtomCache> cache;
   const auto shared_x_display = SharedXDisplay::CreateDefault();
   if (shared_x_display) {
-    cache = absl::make_unique<XAtomCache>(shared_x_display->display());
+    cache = std::make_unique<XAtomCache>(shared_x_display->display());
     options.cache = cache.get();
   }
 #endif
@@ -144,7 +152,7 @@ TEST(WindowFinderTest, ShouldReturnNullWindowIfSpotIsOutOfScreen) {
   std::unique_ptr<XAtomCache> cache;
   const auto shared_x_display = SharedXDisplay::CreateDefault();
   if (shared_x_display) {
-    cache = absl::make_unique<XAtomCache>(shared_x_display->display());
+    cache = std::make_unique<XAtomCache>(shared_x_display->display());
     options.cache = cache.get();
   }
 #endif

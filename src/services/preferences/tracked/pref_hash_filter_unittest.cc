@@ -25,7 +25,7 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/prefs/testing_pref_store.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/preferences/public/cpp/tracked/configuration.h"
 #include "services/preferences/public/cpp/tracked/mock_validation_delegate.h"
 #include "services/preferences/public/cpp/tracked/pref_names.h"
@@ -577,9 +577,10 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel>,
         temp_mock_external_validation_pref_hash_store.get();
     mock_external_validation_hash_store_contents_ =
         temp_mock_external_validation_hash_store_contents.get();
-    prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer;
-    reset_on_load_observer_bindings_.AddBinding(
-        this, mojo::MakeRequest(&reset_on_load_observer));
+    mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
+        reset_on_load_observer;
+    reset_on_load_observer_receivers_.Add(
+        this, reset_on_load_observer.InitWithNewPipeAndPassReceiver());
     pref_hash_filter_.reset(new PrefHashFilter(
         std::move(temp_mock_pref_hash_store),
         PrefHashFilter::StoreContentsPair(
@@ -604,8 +605,8 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel>,
   // |pref_hash_filter_|.
   void DoFilterOnLoad(bool expect_prefs_modifications) {
     pref_hash_filter_->FilterOnLoad(
-        base::Bind(&PrefHashFilterTest::GetPrefsBack, base::Unretained(this),
-                   expect_prefs_modifications),
+        base::BindOnce(&PrefHashFilterTest::GetPrefsBack,
+                       base::Unretained(this), expect_prefs_modifications),
         std::move(pref_store_contents_));
   }
 
@@ -636,8 +637,8 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel>,
 
   base::test::SingleThreadTaskEnvironment task_environment_;
   MockValidationDelegate mock_validation_delegate_;
-  mojo::BindingSet<prefs::mojom::ResetOnLoadObserver>
-      reset_on_load_observer_bindings_;
+  mojo::ReceiverSet<prefs::mojom::ResetOnLoadObserver>
+      reset_on_load_observer_receivers_;
   bool reset_recorded_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashFilterTest);
@@ -1229,7 +1230,7 @@ TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacks) {
   // before-write callback is run.
   ASSERT_EQ(
       0u, mock_external_validation_hash_store_contents_->cleared_paths_count());
-  callbacks.first.Run();
+  std::move(callbacks.first).Run();
   ASSERT_EQ(
       2u, mock_external_validation_hash_store_contents_->cleared_paths_count());
 
@@ -1237,7 +1238,7 @@ TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacks) {
   ASSERT_EQ(
       0u, mock_external_validation_hash_store_contents_->stored_hashes_count());
 
-  callbacks.second.Run(true);
+  std::move(callbacks.second).Run(true);
 
   ASSERT_EQ(
       2u, mock_external_validation_hash_store_contents_->stored_hashes_count());
@@ -1266,13 +1267,13 @@ TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacksWithFailure) {
 
   ASSERT_FALSE(callbacks.first.is_null());
 
-  callbacks.first.Run();
+  std::move(callbacks.first).Run();
 
   // The pref should have been cleared from the external validation store.
   ASSERT_EQ(
       1u, mock_external_validation_hash_store_contents_->cleared_paths_count());
 
-  callbacks.second.Run(false);
+  std::move(callbacks.second).Run(false);
 
   // Expect no writes to the external validation hash store contents.
   ASSERT_EQ(0u,

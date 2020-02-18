@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/reading_list/empty_reading_list_message_util.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_source.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_updater.h"
@@ -187,7 +188,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 }
 
 + (NSString*)accessibilityIdentifier {
-  return @"ReadingListTableView";
+  return kReadingListViewID;
 }
 
 #pragma mark - UIViewController
@@ -658,6 +659,9 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
                     toSection:(SectionIdentifier)toSection {
   // Reconfigure cells, allowing the custom actions to be updated.
   for (NSIndexPath* indexPath in sortedIndexPaths) {
+    if (![self.tableView cellForRowAtIndexPath:indexPath])
+      continue;
+
     [[self.tableViewModel itemAtIndexPath:indexPath]
         configureCell:[self.tableView cellForRowAtIndexPath:indexPath]
            withStyler:self.styler];

@@ -63,7 +63,7 @@ class ServiceWorkerContextCoreTest : public testing::Test,
     blink::ServiceWorkerStatusCode status;
     int64_t registration_id;
     context()->RegisterServiceWorker(
-        script, options,
+        script, options, blink::mojom::FetchClientSettingsObject::New(),
         base::BindLambdaForTesting(
             [&](blink::ServiceWorkerStatusCode result_status,
                 const std::string& /* status_message */,

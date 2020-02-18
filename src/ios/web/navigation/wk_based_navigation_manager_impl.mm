@@ -107,7 +107,6 @@ void WKBasedNavigationManagerImpl::OnNavigationStarted(const GURL& url) {
       !web::wk_navigation_util::ExtractTargetURL(url, &target_url)) {
     restoration_timer_ = std::make_unique<base::ElapsedTimer>();
   } else if (!wk_navigation_util::IsRestoreSessionUrl(url)) {
-    is_restore_session_in_progress_ = false;
     // It's possible for there to be pending navigations for a session that is
     // going to be restored (such as for the -ForwardHistoryClobber workaround).
     // In this case, the pending navigation will start while the navigation
@@ -121,14 +120,17 @@ void WKBasedNavigationManagerImpl::OnNavigationStarted(const GURL& url) {
                           restoration_timer_->Elapsed());
       restoration_timer_.reset();
     }
-
-    for (base::OnceClosure& callback : restore_session_completion_callbacks_) {
-      std::move(callback).Run();
-    }
-    restore_session_completion_callbacks_.clear();
-
-    LoadIfNecessary();
+    FinalizeSessionRestore();
   }
+}
+
+void WKBasedNavigationManagerImpl::FinalizeSessionRestore() {
+  is_restore_session_in_progress_ = false;
+  for (base::OnceClosure& callback : restore_session_completion_callbacks_) {
+    std::move(callback).Run();
+  }
+  restore_session_completion_callbacks_.clear();
+  LoadIfNecessary();
 }
 
 CRWSessionController* WKBasedNavigationManagerImpl::GetSessionController()
@@ -159,7 +161,8 @@ void WKBasedNavigationManagerImpl::AddTransientItem(const GURL& url) {
   // only entry in back/forward history.
   if (item) {
     DCHECK(item->GetUserAgentType() != UserAgentType::NONE);
-    transient_item_->SetUserAgentType(item->GetUserAgentType());
+    transient_item_->SetUserAgentType(item->GetUserAgentForInheritance(),
+                                      /*update_inherited_user_agent =*/true);
   }
 }
 
@@ -244,8 +247,13 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
 
   // CommitPendingItem may be called multiple times. Do nothing if there is no
   // pending item.
-  if (pending_item_index_ == -1 && !pending_item_)
+  if (pending_item_index_ == -1 && !pending_item_) {
+    // Per crbug.com/1010765, it is sometimes possible for pending items to
+    // never commit. If a previous pending item was copied into
+    // empty_window_open_item_, clear it here.
+    empty_window_open_item_.reset();
     return;
+  }
 
   bool last_committed_item_was_empty_window_open_item =
       empty_window_open_item_ != nullptr;
@@ -423,6 +431,20 @@ bool WKBasedNavigationManagerImpl::IsRestoreSessionInProgress() const {
   return is_restore_session_in_progress_;
 }
 
+bool WKBasedNavigationManagerImpl::ShouldBlockUrlDuringRestore(
+    const GURL& url) {
+  DCHECK(is_restore_session_in_progress_);
+  if (!web::GetWebClient()->ShouldBlockUrlDuringRestore(url, GetWebState()))
+    return false;
+
+  // Abort restore.
+  DiscardNonCommittedItems();
+  last_committed_item_index_ = web_view_cache_.GetCurrentItemIndex();
+  restored_visible_item_.reset();
+  FinalizeSessionRestore();
+  return true;
+}
+
 void WKBasedNavigationManagerImpl::SetPendingItemIndex(int index) {
   pending_item_index_ = index;
 }
@@ -490,6 +512,9 @@ NavigationItem* WKBasedNavigationManagerImpl::GetVisibleItem() const {
     bool is_user_initiated = pending_item->NavigationInitiationType() ==
                              NavigationInitiationType::BROWSER_INITIATED;
     bool safe_to_show_pending = is_user_initiated && pending_item_index_ == -1;
+    if (web::features::UseWKWebViewLoading()) {
+      safe_to_show_pending = safe_to_show_pending && GetWebState()->IsLoading();
+    }
     if (safe_to_show_pending) {
       return pending_item;
     }
@@ -1084,6 +1109,16 @@ WKBasedNavigationManagerImpl::WKWebViewCache::GetNavigationItemImplAtIndex(
         new_item->SetVirtualURL(virtual_url);
       }
     }
+  }
+
+  // TODO(crbug.com/1003680) This seems to happen if a restored navigation fails
+  // provisionally before the NavigationContext associates with the original
+  // navigation. Rather than expose the internal placeholder to the UI and to
+  // URL-sensing components outside of //ios/web layer, set virtual URL to the
+  // placeholder original URL here.
+  if (wk_navigation_util::IsPlaceholderUrl(url)) {
+    new_item->SetVirtualURL(
+        wk_navigation_util::ExtractUrlFromPlaceholderUrl(url));
   }
 
   SetNavigationItemInWKItem(wk_item, std::move(new_item));

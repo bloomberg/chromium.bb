@@ -12,17 +12,13 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 
-namespace ash {
-enum class AppListConfigType;
-}
-
 namespace gfx {
 class Size;
 }
 
-namespace app_list {
-
+namespace ash {
 class AppListConfig;
+enum class AppListConfigType;
 
 // Used to create and keep track of existing AppListConfigs.
 class ASH_PUBLIC_EXPORT AppListConfigProvider {
@@ -57,22 +53,28 @@ class ASH_PUBLIC_EXPORT AppListConfigProvider {
   // based on the app list display, and available size for the apps grid.
   // Returns nullptr if the new app list config is the same as |current_config|.
   // |work_area_size|: The work area size of the display showing the app list.
-  // |available_grid_size|: The size of the bounds available for the apps grid.
+  // |shelf_height|: The current shelf height.
+  // |side_shelf_width|: The width taken by side shelf - should be 0 if a side
+  // shelf is not active.
   // |current_config|: If not null, the app list config currently used by the
-  // app list.
+  //     app list.
   // TODO(crbug.com/976947): Once ScalableAppList feature is removed (and
   // enabled by default), this should return a reference or a pointer to an
   // AppListConfig owned by |this|, as then the number of possible different
   // configs will be restricted to the number of supported config types.
   std::unique_ptr<AppListConfig> CreateForAppListWidget(
       const gfx::Size& display_work_area_size,
-      const gfx::Size& available_grid_size,
+      int shelf_height,
+      int side_shelf_width,
       const AppListConfig* current_config);
 
   // Clears the set of configs owned by the provider.
   void ResetForTesting();
 
  private:
+  const AppListConfig& GetBaseConfigForDisplaySize(
+      const gfx::Size& display_work_area_size);
+
   std::map<ash::AppListConfigType, std::unique_ptr<AppListConfig>> configs_;
 
   base::ObserverList<Observer>::Unchecked observers_;
@@ -80,6 +82,6 @@ class ASH_PUBLIC_EXPORT AppListConfigProvider {
   DISALLOW_COPY_AND_ASSIGN(AppListConfigProvider);
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CONFIG_PROVIDER_H_

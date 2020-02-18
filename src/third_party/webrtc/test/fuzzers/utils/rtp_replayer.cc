@@ -11,14 +11,13 @@
 #include "test/fuzzers/utils/rtp_replayer.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "absl/memory/memory.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "rtc_base/strings/json.h"
 #include "system_wrappers/include/clock.h"
-#include "system_wrappers/include/sleep.h"
 #include "test/call_config_utils.h"
 #include "test/encoder_settings.h"
 #include "test/fake_decoder.h"
@@ -31,7 +30,7 @@ namespace test {
 void RtpReplayer::Replay(const std::string& replay_config_filepath,
                          const uint8_t* rtp_dump_data,
                          size_t rtp_dump_size) {
-  auto stream_state = absl::make_unique<StreamState>();
+  auto stream_state = std::make_unique<StreamState>();
   std::vector<VideoReceiveStream::Config> receive_stream_configs =
       ReadConfigFromFile(replay_config_filepath, &(stream_state->transport));
   return Replay(std::move(stream_state), std::move(receive_stream_configs),
@@ -43,6 +42,13 @@ void RtpReplayer::Replay(
     std::vector<VideoReceiveStream::Config> receive_stream_configs,
     const uint8_t* rtp_dump_data,
     size_t rtp_dump_size) {
+  rtc::ScopedBaseFakeClock fake_clock;
+
+  // Work around: webrtc calls webrtc::Random(clock.TimeInMicroseconds())
+  // everywhere and Random expects non-zero seed. Let's set the clock non-zero
+  // to make them happy.
+  fake_clock.SetTime(webrtc::Timestamp::ms(1));
+
   // Attempt to create an RtpReader from the input file.
   auto rtp_reader = CreateRtpReader(rtp_dump_data, rtp_dump_size);
   if (rtp_reader == nullptr) {
@@ -64,7 +70,7 @@ void RtpReplayer::Replay(
     receive_stream->Start();
   }
 
-  ReplayPackets(call.get(), rtp_reader.get());
+  ReplayPackets(&fake_clock, call.get(), rtp_reader.get());
 
   for (const auto& receive_stream : stream_state->receive_streams) {
     call->DestroyVideoReceiveStream(receive_stream);
@@ -96,7 +102,7 @@ void RtpReplayer::SetupVideoStreams(
     std::vector<VideoReceiveStream::Config>* receive_stream_configs,
     StreamState* stream_state,
     Call* call) {
-  stream_state->decoder_factory = absl::make_unique<InternalDecoderFactory>();
+  stream_state->decoder_factory = std::make_unique<InternalDecoderFactory>();
   for (auto& receive_config : *receive_stream_configs) {
     // Attach the decoder for the corresponding payload type in the config.
     for (auto& decoder : receive_config.decoders) {
@@ -127,7 +133,9 @@ std::unique_ptr<test::RtpFileReader> RtpReplayer::CreateRtpReader(
   return rtp_reader;
 }
 
-void RtpReplayer::ReplayPackets(Call* call, test::RtpFileReader* rtp_reader) {
+void RtpReplayer::ReplayPackets(rtc::FakeClock* clock,
+                                Call* call,
+                                test::RtpFileReader* rtp_reader) {
   int64_t replay_start_ms = -1;
   int num_packets = 0;
   std::map<uint32_t, int> unknown_packets;
@@ -145,8 +153,10 @@ void RtpReplayer::ReplayPackets(Call* call, test::RtpFileReader* rtp_reader) {
 
     int64_t deliver_in_ms = replay_start_ms + packet.time_ms - now_ms;
     if (deliver_in_ms > 0) {
-      // Set an upper limit on sleep to prevent timing out.
-      SleepMs(std::min(deliver_in_ms, static_cast<int64_t>(100)));
+      // StatsCounter::ReportMetricToAggregatedCounter is O(elapsed time).
+      // Set an upper limit to prevent waste time.
+      clock->AdvanceTime(webrtc::TimeDelta::ms(
+          std::min(deliver_in_ms, static_cast<int64_t>(100))));
     }
 
     ++num_packets;

@@ -44,7 +44,6 @@ class MockAutofillPopupController
     return suggestions_;
   }
 #if !defined(OS_ANDROID)
-  MOCK_METHOD1(SetTypesetter, void(gfx::Typesetter typesetter));
   MOCK_METHOD1(GetElidedValueWidthForRow, int(int row));
   MOCK_METHOD1(GetElidedLabelWidthForRow, int(int row));
 #endif
@@ -65,6 +64,10 @@ class MockAutofillPopupController
 
   const base::string16& GetElidedLabelAt(int row) const override {
     return suggestions_[row].label;
+  }
+
+  base::WeakPtr<MockAutofillPopupController> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
   }
 
   MOCK_METHOD3(GetRemovalConfirmationText,
@@ -88,6 +91,8 @@ class MockAutofillPopupController
  private:
   std::unique_ptr<autofill::AutofillPopupLayoutModel> layout_model_;
   std::vector<autofill::Suggestion> suggestions_;
+
+  base::WeakPtrFactory<MockAutofillPopupController> weak_ptr_factory_{this};
 };
 
 }  // namespace autofill

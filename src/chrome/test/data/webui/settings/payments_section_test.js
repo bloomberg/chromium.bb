@@ -7,11 +7,17 @@ cr.define('settings_payments_section', function() {
     test('testAutofillExtensionIndicator', function() {
       // Initializing with fake prefs
       const section = document.createElement('settings-payments-section');
-      section.prefs = {autofill: {credit_card_enabled: {}}};
+      section.prefs = {
+        autofill: {credit_card_enabled: {}, credit_card_fido_auth_enabled: {}}
+      };
       document.body.appendChild(section);
 
       assertFalse(!!section.$$('#autofillExtensionIndicator'));
-      section.set('prefs.autofill.credit_card_enabled.extensionId', 'test-id');
+      section.set(
+          'prefs.autofill.credit_card_enabled.extensionId', 'test-id-1');
+      section.set(
+          'prefs.autofill.credit_card_fido_auth_enabled.extensionId',
+          'test-id-2');
       Polymer.dom.flush();
 
       assertTrue(!!section.$$('#autofillExtensionIndicator'));
@@ -59,6 +65,20 @@ cr.define('settings_payments_section', function() {
       Polymer.dom.flush();
       return section;
     }
+
+    // Fakes the existence of a platform authenticator.
+    function addFakePlatformAuthenticator() {
+      if (!window.PublicKeyCredential) {
+        window.PublicKeyCredential = {};
+      }
+      window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable =
+          function() {
+        return new Promise(callback => {
+          callback(true);
+        });
+      };
+    }
+
 
     /**
      * Returns an array containing the local and server credit card items.
@@ -441,6 +461,50 @@ cr.define('settings_payments_section', function() {
           [creditCard], {credit_card_enabled: {value: true}});
 
       assertFalse(section.$$('#migrateCreditCards').hidden);
+    });
+
+    test('verifyFIDOAuthToggleShownIfUserIsVerifiable', function() {
+      // Set |fidoAuthenticationAvailableForAutofill| to true.
+      loadTimeData.overrideValues(
+          {fidoAuthenticationAvailableForAutofill: true});
+      addFakePlatformAuthenticator();
+      const section =
+          createPaymentsSection([], {credit_card_enabled: {value: true}});
+
+      assertTrue(!!section.$$('#autofillCreditCardFIDOAuthToggle'));
+    });
+
+    test('verifyFIDOAuthToggleNotShownIfUserIsNotVerifiable', function() {
+      // Set |fidoAuthenticationAvailableForAutofill| to false.
+      loadTimeData.overrideValues(
+          {fidoAuthenticationAvailableForAutofill: false});
+      const section =
+          createPaymentsSection([], {credit_card_enabled: {value: true}});
+      assertFalse(!!section.$$('#autofillCreditCardFIDOAuthToggle'));
+    });
+
+    test('verifyFIDOAuthToggleCheckedIfOptedIn', function() {
+      // Set FIDO auth pref value to true.
+      loadTimeData.overrideValues(
+          {fidoAuthenticationAvailableForAutofill: true});
+      addFakePlatformAuthenticator();
+      const section = createPaymentsSection([], {
+        credit_card_enabled: {value: true},
+        credit_card_fido_auth_enabled: {value: true}
+      });
+      assertTrue(section.$$('#autofillCreditCardFIDOAuthToggle').checked);
+    });
+
+    test('verifyFIDOAuthToggleUncheckedIfOptedOut', function() {
+      // Set FIDO auth pref value to false.
+      loadTimeData.overrideValues(
+          {fidoAuthenticationAvailableForAutofill: true});
+      addFakePlatformAuthenticator();
+      const section = createPaymentsSection([], {
+        credit_card_enabled: {value: true},
+        credit_card_fido_auth_enabled: {value: false}
+      });
+      assertFalse(section.$$('#autofillCreditCardFIDOAuthToggle').checked);
     });
   });
 });

@@ -4,8 +4,8 @@
 
 #include "components/ui_devtools/devtools_client.h"
 
-#include "components/ui_devtools/devtools_protocol_encoding.h"
 #include "components/ui_devtools/devtools_server.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace ui_devtools {
 
@@ -59,10 +59,10 @@ void UiDevToolsClient::DisableAllAgents() {
 
 namespace {
 std::string SerializeToJSON(std::unique_ptr<protocol::Serializable> message) {
-  std::vector<uint8_t> cbor = message->serializeToBinary();
+  std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
   std::string json;
-  ::inspector_protocol_encoding::Status status =
-      ConvertCBORToJSON(::inspector_protocol_encoding::SpanFrom(cbor), &json);
+  crdtp::Status status =
+      crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   return json;
 }

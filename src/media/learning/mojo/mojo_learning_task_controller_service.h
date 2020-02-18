@@ -28,11 +28,16 @@ class COMPONENT_EXPORT(MEDIA_LEARNING_MOJO) MojoLearningTaskControllerService
   ~MojoLearningTaskControllerService() override;
 
   // mojom::LearningTaskController
-  void BeginObservation(const base::UnguessableToken& id,
-                        const FeatureVector& features) override;
+  void BeginObservation(
+      const base::UnguessableToken& id,
+      const FeatureVector& features,
+      const base::Optional<TargetValue>& default_target) override;
   void CompleteObservation(const base::UnguessableToken& id,
                            const ObservationCompletion& completion) override;
   void CancelObservation(const base::UnguessableToken& id) override;
+  void UpdateDefaultTarget(
+      const base::UnguessableToken& id,
+      const base::Optional<TargetValue>& default_target) override;
 
  protected:
   const LearningTask task_;

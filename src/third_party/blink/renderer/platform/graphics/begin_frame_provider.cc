@@ -59,6 +59,10 @@ void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
   if (compositor_frame_sink_.is_bound())
     return;
 
+  // Once we are using RAF, this thread is driving Display updates. Update
+  // priority accordingly.
+  base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
+
   mojo::Remote<mojom::blink::EmbeddedFrameSinkProvider> provider;
   Platform::Current()->GetInterfaceProvider()->GetInterface(
       provider.BindNewPipeAndPassReceiver());
@@ -91,17 +95,28 @@ void BeginFrameProvider::RequestBeginFrame() {
 void BeginFrameProvider::OnBeginFrame(
     const viz::BeginFrameArgs& args,
     WTF::HashMap<uint32_t, ::viz::mojom::blink::FrameTimingDetailsPtr>) {
+  TRACE_EVENT_WITH_FLOW0("blink", "BeginFrameProvider::OnBeginFrame",
+                         TRACE_ID_GLOBAL(args.trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
+  if (args.deadline < base::TimeTicks::Now()) {
+    compositor_frame_sink_->DidNotProduceFrame(viz::BeginFrameAck(args, false));
+    return;
+  }
+
   // If there was no need for a BeginFrame, just skip it.
   if (needs_begin_frame_ && requested_needs_begin_frame_) {
     requested_needs_begin_frame_ = false;
-    begin_frame_client_->BeginFrame();
+    begin_frame_client_->BeginFrame(args);
   } else {
     if (!requested_needs_begin_frame_) {
       needs_begin_frame_ = false;
       compositor_frame_sink_->SetNeedsBeginFrame(false);
     }
   }
+}
 
+void BeginFrameProvider::FinishBeginFrame(const viz::BeginFrameArgs& args) {
   compositor_frame_sink_->DidNotProduceFrame(viz::BeginFrameAck(args, false));
 }
 

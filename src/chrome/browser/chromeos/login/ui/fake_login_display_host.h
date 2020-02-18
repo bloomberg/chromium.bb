@@ -45,6 +45,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
                       bool is_auto_launch) override;
   void StartDemoAppLaunch() override;
   void StartArcKiosk(const AccountId& account_id) override;
+  void StartWebKiosk(const AccountId& account_id) override;
   void CompleteLogin(const chromeos::UserContext& user_context) override;
   void OnGaiaScreenReady() override;
   void SetDisplayEmail(const std::string& email) override;
@@ -56,7 +57,6 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void ShowGaiaDialog(bool can_close,
                       const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
-  void UpdateOobeDialogSize(int width, int height) override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
   const user_manager::UserList GetUsers() override;
   void CancelPasswordChangedFlow() override;
@@ -66,6 +66,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void ShowResetScreen() override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
+  void RequestSystemInfoUpdate() override;
 
  private:
   class FakeBaseScreen;

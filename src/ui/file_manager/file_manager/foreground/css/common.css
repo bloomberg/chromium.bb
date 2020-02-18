@@ -85,6 +85,10 @@ cr-menu.chrome-menu > cr-menu-item[disabled] {
   pointer-events: none;
 }
 
+cr-menu.chrome-menu > cr-menu-item[disabled] > .icon.start {
+  opacity: 0.20;
+}
+
 cr-menu.chrome-menu > cr-menu-item:not([disabled])[selected],
 cr-menu.chrome-menu > cr-menu-item:not([disabled]):active {
   background-color: rgba(0, 0, 0, 0.08);
@@ -174,15 +178,15 @@ cr-menu.chrome-menu > [checked]::before {
   -webkit-margin-start: 12px;
 }
 
-/* Gray progress bar. */
+/* Gray progress bar. Background color google grey 700 with 30% opacity */
 .progress-bar {
-  background-color: #e6e6e6;
+  background-color: rgba(95, 104, 106, .3);
   border-radius: 3px;
   height: 6px;
 }
 
 .progress-track {
-  background-color: #888;
+  background-color: var(--google-grey-600);
   border-radius: 3px;
   height: 6px;
   min-width: 6px;

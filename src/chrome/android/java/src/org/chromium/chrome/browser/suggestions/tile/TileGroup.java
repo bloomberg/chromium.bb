@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.suggestions.tile;
 
 import android.graphics.Bitmap;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.util.SparseArray;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -14,8 +12,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesCatalogUpdateRequestSource;
 import org.chromium.chrome.browser.favicon.IconType;
@@ -123,6 +124,18 @@ public class TileGroup implements MostVisitedSites.Observer {
     }
 
     /**
+     * Delegate for handling interactions with tiles.
+     */
+    public interface TileInteractionDelegate extends OnClickListener, OnCreateContextMenuListener {
+        /**
+         * Set a runnable for click events on the tile. This is primarily used to track interaction
+         * with the tile used by feature engagement purposes.
+         * @param clickRunnable The {@link Runnable} to be executed when tile is clicked.
+         */
+        void setOnClickRunnable(Runnable clickRunnable);
+    }
+
+    /**
      * Constants used to track the current operations on the group and notify the {@link Delegate}
      * when the expected sequence of potentially asynchronous operations is complete.
      */
@@ -203,7 +216,7 @@ public class TileGroup implements MostVisitedSites.Observer {
     private final TileSetupDelegate mTileSetupDelegate = new TileSetupDelegate() {
         @Override
         public TileInteractionDelegate createInteractionDelegate(Tile tile) {
-            return new TileInteractionDelegate(tile.getData());
+            return new TileInteractionDelegateImpl(tile.getData());
         }
 
         @Override
@@ -510,15 +523,12 @@ public class TileGroup implements MostVisitedSites.Observer {
         }
     }
 
-    /**
-     * Implements various listener and delegate interfaces to handle user interactions with tiles.
-     */
-    public class TileInteractionDelegate
-            implements ContextMenuManager.Delegate, OnClickListener, OnCreateContextMenuListener {
+    private class TileInteractionDelegateImpl
+            implements TileInteractionDelegate, ContextMenuManager.Delegate {
         private final SiteSuggestion mSuggestion;
         private Runnable mOnClickRunnable;
 
-        public TileInteractionDelegate(SiteSuggestion suggestion) {
+        public TileInteractionDelegateImpl(SiteSuggestion suggestion) {
             mSuggestion = suggestion;
         }
 
@@ -587,11 +597,7 @@ public class TileGroup implements MostVisitedSites.Observer {
             mContextMenuManager.createContextMenu(contextMenu, view, this);
         }
 
-        /**
-         * Set a runnable for click events on the tile. This is primarily used to track interaction
-         * with the tile used by feature engagement purposes.
-         * @param clickRunnable The {@link Runnable} to be executed when tile is clicked.
-         */
+        @Override
         public void setOnClickRunnable(Runnable clickRunnable) {
             mOnClickRunnable = clickRunnable;
         }

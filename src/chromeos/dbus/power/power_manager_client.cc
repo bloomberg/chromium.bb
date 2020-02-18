@@ -166,8 +166,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectPath(power_manager::kPowerManagerServicePath));
 
     power_manager_proxy_->SetNameOwnerChangedCallback(
-        base::Bind(&PowerManagerClientImpl::NameOwnerChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&PowerManagerClientImpl::NameOwnerChangedReceived,
+                            weak_ptr_factory_.GetWeakPtr()));
 
     power_manager_proxy_->WaitForServiceToBeAvailable(
         base::BindOnce(&PowerManagerClientImpl::NotifyServiceBecameAvailable,
@@ -178,6 +178,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
     const std::map<const char*, SignalMethod> kSignalMethods = {
         {power_manager::kScreenBrightnessChangedSignal,
          &PowerManagerClientImpl::ScreenBrightnessChangedReceived},
+        {power_manager::kAmbientColorTemperatureChangedSignal,
+         &PowerManagerClientImpl::AmbientColorTemperatureChangedReceived},
         {power_manager::kKeyboardBrightnessChangedSignal,
          &PowerManagerClientImpl::KeyboardBrightnessChangedReceived},
         {power_manager::kScreenIdleStateChangedSignal,
@@ -211,6 +213,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     RegisterSuspendDelays();
     RequestStatusUpdate();
+    CheckAmbientColorSupport();
   }
 
   // PowerManagerClient overrides:
@@ -481,6 +484,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
     MaybeReportSuspendReadiness();
   }
 
+  bool SupportsAmbientColor() override {
+    return device_supports_ambient_color_;
+  }
+
   void CreateArcTimers(
       const std::string& tag,
       std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,
@@ -610,6 +617,20 @@ class PowerManagerClientImpl : public PowerManagerClient {
                      << ": cause " << proto.cause();
     for (auto& observer : observers_)
       observer.ScreenBrightnessChanged(proto);
+  }
+
+  void AmbientColorTemperatureChangedReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    int32_t color_temperature = 0;
+    if (!reader.PopInt32(&color_temperature)) {
+      POWER_LOG(ERROR) << "Unable to decode read ambient color from "
+                       << power_manager::kAmbientColorTemperatureChangedSignal
+                       << " signal";
+      return;
+    }
+
+    for (auto& observer : observers_)
+      observer.AmbientColorChanged(color_temperature);
   }
 
   void KeyboardBrightnessChangedReceived(dbus::Signal* signal) {
@@ -745,6 +766,31 @@ class PowerManagerClientImpl : public PowerManagerClient {
       return;
     }
     std::move(callback).Run(state);
+  }
+
+  void CheckAmbientColorSupport() {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kHasAmbientColorDeviceMethod);
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&PowerManagerClientImpl::OnHasAmbientColorDevice,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void OnHasAmbientColorDevice(dbus::Response* response) {
+    if (!response) {
+      device_supports_ambient_color_ = false;
+      return;
+    }
+    dbus::MessageReader reader(response);
+    bool is_supported = false;
+    if (!reader.PopBool(&is_supported)) {
+      POWER_LOG(ERROR) << "Error reading response from powerd: "
+                       << response->ToString();
+      device_supports_ambient_color_ = false;
+      return;
+    }
+    device_supports_ambient_color_ = is_supported;
   }
 
   void OnGetSwitchStates(DBusMethodCallback<SwitchStates> callback,
@@ -1010,6 +1056,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
         for (auto& observer : observers_)
           observer.TabletModeEventReceived(TabletMode::OFF, timestamp);
         break;
+      default:
+        // TODO(henryhsu): handle the missing cases.
+        break;
     }
   }
 
@@ -1161,6 +1210,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   // Last state passed to SetIsProjecting().
   bool last_is_projecting_ = false;
+
+  // Whether the device supports ambient color. This value is checked when the
+  // DBUS service starts and is cached.
+  bool device_supports_ambient_color_ = false;
 
   // The last proto received from D-Bus; initially empty.
   base::Optional<power_manager::PowerSupplyProperties> proto_;

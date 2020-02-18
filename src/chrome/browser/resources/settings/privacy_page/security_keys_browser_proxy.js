@@ -5,6 +5,16 @@
 cr.exportPath('settings');
 
 /**
+ * Ctap2Status contains a subset of CTAP2 status codes. See
+ * device::CtapDeviceResponseCode for the full list.
+ * @enum {number}
+ */
+const Ctap2Status = {
+  OK: 0x0,
+  ERR_KEEPALIVE_CANCEL: 0x2D,
+};
+
+/**
  * Credential represents a CTAP2 resident credential enumerated from a security
  * key.
  *
@@ -28,15 +38,19 @@ let Credential;
 
 /**
  * EnrollmentStatus represents the current status of an enrollment suboperation,
- * where 'remaining' indicates the number of samples left, 'status' indicates
- * the last enrollment status, and 'code' indicates the CtapDeviceResponseCode.
+ * where 'remaining' is the number of samples left, 'status' is the last
+ * enrollment status, 'code' indicates the final CtapDeviceResponseCode of the
+ * operation, and 'enrollment' contains the new Enrollment.
+ *
  * For each enrollment sample, 'status' is set - when the enrollment operation
- * reaches an end state, 'code' is set. A 'code' of CtapDeviceResponseCode 0
- * indicates successful enrollment.
+ * reaches an end state, 'code' and, if successful, 'enrollment' are set. |OK|
+ * indicates successful enrollment. A code of |ERR_KEEPALIVE_CANCEL| indicates
+ * user-initated cancellation.
  *
  * @typedef {{status: ?number,
- *            code: ?number,
- *            remaining: number}}
+ *            code: ?Ctap2Status,
+ *            remaining: number,
+ *            enrollment: ?Enrollment}}
  * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
  */
 let EnrollmentStatus;
@@ -197,9 +211,6 @@ cr.define('settings', function() {
      * Cancel an ongoing enrollment suboperation. This can safely be called at
      * any time and only has an impact when the authenticator is currently
      * sampling.
-     *
-     * @return {!Promise} resolves when the ongoing enrollment suboperation has
-     *     been cancelled.
      */
     cancelEnrollment() {}
 
@@ -210,6 +221,15 @@ cr.define('settings', function() {
      * @return {!Promise<!Array<!Enrollment>>} The remaining enrollments.
      */
     deleteEnrollment(id) {}
+
+    /**
+     * Renames the enrollment with the given ID.
+     *
+     * @param {string} id
+     * @param {string} name
+     * @return {!Promise<!Array<!Enrollment>>} The updated list of enrollments.
+     */
+    renameEnrollment(id, name) {}
 
     /** Cancels all outstanding operations. */
     close() {}
@@ -303,12 +323,17 @@ cr.define('settings', function() {
 
     /** @override */
     cancelEnrollment() {
-      return cr.sendWithPromise('securityKeyBioEnrollCancel');
+      return chrome.send('securityKeyBioEnrollCancel');
     }
 
     /** @override */
     deleteEnrollment(id) {
       return cr.sendWithPromise('securityKeyBioEnrollDelete', id);
+    }
+
+    /** @override */
+    renameEnrollment(id, name) {
+      return cr.sendWithPromise('securityKeyBioEnrollRename', id, name);
     }
 
     /** @override */

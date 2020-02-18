@@ -16,11 +16,12 @@
 #include "base/stl_util.h"
 #include "components/subresource_filter/content/browser/subframe_navigation_filtering_throttle.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
+#include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 
 namespace content {
 class NavigationHandle;
@@ -33,7 +34,6 @@ namespace subresource_filter {
 class AsyncDocumentSubresourceFilter;
 class ActivationStateComputingNavigationThrottle;
 class PageLoadStatistics;
-class SubresourceFilterObserverManager;
 class SubresourceFilterClient;
 
 // The ContentSubresourceFilterThrottleManager manages NavigationThrottles in
@@ -170,10 +170,10 @@ class ContentSubresourceFilterThrottleManager
   //    OOPIF)
   std::set<const content::RenderFrameHost*> ad_frames_;
 
-  content::WebContentsFrameBindingSet<mojom::SubresourceFilterHost> binding_;
+  content::WebContentsFrameReceiverSet<mojom::SubresourceFilterHost> receiver_;
 
   ScopedObserver<SubresourceFilterObserverManager, SubresourceFilterObserver>
-      scoped_observer_;
+      scoped_observer_{this};
 
   // Lazily instantiated in EnsureRulesetHandle when the first page level
   // activation is triggered. Will go away when there are no more activated

@@ -24,10 +24,14 @@
 
 namespace {
 
+// This flag indicates whether +setUpForTestCase has been executed in a test
+// case.
+bool gExecutedSetUpForTestCase = false;
+
 NSString* const kFlakyEarlGreyTestTargetSuffix = @"_flaky_egtests";
 
 // Contains a list of test names that run in multitasking test suite.
-NSArray* whiteListedMultitaskingTests = @[
+NSArray* multitaskingTests = @[
   // Integration tests
   @"testContextMenuOpenInNewTab",        // ContextMenuTestCase
   @"testSwitchToMain",                   // CookiesTestCase
@@ -46,13 +50,13 @@ NSArray* whiteListedMultitaskingTests = @[
   // UI tests
   @"testActivityServiceControllerPrintAfterRedirectionToUnprintablePage",
   // ActivityServiceControllerTestCase
-  @"testDismissOnDestroy",                      // AlertCoordinatorTestCase
-  @"testAddRemoveBookmark",                     // BookmarksTestCase
-  @"testJavaScriptInOmnibox",                   // BrowserViewControllerTestCase
-  @"testChooseCastReceiverChooser",             // CastReceiverTestCase
-  @"testErrorPage",                             // ErrorPageTestCase
-  @"testFindInPage",                            // FindInPageTestCase
-  @"testDismissFirstRun",                       // FirstRunTestCase
+  @"testDismissOnDestroy",           // AlertCoordinatorTestCase
+  @"testAddRemoveBookmark",          // BookmarksTestCase
+  @"testJavaScriptInOmnibox",        // BrowserViewControllerTestCase
+  @"testChooseCastReceiverChooser",  // CastReceiverTestCase
+  @"testErrorPage",                  // ErrorPageTestCase
+  @"testFindInPage",                 // FindInPageTestCase
+  @"testDismissFirstRun",            // FirstRunTestCase
   // TODO(crbug.com/872788) Failing after move to Xcode 10.
   // @"testLongPDFScroll",                         // FullscreenTestCase
   @"testDeleteHistory",                         // HistoryUITestCase
@@ -104,12 +108,6 @@ UIDeviceOrientation GetCurrentDeviceOrientation() {
 
 }  // namespace
 
-// Category for overriding private methods on XCTestCase. See crbug.com/991338
-// for more information.
-@interface XCTestCase (Private)
-- (void)_recordFailure:(id)arg1;
-@end
-
 #if defined(CHROME_EARL_GREY_2)
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 #endif
@@ -117,6 +115,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 @interface ChromeTestCase () <AppLaunchManagerObserver> {
   // Block to be executed during object tearDown.
   ProceduralBlock _tearDownHandler;
+
+  // This flag indicates whether test method -setUp steps are executed during a
+  // test method.
+  BOOL _executedTestMethodSetUp;
 
   BOOL _isHTTPServerStopped;
   BOOL _isMockAuthenticationDisabled;
@@ -186,16 +188,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   }
 }
 
-- (void)_recordFailure:(id)arg1 {
-  if (@available(iOS 13, *)) {
-    // _recordFailure internally spends a very long time symbolicating
-    // on iOS13. Skipping this seems to be safe. See crbug.com/991338
-    // for more information.
-  } else {
-    [super _recordFailure:arg1];
-  }
-}
-
 #if defined(CHROME_EARL_GREY_1)
 + (void)setUp {
   [super setUp];
@@ -205,6 +197,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 + (void)setUpForTestCase {
   [super setUpForTestCase];
   [ChromeTestCase setUpHelper];
+  gExecutedSetUpForTestCase = true;
 }
 #endif  // CHROME_EARL_GREY_2
 
@@ -214,6 +207,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   [[self class] disableMockAuthentication];
   [[self class] stopHTTPServer];
   [super tearDown];
+  gExecutedSetUpForTestCase = false;
 }
 
 - (net::EmbeddedTestServer*)testServer {
@@ -242,6 +236,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   // Reset any remaining sign-in state from previous tests.
   [ChromeEarlGrey signOutAndClearAccounts];
   [ChromeEarlGrey openNewTab];
+  _executedTestMethodSetUp = YES;
 }
 
 // Tear down called once per test, to close all tabs and menus, and clear the
@@ -276,15 +271,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   if (GetCurrentDeviceOrientation() != _originalOrientation) {
     // Rotate the device back to the original orientation, since some tests
     // attempt to run in other orientations.
-#if defined(CHROME_EARL_GREY_1)
-    [EarlGrey rotateDeviceToOrientation:_originalOrientation errorOrNil:nil];
-#elif defined(CHROME_EARL_GREY_2)
-    [EarlGrey rotateDeviceToOrientation:_originalOrientation error:nil];
-#else
-#error Neither CHROME_EARL_GREY_1 nor CHROME_EARL_GREY_2 are defined
-#endif
+    [ChromeEarlGrey rotateDeviceToOrientation:_originalOrientation error:nil];
   }
   [super tearDown];
+  _executedTestMethodSetUp = NO;
 }
 
 #pragma mark - Public methods
@@ -378,7 +368,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   NSMutableArray* multitaskingTestNames = [NSMutableArray array];
   for (unsigned int i = 0; i < count; i++) {
     SEL selector = method_getName(methods[i]);
-    if ([whiteListedMultitaskingTests
+    if ([multitaskingTests
             containsObject:base::SysUTF8ToNSString(sel_getName(selector))]) {
       NSMethodSignature* methodSignature =
           [self instanceMethodSignatureForSelector:selector];
@@ -396,6 +386,9 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 // Dismisses and revert browser settings to default.
 // It also starts the HTTP server and enables mock authentication.
 + (void)setUpHelper {
+  GREYAssertTrue([ChromeEarlGrey isCustomWebKitLoadedIfRequested],
+                 @"Unable to load custom WebKit");
+
   [CoverageUtils configureCoverageReportPath];
 
   [[self class] startHTTPServer];
@@ -427,9 +420,37 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 
 #pragma mark AppLaunchManagerObserver method
 
-- (void)appLaunchManagerDidRelaunchApp:(AppLaunchManager*)appLaunchManager {
-  [ChromeTestCase setUpHelper];
-  [self resetAppState];
+- (void)appLaunchManagerDidRelaunchApp:(AppLaunchManager*)appLaunchManager
+                             runResets:(BOOL)runResets {
+  if (!runResets) {
+    // Check stored flags and restore to app status before relaunch.
+    if (!_isHTTPServerStopped) {
+      [[self class] startHTTPServer];
+    }
+    if (!_isMockAuthenticationDisabled) {
+      [[self class] enableMockAuthentication];
+    }
+    return;
+  }
+  // Do not call +[ChromeTestCase setUpHelper] if the app was relaunched
+  // before +setUpForTestCase. +setUpForTestCase will call +setUpHelper, and
+  // +setUpHelper can not be called twice during setup process.
+  if (gExecutedSetUpForTestCase) {
+    [ChromeTestCase setUpHelper];
+
+    // Do not call test method setup steps if the app was relaunched before
+    // -setUp is executed. If do so, two new tabs will be opened before test
+    // method starts.
+    if (_executedTestMethodSetUp) {
+      [self resetAppState];
+
+      ResetAuthentication();
+
+      // Reset any remaining sign-in state from previous tests.
+      [ChromeEarlGrey signOutAndClearAccounts];
+      [ChromeEarlGrey openNewTab];
+    }
+  }
 }
 
 @end

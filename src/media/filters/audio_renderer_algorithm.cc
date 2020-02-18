@@ -7,11 +7,13 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "cc/base/math_util.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/limits.h"
+#include "media/base/multi_channel_resampler.h"
 #include "media/filters/wsola_internals.h"
 
 namespace media {
@@ -157,6 +159,72 @@ void AudioRendererAlgorithm::SetChannelMask(std::vector<bool> channel_mask) {
     CreateSearchWrappers();
 }
 
+void AudioRendererAlgorithm::OnResamplerRead(int frame_delay,
+                                             AudioBus* audio_bus) {
+  const int requested_frames = audio_bus->frames();
+  int read_frames = audio_buffer_.ReadFrames(requested_frames, 0, audio_bus);
+
+  if (read_frames < requested_frames) {
+    // We should only be filling up |resampler_| with silence if we are playing
+    // out all remaining frames.
+    DCHECK(reached_end_of_stream_);
+    audio_bus->ZeroFramesPartial(read_frames, requested_frames - read_frames);
+  }
+}
+
+void AudioRendererAlgorithm::MarkEndOfStream() {
+  reached_end_of_stream_ = true;
+}
+
+int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
+                                            int dest_offset,
+                                            int requested_frames,
+                                            double playback_rate) {
+  if (!resampler_) {
+    resampler_ = std::make_unique<MultiChannelResampler>(
+        channels_, playback_rate, SincResampler::kDefaultRequestSize,
+        base::BindRepeating(&AudioRendererAlgorithm::OnResamplerRead,
+                            base::Unretained(this)));
+  }
+
+  const int num_chunks = static_cast<int>(std::ceil(
+      static_cast<float>(requested_frames) / resampler_->ChunkSize()));
+
+  // |resampler_| can request more than |requested_frames|, due to the
+  // requests size not being aligned. To prevent having to fill it with silence,
+  // we find the max number of reads it could request, and make sure we have
+  // enough data to satisfy all of those reads.
+  const int min_frames_required =
+      num_chunks * SincResampler::kDefaultRequestSize;
+
+  if (!reached_end_of_stream_ && audio_buffer_.frames() < min_frames_required) {
+    // Exit early, forgoing at most a total of |audio_buffer_.frames()| +
+    // |resampler_->BufferedFrames()|.
+    // If we have reached the end of stream, |resampler_| will output silence
+    // after running out of frames, which is ok.
+    return 0;
+  }
+  resampler_->SetRatio(playback_rate);
+
+  // Directly use |dest| for the most common case of having 0 offset.
+  if (!dest_offset) {
+    resampler_->Resample(requested_frames, dest);
+    return requested_frames;
+  }
+
+  // This is only really used once, at the beginning of a stream, which means
+  // we can use a temporary variable, rather than saving it as a member.
+  // NOTE: We don't wrap |dest|'s channel data in an AudioBus wrapper, because
+  // |dest_offset| isn't aligned always with AudioBus::kChannelAlignment.
+  std::unique_ptr<AudioBus> resampler_output =
+      AudioBus::Create(channels_, requested_frames);
+
+  resampler_->Resample(requested_frames, resampler_output.get());
+  resampler_output->CopyPartialFramesTo(0, requested_frames, dest_offset, dest);
+
+  return requested_frames;
+}
+
 int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
                                        int dest_offset,
                                        int requested_frames,
@@ -183,6 +251,16 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
         audio_buffer_.ReadFrames(frames_to_copy, dest_offset, dest);
     DCHECK_EQ(frames_read, frames_to_copy);
     return frames_read;
+  }
+
+  // WSOLA at playback rates that are close to 1.0 produces noticeable
+  // warbling and stuttering. We prefer resampling the audio at these speeds.
+  // This does results in a noticeable pitch shift.
+  // NOTE: The cutoff values are arbitrary, and picked based off of a tradeoff
+  // between "resample pitch shift" vs "WSOLA distortions".
+  if (kLowerResampleThreshold <= playback_rate &&
+      playback_rate <= kUpperResampleThreshold) {
+    return ResampleAndFill(dest, dest_offset, requested_frames, playback_rate);
   }
 
   // Allocate structures on first non-1.0 playback rate; these can eat a fair
@@ -234,6 +312,9 @@ void AudioRendererAlgorithm::FlushBuffers() {
   if (wsola_output_)
     wsola_output_->Zero();
   num_complete_frames_ = 0;
+
+  resampler_.reset();
+  reached_end_of_stream_ = false;
 
   // Reset |capacity_| so growth triggered by underflows doesn't penalize seek
   // time.

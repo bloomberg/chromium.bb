@@ -19,16 +19,31 @@ namespace net {
 
 struct NetLogSource;
 
+// NetLog subclass that follows normal lifetime rules (has a public
+// destructor.)
+//
+// This class is for testing only. Production code should use the singleton
+// NetLog::Get().
+class TestNetLog : public NetLog {
+ public:
+  TestNetLog();
+  ~TestNetLog() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestNetLog);
+};
+
 // NetLog subclass that attaches a single observer (this) to record NetLog
 // events and their parameters into an in-memory buffer. The NetLog is observed
 // at kSensitive level by default, however can be changed with
 // SetObserverCaptureMode().
 //
 // This class is for testing only.
-class TestNetLog : public NetLog, public NetLog::ThreadSafeObserver {
+class RecordingTestNetLog : public TestNetLog,
+                            public NetLog::ThreadSafeObserver {
  public:
-  TestNetLog();
-  ~TestNetLog() override;
+  RecordingTestNetLog();
+  ~RecordingTestNetLog() override;
 
   void SetObserverCaptureMode(NetLogCaptureMode capture_mode);
 
@@ -59,18 +74,18 @@ class TestNetLog : public NetLog, public NetLog::ThreadSafeObserver {
   mutable base::Lock lock_;
   std::vector<NetLogEntry> entry_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestNetLog);
+  DISALLOW_COPY_AND_ASSIGN(RecordingTestNetLog);
 };
 
 // Helper class that exposes a similar API as NetLogWithSource, but uses a
-// TestNetLog rather than the more generic NetLog.
+// RecordingTestNetLog rather than the more generic NetLog.
 //
-// A BoundTestNetLog can easily be converted to a NetLogWithSource using the
-// bound() method.
-class BoundTestNetLog {
+// A RecordingBoundTestNetLog can easily be converted to a NetLogWithSource
+// using the bound() method.
+class RecordingBoundTestNetLog {
  public:
-  BoundTestNetLog();
-  ~BoundTestNetLog();
+  RecordingBoundTestNetLog();
+  ~RecordingBoundTestNetLog();
 
   // The returned NetLogWithSource is only valid while |this| is alive.
   NetLogWithSource bound() const { return net_log_; }
@@ -89,14 +104,14 @@ class BoundTestNetLog {
 
   void Clear();
 
-  // Sets the observer capture mode of the underlying TestNetLog.
+  // Sets the observer capture mode of the underlying RecordingTestNetLog.
   void SetObserverCaptureMode(NetLogCaptureMode capture_mode);
 
  private:
-  TestNetLog test_net_log_;
+  RecordingTestNetLog test_net_log_;
   const NetLogWithSource net_log_;
 
-  DISALLOW_COPY_AND_ASSIGN(BoundTestNetLog);
+  DISALLOW_COPY_AND_ASSIGN(RecordingBoundTestNetLog);
 };
 
 }  // namespace net

@@ -4,10 +4,12 @@
 
 #include "third_party/blink/public/platform/web_drag_data.h"
 
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -15,12 +17,10 @@ TEST(WebDragDataTest, items) {
   DataObject* data_object = DataObject::Create();
 
   // Native file.
-  data_object->Add(File::Create("/native/path"));
-
+  data_object->Add(MakeGarbageCollected<File>("/native/path"));
   // Blob file.
-  const scoped_refptr<BlobDataHandle> blob_data_handle =
-      BlobDataHandle::Create();
-  data_object->Add(File::Create("name", 0.0, blob_data_handle));
+  data_object->Add(MakeGarbageCollected<File>("name", base::Time::UnixEpoch(),
+                                              BlobDataHandle::Create()));
 
   // User visible snapshot file.
   {

@@ -8,10 +8,10 @@
 
 #include <algorithm>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -24,21 +24,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
-
-namespace {
-
-inline float Clamp(float value, float low, float high) {
-  return std::min(high, std::max(value, low));
-}
-
-int GetRequiredNumberOfFingers() {
-  return ash::features::IsVirtualDesksEnabled() &&
-                 ash::features::IsVirtualDesksGesturesEnabled()
-             ? 4
-             : 3;
-}
-
-}  // namespace
 
 // static
 TabScrubber* TabScrubber::GetInstance() {
@@ -82,8 +67,7 @@ bool TabScrubber::IsActivationPending() {
   return activate_timer_.IsRunning();
 }
 
-TabScrubber::TabScrubber()
-    : required_finger_count_(GetRequiredNumberOfFingers()) {
+TabScrubber::TabScrubber() {
   // TODO(mash): Add window server API to observe swipe gestures. Observing
   // gestures on browser windows is not sufficient, as this feature works when
   // the cursor is over the shelf, desktop, etc. https://crbug.com/796366
@@ -103,7 +87,7 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
     return;
   }
 
-  if (event->finger_count() != required_finger_count_)
+  if (event->finger_count() != 3)
     return;
 
   Browser* browser = GetActiveBrowser();
@@ -143,7 +127,7 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
   if (!new_tab)
     return;
 
-  int new_index = tab_strip_->GetModelIndexOfTab(new_tab);
+  int new_index = tab_strip_->GetModelIndexOf(new_tab);
   if (highlighted_tab_ == -1 &&
       new_index == browser_->tab_strip_model()->active_index()) {
     return;
@@ -301,8 +285,9 @@ void TabScrubber::UpdateSwipeX(float x_offset) {
   // Each added tab introduces a reduction of 2% in |x_offset|, with a value of
   // one fourth of |x_offset| as the minimum (i.e. we need 38 tabs to reach
   // that minimum reduction).
-  swipe_x_ += Clamp(x_offset - (tab_strip_->tab_count() * 0.02f * x_offset),
-                    0.25f * x_offset, x_offset);
+  swipe_x_ += base::ClampToRange(
+      x_offset - (tab_strip_->tab_count() * 0.02f * x_offset), 0.25f * x_offset,
+      x_offset);
 
   // In an RTL layout, everything is mirrored, i.e. the index of the first tab
   // (with the smallest X mirrored co-ordinates) is actually the index of the

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -20,48 +21,86 @@
 #include "components/search_engines/template_url_service.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/view_class_properties.h"
+
+namespace {
+
+class ChipLabel : public views::Label {
+ public:
+  using views::Label::Label;
+
+  // views::Label
+  gfx::Insets GetInsets() const override {
+    const int icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
+    const int chip_corner_radius =
+        views::LayoutProvider::Get()->GetCornerRadiusMetric(
+            views::EMPHASIS_MAXIMUM, gfx::Size(icon_size, icon_size));
+    return gfx::Insets(0, chip_corner_radius, 0, chip_corner_radius);
+  }
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(views::Label::CalculatePreferredSize().width(),
+                     GetLayoutConstant(LOCATION_BAR_ICON_SIZE));
+  }
+};
+
+}  // namespace
 
 KeywordHintView::KeywordHintView(LocationBarView* parent, Profile* profile)
-    : Button(parent),
-      location_bar_view_(parent),
-      profile_(profile),
-      chip_container_(new views::View()),
-      chip_label_(
-          new views::Label(base::string16(), CONTEXT_OMNIBOX_DECORATION)) {
-  OmniboxTint tint = parent->CalculateTint();
+    : Button(parent), profile_(profile) {
+  auto chip_container = std::make_unique<views::View>();
+  auto chip_label =
+      std::make_unique<ChipLabel>(base::string16(), CONTEXT_OMNIBOX_DECORATION);
+
+  auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout->SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetDefault(views::kFlexBehaviorKey,
+                  views::FlexSpecification::ForSizeRule(
+                      views::MinimumFlexSizeRule::kPreferredSnapToZero,
+                      views::MaximumFlexSizeRule::kPreferred, true));
+
+  const ui::ThemeProvider* theme_provider =
+      &ThemeService::GetThemeProviderForProfile(profile_);
   const SkColor leading_label_text_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT, tint);
+      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
   const SkColor background_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint);
+      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_BACKGROUND);
   leading_label_ = CreateLabel(leading_label_text_color, background_color);
 
-  chip_label_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(0, GetCornerRadius())));
-
   const SkColor tab_border_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE, tint);
+      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE);
   SkColor text_color = leading_label_text_color;
-  SkColor tab_bg_color = GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
+  SkColor tab_bg_color =
+      GetOmniboxColor(theme_provider, OmniboxPart::RESULTS_BACKGROUND);
   if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
     text_color = SK_ColorWHITE;
     tab_bg_color = tab_border_color;
   }
-  chip_label_->SetEnabledColor(text_color);
-  chip_label_->SetBackgroundColor(tab_bg_color);
+  chip_label->SetEnabledColor(text_color);
+  chip_label->SetBackgroundColor(tab_bg_color);
 
-  chip_container_->SetBackground(CreateBackgroundFromPainter(
+  chip_container->SetBackground(CreateBackgroundFromPainter(
       views::Painter::CreateRoundRectWith1PxBorderPainter(
           tab_bg_color, tab_border_color,
-          GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS))));
-  chip_container_->AddChildView(chip_label_);
-  chip_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
-  AddChildView(chip_container_);
+          views::LayoutProvider::Get()->GetCornerRadiusMetric(
+              views::EMPHASIS_HIGH))));
+  chip_label_ = chip_container->AddChildView(std::move(chip_label));
+  chip_container->SetLayoutManager(std::make_unique<views::FillLayout>());
+  chip_container->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification::ForSizeRule(
+          views::MinimumFlexSizeRule::kPreferred,
+          views::MaximumFlexSizeRule::kPreferred, true));
+  chip_container->SizeToPreferredSize();
+  chip_container_ = AddChildView(std::move(chip_container));
 
   trailing_label_ = CreateLabel(text_color, background_color);
 
@@ -167,56 +206,19 @@ const char* KeywordHintView::GetClassName() const {
   return "KeywordHintView";
 }
 
-void KeywordHintView::Layout() {
-  const int chip_width = chip_container_->GetPreferredSize().width();
-  const int chip_height = GetLayoutConstant(LOCATION_BAR_ICON_SIZE) +
-                          chip_container_->GetInsets().height();
-  // |chip_container_|'s size must be updated before calling GetInsets(), since
-  // that function reads its height.
-  chip_container_->SetSize(gfx::Size(chip_width, chip_height));
-  bool show_labels = width() - GetInsets().width() > chip_width;
-  gfx::Size leading_size(leading_label_->GetPreferredSize());
-  leading_label_->SetBounds(GetInsets().left(), 0,
-                            show_labels ? leading_size.width() : 0, height());
-
-  const int chip_vertical_padding = std::max(0, height() - chip_height) / 2;
-  chip_container_->SetPosition(
-      gfx::Point(leading_label_->bounds().right(), chip_vertical_padding));
-  gfx::Size trailing_size(trailing_label_->GetPreferredSize());
-  trailing_label_->SetBounds(chip_container_->bounds().right(), 0,
-                             show_labels ? trailing_size.width() : 0, height());
-}
-
-gfx::Size KeywordHintView::CalculatePreferredSize() const {
-  // Height will be ignored by the LocationBarView.
-  return gfx::Size(leading_label_->GetPreferredSize().width() +
-                       chip_container_->GetPreferredSize().width() +
-                       trailing_label_->GetPreferredSize().width() +
-                       GetInsets().width(),
-                   0);
-}
-
-void KeywordHintView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  const int chip_corner_radius = GetCornerRadius();
-  chip_label_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetInsets().top(), chip_corner_radius, GetInsets().bottom(),
-                  chip_corner_radius)));
-  views::Button::OnBoundsChanged(previous_bounds);
-}
-
 void KeywordHintView::OnThemeChanged() {
-  OmniboxTint tint = location_bar_view_->CalculateTint();
-  const SkColor leading_label_text_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT, tint);
+  const SkColor leading_label_text_color = GetOmniboxColor(
+      GetThemeProvider(), OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
   const SkColor background_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint);
+      GetOmniboxColor(GetThemeProvider(), OmniboxPart::LOCATION_BAR_BACKGROUND);
   leading_label_->SetEnabledColor(leading_label_text_color);
   leading_label_->SetBackgroundColor(background_color);
 
-  const SkColor tab_border_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE, tint);
+  const SkColor tab_border_color = GetOmniboxColor(
+      GetThemeProvider(), OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE);
   SkColor text_color = leading_label_text_color;
-  SkColor tab_bg_color = GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, tint);
+  SkColor tab_bg_color =
+      GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_BACKGROUND);
   if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
     text_color = SK_ColorWHITE;
     tab_bg_color = tab_border_color;
@@ -227,7 +229,8 @@ void KeywordHintView::OnThemeChanged() {
   chip_container_->SetBackground(CreateBackgroundFromPainter(
       views::Painter::CreateRoundRectWith1PxBorderPainter(
           tab_bg_color, tab_border_color,
-          GetLayoutConstant(LOCATION_BAR_BUBBLE_CORNER_RADIUS))));
+          views::LayoutProvider::Get()->GetCornerRadiusMetric(
+              views::EMPHASIS_HIGH))));
 
   trailing_label_->SetEnabledColor(text_color);
   trailing_label_->SetBackgroundColor(background_color);
@@ -235,14 +238,9 @@ void KeywordHintView::OnThemeChanged() {
 
 views::Label* KeywordHintView::CreateLabel(SkColor text_color,
                                            SkColor background_color) {
-  views::Label* label =
-      new views::Label(base::string16(), CONTEXT_OMNIBOX_DECORATION);
+  auto label = std::make_unique<views::Label>(base::string16(),
+                                              CONTEXT_OMNIBOX_DECORATION);
   label->SetEnabledColor(text_color);
   label->SetBackgroundColor(background_color);
-  AddChildView(label);
-  return label;
-}
-
-int KeywordHintView::GetCornerRadius() const {
-  return chip_container_->height() / 2;
+  return AddChildView(std::move(label));
 }

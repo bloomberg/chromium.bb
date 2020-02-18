@@ -16,7 +16,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/stylus_utils.h"
-#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
@@ -261,6 +260,7 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
   }
 
   void TearDown() override {
+    ui::SetEventTickClockForTesting(nullptr);
     // This needs to be called first to reset the controller state before the
     // shell instance gets torn down.
     highlighter_test_api_.reset();
@@ -338,7 +338,7 @@ TEST_F(PaletteTrayTestWithAssistant, MetalayerToolViewCreated) {
 TEST_F(PaletteTrayTestWithAssistant, MetalayerToolActivatesHighlighter) {
   ui::ScopedAnimationDurationScaleMode animation_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-  assistant_state()->NotifyStatusChanged(mojom::VoiceInteractionState::RUNNING);
+  assistant_state()->NotifyStatusChanged(mojom::AssistantState::READY);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
                       true);
@@ -417,8 +417,7 @@ TEST_F(PaletteTrayTestWithAssistant, MetalayerToolActivatesHighlighter) {
 TEST_F(PaletteTrayTestWithAssistant, StylusBarrelButtonActivatesHighlighter) {
   ui::ScopedAnimationDurationScaleMode animation_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-  assistant_state()->NotifyStatusChanged(
-      mojom::VoiceInteractionState::NOT_READY);
+  assistant_state()->NotifyStatusChanged(mojom::AssistantState::NOT_READY);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, false);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
                       false);
@@ -454,7 +453,7 @@ TEST_F(PaletteTrayTestWithAssistant, StylusBarrelButtonActivatesHighlighter) {
                              false /* no highlighter on press */);
 
   // Once the service is ready, the button should start working.
-  assistant_state()->NotifyStatusChanged(mojom::VoiceInteractionState::RUNNING);
+  assistant_state()->NotifyStatusChanged(mojom::AssistantState::READY);
 
   // Press and drag with no button, still no highlighter.
   WaitDragAndAssertMetalayer("all enabled, no button ", origin, ui::EF_NONE,

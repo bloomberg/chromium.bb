@@ -42,7 +42,7 @@ class TestRemoveKnownHost(cros_test_lib.MockTempDirTestCase):
 
   # ssh-keygen doesn't check for a valid hostname so use something that won't
   # be in the user's known_hosts to avoid changing their file contents.
-  _HOST = '0.0.0.0.0.0'
+  _HOST = remote_access.TEST_IP
 
   _HOST_KEY = (
       _HOST + ' ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjysPTaDAtRaxRaW1JjqzCHp2'
@@ -104,12 +104,12 @@ class RemoteShMock(partial_mock.PartialCmdMock):
 
     Returns:
       A CommandResult object with an additional member |rc_mock| to
-      enable examination of the underlying RunCommand() function call.
+      enable examination of the underlying run() function call.
     """
     result = self._results['RemoteSh'].LookupResult(
         (cmd,), hook_args=(inst, cmd,) + args, hook_kwargs=kwargs)
 
-    # Run the real RemoteSh with RunCommand mocked out.
+    # Run the real RemoteSh with run mocked out.
     rc_mock = cros_test_lib.RunCommandMock()
     rc_mock.AddCmdResult(
         partial_mock.Ignore(), result.returncode, result.output, result.error)
@@ -164,9 +164,9 @@ class RemoteShTest(RemoteAccessTest):
     """Test normal functionality."""
     self.SetRemoteShResult()
     result = self.host.RemoteSh(self.TEST_CMD)
-    self.assertEquals(result.returncode, self.RETURN_CODE)
-    self.assertEquals(result.output.strip(), self.OUTPUT)
-    self.assertEquals(result.error.strip(), self.ERROR)
+    self.assertEqual(result.returncode, self.RETURN_CODE)
+    self.assertEqual(result.output.strip(), self.OUTPUT)
+    self.assertEqual(result.error.strip(), self.ERROR)
 
   def testRemoteCmdFailure(self):
     """Test failure in remote cmd."""
@@ -255,7 +255,7 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
     self.rsh_mock.AddCmdResult(command, output=expected_output)
     self._SetupRemoteTempDir()
 
-    with remote_access.RemoteDeviceHandler('1.1.1.1') as device:
+    with remote_access.RemoteDeviceHandler(remote_access.TEST_IP) as device:
       self.assertEqual(expected_output,
                        device.RunCommand(['echo', 'foo']).output)
       self.assertEqual(expected_output,
@@ -263,7 +263,7 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
 
   def testRunCommandShortCmdline(self):
     """Verify short command lines execute env settings directly."""
-    with remote_access.RemoteDeviceHandler('1.1.1.1') as device:
+    with remote_access.RemoteDeviceHandler(remote_access.TEST_IP) as device:
       self.PatchObject(remote_access.RemoteDevice, 'CopyToWorkDir',
                        side_effect=Exception('should not be copying files'))
       self.rsh_mock.AddCmdResult(partial_mock.In('runit'))
@@ -271,7 +271,7 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
 
   def testRunCommandLongCmdline(self):
     """Verify long command lines execute env settings via script."""
-    with remote_access.RemoteDeviceHandler('1.1.1.1') as device:
+    with remote_access.RemoteDeviceHandler(remote_access.TEST_IP) as device:
       self._SetupRemoteTempDir()
       m = self.PatchObject(remote_access.RemoteDevice, 'CopyToWorkDir')
       self.rsh_mock.AddCmdResult(partial_mock.In('runit'))
@@ -286,13 +286,15 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
     expected_output = 'foo'
     self.rsh_mock.AddCmdResult(command, output=expected_output)
 
-    with remote_access.RemoteDeviceHandler('1.1.1.1', base_dir=None) as device:
+    with remote_access.RemoteDeviceHandler(
+        remote_access.TEST_IP, base_dir=None) as device:
       self.assertEqual(expected_output,
                        device.BaseRunCommand(['echo', 'foo']).output)
 
   def testDelayedRemoteDirs(self):
     """Tests the delayed creation of base_dir/work_dir."""
-    with remote_access.RemoteDeviceHandler('1.1.1.1', base_dir='/f') as device:
+    with remote_access.RemoteDeviceHandler(
+        remote_access.TEST_IP, base_dir='/f') as device:
       # Make sure we didn't talk to the remote yet.
       self.assertEqual(self.rsh_mock.call_count, 0)
 
@@ -310,7 +312,7 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
     """Tests behavior of IsSELinuxAvailable() and IsSELinuxEnforced()."""
     self.rsh_mock.AddCmdResult(
         partial_mock.ListRegex('which restorecon'), returncode=0)
-    with remote_access.RemoteDeviceHandler('1.1.1.1') as device:
+    with remote_access.RemoteDeviceHandler(remote_access.TEST_IP) as device:
       self.rsh_mock.AddCmdResult(
           partial_mock.ListRegex('test -f'), returncode=0)
       self.rsh_mock.AddCmdResult(

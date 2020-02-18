@@ -341,9 +341,7 @@ VideoPixelFormat VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
       {MEDIASUBTYPE_RGB32, PIXEL_FORMAT_ARGB},
       {MEDIASUBTYPE_YUY2, PIXEL_FORMAT_YUY2},
       {MEDIASUBTYPE_MJPG, PIXEL_FORMAT_MJPEG},
-      {MEDIASUBTYPE_UYVY, PIXEL_FORMAT_UYVY},
       {MEDIASUBTYPE_ARGB32, PIXEL_FORMAT_ARGB},
-      {kMediaSubTypeHDYC, PIXEL_FORMAT_UYVY},
       {kMediaSubTypeY16, PIXEL_FORMAT_Y16},
       {kMediaSubTypeZ16, PIXEL_FORMAT_Y16},
       {kMediaSubTypeINVZ, PIXEL_FORMAT_Y16},
@@ -417,7 +415,7 @@ VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
   if (graph_builder_.Get()) {
     if (sink_filter_.get()) {
       graph_builder_->RemoveFilter(sink_filter_.get());
-      sink_filter_ = NULL;
+      sink_filter_.reset();
     }
 
     if (capture_filter_.Get())

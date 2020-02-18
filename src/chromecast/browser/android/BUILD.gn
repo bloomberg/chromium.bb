@@ -69,6 +69,10 @@ android_resources("cast_shell_android_stub_resources") {
 
 android_library("cast_audio_manager_java") {
   java_src_dir = "//chromecast/browser/android/apk/src"
+
+  alternative_android_sdk_dep =
+      "//third_party/android_sdk:public_framework_system_java"
+
   java_files = [
     "$java_src_dir/org/chromium/chromecast/shell/CastAudioManager.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastAudioFocusRequest.java",
@@ -103,12 +107,12 @@ android_library("reactive_android_java") {
   deps = [
     "//base:base_java",
     "//chromecast/base:base_java",
-    "//third_party/android_deps:com_android_support_localbroadcastmanager_java",
+    "//third_party/android_deps:androidx_localbroadcastmanager_localbroadcastmanager_java",
     "//third_party/android_deps:com_android_support_support_core_utils_java",
   ]
 }
 
-generate_locale_config_srcjar("chromecast_locale_config") {
+generate_product_config_srcjar("chromecast_product_config") {
   java_package = "org.chromium.chromecast.shell"
 }
 
@@ -144,12 +148,12 @@ android_library("cast_shell_java") {
 
   srcjar_deps = [
     ":cast_shell_build_config_gen",
-    ":chromecast_locale_config",
+    ":chromecast_product_config",
     ":logs_provider_aidl",
     "//chromecast/browser:java_enums",
   ]
 
-  jar_excluded_patterns = [ "*/LocaleConfig.class" ]
+  jar_excluded_patterns = [ "*/ProductConfig.class" ]
 
   deps = [
     ":cast_audio_manager_java",
@@ -158,6 +162,7 @@ android_library("cast_shell_java") {
     ":cast_shell_manifest",
     ":reactive_android_java",
     "//base:base_java",
+    "//base:jni_java",
     "//chromecast/base:base_java",
     "//chromecast/media/cma/backend/android:audio_track_java",
     "//components/crash/android:java",
@@ -167,13 +172,14 @@ android_library("cast_shell_java") {
     "//content/public/android:content_java",
     "//media/base/android:media_java",
     "//net/android:net_java",
-    "//third_party/android_deps:com_android_support_localbroadcastmanager_java",
+    "//third_party/android_deps:androidx_localbroadcastmanager_localbroadcastmanager_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
 
     # TODO(slan): We may need to pass this in as a parameter.
     "//third_party/android_deps:com_android_support_support_core_utils_java",
     "//ui/android:ui_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   if (is_android_things_non_public) {
     deps += [ ":cast_shell_android_things_sys_info_java" ]

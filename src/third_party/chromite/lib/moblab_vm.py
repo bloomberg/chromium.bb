@@ -451,11 +451,11 @@ def _CreateVMImage(src_dir, dest_dir):
         path_util.ToChrootPath(
             os.path.join(constants.CROSUTILS_DIR, 'image_to_vm.sh')),
         '--from=%s' % path_util.ToChrootPath(tempdir),
+        '--disk_layout=16gb-rootfs',
         '--test_image',
     ]
     try:
-      cros_build_lib.RunCommand(cmd, enter_chroot=True,
-                                cwd=constants.SOURCE_ROOT)
+      cros_build_lib.run(cmd, enter_chroot=True, cwd=constants.SOURCE_ROOT)
     except cros_build_lib.RunCommandError as e:
       raise SetupError('Failed to create VM image for %s: %s' % (src_dir, e))
 
@@ -481,10 +481,9 @@ def _CreateMoblabDisk(dest_dir):
     Path to the created disk image.
   """
   dest_path = os.path.join(dest_dir, 'moblab_disk')
-  cros_build_lib.RunCommand(
-      ['qemu-img', 'create', '-f', 'raw', dest_path, '64g'])
-  cros_build_lib.RunCommand(['mkfs.ext4', '-F', dest_path])
-  cros_build_lib.RunCommand(['e2label', dest_path, 'MOBLAB-STORAGE'])
+  cros_build_lib.run(['qemu-img', 'create', '-f', 'raw', dest_path, '64g'])
+  cros_build_lib.run(['mkfs.ext4', '-F', dest_path])
+  cros_build_lib.run(['e2label', dest_path, 'MOBLAB-STORAGE'])
   return dest_path
 
 
@@ -500,8 +499,8 @@ def _TryCreateBridgeDevice():
   num = random.randint(10000, 30000)
   # device names can only be 16 char long. So suffix can be between 0 - 10^9.
   name = 'brmob%s' % num
-  cros_build_lib.SudoRunCommand(['ip', 'link', 'add', name, 'type', 'bridge'],
-                                quiet=True)
+  cros_build_lib.sudo_run(['ip', 'link', 'add', name, 'type', 'bridge'],
+                          quiet=True)
   return num + 1, name
 
 
@@ -509,15 +508,14 @@ def _CreateTapDevice(suffix):
   """Create a tap device using the suffix provided."""
   # device names can only be 16 char long. So suffix can be between 0 - 10^10.
   name = 'tapmob%s' % suffix
-  cros_build_lib.SudoRunCommand(['ip', 'tuntap', 'add', 'mode', 'tap', name])
+  cros_build_lib.sudo_run(['ip', 'tuntap', 'add', 'mode', 'tap', name])
 
   # Creating the device can take some time, and trying to create another device
   # in the meantime returns 'Device or resource busy'. So, wait for device
   # creation to complete.
   @retry_util.WithRetry(max_retry=3, sleep=0.2, exception=RetriableError)
   def _VerifyDeviceCreated(name):
-    result = cros_build_lib.RunCommand(['ip', 'tuntap', 'show'],
-                                       redirect_stdout=True)
+    result = cros_build_lib.run(['ip', 'tuntap', 'show'], redirect_stdout=True)
     if name not in result.output:
       raise RetriableError('Device %s not found in output "%s".' %
                            (name, result.output))
@@ -528,12 +526,12 @@ def _CreateTapDevice(suffix):
 
 def _ConnectDeviceToBridge(device, bridge):
   """Connects link device to network bridge."""
-  cros_build_lib.SudoRunCommand(['ip', 'link', 'set', device, 'master', bridge])
+  cros_build_lib.sudo_run(['ip', 'link', 'set', device, 'master', bridge])
 
 
 def _DeviceUp(device):
   """Bring up the given link device."""
-  cros_build_lib.SudoRunCommand(['ip', 'link', 'set', 'dev', device, 'up'])
+  cros_build_lib.sudo_run(['ip', 'link', 'set', 'dev', device, 'up'])
 
 
 def _StartVM(image_path, ssh_port, max_port, tap_dev, tap_mac_addr, is_moblab,
@@ -553,6 +551,7 @@ def _StartVM(image_path, ssh_port, max_port, tap_dev, tap_mac_addr, is_moblab,
   cmd = [
       './cros_vm', '--start', '--image-path=%s' % image_path,
       '--ssh-port=%d' % ssh_port,
+      '--qemu-m', '32G',
       '--qemu-args', '-net nic,macaddr=%s' % tap_mac_addr,
       '--qemu-args', '-net tap,ifname=%s' % tap_dev
   ]
@@ -578,7 +577,7 @@ def _StartVM(image_path, ssh_port, max_port, tap_dev, tap_mac_addr, is_moblab,
         '--qemu-args', '-device virtio-scsi-pci,id=scsiext',
         '--qemu-args', '-device scsi-hd,bus=scsiext.0,drive=moblabdisk',
     ]
-  cros_build_lib.SudoRunCommand(cmd, cwd=constants.CHROMITE_BIN_DIR)
+  cros_build_lib.sudo_run(cmd, cwd=constants.CHROMITE_BIN_DIR)
 
 
 def _RemoveNetworkBridgeIgnoringErrors(name):
@@ -611,7 +610,7 @@ def _StopVM(ssh_port, chroot_path=None):
 def _RunIgnoringErrors(cmd):
   """Runs the given command, ignores errors but warns user."""
   try:
-    cros_build_lib.SudoRunCommand(cmd, quiet=True)
+    cros_build_lib.sudo_run(cmd, quiet=True)
   except cros_build_lib.RunCommandError as e:
     logging.error('Cleanup operation failed. Please run "%s" manually.',
                   ' '.join(cmd))

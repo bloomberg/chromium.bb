@@ -33,6 +33,13 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
                                       views::BubbleBorder::TOP_RIGHT),
       delegate_(std::move(delegate)),
       anchored_to_action_(anchored_to_action) {
+  DialogDelegate::set_default_button(delegate_->GetDefaultDialogButton());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   delegate_->GetActionButtonText());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   delegate_->GetDismissButtonText());
+  DialogDelegate::SetExtraView(CreateExtraInfoView());
+
   DCHECK(anchor_view);
   set_close_on_deactivate(delegate_->ShouldCloseOnDeactivate());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TOOLBAR_ACTIONS_BAR);
@@ -56,7 +63,8 @@ std::string ToolbarActionsBarBubbleViews::GetAnchorActionId() {
   return delegate_->GetAnchorActionId();
 }
 
-std::unique_ptr<views::View> ToolbarActionsBarBubbleViews::CreateExtraView() {
+std::unique_ptr<views::View>
+ToolbarActionsBarBubbleViews::CreateExtraInfoView() {
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
       extra_view_info = delegate_->GetExtraViewInfo();
 
@@ -80,8 +88,8 @@ std::unique_ptr<views::View> ToolbarActionsBarBubbleViews::CreateExtraView() {
       image_button->SetTooltipText(text);
       views::SetImageFromVectorIcon(image_button.get(),
                                     vector_icons::kHelpOutlineIcon);
-      image_button_ = image_button.release();
-      extra_view.reset(image_button_);
+      learn_more_button_ = image_button.get();
+      extra_view = std::move(image_button);
     } else {
       extra_view = std::make_unique<views::Label>(text);
     }
@@ -177,16 +185,6 @@ int ToolbarActionsBarBubbleViews::GetDialogButtons() const {
   if (!delegate_->GetDismissButtonText().empty())
     buttons |= ui::DIALOG_BUTTON_CANCEL;
   return buttons;
-}
-
-int ToolbarActionsBarBubbleViews::GetDefaultDialogButton() const {
-  return delegate_->GetDefaultDialogButton();
-}
-
-base::string16 ToolbarActionsBarBubbleViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_OK ? delegate_->GetActionButtonText()
-                                        : delegate_->GetDismissButtonText();
 }
 
 void ToolbarActionsBarBubbleViews::ButtonPressed(views::Button* sender,

@@ -157,6 +157,18 @@ namespace sw
 									yyyy * *Pointer<Float4>(primitive + OFFSET(Primitive, V[interpolant].B), 16);
 						}
 					}
+
+					for (unsigned int i = 0; i < state.numClipDistances; i++)
+					{
+						DclipDistance[i] = *Pointer<Float4>(primitive + OFFSET(Primitive, clipDistance[i].C), 16) +
+									yyyy * *Pointer<Float4>(primitive + OFFSET(Primitive, clipDistance[i].B), 16);
+					}
+
+					for (unsigned int i = 0; i < state.numCullDistances; i++)
+					{
+						DcullDistance[i] = *Pointer<Float4>(primitive + OFFSET(Primitive, cullDistance[i].C), 16) +
+									yyyy * *Pointer<Float4>(primitive + OFFSET(Primitive, cullDistance[i].B), 16);
+					}
 				}
 
 				Short4 xLeft[4];
@@ -180,7 +192,8 @@ namespace sw
 					{
 						if (state.multiSampleMask & (1<<q))
 						{
-							Short4 mask = CmpGT(xxxx, xLeft[q]) & CmpGT(xRight[q], xxxx);
+							unsigned int i = state.multiSampledBresenham ? 0 : q;
+							Short4 mask = CmpGT(xxxx, xLeft[i]) & CmpGT(xRight[i], xxxx);
 							cMask[q] = SignMask(PackSigned(mask, mask)) & 0x0000000F;
 						}
 						else

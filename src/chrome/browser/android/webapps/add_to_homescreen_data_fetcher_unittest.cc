@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
@@ -27,7 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "url/gurl.h"
 
@@ -39,8 +38,8 @@ const char* kDefaultIconUrl = "https://www.example.com/icon.png";
 const char* kDefaultManifestName = "Default Name";
 const char* kDefaultManifestShortName = "Default Short Name";
 const char* kDefaultStartUrl = "https://www.example.com/index.html";
-const blink::WebDisplayMode kDefaultManifestDisplayMode =
-    blink::kWebDisplayModeStandalone;
+const blink::mojom::DisplayMode kDefaultManifestDisplayMode =
+    blink::mojom::DisplayMode::kStandalone;
 const int kIconSizePx = 144;
 
 // Tracks which of the AddToHomescreenDataFetcher::Observer methods have been
@@ -243,12 +242,14 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
                   ObserverWaiter& waiter,
                   const char* expected_user_title,
                   const char* expected_name,
-                  blink::WebDisplayMode display_mode,
+                  blink::mojom::DisplayMode display_mode,
                   bool is_webapk_compatible) {
     WebApplicationInfo web_application_info;
     web_application_info.title = base::UTF8ToUTF16(kWebApplicationInfoTitle);
 
-    fetcher->OnDidGetWebApplicationInfo(nullptr, web_application_info);
+    fetcher->OnDidGetWebApplicationInfo(
+        mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>(),
+        web_application_info);
     waiter.WaitForDataAvailable();
 
     EXPECT_EQ(is_webapk_compatible, waiter.is_webapk_compatible());
@@ -266,7 +267,7 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
   void RunFetcher(AddToHomescreenDataFetcher* fetcher,
                   ObserverWaiter& waiter,
                   const char* expected_title,
-                  blink::WebDisplayMode display_mode,
+                  blink::mojom::DisplayMode display_mode,
                   bool is_webapk_compatible) {
     RunFetcher(fetcher, waiter, expected_title, expected_title, display_mode,
                is_webapk_compatible);
@@ -304,7 +305,7 @@ TEST_F(AddToHomescreenDataFetcherTest, EmptyManifest) {
   ObserverWaiter waiter;
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kWebApplicationInfoTitle,
-             blink::kWebDisplayModeBrowser, false);
+             blink::mojom::DisplayMode::kBrowser, false);
   CheckHistograms(histograms);
 }
 
@@ -319,7 +320,7 @@ TEST_F(AddToHomescreenDataFetcherTest, NoIconManifest) {
   ObserverWaiter waiter;
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
-             blink::kWebDisplayModeStandalone, false);
+             blink::mojom::DisplayMode::kStandalone, false);
   CheckHistograms(histograms);
 
   EXPECT_TRUE(fetcher->shortcut_info().best_primary_icon_url.is_empty());
@@ -342,7 +343,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestFetchTimesOutPwa) {
   ObserverWaiter waiter;
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kWebApplicationInfoTitle,
-             blink::kWebDisplayModeBrowser, false);
+             blink::mojom::DisplayMode::kBrowser, false);
   CheckHistograms(histograms);
 
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
@@ -360,7 +361,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestFetchTimesOutNonPwa) {
   ObserverWaiter waiter;
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kWebApplicationInfoTitle,
-             blink::kWebDisplayModeBrowser, false);
+             blink::mojom::DisplayMode::kBrowser, false);
   CheckHistograms(histograms);
 
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
@@ -377,7 +378,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestFetchTimesOutUnknown) {
   ObserverWaiter waiter;
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kWebApplicationInfoTitle,
-             blink::kWebDisplayModeBrowser, false);
+             blink::mojom::DisplayMode::kBrowser, false);
   NavigateAndCommit(GURL("about:blank"));
   CheckHistograms(histograms);
 
@@ -400,7 +401,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ServiceWorkerCheckTimesOutPwa) {
   ObserverWaiter waiter;
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
-             blink::kWebDisplayModeStandalone, false);
+             blink::mojom::DisplayMode::kStandalone, false);
   CheckHistograms(histograms);
 
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
@@ -419,7 +420,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ServiceWorkerCheckTimesOutNonPwa) {
   ObserverWaiter waiter;
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
-             blink::kWebDisplayModeStandalone, false);
+             blink::mojom::DisplayMode::kStandalone, false);
   CheckHistograms(histograms);
 
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
@@ -438,7 +439,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ServiceWorkerCheckTimesOutUnknown) {
   ObserverWaiter waiter;
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
-             blink::kWebDisplayModeStandalone, false);
+             blink::mojom::DisplayMode::kStandalone, false);
 
   // Navigate to ensure the histograms are written.
   NavigateAndCommit(GURL("about:blank"));
@@ -458,7 +459,8 @@ TEST_F(AddToHomescreenDataFetcherTest, InstallableManifest) {
   ObserverWaiter waiter;
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
-             kDefaultManifestName, blink::kWebDisplayModeStandalone, true);
+             kDefaultManifestName, blink::mojom::DisplayMode::kStandalone,
+             true);
 
   // There should always be a primary icon.
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
@@ -485,7 +487,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestNameClobbersWebApplicationName) {
     ObserverWaiter waiter;
     std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
     RunFetcher(fetcher.get(), waiter, kDefaultManifestName,
-               blink::kWebDisplayModeStandalone, false);
+               blink::mojom::DisplayMode::kStandalone, false);
 
     EXPECT_TRUE(fetcher->shortcut_info().best_primary_icon_url.is_empty());
     EXPECT_TRUE(base::EqualsASCII(fetcher->shortcut_info().short_name,
@@ -502,7 +504,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestNameClobbersWebApplicationName) {
     ObserverWaiter waiter;
     std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
     RunFetcher(fetcher.get(), waiter, kDefaultManifestName,
-               blink::kWebDisplayModeStandalone, false);
+               blink::mojom::DisplayMode::kStandalone, false);
 
     EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
     EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
@@ -517,7 +519,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestNameClobbersWebApplicationName) {
     ObserverWaiter waiter;
     std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
     RunFetcher(fetcher.get(), waiter, kDefaultManifestName,
-               blink::kWebDisplayModeStandalone, false);
+               blink::mojom::DisplayMode::kStandalone, false);
 
     EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
     EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
@@ -533,7 +535,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestNameClobbersWebApplicationName) {
     ObserverWaiter waiter;
     std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
     RunFetcher(fetcher.get(), waiter, kDefaultManifestName,
-               blink::kWebDisplayModeStandalone, true);
+               blink::mojom::DisplayMode::kStandalone, true);
 
     EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
     EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
@@ -558,7 +560,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestNoNameNoShortName) {
   ObserverWaiter waiter;
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kWebApplicationInfoTitle,
-             blink::kWebDisplayModeStandalone, false);
+             blink::mojom::DisplayMode::kStandalone, false);
 
   EXPECT_TRUE(base::EqualsASCII(fetcher->shortcut_info().name,
                                 kWebApplicationInfoTitle));
@@ -567,27 +569,4 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestNoNameNoShortName) {
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
   EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
             GURL(kDefaultIconUrl));
-}
-
-TEST_F(AddToHomescreenDataFetcherTest, WebApkFeatureDisabled) {
-  // Test that AddToHomescreenDataFetcher considers Web Manifests as not
-  // WebAPK-compatible when the "Improved add to homescreen" feature is
-  // disabled via variations.
-  bool kTestCasesEnableWebapkFeature[] = {true, false};
-
-  SetManifest(BuildDefaultManifest());
-
-  for (bool enable_webapk_feature : kTestCasesEnableWebapkFeature) {
-    base::test::ScopedFeatureList scoped_feature_list;
-    if (enable_webapk_feature)
-      scoped_feature_list.InitAndEnableFeature(chrome::android::kImprovedA2HS);
-    else
-      scoped_feature_list.InitAndDisableFeature(chrome::android::kImprovedA2HS);
-
-    ObserverWaiter waiter;
-    std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
-    RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
-               kDefaultManifestName, blink::kWebDisplayModeStandalone,
-               enable_webapk_feature);
-  }
 }

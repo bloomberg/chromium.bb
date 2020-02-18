@@ -168,7 +168,7 @@ class VideoCaptureControllerTest
   void InitializeNewDeviceClientAndBufferPoolInstances() {
     buffer_pool_ = new media::VideoCaptureBufferPoolImpl(
         std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
-        kPoolSize);
+        media::VideoCaptureBufferType::kSharedMemory, kPoolSize);
 #if defined(OS_CHROMEOS)
     device_client_.reset(new media::VideoCaptureDeviceClient(
         media::VideoCaptureBufferType::kSharedMemory,
@@ -551,7 +551,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   Mock::VerifyAndClearExpectations(client_b_.get());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoCaptureControllerTest,
                          ::testing::Values(media::PIXEL_FORMAT_I420,
                                            media::PIXEL_FORMAT_Y16));

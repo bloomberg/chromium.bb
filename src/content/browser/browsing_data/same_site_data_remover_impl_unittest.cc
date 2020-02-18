@@ -43,7 +43,7 @@ class SameSiteRemoverTestStoragePartition : public TestStoragePartition {
 
   void ClearData(uint32_t removal_mask,
                  uint32_t quota_storage_removal_mask,
-                 const OriginMatcherFunction& origin_matcher,
+                 OriginMatcherFunction origin_matcher,
                  network::mojom::CookieDeletionFilterPtr cookie_deletion_filter,
                  bool perform_storage_cleanup,
                  const base::Time begin,
@@ -52,7 +52,7 @@ class SameSiteRemoverTestStoragePartition : public TestStoragePartition {
     storage_partition_removal_data_.removal_mask = removal_mask;
     storage_partition_removal_data_.quota_storage_removal_mask =
         quota_storage_removal_mask;
-    storage_partition_removal_data_.origin_matcher = origin_matcher;
+    storage_partition_removal_data_.origin_matcher = std::move(origin_matcher);
     std::move(callback).Run();
   }
 
@@ -107,13 +107,14 @@ class SameSiteDataRemoverImplTest : public testing::Test {
 TEST_F(SameSiteDataRemoverImplTest, TestRemoveSameSiteNoneCookies) {
   BrowserContext* browser_context = GetBrowserContext();
 
-  CreateCookieForTest(
-      "TestCookie1", "www.google.com", net::CookieSameSite::NO_RESTRICTION,
-      net::CookieOptions::SameSiteCookieContext::CROSS_SITE, browser_context);
+  CreateCookieForTest("TestCookie1", "www.google.com",
+                      net::CookieSameSite::NO_RESTRICTION,
+                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
+                      true /* is_cookie_secure */, browser_context);
   CreateCookieForTest("TestCookie2", "www.gmail.google.com",
                       net::CookieSameSite::NO_RESTRICTION,
                       net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
-                      browser_context);
+                      true /* is_cookie_secure */, browser_context);
 
   DeleteSameSiteNoneCookies();
 
@@ -127,14 +128,15 @@ TEST_F(SameSiteDataRemoverImplTest, TestRemoveSameSiteNoneCookies) {
 
 TEST_F(SameSiteDataRemoverImplTest, TestRemoveOnlySameSiteNoneCookies) {
   BrowserContext* browser_context = GetBrowserContext();
-  CreateCookieForTest(
-      "TestCookie1", "www.google.com", net::CookieSameSite::NO_RESTRICTION,
-      net::CookieOptions::SameSiteCookieContext::CROSS_SITE, browser_context);
+  CreateCookieForTest("TestCookie1", "www.google.com",
+                      net::CookieSameSite::NO_RESTRICTION,
+                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
+                      true /* is_cookie_secure */, browser_context);
   // The second cookie has SameSite value STRICT_MODE instead of NO_RESTRICTION.
   CreateCookieForTest(
       "TestCookie2", "www.gmail.google.com", net::CookieSameSite::STRICT_MODE,
       net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-      browser_context);
+      true /* is_cookie_secure */, browser_context);
 
   DeleteSameSiteNoneCookies();
 
@@ -149,15 +151,16 @@ TEST_F(SameSiteDataRemoverImplTest, TestRemoveOnlySameSiteNoneCookies) {
 
 TEST_F(SameSiteDataRemoverImplTest, TestRemoveSameDomainCookies) {
   BrowserContext* browser_context = GetBrowserContext();
-  CreateCookieForTest(
-      "TestCookie1", "www.google.com", net::CookieSameSite::NO_RESTRICTION,
-      net::CookieOptions::SameSiteCookieContext::CROSS_SITE, browser_context);
+  CreateCookieForTest("TestCookie1", "www.google.com",
+                      net::CookieSameSite::NO_RESTRICTION,
+                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
+                      true /* is_cookie_secure */, browser_context);
   // The second cookie has the same domain as the first cookie, but also has
   // SameSite value STRICT_MODE instead of NO_RESTRICTION.
   CreateCookieForTest(
       "TestCookie2", "www.google.com", net::CookieSameSite::STRICT_MODE,
       net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-      browser_context);
+      false /* is_cookie_secure */, browser_context);
 
   DeleteSameSiteNoneCookies();
 
@@ -175,11 +178,11 @@ TEST_F(SameSiteDataRemoverImplTest, TestKeepSameSiteCookies) {
   CreateCookieForTest("TestCookie1", "www.google.com",
                       net::CookieSameSite::LAX_MODE,
                       net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
-                      browser_context);
+                      false /* is_cookie_secure */, browser_context);
   CreateCookieForTest(
       "TestCookie2", "www.gmail.google.com", net::CookieSameSite::STRICT_MODE,
       net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
-      browser_context);
+      false /* is_cookie_secure */, browser_context);
 
   DeleteSameSiteNoneCookies();
 
@@ -202,7 +205,7 @@ TEST_F(SameSiteDataRemoverImplTest, TestCookieRemovalUnaffectedByParameters) {
   bool result_out = false;
   cookie_manager->SetCanonicalCookie(
       net::CanonicalCookie("TestCookie1", "20", "google.com", "/",
-                           base::Time::Now(), base::Time(), base::Time(), false,
+                           base::Time::Now(), base::Time(), base::Time(), true,
                            true, net::CookieSameSite::NO_RESTRICTION,
                            net::COOKIE_PRIORITY_HIGH),
       "https", options,
@@ -252,9 +255,10 @@ TEST_F(SameSiteDataRemoverImplTest, TestStoragePartitionDataRemoval) {
   GetSameSiteDataRemoverImpl()->OverrideStoragePartitionForTesting(
       &storage_partition);
 
-  CreateCookieForTest(
-      "TestCookie1", ".google.com", net::CookieSameSite::NO_RESTRICTION,
-      net::CookieOptions::SameSiteCookieContext::CROSS_SITE, browser_context);
+  CreateCookieForTest("TestCookie1", ".google.com",
+                      net::CookieSameSite::NO_RESTRICTION,
+                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
+                      true /* is_cookie_secure */, browser_context);
   DeleteSameSiteNoneCookies();
 
   ClearStoragePartitionData();

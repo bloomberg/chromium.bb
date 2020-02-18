@@ -18,10 +18,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
-#include "chrome/browser/ssl/certificate_error_report.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/security_interstitials/content/certificate_error_report.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/features.h"
@@ -76,11 +76,13 @@ bool TrialComparisonCertVerifierController::MaybeAllowedForProfile(
 }
 
 void TrialComparisonCertVerifierController::AddClient(
-    network::mojom::TrialComparisonCertVerifierConfigClientPtr config_client,
-    network::mojom::TrialComparisonCertVerifierReportClientRequest
-        report_client_request) {
-  binding_set_.AddBinding(this, std::move(report_client_request));
-  config_client_set_.AddPtr(std::move(config_client));
+    mojo::PendingRemote<network::mojom::TrialComparisonCertVerifierConfigClient>
+        config_client,
+    mojo::PendingReceiver<
+        network::mojom::TrialComparisonCertVerifierReportClient>
+        report_client_receiver) {
+  receiver_set_.Add(this, std::move(report_client_receiver));
+  config_client_set_.Add(std::move(config_client));
 }
 
 bool TrialComparisonCertVerifierController::IsAllowed() const {
@@ -138,9 +140,6 @@ void TrialComparisonCertVerifierController::SetFakeOfficialBuildForTesting(
 
 void TrialComparisonCertVerifierController::RefreshState() {
   const bool is_allowed = IsAllowed();
-  config_client_set_.ForAllPtrs(
-      [is_allowed](
-          network::mojom::TrialComparisonCertVerifierConfigClient* client) {
-        client->OnTrialConfigUpdated(is_allowed);
-      });
+  for (auto& client : config_client_set_)
+    client->OnTrialConfigUpdated(is_allowed);
 }

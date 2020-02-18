@@ -26,7 +26,7 @@ enum DifferentPrimaryAccounts {
 };
 
 // Track all the ways a profile can become signed out as a histogram.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.signin
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SignoutReason
 enum ProfileSignout : int {
   // The value used within unit tests.
@@ -128,7 +128,7 @@ enum Source {
 // "Signin.SigninStartedAccessPoint" and "Signin.SigninCompletedAccessPoint"
 // histograms.
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.signin
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SigninAccessPoint
 enum class AccessPoint : int {
   ACCESS_POINT_START_PAGE = 0,
@@ -160,6 +160,9 @@ enum class AccessPoint : int {
   ACCESS_POINT_MANAGE_CARDS_BUBBLE = 25,
   ACCESS_POINT_MACHINE_LOGON = 26,
   ACCESS_POINT_GOOGLE_SERVICES_SETTINGS = 27,
+  ACCESS_POINT_SYNC_ERROR_CARD = 28,
+  ACCESS_POINT_FORCED_SIGNIN = 29,
+  ACCESS_POINT_ACCOUNT_RENAMED = 30,
   ACCESS_POINT_MAX,  // This must be last.
 };
 
@@ -171,8 +174,6 @@ enum class PromoAction : int {
   // On desktop, the user selected an account that is not the default. On
   // mobile, the user selected the generic "Use another account" button.
   PROMO_ACTION_NOT_DEFAULT,
-  // Non-personalized promo, pre-dice on desktop.
-  PROMO_ACTION_NEW_ACCOUNT_PRE_DICE,
   // Non personalized promo, when there is no account on the device.
   PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT,
   // The user clicked on the "Add account" button, when there are already
@@ -183,7 +184,7 @@ enum class PromoAction : int {
 
 // Enum values which enumerates all reasons to start sign in process.
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.signin
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SigninReason
 enum class Reason : int {
   REASON_SIGNIN_PRIMARY_ACCOUNT = 0,
@@ -248,6 +249,7 @@ enum class AccountEquality : int {
 // When the user is give a choice of deleting their profile or not when signing
 // out, the |DELETED| or |KEEPING| metric should be used. If the user is not
 // given any option, then use the |IGNORE_METRIC| value should be used.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 enum class SignoutDelete : int {
   DELETED = 0,
   KEEPING,
@@ -294,7 +296,9 @@ enum class AccountRelation : int {
 enum class SourceForRefreshTokenOperation {
   kUnknown,
   kTokenService_LoadCredentials,
-  kSupervisedUser_InitSync,
+  // NOTE: This is no longer used but is kept per the comment above about not
+  // renumbering.
+  kDeprecatedSupervisedUser_InitSync,
   kInlineLoginHandler_Signin,
   kPrimaryAccountManager_ClearAccount,
   kPrimaryAccountManager_LegacyPreDiceSigninFlow,
@@ -374,8 +378,6 @@ void LogExternalCcResultFetches(
 
 // Track when the current authentication error changed.
 void LogAuthError(const GoogleServiceAuthError& auth_error);
-
-void LogSigninConfirmHistogramValue(ConfirmationUsage action);
 
 // Records the AccountReconcilor |state| when GAIA returns a specific response.
 // If |state| is different than ACCOUNT_RECONCILOR_OK it means the user will

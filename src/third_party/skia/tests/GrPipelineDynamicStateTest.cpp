@@ -14,9 +14,11 @@
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrGeometryProcessor.h"
+#include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsRenderPass.h"
+#include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
@@ -58,9 +60,8 @@ struct Vertex {
 
 class GrPipelineDynamicStateTestProcessor : public GrGeometryProcessor {
 public:
-    GrPipelineDynamicStateTestProcessor()
-            : INHERITED(kGrPipelineDynamicStateTestProcessor_ClassID) {
-        this->setVertexAttributes(kAttributes, SK_ARRAY_COUNT(kAttributes));
+    static GrGeometryProcessor* Make(SkArenaAlloc* arena) {
+        return arena->make<GrPipelineDynamicStateTestProcessor>();
     }
 
     const char* name() const override { return "GrPipelineDynamicStateTest Processor"; }
@@ -73,6 +74,13 @@ public:
     const Attribute& inColor() const { return kAttributes[1]; }
 
 private:
+    friend class ::SkArenaAlloc; // for access to ctor
+
+    GrPipelineDynamicStateTestProcessor()
+            : INHERITED(kGrPipelineDynamicStateTestProcessor_ClassID) {
+        this->setVertexAttributes(kAttributes, SK_ARRAY_COUNT(kAttributes));
+    }
+
     static constexpr Attribute kAttributes[] = {
         {"vertex", kFloat2_GrVertexAttribType, kHalf2_GrSLType},
         {"color", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType},
@@ -85,7 +93,7 @@ constexpr GrPrimitiveProcessor::Attribute GrPipelineDynamicStateTestProcessor::k
 
 class GLSLPipelineDynamicStateTestProcessor : public GrGLSLGeometryProcessor {
     void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor&,
-                 FPCoordTransformIter&& transformIter) final {}
+                 const CoordTransformRange&) final {}
 
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) final {
         const GrPipelineDynamicStateTestProcessor& mp =
@@ -129,7 +137,7 @@ private:
         , fScissorTest(scissorTest)
         , fVertexBuffer(std::move(vbuff)) {
         this->setBounds(SkRect::MakeIWH(kScreenSize, kScreenSize),
-                        HasAABloat::kNo, IsZeroArea::kNo);
+                        HasAABloat::kNo, IsHairline::kNo);
     }
 
     const char* name() const override { return "GrPipelineDynamicStateTestOp"; }
@@ -139,8 +147,9 @@ private:
         return GrProcessorSet::EmptySetAnalysis();
     }
     void onPrepare(GrOpFlushState*) override {}
-    void onExecute(GrOpFlushState* state, const SkRect& chainBounds) override {
-        GrPipeline pipeline(fScissorTest, SkBlendMode::kSrc, state->drawOpArgs().fOutputSwizzle);
+    void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
+        GrPipeline pipeline(fScissorTest, SkBlendMode::kSrc,
+                            flushState->drawOpArgs().outputSwizzle());
         SkSTArray<kNumMeshes, GrMesh> meshes;
         for (int i = 0; i < kNumMeshes; ++i) {
             GrMesh& mesh = meshes.emplace_back(GrPrimitiveType::kTriangleStrip);
@@ -149,9 +158,20 @@ private:
         }
         GrPipeline::DynamicStateArrays dynamicState;
         dynamicState.fScissorRects = kDynamicScissors;
-        state->opsRenderPass()->draw(GrPipelineDynamicStateTestProcessor(), pipeline, nullptr,
-                                     &dynamicState, meshes.begin(), 4,
-                                     SkRect::MakeIWH(kScreenSize, kScreenSize));
+
+        auto geomProc = GrPipelineDynamicStateTestProcessor::Make(flushState->allocator());
+
+        GrProgramInfo programInfo(flushState->proxy()->numSamples(),
+                                  flushState->proxy()->numStencilSamples(),
+                                  flushState->proxy()->backendFormat(),
+                                  flushState->view()->origin(),
+                                  &pipeline,
+                                  geomProc,
+                                  nullptr,
+                                  &dynamicState, 0, GrPrimitiveType::kTriangleStrip);
+
+        flushState->opsRenderPass()->draw(programInfo, meshes.begin(), 4,
+                                          SkRect::MakeIWH(kScreenSize, kScreenSize));
     }
 
     GrScissorTest               fScissorTest;

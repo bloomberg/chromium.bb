@@ -28,7 +28,7 @@ class GrSurfaceContext;
 class GrSurfaceProxyPriv;
 class GrTextureProxy;
 
-class GrSurfaceProxy : public GrNonAtomicRef<GrSurfaceProxy> {
+class GrSurfaceProxy : public SkNVRefCnt<GrSurfaceProxy> {
 public:
     virtual ~GrSurfaceProxy();
 
@@ -102,41 +102,33 @@ public:
     bool isLazy() const { return !this->isInstantiated() && SkToBool(fLazyInstantiateCallback); }
 
     bool isFullyLazy() const {
-        bool result = fHeight < 0;
-        SkASSERT(result == (fWidth < 0));
+        bool result = fDimensions.width() < 0;
+        SkASSERT(result == (fDimensions.height() < 0));
         SkASSERT(!result || this->isLazy());
         return result;
     }
 
     GrPixelConfig config() const { return fConfig; }
 
-    int width() const {
+    SkISize dimensions() const {
         SkASSERT(!this->isFullyLazy());
-        return fWidth;
+        return fDimensions;
     }
+    int width() const { return this->dimensions().width(); }
+    int height() const { return this->dimensions().height(); }
 
-    int height() const {
-        SkASSERT(!this->isFullyLazy());
-        return fHeight;
-    }
+    SkISize backingStoreDimensions() const;
 
-    SkISize isize() const { return {fWidth, fHeight}; }
-
-    int worstCaseWidth() const;
-    int worstCaseHeight() const;
     /**
-     * Helper that gets the width and height of the surface as a bounding rectangle.
+     * Helper that gets the width and height of the proxy as a bounding rectangle.
      */
-    SkRect getBoundsRect() const {
-        SkASSERT(!this->isFullyLazy());
-        return SkRect::MakeIWH(this->width(), this->height());
-    }
+    SkRect getBoundsRect() const { return SkRect::Make(this->dimensions()); }
+
     /**
-     * Helper that gets the worst case width and height of the surface as a bounding rectangle.
+     * Helper that gets the dimensions the backing GrSurface will have as a bounding rectangle.
      */
-    SkRect getWorstCaseBoundsRect() const {
-        SkASSERT(!this->isFullyLazy());
-        return SkRect::MakeIWH(this->worstCaseWidth(), this->worstCaseHeight());
+    SkRect backingStoreBoundsRect() const {
+        return SkRect::Make(this->backingStoreDimensions());
     }
 
     GrSurfaceOrigin origin() const {
@@ -273,13 +265,13 @@ public:
      *
      * @return the amount of GPU memory used in bytes
      */
-    size_t gpuMemorySize() const {
+    size_t gpuMemorySize(const GrCaps& caps) const {
         SkASSERT(!this->isFullyLazy());
         if (fTarget) {
             return fTarget->gpuMemorySize();
         }
         if (kInvalidGpuMemorySize == fGpuMemorySize) {
-            fGpuMemorySize = this->onUninstantiatedGpuMemorySize();
+            fGpuMemorySize = this->onUninstantiatedGpuMemorySize(caps);
             SkASSERT(kInvalidGpuMemorySize != fGpuMemorySize);
         }
         return fGpuMemorySize;
@@ -360,22 +352,21 @@ protected:
     virtual sk_sp<GrSurface> createSurface(GrResourceProvider*) const = 0;
     void assign(sk_sp<GrSurface> surface);
 
-    sk_sp<GrSurface> createSurfaceImpl(GrResourceProvider*, int sampleCnt,
-                                       int minStencilSampleCount, GrRenderable, GrMipMapped) const;
+    sk_sp<GrSurface> createSurfaceImpl(GrResourceProvider*, int sampleCnt, GrRenderable,
+                                       GrMipMapped) const;
 
-    // Once the size of a fully-lazy proxy is decided, and before it gets instantiated, the client
-    // can use this optional method to specify the proxy's size. (A proxy's size can be less than
-    // the GPU surface that backs it. e.g., SkBackingFit::kApprox.) Otherwise, the proxy's size will
-    // be set to match the underlying GPU surface upon instantiation.
-    void setLazySize(int width, int height) {
+    // Once the dimensions of a fully-lazy proxy are decided, and before it gets instantiated, the
+    // client can use this optional method to specify the proxy's dimensions. (A proxy's dimensions
+    // can be less than the GPU surface that backs it. e.g., SkBackingFit::kApprox.) Otherwise,
+    // the proxy's dimensions will be set to match the underlying GPU surface upon instantiation.
+    void setLazyDimensions(SkISize dimensions) {
         SkASSERT(this->isFullyLazy());
-        SkASSERT(width > 0 && height > 0);
-        fWidth = width;
-        fHeight = height;
+        SkASSERT(!dimensions.isEmpty());
+        fDimensions = dimensions;
     }
 
-    bool instantiateImpl(GrResourceProvider* resourceProvider, int sampleCnt,
-                         int minStencilSampleCount, GrRenderable, GrMipMapped, const GrUniqueKey*);
+    bool instantiateImpl(GrResourceProvider* resourceProvider, int sampleCnt, GrRenderable,
+                         GrMipMapped, const GrUniqueKey*);
 
     // For deferred proxies this will be null until the proxy is instantiated.
     // For wrapped proxies it will point to the wrapped resource.
@@ -392,12 +383,11 @@ protected:
 private:
     // For wrapped resources, 'fFormat', 'fConfig', 'fWidth', 'fHeight', and 'fOrigin; will always
     // be filled in from the wrapped resource.
-    GrBackendFormat        fFormat;
-    GrPixelConfig          fConfig;
-    int                    fWidth;
-    int                    fHeight;
-    GrSurfaceOrigin        fOrigin;
-    GrSwizzle              fTextureSwizzle;
+    const GrBackendFormat  fFormat;
+    const GrPixelConfig    fConfig;
+    SkISize                fDimensions;
+    const GrSurfaceOrigin  fOrigin;
+    const GrSwizzle        fTextureSwizzle;
 
     SkBackingFit           fFit;      // always kApprox for lazy-callback resources
                                       // always kExact for wrapped resources
@@ -417,7 +407,7 @@ private:
     static const size_t kInvalidGpuMemorySize = ~static_cast<size_t>(0);
     SkDEBUGCODE(size_t getRawGpuMemorySize_debugOnly() const { return fGpuMemorySize; })
 
-    virtual size_t onUninstantiatedGpuMemorySize() const = 0;
+    virtual size_t onUninstantiatedGpuMemorySize(const GrCaps&) const = 0;
 
     bool                   fIgnoredByResourceAllocator = false;
     GrProtected            fIsProtected;

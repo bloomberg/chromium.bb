@@ -10,27 +10,21 @@ from __future__ import print_function
 import json
 import os
 import tarfile
-import sys
 
 import mock
 
 from chromite.cbuildbot import commands
 from chromite.lib import config_lib_unittest
-from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import parallel
-
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_build_lib
 from chromite.lib.paygen import paygen_payload_lib
+from chromite.lib.paygen import test_params
 
-AUTOTEST_DIR = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
-                            'autotest', 'files')
-sys.path.insert(0, AUTOTEST_DIR)
-# pylint: disable=import-error,wrong-import-position
-from site_utils.autoupdate.lib import test_params
 
 # We access a lot of protected members during testing.
 # pylint: disable=protected-access
@@ -64,7 +58,7 @@ class PaygenJsonTests(BasePaygenBuildLibTest):
   """Test cases that require mocking paygen.json fetching."""
 
   def testGetPaygenJsonCaching(self):
-    expected_paygen_size = 1069
+    expected_paygen_size = 1057
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
     self.assertEqual(len(result), expected_paygen_size)
     self.mockGetJson.assert_called_once()
@@ -192,7 +186,8 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
         self.target_build.channel,
         self.target_build.version)
     self.delta_payload_test = paygen_build_lib.PayloadTest(
-        self.test_delta_payload)
+        self.test_delta_payload,
+        payload_type=paygen_build_lib.PAYLOAD_TYPE_OMAHA)
 
   def _GetPaygenBuildInstance(self, dry_run=False, skip_delta_payloads=False):
     """Helper method to create a standard Paygen instance."""
@@ -423,13 +418,13 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
 
     # Test the empty case.
     results = paygen._DiscoverRequiredDeltasBuildToBuild([], [])
-    self.assertItemsEqual(results, [])
+    self.assertCountEqual(results, [])
 
     # Fully populated prev and current.
     results = paygen._DiscoverRequiredDeltasBuildToBuild(
         [self.prev_test_image],
         [self.test_image])
-    self.assertItemsEqual(results, [
+    self.assertCountEqual(results, [
         gspaths.Payload(src_image=self.prev_test_image,
                         tgt_image=self.test_image),
     ])
@@ -438,7 +433,7 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
     results = paygen._DiscoverRequiredDeltasBuildToBuild(
         [self.prev_premp_image],
         [self.basic_image])
-    self.assertItemsEqual(results, [])
+    self.assertCountEqual(results, [])
 
     # It's totally legal for a build to be signed for both PreMP and MP at the
     # same time. If that happens we generate:
@@ -446,7 +441,7 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
     results = paygen._DiscoverRequiredDeltasBuildToBuild(
         [self.prev_image, self.prev_premp_image, self.prev_test_image],
         [self.basic_image, self.premp_image, self.test_image])
-    self.assertItemsEqual(results, [
+    self.assertCountEqual(results, [
         gspaths.Payload(src_image=self.prev_image,
                         tgt_image=self.basic_image),
         gspaths.Payload(src_image=self.prev_premp_image,
@@ -461,13 +456,13 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
 
     # Test the empty case.
     results = paygen._DiscoverRequiredDLCDeltasBuildToBuild([], [])
-    self.assertItemsEqual(results, [])
+    self.assertCountEqual(results, [])
 
     # Fully populated prev and current.
     results = paygen._DiscoverRequiredDLCDeltasBuildToBuild(
         [self.prev_dlc_package_image],
         [self.dlc_image])
-    self.assertItemsEqual(results, [
+    self.assertCountEqual(results, [
         gspaths.Payload(src_image=self.prev_dlc_package_image,
                         tgt_image=self.dlc_image),
     ])
@@ -476,11 +471,11 @@ class TestPaygenBuildLibTestGSSearch(BasePaygenBuildLibTestWithBuilds):
     results = paygen._DiscoverRequiredDLCDeltasBuildToBuild(
         [self.prev_dlc2_image],
         [self.dlc_image])
-    self.assertItemsEqual(results, [])
+    self.assertCountEqual(results, [])
     results = paygen._DiscoverRequiredDLCDeltasBuildToBuild(
         [self.prev_dlc_package2_image],
         [self.dlc_image])
-    self.assertItemsEqual(results, [])
+    self.assertCountEqual(results, [])
 
   def testDiscoverDLCImages(self):
     """Test _DiscoverDLCImages."""
@@ -598,7 +593,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
   def testCanaryEverything(self):
     """Handle the canary payloads and tests."""
     # Make our random strings deterministic for testing.
-    self.PatchObject(gspaths, '_RandomString', return_value='<random>')
+    self.PatchObject(cros_build_lib, 'GetRandomString', return_value='<random>')
 
     target_build = gspaths.Build(bucket='crt',
                                  channel='canary-channel',
@@ -668,7 +663,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             '-<random>.signed' % (dlc_id, dlc_package, dlc_id, dlc_package))
 
     # Verify the results.
-    self.assertItemsEqual(
+    self.assertCountEqual(
         payloads,
         [
             mp_full,
@@ -682,13 +677,15 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             dlc_delta,
         ])
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         tests,
         [
             paygen_build_lib.PayloadTest(test_full,
                                          'canary-channel', '9999.0.0'),
             paygen_build_lib.PayloadTest(n2n_delta),
-            paygen_build_lib.PayloadTest(test_delta),
+            paygen_build_lib.PayloadTest(
+                test_delta,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_OMAHA),
         ])
 
   def testCanaryPrempMismatch(self):
@@ -722,7 +719,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
                                  uri=mock.ANY)
 
     # Verify the results.
-    self.assertItemsEqual(
+    self.assertCountEqual(
         payloads,
         [
             mp_full,
@@ -731,13 +728,15 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             test_delta,
         ])
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         tests,
         [
             paygen_build_lib.PayloadTest(test_full,
                                          'canary-channel', '9999.0.0'),
             paygen_build_lib.PayloadTest(n2n_delta),
-            paygen_build_lib.PayloadTest(test_delta),
+            paygen_build_lib.PayloadTest(
+                test_delta,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_OMAHA),
         ])
 
   def testCanarySkipDeltas(self):
@@ -767,14 +766,14 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
     test_full = gspaths.Payload(tgt_image=test_image, uri=mock.ANY)
 
     # Verify the results.
-    self.assertItemsEqual(
+    self.assertCountEqual(
         payloads,
         [
             mp_full,
             test_full,
         ])
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         tests,
         [
             paygen_build_lib.PayloadTest(test_full,
@@ -892,7 +891,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
         tgt_image=test_image, src_image=test_image_9460_67, uri=mock.ANY)
 
     # Verify the results.
-    self.assertItemsEqual(
+    self.assertCountEqual(
         payloads,
         [
             mp_full,
@@ -908,23 +907,133 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
             mp_delta_9460_67, test_delta_9460_67,
         ])
 
-    self.assertItemsEqual(
+    self.assertCountEqual(
         tests,
         [
             paygen_build_lib.PayloadTest(
                 test_full, 'stable-channel', '9999.0.0'),
             paygen_build_lib.PayloadTest(
-                test_full, 'stable-channel', '8530.96.0'),
+                test_full, 'stable-channel', '8530.96.0',
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_FSI),
             paygen_build_lib.PayloadTest(n2n_delta),
-            paygen_build_lib.PayloadTest(test_delta_8530),
-            paygen_build_lib.PayloadTest(test_delta_8743),
-            paygen_build_lib.PayloadTest(test_delta_8872),
-            paygen_build_lib.PayloadTest(test_delta_9000),
-            paygen_build_lib.PayloadTest(test_delta_9202),
-            paygen_build_lib.PayloadTest(test_delta_9334),
-            paygen_build_lib.PayloadTest(test_delta_9460),
+            paygen_build_lib.PayloadTest(
+                test_delta_8530,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_FSI),
+            paygen_build_lib.PayloadTest(
+                test_delta_8743,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_MILESTONE),
+            paygen_build_lib.PayloadTest(
+                test_delta_8872,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_MILESTONE),
+            paygen_build_lib.PayloadTest(
+                test_delta_9000,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_MILESTONE),
+            paygen_build_lib.PayloadTest(
+                test_delta_9202,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_MILESTONE),
+            paygen_build_lib.PayloadTest(
+                test_delta_9334,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_MILESTONE),
+            paygen_build_lib.PayloadTest(
+                test_delta_9460,
+                payload_type=paygen_build_lib.PAYLOAD_TYPE_OMAHA),
             # test_image_9460_67 had test turned off in json.
         ])
+
+  def testApplicableModels(self):
+    """Handle the applicable_models argument for FSI payloads."""
+
+    self.PatchObject(cros_build_lib, 'GetRandomString', return_value='<random>')
+
+    # Setup a stable build that we will generate payload tests for
+    target_build = gspaths.Build(bucket='crt',
+                                 channel='stable-channel',
+                                 board='reef',
+                                 version='11021.57.0')
+
+    # This is all of the other stable channel builds defined in paygen.json
+    # We will generate a payload and test from each
+    build_61 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='9202.61.0')
+    build_64 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='9202.64.0')
+    build_58 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='9334.58.2')
+    build_72 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='9334.72.0')
+    build_60 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='9460.60.0')
+
+    # This the one we really care about that has applicable_models defined.
+    build_56 = gspaths.Build(bucket='crt',
+                             channel='stable-channel',
+                             board='reef',
+                             version='11021.56.0')
+
+    # Tell the build instance about all of them
+    self.addSignedImage(target_build)
+    self.addTestImage(target_build)
+    self.addSignedImage(build_61)
+    self.addTestImage(build_61)
+    self.addSignedImage(build_64)
+    self.addTestImage(build_64)
+    self.addSignedImage(build_58)
+    self.addTestImage(build_58)
+    self.addSignedImage(build_72)
+    self.addTestImage(build_72)
+    self.addSignedImage(build_60)
+    self.addTestImage(build_60)
+    self.addSignedImage(build_56)
+    self.addTestImage(build_56)
+
+    # Generate the payloads and tests
+    paygen = self._GetPaygenBuildInstance(target_build)
+    _, tests = paygen._DiscoverRequiredPayloads()
+
+    expected_fsi_payload_test = {
+        'applicable_models': [u'basking', u'electro'],
+        'src_channel': 'stable-channel', 'src_version': u'11021.56.0',
+        'payload_type': u'FSI',
+        'payload': {
+            'src_image': None,
+            'uri': ('gs://crt/stable-channel/reef/11021.57.0/payloads/'
+                    'chromeos_11021.57.0_reef_stable-channel_full_test.bin-'
+                    '<random>'),
+            'exists': False,
+            'tgt_image': {
+                'image_type': None,
+                'uri': None,
+                'build': {
+                    'version': '11021.57.0',
+                    'bucket': 'crt',
+                    'board': 'reef',
+                    'channel': 'stable-channel',
+                    'uri': None
+                },
+                'milestone': None
+            },
+            'build': {
+                'version': '11021.57.0',
+                'bucket': 'crt',
+                'board': 'reef',
+                'channel': 'stable-channel',
+                'uri': None
+            }
+        }
+    }
+
+    # Check that the last test with applicable_models has the correct data
+    self.assertDictEqual(tests[-1], expected_fsi_payload_test)
 
 
 class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
@@ -944,8 +1053,7 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
         [mock.call(paygen_payload_lib.CreateAndUploadPayload,
                    [(self.mp_full_payload, True, True),
                     (self.mp_delta_payload, True, True),
-                    (self.test_delta_payload, False, True)],
-                   processes=8)])
+                    (self.test_delta_payload, False, True)])])
 
   def testCleanupBuild(self):
     """Test PaygenBuild._CleanupBuild."""
@@ -1147,12 +1255,14 @@ class TestAutotestPayloadsPayloads(BasePaygenBuildLibTestWithBuilds):
                   acl='public-read'),
     ])
 
-    delta_ctrl = 'autotest/au_control_files/control.paygen_au_foo_delta_1.0.0'
-    full_ctrl = 'autotest/au_control_files/control.paygen_au_foo_full_1.2.3'
+    delta_ctrl = (
+        'autotest/au_control_files/control.paygen_au_foo_delta_1.0.0_omaha')
+    full_ctrl = (
+        'autotest/au_control_files/control.paygen_au_foo_full_1.2.3_n2n')
 
     # Verify tarfile contents.
     with tarfile.open(tarball_path) as t:
-      self.assertItemsEqual(
+      self.assertCountEqual(
           t.getnames(),
           ['autotest/au_control_files', delta_ctrl, full_ctrl])
 
@@ -1165,7 +1275,7 @@ class TestAutotestPayloadsPayloads(BasePaygenBuildLibTestWithBuilds):
       full_fp.close()
 
     # We only checking the beginning to avoid the very long doc string.
-    self.assertTrue(delta_contents.startswith("""name = 'paygen_au_foo'
+    self.assertTrue(delta_contents.startswith(b"""name = 'paygen_au_foo'
 update_type = 'delta'
 source_release = '1.0.0'
 target_release = '1.2.3'
@@ -1173,6 +1283,7 @@ target_payload_uri = 'None'
 SUITE = 'paygen_au_foo'
 source_payload_uri = 'foo-channel_1.0.0_uri'
 source_archive_uri = 'gs://crt/foo-channel/foo-board/1.0.0'
+payload_type = 'OMAHA'
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -1184,7 +1295,7 @@ from autotest_lib.client.cros import constants
 from autotest_lib.server import host_attributes
 
 AUTHOR = "Chromium OS"
-NAME = "autoupdate_EndToEndTest_paygen_au_foo_delta_1.0.0"
+NAME = "autoupdate_EndToEndTest_paygen_au_foo_delta_1.0.0_omaha"
 TIME = "MEDIUM"
 TEST_CATEGORY = "Functional"
 TEST_CLASS = "platform"
@@ -1207,7 +1318,7 @@ REQUIRE_SSP = False
 DOC ="""))
 
     # We only checking the beginning to avoid the very long doc string.
-    self.assertTrue(full_contents.startswith("""name = 'paygen_au_foo'
+    self.assertTrue(full_contents.startswith(b"""name = 'paygen_au_foo'
 update_type = 'full'
 source_release = '1.2.3'
 target_release = '1.2.3'
@@ -1215,6 +1326,7 @@ target_payload_uri = 'None'
 SUITE = 'paygen_au_foo'
 source_payload_uri = 'foo-channel_1.2.3_uri'
 source_archive_uri = 'gs://crt/foo-channel/foo-board/1.2.3'
+payload_type = 'N2N'
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -1226,7 +1338,7 @@ from autotest_lib.client.cros import constants
 from autotest_lib.server import host_attributes
 
 AUTHOR = "Chromium OS"
-NAME = "autoupdate_EndToEndTest_paygen_au_foo_full_1.2.3"
+NAME = "autoupdate_EndToEndTest_paygen_au_foo_full_1.2.3_n2n"
 TIME = "MEDIUM"
 TEST_CATEGORY = "Functional"
 TEST_CLASS = "platform"
@@ -1296,7 +1408,9 @@ class HWTest(cros_test_lib.MockTestCase):
             target_release='target-release',
             source_payload_uri='source-uri',
             target_payload_uri='target-uri',
-            suite_name='dummy-suite')]
+            suite_name='dummy-suite',
+            payload_type=paygen_build_lib.PAYLOAD_TYPE_N2N,
+            applicable_models=None)]
 
     test_plan_string = paygen_build_lib._TestPlan(
         payload_test_configs=payload_test_configs,
@@ -1319,7 +1433,7 @@ class HWTest(cros_test_lib.MockTestCase):
                 },
                 'displayName': 'dummy-build/dummy-suite/' +
                                'autoupdate_EndToEndTest_' +
-                               'dummy-test_delta_source-release'
+                               'dummy-test_delta_source-release_n2n'
             }]
         }
     }
@@ -1329,7 +1443,8 @@ class HWTest(cros_test_lib.MockTestCase):
                               'target_release=target-release',
                               'target_payload_uri=target-uri',
                               'SUITE=dummy-suite',
-                              'source_payload_uri=source-uri'])
+                              'source_payload_uri=source-uri',
+                              'payload_type=N2N'])
 
     self.assertDictEqual(test_plan_dict, expected_test_plan)
     self.assertSetEqual(test_args_set, expected_test_args)

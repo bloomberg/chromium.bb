@@ -44,7 +44,7 @@ class OnMoreDataConverter
                  base::TimeTicks delay_timestamp,
                  int prior_frames_skipped,
                  AudioBus* dest) override;
-  void OnError() override;
+  void OnError(ErrorType type) override;
 
   // Sets |source_callback_|.  If this is not a new object, then Stop() must be
   // called before Start().
@@ -184,10 +184,11 @@ AudioOutputResampler::AudioOutputResampler(
       output_params_(output_params),
       original_output_params_(output_params),
       device_id_(output_device_id),
-      reinitialize_timer_(FROM_HERE,
-                          close_delay_,
-                          base::Bind(&AudioOutputResampler::Reinitialize,
-                                     base::Unretained(this))),
+      reinitialize_timer_(
+          FROM_HERE,
+          close_delay_,
+          base::BindRepeating(&AudioOutputResampler::Reinitialize,
+                              base::Unretained(this))),
       register_debug_recording_source_callback_(
           register_debug_recording_source_callback) {
   DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
@@ -490,9 +491,9 @@ double OnMoreDataConverter::ProvideInput(AudioBus* dest,
   return frames > 0 ? 1 : 0;
 }
 
-void OnMoreDataConverter::OnError() {
+void OnMoreDataConverter::OnError(ErrorType type) {
   error_occurred_ = true;
-  source_callback_->OnError();
+  source_callback_->OnError(type);
 }
 
 }  // namespace media

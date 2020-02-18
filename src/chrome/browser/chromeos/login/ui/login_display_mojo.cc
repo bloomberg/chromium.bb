@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/enable_adb_sideloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
@@ -120,6 +121,8 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
       host_->StartWizard(ResetView::kScreenId);
     } else if (local_state->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
       host_->StartWizard(EnableDebuggingScreenView::kScreenId);
+    } else if (local_state->GetBoolean(prefs::kEnableAdbSideloadingRequested)) {
+      host_->StartWizard(EnableAdbSideloadingScreenView::kScreenId);
     } else if (!KioskAppManager::Get()->GetAutoLaunchApp().empty() &&
                KioskAppManager::Get()->IsAutoLaunchRequested()) {
       VLOG(0) << "Showing auto-launch warning";
@@ -167,15 +170,8 @@ void LoginDisplayMojo::ShowError(int error_msg_id,
       error_msg_id != IDS_LOGIN_ERROR_OWNER_KEY_LOST &&
       error_msg_id != IDS_LOGIN_ERROR_OWNER_REQUIRED &&
       error_msg_id != IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED) {
-    // Display a warning if Caps Lock is on.
     input_method::InputMethodManager* ime_manager =
         input_method::InputMethodManager::Get();
-    if (ime_manager->GetImeKeyboard()->CapsLockIsEnabled()) {
-      // TODO(ivankr): use a format string instead of concatenation.
-      error_text +=
-          "\n" + l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
-    }
-
     // Display a hint to switch keyboards if there are other active input
     // methods.
     if (ime_manager->GetActiveIMEState()->GetNumActiveInputMethods() > 1) {

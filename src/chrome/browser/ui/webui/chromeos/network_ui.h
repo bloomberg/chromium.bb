@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_NETWORK_UI_H_
 
 #include "base/macros.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace base {
@@ -25,7 +26,7 @@ class NetworkUI : public ui::MojoWebUIController {
 
  private:
   void BindCrosNetworkConfig(
-      network_config::mojom::CrosNetworkConfigRequest request);
+      mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkUI);
 };

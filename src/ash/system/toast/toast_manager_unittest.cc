@@ -4,10 +4,10 @@
 
 #include "ash/system/toast/toast_manager_impl.h"
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/work_area_insets.h"
@@ -193,7 +193,7 @@ TEST_F(ToastManagerImplTest, DISABLED_QueueMessage) {
 
 TEST_F(ToastManagerImplTest, PositionWithVisibleBottomShelf) {
   Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   ShowToast("DUMMY", ToastData::kInfiniteDuration);
@@ -220,7 +220,7 @@ TEST_F(ToastManagerImplTest, PositionWithAutoHiddenBottomShelf) {
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
 
   Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
@@ -234,14 +234,15 @@ TEST_F(ToastManagerImplTest, PositionWithAutoHiddenBottomShelf) {
   EXPECT_TRUE(toast_bounds.Intersects(
       GetPrimaryWorkAreaInsets()->user_work_area_bounds()));
   EXPECT_NEAR(root_bounds.CenterPoint().x(), toast_bounds.CenterPoint().x(), 1);
-  EXPECT_EQ(root_bounds.bottom() - kHiddenShelfInScreenPortion -
+  EXPECT_EQ(root_bounds.bottom() -
+                ShelfConfig::Get()->hidden_shelf_in_screen_portion() -
                 ToastOverlay::kOffset,
             toast_bounds.bottom());
 }
 
 TEST_F(ToastManagerImplTest, PositionWithHiddenBottomShelf) {
   Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
@@ -262,7 +263,7 @@ TEST_F(ToastManagerImplTest, PositionWithHiddenBottomShelf) {
 TEST_F(ToastManagerImplTest, PositionWithVisibleLeftShelf) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
-  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(ShelfAlignment::kLeft);
 
   ShowToast("DUMMY", ToastData::kInfiniteDuration);
   EXPECT_EQ(1, GetToastSerial());
@@ -289,7 +290,7 @@ TEST_F(ToastManagerImplTest, PositionWithUnifiedDesktop) {
   UpdateDisplay("1000x500,0+600-100x500");
 
   Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
+  EXPECT_EQ(ShelfAlignment::kBottom, shelf->alignment());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   ShowToast("DUMMY", ToastData::kInfiniteDuration);

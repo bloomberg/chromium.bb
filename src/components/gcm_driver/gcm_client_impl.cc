@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -246,8 +247,8 @@ std::unique_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
 std::unique_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
     const std::vector<GURL>& endpoints,
     const net::BackoffEntry::Policy& backoff_policy,
-    base::RepeatingCallback<
-        void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+    base::RepeatingCallback<void(
+        mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
         get_socket_factory_callback,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     GCMStatsRecorder* recorder,
@@ -298,8 +299,8 @@ void GCMClientImpl::Initialize(
     const base::FilePath& path,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    base::RepeatingCallback<
-        void(network::mojom::ProxyResolvingSocketFactoryRequest)>
+    base::RepeatingCallback<void(
+        mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
         get_socket_factory_callback,
     const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
     network::NetworkConnectionTracker* network_connection_tracker,
@@ -606,9 +607,9 @@ void GCMClientImpl::RemoveAccountMapping(const CoreAccountId& account_id) {
 void GCMClientImpl::SetLastTokenFetchTime(const base::Time& time) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   gcm_store_->SetLastTokenFetchTime(
-      time,
-      base::Bind(&GCMClientImpl::IgnoreWriteResultCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      time, base::Bind(&GCMClientImpl::IgnoreWriteResultCallback,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       /*operation_suffix_for_uma=*/"SetLastTokenFetchTime"));
 }
 
 void GCMClientImpl::UpdateHeartbeatTimer(
@@ -623,20 +624,23 @@ void GCMClientImpl::AddInstanceIDData(const std::string& app_id,
                                       const std::string& extra_data) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   instance_id_data_[app_id] = std::make_pair(instance_id, extra_data);
+  // TODO(crbug/1028761): If this call fails, we likely leak a registration
+  // (the one stored in instance_id_data_ would be used for a registration but
+  // not persisted).
   gcm_store_->AddInstanceIDData(
-      app_id,
-      SerializeInstanceIDData(instance_id, extra_data),
+      app_id, SerializeInstanceIDData(instance_id, extra_data),
       base::Bind(&GCMClientImpl::IgnoreWriteResultCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 /*operation_suffix_for_uma=*/"AddInstanceIDData"));
 }
 
 void GCMClientImpl::RemoveInstanceIDData(const std::string& app_id) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   instance_id_data_.erase(app_id);
   gcm_store_->RemoveInstanceIDData(
-      app_id,
-      base::Bind(&GCMClientImpl::IgnoreWriteResultCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      app_id, base::Bind(&GCMClientImpl::IgnoreWriteResultCallback,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         /*operation_suffix_for_uma=*/"RemoveInstanceIDData"));
 }
 
 void GCMClientImpl::GetInstanceIDData(const std::string& app_id,
@@ -789,9 +793,14 @@ void GCMClientImpl::DefaultStoreCallback(bool success) {
   DCHECK(success);
 }
 
-void GCMClientImpl::IgnoreWriteResultCallback(bool success) {
+void GCMClientImpl::IgnoreWriteResultCallback(
+    const std::string& operation_suffix_for_uma,
+    bool success) {
+  // TODO(tschumann): Implement proper error handling.
   // TODO(fgorski): Ignoring the write result for now to make sure
   // sync_intergration_tests are not broken.
+  base::UmaHistogramBoolean(
+      "GCM.IgnoredWriteResult." + operation_suffix_for_uma, success);
 }
 
 void GCMClientImpl::DestroyStoreCallback(bool success) {

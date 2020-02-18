@@ -13,14 +13,14 @@
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "components/url_formatter/elide_url.h"
-#include "content/app/strings/grit/content_strings.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
@@ -28,8 +28,10 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/favicon_url.h"
 #include "media/base/media_content_type.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/gfx/favicon_size.h"
 
 #if defined(OS_ANDROID)
@@ -1021,10 +1023,12 @@ void MediaSessionImpl::GetMediaImageBitmap(
   }
 
   web_contents()->DownloadImage(
-      image.src, false, desired_size_px /* max_bitmap_size */,
-      false /* bypass_cache */,
+      image.src, false /* is_favicon */, desired_size_px /* preferred_size */,
+      desired_size_px /* max_bitmap_size */, false /* bypass_cache */,
       base::BindOnce(&MediaSessionImpl::OnImageDownloadComplete,
-                     base::Unretained(this), std::move(callback),
+                     base::Unretained(this),
+                     mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+                         std::move(callback), SkBitmap()),
                      minimum_size_px, desired_size_px));
 }
 
@@ -1122,6 +1126,9 @@ void MediaSessionImpl::OnServiceCreated(MediaSessionServiceImpl* service) {
   RenderFrameHost* rfh = service->GetRenderFrameHost();
   if (!rfh)
     return;
+
+  content::BackForwardCache::DisableForRenderFrameHost(
+      rfh, "MediaSessionImpl::OnServiceCreated");
 
   services_[rfh] = service;
   UpdateRoutedService();
@@ -1340,8 +1347,12 @@ void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
   base::string16 formatted_origin =
       url.SchemeIsFile()
           ? content_client->GetLocalizedString(IDS_MEDIA_SESSION_FILE_SOURCE)
-          : url_formatter::FormatOriginForSecurityDisplay(
-                url::Origin::Create(url));
+          : url_formatter::FormatUrl(
+                url::Origin::Create(url).GetURL(),
+                url_formatter::kFormatUrlOmitDefaults |
+                    url_formatter::kFormatUrlOmitHTTPS |
+                    url_formatter::kFormatUrlOmitTrivialSubdomains,
+                net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   metadata.source_title = formatted_origin;
 
   // If we have no artwork in |images_| or the arwork has changed then we should

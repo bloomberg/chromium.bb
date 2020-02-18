@@ -4,11 +4,9 @@
 
 #include "extensions/shell/browser/shell_extension_host_delegate.h"
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "extensions/browser/media_capture_util.h"
-#include "extensions/browser/serial_extension_host_queue.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 
 namespace extensions {
@@ -63,13 +61,6 @@ bool ShellExtensionHostDelegate::CheckMediaAccessPermission(
     const Extension* extension) {
   media_capture_util::VerifyMediaAccessPermission(type, extension);
   return true;
-}
-
-static base::LazyInstance<SerialExtensionHostQueue>::DestructorAtExit g_queue =
-    LAZY_INSTANCE_INITIALIZER;
-
-ExtensionHostQueue* ShellExtensionHostDelegate::GetExtensionHostQueue() const {
-  return g_queue.Pointer();
 }
 
 content::PictureInPictureResult

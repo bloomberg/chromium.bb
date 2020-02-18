@@ -205,8 +205,8 @@ MockableQuicClient::MockableQuicClient(
           supported_versions,
           config,
           epoll_server,
-          QuicMakeUnique<MockableQuicClientEpollNetworkHelper>(epoll_server,
-                                                               this),
+          std::make_unique<MockableQuicClientEpollNetworkHelper>(epoll_server,
+                                                                 this),
           QuicWrapUnique(
               new RecordingProofVerifier(std::move(proof_verifier)))),
       override_server_connection_id_(EmptyQuicConnectionId()),
@@ -347,6 +347,10 @@ void QuicTestClient::Initialize() {
   num_requests_ = 0;
   num_responses_ = 0;
   ClearPerConnectionState();
+  // TODO(b/142715651): Figure out how to use QPACK in tests.
+  // Do not use the QPACK dynamic table in tests to avoid flakiness due to the
+  // uncertain order of receiving the SETTINGS frame and sending headers.
+  client_->disable_qpack_dynamic_table();
   // As chrome will generally do this, we want it to be the default when it's
   // not overridden.
   if (!client_->config()->HasSetBytesForConnectionIdToSend()) {
@@ -377,8 +381,10 @@ ssize_t QuicTestClient::SendRequestAndRstTogether(const std::string& uri) {
   ssize_t ret = SendMessage(headers, "", /*fin=*/true, /*flush=*/false);
 
   QuicStreamId stream_id = GetNthClientInitiatedBidirectionalStreamId(
-      session->connection()->transport_version(), 0);
-  session->SendRstStream(stream_id, QUIC_STREAM_CANCELLED, 0);
+      session->transport_version(), 0);
+  QuicStream* stream = session->GetOrCreateStream(stream_id);
+  session->SendRstStream(stream_id, QUIC_STREAM_CANCELLED,
+                         stream->stream_bytes_written());
   return ret;
 }
 
@@ -406,7 +412,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
       // May need to retry request if asynchronous rendezvous fails.
       std::unique_ptr<spdy::SpdyHeaderBlock> new_headers(
           new spdy::SpdyHeaderBlock(headers->Clone()));
-      push_promise_data_to_resend_ = QuicMakeUnique<TestClientDataToResend>(
+      push_promise_data_to_resend_ = std::make_unique<TestClientDataToResend>(
           std::move(new_headers), body, fin, this, std::move(ack_listener));
       return 1;
     }

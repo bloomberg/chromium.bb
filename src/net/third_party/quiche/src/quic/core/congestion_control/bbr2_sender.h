@@ -30,7 +30,7 @@ class QUIC_EXPORT_PRIVATE Bbr2Sender final : public SendAlgorithmInterface {
              QuicPacketCount initial_cwnd_in_packets,
              QuicPacketCount max_cwnd_in_packets,
              QuicRandom* random,
-             QuicConnectionStats* /*stats*/);
+             QuicConnectionStats* stats);
 
   ~Bbr2Sender() override = default;
 
@@ -47,9 +47,7 @@ class QUIC_EXPORT_PRIVATE Bbr2Sender final : public SendAlgorithmInterface {
   void SetFromConfig(const QuicConfig& config,
                      Perspective perspective) override;
 
-  void AdjustNetworkParameters(QuicBandwidth bandwidth,
-                               QuicTime::Delta rtt,
-                               bool allow_cwnd_to_decrease) override;
+  void AdjustNetworkParameters(const NetworkParams& params) override;
 
   void SetInitialCongestionWindowInPackets(
       QuicPacketCount congestion_window) override;
@@ -89,6 +87,8 @@ class QUIC_EXPORT_PRIVATE Bbr2Sender final : public SendAlgorithmInterface {
   std::string GetDebugState() const override;
 
   void OnApplicationLimited(QuicByteCount bytes_in_flight) override;
+
+  void PopulateConnectionStats(QuicConnectionStats* stats) const override;
   // End implementation of SendAlgorithmInterface.
 
   const Bbr2Params& Params() const { return params_; }
@@ -97,7 +97,7 @@ class QUIC_EXPORT_PRIVATE Bbr2Sender final : public SendAlgorithmInterface {
     return cwnd_limits().Min();
   }
 
-  struct DebugState {
+  struct QUIC_EXPORT_PRIVATE DebugState {
     Bbr2Mode mode;
 
     // Shared states.
@@ -105,6 +105,9 @@ class QUIC_EXPORT_PRIVATE Bbr2Sender final : public SendAlgorithmInterface {
     QuicBandwidth bandwidth_hi = QuicBandwidth::Zero();
     QuicBandwidth bandwidth_lo = QuicBandwidth::Zero();
     QuicBandwidth bandwidth_est = QuicBandwidth::Zero();
+    QuicByteCount inflight_hi;
+    QuicByteCount inflight_lo;
+    QuicByteCount max_ack_height;
     QuicTime::Delta min_rtt = QuicTime::Delta::Zero();
     QuicTime min_rtt_timestamp = QuicTime::Zero();
     QuicByteCount congestion_window;
@@ -156,6 +159,7 @@ class QUIC_EXPORT_PRIVATE Bbr2Sender final : public SendAlgorithmInterface {
   const RttStats* const rtt_stats_;
   const QuicUnackedPacketMap* const unacked_packets_;
   QuicRandom* random_;
+  QuicConnectionStats* connection_stats_;
 
   const Bbr2Params params_;
 

@@ -320,6 +320,8 @@ Handle<Object> StackFrameBase::GetWasmModuleName() {
   return isolate_->factory()->undefined_value();
 }
 
+int StackFrameBase::GetWasmFunctionIndex() { return StackFrameBase::kNone; }
+
 Handle<Object> StackFrameBase::GetWasmInstance() {
   return isolate_->factory()->undefined_value();
 }
@@ -603,7 +605,7 @@ int WasmStackFrame::GetColumnNumber() { return GetModuleOffset(); }
 
 int WasmStackFrame::GetModuleOffset() const {
   const int function_offset =
-      wasm_instance_->module_object().GetFunctionOffset(wasm_func_index_);
+      GetWasmFunctionOffset(wasm_instance_->module(), wasm_func_index_);
   return function_offset + GetPosition();
 }
 
@@ -631,7 +633,7 @@ Handle<Object> AsmJsWasmStackFrame::GetReceiver() const {
 }
 
 Handle<Object> AsmJsWasmStackFrame::GetFunction() const {
-  // TODO(clemensh): Return lazily created JSFunction.
+  // TODO(clemensb): Return lazily created JSFunction.
   return Null();
 }
 
@@ -687,7 +689,7 @@ void FrameArrayIterator::Advance() { frame_ix_++; }
 StackFrameBase* FrameArrayIterator::Frame() {
   DCHECK(HasFrame());
   const int flags = array_->Flags(frame_ix_).value();
-  int flag_mask = FrameArray::kIsWasmFrame |
+  int flag_mask = FrameArray::kIsWasmCompiledFrame |
                   FrameArray::kIsWasmInterpretedFrame |
                   FrameArray::kIsAsmJsWasmFrame;
   switch (flags & flag_mask) {
@@ -695,7 +697,7 @@ StackFrameBase* FrameArrayIterator::Frame() {
       // JavaScript Frame.
       js_frame_.FromFrameArray(isolate_, array_, frame_ix_);
       return &js_frame_;
-    case FrameArray::kIsWasmFrame:
+    case FrameArray::kIsWasmCompiledFrame:
     case FrameArray::kIsWasmInterpretedFrame:
       // Wasm Frame:
       wasm_frame_.FromFrameArray(isolate_, array_, frame_ix_);
@@ -894,7 +896,7 @@ MaybeHandle<Object> ErrorUtils::FormatStackTrace(Isolate* isolate,
 
     Handle<StackTraceFrame> frame(StackTraceFrame::cast(elems->get(i)),
                                   isolate);
-    SerializeStackTraceFrame(isolate, frame, builder);
+    SerializeStackTraceFrame(isolate, frame, &builder);
 
     if (isolate->has_pending_exception()) {
       // CallSite.toString threw. Parts of the current frame might have been

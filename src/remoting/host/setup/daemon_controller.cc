@@ -51,6 +51,11 @@ void DaemonController::GetConfig(const GetConfigCallback& done) {
   ServiceOrQueueRequest(request);
 }
 
+void DaemonController::CheckPermission(bool it2me, BoolCallback callback) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  return delegate_->CheckPermission(it2me, std::move(callback));
+}
+
 void DaemonController::SetConfigAndStart(
     std::unique_ptr<base::DictionaryValue> config,
     bool consent,

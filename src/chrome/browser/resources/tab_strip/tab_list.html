@@ -1,51 +1,61 @@
 <style>
   :host {
+    --tabstrip-tab-height: calc(var(--tabstrip-tab-title-height) +
+                                var(--tabstrip-tab-thumbnail-height));
+    --tabstrip-tab-width: var(--tabstrip-tab-thumbnail-width);
+    --tabstrip-tab-spacing: 16px;
+
+    background: var(--tabstrip-background-color);
+    box-sizing: border-box;
     display: flex;
-    padding: 16px;
-    width: fit-content;
+    height: 100%;
+    overflow: overlay hidden;
+    touch-action: pan-x;
+    width: 100%;
   }
 
   #pinnedTabsContainer {
+    /* 3 pinned tabs should fit in the same space vertically as 1 unpinned
+     * tab. 20px is subtracted from the height of an unpinned tab as there
+     * are two 10px gaps to separate each of the 3 pinned tabs. */
+    --tabstrip-pinned-tab-size: calc((var(--tabstrip-tab-height) - 20px) / 3);
+
     display: grid;
-    grid-auto-columns: 50px;
+    grid-auto-columns: var(--tabstrip-pinned-tab-size);
     grid-auto-flow: column;
     grid-gap: 10px;
-    grid-template-rows: repeat(4, 50px);
-    margin-inline-end: 16px;
+    grid-template-rows: repeat(3, var(--tabstrip-pinned-tab-size));
+    padding: var(--tabstrip-tab-spacing);
+    padding-inline-end: 0;
   }
 
-  #pinnedTabsContainer[empty] {
-    display: none;
-  }
-
-  .ghost-pinned-tab {
-    background: var(--tabstrip-card-background-color);
-    border-radius: var(--tabstrip-card-border-radius);
-    box-shadow: var(--tabstrip-elevation-box-shadow);
-    opacity: 0.5;
-  }
-
-  /* The #pinnedTabsContainer can only fit a maximum of 4 pinned tabs. The
-   * ghost-pinned-tab elements are meant to add as placeholders if there
-   * are not enough actual pinned tabs to fill an entire column. Therefore,
-   * all ghost-pinned-tabs after the 4 * nth element should be hidden. */
-  .ghost-pinned-tab:nth-child(4n + 1),
-  .ghost-pinned-tab:nth-child(4n + 1) ~ .ghost-pinned-tab {
+  #pinnedTabsContainer:empty {
     display: none;
   }
 
   #tabsContainer {
     display: flex;
+    min-width: fit-content;
+    overflow: hidden;
+    padding: var(--tabstrip-tab-spacing);
+    padding-inline-end: 0;
+    width: 100%;
   }
 
-  #tabsContainer tabstrip-tab:not(:last-child) {
-    margin-inline-end: 16px;
+  #demoOptions {
+    bottom: 15px;
+    display: none;
+    font-size: 16px;
+    position: fixed;
+    right: 15px;
   }
 </style>
 
-<div id="pinnedTabsContainer" empty>
-  <div class="ghost-pinned-tab"></div>
-  <div class="ghost-pinned-tab"></div>
-  <div class="ghost-pinned-tab"></div>
-</div>
+<div id="pinnedTabsContainer"></div>
 <div id="tabsContainer"></div>
+
+<div id="demoOptions">
+  <label>
+    <input type="checkbox" id="autoCloseCheckbox">Auto-close
+  </label>
+</div>

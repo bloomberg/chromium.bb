@@ -68,7 +68,7 @@ extern std::atomic<uint32_t> g_enabled_tags;
 extern std::atomic<uint64_t> g_enabled_timestamp;
 
 // Enables meta-tracing for one or more tags. Once enabled it will discard any
-// futher Enable() calls and return false until disabled,
+// further Enable() calls and return false until disabled,
 // |read_task| is a closure that will be called enqueued |task_runner| when the
 // meta-tracing ring buffer is half full. The task is expected to read the ring
 // buffer using RingBuffer::GetReadIterator() and serialize the contents onto a
@@ -116,22 +116,33 @@ struct Record {
     timestamp_ns_high = static_cast<uint16_t>(diff >> 32);
   }
 
+  // We can't just memset() this class because on MSVC std::atomic<> is not
+  // trivially constructible anymore. Also std::atomic<> has a deleted copy
+  // constructor so we cant just do "*this = Record()" either.
+  // See http://bit.ly/339Jlzd .
+  void clear() {
+    this->~Record();
+    new (this) Record();
+  }
+
   // This field holds the type (counter vs event) in the MSB and event ID (as
   // defined in metatrace_events.h) in the lowest 15 bits. It is also used also
   // as a linearization point: this is always written after all the other
   // fields with a release-store. This is so the reader can determine whether it
   // can safely process the other event fields after a load-acquire.
-  std::atomic<uint16_t> type_and_id;
+  std::atomic<uint16_t> type_and_id{};
 
   // Timestamp is stored as a 48-bits value diffed against g_enabled_timestamp.
   // This gives us 78 hours from Enabled().
-  uint16_t timestamp_ns_high;
-  uint32_t timestamp_ns_low;
+  uint16_t timestamp_ns_high = 0;
+  uint32_t timestamp_ns_low = 0;
 
-  uint32_t thread_id;
+  uint32_t thread_id = 0;
 
   union {
-    uint32_t duration_ns;   // If type == event.
+    // Only one of the two elements can be zero initialized, clang complains
+    // about "initializing multiple members of union" otherwise.
+    uint32_t duration_ns = 0;  // If type == event.
     int32_t counter_value;  // If type == counter.
   };
 };

@@ -6,21 +6,19 @@
 
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/SharedClipboardMessageHandler_jni.h"
-#include "components/sync_device_info/device_info.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 SharedClipboardMessageHandlerAndroid::SharedClipboardMessageHandlerAndroid(
-    SharingService* sharing_service)
-    : SharedClipboardMessageHandler(sharing_service) {}
+    SharingDeviceSource* device_source)
+    : SharedClipboardMessageHandler(device_source) {}
 
 SharedClipboardMessageHandlerAndroid::~SharedClipboardMessageHandlerAndroid() =
     default;
 
 void SharedClipboardMessageHandlerAndroid::ShowNotification(
-    std::unique_ptr<syncer::DeviceInfo> device_info) {
+    const std::string& device_name) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SharedClipboardMessageHandler_showNotification(
-      env,
-      base::android::ConvertUTF8ToJavaString(env, device_info->client_name()));
+      env, base::android::ConvertUTF8ToJavaString(env, device_name));
 }

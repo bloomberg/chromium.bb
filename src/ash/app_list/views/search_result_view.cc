@@ -28,7 +28,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -82,9 +82,7 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
   set_notify_enter_exit_on_child(true);
 }
 
-SearchResultView::~SearchResultView() {
-  ClearResult();
-}
+SearchResultView::~SearchResultView() = default;
 
 void SearchResultView::OnResultChanged() {
   OnMetadataChanged();
@@ -112,7 +110,8 @@ void SearchResultView::UpdateDetailsText() {
 }
 
 void SearchResultView::CreateTitleRenderText() {
-  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+  std::unique_ptr<gfx::RenderText> render_text =
+      gfx::RenderText::CreateRenderText();
   render_text->SetText(result()->title());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(
@@ -142,7 +141,8 @@ void SearchResultView::CreateDetailsRenderText() {
     details_text_.reset();
     return;
   }
-  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+  std::unique_ptr<gfx::RenderText> render_text =
+      gfx::RenderText::CreateRenderText();
   render_text->SetText(result()->details());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(rb.GetFontList(ui::ResourceBundle::BaseFont));
@@ -231,7 +231,8 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
                                           actions_view()->GetSelectedAction()),
                                       event.flags());
       } else {
-        list_view_->SearchResultActivated(this, event.flags());
+        list_view_->SearchResultActivated(this, event.flags(),
+                                          false /* by_button_press */);
       }
       return true;
     case ui::VKEY_UP:
@@ -331,12 +332,12 @@ void SearchResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (!GetVisible())
     return;
 
-  // This is a work around to deal with the nested button case(append and remove
+  // Mark the result is a list item in the list of search results.
+  // Also avoids an issue with the nested button case(append and remove
   // button are child button of SearchResultView), which is not supported by
   // ChromeVox. see details in crbug.com/924776.
-  // We change the role of the parent view SearchResultView to kGenericContainer
-  // i.e., not a kButton anymore.
-  node_data->role = ax::mojom::Role::kGenericContainer;
+  node_data->role = ax::mojom::Role::kListBoxOption;
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, selected());
   node_data->AddState(ax::mojom::State::kFocusable);
   node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kClick);
   node_data->SetName(GetAccessibleName());
@@ -370,7 +371,8 @@ void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
 void SearchResultView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   DCHECK(sender == this);
-  list_view_->SearchResultActivated(this, event.flags());
+  list_view_->SearchResultActivated(this, event.flags(),
+                                    true /* by_button_press */);
 }
 
 void SearchResultView::OnMetadataChanged() {
@@ -413,7 +415,7 @@ void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
 
 void SearchResultView::OnSearchResultActionActivated(size_t index,
                                                      int event_flags) {
-  // |result()| could be NULL when result list is changing.
+  // |result()| could be nullptr when result list is changing.
   if (!result())
     return;
 
@@ -442,13 +444,6 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
   }
 }
 
-void SearchResultView::OnSearchResultActionsUnSelected() {
-  // If the selection has changed to default result action, announce the
-  // selection change to a11y stack.
-  if (selected())
-    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-}
-
 bool SearchResultView::IsSearchResultHoveredOrSelected() {
   return IsMouseHovered() || selected();
 }
@@ -463,7 +458,7 @@ void SearchResultView::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  // |result()| could be NULL when result list is changing.
+  // |result()| could be nullptr when result list is changing.
   if (!result())
     return;
 
@@ -504,4 +499,4 @@ void SearchResultView::SetDisplayIcon(const gfx::ImageSkia& source) {
   icon_->SetVisible(source.isNull());
 }
 
-}  // namespace app_list
+}  // namespace ash

@@ -53,8 +53,12 @@
 #include "content/test/stub_render_widget_host_owner_delegate.h"
 #include "content/test/test_render_view_host.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_features.h"
@@ -64,6 +68,7 @@
 #include "ui/gfx/canvas.h"
 
 #if defined(OS_ANDROID)
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "ui/android/screen_android.h"
 #endif
@@ -264,14 +269,15 @@ class MockRenderViewHostDelegateView : public RenderViewHostDelegateView {
 // Fake out the renderer side of mojom::RenderFrameMetadataObserver, allowing
 // for RenderWidgetHostImpl to be created.
 //
-// All methods are no-opts, the provided mojo request and info are held, but
+// All methods are no-opts, the provided mojo receiver and remote are held, but
 // never bound.
 class FakeRenderFrameMetadataObserver
     : public mojom::RenderFrameMetadataObserver {
  public:
   FakeRenderFrameMetadataObserver(
-      mojom::RenderFrameMetadataObserverRequest request,
-      mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
+      mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver,
+      mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient>
+          client_remote);
   ~FakeRenderFrameMetadataObserver() override {}
 
 #if defined(OS_ANDROID)
@@ -280,15 +286,28 @@ class FakeRenderFrameMetadataObserver
   void ReportAllFrameSubmissionsForTesting(bool enabled) override {}
 
  private:
-  mojom::RenderFrameMetadataObserverRequest request_;
-  mojom::RenderFrameMetadataObserverClientPtrInfo client_info_;
+  mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver_;
+  mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient> client_remote_;
   DISALLOW_COPY_AND_ASSIGN(FakeRenderFrameMetadataObserver);
 };
 
 FakeRenderFrameMetadataObserver::FakeRenderFrameMetadataObserver(
-    mojom::RenderFrameMetadataObserverRequest request,
-    mojom::RenderFrameMetadataObserverClientPtrInfo client_info)
-    : request_(std::move(request)), client_info_(std::move(client_info)) {}
+    mojo::PendingReceiver<mojom::RenderFrameMetadataObserver> receiver,
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient> client_remote)
+    : receiver_(std::move(receiver)),
+      client_remote_(std::move(client_remote)) {}
+
+// MockInputEventObserver -------------------------------------------------
+class MockInputEventObserver : public RenderWidgetHost::InputEventObserver {
+ public:
+  MOCK_METHOD1(OnInputEvent, void(const blink::WebInputEvent&));
+#if defined(OS_ANDROID)
+  MOCK_METHOD1(OnImeTextCommittedEvent, void(const base::string16& text_str));
+  MOCK_METHOD1(OnImeSetComposingTextEvent,
+               void(const base::string16& text_str));
+  MOCK_METHOD0(OnImeFinishComposingTextEvent, void());
+#endif
+};
 
 // MockRenderWidgetHostDelegate --------------------------------------------
 
@@ -357,6 +376,20 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   int GetFocusOwningWebContentsCallCount() const {
     return focus_owning_web_contents_call_count;
+  }
+
+  void OnVerticalScrollDirectionChanged(
+      viz::VerticalScrollDirection scroll_direction) override {
+    ++on_vertical_scroll_direction_changed_call_count_;
+    last_vertical_scroll_direction_ = scroll_direction;
+  }
+
+  int GetOnVerticalScrollDirectionChangedCallCount() const {
+    return on_vertical_scroll_direction_changed_call_count_;
+  }
+
+  viz::VerticalScrollDirection GetLastVerticalScrollDirection() const {
+    return last_vertical_scroll_direction_;
   }
 
   RenderViewHostDelegateView* GetDelegateView() override {
@@ -429,12 +462,18 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   double zoom_level_ = 0;
 
   int focus_owning_web_contents_call_count = 0;
+
+  int on_vertical_scroll_direction_changed_call_count_ = 0;
+  viz::VerticalScrollDirection last_vertical_scroll_direction_ =
+      viz::VerticalScrollDirection::kNull;
 };
 
 class MockRenderWidgetHostOwnerDelegate
     : public StubRenderWidgetHostOwnerDelegate {
  public:
   MOCK_METHOD1(SetBackgroundOpaque, void(bool opaque));
+  MOCK_METHOD1(UpdatePageVisualProperties,
+               void(const VisualProperties& visual_properties));
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -453,13 +492,6 @@ class RenderWidgetHostTest : public testing::Test {
   }
   bool MouseEventCallback(const blink::WebMouseEvent& /* event */) {
     return handle_mouse_event_;
-  }
-
-  void RunLoopFor(base::TimeDelta duration) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), duration);
-    run_loop.Run();
   }
 
  protected:
@@ -494,36 +526,34 @@ class RenderWidgetHostTest : public testing::Test {
     host_->Init();
     host_->DisableGestureDebounce();
 
-    viz::mojom::CompositorFrameSinkPtr sink;
-    viz::mojom::CompositorFrameSinkRequest sink_request =
-        mojo::MakeRequest(&sink);
-    viz::mojom::CompositorFrameSinkClientRequest client_request =
-        mojo::MakeRequest(&renderer_compositor_frame_sink_ptr_);
+    mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink;
+    mojo::PendingReceiver<viz::mojom::CompositorFrameSink> sink_receiver =
+        sink.InitWithNewPipeAndPassReceiver();
     renderer_compositor_frame_sink_ =
         std::make_unique<FakeRendererCompositorFrameSink>(
-            std::move(sink), std::move(client_request));
+            std::move(sink), renderer_compositor_frame_sink_remote_
+                                 .BindNewPipeAndPassReceiver());
 
-    mojom::RenderFrameMetadataObserverPtr
-        renderer_render_frame_metadata_observer_ptr;
-    mojom::RenderFrameMetadataObserverRequest
-        render_frame_metadata_observer_request =
-            mojo::MakeRequest(&renderer_render_frame_metadata_observer_ptr);
-    mojom::RenderFrameMetadataObserverClientPtrInfo
-        render_frame_metadata_observer_client_info;
-    mojom::RenderFrameMetadataObserverClientRequest
-        render_frame_metadata_observer_client_request =
-            mojo::MakeRequest(&render_frame_metadata_observer_client_info);
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
+        renderer_render_frame_metadata_observer_remote;
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient>
+        render_frame_metadata_observer_remote;
+    mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+        render_frame_metadata_observer_client_receiver =
+            render_frame_metadata_observer_remote
+                .InitWithNewPipeAndPassReceiver();
     renderer_render_frame_metadata_observer_ =
         std::make_unique<FakeRenderFrameMetadataObserver>(
-            std::move(render_frame_metadata_observer_request),
-            std::move(render_frame_metadata_observer_client_info));
+            renderer_render_frame_metadata_observer_remote
+                .InitWithNewPipeAndPassReceiver(),
+            std::move(render_frame_metadata_observer_remote));
 
     host_->RequestCompositorFrameSink(
-        std::move(sink_request),
-        std::move(renderer_compositor_frame_sink_ptr_));
+        std::move(sink_receiver),
+        renderer_compositor_frame_sink_remote_.Unbind());
     host_->RegisterRenderFrameMetadataObserver(
-        std::move(render_frame_metadata_observer_client_request),
-        std::move(renderer_render_frame_metadata_observer_ptr));
+        std::move(render_frame_metadata_observer_client_receiver),
+        std::move(renderer_render_frame_metadata_observer_remote));
   }
 
   void TearDown() override {
@@ -592,7 +622,9 @@ class RenderWidgetHostTest : public testing::Test {
 
   void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
     host_->ForwardWheelEvent(SyntheticWebMouseWheelEventBuilder::Build(
-        0, 0, dX, dY, modifiers, precise));
+        0, 0, dX, dY, modifiers,
+        precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+                : ui::input_types::ScrollGranularity::kScrollByPixel));
   }
 
   void SimulateWheelEvent(float dX,
@@ -601,7 +633,9 @@ class RenderWidgetHostTest : public testing::Test {
                           bool precise,
                           WebMouseWheelEvent::Phase phase) {
     WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
-        0, 0, dX, dY, modifiers, precise);
+        0, 0, dX, dY, modifiers,
+        precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+                : ui::input_types::ScrollGranularity::kScrollByPixel);
     wheel_event.phase = phase;
     host_->ForwardWheelEvent(wheel_event);
   }
@@ -612,8 +646,10 @@ class RenderWidgetHostTest : public testing::Test {
                                          bool precise,
                                          const ui::LatencyInfo& ui_latency) {
     host_->ForwardWheelEventWithLatencyInfo(
-        SyntheticWebMouseWheelEventBuilder::Build(0, 0, dX, dY, modifiers,
-                                                  precise),
+        SyntheticWebMouseWheelEventBuilder::Build(
+            0, 0, dX, dY, modifiers,
+            precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+                    : ui::input_types::ScrollGranularity::kScrollByPixel),
         ui_latency);
   }
 
@@ -624,7 +660,9 @@ class RenderWidgetHostTest : public testing::Test {
                                          const ui::LatencyInfo& ui_latency,
                                          WebMouseWheelEvent::Phase phase) {
     WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
-        0, 0, dX, dY, modifiers, precise);
+        0, 0, dX, dY, modifiers,
+        precise ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
+                : ui::input_types::ScrollGranularity::kScrollByPixel);
     wheel_event.phase = phase;
     host_->ForwardWheelEventWithLatencyInfo(wheel_event, ui_latency);
   }
@@ -693,6 +731,8 @@ class RenderWidgetHostTest : public testing::Test {
     return reinterpret_cast<const WebInputEvent*>(data);
   }
 
+  BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
   std::unique_ptr<MockRenderWidgetHostDelegate> delegate_;
@@ -713,8 +753,8 @@ class RenderWidgetHostTest : public testing::Test {
  private:
   SyntheticWebTouchEvent touch_event_;
 
-  BrowserTaskEnvironment task_environment_;
-  viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
+  mojo::Remote<viz::mojom::CompositorFrameSinkClient>
+      renderer_compositor_frame_sink_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };
@@ -731,71 +771,78 @@ class RenderWidgetHostWithSourceTest
 // -----------------------------------------------------------------------------
 
 TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
+  sink_->ClearMessages();
+
   // The initial zoom is 0 so host should not send a sync message
   delegate_->SetZoomLevel(0);
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(0u, sink_->message_count());
 
-  // The zoom has changed so host should send out a sync message
-  process_->sink().ClearMessages();
-  double new_zoom_level = content::ZoomFactorToZoomLevel(0.25);
+  sink_->ClearMessages();
+
+  // The zoom has changed so host should send out a sync message.
+  double new_zoom_level = blink::PageZoomFactorToZoomLevel(0.25);
   delegate_->SetZoomLevel(new_zoom_level);
   EXPECT_TRUE(host_->SynchronizeVisualProperties());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_NEAR(new_zoom_level, host_->old_visual_properties_->zoom_level, 0.01);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(1u, sink_->message_count());
+
+  sink_->ClearMessages();
 
   // The initial bounds is the empty rect, so setting it to the same thing
   // shouldn't send the resize message.
-  process_->sink().ClearMessages();
   view_->SetBounds(gfx::Rect());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(0u, sink_->message_count());
+
+  sink_->ClearMessages();
 
   // No visual properties ACK if the physical backing gets set, but the view
   // bounds are zero.
   view_->SetMockCompositorViewportPixelSize(gfx::Size(200, 200));
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
+  EXPECT_EQ(1u, sink_->message_count());
+
+  sink_->ClearMessages();
 
   // Setting the view bounds to nonzero should send out the notification.
   // but should not expect ack for empty physical backing size.
   gfx::Rect original_size(0, 0, 100, 100);
-  process_->sink().ClearMessages();
   view_->SetBounds(original_size);
   view_->SetMockCompositorViewportPixelSize(gfx::Size());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(1u, sink_->message_count());
+
+  sink_->ClearMessages();
 
   // Setting the bounds and physical backing size to nonzero should send out
   // the notification and expect an ack.
-  process_->sink().ClearMessages();
   view_->ClearMockCompositorViewportPixelSize();
   host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = original_size.size();
   metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
+  EXPECT_EQ(1u, sink_->message_count());
 
-  process_->sink().ClearMessages();
+  sink_->ClearMessages();
+
   gfx::Rect second_size(0, 0, 110, 110);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   view_->SetBounds(second_size);
   EXPECT_TRUE(host_->SynchronizeVisualProperties());
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
+
+  sink_->ClearMessages();
 
   // Sending out a new notification should NOT send out a new IPC message since
   // a visual properties ACK is pending.
@@ -804,78 +851,78 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   view_->SetBounds(third_size);
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(0u, sink_->message_count());
+
+  sink_->ClearMessages();
 
   // Send a update that's a visual properties ACK, but for the original_size we
   // sent. Since this isn't the second_size, the message handler should
   // immediately send a new resize message for the new size to the renderer.
-  process_->sink().ClearMessages();
   metadata.viewport_size_in_pixels = original_size.size();
   metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(1u, sink_->message_count());
+
+  sink_->ClearMessages();
 
   // Send the visual properties ACK for the latest size.
-  process_->sink().ClearMessages();
   metadata.viewport_size_in_pixels = third_size.size();
   metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
-  EXPECT_FALSE(process_->sink().GetFirstMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(0u, sink_->message_count());
+
+  sink_->ClearMessages();
 
   // Now clearing the bounds should send out a notification but we shouldn't
   // expect a visual properties ACK (since the renderer won't ack empty sizes).
   // The message should contain the new size (0x0) and not the previous one that
   // we skipped.
-  process_->sink().ClearMessages();
   view_->SetBounds(gfx::Rect());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(1u, sink_->message_count());
+
+  sink_->ClearMessages();
 
   // Send a rect that has no area but has either width or height set.
-  process_->sink().ClearMessages();
   view_->SetBounds(gfx::Rect(0, 0, 0, 30));
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 30), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(1u, sink_->message_count());
+
+  sink_->ClearMessages();
 
   // Set the same size again. It should not be sent again.
-  process_->sink().ClearMessages();
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 30), host_->old_visual_properties_->new_size);
-  EXPECT_FALSE(process_->sink().GetFirstMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(0u, sink_->message_count());
+
+  sink_->ClearMessages();
 
   // A different size should be sent again, however.
   view_->SetBounds(gfx::Rect(0, 0, 0, 31));
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 31), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(1u, sink_->message_count());
+
+  sink_->ClearMessages();
 
   // An invalid LocalSurfaceId should result in no change to the
   // |visual_properties_ack_pending_| bit.
-  process_->sink().ClearMessages();
   view_->SetBounds(gfx::Rect(25, 25));
   view_->InvalidateLocalSurfaceId();
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(25, 25), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
+  EXPECT_EQ(1u, sink_->message_count());
 }
 
 // Test that a resize event is sent if SynchronizeVisualProperties() is called
@@ -888,59 +935,73 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.orientation_angle = 0;
   screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
 
+  sink_->ClearMessages();
   view_->SetScreenInfo(screen_info);
-  host_->SynchronizeVisualProperties();
+  EXPECT_EQ(0u, sink_->message_count());
+  EXPECT_TRUE(host_->SynchronizeVisualProperties());
+  // WidgetMsg_UpdateVisualProperties sent to the renderer.
+  ASSERT_EQ(1u, sink_->message_count());
+  EXPECT_EQ(WidgetMsg_UpdateVisualProperties::ID,
+            sink_->GetMessageAt(0)->type());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
-  process_->sink().ClearMessages();
 
   screen_info.orientation_angle = 180;
   screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
 
+  sink_->ClearMessages();
   view_->SetScreenInfo(screen_info);
-  host_->SynchronizeVisualProperties();
+  EXPECT_EQ(0u, sink_->message_count());
+  EXPECT_TRUE(host_->SynchronizeVisualProperties());
+  // WidgetMsg_UpdateVisualProperties sent to the renderer.
+  ASSERT_EQ(1u, sink_->message_count());
+  EXPECT_EQ(WidgetMsg_UpdateVisualProperties::ID,
+            sink_->GetMessageAt(0)->type());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
-  process_->sink().ClearMessages();
 
   screen_info.device_scale_factor = 2.f;
 
+  sink_->ClearMessages();
   view_->SetScreenInfo(screen_info);
-  host_->SynchronizeVisualProperties();
+  EXPECT_EQ(0u, sink_->message_count());
+  EXPECT_TRUE(host_->SynchronizeVisualProperties());
+  // WidgetMsg_UpdateVisualProperties sent to the renderer.
+  ASSERT_EQ(1u, sink_->message_count());
+  EXPECT_EQ(WidgetMsg_UpdateVisualProperties::ID,
+            sink_->GetMessageAt(0)->type());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
-  process_->sink().ClearMessages();
 
   // No screen change.
+  sink_->ClearMessages();
   view_->SetScreenInfo(screen_info);
-  host_->SynchronizeVisualProperties();
+  EXPECT_FALSE(host_->SynchronizeVisualProperties());
+  EXPECT_EQ(0u, sink_->message_count());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
 }
 
 // Test for crbug.com/25097. If a renderer crashes between a resize and the
 // corresponding update message, we must be sure to clear the visual properties
 // ACK logic.
 TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
-  // Clear the first Resize message that carried screen info.
-  process_->sink().ClearMessages();
-
+  sink_->ClearMessages();
   // Setting the bounds to a "real" rect should send out the notification.
-  gfx::Rect original_size(0, 0, 100, 100);
-  view_->SetBounds(original_size);
+  view_->SetBounds(gfx::Rect(100, 100));
   host_->SynchronizeVisualProperties();
+  // WidgetMsg_UpdateVisualProperties is sent to the renderer.
+  ASSERT_EQ(1u, sink_->message_count());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(0);
+    ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
+    WidgetMsg_UpdateVisualProperties::Param params;
+    WidgetMsg_UpdateVisualProperties::Read(msg, &params);
+    VisualProperties visual_properties = std::get<0>(params);
+    // Size sent to the renderer.
+    EXPECT_EQ(gfx::Size(100, 100), visual_properties.new_size);
+  }
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
-  EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
 
-  // Simulate a renderer crash before the update message. Ensure all the visual
-  // properties ACK logic is cleared. Must clear the view first so it doesn't
-  // get deleted.
+  // Simulate a renderer crash before an ACK for the UpdateVisualProperties
+  // message arrives. Ensure all the visual properties ACK logic is cleared.
+  // Must clear the view first so it doesn't get deleted.
   host_->SetView(nullptr);
   host_->RendererExited();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
@@ -956,7 +1017,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
 TEST_F(RenderWidgetHostTest, Background) {
   std::unique_ptr<RenderWidgetHostViewBase> view;
 #if defined(USE_AURA)
-  view.reset(new RenderWidgetHostViewAura(host_.get(), false));
+  view.reset(new RenderWidgetHostViewAura(host_.get()));
   // TODO(derat): Call this on all platforms: http://crbug.com/102450.
   view->InitAsChild(nullptr);
 #elif defined(OS_ANDROID)
@@ -1267,7 +1328,7 @@ TEST_F(RenderWidgetHostTest, DontPostponeInputEventAckTimeout) {
   host_->StartInputEventAckTimeout(TimeDelta::FromSeconds(30));
 
   // Wait long enough for first timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(10));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1283,7 +1344,7 @@ TEST_F(RenderWidgetHostTest, StopAndStartInputEventAckTimeout) {
   host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(10));
 
   // Wait long enough for first timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMilliseconds(40));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(40));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1298,7 +1359,7 @@ TEST_F(RenderWidgetHostTest, ShorterDelayInputEventAckTimeout) {
   host_->StartInputEventAckTimeout(TimeDelta::FromMilliseconds(20));
 
   // Wait long enough for the second timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMilliseconds(25));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(25));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1313,18 +1374,18 @@ TEST_F(RenderWidgetHostTest, InputEventAckTimeoutDisabledForInputWhenHidden) {
 
   // The timeout should not fire.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  RunLoopFor(TimeDelta::FromMicroseconds(2));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(2));
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // The timeout should never reactivate while hidden.
   SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 10, 0, false);
-  RunLoopFor(TimeDelta::FromMicroseconds(2));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(2));
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // Showing the widget should restore the timeout, as the events have
   // not yet been ack'ed.
   host_->WasShown(base::nullopt /* record_tab_switch_time_request */);
-  RunLoopFor(TimeDelta::FromMicroseconds(2));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(2));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1349,7 +1410,7 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Wait long enough for first timeout and see if it fired.
-  RunLoopFor(TimeDelta::FromMicroseconds(20));
+  task_environment_.FastForwardBy(TimeDelta::FromMilliseconds(20));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 TEST_F(RenderWidgetHostTest, IgnoreInputEvent) {
@@ -1625,21 +1686,28 @@ TEST_F(RenderWidgetHostInitialSizeTest, InitialSize) {
   // with the reqiest to new up the RenderView and so subsequent
   // SynchronizeVisualProperties calls should not result in new IPC (unless the
   // size has actually changed).
+  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
-  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
   EXPECT_EQ(initial_size_, host_->old_visual_properties_->new_size);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
 }
 
 TEST_F(RenderWidgetHostTest, HideUnthrottlesResize) {
-  gfx::Size original_size(100, 100);
-  view_->SetBounds(gfx::Rect(original_size));
-  process_->sink().ClearMessages();
+  sink_->ClearMessages();
+  view_->SetBounds(gfx::Rect(100, 100));
   EXPECT_TRUE(host_->SynchronizeVisualProperties());
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID));
-  EXPECT_EQ(original_size, host_->old_visual_properties_->new_size);
+  // WidgetMsg_UpdateVisualProperties is sent to the renderer.
+  ASSERT_EQ(1u, sink_->message_count());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(0);
+    ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
+    WidgetMsg_UpdateVisualProperties::Param params;
+    WidgetMsg_UpdateVisualProperties::Read(msg, &params);
+    VisualProperties visual_properties = std::get<0>(params);
+    // Size sent to the renderer.
+    EXPECT_EQ(gfx::Size(100, 100), visual_properties.new_size);
+  }
+  // An ack is pending, throttling further updates.
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
 
   // Hiding the widget should unthrottle resize.
@@ -1917,9 +1985,9 @@ TEST_F(RenderWidgetHostTest, InflightEventCountResetsAfterRebind) {
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
 
   EXPECT_EQ(1u, host_->in_flight_event_count());
-  mojom::WidgetPtr widget;
+  mojo::PendingRemote<mojom::Widget> widget;
   std::unique_ptr<MockWidgetImpl> widget_impl =
-      std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+      std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
   host_->SetWidget(std::move(widget));
   EXPECT_EQ(0u, host_->in_flight_event_count());
 }
@@ -1935,33 +2003,13 @@ TEST_F(RenderWidgetHostTest, ForceEnableZoomShouldUpdateAfterRebind) {
   host_->ExpectForceEnableZoom(true);
 
   // Rebind should also update to the latest force_enable_zoom state.
-  mojom::WidgetPtr widget;
+  mojo::PendingRemote<mojom::Widget> widget;
   std::unique_ptr<MockWidgetImpl> widget_impl =
-      std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+      std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
   host_->SetWidget(std::move(widget));
 
   SCOPED_TRACE("force_enable_zoom is true after rebind.");
   host_->ExpectForceEnableZoom(true);
-}
-
-TEST_F(RenderWidgetHostTest, RenderWidgetSurfaceProperties) {
-  RenderWidgetSurfaceProperties prop1;
-  prop1.size = gfx::Size(200, 200);
-  prop1.device_scale_factor = 1.f;
-  RenderWidgetSurfaceProperties prop2;
-  prop2.size = gfx::Size(300, 300);
-  prop2.device_scale_factor = 2.f;
-
-  EXPECT_EQ(
-      "RenderWidgetSurfaceProperties(size(this: 200x200, other: 300x300), "
-      "device_scale_factor(this: 1, other: 2))",
-      prop1.ToDiffString(prop2));
-  EXPECT_EQ(
-      "RenderWidgetSurfaceProperties(size(this: 300x300, other: 200x200), "
-      "device_scale_factor(this: 2, other: 1))",
-      prop2.ToDiffString(prop1));
-  EXPECT_EQ("", prop1.ToDiffString(prop1));
-  EXPECT_EQ("", prop2.ToDiffString(prop2));
 }
 
 // If a navigation happens while the widget is hidden, we shouldn't show
@@ -2011,35 +2059,34 @@ TEST_F(RenderWidgetHostTest, RendererHangRecordsMetrics) {
   tester.ExpectUniqueSample("Renderer.Hung.Duration", 17000, 1);
 }
 
-// TODO(https://crbug.com/992784): Flakily fails the final
-// ConsumePendingUserActivationIfAllowed expectation, after RunLoopFor().
-TEST_F(RenderWidgetHostTest, DISABLED_PendingUserActivationTimeout) {
+TEST_F(RenderWidgetHostTest, PendingUserActivationTimeout) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeature(
       features::kBrowserVerifiedUserActivation);
 
   // One event allows one activation notification.
   SimulateMouseEvent(WebInputEvent::kMouseDown);
-  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
-  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_TRUE(host_->RemovePendingUserActivationIfAvailable());
+  EXPECT_FALSE(host_->RemovePendingUserActivationIfAvailable());
 
   // Mouse move and up does not increase pending user activation counter.
   SimulateMouseEvent(WebInputEvent::kMouseMove);
   SimulateMouseEvent(WebInputEvent::kMouseUp);
-  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_FALSE(host_->RemovePendingUserActivationIfAvailable());
 
   // 2 events allow 2 activation notifications.
   SimulateMouseEvent(WebInputEvent::kMouseDown);
   SimulateKeyboardEvent(WebInputEvent::kKeyDown);
-  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
-  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
-  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_TRUE(host_->RemovePendingUserActivationIfAvailable());
+  EXPECT_TRUE(host_->RemovePendingUserActivationIfAvailable());
+  EXPECT_FALSE(host_->RemovePendingUserActivationIfAvailable());
 
-  // Pending activation is reset after |kActivationNotificationExpireTime|.
+  // Timer reset the pending activation.
   SimulateMouseEvent(WebInputEvent::kMouseDown);
   SimulateMouseEvent(WebInputEvent::kMouseDown);
-  RunLoopFor(RenderWidgetHostImpl::kActivationNotificationExpireTime);
-  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+  task_environment_.FastForwardBy(
+      RenderWidgetHostImpl::kActivationNotificationExpireTime);
+  EXPECT_FALSE(host_->RemovePendingUserActivationIfAvailable());
 }
 
 // Tests that fling events are not dispatched when the wheel event is consumed.
@@ -2087,6 +2134,87 @@ TEST_F(RenderWidgetHostTest, FlingEventsWhenSomeScrollEventsConsumed) {
   dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
   EXPECT_NE(0u, dispatched_events.size());
+}
+
+TEST_F(RenderWidgetHostTest, AddAndRemoveInputEventObserver) {
+  MockInputEventObserver observer;
+
+  // Add InputEventObserver.
+  host_->AddInputEventObserver(&observer);
+
+  // Confirm OnInputEvent is triggered.
+  NativeWebKeyboardEvent native_event(WebInputEvent::Type::kChar, 0,
+                                      GetNextSimulatedEventTime());
+  ui::LatencyInfo latency_info = ui::LatencyInfo();
+  EXPECT_CALL(observer, OnInputEvent(_)).Times(1);
+  host_->DispatchInputEventWithLatencyInfo(native_event, &latency_info);
+
+  // Remove InputEventObserver.
+  host_->RemoveInputEventObserver(&observer);
+
+  // Confirm InputEventObserver is removed.
+  EXPECT_CALL(observer, OnInputEvent(_)).Times(0);
+  latency_info = ui::LatencyInfo();
+  host_->DispatchInputEventWithLatencyInfo(native_event, &latency_info);
+}
+
+#if defined(OS_ANDROID)
+TEST_F(RenderWidgetHostTest, AddAndRemoveImeInputEventObserver) {
+  MockInputEventObserver observer;
+
+  // Add ImeInputEventObserver.
+  host_->AddImeInputEventObserver(&observer);
+
+  // Confirm ImeFinishComposingTextEvent is triggered.
+  EXPECT_CALL(observer, OnImeFinishComposingTextEvent()).Times(1);
+  host_->ImeFinishComposingText(true);
+
+  // Remove ImeInputEventObserver.
+  host_->RemoveImeInputEventObserver(&observer);
+
+  // Confirm ImeInputEventObserver is removed.
+  EXPECT_CALL(observer, OnImeFinishComposingTextEvent()).Times(0);
+  host_->ImeFinishComposingText(true);
+}
+#endif
+
+// Tests that vertical scroll direction changes are propagated to the delegate.
+TEST_F(RenderWidgetHostTest, OnVerticalScrollDirectionChanged) {
+  const auto NotifyVerticalScrollDirectionChanged =
+      [this](viz::VerticalScrollDirection scroll_direction) {
+        static uint32_t frame_token = 1u;
+        host_->frame_token_message_queue_->DidProcessFrame(frame_token);
+
+        cc::RenderFrameMetadata metadata;
+        metadata.new_vertical_scroll_direction = scroll_direction;
+        static_cast<mojom::RenderFrameMetadataObserverClient*>(
+            host_->render_frame_metadata_provider())
+            ->OnRenderFrameMetadataChanged(frame_token++, metadata);
+      };
+
+  // Verify initial state.
+  EXPECT_EQ(0, delegate_->GetOnVerticalScrollDirectionChangedCallCount());
+  EXPECT_EQ(viz::VerticalScrollDirection::kNull,
+            delegate_->GetLastVerticalScrollDirection());
+
+  // Verify that we will *not* propagate a vertical scroll of |kNull| which is
+  // only used to indicate the absence of a change in vertical scroll direction.
+  NotifyVerticalScrollDirectionChanged(viz::VerticalScrollDirection::kNull);
+  EXPECT_EQ(0, delegate_->GetOnVerticalScrollDirectionChangedCallCount());
+  EXPECT_EQ(viz::VerticalScrollDirection::kNull,
+            delegate_->GetLastVerticalScrollDirection());
+
+  // Verify that we will propagate a vertical scroll |kUp|.
+  NotifyVerticalScrollDirectionChanged(viz::VerticalScrollDirection::kUp);
+  EXPECT_EQ(1, delegate_->GetOnVerticalScrollDirectionChangedCallCount());
+  EXPECT_EQ(viz::VerticalScrollDirection::kUp,
+            delegate_->GetLastVerticalScrollDirection());
+
+  // Verify that we will propagate a vertical scroll |kDown|.
+  NotifyVerticalScrollDirectionChanged(viz::VerticalScrollDirection::kDown);
+  EXPECT_EQ(2, delegate_->GetOnVerticalScrollDirectionChangedCallCount());
+  EXPECT_EQ(viz::VerticalScrollDirection::kDown,
+            delegate_->GetLastVerticalScrollDirection());
 }
 
 }  // namespace content

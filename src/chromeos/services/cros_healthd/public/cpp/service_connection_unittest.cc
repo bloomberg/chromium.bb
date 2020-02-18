@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
+#include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,7 +27,7 @@ namespace chromeos {
 namespace cros_healthd {
 namespace {
 
-std::vector<mojom::NonRemovableBlockDeviceInfoPtr>
+base::Optional<std::vector<mojom::NonRemovableBlockDeviceInfoPtr>>
 MakeNonRemovableBlockDeviceInfo() {
   std::vector<mojom::NonRemovableBlockDeviceInfoPtr> info;
   info.push_back(mojom::NonRemovableBlockDeviceInfo::New(
@@ -34,55 +36,77 @@ MakeNonRemovableBlockDeviceInfo() {
   info.push_back(mojom::NonRemovableBlockDeviceInfo::New(
       "test_path2", 124 /* size */, "test_type2", 11 /* manfid */, "test_name2",
       767 /* serial */));
-  return info;
+  return base::Optional<std::vector<mojom::NonRemovableBlockDeviceInfoPtr>>(
+      std::move(info));
 }
 
-class MockCrosHealthdService : public mojom::CrosHealthdService {
- public:
-  mojo::PendingRemote<mojom::CrosHealthdService> GetPendingRemote() {
-    return receiver_.BindNewPipeAndPassRemote();
-  }
+mojom::BatteryInfoPtr MakeBatteryInfo() {
+  return mojom::BatteryInfo::New(
+      2 /* cycle_count */, 12.9 /* voltage_now */,
+      "battery_vendor" /* vendor */, "serial_number" /* serial_number */,
+      5.275 /* charge_full_design */, 5.292 /* charge_full */,
+      11.55 /* voltage_min_design */, 51785890 /* manufacture_date_smart */,
+      /*temperature smart=*/981729, /*model_name=*/"battery_model",
+      /*charge_now=*/5.123);
+}
 
-  MOCK_METHOD1(ProbeNonRemovableBlockDeviceInfo,
-               void(ProbeNonRemovableBlockDeviceInfoCallback callback));
+mojom::CachedVpdInfoPtr MakeCachedVpdInfo() {
+  return mojom::CachedVpdInfo::New("fake_sku_number" /* sku_number */);
+}
 
- private:
-  mojo::Receiver<mojom::CrosHealthdService> receiver_{this};
-};
+mojom::TelemetryInfoPtr MakeTelemetryInfo() {
+  return mojom::TelemetryInfo::New(
+      MakeBatteryInfo() /* battery_info */,
+      MakeNonRemovableBlockDeviceInfo() /* block_device_info */,
+      MakeCachedVpdInfo() /* vpd_info */
+  );
+}
 
 class CrosHealthdServiceConnectionTest : public testing::Test {
  public:
   CrosHealthdServiceConnectionTest() = default;
 
-  void SetUp() override {
-    CrosHealthdClient::InitializeFakeWithMockService(
-        mock_service_.GetPendingRemote());
-  }
+  void SetUp() override { CrosHealthdClient::InitializeFake(); }
 
   void TearDown() override { CrosHealthdClient::Shutdown(); }
 
-  MockCrosHealthdService* mock_service() { return &mock_service_; }
-
  private:
   base::test::TaskEnvironment task_environment_;
-  StrictMock<MockCrosHealthdService> mock_service_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosHealthdServiceConnectionTest);
 };
 
-TEST_F(CrosHealthdServiceConnectionTest, ProbeNonRemovableBlockDeviceInfo) {
-  EXPECT_CALL(*mock_service(), ProbeNonRemovableBlockDeviceInfo(_))
-      .WillOnce(WithArgs<0>(Invoke(
-          [](mojom::CrosHealthdService::ProbeNonRemovableBlockDeviceInfoCallback
-                 callback) {
-            std::move(callback).Run(MakeNonRemovableBlockDeviceInfo());
-          })));
+TEST_F(CrosHealthdServiceConnectionTest, ProbeTelemetryInfo) {
+  // Test that we can send a request without categories.
+  auto empty_info = mojom::TelemetryInfo::New();
+  FakeCrosHealthdClient::Get()->SetProbeTelemetryInfoResponseForTesting(
+      empty_info);
+  const std::vector<mojom::ProbeCategoryEnum> no_categories = {};
   bool callback_done = false;
-  ServiceConnection::GetInstance()->ProbeNonRemovableBlockDeviceInfo(
+  ServiceConnection::GetInstance()->ProbeTelemetryInfo(
+      no_categories, base::BindOnce(
+                         [](bool* callback_done, mojom::TelemetryInfoPtr info) {
+                           EXPECT_EQ(info, mojom::TelemetryInfo::New());
+                           *callback_done = true;
+                         },
+                         &callback_done));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(callback_done);
+
+  // Test that we can request all categories.
+  auto response_info = MakeTelemetryInfo();
+  FakeCrosHealthdClient::Get()->SetProbeTelemetryInfoResponseForTesting(
+      response_info);
+  const std::vector<mojom::ProbeCategoryEnum> categories_to_test = {
+      mojom::ProbeCategoryEnum::kBattery,
+      mojom::ProbeCategoryEnum::kNonRemovableBlockDevices,
+      mojom::ProbeCategoryEnum::kCachedVpdData};
+  callback_done = false;
+  ServiceConnection::GetInstance()->ProbeTelemetryInfo(
+      categories_to_test,
       base::BindOnce(
-          [](bool* callback_done,
-             std::vector<mojom::NonRemovableBlockDeviceInfoPtr> info) {
-            EXPECT_EQ(info, MakeNonRemovableBlockDeviceInfo());
+          [](bool* callback_done, mojom::TelemetryInfoPtr info) {
+            EXPECT_EQ(info, MakeTelemetryInfo());
             *callback_done = true;
           },
           &callback_done));

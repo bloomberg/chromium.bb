@@ -29,10 +29,16 @@ Polymer({
      */
     pageVisibility: Object,
 
-    unifiedConsentEnabled: Boolean,
-
     /** @type {settings.SyncStatus} */
     syncStatus: Object,
+
+    /** @private */
+    passwordsLeakDetectionEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('passwordsLeakDetectionEnabled');
+      },
+    },
 
     // <if expr="_google_chrome and not chromeos">
     // TODO(dbeam): make a virtual.* pref namespace and set/get this normally
@@ -47,9 +53,50 @@ Polymer({
       },
     },
 
+    /** @private {chrome.settingsPrivate.PrefObject} */
+    safeBrowsingReportingPref_: {
+      type: Object,
+      value: function() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
+      },
+    },
+
     /** @private */
     showRestart_: Boolean,
+
+    /** @private */
+    showRestartToast_: Boolean,
     // </if>
+
+    /** @private */
+    showSignoutDialog_: Boolean,
+
+    /** @private */
+    privacySettingsRedesignEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+      },
+    },
+
+    /** @private */
+    syncFirstSetupInProgress_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeSyncFirstSetupInProgress_(syncStatus)',
+    },
+  },
+
+  observers: [
+    'onSafeBrowsingReportingPrefChange_(prefs.safebrowsing.*)',
+  ],
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeSyncFirstSetupInProgress_: function() {
+    return !!this.syncStatus && !!this.syncStatus.firstSetupInProgress;
   },
 
   /** @override */
@@ -61,6 +108,39 @@ Polymer({
     this.addWebUIListener('metrics-reporting-change', setMetricsReportingPref);
     this.browserProxy_.getMetricsReporting().then(setMetricsReportingPref);
     // </if>
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  getDisabledExtendedSafeBrowsing_: function() {
+    return !this.getPref('safebrowsing.enabled').value;
+  },
+
+  /** @private */
+  onSafeBrowsingReportingToggleChange_: function() {
+    this.setPrefValue(
+        'safebrowsing.scout_reporting_enabled',
+        this.$$('#safeBrowsingReportingToggle').checked);
+  },
+
+  /** @private */
+  onSafeBrowsingReportingPrefChange_: function() {
+    if (this.prefs == undefined) {
+      return;
+    }
+    const safeBrowsingScoutPref =
+        this.getPref('safebrowsing.scout_reporting_enabled');
+    const prefValue = !!this.getPref('safebrowsing.enabled').value &&
+        !!safeBrowsingScoutPref.value;
+    this.safeBrowsingReportingPref_ = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: prefValue,
+      enforcement: safeBrowsingScoutPref.enforcement,
+      controlledBy: safeBrowsingScoutPref.controlledBy,
+    };
   },
 
   // <if expr="_google_chrome and not chromeos">
@@ -98,14 +178,6 @@ Polymer({
     }
   },
 
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onRestartTap_: function(e) {
-    e.stopPropagation();
-    settings.LifetimeBrowserProxyImpl.getInstance().restart();
-  },
   // </if>
 
   // <if expr="_google_chrome">
@@ -127,10 +199,10 @@ Polymer({
    * @private
    */
   showSpellCheckControl_: function() {
-    return !this.unifiedConsentEnabled ||
-        (!!this.prefs.spellcheck &&
-         /** @type {!Array<string>} */
-         (this.prefs.spellcheck.dictionaries.value).length > 0);
+    return (
+        !!this.prefs.spellcheck &&
+        /** @type {!Array<string>} */
+        (this.prefs.spellcheck.dictionaries.value).length > 0);
   },
 
   /**
@@ -139,9 +211,48 @@ Polymer({
    */
   shouldShowDriveSuggest_: function() {
     return loadTimeData.getBoolean('driveSuggestAvailable') &&
-        !!this.unifiedConsentEnabled && !!this.syncStatus &&
-        !!this.syncStatus.signedIn &&
+        !!this.syncStatus && !!this.syncStatus.signedIn &&
         this.syncStatus.statusAction !== settings.StatusAction.REAUTHENTICATE;
+  },
+
+  /** @private */
+  onSigninAllowedChange_: function() {
+    if (this.syncStatus.signedIn && !this.$$('#signinAllowedToggle').checked) {
+      // Switch the toggle back on and show the signout dialog.
+      this.$$('#signinAllowedToggle').checked = true;
+      this.showSignoutDialog_ = true;
+    } else {
+      /** @type {!SettingsToggleButtonElement} */ (
+          this.$$('#signinAllowedToggle'))
+          .sendPrefChange();
+      this.showRestartToast_ = true;
+    }
+
+    this.browserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_CHROME_SIGN_IN);
+  },
+
+  /** @private */
+  onSignoutDialogClosed_: function() {
+    if (/** @type {!SettingsSignoutDialogElement} */ (
+            this.$$('settings-signout-dialog'))
+            .wasConfirmed()) {
+      this.$$('#signinAllowedToggle').checked = false;
+      /** @type {!SettingsToggleButtonElement} */ (
+          this.$$('#signinAllowedToggle'))
+          .sendPrefChange();
+      this.showRestartToast_ = true;
+    }
+    this.showSignoutDialog_ = false;
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onRestartTap_: function(e) {
+    e.stopPropagation();
+    settings.LifetimeBrowserProxyImpl.getInstance().restart();
   },
 });
 })();

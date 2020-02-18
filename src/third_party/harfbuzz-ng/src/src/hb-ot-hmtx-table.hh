@@ -42,6 +42,13 @@
 #define HB_OT_TAG_vmtx HB_TAG('v','m','t','x')
 
 
+HB_INTERNAL int
+_glyf_get_side_bearing_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical);
+
+HB_INTERNAL unsigned
+_glyf_get_advance_var (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical);
+
+
 namespace OT {
 
 
@@ -52,6 +59,7 @@ struct LongMetric
   public:
   DEFINE_SIZE_STATIC (4);
 };
+
 
 template <typename T, typename H>
 struct hmtxvmtx
@@ -66,7 +74,7 @@ struct hmtxvmtx
 
 
   bool subset_update_header (hb_subset_plan_t *plan,
-                             unsigned int num_hmetrics) const
+			     unsigned int num_hmetrics) const
   {
     hb_blob_t *src_blob = hb_sanitize_context_t ().reference_table<H> (plan->source, H::tableTag);
     hb_blob_t *dest_blob = hb_blob_copy_writable_or_fail (src_blob);
@@ -87,30 +95,30 @@ struct hmtxvmtx
   }
 
   template<typename Iterator,
-           hb_requires (hb_is_iterator (Iterator))>
+	   hb_requires (hb_is_iterator (Iterator))>
   void serialize (hb_serialize_context_t *c,
-                  Iterator it,
-                  unsigned num_advances)
+		  Iterator it,
+		  unsigned num_advances)
   {
     unsigned idx = 0;
     + it
     | hb_apply ([c, &idx, num_advances] (const hb_item_type<Iterator>& _)
-                {
-                  if (idx < num_advances)
-                  {
-                    LongMetric lm;
-                    lm.advance = _.first;
-                    lm.sb = _.second;
-                    if (unlikely (!c->embed<LongMetric> (&lm))) return;
-                  }
-                  else
-                  {
-                    FWORD *sb = c->allocate_size<FWORD> (FWORD::static_size);
-                    if (unlikely (!sb)) return;
-                    *sb = _.second;
-                  }
-                  idx++;
-                })
+		{
+		  if (idx < num_advances)
+		  {
+		    LongMetric lm;
+		    lm.advance = _.first;
+		    lm.sb = _.second;
+		    if (unlikely (!c->embed<LongMetric> (&lm))) return;
+		  }
+		  else
+		  {
+		    FWORD *sb = c->allocate_size<FWORD> (FWORD::static_size);
+		    if (unlikely (!sb)) return;
+		    *sb = _.second;
+		  }
+		  idx++;
+		})
     ;
   }
 
@@ -128,13 +136,12 @@ struct hmtxvmtx
     auto it =
     + hb_range (c->plan->num_output_glyphs ())
     | hb_map ([c, &_mtx] (unsigned _)
-	{
-	  hb_codepoint_t old_gid;
-	  if (c->plan->old_gid_for_new_gid (_, &old_gid))
-            return hb_pair (_mtx.get_advance (old_gid), _mtx.get_side_bearing (old_gid));
-          else
-	    return hb_pair (0u, 0u);
-	})
+	      {
+		hb_codepoint_t old_gid;
+		if (!c->plan->old_gid_for_new_gid (_, &old_gid))
+		  return hb_pair (0u, 0);
+		return hb_pair (_mtx.get_advance (old_gid), _mtx.get_side_bearing (old_gid));
+	      })
     ;
 
     table_prime->serialize (c->serializer, it, num_advances);
@@ -146,9 +153,7 @@ struct hmtxvmtx
 
     // Amend header num hmetrics
     if (unlikely (!subset_update_header (c->plan, num_advances)))
-    {
       return_trace (false);
-    }
 
     return_trace (true);
   }
@@ -158,7 +163,7 @@ struct hmtxvmtx
     friend struct hmtxvmtx;
 
     void init (hb_face_t *face,
-               unsigned int default_advance_ = 0)
+	       unsigned int default_advance_ = 0)
     {
       default_advance = default_advance_ ? default_advance_ : hb_face_get_upem (face);
 
@@ -190,17 +195,33 @@ struct hmtxvmtx
       var_table.destroy ();
     }
 
-    /* TODO Add variations version. */
-    unsigned int get_side_bearing (hb_codepoint_t glyph) const
+    int get_side_bearing (hb_codepoint_t glyph) const
     {
       if (glyph < num_advances)
-        return table->longMetricZ[glyph].sb;
+	return table->longMetricZ[glyph].sb;
 
       if (unlikely (glyph >= num_metrics))
-        return 0;
+	return 0;
 
       const FWORD *bearings = (const FWORD *) &table->longMetricZ[num_advances];
       return bearings[glyph - num_advances];
+    }
+
+    int get_side_bearing (hb_font_t *font, hb_codepoint_t glyph) const
+    {
+      int side_bearing = get_side_bearing (glyph);
+
+#ifndef HB_NO_VAR
+      if (unlikely (glyph >= num_metrics) || !font->num_coords)
+	return side_bearing;
+
+      if (var_table.get_length ())
+        return side_bearing + var_table->get_side_bearing_var (glyph, font->coords, font->num_coords); // TODO Optimize?!
+
+      return _glyf_get_side_bearing_var (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
+#else
+      return side_bearing;
+#endif
     }
 
     unsigned int get_advance (hb_codepoint_t glyph) const
@@ -223,23 +244,30 @@ struct hmtxvmtx
 			      hb_font_t      *font) const
     {
       unsigned int advance = get_advance (glyph);
-      if (likely (glyph < num_metrics))
-      {
-	advance += (font->num_coords ? var_table->get_advance_var (glyph, font->coords, font->num_coords) : 0); // TODO Optimize?!
-      }
+
+#ifndef HB_NO_VAR
+      if (unlikely (glyph >= num_metrics) || !font->num_coords)
+	return advance;
+
+      if (var_table.get_length ())
+	return advance + roundf (var_table->get_advance_var (font, glyph)); // TODO Optimize?!
+
+      return _glyf_get_advance_var (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
+#else
       return advance;
+#endif
     }
 
     unsigned int num_advances_for_subset (const hb_subset_plan_t *plan) const
     {
       unsigned int num_advances = plan->num_output_glyphs ();
       unsigned int last_advance = _advance_for_new_gid (plan,
-                                                        num_advances - 1);
+							num_advances - 1);
       while (num_advances > 1 &&
-             last_advance == _advance_for_new_gid (plan,
-                                                   num_advances - 2))
+	     last_advance == _advance_for_new_gid (plan,
+						   num_advances - 2))
       {
-        num_advances--;
+	num_advances--;
       }
 
       return num_advances;
@@ -247,11 +275,11 @@ struct hmtxvmtx
 
     private:
     unsigned int _advance_for_new_gid (const hb_subset_plan_t *plan,
-                                       hb_codepoint_t new_gid) const
+				       hb_codepoint_t new_gid) const
     {
       hb_codepoint_t old_gid;
       if (!plan->old_gid_for_new_gid (new_gid, &old_gid))
-        return 0;
+	return 0;
 
       return get_advance (old_gid);
     }

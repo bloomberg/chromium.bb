@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("../../pdfium.gni")
 import("../../testing/test.gni")
 
-jumbo_source_set("fxcrt") {
+source_set("fxcrt") {
   sources = [
     "autorestorer.h",
     "bytestring.cpp",
@@ -41,6 +40,7 @@ jumbo_source_set("fxcrt") {
     "fx_extension.h",
     "fx_memory.cpp",
     "fx_memory.h",
+    "fx_memory_wrappers.h",
     "fx_number.cpp",
     "fx_number.h",
     "fx_random.cpp",
@@ -142,6 +142,7 @@ pdfium_unittest_source_set("unittests") {
     "fx_coordinates_unittest.cpp",
     "fx_extension_unittest.cpp",
     "fx_memory_unittest.cpp",
+    "fx_memory_wrappers_unittest.cpp",
     "fx_number_unittest.cpp",
     "fx_random_unittest.cpp",
     "fx_string_unittest.cpp",

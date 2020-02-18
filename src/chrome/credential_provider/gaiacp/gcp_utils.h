@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
 #include "chrome/credential_provider/gaiacp/scoped_handle.h"
@@ -214,6 +215,11 @@ void DeleteStartupSentinel();
 // Gets a string resource from the DLL with the given id.
 base::string16 GetStringResource(int base_message_id);
 
+// Gets a string resource from the DLL with the given id after replacing the
+// placeholders with the provided substitutions.
+base::string16 GetStringResource(int base_message_id,
+                                 const std::vector<base::string16>& subst);
+
 // Gets the language selected by the base::win::i18n::LanguageSelector.
 base::string16 GetSelectedLanguage();
 
@@ -252,6 +258,9 @@ std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
 // See:
 // https://stackoverflow.com/questions/31072543/reliable-way-to-get-windows-version-from-registry
 base::string16 GetWindowsVersion();
+
+// Returns the minimum supported version of Chrome for GCPW.
+base::Version GetMinimumSupportedChromeVersion();
 
 class OSUserManager;
 class OSProcessManager;

@@ -12,7 +12,7 @@ class QuickViewController {
    * @param {!MetadataModel} metadataModel File system metadata.
    * @param {!FileSelectionHandler} selectionHandler
    * @param {!ListContainer} listContainer
-   * @param {!cr.ui.MenuButton} selectionMenuButton
+   * @param {!cr.ui.MultiMenuButton} selectionMenuButton
    * @param {!QuickViewModel} quickViewModel
    * @param {!TaskController} taskController
    * @param {!cr.ui.ListSelectionModel} fileListSelectionModel
@@ -96,13 +96,17 @@ class QuickViewController {
    */
   init_(quickView) {
     this.quickView_ = quickView;
+    this.quickView_.isModal = DialogType.isModal(this.dialogType_);
+
     this.metadataBoxController_.init(quickView);
+
     document.body.addEventListener(
         'keydown', this.onQuickViewKeyDown_.bind(this));
-    quickView.addEventListener('close', () => {
+    this.quickView_.addEventListener('close', () => {
       this.listContainer_.focus();
     });
-    quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
+    this.quickView_.onOpenInNewButtonTap =
+        this.onOpenInNewButtonTap_.bind(this);
 
     const toolTip = this.quickView_.$$('files-tooltip');
     const elems =
@@ -287,15 +291,17 @@ class QuickViewController {
         return;  // Bail: there's no point drawing a stale selection.
       }
 
-      this.quickView_.type = params.type || '';
-      this.quickView_.subtype = params.subtype || '';
-      this.quickView_.filePath = params.filePath || '';
-      this.quickView_.hasTask = params.hasTask || false;
-      this.quickView_.contentUrl = params.contentUrl || '';
-      this.quickView_.videoPoster = params.videoPoster || '';
-      this.quickView_.audioArtwork = params.audioArtwork || '';
-      this.quickView_.autoplay = params.autoplay || false;
-      this.quickView_.browsable = params.browsable || false;
+      this.quickView_.setProperties({
+        type: params.type || '',
+        subtype: params.subtype || '',
+        filePath: params.filePath || '',
+        hasTask: params.hasTask || false,
+        contentUrl: params.contentUrl || '',
+        videoPoster: params.videoPoster || '',
+        audioArtwork: params.audioArtwork || '',
+        autoplay: params.autoplay || false,
+        browsable: params.browsable || false,
+      });
     });
   }
 
@@ -488,6 +494,7 @@ QuickViewController.LOCAL_VOLUME_TYPES_ = [
   VolumeManagerCommon.VolumeType.CROSTINI,
   VolumeManagerCommon.VolumeType.MEDIA_VIEW,
   VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER,
+  VolumeManagerCommon.VolumeType.SMB,
 ];
 
 /**

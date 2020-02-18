@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -34,9 +34,8 @@ struct MODULES_EXPORT VideoInputDeviceCapabilities {
                                Vector<media::VideoCaptureFormat> formats,
                                media::VideoFacingMode facing_mode);
   VideoInputDeviceCapabilities();
-  VideoInputDeviceCapabilities(VideoInputDeviceCapabilities&& other) noexcept;
-  VideoInputDeviceCapabilities& operator=(
-      VideoInputDeviceCapabilities&& other) noexcept;
+  VideoInputDeviceCapabilities(VideoInputDeviceCapabilities&& other);
+  VideoInputDeviceCapabilities& operator=(VideoInputDeviceCapabilities&& other);
   ~VideoInputDeviceCapabilities();
 
   String device_id;
@@ -47,11 +46,10 @@ struct MODULES_EXPORT VideoInputDeviceCapabilities {
 
 struct MODULES_EXPORT VideoDeviceCaptureCapabilities {
   VideoDeviceCaptureCapabilities();
-  VideoDeviceCaptureCapabilities(
-      VideoDeviceCaptureCapabilities&& other) noexcept;
+  VideoDeviceCaptureCapabilities(VideoDeviceCaptureCapabilities&& other);
   ~VideoDeviceCaptureCapabilities();
   VideoDeviceCaptureCapabilities& operator=(
-      VideoDeviceCaptureCapabilities&& other) noexcept;
+      VideoDeviceCaptureCapabilities&& other);
 
   // Each capabilities field is independent of each other.
   // TODO(crbug.com/704136): Replace VideoInputDeviceCapabilities in the

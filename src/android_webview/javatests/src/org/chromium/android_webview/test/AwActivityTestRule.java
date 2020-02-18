@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
@@ -37,14 +39,16 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** Custom ActivityTestRunner for WebView instrumentation tests */
 public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
-    public static final long WAIT_TIMEOUT_MS = 15000L;
+    public static final long WAIT_TIMEOUT_MS = scaleTimeout(15000L);
 
     public static final int CHECK_INTERVAL = 100;
 
@@ -81,7 +85,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         }, description);
     }
 
-    public void setUp() throws Exception {
+    public void setUp() {
         if (needsAwBrowserContextCreated()) {
             createAwBrowserContext();
         }
@@ -135,7 +139,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
                 () -> mBrowserContext = createAwBrowserContextOnUiThread(prefs));
     }
 
-    public void startBrowserProcess() throws Exception {
+    public void startBrowserProcess() {
         // The Activity must be launched in order for proper webview statics to be setup.
         launchActivity();
         TestThreadUtils.runOnUiThreadBlocking(() -> AwBrowserProcess.start());
@@ -187,7 +191,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
     /**
      * Loads url on the UI thread but does not block.
      */
-    public void loadUrlAsync(final AwContents awContents, final String url) throws Exception {
+    public void loadUrlAsync(final AwContents awContents, final String url) {
         loadUrlAsync(awContents, url, null);
     }
 
@@ -210,8 +214,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
     /**
      * Loads url on the UI thread but does not block.
      */
-    public void postUrlAsync(final AwContents awContents, final String url, byte[] postData)
-            throws Exception {
+    public void postUrlAsync(final AwContents awContents, final String url, byte[] postData) {
         class PostUrl implements Runnable {
             byte[] mPostData;
             public PostUrl(byte[] postData) {
@@ -259,7 +262,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
      * Loads data on the UI thread but does not block.
      */
     public void loadDataAsync(final AwContents awContents, final String data, final String mimeType,
-            final boolean isBase64Encoded) throws Exception {
+            final boolean isBase64Encoded) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> awContents.loadData(data, mimeType, isBase64Encoded ? "base64" : null));
     }
@@ -326,7 +329,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
     // Note that this is a stricter condition that waiting for a visual state callback,
     // as visual state callback only indicates that *something* has appeared in WebView.
     public void waitForPixelColorAtCenterOfView(final AwContents awContents,
-            final AwTestContainerView testContainerView, final int expectedColor) throws Exception {
+            final AwTestContainerView testContainerView, final int expectedColor) {
         pollUiThread(() -> GraphicsTestUtils.getPixelColorAtCenterOfView(
                     awContents, testContainerView) == expectedColor);
     }
@@ -379,8 +382,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         return !testMethodHasAnnotation(DisableHardwareAccelerationForTest.class);
     }
 
-    public AwTestContainerView createAwTestContainerViewOnMainSync(final AwContentsClient client)
-            throws Exception {
+    public AwTestContainerView createAwTestContainerViewOnMainSync(final AwContentsClient client) {
         return createAwTestContainerViewOnMainSync(client, false, null);
     }
 
@@ -463,8 +465,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
      * Wrapper around CriteriaHelper.pollInstrumentationThread. This uses AwActivityTestRule-specifc
      * timeouts and treats timeouts and exceptions as test failures automatically.
      */
-    public static void pollInstrumentationThread(final Callable<Boolean> callable)
-            throws Exception {
+    public static void pollInstrumentationThread(final Callable<Boolean> callable) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -482,16 +483,31 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
      * Wrapper around {@link AwActivityTestRule#pollInstrumentationThread()} but runs the
      * callable on the UI thread.
      */
-    public void pollUiThread(final Callable<Boolean> callable) throws Exception {
+    public void pollUiThread(final Callable<Boolean> callable) {
         pollInstrumentationThread(() -> TestThreadUtils.runOnUiThreadBlocking(callable));
+    }
+
+    /**
+     * Takes an element out of the {@link BlockingQueue} (or times out).
+     */
+    public static <T> T waitForNextQueueElement(BlockingQueue<T> queue) throws Exception {
+        T value = queue.poll(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        if (value == null) {
+            // {@code null} is the special value which means {@link BlockingQueue#poll} has timed
+            // out (also: there's no risk for collision with real values, because BlockingQueue does
+            // not allow null entries). Instead of returning this special value, let's throw a
+            // proper TimeoutException.
+            throw new TimeoutException(
+                    "Timeout while trying to take next entry from BlockingQueue");
+        }
+        return value;
     }
 
     /**
      * Clears the resource cache. Note that the cache is per-application, so this will clear the
      * cache for all WebViews used.
      */
-    public void clearCacheOnUiThread(final AwContents awContents, final boolean includeDiskFiles)
-            throws Exception {
+    public void clearCacheOnUiThread(final AwContents awContents, final boolean includeDiskFiles) {
         TestThreadUtils.runOnUiThreadBlocking(() -> awContents.clearCache(includeDiskFiles));
     }
 
@@ -523,7 +539,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         return TestThreadUtils.runOnUiThreadBlocking(() -> awContents.canZoomOut());
     }
 
-    public void killRenderProcessOnUiThreadAsync(final AwContents awContents) throws Exception {
+    public void killRenderProcessOnUiThreadAsync(final AwContents awContents) {
         TestThreadUtils.runOnUiThreadBlocking(() -> awContents.killRenderProcess());
     }
 
@@ -572,7 +588,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
     /**
      * Creates a popup window with AwContents.
      */
-    public PopupInfo createPopupContents(final AwContents parentAwContents) throws Exception {
+    public PopupInfo createPopupContents(final AwContents parentAwContents) {
         TestAwContentsClient popupContentsClient;
         AwTestContainerView popupContainerView;
         final AwContents popupContents;

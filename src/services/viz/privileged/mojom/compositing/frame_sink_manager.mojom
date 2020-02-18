@@ -33,14 +33,13 @@ struct RootCompositorFrameSinkParams {
   [EnableIf=is_android]
   float refresh_rate;
 
-  associated CompositorFrameSink& compositor_frame_sink;
-  CompositorFrameSinkClient compositor_frame_sink_client;
+  pending_associated_receiver<CompositorFrameSink> compositor_frame_sink;
+  pending_remote<CompositorFrameSinkClient> compositor_frame_sink_client;
 
-  associated DisplayPrivate& display_private;
-  DisplayClient display_client;
+  pending_associated_receiver<DisplayPrivate> display_private;
+  pending_remote<DisplayClient> display_client;
 
   associated ExternalBeginFrameController&? external_begin_frame_controller;
-  ExternalBeginFrameControllerClient? external_begin_frame_controller_client;
 };
 
 // The FrameSinkManager interface is a privileged interface that allows the
@@ -98,8 +97,8 @@ interface FrameSinkManager {
   // CompositorFrameSink in order to appear on screen.
   CreateCompositorFrameSink(
       FrameSinkId frame_sink_id,
-      CompositorFrameSink& compositor_frame_sink,
-      CompositorFrameSinkClient compositor_frame_sink_client);
+      pending_receiver<CompositorFrameSink> compositor_frame_sink,
+      pending_remote<CompositorFrameSinkClient> compositor_frame_sink_client);
 
   // Destroys CompositorFrameSink created by Create[Root]CompositorFrameSink().
   // This function should only be used synchronously for destroying root
@@ -120,10 +119,10 @@ interface FrameSinkManager {
 
   // Requests viz to notify |observer| whenever video activity is detected in
   // one of the clients. See viz::VideoDetector.
-  AddVideoDetectorObserver(VideoDetectorObserver observer);
+  AddVideoDetectorObserver(pending_remote<VideoDetectorObserver> observer);
 
   // Creates a FrameSinkVideoCapturer instance.
-  CreateVideoCapturer(FrameSinkVideoCapturer& request);
+  CreateVideoCapturer(pending_receiver<FrameSinkVideoCapturer> receiver);
 
   // Marks the given SurfaceIds for destruction.
   EvictSurfaces(array<SurfaceId> surface_ids);

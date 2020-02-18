@@ -4,19 +4,23 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 
-import org.chromium.base.annotations.UsedByReflection;
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
+import org.chromium.chrome.browser.settings.PreferencesLauncher;
+import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -91,10 +95,6 @@ public class SigninFragment extends SigninFragmentBase {
         return result;
     }
 
-    // Every fragment must have a public default constructor.
-    @UsedByReflection("SigninActivity.java")
-    public SigninFragment() {}
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,8 +130,14 @@ public class SigninFragment extends SigninFragmentBase {
     @Override
     protected void onSigninAccepted(String accountName, boolean isDefaultAccount,
             boolean settingsClicked, Runnable callback) {
+        // TODO(https://crbug.com/1002056): Change onSigninAccepted to get CoreAccountInfo.
+        Account account = AccountManagerFacade.get().getAccountFromName(accountName);
+        if (account == null) {
+            callback.run();
+            return;
+        }
         IdentityServicesProvider.getSigninManager().signIn(
-                accountName, getActivity(), new SigninManager.SignInCallback() {
+                mSigninAccessPoint, account, new SigninManager.SignInCallback() {
                     @Override
                     public void onSignInComplete() {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
@@ -142,7 +148,8 @@ public class SigninFragment extends SigninFragmentBase {
                                     SyncAndServicesPreferences.createArguments(true));
                         } else if (ChromeFeatureList.isEnabled(
                                            ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
-                            ProfileSyncService.get().setFirstSetupComplete();
+                            ProfileSyncService.get().setFirstSetupComplete(
+                                    SyncFirstSetupCompleteSource.BASIC_FLOW);
                         }
 
                         recordSigninCompletedHistogramAccountInfo();

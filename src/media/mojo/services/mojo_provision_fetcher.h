@@ -11,28 +11,30 @@
 #include "media/base/provision_fetcher.h"
 #include "media/mojo/mojom/provision_fetcher.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 
-// A ProvisionFetcher that proxies to a mojom::ProvisionFetcherPtr.
+// A ProvisionFetcher that proxies to a Remote<mojom::ProvisionFetcher>.
 class MEDIA_MOJO_EXPORT MojoProvisionFetcher : public ProvisionFetcher {
  public:
   explicit MojoProvisionFetcher(
-      mojom::ProvisionFetcherPtr provision_fetcher_ptr);
+      mojo::PendingRemote<mojom::ProvisionFetcher> provision_fetcher);
   ~MojoProvisionFetcher() final;
 
   // ProvisionFetcher implementation:
   void Retrieve(const std::string& default_url,
                 const std::string& request_data,
-                const ResponseCB& response_cb) final;
+                ResponseCB response_cb) final;
 
  private:
-  // Callback for mojom::ProvisionFetcherPtr::Retrieve().
-  void OnResponse(const ResponseCB& response_cb,
+  // Callback for mojo::Remote<mojom::ProvisionFetcher>::Retrieve().
+  void OnResponse(ResponseCB response_cb,
                   bool success,
                   const std::string& response);
 
-  mojom::ProvisionFetcherPtr provision_fetcher_ptr_;
+  mojo::Remote<mojom::ProvisionFetcher> provision_fetcher_;
 
   base::WeakPtrFactory<MojoProvisionFetcher> weak_factory_{this};
 

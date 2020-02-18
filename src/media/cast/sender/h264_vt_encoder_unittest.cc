@@ -253,7 +253,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   static FrameSenderConfig video_sender_config_;
 
   base::SimpleTestTickClock clock_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<CastEnvironment> cast_environment_;
   std::unique_ptr<VideoEncoder> encoder_;
   OperationalStatus operational_status_;
@@ -305,7 +305,7 @@ TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFramesAreDecodable) {
   VideoDecoderConfig config(
       kCodecH264, H264PROFILE_MAIN, alpha_mode, VideoColorSpace(),
       kNoTransformation, frame_->coded_size(), frame_->visible_rect(),
-      frame_->natural_size(), EmptyExtraData(), Unencrypted());
+      frame_->natural_size(), EmptyExtraData(), EncryptionScheme::kUnencrypted);
   scoped_refptr<EndToEndFrameChecker> checker(new EndToEndFrameChecker(config));
 
   VideoEncoder::FrameEncodedCallback cb =

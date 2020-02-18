@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 
 namespace language {
 // Features:
@@ -19,10 +20,14 @@ const base::Feature kOverrideTranslateTriggerInIndia{
     "OverrideTranslateTriggerInIndia", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kExplicitLanguageAsk{"ExplicitLanguageAsk",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kImprovedGeoLanguageData{"ImprovedGeoLanguageData",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kUseFluentLanguageModel{"UseFluentLanguageModel",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUseFluentLanguageModel {
+  "UseFluentLanguageModel",
+#if defined(OS_IOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 const base::Feature kNotifySyncOnLanguageDetermined{
     "NotifySyncOnLanguageDetermined", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -40,9 +45,7 @@ const char kOverrideModelDefaultValue[] = "default";
 
 // Params for Translate Desktop UI experiment
 const char kTranslateUIBubbleKey[] = "translate_ui_bubble_style";
-const char kTranslateUIBubbleButtonValue[] = "button";
 const char kTranslateUIBubbleTabValue[] = "tab";
-const char kTranslateUIBubbleButtonGM2Value[] = "button_gm2";
 
 OverrideLanguageModel GetOverrideLanguageModel() {
   std::map<std::string, std::string> params;
@@ -110,14 +113,8 @@ TranslateUIBubbleModel GetTranslateUiBubbleModel() {
   if (base::GetFieldTrialParamsByFeature(language::kUseButtonTranslateBubbleUi,
                                          &params)) {
     if (params[language::kTranslateUIBubbleKey] ==
-        language::kTranslateUIBubbleButtonValue) {
-      return language::TranslateUIBubbleModel::BUTTON;
-    } else if (params[language::kTranslateUIBubbleKey] ==
-               language::kTranslateUIBubbleTabValue) {
+        language::kTranslateUIBubbleTabValue) {
       return language::TranslateUIBubbleModel::TAB;
-    } else if (params[language::kTranslateUIBubbleKey] ==
-               language::kTranslateUIBubbleButtonGM2Value) {
-      return language::TranslateUIBubbleModel::BUTTON_GM2;
     } else {
       return language::TranslateUIBubbleModel::DEFAULT;
     }

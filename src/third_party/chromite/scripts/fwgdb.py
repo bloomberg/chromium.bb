@@ -14,13 +14,13 @@ import re
 import socket
 import time
 
+from elftools.elf.elffile import ELFFile
+
 from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import timeout_util
-
-from elftools.elf.elffile import ELFFile
 
 # Need to do this before Servo import
 cros_build_lib.AssertInsideChroot()
@@ -43,13 +43,13 @@ _PTRN_BOARD = 'Starting(?: read-only| read/write)? depthcharge on ([a-z_]+)...'
 
 def GetGdbForElf(elf):
   """Return the correct C compiler prefix for the target ELF file."""
-  with open(elf, 'rb') as elf:
+  with open(elf, 'rb') as fp:
     return {
         'EM_386': 'x86_64-cros-linux-gnu-gdb',
         'EM_X86_64': 'x86_64-cros-linux-gnu-gdb',
         'EM_ARM': 'armv7a-cros-linux-gnueabihf-gdb',
         'EM_AARCH64': 'aarch64-cros-linux-gnu-gdb',
-    }[ELFFile(elf).header.e_machine]
+    }[ELFFile(fp).header.e_machine]
 
 
 def ParseArgs(argv):
@@ -69,28 +69,21 @@ def ParseArgs(argv):
   parser.add_argument('-e', '--execute', action='append', default=[],
                       help='GDB command to run after connect (can be supplied '
                            'multiple times)')
-
-  parser.add_argument('-n', '--servod-name', dest='name')
-  parser.add_argument('--servod-rcfile', default=servo_parsing.DEFAULT_RC_FILE)
+  parser.add_argument('--servod-rcfile', default=servo_parsing.DEFAULT_RC_FILE,
+                      dest='rcfile')
   parser.add_argument('--servod-server')
-  parser.add_argument('-p', '--servod-port', type=int, dest='port')
+  # Add --name for rc servod configuration.
+  servo_parsing.ServodRCParser.AddRCEnabledNameArg(parser)
+  # Add |port_flags| as the port arguments.
+  port_flags = ['-p', '--servod-port']
+  servo_parsing.BaseServodParser.AddRCEnabledPortArg(parser,
+                                                     port_flags=port_flags)
   parser.add_argument('-t', '--tty',
                       help='TTY file to connect to (defaults to cpu_uart_pty)')
-
   opts = parser.parse_args(argv)
-  servo_parsing.get_env_options(logging, opts)
-  if opts.name:
-    rc = servo_parsing.parse_rc(logging, opts.servod_rcfile)
-    if opts.name not in rc:
-      raise parser.error('%s not in %s' % (opts.name, opts.servod_rcfile))
-    if not opts.servod_server:
-      opts.servod_server = rc[opts.name]['sn']
-    if not opts.port:
-      opts.port = rc[opts.name].get('port', client.DEFAULT_PORT)
-    if not opts.board and 'board' in rc[opts.name]:
-      opts.board = rc[opts.name]['board']
-      logging.warning('Inferring board %s from %s; make sure this is correct!',
-                      opts.board, opts.servod_rcfile)
+
+  # Set |.port| and |.board| in |opts| if there's a rc match for opts.name.
+  servo_parsing.ServodRCParser.PostProcessRCElements(opts)
 
   if not opts.servod_server:
     opts.servod_server = client.DEFAULT_HOST
@@ -264,5 +257,5 @@ def main(argv):
       full_cmd = [gdb_cmd] + gdb_args
 
     logging.info('Launching GDB...')
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         full_cmd, ignore_sigint=True, debug_level=logging.WARNING)

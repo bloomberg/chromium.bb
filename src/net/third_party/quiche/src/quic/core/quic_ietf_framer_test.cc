@@ -34,7 +34,6 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
@@ -248,8 +247,8 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // initialize a writer so that the serialized packet is placed in
     // packet_buffer.
     QuicDataWriter writer(packet_buffer_size, packet_buffer,
-                          NETWORK_BYTE_ORDER);  // do not really care
-                                                // about endianness.
+                          quiche::NETWORK_BYTE_ORDER);  // do not really care
+                                                        // about endianness.
     // set up to define the source frame we wish to send.
     QuicStreamFrame source_stream_frame(
         stream_id, fin_bit, offset, xmit_packet_data, xmit_packet_data_size);
@@ -260,7 +259,8 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // Better have something in the packet buffer.
     EXPECT_NE(0u, writer.length());
     // Now set up a reader to read in the frame.
-    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicDataReader reader(packet_buffer, writer.length(),
+                          quiche::NETWORK_BYTE_ORDER);
 
     // A StreamFrame to hold the results... we know the frame type,
     // put it into the QuicIetfStreamFrame
@@ -324,7 +324,8 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
 
     // Make a writer so that the serialized packet is placed in
     // packet_buffer.
-    QuicDataWriter writer(expected_size, packet_buffer, NETWORK_BYTE_ORDER);
+    QuicDataWriter writer(expected_size, packet_buffer,
+                          quiche::NETWORK_BYTE_ORDER);
 
     // Write the frame to the packet buffer.
     EXPECT_TRUE(QuicFramerPeer::AppendIetfAckFrameAndTypeByte(
@@ -339,7 +340,8 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // and what is in the buffer should be the expected size.
     EXPECT_EQ(expected_size, writer.length()) << "Frame is " << transmit_frame;
     // Now set up a reader to read in the frame.
-    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicDataReader reader(packet_buffer, writer.length(),
+                          quiche::NETWORK_BYTE_ORDER);
 
     // read in the frame type
     uint8_t received_frame_type;
@@ -385,7 +387,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // Make a writer so that the serialized packet is placed in
     // packet_buffer.
     QuicDataWriter writer(packet_buffer_size, packet_buffer,
-                          NETWORK_BYTE_ORDER);
+                          quiche::NETWORK_BYTE_ORDER);
 
     QuicPathChallengeFrame transmit_frame(0, data);
 
@@ -397,7 +399,8 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     EXPECT_EQ(kQuicPathChallengeFrameSize, writer.length());
 
     // now set up a reader to read in the frame.
-    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicDataReader reader(packet_buffer, writer.length(),
+                          quiche::NETWORK_BYTE_ORDER);
 
     QuicPathChallengeFrame receive_frame;
 
@@ -418,7 +421,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // Make a writer so that the serialized packet is placed in
     // packet_buffer.
     QuicDataWriter writer(packet_buffer_size, packet_buffer,
-                          NETWORK_BYTE_ORDER);
+                          quiche::NETWORK_BYTE_ORDER);
 
     QuicPathResponseFrame transmit_frame(0, data);
 
@@ -430,7 +433,8 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     EXPECT_EQ(kQuicPathResponseFrameSize, writer.length());
 
     // Set up a reader to read in the frame.
-    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicDataReader reader(packet_buffer, writer.length(),
+                          quiche::NETWORK_BYTE_ORDER);
 
     QuicPathResponseFrame receive_frame;
 
@@ -453,7 +457,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // Initialize a writer so that the serialized packet is placed in
     // packet_buffer.
     QuicDataWriter writer(packet_buffer_size, packet_buffer,
-                          NETWORK_BYTE_ORDER);
+                          quiche::NETWORK_BYTE_ORDER);
 
     QuicRstStreamFrame transmit_frame(static_cast<QuicControlFrameId>(1),
                                       stream_id, error_code, final_offset);
@@ -466,7 +470,8 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     EXPECT_LT(2u, writer.length());
     EXPECT_GT(25u, writer.length());
     // Now set up a reader to read in the thing in.
-    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicDataReader reader(packet_buffer, writer.length(),
+                          quiche::NETWORK_BYTE_ORDER);
 
     // A QuicRstStreamFrame to hold the results
     QuicRstStreamFrame receive_frame;
@@ -488,7 +493,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     Perspective old_perspective = framer_.perspective();
     // Set up the writer and transmit QuicMaxStreamsFrame
     QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                          NETWORK_BYTE_ORDER);
+                          quiche::NETWORK_BYTE_ORDER);
 
     // Set the perspective of the sender. If the stream id is supposed to
     // be server-initiated, then the sender of the MAX_STREAMS should be
@@ -513,7 +518,8 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
                                                  : Perspective::IS_CLIENT);
 
     // Set up reader and empty receive QuicPaddingFrame.
-    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicDataReader reader(packet_buffer, writer.length(),
+                          quiche::NETWORK_BYTE_ORDER);
     QuicMaxStreamsFrame receive_frame;
 
     // Deframe it
@@ -538,7 +544,7 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     Perspective old_perspective = framer_.perspective();
     // Set up the writer and transmit QuicStreamsBlockedFrame
     QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                          NETWORK_BYTE_ORDER);
+                          quiche::NETWORK_BYTE_ORDER);
 
     // Set the perspective of the sender. If the stream id is supposed to
     // be server-initiated, then the sender of the STREAMS_BLOCKED should be
@@ -563,7 +569,8 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
                                                  : Perspective::IS_SERVER);
 
     // Set up reader and empty receive QuicPaddingFrame.
-    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicDataReader reader(packet_buffer, writer.length(),
+                          quiche::NETWORK_BYTE_ORDER);
     QuicStreamsBlockedFrame receive_frame;
 
     // Deframe it
@@ -763,13 +770,14 @@ TEST_F(QuicIetfFramerTest, CryptoFrame) {
     data_producer.SaveCryptoData(ENCRYPTION_INITIAL, offset, frame_data);
 
     QuicDataWriter writer(QUIC_ARRAYSIZE(packet_buffer), packet_buffer,
-                          NETWORK_BYTE_ORDER);
+                          quiche::NETWORK_BYTE_ORDER);
 
     // Write the frame.
     EXPECT_TRUE(QuicFramerPeer::AppendCryptoFrame(&framer_, frame, &writer));
     EXPECT_NE(0u, writer.length());
     // Read it back.
-    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicDataReader reader(packet_buffer, writer.length(),
+                          quiche::NETWORK_BYTE_ORDER);
     QuicCryptoFrame read_frame;
     EXPECT_TRUE(
         QuicFramerPeer::ProcessCryptoFrame(&framer_, &reader, &read_frame));
@@ -782,21 +790,19 @@ TEST_F(QuicIetfFramerTest, CryptoFrame) {
   }
 }
 
-TEST_F(QuicIetfFramerTest, ConnectionCloseEmptyString) {
+TEST_F(QuicIetfFramerTest, ConnectionClose) {
   char packet_buffer[kNormalPacketBufferSize];
 
   // initialize a writer so that the serialized packet is placed in
   // packet_buffer.
   QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                        NETWORK_BYTE_ORDER);
+                        quiche::NETWORK_BYTE_ORDER);
 
-  // empty string,
   std::string test_string = "Ich Bin Ein Jelly Donut?";
-  QuicConnectionCloseFrame sent_frame;
-  sent_frame.quic_error_code = static_cast<QuicErrorCode>(0);
-  sent_frame.error_details = test_string;
-  sent_frame.transport_close_frame_type = 123;
-  sent_frame.close_type = IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
+  QuicConnectionCloseFrame sent_frame(QUIC_VERSION_99, QUIC_NO_ERROR,
+                                      test_string,
+                                      /*transport_close_frame_type=*/123);
+
   // write the frame to the packet buffer.
   EXPECT_TRUE(QuicFramerPeer::AppendIetfConnectionCloseFrame(
       &framer_, sent_frame, &writer));
@@ -805,7 +811,8 @@ TEST_F(QuicIetfFramerTest, ConnectionCloseEmptyString) {
   EXPECT_NE(0u, writer.length());
 
   // now set up a reader to read in the frame.
-  QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+  QuicDataReader reader(packet_buffer, writer.length(),
+                        quiche::NETWORK_BYTE_ORDER);
 
   // a QuicConnectionCloseFrame to hold the results.
   QuicConnectionCloseFrame sink_frame;
@@ -815,26 +822,25 @@ TEST_F(QuicIetfFramerTest, ConnectionCloseEmptyString) {
 
   // Now check that received == sent
   EXPECT_EQ(sent_frame.quic_error_code, sink_frame.quic_error_code);
-  EXPECT_EQ(sink_frame.quic_error_code, static_cast<QuicErrorCode>(0));
+  EXPECT_THAT(sink_frame.quic_error_code, IsQuicNoError());
   EXPECT_EQ(sink_frame.error_details, test_string);
   EXPECT_EQ(sink_frame.close_type, sent_frame.close_type);
   EXPECT_EQ(sent_frame.close_type, IETF_QUIC_TRANSPORT_CONNECTION_CLOSE);
 }
 
-TEST_F(QuicIetfFramerTest, ApplicationCloseEmptyString) {
+TEST_F(QuicIetfFramerTest, ApplicationClose) {
   char packet_buffer[kNormalPacketBufferSize];
 
   // initialize a writer so that the serialized packet is placed in
   // packet_buffer.
   QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                        NETWORK_BYTE_ORDER);
+                        quiche::NETWORK_BYTE_ORDER);
 
-  // empty string,
   std::string test_string = "Ich Bin Ein Jelly Donut?";
-  QuicConnectionCloseFrame sent_frame;
-  sent_frame.quic_error_code = static_cast<QuicErrorCode>(0);
-  sent_frame.error_details = test_string;
-  sent_frame.close_type = IETF_QUIC_APPLICATION_CONNECTION_CLOSE;
+  QuicConnectionCloseFrame sent_frame(QUIC_VERSION_99, QUIC_LAST_ERROR,
+                                      test_string,
+                                      /*transport_close_frame_type=*/0);
+
   // write the frame to the packet buffer.
   EXPECT_TRUE(QuicFramerPeer::AppendIetfConnectionCloseFrame(
       &framer_, sent_frame, &writer));
@@ -843,7 +849,8 @@ TEST_F(QuicIetfFramerTest, ApplicationCloseEmptyString) {
   EXPECT_NE(0u, writer.length());
 
   // now set up a reader to read in the frame.
-  QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+  QuicDataReader reader(packet_buffer, writer.length(),
+                        quiche::NETWORK_BYTE_ORDER);
 
   // a QuicConnectionCloseFrame to hold the results.
   QuicConnectionCloseFrame sink_frame;
@@ -852,7 +859,7 @@ TEST_F(QuicIetfFramerTest, ApplicationCloseEmptyString) {
       &framer_, &reader, IETF_QUIC_APPLICATION_CONNECTION_CLOSE, &sink_frame));
 
   // Now check that received == sent
-  EXPECT_EQ(sink_frame.quic_error_code, static_cast<QuicErrorCode>(0));
+  EXPECT_EQ(sink_frame.quic_error_code, QUIC_LAST_ERROR);
   EXPECT_EQ(sent_frame.quic_error_code, sink_frame.quic_error_code);
   EXPECT_EQ(sink_frame.error_details, test_string);
   EXPECT_EQ(sent_frame.close_type, IETF_QUIC_APPLICATION_CONNECTION_CLOSE);
@@ -1065,7 +1072,7 @@ TEST_F(QuicIetfFramerTest, AckFrameNoRanges) {
   // Make a writer so that the serialized packet is placed in
   // packet_buffer.
   QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                        NETWORK_BYTE_ORDER);
+                        quiche::NETWORK_BYTE_ORDER);
 
   QuicAckFrame transmit_frame;
   transmit_frame.largest_acked = QuicPacketNumber(1);
@@ -1089,7 +1096,8 @@ TEST_F(QuicIetfFramerTest, AckFrameNoRanges) {
   EXPECT_EQ(0, memcmp(packet, packet_buffer, writer.length()));
 
   // Now set up a reader to read in the frame.
-  QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+  QuicDataReader reader(packet_buffer, writer.length(),
+                        quiche::NETWORK_BYTE_ORDER);
 
   // an AckFrame to hold the results
   QuicAckFrame receive_frame;
@@ -1154,7 +1162,7 @@ TEST_F(QuicIetfFramerTest, StopSendingFrame) {
   // Make a writer so that the serialized packet is placed in
   // packet_buffer.
   QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                        NETWORK_BYTE_ORDER);
+                        quiche::NETWORK_BYTE_ORDER);
 
   QuicStopSendingFrame transmit_frame;
   transmit_frame.stream_id = 12345;
@@ -1168,7 +1176,8 @@ TEST_F(QuicIetfFramerTest, StopSendingFrame) {
   EXPECT_LE(3u, writer.length());
   EXPECT_GE(10u, writer.length());
 
-  QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+  QuicDataReader reader(packet_buffer, writer.length(),
+                        quiche::NETWORK_BYTE_ORDER);
 
   // A frame to hold the results
   QuicStopSendingFrame receive_frame;
@@ -1194,7 +1203,7 @@ TEST_F(QuicIetfFramerTest, MaxDataFrame) {
 
     // Set up the writer and transmit QuicWindowUpdateFrame
     QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                          NETWORK_BYTE_ORDER);
+                          quiche::NETWORK_BYTE_ORDER);
     QuicWindowUpdateFrame transmit_frame(0, 99, window_size);
 
     // Add the frame.
@@ -1206,7 +1215,8 @@ TEST_F(QuicIetfFramerTest, MaxDataFrame) {
     EXPECT_GE(8u, writer.length());
 
     // Set up reader and an empty QuicWindowUpdateFrame
-    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicDataReader reader(packet_buffer, writer.length(),
+                          quiche::NETWORK_BYTE_ORDER);
     QuicWindowUpdateFrame receive_frame;
 
     // Deframe it
@@ -1214,8 +1224,8 @@ TEST_F(QuicIetfFramerTest, MaxDataFrame) {
         QuicFramerPeer::ProcessMaxDataFrame(&framer_, &reader, &receive_frame));
 
     // Now check that the received data equals the sent data.
-    EXPECT_EQ(transmit_frame.byte_offset, window_size);
-    EXPECT_EQ(transmit_frame.byte_offset, receive_frame.byte_offset);
+    EXPECT_EQ(transmit_frame.max_data, window_size);
+    EXPECT_EQ(transmit_frame.max_data, receive_frame.max_data);
     EXPECT_EQ(QuicUtils::GetInvalidStreamId(framer_.transport_version()),
               receive_frame.stream_id);
   }
@@ -1235,7 +1245,7 @@ TEST_F(QuicIetfFramerTest, MaxStreamDataFrame) {
 
       // Set up the writer and transmit QuicWindowUpdateFrame
       QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                            NETWORK_BYTE_ORDER);
+                            quiche::NETWORK_BYTE_ORDER);
       QuicWindowUpdateFrame transmit_frame(0, stream_id, window_size);
 
       // Add the frame.
@@ -1247,7 +1257,8 @@ TEST_F(QuicIetfFramerTest, MaxStreamDataFrame) {
       EXPECT_GE(16u, writer.length());
 
       // Set up reader and empty receive QuicPaddingFrame.
-      QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+      QuicDataReader reader(packet_buffer, writer.length(),
+                            quiche::NETWORK_BYTE_ORDER);
       QuicWindowUpdateFrame receive_frame;
 
       // Deframe it
@@ -1255,8 +1266,8 @@ TEST_F(QuicIetfFramerTest, MaxStreamDataFrame) {
                                                             &receive_frame));
 
       // Now check that received data and sent data are equal.
-      EXPECT_EQ(transmit_frame.byte_offset, window_size);
-      EXPECT_EQ(transmit_frame.byte_offset, receive_frame.byte_offset);
+      EXPECT_EQ(transmit_frame.max_data, window_size);
+      EXPECT_EQ(transmit_frame.max_data, receive_frame.max_data);
       EXPECT_EQ(stream_id, receive_frame.stream_id);
       EXPECT_EQ(transmit_frame.stream_id, receive_frame.stream_id);
     }
@@ -1290,7 +1301,7 @@ TEST_F(QuicIetfFramerTest, BlockedFrame) {
 
     // Set up the writer and transmit QuicBlockedFrame
     QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                          NETWORK_BYTE_ORDER);
+                          quiche::NETWORK_BYTE_ORDER);
     QuicBlockedFrame transmit_frame(
         0, QuicUtils::GetInvalidStreamId(framer_.transport_version()), offset);
 
@@ -1303,7 +1314,8 @@ TEST_F(QuicIetfFramerTest, BlockedFrame) {
     EXPECT_GE(8u, writer.length());
 
     // Set up reader and empty receive QuicFrame.
-    QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+    QuicDataReader reader(packet_buffer, writer.length(),
+                          quiche::NETWORK_BYTE_ORDER);
     QuicBlockedFrame receive_frame;
 
     // Deframe it
@@ -1332,7 +1344,7 @@ TEST_F(QuicIetfFramerTest, StreamBlockedFrame) {
 
       // Set up the writer and transmit QuicWindowUpdateFrame
       QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                            NETWORK_BYTE_ORDER);
+                            quiche::NETWORK_BYTE_ORDER);
       QuicBlockedFrame transmit_frame(0, stream_id, offset);
 
       // Add the frame.
@@ -1344,7 +1356,8 @@ TEST_F(QuicIetfFramerTest, StreamBlockedFrame) {
       EXPECT_GE(16u, writer.length());
 
       // Set up reader and empty receive QuicPaddingFrame.
-      QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+      QuicDataReader reader(packet_buffer, writer.length(),
+                            quiche::NETWORK_BYTE_ORDER);
       QuicBlockedFrame receive_frame;
 
       // Deframe it
@@ -1402,7 +1415,7 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
 
   // Set up the writer and transmit a QuicNewConnectionIdFrame
   QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                        NETWORK_BYTE_ORDER);
+                        quiche::NETWORK_BYTE_ORDER);
 
   // Add the frame.
   EXPECT_TRUE(QuicFramerPeer::AppendNewConnectionIdFrame(
@@ -1428,7 +1441,8 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
   EXPECT_EQ(0, memcmp(packet_buffer, packet, sizeof(packet)));
 
   // Set up reader and empty receive QuicPaddingFrame.
-  QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+  QuicDataReader reader(packet_buffer, writer.length(),
+                        quiche::NETWORK_BYTE_ORDER);
   QuicNewConnectionIdFrame receive_frame;
 
   // Deframe it
@@ -1453,7 +1467,7 @@ TEST_F(QuicIetfFramerTest, RetireConnectionIdFrame) {
 
   // Set up the writer and transmit QuicRetireConnectionIdFrame
   QuicDataWriter writer(sizeof(packet_buffer), packet_buffer,
-                        NETWORK_BYTE_ORDER);
+                        quiche::NETWORK_BYTE_ORDER);
 
   // Add the frame.
   EXPECT_TRUE(QuicFramerPeer::AppendRetireConnectionIdFrame(
@@ -1470,7 +1484,8 @@ TEST_F(QuicIetfFramerTest, RetireConnectionIdFrame) {
   EXPECT_EQ(0, memcmp(packet_buffer, packet, sizeof(packet)));
 
   // Set up reader and empty receive QuicPaddingFrame.
-  QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
+  QuicDataReader reader(packet_buffer, writer.length(),
+                        quiche::NETWORK_BYTE_ORDER);
   QuicRetireConnectionIdFrame receive_frame;
 
   // Deframe it

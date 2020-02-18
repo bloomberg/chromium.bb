@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -140,12 +141,6 @@ ControlPart AutoAppearanceFor(const Element& element) {
 
 }  // namespace
 
-// Wrapper function defined in WebKit.h
-void SetMockThemeEnabledForTest(bool value) {
-  WebTestSupport::SetMockThemeEnabledForTest(value);
-  LayoutTheme::GetTheme().DidChangeThemeEngine();
-}
-
 LayoutTheme& LayoutTheme::GetTheme() {
   if (RuntimeEnabledFeatures::MobileLayoutThemeEnabled()) {
     DEFINE_STATIC_REF(LayoutTheme, layout_theme_mobile,
@@ -211,9 +206,10 @@ ControlPart LayoutTheme::AdjustAppearanceWithElementType(
       // even if their default appearances are different from the keywords.
 
     case kButtonPart:
-      if (IsA<HTMLSelectElement>(*element) || IsA<HTMLAnchorElement>(*element))
-        return auto_appearance;
-      return part;
+      return (auto_appearance == kPushButtonPart ||
+              auto_appearance == kSquareButtonPart)
+                 ? part
+                 : auto_appearance;
 
     case kMenulistButtonPart:
       return auto_appearance == kMenulistPart ? part : auto_appearance;
@@ -312,36 +308,45 @@ String LayoutTheme::ExtraFullscreenStyleSheet() {
   return String();
 }
 
-Color LayoutTheme::ActiveSelectionBackgroundColor() const {
-  return PlatformActiveSelectionBackgroundColor().BlendWithWhite();
+Color LayoutTheme::ActiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveSelectionBackgroundColor(color_scheme).BlendWithWhite();
 }
 
-Color LayoutTheme::InactiveSelectionBackgroundColor() const {
-  return PlatformInactiveSelectionBackgroundColor().BlendWithWhite();
+Color LayoutTheme::InactiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveSelectionBackgroundColor(color_scheme)
+      .BlendWithWhite();
 }
 
-Color LayoutTheme::ActiveSelectionForegroundColor() const {
-  return PlatformActiveSelectionForegroundColor();
+Color LayoutTheme::ActiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveSelectionForegroundColor(color_scheme);
 }
 
-Color LayoutTheme::InactiveSelectionForegroundColor() const {
-  return PlatformInactiveSelectionForegroundColor();
+Color LayoutTheme::InactiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveSelectionForegroundColor(color_scheme);
 }
 
-Color LayoutTheme::ActiveListBoxSelectionBackgroundColor() const {
-  return PlatformActiveListBoxSelectionBackgroundColor();
+Color LayoutTheme::ActiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveListBoxSelectionBackgroundColor(color_scheme);
 }
 
-Color LayoutTheme::InactiveListBoxSelectionBackgroundColor() const {
-  return PlatformInactiveListBoxSelectionBackgroundColor();
+Color LayoutTheme::InactiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveListBoxSelectionBackgroundColor(color_scheme);
 }
 
-Color LayoutTheme::ActiveListBoxSelectionForegroundColor() const {
-  return PlatformActiveListBoxSelectionForegroundColor();
+Color LayoutTheme::ActiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveListBoxSelectionForegroundColor(color_scheme);
 }
 
-Color LayoutTheme::InactiveListBoxSelectionForegroundColor() const {
-  return PlatformInactiveListBoxSelectionForegroundColor();
+Color LayoutTheme::InactiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveListBoxSelectionForegroundColor(color_scheme);
 }
 
 Color LayoutTheme::PlatformSpellingMarkerUnderlineColor() const {
@@ -356,41 +361,49 @@ Color LayoutTheme::PlatformActiveSpellingMarkerHighlightColor() const {
   return Color(255, 0, 0, 102);
 }
 
-Color LayoutTheme::PlatformActiveSelectionBackgroundColor() const {
+Color LayoutTheme::PlatformActiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   // Use a blue color by default if the platform theme doesn't define anything.
   return Color(0, 0, 255);
 }
 
-Color LayoutTheme::PlatformActiveSelectionForegroundColor() const {
+Color LayoutTheme::PlatformActiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   // Use a white color by default if the platform theme doesn't define anything.
   return Color::kWhite;
 }
 
-Color LayoutTheme::PlatformInactiveSelectionBackgroundColor() const {
+Color LayoutTheme::PlatformInactiveSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
   // Use a grey color by default if the platform theme doesn't define anything.
   // This color matches Firefox's inactive color.
   return Color(176, 176, 176);
 }
 
-Color LayoutTheme::PlatformInactiveSelectionForegroundColor() const {
+Color LayoutTheme::PlatformInactiveSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
   // Use a black color by default.
   return Color::kBlack;
 }
 
-Color LayoutTheme::PlatformActiveListBoxSelectionBackgroundColor() const {
-  return PlatformActiveSelectionBackgroundColor();
+Color LayoutTheme::PlatformActiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveSelectionBackgroundColor(color_scheme);
 }
 
-Color LayoutTheme::PlatformActiveListBoxSelectionForegroundColor() const {
-  return PlatformActiveSelectionForegroundColor();
+Color LayoutTheme::PlatformActiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformActiveSelectionForegroundColor(color_scheme);
 }
 
-Color LayoutTheme::PlatformInactiveListBoxSelectionBackgroundColor() const {
-  return PlatformInactiveSelectionBackgroundColor();
+Color LayoutTheme::PlatformInactiveListBoxSelectionBackgroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveSelectionBackgroundColor(color_scheme);
 }
 
-Color LayoutTheme::PlatformInactiveListBoxSelectionForegroundColor() const {
-  return PlatformInactiveSelectionForegroundColor();
+Color LayoutTheme::PlatformInactiveListBoxSelectionForegroundColor(
+    WebColorScheme color_scheme) const {
+  return PlatformInactiveSelectionForegroundColor(color_scheme);
 }
 
 LayoutUnit LayoutTheme::BaselinePositionAdjustment(
@@ -498,13 +511,13 @@ bool LayoutTheme::IsActive(const Node* node) {
 }
 
 bool LayoutTheme::IsChecked(const Node* node) {
-  if (auto* input = ToHTMLInputElementOrNull(node))
+  if (auto* input = DynamicTo<HTMLInputElement>(node))
     return input->ShouldAppearChecked();
   return false;
 }
 
 bool LayoutTheme::IsIndeterminate(const Node* node) {
-  if (auto* input = ToHTMLInputElementOrNull(node))
+  if (auto* input = DynamicTo<HTMLInputElement>(node))
     return input->ShouldAppearIndeterminate();
   return false;
 }
@@ -644,6 +657,10 @@ void LayoutTheme::PlatformColorsDidChange() {
   Page::PlatformColorsChanged();
 }
 
+void LayoutTheme::ColorSchemeDidChange() {
+  Page::ColorSchemeChanged();
+}
+
 void LayoutTheme::SetCaretBlinkInterval(base::TimeDelta interval) {
   caret_blink_interval_ = interval;
 }
@@ -719,26 +736,32 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
       return 0xFFFFFFFF;
     case CSSValueID::kActivecaption:
       return 0xFFCCCCCC;
+    case CSSValueID::kActivetext:
+      return 0xFFFF0000;
     case CSSValueID::kAppworkspace:
-      return 0xFFFFFFFF;
+      return color_scheme == WebColorScheme::kDark ? 0xFF000000 : 0xFFFFFFFF;
     case CSSValueID::kBackground:
       return 0xFF6363CE;
     case CSSValueID::kButtonface:
-      return 0xFFC0C0C0;
+      return color_scheme == WebColorScheme::kDark ? 0xFF404040 : 0xFFC0C0C0;
     case CSSValueID::kButtonhighlight:
       return 0xFFDDDDDD;
     case CSSValueID::kButtonshadow:
       return 0xFF888888;
     case CSSValueID::kButtontext:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kCaptiontext:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
+    case CSSValueID::kField:
+      return color_scheme == WebColorScheme::kDark ? 0xFF000000 : 0xFFFFFFFF;
+    case CSSValueID::kFieldtext:
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kGraytext:
       return 0xFF808080;
     case CSSValueID::kHighlight:
       return 0xFFB5D5FF;
     case CSSValueID::kHighlighttext:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kInactiveborder:
       return 0xFFFFFFFF;
     case CSSValueID::kInactivecaption:
@@ -746,19 +769,19 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kInactivecaptiontext:
       return 0xFF7F7F7F;
     case CSSValueID::kInfobackground:
-      return 0xFFFBFCC5;
+      return color_scheme == WebColorScheme::kDark ? 0xFFB46E32 : 0xFFFBFCC5;
     case CSSValueID::kInfotext:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kLinktext:
       return 0xFF0000EE;
     case CSSValueID::kMenu:
-      return 0xFFC0C0C0;
+      return color_scheme == WebColorScheme::kDark ? 0xFF404040 : 0xFFC0C0C0;
     case CSSValueID::kMenutext:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kScrollbar:
       return 0xFFFFFFFF;
     case CSSValueID::kText:
-      return 0xFF000000;
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kThreeddarkshadow:
       return 0xFF666666;
     case CSSValueID::kThreedface:
@@ -772,19 +795,21 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kVisitedtext:
       return 0xFF551A8B;
     case CSSValueID::kWindow:
-      return 0xFFFFFFFF;
+    case CSSValueID::kCanvas:
+      return color_scheme == WebColorScheme::kDark ? 0xFF000000 : 0xFFFFFFFF;
     case CSSValueID::kWindowframe:
       return 0xFFCCCCCC;
     case CSSValueID::kWindowtext:
-      return 0xFF000000;
+    case CSSValueID::kCanvastext:
+      return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kInternalActiveListBoxSelection:
-      return ActiveListBoxSelectionBackgroundColor();
+      return ActiveListBoxSelectionBackgroundColor(color_scheme);
     case CSSValueID::kInternalActiveListBoxSelectionText:
-      return ActiveListBoxSelectionForegroundColor();
+      return ActiveListBoxSelectionForegroundColor(color_scheme);
     case CSSValueID::kInternalInactiveListBoxSelection:
-      return InactiveListBoxSelectionBackgroundColor();
+      return InactiveListBoxSelectionBackgroundColor(color_scheme);
     case CSSValueID::kInternalInactiveListBoxSelectionText:
-      return InactiveListBoxSelectionForegroundColor();
+      return InactiveListBoxSelectionForegroundColor(color_scheme);
     default:
       break;
   }
@@ -839,13 +864,12 @@ String LayoutTheme::FileListNameForWidth(Locale& locale,
 
   String string;
   if (file_list->IsEmpty()) {
-    string =
-        locale.QueryString(WebLocalizedString::kFileButtonNoFileSelectedLabel);
+    string = locale.QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
   } else if (file_list->length() == 1) {
     string = file_list->item(0)->name();
   } else {
     return StringTruncator::RightTruncate(
-        locale.QueryString(WebLocalizedString::kMultipleFileUploadText,
+        locale.QueryString(IDS_FORM_FILE_MULTIPLE_UPLOAD,
                            locale.ConvertToLocalizedNumber(
                                String::Number(file_list->length()))),
         width, font);
@@ -860,6 +884,10 @@ bool LayoutTheme::ShouldOpenPickerWithF4Key() const {
 
 bool LayoutTheme::SupportsCalendarPicker(const AtomicString& type) const {
   DCHECK(RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled());
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled() &&
+      type == input_type_names::kTime)
+    return true;
+
   return type == input_type_names::kDate ||
          type == input_type_names::kDatetime ||
          type == input_type_names::kDatetimeLocal ||

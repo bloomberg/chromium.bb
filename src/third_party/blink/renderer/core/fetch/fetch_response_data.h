@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_http_header_set.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
@@ -28,7 +28,7 @@ class FetchHeaderList;
 class ScriptState;
 
 class CORE_EXPORT FetchResponseData final
-    : public GarbageCollectedFinalized<FetchResponseData> {
+    : public GarbageCollected<FetchResponseData> {
  public:
   // "A response can have an associated termination reason which is one of
   // end-user abort, fatal, and timeout."
@@ -68,6 +68,7 @@ class CORE_EXPORT FetchResponseData final
   uint16_t Status() const { return status_; }
   AtomicString StatusMessage() const { return status_message_; }
   FetchHeaderList* HeaderList() const { return header_list_.Get(); }
+  FetchHeaderList* InternalHeaderList() const;
   BodyStreamBuffer* Buffer() const { return buffer_; }
   String MimeType() const;
   // Returns the BodyStreamBuffer of |m_internalResponse| if any. Otherwise,
@@ -101,6 +102,9 @@ class CORE_EXPORT FetchResponseData final
   void SetCorsExposedHeaderNames(const WebHTTPHeaderSet& header_names) {
     cors_exposed_header_names_ = header_names;
   }
+  void SetSideDataBlob(scoped_refptr<BlobDataHandle> blob) {
+    side_data_blob_ = std::move(blob);
+  }
 
   // If the type is Default, replaces |buffer_|.
   // If the type is Basic or CORS, replaces |buffer_| and
@@ -109,7 +113,8 @@ class CORE_EXPORT FetchResponseData final
   void ReplaceBodyStreamBuffer(BodyStreamBuffer*);
 
   // Does not contain the blob response body.
-  mojom::blink::FetchAPIResponsePtr PopulateFetchAPIResponse();
+  mojom::blink::FetchAPIResponsePtr PopulateFetchAPIResponse(
+      const KURL& request_url);
 
   void Trace(blink::Visitor*);
 
@@ -127,6 +132,7 @@ class CORE_EXPORT FetchResponseData final
   base::Time response_time_;
   String cache_storage_cache_name_;
   WebHTTPHeaderSet cors_exposed_header_names_;
+  scoped_refptr<BlobDataHandle> side_data_blob_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchResponseData);
 };

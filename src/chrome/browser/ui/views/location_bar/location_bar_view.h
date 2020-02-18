@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
-#include "components/prefs/pref_member.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -45,16 +44,9 @@ class KeywordHintView;
 class LocationIconView;
 enum class OmniboxPart;
 class OmniboxPopupView;
-enum class OmniboxTint;
-class OmniboxPageActionIconContainerView;
+class PageActionIconContainerView;
 class Profile;
 class SelectedKeywordView;
-class StarView;
-
-namespace autofill {
-class LocalCardMigrationIconView;
-class SaveCardIconView;
-}  // namespace autofill
 
 namespace views {
 class ImageButton;
@@ -119,12 +111,12 @@ class LocationBarView : public LocationBar,
   // be called when the receiving instance is attached to a view container.
   bool IsInitialized() const;
 
-  // Helper to get the color for |part| using the current CalculateTint().
+  // Helper to get the color for |part| using the current ThemeProvider.
   SkColor GetColor(OmniboxPart part) const;
 
   // Returns the location bar border color blended with the toolbar color.
   // It's guaranteed to be opaque.
-  SkColor GetOpaqueBorderColor(bool incognito) const;
+  SkColor GetOpaqueBorderColor() const;
 
   // Returns a background that paints an (optionally stroked) rounded rect with
   // the given color.
@@ -137,25 +129,8 @@ class LocationBarView : public LocationBar,
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
 
-  // Toggles the star on or off.
-  void SetStarToggled(bool on);
-
-  // The star. It may not be visible.  It will be null when |browser_| is null.
-  StarView* star_view() { return star_view_; }
-
-  // The save credit card icon. It may not be visible.  It will be null when
-  // |browser_| is null.
-  autofill::SaveCardIconView* save_credit_card_icon_view() {
-    return save_credit_card_icon_view_;
-  }
-
-  autofill::LocalCardMigrationIconView* local_card_migration_icon_view() {
-    return local_card_migration_icon_view_;
-  }
-
-  OmniboxPageActionIconContainerView*
-  omnibox_page_action_icon_container_view() {
-    return omnibox_page_action_icon_container_view_;
+  PageActionIconContainerView* page_action_icon_container() {
+    return page_action_icon_container_;
   }
 
   // Returns the screen coordinates of the omnibox (where the URL text appears,
@@ -192,7 +167,7 @@ class LocationBarView : public LocationBar,
   bool ActivateFirstInactiveBubbleForAccessibility();
 
   // LocationBar:
-  void FocusLocation(bool select_all) override;
+  void FocusLocation(bool is_user_initiated) override;
   void Revert() override;
   OmniboxView* GetOmniboxView() override;
 
@@ -235,6 +210,7 @@ class LocationBarView : public LocationBar,
   void OnOmniboxHovered(bool is_hovering);
 
   Browser* browser() { return browser_; }
+  Profile* profile() { return profile_; }
 
   // LocationIconView::Delegate
   bool IsEditingOrEmpty() const override;
@@ -246,9 +222,6 @@ class LocationBarView : public LocationBar,
   gfx::ImageSkia GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
                                      on_icon_fetched) const override;
   SkColor GetLocationIconInkDropColor() const override;
-
-  // Gets the theme color tint for the location bar and results.
-  OmniboxTint CalculateTint() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
@@ -287,9 +260,6 @@ class LocationBarView : public LocationBar,
   // Updates the color of the icon for the "clear all" button.
   void RefreshClearAllButtonIcon();
 
-  // Updates the focus ring.
-  void RefreshFocusRing();
-
   // Returns true if a keyword is selected in the model.
   bool ShouldShowKeywordBubble() const;
 
@@ -309,15 +279,11 @@ class LocationBarView : public LocationBar,
   void AcceptInput(base::TimeTicks match_selection_timestamp) override;
   void FocusSearch() override;
   void UpdateContentSettingsIcons() override;
-  void UpdateSaveCreditCardIcon() override;
-  void UpdateLocalCardMigrationIcon() override;
-  void UpdateBookmarkStarVisibility() override;
   void SaveStateToContents(content::WebContents* contents) override;
   const OmniboxView* GetOmniboxView() const override;
   LocationBarTesting* GetLocationBarForTesting() override;
 
   // LocationBarTesting:
-  bool GetBookmarkStarVisibility() override;
   bool TestContentSettingImagePressed(size_t index) override;
   bool IsContentSettingBubbleShowing(size_t index) override;
 
@@ -370,6 +336,9 @@ class LocationBarView : public LocationBar,
   // window, so this may be NULL.
   Browser* const browser_;
 
+  // May be nullptr in tests.
+  Profile* const profile_;
+
   OmniboxViewViews* omnibox_view_ = nullptr;
 
   // Our delegate.
@@ -401,18 +370,7 @@ class LocationBarView : public LocationBar,
   ContentSettingViews content_setting_views_;
 
   // The page action icons.
-  OmniboxPageActionIconContainerView* omnibox_page_action_icon_container_view_ =
-      nullptr;
-
-  // The save credit card icon.  It will be null when |browser_| is null.
-  autofill::SaveCardIconView* save_credit_card_icon_view_ = nullptr;
-
-  // The icon for the local card migration prompt.
-  autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
-      nullptr;
-
-  // The star for bookmarking.  It will be null when |browser_| is null.
-  StarView* star_view_ = nullptr;
+  PageActionIconContainerView* page_action_icon_container_ = nullptr;
 
   // An [x] that appears in touch mode (when the OSK is visible) and allows the
   // user to clear all text.
@@ -424,13 +382,6 @@ class LocationBarView : public LocationBar,
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.
   const bool is_popup_mode_;
-
-  // Tracks this preference to determine whether bookmark editing is allowed.
-  BooleanPrefMember edit_bookmarks_enabled_;
-
-  // A list of all page action icons that haven't yet migrated into the
-  // PageActionIconContainerView (https://crbug.com/788051), ordered by focus.
-  std::vector<PageActionIconView*> page_action_icons_;
 
   // The focus ring, if one is in use.
   std::unique_ptr<views::FocusRing> focus_ring_;

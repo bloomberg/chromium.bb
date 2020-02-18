@@ -4,9 +4,9 @@
 
 #include "components/sync_sessions/favicon_cache.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -302,7 +302,7 @@ class SyncFaviconCacheTest : public testing::Test {
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   testing::NiceMock<favicon::MockFaviconService> mock_favicon_service_;
   FaviconCache cache_;
 
@@ -313,7 +313,8 @@ class SyncFaviconCacheTest : public testing::Test {
 };
 
 SyncFaviconCacheTest::SyncFaviconCacheTest()
-    : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+    : task_environment_(
+          base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
       cache_(&mock_favicon_service_, nullptr, kMaxSyncFavicons),
       sync_processor_(new TestChangeProcessor),
       sync_processor_wrapper_(new syncer::SyncChangeProcessorWrapperForTest(
@@ -418,7 +419,7 @@ SyncFaviconCacheTest::CreateAndPassProcessor() {
 
 std::unique_ptr<syncer::SyncErrorFactory>
 SyncFaviconCacheTest::CreateAndPassSyncErrorFactory() {
-  return base::WrapUnique(new syncer::SyncErrorFactoryMock);
+  return std::make_unique<syncer::SyncErrorFactoryMock>();
 }
 
 void SyncFaviconCacheTest::PopulateFaviconService(

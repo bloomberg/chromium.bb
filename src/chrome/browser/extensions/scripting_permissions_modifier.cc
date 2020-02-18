@@ -10,6 +10,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -20,25 +21,10 @@ namespace extensions {
 
 namespace {
 
-// Returns true if Chrome can potentially withhold permissions from the
-// extension.
-bool CanWithholdFromExtension(const Extension& extension) {
-  // Some extensions must retain privilege to all requested host permissions.
-  // Specifically, extensions that don't show up in chrome:extensions (where
-  // withheld permissions couldn't be granted), extensions that are part of
-  // chrome or corporate policy, and extensions that are whitelisted to script
-  // everywhere must always have permission to run on a page.
-  return extension.ShouldDisplayInExtensionSettings() &&
-         !Manifest::IsPolicyLocation(extension.location()) &&
-         !Manifest::IsComponentLocation(extension.location()) &&
-         !PermissionsData::CanExecuteScriptEverywhere(extension.id(),
-                                                      extension.location());
-}
-
-// Iterates over |requested_permissions| and adds any permissions that should
-// be granted to |granted_permissions_out|. These include any non-host
+// Iterates over |requested_permissions| and returns a permission set of any
+// permissions that should be  granted. These include any non-host
 // permissions or host permissions that are present in
-// |runtime_granted_permissions|. |granted_permissions_out| may contain new
+// |runtime_granted_permissions|. The returned permission set may contain new
 // patterns not found in either |requested_permissions| or
 // |runtime_granted_permissions| in the case of overlapping host permissions
 // (such as *://*.google.com/* and https://*/*, which would intersect with
@@ -87,7 +73,7 @@ std::unique_ptr<const PermissionSet> PartitionHostPermissions(
 // by the runtime host permissions experiment.
 bool ShouldConsiderExtension(const Extension& extension) {
   // Certain extensions are always exempt from having permissions withheld.
-  if (!CanWithholdFromExtension(extension))
+  if (!util::CanWithholdPermissionsFromExtension(extension))
     return false;
 
   return true;
@@ -186,8 +172,8 @@ void ScriptingPermissionsModifier::SetWithholdHostPermissions(
 
   // Set the pref first, so that listeners for permission changes get the proper
   // value if they query HasWithheldHostPermissions().
-  extension_prefs_->SetShouldWithholdPermissions(extension_->id(),
-                                                 should_withhold);
+  extension_prefs_->SetWithholdingPermissions(extension_->id(),
+                                              should_withhold);
 
   if (should_withhold)
     WithholdHostPermissions();
@@ -198,13 +184,7 @@ void ScriptingPermissionsModifier::SetWithholdHostPermissions(
 bool ScriptingPermissionsModifier::HasWithheldHostPermissions() const {
   DCHECK(CanAffectExtension());
 
-  base::Optional<bool> pref_value =
-      extension_prefs_->GetShouldWithholdPermissions(extension_->id());
-  if (!pref_value.has_value()) {
-    // If there is no value present, default to false.
-    return false;
-  }
-  return *pref_value;
+  return extension_prefs_->GetWithholdingPermissions(extension_->id());
 }
 
 bool ScriptingPermissionsModifier::CanAffectExtension() const {
@@ -359,23 +339,36 @@ ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
     const Extension& extension,
     const ExtensionPrefs& extension_prefs,
     const PermissionSet& permissions) {
-  bool should_withhold = false;
-  if (ShouldConsiderExtension(extension)) {
-    base::Optional<bool> pref_value =
-        extension_prefs.GetShouldWithholdPermissions(extension.id());
-    should_withhold = pref_value.has_value() && pref_value.value() == true;
-  }
-
-  should_withhold &= !permissions.effective_hosts().is_empty();
-  if (!should_withhold) {
+  if (!ShouldConsiderExtension(extension)) {
+    // The withhold creation flag should never have been set in cases where
+    // withholding isn't allowed.
+    DCHECK(!(extension.creation_flags() & Extension::WITHHOLD_PERMISSIONS));
     return permissions.Clone();
   }
+
+  if (permissions.effective_hosts().is_empty())
+    return permissions.Clone();  // No hosts to withhold.
+
+  bool should_withhold = false;
+  if (extension.creation_flags() & Extension::WITHHOLD_PERMISSIONS) {
+    should_withhold = true;
+  } else {
+    should_withhold = extension_prefs.GetWithholdingPermissions(extension.id());
+  }
+
+  if (!should_withhold)
+    return permissions.Clone();
 
   // Only grant host permissions that the user has explicitly granted at
   // runtime through the runtime host permissions feature or the optional
   // permissions API.
   std::unique_ptr<const PermissionSet> runtime_granted_permissions =
       GetRuntimePermissionsFromPrefs(extension, extension_prefs);
+  // If there were no runtime granted permissions found in the prefs, default to
+  // a new empty set.
+  if (!runtime_granted_permissions) {
+    runtime_granted_permissions = std::make_unique<PermissionSet>();
+  }
   return PartitionHostPermissions(permissions, *runtime_granted_permissions);
 }
 

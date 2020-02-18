@@ -69,7 +69,7 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
     const gfx::Rect& bounds_in_screen) {
   std::unique_ptr<views::Widget> phantom_widget(new views::Widget);
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   // PhantomWindowController is used by FrameMaximizeButton to highlight the
   // launcher button. Put the phantom in the same window as the launcher so that
   // the phantom is visible.
@@ -77,7 +77,7 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "PhantomWindow";
   params.layer_type = ui::LAYER_SOLID_COLOR;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
   params.shadow_elevation = ::wm::kShadowElevationActiveWindow;
   params.parent = root_window->GetChildById(kShellWindowId_ShelfContainer);
   phantom_widget->set_focus_on_creation(false);

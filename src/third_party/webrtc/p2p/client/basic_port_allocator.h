@@ -37,13 +37,10 @@ class RTC_EXPORT BasicPortAllocator : public PortAllocator {
                      RelayPortFactoryInterface* relay_port_factory = nullptr);
   explicit BasicPortAllocator(rtc::NetworkManager* network_manager);
   BasicPortAllocator(rtc::NetworkManager* network_manager,
-                     rtc::PacketSocketFactory* socket_factory,
                      const ServerAddresses& stun_servers);
   BasicPortAllocator(rtc::NetworkManager* network_manager,
-                     const ServerAddresses& stun_servers,
-                     const rtc::SocketAddress& relay_address_udp,
-                     const rtc::SocketAddress& relay_address_tcp,
-                     const rtc::SocketAddress& relay_address_ssl);
+                     rtc::PacketSocketFactory* socket_factory,
+                     const ServerAddresses& stun_servers);
   ~BasicPortAllocator() override;
 
   // Set to kDefaultNetworkIgnoreMask by default.
@@ -265,6 +262,7 @@ class RTC_EXPORT BasicPortAllocatorSession : public PortAllocatorSession,
   Port* GetBestTurnPortForNetwork(const std::string& network_name) const;
   // Returns true if at least one TURN port is pruned.
   bool PruneTurnPorts(Port* newly_pairable_turn_port);
+  bool PruneNewlyPairableTurnPort(PortData* newly_pairable_turn_port);
 
   BasicPortAllocator* allocator_;
   rtc::Thread* network_thread_;
@@ -277,8 +275,8 @@ class RTC_EXPORT BasicPortAllocatorSession : public PortAllocatorSession,
   std::vector<AllocationSequence*> sequences_;
   std::vector<PortData> ports_;
   uint32_t candidate_filter_ = CF_ALL;
-  // Whether to prune low-priority ports, taken from the port allocator.
-  bool prune_turn_ports_;
+  // Policy on how to prune turn ports, taken from the port allocator.
+  webrtc::PortPrunePolicy turn_port_prune_policy_;
   SessionState state_ = SessionState::CLEARED;
 
   friend class AllocationSequence;
@@ -292,6 +290,7 @@ struct RTC_EXPORT PortConfiguration : public rtc::MessageData {
   ServerAddresses stun_servers;
   std::string username;
   std::string password;
+  bool use_turn_server_as_stun_server_disabled = false;
 
   typedef std::vector<RelayServerConfig> RelayList;
   RelayList relays;
@@ -317,11 +316,10 @@ struct RTC_EXPORT PortConfiguration : public rtc::MessageData {
   // Determines whether the given relay server supports the given protocol.
   bool SupportsProtocol(const RelayServerConfig& relay,
                         ProtocolType type) const;
-  bool SupportsProtocol(RelayType turn_type, ProtocolType type) const;
+  bool SupportsProtocol(ProtocolType type) const;
   // Helper method returns the server addresses for the matching RelayType and
   // Protocol type.
-  ServerAddresses GetRelayServerAddresses(RelayType turn_type,
-                                          ProtocolType type) const;
+  ServerAddresses GetRelayServerAddresses(ProtocolType type) const;
 };
 
 class UDPPort;
@@ -389,7 +387,6 @@ class AllocationSequence : public rtc::MessageHandler,
   void CreateTCPPorts();
   void CreateStunPorts();
   void CreateRelayPorts();
-  void CreateGturnPort(const RelayServerConfig& config);
 
   void OnReadPacket(rtc::AsyncPacketSocket* socket,
                     const char* data,

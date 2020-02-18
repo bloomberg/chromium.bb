@@ -38,19 +38,22 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/top_container_background.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
-#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
+#include "chrome/browser/ui/views/toolbar/button_utils.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/chrome_features.h"
@@ -63,9 +66,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/browser/media_session.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -79,7 +80,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
@@ -100,6 +100,10 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 #endif
+
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+#include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -140,10 +144,12 @@ ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
   chrome::AddCommandObserver(browser_, IDC_RELOAD, this);
   chrome::AddCommandObserver(browser_, IDC_HOME, this);
   chrome::AddCommandObserver(browser_, IDC_SHOW_AVATAR_MENU, this);
-  chrome::AddCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 
   UpgradeDetector::GetInstance()->AddObserver(this);
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
+
+  if (display_mode_ == DisplayMode::NORMAL)
+    SetBackground(std::make_unique<TopContainerBackground>(browser_view));
 }
 
 ToolbarView::~ToolbarView() {
@@ -154,7 +160,6 @@ ToolbarView::~ToolbarView() {
   chrome::RemoveCommandObserver(browser_, IDC_RELOAD, this);
   chrome::RemoveCommandObserver(browser_, IDC_HOME, this);
   chrome::RemoveCommandObserver(browser_, IDC_SHOW_AVATAR_MENU, this);
-  chrome::RemoveCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 }
 
 void ToolbarView::Init() {
@@ -178,55 +183,14 @@ void ToolbarView::Init() {
     return;
   }
 
-  auto back = std::make_unique<ToolbarButton>(
-      this,
-      std::make_unique<BackForwardMenuModel>(
-          browser_, BackForwardMenuModel::ModelType::kBackward),
-      browser_->tab_strip_model());
-  back->set_hide_ink_drop_when_showing_context_menu(false);
-  back->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                                    ui::EF_MIDDLE_MOUSE_BUTTON);
-  back->set_tag(IDC_BACK);
-  back->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK));
-  back->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
-  back->GetViewAccessibility().OverrideDescription(
-      l10n_util::GetStringUTF8(IDS_ACCDESCRIPTION_BACK));
-  back->SetID(VIEW_ID_BACK_BUTTON);
-  back->Init();
+  std::unique_ptr<ToolbarButton> back = CreateBackButton(this, browser_);
 
-  auto forward = std::make_unique<ToolbarButton>(
-      this,
-      std::make_unique<BackForwardMenuModel>(
-          browser_, BackForwardMenuModel::ModelType::kForward),
-      browser_->tab_strip_model());
-  forward->set_hide_ink_drop_when_showing_context_menu(false);
-  forward->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                                       ui::EF_MIDDLE_MOUSE_BUTTON);
-  forward->set_tag(IDC_FORWARD);
-  forward->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD));
-  forward->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
-  forward->GetViewAccessibility().OverrideDescription(
-      l10n_util::GetStringUTF8(IDS_ACCDESCRIPTION_FORWARD));
-  forward->SetID(VIEW_ID_FORWARD_BUTTON);
-  forward->Init();
+  std::unique_ptr<ToolbarButton> forward = CreateForwardButton(this, browser_);
 
-  auto reload = std::make_unique<ReloadButton>(browser_->command_controller());
-  reload->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                                      ui::EF_MIDDLE_MOUSE_BUTTON);
-  reload->set_tag(IDC_RELOAD);
-  reload->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
-  reload->SetID(VIEW_ID_RELOAD_BUTTON);
-  reload->Init();
+  std::unique_ptr<ReloadButton> reload =
+      CreateReloadButton(browser_, ReloadButton::IconStyle::kBrowser);
 
-  auto home = std::make_unique<HomeButton>(this, browser_);
-  home->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                                    ui::EF_MIDDLE_MOUSE_BUTTON);
-  home->set_tag(IDC_HOME);
-  home->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME));
-  home->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME));
-  home->SetID(VIEW_ID_HOME_BUTTON);
-  home->Init();
-  home->SizeToPreferredSize();
+  std::unique_ptr<HomeButton> home = CreateHomeButton(this, browser_);
 
   std::unique_ptr<ExtensionsToolbarContainer> extensions_container;
   std::unique_ptr<BrowserActionsContainer> browser_actions;
@@ -248,22 +212,19 @@ void ToolbarView::Init() {
 
   std::unique_ptr<MediaToolbarButtonView> media_button;
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControls)) {
-    const base::UnguessableToken& source_id =
-        content::MediaSession::GetSourceId(browser_->profile());
-    media_button = std::make_unique<MediaToolbarButtonView>(
-        source_id, content::GetSystemConnector(), browser_);
+    media_button = std::make_unique<MediaToolbarButtonView>(browser_);
   }
 
-  std::unique_ptr<ToolbarPageActionIconContainerView>
-      toolbar_page_action_container;
+  std::unique_ptr<ToolbarAccountIconContainerView>
+      toolbar_account_icon_container;
   bool show_avatar_toolbar_button = true;
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableToolbarStatusChip)) {
     // The avatar button is contained inside the page-action container and
     // should not be created twice.
     show_avatar_toolbar_button = false;
-    toolbar_page_action_container =
-        std::make_unique<ToolbarPageActionIconContainerView>(browser_);
+    toolbar_account_icon_container =
+        std::make_unique<ToolbarAccountIconContainerView>(browser_);
   } else {
 #if defined(OS_CHROMEOS)
     // ChromeOS only badges Incognito and Guest icons in the browser window.
@@ -302,9 +263,10 @@ void ToolbarView::Init() {
   if (media_button)
     media_button_ = AddChildView(std::move(media_button));
 
-  if (toolbar_page_action_container)
-    toolbar_page_action_container_ =
-        AddChildView(std::move(toolbar_page_action_container));
+  if (toolbar_account_icon_container) {
+    toolbar_account_icon_container_ =
+        AddChildView(std::move(toolbar_account_icon_container));
+  }
 
   // TODO(crbug.com/932818): Remove this once the
   // |kAutofillEnableToolbarStatusChip| is fully launched.
@@ -364,8 +326,8 @@ void ToolbarView::Update(WebContents* tab) {
   if (reload_)
     reload_->set_menu_enabled(chrome::IsDebuggerAttachedToCurrentTab(browser_));
 
-  if (toolbar_page_action_container_)
-    toolbar_page_action_container_->UpdateAllIcons();
+  if (toolbar_account_icon_container_)
+    toolbar_account_icon_container_->UpdateAllIcons();
 }
 
 void ToolbarView::SetToolbarVisibility(bool visible) {
@@ -395,6 +357,19 @@ void ToolbarView::UpdateCustomTabBarVisibility(bool visible, bool animate) {
   }
 }
 
+void ToolbarView::UpdateForWebUITabStrip() {
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (browser_view_->webui_tab_strip() && app_menu_button_) {
+    const int insertion_index = GetIndexOf(app_menu_button_);
+    AddChildViewAt(browser_view_->webui_tab_strip()->CreateTabCounter(),
+                   insertion_index);
+    AddChildViewAt(browser_view_->webui_tab_strip()->CreateNewTabButton(),
+                   insertion_index);
+    LoadImages();
+  }
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+}
+
 void ToolbarView::ResetTabState(WebContents* tab) {
   if (location_bar_)
     location_bar_->ResetTabState(tab);
@@ -414,18 +389,17 @@ void ToolbarView::ShowIntentPickerBubble(
     bool show_stay_in_chrome,
     bool show_remember_selection,
     PageActionIconType icon_type,
+    const base::Optional<url::Origin>& initiating_origin,
     IntentPickerResponse callback) {
-  PageActionIconView* intent_picker_view =
-      location_bar()
-          ->omnibox_page_action_icon_container_view()
-          ->GetPageActionIconView(icon_type);
+  PageActionIconView* const intent_picker_view =
+      GetPageActionIconView(icon_type);
   if (!intent_picker_view)
     return;
 
   IntentPickerBubbleView::ShowBubble(
       location_bar(), intent_picker_view, icon_type, GetWebContents(),
       std::move(app_info), show_stay_in_chrome, show_remember_selection,
-      std::move(callback));
+      initiating_origin, std::move(callback));
   // TODO(knollr): find a way that the icon updates implicitly.
   intent_picker_view->Update();
 }
@@ -435,45 +409,21 @@ void ToolbarView::ShowBookmarkBubble(
     bool already_bookmarked,
     bookmarks::BookmarkBubbleObserver* observer) {
   views::View* const anchor_view = location_bar();
-  PageActionIconView* const star_view = location_bar()->star_view();
+  PageActionIconView* const bookmark_star_icon =
+      GetPageActionIconView(PageActionIconType::kBookmarkStar);
 
   std::unique_ptr<BubbleSyncPromoDelegate> delegate;
 #if !defined(OS_CHROMEOS)
   // ChromeOS does not show the signin promo.
   delegate.reset(new BookmarkBubbleSignInDelegate(browser_));
 #endif
-  BookmarkBubbleView::ShowBubble(anchor_view, star_view, gfx::Rect(), nullptr,
-                                 observer, std::move(delegate),
+  BookmarkBubbleView::ShowBubble(anchor_view, bookmark_star_icon, gfx::Rect(),
+                                 nullptr, observer, std::move(delegate),
                                  browser_->profile(), url, already_bookmarked);
-}
-
-AvatarToolbarButton* ToolbarView::GetAvatarToolbarButton() {
-  if (toolbar_page_action_container_ &&
-      toolbar_page_action_container_->avatar_button()) {
-    return toolbar_page_action_container_->avatar_button();
-  }
-
-  if (avatar_)
-    return avatar_;
-
-  return nullptr;
 }
 
 ExtensionsToolbarButton* ToolbarView::GetExtensionsButton() const {
   return extensions_container_->extensions_button();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, views::MenuButtonListener implementation:
-
-void ToolbarView::OnMenuButtonClicked(views::Button* source,
-                                      const gfx::Point& point,
-                                      const ui::Event* event) {
-  TRACE_EVENT0("views", "ToolbarView::OnMenuButtonClicked");
-  DCHECK_EQ(VIEW_ID_APP_MENU, source->GetID());
-  app_menu_button_->ShowMenu((event && event->IsKeyEvent())
-                                 ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
-                                 : views::MenuRunner::NO_FLAGS);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -552,6 +502,14 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
 
 void ToolbarView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
+  TRACE_EVENT0("views", "ToolbarView::ButtonPressed");
+  if (sender->GetID() == VIEW_ID_APP_MENU) {
+    DCHECK_EQ(VIEW_ID_APP_MENU, sender->GetID());
+    app_menu_button_->ShowMenu(event.IsKeyEvent()
+                                   ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
+                                   : views::MenuRunner::NO_FLAGS);
+  }
+
   chrome::ExecuteCommandWithDisposition(
       browser_, sender->tag(), ui::DispositionFromEventFlags(event.flags()));
 }
@@ -616,36 +574,6 @@ void ToolbarView::Layout() {
   // Call super implementation to ensure layout manager and child layouts
   // happen.
   AccessiblePaneView::Layout();
-}
-
-void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
-  if (display_mode_ != DisplayMode::NORMAL)
-    return;
-
-  const ui::ThemeProvider* tp = GetThemeProvider();
-
-  // If the toolbar has a theme image, it gets composited against the toolbar
-  // background color when it's imported, so we only need to specificallh draw
-  // the background color if there is no custom image.
-  if (tp->HasCustomImage(IDR_THEME_TOOLBAR)) {
-    const int x_offset =
-        GetMirroredX() + browser_view_->GetMirroredX() +
-        browser_view_->frame()->GetFrameView()->GetThemeBackgroundXInset();
-    const int y_offset = GetLayoutConstant(TAB_HEIGHT) -
-                         browser_view_->tabstrip()->GetStrokeThickness() -
-                         GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
-    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR), x_offset,
-                         y_offset, 0, 0, width(), height());
-  } else {
-    canvas->FillRect(GetLocalBounds(),
-                     tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
-  }
-
-  // Toolbar/content separator.
-  BrowserView::Paint1pxHorizontalLine(
-      canvas,
-      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR),
-      GetLocalBounds(), true);
 }
 
 void ToolbarView::OnThemeChanged() {
@@ -723,15 +651,20 @@ void ToolbarView::InitLayout() {
   const int default_margin = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
   // TODO(dfried): rename this constant.
   const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
-  const views::FlexSpecification browser_actions_flex_rule =
-      views::FlexSpecification::ForCustomRule(
-          BrowserActionsContainer::GetFlexRule())
-          .WithOrder(2);
+  const views::FlexSpecification account_container_flex_rule =
+      views::FlexSpecification::ForSizeRule(
+          views::MinimumFlexSizeRule::kScaleToMinimum,
+          views::MaximumFlexSizeRule::kPreferred)
+          .WithOrder(1);
   const views::FlexSpecification location_bar_flex_rule =
       views::FlexSpecification::ForSizeRule(
           views::MinimumFlexSizeRule::kScaleToMinimum,
           views::MaximumFlexSizeRule::kUnbounded)
-          .WithOrder(1);
+          .WithOrder(2);
+  const views::FlexSpecification browser_actions_flex_rule =
+      views::FlexSpecification::ForCustomRule(
+          BrowserActionsContainer::GetFlexRule())
+          .WithOrder(3);
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
 
@@ -752,6 +685,11 @@ void ToolbarView::InitLayout() {
                                   gfx::Insets(0, location_bar_margin));
   }
 
+  if (toolbar_account_icon_container_) {
+    toolbar_account_icon_container_->SetProperty(views::kFlexBehaviorKey,
+                                                 account_container_flex_rule);
+  }
+
   LayoutCommon();
 }
 
@@ -762,10 +700,14 @@ void ToolbarView::LayoutCommon() {
       GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN);
   layout_manager_->SetInteriorMargin(interior_margin);
 
-  const bool maximized =
-      browser_->window() && browser_->window()->IsMaximized();
-  back_->SetLeadingMargin(maximized ? interior_margin.left() : 0);
-  app_menu_button_->SetTrailingMargin(maximized ? interior_margin.right() : 0);
+  // Extend buttons to the window edge if we're either in a maximized or
+  // fullscreen window. This makes the buttons easier to hit, see Fitts' law.
+  const bool extend_buttons_to_edge =
+      browser_->window() &&
+      (browser_->window()->IsMaximized() || browser_->window()->IsFullscreen());
+  back_->SetLeadingMargin(extend_buttons_to_edge ? interior_margin.left() : 0);
+  app_menu_button_->SetTrailingMargin(
+      extend_buttons_to_edge ? interior_margin.right() : 0);
 
   // Cast button visibility is controlled externally.
 }
@@ -815,20 +757,27 @@ ToolbarActionView* ToolbarView::GetToolbarActionViewForId(
 
 views::View* ToolbarView::GetDefaultExtensionDialogAnchorView() {
   if (extensions_container_)
-    return extensions_container_;
+    return extensions_container_->extensions_button();
   return GetAppMenuButton();
 }
 
-OmniboxPageActionIconContainerView*
-ToolbarView::GetOmniboxPageActionIconContainerView() {
-  return location_bar_->omnibox_page_action_icon_container_view();
+PageActionIconView* ToolbarView::GetPageActionIconView(
+    PageActionIconType type) {
+  PageActionIconView* icon =
+      location_bar()->page_action_icon_container()->GetIconView(type);
+  if (icon)
+    return icon;
+  return toolbar_account_icon_container_
+             ? toolbar_account_icon_container_->page_action_icon_container()
+                   ->GetIconView(type)
+             : nullptr;
 }
 
 AppMenuButton* ToolbarView::GetAppMenuButton() {
   return app_menu_button_;
 }
 
-gfx::Rect ToolbarView::GetFindBarBoundingBox(int contents_height) const {
+gfx::Rect ToolbarView::GetFindBarBoundingBox(int contents_bottom) const {
   if (!browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
     return gfx::Rect();
 
@@ -838,7 +787,7 @@ gfx::Rect ToolbarView::GetFindBarBoundingBox(int contents_height) const {
   gfx::Rect bounds =
       location_bar_->ConvertRectToWidget(location_bar_->GetLocalBounds());
   return gfx::Rect(bounds.x(), bounds.bottom(), bounds.width(),
-                   contents_height);
+                   contents_bottom - bounds.bottom());
 }
 
 void ToolbarView::FocusToolbar() {
@@ -849,8 +798,43 @@ views::AccessiblePaneView* ToolbarView::GetAsAccessiblePaneView() {
   return this;
 }
 
-views::View* ToolbarView::GetAnchorView() {
+views::View* ToolbarView::GetAnchorView(PageActionIconType type) {
+  // Return the container visually housing the icon so all the bubbles align
+  // with the same visible edge.
+  if (toolbar_account_icon_container_) {
+    views::View* icon = GetPageActionIconView(type);
+    if (toolbar_account_icon_container_->Contains(icon)) {
+      DCHECK(base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableToolbarStatusChip));
+      return toolbar_account_icon_container_;
+    }
+  }
   return location_bar_;
+}
+
+void ToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
+  location_bar_->page_action_icon_container()->ZoomChangedForActiveTab(
+      can_show_bubble);
+}
+
+AvatarToolbarButton* ToolbarView::GetAvatarToolbarButton() {
+  if (toolbar_account_icon_container_ &&
+      toolbar_account_icon_container_->avatar_button()) {
+    return toolbar_account_icon_container_->avatar_button();
+  }
+
+  if (avatar_)
+    return avatar_;
+
+  return nullptr;
+}
+
+ToolbarButton* ToolbarView::GetBackButton() {
+  return back_;
+}
+
+ReloadButton* ToolbarView::GetReloadButton() {
+  return reload_;
 }
 
 BrowserRootView::DropIndex ToolbarView::GetDropIndex(
@@ -907,15 +891,20 @@ void ToolbarView::LoadImages() {
   if (media_button_)
     media_button_->UpdateIcon();
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (browser_view_->webui_tab_strip())
+    browser_view_->webui_tab_strip()->UpdateButtons();
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
   if (avatar_)
     avatar_->UpdateIcon();
 
-  if (toolbar_page_action_container_)
-    toolbar_page_action_container_->UpdateAllIcons();
+  if (toolbar_account_icon_container_)
+    toolbar_account_icon_container_->UpdateAllIcons();
 
   app_menu_button_->UpdateIcon();
 
-  reload_->LoadImages();
+  reload_->SetColors(normal_color, disabled_color);
 }
 
 void ToolbarView::ShowCriticalNotification() {

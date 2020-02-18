@@ -18,6 +18,7 @@
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -25,6 +26,8 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 
 using extensions::PlatformAppBrowserTest;
@@ -37,7 +40,7 @@ namespace {
 class TestAppShimHostBootstrap : public AppShimHostBootstrap {
  public:
   TestAppShimHostBootstrap() : AppShimHostBootstrap(getpid()) {}
-  using AppShimHostBootstrap::LaunchApp;
+  using AppShimHostBootstrap::OnShimConnected;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAppShimHostBootstrap);
@@ -64,14 +67,18 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
         extensions::ExtensionRegistry::Get(profile());
     extension_id_ =
         GetExtensionByPath(registry->enabled_extensions(), app_path_)->id();
-    chrome::mojom::AppShimHostPtr host_ptr;
+    mojo::Remote<chrome::mojom::AppShimHost> host;
+    auto app_shim_info = chrome::mojom::AppShimInfo::New();
+    app_shim_info->profile_path = profile()->GetPath().BaseName();
+    app_shim_info->app_id = extension_id_;
+    app_shim_info->app_url = GURL("https://example.com");
+    app_shim_info->launch_type =
+        chrome::mojom::AppShimLaunchType::kRegisterOnly;
     (new TestAppShimHostBootstrap)
-        ->LaunchApp(mojo::MakeRequest(&host_ptr),
-                    profile()->GetPath().BaseName(), extension_id_,
-                    APP_SHIM_LAUNCH_REGISTER_ONLY,
-                    std::vector<base::FilePath>(),
-                    base::BindOnce(&AppShimQuitTest::DoShimLaunchDone,
-                                   base::Unretained(this)));
+        ->OnShimConnected(host.BindNewPipeAndPassReceiver(),
+                          std::move(app_shim_info),
+                          base::BindOnce(&AppShimQuitTest::DoShimLaunchDone,
+                                         base::Unretained(this)));
 
     // Focus the app window.
     NSWindow* window = [[NSApp windows] objectAtIndex:0];
@@ -79,8 +86,9 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
     content::RunAllPendingInMessageLoop();
   }
 
-  void DoShimLaunchDone(apps::AppShimLaunchResult result,
-                        chrome::mojom::AppShimRequest app_shim_request) {}
+  void DoShimLaunchDone(
+      chrome::mojom::AppShimLaunchResult result,
+      mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);

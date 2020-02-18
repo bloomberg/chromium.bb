@@ -34,7 +34,7 @@
 #include "extensions/common/url_pattern.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/web/web_context_menu_data.h"
+#include "third_party/blink/public/common/context_menu_data/input_field_type.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "url/gurl.h"
 
@@ -50,7 +50,7 @@ namespace {
 static content::ContextMenuParams CreateParams(int contexts) {
   content::ContextMenuParams rv;
   rv.is_editable = false;
-  rv.media_type = blink::WebContextMenuData::kMediaTypeNone;
+  rv.media_type = blink::ContextMenuDataMediaType::kNone;
   rv.page_url = GURL("http://test.page/");
 
   static const base::char16 selected_text[] = { 's', 'e', 'l', 0 };
@@ -65,17 +65,17 @@ static content::ContextMenuParams CreateParams(int contexts) {
 
   if (contexts & MenuItem::IMAGE) {
     rv.src_url = GURL("http://test.image/");
-    rv.media_type = blink::WebContextMenuData::kMediaTypeImage;
+    rv.media_type = blink::ContextMenuDataMediaType::kImage;
   }
 
   if (contexts & MenuItem::VIDEO) {
     rv.src_url = GURL("http://test.video/");
-    rv.media_type = blink::WebContextMenuData::kMediaTypeVideo;
+    rv.media_type = blink::ContextMenuDataMediaType::kVideo;
   }
 
   if (contexts & MenuItem::AUDIO) {
     rv.src_url = GURL("http://test.audio/");
-    rv.media_type = blink::WebContextMenuData::kMediaTypeAudio;
+    rv.media_type = blink::ContextMenuDataMediaType::kAudio;
   }
 
   if (contexts & MenuItem::FRAME)
@@ -502,9 +502,6 @@ TEST_F(RenderViewContextMenuPrefsTest, DataSaverDisabledSaveImageAs) {
 
 // Check that if image is broken "Load image" menu item is present.
 TEST_F(RenderViewContextMenuPrefsTest, LoadBrokenImage) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kLoadBrokenImagesFromContextMenu);
   content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
   params.unfiltered_link_url = params.link_url;
   params.has_image_contents = false;
@@ -547,13 +544,10 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswords) {
   // Set up password manager stuff.
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents(), nullptr);
-  password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
-      web_contents())
-      ->RenderFrameCreated(web_contents()->GetMainFrame());
 
   NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
-  params.input_field_type = blink::WebContextMenuData::kInputFieldTypePassword;
+  params.input_field_type = blink::ContextMenuDataInputFieldType::kPassword;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
       web_contents()->GetMainFrame(), params);
   menu->Init();
@@ -571,14 +565,11 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswordsIncognito) {
   // Set up password manager stuff.
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       incognito_web_contents.get(), nullptr);
-  password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
-      incognito_web_contents.get())
-      ->RenderFrameCreated(incognito_web_contents->GetMainFrame());
 
   content::WebContentsTester::For(incognito_web_contents.get())
       ->NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
-  params.input_field_type = blink::WebContextMenuData::kInputFieldTypePassword;
+  params.input_field_type = blink::ContextMenuDataInputFieldType::kPassword;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
       incognito_web_contents->GetMainFrame(), params);
   menu->Init();
@@ -628,7 +619,7 @@ const FormatUrlForClipboardTestData kFormatUrlForClipboardTestData[]{
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     FormatUrlForClipboardTest,
     testing::ValuesIn(kFormatUrlForClipboardTestData),
     [](const testing::TestParamInfo<FormatUrlForClipboardTestData>&

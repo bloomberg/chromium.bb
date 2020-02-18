@@ -14,6 +14,7 @@ import "services/network/public/mojom/address_list.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/default_credentials.mojom";
 import "services/network/public/mojom/cors_origin_pattern.mojom";
+import "services/network/public/mojom/cross_origin_embedder_policy.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
 import "services/network/public/mojom/ip_address.mojom";
@@ -30,6 +31,7 @@ import "services/network/public/mojom/proxy_config.mojom";
 import "services/network/public/mojom/proxy_config_with_annotation.mojom";
 import "services/network/public/mojom/proxy_lookup_client.mojom";
 import "services/network/public/mojom/proxy_resolving_socket.mojom";
+import "services/network/public/mojom/quic_transport.mojom";
 import "services/network/public/mojom/restricted_cookie_manager.mojom";
 import "services/network/public/mojom/ssl_config.mojom";
 import "services/network/public/mojom/tcp_socket.mojom";
@@ -152,10 +154,17 @@ interface TrustedHeaderClient {
 
   // Allows modifying response headers, including sensitive headers such as
   // set-cookie. This should only be used from a trusted process.
-  OnHeadersReceived(string headers) =>
+  // If |preserve_fragment_on_redirect_url| is null, then when the headers
+  // indicate a redirect, URL fragments will be handled the standard way: the
+  // fragment of the original URL will be copied to the new URL, unless the
+  // new URL has a fragment, in which case the new URL's fragment will be
+  // used. If |preserve_fragment_on_redirect_url| is populated, and the
+  // request is redirected to exactly that URL, then the fragment of the
+  // original URL will not be copied to the redirect target URL.
+  OnHeadersReceived(string headers, IPEndPoint remote_endpoint) =>
       (int32 result,
        string? headers,
-       url.mojom.Url allowed_unsafe_redirect_url);
+       url.mojom.Url? preserve_fragment_on_redirect_url);
 };
 
 // Interface to allow modifying the full request and response headers. This
@@ -166,6 +175,19 @@ interface TrustedURLLoaderHeaderClient {
   // corresponding |header_client|.
   OnLoaderCreated(int32 request_id,
                   pending_receiver<TrustedHeaderClient> header_client);
+
+  // When a new URLLoader is created for a CORS preflight request, this will
+  // be called to pass a corresponding |header_client|.
+  OnLoaderForCorsPreflightCreated(
+      URLRequest request,
+      pending_receiver<TrustedHeaderClient> header_client);
+};
+
+struct HttpAuthStaticNetworkContextParams {
+  // Whether authentication APIs that support fallback to the default account
+  // on the system can be used without specifying an account.
+  DefaultCredentials allow_default_credentials
+     = DefaultCredentials.ALLOW_DEFAULT_CREDENTIALS;
 };
 
 // Parameters for constructing a network context.
@@ -197,7 +219,8 @@ struct NetworkContextParams {
   // Handles PAC script execution. If not populated, will attempt to use
   // platform implementation to execute PAC scripts, if available (Only
   // available on Windows and Mac).
-  proxy_resolver.mojom.ProxyResolverFactory? proxy_resolver_factory;
+  pending_remote<proxy_resolver.mojom.ProxyResolverFactory>?
+      proxy_resolver_factory;
 
   // Retrieves the PAC script URL set via DHCP from the browser process. Only
   // used if |proxy_resolver_factory| is set. Note: optional because some tests
@@ -252,22 +275,14 @@ struct NetworkContextParams {
   [EnableIf=is_android]
   bool check_clear_text_permitted = false;
 
-  // Enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
-  bool http_09_on_non_default_ports_enabled = false;
-
   // If true, idle sockets won't be closed when memory pressure happens.
   bool disable_idle_sockets_close_on_memory_pressure = false;
 
-  // Whether authentication APIs that support fallback to the default account
-  // on the system can be used without specifying an account.
-  DefaultCredentials allow_default_credentials =
-      DefaultCredentials.ALLOW_DEFAULT_CREDENTIALS;
-
   // SSL configuration. |initial_proxy_config| is the initial SSL configuration
   // to use. If nullptr, uses the default configuration. Updated SSL
-  // configurations can be passed in via |ssl_config_client_request|.
+  // configurations can be passed in via |ssl_config_client_receiver|.
   SSLConfig? initial_ssl_config;
-  SSLConfigClient&? ssl_config_client_request;
+  pending_receiver<SSLConfigClient>? ssl_config_client_receiver;
 
   // Proxy configuration. If |initial_proxy_config| is set, it's the initial
   // proxy configuration. Updated proxy configuration can be passed in via
@@ -277,7 +292,7 @@ struct NetworkContextParams {
   //
   // If both are null, the NetworkContext will not use a proxy.
   ProxyConfigWithAnnotation? initial_proxy_config;
-  ProxyConfigClient&? proxy_config_client_request;
+  pending_receiver<ProxyConfigClient>? proxy_config_client_receiver;
 
   // If |custom_proxy_config_client_receiver| is set, this context will listen
   // for updates to the custom proxy config, and use it if applicable for
@@ -294,11 +309,11 @@ struct NetworkContextParams {
   // TODO(mmenke): Can the consumer piggy back on other network events through
   // other channels (navigation, issuing requests, etc)? Or can
   // ProxyConfigServices be modified not to need this notification?
-  ProxyConfigPollerClient? proxy_config_poller_client;
+  pending_remote<ProxyConfigPollerClient>? proxy_config_poller_client;
 
   // Optional client that will be notified of errors related to the proxy
   // settings.
-  ProxyErrorClient? proxy_error_client;
+  pending_remote<ProxyErrorClient>? proxy_error_client;
 
   // When PAC quick checking is enabled, DNS lookups for PAC script's host are
   // timed out aggressively. This prevents hanging all network request on DNS
@@ -353,7 +368,7 @@ struct NetworkContextParams {
 
   // If true, the built-in cert verifier will be used. If false, the platform
   // cert verifier will be used.
-  [EnableIf=is_chromeos]
+  [EnableIf=is_builtin_cert_verifier_feature_supported]
   bool use_builtin_cert_verifier = false;
 
   // Parameters for the cert verifier comparison trial. This is a temporary
@@ -415,6 +430,25 @@ struct NetworkContextParams {
 
   // Extra CORS safelisted request headers names.
   array<string> cors_extra_safelisted_request_header_names;
+
+  // Specifies the CORS mode.
+  //   kDefault - Decided by base::Feature
+  //   kEnable  - Enable CORS in Network Service (aka OOR-CORS)
+  //   kDisable - Don't enable CORS (Blink will take care of it)
+  enum CorsMode {kDefault, kDisable, kEnable};
+  CorsMode cors_mode = kDefault;
+
+  // Points to a sqlite database containing persisted Reporting clients and NEL
+  // policies. If Reporting and NEL persistence is disabled, then we'll ignore
+  // this field. If this field is null then persistence will be disabled
+  // regardless. This field should not be used if the ENABLE_REPORTING build
+  // flag is false.
+  mojo_base.mojom.FilePath? reporting_and_nel_store_path;
+
+  // The params are network context specific which will be merged with
+  // the dynamic preference from NetworkService side, to populate
+  // HttpAuthPreference.
+  HttpAuthStaticNetworkContextParams? http_auth_static_network_context_params;
 };
 
 struct NetworkConditions {
@@ -488,10 +522,26 @@ struct SignedExchangeReport {
 const uint32 kBrowserProcessId = 0;
 const uint32 kInvalidProcessId = 0xffffffff;
 
-// https://mikewest.github.io/corpp/#integration-html
-enum CrossOriginEmbedderPolicy {
-  kNone,
-  kRequireCorp,
+// URLLoaderFactory made by the network service consists of two layers of
+// factories, the "internal" one that directly talks to the //net layer, and
+// the "outer" one (which is also called CorsURLLoader) that enforces necessary
+// security features such as CORS.
+//
+// This struct can be used to specify an alternative "internal"
+// URLLoaderFactory so that the requests can still go through the "outer" one
+// for security features, but then they are routed to the alternative
+// |overriding_factory| rather than the one that talks to //net, which is also
+// exposed to the consumer as |overridden_factory_receiver|.
+//
+// |overridden_factory_receiver| is useful when the receiver of
+// |overriding_factory|| wants to decide which (of the "internal", or the
+// "alternative" one) URLLoaderFactory to use on a per-request basis.
+struct URLLoaderFactoryOverride {
+  // This factory replaces the "internal" factory.
+  pending_remote<URLLoaderFactory> overriding_factory;
+
+  // A receiver for the replaced "internal" URLLoaderFactory.
+  pending_receiver<URLLoaderFactory>? overridden_factory_receiver;
 };
 
 struct URLLoaderFactoryParams {
@@ -509,8 +559,15 @@ struct URLLoaderFactoryParams {
   // Cross-origin read blocking (CORB) configuration.
   bool is_corb_enabled = true;
 
-  // True if web related security (e.g., CORS) should be disabled. This is
-  // mainly used by people testing their sites, via a command line switch.
+  // Indicate whether a request is not from web page ( probably from chrome
+  // extension background page ).
+  bool unsafe_non_webby_initiator = false;
+
+  // If `true`, this factory is being created for a context that isn't
+  // considered to be of the web. "Site"-based features, like Fetch
+  // Metadata's `Sec-Fetch-Site` header will treat all requests from
+  // this factory as initiated by the user agent itself, not from any
+  // particular page.
   bool disable_web_security = false;
 
   // https://mikewest.github.io/corpp/#integration-html
@@ -524,13 +581,10 @@ struct URLLoaderFactoryParams {
   // impact because of the extra process hops, so use should be minimized.
   pending_remote<TrustedURLLoaderHeaderClient>? header_client;
 
-  // If non-empty array is given, |factory_bound_allow_patterns| is used for
-  // CORS checks in addition to the per-context allow patterns that is managed
-  // via NetworkContext interface. This still respects the per-context block
-  // lists. To use this feature, caller should set |request_initiator_site_lock|
-  // in order to bind the allow patterns to the factory specific initiator
-  // origin.
-  array<CorsOriginPattern> factory_bound_allow_patterns;
+  // |factory_bound_access_patterns| are used for CORS checks in addition to
+  // the per-context allow patterns that is managed via NetworkContext
+  // interface. This still respects the per-context block lists.
+  CorsOriginAccessPatterns? factory_bound_access_patterns;
 
   // Key used to isolate shared network resources like the cache.
   NetworkIsolationKey? network_isolation_key;
@@ -539,6 +593,15 @@ struct URLLoaderFactoryParams {
   // consumers can issue requests with ResourceRequest::trusted_params
   // populated.
   bool is_trusted;
+
+  // An identifier for toplevel frame. This is used for resource accounting
+  // for keepalive requests. When this factory is for a dedicated worker,
+  // the identifier for the toplevel frame of the ancestor's frame is given.
+  // When this factory is for a shared/service worker, null is given.
+  mojo_base.mojom.UnguessableToken? top_frame_id;
+
+  // Replaces the "internal" factory used by security features such as CORS.
+  URLLoaderFactoryOverride? factory_override;
 };
 
 // The |credentials| output parameter is given to URLRequest::SetAuth()
@@ -564,7 +627,7 @@ interface ClientCertificateResponder {
   ContinueWithCertificate(network.mojom.X509Certificate x509_certificate,
                           string provider_name,
                           array<uint16> algorithm_preferences,
-                          SSLPrivateKey ssl_private_key);
+                          pending_remote<SSLPrivateKey> ssl_private_key);
 
   // Affirmatively select no certificate (this is cached and can affect future
   // URLRequests). Does not cancel the URLRequest.
@@ -737,7 +800,7 @@ interface NetworkContext {
   SetClient(pending_remote<NetworkContextClient> client);
 
   // Creates a new URLLoaderFactory with the given |params|.
-  CreateURLLoaderFactory(URLLoaderFactory& url_loader_factory,
+  CreateURLLoaderFactory(pending_receiver<URLLoaderFactory> url_loader_factory,
                          URLLoaderFactoryParams params);
 
   // Destroys all URLLoaderFactory bindings, which should then be regenerated.
@@ -754,7 +817,15 @@ interface NetworkContext {
   // Gets a RestrictedCookieManager scoped to a given origin, and applying
   // settings configured on the CookieManager associated with this domain.
   //
-  // If role == SCRIPT, this interface can be safely handed out to a process
+  // |site_for_cookies| represents which domains the cookie manager should
+  // consider to be first-party, for purposes of SameSite cookies and any
+  // third-party cookie blocking the embedder may implement. Empty
+  // |site_for_cookies| denotes that no domains are first-party.
+  //
+  // |top_frame_origin| represents the domain for top-level frame, and can be
+  // used to look up preferences that are dependent on that.
+  //
+  // If |role| == SCRIPT, this interface can be safely handed out to a process
   // that is known to represent the given origin, such as a renderer process.
   //
   // |is_service_worker|, |process_id| and |routing_id| will be passed to
@@ -763,6 +834,8 @@ interface NetworkContext {
       pending_receiver<RestrictedCookieManager> restricted_cookie_manager,
       RestrictedCookieManagerRole role,
       url.mojom.Origin origin,
+      url.mojom.Url site_for_cookies,
+      url.mojom.Origin top_frame_origin,
       bool is_service_worker,
       int32 process_id, int32 routing_id);
 
@@ -924,7 +997,8 @@ interface NetworkContext {
   // is not interested in incoming data.
   // Any sockets that are created but are yet to be destroyed will be destroyed
   // when NetworkContext goes away.
-  CreateUDPSocket(UDPSocket& request, UDPSocketListener? listener);
+  CreateUDPSocket(pending_receiver<UDPSocket> receiver,
+                  pending_remote<UDPSocketListener>? listener);
 
   // Creates a TCP server socket that listens on |local_addr|. The socket
   // created can only be used for the purpose specified in |traffic_annotation|,
@@ -941,7 +1015,7 @@ interface NetworkContext {
   CreateTCPServerSocket(IPEndPoint local_addr,
                         uint32 backlog,
                         MutableNetworkTrafficAnnotationTag traffic_annotation,
-                        TCPServerSocket& socket)
+                        pending_receiver<TCPServerSocket> socket)
       => (int32 result, IPEndPoint? local_addr_out);
 
   // Creates a TCP socket connected to |remote_addr|. |observer| if non-null
@@ -964,8 +1038,8 @@ interface NetworkContext {
       AddressList remote_addr_list,
       TCPConnectedSocketOptions? tcp_connected_socket_options,
       MutableNetworkTrafficAnnotationTag traffic_annotation,
-      TCPConnectedSocket& socket,
-      SocketObserver? observer)
+      pending_receiver<TCPConnectedSocket> socket,
+      pending_remote<SocketObserver>? observer)
       => (int32 result,
           IPEndPoint? local_addr,
           IPEndPoint? peer_addr,
@@ -985,7 +1059,7 @@ interface NetworkContext {
   // consumers can mimic Berkeley sockets semantics.
   CreateTCPBoundSocket(IPEndPoint local_addr,
                        MutableNetworkTrafficAnnotationTag traffic_annotation,
-                       TCPBoundSocket& socket)
+                       pending_receiver<TCPBoundSocket> socket)
       => (int32 result, IPEndPoint? local_addr);
 
   // Creates a ProxyResolvingSocketFactory that shares some configuration params
@@ -993,11 +1067,15 @@ interface NetworkContext {
   //
   // Any sockets that are created but are yet to be destroyed will be destroyed
   // when NetworkContext goes away.
-  CreateProxyResolvingSocketFactory(ProxyResolvingSocketFactory& factory);
+  CreateProxyResolvingSocketFactory(
+      pending_receiver<ProxyResolvingSocketFactory> factory);
 
-  // Looks up what proxy to use for a particular URL.
+  // Looks up what proxy to use for a particular URL. |network_isolation_key|
+  // is used to partition the DNS cache in the case a PAC script is used, and
+  // should match the NIK of the frame the lookup is for use with.
   LookUpProxyForURL(url.mojom.Url url,
-                    ProxyLookupClient proxy_lookup_client);
+                    NetworkIsolationKey network_isolation_key,
+                    pending_remote<ProxyLookupClient> proxy_lookup_client);
 
   // Forces refetching the proxy configuration, and applying it.
   ForceReloadProxyConfig() => ();
@@ -1014,6 +1092,8 @@ interface NetworkContext {
   // "sec-websocket-protocol" is constructed from  |requested_protocols| in
   // this message). |site_for_cookies| represents the first-party origin for
   // the request. |options| may be a combination of the kWebSocketOption* flags.
+  // |network_isolation_key| is a (top_frame, current_frame) origin combination
+  // used to isolate shared network stack resources based on the context.
   //
   // If |header_client| is set, requests with the kURLLoadOptionUseHeaderClient
   // option will callback to the |header_client|, allowing the Cookie/Referrer
@@ -1031,6 +1111,7 @@ interface NetworkContext {
         url.mojom.Url url,
         array<string> requested_protocols,
         url.mojom.Url site_for_cookies,
+        NetworkIsolationKey network_isolation_key,
         array<HttpHeader> additional_headers,
         int32 process_id,
         int32 render_frame_id,
@@ -1040,12 +1121,21 @@ interface NetworkContext {
         pending_remote<AuthenticationHandler>? auth_handler,
         pending_remote<TrustedHeaderClient>? header_client);
 
+  // Creates a QuicTransport connection to |url|.
+  //
+  // It is recommended to detect mojo connection errors on |handshake_client|.
+  CreateQuicTransport(
+        url.mojom.Url url,
+        url.mojom.Origin origin,
+        NetworkIsolationKey network_isolation_key,
+        pending_remote<QuicTransportHandshakeClient> handshake_client);
+
   // Create a NetLogExporter, which helps export NetLog to an existing file.
   // Note that the log is generally global, including all NetworkContexts
   // managed by the same NetworkService. The particular NetworkContext this is
   // called on will determine which NetworkContext gets its information and
   // configuration summary written out at the end of the log.
-  CreateNetLogExporter(NetLogExporter& exporter);
+  CreateNetLogExporter(pending_receiver<NetLogExporter> receiver);
 
   // Tries to preconnect to |url|. |num_streams| may be used to request more
   // than one connection be established in parallel.
@@ -1060,12 +1150,13 @@ interface NetworkContext {
                     NetworkIsolationKey network_isolation_key);
 
   // Creates a P2PSocketManager instance, used for WebRTC.
-  CreateP2PSocketManager(P2PTrustedSocketManagerClient client,
-                         P2PTrustedSocketManager& trusted_socket_manager,
-                         P2PSocketManager& socket_manager);
+  CreateP2PSocketManager(
+      pending_remote<P2PTrustedSocketManagerClient> client,
+      pending_receiver<P2PTrustedSocketManager> trusted_socket_manager,
+      pending_receiver<P2PSocketManager> socket_manager);
 
   // Creates an MdnsResponder instance.
-  CreateMdnsResponder(MdnsResponder& responder_request);
+  CreateMdnsResponder(pending_receiver<MdnsResponder> responder_receiver);
 
   // Resolves the given hostname (or IP address literal). See documentation at
   // HostResolver::ResolveHost.
@@ -1073,8 +1164,9 @@ interface NetworkContext {
   // All outstanding requests are cancelled if the NetworkContext is destroyed.
   // Such requests will receive ERR_FAILED via |response_client|.
   ResolveHost(HostPortPair host,
+              NetworkIsolationKey network_isolation_key,
               ResolveHostParameters? optional_parameters,
-              ResolveHostClient response_client);
+              pending_remote<ResolveHostClient> response_client);
 
   // Creates a HostResolver interface that can be passed to code/processes
   // without direct access to NetworkContext to make ResolveHost requests.
@@ -1091,7 +1183,7 @@ interface NetworkContext {
   // the contained ResolveHost method, consider adding the ability for this to
   // be a restricted resolver with some functionality disabled (eg maybe MDNS).
   CreateHostResolver(DnsConfigOverrides? config_overrides,
-                     HostResolver& host_resolver);
+                     pending_receiver<HostResolver> host_resolver);
 
   // Checks the given certificate against the CertVerifier and CTVerifier. This
   // implementation is currently specific for use by Signed Exchange.
@@ -1128,36 +1220,57 @@ interface NetworkContext {
       url.mojom.Origin source_origin, array<CorsOriginPattern> allow_patterns,
       array<CorsOriginPattern> block_patterns) => ();
 
+  // Sets extra CORS safelisted request headers names dynamically.
+  SetCorsExtraSafelistedRequestHeaderNames(
+      array<string> cors_extra_safelisted_request_header_names);
+
   // Deletes any dynamic data stored for |host| from the transport
   // security state. Returns true iff an entry was deleted.
   // See net::TransportSecurityState::DeleteDynamicDataForHost for more detail.
   DeleteDynamicDataForHost(string host) => (bool result);
 
-  // Copies the contents of this NetworkContext's HttpAuthCache and returns a
-  // key that can be used by LoadHttpAuthCache to restore the contents.
-  // The data referenced by the returned key is not associated with this
-  // NetworkContext, and can be loaded by any NetworkContext.
-  // If there is no corresponding LoadHttpAuthCache call, the saved
-  // HttpAuthCache data will leak.
+  // Sets whether the HTTP auth cache will be split the NetworkIsolationKey.
+  // Only affects server (not proxy) credentials. Whenever the effective value
+  // is changed, all cached server auth credentials will be cleared.
+  SetSplitAuthCacheByNetworkIsolationKey(
+      bool split_auth_cache_by_network_isolation_key);
+
+  // Copies the proxy entries of this NetworkContext's auth cache and
+  // returns a key that can be used by LoadHttpAuthCache to load them into
+  // another NetworkContext's auth cache. The data referenced by the
+  // returned key is not associated with this NetworkContext, so will outlast
+  // its destruction. If there is no corresponding LoadHttpAuthCache call, the
+  // saved HttpAuthCache data will leak.
   //
   // TODO(crbug.com/914082): Return a scoped handle that can automatically free
   // the cache when it goes out of scope.
-  SaveHttpAuthCache() => (mojo_base.mojom.UnguessableToken cache_key);
+  SaveHttpAuthCacheProxyEntries()
+      => (mojo_base.mojom.UnguessableToken cache_key);
 
-  // Loads an HttpAuthCache previously saved by SaveHttpAuthCache, and
-  // copies its contents into this NetworkContext's HttpAuthCache.
-  LoadHttpAuthCache(mojo_base.mojom.UnguessableToken cache_key) => ();
+  // Loads auth cache entries previously saved by SaveHttpAuthCacheProxyEntries,
+  // and copies them into this NetworkContext's HttpAuthCache. This may only be
+  // called once for each token returned by SaveHttpAuthCacheProxyEntries().
+  LoadHttpAuthCacheProxyEntries(mojo_base.mojom.UnguessableToken cache_key)
+      => ();
 
   // Adds an entry to the HttpAuthCache or FtpAuthCache (determined by whether
-  // the |challenger| field within |challenge| is an ftp:// URL). |challenge|
-  // may not necessarily contain a stateful challenge that requires a persistent
-  // connection, allowing the cache to be pre-populated.
+  // the |challenger| field within |challenge| is an ftp:// URL).
+  // |network_isolation_key| is the NetworkIsolationKey to restrict the
+  // credentials to, and is only respected for server (not proxy) HTTP auth
+  // and only when the NetworkService was configured to split the auth cache by
+  // NetworkIsolationKey. |challenge| may not necessarily contain a stateful
+  // challenge that requires a persistent connection, allowing the cache to be
+  // pre-populated.
   AddAuthCacheEntry(AuthChallengeInfo challenge,
+                    NetworkIsolationKey network_isolation_key,
                     AuthCredentials credentials) => ();
 
   // Looks up credentials in the HttpAuthCache using the origin and path from
-  // |url|. Only supports basic auth scheme.
-  LookupBasicAuthCredentials(url.mojom.Url url)
+  // |url|. Only supports basic auth scheme. Only looks up server (not proxy)
+  // auth credentials, and only those that are usable in the scope of
+  // |network_isolation_key|.
+  LookupServerBasicAuthCredentials(url.mojom.Url url,
+      NetworkIsolationKey network_isolation_key)
       => (AuthCredentials? credentials);
 
   [Sync]
@@ -1186,5 +1299,6 @@ interface NetworkContext {
   ForceDomainReliabilityUploadsForTesting() => ();
 
   // Gets the OriginPolicyManager associated with this network context.
-  GetOriginPolicyManager(OriginPolicyManager& origin_policy_manager);
+  GetOriginPolicyManager(
+      pending_receiver<OriginPolicyManager> origin_policy_manager);
 };

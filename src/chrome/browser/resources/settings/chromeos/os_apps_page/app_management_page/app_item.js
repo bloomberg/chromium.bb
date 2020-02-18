@@ -23,8 +23,11 @@ Polymer({
    * @private
    */
   onClick_: function() {
-    this.dispatch(
-        app_management.actions.changePage(PageType.DETAIL, this.app.id));
+    app_management.util.openAppDetailPage(this.app.id);
+    chrome.metricsPrivate.recordEnumerationValue(
+        AppManagementEntryPointsHistogramName,
+        this.getAppManagementEntryPoint_(this.app.type),
+        Object.keys(AppManagementEntryPoint).length);
   },
 
   /**
@@ -34,5 +37,22 @@ Polymer({
    */
   iconUrlFromId_: function(app) {
     return app_management.util.getAppIcon(app);
+  },
+
+  /**
+   * @param {AppType} appType
+   * @return {AppManagementEntryPoint}
+   */
+  getAppManagementEntryPoint_: function(appType) {
+    switch (appType) {
+      case AppType.kArc:
+        return AppManagementEntryPoint.MainViewArc;
+      case AppType.kExtension:
+        return AppManagementEntryPoint.MainViewChromeApp;
+      case AppType.kWeb:
+        return AppManagementEntryPoint.MainViewWebApp;
+      default:
+        assertNotReached();
+    }
   },
 });

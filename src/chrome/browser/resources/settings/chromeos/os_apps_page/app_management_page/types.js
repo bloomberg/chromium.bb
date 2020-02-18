@@ -29,35 +29,9 @@ let AppMap;
 
 /**
  * @typedef {{
- *   pageType: PageType,
- *   selectedAppId: ?string,
- * }}
- */
-let Page;
-
-/**
- * @typedef {{
- *   term: ?string,
- *   results: ?Array<App>,
- * }}
- */
-let SearchState;
-
-/**
- * @typedef {{
- *   allowedIds: !Set<string>,
- *   blockedIds: !Set<string>,
- * }}
- */
-let NotificationsState;
-
-/**
- * @typedef {{
  *   apps: !AppMap,
- *   currentPage: !Page,
  *   arcSupported: boolean,
- *   search: !SearchState,
- *   notifications: !NotificationsState,
+ *   selectedAppId: ?string,
  * }}
  */
 let AppManagementPageState;

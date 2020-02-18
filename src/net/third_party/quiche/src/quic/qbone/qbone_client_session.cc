@@ -4,8 +4,9 @@
 
 #include "net/third_party/quiche/src/quic/qbone/qbone_client_session.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
 
 namespace quic {
@@ -27,7 +28,7 @@ QboneClientSession::QboneClientSession(
 QboneClientSession::~QboneClientSession() {}
 
 std::unique_ptr<QuicCryptoStream> QboneClientSession::CreateCryptoStream() {
-  return QuicMakeUnique<QuicCryptoClientStream>(
+  return std::make_unique<QuicCryptoClientStream>(
       server_id_, this, nullptr, quic_crypto_client_config_, this);
 }
 
@@ -39,12 +40,11 @@ void QboneClientSession::Initialize() {
       ->CryptoConnect();
   // Register the reserved control stream.
   QuicStreamId next_id = GetNextOutgoingBidirectionalStreamId();
-  DCHECK_EQ(next_id, QboneConstants::GetControlStreamId(
-                         connection()->transport_version()));
+  DCHECK_EQ(next_id, QboneConstants::GetControlStreamId(transport_version()));
   auto control_stream =
-      QuicMakeUnique<QboneClientControlStream>(this, handler_);
+      std::make_unique<QboneClientControlStream>(this, handler_);
   control_stream_ = control_stream.get();
-  RegisterStaticStream(std::move(control_stream));
+  ActivateStream(std::move(control_stream));
 }
 
 int QboneClientSession::GetNumSentClientHellos() const {

@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -67,7 +68,7 @@ class DraggedNodeImageBuilder {
   STACK_ALLOCATED();
 
  public:
-  DraggedNodeImageBuilder(const LocalFrame& local_frame, Node& node)
+  DraggedNodeImageBuilder(LocalFrame& local_frame, Node& node)
       : local_frame_(&local_frame),
         node_(&node)
 #if DCHECK_IS_ON()
@@ -123,8 +124,7 @@ class DraggedNodeImageBuilder {
     PaintLayerPaintingInfo painting_info(
         layer, CullRect(EnclosingIntRect(bounding_box)),
         kGlobalPaintFlattenCompositingLayers, PhysicalOffset());
-    PaintLayerFlags flags = kPaintLayerHaveTransparency |
-                            kPaintLayerUncachedClipRects;
+    PaintLayerFlags flags = kPaintLayerHaveTransparency;
     PaintRecordBuilder builder;
 
     dragged_layout_object->GetDocument().Lifecycle().AdvanceTo(
@@ -148,7 +148,7 @@ class DraggedNodeImageBuilder {
   }
 
  private:
-  const Member<const LocalFrame> local_frame_;
+  const Member<LocalFrame> local_frame_;
   const Member<Node> node_;
 #if DCHECK_IS_ON()
   const uint64_t dom_tree_version_;
@@ -340,8 +340,9 @@ void DataTransfer::setDragImage(Element* image, int x, int y) {
     return;
 
   IntPoint location(x, y);
-  if (IsHTMLImageElement(*image) && !image->isConnected())
-    SetDragImageResource(ToHTMLImageElement(*image).CachedImage(), location);
+  auto* html_image_element = DynamicTo<HTMLImageElement>(image);
+  if (html_image_element && !image->isConnected())
+    SetDragImageResource(html_image_element->CachedImage(), location);
   else
     SetDragImageElement(image, location);
 }
@@ -383,7 +384,7 @@ FloatSize DataTransfer::DeviceSpaceSize(const FloatSize& css_size,
 // Returns a DragImage whose bitmap contains |contents|, positioned and scaled
 // in device space.
 std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
-    const LocalFrame& frame,
+    LocalFrame& frame,
     float opacity,
     RespectImageOrientationEnum image_orientation,
     const FloatSize& css_size,
@@ -413,9 +414,10 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
   builder.EndRecording(skia_paint_canvas, property_tree_state);
 
   scoped_refptr<Image> image =
-      StaticBitmapImage::Create(surface->makeImageSnapshot());
+      UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot());
+  ChromeClient& chrome_client = frame.GetPage()->GetChromeClient();
   float screen_device_scale_factor =
-      frame.GetPage()->GetChromeClient().GetScreenInfo().device_scale_factor;
+      chrome_client.GetScreenInfo(frame).device_scale_factor;
 
   return DragImage::Create(image.get(), image_orientation,
                            screen_device_scale_factor, kInterpolationDefault,
@@ -423,7 +425,7 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
 }
 
 // static
-std::unique_ptr<DragImage> DataTransfer::NodeImage(const LocalFrame& frame,
+std::unique_ptr<DragImage> DataTransfer::NodeImage(LocalFrame& frame,
                                                    Node& node) {
   DraggedNodeImageBuilder image_node(frame, node);
   return image_node.CreateImage();

@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/auto_reset.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/win/atl.h"
@@ -18,6 +19,7 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
@@ -153,8 +155,9 @@ ScopedVariant SELF(CHILDID_SELF);
     size_t count = array_upper_bound - array_lower_bound + 1;                 \
     ASSERT_EQ(expected_property_values.size(), count);                        \
     for (size_t i = 0; i < count; ++i) {                                      \
-      CComPtr<IRawElementProviderSimple> element;                             \
-      ASSERT_HRESULT_SUCCEEDED(array_data[i]->QueryInterface(&element));      \
+      ComPtr<IRawElementProviderSimple> element;                              \
+      ASSERT_HRESULT_SUCCEEDED(                                               \
+          array_data[i]->QueryInterface(IID_PPV_ARGS(&element)));             \
       EXPECT_UIA_BSTR_EQ(element, element_test_property_id,                   \
                          expected_property_values[i].c_str());                \
     }                                                                         \
@@ -196,8 +199,9 @@ ScopedVariant SELF(CHILDID_SELF);
     ASSERT_EQ(expected_property_values.size(), count);                         \
     std::vector<std::wstring> property_values;                                 \
     for (size_t i = 0; i < count; ++i) {                                       \
-      CComPtr<IRawElementProviderSimple> element;                              \
-      ASSERT_HRESULT_SUCCEEDED(array_data[i]->QueryInterface(&element));       \
+      ComPtr<IRawElementProviderSimple> element;                               \
+      ASSERT_HRESULT_SUCCEEDED(                                                \
+          array_data[i]->QueryInterface(IID_PPV_ARGS(&element)));              \
       ScopedVariant actual;                                                    \
       ASSERT_HRESULT_SUCCEEDED(element->GetPropertyValue(                      \
           element_test_property_id, actual.Receive()));                        \
@@ -284,6 +288,18 @@ AXPlatformNodeWinTest::GetRootIRawElementProviderFragment() {
   return QueryInterfaceFromNode<IRawElementProviderFragment>(GetRootNode());
 }
 
+Microsoft::WRL::ComPtr<IRawElementProviderFragment>
+AXPlatformNodeWinTest::IRawElementProviderFragmentFromNode(AXNode* node) {
+  AXPlatformNode* platform_node = AXPlatformNodeFromNode(node);
+  gfx::NativeViewAccessible native_view =
+      platform_node->GetNativeViewAccessible();
+  ComPtr<IUnknown> unknown_node = native_view;
+  ComPtr<IRawElementProviderFragment> fragment_node;
+  unknown_node.As(&fragment_node);
+
+  return fragment_node;
+}
+
 ComPtr<IAccessible> AXPlatformNodeWinTest::IAccessibleFromNode(AXNode* node) {
   return QueryInterfaceFromNode<IAccessible>(node);
 }
@@ -366,11 +382,19 @@ ComPtr<IAccessibleTableCell> AXPlatformNodeWinTest::GetCellInTable() {
 
 void AXPlatformNodeWinTest::InitFragmentRoot() {
   test_fragment_root_delegate_ = std::make_unique<TestFragmentRootDelegate>();
-  test_fragment_root_delegate_->child_ =
-      AXPlatformNodeFromNode(GetRootNode())->GetNativeViewAccessible();
+  ax_fragment_root_.reset(InitNodeAsFragmentRoot(
+      GetRootNode(), test_fragment_root_delegate_.get()));
+}
 
-  ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(
-      gfx::kMockAcceleratedWidget, test_fragment_root_delegate_.get());
+AXFragmentRootWin* AXPlatformNodeWinTest::InitNodeAsFragmentRoot(
+    AXNode* node,
+    TestFragmentRootDelegate* delegate) {
+  delegate->child_ = AXPlatformNodeFromNode(node)->GetNativeViewAccessible();
+  if (node->parent())
+    delegate->parent_ =
+        AXPlatformNodeFromNode(node->parent())->GetNativeViewAccessible();
+
+  return new AXFragmentRootWin(gfx::kMockAcceleratedWidget, delegate);
 }
 
 ComPtr<IRawElementProviderFragmentRoot>
@@ -398,7 +422,7 @@ AXPlatformNodeWinTest::GetSupportedPatternsFromNodeId(int32_t id) {
       UIA_ValuePatternId,
   };
   for (LONG property_id : all_supported_patterns_) {
-    CComPtr<IUnknown> provider = nullptr;
+    ComPtr<IUnknown> provider;
     if (SUCCEEDED(raw_element_provider_simple->GetPatternProvider(property_id,
                                                                   &provider)) &&
         provider) {
@@ -444,7 +468,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
   AXNodeData root;
   root.id = 1;
-  root.relative_bounds.bounds = gfx::RectF(0, 0, 30, 30);
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 40, 40);
 
   AXNodeData node1;
   node1.id = 2;
@@ -454,7 +478,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
 
   AXNodeData node2;
   node2.id = 3;
-  node2.relative_bounds.bounds = gfx::RectF(20, 20, 10, 10);
+  node2.relative_bounds.bounds = gfx::RectF(20, 20, 20, 20);
   node2.SetName("Name2");
   root.child_ids.push_back(node2.id);
 
@@ -462,17 +486,23 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
 
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
 
-  ScopedVariant obj;
+  // This is way outside of the root node.
+  ScopedVariant obj_1;
+  EXPECT_EQ(S_FALSE, root_obj->accHitTest(50, 50, obj_1.Receive()));
+  EXPECT_EQ(VT_EMPTY, obj_1.type());
 
-  // This is way outside of the root node
-  EXPECT_EQ(S_FALSE, root_obj->accHitTest(50, 50, obj.Receive()));
-  EXPECT_EQ(VT_EMPTY, obj.type());
+  // This is directly on node 1.
+  EXPECT_EQ(S_OK, root_obj->accHitTest(5, 5, obj_1.Receive()));
+  ASSERT_NE(nullptr, obj_1.ptr());
+  CheckVariantHasName(obj_1, L"Name1");
 
-  // this is directly on node 1.
-  EXPECT_EQ(S_OK, root_obj->accHitTest(5, 5, obj.Receive()));
-  ASSERT_NE(nullptr, obj.ptr());
-
-  CheckVariantHasName(obj, L"Name1");
+  // This is directly on node 2 with a scale factor of 1.5.
+  ScopedVariant obj_2;
+  std::unique_ptr<base::AutoReset<float>> scale_factor_reset =
+      TestAXNodeWrapper::SetScaleFactor(1.5);
+  EXPECT_EQ(S_OK, root_obj->accHitTest(38, 38, obj_2.Receive()));
+  ASSERT_NE(nullptr, obj_2.ptr());
+  CheckVariantHasName(obj_2, L"Name2");
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {
@@ -2641,10 +2671,12 @@ TEST_F(AXPlatformNodeWinTest, TestUnlabeledImageRoleDescription) {
   tree.nodes[1].id = 2;
   tree.nodes[1].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+  tree.nodes[1].role = ax::mojom::Role::kImage;
 
   tree.nodes[2].id = 3;
   tree.nodes[2].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation);
+  tree.nodes[2].role = ax::mojom::Role::kImage;
 
   Init(tree);
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
@@ -2675,10 +2707,12 @@ TEST_F(AXPlatformNodeWinTest, TestUnlabeledImageAttributes) {
   tree.nodes[1].id = 2;
   tree.nodes[1].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+  tree.nodes[1].role = ax::mojom::Role::kImage;
 
   tree.nodes[2].id = 3;
   tree.nodes[2].SetImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation);
+  tree.nodes[2].role = ax::mojom::Role::kImage;
 
   Init(tree);
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
@@ -2868,6 +2902,154 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextGetNCharacters) {
   LONG count;
   EXPECT_HRESULT_SUCCEEDED(text->get_nCharacters(&count));
   EXPECT_EQ(4, count);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextGetOffsetAtPoint) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kWebArea;
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 300, 200);
+  root.child_ids = {2, 3};
+
+  AXNodeData button;
+  button.id = 2;
+  button.role = ax::mojom::Role::kButton;
+  button.SetName("button");
+  button.relative_bounds.bounds = gfx::RectF(20, 0, 10, 10);
+
+  AXNodeData static_text1;
+  static_text1.id = 3;
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.SetName("line 1");
+  static_text1.relative_bounds.bounds = gfx::RectF(0, 20, 30, 10);
+  static_text1.child_ids = {4};
+
+  AXNodeData inline_box1;
+  inline_box1.id = 4;
+  inline_box1.role = ax::mojom::Role::kInlineTextBox;
+  inline_box1.SetName("line 1");
+  inline_box1.relative_bounds.bounds = gfx::RectF(0, 20, 30, 10);
+  std::vector<int32_t> character_offsets1;
+  // The width of each character is 5px, height is 10px.
+  character_offsets1.push_back(5);   // "l" {0, 20, 5x10}
+  character_offsets1.push_back(10);  // "i" {5, 20, 5x10}
+  character_offsets1.push_back(15);  // "n" {10, 20, 5x10}
+  character_offsets1.push_back(20);  // "e" {15, 20, 5x10}
+  character_offsets1.push_back(25);  // " " {20, 20, 5x10}
+  character_offsets1.push_back(30);  // "1" {25, 20, 5x10}
+
+  inline_box1.AddIntListAttribute(
+      ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets1);
+  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{0, 5});
+  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{4, 6});
+
+  Init(root, button, static_text1, inline_box1);
+
+  LONG offset_result;
+  ComPtr<IAccessible> root_iaccessible(IAccessibleFromNode(GetRootNode()));
+  ASSERT_NE(nullptr, root_iaccessible.Get());
+
+  ComPtr<IAccessibleText> root_text;
+  root_iaccessible.As(&root_text);
+  ASSERT_NE(nullptr, root_text.Get());
+
+  // Test point(0, 0) with coordinate parent relative, which is not supported.
+  // Expected result: S_FALSE.
+  EXPECT_EQ(S_FALSE, root_text->get_offsetAtPoint(
+                         0, 0, IA2CoordinateType::IA2_COORDTYPE_PARENT_RELATIVE,
+                         &offset_result));
+  EXPECT_EQ(-1, offset_result);
+
+  // Test point(0, 0) retrieved from IAccessibleText of the root web area is
+  // outside of any text. Expected result: S_FALSE.
+  EXPECT_EQ(S_FALSE, root_text->get_offsetAtPoint(
+                         0, 0, IA2CoordinateType::IA2_COORDTYPE_SCREEN_RELATIVE,
+                         &offset_result));
+  EXPECT_EQ(-1, offset_result);
+
+  // Test point(25, 5) retrieved from IAccessibleText of the root web area is
+  // on button, and outside of any text. Expected result: S_FALSE.
+  EXPECT_EQ(S_FALSE,
+            root_text->get_offsetAtPoint(
+                25, 5, IA2CoordinateType::IA2_COORDTYPE_SCREEN_RELATIVE,
+                &offset_result));
+  EXPECT_EQ(-1, offset_result);
+
+  // Test point(0, 20) retrieved from IAccessibleText of the root web area is
+  // on "line 1", character="l". Expected result: S_OK, offset=0.
+  EXPECT_EQ(S_OK, root_text->get_offsetAtPoint(
+                      0, 20, IA2CoordinateType::IA2_COORDTYPE_SCREEN_RELATIVE,
+                      &offset_result));
+  EXPECT_EQ(0, offset_result);
+
+  AXNode* static_text1_node = GetRootNode()->children()[1];
+  ComPtr<IAccessible> text1_iaccessible(IAccessibleFromNode(static_text1_node));
+  ASSERT_NE(nullptr, text1_iaccessible.Get());
+
+  ComPtr<IAccessibleText> text1;
+  text1_iaccessible.As(&text1);
+  ASSERT_NE(nullptr, text1.Get());
+
+  // "l" 4 points of bounds {(0, 20), (5, 20), (0, 30), (5, 30)}
+  // "i" 4 points of bounds {(5, 20), (10, 20), (5, 30), (10, 30)}
+  // "n" 4 points of bounds {(10, 20), (15, 20), (10, 30), (15, 30)}
+  // "e" 4 points of bounds {(15, 20), (20, 20), (15, 30), (20, 30)}
+  // " " 4 points of bounds {(20, 20), (25, 20), (20, 30), (25, 30)}
+  // "1" 4 points of bounds {(25, 20), (30, 20), (25, 30), (30, 30)}
+
+  // Test point(0, 0) outside of any character bounds and text.
+  EXPECT_EQ(S_FALSE, text1->get_offsetAtPoint(
+                         0, 0, IA2CoordinateType::IA2_COORDTYPE_SCREEN_RELATIVE,
+                         &offset_result));
+  EXPECT_EQ(-1, offset_result);
+
+  // Test point(30, 30) outside of any character bounds but on the text.
+  EXPECT_EQ(S_OK, text1->get_offsetAtPoint(
+                      30, 30, IA2CoordinateType::IA2_COORDTYPE_SCREEN_RELATIVE,
+                      &offset_result));
+  EXPECT_EQ(-1, offset_result);
+
+  // Test point(0, 20) inside bounds of "l", text offset=0
+  // character bounds={(0, 20), (5, 20), (0, 30), (5, 30)}
+  EXPECT_HRESULT_SUCCEEDED(text1->get_offsetAtPoint(
+      0, 20, IA2CoordinateType::IA2_COORDTYPE_SCREEN_RELATIVE, &offset_result));
+  EXPECT_EQ(0, offset_result);
+
+  // Test point(9, 20) inside bounds of "i", text offset=1
+  // character bounds={(5, 20), (10, 20), (5, 30), (10, 30)}
+  EXPECT_HRESULT_SUCCEEDED(text1->get_offsetAtPoint(
+      9, 20, IA2CoordinateType::IA2_COORDTYPE_SCREEN_RELATIVE, &offset_result));
+  EXPECT_EQ(1, offset_result);
+
+  // Test point(10, 30) inside bounds of "n", text offset=2
+  // character bounds={(10, 20), (15, 20), (10, 30), (15, 30)}
+  EXPECT_HRESULT_SUCCEEDED(text1->get_offsetAtPoint(
+      10, 29, IA2CoordinateType::IA2_COORDTYPE_SCREEN_RELATIVE,
+      &offset_result));
+  EXPECT_EQ(2, offset_result);
+
+  // Test point(19, 29) inside bounds of "e", text offset=3
+  // character bounds={(15, 20), (20, 20), (15, 30), (20, 30)
+  EXPECT_HRESULT_SUCCEEDED(text1->get_offsetAtPoint(
+      19, 29, IA2CoordinateType::IA2_COORDTYPE_SCREEN_RELATIVE,
+      &offset_result));
+  EXPECT_EQ(3, offset_result);
+
+  // Test point(23, 25) inside bounds of " ", text offset=4
+  // character bounds={(20, 20), (25, 20), (20, 30), (25, 30)}
+  EXPECT_HRESULT_SUCCEEDED(text1->get_offsetAtPoint(
+      23, 25, IA2CoordinateType::IA2_COORDTYPE_SCREEN_RELATIVE,
+      &offset_result));
+  EXPECT_EQ(4, offset_result);
+
+  // Test point(25, 20) inside bounds of "1", text offset=5
+  // character bounds={(25, 20), (30, 20), (25, 30), (30, 30)}
+  EXPECT_HRESULT_SUCCEEDED(text1->get_offsetAtPoint(
+      25, 20, IA2CoordinateType::IA2_COORDTYPE_SCREEN_RELATIVE,
+      &offset_result));
+  EXPECT_EQ(5, offset_result);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleTextTextFieldRemoveSelection) {
@@ -4050,7 +4232,8 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetProviderOptions) {
   EXPECT_HRESULT_SUCCEEDED(root_node->get_ProviderOptions(&provider_options));
   EXPECT_EQ(ProviderOptions_ServerSideProvider |
                 ProviderOptions_UseComThreading |
-                ProviderOptions_RefuseNonClientSupport,
+                ProviderOptions_RefuseNonClientSupport |
+                ProviderOptions_HasNativeIAccessible,
             provider_options);
 }
 
@@ -4349,7 +4532,8 @@ TEST_F(AXPlatformNodeWinTest, TestUIANavigate) {
 TEST_F(AXPlatformNodeWinTest, TestISelectionProviderCanSelectMultipleDefault) {
   Init(BuildListBox(/*option_1_is_selected*/ false,
                     /*option_2_is_selected*/ false,
-                    /*option_3_is_selected*/ false));
+                    /*option_3_is_selected*/ false,
+                    /*additional_state*/ ax::mojom::State::kNone));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -4379,7 +4563,8 @@ TEST_F(AXPlatformNodeWinTest,
        TestISelectionProviderIsSelectionRequiredDefault) {
   Init(BuildListBox(/*option_1_is_selected*/ false,
                     /*option_2_is_selected*/ false,
-                    /*option_3_is_selected*/ false));
+                    /*option_3_is_selected*/ false,
+                    /*additional_state*/ ax::mojom::State::kNone));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -4408,7 +4593,8 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionProviderIsSelectionRequiredTrue) {
 TEST_F(AXPlatformNodeWinTest, TestISelectionProviderGetSelectionNoneSelected) {
   Init(BuildListBox(/*option_1_is_selected*/ false,
                     /*option_2_is_selected*/ false,
-                    /*option_3_is_selected*/ false));
+                    /*option_3_is_selected*/ false,
+                    /*additional_state*/ ax::mojom::State::kNone));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -4433,7 +4619,8 @@ TEST_F(AXPlatformNodeWinTest,
        TestISelectionProviderGetSelectionSingleItemSelected) {
   Init(BuildListBox(/*option_1_is_selected*/ false,
                     /*option_2_is_selected*/ true,
-                    /*option_3_is_selected*/ false));
+                    /*option_3_is_selected*/ false,
+                    /*additional_state*/ ax::mojom::State::kNone));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -4467,7 +4654,8 @@ TEST_F(AXPlatformNodeWinTest,
        TestISelectionProviderGetSelectionMultipleItemsSelected) {
   Init(BuildListBox(/*option_1_is_selected*/ true,
                     /*option_2_is_selected*/ true,
-                    /*option_3_is_selected*/ true));
+                    /*option_3_is_selected*/ true,
+                    /*additional_state*/ ax::mojom::State::kNone));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -5185,16 +5373,25 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   ui::AXNodeData combo_box_grouping_expanded;
   ui::AXNodeData combo_box_grouping_collapsed;
   ui::AXNodeData combo_box_grouping_disabled;
+  ui::AXNodeData button_has_popup_menu;
+  ui::AXNodeData button_has_popup_menu_pressed;
+  ui::AXNodeData button_has_popup_true;
 
   combo_box_grouping_has_popup.id = 2;
   combo_box_grouping_expanded.id = 3;
   combo_box_grouping_collapsed.id = 4;
   combo_box_grouping_disabled.id = 5;
+  button_has_popup_menu.id = 6;
+  button_has_popup_menu_pressed.id = 7;
+  button_has_popup_true.id = 8;
 
   root.child_ids.push_back(combo_box_grouping_has_popup.id);
   root.child_ids.push_back(combo_box_grouping_expanded.id);
   root.child_ids.push_back(combo_box_grouping_collapsed.id);
   root.child_ids.push_back(combo_box_grouping_disabled.id);
+  root.child_ids.push_back(button_has_popup_menu.id);
+  root.child_ids.push_back(button_has_popup_menu_pressed.id);
+  root.child_ids.push_back(button_has_popup_true.id);
 
   // combo_box_grouping HasPopup set to true, can collapse, can expand.
   // state is ExpandCollapseState_LeafNode.
@@ -5216,9 +5413,23 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   combo_box_grouping_disabled.role = ax::mojom::Role::kComboBoxGrouping;
   combo_box_grouping_disabled.SetRestriction(ax::mojom::Restriction::kDisabled);
 
+  // button_has_popup_menu HasPopup set to kMenu and is not STATE_PRESSED.
+  // state is ExpandCollapseState_Collapsed.
+  button_has_popup_menu.SetHasPopup(ax::mojom::HasPopup::kMenu);
+
+  // button_has_popup_menu_pressed HasPopup set to kMenu and is STATE_PRESSED.
+  // state is ExpandCollapseState_Expanded.
+  button_has_popup_menu_pressed.SetHasPopup(ax::mojom::HasPopup::kMenu);
+  button_has_popup_menu_pressed.SetCheckedState(ax::mojom::CheckedState::kTrue);
+
+  // button_has_popup_true HasPopup set to true but is not a menu.
+  // state is ExpandCollapseState_LeafNode.
+  button_has_popup_true.SetHasPopup(ax::mojom::HasPopup::kTrue);
+
   Init(root, combo_box_grouping_has_popup, combo_box_grouping_disabled,
        combo_box_grouping_expanded, combo_box_grouping_collapsed,
-       combo_box_grouping_disabled);
+       combo_box_grouping_disabled, button_has_popup_menu,
+       button_has_popup_menu_pressed, button_has_popup_true);
 
   // combo_box_grouping HasPopup set to true, can collapse, can expand.
   // state is ExpandCollapseState_LeafNode.
@@ -5267,6 +5478,36 @@ TEST_F(AXPlatformNodeWinTest, TestIExpandCollapsePatternProviderAction) {
   EXPECT_NE(nullptr, expandcollapse_provider.Get());
   EXPECT_HRESULT_FAILED(expandcollapse_provider->Collapse());
   EXPECT_HRESULT_FAILED(expandcollapse_provider->Expand());
+  EXPECT_HRESULT_SUCCEEDED(
+      expandcollapse_provider->get_ExpandCollapseState(&state));
+  EXPECT_EQ(ExpandCollapseState_LeafNode, state);
+
+  // button_has_popup_menu HasPopup set to kMenu and is not STATE_PRESSED.
+  // state is ExpandCollapseState_Collapsed.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(4);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  EXPECT_HRESULT_SUCCEEDED(
+      expandcollapse_provider->get_ExpandCollapseState(&state));
+  EXPECT_EQ(ExpandCollapseState_Collapsed, state);
+
+  // button_has_popup_menu_pressed HasPopup set to kMenu and is STATE_PRESSED.
+  // state is ExpandCollapseState_Expanded.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(5);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
+  EXPECT_HRESULT_SUCCEEDED(
+      expandcollapse_provider->get_ExpandCollapseState(&state));
+  EXPECT_EQ(ExpandCollapseState_Expanded, state);
+
+  // button_has_popup_true HasPopup set to true but is not a menu.
+  // state is ExpandCollapseState_LeafNode.
+  raw_element_provider_simple = GetIRawElementProviderSimpleFromChildIndex(6);
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ExpandCollapsePatternId, &expandcollapse_provider));
+  EXPECT_NE(nullptr, expandcollapse_provider.Get());
   EXPECT_HRESULT_SUCCEEDED(
       expandcollapse_provider->get_ExpandCollapseState(&state));
   EXPECT_EQ(ExpandCollapseState_LeafNode, state);
@@ -5320,15 +5561,12 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderNotSupported) {
 
   Init(root);
 
-  ComPtr<ISelectionItemProvider> provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(GetRootNode());
-
-  BOOL selected;
-
-  EXPECT_UIA_INVALIDOPERATION(provider->AddToSelection());
-  EXPECT_UIA_INVALIDOPERATION(provider->RemoveFromSelection());
-  EXPECT_UIA_INVALIDOPERATION(provider->Select());
-  EXPECT_UIA_INVALIDOPERATION(provider->get_IsSelected(&selected));
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  ComPtr<ISelectionItemProvider> selection_item_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_SelectionItemPatternId, &selection_item_provider));
+  ASSERT_EQ(nullptr, selection_item_provider.Get());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderDisabled) {
@@ -5341,15 +5579,19 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderDisabled) {
 
   Init(root);
 
-  ComPtr<ISelectionItemProvider> provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(GetRootNode());
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  ComPtr<ISelectionItemProvider> selection_item_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_SelectionItemPatternId, &selection_item_provider));
+  ASSERT_NE(nullptr, selection_item_provider.Get());
 
   BOOL selected;
 
-  EXPECT_UIA_ELEMENTNOTENABLED(provider->AddToSelection());
-  EXPECT_UIA_ELEMENTNOTENABLED(provider->RemoveFromSelection());
-  EXPECT_UIA_ELEMENTNOTENABLED(provider->Select());
-  EXPECT_HRESULT_SUCCEEDED(provider->get_IsSelected(&selected));
+  EXPECT_UIA_ELEMENTNOTENABLED(selection_item_provider->AddToSelection());
+  EXPECT_UIA_ELEMENTNOTENABLED(selection_item_provider->RemoveFromSelection());
+  EXPECT_UIA_ELEMENTNOTENABLED(selection_item_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 }
 
@@ -5360,15 +5602,12 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderNotSelectable) {
 
   Init(root);
 
-  ComPtr<ISelectionItemProvider> item_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(GetRootNode());
-
-  BOOL selected;
-
-  EXPECT_UIA_INVALIDOPERATION(item_provider->AddToSelection());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->RemoveFromSelection());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->Select());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->get_IsSelected(&selected));
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  ComPtr<ISelectionItemProvider> selection_item_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_SelectionItemPatternId, &selection_item_provider));
+  ASSERT_EQ(nullptr, selection_item_provider.Get());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderSimple) {
@@ -5384,9 +5623,12 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderSimple) {
 
   Init(root, option1);
 
-  const auto* root_node = GetRootNode();
-  ComPtr<ISelectionItemProvider> option1_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[0]);
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetIRawElementProviderSimpleFromChildIndex(0);
+  ComPtr<ISelectionItemProvider> option1_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_SelectionItemPatternId, &option1_provider));
+  ASSERT_NE(nullptr, option1_provider.Get());
 
   BOOL selected;
 
@@ -5467,31 +5709,41 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderRadioButtonIsSelected) {
 
   Init(root, option1, option2, option3, option4);
 
-  const auto* root_node = GetRootNode();
-  // CheckedState::kNone
-  ComPtr<ISelectionItemProvider> option1_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[0]);
-  // CheckedState::kFalse
-  ComPtr<ISelectionItemProvider> option2_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[1]);
-  // CheckedState::kTrue
-  ComPtr<ISelectionItemProvider> option3_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[2]);
-  // CheckedState::kMixed
-  ComPtr<ISelectionItemProvider> option4_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[3]);
-
   BOOL selected;
 
-  EXPECT_UIA_INVALIDOPERATION(option1_provider->get_IsSelected(&selected));
+  // CheckedState::kNone
+  ComPtr<ISelectionItemProvider> option1_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(0)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option1_provider));
+  ASSERT_EQ(nullptr, option1_provider.Get());
+
+  // CheckedState::kFalse
+  ComPtr<ISelectionItemProvider> option2_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(1)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option2_provider));
+  ASSERT_NE(nullptr, option2_provider.Get());
 
   EXPECT_HRESULT_SUCCEEDED(option2_provider->get_IsSelected(&selected));
   EXPECT_FALSE(selected);
 
+  // CheckedState::kTrue
+  ComPtr<ISelectionItemProvider> option3_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(2)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option3_provider));
+  ASSERT_NE(nullptr, option3_provider.Get());
+
   EXPECT_HRESULT_SUCCEEDED(option3_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 
-  EXPECT_UIA_INVALIDOPERATION(option4_provider->get_IsSelected(&selected));
+  // CheckedState::kMixed
+  ComPtr<ISelectionItemProvider> option4_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(3)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option4_provider));
+  ASSERT_EQ(nullptr, option4_provider.Get());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderTable) {
@@ -5512,16 +5764,11 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderTable) {
 
   Init(root, row1, cell1);
 
-  const auto* row = GetRootNode()->children()[0];
-  ComPtr<ISelectionItemProvider> item_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(row->children()[0]);
-
-  BOOL selected;
-
-  EXPECT_UIA_INVALIDOPERATION(item_provider->AddToSelection());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->RemoveFromSelection());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->Select());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->get_IsSelected(&selected));
+  ComPtr<ISelectionItemProvider> selection_item_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(0)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &selection_item_provider));
+  ASSERT_EQ(nullptr, selection_item_provider.Get());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderGrid) {
@@ -5543,8 +5790,13 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderGrid) {
   Init(root, row1, cell1);
 
   const auto* row = GetRootNode()->children()[0];
-  ComPtr<ISelectionItemProvider> item_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(row->children()[0]);
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(row->children()[0]);
+
+  ComPtr<ISelectionItemProvider> selection_item_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_SelectionItemPatternId, &selection_item_provider));
+  ASSERT_NE(nullptr, selection_item_provider.Get());
 
   BOOL selected;
 
@@ -5552,37 +5804,37 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderGrid) {
   // flip kSelected for kCell when the kDoDefault action is fired.
 
   // Initial State
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_FALSE(selected);
 
   // AddToSelection should fire event when not selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->AddToSelection());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->AddToSelection());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 
   // AddToSelection should not fire event when selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->AddToSelection());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->AddToSelection());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 
   // RemoveFromSelection should fire event when selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->RemoveFromSelection());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->RemoveFromSelection());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_FALSE(selected);
 
   // RemoveFromSelection should not fire event when not selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->RemoveFromSelection());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->RemoveFromSelection());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_FALSE(selected);
 
   // Select should fire event when not selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->Select());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 
   // Select should not fire event when selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->Select());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 }
 
@@ -5611,10 +5863,10 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderGetSelectionContainer) {
   ComPtr<ISelectionItemProvider> item_provider =
       QueryInterfaceFromNode<ISelectionItemProvider>(row->children()[0]);
 
-  CComPtr<IRawElementProviderSimple> container;
+  ComPtr<IRawElementProviderSimple> container;
   EXPECT_HRESULT_SUCCEEDED(item_provider->get_SelectionContainer(&container));
   EXPECT_NE(nullptr, container);
-  EXPECT_EQ(container, container_provider.Get());
+  EXPECT_EQ(container, container_provider);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIValueProvider_GetValue) {
@@ -5834,6 +6086,13 @@ TEST_F(AXPlatformNodeWinTest, IScrollProviderSetScrollPercent) {
   EXPECT_HRESULT_SUCCEEDED(
       scroll_provider->get_VerticalScrollPercent(&y_scroll_percent));
   EXPECT_EQ(y_scroll_percent, 34);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestSanitizeStringAttributeForIA2) {
+  std::string input("\\:=,;");
+  std::string output;
+  AXPlatformNodeWin::SanitizeStringAttributeForIA2(input, &output);
+  EXPECT_EQ("\\\\\\:\\=\\,\\;", output);
 }
 
 }  // namespace ui

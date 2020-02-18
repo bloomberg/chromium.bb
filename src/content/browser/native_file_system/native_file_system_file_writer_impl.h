@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/native_file_system_permission_context.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom.h"
 
 namespace content {
@@ -23,13 +23,8 @@ namespace content {
 // owned by the NativeFileSystemManagerImpl instance passed in to the
 // constructor.
 //
-// This class is not thread safe, all methods should be called on the IO thread.
-// The link to the IO thread is due to its dependencies on both the blob system
-// (via storage::BlobStorageContext) and the file system backends (via
-// storage::FileSystemContext and storage::FileSystemOperationRunner, which both
-// expect some of their methods to always be called on the IO thread).
-// See https://crbug.com/957249 for some thoughts about the blob system aspect
-// of this.
+// This class is not thread safe, all methods must be called from the same
+// sequence.
 class CONTENT_EXPORT NativeFileSystemFileWriterImpl
     : public NativeFileSystemHandleBase,
       public blink::mojom::NativeFileSystemFileWriter {
@@ -76,9 +71,6 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   void WriteImpl(uint64_t offset,
                  mojo::PendingRemote<blink::mojom::Blob> data,
                  WriteCallback callback);
-  void DoWriteBlob(WriteCallback callback,
-                   uint64_t position,
-                   std::unique_ptr<storage::BlobDataHandle> blob);
   void WriteStreamImpl(uint64_t offset,
                        mojo::ScopedDataPipeConsumerHandle stream,
                        WriteStreamCallback callback);
@@ -90,25 +82,25 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   void CloseImpl(CloseCallback callback);
   // The following two methods are static, because they need to be invoked to
   // perform cleanup even if the writer was deleted before they were invoked.
-  static void DoSafeBrowsingCheck(
+  static void DoAfterWriteCheck(
       base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
       const base::FilePath& swap_path,
       NativeFileSystemFileWriterImpl::CloseCallback callback,
       base::File::Error hash_result,
       const std::string& hash,
       int64_t size);
-  static void DidSafeBrowsingCheck(
+  static void DidAfterWriteCheck(
       base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
       const base::FilePath& swap_path,
       NativeFileSystemFileWriterImpl::CloseCallback callback,
-      NativeFileSystemPermissionContext::SafeBrowsingResult result);
-  void DidPassSafeBrowsingCheck(CloseCallback callback);
+      NativeFileSystemPermissionContext::AfterWriteCheckResult result);
+  void DidPassAfterWriteCheck(CloseCallback callback);
   void DidSwapFileBeforeClose(CloseCallback callback, base::File::Error result);
   void DidAnnotateFile(CloseCallback callback,
                        quarantine::mojom::QuarantineFileResult result);
 
-  // Safe browsing checks only apply to native local paths.
-  bool require_safe_browsing_check() {
+  // After write checks only apply to native local paths.
+  bool RequireAfterWriteCheck() const {
     return url().type() == storage::kFileSystemTypeNativeLocal;
   }
 
@@ -149,7 +141,7 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
 
   bool skip_quarantine_check_for_testing_ = false;
 
-  // Keeps track of user activation state at creation time for SafeBrowsing
+  // Keeps track of user activation state at creation time for after write
   // checks.
   bool has_transient_user_activation_ = false;
 

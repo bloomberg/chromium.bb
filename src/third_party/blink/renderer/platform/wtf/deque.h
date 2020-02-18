@@ -52,7 +52,9 @@ class DequeConstIterator;
 template <typename T,
           wtf_size_t inlineCapacity = 0,
           typename Allocator = PartitionAllocator>
-class Deque {
+class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
+                                           (INLINE_CAPACITY == 0) &&
+                                               Allocator::kIsGarbageCollected> {
   USE_ALLOCATOR(Deque, Allocator);
 
  public:
@@ -64,11 +66,10 @@ class Deque {
   Deque();
   Deque(const Deque&);
   Deque& operator=(const Deque&);
-  Deque(Deque&&) noexcept;
-  Deque& operator=(Deque&&) noexcept;
-  ~Deque();
+  Deque(Deque&&);
+  Deque& operator=(Deque&&);
 
-  void FinalizeGarbageCollectedObject() { NOTREACHED(); }
+  void Finalize();
 
   void Swap(Deque&);
 
@@ -342,14 +343,14 @@ Deque<T, inlineCapacity, Allocator>::operator=(const Deque& other) {
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
-inline Deque<T, inlineCapacity, Allocator>::Deque(Deque&& other) noexcept
+inline Deque<T, inlineCapacity, Allocator>::Deque(Deque&& other)
     : start_(0), end_(0) {
   Swap(other);
 }
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 inline Deque<T, inlineCapacity, Allocator>&
-Deque<T, inlineCapacity, Allocator>::operator=(Deque&& other) noexcept {
+Deque<T, inlineCapacity, Allocator>::operator=(Deque&& other) {
   Swap(other);
   return *this;
 }
@@ -374,16 +375,18 @@ inline void Deque<T, inlineCapacity, Allocator>::DestroyAll() {
 // For design of the destructor, please refer to
 // [here](https://docs.google.com/document/d/1AoGTvb3tNLx2tD1hNqAfLRLmyM59GM0O-7rCHTT_7_U/)
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
-inline Deque<T, inlineCapacity, Allocator>::~Deque() {
+inline void Deque<T, inlineCapacity, Allocator>::Finalize() {
+  static_assert(!Allocator::kIsGarbageCollected || INLINE_CAPACITY,
+                "GarbageCollected collections without inline capacity cannot "
+                "be finalized.");
   if ((!INLINE_CAPACITY && !buffer_.Buffer()))
     return;
   if (!IsEmpty() &&
       !(Allocator::kIsGarbageCollected && buffer_.HasOutOfLineBuffer()))
     DestroyAll();
 
-  // If this is called during sweeping, it must not touch the OutOfLineBuffer.
-  if (Allocator::IsSweepForbidden())
-    return;
+  // For garbage collected deque HeapAllocator::BackingFree() will bail out
+  // during sweeping.
   buffer_.Destruct();
 }
 
@@ -688,19 +691,19 @@ Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
       if (start_ <= end_) {
         for (const T* buffer_entry = buffer_begin + start_; buffer_entry != end;
              buffer_entry++) {
-          Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
+          Allocator::template Trace<T, VectorTraits<T>>(
               visitor, *const_cast<T*>(buffer_entry));
         }
       } else {
         for (const T* buffer_entry = buffer_begin; buffer_entry != end;
              buffer_entry++) {
-          Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
+          Allocator::template Trace<T, VectorTraits<T>>(
               visitor, *const_cast<T*>(buffer_entry));
         }
         const T* buffer_end = buffer_.Buffer() + buffer_.capacity();
         for (const T* buffer_entry = buffer_begin + start_;
              buffer_entry != buffer_end; buffer_entry++) {
-          Allocator::template Trace<VisitorDispatcher, T, VectorTraits<T>>(
+          Allocator::template Trace<T, VectorTraits<T>>(
               visitor, *const_cast<T*>(buffer_entry));
         }
       }

@@ -74,16 +74,17 @@ class RulesMonitorService::FileSequenceBridge {
 
   void UpdateDynamicRules(
       LoadRequestData load_data,
-      std::vector<dnr_api::Rule> rules,
-      DynamicRuleUpdateAction action,
+      std::vector<int> rule_ids_to_remove,
+      std::vector<dnr_api::Rule> rules_to_add,
       FileSequenceHelper::UpdateDynamicRulesUICallback ui_callback) const {
     // base::Unretained is safe here because we trigger the destruction of
     // |file_sequence_state_| on |file_task_runner_| from our destructor. Hence
     // it is guaranteed to be alive when |update_dynamic_rules_task| is run.
-    base::OnceClosure update_dynamic_rules_task = base::BindOnce(
-        &FileSequenceHelper::UpdateDynamicRules,
-        base::Unretained(file_sequence_helper_.get()), std::move(load_data),
-        std::move(rules), action, std::move(ui_callback));
+    base::OnceClosure update_dynamic_rules_task =
+        base::BindOnce(&FileSequenceHelper::UpdateDynamicRules,
+                       base::Unretained(file_sequence_helper_.get()),
+                       std::move(load_data), std::move(rule_ids_to_remove),
+                       std::move(rules_to_add), std::move(ui_callback));
     file_task_runner_->PostTask(FROM_HERE,
                                 std::move(update_dynamic_rules_task));
   }
@@ -123,8 +124,8 @@ bool RulesMonitorService::HasRegisteredRuleset(
 
 void RulesMonitorService::UpdateDynamicRules(
     const Extension& extension,
-    std::vector<api::declarative_net_request::Rule> rules,
-    DynamicRuleUpdateAction action,
+    std::vector<int> rule_ids_to_remove,
+    std::vector<api::declarative_net_request::Rule> rules_to_add,
     DynamicRuleUpdateUICallback callback) {
   DCHECK(HasRegisteredRuleset(extension.id()));
 
@@ -137,9 +138,9 @@ void RulesMonitorService::UpdateDynamicRules(
   auto update_rules_callback =
       base::BindOnce(&RulesMonitorService::OnDynamicRulesUpdated,
                      weak_factory_.GetWeakPtr(), std::move(callback));
-  file_sequence_bridge_->UpdateDynamicRules(std::move(data), std::move(rules),
-                                            action,
-                                            std::move(update_rules_callback));
+  file_sequence_bridge_->UpdateDynamicRules(
+      std::move(data), std::move(rule_ids_to_remove), std::move(rules_to_add),
+      std::move(update_rules_callback));
 }
 
 RulesMonitorService::RulesMonitorService(
@@ -149,7 +150,8 @@ RulesMonitorService::RulesMonitorService(
       extension_registry_(ExtensionRegistry::Get(browser_context)),
       warning_service_(WarningService::Get(browser_context)),
       context_(browser_context),
-      ruleset_manager_(browser_context) {
+      ruleset_manager_(browser_context),
+      action_tracker_(browser_context) {
   registry_observer_.Add(extension_registry_);
 }
 
@@ -169,7 +171,6 @@ RulesMonitorService::~RulesMonitorService() = default;
       - UI.
 
    On dynamic rules update.
-
       - UI -> File -> UI -> IPC to extension
 */
 
@@ -303,9 +304,10 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
     return;
 
   extensions_with_rulesets_.insert(load_data.extension_id);
-  LoadRuleset(load_data.extension_id,
-              std::make_unique<CompositeMatcher>(std::move(matchers)),
-              prefs_->GetDNRAllowedPages(load_data.extension_id));
+  LoadRuleset(
+      load_data.extension_id,
+      std::make_unique<CompositeMatcher>(std::move(matchers), &action_tracker_),
+      prefs_->GetDNRAllowedPages(load_data.extension_id));
 }
 
 void RulesMonitorService::OnDynamicRulesUpdated(
@@ -350,6 +352,7 @@ void RulesMonitorService::OnDynamicRulesUpdated(
 void RulesMonitorService::UnloadRuleset(const ExtensionId& extension_id) {
   bool had_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
   ruleset_manager_.RemoveRuleset(extension_id);
+  action_tracker_.ClearExtensionData(extension_id);
 
   if (had_extra_headers_matcher &&
       !ruleset_manager_.HasAnyExtraHeadersMatcher()) {

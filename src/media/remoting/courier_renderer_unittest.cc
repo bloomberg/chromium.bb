@@ -252,16 +252,19 @@ class CourierRendererTest : public testing::Test {
     EXPECT_CALL(*render_client_, OnPipelineStatus(_)).Times(1);
     DCHECK(renderer_);
     // Redirect RPC message for simulate receiver scenario
-    controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
-        &CourierRendererTest::RpcMessageResponseBot, base::Unretained(this)));
+    controller_->GetRpcBroker()->SetMessageCallbackForTesting(
+        base::BindRepeating(&CourierRendererTest::RpcMessageResponseBot,
+                            base::Unretained(this)));
     RunPendingTasks();
-    renderer_->Initialize(media_resource_.get(), render_client_.get(),
-                          base::Bind(&RendererClientImpl::OnPipelineStatus,
-                                     base::Unretained(render_client_.get())));
+    renderer_->Initialize(
+        media_resource_.get(), render_client_.get(),
+        base::BindOnce(&RendererClientImpl::OnPipelineStatus,
+                       base::Unretained(render_client_.get())));
     RunPendingTasks();
     // Redirect RPC message back to save for later check.
-    controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
-        &CourierRendererTest::OnSendMessageToSink, base::Unretained(this)));
+    controller_->GetRpcBroker()->SetMessageCallbackForTesting(
+        base::BindRepeating(&CourierRendererTest::OnSendMessageToSink,
+                            base::Unretained(this)));
     RunPendingTasks();
   }
 
@@ -282,8 +285,9 @@ class CourierRendererTest : public testing::Test {
     controller_->OnMetadataChanged(DefaultMetadata());
 
     // Redirect RPC message to CourierRendererTest::OnSendMessageToSink().
-    controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
-        &CourierRendererTest::OnSendMessageToSink, base::Unretained(this)));
+    controller_->GetRpcBroker()->SetMessageCallbackForTesting(
+        base::BindRepeating(&CourierRendererTest::OnSendMessageToSink,
+                            base::Unretained(this)));
 
     renderer_.reset(new CourierRenderer(base::ThreadTaskRunnerHandle::Get(),
                                         controller_->GetWeakPtr(), nullptr));
@@ -358,14 +362,14 @@ class CourierRendererTest : public testing::Test {
     message->set_video_memory_usage(stats.video_memory_usage);
     message->mutable_audio_decoder_info()->set_is_platform_decoder(
         stats.audio_decoder_info.is_platform_decoder);
-    message->mutable_audio_decoder_info()->set_is_decrypting_demuxer_stream(
-        stats.audio_decoder_info.is_decrypting_demuxer_stream);
+    message->mutable_audio_decoder_info()->set_has_decrypting_demuxer_stream(
+        stats.audio_decoder_info.has_decrypting_demuxer_stream);
     message->mutable_audio_decoder_info()->set_decoder_name(
         stats.audio_decoder_info.decoder_name);
     message->mutable_video_decoder_info()->set_is_platform_decoder(
         stats.video_decoder_info.is_platform_decoder);
-    message->mutable_video_decoder_info()->set_is_decrypting_demuxer_stream(
-        stats.video_decoder_info.is_decrypting_demuxer_stream);
+    message->mutable_video_decoder_info()->set_has_decrypting_demuxer_stream(
+        stats.video_decoder_info.has_decrypting_demuxer_stream);
     message->mutable_video_decoder_info()->set_decoder_name(
         stats.video_decoder_info.decoder_name);
     OnReceivedRpc(std::move(rpc));
@@ -389,7 +393,7 @@ class CourierRendererTest : public testing::Test {
     RunPendingTasks();
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<RendererController> controller_;
   std::unique_ptr<RendererClientImpl> render_client_;
   std::unique_ptr<FakeMediaResource> media_resource_;
@@ -441,8 +445,8 @@ TEST_F(CourierRendererTest, InitializeFailed) {
 
   ResetReceivedRpcMessage();
   EXPECT_CALL(*render_client_, OnFlushCallback()).Times(1);
-  renderer_->Flush(base::Bind(&RendererClientImpl::OnFlushCallback,
-                              base::Unretained(render_client_.get())));
+  renderer_->Flush(base::BindOnce(&RendererClientImpl::OnFlushCallback,
+                                  base::Unretained(render_client_.get())));
   RunPendingTasks();
   ASSERT_EQ(0, ReceivedRpcMessageCount());
 
@@ -469,12 +473,12 @@ TEST_F(CourierRendererTest, Flush) {
 
   // Flush Renderer.
   // Redirect RPC message for simulate receiver scenario
-  controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
+  controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::BindRepeating(
       &CourierRendererTest::RpcMessageResponseBot, base::Unretained(this)));
   RunPendingTasks();
   EXPECT_CALL(*render_client_, OnFlushCallback()).Times(1);
-  renderer_->Flush(base::Bind(&RendererClientImpl::OnFlushCallback,
-                              base::Unretained(render_client_.get())));
+  renderer_->Flush(base::BindOnce(&RendererClientImpl::OnFlushCallback,
+                                  base::Unretained(render_client_.get())));
   RunPendingTasks();
 }
 
@@ -557,9 +561,9 @@ TEST_F(CourierRendererTest, OnBufferingStateChange) {
 }
 
 TEST_F(CourierRendererTest, OnAudioConfigChange) {
-  const AudioDecoderConfig kNewAudioConfig(kCodecVorbis, kSampleFormatPlanarF32,
-                                           CHANNEL_LAYOUT_STEREO, 44100,
-                                           EmptyExtraData(), Unencrypted());
+  const AudioDecoderConfig kNewAudioConfig(
+      kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
+      EmptyExtraData(), EncryptionScheme::kUnencrypted);
   InitializeRenderer();
   // Make sure initial audio config does not match the one we intend to send.
   ASSERT_FALSE(render_client_->audio_decoder_config().Matches(kNewAudioConfig));
@@ -665,7 +669,7 @@ TEST_F(CourierRendererTest, OnStatisticsUpdate) {
 TEST_F(CourierRendererTest, OnPacingTooSlowly) {
   InitializeRenderer();
 
-  controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
+  controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::BindRepeating(
       &CourierRendererTest::OnSendMessageToSink, base::Unretained(this)));
 
   // There should be no error reported with this playback rate.

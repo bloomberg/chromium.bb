@@ -76,7 +76,6 @@ static inline VkFormat attrib_type_to_vkformat(GrVertexAttribType type) {
             return VK_FORMAT_R32_UINT;
         case kUShort_norm_GrVertexAttribType:
             return VK_FORMAT_R16_UNORM;
-        // Experimental (for Y416)
         case kUShort4_norm_GrVertexAttribType:
             return VK_FORMAT_R16G16B16A16_UNORM;
     }
@@ -161,8 +160,8 @@ static VkPrimitiveTopology gr_primitive_type_to_vk_topology(GrPrimitiveType prim
             return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
         case GrPrimitiveType::kLineStrip:
             return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-        case GrPrimitiveType::kLinesAdjacency:
-            return VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY;
+        case GrPrimitiveType::kPath:
+            SK_ABORT("Unsupported primitive type");
     }
     SK_ABORT("invalid GrPrimitiveType");
 }
@@ -239,8 +238,11 @@ static void setup_stencil_op_state(
 }
 
 static void setup_depth_stencil_state(
-        const GrStencilSettings& stencilSettings, GrSurfaceOrigin origin,
+        const GrProgramInfo& programInfo,
         VkPipelineDepthStencilStateCreateInfo* stencilInfo) {
+    GrStencilSettings stencilSettings = programInfo.nonGLStencilSettings();
+    GrSurfaceOrigin origin = programInfo.origin();
+
     memset(stencilInfo, 0, sizeof(VkPipelineDepthStencilStateCreateInfo));
     stencilInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     stencilInfo->pNext = nullptr;
@@ -253,11 +255,11 @@ static void setup_depth_stencil_state(
     stencilInfo->stencilTestEnable = !stencilSettings.isDisabled();
     if (!stencilSettings.isDisabled()) {
         if (!stencilSettings.isTwoSided()) {
-            setup_stencil_op_state(&stencilInfo->front, stencilSettings.frontAndBack());
+            setup_stencil_op_state(&stencilInfo->front, stencilSettings.singleSidedFace());
             stencilInfo->back = stencilInfo->front;
         } else {
-            setup_stencil_op_state(&stencilInfo->front, stencilSettings.front(origin));
-            setup_stencil_op_state(&stencilInfo->back, stencilSettings.back(origin));
+            setup_stencil_op_state(&stencilInfo->front, stencilSettings.postOriginCCWFace(origin));
+            setup_stencil_op_state(&stencilInfo->back, stencilSettings.postOriginCWFace(origin));
         }
     }
     stencilInfo->minDepthBounds = 0.0f;
@@ -279,22 +281,56 @@ static void setup_viewport_scissor_state(VkPipelineViewportStateCreateInfo* view
     SkASSERT(viewportInfo->viewportCount == viewportInfo->scissorCount);
 }
 
-static void setup_multisample_state(int numColorSamples,
-                                    const GrPrimitiveProcessor& primProc,
-                                    const GrPipeline& pipeline,
+static void setup_multisample_state(const GrProgramInfo& programInfo,
                                     const GrCaps* caps,
                                     VkPipelineMultisampleStateCreateInfo* multisampleInfo) {
     memset(multisampleInfo, 0, sizeof(VkPipelineMultisampleStateCreateInfo));
     multisampleInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampleInfo->pNext = nullptr;
     multisampleInfo->flags = 0;
-    SkAssertResult(GrSampleCountToVkSampleCount(numColorSamples,
-                   &multisampleInfo->rasterizationSamples));
+    SkAssertResult(GrSampleCountToVkSampleCount(programInfo.numRasterSamples(),
+                                                &multisampleInfo->rasterizationSamples));
     multisampleInfo->sampleShadingEnable = VK_FALSE;
     multisampleInfo->minSampleShading = 0.0f;
     multisampleInfo->pSampleMask = nullptr;
     multisampleInfo->alphaToCoverageEnable = VK_FALSE;
     multisampleInfo->alphaToOneEnable = VK_FALSE;
+}
+
+static void setup_all_sample_locations_at_pixel_center(
+        const GrProgramInfo& programInfo,
+        VkPipelineSampleLocationsStateCreateInfoEXT* sampleLocations) {
+    constexpr static VkSampleLocationEXT kCenteredSampleLocations[16] = {
+            {.5f,.5f}, {.5f,.5f}, {.5f,.5f}, {.5f,.5f}, {.5f,.5f}, {.5f,.5f}, {.5f,.5f}, {.5f,.5f},
+            {.5f,.5f}, {.5f,.5f}, {.5f,.5f}, {.5f,.5f}, {.5f,.5f}, {.5f,.5f}, {.5f,.5f}, {.5f,.5f}};
+    memset(sampleLocations, 0, sizeof(VkPipelineSampleLocationsStateCreateInfoEXT));
+    sampleLocations->sType = VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT;
+    sampleLocations->pNext = nullptr;
+    sampleLocations->sampleLocationsEnable = VK_TRUE;
+    sampleLocations->sampleLocationsInfo.sType = VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT;
+    sampleLocations->sampleLocationsInfo.pNext = nullptr;
+    SkAssertResult(GrSampleCountToVkSampleCount(
+            programInfo.numRasterSamples(),
+            &sampleLocations->sampleLocationsInfo.sampleLocationsPerPixel));
+    sampleLocations->sampleLocationsInfo.sampleLocationGridSize.width = 1;
+    sampleLocations->sampleLocationsInfo.sampleLocationGridSize.height = 1;
+    SkASSERT(programInfo.numRasterSamples() < (int)SK_ARRAY_COUNT(kCenteredSampleLocations));
+    sampleLocations->sampleLocationsInfo.sampleLocationsCount = std::min(
+            programInfo.numRasterSamples(), (int)SK_ARRAY_COUNT(kCenteredSampleLocations));
+    sampleLocations->sampleLocationsInfo.pSampleLocations = kCenteredSampleLocations;
+}
+
+static void setup_coverage_modulation_state(
+        VkPipelineCoverageModulationStateCreateInfoNV* coverageModulationInfo) {
+    memset(coverageModulationInfo, 0, sizeof(VkPipelineCoverageModulationStateCreateInfoNV));
+    coverageModulationInfo->sType =
+            VK_STRUCTURE_TYPE_PIPELINE_COVERAGE_MODULATION_STATE_CREATE_INFO_NV;
+    coverageModulationInfo->pNext = nullptr;
+    coverageModulationInfo->flags = 0;
+    coverageModulationInfo->coverageModulationMode = VK_COVERAGE_MODULATION_MODE_RGBA_NV;
+    coverageModulationInfo->coverageModulationTableEnable = false;
+    coverageModulationInfo->coverageModulationTableCount = 0;
+    coverageModulationInfo->pCoverageModulationTable = nullptr;
 }
 
 static VkBlendFactor blend_coeff_to_vk_blend(GrBlendCoeff coeff) {
@@ -499,38 +535,58 @@ static void setup_dynamic_state(VkPipelineDynamicStateCreateInfo* dynamicInfo,
 }
 
 GrVkPipeline* GrVkPipeline::Create(
-        GrVkGpu* gpu, int numColorSamples, const GrPrimitiveProcessor& primProc,
-        const GrPipeline& pipeline, const GrStencilSettings& stencil, GrSurfaceOrigin origin,
+        GrVkGpu* gpu,
+        const GrProgramInfo& programInfo,
         VkPipelineShaderStageCreateInfo* shaderStageInfo, int shaderStageCount,
-        GrPrimitiveType primitiveType, VkRenderPass compatibleRenderPass, VkPipelineLayout layout,
+        VkRenderPass compatibleRenderPass, VkPipelineLayout layout,
         VkPipelineCache cache) {
     VkPipelineVertexInputStateCreateInfo vertexInputInfo;
     SkSTArray<2, VkVertexInputBindingDescription, true> bindingDescs;
     SkSTArray<16, VkVertexInputAttributeDescription> attributeDesc;
-    int totalAttributeCnt = primProc.numVertexAttributes() + primProc.numInstanceAttributes();
+    int totalAttributeCnt = programInfo.primProc().numVertexAttributes() +
+                            programInfo.primProc().numInstanceAttributes();
     SkASSERT(totalAttributeCnt <= gpu->vkCaps().maxVertexAttributes());
     VkVertexInputAttributeDescription* pAttribs = attributeDesc.push_back_n(totalAttributeCnt);
-    setup_vertex_input_state(primProc, &vertexInputInfo, &bindingDescs, pAttribs);
+    setup_vertex_input_state(programInfo.primProc(), &vertexInputInfo, &bindingDescs, pAttribs);
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
-    setup_input_assembly_state(primitiveType, &inputAssemblyInfo);
+    setup_input_assembly_state(programInfo.primitiveType(), &inputAssemblyInfo);
 
     VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
-    setup_depth_stencil_state(stencil, origin, &depthStencilInfo);
+    setup_depth_stencil_state(programInfo, &depthStencilInfo);
 
     VkPipelineViewportStateCreateInfo viewportInfo;
     setup_viewport_scissor_state(&viewportInfo);
 
     VkPipelineMultisampleStateCreateInfo multisampleInfo;
-    setup_multisample_state(numColorSamples, primProc, pipeline, gpu->caps(), &multisampleInfo);
+    setup_multisample_state(programInfo, gpu->caps(), &multisampleInfo);
+
+    VkPipelineSampleLocationsStateCreateInfoEXT sampleLocations;
+    if (gpu->caps()->multisampleDisableSupport()) {
+        if (programInfo.numRasterSamples() > 1 && !programInfo.pipeline().isHWAntialiasState()) {
+            setup_all_sample_locations_at_pixel_center(programInfo, &sampleLocations);
+            sampleLocations.pNext = multisampleInfo.pNext;
+            multisampleInfo.pNext = &sampleLocations;
+        }
+    }
+
+    VkPipelineCoverageModulationStateCreateInfoNV coverageModulationInfo;
+    if (gpu->caps()->mixedSamplesSupport()) {
+        if (programInfo.isMixedSampled()) {
+            SkASSERT(gpu->caps()->mixedSamplesSupport());
+            setup_coverage_modulation_state(&coverageModulationInfo);
+            coverageModulationInfo.pNext = multisampleInfo.pNext;
+            multisampleInfo.pNext = &coverageModulationInfo;
+        }
+    }
 
     // We will only have one color attachment per pipeline.
     VkPipelineColorBlendAttachmentState attachmentStates[1];
     VkPipelineColorBlendStateCreateInfo colorBlendInfo;
-    setup_color_blend_state(pipeline, &colorBlendInfo, attachmentStates);
+    setup_color_blend_state(programInfo.pipeline(), &colorBlendInfo, attachmentStates);
 
     VkPipelineRasterizationStateCreateInfo rasterInfo;
-    setup_raster_state(pipeline, gpu->caps(), &rasterInfo);
+    setup_raster_state(programInfo.pipeline(), gpu->caps(), &rasterInfo);
 
     VkDynamicState dynamicStates[3];
     VkPipelineDynamicStateCreateInfo dynamicInfo;
@@ -565,10 +621,9 @@ GrVkPipeline* GrVkPipeline::Create(
         // skia:8712
         __lsan::ScopedDisabler lsanDisabler;
 #endif
-        err = GR_VK_CALL(gpu->vkInterface(), CreateGraphicsPipelines(gpu->device(),
-                                                                     cache, 1,
-                                                                     &pipelineCreateInfo,
-                                                                     nullptr, &vkPipeline));
+        GR_VK_CALL_RESULT(gpu, err, CreateGraphicsPipelines(gpu->device(), cache, 1,
+                                                            &pipelineCreateInfo, nullptr,
+                                                            &vkPipeline));
     }
     if (err) {
         SkDebugf("Failed to create pipeline. Error: %d\n", err);
@@ -587,10 +642,9 @@ void GrVkPipeline::SetDynamicScissorRectState(GrVkGpu* gpu,
                                               GrVkCommandBuffer* cmdBuffer,
                                               const GrRenderTarget* renderTarget,
                                               GrSurfaceOrigin rtOrigin,
-                                              SkIRect scissorRect) {
-    if (!scissorRect.intersect(SkIRect::MakeWH(renderTarget->width(), renderTarget->height()))) {
-        scissorRect.setEmpty();
-    }
+                                              const SkIRect& scissorRect) {
+    SkASSERT(scissorRect.isEmpty() ||
+             SkIRect::MakeWH(renderTarget->width(), renderTarget->height()).contains(scissorRect));
 
     VkRect2D scissor;
     scissor.offset.x = scissorRect.fLeft;

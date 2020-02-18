@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
+<link rel="import" href="../route_origin_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="multidevice_constants.html">
 <link rel="import" href="multidevice_feature_behavior.html">
@@ -27,14 +28,8 @@
       cr-policy-indicator {
         padding: 0 var(--cr-controlled-by-spacing);
       }
-
-      .link-wrapper {
-        align-items: center;
-        display: flex;
-        flex-grow: 1;
-      }
     </style>
-    <div id="card" class="settings-box two-line">
+    <div id="card" class="settings-box two-line no-padding">
       <div class="link-wrapper" actionable
            actionable$="[[hasSubpageClickHandler_(
                feature, pageContentData, subpageRoute)]]"
@@ -53,8 +48,10 @@
                   if="[[hasSubpageClickHandler_(
               feature, pageContentData, subpageRoute)]]"
                   restamp>
-          <cr-icon-button class="subpage-arrow" aria-labelledby="featureName"
-                          aria-describedby="featureSecondary"></cr-icon-button>
+          <cr-icon-button id="subpageButton" class="subpage-arrow"
+              aria-labelledby="featureName" aria-describedby="featureSecondary"
+              aria-roledescription="$i18n{subpageArrowRoleDescription}">
+          </cr-icon-button>
         </template>
       </div>
       <template is="dom-if"
@@ -69,14 +66,17 @@
           restamp>
         <cr-policy-indicator indicator-type="userPolicy"></cr-policy-indicator>
       </template>
-      <slot name="feature-controller">
-        <!-- This settings-multidevice-feature-toggle is the default controller.
-        If an element with slot="feature-controller" is attached, it will
-        replace this one. -->
-        <settings-multidevice-feature-toggle feature="[[feature]]"
-            page-content-data="[[pageContentData]]">
-        </settings-multidevice-feature-toggle>
-      </slot>
+      <div class="margin-matches-padding">
+        <slot name="feature-controller">
+          <!-- This settings-multidevice-feature-toggle is the default controller.
+          If an element with slot="feature-controller" is attached, it will
+          replace this one. -->
+          <settings-multidevice-feature-toggle
+              feature="[[feature]]"
+              page-content-data="[[pageContentData]]">
+          </settings-multidevice-feature-toggle>
+        </slot>
+      </div>
     </div>
   </template>
   <script src="multidevice_feature_item.js"></script>

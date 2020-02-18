@@ -165,14 +165,6 @@ void ServiceWorkerGlobalScopeProxy::DidLoadClassicScript() {
   Client().WorkerScriptLoadedOnWorkerThread();
 }
 
-void ServiceWorkerGlobalScopeProxy::DidFailToLoadClassicScript() {
-  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  // Tell ServiceWorkerContextClient about the failure. The generic
-  // WorkerContextFailedToStart() wouldn't make sense because
-  // WorkerContextStarted() was already called.
-  Client().FailedToLoadClassicScript();
-}
-
 void ServiceWorkerGlobalScopeProxy::DidFetchScript() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   Client().WorkerScriptLoadedOnWorkerThread();
@@ -180,7 +172,7 @@ void ServiceWorkerGlobalScopeProxy::DidFetchScript() {
 
 void ServiceWorkerGlobalScopeProxy::DidFailToFetchClassicScript() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  Client().FailedToLoadClassicScript();
+  Client().FailedToFetchClassicScript();
 }
 
 void ServiceWorkerGlobalScopeProxy::DidFailToFetchModuleScript() {
@@ -282,9 +274,9 @@ void ServiceWorkerGlobalScopeProxy::SetupNavigationPreload(
     mojom::blink::FetchEventPreloadHandlePtr preload_handle) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   auto web_preload_handle = std::make_unique<WebFetchEventPreloadHandle>();
-  web_preload_handle->url_loader = preload_handle->url_loader.PassHandle();
-  web_preload_handle->url_loader_client_request =
-      preload_handle->url_loader_client_request.PassMessagePipe();
+  web_preload_handle->url_loader = preload_handle->url_loader.PassPipe();
+  web_preload_handle->url_loader_client_receiver =
+      preload_handle->url_loader_client_receiver.PassPipe();
   Client().SetupNavigationPreload(fetch_event_id, url,
                                   std::move(web_preload_handle));
 }
@@ -322,6 +314,14 @@ void ServiceWorkerGlobalScopeProxy::TerminateWorkerContext() {
 
 bool ServiceWorkerGlobalScopeProxy::IsWindowInteractionAllowed() {
   return WorkerGlobalScope()->IsWindowInteractionAllowed();
+}
+
+void ServiceWorkerGlobalScopeProxy::PauseEvaluation() {
+  WorkerGlobalScope()->PauseEvaluation();
+}
+
+void ServiceWorkerGlobalScopeProxy::ResumeEvaluation() {
+  WorkerGlobalScope()->ResumeEvaluation();
 }
 
 WebServiceWorkerContextClient& ServiceWorkerGlobalScopeProxy::Client() const {

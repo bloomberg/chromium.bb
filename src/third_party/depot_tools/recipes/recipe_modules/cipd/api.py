@@ -36,7 +36,7 @@ def check_list_type(name, var, expect_inner):
 
 def check_dict_type(name, var, expect_key, expect_value):
   check_type(name, var, dict)
-  for key, value in var.iteritems():
+  for key, value in var.items():
     check_type('%s: key' % name, key, expect_key)
     check_type('%s[%s]' % (name, key), value, expect_value)
 

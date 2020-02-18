@@ -84,6 +84,8 @@ void RequestSender::SendInternal() {
     url = BuildUpdateUrl(url, request_query_string);
   }
 
+  DVLOG(2) << "Sending Omaha request: " << request_body_;
+
   network_fetcher_ = config_->GetNetworkFetcherFactory()->Create();
   if (!network_fetcher_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -139,8 +141,7 @@ void RequestSender::SendInternalComplete(int error,
   HandleSendError(error, retry_after_sec);
 }
 
-void RequestSender::OnResponseStarted(const GURL& final_url,
-                                      int response_code,
+void RequestSender::OnResponseStarted(int response_code,
                                       int64_t content_length) {
   response_code_ = response_code;
 }
@@ -156,14 +157,12 @@ void RequestSender::OnNetworkFetcherComplete(
   VLOG(1) << "request completed from url: " << original_url.spec();
 
   int error = -1;
-  if (response_body && response_code_ == 200) {
-    DCHECK_EQ(0, net_error);
+  if (!net_error && response_code_ == 200)
     error = 0;
-  } else if (response_code_ != -1) {
+  else if (response_code_ != -1)
     error = response_code_;
-  } else {
+  else
     error = net_error;
-  }
 
   int retry_after_sec = -1;
   if (original_url.SchemeIsCryptographic() && error > 0)

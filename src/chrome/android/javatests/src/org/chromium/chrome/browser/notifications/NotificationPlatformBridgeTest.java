@@ -39,11 +39,12 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.engagement.SiteEngagementService;
 import org.chromium.chrome.browser.permissions.PermissionDialogController;
 import org.chromium.chrome.browser.permissions.PermissionTestRule;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.settings.website.ContentSettingValues;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
@@ -79,14 +80,14 @@ public class NotificationPlatformBridgeTest {
     private static final int TITLE_UPDATE_TIMEOUT_SECONDS = (int) 5L;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         SiteEngagementService.setParamValuesForTesting();
         mNotificationTestRule.loadUrl(mPermissionTestRule.getURL(NOTIFICATION_TEST_PAGE));
         mPermissionTestRule.setActivity(mNotificationTestRule.getActivity());
     }
 
     @SuppressWarnings("MissingFail")
-    private void waitForTitle(String expectedTitle) throws InterruptedException {
+    private void waitForTitle(String expectedTitle) {
         Tab tab = mNotificationTestRule.getActivity().getActivityTab();
         TabTitleObserver titleObserver = new TabTitleObserver(tab, expectedTitle);
         try {
@@ -112,7 +113,7 @@ public class NotificationPlatformBridgeTest {
         try {
             return TestThreadUtils.runOnUiThreadBlocking(new Callable<Double>() {
                 @Override
-                public Double call() throws Exception {
+                public Double call() {
                     return SiteEngagementService.getForProfile(Profile.getLastUsedProfile())
                             .getScore(mPermissionTestRule.getOrigin());
                 }
@@ -458,7 +459,9 @@ public class NotificationPlatformBridgeTest {
 
         // Disable notification vibration in preferences.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().setNotificationsVibrateEnabled(false));
+                ()
+                        -> PrefServiceBridge.getInstance().setBoolean(
+                                Pref.NOTIFICATIONS_VIBRATE_ENABLED, false));
 
         Notification notification = showAndGetNotification("MyNotification", notificationOptions);
 
@@ -508,8 +511,9 @@ public class NotificationPlatformBridgeTest {
 
         // By default, vibration is enabled in notifications.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> Assert.assertTrue(
-                                PrefServiceBridge.getInstance().isNotificationsVibrateEnabled()));
+                ()
+                        -> Assert.assertTrue(PrefServiceBridge.getInstance().getBoolean(
+                                Pref.NOTIFICATIONS_VIBRATE_ENABLED)));
 
         Notification notification = showAndGetNotification("MyNotification", "{ vibrate: 42 }");
 
@@ -632,8 +636,11 @@ public class NotificationPlatformBridgeTest {
 
         Bitmap generatedIcon = generator.generateIconForUrl(mPermissionTestRule.getOrigin());
         Assert.assertNotNull(generatedIcon);
-        Assert.assertTrue(generatedIcon.sameAs(
-                NotificationTestUtil.getLargeIconFromNotification(context, notification)));
+        // Starts from Android O MR1, large icon can be downscaled by Android platform code.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            Assert.assertTrue(generatedIcon.sameAs(
+                    NotificationTestUtil.getLargeIconFromNotification(context, notification)));
+        }
     }
 
     /*
@@ -838,19 +845,18 @@ public class NotificationPlatformBridgeTest {
      * @return The Android Notification object, as shown in the framework.
      */
     private Notification showAndGetNotification(String title, String options)
-            throws TimeoutException, InterruptedException {
+            throws TimeoutException {
         showNotification(title, options);
         return mNotificationTestRule.waitForNotification().notification;
     }
 
-    private void showNotification(String title, String options)
-            throws TimeoutException, InterruptedException {
+    private void showNotification(String title, String options) throws TimeoutException {
         runJavaScript("GetActivatedServiceWorkerForTest()"
                 + ".then(reg => reg.showNotification('" + title + "', " + options + "))"
                 + ".catch(sendToTest)");
     }
 
-    private String runJavaScript(String code) throws TimeoutException, InterruptedException {
+    private String runJavaScript(String code) throws TimeoutException {
         return mNotificationTestRule.runJavaScriptCodeInCurrentTab(code);
     }
 

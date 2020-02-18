@@ -22,6 +22,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/wm/public/activation_change_observer.h"
 
+class PrefService;
 class Profile;
 
 namespace content {
@@ -37,6 +38,8 @@ namespace arc {
 class AXTreeSourceArc;
 class ArcBridgeService;
 
+arc::mojom::CaptionStylePtr GetCaptionStyleFromPrefs(PrefService* prefs);
+
 // ArcAccessibilityHelperBridge is an instance to receive converted Android
 // accessibility events and info via mojo interface and dispatch them to chrome
 // os components.
@@ -50,6 +53,9 @@ class ArcAccessibilityHelperBridge
       public arc::ArcInputMethodManagerService::Observer,
       public ash::ArcNotificationSurfaceManager::Observer {
  public:
+  // Builds the ArcAccessibilityHelperBridgeFactory.
+  static void CreateFactory();
+
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcAccessibilityHelperBridge* GetForBrowserContext(
@@ -109,11 +115,11 @@ class ArcAccessibilityHelperBridge
 
   void set_filter_type_all_for_test() { use_filter_type_all_for_test_ = true; }
 
- protected:
+ private:
+  // virtual for testing.
   virtual aura::Window* GetActiveWindow();
   virtual extensions::EventRouter* GetEventRouter() const;
 
- private:
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   void UpdateCaptionSettings() const;
 
@@ -135,6 +141,8 @@ class ArcAccessibilityHelperBridge
   void SetExploreByTouchEnabled(bool enabled);
   void UpdateTreeIdOfNotificationSurface(const std::string& notification_key,
                                          ui::AXTreeID tree_id);
+  void HandleFilterTypeFocusEvent(mojom::AccessibilityEventDataPtr event_data);
+  void HandleFilterTypeAllEvent(mojom::AccessibilityEventDataPtr event_data);
 
   AXTreeSourceArc* GetFromTaskId(int32_t task_id);
   AXTreeSourceArc* CreateFromTaskId(int32_t task_id);

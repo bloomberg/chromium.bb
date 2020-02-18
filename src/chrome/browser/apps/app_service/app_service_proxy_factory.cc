@@ -14,6 +14,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/web_applications/web_app_provider_factory.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry_factory.h"
 #endif  // OS_CHROMEOS
@@ -39,19 +41,16 @@ AppServiceProxyFactory* AppServiceProxyFactory::GetInstance() {
   return base::Singleton<AppServiceProxyFactory>::get();
 }
 
-// static
-bool AppServiceProxyFactory::IsEnabled() {
-  return true;
-}
-
 AppServiceProxyFactory::AppServiceProxyFactory()
     : BrowserContextKeyedServiceFactory(
           "AppServiceProxy",
           BrowserContextDependencyManager::GetInstance()) {
 #if defined(OS_CHROMEOS)
   DependsOn(crostini::CrostiniRegistryServiceFactory::GetInstance());
+  DependsOn(extensions::AppWindowRegistry::Factory::GetInstance());
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
+  DependsOn(web_app::WebAppProviderFactory::GetInstance());
 #endif  // OS_CHROMEOS
 }
 

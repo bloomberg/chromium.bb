@@ -170,9 +170,6 @@ std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetDefaultPolicies() {
               std::make_unique<base::ListValue>());
   result->Set(key::kRemoteAccessHostDomainList,
               std::make_unique<base::ListValue>());
-  // TODO(yuweih): kRemoteAccessHostTalkGadgetPrefix is not used any more. Clean
-  // this up.
-  result->SetString(key::kRemoteAccessHostTalkGadgetPrefix, std::string());
   result->SetString(key::kRemoteAccessHostTokenUrl, std::string());
   result->SetString(key::kRemoteAccessHostTokenValidationUrl, std::string());
   result->SetString(key::kRemoteAccessHostTokenValidationCertificateIssuer,
@@ -232,7 +229,7 @@ bool PolicyWatcher::NormalizePolicies(base::DictionaryValue* policy_dict) {
   // 3) policies not supported on all OS-s (i.e. RemoteAccessHostMatchUsername
   //    is not supported on Windows and therefore policy_templates.json omits
   //    schema for this policy on this particular platform).
-  auto strategy = policy::SCHEMA_ALLOW_UNKNOWN_TOPLEVEL;
+  auto strategy = policy::SCHEMA_ALLOW_UNKNOWN;
 
   std::string path;
   std::string error;

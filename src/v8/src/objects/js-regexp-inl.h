@@ -7,6 +7,7 @@
 
 #include "src/objects/js-regexp.h"
 
+#include "src/objects/js-array-inl.h"
 #include "src/objects/objects-inl.h"  // Needed for write barriers
 #include "src/objects/smi.h"
 #include "src/objects/string.h"
@@ -18,6 +19,11 @@ namespace v8 {
 namespace internal {
 
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSRegExp)
+OBJECT_CONSTRUCTORS_IMPL_CHECK_SUPER(JSRegExpResult, JSArray)
+OBJECT_CONSTRUCTORS_IMPL_CHECK_SUPER(JSRegExpResultIndices, JSArray)
+
+CAST_ACCESSOR(JSRegExpResult)
+CAST_ACCESSOR(JSRegExpResultIndices)
 
 ACCESSORS(JSRegExp, last_index, Object, kLastIndexOffset)
 

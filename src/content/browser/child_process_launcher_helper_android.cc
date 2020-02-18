@@ -74,15 +74,20 @@ ChildProcessLauncherHelper::GetFilesToMap() {
   CHECK(!command_line()->HasSwitch(switches::kSingleProcess));
 
   std::unique_ptr<PosixFileDescriptorInfo> files_to_register =
-      CreateDefaultPosixFilesToMap(child_process_id(),
-                                   mojo_channel_->remote_endpoint(),
-                                   true /* include_service_required_files */,
-                                   GetProcessType(), command_line());
+      CreateDefaultPosixFilesToMap(
+          child_process_id(), mojo_channel_->remote_endpoint(),
+          files_to_preload_, GetProcessType(), command_line());
 
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
   base::MemoryMappedFile::Region icu_region;
   int fd = base::i18n::GetIcuDataFileHandle(&icu_region);
   files_to_register->ShareWithRegion(kAndroidICUDataDescriptor, fd, icu_region);
+  base::MemoryMappedFile::Region icu_extra_region;
+  int extra_fd = base::i18n::GetIcuExtraDataFileHandle(&icu_extra_region);
+  if (extra_fd != -1) {
+    files_to_register->ShareWithRegion(kAndroidICUExtraDataDescriptor, extra_fd,
+                                       icu_extra_region);
+  }
 #endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 
   return files_to_register;
@@ -234,18 +239,6 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
       priority.has_media_stream, priority.has_foreground_service_worker,
       priority.frame_depth, priority.intersects_viewport,
       priority.boost_for_pending_views, static_cast<jint>(priority.importance));
-}
-
-// static
-void ChildProcessLauncherHelper::SetRegisteredFilesForService(
-    const std::string& service_name,
-    std::map<std::string, base::FilePath> required_files) {
-  SetFilesToShareForServicePosix(service_name, std::move(required_files));
-}
-
-// static
-void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {
-  ResetFilesToShareForTestingPosix();
 }
 
 // static

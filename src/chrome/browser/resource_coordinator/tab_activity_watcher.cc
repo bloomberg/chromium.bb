@@ -367,13 +367,6 @@ class TabActivityWatcher::WebContentsData
   // most-recently-used order out of all non-incognito tabs.
   // Linear in the number of tabs (most users have <10 tabs open).
   tab_ranker::MRUFeatures GetMRUFeatures() {
-    const auto& all_closing_tabs =
-        TabActivityWatcher::GetInstance()->all_closing_tabs_;
-    // If in closing_all mode, directly returns current |mru_features_|.
-    if (all_closing_tabs.find(this) != all_closing_tabs.end()) {
-      return mru_features_;
-    }
-
     // If not in closing_all mode, calculate |mru_features_|.
     mru_features_.index = 0;
     mru_features_.total = 0;
@@ -454,9 +447,6 @@ class TabActivityWatcher::WebContentsData
     metrics.is_discarded = discarded_since_backgrounded_;
     metrics.time_from_backgrounded =
         (NowTicks() - backgrounded_time_).InMilliseconds();
-    const auto mru = GetMRUFeatures();
-    metrics.mru_index = mru.index;
-    metrics.total_tab_count = mru.total;
     metrics.label_id = label_id_;
 
     TabActivityWatcher::GetInstance()
@@ -565,47 +555,41 @@ base::Optional<float> TabActivityWatcher::CalculateReactivationScore(
   return web_contents_data->CalculateReactivationScore();
 }
 
-void TabActivityWatcher::LogOldestNTabFeatures() {
-  const int oldest_n_to_log = GetNumOldestTabsToLogWithTabRanker();
-  if (oldest_n_to_log <= 0)
-    return;
-
-  // Set query_id so that all TabFeatures logged in this query can be joined.
-  tab_metrics_logger_->set_query_id(NewInt64ForLabelIdOrQueryId());
-
-  std::vector<WebContentsData*> web_contents_data = GetSortedWebContentsData();
-  const int contents_data_size = web_contents_data.size();
-  // Only log oldest n tabs which are tabs
-  // from web_contents_data.size() - 1
-  // to web_contents_data.size() - oldest_n_to_log.
-  const int last_index_to_log =
-      std::max(contents_data_size - oldest_n_to_log, 0);
-  for (int i = contents_data_size - 1; i >= last_index_to_log; --i) {
-    web_contents_data[i]->LogCurrentTabFeatures(
-        web_contents_data[i]->GetTabFeatures());
-  }
-}
-
-void TabActivityWatcher::SortLifecycleUnitWithTabRanker(
+void TabActivityWatcher::LogAndMaybeSortLifecycleUnitWithTabRanker(
     std::vector<LifecycleUnit*>* tabs) {
   // Set query_id so that all TabFeatures logged in this query can be joined.
   tab_metrics_logger_->set_query_id(NewInt64ForLabelIdOrQueryId());
 
   std::map<int32_t, base::Optional<TabFeatures>> tab_features;
   for (auto* lifecycle_unit : *tabs) {
-    content::WebContents* web_contents =
-        lifecycle_unit->AsTabLifecycleUnitExternal()->GetWebContents();
-    WebContentsData* web_contents_data =
-        WebContentsData::FromWebContents(web_contents);
+    auto* lifecycle_unit_external =
+        lifecycle_unit->AsTabLifecycleUnitExternal();
+    // the lifecycle_unit_external is nullptr in the unit test
+    // TabManagerDelegateTest::KillMultipleProcesses.
+    if (!lifecycle_unit_external) {
+      tab_features[lifecycle_unit->GetID()] = base::nullopt;
+      continue;
+    }
+    WebContentsData* web_contents_data = WebContentsData::FromWebContents(
+        lifecycle_unit_external->GetWebContents());
+
+    // The web_contents_data can be nullptr in some cases.
+    // TODO(crbug.com/1019482): move the creation of WebContentsData to
+    // TabHelpers::AttachTabHelpers.
     if (!web_contents_data) {
       tab_features[lifecycle_unit->GetID()] = base::nullopt;
-    } else {
-      const base::Optional<TabFeatures>& tab =
-          web_contents_data->GetTabFeatures();
-      tab_features[lifecycle_unit->GetID()] = tab;
-      web_contents_data->LogCurrentTabFeatures(tab);
+      continue;
     }
+
+    const base::Optional<TabFeatures> tab = web_contents_data->GetTabFeatures();
+    tab_features[lifecycle_unit->GetID()] = tab;
+    web_contents_data->LogCurrentTabFeatures(tab);
   }
+
+  // Directly return if TabRanker is not enabled.
+  if (!base::FeatureList::IsEnabled(features::kTabRanker))
+    return;
+
   const std::map<int32_t, float> reactivation_scores =
       predictor_->ScoreTabs(tab_features);
   // Sort with larger reactivation_score first (desending importance).
@@ -669,7 +653,6 @@ void TabActivityWatcher::OnTabStripModelChanged(
       break;
     }
     case TabStripModelChange::kMoved:
-    case TabStripModelChange::kGroupChanged:
     case TabStripModelChange::kSelectionOnly:
       break;
   }
@@ -701,59 +684,6 @@ TabActivityWatcher* TabActivityWatcher::GetInstance() {
   return instance.get();
 }
 
-std::vector<TabActivityWatcher::WebContentsData*>
-TabActivityWatcher::GetSortedWebContentsData() {
-  // Put all web_contents_data into a vector.
-  std::vector<WebContentsData*> web_contents_data;
-  for (Browser* browser : *BrowserList::GetInstance()) {
-    // Ignore incognito browsers.
-    if (browser->profile()->IsOffTheRecord())
-      continue;
-
-    const int count = browser->tab_strip_model()->count();
-
-    for (int i = 0; i < count; i++) {
-      auto* const other = WebContentsData::FromWebContents(
-          browser->tab_strip_model()->GetWebContentsAt(i));
-      if (other)
-        web_contents_data.push_back(other);
-    }
-  }
-
-  // Sort all web_contents_data by MoreRecentlyUsed.
-  std::sort(web_contents_data.begin(), web_contents_data.end(),
-            WebContentsData::MoreRecentlyUsed);
-  return web_contents_data;
-}
-// When a WillCloseAllTabs is invoked, all MRU index of that tab_strip_model
-// is calculated and saved at that point.
-void TabActivityWatcher::WillCloseAllTabs(TabStripModel* tab_strip_model) {
-  if (tab_strip_model) {
-    std::vector<WebContentsData*> web_contents_data =
-        GetSortedWebContentsData();
-    // Assign index for each web_contents_data.
-    const std::size_t total_tabs = web_contents_data.size();
-    for (std::size_t i = 0; i < total_tabs; ++i) {
-      web_contents_data[i]->mru_features_.index = i;
-      web_contents_data[i]->mru_features_.total = total_tabs;
-    }
-
-    // Add will_be_closed tabs to |all_closing_tabs_| set.
-    int count = tab_strip_model->count();
-    for (int i = 0; i < count; i++) {
-      auto* other = WebContentsData::FromWebContents(
-          tab_strip_model->GetWebContentsAt(i));
-      all_closing_tabs_.insert(other);
-    }
-  }
-}
-
-// Clears all_closing_tabs_ if CloseAllTabs is canceled or completed.
-void TabActivityWatcher::CloseAllTabsStopped(TabStripModel* tab_strip_model,
-                                             CloseAllStoppedReason reason) {
-  all_closing_tabs_.clear();
-}
-
 void TabActivityWatcher::OnTabClosed(WebContentsData* web_contents_data) {
   // Log TabLifetime event.
   tab_metrics_logger_->LogTabLifetime(
@@ -765,9 +695,6 @@ void TabActivityWatcher::OnTabClosed(WebContentsData* web_contents_data) {
     web_contents_data->LogForegroundedOrClosedMetrics(
         false /*is_foregrounded */);
   }
-
-  // Erase the pointer in |all_closing_tabs_| only when all logging finished.
-  all_closing_tabs_.erase(web_contents_data);
 }
 
 }  // namespace resource_coordinator

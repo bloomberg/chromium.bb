@@ -72,6 +72,10 @@ class Controller : public ScriptExecutorDelegate,
   void Track(std::unique_ptr<TriggerContext> trigger_context,
              base::OnceCallback<void()> on_first_check_done);
 
+  // Returns true if we are in tracking mode and the first round of script
+  // checks has been completed.
+  bool HasRunFirstCheck() const;
+
   // Called when autofill assistant should start.
   //
   // This shows a UI, containing a progress bar, and executes the first
@@ -99,6 +103,8 @@ class Controller : public ScriptExecutorDelegate,
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   content::WebContents* GetWebContents() override;
   std::string GetAccountEmailAddress() override;
+  std::string GetLocale() override;
+
   void SetTouchableElementArea(const ElementAreaProto& area) override;
   void SetStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() const override;
@@ -113,9 +119,10 @@ class Controller : public ScriptExecutorDelegate,
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void SetViewportMode(ViewportMode mode) override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
-  bool SetForm(std::unique_ptr<FormProto> form,
-               base::RepeatingCallback<void(const FormProto::Result*)> callback)
-      override;
+  bool SetForm(
+      std::unique_ptr<FormProto> form,
+      base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
+      base::OnceCallback<void(const ClientStatus&)> cancel_callback) override;
   bool IsNavigatingToNewDocument() override;
   bool HasNavigationError() override;
 
@@ -127,9 +134,9 @@ class Controller : public ScriptExecutorDelegate,
   void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
 
   void EnterState(AutofillAssistantState state) override;
-  void SetCollectUserDataOptions(
-      std::unique_ptr<CollectUserDataOptions> options,
-      std::unique_ptr<UserData> information) override;
+  void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
+  void WriteUserData(
+      base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
   void OnScriptError(const std::string& error_message,
                      Metrics::DropOutReason reason);
 
@@ -152,11 +159,28 @@ class Controller : public ScriptExecutorDelegate,
       std::unique_ptr<autofill::AutofillProfile> address) override;
   void SetContactInfo(
       std::unique_ptr<autofill::AutofillProfile> profile) override;
-  void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) override;
+  void SetCreditCard(
+      std::unique_ptr<autofill::CreditCard> card,
+      std::unique_ptr<autofill::AutofillProfile> billing_profile) override;
   void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) override;
   void SetLoginOption(std::string identifier) override;
   void OnTermsAndConditionsLinkClicked(int link) override;
+  void OnFormActionLinkClicked(int link) override;
+  void SetDateTimeRangeStart(int year,
+                             int month,
+                             int day,
+                             int hour,
+                             int minute,
+                             int second) override;
+  void SetDateTimeRangeEnd(int year,
+                           int month,
+                           int day,
+                           int hour,
+                           int minute,
+                           int second) override;
+  void SetAdditionalValue(const std::string& client_memory_key,
+                          const std::string& value) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void GetRestrictedArea(std::vector<RectF>* area) const override;
   void GetVisualViewport(RectF* visual_viewport) const override;
@@ -339,12 +363,14 @@ class Controller : public ScriptExecutorDelegate,
 
   std::unique_ptr<OverlayColors> overlay_colors_;
 
-  std::unique_ptr<CollectUserDataOptions> collect_user_data_options_;
+  CollectUserDataOptions* collect_user_data_options_ = nullptr;
   std::unique_ptr<UserData> user_data_;
 
   std::unique_ptr<FormProto> form_;
   std::unique_ptr<FormProto::Result> form_result_;
-  base::RepeatingCallback<void(const FormProto::Result*)> form_callback_ =
+  base::RepeatingCallback<void(const FormProto::Result*)>
+      form_changed_callback_ = base::DoNothing();
+  base::OnceCallback<void(const ClientStatus&)> form_cancel_callback_ =
       base::DoNothing();
 
   // Value for ScriptExecutorDelegate::IsNavigatingToNewDocument()

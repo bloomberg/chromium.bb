@@ -70,15 +70,6 @@
 #define FPDF_PRINTMODE_POSTSCRIPT2_PASSTHROUGH 4
 #define FPDF_PRINTMODE_POSTSCRIPT3_PASSTHROUGH 5
 
-#define FPDF_TEXTRENDERMODE_FILL 0
-#define FPDF_TEXTRENDERMODE_STROKE 1
-#define FPDF_TEXTRENDERMODE_FILL_STROKE 2
-#define FPDF_TEXTRENDERMODE_INVISIBLE 3
-#define FPDF_TEXTRENDERMODE_FILL_CLIP 4
-#define FPDF_TEXTRENDERMODE_STROKE_CLIP 5
-#define FPDF_TEXTRENDERMODE_FILL_STROKE_CLIP 6
-#define FPDF_TEXTRENDERMODE_CLIP 7
-
 typedef struct FPDF_IMAGEOBJ_METADATA {
   // The image width in pixels.
   unsigned int width;
@@ -1133,13 +1124,13 @@ FPDFText_LoadStandardFont(FPDF_DOCUMENT document, FPDF_BYTESTRING font);
 // and used to scale, rotate, shear and translate the text.
 //
 // Returns TRUE on success.
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFText_GetMatrix(FPDF_PAGEOBJECT text,
-                                                       double* a,
-                                                       double* b,
-                                                       double* c,
-                                                       double* d,
-                                                       double* e,
-                                                       double* f);
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFTextObj_GetMatrix(FPDF_PAGEOBJECT text,
+                                                          double* a,
+                                                          double* b,
+                                                          double* c,
+                                                          double* d,
+                                                          double* e,
+                                                          double* f);
 
 // Experimental API.
 // Get the font size of a text object.
@@ -1173,7 +1164,8 @@ FPDFPageObj_CreateTextObj(FPDF_DOCUMENT document,
 // text     - the handle to the text object.
 //
 // Returns one of the FPDF_TEXTRENDERMODE_* flags on success, -1 on error.
-FPDF_EXPORT int FPDF_CALLCONV FPDFText_GetTextRenderMode(FPDF_PAGEOBJECT text);
+FPDF_EXPORT FPDF_TEXT_RENDERMODE FPDF_CALLCONV
+FPDFTextObj_GetTextRenderMode(FPDF_PAGEOBJECT text);
 
 // Experimental API.
 // Get the font name of a text object.

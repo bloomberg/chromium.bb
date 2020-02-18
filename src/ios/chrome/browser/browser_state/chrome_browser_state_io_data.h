@@ -80,9 +80,6 @@ class ChromeBrowserStateIOData {
   void Init(ProtocolHandlerMap* protocol_handlers) const;
 
   net::URLRequestContext* GetMainRequestContext() const;
-  net::URLRequestContext* GetIsolatedAppRequestContext(
-      net::URLRequestContext* main_context,
-      const base::FilePath& partition_path) const;
 
   // Sets the cookie store associated with a partition path.
   // The path must exist. If there is already a cookie store, it is deleted.
@@ -95,10 +92,6 @@ class ChromeBrowserStateIOData {
   // that browser state.
   content_settings::CookieSettings* GetCookieSettings() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
-
-  StringPrefMember* google_services_account_id() const {
-    return &google_services_user_account_id_;
-  }
 
   net::TransportSecurityState* transport_security_state() const {
     return transport_security_state_.get();
@@ -173,10 +166,6 @@ class ChromeBrowserStateIOData {
   void InitializeOnUIThread(ios::ChromeBrowserState* browser_state);
   void ApplyProfileParamsToContext(net::URLRequestContext* context) const;
 
-  std::unique_ptr<net::URLRequestJobFactory> SetUpJobFactoryDefaults(
-      std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory,
-      net::NetworkDelegate* network_delegate) const;
-
   // Called when the ChromeBrowserState is destroyed. |context_getters| must
   // include all URLRequestContextGetters that refer to the
   // ChromeBrowserStateIOData's URLRequestContexts. Triggers destruction of the
@@ -229,16 +218,6 @@ class ChromeBrowserStateIOData {
       ProfileParams* profile_params,
       ProtocolHandlerMap* protocol_handlers) const = 0;
 
-  // Does an on-demand initialization of a RequestContext for the given
-  // isolated app.
-  virtual AppRequestContext* InitializeAppRequestContext(
-      net::URLRequestContext* main_context) const = 0;
-
-  // These functions are used to transfer ownership of the lazily initialized
-  // context from ChromeBrowserStateIOData to the URLRequestContextGetter.
-  virtual AppRequestContext* AcquireIsolatedAppRequestContext(
-      net::URLRequestContext* main_context) const = 0;
-
   // The order *DOES* matter for the majority of these member variables, so
   // don't move them around unless you know what you're doing!
   // General rules:
@@ -258,8 +237,6 @@ class ChromeBrowserStateIOData {
   // Data from the UI thread from the ChromeBrowserState, used to initialize
   // ChromeBrowserStateIOData. Deleted after lazy initialization.
   mutable std::unique_ptr<ProfileParams> profile_params_;
-
-  mutable StringPrefMember google_services_user_account_id_;
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;

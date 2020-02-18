@@ -18,10 +18,7 @@
 #
 # Author: Mark Lobodzinski <mark@lunarg.com>
 
-import os,re,sys,string
-import xml.etree.ElementTree as etree
-from generator import *
-from collections import namedtuple
+import os
 
 # Copyright text prefixing all headers (list of strings).
 prefixStrings = [
@@ -50,6 +47,7 @@ prefixStrings = [
 platform_dict = {
     'android' : 'VK_USE_PLATFORM_ANDROID_KHR',
     'fuchsia' : 'VK_USE_PLATFORM_FUCHSIA',
+    'ggp': 'VK_USE_PLATFORM_GGP',
     'ios' : 'VK_USE_PLATFORM_IOS_MVK',
     'macos' : 'VK_USE_PLATFORM_MACOS_MVK',
     'metal' : 'VK_USE_PLATFORM_METAL_EXT',
@@ -70,3 +68,7 @@ def GetFeatureProtect(interface):
     if platform is not None:
         protect = platform_dict[platform]
     return protect
+
+# helper to define paths relative to the repo root
+def repo_relative(path):
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', path))

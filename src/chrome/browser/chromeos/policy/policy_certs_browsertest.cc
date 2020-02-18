@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 #include "chrome/browser/chromeos/policy/signin_profile_extensions_policy_test_base.h"
@@ -362,14 +363,11 @@ bool HasSubjectCommonName(CERTCertificate* cert_handle,
   return result;
 }
 
-void IsCertInNSSDatabaseOnIOThreadWithCertDb(
+void IsCertInNSSDatabaseOnIOThreadWithCertList(
     const std::string& subject_common_name,
     bool* out_system_slot_available,
     base::OnceClosure done_closure,
-    net::NSSCertDatabase* cert_db) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  base::ScopedAllowBlockingForTesting scoped_allow_blocking_for_testing;
-  net::ScopedCERTCertificateList certs = cert_db->ListCertsSync();
+    net::ScopedCERTCertificateList certs) {
   for (const net::ScopedCERTCertificate& cert : certs) {
     if (HasSubjectCommonName(cert.get(), subject_common_name)) {
       *out_system_slot_available = true;
@@ -377,6 +375,17 @@ void IsCertInNSSDatabaseOnIOThreadWithCertDb(
     }
   }
   std::move(done_closure).Run();
+}
+
+void IsCertInNSSDatabaseOnIOThreadWithCertDb(
+    const std::string& subject_common_name,
+    bool* out_system_slot_available,
+    base::OnceClosure done_closure,
+    net::NSSCertDatabase* cert_db) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  cert_db->ListCerts(base::BindOnce(
+      &IsCertInNSSDatabaseOnIOThreadWithCertList, subject_common_name,
+      out_system_slot_available, std::move(done_closure)));
 }
 
 void IsCertInNSSDatabaseOnIOThread(content::ResourceContext* resource_context,
@@ -795,8 +804,7 @@ class PolicyProvidedCertsForSigninExtensionTest
     onc_cert_scope.SetKey(onc::scope::kId, base::Value(extension_id));
 
     base::Value onc_cert_trust_bits(base::Value::Type::LIST);
-    onc_cert_trust_bits.GetList().push_back(
-        base::Value(onc::certificate::kWeb));
+    onc_cert_trust_bits.Append(base::Value(onc::certificate::kWeb));
 
     base::Value onc_certificate(base::Value::Type::DICTIONARY);
     onc_certificate.SetKey(onc::certificate::kGUID, base::Value("guid"));
@@ -808,7 +816,7 @@ class PolicyProvidedCertsForSigninExtensionTest
                            std::move(onc_cert_trust_bits));
 
     base::Value onc_certificates(base::Value::Type::LIST);
-    onc_certificates.GetList().emplace_back(std::move(onc_certificate));
+    onc_certificates.Append(std::move(onc_certificate));
 
     base::Value onc_dict(base::Value::Type::DICTIONARY);
     onc_dict.SetKey(onc::toplevel_config::kCertificates,

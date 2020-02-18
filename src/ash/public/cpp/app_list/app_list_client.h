@@ -19,7 +19,7 @@
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "ui/base/models/simple_menu_model.h"
 
-namespace app_list {
+namespace ash {
 
 class AppListController;
 
@@ -51,11 +51,14 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // |suggestion_index|: the position of the result as a suggestion chip in
   // the AppsGridView or the position of the result in the zero state search
   // page.
+  // |launch_as_default|: True if the result is launched as the default result
+  // by user pressing ENTER key.
   virtual void OpenSearchResult(const std::string& result_id,
                                 int event_flags,
                                 ash::AppListLaunchedFrom launched_from,
                                 ash::AppListLaunchType launch_type,
-                                int suggestion_index) = 0;
+                                int suggestion_index,
+                                bool launch_as_default) = 0;
   // Invokes a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an action on the search result,
   // for example, installing. They are stored in SearchResult::actions_.
@@ -77,7 +80,7 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // Invoked when the app list is closed.
   virtual void ViewClosing() = 0;
   // Notifies target visibility changes of the app list.
-  virtual void OnAppListTargetVisibilityChanged(bool visible) = 0;
+  virtual void OnAppListVisibilityWillChange(bool visible) = 0;
   // Notifies visibility changes of the app list.
   virtual void OnAppListVisibilityChanged(bool visible) = 0;
 
@@ -137,6 +140,6 @@ class ASH_PUBLIC_EXPORT AppListClient {
   virtual ~AppListClient() = default;
 };
 
-}  // namespace app_list
+}  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_CLIENT_H_

@@ -5,10 +5,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter.h"
+#include "chrome/browser/permissions/mock_permission_request.h"
+#include "chrome/browser/permissions/notification_permission_ui_selector.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,6 +24,7 @@
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -30,20 +35,57 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
+namespace {
+
+using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
+
+// Test implementation of NotificationPermissionUiSelector that always forces
+// the quiet UI to be used for surfacing notification permission requests.
+class TestQuietNotificationPermissionUiSelector
+    : public NotificationPermissionUiSelector {
+ public:
+  TestQuietNotificationPermissionUiSelector(
+      QuietUiReason simulated_reason_for_quiet_ui)
+      : simulated_reason_for_quiet_ui_(simulated_reason_for_quiet_ui) {}
+  ~TestQuietNotificationPermissionUiSelector() override = default;
+
+ protected:
+  // NotificationPermissionUiSelector:
+  void SelectUiToUse(PermissionRequest* request,
+                     DecisionMadeCallback callback) override {
+    std::move(callback).Run(UiToUse::kQuietUi, simulated_reason_for_quiet_ui_);
+  }
+
+ private:
+  QuietUiReason simulated_reason_for_quiet_ui_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestQuietNotificationPermissionUiSelector);
+};
+
+}  // namespace
+
 using ImageType = ContentSettingImageModel::ImageType;
 
 class ContentSettingBubbleDialogTest : public DialogBrowserTest {
  public:
-  ContentSettingBubbleDialogTest() {}
+  ContentSettingBubbleDialogTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kQuietNotificationPrompts);
+  }
 
   void ApplyMediastreamSettings(bool mic_accessed, bool camera_accessed);
   void ApplyContentSettingsForType(ContentSettingsType content_type);
+  void TriggerQuietNotificationPermissionRequest(
+      QuietUiReason simulated_reason_for_quiet_ui);
 
   void ShowDialogBubble(ContentSettingImageModel::ImageType image_type);
 
   void ShowUi(const std::string& name) override;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::Optional<MockPermissionRequest> notification_permission_request_;
+
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleDialogTest);
 };
 
@@ -69,10 +111,10 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   switch (content_type) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+    case ContentSettingsType::GEOLOCATION:
       content_settings->OnGeolocationPermissionSet(GURL::EmptyGURL(), false);
       break;
-    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS: {
+    case ContentSettingsType::AUTOMATIC_DOWNLOADS: {
       // Automatic downloads are handled by DownloadRequestLimiter.
       DownloadRequestLimiter::TabDownloadState* tab_download_state =
           g_browser_process->download_request_limiter()->GetDownloadState(
@@ -83,7 +125,7 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
           DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
       break;
     }
-    case CONTENT_SETTINGS_TYPE_POPUPS: {
+    case ContentSettingsType::POPUPS: {
       GURL url(
           embedded_test_server()->GetURL("/popup_blocker/popup-many-10.html"));
       ui_test_utils::NavigateToURL(browser(), url);
@@ -93,9 +135,8 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
       EXPECT_EQ(10u, helper->GetBlockedPopupsCount());
       break;
     }
-    case CONTENT_SETTINGS_TYPE_PLUGINS: {
-      const base::string16 plugin_name = base::ASCIIToUTF16("plugin_name");
-      content_settings->OnContentBlockedWithDetail(content_type, plugin_name);
+    case ContentSettingsType::PLUGINS: {
+      content_settings->OnContentBlocked(content_type);
       break;
     }
 
@@ -105,6 +146,24 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
       break;
   }
   browser()->window()->UpdateToolbar(web_contents);
+}
+
+void ContentSettingBubbleDialogTest::TriggerQuietNotificationPermissionRequest(
+    QuietUiReason simulated_reason_for_quiet_ui) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  auto* permission_request_manager =
+      PermissionRequestManager::FromWebContents(web_contents);
+  permission_request_manager
+      ->set_notification_permission_ui_selector_for_testing(
+          std::make_unique<TestQuietNotificationPermissionUiSelector>(
+              simulated_reason_for_quiet_ui));
+  DCHECK(!notification_permission_request_);
+  notification_permission_request_.emplace(
+      "notifications", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      GURL("https://example.com"));
+  permission_request_manager->AddRequest(&*notification_permission_request_);
+  base::RunLoop().RunUntilIdle();
 }
 
 void ContentSettingBubbleDialogTest::ShowDialogBubble(
@@ -131,28 +190,37 @@ void ContentSettingBubbleDialogTest::ShowUi(const std::string& name) {
     return;
   }
 
+  if (base::StartsWith(name, "notifications_quiet",
+                       base::CompareCase::SENSITIVE)) {
+    TriggerQuietNotificationPermissionRequest(
+        name == "notifications_quiet_crowd_deny"
+            ? QuietUiReason::kTriggeredByCrowdDeny
+            : QuietUiReason::kEnabledInPrefs);
+    ShowDialogBubble(ImageType::NOTIFICATIONS_QUIET_PROMPT);
+    return;
+  }
+
   constexpr struct {
     const char* name;
     ContentSettingsType content_type;
     ContentSettingImageModel::ImageType image_type;
   } content_settings_values[] = {
-      {"cookies", CONTENT_SETTINGS_TYPE_COOKIES, ImageType::COOKIES},
-      {"images", CONTENT_SETTINGS_TYPE_IMAGES, ImageType::IMAGES},
-      {"javascript", CONTENT_SETTINGS_TYPE_JAVASCRIPT, ImageType::JAVASCRIPT},
-      {"plugins", CONTENT_SETTINGS_TYPE_PLUGINS, ImageType::PLUGINS},
-      {"popups", CONTENT_SETTINGS_TYPE_POPUPS, ImageType::POPUPS},
-      {"geolocation", CONTENT_SETTINGS_TYPE_GEOLOCATION,
-       ImageType::GEOLOCATION},
-      {"ppapi_broker", CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
+      {"cookies", ContentSettingsType::COOKIES, ImageType::COOKIES},
+      {"images", ContentSettingsType::IMAGES, ImageType::IMAGES},
+      {"javascript", ContentSettingsType::JAVASCRIPT, ImageType::JAVASCRIPT},
+      {"plugins", ContentSettingsType::PLUGINS, ImageType::PLUGINS},
+      {"popups", ContentSettingsType::POPUPS, ImageType::POPUPS},
+      {"geolocation", ContentSettingsType::GEOLOCATION, ImageType::GEOLOCATION},
+      {"ppapi_broker", ContentSettingsType::PPAPI_BROKER,
        ImageType::PPAPI_BROKER},
-      {"mixed_script", CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+      {"mixed_script", ContentSettingsType::MIXEDSCRIPT,
        ImageType::MIXEDSCRIPT},
-      {"protocol_handlers", CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS,
+      {"protocol_handlers", ContentSettingsType::PROTOCOL_HANDLERS,
        ImageType::PROTOCOL_HANDLERS},
-      {"automatic_downloads", CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+      {"automatic_downloads", ContentSettingsType::AUTOMATIC_DOWNLOADS,
        ImageType::AUTOMATIC_DOWNLOADS},
-      {"midi_sysex", CONTENT_SETTINGS_TYPE_MIDI_SYSEX, ImageType::MIDI_SYSEX},
-      {"ads", CONTENT_SETTINGS_TYPE_ADS, ImageType::ADS},
+      {"midi_sysex", ContentSettingsType::MIDI_SYSEX, ImageType::MIDI_SYSEX},
+      {"ads", ContentSettingsType::ADS, ImageType::ADS},
   };
   for (auto content_settings : content_settings_values) {
     if (name == content_settings.name) {
@@ -227,5 +295,15 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_midi_sysex) {
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_ads) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
+                       InvokeUi_notifications_quiet) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest,
+                       InvokeUi_notifications_quiet_crowd_deny) {
   ShowAndVerifyUi();
 }

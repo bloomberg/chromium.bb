@@ -58,7 +58,8 @@ ShellBrowserState* ShellWebClient::browser_state() const {
 }
 
 std::string ShellWebClient::GetUserAgent(UserAgentType type) const {
-  return web::BuildUserAgentFromProduct("CriOS/36.77.34.45");
+  return web::BuildUserAgentFromProduct(UserAgentType::MOBILE,
+                                        "CriOS/36.77.34.45");
 }
 
 base::StringPiece ShellWebClient::GetDataResource(
@@ -89,6 +90,7 @@ void ShellWebClient::AllowCertificateError(
     const net::SSLInfo&,
     const GURL&,
     bool overridable,
+    int64_t /*navigation_id*/,
     const base::Callback<void(bool)>& callback) {
   base::Callback<void(bool)> block_callback(callback);
   UIAlertController* alert = [UIAlertController

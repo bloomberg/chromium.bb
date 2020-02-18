@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import collections
 import glob
 import os
 import re
@@ -47,19 +48,26 @@ class LoopbackPartitions(object):
   In either case, the same arguments should be passed to init.
   """
 
-  def __init__(self, path, destination=None):
+  def __init__(self, path, destination=None, part_ids=None, mount_opts=('ro',)):
     """Initialize.
 
     Args:
       path: Path to the backing file.
-      destination: Base path to mount partitions.
+      destination: Base path to mount partitions.  If not specified, then
+          calling Mount() will create a temporary directory and use it.
+      part_ids: Mount these partitions at context manager entry.  This is only
+          used during initialization of the context manager.
+      mount_opts: Use these mount_opts for mounting |part_ids|.  This is only
+          used during initialization of the context manager.
     """
     self.path = path
     self.destination = destination
     self.dev = None
+    self.part_ids = part_ids
+    self.mount_opts = mount_opts
     self.parts = {}
     self._destination_created = False
-    self._gpt_table = cros_build_lib.GetImageDiskPartitionInfo(path)
+    self._gpt_table = GetImageDiskPartitionInfo(path)
     # Set of _gpt_table elements currently mounted.
     self._mounted = set()
     # Set of dirs that need to be removed in close().
@@ -69,20 +77,20 @@ class LoopbackPartitions(object):
 
     try:
       cmd = ['losetup', '--show', '-f', self.path]
-      ret = cros_build_lib.SudoRunCommand(
-          cmd, print_cmd=False, capture_output=True)
+      ret = cros_build_lib.sudo_run(
+          cmd, debug_level=logging.DEBUG, capture_output=True, encoding='utf-8')
       self.dev = ret.output.strip()
       cmd = ['partx', '-d', self.dev]
-      cros_build_lib.SudoRunCommand(cmd, quiet=True, error_code_ok=True)
+      cros_build_lib.sudo_run(cmd, quiet=True, error_code_ok=True)
       cmd = ['partx', '-a', self.dev]
-      ret = cros_build_lib.SudoRunCommand(
-          cmd, print_cmd=False, error_code_ok=True)
+      ret = cros_build_lib.sudo_run(
+          cmd, debug_level=logging.DEBUG, error_code_ok=True)
       if ret.returncode:
         logging.warning('Adding partitions failed; dumping log & retrying')
-        cros_build_lib.RunCommand(['sync'])
-        cros_build_lib.RunCommand(['dmesg'])
+        cros_build_lib.run(['sync'])
+        cros_build_lib.run(['dmesg'])
         cmd = ['partx', '-u', self.dev]
-        cros_build_lib.SudoRunCommand(cmd, print_cmd=False)
+        cros_build_lib.sudo_run(cmd)
 
       self.parts = {}
       part_devs = glob.glob(self.dev + 'p*')
@@ -167,10 +175,13 @@ class LoopbackPartitions(object):
     """Is the given partition an ext2 file system?"""
     dev = self.GetPartitionDevName(part_id)
     magic_ofs = offset + 0x438
-    ret = cros_build_lib.SudoRunCommand(
+    # We shouldn't need the sync here, but we sometimes see flakes with some
+    # kernels where it looks like the metadata written isn't seen when we try
+    # to mount later on.  Adding a sync for 1 byte shouldn't be too bad.
+    ret = cros_build_lib.sudo_run(
         ['dd', 'if=%s' % dev, 'skip=%d' % magic_ofs,
-         'conv=notrunc', 'count=2', 'bs=1'],
-        capture_output=True, error_code_ok=True)
+         'conv=notrunc,fsync', 'count=2', 'bs=1'],
+        debug_level=logging.DEBUG, capture_output=True, error_code_ok=True)
     if ret.returncode:
       return False
     return ret.output == b'\x53\xef'
@@ -184,10 +195,13 @@ class LoopbackPartitions(object):
       return
     ro_compat_ofs = offset + 0x464 + 3
     logging.info('Enabling RW mount writing 0x00 to %d', ro_compat_ofs)
-    cros_build_lib.SudoRunCommand(
+    # We shouldn't need the sync here, but we sometimes see flakes with some
+    # kernels where it looks like the metadata written isn't seen when we try
+    # to mount later on.  Adding a sync for 1 byte shouldn't be too bad.
+    cros_build_lib.sudo_run(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
-         'conv=notrunc', 'count=1', 'bs=1'],
-        input=b'\0', redirect_stderr=True)
+         'conv=notrunc,fsync', 'count=1', 'bs=1'],
+        input=b'\0', debug_level=logging.DEBUG, redirect_stderr=True)
 
   def DisableRwMount(self, part_id, offset=0):
     """Disable RW mounts of the specified partition."""
@@ -198,19 +212,22 @@ class LoopbackPartitions(object):
       return
     ro_compat_ofs = offset + 0x464 + 3
     logging.info('Disabling RW mount writing 0xff to %d', ro_compat_ofs)
-    cros_build_lib.SudoRunCommand(
+    # We shouldn't need the sync here, but we sometimes see flakes with some
+    # kernels where it looks like the metadata written isn't seen when we try
+    # to mount later on.  Adding a sync for 1 byte shouldn't be too bad.
+    cros_build_lib.sudo_run(
         ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
-         'conv=notrunc', 'count=1', 'bs=1'],
-        input=b'\xff', redirect_stderr=True)
+         'conv=notrunc,fsync', 'count=1', 'bs=1'],
+        input=b'\xff', debug_level=logging.DEBUG, redirect_stderr=True)
 
   def _Mount(self, part, mount_opts):
+    if not self.destination:
+      self.destination = osutils.TempDir().tempdir
+      self._destination_created = True
+
     dest_number, dest_label = self._GetMountPointAndSymlink(part)
     if part in self._mounted and 'remount' not in mount_opts:
       return dest_number
-
-    if not self.destination:
-      self.destination = osutils.TempDir()
-      self._destination_created = True
 
     osutils.MountDir(self.GetPartitionDevName(part.number), dest_number,
                      makedirs=True, skip_mtab=False, sudo=True,
@@ -244,8 +261,8 @@ class LoopbackPartitions(object):
                                   osutils.RmDir, path, sudo=True, sleep=1)
       self._to_be_rmdir = set()
       cmd = ['partx', '-d', self.dev]
-      cros_build_lib.SudoRunCommand(cmd, quiet=True, error_code_ok=True)
-      cros_build_lib.SudoRunCommand(['losetup', '--detach', self.dev])
+      cros_build_lib.sudo_run(cmd, quiet=True, error_code_ok=True)
+      cros_build_lib.sudo_run(['losetup', '--detach', self.dev])
       self.dev = None
       self.parts = {}
       self._gpt_table = None
@@ -254,6 +271,8 @@ class LoopbackPartitions(object):
         self._destination_created = False
 
   def __enter__(self):
+    if self.part_ids:
+      self.Mount(self.part_ids, self.mount_opts)
     return self
 
   def __exit__(self, exc_type, exc, tb):
@@ -284,7 +303,7 @@ def WriteLsbRelease(sysroot, fields):
     content = osutils.ReadFile(path) + content
 
   osutils.WriteFile(path, content, mode='w', makedirs=True, sudo=True)
-  cros_build_lib.SudoRunCommand([
+  cros_build_lib.sudo_run([
       'setfattr', '-n', 'security.selinux', '-v',
       'u:object_r:cros_conf_file:s0', path])
 
@@ -349,14 +368,13 @@ def SecurityTest(board=None, image=None, baselines=None, vboot_hash=None):
       cmd += ['--baselines', baselines]
     if vboot_hash:
       cmd += ['--vboot-hash', vboot_hash]
-    result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
-                                       error_code_ok=True)
+    result = cros_build_lib.run(cmd, enter_chroot=True, error_code_ok=True)
     return not result.returncode
   else:
     try:
       image = BuildImagePath(board, image)
     except ImageDoesNotExistError as e:
-      raise SecurityTestArgumentError(e.message)
+      raise SecurityTestArgumentError(str(e))
     logging.info('Using %s', image)
 
     if not baselines:
@@ -483,7 +501,7 @@ class SecurityTestConfig(object):
     try:
       self._RunCommand(cmd)
     except cros_build_lib.RunCommandError as e:
-      logging.error('%s test failed: %s', check, e.message)
+      logging.error('%s test failed: %s', check, e)
       return False
     else:
       return True
@@ -498,13 +516,13 @@ class SecurityTestConfig(object):
         git.Clone(self._repo_dir, self._VBOOT_SRC, reference=self._VBOOT_SRC)
       except cros_build_lib.RunCommandError as e:
         raise VbootCheckoutError('Failed cloning repo from %s: %s' %
-                                 (self._VBOOT_SRC, e.message))
+                                 (self._VBOOT_SRC, e))
       try:
-        cros_build_lib.RunCommand(['git', 'checkout', '-q', self.vboot_hash],
-                                  cwd=self._repo_dir)
+        cros_build_lib.run(['git', 'checkout', '-q', self.vboot_hash],
+                           cwd=self._repo_dir)
       except cros_build_lib.RunCommandError as e:
         raise VbootCheckoutError('Failed checking out %s from %s: %s' %
-                                 (self.vboot_hash, self._VBOOT_SRC, e.message))
+                                 (self.vboot_hash, self._VBOOT_SRC, e))
       self._checked_out = True
 
   def _RunCommand(self, cmd, *args, **kwargs):
@@ -512,4 +530,113 @@ class SecurityTestConfig(object):
     extra_env = {'PATH': '%s:%s' % (signing.CROS_SIGNING_BIN_DIR,
                                     os.environ['PATH'])}
     kwargs['extra_env'] = extra_env.update(kwargs.get('extra_env', {}))
-    return cros_build_lib.RunCommand(cmd, *args, **kwargs)
+    return cros_build_lib.run(cmd, *args, **kwargs)
+
+
+PartitionInfo = collections.namedtuple(
+    'PartitionInfo',
+    ['number', 'start', 'end', 'size', 'file_system', 'name', 'flags']
+)
+
+
+def _ParseParted(lines):
+  """Returns partition information from `parted print` output."""
+  ret = []
+  # Sample output (partition #, start, end, size, file system, name, flags):
+  #   /foo/chromiumos_qemu_image.bin:3360MB:file:512:512:gpt:;
+  #   11:0.03MB:8.42MB:8.39MB::RWFW:;
+  #   6:8.42MB:8.42MB:0.00MB::KERN-C:;
+  #   7:8.42MB:8.42MB:0.00MB::ROOT-C:;
+  #   9:8.42MB:8.42MB:0.00MB::reserved:;
+  #   10:8.42MB:8.42MB:0.00MB::reserved:;
+  #   2:10.5MB:27.3MB:16.8MB::KERN-A:;
+  #   4:27.3MB:44.0MB:16.8MB::KERN-B:;
+  #   8:44.0MB:60.8MB:16.8MB:ext4:OEM:;
+  #   12:128MB:145MB:16.8MB:fat16:EFI-SYSTEM:boot;
+  #   5:145MB:2292MB:2147MB::ROOT-B:;
+  #   3:2292MB:4440MB:2147MB:ext2:ROOT-A:;
+  #   1:4440MB:7661MB:3221MB:ext4:STATE:;
+  pattern = re.compile(r'(([^:]*:){6}[^:]*);')
+  for line in lines:
+    match = pattern.match(line)
+    if match:
+      d = dict(zip(PartitionInfo._fields, match.group(1).split(':')))
+      # Disregard any non-numeric partition number (e.g. the file path).
+      if d['number'].isdigit():
+        d['number'] = int(d['number'])
+        for key in ['start', 'end', 'size']:
+          d[key] = float(d[key][:-1])
+        ret.append(PartitionInfo(**d))
+  return ret
+
+
+def _ParseCgpt(lines):
+  """Returns partition information from `cgpt show` output."""
+  #   start        size    part  contents
+  # 1921024     2097152       1  Label: "STATE"
+  #                              Type: Linux data
+  #                              UUID: EEBD83BE-397E-BD44-878B-0DDDD5A5C510
+  #   20480       32768       2  Label: "KERN-A"
+  #                              Type: ChromeOS kernel
+  #                              UUID: 7007C2F3-08E5-AB40-A4BC-FF5B01F5460D
+  #                              Attr: priority=15 tries=15 successful=1
+  # pylint: disable=invalid-triple-quote
+  # https://github.com/edaniszewski/pylint-quotes/issues/20
+  start_pattern = re.compile(r'''\s+(\d+)\s+(\d+)\s+(\d+)\s+Label: "(.+)"''')
+  ret = []
+  line_no = 0
+  while line_no < len(lines):
+    line = lines[line_no]
+    line_no += 1
+    m = start_pattern.match(line)
+    if not m:
+      continue
+
+    start, size, number, label = m.groups()
+    number = int(number)
+    start = int(start) * 512
+    size = int(size) * 512
+    end = start + size
+
+    ret.append(PartitionInfo(number=number, start=start, end=end, size=size,
+                             name=label, file_system='', flags=''))
+
+  return ret
+
+
+def GetImageDiskPartitionInfo(image_path):
+  """Returns the disk partition table of an image.
+
+  Args:
+    image_path: Path to the image file.
+
+  Returns:
+    A list of ParitionInfo items.
+  """
+  if cros_build_lib.IsInsideChroot():
+    # Inside chroot, use `cgpt`.
+    cmd = ['cgpt', 'show', image_path]
+    func = _ParseCgpt
+  else:
+    # Outside chroot, use `parted`. Parted 3.2 and earlier has a bug where it
+    # will complain that partitions are overlapping even when they are not. It
+    # does this in a specific case: when inserting a one-sector partition into
+    # a layout where that partition is snug in between two other partitions
+    # that have smaller partition numbers. With disk_layout_v2.json, this
+    # happens when inserting partition 10, KERN-A, since the blank padding
+    # before it was removed.
+    # Work around this by telling parted to ignore this "failure" interactively.
+    # Yes, the three dashes are correct, and yes, it _is_ weird.
+    cmd = ['parted', '---pretend-input-tty', '-m', image_path, 'unit', 'B',
+           'print']
+    func = _ParseParted
+
+  # The 'I' input tells parted to ignore its supposed concern about overlapping
+  # partitions. Cgpt simply ignores the input.
+  lines = cros_build_lib.run(
+      cmd,
+      extra_env={'PATH': '/sbin:%s' % os.environ['PATH'], 'LC_ALL': 'C'},
+      capture_output=True,
+      encoding='utf-8',
+      input=b'I').stdout.splitlines()
+  return func(lines)

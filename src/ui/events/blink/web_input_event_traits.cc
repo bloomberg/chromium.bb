@@ -48,13 +48,11 @@ void ApppendEventDetails(const WebMouseEvent& event, std::string* result) {
 void ApppendEventDetails(const WebMouseWheelEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n Delta: (%f, %f)\n WheelTicks: (%f, %f)\n Accel: (%f, %f)\n"
-                " ScrollByPage: %d\n HasPreciseScrollingDeltas: %d\n"
-                " Phase: (%d, %d)",
+                " DeltaUnits: %d\n Phase: (%d, %d)",
                 event.delta_x, event.delta_y, event.wheel_ticks_x,
                 event.wheel_ticks_y, event.acceleration_ratio_x,
-                event.acceleration_ratio_y, event.scroll_by_page,
-                event.has_precise_scrolling_deltas, event.phase,
-                event.momentum_phase);
+                event.acceleration_ratio_y, static_cast<int>(event.delta_units),
+                event.phase, event.momentum_phase);
 }
 
 void ApppendEventDetails(const WebGestureEvent& event, std::string* result) {
@@ -131,14 +129,6 @@ struct WebInputEventToString {
   }
 };
 
-struct WebInputEventSize {
-  template <class EventType>
-  bool Execute(WebInputEvent::Type /* type */, size_t* type_size) const {
-    *type_size = sizeof(EventType);
-    return true;
-  }
-};
-
 struct WebInputEventClone {
   template <class EventType>
   bool Execute(const WebInputEvent& event,
@@ -185,12 +175,6 @@ std::string WebInputEventTraits::ToString(const WebInputEvent& event) {
   std::string result;
   Apply(WebInputEventToString(), event.GetType(), event, &result);
   return result;
-}
-
-size_t WebInputEventTraits::GetSize(WebInputEvent::Type type) {
-  size_t size = 0;
-  Apply(WebInputEventSize(), type, type, &size);
-  return size;
 }
 
 WebScopedInputEvent WebInputEventTraits::Clone(const WebInputEvent& event) {

@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("dawn_overrides_with_defaults.gni")
+import("//build_overrides/build.gni")
 import("dawn_features.gni")
+import("dawn_overrides_with_defaults.gni")
 
 ###############################################################################
 # Template to produce a component for one of Dawn's libraries.
@@ -96,12 +97,13 @@ template("dawn_component") {
     }
     defines += [ "${invoker.DEFINE_PREFIX}_IMPLEMENTATION" ]
 
-    # TODO(cwallez@chromium.org): Remove this when we are sure the bots have
-    # been clobbered. This is necessary because when moving generated files
-    # around we ended up with bad generated files in cached build
-    # directories that get picked up because of the default inclusion of
-    # target_gen_dir as an include directory.
-    configs -= [ "//build/config/compiler:default_include_dirs" ]
+    # Chromium adds a config that uses a special linker script that removes
+    # all symbols except JNI ones. Remove this config so that our
+    # shared_library symbols are visible. This matches what Chromium's
+    # component template does.
+    if (build_with_chromium && is_android) {
+      configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    }
   }
 
   static_library("${libname}_static") {
@@ -114,13 +116,6 @@ template("dawn_component") {
     if (defined(invoker.configs)) {
       configs += invoker.configs
     }
-
-    # TODO(cwallez@chromium.org): Remove this when we are sure the bots have
-    # been clobbered. This is necessary because when moving generated files
-    # around we ended up with bad generated files in cached build
-    # directories that get picked up because of the default inclusion of
-    # target_gen_dir as an include directory.
-    configs -= [ "//build/config/compiler:default_include_dirs" ]
   }
 
   group(libname) {

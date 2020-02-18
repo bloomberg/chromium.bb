@@ -20,8 +20,7 @@ namespace remote_cocoa {
 
 RenderWidgetHostNSViewBridge::RenderWidgetHostNSViewBridge(
     mojom::RenderWidgetHostNSViewHost* host,
-    RenderWidgetHostNSViewHostHelper* host_helper)
-    : binding_(this) {
+    RenderWidgetHostNSViewHostHelper* host_helper) {
   display::Screen::GetScreen()->AddObserver(this);
 
   cocoa_view_.reset([[RenderWidgetHostViewCocoa alloc]
@@ -49,10 +48,11 @@ RenderWidgetHostNSViewBridge::~RenderWidgetHostNSViewBridge() {
   popup_window_.reset();
 }
 
-void RenderWidgetHostNSViewBridge::BindRequest(
-    mojom::RenderWidgetHostNSViewAssociatedRequest bridge_request) {
-  binding_.Bind(std::move(bridge_request),
-                ui::WindowResizeHelperMac::Get()->task_runner());
+void RenderWidgetHostNSViewBridge::BindReceiver(
+    mojo::PendingAssociatedReceiver<mojom::RenderWidgetHostNSView>
+        bridge_receiver) {
+  receiver_.Bind(std::move(bridge_receiver),
+                 ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
 RenderWidgetHostViewCocoa* RenderWidgetHostNSViewBridge::GetNSView() {
@@ -72,7 +72,12 @@ void RenderWidgetHostNSViewBridge::SetParentWebContentsNSView(
   // done by WebContentsViewMac.
   [cocoa_view_ setFrame:[parent_ns_view bounds]];
   [cocoa_view_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-  [parent_ns_view addSubview:cocoa_view_];
+  // Place the new view below all other views, matching the behavior in
+  // WebContentsViewMac::CreateViewForWidget.
+  // https://crbug.com/1017446
+  [parent_ns_view addSubview:cocoa_view_
+                  positioned:NSWindowBelow
+                  relativeTo:nil];
 }
 
 void RenderWidgetHostNSViewBridge::MakeFirstResponder() {

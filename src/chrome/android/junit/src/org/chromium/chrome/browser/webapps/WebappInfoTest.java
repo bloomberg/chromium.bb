@@ -13,10 +13,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
-import org.chromium.chrome.test.util.browser.WebappTestHelper;
+import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
@@ -143,16 +142,16 @@ public class WebappInfoTest {
     public void testNormalColors() {
         String name = "longName";
         String shortName = "name";
-        long themeColor = Color.argb(0xff, 0, 0xff, 0);
+        long toolbarColor = Color.argb(0xff, 0, 0xff, 0);
         long backgroundColor = Color.argb(0xff, 0, 0, 0xff);
 
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
-        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, themeColor);
+        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, toolbarColor);
         intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor);
         WebappInfo info = WebappInfo.create(intent);
-        Assert.assertEquals(themeColor, info.themeColor());
+        Assert.assertEquals(toolbarColor, info.toolbarColor());
         Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
 
@@ -165,22 +164,22 @@ public class WebappInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
         WebappInfo info = WebappInfo.create(intent);
-        Assert.assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.themeColor());
+        Assert.assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.toolbarColor());
         Assert.assertEquals(
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.backgroundColor());
     }
 
     @Test
     public void testColorsIntentCreation() {
-        long themeColor = Color.argb(0xff, 0, 0xff, 0);
+        long toolbarColor = Color.argb(0xff, 0, 0xff, 0);
         long backgroundColor = Color.argb(0xff, 0, 0, 0xff);
 
         Intent intent = createIntentWithUrlAndId();
-        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, themeColor);
+        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, toolbarColor);
         intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor);
 
         WebappInfo info = WebappInfo.create(intent);
-        Assert.assertEquals(themeColor, info.themeColor());
+        Assert.assertEquals(toolbarColor, info.toolbarColor());
         Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
 

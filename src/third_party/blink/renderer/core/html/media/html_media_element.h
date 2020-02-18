@@ -93,9 +93,6 @@ class CORE_EXPORT HTMLMediaElement
   USING_PRE_FINALIZER(HTMLMediaElement, Dispose);
 
  public:
-  // Returns attributes that should be checked against Trusted Types
-  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
-
   bool IsMediaElement() const override { return true; }
 
   static MIMETypeRegistry::SupportsType GetSupportsType(const ContentType&);
@@ -142,8 +139,18 @@ class CORE_EXPORT HTMLMediaElement
 
   // network state
   void SetSrc(const AtomicString&);
-  void SetSrc(const USVStringOrTrustedURL&, ExceptionState&);
   const KURL& currentSrc() const { return current_src_; }
+
+  // Return the URL to be used for downloading the media.
+  const KURL& downloadURL() const {
+    // If we didn't get a redirected URL from the player, then use the original.
+    if (current_src_after_redirects_.IsNull() ||
+        current_src_after_redirects_.IsEmpty()) {
+      return currentSrc();
+    }
+    return current_src_after_redirects_;
+  }
+
   void SetSrcObject(MediaStreamDescriptor*);
   MediaStreamDescriptor* GetSrcObject() const { return src_object_.Get(); }
 
@@ -198,6 +205,8 @@ class CORE_EXPORT HTMLMediaElement
   ScriptPromise playForBindings(ScriptState*);
   base::Optional<DOMExceptionCode> Play();
   void pause();
+  double latencyHint() const;
+  void setLatencyHint(double);
   void FlingingStarted();
   void FlingingStopped();
 
@@ -334,6 +343,9 @@ class CORE_EXPORT HTMLMediaElement
   void SetCcLayerForTesting(cc::Layer* layer) { SetCcLayer(layer); }
 
  protected:
+  // Assert the correct order of the children in shadow dom when DCHECK is on.
+  static void AssertShadowRootChildren(ShadowRoot&);
+
   HTMLMediaElement(const QualifiedName&, Document&);
   ~HTMLMediaElement() override;
   void Dispose();
@@ -361,8 +373,8 @@ class CORE_EXPORT HTMLMediaElement
   DisplayMode GetDisplayMode() const { return display_mode_; }
   virtual void SetDisplayMode(DisplayMode mode) { display_mode_ = mode; }
 
-  // Assert the correct order of the children in shadow dom when DCHECK is on.
-  static void AssertShadowRootChildren(ShadowRoot&);
+  // Called after the creation of |web_media_player_|.
+  virtual void OnWebMediaPlayerCreated() {}
 
  private:
   // Friend class for testing.
@@ -556,7 +568,7 @@ class CORE_EXPORT HTMLMediaElement
 
   void OnRemovedFromDocumentTimerFired(TimerBase*);
 
-  void DefaultEventHandler(Event&) override;
+  Features GetFeatures() override;
 
   TaskRunnerTimer<HTMLMediaElement> load_timer_;
   TaskRunnerTimer<HTMLMediaElement> progress_event_timer_;
@@ -573,6 +585,7 @@ class CORE_EXPORT HTMLMediaElement
   ReadyState ready_state_;
   ReadyState ready_state_maximum_;
   KURL current_src_;
+  KURL current_src_after_redirects_;
   Member<MediaStreamDescriptor> src_object_;
 
   Member<MediaError> error_;
@@ -686,9 +699,8 @@ class CORE_EXPORT HTMLMediaElement
 
   // AudioClientImpl wraps an AudioSourceProviderClient.
   // When the audio format is known, Chromium calls setFormat().
-  class AudioClientImpl final
-      : public GarbageCollectedFinalized<AudioClientImpl>,
-        public WebAudioSourceProviderClient {
+  class AudioClientImpl final : public GarbageCollected<AudioClientImpl>,
+                                public WebAudioSourceProviderClient {
    public:
     explicit AudioClientImpl(AudioSourceProviderClient* client)
         : client_(client) {}
@@ -735,7 +747,6 @@ class CORE_EXPORT HTMLMediaElement
   friend class Internals;
   friend class TrackDisplayUpdateScope;
   friend class MediaControlsImplTest;
-  friend class MediaControlsTouchlessImplTest;
   friend class HTMLMediaElementTest;
   friend class HTMLMediaElementEventListenersTest;
   friend class HTMLVideoElement;
@@ -757,7 +768,7 @@ class CORE_EXPORT HTMLMediaElement
 };
 
 inline bool IsHTMLMediaElement(const HTMLElement& element) {
-  return IsA<HTMLAudioElement>(element) || IsHTMLVideoElement(element);
+  return IsA<HTMLAudioElement>(element) || IsA<HTMLVideoElement>(element);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);

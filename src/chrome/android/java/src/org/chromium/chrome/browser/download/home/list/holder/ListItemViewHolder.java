@@ -40,14 +40,30 @@ public abstract class ListItemViewHolder extends ViewHolder {
                 return ImageViewHolder.create(parent);
             case ListUtils.ViewType.CUSTOM_VIEW:
                 return new CustomViewHolder(parent);
-            case ListUtils.ViewType.PREFETCH:
-                return PrefetchViewHolder.create(parent);
+            case ListUtils.ViewType.PREFETCH_ARTICLE:
+                return PrefetchArticleViewHolder.create(parent);
+            case ListUtils.ViewType.AUDIO:
+                return AudioViewHolder.create(parent);
             case ListUtils.ViewType.SECTION_HEADER:
                 return SectionTitleViewHolder.create(parent);
             case ListUtils.ViewType.IN_PROGRESS_VIDEO:
                 return InProgressVideoViewHolder.create(parent);
             case ListUtils.ViewType.IN_PROGRESS_IMAGE:
                 return InProgressImageViewHolder.create(parent);
+            case ListUtils.ViewType.PAGINATION_HEADER:
+                return PaginationViewHolder.create(parent);
+            case ListUtils.ViewType.GROUP_CARD_ITEM:
+                return PrefetchGroupedItemViewHolder.create(parent);
+            case ListUtils.ViewType.GROUP_CARD_HEADER:
+                return CardHeaderViewHolder.create(parent);
+            case ListUtils.ViewType.GROUP_CARD_FOOTER:
+                return CardFooterViewHolder.create(parent);
+            case ListUtils.ViewType.GROUP_CARD_DIVIDER_TOP:
+                return CardDividerTopViewHolder.create(parent);
+            case ListUtils.ViewType.GROUP_CARD_DIVIDER_MIDDLE:
+                return CardDividerMiddleViewHolder.create(parent);
+            case ListUtils.ViewType.GROUP_CARD_DIVIDER_BOTTOM:
+                return CardDividerBottomViewHolder.create(parent);
         }
 
         assert false;

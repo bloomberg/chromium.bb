@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "absl/algorithm/container.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/match.h"
 #include "p2p/base/port_allocator.h"
 #include "rtc_base/checks.h"
@@ -129,6 +128,8 @@ const int DEFAULT_RTT = 3000;  // 3 seconds
 const int MINIMUM_RTT = 100;    // 0.1 seconds
 const int MAXIMUM_RTT = 60000;  // 60 seconds
 
+const int DEFAULT_RTT_ESTIMATE_HALF_TIME_MS = 500;
+
 // Computes our estimate of the RTT given the current estimate.
 inline int ConservativeRTTEstimate(int rtt) {
   return rtc::SafeClamp(2 * rtt, MINIMUM_RTT, MAXIMUM_RTT);
@@ -138,6 +139,9 @@ inline int ConservativeRTTEstimate(int rtt) {
 const int RTT_RATIO = 3;  // 3 : 1
 
 constexpr int64_t kMinExtraPingDelayMs = 100;
+
+// Default field trials.
+const cricket::IceFieldTrials kDefaultFieldTrials;
 
 }  // namespace
 
@@ -156,45 +160,45 @@ void ConnectionRequest::Prepare(StunMessage* request) {
   // receiver side. The attribute is retrieved then by iterating and matching
   // over all parsed attributes. See StunMessage::GetAttribute.
   request->AddAttribute(
-      absl::make_unique<StunByteStringAttribute>(STUN_ATTR_USERNAME, username));
+      std::make_unique<StunByteStringAttribute>(STUN_ATTR_USERNAME, username));
 
   // connection_ already holds this ping, so subtract one from count.
   if (connection_->port()->send_retransmit_count_attribute()) {
-    request->AddAttribute(absl::make_unique<StunUInt32Attribute>(
+    request->AddAttribute(std::make_unique<StunUInt32Attribute>(
         STUN_ATTR_RETRANSMIT_COUNT,
         static_cast<uint32_t>(connection_->pings_since_last_response_.size() -
                               1)));
   }
   uint32_t network_info = connection_->port()->Network()->id();
   network_info = (network_info << 16) | connection_->port()->network_cost();
-  request->AddAttribute(absl::make_unique<StunUInt32Attribute>(
+  request->AddAttribute(std::make_unique<StunUInt32Attribute>(
       STUN_ATTR_NETWORK_INFO, network_info));
 
   if (webrtc::field_trial::IsEnabled(
           "WebRTC-PiggybackIceCheckAcknowledgement") &&
       connection_->last_ping_id_received()) {
-    request->AddAttribute(absl::make_unique<StunByteStringAttribute>(
+    request->AddAttribute(std::make_unique<StunByteStringAttribute>(
         STUN_ATTR_LAST_ICE_CHECK_RECEIVED,
         connection_->last_ping_id_received().value()));
   }
 
   // Adding ICE_CONTROLLED or ICE_CONTROLLING attribute based on the role.
   if (connection_->port()->GetIceRole() == ICEROLE_CONTROLLING) {
-    request->AddAttribute(absl::make_unique<StunUInt64Attribute>(
+    request->AddAttribute(std::make_unique<StunUInt64Attribute>(
         STUN_ATTR_ICE_CONTROLLING, connection_->port()->IceTiebreaker()));
     // We should have either USE_CANDIDATE attribute or ICE_NOMINATION
     // attribute but not both. That was enforced in p2ptransportchannel.
     if (connection_->use_candidate_attr()) {
       request->AddAttribute(
-          absl::make_unique<StunByteStringAttribute>(STUN_ATTR_USE_CANDIDATE));
+          std::make_unique<StunByteStringAttribute>(STUN_ATTR_USE_CANDIDATE));
     }
     if (connection_->nomination() &&
         connection_->nomination() != connection_->acked_nomination()) {
-      request->AddAttribute(absl::make_unique<StunUInt32Attribute>(
+      request->AddAttribute(std::make_unique<StunUInt32Attribute>(
           STUN_ATTR_NOMINATION, connection_->nomination()));
     }
   } else if (connection_->port()->GetIceRole() == ICEROLE_CONTROLLED) {
-    request->AddAttribute(absl::make_unique<StunUInt64Attribute>(
+    request->AddAttribute(std::make_unique<StunUInt64Attribute>(
         STUN_ATTR_ICE_CONTROLLED, connection_->port()->IceTiebreaker()));
   } else {
     RTC_NOTREACHED();
@@ -213,7 +217,7 @@ void ConnectionRequest::Prepare(StunMessage* request) {
   uint32_t prflx_priority =
       type_preference << 24 |
       (connection_->local_candidate().priority() & 0x00FFFFFF);
-  request->AddAttribute(absl::make_unique<StunUInt32Attribute>(
+  request->AddAttribute(std::make_unique<StunUInt32Attribute>(
       STUN_ATTR_PRIORITY, prflx_priority));
 
   // Adding Message Integrity attribute.
@@ -268,7 +272,9 @@ Connection::Connection(Port* port,
       last_ping_response_received_(0),
       reported_(false),
       state_(IceCandidatePairState::WAITING),
-      time_created_ms_(rtc::TimeMillis()) {
+      time_created_ms_(rtc::TimeMillis()),
+      field_trials_(&kDefaultFieldTrials),
+      rtt_estimate_(DEFAULT_RTT_ESTIMATE_HALF_TIME_MS) {
   // All of our connections start in WAITING state.
   // TODO(mallinath) - Start connections from STATE_FROZEN.
   // Wire up to send stun packets
@@ -285,6 +291,14 @@ const Candidate& Connection::local_candidate() const {
 
 const Candidate& Connection::remote_candidate() const {
   return remote_candidate_;
+}
+
+const rtc::Network* Connection::network() const {
+  return port()->Network();
+}
+
+int Connection::generation() const {
+  return port()->generation();
 }
 
 uint64_t Connection::priority() const {
@@ -382,6 +396,11 @@ int Connection::inactive_timeout() const {
 
 int Connection::receiving_timeout() const {
   return receiving_timeout_.value_or(WEAK_CONNECTION_RECEIVE_TIMEOUT);
+}
+
+void Connection::SetIceFieldTrials(const IceFieldTrials* field_trials) {
+  field_trials_ = field_trials;
+  rtt_estimate_.SetHalfTime(field_trials->rtt_estimate_halftime_ms);
 }
 
 void Connection::OnSendStunPacket(const void* data,
@@ -517,7 +536,7 @@ void Connection::HandleBindingRequest(IceMessage* msg) {
                         msg->reduced_transaction_id());
 
   // This is a validated stun request from remote peer.
-  port_->SendBindingResponse(msg, remote_addr);
+  SendBindingResponse(msg);
 
   // If it timed out on writing check, start up again
   if (!pruned_ && write_state_ == STATE_WRITE_TIMEOUT) {
@@ -565,6 +584,72 @@ void Connection::HandleBindingRequest(IceMessage* msg) {
   if (webrtc::field_trial::IsEnabled(
           "WebRTC-PiggybackIceCheckAcknowledgement")) {
     HandlePiggybackCheckAcknowledgementIfAny(msg);
+  }
+}
+
+void Connection::SendBindingResponse(const StunMessage* request) {
+  RTC_DCHECK(request->type() == STUN_BINDING_REQUEST);
+
+  // Where I send the response.
+  const rtc::SocketAddress& addr = remote_candidate_.address();
+
+  // Retrieve the username from the request.
+  const StunByteStringAttribute* username_attr =
+      request->GetByteString(STUN_ATTR_USERNAME);
+  RTC_DCHECK(username_attr != NULL);
+  if (username_attr == NULL) {
+    // No valid username, skip the response.
+    return;
+  }
+
+  // Fill in the response message.
+  StunMessage response;
+  response.SetType(STUN_BINDING_RESPONSE);
+  response.SetTransactionID(request->transaction_id());
+  const StunUInt32Attribute* retransmit_attr =
+      request->GetUInt32(STUN_ATTR_RETRANSMIT_COUNT);
+  if (retransmit_attr) {
+    // Inherit the incoming retransmit value in the response so the other side
+    // can see our view of lost pings.
+    response.AddAttribute(std::make_unique<StunUInt32Attribute>(
+        STUN_ATTR_RETRANSMIT_COUNT, retransmit_attr->value()));
+
+    if (retransmit_attr->value() > CONNECTION_WRITE_CONNECT_FAILURES) {
+      RTC_LOG(LS_INFO)
+          << ToString()
+          << ": Received a remote ping with high retransmit count: "
+          << retransmit_attr->value();
+    }
+  }
+
+  response.AddAttribute(std::make_unique<StunXorAddressAttribute>(
+      STUN_ATTR_XOR_MAPPED_ADDRESS, addr));
+  response.AddMessageIntegrity(local_candidate().password());
+  response.AddFingerprint();
+
+  // Send the response message.
+  rtc::ByteBufferWriter buf;
+  response.Write(&buf);
+  rtc::PacketOptions options(port_->StunDscpValue());
+  options.info_signaled_after_sent.packet_type =
+      rtc::PacketType::kIceConnectivityCheckResponse;
+  auto err = port_->SendTo(buf.Data(), buf.Length(), addr, options, false);
+  if (err < 0) {
+    RTC_LOG(LS_ERROR) << ToString()
+                      << ": Failed to send STUN ping response, to="
+                      << addr.ToSensitiveString() << ", err=" << err
+                      << ", id=" << rtc::hex_encode(response.transaction_id());
+  } else {
+    // Log at LS_INFO if we send a stun ping response on an unwritable
+    // connection.
+    rtc::LoggingSeverity sev = (!writable()) ? rtc::LS_INFO : rtc::LS_VERBOSE;
+    RTC_LOG_V(sev) << ToString() << ": Sent STUN ping response, to="
+                   << addr.ToSensitiveString()
+                   << ", id=" << rtc::hex_encode(response.transaction_id());
+
+    stats_.sent_ping_responses++;
+    LogCandidatePairEvent(webrtc::IceCandidatePairEventType::kCheckResponseSent,
+                          request->reduced_transaction_id());
   }
 }
 
@@ -734,11 +819,13 @@ void Connection::ReceivedPingResponse(
     acked_nomination_ = nomination.value();
   }
 
+  int64_t now = rtc::TimeMillis();
   total_round_trip_time_ms_ += rtt;
   current_round_trip_time_ms_ = static_cast<uint32_t>(rtt);
+  rtt_estimate_.AddSample(now, rtt);
 
   pings_since_last_response_.clear();
-  last_ping_response_received_ = rtc::TimeMillis();
+  last_ping_response_received_ = now;
   UpdateReceiving(last_ping_response_received_);
   set_write_state(STATE_WRITABLE);
   set_state(IceCandidatePairState::SUCCEEDED);
@@ -1118,6 +1205,18 @@ bool Connection::missing_responses(int64_t now) const {
 
   int64_t waiting = now - pings_since_last_response_[0].sent_time;
   return waiting > 2 * rtt();
+}
+
+bool Connection::TooManyOutstandingPings(
+    const absl::optional<int>& max_outstanding_pings) const {
+  if (!max_outstanding_pings.has_value()) {
+    return false;
+  }
+  if (static_cast<int>(pings_since_last_response_.size()) <
+      *max_outstanding_pings) {
+    return false;
+  }
+  return true;
 }
 
 ProxyConnection::ProxyConnection(Port* port,

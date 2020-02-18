@@ -100,7 +100,7 @@ int CalculateFlags(bool bold,
                    bool symbolic) {
   int flags = 0;
   if (bold)
-    flags |= FXFONT_BOLD;
+    flags |= FXFONT_FORCE_BOLD;
   if (italic)
     flags |= FXFONT_ITALIC;
   if (fixedPitch)
@@ -503,8 +503,7 @@ RetainPtr<CPDF_Font> CPDF_DocPageData::AddFont(std::unique_ptr<CFX_Font> pFont,
           InsertWidthArray1(pFont.get(), pEncoding.get(), start, end, widthArr);
         });
   }
-  int italicangle =
-      pFont->GetSubstFont() ? pFont->GetSubstFont()->m_ItalicAngle : 0;
+  int italicangle = pFont->GetSubstFontItalicAngle();
   FX_RECT bbox;
   pFont->GetBBox(&bbox);
   auto pBBox = pdfium::MakeRetain<CPDF_Array>();

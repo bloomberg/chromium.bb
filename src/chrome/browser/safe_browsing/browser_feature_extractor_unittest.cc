@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -104,7 +104,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
   void TearDown() override {
     extractor_.reset();
     host_.reset();
-    db_manager_ = NULL;
+    db_manager_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
     ASSERT_EQ(0, num_pending_);
   }

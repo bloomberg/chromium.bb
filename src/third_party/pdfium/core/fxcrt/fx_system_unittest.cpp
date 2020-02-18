@@ -74,6 +74,107 @@ void Check64BitBase2Itoa(int64_t input, const char* expected_output) {
 
 }  // namespace
 
+TEST(fxcrt, FXSYS_roundf) {
+  EXPECT_EQ(0, FXSYS_roundf(0.0f));
+  EXPECT_EQ(0, FXSYS_roundf(-0.0f));
+  EXPECT_EQ(0, FXSYS_roundf(0.00001f));
+  EXPECT_EQ(0, FXSYS_roundf(-0.00001f));
+  EXPECT_EQ(3, FXSYS_roundf(3.14159f));
+  EXPECT_EQ(4, FXSYS_roundf(3.5f));
+
+  // Check for smallest non-zero float values.
+  EXPECT_EQ(0, FXSYS_roundf(std::numeric_limits<float>::min()));
+  EXPECT_EQ(0, FXSYS_roundf(-std::numeric_limits<float>::min()));
+
+  // Function is a wrapper around standard C library function round(), so
+  // returns the integral value that is nearest to x, with halfway cases
+  // rounded away from zero.
+  EXPECT_EQ(-3, FXSYS_roundf(-3.14159f));
+  EXPECT_EQ(-4, FXSYS_roundf(-3.5f));
+
+  // Positive rounding stops at maximum int.
+  // MAX_INT=0x7FFFFFFF=2147483647=2.147483647e+9
+  // In IEEE-754 format, 2^31 yields exponent of 0x9E with mantissa of all
+  // zeroes which is 0x4f000000=2.14748365e+9, which is beyond max integer.
+  // Going to next smallest float by minus one from exponent and mantissa of
+  // all ones yields binary float representation of 0x4EFFFFFF=2.14748352e+9,
+  // which is 2147483520.
+  EXPECT_EQ(2147483520, FXSYS_roundf(2.14748352e+9f));
+
+  // Using a slightly larger value, expect to see it be capped at MAX_INT.
+  EXPECT_EQ(2147483647, FXSYS_roundf(2.14748365e+9f));
+
+  EXPECT_EQ(2147483647, FXSYS_roundf(2.14748365e+10f));
+  EXPECT_EQ(2147483647, FXSYS_roundf(std::numeric_limits<float>::max()));
+
+  // Negative rounding stops at minimum int.
+  // MIN_INT=0x80000000=-2147483648,=-2.147483648e+9
+  // In IEEE-754 format, 2^31 yields exponent of 0x9E with mantissa of all
+  // zeroes which is 0x4f000000=2.14748365e+9, and the sign bit set, which
+  // is 0xCF000000 and exactly matches the minimum integer.  Going to next
+  // smallest negative float by minus one from exponent and mantissa of all
+  // ones yields binary float representation of 0xCEFFFFFF=-2.14748352e+9,
+  // which is -2147483520.
+  EXPECT_EQ(-2147483648, FXSYS_roundf(-2.147483648e+10f));
+  EXPECT_EQ(-2147483648, FXSYS_roundf(-2.147483648e+9f));
+  EXPECT_EQ(-2147483520, FXSYS_roundf(-2.14748352e+9f));
+  EXPECT_EQ(-2147483648, FXSYS_roundf(-std::numeric_limits<float>::max()));
+
+  // NaN should give zero.
+  EXPECT_EQ(0, FXSYS_roundf(NAN));
+}
+
+TEST(fxcrt, FXSYS_round) {
+  EXPECT_EQ(0, FXSYS_round(0.0));
+  EXPECT_EQ(0, FXSYS_round(-0.0));
+  EXPECT_EQ(0, FXSYS_round(0.00001));
+  EXPECT_EQ(0, FXSYS_round(-0.00001));
+  EXPECT_EQ(3, FXSYS_round(3.14159));
+  EXPECT_EQ(4, FXSYS_round(3.5));
+
+  // Check for smallest non-zero double values.
+  EXPECT_EQ(0, FXSYS_round(std::numeric_limits<double>::min()));
+  EXPECT_EQ(0, FXSYS_round(-std::numeric_limits<double>::min()));
+
+  // Function is a wrapper around standard C library function round(), so
+  // returns the integral value that is nearest to x, with halfway cases
+  // rounded away from zero.
+  EXPECT_EQ(-3, FXSYS_round(-3.14159));
+  EXPECT_EQ(-4, FXSYS_round(-3.5));
+
+  // Positive rounding stops at maximum int.
+  // MAX_INT=0x7FFFFFFF=2147483647=2.147483647e+9
+  // In IEEE-754 double precision format, 2^31 yields exponent of 0x41E with
+  // mantissa of all zeroes which is 0x41E0000000000000=2.14748365e+9, which
+  // is beyond max integer.
+  // Going to next smallest float by minus one from exponent and mantissa of
+  // all ones yields binary float representation of
+  // 41DFFFFFFFC00000=2.147483647e+9, which matches the max integer.
+  EXPECT_EQ(2147483647, FXSYS_round(2.147483647e+9));
+
+  // Using a slightly larger value, expect to see it be capped at MAX_INT.
+  EXPECT_EQ(2147483647, FXSYS_round(2.14748365e+9));
+
+  EXPECT_EQ(2147483647, FXSYS_round(2.14748365e+10));
+  EXPECT_EQ(2147483647, FXSYS_round(std::numeric_limits<double>::max()));
+
+  // Negative rounding stops at minimum int.
+  // MIN_INT=0x80000000=-2147483648,=-2.147483648e+9
+  // In IEEE-754 double precision format, 2^31 yields exponent of 0x41E with
+  // mantissa of all zeroes which is 0x41E0000000000000=2.14748365e+9, and the
+  // sign bit set, which is 0xC1E0000000000000 and exactly matches the minimum
+  // integer.  Going to next smallest negative double by minus one from
+  // exponent and mantissa of all ones yields binary float representation of
+  // 0xC1DFFFFFFFFFFFFF=-2.1474836479999998e+9, which is -2147483648.
+  EXPECT_EQ(-2147483648, FXSYS_round(-2.1474836479999998e+9));
+  EXPECT_EQ(-2147483648, FXSYS_round(-2.147483648e+9));
+  EXPECT_EQ(-2147483648, FXSYS_round(-2.147483648e+10));
+  EXPECT_EQ(-2147483648, FXSYS_round(-std::numeric_limits<double>::max()));
+
+  // NaN should give zero.
+  EXPECT_EQ(0, FXSYS_round(NAN));
+}
+
 TEST(fxcrt, FXSYS_itoa_InvalidRadix) {
   char buf[32];
 

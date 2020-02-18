@@ -206,12 +206,16 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
     base::ReadOnlySharedMemoryRegion data,
     media::mojom::VideoFrameInfoPtr info,
     const gfx::Rect& content_rect,
-    viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
+    mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+        callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callbacks);
 
+  mojo::Remote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+      callbacks_remote(std::move(callbacks));
+
   if (!receiver_ || !data.IsValid()) {
-    callbacks->Done();
+    callbacks_remote->Done();
     return;
   }
 
@@ -225,11 +229,11 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
       // number of frames in-flight.
       constexpr size_t kMaxInFlightFrames = 32;  // Arbitrarily-chosen limit.
       DCHECK_LT(frame_callbacks_.size(), kMaxInFlightFrames);
-      frame_callbacks_.emplace_back(std::move(callbacks));
+      frame_callbacks_.emplace_back(std::move(callbacks_remote));
       break;
     }
     if (!frame_callbacks_[index].is_bound()) {
-      frame_callbacks_[index] = std::move(callbacks);
+      frame_callbacks_[index] = std::move(callbacks_remote);
       break;
     }
   }
@@ -293,24 +297,26 @@ void FrameSinkVideoCaptureDevice::WillStart() {}
 void FrameSinkVideoCaptureDevice::DidStop() {}
 
 void FrameSinkVideoCaptureDevice::CreateCapturer(
-    viz::mojom::FrameSinkVideoCapturerRequest request) {
-  CreateCapturerViaGlobalManager(std::move(request));
+    mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer> receiver) {
+  CreateCapturerViaGlobalManager(std::move(receiver));
 }
 
 // static
 void FrameSinkVideoCaptureDevice::CreateCapturerViaGlobalManager(
-    viz::mojom::FrameSinkVideoCapturerRequest request) {
-  // Send the request to UI thread because that's where HostFrameSinkManager
+    mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer> receiver) {
+  // Send the receiver to UI thread because that's where HostFrameSinkManager
   // lives.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(
-                     [](viz::mojom::FrameSinkVideoCapturerRequest request) {
-                       viz::HostFrameSinkManager* const manager =
-                           GetHostFrameSinkManager();
-                       DCHECK(manager);
-                       manager->CreateVideoCapturer(std::move(request));
-                     },
-                     std::move(request)));
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(
+          [](mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer>
+                 receiver) {
+            viz::HostFrameSinkManager* const manager =
+                GetHostFrameSinkManager();
+            DCHECK(manager);
+            manager->CreateVideoCapturer(std::move(receiver));
+          },
+          std::move(receiver)));
 }
 
 void FrameSinkVideoCaptureDevice::MaybeStartConsuming() {

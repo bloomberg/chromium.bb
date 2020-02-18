@@ -42,12 +42,15 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 using blink::mojom::FetchCacheMode;
 
 namespace blink {
+
+WebURLRequest::ExtraData::ExtraData() : render_frame_id_(MSG_ROUTING_NONE) {}
 
 // The purpose of this struct is to permit allocating a ResourceRequest on the
 // heap, which is otherwise disallowed by DISALLOW_NEW annotation on
@@ -118,6 +121,10 @@ void WebURLRequest::SetTopFrameOrigin(const WebSecurityOrigin& origin) {
 
 WebSecurityOrigin WebURLRequest::RequestorOrigin() const {
   return resource_request_->RequestorOrigin();
+}
+
+WebSecurityOrigin WebURLRequest::IsolatedWorldOrigin() const {
+  return resource_request_->IsolatedWorldOrigin();
 }
 
 void WebURLRequest::SetRequestorOrigin(
@@ -391,10 +398,6 @@ bool WebURLRequest::IsRevalidating() const {
   return resource_request_->IsRevalidating();
 }
 
-bool WebURLRequest::ShouldAlsoUseFactoryBoundOriginForCors() const {
-  return resource_request_->ShouldAlsoUseFactoryBoundOriginForCors();
-}
-
 const base::Optional<base::UnguessableToken>& WebURLRequest::GetDevToolsToken()
     const {
   return resource_request_->GetDevToolsToken();
@@ -470,7 +473,7 @@ int WebURLRequest::GetLoadFlagsForWebUrlRequest() const {
               blink::mojom::RequestContextType::PREFETCH);
     DCHECK(base::FeatureList::IsEnabled(
         network::features::kPrefetchMainResourceNetworkIsolationKey));
-    if (!resource_request_->RequestorOrigin()->IsSameSchemeHostPort(
+    if (!resource_request_->RequestorOrigin()->IsSameOriginWith(
             SecurityOrigin::Create(resource_request_->Url()).get())) {
       load_flags |= net::LOAD_RESTRICTED_PREFETCH;
     }
@@ -494,6 +497,11 @@ bool WebURLRequest::IsFromOriginDirtyStyleSheet() const {
 
 bool WebURLRequest::IsSignedExchangePrefetchCacheEnabled() const {
   return resource_request_->IsSignedExchangePrefetchCacheEnabled();
+}
+
+base::Optional<base::UnguessableToken> WebURLRequest::RecursivePrefetchToken()
+    const {
+  return resource_request_->RecursivePrefetchToken();
 }
 
 WebURLRequest::WebURLRequest(ResourceRequest& r) : resource_request_(&r) {}

@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/browser/resources/media/grit/media_internals_resources.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
@@ -31,7 +32,7 @@ class WebUIResourceBrowserTest : public ContentBrowserTest {
       ASSERT_TRUE(PathExists(file));
     }
 
-    NavigateToURL(shell(), net::FilePathToFileURL(file));
+    EXPECT_TRUE(NavigateToURL(shell(), net::FilePathToFileURL(file)));
 
     content::WebContents* web_contents = shell()->web_contents();
     ASSERT_TRUE(web_contents);

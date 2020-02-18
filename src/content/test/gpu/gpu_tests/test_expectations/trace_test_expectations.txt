@@ -29,6 +29,11 @@ crbug.com/867136 [ linux ] OverlayModeTraceTest_* [ Skip ]
 crbug.com/867136 [ android ] OverlayModeTraceTest_* [ Skip ]
 crbug.com/867136 [ chromeos ] OverlayModeTraceTest_* [ Skip ]
 crbug.com/867136 [ win7 ] OverlayModeTraceTest_* [ Skip ]
+crbug.com/1009860 [ mac ] SwapChainTraceTest_* [ Skip ]
+crbug.com/1009860 [ linux ] SwapChainTraceTest_* [ Skip ]
+crbug.com/1009860 [ android ] SwapChainTraceTest_* [ Skip ]
+crbug.com/1009860 [ chromeos ] SwapChainTraceTest_* [ Skip ]
+crbug.com/1009860 [ win7 ] SwapChainTraceTest_* [ Skip ]
 
 # VP9 videos fail to trigger zero copy video presentation path.
 crbug.com/930343 [ win intel ] VideoPathTraceTest_DirectComposition_Video_VP9_Fullsize [ Failure ]
@@ -40,8 +45,3 @@ crbug.com/937545 [ win10 nvidia ] VideoPathTraceTest_DirectComposition_ComplexOv
 crbug.com/960007 [ win10 nvidia ] OverlayModeTraceTest_DirectComposition_Nonroot [ RetryOnFailure ]
 crbug.com/969117 [ win10 intel ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
 crbug.com/978181 [ win10 nvidia ] OverlayModeTraceTest_DirectComposition_Underlay [ RetryOnFailure ]
-
-# These tests check if overlay is being used for the test, but they shouldn't.
-# TODO(sunnyps) - Remove when this inherent check is removed.
-crbug.com/1007411 [ win10 ] OverlayModeTraceTest_DirectComposition_Video_MP4_Rounded_Corner [ Failure ]
-crbug.com/1007411 [ win10 ] VideoPathTraceTest_DirectComposition_Video_MP4_Rounded_Corner [ Failure ]

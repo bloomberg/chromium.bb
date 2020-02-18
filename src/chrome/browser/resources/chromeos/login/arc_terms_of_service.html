@@ -8,6 +8,7 @@
 
 <dom-module id="arc-tos-root">
   <template>
+    <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="arc_terms_of_service.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="arc-tos-dialog" has-buttons class="arc-tos-loading">
@@ -17,8 +18,9 @@
       <div slot="subtitle" i18n-content="arcTermsOfServiceScreenDescription">
       </div>
       <div id="arc-tos-container" slot="footer" class="flex layout vertical">
-        <div id="arc-tos-view-container" class="arc-tos-content">
-          <webview id="arc-tos-view"></webview>
+        <div id="arc-tos-view-container" class="arc-tos-content flex">
+          <webview id="arc-tos-view" allowTransparency
+              class="oobe-tos-webview"></webview>
         </div>
         <div id="arc-policy-link" class="arc-tos-content">
           <a href="#" i18n-content="arcPolicyLink"></a>

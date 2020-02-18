@@ -62,7 +62,7 @@ std::unique_ptr<PrinterCache> ParsePrinters(std::unique_ptr<std::string> data) {
     return nullptr;
   }
 
-  const base::Value::ListStorage& printer_list = json_blob->GetList();
+  base::Value::ConstListView printer_list = json_blob->GetList();
   if (printer_list.size() > kMaxRecords) {
     LOG(WARNING) << "Too many records in printers policy: "
                  << printer_list.size();
@@ -225,6 +225,10 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
              base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   }
 
+  BulkPrintersCalculatorImpl(const BulkPrintersCalculatorImpl&) = delete;
+  BulkPrintersCalculatorImpl& operator=(const BulkPrintersCalculatorImpl&) =
+      delete;
+
   void AddObserver(Observer* observer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     observers_.AddObserver(observer);
@@ -351,8 +355,8 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
   std::unordered_map<std::string, Printer> printers_;
 
   base::ObserverList<BulkPrintersCalculator::Observer>::Unchecked observers_;
+
   SEQUENCE_CHECKER(sequence_checker_);
-  DISALLOW_COPY_AND_ASSIGN(BulkPrintersCalculatorImpl);
   base::WeakPtrFactory<BulkPrintersCalculatorImpl> weak_ptr_factory_{this};
 };
 

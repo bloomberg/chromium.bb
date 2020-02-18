@@ -45,6 +45,7 @@ int HttpCacheLookupManager::LookupTransaction::StartLookup(
   });
 
   request_->url = push_helper_->GetURL();
+  request_->network_isolation_key = push_helper_->GetNetworkIsolationKey();
   request_->method = "GET";
   request_->load_flags = LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
   cache->CreateTransaction(DEFAULT_PRIORITY, &transaction_);
@@ -80,8 +81,9 @@ void HttpCacheLookupManager::OnPush(
   // LookupTransaction.
 
   int rv = lookup->StartLookup(
-      http_cache_, base::Bind(&HttpCacheLookupManager::OnLookupComplete,
-                              weak_factory_.GetWeakPtr(), pushed_url),
+      http_cache_,
+      base::BindOnce(&HttpCacheLookupManager::OnLookupComplete,
+                     weak_factory_.GetWeakPtr(), pushed_url),
       session_net_log);
 
   if (rv == ERR_IO_PENDING) {

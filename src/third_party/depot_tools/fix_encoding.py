@@ -215,6 +215,10 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
       if sys.version_info.major == 2 and not isinstance(text, unicode):
         # Convert to unicode.
         text = str(text).decode(self.encoding, 'replace')
+      elif sys.version_info.major == 3 and isinstance(text, bytes):
+        # Bytestrings need to be decoded to a string before being passed to
+        # Windows.
+        text = text.decode(self.encoding, 'replace')
       remaining = len(text)
       while remaining > 0:
         n = self._DWORD(0)

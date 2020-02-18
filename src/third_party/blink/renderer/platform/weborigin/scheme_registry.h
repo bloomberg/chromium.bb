@@ -92,8 +92,8 @@ class PLATFORM_EXPORT SchemeRegistry {
   // Serialize the registered schemes in a comma-separated list.
   static String ListOfCorsEnabledURLSchemes();
 
-  // "Legacy" schemes (e.g. 'ftp:', 'gopher:') which we might want to treat
-  // differently from "webby" schemes.
+  // "Legacy" schemes (e.g. 'ftp:') which we might want to treat differently
+  // from "webby" schemes.
   static bool ShouldTreatURLSchemeAsLegacy(const String& scheme);
 
   // Does the scheme represent a location relevant to web compatibility metrics?
@@ -112,6 +112,9 @@ class PLATFORM_EXPORT SchemeRegistry {
   static bool IsFetchScheme(const String& scheme);
 
   // Schemes which override the first-/third-party checks on a Document.
+  // TODO(chlily): This should also reflect the fact that chrome:// scheme
+  // should be considered first-party if the embedded origin is secure, to be
+  // consistent with other places that check this.
   static void RegisterURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);
   static void RemoveURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);
   static bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(

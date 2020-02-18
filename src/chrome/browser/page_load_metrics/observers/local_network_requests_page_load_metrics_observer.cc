@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
@@ -124,15 +124,19 @@ bool GetIPAndPort(
   // from the URL. If none was returned, try matching the hostname from the URL
   // itself as it might be an IP address if it is a local network request, which
   // is what we care about.
-  if (!ip_exists && extra_request_info.url.is_valid()) {
-    if (net::IsLocalhost(extra_request_info.url)) {
+  if (!ip_exists && !extra_request_info.origin_of_final_url.opaque()) {
+    // TODO(csharrison): https://crbug.com/1023042: Avoid the url::Origin->GURL
+    // conversion.  Today the conversion is necessary, because net::IsLocalhost
+    // and EffectiveIntPort are only available for GURL.
+    GURL origin_of_final_url = extra_request_info.origin_of_final_url.GetURL();
+    if (net::IsLocalhost(origin_of_final_url)) {
       *resource_ip = net::IPAddress::IPv4Localhost();
       ip_exists = true;
     } else {
-      ip_exists = net::ParseURLHostnameToAddress(extra_request_info.url.host(),
+      ip_exists = net::ParseURLHostnameToAddress(origin_of_final_url.host(),
                                                  resource_ip);
     }
-    *resource_port = extra_request_info.url.EffectiveIntPort();
+    *resource_port = origin_of_final_url.EffectiveIntPort();
   }
 
   if (net::HostStringIsLocalhost(resource_ip->ToString())) {

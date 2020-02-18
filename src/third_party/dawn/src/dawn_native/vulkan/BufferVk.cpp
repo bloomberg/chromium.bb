@@ -16,6 +16,9 @@
 
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
+#include "dawn_native/vulkan/ResourceHeapVk.h"
+#include "dawn_native/vulkan/ResourceMemoryAllocatorVk.h"
+#include "dawn_native/vulkan/VulkanError.h"
 
 #include <cstring>
 
@@ -23,86 +26,86 @@ namespace dawn_native { namespace vulkan {
 
     namespace {
 
-        VkBufferUsageFlags VulkanBufferUsage(dawn::BufferUsage usage) {
+        VkBufferUsageFlags VulkanBufferUsage(wgpu::BufferUsage usage) {
             VkBufferUsageFlags flags = 0;
 
-            if (usage & dawn::BufferUsage::CopySrc) {
+            if (usage & wgpu::BufferUsage::CopySrc) {
                 flags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             }
-            if (usage & dawn::BufferUsage::CopyDst) {
+            if (usage & wgpu::BufferUsage::CopyDst) {
                 flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
             }
-            if (usage & dawn::BufferUsage::Index) {
+            if (usage & wgpu::BufferUsage::Index) {
                 flags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
             }
-            if (usage & dawn::BufferUsage::Vertex) {
+            if (usage & wgpu::BufferUsage::Vertex) {
                 flags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             }
-            if (usage & dawn::BufferUsage::Uniform) {
+            if (usage & wgpu::BufferUsage::Uniform) {
                 flags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
             }
-            if (usage & dawn::BufferUsage::Storage) {
+            if (usage & wgpu::BufferUsage::Storage) {
                 flags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
             }
-            if (usage & dawn::BufferUsage::Indirect) {
+            if (usage & wgpu::BufferUsage::Indirect) {
                 flags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
             }
 
             return flags;
         }
 
-        VkPipelineStageFlags VulkanPipelineStage(dawn::BufferUsage usage) {
+        VkPipelineStageFlags VulkanPipelineStage(wgpu::BufferUsage usage) {
             VkPipelineStageFlags flags = 0;
 
-            if (usage & (dawn::BufferUsage::MapRead | dawn::BufferUsage::MapWrite)) {
+            if (usage & (wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite)) {
                 flags |= VK_PIPELINE_STAGE_HOST_BIT;
             }
-            if (usage & (dawn::BufferUsage::CopySrc | dawn::BufferUsage::CopyDst)) {
+            if (usage & (wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst)) {
                 flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
             }
-            if (usage & (dawn::BufferUsage::Index | dawn::BufferUsage::Vertex)) {
+            if (usage & (wgpu::BufferUsage::Index | wgpu::BufferUsage::Vertex)) {
                 flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
             }
-            if (usage & (dawn::BufferUsage::Uniform | dawn::BufferUsage::Storage)) {
+            if (usage & (wgpu::BufferUsage::Uniform | wgpu::BufferUsage::Storage)) {
                 flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
                          VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
                          VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
             }
-            if (usage & dawn::BufferUsage::Indirect) {
+            if (usage & wgpu::BufferUsage::Indirect) {
                 flags |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
             }
 
             return flags;
         }
 
-        VkAccessFlags VulkanAccessFlags(dawn::BufferUsage usage) {
+        VkAccessFlags VulkanAccessFlags(wgpu::BufferUsage usage) {
             VkAccessFlags flags = 0;
 
-            if (usage & dawn::BufferUsage::MapRead) {
+            if (usage & wgpu::BufferUsage::MapRead) {
                 flags |= VK_ACCESS_HOST_READ_BIT;
             }
-            if (usage & dawn::BufferUsage::MapWrite) {
+            if (usage & wgpu::BufferUsage::MapWrite) {
                 flags |= VK_ACCESS_HOST_WRITE_BIT;
             }
-            if (usage & dawn::BufferUsage::CopySrc) {
+            if (usage & wgpu::BufferUsage::CopySrc) {
                 flags |= VK_ACCESS_TRANSFER_READ_BIT;
             }
-            if (usage & dawn::BufferUsage::CopyDst) {
+            if (usage & wgpu::BufferUsage::CopyDst) {
                 flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
             }
-            if (usage & dawn::BufferUsage::Index) {
+            if (usage & wgpu::BufferUsage::Index) {
                 flags |= VK_ACCESS_INDEX_READ_BIT;
             }
-            if (usage & dawn::BufferUsage::Vertex) {
+            if (usage & wgpu::BufferUsage::Vertex) {
                 flags |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
             }
-            if (usage & dawn::BufferUsage::Uniform) {
+            if (usage & wgpu::BufferUsage::Uniform) {
                 flags |= VK_ACCESS_UNIFORM_READ_BIT;
             }
-            if (usage & dawn::BufferUsage::Storage) {
+            if (usage & wgpu::BufferUsage::Storage) {
                 flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
             }
-            if (usage & dawn::BufferUsage::Indirect) {
+            if (usage & wgpu::BufferUsage::Indirect) {
                 flags |= VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
             }
 
@@ -111,8 +114,14 @@ namespace dawn_native { namespace vulkan {
 
     }  // namespace
 
-    Buffer::Buffer(Device* device, const BufferDescriptor* descriptor)
-        : BufferBase(device, descriptor) {
+    // static
+    ResultOrError<Buffer*> Buffer::Create(Device* device, const BufferDescriptor* descriptor) {
+        std::unique_ptr<Buffer> buffer = std::make_unique<Buffer>(device, descriptor);
+        DAWN_TRY(buffer->Initialize());
+        return buffer.release();
+    }
+
+    MaybeError Buffer::Initialize() {
         VkBufferCreateInfo createInfo;
         createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         createInfo.pNext = nullptr;
@@ -120,31 +129,30 @@ namespace dawn_native { namespace vulkan {
         createInfo.size = GetSize();
         // Add CopyDst for non-mappable buffer initialization in CreateBufferMapped
         // and robust resource initialization.
-        createInfo.usage = VulkanBufferUsage(GetUsage() | dawn::BufferUsage::CopyDst);
+        createInfo.usage = VulkanBufferUsage(GetUsage() | wgpu::BufferUsage::CopyDst);
         createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.queueFamilyIndexCount = 0;
         createInfo.pQueueFamilyIndices = 0;
 
-        if (device->fn.CreateBuffer(device->GetVkDevice(), &createInfo, nullptr, &mHandle) !=
-            VK_SUCCESS) {
-            ASSERT(false);
-        }
+        Device* device = ToBackend(GetDevice());
+        DAWN_TRY(CheckVkSuccess(
+            device->fn.CreateBuffer(device->GetVkDevice(), &createInfo, nullptr, &mHandle),
+            "vkCreateBuffer"));
 
         VkMemoryRequirements requirements;
         device->fn.GetBufferMemoryRequirements(device->GetVkDevice(), mHandle, &requirements);
 
         bool requestMappable =
-            (GetUsage() & (dawn::BufferUsage::MapRead | dawn::BufferUsage::MapWrite)) != 0;
-        if (!device->GetMemoryAllocator()->Allocate(requirements, requestMappable,
-                                                    &mMemoryAllocation)) {
-            ASSERT(false);
-        }
+            (GetUsage() & (wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite)) != 0;
+        DAWN_TRY_ASSIGN(mMemoryAllocation, device->AllocateMemory(requirements, requestMappable));
 
-        if (device->fn.BindBufferMemory(device->GetVkDevice(), mHandle,
-                                        mMemoryAllocation.GetMemory(),
-                                        mMemoryAllocation.GetMemoryOffset()) != VK_SUCCESS) {
-            ASSERT(false);
-        }
+        DAWN_TRY(CheckVkSuccess(
+            device->fn.BindBufferMemory(device->GetVkDevice(), mHandle,
+                                        ToBackend(mMemoryAllocation.GetResourceHeap())->GetMemory(),
+                                        mMemoryAllocation.GetOffset()),
+            "vkBindBufferMemory"));
+
+        return {};
     }
 
     Buffer::~Buffer() {
@@ -152,11 +160,11 @@ namespace dawn_native { namespace vulkan {
     }
 
     void Buffer::OnMapReadCommandSerialFinished(uint32_t mapSerial, const void* data) {
-        CallMapReadCallback(mapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS, data, GetSize());
+        CallMapReadCallback(mapSerial, WGPUBufferMapAsyncStatus_Success, data, GetSize());
     }
 
     void Buffer::OnMapWriteCommandSerialFinished(uint32_t mapSerial, void* data) {
-        CallMapWriteCallback(mapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS, data, GetSize());
+        CallMapWriteCallback(mapSerial, WGPUBufferMapAsyncStatus_Success, data, GetSize());
     }
 
     VkBuffer Buffer::GetHandle() const {
@@ -164,7 +172,7 @@ namespace dawn_native { namespace vulkan {
     }
 
     void Buffer::TransitionUsageNow(CommandRecordingContext* recordingContext,
-                                    dawn::BufferUsage usage) {
+                                    wgpu::BufferUsage usage) {
         bool lastIncludesTarget = (mLastUsage & usage) == usage;
         bool lastReadOnly = (mLastUsage & kReadOnlyBufferUsages) == mLastUsage;
 
@@ -174,7 +182,7 @@ namespace dawn_native { namespace vulkan {
         }
 
         // Special-case for the initial transition: Vulkan doesn't allow access flags to be 0.
-        if (mLastUsage == dawn::BufferUsage::None) {
+        if (mLastUsage == wgpu::BufferUsage::None) {
             mLastUsage = usage;
             return;
         }
@@ -214,7 +222,7 @@ namespace dawn_native { namespace vulkan {
         Device* device = ToBackend(GetDevice());
 
         CommandRecordingContext* recordingContext = device->GetPendingRecordingContext();
-        TransitionUsageNow(recordingContext, dawn::BufferUsage::MapRead);
+        TransitionUsageNow(recordingContext, wgpu::BufferUsage::MapRead);
 
         uint8_t* memory = mMemoryAllocation.GetMappedPointer();
         ASSERT(memory != nullptr);
@@ -228,7 +236,7 @@ namespace dawn_native { namespace vulkan {
         Device* device = ToBackend(GetDevice());
 
         CommandRecordingContext* recordingContext = device->GetPendingRecordingContext();
-        TransitionUsageNow(recordingContext, dawn::BufferUsage::MapWrite);
+        TransitionUsageNow(recordingContext, wgpu::BufferUsage::MapWrite);
 
         uint8_t* memory = mMemoryAllocation.GetMappedPointer();
         ASSERT(memory != nullptr);
@@ -243,7 +251,7 @@ namespace dawn_native { namespace vulkan {
     }
 
     void Buffer::DestroyImpl() {
-        ToBackend(GetDevice())->GetMemoryAllocator()->Free(&mMemoryAllocation);
+        ToBackend(GetDevice())->DeallocateMemory(&mMemoryAllocation);
 
         if (mHandle != VK_NULL_HANDLE) {
             ToBackend(GetDevice())->GetFencedDeleter()->DeleteWhenUnused(mHandle);

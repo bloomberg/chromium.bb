@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
+#include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "mojo/public/cpp/bindings/sequence_local_sync_event_watcher.h"
 
 namespace mojo {
@@ -313,11 +314,11 @@ struct MultiplexRouter::Task {
 MultiplexRouter::MultiplexRouter(
     ScopedMessagePipeHandle message_pipe,
     Config config,
-    bool set_interface_id_namesapce_bit,
+    bool set_interface_id_namespace_bit,
     scoped_refptr<base::SequencedTaskRunner> runner)
-    : set_interface_id_namespace_bit_(set_interface_id_namesapce_bit),
+    : set_interface_id_namespace_bit_(set_interface_id_namespace_bit),
       task_runner_(runner),
-      filters_(this),
+      dispatcher_(this),
       connector_(std::move(message_pipe),
                  config == MULTI_INTERFACE ? Connector::MULTI_THREADED_SEND
                                            : Connector::SINGLE_THREADED_SEND,
@@ -337,15 +338,20 @@ MultiplexRouter::MultiplexRouter(
     // on a different sequence.
     connector_.AllowWokenUpBySyncWatchOnSameThread();
   }
-  connector_.set_incoming_receiver(&filters_);
+  connector_.set_incoming_receiver(&dispatcher_);
   connector_.set_connection_error_handler(
       base::BindOnce(&MultiplexRouter::OnPipeConnectionError,
                      base::Unretained(this), false /* force_async_dispatch */));
 
+  scoped_refptr<internal::MessageQuotaChecker> quota_checker =
+      internal::MessageQuotaChecker::MaybeCreate();
+  if (quota_checker)
+    connector_.SetMessageQuotaChecker(std::move(quota_checker));
+
   std::unique_ptr<MessageHeaderValidator> header_validator =
       std::make_unique<MessageHeaderValidator>();
   header_validator_ = header_validator.get();
-  filters_.Append(std::move(header_validator));
+  dispatcher_.SetValidator(std::move(header_validator));
 }
 
 MultiplexRouter::~MultiplexRouter() {
@@ -358,9 +364,9 @@ MultiplexRouter::~MultiplexRouter() {
   endpoints_.clear();
 }
 
-void MultiplexRouter::AddIncomingMessageFilter(
-    std::unique_ptr<MessageReceiver> filter) {
-  filters_.Append(std::move(filter));
+void MultiplexRouter::SetIncomingMessageFilter(
+    std::unique_ptr<MessageFilter> filter) {
+  dispatcher_.SetFilter(std::move(filter));
 }
 
 void MultiplexRouter::SetMasterInterfaceName(const char* name) {
@@ -897,7 +903,7 @@ void MultiplexRouter::MaybePostToProcessTasks(
 
 void MultiplexRouter::LockAndCallProcessTasks() {
   // There is no need to hold a ref to this class in this case because this is
-  // always called using base::Bind(), which holds a ref.
+  // always called from a bound callback, which holds a ref.
   MayAutoLock locker(&lock_);
   posted_to_process_tasks_ = false;
   scoped_refptr<base::SequencedTaskRunner> runner(

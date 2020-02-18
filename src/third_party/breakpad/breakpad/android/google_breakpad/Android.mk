@@ -82,7 +82,7 @@ LOCAL_SRC_FILES := \
     src/client/linux/minidump_writer/minidump_writer.cc \
     src/client/minidump_file_writer.cc \
     src/common/android/breakpad_getcontext.S \
-    src/common/convert_UTF.c \
+    src/common/convert_UTF.cc \
     src/common/md5.cc \
     src/common/string_conversion.cc \
     src/common/linux/elfutils.cc \

@@ -16,7 +16,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
-#include "chrome/browser/ui/autofill/payments/autofill_ui_util.h"
+#include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/passwords/credential_leak_dialog_controller_impl.h"
 #include "chrome/browser/ui/passwords/credential_manager_dialog_controller_impl.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
@@ -41,6 +41,7 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -59,7 +60,8 @@ password_manager::PasswordStore* GetPasswordStore(
     content::WebContents* web_contents) {
   return PasswordStoreFactory::GetForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-             ServiceAccessType::EXPLICIT_ACCESS).get();
+             ServiceAccessType::EXPLICIT_ACCESS)
+      .get();
 }
 
 std::vector<std::unique_ptr<autofill::PasswordForm>> CopyFormVector(
@@ -223,8 +225,7 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
 }
 
 void ManagePasswordsUIController::OnPasswordAutofilled(
-    const std::map<base::string16, const autofill::PasswordForm*>&
-        password_form_map,
+    const std::vector<const autofill::PasswordForm*>& password_forms,
     const GURL& origin,
     const std::vector<const autofill::PasswordForm*>* federated_matches) {
   // To change to managed state only when the managed state is more important
@@ -232,7 +233,7 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
   if (passwords_data_.state() == password_manager::ui::INACTIVE_STATE ||
       passwords_data_.state() == password_manager::ui::MANAGE_STATE) {
     ClearPopUpFlagForBubble();
-    passwords_data_.OnPasswordAutofilled(password_form_map, origin,
+    passwords_data_.OnPasswordAutofilled(password_forms, origin,
                                          federated_matches);
     // Don't close the existing bubble. Update the icon later.
     if (bubble_status_ == BubbleStatus::SHOWN)
@@ -316,12 +317,19 @@ ManagePasswordsUIController::GetPasswordFormMetricsRecorder() {
   return form_manager ? form_manager->GetMetricsRecorder() : nullptr;
 }
 
+password_manager::PasswordFeatureManager*
+ManagePasswordsUIController::GetPasswordFeatureManager() {
+  password_manager::PasswordManagerClient* client =
+      ChromePasswordManagerClient::FromWebContents(web_contents());
+  return client->GetPasswordFeatureManager();
+}
+
 password_manager::ui::State ManagePasswordsUIController::GetState() const {
   return passwords_data_.state();
 }
 
-const autofill::PasswordForm& ManagePasswordsUIController::
-    GetPendingPassword() const {
+const autofill::PasswordForm& ManagePasswordsUIController::GetPendingPassword()
+    const {
   if (GetState() == password_manager::ui::AUTO_SIGNIN_STATE)
     return *GetCurrentForms()[0];
 
@@ -404,7 +412,7 @@ void ManagePasswordsUIController::OnNopeUpdateClicked() {
 
 void ManagePasswordsUIController::NeverSavePassword() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, GetState());
-  NeverSavePasswordInternal();
+  passwords_data_.form_manager()->OnNeverClicked();
   ClearPopUpFlagForBubble();
   if (passwords_data_.GetCurrentForms().empty())
     passwords_data_.OnInactive();
@@ -432,11 +440,13 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
   }
 
   save_fallback_timer_.Stop();
-  SavePasswordInternal();
+  passwords_data_.form_manager()->Save();
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   // The icon is to be updated after the bubble (either "Save password" or "Sign
   // in to Chrome") is closed.
   bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
+  if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents()))
+    browser->window()->GetAutofillBubbleHandler()->OnPasswordSaved();
 }
 
 void ManagePasswordsUIController::ChooseCredential(
@@ -517,17 +527,6 @@ bool ManagePasswordsUIController::ArePasswordsRevealedWhenBubbleIsOpened()
   return are_passwords_revealed_when_next_bubble_is_opened_;
 }
 
-void ManagePasswordsUIController::SavePasswordInternal() {
-  passwords_data_.form_manager()->Save();
-}
-
-void ManagePasswordsUIController::NeverSavePasswordInternal() {
-  password_manager::PasswordFormManagerForUI* form_manager =
-      passwords_data_.form_manager();
-  DCHECK(form_manager);
-  form_manager->OnNeverClicked();
-}
-
 void ManagePasswordsUIController::HidePasswordBubble() {
   if (TabDialogs* tab_dialogs = TabDialogs::FromWebContents(web_contents()))
     tab_dialogs->HideManagePasswordsBubble();
@@ -545,9 +544,7 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser)
     return;
-
-  ::autofill::UpdatePageActionIcon(PageActionIconType::kManagePasswords,
-                                   web_contents());
+  browser->window()->UpdatePageActionIcon(PageActionIconType::kManagePasswords);
 }
 
 AccountChooserPrompt* ManagePasswordsUIController::CreateAccountChooser(

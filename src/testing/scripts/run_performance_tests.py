@@ -137,7 +137,7 @@ class GtestCommandGenerator(object):
   def __init__(self, options):
     self._options = options
 
-  def generate(self):
+  def generate(self, output_dir):
     """Generate the command to run to start the gtest perf test.
 
     Returns:
@@ -147,7 +147,7 @@ class GtestCommandGenerator(object):
             self._generate_filter_args() +
             self._generate_repeat_args() +
             self._generate_also_run_disabled_tests_args() +
-            self._generate_output_args() +
+            self._generate_output_args(output_dir) +
             self._get_passthrough_args()
            )
 
@@ -177,8 +177,10 @@ class GtestCommandGenerator(object):
     # --isolated-script-test-also-run-disabled-tests.
     return []
 
-  def _generate_output_args(self):
+  def _generate_output_args(self, output_dir):
     output_args = []
+    if self._options.use_gtest_benchmark_script:
+      output_args.append('--output-dir=' + output_dir)
     # These flags are to make sure that test output perf metrics in the log.
     if not '--verbose' in self._options.passthrough_args:
       output_args.append('--verbose')
@@ -211,7 +213,7 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False):
 
   return_code = 0
   try:
-    command = command_generator.generate()
+    command = command_generator.generate(output_paths.benchmark_path)
     if use_xvfb:
       # When running with xvfb, we currently output both to stdout and to the
       # file. It would be better to only output to the file to keep the logs
@@ -222,14 +224,15 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False):
       with open(output_paths.logs, 'w') as handle:
         return_code = test_env.run_command_output_to_handle(
             command, handle, env=env)
-    # Get the correct json format from the stdout to write to the perf
-    # results file.
-    results_processor = generate_legacy_perf_dashboard_json.\
-        LegacyResultsProcessor()
-    graph_json_string = results_processor.GenerateJsonResults(
-        output_paths.logs)
-    with open(output_paths.perf_results, 'w') as fh:
-      fh.write(graph_json_string)
+    if not os.path.exists(output_paths.perf_results):
+      # Get the correct json format from the stdout to write to the perf
+      # results file if gtest does not generate one.
+      results_processor = generate_legacy_perf_dashboard_json.\
+          LegacyResultsProcessor()
+      graph_json_string = results_processor.GenerateJsonResults(
+          output_paths.logs)
+      with open(output_paths.perf_results, 'w') as fh:
+        fh.write(graph_json_string)
   except Exception:
     traceback.print_exc()
     return_code = 1
@@ -315,8 +318,8 @@ class TelemetryCommandGenerator(object):
       if 'end' in self._story_selection_config:
         selection_args.append('--story-shard-end-index=%d' % (
             self._story_selection_config['end']))
-      if not self._story_selection_config.get('abridged', True):
-        selection_args.append('--run-full-story-set')
+      if self._story_selection_config.get('abridged', True):
+        selection_args.append('--run-abridged-story-set')
     return selection_args
 
   def _generate_reference_build_args(self):
@@ -374,6 +377,15 @@ def execute_telemetry_benchmark(
 
   print_duration('executing benchmark %s' % command_generator.benchmark, start)
 
+  # Telemetry sets exit code to -1 to indicate that no stories were run. This
+  # becomes 255 on linux because linux doesn't support -1 so it does modulo:
+  # -1 % 256 == 255.
+  # TODO(crbug.com/1019139): Make 111 be the exit code that means
+  # "no stories were run.".
+  if return_code in (111, -1, 255):
+    print ('Exit code %s indicates that no stories were run, so we are marking '
+           'this as a success.' % return_code)
+    return 0
   if return_code:
     return return_code
   return 0
@@ -409,6 +421,9 @@ def parse_arguments(args):
   parser.add_argument('--gtest-benchmark-name',
                       help='Name of the gtest benchmark', type=str,
                       required=False)
+  parser.add_argument('--use-gtest-benchmark-script',
+                      help='Whether gtest is invoked via benchmark script.',
+                      default=False, action='store_true')
 
   parser.add_argument('--benchmarks',
                       help='Comma separated list of benchmark names'

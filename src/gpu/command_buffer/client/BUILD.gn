@@ -185,6 +185,7 @@ source_set("interface_base") {
 # an implementation.
 source_set("gles2_interface") {
   sources = [
+    "gles2_interface.cc",
     "gles2_interface.h",
   ]
   public_configs = [ "//third_party/khronos:khronos_headers" ]
@@ -218,6 +219,7 @@ source_set("webgpu_interface") {
   deps = [
     ":interface_base",
     "//base",
+    "//gpu/command_buffer/common:webgpu",
   ]
 }
 

@@ -55,22 +55,22 @@ class ParserTest(cros_test_lib.MockTempDirTestCase):
     with MockChromeSDKCommand(
         ['--board', SDKFetcherMock.BOARD],
         base_args=['--cache-dir', self.tempdir]) as bootstrap:
-      self.assertEquals(bootstrap.inst.options.board, SDKFetcherMock.BOARD)
-      self.assertEquals(bootstrap.inst.options.cache_dir, self.tempdir)
+      self.assertEqual(bootstrap.inst.options.board, SDKFetcherMock.BOARD)
+      self.assertEqual(bootstrap.inst.options.cache_dir, self.tempdir)
 
   def testVersion(self):
     """Tests that a platform version is allowed."""
     VERSION = '1234.0.0'
     with MockChromeSDKCommand(
         ['--board', SDKFetcherMock.BOARD, '--version', VERSION]) as parser:
-      self.assertEquals(parser.inst.options.version, VERSION)
+      self.assertEqual(parser.inst.options.version, VERSION)
 
   def testFullVersion(self):
     """Tests that a full version is allowed."""
     FULL_VERSION = 'R56-1234.0.0'
     with MockChromeSDKCommand(
         ['--board', SDKFetcherMock.BOARD, '--version', FULL_VERSION]) as parser:
-      self.assertEquals(parser.inst.options.version, FULL_VERSION)
+      self.assertEqual(parser.inst.options.version, FULL_VERSION)
 
 
 def _GSCopyMock(_self, path, dest, **_kwargs):
@@ -113,7 +113,7 @@ class SDKFetcherMock(partial_mock.PartialMock):
 
   TARGET = 'chromite.cli.cros.cros_chrome_sdk.SDKFetcher'
   ATTRS = ('__init__', 'GetFullVersion', '_GetMetadata', '_UpdateTarball',
-           '_GetManifest', 'UpdateDefaultVersion')
+           '_GetManifest', 'UpdateDefaultVersion', '_GetTarballCacheKey')
 
   FAKE_METADATA = """
 {
@@ -187,6 +187,10 @@ class SDKFetcherMock(partial_mock.PartialMock):
             'sys-firmware/seabios': [['1.11.0', {}]]
         }
     }
+
+  @_DependencyMockCtx
+  def _GetTarballCacheKey(self, _inst, component, _url):
+    return (os.path.join(component, 'some-fake-hash'),)
 
 
 class RunThroughTest(cros_test_lib.MockTempDirTestCase,
@@ -267,7 +271,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       self.rc_mock.AddCmdResult(partial_mock.ListRegex('-- true'),
                                 returncode=5)
       returncode = self.cmd_mock.inst.Run()
-      self.assertEquals(returncode, 5)
+      self.assertEqual(returncode, 5)
 
   def testLocalSDKPath(self):
     """Fetch components from a local --sdk-path."""
@@ -386,7 +390,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
 
     out_dir = os.path.join(self.chrome_src_dir, 'out_%s' % SDKFetcherMock.BOARD)
 
-    self.assertEquals(out_dir, self.cmd_mock.env['CHROMIUM_OUT_DIR'])
+    self.assertEqual(out_dir, self.cmd_mock.env['CHROMIUM_OUT_DIR'])
 
   def testClearSDKCache(self):
     """Verifies cache directories are removed with --clear-sdk-cache."""
@@ -400,12 +404,12 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     old_chrome_cache = os.path.join(self.chrome_root, '.cros_cache')
     chrome_cache = os.path.join(self.chrome_src_dir, 'build/cros_cache')
     osutils.SafeMakedirs(old_chrome_cache)
-    self.assertFalse(os.path.exists(chrome_cache))
+    self.assertNotExists(chrome_cache)
 
     self.cmd_mock.inst.Run()
     # Old chrome cache should be gone and the new one should now exist.
-    self.assertFalse(os.path.exists(old_chrome_cache))
-    self.assertTrue(os.path.exists(chrome_cache))
+    self.assertNotExists(old_chrome_cache)
+    self.assertExists(chrome_cache)
 
   def testSeabiosDownload(self):
     """Verify _CreateSeabiosFWSymlinks.
@@ -415,10 +419,10 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     """
     qemu_share = os.path.join(
         self.tempdir,
-        'chrome-sdk/tarballs/eve+4567.8.9+app-emulation/qemu/usr/share')
+        'chrome-sdk/tarballs/app-emulation/qemu/some-fake-hash/usr/share')
     seabios_share = os.path.join(
         self.tempdir,
-        'chrome-sdk/tarballs/eve+4567.8.9+sys-firmware/seabios/usr/share')
+        'chrome-sdk/tarballs/sys-firmware/seabios/some-fake-hash/usr/share')
 
     # Create qemu subdirectories.
     for share_dir in ['qemu', 'seabios', 'seavgabios']:
@@ -437,7 +441,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       for link in os.listdir(qemu_share_dir):
         full_link = os.path.join(qemu_share_dir, link)
         self.assertTrue(os.path.islink(full_link))
-        self.assertFalse(os.path.exists(full_link) == broken)
+        self.assertNotEqual(os.path.exists(full_link), broken)
 
     # Create qemu links.
     for bios in ['bios.bin', 'bios256k.bin']:
@@ -458,6 +462,33 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.SetupCommandMock(extra_args=['--download-vm'])
     self.cmd_mock.inst.Run()
     _VerifyLinks(broken=False)
+
+  def testSymlinkCache(self):
+    """Ensures the symlink cache contains valid links to the tarball cache."""
+    self.SetupCommandMock()
+    self.cmd_mock.inst.Run()
+
+    board, version, _ = self.VERSION_KEY
+    toolchain_dir = os.path.join(
+        self.tempdir,
+        'chrome-sdk/tarballs/target_toolchain/some-fake-hash')
+    sysroot_dir = os.path.join(
+        self.tempdir,
+        'chrome-sdk/tarballs/sysroot_chromeos-base_chromeos-chrome.tar.xz/'
+        'some-fake-hash')
+    self.assertExists(toolchain_dir)
+    self.assertExists(sysroot_dir)
+    toolchain_link = os.path.join(
+        self.tempdir,
+        'chrome-sdk/symlinks/%s+%s+target_toolchain' % (board, version))
+    sysroot_link = os.path.join(
+        self.tempdir,
+        'chrome-sdk/symlinks/%s+%s+sysroot_chromeos-base_chromeos-'
+        'chrome.tar.xz' % (board, version))
+    self.assertTrue(os.path.islink(toolchain_link))
+    self.assertTrue(os.path.islink(sysroot_link))
+    self.assertEqual(os.path.realpath(toolchain_link), toolchain_dir)
+    self.assertEqual(os.path.realpath(sysroot_link), sysroot_dir)
 
 
 class GomaTest(cros_test_lib.MockTempDirTestCase,
@@ -503,7 +534,7 @@ class GomaTest(cros_test_lib.MockTempDirTestCase,
     # Run it twice to exercise caching.
     for _ in range(2):
       goma_dir, goma_port = self.cmd_mock.inst._FetchGoma()
-      self.assertEquals(goma_port, 'XXXX')
+      self.assertEqual(goma_port, 'XXXX')
       self.assertTrue(bool(goma_dir))
 
 
@@ -550,8 +581,8 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     osutils.WriteFile(lkgm_file, self.VERSION)
     self.sdk_mock.UnMockAttr('UpdateDefaultVersion')
     self.sdk.UpdateDefaultVersion()
-    self.assertEquals(self.sdk.GetDefaultVersion(),
-                      self.VERSION)
+    self.assertEqual(self.sdk.GetDefaultVersion(),
+                     self.VERSION)
 
   def testFullVersionFromFullVersion(self):
     """Test that a fully specified version is allowed."""
@@ -559,7 +590,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
         output=self.FULL_VERSION)
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION,
         self.sdk.GetFullVersion(self.FULL_VERSION))
 
@@ -569,7 +600,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
         output=self.FULL_VERSION)
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION,
         self.sdk.GetFullVersion(self.VERSION))
 
@@ -616,7 +647,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
         self.assertRaises(cros_chrome_sdk.MissingSDK, self.sdk.GetFullVersion,
                           self.VERSION)
       else:
-        self.assertEquals(
+        self.assertEqual(
             self.FULL_VERSION_RECENT,
             self.sdk.GetFullVersion(self.VERSION))
 
@@ -629,14 +660,14 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
         output=self.FULL_VERSION)
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION,
         self.sdk.GetFullVersion(self.VERSION))
     # Test that we access the cache on the next call, rather than checking GS.
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
         side_effect=RaiseException)
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION,
         self.sdk.GetFullVersion(self.VERSION))
     # Test that we access GS again if the board is changed.
@@ -644,7 +675,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
         output=self.FULL_VERSION + '2')
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION + '2',
         self.sdk.GetFullVersion(self.VERSION))
 
@@ -666,7 +697,7 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.NON_CANARY_VERSION),
         output=self.FULL_VERSION_NON_CANARY)
-    self.assertEquals(
+    self.assertEqual(
         self.FULL_VERSION_NON_CANARY,
         self.sdk.GetFullVersion(self.NON_CANARY_VERSION))
 
@@ -685,15 +716,15 @@ class VersionTest(cros_test_lib.MockTempDirTestCase,
   def testDefaultEnvBadBoard(self):
     """We don't use the version in the environment if board doesn't match."""
     os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = self.VERSION
-    self.assertNotEquals(self.VERSION, self.sdk_mock.VERSION)
-    self.assertEquals(self.sdk.GetDefaultVersion(), None)
+    self.assertNotEqual(self.VERSION, self.sdk_mock.VERSION)
+    self.assertEqual(self.sdk.GetDefaultVersion(), None)
 
   def testDefaultEnvGoodBoard(self):
     """We use the version in the environment if board matches."""
     sdk_version_env = cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV
     os.environ[sdk_version_env] = self.VERSION
     os.environ[cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV] = self.BOARD
-    self.assertEquals(self.sdk.GetDefaultVersion(), self.VERSION)
+    self.assertEqual(self.sdk.GetDefaultVersion(), self.VERSION)
 
 
 class PathVerifyTest(cros_test_lib.MockTempDirTestCase,

@@ -26,6 +26,7 @@ source_set("autofill") {
     "autofill_profile_table_view_controller.mm",
   ]
   deps = [
+    ":constants",
     ":feature_flags",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
@@ -52,9 +53,18 @@ source_set("autofill") {
     "//ios/chrome/browser/ui/settings/credit_card_scanner",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view/cells",
+    "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/colors",
     "//ui/base",
+  ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "autofill_constants.h",
+    "autofill_constants.mm",
   ]
 }
 
@@ -99,6 +109,7 @@ source_set("unit_tests") {
 
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
+  defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
   sources = [
     "autofill_credit_card_settings_egtest.mm",
@@ -106,13 +117,48 @@ source_set("eg_tests") {
   ]
   deps = [
     ":autofill",
+    ":constants",
+    ":feature_flags",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/autofill",
+    "//ios/chrome/browser/ui/autofill:test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
+    "//net:test_support",
     "//ui/base",
   ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "autofill_add_credit_card_egtest.mm",
+    "autofill_credit_card_settings_egtest.mm",
+    "autofill_profile_settings_egtest.mm",
+  ]
+  deps = [
+    ":constants",
+    ":feature_flags",
+    "//base",
+    "//components/strings:components_strings_grit",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/autofill:eg_test_support+eg2",
+    "//ios/chrome/browser/ui/autofill:eg_test_support+eg2",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test:element_selector",
+    "//net:test_support",
+    "//ui/base",
+  ]
+  libs = [ "UIKit.framework" ]
 }

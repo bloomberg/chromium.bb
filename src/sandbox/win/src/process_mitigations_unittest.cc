@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
+#include "base/process/kill.h"
 #include "base/scoped_native_library.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/windows_version.h"
@@ -61,7 +62,7 @@ void TestWin10NonSystemFont(bool is_success_test) {
               sandbox::SBOX_ALL_OK);
   }
 
-  base::string16 test_command = L"CheckWin10FontLoad \"";
+  std::wstring test_command = L"CheckWin10FontLoad \"";
   test_command += font_path.value().c_str();
   test_command += L"\"";
 
@@ -130,7 +131,7 @@ void TestWin10MsSigned(int expected,
   EXPECT_TRUE(runner.AddFsRule(sandbox::TargetPolicy::FILES_ALLOW_READONLY,
                                dll_path.value().c_str()));
   // Set up test string.
-  base::string16 test = L"TestDllLoad \"";
+  std::wstring test = L"TestDllLoad \"";
   test += dll_path.value().c_str();
   test += L"\"";
 
@@ -424,7 +425,7 @@ SBOX_TESTS_COMMAND int TestDllLoad(int argc, wchar_t** argv) {
   if (argc < 1 || !argv[0])
     return SBOX_TEST_INVALID_PARAMETER;
 
-  base::string16 dll = argv[0];
+  std::wstring dll = argv[0];
   base::ScopedNativeLibrary test_dll((base::FilePath(dll)));
   if (test_dll.is_valid())
     return SBOX_TEST_SUCCEEDED;
@@ -511,7 +512,7 @@ SBOX_TESTS_COMMAND int TestChildProcess(int argc, wchar_t** argv) {
     return SBOX_TEST_INVALID_PARAMETER;
 
   bool process_finishes = true;
-  base::string16 arg2 = argv[1];
+  std::wstring arg2 = argv[1];
   if (arg2.compare(L"false") == 0)
     process_finishes = false;
 
@@ -520,7 +521,7 @@ SBOX_TESTS_COMMAND int TestChildProcess(int argc, wchar_t** argv) {
     desired_exit_code = wcstoul(argv[2], nullptr, 0);
   }
 
-  base::string16 cmd = argv[0];
+  std::wstring cmd = argv[0];
   base::LaunchOptions options = base::LaunchOptionsForTest();
   base::Process setup_proc = base::LaunchProcess(cmd.c_str(), options);
 
@@ -588,7 +589,7 @@ TEST(ProcessMitigationsTest, CheckDepWin8PolicySuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_DEP);
 
   //---------------------------------
@@ -629,7 +630,7 @@ TEST(ProcessMitigationsTest, CheckWin8AslrPolicySuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_ASLR);
 
 //---------------------------------------------
@@ -657,7 +658,7 @@ TEST(ProcessMitigationsTest, CheckWin8StrictHandlePolicySuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN8)
     return;
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_STRICTHANDLE);
 
   //---------------------------------
@@ -684,7 +685,7 @@ TEST(ProcessMitigationsTest, CheckWin10NonSystemFontLockDownPolicySuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_NONSYSFONT);
 
   //---------------------------------
@@ -741,7 +742,7 @@ TEST(ProcessMitigationsTest, CheckWin10MsSignedPolicySuccessDelayed) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_MSSIGNED);
 
 //---------------------------------
@@ -768,7 +769,7 @@ TEST(ProcessMitigationsTest, CheckWin10MsSignedPolicySuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_MSSIGNED);
 
   //---------------------------------
@@ -878,6 +879,11 @@ TEST(ProcessMitigationsTest, MAYBE_CheckWin10MsSigned_FailurePreSpawn) {
 
   ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
+  // Other code in base/process relies on this invariant.
+  static_assert(
+      base::win::kStatusInvalidImageHashExitCode == STATUS_INVALID_IMAGE_HASH,
+      "Invalid hash exit code does not match between base and sandbox.");
+
 #if defined(COMPONENT_BUILD)
   // In a component build, the executable will fail to start-up because
   // imports e.g. base.dll cannot be resolved.
@@ -954,7 +960,7 @@ TEST(ProcessMitigationsTest, CheckChildProcessSuccess) {
   EXPECT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &cmd));
   cmd = cmd.Append(L"calc.exe");
 
-  base::string16 test_command = L"TestChildProcess \"";
+  std::wstring test_command = L"TestChildProcess \"";
   test_command += cmd.value().c_str();
   test_command += L"\" false";
 
@@ -978,7 +984,7 @@ TEST(ProcessMitigationsTest, CheckChildProcessFailure) {
   EXPECT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &cmd));
   cmd = cmd.Append(L"calc.exe");
 
-  base::string16 test_command = L"TestChildProcess \"";
+  std::wstring test_command = L"TestChildProcess \"";
   test_command += cmd.value().c_str();
   test_command += L"\" false";
 
@@ -1004,7 +1010,7 @@ TEST(ProcessMitigationsTest, CheckChildProcessAbnormalExit) {
   EXPECT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &cmd));
   cmd = cmd.Append(L"calc.exe");
 
-  base::string16 test_command = L"TestChildProcess \"";
+  std::wstring test_command = L"TestChildProcess \"";
   test_command += cmd.value().c_str();
   test_command += L"\" false ";
   test_command += std::to_wstring(STATUS_ACCESS_VIOLATION);
@@ -1026,7 +1032,7 @@ TEST(ProcessMitigationsTest,
   if (base::win::GetVersion() < base::win::Version::WIN10_RS3)
     return;
 
-  base::string16 test_command = L"CheckPolicy ";
+  std::wstring test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_RESTRICTINDIRECTBRANCHPREDICTION);
 
   //---------------------------------

@@ -108,41 +108,33 @@ class FakeNetstack : public fuchsia::netstack::testing::Netstack_TestBase {
   ~FakeNetstack() override = default;
 
   // Adds |interface| to the interface query response list.
-  void PushInterface(fuchsia::netstack::NetInterface&& interface) {
+  void PushInterface(fuchsia::netstack::NetInterface interface) {
     interfaces_.push_back(std::move(interface));
-  }
-
-  void PushRouteTableEntry(fuchsia::netstack::RouteTableEntry&& interface) {
-    route_table_.push_back(std::move(interface));
   }
 
   // Sends the accumulated |interfaces_| to the OnInterfacesChanged event.
   void NotifyInterfaces() {
-    did_work_ = true;
     binding_.events().OnInterfacesChanged(std::move(interfaces_));
     interfaces_.clear();
   }
 
-  // Sets |*did_work_out| to |true| if any FIDL API was called since the
-  // last DidDoWork() call. This is used by the FakeNetstackAsync::Synchronize()
-  // call to determine when to stop pumping the message loops.
-  void DidDoWork(base::OnceClosure done, bool* did_work_out) {
-    *did_work_out = std::exchange(did_work_, false);
-    std::move(done).Run();
+  void SetOnGetRouteTableCallback(base::OnceClosure callback) {
+    on_get_route_table_ = std::move(callback);
   }
 
  private:
   void GetInterfaces(GetInterfacesCallback callback) override {
-    did_work_ = true;
     callback(std::move(interfaces_));
   }
 
   void GetRouteTable(GetRouteTableCallback callback) override {
-    did_work_ = true;
     std::vector<fuchsia::netstack::RouteTableEntry> table(2);
     table[0] = CreateRouteTableEntry(kDefaultNic, true);
     table[1] = CreateRouteTableEntry(kSecondaryNic, false);
     callback(std::move(table));
+
+    if (on_get_route_table_)
+      std::move(on_get_route_table_).Run();
   }
 
   void NotImplemented_(const std::string& name) override {
@@ -150,12 +142,10 @@ class FakeNetstack : public fuchsia::netstack::testing::Netstack_TestBase {
   }
 
   std::vector<fuchsia::netstack::NetInterface> interfaces_;
-  std::vector<fuchsia::netstack::RouteTableEntry> route_table_;
 
   fidl::Binding<fuchsia::netstack::Netstack> binding_;
 
-  // |true| if any FIDL API was called since the last DidDoWork().
-  bool did_work_ = false;
+  base::OnceClosure on_get_route_table_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNetstack);
 };
@@ -173,32 +163,23 @@ class FakeNetstackAsync {
   ~FakeNetstackAsync() = default;
 
   // Asynchronously update the state of the netstack.
-  void PushInterface(fuchsia::netstack::NetInterface&& interface) {
+  void PushInterface(fuchsia::netstack::NetInterface interface) {
     netstack_.Post(FROM_HERE, &FakeNetstack::PushInterface,
                    std::move(interface));
-  }
-  void PushRouteTableEntry(fuchsia::netstack::RouteTableEntry&& route) {
-    netstack_.Post(FROM_HERE, &FakeNetstack::PushRouteTableEntry,
-                   std::move(route));
   }
   void NotifyInterfaces() {
     netstack_.Post(FROM_HERE, &FakeNetstack::NotifyInterfaces);
   }
 
-  // Pump the test main and Netstack loops until things stabilize.
-  void Synchronize() {
+  void SetOnGetRouteTableCallback(base::OnceClosure callback) {
+    netstack_.Post(FROM_HERE, &FakeNetstack::SetOnGetRouteTableCallback,
+                   std::move(callback));
+  }
+
+  // Ensure that any PushInterface() or NotifyInterfaces() have been processed.
+  void FlushNetstackThread() {
     // Ensure that pending Push*() and Notify*() calls were processed.
     thread_.FlushForTesting();
-
-    // Spin the Netstack until it stops receiving FIDL calls.
-    bool did_work = false;
-    do {
-      base::RunLoop loop;
-      did_work = false;
-      netstack_.Post(FROM_HERE, &FakeNetstack::DidDoWork,
-                     loop.QuitWhenIdleClosure(), &did_work);
-      loop.Run();
-    } while (did_work);
   }
 
  private:
@@ -220,6 +201,12 @@ class MockIPAddressObserver : public NetworkChangeNotifier::IPAddressObserver {
   MOCK_METHOD0(OnIPAddressChanged, void());
 };
 
+class MockNetworkChangeObserver
+    : public NetworkChangeNotifier::NetworkChangeObserver {
+ public:
+  MOCK_METHOD1(OnNetworkChanged, void(NetworkChangeNotifier::ConnectionType));
+};
+
 }  // namespace
 
 class NetworkChangeNotifierFuchsiaTest : public testing::Test {
@@ -234,7 +221,7 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
   void CreateNotifier(uint32_t required_features = 0) {
     // Ensure that the Netstack internal state is up-to-date before the
     // notifier queries it.
-    netstack_.Synchronize();
+    netstack_.FlushNetstackThread();
 
     // Use a noop DNS notifier.
     dns_config_notifier_ = std::make_unique<SystemDnsConfigChangeNotifier>(
@@ -249,7 +236,8 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
 
   void TearDown() override {
     // Spin the loops to catch any unintended notifications.
-    netstack_.Synchronize();
+    netstack_.FlushNetstackThread();
+    base::RunLoop().RunUntilIdle();
 
     if (notifier_) {
       NetworkChangeNotifier::RemoveConnectionTypeObserver(&observer_);
@@ -257,12 +245,22 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
     }
   }
 
+  // Causes FakeNetstack to emit NotifyInterfaces(), and then runs the loop
+  // until the GetRouteTable() is called.
+  void NetstackNotifyInterfacesAndWaitForGetRouteTable() {
+    base::RunLoop loop;
+    netstack_.SetOnGetRouteTableCallback(loop.QuitClosure());
+    netstack_.NotifyInterfaces();
+    loop.Run();
+  }
+
  protected:
-  base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
-      base::test::TaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   testing::StrictMock<MockConnectionTypeObserver> observer_;
   testing::StrictMock<MockIPAddressObserver> ip_observer_;
+  testing::StrictMock<MockNetworkChangeObserver> network_change_observer_;
+
   fuchsia::netstack::NetstackPtr netstack_ptr_;
   FakeNetstackAsync netstack_;
 
@@ -283,12 +281,37 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InitialState) {
             notifier_->GetCurrentConnectionType());
 }
 
+TEST_F(NetworkChangeNotifierFuchsiaTest, NotifyNetworkChangeOnInitialIPChange) {
+  netstack_.PushInterface(
+      CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp,
+                         fuchsia::hardware::ethernet::INFO_FEATURE_WLAN,
+                         CreateIPv4Address(169, 254, 0, 1),
+                         CreateIPv4Address(255, 255, 255, 0), {}));
+  CreateNotifier();
+  // Add and remove network_change_observer_ since it's only used in this method
+  // gtest gives warnings on unused mocks if put into setup/teardown.
+  NetworkChangeNotifier::AddNetworkChangeObserver(&network_change_observer_);
+  EXPECT_CALL(network_change_observer_,
+              OnNetworkChanged(NetworkChangeNotifier::CONNECTION_NONE));
+  EXPECT_CALL(network_change_observer_,
+              OnNetworkChanged(NetworkChangeNotifier::CONNECTION_WIFI));
+  EXPECT_CALL(ip_observer_, OnIPAddressChanged());
+  // Changing the IP address will now trigger network change as well since it is
+  // currently out of sync
+  netstack_.PushInterface(CreateNetInterface(
+      kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp,
+      fuchsia::hardware::ethernet::INFO_FEATURE_WLAN,
+      CreateIPv4Address(10, 0, 0, 1), CreateIPv4Address(255, 255, 0, 0), {}));
+  NetstackNotifyInterfacesAndWaitForGetRouteTable();
+
+  NetworkChangeNotifier::RemoveNetworkChangeObserver(&network_change_observer_);
+}
+
 TEST_F(NetworkChangeNotifierFuchsiaTest, NoChange) {
   netstack_.PushInterface(
       CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
                          CreateIPv4Address(169, 254, 0, 1),
                          CreateIPv4Address(255, 255, 255, 0), {}));
-  netstack_.PushRouteTableEntry(CreateRouteTableEntry(kDefaultNic, true));
 
   CreateNotifier();
   EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN,
@@ -298,7 +321,6 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, NoChange) {
       CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
                          CreateIPv4Address(169, 254, 0, 1),
                          CreateIPv4Address(255, 255, 255, 0), {}));
-  netstack_.PushRouteTableEntry(CreateRouteTableEntry(kDefaultNic, true));
   netstack_.NotifyInterfaces();
 }
 
@@ -371,7 +393,8 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, IpChange) {
   netstack_.PushInterface(CreateNetInterface(
       kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
       CreateIPv4Address(10, 0, 0, 1), CreateIPv4Address(255, 255, 0, 0), {}));
-  netstack_.NotifyInterfaces();
+
+  NetstackNotifyInterfacesAndWaitForGetRouteTable();
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, IpChangeV6) {
@@ -389,7 +412,8 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, IpChangeV6) {
       CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
                          CreateIPv6Address({0xfe, 0x80, 0x02}),
                          CreateIPv6Address({0xfe, 0x80}), {}));
-  netstack_.NotifyInterfaces();
+
+  NetstackNotifyInterfacesAndWaitForGetRouteTable();
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, MultiV6IPChanged) {
@@ -411,7 +435,8 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, MultiV6IPChanged) {
       kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
       CreateIPv4Address(10, 0, 0, 1), CreateIPv4Address(255, 255, 0, 0),
       std::move(addresses)));
-  netstack_.NotifyInterfaces();
+
+  NetstackNotifyInterfacesAndWaitForGetRouteTable();
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, Ipv6AdditionalIpChange) {
@@ -432,7 +457,8 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, Ipv6AdditionalIpChange) {
       kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
       CreateIPv4Address(169, 254, 0, 1), CreateIPv4Address(255, 255, 255, 0),
       std::move(addresses)));
-  netstack_.NotifyInterfaces();
+
+  NetstackNotifyInterfacesAndWaitForGetRouteTable();
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceDown) {
@@ -452,7 +478,8 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceDown) {
   netstack_.PushInterface(
       CreateNetInterface(1, 0, 0, CreateIPv4Address(169, 254, 0, 1),
                          CreateIPv4Address(255, 255, 0, 0), {}));
-  netstack_.NotifyInterfaces();
+
+  NetstackNotifyInterfacesAndWaitForGetRouteTable();
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceUp) {
@@ -472,7 +499,8 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceUp) {
       CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
                          CreateIPv4Address(169, 254, 0, 1),
                          CreateIPv4Address(255, 255, 0, 0), {}));
-  netstack_.NotifyInterfaces();
+
+  NetstackNotifyInterfacesAndWaitForGetRouteTable();
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceDeleted) {
@@ -489,7 +517,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceDeleted) {
             notifier_->GetCurrentConnectionType());
 
   // NotifyInterfaces() with no new PushInterfaces() means removing everything.
-  netstack_.NotifyInterfaces();
+  NetstackNotifyInterfacesAndWaitForGetRouteTable();
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceAdded) {
@@ -508,7 +536,8 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceAdded) {
                          fuchsia::hardware::ethernet::INFO_FEATURE_WLAN,
                          CreateIPv4Address(169, 254, 0, 1),
                          CreateIPv4Address(255, 255, 255, 0), {}));
-  netstack_.NotifyInterfaces();
+
+  NetstackNotifyInterfacesAndWaitForGetRouteTable();
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, SecondaryInterfaceAddedNoop) {
@@ -526,6 +555,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, SecondaryInterfaceAddedNoop) {
       CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
                          CreateIPv4Address(169, 254, 0, 1),
                          CreateIPv4Address(255, 255, 255, 0), {}));
+
   netstack_.NotifyInterfaces();
 }
 
@@ -544,6 +574,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, SecondaryInterfaceDeletedNoop) {
       CreateNetInterface(kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
                          CreateIPv4Address(169, 254, 0, 1),
                          CreateIPv4Address(255, 255, 255, 0), {}));
+
   netstack_.NotifyInterfaces();
 }
 

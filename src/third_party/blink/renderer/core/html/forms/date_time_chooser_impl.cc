@@ -32,6 +32,9 @@
 
 #include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/chooser_resource_loader.h"
@@ -105,20 +108,17 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   String today_label_string;
   String other_date_label_string;
   if (parameters_->type == input_type_names::kMonth) {
-    today_label_string =
-        GetLocale().QueryString(WebLocalizedString::kThisMonthButtonLabel);
+    today_label_string = GetLocale().QueryString(IDS_FORM_THIS_MONTH_LABEL);
     other_date_label_string =
-        GetLocale().QueryString(WebLocalizedString::kOtherMonthLabel);
+        GetLocale().QueryString(IDS_FORM_OTHER_MONTH_LABEL);
   } else if (parameters_->type == input_type_names::kWeek) {
-    today_label_string =
-        GetLocale().QueryString(WebLocalizedString::kThisWeekButtonLabel);
+    today_label_string = GetLocale().QueryString(IDS_FORM_THIS_WEEK_LABEL);
     other_date_label_string =
-        GetLocale().QueryString(WebLocalizedString::kOtherWeekLabel);
+        GetLocale().QueryString(IDS_FORM_OTHER_WEEK_LABEL);
   } else {
-    today_label_string =
-        GetLocale().QueryString(WebLocalizedString::kCalendarToday);
+    today_label_string = GetLocale().QueryString(IDS_FORM_CALENDAR_TODAY);
     other_date_label_string =
-        GetLocale().QueryString(WebLocalizedString::kOtherDateLabel);
+        GetLocale().QueryString(IDS_FORM_OTHER_DATE_LABEL);
   }
 
   AddString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
@@ -130,15 +130,17 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   data->Append(ChooserResourceLoader::GetCalendarPickerStyleSheet());
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
     data->Append(ChooserResourceLoader::GetCalendarPickerRefreshStyleSheet());
+    if (parameters_->type == input_type_names::kTime ||
+        parameters_->type == input_type_names::kDatetimeLocal) {
+      data->Append(ChooserResourceLoader::GetTimePickerStyleSheet());
+    }
   }
   AddString(
       "</style></head><body><div id=main>Loading...</div><script>\n"
       "window.dialogArguments = {\n",
       data);
   AddProperty("anchorRectInScreen", parameters_->anchor_rect_in_screen, data);
-  float scale_factor =
-      frame_->View()->GetChromeClient()->WindowToViewportScalar(frame_, 1.0f);
-  AddProperty("zoomFactor", ZoomFactor() / scale_factor, data);
+  AddProperty("zoomFactor", ScaledZoomFactor(), data);
   AddProperty("min",
               ValueToDateTimeString(parameters_->minimum, parameters_->type),
               data);
@@ -154,32 +156,31 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
       data);
   AddProperty("locale", parameters_->locale.GetString(), data);
   AddProperty("todayLabel", today_label_string, data);
-  AddProperty("clearLabel",
-              GetLocale().QueryString(WebLocalizedString::kCalendarClear),
+  AddProperty("clearLabel", GetLocale().QueryString(IDS_FORM_CALENDAR_CLEAR),
               data);
-  AddProperty("weekLabel",
-              GetLocale().QueryString(WebLocalizedString::kWeekNumberLabel),
+  AddProperty("weekLabel", GetLocale().QueryString(IDS_FORM_WEEK_NUMBER_LABEL),
               data);
-  AddProperty(
-      "axShowMonthSelector",
-      GetLocale().QueryString(WebLocalizedString::kAXCalendarShowMonthSelector),
-      data);
-  AddProperty(
-      "axShowNextMonth",
-      GetLocale().QueryString(WebLocalizedString::kAXCalendarShowNextMonth),
-      data);
-  AddProperty(
-      "axShowPreviousMonth",
-      GetLocale().QueryString(WebLocalizedString::kAXCalendarShowPreviousMonth),
-      data);
+  AddProperty("axShowMonthSelector",
+              GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_MONTH_SELECTOR),
+              data);
+  AddProperty("axShowNextMonth",
+              GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_NEXT_MONTH), data);
+  AddProperty("axShowPreviousMonth",
+              GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_PREVIOUS_MONTH),
+              data);
   AddProperty("weekStartDay", locale_->FirstDayOfWeek(), data);
   AddProperty("shortMonthLabels", locale_->ShortMonthLabels(), data);
   AddProperty("dayLabels", locale_->WeekDayShortLabels(), data);
+  AddProperty("ampmLabels", locale_->TimeAMPMLabels(), data);
   AddProperty("isLocaleRTL", locale_->IsRTL(), data);
   AddProperty("isRTL", parameters_->is_anchor_element_rtl, data);
   AddProperty("isFormControlsRefreshEnabled",
               RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);
   AddProperty("mode", parameters_->type.GetString(), data);
+  AddProperty("isAMPMFirst", parameters_->is_ampm_first, data);
+  AddProperty("hasAMPM", parameters_->has_ampm, data);
+  AddProperty("hasSecond", parameters_->has_second, data);
+  AddProperty("hasMillisecond", parameters_->has_millisecond, data);
   if (parameters_->suggestions.size()) {
     Vector<String> suggestion_values;
     Vector<String> localized_suggestion_values;
@@ -203,14 +204,19 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
         LayoutTheme::GetTheme().SupportsCalendarPicker(parameters_->type),
         data);
     AddProperty("otherDateLabel", other_date_label_string, data);
+
+    DCHECK(OwnerElement().GetComputedStyle());
+    WebColorScheme color_scheme =
+        OwnerElement().GetComputedStyle()->UsedColorScheme();
+
     AddProperty("suggestionHighlightColor",
                 LayoutTheme::GetTheme()
-                    .ActiveListBoxSelectionBackgroundColor()
+                    .ActiveListBoxSelectionBackgroundColor(color_scheme)
                     .Serialized(),
                 data);
     AddProperty("suggestionHighlightTextColor",
                 LayoutTheme::GetTheme()
-                    .ActiveListBoxSelectionForegroundColor()
+                    .ActiveListBoxSelectionForegroundColor(color_scheme)
                     .Serialized(),
                 data);
   }
@@ -218,12 +224,25 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
 
   data->Append(ChooserResourceLoader::GetPickerCommonJS());
   data->Append(ChooserResourceLoader::GetSuggestionPickerJS());
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    data->Append(ChooserResourceLoader::GetMonthPickerJS());
+    if (parameters_->type == input_type_names::kTime) {
+      data->Append(ChooserResourceLoader::GetTimePickerJS());
+    } else if (parameters_->type == input_type_names::kDatetimeLocal) {
+      data->Append(ChooserResourceLoader::GetTimePickerJS());
+      data->Append(ChooserResourceLoader::GetDateTimeLocalPickerJS());
+    }
+  }
   data->Append(ChooserResourceLoader::GetCalendarPickerJS());
   AddString("</script></body>\n", data);
 }
 
 Element& DateTimeChooserImpl::OwnerElement() {
   return client_->OwnerElement();
+}
+
+ChromeClient& DateTimeChooserImpl::GetChromeClient() {
+  return *frame_->View()->GetChromeClient();
 }
 
 Locale& DateTimeChooserImpl::GetLocale() {

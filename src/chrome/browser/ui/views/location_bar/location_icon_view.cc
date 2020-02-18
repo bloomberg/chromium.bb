@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -30,10 +31,9 @@ using security_state::SecurityLevel;
 LocationIconView::LocationIconView(const gfx::FontList& font_list,
                                    Delegate* delegate)
     : IconLabelBubbleView(font_list), delegate_(delegate) {
-  label()->SetElideBehavior(gfx::ELIDE_MIDDLE);
   SetID(VIEW_ID_LOCATION_ICON);
   Update(true);
-  SetUpForInOutAnimation();
+  SetUpForAnimation();
 
   // Readability is guaranteed by the omnibox theme.
   label()->SetAutoColorReadabilityEnabled(false);
@@ -169,13 +169,12 @@ bool LocationIconView::ShouldAnimateTextVisibilityChange() const {
     return false;
 
   SecurityLevel level = delegate_->GetLocationBarModel()->GetSecurityLevel();
-  // Do not animate transitions from HTTP_SHOW_WARNING to DANGEROUS, since the
-  // transition can look confusing/messy.
+  // Do not animate transitions from WARNING to DANGEROUS, since
+  // the transition can look confusing/messy.
   if (level == SecurityLevel::DANGEROUS &&
-      last_update_security_level_ == SecurityLevel::HTTP_SHOW_WARNING)
+      last_update_security_level_ == SecurityLevel::WARNING)
     return false;
-  return (level == SecurityLevel::DANGEROUS ||
-          level == SecurityLevel::HTTP_SHOW_WARNING);
+  return (level == SecurityLevel::DANGEROUS || level == SecurityLevel::WARNING);
 }
 
 void LocationIconView::UpdateTextVisibility(bool suppress_animations) {
@@ -262,19 +261,10 @@ bool LocationIconView::IsTriggerableEvent(const ui::Event& event) {
   return IconLabelBubbleView::IsTriggerableEvent(event);
 }
 
-double LocationIconView::WidthMultiplier() const {
-  return GetAnimationValue();
-}
-
 gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
     gfx::Size size) const {
   const int kMinCharacters = 10;
   size.SetToMin(
       GetSizeForLabelWidth(font_list().GetExpectedTextWidth(kMinCharacters)));
   return size;
-}
-
-int LocationIconView::GetSlideDurationTime() const {
-  constexpr int kSlideDurationTimeMs = 150;
-  return kSlideDurationTimeMs;
 }

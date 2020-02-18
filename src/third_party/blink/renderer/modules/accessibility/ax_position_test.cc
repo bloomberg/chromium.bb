@@ -77,6 +77,12 @@ constexpr char kAOM[] = R"HTML(
     </script>
     )HTML";
 
+constexpr char kMap[] = R"HTML(
+    <br id="br">
+    <map id="map">
+      <area shape="rect" coords="0,0,10,10" href="about:blank">
+    </map>
+    )HTML";
 }  // namespace
 
 //
@@ -734,11 +740,12 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
   const AXObject* ax_body = ax_root->FirstChild();
   ASSERT_NE(nullptr, ax_body);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_body->RoleValue());
-  ASSERT_EQ(1, ax_body->ChildCount());
+  ASSERT_EQ(2, ax_body->ChildCount());
 
   const AXObject* ax_hidden = GetAXObjectByElementId("hidden");
   ASSERT_NE(nullptr, ax_hidden);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_hidden->RoleValue());
+  ASSERT_TRUE(ax_hidden->AccessibilityIsIgnoredButIncludedInTree());
 
   const AXObject* ax_visible = GetAXObjectByElementId("visible");
   ASSERT_NE(nullptr, ax_visible);
@@ -762,10 +769,7 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
             ax_position_before_visible_from_dom.ChildAfterTreePosition());
 
   // A position at the beginning of the body will appear to be before the hidden
-  // element in the DOM, but it should be before the visible object in the
-  // accessibility tree since the hidden element is not in the tree. Hence, when
-  // converting to the corresponding DOM position, it should be before the
-  // visible element in the DOM as well.
+  // element in the DOM.
   const auto ax_position_first =
       AXPosition::CreateFirstPositionInObject(*ax_root);
   const auto position_first = ax_position_first.ToPositionWithAffinity();
@@ -781,13 +785,13 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
   EXPECT_EQ(ax_body, ax_position_first_from_dom.ChildAfterTreePosition());
 
   // A DOM position before |hidden| should convert to an accessibility position
-  // before |visible|.
+  // before |hidden| because the node is ignored but included in the tree.
   const auto position_before = Position::BeforeNode(*hidden);
   const auto ax_position_before_from_dom =
       AXPosition::FromPosition(position_before);
   EXPECT_EQ(ax_body, ax_position_before_from_dom.ContainerObject());
   EXPECT_EQ(0, ax_position_before_from_dom.ChildIndex());
-  EXPECT_EQ(ax_visible, ax_position_before_from_dom.ChildAfterTreePosition());
+  EXPECT_EQ(ax_hidden, ax_position_before_from_dom.ChildAfterTreePosition());
 
   // A DOM position after |hidden| should convert to an accessibility position
   // before |visible|.
@@ -795,7 +799,7 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
   const auto ax_position_after_from_dom =
       AXPosition::FromPosition(position_after);
   EXPECT_EQ(ax_body, ax_position_after_from_dom.ContainerObject());
-  EXPECT_EQ(0, ax_position_after_from_dom.ChildIndex());
+  EXPECT_EQ(1, ax_position_after_from_dom.ChildIndex());
   EXPECT_EQ(ax_visible, ax_position_after_from_dom.ChildAfterTreePosition());
 }
 
@@ -1620,6 +1624,61 @@ TEST_F(AccessibilityTest, DISABLED_PositionInVirtualAOMNode) {
       AXPosition::FromPosition(position_after);
   EXPECT_EQ(ax_position_after, ax_position_after_from_dom);
   EXPECT_EQ(ax_after, ax_position_after_from_dom.ChildAfterTreePosition());
+}
+
+TEST_F(AccessibilityTest, PositionInInvalidMapLayout) {
+  SetBodyInnerHTML(kMap);
+
+  Node* br = GetElementById("br");
+  ASSERT_NE(nullptr, br);
+  Node* map = GetElementById("map");
+  ASSERT_NE(nullptr, map);
+
+  // Create an invalid layout by appending a child to the <br>
+  br->appendChild(map);
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  const AXObject* ax_map = GetAXObjectByElementId("map");
+  ASSERT_NE(nullptr, ax_map);
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_map->RoleValue());
+
+  const auto ax_position_before =
+      AXPosition::CreatePositionBeforeObject(*ax_map);
+  const auto position_before = ax_position_before.ToPositionWithAffinity();
+  EXPECT_EQ(nullptr, position_before.AnchorNode());
+  EXPECT_EQ(0, position_before.GetPosition().OffsetInContainerNode());
+
+  const auto ax_position_after = AXPosition::CreatePositionAfterObject(*ax_map);
+  const auto position_after = ax_position_after.ToPositionWithAffinity();
+  EXPECT_EQ(nullptr, position_after.AnchorNode());
+  EXPECT_EQ(0, position_after.GetPosition().OffsetInContainerNode());
+}
+
+TEST_P(ParameterizedAccessibilityTest,
+       ToPositionWithAffinityWithMultipleInlineTextBoxes) {
+  // "&#10" is a Line Feed ("\n").
+  SetBodyInnerHTML(
+      R"HTML(<style>p { white-space: pre-line; }</style>
+      <p id="paragraph">Hello &#10; world</p>)HTML");
+  const Node* text = GetElementById("paragraph")->firstChild();
+  ASSERT_NE(nullptr, text);
+  ASSERT_TRUE(text->IsTextNode());
+  AXObject* ax_static_text = GetAXObjectByElementId("paragraph")->FirstChild();
+
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
+
+  ax_static_text->LoadInlineTextBoxes();
+  ASSERT_EQ(3, ax_static_text->ChildCount());
+
+  // This test expects the starting offset of the last InlineTextBox object to
+  // equates the sum of the previous inline text boxes length, without the
+  // collapsed white-spaces.
+  const auto ax_position =
+      AXPosition::CreatePositionBeforeObject(*(ax_static_text->LastChild()));
+  const auto position = ax_position.ToPositionWithAffinity();
+  EXPECT_EQ(LayoutNGEnabled() ? 7 : 6,
+            position.GetPosition().OffsetInContainerNode());
 }
 
 }  // namespace test

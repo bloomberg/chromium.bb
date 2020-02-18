@@ -31,7 +31,10 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 
+#include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/common/css/forced_colors.h"
+#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
@@ -81,6 +84,21 @@ class WebThemeEngine {
     kPartProgressBar
   };
 
+  enum class SystemThemeColor {
+    kNotSupported,
+    kButtonFace,
+    kButtonText,
+    kGrayText,
+    kHighlight,
+    kHighlightText,
+    kHotlight,
+    kMenuHighlight,
+    kScrollbar,
+    kWindow,
+    kWindowText,
+    kMaxValue = kWindowText,
+  };
+
   // Extra parameters for drawing the PartScrollbarHorizontalTrack and
   // PartScrollbarVerticalTrack.
   struct ScrollbarTrackExtraParams {
@@ -99,6 +117,7 @@ class WebThemeEngine {
     bool indeterminate;  // Whether the button state is indeterminate.
     bool has_border;
     SkColor background_color;
+    float zoom;
   };
 
   // Extra parameters for PartTextField
@@ -126,6 +145,7 @@ class WebThemeEngine {
     bool in_drag;
     int thumb_x;
     int thumb_y;
+    float zoom;
   };
 
   // Extra parameters for PartInnerSpinButton
@@ -203,6 +223,19 @@ class WebThemeEngine {
                      const WebRect&,
                      const ExtraParams*,
                      blink::WebColorScheme) {}
+
+  virtual base::Optional<SkColor> GetSystemColor(
+      SystemThemeColor system_theme) const {
+    return base::nullopt;
+  }
+
+  virtual ForcedColors GetForcedColors() const { return ForcedColors::kNone; }
+  virtual void SetForcedColors(const blink::ForcedColors forced_colors) {}
+  virtual blink::PreferredColorScheme PreferredColorScheme() const {
+    return PreferredColorScheme::kNoPreference;
+  }
+  virtual void SetPreferredColorScheme(
+      const blink::PreferredColorScheme preferred_color_scheme) {}
 };
 
 }  // namespace blink

@@ -54,13 +54,14 @@ class IDLLexer(object):
   # if the token is actually a keyword.
   keywords = {
     'any' : 'ANY',
+    'async' : 'ASYNC',
     'attribute' : 'ATTRIBUTE',
     'boolean' : 'BOOLEAN',
     'byte' : 'BYTE',
     'ByteString' : 'BYTESTRING',
     'callback' : 'CALLBACK',
     'const' : 'CONST',
-    'creator' : 'CREATOR',
+    'constructor' : 'CONSTRUCTOR',
     'deleter' : 'DELETER',
     'dictionary' : 'DICTIONARY',
     'DOMString' : 'DOMSTRING',
@@ -75,7 +76,6 @@ class IDLLexer(object):
     'inherit' : 'INHERIT',
     'interface' : 'INTERFACE',
     'iterable': 'ITERABLE',
-    'legacycaller' : 'LEGACYCALLER',
     'long' : 'LONG',
     'maplike': 'MAPLIKE',
     'mixin': 'MIXIN',

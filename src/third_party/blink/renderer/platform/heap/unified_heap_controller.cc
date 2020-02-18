@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 
+#include "base/macros.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
@@ -29,15 +31,11 @@ constexpr BlinkGC::StackState ToBlinkGCStackState(
 
 UnifiedHeapController::UnifiedHeapController(ThreadState* thread_state)
     : thread_state_(thread_state) {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kBlinkHeapUnifiedGCScheduling))
-    thread_state->Heap().stats_collector()->RegisterObserver(this);
+  thread_state->Heap().stats_collector()->RegisterObserver(this);
 }
 
 UnifiedHeapController::~UnifiedHeapController() {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kBlinkHeapUnifiedGCScheduling))
-    thread_state_->Heap().stats_collector()->UnregisterObserver(this);
+  thread_state_->Heap().stats_collector()->UnregisterObserver(this);
 }
 
 void UnifiedHeapController::TracePrologue(
@@ -48,17 +46,16 @@ void UnifiedHeapController::TracePrologue(
 
   // Be conservative here as a new garbage collection gets started right away.
   thread_state_->FinishIncrementalMarkingIfRunning(
-      BlinkGC::kHeapPointersOnStack, BlinkGC::kIncrementalMarking,
+      BlinkGC::kHeapPointersOnStack, BlinkGC::kIncrementalAndConcurrentMarking,
       BlinkGC::kConcurrentAndLazySweeping,
       thread_state_->current_gc_data_.reason);
 
-  // Reset any previously scheduled garbage collections.
   thread_state_->SetGCState(ThreadState::kNoGCScheduled);
   BlinkGC::GCReason gc_reason =
       (v8_flags & v8::EmbedderHeapTracer::TraceFlags::kReduceMemory)
           ? BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC
           : BlinkGC::GCReason::kUnifiedHeapGC;
-  thread_state_->IncrementalMarkingStart(gc_reason);
+  thread_state_->StartIncrementalMarking(gc_reason);
 
   is_tracing_done_ = false;
 }
@@ -68,10 +65,11 @@ void UnifiedHeapController::EnterFinalPause(EmbedderStackState stack_state) {
   ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
       thread_state_->Heap().stats_collector());
   thread_state_->AtomicPauseMarkPrologue(
-      ToBlinkGCStackState(stack_state), BlinkGC::kIncrementalMarking,
+      ToBlinkGCStackState(stack_state),
+      BlinkGC::kIncrementalAndConcurrentMarking,
       thread_state_->current_gc_data_.reason);
   thread_state_->AtomicPauseMarkRoots(ToBlinkGCStackState(stack_state),
-                                      BlinkGC::kIncrementalMarking,
+                                      BlinkGC::kIncrementalAndConcurrentMarking,
                                       thread_state_->current_gc_data_.reason);
 }
 
@@ -81,18 +79,17 @@ void UnifiedHeapController::TraceEpilogue(
   {
     ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
         thread_state_->Heap().stats_collector());
-    thread_state_->AtomicPauseMarkEpilogue(BlinkGC::kIncrementalMarking);
+    thread_state_->AtomicPauseMarkEpilogue(
+        BlinkGC::kIncrementalAndConcurrentMarking);
     thread_state_->AtomicPauseSweepAndCompact(
-        BlinkGC::kIncrementalMarking, BlinkGC::kConcurrentAndLazySweeping);
+        BlinkGC::kIncrementalAndConcurrentMarking,
+        BlinkGC::kConcurrentAndLazySweeping);
 
-    if (base::FeatureList::IsEnabled(
-            blink::features::kBlinkHeapUnifiedGCScheduling)) {
-      ThreadHeapStatsCollector* const stats_collector =
-          thread_state_->Heap().stats_collector();
-      summary->allocated_size =
-          static_cast<size_t>(stats_collector->marked_bytes());
-      summary->time = stats_collector->marking_time_so_far().InMillisecondsF();
-    }
+    ThreadHeapStatsCollector* const stats_collector =
+        thread_state_->Heap().stats_collector();
+    summary->allocated_size =
+        static_cast<size_t>(stats_collector->marked_bytes());
+    summary->time = stats_collector->marking_time_so_far().InMillisecondsF();
     buffered_allocated_size_ = 0;
   }
   thread_state_->AtomicPauseEpilogue();
@@ -147,16 +144,22 @@ bool UnifiedHeapController::IsTracingDone() {
   return is_tracing_done_;
 }
 
-bool UnifiedHeapController::IsRootForNonTracingGCInternal(
-    const v8::TracedGlobal<v8::Value>& handle) {
+bool UnifiedHeapController::IsRootForNonTracingGC(
+    const v8::TracedReference<v8::Value>& handle) {
+  if (thread_state()->IsIncrementalMarking()) {
+    // We have a non-tracing GC while unified GC is in progress. Treat all
+    // objects as roots to avoid stale pointers in the marking worklists.
+    return true;
+  }
   const uint16_t class_id = handle.WrapperClassId();
-  // Stand-alone TracedGlobal reference or kCustomWrappableId. Keep as root as
+  // Stand-alone reference or kCustomWrappableId. Keep as root as
   // we don't know better.
   if (class_id != WrapperTypeInfo::kNodeClassId &&
       class_id != WrapperTypeInfo::kObjectClassId)
     return true;
 
-  const v8::TracedGlobal<v8::Object>& traced = handle.As<v8::Object>();
+  const v8::TracedReference<v8::Object>& traced =
+      handle.template As<v8::Object>();
   if (ToWrapperTypeInfo(traced)->IsActiveScriptWrappable() &&
       ToScriptWrappable(traced)->HasPendingActivity()) {
     return true;
@@ -170,7 +173,7 @@ bool UnifiedHeapController::IsRootForNonTracingGCInternal(
 }
 
 void UnifiedHeapController::ResetHandleInNonTracingGC(
-    const v8::TracedGlobal<v8::Value>& handle) {
+    const v8::TracedReference<v8::Value>& handle) {
   const uint16_t class_id = handle.WrapperClassId();
   // Only consider handles that have not been treated as roots, see
   // IsRootForNonTracingGCInternal.
@@ -178,21 +181,38 @@ void UnifiedHeapController::ResetHandleInNonTracingGC(
       class_id != WrapperTypeInfo::kObjectClassId)
     return;
 
-  const v8::TracedGlobal<v8::Object>& traced = handle.As<v8::Object>();
-  ToScriptWrappable(traced)->UnsetWrapperIfAny();
+  // We should not reset any handles during an already running tracing
+  // collection. Resetting a handle could re-allocate a backing or trigger
+  // potential in place rehashing. Both operations may trigger write barriers by
+  // moving references. Such references may already be dead but not yet cleared
+  // which would result in reporting dead objects to V8.
+  DCHECK(!thread_state()->IsIncrementalMarking());
+  // Clearing the wrapper below adjusts the DOM wrapper store which may
+  // re-allocate its backing. We have to avoid report memory to V8 as that may
+  // trigger GC during GC.
+  ThreadState::GCForbiddenScope gc_forbidden(thread_state());
+  const v8::TracedReference<v8::Object>& traced = handle.As<v8::Object>();
+  bool success = DOMWrapperWorld::UnsetSpecificWrapperIfSet(
+      ToScriptWrappable(traced), traced);
+  // Since V8 found a handle, Blink needs to find it as well when trying to
+  // remove it.
+  CHECK(success);
 }
 
 bool UnifiedHeapController::IsRootForNonTracingGC(
     const v8::TracedGlobal<v8::Value>& handle) {
-  return IsRootForNonTracingGCInternal(handle);
+  CHECK(false) << "Blink does not use v8::TracedGlobal.";
+  return false;
 }
 
 void UnifiedHeapController::ReportBufferedAllocatedSizeIfPossible() {
-  DCHECK(base::FeatureList::IsEnabled(
-      blink::features::kBlinkHeapUnifiedGCScheduling));
-  // Reported from a recursive sweeping call.
-  if (thread_state()->IsSweepingInProgress() &&
-      thread_state()->SweepForbidden()) {
+  // Avoid reporting to V8 in the following conditions as that may trigger GC
+  // finalizations where not allowed.
+  // - Recursive sweeping.
+  // - GC forbidden scope.
+  if ((thread_state()->IsSweepingInProgress() &&
+       thread_state()->SweepForbidden()) ||
+      thread_state()->IsGCForbidden()) {
     return;
   }
 

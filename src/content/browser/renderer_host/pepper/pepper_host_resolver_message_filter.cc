@@ -21,7 +21,9 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/address_list.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -86,8 +88,7 @@ PepperHostResolverMessageFilter::PepperHostResolverMessageFilter(
     : external_plugin_(host->external_plugin()),
       private_api_(private_api),
       render_process_id_(0),
-      render_frame_id_(0),
-      binding_(this) {
+      render_frame_id_(0) {
   DCHECK(host);
 
   if (!host->GetRenderFrameIDsForInstance(
@@ -145,19 +146,19 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
   // thread pending). Balanced in OnComplete();
   AddRef();
 
-  network::mojom::ResolveHostClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr));
-  binding_.set_connection_error_handler(
-      base::BindOnce(&PepperHostResolverMessageFilter::OnComplete,
-                     base::Unretained(this), net::ERR_FAILED, base::nullopt));
-
   network::mojom::ResolveHostParametersPtr parameters =
       network::mojom::ResolveHostParameters::New();
   PrepareRequestInfo(hint, parameters.get());
 
+  // TODO(mmenke): Pass in correct NetworkIsolationKey.
   storage_partition->GetNetworkContext()->ResolveHost(
-      net::HostPortPair(host_port.host, host_port.port), std::move(parameters),
-      std::move(client_ptr));
+      net::HostPortPair(host_port.host, host_port.port),
+      net::NetworkIsolationKey::Todo(), std::move(parameters),
+      receiver_.BindNewPipeAndPassRemote());
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&PepperHostResolverMessageFilter::OnComplete,
+                     base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
+                     net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
   host_resolve_context_ = context->MakeReplyMessageContext();
 
   return PP_OK_COMPLETIONPENDING;
@@ -165,14 +166,15 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
 
 void PepperHostResolverMessageFilter::OnComplete(
     int result,
+    const net::ResolveErrorInfo& resolve_error_info,
     const base::Optional<net::AddressList>& resolved_addresses) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  binding_.Close();
+  receiver_.reset();
 
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperHostResolverMessageFilter::OnLookupFinished, this,
-                     result, std::move(resolved_addresses),
+                     resolve_error_info.error, std::move(resolved_addresses),
                      host_resolve_context_));
   host_resolve_context_ = ppapi::host::ReplyMessageContext();
 

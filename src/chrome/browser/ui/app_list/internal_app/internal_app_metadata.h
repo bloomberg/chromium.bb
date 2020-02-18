@@ -13,24 +13,15 @@
 class Profile;
 class GURL;
 
+namespace apps {
+enum class BuiltInAppName;
+}
+
 namespace sync_sessions {
 class OpenTabsUIDelegate;
 }  // namespace sync_sessions
 
 namespace app_list {
-
-// The internal app's histogram name of the chrome search result. This is used
-// for logging so do not change the order of this enum.
-enum class InternalAppName {
-  kKeyboardShortcutViewer = 0,
-  kSettings = 1,
-  kContinueReading = 2,
-  kCamera = 3,
-  kDiscover = 4,
-  kPluginVm = 5,
-  kReleaseNotes = 6,
-  kMaxValue = kReleaseNotes,
-};
 
 // Metadata about an internal app.
 // Internal apps are these Chrome OS special apps, e.g. Settings, or these apps
@@ -52,7 +43,7 @@ struct InternalApp {
   // Can show in launcher apps grid.
   bool show_in_launcher;
 
-  InternalAppName internal_app_name;
+  apps::BuiltInAppName internal_app_name;
 
   // The string used for search query in addition to the name.
   int searchable_string_resource_id = 0;
@@ -101,10 +92,6 @@ bool HasRecommendableForeignTab(
     base::string16* title,
     GURL* url,
     sync_sessions::OpenTabsUIDelegate* test_delegate);
-
-// Returns the InternalAppName of an internal app.
-InternalAppName GetInternalAppNameByAppId(
-    const std::string& app_id);
 
 // Returns the number of internal apps which can show in launcher.
 // If |apps_name| is not nullptr, it will be the concatenated string of these

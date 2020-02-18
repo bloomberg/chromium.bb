@@ -40,6 +40,7 @@
 #include <fuchsia/logger/cpp/fidl.h>
 #include <fuchsia/logger/cpp/fidl_test_base.h>
 #include <lib/fidl/cpp/binding.h>
+#include <lib/sys/cpp/component_context.h>
 #include <lib/zx/channel.h>
 #include <lib/zx/event.h>
 #include <lib/zx/exception.h>
@@ -51,8 +52,8 @@
 #include <zircon/syscalls/exception.h>
 #include <zircon/types.h>
 
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/service_directory_client.h"
 #endif  // OS_FUCHSIA
 
 namespace logging {
@@ -119,7 +120,7 @@ TEST_F(LoggingTest, BasicLogging) {
   SetMinLogLevel(LOG_INFO);
 
   EXPECT_TRUE(LOG_IS_ON(INFO));
-  EXPECT_TRUE((DCHECK_IS_ON() != 0) == DLOG_IS_ON(INFO));
+  EXPECT_EQ(DCHECK_IS_ON(), DLOG_IS_ON(INFO));
   EXPECT_TRUE(VLOG_IS_ON(0));
 
   LOG(INFO) << mock_log_source.Log();
@@ -1008,8 +1009,9 @@ TEST_F(LoggingTest, FuchsiaSystemLogging) {
         std::make_unique<fuchsia::logger::LogFilterOptions>();
     options->tags = {"base_unittests__exec"};
     fuchsia::logger::LogPtr logger =
-        base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-            ->ConnectToService<fuchsia::logger::Log>();
+        base::fuchsia::ComponentContextForCurrentProcess()
+            ->svc()
+            ->Connect<fuchsia::logger::Log>();
     logger->DumpLogs(binding.NewBinding(), std::move(options));
     listener.RunUntilDone();
   } while (!listener.DidReceiveString(kLogMessage, &logged_message));
@@ -1032,7 +1034,7 @@ TEST_F(LoggingTest, FuchsiaLogging) {
   SetMinLogLevel(LOG_INFO);
 
   EXPECT_TRUE(LOG_IS_ON(INFO));
-  EXPECT_TRUE((DCHECK_IS_ON() != 0) == DLOG_IS_ON(INFO));
+  EXPECT_EQ(DCHECK_IS_ON(), DLOG_IS_ON(INFO));
 
   ZX_LOG(INFO, ZX_ERR_INTERNAL) << mock_log_source.Log();
   ZX_DLOG(INFO, ZX_ERR_INTERNAL) << mock_log_source.Log();

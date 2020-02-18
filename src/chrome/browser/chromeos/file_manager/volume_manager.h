@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/documents_provider_root_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/icon_set.h"
@@ -63,6 +63,7 @@ enum VolumeType {
   VOLUME_TYPE_CROSTINI,
   VOLUME_TYPE_ANDROID_FILES,
   VOLUME_TYPE_DOCUMENTS_PROVIDER,
+  VOLUME_TYPE_SMB,
   // The enum values must be kept in sync with FileManagerVolumeType in
   // tools/metrics/histograms/enums.xml. Since enums for histograms are
   // append-only (for keeping the number consistent across versions), new values

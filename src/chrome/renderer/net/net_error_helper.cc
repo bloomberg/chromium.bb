@@ -24,14 +24,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
-#include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
-#include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/grit/components_resources.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "components/security_interstitials/content/renderer/security_interstitial_page_controller.h"
 #include "components/security_interstitials/core/common/mojom/interstitial_commands.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -99,8 +98,7 @@ NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
 
 #if defined(OS_ANDROID)
 bool IsOfflineContentOnNetErrorFeatureEnabled() {
-  return offline_pages::IsOfflinePagesEnabled() &&
-         base::FeatureList::IsEnabled(features::kNewNetErrorPageUI);
+  return true;
 }
 #else   // OS_ANDROID
 bool IsOfflineContentOnNetErrorFeatureEnabled() {
@@ -110,9 +108,7 @@ bool IsOfflineContentOnNetErrorFeatureEnabled() {
 
 #if defined(OS_ANDROID)
 bool IsAutoFetchFeatureEnabled() {
-  // Disabled for touchless builds.
-  return base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage) &&
-         offline_pages::IsOfflinePagesEnabled();
+  return true;
 }
 #else   // OS_ANDROID
 bool IsAutoFetchFeatureEnabled() {
@@ -209,85 +205,12 @@ content::RenderFrame* NetErrorHelper::GetRenderFrame() {
   return render_frame();
 }
 
-void NetErrorHelper::SendCommand(
-    security_interstitials::SecurityInterstitialCommand command) {
-  security_interstitials::mojom::InterstitialCommandsAssociatedPtr interface;
+mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
+NetErrorHelper::GetInterface() {
+  mojo::AssociatedRemote<security_interstitials::mojom::InterstitialCommands>
+      interface;
   render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&interface);
-  switch (command) {
-    case security_interstitials::CMD_DONT_PROCEED: {
-      interface->DontProceed();
-      break;
-    }
-    case security_interstitials::CMD_PROCEED: {
-      interface->Proceed();
-      break;
-    }
-    case security_interstitials::CMD_SHOW_MORE_SECTION: {
-      interface->ShowMoreSection();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_HELP_CENTER: {
-      interface->OpenHelpCenter();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_DIAGNOSTIC: {
-      interface->OpenDiagnostic();
-      break;
-    }
-    case security_interstitials::CMD_RELOAD: {
-      interface->Reload();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_DATE_SETTINGS: {
-      interface->OpenDateSettings();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_LOGIN: {
-      interface->OpenLogin();
-      break;
-    }
-    case security_interstitials::CMD_DO_REPORT: {
-      interface->DoReport();
-      break;
-    }
-    case security_interstitials::CMD_DONT_REPORT: {
-      interface->DontReport();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_REPORTING_PRIVACY: {
-      interface->OpenReportingPrivacy();
-      break;
-    }
-    case security_interstitials::CMD_OPEN_WHITEPAPER: {
-      interface->OpenWhitepaper();
-      break;
-    }
-    case security_interstitials::CMD_REPORT_PHISHING_ERROR: {
-      interface->ReportPhishingError();
-      break;
-    }
-    default: {
-      // Other values in the enum are only used by tests so this
-      // method should not be called with them.
-      NOTREACHED();
-    }
-  }
-}
-
-void NetErrorHelper::GoBack() {
-  if (supervised_user_interface_)
-    supervised_user_interface_->GoBack();
-}
-
-void NetErrorHelper::RequestPermission(
-    base::OnceCallback<void(bool)> callback) {
-  if (supervised_user_interface_)
-    supervised_user_interface_->RequestPermission(std::move(callback));
-}
-
-void NetErrorHelper::Feedback() {
-  if (supervised_user_interface_)
-    supervised_user_interface_->Feedback();
+  return interface;
 }
 
 void NetErrorHelper::DidStartNavigation(
@@ -308,7 +231,6 @@ void NetErrorHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
   // it.
   weak_controller_delegate_factory_.InvalidateWeakPtrs();
   weak_security_interstitial_controller_delegate_factory_.InvalidateWeakPtrs();
-  weak_supervised_user_error_controller_delegate_factory_.InvalidateWeakPtrs();
 
   core_->OnCommitLoad(GetFrameType(render_frame()),
                       render_frame()->GetWebFrame()->GetDocument().Url());
@@ -340,10 +262,9 @@ void NetErrorHelper::NetworkStateChanged(bool enabled) {
 
 void NetErrorHelper::PrepareErrorPage(const error_page::Error& error,
                                       bool is_failed_post,
-                                      bool is_ignoring_cache,
                                       std::string* error_html) {
   core_->PrepareErrorPage(GetFrameType(render_frame()), error, is_failed_post,
-                          is_ignoring_cache, error_html);
+                          error_html);
 }
 
 bool NetErrorHelper::ShouldSuppressErrorPage(const GURL& url) {
@@ -406,7 +327,7 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
 
   int resource_id = IDR_NET_ERROR_HTML;
   std::string extracted_string =
-      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           resource_id);
   base::StringPiece template_html(extracted_string.data(),
                                   extracted_string.size());
@@ -431,17 +352,11 @@ void NetErrorHelper::LoadErrorPage(const std::string& html,
 }
 
 void NetErrorHelper::EnablePageHelperFunctions() {
-  SecurityInterstitialPageController::Install(
+  security_interstitials::SecurityInterstitialPageController::Install(
       render_frame(),
       weak_security_interstitial_controller_delegate_factory_.GetWeakPtr());
   NetErrorPageController::Install(
       render_frame(), weak_controller_delegate_factory_.GetWeakPtr());
-
-  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
-      &supervised_user_interface_);
-  SupervisedUserErrorPageController::Install(
-      render_frame(),
-      weak_supervised_user_error_controller_delegate_factory_.GetWeakPtr());
 }
 
 LocalizedError::PageState NetErrorHelper::UpdateErrorPage(
@@ -542,10 +457,8 @@ void NetErrorHelper::SendTrackingRequest(
       network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
 }
 
-void NetErrorHelper::ReloadPage(bool bypass_cache) {
-  render_frame()->GetWebFrame()->StartReload(
-      bypass_cache ? blink::WebFrameLoadType::kReloadBypassingCache
-                   : blink::WebFrameLoadType::kReload);
+void NetErrorHelper::ReloadFrame() {
+  render_frame()->GetWebFrame()->StartReload(blink::WebFrameLoadType::kReload);
 }
 
 void NetErrorHelper::DiagnoseError(const GURL& page_url) {
@@ -634,13 +547,15 @@ void NetErrorHelper::OnTrackingRequestComplete(
 }
 
 void NetErrorHelper::OnNetworkDiagnosticsClientRequest(
-    chrome::mojom::NetworkDiagnosticsClientAssociatedRequest request) {
-  network_diagnostics_client_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingAssociatedReceiver<chrome::mojom::NetworkDiagnosticsClient>
+        receiver) {
+  network_diagnostics_client_receivers_.Add(this, std::move(receiver));
 }
 
 void NetErrorHelper::OnNavigationCorrectorRequest(
-    chrome::mojom::NavigationCorrectorAssociatedRequest request) {
-  navigation_corrector_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingAssociatedReceiver<chrome::mojom::NavigationCorrector>
+        receiver) {
+  navigation_corrector_receivers_.Add(this, std::move(receiver));
 }
 
 void NetErrorHelper::SetCanShowNetworkDiagnosticsDialog(bool can_show) {

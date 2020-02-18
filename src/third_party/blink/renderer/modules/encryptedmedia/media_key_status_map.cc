@@ -18,7 +18,7 @@ namespace blink {
 
 // Represents the key ID and associated status.
 class MediaKeyStatusMap::MapEntry final
-    : public GarbageCollectedFinalized<MediaKeyStatusMap::MapEntry> {
+    : public GarbageCollected<MediaKeyStatusMap::MapEntry> {
  public:
   MapEntry(WebData key_id, const String& status)
       : key_id_(DOMArrayBuffer::Create(scoped_refptr<SharedBuffer>(key_id))),
@@ -45,15 +45,15 @@ class MediaKeyStatusMap::MapEntry final
       return b->KeyId();
 
     // Compare the bytes.
-    int result =
-        memcmp(a->KeyId()->Data(), b->KeyId()->Data(),
-               std::min(a->KeyId()->ByteLength(), b->KeyId()->ByteLength()));
+    int result = memcmp(a->KeyId()->Data(), b->KeyId()->Data(),
+                        std::min(a->KeyId()->ByteLengthAsSizeT(),
+                                 b->KeyId()->ByteLengthAsSizeT()));
     if (result != 0)
       return result < 0;
 
     // KeyIds are equal to the shared length, so the shorter string is <.
-    DCHECK_NE(a->KeyId()->ByteLength(), b->KeyId()->ByteLength());
-    return a->KeyId()->ByteLength() < b->KeyId()->ByteLength();
+    DCHECK_NE(a->KeyId()->ByteLengthAsSizeT(), b->KeyId()->ByteLengthAsSizeT());
+    return a->KeyId()->ByteLengthAsSizeT() < b->KeyId()->ByteLengthAsSizeT();
   }
 
   virtual void Trace(blink::Visitor* visitor) { visitor->Trace(key_id_); }
@@ -137,8 +137,10 @@ bool MediaKeyStatusMap::has(const ArrayBufferOrArrayBufferView& key_id) {
 ScriptValue MediaKeyStatusMap::get(ScriptState* script_state,
                                    const ArrayBufferOrArrayBufferView& key_id) {
   uint32_t index = IndexOf(key_id);
-  if (index >= entries_.size())
-    return ScriptValue(script_state, v8::Undefined(script_state->GetIsolate()));
+  if (index >= entries_.size()) {
+    return ScriptValue(script_state->GetIsolate(),
+                       v8::Undefined(script_state->GetIsolate()));
+  }
   return ScriptValue::From(script_state, at(index).Status());
 }
 

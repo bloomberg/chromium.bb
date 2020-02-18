@@ -89,8 +89,8 @@ BrowserState::~BrowserState() {
   shared_url_loader_factory_->Detach();
 
   if (network_context_) {
-    web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
-                               network_context_owner_.release());
+    base::DeleteSoon(FROM_HERE, {web::WebThread::IO},
+                     network_context_owner_.release());
   }
 
   // Delete the URLDataManagerIOSBackend instance on the IO thread if it has
@@ -99,8 +99,8 @@ BrowserState::~BrowserState() {
   // BrowserState are still accessing it on the IO thread at this point,
   // they're going to have a bad time anyway.
   if (url_data_manager_ios_backend_) {
-    bool posted = web::WebThread::DeleteSoon(web::WebThread::IO, FROM_HERE,
-                                             url_data_manager_ios_backend_);
+    bool posted = base::DeleteSoon(FROM_HERE, {web::WebThread::IO},
+                                   url_data_manager_ios_backend_);
     if (!posted)
       delete url_data_manager_ios_backend_;
   }
@@ -114,7 +114,7 @@ network::mojom::URLLoaderFactory* BrowserState::GetURLLoaderFactory() {
     url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
     url_loader_factory_params->is_corb_enabled = false;
     network_context_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_),
+        url_loader_factory_.BindNewPipeAndPassReceiver(),
         std::move(url_loader_factory_params));
   }
 
@@ -139,10 +139,11 @@ leveldb_proto::ProtoDatabaseProvider* BrowserState::GetProtoDatabaseProvider() {
 }
 
 void BrowserState::GetProxyResolvingSocketFactory(
-    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
+        receiver) {
   CreateNetworkContextIfNecessary();
 
-  network_context_->CreateProxyResolvingSocketFactory(std::move(request));
+  network_context_->CreateProxyResolvingSocketFactory(std::move(receiver));
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/infobars/core/infobar.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
@@ -32,6 +33,7 @@
 
 namespace {
 
+#if !defined(OS_CHROMEOS)
 const int kContentsBorderThickness = 5;
 const float kContentsBorderOpacity = 0.50;
 const SkColor kContentsBorderColor = gfx::kGoogleBlue500;
@@ -45,7 +47,7 @@ void InitContentsBorderWidget(content::WebContents* contents) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   views::Widget* frame = browser_view->contents_web_view()->GetWidget();
   params.parent = frame->GetNativeView();
   params.context = frame->GetNativeWindow();
@@ -70,8 +72,11 @@ void InitContentsBorderWidget(content::WebContents* contents) {
 
   browser_view->set_contents_border_widget(widget);
 }
+#endif
 
 void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
+  // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
+#if !defined(OS_CHROMEOS)
   if (!contents)
     return;
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
@@ -90,6 +95,7 @@ void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
     contents_border_widget->Show();
   else
     contents_border_widget->Hide();
+#endif
 }
 
 base::string16 GetTabName(content::WebContents* tab) {
@@ -117,9 +123,13 @@ TabSharingUIViews::TabSharingUIViews(const content::DesktopMediaID& media_id,
       content::RenderFrameHost::FromID(
           media_id.web_contents_id.render_process_id,
           media_id.web_contents_id.main_render_frame_id));
+  Observe(shared_tab_);
   shared_tab_name_ = GetTabName(shared_tab_);
   profile_ = ProfileManager::GetLastUsedProfileAllowedByPolicy();
+  // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
+#if !defined(OS_CHROMEOS)
   InitContentsBorderWidget(shared_tab_);
+#endif
 }
 
 TabSharingUIViews::~TabSharingUIViews() {
@@ -166,6 +176,7 @@ void TabSharingUIViews::StopSharing() {
     std::move(stop_callback_).Run();
   RemoveInfobarsForAllTabs();
   SetContentsBorderVisible(shared_tab_, false);
+  tab_capture_indicator_ui_.reset();
   shared_tab_ = nullptr;
 }
 
@@ -178,7 +189,6 @@ void TabSharingUIViews::OnBrowserRemoved(Browser* browser) {
   BrowserList* browser_list = BrowserList::GetInstance();
   if (browser_list->empty())
     browser_list->RemoveObserver(this);
-
   browser->tab_strip_model()->RemoveObserver(this);
 }
 
@@ -190,17 +200,6 @@ void TabSharingUIViews::OnTabStripModelChanged(
     for (const auto& contents : change.GetInsert()->contents) {
       if (infobars_.find(contents.contents) == infobars_.end())
         CreateInfobarForWebContents(contents.contents);
-    }
-  } else if (change.type() == TabStripModelChange::kRemoved) {
-    auto* remove = change.GetRemove();
-    if (remove->will_be_deleted) {
-      bool remove_shared_tab = false;
-      for (const auto& contents : remove->contents) {
-        remove_shared_tab |= contents.contents == shared_tab_;
-        infobars_.erase(contents.contents);
-      }
-      if (remove_shared_tab)
-        StopSharing();
     }
   }
 
@@ -225,19 +224,38 @@ void TabSharingUIViews::TabChangedAt(content::WebContents* contents,
     CreateInfobarForWebContents(contents);
 }
 
-void TabSharingUIViews::OnInfoBarRemoved(infobars::InfoBar* info_bar,
+void TabSharingUIViews::OnInfoBarRemoved(infobars::InfoBar* infobar,
                                          bool animate) {
   auto infobars_entry = std::find_if(infobars_.begin(), infobars_.end(),
-                                     [info_bar](const auto& infobars_entry) {
-                                       return infobars_entry.second == info_bar;
+                                     [infobar](const auto& infobars_entry) {
+                                       return infobars_entry.second == infobar;
                                      });
   if (infobars_entry == infobars_.end())
     return;
 
-  info_bar->owner()->RemoveObserver(this);
+  infobar->owner()->RemoveObserver(this);
   infobars_.erase(infobars_entry);
-  if (infobars_entry->first == shared_tab_)
+  if (InfoBarService::WebContentsFromInfoBar(infobar) == shared_tab_)
     StopSharing();
+}
+
+void TabSharingUIViews::DidFinishNavigation(content::NavigationHandle* handle) {
+  // Only interested in committed navigations on the shared tab that result in
+  // changing the shared tab's name.
+  if (!handle->IsInMainFrame() || !handle->HasCommitted() ||
+      handle->IsSameDocument() || handle->GetWebContents() != shared_tab_ ||
+      GetTabName(shared_tab_) == shared_tab_name_) {
+    return;
+  }
+  shared_tab_name_ = GetTabName(shared_tab_);
+  for (const auto& infobars_entry : infobars_) {
+    if (infobars_entry.first == shared_tab_)
+      continue;
+    // Recreate infobars to reflect the new shared tab name.
+    infobars_entry.second->owner()->RemoveObserver(this);
+    infobars_entry.second->RemoveSelf();
+    CreateInfobarForWebContents(infobars_entry.first);
+  }
 }
 
 void TabSharingUIViews::CreateInfobarsForAllTabs() {

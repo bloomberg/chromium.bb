@@ -14,7 +14,9 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
@@ -64,27 +66,27 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
       public testing::WithParamInterface<TestParams>,
       public video_capture::mojom::DevicesChangedObserver {
  public:
-  WebRtcVideoCaptureServiceEnumerationBrowserTest()
-      : devices_changed_observer_binding_(this) {
+  WebRtcVideoCaptureServiceEnumerationBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
   }
 
   ~WebRtcVideoCaptureServiceEnumerationBrowserTest() override {}
 
   void ConnectToService() {
-    video_capture::mojom::DevicesChangedObserverPtr observer;
-    devices_changed_observer_binding_.Bind(mojo::MakeRequest(&observer));
+    mojo::PendingRemote<video_capture::mojom::DevicesChangedObserver> observer;
+    devices_changed_observer_receiver_.Bind(
+        observer.InitWithNewPipeAndPassReceiver());
     switch (GetParam().api_to_use) {
       case ServiceApi::kSingleClient:
         GetVideoCaptureService().ConnectToDeviceFactory(
-            mojo::MakeRequest(&factory_));
+            factory_.BindNewPipeAndPassReceiver());
         factory_->RegisterVirtualDevicesChangedObserver(
             std::move(observer),
             false /*raise_event_if_virtual_devices_already_present*/);
         break;
       case ServiceApi::kMultiClient:
         GetVideoCaptureService().ConnectToVideoSourceProvider(
-            mojo::MakeRequest(&video_source_provider_));
+            video_source_provider_.BindNewPipeAndPassReceiver());
         video_source_provider_->RegisterVirtualDevicesChangedObserver(
             std::move(observer),
             false /*raise_event_if_virtual_devices_already_present*/);
@@ -102,20 +104,21 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
     closure_to_be_called_on_devices_changed_ = wait_loop.QuitClosure();
     switch (GetParam().device_type) {
       case VirtualDeviceType::kSharedMemory: {
-        video_capture::mojom::SharedMemoryVirtualDevicePtr virtual_device;
-        video_capture::mojom::ProducerPtr producer;
+        mojo::PendingRemote<video_capture::mojom::SharedMemoryVirtualDevice>
+            virtual_device;
+        mojo::PendingRemote<video_capture::mojom::Producer> producer;
         auto mock_producer = std::make_unique<video_capture::MockProducer>(
-            mojo::MakeRequest(&producer));
+            producer.InitWithNewPipeAndPassReceiver());
         switch (GetParam().api_to_use) {
           case ServiceApi::kSingleClient:
             factory_->AddSharedMemoryVirtualDevice(
                 info, std::move(producer), false,
-                mojo::MakeRequest(&virtual_device));
+                virtual_device.InitWithNewPipeAndPassReceiver());
             break;
           case ServiceApi::kMultiClient:
             video_source_provider_->AddSharedMemoryVirtualDevice(
                 info, std::move(producer), false,
-                mojo::MakeRequest(&virtual_device));
+                virtual_device.InitWithNewPipeAndPassReceiver());
             break;
         }
         shared_memory_devices_by_id_.insert(std::make_pair(
@@ -124,15 +127,16 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
         break;
       }
       case VirtualDeviceType::kTexture: {
-        video_capture::mojom::TextureVirtualDevicePtr virtual_device;
+        mojo::PendingRemote<video_capture::mojom::TextureVirtualDevice>
+            virtual_device;
         switch (GetParam().api_to_use) {
           case ServiceApi::kSingleClient:
             factory_->AddTextureVirtualDevice(
-                info, mojo::MakeRequest(&virtual_device));
+                info, virtual_device.InitWithNewPipeAndPassReceiver());
             break;
           case ServiceApi::kMultiClient:
             video_source_provider_->AddTextureVirtualDevice(
-                info, mojo::MakeRequest(&virtual_device));
+                info, virtual_device.InitWithNewPipeAndPassReceiver());
             break;
         }
         texture_devices_by_id_.insert(
@@ -161,8 +165,8 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
   }
 
   void DisconnectFromService() {
-    factory_ = nullptr;
-    video_source_provider_ = nullptr;
+    factory_.reset();
+    video_source_provider_.reset();
   }
 
   void EnumerateDevicesInRendererAndVerifyDeviceCount(
@@ -216,19 +220,22 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
         shell(), GURL(embedded_test_server()->GetURL(kVideoCaptureHtmlFile))));
   }
 
-  std::map<std::string, video_capture::mojom::TextureVirtualDevicePtr>
+  std::map<std::string,
+           mojo::PendingRemote<video_capture::mojom::TextureVirtualDevice>>
       texture_devices_by_id_;
   std::map<std::string,
-           std::pair<video_capture::mojom::SharedMemoryVirtualDevicePtr,
+           std::pair<mojo::PendingRemote<
+                         video_capture::mojom::SharedMemoryVirtualDevice>,
                      std::unique_ptr<video_capture::MockProducer>>>
       shared_memory_devices_by_id_;
 
  private:
-  mojo::Binding<video_capture::mojom::DevicesChangedObserver>
-      devices_changed_observer_binding_;
+  mojo::Receiver<video_capture::mojom::DevicesChangedObserver>
+      devices_changed_observer_receiver_{this};
   base::test::ScopedFeatureList scoped_feature_list_;
-  video_capture::mojom::DeviceFactoryPtr factory_;
-  video_capture::mojom::VideoSourceProviderPtr video_source_provider_;
+  mojo::Remote<video_capture::mojom::DeviceFactory> factory_;
+  mojo::Remote<video_capture::mojom::VideoSourceProvider>
+      video_source_provider_;
   base::OnceClosure closure_to_be_called_on_devices_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCaptureServiceEnumerationBrowserTest);
@@ -286,7 +293,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     WebRtcVideoCaptureServiceEnumerationBrowserTest,
     ::testing::Values(
         TestParams{ServiceApi::kSingleClient, VirtualDeviceType::kSharedMemory},

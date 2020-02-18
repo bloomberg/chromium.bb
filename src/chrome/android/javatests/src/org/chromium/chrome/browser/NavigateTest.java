@@ -71,13 +71,13 @@ public class NavigateTest {
     private EmbeddedTestServer mTestServer;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mActivityTestRule.startMainActivityFromLauncher();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -164,10 +164,10 @@ public class NavigateTest {
     }
 
     @Test
-    @DisabledTest(message = "crbug.com/516018")
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Navigation"})
+    @RetryOnFailure
     public void testNavigateMany() throws Exception {
         final String[] urls = mTestServer.getURLs("/chrome/test/data/android/navigate/one.html",
                 "/chrome/test/data/android/navigate/two.html",

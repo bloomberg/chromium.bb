@@ -32,15 +32,9 @@ namespace media_router {
 #if !defined(OS_ANDROID)
 // Controls if browser side DialMediaRouteProvider is enabled.
 const base::Feature kDialMediaRouteProvider{"DialMediaRouteProvider",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls if browser side Cast device discovery is enabled.
-const base::Feature kEnableCastDiscovery{"EnableCastDiscovery",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kCastMediaRouteProvider{"CastMediaRouteProvider",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kCastAllowAllIPsFeature{"CastAllowAllIPs",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
@@ -116,10 +110,6 @@ bool DialMediaRouteProviderEnabled() {
   return base::FeatureList::IsEnabled(kDialMediaRouteProvider);
 }
 
-bool CastDiscoveryEnabled() {
-  return base::FeatureList::IsEnabled(kEnableCastDiscovery);
-}
-
 bool CastMediaRouteProviderEnabled() {
   return base::FeatureList::IsEnabled(kCastMediaRouteProvider);
 }
@@ -127,10 +117,8 @@ bool CastMediaRouteProviderEnabled() {
 bool ShouldUseMirroringService() {
   // The native Cast MRP requires the mirroring service to do mirroring, so try
   // to enable the service if the native Cast MRP is being used.
-  return (base::FeatureList::IsEnabled(
-              mirroring::features::kMirroringService) ||
-          base::FeatureList::IsEnabled(kCastMediaRouteProvider)) &&
-         base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams);
+  return base::FeatureList::IsEnabled(mirroring::features::kMirroringService) ||
+         base::FeatureList::IsEnabled(kCastMediaRouteProvider);
 }
 
 #endif  // !defined(OS_ANDROID)

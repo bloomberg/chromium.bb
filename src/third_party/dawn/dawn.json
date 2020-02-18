@@ -41,6 +41,7 @@
         "category": "structure",
         "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "layout", "type": "bind group layout"},
             {"name": "binding count", "type": "uint32_t"},
             {"name": "bindings", "type": "bind group binding", "annotation": "const*", "length": "binding count"}
@@ -56,8 +57,9 @@
             {"name": "binding", "type": "uint32_t"},
             {"name": "visibility", "type": "shader stage"},
             {"name": "type", "type": "binding type"},
-            {"name": "dynamic", "type": "bool", "default": "false"},
+            {"name": "has dynamic offset", "type": "bool", "default": "false"},
             {"name": "multisampled", "type": "bool", "default": "false"},
+            {"name": "texture dimension", "type": "texture view dimension", "default": "undefined"},
             {"name": "texture component type", "type": "texture component type", "default": "float"}
         ]
     },
@@ -65,6 +67,7 @@
         "category": "structure",
         "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "binding count", "type": "uint32_t"},
             {"name": "bindings", "type": "bind group layout binding", "annotation": "const*", "length": "binding count"}
         ]
@@ -164,7 +167,12 @@
         ]
     },
     "buffer create mapped callback": {
-        "category": "natively defined"
+        "category": "callback",
+        "args": [
+            {"name": "status", "type": "buffer map async status"},
+            {"name": "result", "type": "create buffer mapped result"},
+            {"name": "userdata", "type": "void", "annotation": "*"}
+        ]
     },
     "buffer copy view": {
         "category": "structure",
@@ -180,15 +188,28 @@
         "category": "structure",
         "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "usage", "type": "buffer usage"},
             {"name": "size", "type": "uint64_t"}
         ]
     },
     "buffer map read callback": {
-        "category": "natively defined"
+        "category": "callback",
+        "args": [
+            {"name": "status", "type": "buffer map async status"},
+            {"name": "data", "type": "void", "annotation": "const*"},
+            {"name": "data length", "type": "uint64_t"},
+            {"name": "userdata", "type": "void", "annotation": "*"}
+        ]
     },
     "buffer map write callback": {
-        "category": "natively defined"
+        "category": "callback",
+        "args": [
+            {"name": "status", "type": "buffer map async status"},
+            {"name": "data", "type": "void", "annotation": "*"},
+            {"name": "data length", "type": "uint64_t"},
+            {"name": "userdata", "type": "void", "annotation": "*"}
+        ]
     },
     "buffer map async status": {
         "category": "enum",
@@ -251,7 +272,9 @@
     "command buffer descriptor": {
         "category": "structure",
         "extensible": true,
-        "members": []
+        "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true}
+        ]
     },
     "command encoder": {
         "category": "object",
@@ -313,13 +336,31 @@
                     {"name": "destination", "type": "texture copy view", "annotation": "const*"},
                     {"name": "copy size", "type": "extent 3D", "annotation": "const*"}
                 ]
+            },
+            {
+                "name": "insert debug marker",
+                "args": [
+                    {"name": "group label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
+            },
+            {
+                "name": "pop debug group",
+                "args": []
+            },
+            {
+                "name": "push debug group",
+                "args": [
+                    {"name": "group label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
             }
         ]
     },
     "command encoder descriptor": {
         "category": "structure",
         "extensible": true,
-        "members": []
+        "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true}
+        ]
     },
     "compare function": {
         "category": "enum",
@@ -337,7 +378,9 @@
     "compute pass descriptor": {
         "category": "structure",
         "extensible": true,
-        "members": []
+        "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true}
+        ]
     },
     "compute pass encoder": {
         "category": "object",
@@ -369,8 +412,8 @@
                 "args": [
                     {"name": "group index", "type": "uint32_t"},
                     {"name": "group", "type": "bind group"},
-                    {"name": "dynamic offset count", "type": "uint32_t"},
-                    {"name": "dynamic offsets", "type": "uint64_t", "annotation": "const*", "length": "dynamic offset count"}
+                    {"name": "dynamic offset count", "type": "uint32_t", "default": "0"},
+                    {"name": "dynamic offsets", "type": "uint32_t", "annotation": "const*", "length": "dynamic offset count", "optional": true}
                 ]
             },
             {
@@ -394,14 +437,24 @@
         ]
     },
     "compute pipeline": {
-        "category": "object"
+        "category": "object",
+        "methods": [
+            {
+                "name": "get bind group layout",
+                "returns": "bind group layout",
+                "args": [
+                    {"name": "group", "type": "uint32_t"}
+                ]
+            }
+        ]
     },
     "compute pipeline descriptor": {
         "category": "structure",
         "extensible": true,
         "members": [
-            {"name": "layout", "type": "pipeline layout"},
-            {"name": "compute stage", "type": "pipeline stage descriptor"}
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
+            {"name": "layout", "type": "pipeline layout", "optional": true},
+            {"name": "compute stage", "type": "programmable stage descriptor"}
         ]
     },
     "cull mode": {
@@ -519,6 +572,14 @@
                 ]
             },
             {
+                "name": "inject error",
+                "args": [
+                    {"name": "type", "type": "error type"},
+                    {"name": "message", "type": "char", "annotation": "const*", "length": "strlen"}
+                ],
+                "TODO": "enga@: Make this a Dawn extension"
+            },
+            {
                 "name": "tick"
             },
             {
@@ -544,6 +605,13 @@
             }
         ]
     },
+    "device properties": {
+        "category": "structure",
+        "extensible": false,
+        "members": [
+            {"name": "texture compression BC", "type": "bool", "default": "false"}
+        ]
+    },
     "depth stencil state descriptor": {
         "category": "structure",
         "extensible": true,
@@ -558,7 +626,12 @@
         ]
     },
     "error callback": {
-        "category": "natively defined"
+        "category": "callback",
+        "args": [
+            {"name": "type", "type": "error type"},
+            {"name": "message", "type": "char", "annotation": "const*"},
+            {"name": "userdata", "type": "void", "annotation": "*"}
+        ]
     },
     "error filter": {
         "category": "enum",
@@ -604,7 +677,11 @@
         ]
     },
     "fence on completion callback": {
-        "category": "natively defined"
+        "category": "callback",
+        "args": [
+            {"name": "status", "type": "fence completion status"},
+            {"name": "userdata", "type": "void", "annotation": "*"}
+        ]
     },
     "fence completion status": {
         "category": "enum",
@@ -619,6 +696,7 @@
         "category": "structure",
         "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "initial value", "type": "uint64_t", "default": "0"}
         ]
     },
@@ -650,28 +728,28 @@
         "category": "structure",
         "extensible": false,
         "members": [
-            {"name": "shader location", "type": "uint32_t"},
-            {"name": "offset", "type": "uint64_t", "default": "0"},
-            {"name": "format", "type": "vertex format"}
+            {"name": "format", "type": "vertex format"},
+            {"name": "offset", "type": "uint64_t"},
+            {"name": "shader location", "type": "uint32_t"}
         ]
     },
-    "vertex buffer descriptor": {
+    "vertex buffer layout descriptor": {
         "category": "structure",
         "extensible": false,
         "members": [
-            {"name": "stride", "type": "uint64_t"},
+            {"name": "array stride", "type": "uint64_t"},
             {"name": "step mode", "type": "input step mode", "default": "vertex"},
             {"name": "attribute count", "type": "uint32_t"},
             {"name": "attributes", "type": "vertex attribute descriptor", "annotation": "const*", "length": "attribute count"}
         ]
     },
-    "vertex input descriptor": {
+    "vertex state descriptor": {
         "category": "structure",
         "extensible": true,
         "members": [
             {"name": "index format", "type": "index format", "default": "uint32"},
-            {"name": "buffer count", "type": "uint32_t", "default": 0},
-            {"name": "buffers", "type": "vertex buffer descriptor", "annotation": "const*", "length": "buffer count"}
+            {"name": "vertex buffer count", "type": "uint32_t", "default": 0},
+            {"name": "vertex buffers", "type": "vertex buffer layout descriptor", "annotation": "const*", "length": "vertex buffer count"}
         ]
     },
     "input step mode": {
@@ -691,7 +769,8 @@
     "store op": {
         "category": "enum",
         "values": [
-            {"value": 0, "name": "store"}
+            {"value": 0, "name": "store"},
+            {"value": 1, "name": "clear"}
         ]
     },
     "origin 3D": {
@@ -709,11 +788,12 @@
         "category": "structure",
         "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "bind group layout count", "type": "uint32_t"},
             {"name": "bind group layouts", "type": "bind group layout", "annotation": "const*", "length": "bind group layout count"}
         ]
     },
-    "pipeline stage descriptor": {
+    "programmable stage descriptor": {
         "category": "structure",
         "extensible": true,
         "members": [
@@ -788,8 +868,8 @@
                 "args": [
                     {"name": "group index", "type": "uint32_t"},
                     {"name": "group", "type": "bind group"},
-                    {"name": "dynamic offset count", "type": "uint32_t"},
-                    {"name": "dynamic offsets", "type": "uint64_t", "annotation": "const*", "length": "dynamic offset count"}
+                    {"name": "dynamic offset count", "type": "uint32_t", "default": "0"},
+                    {"name": "dynamic offsets", "type": "uint32_t", "annotation": "const*", "length": "dynamic offset count", "optional": true}
                 ]
             },
             {
@@ -842,19 +922,18 @@
                 ]
             },
             {
-                "name": "set vertex buffers",
+                "name": "set vertex buffer",
                 "args": [
-                    {"name": "start slot", "type": "uint32_t"},
-                    {"name": "count", "type": "uint32_t"},
-                    {"name": "buffers", "type": "buffer", "annotation": "const*", "length": "count"},
-                    {"name": "offsets", "type": "uint64_t", "annotation": "const*", "length": "count"}
+                    {"name": "slot", "type": "uint32_t"},
+                    {"name": "buffer", "type": "buffer"},
+                    {"name": "offset", "type": "uint64_t", "default": "0"}
                 ]
             },
             {
                 "name": "set index buffer",
                 "args": [
                     {"name": "buffer", "type": "buffer"},
-                    {"name": "offset", "type": "uint64_t"}
+                    {"name": "offset", "type": "uint64_t", "default": "0"}
                 ]
             },
             {
@@ -870,13 +949,16 @@
     "render bundle descriptor": {
         "category": "structure",
         "extensible": true,
-        "members": []
+        "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true}
+        ]
     },
 
     "render bundle encoder descriptor": {
         "category": "structure",
         "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "color formats count", "type": "uint32_t"},
             {"name": "color formats", "type": "texture format", "annotation": "const*", "length": "color formats count"},
             {"name": "depth stencil format", "type": "texture format", "default": "undefined"},
@@ -910,9 +992,11 @@
 
     "render pass descriptor": {
         "category": "structure",
+        "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "color attachment count", "type": "uint32_t"},
-            {"name": "color attachments", "type": "render pass color attachment descriptor", "annotation": "const*const*", "length": "color attachment count"},
+            {"name": "color attachments", "type": "render pass color attachment descriptor", "annotation": "const*", "length": "color attachment count"},
             {"name": "depth stencil attachment", "type": "render pass depth stencil attachment descriptor", "annotation": "const*", "optional": true}
         ]
     },
@@ -930,8 +1014,8 @@
                 "args": [
                     {"name": "group index", "type": "uint32_t"},
                     {"name": "group", "type": "bind group"},
-                    {"name": "dynamic offset count", "type": "uint32_t"},
-                    {"name": "dynamic offsets", "type": "uint64_t", "annotation": "const*", "length": "dynamic offset count"}
+                    {"name": "dynamic offset count", "type": "uint32_t", "default": "0"},
+                    {"name": "dynamic offsets", "type": "uint32_t", "annotation": "const*", "length": "dynamic offset count", "optional": true}
                 ]
             },
             {
@@ -1023,19 +1107,18 @@
                 ]
             },
             {
-                "name": "set vertex buffers",
+                "name": "set vertex buffer",
                 "args": [
-                    {"name": "start slot", "type": "uint32_t"},
-                    {"name": "count", "type": "uint32_t"},
-                    {"name": "buffers", "type": "buffer", "annotation": "const*", "length": "count"},
-                    {"name": "offsets", "type": "uint64_t", "annotation": "const*", "length": "count"}
+                    {"name": "slot", "type": "uint32_t"},
+                    {"name": "buffer", "type": "buffer"},
+                    {"name": "offset", "type": "uint64_t", "default": "0"}
                 ]
             },
             {
                 "name": "set index buffer",
                 "args": [
                     {"name": "buffer", "type": "buffer"},
-                    {"name": "offset", "type": "uint64_t"}
+                    {"name": "offset", "type": "uint64_t", "default": "0"}
                 ]
             },
             {
@@ -1044,22 +1127,32 @@
         ]
     },
     "render pipeline": {
-        "category": "object"
+        "category": "object",
+        "methods": [
+            {
+                "name": "get bind group layout",
+                "returns": "bind group layout",
+                "args": [
+                    {"name": "group", "type": "uint32_t"}
+                ]
+            }
+        ]
     },
     "render pipeline descriptor": {
         "category": "structure",
         "extensible": true,
         "members": [
-            {"name": "layout", "type": "pipeline layout"},
-            {"name": "vertex stage", "type": "pipeline stage descriptor"},
-            {"name": "fragment stage", "type": "pipeline stage descriptor", "annotation": "const*", "optional": true},
-            {"name": "vertex input", "type": "vertex input descriptor", "annotation": "const*", "optional": true},
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
+            {"name": "layout", "type": "pipeline layout", "optional": true},
+            {"name": "vertex stage", "type": "programmable stage descriptor"},
+            {"name": "fragment stage", "type": "programmable stage descriptor", "annotation": "const*", "optional": true},
+            {"name": "vertex state", "type": "vertex state descriptor", "annotation": "const*", "optional": true},
             {"name": "primitive topology", "type": "primitive topology"},
             {"name": "rasterization state", "type": "rasterization state descriptor", "annotation": "const*", "optional": true},
             {"name": "sample count", "type": "uint32_t", "default": "1"},
             {"name": "depth stencil state", "type": "depth stencil state descriptor", "annotation": "const*", "optional": true},
             {"name": "color state count", "type": "uint32_t"},
-            {"name": "color states", "type": "color state descriptor", "annotation": "const*const*", "length": "color state count"},
+            {"name": "color states", "type": "color state descriptor", "annotation": "const*", "length": "color state count"},
             {"name": "sample mask", "type": "uint32_t", "default": "0xFFFFFFFF"},
             {"name": "alpha to coverage enabled", "type": "bool", "default": "false"}
         ]
@@ -1071,6 +1164,7 @@
         "category": "structure",
         "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "address mode u", "type": "address mode", "default": "clamp to edge"},
             {"name": "address mode v", "type": "address mode", "default": "clamp to edge"},
             {"name": "address mode w", "type": "address mode", "default": "clamp to edge"},
@@ -1089,6 +1183,7 @@
         "category": "structure",
         "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "code size", "type": "uint32_t"},
             {"name": "code", "type": "uint32_t", "annotation": "const*", "length": "code size"}
         ]
@@ -1137,22 +1232,15 @@
                     {"name": "height", "type": "uint32_t"}
                 ]
             },
-            {
-                "name": "get next texture",
-                "returns": "texture"
-            },
-            {
-                "name": "present",
-                "args": [
-                    {"name": "texture", "type": "texture"}
-                ]
-            }
+            {"name": "get current texture view", "returns": "texture view"},
+            {"name": "present"}
         ]
     },
     "swap chain descriptor": {
         "category": "structure",
         "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "implementation", "type": "uint64_t"}
         ]
     },
@@ -1201,6 +1289,7 @@
         "category": "structure",
         "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "usage", "type": "texture usage"},
             {"name": "dimension", "type": "texture dimension", "default": "2D"},
             {"name": "size", "type": "extent 3D"},
@@ -1298,12 +1387,14 @@
         "category": "structure",
         "extensible": true,
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "format", "type": "texture format", "default": "undefined"},
             {"name": "dimension", "type": "texture view dimension", "default": "undefined"},
             {"name": "base mip level", "type": "uint32_t", "default": "0"},
             {"name": "mip level count", "type": "uint32_t", "default": "0"},
             {"name": "base array layer", "type": "uint32_t", "default": "0"},
-            {"name": "array layer count", "type": "uint32_t", "default": "0"}
+            {"name": "array layer count", "type": "uint32_t", "default": "0"},
+            {"name": "aspect", "type": "texture aspect", "default": "all"}
         ],
         "TODO": [
             "jiawei.shao@intel.com: Allow choosing the aspect (depth vs. stencil)"

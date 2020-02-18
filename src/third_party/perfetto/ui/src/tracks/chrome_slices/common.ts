@@ -20,15 +20,15 @@ export interface Config {
   maxDepth: number;
   upid: number;
   utid: number;
+  trackId: number;
 }
 
 export interface Data extends TrackData {
   // Slices are stored in a columnar fashion. All fields have the same length.
   strings: string[];
-  slice_ids: Float64Array;
+  sliceIds: Float64Array;
   starts: Float64Array;
   ends: Float64Array;
   depths: Uint16Array;
   titles: Uint16Array;      // Index in |strings|.
-  categories: Uint16Array;  // Index in |strings|.
 }

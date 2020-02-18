@@ -10,7 +10,7 @@ Any events and metrics you collect need to be documented in [//tools/metrics/ukm
 
 ### Required Details
 
-* Metric `owner`: This the email of someone who can answer questions about how this metric is recorded, what it means, and how it should be used. Can include multiple people.
+* Metric `owner`: the email of someone who can answer questions about how this metric is recorded, what it means, and how it should be used. Can include multiple people.
 * A `summary` of the event about which you are recording details, including a description of when the event will be recorded.
 * For each metric in the event: a `summary` of the data and what it means.
 * The `enum` type if the metric is enumerated. The enum uses the [//tools/metrics/histograms/enums.xml](https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml) file for definitions. Note this is the same file for UMA histogram definitions so these can ideally be reused.
@@ -73,11 +73,10 @@ Supported statistic types are:
 There can also be one or more `index` tags which define additional aggregation
 keys. These are a comma-separated list of keys that is appended to the standard
 set. These additional keys are optional but, if present, are always present
-together. In other words, "fields=profile.county,profile.form_factory" will
-cause all the standard aggregations plus each with *both* country *and*
-form_factor but **not** with all the standard aggregations (see above) plus only
-one of them. If individual and combined versions are desired, use multiple index
-tags.
+together. In other words, "fields=profile.county,profile.form_factor" will cause
+all the standard aggregations plus each with *both* country *and* form_factor
+but **not** with all the standard aggregations (see above) plus only one of
+them. If individual and combined versions are desired, use multiple index tags.
 
 Currently supported additional index fields are:
 
@@ -87,39 +86,7 @@ Currently supported additional index fields are:
 
 ### Aggregation by Metrics in the Same Event
 
-In addition to the standard "profile" keys, aggregation can be done against
-another metric in the same event. This is accomplished with the same `<index>`
-tag as above but including "metrics.OtherMetricName" in the fields list. There
-is no event name included as the metric must always be in the same event.
-
-The metric to act as a key must also have `<aggregation>`, `<history>`, and
-`<statistics>` tags with a valid statistic (currently only `<enumeration>` is
-supported). However, since generating statistics for this "key" metric isn't
-likely to be useful on its own, add `export=False` to its `<statistics>` tag.
-
-```xml
-<event name="Memory.Experimental">
-  <metric name="ProcessType" enum="MemoryProcessType">
-    <aggregation>
-      <history>
-        <statistics export="False">
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="PrivateMemoryFootprint" unit="MB">
-    <aggregation>
-      <history>
-        <index fields="metrics.ProcessType"/>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-</event>
-```
+WARNING: This feature is still under development and isn't ready for use.
 
 ### Enumeration Proportions
 
@@ -190,7 +157,7 @@ ukm::builders::MyEvent(source_id)
 
 ### Get A ukm::SourceId
 
-UKM identifies navigations by their source ID and you'll need to associate and ID with your event in order to tie it to a main frame URL.  Preferrably, get an existing ID for the navigation from another object.
+UKM identifies navigations by their source ID and you'll need to associate an ID with your event in order to tie it to a main frame URL.  Preferably, get an existing ID for the navigation from another object.
 
 The main method for doing this is by getting a navigation ID:
 
@@ -253,7 +220,7 @@ If the event name in the XML contains a period (`.`), it is replaced with an und
 
 ### Local Testing
 
-Build Chromium and run it with '--force-enable-metrics-reporting'. Trigger your event locally and check chrome://ukm to make sure the data was recorded correctly.
+Build Chromium and run it with '--force-enable-metrics-reporting --metrics-upload-interval=N'. You may want some small N if you are interested in seeing behavior when UKM reports are emitted. Trigger your event locally and check chrome://ukm to make sure the data was recorded correctly.
 
 ## Unit Testing
 

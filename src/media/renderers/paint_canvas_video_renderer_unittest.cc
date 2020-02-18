@@ -384,7 +384,7 @@ class PaintCanvasVideoRendererTest : public testing::Test {
 
   SkBitmap bitmap_;
   cc::SkiaPaintCanvas target_canvas_;
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintCanvasVideoRendererTest);
 };
@@ -926,7 +926,7 @@ TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
   gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {gpu::MailboxHolder(
       gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_RECTANGLE_ARB)};
   auto video_frame = VideoFrame::WrapNativeTextures(
-      PIXEL_FORMAT_UYVY, holders, base::Bind(MailboxHoldersReleased), size,
+      PIXEL_FORMAT_NV12, holders, base::BindOnce(MailboxHoldersReleased), size,
       gfx::Rect(size), size, kNoTimestamp);
 
   cc::PaintFlags flags;
@@ -983,9 +983,9 @@ TEST_F(PaintCanvasVideoRendererTest, TexImage2D_Y16_RGBA32F) {
   TestGLES2Interface gles2;
   // Bind the texImage2D callback to verify the uint16 to float32 conversion.
   gles2.teximage2d_callback_ =
-      base::Bind([](GLenum target, GLint level, GLint internalformat,
-                    GLsizei width, GLsizei height, GLint border, GLenum format,
-                    GLenum type, const void* pixels) {
+      base::BindRepeating([](GLenum target, GLint level, GLint internalformat,
+                             GLsizei width, GLsizei height, GLint border,
+                             GLenum format, GLenum type, const void* pixels) {
         EXPECT_EQ(static_cast<unsigned>(GL_FLOAT), type);
         EXPECT_EQ(static_cast<unsigned>(GL_RGBA), format);
         EXPECT_EQ(GL_RGBA, internalformat);
@@ -1031,9 +1031,9 @@ TEST_F(PaintCanvasVideoRendererTest, TexSubImage2D_Y16_R32F) {
   TestGLES2Interface gles2;
   // Bind the texImage2D callback to verify the uint16 to float32 conversion.
   gles2.texsubimage2d_callback_ =
-      base::Bind([](GLenum target, GLint level, GLint xoffset, GLint yoffset,
-                    GLsizei width, GLsizei height, GLenum format, GLenum type,
-                    const void* pixels) {
+      base::BindRepeating([](GLenum target, GLint level, GLint xoffset,
+                             GLint yoffset, GLsizei width, GLsizei height,
+                             GLenum format, GLenum type, const void* pixels) {
         EXPECT_EQ(static_cast<unsigned>(GL_FLOAT), type);
         EXPECT_EQ(static_cast<unsigned>(GL_RED), format);
         EXPECT_EQ(2, xoffset);
@@ -1174,6 +1174,14 @@ class PaintCanvasVideoRendererWithGLTest : public PaintCanvasVideoRendererTest {
                                       gfx::Rect(2, 2, 12, 4),
                                       std::move(closure));
   }
+  // Creates a cropped I420 VideoFrame. |closure| is run once the shared images
+  // backing the VideoFrame have been destroyed.
+  scoped_refptr<VideoFrame> CreateTestI420FrameNotSubset(
+      base::OnceClosure closure) {
+    return CreateSharedImageI420Frame(media_context_, gfx::Size(16, 8),
+                                      gfx::Rect(0, 0, 16, 8),
+                                      std::move(closure));
+  }
 
   // Checks that the contents of a texture/canvas match the expectations for the
   // cropped I420 frame above. |get_color| is a callback that returns the actual
@@ -1190,6 +1198,23 @@ class PaintCanvasVideoRendererWithGLTest : public PaintCanvasVideoRendererTest {
     EXPECT_EQ(SK_ColorMAGENTA, get_color.Run(3, 3));
     EXPECT_EQ(SK_ColorCYAN, get_color.Run(7, 3));
     EXPECT_EQ(SK_ColorWHITE, get_color.Run(11, 3));
+  }
+
+  // Checks that the contents of a texture/canvas match the expectations for the
+  // cropped I420 frame above. |get_color| is a callback that returns the actual
+  // color at a given pixel location.
+  static void CheckI420FramePixelsNotSubset(GetColorCallback get_color) {
+    // Avoid checking around the "seams" where subsamples may be interpolated.
+    EXPECT_EQ(SK_ColorBLACK, get_color.Run(2, 2));
+    EXPECT_EQ(SK_ColorRED, get_color.Run(5, 2));
+    EXPECT_EQ(SK_ColorRED, get_color.Run(6, 2));
+    EXPECT_EQ(SK_ColorGREEN, get_color.Run(9, 2));
+    EXPECT_EQ(SK_ColorGREEN, get_color.Run(10, 2));
+    EXPECT_EQ(SK_ColorYELLOW, get_color.Run(13, 2));
+    EXPECT_EQ(SK_ColorBLUE, get_color.Run(2, 5));
+    EXPECT_EQ(SK_ColorMAGENTA, get_color.Run(5, 5));
+    EXPECT_EQ(SK_ColorCYAN, get_color.Run(9, 5));
+    EXPECT_EQ(SK_ColorWHITE, get_color.Run(13, 5));
   }
 
   // Creates a cropped NV12 VideoFrame, or nullptr if the needed extension is
@@ -1339,6 +1364,19 @@ TEST_F(PaintCanvasVideoRendererWithGLTest, PaintI420) {
   scoped_refptr<VideoFrame> frame = CreateTestI420Frame(run_loop.QuitClosure());
 
   PaintVideoFrameAndCheckPixels(frame, &CheckI420FramePixels);
+
+  frame.reset();
+  run_loop.Run();
+}
+
+// Checks that we correctly paint a I420 shared image VideoFrame, including
+// correct cropping.
+TEST_F(PaintCanvasVideoRendererWithGLTest, PaintI420NotSubset) {
+  base::RunLoop run_loop;
+  scoped_refptr<VideoFrame> frame =
+      CreateTestI420FrameNotSubset(run_loop.QuitClosure());
+
+  PaintVideoFrameAndCheckPixels(frame, &CheckI420FramePixelsNotSubset);
 
   frame.reset();
   run_loop.Run();

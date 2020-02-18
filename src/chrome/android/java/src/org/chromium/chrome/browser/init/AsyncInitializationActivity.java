@@ -15,8 +15,6 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
-import android.support.annotation.CallSuper;
-import android.support.annotation.Nullable;
 import android.view.Display;
 import android.view.Menu;
 import android.view.View;
@@ -24,15 +22,17 @@ import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.view.WindowManager;
 
+import androidx.annotation.CallSuper;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
@@ -248,9 +248,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     @CallSuper
     @Override
     public void onStartupFailure() {
-        ProcessInitException e =
-                new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_STARTUP_FAILED);
-        ChromeApplication.reportStartupErrorAndExit(e);
+        throw new ProcessInitException(LoaderErrors.NATIVE_STARTUP_FAILED);
     }
 
     /**
@@ -498,11 +496,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     @Override
     public final void onCreateWithNative() {
         mLifecycleDispatcher.onCreateWithNative();
-        try {
-            ChromeBrowserInitializer.getInstance(this).handlePostNativeStartup(true, this);
-        } catch (ProcessInitException e) {
-            ChromeApplication.reportStartupErrorAndExit(e);
-        }
+        ChromeBrowserInitializer.getInstance(this).handlePostNativeStartup(true, this);
     }
 
     @CallSuper

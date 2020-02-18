@@ -29,12 +29,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
+#include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -110,8 +112,9 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
 
   std::vector<aura::Window*> transient_children_to_hide;
   for (auto* transient : GetTransientTreeIterator(window)) {
-    targeting_policy_map_[transient] = transient->event_targeting_policy();
-    transient->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
+    event_targeting_blocker_map_[transient] =
+        std::make_unique<aura::ScopedWindowEventTargetingBlocker>(transient);
+
     transient->SetProperty(kIsShowingInOverviewKey, true);
 
     // Hide transient children which have been specified to be hidden in
@@ -134,7 +137,8 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
   // activated.
   // TODO(sammiequon): This does not handle the case if either the snapped
   // window or this window is an always on top window.
-  auto* split_view_controller = Shell::Get()->split_view_controller();
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
   if (ShouldUseTabletModeGridLayout() &&
       split_view_controller->InSplitViewMode()) {
     aura::Window* snapped_window =
@@ -159,16 +163,13 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
   for (auto* transient : GetTransientTreeIterator(window_)) {
     transient->ClearProperty(kIsShowingInOverviewKey);
-    DCHECK(targeting_policy_map_.contains(transient));
-    auto it = targeting_policy_map_.find(transient);
-    transient->SetEventTargetingPolicy(it->second);
-    targeting_policy_map_.erase(it);
+    DCHECK(event_targeting_blocker_map_.contains(transient));
+    event_targeting_blocker_map_.erase(transient);
   }
 
   // No need to update the clip since we're about to restore it to
   // `original_clip_rect_`.
   UpdateRoundedCorners(/*show=*/false, /*update_clip=*/false);
-  StopObservingImplicitAnimations();
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
   window_->layer()->SetClipRect(original_clip_rect_);
 }
@@ -180,18 +181,6 @@ float ScopedOverviewTransformWindow::GetItemScale(const gfx::SizeF& source,
                                                   int title_height) {
   return std::min(2.0f, (target.height() - title_height) /
                             (source.height() - top_view_inset));
-}
-
-// static
-gfx::Transform ScopedOverviewTransformWindow::GetTransformForRect(
-    const gfx::RectF& src_rect,
-    const gfx::RectF& dst_rect) {
-  DCHECK(!src_rect.IsEmpty());
-  gfx::Transform transform;
-  transform.Translate(dst_rect.x() - src_rect.x(), dst_rect.y() - src_rect.y());
-  transform.Scale(dst_rect.width() / src_rect.width(),
-                  dst_rect.height() / src_rect.height());
-  return transform;
 }
 
 void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform) {
@@ -259,11 +248,6 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
 
     animation_settings->push_back(std::move(settings));
   }
-
-  if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW &&
-      animation_settings->size() > 0u) {
-    animation_settings->front()->AddObserver(this);
-  }
 }
 
 bool ScopedOverviewTransformWindow::Contains(const aura::Window* target) const {
@@ -296,13 +280,28 @@ int ScopedOverviewTransformWindow::GetTopInset() const {
   return window_->GetProperty(aura::client::kTopViewInset);
 }
 
-void ScopedOverviewTransformWindow::OnWindowDestroyed() {
-  window_ = nullptr;
-}
-
 void ScopedOverviewTransformWindow::SetOpacity(float opacity) {
   for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow()))
     window->layer()->SetOpacity(opacity);
+}
+
+void ScopedOverviewTransformWindow::SetClipping(const gfx::SizeF& size) {
+  has_aspect_ratio_clipping_ = !size.IsEmpty();
+
+  // If width or height are 0, restore the overview clipping.
+  if (size.IsEmpty()) {
+    window_->layer()->SetClipRect(overview_clip_rect_);
+    return;
+  }
+
+  // Compute the clip rect. Transform affects the clip rect, so take that into
+  // account.
+  gfx::Rect clip_rect;
+  const gfx::Vector2dF scale = window_->layer()->GetTargetTransform().Scale2d();
+  clip_rect.set_y(GetTopInset());
+  clip_rect.set_width(size.width() / scale.x());
+  clip_rect.set_height(size.height() / scale.y());
+  window_->layer()->SetClipRect(clip_rect);
 }
 
 gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
@@ -411,15 +410,16 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
 
 void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
                                                          bool update_clip) {
-  // Hide the corners if minimized, CaptionContainerView will handle showing the
+  // Hide the corners if minimized, OverviewItemView will handle showing the
   // rounded corners on the UI.
   const bool show_corners = show && !IsMinimized();
   // Add the mask which gives the overview item rounded corners, and add the
   // shadow around the window.
   ui::Layer* layer = window_->layer();
   const float scale = layer->transform().Scale2d().x();
-  const gfx::RoundedCornersF radii(
-      show_corners ? kOverviewWindowRoundingDp / scale : 0.0f);
+  const int radius =
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_LOW);
+  const gfx::RoundedCornersF radii(show_corners ? (radius / scale) : 0.0f);
   layer->SetRoundedCornerRadius(radii);
   layer->SetIsFastRoundedCorner(true);
 
@@ -427,7 +427,7 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
     return;
 
   const int top_inset = GetTopInset();
-  if (top_inset > 0) {
+  if (!has_aspect_ratio_clipping_ && top_inset > 0) {
     gfx::Rect clip_rect(window_->bounds().size());
     // We add 1 to the top_inset, because in some cases, the header is not
     // clipped fully due to what seems to be a rounding error.
@@ -436,25 +436,8 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
     ScopedOverviewAnimationSettings settings(
         OVERVIEW_ANIMATION_FRAME_HEADER_CLIP, window_);
     layer->SetClipRect(clip_rect);
+    overview_clip_rect_ = clip_rect;
   }
-}
-
-void ScopedOverviewTransformWindow::CancelAnimationsListener() {
-  StopObservingImplicitAnimations();
-}
-
-void ScopedOverviewTransformWindow::OnLayerAnimationStarted(
-    ui::LayerAnimationSequence* sequence) {
-  // Remove the shadow before animating because it may affect animation
-  // performance. The shadow will be added back once the animation is completed.
-  // Note that we can't use UpdateRoundedCornersAndShadow() since we don't want
-  // to update the rounded corners.
-  overview_item_->SetShadowBounds(base::nullopt);
-}
-
-void ScopedOverviewTransformWindow::OnImplicitAnimationsCompleted() {
-  overview_item_->UpdateRoundedCornersAndShadow();
-  overview_item_->OnDragAnimationCompleted();
 }
 
 void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(
@@ -463,10 +446,11 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(
   if (parent != window_ && !::wm::HasTransientAncestor(parent, window_))
     return;
 
-  DCHECK(!targeting_policy_map_.contains(transient_child));
-  targeting_policy_map_[transient_child] =
-      transient_child->event_targeting_policy();
-  transient_child->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
+  DCHECK(!event_targeting_blocker_map_.contains(transient_child));
+  event_targeting_blocker_map_[transient_child] =
+      std::make_unique<aura::ScopedWindowEventTargetingBlocker>(
+          transient_child);
+  transient_child->SetProperty(kIsShowingInOverviewKey, true);
 }
 
 void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
@@ -475,10 +459,9 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
   if (parent != window_ && !::wm::HasTransientAncestor(parent, window_))
     return;
 
-  DCHECK(targeting_policy_map_.contains(transient_child));
-  auto it = targeting_policy_map_.find(transient_child);
-  transient_child->SetEventTargetingPolicy(it->second);
-  targeting_policy_map_.erase(it);
+  transient_child->ClearProperty(kIsShowingInOverviewKey);
+  DCHECK(event_targeting_blocker_map_.contains(transient_child));
+  event_targeting_blocker_map_.erase(transient_child);
 }
 
 void ScopedOverviewTransformWindow::CloseWidget() {

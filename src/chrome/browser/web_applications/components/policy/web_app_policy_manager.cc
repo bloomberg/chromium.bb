@@ -41,18 +41,18 @@ ExternalInstallOptions ParseInstallOptionsFromPolicyEntry(
          default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue);
 
-  LaunchContainer launch_container;
+  DisplayMode user_display_mode;
   if (!default_launch_container) {
-    launch_container = LaunchContainer::kTab;
+    user_display_mode = DisplayMode::kBrowser;
   } else if (default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue) {
-    launch_container = LaunchContainer::kTab;
+    user_display_mode = DisplayMode::kBrowser;
   } else {
-    launch_container = LaunchContainer::kWindow;
+    user_display_mode = DisplayMode::kStandalone;
   }
 
   ExternalInstallOptions install_options{
-      GURL(url.GetString()), launch_container,
+      GURL(url.GetString()), user_display_mode,
       ExternalInstallSource::kExternalPolicy};
 
   install_options.add_to_applications_menu = true;

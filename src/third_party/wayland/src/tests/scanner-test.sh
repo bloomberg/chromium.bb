@@ -48,4 +48,8 @@ generate_and_compare "-c code" "small.xml" "small-code-core.c"
 generate_and_compare "-c client-header" "small.xml" "small-client-core.h"
 generate_and_compare "-c server-header" "small.xml" "small-server-core.h"
 
+# The existing "code" must produce result identical to "public-code"
+generate_and_compare "code" "small.xml" "small-code.c"
+generate_and_compare "public-code" "small.xml" "small-code.c"
+generate_and_compare "private-code" "small.xml" "small-private-code.c"
 exit $RETCODE

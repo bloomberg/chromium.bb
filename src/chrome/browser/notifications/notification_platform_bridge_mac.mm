@@ -41,7 +41,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
+#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -255,14 +255,10 @@ void NotificationPlatformBridgeMac::Display(
     [builder setIcon:notification.icon().ToNSImage()];
   }
 
-  [builder
-      setShowSettingsButton:(notification_type !=
-                                 NotificationHandler::Type::EXTENSION &&
-                             notification_type !=
-                                 NotificationHandler::Type::SEND_TAB_TO_SELF)];
+  [builder setShowSettingsButton:(notification.should_show_settings_button())];
   std::vector<message_center::ButtonInfo> buttons = notification.buttons();
   if (!buttons.empty()) {
-    DCHECK_LE(buttons.size(), blink::kWebNotificationMaxActions);
+    DCHECK_LE(buttons.size(), blink::kNotificationMaxActions);
     NSString* buttonOne = base::SysUTF16ToNSString(buttons[0].title);
     NSString* buttonTwo = nullptr;
     if (buttons.size() > 1)
@@ -424,7 +420,7 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
   if (button_index.intValue <
           notification_constants::kNotificationInvalidButtonIndex ||
       button_index.intValue >=
-          static_cast<int>(blink::kWebNotificationMaxActions)) {
+          static_cast<int>(blink::kNotificationMaxActions)) {
     LOG(ERROR) << "Invalid number of buttons supplied "
                << button_index.intValue;
     return false;
@@ -456,7 +452,7 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
   // Origin is not actually required but if it's there it should be a valid one.
   NSString* origin =
       [response objectForKey:notification_constants::kNotificationOrigin];
-  if (origin) {
+  if (origin && origin.length) {
     std::string notificationOrigin = base::SysNSStringToUTF8(origin);
     GURL url(notificationOrigin);
     if (!url.is_valid())

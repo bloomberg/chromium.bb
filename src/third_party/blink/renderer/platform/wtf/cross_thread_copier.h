@@ -51,6 +51,7 @@ class RefCountedThreadSafe;
 class TimeDelta;
 class TimeTicks;
 class Time;
+class UnguessableToken;
 }  // namespace base
 
 class SkRefCnt;
@@ -146,6 +147,12 @@ struct CrossThreadCopier<base::File> {
   STATIC_ONLY(CrossThreadCopier);
   using Type = base::File;
   static Type Copy(Type pointer) { return pointer; }
+};
+
+template <>
+struct CrossThreadCopier<base::UnguessableToken>
+    : public CrossThreadCopierPassThrough<base::UnguessableToken> {
+  STATIC_ONLY(CrossThreadCopier);
 };
 
 template <>
@@ -263,25 +270,6 @@ struct CrossThreadCopier<String> {
   STATIC_ONLY(CrossThreadCopier);
   typedef String Type;
   WTF_EXPORT static Type Copy(const String&);
-};
-
-// mojo::InterfacePtrInfo is a cross-thread safe mojo::InterfacePtr.
-template <typename Interface>
-struct CrossThreadCopier<mojo::InterfacePtrInfo<Interface>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = mojo::InterfacePtrInfo<Interface>;
-  static Type Copy(Type ptr_info) {
-    return ptr_info;  // This is in fact a move.
-  }
-};
-
-template <typename Interface>
-struct CrossThreadCopier<mojo::InterfaceRequest<Interface>> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = mojo::InterfaceRequest<Interface>;
-  static Type Copy(Type request) {
-    return request;  // This is in fact a move.
-  }
 };
 
 template <typename Interface>

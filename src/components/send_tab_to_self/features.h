@@ -11,10 +11,6 @@ class PrefService;
 
 namespace send_tab_to_self {
 
-// If this feature is enabled, we will display the UI to send tabs if the Sync
-// datatype is also enabled.
-extern const base::Feature kSendTabToSelfShowSendingUI;
-
 // If this feature is enabled, the tabs will be broadcasted instead of
 // targeted to a specific device. This only affects the receiving side.
 extern const base::Feature kSendTabToSelfBroadcast;
@@ -23,6 +19,9 @@ extern const base::Feature kSendTabToSelfBroadcast;
 // persistent sync data. Users who are signed in can use the feature regardless
 // of whether they have the sync feature enabled.
 extern const base::Feature kSendTabToSelfWhenSignedIn;
+
+// Feature flag to enable device renaming.
+extern const base::Feature kSharingRenameDevices;
 
 // Returns whether the receiving components of the feature is enabled on this
 // device. This is different from IsReceivingEnabled in SendTabToSelfUtil

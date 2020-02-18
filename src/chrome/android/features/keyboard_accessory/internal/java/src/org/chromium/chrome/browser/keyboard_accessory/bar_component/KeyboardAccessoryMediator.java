@@ -14,10 +14,10 @@ import static org.chromium.chrome.browser.keyboard_accessory.bar_component.Keybo
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
 
-import android.support.annotation.Nullable;
-import android.support.annotation.Px;
+import androidx.annotation.Nullable;
+import androidx.annotation.Px;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessorySheetTrigger;
@@ -133,7 +133,6 @@ class KeyboardAccessoryMediator
             case PopupItemId.ITEM_ID_CLEAR_FORM:
             case PopupItemId.ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
             case PopupItemId.ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
-            case PopupItemId.ITEM_ID_GOOGLE_PAY_BRANDING:
             case PopupItemId.ITEM_ID_GENERATE_PASSWORD_ENTRY:
             case PopupItemId.ITEM_ID_SHOW_ACCOUNT_CARDS:
             case PopupItemId.ITEM_ID_AUTOFILL_OPTIONS:

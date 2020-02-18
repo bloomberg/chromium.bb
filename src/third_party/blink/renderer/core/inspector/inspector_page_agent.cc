@@ -41,7 +41,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/test_report_body.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
@@ -223,7 +224,7 @@ static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
         TextResourceDecoderOptions::kHTMLContent, UTF8Encoding()));
   }
   if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type) ||
-      DOMImplementation::IsJSONMIMEType(mime_type)) {
+      MIMETypeRegistry::IsJSONMimeType(mime_type)) {
     return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding()));
   }
@@ -1046,8 +1047,10 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
   if (parent_frame) {
     frame_object->setParentId(IdentifiersFactory::FrameId(parent_frame));
     AtomicString name = frame->Tree().GetName();
-    if (name.IsEmpty() && frame->DeprecatedLocalOwner())
-      name = frame->DeprecatedLocalOwner()->getAttribute(html_names::kIdAttr);
+    if (name.IsEmpty() && frame->DeprecatedLocalOwner()) {
+      name =
+          frame->DeprecatedLocalOwner()->FastGetAttribute(html_names::kIdAttr);
+    }
     frame_object->setName(name);
   }
   if (loader && !loader->UnreachableURL().IsEmpty())
@@ -1181,7 +1184,8 @@ Response InspectorPageAgent::getLayoutMetrics(
   // page_zoom_factor is CSS to DIP (device independent pixels).
   float page_zoom_factor =
       page_zoom /
-      main_frame->GetPage()->GetChromeClient().WindowToViewportScalar(1);
+      main_frame->GetPage()->GetChromeClient().WindowToViewportScalar(
+          main_frame, 1);
   FloatRect visible_rect = visual_viewport.VisibleRect();
   float scale = visual_viewport.Scale();
 
@@ -1337,6 +1341,19 @@ void InspectorPageAgent::ProduceCompilationCache(const ScriptSourceCode& source,
   }
 }
 
+void InspectorPageAgent::FileChooserOpened(LocalFrame* frame,
+                                           HTMLInputElement* element,
+                                           bool* intercepted) {
+  *intercepted |= intercept_file_chooser_;
+  if (!intercept_file_chooser_)
+    return;
+  bool multiple = element->Multiple();
+  GetFrontend()->fileChooserOpened(
+      IdentifiersFactory::FrameId(frame), DOMNodeIds::IdForNode(element),
+      multiple ? protocol::Page::FileChooserOpened::ModeEnum::SelectMultiple
+               : protocol::Page::FileChooserOpened::ModeEnum::SelectSingle);
+}
+
 Response InspectorPageAgent::setProduceCompilationCache(bool enabled) {
   produce_compilation_cache_.Set(enabled);
   return Response::OK();
@@ -1358,8 +1375,13 @@ Response InspectorPageAgent::waitForDebugger() {
   return Response::OK();
 }
 
-protocol::Response InspectorPageAgent::generateTestReport(const String& message,
-                                                          Maybe<String> group) {
+Response InspectorPageAgent::setInterceptFileChooserDialog(bool enabled) {
+  intercept_file_chooser_ = enabled;
+  return Response::OK();
+}
+
+Response InspectorPageAgent::generateTestReport(const String& message,
+                                                Maybe<String> group) {
   Document* document = inspected_frames_->Root()->GetDocument();
 
   // Construct the test report.

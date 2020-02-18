@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -246,8 +245,6 @@ void MainThreadDebugger::runMessageLoopOnPause(int context_group_id) {
   }
   DCHECK(paused_frame == paused_frame->LocalFrameRoot());
   paused_ = true;
-
-  UserGestureIndicator::SetTimeoutPolicy(UserGestureToken::kHasPaused);
 
   // Wait for continue or step command.
   if (client_message_loop_)

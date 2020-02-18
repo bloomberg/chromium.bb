@@ -27,6 +27,7 @@
 
 #include "cc/paint/node_id.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_iterator.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
@@ -53,7 +54,6 @@ namespace blink {
 struct CharacterRange;
 class FloatPoint;
 class FloatRect;
-class FontFallbackIterator;
 class FontData;
 class FontSelector;
 class ShapeCache;
@@ -230,8 +230,11 @@ class PLATFORM_EXPORT Font {
 
  public:
   FontSelector* GetFontSelector() const;
-  scoped_refptr<FontFallbackIterator> CreateFontFallbackIterator(
-      FontFallbackPriority) const;
+  FontFallbackIterator CreateFontFallbackIterator(
+      FontFallbackPriority fallback_priority) const {
+    return FontFallbackIterator(font_description_, font_fallback_list_,
+                                fallback_priority);
+  }
 
   void WillUseFontData(const String& text) const;
 
@@ -274,21 +277,6 @@ inline float Font::TabWidth(const SimpleFontData* font_data,
     return GetFontDescription().LetterSpacing();
   float base_tab_width = tab_size.GetPixelSize(font_data->SpaceWidth());
   return base_tab_width ? base_tab_width : GetFontDescription().LetterSpacing();
-}
-
-inline float Font::TabWidth(const SimpleFontData* font_data,
-                            const TabSize& tab_size,
-                            float position) const {
-  float base_tab_width = TabWidth(font_data, tab_size);
-  float distance_to_tab_stop = base_tab_width - fmodf(position, base_tab_width);
-
-  // Let the minimum width be the half of the space width so that it's always
-  // recognizable.  if the distance to the next tab stop is less than that,
-  // advance an additional tab stop.
-  if (distance_to_tab_stop < font_data->SpaceWidth() / 2)
-    distance_to_tab_stop += base_tab_width;
-
-  return distance_to_tab_stop;
 }
 
 }  // namespace blink

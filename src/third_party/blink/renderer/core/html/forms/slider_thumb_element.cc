@@ -50,8 +50,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 inline static bool HasVerticalAppearance(HTMLInputElement* input) {
   return input->ComputedStyleRef().EffectiveAppearance() == kSliderVerticalPart;
 }
@@ -59,7 +57,7 @@ inline static bool HasVerticalAppearance(HTMLInputElement* input) {
 SliderThumbElement::SliderThumbElement(Document& document)
     : HTMLDivElement(document), in_drag_mode_(false) {
   SetHasCustomStyleCallbacks();
-  setAttribute(kIdAttr, shadow_element_names::SliderThumb());
+  setAttribute(html_names::kIdAttr, shadow_element_names::SliderThumb());
 }
 
 void SliderThumbElement::SetPositionFromValue() {
@@ -124,8 +122,10 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   LayoutUnit track_size;
   LayoutUnit position;
   LayoutUnit current_position;
-  PhysicalOffset thumb_offset = thumb_box->OffsetFromAncestor(input_object) -
-                                track_box->OffsetFromAncestor(input_object);
+  const LayoutBox* input_box = ToLayoutBox(input_object);
+  PhysicalOffset thumb_offset =
+      thumb_box->LocalToAncestorPoint(PhysicalOffset(), input_box) -
+      track_box->LocalToAncestorPoint(PhysicalOffset(), input_box);
   if (is_vertical) {
     track_size = track_box->ContentHeight() - thumb_box->Size().Height();
     position = point_in_track.top - thumb_box->Size().Height() / 2 -
@@ -275,7 +275,7 @@ void SliderThumbElement::DetachLayoutTree(bool performing_reattach) {
 HTMLInputElement* SliderThumbElement::HostInput() const {
   // Only HTMLInputElement creates SliderThumbElement instances as its shadow
   // nodes.  So, ownerShadowHost() must be an HTMLInputElement.
-  return ToHTMLInputElement(OwnerShadowHost());
+  return To<HTMLInputElement>(OwnerShadowHost());
 }
 
 static const AtomicString& SliderThumbShadowPartId() {
@@ -339,7 +339,7 @@ SliderContainerElement::SliderContainerElement(Document& document)
 }
 
 HTMLInputElement* SliderContainerElement::HostInput() const {
-  return ToHTMLInputElement(OwnerShadowHost());
+  return To<HTMLInputElement>(OwnerShadowHost());
 }
 
 LayoutObject* SliderContainerElement::CreateLayoutObject(const ComputedStyle&,

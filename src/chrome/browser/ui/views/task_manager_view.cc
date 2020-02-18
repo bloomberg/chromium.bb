@@ -32,7 +32,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/shelf_item.h"
@@ -102,6 +101,7 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   static constexpr char kTaskManagerId[] = "ijaigheoohcacdnplfbdimmcfldnnhdi";
   const ash::ShelfID shelf_id(kTaskManagerId);
   window->SetProperty(ash::kShelfIDKey, shelf_id.Serialize());
+  window->SetProperty(ash::kAppIDKey, shelf_id.app_id);
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
 #endif
   return g_task_manager_view->table_model_.get();
@@ -209,15 +209,6 @@ bool TaskManagerView::Close() {
   return true;
 }
 
-int TaskManagerView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
-base::string16 TaskManagerView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL);
-}
-
 bool TaskManagerView::IsDialogButtonEnabled(ui::DialogButton button) const {
   const ui::ListSelectionModel::SelectedIndices& selections(
       tab_table_->selection_model().selected_indices());
@@ -239,10 +230,6 @@ void TaskManagerView::WindowClosing() {
     g_task_manager_view = nullptr;
   }
   table_model_->StoreColumnsSettings();
-}
-
-bool TaskManagerView::ShouldUseCustomFrame() const {
-  return false;
 }
 
 void TaskManagerView::GetGroupRange(int model_index, views::GroupRange* range) {
@@ -301,6 +288,11 @@ TaskManagerView::TaskManagerView()
     : tab_table_(nullptr),
       tab_table_parent_(nullptr),
       is_always_on_top_(false) {
+  DialogDelegate::set_use_custom_frame(false);
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
+
   Init();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TASK_MANAGER);
 }

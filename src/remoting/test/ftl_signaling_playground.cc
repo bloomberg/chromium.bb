@@ -159,10 +159,8 @@ void FtlSignalingPlayground::AcceptIncoming(base::OnceClosure on_done) {
                                ? cmd->GetSwitchValueASCII(kSwitchNameHostOwner)
                                : user_email;
   HOST_LOG << "Using host owner: " << host_owner;
-  bool is_service_account =
-      test::TestOAuthTokenGetter::IsServiceAccount(user_email);
   auto factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
-      is_service_account, host_owner, cert, key_pair,
+      host_owner, cert, key_pair,
       /* domain_list */ {}, pin_hash, /* pairing_registry */ {});
   session_manager_->set_authenticator_factory(std::move(factory));
   HOST_LOG << "Waiting for incoming session...";
@@ -284,7 +282,7 @@ void FtlSignalingPlayground::OnSignalStrategyStateChange(
 
   if (state == SignalStrategy::CONNECTED) {
     HOST_LOG << "Signaling connected. New JID: "
-             << signal_strategy_->GetLocalAddress().jid();
+             << signal_strategy_->GetLocalAddress().id();
     if (on_signaling_connected_callback_) {
       std::move(on_signaling_connected_callback_).Run();
     }

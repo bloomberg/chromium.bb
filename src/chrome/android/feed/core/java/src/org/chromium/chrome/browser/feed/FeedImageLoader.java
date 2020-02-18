@@ -9,19 +9,19 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.support.annotation.DrawableRes;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 
-import com.google.android.libraries.feed.api.host.imageloader.BundledAssets;
-import com.google.android.libraries.feed.api.host.imageloader.ImageLoaderApi;
-import com.google.android.libraries.feed.common.functional.Consumer;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Consumer;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.SysUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.feed.library.api.host.imageloader.BundledAssets;
+import org.chromium.chrome.browser.feed.library.api.host.imageloader.ImageLoaderApi;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;

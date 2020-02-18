@@ -41,10 +41,6 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   explicit OverviewButtonTray(Shelf* shelf);
   ~OverviewButtonTray() override;
 
-  // Updates the tray's visibility based on the LoginStatus and the current
-  // state of TabletMode
-  virtual void UpdateAfterLoginStatusChange(LoginStatus status);
-
   // Sets the ink drop ripple to ACTIVATED immediately with no animations.
   void SnapRippleToActivated();
 
@@ -53,6 +49,8 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
 
   // ActionableView:
   bool PerformAction(const ui::Event& event) override;
+  void HandlePerformActionResult(bool action_performed,
+                                 const ui::Event& event) override;
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
@@ -65,6 +63,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   void OnTabletModeEventsBlockingChanged() override;
 
   // TrayBackgroundView:
+  void UpdateAfterLoginStatusChange(LoginStatus status) override;
   void ClickedOutsideBubble() override;
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;

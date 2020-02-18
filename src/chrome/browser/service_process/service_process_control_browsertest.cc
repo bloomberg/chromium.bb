@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
@@ -30,6 +29,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if defined(OS_WIN)
@@ -174,9 +174,9 @@ IN_PROC_BROWSER_TEST_F(RealServiceProcessControlBrowserTest,
 
   // Make sure we are connected to the service process.
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
-  cloud_print::mojom::CloudPrintPtr cloud_print_proxy;
+  mojo::Remote<cloud_print::mojom::CloudPrint> cloud_print_proxy;
   ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
-      &cloud_print_proxy);
+      cloud_print_proxy.BindNewPipeAndPassReceiver());
   base::RunLoop run_loop;
   cloud_print_proxy->GetCloudPrintProxyInfo(
       base::BindOnce([](base::OnceClosure done, bool, const std::string&,
@@ -193,9 +193,9 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
 
   // Make sure we are connected to the service process.
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
-  cloud_print::mojom::CloudPrintPtr cloud_print_proxy;
+  mojo::Remote<cloud_print::mojom::CloudPrint> cloud_print_proxy;
   ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
-      &cloud_print_proxy);
+      cloud_print_proxy.BindNewPipeAndPassReceiver());
   base::RunLoop run_loop;
   cloud_print_proxy->GetCloudPrintProxyInfo(
       base::BindOnce([](base::OnceClosure done, bool, const std::string&,
@@ -207,8 +207,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
   EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
 }
 
-// Flaky on macOS: https://crbug.com/978948
-#if defined(OS_MACOSX)
+// Flaky on macOS, linux and windows: https://crbug.com/978948
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_LaunchAndReconnect DISABLED_LaunchAndReconnect
 #else
 #define MAYBE_LaunchAndReconnect LaunchAndReconnect
@@ -220,14 +220,15 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   // Make sure we are connected to the service process.
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   // Send an IPC that will keep the service process alive after we disconnect.
-  cloud_print::mojom::CloudPrintPtr cloud_print_proxy;
+  mojo::Remote<cloud_print::mojom::CloudPrint> cloud_print_proxy;
   ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
-      &cloud_print_proxy);
+      cloud_print_proxy.BindNewPipeAndPassReceiver());
   cloud_print_proxy->EnableCloudPrintProxyWithRobot(
       "", "", "", base::Value(base::Value::Type::DICTIONARY));
 
+  cloud_print_proxy.reset();
   ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
-      &cloud_print_proxy);
+      cloud_print_proxy.BindNewPipeAndPassReceiver());
   {
     base::RunLoop run_loop;
     cloud_print_proxy->GetCloudPrintProxyInfo(
@@ -246,8 +247,9 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
     run_loop.Run();
   }
 
+  cloud_print_proxy.reset();
   ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
-      &cloud_print_proxy);
+      cloud_print_proxy.BindNewPipeAndPassReceiver());
   {
     base::RunLoop run_loop;
     cloud_print_proxy->GetCloudPrintProxyInfo(
@@ -275,9 +277,9 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_LaunchTwice) {
 
   // Make sure we are connected to the service process.
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
-  cloud_print::mojom::CloudPrintPtr cloud_print_proxy;
+  mojo::Remote<cloud_print::mojom::CloudPrint> cloud_print_proxy;
   ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
-      &cloud_print_proxy);
+      cloud_print_proxy.BindNewPipeAndPassReceiver());
   {
     base::RunLoop run_loop;
     cloud_print_proxy->GetCloudPrintProxyInfo(
@@ -290,8 +292,9 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_LaunchTwice) {
   // Launch the service process again.
   LaunchServiceProcessControlAndWait();
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
+  cloud_print_proxy.reset();
   ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
-      &cloud_print_proxy);
+      cloud_print_proxy.BindNewPipeAndPassReceiver());
   {
     base::RunLoop run_loop;
     cloud_print_proxy->GetCloudPrintProxyInfo(
@@ -455,9 +458,9 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, StopViaWmQuit) {
 
   // Make sure we are connected to the service process.
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
-  cloud_print::mojom::CloudPrintPtr cloud_print_proxy;
+  mojo::Remote<cloud_print::mojom::CloudPrint> cloud_print_proxy;
   ServiceProcessControl::GetInstance()->remote_interfaces().GetInterface(
-      &cloud_print_proxy);
+      cloud_print_proxy.BindNewPipeAndPassReceiver());
   base::RunLoop run_loop;
   cloud_print_proxy->GetCloudPrintProxyInfo(
       base::BindOnce([](base::OnceClosure done, bool, const std::string&,

@@ -64,17 +64,7 @@ class AdSamplerTriggerTest : public content::RenderViewHostTestHarness {
   // Returns the final RenderFrameHost after navigation commits.
   RenderFrameHost* NavigateFrame(const std::string& url,
                                  RenderFrameHost* frame) {
-    GURL gurl(url);
-    auto navigation_simulator =
-        NavigationSimulator::CreateRendererInitiated(gurl, frame);
-    navigation_simulator->Commit();
-    RenderFrameHost* final_frame_host =
-        navigation_simulator->GetFinalRenderFrameHost();
-    // Call the trigger's FinishLoad event handler directly since it doesn't
-    // happen as part of the navigation.
-    safe_browsing::AdSamplerTrigger::FromWebContents(web_contents())
-        ->DidFinishLoad(final_frame_host, gurl);
-    return final_frame_host;
+    return NavigationSimulator::NavigateAndCommitFromDocument(GURL(url), frame);
   }
 
   // Returns the final RenderFrameHost after navigation commits.
@@ -133,7 +123,7 @@ TEST_F(AdSamplerTriggerTest, TriggerDisabledBySamplingFrequency) {
                                       NO_SAMPLE_AD_SKIPPED_FOR_FREQUENCY, 2);
 }
 
-TEST_F(AdSamplerTriggerTest, PageWithNoAds) {
+TEST_F(AdSamplerTriggerTest, DISABLED_PageWithNoAds) {
   // Make sure the trigger doesn't fire when there are no ads on the page.
   CreateTriggerWithFrequency(/*denominator=*/1);
 

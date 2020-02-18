@@ -63,9 +63,10 @@
 #endif  // defined(USE_OZONE) || defined(USE_X11)
 
 #if defined(OS_WIN)
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/shell_integration_win.h"
+#include "printing/backend/win_helper.h"
 #endif  // defined(OS_WIN)
 
 namespace {
@@ -74,10 +75,9 @@ void RecordMemoryMetrics();
 
 // Records memory metrics after a delay.
 void RecordMemoryMetricsAfterDelay() {
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&RecordMemoryMetrics),
-      memory_instrumentation::GetDelayForNextMemoryLog());
+  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                        base::BindOnce(&RecordMemoryMetrics),
+                        memory_instrumentation::GetDelayForNextMemoryLog());
 }
 
 // Records memory metrics, and then triggers memory colleciton after a delay.
@@ -206,6 +206,10 @@ void RecordMicroArchitectureStats() {
                            base::SysInfo::NumberOfProcessors());
 }
 
+#if defined(OS_WIN)
+bool IsApplockerRunning();
+#endif  // defined(OS_WIN)
+
 // Called on a background thread, with low priority to avoid slowing down
 // startup with metrics that aren't trivial to compute.
 void RecordStartupMetrics() {
@@ -225,8 +229,21 @@ void RecordStartupMetrics() {
   DCHECK(patch_level) << "Windows version too high!";
   base::UmaHistogramSparse("Windows.PatchLevel", patch_level);
 
+  // Record installed UCRT version information. This is of particular interest
+  // on Windows 7 due to Windows 7 crashes - https://crbug.com/920704
+  UMA_HISTOGRAM_ENUMERATION("Windows.UCRTVersion", os_info.UcrtVersion(),
+                            base::win::Version::WIN_LAST);
+
   UMA_HISTOGRAM_BOOLEAN("Windows.HasHighResolutionTimeTicks",
                         base::TimeTicks::IsHighResolution());
+
+  // Metric of interest specifically for Windows 7 printing.
+  UMA_HISTOGRAM_BOOLEAN("Windows.HasOpenXpsSupport",
+                        printing::XPSModule::IsOpenXpsCapable());
+
+  // Determine if Applocker is enabled and running. This does not check if
+  // Applocker rules are being enforced.
+  UMA_HISTOGRAM_BOOLEAN("Windows.ApplockerRunning", IsApplockerRunning());
 #endif  // defined(OS_WIN)
 
   bluetooth_utility::ReportBluetoothAvailability();
@@ -303,18 +320,18 @@ void RecordLinuxDistro() {
         }
       }
     } else if (distro_tokens[0] == "Fedora") {
-      // Format: Fedora release RR (<codename>)
+      // Format: Fedora RR (<codename>)
       distro_result = UMA_LINUX_DISTRO_FEDORA_OTHER;
-      if (distro_tokens.size() >= 3) {
-        if (distro_tokens[2] == "24") {
+      if (distro_tokens.size() >= 2) {
+        if (distro_tokens[1] == "24") {
           distro_result = UMA_LINUX_DISTRO_FEDORA_24;
-        } else if (distro_tokens[2] == "25") {
+        } else if (distro_tokens[1] == "25") {
           distro_result = UMA_LINUX_DISTRO_FEDORA_25;
-        } else if (distro_tokens[2] == "26") {
+        } else if (distro_tokens[1] == "26") {
           distro_result = UMA_LINUX_DISTRO_FEDORA_26;
-        } else if (distro_tokens[2] == "27") {
+        } else if (distro_tokens[1] == "27") {
           distro_result = UMA_LINUX_DISTRO_FEDORA_27;
-        } else if (distro_tokens[2] == "28") {
+        } else if (distro_tokens[1] == "28") {
           distro_result = UMA_LINUX_DISTRO_FEDORA_28;
         }
       }
@@ -322,23 +339,23 @@ void RecordLinuxDistro() {
       // Format: Arch Linux
       distro_result = UMA_LINUX_DISTRO_ARCH;
     } else if (distro_tokens[0] == "CentOS") {
-      // Format: CentOS [Linux] release <version> (<codename>)
+      // Format: CentOS [Linux] <version> (<codename>)
       distro_result = UMA_LINUX_DISTRO_CENTOS;
     } else if (distro_tokens[0] == "elementary") {
       // Format: elementary OS <release name>
       distro_result = UMA_LINUX_DISTRO_ELEMENTARY;
     } else if (distro_tokens.size() >= 2 && distro_tokens[1] == "Mint") {
-      // Format: Linux Mint RR <codename>
+      // Format: Linux Mint RR
       distro_result = UMA_LINUX_DISTRO_MINT;
     } else if (distro_tokens.size() >= 4 && distro_tokens[0] == "Red" &&
                distro_tokens[1] == "Hat" && distro_tokens[2] == "Enterprise" &&
                distro_tokens[3] == "Linux") {
-      // Format: Red Hat Enterprise Linux <variant> [release] R.P (<codename>)
+      // Format: Red Hat Enterprise Linux <variant> R.P (<codename>)
       distro_result = UMA_LINUX_DISTRO_RHEL;
     } else if (distro_tokens.size() >= 3 && distro_tokens[0] == "SUSE" &&
                distro_tokens[1] == "Linux" &&
                distro_tokens[2] == "Enterprise") {
-      // Format: SUSE Linux Enterprise <variant> RR (<platform>)
+      // Format: SUSE Linux Enterprise <variant> RR
       distro_result = UMA_LINUX_DISTRO_SUSE_ENTERPRISE;
     }
   }
@@ -524,6 +541,49 @@ void RecordIsPinnedToTaskbarHistogram() {
 void RecordVrStartupHistograms() {
   vr::XRRuntimeManager::RecordVrStartupHistograms();
 }
+
+class ScHandleTraits {
+ public:
+  typedef SC_HANDLE Handle;
+
+  ScHandleTraits() = delete;
+  ScHandleTraits(const ScHandleTraits&) = delete;
+  ScHandleTraits& operator=(const ScHandleTraits&) = delete;
+
+  // Closes the handle.
+  static bool CloseHandle(SC_HANDLE handle) {
+    return ::CloseServiceHandle(handle) != FALSE;
+  }
+
+  // Returns true if the handle value is valid.
+  static bool IsHandleValid(SC_HANDLE handle) { return handle != nullptr; }
+
+  // Returns null handle value.
+  static SC_HANDLE NullHandle() { return nullptr; }
+};
+
+typedef base::win::GenericScopedHandle<ScHandleTraits,
+                                       base::win::DummyVerifierTraits>
+    ScopedScHandle;
+
+bool IsApplockerRunning() {
+  ScopedScHandle scm_handle(
+      ::OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CONNECT));
+  if (!scm_handle.IsValid())
+    return false;
+
+  ScopedScHandle service_handle(
+      ::OpenServiceW(scm_handle.Get(), L"appid", SERVICE_QUERY_STATUS));
+  if (!service_handle.IsValid())
+    return false;
+
+  SERVICE_STATUS status;
+  if (!::QueryServiceStatus(service_handle.Get(), &status))
+    return false;
+
+  return status.dwCurrentState == SERVICE_RUNNING;
+}
+
 #endif  // defined(OS_WIN)
 
 }  // namespace
@@ -545,21 +605,10 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
   about_flags::RecordUMAStatistics(&flags_storage);
-
-#if defined(OS_WIN)
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("ChromeWinClang",
-#if defined(__clang__)
-                                                            "Enabled"
-#else
-                                                            "Disabled"
-#endif
-                                                            );
-#endif
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
-  if (!base::FeatureList::IsEnabled(kMemoryMetricsOldTiming))
-    RecordMemoryMetricsAfterDelay();
+  RecordMemoryMetricsAfterDelay();
   RecordLinuxGlibcVersion();
 #if defined(USE_X11)
   UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager", GetLinuxWindowManager(),

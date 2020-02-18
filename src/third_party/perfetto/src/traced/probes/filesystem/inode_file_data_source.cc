@@ -29,6 +29,7 @@
 #include "perfetto/ext/tracing/core/trace_writer.h"
 
 #include "protos/perfetto/config/inode_file/inode_file_config.pbzero.h"
+#include "protos/perfetto/trace/filesystem/inode_file_map.pbzero.h"
 #include "protos/perfetto/trace/trace_packet.pbzero.h"
 #include "src/traced/probes/filesystem/file_scanner.h"
 
@@ -65,7 +66,7 @@ class StaticMapDelegate : public FileScanner::Delegate {
   bool OnInodeFound(BlockDeviceID block_device_id,
                     Inode inode_number,
                     const std::string& path,
-                    protos::pbzero::InodeFileMap_Entry_Type type) {
+                    InodeFileMap_Entry_Type type) {
     std::unordered_map<Inode, InodeMapValue>& inode_map =
         (*map_)[block_device_id];
     inode_map[inode_number].SetType(type);
@@ -95,7 +96,8 @@ void InodeFileDataSource::FillInodeEntry(InodeFileMap* destination,
                                          const InodeMapValue& inode_map_value) {
   auto* entry = destination->add_entries();
   entry->set_inode_number(inode_number);
-  entry->set_type(inode_map_value.type());
+  entry->set_type(static_cast<protos::pbzero::InodeFileMap_Entry_Type>(
+      inode_map_value.type()));
   for (const auto& path : inode_map_value.paths())
     entry->add_paths(path.c_str());
 }
@@ -117,13 +119,12 @@ InodeFileDataSource::InodeFileDataSource(
   using protos::pbzero::InodeFileConfig;
   InodeFileConfig::Decoder cfg(ds_config.inode_file_config_raw());
   for (auto mp = cfg.scan_mount_points(); mp; ++mp)
-    scan_mount_points_.insert(mp->as_std_string());
+    scan_mount_points_.insert((*mp).ToStdString());
   for (auto mpm = cfg.mount_point_mapping(); mpm; ++mpm) {
-    auto raw = mpm->as_bytes();
-    InodeFileConfig::MountPointMappingEntry::Decoder entry(raw.data, raw.size);
+    InodeFileConfig::MountPointMappingEntry::Decoder entry(*mpm);
     std::vector<std::string> scan_roots;
     for (auto scan_root = entry.scan_roots(); scan_root; ++scan_root)
-      scan_roots.push_back(scan_root->as_std_string());
+      scan_roots.push_back((*scan_root).ToStdString());
     std::string mountpoint = entry.mountpoint().ToStdString();
     mount_point_mapping_.emplace(mountpoint, std::move(scan_roots));
   }
@@ -193,7 +194,7 @@ void InodeFileDataSource::Flush(FlushRequestID,
 }
 
 void InodeFileDataSource::OnInodes(
-    const std::vector<std::pair<Inode, BlockDeviceID>>& inodes) {
+    const base::FlatSet<InodeBlockPair>& inodes) {
   if (mount_points_.empty()) {
     mount_points_ = ParseMounts();
   }
@@ -293,11 +294,10 @@ void InodeFileDataSource::RemoveFromNextMissingInodes(
   it->second.erase(inode_number);
 }
 
-bool InodeFileDataSource::OnInodeFound(
-    BlockDeviceID block_device_id,
-    Inode inode_number,
-    const std::string& path,
-    protos::pbzero::InodeFileMap_Entry_Type type) {
+bool InodeFileDataSource::OnInodeFound(BlockDeviceID block_device_id,
+                                       Inode inode_number,
+                                       const std::string& path,
+                                       InodeFileMap_Entry_Type type) {
   auto it = missing_inodes_.find(block_device_id);
   if (it == missing_inodes_.end())
     return true;

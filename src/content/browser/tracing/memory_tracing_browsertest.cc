@@ -27,6 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::trace_event::MemoryDumpArgs;
+using base::trace_event::MemoryDumpDeterminism;
 using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::MemoryDumpManager;
 using base::trace_event::MemoryDumpType;
@@ -49,7 +50,7 @@ class MemoryTracingTest : public ContentBrowserTest {
   // Used as callback argument for MemoryDumpManager::RequestGlobalDump():
   void OnGlobalMemoryDumpDone(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      base::Closure closure,
+      base::OnceClosure closure,
       uint32_t request_index,
       bool success,
       uint64_t dump_guid) {
@@ -66,7 +67,7 @@ class MemoryTracingTest : public ContentBrowserTest {
     if (success)
       EXPECT_NE(0u, dump_guid);
     OnMemoryDumpDone(request_index, success);
-    if (!closure.is_null())
+    if (closure)
       std::move(closure).Run();
   }
 
@@ -74,21 +75,23 @@ class MemoryTracingTest : public ContentBrowserTest {
       bool from_renderer_thread,
       const MemoryDumpType& dump_type,
       const MemoryDumpLevelOfDetail& level_of_detail,
-      const base::Closure& closure) {
+      base::OnceClosure closure) {
     uint32_t request_index = next_request_index_++;
-    auto callback = base::Bind(
+    auto callback = base::BindOnce(
         &MemoryTracingTest::OnGlobalMemoryDumpDone, base::Unretained(this),
-        base::ThreadTaskRunnerHandle::Get(), closure, request_index);
+        base::ThreadTaskRunnerHandle::Get(), std::move(closure), request_index);
     if (from_renderer_thread) {
       PostTaskToInProcessRendererAndWait(base::BindOnce(
           &memory_instrumentation::MemoryInstrumentation::
               RequestGlobalDumpAndAppendToTrace,
           base::Unretained(
               memory_instrumentation::MemoryInstrumentation::GetInstance()),
-          dump_type, level_of_detail, std::move(callback)));
+          dump_type, level_of_detail, MemoryDumpDeterminism::NONE,
+          std::move(callback)));
     } else {
       memory_instrumentation::MemoryInstrumentation::GetInstance()
           ->RequestGlobalDumpAndAppendToTrace(dump_type, level_of_detail,
+                                              MemoryDumpDeterminism::NONE,
                                               std::move(callback));
     }
   }
@@ -134,10 +137,9 @@ class MemoryTracingTest : public ContentBrowserTest {
   void DisableTracing() {
     base::RunLoop run_loop;
     bool success = TracingController::GetInstance()->StopTracing(
-        TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
-            [](base::Closure quit_closure,
-               std::unique_ptr<const base::DictionaryValue> metadata,
-               base::RefCountedString* trace_str) {
+        TracingControllerImpl::CreateCallbackEndpoint(base::BindOnce(
+            [](base::OnceClosure quit_closure,
+               std::unique_ptr<std::string> trace_str) {
               std::move(quit_closure).Run();
             },
             run_loop.QuitClosure())));
@@ -159,16 +161,15 @@ class MemoryTracingTest : public ContentBrowserTest {
                          const MemoryDumpType& dump_type,
                          const MemoryDumpLevelOfDetail& level_of_detail) {
     RequestGlobalDumpWithClosure(from_renderer_thread, dump_type,
-                                 level_of_detail, base::Closure());
+                                 level_of_detail, base::NullCallback());
   }
 
   void Navigate(Shell* shell) {
-    NavigateToURL(shell, GetTestUrl("", "title1.html"));
+    EXPECT_TRUE(NavigateToURL(shell, GetTestUrl("", "title1.html")));
   }
 
   MOCK_METHOD2(OnMemoryDumpDone, void(uint32_t request_index, bool successful));
 
-  base::Closure on_memory_dump_complete_closure_;
   std::unique_ptr<MockDumpProvider> mock_dump_provider_;
   uint32_t next_request_index_;
   bool last_callback_success_;
@@ -178,10 +179,9 @@ class MemoryTracingTest : public ContentBrowserTest {
 // intended to give coverage to Android WebView.
 #if defined(OS_ANDROID)
 
-// Flaky on Android. crbug.com/970058
-class DISABLED_SingleProcessMemoryTracingTest : public MemoryTracingTest {
+class SingleProcessMemoryTracingTest : public MemoryTracingTest {
  public:
-  DISABLED_SingleProcessMemoryTracingTest() {}
+  SingleProcessMemoryTracingTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
@@ -189,15 +189,15 @@ class DISABLED_SingleProcessMemoryTracingTest : public MemoryTracingTest {
 };
 
 // https://crbug.com/788788
-#if defined(ADDRESS_SANITIZER)
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 #define MAYBE_BrowserInitiatedSingleDump DISABLED_BrowserInitiatedSingleDump
 #else
 #define MAYBE_BrowserInitiatedSingleDump BrowserInitiatedSingleDump
-#endif  // defined(ADDRESS_SANITIZER)
+#endif  // defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 
 // Checks that a memory dump initiated from a the main browser thread ends up in
 // a single dump even in single process mode.
-IN_PROC_BROWSER_TEST_F(DISABLED_SingleProcessMemoryTracingTest,
+IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest,
                        MAYBE_BrowserInitiatedSingleDump) {
   Navigate(shell());
 
@@ -212,16 +212,16 @@ IN_PROC_BROWSER_TEST_F(DISABLED_SingleProcessMemoryTracingTest,
 }
 
 // https://crbug.com/788788
-#if defined(ADDRESS_SANITIZER)
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 #define MAYBE_RendererInitiatedSingleDump DISABLED_RendererInitiatedSingleDump
 #else
 #define MAYBE_RendererInitiatedSingleDump RendererInitiatedSingleDump
-#endif  // defined(ADDRESS_SANITIZER)
+#endif  // defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 
 // Checks that a memory dump initiated from a renderer thread ends up in a
 // single dump even in single process mode.
-IN_PROC_BROWSER_TEST_F(DISABLED_SingleProcessMemoryTracingTest,
-                       DISABLED_RendererInitiatedSingleDump) {
+IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest,
+                       MAYBE_RendererInitiatedSingleDump) {
   Navigate(shell());
 
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_,_)).WillOnce(Return(true));
@@ -235,12 +235,12 @@ IN_PROC_BROWSER_TEST_F(DISABLED_SingleProcessMemoryTracingTest,
 }
 
 // https://crbug.com/788788
-#if defined(ADDRESS_SANITIZER)
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 #define MAYBE_ManyInterleavedDumps DISABLED_ManyInterleavedDumps
 #else
 #define MAYBE_ManyInterleavedDumps ManyInterleavedDumps
-#endif  // defined(ADDRESS_SANITIZER)
-IN_PROC_BROWSER_TEST_F(DISABLED_SingleProcessMemoryTracingTest,
+#endif  // defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest,
                        MAYBE_ManyInterleavedDumps) {
   Navigate(shell());
 
@@ -270,8 +270,7 @@ IN_PROC_BROWSER_TEST_F(DISABLED_SingleProcessMemoryTracingTest,
 // that periodic dump requests fail in case there is already a request in the
 // queue with the same level of detail.
 // Flaky failures on all platforms. https://crbug.com/752613
-IN_PROC_BROWSER_TEST_F(DISABLED_SingleProcessMemoryTracingTest,
-                       DISABLED_QueuedDumps) {
+IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, DISABLED_QueuedDumps) {
   Navigate(shell());
 
   EnableMemoryTracing();
@@ -337,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(DISABLED_SingleProcessMemoryTracingTest,
 #endif  // defined(OS_ANDROID)
 
 // Flaky on Mac. crbug.com/809809
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MACOSX)
 #define MAYBE_BrowserInitiatedDump DISABLED_BrowserInitiatedDump
 #else
 #define MAYBE_BrowserInitiatedDump BrowserInitiatedDump

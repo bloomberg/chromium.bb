@@ -7,10 +7,10 @@
 
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/performance_manager/public/graph/frame_node.h"
-#include "chrome/browser/performance_manager/public/graph/graph.h"
-#include "chrome/browser/performance_manager/public/graph/page_node.h"
-#include "chrome/browser/performance_manager/public/graph/process_node.h"
+#include "components/performance_manager/public/graph/frame_node.h"
+#include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/page_node.h"
+#include "components/performance_manager/public/graph/process_node.h"
 
 namespace performance_manager {
 
@@ -41,7 +41,7 @@ class PageAlmostIdleDecorator : public FrameNode::ObserverDefaultImpl,
 
   // PageNodeObserver implementation:
   void OnIsLoadingChanged(const PageNode* page_node) override;
-  void OnMainFrameNavigationCommitted(const PageNode* page_node) override;
+  void OnMainFrameDocumentChanged(const PageNode* page_node) override;
 
   // ProcessNodeObserver implementation:
   void OnMainThreadTaskLoadIsLow(const ProcessNode* process_node) override;

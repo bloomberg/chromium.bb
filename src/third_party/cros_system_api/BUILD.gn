@@ -6,6 +6,8 @@ import("//common-mk/proto_library.gni")
 
 group("all") {
   deps = [
+    ":system_api-anomaly_detector-protos",
+    ":system_api-attestation-goprotos",
     ":system_api-attestation-protos",
     ":system_api-authpolicy-protos",
     ":system_api-biod-protos",
@@ -22,10 +24,12 @@ group("all") {
     ":system_api-metrics_event-goprotos",
     ":system_api-metrics_event-protos",
     ":system_api-oobe_config-protos",
+    ":system_api-patchpanel-protos",
     ":system_api-plugin_vm_service-protos",
     ":system_api-power_manager-goprotos",
     ":system_api-power_manager-protos",
     ":system_api-protos",
+    ":system_api-runtime_probe-goprotos",
     ":system_api-runtime_probe-protos",
     ":system_api-seneschal-goprotos",
     ":system_api-seneschal-protos",
@@ -38,6 +42,7 @@ group("all") {
     ":system_api-vm_cicerone-protos",
     ":system_api-vm_concierge-goprotos",
     ":system_api-vm_concierge-protos",
+    ":system_api-vm_plugin_dispatcher-goprotos",
     ":system_api-vm_plugin_dispatcher-protos",
   ]
 }
@@ -89,6 +94,7 @@ proto_library("system_api-cryptohome-protos") {
   proto_out_dir = "include/cryptohome/proto_bindings"
   sources = [
     "${proto_in_dir}/UserDataAuth.proto",
+    "${proto_in_dir}/fido.proto",
     "${proto_in_dir}/key.proto",
     "${proto_in_dir}/rpc.proto",
     "${proto_in_dir}/signed_secret.proto",
@@ -150,6 +156,12 @@ proto_library("system_api-login_manager-protos") {
     "${proto_in_dir}/policy_descriptor.proto",
   ]
   standalone = true
+
+  # Override optimize_for option in proto file.
+  # Needed for fuzz targets using libprotobuf-mutator.
+  if (use.fuzzer) {
+    gen_cpp_mode = "speed"
+  }
 }
 
 goproto_library("system_api-login_manager-goprotos") {
@@ -186,6 +198,14 @@ proto_library("system_api-attestation-protos") {
   # system_api-chaps-protos" is used by a shared_library
   # object, so we need to build it with "-fPIC" instead of "-fPIE".
   use_pic = true
+}
+
+goproto_library("system_api-attestation-goprotos") {
+  proto_in_dir = "dbus/attestation"
+  proto_out_dir = "go/src/chromiumos/system_api/attestation_proto"
+  sources = [
+    "${proto_in_dir}/attestation_ca.proto",
+  ]
 }
 
 proto_library("system_api-tpm_manager-protos") {
@@ -257,7 +277,7 @@ proto_library("system_api-vm_concierge-protos") {
   proto_in_dir = "dbus/vm_concierge"
   proto_out_dir = "include/vm_concierge/proto_bindings"
   sources = [
-    "${proto_in_dir}/service.proto",
+    "${proto_in_dir}/concierge_service.proto",
   ]
   standalone = true
 }
@@ -266,7 +286,7 @@ goproto_library("system_api-vm_concierge-goprotos") {
   proto_in_dir = "dbus/vm_concierge"
   proto_out_dir = "go/src/chromiumos/system_api/vm_concierge_proto"
   sources = [
-    "${proto_in_dir}/service.proto",
+    "${proto_in_dir}/concierge_service.proto",
   ]
 }
 
@@ -314,6 +334,14 @@ proto_library("system_api-runtime_probe-protos") {
   standalone = true
 }
 
+goproto_library("system_api-runtime_probe-goprotos") {
+  proto_in_dir = "dbus/runtime_probe"
+  proto_out_dir = "go/src/chromiumos/system_api/runtime_probe_proto"
+  sources = [
+    "${proto_in_dir}/runtime_probe.proto",
+  ]
+}
+
 proto_library("system_api-bootlockbox-protos") {
   proto_in_dir = "dbus/bootlockbox"
   proto_out_dir = "include/bootlockbox/proto_bindings"
@@ -350,11 +378,19 @@ proto_library("system_api-vm_plugin_dispatcher-protos") {
   standalone = true
 }
 
+goproto_library("system_api-vm_plugin_dispatcher-goprotos") {
+  proto_in_dir = "dbus/vm_plugin_dispatcher"
+  proto_out_dir = "go/src/chromiumos/system_api/vm_plugin_dispatcher_proto"
+  sources = [
+    "${proto_in_dir}/vm_plugin_dispatcher.proto",
+  ]
+}
+
 proto_library("system_api-u2f-protos") {
   proto_in_dir = "dbus/u2f"
   proto_out_dir = "include/u2f/proto_bindings"
   sources = [
-    "${proto_in_dir}/interface.proto",
+    "${proto_in_dir}/u2f_interface.proto",
   ]
   standalone = true
 }
@@ -364,6 +400,25 @@ proto_library("system_api-chunneld-protos") {
   proto_out_dir = "include/chunneld/proto_bindings"
   sources = [
     "${proto_in_dir}/chunneld_service.proto",
+  ]
+  standalone = true
+}
+
+proto_library("system_api-patchpanel-protos") {
+  proto_in_dir = "dbus/patchpanel"
+  proto_out_dir = "include/patchpanel/proto_bindings"
+  sources = [
+    "${proto_in_dir}/patchpanel-service.proto",
+  ]
+  standalone = true
+  use_pic = true
+}
+
+proto_library("system_api-anomaly_detector-protos") {
+  proto_in_dir = "dbus/anomaly_detector"
+  proto_out_dir = "include/anomaly_detector/proto_bindings"
+  sources = [
+    "${proto_in_dir}/anomaly_detector.proto",
   ]
   standalone = true
 }

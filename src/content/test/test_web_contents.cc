@@ -13,7 +13,7 @@
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -103,6 +103,7 @@ TestRenderFrameHost* TestWebContents::GetPendingMainFrame() {
 
 int TestWebContents::DownloadImage(const GURL& url,
                                    bool is_favicon,
+                                   uint32_t preferred_size,
                                    uint32_t max_bitmap_size,
                                    bool bypass_cache,
                                    ImageDownloadCallback callback) {
@@ -320,7 +321,7 @@ void TestWebContents::TestSetIsLoading(bool value) {
           node->render_manager()->speculative_frame_host();
       if (speculative_frame_host)
         speculative_frame_host->ResetLoadingState();
-      node->ResetNavigationRequest(false, true);
+      node->ResetNavigationRequest(false);
     }
   }
 }
@@ -374,27 +375,29 @@ void TestWebContents::SetHistoryOffsetAndLength(int history_offset,
 void TestWebContents::SetHttpResponseHeaders(
     NavigationHandle* navigation_handle,
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
-  static_cast<NavigationHandleImpl*>(navigation_handle)
-      ->navigation_request()
+  NavigationRequest::From(navigation_handle)
       ->set_response_headers_for_testing(response_headers);
 }
 
-void TestWebContents::CreateNewWindow(
+RenderFrameHostDelegate* TestWebContents::CreateNewWindow(
     RenderFrameHost* opener,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
     const mojom::CreateNewWindowParams& params,
+    bool is_new_browsing_instance,
     bool has_user_gesture,
-    SessionStorageNamespace* session_storage_namespace) {}
+    SessionStorageNamespace* session_storage_namespace) {
+  return nullptr;
+}
 
 void TestWebContents::CreateNewWidget(int32_t render_process_id,
                                       int32_t route_id,
-                                      mojom::WidgetPtr widget) {}
+                                      mojo::PendingRemote<mojom::Widget> widget,
+                                      RenderViewHostImpl* render_view_host) {}
 
-void TestWebContents::CreateNewFullscreenWidget(int32_t render_process_id,
-                                                int32_t route_id,
-                                                mojom::WidgetPtr widget) {}
+void TestWebContents::CreateNewFullscreenWidget(
+    int32_t render_process_id,
+    int32_t route_id,
+    mojo::PendingRemote<mojom::Widget> widget,
+    RenderViewHostImpl* render_view_host) {}
 
 void TestWebContents::ShowCreatedWindow(int process_id,
                                         int route_id,

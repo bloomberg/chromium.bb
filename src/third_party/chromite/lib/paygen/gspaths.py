@@ -17,11 +17,10 @@ This includes definitions for various build flags:
 
 from __future__ import print_function
 
-import hashlib
 import os
-import random
 import re
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib.paygen import utils
 
@@ -43,9 +42,6 @@ class Build(utils.RestrictedAttrDict):
   """
   _slots = ('board', 'version', 'channel', 'bucket', 'uri')
   _name = 'Build definition'
-
-  def __init__(self, *args, **kwargs):
-    super(Build, self).__init__(*args, **kwargs)
 
   @staticmethod
   def BuildValuesFromUri(uri_re, uri):
@@ -101,6 +97,9 @@ class Image(utils.RestrictedAttrDict):
   def __init__(self, *args, **kwargs):
     super(Image, self).__init__(*args, **kwargs)
 
+    # Pylint isn't able to follow utils.RestrictedAttrDict & _slots trickery.
+    # pylint: disable=access-member-before-definition
+
     # If these match defaults, set to None.
     if self.build:
       self._clear_if_default('image_channel', self.build.channel)
@@ -133,9 +132,6 @@ class DLCImage(Image):
   """
   _name = 'DLC Image definition'
   _slots = Image._slots + ('dlc_id', 'dlc_package', 'dlc_image')
-
-  def __init__(self, *args, **kwargs):
-    super(DLCImage, self).__init__(*args, **kwargs)
 
   def __str__(self):
     if self.uri:
@@ -191,6 +187,9 @@ class Payload(utils.RestrictedAttrDict):
   def __init__(self, exists=False, *args, **kwargs):
     kwargs.update(exists=exists)
     super(Payload, self).__init__(*args, **kwargs)
+
+    # Pylint isn't able to follow utils.RestrictedAttrDict & _slots trickery.
+    # pylint: disable=access-member-before-definition
 
     # If there was no build passed, set the target image's build as the default.
     if not self.build and self.tgt_image.build:
@@ -483,7 +482,7 @@ class ChromeosReleases(object):
       .bin-250bc111ea4955aebc2af08db1f1773c.signed
     """
     if random_str is None:
-      random_str = _RandomString()
+      random_str = cros_build_lib.GetRandomString()
 
     if sign is True:
       signed_ext = '.signed'
@@ -550,7 +549,7 @@ class ChromeosReleases(object):
         bin-610c97c30fae8561bde01a6116d65cb9.signed
     """
     if random_str is None:
-      random_str = _RandomString()
+      random_str = cros_build_lib.GetRandomString()
 
     if key is None:
       signed_ext = ''
@@ -831,13 +830,3 @@ def IsDLCImage(a):
     True if |a| is of DLCImage type, False otherwise
   """
   return isinstance(a, DLCImage)
-
-
-def _RandomString():
-  """Helper function for generating a random string for a payload name.
-
-  This is an external helper function so that it can be trivially mocked
-  to make test results deterministic.
-  """
-  random.seed()
-  return hashlib.md5(str(random.getrandbits(128))).hexdigest()

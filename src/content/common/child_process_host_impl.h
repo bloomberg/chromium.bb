@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -23,6 +23,7 @@
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/system/invitation.h"
 
 namespace IPC {
 class MessageFilter;
@@ -70,11 +71,10 @@ class CONTENT_EXPORT ChildProcessHostImpl
   // ChildProcessHost implementation
   bool Send(IPC::Message* message) override;
   void ForceShutdown() override;
+  base::Optional<mojo::OutgoingInvitation>& GetMojoInvitation() override;
   void CreateChannelMojo() override;
   bool IsChannelOpening() override;
   void AddFilter(IPC::MessageFilter* filter) override;
-  void BindInterface(const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle interface_pipe) override;
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   void RunService(
       const std::string& service_name,
@@ -86,7 +86,7 @@ class CONTENT_EXPORT ChildProcessHostImpl
  private:
   friend class content::ChildProcessHost;
 
-  explicit ChildProcessHostImpl(ChildProcessHostDelegate* delegate);
+  ChildProcessHostImpl(ChildProcessHostDelegate* delegate, IpcMode ipc_mode);
 
   // mojom::ChildProcessHostBootstrap implementation:
   void BindProcessHost(
@@ -105,6 +105,11 @@ class CONTENT_EXPORT ChildProcessHostImpl
   // non-null.
   bool InitChannel();
 
+  // The outgoing Mojo invitation which must be consumed to bootstrap Mojo IPC
+  // to the child process.
+  base::Optional<mojo::OutgoingInvitation> mojo_invitation_{base::in_place};
+
+  const IpcMode ipc_mode_;
   ChildProcessHostDelegate* delegate_;
   base::Process peer_process_;
   bool opening_channel_;  // True while we're waiting the channel to be opened.

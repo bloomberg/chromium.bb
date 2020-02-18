@@ -25,9 +25,9 @@
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/format_utils.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/gpu/accelerated_video_decoder.h"
-#include "media/gpu/format_utils.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_common.h"
@@ -201,14 +201,14 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
 
   if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
     decoder_.reset(new H264Decoder(
-        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_),
+        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_), profile,
         config.container_color_space));
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
     decoder_.reset(new VP8Decoder(
         std::make_unique<VaapiVP8Accelerator>(this, vaapi_wrapper_)));
   } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
     decoder_.reset(new VP9Decoder(
-        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_),
+        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_), profile,
         config.container_color_space));
   } else {
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
@@ -444,18 +444,24 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
     }
 
     switch (res) {
-      case AcceleratedVideoDecoder::kAllocateNewSurfaces:
+      case AcceleratedVideoDecoder::kConfigChange: {
+        gfx::Size new_size = decoder_->GetPicSize();
+        if (profile_ != decoder_->GetProfile() &&
+            requested_pic_size_ == new_size) {
+          // Profile only is changed.
+          // TODO(crbug.com/1022246): Handle profile change.
+          continue;
+        }
         VLOGF(2) << "Decoder requesting a new set of surfaces";
         task_runner_->PostTask(
             FROM_HERE,
             base::BindOnce(
                 &VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange,
-                weak_this_, decoder_->GetRequiredNumOfPictures(),
-                decoder_->GetPicSize(), decoder_->GetNumReferenceFrames(),
-                decoder_->GetVisibleRect()));
+                weak_this_, decoder_->GetRequiredNumOfPictures(), new_size,
+                decoder_->GetNumReferenceFrames(), decoder_->GetVisibleRect()));
         // We'll get rescheduled once ProvidePictureBuffers() finishes.
         return;
-
+      }
       case AcceleratedVideoDecoder::kRanOutOfStreamData:
         ReturnCurrInputBuffer_Locked();
         break;
@@ -579,11 +585,13 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   VLOGF(2) << "Requesting " << requested_num_pics_
            << " pictures of size: " << requested_pic_size_.ToString();
 
-  const VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(
-      vaapi_picture_factory_->GetBufferFormat());
+  const base::Optional<VideoPixelFormat> format =
+      GfxBufferFormatToVideoPixelFormat(
+          vaapi_picture_factory_->GetBufferFormat());
+  CHECK(format);
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Client::ProvidePictureBuffersWithVisibleRect,
-                                client_, requested_num_pics_, format, 1,
+                                client_, requested_num_pics_, *format, 1,
                                 requested_pic_size_, requested_visible_rect_,
                                 vaapi_picture_factory_->GetGLTextureTarget()));
   // |client_| may respond via AssignPictureBuffers().
@@ -629,8 +637,8 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   // |requested_pic_size_| by buffers[0].size(). But AMD driver doesn't decode
   // frames correctly if the surface stride is different from the width of a
   // coded size.
-  // TODO(b/139460315): Update |requested_pic_size_| by buffers[0].size() once
-  // the AMD driver issue is resolved.
+  // TODO(b/139460315): Save buffers[0].size() as |adjusted_size_| once the
+  // AMD driver issue is resolved.
 
   va_surface_format_ = GetVaFormatForVideoCodecProfile(profile_);
   std::vector<VASurfaceID> va_surface_ids;
@@ -643,10 +651,14 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     vpp_vaapi_wrapper_ = VaapiWrapper::Create(
         VaapiWrapper::kVideoProcess, VAProfileNone,
         base::BindRepeating(&ReportToUMA, VAAPI_VPP_ERROR));
-    if (!vpp_vaapi_wrapper_) {
-      VLOGF(1) << "Failed initializing VppVaapiWrapper";
-      NotifyError(PLATFORM_FAILURE);
-    }
+    RETURN_AND_NOTIFY_ON_FAILURE(vpp_vaapi_wrapper_,
+                                 "Failed to initialize VppVaapiWrapper",
+                                 PLATFORM_FAILURE, );
+
+    // Size is irrelevant for a VPP context.
+    RETURN_AND_NOTIFY_ON_FAILURE(vpp_vaapi_wrapper_->CreateContext(gfx::Size()),
+                                 "Failed to create Context",
+                                 PLATFORM_FAILURE, );
   }
 
   for (size_t i = 0; i < buffers.size(); ++i) {
@@ -698,11 +710,12 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
             : pictures_.size();
     CHECK_NE(requested_num_surfaces, 0u);
     va_surface_ids.clear();
-    RETURN_AND_NOTIFY_ON_FAILURE(vaapi_wrapper_->CreateContextAndSurfaces(
-                                     va_surface_format_, requested_pic_size_,
-                                     requested_num_surfaces, &va_surface_ids),
-                                 "Failed creating VA Surfaces",
-                                 PLATFORM_FAILURE, );
+    RETURN_AND_NOTIFY_ON_FAILURE(
+        vaapi_wrapper_->CreateContextAndSurfaces(
+            va_surface_format_, requested_pic_size_,
+            VaapiWrapper::SurfaceUsageHint::kVideoDecoder,
+            requested_num_surfaces, &va_surface_ids),
+        "Failed creating VA Surfaces", PLATFORM_FAILURE, );
   }
 
   available_va_surfaces_.assign(va_surface_ids.begin(), va_surface_ids.end());

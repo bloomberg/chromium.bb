@@ -40,7 +40,7 @@ Polymer({
      * The current filter applied to the cookie data list.
      */
     filter: {
-      observer: 'updateSiteList_',
+      observer: 'onFilterChanged_',
       notify: true,
       type: String,
     },
@@ -75,15 +75,6 @@ Polymer({
 
     /** @private */
     listBlurred_: Boolean,
-
-    /** @private */
-    enableRemovingAllThirdPartyCookies_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableRemovingAllThirdPartyCookies') &&
-            (this.sites.length > 0);
-      }
-    },
   },
 
   /** @private {settings.LocalDataBrowserProxy} */
@@ -98,8 +89,12 @@ Polymer({
   lastSelected_: null,
 
   /** @override */
-  ready: function() {
+  created: function() {
     this.browserProxy_ = settings.LocalDataBrowserProxyImpl.getInstance();
+  },
+
+  /** @override */
+  ready: function() {
     this.addWebUIListener(
         'on-tree-item-removed', this.updateSiteList_.bind(this));
   },
@@ -176,6 +171,18 @@ Polymer({
     const siteToSelect = this.sites[index].site.replace(/[.]/g, '\\.');
     const button = this.$$(`#siteItem_${siteToSelect}`).$$('.subpage-arrow');
     cr.ui.focusWithoutInk(assert(button));
+  },
+
+  /**
+   * @param {string} current
+   * @param {string|undefined} previous
+   * @private
+   */
+  onFilterChanged_: function(current, previous) {
+    if (previous === undefined) {
+      return;
+    }
+    this.updateSiteList_();
   },
 
   /**
@@ -286,5 +293,14 @@ Polymer({
         settings.routes.SITE_SETTINGS_DATA_DETAILS,
         new URLSearchParams('site=' + event.model.item.site));
     this.lastSelected_ = event.model;
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  showRemoveThirdPartyCookies_: function() {
+    return loadTimeData.getBoolean('enableRemovingAllThirdPartyCookies') &&
+        this.sites.length > 0 && this.filter.length == 0;
   },
 });

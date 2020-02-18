@@ -12,8 +12,8 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_file.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -72,18 +72,20 @@ void VirtualFileRequestServiceProvider::HandleReadRequest(
   dbus::MessageReader reader(method_call);
   if (!reader.PopString(&id) || !reader.PopInt64(&offset) ||
       !reader.PopInt64(&size) || !reader.PopFileDescriptor(&pipe_write_end)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, std::string()));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, std::string()));
     return;
   }
 
   arc::ArcFileSystemBridge* bridge = GetArcFileSystemBridge();
   if (bridge &&
       bridge->HandleReadRequest(id, offset, size, std::move(pipe_write_end))) {
-    response_sender.Run(dbus::Response::FromMethodCall(method_call));
+    std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
   } else {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED, std::string()));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
+                                                 std::string()));
   }
 }
 
@@ -93,17 +95,19 @@ void VirtualFileRequestServiceProvider::HandleIdReleased(
   std::string id;
   dbus::MessageReader reader(method_call);
   if (!reader.PopString(&id)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, std::string()));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, std::string()));
     return;
   }
 
   arc::ArcFileSystemBridge* bridge = GetArcFileSystemBridge();
   if (bridge && bridge->HandleIdReleased(id)) {
-    response_sender.Run(dbus::Response::FromMethodCall(method_call));
+    std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
   } else {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED, std::string()));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
+                                                 std::string()));
   }
 }
 

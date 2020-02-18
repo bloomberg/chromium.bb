@@ -77,14 +77,12 @@ gfx::Rect WebContentsViewChildFrame::GetViewBounds() const {
   return gfx::Rect();
 }
 
-void WebContentsViewChildFrame::CreateView(const gfx::Size& initial_size,
-                                           gfx::NativeView context) {
+void WebContentsViewChildFrame::CreateView(gfx::NativeView context) {
   // The WebContentsViewChildFrame does not have a native view.
 }
 
 RenderWidgetHostViewBase* WebContentsViewChildFrame::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host,
-    bool is_guest_view_hack) {
+    RenderWidgetHost* render_widget_host) {
   return RenderWidgetHostViewChildFrame::Create(render_widget_host);
 }
 

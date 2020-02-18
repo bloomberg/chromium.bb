@@ -16,6 +16,7 @@ import tempfile
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.signing.lib import signer
 
@@ -83,10 +84,10 @@ class ECSigner(signer.BaseSigner):
     """Returns True if the given ec.bin is RO signed"""
 
     # Check fmap for KEY_RO
-    fmap = cros_build_lib.RunCommand(['futility', 'dump_fmap', '-p', ec_image],
-                                     capture_output=True)
+    fmap = cros_build_lib.run(['futility', 'dump_fmap', '-p', ec_image],
+                              capture_output=True)
 
-    return re.search('KEY_RO', fmap.output) is not None
+    return b'KEY_RO' in fmap.stdout
 
   def Sign(self, keyset, input_name, output_name):
     """Sign EC image
@@ -114,23 +115,17 @@ class ECSigner(signer.BaseSigner):
       ec_rw_bin = os.path.join(temp_dir, 'EC_RW.bin')
       ec_rw_hash = os.path.join(temp_dir, 'EC_RW.hash')
       try:
-        cros_build_lib.RunCommand(['futility', 'sign',
-                                   '--type', 'rwsig',
-                                   '--prikey',
-                                   keyset.keys['key_ec_efs'].private,
-                                   ec_path],
-                                  cwd=temp_dir)
+        cros_build_lib.run(['futility', 'sign', '--type', 'rwsig', '--prikey',
+                            keyset.keys['key_ec_efs'].private, ec_path],
+                           cwd=temp_dir)
 
-        cros_build_lib.RunCommand(['openssl', 'dgst', '-sha256', '-binary',
-                                   ec_rw_bin],
-                                  log_stdout_to_file=ec_rw_hash,
-                                  cwd=temp_dir)
+        cros_build_lib.run(['openssl', 'dgst', '-sha256', '-binary', ec_rw_bin],
+                           log_stdout_to_file=ec_rw_hash, cwd=temp_dir)
 
-        cros_build_lib.RunCommand(['store_file_in_cbfs', bios_path,
-                                   ec_rw_bin, 'ecrw'])
+        cros_build_lib.run(['store_file_in_cbfs', bios_path, ec_rw_bin, 'ecrw'])
 
-        cros_build_lib.RunCommand(['store_file_in_cbfs', bios_path,
-                                   ec_rw_hash, 'ecrw.hash'])
+        cros_build_lib.run(['store_file_in_cbfs', bios_path, ec_rw_hash,
+                            'ecrw.hash'])
 
       except cros_build_lib.RunCommandError as err:
         logging.warning('Signing EC failed: %s', str(err))
@@ -338,7 +333,51 @@ class Shellball(object):
     """Execute shellball with given arguments."""
     cmd = [os.path.realpath(self.filename)]
     cmd += args
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.run(cmd)
+
+
+# TODO(vapier): Should switch this to image_lib.LoopbackPartitions or
+# signing.lib.imagefile as makes sense.
+def _MountImagePartition(image_file, part_id, destination, gpt_table=None,
+                         sudo=True, makedirs=True, mount_opts=('ro', ),
+                         skip_mtab=False):
+  """Mount a |partition| from |image_file| to |destination|.
+
+  If there is a GPT table (GetImageDiskPartitionInfo), it will be used for
+  start offset and size of the selected partition. Otherwise, the GPT will
+  be read again from |image_file|.
+
+  The mount option will be:
+
+    -o offset=XXX,sizelimit=YYY,(*mount_opts)
+
+  Args:
+    image_file: A path to the image file (chromiumos_base_image.bin).
+    part_id: A partition name or number.
+    destination: A path to the mount point.
+    gpt_table: A list of PartitionInfo objects. See
+      image_lib.GetImageDiskPartitionInfo.
+    sudo: Same as MountDir.
+    makedirs: Same as MountDir.
+    mount_opts: Same as MountDir.
+    skip_mtab: Same as MountDir.
+  """
+
+  if gpt_table is None:
+    gpt_table = image_lib.GetImageDiskPartitionInfo(image_file)
+
+  for part in gpt_table:
+    if part_id == part.name or part_id == part.number:
+      break
+  else:
+    part = None
+    raise ValueError('Partition number %s not found in the GPT %r.' %
+                     (part_id, gpt_table))
+
+  opts = ['loop', 'offset=%d' % part.start, 'sizelimit=%d' % part.size]
+  opts += mount_opts
+  osutils.MountDir(image_file, destination, sudo=sudo, makedirs=makedirs,
+                   mount_opts=opts, skip_mtab=skip_mtab)
 
 
 def ResignImageFirmware(image_file, keyset):
@@ -351,7 +390,7 @@ def ResignImageFirmware(image_file, keyset):
   Raises SignerFailedError
   """
   with osutils.TempDir() as rootfs_dir:
-    with osutils.MountImagePartition(image_file, 'ROOT-A', rootfs_dir):
+    with _MountImagePartition(image_file, 'ROOT-A', rootfs_dir):
       sb_file = os.path.join(rootfs_dir, 'usr/sbin/chromeos-firmware')
       if os.path.exists(sb_file):
         logging.info('Found firmware, signing')
@@ -399,13 +438,13 @@ def WriteSignerNotes(keyset, outfile):
     outfile: file object that signer notes are written to.
   """
   recovery_key = keyset.keys['recovery_key']
-  outfile.write('Signed with keyset in %s\n' % recovery_key.keydir)
-  outfile.write('recovery: %s\n' % recovery_key.GetSHA1sum())
+  outfile.write(u'Signed with keyset in %s\n' % recovery_key.keydir)
+  outfile.write(u'recovery: %s\n' % recovery_key.GetSHA1sum())
 
   root_keys = keyset.GetRootOfTrustKeys('root_key')
   if 'root_key' in root_keys and len(root_keys) == 1:
-    outfile.write('root: %s\n' % (root_keys['root_key'].GetSHA1sum()))
+    outfile.write(u'root: %s\n' % (root_keys['root_key'].GetSHA1sum()))
   else:
-    outfile.write("List sha1sum of all loem/model's signatures:\n")
+    outfile.write(u"List sha1sum of all loem/model's signatures:\n")
     for key_id, key in root_keys.items():
-      outfile.write('%s: %s\n' % (key_id, key.GetSHA1sum()))
+      outfile.write(u'%s: %s\n' % (key_id, key.GetSHA1sum()))

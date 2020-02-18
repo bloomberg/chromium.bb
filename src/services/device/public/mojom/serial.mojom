@@ -95,11 +95,11 @@ interface SerialPortManager {
   GetDevices() => (array<SerialPortInfo> devices);
 
   // Creates a SerialPort instance attached to the port represented by |token|.
-  // When the pipe passed in |port_request| is closed the optional pipe passed
+  // When the pipe passed in |port_receiver| is closed the optional pipe passed
   // in |watcher| will also be closed.
   GetPort(mojo_base.mojom.UnguessableToken token,
-          SerialPort& port_request,
-          SerialPortConnectionWatcher? watcher);
+          pending_receiver<SerialPort> port_receiver,
+          pending_remote<SerialPortConnectionWatcher>? watcher);
 };
 
 // Performs asynchronous I/O on serial devices.
@@ -108,7 +108,7 @@ interface SerialPort {
   Open(SerialConnectionOptions options,
        handle<data_pipe_consumer> in_stream,
        handle<data_pipe_producer> out_stream,
-       SerialPortClient client) => (bool success);
+       pending_remote<SerialPortClient> client) => (bool success);
 
   // Try to clear existing send error and reconnect the data pipe for send.
   // This is supposed to be called after SerialPortClient#OnSendError is

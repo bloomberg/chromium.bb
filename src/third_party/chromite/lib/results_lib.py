@@ -285,9 +285,8 @@ class _Results(object):
       else:
         status = 'FAIL'
         if isinstance(result, cros_build_lib.RunCommandError):
-          # If there was a RunCommand error, give just the command that
-          # failed, not its full argument list, since those are usually
-          # too long.
+          # If there was a run error, give just the command that failed, not
+          # its full argument list, since those are usually too long.
           details = ' in %s' % result.result.cmd[0]
         elif isinstance(result, failures_lib.BuildScriptFailure):
           # BuildScriptFailure errors publish a 'short' name of the

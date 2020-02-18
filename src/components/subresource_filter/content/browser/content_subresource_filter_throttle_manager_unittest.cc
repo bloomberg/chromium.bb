@@ -20,6 +20,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/subframe_navigation_test_utils.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
@@ -38,6 +39,8 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -63,13 +66,13 @@ enum PageActivationNotificationTiming {
 
 class FakeSubresourceFilterAgent : public mojom::SubresourceFilterAgent {
  public:
-  FakeSubresourceFilterAgent() : binding_(this) {}
+  FakeSubresourceFilterAgent() = default;
   ~FakeSubresourceFilterAgent() override = default;
 
-  void OnSubresourceFilterAgentRequest(
+  void OnSubresourceFilterAgentReceiver(
       mojo::ScopedInterfaceEndpointHandle handle) {
-    binding_.Bind(
-        mojo::AssociatedInterfaceRequest<mojom::SubresourceFilterAgent>(
+    receiver_.Bind(
+        mojo::PendingAssociatedReceiver<mojom::SubresourceFilterAgent>(
             std::move(handle)));
   }
 
@@ -98,7 +101,7 @@ class FakeSubresourceFilterAgent : public mojom::SubresourceFilterAgent {
  private:
   mojom::ActivationStatePtr last_activation_;
   bool is_ad_subframe_ = false;
-  mojo::AssociatedBinding<mojom::SubresourceFilterAgent> binding_;
+  mojo::AssociatedReceiver<mojom::SubresourceFilterAgent> receiver_{this};
 };
 
 // Simple throttle that sends page-level activation to the manager for a
@@ -293,7 +296,7 @@ class ContentSubresourceFilterThrottleManagerTest
     host->GetRemoteAssociatedInterfaces()->OverrideBinderForTesting(
         mojom::SubresourceFilterAgent::Name_,
         base::BindRepeating(
-            &FakeSubresourceFilterAgent::OnSubresourceFilterAgentRequest,
+            &FakeSubresourceFilterAgent::OnSubresourceFilterAgentReceiver,
             base::Unretained(new_agent.get())));
     agent_map_[host] = std::move(new_agent);
   }
@@ -331,7 +334,7 @@ class ContentSubresourceFilterThrottleManagerTest
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterThrottleManagerTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ContentSubresourceFilterThrottleManagerTest,
                          ::testing::Values(WILL_START_REQUEST,
                                            WILL_PROCESS_RESPONSE));
@@ -688,7 +691,14 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation) {
 }
 
 // Ensure activation propagates through whitelisted documents.
-TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation2) {
+// crbug.com/1010000: crashes on win
+#if defined(OS_WIN)
+#define MAYBE_ActivationPropagation2 DISABLED_ActivationPropagation2
+#else
+#define MAYBE_ActivationPropagation2 ActivationPropagation2
+#endif
+TEST_P(ContentSubresourceFilterThrottleManagerTest,
+       MAYBE_ActivationPropagation2) {
   NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
 

@@ -180,21 +180,12 @@ int XGetModifiers() {
   return modifiers;
 }
 
-// The time to wait for the target to respond after the user has released the
-// mouse button before ending the move loop.
-const int kEndMoveLoopTimeoutMs = 1000;
-
-// The time to wait since sending the last XdndPosition message before
-// reprocessing the most recent mouse move event in case that the window
-// stacking order has changed and |source_current_window_| needs to be updated.
-const int kRepeatMouseMoveTimeoutMs = 350;
-
 // The minimum alpha before we declare a pixel transparent when searching in
 // our source image.
-const uint32_t kMinAlpha = 32;
+constexpr uint32_t kMinAlpha = 32;
 
 // |drag_widget_|'s opacity.
-const float kDragWidgetOpacity = .75f;
+constexpr float kDragWidgetOpacity = .75f;
 
 static base::LazyInstance<
     std::map<::Window, views::DesktopDragDropClientAuraX11*> >::Leaky
@@ -683,22 +674,22 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
           std::make_unique<ui::OSExchangeDataProviderAuraX11>(
               xwindow_, target_current_context_->fetched_targets())));
 
-      ui::DropTargetEvent event(*data.get(),
-                                gfx::PointF(target_window_location_),
-                                gfx::PointF(target_window_root_location_),
-                                target_current_context_->GetDragOperation());
+      ui::DropTargetEvent drop_event(
+          *data.get(), gfx::PointF(target_window_location_),
+          gfx::PointF(target_window_root_location_),
+          target_current_context_->GetDragOperation());
       if (target_current_context_->source_client()) {
-        event.set_flags(target_current_context_->source_client()
-                            ->current_modifier_state());
+        drop_event.set_flags(
+            target_current_context_->source_client()->current_modifier_state());
       } else {
-        event.set_flags(XGetModifiers());
+        drop_event.set_flags(XGetModifiers());
       }
 
       if (!IsDragDropInProgress()) {
         UMA_HISTOGRAM_COUNTS_1M("Event.DragDrop.ExternalOriginDrop", 1);
       }
 
-      drag_operation = delegate->OnPerformDrop(event, std::move(data));
+      drag_operation = delegate->OnPerformDrop(drop_event, std::move(data));
     }
 
     target_window_->RemoveObserver(this);
@@ -1021,11 +1012,8 @@ void DesktopDragDropClientAuraX11::ProcessMouseMove(
 }
 
 void DesktopDragDropClientAuraX11::StartEndMoveLoopTimer() {
-  end_move_loop_timer_.Start(FROM_HERE,
-                             base::TimeDelta::FromMilliseconds(
-                                 kEndMoveLoopTimeoutMs),
-                             this,
-                             &DesktopDragDropClientAuraX11::EndMoveLoop);
+  end_move_loop_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1000),
+                             this, &DesktopDragDropClientAuraX11::EndMoveLoop);
 }
 
 void DesktopDragDropClientAuraX11::EndMoveLoop() {
@@ -1239,7 +1227,7 @@ void DesktopDragDropClientAuraX11::SendXdndPosition(
   // the Xdnd protocol both recommend that drag events should be sent
   // periodically.
   repeat_mouse_move_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kRepeatMouseMoveTimeoutMs),
+      FROM_HERE, base::TimeDelta::FromMilliseconds(350),
       base::BindOnce(&DesktopDragDropClientAuraX11::ProcessMouseMove,
                      base::Unretained(this), screen_point, event_time));
 }
@@ -1263,9 +1251,9 @@ void DesktopDragDropClientAuraX11::CreateDragWidget(
   Widget* widget = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_DRAG);
   if (ui::IsCompositingManagerPresent())
-    params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
   else
-    params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+    params.opacity = Widget::InitParams::WindowOpacity::kOpaque;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.accept_events = false;
 
@@ -1275,7 +1263,7 @@ void DesktopDragDropClientAuraX11::CreateDragWidget(
   widget->set_focus_on_creation(false);
   widget->set_frame_type(Widget::FrameType::kForceNative);
   widget->Init(std::move(params));
-  if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW)
+  if (params.opacity == Widget::InitParams::WindowOpacity::kTranslucent)
     widget->SetOpacity(kDragWidgetOpacity);
   widget->GetNativeWindow()->SetName("DragWindow");
 

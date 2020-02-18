@@ -4,9 +4,11 @@
 
 #include "ash/system/unified/unified_system_tray_bubble.h"
 
-#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
@@ -17,6 +19,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/wm/core/window_util.h"
@@ -69,8 +72,9 @@ class ContainerView : public views::View {
 
 UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
                                                  bool show_by_click)
-    : controller_(
-          std::make_unique<UnifiedSystemTrayController>(tray->model(), this)),
+    : controller_(std::make_unique<UnifiedSystemTrayController>(tray->model(),
+                                                                this,
+                                                                tray)),
       tray_(tray) {
   if (show_by_click)
     time_shown_by_click_ = base::TimeTicks::Now();
@@ -84,11 +88,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   init_params.anchor_view = nullptr;
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = tray->shelf()->GetSystemTrayAnchorRect();
-  // Decrease bottom and right insets to compensate for the adjustment of
-  // the respective edges in Shelf::GetSystemTrayAnchorRect().
-  init_params.insets = gfx::Insets(
-      kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding - 1,
-      kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
+  init_params.insets = GetInsets();
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   init_params.show_by_click = show_by_click;
@@ -102,6 +102,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   int max_height = CalculateMaxHeight();
   unified_view_->SetMaxHeight(max_height);
   bubble_view_->SetMaxHeight(max_height);
+  controller_->ResetToCollapsedIfRequired();
   bubble_view_->AddChildView(new ContainerView(unified_view_));
 
   bubble_view_->set_color(SK_ColorTRANSPARENT);
@@ -113,7 +114,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
 
-  if (app_list_features::IsBackgroundBlurEnabled()) {
+  if (features::IsBackgroundBlurEnabled()) {
     bubble_widget_->client_view()->layer()->SetBackgroundBlur(
         kUnifiedMenuBackgroundBlur);
   }
@@ -164,6 +165,15 @@ void UnifiedSystemTrayBubble::CloseNow() {
   bubble_widget_ = nullptr;
 }
 
+void UnifiedSystemTrayBubble::EnsureCollapsed() {
+  if (!bubble_widget_)
+    return;
+
+  DCHECK(unified_view_);
+  DCHECK(controller_);
+  controller_->EnsureCollapsed();
+}
+
 void UnifiedSystemTrayBubble::EnsureExpanded() {
   if (!bubble_widget_)
     return;
@@ -173,6 +183,14 @@ void UnifiedSystemTrayBubble::EnsureExpanded() {
   controller_->EnsureExpanded();
 }
 
+void UnifiedSystemTrayBubble::CollapseMessageCenter() {
+  tray_->CollapseMessageCenter();
+}
+
+void UnifiedSystemTrayBubble::ExpandMessageCenter() {
+  tray_->ExpandMessageCenter();
+}
+
 void UnifiedSystemTrayBubble::ShowAudioDetailedView() {
   if (!bubble_widget_)
     return;
@@ -180,6 +198,15 @@ void UnifiedSystemTrayBubble::ShowAudioDetailedView() {
   DCHECK(unified_view_);
   DCHECK(controller_);
   controller_->ShowAudioDetailedView();
+}
+
+void UnifiedSystemTrayBubble::ShowNetworkDetailedView(bool force) {
+  if (!bubble_widget_)
+    return;
+
+  DCHECK(unified_view_);
+  DCHECK(controller_);
+  controller_->ShowNetworkDetailedView(force);
 }
 
 void UnifiedSystemTrayBubble::UpdateBubble() {
@@ -252,6 +279,21 @@ int UnifiedSystemTrayBubble::CalculateMaxHeight() const {
   return free_space_height_above_anchor - kUnifiedMenuPadding * 2;
 }
 
+bool UnifiedSystemTrayBubble::FocusOut(bool reverse) {
+  return tray_->FocusMessageCenter(reverse);
+}
+
+void UnifiedSystemTrayBubble::FocusEntered(bool reverse) {
+  unified_view_->FocusEntered(reverse);
+}
+
+void UnifiedSystemTrayBubble::OnMessageCenterActivated() {
+  // When the message center is activated, we no longer need to reroute key
+  // events to this bubble. Otherwise, we interfere with notifications that may
+  // require key input like inline replies. See crbug.com/1040738.
+  bubble_view_->StopReroutingEvents();
+}
+
 void UnifiedSystemTrayBubble::OnDisplayConfigurationChanged() {
   UpdateBubbleBounds();
 }
@@ -266,7 +308,7 @@ void UnifiedSystemTrayBubble::OnWidgetDestroying(views::Widget* widget) {
 void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
                                                 aura::Window* gained_active,
                                                 aura::Window* lost_active) {
-  if (!gained_active)
+  if (!gained_active || !bubble_widget_)
     return;
 
   // Don't close the bubble if a transient child is gaining or losing
@@ -277,6 +319,21 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
       (lost_active && ::wm::HasTransientAncestor(
                           lost_active, bubble_widget_->GetNativeWindow()))) {
     return;
+  }
+
+  // Don't close the bubble if the message center is gaining or losing
+  // activation.
+  if (features::IsUnifiedMessageCenterRefactorEnabled() &&
+      tray_->IsMessageCenterBubbleShown()) {
+    views::Widget* message_center_widget =
+        tray_->message_center_bubble()->GetBubbleWidget();
+    if (message_center_widget ==
+            views::Widget::GetWidgetForNativeView(gained_active) ||
+        (lost_active &&
+         message_center_widget ==
+             views::Widget::GetWidgetForNativeView(lost_active))) {
+      return;
+    }
   }
 
   tray_->CloseBubble();
@@ -312,10 +369,13 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
   bubble_view_->SetMaxHeight(max_height);
   bubble_view_->ChangeAnchorAlignment(tray_->shelf()->alignment());
   bubble_view_->ChangeAnchorRect(tray_->shelf()->GetSystemTrayAnchorRect());
+
+  if (tray_->IsMessageCenterBubbleShown())
+    tray_->message_center_bubble()->UpdatePosition();
 }
 
 void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {
-  if (!app_list_features::IsBackgroundBlurEnabled())
+  if (!features::IsBackgroundBlurEnabled())
     return;
 
   if (blur_layer_)
@@ -342,7 +402,7 @@ void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {
 }
 
 void UnifiedSystemTrayBubble::DestroyBlurLayerForAnimation() {
-  if (!app_list_features::IsBackgroundBlurEnabled())
+  if (!features::IsBackgroundBlurEnabled())
     return;
 
   if (!blur_layer_)
@@ -357,6 +417,28 @@ void UnifiedSystemTrayBubble::DestroyBlurLayerForAnimation() {
 void UnifiedSystemTrayBubble::SetFrameVisible(bool visible) {
   DCHECK(bubble_widget_);
   bubble_widget_->non_client_view()->frame_view()->SetVisible(visible);
+}
+
+gfx::Insets UnifiedSystemTrayBubble::GetInsets() {
+  // Decrease bottom and right insets to compensate for the adjustment of
+  // the respective edges in Shelf::GetSystemTrayAnchorRect().
+  gfx::Insets insets = gfx::Insets(
+      kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding - 1,
+      kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
+
+  // A special case exists on the homescreen in tablet mode in which the padding
+  // is already applied in the status area. We should not set the padding again
+  // for the bubble. See crbug.com/1011924.
+  bool in_tablet_mode = Shell::Get()->tablet_mode_controller() &&
+                        Shell::Get()->tablet_mode_controller()->InTabletMode();
+  bool is_bottom_alignment =
+      tray_->shelf()->alignment() == ShelfAlignment::kBottom;
+  if (chromeos::switches::ShouldShowShelfHotseat() && in_tablet_mode &&
+      !ShelfConfig::Get()->is_in_app() && is_bottom_alignment) {
+    insets.set_bottom(0);
+  }
+
+  return insets;
 }
 
 }  // namespace ash

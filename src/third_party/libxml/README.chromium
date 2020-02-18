@@ -1,6 +1,6 @@
 Name: libxml
 URL: http://xmlsoft.org
-Version: 6a6fb8560e75c3b9c15744ef20df9fce9fcd8c6e
+Version: a7fe7ee45938c53a8dd028dd40baa461191a2fd2
 License: MIT
 License File: src/Copyright
 Security Critical: yes
@@ -10,8 +10,7 @@ Description:
 libxml2 from libxml.org.
 
 Modifications:
-- Add helper classes in chromium/libxml_utils.cc and
-  chromium/include/libxml/libxml_utils.h.
+- Add helper classes in the chromium/ subdirectory.
 - Applied these patches in chromium/*.patch:
   chromium-issue-599427.patch: workaround for VS 2015 Update 2 code-gen bug
   chromium-issue-628581.patch: See https://crbug.com/628581#c18

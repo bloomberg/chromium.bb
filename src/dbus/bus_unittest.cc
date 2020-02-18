@@ -130,7 +130,7 @@ TEST(BusTest, GetObjectProxyIgnoreUnknownService) {
 }
 
 TEST(BusTest, RemoveObjectProxy) {
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   // Start the D-Bus thread.
   base::Thread::Options thread_options;
@@ -318,8 +318,8 @@ TEST(BusTest, DoubleAddAndRemoveMatch) {
 }
 
 TEST(BusTest, ListenForServiceOwnerChange) {
-  base::test::TaskEnvironment task_environment(
-      base::test::TaskEnvironment::MainThreadType::IO);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
 
   RunLoopWithExpectedCount run_loop_state;
 
@@ -330,11 +330,9 @@ TEST(BusTest, ListenForServiceOwnerChange) {
   // Add a listener.
   std::string service_owner1;
   int num_of_owner_changes1 = 0;
-  Bus::GetServiceOwnerCallback callback1 =
-      base::Bind(&OnServiceOwnerChanged,
-                 &run_loop_state,
-                 &service_owner1,
-                 &num_of_owner_changes1);
+  Bus::ServiceOwnerChangeCallback callback1 =
+      base::BindRepeating(&OnServiceOwnerChanged, &run_loop_state,
+                          &service_owner1, &num_of_owner_changes1);
   bus->ListenForServiceOwnerChange("org.chromium.TestService", callback1);
   // This should be a no-op.
   bus->ListenForServiceOwnerChange("org.chromium.TestService", callback1);
@@ -367,11 +365,9 @@ TEST(BusTest, ListenForServiceOwnerChange) {
   // Add a second listener.
   std::string service_owner2;
   int num_of_owner_changes2 = 0;
-  Bus::GetServiceOwnerCallback callback2 =
-      base::Bind(&OnServiceOwnerChanged,
-                 &run_loop_state,
-                 &service_owner2,
-                 &num_of_owner_changes2);
+  Bus::ServiceOwnerChangeCallback callback2 =
+      base::BindRepeating(&OnServiceOwnerChanged, &run_loop_state,
+                          &service_owner2, &num_of_owner_changes2);
   bus->ListenForServiceOwnerChange("org.chromium.TestService", callback2);
   base::RunLoop().RunUntilIdle();
 

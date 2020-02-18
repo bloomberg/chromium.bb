@@ -11,15 +11,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/enterprise_reporting/report_request_definition.h"
 #include "net/base/backoff_entry.h"
 
 namespace base {
 class OneShotTimer;
 }  // namespace base
-
-namespace enterprise_management {
-class ChromeDesktopReportRequest;
-}  // namespace enterprise_management
 
 namespace policy {
 class CloudPolicyClient;
@@ -48,7 +45,8 @@ class ReportUploader {
                        // invalid dm token.
   };
 
-  using Requests = std::queue<std::unique_ptr<em::ChromeDesktopReportRequest>>;
+  using ReportRequest = definition::ReportRequest;
+  using ReportRequests = std::queue<std::unique_ptr<ReportRequest>>;
   // A callback to notify the upload result.
   using ReportCallback = base::OnceCallback<void(ReportStatus status)>;
 
@@ -58,7 +56,8 @@ class ReportUploader {
 
   // Sets a list of requests and upload it. Request will be uploaded one after
   // another.
-  virtual void SetRequestAndUpload(Requests requests, ReportCallback callback);
+  virtual void SetRequestAndUpload(ReportRequests requests,
+                                   ReportCallback callback);
 
  private:
   // Uploads the first request in the queue.
@@ -80,7 +79,7 @@ class ReportUploader {
 
   policy::CloudPolicyClient* client_;
   ReportCallback callback_;
-  Requests requests_;
+  ReportRequests requests_;
 
   net::BackoffEntry backoff_entry_;
   base::OneShotTimer backoff_request_timer_;
@@ -88,6 +87,16 @@ class ReportUploader {
 
   base::WeakPtrFactory<ReportUploader> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ReportUploader);
+};
+
+enum ReportResponseMetricsStatus {
+  kSuccess = 0,
+  kNetworkError = 1,
+  kTemporaryServerError = 2,
+  kDDSConcurrencyError = 3,
+  kRequestTooLargeError = 4,
+  kOtherError = 5,
+  kMaxValue = kOtherError,
 };
 
 }  // namespace enterprise_reporting

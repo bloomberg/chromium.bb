@@ -74,11 +74,10 @@ def UninstallWebViewUpdates(device):
 def CheckWebViewIsUninstalled(device):
   """Throws if WebView is still installed."""
   for webview_package in WEBVIEW_PACKAGES:
-    paths = device.GetApplicationPaths(webview_package)
-    if paths:
+    if device.IsApplicationInstalled(webview_package):
       raise device_errors.CommandFailedError(
-          '{} is still installed on the device at {}'.format(
-              webview_package, paths), device)
+          '{} is still installed on the device'.format(webview_package),
+          device)
 
 
 def RemovePreinstalledWebViews(device):
@@ -87,7 +86,7 @@ def RemovePreinstalledWebViews(device):
   try:
     UninstallWebViewSystemImages(device)
     CheckWebViewIsUninstalled(device)
-  except device_errors.CommandFailedError as e:
+  except device_errors.CommandFailedError:
     if device.adb.is_emulator:
       # Point the user to documentation, since there's a good chance they can
       # workaround this. Use lots of newlines to make sure this message doesn't
@@ -96,7 +95,7 @@ def RemovePreinstalledWebViews(device):
                     'See https://chromium.googlesource.com/chromium/src/+/'
                     'master/docs/android_emulator.md#writable-system-partition'
                     '\n')
-    raise e
+    raise
   device.SetWebViewFallbackLogic(False)  # Allow standalone WebView on N+
 
 

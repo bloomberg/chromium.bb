@@ -32,16 +32,25 @@ base::Optional<Printer> CupsProxyServiceDelegateImpl::GetPrinter(
 }
 
 // TODO(crbug.com/945409): Incorporate printer limit workaround.
-std::vector<Printer> CupsProxyServiceDelegateImpl::GetPrinters() {
+std::vector<Printer> CupsProxyServiceDelegateImpl::GetPrinters(
+    PrinterClass printer_class) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(crbug.com/945409): Include saved + enterprise (+ephemeral?).
-  return printers_manager_->GetPrinters(PrinterClass::kSaved);
+  return printers_manager_->GetPrinters(printer_class);
 }
 
 bool CupsProxyServiceDelegateImpl::IsPrinterInstalled(const Printer& printer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return printers_manager_->IsPrinterInstalled(printer);
+}
+
+// Expects |printer| is known by the printers_manager_.
+void CupsProxyServiceDelegateImpl::PrinterInstalled(const Printer& printer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(GetPrinter(printer.id()));
+  printers_manager_->PrinterInstalled(
+      printer, false /* unused */, PrinterSetupSource::kMaxValue /* unused */);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

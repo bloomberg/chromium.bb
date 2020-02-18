@@ -13,20 +13,21 @@ import datetime
 import errno
 import fnmatch
 import getpass
-import itertools
 import hashlib
 import os
 import re
 import shutil
 import subprocess
 import tempfile
-import urlparse
+
+import six
+from six.moves import urllib
 
 from chromite.lib import constants
 from chromite.lib import cache
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
-from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import retry_stats
@@ -34,11 +35,6 @@ from chromite.lib import retry_util
 from chromite.lib import signals
 from chromite.lib import timeout_util
 
-# TODO(crbug.com/765864): Remove this import guard when we have a wrapper
-try:
-  from infra_libs import ts_mon
-except (ImportError, RuntimeError):
-  ts_mon = metrics.MockMetric()
 
 # This bucket has the allAuthenticatedUsers:READER ACL.
 AUTHENTICATION_BUCKET = 'gs://chromeos-authentication-bucket/'
@@ -170,7 +166,7 @@ class GSContextException(Exception):
   """Base exception for all exceptions thrown by GSContext."""
 
 
-# Since the underlying code uses RunCommand, some callers might be trying to
+# Since the underlying code uses run, some callers might be trying to
 # catch cros_build_lib.RunCommandError themselves.  Extend that class so that
 # code continues to work.
 class GSCommandError(GSContextException, cros_build_lib.RunCommandError):
@@ -215,44 +211,9 @@ GSListResult = collections.namedtuple(
     ('url', 'creation_time', 'content_length', 'generation', 'metageneration'))
 
 
-def NamedTupleWithDefaults(name, fields, field_defaults=None):
-  """Returns a subclass of namedtuple which fills in some default fields.
-
-  Args:
-    name: The name of the class to return.
-    fields: The fields of the namedtuple
-    field_defaults: A dict mapping field names to default values.
-  """
-  field_defaults = field_defaults or {}
-  to_wrap = collections.namedtuple(name, fields)
-
-  # pylint: disable=slots-on-old-class,no-init
-  class DefaultWrapped(to_wrap):
-    """A namedtuple with some defaults"""
-    __slots__ = ()
-    def __new__(cls, *args, **kwargs):
-      # fill in the fields that weren't used
-      for k in fields[len(args):]:
-        try:
-          if k not in kwargs:
-            kwargs[k] = field_defaults[k]
-        except KeyError:
-          raise TypeError(
-              'Field %s is not optional when constructiong %s', k, name)
-      return to_wrap.__new__(cls, *args, **kwargs)
-
-  DefaultWrapped.__name__ = name
-
-  return DefaultWrapped
-
-
-_ErrorDetails = NamedTupleWithDefaults(
+ErrorDetails = cros_collections.Collection(
     'ErrorDetails',
-    ('type', 'message_pattern', 'retriable', 'exception'),
-    field_defaults={
-        'message_pattern': '',
-        'exception': None,
-    })
+    type=None, message_pattern='', retriable=None, exception=None)
 
 
 class GSCounter(object):
@@ -363,48 +324,49 @@ class GSContext(object):
   # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
   DEFAULT_SLEEP_TIME = 60
 
-  GSUTIL_VERSION = '4.41'
+  GSUTIL_VERSION = '4.46'
   GSUTIL_TAR = 'gsutil_%s.tar.gz' % GSUTIL_VERSION
   GSUTIL_URL = (PUBLIC_BASE_HTTPS_URL +
                 'chromeos-mirror/gentoo/distfiles/%s' % GSUTIL_TAR)
   GSUTIL_API_SELECTOR = 'JSON'
 
-  RESUMABLE_UPLOAD_ERROR = ('Too many resumable upload attempts failed without '
-                            'progress')
-  RESUMABLE_DOWNLOAD_ERROR = ('Too many resumable download attempts failed '
-                              'without progress')
+  RESUMABLE_UPLOAD_ERROR = (b'Too many resumable upload attempts failed '
+                            b'without progress')
+  RESUMABLE_DOWNLOAD_ERROR = (b'Too many resumable download attempts failed '
+                              b'without progress')
 
   # TODO: Below is a list of known flaky errors that we should
   # retry. The list needs to be extended.
   RESUMABLE_ERROR_MESSAGE = (
       RESUMABLE_DOWNLOAD_ERROR,
       RESUMABLE_UPLOAD_ERROR,
-      'ResumableUploadException',
-      'ResumableUploadAbortException',
-      'ResumableDownloadException',
-      'ssl.SSLError: The read operation timed out',
+      b'ResumableUploadException',
+      b'ResumableUploadAbortException',
+      b'ResumableDownloadException',
+      b'ssl.SSLError: The read operation timed out',
       # TODO: Error messages may change in different library versions,
       # use regexes to match resumable error messages.
-      "ssl.SSLError: ('The read operation timed out',)",
-      'ssl.SSLError: _ssl.c:495: The handshake operation timed out',
-      'Unable to find the server',
-      "doesn't match cloud-supplied digest",
-      'ssl.SSLError: [Errno 8]',
-      'EOF occurred in violation of protocol',
+      b"ssl.SSLError: ('The read operation timed out',)",
+      b'ssl.SSLError: _ssl.c:495: The handshake operation timed out',
+      b'Unable to find the server',
+      b"doesn't match cloud-supplied digest",
+      b'ssl.SSLError: [Errno 8]',
+      b'EOF occurred in violation of protocol',
       # TODO(nxia): crbug.com/775330 narrow down the criteria for retrying
-      'AccessDeniedException',
+      b'AccessDeniedException',
   )
 
   # We have seen flaky errors with 5xx return codes
   # See b/17376491 for the "JSON decoding" error.
   # We have seen transient Oauth 2.0 credential errors (crbug.com/414345).
   TRANSIENT_ERROR_MESSAGE = (
-      'ServiceException: 5',
-      'Failure: No JSON object could be decoded',
-      'Oauth 2.0 User Account',
-      'InvalidAccessKeyId',
-      'socket.error: [Errno 104] Connection reset by peer',
-      'Received bad request from server',
+      b'ServiceException: 5',
+      b'Failure: No JSON object could be decoded',
+      b'Oauth 2.0 User Account',
+      b'InvalidAccessKeyId',
+      b'socket.error: [Errno 104] Connection reset by peer',
+      b'Received bad request from server',
+      b"can't start new thread",
   )
 
   @classmethod
@@ -459,8 +421,7 @@ class GSContext(object):
       # non-root, just flag it and return.
       if e.errno == errno.EACCES:
         logging.debug('Skipping gsutil crcmod compile due to permissions')
-        cros_build_lib.SudoRunCommand(['touch', flag],
-                                      debug_level=logging.DEBUG)
+        cros_build_lib.sudo_run(['touch', flag], debug_level=logging.DEBUG)
         return False
       else:
         raise
@@ -481,7 +442,7 @@ class GSContext(object):
 
     logging.debug('Attempting to compile local crcmod for gsutil')
     with osutils.TempDir(prefix='chromite.gsutil.crcmod') as tempdir:
-      result = cros_build_lib.RunCommand(
+      result = cros_build_lib.run(
           ['python', './setup.py', 'build', '--build-base', tempdir,
            '--build-platlib', tempdir],
           cwd=src_root, capture_output=True, error_code_ok=True,
@@ -543,7 +504,7 @@ class GSContext(object):
     # Set HTTP proxy if environment variable http_proxy is set
     # (crbug.com/325032).
     if 'http_proxy' in os.environ:
-      url = urlparse.urlparse(os.environ['http_proxy'])
+      url = urllib.parse.urlparse(os.environ['http_proxy'])
       if not url.hostname or (not url.username and url.password):
         logging.warning('GS_ERROR: Ignoring env variable http_proxy because it '
                         'is not properly set: %s', os.environ['http_proxy'])
@@ -570,14 +531,6 @@ class GSContext(object):
     self.dry_run = dry_run
     self.retries = self.DEFAULT_RETRIES if retries is None else int(retries)
     self._sleep_time = self.DEFAULT_SLEEP_TIME if sleep is None else int(sleep)
-
-    # TODO(phobbs) make a class level constant after crbug.com/755415 is fixed.
-    self._error_metric = metrics.Counter(
-        constants.MON_GS_ERROR,
-        description='Errors encountered with Google Storage',
-        field_spec=[ts_mon.StringField('type'),
-                    ts_mon.StringField('message_pattern'),
-                    ts_mon.BooleanField('retriable')])
 
     if init_boto and not dry_run:
       # We can't really expect gsutil to even be present in dry_run mode.
@@ -655,6 +608,7 @@ class GSContext(object):
   def Cat(self, path, **kwargs):
     """Returns the contents of a GS object."""
     kwargs.setdefault('redirect_stdout', True)
+    kwargs.setdefault('encoding', None)
     if not PathIsGs(path):
       # gsutil doesn't support cat-ting a local path, so read it ourselves.
       try:
@@ -682,7 +636,7 @@ class GSContext(object):
         at a time. The default value is 1 MB.
 
     Yields:
-      The file content, chunk by chunk.
+      The file content, chunk by chunk, as bytes.
     """
     assert PathIsGs(path)
 
@@ -740,7 +694,7 @@ class GSContext(object):
     Returns:
       The list of potential tracker filenames.
     """
-    dest = urlparse.urlsplit(dest_path)
+    dest = urllib.parse.urlsplit(dest_path)
     filenames = []
     if dest.scheme == 'gs':
       prefix = 'upload'
@@ -772,11 +726,6 @@ class GSContext(object):
          exception type based on the contents of |e|.
     """
     error_details = self._MatchKnownError(e)
-    self._error_metric.increment(fields={
-        'type': error_details.type,
-        'message_pattern': error_details.message_pattern,
-        'retriable': error_details.retriable,
-    })
     if error_details.exception:
       raise error_details.exception
     return error_details.retriable
@@ -788,39 +737,46 @@ class GSContext(object):
       e: Exception object to filter.
 
     Returns:
-      An _ErrorDetails instance with details about the message pattern found.
+      An ErrorDetails instance with details about the message pattern found.
     """
     if not retry_util.ShouldRetryCommandCommon(e):
       if not isinstance(e, cros_build_lib.RunCommandError):
         error_type = 'unknown'
       else:
         error_type = 'failed_to_launch'
-      return _ErrorDetails(error_type, retriable=False)
+      return ErrorDetails(type=error_type, retriable=False)
 
     # e is guaranteed by above filter to be a RunCommandError
     if e.result.returncode < 0:
       sig_name = signals.StrSignal(-e.result.returncode)
       logging.info('Child process received signal %d; not retrying.', sig_name)
-      return _ErrorDetails('received_signal', sig_name, False)
+      return ErrorDetails(type='received_signal', message_pattern=sig_name,
+                          retriable=False)
 
     error = e.result.error
     if error:
+      # Since the captured error will use the encoding the user requested,
+      # normalize to bytes for testing below.
+      if isinstance(error, six.text_type):
+        error = error.encode('utf-8')
+
       # gsutil usually prints PreconditionException when a precondition fails.
       # It may also print "ResumableUploadAbortException: 412 Precondition
       # Failed", so the logic needs to be a little more general.
-      if 'PreconditionException' in error or '412 Precondition Failed' in error:
-        return _ErrorDetails('precondition_exception', retriable=False,
-                             exception=GSContextPreconditionFailed(e))
+      if (b'PreconditionException' in error or
+          b'412 Precondition Failed' in error):
+        return ErrorDetails(type='precondition_exception', retriable=False,
+                            exception=GSContextPreconditionFailed(e))
 
       # If the file does not exist, one of the following errors occurs. The
       # "stat" command leaves off the "CommandException: " prefix, but it also
       # outputs to stdout instead of stderr and so will not be caught here
       # regardless.
-      if ('CommandException: No URLs matched' in error or
-          'NotFoundException:' in error or
-          'One or more URLs matched no objects' in error):
-        return _ErrorDetails('no_such_key', retriable=False,
-                             exception=GSNoSuchKey(e))
+      if (b'CommandException: No URLs matched' in error or
+          b'NotFoundException:' in error or
+          b'One or more URLs matched no objects' in error):
+        return ErrorDetails(type='no_such_key', retriable=False,
+                            exception=GSNoSuchKey(e))
 
       logging.warning('GS_ERROR: %s ', error)
 
@@ -846,13 +802,17 @@ class GSContext(object):
               logging.info('The content of the tracker file: %s',
                            osutils.ReadFile(tracker_file_path))
               osutils.SafeUnlink(tracker_file_path)
-        return _ErrorDetails('resumable', resumable_error, retriable=True)
+        return ErrorDetails(type='resumable',
+                            message_pattern=resumable_error.decode('utf-8'),
+                            retriable=True)
 
       transient_error = _FirstSubstring(error, self.TRANSIENT_ERROR_MESSAGE)
       if transient_error:
-        return _ErrorDetails('transient', transient_error, retriable=True)
+        return ErrorDetails(type='transient',
+                            message_pattern=transient_error.decode('utf-8'),
+                            retriable=True)
 
-    return _ErrorDetails('unknown', retriable=False)
+    return ErrorDetails(type='unknown', retriable=False)
 
   # TODO(mtennant): Make a private method.
   def DoCommand(self, gsutil_cmd, headers=(), retries=None, version=None,
@@ -880,6 +840,7 @@ class GSContext(object):
     """
     kwargs = kwargs.copy()
     kwargs.setdefault('redirect_stderr', True)
+    kwargs.setdefault('encoding', 'utf-8')
 
     cmd = [self.gsutil_bin]
     cmd += self.gsutil_flags
@@ -910,7 +871,7 @@ class GSContext(object):
       try:
         return retry_stats.RetryWithStats(retry_stats.GSUTIL,
                                           self._RetryFilter,
-                                          retries, cros_build_lib.RunCommand,
+                                          retries, cros_build_lib.run,
                                           cmd, sleep=self._sleep_time,
                                           extra_env=extra_env, **kwargs)
       except cros_build_lib.RunCommandError as e:
@@ -962,10 +923,14 @@ class GSContext(object):
 
     with cros_build_lib.ContextManagerStack() as stack:
       # Write the input into a tempfile if possible. This is needed so that
-      # gsutil can retry failed requests.
+      # gsutil can retry failed requests.  We allow the input to be a string
+      # or bytes regardless of the output encoding.
       if src_path == '-' and kwargs.get('input') is not None:
-        f = stack.Add(tempfile.NamedTemporaryFile)
-        f.write(kwargs['input'])
+        f = stack.Add(tempfile.NamedTemporaryFile, mode='wb')
+        data = kwargs['input']
+        if isinstance(data, six.text_type):
+          data = data.encode('utf-8')
+        f.write(data)
         f.flush()
         del kwargs['input']
         src_path = f.name
@@ -1008,7 +973,7 @@ class GSContext(object):
 
     Args:
       gs_uri: The URI of a file on Google Storage.
-      contents: String with contents to write to the file.
+      contents: String or bytes with contents to write to the file.
       kwargs: See additional options that Copy takes.
 
     Raises:
@@ -1036,7 +1001,8 @@ class GSContext(object):
       kwargs.pop('retries', None)
       kwargs.pop('headers', None)
       kwargs['capture_output'] = True
-      result = cros_build_lib.RunCommand(['ls', path], **kwargs)
+      kwargs.setdefault('encoding', 'utf-8')
+      result = cros_build_lib.run(['ls', path], **kwargs)
       return result.output.splitlines()
     else:
       return [x.url for x in self.List(path, **kwargs)]
@@ -1410,7 +1376,8 @@ def _FirstMatch(predicate, elems):
     predicate: A function which takes an element and returns a bool
     elems: A sequence of elements.
   """
-  return next(itertools.ifilter(predicate, elems), None)
+  matches = [x for x in elems if predicate(x)]
+  return matches[0] if matches else None
 
 
 def _FirstSubstring(superstring, haystack):

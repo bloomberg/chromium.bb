@@ -21,10 +21,10 @@ namespace views {
 
 // The default diameter of a Throbber. If you change this, also change
 // kCheckmarkDipSize.
-static constexpr int kDefaultDiameter = 16;
+constexpr int kDefaultDiameter = 16;
 // The size of the checkmark, in DIP. This magic number matches the default
-// diamater plus padding inherent in the checkmark SVG.
-static constexpr int kCheckmarkDipSize = 18;
+// diameter plus padding inherent in the checkmark SVG.
+constexpr int kCheckmarkDipSize = kDefaultDiameter + 2;
 
 Throbber::Throbber() = default;
 
@@ -37,9 +37,8 @@ void Throbber::Start() {
     return;
 
   start_time_ = base::TimeTicks::Now();
-  constexpr int kFrameTimeMs = 30;
   timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kFrameTimeMs),
+      FROM_HERE, base::TimeDelta::FromMilliseconds(30),
       base::BindRepeating(&Throbber::SchedulePaint, base::Unretained(this)));
   SchedulePaint();  // paint right away
 }
@@ -97,15 +96,9 @@ END_METADATA()
 
 // Smoothed throbber ---------------------------------------------------------
 
-// Delay after work starts before starting throbber, in milliseconds.
-static constexpr int kStartDelay = 200;
-
-// Delay after work stops before stopping, in milliseconds.
-static constexpr int kStopDelay = 50;
-
 SmoothedThrobber::SmoothedThrobber()
-    : start_delay_ms_(kStartDelay), stop_delay_ms_(kStopDelay) {
-}
+    : start_delay_(base::TimeDelta::FromMilliseconds(200)),
+      stop_delay_(base::TimeDelta::FromMilliseconds(50)) {}
 
 SmoothedThrobber::~SmoothedThrobber() = default;
 
@@ -113,8 +106,7 @@ void SmoothedThrobber::Start() {
   stop_timer_.Stop();
 
   if (!IsRunning() && !start_timer_.IsRunning()) {
-    start_timer_.Start(FROM_HERE,
-                       base::TimeDelta::FromMilliseconds(start_delay_ms_), this,
+    start_timer_.Start(FROM_HERE, start_delay_, this,
                        &SmoothedThrobber::StartDelayOver);
   }
 }
@@ -128,31 +120,30 @@ void SmoothedThrobber::Stop() {
     start_timer_.Stop();
 
   stop_timer_.Stop();
-  stop_timer_.Start(FROM_HERE,
-                    base::TimeDelta::FromMilliseconds(stop_delay_ms_), this,
+  stop_timer_.Start(FROM_HERE, stop_delay_, this,
                     &SmoothedThrobber::StopDelayOver);
 }
 
-int SmoothedThrobber::GetStartDelayMs() const {
-  return start_delay_ms_;
+base::TimeDelta SmoothedThrobber::GetStartDelay() const {
+  return start_delay_;
 }
 
-void SmoothedThrobber::SetStartDelayMs(int start_delay_ms) {
-  if (start_delay_ms == start_delay_ms_)
+void SmoothedThrobber::SetStartDelay(const base::TimeDelta& start_delay) {
+  if (start_delay == start_delay_)
     return;
-  start_delay_ms_ = start_delay_ms;
-  OnPropertyChanged(&start_delay_ms_, kPropertyEffectsNone);
+  start_delay_ = start_delay;
+  OnPropertyChanged(&start_delay_, kPropertyEffectsNone);
 }
 
-int SmoothedThrobber::GetStopDelayMs() const {
-  return stop_delay_ms_;
+base::TimeDelta SmoothedThrobber::GetStopDelay() const {
+  return stop_delay_;
 }
 
-void SmoothedThrobber::SetStopDelayMs(int stop_delay_ms) {
-  if (stop_delay_ms == stop_delay_ms_)
+void SmoothedThrobber::SetStopDelay(const base::TimeDelta& stop_delay) {
+  if (stop_delay == stop_delay_)
     return;
-  stop_delay_ms_ = stop_delay_ms;
-  OnPropertyChanged(&stop_delay_ms_, kPropertyEffectsNone);
+  stop_delay_ = stop_delay;
+  OnPropertyChanged(&stop_delay_, kPropertyEffectsNone);
 }
 
 void SmoothedThrobber::StopDelayOver() {
@@ -161,8 +152,8 @@ void SmoothedThrobber::StopDelayOver() {
 
 BEGIN_METADATA(SmoothedThrobber)
 METADATA_PARENT_CLASS(Throbber)
-ADD_PROPERTY_METADATA(SmoothedThrobber, int, StartDelayMs)
-ADD_PROPERTY_METADATA(SmoothedThrobber, int, StopDelayMs)
+ADD_PROPERTY_METADATA(SmoothedThrobber, base::TimeDelta, StartDelay)
+ADD_PROPERTY_METADATA(SmoothedThrobber, base::TimeDelta, StopDelay)
 END_METADATA()
 
 }  // namespace views

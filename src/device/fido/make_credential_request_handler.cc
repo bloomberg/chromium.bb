@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/cbor/diagnostic_writer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -177,6 +178,7 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     CtapMakeCredentialRequest request,
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
+    bool allow_skipping_pin_touch,
     CompletionCallback completion_callback)
     : FidoRequestHandlerBase(
           connector,
@@ -187,7 +189,8 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
       completion_callback_(std::move(completion_callback)),
       request_(std::move(request)),
       authenticator_selection_criteria_(
-          std::move(authenticator_selection_criteria)) {
+          std::move(authenticator_selection_criteria)),
+      allow_skipping_pin_touch_(allow_skipping_pin_touch) {
   transport_availability_info().request_type =
       FidoRequestHandlerBase::RequestType::kMakeCredential;
 
@@ -252,6 +255,11 @@ void MakeCredentialRequestHandler::DispatchRequest(
   switch (authenticator->WillNeedPINToMakeCredential(request_, observer())) {
     case MakeCredentialPINDisposition::kUsePIN:
     case MakeCredentialPINDisposition::kSetPIN:
+      // Skip asking for touch if this is the only available authenticator.
+      if (active_authenticators().size() == 1 && allow_skipping_pin_touch_) {
+        HandleTouch(authenticator);
+        return;
+      }
       // A PIN will be needed. Just request a touch to let the user select
       // this authenticator if they wish.
       authenticator->GetTouch(
@@ -373,12 +381,41 @@ void MakeCredentialRequestHandler::HandleResponse(
   const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request_.rp.id);
 
   if (!response || response->GetRpIdHash() != rp_id_hash) {
-    FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
-                    << authenticator->GetDisplayName();
+    FIDO_LOG(ERROR)
+        << "Failing make credential request due to bad response from "
+        << authenticator->GetDisplayName();
     std::move(completion_callback_)
         .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid, base::nullopt,
              authenticator);
     return;
+  }
+
+  const base::Optional<cbor::Value>& extensions =
+      response->attestation_object().authenticator_data().extensions();
+  if (extensions) {
+    // The fact that |extensions| is a map is checked in
+    // |AuthenticatorData::DecodeAuthenticatorData|.
+    for (const auto& it : extensions->GetMap()) {
+      if (request_.cred_protect &&
+          authenticator->Options()->supports_cred_protect &&
+          it.first.is_string() &&
+          it.first.GetString() == kExtensionCredProtect &&
+          it.second.is_integer()) {
+        continue;
+      }
+      if (request_.hmac_secret && it.first.is_string() &&
+          it.first.GetString() == kExtensionHmacSecret && it.second.is_bool()) {
+        continue;
+      }
+
+      FIDO_LOG(ERROR)
+          << "Failing make credential request due to extensions block: "
+          << cbor::DiagnosticWriter::Write(*extensions);
+      std::move(completion_callback_)
+          .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid,
+               base::nullopt, authenticator);
+      return;
+    }
   }
 
   if (authenticator->AuthenticatorTransport()) {

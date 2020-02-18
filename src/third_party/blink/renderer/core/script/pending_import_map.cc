@@ -18,18 +18,21 @@ PendingImportMap* PendingImportMap::CreateInline(ScriptElementBase& element,
                                                  const KURL& base_url) {
   Document& element_document = element.GetDocument();
   Document* context_document = element_document.ContextDocument();
-  Modulator* modulator =
-      Modulator::From(ToScriptStateForMainWorld(context_document->GetFrame()));
+  ScriptState* script_state =
+      ToScriptStateForMainWorld(context_document->GetFrame());
+  Modulator* modulator = Modulator::From(script_state);
 
   ScriptValue error_to_rethrow;
   ImportMap* import_map =
-      ImportMap::Parse(*modulator, import_map_text, base_url, *context_document,
-                       &error_to_rethrow);
+      ImportMap::Parse(*modulator, import_map_text, base_url,
+                       modulator->BuiltInModuleInfraEnabled(),
+                       *context_document, &error_to_rethrow);
   return MakeGarbageCollected<PendingImportMap>(
-      element, import_map, error_to_rethrow, *context_document);
+      script_state, element, import_map, error_to_rethrow, *context_document);
 }
 
-PendingImportMap::PendingImportMap(ScriptElementBase& element,
+PendingImportMap::PendingImportMap(ScriptState* script_state,
+                                   ScriptElementBase& element,
                                    ImportMap* import_map,
                                    ScriptValue error_to_rethrow,
                                    const Document& original_context_document)
@@ -37,8 +40,8 @@ PendingImportMap::PendingImportMap(ScriptElementBase& element,
       import_map_(import_map),
       original_context_document_(&original_context_document) {
   if (!error_to_rethrow.IsEmpty()) {
-    ScriptState::Scope scope(error_to_rethrow.GetScriptState());
-    error_to_rethrow_.Set(error_to_rethrow.GetIsolate(),
+    ScriptState::Scope scope(script_state);
+    error_to_rethrow_.Set(script_state->GetIsolate(),
                           error_to_rethrow.V8Value());
   }
 }
@@ -85,8 +88,11 @@ void PendingImportMap::RegisterImportMap() const {
 
   ScriptState* script_state = modulator->GetScriptState();
   ScriptState::Scope scope(script_state);
-  ScriptValue error(script_state,
-                    error_to_rethrow_.NewLocal(script_state->GetIsolate()));
+  ScriptValue error;
+  if (!error_to_rethrow_.IsEmpty()) {
+    error = ScriptValue(script_state->GetIsolate(),
+                        error_to_rethrow_.Get(script_state));
+  }
   modulator->RegisterImportMap(import_map_, error);
 
   // <spec step="9">If element is from an external file, then fire an event

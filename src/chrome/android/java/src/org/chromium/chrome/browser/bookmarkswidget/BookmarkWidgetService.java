@@ -12,34 +12,34 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.StrictMode;
-import android.support.annotation.BinderThread;
-import android.support.annotation.Nullable;
-import android.support.annotation.UiThread;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
+
+import androidx.annotation.BinderThread;
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 
 import com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
+import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
@@ -186,7 +186,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             mMinIconSizeDp = (int) res.getDimension(R.dimen.default_favicon_min_size);
             mDisplayedIconSize = res.getDimensionPixelSize(R.dimen.default_favicon_size);
             mIconGenerator =
-                    ViewUtils.createDefaultRoundedIconGenerator(context.getResources(), false);
+                    FaviconUtils.createRoundedRectangleIconGenerator(context.getResources());
 
             mRemainingTaskCount = 1;
             mBookmarkModel = new BookmarkModel();
@@ -306,14 +306,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
         public void onCreate() {
             // Required to be applied here redundantly to prevent crashes in the cases where the
             // package data is deleted or the Chrome application forced to stop.
-            try {
-                ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
-            } catch (ProcessInitException e) {
-                Log.e(TAG, "Failed to start browser process.", e);
-                // Since the library failed to initialize nothing in the application
-                // can work, so kill the whole application not just the activity
-                System.exit(-1);
-            }
+            ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
             if (isWidgetNewlyCreated()) {
                 RecordUserAction.record("BookmarkNavigatorWidgetAdded");
             }

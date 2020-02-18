@@ -28,6 +28,8 @@ class WebThemeEngineDefault : public blink::WebThemeEngine {
   bool SupportsNinePatch(Part part) const override;
   blink::WebSize NinePatchCanvasSize(Part part) const override;
   blink::WebRect NinePatchAperture(Part part) const override;
+  base::Optional<SkColor> GetSystemColor(blink::WebThemeEngine::SystemThemeColor
+                                             system_theme_color) const override;
 #if defined(OS_WIN)
   // Caches the scrollbar metrics. These are retrieved in the browser and passed
   // to the renderer in blink::mojom::RendererPreferences because the required
@@ -37,6 +39,11 @@ class WebThemeEngineDefault : public blink::WebThemeEngine {
                                     int32_t vertical_arrow_bitmap_height,
                                     int32_t horizontal_arrow_bitmap_width);
 #endif
+  blink::ForcedColors GetForcedColors() const override;
+  void SetForcedColors(const blink::ForcedColors forced_colors) override;
+  blink::PreferredColorScheme PreferredColorScheme() const override;
+  void SetPreferredColorScheme(
+      const blink::PreferredColorScheme preferred_color_scheme) override;
 };
 
 }  // namespace content

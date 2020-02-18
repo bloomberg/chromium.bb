@@ -22,7 +22,7 @@ enum class SinkIconType;
 
 // NOTE: Do not renumber enums as that would confuse interpretation of
 // previously logged data. When making changes, also update the enum list
-// in tools/metrics/histograms/histograms.xml to keep it in sync.
+// in tools/metrics/histograms/enums.xml to keep it in sync.
 
 // NOTE: For metrics specific to the Media Router component extension, see
 // mojo/media_router_mojo_metrics.h.
@@ -33,9 +33,10 @@ enum class MediaRouterDialogOpenOrigin {
   OVERFLOW_MENU = 1,
   CONTEXTUAL_MENU = 2,
   PAGE = 3,
+  APP_MENU = 4,
 
   // NOTE: Add entries only immediately above this line.
-  TOTAL_COUNT = 4
+  TOTAL_COUNT = 5
 };
 
 // The possible outcomes from a route creation response.
@@ -77,6 +78,15 @@ enum class PresentationUrlType {
   kPresentationUrlTypeCount
 };
 
+// Whether audio has been played since the last navigation. Do not modify
+// existing values, since they are used for metrics reporting. Add new values
+// only at the bottom, and also update tools/metrics/histograms/enums.xml.
+enum class WebContentsAudioState {
+  kWasNeverAudible = 0,
+  kIsCurrentlyAudible = 1,
+  kWasPreviouslyAudible = 2,  // Was playing audio, but not currently.
+};
+
 class MediaRouterMetrics {
  public:
   MediaRouterMetrics();
@@ -99,13 +109,14 @@ class MediaRouterMetrics {
   static const char kHistogramStartLocalSessionSuccessful[];
   static const char kHistogramStopRoute[];
   static const char kHistogramUiDeviceCount[];
-  static const char kHistogramUiDialogPaint[];
+  static const char kHistogramUiDialogIconStateAtOpen[];
   static const char kHistogramUiDialogLoadedWithData[];
+  static const char kHistogramUiDialogPaint[];
   static const char kHistogramUiFirstAction[];
+  static const char kHistogramUiIconStateAtInit[];
 
   // Records where the user clicked to open the Media Router dialog.
-  static void RecordMediaRouterDialogOrigin(
-      MediaRouterDialogOpenOrigin origin);
+  static void RecordMediaRouterDialogOrigin(MediaRouterDialogOpenOrigin origin);
 
   // Records the duration it takes for the Media Router dialog to open and
   // finish painting after a user clicks to open the dialog.
@@ -122,8 +133,7 @@ class MediaRouterMetrics {
 
   // Records the first action the user took after the Media Router dialog
   // opened.
-  static void RecordMediaRouterInitialUserAction(
-      MediaRouterUserAction action);
+  static void RecordMediaRouterInitialUserAction(MediaRouterUserAction action);
 
   // Records the outcome in a create route response.
   static void RecordRouteCreationOutcome(
@@ -175,6 +185,14 @@ class MediaRouterMetrics {
   // Records whether or not a sink was found for the ID that the user manually
   // entered and attempted to cast to.
   static void RecordSearchSinkOutcome(bool success);
+
+  // Records whether the toolbar icon is pinned by the user pref / admin policy.
+  // Recorded whenever the Cast dialog is opened.
+  static void RecordIconStateAtDialogOpen(bool is_pinned);
+
+  // Records whether the toolbar icon is pinned by the user pref / admin policy.
+  // Recorded whenever the browser is initialized.
+  static void RecordIconStateAtInit(bool is_pinned);
 };
 
 }  // namespace media_router

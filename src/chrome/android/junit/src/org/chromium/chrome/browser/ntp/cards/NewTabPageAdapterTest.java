@@ -31,13 +31,13 @@ import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestio
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.registerCategory;
 
 import android.content.res.Resources;
-import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import org.junit.After;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,6 +54,7 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowResources;
 
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -68,23 +69,24 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 
@@ -120,6 +122,8 @@ public class NewTabPageAdapterTest {
 
     private FakeSuggestionsSource mSource;
     private NewTabPageAdapter mAdapter;
+    @Mock
+    private IdentityManager mMockIdentityManager;
     @Mock
     private SigninManager mMockSigninManager;
     @Mock
@@ -299,9 +303,6 @@ public class NewTabPageAdapterTest {
 
     @Before
     public void setUp() {
-        // These tests fail on touchless builds, see https://crbug.com/981870.
-        Assume.assumeFalse(FeatureUtilities.isNoTouchModeEnabled());
-
         MockitoAnnotations.initMocks(this);
 
         // Ensure that NetworkChangeNotifier is initialized.
@@ -316,7 +317,8 @@ public class NewTabPageAdapterTest {
         // Set up test account and initialize the sign in state. We will be signed in by default
         // in the tests.
         NewTabPageTestUtils.setUpTestAccount();
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(true);
+        when(mMockSigninManager.getIdentityManager()).thenReturn(mMockIdentityManager);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(true);
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
 
         mSource = new FakeSuggestionsSource();
@@ -337,8 +339,8 @@ public class NewTabPageAdapterTest {
     @After
     public void tearDown() {
         CardsVariationParameters.setTestVariationParams(null);
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false);
         ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
         PrefServiceBridge.setInstanceForTesting(null);
         ShadowPostTask.reset();
@@ -958,7 +960,7 @@ public class NewTabPageAdapterTest {
         useArticleCategory();
 
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         resetUiDelegate();
         reloadNtp();
 
@@ -997,7 +999,7 @@ public class NewTabPageAdapterTest {
     @Feature({"Ntp"})
     public void testSigninPromoSuppressionActive() {
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         useArticleCategory();
 
         // Suppress promo.
@@ -1013,7 +1015,7 @@ public class NewTabPageAdapterTest {
     @Feature({"Ntp"})
     public void testSigninPromoSuppressionExpired() {
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         useArticleCategory();
 
         // Suppress promo.
@@ -1039,9 +1041,9 @@ public class NewTabPageAdapterTest {
                 .thenReturn(signInPromoText);
 
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false);
         useArticleCategory();
 
         final int signInPromoPosition = mAdapter.getFirstPositionForType(ItemViewType.PROMO);
@@ -1052,8 +1054,8 @@ public class NewTabPageAdapterTest {
 
         verify(itemDismissedCallback).onResult(anyString());
         assertFalse(isSignInPromoVisible());
-        assertTrue(ChromePreferenceManager.getInstance().readBoolean(
-                ChromePreferenceManager.NTP_SIGNIN_PROMO_DISMISSED, false));
+        assertTrue(SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.NTP_SIGNIN_PROMO_DISMISSED, false));
         reloadNtp();
         assertFalse(isSignInPromoVisible());
     }
@@ -1064,7 +1066,7 @@ public class NewTabPageAdapterTest {
     public void testSigninPromoAccountsNotReady() {
         useArticleCategory();
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         resetUiDelegate();
         reloadNtp();
         assertFalse(isSignInPromoVisible());
@@ -1087,7 +1089,7 @@ public class NewTabPageAdapterTest {
         Callback<String> itemDismissedCallback = mock(Callback.class);
 
         // On signed out, the promo should be shown.
-        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        when(mMockIdentityManager.hasPrimaryAccount()).thenReturn(false);
         signinObserver.onSignedOut();
 
         // By default, there is no All Dismissed item.

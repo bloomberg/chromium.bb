@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,7 +27,6 @@
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/x/x11_types.h"
 
-typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.
 typedef unsigned long Cursor;
 
 namespace gfx {
@@ -48,6 +48,12 @@ COMPONENT_EXPORT(UI_BASE_X) bool IsXInput2Available();
 
 // Return true iff the display supports Xrender
 COMPONENT_EXPORT(UI_BASE_X) bool QueryRenderSupport(XDisplay* dpy);
+
+// Return true iff the display supports MIT-SHM.
+COMPONENT_EXPORT(UI_BASE_X) bool QueryShmSupport();
+
+// Returns the first event ID for the MIT-SHM extension, if available.
+COMPONENT_EXPORT(UI_BASE_X) int ShmEventBase();
 
 // Creates a custom X cursor from the image. This takes ownership of image. The
 // caller must not free/modify the image. The refcount of the newly created
@@ -318,6 +324,11 @@ gfx::ICCProfile GetICCProfileForMonitor(int monitor);
 // Return true if the display supports SYNC extension.
 COMPONENT_EXPORT(UI_BASE_X) bool IsSyncExtensionAvailable();
 
+// Returns the preferred Skia colortype for an X11 visual.  LOG(FATAL)'s if
+// there isn't a suitable colortype.
+COMPONENT_EXPORT(UI_BASE_X)
+SkColorType ColorTypeForVisual(void* visual);
+
 // Manages a piece of X11 allocated memory as a RefCountedMemory segment. This
 // object takes ownership over the passed in memory and will free it with the
 // X11 allocator when done.
@@ -356,6 +367,11 @@ class COMPONENT_EXPORT(UI_BASE_X) XScopedCursor {
 
   DISALLOW_COPY_AND_ASSIGN(XScopedCursor);
 };
+
+struct COMPONENT_EXPORT(UI_BASE_X) XImageDeleter {
+  void operator()(XImage* image) const;
+};
+using XScopedImage = std::unique_ptr<XImage, XImageDeleter>;
 
 namespace test {
 

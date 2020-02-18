@@ -12,7 +12,11 @@ namespace printing {
 // static
 void PolicySettings::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterListPref(prefs::kPrinterTypeDenyList);
   registry->RegisterBooleanPref(prefs::kPrintHeaderFooter, true);
+  registry->RegisterIntegerPref(prefs::kPrintingAllowedBackgroundGraphicsModes,
+                                0);
+  registry->RegisterIntegerPref(prefs::kPrintingBackgroundGraphicsDefault, 0);
 #if defined(OS_CHROMEOS)
   registry->RegisterIntegerPref(prefs::kPrintingAllowedColorModes, 0);
   registry->RegisterIntegerPref(prefs::kPrintingAllowedDuplexModes, 0);

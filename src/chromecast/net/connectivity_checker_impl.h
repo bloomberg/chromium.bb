@@ -10,6 +10,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
@@ -39,8 +40,8 @@ class ConnectivityCheckerImpl
   // Connectivity checking and initialization will run on task_runner.
   static scoped_refptr<ConnectivityCheckerImpl> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker);
 
   // ConnectivityChecker implementation:
@@ -55,8 +56,8 @@ class ConnectivityCheckerImpl
 
  private:
   // Initializes ConnectivityChecker
-  void Initialize(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                      url_loader_factory_info);
+  void Initialize(std::unique_ptr<network::PendingSharedURLLoaderFactory>
+                      pending_url_loader_factory);
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver
   // implementation:
@@ -106,6 +107,9 @@ class ConnectivityCheckerImpl
   // Note: Cancelling this timeout can cause the destructor for this class to be
   // called.
   base::CancelableCallback<void()> timeout_;
+
+  base::WeakPtr<ConnectivityCheckerImpl> weak_this_;
+  base::WeakPtrFactory<ConnectivityCheckerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectivityCheckerImpl);
 };

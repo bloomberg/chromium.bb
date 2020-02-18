@@ -11,8 +11,8 @@ import "mojo/public/mojom/base/generic_pending_receiver.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/network_types.mojom";
+import "third_party/blink/public/mojom/manifest/manifest.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
-import "third_party/blink/public/mojom/service_worker/embedded_worker.mojom";
 import "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
@@ -75,7 +75,9 @@ struct CreateViewParams {
   // Whether or not the frame has previously committed a real load.
   bool has_committed_real_load;
 
-  // The initial renderer size.
+  // Initial state for the main frame RenderWidget.
+  // TODO(danakj): This should be optional and not included when there is no
+  // main_frame_widget_routing_id.
   VisualProperties visual_properties;
 
   // Whether lookup of frames in the created RenderView (e.g. lookup via
@@ -89,9 +91,11 @@ struct CreateViewParams {
 
 struct CreateFrameWidgetParams {
   // Gives the routing ID for the RenderWidget that will be attached to the
-  // new RenderFrame. If the RenderFrame does not need a RenderWidget, this
-  // is MSG_ROUTING_NONE and the other parameters are not read.
+  // new RenderFrame.
   int32 routing_id;
+
+  // The initial visual properties of the widget.
+  VisualProperties visual_properties;
 };
 
 struct CreateFrameParams {
@@ -141,7 +145,7 @@ struct CreateFrameParams {
 
   // Specifies properties for a new RenderWidget that will be attached to the
   // new RenderFrame (if one is needed).
-  CreateFrameWidgetParams widget_params;
+  CreateFrameWidgetParams? widget_params;
 
   // Whether or not the frame has previously committed a real load.
   bool has_committed_real_load;
@@ -170,14 +174,24 @@ struct UpdateSystemColorInfoParams {
   map<SystemThemeColor, uint32> colors;
 };
 
-enum RenderProcessState {
-  kVisible,
-  // Hidden render processes can still be foregrounded. For example, a hidden
-  // renderer playing audio would be foregrounded.
-  kHidden,
-  // Refers to a renderer that is hidden and running at background process
-  // priority.
+// The background state for the render process.  When backgrounded the process's
+// priority will be lower (via base::Process::SetProcessBackgrounded()) if
+// allowed on the current platform (as determined by
+// base::Process::CanBackgroundProcesses()).
+enum RenderProcessBackgroundState {
+  // The renderer process has not been backgrounded, a hidden renderer may still
+  // be foregrounded, e.g. when it is playing audio.
+  kForegrounded,
+  // The renderer process has been backgrounded, a visible renderer may still
+  // be backgrounded, e.g. when it is hosting only low priority frames.
   kBackgrounded,
+};
+
+// The visibility state for the renderer process, indicating whether or not any
+// of the frames associated with the renderer process are visible.
+enum RenderProcessVisibleState {
+  kVisible,
+  kHidden,
 };
 
 // The primordial Channel-associated interface implemented by a render process.
@@ -209,14 +223,6 @@ interface Renderer {
                    int32 opener_routing_id, int32 parent_routing_id,
                    FrameReplicationState replication_state,
                    mojo_base.mojom.UnguessableToken devtools_frame_token);
-
-  // Tells the renderer to create an EmbeddedWorkerInstanceClient, which is what
-  // manages service worker startup and shutdown.
-  // TODO(shimazu): Send all params for starting service worker to reduce the
-  // number of IPCs.
-  SetUpEmbeddedWorkerChannelForServiceWorker(
-      pending_receiver<blink.mojom.EmbeddedWorkerInstanceClient>
-          client_receiver);
 
   // Tells the renderer that the network type has changed so that
   // navigator.onLine and navigator.connection can be updated.
@@ -267,7 +273,8 @@ interface Renderer {
 
 
   // Tells the renderer process of a change in visibility or background state.
-  SetProcessState(RenderProcessState process_state);
+  SetProcessState(RenderProcessBackgroundState background_state,
+                  RenderProcessVisibleState visible_state);
 
   // Tells the scheduler about "keep-alive" state which can be due to:
   // service workers, shared workers, or fetch keep-alive.

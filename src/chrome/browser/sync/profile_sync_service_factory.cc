@@ -27,6 +27,7 @@
 #include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/security_events/security_event_recorder_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
@@ -80,6 +81,10 @@
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_WIN)
+#include "chrome/browser/sync/roaming_profile_directory_deleter_win.h"
+#endif  // defined(OS_WIN)
 
 namespace {
 
@@ -276,6 +281,12 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
   auto pss =
       std::make_unique<syncer::ProfileSyncService>(std::move(init_params));
+
+#if defined(OS_WIN)
+  if (!local_sync_backend_enabled)
+    DeleteRoamingUserDataDirectoryLater();
+#endif
+
   pss->Initialize();
 
   // Hook PSS into PersonalDataManager (a circular dependency).
@@ -289,6 +300,20 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 // static
 bool ProfileSyncServiceFactory::HasSyncService(Profile* profile) {
   return GetInstance()->GetServiceForBrowserContext(profile, false) != nullptr;
+}
+
+// static
+std::vector<const syncer::SyncService*>
+ProfileSyncServiceFactory::GetAllSyncServices() {
+  std::vector<Profile*> profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  std::vector<const syncer::SyncService*> sync_services;
+  for (Profile* profile : profiles) {
+    if (HasSyncService(profile)) {
+      sync_services.push_back(GetForProfile(profile));
+    }
+  }
+  return sync_services;
 }
 
 // static

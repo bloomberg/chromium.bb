@@ -27,7 +27,6 @@
 #include "base/format_macros.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/numerics/safe_conversions.h"
@@ -630,16 +629,6 @@ struct COMPONENT_EXPORT(IPC) ParamTraits<zx::channel> {
 };
 #endif  // defined(OS_FUCHSIA)
 
-template <>
-struct COMPONENT_EXPORT(IPC) ParamTraits<base::SharedMemoryHandle> {
-  typedef base::SharedMemoryHandle param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
 #if defined(OS_ANDROID)
 template <>
 struct COMPONENT_EXPORT(IPC)
@@ -973,7 +962,7 @@ struct ParamTraits<base::flat_map<Key, Mapped, Compare>> {
         return false;
     }
 
-    *r = param_type(std::move(vect), base::KEEP_FIRST_OF_DUPES);
+    *r = param_type(std::move(vect));
     return true;
   }
   static void Log(const param_type& p, std::string* l) {

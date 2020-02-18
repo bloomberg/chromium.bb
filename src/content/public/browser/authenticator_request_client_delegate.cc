@@ -9,7 +9,12 @@
 #include "base/callback.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_discovery_factory.h"
+
+#if defined(OS_WIN)
+#include "device/fido/win/webauthn_api.h"
+#endif  // defined(OS_WIN)
 
 namespace content {
 
@@ -25,7 +30,7 @@ bool AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
 
 void AuthenticatorRequestClientDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
-    base::Closure start_over_callback,
+    base::RepeatingClosure start_over_callback,
     device::FidoRequestHandlerBase::RequestCallback request_callback,
     base::RepeatingClosure bluetooth_adapter_power_on_callback,
     device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback) {}
@@ -56,8 +61,14 @@ bool AuthenticatorRequestClientDelegate::ShouldPermitCableExtension(
 
 bool AuthenticatorRequestClientDelegate::SetCableTransportInfo(
     bool cable_extension_provided,
+    bool have_paired_phones,
     base::Optional<device::QRGeneratorKey> qr_generator_key) {
   return false;
+}
+
+std::vector<device::CableDiscoveryData>
+AuthenticatorRequestClientDelegate::GetCablePairings() {
+  return {};
 }
 
 void AuthenticatorRequestClientDelegate::SelectAccount(
@@ -96,6 +107,15 @@ AuthenticatorRequestClientDelegate::GetDiscoveryFactory() {
 #if defined(OS_MACOSX)
     discovery_factory_->set_mac_touch_id_info(GetTouchIdAuthenticatorConfig());
 #endif  // defined(OS_MACOSX)
+
+#if defined(OS_WIN)
+    if (base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi)) {
+      discovery_factory_->set_win_webauthn_api(
+          device::WinWebAuthnApi::GetDefault());
+    }
+#endif  // defined(OS_WIN)
+
+    CustomizeDiscoveryFactory(discovery_factory_.get());
   }
   return discovery_factory_.get();
 #endif
@@ -149,5 +169,8 @@ void AuthenticatorRequestClientDelegate::CollectPIN(
 void AuthenticatorRequestClientDelegate::FinishCollectPIN() {
   NOTREACHED();
 }
+
+void AuthenticatorRequestClientDelegate::CustomizeDiscoveryFactory(
+    device::FidoDiscoveryFactory* discovery_factory) {}
 
 }  // namespace content

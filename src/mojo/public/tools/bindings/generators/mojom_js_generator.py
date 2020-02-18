@@ -221,7 +221,7 @@ def GetRelativeUrl(module, base_module):
 
 class JavaScriptStylizer(generator.Stylizer):
   def StylizeConstant(self, mojom_name):
-    return mojom_name
+    return generator.ToConstantCase(mojom_name)
 
   def StylizeField(self, mojom_name):
     return generator.ToCamel(mojom_name, lower_initial=True)
@@ -264,8 +264,7 @@ class Generator(generator.Generator):
       "unions": self.module.unions,
       "generate_fuzzing": self.generate_fuzzing,
       "generate_closure_exports": for_compile,
-      "use_old_names": self.use_old_js_lite_bindings_names,
-      "primitives_names": self._GetPrimitivesNames(),
+      "generate_struct_deserializers": self.js_generate_struct_deserializers,
    }
 
   @staticmethod
@@ -286,8 +285,11 @@ class Generator(generator.Generator):
       "is_any_handle_or_interface_kind": mojom.IsAnyHandleOrInterfaceKind,
       "is_array_kind": mojom.IsArrayKind,
       "is_associated_interface_kind": mojom.IsAssociatedInterfaceKind,
+      "is_pending_associated_remote_kind": mojom.IsPendingAssociatedRemoteKind,
       "is_associated_interface_request_kind":
           mojom.IsAssociatedInterfaceRequestKind,
+      "is_pending_associated_receiver_kind":
+          mojom.IsPendingAssociatedReceiverKind,
       "is_bool_kind": mojom.IsBoolKind,
       "is_enum_kind": mojom.IsEnumKind,
       "is_any_handle_kind": mojom.IsAnyHandleKind,
@@ -447,7 +449,9 @@ class Generator(generator.Generator):
           self._LiteClosureTypeWithNullability(kind.value_kind))
 
     if (mojom.IsAssociatedKind(kind) or mojom.IsInterfaceRequestKind(kind) or
-        mojom.IsPendingRemoteKind(kind) or mojom.IsPendingReceiverKind(kind)):
+        mojom.IsPendingRemoteKind(kind) or mojom.IsPendingReceiverKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       named_kind = kind.kind
     else:
       named_kind = kind
@@ -469,9 +473,9 @@ class Generator(generator.Generator):
         mojom.IsEnumKind(kind)):
       return name
     if mojom.IsInterfaceKind(kind) or mojom.IsPendingRemoteKind(kind):
-      return name + self._GetPrimitivesNames()["remote"]
+      return name + "Remote"
     if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
-      return name + self._GetPrimitivesNames()["pending_receiver"]
+      return name + "PendingReceiver"
     # TODO(calamity): Support associated interfaces properly.
     if (mojom.IsAssociatedInterfaceKind(kind) or
         mojom.IsPendingAssociatedRemoteKind(kind)):
@@ -546,7 +550,9 @@ class Generator(generator.Generator):
           "true" if mojom.IsNullableKind(kind.value_kind) else "false")
 
     if (mojom.IsAssociatedKind(kind) or mojom.IsInterfaceRequestKind(kind) or
-        mojom.IsPendingRemoteKind(kind) or mojom.IsPendingReceiverKind(kind)):
+        mojom.IsPendingRemoteKind(kind) or mojom.IsPendingReceiverKind(kind) or
+        mojom.IsPendingAssociatedRemoteKind(kind) or
+        mojom.IsPendingAssociatedReceiverKind(kind)):
       named_kind = kind.kind
     else:
       named_kind = kind
@@ -566,21 +572,17 @@ class Generator(generator.Generator):
         mojom.IsEnumKind(kind)):
       return "%sSpec.$" % name
     if mojom.IsInterfaceKind(kind) or mojom.IsPendingRemoteKind(kind):
-      remote_name = name + self._GetPrimitivesNames()["remote"]
-      return "mojo.internal.InterfaceProxy(%s)" % remote_name
+      return "mojo.internal.InterfaceProxy(%sRemote)" % name
     if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
-      request_name = name + self._GetPrimitivesNames()["pending_receiver"]
-      return "mojo.internal.InterfaceRequest(%s)" % request_name
+      return "mojo.internal.InterfaceRequest(%sPendingReceiver)" % name
     if (mojom.IsAssociatedInterfaceKind(kind) or
         mojom.IsPendingAssociatedRemoteKind(kind)):
-      remote_name = name + self._GetPrimitivesNames()["remote"]
       # TODO(rockot): Implement associated interfaces.
-      return "mojo.internal.AssociatedInterfaceProxy(%s)" % (
-          remote_name)
+      return "mojo.internal.AssociatedInterfaceProxy(%sRemote)" % (name)
     if (mojom.IsAssociatedInterfaceRequestKind(kind) or
         mojom.IsPendingAssociatedReceiverKind(kind)):
-      request_name = name + self._GetPrimitivesNames()["pending_receiver"]
-      return "mojo.internal.AssociatedInterfaceRequest(%s)" % request_name
+      return "mojo.internal.AssociatedInterfaceRequest(%sPendingReceiver)" % (
+        name)
 
     return name
 
@@ -818,20 +820,6 @@ class Generator(generator.Generator):
       return ".".join(name)
 
     return self._ExpressionToText(token)
-
-  def _GetPrimitivesNames(self):
-    if self.use_old_js_lite_bindings_names:
-      return {
-          "remote": "Proxy",
-          "receiver": "",
-          "pending_receiver": "Request",
-      }
-    else:
-      return {
-          "remote": "Remote",
-          "receiver": "Receiver",
-          "pending_receiver": "PendingReceiver",
-      }
 
   def _GenerateHtmlImports(self):
     result = []

@@ -328,11 +328,8 @@ bool HaveConsistentPhase(const WebMouseWheelEvent& event_to_coalesce,
 bool CanCoalesce(const WebMouseWheelEvent& event_to_coalesce,
                  const WebMouseWheelEvent& event) {
   return event.GetModifiers() == event_to_coalesce.GetModifiers() &&
-         event.scroll_by_page == event_to_coalesce.scroll_by_page &&
-         HaveConsistentPhase(event_to_coalesce, event) &&
-         event.resending_plugin_id == event_to_coalesce.resending_plugin_id &&
-         event.has_precise_scrolling_deltas ==
-             event_to_coalesce.has_precise_scrolling_deltas;
+         event.delta_units == event_to_coalesce.delta_units &&
+         HaveConsistentPhase(event_to_coalesce, event);
 }
 
 void Coalesce(const WebMouseWheelEvent& event_to_coalesce,
@@ -433,7 +430,6 @@ void Coalesce(const WebTouchEvent& event_to_coalesce, WebTouchEvent* event) {
 bool CanCoalesce(const WebGestureEvent& event_to_coalesce,
                  const WebGestureEvent& event) {
   if (event.GetType() != event_to_coalesce.GetType() ||
-      event.resending_plugin_id != event_to_coalesce.resending_plugin_id ||
       event.SourceDevice() != event_to_coalesce.SourceDevice() ||
       event.GetModifiers() != event_to_coalesce.GetModifiers())
     return false;
@@ -873,7 +869,8 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     float x = (wheel_event->PositionInWidget().x + delta.x()) * scale;
     float y = (wheel_event->PositionInWidget().y + delta.y()) * scale;
     wheel_event->SetPositionInWidget(x, y);
-    if (!wheel_event->scroll_by_page) {
+    if (wheel_event->delta_units !=
+        ui::input_types::ScrollGranularity::kScrollByPage) {
       wheel_event->delta_x *= scale;
       wheel_event->delta_y *= scale;
       wheel_event->wheel_ticks_x *= scale;

@@ -18,6 +18,7 @@
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/feed/content/feed_host_service.h"
@@ -88,7 +89,7 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
   auto networking_host = std::make_unique<FeedNetworkingHost>(
       identity_manager, api_key,
       storage_partition->GetURLLoaderFactoryForBrowserProcess(),
-      base::DefaultTickClock::GetInstance());
+      base::DefaultTickClock::GetInstance(), profile->GetPrefs());
 
   auto scheduler_host = std::make_unique<FeedSchedulerHost>(
       profile->GetPrefs(), g_browser_process->local_state(),
@@ -136,6 +137,10 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
 content::BrowserContext* FeedHostServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return context->IsOffTheRecord() ? nullptr : context;
+}
+
+bool FeedHostServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
 }
 
 }  // namespace feed

@@ -48,6 +48,24 @@ void JsSyncEncryptionHandlerObserver::OnPassphraseAccepted() {
   HandleJsEvent(FROM_HERE, "onPassphraseAccepted", JsEventDetails(&details));
 }
 
+void JsSyncEncryptionHandlerObserver::OnTrustedVaultKeyRequired() {
+  if (!event_handler_.IsInitialized()) {
+    return;
+  }
+  base::DictionaryValue details;
+  HandleJsEvent(FROM_HERE, "OnTrustedVaultKeyRequired",
+                JsEventDetails(&details));
+}
+
+void JsSyncEncryptionHandlerObserver::OnTrustedVaultKeyAccepted() {
+  if (!event_handler_.IsInitialized()) {
+    return;
+  }
+  base::DictionaryValue details;
+  HandleJsEvent(FROM_HERE, "OnTrustedVaultKeyAccepted",
+                JsEventDetails(&details));
+}
+
 void JsSyncEncryptionHandlerObserver::OnBootstrapTokenUpdated(
     const std::string& boostrap_token,
     BootstrapTokenType type) {
@@ -81,13 +99,14 @@ void JsSyncEncryptionHandlerObserver::OnEncryptionComplete() {
 }
 
 void JsSyncEncryptionHandlerObserver::OnCryptographerStateChanged(
-    Cryptographer* cryptographer) {
+    Cryptographer* cryptographer,
+    bool has_pending_keys) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   base::DictionaryValue details;
-  details.SetBoolean("ready", cryptographer->is_ready());
-  details.SetBoolean("hasPendingKeys", cryptographer->has_pending_keys());
+  details.SetBoolean("canEncrypt", cryptographer->CanEncrypt());
+  details.SetBoolean("hasPendingKeys", has_pending_keys);
   HandleJsEvent(FROM_HERE, "onCryptographerStateChanged",
                 JsEventDetails(&details));
 }

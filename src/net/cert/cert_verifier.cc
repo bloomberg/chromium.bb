@@ -8,6 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "net/base/features.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/crl_set.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
@@ -17,6 +18,7 @@
 #include "base/logging.h"
 #else
 #include "net/cert/caching_cert_verifier.h"
+#include "net/cert/coalescing_cert_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #endif
 
@@ -82,9 +84,26 @@ std::unique_ptr<CertVerifier> CertVerifier::CreateDefault(
   NOTIMPLEMENTED();
   return std::unique_ptr<CertVerifier>();
 #else
+  scoped_refptr<CertVerifyProc> verify_proc;
+#if defined(OS_FUCHSIA)
+  verify_proc =
+      CertVerifyProc::CreateBuiltinVerifyProc(std::move(cert_net_fetcher));
+#elif BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+  if (base::FeatureList::IsEnabled(features::kCertVerifierBuiltinFeature)) {
+    verify_proc =
+        CertVerifyProc::CreateBuiltinVerifyProc(std::move(cert_net_fetcher));
+  } else {
+    verify_proc =
+        CertVerifyProc::CreateSystemVerifyProc(std::move(cert_net_fetcher));
+  }
+#else
+  verify_proc =
+      CertVerifyProc::CreateSystemVerifyProc(std::move(cert_net_fetcher));
+#endif
+
   return std::make_unique<CachingCertVerifier>(
-      std::make_unique<MultiThreadedCertVerifier>(
-          CertVerifyProc::CreateDefault(std::move(cert_net_fetcher))));
+      std::make_unique<CoalescingCertVerifier>(
+          std::make_unique<MultiThreadedCertVerifier>(std::move(verify_proc))));
 #endif
 }
 

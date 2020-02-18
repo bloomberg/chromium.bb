@@ -7,14 +7,13 @@
 #include "base/allocator/buildflags.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/simple_test_tick_clock.h"
-#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
-#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
-#include "chrome/browser/performance_manager/graph/mock_graphs.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/performance_manager.h"
+#include "components/performance_manager/graph/graph_impl_operations.h"
+#include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/test_support/graph_test_harness.h"
+#include "components/performance_manager/test_support/mock_graphs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -89,7 +88,7 @@ class DynamicTcmallocPolicyTest : public ::testing::Test {
     process_node_ = CreateNode<ProcessNodeImpl>();
     page_node_ = CreateNode<PageNodeImpl>();
     frame_node_ =
-        CreateNode<FrameNodeImpl>(process_node().get(), page_node().get());
+        graph()->CreateFrameNodeAutoId(process_node().get(), page_node().get());
 
     // Create a Process so this process node doesn't bail on Process.IsValid();
     const base::Process self = base::Process::Current();
@@ -120,7 +119,7 @@ class DynamicTcmallocPolicyTest : public ::testing::Test {
                                               std::forward<Args>(args)...);
   }
 
-  GraphImpl* graph() { return &graph_; }
+  TestGraphImpl* graph() { return &graph_; }
   content::BrowserTaskEnvironment* browser_env() { return &browser_env_; }
   TestNodeWrapper<ProcessNodeImpl>& process_node() { return process_node_; }
   TestNodeWrapper<PageNodeImpl>& page_node() { return page_node_; }
@@ -132,7 +131,7 @@ class DynamicTcmallocPolicyTest : public ::testing::Test {
 
  private:
   content::BrowserTaskEnvironment browser_env_;
-  GraphImpl graph_;
+  TestGraphImpl graph_;
   MockDynamicTcmallocPolicy* policy_ = nullptr;  // Not owned.
 
   TestNodeWrapper<ProcessNodeImpl> process_node_;

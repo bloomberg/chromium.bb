@@ -5,7 +5,18 @@
 #include "chrome/browser/page_load_metrics/observers/third_party_metrics_observer.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+
+namespace {
+
+// The maximum number of subframes that we've recorded timings for that we can
+// keep track of in memory.
+const int kMaxRecordedFrames = 50;
+
+}  // namespace
 
 ThirdPartyMetricsObserver::CookieAccessTypes::CookieAccessTypes(
     AccessType access_type) {
@@ -99,6 +110,60 @@ void ThirdPartyMetricsObserver::OnDomStorageAccessed(
       local ? StorageType::kLocalStorage : StorageType::kSessionStorage);
 }
 
+void ThirdPartyMetricsObserver::OnDidFinishSubFrameNavigation(
+    content::NavigationHandle* navigation_handle) {
+  DCHECK(navigation_handle->GetNetworkIsolationKey().GetTopFrameOrigin());
+
+  if (!navigation_handle->HasCommitted())
+    return;
+
+  // A RenderFrameHost is navigating. Since this is a new navigation we want to
+  // capture its paint timing. Remove the RFH from the list of recorded frames.
+  // This is guaranteed to be called before receiving the first paint update for
+  // the navigation.
+  recorded_frames_.erase(navigation_handle->GetRenderFrameHost());
+}
+
+void ThirdPartyMetricsObserver::OnFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  recorded_frames_.erase(render_frame_host);
+}
+
+void ThirdPartyMetricsObserver::OnTimingUpdate(
+    content::RenderFrameHost* subframe_rfh,
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (!timing.paint_timing->first_contentful_paint)
+    return;
+
+  // Filter out top-frames
+  if (!subframe_rfh)
+    return;
+
+  // Filter out navigations that we've already recorded, or if we've reached our
+  // frame limit.
+  const auto it = recorded_frames_.find(subframe_rfh);
+  if (it != recorded_frames_.end() ||
+      recorded_frames_.size() >= kMaxRecordedFrames) {
+    return;
+  }
+
+  // Filter out first-party frames.
+  content::RenderFrameHost* top_frame =
+      GetDelegate().GetWebContents()->GetMainFrame();
+  if (!top_frame || top_frame->GetLastCommittedOrigin().IsSameOriginWith(
+                        subframe_rfh->GetLastCommittedOrigin())) {
+    return;
+  }
+
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_contentful_paint, GetDelegate())) {
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.ThirdParty.Frames.NavigationToFirstContentfulPaint",
+        timing.paint_timing->first_contentful_paint.value());
+    recorded_frames_.insert(subframe_rfh);
+  }
+}
+
 void ThirdPartyMetricsObserver::OnCookieAccess(const GURL& url,
                                                const GURL& first_party_url,
                                                bool blocked_by_policy,
@@ -109,6 +174,10 @@ void ThirdPartyMetricsObserver::OnCookieAccess(const GURL& url,
   }
 
   // TODO(csharrison): Optimize the domain lookup.
+  // Note: If either |url| or |first_party_url| is empty, SameDomainOrHost will
+  // return false, and function execution will continue because it is considered
+  // 3rd party. Since |first_party_url| is actually the |site_for_cookies|, this
+  // will happen e.g. for a 3rd party iframe on document.cookie access.
   if (!url.is_valid() ||
       net::registry_controlled_domains::SameDomainOrHost(
           url, first_party_url,
@@ -120,8 +189,17 @@ void ThirdPartyMetricsObserver::OnCookieAccess(const GURL& url,
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
-  if (registrable_domain.empty())
-    return;
+  // |registrable_domain| can be empty e.g. if |url| is on an IP address, or the
+  // domain is itself a TLD, or it's a file URL (in which case it has no host),
+  // etc. See comment for GetDomainAndRegistry() in
+  // //net/base/registry_controlled_domains/registry_controlled_domains.h.
+  if (registrable_domain.empty()) {
+    if (url.has_host()) {
+      registrable_domain = url.host();
+    } else {
+      return;
+    }
+  }
 
   auto it = third_party_cookie_access_types_.find(registrable_domain);
 

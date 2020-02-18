@@ -24,23 +24,21 @@
 #include "xfa/fxfa/parser/cxfa_para.h"
 #include "xfa/fxfa/parser/cxfa_value.h"
 
-CXFA_FFImageEdit::CXFA_FFImageEdit(CXFA_Node* pNode)
-    : CXFA_FFField(pNode), m_pOldDelegate(nullptr) {}
+CXFA_FFImageEdit::CXFA_FFImageEdit(CXFA_Node* pNode) : CXFA_FFField(pNode) {}
 
 CXFA_FFImageEdit::~CXFA_FFImageEdit() {
   m_pNode->SetImageEditImage(nullptr);
 }
 
 bool CXFA_FFImageEdit::LoadWidget() {
+  ASSERT(!IsLoaded());
   auto pNew = pdfium::MakeUnique<CFWL_PictureBox>(GetFWLApp());
   CFWL_PictureBox* pPictureBox = pNew.get();
-  m_pNormalWidget = std::move(pNew);
-  m_pNormalWidget->SetFFWidget(this);
+  SetNormalWidget(std::move(pNew));
+  pPictureBox->SetFFWidget(this);
 
-  CFWL_NoteDriver* pNoteDriver =
-      m_pNormalWidget->GetOwnerApp()->GetNoteDriver();
-  pNoteDriver->RegisterEventTarget(m_pNormalWidget.get(),
-                                   m_pNormalWidget.get());
+  CFWL_NoteDriver* pNoteDriver = pPictureBox->GetOwnerApp()->GetNoteDriver();
+  pNoteDriver->RegisterEventTarget(pPictureBox, pPictureBox);
   m_pOldDelegate = pPictureBox->GetDelegate();
   pPictureBox->SetDelegate(this);
 
@@ -67,7 +65,7 @@ void CXFA_FFImageEdit::RenderWidget(CXFA_Graphics* pGS,
   if (!pDIBitmap)
     return;
 
-  CFX_RectF rtImage = m_pNormalWidget->GetWidgetRect();
+  CFX_RectF rtImage = GetNormalWidget()->GetWidgetRect();
   XFA_AttributeValue iHorzAlign = XFA_AttributeValue::Left;
   XFA_AttributeValue iVertAlign = XFA_AttributeValue::Top;
   CXFA_Para* para = m_pNode->GetParaIfExists();
@@ -106,19 +104,19 @@ void CXFA_FFImageEdit::OnLButtonDown(uint32_t dwFlags,
                                      const CFX_PointF& point) {
   SetButtonDown(true);
   SendMessageToFWLWidget(pdfium::MakeUnique<CFWL_MessageMouse>(
-      m_pNormalWidget.get(), FWL_MouseCommand::LeftButtonDown, dwFlags,
+      GetNormalWidget(), FWL_MouseCommand::LeftButtonDown, dwFlags,
       FWLToClient(point)));
 }
 
 void CXFA_FFImageEdit::SetFWLRect() {
-  if (!m_pNormalWidget)
+  if (!GetNormalWidget())
     return;
 
   CFX_RectF rtUIMargin = m_pNode->GetUIMargin();
   CFX_RectF rtImage(m_rtUI);
   rtImage.Deflate(rtUIMargin.left, rtUIMargin.top, rtUIMargin.width,
                   rtUIMargin.height);
-  m_pNormalWidget->SetWidgetRect(rtImage);
+  GetNormalWidget()->SetWidgetRect(rtImage);
 }
 
 bool CXFA_FFImageEdit::CommitData() {

@@ -50,7 +50,6 @@
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -70,7 +69,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -149,6 +147,11 @@ const char kDangerUnwanted[] = "unwanted";
 const char kDangerWhitelistedByPolicy[] = "whitelistedByPolicy";
 const char kDangerAsyncScanning[] = "asyncScanning";
 const char kDangerPasswordProtected[] = "passwordProtected";
+const char kDangerTooLarge[] = "blockedTooLarge";
+const char kDangerSensitiveContentWarning[] = "sensitiveContentWarning";
+const char kDangerSensitiveContentBlock[] = "sensitiveContentBlock";
+const char kDangerDeepScannedSafe[] = "deepScannedSafe";
+const char kDangerDeepScannedOpenedDangerous[] = "deepScannedOpenedDangerous";
 const char kDangerUrl[] = "url";
 const char kEndTimeKey[] = "endTime";
 const char kEndedAfterKey[] = "endedAfter";
@@ -182,13 +185,23 @@ const char kFinalUrlRegexKey[] = "finalUrlRegex";
 
 // Note: Any change to the danger type strings, should be accompanied by a
 // corresponding change to downloads.json.
-const char* const kDangerStrings[] = {
-    kDangerSafe,          kDangerFile,
-    kDangerUrl,           kDangerContent,
-    kDangerSafe,          kDangerUncommon,
-    kDangerAccepted,      kDangerHost,
-    kDangerUnwanted,      kDangerWhitelistedByPolicy,
-    kDangerAsyncScanning, kDangerPasswordProtected};
+const char* const kDangerStrings[] = {kDangerSafe,
+                                      kDangerFile,
+                                      kDangerUrl,
+                                      kDangerContent,
+                                      kDangerSafe,
+                                      kDangerUncommon,
+                                      kDangerAccepted,
+                                      kDangerHost,
+                                      kDangerUnwanted,
+                                      kDangerWhitelistedByPolicy,
+                                      kDangerAsyncScanning,
+                                      kDangerPasswordProtected,
+                                      kDangerTooLarge,
+                                      kDangerSensitiveContentWarning,
+                                      kDangerSensitiveContentBlock,
+                                      kDangerDeepScannedSafe,
+                                      kDangerDeepScannedOpenedDangerous};
 static_assert(base::size(kDangerStrings) == download::DOWNLOAD_DANGER_TYPE_MAX,
               "kDangerStrings should have DOWNLOAD_DANGER_TYPE_MAX elements");
 
@@ -396,7 +409,7 @@ void InitFilterTypeMap(FilterTypeMap* filter_types_ptr) {
   AppendFilter(kFinalUrlKey, DownloadQuery::FILTER_URL, &v);
   AppendFilter(kFinalUrlRegexKey, DownloadQuery::FILTER_URL_REGEX, &v);
 
-  *filter_types_ptr = FilterTypeMap(std::move(v), base::KEEP_FIRST_OF_DUPES);
+  *filter_types_ptr = FilterTypeMap(std::move(v));
 }
 
 using SortTypeMap = base::flat_map<std::string, DownloadQuery::SortType>;
@@ -423,7 +436,7 @@ void InitSortTypeMap(SortTypeMap* sorter_types_ptr) {
   AppendFilter(kUrlKey, DownloadQuery::SORT_ORIGINAL_URL, &v);
   AppendFilter(kFinalUrlKey, DownloadQuery::SORT_URL, &v);
 
-  *sorter_types_ptr = SortTypeMap(std::move(v), base::KEEP_FIRST_OF_DUPES);
+  *sorter_types_ptr = SortTypeMap(std::move(v));
 }
 
 bool IsNotTemporaryDownloadFilter(const DownloadItem& download_item) {
@@ -1037,7 +1050,8 @@ bool DownloadsDownloadFunction::RunAsync() {
       new download::DownloadUrlParameters(
           download_url, source_process_id(),
           render_frame_host()->GetRenderViewHost()->GetRoutingID(),
-          render_frame_host()->GetRoutingID(), traffic_annotation));
+          render_frame_host()->GetRoutingID(), traffic_annotation,
+          render_frame_host()->GetNetworkIsolationKey()));
 
   base::FilePath creator_suggested_filename;
   if (options.filename.get()) {
@@ -1611,9 +1625,7 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
 ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
     Profile* profile,
     DownloadManager* manager)
-    : profile_(profile),
-      notifier_(manager, this),
-      extension_registry_observer_(this) {
+    : profile_(profile), notifier_(manager, this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile_);
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));

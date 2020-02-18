@@ -144,7 +144,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   // Populates StickyPositionConstraints, setting the sticky box rect,
   // containing block rect and updating the constraint offsets according to the
   // available space.
-  FloatRect ComputeStickyConstrainingRect() const;
+  PhysicalRect ComputeStickyConstrainingRect() const;
   void UpdateStickyPositionConstraints() const;
   PhysicalOffset StickyPositionOffset() const;
   bool IsSlowRepaintConstrainedObject() const;
@@ -581,6 +581,13 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBoxModelObject, IsBoxModelObject());
+
+template <>
+struct DowncastTraits<LayoutBoxModelObject> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsBoxModelObject();
+  }
+};
 
 }  // namespace blink
 

@@ -14,9 +14,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,12 +28,15 @@ import android.view.animation.Interpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.ScrollToLoadListener;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
+import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +50,8 @@ import java.util.Set;
  * New Tab page receives focus when clicked.
  */
 public class SuggestionsRecyclerView extends RecyclerView {
-    private static final Interpolator DISMISS_INTERPOLATOR = new FastOutLinearInInterpolator();
+    private static final Interpolator DISMISS_INTERPOLATOR =
+            Interpolators.FAST_OUT_LINEAR_IN_INTERPOLATOR;
     private static final int DISMISS_ANIMATION_TIME_MS = 300;
 
     private final GestureDetector mGestureDetector;

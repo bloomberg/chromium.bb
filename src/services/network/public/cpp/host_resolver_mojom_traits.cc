@@ -282,6 +282,9 @@ DnsQueryType EnumTraits<DnsQueryType, net::DnsQueryType>::ToMojom(
       return DnsQueryType::PTR;
     case net::DnsQueryType::SRV:
       return DnsQueryType::SRV;
+    case net::DnsQueryType::ESNI:
+      NOTIMPLEMENTED();
+      return DnsQueryType::UNSPECIFIED;
   }
 }
 
@@ -417,6 +420,14 @@ bool EnumTraits<network::mojom::SecureDnsMode, net::DnsConfig::SecureDnsMode>::
       return true;
   }
   return false;
+}
+
+bool StructTraits<
+    network::mojom::ResolveErrorInfoDataView,
+    net::ResolveErrorInfo>::Read(network::mojom::ResolveErrorInfoDataView data,
+                                 net::ResolveErrorInfo* out) {
+  *out = net::ResolveErrorInfo(data.error());
+  return true;
 }
 
 }  // namespace mojo

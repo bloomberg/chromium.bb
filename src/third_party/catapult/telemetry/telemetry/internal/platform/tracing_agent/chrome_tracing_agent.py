@@ -156,9 +156,9 @@ class ChromeTracingAgent(tracing_agent.TracingAgent):
     # We get all DevTools clients including the stale ones, so that we get an
     # exception if there is a stale client. This is because we will potentially
     # lose data if there is a stale client.
-    # TODO(perezju): Check if this actually works. It looks like the call to
-    # GetActiveDevToolsClients in RecordClockSyncMarker would have wiped out
-    # the stale clients anyway.
+    # TODO(crbug.com/1029812): Check if this actually works. It looks like the
+    # call to GetActiveDevToolsClients in RecordClockSyncMarker would have
+    # wiped out the stale clients anyway.
     devtools_clients = (chrome_tracing_devtools_manager
                         .GetDevToolsClients(self._platform_backend))
     raised_exception_messages = []
@@ -226,6 +226,10 @@ class ChromeTracingAgent(tracing_agent.TracingAgent):
       self._trace_config_file = os.path.join(_CHROME_TRACE_CONFIG_DIR_CROS,
                                              _CHROME_TRACE_CONFIG_FILE_NAME)
       cri = self._platform_backend.cri
+      # Before push the config file to DUT, first make sure the DUT is not
+      # write-protected, and remount the root here to avoid losing the config
+      # file.
+      cri.MakeRootReadWriteIfNecessary()
       cri.PushContents(self._CreateTraceConfigFileString(config),
                        self._trace_config_file)
       cri.Chown(self._trace_config_file)

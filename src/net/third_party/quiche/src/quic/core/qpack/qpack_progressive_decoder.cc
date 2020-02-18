@@ -6,28 +6,29 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_constants.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_index_conversions.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_instructions.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_required_insert_count.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 
 namespace quic {
 
 QpackProgressiveDecoder::QpackProgressiveDecoder(
     QuicStreamId stream_id,
     BlockedStreamLimitEnforcer* enforcer,
+    DecodingCompletedVisitor* visitor,
     QpackHeaderTable* header_table,
-    QpackDecoderStreamSender* decoder_stream_sender,
     HeadersHandlerInterface* handler)
     : stream_id_(stream_id),
       prefix_decoder_(
-          QuicMakeUnique<QpackInstructionDecoder>(QpackPrefixLanguage(), this)),
+          std::make_unique<QpackInstructionDecoder>(QpackPrefixLanguage(),
+                                                    this)),
       instruction_decoder_(QpackRequestStreamLanguage(), this),
       enforcer_(enforcer),
+      visitor_(visitor),
       header_table_(header_table),
-      decoder_stream_sender_(decoder_stream_sender),
       handler_(handler),
       required_insert_count_(0),
       base_(0),
@@ -35,7 +36,14 @@ QpackProgressiveDecoder::QpackProgressiveDecoder(
       prefix_decoded_(false),
       blocked_(false),
       decoding_(true),
-      error_detected_(false) {}
+      error_detected_(false),
+      cancelled_(false) {}
+
+QpackProgressiveDecoder::~QpackProgressiveDecoder() {
+  if (blocked_ && !cancelled_) {
+    header_table_->UnregisterObserver(required_insert_count_, this);
+  }
+}
 
 void QpackProgressiveDecoder::Decode(QuicStringPiece data) {
   DCHECK(decoding_);
@@ -49,10 +57,12 @@ void QpackProgressiveDecoder::Decode(QuicStringPiece data) {
   while (!prefix_decoded_) {
     DCHECK(!blocked_);
 
-    prefix_decoder_->Decode(data.substr(0, 1));
-    if (error_detected_) {
+    if (!prefix_decoder_->Decode(data.substr(0, 1))) {
       return;
     }
+
+    // |prefix_decoder_->Decode()| must return false if an error is detected.
+    DCHECK(!error_detected_);
 
     data = data.substr(1);
     if (data.empty()) {
@@ -107,23 +117,35 @@ void QpackProgressiveDecoder::OnError(QuicStringPiece error_message) {
   DCHECK(!error_detected_);
 
   error_detected_ = true;
+  // Might destroy |this|.
   handler_->OnDecodingErrorDetected(error_message);
 }
 
 void QpackProgressiveDecoder::OnInsertCountReachedThreshold() {
   DCHECK(blocked_);
 
-  if (!buffer_.empty()) {
-    instruction_decoder_.Decode(buffer_);
-    buffer_.clear();
-  }
-
+  // Clear |blocked_| before calling instruction_decoder_.Decode() below,
+  // because that might destroy |this| and ~QpackProgressiveDecoder() needs to
+  // know not to call UnregisterObserver().
   blocked_ = false;
   enforcer_->OnStreamUnblocked(stream_id_);
+
+  if (!buffer_.empty()) {
+    std::string buffer(std::move(buffer_));
+    buffer_.clear();
+    if (!instruction_decoder_.Decode(buffer)) {
+      // |this| might be destroyed.
+      return;
+    }
+  }
 
   if (!decoding_) {
     FinishDecoding();
   }
+}
+
+void QpackProgressiveDecoder::Cancel() {
+  cancelled_ = true;
 }
 
 bool QpackProgressiveDecoder::DoIndexedHeaderFieldInstruction() {
@@ -151,6 +173,7 @@ bool QpackProgressiveDecoder::DoIndexedHeaderFieldInstruction() {
       return false;
     }
 
+    header_table_->set_dynamic_table_entry_referenced();
     handler_->OnHeaderDecoded(entry->name(), entry->value());
     return true;
   }
@@ -190,6 +213,7 @@ bool QpackProgressiveDecoder::DoIndexedHeaderFieldPostBaseInstruction() {
     return false;
   }
 
+  header_table_->set_dynamic_table_entry_referenced();
   handler_->OnHeaderDecoded(entry->name(), entry->value());
   return true;
 }
@@ -219,6 +243,7 @@ bool QpackProgressiveDecoder::DoLiteralHeaderFieldNameReferenceInstruction() {
       return false;
     }
 
+    header_table_->set_dynamic_table_entry_referenced();
     handler_->OnHeaderDecoded(entry->name(), instruction_decoder_.value());
     return true;
   }
@@ -258,6 +283,7 @@ bool QpackProgressiveDecoder::DoLiteralHeaderFieldPostBaseInstruction() {
     return false;
   }
 
+  header_table_->set_dynamic_table_entry_referenced();
   handler_->OnHeaderDecoded(entry->name(), instruction_decoder_.value());
   return true;
 }
@@ -289,12 +315,12 @@ bool QpackProgressiveDecoder::DoPrefixInstruction() {
   prefix_decoded_ = true;
 
   if (required_insert_count_ > header_table_->inserted_entry_count()) {
-    blocked_ = true;
     if (!enforcer_->OnStreamBlocked(stream_id_)) {
       OnError("Limit on number of blocked streams exceeded.");
       return false;
     }
-    header_table_->RegisterObserver(this, required_insert_count_);
+    blocked_ = true;
+    header_table_->RegisterObserver(required_insert_count_, this);
   }
 
   return true;
@@ -324,10 +350,7 @@ void QpackProgressiveDecoder::FinishDecoding() {
     return;
   }
 
-  if (required_insert_count_ > 0) {
-    decoder_stream_sender_->SendHeaderAcknowledgement(stream_id_);
-  }
-
+  visitor_->OnDecodingCompleted(stream_id_, required_insert_count_);
   handler_->OnDecodingCompleted();
 }
 

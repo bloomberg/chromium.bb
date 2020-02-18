@@ -4,13 +4,14 @@
 
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_utils.h"
@@ -127,12 +128,9 @@ size_t GetPacketHeaderSize(
         size += kConnectionIdLengthSize;
       }
       DCHECK(QuicVersionHasLongHeaderLengths(version) ||
-             !GetQuicReloadableFlag(quic_fix_get_packet_header_size) ||
              retry_token_length_length + retry_token_length + length_length ==
                  0);
-      if (QuicVersionHasLongHeaderLengths(version) ||
-          !GetQuicReloadableFlag(quic_fix_get_packet_header_size)) {
-        QUIC_RELOADABLE_FLAG_COUNT_N(quic_fix_get_packet_header_size, 1, 3);
+      if (QuicVersionHasLongHeaderLengths(version)) {
         size += retry_token_length_length + retry_token_length + length_length;
       }
       return size;
@@ -339,7 +337,7 @@ QuicEncryptedPacket::QuicEncryptedPacket(QuicStringPiece data)
 std::unique_ptr<QuicEncryptedPacket> QuicEncryptedPacket::Clone() const {
   char* buffer = new char[this->length()];
   memcpy(buffer, this->data(), this->length());
-  return QuicMakeUnique<QuicEncryptedPacket>(buffer, this->length(), true);
+  return std::make_unique<QuicEncryptedPacket>(buffer, this->length(), true);
 }
 
 std::ostream& operator<<(std::ostream& os, const QuicEncryptedPacket& s) {
@@ -410,12 +408,12 @@ std::unique_ptr<QuicReceivedPacket> QuicReceivedPacket::Clone() const {
   if (this->packet_headers()) {
     char* headers_buffer = new char[this->headers_length()];
     memcpy(headers_buffer, this->packet_headers(), this->headers_length());
-    return QuicMakeUnique<QuicReceivedPacket>(
+    return std::make_unique<QuicReceivedPacket>(
         buffer, this->length(), receipt_time(), true, ttl(), ttl() >= 0,
         headers_buffer, this->headers_length(), true);
   }
 
-  return QuicMakeUnique<QuicReceivedPacket>(
+  return std::make_unique<QuicReceivedPacket>(
       buffer, this->length(), receipt_time(), true, ttl(), ttl() >= 0);
 }
 
@@ -458,7 +456,8 @@ SerializedPacket::SerializedPacket(QuicPacketNumber packet_number,
       encryption_level(ENCRYPTION_INITIAL),
       has_ack(has_ack),
       has_stop_waiting(has_stop_waiting),
-      transmission_type(NOT_RETRANSMISSION) {}
+      transmission_type(NOT_RETRANSMISSION),
+      has_ack_frame_copy(false) {}
 
 SerializedPacket::SerializedPacket(const SerializedPacket& other) = default;
 
@@ -476,17 +475,46 @@ SerializedPacket::SerializedPacket(SerializedPacket&& other)
       has_ack(other.has_ack),
       has_stop_waiting(other.has_stop_waiting),
       transmission_type(other.transmission_type),
-      original_packet_number(other.original_packet_number),
-      largest_acked(other.largest_acked) {
+      largest_acked(other.largest_acked),
+      has_ack_frame_copy(other.has_ack_frame_copy) {
   retransmittable_frames.swap(other.retransmittable_frames);
+  nonretransmittable_frames.swap(other.nonretransmittable_frames);
 }
 
 SerializedPacket::~SerializedPacket() {}
+
+SerializedPacket* CopySerializedPacket(const SerializedPacket& serialized,
+                                       QuicBufferAllocator* allocator,
+                                       bool copy_buffer) {
+  SerializedPacket* copy = new SerializedPacket(serialized);
+  if (copy_buffer) {
+    copy->encrypted_buffer = CopyBuffer(serialized);
+  }
+  // Copy underlying frames.
+  copy->retransmittable_frames =
+      CopyQuicFrames(allocator, serialized.retransmittable_frames);
+  copy->nonretransmittable_frames.clear();
+  for (const auto& frame : serialized.nonretransmittable_frames) {
+    if (frame.type == ACK_FRAME) {
+      copy->has_ack_frame_copy = true;
+    }
+    copy->nonretransmittable_frames.push_back(CopyQuicFrame(allocator, frame));
+  }
+  return copy;
+}
 
 void ClearSerializedPacket(SerializedPacket* serialized_packet) {
   if (!serialized_packet->retransmittable_frames.empty()) {
     DeleteFrames(&serialized_packet->retransmittable_frames);
   }
+  for (auto& frame : serialized_packet->nonretransmittable_frames) {
+    if (!serialized_packet->has_ack_frame_copy && frame.type == ACK_FRAME) {
+      // Do not delete ack frame if the packet does not own a copy of it.
+      continue;
+    }
+    DeleteFrame(&frame);
+  }
+  serialized_packet->nonretransmittable_frames.clear();
   serialized_packet->encrypted_buffer = nullptr;
   serialized_packet->encrypted_length = 0;
   serialized_packet->largest_acked.Clear();
@@ -498,6 +526,13 @@ char* CopyBuffer(const SerializedPacket& packet) {
   return dst_buffer;
 }
 
+char* CopyBuffer(const char* encrypted_buffer,
+                 QuicPacketLength encrypted_length) {
+  char* dst_buffer = new char[encrypted_length];
+  memcpy(dst_buffer, encrypted_buffer, encrypted_length);
+  return dst_buffer;
+}
+
 ReceivedPacketInfo::ReceivedPacketInfo(const QuicSocketAddress& self_address,
                                        const QuicSocketAddress& peer_address,
                                        const QuicReceivedPacket& packet)
@@ -505,6 +540,7 @@ ReceivedPacketInfo::ReceivedPacketInfo(const QuicSocketAddress& self_address,
       peer_address(peer_address),
       packet(packet),
       form(GOOGLE_QUIC_PACKET),
+      long_packet_type(INVALID_PACKET_TYPE),
       version_flag(false),
       use_length_prefix(false),
       version_label(0),

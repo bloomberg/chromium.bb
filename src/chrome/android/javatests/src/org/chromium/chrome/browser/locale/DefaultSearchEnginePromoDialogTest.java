@@ -13,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -40,10 +39,10 @@ import java.util.concurrent.ExecutionException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class DefaultSearchEnginePromoDialogTest {
     @Before
-    public void setUp() throws ExecutionException, ProcessInitException {
+    public void setUp() throws ExecutionException {
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
-            public Void call() throws ProcessInitException {
+            public Void call() {
                 ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
                         .handleSynchronousStartup();
 
@@ -88,14 +87,14 @@ public class DefaultSearchEnginePromoDialogTest {
 
         CriteriaHelper.pollUiThread(Criteria.equals(false, new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return searchDialog.isShowing();
             }
         }));
 
         CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
             @Override
-            public Boolean call() throws Exception {
+            public Boolean call() {
                 return searchActivity.isFinishing();
             }
         }));
@@ -114,7 +113,7 @@ public class DefaultSearchEnginePromoDialogTest {
         return TestThreadUtils.runOnUiThreadBlocking(
                 new Callable<DefaultSearchEnginePromoDialog>() {
                     @Override
-                    public DefaultSearchEnginePromoDialog call() throws Exception {
+                    public DefaultSearchEnginePromoDialog call() {
                         DefaultSearchEnginePromoDialog dialog = new DefaultSearchEnginePromoDialog(
                                 activity, LocaleManager.SearchEnginePromoType.SHOW_EXISTING, null);
                         dialog.show();

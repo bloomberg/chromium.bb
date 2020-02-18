@@ -118,6 +118,12 @@ void ProactiveSuggestionsClientImpl::DidStartNavigation(
   SetActiveUrl(active_contents_->GetURL());
 }
 
+void ProactiveSuggestionsClientImpl::DidChangeVerticalScrollDirection(
+    viz::VerticalScrollDirection scroll_direction) {
+  if (delegate_)
+    delegate_->OnSourceVerticalScrollDirectionChanged(scroll_direction);
+}
+
 void ProactiveSuggestionsClientImpl::OnAssistantFeatureAllowedChanged(
     ash::mojom::AssistantAllowedState state) {
   // When the Assistant feature is allowed/disallowed we may need to resume/
@@ -182,7 +188,8 @@ void ProactiveSuggestionsClientImpl::SetActiveUrl(const GURL& url) {
   // The previous set of proactive suggestions is no longer valid.
   SetActiveProactiveSuggestions(nullptr);
 
-  if (active_url_.is_empty()) {
+  // We only load proactive suggestions for http/https schemes.
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS()) {
     loader_.reset();
     return;
   }

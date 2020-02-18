@@ -9,11 +9,14 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace content {
@@ -80,12 +83,11 @@ class ServiceWorkerNavigationLoaderInterceptor final
   void RequestHandlerWrapper(
       SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread,
       const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderRequest request,
-      network::mojom::URLLoaderClientPtr client);
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client);
 
   // For navigations, |handle_| outlives |this|. It's owned by
-  // NavigationHandleImpl which outlives NavigationURLLoaderImpl which owns
-  // |this|.
+  // NavigationRequest which outlives NavigationURLLoaderImpl which owns |this|.
   // For workers, |handle_| may be destroyed during interception. It's owned by
   // DedicatedWorkerHost or SharedWorkerHost which may be destroyed before
   // WorkerScriptLoader which owns |this|.

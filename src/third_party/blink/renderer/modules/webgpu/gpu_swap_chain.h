@@ -19,7 +19,8 @@ class GPUDevice;
 class GPUSwapChainDescriptor;
 class GPUTexture;
 
-class GPUSwapChain : public DawnObjectBase,
+class GPUSwapChain : public ScriptWrappable,
+                     public DawnObjectBase,
                      public WebGPUSwapBufferProvider::Client {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -48,7 +49,7 @@ class GPUSwapChain : public DawnObjectBase,
 
   Member<GPUDevice> device_;
   Member<GPUCanvasContext> context_;
-  DawnTextureUsage usage_;
+  WGPUTextureUsage usage_;
 
   Member<GPUTexture> texture_;
 };

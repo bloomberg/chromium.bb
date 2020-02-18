@@ -69,7 +69,6 @@ class DirectoryBackingStore {
   // NOTE: On success (return value of OPENED), the buckets are populated with
   // newly allocated items, meaning ownership is bestowed upon the caller.
   virtual DirOpenResult Load(Directory::MetahandlesMap* handles_map,
-                             JournalIndex* delete_journals,
                              MetahandleSet* metahandles_to_purge,
                              Directory::KernelLoadInfo* kernel_load_info) = 0;
 
@@ -141,12 +140,10 @@ class DirectoryBackingStore {
   // error.
   bool LoadEntries(Directory::MetahandlesMap* handles_map,
                    MetahandleSet* metahandles_to_purge);
-  bool LoadDeleteJournals(JournalIndex* delete_journals);
   bool LoadInfo(Directory::KernelLoadInfo* info);
 
   enum EntryTable {
     METAS_TABLE,
-    DELETE_JOURNAL_TABLE,
   };
   // Removes each entry whose metahandle is in |handles| from the table
   // specified by |from| table. Does synchronous I/O.  Returns false on error.
@@ -267,7 +264,6 @@ class DirectoryBackingStore {
 
   std::unique_ptr<sql::Database> db_;
   sql::Statement save_meta_statement_;
-  sql::Statement save_delete_journal_statement_;
 
   // Set to true if migration left some old columns around that need to be
   // discarded.

@@ -387,8 +387,8 @@ void AsmJsParser::ValidateModule() {
     uint32_t import_index = module_builder_->AddGlobalImport(
         global_import.import_name, global_import.value_type,
         false /* mutability */);
-    start->EmitWithI32V(kExprGetGlobal, import_index);
-    start->EmitWithI32V(kExprSetGlobal, VarIndex(global_import.var_info));
+    start->EmitWithI32V(kExprGlobalGet, import_index);
+    start->EmitWithI32V(kExprGlobalSet, VarIndex(global_import.var_info));
   }
   start->Emit(kExprEnd);
   FunctionSig::Builder b(zone(), 0, 0);
@@ -952,8 +952,8 @@ void AsmJsParser::ValidateFunctionLocals(size_t param_count,
           } else {
             FAIL("Bad local variable definition");
           }
-          current_function_builder_->EmitWithI32V(kExprGetGlobal,
-                                                    VarIndex(sinfo));
+          current_function_builder_->EmitWithI32V(kExprGlobalGet,
+                                                  VarIndex(sinfo));
           current_function_builder_->EmitSetLocal(info->index);
         } else if (sinfo->type->IsA(stdlib_fround_)) {
           EXPECT_TOKEN('(');
@@ -1447,7 +1447,7 @@ AsmType* AsmJsParser::Identifier() {
     if (info->kind != VarKind::kGlobal) {
       FAILn("Undefined global variable");
     }
-    current_function_builder_->EmitWithI32V(kExprGetGlobal, VarIndex(info));
+    current_function_builder_->EmitWithI32V(kExprGlobalGet, VarIndex(info));
     return info->type;
   }
   UNREACHABLE();
@@ -1514,17 +1514,19 @@ AsmType* AsmJsParser::AssignmentExpression() {
       if (!value->IsA(ret)) {
         FAILn("Illegal type stored to heap view");
       }
+      ret = value;
       if (heap_type->IsA(AsmType::Float32Array()) &&
           value->IsA(AsmType::DoubleQ())) {
         // Assignment to a float32 heap can be used to convert doubles.
         current_function_builder_->Emit(kExprF32ConvertF64);
+        ret = AsmType::FloatQ();
       }
       if (heap_type->IsA(AsmType::Float64Array()) &&
           value->IsA(AsmType::FloatQ())) {
         // Assignment to a float64 heap can be used to convert floats.
         current_function_builder_->Emit(kExprF64ConvertF32);
+        ret = AsmType::DoubleQ();
       }
-      ret = value;
 #define V(array_type, wasmload, wasmstore, type)                         \
   if (heap_type->IsA(AsmType::array_type())) {                           \
     current_function_builder_->Emit(kExpr##type##AsmjsStore##wasmstore); \
@@ -1558,8 +1560,8 @@ AsmType* AsmJsParser::AssignmentExpression() {
       if (info->kind == VarKind::kLocal) {
         current_function_builder_->EmitTeeLocal(info->index);
       } else if (info->kind == VarKind::kGlobal) {
-        current_function_builder_->EmitWithU32V(kExprSetGlobal, VarIndex(info));
-        current_function_builder_->EmitWithU32V(kExprGetGlobal, VarIndex(info));
+        current_function_builder_->EmitWithU32V(kExprGlobalSet, VarIndex(info));
+        current_function_builder_->EmitWithU32V(kExprGlobalGet, VarIndex(info));
       } else {
         UNREACHABLE();
       }
@@ -2489,7 +2491,7 @@ void AsmJsParser::ValidateFloatCoercion() {
   // because imported functions are not allowed to have float return type.
   call_coercion_position_ = scanner_.Position();
   AsmType* ret;
-  RECURSE(ret = ValidateExpression());
+  RECURSE(ret = AssignmentExpression());
   if (ret->IsA(AsmType::Floatish())) {
     // Do nothing, as already a float.
   } else if (ret->IsA(AsmType::DoubleQ())) {

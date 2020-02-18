@@ -28,6 +28,16 @@ void NGContainerFragmentBuilder::AddChild(
     const NGPhysicalContainerFragment& child,
     const LogicalOffset& child_offset,
     const LayoutInline* inline_container) {
+  PropagateChildData(child, child_offset, inline_container);
+  AddChildInternal(&child, child_offset);
+}
+
+// Propagate data in |child| to this fragment. The |child| will then be added as
+// a child fragment or a child fragment item.
+void NGContainerFragmentBuilder::PropagateChildData(
+    const NGPhysicalContainerFragment& child,
+    const LogicalOffset& child_offset,
+    const LayoutInline* inline_container) {
   // Collect the child's out of flow descendants.
   // child_offset is offset of inline_start/block_start vertex.
   // Candidates need offset of top/left vertex.
@@ -95,15 +105,14 @@ void NGContainerFragmentBuilder::AddChild(
        child.MayHaveDescendantAboveBlockStart()))
     may_have_descendant_above_block_start_ = true;
 
-  // Compute |has_floating_descendants_| to optimize tree traversal in paint.
-  if (!has_floating_descendants_) {
-    if (child.IsFloating()) {
-      has_floating_descendants_ = true;
-    } else {
-      if (!child.IsBlockFormattingContextRoot() &&
-          child.HasFloatingDescendants())
-        has_floating_descendants_ = true;
-    }
+  // Compute |has_floating_descendants_for_paint_| to optimize tree traversal
+  // in paint.
+  if (!has_floating_descendants_for_paint_) {
+    // TODO(layout-dev): The |NGPhysicalFragment::IsAtomicInline| check should
+    // be checking for any children which paint all phases atomically.
+    if (child.IsFloating() || child.IsLegacyLayoutRoot() ||
+        (child.HasFloatingDescendantsForPaint() && !child.IsAtomicInline()))
+      has_floating_descendants_for_paint_ = true;
   }
 
   // The |has_adjoining_object_descendants_| is used to determine if a fragment
@@ -124,8 +133,6 @@ void NGContainerFragmentBuilder::AddChild(
       switch (child.Type()) {
         case NGPhysicalFragment::kFragmentBox:
         case NGPhysicalFragment::kFragmentRenderedLegend:
-          if (To<NGBlockBreakToken>(child_break_token)->HasLastResortBreak())
-            has_last_resort_break_ = true;
           child_break_tokens_.push_back(child_break_token);
           break;
         case NGPhysicalFragment::kFragmentLineBox:
@@ -141,8 +148,6 @@ void NGContainerFragmentBuilder::AddChild(
       }
     }
   }
-
-  AddChildInternal(&child, child_offset);
 }
 
 void NGContainerFragmentBuilder::AddChildInternal(
@@ -188,24 +193,28 @@ LogicalOffset NGContainerFragmentBuilder::GetChildOffset(
 void NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
     NGBlockNode child,
     const LogicalOffset& child_offset,
-    base::Optional<TextDirection> container_direction) {
+    NGLogicalStaticPosition::InlineEdge inline_edge,
+    NGLogicalStaticPosition::BlockEdge block_edge) {
   DCHECK(child);
-  DCHECK(layout_object_ && !layout_object_->IsLayoutInline() ||
-         container_direction)
-      << "container_direction must only be set for inline-level OOF children.";
+
+  oof_positioned_candidates_.emplace_back(
+      child, NGLogicalStaticPosition{child_offset, inline_edge, block_edge});
+}
+
+void NGContainerFragmentBuilder::AddOutOfFlowInlineChildCandidate(
+    NGBlockNode child,
+    const LogicalOffset& child_offset,
+    TextDirection inline_container_direction) {
+  DCHECK(node_.IsInline() || layout_object_->IsLayoutInline());
 
   // As all inline-level fragments are built in the line-logical coordinate
   // system (Direction() is kLtr), we need to know the direction of the
   // parent element to correctly determine an OOF childs static position.
-  TextDirection direction = container_direction.value_or(TextDirection::kLtr);
-
-  oof_positioned_candidates_.emplace_back(
-      child,
-      NGLogicalStaticPosition{
-          child_offset,
-          IsLtr(direction) ? NGLogicalStaticPosition::InlineEdge::kInlineStart
-                           : NGLogicalStaticPosition::InlineEdge::kInlineEnd,
-          NGLogicalStaticPosition::BlockEdge::kBlockStart});
+  AddOutOfFlowChildCandidate(child, child_offset,
+                             IsLtr(inline_container_direction)
+                                 ? NGLogicalStaticPosition::kInlineStart
+                                 : NGLogicalStaticPosition::kInlineEnd,
+                             NGLogicalStaticPosition::kBlockStart);
 }
 
 void NGContainerFragmentBuilder::AddOutOfFlowDescendant(
@@ -214,17 +223,20 @@ void NGContainerFragmentBuilder::AddOutOfFlowDescendant(
 }
 
 void NGContainerFragmentBuilder::SwapOutOfFlowPositionedCandidates(
-    Vector<NGLogicalOutOfFlowPositionedNode>* candidates,
-    const LayoutObject* current_container) {
+    Vector<NGLogicalOutOfFlowPositionedNode>* candidates) {
   DCHECK(candidates->IsEmpty());
-
-  // The |oof_positioned_candidates_| list may get additional candidates, in the
-  // following case:
-  //  - If an absolute-positioned element gets added to the builder, and it has
-  //    a fixed-positioned descendant.
   std::swap(oof_positioned_candidates_, *candidates);
+}
 
-  for (auto& candidate : *candidates) {
+void NGContainerFragmentBuilder::
+    MoveOutOfFlowDescendantCandidatesToDescendants() {
+  DCHECK(oof_positioned_descendants_.IsEmpty());
+  std::swap(oof_positioned_candidates_, oof_positioned_descendants_);
+
+  if (!layout_object_->IsInline())
+    return;
+
+  for (auto& candidate : oof_positioned_descendants_) {
     // If we are inside the inline algorithm, (and creating a fragment for a
     // <span> or similar), we may add a child (e.g. an atomic-inline) which has
     // OOF descandants.
@@ -240,13 +252,7 @@ void NGContainerFragmentBuilder::SwapOutOfFlowPositionedCandidates(
       candidate.inline_container =
           ToLayoutInline(candidate.inline_container->ContinuationRoot());
     }
-
-    // Copy-back the static-position for legacy.
-    candidate.node.SaveStaticOffsetForLegacy(candidate.static_position.offset,
-                                             current_container);
   }
-
-  DCHECK(oof_positioned_candidates_.IsEmpty());
 }
 
 #if DCHECK_IS_ON()

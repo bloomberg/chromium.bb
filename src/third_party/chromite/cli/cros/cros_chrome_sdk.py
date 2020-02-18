@@ -61,10 +61,16 @@ class MissingLKGMFile(Exception):
 class MissingSDK(Exception):
   """Error thrown when we cannot find an SDK."""
 
-  def __init__(self, board, version=None):
-    msg = 'Cannot find SDK for %r' % (board,)
+  def _ConstructLegolandURL(self, config):
+    """Returns a link to the given board's release builder."""
+    return ('http://cros-goldeneye/chromeos/legoland/builderHistory?'
+            'buildConfig=%s' % config)
+
+  def __init__(self, config, version=None):
+    msg = 'Cannot find SDK for %s' % config
     if version is not None:
-      msg += ' with version %s' % (version,)
+      msg += ' with version %s' % version
+    msg += ' from its builder: %s' % self._ConstructLegolandURL(config)
     Exception.__init__(self, msg)
 
 
@@ -83,6 +89,7 @@ class SDKFetcher(object):
 
   TARBALL_CACHE = 'tarballs'
   MISC_CACHE = 'misc'
+  SYMLINK_CACHE = 'symlinks'
 
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
   QEMU_BIN_PATH = 'app-emulation/qemu'
@@ -127,6 +134,8 @@ class SDKFetcher(object):
         os.path.join(self.cache_base, self.TARBALL_CACHE))
     self.misc_cache = cache.DiskCache(
         os.path.join(self.cache_base, self.MISC_CACHE))
+    self.symlink_cache = cache.DiskCache(
+        os.path.join(self.cache_base, self.SYMLINK_CACHE))
     self.board = board
     self.config = site_config.FindCanonicalConfigForBoard(
         board, allow_internal=not use_external_config)
@@ -164,26 +173,45 @@ class SDKFetcher(object):
       self.gs_ctx.Copy(url, tempdir, debug_level=logging.DEBUG)
       ref.SetDefault(local_path, lock=True)
 
+  def _UpdateCacheSymlink(self, ref, source_path):
+    """Adds a symlink to the cache pointing at the given source.
+
+    Args:
+      ref: cache.CacheReference of the link to be created.
+      source_path: Absolute path that the symlink will point to.
+    """
+    with osutils.TempDir(base_dir=self.symlink_cache.staging_dir) as tempdir:
+      # Make the symlink relative so the cache can be moved to different
+      # locations/machines without breaking the link.
+      rel_source_path = os.path.relpath(
+          source_path, start=os.path.dirname(ref.path))
+      link_name_path = os.path.join(tempdir, 'tmp-link')
+      osutils.SafeSymlink(rel_source_path, link_name_path)
+      ref.SetDefault(link_name_path, lock=True)
+
   def _GetMetadata(self, version):
     """Return metadata (in the form of a dict) for a given version."""
     raw_json = None
     version_base = self._GetVersionGSBase(version)
+    metadata_path = os.path.join(version_base, constants.METADATA_JSON)
+    partial_metadata_path = os.path.join(version_base,
+                                         constants.PARTIAL_METADATA_JSON)
     with self.misc_cache.Lookup(
-        self._GetCacheKeyForComponent(version, constants.METADATA_JSON)) as ref:
+        self._GetTarballCacheKey(constants.PARTIAL_METADATA_JSON,
+                                 partial_metadata_path)) as ref:
       if ref.Exists(lock=True):
         raw_json = osutils.ReadFile(ref.path)
       else:
-        metadata_path = os.path.join(version_base, constants.METADATA_JSON)
-        partial_metadata_path = os.path.join(version_base,
-                                             constants.PARTIAL_METADATA_JSON)
         try:
           raw_json = self.gs_ctx.Cat(metadata_path,
-                                     debug_level=logging.DEBUG)
+                                     debug_level=logging.DEBUG,
+                                     encoding='utf-8')
         except gs.GSNoSuchKey:
           logging.info('Could not read %s, falling back to %s',
                        metadata_path, partial_metadata_path)
           raw_json = self.gs_ctx.Cat(partial_metadata_path,
-                                     debug_level=logging.DEBUG)
+                                     debug_level=logging.DEBUG,
+                                     encoding='utf-8')
 
         ref.AssignText(raw_json)
 
@@ -240,12 +268,12 @@ class SDKFetcher(object):
       if not sdk_version:
         return None
 
-    # Look up the cache entry in the tarball cache.
-    tarball_cache_path = os.path.join(
-        cache_dir, COMMAND_NAME, cls.TARBALL_CACHE)
-    tarball_cache = cache.TarballCache(tarball_cache_path)
+    # Look up the cache entry in the symlink cache.
+    symlink_cache_path = os.path.join(
+        cache_dir, COMMAND_NAME, cls.SYMLINK_CACHE)
+    symlink_cache = cache.DiskCache(symlink_cache_path)
     cache_key = (board, sdk_version, key)
-    with tarball_cache.Lookup(cache_key) as ref:
+    with symlink_cache.Lookup(cache_key) as ref:
       if ref.Exists():
         return ref.path
     return None
@@ -280,7 +308,7 @@ class SDKFetcher(object):
             bucket=constants.SDK_GS_BUCKET,
             suburl='cros-sdk-%s.tar.xz.Manifest' % self._GetSDKVersion(version),
             for_gsutil=True)
-        manifest = self.gs_ctx.Cat(manifest_path)
+        manifest = self.gs_ctx.Cat(manifest_path, encoding='utf-8')
         ref.AssignText(manifest)
       return json.loads(manifest)
 
@@ -305,14 +333,14 @@ class SDKFetcher(object):
         (self._GetSDKVersion(version), key, package_version),
         for_gsutil=True)
 
-  def _GetTarballCachePath(self, version, key):
+  def _GetTarballCachePath(self, component, url):
     """Get a path in the tarball cache.
 
     Args:
-      version: LKGM version, e.g. 12345.0.0
-      key: tarball key, for e.g. 'app-emulation/qemu'
+      component: component name, for e.g. 'app-emulation/qemu'
+      url: Google Storage url, e.g. 'gs://chromiumos-sdk/2019/some-tarball.tar'
     """
-    cache_key = self._GetCacheKeyForComponent(version, key)
+    cache_key = self._GetTarballCacheKey(component, url)
     with self.tarball_cache.Lookup(cache_key) as ref:
       if ref.Exists(lock=True):
         return ref.path
@@ -341,8 +369,12 @@ class SDKFetcher(object):
     Args:
       version: LKGM version, e.g. 12345.0.0
     """
-    qemu_bin_path = self._GetTarballCachePath(version, self.QEMU_BIN_PATH)
-    seabios_bin_path = self._GetTarballCachePath(version, self.SEABIOS_BIN_PATH)
+    qemu_bin_path = self._GetTarballCachePath(
+        self.QEMU_BIN_PATH,
+        self._GetBinPackageGSPath(version, self.QEMU_BIN_PATH))
+    seabios_bin_path = self._GetTarballCachePath(
+        self.SEABIOS_BIN_PATH,
+        self._GetBinPackageGSPath(version, self.SEABIOS_BIN_PATH))
     if not qemu_bin_path or not seabios_bin_path:
       return
 
@@ -369,7 +401,7 @@ class SDKFetcher(object):
     try:
        # If the version doesn't exist in google storage,
        # which isn't unlikely, don't waste time on retries.
-      full_version = self.gs_ctx.Cat(version_file, retries=0)
+      full_version = self.gs_ctx.Cat(version_file, retries=0, encoding='utf-8')
       assert full_version.startswith('R')
       return full_version
     except (gs.GSNoSuchKey, gs.GSCommandError):
@@ -497,7 +529,7 @@ class SDKFetcher(object):
         full_version = self._GetFullVersionFromLatest(version)
 
         if full_version is None:
-          raise MissingSDK(self.board, version)
+          raise MissingSDK(self.config.name, version)
 
         ref.AssignText(full_version)
         return full_version
@@ -510,8 +542,17 @@ class SDKFetcher(object):
     full_version = self.GetFullVersion(version)
     return os.path.join(self.gs_base, full_version)
 
-  def _GetCacheKeyForComponent(self, version, component):
-    """Builds the cache key tuple for an SDK component."""
+  def _GetTarballCacheKey(self, component, url):
+    """Builds the cache key tuple for an SDK component.
+
+    Returns a key based of the component name + the URL of its location in GS.
+    """
+    key = self.sdk_path if self.sdk_path else url.strip('gs://')
+    key = key.replace('/', '-')
+    return (os.path.join(component, key),)
+
+  def _GetLinkNameForComponent(self, version, component):
+    """Builds the human-readable symlink name for an SDK component."""
     version_section = version
     if self.sdk_path is not None:
       version_section = self.sdk_path.replace('/', '__').replace(':', '__')
@@ -593,17 +634,17 @@ class SDKFetcher(object):
     fetch_urls.update((t, os.path.join(version_base, t)) for t in components)
     try:
       for key, url in fetch_urls.items():
-        cache_key = self._GetCacheKeyForComponent(version, key)
-        ref = self.tarball_cache.Lookup(cache_key)
-        key_map[key] = ref
-        ref.Acquire()
-        if not ref.Exists(lock=True):
+        tarball_cache_key = self._GetTarballCacheKey(key, url)
+        tarball_ref = self.tarball_cache.Lookup(tarball_cache_key)
+        key_map[tarball_cache_key] = tarball_ref
+        tarball_ref.Acquire()
+        if not tarball_ref.Exists(lock=True):
           # TODO(rcui): Parallelize this.  Requires acquiring locks *before*
           # generating worker processes; therefore the functionality needs to
           # be moved into the DiskCache class itself -
           # i.e.,DiskCache.ParallelSetDefault().
           try:
-            self._UpdateTarball(url, ref)
+            self._UpdateTarball(url, tarball_ref)
           except gs.GSNoSuchKey:
             if key == constants.VM_IMAGE_TAR:
               logging.warning(
@@ -612,6 +653,17 @@ class SDKFetcher(object):
                   self.board)
             else:
               raise
+
+        # Create a symlink in a separate cache dir that points to the tarball
+        # component. Since the tarball cache is keyed based off of GS URLs,
+        # these symlinks can be used to identify tarball components without
+        # knowing the GS URL.
+        link_name = self._GetLinkNameForComponent(version, key)
+        link_ref = self.symlink_cache.Lookup(link_name)
+        key_map[key] = link_ref
+        link_ref.Acquire()
+        if not link_ref.Exists(lock=True):
+          self._UpdateCacheSymlink(link_ref, tarball_ref.path)
 
       self._FinalizePackages(version)
       ctx_version = version
@@ -828,8 +880,8 @@ class ChromeSDKCommand(command.CliCommand):
       version: The SDK version.
       chroot: The path to the chroot, if set.
     """
-    current_ps1 = cros_build_lib.RunCommand(
-        ['bash', '-l', '-c', 'echo "$PS1"'], print_cmd=False,
+    current_ps1 = cros_build_lib.run(
+        ['bash', '-l', '-c', 'echo "$PS1"'], print_cmd=False, encoding='utf-8',
         capture_output=True).output.splitlines()
     if current_ps1:
       current_ps1 = current_ps1[-1]
@@ -876,7 +928,7 @@ class ChromeSDKCommand(command.CliCommand):
       return
 
     logging.warning('Running gn gen')
-    cros_build_lib.RunCommand(
+    cros_build_lib.run(
         ['gn', 'gen', 'out_%s/Release' % board,
          '--args=%s' % gn_helpers.ToGNString(gn_args)],
         print_cmd=logging.getLogger().isEnabledFor(logging.DEBUG),
@@ -1045,9 +1097,6 @@ class ChromeSDKCommand(command.CliCommand):
 
     gn_args['target_sysroot'] = sysroot
     gn_args.pop('pkg_config', None)
-    # pkg_config only affects the target and comes from the sysroot.
-    # host_pkg_config is used for programs compiled for use later in the build.
-    gn_args['host_pkg_config'] = 'pkg-config'
     if options.clang:
       gn_args['is_clang'] = True
     if options.internal:
@@ -1255,9 +1304,9 @@ class ChromeSDKCommand(command.CliCommand):
 
   def _GomaPort(self, goma_dir):
     """Returns current active Goma port."""
-    port = cros_build_lib.RunCommand(
+    port = cros_build_lib.run(
         self.GOMACC_PORT_CMD, cwd=goma_dir, debug_level=logging.DEBUG,
-        error_code_ok=True, capture_output=True).output.strip()
+        check=False, encoding='utf-8', capture_output=True).output.strip()
     return port
 
   def _FetchGoma(self):
@@ -1281,7 +1330,7 @@ class ChromeSDKCommand(command.CliCommand):
           with osutils.ChdirContext(tempdir):
             try:
               result = retry_util.RunCurl(['--fail', self._GOMA_DOWNLOAD_URL],
-                                          stdout_to_pipe=True)
+                                          redirect_stdout=True)
               if result.returncode:
                 raise GomaError('Failed to fetch Goma Download URL')
               download_url = result.output.strip()
@@ -1292,13 +1341,14 @@ class ChromeSDKCommand(command.CliCommand):
                 raise GomaError('Failed to fetch Goma')
             except retry_util.DownloadError:
               raise GomaError('Failed to fetch Goma')
-            result = cros_build_lib.DebugRunCommand(
+            result = cros_build_lib.dbg_run(
                 ['tar', 'xf', self._GOMA_TGZ,
                  '--strip=1', '-C', goma_dir])
             if result.returncode:
               raise GomaError('Failed to extract Goma')
-            result = cros_build_lib.DebugRunCommand(
-                [os.path.join(goma_dir, 'goma_ctl.py'), 'update'],
+            # TODO(crbug.com/1007384): Stop forcing Python 2.
+            result = cros_build_lib.dbg_run(
+                ['python2', os.path.join(goma_dir, 'goma_ctl.py'), 'update'],
                 extra_env={'PLATFORM': 'goobuntu'})
             if result.returncode:
               raise GomaError('Failed to install Goma')
@@ -1308,8 +1358,9 @@ class ChromeSDKCommand(command.CliCommand):
     port = None
     if self.options.start_goma:
       Log('Starting Goma.', silent=self.silent)
-      cros_build_lib.DebugRunCommand(
-          [os.path.join(goma_dir, 'goma_ctl.py'), 'ensure_start'])
+      # TODO(crbug.com/1007384): Stop forcing Python 2.
+      cros_build_lib.dbg_run(
+          ['python2', os.path.join(goma_dir, 'goma_ctl.py'), 'ensure_start'])
       port = self._GomaPort(goma_dir)
       Log('Goma is started on port %s', port, silent=self.silent)
       if not port:
@@ -1397,7 +1448,7 @@ class ChromeSDKCommand(command.CliCommand):
         os.environ.pop('SSH_CONNECTION', None)
         os.environ.pop('SSH_TTY', None)
 
-        cmd_result = cros_build_lib.RunCommand(
+        cmd_result = cros_build_lib.run(
             bash_cmd, print_cmd=False, debug_level=logging.CRITICAL,
             error_code_ok=True, extra_env=extra_env, cwd=self.options.cwd)
         if self.options.cmd:

@@ -171,9 +171,9 @@ class CertificateProviderRequestPinTest : public CertificateProviderApiTest {
     CertificateProviderApiTest::TearDownOnMainThread();
   }
 
-  void AddFakeSignRequest() {
+  void AddFakeSignRequest(int sign_request_id) {
     cert_provider_service_->pin_dialog_manager()->AddSignRequestId(
-        extension_->id(), kFakeSignRequestId, {});
+        extension_->id(), sign_request_id, {});
   }
 
   void NavigateTo(const std::string& test_page_file_name) {
@@ -372,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
 
 // User enters the correct PIN.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ShowPinDialogAccept) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("basic.html");
 
   // Enter the valid PIN.
@@ -382,14 +382,14 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ShowPinDialogAccept) {
   EXPECT_FALSE(GetActivePinDialogView());
 }
 
-// User closes the dialog kMaxClosedDialogsPer10Mins times, and the extension
+// User closes the dialog kMaxClosedDialogsPerMinute times, and the extension
 // should be blocked from showing it again.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ShowPinDialogClose) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("basic.html");
 
   for (int i = 0;
-       i < extensions::api::certificate_provider::kMaxClosedDialogsPer10Mins;
+       i < extensions::api::certificate_provider::kMaxClosedDialogsPerMinute;
        i++) {
     ExtensionTestMessageListener listener("User closed the dialog", false);
     GetActivePinDialogWindow()->Close();
@@ -401,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ShowPinDialogClose) {
   ASSERT_TRUE(close_listener.WaitUntilSatisfied());
   close_listener.Reply("GetLastError");
   ExtensionTestMessageListener last_error_listener(
-      "This request exceeds the MAX_PIN_DIALOGS_CLOSED_PER_10_MINUTES quota.",
+      "This request exceeds the MAX_PIN_DIALOGS_CLOSED_PER_MINUTE quota.",
       false);
   ASSERT_TRUE(last_error_listener.WaitUntilSatisfied());
   EXPECT_FALSE(GetActivePinDialogView());
@@ -410,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ShowPinDialogClose) {
 // User enters a wrong PIN first and a correct PIN on the second try.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
                        ShowPinDialogWrongPin) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("basic.html");
   EnterWrongPinAndWaitForMessage();
 
@@ -428,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
 // User enters wrong PIN three times.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
                        ShowPinDialogWrongPinThreeTimes) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("basic.html");
   for (int i = 0; i < kWrongPinAttemptsLimit; i++)
     EnterWrongPinAndWaitForMessage();
@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
 // User closes the dialog while the extension is processing the request.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
                        ShowPinDialogCloseWhileProcessing) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("operated.html");
 
   EXPECT_TRUE(SendCommandAndWaitForMessage("Request", "request1:begun"));
@@ -462,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
   EXPECT_FALSE(GetActivePinDialogView());
 }
 
-// Extension closes the dialog kMaxClosedDialogsPer10Mins times after the user
+// Extension closes the dialog kMaxClosedDialogsPerMinute times after the user
 // inputs some value, and it should be blocked from showing it again.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
                        RepeatedProgrammaticCloseAfterInput) {
@@ -470,9 +470,9 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
 
   for (int i = 0;
        i <
-       extensions::api::certificate_provider::kMaxClosedDialogsPer10Mins + 1;
+       extensions::api::certificate_provider::kMaxClosedDialogsPerMinute + 1;
        i++) {
-    AddFakeSignRequest();
+    AddFakeSignRequest(kFakeSignRequestId);
     EXPECT_TRUE(SendCommandAndWaitForMessage(
         "Request", base::StringPrintf("request%d:begun", i + 1)));
 
@@ -482,20 +482,20 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
     EXPECT_FALSE(GetActivePinDialogView());
   }
 
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   EXPECT_TRUE(SendCommandAndWaitForMessage(
       "Request",
       base::StringPrintf(
           "request%d:error:This request exceeds the "
-          "MAX_PIN_DIALOGS_CLOSED_PER_10_MINUTES quota.",
-          extensions::api::certificate_provider::kMaxClosedDialogsPer10Mins +
+          "MAX_PIN_DIALOGS_CLOSED_PER_MINUTE quota.",
+          extensions::api::certificate_provider::kMaxClosedDialogsPerMinute +
               2)));
   EXPECT_FALSE(GetActivePinDialogView());
 }
 
 // Extension erroneously attempts to close the PIN dialog twice.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, DoubleClose) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("operated.html");
 
   EXPECT_TRUE(SendCommand("Request"));
@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, DoubleClose) {
   EXPECT_FALSE(GetActivePinDialogView());
 }
 
-// Extension closes the dialog kMaxClosedDialogsPer10Mins times before the user
+// Extension closes the dialog kMaxClosedDialogsPerMinute times before the user
 // inputs anything, and it should be blocked from showing it again.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
                        RepeatedProgrammaticCloseBeforeInput) {
@@ -513,22 +513,22 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
 
   for (int i = 0;
        i <
-       extensions::api::certificate_provider::kMaxClosedDialogsPer10Mins + 1;
+       extensions::api::certificate_provider::kMaxClosedDialogsPerMinute + 1;
        i++) {
-    AddFakeSignRequest();
+    AddFakeSignRequest(kFakeSignRequestId);
     EXPECT_TRUE(SendCommand("Request"));
     EXPECT_TRUE(SendCommandAndWaitForMessage(
         "Stop", base::StringPrintf("stop%d:success", i + 1)));
     EXPECT_FALSE(GetActivePinDialogView());
   }
 
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   EXPECT_TRUE(SendCommandAndWaitForMessage(
       "Request",
       base::StringPrintf(
           "request%d:error:This request exceeds the "
-          "MAX_PIN_DIALOGS_CLOSED_PER_10_MINUTES quota.",
-          extensions::api::certificate_provider::kMaxClosedDialogsPer10Mins +
+          "MAX_PIN_DIALOGS_CLOSED_PER_MINUTE quota.",
+          extensions::api::certificate_provider::kMaxClosedDialogsPerMinute +
               2)));
   EXPECT_FALSE(GetActivePinDialogView());
 }
@@ -537,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
 // the user provided any input.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
                        StopWithErrorBeforeInput) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("operated.html");
 
   EXPECT_TRUE(SendCommand("Request"));
@@ -557,7 +557,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, InvalidRequestId) {
 
 // Extension specifies zero left attempts in the very first PIN request.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ZeroAttemptsAtStart) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("operated.html");
 
   EXPECT_TRUE(SendCommandAndWaitForMessage("RequestWithZeroAttempts",
@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ZeroAttemptsAtStart) {
 
 // Extension erroneously passes a negative attempts left count.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, NegativeAttempts) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("operated.html");
 
   EXPECT_TRUE(SendCommandAndWaitForMessage(
@@ -583,7 +583,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, NegativeAttempts) {
 
 // Extension erroneously attempts to close a non-existing dialog.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, CloseNonExisting) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("operated.html");
 
   EXPECT_TRUE(SendCommandAndWaitForMessage(
@@ -593,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, CloseNonExisting) {
 
 // Extension erroneously attempts to stop a non-existing dialog with an error.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, StopNonExisting) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("operated.html");
 
   EXPECT_TRUE(SendCommandAndWaitForMessage(
@@ -605,7 +605,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, StopNonExisting) {
 // user closed the previously stopped with an error PIN request.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
                        UpdateAlreadyStopped) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("operated.html");
 
   EXPECT_TRUE(SendCommandAndWaitForMessage("Request", "request1:begun"));
@@ -622,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
 // Extension starts a new PIN request after it stopped the previous one with an
 // error.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, StartAfterStop) {
-  AddFakeSignRequest();
+  AddFakeSignRequest(kFakeSignRequestId);
   NavigateTo("operated.html");
 
   EXPECT_TRUE(SendCommandAndWaitForMessage("Request", "request1:begun"));
@@ -636,4 +636,29 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, StartAfterStop) {
   EnterCode(kCorrectPin);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
   EXPECT_FALSE(GetActivePinDialogView()->textfield_for_testing()->GetEnabled());
+}
+
+// Test that no quota is applied to the first PIN requests for each requestId.
+IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
+                       RepeatedCloseWithDifferentIds) {
+  NavigateTo("operated.html");
+
+  for (int i = 0;
+       i <
+       extensions::api::certificate_provider::kMaxClosedDialogsPer10Minutes + 2;
+       i++) {
+    AddFakeSignRequest(kFakeSignRequestId + i);
+    EXPECT_TRUE(SendCommandAndWaitForMessage(
+        "Request", base::StringPrintf("request%d:begun", i + 1)));
+
+    ExtensionTestMessageListener listener(
+        base::StringPrintf("request%d:empty", i + 1), false);
+    ASSERT_TRUE(GetActivePinDialogView());
+    GetActivePinDialogView()->GetWidget()->CloseWithReason(
+        views::Widget::ClosedReason::kCloseButtonClicked);
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    EXPECT_FALSE(GetActivePinDialogView());
+
+    EXPECT_TRUE(SendCommand("IncrementRequestId"));
+  }
 }

@@ -32,6 +32,7 @@ class ConvertableToTraceFormat;
 
 namespace gpu {
 class SyncPointManager;
+struct GpuPreferences;
 
 class GPU_EXPORT Scheduler {
  public:
@@ -49,7 +50,8 @@ class GPU_EXPORT Scheduler {
   };
 
   Scheduler(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-            SyncPointManager* sync_point_manager);
+            SyncPointManager* sync_point_manager,
+            const GpuPreferences& gpu_preferences);
 
   virtual ~Scheduler();
 
@@ -91,6 +93,13 @@ class GPU_EXPORT Scheduler {
 
   // If the sequence should yield so that a higher priority sequence may run.
   bool ShouldYield(SequenceId sequence_id);
+
+  base::WeakPtr<Scheduler> AsWeakPtr();
+
+  // Takes and resets current accumulated blocking time. Not available on all
+  // platforms. Must be enabled with --enable-gpu-blocked-time.
+  // Returns TimeDelta::Min() when not available.
+  base::TimeDelta TakeTotalBlockingTime();
 
  private:
 
@@ -332,6 +341,10 @@ class GPU_EXPORT Scheduler {
   // If the scheduling queue needs to be rebuild because a sequence changed
   // priority.
   bool rebuild_scheduling_queue_ = false;
+
+  // Accumulated time the thread was blocked during running task
+  base::TimeDelta total_blocked_time_;
+  const bool blocked_time_collection_enabled_;
 
   base::ThreadChecker thread_checker_;
 

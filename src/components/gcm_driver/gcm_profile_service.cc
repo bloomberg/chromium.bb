@@ -112,7 +112,7 @@ void GCMProfileService::IdentityObserver::StartAccountTracker(
     return;
 
   std::unique_ptr<AccountTracker> gaia_account_tracker(
-      new AccountTracker(identity_manager_, std::move(url_loader_factory)));
+      new AccountTracker(identity_manager_));
 
   gcm_account_tracker_.reset(new GCMAccountTracker(
       std::move(gaia_account_tracker), identity_manager_, driver_));
@@ -144,9 +144,9 @@ GCMProfileService::GCMProfileService(
 GCMProfileService::GCMProfileService(
     PrefService* prefs,
     base::FilePath path,
-    base::RepeatingCallback<
-        void(base::WeakPtr<GCMProfileService>,
-             network::mojom::ProxyResolvingSocketFactoryRequest)>
+    base::RepeatingCallback<void(
+        base::WeakPtr<GCMProfileService>,
+        mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>)>
         get_socket_factory_callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     network::NetworkConnectionTracker* network_connection_tracker,

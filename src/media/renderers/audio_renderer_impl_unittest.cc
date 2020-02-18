@@ -106,7 +106,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
         ended_(false) {
     AudioDecoderConfig audio_config(kCodec, kSampleFormat, kChannelLayout,
                                     kInputSamplesPerSecond, EmptyExtraData(),
-                                    Unencrypted());
+                                    EncryptionScheme::kUnencrypted);
     demuxer_stream_.set_audio_decoder_config(audio_config);
 
     ConfigureDemuxerStream(true);
@@ -117,8 +117,8 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
                                512);
     renderer_.reset(new AudioRendererImpl(
         main_thread_task_runner_, sink_.get(),
-        base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
-                   base::Unretained(this)),
+        base::BindRepeating(&AudioRendererImplTest::CreateAudioDecoderForTest,
+                            base::Unretained(this)),
         &media_log_));
     renderer_->tick_clock_ = &tick_clock_;
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
@@ -130,10 +130,10 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
 
   // Mock out demuxer reads.
   void ConfigureDemuxerStream(bool supports_config_changes) {
-    EXPECT_CALL(demuxer_stream_, Read(_))
-        .WillRepeatedly(
-            RunCallback<0>(DemuxerStream::kOk,
-                           scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
+    EXPECT_CALL(demuxer_stream_, OnRead(_))
+        .WillRepeatedly(RunOnceCallback<0>(
+            DemuxerStream::kOk,
+            scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
     EXPECT_CALL(demuxer_stream_, SupportsConfigChanges())
         .WillRepeatedly(Return(supports_config_changes));
   }
@@ -144,8 +144,8 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     sink_ = new FakeAudioRendererSink(hardware_params_);
     renderer_.reset(new AudioRendererImpl(
         main_thread_task_runner_, sink_.get(),
-        base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
-                   base::Unretained(this)),
+        base::BindRepeating(&AudioRendererImplTest::CreateAudioDecoderForTest,
+                            base::Unretained(this)),
         &media_log_));
     testing::Mock::VerifyAndClearExpectations(&demuxer_stream_);
     ConfigureDemuxerStream(false);
@@ -158,8 +158,8 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     sink_ = new FakeAudioRendererSink(hardware_params_);
     renderer_.reset(new AudioRendererImpl(
         main_thread_task_runner_, sink_.get(),
-        base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
-                   base::Unretained(this)),
+        base::BindRepeating(&AudioRendererImplTest::CreateAudioDecoderForTest,
+                            base::Unretained(this)),
         &media_log_));
     testing::Mock::VerifyAndClearExpectations(&demuxer_stream_);
     ConfigureDemuxerStream(true);
@@ -169,8 +169,8 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     mock_sink_ = new MockAudioRendererSink();
     renderer_.reset(new AudioRendererImpl(
         main_thread_task_runner_, mock_sink_.get(),
-        base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
-                   base::Unretained(this)),
+        base::BindRepeating(&AudioRendererImplTest::CreateAudioDecoderForTest,
+                            base::Unretained(this)),
         &media_log_));
     testing::Mock::VerifyAndClearExpectations(&demuxer_stream_);
     ConfigureDemuxerStream(true);
@@ -218,17 +218,17 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     hardware_params_.Reset(AudioParameters::AUDIO_BITSTREAM_EAC3,
                            kChannelLayout, kOutputSamplesPerSecond, 512);
     sink_ = new FakeAudioRendererSink(hardware_params_);
-    AudioDecoderConfig audio_config(kCodecAC3, kSampleFormatEac3,
-                                    kChannelLayout, kInputSamplesPerSecond,
-                                    EmptyExtraData(), Unencrypted());
+    AudioDecoderConfig audio_config(
+        kCodecAC3, kSampleFormatEac3, kChannelLayout, kInputSamplesPerSecond,
+        EmptyExtraData(), EncryptionScheme::kUnencrypted);
     demuxer_stream_.set_audio_decoder_config(audio_config);
 
     ConfigureDemuxerStream(true);
 
     renderer_.reset(new AudioRendererImpl(
         main_thread_task_runner_, sink_.get(),
-        base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
-                   base::Unretained(this)),
+        base::BindRepeating(&AudioRendererImplTest::CreateAudioDecoderForTest,
+                            base::Unretained(this)),
         &media_log_));
 
     Initialize();
@@ -352,9 +352,9 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     DCHECK(decode_cb_);
 
     // Return EOS buffer to trigger EOS frame.
-    EXPECT_CALL(demuxer_stream_, Read(_))
-        .WillOnce(RunCallback<0>(DemuxerStream::kOk,
-                                 DecoderBuffer::CreateEOSBuffer()));
+    EXPECT_CALL(demuxer_stream_, OnRead(_))
+        .WillOnce(RunOnceCallback<0>(DemuxerStream::kOk,
+                                     DecoderBuffer::CreateEOSBuffer()));
 
     // Satify pending |decode_cb_| to trigger a new DemuxerStream::Read().
     main_thread_task_runner_->PostTask(
@@ -565,7 +565,7 @@ TEST_F(AudioRendererImplTest, ReinitializeForDifferentStream) {
   EXPECT_CALL(new_stream, SupportsConfigChanges()).WillOnce(Return(false));
   AudioDecoderConfig audio_config(kCodec, kSampleFormat, kChannelLayout,
                                   kInputSamplesPerSecond, EmptyExtraData(),
-                                  Unencrypted());
+                                  EncryptionScheme::kUnencrypted);
   new_stream.set_audio_decoder_config(audio_config);
 
   // The renderer is now in the flushed state and can be reinitialized.
@@ -586,7 +586,7 @@ TEST_F(AudioRendererImplTest, SignalConfigChange) {
   // that RendererClient to be signaled with the new config.
   const AudioDecoderConfig kValidAudioConfig(
       kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
-      EmptyExtraData(), Unencrypted());
+      EmptyExtraData(), EncryptionScheme::kUnencrypted);
   EXPECT_TRUE(kValidAudioConfig.IsValidConfig());
   EXPECT_CALL(*this, OnAudioConfigChange(DecoderConfigEq(kValidAudioConfig)));
   force_config_change(kValidAudioConfig);
@@ -850,7 +850,7 @@ TEST_F(AudioRendererImplTest, ChannelMask_DownmixDiscreteLayout) {
 
   AudioDecoderConfig audio_config(
       kCodecOpus, kSampleFormat, CHANNEL_LAYOUT_DISCRETE,
-      kInputSamplesPerSecond, EmptyExtraData(), Unencrypted());
+      kInputSamplesPerSecond, EmptyExtraData(), EncryptionScheme::kUnencrypted);
   audio_config.SetChannelsForDiscrete(audio_channels);
   demuxer_stream_.set_audio_decoder_config(audio_config);
   ConfigureDemuxerStream(true);

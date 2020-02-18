@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -15,7 +16,6 @@
 #include "ui/events/ozone/device/device_event_observer.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/event_thread_evdev.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/input_controller_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
@@ -41,15 +41,15 @@ enum class DomCode;
 enum class StylusState;
 
 #if !defined(USE_EVDEV)
-#error Missing dependency on ui/events/ozone:events_ozone_evdev
+#error Missing dependency on ui/events/ozone/evdev
 #endif
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
 //
 // This is a UI thread object, but creates its own thread for I/O. See
 // InputDeviceFactoryEvdev for the I/O thread part.
-class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
-                                                    public PlatformEventSource {
+class COMPONENT_EXPORT(EVDEV) EventFactoryEvdev : public DeviceEventObserver,
+                                                  public PlatformEventSource {
  public:
   EventFactoryEvdev(CursorDelegateEvdev* cursor,
                     DeviceManager* device_manager,
@@ -115,10 +115,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   int last_device_id_ = 0;
 
   // Interface for scanning & monitoring input devices.
-  DeviceManager* device_manager_;  // Not owned.
+  DeviceManager* const device_manager_;  // Not owned.
 
   // Gamepad provider to dispatch gamepad events.
-  GamepadProviderOzone* gamepad_provider_;
+  GamepadProviderOzone* const gamepad_provider_;
 
   // Proxy for input device factory (manages device I/O objects).
   // The real object lives on a different thread.
@@ -134,7 +134,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   KeyboardEvdev keyboard_;
 
   // Cursor movement.
-  CursorDelegateEvdev* cursor_;
+  CursorDelegateEvdev* const cursor_;
 
   // Object for controlling input devices.
   InputControllerEvdev input_controller_;

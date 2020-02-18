@@ -32,6 +32,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CONTEXT_MENU_DATA_H_
 
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/context_menu_data/input_field_type.h"
+#include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -44,28 +46,9 @@ namespace blink {
 
 // This struct is passed to WebViewClient::ShowContextMenu.
 struct WebContextMenuData {
-  // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.web
-  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: WebContextMenuMediaType
-  enum MediaType {
-    // No special node is in context.
-    kMediaTypeNone,
-    // An image node is selected.
-    kMediaTypeImage,
-    // A video node is selected.
-    kMediaTypeVideo,
-    // An audio node is selected.
-    kMediaTypeAudio,
-    // A canvas node is selected.
-    kMediaTypeCanvas,
-    // A file node is selected.
-    kMediaTypeFile,
-    // A plugin node is selected.
-    kMediaTypePlugin,
-    kMediaTypeLast = kMediaTypePlugin
-  };
   // The type of media the context menu is being invoked on.
-  MediaType media_type;
+  // using MediaType = ContextMenuDataMediaType;
+  ContextMenuDataMediaType media_type;
 
   // The x and y position of the mouse pointer (relative to the webview).
   WebPoint mouse_position;
@@ -135,24 +118,8 @@ struct WebContextMenuData {
   // Whether context is editable.
   bool is_editable;
 
-  enum InputFieldType {
-    // Not an input field.
-    kInputFieldTypeNone,
-    // type = text, search, email, url
-    kInputFieldTypePlainText,
-    // type = password
-    kInputFieldTypePassword,
-    // type = number
-    kInputFieldTypeNumber,
-    // type = tel
-    kInputFieldTypeTelephone,
-    // type = <etc.>
-    kInputFieldTypeOther,
-    kInputFieldTypeLast = kInputFieldTypeOther
-  };
-
   // If this node is an input field, the type of that field.
-  InputFieldType input_field_type;
+  ContextMenuDataInputFieldType input_field_type;
 
   enum CheckableMenuItemFlags {
     kCheckableMenuItemDisabled = 0x0,
@@ -165,19 +132,6 @@ struct WebContextMenuData {
   int writing_direction_default;
   int writing_direction_left_to_right;
   int writing_direction_right_to_left;
-
-  enum EditFlags {
-    kCanDoNone = 0x0,
-    kCanUndo = 0x1,
-    kCanRedo = 0x2,
-    kCanCut = 0x4,
-    kCanCopy = 0x8,
-    kCanPaste = 0x10,
-    kCanDelete = 0x20,
-    kCanSelectAll = 0x40,
-    kCanTranslate = 0x80,
-    kCanEditRichly = 0x100,
-  };
 
   // Which edit operations are available in the context.
   int edit_flags;
@@ -202,7 +156,7 @@ struct WebContextMenuData {
   WebMenuSourceType source_type;
 
   WebContextMenuData()
-      : media_type(kMediaTypeNone),
+      : media_type(ContextMenuDataMediaType::kNone),
         has_image_contents(false),
         media_flags(kMediaNone),
         is_spell_checking_enabled(false),

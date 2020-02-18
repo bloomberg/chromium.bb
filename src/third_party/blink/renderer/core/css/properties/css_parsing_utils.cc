@@ -56,7 +56,8 @@
 
 namespace blink {
 
-using namespace cssvalue;
+using cssvalue::CSSFontFeatureValue;
+using cssvalue::CSSGridLineNamesValue;
 
 namespace css_parsing_utils {
 namespace {
@@ -175,7 +176,8 @@ CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
   }
 
   range = range_copy;
-  return CSSStepsTimingFunctionValue::Create(steps->GetIntValue(), position);
+  return cssvalue::CSSStepsTimingFunctionValue::Create(steps->GetIntValue(),
+                                                       position);
 }
 
 CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {
@@ -195,8 +197,8 @@ CSSValue* ConsumeCubicBezier(CSSParserTokenRange& range) {
       css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args) &&
       css_property_parser_helpers::ConsumeNumberRaw(args, y2) && args.AtEnd()) {
     range = range_copy;
-    return MakeGarbageCollected<CSSCubicBezierTimingFunctionValue>(x1, y1, x2,
-                                                                   y2);
+    return MakeGarbageCollected<cssvalue::CSSCubicBezierTimingFunctionValue>(
+        x1, y1, x2, y2);
   }
 
   return nullptr;
@@ -228,12 +230,12 @@ CSSValue* ConsumeShapeRadius(CSSParserTokenRange& args,
       args, css_parser_mode, kValueRangeNonNegative);
 }
 
-CSSBasicShapeCircleValue* ConsumeBasicShapeCircle(
+cssvalue::CSSBasicShapeCircleValue* ConsumeBasicShapeCircle(
     CSSParserTokenRange& args,
     const CSSParserContext& context) {
   // spec: https://drafts.csswg.org/css-shapes/#supported-basic-shapes
   // circle( [<shape-radius>]? [at <position>]? )
-  auto* shape = MakeGarbageCollected<CSSBasicShapeCircleValue>();
+  auto* shape = MakeGarbageCollected<cssvalue::CSSBasicShapeCircleValue>();
   if (CSSValue* radius = ConsumeShapeRadius(args, context.Mode()))
     shape->SetRadius(radius);
   if (css_property_parser_helpers::ConsumeIdent<CSSValueID::kAt>(args)) {
@@ -249,12 +251,12 @@ CSSBasicShapeCircleValue* ConsumeBasicShapeCircle(
   return shape;
 }
 
-CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
+cssvalue::CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
     CSSParserTokenRange& args,
     const CSSParserContext& context) {
   // spec: https://drafts.csswg.org/css-shapes/#supported-basic-shapes
   // ellipse( [<shape-radius>{2}]? [at <position>]? )
-  auto* shape = MakeGarbageCollected<CSSBasicShapeEllipseValue>();
+  auto* shape = MakeGarbageCollected<cssvalue::CSSBasicShapeEllipseValue>();
   WebFeature feature = WebFeature::kBasicShapeEllipseNoRadius;
   if (CSSValue* radius_x = ConsumeShapeRadius(args, context.Mode())) {
     CSSValue* radius_y = ConsumeShapeRadius(args, context.Mode());
@@ -279,10 +281,10 @@ CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
   return shape;
 }
 
-CSSBasicShapePolygonValue* ConsumeBasicShapePolygon(
+cssvalue::CSSBasicShapePolygonValue* ConsumeBasicShapePolygon(
     CSSParserTokenRange& args,
     const CSSParserContext& context) {
-  auto* shape = MakeGarbageCollected<CSSBasicShapePolygonValue>();
+  auto* shape = MakeGarbageCollected<cssvalue::CSSBasicShapePolygonValue>();
   if (css_property_parser_helpers::IdentMatches<CSSValueID::kEvenodd,
                                                 CSSValueID::kNonzero>(
           args.Peek().Id())) {
@@ -310,10 +312,10 @@ CSSBasicShapePolygonValue* ConsumeBasicShapePolygon(
   return shape;
 }
 
-CSSBasicShapeInsetValue* ConsumeBasicShapeInset(
+cssvalue::CSSBasicShapeInsetValue* ConsumeBasicShapeInset(
     CSSParserTokenRange& args,
     const CSSParserContext& context) {
-  auto* shape = MakeGarbageCollected<CSSBasicShapeInsetValue>();
+  auto* shape = MakeGarbageCollected<cssvalue::CSSBasicShapeInsetValue>();
   CSSPrimitiveValue* top = css_property_parser_helpers::ConsumeLengthOrPercent(
       args, context.Mode(), kValueRangeAll);
   if (!top)
@@ -492,7 +494,7 @@ CSSValue* ConsumeContentDistributionOverflowPosition(
   DCHECK(is_position_keyword);
   CSSValueID id = range.Peek().Id();
   if (css_property_parser_helpers::IdentMatches<CSSValueID::kNormal>(id)) {
-    return MakeGarbageCollected<CSSContentDistributionValue>(
+    return MakeGarbageCollected<cssvalue::CSSContentDistributionValue>(
         CSSValueID::kInvalid, range.ConsumeIncludingWhitespace().Id(),
         CSSValueID::kInvalid);
   }
@@ -501,13 +503,13 @@ CSSValue* ConsumeContentDistributionOverflowPosition(
     CSSValue* baseline = ConsumeBaselineKeyword(range);
     if (!baseline)
       return nullptr;
-    return MakeGarbageCollected<CSSContentDistributionValue>(
+    return MakeGarbageCollected<cssvalue::CSSContentDistributionValue>(
         CSSValueID::kInvalid, GetBaselineKeyword(*baseline),
         CSSValueID::kInvalid);
   }
 
   if (IsContentDistributionKeyword(id)) {
-    return MakeGarbageCollected<CSSContentDistributionValue>(
+    return MakeGarbageCollected<cssvalue::CSSContentDistributionValue>(
         range.ConsumeIncludingWhitespace().Id(), CSSValueID::kInvalid,
         CSSValueID::kInvalid);
   }
@@ -516,7 +518,7 @@ CSSValue* ConsumeContentDistributionOverflowPosition(
                             ? range.ConsumeIncludingWhitespace().Id()
                             : CSSValueID::kInvalid;
   if (is_position_keyword(range.Peek().Id())) {
-    return MakeGarbageCollected<CSSContentDistributionValue>(
+    return MakeGarbageCollected<cssvalue::CSSContentDistributionValue>(
         CSSValueID::kInvalid, range.ConsumeIncludingWhitespace().Id(),
         overflow);
   }
@@ -849,6 +851,7 @@ bool ParseBackgroundOrMask(bool important,
     CSSValue* origin_value = nullptr;
     do {
       bool found_property = false;
+      bool bg_position_parsed_in_current_layer = false;
       for (unsigned i = 0; i < longhand_count; ++i) {
         if (parsed_longhand[i])
           continue;
@@ -866,6 +869,8 @@ bool ParseBackgroundOrMask(bool important,
                   css_property_parser_helpers::UnitlessQuirk::kForbid,
                   WebFeature::kThreeValuedPositionBackground, value, value_y))
             continue;
+          if (value)
+            bg_position_parsed_in_current_layer = true;
         } else if (property.IDEquals(CSSPropertyID::kBackgroundSize) ||
                    property.IDEquals(CSSPropertyID::kWebkitMaskSize)) {
           if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(
@@ -877,12 +882,8 @@ bool ParseBackgroundOrMask(bool important,
                   ? WebFeature::kNegativeBackgroundSize
                   : WebFeature::kNegativeMaskSize,
               ParsingStyle::kNotLegacy);
-          if (!value ||
-              !parsed_longhand[i - 1])  // Position must have been
-                                        // parsed in the current layer.
-          {
+          if (!value || !bg_position_parsed_in_current_layer)
             return false;
-          }
         } else if (property.IDEquals(CSSPropertyID::kBackgroundPositionY) ||
                    property.IDEquals(CSSPropertyID::kBackgroundRepeatY) ||
                    property.IDEquals(CSSPropertyID::kWebkitMaskPositionY) ||
@@ -1092,7 +1093,7 @@ CSSValue* ConsumeBorderImageSlice(CSSParserTokenRange& range,
   css_property_parser_helpers::Complete4Sides(slices);
   if (default_fill == DefaultFill::kFill)
     fill = true;
-  return MakeGarbageCollected<CSSBorderImageSliceValue>(
+  return MakeGarbageCollected<cssvalue::CSSBorderImageSliceValue>(
       MakeGarbageCollected<CSSQuadValue>(slices[0], slices[1], slices[2],
                                          slices[3],
                                          CSSQuadValue::kSerializeAsQuad),
@@ -1433,8 +1434,8 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
   if (parser_mode != kCSSFontFaceRuleMode || range.AtEnd()) {
     CSSValueList* value_list = CSSValueList::CreateSpaceSeparated();
     value_list->Append(*start_angle);
-    return MakeGarbageCollected<CSSFontStyleRangeValue>(*oblique_identifier,
-                                                        *value_list);
+    return MakeGarbageCollected<cssvalue::CSSFontStyleRangeValue>(
+        *oblique_identifier, *value_list);
   }
 
   CSSPrimitiveValue* end_angle = css_property_parser_helpers::ConsumeAngle(
@@ -1445,8 +1446,8 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
   CSSValueList* range_list = CombineToRangeListOrNull(start_angle, end_angle);
   if (!range_list)
     return nullptr;
-  return MakeGarbageCollected<CSSFontStyleRangeValue>(*oblique_identifier,
-                                                      *range_list);
+  return MakeGarbageCollected<cssvalue::CSSFontStyleRangeValue>(
+      *oblique_identifier, *range_list);
 }
 
 CSSIdentifierValue* ConsumeFontStretchKeywordOnly(CSSParserTokenRange& range) {
@@ -1723,7 +1724,7 @@ CSSCustomIdentValue* ConsumeCustomIdentForGridLine(
 }
 
 // Appends to the passed in CSSGridLineNamesValue if any, otherwise creates a
-// new one.
+// new one. Returns nullptr if an empty list is consumed.
 CSSGridLineNamesValue* ConsumeGridLineNames(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -1739,6 +1740,8 @@ CSSGridLineNamesValue* ConsumeGridLineNames(
   if (range_copy.ConsumeIncludingWhitespace().GetType() != kRightBracketToken)
     return nullptr;
   range = range_copy;
+  if (line_names->length() == 0U)
+    return nullptr;
   return line_names;
 }
 
@@ -1757,7 +1760,7 @@ bool ConsumeGridTrackRepeatFunction(CSSParserTokenRange& range,
       CSSValueID::kAutoFill, CSSValueID::kAutoFit>(args.Peek().Id());
   CSSValueList* repeated_values;
   if (is_auto_repeat) {
-    repeated_values = MakeGarbageCollected<CSSGridAutoRepeatValue>(
+    repeated_values = MakeGarbageCollected<cssvalue::CSSGridAutoRepeatValue>(
         args.ConsumeIncludingWhitespace().Id());
   } else {
     // TODO(rob.buis): a consumeIntegerRaw would be more efficient here.
@@ -1800,7 +1803,7 @@ bool ConsumeGridTrackRepeatFunction(CSSParserTokenRange& range,
     // while staying below the max grid size.
     repetitions = std::min(repetitions, kGridMaxTracks / number_of_tracks);
     auto* integer_repeated_values =
-        MakeGarbageCollected<CSSGridIntegerRepeatValue>(repetitions);
+        MakeGarbageCollected<cssvalue::CSSGridIntegerRepeatValue>(repetitions);
     for (size_t i = 0; i < repeated_values->length(); ++i)
       integer_repeated_values->Append(repeated_values->Item(i));
     list.Append(*integer_repeated_values);
@@ -1868,7 +1871,7 @@ bool ConsumeGridTemplateRowsAndAreasAndColumns(bool important,
   }
 
   template_rows = template_rows_value_list;
-  template_areas = MakeGarbageCollected<CSSGridTemplateAreasValue>(
+  template_areas = MakeGarbageCollected<cssvalue::CSSGridTemplateAreasValue>(
       grid_area_map, row_count, column_count);
   return true;
 }
@@ -1939,12 +1942,11 @@ CSSValue* ConsumeGridTrackList(CSSParserTokenRange& range,
                                TrackListType track_list_type) {
   bool allow_grid_line_names = track_list_type != TrackListType::kGridAuto;
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();
+  if (!allow_grid_line_names && range.Peek().GetType() == kLeftBracketToken)
+    return nullptr;
   CSSGridLineNamesValue* line_names = ConsumeGridLineNames(range, context);
-  if (line_names) {
-    if (!allow_grid_line_names)
-      return nullptr;
+  if (line_names)
     values->Append(*line_names);
-  }
 
   bool allow_repeat = track_list_type == TrackListType::kGridTemplate;
   bool seen_auto_repeat = false;
@@ -1970,12 +1972,11 @@ CSSValue* ConsumeGridTrackList(CSSParserTokenRange& range,
     }
     if (seen_auto_repeat && !all_tracks_are_fixed_sized)
       return nullptr;
+    if (!allow_grid_line_names && range.Peek().GetType() == kLeftBracketToken)
+      return nullptr;
     line_names = ConsumeGridLineNames(range, context);
-    if (line_names) {
-      if (!allow_grid_line_names)
-        return nullptr;
+    if (line_names)
       values->Append(*line_names);
-    }
   } while (!range.AtEnd() && range.Peek().GetType() != kDelimiterToken);
   return values;
 }
@@ -2218,7 +2219,7 @@ CSSValue* ConsumePath(CSSParserTokenRange& range) {
   range = function_range;
   if (byte_stream->IsEmpty())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return MakeGarbageCollected<CSSPathValue>(std::move(byte_stream));
+  return MakeGarbageCollected<cssvalue::CSSPathValue>(std::move(byte_stream));
 }
 
 CSSValue* ConsumeRay(CSSParserTokenRange& range,
@@ -2257,7 +2258,7 @@ CSSValue* ConsumeRay(CSSParserTokenRange& range,
   if (!angle || !size)
     return nullptr;
   range = function_range;
-  return MakeGarbageCollected<CSSRayValue>(*angle, *size, contain);
+  return MakeGarbageCollected<cssvalue::CSSRayValue>(*angle, *size, contain);
 }
 
 CSSValue* ConsumeMaxWidthOrHeight(
@@ -2650,7 +2651,8 @@ CSSValue* ParsePaintStroke(CSSParserTokenRange& range,
                            const CSSParserContext& context) {
   if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
-  CSSURIValue* url = css_property_parser_helpers::ConsumeUrl(range, &context);
+  cssvalue::CSSURIValue* url =
+      css_property_parser_helpers::ConsumeUrl(range, &context);
   if (url) {
     CSSValue* parsed_value = nullptr;
     if (range.Peek().Id() == CSSValueID::kNone) {
@@ -2675,6 +2677,17 @@ css_property_parser_helpers::UnitlessQuirk UnitlessUnlessShorthand(
   return local_context.CurrentShorthand() == CSSPropertyID::kInvalid
              ? css_property_parser_helpers::UnitlessQuirk::kAllow
              : css_property_parser_helpers::UnitlessQuirk::kForbid;
+}
+
+CSSValue* ConsumeIntrinsicLength(CSSParserTokenRange& range,
+                                 const CSSParserContext& context) {
+  if (css_property_parser_helpers::IdentMatches<CSSValueID::kLegacy,
+                                                CSSValueID::kAuto>(
+          range.Peek().Id())) {
+    return css_property_parser_helpers::ConsumeIdent(range);
+  }
+  return css_property_parser_helpers::ConsumeLength(range, context.Mode(),
+                                                    kValueRangeNonNegative);
 }
 
 }  // namespace css_parsing_utils

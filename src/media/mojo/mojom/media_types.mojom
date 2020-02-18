@@ -9,6 +9,7 @@ import "gpu/ipc/common/vulkan_ycbcr_info.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "ui/gfx/mojom/buffer_types.mojom";
 import "ui/gfx/mojom/color_space.mojom";
 
 // See media/base/audio_codecs.h for descriptions.
@@ -79,10 +80,6 @@ enum WaitingReason;
 [Native]
 enum WatchTimeKey;
 
-// See media/base/decrypt_config.h for descriptions.
-[Native]
-enum EncryptionMode;
-
 // See media/base/container_names.h for descriptions.
 [Native]
 enum MediaContainerName;
@@ -98,15 +95,9 @@ struct EncryptionPattern {
   uint32 skip_byte_block;
 };
 
-// This defines a mojo transport format for media::EncryptionScheme.
 // See media/base/encryption_scheme.h for description.
-struct EncryptionScheme {
-  [Native]
-  enum CipherMode;
-
-  CipherMode mode;
-  EncryptionPattern pattern;
-};
+[Native]
+enum EncryptionScheme;
 
 // This defines a mojo transport format for media::VideoColorSpace.
 // See media/base/video_color_space.h for description.
@@ -182,7 +173,7 @@ struct SubsampleEntry;
 // This defines a mojo transport format for media::DecryptConfig.
 // See media/base/decrypt_config.h for descriptions.
 struct DecryptConfig {
-  EncryptionMode encryption_mode;
+  EncryptionScheme encryption_scheme;
   string key_id;
   string iv;
   array<SubsampleEntry> subsamples;
@@ -275,6 +266,7 @@ union VideoFrameData {
   EosVideoFrameData eos_data;
   SharedBufferVideoFrameData shared_buffer_data;
   DmabufVideoFrameData dmabuf_data;
+  GpuMemoryBufferVideoFrameData gpu_memory_buffer_data;
   MailboxVideoFrameData mailbox_data;
 };
 
@@ -304,6 +296,11 @@ struct DmabufVideoFrameData {
   array<handle> dmabuf_fds;
 };
 
+struct GpuMemoryBufferVideoFrameData {
+  gfx.mojom.GpuMemoryBufferHandle gpu_memory_buffer_handle;
+  array<gpu.mojom.MailboxHolder, 4> mailbox_holder;
+};
+
 // This defines video frame data stored in texture mailboxes.
 struct MailboxVideoFrameData {
   // Size must be kept in sync with media::VideoFrame::kMaxPlanes.
@@ -327,7 +324,9 @@ struct PredictionFeatures {
     // but we can't do that with native enums.
     VideoCodecProfile profile;
     gfx.mojom.Size video_size;
-    int32 frames_per_sec = 0;
+    // Frames per second may ultimately be a bucketed as an integer, but we want
+    // to do that as late as possible. Using a double avoids early truncation.
+    double frames_per_sec = 0;
     // Name of the key system used for EME playbacks.
     string key_system;
     // Indicates when CDM will use HW secure decoding for EME playbacks.
@@ -346,5 +345,5 @@ struct PredictionTargets {
 struct PipelineDecoderInfo {
   string decoder_name;
   bool is_platform_decoder = false;
-  bool is_decrypting_demuxer_stream = false;
+  bool has_decrypting_demuxer_stream = false;
 };

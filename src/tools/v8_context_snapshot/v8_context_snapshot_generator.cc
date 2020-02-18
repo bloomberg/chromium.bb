@@ -11,7 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/v8_initializer.h"
 #include "mojo/core/embedder/embedder.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_v8_context_snapshot.h"
 #include "v8/include/v8.h"
@@ -37,7 +37,6 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::V8Initializer::LoadV8Snapshot();
-  gin::V8Initializer::LoadV8Natives();
 #endif
 
   // Set up environment to make Blink and V8 workable.
@@ -50,8 +49,8 @@ int main(int argc, char** argv) {
 
   // Take a snapshot.
   SnapshotPlatform platform;
-  service_manager::BinderRegistry empty_registry;
-  blink::CreateMainThreadAndInitialize(&platform, &empty_registry);
+  mojo::BinderMap binders;
+  blink::CreateMainThreadAndInitialize(&platform, &binders);
   v8::StartupData blob = blink::WebV8ContextSnapshot::TakeSnapshot();
 
   // Save the snapshot as a file. Filename is given in a command line option.

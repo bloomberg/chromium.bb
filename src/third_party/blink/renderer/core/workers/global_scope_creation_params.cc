@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 
 namespace blink {
@@ -32,8 +33,6 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     std::unique_ptr<WorkerSettings> worker_settings,
     V8CacheOptions v8_cache_options,
     WorkletModuleResponsesMap* module_responses_map,
-    service_manager::mojom::blink::InterfaceProviderPtrInfo
-        interface_provider_info,
     mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
         browser_interface_broker,
     BeginFrameProviderParams begin_frame_provider_params,
@@ -56,7 +55,6 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       worker_settings(std::move(worker_settings)),
       v8_cache_options(v8_cache_options),
       module_responses_map(module_responses_map),
-      interface_provider(std::move(interface_provider_info)),
       browser_interface_broker(std::move(browser_interface_broker)),
       begin_frame_provider_params(std::move(begin_frame_provider_params)),
       // At the moment, workers do not support their container policy being set,

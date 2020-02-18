@@ -47,31 +47,20 @@
 #include "device/bluetooth/test/bluetooth_test_fuchsia.h"
 #endif
 
-// TODO(crbug.com/969160): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
-#define MAYBE_GetMergedDiscoveryFilterTransport \
-  DISABLED_GetMergedDiscoveryFilterTransport
-#define MAYBE_GetMergedDiscoveryFilterRegular \
-  DISABLED_GetMergedDiscoveryFilterRegular
-#define MAYBE_GetMergedDiscoveryFilterRssi DISABLED_GetMergedDiscoveryFilterRssi
-#define MAYBE_GetMergedDiscoveryFilterAllFields \
-  DISABLED_GetMergedDiscoveryFilterAllFields
-#else
-#define MAYBE_GetMergedDiscoveryFilterTransport \
-  GetMergedDiscoveryFilterTransport
-#define MAYBE_GetMergedDiscoveryFilterRegular GetMergedDiscoveryFilterRegular
-#define MAYBE_GetMergedDiscoveryFilterRssi GetMergedDiscoveryFilterRssi
-#define MAYBE_GetMergedDiscoveryFilterAllFields \
-  GetMergedDiscoveryFilterAllFields
-#endif
-
 using device::BluetoothDevice;
 
 namespace device {
 
+void AddDeviceFilterWithUUID(BluetoothDiscoveryFilter* filter,
+                             BluetoothUUID uuid) {
+  BluetoothDiscoveryFilter::DeviceInfoFilter device_filter;
+  device_filter.uuids.insert(uuid);
+  filter->AddDeviceFilter(device_filter);
+}
+
 namespace {
 
-class TestBluetoothAdapter : public BluetoothAdapter {
+class TestBluetoothAdapter final : public BluetoothAdapter {
  public:
   TestBluetoothAdapter() = default;
 
@@ -162,6 +151,11 @@ class TestBluetoothAdapter : public BluetoothAdapter {
     run_loop_quit.Run();
   }
 
+  void set_discovery_session_outcome(
+      UMABluetoothDiscoverySessionOutcome outcome) {
+    discovery_session_outcome_ = outcome;
+  }
+
   void StopDiscoverySession(base::Closure run_loop_quit) {
     discovery_sessions_holder_.front()->Stop(
         base::BindRepeating(&TestBluetoothAdapter::OnRemoveDiscoverySession,
@@ -198,14 +192,6 @@ class TestBluetoothAdapter : public BluetoothAdapter {
     std::swap(discovery_sessions_holder_, empty_queue);
   }
 
-  void InjectFilteredSession(
-      std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter) {
-    StartDiscoverySessionWithFilter(
-        std::move(discovery_filter),
-        base::Bind(&TestBluetoothAdapter::TestOnStartDiscoverySession, this),
-        base::Bind(&TestBluetoothAdapter::TestErrorCallback, this));
-  }
-
   void QueueStartRequests(base::Closure run_loop_quit, int num_requests) {
     for (int i = 0; i < num_requests; ++i) {
       StartDiscoverySession(
@@ -235,6 +221,13 @@ class TestBluetoothAdapter : public BluetoothAdapter {
         base::DoNothing());
   }
 
+  void RunStartSessionWithFilter(
+      std::unique_ptr<BluetoothDiscoveryFilter> filter) {
+    base::RunLoop loop;
+    StartSessionWithFilter(std::move(filter), loop.QuitClosure());
+    loop.Run();
+  }
+
   // |discovery_sessions_holder_| is used to hold unique pointers of Discovery
   // Sessions so that the destructors don't get called and so we can test
   // removing them
@@ -250,12 +243,17 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 
   bool SetPoweredImpl(bool powered) override { return false; }
 
+  base::WeakPtr<BluetoothAdapter> GetWeakPtr() override {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
   void StartScanWithFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       DiscoverySessionResultCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&TestBluetoothAdapter::SetFilter, this,
+        base::BindOnce(&TestBluetoothAdapter::SetFilter,
+                       weak_ptr_factory_.GetWeakPtr(),
                        std::move(discovery_filter), std::move(callback)));
   }
 
@@ -263,22 +261,27 @@ class TestBluetoothAdapter : public BluetoothAdapter {
                     DiscoverySessionResultCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&TestBluetoothAdapter::SetFilter, this,
+        base::BindOnce(&TestBluetoothAdapter::SetFilter,
+                       weak_ptr_factory_.GetWeakPtr(),
                        std::move(discovery_filter), std::move(callback)));
   }
 
   void SetFilter(std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
                  DiscoverySessionResultCallback callback) {
-    is_discovering_ = true;
-    current_filter->CopyFrom(*discovery_filter.get());
-    std::move(callback).Run(/*is_error=*/false,
-                            UMABluetoothDiscoverySessionOutcome::SUCCESS);
+    bool is_error = discovery_session_outcome_ !=
+                    UMABluetoothDiscoverySessionOutcome::SUCCESS;
+    if (!is_error) {
+      is_discovering_ = true;
+      current_filter->CopyFrom(*discovery_filter.get());
+    }
+    std::move(callback).Run(is_error, discovery_session_outcome_);
   }
 
   void StopScan(DiscoverySessionResultCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&TestBluetoothAdapter::FakeOSStopScan, this,
-                                  std::move(callback)));
+        FROM_HERE,
+        base::BindOnce(&TestBluetoothAdapter::FakeOSStopScan,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void FakeOSStopScan(DiscoverySessionResultCallback callback) {
@@ -297,6 +300,13 @@ class TestBluetoothAdapter : public BluetoothAdapter {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(callback));
   }
+
+  UMABluetoothDiscoverySessionOutcome discovery_session_outcome_ =
+      UMABluetoothDiscoverySessionOutcome::SUCCESS;
+
+  // This must be the last field in the class so that weak pointers are
+  // invalidated first.
+  base::WeakPtrFactory<TestBluetoothAdapter> weak_ptr_factory_{this};
 };
 
 class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
@@ -386,8 +396,7 @@ TEST_F(BluetoothAdapterTest, GetMergedDiscoveryFilterEmpty) {
   EXPECT_TRUE(discovery_filter->IsDefault());
 }
 
-TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRegular) {
-  scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
+TEST_F(BluetoothAdapterTest, GetMergedDiscoveryFilterRegular) {
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter;
 
   // having one reglar session should result in no filter
@@ -399,15 +408,13 @@ TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRegular) {
 }
 
 TEST_F(BluetoothAdapterTest, TestQueueingLogic) {
-  BluetoothDiscoveryFilter* df =
-      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
-  df->AddUUID(device::BluetoothUUID("1001"));
-  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(df);
+  auto discovery_filter =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE);
+  AddDeviceFilterWithUUID(discovery_filter.get(), BluetoothUUID("1001"));
 
-  BluetoothDiscoveryFilter* df2 =
-      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
-  df->AddUUID(device::BluetoothUUID("1002"));
-  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(df2);
+  auto discovery_filter2 =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE);
+  AddDeviceFilterWithUUID(discovery_filter2.get(), BluetoothUUID("1002"));
 
   // Start a discovery session
   base::RunLoop run_loop1;
@@ -460,10 +467,9 @@ TEST_F(BluetoothAdapterTest, TestQueueingLogic) {
 
 TEST_F(BluetoothAdapterTest, ShortCircuitUpdateTest) {
   auto discovery_filter_default1 = std::make_unique<BluetoothDiscoveryFilter>();
-  BluetoothDiscoveryFilter* df =
-      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
-  df->SetRSSI(-30);
-  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(df);
+  auto discovery_filter =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE);
+  discovery_filter->SetRSSI(-30);
 
   base::RunLoop run_loop;
   adapter_->StartSessionWithFilter(std::move(discovery_filter_default1),
@@ -529,31 +535,27 @@ TEST_F(BluetoothAdapterTest, ShortCircuitUpdateTest) {
   adapter_->CleanupSessions();
 }
 
-TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRssi) {
-  scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
+TEST_F(BluetoothAdapterTest, GetMergedDiscoveryFilterRssi) {
   int16_t resulting_rssi;
   uint16_t resulting_pathloss;
   std::unique_ptr<BluetoothDiscoveryFilter> resulting_filter;
 
-  BluetoothDiscoveryFilter* df =
-      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
-  df->SetRSSI(-30);
-  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(df);
+  auto discovery_filter =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE);
+  discovery_filter->SetRSSI(-30);
 
-  BluetoothDiscoveryFilter* df2 =
-      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
-  df2->SetRSSI(-65);
-  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(df2);
+  auto discovery_filter2 =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE);
+  discovery_filter2->SetRSSI(-65);
 
   // Make sure adapter has one session without filtering.
-  adapter_->InjectFilteredSession(std::move(discovery_filter));
+  adapter_->RunStartSessionWithFilter(std::move(discovery_filter));
 
-  // DO_NOTHING should have no impact
   resulting_filter = adapter_->GetMergedDiscoveryFilter();
   resulting_filter->GetRSSI(&resulting_rssi);
   EXPECT_EQ(-30, resulting_rssi);
 
-  adapter_->InjectFilteredSession(std::move(discovery_filter2));
+  adapter_->RunStartSessionWithFilter(std::move(discovery_filter2));
 
   // result of merging two rssi values should be lower one
   resulting_filter = adapter_->GetMergedDiscoveryFilter();
@@ -567,7 +569,12 @@ TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRssi) {
 
   // when rssi and pathloss are merged, both should be cleared, because there is
   // no way to tell which filter will be more generic
-  adapter_->InjectFilteredSession(std::move(discovery_filter3));
+  {
+    base::RunLoop run_loop;
+    adapter_->StartSessionWithFilter(std::move(discovery_filter3),
+                                     run_loop.QuitClosure());
+    run_loop.Run();
+  }
   resulting_filter = adapter_->GetMergedDiscoveryFilter();
   EXPECT_FALSE(resulting_filter->GetRSSI(&resulting_rssi));
   EXPECT_FALSE(resulting_filter->GetPathloss(&resulting_pathloss));
@@ -575,73 +582,66 @@ TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterRssi) {
   adapter_->CleanupSessions();
 }
 
-TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterTransport) {
-  scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
+TEST_F(BluetoothAdapterTest, GetMergedDiscoveryFilterTransport) {
   std::unique_ptr<BluetoothDiscoveryFilter> resulting_filter;
 
-  BluetoothDiscoveryFilter* df =
-      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_CLASSIC);
-  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(df);
+  auto discovery_filter =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_CLASSIC);
 
-  BluetoothDiscoveryFilter* df2 =
-      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
-  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(df2);
+  auto discovery_filter2 =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE);
 
-  adapter_->InjectFilteredSession(std::move(discovery_filter));
+  adapter_->RunStartSessionWithFilter(std::move(discovery_filter));
 
   // Just one filter, make sure transport was properly rewritten
   resulting_filter = adapter_->GetMergedDiscoveryFilter();
   EXPECT_EQ(BLUETOOTH_TRANSPORT_CLASSIC, resulting_filter->GetTransport());
 
-  adapter_->InjectFilteredSession(std::move(discovery_filter2));
+  adapter_->RunStartSessionWithFilter(std::move(discovery_filter2));
 
   // Two filters, should have OR of both transport's
   resulting_filter = adapter_->GetMergedDiscoveryFilter();
   EXPECT_EQ(BLUETOOTH_TRANSPORT_DUAL, resulting_filter->GetTransport());
 
-  BluetoothDiscoveryFilter* df3 =
-      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
-  df3->CopyFrom(BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_DUAL));
-  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter3(df3);
+  auto discovery_filter3 =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE);
+  discovery_filter3->CopyFrom(
+      BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_DUAL));
 
   // Merging empty filter in should result in empty filter
-  adapter_->InjectFilteredSession(std::move(discovery_filter3));
+  adapter_->RunStartSessionWithFilter(std::move(discovery_filter3));
   resulting_filter = adapter_->GetMergedDiscoveryFilter();
   EXPECT_TRUE(resulting_filter->IsDefault());
 
   adapter_->CleanupSessions();
 }
 
-TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterAllFields) {
-  scoped_refptr<TestBluetoothAdapter> adapter = new TestBluetoothAdapter();
+TEST_F(BluetoothAdapterTest, GetMergedDiscoveryFilterAllFields) {
   int16_t resulting_rssi;
   std::set<device::BluetoothUUID> resulting_uuids;
 
-  BluetoothDiscoveryFilter* df =
-      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
-  df->SetRSSI(-60);
-  df->AddUUID(device::BluetoothUUID("1000"));
-  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter(df);
+  auto discovery_filter =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE);
+  discovery_filter->SetRSSI(-60);
+  AddDeviceFilterWithUUID(discovery_filter.get(), BluetoothUUID("1000"));
 
-  BluetoothDiscoveryFilter* df2 =
-      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
-  df2->SetRSSI(-85);
-  df2->SetTransport(BLUETOOTH_TRANSPORT_LE);
-  df2->AddUUID(device::BluetoothUUID("1020"));
-  df2->AddUUID(device::BluetoothUUID("1001"));
-  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(df2);
+  auto discovery_filter2 =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE);
+  discovery_filter2->SetRSSI(-85);
+  AddDeviceFilterWithUUID(discovery_filter2.get(), BluetoothUUID("1020"));
+  AddDeviceFilterWithUUID(discovery_filter2.get(), BluetoothUUID("1001"));
 
-  BluetoothDiscoveryFilter* df3 =
-      new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE);
-  df3->SetRSSI(-65);
-  df3->SetTransport(BLUETOOTH_TRANSPORT_CLASSIC);
-  df3->AddUUID(device::BluetoothUUID("1020"));
-  df3->AddUUID(device::BluetoothUUID("1003"));
-  std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter3(df3);
+  auto discovery_filter3 =
+      std::make_unique<BluetoothDiscoveryFilter>(BLUETOOTH_TRANSPORT_LE);
+  discovery_filter3->SetRSSI(-65);
+  discovery_filter3->SetTransport(BLUETOOTH_TRANSPORT_CLASSIC);
+  AddDeviceFilterWithUUID(discovery_filter3.get(), BluetoothUUID("1020"));
+  AddDeviceFilterWithUUID(discovery_filter3.get(), BluetoothUUID("1003"));
 
-  adapter_->InjectFilteredSession(std::move(discovery_filter));
-  adapter_->InjectFilteredSession(std::move(discovery_filter2));
-  adapter_->InjectFilteredSession(std::move(discovery_filter3));
+  adapter_->RunStartSessionWithFilter(std::move(discovery_filter));
+  adapter_->RunStartSessionWithFilter(std::move(discovery_filter2));
+  adapter_->RunStartSessionWithFilter(std::move(discovery_filter3));
+
   std::unique_ptr<BluetoothDiscoveryFilter> resulting_filter =
       adapter_->GetMergedDiscoveryFilter();
   resulting_filter->GetRSSI(&resulting_rssi);
@@ -660,6 +660,30 @@ TEST_F(BluetoothAdapterTest, MAYBE_GetMergedDiscoveryFilterAllFields) {
               resulting_uuids.end());
 
   adapter_->CleanupSessions();
+}
+
+TEST_F(BluetoothAdapterTest, StartDiscoverySession_Destroy) {
+  base::RunLoop loop;
+  adapter_->StartDiscoverySession(
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<BluetoothDiscoverySession> session) {
+            adapter_.reset();
+            loop.Quit();
+          }),
+      base::DoNothing());
+  loop.Run();
+}
+
+TEST_F(BluetoothAdapterTest, StartDiscoverySessionError_Destroy) {
+  base::RunLoop loop;
+  adapter_->set_discovery_session_outcome(
+      UMABluetoothDiscoverySessionOutcome::FAILED);
+  adapter_->StartDiscoverySession(base::DoNothing(),
+                                  base::BindLambdaForTesting([&]() {
+                                    adapter_.reset();
+                                    loop.Quit();
+                                  }));
+  loop.Run();
 }
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
@@ -1696,21 +1720,19 @@ TEST_F(BluetoothTest, MAYBE_RegisterLocalGattServices) {
   base::WeakPtr<BluetoothLocalGattCharacteristic> characteristic1 =
       BluetoothLocalGattCharacteristic::Create(
           BluetoothUUID(kTestUUIDGenericAttribute),
-          device::BluetoothLocalGattCharacteristic::Properties(),
-          device::BluetoothLocalGattCharacteristic::Permissions(),
-          service.get());
+          BluetoothLocalGattCharacteristic::Properties(),
+          BluetoothLocalGattCharacteristic::Permissions(), service.get());
 
   base::WeakPtr<BluetoothLocalGattCharacteristic> characteristic2 =
       BluetoothLocalGattCharacteristic::Create(
           BluetoothUUID(kTestUUIDGenericAttribute),
-          device::BluetoothLocalGattCharacteristic::Properties(),
-          device::BluetoothLocalGattCharacteristic::Permissions(),
-          service.get());
+          BluetoothLocalGattCharacteristic::Properties(),
+          BluetoothLocalGattCharacteristic::Permissions(), service.get());
 
   base::WeakPtr<BluetoothLocalGattDescriptor> descriptor =
       BluetoothLocalGattDescriptor::Create(
           BluetoothUUID(kTestUUIDGenericAttribute),
-          device::BluetoothLocalGattCharacteristic::Permissions(),
+          BluetoothLocalGattCharacteristic::Permissions(),
           characteristic1.get());
 
   service->Register(GetCallback(Call::EXPECTED),
@@ -1865,9 +1887,8 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceWithFilter) {
   SimulateConnectedLowEnergyDevice(ConnectedDeviceType::GENERIC_DEVICE);
   SimulateConnectedLowEnergyDevice(ConnectedDeviceType::HEART_RATE_DEVICE);
   BluetoothDiscoveryFilter discovery_filter(BLUETOOTH_TRANSPORT_LE);
-  device::BluetoothUUID heart_service_uuid =
-      device::BluetoothUUID(kTestUUIDHeartRate);
-  discovery_filter.AddUUID(heart_service_uuid);
+  BluetoothUUID heart_service_uuid = BluetoothUUID(kTestUUIDHeartRate);
+  AddDeviceFilterWithUUID(&discovery_filter, heart_service_uuid);
   std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet> result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
           discovery_filter);
@@ -1900,7 +1921,7 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceWithWrongFilter) {
   SimulateConnectedLowEnergyDevice(ConnectedDeviceType::GENERIC_DEVICE);
   SimulateConnectedLowEnergyDevice(ConnectedDeviceType::HEART_RATE_DEVICE);
   BluetoothDiscoveryFilter discovery_filter(BLUETOOTH_TRANSPORT_LE);
-  discovery_filter.AddUUID(device::BluetoothUUID(kTestUUIDLinkLoss));
+  AddDeviceFilterWithUUID(&discovery_filter, BluetoothUUID(kTestUUIDLinkLoss));
   std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet> result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
           discovery_filter);
@@ -1929,12 +1950,10 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceWithTwoFilters) {
   SimulateConnectedLowEnergyDevice(ConnectedDeviceType::GENERIC_DEVICE);
   SimulateConnectedLowEnergyDevice(ConnectedDeviceType::HEART_RATE_DEVICE);
   BluetoothDiscoveryFilter discovery_filter(BLUETOOTH_TRANSPORT_LE);
-  device::BluetoothUUID heart_service_uuid =
-      device::BluetoothUUID(kTestUUIDHeartRate);
-  discovery_filter.AddUUID(heart_service_uuid);
-  device::BluetoothUUID generic_service_uuid =
-      device::BluetoothUUID(kTestUUIDGenericAccess);
-  discovery_filter.AddUUID(generic_service_uuid);
+  BluetoothUUID heart_service_uuid = BluetoothUUID(kTestUUIDHeartRate);
+  AddDeviceFilterWithUUID(&discovery_filter, heart_service_uuid);
+  BluetoothUUID generic_service_uuid = BluetoothUUID(kTestUUIDGenericAccess);
+  AddDeviceFilterWithUUID(&discovery_filter, generic_service_uuid);
   std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet> result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
           discovery_filter);
@@ -1977,9 +1996,8 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceTwice) {
   SimulateConnectedLowEnergyDevice(ConnectedDeviceType::GENERIC_DEVICE);
   SimulateConnectedLowEnergyDevice(ConnectedDeviceType::HEART_RATE_DEVICE);
   BluetoothDiscoveryFilter discovery_filter(BLUETOOTH_TRANSPORT_LE);
-  device::BluetoothUUID heart_service_uuid =
-      device::BluetoothUUID(kTestUUIDHeartRate);
-  discovery_filter.AddUUID(heart_service_uuid);
+  BluetoothUUID heart_service_uuid = BluetoothUUID(kTestUUIDHeartRate);
+  AddDeviceFilterWithUUID(&discovery_filter, heart_service_uuid);
   std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet> result =
       adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
           discovery_filter);

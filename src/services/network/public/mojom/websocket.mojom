@@ -38,6 +38,10 @@ struct WebSocketHandshakeResponse {
   IPEndPoint remote_endpoint;
   array<HttpHeader> headers;
   string headers_text;
+  // Sub-protocol the server selected, or empty if no sub-protocol was selected.
+  string selected_protocol;
+  // The list of extensions negotiated for the connection.
+  string extensions;
 };
 
 // This interface is for HTTP Authentication.
@@ -54,21 +58,13 @@ interface WebSocketHandshakeClient {
   // Notify the renderer that the browser has started an opening handshake.
   OnOpeningHandshakeStarted(WebSocketHandshakeRequest request);
 
-  // Called when the HTTP response is received. This doesn't mean the connection
-  // is (or will be) established. This message precedes OnConnectionEstablished.
+  // Called when the connection is established.
   // |response| may contain cookie-related headers when the client has
   // an access to raw cookie information.
-  OnResponseReceived(WebSocketHandshakeResponse response);
-
-  // Called when the connection is established. |selected_protocol| is the
-  // sub-protocol the server selected, or empty if no sub-protocol was selected.
-  // |extensions| is the list of extensions negotiated for the connection.
-  // default threshold value
   // |readable| is readable datapipe to receive data from browser.
   OnConnectionEstablished(pending_remote<WebSocket> socket,
                           pending_receiver<WebSocketClient> client_receiver,
-                          string selected_protocol,
-                          string extensions,
+                          WebSocketHandshakeResponse response,
                           handle<data_pipe_consumer> readable);
 };
 
@@ -131,7 +127,9 @@ interface WebSocket {
   //   the first message. If |type| is WebSocketMessageType.TEXT, then the
   //   concatenation of the |data| from every frame in the message must be valid
   //   UTF-8. If |fin| is not set, |data| must be non-empty.
-  SendFrame(bool fin, WebSocketMessageType type, array<uint8> data);
+  SendFrame(bool fin,
+            WebSocketMessageType type,
+            mojo_base.mojom.ReadOnlyBuffer data);
 
   // Let browser to start receiving WebSocket data frames from network stream.
   // TODO(yoichio): Remove this by move Connect() after checking throttle at

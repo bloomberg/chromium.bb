@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -28,14 +29,23 @@ class TestInstallFinalizer final : public InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
+  void FinalizeFallbackInstallAfterSync(
+      const AppId& app_id,
+      InstallFinalizedCallback callback) override;
+  void FinalizeUninstallAfterSync(const AppId& app_id,
+                                  UninstallWebAppCallback callback) override;
+  void FinalizeUpdate(const WebApplicationInfo& web_app_info,
+                      InstallFinalizedCallback callback) override;
   void UninstallExternalWebApp(const GURL& app_url,
+                               ExternalInstallSource external_install_source,
                                UninstallWebAppCallback callback) override;
-  void UninstallWebApp(const AppId& app_id,
-                       UninstallWebAppCallback callback) override;
-  bool CanCreateOsShortcuts() const override;
-  void CreateOsShortcuts(const AppId& app_id,
-                         bool add_to_desktop,
-                         CreateOsShortcutsCallback callback) override;
+  bool CanUserUninstallFromSync(const AppId& app_id) const override;
+  void UninstallWebAppFromSyncByUser(const AppId& app_id,
+                                     UninstallWebAppCallback callback) override;
+  bool CanUserUninstallExternalApp(const AppId& app_id) const override;
+  void UninstallExternalAppByUser(const AppId& app_id,
+                                  UninstallWebAppCallback callback) override;
+  bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
   bool CanReparentTab(const AppId& app_id,
@@ -45,16 +55,16 @@ class TestInstallFinalizer final : public InstallFinalizer {
                    content::WebContents* web_contents) override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const AppId& app_id) override;
-  bool CanSkipAppUpdateForSync(
-      const AppId& app_id,
-      const WebApplicationInfo& web_app_info) const override;
-  bool CanUserUninstallFromSync(const AppId& app_id) const override;
 
   void SetNextFinalizeInstallResult(const AppId& app_id,
                                     InstallResultCode code);
   void SetNextUninstallExternalWebAppResult(const GURL& app_url,
                                             bool uninstalled);
-  void SetNextCanSkipAppUpdateForSync(bool can_skip_app_update_for_sync);
+
+  // Uninstall the app and add |app_id| to the map of external extensions
+  // uninstalled by the user. May be called on an app that isn't installed to
+  // simulate that the app was uninstalled previously.
+  void SimulateExternalAppUninstalledByUser(const AppId& app_id);
 
   std::unique_ptr<WebApplicationInfo> web_app_info() {
     return std::move(web_app_info_copy_);
@@ -68,7 +78,6 @@ class TestInstallFinalizer final : public InstallFinalizer {
     return uninstall_external_web_app_urls_;
   }
 
-  int num_create_os_shortcuts_calls() { return num_create_os_shortcuts_calls_; }
   int num_reparent_tab_calls() { return num_reparent_tab_calls_; }
   int num_reveal_appshim_calls() { return num_reveal_appshim_calls_; }
   int num_add_app_to_quick_launch_bar_calls() {
@@ -76,6 +85,10 @@ class TestInstallFinalizer final : public InstallFinalizer {
   }
 
  private:
+  void Finalize(const WebApplicationInfo& web_app_info,
+                InstallResultCode code,
+                InstallFinalizedCallback callback);
+
   std::unique_ptr<WebApplicationInfo> web_app_info_copy_;
   std::vector<FinalizeOptions> finalize_options_list_;
   std::vector<GURL> uninstall_external_web_app_urls_;
@@ -83,9 +96,8 @@ class TestInstallFinalizer final : public InstallFinalizer {
   base::Optional<AppId> next_app_id_;
   base::Optional<InstallResultCode> next_result_code_;
   std::map<GURL, bool> next_uninstall_external_web_app_results_;
-  bool next_can_skip_app_update_for_sync_ = false;
+  std::set<AppId> user_uninstalled_external_apps_;
 
-  int num_create_os_shortcuts_calls_ = 0;
   int num_reparent_tab_calls_ = 0;
   int num_reveal_appshim_calls_ = 0;
   int num_add_app_to_quick_launch_bar_calls_ = 0;

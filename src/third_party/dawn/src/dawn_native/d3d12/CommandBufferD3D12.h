@@ -18,6 +18,7 @@
 #include "common/Constants.h"
 #include "dawn_native/CommandAllocator.h"
 #include "dawn_native/CommandBuffer.h"
+#include "dawn_native/Error.h"
 
 #include "dawn_native/d3d12/Forward.h"
 #include "dawn_native/d3d12/d3d12_platform.h"
@@ -30,39 +31,39 @@ namespace dawn_native {
 
 namespace dawn_native { namespace d3d12 {
 
+    struct OMSetRenderTargetArgs {
+        unsigned int numRTVs = 0;
+        std::array<D3D12_CPU_DESCRIPTOR_HANDLE, kMaxColorAttachments> RTVs = {};
+        D3D12_CPU_DESCRIPTOR_HANDLE dsv = {};
+    };
+
     class BindGroupStateTracker;
+    class CommandRecordingContext;
     class Device;
     class RenderPassDescriptorHeapTracker;
+    class RenderPassBuilder;
     class RenderPipeline;
-
-    struct VertexBuffersInfo {
-        // startSlot and endSlot indicate the range of dirty vertex buffers.
-        // If there are multiple calls to SetVertexBuffers, the start and end
-        // represent the union of the dirty ranges (the union may have non-dirty
-        // data in the middle of the range).
-        const RenderPipeline* lastRenderPipeline = nullptr;
-        uint32_t startSlot = kMaxVertexBuffers;
-        uint32_t endSlot = 0;
-        std::array<D3D12_VERTEX_BUFFER_VIEW, kMaxVertexBuffers> d3d12BufferViews = {};
-    };
 
     class CommandBuffer : public CommandBufferBase {
       public:
-        CommandBuffer(CommandEncoderBase* encoder, const CommandBufferDescriptor* descriptor);
+        CommandBuffer(CommandEncoder* encoder, const CommandBufferDescriptor* descriptor);
         ~CommandBuffer();
 
-        void RecordCommands(ComPtr<ID3D12GraphicsCommandList> commandList, uint32_t indexInSubmit);
+        MaybeError RecordCommands(CommandRecordingContext* commandContext, uint32_t indexInSubmit);
 
       private:
-        void FlushSetVertexBuffers(ComPtr<ID3D12GraphicsCommandList> commandList,
-                                   VertexBuffersInfo* vertexBuffersInfo,
-                                   const RenderPipeline* lastRenderPipeline);
-        void RecordComputePass(ComPtr<ID3D12GraphicsCommandList> commandList,
+        void RecordComputePass(CommandRecordingContext* commandContext,
                                BindGroupStateTracker* bindingTracker);
-        void RecordRenderPass(ComPtr<ID3D12GraphicsCommandList> commandList,
+        void RecordRenderPass(CommandRecordingContext* commandContext,
                               BindGroupStateTracker* bindingTracker,
-                              RenderPassDescriptorHeapTracker* renderPassTracker,
-                              BeginRenderPassCmd* renderPass);
+                              RenderPassDescriptorHeapTracker* renderPassDescriptorHeapTracker,
+                              BeginRenderPassCmd* renderPass,
+                              bool passHasUAV);
+        void SetupRenderPass(CommandRecordingContext* commandContext,
+                             BeginRenderPassCmd* renderPass,
+                             RenderPassBuilder* renderPassBuilder);
+        void EmulateBeginRenderPass(CommandRecordingContext* commandContext,
+                                    const RenderPassBuilder* renderPassBuilder) const;
 
         CommandIterator mCommands;
     };

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/base/rand_callback.h"
 #include "net/dns/dns_config.h"
@@ -63,9 +64,11 @@ class NET_EXPORT DnsClient {
   virtual const DnsConfig* GetEffectiveConfig() const = 0;
   virtual const DnsHosts* GetHosts() const = 0;
 
-  // Sets the URLRequestContext to use for issuing DoH probes.
-  virtual void SetRequestContextForProbes(
-      URLRequestContext* url_request_context) = 0;
+  // Enables DoH probes to be sent using |url_request_context| whenever the DNS
+  // configuration contains DoH servers. Currently only allows one probe
+  // activation at a time. Must be cancelled before activating another.
+  virtual void ActivateDohProbes(URLRequestContext* url_request_context) = 0;
+  virtual void CancelDohProbes() = 0;
 
   // Returns null if the current config is not valid.
   virtual DnsTransactionFactory* GetTransactionFactory() = 0;
@@ -79,6 +82,9 @@ class NET_EXPORT DnsClient {
   virtual DnsConfigOverrides GetConfigOverridesForTesting() const = 0;
 
   virtual void SetProbeSuccessForTest(unsigned index, bool success) = 0;
+
+  virtual void SetTransactionFactoryForTesting(
+      std::unique_ptr<DnsTransactionFactory> factory) = 0;
 
   // Creates default client.
   static std::unique_ptr<DnsClient> CreateClient(NetLog* net_log);

@@ -202,7 +202,7 @@ class EscrowServiceRequest {
 
     HRESULT hr = requester->fetcher_->Fetch(&requester->response_);
     if (FAILED(hr))
-      LOGFN(INFO) << "fetcher.Fetch hr=" << putHR(hr);
+      LOGFN(ERROR) << "fetcher.Fetch hr=" << putHR(hr);
 
     requester->ProcessingDone();
     return 0;
@@ -666,7 +666,7 @@ HRESULT PasswordRecoveryManager::StoreWindowsPasswordIfNeeded(
     const base::string16& sid,
     const std::string& access_token,
     const base::string16& password) {
-  if (!MdmPasswordRecoveryEnabled())
+  if (!PasswordRecoveryEnabled())
     return E_NOTIMPL;
 
   base::string16 machine_guid;
@@ -710,6 +710,8 @@ HRESULT PasswordRecoveryManager::StoreWindowsPasswordIfNeeded(
         LOGFN(ERROR) << "StorePrivateData hr=" << putHR(hr);
         return hr;
       }
+
+      LOGFN(INFO) << "Encrypted and stored secret for sid=" << sid;
     } else {
       LOGFN(ERROR) << "base::JSONWriter::Write failed";
       return E_FAIL;
@@ -728,7 +730,7 @@ HRESULT PasswordRecoveryManager::RecoverWindowsPasswordIfPossible(
     const base::string16& sid,
     const std::string& access_token,
     base::string16* recovered_password) {
-  if (!MdmPasswordRecoveryEnabled())
+  if (!PasswordRecoveryEnabled())
     return E_NOTIMPL;
 
   DCHECK(recovered_password);
@@ -770,14 +772,16 @@ HRESULT PasswordRecoveryManager::RecoverWindowsPasswordIfPossible(
     *recovered_password = decrypted_password;
   SecurelyClearString(decrypted_password);
 
+  LOGFN(INFO) << "Decrypted the secret for sid=" << sid;
+
   return hr;
 }
 
 GURL PasswordRecoveryManager::GetEscrowServiceGenerateKeyPairUrl() {
-  if (!MdmPasswordRecoveryEnabled())
+  if (!PasswordRecoveryEnabled())
     return GURL();
 
-  GURL escrow_service_server = MdmEscrowServiceUrl();
+  GURL escrow_service_server = EscrowServiceUrl();
 
   if (escrow_service_server.is_empty()) {
     LOGFN(ERROR) << "No escrow service server specified";
@@ -789,10 +793,10 @@ GURL PasswordRecoveryManager::GetEscrowServiceGenerateKeyPairUrl() {
 
 GURL PasswordRecoveryManager::GetEscrowServiceGetPrivateKeyUrl(
     const std::string& resource_id) {
-  if (!MdmPasswordRecoveryEnabled())
+  if (!PasswordRecoveryEnabled())
     return GURL();
 
-  GURL escrow_service_server = MdmEscrowServiceUrl();
+  GURL escrow_service_server = EscrowServiceUrl();
 
   if (escrow_service_server.is_empty()) {
     LOGFN(ERROR) << "No escrow service server specified";

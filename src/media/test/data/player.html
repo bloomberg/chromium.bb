@@ -43,6 +43,10 @@ function getVideoStatus(video) {
   if (video.error) {
     result.push(`error: {${video.error.code},${video.error.message}}`);
   }
+  if (window.internals) {
+    result.push(`suspended: ${internals.isMediaElementSuspended(video) ?
+      'true' : 'false'}`);
+  }
   return result.join(', ');
 }
 
@@ -204,6 +208,7 @@ function RunTest() {
 
   // Starts the player.
   player.loop = loop;
+  player.preload = 'auto';
   player.src = media_url;
   Log('Starting by calling play()');
   player.play().catch(function(error) {

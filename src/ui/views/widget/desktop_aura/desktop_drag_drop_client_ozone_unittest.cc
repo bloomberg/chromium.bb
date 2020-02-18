@@ -13,6 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
 #include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
 #include "ui/views/test/views_test_base.h"
@@ -30,9 +31,10 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
   ~FakePlatformWindow() override = default;
 
   // ui::PlatformWindow
-  void Show() override {}
+  void Show(bool inactive) override {}
   void Hide() override {}
   void Close() override {}
+  bool IsVisible() const override { return true; }
   void PrepareForShutdown() override {}
   void SetBounds(const gfx::Rect& bounds) override {}
   gfx::Rect GetBounds() override { return gfx::Rect(); }
@@ -55,6 +57,10 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override {}
   gfx::Rect GetRestoredBoundsInPixels() const override { return gfx::Rect(); }
   void SetUseNativeFrame(bool use_native_frame) override {}
+  bool ShouldUseNativeFrame() const override { return false; }
+  void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                      const gfx::ImageSkia& app_icon) override {}
+  void SizeConstraintsChanged() override {}
 
   // ui::WmDragHandler
   void StartDrag(const OSExchangeData& data,

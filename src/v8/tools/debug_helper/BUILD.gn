@@ -86,6 +86,7 @@ v8_component("v8_debug_helper") {
     "get-object-properties.cc",
     "heap-constants.cc",
     "heap-constants.h",
+    "list-object-classes.cc",
   ]
 
   deps = [
@@ -99,6 +100,9 @@ v8_component("v8_debug_helper") {
   if (v8_enable_i18n_support) {
     configs += [ "//third_party/icu:icu_config" ]
   }
+
+  remove_configs = [ "//build/config/compiler:no_rtti" ]
+  configs += [ "//build/config/compiler:rtti" ]
 
   public_configs = [ ":external_config" ]
 }

@@ -290,7 +290,7 @@ struct hb_sorted_vector_t : hb_vector_t<Type>
   typedef hb_sorted_array_t<      Type>       iter_t;
   const_iter_t  iter () const { return as_array (); }
   const_iter_t citer () const { return as_array (); }
-        iter_t  iter ()       { return as_array (); }
+	iter_t  iter ()       { return as_array (); }
   operator       iter_t ()       { return iter (); }
   operator const_iter_t () const { return iter (); }
 
@@ -302,8 +302,8 @@ struct hb_sorted_vector_t : hb_vector_t<Type>
   { return as_array ().bsearch (x, not_found); }
   template <typename T>
   bool bfind (const T &x, unsigned int *i = nullptr,
-		     hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
-		     unsigned int to_store = (unsigned int) -1) const
+	      hb_bfind_not_found_t not_found = HB_BFIND_NOT_FOUND_DONT_STORE,
+	      unsigned int to_store = (unsigned int) -1) const
   { return as_array ().bfind (x, i, not_found, to_store); }
 };
 

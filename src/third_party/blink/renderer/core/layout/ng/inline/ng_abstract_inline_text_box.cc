@@ -147,8 +147,14 @@ unsigned NGAbstractInlineTextBox::Len() const {
   if (!fragment_)
     return 0;
   if (NeedsTrailingSpace())
-    return PhysicalTextFragment().Length() + 1;
-  return PhysicalTextFragment().Length();
+    return PhysicalTextFragment().TextLength() + 1;
+  return PhysicalTextFragment().TextLength();
+}
+
+unsigned NGAbstractInlineTextBox::TextOffsetInContainer(unsigned offset) const {
+  if (!fragment_)
+    return 0;
+  return PhysicalTextFragment().StartOffset() + offset;
 }
 
 AbstractInlineTextBox::Direction NGAbstractInlineTextBox::GetDirection() const {

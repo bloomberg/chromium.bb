@@ -4,31 +4,33 @@
 
 package org.chromium.chrome.modules.test_dummy;
 
-import android.app.Activity;
-import android.content.Intent;
+import org.chromium.components.module_installer.engine.InstallListener;
 
-/** Installs the test dummy module and launches the test dummy implementation. */
+/** Installs and loads the test dummy module. */
 public class TestDummyModuleProvider {
-    /**
-     * Launches test dummy. Installs test dummy module if necessary.
-     *
-     * @param intent A test dummy intent encoding the desired test scenario.
-     * @param activity The activity the test dummy will run in.
-     */
-    public static void launchTestDummy(Intent intent, Activity activity) {
-        if (!TestDummyModule.isInstalled()) {
-            installAndLaunchTestDummy(intent, activity);
-            return;
-        }
-        TestDummyModule.getImpl().getTestDummy().launch(intent, activity);
+    /** Returns true if the module is installed. */
+    public static boolean isModuleInstalled() {
+        return TestDummyModule.isInstalled();
     }
 
-    private static void installAndLaunchTestDummy(Intent intent, Activity activity) {
-        TestDummyModule.install((success) -> {
-            if (!success) {
-                throw new RuntimeException("Failed to install module.");
-            }
-            TestDummyModule.getImpl().getTestDummy().launch(intent, activity);
-        });
+    /**
+     * Installs the module.
+     *
+     * Can only be called if the module is not installed.
+     *
+     * @param listener Called when the install has finished.
+     */
+    public static void installModule(InstallListener listener) {
+        TestDummyModule.install(listener);
+    }
+
+    /**
+     * Returns the test dummy provider from inside the module.
+     *
+     * Can only be called if the module is installed. Maps native resources into memory on first
+     * call.
+     */
+    public static TestDummyProvider getTestDummyProvider() {
+        return TestDummyModule.getImpl();
     }
 }

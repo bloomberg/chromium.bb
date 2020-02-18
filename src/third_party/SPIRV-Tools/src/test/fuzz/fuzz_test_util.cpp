@@ -14,7 +14,10 @@
 
 #include "test/fuzz/fuzz_test_util.h"
 
+#include <fstream>
 #include <iostream>
+
+#include "tools/io.h"
 
 namespace spvtools {
 namespace fuzz {
@@ -87,6 +90,35 @@ std::string ToString(spv_target_env env, const std::vector<uint32_t>& binary) {
   std::string result;
   t.Disassemble(binary, &result, kFuzzDisassembleOption);
   return result;
+}
+
+void DumpShader(opt::IRContext* context, const char* filename) {
+  std::vector<uint32_t> binary;
+  context->module()->ToBinary(&binary, false);
+  DumpShader(binary, filename);
+}
+
+void DumpShader(const std::vector<uint32_t>& binary, const char* filename) {
+  auto write_file_succeeded =
+      WriteFile(filename, "wb", &binary[0], binary.size());
+  if (!write_file_succeeded) {
+    std::cerr << "Failed to dump shader" << std::endl;
+  }
+}
+
+void DumpTransformationsJson(
+    const protobufs::TransformationSequence& transformations,
+    const char* filename) {
+  std::string json_string;
+  auto json_options = google::protobuf::util::JsonOptions();
+  json_options.add_whitespace = true;
+  auto json_generation_status = google::protobuf::util::MessageToJsonString(
+      transformations, &json_string, json_options);
+  if (json_generation_status == google::protobuf::util::Status::OK) {
+    std::ofstream transformations_json_file(filename);
+    transformations_json_file << json_string;
+    transformations_json_file.close();
+  }
 }
 
 }  // namespace fuzz

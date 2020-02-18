@@ -346,6 +346,10 @@ class V8_EXPORT_PRIVATE InstructionSelector final {
                                     size_t input_count,
                                     InstructionOperand* inputs,
                                     FlagsContinuation* cont);
+  Instruction* EmitWithContinuation(
+      InstructionCode opcode, size_t output_count, InstructionOperand* outputs,
+      size_t input_count, InstructionOperand* inputs, size_t temp_count,
+      InstructionOperand* temps, FlagsContinuation* cont);
 
   // ===========================================================================
   // ===== Architecture-independent deoptimization exit emission methods. ======
@@ -502,15 +506,12 @@ class V8_EXPORT_PRIVATE InstructionSelector final {
                                  FeedbackSource const& feedback,
                                  Node* frame_state);
 
-  void EmitTableSwitch(
-      const SwitchInfo& sw,
-      InstructionOperand& index_operand);  // NOLINT(runtime/references)
-  void EmitLookupSwitch(
-      const SwitchInfo& sw,
-      InstructionOperand& value_operand);  // NOLINT(runtime/references)
-  void EmitBinarySearchSwitch(
-      const SwitchInfo& sw,
-      InstructionOperand& value_operand);  // NOLINT(runtime/references)
+  void EmitTableSwitch(const SwitchInfo& sw,
+                       InstructionOperand const& index_operand);
+  void EmitLookupSwitch(const SwitchInfo& sw,
+                        InstructionOperand const& value_operand);
+  void EmitBinarySearchSwitch(const SwitchInfo& sw,
+                              InstructionOperand const& value_operand);
 
   void TryRename(InstructionOperand* op);
   int GetRename(int virtual_register);
@@ -562,8 +563,7 @@ class V8_EXPORT_PRIVATE InstructionSelector final {
     kCallCodeImmediate = 1u << 0,
     kCallAddressImmediate = 1u << 1,
     kCallTail = 1u << 2,
-    kCallFixedTargetRegister = 1u << 3,
-    kAllowCallThroughSlot = 1u << 4
+    kCallFixedTargetRegister = 1u << 3
   };
   using CallBufferFlags = base::Flags<CallBufferFlag>;
 
@@ -616,6 +616,7 @@ class V8_EXPORT_PRIVATE InstructionSelector final {
 
   // Visit the load node with a value and opcode to replace with.
   void VisitLoad(Node* node, Node* value, InstructionCode opcode);
+  void VisitLoadTransform(Node* node, Node* value, InstructionCode opcode);
   void VisitFinishRegion(Node* node);
   void VisitParameter(Node* node);
   void VisitIfException(Node* node);
@@ -769,6 +770,7 @@ class V8_EXPORT_PRIVATE InstructionSelector final {
   ZoneVector<Instruction*> instructions_;
   InstructionOperandVector continuation_inputs_;
   InstructionOperandVector continuation_outputs_;
+  InstructionOperandVector continuation_temps_;
   BoolVector defined_;
   BoolVector used_;
   IntVector effect_level_;

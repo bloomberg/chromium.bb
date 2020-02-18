@@ -46,11 +46,6 @@ namespace {
 // This constant controls how many tests are run in a single batch by default.
 const size_t kDefaultTestBatchLimit = 10;
 
-const char kHelpFlag[] = "help";
-
-// Flag to run all tests in a single process.
-const char kSingleProcessTestsFlag[] = "single-process-tests";
-
 void PrintUsage() {
   fprintf(stdout,
           "Runs tests using the gtest framework, each batch of tests being\n"
@@ -130,6 +125,7 @@ bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
 int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
                             size_t parallel_jobs,
                             int default_batch_limit,
+                            size_t retry_limit,
                             bool use_job_objects,
                             OnceClosure gtest_init) {
 #if defined(OS_ANDROID)
@@ -154,7 +150,8 @@ int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestHelpFlag) ||
       CommandLine::ForCurrentProcess()->HasSwitch(kGTestListTestsFlag) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcessTests) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTestChildProcess) ||
       force_single_process) {
@@ -162,7 +159,7 @@ int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
   }
 #endif
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kHelpFlag)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kHelpFlag)) {
     PrintUsage();
     return 0;
   }
@@ -194,7 +191,7 @@ int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
   DefaultUnitTestPlatformDelegate platform_delegate;
   UnitTestLauncherDelegate delegate(&platform_delegate, batch_limit,
                                     use_job_objects);
-  TestLauncher launcher(&delegate, parallel_jobs);
+  TestLauncher launcher(&delegate, parallel_jobs, retry_limit);
   bool success = launcher.Run();
 
   fprintf(stdout, "Tests took %" PRId64 " seconds.\n",
@@ -221,14 +218,15 @@ const char kDontUseJobObjectFlag[] = "dont-use-job-objects";
 
 int LaunchUnitTests(int argc,
                     char** argv,
-                    RunTestSuiteCallback run_test_suite) {
+                    RunTestSuiteCallback run_test_suite,
+                    size_t retry_limit) {
   CommandLine::Init(argc, argv);
   size_t parallel_jobs = NumParallelJobs();
   if (parallel_jobs == 0U) {
     return 1;
   }
   return LaunchUnitTestsInternal(std::move(run_test_suite), parallel_jobs,
-                                 kDefaultTestBatchLimit, true,
+                                 kDefaultTestBatchLimit, retry_limit, true,
                                  BindOnce(&InitGoogleTestChar, &argc, argv));
 }
 
@@ -237,7 +235,7 @@ int LaunchUnitTestsSerially(int argc,
                             RunTestSuiteCallback run_test_suite) {
   CommandLine::Init(argc, argv);
   return LaunchUnitTestsInternal(std::move(run_test_suite), 1U,
-                                 kDefaultTestBatchLimit, true,
+                                 kDefaultTestBatchLimit, 1U, true,
                                  BindOnce(&InitGoogleTestChar, &argc, argv));
 }
 
@@ -249,7 +247,7 @@ int LaunchUnitTestsWithOptions(int argc,
                                RunTestSuiteCallback run_test_suite) {
   CommandLine::Init(argc, argv);
   return LaunchUnitTestsInternal(std::move(run_test_suite), parallel_jobs,
-                                 default_batch_limit, use_job_objects,
+                                 default_batch_limit, 1U, use_job_objects,
                                  BindOnce(&InitGoogleTestChar, &argc, argv));
 }
 
@@ -265,7 +263,7 @@ int LaunchUnitTests(int argc,
     return 1;
   }
   return LaunchUnitTestsInternal(std::move(run_test_suite), parallel_jobs,
-                                 kDefaultTestBatchLimit, use_job_objects,
+                                 kDefaultTestBatchLimit, 1U, use_job_objects,
                                  BindOnce(&InitGoogleTestWChar, &argc, argv));
 }
 #endif  // defined(OS_WIN)
@@ -311,7 +309,7 @@ CommandLine DefaultUnitTestPlatformDelegate::GetCommandLineForChildGTestProcess(
 
   new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
   new_cmd_line.AppendSwitchPath(kGTestFlagfileFlag, flag_file);
-  new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
+  new_cmd_line.AppendSwitch(switches::kSingleProcessTests);
 
   return new_cmd_line;
 }

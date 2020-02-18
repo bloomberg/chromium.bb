@@ -13,11 +13,9 @@ namespace network_config {
 CrosNetworkConfigTestObserver::CrosNetworkConfigTestObserver() = default;
 CrosNetworkConfigTestObserver::~CrosNetworkConfigTestObserver() = default;
 
-mojom::CrosNetworkConfigObserverPtr
-CrosNetworkConfigTestObserver::GenerateInterfacePtr() {
-  mojom::CrosNetworkConfigObserverPtr observer_ptr;
-  binding().Bind(mojo::MakeRequest(&observer_ptr));
-  return observer_ptr;
+mojo::PendingRemote<mojom::CrosNetworkConfigObserver>
+CrosNetworkConfigTestObserver::GenerateRemote() {
+  return receiver().BindNewPipeAndPassRemote();
 }
 
 int CrosNetworkConfigTestObserver::GetNetworkChangedCount(
@@ -50,16 +48,21 @@ void CrosNetworkConfigTestObserver::OnVpnProvidersChanged() {
   vpn_providers_changed_++;
 }
 
+void CrosNetworkConfigTestObserver::OnNetworkCertificatesChanged() {
+  network_certificates_changed_++;
+}
+
 void CrosNetworkConfigTestObserver::ResetNetworkChanges() {
   active_networks_changed_ = 0;
   networks_changed_.clear();
   network_state_list_changed_ = 0;
   device_state_list_changed_ = 0;
   vpn_providers_changed_ = 0;
+  network_certificates_changed_ = 0;
 }
 
 void CrosNetworkConfigTestObserver::FlushForTesting() {
-  binding_.FlushForTesting();
+  receiver_.FlushForTesting();
 }
 
 }  // namespace network_config

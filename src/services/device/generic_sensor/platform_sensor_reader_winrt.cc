@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+#include "base/metrics/histogram_functions.h"
+#include "base/numerics/math_constants.h"
 #include "base/win/core_winrt_util.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/public/mojom/sensor.mojom.h"
@@ -54,6 +56,10 @@ using ABI::Windows::Foundation::DateTime;
 using ABI::Windows::Foundation::ITypedEventHandler;
 using Microsoft::WRL::Callback;
 using Microsoft::WRL::ComPtr;
+
+void RecordSensorStartResult(HRESULT result) {
+  base::UmaHistogramSparse("Sensors.Windows.WinRT.Start.Result", result);
+}
 
 double GetAngleBetweenOrientationSamples(SensorReading reading1,
                                          SensorReading reading2) {
@@ -121,35 +127,6 @@ void PlatformSensorReaderWinrtBase<
   client_ = client;
 }
 
-// static
-template <wchar_t const* runtime_class_id,
-          class ISensorWinrtStatics,
-          class ISensorWinrtClass,
-          class ISensorReadingChangedHandler,
-          class ISensorReadingChangedEventArgs>
-bool PlatformSensorReaderWinrtBase<runtime_class_id,
-                                   ISensorWinrtStatics,
-                                   ISensorWinrtClass,
-                                   ISensorReadingChangedHandler,
-                                   ISensorReadingChangedEventArgs>::
-    IsSensorCreateSuccess(SensorWinrtCreateFailure create_return_code) {
-  switch (create_return_code) {
-    case SensorWinrtCreateFailure::kErrorISensorWinrtStaticsActivationFailed:
-      // Failing to query the default report interval is not a fatal error. The
-      // consumer (PlatformSensorWin) should be able to handle this and return a
-      // default report interval instead.
-      FALLTHROUGH;
-    case SensorWinrtCreateFailure::kOk:
-      return true;
-    case SensorWinrtCreateFailure::kErrorGetDefaultSensorFailed:
-      FALLTHROUGH;
-    case SensorWinrtCreateFailure::kErrorDefaultSensorNull:
-      FALLTHROUGH;
-    case SensorWinrtCreateFailure::kErrorGetMinReportIntervalFailed:
-      return false;
-  }
-}
-
 template <wchar_t const* runtime_class_id,
           class ISensorWinrtStatics,
           class ISensorWinrtClass,
@@ -178,32 +155,49 @@ template <wchar_t const* runtime_class_id,
           class ISensorWinrtClass,
           class ISensorReadingChangedHandler,
           class ISensorReadingChangedEventArgs>
-SensorWinrtCreateFailure
-PlatformSensorReaderWinrtBase<runtime_class_id,
-                              ISensorWinrtStatics,
-                              ISensorWinrtClass,
-                              ISensorReadingChangedHandler,
-                              ISensorReadingChangedEventArgs>::Initialize() {
+bool PlatformSensorReaderWinrtBase<
+    runtime_class_id,
+    ISensorWinrtStatics,
+    ISensorWinrtClass,
+    ISensorReadingChangedHandler,
+    ISensorReadingChangedEventArgs>::Initialize() {
   ComPtr<ISensorWinrtStatics> sensor_statics;
 
   HRESULT hr = get_sensor_factory_callback_.Run(&sensor_statics);
 
-  if (FAILED(hr))
-    return SensorWinrtCreateFailure::kErrorISensorWinrtStaticsActivationFailed;
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get sensor activation factory: "
+                << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
 
-  if (FAILED(sensor_statics->GetDefault(&sensor_)))
-    return SensorWinrtCreateFailure::kErrorGetDefaultSensorFailed;
+  hr = sensor_statics->GetDefault(&sensor_);
+  if (FAILED(hr)) {
+    base::UmaHistogramSparse("Sensors.Windows.WinRT.Activation.Result", hr);
+    DLOG(ERROR) << "Failed to query default sensor: "
+                << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
 
   // GetDefault() returns null if the sensor does not exist
-  if (!sensor_)
-    return SensorWinrtCreateFailure::kErrorDefaultSensorNull;
+  if (!sensor_) {
+    // https://docs.microsoft.com/en-us/windows/win32/api/sensorsapi/nf-sensorsapi-isensormanager-getsensorsbytype
+    // The Win32 flavor returns HRESULT_FROM_WIN32(ERROR_NOT_FOUND) when the
+    // sensor is not found so log the same error result here as well.
+    base::UmaHistogramSparse("Sensors.Windows.WinRT.Activation.Result",
+                             HRESULT_FROM_WIN32(ERROR_NOT_FOUND));
+    VLOG(1) << "Sensor does not exist on system";
+    return false;
+  }
+
+  base::UmaHistogramSparse("Sensors.Windows.WinRT.Activation.Result", S_OK);
 
   minimum_report_interval_ = GetMinimumReportIntervalFromSensor();
 
   if (minimum_report_interval_.is_zero())
-    return SensorWinrtCreateFailure::kErrorGetMinReportIntervalFailed;
+    DLOG(WARNING) << "Failed to get sensor minimum report interval";
 
-  return SensorWinrtCreateFailure::kOk;
+  return true;
 }
 
 template <wchar_t const* runtime_class_id,
@@ -270,6 +264,7 @@ bool PlatformSensorReaderWinrtBase<runtime_class_id,
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to set report interval: "
                   << logging::SystemErrorCodeToString(hr);
+      RecordSensorStartResult(hr);
       return false;
     }
 
@@ -283,10 +278,12 @@ bool PlatformSensorReaderWinrtBase<runtime_class_id,
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to add reading callback handler: "
                   << logging::SystemErrorCodeToString(hr);
+      RecordSensorStartResult(hr);
       return false;
     }
 
     reading_callback_token_ = event_token;
+    RecordSensorStartResult(hr);
   }
 
   return true;
@@ -309,6 +306,7 @@ void PlatformSensorReaderWinrtBase<
     HRESULT hr =
         sensor_->remove_ReadingChanged(reading_callback_token_.value());
 
+    base::UmaHistogramSparse("Sensors.Windows.WinRT.Stop.Result", hr);
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to remove ALS reading callback handler: "
                   << logging::SystemErrorCodeToString(hr);
@@ -336,7 +334,7 @@ PlatformSensorReaderWinrtBase<
 std::unique_ptr<PlatformSensorReaderWinBase>
 PlatformSensorReaderWinrtLightSensor::Create() {
   auto light_sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-  if (IsSensorCreateSuccess(light_sensor->Initialize())) {
+  if (light_sensor->Initialize()) {
     return light_sensor;
   }
   return nullptr;
@@ -394,7 +392,7 @@ std::unique_ptr<PlatformSensorReaderWinBase>
 PlatformSensorReaderWinrtAccelerometer::Create() {
   auto accelerometer =
       std::make_unique<PlatformSensorReaderWinrtAccelerometer>();
-  if (IsSensorCreateSuccess(accelerometer->Initialize())) {
+  if (accelerometer->Initialize()) {
     return accelerometer;
   }
   return nullptr;
@@ -455,9 +453,9 @@ HRESULT PlatformSensorReaderWinrtAccelerometer::OnReadingChangedCallback(
     // The generic sensor interface exposes acceleration simply as
     // m/s^2, so the data must be converted.
     SensorReading reading;
-    reading.accel.x = -x * kMeanGravity;
-    reading.accel.y = -y * kMeanGravity;
-    reading.accel.z = -z * kMeanGravity;
+    reading.accel.x = -x * base::kMeanGravityDouble;
+    reading.accel.y = -y * base::kMeanGravityDouble;
+    reading.accel.z = -z * base::kMeanGravityDouble;
     reading.accel.timestamp = timestamp_delta.InSecondsF();
     client_->OnReadingUpdated(reading);
 
@@ -474,7 +472,7 @@ HRESULT PlatformSensorReaderWinrtAccelerometer::OnReadingChangedCallback(
 std::unique_ptr<PlatformSensorReaderWinBase>
 PlatformSensorReaderWinrtGyrometer::Create() {
   auto gyrometer = std::make_unique<PlatformSensorReaderWinrtGyrometer>();
-  if (IsSensorCreateSuccess(gyrometer->Initialize())) {
+  if (gyrometer->Initialize()) {
     return gyrometer;
   }
   return nullptr;
@@ -553,7 +551,7 @@ HRESULT PlatformSensorReaderWinrtGyrometer::OnReadingChangedCallback(
 std::unique_ptr<PlatformSensorReaderWinBase>
 PlatformSensorReaderWinrtMagnetometer::Create() {
   auto magnetometer = std::make_unique<PlatformSensorReaderWinrtMagnetometer>();
-  if (IsSensorCreateSuccess(magnetometer->Initialize())) {
+  if (magnetometer->Initialize()) {
     return magnetometer;
   }
   return nullptr;
@@ -630,7 +628,7 @@ std::unique_ptr<PlatformSensorReaderWinBase>
 PlatformSensorReaderWinrtAbsOrientationEulerAngles::Create() {
   auto inclinometer =
       std::make_unique<PlatformSensorReaderWinrtAbsOrientationEulerAngles>();
-  if (IsSensorCreateSuccess(inclinometer->Initialize())) {
+  if (inclinometer->Initialize()) {
     return inclinometer;
   }
   return nullptr;
@@ -708,7 +706,7 @@ std::unique_ptr<PlatformSensorReaderWinBase>
 PlatformSensorReaderWinrtAbsOrientationQuaternion::Create() {
   auto orientation =
       std::make_unique<PlatformSensorReaderWinrtAbsOrientationQuaternion>();
-  if (IsSensorCreateSuccess(orientation->Initialize())) {
+  if (orientation->Initialize()) {
     return orientation;
   }
   return nullptr;

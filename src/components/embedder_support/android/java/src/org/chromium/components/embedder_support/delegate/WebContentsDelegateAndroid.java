@@ -25,14 +25,6 @@ public class WebContentsDelegateAndroid {
     // Equivalent of WebCore::WebConsoleMessage::LevelError.
     public static final int LOG_LEVEL_ERROR = 3;
 
-    // The most recent load progress callback received from WebContents, as a percentage.
-    // Initialize to 100 to indicate that we're not in a loading state.
-    private int mMostRecentProgress = 100;
-
-    public int getMostRecentProgress() {
-        return mMostRecentProgress;
-    }
-
     /**
      * @param disposition         The new tab disposition, defined in
      *                            //ui/base/mojo/window_open_disposition.mojom.
@@ -56,18 +48,6 @@ public class WebContentsDelegateAndroid {
 
     @CalledByNative
     public void visibleSSLStateChanged() {}
-
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private final void notifyLoadProgressChanged(double progress) {
-        mMostRecentProgress = (int) (100.0 * progress);
-        onLoadProgressChanged(mMostRecentProgress);
-    }
-
-    /**
-     * @param progress The load progress [0, 100] for the current web contents.
-     */
-    public void onLoadProgressChanged(int progress) {}
 
     /**
      * Signaled when the renderer has been deemed to be unresponsive.
@@ -157,11 +137,35 @@ public class WebContentsDelegateAndroid {
     }
 
     /**
+     * @return The minimum visible height the top controls can have in DIP.
+     */
+    @CalledByNative
+    public int getTopControlsMinHeight() {
+        return 0;
+    }
+
+    /**
      * @return The height of the bottom controls in DIP.
      */
     @CalledByNative
     public int getBottomControlsHeight() {
         return 0;
+    }
+
+    /**
+     * @return The minimum visible height the bottom controls can have in DIP.
+     */
+    @CalledByNative
+    public int getBottomControlsMinHeight() {
+        return 0;
+    }
+
+    /**
+     * @return Whether or not the browser controls height changes should be animated.
+     */
+    @CalledByNative
+    public boolean shouldAnimateBrowserControlsHeightChanges() {
+        return false;
     }
 
     /**

@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_TEST_FAKE_ARC_SESSION_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "components/arc/session/arc_session.h"
@@ -25,7 +26,8 @@ class FakeArcSession : public ArcSession {
   void Stop() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
-  void SetUserIdHashForProfile(const std::string& hash) override;
+  void SetUserInfo(const std::string& hash,
+                   const std::string& serial_number) override;
 
   // To emulate unexpected stop, such as crash.
   void StopWithReason(ArcStopReason reason);
@@ -46,6 +48,9 @@ class FakeArcSession : public ArcSession {
   // Returns true if the session is considered as running.
   bool is_running() const { return running_; }
 
+  // Returns an upgrade parameter passed to the session.
+  std::string upgrade_locale_param() const { return upgrade_locale_param_; }
+
   // Returns FakeArcSession instance. This can be used for a factory
   // in ArcBridgeServiceImpl.
   static std::unique_ptr<ArcSession> Create();
@@ -58,6 +63,7 @@ class FakeArcSession : public ArcSession {
   bool upgrade_requested_ = false;
   bool running_ = false;
   bool stop_requested_ = false;
+  std::string upgrade_locale_param_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeArcSession);
 };

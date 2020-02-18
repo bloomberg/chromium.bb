@@ -26,7 +26,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -65,7 +65,7 @@ class AvailabilityProber
     // delegate returns true, no more probes would be attempted until there is a
     // change in the network or |SendNowIfInactive| is called.
     virtual bool IsResponseSuccess(net::Error net_error,
-                                   const network::ResourceResponseHead* head,
+                                   const network::mojom::URLResponseHead* head,
                                    std::unique_ptr<std::string> body) = 0;
   };
 
@@ -181,6 +181,11 @@ class AvailabilityProber
   // Sets a repeating callback to notify the completion of a probe and whether
   // it was successful. It is safe to delete |this| during the callback.
   void SetOnCompleteCallback(AvailabilityProberOnCompleteCallback callback);
+
+  // Called when some other network request to the same endpoint has failed and
+  // the probe should be reattempted. Also records this event as a probe
+  // failure.
+  void ReportExternalFailureAndRetry();
 
  protected:
   // Exposes |tick_clock| and |clock| for testing.
@@ -314,6 +319,11 @@ class AvailabilityProber
   // An optional callback to notify of a completed probe. This callback passes a
   // bool to indicate success of the completed probe.
   AvailabilityProberOnCompleteCallback on_complete_callback_;
+
+  // This is set after a call to |ReportExternalFailureAndRetry| and cleared
+  // when the next probe completes. This state is kept for histogram recording
+  // of success after a reported failure.
+  bool reported_external_failure_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

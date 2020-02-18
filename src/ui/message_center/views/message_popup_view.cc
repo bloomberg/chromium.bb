@@ -13,7 +13,6 @@
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_factory.h"
-#include "ui/message_center/views/popup_alignment_delegate.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -29,10 +28,8 @@
 namespace message_center {
 
 MessagePopupView::MessagePopupView(const Notification& notification,
-                                   PopupAlignmentDelegate* alignment_delegate,
                                    MessagePopupCollection* popup_collection)
     : message_view_(MessageViewFactory::Create(notification)),
-      alignment_delegate_(alignment_delegate),
       popup_collection_(popup_collection),
       a11y_feedback_on_init_(
           notification.rich_notification_data()
@@ -45,10 +42,8 @@ MessagePopupView::MessagePopupView(const Notification& notification,
   set_notify_enter_exit_on_child(true);
 }
 
-MessagePopupView::MessagePopupView(PopupAlignmentDelegate* alignment_delegate,
-                                   MessagePopupCollection* popup_collection)
+MessagePopupView::MessagePopupView(MessagePopupCollection* popup_collection)
     : message_view_(nullptr),
-      alignment_delegate_(alignment_delegate),
       popup_collection_(popup_collection),
       a11y_feedback_on_init_(false) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -110,13 +105,13 @@ void MessagePopupView::Show() {
   // Make the widget explicitly activatable as TYPE_POPUP is not activatable by
   // default but we need focus for the inline reply textarea.
   params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
-  params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
 #else
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
 #endif
   params.delegate = this;
   views::Widget* widget = new views::Widget();
-  alignment_delegate_->ConfigureWidgetInitParamsForContainer(widget, &params);
+  popup_collection_->ConfigureWidgetInitParamsForContainer(widget, &params);
   widget->set_focus_on_creation(false);
   widget->AddObserver(this);
 
@@ -191,10 +186,16 @@ void MessagePopupView::OnWorkAreaChanged() {
   if (!native_view)
     return;
 
-  if (alignment_delegate_->RecomputeAlignment(
+  if (popup_collection_->RecomputeAlignment(
           display::Screen::GetScreen()->GetDisplayNearestView(native_view))) {
     popup_collection_->ResetBounds();
   }
+}
+
+void MessagePopupView::OnFocus() {
+  // This view is just a container, so advance focus to the underlying
+  // MessageView.
+  GetFocusManager()->SetFocusedView(message_view_);
 }
 
 void MessagePopupView::OnWidgetActivationChanged(views::Widget* widget,

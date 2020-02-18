@@ -45,14 +45,16 @@ jumbo_static_library("renderer") {
   sources = [
     "benchmarking_extension.cc",
     "benchmarking_extension.h",
+    "browser_exposed_renderer_interfaces.cc",
+    "browser_exposed_renderer_interfaces.h",
     "chrome_content_renderer_client.cc",
     "chrome_content_renderer_client.h",
     "chrome_render_frame_observer.cc",
     "chrome_render_frame_observer.h",
     "chrome_render_thread_observer.cc",
     "chrome_render_thread_observer.h",
-    "content_settings_observer.cc",
-    "content_settings_observer.h",
+    "content_settings_agent_impl.cc",
+    "content_settings_agent_impl.h",
     "custom_menu_commands.h",
     "instant_restricted_id_cache.h",
     "loadtimes_extension_bindings.cc",
@@ -91,8 +93,6 @@ jumbo_static_library("renderer") {
     "previews/resource_loading_hints_agent.h",
     "sandbox_status_extension_android.cc",
     "sandbox_status_extension_android.h",
-    "security_interstitials/security_interstitial_page_controller.cc",
-    "security_interstitials/security_interstitial_page_controller.h",
     "subresource_redirect/subresource_redirect_experiments.cc",
     "subresource_redirect/subresource_redirect_experiments.h",
     "subresource_redirect/subresource_redirect_params.cc",
@@ -101,8 +101,8 @@ jumbo_static_library("renderer") {
     "subresource_redirect/subresource_redirect_url_loader_throttle.h",
     "subresource_redirect/subresource_redirect_util.cc",
     "subresource_redirect/subresource_redirect_util.h",
-    "supervised_user/supervised_user_error_page_controller.cc",
-    "supervised_user/supervised_user_error_page_controller.h",
+    "sync_encryption_keys_extension.cc",
+    "sync_encryption_keys_extension.h",
     "url_loader_throttle_provider_impl.cc",
     "url_loader_throttle_provider_impl.h",
     "v8_unwinder.cc",
@@ -114,6 +114,16 @@ jumbo_static_library("renderer") {
     "worker_content_settings_client.cc",
     "worker_content_settings_client.h",
   ]
+
+  if (enable_supervised_users) {
+    sources += [
+      "supervised_user/supervised_user_error_page_controller.cc",
+      "supervised_user/supervised_user_error_page_controller.h",
+      "supervised_user/supervised_user_error_page_controller_delegate.h",
+      "supervised_user/supervised_user_error_page_controller_delegate_impl.cc",
+      "supervised_user/supervised_user_error_page_controller_delegate_impl.h",
+    ]
+  }
 
   defines = []
 
@@ -142,6 +152,7 @@ jumbo_static_library("renderer") {
     "//components/safe_browsing:buildflags",
     "//components/safe_browsing/common:interfaces",
     "//components/safe_browsing/renderer:throttles",
+    "//components/security_interstitials/content/renderer:security_interstitial_page_controller",
     "//components/security_interstitials/core:",
     "//components/security_interstitials/core/common/mojom:",
     "//components/spellcheck:buildflags",
@@ -153,7 +164,6 @@ jumbo_static_library("renderer") {
     "//components/visitedlink/renderer",
     "//components/web_cache/renderer",
     "//content/app/resources",
-    "//content/app/strings",
     "//content/public/common",
     "//content/public/renderer",
     "//extensions/buildflags",
@@ -172,6 +182,7 @@ jumbo_static_library("renderer") {
     "//third_party/blink/public:blink",
     "//third_party/blink/public:resources",
     "//third_party/blink/public:scaled_resources",
+    "//third_party/blink/public/strings",
     "//third_party/icu",
     "//third_party/re2",
     "//third_party/widevine/cdm:buildflags",

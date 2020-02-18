@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.feed;
 
 import android.text.TextUtils;
 
-import com.google.android.libraries.feed.api.host.config.Configuration;
-import com.google.android.libraries.feed.api.host.config.Configuration.ConfigKey;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
+import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
 
 /**
  * Collection of configurable parameters and default values given to the Feed. Every getter passes
@@ -22,7 +22,7 @@ public final class FeedConfiguration {
 
     private static final String ABANDON_RESTORE_BELOW_FOLD = "abandon_restore_below_fold";
     /** Default value for whether to restore below fold. */
-    public static final boolean ABANDON_RESTORE_BELOW_FOLD_DEFAULT = true;
+    public static final boolean ABANDON_RESTORE_BELOW_FOLD_DEFAULT = false;
 
     private static final String CARD_MENU_TOOLTIP_ELIGIBLE = "card_menu_tooltip_eligible";
     /** Default value for if card menus should have tooltips enabled. */
@@ -35,7 +35,11 @@ public final class FeedConfiguration {
     private static final String CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING =
             "consume_synthetic_tokens_while_restoring_bool";
     /** Default value for whether to consumer synthetic tokens on restore. */
-    public static final boolean CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT = false;
+    public static final boolean CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT = true;
+
+    private static final String DEFAULT_ACTION_TTL_SECONDS = "default_action_ttl_seconds";
+    /** Default value for the TTL of default action (3 days). */
+    public static final long DEFAULT_ACTION_TTL_SECONDS_DEFAULT = 259200;
 
     private static final String FEED_ACTION_SERVER_ENDPOINT = "feed_action_server_endpoint";
     /** Default value for the endpoint used for recording uploaded actions to the server. */
@@ -78,7 +82,7 @@ public final class FeedConfiguration {
 
     private static final String FEED_UI_ENABLED = "feed_ui_enabled";
     /** Default value for the type of UI to request from the server. */
-    public static final boolean FEED_UI_ENABLED_DEFAULT = false;
+    public static final boolean FEED_UI_ENABLED_DEFAULT = true;
 
     private static final String INITIAL_NON_CACHED_PAGE_SIZE = "initial_non_cached_page_size";
     /** Default value for initial non cached page size. */
@@ -115,11 +119,11 @@ public final class FeedConfiguration {
 
     private static final String SNIPPETS_ENABLED = "snippets_enabled";
     /** Default value for whether to show article snippets. */
-    public static final boolean SNIPPETS_ENABLED_DEFAULT = false;
+    public static final boolean SNIPPETS_ENABLED_DEFAULT = true;
 
     private static final String SPINNER_DELAY_MS = "spinner_delay";
     /** Default value for delay before showing a spinner. */
-    public static final long SPINNER_DELAY_MS_DEFAULT = 0;
+    public static final long SPINNER_DELAY_MS_DEFAULT = 500;
 
     private static final String SPINNER_MINIMUM_SHOW_TIME_MS = "spinner_minimum_show_time";
     /** Default value for how long spinners must be shown for. */
@@ -127,7 +131,7 @@ public final class FeedConfiguration {
 
     private static final String STORAGE_MISS_THRESHOLD = "storage_miss_threshold";
     /** Default number of items that can be missing from a call to FeedStore before failing. */
-    public static final long STORAGE_MISS_THRESHOLD_DEFAULT = 4;
+    public static final long STORAGE_MISS_THRESHOLD_DEFAULT = 100;
 
     private static final String TRIGGER_IMMEDIATE_PAGINATION = "trigger_immediate_pagination";
     /** Default value for triggering immediate pagination. */
@@ -183,6 +187,14 @@ public final class FeedConfiguration {
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING,
                 CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT);
+    }
+
+    /** @return The TTL (in seconds) for the default action. */
+    @VisibleForTesting
+    static long getDefaultActionTtlSeconds() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, DEFAULT_ACTION_TTL_SECONDS,
+                (int) DEFAULT_ACTION_TTL_SECONDS_DEFAULT);
     }
 
     /** @return The endpoint used for recording uploaded actions to the server. */
@@ -249,8 +261,7 @@ public final class FeedConfiguration {
     }
 
     /** @return Whether to ask the server for "Feed" UI or just basic UI. */
-    @VisibleForTesting
-    static boolean getFeedUiEnabled() {
+    public static boolean getFeedUiEnabled() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, FEED_UI_ENABLED,
                 FEED_UI_ENABLED_DEFAULT);
@@ -418,6 +429,8 @@ public final class FeedConfiguration {
                         FeedConfiguration.getConsumeSyntheticTokens())
                 .put(ConfigKey.CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING,
                         FeedConfiguration.getConsumeSyntheticTokensWhileRestoring())
+                .put(ConfigKey.DEFAULT_ACTION_TTL_SECONDS,
+                        FeedConfiguration.getDefaultActionTtlSeconds())
                 .put(ConfigKey.FEED_ACTION_SERVER_ENDPOINT,
                         FeedConfiguration.getFeedActionServerEndpoint())
                 .put(ConfigKey.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST,

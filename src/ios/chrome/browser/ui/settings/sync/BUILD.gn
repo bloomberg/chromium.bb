@@ -11,8 +11,6 @@ source_set("sync") {
     "sync_encryption_passphrase_table_view_controller.mm",
     "sync_encryption_table_view_controller.h",
     "sync_encryption_table_view_controller.mm",
-    "sync_settings_table_view_controller.h",
-    "sync_settings_table_view_controller.mm",
   ]
   deps = [
     "//base",
@@ -45,6 +43,7 @@ source_set("sync") {
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view/cells",
+    "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/colors",
     "//ios/public/provider/chrome/browser",
@@ -61,7 +60,6 @@ source_set("unit_tests") {
     "sync_create_passphrase_table_view_controller_unittest.mm",
     "sync_encryption_passphrase_table_view_controller_unittest.mm",
     "sync_encryption_table_view_controller_unittest.mm",
-    "sync_settings_table_view_controller_unittest.mm",
   ]
   deps = [
     ":sync",
@@ -73,7 +71,6 @@ source_set("unit_tests") {
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/unified_consent",
-    "//components/unified_consent:test_support",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser",

@@ -8,20 +8,23 @@ import itertools
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
 from .composition_parts import Identifier
+from .constructor import ConstructorGroup
 from .database import Database
 from .database import DatabaseBody
 from .dictionary import Dictionary
 from .enumeration import Enumeration
-from .ir_map import IRMap
 from .idl_type import IdlTypeFactory
 from .interface import Interface
+from .ir_map import IRMap
 from .make_copy import make_copy
+from .namespace import Namespace
 from .operation import OperationGroup
 from .reference import RefByIdFactory
 from .typedef import Typedef
 from .union import Union
 from .user_defined_type import StubUserDefinedType
 from .user_defined_type import UserDefinedType
+from .validator import validate_after_resolve_references
 
 
 class IdlCompiler(object):
@@ -44,15 +47,13 @@ class IdlCompiler(object):
     Note that an old IR for 'x' remains internally.  See IRMap for the details.
     """
 
-    def __init__(self, ir_map, ref_to_idl_def_factory, ref_to_idl_type_factory,
-                 idl_type_factory, report_error):
+    def __init__(self, ir_map, ref_to_idl_def_factory, idl_type_factory,
+                 report_error):
         """
         Args:
             ir_map: IRMap filled with the initial IRs of IDL definitions.
             ref_to_idl_def_factory: RefByIdFactory that created all references
                 to UserDefinedType.
-            ref_to_idl_type_factory: RefByIdFactory that created all references
-                to IdlType.
             idl_type_factory: IdlTypeFactory that created all instances of
                 IdlType.
             report_error: A callback that will be invoked when an error occurs
@@ -62,12 +63,10 @@ class IdlCompiler(object):
         """
         assert isinstance(ir_map, IRMap)
         assert isinstance(ref_to_idl_def_factory, RefByIdFactory)
-        assert isinstance(ref_to_idl_type_factory, RefByIdFactory)
         assert isinstance(idl_type_factory, IdlTypeFactory)
         assert callable(report_error)
         self._ir_map = ir_map
         self._ref_to_idl_def_factory = ref_to_idl_def_factory
-        self._ref_to_idl_type_factory = ref_to_idl_type_factory
         self._idl_type_factory = idl_type_factory
         self._report_error = report_error
         self._db = DatabaseBody()
@@ -78,16 +77,22 @@ class IdlCompiler(object):
         self._did_run = True
 
         # Merge partial definitions.
+        self._record_defined_in_partial_and_mixin()
         self._propagate_extattrs_per_idl_fragment()
-        self._merge_partial_interfaces()
+        self._merge_partial_interface_likes()
         self._merge_partial_dictionaries()
         # Merge mixins.
+        self._set_owner_mixin_of_mixin_members()
         self._merge_interface_mixins()
-
-        self._group_overloaded_functions()
 
         # Process inheritances.
         self._process_interface_inheritances()
+
+        # Make groups of overloaded functions including inherited ones.
+        self._group_overloaded_functions()
+        self._calculate_group_exposure()
+
+        self._sort_dictionary_members()
 
         # Updates on IRs are finished.  Create API objects.
         self._create_public_objects()
@@ -95,11 +100,31 @@ class IdlCompiler(object):
         # Resolve references.
         self._resolve_references_to_idl_def()
         self._resolve_references_to_idl_type()
+        validate_after_resolve_references(self._ir_map)
 
         # Build union API objects.
         self._create_public_unions()
 
         return Database(self._db)
+
+    def _record_defined_in_partial_and_mixin(self):
+        old_irs = self._ir_map.irs_of_kinds(
+            IRMap.IR.Kind.DICTIONARY, IRMap.IR.Kind.INTERFACE,
+            IRMap.IR.Kind.INTERFACE_MIXIN, IRMap.IR.Kind.NAMESPACE,
+            IRMap.IR.Kind.PARTIAL_DICTIONARY, IRMap.IR.Kind.PARTIAL_INTERFACE,
+            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN,
+            IRMap.IR.Kind.PARTIAL_NAMESPACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+            for member in new_ir.iter_all_members():
+                member.code_generator_info.set_defined_in_partial(
+                    hasattr(new_ir, 'is_partial') and new_ir.is_partial)
+                member.code_generator_info.set_defined_in_mixin(
+                    hasattr(new_ir, 'is_mixin') and new_ir.is_mixin)
 
     def _propagate_extattrs_per_idl_fragment(self):
         def propagate_extattr(extattr_key_and_attr_name,
@@ -147,6 +172,7 @@ class IdlCompiler(object):
 
         def process_interface_like(ir):
             ir = make_copy(ir)
+            self._ir_map.add(ir)
 
             propagate = functools.partial(propagate_extattr, ir=ir)
             propagate(('ImplementedAs', 'set_receiver_implemented_as'),
@@ -155,8 +181,6 @@ class IdlCompiler(object):
             propagate_to_exposure(propagate)
 
             map(process_member_like, ir.iter_all_members())
-
-            self._ir_map.add(ir)
 
         def process_member_like(ir):
             propagate = functools.partial(propagate_extattr, ir=ir)
@@ -173,27 +197,32 @@ class IdlCompiler(object):
                       default_value=True)
 
         old_irs = self._ir_map.irs_of_kinds(
-            IRMap.IR.Kind.INTERFACE, IRMap.IR.Kind.INTERFACE_MIXIN,
-            IRMap.IR.Kind.DICTIONARY, IRMap.IR.Kind.PARTIAL_INTERFACE,
+            IRMap.IR.Kind.DICTIONARY, IRMap.IR.Kind.INTERFACE,
+            IRMap.IR.Kind.INTERFACE_MIXIN, IRMap.IR.Kind.NAMESPACE,
+            IRMap.IR.Kind.PARTIAL_DICTIONARY, IRMap.IR.Kind.PARTIAL_INTERFACE,
             IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN,
-            IRMap.IR.Kind.PARTIAL_DICTIONARY)
+            IRMap.IR.Kind.PARTIAL_NAMESPACE)
 
         self._ir_map.move_to_new_phase()
 
         map(process_interface_like, old_irs)
 
-    def _merge_partial_interfaces(self):
-        old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
-        partial_interfaces = self._ir_map.find_by_kind(
-            IRMap.IR.Kind.PARTIAL_INTERFACE)
-        old_mixins = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE_MIXIN)
-        partial_mixins = self._ir_map.find_by_kind(
-            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN)
+    def _merge_partial_interface_likes(self):
+        irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
+                                        IRMap.IR.Kind.INTERFACE_MIXIN,
+                                        IRMap.IR.Kind.NAMESPACE)
+        partial_irs = self._ir_map.irs_of_kinds(
+            IRMap.IR.Kind.PARTIAL_INTERFACE,
+            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN,
+            IRMap.IR.Kind.PARTIAL_NAMESPACE)
 
         self._ir_map.move_to_new_phase()
 
-        self._merge_interfaces(old_interfaces, partial_interfaces)
-        self._merge_interfaces(old_mixins, partial_mixins)
+        ir_sets_to_merge = [(ir, [
+            partial_ir for partial_ir in partial_irs
+            if partial_ir.identifier == ir.identifier
+        ]) for ir in irs]
+        self._merge_interface_like_irs(ir_sets_to_merge)
 
     def _merge_partial_dictionaries(self):
         old_dictionaries = self._ir_map.find_by_kind(IRMap.IR.Kind.DICTIONARY)
@@ -204,6 +233,7 @@ class IdlCompiler(object):
 
         for identifier, old_dictionary in old_dictionaries.iteritems():
             new_dictionary = make_copy(old_dictionary)
+            self._ir_map.add(new_dictionary)
             for partial_dictionary in old_partial_dictionaries.get(
                     identifier, []):
                 new_dictionary.add_components(partial_dictionary.components)
@@ -211,63 +241,50 @@ class IdlCompiler(object):
                     partial_dictionary.debug_info.all_locations)
                 new_dictionary.own_members.extend(
                     make_copy(partial_dictionary.own_members))
-            self._ir_map.add(new_dictionary)
+
+    def _set_owner_mixin_of_mixin_members(self):
+        mixins = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE_MIXIN)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in mixins:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+            ref_to_mixin = self._ref_to_idl_def_factory.create(
+                new_ir.identifier)
+            for member in new_ir.iter_all_members():
+                member.set_owner_mixin(ref_to_mixin)
 
     def _merge_interface_mixins(self):
         interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
-        interface_mixins = self._ir_map.find_by_kind(
-            IRMap.IR.Kind.INTERFACE_MIXIN)
+        mixins = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE_MIXIN)
+        includes = self._ir_map.find_by_kind(IRMap.IR.Kind.INCLUDES)
 
-        identifier_to_mixin_map = {
-            identifier: [
-                interface_mixins[include.mixin_identifier]
-                for include in includes
-            ]
-            for identifier, includes in self._ir_map.find_by_kind(
-                IRMap.IR.Kind.INCLUDES).iteritems()
-        }
+        ir_sets_to_merge = [(interface, [
+            mixins[include.mixin_identifier]
+            for include in includes.get(identifier, [])
+        ]) for identifier, interface in interfaces.iteritems()]
 
         self._ir_map.move_to_new_phase()
 
-        self._merge_interfaces(interfaces, identifier_to_mixin_map)
+        self._merge_interface_like_irs(ir_sets_to_merge)
 
-    def _merge_interfaces(self, old_interfaces, interfaces_to_be_merged):
-        for identifier, old_interface in old_interfaces.iteritems():
-            new_interface = make_copy(old_interface)
-            for to_be_merged in interfaces_to_be_merged.get(identifier, []):
-                new_interface.add_components(to_be_merged.components)
-                new_interface.debug_info.add_locations(
+    def _merge_interface_like_irs(self, old_irs_to_merge):
+        for old_ir, irs_to_be_merged in old_irs_to_merge:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+            for ir in irs_to_be_merged:
+                to_be_merged = make_copy(ir)
+                new_ir.add_components(to_be_merged.components)
+                new_ir.debug_info.add_locations(
                     to_be_merged.debug_info.all_locations)
-                new_interface.attributes.extend(
-                    make_copy(to_be_merged.attributes))
-                new_interface.constants.extend(
-                    make_copy(to_be_merged.constants))
-                new_interface.operations.extend(
-                    make_copy(to_be_merged.operations))
-            self._ir_map.add(new_interface)
-
-    def _group_overloaded_functions(self):
-        old_interfaces = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
-
-        self._ir_map.move_to_new_phase()
-
-        for old_interface in old_interfaces:
-            assert not old_interface.operation_groups
-            new_interface = make_copy(old_interface)
-
-            sort_key = lambda x: x.identifier
-            sorted_operations = sorted(new_interface.operations, key=sort_key)
-            new_interface.operation_groups = [
-                OperationGroup.IR(operations=list(operations))
-                for identifier, operations in itertools.groupby(
-                    sorted_operations, key=sort_key) if identifier
-            ]
-
-            self._ir_map.add(new_interface)
+                new_ir.attributes.extend(to_be_merged.attributes)
+                new_ir.constants.extend(to_be_merged.constants)
+                new_ir.operations.extend(to_be_merged.operations)
 
     def _process_interface_inheritances(self):
         def is_own_member(member):
-            return 'Unfogeable' in member.extended_attributes
+            return 'Unforgeable' in member.extended_attributes
 
         def create_inheritance_stack(obj, table):
             if obj.inherited is None:
@@ -281,6 +298,7 @@ class IdlCompiler(object):
 
         for old_interface in old_interfaces.itervalues():
             new_interface = make_copy(old_interface)
+            self._ir_map.add(new_interface)
             inheritance_stack = create_inheritance_stack(
                 old_interface, old_interfaces)
             for interface in inheritance_stack[1:]:
@@ -292,7 +310,100 @@ class IdlCompiler(object):
                     make_copy(operation) for operation in interface.operations
                     if is_own_member(operation)
                 ])
-            self._ir_map.add(new_interface)
+
+    def _group_overloaded_functions(self):
+        old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.CALLBACK_INTERFACE,
+                                            IRMap.IR.Kind.INTERFACE,
+                                            IRMap.IR.Kind.NAMESPACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            assert not old_ir.constructor_groups
+            assert not old_ir.operation_groups
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+            sort_key = lambda x: x.identifier
+            new_ir.constructor_groups = [
+                ConstructorGroup.IR(constructors=list(constructors))
+                for identifier, constructors in itertools.groupby(
+                    sorted(new_ir.constructors, key=sort_key), key=sort_key)
+            ]
+            new_ir.operation_groups = [
+                OperationGroup.IR(operations=list(operations))
+                for identifier, operations in itertools.groupby(
+                    sorted(new_ir.operations, key=sort_key), key=sort_key)
+                if identifier
+            ]
+
+    def _calculate_group_exposure(self):
+        old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
+                                            IRMap.IR.Kind.NAMESPACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+
+            for group in new_ir.constructor_groups + new_ir.operation_groups:
+                exposures = map(lambda overload: overload.exposure, group)
+
+                # [Exposed]
+                if any(not exposure.global_names_and_features
+                       for exposure in exposures):
+                    pass  # Unconditionally exposed by default.
+                else:
+                    for exposure in exposures:
+                        for entry in exposure.global_names_and_features:
+                            group.exposure.add_global_name_and_feature(
+                                entry.global_name, entry.feature)
+
+                # [RuntimeEnabled]
+                if any(not exposure.runtime_enabled_features
+                       for exposure in exposures):
+                    pass  # Unconditionally exposed by default.
+                else:
+                    for exposure in exposures:
+                        for name in exposure.runtime_enabled_features:
+                            group.exposure.add_runtime_enabled_feature(name)
+
+                # [ContextEnabled]
+                if any(not exposure.context_enabled_features
+                       for exposure in exposures):
+                    pass  # Unconditionally exposed by default.
+                else:
+                    for exposure in exposures:
+                        for name in exposure.context_enabled_features:
+                            group.exposure.add_context_enabled_feature(name)
+
+                # [SecureContext]
+                if any(exposure.only_in_secure_contexts is False
+                       for exposure in exposures):
+                    group.exposure.set_only_in_secure_contexts(False)
+                elif all(exposure.only_in_secure_contexts is True
+                         for exposure in exposures):
+                    group.exposure.set_only_in_secure_contexts(True)
+                else:
+                    flag_names = tuple(
+                        itertools.chain.from_iterable([
+                            exposure.only_in_secure_contexts
+                            for exposure in exposures
+                            if exposure.only_in_secure_contexts is not True
+                        ]))
+                    group.exposure.set_only_in_secure_contexts(flag_names)
+
+    def _sort_dictionary_members(self):
+        """Sorts dictionary members in alphabetical order."""
+        old_irs = self._ir_map.irs_of_kind(IRMap.IR.Kind.DICTIONARY)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_ir in old_irs:
+            new_ir = make_copy(old_ir)
+            self._ir_map.add(new_ir)
+
+            new_ir.own_members.sort(key=lambda x: x.identifier)
 
     def _create_public_objects(self):
         """Creates public representations of compiled objects."""
@@ -301,6 +412,9 @@ class IdlCompiler(object):
 
         for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE_MIXIN):
             self._db.register(DatabaseBody.Kind.INTERFACE_MIXIN, Interface(ir))
+
+        for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.NAMESPACE):
+            self._db.register(DatabaseBody.Kind.NAMESPACE, Namespace(ir))
 
         for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.DICTIONARY):
             self._db.register(DatabaseBody.Kind.DICTIONARY, Dictionary(ir))
@@ -348,7 +462,7 @@ class IdlCompiler(object):
                 assert False
             ref.set_target_object(idl_type)
 
-        self._ref_to_idl_type_factory.for_each(resolve)
+        self._idl_type_factory.for_each_reference(resolve)
 
     def _create_public_unions(self):
         all_union_types = []  # all instances of UnionType

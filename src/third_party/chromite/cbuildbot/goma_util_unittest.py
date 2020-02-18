@@ -213,3 +213,53 @@ class TestGomaLogUploader(cros_test_lib.MockTempDirTestCase):
             'compiler_proxy_info':
             'compiler_proxy.host.log.INFO.20170821-120000.000000'
         })
+
+
+class GomaTest(cros_test_lib.TempDirTestCase):
+  """Tests for the Goma object."""
+
+  def testExtraEnvCustomChroot(self):
+    """Test the chroot env building with a custom chroot location."""
+    goma_dir = os.path.join(self.tempdir, 'goma')
+    goma_client_json = os.path.join(self.tempdir, 'goma_client.json')
+    chroot_dir = os.path.join(self.tempdir, 'chroot')
+    chroot_tmp = os.path.join(chroot_dir, 'tmp')
+    osutils.Touch(goma_client_json)
+    osutils.SafeMakedirs(goma_dir)
+    osutils.SafeMakedirs(chroot_tmp)
+
+    goma = goma_util.Goma(goma_dir, goma_client_json, chroot_dir=chroot_dir)
+
+    env = goma.GetExtraEnv()
+    chroot_env = goma.GetChrootExtraEnv()
+
+    # Make sure the chroot paths got translated.
+    self.assertStartsWith(chroot_env['GOMA_TMP_DIR'], '/tmp')
+    self.assertStartsWith(chroot_env['GLOG_log_dir'], '/tmp')
+    # Make sure the non-chroot paths didn't get translated.
+    self.assertStartsWith(env['GOMA_TMP_DIR'], chroot_tmp)
+    self.assertStartsWith(env['GLOG_log_dir'], chroot_tmp)
+    # Make sure they're based on the same path.
+    self.assertEndsWith(env['GOMA_TMP_DIR'], chroot_env['GOMA_TMP_DIR'])
+    self.assertEndsWith(env['GLOG_log_dir'], chroot_env['GLOG_log_dir'])
+
+  def testExtraEnvGomaApproach(self):
+    """Test the chroot env building with a goma approach."""
+    goma_dir = os.path.join(self.tempdir, 'goma')
+    goma_client_json = os.path.join(self.tempdir, 'goma_client.json')
+    chroot_dir = os.path.join(self.tempdir, 'chroot')
+    chroot_tmp = os.path.join(chroot_dir, 'tmp')
+    osutils.Touch(goma_client_json)
+    osutils.SafeMakedirs(goma_dir)
+    osutils.SafeMakedirs(chroot_tmp)
+    goma_approach = goma_util.GomaApproach('foo', 'bar', True)
+
+    goma = goma_util.Goma(goma_dir, goma_client_json,
+                          chroot_dir=chroot_dir, goma_approach=goma_approach)
+
+    env = goma.GetExtraEnv()
+
+    # Make sure the extra environment specified by goma_approach is present.
+    self.assertEqual(env['GOMA_RPC_EXTRA_PARAMS'], 'foo')
+    self.assertEqual(env['GOMA_SERVER_HOST'], 'bar')
+    self.assertEqual(env['GOMA_ARBITRARY_TOOLCHAIN_SUPPORT'], 'true')

@@ -11,6 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/process/process.h"
 #include "content/common/content_export.h"
+#include "gpu/config/gpu_feature_info.h"
+#include "gpu/config/gpu_feature_type.h"
 
 namespace base {
 class CommandLine;
@@ -26,6 +28,12 @@ enum GpuProcessKind {
   GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,  // Unsandboxed, no init GL bindings.
   GPU_PROCESS_KIND_SANDBOXED,
   GPU_PROCESS_KIND_COUNT
+};
+
+enum GpuInfoRequest {
+  kGpuInfoRequestDxDiag = 1 << 0,
+  kGpuInfoRequestDx12Vulkan = 1 << 1,
+  kGpuInfoRequestAll = kGpuInfoRequestDxDiag | kGpuInfoRequestDx12Vulkan,
 };
 
 class GpuDataManagerObserver;
@@ -44,6 +52,9 @@ class GpuDataManager {
 
   virtual gpu::GPUInfo GetGPUInfo() = 0;
 
+  virtual gpu::GpuFeatureStatus GetFeatureStatus(
+      gpu::GpuFeatureType feature) = 0;
+
   // This indicator might change because we could collect more GPU info or
   // because the GPU blacklist could be updated.
   // If this returns false, any further GPU access, including establishing GPU
@@ -54,7 +65,8 @@ class GpuDataManager {
   virtual bool GpuAccessAllowed(std::string* reason) = 0;
 
   // Requests complete GPU info if it has not already been requested
-  virtual void RequestCompleteGpuInfoIfNeeded() = 0;
+  virtual void RequestDxdiagDx12VulkanGpuInfoIfNeeded(GpuInfoRequest request,
+                                                      bool delayed) = 0;
 
   // Check if basic and context GPU info have been collected.
   virtual bool IsEssentialGpuInfoAvailable() = 0;

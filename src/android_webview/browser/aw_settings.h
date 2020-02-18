@@ -28,6 +28,13 @@ class AwSettings : public content::WebContentsObserver {
     FORCE_DARK_ON = 2,
   };
 
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.android_webview.settings
+  enum ForceDarkBehavior {
+    FORCE_DARK_ONLY = 0,
+    MEDIA_QUERY_ONLY = 1,
+    PREFER_MEDIA_QUERY_OVER_FORCE_DARK = 2,
+  };
+
   static AwSettings* FromWebContents(content::WebContents* web_contents);
   static bool GetAllowSniffingFileUrls();
 
@@ -72,6 +79,9 @@ class AwSettings : public content::WebContentsObserver {
   void UpdateOffscreenPreRasterLocked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  void UpdateAllowFileAccessLocked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   void PopulateWebPreferences(content::WebPreferences* web_prefs);
   bool GetAllowFileAccess();
@@ -88,6 +98,7 @@ class AwSettings : public content::WebContentsObserver {
   bool renderer_prefs_initialized_;
   bool javascript_can_open_windows_automatically_;
   bool allow_third_party_cookies_;
+  bool allow_file_access_;
 
   JavaObjectWeakGlobalRef aw_settings_;
 };

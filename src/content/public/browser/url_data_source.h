@@ -43,6 +43,11 @@ class CONTENT_EXPORT URLDataSource {
                               const GURL& url,
                               base::OnceCallback<void(URLDataSource*)>);
 
+  // Parse |url| to get the path which will be used to resolve the request. The
+  // path is the remaining portion after the scheme and hostname, without the
+  // leading slash.
+  static std::string URLToRequestPath(const GURL& url);
+
   virtual ~URLDataSource() {}
 
   // The name of this source.
@@ -56,22 +61,22 @@ class CONTENT_EXPORT URLDataSource {
 
   // Used by StartDataRequest so that the child class can return the data when
   // it's available.
-  typedef base::Callback<void(scoped_refptr<base::RefCountedMemory>)>
-      GotDataCallback;
+  using GotDataCallback =
+      base::OnceCallback<void(scoped_refptr<base::RefCountedMemory>)>;
 
   // Must be called on the task runner specified by TaskRunnerForRequestPath,
   // or the IO thread if TaskRunnerForRequestPath returns nullptr.
   //
-  // Called by URLDataSource to request data at |path|. The string parameter is
-  // the path of the request. The child class should run |callback| when the
-  // data is available or if the request could not be satisfied. This can be
-  // called either in this callback or asynchronously with the response.
-  // |wc_getter| can be called on the UI thread to return the WebContents for
-  // this request if it originates from a render frame. If it originated from a
-  // worker or if the frame has destructed it will return null.
-  virtual void StartDataRequest(const std::string& path,
+  // Called by URLDataSource to request data at |url|. The child class should
+  // run |callback| when the data is available or if the request could not be
+  // satisfied. This can be called either in this callback or asynchronously
+  // with the response. |wc_getter| can be called on the UI thread to return the
+  // WebContents for this request if it originates from a render frame. If it
+  // originated from a worker or if the frame has destructed it will return
+  // null.
+  virtual void StartDataRequest(const GURL& url,
                                 const WebContents::Getter& wc_getter,
-                                const GotDataCallback& callback) = 0;
+                                GotDataCallback callback) = 0;
 
   // The following methods are all called on the IO thread.
 
@@ -159,9 +164,6 @@ class CONTENT_EXPORT URLDataSource {
   // Default implementation returns an empty string.
   virtual std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin);
-
-  // Whether |path| is gzipped (and should be transmitted gzipped).
-  virtual bool IsGzipped(const std::string& path);
 
   // Called on the UI thread. For the shared resource, disables using Polymer 2
   // for requests from |host|, even if WebUIPolymer2 is enabled. Assumes this

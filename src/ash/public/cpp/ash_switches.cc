@@ -58,6 +58,10 @@ const char kAshEnableWaylandServer[] = "enable-wayland-server";
 // Enables the stylus tools next to the status area.
 const char kAshForceEnableStylusTools[] = "force-enable-stylus-tools";
 
+// Forces the status area to allow collapse/expand regardless of the current
+// state.
+const char kAshForceStatusAreaCollapsible[] = "force-status-area-collapsible";
+
 // Power button position includes the power button's physical display side and
 // the percentage for power button center position to the display's
 // width/height in landscape_primary screen orientation. The value is a JSON
@@ -97,6 +101,9 @@ const char kAshSideVolumeButtonPosition[] = "ash-side-volume-button-position";
 // instead of displaying an interactive animation.
 const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 
+// Enables Shelf Dimming for ChromeOS.
+const char kEnableDimShelf[] = "enable-dim-shelf";
+
 // If set, tablet-like power button behavior (i.e. tapping the button turns the
 // screen off) is used even if the device is in laptop mode.
 const char kForceTabletPowerButton[] = "force-tablet-power-button";
@@ -128,6 +135,10 @@ const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
 
 bool IsUsingViewsLock() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLock);
+}
+
+bool IsUsingShelfAutoDim() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableDimShelf);
 }
 
 }  // namespace switches

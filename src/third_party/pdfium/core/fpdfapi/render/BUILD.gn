@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("../../../pdfium.gni")
 import("../../../testing/test.gni")
 
-jumbo_source_set("render") {
+source_set("render") {
   sources = [
     "cpdf_charposlist.cpp",
     "cpdf_charposlist.h",
@@ -30,6 +29,8 @@ jumbo_source_set("render") {
     "cpdf_rendercontext.h",
     "cpdf_renderoptions.cpp",
     "cpdf_renderoptions.h",
+    "cpdf_rendershading.cpp",
+    "cpdf_rendershading.h",
     "cpdf_renderstatus.cpp",
     "cpdf_renderstatus.h",
     "cpdf_scaledrenderbuffer.cpp",

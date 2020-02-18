@@ -4,11 +4,12 @@
 
 #include "net/third_party/quiche/src/quic/qbone/qbone_stream.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test_loopback.h"
 #include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
@@ -135,7 +136,7 @@ class QboneReadOnlyStreamTest : public ::testing::Test,
     Perspective perspective = Perspective::IS_SERVER;
     bool owns_writer = true;
 
-    alarm_factory_ = QuicMakeUnique<test::MockAlarmFactory>();
+    alarm_factory_ = std::make_unique<test::MockAlarmFactory>();
 
     connection_.reset(new QuicConnection(
         test::TestConnectionId(0), QuicSocketAddress(TestLoopback(), 0),
@@ -143,8 +144,8 @@ class QboneReadOnlyStreamTest : public ::testing::Test,
         new DummyPacketWriter(), owns_writer, perspective,
         ParsedVersionOfIndex(CurrentSupportedVersions(), 0)));
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
-    session_ = QuicMakeUnique<StrictMock<MockQuicSession>>(connection_.get(),
-                                                           QuicConfig());
+    session_ = std::make_unique<StrictMock<MockQuicSession>>(connection_.get(),
+                                                             QuicConfig());
     stream_ = new QboneReadOnlyStream(kStreamId, session_.get());
     session_->ActivateReliableStream(
         std::unique_ptr<QboneReadOnlyStream>(stream_));

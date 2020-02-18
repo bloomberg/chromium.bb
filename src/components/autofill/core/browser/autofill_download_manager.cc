@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
@@ -23,12 +24,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_driver.h"
-#include "components/autofill/core/browser/autofill_internals_service.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/logging/log_buffer.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
+#include "components/autofill/core/browser/logging/log_protobufs.h"
 #include "components/autofill/core/browser/proto/legacy_proto_bridge.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -37,6 +38,8 @@
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
+#include "components/autofill/core/common/logging/log_buffer.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/history_service.h"
@@ -851,6 +854,15 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = method;
 
+  // On iOS we have a single, shared URLLoaderFactory provided by BrowserState.
+  // As it is shared, it is not trusted and we cannot assign trusted_params
+  // to the network request.
+#if !defined(OS_IOS)
+  resource_request->trusted_params = network::ResourceRequest::TrustedParams();
+  resource_request->trusted_params->network_isolation_key =
+      driver_->NetworkIsolationKey();
+#endif
+
   // Add Chrome experiment state to the request headers.
   variations::AppendVariationsHeaderUnknownSignedIn(
       request_url,
@@ -906,7 +918,7 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
       url_loader_factory.get(),
       base::BindOnce(&AutofillDownloadManager::OnSimpleLoaderComplete,
                      base::Unretained(this), std::move(--url_loaders_.end()),
-                     std::move(request_data), base::TimeTicks::Now()));
+                     std::move(request_data), AutofillTickClock::NowTicks()));
   return true;
 }
 
@@ -966,9 +978,9 @@ std::string AutofillDownloadManager::GetCombinedSignature(
 int AutofillDownloadManager::GetMaxServerAttempts() {
   // This value is constant for the life of the browser, so we cache it
   // statically on first use to avoid re-parsing the param on each retry
-  // opportunity. The range is forced to be within [1, 20].
-  static int max_attempts =
-      std::max(1, std::min(20, kAutofillMaxServerAttempts.Get()));
+  // opportunity.
+  static const int max_attempts =
+      base::ClampToRange(kAutofillMaxServerAttempts.Get(), 1, 20);
   return max_attempts;
 }
 
@@ -997,7 +1009,7 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
 
   LogHttpResponseData(request_data.request_type, response_code,
                       simple_loader->NetError(),
-                      base::TimeTicks::Now() - request_start);
+                      AutofillTickClock::NowTicks() - request_start);
 
   // Handle error if there is and return.
   if (!success) {

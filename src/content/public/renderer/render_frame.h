@@ -20,26 +20,27 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
-#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "ui/accessibility/ax_mode.h"
 
 namespace blink {
 class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
 class BrowserInterfaceBrokerProxy;
+class WebElement;
 class WebFrame;
 class WebLocalFrame;
 class WebPlugin;
 struct WebPluginParams;
+struct WebRect;
 }
 
 namespace gfx {
 class Range;
+class RectF;
 class Size;
 }
 
@@ -142,6 +143,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // menu is closed.
   virtual void CancelContextMenu(int request_id) = 0;
 
+  // Issues a request to show the virtual keyboard.
+  virtual void ShowVirtualKeyboard() = 0;
+
   // Create a new Pepper plugin depending on |info|. Returns NULL if no plugin
   // was found. |throttler| may be empty.
   virtual blink::WebPlugin* CreatePlugin(
@@ -167,11 +171,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Returns the InterfaceProvider that this process can use to bind
   // interfaces exposed to it by the application running in this frame.
   virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
-
-  // Returns the DocumentInterfaceBroker that this process can use to bind
-  // interfaces exposed to it by the application running in this frame.
-  virtual blink::mojom::DocumentInterfaceBroker*
-  GetDocumentInterfaceBroker() = 0;
 
   // Returns the BrowserInterfaceBrokerProxy that this process can use to bind
   // interfaces exposed to it by the application running in this frame.
@@ -244,19 +243,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
                                size_t offset,
                                const gfx::Range& range) = 0;
 
-  // Notifies the frame's RenderView that the zoom has changed.
-  virtual void SetZoomLevel(double zoom_level) = 0;
-
-  // Returns the page's zoom level from the frame's RenderView.
-  virtual double GetZoomLevel() = 0;
-
   // Adds |message| to the DevTools console.
   virtual void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                                    const std::string& message) = 0;
-
-  // Sets the PreviewsState of this frame, a bitmask of potentially several
-  // Previews optimizations.
-  virtual void SetPreviewsState(PreviewsState previews_state) = 0;
 
   // Returns the PreviewsState of this frame, a bitmask of potentially several
   // Previews optimizations.
@@ -302,16 +291,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void SetRenderFrameMediaPlaybackOptions(
       const RenderFrameMediaPlaybackOptions& opts) = 0;
 
-  // Requests that fetches initiated by |initiator_origin| should go through the
-  // provided |url_loader_factory|.  This method should be called before
-  // executing scripts in a isolated world - such scripts are typically
-  // associated with a security origin different from the main world (and
-  // therefore fetches from such scripts set |request_initiator| that is
-  // incompatible with |request_initiator_site_lock|.
-  virtual void MarkInitiatorAsRequiringSeparateURLLoaderFactory(
-      const url::Origin& initiator_origin,
-      network::mojom::URLLoaderFactoryPtr url_loader_factory) = 0;
-
   // Synchronously performs the complete set of document lifecycle phases,
   // including updates to the compositor state and rasterization, then sending
   // a frame to the viz display compositor. Does nothing if RenderFrame is not
@@ -320,6 +299,20 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Sets that cross browsing instance frame lookup is allowed.
   virtual void SetAllowsCrossBrowsingInstanceFrameLookup() = 0;
+
+  // Returns the bounds of |element| in Window coordinates which are device
+  // scale independent. The bounds have been adjusted to include any
+  // transformations, including page scale. This function will update the layout
+  // if required.
+  virtual gfx::RectF ElementBoundsInWindow(
+      const blink::WebElement& element) = 0;
+
+  // Converts the |rect| to Window coordinates which are device scale
+  // independent.
+  virtual void ConvertViewportToWindow(blink::WebRect* rect) = 0;
+
+  // Returns the device scale factor of the display the render frame is in.
+  virtual float GetDeviceScaleFactor() = 0;
 
  protected:
   ~RenderFrame() override {}

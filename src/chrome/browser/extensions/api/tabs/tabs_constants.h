@@ -52,6 +52,7 @@ extern const char kTitleKey[];
 extern const char kToIndexKey[];
 extern const char kTopKey[];
 extern const char kUrlKey[];
+extern const char kPendingUrlKey[];
 extern const char kWidthKey[];
 extern const char kWindowClosing[];
 extern const char kWindowIdKey[];
@@ -107,6 +108,7 @@ extern const char kCannotDetermineLanguageOfUnloadedTab[];
 extern const char kMissingLockWindowFullscreenPrivatePermission[];
 extern const char kJavaScriptUrlsNotAllowedInTabsUpdate[];
 extern const char kBrowserWindowNotAllowed[];
+extern const char kLockedFullscreenModeNewTabError[];
 
 }  // namespace tabs_constants
 }  // namespace extensions

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGLengthUtils_h
-#define NGLengthUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LENGTH_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LENGTH_UTILS_H_
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -59,7 +59,9 @@ CORE_EXPORT bool NeedMinMaxSizeForContentContribution(WritingMode mode,
                                                       const ComputedStyle&);
 
 // Returns if the given |Length| is unresolvable, e.g. the length is %-based
-// during the intrinsic phase. Considers 'auto' as resolvable.
+// during the intrinsic phase. For block lengths we also consider 'auto',
+// 'min-content', 'max-content', 'fit-content' and 'none' (for max-block-size)
+// as unresolvable.
 CORE_EXPORT bool InlineLengthUnresolvable(const Length&, LengthResolvePhase);
 CORE_EXPORT bool BlockLengthUnresolvable(
     const NGConstraintSpace&,
@@ -145,11 +147,9 @@ inline LayoutUnit ResolveMinBlockLength(
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
-  if (LIKELY(length.IsAuto() || length.IsMinContent() ||
-             length.IsMaxContent() || length.IsFitContent() ||
-             BlockLengthUnresolvable(
-                 constraint_space, length, phase,
-                 opt_percentage_resolution_block_size_for_min_max)))
+  if (LIKELY(BlockLengthUnresolvable(
+          constraint_space, length, phase,
+          opt_percentage_resolution_block_size_for_min_max)))
     return border_padding.BlockSum();
 
   return ResolveBlockLengthInternal(
@@ -167,11 +167,9 @@ inline LayoutUnit ResolveMaxBlockLength(
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
         nullptr) {
-  if (LIKELY(length.IsMaxSizeNone() || length.IsMinContent() ||
-             length.IsMaxContent() || length.IsFitContent() ||
-             BlockLengthUnresolvable(
-                 constraint_space, length, phase,
-                 opt_percentage_resolution_block_size_for_min_max)))
+  if (LIKELY(BlockLengthUnresolvable(
+          constraint_space, length, phase,
+          opt_percentage_resolution_block_size_for_min_max)))
     return LayoutUnit::Max();
 
   return ResolveBlockLengthInternal(
@@ -257,10 +255,21 @@ ComputeBlockSizeForFragment(const NGConstraintSpace&,
                             const NGBoxStrut& border_padding,
                             LayoutUnit content_size);
 
-// Computes intrinsic size for replaced elements.
-CORE_EXPORT LogicalSize ComputeReplacedSize(const NGLayoutInputNode&,
-                                            const NGConstraintSpace&,
-                                            const base::Optional<MinMaxSize>&);
+// Intrinsic size for replaced elements is computed as:
+// - |out_replaced_size| intrinsic size of the element. It might have no value.
+// - |out_aspect_ratio| only set if out_replaced_size is empty.
+//   If out_replaced_size is not empty, that is the aspect ratio.
+// This routine will return one of the following:
+// - out_replaced_size, and no out_aspect_ratio
+// - out_aspect_ratio, and no out_replaced_size
+// - neither out_aspect_ratio, nor out_replaced_size
+// SVG elements can return any of the three options above.
+CORE_EXPORT void ComputeReplacedSize(
+    const NGLayoutInputNode&,
+    const NGConstraintSpace&,
+    const base::Optional<MinMaxSize>&,
+    base::Optional<LogicalSize>* out_replaced_size,
+    base::Optional<LogicalSize>* out_aspect_ratio);
 
 // Based on available inline size, CSS computed column-width, CSS computed
 // column-count and CSS used column-gap, return CSS used column-count.
@@ -460,9 +469,12 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
 // The following function clamps the calculated size based on the node
 // requirements. Specifically, this adjusts the size based on size containment
 // and display locking status.
-LayoutUnit ClampIntrinsicBlockSize(const NGBlockNode&,
-                                   const NGBoxStrut& border_scrollbar_padding,
-                                   LayoutUnit current_intrinsic_block_size);
+LayoutUnit ClampIntrinsicBlockSize(
+    const NGConstraintSpace&,
+    const NGBlockNode&,
+    const NGBoxStrut& border_scrollbar_padding,
+    LayoutUnit current_intrinsic_block_size,
+    base::Optional<LayoutUnit> body_margin_block_sum = base::nullopt);
 
 // This function checks if the inline size of this node has to be calculated
 // without considering children. If so, it returns the calculated size.
@@ -473,6 +485,7 @@ base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
     const NGBoxStrut& border_scrollbar_padding,
     NGMinMaxSizeType);
 
+
 }  // namespace blink
 
-#endif  // NGLengthUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_LENGTH_UTILS_H_

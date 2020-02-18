@@ -38,10 +38,8 @@ class ChromeSliceTrackController extends TrackController<Config, Data> {
 
       await this.query(
           `create view ${this.tableName('small')} as ` +
-          `select ts,dur,depth,cat,name,slice_id from slices ` +
-          `where utid = ${this.config.utid} ` +
-          `and ts >= ${startNs} - dur ` +
-          `and ts <= ${endNs} ` +
+          `select ts,dur,depth,name,slice_id from slice ` +
+          `where track_id = ${this.config.trackId} ` +
           `and dur < ${minNs} ` +
           `order by ts;`);
 
@@ -65,17 +63,15 @@ class ChromeSliceTrackController extends TrackController<Config, Data> {
 
     await this.query(
         `create view ${this.tableName('small')} as ` +
-        `select ts,dur,depth,cat,name, slice_id from slices ` +
-        `where utid = ${this.config.utid} ` +
-        `and ts >= ${startNs} - dur ` +
-        `and ts <= ${endNs} ` +
+        `select ts,dur,depth,name,slice_id from slice ` +
+        `where track_id = ${this.config.trackId} ` +
         `and dur < ${minNs} ` +
         `order by ts `);
 
     await this.query(
         `create view ${this.tableName('big')} as ` +
-        `select ts,dur,depth,cat,name, slice_id from slices ` +
-        `where utid = ${this.config.utid} ` +
+        `select ts,dur,depth,name,slice_id from slice ` +
+        `where track_id = ${this.config.trackId} ` +
         `and ts >= ${startNs} - dur ` +
         `and ts <= ${endNs} ` +
         `and dur >= ${minNs} ` +
@@ -87,11 +83,10 @@ class ChromeSliceTrackController extends TrackController<Config, Data> {
       (quantum_ts * ${minNs} + ${startNs}) as ts,
       ${minNs} as dur,
       depth,
-      cat,
       'Busy' as name,
       -1 as slice_id
       from ${this.tableName('span')}
-      group by cat, depth, quantum_ts
+      group by depth, quantum_ts
       order by ts;`);
 
     const query = `select * from ${this.tableName('summary')} UNION ` +
@@ -111,12 +106,11 @@ class ChromeSliceTrackController extends TrackController<Config, Data> {
       resolution,
       length: numRows,
       strings: [],
-      slice_ids: new Float64Array(numRows),
+      sliceIds: new Float64Array(numRows),
       starts: new Float64Array(numRows),
       ends: new Float64Array(numRows),
       depths: new Uint16Array(numRows),
       titles: new Uint16Array(numRows),
-      categories: new Uint16Array(numRows),
     };
 
     const stringIndexes = new Map<string, number>();
@@ -135,9 +129,8 @@ class ChromeSliceTrackController extends TrackController<Config, Data> {
       slices.starts[row] = startSec;
       slices.ends[row] = startSec + fromNs(+cols[1].longValues![row]);
       slices.depths[row] = +cols[2].longValues![row];
-      slices.categories[row] = internString(cols[3].stringValues![row]);
-      slices.titles[row] = internString(cols[4].stringValues![row]);
-      slices.slice_ids[row] = +cols[5].longValues![row];
+      slices.titles[row] = internString(cols[3].stringValues![row]);
+      slices.sliceIds[row] = +cols[4].longValues![row];
     }
     return slices;
   }

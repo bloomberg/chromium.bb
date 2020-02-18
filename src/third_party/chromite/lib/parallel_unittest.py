@@ -167,9 +167,6 @@ class TestManager(cros_test_lib.TestCase):
 class TestBackgroundWrapper(cros_test_lib.TestCase):
   """Unittests for background wrapper."""
 
-  def setUp(self):
-    self.tempfile = None
-
   def tearDown(self):
     # Wait for children to exit.
     try:
@@ -191,12 +188,11 @@ class TestBackgroundWrapper(cros_test_lib.TestCase):
     # Set _PRINT_INTERVAL to a smaller number to make it easier to
     # reproduce bugs.
     with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):
-      with tempfile.NamedTemporaryFile(bufsize=0) as output:
-        with mock.patch.multiple(sys, stdout=output):
-          func()
-        with open(output.name, 'r', 0) as tmp:
-          tmp.seek(0)
-          return tmp.read()
+      with tempfile.NamedTemporaryFile() as temp:
+        with open(temp.name, 'w') as output:
+          with mock.patch.multiple(sys, stdout=output):
+            func()
+        return osutils.ReadFile(temp.name)
 
 
 class TestHelloWorld(TestBackgroundWrapper):
@@ -236,7 +232,7 @@ class TestHelloWorld(TestBackgroundWrapper):
   def testParallelHelloWorld(self):
     """Test that output is not written multiple times when seeking."""
     out = self.wrapOutputTest(self._ParallelHelloWorld)
-    self.assertEquals(out, _GREETING)
+    self.assertEqual(out, _GREETING)
 
   def testMultipleHelloWorlds(self):
     """Test that multiple threads can be created."""
@@ -279,12 +275,12 @@ class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
       result_arg2s = set()
       for _ in range(3):
         result = results.get()
-        self.assertEquals(result[0], 'arg1')
+        self.assertEqual(result[0], 'arg1')
         result_arg2s.add(result[1])
-        self.assertEquals(result[2], 'kwarg1')
-        self.assertEquals(result[3], None)
-      self.assertEquals(arg2s, result_arg2s)
-      self.assertEquals(results.empty(), True)
+        self.assertEqual(result[2], 'kwarg1')
+        self.assertEqual(result[3], None)
+      self.assertEqual(arg2s, result_arg2s)
+      self.assertEqual(results.empty(), True)
 
 
 class TestFastPrinting(TestBackgroundWrapper):
@@ -295,7 +291,7 @@ class TestFastPrinting(TestBackgroundWrapper):
     # because it can trigger race conditions.
     for _ in range(_NUM_WRITES - 1):
       sys.stdout.write('x' * _BUFSIZE)
-    sys.stdout.write('x' * (_BUFSIZE - 1) + '\n')
+    sys.stderr.write('x' * (_BUFSIZE - 1) + '\n')
 
   def _ParallelPrinter(self):
     parallel.RunParallelSteps([self._FastPrinter] * _NUM_THREADS)
@@ -305,12 +301,12 @@ class TestFastPrinting(TestBackgroundWrapper):
 
   def testSimpleParallelPrinter(self):
     out = self.wrapOutputTest(self._ParallelPrinter)
-    self.assertEquals(len(out), _TOTAL_BYTES)
+    self.assertEqual(len(out), _TOTAL_BYTES)
 
   def testNestedParallelPrinter(self):
     """Verify that no output is lost when lots of output is written."""
     out = self.wrapOutputTest(self._NestedParallelPrinter)
-    self.assertEquals(len(out), _TOTAL_BYTES)
+    self.assertEqual(len(out), _TOTAL_BYTES)
 
 
 class TestRunParallelSteps(cros_test_lib.TestCase):
@@ -326,7 +322,7 @@ class TestRunParallelSteps(cros_test_lib.TestCase):
       pass
 
     return_values = parallel.RunParallelSteps([f1, f2, f3], return_values=True)
-    self.assertEquals(return_values, [1, 2, None])
+    self.assertEqual(return_values, [1, 2, None])
 
   def testLargeReturnValues(self):
     """Test that the managed queue prevents hanging on large return values."""
@@ -338,7 +334,7 @@ class TestRunParallelSteps(cros_test_lib.TestCase):
       ret_value += 'This will be repeated many times.\n'
 
     return_values = parallel.RunParallelSteps([f1], return_values=True)
-    self.assertEquals(return_values, [ret_value])
+    self.assertEqual(return_values, [ret_value])
 
 
 class TestParallelMock(TestBackgroundWrapper):
@@ -420,11 +416,12 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
         queue.put([])
         raise self._TestException()
 
+  # We can't test for PickleError with Python 3.5+ due to bugs in Python.
+  @unittest.skipIf(sys.version_info >= (3, 5),
+                   'https://bugs.python.org/issue29187')
   def testFailedPickle(self):
     """PicklingError should be thrown when an argument fails to pickle."""
-    # TODO: We have to refer to cPickle because Python internals throw it.
-    # Once we migrate to Python 3, we can switch to pickle directly.
-    with self.assertRaises(pickle.PicklingError):
+    with self.assertRaises(pickle.PickleError):
       parallel.RunTasksInProcessPool(self._SystemExit, [[self._SystemExit]])
 
   def testFailedPickleOnReturn(self):

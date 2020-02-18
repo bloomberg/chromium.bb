@@ -48,6 +48,7 @@ const char kGetInactivityDelaysMethod[] = "GetInactivityDelays";
 const char kCreateArcTimersMethod[] = "CreateArcTimers";
 const char kStartArcTimerMethod[] = "StartArcTimer";
 const char kDeleteArcTimersMethod[] = "DeleteArcTimers";
+const char kHasAmbientColorDeviceMethod[] = "HasAmbientColorDevice";
 
 // Signals emitted by powerd.
 const char kScreenBrightnessChangedSignal[] = "ScreenBrightnessChanged";
@@ -62,6 +63,8 @@ const char kIdleActionImminentSignal[] = "IdleActionImminent";
 const char kIdleActionDeferredSignal[] = "IdleActionDeferred";
 const char kScreenIdleStateChangedSignal[] = "ScreenIdleStateChanged";
 const char kInactivityDelaysChangedSignal[] = "InactivityDelaysChanged";
+const char kAmbientColorTemperatureChangedSignal[] =
+    "AmbientColorTemperatureChanged";
 
 // Values
 const int kBrightnessTransitionGradual = 1;

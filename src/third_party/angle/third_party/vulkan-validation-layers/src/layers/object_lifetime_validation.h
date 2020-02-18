@@ -42,14 +42,8 @@ extern uint64_t object_track_index;
 typedef VkFlags ObjectStatusFlags;
 enum ObjectStatusFlagBits {
     OBJSTATUS_NONE = 0x00000000,                      // No status is set
-    OBJSTATUS_FENCE_IS_SUBMITTED = 0x00000001,        // Fence has been submitted
-    OBJSTATUS_VIEWPORT_BOUND = 0x00000002,            // Viewport state object has been bound
-    OBJSTATUS_RASTER_BOUND = 0x00000004,              // Viewport state object has been bound
-    OBJSTATUS_COLOR_BLEND_BOUND = 0x00000008,         // Viewport state object has been bound
-    OBJSTATUS_DEPTH_STENCIL_BOUND = 0x00000010,       // Viewport state object has been bound
-    OBJSTATUS_GPU_MEM_MAPPED = 0x00000020,            // Memory object is currently mapped
-    OBJSTATUS_COMMAND_BUFFER_SECONDARY = 0x00000040,  // Command Buffer is of type SECONDARY
-    OBJSTATUS_CUSTOM_ALLOCATOR = 0x00000080,          // Allocated with custom allocator
+    OBJSTATUS_COMMAND_BUFFER_SECONDARY = 0x00000001,  // Command Buffer is of type SECONDARY
+    OBJSTATUS_CUSTOM_ALLOCATOR = 0x00000002,          // Allocated with custom allocator
 };
 
 // Object and state information structure
@@ -61,50 +55,70 @@ struct ObjTrackState {
     std::unique_ptr<std::unordered_set<uint64_t> > child_objects;  // Child objects (used for VkDescriptorPool only)
 };
 
-// Track Queue information
-struct ObjTrackQueueInfo {
-    uint32_t queue_node_index;
-    VkQueue queue;
-};
-
-typedef std::unordered_map<uint64_t, ObjTrackState *> object_map_type;
+typedef vl_concurrent_unordered_map<uint64_t, std::shared_ptr<ObjTrackState>, 6> object_map_type;
 
 class ObjectLifetimes : public ValidationObject {
-   public:
-    uint64_t num_objects[kVulkanObjectTypeMax + 1];
-    uint64_t num_total_objects;
-    // Vector of unordered_maps per object type to hold ObjTrackState info
-    std::vector<object_map_type> object_map;
-    // Special-case map for swapchain images
-    std::unordered_map<uint64_t, ObjTrackState *> swapchainImageMap;
-    // Map of queue information structures, one per queue
-    std::unordered_map<VkQueue, ObjTrackQueueInfo *> queue_info_map;
+  public:
+    // Override chassis read/write locks for this validation object
+    // This override takes a deferred lock. i.e. it is not acquired.
+    // This class does its own locking with a shared mutex.
+    virtual read_lock_guard_t read_lock() { return read_lock_guard_t(validation_object_mutex, std::defer_lock); }
+    virtual write_lock_guard_t write_lock() { return write_lock_guard_t(validation_object_mutex, std::defer_lock); }
 
-    std::vector<VkQueueFamilyProperties> queue_family_properties;
+    mutable ReadWriteLock object_lifetime_mutex;
+    write_lock_guard_t write_shared_lock() { return write_lock_guard_t(object_lifetime_mutex); }
+    read_lock_guard_t read_shared_lock() const { return read_lock_guard_t(object_lifetime_mutex); }
+
+    std::atomic<uint64_t> num_objects[kVulkanObjectTypeMax + 1];
+    std::atomic<uint64_t> num_total_objects;
+    // Vector of unordered_maps per object type to hold ObjTrackState info
+    object_map_type object_map[kVulkanObjectTypeMax + 1];
+    // Special-case map for swapchain images
+    object_map_type swapchainImageMap;
 
     // Constructor for object lifetime tracking
-    ObjectLifetimes() : num_objects{}, num_total_objects(0), object_map{} { object_map.resize(kVulkanObjectTypeMax + 1); }
+    ObjectLifetimes() : num_objects{}, num_total_objects(0) {}
 
-    bool DeviceReportUndestroyedObjects(VkDevice device, VulkanObjectType object_type, const std::string &error_code);
-    void DeviceDestroyUndestroyedObjects(VkDevice device, VulkanObjectType object_type);
-    void CreateQueue(VkDevice device, VkQueue vkObj);
-    void AddQueueInfo(VkDevice device, uint32_t queue_node_index, VkQueue queue);
-    void ValidateQueueFlags(VkQueue queue, const char *function);
-    void AllocateCommandBuffer(VkDevice device, const VkCommandPool command_pool, const VkCommandBuffer command_buffer,
-                               VkCommandBufferLevel level);
-    void AllocateDescriptorSet(VkDevice device, VkDescriptorPool descriptor_pool, VkDescriptorSet descriptor_set);
-    void CreateSwapchainImageObject(VkDevice dispatchable_object, VkImage swapchain_image, VkSwapchainKHR swapchain);
-    bool ReportUndestroyedObjects(VkDevice device, const std::string &error_code);
-    void DestroyUndestroyedObjects(VkDevice device);
-    bool ValidateDeviceObject(uint64_t device_handle, const char *invalid_handle_code, const char *wrong_device_code);
-    void DestroyQueueDataStructures(VkDevice device);
-    bool ValidateCommandBuffer(VkDevice device, VkCommandPool command_pool, VkCommandBuffer command_buffer);
-    bool ValidateDescriptorSet(VkDevice device, VkDescriptorPool descriptor_pool, VkDescriptorSet descriptor_set);
-    bool ValidateSamplerObjects(VkDevice device, const VkDescriptorSetLayoutCreateInfo *pCreateInfo);
-    template <typename DispObj>
-    bool ValidateDescriptorWrite(DispObj disp, VkWriteDescriptorSet const *desc, bool isPush);
+    void InsertObject(object_map_type &map, uint64_t object_handle, VulkanObjectType object_type,
+                      std::shared_ptr<ObjTrackState> pNode) {
+        bool inserted = map.insert(object_handle, pNode);
+        if (!inserted) {
+            // The object should not already exist. If we couldn't add it to the map, there was probably
+            // a race condition in the app. Report an error and move on.
+            VkDebugReportObjectTypeEXT debug_object_type = get_debug_report_enum[object_type];
+            log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, debug_object_type, object_handle, kVUID_ObjectTracker_Info,
+                    "Couldn't insert %s Object 0x%" PRIxLEAST64
+                    ", already existed. This should not happen and may indicate a "
+                    "race condition in the application.",
+                    object_string[object_type], object_handle);
+        }
+    }
 
-    ObjectLifetimes *GetObjectLifetimeData(std::vector<ValidationObject *> &object_dispatch) {
+    bool ReportUndestroyedInstanceObjects(VkInstance instance, const std::string &error_code) const;
+    bool ReportUndestroyedDeviceObjects(VkDevice device, const std::string &error_code) const;
+
+    bool ReportLeakedDeviceObjects(VkDevice device, VulkanObjectType object_type, const std::string &error_code) const;
+    bool ReportLeakedInstanceObjects(VkInstance instance, VulkanObjectType object_type, const std::string &error_code) const;
+
+    void DestroyUndestroyedObjects(VulkanObjectType object_type);
+
+    void CreateQueue(VkQueue vkObj);
+    void AllocateCommandBuffer(const VkCommandPool command_pool, const VkCommandBuffer command_buffer, VkCommandBufferLevel level);
+    void AllocateDescriptorSet(VkDescriptorPool descriptor_pool, VkDescriptorSet descriptor_set);
+    void CreateSwapchainImageObject(VkImage swapchain_image, VkSwapchainKHR swapchain);
+    void DestroyLeakedInstanceObjects();
+    void DestroyLeakedDeviceObjects();
+    bool ValidateDeviceObject(const VulkanTypedHandle &device_typed, const char *invalid_handle_code,
+                              const char *wrong_device_code) const;
+    void DestroyQueueDataStructures();
+    bool ValidateCommandBuffer(VkCommandPool command_pool, VkCommandBuffer command_buffer) const;
+    bool ValidateDescriptorSet(VkDescriptorPool descriptor_pool, VkDescriptorSet descriptor_set) const;
+    bool ValidateSamplerObjects(const VkDescriptorSetLayoutCreateInfo *pCreateInfo) const;
+    bool ValidateDescriptorWrite(VkWriteDescriptorSet const *desc, bool isPush) const;
+    bool ValidateAnonymousObject(uint64_t object, VkObjectType core_object_type, bool null_allowed, const char *invalid_handle_code,
+                                 const char *wrong_device_code) const;
+
+    ObjectLifetimes *GetObjectLifetimeData(std::vector<ValidationObject *> &object_dispatch) const {
         for (auto layer_object : object_dispatch) {
             if (layer_object->container_type == LayerObjectTypeObjectTracker) {
                 return (reinterpret_cast<ObjectLifetimes *>(layer_object));
@@ -113,22 +127,12 @@ class ObjectLifetimes : public ValidationObject {
         return nullptr;
     };
 
-    template <typename T1, typename T2>
-    bool ValidateObject(T1 dispatchable_object, T2 object, VulkanObjectType object_type, bool null_allowed,
-                        const char *invalid_handle_code, const char *wrong_device_code) {
-        if (null_allowed && (object == VK_NULL_HANDLE)) {
-            return false;
-        }
-        auto object_handle = HandleToUint64(object);
-
-        if (object_type == kVulkanObjectTypeDevice) {
-            return ValidateDeviceObject(object_handle, invalid_handle_code, wrong_device_code);
-        }
-
+    bool CheckObjectValidity(uint64_t object_handle, VulkanObjectType object_type, bool null_allowed,
+                             const char *invalid_handle_code, const char *wrong_device_code) const {
         VkDebugReportObjectTypeEXT debug_object_type = get_debug_report_enum[object_type];
 
         // Look for object in object map
-        if (object_map[object_type].find(object_handle) == object_map[object_type].end()) {
+        if (!object_map[object_type].contains(object_handle)) {
             // If object is an image, also look for it in the swapchain image map
             if ((object_type != kVulkanObjectTypeImage) || (swapchainImageMap.find(object_handle) == swapchainImageMap.end())) {
                 // Object not found, look for it in other device object maps
@@ -165,22 +169,32 @@ class ObjectLifetimes : public ValidationObject {
         return false;
     }
 
-    template <typename T1, typename T2>
-    void CreateObject(T1 dispatchable_object, T2 object, VulkanObjectType object_type, const VkAllocationCallbacks *pAllocator) {
+    template <typename T1>
+    bool ValidateObject(T1 object, VulkanObjectType object_type, bool null_allowed, const char *invalid_handle_code,
+                        const char *wrong_device_code) const {
+        if (null_allowed && (object == VK_NULL_HANDLE)) {
+            return false;
+        }
+        auto object_handle = HandleToUint64(object);
+
+        if (object_type == kVulkanObjectTypeDevice) {
+            return ValidateDeviceObject(VulkanTypedHandle(object, object_type), invalid_handle_code, wrong_device_code);
+        }
+
+        return CheckObjectValidity(object_handle, object_type, null_allowed, invalid_handle_code, wrong_device_code);
+    }
+
+    template <typename T1>
+    void CreateObject(T1 object, VulkanObjectType object_type, const VkAllocationCallbacks *pAllocator) {
         uint64_t object_handle = HandleToUint64(object);
         bool custom_allocator = (pAllocator != nullptr);
-        if (!object_map[object_type].count(object_handle)) {
-            VkDebugReportObjectTypeEXT debug_object_type = get_debug_report_enum[object_type];
-            log_msg(report_data, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, debug_object_type, object_handle, kVUID_ObjectTracker_Info,
-                    "OBJ[0x%" PRIxLEAST64 "] : CREATE %s object 0x%" PRIxLEAST64, object_track_index++, object_string[object_type],
-                    object_handle);
-
-            ObjTrackState *pNewObjNode = new ObjTrackState;
+        if (!object_map[object_type].contains(object_handle)) {
+            auto pNewObjNode = std::make_shared<ObjTrackState>();
             pNewObjNode->object_type = object_type;
             pNewObjNode->status = custom_allocator ? OBJSTATUS_CUSTOM_ALLOCATOR : OBJSTATUS_NONE;
             pNewObjNode->handle = object_handle;
 
-            object_map[object_type][object_handle] = pNewObjNode;
+            InsertObject(object_map[object_type], object_handle, object_type, pNewObjNode);
             num_objects[object_type]++;
             num_total_objects++;
 
@@ -195,52 +209,49 @@ class ObjectLifetimes : public ValidationObject {
         auto object_handle = HandleToUint64(object);
         assert(object_handle != VK_NULL_HANDLE);
 
-        auto item = object_map[object_type].find(object_handle);
-        assert(item != object_map[object_type].end());
-
-        ObjTrackState *pNode = item->second;
+        auto item = object_map[object_type].pop(object_handle);
+        if (item == object_map[object_type].end()) {
+            // We've already checked that the object exists. If we couldn't find and atomically remove it
+            // from the map, there must have been a race condition in the app. Report an error and move on.
+            VkDebugReportObjectTypeEXT debug_object_type = get_debug_report_enum[object_type];
+            log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, debug_object_type, object_handle, kVUID_ObjectTracker_Info,
+                    "Couldn't destroy %s Object 0x%" PRIxLEAST64
+                    ", not found. This should not happen and may indicate a "
+                    "race condition in the application.",
+                    object_string[object_type], object_handle);
+            return;
+        }
         assert(num_total_objects > 0);
 
         num_total_objects--;
-        assert(num_objects[pNode->object_type] > 0);
+        assert(num_objects[item->second->object_type] > 0);
 
-        num_objects[pNode->object_type]--;
-
-        delete pNode;
-        object_map[object_type].erase(item);
+        num_objects[item->second->object_type]--;
     }
 
-    template <typename T1, typename T2>
-    void RecordDestroyObject(T1 dispatchable_object, T2 object, VulkanObjectType object_type) {
+    template <typename T1>
+    void RecordDestroyObject(T1 object, VulkanObjectType object_type) {
         auto object_handle = HandleToUint64(object);
         if (object_handle != VK_NULL_HANDLE) {
-            auto item = object_map[object_type].find(object_handle);
-            if (item != object_map[object_type].end()) {
+            if (object_map[object_type].contains(object_handle)) {
                 DestroyObjectSilently(object, object_type);
             }
         }
     }
 
-    template <typename T1, typename T2>
-    bool ValidateDestroyObject(T1 dispatchable_object, T2 object, VulkanObjectType object_type,
-                               const VkAllocationCallbacks *pAllocator, const char *expected_custom_allocator_code,
-                               const char *expected_default_allocator_code) {
+    template <typename T1>
+    bool ValidateDestroyObject(T1 object, VulkanObjectType object_type, const VkAllocationCallbacks *pAllocator,
+                               const char *expected_custom_allocator_code, const char *expected_default_allocator_code) const {
         auto object_handle = HandleToUint64(object);
         bool custom_allocator = pAllocator != nullptr;
         VkDebugReportObjectTypeEXT debug_object_type = get_debug_report_enum[object_type];
         bool skip = false;
 
-        if (object_handle != VK_NULL_HANDLE) {
+        if ((expected_custom_allocator_code != kVUIDUndefined || expected_default_allocator_code != kVUIDUndefined) &&
+            object_handle != VK_NULL_HANDLE) {
             auto item = object_map[object_type].find(object_handle);
             if (item != object_map[object_type].end()) {
-                ObjTrackState *pNode = item->second;
-                skip |= log_msg(report_data, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, debug_object_type, object_handle,
-                                kVUID_ObjectTracker_Info,
-                                "OBJ_STAT Destroy %s obj 0x%" PRIxLEAST64 " (%" PRIu64 " total objs remain & %" PRIu64 " %s objs).",
-                                object_string[object_type], HandleToUint64(object), num_total_objects - 1,
-                                num_objects[pNode->object_type] - 1, object_string[object_type]);
-
-                auto allocated_with_custom = (pNode->status & OBJSTATUS_CUSTOM_ALLOCATOR) ? true : false;
+                auto allocated_with_custom = (item->second->status & OBJSTATUS_CUSTOM_ALLOCATOR) ? true : false;
                 if (allocated_with_custom && !custom_allocator && expected_custom_allocator_code != kVUIDUndefined) {
                     // This check only verifies that custom allocation callbacks were provided to both Create and Destroy calls,
                     // it cannot verify that these allocation callbacks are compatible with each other.

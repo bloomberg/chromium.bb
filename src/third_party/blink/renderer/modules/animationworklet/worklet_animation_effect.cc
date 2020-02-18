@@ -13,8 +13,7 @@ WorkletAnimationEffect::WorkletAnimationEffect(
     const Timing& specified_timing)
     : local_time_(local_time),
       specified_timing_(specified_timing),
-      calculated_(),
-      last_update_time_(NullValue()) {
+      calculated_() {
   specified_timing_.AssertValid();
 }
 
@@ -23,16 +22,22 @@ EffectTiming* WorkletAnimationEffect::getTiming() const {
 }
 
 ComputedEffectTiming* WorkletAnimationEffect::getComputedTiming() const {
-  double local_time =
-      local_time_.has_value() ? local_time_.value().InSecondsF() : NullValue();
+  base::Optional<double> local_time;
+  if (local_time_)
+    local_time = base::Optional<double>(local_time_.value().InSecondsF());
 
-  bool needs_update = last_update_time_ != local_time &&
-                      !(IsNull(last_update_time_) && IsNull(local_time));
+  bool needs_update = last_update_time_ != local_time;
   last_update_time_ = local_time;
 
   if (needs_update) {
+    // The playback rate is needed to calculate whether the effect is current or
+    // not (https://drafts.csswg.org/web-animations-1/#current). Since we only
+    // use this information to create a ComputedEffectTiming, which does not
+    // include that information, we do not need to supply one.
+    base::Optional<double> playback_rate = base::nullopt;
     calculated_ = specified_timing_.CalculateTimings(
-        local_time, Timing::AnimationDirection::kForwards, false);
+        local_time, Timing::AnimationDirection::kForwards, false,
+        playback_rate);
   }
 
   return specified_timing_.getComputedTiming(calculated_,

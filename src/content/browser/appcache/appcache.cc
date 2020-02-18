@@ -20,6 +20,35 @@
 
 namespace content {
 
+// static
+bool AppCache::CheckValidManifestScope(const GURL& manifest_url,
+                                       const std::string& manifest_scope) {
+  if (manifest_scope.empty())
+    return false;
+  const GURL url = manifest_url.Resolve(manifest_scope);
+  return url.is_valid() && !url.has_ref() && !url.has_query() &&
+         url.spec().back() == '/';
+}
+
+// static
+std::string AppCache::GetManifestScope(const GURL& manifest_url,
+                                       std::string optional_scope) {
+  DCHECK(manifest_url.is_valid());
+  if (!optional_scope.empty()) {
+    std::string scope = manifest_url.Resolve(optional_scope).path();
+    if (CheckValidManifestScope(manifest_url, scope)) {
+      return optional_scope;
+    }
+  }
+
+  // The default manifest scope is the path to the manifest URL's containing
+  // directory.
+  const GURL manifest_scope_url = manifest_url.GetWithoutFilename();
+  DCHECK(manifest_scope_url.is_valid());
+  DCHECK(CheckValidManifestScope(manifest_url, manifest_scope_url.path()));
+  return manifest_scope_url.path();
+}
+
 AppCache::AppCache(AppCacheStorage* storage, int64_t cache_id)
     : cache_id_(cache_id),
       owning_group_(nullptr),
@@ -27,6 +56,8 @@ AppCache::AppCache(AppCacheStorage* storage, int64_t cache_id)
       is_complete_(false),
       cache_size_(0),
       padding_size_(0),
+      manifest_parser_version_(-1),
+      manifest_scope_(""),
       storage_(storage) {
   storage_->working_set()->AddCache(this);
 }
@@ -115,6 +146,8 @@ bool SortNamespacesByLength(
 
 void AppCache::InitializeWithManifest(AppCacheManifest* manifest) {
   DCHECK(manifest);
+  manifest_parser_version_ = manifest->parser_version;
+  manifest_scope_ = manifest->scope;
   intercept_namespaces_.swap(manifest->intercept_namespaces);
   fallback_namespaces_.swap(manifest->fallback_namespaces);
   online_whitelist_namespaces_.swap(manifest->online_whitelist_namespaces);
@@ -135,6 +168,8 @@ void AppCache::InitializeWithDatabaseRecords(
     const std::vector<AppCacheDatabase::NamespaceRecord>& fallbacks,
     const std::vector<AppCacheDatabase::OnlineWhiteListRecord>& whitelists) {
   DCHECK_EQ(cache_id_, cache_record.cache_id);
+  manifest_parser_version_ = cache_record.manifest_parser_version;
+  manifest_scope_ = cache_record.manifest_scope;
   online_whitelist_all_ = cache_record.online_wildcard;
   update_time_ = cache_record.update_time;
 
@@ -185,6 +220,8 @@ void AppCache::ToDatabaseRecords(
   cache_record->update_time = update_time_;
   cache_record->cache_size = cache_size_;
   cache_record->padding_size = padding_size_;
+  cache_record->manifest_parser_version = manifest_parser_version_;
+  cache_record->manifest_scope = manifest_scope_;
 
   for (const auto& pair : entries_) {
     entries->push_back(AppCacheDatabase::EntryRecord());

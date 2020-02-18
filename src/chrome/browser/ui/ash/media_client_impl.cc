@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
@@ -138,7 +138,7 @@ MediaCaptureState GetMediaCaptureStateOfAllWebContents(
 
 MediaClientImpl::MediaClientImpl() {
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
-  BrowserList::GetInstance()->AddObserver(this);
+  BrowserList::AddObserver(this);
 
   DCHECK(!g_media_client);
   g_media_client = this;
@@ -151,7 +151,7 @@ MediaClientImpl::~MediaClientImpl() {
     media_controller_->SetClient(nullptr);
 
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
-  BrowserList::GetInstance()->RemoveObserver(this);
+  BrowserList::RemoveObserver(this);
 }
 
 // static

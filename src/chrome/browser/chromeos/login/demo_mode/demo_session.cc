@@ -41,12 +41,10 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -331,6 +329,8 @@ std::string DemoSession::GetScreensaverAppId() {
     return extension_misc::kScreensaverNocturneAppId;
   if (board == "atlas")
     return extension_misc::kScreensaverAltAppId;
+  if (board == "kukui")
+    return extension_misc::kScreensaverKukuiAppId;
   return extension_misc::kScreensaverAppId;
 }
 
@@ -355,7 +355,7 @@ base::Value DemoSession::GetCountryList() {
     dict.SetString(
         "title", l10n_util::GetDisplayNameForCountry(country, current_locale));
     dict.SetBoolean("selected", current_country == country);
-    country_list.GetList().push_back(std::move(dict));
+    country_list.Append(std::move(dict));
   }
   return country_list;
 }
@@ -565,11 +565,10 @@ void DemoSession::OnExtensionInstalled(content::BrowserContext* browser_context,
     return;
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
-  apps::LaunchService::Get(profile)->OpenApplication(
-      AppLaunchParams(profile, extension->id(),
-                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      apps::mojom::AppLaunchSource::kSourceChromeInternal));
+  apps::LaunchService::Get(profile)->OpenApplication(apps::AppLaunchParams(
+      extension->id(), apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_WINDOW,
+      apps::mojom::AppLaunchSource::kSourceChromeInternal));
 }
 
 void DemoSession::OnAppWindowActivated(extensions::AppWindow* app_window) {

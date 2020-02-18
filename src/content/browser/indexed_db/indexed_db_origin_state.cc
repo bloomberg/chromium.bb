@@ -9,9 +9,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
+#include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
@@ -22,9 +27,7 @@
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
 namespace {
@@ -45,7 +48,7 @@ static_assert(kMinEarliestOriginSweepFromNow <
               "Min < Max");
 
 constexpr const base::TimeDelta kMinEarliestGlobalSweepFromNow =
-    base::TimeDelta::FromMinutes(10);
+    base::TimeDelta::FromMinutes(5);
 static_assert(kMinEarliestGlobalSweepFromNow <
                   IndexedDBOriginState::kMaxEarliestGlobalSweepFromNow,
               "Min < Max");
@@ -79,7 +82,7 @@ IndexedDBOriginState::IndexedDBOriginState(
     url::Origin origin,
     bool persist_for_incognito,
     base::Clock* clock,
-    indexed_db::LevelDBFactory* leveldb_factory,
+    TransactionalLevelDBFactory* transactional_leveldb_factory,
     base::Time* earliest_global_sweep_time,
     std::unique_ptr<DisjointRangeLockManager> lock_manager,
     TasksAvailableCallback notify_tasks_callback,
@@ -88,7 +91,7 @@ IndexedDBOriginState::IndexedDBOriginState(
     : origin_(std::move(origin)),
       persist_for_incognito_(persist_for_incognito),
       clock_(clock),
-      leveldb_factory_(leveldb_factory),
+      transactional_leveldb_factory_(transactional_leveldb_factory),
       earliest_global_sweep_time_(earliest_global_sweep_time),
       lock_manager_(std::move(lock_manager)),
       backing_store_(std::move(backing_store)),
@@ -136,7 +139,7 @@ void IndexedDBOriginState::AbortAllTransactions(bool compact) {
       if (connection) {
         leveldb::Status status =
             connection->AbortAllTransactions(IndexedDBDatabaseError(
-                blink::kWebIDBDatabaseExceptionUnknownError,
+                blink::mojom::IDBException::kUnknownError,
                 "Aborting all transactions for the origin."));
         if (!status.ok()) {
           // This call should delete this object.
@@ -322,7 +325,8 @@ void IndexedDBOriginState::StartPreCloseTasks() {
   // A sweep will happen now, so reset the sweep timers.
   *earliest_global_sweep_time_ = GenerateNextGlobalSweepTime(now);
   std::unique_ptr<LevelDBDirectTransaction> txn =
-      leveldb_factory_->CreateLevelDBDirectTransaction(backing_store_->db());
+      transactional_leveldb_factory_->CreateLevelDBDirectTransaction(
+          backing_store_->db());
   s = indexed_db::SetEarliestSweepTime(txn.get(),
                                        GenerateNextOriginSweepTime(now));
   // TODO(dmurph): Log this or report to UMA.

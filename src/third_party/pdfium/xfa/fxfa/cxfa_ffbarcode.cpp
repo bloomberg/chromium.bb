@@ -136,25 +136,26 @@ const BarCodeInfo* CXFA_FFBarcode::GetBarcodeTypeByName(
 CXFA_FFBarcode::CXFA_FFBarcode(CXFA_Node* pNode, CXFA_Barcode* barcode)
     : CXFA_FFTextEdit(pNode), barcode_(barcode) {}
 
-CXFA_FFBarcode::~CXFA_FFBarcode() {}
+CXFA_FFBarcode::~CXFA_FFBarcode() = default;
 
 bool CXFA_FFBarcode::LoadWidget() {
+  ASSERT(!IsLoaded());
   auto pNew = pdfium::MakeUnique<CFWL_Barcode>(GetFWLApp());
   CFWL_Barcode* pFWLBarcode = pNew.get();
-  m_pNormalWidget = std::move(pNew);
-  m_pNormalWidget->SetFFWidget(this);
+  SetNormalWidget(std::move(pNew));
+  pFWLBarcode->SetFFWidget(this);
 
-  CFWL_NoteDriver* pNoteDriver =
-      m_pNormalWidget->GetOwnerApp()->GetNoteDriver();
-  pNoteDriver->RegisterEventTarget(m_pNormalWidget.get(),
-                                   m_pNormalWidget.get());
-  m_pOldDelegate = m_pNormalWidget->GetDelegate();
-  m_pNormalWidget->SetDelegate(this);
-  m_pNormalWidget->LockUpdate();
+  CFWL_NoteDriver* pNoteDriver = pFWLBarcode->GetOwnerApp()->GetNoteDriver();
+  pNoteDriver->RegisterEventTarget(pFWLBarcode, pFWLBarcode);
+  m_pOldDelegate = pFWLBarcode->GetDelegate();
+  pFWLBarcode->SetDelegate(this);
 
-  pFWLBarcode->SetText(m_pNode->GetValue(XFA_VALUEPICTURE_Display));
-  UpdateWidgetProperty();
-  m_pNormalWidget->UnlockUpdate();
+  {
+    CFWL_Widget::ScopedUpdateLock update_lock(pFWLBarcode);
+    pFWLBarcode->SetText(m_pNode->GetValue(XFA_VALUEPICTURE_Display));
+    UpdateWidgetProperty();
+  }
+
   return CXFA_FFField::LoadWidget();
 }
 
@@ -170,11 +171,11 @@ void CXFA_FFBarcode::RenderWidget(CXFA_Graphics* pGS,
   CXFA_FFWidget::RenderWidget(pGS, mtRotate, highlight);
   DrawBorder(pGS, m_pNode->GetUIBorder(), m_rtUI, mtRotate);
   RenderCaption(pGS, &mtRotate);
-  CFX_RectF rtWidget = m_pNormalWidget->GetWidgetRect();
+  CFX_RectF rtWidget = GetNormalWidget()->GetWidgetRect();
 
   CFX_Matrix mt(1, 0, 0, 1, rtWidget.left, rtWidget.top);
   mt.Concat(mtRotate);
-  m_pNormalWidget->DrawWidget(pGS, mt);
+  GetNormalWidget()->DrawWidget(pGS, mt);
 }
 
 void CXFA_FFBarcode::UpdateWidgetProperty() {
@@ -184,7 +185,7 @@ void CXFA_FFBarcode::UpdateWidgetProperty() {
   if (!info)
     return;
 
-  auto* pBarCodeWidget = static_cast<CFWL_Barcode*>(m_pNormalWidget.get());
+  auto* pBarCodeWidget = static_cast<CFWL_Barcode*>(GetNormalWidget());
   pBarCodeWidget->SetType(info->eBCType);
 
   Optional<WideString> encoding_string = barcode_->GetCharEncoding();
@@ -250,7 +251,7 @@ void CXFA_FFBarcode::UpdateWidgetProperty() {
 bool CXFA_FFBarcode::AcceptsFocusOnButtonDown(uint32_t dwFlags,
                                               const CFX_PointF& point,
                                               FWL_MouseCommand command) {
-  auto* pBarCodeWidget = static_cast<CFWL_Barcode*>(m_pNormalWidget.get());
+  auto* pBarCodeWidget = static_cast<CFWL_Barcode*>(GetNormalWidget());
   if (!pBarCodeWidget || pBarCodeWidget->IsProtectedType())
     return false;
   if (command == FWL_MouseCommand::LeftButtonDown && !m_pNode->IsOpenAccess())

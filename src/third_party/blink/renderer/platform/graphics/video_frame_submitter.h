@@ -19,6 +19,7 @@
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "services/viz/public/mojom/compositing/frame_timing_details.mojom-blink.h"
@@ -131,8 +132,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   cc::VideoFrameProvider* video_frame_provider_ = nullptr;
   scoped_refptr<viz::RasterContextProvider> context_provider_;
-  viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
-  mojom::blink::SurfaceEmbedderPtr surface_embedder_;
+  mojo::Remote<viz::mojom::blink::CompositorFrameSink> compositor_frame_sink_;
+  mojo::Remote<mojom::blink::SurfaceEmbedder> surface_embedder_;
   mojo::Receiver<viz::mojom::blink::CompositorFrameSinkClient> receiver_{this};
   WebContextProviderCallback context_provider_callback_;
   std::unique_ptr<VideoFrameResourceProvider> resource_provider_;
@@ -184,6 +185,11 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // The BeginFrameArgs passed to the most recent call of OnBeginFrame().
   // Required for FrameSequenceTrackerCollection::NotifySubmitFrame
   viz::BeginFrameArgs last_begin_frame_args_;
+
+  // The token of the frames that are submitted outside OnBeginFrame(). These
+  // frames should be ignored by the video tracker even if they are reported as
+  // presented.
+  base::flat_set<uint32_t> ignorable_submitted_frames_;
 
   THREAD_CHECKER(thread_checker_);
 

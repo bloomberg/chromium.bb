@@ -10,13 +10,13 @@
 #include <limits>
 #include <vector>
 
-#include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
 #include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "third_party/mDNSResponder/src/mDNSCore/mDNSEmbeddedAPI.h"
+#include "util/logging.h"
 
 using openscreen::platform::Clock;
 using std::chrono::duration_cast;
@@ -61,14 +61,11 @@ mStatus mDNSPlatformSendUDP(const mDNS* m,
   if (length < 0 || length > std::numeric_limits<ssize_t>::max()) {
     return mStatus_BadParamErr;
   }
-  switch ((*socket_it)->SendMessage(msg, length, dest).code()) {
-    case openscreen::Error::Code::kNone:
-      return mStatus_NoError;
-    case openscreen::Error::Code::kAgain:
-      return mStatus_TransientErr;
-    default:
-      return mStatus_UnknownErr;
-  }
+
+  // UDP is inherently lossy, so don't worry about async failures and let the
+  // underlying protocol handle it.
+  (*socket_it)->SendMessage(msg, length, dest);
+  return mStatus_NoError;
 }
 
 void mDNSPlatformLock(const mDNS* m) {

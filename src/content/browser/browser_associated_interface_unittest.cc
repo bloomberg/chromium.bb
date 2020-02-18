@@ -26,6 +26,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -100,8 +101,8 @@ class TestDriverMessageFilter
 
   void OnFilterRemoved() override {
     // Check that the bindings are cleared by
-    // BrowserAssociatedInterface::ClearBindings() callbacks.
-    EXPECT_FALSE(internal_state_->bindings_.has_value());
+    // BrowserAssociatedInterface::ClearReceivers() callbacks.
+    EXPECT_FALSE(internal_state_->receivers_.has_value());
   }
 
   // mojom::BrowserAssociatedInterfaceTestDriver:
@@ -140,7 +141,7 @@ class TestClientRunner {
         base::Thread::Options(base::MessagePumpType::IO, 0));
     ProxyRunner proxy(std::move(pipe), false, io_thread.task_runner());
 
-    mojom::BrowserAssociatedInterfaceTestDriverAssociatedPtr driver;
+    mojo::AssociatedRemote<mojom::BrowserAssociatedInterfaceTestDriver> driver;
     proxy.channel()->GetRemoteAssociatedInterface(&driver);
 
     for (int i = 0; i < kNumTestMessages; ++i) {

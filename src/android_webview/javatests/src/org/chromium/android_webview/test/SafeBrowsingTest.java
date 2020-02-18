@@ -30,14 +30,14 @@ import org.chromium.android_webview.AwContents.InternalAccessDelegate;
 import org.chromium.android_webview.AwContents.NativeDrawFunctorFactory;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
-import org.chromium.android_webview.AwSafeBrowsingConfigHelper;
-import org.chromium.android_webview.AwSafeBrowsingConversionHelper;
-import org.chromium.android_webview.AwSafeBrowsingResponse;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.AwWebContentsObserver;
 import org.chromium.android_webview.ErrorCodeConversionHelper;
 import org.chromium.android_webview.SafeBrowsingAction;
+import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
+import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConversionHelper;
+import org.chromium.android_webview.safe_browsing.AwSafeBrowsingResponse;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedError2Helper;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.BuildInfo;
@@ -47,11 +47,9 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.components.safe_browsing.SafeBrowsingApiHandler;
-import org.chromium.components.safe_browsing.SafeBrowsingApiHandler.Observer;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -193,6 +191,11 @@ public class SafeBrowsingTest {
                     (Runnable) () -> mObserver.onUrlCheckDone(
                         callbackId, SafeBrowsingResult.SUCCESS, metadata, CHECK_DELTA_US));
             // clang-format on
+        }
+
+        @Override
+        public boolean startAllowlistLookup(final String uri, int threatType) {
+            return false;
         }
     }
 
@@ -338,7 +341,7 @@ public class SafeBrowsingTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mContentsClient = new SafeBrowsingContentsClient();
         mContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(
                 mContentsClient, false, new SafeBrowsingDependencyFactory());
@@ -353,7 +356,7 @@ public class SafeBrowsingTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -390,7 +393,7 @@ public class SafeBrowsingTest {
         return helper.getValue();
     }
 
-    private void waitForInterstitialDomToLoad() throws Exception {
+    private void waitForInterstitialDomToLoad() {
         final String script = "document.readyState;";
         final String expected = "\"complete\"";
 
@@ -441,21 +444,21 @@ public class SafeBrowsingTest {
                         mAwContents, mContainerView)));
     }
 
-    private void assertGreenPageShowing() throws Exception {
+    private void assertGreenPageShowing() {
         Assert.assertEquals("Original page should be showing",
                 colorToString(GREEN_PAGE_BACKGROUND_COLOR),
                 colorToString(GraphicsTestUtils.getPixelColorAtCenterOfView(
                         mAwContents, mContainerView)));
     }
 
-    private void assertGreenPageNotShowing() throws Exception {
+    private void assertGreenPageNotShowing() {
         assertNotEquals("Original page should not be showing",
                 colorToString(GREEN_PAGE_BACKGROUND_COLOR),
                 colorToString(GraphicsTestUtils.getPixelColorAtCenterOfView(
                         mAwContents, mContainerView)));
     }
 
-    private void assertTargetPageNotShowing(int pageColor) throws Exception {
+    private void assertTargetPageNotShowing(int pageColor) {
         assertNotEquals("Target page should not be showing", colorToString(pageColor),
                 colorToString(GraphicsTestUtils.getPixelColorAtCenterOfView(
                         mAwContents, mContainerView)));
@@ -654,7 +657,6 @@ public class SafeBrowsingTest {
     }
 
     @Test
-    @FlakyTest(message = "crbug.com/984705")
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testSafeBrowsingProceedThroughInterstitialForSubresource() throws Throwable {
@@ -1221,7 +1223,7 @@ public class SafeBrowsingTest {
         // As long as we've reached this line without crashing, there should be no bug.
     }
 
-    private void destroyOnMainSync() throws Exception {
+    private void destroyOnMainSync() {
         // The AwActivityTestRule method invokes AwContents#destroy() on the main thread, but
         // Awcontents#destroy() posts an asynchronous task itself to destroy natives. Therefore, we
         // still need to wait for the real work to actually finish.

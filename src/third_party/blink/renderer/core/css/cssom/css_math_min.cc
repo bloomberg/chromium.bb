@@ -73,12 +73,12 @@ CSSMathExpressionNode* CSSMathMin::ToCalcExpressionNode() const {
   if (!RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled())
     return nullptr;
 
-  HeapVector<Member<CSSMathExpressionNode>> operands;
+  CSSMathExpressionVariadicOperation::Operands operands;
   operands.ReserveCapacity(NumericValues().size());
   for (const auto& value : NumericValues()) {
     CSSMathExpressionNode* operand = value->ToCalcExpressionNode();
     if (!operand) {
-      // TODO(crbug.com/825895): Remove this when all ToCalcExpressionNode()
+      // TODO(crbug.com/983784): Remove this when all ToCalcExpressionNode()
       // overrides are implemented.
       NOTREACHED();
       continue;
@@ -86,7 +86,7 @@ CSSMathExpressionNode* CSSMathMin::ToCalcExpressionNode() const {
     operands.push_back(value->ToCalcExpressionNode());
   }
   if (!operands.size()) {
-    // TODO(crbug.com/825895): Remove this when all ToCalcExpressionNode()
+    // TODO(crbug.com/983784): Remove this when all ToCalcExpressionNode()
     // overrides are implemented.
     NOTREACHED();
     return nullptr;

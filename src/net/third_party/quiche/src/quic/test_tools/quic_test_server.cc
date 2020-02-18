@@ -4,6 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_server.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/quic_epoll_alarm_factory.h"
 #include "net/third_party/quiche/src/quic/core/quic_epoll_connection_helper.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
@@ -116,6 +118,11 @@ class QuicTestDispatcher : public QuicSimpleDispatcher {
           config(), connection, this, session_helper(), crypto_config(),
           compressed_certs_cache(), server_backend());
     }
+    // TODO(b/142715651): Figure out how to use QPACK in tests.
+    // Do not use the QPACK dynamic table in tests to avoid flakiness due to the
+    // uncertain order of receiving the SETTINGS frame and sending headers.
+    session->set_qpack_maximum_dynamic_table_capacity(0);
+    session->set_qpack_maximum_blocked_streams(0);
     session->Initialize();
     return session;
   }
@@ -181,11 +188,11 @@ QuicTestServer::QuicTestServer(
 QuicDispatcher* QuicTestServer::CreateQuicDispatcher() {
   return new QuicTestDispatcher(
       &config(), &crypto_config(), version_manager(),
-      QuicMakeUnique<QuicEpollConnectionHelper>(epoll_server(),
-                                                QuicAllocator::BUFFER_POOL),
+      std::make_unique<QuicEpollConnectionHelper>(epoll_server(),
+                                                  QuicAllocator::BUFFER_POOL),
       std::unique_ptr<QuicCryptoServerStream::Helper>(
           new QuicSimpleCryptoServerStreamHelper()),
-      QuicMakeUnique<QuicEpollAlarmFactory>(epoll_server()), server_backend(),
+      std::make_unique<QuicEpollAlarmFactory>(epoll_server()), server_backend(),
       expected_server_connection_id_length());
 }
 
@@ -223,8 +230,21 @@ ImmediateGoAwaySession::ImmediateGoAwaySession(
                               quic_simple_server_backend) {}
 
 void ImmediateGoAwaySession::OnStreamFrame(const QuicStreamFrame& frame) {
-  SendGoAway(QUIC_PEER_GOING_AWAY, "");
+  if (VersionUsesHttp3(transport_version())) {
+    SendHttp3GoAway();
+  } else {
+    SendGoAway(QUIC_PEER_GOING_AWAY, "");
+  }
   QuicSimpleServerSession::OnStreamFrame(frame);
+}
+
+void ImmediateGoAwaySession::OnCryptoFrame(const QuicCryptoFrame& frame) {
+  // In IETF QUIC, GOAWAY lives up in HTTP/3 layer. Even if it's a immediate
+  // goaway session, goaway shouldn't be sent when crypto frame is received.
+  if (!VersionUsesHttp3(transport_version())) {
+    SendGoAway(QUIC_PEER_GOING_AWAY, "");
+  }
+  QuicSimpleServerSession::OnCryptoFrame(frame);
 }
 
 }  // namespace test

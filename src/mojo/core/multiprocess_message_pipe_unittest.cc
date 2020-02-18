@@ -1283,7 +1283,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MessagePipeStatusChangeInTransitClient,
     SimpleWatcher watcher(FROM_HERE, SimpleWatcher::ArmingPolicy::AUTOMATIC,
                           base::SequencedTaskRunnerHandle::Get());
     watcher.Watch(Handle(handles[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-                  base::Bind(
+                  base::BindRepeating(
                       [](base::RunLoop* loop, MojoResult result) {
                         EXPECT_EQ(MOJO_RESULT_OK, result);
                         loop->Quit();
@@ -1309,6 +1309,38 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MessagePipeStatusChangeInTransitClient,
 
   for (size_t i = 0; i < 4; ++i)
     CloseHandle(handles[i]);
+}
+
+TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
+       ReceiveMessagesSentJustBeforeProcessDeath) {
+  // Regression test for https://crbug.com/1005510. The client will write a
+  // message to the pipe it gives us and then it will die immediately. We should
+  // always be able to read the message received on that pipe.
+  RunTestClient("SpotaneouslyDyingProcess", [&](MojoHandle child) {
+    MojoHandle receiver;
+    EXPECT_EQ("receiver", ReadMessageWithHandles(child, &receiver, 1));
+    EXPECT_EQ("ok", ReadMessage(receiver));
+  });
+}
+
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(SpotaneouslyDyingProcess,
+                                  MultiprocessMessagePipeTest,
+                                  parent) {
+  MojoHandle sender;
+  MojoHandle receiver;
+  CreateMessagePipe(&sender, &receiver);
+
+  WriteMessageWithHandles(parent, "receiver", &receiver, 1);
+
+  // Wait for the pipe to actually appear as remote. Before this happens, it's
+  // possible for message transmission to be deferred to the IO thread, and
+  // sudden termination might preempt that work.
+  WaitForSignals(sender, MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+
+  WriteMessage(sender, "ok");
+
+  // Here process termination is imminent. If the bug reappears this test will
+  // fail flakily.
 }
 
 TEST_F(MultiprocessMessagePipeTest, MessagePipeStatusChangeInTransit) {
@@ -1337,10 +1369,11 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(BadMessageClient,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     MultiprocessMessagePipeTestWithPeerSupport,
     testing::Values(test::MojoTestBase::LaunchType::CHILD,
-                    test::MojoTestBase::LaunchType::PEER
+                    test::MojoTestBase::LaunchType::PEER,
+                    test::MojoTestBase::LaunchType::ASYNC
 #if !defined(OS_FUCHSIA)
                     ,
                     test::MojoTestBase::LaunchType::NAMED_CHILD,

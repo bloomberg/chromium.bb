@@ -12,61 +12,77 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
+#include "base/optional.h"
 
 namespace base {
 class FilePath;
-class ListValue;
 }
 
 namespace extensions {
 
-// A pair of classes for serialization of a set of SHA256 block hashes computed
-// over the files inside an extension.
+using IsCancelledCallback = base::RepeatingCallback<bool(void)>;
+using ShouldComputeHashesCallback =
+    base::RepeatingCallback<bool(const base::FilePath& relative_path)>;
+
+// A class for storage and serialization of a set of SHA256 block hashes
+// computed over the files inside an extension.
 class ComputedHashes {
  public:
-  class Reader {
-   public:
-    Reader();
-    ~Reader();
-    bool InitFromFile(const base::FilePath& path);
+  using HashInfo = std::pair<int, std::vector<std::string>>;
+  using Data = std::map<base::FilePath, HashInfo>;
 
-    // The block size and hashes for |relative_path| will be copied into the
-    // out parameters.
-    bool GetHashes(const base::FilePath& relative_path,
-                   int* block_size,
-                   std::vector<std::string>* hashes) const;
+  explicit ComputedHashes(Data&& data);
+  ComputedHashes(const ComputedHashes&) = delete;
+  ComputedHashes& operator=(const ComputedHashes&) = delete;
+  ComputedHashes(ComputedHashes&&);
+  ComputedHashes& operator=(ComputedHashes&&);
+  ~ComputedHashes();
 
-   private:
-    typedef std::pair<int, std::vector<std::string> > HashInfo;
+  // Reads computed hashes from the computed_hashes.json file, returns nullopt
+  // upon any failure.
+  static base::Optional<ComputedHashes> CreateFromFile(
+      const base::FilePath& path);
 
-    // This maps a relative path to a pair of (block size, hashes)
-    std::map<base::FilePath, HashInfo> data_;
-  };
+  // Computes hashes for files in |extension_root|. Returns nullopt upon any
+  // failure. Callback |should_compute_hashes_for| is used to determine whether
+  // we need hashes for a resource or not.
+  // TODO(https://crbug.com/796395#c24) To support per-file block size instead
+  // of passing |block_size| as an argument make callback
+  // |should_compute_hashes_for| return optional<int>: nullopt if hashes are not
+  // needed for this file, block size for this file otherwise.
+  static base::Optional<ComputedHashes::Data> Compute(
+      const base::FilePath& extension_root,
+      int block_size,
+      const IsCancelledCallback& is_cancelled,
+      const ShouldComputeHashesCallback& should_compute_hashes_for_resource);
 
-  class Writer {
-   public:
-    Writer();
-    ~Writer();
+  // Saves computed hashes to given file, returns false upon any failure (and
+  // true on success).
+  bool WriteToFile(const base::FilePath& path) const;
 
-    // Adds hashes for |relative_path|. Should not be called more than once
-    // for a given |relative_path|.
-    void AddHashes(const base::FilePath& relative_path,
-                   int block_size,
-                   const std::vector<std::string>& hashes);
+  // Gets hash info for |relative_path|. The block size and hashes for
+  // |relative_path| will be copied into the out parameters. Returns false if
+  // resource was not found (and true on success).
+  bool GetHashes(const base::FilePath& relative_path,
+                 int* block_size,
+                 std::vector<std::string>* hashes) const;
 
-    bool WriteToFile(const base::FilePath& path);
+  // Returns the SHA256 hash of each |block_size| chunk in |contents|.
+  static std::vector<std::string> GetHashesForContent(
+      const std::string& contents,
+      size_t block_size);
 
-   private:
-    // Each element of this list contains the path and block hashes for one
-    // file.
-    std::unique_ptr<base::ListValue> file_list_;
-  };
+ private:
+  // Builds hashes for one resource and checks them against
+  // verified_contents.json if needed. Returns nullopt if nothing should be
+  // added to computed_hashes.json for this resource.
+  static base::Optional<std::vector<std::string>> ComputeAndCheckResourceHash(
+      const base::FilePath& full_path,
+      const base::FilePath& relative_unix_path,
+      int block_size);
 
-  // Computes the SHA256 hash of each |block_size| chunk in |contents|, placing
-  // the results into |hashes|.
-  static void ComputeHashesForContent(const std::string& contents,
-                                      size_t block_size,
-                                      std::vector<std::string>* hashes);
+  Data data_;
 };
 
 }  // namespace extensions

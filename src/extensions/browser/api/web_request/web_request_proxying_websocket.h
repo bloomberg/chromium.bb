@@ -19,10 +19,9 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/base/network_delegate.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -61,13 +60,10 @@ class WebRequestProxyingWebSocket
   // network::mojom::WebSocketHandshakeClient methods:
   void OnOpeningHandshakeStarted(
       network::mojom::WebSocketHandshakeRequestPtr request) override;
-  void OnResponseReceived(
-      network::mojom::WebSocketHandshakeResponsePtr response) override;
   void OnConnectionEstablished(
       mojo::PendingRemote<network::mojom::WebSocket> websocket,
       mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
-      const std::string& selected_protocol,
-      const std::string& extensions,
+      network::mojom::WebSocketHandshakeResponsePtr response,
       mojo::ScopedDataPipeConsumerHandle readable) override;
 
   // network::mojom::AuthenticationHandler method:
@@ -80,6 +76,7 @@ class WebRequestProxyingWebSocket
   void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
                            OnBeforeSendHeadersCallback callback) override;
   void OnHeadersReceived(const std::string& headers,
+                         const net::IPEndPoint& endpoint,
                          OnHeadersReceivedCallback callback) override;
 
   static void StartProxying(
@@ -105,9 +102,11 @@ class WebRequestProxyingWebSocket
   void ContinueToStartRequest(int error_code);
   void OnHeadersReceivedComplete(int error_code);
   void ContinueToHeadersReceived();
-  void OnAuthRequiredComplete(net::NetworkDelegate::AuthRequiredResponse rv);
+  void OnAuthRequiredComplete(
+      ExtensionWebRequestEventRouter::AuthRequiredResponse rv);
   void OnHeadersReceivedCompleteForAuth(const net::AuthChallengeInfo& auth_info,
                                         int rv);
+  void ContinueToCompleted();
 
   void PauseIncomingMethodCallProcessing();
   void ResumeIncomingMethodCallProcessing();
@@ -127,7 +126,7 @@ class WebRequestProxyingWebSocket
       receiver_as_header_client_{this};
 
   net::HttpRequestHeaders request_headers_;
-  network::ResourceResponseHead response_;
+  network::mojom::URLResponseHeadPtr response_;
   net::AuthCredentials auth_credentials_;
   OnAuthRequiredCallback auth_required_callback_;
   scoped_refptr<net::HttpResponseHeaders> override_headers_;
@@ -138,8 +137,11 @@ class WebRequestProxyingWebSocket
 
   GURL redirect_url_;
   bool is_done_ = false;
-  bool waiting_for_header_client_headers_received_ = false;
   bool has_extra_headers_;
+  mojo::PendingRemote<network::mojom::WebSocket> websocket_;
+  mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver_;
+  network::mojom::WebSocketHandshakeResponsePtr handshake_response_ = nullptr;
+  mojo::ScopedDataPipeConsumerHandle readable_;
 
   WebRequestInfo info_;
 

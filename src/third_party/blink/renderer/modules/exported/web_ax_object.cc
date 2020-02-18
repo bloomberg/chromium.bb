@@ -281,11 +281,11 @@ bool WebAXObject::IsAutofillAvailable() const {
   return private_->IsAutofillAvailable();
 }
 
-WebString WebAXObject::AriaAutoComplete() const {
+WebString WebAXObject::AutoComplete() const {
   if (IsDetached())
     return WebString();
 
-  return private_->AriaAutoComplete();
+  return private_->AutoComplete();
 }
 
 ax::mojom::AriaCurrentState WebAXObject::AriaCurrentState() const {
@@ -770,7 +770,6 @@ bool WebAXObject::Click() const {
   if (IsDetached())
     return false;
 
-  ScopedActionAnnotator annotater(private_.Get());
   return private_->RequestClickAction();
 }
 
@@ -1445,6 +1444,7 @@ static ax::mojom::MarkerType ToAXMarkerType(
       return ax::mojom::MarkerType::kSpelling;
     case DocumentMarker::kGrammar:
       return ax::mojom::MarkerType::kGrammar;
+    case DocumentMarker::kTextFragment:
     case DocumentMarker::kTextMatch:
       return ax::mojom::MarkerType::kTextMatch;
     case DocumentMarker::kActiveSuggestion:
@@ -1594,7 +1594,8 @@ bool WebAXObject::ScrollToMakeVisible() const {
 bool WebAXObject::ScrollToMakeVisibleWithSubFocus(
     const WebRect& subfocus,
     ax::mojom::ScrollAlignment horizontal_scroll_alignment,
-    ax::mojom::ScrollAlignment vertical_scroll_alignment) const {
+    ax::mojom::ScrollAlignment vertical_scroll_alignment,
+    ax::mojom::ScrollBehavior scroll_behavior) const {
   if (IsDetached())
     return false;
 
@@ -1603,10 +1604,20 @@ bool WebAXObject::ScrollToMakeVisibleWithSubFocus(
       ToBlinkScrollAlignmentBehavior(horizontal_scroll_alignment);
   auto vertical_behavior =
       ToBlinkScrollAlignmentBehavior(vertical_scroll_alignment);
+
+  blink::ScrollAlignmentBehavior visible_horizontal_behavior =
+      scroll_behavior == ax::mojom::ScrollBehavior::kScrollIfVisible
+          ? horizontal_behavior
+          : kScrollAlignmentNoScroll;
+  blink::ScrollAlignmentBehavior visible_vertical_behavior =
+      scroll_behavior == ax::mojom::ScrollBehavior::kScrollIfVisible
+          ? vertical_behavior
+          : kScrollAlignmentNoScroll;
+
   blink::ScrollAlignment blink_horizontal_scroll_alignment = {
-      kScrollAlignmentNoScroll, horizontal_behavior, horizontal_behavior};
+      visible_horizontal_behavior, horizontal_behavior, horizontal_behavior};
   blink::ScrollAlignment blink_vertical_scroll_alignment = {
-      kScrollAlignmentNoScroll, vertical_behavior, vertical_behavior};
+      visible_vertical_behavior, vertical_behavior, vertical_behavior};
   return private_->RequestScrollToMakeVisibleWithSubFocusAction(
       subfocus, blink_horizontal_scroll_alignment,
       blink_vertical_scroll_alignment);
@@ -1630,11 +1641,12 @@ void WebAXObject::Swap(WebAXObject& other) {
   other = temp;
 }
 
-void WebAXObject::HandleAutofillStateChanged(bool suggestions_available) const {
+void WebAXObject::HandleAutofillStateChanged(
+    const blink::WebAXAutofillState state) const {
   if (IsDetached() || !private_->IsAXLayoutObject())
     return;
 
-  private_->HandleAutofillStateChanged(suggestions_available);
+  private_->HandleAutofillStateChanged(state);
 }
 
 WebString WebAXObject::ToString() const {

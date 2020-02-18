@@ -66,11 +66,11 @@ void FakeDemuxerStream::Initialize() {
   next_read_num_ = 0;
 }
 
-void FakeDemuxerStream::Read(const ReadCB& read_cb) {
+void FakeDemuxerStream::Read(ReadCB read_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!read_cb_);
 
-  read_cb_ = BindToCurrentLoop(read_cb);
+  read_cb_ = BindToCurrentLoop(std::move(read_cb));
 
   if (read_to_hold_ == next_read_num_)
     return;
@@ -138,7 +138,7 @@ void FakeDemuxerStream::Reset() {
   read_to_hold_ = -1;
 
   if (read_cb_)
-    std::move(read_cb_).Run(kAborted, NULL);
+    std::move(read_cb_).Run(kAborted, nullptr);
 }
 
 void FakeDemuxerStream::Error() {
@@ -165,7 +165,7 @@ void FakeDemuxerStream::UpdateVideoDecoderConfig() {
       VideoDecoderConfig::AlphaMode::kIsOpaque, VideoColorSpace(),
       kNoTransformation, next_coded_size_, kVisibleRect, next_coded_size_,
       EmptyExtraData(),
-      is_encrypted_ ? AesCtrEncryptionScheme() : Unencrypted());
+      is_encrypted_ ? EncryptionScheme::kCenc : EncryptionScheme::kUnencrypted);
   next_coded_size_.Enlarge(kWidthDelta, kHeightDelta);
 }
 
@@ -185,7 +185,7 @@ void FakeDemuxerStream::DoRead() {
     // Config change.
     num_buffers_left_in_current_config_ = num_buffers_in_one_config_;
     UpdateVideoDecoderConfig();
-    std::move(read_cb_).Run(kConfigChanged, NULL);
+    std::move(read_cb_).Run(kConfigChanged, nullptr);
     return;
   }
 

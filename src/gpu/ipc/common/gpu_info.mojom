@@ -9,10 +9,17 @@ import "gpu/ipc/common/dx_diag_node.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
+[EnableIf=supports_vulkan]
+import "gpu/ipc/common/vulkan_info.mojom";
+
 // gpu::GPUInfo::GPUDevice
 struct GpuDevice {
   uint32 vendor_id;
   uint32 device_id;
+  [EnableIf=is_win]
+  uint32 sub_sys_id;
+  [EnableIf=is_win]
+  uint32 revision;
   bool active;
   string vendor_string;
   string device_string;
@@ -72,6 +79,7 @@ struct VideoDecodeAcceleratorCapabilities {
 // gpu::VideoEncodeAcceleratorSupportedProfile
 struct VideoEncodeAcceleratorSupportedProfile {
   VideoCodecProfile profile;
+  gfx.mojom.Size min_resolution;
   gfx.mojom.Size max_resolution;
   uint32 max_framerate_numerator;
   uint32 max_framerate_denominator;
@@ -167,4 +175,8 @@ struct GpuInfo {
   uint64 system_visual;
   uint64 rgba_visual;
   bool oop_rasterization_supported;
+  bool subpixel_font_rendering;
+
+  [EnableIf=supports_vulkan]
+  VulkanInfo? vulkan_info;
 };

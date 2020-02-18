@@ -49,7 +49,7 @@ class ModificationTimeMonitor(object):
   mtimes. Note that a key may be associated with multiple paths, in which case
   the latest mtime among them will be returned.
 
-  Members:
+  Attributes:
     _tasks: A list of (key, path) pairs to check.
     _result_queue: A queue populated with corresponding (key, mtime) pairs.
   """
@@ -66,8 +66,8 @@ class ModificationTimeMonitor(object):
   def _LastModificationTime(self, path):
     """Returns the latest modification time for anything under |path|."""
     cmd = 'find . -name .git -prune -o -printf "%T@\n" | sort -nr | head -n1'
-    ret = cros_build_lib.RunCommand(cmd, cwd=path, shell=True, print_cmd=False,
-                                    capture_output=True)
+    ret = cros_build_lib.run(cmd, cwd=path, shell=True, print_cmd=False,
+                             capture_output=True)
     return float(ret.output) if ret.output else 0
 
   def GetModificationTimes(self):
@@ -85,7 +85,7 @@ class ModificationTimeMonitor(object):
 class WorkonPackageInfo(object):
   """Class for getting information about workon packages.
 
-  Members:
+  Attributes:
     cp: The package name (e.g. chromeos-base/power_manager).
     mtime: The modification time of the installed package.
     projects: The project(s) associated with the package.
@@ -164,7 +164,7 @@ def ListWorkonPackagesInfo(sysroot):
       results[cp] = WorkonPackageInfo(cp, pkg_mtime, projects, srcpaths,
                                       src_ebuild_mtime)
 
-  return results.values()
+  return list(results.values())
 
 
 def WorkonProjectsMonitor(projects):

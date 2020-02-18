@@ -27,8 +27,10 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   void NotifyOneShotBackgroundSyncRegistered(const url::Origin& origin,
                                              bool can_fire,
                                              bool is_reregistered) override;
-  void ScheduleBrowserWakeUp(
-      blink::mojom::BackgroundSyncType sync_type) override;
+  void ScheduleBrowserWakeUpWithDelay(
+      blink::mojom::BackgroundSyncType sync_type,
+      base::TimeDelta delay) override;
+  void CancelBrowserWakeup(blink::mojom::BackgroundSyncType sync_type) override;
   void GetParameterOverrides(BackgroundSyncParameters* parameters) override;
   base::TimeDelta GetNextEventDelay(
       const BackgroundSyncRegistration& registration,
@@ -38,6 +40,10 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   CreateBackgroundSyncEventKeepAlive() override;
   void NoteSuspendedPeriodicSyncOrigins(
       std::set<url::Origin> suspended_registrations) override;
+  void NoteRegisteredPeriodicSyncOrigins(
+      std::set<url::Origin> registered_origins) override;
+  void AddToTrackedOrigins(const url::Origin& origin) override;
+  void RemoveFromTrackedOrigins(const url::Origin& origin) override;
 
   int registration_count() const { return registration_count_; }
   const url::Origin& registration_origin() const {
@@ -49,6 +55,15 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   int run_in_background_periodic_sync_count() const {
     return run_in_background_for_periodic_sync_count_;
   }
+
+  base::TimeDelta GetBrowserWakeupDelay(
+      blink::mojom::BackgroundSyncType sync_type) const {
+    if (sync_type == blink::mojom::BackgroundSyncType::ONE_SHOT)
+      return one_shot_sync_browser_wakeup_delay_;
+    else
+      return periodic_sync_browser_wakeup_delay_;
+  }
+
   BackgroundSyncParameters* background_sync_parameters() {
     return &background_sync_parameters_;
   }
@@ -64,8 +79,11 @@ class MockBackgroundSyncController : public BackgroundSyncController {
 
   int run_in_background_for_one_shot_sync_count_ = 0;
   int run_in_background_for_periodic_sync_count_ = 0;
+  base::TimeDelta periodic_sync_browser_wakeup_delay_;
+  base::TimeDelta one_shot_sync_browser_wakeup_delay_;
   BackgroundSyncParameters background_sync_parameters_;
   std::set<url::Origin> suspended_periodic_sync_origins_;
+  std::set<url::Origin> periodic_sync_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBackgroundSyncController);
 };

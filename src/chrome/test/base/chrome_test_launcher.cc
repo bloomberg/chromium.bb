@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_file_util.h"
+#include "base/test/test_switches.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -45,14 +46,6 @@
 #include "ui/base/test/ui_controls_aura.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "ash/mojo_interface_factory.h"
-#include "ash/mojo_test_interface_factory.h"
-#include "ash/public/cpp/manifest.h"
-#include "ash/public/cpp/test_manifest.h"
-#include "ash/test/ui_controls_factory_ash.h"
-#endif
-
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "chrome/app/chrome_crash_reporter_client.h"
 #endif
@@ -76,8 +69,10 @@ ChromeTestSuiteRunner::~ChromeTestSuiteRunner() {}
 
 int ChromeTestSuiteRunner::RunTestSuite(int argc, char** argv) {
   ChromeTestSuite test_suite(argc, argv);
-  // Browser tests are expected not to tear-down various globals.
+  // Browser tests are expected not to tear-down various globals and may
+  // complete with the thread priority being above NORMAL.
   test_suite.DisableCheckForLeakedGlobals();
+  test_suite.DisableCheckForThreadPriorityAtTestEnd();
 #if defined(OS_ANDROID)
   // Android browser tests run child processes as threads instead.
   content::ContentTestSuiteBase::RegisterInProcessThreads();
@@ -210,7 +205,7 @@ int LaunchChromeTests(size_t parallel_jobs,
   // mimics the behavior in standalone Chrome, where this is done in
   // chrome/app/chrome_main.cc, which does not get called by tests.
   std::unique_ptr<MainThreadStackSamplingProfiler> sampling_profiler;
-  if (command_line.HasSwitch(content::kLaunchAsBrowser))
+  if (command_line.HasSwitch(switches::kLaunchAsBrowser))
     sampling_profiler = std::make_unique<MainThreadStackSamplingProfiler>();
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -239,14 +234,6 @@ int LaunchChromeTests(size_t parallel_jobs,
         },
         network_service_test_helper.get()));
   }
-
-#if defined(OS_CHROMEOS)
-  // Inject the test interfaces for ash. Use a callback to avoid linking test
-  // interface support into production code.
-  ash::AmendManifestForTesting(ash::GetManifestOverlayForTesting());
-  ash::mojo_interface_factory::SetRegisterInterfacesCallback(
-      base::Bind(&ash::mojo_test_interface_factory::RegisterInterfaces));
-#endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

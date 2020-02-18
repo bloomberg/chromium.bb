@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_OZONE_EVDEV_INPUT_DEVICE_FACTORY_PROXY_EVDEV_H_
-#define UI_EVENTS_OZONE_EVDEV_INPUT_DEVICE_FACTORY_PROXY_EVDEV_H_
+#ifndef UI_EVENTS_OZONE_EVDEV_INPUT_DEVICE_FACTORY_EVDEV_PROXY_H_
+#define UI_EVENTS_OZONE_EVDEV_INPUT_DEVICE_FACTORY_EVDEV_PROXY_H_
 
 #include <memory>
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/ozone/public/input_controller.h"
 
 namespace ui {
@@ -28,7 +29,7 @@ struct InputDeviceSettingsEvdev;
 //
 // This is used on the UI thread to proxy calls to the real object on
 // the device I/O thread.
-class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
+class COMPONENT_EXPORT(EVDEV) InputDeviceFactoryEvdevProxy {
  public:
   InputDeviceFactoryEvdevProxy(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -47,7 +48,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
   void GetTouchEventLog(const base::FilePath& out_dir,
                         InputController::GetTouchEventLogReply reply);
   void GetGesturePropertiesService(
-      ozone::mojom::GesturePropertiesServiceRequest request);
+      mojo::PendingReceiver<ozone::mojom::GesturePropertiesService> receiver);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -58,4 +59,4 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_OZONE_EVDEV_INPUT_DEVICE_FACTORY_PROXY_EVDEV_H_
+#endif  // UI_EVENTS_OZONE_EVDEV_INPUT_DEVICE_FACTORY_EVDEV_PROXY_H_

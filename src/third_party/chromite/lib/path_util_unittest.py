@@ -46,9 +46,9 @@ class DetermineCheckoutTest(cros_test_lib.MockTempDirTestCase):
     if expected_src is not None:
       full_src = os.path.join(self.tempdir, expected_src)
 
-    self.assertEquals(checkout_info.root, full_root)
-    self.assertEquals(checkout_info.type, expected_type)
-    self.assertEquals(checkout_info.chrome_src_dir, full_src)
+    self.assertEqual(checkout_info.root, full_root)
+    self.assertEqual(checkout_info.type, expected_type)
+    self.assertEqual(checkout_info.chrome_src_dir, full_src)
 
   def testGclientRepo(self):
     """Recognizes a GClient repo checkout."""
@@ -132,14 +132,14 @@ class FindCacheDirTest(cros_test_lib.MockTempDirTestCase):
   def testRepoRoot(self):
     """Test when we are inside a repo checkout."""
     self.cwd_mock.return_value = self.repo_root
-    self.assertEquals(
+    self.assertEqual(
         path_util.FindCacheDir(),
         os.path.join(self.repo_root, path_util.GENERAL_CACHE_DIR))
 
   def testGclientRoot(self):
     """Test when we are inside a gclient checkout."""
     self.cwd_mock.return_value = self.gclient_root
-    self.assertEquals(
+    self.assertEqual(
         path_util.FindCacheDir(),
         os.path.join(self.gclient_root, 'src', 'build',
                      path_util.CHROME_CACHE_DIR))

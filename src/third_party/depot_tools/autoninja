@@ -5,7 +5,7 @@
 # found in the LICENSE file.
 
 # Set unique build ID.
-AUTONINJA_BUILD_ID="$(python -c "import uuid; print uuid.uuid4()")"
+AUTONINJA_BUILD_ID="$(python -c "import uuid; print(uuid.uuid4())")"
 export AUTONINJA_BUILD_ID
 
 if [ "$NINJA_SUMMARIZE_BUILD" == "1" ]; then

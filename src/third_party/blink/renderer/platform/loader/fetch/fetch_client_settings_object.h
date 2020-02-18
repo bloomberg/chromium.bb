@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CLIENT_SETTINGS_OBJECT_H_
 
 #include "base/optional.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -31,7 +31,7 @@ namespace blink {
 // used together with them.
 // https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree
 class PLATFORM_EXPORT FetchClientSettingsObject
-    : public GarbageCollectedFinalized<FetchClientSettingsObject> {
+    : public GarbageCollected<FetchClientSettingsObject> {
  public:
   virtual ~FetchClientSettingsObject() = default;
 
@@ -87,8 +87,6 @@ class PLATFORM_EXPORT FetchClientSettingsObject
   using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
   virtual const InsecureNavigationsSet& GetUpgradeInsecureNavigationsSet()
       const = 0;
-
-  virtual bool GetMixedAutoUpgradeOptOut() const = 0;
 
   virtual void Trace(Visitor*) {}
 };

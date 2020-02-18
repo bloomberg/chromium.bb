@@ -23,11 +23,12 @@ from dashboard.pinpoint.models.quest import quest
 from dashboard.services import swarming
 
 
+# TODO(dberris): Move these into configuration instead of being in code.
 _CIPD_VERSION = 'git_revision:66410e06ff82b4e79e849977e4e58c0a261d9953'
 _CPYTHON_VERSION = 'version:2.7.14.chromium14'
 _LOGDOG_BUTLER_VERSION = 'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'
 _VPYTHON_VERSION = 'git_revision:00e2d8b49a4e7505d1c71f19d15c9e7c5b9245a5'
-_VPYTHON_PARAMS = {
+VPYTHON_PARAMS = {
     'caches': [
         {
             'name': 'swarming_module_cache_vpython',
@@ -76,6 +77,16 @@ _VPYTHON_PARAMS = {
 }
 
 
+def SwarmingTagsFromJob(job):
+  return {
+      'pinpoint_job_id': job.job_id,
+      'url': job.url,
+      'comparison_mode': job.comparison_mode,
+      'pinpoint_task_kind': 'test',
+      'pinpoint_user': job.user,
+  }
+
+
 class RunTest(quest.Quest):
 
   def __init__(self, swarming_server, dimensions, extra_args, swarming_tags):
@@ -108,13 +119,7 @@ class RunTest(quest.Quest):
   def PropagateJob(self, job):
     if not hasattr(self, '_swarming_tags'):
       self._swarming_tags = {}
-    self._swarming_tags.update({
-        'pinpoint_job_id': job.job_id,
-        'url': job.url,
-        'comparison_mode': job.comparison_mode,
-        'pinpoint_task_kind': 'test',
-        'pinpoint_user': job.user,
-    })
+    self._swarming_tags.update(SwarmingTagsFromJob(job))
 
   def Start(self, change, isolate_server, isolate_hash):
     return self._Start(change, isolate_server, isolate_hash, self._extra_args,
@@ -255,7 +260,7 @@ class _RunTestExecution(execution_module.Execution):
       raise errors.SwarmingTaskError(result['state'])
 
     if result['failure']:
-      exception_string = _ParseException(swarming_task.Stdout()['output'])
+      exception_string = ParseException(swarming_task.Stdout()['output'])
       if exception_string:
         raise errors.SwarmingTaskFailed(exception_string)
       else:
@@ -288,7 +293,7 @@ class _RunTestExecution(execution_module.Execution):
         'execution_timeout_secs': '21600',  # 6 hours, for rendering.mobile.
         'io_timeout_secs': '14400',  # 4 hours, to match the perf bots.
     }
-    properties.update(_VPYTHON_PARAMS)
+    properties.update(VPYTHON_PARAMS)
     body = {
         'name': 'Pinpoint job',
         'user': 'Pinpoint',
@@ -327,7 +332,7 @@ class _RunTestExecution(execution_module.Execution):
     self._task_id = response['task_id']
 
 
-def _ParseException(log):
+def ParseException(log):
   """Searches a log for a stack trace and returns the exception string.
 
   This function supports both default Python-style stacks and Telemetry-style
@@ -364,3 +369,5 @@ def _ParseException(log):
 
     # Skip the line containing the code at the stack frame location.
     next(log_iterator)
+
+

@@ -8,22 +8,30 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
-import org.chromium.base.VisibleForTesting;
+import org.chromium.base.Log;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.BrowserStartupController;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +39,8 @@ import java.util.Map;
  * Collection of shared code for displaying search engine logos.
  */
 public class SearchEngineLogoUtils {
+    // Note: shortened to account for the 20 character limit.
+    private static final String TAG = "SearchLogoUtils";
     private static final String ROUNDED_EDGES_VARIANT = "rounded_edges";
     private static final String LOUPE_EVERYWHERE_VARIANT = "loupe_everywhere";
     private static final String DUMMY_URL_QUERY = "replace_me";
@@ -45,38 +55,109 @@ public class SearchEngineLogoUtils {
     private static int sSearchEngineLogoTargetSizePixels;
     private static int sSearchEngineLogoComposedSizePixels;
 
+    /** Encapsulates methods that rely on static dependencies that aren't available for testing. */
+    static class Delegate {
+        /** @see SearchEngineLogoUtils#isSearchEngineLogoEnabled */
+        public boolean isSearchEngineLogoEnabled() {
+            // Note: LocaleManager#needToCheckForSearchEnginePromo() checks several system features
+            // which risk throwing a security exception. Catching that here to prevent it from
+            // crashing the app.
+            try {
+                return !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
+                        && ChromeFeatureList.isInitialized()
+                        && ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO);
+            } catch (SecurityException e) {
+                Log.e(TAG, "Security exception thrown by failed IPC, see crbug.com/1027709");
+                return false;
+            }
+        }
+
+        /** @see SearchEngineLogoUtils#shouldShowSearchEngineLogo */
+        public boolean shouldShowSearchEngineLogo(boolean isOffTheRecord) {
+            return !isOffTheRecord
+                    && isSearchEngineLogoEnabled()
+                    // Using the profile now, so we need to pay attention to browser initialization.
+                    && BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                               .isFullBrowserStarted();
+        }
+
+        /** @see SearchEngineLogoUtils#shouldShowRoundedSearchEngineLogo */
+        public boolean shouldShowRoundedSearchEngineLogo(boolean isOffTheRecord) {
+            return shouldShowSearchEngineLogo(isOffTheRecord) && ChromeFeatureList.isInitialized()
+                    && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                            ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO, ROUNDED_EDGES_VARIANT,
+                            false);
+        }
+
+        /** @see SearchEngineLogoUtils#shouldShowSearchLoupeEverywhere */
+        public boolean shouldShowSearchLoupeEverywhere(boolean isOffTheRecord) {
+            return shouldShowSearchEngineLogo(isOffTheRecord)
+                    && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                            ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO, LOUPE_EVERYWHERE_VARIANT,
+                            false);
+        }
+    }
+    private static Delegate sDelegate = new Delegate();
+
+    /**
+     * AndroidSearchEngineLogoEvents defined in tools/metrics/histograms/enums.xml. These values
+     * are persisted to logs. Entries should not be renumbered and numeric values should never be
+     * reused.
+     */
+    @IntDef({Events.FETCH_NON_GOOGLE_LOGO_REQUEST, Events.FETCH_FAILED_NULL_URL,
+            Events.FETCH_FAILED_FAVICON_HELPER_ERROR, Events.FETCH_FAILED_RETURNED_BITMAP_NULL,
+            Events.FETCH_SUCCESS_CACHE_HIT, Events.FETCH_SUCCESS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Events {
+        int FETCH_NON_GOOGLE_LOGO_REQUEST = 0;
+        int FETCH_FAILED_NULL_URL = 1;
+        int FETCH_FAILED_FAVICON_HELPER_ERROR = 2;
+        int FETCH_FAILED_RETURNED_BITMAP_NULL = 3;
+        int FETCH_SUCCESS_CACHE_HIT = 4;
+        int FETCH_SUCCESS = 5;
+
+        int MAX = 6;
+    }
+
     /**
      * Encapsulates complicated boolean check for reuse and readability.
-     * @return True if we should show the search engine logo.
+     * @return True if the search engine logo is enabled, regardless of visibility.
      */
-    public static boolean shouldShowSearchEngineLogo() {
-        return !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
-                && ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
-                // Using the profile now, so we need to pay attention to browser initialization.
-                && BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                           .isFullBrowserStarted()
-                && !Profile.getLastUsedProfile().isOffTheRecord();
-    }
-
-    public static boolean shouldRoundedSearchEngineLogo() {
-        return shouldShowSearchEngineLogo() && ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO, ROUNDED_EDGES_VARIANT, false);
-    }
-
-    public static boolean shouldShowSearchLoupeEverywhere() {
-        return shouldShowSearchEngineLogo()
-                && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO, LOUPE_EVERYWHERE_VARIANT,
-                        false);
+    public static boolean isSearchEngineLogoEnabled() {
+        return sDelegate.isSearchEngineLogoEnabled();
     }
 
     /**
-     * @return True if the search engine is Google.
+     * Encapsulates complicated boolean check for reuse and readability.
+     * @param isOffTheRecord True if the user is currently using an incognito tab.
+     * @return True if we should show the search engine logo.
      */
-    public static boolean isSearchEngineGoogle() {
-        return TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle();
+    public static boolean shouldShowSearchEngineLogo(boolean isOffTheRecord) {
+        return sDelegate.shouldShowSearchEngineLogo(isOffTheRecord);
+    }
+
+    /**
+     * Encapsulates complicated boolean check for reuse and readability.
+     * @param isOffTheRecord True if the user is currently using an incognito tab.
+     * @return True if we should show the rounded search engine logo.
+     */
+    public static boolean shouldShowRoundedSearchEngineLogo(boolean isOffTheRecord) {
+        return sDelegate.shouldShowRoundedSearchEngineLogo(isOffTheRecord);
+    }
+
+    /** Ignores the incognito state for instances where a caller would otherwise pass "false". */
+    static boolean isRoundedSearchEngineLogoEnabled() {
+        return shouldShowRoundedSearchEngineLogo(false);
+    }
+
+    /**
+     * Encapsulates complicated boolean check for reuse and readability.
+     * @param isOffTheRecord True if the user is currently using an incognito tab.
+     * @return True if we should show the search engine logo as a loupe everywhere.
+     */
+    public static boolean shouldShowSearchLoupeEverywhere(boolean isOffTheRecord) {
+        return sDelegate.shouldShowSearchLoupeEverywhere(isOffTheRecord);
     }
 
     /**
@@ -85,6 +166,13 @@ public class SearchEngineLogoUtils {
     public static boolean doesUrlMatchDefaultSearchEngine(String url) {
         if (TextUtils.isEmpty(url)) return false;
         return UrlUtilities.sameDomainOrHost(url, getSearchLogoUrl(), false);
+    }
+
+    /** @return Whether the status icon should be hidden when the LocationBar is unfocused. */
+    public static boolean currentlyOnNTP(
+            ToolbarCommonPropertiesModel toolbarCommonPropertiesModel) {
+        return toolbarCommonPropertiesModel.getNewTabPageForCurrentTab() != null
+                && NewTabPage.isNTPUrl(toolbarCommonPropertiesModel.getCurrentUrl());
     }
 
     /**
@@ -107,7 +195,7 @@ public class SearchEngineLogoUtils {
      */
     public static int getSearchEngineLogoSizePixels(Resources resources) {
         if (sSearchEngineLogoTargetSizePixels == 0) {
-            if (shouldRoundedSearchEngineLogo()) {
+            if (isRoundedSearchEngineLogoEnabled()) {
                 sSearchEngineLogoTargetSizePixels = resources.getDimensionPixelSize(
                         R.dimen.omnibox_search_engine_logo_favicon_size);
             } else {
@@ -142,11 +230,13 @@ public class SearchEngineLogoUtils {
      */
     public static void getSearchEngineLogoFavicon(
             Profile profile, Resources resources, Callback<Bitmap> callback) {
+        recordEvent(Events.FETCH_NON_GOOGLE_LOGO_REQUEST);
         if (sFaviconHelper == null) sFaviconHelper = new FaviconHelper();
 
         String logoUrl = getSearchLogoUrl();
         if (logoUrl == null) {
             callback.onResult(null);
+            recordEvent(Events.FETCH_FAILED_NULL_URL);
             return;
         }
 
@@ -154,20 +244,26 @@ public class SearchEngineLogoUtils {
         if (sCachedComposedBackground != null
                 && sCachedComposedBackgroundLogoUrl.equals(getSearchLogoUrl())) {
             callback.onResult(sCachedComposedBackground);
+            recordEvent(Events.FETCH_SUCCESS_CACHE_HIT);
             return;
         }
 
         final int logoSizePixels = SearchEngineLogoUtils.getSearchEngineLogoSizePixels(resources);
-        boolean willReturn = sFaviconHelper.getLocalFaviconImageForURL(
+        boolean willCallbackBeCalled = sFaviconHelper.getLocalFaviconImageForURL(
                 profile, logoUrl, logoSizePixels, (image, iconUrl) -> {
                     if (image == null) {
                         callback.onResult(image);
+                        recordEvent(Events.FETCH_FAILED_RETURNED_BITMAP_NULL);
                         return;
                     }
 
                     processReturnedLogo(logoUrl, image, resources, callback);
+                    recordEvent(Events.FETCH_SUCCESS);
                 });
-        if (!willReturn) callback.onResult(null);
+        if (!willCallbackBeCalled) {
+            callback.onResult(null);
+            recordEvent(Events.FETCH_FAILED_FAVICON_HELPER_ERROR);
+        }
     }
 
     /**
@@ -192,13 +288,16 @@ public class SearchEngineLogoUtils {
                 SearchEngineLogoUtils.getSearchEngineLogoSizePixels(resources), true);
 
         Bitmap composedIcon = scaledIcon;
-        if (shouldRoundedSearchEngineLogo()) {
+        if (isRoundedSearchEngineLogoEnabled()) {
             int composedSizePixels = getSearchEngineLogoComposedSizePixels(resources);
             if (sRoundedIconGenerator == null) {
                 sRoundedIconGenerator = new RoundedIconGenerator(composedSizePixels,
                         composedSizePixels, composedSizePixels, Color.TRANSPARENT, 0);
             }
-            sRoundedIconGenerator.setBackgroundColor(getMostCommonEdgeColor(image));
+            int color = (image.getWidth() == 0 || image.getHeight() == 0)
+                    ? Color.TRANSPARENT
+                    : getMostCommonEdgeColor(image);
+            sRoundedIconGenerator.setBackgroundColor(color);
 
             // Generate a rounded background with no text.
             composedIcon = sRoundedIconGenerator.generateIconForText("");
@@ -224,7 +323,6 @@ public class SearchEngineLogoUtils {
         for (int i = 0; i < icon.getWidth(); i++) {
             // top edge
             int color = icon.getPixel(i, 0);
-            System.out.println("current color: " + color);
             if (!colorCount.containsKey(color)) colorCount.put(color, 0);
             colorCount.put(color, colorCount.get(color) + 1);
 
@@ -260,5 +358,37 @@ public class SearchEngineLogoUtils {
         assert maxVal > -1;
 
         return maxKey;
+    }
+
+    /**
+     * Records an event to the search engine logo histogram. See {@link Events} and histograms.xml
+     * for more details.
+     * @param event The {@link Events} to be reported.
+     */
+    @VisibleForTesting
+    static void recordEvent(@Events int event) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "AndroidSearchEngineLogo.Events", event, Events.MAX);
+    }
+
+    /** Set the favicon helper for testing. */
+    static void setFaviconHelperForTesting(FaviconHelper faviconHelper) {
+        sFaviconHelper = faviconHelper;
+    }
+
+    /** Set the delegate for testing. */
+    static void setDelegateForTesting(Delegate mDelegate) {
+        sDelegate = mDelegate;
+    }
+
+    /** Set the RoundedIconGenerator for testing. */
+    static void setRoundedIconGeneratorForTesting(RoundedIconGenerator roundedIconGenerator) {
+        sRoundedIconGenerator = roundedIconGenerator;
+    }
+
+    /** Reset the cache values for testing. */
+    static void resetCacheForTesting() {
+        sCachedComposedBackground = null;
+        sCachedComposedBackgroundLogoUrl = null;
     }
 }

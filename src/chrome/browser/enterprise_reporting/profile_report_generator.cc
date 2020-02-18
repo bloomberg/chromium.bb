@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/util/values/values_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise_reporting/extension_info.h"
 #include "chrome/browser/enterprise_reporting/policy_info.h"
@@ -14,6 +15,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
@@ -29,6 +33,10 @@ void ProfileReportGenerator::set_extensions_enabled(bool enabled) {
 
 void ProfileReportGenerator::set_policies_enabled(bool enabled) {
   policies_enabled_ = enabled;
+}
+
+void ProfileReportGenerator::set_extension_request_enabled(bool enabled) {
+  extension_request_enabled_ = enabled;
 }
 
 std::unique_ptr<em::ChromeUserProfileInfo>
@@ -47,6 +55,7 @@ ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
 
   GetSigninUserInfo();
   GetExtensionInfo();
+  GetExtensionRequest();
 
   if (policies_enabled_) {
     // TODO(crbug.com/983151): Upload policy error as their IDs.
@@ -91,5 +100,24 @@ void ProfileReportGenerator::GetPolicyFetchTimestampInfo() {
   AppendMachineLevelUserCloudPolicyFetchTimestamp(report_.get());
 }
 
+void ProfileReportGenerator::GetExtensionRequest() {
+  if (!extension_request_enabled_)
+    return;
+  const base::DictionaryValue* pending_requests =
+      profile_->GetPrefs()->GetDictionary(prefs::kCloudExtensionRequestIds);
+
+  // In case a corrupted profile prefs causing |pending_requests| to be null.
+  if (!pending_requests)
+    return;
+
+  for (const auto& it : *pending_requests) {
+    auto* request = report_->add_extension_requests();
+    request->set_id(it.first);
+    base::Optional<base::Time> timestamp = ::util::ValueToTime(
+        it.second->FindKey(extension_misc::kExtensionRequestTimestamp));
+    if (timestamp)
+      request->set_request_timestamp(timestamp->ToJavaTime());
+  }
+}
 
 }  // namespace enterprise_reporting

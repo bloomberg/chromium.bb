@@ -380,7 +380,8 @@ class CopyTextureVariationsTest : public ANGLETestWithParam<CopyTextureVariation
         }
     }
 
-    void initializeSourceTexture(GLenum sourceFormat,
+    void initializeSourceTexture(GLenum target,
+                                 GLenum sourceFormat,
                                  const uint8_t *srcColors,
                                  uint8_t componentCount)
     {
@@ -398,12 +399,13 @@ class CopyTextureVariationsTest : public ANGLETestWithParam<CopyTextureVariation
                    srcRowPitch - inputRowPitch);
         }
 
-        glBindTexture(GL_TEXTURE_2D, mTextures[0]);
-        glTexImage2D(GL_TEXTURE_2D, 0, sourceFormat, 2, 2, 0, sourceFormat, GL_UNSIGNED_BYTE,
+        glBindTexture(target, mTextures[0]);
+        glTexImage2D(target, 0, sourceFormat, 2, 2, 0, sourceFormat, GL_UNSIGNED_BYTE,
                      srcColorsPadded);
     }
 
-    void testCopyTexture(GLenum sourceFormat,
+    void testCopyTexture(GLenum sourceTarget,
+                         GLenum sourceFormat,
                          GLenum destFormat,
                          bool flipY,
                          bool premultiplyAlpha,
@@ -427,7 +429,8 @@ class CopyTextureVariationsTest : public ANGLETestWithParam<CopyTextureVariation
 
         for (size_t i = 0; i < colorCount - 3; ++i)
         {
-            initializeSourceTexture(sourceFormat, &srcColors[i * componentCount], componentCount);
+            initializeSourceTexture(sourceTarget, sourceFormat, &srcColors[i * componentCount],
+                                    componentCount);
 
             glCopyTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, destFormat,
                                   GL_UNSIGNED_BYTE, flipY, premultiplyAlpha, unmultiplyAlpha);
@@ -456,7 +459,8 @@ class CopyTextureVariationsTest : public ANGLETestWithParam<CopyTextureVariation
         }
     }
 
-    void testCopySubTexture(GLenum sourceFormat,
+    void testCopySubTexture(GLenum sourceTarget,
+                            GLenum sourceFormat,
                             GLenum destFormat,
                             bool flipY,
                             bool premultiplyAlpha,
@@ -480,7 +484,8 @@ class CopyTextureVariationsTest : public ANGLETestWithParam<CopyTextureVariation
 
         for (size_t i = 0; i < colorCount - 3; ++i)
         {
-            initializeSourceTexture(sourceFormat, &srcColors[i * componentCount], componentCount);
+            initializeSourceTexture(sourceTarget, sourceFormat, &srcColors[i * componentCount],
+                                    componentCount);
 
             glBindTexture(GL_TEXTURE_2D, mTextures[1]);
             glTexImage2D(GL_TEXTURE_2D, 0, destFormat, 2, 2, 0, destFormat, GL_UNSIGNED_BYTE,
@@ -862,14 +867,32 @@ constexpr GLenum kCopyTextureVariationsDstFormats[] = {GL_RGB, GL_RGBA, GL_BGRA_
 
 TEST_P(CopyTextureVariationsTest, CopyTexture)
 {
-    testCopyTexture(std::get<1>(GetParam()), std::get<2>(GetParam()), std::get<3>(GetParam()),
-                    std::get<4>(GetParam()), std::get<5>(GetParam()));
+    // http://anglebug.com/4092
+    ANGLE_SKIP_TEST_IF(IsVulkan());
+    testCopyTexture(GL_TEXTURE_2D, std::get<1>(GetParam()), std::get<2>(GetParam()),
+                    std::get<3>(GetParam()), std::get<4>(GetParam()), std::get<5>(GetParam()));
 }
 
 TEST_P(CopyTextureVariationsTest, CopySubTexture)
 {
-    testCopySubTexture(std::get<1>(GetParam()), std::get<2>(GetParam()), std::get<3>(GetParam()),
-                       std::get<4>(GetParam()), std::get<5>(GetParam()));
+    testCopySubTexture(GL_TEXTURE_2D, std::get<1>(GetParam()), std::get<2>(GetParam()),
+                       std::get<3>(GetParam()), std::get<4>(GetParam()), std::get<5>(GetParam()));
+}
+
+TEST_P(CopyTextureVariationsTest, CopyTextureRectangle)
+{
+    ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_ANGLE_texture_rectangle"));
+
+    testCopyTexture(GL_TEXTURE_RECTANGLE_ANGLE, std::get<1>(GetParam()), std::get<2>(GetParam()),
+                    std::get<3>(GetParam()), std::get<4>(GetParam()), std::get<5>(GetParam()));
+}
+
+TEST_P(CopyTextureVariationsTest, CopySubTextureRectangle)
+{
+    ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_ANGLE_texture_rectangle"));
+
+    testCopySubTexture(GL_TEXTURE_RECTANGLE_ANGLE, std::get<1>(GetParam()), std::get<2>(GetParam()),
+                       std::get<3>(GetParam()), std::get<4>(GetParam()), std::get<5>(GetParam()));
 }
 
 // Test that copying to cube maps works
@@ -1541,6 +1564,8 @@ TEST_P(CopyTextureTestDest, AlphaUnmultiply)
 // are set to 0.
 TEST_P(CopyTextureTestDest, AlphaCopyWithRGB)
 {
+    // http://anglebug.com/4121
+    ANGLE_SKIP_TEST_IF(IsIntel() && IsLinux() && IsOpenGLES());
     ANGLE_SKIP_TEST_IF(!checkExtensions());
 
     GLColor originalPixels(50u, 100u, 150u, 155u);
@@ -1564,6 +1589,62 @@ TEST_P(CopyTextureTestDest, AlphaCopyWithRGB)
     EXPECT_GL_NO_ERROR();
 
     EXPECT_PIXEL_COLOR_EQ(0, 0, expectedPixels);
+}
+
+// Bug where TEXTURE_SWIZZLE_RGBA was not reset after the Luminance workaround. (crbug.com/1022080)
+TEST_P(CopyTextureTestES3, LuminanceWorkaroundTextureSwizzleBug)
+{
+
+    {
+        GLColor pixels(50u, 20u, 100u, 150u);
+
+        // Hit BlitGL::copySubImageToLUMAWorkaroundTexture by copying an ALPHA texture
+        GLTexture srcTexture;
+        glBindTexture(GL_TEXTURE_2D, srcTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixels);
+
+        GLFramebuffer srcFBO;
+        glBindFramebuffer(GL_FRAMEBUFFER, srcFBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, srcTexture, 0);
+
+        GLTexture dstTexture;
+        glBindTexture(GL_TEXTURE_2D, dstTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 1, 1, 0, GL_ALPHA, GL_UNSIGNED_BYTE, nullptr);
+
+        glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 1, 1);
+        EXPECT_GL_NO_ERROR();
+    }
+
+    {
+        // This time hit BlitGL::blitColorBufferWithShader by copying an SRGB texture
+        GLColor pixels(100u, 200u, 50u, 210u);
+
+        GLTexture srcTexture;
+        glBindTexture(GL_TEXTURE_2D, srcTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA_EXT, 1, 1, 0, GL_SRGB_ALPHA_EXT,
+                     GL_UNSIGNED_BYTE, &pixels);
+
+        GLFramebuffer srcFBO;
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO);
+        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, srcTexture,
+                               0);
+
+        GLTexture dstTexture;
+        glBindTexture(GL_TEXTURE_2D, dstTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA_EXT, 1, 1, 0, GL_SRGB_ALPHA_EXT,
+                     GL_UNSIGNED_BYTE, nullptr);
+
+        GLFramebuffer dstFBO;
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dstTexture,
+                               0);
+
+        glBlitFramebuffer(0, 0, 1, 1, 0, 0, 1, 1, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+        // The previous workaround should not affect this copy
+        glBindFramebuffer(GL_FRAMEBUFFER, dstFBO);
+        EXPECT_PIXEL_COLOR_EQ(0, 0, pixels);
+    }
 }
 
 // Test to ensure that CopyTexture will fail with a non-zero level and NPOT texture in WebGL
@@ -1602,6 +1683,8 @@ TEST_P(CopyTextureTestES3, ES3UnormFormats)
     {
         return;
     }
+    // http://anglebug.com/4092
+    ANGLE_SKIP_TEST_IF(IsAndroid() || IsVulkan());
 
     auto testOutput = [this](GLuint texture, const GLColor &expectedColor) {
         constexpr char kVS[] =
@@ -1739,6 +1822,8 @@ TEST_P(CopyTextureTestES3, ES3FloatFormats)
     }
 
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_color_buffer_float"));
+    // http://anglebug.com/4092
+    ANGLE_SKIP_TEST_IF(IsVulkan());
 
     auto testOutput = [this](GLuint texture, const GLColor32F &expectedColor) {
         constexpr char kVS[] =
@@ -1854,6 +1939,8 @@ TEST_P(CopyTextureTestES3, ES3FloatFormats)
 TEST_P(CopyTextureTestES3, ES3UintFormats)
 {
     ANGLE_SKIP_TEST_IF(IsLinux() && IsOpenGL() && IsIntel());
+    // http://anglebug.com/4092
+    ANGLE_SKIP_TEST_IF(IsVulkan());
 
     if (!checkExtensions())
     {
@@ -1970,12 +2057,7 @@ TEST_P(CopyTextureTestES3, ES3UintFormats)
 
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these
 // tests should be run against.
-ANGLE_INSTANTIATE_TEST(CopyTextureTest,
-                       ES2_D3D9(),
-                       ES2_D3D11(),
-                       ES2_OPENGL(),
-                       ES2_OPENGLES(),
-                       ES2_VULKAN());
+ANGLE_INSTANTIATE_TEST_ES2(CopyTextureTest);
 ANGLE_INSTANTIATE_TEST_COMBINE_5(CopyTextureVariationsTest,
                                  CopyTextureVariationsTestPrint,
                                  testing::ValuesIn(kCopyTextureVariationsSrcFormats),
@@ -1988,13 +2070,12 @@ ANGLE_INSTANTIATE_TEST_COMBINE_5(CopyTextureVariationsTest,
                                  ES2_OPENGL(),
                                  ES2_OPENGLES(),
                                  ES2_VULKAN());
-ANGLE_INSTANTIATE_TEST(CopyTextureTestWebGL,
-                       ES2_D3D9(),
+ANGLE_INSTANTIATE_TEST_ES2(CopyTextureTestWebGL);
+ANGLE_INSTANTIATE_TEST(CopyTextureTestDest,
                        ES2_D3D11(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
-ANGLE_INSTANTIATE_TEST(CopyTextureTestDest, ES2_D3D11());
-ANGLE_INSTANTIATE_TEST(CopyTextureTestES3, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
+ANGLE_INSTANTIATE_TEST_ES3(CopyTextureTestES3);
 
 }  // namespace angle

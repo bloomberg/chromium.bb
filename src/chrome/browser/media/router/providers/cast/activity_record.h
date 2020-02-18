@@ -17,6 +17,8 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace cast_channel {
 class CastMessageHandler;
@@ -29,7 +31,6 @@ class Origin;
 namespace media_router {
 
 class CastSessionTracker;
-class DataDecoder;
 
 class ActivityRecord {
  public:
@@ -39,8 +40,7 @@ class ActivityRecord {
   ActivityRecord(const MediaRoute& route,
                  const std::string& app_id,
                  cast_channel::CastMessageHandler* message_handler,
-                 CastSessionTracker* session_tracker,
-                 DataDecoder* data_decoder);
+                 CastSessionTracker* session_tracker);
   ActivityRecord(const ActivityRecord&) = delete;
   ActivityRecord& operator=(const ActivityRecord&) = delete;
   virtual ~ActivityRecord();
@@ -130,7 +130,7 @@ class ActivityRecord {
                                         base::Optional<int> request_id) = 0;
 
   // Handles a message forwarded by CastActivityManager.
-  virtual void OnAppMessage(const cast_channel::CastMessage& message) = 0;
+  virtual void OnAppMessage(const cast::channel::CastMessage& message) = 0;
   virtual void OnInternalMessage(
       const cast_channel::InternalMessage& message) = 0;
 
@@ -141,8 +141,8 @@ class ActivityRecord {
   virtual void TerminatePresentationConnections() = 0;
 
   virtual void CreateMediaController(
-      mojom::MediaControllerRequest media_controller,
-      mojom::MediaStatusObserverPtr observer) = 0;
+      mojo::PendingReceiver<mojom::MediaController> media_controller,
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer) = 0;
 
  protected:
   CastSession* GetSession() const;
@@ -161,7 +161,6 @@ class ActivityRecord {
   cast_channel::CastMessageHandler* const message_handler_;
 
   CastSessionTracker* const session_tracker_;
-  DataDecoder* const data_decoder_;
 
   // Set by CastActivityManager after the session is launched successfully.
   base::Optional<std::string> session_id_;

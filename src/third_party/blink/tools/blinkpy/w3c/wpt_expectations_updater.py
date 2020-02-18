@@ -105,7 +105,7 @@ class WPTExpectationsUpdater(object):
 
     def get_latest_try_jobs(self):
         """Returns the latest finished try jobs as Build objects."""
-        return self.git_cl.latest_try_jobs(self._get_try_bots(), patchset=self.patchset)
+        return self.git_cl.latest_try_jobs(builder_names=self._get_try_bots(), patchset=self.patchset)
 
     def get_failing_results_dict(self, build):
         """Returns a nested dict of failing test results.
@@ -131,14 +131,14 @@ class WPTExpectationsUpdater(object):
             # All tests passed, so there should be no failing results.
             return {}
 
-        test_result_list = [self.host.buildbot.fetch_results(build)]
+        test_result_list = [self.host.results_fetcher.fetch_results(build)]
         has_webdriver_tests = self.host.builders.has_webdriver_tests_for_builder(
             build.builder_name)
         if has_webdriver_tests:
             master = self.host.builders.master_for_builder(
                 build.builder_name)
             test_result_list.append(
-                self.host.buildbot.fetch_webdriver_test_results(build, master))
+                self.host.results_fetcher.fetch_webdriver_test_results(build, master))
 
         test_result_list = filter(None, test_result_list)
         if not test_result_list:
@@ -283,7 +283,7 @@ class WPTExpectationsUpdater(object):
         if 'MISSING' in actual_results:
             return {'Skip'}
         if '-manual.' in test_name and 'TIMEOUT' in actual_results:
-            return {'WontFix'}
+            return {'Skip'}
         expectations = set()
         failure_types = {'TEXT', 'IMAGE+TEXT', 'IMAGE', 'AUDIO', 'FAIL'}
         other_types = {'TIMEOUT', 'CRASH', 'PASS'}
@@ -485,7 +485,7 @@ class WPTExpectationsUpdater(object):
         webdriver_list = []
         for lines in line_dict.itervalues():
             for line in lines:
-                if 'WontFix' in line:
+                if 'Skip' in line and '-manual.' in line:
                     wont_fix_list.append(line)
                 elif self.finder.webdriver_prefix() in line:
                     webdriver_list.append(line)

@@ -4,8 +4,8 @@
 
 #include "media/webrtc/audio_processor.h"
 
+#include <array>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -18,6 +18,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "media/base/limits.h"
+#include "media/webrtc/helpers.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
 #include "third_party/webrtc/modules/audio_processing/aec_dump/aec_dump_factory.h"
@@ -27,26 +29,12 @@ namespace media {
 
 namespace {
 
-constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
-
-webrtc::AudioProcessing::ChannelLayout MediaLayoutToWebRtcLayout(
-    ChannelLayout media_layout) {
-  switch (media_layout) {
-    case CHANNEL_LAYOUT_MONO:
-      return webrtc::AudioProcessing::kMono;
-    case CHANNEL_LAYOUT_STEREO:
-    case CHANNEL_LAYOUT_DISCRETE:
-      // TODO(https://crbug.com/868026): currently mapping all discrete channel
-      // layouts to two channels assuming that any required channel remix takes
-      // place in the native audio layer.
-      return webrtc::AudioProcessing::kStereo;
-    case CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC:
-      return webrtc::AudioProcessing::kStereoAndKeyboard;
-    default:
-      NOTREACHED() << "Layout not supported: " << media_layout;
-      return webrtc::AudioProcessing::kMono;
-  }
+bool UseMultiChannelCaptureProcessing() {
+  return base::FeatureList::IsEnabled(
+      features::kWebRtcEnableCaptureMultiChannelApm);
 }
+
+constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
 
 }  // namespace
 
@@ -63,7 +51,9 @@ AudioProcessor::AudioProcessor(const AudioParameters& audio_parameters,
     : audio_parameters_(audio_parameters),
       settings_(settings),
       output_bus_(AudioBus::Create(audio_parameters_)),
-      audio_delay_stats_reporter_(kBuffersPerSecond) {
+      audio_delay_stats_reporter_(kBuffersPerSecond),
+      use_capture_multi_channel_processing_(
+          UseMultiChannelCaptureProcessing()) {
   DCHECK(audio_parameters.IsValid());
   DCHECK_EQ(audio_parameters_.GetBufferDuration(),
             base::TimeDelta::FromMilliseconds(10));
@@ -116,23 +106,28 @@ void AudioProcessor::AnalyzePlayout(const AudioBus& audio,
 
   render_delay_ = playout_time - base::TimeTicks::Now();
 
-  constexpr int kMaxChannels = 2;
   DCHECK_GE(parameters.channels(), 1);
-  const float* channel_ptrs[kMaxChannels];
-  channel_ptrs[0] = audio.channel(0);
-  webrtc::AudioProcessing::ChannelLayout webrtc_layout =
-      webrtc::AudioProcessing::ChannelLayout::kMono;
-  // Limit the number of channels to two (stereo) even in a multi-channel case.
-  // TODO(crbug.com/982276): process all channels when multi-channel AEC is
-  // supported.
-  if (parameters.channels() > 1) {
-    channel_ptrs[1] = audio.channel(1);
-    webrtc_layout = webrtc::AudioProcessing::ChannelLayout::kStereo;
+  DCHECK_LE(parameters.channels(), audio.channels());
+  DCHECK_LE(parameters.channels(), media::limits::kMaxChannels);
+  webrtc::StreamConfig input_stream_config = CreateStreamConfig(parameters);
+  // If the input audio appears to contain upmixed mono audio, then APM is only
+  // given the left channel. This reduces computational complexity and improves
+  // convergence of audio processing algorithms.
+  // TODO(crbug.com/1023337): Ensure correct channel count in input audio bus.
+  assume_upmixed_mono_playout_ =
+      assume_upmixed_mono_playout_ && LeftAndRightChannelsAreSymmetric(audio);
+  if (assume_upmixed_mono_playout_) {
+    input_stream_config.set_num_channels(1);
+  }
+
+  std::array<const float*, media::limits::kMaxChannels> input_ptrs;
+  for (int i = 0; i < static_cast<int>(input_stream_config.num_channels());
+       ++i) {
+    input_ptrs[i] = audio.channel(i);
   }
 
   const int apm_error = audio_processing_->AnalyzeReverseStream(
-      channel_ptrs, parameters.frames_per_buffer(), parameters.sample_rate(),
-      webrtc_layout);
+      input_ptrs.data(), input_stream_config);
 
   DCHECK_EQ(apm_error, webrtc::AudioProcessing::kNoError);
 }
@@ -205,7 +200,6 @@ void AudioProcessor::InitializeAPM() {
 
   // AEC setup part 1.
 
-
   // Echo cancellation is configured both before and after AudioProcessing
   // construction, but before Initialize.
   if (settings_.echo_cancellation == EchoCancellationType::kAec3) {
@@ -243,6 +237,11 @@ void AudioProcessor::InitializeAPM() {
   audio_processing_ = base::WrapUnique(ap_builder.Create(ap_config));
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
+
+  // APM audio pipeline setup.
+  apm_config.pipeline.multi_channel_render = true;
+  apm_config.pipeline.multi_channel_capture =
+      use_capture_multi_channel_processing_;
 
   // Typing detection setup.
   if (settings_.typing_detection) {
@@ -324,18 +323,15 @@ void AudioProcessor::UpdateAnalogLevel(double volume) {
 }
 
 void AudioProcessor::FeedDataToAPM(const AudioBus& source) {
-  std::vector<const float*> input_ptrs(source.channels());
+  DCHECK_LE(source.channels(), media::limits::kMaxChannels);
+  std::array<const float*, media::limits::kMaxChannels> input_ptrs;
   for (int i = 0; i < source.channels(); ++i) {
     input_ptrs[i] = source.channel(i);
   }
 
-  const auto layout =
-      MediaLayoutToWebRtcLayout(audio_parameters_.channel_layout());
-
-  const int sample_rate = audio_parameters_.sample_rate();
-  int err = audio_processing_->ProcessStream(
-      input_ptrs.data(), audio_parameters_.frames_per_buffer(), sample_rate,
-      layout, sample_rate, layout, output_ptrs_.data());
+  const webrtc::StreamConfig config = CreateStreamConfig(audio_parameters_);
+  int err = audio_processing_->ProcessStream(input_ptrs.data(), config, config,
+                                             output_ptrs_.data());
   DCHECK_EQ(err, 0) << "ProcessStream() error: " << err;
 }
 

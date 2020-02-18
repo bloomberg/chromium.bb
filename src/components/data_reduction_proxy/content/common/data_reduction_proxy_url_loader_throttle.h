@@ -10,7 +10,9 @@
 #include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace data_reduction_proxy {
@@ -40,16 +42,16 @@ class DataReductionProxyURLLoaderThrottle
                         bool* defer) override;
   void WillRedirectRequest(
       net::RedirectInfo* redirect_info,
-      const network::ResourceResponseHead& response_head,
+      const network::mojom::URLResponseHead& response_head,
       bool* defer,
       std::vector<std::string>* to_be_removed_request_headers,
       net::HttpRequestHeaders* modified_request_headers) override;
   void BeforeWillProcessResponse(
       const GURL& response_url,
-      const network::ResourceResponseHead& response_head,
+      const network::mojom::URLResponseHead& response_head,
       bool* defer) override;
   void WillProcessResponse(const GURL& response_url,
-                           network::ResourceResponseHead* response_head,
+                           network::mojom::URLResponseHead* response_head,
                            bool* defer) override;
   void WillOnCompleteWithError(const network::URLLoaderCompletionStatus& status,
                                bool* defer) override;
@@ -104,10 +106,11 @@ class DataReductionProxyURLLoaderThrottle
   mojom::DataReductionProxy* data_reduction_proxy_;
 
   // Throttles that run on different sequences need "private" mojo pipes.
-  mojom::DataReductionProxyPtrInfo private_data_reduction_proxy_info_;
-  mojom::DataReductionProxyPtr private_data_reduction_proxy_;
-  mojo::Binding<mojom::DataReductionProxyThrottleConfigObserver>
-      private_config_observer_binding_;
+  mojo::PendingRemote<mojom::DataReductionProxy>
+      private_data_reduction_proxy_remote_;
+  mojo::Remote<mojom::DataReductionProxy> private_data_reduction_proxy_;
+  mojo::Receiver<mojom::DataReductionProxyThrottleConfigObserver>
+      private_config_observer_receiver_{this};
 
   // The last seen config values.
   std::vector<DataReductionProxyServer> proxies_for_http_;

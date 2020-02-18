@@ -72,22 +72,22 @@ void SetJsonDevicePolicy(
 
 // Returns true and sets |level| to a PolicyLevel if the policy has been set
 // at that level. Returns false if the policy has been set at the level of
-// DevicePolicyOptions::UNSET.
+// PolicyOptions::UNSET.
 bool GetPolicyLevel(bool has_policy_options,
-                    const em::DevicePolicyOptions& policy_option_proto,
+                    const em::PolicyOptions& policy_option_proto,
                     PolicyLevel* level) {
   if (!has_policy_options) {
     *level = POLICY_LEVEL_MANDATORY;
     return true;
   }
   switch (policy_option_proto.mode()) {
-    case em::DevicePolicyOptions::MANDATORY:
+    case em::PolicyOptions::MANDATORY:
       *level = POLICY_LEVEL_MANDATORY;
       return true;
-    case em::DevicePolicyOptions::RECOMMENDED:
+    case em::PolicyOptions::RECOMMENDED:
       *level = POLICY_LEVEL_RECOMMENDED;
       return true;
-    case em::DevicePolicyOptions::UNSET:
+    case em::PolicyOptions::UNSET:
       return false;
   }
 }
@@ -264,6 +264,12 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
               chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
               base::Value(entry.android_kiosk_app().display_name()));
         }
+        if (entry.web_kiosk_app().has_url()) {
+          entry_dict->SetKey(
+              chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl,
+              base::Value(entry.web_kiosk_app().url()));
+        }
+
       } else if (entry.has_deprecated_public_session_id()) {
         // Deprecated public session specification.
         entry_dict->SetKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
@@ -284,10 +290,13 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
     if (container.has_auto_login_delay()) {
-      policies->Set(key::kDeviceLocalAccountAutoLoginDelay,
-                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                    POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.auto_login_delay()), nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.auto_login_delay()));
+      if (value) {
+        policies->Set(key::kDeviceLocalAccountAutoLoginDelay,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+      }
     }
     if (container.has_enable_auto_login_bailout()) {
       policies->Set(
@@ -321,11 +330,13 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::LoginAuthenticationBehaviorProto& container(
         policy.login_authentication_behavior());
     if (container.has_login_authentication_behavior()) {
-      policies->Set(
-          key::kLoginAuthenticationBehavior, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-          DecodeIntegerValue(container.login_authentication_behavior()),
-          nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.login_authentication_behavior()));
+      if (value) {
+        policies->Set(key::kLoginAuthenticationBehavior, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(value), nullptr);
+      }
     }
   }
 
@@ -417,6 +428,47 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                   POLICY_SOURCE_CLOUD, std::move(rules), nullptr);
   }
 
+  if (policy.has_device_login_screen_webusb_allow_devices_for_urls()) {
+    const em::DeviceLoginScreenWebUsbAllowDevicesForUrlsProto& container(
+        policy.device_login_screen_webusb_allow_devices_for_urls());
+    if (container.has_device_login_screen_webusb_allow_devices_for_urls()) {
+      SetJsonDevicePolicy(
+          key::kDeviceLoginScreenWebUsbAllowDevicesForUrls,
+          container.device_login_screen_webusb_allow_devices_for_urls(),
+          policies);
+    }
+  }
+
+  if (policy.has_device_login_screen_system_info_enforced()) {
+    const em::BooleanPolicyProto& container(
+        policy.device_login_screen_system_info_enforced());
+    if (container.has_value()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(container.has_policy_options(),
+                         container.policy_options(), &level)) {
+        policies->Set(key::kDeviceLoginScreenSystemInfoEnforced, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(container.value()),
+                      nullptr);
+      }
+    }
+  }
+
+  if (policy.has_device_show_numeric_keyboard_for_password()) {
+    const em::BooleanPolicyProto& container(
+        policy.device_show_numeric_keyboard_for_password());
+    if (container.has_value()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(container.has_policy_options(),
+                         container.policy_options(), &level)) {
+        policies->Set(key::kDeviceShowNumericKeyboardForPassword, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(container.value()),
+                      nullptr);
+      }
+    }
+  }
+
   if (policy.has_saml_login_authentication_type()) {
     const em::SamlLoginAuthenticationTypeProto& container(
         policy.saml_login_authentication_type());
@@ -451,6 +503,24 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
           POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
           std::make_unique<base::Value>(container.device_powerwash_allowed()),
           nullptr);
+    }
+  }
+
+  if (policy.has_device_web_based_attestation_allowed_urls()) {
+    const em::StringListPolicyProto& container(
+        policy.device_web_based_attestation_allowed_urls());
+
+    PolicyLevel level;
+    if (GetPolicyLevel(container.has_policy_options(),
+                       container.policy_options(), &level)) {
+      auto urls = std::make_unique<base::Value>(base::Value::Type::LIST);
+      for (const std::string& entry : container.value().entries()) {
+        urls->Append(entry);
+      }
+
+      policies->Set(key::kDeviceWebBasedAttestationAllowedUrls, level,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(urls),
+                    nullptr);
     }
   }
 }
@@ -522,9 +592,12 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceKerberosEncryptionTypesProto& container(
         policy.device_kerberos_encryption_types());
     if (container.has_types()) {
-      policies->Set(key::kDeviceKerberosEncryptionTypes, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.types()), nullptr);
+      std::unique_ptr<base::Value> value(DecodeIntegerValue(container.types()));
+      if (value) {
+        policies->Set(key::kDeviceKerberosEncryptionTypes,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+      }
     }
   }
 }
@@ -608,10 +681,13 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
     if (container.has_device_status_frequency()) {
-      policies->Set(key::kReportUploadFrequency, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.device_status_frequency()),
-                    nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.device_status_frequency()));
+      if (value) {
+        policies->Set(key::kReportUploadFrequency, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(value), nullptr);
+      }
     }
   }
 
@@ -626,10 +702,13 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
     if (container.has_heartbeat_frequency()) {
-      policies->Set(key::kHeartbeatFrequency, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.heartbeat_frequency()),
-                    nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.heartbeat_frequency()));
+      if (value) {
+        policies->Set(key::kHeartbeatFrequency, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(value), nullptr);
+      }
     }
   }
 
@@ -708,12 +787,13 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
     }
 
     if (container.has_scatter_factor_in_seconds()) {
-      // TODO(dcheng): Shouldn't this use DecodeIntegerValue?
-      policies->Set(key::kDeviceUpdateScatterFactor, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    std::make_unique<base::Value>(static_cast<int>(
-                        container.scatter_factor_in_seconds())),
-                    nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.scatter_factor_in_seconds()));
+      if (value) {
+        policies->Set(key::kDeviceUpdateScatterFactor, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(value), nullptr);
+      }
     }
 
     if (container.allowed_connection_types_size()) {
@@ -824,6 +904,24 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
       }
     }
 
+    if (container.has_login_screen_show_options_in_system_tray_menu_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container
+                  .has_login_screen_show_options_in_system_tray_menu_enabled_options(),
+              container
+                  .login_screen_show_options_in_system_tray_menu_enabled_options(),
+              &level)) {
+        policies->Set(
+            key::kDeviceLoginScreenShowOptionsInSystemTrayMenu, level,
+            POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+            std::make_unique<base::Value>(
+                container
+                    .login_screen_show_options_in_system_tray_menu_enabled()),
+            nullptr);
+      }
+    }
+
     if (container.has_login_screen_default_spoken_feedback_enabled()) {
       policies->Set(
           key::kDeviceLoginScreenDefaultSpokenFeedbackEnabled,
@@ -831,6 +929,20 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
           std::make_unique<base::Value>(
               container.login_screen_default_spoken_feedback_enabled()),
           nullptr);
+    }
+
+    if (container.has_login_screen_spoken_feedback_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_spoken_feedback_enabled_options(),
+              container.login_screen_spoken_feedback_enabled_options(),
+              &level)) {
+        policies->Set(key::kDeviceLoginScreenSpokenFeedbackEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_spoken_feedback_enabled()),
+                      nullptr);
+      }
     }
 
     if (container.has_login_screen_default_high_contrast_enabled()) {
@@ -842,13 +954,27 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
 
+    if (container.has_login_screen_high_contrast_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_high_contrast_enabled_options(),
+              container.login_screen_high_contrast_enabled_options(), &level)) {
+        policies->Set(key::kDeviceLoginScreenHighContrastEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_high_contrast_enabled()),
+                      nullptr);
+      }
+    }
+
     if (container.has_login_screen_default_screen_magnifier_type()) {
-      policies->Set(key::kDeviceLoginScreenDefaultScreenMagnifierType,
-                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                    POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(
-                        container.login_screen_default_screen_magnifier_type()),
-                    nullptr);
+      std::unique_ptr<base::Value> value(DecodeIntegerValue(
+          container.login_screen_default_screen_magnifier_type()));
+      if (value) {
+        policies->Set(key::kDeviceLoginScreenDefaultScreenMagnifierType,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+      }
     }
 
     if (container.has_login_screen_default_virtual_keyboard_enabled()) {
@@ -858,6 +984,140 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
           std::make_unique<base::Value>(
               container.login_screen_default_virtual_keyboard_enabled()),
           nullptr);
+    }
+
+    if (container.has_login_screen_virtual_keyboard_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_virtual_keyboard_enabled_options(),
+              container.login_screen_virtual_keyboard_enabled_options(),
+              &level)) {
+        policies->Set(key::kDeviceLoginScreenVirtualKeyboardEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_virtual_keyboard_enabled()),
+                      nullptr);
+      }
+    }
+
+    if (container.has_login_screen_dictation_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(container.has_login_screen_dictation_enabled_options(),
+                         container.login_screen_dictation_enabled_options(),
+                         &level)) {
+        policies->Set(key::kDeviceLoginScreenDictationEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_dictation_enabled()),
+                      nullptr);
+      }
+    }
+    if (container.has_login_screen_select_to_speak_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_select_to_speak_enabled_options(),
+              container.login_screen_select_to_speak_enabled_options(),
+              &level)) {
+        policies->Set(key::kDeviceLoginScreenSelectToSpeakEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_select_to_speak_enabled()),
+                      nullptr);
+      }
+    }
+    if (container.has_login_screen_cursor_highlight_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_cursor_highlight_enabled_options(),
+              container.login_screen_cursor_highlight_enabled_options(),
+              &level)) {
+        policies->Set(key::kDeviceLoginScreenCursorHighlightEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_cursor_highlight_enabled()),
+                      nullptr);
+      }
+    }
+    if (container.has_login_screen_caret_highlight_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_caret_highlight_enabled_options(),
+              container.login_screen_caret_highlight_enabled_options(),
+              &level)) {
+        policies->Set(key::kDeviceLoginScreenCaretHighlightEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_caret_highlight_enabled()),
+                      nullptr);
+      }
+    }
+    if (container.has_login_screen_mono_audio_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_mono_audio_enabled_options(),
+              container.login_screen_mono_audio_enabled_options(), &level)) {
+        policies->Set(key::kDeviceLoginScreenMonoAudioEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_mono_audio_enabled()),
+                      nullptr);
+      }
+    }
+    if (container.has_login_screen_autoclick_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(container.has_login_screen_autoclick_enabled_options(),
+                         container.login_screen_autoclick_enabled_options(),
+                         &level)) {
+        policies->Set(key::kDeviceLoginScreenAutoclickEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_autoclick_enabled()),
+                      nullptr);
+      }
+    }
+
+    if (container.has_login_screen_sticky_keys_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_sticky_keys_enabled_options(),
+              container.login_screen_sticky_keys_enabled_options(), &level)) {
+        policies->Set(key::kDeviceLoginScreenStickyKeysEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_sticky_keys_enabled()),
+                      nullptr);
+      }
+    }
+
+    if (container.has_login_screen_screen_magnifier_type()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_screen_magnifier_type_options(),
+              container.login_screen_screen_magnifier_type_options(), &level)) {
+        std::unique_ptr<base::Value> value(
+            DecodeIntegerValue(container.login_screen_screen_magnifier_type()));
+        if (value) {
+          policies->Set(key::kDeviceLoginScreenScreenMagnifierType, level,
+                        POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                        std::move(value), nullptr);
+        }
+      }
+    }
+
+    if (container.has_login_screen_keyboard_focus_highlight_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container
+                  .has_login_screen_keyboard_focus_highlight_enabled_options(),
+              container.login_screen_keyboard_focus_highlight_enabled_options(),
+              &level)) {
+        policies->Set(
+            key::kDeviceLoginScreenKeyboardFocusHighlightEnabled, level,
+            POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+            std::make_unique<base::Value>(
+                container.login_screen_keyboard_focus_highlight_enabled()),
+            nullptr);
+      }
     }
   }
 }
@@ -903,10 +1163,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DevicePolicyRefreshRateProto& container(
         policy.device_policy_refresh_rate());
     if (container.has_device_policy_refresh_rate()) {
-      policies->Set(key::kDevicePolicyRefreshRate, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.device_policy_refresh_rate()),
-                    nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.device_policy_refresh_rate()));
+      if (value) {
+        policies->Set(key::kDevicePolicyRefreshRate, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(value), nullptr);
+      }
     }
   }
 
@@ -965,9 +1228,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   if (policy.has_uptime_limit()) {
     const em::UptimeLimitProto& container(policy.uptime_limit());
     if (container.has_uptime_limit()) {
-      policies->Set(key::kUptimeLimit, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.uptime_limit()), nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.uptime_limit()));
+      if (value) {
+        policies->Set(key::kUptimeLimit, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(value), nullptr);
+      }
     }
   }
 
@@ -1013,10 +1280,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   if (policy.has_extension_cache_size()) {
     const em::ExtensionCacheSizeProto& container(policy.extension_cache_size());
     if (container.has_extension_cache_size()) {
-      policies->Set(key::kExtensionCacheSize, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.extension_cache_size()),
-                    nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.extension_cache_size()));
+      if (value) {
+        policies->Set(key::kExtensionCacheSize, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(value), nullptr);
+      }
     }
   }
 
@@ -1024,10 +1294,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DisplayRotationDefaultProto& container(
         policy.display_rotation_default());
     if (container.has_display_rotation_default()) {
-      policies->Set(key::kDisplayRotationDefault, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.display_rotation_default()),
-                    nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.display_rotation_default()));
+      if (value) {
+        policies->Set(key::kDisplayRotationDefault, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(value), nullptr);
+      }
     }
   }
 
@@ -1074,10 +1347,12 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   if (policy.has_device_second_factor_authentication()) {
     const em::DeviceSecondFactorAuthenticationProto& container(
         policy.device_second_factor_authentication());
-    policies->Set(key::kDeviceSecondFactorAuthentication,
-                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                  POLICY_SOURCE_CLOUD, DecodeIntegerValue(container.mode()),
-                  nullptr);
+    std::unique_ptr<base::Value> value(DecodeIntegerValue(container.mode()));
+    if (value) {
+      policies->Set(key::kDeviceSecondFactorAuthentication,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+    }
   }
 
   if (policy.has_device_off_hours()) {
@@ -1101,10 +1376,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceNativePrintersAccessModeProto& container(
         policy.native_device_printers_access_mode());
     if (container.has_access_mode()) {
-      policies->Set(key::kDeviceNativePrintersAccessMode,
-                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                    POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.access_mode()), nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.access_mode()));
+      if (value) {
+        policies->Set(key::kDeviceNativePrintersAccessMode,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+      }
     }
   }
 
@@ -1168,10 +1446,12 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceUserPolicyLoopbackProcessingModeProto& container(
         policy.device_user_policy_loopback_processing_mode());
     if (container.has_mode()) {
-      policies->Set(key::kDeviceUserPolicyLoopbackProcessingMode,
-                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                    POLICY_SOURCE_CLOUD, DecodeIntegerValue(container.mode()),
-                    nullptr);
+      std::unique_ptr<base::Value> value(DecodeIntegerValue(container.mode()));
+      if (value) {
+        policies->Set(key::kDeviceUserPolicyLoopbackProcessingMode,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+      }
     }
   }
 
@@ -1202,10 +1482,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceMachinePasswordChangeRateProto& container(
         policy.device_machine_password_change_rate());
     if (container.has_rate_days()) {
-      policies->Set(key::kDeviceMachinePasswordChangeRate,
-                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                    POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.rate_days()), nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.rate_days()));
+      if (value) {
+        policies->Set(key::kDeviceMachinePasswordChangeRate,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+      }
     }
   }
 
@@ -1213,9 +1496,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceGpoCacheLifetimeProto& container(
         policy.device_gpo_cache_lifetime());
     if (container.has_lifetime_hours()) {
-      policies->Set(key::kDeviceGpoCacheLifetime, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.lifetime_hours()), nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.lifetime_hours()));
+      if (value) {
+        policies->Set(key::kDeviceGpoCacheLifetime, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(value), nullptr);
+      }
     }
   }
 
@@ -1223,9 +1510,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceAuthDataCacheLifetimeProto& container(
         policy.device_auth_data_cache_lifetime());
     if (container.has_lifetime_hours()) {
-      policies->Set(key::kDeviceAuthDataCacheLifetime, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    DecodeIntegerValue(container.lifetime_hours()), nullptr);
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.lifetime_hours()));
+      if (value) {
+        policies->Set(key::kDeviceAuthDataCacheLifetime, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(value), nullptr);
+      }
     }
   }
 

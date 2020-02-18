@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "content/child/thread_safe_sender.h"
@@ -21,12 +20,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -34,6 +28,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -138,19 +133,21 @@ class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
   FakeURLLoaderFactory() = default;
   ~FakeURLLoaderFactory() override = default;
 
-  void AddBinding(network::mojom::URLLoaderFactoryRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void AddReceiver(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   // network::mojom::URLLoaderFactory:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
+  void CreateLoaderAndStart(
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& url_request,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+      override {
     // Does nothing, but just record the request and hold the client (to avoid
     // connection errors).
     last_url_ = url_request.url;
@@ -158,8 +155,9 @@ class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
     if (start_loader_callback_)
       std::move(start_loader_callback_).Run();
   }
-  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
-    bindings_.AddBinding(this, std::move(factory));
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory)
+      override {
+    receivers_.Add(this, std::move(factory));
   }
 
   void set_start_loader_callback(base::OnceClosure closure) {
@@ -170,8 +168,8 @@ class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
   GURL last_request_url() const { return last_url_; }
 
  private:
-  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
-  std::vector<network::mojom::URLLoaderClientPtr> clients_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
+  std::vector<mojo::PendingRemote<network::mojom::URLLoaderClient>> clients_;
   base::OnceClosure start_loader_callback_;
   GURL last_url_;
 
@@ -198,8 +196,9 @@ class FakeControllerServiceWorker
     if (fetch_event_callback_)
       std::move(fetch_event_callback_).Run();
   }
-  void Clone(mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
-                 receiver) override {
+  void Clone(
+      mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
+      network::mojom::CrossOriginEmbedderPolicy) override {
     receivers_.Add(this, std::move(receiver));
   }
 
@@ -234,6 +233,8 @@ class FakeServiceWorkerContainerHost
   // Implements blink::mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
                 blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
+                blink::mojom::FetchClientSettingsObjectPtr
+                    outside_fetch_client_settings_object,
                 RegisterCallback callback) override {
     NOTIMPLEMENTED();
   }
@@ -273,8 +274,9 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   ServiceWorkerProviderContextTest() = default;
 
   void EnableNetworkService() {
-    network::mojom::URLLoaderFactoryPtr fake_loader_factory;
-    fake_loader_factory_.AddBinding(MakeRequest(&fake_loader_factory));
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> fake_loader_factory;
+    fake_loader_factory_.AddReceiver(
+        fake_loader_factory.InitWithNewPipeAndPassReceiver());
     loader_factory_ =
         base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(fake_loader_factory));
@@ -285,11 +287,12 @@ class ServiceWorkerProviderContextTest : public testing::Test {
     network::ResourceRequest request;
     request.url = url;
     request.resource_type = static_cast<int>(ResourceType::kSubResource);
-    network::mojom::URLLoaderPtr loader;
+    mojo::PendingRemote<network::mojom::URLLoader> loader;
     network::TestURLLoaderClient loader_client;
     factory->CreateLoaderAndStart(
-        mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
-        request, loader_client.CreateInterfacePtr(),
+        loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
+        NextRequestId(), network::mojom::kURLLoadOptionNone, request,
+        loader_client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
@@ -302,6 +305,11 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   base::test::TaskEnvironment task_environment;
   FakeURLLoaderFactory fake_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
+
+ private:
+  int NextRequestId() { return request_id_++; }
+
+  int request_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContextTest);
 };
@@ -448,7 +456,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   FakeControllerServiceWorker fake_controller1;
   auto controller_info1 = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller1;
-  fake_controller1.Clone(remote_controller1.BindNewPipeAndPassReceiver());
+  fake_controller1.Clone(remote_controller1.BindNewPipeAndPassReceiver(),
+                         network::mojom::CrossOriginEmbedderPolicy::kNone);
   controller_info1->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info1->object_info = std::move(object_info1);
@@ -491,7 +500,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   FakeControllerServiceWorker fake_controller2;
   auto controller_info2 = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller2;
-  fake_controller2.Clone(remote_controller2.BindNewPipeAndPassReceiver());
+  fake_controller2.Clone(remote_controller2.BindNewPipeAndPassReceiver(),
+                         network::mojom::CrossOriginEmbedderPolicy::kNone);
   controller_info2->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info2->object_info = std::move(object_info2);
@@ -580,7 +590,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   FakeControllerServiceWorker fake_controller4;
   auto controller_info4 = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller4;
-  fake_controller4.Clone(remote_controller4.BindNewPipeAndPassReceiver());
+  fake_controller4.Clone(remote_controller4.BindNewPipeAndPassReceiver(),
+                         network::mojom::CrossOriginEmbedderPolicy::kNone);
   controller_info4->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info4->object_info = std::move(object_info4);
@@ -733,7 +744,8 @@ TEST_F(ServiceWorkerProviderContextTest, OnNetworkProviderDestroyed) {
   FakeControllerServiceWorker fake_controller;
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
-  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver());
+  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver(),
+                        network::mojom::CrossOriginEmbedderPolicy::kNone);
   controller_info->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info->object_info = std::move(object_info);
@@ -780,7 +792,8 @@ TEST_F(ServiceWorkerProviderContextTest,
   FakeControllerServiceWorker fake_controller;
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
   mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
-  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver());
+  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver(),
+                        network::mojom::CrossOriginEmbedderPolicy::kNone);
   controller_info->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info->object_info = std::move(object_info);
@@ -813,11 +826,11 @@ TEST_F(ServiceWorkerProviderContextTest,
   network::ResourceRequest request;
   request.url = GURL("https://www.example.com/random.js");
   request.resource_type = static_cast<int>(ResourceType::kSubResource);
-  network::mojom::URLLoaderPtr loader;
+  mojo::PendingRemote<network::mojom::URLLoader> loader;
   network::TestURLLoaderClient loader_client;
   wrapped_loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
-      request, loader_client.CreateInterfacePtr(),
+      loader.InitWithNewPipeAndPassReceiver(), 0, 0,
+      network::mojom::kURLLoadOptionNone, request, loader_client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 }
 

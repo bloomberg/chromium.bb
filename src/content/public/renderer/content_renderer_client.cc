@@ -6,8 +6,8 @@
 
 #include "media/base/renderer_factory.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
-#include "third_party/blink/public/web/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "ui/gfx/icc_profile.h"
 #include "url/gurl.h"
 
@@ -113,12 +113,14 @@ bool ContentRendererClient::ShouldFork(blink::WebLocalFrame* frame,
   return false;
 }
 
-void ContentRendererClient::WillSendRequest(blink::WebLocalFrame* frame,
-                                            ui::PageTransition transition_type,
-                                            const blink::WebURL& url,
-                                            const url::Origin* initiator_origin,
-                                            GURL* new_url,
-                                            bool* attach_same_site_cookies) {}
+void ContentRendererClient::WillSendRequest(
+    blink::WebLocalFrame* frame,
+    ui::PageTransition transition_type,
+    const blink::WebURL& url,
+    const blink::WebURL& site_for_cookies,
+    const url::Origin* initiator_origin,
+    GURL* new_url,
+    bool* attach_same_site_cookies) {}
 
 bool ContentRendererClient::IsPrefetchOnly(
     RenderFrame* render_frame,
@@ -135,8 +137,8 @@ bool ContentRendererClient::IsLinkVisited(uint64_t link_hash) {
   return false;
 }
 
-blink::WebPrescientNetworking*
-ContentRendererClient::GetPrescientNetworking() {
+std::unique_ptr<blink::WebPrescientNetworking>
+ContentRendererClient::CreatePrescientNetworking(RenderFrame* render_frame) {
   return nullptr;
 }
 
@@ -170,11 +172,6 @@ bool ContentRendererClient::IsSupportedVideoType(const media::VideoType& type) {
 bool ContentRendererClient::IsSupportedBitstreamAudioCodec(
     media::AudioCodec codec) {
   return false;
-}
-
-std::unique_ptr<blink::WebMediaStreamRendererFactory>
-ContentRendererClient::CreateMediaStreamRendererFactory() {
-  return nullptr;
 }
 
 bool ContentRendererClient::ShouldReportDetailedMessageForSource(
@@ -227,10 +224,6 @@ bool ContentRendererClient::IsIdleMediaSuspendEnabled() {
   return true;
 }
 
-bool ContentRendererClient::SuppressLegacyTLSVersionConsoleMessage() {
-  return false;
-}
-
 std::unique_ptr<URLLoaderThrottleProvider>
 ContentRendererClient::CreateURLLoaderThrottleProvider(
     URLLoaderThrottleProviderType provider_type) {
@@ -249,7 +242,7 @@ bool ContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
 
 void ContentRendererClient::DidSetUserAgent(const std::string& user_agent) {}
 
-bool ContentRendererClient::RequiresHtmlImports(const GURL& url) {
+bool ContentRendererClient::RequiresWebComponentsV0(const GURL& url) {
   return false;
 }
 

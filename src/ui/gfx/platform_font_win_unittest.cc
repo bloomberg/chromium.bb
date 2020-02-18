@@ -15,10 +15,10 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/platform_font_skia.h"
-#include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/scoped_set_map_mode.h"
 
 namespace gfx {
@@ -142,6 +142,24 @@ TEST(PlatformFontWinTest, DefaultFontRenderParams) {
   // params.
   EXPECT_EQ(default_font->GetFontRenderParams(),
             named_font->GetFontRenderParams());
+}
+
+TEST(PlatformFontWinTest, SkiaTypefaceConstructor) {
+  gfx::Font default_font;
+
+  // The PlatformFontWin constructor doesn't create a skia typeface.
+  if (!base::FeatureList::IsEnabled(kPlatformFontSkiaOnWindows)) {
+    EXPECT_EQ(default_font.platform_font()->GetNativeSkTypefaceIfAvailable(),
+              nullptr);
+  }
+
+  sk_sp<SkFontMgr> font_mgr = SkFontMgr::RefDefault();
+  sk_sp<SkTypeface> typeface(
+      font_mgr->matchFamilyStyle("Segoe UI", SkFontStyle()));
+  ASSERT_TRUE(typeface);
+  gfx::Font fallback_font(new PlatformFontWin(typeface, 13, base::nullopt));
+  EXPECT_EQ(fallback_font.platform_font()->GetNativeSkTypefaceIfAvailable(),
+            typeface);
 }
 
 }  // namespace gfx

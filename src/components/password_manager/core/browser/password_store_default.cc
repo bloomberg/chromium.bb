@@ -222,6 +222,54 @@ std::vector<InteractionsStats> PasswordStoreDefault::GetSiteStatsImpl(
                    : std::vector<InteractionsStats>();
 }
 
+void PasswordStoreDefault::AddCompromisedCredentialsImpl(
+    const CompromisedCredentials& compromised_credentials) {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  if (login_db_)
+    login_db_->compromised_credentials_table().AddRow(compromised_credentials);
+}
+
+void PasswordStoreDefault::RemoveCompromisedCredentialsImpl(
+    const GURL& url,
+    const base::string16& username) {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  if (login_db_)
+    login_db_->compromised_credentials_table().RemoveRow(url, username);
+}
+
+std::vector<CompromisedCredentials>
+PasswordStoreDefault::GetAllCompromisedCredentialsImpl() {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  return login_db_ ? login_db_->compromised_credentials_table().GetAllRows()
+                   : std::vector<CompromisedCredentials>();
+}
+
+void PasswordStoreDefault::RemoveCompromisedCredentialsByUrlAndTimeImpl(
+    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
+    base::Time remove_begin,
+    base::Time remove_end) {
+  if (login_db_) {
+    login_db_->compromised_credentials_table().RemoveRowsByUrlAndTime(
+        url_filter, remove_begin, remove_end);
+  }
+}
+
+void PasswordStoreDefault::AddFieldInfoImpl(const FieldInfo& field_info) {
+  if (login_db_)
+    login_db_->field_info_table().AddRow(field_info);
+}
+
+std::vector<FieldInfo> PasswordStoreDefault::GetAllFieldInfoImpl() {
+  return login_db_ ? login_db_->field_info_table().GetAllRows()
+                   : std::vector<FieldInfo>();
+}
+
+void PasswordStoreDefault::RemoveFieldInfoByTimeImpl(base::Time remove_begin,
+                                                     base::Time remove_end) {
+  if (login_db_)
+    login_db_->field_info_table().RemoveRowsByTime(remove_begin, remove_end);
+}
+
 bool PasswordStoreDefault::BeginTransaction() {
   if (login_db_)
     return login_db_->BeginTransaction();
@@ -273,12 +321,5 @@ void PasswordStoreDefault::ResetLoginDB() {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   login_db_.reset();
 }
-
-#if defined(USE_X11)
-void PasswordStoreDefault::SetLoginDB(std::unique_ptr<LoginDatabase> login_db) {
-  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  login_db_ = std::move(login_db);
-}
-#endif  // defined(USE_X11)
 
 }  // namespace password_manager

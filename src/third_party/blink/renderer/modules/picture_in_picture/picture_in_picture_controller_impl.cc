@@ -9,9 +9,9 @@
 
 #include "base/bind_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -39,7 +39,7 @@ bool IsVideoElement(const Element& element) {
   if (!element.IsMediaElement())
     return false;
 
-  return static_cast<const HTMLMediaElement&>(element).IsHTMLVideoElement();
+  return IsA<HTMLVideoElement>(static_cast<const HTMLMediaElement&>(element));
 }
 
 }  // namespace
@@ -320,7 +320,7 @@ bool PictureInPictureControllerImpl::IsEnterAutoPictureInPictureAllowed()
         Fullscreen::FullscreenElementFrom(*GetSupplementable()) ||
         (GetSupplementable()->View() &&
          GetSupplementable()->View()->DisplayMode() !=
-             WebDisplayMode::kWebDisplayModeBrowser &&
+             blink::mojom::DisplayMode::kBrowser &&
          GetSupplementable()->IsInWebAppScope()))) {
     return false;
   }
@@ -423,7 +423,7 @@ bool PictureInPictureControllerImpl::EnsureService() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetSupplementable()->GetFrame()->GetTaskRunner(
           TaskType::kMediaElementEvent);
-  GetSupplementable()->GetFrame()->GetInterfaceProvider().GetInterface(
+  GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
       picture_in_picture_service_.BindNewPipeAndPassReceiver(task_runner));
   return true;
 }

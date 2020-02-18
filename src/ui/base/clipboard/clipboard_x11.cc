@@ -679,18 +679,18 @@ void ClipboardX11::ReadData(const ClipboardFormatType& format,
     data.AssignTo(result);
 }
 
-void ClipboardX11::WriteObjects(ClipboardBuffer buffer,
-                                const ObjectMap& objects) {
+void ClipboardX11::WritePortableRepresentations(ClipboardBuffer buffer,
+                                                const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
 
   x11_details_->CreateNewClipboardData();
   for (const auto& object : objects)
-    DispatchObject(object.first, object.second);
+    DispatchPortableRepresentation(object.first, object.second);
   x11_details_->TakeOwnershipOfSelection(buffer);
 
   if (buffer == ClipboardBuffer::kCopyPaste) {
-    auto text_iter = objects.find(ObjectType::kText);
+    auto text_iter = objects.find(PortableFormat::kText);
     if (text_iter != objects.end()) {
       x11_details_->CreateNewClipboardData();
       const ObjectMapParams& params_vector = text_iter->second;
@@ -702,6 +702,17 @@ void ClipboardX11::WriteObjects(ClipboardBuffer buffer,
       x11_details_->TakeOwnershipOfSelection(ClipboardBuffer::kSelection);
     }
   }
+}
+
+void ClipboardX11::WritePlatformRepresentations(
+    ClipboardBuffer buffer,
+    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(IsSupportedClipboardBuffer(buffer));
+
+  x11_details_->CreateNewClipboardData();
+  DispatchPlatformRepresentations(std::move(platform_representations));
+  x11_details_->TakeOwnershipOfSelection(buffer);
 }
 
 void ClipboardX11::WriteText(const char* text_data, size_t text_len) {
@@ -776,11 +787,6 @@ void ClipboardX11::WriteBitmap(const SkBitmap& bitmap) {
 void ClipboardX11::WriteData(const ClipboardFormatType& format,
                              const char* data_data,
                              size_t data_len) {
-  // We assume that certain mapping types are only written by trusted code.
-  // Therefore we must upkeep their integrity.
-  if (format.Equals(ClipboardFormatType::GetBitmapType()))
-    return;
-
   std::vector<unsigned char> bytes(data_data, data_data + data_len);
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&bytes));

@@ -13,18 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -eux -o pipefail
-
-cd $(dirname ${BASH_SOURCE[0]})/../..
-
-OUT_PATH="out/dist"
-
-tools/install-build-deps --no-android
-
-if [[ -e buildtools/clang/bin/llvm-symbolizer ]]; then
-  export ASAN_SYMBOLIZER_PATH="buildtools/clang/bin/llvm-symbolizer"
-  export MSAN_SYMBOLIZER_PATH="buildtools/clang/bin/llvm-symbolizer"
-fi
+INSTALL_BUILD_DEPS_ARGS="--no-android"
+source $(dirname ${BASH_SOURCE[0]})/common.sh
 
 tools/gn gen ${OUT_PATH} --args="${PERFETTO_TEST_GN_ARGS}" --check
 tools/ninja -C ${OUT_PATH} ${PERFETTO_TEST_NINJA_ARGS}
@@ -33,14 +23,32 @@ tools/ninja -C ${OUT_PATH} ${PERFETTO_TEST_NINJA_ARGS}
 
 ${OUT_PATH}/perfetto_unittests
 ${OUT_PATH}/perfetto_integrationtests
-BENCHMARK_FUNCTIONAL_TEST_ONLY=true ${OUT_PATH}/perfetto_benchmarks
+
+# If this is a split host+target build, use the trace_processoer_shell binary
+# from the host directory. In some cases (e.g. lsan x86 builds) the host binary
+# that is copied into the target directory (OUT_PATH) cannot run because depends
+# on libc++.so within the same folder (which is built using target bitness,
+# not host bitness).
+TP_SHELL=${OUT_PATH}/gcc_like_host/trace_processor_shell
+if [ ! -f ${TP_SHELL} ]; then
+  TP_SHELL=${OUT_PATH}/trace_processor_shell
+fi
 
 mkdir -p /ci/artifacts/perf
+
 tools/diff_test_trace_processor.py \
   --test-type=queries \
   --perf-file=/ci/artifacts/perf/tp-perf-queries.json \
-  ${OUT_PATH}/trace_processor_shell
+  ${TP_SHELL}
+
 tools/diff_test_trace_processor.py \
   --test-type=metrics \
   --perf-file=/ci/artifacts/perf/tp-perf-metrics.json \
-  ${OUT_PATH}/trace_processor_shell
+  ${TP_SHELL}
+
+# Don't run benchmarks under sanitizers or debug, too slow and pointless.
+USING_SANITIZER="$(tools/gn args --short --list=using_sanitizer ${OUT_PATH} | awk '{print $3}')"
+IS_DEBUG="$(tools/gn args --short --list=is_debug ${OUT_PATH} | awk '{print $3}')"
+if [ "$USING_SANITIZER" == "false" ] && [ "$IS_DEBUG" == "false" ]; then
+  BENCHMARK_FUNCTIONAL_TEST_ONLY=true ${OUT_PATH}/perfetto_benchmarks
+fi

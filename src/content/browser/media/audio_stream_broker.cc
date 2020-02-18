@@ -35,8 +35,8 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
       bool enable_agc,
       audio::mojom::AudioProcessingConfigPtr processing_config,
       AudioStreamBroker::DeleterCallback deleter,
-      mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client)
-      final {
+      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+          renderer_factory_client) final {
     return std::make_unique<AudioInputStreamBroker>(
         render_process_id, render_frame_id, device_id, params,
         shared_memory_count, user_input_monitor, enable_agc,
@@ -52,8 +52,8 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
       uint32_t shared_memory_count,
       bool mute_source,
       AudioStreamBroker::DeleterCallback deleter,
-      mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client)
-      final {
+      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+          renderer_factory_client) final {
     return std::make_unique<AudioLoopbackStreamBroker>(
         render_process_id, render_frame_id, source, params, shared_memory_count,
         mute_source, std::move(deleter), std::move(renderer_factory_client));
@@ -68,7 +68,8 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
       const base::UnguessableToken& group_id,
       const base::Optional<base::UnguessableToken>& processing_id,
       AudioStreamBroker::DeleterCallback deleter,
-      media::mojom::AudioOutputStreamProviderClientPtr client) final {
+      mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client)
+      final {
     return std::make_unique<AudioOutputStreamBroker>(
         render_process_id, render_frame_id, stream_id, output_device_id, params,
         group_id, processing_id, std::move(deleter), std::move(client));

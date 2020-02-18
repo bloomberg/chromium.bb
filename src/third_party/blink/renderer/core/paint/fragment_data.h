@@ -16,8 +16,6 @@ namespace blink {
 class PaintLayer;
 
 // Represents the data for a particular fragment of a LayoutObject.
-// Only LayoutObjects with a self-painting PaintLayer may have more than one
-// FragmentData, and even then only when they are inside of multicol.
 // See README.md.
 class CORE_EXPORT FragmentData {
   USING_FAST_MALLOC(FragmentData);
@@ -39,8 +37,6 @@ class CORE_EXPORT FragmentData {
   }
 
   // The visual rect computed by the latest paint invalidation.
-  // This rect does *not* account for composited scrolling. See LayoutObject::
-  // AdjustVisualRectForCompositedScrolling().
   // It's location may be different from PaintOffset when there is visual (ink)
   // overflow to the top and/or the left.
   IntRect VisualRect() const { return visual_rect_; }

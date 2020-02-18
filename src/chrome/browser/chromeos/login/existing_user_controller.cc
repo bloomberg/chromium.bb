@@ -28,6 +28,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
@@ -179,7 +180,8 @@ void TransferHttpAuthCacheToSystemNetworkContext(
     const base::UnguessableToken& cache_key) {
   network::mojom::NetworkContext* system_network_context =
       g_browser_process->system_network_context_manager()->GetContext();
-  system_network_context->LoadHttpAuthCache(cache_key, completion_callback);
+  system_network_context->LoadHttpAuthCacheProxyEntries(cache_key,
+                                                        completion_callback);
 }
 
 // Copies any authentication details that were entered in the login profile to
@@ -192,16 +194,16 @@ void TransferHttpAuthCaches() {
       base::BarrierClosure(webview_storage_partition ? 2 : 1,
                            base::BindOnce(&OnTranferredHttpAuthCaches));
   if (webview_storage_partition) {
-    webview_storage_partition->GetNetworkContext()->SaveHttpAuthCache(
-        base::BindOnce(&TransferHttpAuthCacheToSystemNetworkContext,
-                       completion_callback));
+    webview_storage_partition->GetNetworkContext()
+        ->SaveHttpAuthCacheProxyEntries(base::BindOnce(
+            &TransferHttpAuthCacheToSystemNetworkContext, completion_callback));
   }
 
   network::mojom::NetworkContext* default_network_context =
       content::BrowserContext::GetDefaultStoragePartition(
           ProfileHelper::GetSigninProfile())
           ->GetNetworkContext();
-  default_network_context->SaveHttpAuthCache(base::BindOnce(
+  default_network_context->SaveHttpAuthCacheProxyEntries(base::BindOnce(
       &TransferHttpAuthCacheToSystemNetworkContext, completion_callback));
 }
 
@@ -354,7 +356,7 @@ class ExistingUserController::PolicyStoreLoadWaiter
 
  private:
   base::OnceClosure callback_;
-  ScopedObserver<policy::CloudPolicyStore, PolicyStoreLoadWaiter>
+  ScopedObserver<policy::CloudPolicyStore, policy::CloudPolicyStore::Observer>
       scoped_observer_{this};
 };
 
@@ -436,11 +438,9 @@ void ExistingUserController::UpdateLoginDisplay(
   for (auto* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
-    // KioskAppManager and ArcKioskAppManager.
-    if (user->GetType() == user_manager::USER_TYPE_KIOSK_APP ||
-        user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
+    // KioskAppManager, ArcKioskAppManager and WebKioskAppManager.
+    if (user->IsKioskType())
       continue;
-    }
     // TODO(xiyuan): Clean user profile whose email is not in whitelist.
     const bool meets_supervised_requirements =
         user->GetType() != user_manager::USER_TYPE_SUPERVISED ||
@@ -502,11 +502,11 @@ void ExistingUserController::Observe(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ExistingUserController, ArcKioskAppManager::ArcKioskAppManagerObserver
+// ExistingUserController, KioskAppManagerObserver
 // implementation:
 //
 
-void ExistingUserController::OnArcKioskAppsChanged() {
+void ExistingUserController::OnKioskAppsSettingsChanged() {
   ConfigureAutoLogin();
 }
 
@@ -635,7 +635,7 @@ void ExistingUserController::PerformLogin(
         base::UTF8ToUTF16(new_user_context.GetKey()->GetSecret()));
     new_user_context.SetSyncPasswordData(password_manager::PasswordHashData(
         user_context.GetAccountId().GetUserEmail(), password,
-        auth_mode == LoginPerformer::AUTH_MODE_EXTENSION));
+        auth_mode == LoginPerformer::AuthorizationMode::kExternal));
   }
 
   if (new_user_context.IsUsingPin()) {
@@ -880,7 +880,8 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
     base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&SessionTerminationManager::StopSession,
-                       base::Unretained(SessionTerminationManager::Get())),
+                       base::Unretained(SessionTerminationManager::Get()),
+                       login_manager::SessionStopReason::OWNER_REQUIRED),
         base::TimeDelta::FromMilliseconds(kSafeModeRestartUiDelayMs));
   } else if (failure.reason() == AuthFailure::TPM_ERROR) {
     ShowTPMError();
@@ -946,7 +947,8 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   //  /ServiceLogin              T            T
   //  /ChromeOsEmbeddedSetup     F            T
   const bool has_auth_cookies =
-      login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION &&
+      login_performer_->auth_mode() ==
+          LoginPerformer::AuthorizationMode::kExternal &&
       (user_context.GetAccessToken().empty() ||
        user_context.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML);
 
@@ -1422,6 +1424,10 @@ void ExistingUserController::LoginAsArcKioskApp(const AccountId& account_id) {
   GetLoginDisplayHost()->StartArcKiosk(account_id);
 }
 
+void ExistingUserController::LoginAsWebKioskApp(const AccountId& account_id) {
+  GetLoginDisplayHost()->StartWebKiosk(account_id);
+}
+
 void ExistingUserController::ConfigureAutoLogin() {
   std::string auto_login_account_id;
   cros_settings_->GetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
@@ -1749,7 +1755,7 @@ void ExistingUserController::DoCompleteLogin(
     return;
   }
 
-  PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
+  PerformLogin(user_context, LoginPerformer::AuthorizationMode::kExternal);
 }
 
 void ExistingUserController::DoLogin(const UserContext& user_context,
@@ -1784,6 +1790,11 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
     return;
   }
 
+  if (user_context.GetUserType() == user_manager::USER_TYPE_WEB_KIOSK_APP) {
+    LoginAsWebKioskApp(user_context.GetAccountId());
+    return;
+  }
+
   // Regular user or supervised user login.
 
   if (!user_context.HasCredentials()) {
@@ -1796,7 +1807,7 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
   }
 
   PerformPreLoginActions(user_context);
-  PerformLogin(user_context, LoginPerformer::AUTH_MODE_INTERNAL);
+  PerformLogin(user_context, LoginPerformer::AuthorizationMode::kInternal);
 }
 
 void ExistingUserController::OnOAuth2TokensFetched(
@@ -1808,7 +1819,7 @@ void ExistingUserController::OnOAuth2TokensFetched(
     return;
   }
   UserSessionManager::GetInstance()->OnOAuth2TokensFetched(user_context);
-  PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
+  PerformLogin(user_context, LoginPerformer::AuthorizationMode::kExternal);
 }
 
 void ExistingUserController::ClearRecordedNames() {

@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_WEB_APPLICATION_INFO_H_
 #define CHROME_COMMON_WEB_APPLICATION_INFO_H_
 
+#include <iosfwd>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -12,23 +14,28 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
+using SquareSizePx = int;
+
+struct WebApplicationIconInfo {
+  WebApplicationIconInfo();
+  WebApplicationIconInfo(const WebApplicationIconInfo&);
+  WebApplicationIconInfo(WebApplicationIconInfo&&);
+  ~WebApplicationIconInfo();
+  WebApplicationIconInfo& operator=(const WebApplicationIconInfo&);
+  WebApplicationIconInfo& operator=(WebApplicationIconInfo&&);
+
+  GURL url;
+  SquareSizePx square_size_px;
+};
+
 // Structure used when installing a web page as an app.
 struct WebApplicationInfo {
-  struct IconInfo {
-    IconInfo();
-    ~IconInfo();
-
-    GURL url;
-    int width;
-    int height;
-    SkBitmap data;
-  };
-
   enum MobileCapable {
     MOBILE_CAPABLE_UNSPECIFIED,
     MOBILE_CAPABLE,
@@ -51,8 +58,11 @@ struct WebApplicationInfo {
   // Scope for the app. Dictates what URLs will be opened in the app.
   GURL scope;
 
-  // Set of available icons.
-  std::vector<IconInfo> icons;
+  // List of icon URLs with associated square size.
+  std::vector<WebApplicationIconInfo> icon_infos;
+
+  // Icon bitmaps keyed by their square size.
+  std::map<SquareSizePx, SkBitmap> icon_bitmaps;
 
   // Whether the page is marked as mobile-capable, including apple specific meta
   // tag.
@@ -64,12 +74,24 @@ struct WebApplicationInfo {
   // The color to use for the web app frame.
   base::Optional<SkColor> theme_color;
 
-  // Whether the app should be opened in a window. If false, the app will be
-  // opened in a tab.
+  // App preference regarding whether the app should be opened in a tab,
+  // in a window (with or without minimal-ui buttons), or full screen.
+  blink::mojom::DisplayMode display_mode;
+
+  // User preference as to whether the app should be opened in a window.
+  // If false, the app will be opened in a tab.
+  // If true, the app will be opened in a window, with minimal-ui buttons
+  // if display_mode is kBrowser or kMinimalUi.
   bool open_as_window;
 
   // The extensions and mime types the app can handle.
-  base::Optional<blink::Manifest::FileHandler> file_handler;
+  std::vector<blink::Manifest::FileHandler> file_handlers;
 };
+
+std::ostream& operator<<(std::ostream& out,
+                         const WebApplicationIconInfo& icon_info);
+
+bool operator==(const WebApplicationIconInfo& icon_info1,
+                const WebApplicationIconInfo& icon_info2);
 
 #endif  // CHROME_COMMON_WEB_APPLICATION_INFO_H_

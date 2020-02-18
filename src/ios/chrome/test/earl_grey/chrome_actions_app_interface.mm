@@ -29,6 +29,11 @@ NSString* kChromeActionsErrorDomain = @"ChromeActionsError";
       chrome_test_util::GetCurrentWebState(), selector, triggerContextMenu);
 }
 
++ (id<GREYAction>)scrollElementToVisible:(ElementSelector*)selector {
+  return WebViewScrollElementToVisible(chrome_test_util::GetCurrentWebState(),
+                                       selector);
+}
+
 + (id<GREYAction>)turnSettingsSwitchOn:(BOOL)on {
   id<GREYMatcher> constraints = grey_not(grey_systemAlertViewShown());
   NSString* actionName =
@@ -98,6 +103,27 @@ NSString* kChromeActionsErrorDomain = @"ChromeActionsError";
 + (id<GREYAction>)tapWebElement:(ElementSelector*)selector {
   return web::WebViewTapElement(chrome_test_util::GetCurrentWebState(),
                                 selector);
+}
+
++ (id<GREYAction>)scrollToTop {
+  GREYPerformBlock scrollToTopBlock = ^BOOL(id element,
+                                            __strong NSError** error) {
+    grey_dispatch_sync_on_main_thread(^{
+      UIScrollView* view = base::mac::ObjCCast<UIScrollView>(element);
+      if (!view) {
+        *error = [NSError
+            errorWithDomain:kChromeActionsErrorDomain
+                       code:0
+                   userInfo:@{
+                     NSLocalizedDescriptionKey : @"View is not a UIScrollView"
+                   }];
+      }
+      view.contentOffset = CGPointZero;
+    });
+    return YES;
+  };
+  return [GREYActionBlock actionWithName:@"Scroll to top"
+                            performBlock:scrollToTopBlock];
 }
 
 @end

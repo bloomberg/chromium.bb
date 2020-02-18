@@ -28,8 +28,8 @@ enum class DecisionFailureReason : int32_t {
   INVALID = -1,
   // The browser was opted out of the intervention via enterprise policy.
   LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT,
-  // The origin opted itself out of the intervention via feature policy.
-  LIFECYCLES_FEATURE_POLICY_OPT_OUT,
+  // A frame on the page opted itself out of the intervention via origin trial.
+  ORIGIN_TRIAL_OPT_OUT,
   // The origin was opted out of the intervention in the global blacklist.
   GLOBAL_BLACKLIST,
   // The local heuristic opted the origin out of the intervention due to its use
@@ -41,9 +41,6 @@ enum class DecisionFailureReason : int32_t {
   // The local heuristic is temporarily opting the origin out of the
   // intervention due to a lack of sufficient observation time.
   HEURISTIC_INSUFFICIENT_OBSERVATION,
-  // The local heuristic opted the origin out of the intervention due to its use
-  // of notifications while in the background.
-  HEURISTIC_NOTIFICATIONS,
   // The local heuristic opted the origin out of the intervention due to its use
   // of title updates while in the background.
   HEURISTIC_TITLE,
@@ -80,6 +77,15 @@ enum class DecisionFailureReason : int32_t {
   // The tab is opted out of the intervention as it's currently connected to a
   // bluetooth device.
   LIVE_STATE_USING_BLUETOOTH,
+  // The tab is opted out of the intervention as it's currently holding at least
+  // one WebLock.
+  LIVE_STATE_USING_WEBLOCK,
+  // The tab is opted out of the intervention as it's currently holding at least
+  // one IndexedDB lock.
+  LIVE_STATE_USING_INDEXEDDB_LOCK,
+  // The tab is opted out of the intervention as it has the permission to use
+  // notifications.
+  LIVE_STATE_HAS_NOTIFICATIONS_PERMISSION,
   // This must remain last.
   MAX,
 };
@@ -90,9 +96,8 @@ enum class DecisionFailureReason : int32_t {
 enum class DecisionSuccessReason : int32_t {
   // An invalid failure reason. This must remain first.
   INVALID = -1,
-  // The origin opted itself into the intervention via lifecycles feature
-  // policy.
-  LIFECYCLES_FEATURE_POLICY_OPT_IN,
+  // A frame on the page opted itself in the intervention via origin trial.
+  ORIGIN_TRIAL_OPT_IN,
   // The origin was opted into the intervention via the global whitelist.
   GLOBAL_WHITELIST,
   // The origin has been observed to be safe for the intervention using local

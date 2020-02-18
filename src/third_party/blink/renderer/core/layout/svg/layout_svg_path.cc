@@ -36,7 +36,7 @@ namespace blink {
 
 LayoutSVGPath::LayoutSVGPath(SVGGeometryElement* node)
     // <line> elements have no joins and thus needn't care about miters.
-    : LayoutSVGShape(node, IsSVGLineElement(node) ? kNoMiters : kComplex) {}
+    : LayoutSVGShape(node, IsA<SVGLineElement>(node) ? kNoMiters : kComplex) {}
 
 LayoutSVGPath::~LayoutSVGPath() = default;
 
@@ -74,14 +74,7 @@ void LayoutSVGPath::UpdateMarkers() {
   if (!(marker_start || marker_mid || marker_end))
     return;
 
-  {
-    SVGMarkerData marker_data(
-        marker_positions_,
-        marker_start &&
-            marker_start->OrientType() == kSVGMarkerOrientAutoStartReverse);
-    GetPath().Apply(&marker_data, SVGMarkerData::UpdateFromPathElement);
-    marker_data.PathIsDone();
-  }
+  SVGMarkerDataBuilder(marker_positions_).Build(GetPath());
 
   if (marker_positions_.IsEmpty())
     return;
@@ -89,10 +82,10 @@ void LayoutSVGPath::UpdateMarkers() {
   const float stroke_width = StrokeWidth();
   FloatRect boundaries;
   for (const auto& position : marker_positions_) {
-    if (LayoutSVGResourceMarker* marker = SVGMarkerData::MarkerForType(
-            position.type, marker_start, marker_mid, marker_end)) {
-      boundaries.Unite(marker->MarkerBoundaries(marker->MarkerTransformation(
-          position.origin, position.angle, stroke_width)));
+    if (LayoutSVGResourceMarker* marker =
+            position.SelectMarker(marker_start, marker_mid, marker_end)) {
+      boundaries.Unite(marker->MarkerBoundaries(
+          marker->MarkerTransformation(position, stroke_width)));
     }
   }
 

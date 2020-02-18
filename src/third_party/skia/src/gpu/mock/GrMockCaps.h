@@ -34,10 +34,9 @@ public:
         fShaderCaps->fMaxFragmentSamplers = options.fMaxFragmentSamplers;
         fShaderCaps->fShaderDerivativeSupport = options.fShaderDerivativeSupport;
         fShaderCaps->fDualSourceBlendingSupport = options.fDualSourceBlendingSupport;
-        fShaderCaps->fSampleVariablesSupport = true;
-        fShaderCaps->fSampleVariablesStencilSupport = true;
+        fShaderCaps->fSampleMaskSupport = true;
 
-        this->applyOptionsOverrides(contextOptions);
+        this->finishInitialization(contextOptions);
     }
 
     bool isFormatSRGB(const GrBackendFormat& format) const override {
@@ -46,7 +45,8 @@ public:
     }
 
     // Mock caps doesn't support any compressed formats right now
-    bool isFormatCompressed(const GrBackendFormat&) const override {
+    bool isFormatCompressed(const GrBackendFormat&,
+                            SkImage::CompressionType* compressionType = nullptr) const override {
         return false;
     }
 
@@ -113,6 +113,10 @@ public:
         return this->maxRenderTargetSampleCount(format.asMockColorType());
     }
 
+    size_t bytesPerPixel(const GrBackendFormat& format) const override {
+        return GrColorTypeBytesPerPixel(format.asMockColorType());
+    }
+
     SupportedWrite supportedWritePixelsColorType(GrColorType surfaceColorType,
                                                  const GrBackendFormat& surfaceFormat,
                                                  GrColorType srcColorType) const override {
@@ -132,14 +136,14 @@ public:
         return {};
     }
 
-    bool canClearTextureOnCreation() const override { return true; }
-
     GrSwizzle getTextureSwizzle(const GrBackendFormat&, GrColorType) const override {
         return GrSwizzle();
     }
     GrSwizzle getOutputSwizzle(const GrBackendFormat&, GrColorType) const override {
         return GrSwizzle();
     }
+
+    GrProgramDesc makeDesc(const GrRenderTarget*, const GrProgramInfo&) const override;
 
 #if GR_TEST_UTILS
     std::vector<GrCaps::TestFormatColorTypeCombination> getTestingCombinations() const override;

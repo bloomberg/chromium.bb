@@ -68,6 +68,8 @@ jumbo_source_set("capture_device_specific") {
     "video/file_video_capture_device.h",
     "video/file_video_capture_device_factory.cc",
     "video/file_video_capture_device_factory.h",
+    "video/gpu_memory_buffer_utils.cc",
+    "video/gpu_memory_buffer_utils.h",
     "video/video_capture_buffer_handle.cc",
     "video/video_capture_buffer_handle.h",
     "video/video_capture_device.cc",
@@ -83,6 +85,7 @@ jumbo_source_set("capture_device_specific") {
     "//base",
     "//base:i18n",
     "//gpu/command_buffer/client",
+    "//gpu/ipc/common:common",
     "//media",
     "//media/capture/mojom:image_capture",
     "//media/capture/mojom:image_capture_types",
@@ -247,8 +250,6 @@ jumbo_component("capture_lib") {
       "video/chromeos/camera_app_device_impl.h",
       "video/chromeos/camera_app_device_provider_impl.cc",
       "video/chromeos/camera_app_device_provider_impl.h",
-      "video/chromeos/camera_app_helper_impl.cc",
-      "video/chromeos/camera_app_helper_impl.h",
       "video/chromeos/camera_buffer_factory.cc",
       "video/chromeos/camera_buffer_factory.h",
       "video/chromeos/camera_device_context.cc",
@@ -332,23 +333,6 @@ source_set("test_support") {
   testonly = true
 }
 
-if (is_chromeos) {
-  source_set("chromeos_test_utils") {
-    sources = [
-      "video/chromeos/local_gpu_memory_buffer_manager.cc",
-    ]
-
-    deps = [
-      "//base",
-      "//build/config/linux/libdrm",
-      "//gpu/command_buffer/client",
-      "//third_party/minigbm",
-      "//ui/gfx:memory_buffer",
-      "//ui/gfx/geometry",
-    ]
-  }
-}
-
 test("capture_unittests") {
   sources = [
     "content/animated_content_sampler_unittest.cc",
@@ -417,6 +401,10 @@ test("capture_unittests") {
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   }
 
+  if (is_linux) {
+    deps += [ "//media/gpu/test:local_gpu_memory_buffer_manager" ]
+  }
+
   if (is_chromeos) {
     sources += [
       "video/chromeos/camera_3a_controller_unittest.cc",
@@ -432,7 +420,6 @@ test("capture_unittests") {
       "video/chromeos/request_manager_unittest.cc",
     ]
     deps += [
-      ":chromeos_test_utils",
       "//build/config/linux/libdrm",
       "//chromeos/dbus/power",
       "//media/capture/video/chromeos/mojom:cros_camera",

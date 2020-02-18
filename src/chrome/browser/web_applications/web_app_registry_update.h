@@ -6,52 +6,73 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_REGISTRY_UPDATE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 namespace web_app {
 
 class WebApp;
 class WebAppRegistrar;
+class WebAppSyncBridge;
+
+// A raw registry update data.
+struct RegistryUpdateData {
+  RegistryUpdateData();
+  ~RegistryUpdateData();
+
+  using Apps = std::vector<std::unique_ptr<WebApp>>;
+  Apps apps_to_create;
+  Apps apps_to_update;
+
+  std::vector<AppId> apps_to_delete;
+
+  bool IsEmpty() const;
+
+  DISALLOW_COPY_AND_ASSIGN(RegistryUpdateData);
+};
 
 // An explicit writable "view" for the registry. Any write operations must be
-// batched as a part of WebAppRegistryUpdate object.
-//
-// TODO(loyso): Support creation and deletion of apps as a part of single
-// update (As in Database CRUD: Create/Update/Delete).
+// batched as a part of WebAppRegistryUpdate object. Effectively
+// WebAppRegistryUpdate is a part of WebAppSyncBridge class.
 class WebAppRegistryUpdate {
  public:
+  WebAppRegistryUpdate(const WebAppRegistrar* registrar,
+                       util::PassKey<WebAppSyncBridge>);
   ~WebAppRegistryUpdate();
 
-  // Acquire a mutable app object to set new field values.
+  // Register a new app.
+  void CreateApp(std::unique_ptr<WebApp> web_app);
+  // Delete registered app.
+  void DeleteApp(const AppId& app_id);
+  // Acquire a mutable existing app to set new field values.
   WebApp* UpdateApp(const AppId& app_id);
 
+  const RegistryUpdateData& update_data() const { return *update_data_; }
+  std::unique_ptr<RegistryUpdateData> TakeUpdateData();
+
  private:
-  friend class WebAppRegistrar;
-  friend class ScopedRegistryUpdate;
-
-  explicit WebAppRegistryUpdate(WebAppRegistrar* registrar);
-
-  base::flat_set<const WebApp*> apps_to_update_;
-  WebAppRegistrar* registrar_;
+  std::unique_ptr<RegistryUpdateData> update_data_;
+  const WebAppRegistrar* const registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppRegistryUpdate);
 };
 
-// A convenience utility class to use RAII for WebAppRegistrar::BeginUpdate and
-// WebAppRegistrar::CommitUpdate calls.
+// A convenience utility class to use RAII for WebAppSyncBridge::BeginUpdate and
+// WebAppSyncBridge::CommitUpdate calls.
 class ScopedRegistryUpdate {
  public:
-  explicit ScopedRegistryUpdate(WebAppRegistrar* registrar);
+  explicit ScopedRegistryUpdate(WebAppSyncBridge* sync_bridge);
   ~ScopedRegistryUpdate();
 
   WebAppRegistryUpdate* operator->() { return update_.get(); }
 
  private:
   std::unique_ptr<WebAppRegistryUpdate> update_;
+  WebAppSyncBridge* const sync_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedRegistryUpdate);
 };

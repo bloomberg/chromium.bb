@@ -5,18 +5,27 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_EXTERNAL_PROTOCOL_DIALOG_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_EXTERNAL_PROTOCOL_DIALOG_H_
 
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "base/optional.h"
+#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "ui/base/page_transition_types.h"
+#include "url/origin.h"
 
 class GURL;
 
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace syncer {
+class DeviceInfo;
+}  // namespace syncer
 
 namespace arc {
 
@@ -25,10 +34,6 @@ using GurlAndActivityInfo =
 
 // An enum returned from GetAction function. This is visible for testing.
 enum class GetActionResult {
-  // ARC cannot handle the |original_url|, and the URL does not have a fallback
-  // http(s) URL. Chrome should show the "Google Chrome OS can't open the page"
-  // dialog now.
-  SHOW_CHROME_OS_DIALOG,
   // ARC cannot handle the |original_url|, but the URL did have a fallback URL
   // which Chrome can handle. Chrome should show the fallback URL now.
   OPEN_URL_IN_CHROME,
@@ -94,7 +99,8 @@ enum class ProtocolAction {
   WEBCAL_ACCEPTED_PERSISTED = 45,
   WEBCAL_ACCEPTED_NOT_PERSISTED = 46,
   WEBCAL_REJECTED = 47,
-  kMaxValue = WEBCAL_REJECTED
+  TEL_DEVICE_SELECTED = 48,
+  kMaxValue = TEL_DEVICE_SELECTED
 };
 
 // Possible schemes for recording external protocol dialog metrics
@@ -119,11 +125,13 @@ enum class Scheme {
 
 // Shows ARC version of the dialog. Returns true if ARC is supported, running,
 // and in a context where it is allowed to handle external protocol.
-bool RunArcExternalProtocolDialog(const GURL& url,
-                                  int render_process_host_id,
-                                  int routing_id,
-                                  ui::PageTransition page_transition,
-                                  bool has_user_gesture);
+bool RunArcExternalProtocolDialog(
+    const GURL& url,
+    const base::Optional<url::Origin>& initiating_origin,
+    int render_process_host_id,
+    int routing_id,
+    ui::PageTransition page_transition,
+    bool has_user_gesture);
 
 GetActionResult GetActionForTesting(
     const GURL& original_url,
@@ -141,9 +149,27 @@ bool GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlagForTesting(
 bool IsChromeAnAppCandidateForTesting(
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
 
-void RecordUmaDialogAction(Scheme scheme, bool accepted, bool persisted);
+void RecordUmaDialogAction(Scheme scheme,
+                           apps::PickerEntryType entry_type,
+                           bool accepted,
+                           bool persisted);
 
-ProtocolAction GetProtocolAction(Scheme scheme, bool accepted, bool persisted);
+ProtocolAction GetProtocolAction(Scheme scheme,
+                                 apps::PickerEntryType entry_type,
+                                 bool accepted,
+                                 bool persisted);
+
+void OnIntentPickerClosedForTesting(
+    int render_process_host_id,
+    int routing_id,
+    const GURL& url,
+    bool safe_to_bypass_ui,
+    std::vector<mojom::IntentHandlerInfoPtr> handlers,
+    std::vector<std::unique_ptr<syncer::DeviceInfo>> devices,
+    const std::string& selected_app_package,
+    apps::PickerEntryType entry_type,
+    apps::IntentPickerCloseReason reason,
+    bool should_persist);
 
 }  // namespace arc
 

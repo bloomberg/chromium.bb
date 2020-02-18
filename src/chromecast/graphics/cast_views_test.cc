@@ -27,15 +27,14 @@ TEST_F(CastViewsTest, ProgressBar) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = window_manager->GetRootWindow();
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
   params.bounds = bounds;
   std::unique_ptr<views::Widget> widget(new views::Widget);
   widget->Init(std::move(params));
   widget->SetOpacity(0.6);
   widget->SetContentsView(progress_bar);
-  window_manager->SetWindowId(widget->GetNativeView(),
-                              CastWindowManager::VOLUME);
+  window_manager->SetZOrder(widget->GetNativeView(), mojom::ZOrder::VOLUME);
   widget->Show();
 
   EXPECT_TRUE(progress_bar->GetWidget());

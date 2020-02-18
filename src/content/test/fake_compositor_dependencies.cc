@@ -64,6 +64,11 @@ FakeCompositorDependencies::GetCompositorImplThreadTaskRunner() {
   return nullptr;  // Currently never threaded compositing in unit tests.
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+FakeCompositorDependencies::GetCleanupTaskRunner() {
+  return base::ThreadTaskRunnerHandle::Get();
+}
+
 blink::scheduler::WebThreadScheduler*
 FakeCompositorDependencies::GetWebMainThreadScheduler() {
   return &main_thread_scheduler_;
@@ -83,13 +88,14 @@ FakeCompositorDependencies::CreateUkmRecorderFactory() {
 }
 
 void FakeCompositorDependencies::RequestNewLayerTreeFrameSink(
-    int widget_routing_id,
+    RenderWidget* render_widget,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
     LayerTreeFrameSinkCallback callback,
-    mojom::RenderFrameMetadataObserverClientRequest
-        render_frame_metadata_observer_client_request,
-    mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
+    mojo::PendingReceiver<mojom::RenderFrameMetadataObserverClient>
+        render_frame_metadata_observer_client_receiver,
+    mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
+        render_frame_metadata_observer_remote,
     const char* client_name) {
   std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d());
 }

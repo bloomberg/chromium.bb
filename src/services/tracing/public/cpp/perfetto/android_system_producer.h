@@ -68,6 +68,11 @@ class COMPONENT_EXPORT(TRACING_CPP) AndroidSystemProducer
   // traces.
   void DisconnectWithReply(
       base::OnceClosure on_disconnect_complete = base::OnceClosure()) override;
+  // IMPORTANT!! this only resets |sequence_checker_| owned by this class, if
+  // this SystemProducer is connected to a service through the unix socket there
+  // will be additional sequence checkers which will fail if the socket
+  // disconnects.
+  void ResetSequenceForTesting() override;
 
   // perfetto::Producer implementation.
   // Used by the service to start and stop traces.
@@ -132,7 +137,7 @@ class COMPONENT_EXPORT(TRACING_CPP) AndroidSystemProducer
   // later.
   void DelayedReconnect();
 
-  const char* socket_name_;
+  std::string socket_name_;
   uint32_t connection_backoff_ms_;
   uint64_t data_sources_tracing_ = 0;
   bool disallow_pre_android_pie = true;

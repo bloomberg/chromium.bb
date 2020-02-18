@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/performance_manager/persistence/site_data/unittest_utils.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 
 #include <utility>
@@ -47,16 +48,16 @@ TestWithPerformanceManager::TestWithPerformanceManager() = default;
 TestWithPerformanceManager::~TestWithPerformanceManager() = default;
 
 void TestWithPerformanceManager::SetUp() {
-  EXPECT_EQ(nullptr, PerformanceManager::GetInstance());
-  performance_manager_ = PerformanceManager::Create();
+  EXPECT_EQ(nullptr, PerformanceManagerImpl::GetInstance());
+  performance_manager_ = PerformanceManagerImpl::Create(base::DoNothing());
   // Make sure creation registers the created instance.
-  EXPECT_EQ(performance_manager_.get(), PerformanceManager::GetInstance());
+  EXPECT_EQ(performance_manager_.get(), PerformanceManagerImpl::GetInstance());
 }
 
 void TestWithPerformanceManager::TearDown() {
-  PerformanceManager::Destroy(std::move(performance_manager_));
+  PerformanceManagerImpl::Destroy(std::move(performance_manager_));
   // Make sure destruction unregisters the instance.
-  EXPECT_EQ(nullptr, PerformanceManager::GetInstance());
+  EXPECT_EQ(nullptr, PerformanceManagerImpl::GetInstance());
 
   task_environment_.RunUntilIdle();
 }

@@ -83,7 +83,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     AnchorMode anchor_mode = AnchorMode::kView;
     // Only used if anchor_mode == AnchorMode::kRect.
     gfx::Rect anchor_rect;
-    ShelfAlignment shelf_alignment = SHELF_ALIGNMENT_BOTTOM;
+    ShelfAlignment shelf_alignment = ShelfAlignment::kBottom;
     int min_width = 0;
     int max_width = 0;
     int max_height = 0;
@@ -142,6 +142,10 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // this function for a bubble which is not anchored directly to the status
   // area.
   virtual bool IsAnchoredToStatusArea() const;
+
+  // Stops rerouting key events to this view. If this view is not currently
+  // rerouting events, then this function will be idempotent.
+  void StopReroutingEvents();
 
   Delegate* delegate() { return delegate_; }
 

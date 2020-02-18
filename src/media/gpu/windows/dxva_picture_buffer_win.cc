@@ -21,7 +21,7 @@ namespace media {
 namespace {
 
 void LogDXVAError(int line) {
-  LOG(ERROR) << "Error in dxva_picture_buffer_win.cc on line " << line;
+  PLOG(ERROR) << "Error in dxva_picture_buffer_win.cc on line " << line;
   base::UmaHistogramSparse("Media.DXVAVDA.PictureBufferErrorLine", line);
 }
 
@@ -34,6 +34,7 @@ class DummyGLImage : public gl::GLImage {
   // gl::GLImage implementation.
   gfx::Size GetSize() override { return size_; }
   unsigned GetInternalFormat() override { return GL_BGRA_EXT; }
+  unsigned GetDataType() override { return GL_UNSIGNED_BYTE; }
   BindOrCopy ShouldBindOrCopy() override { return BIND; }
   // PbufferPictureBuffer::CopySurfaceComplete does the actual binding, so
   // this doesn't do anything and always succeeds.

@@ -4,6 +4,9 @@
 
 #include "components/download/public/common/download_utils.h"
 
+#include <memory>
+#include <string>
+
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/i18n/file_util_icu.h"
@@ -27,7 +30,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
 #include "components/download/internal/common/android/download_collection_bridge.h"
-#endif
+#endif  // defined(OS_ANDROID)
 
 namespace download {
 
@@ -40,6 +43,31 @@ const int64_t kDefaultContentValidationLength = 1024;
 // validation will be performed and download stream will be written to
 // file starting at the offset from the response.
 const int64_t kInvalidFileWriteOffset = -1;
+
+// Default expiration time of download in days. Canceled and interrupted
+// downloads will be deleted after expiration.
+const int kDefaultDownloadExpiredTimeInDays = 90;
+
+#if defined(OS_ANDROID)
+// Default maximum length of a downloaded file name on Android.
+const int kDefaultMaxFileNameLengthOnAndroid = 127;
+
+DownloadItem::DownloadRenameResult RenameDownloadedFileForContentUri(
+    const base::FilePath& from_path,
+    const base::FilePath& display_name) {
+  if (static_cast<int>(display_name.value().length()) >
+      kDefaultMaxFileNameLengthOnAndroid) {
+    return DownloadItem::DownloadRenameResult::FAILURE_NAME_TOO_LONG;
+  }
+
+  if (DownloadCollectionBridge::FileNameExists(display_name))
+    return DownloadItem::DownloadRenameResult::FAILURE_NAME_CONFLICT;
+
+  return DownloadCollectionBridge::RenameDownloadUri(from_path, display_name)
+             ? DownloadItem::DownloadRenameResult::SUCCESS
+             : DownloadItem::DownloadRenameResult::FAILURE_NAME_INVALID;
+}
+#endif  // defined(OS_ANDROID)
 
 void AppendExtraHeaders(net::HttpRequestHeaders* headers,
                         DownloadUrlParameters* params) {
@@ -57,23 +85,6 @@ DownloadInterruptReason HandleRequestCompletionStatus(
     net::CertStatus cert_status,
     bool is_partial_request,
     DownloadInterruptReason abort_reason) {
-  // ERR_CONTENT_LENGTH_MISMATCH can be caused by 1 of the following reasons:
-  // 1. Server or proxy closes the connection too early.
-  // 2. The content-length header is wrong.
-  // If the download has strong validators, we can interrupt the download
-  // and let it resume automatically. Otherwise, resuming the download will
-  // cause it to restart and the download may never complete if the error was
-  // caused by reason 2. As a result, downloads without strong validators are
-  // treated as completed here.
-  // TODO(qinmin): check the metrics from downloads with strong validators,
-  // and decide whether we should interrupt downloads without strong validators
-  // rather than complete them.
-  if (error_code == net::ERR_CONTENT_LENGTH_MISMATCH &&
-      !has_strong_validators) {
-    error_code = net::OK;
-    RecordDownloadCount(COMPLETED_WITH_CONTENT_LENGTH_MISMATCH_COUNT);
-  }
-
   if (error_code == net::ERR_ABORTED) {
     // ERR_ABORTED == something outside of the network
     // stack cancelled the request.  There aren't that many things that
@@ -166,15 +177,8 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
     return result;
 
   // The caller is expecting a partial response.
-  if (save_info && (save_info->offset > 0 || save_info->length > 0)) {
+  if (save_info && save_info->offset > 0) {
     if (http_headers.response_code() != net::HTTP_PARTIAL_CONTENT) {
-      // Server should send partial content when "If-Match" or
-      // "If-Unmodified-Since" check passes, and the range request header has
-      // last byte position. e.g. "Range:bytes=50-99".
-      if (save_info->length != DownloadSaveInfo::kLengthFullContent &&
-          !fetch_error_body)
-        return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
-
       // Requested a partial range, but received the entire response, when
       // the range request header is "Range:bytes={offset}-".
       // The response can be HTTP 200 or other error code when
@@ -193,9 +197,7 @@ DownloadInterruptReason HandleSuccessfulServerResponse(
       return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
     DCHECK_GE(first_byte, 0);
 
-    if (first_byte != save_info->offset ||
-        (save_info->length > 0 &&
-         last_byte != save_info->offset + save_info->length - 1)) {
+    if (first_byte != save_info->offset) {
       // The server returned a different range than the one we requested. Assume
       // the server doesn't support range request.
       return DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
@@ -253,13 +255,18 @@ void HandleResponseHeaders(const net::HttpResponseHeaders* headers,
 
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     DownloadUrlParameters* params) {
-  DCHECK(params->offset() >= 0);
+  DCHECK_GE(params->offset(), 0);
 
   std::unique_ptr<network::ResourceRequest> request(
       new network::ResourceRequest);
   request->method = params->method();
   request->url = params->url();
   request->request_initiator = params->initiator();
+  if (!params->network_isolation_key().IsEmpty()) {
+    request->trusted_params = network::ResourceRequest::TrustedParams();
+    request->trusted_params->network_isolation_key =
+        params->network_isolation_key();
+  }
   request->do_not_prompt_for_login = params->do_not_prompt_for_login();
   request->site_for_cookies = params->url();
   request->referrer = params->referrer();
@@ -321,8 +328,7 @@ int GetLoadFlags(DownloadUrlParameters* params, bool has_upload_data) {
 std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
     DownloadUrlParameters* params) {
   auto headers = std::make_unique<net::HttpRequestHeaders>();
-  if (params->offset() == 0 &&
-      params->length() == DownloadSaveInfo::kLengthFullContent) {
+  if (params->offset() == 0) {
     AppendExtraHeaders(headers.get(), params);
     return headers;
   }
@@ -345,10 +351,7 @@ std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
 
   // Add "Range" header.
   std::string range_header =
-      (params->length() == DownloadSaveInfo::kLengthFullContent)
-          ? base::StringPrintf("bytes=%" PRId64 "-", params->offset())
-          : base::StringPrintf("bytes=%" PRId64 "-%" PRId64, params->offset(),
-                               params->offset() + params->length() - 1);
+      base::StringPrintf("bytes=%" PRId64 "-", params->offset());
   headers->SetHeader(net::HttpRequestHeaders::kRange, range_header);
 
   // Add "If-Range" headers.
@@ -420,26 +423,26 @@ DownloadDBEntry CreateDownloadDBEntryFromItem(const DownloadItemImpl& item) {
   download_info.in_progress_info = in_progress_info;
 
   download_info.ukm_info =
-      UkmInfo(item.download_source(), item.ukm_download_id());
+      UkmInfo(item.GetDownloadSource(), item.ukm_download_id());
   entry.download_info = download_info;
   return entry;
 }
 
-base::Optional<DownloadEntry> CreateDownloadEntryFromDownloadDBEntry(
+std::unique_ptr<DownloadEntry> CreateDownloadEntryFromDownloadDBEntry(
     base::Optional<DownloadDBEntry> entry) {
   if (!entry || !entry->download_info)
-    return base::Optional<DownloadEntry>();
+    return nullptr;
 
   base::Optional<InProgressInfo> in_progress_info =
       entry->download_info->in_progress_info;
   base::Optional<UkmInfo> ukm_info = entry->download_info->ukm_info;
   if (!ukm_info || !in_progress_info)
-    return base::Optional<DownloadEntry>();
+    return nullptr;
 
-  return base::Optional<DownloadEntry>(DownloadEntry(
+  return std::make_unique<DownloadEntry>(
       entry->download_info->guid, std::string(), ukm_info->download_source,
       in_progress_info->fetch_error_body, in_progress_info->request_headers,
-      ukm_info->ukm_download_id));
+      ukm_info->ukm_download_id);
 }
 
 uint64_t GetUniqueDownloadId() {
@@ -557,7 +560,7 @@ bool IsDownloadDone(const GURL& url,
     case DownloadItem::INTERRUPTED:
       return GetDownloadResumeMode(url, reason, false /* restart_required */,
                                    false /* user_action_required */) ==
-             download::ResumeMode::INVALID;
+             ResumeMode::INVALID;
     default:
       return false;
   }
@@ -577,9 +580,14 @@ bool DeleteDownloadedFile(const base::FilePath& path) {
   return base::DeleteFile(path, false);
 }
 
-download::DownloadItem::DownloadRenameResult RenameDownloadedFile(
+DownloadItem::DownloadRenameResult RenameDownloadedFile(
     const base::FilePath& from_path,
-    const base::FilePath& to_path) {
+    const base::FilePath& display_name) {
+#if defined(OS_ANDROID)
+  if (from_path.IsContentUri())
+    return RenameDownloadedFileForContentUri(from_path, display_name);
+#endif  // defined(OS_ANDROID)
+  auto to_path = base::FilePath(from_path.DirName()).Append(display_name);
   if (!base::PathExists(from_path) ||
       !base::DirectoryExists(from_path.DirName()))
     return DownloadItem::DownloadRenameResult::FAILURE_UNAVAILABLE;
@@ -598,20 +606,9 @@ download::DownloadItem::DownloadRenameResult RenameDownloadedFile(
       return DownloadItem::DownloadRenameResult::FAILURE_NAME_TOO_LONG;
     }
   }
-#if defined(OS_ANDROID)
-  if (from_path.IsContentUri()) {
-    return DownloadCollectionBridge::RenameDownloadUri(from_path,
-                                                       to_path.BaseName())
-               ? download::DownloadItem::DownloadRenameResult::SUCCESS
-               : download::DownloadItem::DownloadRenameResult::
-                     FAILURE_NAME_INVALID;
-  }
-#endif
-
   return base::Move(from_path, to_path)
-             ? download::DownloadItem::DownloadRenameResult::SUCCESS
-             : download::DownloadItem::DownloadRenameResult::
-                   FAILURE_NAME_INVALID;
+             ? DownloadItem::DownloadRenameResult::SUCCESS
+             : DownloadItem::DownloadRenameResult::FAILURE_NAME_INVALID;
 }
 
 int64_t GetDownloadValidationLengthConfig() {
@@ -623,4 +620,12 @@ int64_t GetDownloadValidationLengthConfig() {
              ? result
              : kDefaultContentValidationLength;
 }
+
+base::TimeDelta GetExpiredDownloadDeleteTime() {
+  int expired_days = base::GetFieldTrialParamByFeatureAsInt(
+      features::kDeleteExpiredDownloads, kExpiredDownloadDeleteTimeFinchKey,
+      kDefaultDownloadExpiredTimeInDays);
+  return base::TimeDelta::FromDays(expired_days);
+}
+
 }  // namespace download

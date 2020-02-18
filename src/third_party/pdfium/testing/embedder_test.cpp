@@ -100,8 +100,7 @@ void EmbedderTest::TearDown() {
 
   if (document_) {
     FORM_DoDocumentAAction(form_handle_, FPDFDOC_AACTION_WC);
-    FPDFDOC_ExitFormFillEnvironment(form_handle_);
-    FPDF_CloseDocument(document_);
+    CloseDocument();
   }
 
   FPDFAvail_Destroy(avail_);
@@ -219,7 +218,6 @@ bool EmbedderTest::OpenDocumentHelper(const char* password,
         nRet = FPDFAvail_IsPageAvail(*avail, i,
                                      network_simulator->GetDownloadHints());
       }
-
       if (nRet == PDF_DATA_ERROR)
         return false;
     }
@@ -234,14 +232,20 @@ bool EmbedderTest::OpenDocumentHelper(const char* password,
   }
   *form_handle = SetupFormFillEnvironment(*document, javascript_option);
 
-#ifdef PDF_ENABLE_XFA
   int doc_type = FPDF_GetFormType(*document);
   if (doc_type == FORMTYPE_XFA_FULL || doc_type == FORMTYPE_XFA_FOREGROUND)
     FPDF_LoadXFA(*document);
-#endif  // PDF_ENABLE_XFA
 
   (void)FPDF_GetDocPermissions(*document);
   return true;
+}
+
+void EmbedderTest::CloseDocument() {
+  FPDFDOC_ExitFormFillEnvironment(form_handle_);
+  form_handle_ = nullptr;
+
+  FPDF_CloseDocument(document_);
+  document_ = nullptr;
 }
 
 FPDF_FORMHANDLE EmbedderTest::SetupFormFillEnvironment(
@@ -420,7 +424,7 @@ std::vector<uint8_t> EmbedderTest::RenderPageWithFlagsToEmf(FPDF_PAGE page,
 
 // static
 std::string EmbedderTest::GetPostScriptFromEmf(
-    const std::vector<uint8_t>& emf_data) {
+    pdfium::span<const uint8_t> emf_data) {
   // This comes from Emf::InitFromData() in Chromium.
   HENHMETAFILE emf = SetEnhMetaFileBits(emf_data.size(), emf_data.data());
   if (!emf)

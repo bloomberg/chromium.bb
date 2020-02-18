@@ -217,8 +217,11 @@ void CallPrinter::VisitFunctionLiteral(FunctionLiteral* node) {
 
 void CallPrinter::VisitClassLiteral(ClassLiteral* node) {
   if (node->extends()) Find(node->extends());
-  for (int i = 0; i < node->properties()->length(); i++) {
-    Find(node->properties()->at(i)->value());
+  for (int i = 0; i < node->public_members()->length(); i++) {
+    Find(node->public_members()->at(i)->value());
+  }
+  for (int i = 0; i < node->private_members()->length(); i++) {
+    Find(node->private_members()->at(i)->value());
   }
 }
 
@@ -397,8 +400,6 @@ void CallPrinter::VisitProperty(Property* node) {
     Print("]");
   }
 }
-
-void CallPrinter::VisitResolvedProperty(ResolvedProperty* node) {}
 
 void CallPrinter::VisitCall(Call* node) {
   bool was_found = false;
@@ -579,7 +580,8 @@ void CallPrinter::PrintLiteral(Handle<Object> value, bool quote) {
     Print(isolate_->factory()->NumberToString(value));
   } else if (value->IsSymbol()) {
     // Symbols can only occur as literals if they were inserted by the parser.
-    PrintLiteral(handle(Handle<Symbol>::cast(value)->name(), isolate_), false);
+    PrintLiteral(handle(Handle<Symbol>::cast(value)->description(), isolate_),
+                 false);
   }
 }
 
@@ -1106,7 +1108,8 @@ void AstPrinter::VisitClassLiteral(ClassLiteral* node) {
     PrintIndentedVisit("INSTANCE MEMBERS INITIALIZER",
                        node->instance_members_initializer_function());
   }
-  PrintClassProperties(node->properties());
+  PrintClassProperties(node->private_members());
+  PrintClassProperties(node->public_members());
 }
 
 void AstPrinter::VisitInitializeClassMembersStatement(
@@ -1267,6 +1270,9 @@ void AstPrinter::VisitVariableProxy(VariableProxy* node) {
       case VariableLocation::MODULE:
         SNPrintF(buf + pos, " module");
         break;
+      case VariableLocation::REPL_GLOBAL:
+        SNPrintF(buf + pos, " repl global[%d]", var->index());
+        break;
     }
     PrintLiteralWithModeIndented(buf.begin(), var, node->raw_name());
   }
@@ -1351,15 +1357,6 @@ void AstPrinter::VisitProperty(Property* node) {
     case NON_PROPERTY:
       UNREACHABLE();
   }
-}
-
-void AstPrinter::VisitResolvedProperty(ResolvedProperty* node) {
-  EmbeddedVector<char, 128> buf;
-  SNPrintF(buf, "RESOLVED-PROPERTY");
-  IndentedScope indent(this, buf.begin(), node->position());
-
-  PrintIndentedVisit("RECEIVER", node->object());
-  PrintIndentedVisit("PROPERTY", node->property());
 }
 
 void AstPrinter::VisitCall(Call* node) {

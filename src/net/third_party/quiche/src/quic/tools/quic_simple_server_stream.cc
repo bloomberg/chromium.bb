@@ -29,6 +29,7 @@ QuicSimpleServerStream::QuicSimpleServerStream(
     QuicSimpleServerBackend* quic_simple_server_backend)
     : QuicSpdyServerStreamBase(id, session, type),
       content_length_(-1),
+      generate_bytes_length_(0),
       quic_simple_server_backend_(quic_simple_server_backend) {
   DCHECK(quic_simple_server_backend_);
 }
@@ -40,6 +41,7 @@ QuicSimpleServerStream::QuicSimpleServerStream(
     QuicSimpleServerBackend* quic_simple_server_backend)
     : QuicSpdyServerStreamBase(pending, session, type),
       content_length_(-1),
+      generate_bytes_length_(0),
       quic_simple_server_backend_(quic_simple_server_backend) {
   DCHECK(quic_simple_server_backend_);
 }
@@ -107,8 +109,8 @@ void QuicSimpleServerStream::OnBodyAvailable() {
 
 void QuicSimpleServerStream::PushResponse(
     SpdyHeaderBlock push_request_headers) {
-  if (QuicUtils::IsClientInitiatedStreamId(
-          session()->connection()->transport_version(), id())) {
+  if (QuicUtils::IsClientInitiatedStreamId(session()->transport_version(),
+                                           id())) {
     QUIC_BUG << "Client initiated stream shouldn't be used as promised stream.";
     return;
   }
@@ -220,8 +222,8 @@ void QuicSimpleServerStream::OnResponseBackendComplete(
     return;
   }
 
-  if (QuicUtils::IsServerInitiatedStreamId(
-          session()->connection()->transport_version(), id())) {
+  if (QuicUtils::IsServerInitiatedStreamId(session()->transport_version(),
+                                           id())) {
     // A server initiated stream is only used for a server push response,
     // and only 200 and 30X response codes are supported for server push.
     // This behavior mirrors the HTTP/2 implementation.
@@ -260,9 +262,44 @@ void QuicSimpleServerStream::OnResponseBackendComplete(
     return;
   }
 
+  if (response->response_type() == QuicBackendResponse::GENERATE_BYTES) {
+    QUIC_DVLOG(1) << "Stream " << id() << " sending a generate bytes response.";
+    std::string path = request_headers_[":path"].as_string().substr(1);
+    if (!QuicTextUtils::StringToUint64(path, &generate_bytes_length_)) {
+      QUIC_LOG(ERROR) << "Path is not a number.";
+      SendNotFoundResponse();
+      return;
+    }
+    SpdyHeaderBlock headers = response->headers().Clone();
+    headers["content-length"] =
+        QuicTextUtils::Uint64ToString(generate_bytes_length_);
+
+    WriteHeaders(std::move(headers), false, nullptr);
+
+    WriteGeneratedBytes();
+
+    return;
+  }
+
   QUIC_DVLOG(1) << "Stream " << id() << " sending response.";
   SendHeadersAndBodyAndTrailers(response->headers().Clone(), response->body(),
                                 response->trailers().Clone());
+}
+
+void QuicSimpleServerStream::OnCanWrite() {
+  QuicSpdyStream::OnCanWrite();
+  WriteGeneratedBytes();
+}
+
+void QuicSimpleServerStream::WriteGeneratedBytes() {
+  static size_t kChunkSize = 1024;
+  while (!HasBufferedData() && generate_bytes_length_ > 0) {
+    size_t len = std::min<size_t>(kChunkSize, generate_bytes_length_);
+    std::string data(len, 'a');
+    generate_bytes_length_ -= len;
+    bool fin = generate_bytes_length_ == 0;
+    WriteOrBufferBody(data, fin);
+  }
 }
 
 void QuicSimpleServerStream::SendNotFoundResponse() {

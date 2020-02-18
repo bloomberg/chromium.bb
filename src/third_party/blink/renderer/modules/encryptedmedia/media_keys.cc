@@ -52,7 +52,7 @@ namespace blink {
 
 // A class holding a pending action.
 class MediaKeys::PendingAction final
-    : public GarbageCollectedFinalized<MediaKeys::PendingAction> {
+    : public GarbageCollected<MediaKeys::PendingAction> {
  public:
   enum class Type { kSetServerCertificate, kGetStatusForPolicy };
 
@@ -284,7 +284,7 @@ ScriptPromise MediaKeys::setServerCertificate(
   //
   // 2. If serverCertificate is an empty array, return a promise rejected
   //    with a new a newly created TypeError.
-  if (!server_certificate.ByteLength()) {
+  if (!server_certificate.ByteLengthAsSizeT()) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
                           script_state->GetIsolate(),
@@ -294,7 +294,7 @@ ScriptPromise MediaKeys::setServerCertificate(
   // 3. Let certificate be a copy of the contents of the serverCertificate
   //    parameter.
   DOMArrayBuffer* server_certificate_buffer = DOMArrayBuffer::Create(
-      server_certificate.Data(), server_certificate.ByteLength());
+      server_certificate.Data(), server_certificate.ByteLengthAsSizeT());
 
   // 4. Let promise be a new promise.
   SetCertificateResultPromise* result =
@@ -323,7 +323,7 @@ void MediaKeys::SetServerCertificateTask(
   // 5.2 Use the cdm to process certificate.
   cdm->SetServerCertificate(
       static_cast<unsigned char*>(server_certificate->Data()),
-      server_certificate->ByteLength(), result->Result());
+      server_certificate->ByteLengthAsSizeT(), result->Result());
 
   // 5.3 If any of the preceding steps failed, reject promise with a
   //     new DOMException whose name is the appropriate error name.

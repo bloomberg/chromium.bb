@@ -16,7 +16,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -47,7 +48,9 @@ struct PrefetchURLLoaderService::BindContext {
         render_frame_host(other->render_frame_host),
         cross_origin_factory(other->cross_origin_factory),
         prefetched_signed_exchange_cache(
-            other->prefetched_signed_exchange_cache) {}
+            other->prefetched_signed_exchange_cache),
+        prefetch_network_isolation_keys(
+            other->prefetch_network_isolation_keys) {}
 
   ~BindContext() = default;
 
@@ -57,7 +60,17 @@ struct PrefetchURLLoaderService::BindContext {
 
   // This member is lazily initialized by EnsureCrossOriginFactory().
   scoped_refptr<network::SharedURLLoaderFactory> cross_origin_factory;
+
   scoped_refptr<PrefetchedSignedExchangeCache> prefetched_signed_exchange_cache;
+
+  // This maps recursive prefetch tokens to NetworkIsolationKeys that they
+  // should be fetched with.
+  std::map<base::UnguessableToken, net::NetworkIsolationKey>
+      prefetch_network_isolation_keys;
+
+  // This must be the last member.
+  base::WeakPtrFactory<PrefetchURLLoaderService::BindContext> weak_ptr_factory{
+      this};
 };
 
 PrefetchURLLoaderService::PrefetchURLLoaderService(
@@ -78,7 +91,7 @@ PrefetchURLLoaderService::PrefetchURLLoaderService(
 void PrefetchURLLoaderService::GetFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     int frame_tree_node_id,
-    std::unique_ptr<network::SharedURLLoaderFactoryInfo> factories,
+    std::unique_ptr<network::PendingSharedURLLoaderFactory> factories,
     base::WeakPtr<RenderFrameHostImpl> render_frame_host,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache) {
@@ -93,12 +106,12 @@ void PrefetchURLLoaderService::GetFactory(
 }
 
 void PrefetchURLLoaderService::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request_in,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -108,10 +121,11 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
 
   DCHECK_EQ(static_cast<int>(ResourceType::kPrefetch),
             resource_request.resource_type);
-  const auto& current_context = *loader_factory_receivers_.current_context();
+  auto& current_context = *loader_factory_receivers_.current_context();
 
   if (!current_context.render_frame_host) {
-    client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+    mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
     return;
   }
 
@@ -129,8 +143,9 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     // An invalid request could indicate a compromised renderer inappropriately
     // modifying the request, so we immediately complete it with an error.
     if (!IsValidCrossOriginPrefetch(resource_request)) {
-      client->OnComplete(
-          network::URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+      mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
       return;
     }
 
@@ -143,6 +158,33 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
         net::NetworkIsolationKey(destination_origin, destination_origin);
   }
 
+  // Recursive prefetch from a cross-origin main resource prefetch.
+  if (resource_request.recursive_prefetch_token) {
+    // A request's |recursive_prefetch_token| is only provided if the request is
+    // a recursive prefetch. This means it is expected that the current
+    // context's |cross_origin_factory| was already created.
+    DCHECK(current_context.cross_origin_factory);
+
+    // Resurrect the request's NetworkIsolationKey from the current context's
+    // map, and use it for this request.
+    auto nik_iterator = current_context.prefetch_network_isolation_keys.find(
+        resource_request.recursive_prefetch_token.value());
+
+    // An unexpected token could indicate a compromised renderer trying to fetch
+    // a request in a special way. We'll cancel the request.
+    if (nik_iterator == current_context.prefetch_network_isolation_keys.end()) {
+      mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+      return;
+    }
+
+    resource_request.trusted_params = network::ResourceRequest::TrustedParams();
+    resource_request.trusted_params->network_isolation_key =
+        nik_iterator->second;
+    network_loader_factory_to_use = current_context.cross_origin_factory;
+  }
+
   if (prefetch_load_callback_for_testing_)
     prefetch_load_callback_for_testing_.Run();
 
@@ -153,25 +195,25 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
             ->prefetched_signed_exchange_cache;
   }
 
-  auto frame_tree_node_id_getter = base::BindRepeating(
-      [](int id) { return id; }, current_context.frame_tree_node_id);
-
-  // For now we strongly bind the loader to the request, while we can
-  // also possibly make the new loader owned by the factory so that
-  // they can live longer than the client (i.e. run in detached mode).
+  // For now we make self owned receiver for the loader to the request, while we
+  // can also possibly make the new loader owned by the factory so that they can
+  // live longer than the client (i.e. run in detached mode).
   // TODO(kinuko): Revisit this.
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<PrefetchURLLoader>(
-          routing_id, request_id, options, frame_tree_node_id_getter,
+          routing_id, request_id, options, current_context.frame_tree_node_id,
           resource_request, std::move(client), traffic_annotation,
           std::move(network_loader_factory_to_use),
           base::BindRepeating(
               &PrefetchURLLoaderService::CreateURLLoaderThrottles, this,
-              resource_request, frame_tree_node_id_getter),
+              resource_request, current_context.frame_tree_node_id),
           browser_context_, signed_exchange_prefetch_metric_recorder_,
           std::move(prefetched_signed_exchange_cache), blob_storage_context_,
-          accept_langs_),
-      std::move(request));
+          accept_langs_,
+          base::BindOnce(
+              &PrefetchURLLoaderService::GenerateRecursivePrefetchToken, this,
+              current_context.weak_ptr_factory.GetWeakPtr())),
+      std::move(receiver));
 }
 
 PrefetchURLLoaderService::~PrefetchURLLoaderService() = default;
@@ -224,7 +266,7 @@ void PrefetchURLLoaderService::EnsureCrossOriginFactory() {
     return;
 
   DCHECK(current_context.render_frame_host);
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> factories =
+  std::unique_ptr<network::PendingSharedURLLoaderFactory> factories =
       current_context.render_frame_host
           ->CreateCrossOriginPrefetchLoaderFactoryBundle();
   current_context.cross_origin_factory =
@@ -232,10 +274,10 @@ void PrefetchURLLoaderService::EnsureCrossOriginFactory() {
 }
 
 void PrefetchURLLoaderService::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   loader_factory_receivers_.Add(
-      this, std::move(request),
+      this, std::move(receiver),
       std::make_unique<BindContext>(
           loader_factory_receivers_.current_context()));
 }
@@ -245,11 +287,35 @@ void PrefetchURLLoaderService::NotifyUpdate(
   SetAcceptLanguages(new_prefs->accept_languages);
 }
 
+base::UnguessableToken PrefetchURLLoaderService::GenerateRecursivePrefetchToken(
+    base::WeakPtr<BindContext> current_context,
+    const network::ResourceRequest& request) {
+  // If the relevant frame has gone away before this method is called
+  // asynchronously, we cannot generate and store a
+  // {token, NetworkIsolationKey} pair in the frame's
+  // |prefetch_network_isolation_keys| map, so we'll create and return a dummy
+  // token that will not get used.
+  if (!current_context)
+    return base::UnguessableToken::Create();
+
+  // Create NetworkIsolationKey.
+  url::Origin destination_origin = url::Origin::Create(request.url);
+  net::NetworkIsolationKey preload_nik =
+      net::NetworkIsolationKey(destination_origin, destination_origin);
+
+  // Generate token.
+  base::UnguessableToken return_token = base::UnguessableToken::Create();
+
+  // Associate the two, and return the token.
+  current_context->prefetch_network_isolation_keys.insert(
+      {return_token, preload_nik});
+  return return_token;
+}
+
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 PrefetchURLLoaderService::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
-    base::RepeatingCallback<int(void)> frame_tree_node_id_getter) {
-  int frame_tree_node_id = frame_tree_node_id_getter.Run();
+    int frame_tree_node_id) {
   return GetContentClient()->browser()->CreateURLLoaderThrottles(
       request, browser_context_,
       base::BindRepeating(&WebContents::FromFrameTreeNodeId,

@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/common/visual_properties.h"
 
 namespace blink {
 class WebMouseEvent;
@@ -40,10 +41,6 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
 
   // The RenderWidget finished the first visually non-empty paint.
   virtual void RenderWidgetDidFirstVisuallyNonEmptyPaint() = 0;
-
-  // The RenderWidget has issued a draw command, signaling the widget
-  // has been visually updated.
-  virtual void RenderWidgetDidCommitAndDrawCompositorFrame() = 0;
 
   // The RenderWidgetHost got the focus.
   virtual void RenderWidgetGotFocus() = 0;

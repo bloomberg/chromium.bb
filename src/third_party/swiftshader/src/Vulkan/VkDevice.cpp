@@ -57,11 +57,12 @@ void Device::SamplingRoutineCache::updateConstCache()
 	cache.updateConstCache();
 }
 
-Device::Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice *physicalDevice, const VkPhysicalDeviceFeatures *enabledFeatures, yarn::Scheduler *scheduler)
+Device::Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice *physicalDevice, const VkPhysicalDeviceFeatures *enabledFeatures, const std::shared_ptr<marl::Scheduler>& scheduler)
 	: physicalDevice(physicalDevice),
 	  queues(reinterpret_cast<Queue*>(mem)),
 	  enabledExtensionCount(pCreateInfo->enabledExtensionCount),
-	  enabledFeatures(enabledFeatures ? *enabledFeatures : VkPhysicalDeviceFeatures{})  // "Setting pEnabledFeatures to NULL and not including a VkPhysicalDeviceFeatures2 in the pNext member of VkDeviceCreateInfo is equivalent to setting all members of the structure to VK_FALSE."
+	  enabledFeatures(enabledFeatures ? *enabledFeatures : VkPhysicalDeviceFeatures{}),  // "Setting pEnabledFeatures to NULL and not including a VkPhysicalDeviceFeatures2 in the pNext member of VkDeviceCreateInfo is equivalent to setting all members of the structure to VK_FALSE."
+	  scheduler(scheduler)
 {
 	for(uint32_t i = 0; i < pCreateInfo->queueCreateInfoCount; i++)
 	{
@@ -76,7 +77,7 @@ Device::Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice 
 
 		for(uint32_t j = 0; j < queueCreateInfo.queueCount; j++, queueID++)
 		{
-			new (&queues[queueID]) Queue(this, scheduler);
+			new (&queues[queueID]) Queue(this, scheduler.get());
 		}
 	}
 
@@ -176,37 +177,27 @@ VkResult Device::waitForFences(uint32_t fenceCount, const VkFence* pFences, VkBo
 	}
 	else // At least one fence must be signaled
 	{
-		// Start by quickly checking the status of all fences, as only one is required
+		marl::containers::vector<marl::Event, 8> events;
 		for(uint32_t i = 0; i < fenceCount; i++)
 		{
-			if(Cast(pFences[i])->getStatus() == VK_SUCCESS) // At least one fence is signaled
-			{
-				return VK_SUCCESS;
-			}
+			events.push_back(Cast(pFences[i])->getEvent());
 		}
 
-		if(timeout > 0)
+		auto any = marl::Event::any(events.begin(), events.end());
+
+		if(timeout == 0)
 		{
-			for(uint32_t i = 0; i < fenceCount; i++)
-			{
-				if(infiniteTimeout)
-				{
-					if(Cast(pFences[i])->wait() == VK_SUCCESS) // At least one fence is signaled
-					{
-						return VK_SUCCESS;
-					}
-				}
-				else
-				{
-					if(Cast(pFences[i])->wait(end_ns) == VK_SUCCESS) // At least one fence is signaled
-					{
-						return VK_SUCCESS;
-					}
-				}
-			}
+			return any.isSignalled() ? VK_SUCCESS : VK_TIMEOUT;
 		}
-
-		return VK_TIMEOUT;
+		else if (infiniteTimeout)
+		{
+			any.wait();
+			return VK_SUCCESS;
+		}
+		else
+		{
+			return any.wait_until(end_ns) ? VK_SUCCESS : VK_TIMEOUT;
+		}
 	}
 }
 
@@ -223,8 +214,13 @@ VkResult Device::waitIdle()
 void Device::getDescriptorSetLayoutSupport(const VkDescriptorSetLayoutCreateInfo* pCreateInfo,
                                            VkDescriptorSetLayoutSupport* pSupport) const
 {
-	// Mark everything as unsupported
-	pSupport->supported = VK_FALSE;
+	// From Vulkan Spec 13.2.1 Descriptor Set Layout, in description of vkGetDescriptorSetLayoutSupport:
+	// "This command does not consider other limits such as maxPerStageDescriptor*, and so a descriptor
+	// set layout that is supported according to this command must still satisfy the pipeline layout limits
+	// such as maxPerStageDescriptor* in order to be used in a pipeline layout."
+
+	// We have no "strange" limitations to enforce beyond the device limits, so we can safely always claim support.
+	pSupport->supported = VK_TRUE;
 }
 
 void Device::updateDescriptorSets(uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites,
@@ -239,6 +235,12 @@ void Device::updateDescriptorSets(uint32_t descriptorWriteCount, const VkWriteDe
 	{
 		DescriptorSetLayout::CopyDescriptorSet(pDescriptorCopies[i]);
 	}
+}
+
+void Device::getRequirements(VkMemoryDedicatedRequirements* requirements) const
+{
+	requirements->prefersDedicatedAllocation = VK_FALSE;
+	requirements->requiresDedicatedAllocation = VK_FALSE;
 }
 
 Device::SamplingRoutineCache* Device::getSamplingRoutineCache() const

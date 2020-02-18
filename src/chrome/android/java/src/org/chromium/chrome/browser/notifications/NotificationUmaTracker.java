@@ -10,10 +10,11 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationManagerCompat;
 import android.text.format.DateUtils;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -51,7 +52,7 @@ public class NotificationUmaTracker {
             SystemNotificationType.SEND_TAB_TO_SELF, SystemNotificationType.UPDATES,
             SystemNotificationType.CLICK_TO_CALL, SystemNotificationType.SHARED_CLIPBOARD,
             SystemNotificationType.PERMISSION_REQUESTS,
-            SystemNotificationType.PERMISSION_REQUESTS_HIGH})
+            SystemNotificationType.PERMISSION_REQUESTS_HIGH, SystemNotificationType.ANNOUNCEMENT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemNotificationType {
         int UNKNOWN = -1;
@@ -76,8 +77,9 @@ public class NotificationUmaTracker {
         int SHARED_CLIPBOARD = 18;
         int PERMISSION_REQUESTS = 19;
         int PERMISSION_REQUESTS_HIGH = 20;
+        int ANNOUNCEMENT = 21;
 
-        int NUM_ENTRIES = 21;
+        int NUM_ENTRIES = 22;
     }
 
     /*
@@ -91,7 +93,8 @@ public class NotificationUmaTracker {
             ActionType.DOWNLOAD_PAGE_RESUME, ActionType.DOWNLOAD_PAGE_CANCEL,
             ActionType.CONTENT_SUGGESTION_SETTINGS, ActionType.WEB_APP_ACTION_SHARE,
             ActionType.WEB_APP_ACTION_OPEN_IN_CHROME,
-            ActionType.OFFLINE_CONTENT_SUGGESTION_SETTINGS})
+            ActionType.OFFLINE_CONTENT_SUGGESTION_SETTINGS, ActionType.SHARING_TRY_AGAIN,
+            ActionType.SETTINGS, ActionType.ANNOUNCEMENT_ACK, ActionType.ANNOUNCEMENT_OPEN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ActionType {
         int UNKNOWN = -1;
@@ -116,11 +119,17 @@ public class NotificationUmaTracker {
         // Setting button in offline content suggestion notification.
         int OFFLINE_CONTENT_SUGGESTION_SETTINGS = 9;
         // Dismiss button on sharing notification.
-        int SHARING_DISMISS = 10;
+        // int SHARING_DISMISS = 10; deprecated
         // Try again button on sharing error notification.
         int SHARING_TRY_AGAIN = 11;
+        // Settings button for notifications.
+        int SETTINGS = 12;
+        // Ack button on announcement notification.
+        int ANNOUNCEMENT_ACK = 13;
+        // Open button on announcement notification.
+        int ANNOUNCEMENT_OPEN = 14;
 
-        int NUM_ENTRIES = 12;
+        int NUM_ENTRIES = 15;
     }
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =

@@ -43,6 +43,9 @@ def read_config():
       items = [(k, os.path.join(output_base, v) if k == "output" else v)
                for (k, v) in items]
       keys, values = list(zip(*items))
+      # 'async' is a keyword since Python 3.7.
+      # Avoid namedtuple(rename=True) for compatibility with Python 2.X.
+      keys = tuple('async_' if k == 'async' else k for k in keys)
       return collections.namedtuple('X', keys)(*values)
     return json.loads(data, object_hook=json_object_hook)
 
@@ -109,16 +112,9 @@ def read_config():
       ".lib": False,
       ".lib.export_macro": "",
       ".lib.export_header": False,
-      # The encoding lib consists of encoding/encoding.h and
-      # encoding/encoding.cc in its subdirectory, which binaries
-      # must link / depend on.
-      ".encoding_lib.header": os.path.join(inspector_protocol_dir,
-                                           "encoding/encoding.h"),
-      ".encoding_lib.namespace": "",
-      # Ditto for bindings, see bindings/bindings.h.
-      ".bindings_lib.header": os.path.join(inspector_protocol_dir,
-                                           "bindings/bindings.h"),
-      ".bindings_lib.namespace": ""
+      ".crdtp": False,
+      ".crdtp.dir": os.path.join(inspector_protocol_dir, "crdtp"),
+      ".crdtp.namespace": "crdtp",
     }
     for key_value in config_values:
       parts = key_value.split("=")
@@ -555,7 +551,7 @@ class Protocol(object):
     if not self.config.protocol.options:
       return False
     return self.check_options(self.config.protocol.options, domain, command,
-                              "async", None, False)
+                              "async_", None, False)
 
   def is_exported(self, domain, name):
     if not self.config.protocol.options:

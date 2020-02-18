@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/input_messages.h"
@@ -20,6 +21,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/mock_widget_impl.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -140,44 +142,46 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
   supported_factors.push_back(ui::SCALE_FACTOR_100P);
   ui::test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
 
-  base::mac::ScopedNSAutoreleasePool pool;
+  @autoreleasepool {
+    int32_t routing_id = process_host->GetNextRoutingID();
+    mojo::PendingRemote<mojom::Widget> widget;
+    std::unique_ptr<MockWidgetImpl> widget_impl =
+        std::make_unique<MockWidgetImpl>(
+            widget.InitWithNewPipeAndPassReceiver());
 
-  int32_t routing_id = process_host->GetNextRoutingID();
-  mojom::WidgetPtr widget;
-  std::unique_ptr<MockWidgetImpl> widget_impl =
-      std::make_unique<MockWidgetImpl>(mojo::MakeRequest(&widget));
+    RenderWidgetHostImpl* render_widget = new RenderWidgetHostImpl(
+        &delegate, process_host, routing_id, std::move(widget),
+        /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
 
-  RenderWidgetHostImpl* render_widget = new RenderWidgetHostImpl(
-      &delegate, process_host, routing_id, std::move(widget), false);
+    ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 
-  ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
+    // Owned by its |GetInProcessNSView()|, i.e. |rwhv_cocoa|.
+    RenderWidgetHostViewMac* rwhv_mac =
+        new RenderWidgetHostViewMac(render_widget);
+    base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa(
+        [rwhv_mac->GetInProcessNSView() retain]);
 
-  // Owned by its |GetInProcessNSView()|, i.e. |rwhv_cocoa|.
-  RenderWidgetHostViewMac* rwhv_mac = new RenderWidgetHostViewMac(
-      render_widget, false);
-  base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa(
-      [rwhv_mac->GetInProcessNSView() retain]);
+    RenderWidgetHostViewMacEditCommandHelper helper;
+    NSArray* edit_command_strings = helper.GetEditSelectorNames();
+    RenderWidgetHostNSViewHostOwner* rwhwvm_owner =
+        [[[RenderWidgetHostNSViewHostOwner alloc]
+            initWithRenderWidgetHostViewMac:rwhv_mac] autorelease];
 
-  RenderWidgetHostViewMacEditCommandHelper helper;
-  NSArray* edit_command_strings = helper.GetEditSelectorNames();
-  RenderWidgetHostNSViewHostOwner* rwhwvm_owner =
-      [[[RenderWidgetHostNSViewHostOwner alloc]
-          initWithRenderWidgetHostViewMac:rwhv_mac] autorelease];
+    helper.AddEditingSelectorsToClass([rwhwvm_owner class]);
 
-  helper.AddEditingSelectorsToClass([rwhwvm_owner class]);
+    for (NSString* edit_command_name in edit_command_strings) {
+      NSString* sel_str = [edit_command_name stringByAppendingString:@":"];
+      [rwhwvm_owner performSelector:NSSelectorFromString(sel_str)
+                         withObject:nil];
+    }
 
-  for (NSString* edit_command_name in edit_command_strings) {
-    NSString* sel_str = [edit_command_name stringByAppendingString:@":"];
-    [rwhwvm_owner performSelector:NSSelectorFromString(sel_str) withObject:nil];
+    size_t num_edit_commands = [edit_command_strings count];
+    EXPECT_EQ(delegate.edit_command_message_count_, num_edit_commands);
+    rwhv_cocoa.reset();
+
+    // The |render_widget|'s process needs to be deleted within |message_loop|.
+    delete render_widget;
   }
-
-  size_t num_edit_commands = [edit_command_strings count];
-  EXPECT_EQ(delegate.edit_command_message_count_, num_edit_commands);
-  rwhv_cocoa.reset();
-  pool.Recycle();
-
-  // The |render_widget|'s process needs to be deleted within |message_loop|.
-  delete render_widget;
 
   ui::WindowResizeHelperMac::Get()->ShutdownForTests();
 }

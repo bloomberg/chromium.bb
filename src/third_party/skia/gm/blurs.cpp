@@ -18,6 +18,7 @@
 #include "include/core/SkScalar.h"
 #include "include/core/SkTypeface.h"
 #include "include/core/SkTypes.h"
+#include "include/effects/SkBlurImageFilter.h"
 #include "src/core/SkBlurMask.h"
 #include "tools/Resources.h"
 #include "tools/ToolUtils.h"
@@ -88,8 +89,8 @@ DEF_SIMPLE_GM(blur2rects, canvas, 700, 500) {
         SkRect outer = SkRect::MakeXYWH(10.125f, 10.125f, 100.125f, 100);
         SkRect inner = SkRect::MakeXYWH(20.25f, 20.125f, 80, 80);
         SkPath path;
-        path.addRect(outer, SkPath::kCW_Direction);
-        path.addRect(inner, SkPath::kCCW_Direction);
+        path.addRect(outer, SkPathDirection::kCW);
+        path.addRect(inner, SkPathDirection::kCCW);
 
         canvas->drawPath(path, paint);
         // important to translate by a factional amount to exercise a different "phase"
@@ -106,8 +107,8 @@ DEF_SIMPLE_GM(blur2rectsnonninepatch, canvas, 700, 500) {
         SkRect outer = SkRect::MakeXYWH(10, 110, 100, 100);
         SkRect inner = SkRect::MakeXYWH(50, 150, 10, 10);
         SkPath path;
-        path.addRect(outer, SkPath::kCW_Direction);
-        path.addRect(inner, SkPath::kCW_Direction);
+        path.addRect(outer, SkPathDirection::kCW);
+        path.addRect(inner, SkPathDirection::kCW);
         canvas->drawPath(path, paint);
 
         SkScalar dx = SkScalarRoundToScalar(path.getBounds().width()) + 40 + 0.25f;
@@ -128,4 +129,12 @@ DEF_SIMPLE_GM(BlurDrawImage, canvas, 256, 256) {
         canvas->scale(0.25, 0.25);
         canvas->drawImage(image, 256, 256, &paint);
     }
+}
+
+DEF_SIMPLE_GM(BlurBigSigma, canvas, 1024, 1024) {
+    SkPaint layerPaint, p;
+
+    p.setImageFilter(SkBlurImageFilter::Make(500, 500, nullptr));
+
+    canvas->drawRect(SkRect::MakeWH(700, 800), p);
 }

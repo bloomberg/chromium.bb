@@ -378,7 +378,7 @@ TraceLog::TraceLog()
       num_traces_recorded_(0),
       process_sort_index_(0),
       process_id_hash_(0),
-      process_id_(0),
+      process_id_(base::kNullProcessId),
       trace_options_(kInternalRecordUntilFull),
       trace_config_(TraceConfig()),
       thread_shared_chunk_index_(0),
@@ -595,11 +595,6 @@ void TraceLog::SetEnabled(const TraceConfig& trace_config,
   const bool already_recording = enabled_modes_ & RECORDING_MODE;
   if (modes_to_enable & RECORDING_MODE) {
     if (already_recording) {
-      // TODO(ssid): Stop supporting enabling of RECORDING_MODE when already
-      // enabled crbug.com/625170.
-      DCHECK_EQ(new_options, old_options) << "Attempting to re-enable "
-                                             "tracing with a different set "
-                                             "of options.";
       trace_config_.Merge(trace_config);
     } else {
       trace_config_ = trace_config;
@@ -1086,6 +1081,69 @@ void TraceLog::UseNextTraceBuffer() {
   thread_shared_chunk_index_ = 0;
 }
 
+bool TraceLog::ShouldAddAfterUpdatingState(
+    char phase,
+    const unsigned char* category_group_enabled,
+    const char* name,
+    unsigned long long id,
+    int thread_id,
+    TraceArguments* args) {
+  if (!*category_group_enabled)
+    return false;
+
+  // Avoid re-entrance of AddTraceEvent. This may happen in GPU process when
+  // ECHO_TO_CONSOLE is enabled: AddTraceEvent -> LOG(ERROR) ->
+  // GpuProcessLogMessageHandler -> PostPendingTask -> TRACE_EVENT ...
+  if (thread_is_in_trace_event_.Get())
+    return false;
+
+  DCHECK(name);
+
+  // Check and update the current thread name only if the event is for the
+  // current thread to avoid locks in most cases.
+  if (thread_id == static_cast<int>(PlatformThread::CurrentId())) {
+    const char* new_name =
+        ThreadIdNameManager::GetInstance()->GetNameForCurrentThread();
+    // Check if the thread name has been set or changed since the previous
+    // call (if any), but don't bother if the new name is empty. Note this will
+    // not detect a thread name change within the same char* buffer address: we
+    // favor common case performance over corner case correctness.
+    static auto* current_thread_name = new ThreadLocalPointer<const char>();
+    if (new_name != current_thread_name->Get() && new_name && *new_name) {
+      current_thread_name->Set(new_name);
+
+      AutoLock thread_info_lock(thread_info_lock_);
+
+      auto existing_name = thread_names_.find(thread_id);
+      if (existing_name == thread_names_.end()) {
+        // This is a new thread id, and a new name.
+        thread_names_[thread_id] = new_name;
+      } else {
+        // This is a thread id that we've seen before, but potentially with a
+        // new name.
+        std::vector<StringPiece> existing_names = base::SplitStringPiece(
+            existing_name->second, ",", base::KEEP_WHITESPACE,
+            base::SPLIT_WANT_NONEMPTY);
+        if (!Contains(existing_names, new_name)) {
+          if (!existing_names.empty())
+            existing_name->second.push_back(',');
+          existing_name->second.append(new_name);
+        }
+      }
+    }
+  }
+
+#if defined(OS_WIN)
+  // This is done sooner rather than later, to avoid creating the event and
+  // acquiring the lock, which is not needed for ETW as it's already threadsafe.
+  if (*category_group_enabled & TraceCategory::ENABLED_FOR_ETW_EXPORT) {
+    TraceEventETWExport::AddEvent(phase, category_group_enabled, name, id,
+                                  args);
+  }
+#endif  // OS_WIN
+  return true;
+}
+
 TraceEventHandle TraceLog::AddTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
@@ -1164,19 +1222,13 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     TraceArguments* args,
     unsigned int flags) {
   TraceEventHandle handle = {0, 0, 0};
-  if (!*category_group_enabled)
+  if (!ShouldAddAfterUpdatingState(phase, category_group_enabled, name, id,
+                                   thread_id, args)) {
     return handle;
-
-  // Avoid re-entrance of AddTraceEvent. This may happen in GPU process when
-  // ECHO_TO_CONSOLE is enabled: AddTraceEvent -> LOG(ERROR) ->
-  // GpuProcessLogMessageHandler -> PostPendingTask -> TRACE_EVENT ...
-  if (thread_is_in_trace_event_.Get())
-    return handle;
+  }
+  DCHECK(!timestamp.is_null());
 
   AutoThreadLocalBoolean thread_is_in_trace_event(&thread_is_in_trace_event_);
-
-  DCHECK(name);
-  DCHECK(!timestamp.is_null());
 
   if (flags & TRACE_EVENT_FLAG_MANGLE_ID) {
     if ((flags & TRACE_EVENT_FLAG_FLOW_IN) ||
@@ -1196,48 +1248,6 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     InitializeThreadLocalEventBufferIfSupported();
     thread_local_event_buffer = thread_local_event_buffer_.Get();
   }
-
-  // Check and update the current thread name only if the event is for the
-  // current thread to avoid locks in most cases.
-  if (thread_id == static_cast<int>(PlatformThread::CurrentId())) {
-    const char* new_name =
-        ThreadIdNameManager::GetInstance()->GetNameForCurrentThread();
-    // Check if the thread name has been set or changed since the previous
-    // call (if any), but don't bother if the new name is empty. Note this will
-    // not detect a thread name change within the same char* buffer address: we
-    // favor common case performance over corner case correctness.
-    static auto* current_thread_name = new ThreadLocalPointer<const char>();
-    if (new_name != current_thread_name->Get() && new_name && *new_name) {
-      current_thread_name->Set(new_name);
-
-      AutoLock thread_info_lock(thread_info_lock_);
-
-      auto existing_name = thread_names_.find(thread_id);
-      if (existing_name == thread_names_.end()) {
-        // This is a new thread id, and a new name.
-        thread_names_[thread_id] = new_name;
-      } else {
-        // This is a thread id that we've seen before, but potentially with a
-        // new name.
-        std::vector<StringPiece> existing_names = base::SplitStringPiece(
-            existing_name->second, ",", base::KEEP_WHITESPACE,
-            base::SPLIT_WANT_NONEMPTY);
-        if (!Contains(existing_names, new_name)) {
-          if (!existing_names.empty())
-            existing_name->second.push_back(',');
-          existing_name->second.append(new_name);
-        }
-      }
-    }
-  }
-
-#if defined(OS_WIN)
-  // This is done sooner rather than later, to avoid creating the event and
-  // acquiring the lock, which is not needed for ETW as it's already threadsafe.
-  if (*category_group_enabled & TraceCategory::ENABLED_FOR_ETW_EXPORT)
-    TraceEventETWExport::AddEvent(phase, category_group_enabled, name, id,
-                                  args);
-#endif  // OS_WIN
 
   if (*category_group_enabled & RECORDING_MODE) {
     auto trace_event_override =
@@ -1405,15 +1415,19 @@ void TraceLog::UpdateTraceEventDuration(
   if (!category_group_enabled_local)
     return;
 
-  UpdateTraceEventDurationExplicit(category_group_enabled, name, handle,
-                                   OffsetNow(), ThreadNow(),
-                                   ThreadInstructionNow());
+  UpdateTraceEventDurationExplicit(
+      category_group_enabled, name, handle,
+      static_cast<int>(base::PlatformThread::CurrentId()),
+      /*explicit_timestamps=*/false, OffsetNow(), ThreadNow(),
+      ThreadInstructionNow());
 }
 
 void TraceLog::UpdateTraceEventDurationExplicit(
     const unsigned char* category_group_enabled,
     const char* name,
     TraceEventHandle handle,
+    int thread_id,
+    bool explicit_timestamps,
     const TimeTicks& now,
     const ThreadTicks& thread_now,
     ThreadInstructionCount thread_instruction_now) {
@@ -1438,7 +1452,9 @@ void TraceLog::UpdateTraceEventDurationExplicit(
     auto update_duration_override =
         update_duration_override_.load(std::memory_order_relaxed);
     if (update_duration_override) {
-      update_duration_override(handle, now, thread_now, thread_instruction_now);
+      update_duration_override(category_group_enabled, name, handle, thread_id,
+                               explicit_timestamps, now, thread_now,
+                               thread_instruction_now);
       return;
     }
   }
@@ -1816,13 +1832,15 @@ void UpdateTraceEventDurationExplicit(
     const unsigned char* category_group_enabled,
     const char* name,
     base::trace_event::TraceEventHandle handle,
+    int thread_id,
+    bool explicit_timestamps,
     const base::TimeTicks& now,
     const base::ThreadTicks& thread_now,
     base::trace_event::ThreadInstructionCount thread_instruction_now) {
   return base::trace_event::TraceLog::GetInstance()
       ->UpdateTraceEventDurationExplicit(category_group_enabled, name, handle,
-                                         now, thread_now,
-                                         thread_instruction_now);
+                                         thread_id, explicit_timestamps, now,
+                                         thread_now, thread_instruction_now);
 }
 
 ScopedTraceBinaryEfficient::ScopedTraceBinaryEfficient(

@@ -7,9 +7,10 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_app_button.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_menu_model_adapter.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_widget.h"
 #include "base/run_loop.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -80,13 +81,13 @@ const gfx::Rect& ShelfViewTestAPI::GetIdealBoundsByIndex(int index) {
   return shelf_view_->view_model_->ideal_bounds(index);
 }
 
-int ShelfViewTestAPI::GetAnimationDuration() const {
+base::TimeDelta ShelfViewTestAPI::GetAnimationDuration() const {
   DCHECK(shelf_view_->bounds_animator_);
   return shelf_view_->bounds_animator_->GetAnimationDuration();
 }
 
-void ShelfViewTestAPI::SetAnimationDuration(int duration_ms) {
-  shelf_view_->bounds_animator_->SetAnimationDuration(duration_ms);
+void ShelfViewTestAPI::SetAnimationDuration(base::TimeDelta duration) {
+  shelf_view_->bounds_animator_->SetAnimationDuration(duration);
 }
 
 void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone(
@@ -129,7 +130,7 @@ OverflowBubble* ShelfViewTestAPI::overflow_bubble() {
 }
 
 ShelfTooltipManager* ShelfViewTestAPI::tooltip_manager() {
-  return &shelf_view_->tooltip_;
+  return shelf_view_->shelf()->tooltip();
 }
 
 int ShelfViewTestAPI::GetMinimumDragDistance() const {

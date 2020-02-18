@@ -120,8 +120,8 @@ To just build a single package:
       cmd = chroot_util.GetEmergeCommand(sysroot=self.sysroot)
       cmd += ['-pe', '--backtrack=0'] + self.build_pkgs
       try:
-        cros_build_lib.RunCommand(cmd, combine_stdout_stderr=True,
-                                  debug_level=logging.DEBUG)
+        cros_build_lib.run(cmd, combine_stdout_stderr=True,
+                           debug_level=logging.DEBUG)
       except cros_build_lib.RunCommandError as ex:
         ex.msg += self._BAD_DEPEND_MSG
         raise

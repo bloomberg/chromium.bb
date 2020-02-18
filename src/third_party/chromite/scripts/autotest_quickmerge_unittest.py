@@ -7,8 +7,6 @@
 
 from __future__ import print_function
 
-import types
-
 import mock
 
 from chromite.lib import cros_test_lib
@@ -115,7 +113,7 @@ class RsyncCommandTest(cros_test_lib.RunCommandTestCase):
   """Test autotest_quickmerge.RsyncQuickmerge."""
 
   def testRsyncQuickmergeCommand(self):
-    """Test that RsyncQuickMerge makes correct call to SudoRunCommand"""
+    """Test that RsyncQuickMerge makes correct call to sudo_run"""
     include_file_name = 'an_include_file_name'
     source_path = 'a_source_path'
     sysroot_path = 'a_sysroot_path'
@@ -192,6 +190,6 @@ class PortageAPITest(cros_test_lib.TestCase):
       self.fail('Required writeContentsToContentsFile function does '
                 'not exist.')
 
-    self.assertIsInstance(f, types.UnboundMethodType,
-                          'Required writeContentsToContentsFile is not '
-                          'a function.')
+    self.assertTrue(
+        callable(f),
+        msg='Required writeContentsToContentsFile is not a function.')

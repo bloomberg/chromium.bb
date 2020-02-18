@@ -21,9 +21,11 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/geometry/insets.h"
@@ -32,7 +34,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -44,8 +46,8 @@ constexpr base::TimeDelta kZeroStateImpressionThreshold =
 constexpr SkColor kListVerticalBarIconColor =
     SkColorSetARGB(0xFF, 0xE8, 0xEA, 0xED);
 
-bool IsEmbeddedAssistantUiEnabled(AppListViewDelegate* view_delegate) {
-  if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+bool IsAssistantSearchEnabled(AppListViewDelegate* view_delegate) {
+  if (!app_list_features::IsAssistantSearchEnabled())
     return false;
 
   return view_delegate && view_delegate->IsAssistantAllowedAndEnabled();
@@ -68,7 +70,7 @@ const gfx::VectorIcon* GetPreviousVectorIcon(
 const gfx::VectorIcon* GetCurrentVectorIcon(
     int continuous_assistant_item_count) {
   if (continuous_assistant_item_count == 1) {
-    return &ash::kAssistantIcon;
+    return &kAssistantIcon;
   } else if (continuous_assistant_item_count == 2) {
     return &kVerticalBarStartIcon;
   } else if (continuous_assistant_item_count > 2) {
@@ -118,27 +120,27 @@ void CalculateDisplayIcons(
   }
 }
 
-ash::SearchResultIdWithPositionIndices GetSearchResultsForLogging(
+SearchResultIdWithPositionIndices GetSearchResultsForLogging(
     std::vector<SearchResultView*> search_result_views) {
-  ash::SearchResultIdWithPositionIndices results;
+  SearchResultIdWithPositionIndices results;
   for (const auto* item : search_result_views) {
     if (item->result()) {
-      results.emplace_back(ash::SearchResultIdWithPositionIndex(
+      results.emplace_back(SearchResultIdWithPositionIndex(
           item->result()->id(), item->index_in_container()));
     }
   }
   return results;
 }
 
-bool IsZeroStateFile(const app_list::SearchResult& result) {
-  return result.result_type() == ash::SearchResultType::kZeroStateFile;
+bool IsZeroStateFile(const SearchResult& result) {
+  return result.result_type() == AppListSearchResultType::kZeroStateFile;
 }
 
-bool IsDriveQuickAccess(const app_list::SearchResult& result) {
-  return result.result_type() == ash::SearchResultType::kDriveQuickAccess;
+bool IsDriveQuickAccess(const SearchResult& result) {
+  return result.result_type() == AppListSearchResultType::kDriveQuickAccess;
 }
 
-void LogFileImpressions(app_list::SearchResultType result_type) {
+void LogFileImpressions(SearchResultType result_type) {
   UMA_HISTOGRAM_ENUMERATION("Apps.AppList.ZeroStateResultsList.FileImpressions",
                             result_type, SEARCH_RESULT_TYPE_BOUNDARY);
 }
@@ -206,13 +208,13 @@ int SearchResultListView::DoUpdate() {
 
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
-          results(), ash::SearchResultDisplayType::kList, /*excludes=*/{},
+          results(), SearchResultDisplayType::kList, /*excludes=*/{},
           results_container_->children().size());
 
   const size_t display_size = display_results.size();
   std::vector<const gfx::VectorIcon*> assistant_item_icons(display_size,
                                                            nullptr);
-  if (IsEmbeddedAssistantUiEnabled(view_delegate_))
+  if (IsAssistantSearchEnabled(view_delegate_))
     CalculateDisplayIcons(display_results, &assistant_item_icons);
 
   bool found_zero_state_file = false;
@@ -229,7 +231,7 @@ int SearchResultListView::DoUpdate() {
       if (assistant_item_icons[i]) {
         result_view->SetDisplayIcon(gfx::CreateVectorIcon(
             *(assistant_item_icons[i]),
-            (assistant_item_icons[i] == &ash::kAssistantIcon)
+            (assistant_item_icons[i] == &kAssistantIcon)
                 ? AppListConfig::instance().search_list_icon_dimension()
                 : AppListConfig::instance()
                       .search_list_icon_vertical_bar_dimension(),
@@ -238,10 +240,17 @@ int SearchResultListView::DoUpdate() {
         // Reset |display_icon_|.
         result_view->SetDisplayIcon(gfx::ImageSkia());
       }
+      if (IsAssistantSearchEnabled(view_delegate_) &&
+          display_results[i]->is_omnibox_search()) {
+        display_results[i]->set_accessible_name(l10n_util::GetStringFUTF16(
+            IDS_ASH_ASSISTANT_QUERY_ACCESSIBILITY_ANNOUNCEMENT,
+            display_results[i]->title()));
+      }
+
       result_view->SetResult(display_results[i]);
       result_view->SetVisible(true);
     } else {
-      result_view->SetResult(NULL);
+      result_view->SetResult(nullptr);
       result_view->SetVisible(false);
     }
   }
@@ -310,7 +319,8 @@ int SearchResultListView::GetHeightForWidth(int w) const {
 }
 
 void SearchResultListView::SearchResultActivated(SearchResultView* view,
-                                                 int event_flags) {
+                                                 int event_flags,
+                                                 bool by_button_press) {
   if (view_delegate_ && view->result()) {
     RecordSearchResultOpenSource(view->result(), view_delegate_->GetModel(),
                                  view_delegate_->GetSearchModel());
@@ -322,8 +332,9 @@ void SearchResultListView::SearchResultActivated(SearchResultView* view,
         view->index_in_container());
     view_delegate_->OpenSearchResult(
         view->result()->id(), event_flags,
-        ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
-        ash::AppListLaunchType::kSearchResult, -1 /* suggestion_index */);
+        AppListLaunchedFrom::kLaunchedFromSearchBox,
+        AppListLaunchType::kSearchResult, -1 /* suggestion_index */,
+        !by_button_press && view->is_default_result() /* launch_as_default */);
   }
 }
 
@@ -331,12 +342,11 @@ void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
                                                        size_t action_index,
                                                        int event_flags) {
   if (view_delegate_ && view->result()) {
-    ash::OmniBoxZeroStateAction action =
-        ash::GetOmniBoxZeroStateAction(action_index);
-    if (action == ash::OmniBoxZeroStateAction::kRemoveSuggestion) {
+    OmniBoxZeroStateAction action = GetOmniBoxZeroStateAction(action_index);
+    if (action == OmniBoxZeroStateAction::kRemoveSuggestion) {
       view_delegate_->InvokeSearchResultAction(view->result()->id(),
                                                action_index, event_flags);
-    } else if (action == ash::OmniBoxZeroStateAction::kAppendSuggestion) {
+    } else if (action == OmniBoxZeroStateAction::kAppendSuggestion) {
       // Make sure ChromeVox will focus on the search box.
       main_view_->search_box_view()->search_box()->NotifyAccessibilityEvent(
           ax::mojom::Event::kSelection, true);
@@ -398,4 +408,4 @@ void SearchResultListView::VisibilityChanged(View* starting_from,
   previous_found_drive_quick_access_ = false;
 }
 
-}  // namespace app_list
+}  // namespace ash

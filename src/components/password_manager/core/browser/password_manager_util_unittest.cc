@@ -67,16 +67,6 @@ autofill::PasswordForm GetTestProxyCredential() {
   return form;
 }
 
-std::map<base::string16, const autofill::PasswordForm*> MapFromCredentials(
-    const std::vector<const autofill::PasswordForm*>& forms) {
-  std::map<base::string16, const autofill::PasswordForm*> result;
-  for (const autofill::PasswordForm* form : forms) {
-    auto inserted = result.emplace(form->username_value, form);
-    EXPECT_TRUE(inserted.second);
-  }
-  return result;
-}
-
 }  // namespace
 
 using password_manager::UnorderedPasswordFormElementsAre;
@@ -197,12 +187,13 @@ TEST(PasswordManagerUtil, FindBestMatches) {
     for (const PasswordForm& match : owning_matches)
       matches.push_back(&match);
 
-    std::map<base::string16, const PasswordForm*> best_matches;
+    std::vector<const PasswordForm*> best_matches;
     const PasswordForm* preferred_match = nullptr;
 
     std::vector<const PasswordForm*> same_scheme_matches;
-    FindBestMatches(matches, PasswordForm::Scheme::kHtml, &same_scheme_matches,
-                    &best_matches, &preferred_match);
+    FindBestMatches(matches, PasswordForm::Scheme::kHtml,
+                    /*sort_matches_by_date_last_used=*/false,
+                    &same_scheme_matches, &best_matches, &preferred_match);
 
     if (test_case.expected_preferred_match_index == kNotFound) {
       // Case of empty |matches|.
@@ -216,15 +207,168 @@ TEST(PasswordManagerUtil, FindBestMatches) {
       ASSERT_EQ(test_case.expected_best_matches_indices.size(),
                 best_matches.size());
 
-      for (const auto& username_match : best_matches) {
-        std::string username = base::UTF16ToUTF8(username_match.first);
+      for (const PasswordForm* match : best_matches) {
+        std::string username = base::UTF16ToUTF8(match->username_value);
         ASSERT_NE(test_case.expected_best_matches_indices.end(),
                   test_case.expected_best_matches_indices.find(username));
         size_t expected_index =
             test_case.expected_best_matches_indices.at(username);
         size_t actual_index = std::distance(
-            matches.begin(),
-            std::find(matches.begin(), matches.end(), username_match.second));
+            matches.begin(), std::find(matches.begin(), matches.end(), match));
+        EXPECT_EQ(expected_index, actual_index);
+      }
+    }
+  }
+}
+
+TEST(PasswordManagerUtil, FindBestMatchesByUsageTime) {
+  const base::Time kNow = base::Time::Now();
+  const base::Time kYesterday = kNow - base::TimeDelta::FromDays(1);
+  const base::Time k2DaysAgo = kNow - base::TimeDelta::FromDays(2);
+  const int kNotFound = -1;
+  struct TestMatch {
+    bool is_psl_match;
+    bool preferred;
+    base::Time date_last_used;
+    std::string username;
+  };
+  struct TestCase {
+    const char* description;
+    std::vector<TestMatch> matches;
+    int expected_preferred_match_index;
+    std::map<std::string, size_t> expected_best_matches_indices;
+  } test_cases[] = {
+      {"Empty matches", {}, kNotFound, {}},
+      {"1 preferred non-psl match",
+       {{.is_psl_match = false,
+         .preferred = true,
+         .date_last_used = kNow,
+         .username = "u"}},
+       0,
+       {{"u", 0}}},
+      {"1 non-preferred psl match",
+       {{.is_psl_match = true,
+         .preferred = false,
+         .date_last_used = kNow,
+         .username = "u"}},
+       0,
+       {{"u", 0}}},
+      {"2 matches with the same username",
+       {{.is_psl_match = false,
+         .preferred = false,
+         .date_last_used = kNow,
+         .username = "u"},
+        {.is_psl_match = false,
+         .preferred = true,
+         .date_last_used = kYesterday,
+         .username = "u"}},
+       0,
+       {{"u", 0}}},
+      {"2 matches with different usernames, most recently used taken",
+       {{.is_psl_match = false,
+         .preferred = false,
+         .date_last_used = kNow,
+         .username = "u1"},
+        {.is_psl_match = false,
+         .preferred = true,
+         .date_last_used = kYesterday,
+         .username = "u2"}},
+       0,
+       {{"u1", 0}, {"u2", 1}}},
+      {"2 matches with different usernames, non-psl much taken",
+       {{.is_psl_match = false,
+         .preferred = false,
+         .date_last_used = kYesterday,
+         .username = "u1"},
+        {.is_psl_match = true,
+         .preferred = true,
+         .date_last_used = kNow,
+         .username = "u2"}},
+       0,
+       {{"u1", 0}, {"u2", 1}}},
+      {"8 matches, 3 usernames",
+       {{.is_psl_match = false,
+         .preferred = false,
+         .date_last_used = kYesterday,
+         .username = "u2"},
+        {.is_psl_match = true,
+         .preferred = false,
+         .date_last_used = kYesterday,
+         .username = "u3"},
+        {.is_psl_match = true,
+         .preferred = false,
+         .date_last_used = kYesterday,
+         .username = "u1"},
+        {.is_psl_match = false,
+         .preferred = true,
+         .date_last_used = k2DaysAgo,
+         .username = "u3"},
+        {.is_psl_match = true,
+         .preferred = false,
+         .date_last_used = kNow,
+         .username = "u1"},
+        {.is_psl_match = false,
+         .preferred = false,
+         .date_last_used = kNow,
+         .username = "u2"},
+        {.is_psl_match = true,
+         .preferred = true,
+         .date_last_used = kYesterday,
+         .username = "u3"},
+        {.is_psl_match = false,
+         .preferred = false,
+         .date_last_used = k2DaysAgo,
+         .username = "u1"}},
+       5,
+       {{"u1", 7}, {"u2", 5}, {"u3", 3}}},
+
+  };
+
+  for (const TestCase& test_case : test_cases) {
+    SCOPED_TRACE(testing::Message("Test description: ")
+                 << test_case.description);
+    // Convert TestMatch to PasswordForm.
+    std::vector<PasswordForm> owning_matches;
+    for (const TestMatch& match : test_case.matches) {
+      PasswordForm form;
+      form.is_public_suffix_match = match.is_psl_match;
+      form.preferred = match.preferred;
+      form.date_last_used = match.date_last_used;
+      form.username_value = base::ASCIIToUTF16(match.username);
+      owning_matches.push_back(form);
+    }
+    std::vector<const PasswordForm*> matches;
+    for (const PasswordForm& match : owning_matches)
+      matches.push_back(&match);
+
+    std::vector<const PasswordForm*> best_matches;
+    const PasswordForm* preferred_match = nullptr;
+
+    std::vector<const PasswordForm*> same_scheme_matches;
+    FindBestMatches(matches, PasswordForm::Scheme::kHtml,
+                    /*sort_matches_by_date_last_used=*/true,
+                    &same_scheme_matches, &best_matches, &preferred_match);
+
+    if (test_case.expected_preferred_match_index == kNotFound) {
+      // Case of empty |matches|.
+      EXPECT_FALSE(preferred_match);
+      EXPECT_TRUE(best_matches.empty());
+    } else {
+      // Check |preferred_match|.
+      EXPECT_EQ(matches[test_case.expected_preferred_match_index],
+                preferred_match);
+      // Check best matches.
+      ASSERT_EQ(test_case.expected_best_matches_indices.size(),
+                best_matches.size());
+
+      for (const PasswordForm* match : best_matches) {
+        std::string username = base::UTF16ToUTF8(match->username_value);
+        ASSERT_NE(test_case.expected_best_matches_indices.end(),
+                  test_case.expected_best_matches_indices.find(username));
+        size_t expected_index =
+            test_case.expected_best_matches_indices.at(username);
+        size_t actual_index = std::distance(
+            matches.begin(), std::find(matches.begin(), matches.end(), match));
         EXPECT_EQ(expected_index, actual_index);
       }
     }
@@ -236,8 +380,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsername) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.password_value = base::ASCIIToUTF16("new_password");
 
-  EXPECT_EQ(&stored,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(&stored, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_RejectUnknownUsername) {
@@ -245,8 +388,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_RejectUnknownUsername) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.username_value = base::ASCIIToUTF16("other_username");
 
-  EXPECT_EQ(nullptr,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(nullptr, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_FederatedCredential) {
@@ -255,8 +397,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_FederatedCredential) {
   parsed.password_value.clear();
   parsed.federation_origin = url::Origin::Create(GURL(kTestFederationURL));
 
-  EXPECT_EQ(nullptr,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(nullptr, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsernamePSL) {
@@ -264,8 +405,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsernamePSL) {
   stored.is_public_suffix_match = true;
   autofill::PasswordForm parsed = GetTestCredential();
 
-  EXPECT_EQ(&stored,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(&stored, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsernamePSLAnotherPassword) {
@@ -274,8 +414,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_MatchUsernamePSLAnotherPassword) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.password_value = base::ASCIIToUTF16("new_password");
 
-  EXPECT_EQ(nullptr,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(nullptr, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil,
@@ -286,8 +425,7 @@ TEST(PasswordManagerUtil,
   parsed.new_password_value = parsed.password_value;
   parsed.password_value.clear();
 
-  EXPECT_EQ(&stored,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(&stored, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil,
@@ -298,8 +436,7 @@ TEST(PasswordManagerUtil,
   parsed.new_password_value = base::ASCIIToUTF16("new_password");
   parsed.password_value.clear();
 
-  EXPECT_EQ(nullptr,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(nullptr, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameFindByPassword) {
@@ -307,8 +444,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameFindByPassword) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.username_value.clear();
 
-  EXPECT_EQ(&stored,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(&stored, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameFindByPasswordPSL) {
@@ -317,8 +453,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameFindByPasswordPSL) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.username_value.clear();
 
-  EXPECT_EQ(&stored,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(&stored, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameCMAPI) {
@@ -329,8 +464,7 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernameCMAPI) {
 
   // In case of the Credential Management API we know for sure that the site
   // meant empty username. Don't try any other heuristics.
-  EXPECT_EQ(nullptr,
-            GetMatchForUpdating(parsed, MapFromCredentials({&stored})));
+  EXPECT_EQ(nullptr, GetMatchForUpdating(parsed, {&stored}));
 }
 
 TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernamePickFirst) {
@@ -347,10 +481,9 @@ TEST(PasswordManagerUtil, GetMatchForUpdating_EmptyUsernamePickFirst) {
   autofill::PasswordForm parsed = GetTestCredential();
   parsed.username_value.clear();
 
-  // The credential with the first username is picked.
-  EXPECT_EQ(&stored1,
-            GetMatchForUpdating(
-                parsed, MapFromCredentials({&stored3, &stored2, &stored1})));
+  // The first credential is picked (arbitrarily).
+  EXPECT_EQ(&stored3,
+            GetMatchForUpdating(parsed, {&stored3, &stored2, &stored1}));
 }
 
 TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Android) {

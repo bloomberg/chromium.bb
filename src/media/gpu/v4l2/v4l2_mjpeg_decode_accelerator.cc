@@ -26,7 +26,7 @@
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
-#include "media/gpu/format_utils.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/video_frame_mapper.h"
@@ -617,7 +617,7 @@ bool V4L2MjpegDecodeAccelerator::CreateOutputBuffers() {
     output_strides_[i] = format.fmt.pix_mp.plane_fmt[i].bytesperline;
 
   VideoPixelFormat output_format =
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_buffer_pixelformat_);
+      Fourcc::FromV4L2PixFmt(output_buffer_pixelformat_).ToVideoPixelFormat();
   if (output_format == PIXEL_FORMAT_UNKNOWN) {
     VLOGF(1) << "unknown V4L2 pixel format: "
              << FourccToString(output_buffer_pixelformat_);
@@ -862,7 +862,8 @@ bool V4L2MjpegDecodeAccelerator::ConvertOutputImage(
   // Dmabuf-backed frame needs to be mapped for SW access.
   if (dst_frame->HasDmaBufs()) {
     std::unique_ptr<VideoFrameMapper> frame_mapper =
-        VideoFrameMapperFactory::CreateMapper(dst_frame->format());
+        VideoFrameMapperFactory::CreateMapper(dst_frame->format(),
+                                              VideoFrame::STORAGE_DMABUFS);
     if (!frame_mapper) {
       VLOGF(1) << "Failed to create video frame mapper";
       return false;
@@ -887,7 +888,7 @@ bool V4L2MjpegDecodeAccelerator::ConvertOutputImage(
       dst_frame->format() == PIXEL_FORMAT_I420) {
     DCHECK_EQ(dst_frame->layout().num_planes(), 3u);
     const VideoPixelFormat format =
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(output_buffer_pixelformat_);
+        Fourcc::FromV4L2PixFmt(output_buffer_pixelformat_).ToVideoPixelFormat();
     if (format == PIXEL_FORMAT_UNKNOWN) {
       VLOGF(1) << "Unknown V4L2 format: "
                << FourccToString(output_buffer_pixelformat_);

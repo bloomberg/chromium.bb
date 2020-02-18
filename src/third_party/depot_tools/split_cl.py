@@ -229,7 +229,7 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
         return 0
 
     for cl_index, (directory, files) in \
-        enumerate(files_split_by_owners.iteritems(), 1):
+        enumerate(files_split_by_owners.items(), 1):
       # Use '/' as a path separator in the branch name and the CL description
       # and comment.
       directory = directory.replace(os.path.sep, '/')

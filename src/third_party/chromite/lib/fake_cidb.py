@@ -8,12 +8,10 @@
 from __future__ import print_function
 
 import datetime
-import itertools
 
 from chromite.lib import build_requests
 from chromite.lib import constants
 from chromite.lib import cidb
-from chromite.lib import clactions
 from chromite.lib import failure_message_lib
 from chromite.lib import hwtest_results
 
@@ -142,35 +140,6 @@ class FakeCIDBConnection(object):
          'build_type': d.get('build_type'),
          'important': d.get('important')})
     return 1
-
-  def InsertCLActions(self, build_id, cl_actions, timestamp=None):
-    """Insert a list of |cl_actions|."""
-    if not cl_actions:
-      return 0
-
-    rows = []
-    for cl_action in cl_actions:
-      change_number = int(cl_action.change_number)
-      patch_number = int(cl_action.patch_number)
-      change_source = cl_action.change_source
-      action = cl_action.action
-      reason = cl_action.reason
-      buildbucket_id = cl_action.buildbucket_id
-
-      timestamp = cl_action.timestamp or timestamp or datetime.datetime.now()
-
-      rows.append({
-          'build_id' : build_id,
-          'change_source' : change_source,
-          'change_number': change_number,
-          'patch_number' : patch_number,
-          'action' : action,
-          'timestamp': timestamp,
-          'reason' : reason,
-          'buildbucket_id': buildbucket_id})
-
-    self.clActionTable.extend(rows)
-    return len(rows)
 
   def InsertBuildStage(self, build_id, name, board=None,
                        status=constants.BUILDER_STATUS_PLANNED):
@@ -312,80 +281,6 @@ class FakeCIDBConnection(object):
 
     self.buildStageTable[build_stage_id]['status'] = status
 
-  def GetActionsForChanges(self, changes, ignore_patch_number=True,
-                           status=None, action=None, start_time=None):
-    """Gets all the actions for the given changes.
-
-    Args:
-      changes: A list of GerritChangeTuple, GerritPatchTuple or GerritPatch
-        specifying the changes to whose actions should be fetched.
-      ignore_patch_number: Boolean indicating whether to ignore patch_number of
-        the changes. If ignore_patch_number is False, only get the actions with
-        matched patch_number. Default to True.
-      status: If provided, only return the actions with build is |status| (a
-        member of constants.BUILDER_ALL_STATUSES). Default to None.
-      action: If provided, only return the actions is |action| (a member of
-        constants.CL_ACTIONS). Default to None.
-      start_time: If provided, only return the actions with timestamp >=
-        start_time. Default to None.
-
-    Returns:
-      A list of CLAction instances, in action id order.
-    """
-    values = []
-    for row in self.GetActionHistory():
-      if start_time is not None and row.timestamp < start_time:
-        continue
-      if status is not None and row.status != status:
-        continue
-      if action is not None and row.action != action:
-        continue
-
-      for change in changes:
-        change_source = 'internal' if change.internal else 'external'
-
-        if (change_source != row.change_source or
-            int(change.gerrit_number) != row.change_number):
-          continue
-        if (not ignore_patch_number and
-            int(change.patch_number) != row.patch_number):
-          continue
-
-        values.append(row)
-        break
-
-    return values
-
-  def GetActionsForBuild(self, build_id):
-    """Gets all the actions associated with build |build_id|.
-
-    Returns:
-      A list of CLAction instance, in action id order.
-    """
-    return [row for row in self.GetActionHistory()
-            if build_id == row.build_id]
-
-  def GetActionHistory(self, *args, **kwargs):
-    """Get all the actions for all changes."""
-    # pylint: disable=unused-argument
-    values = []
-    for item, action_id in zip(self.clActionTable, itertools.count()):
-      row = (
-          action_id,
-          item['build_id'],
-          item['action'],
-          item['reason'],
-          self.buildTable[item['build_id']]['build_config'],
-          item['change_number'],
-          item['patch_number'],
-          item['change_source'],
-          item['timestamp'],
-          item['buildbucket_id'],
-          self.buildTable[item['build_id']]['status'])
-      values.append(row)
-
-    return clactions.CLActionHistory(clactions.CLAction(*row) for row in values)
-
   def GetBuildStatus(self, build_id):
     """Gets the status of the build."""
     try:
@@ -435,7 +330,7 @@ class FakeCIDBConnection(object):
 
     return build_stages
 
-  #pylint: disable=unused-argument
+  # pylint: disable=unused-argument
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       branch=None, milestone_version=None,
@@ -455,7 +350,8 @@ class FakeCIDBConnection(object):
                        platform_version=None, starting_build_id=None,
                        final=False, reverse=False):
     """Returns the build history for the given |build_configs|."""
-    builds = sorted(self.buildTable, reverse=(not reverse))
+    builds = sorted(self.buildTable, reverse=(not reverse),
+                    key=lambda x: x['id'])
 
     # Filter results.
     if build_configs:
@@ -715,4 +611,3 @@ class FakeCIDBConnection(object):
     This function is not being tested. A function stub to spare a
     unittest error.
     """
-    pass

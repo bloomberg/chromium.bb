@@ -47,6 +47,7 @@ struct SimulationSettings {
   absl::optional<std::string> input_filename;
   absl::optional<std::string> reverse_input_filename;
   absl::optional<std::string> artificial_nearend_filename;
+  absl::optional<std::string> linear_aec_output_filename;
   absl::optional<bool> use_aec;
   absl::optional<bool> use_aecm;
   absl::optional<bool> use_ed;  // Residual Echo Detector.
@@ -57,7 +58,6 @@ struct SimulationSettings {
   absl::optional<bool> use_hpf;
   absl::optional<bool> use_ns;
   absl::optional<bool> use_ts;
-  absl::optional<bool> use_ie;
   absl::optional<bool> use_vad;
   absl::optional<bool> use_le;
   absl::optional<bool> use_all;
@@ -66,6 +66,7 @@ struct SimulationSettings {
   absl::optional<bool> use_extended_filter;
   absl::optional<bool> use_drift_compensation;
   absl::optional<bool> use_legacy_aec;
+  absl::optional<bool> use_legacy_ns;
   absl::optional<bool> use_experimental_agc;
   absl::optional<bool> use_experimental_agc_agc2_level_estimator;
   absl::optional<bool> experimental_agc_disable_digital_adaptive;
@@ -79,11 +80,13 @@ struct SimulationSettings {
   AudioProcessing::Config::GainController2::LevelEstimator
       agc2_adaptive_level_estimator;
   absl::optional<float> pre_amplifier_gain_factor;
-  absl::optional<int> vad_likelihood;
   absl::optional<int> ns_level;
+  absl::optional<int> maximum_internal_processing_rate;
   absl::optional<bool> use_refined_adaptive_filter;
   int initial_mic_level;
   bool simulate_mic_gain = false;
+  absl::optional<bool> multi_channel_render;
+  absl::optional<bool> multi_channel_capture;
   absl::optional<int> simulated_mic_kind;
   bool report_performance = false;
   absl::optional<std::string> performance_report_output_filename;
@@ -155,6 +158,7 @@ class AudioProcessingSimulator {
   std::unique_ptr<ChannelBuffer<float>> out_buf_;
   std::unique_ptr<ChannelBuffer<float>> reverse_in_buf_;
   std::unique_ptr<ChannelBuffer<float>> reverse_out_buf_;
+  std::vector<std::array<float, 160>> linear_aec_output_buf_;
   StreamConfig in_config_;
   StreamConfig out_config_;
   StreamConfig reverse_in_config_;
@@ -177,6 +181,7 @@ class AudioProcessingSimulator {
   std::unique_ptr<ChannelBufferWavWriter> buffer_file_writer_;
   std::unique_ptr<ChannelBufferWavWriter> reverse_buffer_file_writer_;
   std::unique_ptr<ChannelBufferVectorWriter> buffer_memory_writer_;
+  std::unique_ptr<WavWriter> linear_aec_output_file_writer_;
   ApiCallStatistics api_call_statistics_;
   std::ofstream residual_echo_likelihood_graph_writer_;
   int analog_mic_level_;

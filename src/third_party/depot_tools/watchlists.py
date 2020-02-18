@@ -6,8 +6,8 @@
 """Watchlists
 
 Watchlists is a mechanism that allow a developer (a "watcher") to watch over
-portions of code that he is interested in. A "watcher" will be cc-ed to
-changes that modify that portion of code, thereby giving him an opportunity
+portions of code that they are interested in. A "watcher" will be cc-ed to
+changes that modify that portion of code, thereby giving them an opportunity
 to make comments on codereview.chromium.org even before the change is
 committed.
 Refer: http://dev.chromium.org/developers/contributing-code/watchlists
@@ -94,7 +94,7 @@ class Watchlists(object):
     # Compile the regular expressions ahead of time to avoid creating them
     # on-the-fly multiple times per file.
     self._path_regexps = {}
-    for name, rule in defns.iteritems():
+    for name, rule in defns.items():
       filepath = rule.get('filepath')
       if not filepath:
         continue
@@ -117,12 +117,13 @@ class Watchlists(object):
     watchers = set()  # A set, to avoid duplicates
     for path in paths:
       path = path.replace(os.sep, '/')
-      for name, rule in self._path_regexps.iteritems():
+      for name, rule in self._path_regexps.items():
         if name not in self._watchlists:
           continue
         if rule.search(path):
-          map(watchers.add, self._watchlists[name])
-    return list(watchers)
+          for watchlist in self._watchlists[name]:
+            watchers.add(watchlist)
+    return sorted(watchers)
 
 
 def main(argv):

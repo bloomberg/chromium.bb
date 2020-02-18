@@ -5,13 +5,13 @@
 package org.chromium.chrome.browser.feed;
 
 import android.app.Activity;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 
-import com.google.android.libraries.feed.api.client.stream.Stream;
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -88,11 +88,8 @@ public class StreamLifecycleManager implements ApplicationStatus.ActivityStateLi
     /** @return Whether the {@link Stream} can be shown. */
     protected boolean canShow() {
         final int state = ApplicationStatus.getStateForActivity(mActivity);
-        // We don't call Stream#onShow to prevent feed services from being warmed up if the user
-        // has opted out from article suggestions during the previous session.
         return (mStreamState == StreamState.CREATED || mStreamState == StreamState.HIDDEN)
-                && (state == ActivityState.STARTED || state == ActivityState.RESUMED)
-                && FeedProcessScopeFactory.areArticlesVisibleDuringSession();
+                && (state == ActivityState.STARTED || state == ActivityState.RESUMED);
     }
 
     /** Calls {@link Stream#onShow()}. */
@@ -106,8 +103,7 @@ public class StreamLifecycleManager implements ApplicationStatus.ActivityStateLi
     /** @return Whether the {@link Stream} can be activated. */
     protected boolean canActivate() {
         return (mStreamState == StreamState.SHOWN || mStreamState == StreamState.INACTIVE)
-                && ApplicationStatus.getStateForActivity(mActivity) == ActivityState.RESUMED
-                && FeedProcessScopeFactory.areArticlesVisibleDuringSession();
+                && ApplicationStatus.getStateForActivity(mActivity) == ActivityState.RESUMED;
     }
 
     /** Calls {@link Stream#onActive()}. */
@@ -131,8 +127,9 @@ public class StreamLifecycleManager implements ApplicationStatus.ActivityStateLi
     /** Calls {@link Stream#onHide()}. */
     protected void hide() {
         if (mStreamState == StreamState.HIDDEN || mStreamState == StreamState.CREATED
-                || mStreamState == StreamState.DESTROYED)
+                || mStreamState == StreamState.DESTROYED) {
             return;
+        }
 
         // Make sure the Stream is inactive before setting it to hidden state.
         deactivate();

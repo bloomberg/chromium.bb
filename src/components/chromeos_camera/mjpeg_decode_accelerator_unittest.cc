@@ -36,11 +36,12 @@
 #include "build/build_config.h"
 #include "components/chromeos_camera/gpu_mjpeg_decode_accelerator_factory.h"
 #include "components/chromeos_camera/mjpeg_decode_accelerator.h"
+#include "media/base/color_plane_layout.h"
+#include "media/base/format_utils.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_frame_layout.h"
-#include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
 #include "media/gpu/buildflags.h"
-#include "media/gpu/format_utils.h"
+#include "media/gpu/test/local_gpu_memory_buffer_manager.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_frame_helpers.h"
 #include "media/parsers/jpeg_parser.h"
@@ -348,7 +349,7 @@ MjpegDecodeAcceleratorTestEnvironment::CreateDmaBufVideoFrame(
   gmb->Unmap();
 
   // Create a VideoFrame from the NativePixmapHandle.
-  std::vector<media::VideoFrameLayout::Plane> planes;
+  std::vector<media::ColorPlaneLayout> planes;
   std::vector<base::ScopedFD> dmabuf_fds;
   for (size_t i = 0; i < num_planes; i++) {
     gfx::NativePixmapPlane& plane = gmb_handle.native_pixmap_handle.planes[i];
@@ -1104,7 +1105,7 @@ std::string TestParamToString(::testing::TestParamInfo<bool> param_info) {
   return param_info.param ? "DMABUF" : "SHMEM";
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MjpegDecodeAcceleratorTest,
                          ::testing::Bool(),
                          TestParamToString);

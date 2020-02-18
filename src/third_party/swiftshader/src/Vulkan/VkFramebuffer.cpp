@@ -23,7 +23,8 @@ namespace vk
 
 Framebuffer::Framebuffer(const VkFramebufferCreateInfo* pCreateInfo, void* mem) :
 	attachmentCount(pCreateInfo->attachmentCount),
-	attachments(reinterpret_cast<ImageView**>(mem))
+	attachments(reinterpret_cast<ImageView**>(mem)),
+	extent{pCreateInfo->width, pCreateInfo->height, pCreateInfo->layers}
 {
 	for(uint32_t i = 0; i < attachmentCount; i++)
 	{
@@ -95,17 +96,22 @@ void Framebuffer::clearAttachment(const RenderPass* renderPass, uint32_t subpass
 	}
 	else if (attachment.aspectMask & (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT))
 	{
-		ASSERT(subpass.pDepthStencilAttachment->attachment < attachmentCount);
-		ImageView *imageView = attachments[subpass.pDepthStencilAttachment->attachment];
+		uint32_t attachmentIndex = subpass.pDepthStencilAttachment->attachment;
 
-		if (renderPass->isMultiView())
+		if (attachmentIndex != VK_ATTACHMENT_UNUSED)
 		{
-			imageView->clearWithLayerMask(attachment.clearValue, attachment.aspectMask, rect.rect,
-										  renderPass->getViewMask(subpassIndex));
-		}
-		else
-		{
-			imageView->clear(attachment.clearValue, attachment.aspectMask, rect);
+			ASSERT(attachmentIndex < attachmentCount);
+			ImageView *imageView = attachments[attachmentIndex];
+
+			if (renderPass->isMultiView())
+			{
+				imageView->clearWithLayerMask(attachment.clearValue, attachment.aspectMask, rect.rect,
+											  renderPass->getViewMask(subpassIndex));
+			}
+			else
+			{
+				imageView->clear(attachment.clearValue, attachment.aspectMask, rect);
+			}
 		}
 	}
 }

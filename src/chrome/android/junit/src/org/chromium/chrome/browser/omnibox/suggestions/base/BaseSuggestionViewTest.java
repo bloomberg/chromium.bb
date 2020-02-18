@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+
 import android.app.Activity;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -42,7 +44,7 @@ public class BaseSuggestionViewTest {
     // TODO(https://github.com/robolectric/robolectric/issues/3910) Remove the class below once
     // the above issue is resolved and our robolectric version is rolled forward to the version
     // that supports layout direction changes.
-    class BaseSuggestionViewForTest extends BaseSuggestionView {
+    static class BaseSuggestionViewForTest extends BaseSuggestionView {
         private int mCurrentDirection = View.LAYOUT_DIRECTION_LTR;
 
         BaseSuggestionViewForTest(View childView) {
@@ -76,7 +78,7 @@ public class BaseSuggestionViewTest {
         }
 
         View getRefineView() {
-            return mRefineView;
+            return mActionView;
         }
     }
 
@@ -124,7 +126,7 @@ public class BaseSuggestionViewTest {
         Assert.assertEquals("right view edge", right, v.getRight());
         Assert.assertEquals("bottom view edge", bottom, v.getBottom());
         Assert.assertEquals("view width", right - left, v.getMeasuredWidth());
-        Assert.assertEquals("view height", bottom - top, v.getMeasuredHeight());
+        Assert.assertThat("view height", v.getMeasuredHeight(), lessThanOrEqualTo(bottom - top));
     }
 
     @Test
@@ -176,10 +178,10 @@ public class BaseSuggestionViewTest {
                 useContentWidth + mActionIconWidthPx + mSuggestionPaddingEndPx;
         final int giveContentHeight = 25;
 
-        final int expectedRefineLeft = 0;
-        final int expectedRefineRight = mActionIconWidthPx;
+        final int expectedRefineLeft = mSuggestionPaddingEndPx;
+        final int expectedRefineRight = expectedRefineLeft + mActionIconWidthPx;
         final int expectedContentLeft = expectedRefineRight;
-        final int expectedContentRight = giveSuggestionWidth - mSuggestionPaddingEndPx;
+        final int expectedContentRight = giveSuggestionWidth;
 
         executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_RTL);
 
@@ -231,8 +233,8 @@ public class BaseSuggestionViewTest {
         final int giveSuggestionWidth = 250;
         final int giveContentHeight = 15;
 
-        final int expectedContentLeft = 0;
-        final int expectedContentRight = giveSuggestionWidth - mSuggestionPaddingEndPx;
+        final int expectedContentLeft = mSuggestionPaddingEndPx;
+        final int expectedContentRight = giveSuggestionWidth;
 
         mRefineView.setVisibility(View.GONE);
 

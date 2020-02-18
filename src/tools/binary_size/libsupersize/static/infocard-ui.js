@@ -80,21 +80,19 @@ const displayInfocard = (() => {
      */
     _updatePaths(node) {
       let pathFragment;
+      // srcPath is set only for leaf nodes.
       if (node.srcPath) {
         pathFragment = dom.createFragment([
             dom.textElement('span', 'Path: ', 'symbol-name-info'),
             document.createTextNode(node.srcPath),
             document.createElement('br'),
             dom.textElement('span', 'Component: ', 'symbol-name-info'),
-            document.createTextNode(node.componet || '(No component)'),
+            document.createTextNode(node.component || '(No component)'),
         ]);
       } else {
         const path = node.idPath.slice(0, node.shortNameIndex);
         const boldShortName = dom.textElement(
-          'span',
-          shortName(node),
-          'symbol-name-info'
-        );
+            'span', node.fullName || shortName(node), 'symbol-name-info');
         pathFragment = dom.createFragment([
           document.createTextNode(path),
           boldShortName,
@@ -193,6 +191,7 @@ const displayInfocard = (() => {
     constructor(id) {
       super(id);
       this._tableBody = this._infocard.querySelector('tbody');
+      this._tableHeader = this._infocard.querySelector('thead');
       this._ctx = this._infocard.querySelector('canvas').getContext('2d');
 
       /**
@@ -291,6 +290,9 @@ const displayInfocard = (() => {
       const countColumn = row.querySelector('.count');
       const sizeColumn = row.querySelector('.size');
       const percentColumn = row.querySelector('.percent');
+      const addedColumn = row.querySelector('.added');
+      const removedColumn = row.querySelector('.removed');
+      const changedColumn = row.querySelector('.changed');
 
       const countString = stats.count.toLocaleString(_LOCALE, {
         useGrouping: true,
@@ -305,6 +307,26 @@ const displayInfocard = (() => {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
+
+      const diffMode = state.has('diff_mode');
+      if (diffMode && stats.added !== undefined) {
+        addedColumn.removeAttribute('hidden');
+        removedColumn.removeAttribute('hidden');
+        changedColumn.removeAttribute('hidden');
+        countColumn.setAttribute('hidden', '');
+
+        addedColumn.textContent =
+            stats.added.toLocaleString(_LOCALE, {useGrouping: true});
+        removedColumn.textContent =
+            stats.removed.toLocaleString(_LOCALE, {useGrouping: true});
+        changedColumn.textContent =
+            stats.changed.toLocaleString(_LOCALE, {useGrouping: true});
+      } else {
+        addedColumn.setAttribute('hidden', '');
+        removedColumn.setAttribute('hidden', '');
+        changedColumn.setAttribute('hidden', '');
+        countColumn.removeAttribute('hidden');
+      }
 
       // Update DOM
       countColumn.textContent = countString;
@@ -323,10 +345,30 @@ const displayInfocard = (() => {
         (a, b) => b[1].size - a[1].size
       );
       const diffMode = state.has('diff_mode');
-      const highlightMode = state.has('highlight');
       let totalSize = 0;
       for (const [, stats] of statsEntries) {
         totalSize += Math.abs(stats.size);
+      }
+
+      const countColumn = this._tableHeader.querySelector('.count');
+      const addedColumn = this._tableHeader.querySelector('.added');
+      const removedColumn = this._tableHeader.querySelector('.removed');
+      const changedColumn = this._tableHeader.querySelector('.changed');
+
+      // The WebAssembly worker supports added/removed/changed in diff view,
+      // so displaying count isn't useful.
+      // In non-diff view, and any .ndjson view, we don't have added/removed/
+      // changed information, so we just display a count.
+      if (diffMode && statsEntries[0][1].added !== undefined) {
+        addedColumn.removeAttribute('hidden');
+        removedColumn.removeAttribute('hidden');
+        changedColumn.removeAttribute('hidden');
+        countColumn.setAttribute('hidden', '');
+      } else {
+        addedColumn.setAttribute('hidden', '');
+        removedColumn.setAttribute('hidden', '');
+        changedColumn.setAttribute('hidden', '');
+        countColumn.removeAttribute('hidden');
       }
 
       // Update DOM
@@ -343,13 +385,6 @@ const displayInfocard = (() => {
           const angleEnd = angleStart + arcLength;
 
           this._drawSlice(angleStart, angleEnd, color);
-          if (highlightMode) {
-            const highlightPercent = stats.highlight / totalSize;
-            const highlightArcLength = Math.abs(highlightPercent) * 2 * Math.PI;
-            const highlightEnd = (angleStart + highlightArcLength);
-
-            this._drawBorder(angleStart, highlightEnd, '#feefc3', 32);
-          }
           if (diffMode) {
             const strokeColor = stats.size > 0 ? '#ea4335' : '#34a853';
             this._drawBorder(angleStart, angleEnd, strokeColor, 16);

@@ -17,8 +17,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
-import org.chromium.chrome.browser.preferences.website.PermissionInfo;
+import org.chromium.chrome.browser.settings.website.ContentSettingValues;
+import org.chromium.chrome.browser.settings.website.PermissionInfo;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -64,7 +64,7 @@ public class PermissionUpdateInfobarTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         mTestServer.stopAndDestroyServer();
     }
 
@@ -73,7 +73,7 @@ public class PermissionUpdateInfobarTest {
     @Test
     @MediumTest
     public void testInfobarShutsDownCleanlyForGeolocation()
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
+            throws IllegalArgumentException, TimeoutException {
         ChromeTabUtils.newTabFromMenu(
                 InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
 
@@ -110,7 +110,7 @@ public class PermissionUpdateInfobarTest {
             final WebContents webContents =
                     TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<WebContents>() {
                         @Override
-                        public WebContents call() throws Exception {
+                        public WebContents call() {
                             return mActivityTestRule.getActivity()
                                     .getActivityTab()
                                     .getWebContents();

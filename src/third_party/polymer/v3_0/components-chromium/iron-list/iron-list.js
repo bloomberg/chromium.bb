@@ -248,12 +248,12 @@ once. Say you have a million records in the database, you want to split the data
 into pages so you can bring in a page at the time. The page could contain 500
 items, and iron-list will only render 20.
 
-@group Iron Element
 @element iron-list
 @demo demo/index.html
 
 */
 Polymer({
+  /** @override */
   _template: html`
     <style>
       :host {
@@ -376,7 +376,15 @@ Polymer({
      * there's some offset between the scrolling element and the list. For
      * example: a header is placed above the list.
      */
-    scrollOffset: {type: Number, value: 0}
+    scrollOffset: {type: Number, value: 0},
+
+    /**
+     * If set to true, focus on an element will be preserved after rerender.
+     */
+    preserveFocus: {
+      type: Boolean,
+      value: false
+    }
   },
 
   observers: [
@@ -406,7 +414,7 @@ Polymer({
   _scrollerPaddingTop: 0,
 
   /**
-   * This value is the same as `scrollTop`.
+   * This value is a cached value of `scrollTop` from the last `scroll` event.
    */
   _scrollPosition: 0,
 
@@ -460,7 +468,7 @@ Polymer({
 
   /**
    * An array of DOM nodes that are currently in the tree
-   * @type {?Array<!TemplateInstanceBase>}
+   * @type {?Array<!HTMLElement>}
    */
   _physicalItems: null,
 
@@ -507,13 +515,14 @@ Polymer({
 
   /**
    * The the item that is focused if it is moved offscreen.
-   * @private {?TemplatizerNode}
+   * @private {?HTMLElement}
    */
   _offscreenFocusedItem: null,
 
   /**
    * The item that backfills the `_offscreenFocusedItem` in the physical items
    * list when that item is moved offscreen.
+   * @type {?HTMLElement}
    */
   _focusBackfillItem: null,
 
@@ -735,10 +744,12 @@ Polymer({
     return this._scrollerPaddingTop + this.scrollOffset;
   },
 
+  /** @override */
   ready: function() {
     this.addEventListener('focus', this._didFocus.bind(this), true);
   },
 
+  /** @override */
   attached: function() {
     this._debounce('_render', this._render, animationFrame);
     // `iron-resize` is fired when the list is attached if the event is added
@@ -747,6 +758,7 @@ Polymer({
     this.listen(this, 'keydown', '_keydownHandler');
   },
 
+  /** @override */
   detached: function() {
     this.unlisten(this, 'iron-resize', '_resizeHandler');
     this.unlisten(this, 'keydown', '_keydownHandler');
@@ -799,9 +811,16 @@ Polymer({
           Math.round(delta / this._physicalAverage) * this._itemsPerRow;
       this._virtualStart = this._virtualStart + idxAdjustment;
       this._physicalStart = this._physicalStart + idxAdjustment;
-      // Estimate new physical offset.
-      this._physicalTop = Math.floor(this._virtualStart / this._itemsPerRow) *
-          this._physicalAverage;
+      // Estimate new physical offset based on the virtual start index.
+      // adjusts the physical start position to stay in sync with the clamped
+      // virtual start index. It's critical not to let this value be
+      // more than the scroll position however, since that would result in
+      // the physical items not covering the viewport, and leading to
+      // _increasePoolIfNeeded to run away creating items to try to fill it.
+      this._physicalTop = Math.min(
+          Math.floor(this._virtualStart / this._itemsPerRow) *
+              this._physicalAverage,
+          this._scrollPosition);
       this._update();
     } else if (this._physicalCount > 0) {
       var reusables = this._getReusables(isScrollingDown);
@@ -837,7 +856,8 @@ Polymer({
     var physicalCount = this._physicalCount;
     var top = this._physicalTop + this._scrollOffset;
     var bottom = this._physicalBottom + this._scrollOffset;
-    var scrollTop = this._scrollTop;
+    // This may be called outside of a scrollHandler, so use last cached position
+    var scrollTop = this._scrollPosition;
     var scrollBottom = this._scrollBottom;
 
     if (fromTop) {
@@ -1031,7 +1051,8 @@ Polymer({
     if (this.ctor) {
       return;
     }
-    this._userTemplate = this.queryEffectiveChildren('template');
+    this._userTemplate = /** @type {!HTMLTemplateElement} */ (
+        this.queryEffectiveChildren('template'));
     if (!this._userTemplate) {
       console.warn('iron-list requires a template to be provided in light-dom');
     }
@@ -1054,10 +1075,52 @@ Polymer({
   },
 
   /**
+   * Finds and returns the focused element (both within self and children's
+   * Shadow DOM).
+   * @return {?HTMLElement}
+   */
+  _getFocusedElement: function() {
+    function doSearch(node, query) {
+      let result = null;
+      let type = node.nodeType;
+      if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_FRAGMENT_NODE)
+        result = node.querySelector(query);
+      if (result)
+        return result;
+
+      let child = node.firstChild;
+      while (child !== null && result === null) {
+        result = doSearch(child, query);
+        child = child.nextSibling;
+      }
+      if (result)
+        return result;
+
+      const shadowRoot = node.shadowRoot;
+      return shadowRoot ? doSearch(shadowRoot, query) : null;
+    }
+
+    // Find out if any of the items are focused first, and only search
+    // recursively in the item that contains focus, to avoid a slow
+    // search of the entire list.
+    const focusWithin = doSearch(this, ':focus-within');
+    return focusWithin ? doSearch(focusWithin, ':focus') : null;
+  },
+
+  /**
    * Called when the items have changed. That is, reassignments
    * to `items`, splices or updates to a single item.
    */
   _itemsChanged: function(change) {
+    var rendering = /^items(\.splices){0,1}$/.test(change.path);
+    var lastFocusedIndex, focusedElement;
+    if (rendering && this.preserveFocus) {
+      lastFocusedIndex = this._focusedVirtualIndex;
+      focusedElement = this._getFocusedElement();
+    }
+
+    var preservingFocus = rendering && this.preserveFocus && focusedElement;
+
     if (change.path === 'items') {
       this._virtualStart = 0;
       this._physicalTop = 0;
@@ -1069,7 +1132,7 @@ Polymer({
       this._physicalItems = this._physicalItems || [];
       this._physicalSizes = this._physicalSizes || [];
       this._physicalStart = 0;
-      if (this._scrollTop > this._scrollOffset) {
+      if (this._scrollTop > this._scrollOffset && !preservingFocus) {
         this._resetScrollPosition(0);
       }
       this._removeFocusedItem();
@@ -1101,6 +1164,17 @@ Polymer({
     } else if (change.path !== 'items.length') {
       this._forwardItemPath(change.path, change.value);
     }
+
+    // If the list was in focus when updated, preserve the focus on item.
+    if (preservingFocus) {
+      flush();
+      focusedElement.blur();  // paper- elements breaks when focused twice.
+      this._focusPhysicalItem(
+          Math.min(this.items.length - 1, lastFocusedIndex));
+      if (!this._isIndexVisible(this._focusedVirtualIndex)) {
+        this.scrollToIndex(this._focusedVirtualIndex);
+      }
+    }
   },
 
   _forwardItemPath: function(path, value) {
@@ -1128,7 +1202,7 @@ Polymer({
     path = path.substring(dot + 1);
     path = this.as + (path ? '.' + path : '');
     inst._setPendingPropertyOrPath(path, value, false, true);
-    inst._flushProperties && inst._flushProperties(true);
+    inst._flushProperties && inst._flushProperties();
     // TODO(blasten): V1 doesn't do this and it's a bug
     if (isIndexRendered) {
       this._updateMetrics([pidx]);
@@ -1318,10 +1392,19 @@ Polymer({
         }
       });
     } else {
+      const order = [];
       this._iterateItems(function(pidx, vidx) {
-        this.translate3d(0, y + 'px', 0, this._physicalItems[pidx]);
+        const item = this._physicalItems[pidx];
+        this.translate3d(0, y + 'px', 0, item);
         y += this._physicalSizes[pidx];
+        const itemId = item.id;
+        if (itemId) {
+          order.push(itemId);
+        }
       });
+      if (order.length) {
+        this.setAttribute('aria-owns', order.join(' '));
+      }
     }
   },
 
@@ -1357,7 +1440,8 @@ Polymer({
     // Note: the delta can be positive or negative.
     if (deltaHeight !== 0) {
       this._physicalTop = this._physicalTop - deltaHeight;
-      var scrollTop = this._scrollTop;
+      // This may be called outside of a scrollHandler, so use last cached position
+      var scrollTop = this._scrollPosition;
       // juking scroll position during interial scrolling on iOS is no bueno
       if (!IOS_TOUCH_SCROLLING && scrollTop > 0) {
         this._resetScrollPosition(scrollTop - deltaHeight);
@@ -1773,7 +1857,8 @@ Polymer({
     if (!this._focusBackfillItem) {
       // Create a physical item.
       var inst = this.stamp(null);
-      this._focusBackfillItem = inst.root.querySelector('*');
+      this._focusBackfillItem =
+          /** @type {!HTMLElement} */ (inst.root.querySelector('*'));
       this._itemsParent.appendChild(inst.root);
     }
     // Set the offcreen focused physical item.
@@ -1937,7 +2022,7 @@ Polymer({
         .concat([this._offscreenFocusedItem, this._focusBackfillItem])
         .forEach(function(item) {
           if (item) {
-            this.modelForElement(item).notifyPath(path, value, true);
+            this.modelForElement(item).notifyPath(path, value);
           }
         }, this);
   },

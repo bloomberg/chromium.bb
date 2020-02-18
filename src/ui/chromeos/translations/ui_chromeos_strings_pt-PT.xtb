@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pinguim</translation>
 <translation id="183183971458492120">A carregar informações…</translation>
 <translation id="1838709767668011582">Site Google</translation>
-<translation id="1839704667838141620">Alterar a forma como este ficheiro é partilhado</translation>
 <translation id="1844692022597038441">Este ficheiro não está disponível offline.</translation>
 <translation id="184633654410729720">Teclado tailandês (kedmanee)</translation>
 <translation id="1847880352285315359">Guardado</translation>
-<translation id="1864676585353837027">Alterar a forma como estes ficheiros são partilhados</translation>
 <translation id="1864756863218646478">Não foi possível encontrar o ficheiro.</translation>
 <translation id="1921986354447415460">Teclado Turco-F</translation>
 <translation id="1931134289871235022">Eslovaco</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Instalar novo serviço</translation>
 <translation id="1947424002851288782">Teclado alemão</translation>
 <translation id="1972984168337863910">Expandir painéis de comentários dos ficheiros</translation>
-<translation id="197560921582345123">Pode editar</translation>
 <translation id="1984603991036629094">Teclado fonético em arménio</translation>
 <translation id="2001796770603320721">Gerir no Drive</translation>
 <translation id="2009067268969781306">Ao formatar uma unidade, todos os dados aí armazenados são eliminados. Não é possível anular esta ação.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">Soltar pasta</translation>
 <translation id="3678559383040232393">Teclado maltês</translation>
 <translation id="3685122418104378273">Quando utiliza dados móveis, a sincronização do Google Drive é desativada por predefinição.</translation>
+<translation id="3689865792480713551">Cancele <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Não é possível abrir este aparelho porque o sistema de ficheiros não é suportado.</translation>
 <translation id="3741243925913727067">Faça uma cópia de segurança das fotos e dos vídeos do seu dispositivo multimédia no Google Drive.</translation>
 <translation id="3749289110408117711">Nome do ficheiro</translation>
@@ -286,7 +284,6 @@
 <translation id="4522570452068850558">Detalhes</translation>
 <translation id="4552678318981539154">Comprar mais armazenamento</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="4568854179928172494">Hora da modificação</translation>
 <translation id="4572815280350369984">Ficheiro <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Mais...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> foi adicionado à seleção.</translation>
@@ -404,7 +401,7 @@
 <translation id="5605830556594064952">EUA Dvorak</translation>
 <translation id="5640179856859982418">Teclado suíço</translation>
 <translation id="5649768706273821470">Ouvir</translation>
-<translation id="5678784840044122290">A aplicação para Linux estará disponível no terminal. Também pode existir um ícone no Iniciador.</translation>
+<translation id="5678784840044122290">A aplicação para Linux estará disponível no terminal. Também pode existir um ícone no Launcher.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Não é possível desassociar de um arquivo ou disco virtual<ph name="END_BOLD" />
    <ph name="LINE_BREAKS" />
    Feche todos os ficheiros do arquivo ou disco virtual e tente novamente.</translation>
@@ -467,6 +464,7 @@
 <translation id="6339145975392024142">Americano internacional (PC)</translation>
 <translation id="6346310558342052870">Acesso restrito</translation>
 <translation id="6353618411602605519">Teclado croata</translation>
+<translation id="6356685157277930264">Janela de comentários dos ficheiros</translation>
 <translation id="6358884629796491903">Dragão</translation>
 <translation id="637062427944097960">Este ficheiro foi aberto num ambiente de trabalho diferente. Mova para <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) para ver.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> itens</translation>
@@ -566,6 +564,7 @@
 <translation id="7589661784326793847">Aguarde um momento</translation>
 <translation id="7603724359189955920">Grelhas</translation>
 <translation id="7627790789328695202">Ups, <ph name="FILE_NAME" /> já existe. Dê um nome novo e tente novamente.</translation>
+<translation id="7628656427739290098"><ph name="PERCENT" />% concluído.</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7654209398114106148">A mover <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -592,7 +591,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">A obtenção destes ficheiros utilizará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
-<translation id="7850851215703745691">Estes ficheiros do Google Drive ainda não foram partilhados</translation>
 <translation id="7853966320808728790">BÉPO francês</translation>
 <translation id="7864662577698025113">Adicionar novo serviço</translation>
 <translation id="7873831373602885875">Não é possível guardar em <ph name="FOLDER_NAME" />. Todas as edições serão guardadas em <ph name="DOWNLOADS_FOLDER" /> na pasta Transferências.</translation>
@@ -608,7 +606,6 @@
 <translation id="7969525169268594403">Esloveno</translation>
 <translation id="7982283708762922719">Altura</translation>
 <translation id="7987485481246785146">Teclado curdo sorani baseado no árabe</translation>
-<translation id="799923393800005025">Pode ver</translation>
 <translation id="8008366997883261463">Jack Russell Terrier</translation>
 <translation id="8028993641010258682">Tamanho</translation>
 <translation id="8031722894461705849">Teclado eslovaco</translation>
@@ -670,8 +667,6 @@
 <translation id="8600173386174225982">A lista de ficheiros foi alterada para a vista de miniatura.</translation>
 <translation id="8601932370724196034">Ficheiro de imagem do Crostini</translation>
 <translation id="8669949407341943408">A mover...</translation>
-<translation id="8671210955687109937">Pode comentar</translation>
-<translation id="8686213429977032554">Este ficheiro do Google Drive ainda não foi partilhado</translation>
 <translation id="8698464937041809063">Desenho do Google</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
 <translation id="8719721339511222681">Selecionou <ph name="ENTRY_NAME" />.</translation>

@@ -49,24 +49,30 @@ void MediaStreamVideoSource::AddTrack(
     MediaStreamVideoTrack* track,
     const VideoTrackAdapterSettings& track_adapter_settings,
     const VideoCaptureDeliverFrameCB& frame_callback,
+    const EncodedVideoFrameCB& encoded_frame_callback,
     const VideoTrackSettingsCallback& settings_callback,
     const VideoTrackFormatCallback& format_callback,
-    const ConstraintsCallback& callback) {
+    ConstraintsOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!base::Contains(tracks_, track));
   tracks_.push_back(track);
   secure_tracker_.Add(track, true);
 
   pending_tracks_.push_back(PendingTrackInfo(
-      track, frame_callback, settings_callback, format_callback,
+      track, frame_callback, encoded_frame_callback, settings_callback,
+      format_callback,
       std::make_unique<VideoTrackAdapterSettings>(track_adapter_settings),
-      callback));
+      std::move(callback)));
 
   switch (state_) {
     case NEW: {
       state_ = STARTING;
-      StartSourceImpl(ConvertToBaseCallback(CrossThreadBindRepeating(
-          &VideoTrackAdapter::DeliverFrameOnIO, track_adapter_)));
+      StartSourceImpl(
+          ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+              &VideoTrackAdapter::DeliverFrameOnIO, track_adapter_)),
+          ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+              &VideoTrackAdapter::DeliverEncodedVideoFrameOnIO,
+              track_adapter_)));
       break;
     }
     case STARTING:
@@ -287,7 +293,14 @@ void MediaStreamVideoSource::UpdateCapturingLinkSecure(
     bool is_secure) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   secure_tracker_.Update(track, is_secure);
-  OnCapturingLinkSecured(secure_tracker_.is_capturing_secure());
+  NotifyCapturingLinkSecured(CountEncodedSinks());
+}
+
+void MediaStreamVideoSource::NotifyCapturingLinkSecured(
+    size_t num_encoded_sinks) {
+  // Encoded sinks imply insecure sinks.
+  OnCapturingLinkSecured(secure_tracker_.is_capturing_secure() &&
+                         num_encoded_sinks == 0);
 }
 
 void MediaStreamVideoSource::SetDeviceRotationDetection(bool enabled) {
@@ -310,6 +323,25 @@ base::Optional<media::VideoCaptureParams>
 MediaStreamVideoSource::GetCurrentCaptureParams() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return base::Optional<media::VideoCaptureParams>();
+}
+
+size_t MediaStreamVideoSource::CountEncodedSinks() const {
+  return std::accumulate(tracks_.begin(), tracks_.end(), size_t(0),
+                         [](size_t accum, MediaStreamVideoTrack* track) {
+                           return accum + track->CountEncodedSinks();
+                         });
+}
+
+void MediaStreamVideoSource::UpdateNumEncodedSinks() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  size_t count = CountEncodedSinks();
+  if (count == 1) {
+    OnEncodedSinkEnabled();
+  } else if (count == 0) {
+    OnEncodedSinkDisabled();
+  }
+  // Encoded sinks are insecure.
+  NotifyCapturingLinkSecured(count);
 }
 
 void MediaStreamVideoSource::DoChangeSource(
@@ -366,7 +398,7 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   std::vector<PendingTrackInfo> pending_track_descriptors;
   pending_track_descriptors.swap(pending_tracks_);
-  for (const auto& track_info : pending_track_descriptors) {
+  for (auto& track_info : pending_track_descriptors) {
     auto result = mojom::blink::MediaStreamRequestResult::OK;
     if (state_ != STARTED) {
       result =
@@ -374,10 +406,10 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
     }
 
     if (result == mojom::blink::MediaStreamRequestResult::OK) {
-      track_adapter_->AddTrack(track_info.track, track_info.frame_callback,
-                               track_info.settings_callback,
-                               track_info.format_callback,
-                               *track_info.adapter_settings);
+      track_adapter_->AddTrack(
+          track_info.track, track_info.frame_callback,
+          track_info.encoded_frame_callback, track_info.settings_callback,
+          track_info.format_callback, *track_info.adapter_settings);
       UpdateTrackSettings(track_info.track, *track_info.adapter_settings);
     }
 
@@ -385,7 +417,7 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
       OnLog(
           "MediaStreamVideoSource invoking callback indicating result of "
           "starting track.");
-      track_info.callback.Run(this, result, WebString());
+      std::move(track_info.callback).Run(this, result, WebString());
     } else {
       OnLog(
           "MediaStreamVideoSource dropping event indicating result of starting "
@@ -446,25 +478,31 @@ void MediaStreamVideoSource::UpdateTrackSettings(
   track->SetTrackAdapterSettings(adapter_settings);
 }
 
+bool MediaStreamVideoSource::SupportsEncodedOutput() const {
+  return false;
+}
+
 MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(
     MediaStreamVideoTrack* track,
     const VideoCaptureDeliverFrameCB& frame_callback,
+    const EncodedVideoFrameCB& encoded_frame_callback,
     const VideoTrackSettingsCallback& settings_callback,
     const VideoTrackFormatCallback& format_callback,
     std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
-    const ConstraintsCallback& callback)
+    ConstraintsOnceCallback callback)
     : track(track),
       frame_callback(frame_callback),
+      encoded_frame_callback(encoded_frame_callback),
       settings_callback(settings_callback),
       format_callback(format_callback),
       adapter_settings(std::move(adapter_settings)),
-      callback(callback) {}
+      callback(std::move(callback)) {}
 
 MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(
-    PendingTrackInfo&& other) noexcept = default;
+    PendingTrackInfo&& other) = default;
 MediaStreamVideoSource::PendingTrackInfo&
 MediaStreamVideoSource::PendingTrackInfo::operator=(
-    MediaStreamVideoSource::PendingTrackInfo&& other) noexcept = default;
+    MediaStreamVideoSource::PendingTrackInfo&& other) = default;
 
 MediaStreamVideoSource::PendingTrackInfo::~PendingTrackInfo() {}
 

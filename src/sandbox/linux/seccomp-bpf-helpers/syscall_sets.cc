@@ -35,9 +35,10 @@ bool SyscallSets::IsAllowedGettime(int sysno) {
       return true;
     case __NR_adjtimex:         // Privileged.
     case __NR_clock_adjtime:    // Privileged.
-    case __NR_clock_getres:     // Could be allowed.
-    case __NR_clock_gettime:
-    case __NR_clock_nanosleep:  // Could be allowed.
+    case __NR_clock_getres:     // Allowed only on Android with parameters
+                                // filtered by RestrictClokID().
+    case __NR_clock_gettime:    // Parameters filtered by RestrictClockID().
+    case __NR_clock_nanosleep:  // Parameters filtered by RestrictClockID().
     case __NR_clock_settime:    // Privileged.
 #if defined(__i386__) || \
     (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
@@ -845,7 +846,8 @@ bool SyscallSets::IsSystemVSemaphores(int sysno) {
 }
 #endif
 
-#if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) || \
+#if defined(__i386__) || defined(__x86_64__) || defined(__arm__) || \
+    defined(__aarch64__) ||                                         \
     (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_64_BITS))
 // These give a lot of ambient authority and bypass the setuid sandbox.
 bool SyscallSets::IsSystemVSharedMemory(int sysno) {

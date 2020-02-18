@@ -16,7 +16,7 @@ serial_test(async (t, fake) => {
   const readable = port.readable;
   assert_true(readable instanceof ReadableStream);
 
-  port.close();
+  await port.close();
   assert_equals(port.readable, null);
 
   const reader = readable.getReader();
@@ -24,6 +24,20 @@ serial_test(async (t, fake) => {
   assert_true(done);
   assert_equals(value, undefined);
 }, 'SerialPort.readable is set by open() and closes on port close');
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+
+  await port.open({ baudrate: 9600 });
+  assert_true(port.readable instanceof ReadableStream);
+
+  const reader = port.readable.getReader();
+  await promise_rejects(t, new TypeError(), port.close());
+
+  reader.releaseLock();
+  await port.close();
+  assert_equals(port.readable, null);
+}, 'Port cannot be closed while readable is locked');
 
 serial_test(async (t, fake) => {
   const { port, fakePort } = await getFakeSerialPort(fake);
@@ -37,12 +51,9 @@ serial_test(async (t, fake) => {
   let { value, done } = await reader.read();
   assert_false(done);
   compareArrays(data, value);
+  reader.releaseLock();
 
-  port.close();
-
-  ({ value, done } = await reader.read());
-  assert_true(done);
-  assert_equals(undefined, value);
+  await port.close();
 }, 'Can read a small amount of data');
 
 serial_test(async (t, fake) => {
@@ -56,9 +67,11 @@ serial_test(async (t, fake) => {
   fakePort.write(data);
 
   const reader = port.readable.getReader();
-  port.close();
-  const value = await readAll(reader);
+  const value = await readWithLength(reader, data.byteLength);
   compareArrays(data, value);
+  reader.releaseLock();
+
+  await port.close();
 }, 'Can read a large amount of data');
 
 serial_test(async (t, fake) => {
@@ -83,19 +96,130 @@ serial_test(async (t, fake) => {
   assert_true(readable instanceof ReadableStream);
   reader = port.readable.getReader();
 
-  await fakePort.waitForErrorCleared();
+  await fakePort.waitForReadErrorCleared();
   fakePort.write(data);
 
   ({ value, done } = await reader.read());
   assert_false(done);
   compareArrays(data, value);
+  reader.releaseLock();
 
-  port.close();
+  await port.close();
+  assert_equals(port.readable, null);
+}, 'Parity error closes readable and replaces it with a new stream');
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+  // Select a buffer size smaller than the amount of data transferred.
+  await port.open({ baudrate: 9600, buffersize: 64 });
+
+  const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+  fakePort.write(data);
+  fakePort.simulateDisconnectOnRead();
+
+  const reader = port.readable.getReader();
+  const { value, done } = await reader.read();
+  assert_false(done);
+  compareArrays(data, value);
+
+  await promise_rejects(t, 'NetworkError', reader.read());
   assert_equals(port.readable, null);
 
-  ({ value, done } = await reader.read());
+  await port.close();
+}, 'Disconnect error closes readable and sets it to null');
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+  // Select a buffer size larger than the amount of data transferred.
+  await port.open({ baudrate: 9600, buffersize: 64 });
+
+  fakePort.write(new TextEncoder().encode("Hello world!"));
+
+  const decoder = new TextDecoderStream();
+  const streamClosed = port.readable.pipeTo(decoder.writable);
+  const reader = decoder.readable.getReader();
+  const { value, done } = await reader.read();
+  assert_false(done);
+  assert_equals("Hello world!", value);
+  await reader.cancel();
+  await streamClosed.catch(reason => {
+    assert_equals(undefined, reason);
+  });
+
+  await port.close();
+}, 'Can pipe readable through a transform stream.')
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+  // Select a buffer size smaller than the amount of data transferred.
+  await port.open({ baudrate: 9600, buffersize: 64 });
+
+  const reader = port.readable.getReader();
+  const readPromise = reader.read();
+  await reader.cancel();
+  const { value, done } = await readPromise;
   assert_true(done);
   assert_equals(undefined, value);
-}, 'Parity error closes readable and replaces it with a new stream');
+
+  await port.close();
+}, 'Can cancel while reading');
+
+serial_test(async (t, fake) => {
+  const { port, fakePort } = await getFakeSerialPort(fake);
+  // Select a buffer size larger than the amount of data transferred.
+  await port.open({ baudrate: 9600, buffersize: 64 });
+
+  fakePort.write(new TextEncoder().encode("Hello world!"));
+
+  const decoder = new TextDecoderStream();
+  const streamClosed = port.readable.pipeTo(decoder.writable);
+  const readable = decoder.readable.pipeThrough(new TransformStream())
+                                   .pipeThrough(new TransformStream())
+                                   .pipeThrough(new TransformStream())
+                                   .pipeThrough(new TransformStream());
+  const reader = readable.getReader();
+  const { value, done } = await reader.read();
+  assert_false(done);
+  assert_equals("Hello world!", value);
+  await reader.cancel("arbitrary reason");
+  await streamClosed.catch(reason => {
+    assert_equals("arbitrary reason", reason);
+  });
+
+  await port.close();
+}, 'Stream closure is observable through a long chain of transforms');
+
+serial_test(async (t, fake) => {
+  let fakePort;
+  let chunkReceived;
+  await (async () => {
+    let port;
+    ({ port, fakePort } = await getFakeSerialPort(fake));
+
+    // Select a buffer size larger than the amount of data transferred.
+    await port.open({ baudrate: 9600, buffersize: 64 });
+
+    let writable;
+    chunkReceived = new Promise(resolve => {
+      writable = new WritableStream({
+        write: function(chunk) {
+          resolve();
+        }
+      });
+    });
+
+    port.readable.pipeTo(writable);
+  })();
+
+  for (let i = 0; i < 50; ++i) {
+    GCController.collect();
+    await new Promise(resolve => setTimeout(resolve, 0));
+  }
+
+  const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+  fakePort.write(data);
+
+  await chunkReceived;
+}, 'Dropping references to a port does not close its streams');
 
 </script>

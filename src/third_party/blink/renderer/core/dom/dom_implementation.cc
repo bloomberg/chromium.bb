@@ -74,7 +74,8 @@ DocumentType* DOMImplementation::createDocumentType(
                                     exception_state))
     return nullptr;
 
-  return DocumentType::Create(document_, qualified_name, public_id, system_id);
+  return MakeGarbageCollected<DocumentType>(document_, qualified_name,
+                                            public_id, system_id);
 }
 
 XMLDocument* DOMImplementation::createDocument(
@@ -171,25 +172,6 @@ bool DOMImplementation::IsXMLMIMEType(const String& mime_type) {
   return true;
 }
 
-bool DOMImplementation::IsJSONMIMEType(const String& mime_type) {
-  if (mime_type.StartsWithIgnoringASCIICase("application/json"))
-    return true;
-  if (mime_type.StartsWithIgnoringASCIICase("application/")) {
-    size_t subtype = mime_type.FindIgnoringASCIICase("+json", 12);
-    if (subtype != kNotFound) {
-      // Just check that a parameter wasn't matched.
-      size_t parameter_marker = mime_type.Find(";");
-      if (parameter_marker == kNotFound) {
-        unsigned end_subtype = static_cast<unsigned>(subtype) + 5;
-        return end_subtype == mime_type.length() ||
-               IsASCIISpace(mime_type[end_subtype]);
-      }
-      return parameter_marker > subtype;
-    }
-  }
-  return false;
-}
-
 static bool IsTextPlainType(const String& mime_type) {
   return mime_type.StartsWithIgnoringASCIICase("text/") &&
          !(EqualIgnoringASCIICase(mime_type, "text/html") ||
@@ -199,7 +181,8 @@ static bool IsTextPlainType(const String& mime_type) {
 
 bool DOMImplementation::IsTextMIMEType(const String& mime_type) {
   return MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type) ||
-         IsJSONMIMEType(mime_type) || IsTextPlainType(mime_type);
+         MIMETypeRegistry::IsJSONMimeType(mime_type) ||
+         IsTextPlainType(mime_type);
 }
 
 Document* DOMImplementation::createHTMLDocument(const String& title) {
@@ -207,7 +190,8 @@ Document* DOMImplementation::createHTMLDocument(const String& title) {
       DocumentInit::Create()
           .WithContextDocument(document_->ContextDocument())
           .WithOwnerDocument(document_->ContextDocument())
-          .WithRegistrationContext(document_->RegistrationContext());
+          .WithRegistrationContext(document_->RegistrationContext())
+          .WithContentSecurityPolicyFromContextDoc();
   auto* d = MakeGarbageCollected<HTMLDocument>(init);
   d->open();
   d->write("<!doctype html><html><head></head><body></body></html>");
@@ -255,8 +239,7 @@ Document* DOMImplementation::createDocument(const String& type,
     }
   }
 
-  if (RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled() &&
-      plugin_data && plugin_data->IsExternalPluginMimeType(type)) {
+  if (plugin_data && plugin_data->IsExternalPluginMimeType(type)) {
     // Plugins handled by MimeHandlerView do not create a PluginDocument. They
     // are rendered inside cross-process frames and the notion of a PluginView
     // (which is associated with PluginDocument) is irrelevant here.

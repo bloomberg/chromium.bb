@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -671,31 +672,6 @@ TEST(AutofillProfileTest, CreateInferredLabelsFlattensMultiLineValues) {
                                         "en-US", &labels);
   ASSERT_EQ(1U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., Apt. 42"), labels[0]);
-}
-
-TEST(AutofillProfileTest, IsSubsetOfForProfiles) {
-  AutofillProfile profile1 =
-      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile1, "Genevieve", "", "Fox",
-                       "genevieve@hotmail.com", "", "274 Main St", "",
-                       "Northhampton", "MA", "01060", "US", "");
-
-  AutofillProfile profile2 =
-      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile2, "Genevieve", "", "Fox",
-                       "genevieve@hotmail.com", "", "", "", "", "", "", "US",
-                       "");
-
-  AutofillProfile profile3 =
-      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile3, "Genevieve", "", "Fuller",
-                       "genevieve@hotmail.com", "", "", "", "", "", "", "US",
-                       "");
-
-  EXPECT_FALSE(profile1.IsSubsetOf(profile2, "en-US"));
-  EXPECT_TRUE(profile2.IsSubsetOf(profile1, "en-US"));
-  EXPECT_FALSE(profile2.IsSubsetOf(profile3, "en-US"));
-  EXPECT_FALSE(profile3.IsSubsetOf(profile2, "en-US"));
 }
 
 TEST(AutofillProfileTest, IsSubsetOfForFieldSet_DifferentMiddleNames) {
@@ -2210,7 +2186,7 @@ TEST_P(HasGreaterFrescocencyTest, HasGreaterFrescocency) {
                              test_case.server_validity_state_b,
                              AutofillDataModel::SERVER);
 
-  const base::Time now = base::Time::Now();
+  const base::Time now = AutofillClock::Now();
 
   if (test_case.expectation == EQUAL) {
     EXPECT_EQ(profile_a.HasGreaterFrecencyThan(&profile_b, now),
@@ -2249,7 +2225,7 @@ TEST_P(HasGreaterFrescocencyTest, PriorityCheck) {
   profile_invalid.set_use_count(100);
   profile_valid.set_use_count(10);
 
-  const base::Time now = base::Time::Now();
+  const base::Time now = AutofillClock::Now();
   const base::Time past = now - base::TimeDelta::FromDays(1);
 
   profile_invalid.set_use_date(now);

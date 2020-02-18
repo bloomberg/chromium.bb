@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_SESSION_ARC_BRIDGE_SERVICE_H_
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "components/arc/session/connection_holder.h"
 
 namespace arc {
@@ -82,6 +83,8 @@ class PropertyInstance;
 class RotationLockInstance;
 class ScreenCaptureHost;
 class ScreenCaptureInstance;
+class SmartCardManagerHost;
+class SmartCardManagerInstance;
 class StorageManagerInstance;
 class TimerHost;
 class TimerInstance;
@@ -105,8 +108,29 @@ class WallpaperInstance;
 // instances are set/removed via ArcBridgeHostImpl.
 class ArcBridgeService {
  public:
+  // Observer for those services outside of ArcBridgeService which want to know
+  // ArcBridgeService events.
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called immediately before the ArcBridgeHost is closed.
+    virtual void BeforeArcBridgeClosed() {}
+    // Called immediately after the ArcBridgeHost is closed.
+    virtual void AfterArcBridgeClosed() {}
+
+   protected:
+    ~Observer() override = default;
+  };
+
   ArcBridgeService();
   ~ArcBridgeService();
+
+  // Adds or removes observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // Call these methods to invoke the corresponding methods on the observers.
+  void ObserveBeforeArcBridgeClosed();
+  void ObserveAfterArcBridgeClosed();
 
   ConnectionHolder<mojom::AccessibilityHelperInstance,
                    mojom::AccessibilityHelperHost>*
@@ -230,6 +254,12 @@ class ArcBridgeService {
   screen_capture() {
     return &screen_capture_;
   }
+  ConnectionHolder<mojom::SmartCardManagerInstance,
+                   mojom::SmartCardManagerHost>*
+  smart_card_manager() {
+    return &smart_card_manager_;
+  }
+
   ConnectionHolder<mojom::StorageManagerInstance>* storage_manager() {
     return &storage_manager_;
   }
@@ -257,6 +287,8 @@ class ArcBridgeService {
   }
 
  private:
+  base::ObserverList<Observer> observer_list_;
+
   ConnectionHolder<mojom::AccessibilityHelperInstance,
                    mojom::AccessibilityHelperHost>
       accessibility_helper_;
@@ -308,6 +340,8 @@ class ArcBridgeService {
   ConnectionHolder<mojom::RotationLockInstance> rotation_lock_;
   ConnectionHolder<mojom::ScreenCaptureInstance, mojom::ScreenCaptureHost>
       screen_capture_;
+  ConnectionHolder<mojom::SmartCardManagerInstance, mojom::SmartCardManagerHost>
+      smart_card_manager_;
   ConnectionHolder<mojom::StorageManagerInstance> storage_manager_;
   ConnectionHolder<mojom::TimerInstance, mojom::TimerHost> timer_;
   ConnectionHolder<mojom::TracingInstance> tracing_;

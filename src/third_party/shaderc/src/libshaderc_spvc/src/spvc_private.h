@@ -13,31 +13,38 @@
 // limitations under the License.
 
 #include <cstdint>
-#include <string>
-#include <vector>
-
-#include "shaderc/spvc.h"
 #include <spirv_glsl.hpp>
 #include <spirv_hlsl.hpp>
 #include <spirv_msl.hpp>
+#include <spirv_reflect.hpp>
+#include <string>
+#include <vector>
+
 #include "spirv-tools/libspirv.hpp"
+#include "spvc/spvc.h"
 
 // GLSL version produced when none specified nor detected from source.
 #define DEFAULT_GLSL_VERSION 450
 
-struct shaderc_spvc_compiler {};
+typedef enum {
+  SPVC_TARGET_LANG_UNKNOWN,
+  SPVC_TARGET_LANG_GLSL,
+  SPVC_TARGET_LANG_HLSL,
+  SPVC_TARGET_LANG_MSL,
+  SPVC_TARGET_LANG_VULKAN,
+} spvc_target_lang;
 
-// Described in spvc.h.
-struct shaderc_spvc_compilation_result {
-  std::string string_output;
-  std::vector<uint32_t> binary_output;
+struct shaderc_spvc_context {
+  std::unique_ptr<spirv_cross::Compiler> cross_compiler;
   std::string messages;
-  shaderc_compilation_status status =
-      shaderc_compilation_status_null_result_object;
+  spvc_target_lang target_lang = SPVC_TARGET_LANG_UNKNOWN;
+  std::vector<uint32_t> intermediate_shader;
+  bool use_spvc_parser = false;
 };
 
 struct shaderc_spvc_compile_options {
   bool validate = true;
+  bool optimize = true;
   bool remove_unused_variables = false;
   bool robust_buffer_access_pass = false;
   bool flatten_ubo = false;
@@ -52,6 +59,12 @@ struct shaderc_spvc_compile_options {
   spirv_cross::CompilerMSL::Options msl;
 };
 
+// Described in spvc.h.
+struct shaderc_spvc_compilation_result {
+  std::string string_output;
+  std::vector<uint32_t> binary_output;
+};
+
 namespace spvc_private {
 
 // Convert from shaderc values to spirv-tools values.
@@ -60,62 +73,80 @@ spv_target_env get_spv_target_env(shaderc_target_env env,
 
 // Handler for spirv-tools error/warning messages that records them in the
 // results structure.
-void consume_spirv_tools_message(shaderc_spvc_compilation_result* result,
+void consume_spirv_tools_message(shaderc_spvc_context* context,
                                  spv_message_level_t level, const char* src,
                                  const spv_position_t& pos,
                                  const char* message);
 
 // Test whether or not the given SPIR-V binary is valid for the specific
 // environment. Invoke spirv-val to perform this operation.
-shaderc_spvc_compilation_result_t validate_spirv(
-    spv_target_env env, const uint32_t* source, size_t source_len,
-    shaderc_spvc_compilation_result_t result);
+shaderc_spvc_status validate_spirv(shaderc_spvc_context* context,
+                                   spv_target_env env, const uint32_t* source,
+                                   size_t source_len);
 
 // Convert SPIR-V from one environment to another, if there is a known
 // conversion. If the origin and destination environments are the same, then
 // the binary is just copied to the output buffer. Invokes spirv-opt to perform
 // the actual translation.
-shaderc_spvc_compilation_result_t translate_spirv(
-    spv_target_env source_env, spv_target_env target_env,
-    const uint32_t* source, size_t source_len,
-    shaderc_spvc_compile_options_t options, std::vector<uint32_t>* target,
-    shaderc_spvc_compilation_result_t result);
+shaderc_spvc_status translate_spirv(shaderc_spvc_context* context,
+                                    spv_target_env source_env,
+                                    spv_target_env target_env,
+                                    const uint32_t* source, size_t source_len,
+                                    shaderc_spvc_compile_options_t options,
+                                    std::vector<uint32_t>* target);
 
 // Execute the validation and translate steps. Specifically validates the input,
 // transforms it, then validates the transformed input. All of these steps are
 // only done if needed.
-shaderc_spvc_compilation_result_t validate_and_translate_spirv(
-    const uint32_t* source, size_t source_len,
-    shaderc_spvc_compile_options_t options, std::vector<uint32_t>* target,
-    shaderc_spvc_compilation_result_t result);
+shaderc_spvc_status validate_and_translate_spirv(
+    shaderc_spvc_context* context, const uint32_t* source, size_t source_len,
+    shaderc_spvc_compile_options_t options, std::vector<uint32_t>* target);
 
 // Given a configured compiler run it to generate a shader. Does all of the
 // required trapping to handle if the compile fails.
-shaderc_spvc_compilation_result_t generate_shader(
-    spirv_cross::Compiler* compiler, shaderc_spvc_compilation_result_t result);
+shaderc_spvc_status generate_shader(spirv_cross::Compiler* compiler,
+                                    shaderc_spvc_compilation_result_t result);
 
-// Given a Vulkan SPIR-V shader and set of options generate a GLSL shader.
-// Handles correctly setting up the SPIRV-Cross compiler based on the options
-// and then envoking it.
-shaderc_spvc_compilation_result_t generate_glsl_shader(
-    const uint32_t* source, size_t source_len,
-    shaderc_spvc_compile_options_t options,
-    shaderc_spvc_compilation_result_t result);
+// Given a Vulkan SPIR-V shader and set of options, create a compiler for
+// generating a GLSL shader and performing reflection.
+shaderc_spvc_status generate_glsl_compiler(
+    const shaderc_spvc_context_t context, const uint32_t* source,
+    size_t source_len, shaderc_spvc_compile_options_t options);
 
-// Given a Vulkan SPIR-V shader and set of options generate a HLSL shader.
-// Handles correctly setting up the SPIRV-Cross compiler based on the options
-// and then envoking it.
-shaderc_spvc_compilation_result_t generate_hlsl_shader(
-    const uint32_t* source, size_t source_len,
-    shaderc_spvc_compile_options_t options,
-    shaderc_spvc_compilation_result_t result);
+// Given a Vulkan SPIR-V shader and set of options, create a compiler for
+// generating a HLSL shader and performing reflection.
+shaderc_spvc_status generate_hlsl_compiler(
+    const shaderc_spvc_context_t context, const uint32_t* source,
+    size_t source_len, shaderc_spvc_compile_options_t options);
 
-// Given a Vulkan SPIR-V shader and set of options generate a MSL shader.
-// Handles correctly setting up the SPIRV-Cross compiler based on the options
-// and then envoking it.
-shaderc_spvc_compilation_result_t generate_msl_shader(
-    const uint32_t* source, size_t source_len,
-    shaderc_spvc_compile_options_t options,
-    shaderc_spvc_compilation_result_t result);
+// Given a Vulkan SPIR-V shader and set of options, create a compiler for
+// generating a MSL shader and performing reflection.
+shaderc_spvc_status generate_msl_compiler(
+    const shaderc_spvc_context_t context, const uint32_t* source,
+    size_t source_len, shaderc_spvc_compile_options_t options);
+
+// Given a Vulkan SPIR-V shader and set of options, create a compiler for
+// generating performing reflection.
+shaderc_spvc_status generate_vulkan_compiler(
+    const shaderc_spvc_context_t context, const uint32_t* source,
+    size_t source_len, shaderc_spvc_compile_options_t options);
+
+// Given a pointer to an SPIRV-Cross IR (with initialized spirv field), Invokes
+// spirv-opt to generate a SPIRV-Cross IR (ie. populate empty fields of the
+// given spirv_cross::ParsedIR* ir).
+shaderc_spvc_status generate_spvcir(const shaderc_spvc_context_t context,
+                                    spirv_cross::ParsedIR* ir,
+                                    const uint32_t* source, size_t source_len,
+                                    shaderc_spvc_compile_options_t options);
+
+// Converts a shaderc spvc decoration value to the equivalent spirv-cross
+// decoration value and sends the result out through |spirv_cross_decoration|.
+// If the conversion fails, returns an error result.
+// Only WebGPU decorations are supported. More cases can be added if necessary.
+// PS. Added because spirv_cross forks Vulkan spirv headers instead of having
+// it as a dependency.
+shaderc_spvc_status shaderc_spvc_decoration_to_spirv_cross_decoration(
+    const shaderc_spvc_decoration decoration,
+    spv::Decoration* spirv_cross_decoration);
 
 }  // namespace spvc_private

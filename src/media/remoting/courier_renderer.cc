@@ -79,8 +79,8 @@ CourierRenderer::CourierRenderer(
   // on the media thread. Therefore, all weak pointers must be dereferenced on
   // the media thread.
   const RpcBroker::ReceiveMessageCallback receive_callback =
-      base::Bind(&CourierRenderer::OnMessageReceivedOnMainThread,
-                 media_task_runner_, weak_factory_.GetWeakPtr());
+      base::BindRepeating(&CourierRenderer::OnMessageReceivedOnMainThread,
+                          media_task_runner_, weak_factory_.GetWeakPtr());
   rpc_broker_->RegisterMessageReceiverCallback(rpc_handle_, receive_callback);
 }
 
@@ -101,7 +101,7 @@ CourierRenderer::~CourierRenderer() {
 
 void CourierRenderer::Initialize(MediaResource* media_resource,
                                  RendererClient* client,
-                                 const PipelineStatusCB& init_cb) {
+                                 PipelineStatusCallback init_cb) {
   VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(media_resource);
@@ -109,13 +109,14 @@ void CourierRenderer::Initialize(MediaResource* media_resource,
 
   if (state_ != STATE_UNINITIALIZED) {
     media_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(init_cb, PIPELINE_ERROR_INVALID_STATE));
+        FROM_HERE,
+        base::BindOnce(std::move(init_cb), PIPELINE_ERROR_INVALID_STATE));
     return;
   }
 
   media_resource_ = media_resource;
   client_ = client;
-  init_workflow_done_callback_ = init_cb;
+  init_workflow_done_callback_ = std::move(init_cb);
 
   state_ = STATE_CREATE_PIPE;
 
@@ -150,14 +151,17 @@ void CourierRenderer::Initialize(MediaResource* media_resource,
 }
 
 void CourierRenderer::SetCdm(CdmContext* cdm_context,
-                             const CdmAttachedCB& cdm_attached_cb) {
+                             CdmAttachedCB cdm_attached_cb) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   // Media remoting doesn't support encrypted content.
   NOTIMPLEMENTED();
 }
 
-void CourierRenderer::Flush(const base::Closure& flush_cb) {
+void CourierRenderer::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {}
+
+void CourierRenderer::Flush(base::OnceClosure flush_cb) {
   VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!flush_cb_);
@@ -167,7 +171,7 @@ void CourierRenderer::Flush(const base::Closure& flush_cb) {
     // In the error state, this renderer will be shut down shortly. To prevent
     // breaking the pipeline impl, just run the done callback (interface
     // requirement).
-    media_task_runner_->PostTask(FROM_HERE, flush_cb);
+    media_task_runner_->PostTask(FROM_HERE, std::move(flush_cb));
     return;
   }
 
@@ -188,7 +192,7 @@ void CourierRenderer::Flush(const base::Closure& flush_cb) {
     return;
   }
 
-  flush_cb_ = flush_cb;
+  flush_cb_ = std::move(flush_cb);
 
   // Issues RPC_R_FLUSHUNTIL RPC message.
   std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
@@ -288,8 +292,8 @@ void CourierRenderer::OnDataPipeCreatedOnMainThread(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     base::WeakPtr<CourierRenderer> self,
     base::WeakPtr<RpcBroker> rpc_broker,
-    mojom::RemotingDataStreamSenderPtrInfo audio,
-    mojom::RemotingDataStreamSenderPtrInfo video,
+    mojo::PendingRemote<mojom::RemotingDataStreamSender> audio,
+    mojo::PendingRemote<mojom::RemotingDataStreamSender> video,
     mojo::ScopedDataPipeProducerHandle audio_handle,
     mojo::ScopedDataPipeProducerHandle video_handle) {
   media_task_runner->PostTask(
@@ -304,8 +308,8 @@ void CourierRenderer::OnDataPipeCreatedOnMainThread(
 }
 
 void CourierRenderer::OnDataPipeCreated(
-    mojom::RemotingDataStreamSenderPtrInfo audio,
-    mojom::RemotingDataStreamSenderPtrInfo video,
+    mojo::PendingRemote<mojom::RemotingDataStreamSender> audio,
+    mojo::PendingRemote<mojom::RemotingDataStreamSender> video,
     mojo::ScopedDataPipeProducerHandle audio_handle,
     mojo::ScopedDataPipeProducerHandle video_handle,
     int audio_rpc_handle,
@@ -333,7 +337,8 @@ void CourierRenderer::OnDataPipeCreated(
         main_task_runner_, media_task_runner_, "audio", audio_demuxer_stream,
         rpc_broker_, audio_rpc_handle, std::move(audio),
         std::move(audio_handle),
-        base::Bind(&CourierRenderer::OnFatalError, base::Unretained(this))));
+        base::BindOnce(&CourierRenderer::OnFatalError,
+                       base::Unretained(this))));
   }
 
   // Create video demuxer stream adapter if video is available.
@@ -344,7 +349,8 @@ void CourierRenderer::OnDataPipeCreated(
         main_task_runner_, media_task_runner_, "video", video_demuxer_stream,
         rpc_broker_, video_rpc_handle, std::move(video),
         std::move(video_handle),
-        base::Bind(&CourierRenderer::OnFatalError, base::Unretained(this))));
+        base::BindOnce(&CourierRenderer::OnFatalError,
+                       base::Unretained(this))));
   }
 
   // Checks if data pipe is created successfully.

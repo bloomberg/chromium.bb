@@ -200,15 +200,19 @@ void RtcpTransceiverImpl::SendPictureLossIndication(uint32_t ssrc) {
 }
 
 void RtcpTransceiverImpl::SendFullIntraRequest(
-    rtc::ArrayView<const uint32_t> ssrcs) {
+    rtc::ArrayView<const uint32_t> ssrcs,
+    bool new_request) {
   RTC_DCHECK(!ssrcs.empty());
   if (!ready_to_send_)
     return;
   rtcp::Fir fir;
   fir.SetSenderSsrc(config_.feedback_ssrc);
-  for (uint32_t media_ssrc : ssrcs)
-    fir.AddRequestTo(media_ssrc,
-                     remote_senders_[media_ssrc].fir_sequence_number++);
+  for (uint32_t media_ssrc : ssrcs) {
+    uint8_t& command_seq_num = remote_senders_[media_ssrc].fir_sequence_number;
+    if (new_request)
+      command_seq_num += 1;
+    fir.AddRequestTo(media_ssrc, command_seq_num);
+  }
   SendImmediateFeedback(fir);
 }
 
@@ -377,6 +381,20 @@ void RtcpTransceiverImpl::SendPeriodicCompoundPacket() {
   };
   PacketSender sender(send_packet, config_.max_packet_size);
   CreateCompoundPacket(&sender);
+  sender.Send();
+}
+
+void RtcpTransceiverImpl::SendCombinedRtcpPacket(
+    std::vector<std::unique_ptr<rtcp::RtcpPacket>> rtcp_packets) {
+  auto send_packet = [this](rtc::ArrayView<const uint8_t> packet) {
+    config_.outgoing_transport->SendRtcp(packet.data(), packet.size());
+  };
+  PacketSender sender(send_packet, config_.max_packet_size);
+
+  for (auto& rtcp_packet : rtcp_packets) {
+    rtcp_packet->SetSenderSsrc(config_.feedback_ssrc);
+    sender.AppendPacket(*rtcp_packet);
+  }
   sender.Send();
 }
 

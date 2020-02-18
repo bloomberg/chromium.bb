@@ -28,6 +28,11 @@ const base::Feature kSettingsShowsPerKeyboardSettings = {
 const base::Feature kInputMethodSettingsUiUpdate = {
     "InputMethodSettingsUiUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables percent-based scrolling for mousewheel and keyboard initiated
+// scrolls.
+const base::Feature kPercentBasedScrolling = {
+    "PercentBasedScrolling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows requesting unadjusted movement when entering pointerlock.
 const base::Feature kPointerLockOptions = {"PointerLockOptions",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -75,6 +80,11 @@ const base::Feature kUiCompositorScrollWithLayers = {
 // gesture events.
 const base::Feature kCompositorThreadedScrollbarScrolling = {
     "CompositorThreadedScrollbarScrolling", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the use of a touch fling curve that is based on the behavior of
+// native apps on Windows.
+const base::Feature kExperimentalFlingAnimation{
+    "ExperimentalFlingAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_WIN)
 // Enables InputPane API for controlling on screen keyboard.
@@ -126,6 +136,10 @@ const base::Feature kDirectManipulationStylus = {
 
 const base::Feature kFormControlsRefresh = {"FormControlsRefresh",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable WebUI accessibility enhancements for review and testing.
+const base::Feature kWebUIA11yEnhancements{"WebUIA11yEnhancements",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsFormControlsRefreshEnabled() {
   return base::FeatureList::IsEnabled(features::kFormControlsRefresh);

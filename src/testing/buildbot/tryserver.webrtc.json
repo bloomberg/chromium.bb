@@ -19,8 +19,18 @@
       "content_browsertests",
       "content_unittests",
       "jingle_unittests",
-      "remoting_unittests",
-      "remoting/webapp:webapp"
+      "remoting_unittests"
+    ]
+  },
+  "linux_chromium_compile_dbg": {
+    "additional_compile_targets": [
+      "blink_unittests",
+      "browser_tests",
+      "capture_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "jingle_unittests",
+      "remoting_unittests"
     ]
   },
   "mac_chromium_compile": {
@@ -31,8 +41,7 @@
       "content_browsertests",
       "content_unittests",
       "jingle_unittests",
-      "remoting_unittests",
-      "remoting/webapp:webapp"
+      "remoting_unittests"
     ]
   },
   "win_chromium_compile": {
@@ -43,8 +52,18 @@
       "content_browsertests",
       "content_unittests",
       "jingle_unittests",
-      "remoting_unittests",
-      "remoting/webapp:webapp"
+      "remoting_unittests"
+    ]
+  },
+  "win_chromium_compile_dbg": {
+    "additional_compile_targets": [
+      "blink_unittests",
+      "browser_tests",
+      "capture_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "jingle_unittests",
+      "remoting_unittests"
     ]
   }
 }

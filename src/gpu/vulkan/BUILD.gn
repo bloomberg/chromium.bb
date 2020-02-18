@@ -44,6 +44,7 @@ if (enable_vulkan) {
       "vulkan_implementation.cc",
       "vulkan_implementation.h",
       "vulkan_instance.cc",
+      "vulkan_instance.h",
       "vulkan_surface.cc",
       "vulkan_surface.h",
       "vulkan_swap_chain.cc",
@@ -66,7 +67,9 @@ if (enable_vulkan) {
       "//base",
       "//ui/gfx",
     ]
-    public_deps = []
+    public_deps = [
+      "//gpu/config:vulkan_info",
+    ]
     data_deps = []
 
     if (is_posix) {

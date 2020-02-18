@@ -22,6 +22,8 @@ const base::Feature kIPHGlobalMediaControlsFeature{
     "IPH_GlobalMediaControls", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHReopenTabFeature{"IPH_ReopenTab",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHWebUITabStripFeature{"IPH_WebUITabStrip",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 const base::Feature kIPHBookmarkFeature{"IPH_Bookmark",
@@ -40,15 +42,19 @@ const base::Feature kIPHDataSaverDetailFeature{
 const base::Feature kIPHDataSaverMilestonePromoFeature{
     "IPH_DataSaverMilestonePromo", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDataSaverPreviewFeature{
-    "IPH_DataSaverPreview", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_DataSaverPreview", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadHomeFeature{"IPH_DownloadHome",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadPageFeature{"IPH_DownloadPage",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadPageScreenshotFeature{
     "IPH_DownloadPageScreenshot", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHChromeDuetFeature{"IPH_ChromeDuet",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHChromeDuetHomeButtonFeature{
+    "IPH_ChromeDuetHomeButton", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHChromeDuetSearchFeature{
+    "IPH_ChromeDuet", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHChromeDuetTabSwitcherFeature{
+    "IPH_ChromeDuetTabSwitcherButton", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHChromeHomeExpandFeature{
     "IPH_ChromeHomeExpand", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHChromeHomePullToRefreshFeature{
@@ -67,11 +73,9 @@ const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature{
     "IPH_DownloadInfoBarDownloadContinuing", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature{
     "IPH_DownloadInfoBarDownloadsAreFaster", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHQuietNotificationPromptsFeature{
+    "IPH_QuietNotificationPrompts", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFeedCardMenuFeature{"IPH_FeedCardMenu",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHHomePageButtonFeature{
-    "IPH_HomePageButton", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHHomepageTileFeature{"IPH_HomepageTile",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHIdentityDiscFeature{"IPH_IdentityDisc",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
@@ -81,10 +85,8 @@ const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature{
     "IPH_KeyboardAccessoryPasswordFilling", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHKeyboardAccessoryPaymentFillingFeature{
     "IPH_KeyboardAccessoryPaymentFilling", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHNewTabPageButtonFeature{
-    "IPH_NewTabPageButton", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHPreviewsOmniboxUIFeature{
-    "IPH_PreviewsOmniboxUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_PreviewsOmniboxUI", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsQuicklyComparePagesFeature{
     "IPH_TabGroupsQuicklyComparePages", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature{

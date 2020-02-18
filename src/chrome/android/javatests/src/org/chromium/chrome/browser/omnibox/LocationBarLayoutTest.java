@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.ImageButton;
@@ -15,15 +20,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -113,8 +121,13 @@ public class LocationBarLayoutTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
+        setupModelsForCurrentTab();
+    }
+
+    private void setupModelsForCurrentTab() {
         mTestLocationBarModel = new TestLocationBarModel();
-        mTestLocationBarModel.setTab(mActivityTestRule.getActivity().getActivityTab(), false);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        mTestLocationBarModel.setTab(tab, tab.isIncognito());
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> getLocationBar().setToolbarDataProvider(mTestLocationBarModel));
@@ -152,8 +165,7 @@ public class LocationBarLayoutTest {
         return mActivityTestRule.getActivity().findViewById(R.id.security_button);
     }
 
-    private void setUrlBarTextAndFocus(String text)
-            throws ExecutionException, InterruptedException {
+    private void setUrlBarTextAndFocus(String text) throws ExecutionException {
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() throws InterruptedException {
@@ -167,24 +179,22 @@ public class LocationBarLayoutTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    public void testNotShowingVoiceSearchButtonIfUrlBarContainsText()
-            throws ExecutionException, InterruptedException {
+    public void testNotShowingVoiceSearchButtonIfUrlBarContainsText() throws ExecutionException {
         setUrlBarTextAndFocus("testing");
 
-        Assert.assertEquals(getDeleteButton().getVisibility(), View.VISIBLE);
-        Assert.assertNotEquals(getMicButton().getVisibility(), View.VISIBLE);
+        Assert.assertEquals(getDeleteButton().getVisibility(), VISIBLE);
+        Assert.assertNotEquals(getMicButton().getVisibility(), VISIBLE);
     }
 
     @Test
     @SmallTest
+    @FlakyTest(message = "https://crbug.com/1020381")
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisabledTest(message = "https://crbug.com/1000315")
-    public void testShowingVoiceSearchButtonIfUrlBarIsEmpty()
-            throws ExecutionException, InterruptedException {
+    public void testShowingVoiceSearchButtonIfUrlBarIsEmpty() throws ExecutionException {
         setUrlBarTextAndFocus("");
 
-        Assert.assertNotEquals(getDeleteButton().getVisibility(), View.VISIBLE);
-        Assert.assertEquals(getMicButton().getVisibility(), View.VISIBLE);
+        Assert.assertNotEquals(getDeleteButton().getVisibility(), VISIBLE);
+        Assert.assertEquals(getMicButton().getVisibility(), VISIBLE);
     }
 
     @Test
@@ -228,5 +238,90 @@ public class LocationBarLayoutTest {
             Assert.assertEquals(0, urlBar.getSelectionStart());
             Assert.assertEquals(VERBOSE_URL.length(), urlBar.getSelectionEnd());
         });
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    @Feature({"OmniboxSearchEngineLogo"})
+    public void testOmniboxSearchEngineLogo_goneWhenIncognito() throws ExecutionException {
+        mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL, true);
+        setupModelsForCurrentTab();
+
+        final LocationBarLayout locationBar = getLocationBar();
+        final View iconView = locationBar.getSecurityIconView();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestLocationBarModel.setDisplaySearchTerms(null);
+            locationBar.updateSearchEngineStatusIcon(false, false, "");
+        });
+
+        onView(withId(R.id.location_bar_status))
+                .check((view, e) -> Assert.assertEquals(iconView.getVisibility(), GONE));
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    @Feature({"OmniboxSearchEngineLogo"})
+    public void testOmniboxSearchEngineLogo_goneOnNTP() {
+        mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL, false);
+        setupModelsForCurrentTab();
+
+        final LocationBarLayout locationBar = getLocationBar();
+        final View iconView = locationBar.getSecurityIconView();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTestLocationBarModel.setDisplaySearchTerms(null);
+            locationBar.updateVisualsForState();
+            locationBar.updateSearchEngineStatusIcon(false, false, "");
+        });
+        onView(withId(R.id.location_bar_status))
+                .check((view, e) -> Assert.assertEquals(iconView.getVisibility(), GONE));
+    }
+
+    @Test
+    @SmallTest
+    public void testSetUrlBarFocus() {
+        final LocationBarLayout locationBar = getLocationBar();
+
+        Assert.assertEquals(
+                0, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBar.setUrlBarFocus(
+                    true, SEARCH_TERMS_URL, LocationBar.OmniboxFocusReason.FAKE_BOX_LONG_PRESS);
+        });
+        Assert.assertTrue(locationBar.isUrlBarFocused());
+        Assert.assertTrue(locationBar.didFocusUrlFromFakebox());
+        Assert.assertEquals(SEARCH_TERMS_URL, getUrlText(getUrlBar()));
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBar.setUrlBarFocus(
+                    true, SEARCH_TERMS, LocationBar.OmniboxFocusReason.SEARCH_QUERY);
+        });
+        Assert.assertTrue(locationBar.isUrlBarFocused());
+        Assert.assertTrue(locationBar.didFocusUrlFromFakebox());
+        Assert.assertEquals(SEARCH_TERMS, getUrlText(getUrlBar()));
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBar.setUrlBarFocus(false, null, LocationBar.OmniboxFocusReason.UNFOCUS);
+        });
+        Assert.assertFalse(locationBar.isUrlBarFocused());
+        Assert.assertFalse(locationBar.didFocusUrlFromFakebox());
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBar.setUrlBarFocus(true, null, LocationBar.OmniboxFocusReason.OMNIBOX_TAP);
+        });
+        Assert.assertTrue(locationBar.isUrlBarFocused());
+        Assert.assertFalse(locationBar.didFocusUrlFromFakebox());
+        Assert.assertEquals(
+                2, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
     }
 }

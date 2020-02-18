@@ -30,11 +30,12 @@ import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.UserData;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -86,7 +87,7 @@ import java.util.List;
  */
 @JNINamespace("content")
 public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData {
-    private static final String TAG = "cr_Ime";
+    private static final String TAG = "Ime";
     private static final boolean DEBUG_LOGS = false;
 
     private static final float SUGGESTION_HIGHLIGHT_BACKGROUND_TRANSPARENCY = 0.4f;
@@ -604,10 +605,11 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
             // show soft keyboard (for IME composition window only) if a hardware keyboard is
             // present.
             restartInput();
-            if (!isHardwareKeyboardAttached())
+            if (!isHardwareKeyboardAttached()) {
                 hideKeyboard();
-            else
+            } else {
                 showSoftKeyboard();
+            }
         }
     }
 

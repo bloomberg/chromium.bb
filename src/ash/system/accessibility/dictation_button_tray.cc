@@ -7,8 +7,8 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
@@ -23,12 +23,10 @@ namespace ash {
 
 DictationButtonTray::DictationButtonTray(Shelf* shelf)
     : TrayBackgroundView(shelf), icon_(new views::ImageView()) {
-  UpdateVisibility();
-
-  SetInkDropMode(InkDropMode::ON);
-
-  off_image_ = gfx::CreateVectorIcon(kDictationOffNewuiIcon, kShelfIconColor);
-  on_image_ = gfx::CreateVectorIcon(kDictationOnNewuiIcon, kShelfIconColor);
+  off_image_ = gfx::CreateVectorIcon(kDictationOffNewuiIcon,
+                                     ShelfConfig::Get()->shelf_icon_color());
+  on_image_ = gfx::CreateVectorIcon(kDictationOnNewuiIcon,
+                                    ShelfConfig::Get()->shelf_icon_color());
   icon_->SetImage(off_image_);
   const int vertical_padding = (kTrayItemSize - off_image_.height()) / 2;
   const int horizontal_padding = (kTrayItemSize - off_image_.width()) / 2;
@@ -52,6 +50,11 @@ bool DictationButtonTray::PerformAction(const ui::Event& event) {
 
   CheckDictationStatusAndUpdateIcon();
   return true;
+}
+
+void DictationButtonTray::Initialize() {
+  TrayBackgroundView::Initialize();
+  UpdateVisibility();
 }
 
 void DictationButtonTray::ClickedOutsideBubble() {}
@@ -95,7 +98,7 @@ void DictationButtonTray::UpdateIcon(bool dictation_active) {
 void DictationButtonTray::UpdateVisibility() {
   bool is_visible =
       Shell::Get()->accessibility_controller()->dictation_enabled();
-  SetVisible(is_visible);
+  SetVisiblePreferred(is_visible);
 }
 
 void DictationButtonTray::CheckDictationStatusAndUpdateIcon() {

@@ -26,6 +26,7 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/common/cast_resource_delegate.h"
 #include "chromecast/common/global_descriptors.h"
+#include "chromecast/gpu/cast_content_gpu_client.h"
 #include "chromecast/renderer/cast_content_renderer_client.h"
 #include "chromecast/utility/cast_content_utility_client.h"
 #include "components/crash/content/app/crash_reporter_client.h"
@@ -220,8 +221,13 @@ void CastMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   CHECK(base::CreateDirectory(home_dir));
 #endif  // !defined(OS_ANDROID)
 
-  // The |FieldTrialList| is a dependency of the feature list.
-  field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
+  // The |FieldTrialList| is a dependency of the feature list. In tests, it
+  // gets constructed as part of the test suite.
+  if (is_running_tests) {
+    DCHECK(base::FieldTrialList::GetInstance());
+  } else {
+    field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
+  }
 
   // Initialize the base::FeatureList and the PrefService (which it depends on),
   // so objects initialized after this point can use features from
@@ -282,6 +288,11 @@ content::ContentBrowserClient* CastMainDelegate::CreateContentBrowserClient() {
   browser_client_ =
       CastContentBrowserClient::Create(cast_feature_list_creator_.get());
   return browser_client_.get();
+}
+
+content::ContentGpuClient* CastMainDelegate::CreateContentGpuClient() {
+  gpu_client_ = CastContentGpuClient::Create();
+  return gpu_client_.get();
 }
 
 content::ContentRendererClient*

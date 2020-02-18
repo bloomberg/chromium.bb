@@ -7,7 +7,7 @@
 
 from __future__ import print_function
 
-import distutils.version
+import distutils.version  # pylint: disable=import-error,no-name-in-module
 import os
 
 from chromite.cbuildbot import manifest_version
@@ -15,6 +15,7 @@ from chromite.lib import chrome_committer
 from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
+from chromite.lib import gerrit
 from chromite.lib import osutils
 
 
@@ -29,13 +30,15 @@ class LKGMFileNotFound(chrome_committer.CommitError):
 class ChromeLKGMCommitter(object):
   """Committer object responsible for obtaining a new LKGM and committing it."""
 
-  _COMMIT_MSG_TEMPLATE = (
-      'LKGM %(version)s for chromeos.'
-      # Make all LKGM updates run and pass on the betty trybot before landing.
-      # Since it's an internal trybot, the CQ won't automatically trigger it,
-      # so we have to explicitly tell it to.
-      '\n\nCQ_INCLUDE_TRYBOTS=luci.chrome.try:chromeos-betty-chrome'
-      '\n\nBUG=762641')
+  # The list of trybots we require LKGM updates to run and pass on before
+  # landing. Since they're internal trybots, the CQ won't automatically trigger
+  # them, so we have to explicitly tell it to.
+  _PRESUBMIT_BOTS = [
+      'chromeos-betty-chrome',
+      'chromeos-betty-pi-arc-chrome',
+      'chromeos-eve-compile-chrome',
+      'chromeos-kevin-compile-chrome',
+  ]
   # Files needed in a local checkout to successfully update the LKGM. The OWNERS
   # file allows the --tbr-owners mechanism to select an appropriate OWNER to
   # TBR. TRANSLATION_OWNERS is necesssary to parse CHROMEOS_OWNERS file since
@@ -59,6 +62,7 @@ class ChromeLKGMCommitter(object):
     logging.info('lkgm=%s', self._lkgm)
 
   def Run(self):
+    self.CloseOldLKGMRolls()
     self._committer.Cleanup()
     self._committer.Checkout(self._NEEDED_FILES)
     self.UpdateLKGM()
@@ -72,6 +76,26 @@ class ChromeLKGMCommitter(object):
   @property
   def lkgm_file(self):
     return self._committer.FullPath(constants.PATH_TO_CHROME_LKGM)
+
+  def CloseOldLKGMRolls(self):
+    """Closes all open LKGM roll CLs that were last modified >24 hours ago.
+
+    Any roll that hasn't passed the CQ in 24 hours is likely broken and can be
+    discarded.
+    """
+    query_params = {
+        'project': constants.CHROMIUM_SRC_PROJECT,
+        'branch': 'master',
+        'author': self._committer.author,
+        'file': constants.PATH_TO_CHROME_LKGM,
+        'age': '1d',
+        'status': 'open',
+    }
+    gerrit_helper = gerrit.GetCrosExternal()
+    for open_issue in gerrit_helper.Query(**query_params):
+      logging.info(
+          'Closing old LKGM roll crrev.com/c/%s', open_issue.gerrit_number)
+      gerrit_helper.AbandonChange(open_issue)
 
   def UpdateLKGM(self):
     """Updates the LKGM file with the new version."""
@@ -91,10 +115,22 @@ class ChromeLKGMCommitter(object):
                  self._lkgm, self._old_lkgm)
     osutils.WriteFile(lkgm_file, self._lkgm)
 
+  def ComposeCommitMsg(self):
+    """Constructs and returns the commit message for the LKGM update."""
+    commit_msg_template = (
+        'LKGM %(version)s for chromeos.'
+        '\n\n%(cq_includes)s'
+        '\nBUG=762641')
+    cq_includes = ''
+    for bot in self._PRESUBMIT_BOTS:
+      cq_includes += 'CQ_INCLUDE_TRYBOTS=luci.chrome.try:%s\n' % bot
+    return commit_msg_template % dict(
+        version=self._lkgm, cq_includes=cq_includes)
+
   def CommitNewLKGM(self):
     """Commits the new LKGM file using our template commit message."""
-    commit_msg = self._COMMIT_MSG_TEMPLATE % dict(version=self._lkgm)
-    self._committer.Commit([constants.PATH_TO_CHROME_LKGM], commit_msg)
+    self._committer.Commit([constants.PATH_TO_CHROME_LKGM],
+                           self.ComposeCommitMsg())
 
 
 def GetArgs(argv):

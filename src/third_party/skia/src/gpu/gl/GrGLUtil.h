@@ -61,7 +61,8 @@ enum GrGLRenderer {
     kAdreno430_GrGLRenderer,
     kAdreno4xx_other_GrGLRenderer,
     kAdreno5xx_GrGLRenderer,
-    kOSMesa_GrGLRenderer,
+    kAdreno615_GrGLRenderer,  // Pixel3a
+    kAdreno630_GrGLRenderer,  // Pixel3
     kGoogleSwiftShader_GrGLRenderer,
 
     /** Intel GPU families, ordered by generation **/
@@ -93,8 +94,10 @@ enum GrGLRenderer {
     kMaliT_GrGLRenderer,
     kANGLE_GrGLRenderer,
 
-    kAMDRadeonHD7xxx_GrGLRenderer,  // AMD Radeon HD 7000 Series
-    kAMDRadeonR9M4xx_GrGLRenderer,  // AMD Radeon R9 M400 Series
+    kAMDRadeonHD7xxx_GrGLRenderer,    // AMD Radeon HD 7000 Series
+    kAMDRadeonR9M3xx_GrGLRenderer,    // AMD Radeon R9 M300 Series
+    kAMDRadeonR9M4xx_GrGLRenderer,    // AMD Radeon R9 M400 Series
+    kAMDRadeonProVegaxx_GrGLRenderer, // AMD Radeon Pro Vega
 
     kOther_GrGLRenderer
 };
@@ -293,7 +296,6 @@ static constexpr GrGLFormat GrGLFormatFromGLEnum(GrGLenum glFormat) {
         case GR_GL_RG8:                  return GrGLFormat::kRG8;
         case GR_GL_RGB10_A2:             return GrGLFormat::kRGB10_A2;
         case GR_GL_RGBA4:                return GrGLFormat::kRGBA4;
-        case GR_GL_RGBA32F:              return GrGLFormat::kRGBA32F;
         case GR_GL_SRGB8_ALPHA8:         return GrGLFormat::kSRGB8_ALPHA8;
         case GR_GL_COMPRESSED_RGB8_ETC2: return GrGLFormat::kCOMPRESSED_RGB8_ETC2;
         case GR_GL_COMPRESSED_ETC1_RGB8: return GrGLFormat::kCOMPRESSED_ETC1_RGB8;
@@ -322,7 +324,6 @@ static constexpr GrGLenum GrGLFormatToEnum(GrGLFormat format) {
         case GrGLFormat::kRG8:                  return GR_GL_RG8;
         case GrGLFormat::kRGB10_A2:             return GR_GL_RGB10_A2;
         case GrGLFormat::kRGBA4:                return GR_GL_RGBA4;
-        case GrGLFormat::kRGBA32F:              return GR_GL_RGBA32F;
         case GrGLFormat::kSRGB8_ALPHA8:         return GR_GL_SRGB8_ALPHA8;
         case GrGLFormat::kCOMPRESSED_RGB8_ETC2: return GR_GL_COMPRESSED_RGB8_ETC2;
         case GrGLFormat::kCOMPRESSED_ETC1_RGB8: return GR_GL_COMPRESSED_ETC1_RGB8;
@@ -376,7 +377,5 @@ bool GrGLFormatIsCompressed(GrGLFormat);
  * Maps a GrGLFormat into the CompressionType enum if appropriate.
  */
 bool GrGLFormatToCompressionType(GrGLFormat, SkImage::CompressionType*);
-
-size_t GrGLBytesPerFormat(GrGLFormat);
 
 #endif

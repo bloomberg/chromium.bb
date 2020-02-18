@@ -39,16 +39,16 @@ blink::WebView* WebViewTestProxy::CreateView(
     blink::WebSandboxFlags sandbox_flags,
     const blink::FeaturePolicy::FeatureState& opener_feature_state,
     const blink::SessionStorageNamespaceId& session_storage_namespace_id) {
-  if (GetTestRunner()->shouldDumpNavigationPolicy()) {
+  if (GetTestRunner()->ShouldDumpNavigationPolicy()) {
     delegate()->PrintMessage("Default policy for createView for '" +
                              URLDescription(request.Url()) + "' is '" +
                              WebNavigationPolicyToString(policy) + "'\n");
   }
 
-  if (!GetTestRunner()->canOpenWindows())
+  if (!GetTestRunner()->CanOpenWindows())
     return nullptr;
 
-  if (GetTestRunner()->shouldDumpCreateView()) {
+  if (GetTestRunner()->ShouldDumpCreateView()) {
     delegate()->PrintMessage(std::string("createView(") +
                              URLDescription(request.Url()) + ")\n");
   }
@@ -73,21 +73,6 @@ blink::WebString WebViewTestProxy::AcceptLanguages() {
 void WebViewTestProxy::DidFocus(blink::WebLocalFrame* calling_frame) {
   GetTestRunner()->SetFocus(webview(), true);
   RenderViewImpl::DidFocus(calling_frame);
-}
-
-blink::WebScreenInfo WebViewTestProxy::GetScreenInfo() {
-  blink::WebScreenInfo info = RenderViewImpl::GetScreenInfo();
-
-  MockScreenOrientationClient* mock_client =
-      GetTestRunner()->getMockScreenOrientationClient();
-
-  if (!mock_client->IsDisabled()) {
-    // Override screen orientation information with mock data.
-    info.orientation_type = mock_client->CurrentOrientationType();
-    info.orientation_angle = mock_client->CurrentOrientationAngle();
-  }
-
-  return info;
 }
 
 void WebViewTestProxy::Reset() {
@@ -116,8 +101,10 @@ void WebViewTestProxy::BindTo(blink::WebLocalFrame* frame) {
 
 WebViewTestProxy::~WebViewTestProxy() {
   test_interfaces_->WindowClosed(this);
-  if (test_interfaces_->GetDelegate() == delegate_.get())
+  if (test_interfaces_->GetDelegate() == delegate_.get()) {
     test_interfaces_->SetDelegate(nullptr);
+    test_interfaces_->SetMainView(nullptr);
+  }
 }
 
 TestRunner* WebViewTestProxy::GetTestRunner() {

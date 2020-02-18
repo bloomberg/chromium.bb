@@ -2,42 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('signin_view_test', function() {
-  suite('SigninViewTest', function() {
+import 'chrome://welcome/signin_view.js';
 
-    /** @type {SigninViewElement} */
-    let testElement;
+import {SigninViewProxyImpl} from 'chrome://welcome/signin_view_proxy.js';
+import {WelcomeBrowserProxyImpl} from 'chrome://welcome/welcome_browser_proxy.js';
 
-    /** @type {welcome.WelcomeBrowserProxy} */
-    let testWelcomeBrowserProxy;
+import {TestSigninViewProxy} from './test_signin_view_proxy.js';
+import {TestWelcomeBrowserProxy} from './test_welcome_browser_proxy.js';
 
-    setup(function() {
-      testWelcomeBrowserProxy = new TestWelcomeBrowserProxy();
-      welcome.WelcomeBrowserProxyImpl.instance_ = testWelcomeBrowserProxy;
+suite('SigninViewTest', function() {
+  /** @type {SigninViewElement} */
+  let testElement;
 
-      PolymerTest.clearBody();
-      testElement = document.createElement('signin-view');
-      document.body.appendChild(testElement);
-    });
+  /** @type {WelcomeBrowserProxy} */
+  let testWelcomeBrowserProxy;
 
-    teardown(function() {
-      testElement.remove();
-    });
+  setup(function() {
+    testWelcomeBrowserProxy = new TestWelcomeBrowserProxy();
+    WelcomeBrowserProxyImpl.instance_ = testWelcomeBrowserProxy;
 
-    test('sign-in button', function() {
-      const signinButton = testElement.$$('cr-button');
-      assertTrue(!!signinButton);
+    // Not used in test, but setting to test proxy anyway, in order to prevent
+    // calls to backend.
+    SigninViewProxyImpl.instance_ = new TestSigninViewProxy();
 
-      signinButton.click();
-      return testWelcomeBrowserProxy.whenCalled('handleActivateSignIn')
-          .then(redirectUrl => assertEquals(null, redirectUrl));
-    });
+    PolymerTest.clearBody();
+    testElement = document.createElement('signin-view');
+    document.body.appendChild(testElement);
+  });
 
-    test('no-thanks button', function() {
-      const noThanksButton = testElement.$$('button');
-      assertTrue(!!noThanksButton);
-      noThanksButton.click();
-      return testWelcomeBrowserProxy.whenCalled('handleUserDecline');
-    });
+  teardown(function() {
+    testElement.remove();
+  });
+
+  test('sign-in button', function() {
+    const signinButton = testElement.$$('cr-button');
+    assertTrue(!!signinButton);
+
+    signinButton.click();
+    return testWelcomeBrowserProxy.whenCalled('handleActivateSignIn')
+        .then(redirectUrl => assertEquals(null, redirectUrl));
+  });
+
+  test('no-thanks button', function() {
+    const noThanksButton = testElement.$$('button');
+    assertTrue(!!noThanksButton);
+    noThanksButton.click();
+    return testWelcomeBrowserProxy.whenCalled('handleUserDecline');
   });
 });

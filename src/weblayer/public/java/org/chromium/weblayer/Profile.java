@@ -4,57 +4,101 @@
 
 package org.chromium.weblayer;
 
-import android.content.Context;
 import android.os.RemoteException;
-import android.util.AndroidRuntimeException;
-import android.util.Log;
 
-import org.chromium.weblayer_private.aidl.IProfile;
-import org.chromium.weblayer_private.aidl.ObjectWrapper;
+import androidx.annotation.NonNull;
+
+import org.chromium.weblayer_private.interfaces.APICallException;
+import org.chromium.weblayer_private.interfaces.IProfile;
+import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Profile holds state (typically on disk) needed for browsing. Create a
  * Profile via WebLayer.
  */
 public final class Profile {
-    private static final String TAG = "WL_Profile";
+    private static final Map<String, Profile> sProfiles = new HashMap<>();
 
-    private IProfile mImpl;
+    /* package */ static Profile of(IProfile impl) {
+        ThreadCheck.ensureOnUiThread();
+        String name;
+        try {
+            name = impl.getName();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+        Profile profile = sProfiles.get(name);
+        if (profile != null) {
+            return profile;
+        }
 
-    Profile(IProfile impl) {
-        mImpl = impl;
+        return new Profile(name, impl);
     }
 
-    @Override
-    protected void finalize() {
-        // TODO(sky): figure out right assertion here if mImpl is non-null.
+    /**
+     * Return all profiles that have been created and not yet called destroyed.
+     * Note returned structure is immutable.
+     */
+    @NonNull
+    public static Collection<Profile> getAllProfiles() {
+        ThreadCheck.ensureOnUiThread();
+        return Collections.unmodifiableCollection(sProfiles.values());
+    }
+
+    private final String mName;
+    private IProfile mImpl;
+
+    private Profile(String name, IProfile impl) {
+        mName = name;
+        mImpl = impl;
+
+        sProfiles.put(name, this);
+    }
+
+    /**
+     * Clears the data associated with the Profile.
+     * The clearing is asynchronous, and new data may be generated during clearing. It is safe to
+     * call this method repeatedly without waiting for callback.
+     *
+     * @param dataTypes See {@link BrowsingDataType}.
+     * @param fromMillis Defines the start (in milliseconds since epoch) of the time range to clear.
+     * @param toMillis Defines the end (in milliseconds since epoch) of the time range to clear.
+     * For clearing all data prefer using {@link Long#MAX_VALUE} to
+     * {@link System.currentTimeMillis()} to take into account possible system clock changes.
+     * @param callback {@link Runnable} which is run when clearing is finished.
+     */
+    public void clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes, long fromMillis,
+            long toMillis, @NonNull Runnable callback) {
+        ThreadCheck.ensureOnUiThread();
+        try {
+            mImpl.clearBrowsingData(dataTypes, fromMillis, toMillis, ObjectWrapper.wrap(callback));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Clears the data associated with the Profile.
+     * Same as {@link #clearBrowsingData(int[], long, long, Runnable)} with unbounded time range.
+     */
+    public void clearBrowsingData(
+            @NonNull @BrowsingDataType int[] dataTypes, @NonNull Runnable callback) {
+        clearBrowsingData(dataTypes, 0, Long.MAX_VALUE, callback);
     }
 
     public void destroy() {
+        ThreadCheck.ensureOnUiThread();
         try {
             mImpl.destroy();
         } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call destroy.", e);
-            throw new AndroidRuntimeException(e);
+            throw new APICallException(e);
         }
-    }
-
-    public void clearBrowsingData() {
-        try {
-            mImpl.clearBrowsingData();
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call clearBrowsingData.", e);
-            throw new AndroidRuntimeException(e);
-        }
-    }
-
-    public BrowserController createBrowserController(Context context) {
-        try {
-            return new BrowserController(
-                    mImpl.createBrowserController(ObjectWrapper.wrap(context)));
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to call createBrowserController.", e);
-            throw new AndroidRuntimeException(e);
-        }
+        mImpl = null;
+        sProfiles.remove(mName);
     }
 }

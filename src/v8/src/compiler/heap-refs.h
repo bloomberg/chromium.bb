@@ -29,7 +29,6 @@ class NativeContext;
 class ScriptContextTable;
 
 namespace compiler {
-
 // Whether we are loading a property or storing to a property.
 // For a store during literal creation, do not walk up the prototype chain.
 enum class AccessMode { kLoad, kStore, kStoreInLiteral, kHas };
@@ -95,10 +94,12 @@ enum class OddballType : uint8_t {
   V(PropertyCell)                  \
   V(SharedFunctionInfo)            \
   V(SourceTextModule)              \
+  V(TemplateObjectDescription)     \
   /* Subtypes of Object */         \
   V(HeapObject)
 
 class CompilationDependencies;
+struct FeedbackSource;
 class JSHeapBroker;
 class ObjectData;
 class PerIsolateCompilerCache;
@@ -163,8 +164,8 @@ class V8_EXPORT_PRIVATE ObjectRef {
  private:
   friend class FunctionTemplateInfoRef;
   friend class JSArrayData;
-  friend class JSGlobalProxyRef;
-  friend class JSGlobalProxyData;
+  friend class JSGlobalObjectData;
+  friend class JSGlobalObjectRef;
   friend class JSHeapBroker;
   friend class JSObjectData;
   friend class StringData;
@@ -329,8 +330,6 @@ class V8_EXPORT_PRIVATE JSFunctionRef : public JSObjectRef {
   SharedFunctionInfoRef shared() const;
   FeedbackVectorRef feedback_vector() const;
   int InitialMapInstanceSizeWithMinSlack() const;
-
-  bool IsSerializedForCompilation() const;
 };
 
 class JSRegExpRef : public JSObjectRef {
@@ -344,6 +343,8 @@ class JSRegExpRef : public JSObjectRef {
   ObjectRef source() const;
   ObjectRef flags() const;
   ObjectRef last_index() const;
+
+  void SerializeAsRegExpBoilerplate();
 };
 
 class HeapNumberRef : public HeapObjectRef {
@@ -388,14 +389,19 @@ class ContextRef : public HeapObjectRef {
   V(JSFunction, object_function)                                      \
   V(JSFunction, promise_function)                                     \
   V(JSFunction, promise_then)                                         \
+  V(JSFunction, regexp_function)                                      \
   V(JSFunction, string_function)                                      \
   V(JSFunction, symbol_function)                                      \
   V(JSGlobalObject, global_object)                                    \
   V(JSGlobalProxy, global_proxy_object)                               \
   V(JSObject, promise_prototype)                                      \
+  V(Map, block_context_map)                                           \
   V(Map, bound_function_with_constructor_map)                         \
   V(Map, bound_function_without_constructor_map)                      \
+  V(Map, catch_context_map)                                           \
+  V(Map, eval_context_map)                                            \
   V(Map, fast_aliased_arguments_map)                                  \
+  V(Map, function_context_map)                                        \
   V(Map, initial_array_iterator_map)                                  \
   V(Map, initial_string_iterator_map)                                 \
   V(Map, iterator_result_map)                                         \
@@ -408,6 +414,7 @@ class ContextRef : public HeapObjectRef {
   V(Map, sloppy_arguments_map)                                        \
   V(Map, slow_object_with_null_prototype_map)                         \
   V(Map, strict_arguments_map)                                        \
+  V(Map, with_context_map)                                            \
   V(ScriptContextTable, script_context_table)                         \
   V(SharedFunctionInfo, promise_capability_default_reject_shared_fun) \
   V(SharedFunctionInfo, promise_catch_finally_shared_fun)             \
@@ -496,7 +503,6 @@ class FeedbackVectorRef : public HeapObjectRef {
   double invocation_count() const;
 
   void Serialize();
-  ObjectRef get(FeedbackSlot slot) const;
   FeedbackCellRef GetClosureFeedbackCell(int index) const;
 };
 
@@ -535,6 +541,9 @@ class AllocationSiteRef : public HeapObjectRef {
   //
   // If PointsToLiteral() is false, then IsFastLiteral() is also false.
   bool IsFastLiteral() const;
+
+  void SerializeBoilerplate();
+
   // We only serialize boilerplate if IsFastLiteral is true.
   base::Optional<JSObjectRef> boilerplate() const;
 
@@ -585,7 +594,6 @@ class V8_EXPORT_PRIVATE MapRef : public HeapObjectRef {
   bool is_migration_target() const;
   bool supports_fast_array_iteration() const;
   bool supports_fast_array_resize() const;
-  bool IsMapOfTargetGlobalProxy() const;
   bool is_abandoned_prototype_map() const;
 
   OddballType oddball_type() const;
@@ -609,15 +617,15 @@ class V8_EXPORT_PRIVATE MapRef : public HeapObjectRef {
 
   // Concerning the underlying instance_descriptors:
   void SerializeOwnDescriptors();
-  void SerializeOwnDescriptor(int descriptor_index);
-  bool serialized_own_descriptor(int descriptor_index) const;
-  MapRef FindFieldOwner(int descriptor_index) const;
-  PropertyDetails GetPropertyDetails(int descriptor_index) const;
-  NameRef GetPropertyKey(int descriptor_index) const;
-  FieldIndex GetFieldIndexFor(int descriptor_index) const;
-  ObjectRef GetFieldType(int descriptor_index) const;
-  bool IsUnboxedDoubleField(int descriptor_index) const;
-  ObjectRef GetStrongValue(int descriptor_number) const;
+  void SerializeOwnDescriptor(InternalIndex descriptor_index);
+  bool serialized_own_descriptor(InternalIndex descriptor_index) const;
+  MapRef FindFieldOwner(InternalIndex descriptor_index) const;
+  PropertyDetails GetPropertyDetails(InternalIndex descriptor_index) const;
+  NameRef GetPropertyKey(InternalIndex descriptor_index) const;
+  FieldIndex GetFieldIndexFor(InternalIndex descriptor_index) const;
+  ObjectRef GetFieldType(InternalIndex descriptor_index) const;
+  bool IsUnboxedDoubleField(InternalIndex descriptor_index) const;
+  ObjectRef GetStrongValue(InternalIndex descriptor_number) const;
 
   void SerializeRootMap();
   base::Optional<MapRef> FindRootMap() const;
@@ -727,7 +735,6 @@ class BytecodeArrayRef : public FixedArrayBaseRef {
   Address handler_table_address() const;
   int handler_table_size() const;
 
-  bool IsSerializedForCompilation() const;
   void SerializeForCompilation();
 };
 
@@ -753,23 +760,31 @@ class ScopeInfoRef : public HeapObjectRef {
   Handle<ScopeInfo> object() const;
 
   int ContextLength() const;
+  bool HasOuterScopeInfo() const;
+  int Flags() const;
+  bool HasContextExtension() const;
+
+  // Only serialized via SerializeScopeInfoChain.
+  ScopeInfoRef OuterScopeInfo() const;
+  void SerializeScopeInfoChain();
 };
 
-#define BROKER_SFI_FIELDS(V)                 \
-  V(int, internal_formal_parameter_count)    \
-  V(bool, has_duplicate_parameters)          \
-  V(int, function_map_index)                 \
-  V(FunctionKind, kind)                      \
-  V(LanguageMode, language_mode)             \
-  V(bool, native)                            \
-  V(bool, HasBreakInfo)                      \
-  V(bool, HasBuiltinId)                      \
-  V(bool, construct_as_builtin)              \
-  V(bool, HasBytecodeArray)                  \
-  V(bool, is_safe_to_skip_arguments_adaptor) \
-  V(bool, IsInlineable)                      \
-  V(int, StartPosition)                      \
-  V(bool, is_compiled)
+#define BROKER_SFI_FIELDS(V)                             \
+  V(int, internal_formal_parameter_count)                \
+  V(bool, has_duplicate_parameters)                      \
+  V(int, function_map_index)                             \
+  V(FunctionKind, kind)                                  \
+  V(LanguageMode, language_mode)                         \
+  V(bool, native)                                        \
+  V(bool, HasBreakInfo)                                  \
+  V(bool, HasBuiltinId)                                  \
+  V(bool, construct_as_builtin)                          \
+  V(bool, HasBytecodeArray)                              \
+  V(bool, is_safe_to_skip_arguments_adaptor)             \
+  V(SharedFunctionInfo::Inlineability, GetInlineability) \
+  V(int, StartPosition)                                  \
+  V(bool, is_compiled)                                   \
+  V(bool, IsUserJavaScript)
 
 class V8_EXPORT_PRIVATE SharedFunctionInfoRef : public HeapObjectRef {
  public:
@@ -778,24 +793,29 @@ class V8_EXPORT_PRIVATE SharedFunctionInfoRef : public HeapObjectRef {
   Handle<SharedFunctionInfo> object() const;
 
   int builtin_id() const;
+  int context_header_size() const;
   BytecodeArrayRef GetBytecodeArray() const;
 
 #define DECL_ACCESSOR(type, name) type name() const;
   BROKER_SFI_FIELDS(DECL_ACCESSOR)
 #undef DECL_ACCESSOR
 
-  bool IsSerializedForCompilation(FeedbackVectorRef feedback) const;
-  void SetSerializedForCompilation(FeedbackVectorRef feedback);
+  bool IsInlineable() const {
+    return GetInlineability() == SharedFunctionInfo::kIsInlineable;
+  }
 
   // Template objects may not be created at compilation time. This method
   // wraps the retrieval of the template object and creates it if
   // necessary.
   JSArrayRef GetTemplateObject(
-      ObjectRef description, FeedbackVectorRef vector, FeedbackSlot slot,
+      TemplateObjectDescriptionRef description, FeedbackSource const& source,
       SerializationPolicy policy = SerializationPolicy::kAssumeSerialized);
 
   void SerializeFunctionTemplateInfo();
   base::Optional<FunctionTemplateInfoRef> function_template_info() const;
+
+  void SerializeScopeInfoChain();
+  ScopeInfoRef scope_info() const;
 };
 
 class StringRef : public NameRef {
@@ -826,7 +846,7 @@ class JSTypedArrayRef : public JSObjectRef {
 
   bool is_on_heap() const;
   size_t length() const;
-  void* external_pointer() const;
+  void* data_ptr() const;
 
   void Serialize();
   bool serialized() const;
@@ -845,6 +865,13 @@ class SourceTextModuleRef : public HeapObjectRef {
   base::Optional<CellRef> GetCell(int cell_index) const;
 };
 
+class TemplateObjectDescriptionRef : public HeapObjectRef {
+ public:
+  DEFINE_REF_CONSTRUCTOR(TemplateObjectDescription, HeapObjectRef)
+
+  Handle<TemplateObjectDescription> object() const;
+};
+
 class CellRef : public HeapObjectRef {
  public:
   DEFINE_REF_CONSTRUCTOR(Cell, HeapObjectRef)
@@ -859,13 +886,8 @@ class JSGlobalObjectRef : public JSObjectRef {
   DEFINE_REF_CONSTRUCTOR(JSGlobalObject, JSObjectRef)
 
   Handle<JSGlobalObject> object() const;
-};
 
-class JSGlobalProxyRef : public JSObjectRef {
- public:
-  DEFINE_REF_CONSTRUCTOR(JSGlobalProxy, JSObjectRef)
-
-  Handle<JSGlobalProxy> object() const;
+  bool IsDetached() const;
 
   // If {serialize} is false:
   //   If the property is known to exist as a property cell (on the global
@@ -877,6 +899,13 @@ class JSGlobalProxyRef : public JSObjectRef {
   base::Optional<PropertyCellRef> GetPropertyCell(
       NameRef const& name, SerializationPolicy policy =
                                SerializationPolicy::kAssumeSerialized) const;
+};
+
+class JSGlobalProxyRef : public JSObjectRef {
+ public:
+  DEFINE_REF_CONSTRUCTOR(JSGlobalProxy, JSObjectRef)
+
+  Handle<JSGlobalProxy> object() const;
 };
 
 class CodeRef : public HeapObjectRef {

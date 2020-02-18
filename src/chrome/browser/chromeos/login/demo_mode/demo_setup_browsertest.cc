@@ -16,6 +16,7 @@
 #include "base/time/time_to_iso8601.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -155,7 +156,7 @@ class DemoSetupTest : public LoginManagerTest {
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
     DisableConfirmationDialogAnimations();
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
     DisconnectAllNetworks();
   }
 
@@ -212,7 +213,7 @@ class DemoSetupTest : public LoginManagerTest {
   bool IsCustomNetworkListElementShown(const std::string& custom_item_name) {
     const std::string element_selector = base::StrCat(
         {ScreenToContentQuery(NetworkScreenView::kScreenId),
-         ".getNetworkListItemWithQueryForTest('cr-network-list-item')"});
+         ".getNetworkListItemWithQueryForTest('network-list-item')"});
     const std::string query =
         base::StrCat({"!!", element_selector, " && ", element_selector,
                       ".item.customItemName == '", custom_item_name, "' && !",
@@ -328,12 +329,11 @@ class DemoSetupTest : public LoginManagerTest {
   }
 
   // Simulates click on the network list item. |element| should specify
-  // the aria-label of the desired cr-network-list-item.
-  void ClickNetworkListElement(const std::string& element) {
-    const std::string query =
-        base::StrCat({ScreenToContentQuery(NetworkScreenView::kScreenId),
-                      ".getNetworkListItemWithQueryForTest('[aria-label=\"",
-                      element, "\"]').click()"});
+  // the aria-label of the desired network-list-item.
+  void ClickNetworkListElement(const std::string& name) {
+    const std::string query = base::StrCat(
+        {ScreenToContentQuery(NetworkScreenView::kScreenId),
+         ".getNetworkListItemByNameForTest('", name, "').click()"});
     test::ExecuteOobeJSAsync(query);
   }
 
@@ -457,7 +457,7 @@ class DemoSetupTest : public LoginManagerTest {
   // TODO(agawronska): Maybe create a separate test fixture for offline setup.
   base::ScopedTempDir fake_demo_resources_dir_;
   policy::MockCloudPolicyStore mock_policy_store_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupTest);
 };
@@ -577,8 +577,16 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowSuccess) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
+// Disabled on debug builds for flakiness. See crbug.com/1030782.
+#if !defined(NDEBUG)
+#define MAYBE_OnlineSetupFlowSuccessWithCountryCustomization \
+  DISABLED_OnlineSetupFlowSuccessWithCountryCustomization
+#else
+#define MAYBE_OnlineSetupFlowSuccessWithCountryCustomization \
+  OnlineSetupFlowSuccessWithCountryCustomization
+#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupTest,
-                       OnlineSetupFlowSuccessWithCountryCustomization) {
+                       MAYBE_OnlineSetupFlowSuccessWithCountryCustomization) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -729,7 +737,16 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorDefault) {
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorPowerwashRequired) {
+// Consistently timing out on xxx. http://crbug/com/1025213
+#if defined(OS_LINUX)
+#define MAYBE_OnlineSetupFlowErrorPowerwashRequired \
+  DISABLED_OnlineSetupFlowErrorPowerwashRequired
+#else
+#define MAYBE_OnlineSetupFlowErrorPowerwashRequired \
+  OnlineSetupFlowErrorPowerwashRequired
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupTest,
+                       MAYBE_OnlineSetupFlowErrorPowerwashRequired) {
   // Simulate online setup failure that requires powerwash.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);

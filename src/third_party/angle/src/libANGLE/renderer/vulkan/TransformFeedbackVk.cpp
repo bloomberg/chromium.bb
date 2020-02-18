@@ -129,7 +129,7 @@ void TransformFeedbackVk::addFramebufferDependency(ContextVk *contextVk,
         ASSERT(buffer != nullptr);
 
         vk::BufferHelper &bufferHelper = vk::GetImpl(buffer)->getBuffer();
-        bufferHelper.onWrite(contextVk, framebuffer, 0, VK_ACCESS_SHADER_WRITE_BIT);
+        bufferHelper.onWrite(contextVk, framebuffer, VK_ACCESS_SHADER_WRITE_BIT);
     }
 }
 
@@ -237,7 +237,7 @@ void TransformFeedbackVk::onBeginOrEnd(const gl::Context *context)
     FramebufferVk *framebufferVk       = vk::GetImpl(context->getState().getDrawFramebuffer());
     vk::FramebufferHelper *framebuffer = framebufferVk->getFramebuffer();
 
-    framebuffer->updateQueueSerial(contextVk->getCurrentQueueSerial());
+    framebuffer->updateCurrentAccessNodes();
     if (framebuffer->hasStartedRenderPass())
     {
         framebuffer->finishCurrentCommands(contextVk);

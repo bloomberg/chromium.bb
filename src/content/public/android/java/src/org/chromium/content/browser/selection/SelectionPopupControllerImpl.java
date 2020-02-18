@@ -18,7 +18,6 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.provider.Browser;
-import android.support.annotation.Nullable;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.CharacterStyle;
@@ -32,12 +31,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.textclassifier.SelectionEvent;
 import android.view.textclassifier.TextClassifier;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.UserData;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -372,7 +375,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                         break;
                     case MenuSourceType.MENU_SOURCE_ADJUST_SELECTION_RESET:
                         mSelectionMetricsLogger.logSelectionAction(mLastSelectedText,
-                                mLastSelectionOffset, SmartSelectionMetricsLogger.ActionType.RESET,
+                                mLastSelectionOffset, SelectionEvent.ACTION_RESET,
                                 /* SelectionClient.Result = */ null);
                         break;
                     case MenuSourceType.MENU_SOURCE_TOUCH_HANDLE:
@@ -850,9 +853,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             return;
         }
 
-        PackageManager packageManager = mContext.getPackageManager();
         List<ResolveInfo> supportedActivities =
-                packageManager.queryIntentActivities(createProcessTextIntent(), 0);
+                PackageManagerUtils.queryIntentActivities(createProcessTextIntent(), 0);
         for (int i = 0; i < supportedActivities.size(); i++) {
             ResolveInfo resolveInfo = supportedActivities.get(i);
             CharSequence label = resolveInfo.loadLabel(mContext.getPackageManager());
@@ -970,28 +972,28 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     private int getActionType(int menuItemId, int menuItemGroupId) {
         if (menuItemGroupId == android.R.id.textAssist) {
-            return SmartSelectionMetricsLogger.ActionType.SMART_SHARE;
+            return SelectionEvent.ACTION_SMART_SHARE;
         }
         if (menuItemId == R.id.select_action_menu_select_all) {
-            return SmartSelectionMetricsLogger.ActionType.SELECT_ALL;
+            return SelectionEvent.ACTION_SELECT_ALL;
         }
         if (menuItemId == R.id.select_action_menu_cut) {
-            return SmartSelectionMetricsLogger.ActionType.CUT;
+            return SelectionEvent.ACTION_CUT;
         }
         if (menuItemId == R.id.select_action_menu_copy) {
-            return SmartSelectionMetricsLogger.ActionType.COPY;
+            return SelectionEvent.ACTION_COPY;
         }
         if (menuItemId == R.id.select_action_menu_paste
                 || menuItemId == R.id.select_action_menu_paste_as_plain_text) {
-            return SmartSelectionMetricsLogger.ActionType.PASTE;
+            return SelectionEvent.ACTION_PASTE;
         }
         if (menuItemId == R.id.select_action_menu_share) {
-            return SmartSelectionMetricsLogger.ActionType.SHARE;
+            return SelectionEvent.ACTION_SHARE;
         }
         if (menuItemId == android.R.id.textAssist) {
-            return SmartSelectionMetricsLogger.ActionType.SMART_SHARE;
+            return SelectionEvent.ACTION_SMART_SHARE;
         }
-        return SmartSelectionMetricsLogger.ActionType.OTHER;
+        return SelectionEvent.ACTION_OTHER;
     }
 
     /**
@@ -1236,14 +1238,16 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     // All coordinates are in DIP.
     @VisibleForTesting
     @CalledByNative
-    void onSelectionEvent(int eventType, int left, int top, int right, int bottom) {
-        // Ensure the provided selection coordinates form a non-empty rect, as required by
-        // the selection action mode.
-        if (left == right) ++right;
-        if (top == bottom) ++bottom;
+    void onSelectionEvent(
+            @SelectionEventType int eventType, int left, int top, int right, int bottom) {
+        // The selection action mode requires that the selection coordinates to form a non-empty
+        // rect.
+        assert left < right;
+        assert top < bottom;
 
         switch (eventType) {
             case SelectionEventType.SELECTION_HANDLES_SHOWN:
+                mSelectionRect.set(left, top, right, bottom);
                 break;
 
             case SelectionEventType.SELECTION_HANDLES_MOVED:
@@ -1393,7 +1397,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         if (unSelected) {
             if (mSelectionMetricsLogger != null) {
                 mSelectionMetricsLogger.logSelectionAction(mLastSelectedText, mLastSelectionOffset,
-                        SmartSelectionMetricsLogger.ActionType.ABANDON,
+                        SelectionEvent.ACTION_ABANDON,
                         /* SelectionClient.Result = */ null);
             }
             destroyActionModeAndKeepSelection();
@@ -1484,10 +1488,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     private boolean isShareAvailable() {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        return mContext.getPackageManager()
-                       .queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
-                       .size()
-                > 0;
+        return !PackageManagerUtils.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                        .isEmpty();
     }
 
     // The callback class that delivers the result from a SmartSelectionClient.

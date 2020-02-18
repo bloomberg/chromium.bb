@@ -14,6 +14,8 @@ static_library("multidevice_setup") {
     "android_sms_app_installing_status_observer.h",
     "device_reenroller.cc",
     "device_reenroller.h",
+    "device_with_connectivity_status.cc",
+    "device_with_connectivity_status.h",
     "eligible_host_devices_provider.h",
     "eligible_host_devices_provider_impl.cc",
     "eligible_host_devices_provider_impl.h",
@@ -56,6 +58,7 @@ static_library("multidevice_setup") {
     "//base",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice/logging",
+    "//chromeos/constants:constants",
     "//chromeos/services/device_sync/proto:util",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
@@ -65,17 +68,22 @@ static_library("multidevice_setup") {
     "//chromeos/services/multidevice_setup/public/cpp:auth_token_validator",
     "//chromeos/services/multidevice_setup/public/cpp:oobe_completion_tracker",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
-    "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/services/secure_channel/public/mojom",
     "//components/pref_registry",
     "//components/prefs:prefs",
-    "//services/service_manager/public/cpp",
+    "//url",
+  ]
+
+  public_deps = [
+    "//chromeos/services/multidevice_setup/public/mojom",
   ]
 
   visibility = [
     ":*",
     "//chrome/browser",
+    "//chrome/browser/chromeos",
+    "//chrome/browser/ui",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/cpp:unit_tests",
   ]
@@ -142,6 +150,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
+    "//chromeos/constants:constants",
     "//chromeos/services/device_sync/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/cpp:oobe_completion_tracker",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
@@ -150,7 +159,6 @@ source_set("unit_tests") {
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/secure_channel/public/cpp/client:test_support",
     "//components/sync_preferences:test_support",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

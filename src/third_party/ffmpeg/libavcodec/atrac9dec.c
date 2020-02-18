@@ -121,10 +121,7 @@ static inline int parse_gradient(ATRAC9Context *s, ATRAC9BlockData *b,
     }
     b->grad_boundary = get_bits(gb, 4);
 
-    if (grad_range[0] >= grad_range[1] || grad_range[1] > 47)
-        return AVERROR_INVALIDDATA;
-
-    if (grad_value[0] > 31 || grad_value[1] > 31)
+    if (grad_range[0] >= grad_range[1] || grad_range[1] > 31)
         return AVERROR_INVALIDDATA;
 
     if (b->grad_boundary > b->q_unit_cnt)
@@ -842,6 +839,11 @@ static av_cold int atrac9_decode_init(AVCodecContext *avctx)
 
     av_lfg_init(&s->lfg, 0xFBADF00D);
 
+    if (avctx->block_align <= 0) {
+        av_log(avctx, AV_LOG_ERROR, "Invalid block align\n");
+        return AVERROR_INVALIDDATA;
+    }
+
     if (avctx->extradata_size != 12) {
         av_log(avctx, AV_LOG_ERROR, "Invalid extradata length!\n");
         return AVERROR_INVALIDDATA;
@@ -871,6 +873,7 @@ static av_cold int atrac9_decode_init(AVCodecContext *avctx)
     s->block_config = &at9_block_layout[block_config_idx];
 
     avctx->channel_layout = s->block_config->channel_layout;
+    avctx->channels       = av_get_channel_layout_nb_channels(avctx->channel_layout);
     avctx->sample_fmt     = AV_SAMPLE_FMT_FLTP;
 
     if (get_bits1(&gb)) {

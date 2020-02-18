@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+// clang-format on
+
 suite('cr-link-row', function() {
   let linkRow;
 
@@ -27,5 +31,14 @@ suite('cr-link-row', function() {
     assertEquals('cr:arrow-right', iconButton.ironIcon);
     linkRow.external = true;
     assertEquals('cr:open-in-new', iconButton.ironIcon);
+  });
+
+  test('role description', () => {
+    const iconButton = linkRow.$.icon;
+    assertEquals(undefined, linkRow.roleDescription);
+    assertEquals(null, iconButton.getAttribute('aria-roledescription'));
+    const description = 'self destruct button';
+    linkRow.roleDescription = description;
+    assertEquals(description, iconButton.getAttribute('aria-roledescription'));
   });
 });

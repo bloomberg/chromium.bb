@@ -221,12 +221,13 @@ class PasswordFormMetricsRecorder
     // Form is suspected to be a password change form. (Only recorded for old
     // form parser)
     kFormNotGoodForFilling = 3,
-    // User is on an HTTP site where passwords are filled on account selection
-    // (FOAS).
-    kFoasOnHTTP = 4,
+    // User is on a site with an insecure main frame origin.
+    kInsecureOrigin = 4,
     // The Touch To Fill feature is enabled.
     kTouchToFill = 5,
-    kMaxValue = kTouchToFill,
+    // Show suggestion on account selection feature is enabled.
+    kFoasFeature = 6,
+    kMaxValue = kFoasFeature,
   };
 
   // This metric records the user experience with the passwords filling. The
@@ -267,6 +268,24 @@ class PasswordFormMetricsRecorder
     kMaxValue = kHashSaved,
   };
 
+  // Records user actions when Chrome suggests usernames on a page which are
+  // considered to be username first flow.
+  enum class SavingOnUsernameFirstFlow {
+    kSaved = 0,
+    kSavedWithEditedUsername = 1,
+    kNotSaved = 2,
+    kMaxValue = kNotSaved,
+  };
+
+  // Used in UMA histogram, please do NOT reorder.
+  // Metric: "PasswordManager.JavaScriptOnlyValueInSubmittedForm"
+  enum class JsOnlyInput {
+    kOnlyJsInputNoFocus = 0,
+    kOnlyJsInputWithFocus = 1,
+    kAutofillOrUserInput = 2,
+    kMaxValue = kAutofillOrUserInput,
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -284,13 +303,6 @@ class PasswordFormMetricsRecorder
   // Stores the user action associated with a generated password.
   void SetGeneratedPasswordStatus(GeneratedPasswordStatus status);
 
-  // Reports the priority of a PasswordGenerationRequirementsSpec for a
-  // generated password. This can be used for debugging as a 0 means that
-  // no spec was used, a 10 means that the spec came from autofill and was crowd
-  // sourced, a 20 means that it was overrideen per domain and a 30 means that
-  // is was overridden for the form.
-  void ReportSpecPriorityForGeneratedPassword(uint32_t spec_priority);
-
   // Stores the password manager action. During destruction the last
   // set value will be logged.
   void SetManagerAction(ManagerAction manager_action);
@@ -299,8 +311,7 @@ class PasswordFormMetricsRecorder
   // matches. Also inspects |manager_action_| to correctly detect if the
   // user chose a credential.
   void CalculateUserAction(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
+      const std::vector<const autofill::PasswordForm*>& best_matches,
       const autofill::PasswordForm& submitted_form);
 
   // Allow tests to explicitly set a value for |user_action_|.
@@ -353,14 +364,6 @@ class PasswordFormMetricsRecorder
   // distinguish two forms on the same site.
   void RecordFormSignature(autofill::FormSignature form_signature);
 
-  // Records old and new form parsings comparison result.
-  void RecordParsingsComparisonResult(
-      ParsingComparisonResult comparison_result);
-
-  // Records the comparison of the old and new password form parsing for saving.
-  // |comparison_result| is a bitmask of values from ParsingOnSavingDifference.
-  void RecordParsingOnSavingDifference(uint64_t comparison_result);
-
   // Records the readonly status encoded with parsing success after parsing for
   // filling. The |value| is constructed as follows: The least significant bit
   // says whether parsing succeeded (1) or not (0). The rest, shifted by one
@@ -393,12 +396,24 @@ class PasswordFormMetricsRecorder
       bool is_blacklisted,
       const std::vector<InteractionsStats>& interactions_stats);
 
+  // Calculates whether all field values in |submitted_form| came from
+  // JavaScript. The result is stored in |js_only_input_|.
+  void CalculateJsOnlyInput(const autofill::FormData& submitted_form);
+
   void set_user_typed_password_on_chrome_sign_in_page() {
     user_typed_password_on_chrome_sign_in_page_ = true;
   }
 
   void set_password_hash_saved_on_chrome_sing_in_page() {
     password_hash_saved_on_chrome_sing_in_page_ = true;
+  }
+
+  void set_possible_username_used(bool value) {
+    possible_username_used_ = value;
+  }
+
+  void set_username_updated_in_bubble(bool value) {
+    username_updated_in_bubble_ = value;
   }
 
  private:
@@ -433,8 +448,6 @@ class PasswordFormMetricsRecorder
   // Contains the generated password's status, which resulted from a user
   // action.
   base::Optional<GeneratedPasswordStatus> generated_password_status_;
-
-  base::Optional<uint32_t> spec_priority_of_generated_password_;
 
   // Tracks which bubble is currently being displayed to the user.
   CurrentBubbleOfInterest current_bubble_ = CurrentBubbleOfInterest::kNone;
@@ -488,6 +501,11 @@ class PasswordFormMetricsRecorder
   bool password_hash_saved_on_chrome_sing_in_page_ = false;
 
   base::Optional<FillingAssistance> filling_assistance_;
+
+  bool possible_username_used_ = false;
+  bool username_updated_in_bubble_ = false;
+
+  base::Optional<JsOnlyInput> js_only_input_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };

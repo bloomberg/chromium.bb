@@ -126,6 +126,17 @@ bool ValidateBlitFramebufferParameters(Context *context,
                                        GLbitfield mask,
                                        GLenum filter);
 
+bool ValidatePixelPack(Context *context,
+                       GLenum format,
+                       GLenum type,
+                       GLint x,
+                       GLint y,
+                       GLsizei width,
+                       GLsizei height,
+                       GLsizei bufSize,
+                       GLsizei *length,
+                       void *pixels);
+
 bool ValidateReadPixelsBase(Context *context,
                             GLint x,
                             GLint y,
@@ -313,9 +324,9 @@ ANGLE_INLINE bool ValidateDrawBase(Context *context, PrimitiveMode mode)
 
         // All errors from ValidateDrawStates should return INVALID_OPERATION except Framebuffer
         // Incomplete.
+        bool isFramebufferIncomplete = strcmp(errorMessage, err::kDrawFramebufferIncomplete) == 0;
         GLenum errorCode =
-            (errorMessage == err::kDrawFramebufferIncomplete ? GL_INVALID_FRAMEBUFFER_OPERATION
-                                                             : GL_INVALID_OPERATION);
+            isFramebufferIncomplete ? GL_INVALID_FRAMEBUFFER_OPERATION : GL_INVALID_OPERATION;
         context->validationError(errorCode, errorMessage);
         return false;
     }
@@ -521,7 +532,7 @@ ANGLE_INLINE bool ValidateVertexFormat(Context *context,
                                        VertexAttribTypeCase validation)
 {
     const Caps &caps = context->getCaps();
-    if (index >= caps.maxVertexAttributes)
+    if (index >= static_cast<GLuint>(caps.maxVertexAttributes))
     {
         context->validationError(GL_INVALID_VALUE, err::kIndexExceedsMaxVertexAttribute);
         return false;
@@ -544,6 +555,14 @@ ANGLE_INLINE bool ValidateVertexFormat(Context *context,
             {
                 context->validationError(GL_INVALID_OPERATION,
                                          err::kInvalidVertexAttribSize2101010);
+                return false;
+            }
+            break;
+        case VertexAttribTypeCase::ValidSize3or4:
+            if (size != 3 && size != 4)
+            {
+                context->validationError(GL_INVALID_OPERATION,
+                                         err::kInvalidVertexAttribSize1010102);
                 return false;
             }
             break;
@@ -606,7 +625,9 @@ bool ValidateGetInternalFormativBase(Context *context,
                                      GLsizei bufSize,
                                      GLsizei *numParams);
 
-bool ValidateFramebufferNotMultisampled(Context *context, Framebuffer *framebuffer);
+bool ValidateFramebufferNotMultisampled(Context *context,
+                                        Framebuffer *framebuffer,
+                                        bool needResourceSamples);
 
 bool ValidateMultitextureUnit(Context *context, GLenum texture);
 
@@ -943,7 +964,7 @@ ANGLE_INLINE bool ValidateDrawElementsCommon(Context *context,
         // If we use an index greater than our maximum supported index range, return an error.
         // The ES3 spec does not specify behaviour here, it is undefined, but ANGLE should
         // always return an error if possible here.
-        if (static_cast<GLuint64>(indexRange.end) >= context->getCaps().maxElementIndex)
+        if (static_cast<GLint64>(indexRange.end) >= context->getCaps().maxElementIndex)
         {
             context->validationError(GL_INVALID_OPERATION, err::kExceedsMaxElement);
             return false;

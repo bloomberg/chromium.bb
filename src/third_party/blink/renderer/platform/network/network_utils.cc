@@ -11,7 +11,6 @@
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request_data_job.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -75,11 +74,11 @@ std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
   std::string utf8_mime_type;
   std::string utf8_charset;
   std::string data_string;
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
+  scoped_refptr<net::HttpResponseHeaders> headers;
 
-  int result = net::URLRequestDataJob::BuildResponse(
-      GURL(url), method.Ascii(), &utf8_mime_type, &utf8_charset, &data_string,
-      headers.get());
+  net::Error result =
+      net::DataURL::BuildResponse(GURL(url), method.Ascii(), &utf8_mime_type,
+                                  &utf8_charset, &data_string, &headers);
   if (result != net::OK)
     return std::make_tuple(result, ResourceResponse(), nullptr);
 
@@ -102,13 +101,18 @@ std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
   return std::make_tuple(net::OK, std::move(response), std::move(buffer));
 }
 
-bool IsDataURLMimeTypeSupported(const KURL& url, std::string* data) {
+bool IsDataURLMimeTypeSupported(const KURL& url,
+                                std::string* data,
+                                std::string* mime_type) {
   std::string utf8_mime_type;
   std::string utf8_charset;
-  if (net::DataURL::Parse(GURL(url), &utf8_mime_type, &utf8_charset, data)) {
-    return blink::IsSupportedMimeType(utf8_mime_type);
-  }
-  return false;
+  if (!net::DataURL::Parse(GURL(url), &utf8_mime_type, &utf8_charset, data))
+    return false;
+  if (!blink::IsSupportedMimeType(utf8_mime_type))
+    return false;
+  if (mime_type)
+    utf8_mime_type.swap(*mime_type);
+  return true;
 }
 
 bool IsRedirectResponseCode(int response_code) {

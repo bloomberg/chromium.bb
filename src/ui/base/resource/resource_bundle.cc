@@ -149,15 +149,16 @@ bool BrotliDecompress(base::StringPiece input, std::string* output) {
 }
 
 // Helper function for decompressing resource.
-void Decompress(base::StringPiece data, std::string* output) {
-  if (HasGzipHeader(data)) {
+void DecompressIfNeeded(base::StringPiece data, std::string* output) {
+  if (!data.empty() && HasGzipHeader(data)) {
     bool success = compression::GzipUncompress(data, output);
     DCHECK(success);
-  } else if (HasBrotliHeader(data)) {
+  } else if (!data.empty() && HasBrotliHeader(data)) {
     bool success = BrotliDecompress(data, output);
     DCHECK(success);
   } else {
-    NOTREACHED() << "Resource is not compressed";
+    // Assume the raw data is not compressed.
+    data.CopyToString(output);
   }
 }
 
@@ -317,7 +318,7 @@ void ResourceBundle::LoadSecondaryLocaleDataWithPakFileRegion(
 #if !defined(OS_ANDROID)
 // static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
-  return !GetLocaleFilePath(locale, true).empty();
+  return !GetLocaleFilePath(locale).empty();
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -363,8 +364,8 @@ void ResourceBundle::AddDataPackFromFileRegion(
 
 #if !defined(OS_MACOSX)
 // static
-base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
-                                                 bool test_file_exists) {
+base::FilePath ResourceBundle::GetLocaleFilePath(
+    const std::string& app_locale) {
   if (app_locale.empty())
     return base::FilePath();
 
@@ -405,10 +406,10 @@ base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
   if (locale_file_path.empty() || !locale_file_path.IsAbsolute())
     return base::FilePath();
 
-  if (test_file_exists && !base::PathExists(locale_file_path))
-    return base::FilePath();
+  if (base::PathExists(locale_file_path))
+    return locale_file_path;
 
-  return locale_file_path;
+  return base::FilePath();
 }
 #endif
 
@@ -419,7 +420,7 @@ std::string ResourceBundle::LoadLocaleResources(
   std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
   base::FilePath locale_file_path = GetOverriddenPakPath();
   if (locale_file_path.empty())
-    locale_file_path = GetLocaleFilePath(app_locale, true);
+    locale_file_path = GetLocaleFilePath(app_locale);
 
   if (locale_file_path.empty()) {
     // It's possible that there is no locale.pak.
@@ -429,7 +430,7 @@ std::string ResourceBundle::LoadLocaleResources(
 
   std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
   if (!data_pack->LoadFromPath(locale_file_path)) {
-    LOG(ERROR) << "failed to load locale.pak";
+    LOG(ERROR) << "failed to load locale file: " << locale_file_path;
     NOTREACHED();
     return std::string();
   }
@@ -588,7 +589,7 @@ base::RefCountedMemory* ResourceBundle::LoadDataResourceBytesForScale(
     if (!data.empty()) {
       if (HasGzipHeader(data) || HasBrotliHeader(data)) {
         base::RefCountedString* bytes_string = new base::RefCountedString();
-        Decompress(data, &(bytes_string->data()));
+        DecompressIfNeeded(data, &(bytes_string->data()));
         bytes = bytes_string;
       } else {
         bytes = new base::RefCountedStaticMemory(data.data(), data.length());
@@ -632,19 +633,20 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   return base::StringPiece();
 }
 
-std::string ResourceBundle::DecompressDataResource(int resource_id) {
-  return DecompressDataResourceScaled(resource_id, ui::SCALE_FACTOR_NONE);
+std::string ResourceBundle::LoadDataResourceString(int resource_id) const {
+  return LoadDataResourceStringForScale(resource_id, ui::SCALE_FACTOR_NONE);
 }
 
-std::string ResourceBundle::DecompressDataResourceScaled(
+std::string ResourceBundle::LoadDataResourceStringForScale(
     int resource_id,
-    ScaleFactor scaling_factor) {
+    ScaleFactor scaling_factor) const {
   std::string output;
-  Decompress(GetRawDataResourceForScale(resource_id, scaling_factor), &output);
+  DecompressIfNeeded(GetRawDataResourceForScale(resource_id, scaling_factor),
+                     &output);
   return output;
 }
 
-std::string ResourceBundle::DecompressLocalizedDataResource(int resource_id) {
+std::string ResourceBundle::LoadLocalizedResourceString(int resource_id) const {
   base::AutoLock lock_scope(*locale_resources_data_lock_);
   base::StringPiece data;
   if (!(locale_resources_data_.get() &&
@@ -660,7 +662,7 @@ std::string ResourceBundle::DecompressLocalizedDataResource(int resource_id) {
     }
   }
   std::string output;
-  Decompress(data, &output);
+  DecompressIfNeeded(data, &output);
   return output;
 }
 
@@ -690,6 +692,30 @@ base::string16 ResourceBundle::GetLocalizedString(int resource_id) {
   }
 #endif
   return GetLocalizedStringImpl(resource_id);
+}
+
+base::RefCountedMemory* ResourceBundle::LoadLocalizedResourceBytes(
+    int resource_id) {
+  {
+    base::AutoLock lock_scope(*locale_resources_data_lock_);
+    base::StringPiece data;
+
+    if (locale_resources_data_.get() &&
+        locale_resources_data_->GetStringPiece(
+            static_cast<uint16_t>(resource_id), &data) &&
+        !data.empty()) {
+      return new base::RefCountedStaticMemory(data.data(), data.length());
+    }
+
+    if (secondary_locale_resources_data_.get() &&
+        secondary_locale_resources_data_->GetStringPiece(
+            static_cast<uint16_t>(resource_id), &data) &&
+        !data.empty()) {
+      return new base::RefCountedStaticMemory(data.data(), data.length());
+    }
+  }
+  // Release lock_scope and fall back to main data pack.
+  return LoadDataResourceBytes(resource_id);
 }
 
 const gfx::FontList& ResourceBundle::GetFontListWithDelta(

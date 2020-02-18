@@ -170,11 +170,11 @@ class TestChromeOnCrosBisector(cros_test_lib.MockTempDirTestCase):
     with self.assertRaises(common.MissingRequiredOptionsException) as cm:
       chrome_on_cros_bisector.ChromeOnCrosBisector(options, self.builder,
                                                    self.evaluator)
-    exception_message = cm.exception.message
-    self.assertTrue('Missing command line' in exception_message)
-    self.assertTrue('ChromeOnCrosBisector' in exception_message)
+    exception_message = str(cm.exception)
+    self.assertIn('Missing command line', exception_message)
+    self.assertIn('ChromeOnCrosBisector', exception_message)
     for arg in chrome_on_cros_bisector.ChromeOnCrosBisector.REQUIRED_ARGS:
-      self.assertTrue(arg in exception_message)
+      self.assertIn(arg, exception_message)
 
   def testCheckCommitFormat(self):
     """Tests CheckCommitFormat()."""

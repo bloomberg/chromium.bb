@@ -74,7 +74,7 @@ int FeaturePodsContainerView::GetExpandedHeight() const {
   int number_of_lines = (visible_count + kUnifiedFeaturePodItemsInRow - 1) /
                         kUnifiedFeaturePodItemsInRow;
 
-  if (features::IsSystemTrayFeaturePodsPaginationEnabled())
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
     number_of_lines = std::min(number_of_lines, feature_pod_rows_);
 
   return kUnifiedFeaturePodBottomPadding +
@@ -163,6 +163,23 @@ int FeaturePodsContainerView::GetVisibleCount() const {
       });
 }
 
+void FeaturePodsContainerView::EnsurePageWithButton(views::View* button) {
+  int index = visible_buttons_.GetIndexOfView(button->parent());
+  if (index < 0)
+    return;
+
+  int tiles_per_page = GetTilesPerPage();
+  int first_index = pagination_model_->selected_page() * tiles_per_page;
+  int last_index =
+      ((pagination_model_->selected_page() + 1) * tiles_per_page) - 1;
+  if (index < first_index || index > last_index) {
+    int page = ((index + 1) / tiles_per_page) +
+               ((index + 1) % tiles_per_page ? 1 : 0) - 1;
+
+    pagination_model_->SelectPage(page, true /*animate*/);
+  }
+}
+
 gfx::Point FeaturePodsContainerView::GetButtonPosition(
     int visible_index) const {
   int row = visible_index / kUnifiedFeaturePodItemsInRow;
@@ -208,14 +225,35 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
       y * expanded_amount_ + collapsed_y * (1.0 - expanded_amount_));
 }
 
-void FeaturePodsContainerView::SetMaxHeight(int max_height) {
-  int feature_pod_rows =
-      (max_height - kUnifiedFeaturePodBottomPadding -
-       kUnifiedFeaturePodTopPadding) /
-      (kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding);
+int FeaturePodsContainerView::CalculateRowsFromHeight(int height) {
+  int available_height =
+      height - kUnifiedFeaturePodBottomPadding - kUnifiedFeaturePodTopPadding;
+  int row_height =
+      kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding;
 
-  feature_pod_rows = std::min(feature_pod_rows, kUnifiedFeaturePodMaxRows);
-  feature_pod_rows = std::max(feature_pod_rows, kUnifiedFeaturePodMinRows);
+  // Only use the max number of rows when there is enough space
+  // to show the fully expanded message center and quick settings.
+  if (available_height > (kUnifiedFeaturePodMaxRows * row_height) &&
+      available_height - (kUnifiedFeaturePodMaxRows * row_height) >
+          kMessageCenterCollapseThreshold) {
+    return kUnifiedFeaturePodMaxRows;
+  }
+
+  // Use 1 less than the max number of rows when there is enough
+  // space to show the message center in the collapsed state along
+  // with the expanded quick settings.
+  int feature_pod_rows = kUnifiedFeaturePodMaxRows - 1;
+  if (available_height > (feature_pod_rows * row_height) &&
+      available_height - (feature_pod_rows * row_height) >
+          kStackedNotificationBarHeight) {
+    return feature_pod_rows;
+  }
+
+  return kUnifiedFeaturePodMinRows;
+}
+
+void FeaturePodsContainerView::SetMaxHeight(int max_height) {
+  int feature_pod_rows = CalculateRowsFromHeight(max_height);
 
   if (feature_pod_rows_ != feature_pod_rows) {
     feature_pod_rows_ = feature_pod_rows;
@@ -315,7 +353,7 @@ void FeaturePodsContainerView::CalculateIdealBoundsForFeaturePods() {
 }
 
 int FeaturePodsContainerView::GetTilesPerPage() const {
-  if (features::IsSystemTrayFeaturePodsPaginationEnabled())
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
     return kUnifiedFeaturePodItemsInRow * feature_pod_rows_;
   else
     return children().size();

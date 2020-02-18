@@ -78,12 +78,6 @@ bool MouseWheelEventQueue::CanGenerateGestureScroll(
     return false;
   }
 
-  if (event_sent_for_gesture_ack_->event.resending_plugin_id != -1) {
-    TRACE_EVENT_INSTANT0("input", "Wheel Event Resending Plugin Id Is Not -1",
-                         TRACE_EVENT_SCOPE_THREAD);
-    return false;
-  }
-
   if (scrolling_device_ != blink::WebGestureDevice::kUninitialized &&
       scrolling_device_ != blink::WebGestureDevice::kTouchpad) {
     TRACE_EVENT_INSTANT0("input",
@@ -136,7 +130,6 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         event_sent_for_gesture_ack_->event.PositionInWidget());
     scroll_update.SetPositionInScreen(
         event_sent_for_gesture_ack_->event.PositionInScreen());
-    scroll_update.resending_plugin_id = -1;
 
 #if !defined(OS_MACOSX)
     // Swap X & Y if Shift is down and when there is no horizontal movement.
@@ -165,10 +158,19 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
       scroll_update.data.scroll_update.inertial_phase =
           WebGestureEvent::InertialPhaseState::kNonMomentum;
     }
-    if (event_sent_for_gesture_ack_->event.scroll_by_page) {
-      scroll_update.data.scroll_update.delta_units =
-          ui::input_types::ScrollGranularity::kScrollByPage;
 
+    // WebMouseWheelEvent only supports these units for the delta.
+    DCHECK(event_sent_for_gesture_ack_->event.delta_units ==
+               ui::input_types::ScrollGranularity::kScrollByPage ||
+           event_sent_for_gesture_ack_->event.delta_units ==
+               ui::input_types::ScrollGranularity::kScrollByPrecisePixel ||
+           event_sent_for_gesture_ack_->event.delta_units ==
+               ui::input_types::ScrollGranularity::kScrollByPixel);
+    scroll_update.data.scroll_update.delta_units =
+        event_sent_for_gesture_ack_->event.delta_units;
+
+    if (event_sent_for_gesture_ack_->event.delta_units ==
+        ui::input_types::ScrollGranularity::kScrollByPage) {
       // Turn page scrolls into a *single* page scroll because
       // the magnitude the number of ticks is lost when coalescing.
       if (scroll_update.data.scroll_update.delta_x)
@@ -178,11 +180,6 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         scroll_update.data.scroll_update.delta_y =
             scroll_update.data.scroll_update.delta_y > 0 ? 1 : -1;
     } else {
-      scroll_update.data.scroll_update.delta_units =
-          event_sent_for_gesture_ack_->event.has_precise_scrolling_deltas
-              ? ui::input_types::ScrollGranularity::kScrollByPrecisePixel
-              : ui::input_types::ScrollGranularity::kScrollByPixel;
-
       if (event_sent_for_gesture_ack_->event.rails_mode ==
           WebInputEvent::kRailsModeVertical)
         scroll_update.data.scroll_update.delta_x = 0;
@@ -297,7 +294,6 @@ void MouseWheelEventQueue::SendScrollEnd(WebGestureEvent update_event,
   WebGestureEvent scroll_end(update_event);
   scroll_end.SetTimeStamp(ui::EventTimeForNow());
   scroll_end.SetType(WebInputEvent::kGestureScrollEnd);
-  scroll_end.resending_plugin_id = -1;
   scroll_end.data.scroll_end.synthetic = synthetic;
   scroll_end.data.scroll_end.inertial_phase =
       update_event.data.scroll_update.inertial_phase;

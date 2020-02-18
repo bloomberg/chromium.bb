@@ -45,6 +45,11 @@ current assignee.
 * Please base your fixes on the master branch.
   SDK branches are generally not updated except for critical fixes needed to
   repair an SDK release.
+* The resulting Pull Request will be assigned to a repository maintainer.
+  It is the maintainer's responsibility to ensure the Pull Request
+  passes the Google/LunarG internal CI processes.
+  Once the Pull Request has been approved and is passing internal CI,
+  a repository maintainer will merge the PR.
 
 #### Coding Conventions and Formatting
 
@@ -101,7 +106,16 @@ error for each commit in your pull request.
 Note that to be accepted into the repository, the pull request must
 pass all tests on all supported platforms.
 The automatic Github Travis and AppVeyor continuous integration features
-will assist in enforcing this requirement.
+will assist in enforcing this requirement.*
+
+#### Generated Source Code
+
+The `loader/generated` directory contains source code that is created by several
+generator scripts in the `scripts` directory. All changes to these scripts _must_ be submitted with the
+corresponding generated output to keep the repository self-consistent. This requirement is enforced by both
+Travis CI and AppVeyor test configurations. Regenerate source files after modifying any of the generator
+scripts and before building and testing your changes. More details can be found in
+[BUILD.md](https://github.com/KhronosGroup/Vulkan-Loader/blob/master/BUILD.md#generated-source-code).
 
 #### Testing Your Changes
 

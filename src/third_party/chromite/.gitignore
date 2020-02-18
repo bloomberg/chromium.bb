@@ -1,5 +1,6 @@
 # Generated files
-*.pyc
+*.py[co]
+__pycache__
 *~
 *.swp
 .project

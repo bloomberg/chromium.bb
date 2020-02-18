@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/webgl_any.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_program.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_uniform_location.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -69,21 +70,71 @@ void WebGL2ComputeRenderingContextBase::dispatchComputeIndirect(
   ContextGL()->DispatchComputeIndirect(static_cast<GLintptr>(offset));
 }
 
+void WebGL2ComputeRenderingContextBase::drawArraysIndirect(
+    GLenum mode,
+    int64_t offset) {
+  if (!ValidateValueFitNonNegInt32("drawArraysIndirect", "offset", offset))
+    return;
+
+  if (!ValidateDrawArrays("drawArraysIndirect"))
+    return;
+
+  if (!bound_vertex_array_object_->IsAllEnabledAttribBufferBound()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "drawArraysIndirect",
+                      "no buffer is bound to enabled attribute");
+    return;
+  }
+
+  ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
+                                                   drawing_buffer_.get());
+  OnBeforeDrawCall();
+  ContextGL()->DrawArraysIndirect(
+      mode, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
+}
+
+void WebGL2ComputeRenderingContextBase::drawElementsIndirect(
+    GLenum mode,
+    GLenum type,
+    int64_t offset) {
+  if (!ValidateValueFitNonNegInt32("drawElementsIndirect", "offset", offset))
+    return;
+
+  // The buffer currently bound to the (GL_)DRAW_INDIRECT_BUFFER binding might
+  // be unpopulated at this point, so the validation of element array buffer
+  // offset in it needs to be deferred. By feeding a dummy in-range offset value
+  // here, other validation logic for indexed drawing can be reused.
+  int64_t dummy_offset = 0;
+  if (!ValidateDrawElements("drawElementsIndirect", type, dummy_offset))
+    return;
+
+  if (!bound_vertex_array_object_->IsAllEnabledAttribBufferBound()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, "drawElementsIndirect",
+                      "no buffer is bound to enabled attribute");
+    return;
+  }
+
+  ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
+                                                   drawing_buffer_.get());
+  OnBeforeDrawCall();
+  ContextGL()->DrawElementsIndirect(
+      mode, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
+}
+
 ScriptValue WebGL2ComputeRenderingContextBase::getProgramInterfaceParameter(
     ScriptState* script_state,
     WebGLProgram* program,
     GLenum program_interface,
     GLenum pname) {
   if (!ValidateWebGLProgramOrShader("getProgramInterfaceParameter", program))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   if (!ValidateProgramInterface(
       "getProgramInterfaceParameter", program_interface))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   if (program_interface == GL_ATOMIC_COUNTER_BUFFER &&
       pname == GL_MAX_NAME_LENGTH) {
     SynthesizeGLError(GL_INVALID_OPERATION, "getProgramInterfaceParameter",
                       "atomic counter resources are not assigned name strings");
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   }
   if (program_interface != GL_ATOMIC_COUNTER_BUFFER &&
       program_interface != GL_SHADER_STORAGE_BLOCK &&
@@ -92,7 +143,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::getProgramInterfaceParameter(
     SynthesizeGLError(
         GL_INVALID_OPERATION, "getProgramInterfaceParameter",
         "invalid parameter name for the specified program interface");
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 
   switch (pname) {
@@ -107,7 +158,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::getProgramInterfaceParameter(
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getProgramInterfaceParameter",
                         "invalid parameter name");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 }
 
@@ -164,7 +215,7 @@ String WebGL2ComputeRenderingContextBase::getProgramResourceName(
   return String(name.get(), static_cast<uint32_t>(length));
 }
 
-base::Optional<Vector<ScriptValue>>
+base::Optional<HeapVector<ScriptValue>>
 WebGL2ComputeRenderingContextBase::getProgramResource(
     ScriptState* script_state,
     WebGLProgram* program,
@@ -229,7 +280,7 @@ WebGL2ComputeRenderingContextBase::getProgramResource(
 
   // Interpret the returned values and construct the result array. The type of
   // each array element is the natural type for the requested property.
-  Vector<ScriptValue> result;
+  HeapVector<ScriptValue> result;
   wtf_size_t auxiliary_param_index = 0;
   wtf_size_t extended_param_index = auxiliary_params.size();
   for (GLenum prop : props) {
@@ -346,7 +397,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::getParameter(
     ScriptState* script_state,
     GLenum pname) {
   if (isContextLost())
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   switch (pname) {
     case GL_SHADING_LANGUAGE_VERSION: {
       return WebGLAny(
@@ -397,14 +448,14 @@ ScriptValue WebGL2ComputeRenderingContextBase::getIndexedParameter(
     GLenum target,
     GLuint index) {
   if (isContextLost())
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   switch (target) {
     case GL_ATOMIC_COUNTER_BUFFER_BINDING:
       if (index >= bound_indexed_atomic_counter_buffers_.size()) {
         SynthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter",
                           "index out of range");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       }
       return WebGLAny(script_state,
                       bound_indexed_atomic_counter_buffers_[index].Get());
@@ -412,7 +463,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::getIndexedParameter(
       if (index >= bound_indexed_shader_storage_buffers_.size()) {
         SynthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter",
                           "index out of range");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       }
       return WebGLAny(script_state,
                       bound_indexed_shader_storage_buffers_[index].Get());
@@ -620,11 +671,12 @@ ScriptValue WebGL2ComputeRenderingContextBase::WrapLocation(
     }
     case GL_UNIFORM: {
       if (location == -1)
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       DCHECK_GE(location, 0);
       WebGLUniformLocation* uniform_location =
           WebGLUniformLocation::Create(program, location);
-      return ScriptValue(script_state, ToV8(uniform_location, script_state));
+      return ScriptValue(script_state->GetIsolate(),
+                         ToV8(uniform_location, script_state));
     }
     default: {
       return WebGLAny(script_state, location);

@@ -35,7 +35,7 @@
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
@@ -62,7 +62,7 @@ class ResponseBodyLoader;
 // WebURLLoader and loads the resource using it. Any per-load logic should be
 // implemented in this class basically.
 class PLATFORM_EXPORT ResourceLoader final
-    : public GarbageCollectedFinalized<ResourceLoader>,
+    : public GarbageCollected<ResourceLoader>,
       public ResourceLoadSchedulerClient,
       protected WebURLLoaderClient,
       protected mojom::blink::ProgressClient,
@@ -116,7 +116,6 @@ class PLATFORM_EXPORT ResourceLoader final
   bool WillFollowRedirect(
       const WebURL& new_url,
       const WebURL& new_site_for_cookies,
-      const base::Optional<WebSecurityOrigin>& new_top_frame_origin,
       const WebString& new_referrer,
       network::mojom::ReferrerPolicy new_referrer_policy,
       const WebString& new_method,

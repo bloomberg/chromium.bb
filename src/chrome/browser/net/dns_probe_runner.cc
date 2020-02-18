@@ -12,6 +12,8 @@
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace chrome_browser_net {
@@ -73,10 +75,8 @@ DnsProbeRunner::Result EvaluateResponse(
 DnsProbeRunner::DnsProbeRunner(
     net::DnsConfigOverrides dns_config_overrides,
     const NetworkContextGetter& network_context_getter)
-    : binding_(this),
-      dns_config_overrides_(dns_config_overrides),
-      network_context_getter_(network_context_getter),
-      result_(UNKNOWN) {
+    : dns_config_overrides_(dns_config_overrides),
+      network_context_getter_(network_context_getter) {
   CreateHostResolver();
 }
 
@@ -89,12 +89,7 @@ void DnsProbeRunner::RunProbe(base::OnceClosure callback) {
   DCHECK(!callback.is_null());
   DCHECK(host_resolver_);
   DCHECK(callback_.is_null());
-  DCHECK(!binding_);
-
-  network::mojom::ResolveHostClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr));
-  binding_.set_connection_error_handler(base::BindOnce(
-      &DnsProbeRunner::OnMojoConnectionError, base::Unretained(this)));
+  DCHECK(!receiver_.is_bound());
 
   network::mojom::ResolveHostParametersPtr parameters =
       network::mojom::ResolveHostParameters::New();
@@ -102,8 +97,14 @@ void DnsProbeRunner::RunProbe(base::OnceClosure callback) {
   parameters->source = net::HostResolverSource::DNS;
   parameters->allow_cached_response = false;
 
+  // Use transient NIKs - don't want cached responses anyways, so no benefit
+  // from sharing a cache, beyond multiple probes not evicting anything.
   host_resolver_->ResolveHost(net::HostPortPair(kKnownGoodHostname, 80),
-                              std::move(parameters), std::move(client_ptr));
+                              net::NetworkIsolationKey::CreateTransient(),
+                              std::move(parameters),
+                              receiver_.BindNewPipeAndPassRemote());
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &DnsProbeRunner::OnMojoConnectionError, base::Unretained(this)));
 
   callback_ = std::move(callback);
 }
@@ -115,12 +116,13 @@ bool DnsProbeRunner::IsRunning() const {
 
 void DnsProbeRunner::OnComplete(
     int32_t result,
+    const net::ResolveErrorInfo& resolve_error_info,
     const base::Optional<net::AddressList>& resolved_addresses) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback_.is_null());
 
-  result_ = EvaluateResponse(result, resolved_addresses);
-  binding_.Close();
+  result_ = EvaluateResponse(resolve_error_info.error, resolved_addresses);
+  receiver_.reset();
 
   // ResolveHost will call OnComplete asynchronously, so callback_ can be
   // invoked directly here.  Clear callback in case it starts a new probe
@@ -131,13 +133,14 @@ void DnsProbeRunner::OnComplete(
 void DnsProbeRunner::CreateHostResolver() {
   host_resolver_.reset();
   network_context_getter_.Run()->CreateHostResolver(
-      dns_config_overrides_, mojo::MakeRequest(&host_resolver_));
+      dns_config_overrides_, host_resolver_.BindNewPipeAndPassReceiver());
 }
 
 void DnsProbeRunner::OnMojoConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CreateHostResolver();
-  OnComplete(net::ERR_FAILED, base::nullopt);
+  OnComplete(net::ERR_NAME_NOT_RESOLVED, net::ResolveErrorInfo(net::ERR_FAILED),
+             base::nullopt);
 }
 
 }  // namespace chrome_browser_net

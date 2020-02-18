@@ -333,8 +333,13 @@ void WebStateList::CloseWebStateAt(int index, int close_flags) {
 }
 
 void WebStateList::CloseAllWebStates(int close_flags) {
-  while (!empty())
-    CloseWebStateAt(count() - 1, close_flags);
+  PerformBatchOperation(base::BindOnce(
+      [](int close_flags, WebStateList* web_state_list) {
+        while (!web_state_list->empty())
+          web_state_list->CloseWebStateAt(web_state_list->count() - 1,
+                                          close_flags);
+      },
+      close_flags));
 }
 
 void WebStateList::ActivateWebStateAt(int index) {
@@ -351,6 +356,16 @@ void WebStateList::AddObserver(WebStateListObserver* observer) {
 
 void WebStateList::RemoveObserver(WebStateListObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void WebStateList::PerformBatchOperation(
+    base::OnceCallback<void(WebStateList*)> operation) {
+  for (auto& observer : observers_)
+    observer.WillBeginBatchOperation(this);
+  if (!operation.is_null())
+    std::move(operation).Run(this);
+  for (auto& observer : observers_)
+    observer.BatchOperationEnded(this);
 }
 
 void WebStateList::ClearOpenersReferencing(int index) {

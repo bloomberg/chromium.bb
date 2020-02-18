@@ -28,7 +28,6 @@ from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
                     DownloadAndUnpack, EnsureDirExists, GetWinSDKDir,
                     ReadStampFile, RmTree, WriteStampFile)
 
-
 # Path constants. (All of these should be absolute paths.)
 THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
 LLVM_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm')
@@ -52,6 +51,9 @@ FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
 BUG_REPORT_URL = ('https://crbug.com and run'
                   ' tools/clang/scripts/process_crashreports.py'
                   ' (only works inside Google) which will upload a report')
+
+FIRST_LLVM_COMMIT = '97724f18c79c7cc81ced24239eb5e883bf1398ef'
+
 
 
 def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
@@ -100,31 +102,28 @@ def CheckoutLLVM(commit, dir):
   modifications in dir will be lost."""
 
   print('Checking out LLVM monorepo %s into %s' % (commit, dir))
-  git_dir = os.path.join(dir, '.git')
-  fetch_cmd = ['git', '--git-dir', git_dir, 'fetch']
-  checkout_cmd = ['git', 'checkout', commit]
 
-  # Do a somewhat shallow clone to save on bandwidth for GitHub and for us.
-  # The depth was whosen to be deep enough to contain the version we're
-  # building, and shallow enough to save significantly on bandwidth compared to
-  # a full clone.
-  clone_cmd = ['git', 'clone', '--depth', '10000',
-               'https://github.com/llvm/llvm-project/', dir]
-
-  # Try updating the current repo.
-  if RunCommand(fetch_cmd, fail_hard=False):
+  # Try updating the current repo if it exists and has no local diff.
+  if os.path.isdir(dir):
     os.chdir(dir)
-    if RunCommand(checkout_cmd, fail_hard=False):
+    # git diff-index --quiet returns success when there is no diff.
+    # Also check that the first commit is reachable.
+    if (RunCommand(['git', 'diff-index', '--quiet', 'HEAD'], fail_hard=False)
+        and RunCommand(['git', 'fetch'], fail_hard=False)
+        and RunCommand(['git', 'checkout', commit], fail_hard=False)
+        and RunCommand(['git', 'show', FIRST_LLVM_COMMIT], fail_hard=False)):
       return
 
-  # Otherwise, do a fresh clone.
-  if os.path.isdir(dir):
+    # If we can't use the current repo, delete it.
     os.chdir(CHROMIUM_DIR)  # Can't remove dir if we're in it.
     print('Removing %s.' % dir)
     RmTree(dir)
+
+  clone_cmd = ['git', 'clone', 'https://github.com/llvm/llvm-project/', dir]
+
   if RunCommand(clone_cmd, fail_hard=False):
     os.chdir(dir)
-    if RunCommand(checkout_cmd, fail_hard=False):
+    if RunCommand(['git', 'checkout', commit], fail_hard=False):
       return
 
   print('CheckoutLLVM failed.')
@@ -148,12 +147,12 @@ def GetLatestLLVMCommit():
   return ref['object']['sha']
 
 
-def GetSvnRevision(commit):
-  """Get the svn revision corresponding to a git commit in the LLVM repo."""
-  commit = json.loads(UrlOpen(('https://api.github.com/repos/llvm/'
-                               'llvm-project/git/commits/' + commit)))
-  revision = re.search("llvm-svn: ([0-9]+)$", commit['message']).group(1)
-  return revision
+def GetCommitCount(commit):
+  """Get the number of commits from FIRST_LLVM_COMMIT to commit.
+
+  Needs to be called from inside the git repository dir."""
+  return subprocess.check_output(['git', 'rev-list', '--count',
+                                  FIRST_LLVM_COMMIT + '..' + commit]).rstrip()
 
 
 def DeleteChromeToolsShim():
@@ -372,6 +371,9 @@ def main():
     return 1
 
 
+  # Don't buffer stdout, so that print statements are immediately flushed.
+  sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+
   # The gnuwin package also includes curl, which is needed to interact with the
   # github API below.
   # TODO(crbug.com/965937): Use urllib once our Python is recent enough, and
@@ -385,11 +387,13 @@ def main():
   global CLANG_REVISION, PACKAGE_VERSION
   if args.llvm_force_head_revision:
     CLANG_REVISION = GetLatestLLVMCommit()
-    PACKAGE_VERSION = '%s-%s-0' % (GetSvnRevision(CLANG_REVISION),
-                                   CLANG_REVISION[:8])
 
-  # Don't buffer stdout, so that print statements are immediately flushed.
-  sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+  if not args.skip_checkout:
+    CheckoutLLVM(CLANG_REVISION, LLVM_DIR);
+
+  if args.llvm_force_head_revision:
+    PACKAGE_VERSION = 'n%s-%s-0' % (GetCommitCount(CLANG_REVISION),
+                                   CLANG_REVISION[:8])
 
   print('Locally building clang %s...' % PACKAGE_VERSION)
   WriteStampFile('', STAMP_FILE)
@@ -398,8 +402,6 @@ def main():
   AddCMakeToPath(args)
   DeleteChromeToolsShim()
 
-  if not args.skip_checkout:
-    CheckoutLLVM(CLANG_REVISION, LLVM_DIR);
 
   if args.skip_build:
     return 0
@@ -425,7 +427,7 @@ def main():
 
   targets = 'AArch64;ARM;Mips;PowerPC;SystemZ;WebAssembly;X86'
 
-  projects = 'clang;compiler-rt;lld;chrometools'
+  projects = 'clang;compiler-rt;lld;chrometools;clang-tools-extra'
 
   if sys.platform == 'darwin':
     # clang needs libc++, else -stdlib=libc++ won't find includes
@@ -610,6 +612,10 @@ def main():
     # C++-y "Hello World" program only resulted in 14% faster builds.)
     # See https://crbug.com/966403#c16 for all numbers.
     #
+    # NOTE: Tidy uses binaries built with this profile, but doesn't seem to
+    # gain much from it. If tidy's execution time becomes a concern, it might
+    # be good to investigate that.
+    #
     # TODO(hans): Enhance the training, perhaps by including preprocessed code
     # from more platforms, and by doing some linking so that lld can benefit
     # from PGO as well. Perhaps the training could be done asynchronously by
@@ -760,7 +766,7 @@ def main():
     cmake_args += ['-DCOMPILER_RT_ENABLE_IOS=ON',
                    '-DSANITIZER_MIN_OSX_VERSION=10.7']
 
-  # TODO(crbug.com/41866): Use -DLLVM_EXTERNAL_PROJECTS instead.
+  # TODO(crbug.com/962988): Use -DLLVM_EXTERNAL_PROJECTS instead.
   CreateChromeToolsShim()
 
   if os.path.exists(LLVM_BUILD_DIR):

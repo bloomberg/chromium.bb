@@ -25,7 +25,7 @@ def _FindSourceRoot():
 SOURCE_ROOT = _FindSourceRoot()
 CHROOT_SOURCE_ROOT = '/mnt/host/source'
 CHROOT_CACHE_ROOT = '/var/cache/chromeos-cache'
-DEPOT_TOOLS_SUBPATH = 'chromium/tools/depot_tools'
+DEPOT_TOOLS_SUBPATH = 'src/chromium/depot_tools'
 
 CROSUTILS_DIR = os.path.join(SOURCE_ROOT, 'src/scripts')
 CHROMITE_DIR = os.path.realpath(os.path.join(
@@ -37,6 +37,8 @@ CHROMITE_BIN_DIR = os.path.join(CHROMITE_DIR, 'bin')
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_CHROOT_PATH = os.path.join(SOURCE_ROOT, DEFAULT_CHROOT_DIR)
+TERMINA_TOOLS_DIR = os.path.join(
+    SOURCE_ROOT, 'src/platform/container-guest-tools/termina')
 
 # These constants are defined and used in the die_hook that logs failed
 # packages: 'cros_log_failed_packages' in profiles/base/profile.bashrc in
@@ -63,7 +65,9 @@ SDK_OVERLAYS_OUTPUT = 'tmp/sdk-overlays'
 
 AUTOTEST_BUILD_PATH = 'usr/local/build/autotest'
 UNITTEST_PKG_PATH = 'test-packages'
-GUEST_IMAGES_PINS_PATH = 'opt/google/containers/pins'
+
+# Only used for testing pinned images on test images.
+GUEST_IMAGES_PINS_PATH = 'usr/local/opt/google/containers/pins'
 PIN_KEY_FILENAME = 'filename'
 PIN_KEY_GSURI = 'gsuri'
 
@@ -257,7 +261,6 @@ MON_REPO_SELFUPDATE_FAILURE_COUNT = ('chromeos/cbuildbot/repo/'
 MON_REPO_INIT_RETRY_COUNT = 'chromeos/cbuildbot/repo/init_retry_count'
 MON_REPO_MANIFEST_FAILURE_COUNT = ('chromeos/cbuildbot/repo/'
                                    'manifest_failure_count')
-MON_GIT_FETCH_COUNT = 'chromeos/cbuildbot/git/fetch_count'
 MON_BB_RETRY_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
                             'retry_build_count')
 MON_BB_CANCEL_BATCH_BUILDS_COUNT = ('chromeos/cbuildbot/buildbucket/'
@@ -266,7 +269,6 @@ MON_BB_CANCEL_PRE_CQ_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
                                     'cancel_pre_cq_build_count')
 MON_EXPORT_TO_GCLOUD = 'chromeos/cbuildbot/export_to_gcloud'
 MON_CL_REJECT_COUNT = 'chromeos/cbuildbot/change/rejected_count'
-MON_GS_ERROR = 'chromeos/gs/error_count'
 
 # Stage Categorization for failed stages metric.
 UNCATEGORIZED_STAGE = 'Uncategorized'
@@ -347,10 +349,14 @@ INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 DEFAULT_CTS_TEST_XML_MAP = {
     'cheets_CTS_': 'test_result.xml',
     'cheets_GTS.': 'test_result.xml',
+    'cheets_GTS_': 'test_result.xml',
 }
 # Google Storage bucket URI to store results in.
 DEFAULT_CTS_RESULTS_GSURI = 'gs://chromeos-cts-results/'
 DEFAULT_CTS_APFE_GSURI = 'gs://chromeos-cts-apfe/'
+
+ANDROID_CONTAINER_PACKAGE_KEYWORD = 'android-container'
+ANDROID_VM_PACKAGE_KEYWORD = 'android-vm'
 
 ANDROID_INTERNAL_PATTERN = r'\.zip.internal$'
 ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
@@ -359,6 +365,9 @@ ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
 ANDROID_PI_BUILD_BRANCH = 'git_pi-arc'
 ANDROID_QT_BUILD_BRANCH = 'git_qt-arc-dev'
 ANDROID_VMPI_BUILD_BRANCH = 'git_pi-arcvm-dev'
+ANDROID_VMMST_BUILD_BRANCH = 'git_master-arc-dev'
+assert ANDROID_VMMST_BUILD_BRANCH == ANDROID_MST_BUILD_BRANCH
+
 ANDROID_GTS_BUILD_TARGETS = {
     # "gts_arm64" is the build maintained by GMS team.
     'XTS': ('linux-gts_arm64', r'\.zip$'),
@@ -419,8 +428,17 @@ ANDROID_QT_BUILD_TARGETS = {
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
 ANDROID_VMPI_BUILD_TARGETS = {
-    'ARM_USERDEBUG': ('linux-bertha_arm-userdebug', r'\.zip$'),
-    'X86_USERDEBUG': ('linux-bertha_x86-userdebug', r'\.zip$'),
+    # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'ARM_USERDEBUG': ('linux-bertha_arm-userdebug',
+                      r'(\.zip|/XkbToKcmConverter)$'),
+    'X86_USERDEBUG': ('linux-bertha_x86-userdebug',
+                      r'(\.zip|/XkbToKcmConverter)$'),
+    'X86_64_USERDEBUG': ('linux-bertha_x86_64-userdebug', r'\.zip$'),
+}
+ANDROID_VMMST_BUILD_TARGETS = {
+    # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'X86_USERDEBUG': ('linux-bertha_x86-userdebug',
+                      r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64_USERDEBUG': ('linux-bertha_x86_64-userdebug', r'\.zip$'),
 }
 
@@ -658,16 +676,14 @@ VALID_BUILD_TYPES = (
 # The default list of pre-cq configs to use.
 PRE_CQ_DEFAULT_CONFIGS = [
     # Betty is the designated board to run vmtest on N.
-    # betty-arcnext is disabled pending https://crbug.com/977232
-    # 'betty-arcnext-pre-cq',           # vm board    arcnext
-    # betty is disabled due to https://crbug.com/984316
-    # 'betty-pre-cq',                   # vm board    vmtest
+    # betty-pi-arc is disabled pending decreasing its runtime
+    # 'betty-pi-arc-pre-cq',           # vm board    arcnext
+    'betty-pre-cq',                   # vm board    vmtest
     'eve-no-vmtest-pre-cq',           # kabylake    cheets_64 vulkan(Intel)
     'fizz-no-vmtest-pre-cq',          # kabylake
     'grunt-no-vmtest-pre-cq',         # stoneyridge vulkan(AMD)
     'kevin-arcnext-no-vmtest-pre-cq', # arm64       arcnext
     'lakitu-no-vmtest-pre-cq',        # container
-    'nyan_blaze-no-vmtest-pre-cq',    # arm32
     'whirlwind-no-vmtest-pre-cq',     # brillo
 ]
 
@@ -742,7 +758,6 @@ HWTEST_MOBLAB_SUITE = 'moblab'
 HWTEST_MOBLAB_QUICK_SUITE = 'moblab_quick'
 HWTEST_SANITY_SUITE = 'sanity'
 HWTEST_TOOLCHAIN_SUITE = 'toolchain-tests'
-HWTEST_PROVISION_SUITE = 'provision'
 HWTEST_CTS_QUAL_SUITE = 'arc-cts-qual'
 HWTEST_GTS_QUAL_SUITE = 'arc-gts-qual'
 # Non-blocking informational hardware tests for Chrome, run throughout the
@@ -840,21 +855,26 @@ JOB_KEYVAL_BRANCH = 'branch'
 # How many total test retries should be done for a suite.
 VM_TEST_MAX_RETRIES = 5
 # Defines VM Test types.
-FULL_AU_TEST_TYPE = 'full_suite'
 SIMPLE_AU_TEST_TYPE = 'pfq_suite'
 VM_SUITE_TEST_TYPE = 'vm_suite'
 GCE_SUITE_TEST_TYPE = 'gce_suite'
 CROS_VM_TEST_TYPE = 'cros_vm_test'
 DEV_MODE_TEST_TYPE = 'dev_mode_test'
-VALID_VM_TEST_TYPES = [FULL_AU_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
-                       VM_SUITE_TEST_TYPE, GCE_SUITE_TEST_TYPE,
-                       CROS_VM_TEST_TYPE, DEV_MODE_TEST_TYPE]
+VALID_VM_TEST_TYPES = [
+    SIMPLE_AU_TEST_TYPE,
+    VM_SUITE_TEST_TYPE,
+    GCE_SUITE_TEST_TYPE,
+    CROS_VM_TEST_TYPE,
+    DEV_MODE_TEST_TYPE
+]
 VALID_GCE_TEST_SUITES = ['gce-smoke', 'gce-sanity']
 # MoblabVM tests are suites of tests used to validate a moblab image via
 # VMTests.
 MOBLAB_VM_SMOKE_TEST_TYPE = 'moblab_smoke_test'
 
 CHROMIUMOS_OVERLAY_DIR = 'src/third_party/chromiumos-overlay'
+PORTAGE_STABLE_OVERLAY_DIR = 'src/third_party/portage-stable'
+ECLASS_OVERLAY_DIR = 'src/third_party/eclass-overlay'
 CHROMEOS_PARTNER_OVERLAY_DIR = 'src/private-overlays/chromeos-partner-overlay/'
 PUBLIC_BINHOST_CONF_DIR = os.path.join(CHROMIUMOS_OVERLAY_DIR,
                                        'chromeos/binhost')
@@ -921,7 +941,6 @@ GERRIT_ON_BORG_LABELS = {
     'Code-Review': 'CRVW',
     'Commit-Queue': 'COMR',
     'Verified': 'VRIF',
-    'Legacy-Commit-Queue': 'LCQ',
 }
 
 # Actions that a CQ run can take on a CL
@@ -1056,7 +1075,7 @@ CQ = 'cq'
 PRE_CQ = 'pre-cq'
 
 # Environment variables that should be exposed to all children processes
-# invoked via cros_build_lib.RunCommand.
+# invoked via cros_build_lib.run.
 ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR,
                 PARALLEL_EMERGE_STATUS_FILE_ENVVAR)
 
@@ -1126,6 +1145,10 @@ VM_DISK_PREFIX = 'chromiumos_qemu_disk.bin'
 VM_MEM_PREFIX = 'chromiumos_qemu_mem.bin'
 VM_NUM_RETRIES = 0
 TAST_VM_TEST_RESULTS = 'tast_vm_test_results_%(attempt)s'
+BASE_GUEST_VM_DIR = 'guest-vm-base'
+TEST_GUEST_VM_DIR = 'guest-vm-test'
+BASE_GUEST_VM_TAR = '%s.tar.xz' % BASE_GUEST_VM_DIR
+TEST_GUEST_VM_TAR = '%s.tar.xz' % TEST_GUEST_VM_DIR
 
 TEST_IMAGE_NAME = 'chromiumos_test_image'
 TEST_IMAGE_TAR = '%s.tar.xz' % TEST_IMAGE_NAME
@@ -1154,6 +1177,8 @@ IMAGE_TYPE_NV_LP0_FIRMWARE = 'nv_lp0_firmware'
 IMAGE_TYPE_ACCESSORY_USBPD = 'accessory_usbpd'
 # Standalone accessory microcontroller firmware (e.g. wireless keyboard).
 IMAGE_TYPE_ACCESSORY_RWSIG = 'accessory_rwsig'
+# Cr50 Firmware.
+IMAGE_TYPE_CR50_FIRMWARE = 'cr50_firmware'
 
 IMAGE_TYPE_TO_NAME = {
     IMAGE_TYPE_BASE: BASE_IMAGE_BIN,
@@ -1183,19 +1208,18 @@ LAB_STATUS_URL = 'http://chromiumos-lab.appspot.com/current?format=json'
 GOLO_SMTP_SERVER = 'mail.golo.chromium.org'
 
 CHROME_GARDENER = 'chrome'
-# URL to retrieve gardener names from the waterfall.
-CHROME_GARDENER_URL = (
-    'https://rota-ng.appspot.com/legacy/sheriff_cr_cros_gardeners.json'
-)
+# Email alias to add as reviewer in Gerrit, which GWSQ will then automatically
+# assign to the current gardener.
+CHROME_GARDENER_REVIEW_EMAIL = 'chrome-os-gardeners@google.com'
 
 # Useful config targets.
 CQ_MASTER = 'master-paladin'
 CANARY_MASTER = 'master-release'
 PFQ_MASTER = 'master-chromium-pfq'
-BINHOST_PRE_CQ = 'binhost-pre-cq'
 WIFICELL_PRE_CQ = 'wificell-pre-cq'
 BLUESTREAK_PRE_CQ = 'bluestreak-pre-cq'
 MST_ANDROID_PFQ_MASTER = 'master-mst-android-pfq'
+VMMST_ANDROID_PFQ_MASTER = 'master-vmmst-android-pfq'
 NYC_ANDROID_PFQ_MASTER = 'master-nyc-android-pfq'
 PI_ANDROID_PFQ_MASTER = 'master-pi-android-pfq'
 VMPI_ANDROID_PFQ_MASTER = 'master-vmpi-android-pfq'
@@ -1220,7 +1244,7 @@ EXTRA_BUCKETS_FILES_BLACKLIST = [
 
 # AFDO common constants.
 # How long does the AFDO_record autotest have to generate the AFDO perf data.
-AFDO_GENERATE_TIMEOUT = 100 * 60
+AFDO_GENERATE_TIMEOUT = 120 * 60
 
 # Manual Uprev PFQ constants.
 STAGING_PFQ_BRANCH_PREFIX = 'staging_pfq_branch_'
@@ -1269,10 +1293,6 @@ SELF_DESTRUCTED_BUILD = 'self_destructed_build'
 # Metadata key to indicate whether a build is self-destructed with success.
 SELF_DESTRUCTED_WITH_SUCCESS_BUILD = 'self_destructed_with_success_build'
 
-# The path to update_payload in the update_engine.
-UPDATE_ENGINE_SCRIPTS_PATH = os.path.join(SOURCE_ROOT, 'src', 'aosp', 'system',
-                                          'update_engine', 'scripts')
-
 # Chroot snapshot names
 CHROOT_SNAPSHOT_CLEAN = 'clean-chroot'
 
@@ -1282,6 +1302,13 @@ PART_ROOT_A = 'ROOT-A'
 PART_ROOT_B = 'ROOT-B'
 PART_KERN_A = 'KERN-A'
 PART_KERN_B = 'KERN-B'
+
+# Quick provision payloads. These file names should never be changed, otherwise
+# very bad things can happen :). The reason is we have already uploaded these
+# files with these names for all boards. So if the name changes, all scripts
+# that have been using this need to handle both cases to be backward compatible.
+QUICK_PROVISION_PAYLOAD_KERNEL = 'full_dev_part_KERN.bin.gz'
+QUICK_PROVISION_PAYLOAD_ROOTFS = 'full_dev_part_ROOT.bin.gz'
 
 # Mock build and stage IDs.
 MOCK_STAGE_ID = 313377
@@ -1304,3 +1331,6 @@ TOPOLOGY_DICT = {
     '/swarming_proxy/host':
         'chromeos-proxy.appspot.com',
 }
+
+# Percentage of child builders that need to complete to update LKGM
+LKGM_THRESHOLD = 80

@@ -275,7 +275,8 @@ RecommendAppsFetcherImpl::RecommendAppsFetcherImpl(
       url_loader_factory_(url_loader_factory),
       arc_features_getter_(
           base::BindRepeating(&arc::ArcFeaturesParser::GetArcFeatures)) {
-  connector_->BindInterface(ash::mojom::kServiceName, &cros_display_config_);
+  connector_->Connect(ash::mojom::kServiceName,
+                      cros_display_config_.BindNewPipeAndPassReceiver());
 }
 
 RecommendAppsFetcherImpl::~RecommendAppsFetcherImpl() = default;
@@ -576,7 +577,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
   }
 
   // Otherwise, the response should return a list of apps.
-  const base::Value::ListStorage& app_list = json_value->GetList();
+  base::Value::ConstListView app_list = json_value->GetList();
   if (app_list.empty()) {
     DVLOG(1) << "No app in the response.";
     RecordUmaResponseParseResult(RECOMMEND_APPS_RESPONSE_PARSE_RESULT_NO_APP);
@@ -622,7 +623,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
       continue;
     }
 
-    output.GetList().push_back(std::move(output_map));
+    output.Append(std::move(output_map));
   }
 
   RecordUmaResponseParseResult(RECOMMEND_APPS_RESPONSE_PARSE_RESULT_NO_ERROR);

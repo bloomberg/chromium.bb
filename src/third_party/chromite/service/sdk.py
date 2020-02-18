@@ -119,8 +119,39 @@ class UpdateArguments(object):
 
     if self.toolchain_targets:
       args.extend(['--toolchain_boards', ','.join(self.toolchain_targets)])
+    else:
+      args.append('--skip_toolchain_update')
 
     return args
+
+
+def Clean(chroot, images=False, sysroots=False, tmp=False):
+  """Clean the chroot.
+
+  See:
+    cros clean -h
+
+  Args:
+    chroot: The chroot to clean.
+    images (bool): Remove all built images.
+    sysroots (bool): Remove all of the sysroots.
+    tmp (bool): Clean the tmp/ directory.
+  """
+  if not images and not sysroots and not tmp:
+    return
+
+  cmd = ['cros', 'clean']
+  if chroot:
+    cmd.extend(['--sdk-path', chroot.path])
+  if images:
+    cmd.append('--images')
+  if sysroots:
+    cmd.append('--sysroots')
+  if tmp:
+    cmd.append('--chroot-tmp')
+
+  cros_build_lib.run(cmd)
+
 
 def Create(arguments):
   """Create or replace the chroot.
@@ -137,17 +168,54 @@ def Create(arguments):
   cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk')]
   cmd.extend(arguments.GetArgList())
 
-  cros_build_lib.RunCommand(cmd)
+  cros_build_lib.run(cmd)
 
   version = GetChrootVersion(arguments.chroot_path)
-  if not version and not arguments.replace:
-    # Force replace when we can't get a version for a chroot that exists,
-    # since something must have gone wrong.
-    logging.info('Replacing broken chroot.')
-    arguments.replace = True
-    return Create(arguments)
+  if not arguments.replace:
+    # Force replace scenarios. Only needed when we're not already replacing it.
+    if not version:
+      # Force replace when we can't get a version for a chroot that exists,
+      # since something must have gone wrong.
+      logging.notice('Replacing broken chroot.')
+      arguments.replace = True
+      return Create(arguments)
+    elif not cros_sdk_lib.IsChrootVersionValid(arguments.chroot_path):
+      # Force replace when the version is not valid, i.e. ahead of the chroot
+      # version hooks.
+      logging.notice('Replacing chroot ahead of current checkout.')
+      arguments.replace = True
+      return Create(arguments)
+    elif not cros_sdk_lib.IsChrootDirValid(arguments.chroot_path):
+      # Force replace when the permissions or owner are not correct.
+      logging.notice('Replacing chroot with invalid permissions.')
+      arguments.replace = True
+      return Create(arguments)
 
   return GetChrootVersion(arguments.chroot_path)
+
+
+def Delete(chroot=None):
+  """Delete the chroot.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot being deleted, or None for the
+      default chroot.
+  """
+  # Manually remove the sysroots to reduce the time taken to delete the chroot.
+  logging.info('Removing sysroots.')
+  Clean(chroot, sysroots=True)
+
+  # Delete the chroot itself.
+  logging.info('Removing the SDK.')
+  cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'), '--delete']
+  if chroot:
+    cmd.extend(['--chroot', chroot.path])
+
+  cros_build_lib.run(cmd)
+
+  # Remove any images that were built.
+  logging.info('Removing images.')
+  Clean(chroot, images=True)
 
 
 def GetChrootVersion(chroot_path=None):
@@ -184,6 +252,6 @@ def Update(arguments):
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'update_chroot')]
   cmd.extend(arguments.GetArgList())
 
-  cros_build_lib.RunCommand(cmd)
+  cros_build_lib.run(cmd)
 
   return GetChrootVersion()

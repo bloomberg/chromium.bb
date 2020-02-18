@@ -15,8 +15,8 @@
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/common/throttling_url_loader.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
@@ -96,6 +96,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     const GURL& scope,
     bool force_bypass_cache,
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
+    const blink::mojom::FetchClientSettingsObjectPtr&
+        fetch_client_settings_object,
     base::TimeDelta time_since_last_check,
     const net::HttpRequestHeaders& default_headers,
     ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
@@ -111,7 +113,6 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
       force_bypass_cache_(force_bypass_cache),
       update_via_cache_(update_via_cache),
       time_since_last_check_(time_since_last_check),
-      network_client_binding_(this),
       network_watcher_(FROM_HERE,
                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                        base::SequencedTaskRunnerHandle::Get()),
@@ -129,6 +130,17 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   resource_request.site_for_cookies = main_script_url;
   resource_request.do_not_prompt_for_login = true;
   resource_request.headers = default_headers;
+  resource_request.referrer_policy = Referrer::ReferrerPolicyForUrlRequest(
+      fetch_client_settings_object->referrer_policy);
+  // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
+  resource_request.referrer =
+      Referrer::SanitizeForRequest(
+          script_url, Referrer(fetch_client_settings_object->outgoing_referrer,
+                               fetch_client_settings_object->referrer_policy))
+          .url;
+  resource_request.upgrade_if_insecure =
+      fetch_client_settings_object->insecure_requests_policy ==
+      blink::mojom::InsecureRequestsPolicy::kUpgrade;
 
   // ResourceRequest::request_initiator is the request's origin in the spec.
   // https://fetch.spec.whatwg.org/#concept-request-origin
@@ -215,9 +227,6 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
       std::move(compare_reader), std::move(copy_reader), std::move(writer),
       /*pause_when_not_identical=*/true);
 
-  network::mojom::URLLoaderClientPtrInfo network_client;
-  network_client_binding_.Bind(mojo::MakeRequest(&network_client));
-
   // Use NavigationURLLoaderImpl to get a unique request id across
   // browser-initiated navigations and worker script fetch.
   const int request_id =
@@ -225,7 +234,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   network_loader_ = ServiceWorkerUpdatedScriptLoader::
       ThrottlingURLLoaderCoreWrapper::CreateLoaderAndStart(
           loader_factory->Clone(), browser_context_getter, MSG_ROUTING_NONE,
-          request_id, options, resource_request, std::move(network_client),
+          request_id, options, resource_request,
+          network_client_receiver_.BindNewPipeAndPassRemote(),
           kUpdateCheckTrafficAnnotation);
   DCHECK_EQ(network_loader_state_,
             ServiceWorkerUpdatedScriptLoader::LoaderState::kNotStarted);
@@ -252,7 +262,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
   std::string error_message;
   std::unique_ptr<net::HttpResponseInfo> response_info =
       service_worker_loader_helpers::CreateHttpResponseInfoAndCheckHeaders(
-          response_head, &service_worker_status, &completion_status,
+          *response_head, &service_worker_status, &completion_status,
           &error_message);
   if (!response_info) {
     DCHECK_NE(net::OK, completion_status.error_code);
@@ -613,19 +623,24 @@ void ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete(
       "bytes_written", bytes_written);
 
   DCHECK(pending_buffer || bytes_written == 0);
-  if (pending_buffer) {
-    // We consumed |bytes_written| bytes of data from the network so call
-    // CompleteRead(), regardless of what |error| is.
-    pending_buffer->CompleteRead(bytes_written);
-    network_consumer_ = pending_buffer->ReleaseHandle();
-  }
 
   if (cache_writer_->is_pausing()) {
     // |cache_writer_| can be pausing only when it finds difference between
     // stored body and network body.
     DCHECK_EQ(error, net::ERR_IO_PENDING);
-    Succeed(Result::kDifferent);
+    auto paused_state = std::make_unique<PausedState>(
+        std::move(cache_writer_), std::move(network_loader_),
+        network_client_receiver_.Unbind(), std::move(pending_buffer),
+        bytes_written, network_loader_state_, body_writer_state_);
+    Succeed(Result::kDifferent, std::move(paused_state));
     return;
+  }
+
+  if (pending_buffer) {
+    // We consumed |bytes_written| bytes of data from the network so call
+    // CompleteRead(), regardless of what |error| is.
+    pending_buffer->CompleteRead(bytes_written);
+    network_consumer_ = pending_buffer->ReleaseHandle();
   }
 
   if (error != net::OK) {
@@ -639,7 +654,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete(
   if (bytes_written == 0) {
     // All data has been read. If we reach here without any error, the script
     // from the network was identical to the one in the disk cache.
-    Succeed(Result::kIdentical);
+    Succeed(Result::kIdentical, /*paused_state=*/nullptr);
     return;
   }
 
@@ -657,35 +672,36 @@ void ServiceWorkerSingleScriptUpdateChecker::Fail(
                          "error_message", error_message);
 
   Finish(Result::kFailed,
+         /*paused_state=*/nullptr,
          std::make_unique<FailureInfo>(status, error_message,
                                        std::move(network_status)));
 }
 
-void ServiceWorkerSingleScriptUpdateChecker::Succeed(Result result) {
+void ServiceWorkerSingleScriptUpdateChecker::Succeed(
+    Result result,
+    std::unique_ptr<PausedState> paused_state) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker", "ServiceWorkerSingleScriptUpdateChecker::Succeed", this,
       TRACE_EVENT_FLAG_FLOW_IN, "result", ResultToString(result));
 
   DCHECK_NE(result, Result::kFailed);
-  Finish(result, nullptr);
+  Finish(result, std::move(paused_state), /*failure_info=*/nullptr);
 }
 
 void ServiceWorkerSingleScriptUpdateChecker::Finish(
     Result result,
+    std::unique_ptr<PausedState> paused_state,
     std::unique_ptr<FailureInfo> failure_info) {
   network_watcher_.Cancel();
   if (Result::kDifferent == result) {
-    auto paused_state = std::make_unique<PausedState>(
-        std::move(cache_writer_), std::move(network_loader_),
-        network_client_binding_.Unbind(), std::move(network_consumer_),
-        network_loader_state_, body_writer_state_);
+    DCHECK(paused_state);
     std::move(callback_).Run(script_url_, result, nullptr,
                              std::move(paused_state));
     return;
   }
 
   network_loader_.reset();
-  network_client_binding_.Close();
+  network_client_receiver_.reset();
   network_consumer_.reset();
   std::move(callback_).Run(script_url_, result, std::move(failure_info),
                            nullptr);
@@ -696,14 +712,17 @@ ServiceWorkerSingleScriptUpdateChecker::PausedState::PausedState(
     std::unique_ptr<
         ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper>
         network_loader,
-    network::mojom::URLLoaderClientRequest network_client_request,
-    mojo::ScopedDataPipeConsumerHandle network_consumer,
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>
+        network_client_receiver,
+    scoped_refptr<network::MojoToNetPendingBuffer> pending_network_buffer,
+    uint32_t consumed_bytes,
     ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
     ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state)
     : cache_writer(std::move(cache_writer)),
       network_loader(std::move(network_loader)),
-      network_client_request(std::move(network_client_request)),
-      network_consumer(std::move(network_consumer)),
+      network_client_receiver(std::move(network_client_receiver)),
+      pending_network_buffer(std::move(pending_network_buffer)),
+      consumed_bytes(consumed_bytes),
       network_loader_state(network_loader_state),
       body_writer_state(body_writer_state) {}
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -28,7 +28,8 @@ class GitCacheTest(unittest.TestCase):
 
   def git(self, cmd, cwd=None):
     cwd = cwd or self.origin_dir
-    subprocess.check_call(['git'] + cmd, cwd=cwd)
+    git = 'git.bat' if sys.platform == 'win32' else 'git'
+    subprocess.check_call([git] + cmd, cwd=cwd)
 
   def testParseFetchSpec(self):
     testData = [
@@ -83,6 +84,36 @@ class GitCacheTest(unittest.TestCase):
 
     mirror.populate(reset_fetch_config=True)
 
+  def _makeGitRepoWithTag(self):
+    self.git(['init', '-q'])
+    with open(os.path.join(self.origin_dir, 'foo'), 'w') as f:
+      f.write('touched\n')
+    self.git(['add', 'foo'])
+    self.git(['commit', '-m', 'foo'])
+    self.git(['tag', 'TAG'])
+    self.git(['pack-refs'])
+
+  def testPopulateFetchTagsByDefault(self):
+    self._makeGitRepoWithTag()
+
+    # Default behaviour includes tags.
+    mirror = git_cache.Mirror(self.origin_dir)
+    mirror.populate()
+
+    cache_dir = os.path.join(self.cache_dir,
+                             mirror.UrlToCacheDir(self.origin_dir))
+    self.assertTrue(os.path.exists(cache_dir + '/refs/tags/TAG'))
+
+  def testPopulateFetchWithoutTags(self):
+    self._makeGitRepoWithTag()
+
+    # Ask to not include tags.
+    mirror = git_cache.Mirror(self.origin_dir)
+    mirror.populate(no_fetch_tags=True)
+
+    cache_dir = os.path.join(self.cache_dir,
+                             mirror.UrlToCacheDir(self.origin_dir))
+    self.assertFalse(os.path.exists(cache_dir + '/refs/tags/TAG'))
 
   def testPopulateResetFetchConfigEmptyFetchConfig(self):
     self.git(['init', '-q'])

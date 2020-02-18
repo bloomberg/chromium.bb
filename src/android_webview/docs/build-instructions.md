@@ -53,11 +53,6 @@ system_webview_package_name = "..."
 
 # Optional: speeds up fresh builds (Googlers-only)
 use_goma = true
-
-# Optional: 64-bit APKs include 32-bit & 64-bit code for broader compatibility.
-# You can disable building the 32-bit "secondary ABI" to speed up compiles, but
-# this crashes apps with their own 32-bit code.
-build_apk_secondary_abi = false
 ```
 
 ### Figuring out target\_cpu
@@ -127,6 +122,14 @@ build files for local development.
 
 See [internal instructions][1] for the Google-internal variants of the build
 targets (`system_webview_google_apk`, `monochrome_apk`).
+
+*** note
+**Note:** TV/car devices have a bug where the release key signed WebView is
+preinstalled on all Android images, even those signed with dev-keys. Because
+humans cannot access release keys (`use_signing_keys = true` provides "developer
+test keys," not release keys), you must remove the preinstalled WebView (see
+below).
+***
 
 ### Removing preinstalled WebView
 

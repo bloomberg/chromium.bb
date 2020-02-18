@@ -29,6 +29,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/service_worker_external_request_result.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -128,17 +129,17 @@ void PropagateExtensionWakeResult(
 void StartServiceWorkerExternalRequest(content::ServiceWorkerContext* context,
                                        int64_t service_worker_version_id,
                                        const std::string& request_uuid) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::ServiceWorkerContext::GetCoreThreadId());
   context->StartingExternalRequest(service_worker_version_id, request_uuid);
 }
 
 void FinishServiceWorkerExternalRequest(content::ServiceWorkerContext* context,
                                         int64_t service_worker_version_id,
                                         const std::string& request_uuid) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  bool status =
+  DCHECK_CURRENTLY_ON(content::ServiceWorkerContext::GetCoreThreadId());
+  content::ServiceWorkerExternalRequestResult result =
       context->FinishedExternalRequest(service_worker_version_id, request_uuid);
-  DCHECK(status);
+  DCHECK_EQ(result, content::ServiceWorkerExternalRequestResult::kOk);
 }
 
 }  // namespace
@@ -262,12 +263,13 @@ ProcessManager::ProcessManager(BrowserContext* context,
   DCHECK_EQ(original_context, extension_registry_->browser_context());
   extension_registry_->AddObserver(this);
 
+  // Only the original profile needs to listen for ready to create background
+  // pages for all spanning extensions.
   if (!context->IsOffTheRecord()) {
-    // Only the original profile needs to listen for ready to create background
-    // pages for all spanning extensions.
-    registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                 content::Source<BrowserContext>(original_context));
+    ExtensionSystem::Get(context)->ready().Post(
+        FROM_HERE,
+        base::Bind(&ProcessManager::MaybeCreateStartupBackgroundHosts,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
@@ -288,6 +290,9 @@ void ProcessManager::Shutdown() {
   DCHECK(background_hosts_.empty());
   content::DevToolsAgentHost::RemoveObserver(this);
   site_instance_ = nullptr;
+
+  for (auto& observer : observer_list_)
+    observer.OnProcessManagerShutdown(this);
 }
 
 void ProcessManager::RegisterRenderFrameHost(
@@ -392,6 +397,9 @@ void ProcessManager::MaybeCreateStartupBackgroundHosts() {
   if (startup_background_hosts_created_)
     return;
 
+  if (!ExtensionSystem::Get(browser_context_)->ready().is_signaled())
+    return;
+
   // The embedder might disallow background pages entirely.
   ProcessManagerDelegate* delegate =
       ExtensionsBrowserClient::Get()->GetProcessManagerDelegate();
@@ -408,19 +416,6 @@ void ProcessManager::MaybeCreateStartupBackgroundHosts() {
 
   CreateStartupBackgroundHosts();
   startup_background_hosts_created_ = true;
-
-  // Background pages should only be loaded once. To prevent any further loads
-  // occurring, we remove the notification listeners.
-  BrowserContext* original_context =
-      ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context_);
-  if (registrar_.IsRegistered(
-          this,
-          extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-          content::Source<BrowserContext>(original_context))) {
-    registrar_.Remove(this,
-                      extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                      content::Source<BrowserContext>(original_context));
-  }
 }
 
 ExtensionHost* ProcessManager::GetBackgroundHostForExtension(
@@ -648,13 +643,6 @@ void ProcessManager::Observe(int type,
                              const content::NotificationDetails& details) {
   TRACE_EVENT0("browser,startup", "ProcessManager::Observe");
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED: {
-      // TODO(jamescook): Convert this to use ExtensionSystem::ready() instead
-      // of a notification.
-      SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ProcessManagerStartupHostsTime");
-      MaybeCreateStartupBackgroundHosts();
-      break;
-    }
     case extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       if (background_hosts_.erase(host)) {
@@ -695,6 +683,7 @@ void ProcessManager::OnExtensionUnloaded(BrowserContext* browser_context,
 }
 
 void ProcessManager::CreateStartupBackgroundHosts() {
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ProcessManagerStartupHostsTime2");
   DCHECK(!startup_background_hosts_created_);
   for (const scoped_refptr<const Extension>& extension :
            extension_registry_->enabled_extensions()) {
@@ -786,10 +775,16 @@ std::string ProcessManager::IncrementServiceWorkerKeepaliveCount(
                                                           extension->url())
           ->GetServiceWorkerContext();
 
-  content::ServiceWorkerContext::RunTask(
-      worker_task_runner_, FROM_HERE, service_worker_context,
-      base::BindOnce(&StartServiceWorkerExternalRequest, service_worker_context,
-                     service_worker_version_id, request_uuid));
+  if (content::ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    StartServiceWorkerExternalRequest(service_worker_context,
+                                      service_worker_version_id, request_uuid);
+  } else {
+    content::ServiceWorkerContext::RunTask(
+        worker_task_runner_, FROM_HERE, service_worker_context,
+        base::BindOnce(&StartServiceWorkerExternalRequest,
+                       service_worker_context, service_worker_version_id,
+                       request_uuid));
+  }
   return request_uuid;
 }
 
@@ -846,11 +841,16 @@ void ProcessManager::DecrementServiceWorkerKeepaliveCount(
                                                           extension->url())
           ->GetServiceWorkerContext();
 
-  content::ServiceWorkerContext::RunTask(
-      worker_task_runner_, FROM_HERE, service_worker_context,
-      base::BindOnce(&FinishServiceWorkerExternalRequest,
-                     service_worker_context, service_worker_version_id,
-                     request_uuid));
+  if (content::ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    FinishServiceWorkerExternalRequest(service_worker_context,
+                                       service_worker_version_id, request_uuid);
+  } else {
+    content::ServiceWorkerContext::RunTask(
+        worker_task_runner_, FROM_HERE, service_worker_context,
+        base::BindOnce(&FinishServiceWorkerExternalRequest,
+                       service_worker_context, service_worker_version_id,
+                       request_uuid));
+  }
 }
 
 void ProcessManager::OnLazyBackgroundPageIdle(const std::string& extension_id,

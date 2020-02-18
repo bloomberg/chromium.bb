@@ -20,7 +20,6 @@
 #include "absl/algorithm/container.h"
 #include "p2p/base/basic_packet_socket_factory.h"
 #include "p2p/base/port.h"
-#include "p2p/base/relay_port.h"
 #include "p2p/base/stun_port.h"
 #include "p2p/base/tcp_port.h"
 #include "p2p/base/turn_port.h"
@@ -28,6 +27,7 @@
 #include "rtc_base/checks.h"
 #include "rtc_base/helpers.h"
 #include "rtc_base/logging.h"
+#include "system_wrappers/include/field_trial.h"
 #include "system_wrappers/include/metrics.h"
 
 using rtc::CreateRandomId;
@@ -161,7 +161,7 @@ BasicPortAllocator::BasicPortAllocator(
   RTC_DCHECK(network_manager_ != nullptr);
   RTC_DCHECK(socket_factory_ != nullptr);
   SetConfiguration(ServerAddresses(), std::vector<RelayServerConfig>(), 0,
-                   false, customizer);
+                   webrtc::NO_PRUNE, customizer);
   Construct();
 }
 
@@ -174,44 +174,19 @@ BasicPortAllocator::BasicPortAllocator(rtc::NetworkManager* network_manager)
 }
 
 BasicPortAllocator::BasicPortAllocator(rtc::NetworkManager* network_manager,
+                                       const ServerAddresses& stun_servers)
+    : BasicPortAllocator(network_manager,
+                         /*socket_factory=*/nullptr,
+                         stun_servers) {}
+
+BasicPortAllocator::BasicPortAllocator(rtc::NetworkManager* network_manager,
                                        rtc::PacketSocketFactory* socket_factory,
                                        const ServerAddresses& stun_servers)
     : network_manager_(network_manager), socket_factory_(socket_factory) {
   InitRelayPortFactory(nullptr);
   RTC_DCHECK(relay_port_factory_ != nullptr);
-  RTC_DCHECK(socket_factory_ != NULL);
-  SetConfiguration(stun_servers, std::vector<RelayServerConfig>(), 0, false,
-                   nullptr);
-  Construct();
-}
-
-BasicPortAllocator::BasicPortAllocator(
-    rtc::NetworkManager* network_manager,
-    const ServerAddresses& stun_servers,
-    const rtc::SocketAddress& relay_address_udp,
-    const rtc::SocketAddress& relay_address_tcp,
-    const rtc::SocketAddress& relay_address_ssl)
-    : network_manager_(network_manager), socket_factory_(NULL) {
-  InitRelayPortFactory(nullptr);
-  RTC_DCHECK(relay_port_factory_ != nullptr);
-  RTC_DCHECK(network_manager_ != nullptr);
-  std::vector<RelayServerConfig> turn_servers;
-  RelayServerConfig config(RELAY_GTURN);
-  if (!relay_address_udp.IsNil()) {
-    config.ports.push_back(ProtocolAddress(relay_address_udp, PROTO_UDP));
-  }
-  if (!relay_address_tcp.IsNil()) {
-    config.ports.push_back(ProtocolAddress(relay_address_tcp, PROTO_TCP));
-  }
-  if (!relay_address_ssl.IsNil()) {
-    config.ports.push_back(ProtocolAddress(relay_address_ssl, PROTO_SSLTCP));
-  }
-
-  if (!config.ports.empty()) {
-    turn_servers.push_back(config);
-  }
-
-  SetConfiguration(stun_servers, turn_servers, 0, false, nullptr);
+  SetConfiguration(stun_servers, std::vector<RelayServerConfig>(), 0,
+                   webrtc::NO_PRUNE, nullptr);
   Construct();
 }
 
@@ -267,7 +242,7 @@ void BasicPortAllocator::AddTurnServer(const RelayServerConfig& turn_server) {
   std::vector<RelayServerConfig> new_turn_servers = turn_servers();
   new_turn_servers.push_back(turn_server);
   SetConfiguration(stun_servers(), new_turn_servers, candidate_pool_size(),
-                   prune_turn_ports(), turn_customizer());
+                   turn_port_prune_policy(), turn_customizer());
 }
 
 void BasicPortAllocator::InitRelayPortFactory(
@@ -298,7 +273,7 @@ BasicPortAllocatorSession::BasicPortAllocatorSession(
       allocation_started_(false),
       network_manager_started_(false),
       allocation_sequences_created_(false),
-      prune_turn_ports_(allocator->prune_turn_ports()) {
+      turn_port_prune_policy_(allocator->turn_port_prune_policy()) {
   allocator_->network_manager()->SignalNetworksChanged.connect(
       this, &BasicPortAllocatorSession::OnNetworksChanged);
   allocator_->network_manager()->StartUpdating();
@@ -403,8 +378,8 @@ void BasicPortAllocatorSession::StartGettingPorts() {
 
   network_thread_->Post(RTC_FROM_HERE, this, MSG_CONFIG_START);
 
-  RTC_LOG(LS_INFO) << "Start getting ports with prune_turn_ports "
-                   << (prune_turn_ports_ ? "enabled" : "disabled");
+  RTC_LOG(LS_INFO) << "Start getting ports with turn_port_prune_policy "
+                   << turn_port_prune_policy_;
 }
 
 void BasicPortAllocatorSession::StopGettingPorts() {
@@ -992,9 +967,14 @@ void BasicPortAllocatorSession::OnCandidateReady(Port* port,
   if (CandidatePairable(c, port) && !data->has_pairable_candidate()) {
     data->set_has_pairable_candidate(true);
 
-    if (prune_turn_ports_ && port->Type() == RELAY_PORT_TYPE) {
-      pruned = PruneTurnPorts(port);
+    if (port->Type() == RELAY_PORT_TYPE) {
+      if (turn_port_prune_policy_ == webrtc::KEEP_FIRST_READY) {
+        pruned = PruneNewlyPairableTurnPort(data);
+      } else if (turn_port_prune_policy_ == webrtc::PRUNE_BASED_ON_PRIORITY) {
+        pruned = PruneTurnPorts(port);
+      }
     }
+
     // If the current port is not pruned yet, SignalPortReady.
     if (!data->pruned()) {
       RTC_LOG(LS_INFO) << port->ToString() << ": Port ready.";
@@ -1038,6 +1018,28 @@ Port* BasicPortAllocatorSession::GetBestTurnPortForNetwork(
     }
   }
   return best_turn_port;
+}
+
+bool BasicPortAllocatorSession::PruneNewlyPairableTurnPort(
+    PortData* newly_pairable_port_data) {
+  RTC_DCHECK_RUN_ON(network_thread_);
+  RTC_DCHECK(newly_pairable_port_data->port()->Type() == RELAY_PORT_TYPE);
+  // If an existing turn port is ready on the same network, prune the newly
+  // pairable port.
+  const std::string& network_name =
+      newly_pairable_port_data->port()->Network()->name();
+
+  for (PortData& data : ports_) {
+    if (data.port()->Network()->name() == network_name &&
+        data.port()->Type() == RELAY_PORT_TYPE && data.ready() &&
+        &data != newly_pairable_port_data) {
+      RTC_LOG(LS_INFO) << "Port pruned: "
+                       << newly_pairable_port_data->port()->ToString();
+      newly_pairable_port_data->Prune();
+      return true;
+    }
+  }
+  return false;
 }
 
 bool BasicPortAllocatorSession::PruneTurnPorts(Port* newly_pairable_turn_port) {
@@ -1519,42 +1521,7 @@ void AllocationSequence::CreateRelayPorts() {
   }
 
   for (RelayServerConfig& relay : config_->relays) {
-    if (relay.type == RELAY_GTURN) {
-      CreateGturnPort(relay);
-    } else if (relay.type == RELAY_TURN) {
-      CreateTurnPort(relay);
-    } else {
-      RTC_NOTREACHED();
-    }
-  }
-}
-
-void AllocationSequence::CreateGturnPort(const RelayServerConfig& config) {
-  // TODO(mallinath) - Rename RelayPort to GTurnPort.
-  std::unique_ptr<RelayPort> port = RelayPort::Create(
-      session_->network_thread(), session_->socket_factory(), network_,
-      session_->allocator()->min_port(), session_->allocator()->max_port(),
-      config_->username, config_->password);
-  if (port) {
-    RelayPort* port_ptr = port.release();
-    // Since RelayPort is not created using shared socket, |port| will not be
-    // added to the dequeue.
-    // Note: We must add the allocated port before we add addresses because
-    //       the latter will create candidates that need name and preference
-    //       settings.  However, we also can't prepare the address (normally
-    //       done by AddAllocatedPort) until we have these addresses.  So we
-    //       wait to do that until below.
-    session_->AddAllocatedPort(port_ptr, this, false);
-
-    // Add the addresses of this protocol.
-    PortList::const_iterator relay_port;
-    for (relay_port = config.ports.begin(); relay_port != config.ports.end();
-         ++relay_port) {
-      port_ptr->AddServerAddress(*relay_port);
-      port_ptr->AddExternalAddress(*relay_port);
-    }
-    // Start fetching an address for this port.
-    port_ptr->PrepareAddress();
+    CreateTurnPort(relay);
   }
 }
 
@@ -1576,8 +1543,8 @@ void AllocationSequence::CreateTurnPort(const RelayServerConfig& config) {
       RTC_LOG(LS_INFO)
           << "Server and local address families are not compatible. "
              "Server address: "
-          << relay_port->address.ipaddr().ToString()
-          << " Local address: " << network_->GetBestIP().ToString();
+          << relay_port->address.ipaddr().ToSensitiveString()
+          << " Local address: " << network_->GetBestIP().ToSensitiveString();
       continue;
     }
 
@@ -1604,7 +1571,7 @@ void AllocationSequence::CreateTurnPort(const RelayServerConfig& config) {
 
       if (!port) {
         RTC_LOG(LS_WARNING) << "Failed to create relay port with "
-                            << args.server_address->address.ToString();
+                            << args.server_address->address.ToSensitiveString();
         continue;
       }
 
@@ -1619,7 +1586,7 @@ void AllocationSequence::CreateTurnPort(const RelayServerConfig& config) {
 
       if (!port) {
         RTC_LOG(LS_WARNING) << "Failed to create relay port with "
-                            << args.server_address->address.ToString();
+                            << args.server_address->address.ToSensitiveString();
         continue;
       }
     }
@@ -1697,6 +1664,9 @@ PortConfiguration::PortConfiguration(const ServerAddresses& stun_servers,
     : stun_servers(stun_servers), username(username), password(password) {
   if (!stun_servers.empty())
     stun_address = *(stun_servers.begin());
+  // Note that this won't change once the config is initialized.
+  use_turn_server_as_stun_server_disabled =
+      webrtc::field_trial::IsDisabled("WebRTC-UseTurnServerAsStunServer");
 }
 
 PortConfiguration::~PortConfiguration() = default;
@@ -1706,8 +1676,15 @@ ServerAddresses PortConfiguration::StunServers() {
       stun_servers.find(stun_address) == stun_servers.end()) {
     stun_servers.insert(stun_address);
   }
-  // Every UDP TURN server should also be used as a STUN server.
-  ServerAddresses turn_servers = GetRelayServerAddresses(RELAY_TURN, PROTO_UDP);
+
+  if (!stun_servers.empty() && use_turn_server_as_stun_server_disabled) {
+    return stun_servers;
+  }
+
+  // Every UDP TURN server should also be used as a STUN server if
+  // use_turn_server_as_stun_server is not disabled or the stun servers are
+  // empty.
+  ServerAddresses turn_servers = GetRelayServerAddresses(PROTO_UDP);
   for (const rtc::SocketAddress& turn_server : turn_servers) {
     if (stun_servers.find(turn_server) == stun_servers.end()) {
       stun_servers.insert(turn_server);
@@ -1731,21 +1708,19 @@ bool PortConfiguration::SupportsProtocol(const RelayServerConfig& relay,
   return false;
 }
 
-bool PortConfiguration::SupportsProtocol(RelayType turn_type,
-                                         ProtocolType type) const {
+bool PortConfiguration::SupportsProtocol(ProtocolType type) const {
   for (size_t i = 0; i < relays.size(); ++i) {
-    if (relays[i].type == turn_type && SupportsProtocol(relays[i], type))
+    if (SupportsProtocol(relays[i], type))
       return true;
   }
   return false;
 }
 
 ServerAddresses PortConfiguration::GetRelayServerAddresses(
-    RelayType turn_type,
     ProtocolType type) const {
   ServerAddresses servers;
   for (size_t i = 0; i < relays.size(); ++i) {
-    if (relays[i].type == turn_type && SupportsProtocol(relays[i], type)) {
+    if (SupportsProtocol(relays[i], type)) {
       servers.insert(relays[i].ports.front().address);
     }
   }

@@ -79,9 +79,11 @@ Polymer({
      */
     pageVisibility: Object,
 
-    showApps: Boolean,
-
     showAndroidApps: Boolean,
+
+    showAppManagement: Boolean,
+
+    showApps: Boolean,
 
     showCrostini: Boolean,
 
@@ -172,6 +174,7 @@ Polymer({
     const overscroll = Math.max(0, this.offsetParent.clientHeight - distance);
     this.setOverscroll_(overscroll);
     section.scrollIntoView();
+    section.focus();
   },
 
   /**

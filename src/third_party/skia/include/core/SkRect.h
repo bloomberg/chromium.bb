@@ -273,11 +273,25 @@ struct SK_API SkIRect {
         @param dy  offset added to fTop and fBottom
         @return    SkIRect offset by dx and dy, with original width and height
     */
-    SkIRect makeOffset(int32_t dx, int32_t dy) const {
+    constexpr SkIRect makeOffset(int32_t dx, int32_t dy) const {
         return {
             Sk32_sat_add(fLeft,  dx), Sk32_sat_add(fTop,    dy),
             Sk32_sat_add(fRight, dx), Sk32_sat_add(fBottom, dy),
         };
+    }
+
+    /** Returns SkIRect offset by (offset.x(), offset.y()).
+
+        If offset.x() is negative, SkIRect returned is moved to the left.
+        If offset.x() is positive, SkIRect returned is moved to the right.
+        If offset.y() is negative, SkIRect returned is moved upward.
+        If offset.y() is positive, SkIRect returned is moved downward.
+
+        @param offset  translation vector
+        @return    SkIRect translated by offset, with original width and height
+    */
+    constexpr SkIRect makeOffset(SkIVector offset) const {
+        return this->makeOffset(offset.x(), offset.y());
     }
 
     /** Returns SkIRect, inset by (dx, dy).
@@ -504,6 +518,8 @@ struct SK_API SkIRect {
      Has no effect if r is empty. Otherwise, if SkIRect is empty, sets SkIRect to r.
 
      @param r  expansion SkIRect
+
+        example: https://fiddle.skia.org/c/@IRect_join_2
      */
     void join(const SkIRect& r);
 
@@ -806,6 +822,8 @@ struct SK_API SkRect {
         TODO: Consider adding parameter to control whether quad is clockwise or counterclockwise.
 
         @param quad  storage for corners of SkRect
+
+        example: https://fiddle.skia.org/c/@Rect_toQuad
     */
     void toQuad(SkPoint quad[4]) const;
 
@@ -868,6 +886,8 @@ struct SK_API SkRect {
         @param pts    SkPoint array
         @param count  entries in array
         @return       true if all SkPoint values are finite
+
+        example: https://fiddle.skia.org/c/@Rect_setBoundsCheck
     */
     bool setBoundsCheck(const SkPoint pts[], int count);
 
@@ -876,6 +896,8 @@ struct SK_API SkRect {
 
         @param pts    SkPoint array
         @param count  entries in array
+
+        example: https://fiddle.skia.org/c/@Rect_setBoundsNoCheck
     */
     void setBoundsNoCheck(const SkPoint pts[], int count);
 
@@ -934,9 +956,16 @@ struct SK_API SkRect {
         @param dy  added to fTop and fBottom
         @return    SkRect offset on axes, with original width and height
     */
-    SkRect makeOffset(SkScalar dx, SkScalar dy) const {
+    constexpr SkRect makeOffset(SkScalar dx, SkScalar dy) const {
         return MakeLTRB(fLeft + dx, fTop + dy, fRight + dx, fBottom + dy);
     }
+
+    /** Returns SkRect offset by v.
+
+        @param v  added to rect
+        @return    SkRect offset on axes, with original width and height
+    */
+    constexpr SkRect makeOffset(SkVector v) const { return this->makeOffset(v.x(), v.y()); }
 
     /** Returns SkRect, inset by (dx, dy).
 
@@ -1048,6 +1077,8 @@ struct SK_API SkRect {
 
         @param r  limit of result
         @return   true if r and SkRect have area in common
+
+        example: https://fiddle.skia.org/c/@Rect_intersect
     */
     bool intersect(const SkRect& r);
 
@@ -1104,6 +1135,8 @@ public:
         SkRect to r.
 
         @param r  expansion SkRect
+
+        example: https://fiddle.skia.org/c/@Rect_join_2
     */
     void join(const SkRect& r);
 
@@ -1292,6 +1325,8 @@ public:
         generate exact binary representations of floating point numbers.
 
         @param asHex  true if SkScalar values are written as hexadecimal
+
+        example: https://fiddle.skia.org/c/@Rect_dump
     */
     void dump(bool asHex) const;
 

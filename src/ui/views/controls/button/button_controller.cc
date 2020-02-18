@@ -28,7 +28,7 @@ bool ButtonController::OnMousePressed(const ui::MouseEvent& event) {
   }
   button_controller_delegate_->RequestFocusFromEvent();
   if (button_controller_delegate_->IsTriggerableEvent(event) &&
-      notify_action_ == ButtonController::NOTIFY_ON_PRESS) {
+      notify_action_ == ButtonController::NotifyAction::kOnPress) {
     button_controller_delegate_->NotifyClick(event);
     // NOTE: We may be deleted at this point (by the listener's notification
     // handler).
@@ -43,7 +43,7 @@ void ButtonController::OnMouseReleased(const ui::MouseEvent& event) {
     } else {
       button_->SetState(Button::STATE_HOVERED);
       if (button_controller_delegate_->IsTriggerableEvent(event) &&
-          notify_action_ == ButtonController::NOTIFY_ON_RELEASE) {
+          notify_action_ == ButtonController::NotifyAction::kOnRelease) {
         button_controller_delegate_->NotifyClick(event);
         // NOTE: We may be deleted at this point (by the listener's notification
         // handler).
@@ -51,7 +51,7 @@ void ButtonController::OnMouseReleased(const ui::MouseEvent& event) {
       }
     }
   }
-  if (notify_action_ == ButtonController::NOTIFY_ON_RELEASE)
+  if (notify_action_ == ButtonController::NotifyAction::kOnRelease)
     button_controller_delegate_->OnClickCanceled(event);
 }
 
@@ -80,7 +80,7 @@ bool ButtonController::OnKeyPressed(const ui::KeyEvent& event) {
     return false;
 
   switch (button_->GetKeyClickActionForEvent(event)) {
-    case Button::KeyClickAction::CLICK_ON_KEY_RELEASE:
+    case Button::KeyClickAction::kOnKeyRelease:
       button_->SetState(Button::STATE_PRESSED);
       if (button_controller_delegate_->GetInkDrop()->GetTargetInkDropState() !=
           InkDropState::ACTION_PENDING) {
@@ -88,11 +88,11 @@ bool ButtonController::OnKeyPressed(const ui::KeyEvent& event) {
                                 nullptr /* event */);
       }
       return true;
-    case Button::KeyClickAction::CLICK_ON_KEY_PRESS:
+    case Button::KeyClickAction::kOnKeyPress:
       button_->SetState(Button::STATE_NORMAL);
       button_controller_delegate_->NotifyClick(event);
       return true;
-    case Button::KeyClickAction::CLICK_NONE:
+    case Button::KeyClickAction::kNone:
       return false;
   }
 
@@ -103,7 +103,7 @@ bool ButtonController::OnKeyPressed(const ui::KeyEvent& event) {
 bool ButtonController::OnKeyReleased(const ui::KeyEvent& event) {
   const bool click_button = button_->state() == Button::STATE_PRESSED &&
                             button_->GetKeyClickActionForEvent(event) ==
-                                Button::KeyClickAction::CLICK_ON_KEY_RELEASE;
+                                Button::KeyClickAction::kOnKeyRelease;
   if (!click_button)
     return false;
 

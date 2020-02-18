@@ -5,48 +5,49 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace service_manager {
 
 InterfaceProvider::InterfaceProvider() {
-  pending_request_ = MakeRequest(&interface_provider_);
+  pending_receiver_ = interface_provider_.BindNewPipeAndPassReceiver();
 }
 
 InterfaceProvider::InterfaceProvider(
-    mojom::InterfaceProviderPtr interface_provider)
+    mojo::PendingRemote<mojom::InterfaceProvider> interface_provider)
     : interface_provider_(std::move(interface_provider)) {}
 
 InterfaceProvider::~InterfaceProvider() {}
 
 void InterfaceProvider::Close() {
-  if (pending_request_.is_pending())
-    pending_request_.PassMessagePipe().reset();
+  if (pending_receiver_)
+    pending_receiver_.PassPipe().reset();
   interface_provider_.reset();
 }
 
-void InterfaceProvider::Bind(mojom::InterfaceProviderPtr interface_provider) {
-  DCHECK(pending_request_.is_pending() || !interface_provider_);
+void InterfaceProvider::Bind(
+    mojo::PendingRemote<mojom::InterfaceProvider> interface_provider) {
+  DCHECK(pending_receiver_ || !interface_provider_);
   DCHECK(forward_callback_.is_null());
-  if (pending_request_.is_pending()) {
-    mojo::FuseInterface(std::move(pending_request_),
-                        interface_provider.PassInterface());
+  if (pending_receiver_) {
+    mojo::FusePipes(std::move(pending_receiver_),
+                    std::move(interface_provider));
   } else {
-    interface_provider_ = std::move(interface_provider);
+    interface_provider_.Bind(std::move(interface_provider));
   }
 }
 
 void InterfaceProvider::Forward(const ForwardCallback& callback) {
-  DCHECK(pending_request_.is_pending());
+  DCHECK(pending_receiver_);
   DCHECK(forward_callback_.is_null());
   interface_provider_.reset();
-  pending_request_.PassMessagePipe().reset();
+  pending_receiver_.PassPipe().reset();
   forward_callback_ = callback;
 }
 
 void InterfaceProvider::SetConnectionLostClosure(
-    const base::Closure& connection_lost_closure) {
-  interface_provider_.set_connection_error_handler(connection_lost_closure);
+    base::OnceClosure connection_lost_closure) {
+  interface_provider_.set_disconnect_handler(
+      std::move(connection_lost_closure));
 }
 
 base::WeakPtr<InterfaceProvider> InterfaceProvider::GetWeakPtr() {

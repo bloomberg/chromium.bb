@@ -314,15 +314,16 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // There are two sets, one for unidirectional streams and one for
   // bidirectional. The bidirectional set also covers Google-QUICs
   // dynamic stream count (which are bidirectional streams).
+  // TODO(b/142351095) rename these to improve clarity.
   void SetMaxIncomingBidirectionalStreamsToSend(uint32_t max_streams);
-  uint32_t GetMaxIncomingBidirectionalStreamsToSend();
-  bool HasReceivedMaxIncomingBidirectionalStreams();
-  uint32_t ReceivedMaxIncomingBidirectionalStreams();
+  uint32_t GetMaxIncomingBidirectionalStreamsToSend() const;
+  bool HasReceivedMaxIncomingBidirectionalStreams() const;
+  uint32_t ReceivedMaxIncomingBidirectionalStreams() const;
 
   void SetMaxIncomingUnidirectionalStreamsToSend(uint32_t max_streams);
-  uint32_t GetMaxIncomingUnidirectionalStreamsToSend();
-  bool HasReceivedMaxIncomingUnidirectionalStreams();
-  uint32_t ReceivedMaxIncomingUnidirectionalStreams();
+  uint32_t GetMaxIncomingUnidirectionalStreamsToSend() const;
+  bool HasReceivedMaxIncomingUnidirectionalStreams() const;
+  uint32_t ReceivedMaxIncomingUnidirectionalStreams() const;
 
   void set_max_time_before_crypto_handshake(
       QuicTime::Delta max_time_before_crypto_handshake) {
@@ -377,12 +378,38 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
 
   // Sets an initial stream flow control window size to transmit to the peer.
   void SetInitialStreamFlowControlWindowToSend(uint32_t window_bytes);
-
   uint32_t GetInitialStreamFlowControlWindowToSend() const;
-
   bool HasReceivedInitialStreamFlowControlWindowBytes() const;
-
   uint32_t ReceivedInitialStreamFlowControlWindowBytes() const;
+
+  // Specifies the initial flow control window (max stream data) for
+  // incoming bidirectional streams. Incoming means streams initiated by our
+  // peer. If not set, GetInitialMaxStreamDataBytesIncomingBidirectionalToSend
+  // returns the value passed to SetInitialStreamFlowControlWindowToSend.
+  void SetInitialMaxStreamDataBytesIncomingBidirectionalToSend(
+      uint32_t window_bytes);
+  uint32_t GetInitialMaxStreamDataBytesIncomingBidirectionalToSend() const;
+  bool HasReceivedInitialMaxStreamDataBytesIncomingBidirectional() const;
+  uint32_t ReceivedInitialMaxStreamDataBytesIncomingBidirectional() const;
+
+  // Specifies the initial flow control window (max stream data) for
+  // outgoing bidirectional streams. Outgoing means streams initiated by us.
+  // If not set, GetInitialMaxStreamDataBytesOutgoingBidirectionalToSend
+  // returns the value passed to SetInitialStreamFlowControlWindowToSend.
+  void SetInitialMaxStreamDataBytesOutgoingBidirectionalToSend(
+      uint32_t window_bytes);
+  uint32_t GetInitialMaxStreamDataBytesOutgoingBidirectionalToSend() const;
+  bool HasReceivedInitialMaxStreamDataBytesOutgoingBidirectional() const;
+  uint32_t ReceivedInitialMaxStreamDataBytesOutgoingBidirectional() const;
+
+  // Specifies the initial flow control window (max stream data) for
+  // unidirectional streams. If not set,
+  // GetInitialMaxStreamDataBytesUnidirectionalToSend returns the value passed
+  // to SetInitialStreamFlowControlWindowToSend.
+  void SetInitialMaxStreamDataBytesUnidirectionalToSend(uint32_t window_bytes);
+  uint32_t GetInitialMaxStreamDataBytesUnidirectionalToSend() const;
+  bool HasReceivedInitialMaxStreamDataBytesUnidirectional() const;
+  uint32_t ReceivedInitialMaxStreamDataBytesUnidirectional() const;
 
   // Sets an initial session flow control window size to transmit to the peer.
   void SetInitialSessionFlowControlWindowToSend(uint32_t window_bytes);
@@ -425,9 +452,21 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   uint32_t ReceivedMaxAckDelayMs() const;
 
   void SetAckDelayExponentToSend(uint32_t exponent);
-  uint32_t GetAckDelayExponentToSend();
+  uint32_t GetAckDelayExponentToSend() const;
   bool HasReceivedAckDelayExponent() const;
   uint32_t ReceivedAckDelayExponent() const;
+
+  // IETF QUIC max_packet_size transport parameter.
+  void SetMaxPacketSizeToSend(uint32_t max_packet_size);
+  uint32_t GetMaxPacketSizeToSend() const;
+  bool HasReceivedMaxPacketSize() const;
+  uint32_t ReceivedMaxPacketSize() const;
+
+  // IETF QUIC max_datagram_frame_size transport parameter.
+  void SetMaxDatagramFrameSizeToSend(uint32_t max_datagram_frame_size);
+  uint32_t GetMaxDatagramFrameSizeToSend() const;
+  bool HasReceivedMaxDatagramFrameSize() const;
+  uint32_t ReceivedMaxDatagramFrameSize() const;
 
   bool negotiated() const;
 
@@ -458,6 +497,14 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   QuicErrorCode ProcessTransportParameters(const TransportParameters& params,
                                            HelloType hello_type,
                                            std::string* error_details);
+
+  TransportParameters::ParameterMap& custom_transport_parameters_to_send() {
+    return custom_transport_parameters_to_send_;
+  }
+  const TransportParameters::ParameterMap&
+  received_custom_transport_parameters() const {
+    return received_custom_transport_parameters_;
+  }
 
  private:
   friend class test::QuicConfigPeer;
@@ -491,8 +538,17 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // Initial round trip time estimate in microseconds.
   QuicFixedUint32 initial_round_trip_time_us_;
 
-  // Initial stream flow control receive window in bytes.
+  // Initial IETF QUIC stream flow control receive windows in bytes.
+  // Incoming bidirectional streams.
+  QuicFixedUint32 initial_max_stream_data_bytes_incoming_bidirectional_;
+  // Outgoing bidirectional streams.
+  QuicFixedUint32 initial_max_stream_data_bytes_outgoing_bidirectional_;
+  // Unidirectional streams.
+  QuicFixedUint32 initial_max_stream_data_bytes_unidirectional_;
+
+  // Initial Google QUIC stream flow control receive window in bytes.
   QuicFixedUint32 initial_stream_flow_control_window_bytes_;
+
   // Initial session flow control receive window in bytes.
   QuicFixedUint32 initial_session_flow_control_window_bytes_;
 
@@ -528,6 +584,17 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // deserializing the frame); the received exponent is the value the peer uses
   // to serialize frames and this node uses to deserialize them.
   QuicFixedUint32 ack_delay_exponent_;
+
+  // max_packet_size IETF QUIC transport parameter.
+  QuicFixedUint32 max_packet_size_;
+
+  // max_datagram_frame_size IETF QUIC transport parameter.
+  QuicFixedUint32 max_datagram_frame_size_;
+
+  // Custom transport parameters that can be sent and received in the TLS
+  // handshake.
+  TransportParameters::ParameterMap custom_transport_parameters_to_send_;
+  TransportParameters::ParameterMap received_custom_transport_parameters_;
 };
 
 }  // namespace quic

@@ -7,19 +7,20 @@ package org.chromium.chrome.browser.tracing;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
-import org.chromium.chrome.browser.preferences.developer.TracingPreferences;
+import org.chromium.chrome.browser.settings.developer.TracingSettings;
 import org.chromium.content_public.browser.TracingControllerAndroid;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.widget.Toast;
@@ -238,8 +239,8 @@ public class TracingController {
         assert mState == State.STARTING;
 
         // TODO(eseckler): TracingControllerAndroid currently doesn't support a json trace config.
-        String categories = TextUtils.join(",", TracingPreferences.getEnabledCategories());
-        String options = TracingPreferences.getSelectedTracingMode();
+        String categories = TextUtils.join(",", TracingSettings.getEnabledCategories());
+        String options = TracingSettings.getSelectedTracingMode();
 
         if (!mNativeController.startTracing(
                     mTracingTempFile.getPath(), false, categories, options, true)) {

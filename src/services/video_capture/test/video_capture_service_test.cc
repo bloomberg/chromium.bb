@@ -13,9 +13,10 @@
 namespace video_capture {
 
 VideoCaptureServiceTest::SharedMemoryVirtualDeviceContext::
-    SharedMemoryVirtualDeviceContext(mojom::ProducerRequest producer_request)
+    SharedMemoryVirtualDeviceContext(
+        mojo::PendingReceiver<mojom::Producer> producer_receiver)
     : mock_producer(
-          std::make_unique<MockProducer>(std::move(producer_request))) {}
+          std::make_unique<MockProducer>(std::move(producer_receiver))) {}
 
 VideoCaptureServiceTest::SharedMemoryVirtualDeviceContext::
     ~SharedMemoryVirtualDeviceContext() = default;
@@ -38,7 +39,8 @@ void VideoCaptureServiceTest::SetUp() {
   // |service_remote_->InjectGpuDependencies()| here. Test case
   // |FakeMjpegVideoCaptureDeviceTest.
   //  CanDecodeMjpegWithoutInjectedGpuDependencies| depends on this assumption.
-  service_remote_->ConnectToDeviceFactory(mojo::MakeRequest(&factory_));
+  service_remote_->ConnectToDeviceFactory(
+      factory_.BindNewPipeAndPassReceiver());
 }
 
 std::unique_ptr<VideoCaptureServiceTest::SharedMemoryVirtualDeviceContext>
@@ -46,22 +48,23 @@ VideoCaptureServiceTest::AddSharedMemoryVirtualDevice(
     const std::string& device_id) {
   media::VideoCaptureDeviceInfo device_info;
   device_info.descriptor.device_id = device_id;
-  mojom::ProducerPtr producer;
+  mojo::PendingRemote<mojom::Producer> producer;
   auto result = std::make_unique<SharedMemoryVirtualDeviceContext>(
-      mojo::MakeRequest(&producer));
+      producer.InitWithNewPipeAndPassReceiver());
   factory_->AddSharedMemoryVirtualDevice(
       device_info, std::move(producer),
       false /* send_buffer_handles_to_producer_as_raw_file_descriptors */,
-      mojo::MakeRequest(&result->device));
+      result->device.BindNewPipeAndPassReceiver());
   return result;
 }
 
-mojom::TextureVirtualDevicePtr VideoCaptureServiceTest::AddTextureVirtualDevice(
-    const std::string& device_id) {
+mojo::PendingRemote<mojom::TextureVirtualDevice>
+VideoCaptureServiceTest::AddTextureVirtualDevice(const std::string& device_id) {
   media::VideoCaptureDeviceInfo device_info;
   device_info.descriptor.device_id = device_id;
-  mojom::TextureVirtualDevicePtr device;
-  factory_->AddTextureVirtualDevice(device_info, mojo::MakeRequest(&device));
+  mojo::PendingRemote<mojom::TextureVirtualDevice> device;
+  factory_->AddTextureVirtualDevice(device_info,
+                                    device.InitWithNewPipeAndPassReceiver());
   return device;
 }
 

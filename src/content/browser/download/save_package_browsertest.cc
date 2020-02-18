@@ -31,22 +31,20 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
                       const base::FilePath& suggested_path,
                       const base::FilePath::StringType& default_extension,
                       bool can_save_as_complete,
-                      const SavePackagePathPickedCallback& callback) override {
-    callback.Run(suggested_path, save_page_type_,
-                 SavePackageDownloadCreatedCallback());
+                      SavePackagePathPickedCallback callback) override {
+    std::move(callback).Run(suggested_path, save_page_type_,
+                            SavePackageDownloadCreatedCallback());
   }
 
   void GetSaveDir(BrowserContext* context,
                   base::FilePath* website_save_dir,
-                  base::FilePath* download_save_dir,
-                  bool* skip_dir_check) override {
+                  base::FilePath* download_save_dir) override {
     *website_save_dir = download_dir_;
     *download_save_dir = download_dir_;
-    *skip_dir_check = false;
   }
 
   bool ShouldCompleteDownload(download::DownloadItem* download,
-                              const base::Closure& closure) override {
+                              base::OnceClosure closure) override {
     return true;
   }
 

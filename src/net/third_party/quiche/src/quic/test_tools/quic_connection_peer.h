@@ -20,7 +20,6 @@ class QuicConnectionVisitorInterface;
 class QuicEncryptedPacket;
 class QuicFramer;
 class QuicPacketCreator;
-class QuicPacketGenerator;
 class QuicPacketWriter;
 class QuicSentPacketManager;
 class SendAlgorithmInterface;
@@ -41,11 +40,7 @@ class QuicConnectionPeer {
   static void PopulateStopWaitingFrame(QuicConnection* connection,
                                        QuicStopWaitingFrame* stop_waiting);
 
-  static QuicConnectionVisitorInterface* GetVisitor(QuicConnection* connection);
-
   static QuicPacketCreator* GetPacketCreator(QuicConnection* connection);
-
-  static QuicPacketGenerator* GetPacketGenerator(QuicConnection* connection);
 
   static QuicSentPacketManager* GetSentPacketManager(
       QuicConnection* connection);
@@ -107,10 +102,10 @@ class QuicConnectionPeer {
 
   static QuicPacketCount GetPacketsBetweenMtuProbes(QuicConnection* connection);
 
-  static void SetPacketsBetweenMtuProbes(QuicConnection* connection,
-                                         QuicPacketCount packets);
-  static void SetNextMtuProbeAt(QuicConnection* connection,
-                                QuicPacketNumber number);
+  static void ReInitializeMtuDiscoverer(
+      QuicConnection* connection,
+      QuicPacketCount packets_between_probes_base,
+      QuicPacketNumber next_probe_at);
   static void SetAckMode(QuicConnection* connection, AckMode ack_mode);
   static void SetFastAckAfterQuiescence(QuicConnection* connection,
                                         bool fast_ack_after_quiescence);
@@ -123,7 +118,6 @@ class QuicConnectionPeer {
                                      bool no_stop_waiting_frames);
   static void SetMaxTrackedPackets(QuicConnection* connection,
                                    QuicPacketCount max_tracked_packets);
-  static void SetSessionDecidesWhatToWrite(QuicConnection* connection);
   static void SetNegotiatedVersion(QuicConnection* connection);
   static void SetMaxConsecutiveNumPacketsWithNoRetransmittableFrames(
       QuicConnection* connection,
@@ -135,6 +129,12 @@ class QuicConnectionPeer {
                                   PacketHeaderFormat format);
   static void AddBytesReceived(QuicConnection* connection, size_t length);
   static void SetAddressValidated(QuicConnection* connection);
+
+  static void SendConnectionClosePacket(QuicConnection* connection,
+                                        QuicErrorCode error,
+                                        const std::string& details);
+
+  static size_t GetNumEncryptionLevels(QuicConnection* connection);
 };
 
 }  // namespace test

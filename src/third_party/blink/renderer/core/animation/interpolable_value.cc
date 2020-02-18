@@ -63,11 +63,11 @@ void InterpolableList::Interpolate(const InterpolableValue& to,
   }
 }
 
-std::unique_ptr<InterpolableValue> InterpolableList::CloneAndZero() const {
-  auto result = std::make_unique<InterpolableList>(length());
+InterpolableList* InterpolableList::RawCloneAndZero() const {
+  auto* result = new InterpolableList(length());
   for (wtf_size_t i = 0; i < length(); i++)
     result->Set(i, values_[i]->CloneAndZero());
-  return std::move(result);
+  return result;
 }
 
 void InterpolableNumber::Scale(double scale) {
@@ -79,9 +79,15 @@ void InterpolableList::Scale(double scale) {
     values_[i]->Scale(scale);
 }
 
-void InterpolableNumber::ScaleAndAdd(double scale,
-                                     const InterpolableValue& other) {
-  value_ = value_ * scale + ToInterpolableNumber(other).value_;
+void InterpolableNumber::Add(const InterpolableValue& other) {
+  value_ += ToInterpolableNumber(other).value_;
+}
+
+void InterpolableList::Add(const InterpolableValue& other) {
+  const InterpolableList& other_list = ToInterpolableList(other);
+  DCHECK_EQ(other_list.length(), length());
+  for (wtf_size_t i = 0; i < length(); i++)
+    values_[i]->Add(*other_list.values_[i]);
 }
 
 void InterpolableList::ScaleAndAdd(double scale,

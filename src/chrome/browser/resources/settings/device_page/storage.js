@@ -34,15 +34,13 @@ settings.StorageSizeStat;
 Polymer({
   is: 'settings-storage',
 
-  behaviors: [settings.RouteObserverBehavior, WebUIListenerBehavior],
+  behaviors: [
+    settings.RouteObserverBehavior,
+    settings.RouteOriginBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
-    /** @private */
-    driveEnabled_: {
-      type: Boolean,
-      value: false,
-    },
-
     androidEnabled: Boolean,
 
     /** @private */
@@ -68,15 +66,12 @@ Polymer({
       }
     },
 
-    /** @private */
-    hasDriveCache_: {
-      type: Boolean,
-      value: false,
-    },
-
     /** @private {settings.StorageSizeStat} */
     sizeStat_: Object,
   },
+
+  /** settings.RouteOriginBehavior override */
+  route_: settings.routes.STORAGE,
 
   observers: ['handleCrostiniEnabledChanged_(prefs.crostini.enabled.value)'],
 
@@ -94,9 +89,6 @@ Polymer({
         'storage-downloads-size-changed',
         this.handleDownloadsSizeChanged_.bind(this));
     this.addWebUIListener(
-        'storage-drive-cache-size-changed',
-        this.handleDriveCacheSizeChanged_.bind(this));
-    this.addWebUIListener(
         'storage-browsing-data-size-changed',
         this.handleBrowsingDataSizeChanged_.bind(this));
     this.addWebUIListener(
@@ -111,21 +103,32 @@ Polymer({
           this.handleOtherUsersSizeChanged_.bind(this));
     }
     this.addWebUIListener(
-        'storage-drive-enabled-changed',
-        this.handleDriveEnabledChanged_.bind(this));
-    this.addWebUIListener(
         'storage-android-running-changed',
         this.handleAndroidRunningChanged_.bind(this));
   },
 
+  ready: function() {
+    const r = settings.routes;
+    this.addFocusConfig_(r.CROSTINI_DETAILS, '#crostiniSize');
+    this.addFocusConfig_(r.ACCOUNTS, '#otherUsersSize');
+    this.addFocusConfig_(
+        r.EXTERNAL_STORAGE_PREFERENCES, '#externalStoragePreferences');
+  },
+
   /**
-   * Overridden from settings.RouteObserverBehavior.
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
    * @protected
    */
-  currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.routes.STORAGE) {
-      this.onPageShown_();
+  currentRouteChanged: function(newRoute, oldRoute) {
+    settings.RouteOriginBehaviorImpl.currentRouteChanged.call(
+        this, newRoute, oldRoute);
+
+    if (settings.getCurrentRoute() != settings.routes.STORAGE) {
+      return;
     }
+    this.onPageShown_();
   },
 
   /** @private */
@@ -143,18 +146,6 @@ Polymer({
    */
   onDownloadsTap_: function() {
     chrome.send('openDownloads');
-  },
-
-  /**
-   * Handler for tapping the "Offline files" item.
-   * @param {!Event} e
-   * @private
-   */
-  onDriveCacheTap_: function(e) {
-    e.preventDefault();
-    if (this.hasDriveCache_) {
-      this.$.storageDriveCache.open();
-    }
   },
 
   /**
@@ -221,19 +212,6 @@ Polymer({
   },
 
   /**
-   * @param {string} size Formatted string representing the size of Offline
-   *     files.
-   * @param {boolean} hasCache True if the device has at least one offline file.
-   * @private
-   */
-  handleDriveCacheSizeChanged_: function(size, hasCache) {
-    if (this.driveEnabled_) {
-      this.$$('#driveCacheSize').textContent = size;
-      this.hasDriveCache_ = hasCache;
-    }
-  },
-
-  /**
    * @param {string} size Formatted string representing the size of Browsing
    *     data.
    * @private
@@ -272,14 +250,6 @@ Polymer({
     if (!this.isGuest_) {
       this.$$('#otherUsersSize').subLabel = size;
     }
-  },
-
-  /**
-   * @param {boolean} enabled True if Google Drive is enabled.
-   * @private
-   */
-  handleDriveEnabledChanged_: function(enabled) {
-    this.driveEnabled_ = enabled;
   },
 
   /**
@@ -361,10 +331,5 @@ Polymer({
       default:
         return '';
     }
-  },
-
-  /** @private */
-  onCloseDriveCacheDialog_: function() {
-    cr.ui.focusWithoutInk(assert(this.$$('#deleteButton')));
   },
 });

@@ -8,28 +8,32 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sharing/proto/shared_clipboard_message.pb.h"
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
-#include "chrome/browser/sharing/sharing_service.h"
+#include "chrome/browser/sharing/sharing_device_source.h"
+#include "components/sync/protocol/sharing_message.pb.h"
+#include "components/sync/protocol/sharing_shared_clipboard_message.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 SharedClipboardMessageHandler::SharedClipboardMessageHandler(
-    SharingService* sharing_service)
-    : sharing_service_(sharing_service) {}
+    SharingDeviceSource* device_source)
+    : device_source_(device_source) {}
 
 SharedClipboardMessageHandler::~SharedClipboardMessageHandler() = default;
 
 void SharedClipboardMessageHandler::OnMessage(
-    const chrome_browser_sharing::SharingMessage& message) {
+    chrome_browser_sharing::SharingMessage message,
+    SharingMessageHandler::DoneCallback done_callback) {
   DCHECK(message.has_shared_clipboard_message());
 
   ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(base::UTF8ToUTF16(message.shared_clipboard_message().text()));
 
   std::unique_ptr<syncer::DeviceInfo> device =
-      sharing_service_->GetDeviceByGuid(message.sender_guid());
-  if (device)
-    ShowNotification(std::move(device));
+      device_source_->GetDeviceByGuid(message.sender_guid());
+  const std::string& device_name =
+      device ? device->client_name() : message.sender_device_name();
+  ShowNotification(device_name);
+
+  std::move(done_callback).Run(/*response=*/nullptr);
 }

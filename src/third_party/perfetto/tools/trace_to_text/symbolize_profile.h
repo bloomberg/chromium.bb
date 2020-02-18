@@ -17,6 +17,7 @@
 #ifndef TOOLS_TRACE_TO_TEXT_SYMBOLIZE_PROFILE_H_
 #define TOOLS_TRACE_TO_TEXT_SYMBOLIZE_PROFILE_H_
 
+#include <functional>
 #include <iostream>
 
 namespace perfetto {

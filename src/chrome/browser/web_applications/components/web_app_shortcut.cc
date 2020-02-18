@@ -7,29 +7,42 @@
 #include <functional>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_constants.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 
+namespace web_app {
+
 namespace {
 
-void DeleteShortcutInfoOnUIThread(
-    std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
-    base::OnceClosure callback) {
+void DeleteShortcutInfoOnUIThread(std::unique_ptr<ShortcutInfo> shortcut_info,
+                                  base::OnceClosure callback) {
   shortcut_info.reset();
   if (callback)
     std::move(callback).Run();
 }
 
-}  // namespace
+void CreatePlatformShortcutsAndPostCallback(
+    const base::FilePath& shortcut_data_path,
+    const ShortcutLocations& creation_locations,
+    ShortcutCreationReason creation_reason,
+    CreateShortcutsCallback callback,
+    const ShortcutInfo& shortcut_info) {
+  bool shortcut_created = internals::CreatePlatformShortcuts(
+      shortcut_data_path, creation_locations, creation_reason, shortcut_info);
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), shortcut_created));
+}
 
-namespace web_app {
+}  // namespace
 
 ShortcutInfo::ShortcutInfo() = default;
 
@@ -85,6 +98,20 @@ void PostShortcutIOTask(base::OnceCallback<void(const ShortcutInfo&)> task,
                              base::OnceClosure());
 }
 
+void ScheduleCreatePlatformShortcuts(
+    const base::FilePath& shortcut_data_path,
+    const ShortcutLocations& creation_locations,
+    ShortcutCreationReason reason,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
+    CreateShortcutsCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  PostShortcutIOTask(base::BindOnce(&CreatePlatformShortcutsAndPostCallback,
+                                    shortcut_data_path, creation_locations,
+                                    reason, std::move(callback)),
+                     std::move(shortcut_info));
+}
+
 void PostShortcutIOTaskAndReply(
     base::OnceCallback<void(const ShortcutInfo&)> task,
     std::unique_ptr<ShortcutInfo> shortcut_info,
@@ -93,7 +120,7 @@ void PostShortcutIOTaskAndReply(
 
   // Ownership of |shortcut_info| moves to the Reply, which is guaranteed to
   // outlive the const reference.
-  const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
+  const ShortcutInfo& shortcut_info_ref = *shortcut_info;
   GetShortcutIOTaskRunner()->PostTaskAndReply(
       FROM_HERE, base::BindOnce(std::move(task), std::cref(shortcut_info_ref)),
       base::BindOnce(&DeleteShortcutInfoOnUIThread, std::move(shortcut_info),
@@ -123,11 +150,17 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
   return base::FilePath(file_name);
 }
 
-base::FilePath GetShortcutDataDir(const web_app::ShortcutInfo& shortcut_info) {
-  return web_app::GetWebAppDataDirectory(shortcut_info.profile_path,
-                                         shortcut_info.extension_id,
-                                         shortcut_info.url);
+base::FilePath GetShortcutDataDir(const ShortcutInfo& shortcut_info) {
+  return GetWebAppDataDirectory(shortcut_info.profile_path,
+                                shortcut_info.extension_id, shortcut_info.url);
 }
+
+#if !defined(OS_MACOSX)
+void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
+  // Multi-profile shortcuts exist only on macOS.
+  NOTREACHED();
+}
+#endif
 
 }  // namespace internals
 

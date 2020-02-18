@@ -9,31 +9,63 @@
 
 #include "base/containers/span.h"
 #include "base/strings/string16.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+namespace autofill {
+struct PasswordForm;
+}
 
 namespace password_manager {
 
 // Encapsulates the data from the password manager backend as used by the UI.
-struct CredentialPair {
-  CredentialPair(base::string16 username,
-                 base::string16 password,
-                 const GURL& origin_url,
-                 bool is_public_suffix_match);
-  CredentialPair(CredentialPair&&);
-  CredentialPair(const CredentialPair&);
-  CredentialPair& operator=(CredentialPair&&);
-  CredentialPair& operator=(const CredentialPair&);
+class UiCredential {
+ public:
+  using IsPublicSuffixMatch =
+      util::StrongAlias<class IsPublicSuffixMatchTag, bool>;
 
-  base::string16 username;
-  base::string16 password;
-  GURL origin_url;  // Could be android:// which url::Origin doesn't support.
-  bool is_public_suffix_match = false;
+  using IsAffiliationBasedMatch =
+      util::StrongAlias<class IsAffiliationBasedMatchTag, bool>;
+
+  UiCredential(base::string16 username,
+               base::string16 password,
+               url::Origin origin,
+               IsPublicSuffixMatch is_public_suffix_match,
+               IsAffiliationBasedMatch is_affiliation_based_match);
+  UiCredential(const autofill::PasswordForm& form,
+               const url::Origin& affiliated_origin);
+  UiCredential(UiCredential&&);
+  UiCredential(const UiCredential&);
+  UiCredential& operator=(UiCredential&&);
+  UiCredential& operator=(const UiCredential&);
+  ~UiCredential();
+
+  const base::string16& username() const { return username_; }
+
+  const base::string16& password() const { return password_; }
+
+  const url::Origin& origin() const { return origin_; }
+
+  IsPublicSuffixMatch is_public_suffix_match() const {
+    return is_public_suffix_match_;
+  }
+
+  IsAffiliationBasedMatch is_affiliation_based_match() const {
+    return is_affiliation_based_match_;
+  }
+
+ private:
+  base::string16 username_;
+  base::string16 password_;
+  url::Origin origin_;
+  IsPublicSuffixMatch is_public_suffix_match_{false};
+  IsAffiliationBasedMatch is_affiliation_based_match_{false};
 };
 
-bool operator==(const CredentialPair& lhs, const CredentialPair& rhs);
+bool operator==(const UiCredential& lhs, const UiCredential& rhs);
 
-std::ostream& operator<<(std::ostream& os, const CredentialPair& pair);
+std::ostream& operator<<(std::ostream& os, const UiCredential& credential);
 
 // This class stores credential pairs originating from the same origin. The
 // store is supposed to be unique per origin per tab. It is designed to share
@@ -46,10 +78,10 @@ class OriginCredentialStore {
   ~OriginCredentialStore();
 
   // Saves credentials so that they can be used in the UI.
-  void SaveCredentials(std::vector<CredentialPair> credentials);
+  void SaveCredentials(std::vector<UiCredential> credentials);
 
   // Returns references to the held credentials (or an empty set if aren't any).
-  base::span<const CredentialPair> GetCredentials() const;
+  base::span<const UiCredential> GetCredentials() const;
 
   // Removes all credentials from the store.
   void ClearCredentials();
@@ -59,7 +91,7 @@ class OriginCredentialStore {
 
  private:
   // Contains all previously stored of credentials.
-  std::vector<CredentialPair> credentials_;
+  std::vector<UiCredential> credentials_;
 
   // The origin which all stored passwords are related to.
   const url::Origin origin_;

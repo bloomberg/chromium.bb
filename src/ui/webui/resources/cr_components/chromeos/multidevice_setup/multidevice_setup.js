@@ -91,7 +91,7 @@ cr.define('multidevice_setup', function() {
       /**
        * Array of objects representing all potential MultiDevice hosts.
        *
-       * @private {!Array<!chromeos.multidevice.mojom.RemoteDevice>}
+       * @private {!Array<!chromeos.multideviceSetup.mojom.HostDevice>}
        */
       devices_: Array,
 
@@ -117,10 +117,22 @@ cr.define('multidevice_setup', function() {
        * Provider of an interface to the MultiDeviceSetup Mojo service.
        * @private {!multidevice_setup.MojoInterfaceProvider}
        */
-      mojoInterfaceProvider_: Object
+      mojoInterfaceProvider_: Object,
+
+      /**
+       * Whether a shadow should appear over the button bar; the shadow is
+       * intended to appear when the contents are not scrolled to the bottom to
+       * indicate that more contents can be viewed below.
+       * @private
+       */
+      isScrolledToBottom_: {
+        type: Boolean,
+        value: false,
+      },
     },
 
     listeners: {
+      'scroll': 'onWindowContentUpdate_',
       'backward-navigation-requested': 'onBackwardNavigationRequested_',
       'cancel-requested': 'onCancelRequested_',
       'forward-navigation-requested': 'onForwardNavigationRequested_',
@@ -139,6 +151,21 @@ cr.define('multidevice_setup', function() {
           this.initializeSetupFlow.bind(this));
     },
 
+    /** @override */
+    attached: function() {
+      window.addEventListener(
+          'orientationchange', this.onWindowContentUpdate_.bind(this));
+      window.addEventListener('resize', this.onWindowContentUpdate_.bind(this));
+    },
+
+    /** @override */
+    detached: function() {
+      window.removeEventListener(
+          'orientationchange', this.onWindowContentUpdate_.bind(this));
+      window.removeEventListener(
+          'resize', this.onWindowContentUpdate_.bind(this));
+    },
+
     updateLocalizedContent: function() {
       this.$.ironPages.querySelectorAll('.ui-page')
           .forEach(page => page.i18nUpdateLocale());
@@ -146,7 +173,7 @@ cr.define('multidevice_setup', function() {
 
     initializeSetupFlow: function() {
       this.mojoInterfaceProvider_.getMojoServiceRemote()
-          .getEligibleHostDevices()
+          .getEligibleActiveHostDevices()
           .then((responseParams) => {
             if (responseParams.eligibleHostDevices.length == 0) {
               console.warn('Potential host list is empty.');
@@ -164,6 +191,24 @@ cr.define('multidevice_setup', function() {
     /** @private */
     onCancelRequested_: function() {
       this.exitSetupFlow_(false /* didUserCompleteSetup */);
+    },
+
+    /**
+     * Called when contents are scrolled, the window is resized, or the window's
+     * orientation is updated.
+     * @private
+     */
+    onWindowContentUpdate_: function() {
+      // (scrollHeight - scrollTop) represents the visible height of the
+      // contents, not including scrollbars.
+      const visibleHeight = this.scrollHeight - this.scrollTop;
+
+      // If these two heights are equal, the contents are scrolled to the
+      // bottom. Instead of using equality, we check that the difference is
+      // sufficiently small to account for fractional values due to browser
+      // zoom and/or display density.
+      this.isScrolledToBottom_ =
+          Math.abs(this.clientHeight - visibleHeight) < 1;
     },
 
     /** @private */

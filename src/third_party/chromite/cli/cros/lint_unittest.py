@@ -8,8 +8,8 @@
 from __future__ import print_function
 
 import collections
+import io
 import os
-import StringIO
 
 from chromite.cli.cros import lint
 from chromite.lib import cros_test_lib
@@ -194,6 +194,17 @@ class DocStringCheckerTest(CheckerTestCase):
         First line is two spaces which is ok.
           Then we indent some more!
       """,
+      """Arguments with same names as sections.
+
+      Args:
+        result: Valid arg, invalid section.
+        return: Valid arg, invalid section.
+        returns: Valid arg, valid section.
+        arg: Valid arg, invalid section.
+        args: Valid arg, valid section.
+        attribute: Valid arg, invalid section.
+        attributes: Valid arg, valid section.
+      """,
   )
 
   BAD_FUNC_DOCSTRINGS = (
@@ -208,6 +219,9 @@ class DocStringCheckerTest(CheckerTestCase):
       """ whitespace is wrong
 
       Multiline tickles differently.
+      """,
+      """First line is OK, but too much trailing whitespace
+
       """,
       """Should be no trailing blank lines
 
@@ -306,6 +320,17 @@ class DocStringCheckerTest(CheckerTestCase):
           some: has four spaces but should be two
       """,
       """"Extra leading quotes.""",
+      """Class-only sections aren't allowed.
+
+      Attributes:
+        foo: bar.
+      """,
+      """No lines between section headers & keys.
+
+      Args:
+
+        arg: No blank line above!
+      """,
   )
 
   # The current linter isn't good enough yet to detect these.
@@ -317,24 +342,87 @@ class DocStringCheckerTest(CheckerTestCase):
 
       returns something
       """,
+      """Too many spaces after header.
+
+      Args:
+        arg:  too many spaces
+      """,
+  )
+
+  # We don't need to test most scenarios as the func & class checkers share
+  # code.  Only test the differences.
+  GOOD_CLASS_DOCSTRINGS = (
+      """Basic class.""",
+      """Class with attributes.
+
+      Attributes:
+        foo: bar
+      """,
+      """Class with examples.
+
+      Examples:
+        Do stuff.
+      """,
+      """Class with examples & attributes.
+
+      Examples:
+        Do stuff.
+
+      Attributes:
+        foo: bar
+      """,
+      """Attributes with same names as sections.
+
+      Attributes:
+        result: Valid arg, invalid section.
+        return: Valid arg, invalid section.
+        returns: Valid arg, valid section.
+        arg: Valid arg, invalid section.
+        args: Valid arg, valid section.
+        attribute: Valid arg, invalid section.
+        attributes: Valid arg, valid section.
+      """,
+  )
+
+  BAD_CLASS_DOCSTRINGS = (
+      """Class with wrong attributes name.
+
+      Members:
+        foo: bar
+      """,
+      """Class with func-specific section.
+
+      These sections aren't valid for classes.
+
+      Args:
+        foo: bar
+      """,
+      """Class with examples & attributes out of order.
+
+      Attributes:
+        foo: bar
+
+      Examples:
+        Do stuff.
+      """,
   )
 
   CHECKER = lint.DocStringChecker
 
-  def testGood_visit_function(self):
+  def testGood_visit_functiondef(self):
     """Allow known good docstrings"""
     for dc in self.GOOD_FUNC_DOCSTRINGS:
       self.results = []
       node = TestNode(doc=dc, display_type=None, col_offset=4)
-      self.checker.visit_function(node)
+      self.checker.visit_functiondef(node)
       self.assertLintPassed(msg='docstring was not accepted:\n"""%s"""' % dc)
 
-  def testBad_visit_function(self):
+  def testBad_visit_functiondef(self):
     """Reject known bad docstrings"""
     for dc in self.BAD_FUNC_DOCSTRINGS:
       self.results = []
       node = TestNode(doc=dc, display_type=None, col_offset=4)
-      self.checker.visit_function(node)
+      self.checker.visit_functiondef(node)
       self.assertLintFailed(msg='docstring was not rejected:\n"""%s"""' % dc)
 
   def testSmoke_visit_module(self):
@@ -344,9 +432,25 @@ class DocStringCheckerTest(CheckerTestCase):
     self.checker.visit_module(TestNode(doc='', path='/foo/__init__.py'))
     self.assertLintPassed()
 
-  def testSmoke_visit_class(self):
+  def testGood_visit_classdef(self):
+    """Allow known good docstrings"""
+    for dc in self.GOOD_CLASS_DOCSTRINGS:
+      self.results = []
+      node = TestNode(doc=dc, display_type=None, col_offset=4)
+      self.checker.visit_classdef(node)
+      self.assertLintPassed(msg='docstring was not accepted:\n"""%s"""' % dc)
+
+  def testBad_visit_classdef(self):
+    """Reject known bad docstrings"""
+    for dc in self.BAD_CLASS_DOCSTRINGS:
+      self.results = []
+      node = TestNode(doc=dc, display_type=None, col_offset=4)
+      self.checker.visit_classdef(node)
+      self.assertLintFailed(msg='docstring was not rejected:\n"""%s"""' % dc)
+
+  def testSmoke_visit_classdef(self):
     """Smoke test for classes"""
-    self.checker.visit_class(TestNode(doc='bar'))
+    self.checker.visit_classdef(TestNode(doc='bar'))
 
   def testGood_check_first_line(self):
     """Verify _check_first_line accepts good inputs"""
@@ -521,7 +625,7 @@ class DocStringCheckerTest(CheckerTestCase):
 
          Returns:
            some value
-         """, [
+         """, collections.OrderedDict((
              ('Args', lint.DocStringSectionDetails(
                  name='Args',
                  header='         Args:',
@@ -537,12 +641,12 @@ class DocStringCheckerTest(CheckerTestCase):
                  header='         Returns:',
                  lines=['           some value'],
                  lineno=12)),
-         ]),
+         ))),
     )
     for dc, expected in datasets:
       node = TestNode(doc=dc)
       sections = self.checker._parse_docstring_sections(node, node.lines)
-      self.assertEqual(expected, sections.items())
+      self.assertEqual(expected, sections)
 
 
 class ChromiteLoggingCheckerTest(CheckerTestCase):
@@ -573,7 +677,7 @@ class SourceCheckerTest(CheckerTestCase):
     for shebang in shebangs:
       self.results = []
       node = TestNode()
-      stream = StringIO.StringIO(shebang)
+      stream = io.BytesIO(shebang)
       st = StatStub(size=len(shebang), mode=mode)
       self.checker._check_shebang(node, stream, st)
       msg = 'processing shebang failed: %r' % shebang
@@ -585,28 +689,28 @@ class SourceCheckerTest(CheckerTestCase):
   def testBadShebang(self):
     """Verify _check_shebang rejects bad shebangs"""
     shebangs = (
-        '#!/usr/bin/python\n',
-        '#! /usr/bin/python2 \n',
-        '#!/usr/bin/env python\n',
-        '#! /usr/bin/env python2 \n',
-        '#!/usr/bin/python2\n',
+        b'#!/usr/bin/python\n',
+        b'#! /usr/bin/python2 \n',
+        b'#!/usr/bin/env python\n',
+        b'#! /usr/bin/env python2 \n',
+        b'#!/usr/bin/python2\n',
     )
     self._testShebang(shebangs, ('R9200',), 0o755)
 
   def testGoodShebangNoExec(self):
     """Verify _check_shebang rejects shebangs on non-exec files"""
     shebangs = (
-        '#!/usr/bin/env python2\n',
-        '#!/usr/bin/env python3\n',
+        b'#!/usr/bin/env python2\n',
+        b'#!/usr/bin/env python3\n',
     )
     self._testShebang(shebangs, ('R9202',), 0o644)
 
   def testGoodShebang(self):
     """Verify _check_shebang accepts good shebangs"""
     shebangs = (
-        '#!/usr/bin/env python2\n',
-        '#!/usr/bin/env python3\n',
-        '#!/usr/bin/env python2\t\n',
+        b'#!/usr/bin/env python2\n',
+        b'#!/usr/bin/env python3\n',
+        b'#!/usr/bin/env python2\t\n',
     )
     self._testShebang(shebangs, (), 0o755)
 
@@ -614,56 +718,56 @@ class SourceCheckerTest(CheckerTestCase):
     """_check_encoding should ignore 0 byte files"""
     node = TestNode()
     self.results = []
-    stream = StringIO.StringIO('')
+    stream = io.BytesIO(b'')
     self.checker._check_encoding(node, stream, StatStub())
     self.assertLintPassed()
 
   def testMissingEncoding(self):
     """_check_encoding should fail when there is no encoding"""
     headers = (
-        '#',
-        '#\n',
-        '#\n#',
-        '#\n#\n',
-        '#!/usr/bin/python\n# foo\n'
-        '#!/usr/bin/python\n',
-        '# some comment\n',
-        '# some comment\n# another line\n',
-        '# first line is not a shebang\n# -*- coding: utf-8 -*-\n',
-        '#!/usr/bin/python\n# second line\n# -*- coding: utf-8 -*-\n',
+        b'#',
+        b'#\n',
+        b'#\n#',
+        b'#\n#\n',
+        b'#!/usr/bin/python\n# foo\n'
+        b'#!/usr/bin/python\n',
+        b'# some comment\n',
+        b'# some comment\n# another line\n',
+        b'# first line is not a shebang\n# -*- coding: utf-8 -*-\n',
+        b'#!/usr/bin/python\n# second line\n# -*- coding: utf-8 -*-\n',
     )
     node = TestNode()
     for header in headers:
       self.results = []
-      stream = StringIO.StringIO(header)
+      stream = io.BytesIO(header)
       self.checker._check_encoding(node, stream, StatStub(size=len(header)))
       self.assertLintFailed(expected=('R9204',))
 
   def testBadEncoding(self):
     """_check_encoding should reject non-"utf-8" encodings"""
     encodings = (
-        'UTF8', 'UTF-8', 'utf8', 'ISO-8859-1',
+        b'UTF8', b'UTF-8', b'utf8', b'ISO-8859-1',
     )
     node = TestNode()
     for encoding in encodings:
       self.results = []
-      header = '# -*- coding: %s -*-\n' % (encoding,)
-      stream = StringIO.StringIO(header)
+      header = b'# -*- coding: %s -*-\n' % (encoding,)
+      stream = io.BytesIO(header)
       self.checker._check_encoding(node, stream, StatStub(size=len(header)))
       self.assertLintFailed(expected=('R9205',))
 
   def testGoodEncodings(self):
     """Verify _check_encoding accepts various correct encoding forms"""
-    shebang = '#!/usr/bin/python\n'
+    shebang = b'#!/usr/bin/python\n'
     encodings = (
-        '# -*- coding: utf-8 -*-',
+        b'# -*- coding: utf-8 -*-',
     )
     node = TestNode()
     self.results = []
-    for first in ('', shebang):
+    for first in (b'', shebang):
       for encoding in encodings:
-        data = first + encoding + '\n'
-        stream = StringIO.StringIO(data)
+        data = first + encoding + b'\n'
+        stream = io.BytesIO(data)
         self.checker._check_encoding(node, stream, StatStub(size=len(data)))
         self.assertLintPassed()
 
@@ -688,3 +792,43 @@ class SourceCheckerTest(CheckerTestCase):
       self.results = []
       self.checker._check_module_name(node)
       self.assertLintFailed(expected=('R9203',))
+
+
+class CommentCheckerTest(CheckerTestCase):
+  """Tests for CommentChecker module"""
+
+  CHECKER = lint.CommentChecker
+
+  def testGoodComments(self):
+    """Verify we accept good comments."""
+    GOOD_COMMENTS = (
+        '# Blah.',
+        '## Blah.',
+        '#',
+        '#   Indented Code.',
+        '# pylint: disable all the things',
+    )
+    for comment in GOOD_COMMENTS:
+      self.results = []
+      self.checker._visit_comment(0, comment)
+      self.assertLintPassed()
+
+  def testIgnoreShebangs(self):
+    """Verify we ignore shebangs."""
+    self.results = []
+    self.checker._visit_comment(1, '#!/usr/bin/env python3')
+    self.assertLintPassed()
+
+  def testBadCommentsSpace(self):
+    """Verify we reject comments missing leading space."""
+    BAD_COMMENTS = (
+        '#Blah.',
+        '##Blah.',
+        '#TODO(foo): Bar.',
+        '#pylint: nah',
+        '#\tNo tabs!',
+    )
+    for comment in BAD_COMMENTS:
+      self.results = []
+      self.checker._visit_comment(0, comment)
+      self.assertLintFailed(expected=('R9250',))

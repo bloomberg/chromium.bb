@@ -42,7 +42,6 @@ class RtpPacketizer {
       PayloadSizeLimits limits,
       // Codec-specific details.
       const RTPVideoHeader& rtp_video_header,
-      VideoFrameType frame_type,
       const RTPFragmentationHeader* fragmentation);
 
   virtual ~RtpPacketizer() = default;
@@ -61,7 +60,7 @@ class RtpPacketizer {
                                             const PayloadSizeLimits& limits);
 };
 
-// TODO(sprang): Update the depacketizer to return a std::unqie_ptr with a copy
+// TODO(bugs.webrtc.org/11152): Update the depacketizer to return a copy
 // of the parsed payload, rather than just a pointer into the incoming buffer.
 // This way we can move some parsing out from the jitter buffer into here, and
 // the jitter buffer can just store that pointer rather than doing a copy there.
@@ -70,12 +69,6 @@ class RtpDepacketizer {
   struct ParsedPayload {
     RTPVideoHeader& video_header() { return video; }
     const RTPVideoHeader& video_header() const { return video; }
-
-    // TODO(bugs.webrtc.org/10397): These are temporary accessors, to enable
-    // move of the frame_type member to inside RTPVideoHeader, without breaking
-    // downstream code.
-    VideoFrameType FrameType() const { return video_header().frame_type; }
-    void SetFrameType(VideoFrameType type) { video_header().frame_type = type; }
 
     RTPVideoHeader video;
 

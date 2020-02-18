@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -31,7 +30,7 @@ class PrefService;
 namespace autofill {
 class AutofillDownloadManager;
 class LogManager;
-}
+}  // namespace autofill
 
 namespace favicon {
 class FaviconService;
@@ -55,6 +54,8 @@ class PasswordProtectionService;
 
 namespace password_manager {
 
+class FieldInfoManager;
+class PasswordFeatureManager;
 class PasswordFormManagerForUI;
 class PasswordManager;
 class PasswordManagerDriver;
@@ -66,7 +67,8 @@ class PasswordStore;
 enum SyncState {
   NOT_SYNCING,
   SYNCING_NORMAL_ENCRYPTION,
-  SYNCING_WITH_CUSTOM_PASSPHRASE
+  SYNCING_WITH_CUSTOM_PASSPHRASE,
+  ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION
 };
 
 // An abstraction of operations that depend on the embedders (e.g. Chrome)
@@ -204,8 +206,7 @@ class PasswordManagerClient {
   // They are never filled, but might be needed in the UI, for example. Default
   // implementation is a noop.
   virtual void PasswordWasAutofilled(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
+      const std::vector<const autofill::PasswordForm*>& best_matches,
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches);
 
@@ -215,15 +216,17 @@ class PasswordManagerClient {
                                 const PasswordFormManagerForUI* form_manager);
 
   // Informs the embedder that user credentials were leaked.
-  virtual void NotifyUserCredentialsWereLeaked(
-      password_manager::CredentialLeakType leak_type,
-      const GURL& origin);
+  virtual void NotifyUserCredentialsWereLeaked(CredentialLeakType leak_type,
+                                               const GURL& origin);
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;
 
-  // Returns the PasswordStore associated with this instance.
-  virtual PasswordStore* GetPasswordStore() const = 0;
+  // Returns the profile PasswordStore associated with this instance.
+  virtual PasswordStore* GetProfilePasswordStore() const = 0;
+
+  // Returns the account PasswordStore associated with this instance.
+  virtual PasswordStore* GetAccountPasswordStore() const = 0;
 
   // Reports whether and how passwords are synced in the embedder. The default
   // implementation always returns NOT_SYNCING.
@@ -235,6 +238,10 @@ class PasswordManagerClient {
   // Obtains the cert status for the main frame.
   virtual net::CertStatus GetMainFrameCertStatus() const;
 
+  // Shows the dialog where the user can accept or decline the global autosignin
+  // setting as a first run experience.
+  virtual void PromptUserToEnableAutosignin();
+
   // If this browsing session should not be persisted.
   virtual bool IsIncognito() const;
 
@@ -242,6 +249,9 @@ class PasswordManagerClient {
   // version calls the const one.
   PasswordManager* GetPasswordManager();
   virtual const PasswordManager* GetPasswordManager() const;
+
+  PasswordFeatureManager* GetPasswordFeatureManager();
+  virtual const PasswordFeatureManager* GetPasswordFeatureManager() const = 0;
 
   // Returns the HttpAuthManager associated with this client.
   virtual HttpAuthManager* GetHttpAuthManager();
@@ -294,7 +304,9 @@ class PasswordManagerClient {
       const std::string& username,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists) = 0;
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   // Records a Chrome Sync event that GAIA password reuse was detected.
   virtual void LogPasswordReuseDetectedEvent() = 0;
 #endif
@@ -344,6 +356,9 @@ class PasswordManagerClient {
 
   // Returns true if the current page is to the new tab page.
   virtual bool IsNewTabPage() const = 0;
+
+  // Returns a FieldInfoManager associated with the current profile.
+  virtual FieldInfoManager* GetFieldInfoManager() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

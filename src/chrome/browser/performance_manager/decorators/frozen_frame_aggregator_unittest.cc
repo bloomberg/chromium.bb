@@ -6,10 +6,10 @@
 
 #include <memory>
 
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
-#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/graph/frame_node_impl.h"
+#include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/test_support/graph_test_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,8 +23,6 @@ class LenientMockProcessNodeObserver : public ProcessNode::ObserverDefaultImpl {
  public:
   LenientMockProcessNodeObserver() = default;
   ~LenientMockProcessNodeObserver() override = default;
-
-  virtual bool ShouldObserve(const NodeBase* node) { return false; }
 
   MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNode*));
 
@@ -79,8 +77,8 @@ class FrozenFrameAggregatorTest : public GraphTestHarness {
 
   TestNodeWrapper<FrameNodeImpl> CreateFrame(FrameNodeImpl* parent_frame_node,
                                              int frame_tree_node_id) {
-    return CreateNode<FrameNodeImpl>(process_node_.get(), page_node_.get(),
-                                     parent_frame_node, frame_tree_node_id);
+    return CreateFrameNodeAutoId(process_node_.get(), page_node_.get(),
+                                 parent_frame_node, frame_tree_node_id);
   }
 
   FrozenFrameAggregator* ffa_;
@@ -117,8 +115,7 @@ TEST_F(FrozenFrameAggregatorTest, ProcessAggregation) {
   ExpectProcessData(1, 1);
 
   // Create a child frame for the first page hosted in the second process.
-  auto f1 =
-      CreateNode<FrameNodeImpl>(proc2.get(), page_node_.get(), f0.get(), 1);
+  auto f1 = CreateFrameNodeAutoId(proc2.get(), page_node_.get(), f0.get(), 1);
   ExpectProcessData(1, 1);
 
   // Immediately make it current.
@@ -138,8 +135,7 @@ TEST_F(FrozenFrameAggregatorTest, ProcessAggregation) {
   ExpectProcessData(1, 0);
 
   // Create a main frame in the second page, but that's in the first process.
-  auto f2 =
-      CreateNode<FrameNodeImpl>(process_node_.get(), page2.get(), nullptr, 2);
+  auto f2 = CreateFrameNodeAutoId(process_node_.get(), page2.get(), nullptr, 2);
   ExpectProcessData(1, 0);
 
   // Freeze the main frame in the second page.

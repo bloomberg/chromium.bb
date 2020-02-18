@@ -75,12 +75,11 @@ void GenerateCaps(ID3D11Device *device,
                   ID3D11DeviceContext *deviceContext,
                   const Renderer11DeviceCaps &renderer11DeviceCaps,
                   const angle::FeaturesD3D &features,
+                  const char *description,
                   gl::Caps *caps,
                   gl::TextureCapsMap *textureCapsMap,
                   gl::Extensions *extensions,
                   gl::Limitations *limitations);
-
-void GetSamplePosition(GLsizei sampleCount, size_t index, GLfloat *xy);
 
 D3D_FEATURE_LEVEL GetMinimumFeatureLevelForES31();
 

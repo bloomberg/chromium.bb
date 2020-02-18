@@ -15,11 +15,18 @@
 namespace tracing {
 
 // static
+void TracedProcess::ResetTracedProcessReceiver() {
+#if !defined(OS_NACL) && !defined(OS_IOS)
+  tracing::TracedProcessImpl::GetInstance()->ResetTracedProcessReceiver();
+#endif
+}
+
+// static
 void TracedProcess::OnTracedProcessRequest(
-    mojom::TracedProcessRequest request) {
+    mojo::PendingReceiver<mojom::TracedProcess> receiver) {
 #if !defined(OS_NACL) && !defined(OS_IOS)
   tracing::TracedProcessImpl::GetInstance()->OnTracedProcessRequest(
-      std::move(request));
+      std::move(receiver));
 #endif
 }
 

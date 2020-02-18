@@ -10,9 +10,9 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/profiles/profile.h"
@@ -249,8 +249,7 @@ void CrostiniPackageService::QueueInstallLinuxPackage(
 }
 
 void CrostiniPackageService::OnInstallLinuxPackageProgress(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     InstallLinuxPackageProgressStatus status,
     int progress_percent) {
   // Linux package install has two phases, downloading and installing, which we
@@ -260,19 +259,16 @@ void CrostiniPackageService::OnInstallLinuxPackageProgress(
   if (status == InstallLinuxPackageProgressStatus::INSTALLING)
     display_progress += 50;  // Second phase
 
-  UpdatePackageOperationStatus(std::make_pair(vm_name, container_name),
-                               InstallStatusToOperationStatus(status),
-                               display_progress);
+  UpdatePackageOperationStatus(
+      container_id, InstallStatusToOperationStatus(status), display_progress);
 }
 
 void CrostiniPackageService::OnUninstallPackageProgress(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     UninstallPackageProgressStatus status,
     int progress_percent) {
-  UpdatePackageOperationStatus(ContainerId(vm_name, container_name),
-                               UninstallStatusToOperationStatus(status),
-                               progress_percent);
+  UpdatePackageOperationStatus(
+      container_id, UninstallStatusToOperationStatus(status), progress_percent);
 }
 
 void CrostiniPackageService::OnVmShutdown(const std::string& vm_name) {
@@ -282,7 +278,7 @@ void CrostiniPackageService::OnVmShutdown(const std::string& vm_name) {
   std::vector<ContainerId> to_remove;
   for (auto iter = running_notifications_.begin();
        iter != running_notifications_.end(); iter++) {
-    if (iter->first.first == vm_name) {
+    if (iter->first.vm_name == vm_name) {
       to_remove.push_back(iter->first);
     }
   }
@@ -395,13 +391,11 @@ void CrostiniPackageService::UpdatePackageOperationStatus(
   // Update the notification window, if any.
   auto it = running_notifications_.find(container_id);
   if (it == running_notifications_.end()) {
-    LOG(ERROR) << ContainerIdToString(container_id)
-               << " has no notification to update";
+    LOG(ERROR) << container_id << " has no notification to update";
     return;
   }
   if (it->second == nullptr) {
-    LOG(ERROR) << ContainerIdToString(container_id)
-               << " has null notification pointer";
+    LOG(ERROR) << container_id << " has null notification pointer";
     running_notifications_.erase(it);
     return;
   }
@@ -431,11 +425,8 @@ void CrostiniPackageService::UpdatePackageOperationStatus(
 }
 
 void CrostiniPackageService::OnPendingAppListUpdates(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     int count) {
-  const ContainerId container_id(vm_name, container_name);
-
   if (count != 0) {
     has_pending_app_list_updates_.insert(container_id);
   } else {
@@ -482,7 +473,7 @@ void CrostiniPackageService::UninstallApplication(
   const ContainerId container_id(vm_name, container_name);
 
   // Policies can change under us, and crostini may now be forbidden.
-  if (!IsCrostiniUIAllowedForProfile(profile_)) {
+  if (!CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
     LOG(ERROR) << "Can't uninstall because policy no longer allows Crostini";
     UpdatePackageOperationStatus(container_id, PackageOperationStatus::FAILED,
                                  0);
@@ -508,8 +499,8 @@ void CrostiniPackageService::OnCrostiniRunningForUninstall(
                                  0);
     return;
   }
-  const std::string& vm_name = container_id.first;
-  const std::string& container_name = container_id.second;
+  const std::string& vm_name = container_id.vm_name;
+  const std::string& container_name = container_id.container_name;
 
   CrostiniManager::GetForProfile(profile_)->UninstallPackageOwningFile(
       vm_name, container_name, desktop_file_id,
@@ -594,8 +585,8 @@ void CrostiniPackageService::StartQueuedOperation(
       install_queue.pop();  // Invalidates |next|
     }
 
-    std::string vm_name = container_id.first;
-    std::string container_name = container_id.second;
+    std::string vm_name = container_id.vm_name;
+    std::string container_name = container_id.container_name;
 
     CrostiniManager::GetForProfile(profile_)->InstallLinuxPackage(
         vm_name, container_name, package_path,

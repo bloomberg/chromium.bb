@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/test/accessibility_controller_test_api.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -525,14 +526,16 @@ class AccessibilityManagerLoginTest : public OobeBaseTest {
   ~AccessibilityManagerLoginTest() override = default;
 
   void SetUpOnMainThread() override {
-    OobeBaseTest::SetUpOnMainThread();
+    // BrailleController has to be set before SetUpOnMainThread call as
+    // observers subscribe to the controller during SetUpOnMainThread.
     AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
     default_autoclick_delay_ = GetAutoclickDelay();
+    OobeBaseTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
-    AccessibilityManager::SetBrailleControllerForTest(nullptr);
     OobeBaseTest::TearDownOnMainThread();
+    AccessibilityManager::SetBrailleControllerForTest(nullptr);
   }
 
   void CreateSession(const AccountId& account_id) {
@@ -546,7 +549,10 @@ class AccessibilityManagerLoginTest : public OobeBaseTest {
         user_manager::UserManager::Get()
             ->FindUser(account_id)
             ->username_hash());
-    session_manager::SessionManager::Get()->SessionStarted();
+
+    auto* session_manager = session_manager::SessionManager::Get();
+    session_manager->NotifyUserProfileLoaded(account_id);
+    session_manager->SessionStarted();
   }
 
   void SetBrailleDisplayAvailability(bool available) {
@@ -636,6 +642,30 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerLoginTest, MAYBE_Login) {
   EXPECT_TRUE(IsMonoAudioEnabled());
 }
 
+// Tests that ash and browser process has the same states after sign-in.
+IN_PROC_BROWSER_TEST_F(AccessibilityManagerLoginTest, AshState) {
+  WaitForSigninScreen();
+  CreateSession(test_account_id_);
+  StartUserSession(test_account_id_);
+
+  auto ash_a11y_controller_test_api =
+      ash::AccessibilityControllerTestApi::Create();
+
+  // Ash and browser has the same state.
+  EXPECT_FALSE(IsLargeCursorEnabled());
+  EXPECT_FALSE(ash_a11y_controller_test_api->IsLargeCursorEnabled());
+
+  // Changes from the browser side is reflected in both browser and ash.
+  SetLargeCursorEnabled(true);
+  EXPECT_TRUE(IsLargeCursorEnabled());
+  EXPECT_TRUE(ash_a11y_controller_test_api->IsLargeCursorEnabled());
+
+  // Changes from ash is also reflect in both browser and ash.
+  ash_a11y_controller_test_api->SetLargeCursorEnabled(false);
+  EXPECT_FALSE(IsLargeCursorEnabled());
+  EXPECT_FALSE(ash_a11y_controller_test_api->IsLargeCursorEnabled());
+}
+
 class AccessibilityManagerUserTypeTest
     : public AccessibilityManagerTest,
       public WithParamInterface<user_manager::UserType> {
@@ -646,7 +676,7 @@ class AccessibilityManagerUserTypeTest
     } else if (GetParam() == user_manager::USER_TYPE_CHILD) {
       logged_in_user_mixin_ = std::make_unique<LoggedInUserMixin>(
           &mixin_host_, LoggedInUserMixin::LogInType::kChild,
-          embedded_test_server());
+          embedded_test_server(), this);
     }
   }
   ~AccessibilityManagerUserTypeTest() override = default;

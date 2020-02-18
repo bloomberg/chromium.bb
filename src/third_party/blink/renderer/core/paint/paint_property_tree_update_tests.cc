@@ -64,10 +64,6 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
 TEST_P(PaintPropertyTreeUpdateTest,
        BackgroundAttachmentFixedMainThreadScrollReasonsWithNestedScrollers) {
-  // This test needs the |FastMobileScrolling| feature to be disabled
-  // although it is stable on Android.
-  ScopedFastMobileScrollingForTest fast_mobile_scrolling(false);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       #overflowA {
@@ -151,10 +147,6 @@ TEST_P(PaintPropertyTreeUpdateTest,
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ParentFrameMainThreadScrollReasons) {
-  // This test needs the |FastMobileScrolling| feature to be disabled
-  // although it is stable on Android.
-  ScopedFastMobileScrollingForTest fast_mobile_scrolling(false);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -191,10 +183,6 @@ TEST_P(PaintPropertyTreeUpdateTest, ParentFrameMainThreadScrollReasons) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ChildFrameMainThreadScrollReasons) {
-  // This test needs the |FastMobileScrolling| feature to be disabled
-  // although it is stable on Android.
-  ScopedFastMobileScrollingForTest fast_mobile_scrolling(false);
-
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
     <iframe></iframe>
@@ -234,10 +222,6 @@ TEST_P(PaintPropertyTreeUpdateTest, ChildFrameMainThreadScrollReasons) {
 
 TEST_P(PaintPropertyTreeUpdateTest,
        BackgroundAttachmentFixedMainThreadScrollReasonsWithFixedScroller) {
-  // This test needs the |FastMobileScrolling| feature to be disabled
-  // although it is stable on Android.
-  ScopedFastMobileScrollingForTest fast_mobile_scrolling(false);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       #overflowA {
@@ -848,8 +832,9 @@ TEST_P(PaintPropertyTreeUpdateTest, ViewportAddRemoveDeviceEmulationNode) {
   EXPECT_FALSE(visual_viewport.LayerForHorizontalScrollbar());
   EXPECT_FALSE(visual_viewport.LayerForVerticalScrollbar());
   ASSERT_TRUE(GetLayoutView().GetScrollableArea());
-  auto* scrollbar_layer =
-      GetLayoutView().GetScrollableArea()->LayerForHorizontalScrollbar();
+  auto* scrollbar_layer = GetLayoutView()
+                              .GetScrollableArea()
+                              ->GraphicsLayerForHorizontalScrollbar();
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     ASSERT_TRUE(scrollbar_layer);
     EXPECT_EQ(&TransformPaintPropertyNode::Root(),
@@ -945,7 +930,7 @@ TEST_P(PaintPropertyTreeUpdateTest, MenuListControlClipChange) {
   EXPECT_NE(nullptr, select->FirstFragment().PaintProperties()->OverflowClip());
 
   // Should not assert in FindPropertiesNeedingUpdate.
-  ToHTMLSelectElement(select->GetNode())->setSelectedIndex(1);
+  To<HTMLSelectElement>(select->GetNode())->setSelectedIndex(1);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(nullptr, select->FirstFragment().PaintProperties()->OverflowClip());
 }
@@ -1390,6 +1375,11 @@ TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
   )HTML");
 
   GetDocument().View()->Resize(300, 300);
+  // Manually set the visual viewport size because the testing client does not
+  // do this. The size needs to be updated because otherwise the
+  // RootFrameViewport's maximum scroll offset would be negative and trigger a
+  // DCHECK.
+  GetDocument().GetPage()->GetVisualViewport().SetSize(IntSize(300, 300));
   UpdateAllLifecyclePhasesForTest();
 
   auto doc_snap_container_data = DocScroll()->GetSnapContainerData();

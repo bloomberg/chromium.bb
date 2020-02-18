@@ -8,25 +8,34 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/hid_chooser.h"
 #include "content/public/browser/hid_delegate.h"
 #include "content/public/browser/render_frame_host.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 namespace content {
 
 HidService::HidService(RenderFrameHost* render_frame_host,
-                       blink::mojom::HidServiceRequest request)
-    : FrameServiceBase(render_frame_host, std::move(request)) {}
+                       mojo::PendingReceiver<blink::mojom::HidService> receiver)
+    : FrameServiceBase(render_frame_host, std::move(receiver)) {
+  watchers_.set_disconnect_handler(base::BindRepeating(
+      &HidService::OnWatcherConnectionError, base::Unretained(this)));
+}
 
-HidService::~HidService() = default;
+HidService::~HidService() {
+  // The remaining watchers will be closed from this end.
+  if (!watchers_.empty())
+    DecrementActiveFrameCount();
+}
 
 // static
-void HidService::Create(RenderFrameHost* render_frame_host,
-                        blink::mojom::HidServiceRequest request) {
+void HidService::Create(
+    RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::HidService> receiver) {
   DCHECK(render_frame_host);
 
   if (!render_frame_host->IsFeatureEnabled(
@@ -43,7 +52,7 @@ void HidService::Create(RenderFrameHost* render_frame_host,
   // HidService owns itself. It will self-destruct when a mojo interface error
   // occurs, the render frame host is deleted, or the render frame host
   // navigates to a new document.
-  new HidService(render_frame_host, std::move(request));
+  new HidService(render_frame_host, std::move(receiver));
 }
 
 void HidService::GetDevices(GetDevicesCallback callback) {
@@ -75,14 +84,33 @@ void HidService::Connect(
     const std::string& device_guid,
     mojo::PendingRemote<device::mojom::HidConnectionClient> client,
     ConnectCallback callback) {
+  if (watchers_.empty()) {
+    auto* web_contents_impl = static_cast<WebContentsImpl*>(
+        WebContents::FromRenderFrameHost(render_frame_host()));
+    web_contents_impl->IncrementHidActiveFrameCount();
+  }
+
+  mojo::PendingRemote<device::mojom::HidConnectionWatcher> watcher;
+  watchers_.Add(this, watcher.InitWithNewPipeAndPassReceiver());
   GetContentClient()
       ->browser()
       ->GetHidDelegate()
       ->GetHidManager(web_contents())
       ->Connect(
-          device_guid, std::move(client),
+          device_guid, std::move(client), std::move(watcher),
           base::BindOnce(&HidService::FinishConnect, weak_factory_.GetWeakPtr(),
                          std::move(callback)));
+}
+
+void HidService::OnWatcherConnectionError() {
+  if (watchers_.empty())
+    DecrementActiveFrameCount();
+}
+
+void HidService::DecrementActiveFrameCount() {
+  auto* web_contents_impl = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(render_frame_host()));
+  web_contents_impl->DecrementHidActiveFrameCount();
 }
 
 void HidService::FinishGetDevices(
@@ -108,10 +136,11 @@ void HidService::FinishRequestDevice(RequestDeviceCallback callback,
   std::move(callback).Run(std::move(device));
 }
 
-void HidService::FinishConnect(ConnectCallback callback,
-                               device::mojom::HidConnectionPtr connection) {
+void HidService::FinishConnect(
+    ConnectCallback callback,
+    mojo::PendingRemote<device::mojom::HidConnection> connection) {
   if (!connection) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
 

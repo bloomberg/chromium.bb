@@ -91,31 +91,80 @@ TEST_F(FPDFTextEmbedderTest, Text) {
   EXPECT_EQ(12.0, FPDFText_GetFontSize(textpage, 0));
   EXPECT_EQ(16.0, FPDFText_GetFontSize(textpage, 15));
 
-  double left = 0.0;
-  double right = 0.0;
-  double bottom = 0.0;
-  double top = 0.0;
+  double left = 1.0;
+  double right = 2.0;
+  double bottom = 3.0;
+  double top = 4.0;
   EXPECT_FALSE(FPDFText_GetCharBox(nullptr, 4, &left, &right, &bottom, &top));
-  EXPECT_DOUBLE_EQ(0.0, left);
-  EXPECT_DOUBLE_EQ(0.0, right);
-  EXPECT_DOUBLE_EQ(0.0, bottom);
-  EXPECT_DOUBLE_EQ(0.0, top);
+  EXPECT_DOUBLE_EQ(1.0, left);
+  EXPECT_DOUBLE_EQ(2.0, right);
+  EXPECT_DOUBLE_EQ(3.0, bottom);
+  EXPECT_DOUBLE_EQ(4.0, top);
   EXPECT_FALSE(FPDFText_GetCharBox(textpage, -1, &left, &right, &bottom, &top));
-  EXPECT_DOUBLE_EQ(0.0, left);
-  EXPECT_DOUBLE_EQ(0.0, right);
-  EXPECT_DOUBLE_EQ(0.0, bottom);
-  EXPECT_DOUBLE_EQ(0.0, top);
+  EXPECT_DOUBLE_EQ(1.0, left);
+  EXPECT_DOUBLE_EQ(2.0, right);
+  EXPECT_DOUBLE_EQ(3.0, bottom);
+  EXPECT_DOUBLE_EQ(4.0, top);
   EXPECT_FALSE(FPDFText_GetCharBox(textpage, 55, &left, &right, &bottom, &top));
-  EXPECT_DOUBLE_EQ(0.0, left);
-  EXPECT_DOUBLE_EQ(0.0, right);
-  EXPECT_DOUBLE_EQ(0.0, bottom);
-  EXPECT_DOUBLE_EQ(0.0, top);
+  EXPECT_DOUBLE_EQ(1.0, left);
+  EXPECT_DOUBLE_EQ(2.0, right);
+  EXPECT_DOUBLE_EQ(3.0, bottom);
+  EXPECT_DOUBLE_EQ(4.0, top);
+  EXPECT_FALSE(
+      FPDFText_GetCharBox(textpage, 4, nullptr, &right, &bottom, &top));
+  EXPECT_FALSE(FPDFText_GetCharBox(textpage, 4, &left, nullptr, &bottom, &top));
+  EXPECT_FALSE(FPDFText_GetCharBox(textpage, 4, &left, &right, nullptr, &top));
+  EXPECT_FALSE(
+      FPDFText_GetCharBox(textpage, 4, &left, &right, &bottom, nullptr));
+  EXPECT_FALSE(
+      FPDFText_GetCharBox(textpage, 4, nullptr, nullptr, nullptr, nullptr));
 
   EXPECT_TRUE(FPDFText_GetCharBox(textpage, 4, &left, &right, &bottom, &top));
   EXPECT_NEAR(41.071, left, 0.001);
   EXPECT_NEAR(46.243, right, 0.001);
   EXPECT_NEAR(49.844, bottom, 0.001);
   EXPECT_NEAR(55.520, top, 0.001);
+
+  left = 4.0;
+  right = 3.0;
+  bottom = 2.0;
+  top = 1.0;
+  EXPECT_FALSE(
+      FPDFText_GetLooseCharBox(nullptr, 4, &left, &right, &bottom, &top));
+  EXPECT_DOUBLE_EQ(4.0, left);
+  EXPECT_DOUBLE_EQ(3.0, right);
+  EXPECT_DOUBLE_EQ(2.0, bottom);
+  EXPECT_DOUBLE_EQ(1.0, top);
+  EXPECT_FALSE(
+      FPDFText_GetLooseCharBox(textpage, -1, &left, &right, &bottom, &top));
+  EXPECT_DOUBLE_EQ(4.0, left);
+  EXPECT_DOUBLE_EQ(3.0, right);
+  EXPECT_DOUBLE_EQ(2.0, bottom);
+  EXPECT_DOUBLE_EQ(1.0, top);
+  EXPECT_FALSE(
+      FPDFText_GetLooseCharBox(textpage, 55, &left, &right, &bottom, &top));
+  EXPECT_DOUBLE_EQ(4.0, left);
+  EXPECT_DOUBLE_EQ(3.0, right);
+  EXPECT_DOUBLE_EQ(2.0, bottom);
+  EXPECT_DOUBLE_EQ(1.0, top);
+  EXPECT_FALSE(
+      FPDFText_GetLooseCharBox(textpage, 4, nullptr, &right, &bottom, &top));
+  EXPECT_FALSE(
+      FPDFText_GetLooseCharBox(textpage, 4, &left, nullptr, &bottom, &top));
+  EXPECT_FALSE(
+      FPDFText_GetLooseCharBox(textpage, 4, &left, &right, nullptr, &top));
+  EXPECT_FALSE(
+      FPDFText_GetLooseCharBox(textpage, 4, &left, &right, &bottom, nullptr));
+  EXPECT_FALSE(FPDFText_GetLooseCharBox(textpage, 4, nullptr, nullptr, nullptr,
+                                        nullptr));
+
+  EXPECT_TRUE(
+      FPDFText_GetLooseCharBox(textpage, 4, &left, &right, &bottom, &top));
+  EXPECT_NEAR(40.664, left, 0.001);
+  EXPECT_NEAR(46.664, right, 0.001);
+  EXPECT_NEAR(47.667, bottom, 0.001);
+  EXPECT_NEAR(59.667, top, 0.001);
+  EXPECT_NEAR(12.000, top - bottom, 0.001);
 
   double x = 0.0;
   double y = 0.0;
@@ -188,6 +237,50 @@ TEST_F(FPDFTextEmbedderTest, Text) {
   EXPECT_TRUE(check_unsigned_shorts(kHelloGoodbyeText + 4, buffer, 9));
   EXPECT_EQ(0u, buffer[9]);
   EXPECT_EQ(0xbdbd, buffer[10]);
+
+  FPDFText_ClosePage(textpage);
+  UnloadPage(page);
+}
+
+TEST_F(FPDFTextEmbedderTest, TextVertical) {
+  ASSERT_TRUE(OpenDocument("vertical_text.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  FPDF_TEXTPAGE textpage = FPDFText_LoadPage(page);
+  ASSERT_TRUE(textpage);
+
+  EXPECT_EQ(12.0, FPDFText_GetFontSize(textpage, 0));
+
+  double x = 0.0;
+  double y = 0.0;
+  EXPECT_TRUE(FPDFText_GetCharOrigin(textpage, 1, &x, &y));
+  EXPECT_NEAR(6.664, x, 0.001);
+  EXPECT_NEAR(171.508, y, 0.001);
+
+  EXPECT_TRUE(FPDFText_GetCharOrigin(textpage, 2, &x, &y));
+  EXPECT_NEAR(8.668, x, 0.001);
+  EXPECT_NEAR(160.492, y, 0.001);
+
+  double left = 0.0;
+  double right = 0.0;
+  double bottom = 0.0;
+  double top = 0.0;
+  EXPECT_TRUE(
+      FPDFText_GetLooseCharBox(textpage, 1, &left, &right, &bottom, &top));
+  EXPECT_NEAR(4, left, 0.001);
+  EXPECT_NEAR(16, right, 0.001);
+  EXPECT_NEAR(178.984, bottom, 0.001);
+  EXPECT_NEAR(170.308, top, 0.001);
+  EXPECT_NEAR(12.000, right - left, 0.001);
+
+  EXPECT_TRUE(
+      FPDFText_GetLooseCharBox(textpage, 2, &left, &right, &bottom, &top));
+  EXPECT_NEAR(4, left, 0.001);
+  EXPECT_NEAR(16, right, 0.001);
+  EXPECT_NEAR(170.308, bottom, 0.001);
+  EXPECT_NEAR(159.292, top, 0.001);
+  EXPECT_NEAR(12.000, right - left, 0.001);
 
   FPDFText_ClosePage(textpage);
   UnloadPage(page);
@@ -1247,6 +1340,122 @@ TEST_F(FPDFTextEmbedderTest, GetCharAngle) {
       FPDFText_GetCharAngle(text_page, kSubstringsSize[0] + kSubstringsSize[1] +
                                            kSubstringsSize[2]),
       0.001);
+
+  FPDFText_ClosePage(text_page);
+  UnloadPage(page);
+}
+
+TEST_F(FPDFTextEmbedderTest, GetFontWeight) {
+  ASSERT_TRUE(OpenDocument("font_weight.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
+  ASSERT_TRUE(text_page);
+
+  EXPECT_EQ(2, FPDFText_CountChars(text_page));
+
+  EXPECT_EQ(-1, FPDFText_GetFontWeight(nullptr, 0));
+  EXPECT_EQ(-1, FPDFText_GetFontWeight(text_page, -1));
+  EXPECT_EQ(-1, FPDFText_GetFontWeight(text_page, 314));
+
+  // The font used for this text only specifies /StemV (80); the weight value
+  // that is returned should be calculated from that (80*5 == 400).
+  EXPECT_EQ(400, FPDFText_GetFontWeight(text_page, 0));
+
+  // Using a /StemV value of 82, the estimate comes out to 410, even though
+  // /FontWeight is 400.
+  // TODO(crbug.com/pdfium/1420): Fix this the return value here.
+  EXPECT_EQ(410, FPDFText_GetFontWeight(text_page, 1));
+
+  FPDFText_ClosePage(text_page);
+  UnloadPage(page);
+}
+
+TEST_F(FPDFTextEmbedderTest, GetTextRenderMode) {
+  EXPECT_TRUE(OpenDocument("text_render_mode.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
+  ASSERT_TRUE(text_page);
+
+  ASSERT_EQ(12, FPDFText_CountChars(text_page));
+
+  ASSERT_EQ(-1, FPDFText_GetTextRenderMode(nullptr, 0));
+  ASSERT_EQ(-1, FPDFText_GetTextRenderMode(text_page, -1));
+  ASSERT_EQ(-1, FPDFText_GetTextRenderMode(text_page, 314));
+
+  ASSERT_EQ(FPDF_TEXTRENDERMODE_FILL, FPDFText_GetTextRenderMode(text_page, 0));
+
+  ASSERT_EQ(FPDF_TEXTRENDERMODE_STROKE,
+            FPDFText_GetTextRenderMode(text_page, 7));
+
+  FPDFText_ClosePage(text_page);
+  UnloadPage(page);
+}
+
+TEST_F(FPDFTextEmbedderTest, GetFillColor) {
+  ASSERT_TRUE(OpenDocument("text_color.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
+  ASSERT_TRUE(text_page);
+
+  ASSERT_EQ(1, FPDFText_CountChars(text_page));
+
+  ASSERT_FALSE(
+      FPDFText_GetFillColor(nullptr, 0, nullptr, nullptr, nullptr, nullptr));
+  ASSERT_FALSE(
+      FPDFText_GetFillColor(text_page, -1, nullptr, nullptr, nullptr, nullptr));
+  ASSERT_FALSE(FPDFText_GetFillColor(text_page, 314, nullptr, nullptr, nullptr,
+                                     nullptr));
+  ASSERT_FALSE(
+      FPDFText_GetFillColor(text_page, 0, nullptr, nullptr, nullptr, nullptr));
+
+  unsigned int r;
+  unsigned int g;
+  unsigned int b;
+  unsigned int a;
+  ASSERT_TRUE(FPDFText_GetFillColor(text_page, 0, &r, &g, &b, &a));
+  ASSERT_EQ(0xffu, r);
+  ASSERT_EQ(0u, g);
+  ASSERT_EQ(0u, b);
+  ASSERT_EQ(0xffu, a);
+
+  FPDFText_ClosePage(text_page);
+  UnloadPage(page);
+}
+
+TEST_F(FPDFTextEmbedderTest, GetStrokeColor) {
+  ASSERT_TRUE(OpenDocument("text_color.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
+  ASSERT_TRUE(text_page);
+
+  ASSERT_EQ(1, FPDFText_CountChars(text_page));
+
+  ASSERT_FALSE(
+      FPDFText_GetStrokeColor(nullptr, 0, nullptr, nullptr, nullptr, nullptr));
+  ASSERT_FALSE(FPDFText_GetStrokeColor(text_page, -1, nullptr, nullptr, nullptr,
+                                       nullptr));
+  ASSERT_FALSE(FPDFText_GetStrokeColor(text_page, 314, nullptr, nullptr,
+                                       nullptr, nullptr));
+  ASSERT_FALSE(FPDFText_GetStrokeColor(text_page, 0, nullptr, nullptr, nullptr,
+                                       nullptr));
+
+  unsigned int r;
+  unsigned int g;
+  unsigned int b;
+  unsigned int a;
+  ASSERT_TRUE(FPDFText_GetStrokeColor(text_page, 0, &r, &g, &b, &a));
+  ASSERT_EQ(0u, r);
+  ASSERT_EQ(0xffu, g);
+  ASSERT_EQ(0u, b);
+  ASSERT_EQ(0xffu, a);
 
   FPDFText_ClosePage(text_page);
   UnloadPage(page);

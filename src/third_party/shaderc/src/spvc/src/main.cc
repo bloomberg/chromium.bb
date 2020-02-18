@@ -21,7 +21,7 @@
 #include "libshaderc_util/args.h"
 #include "libshaderc_util/string_piece.h"
 #include "shaderc/env.h"
-#include "shaderc/spvc.hpp"
+#include "spvc/spvc.hpp"
 #include "shaderc/status.h"
 #include "spirv-tools/libspirv.h"
 
@@ -43,6 +43,8 @@ Options:
   -o <output file>         '-' means standard output.
   --no-validate            Disable validating input and intermediate source.
                              Validation is by default enabled.
+  --no-optimize            Disable optimizing input and intermediate source.
+                             Optimization is by default enabled.
   --source-env=<env>       Execution environment of the input source.
                              <env> is vulkan1.0 (the default), vulkan1.1,
                              or webgpu0
@@ -65,6 +67,8 @@ Options:
                            Defined transforms:
                              webgpu0 -> vulkan1.1
                              vulkan1.1 -> webgpu0
+   --use-spvc-parser       Use the built in parser for generating spirv-cross IR
+                           instead of spirv-cross.
 
 
   The following flags behave as in spirv-cross:
@@ -84,6 +88,7 @@ Options:
   --msl-domain-lower-left
   --msl-argument-buffers
   --msl-discrete-descriptor-set=<number>
+  --emit-line-directives
   --hlsl-enable-compat
   --shader-model=<model>
 )";
@@ -118,7 +123,7 @@ bool ReadFile(const std::string& path, std::vector<uint32_t>* out) {
 }  // anonymous namespace
 
 int main(int argc, char** argv) {
-  shaderc_spvc::Compiler compiler;
+  shaderc_spvc::Context context;
   shaderc_spvc::CompileOptions options;
   std::vector<uint32_t> input;
   std::vector<uint32_t> msl_discrete_descriptor;
@@ -182,6 +187,10 @@ int main(int argc, char** argv) {
       }
     } else if (arg == "--remove-unused-variables") {
       options.SetRemoveUnusedVariables(true);
+    } else if (arg == "--no-validate"){
+      options.SetValidate(false);
+    } else if (arg == "--no-optimize"){
+      options.SetOptimize(false);
     } else if (arg == "--robust-buffer-access-pass"){
       options.SetRobustBufferAccessPass(true);
     } else if (arg == "--vulkan-semantics") {
@@ -234,6 +243,8 @@ int main(int argc, char** argv) {
         return 1;
       }
       msl_discrete_descriptor.push_back(descriptor_num);
+    } else if (arg == "--emit-line-directives") {
+      options.SetEmitLineDirectives(true);
     } else if (arg.starts_with("--shader-model=")) {
       string_piece shader_model_str;
       shaderc_util::GetOptionArgument(argc, argv, &i,
@@ -282,6 +293,8 @@ int main(int argc, char** argv) {
                   << "' in --target-env=" << std::endl;
         return 1;
       }
+    } else if (arg == "--use-spvc-parser") {
+      context.SetUseSpvcParser(true);
     } else {
       if (!ReadFile(arg.str(), &input)) {
         std::cerr << "spvc: error: could not read file" << std::endl;
@@ -311,53 +324,66 @@ int main(int argc, char** argv) {
   options.SetMSLDiscreteDescriptorSets(msl_discrete_descriptor);
 
   shaderc_spvc::CompilationResult result;
+  shaderc_spvc_status status = shaderc_spvc_status_configuration_error;
+
   if (output_language == "glsl") {
-    result = compiler.CompileSpvToGlsl((const uint32_t*)input.data(),
+    status = context.InitializeForGlsl((const uint32_t*)input.data(),
                                        input.size(), options);
   } else if (output_language == "msl") {
-    result = compiler.CompileSpvToMsl((const uint32_t*)input.data(),
+    status = context.InitializeForMsl((const uint32_t*)input.data(),
                                       input.size(), options);
   } else if (output_language == "hlsl") {
-    result = compiler.CompileSpvToHlsl((const uint32_t*)input.data(),
+    status = context.InitializeForHlsl((const uint32_t*)input.data(),
                                        input.size(), options);
   } else if (output_language == "vulkan") {
-    result = compiler.CompileSpvToVulkan((const uint32_t*)input.data(),
+    status = context.InitializeForVulkan((const uint32_t*)input.data(),
                                          input.size(), options);
-  }
-
-  auto status = result.GetCompilationStatus();
-  if (status == shaderc_compilation_status_validation_error) {
-    std::cerr << "validation failed:\n" << result.GetMessages() << std::endl;
+  } else {
+    std::cerr << "Attempted to output to unknown language: " << output_language
+              << std::endl;
     return 1;
   }
-  if (status == shaderc_compilation_status_success) {
-    const char* path = output_path.data();
-    if (output_language != "vulkan") {
-      if (path && strcmp(path, "-")) {
-        std::basic_ofstream<char>(path) << result.GetStringOutput();
-      } else {
-        std::cout << result.GetStringOutput();
-      }
-    } else {
-      if (path && strcmp(path, "-")) {
-        std::ofstream out(path, std::ios::binary);
-        out.write((char*)result.GetBinaryOutput().data(),
-                  (sizeof(uint32_t) / sizeof(char)) *
-                      result.GetBinaryOutput().size());
-      } else {
-        std::cerr << "Cowardly refusing to output binary result to screen"
-                  << std::endl;
-        return 1;
-      }
+
+  if (status == shaderc_spvc_status_success)
+    status = context.CompileShader(&result);
+
+  switch (status) {
+    case shaderc_spvc_status_validation_error: {
+      std::cerr << "validation failed:\n" << context.GetMessages() << std::endl;
+      return 1;
     }
-    return 0;
-  }
 
-  if (status == shaderc_compilation_status_compilation_error) {
-    std::cerr << "compilation failed:\n" << result.GetMessages() << std::endl;
-    return 1;
-  }
+    case shaderc_spvc_status_success: {
+      const char* path = output_path.data();
+      if (output_language != "vulkan") {
+        if (path && strcmp(path, "-")) {
+          std::basic_ofstream<char>(path) << result.GetStringOutput();
+        } else {
+          std::cout << result.GetStringOutput();
+        }
+      } else {
+        if (path && strcmp(path, "-")) {
+          std::ofstream out(path, std::ios::binary);
+          out.write((char*)result.GetBinaryOutput().data(),
+                    (sizeof(uint32_t) / sizeof(char)) *
+                        result.GetBinaryOutput().size());
+        } else {
+          std::cerr << "Cowardly refusing to output binary result to screen"
+                    << std::endl;
+          return 1;
+        }
+      }
+      return 0;
+    }
 
-  std::cerr << "unexpected error " << status << std::endl;
-  return 1;
+    case shaderc_spvc_status_compilation_error: {
+      std::cerr << "compilation failed:\n"
+                << context.GetMessages() << std::endl;
+      return 1;
+    }
+
+    default:
+      std::cerr << "unexpected error " << status << std::endl;
+      return 1;
+  }
 }

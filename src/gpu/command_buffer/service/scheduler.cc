@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/gpu_preferences.h"
 
 namespace gpu {
 
@@ -289,12 +290,19 @@ void Scheduler::Sequence::RemoveClientWait(CommandBufferId command_buffer_id) {
 }
 
 Scheduler::Scheduler(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                     SyncPointManager* sync_point_manager)
+                     SyncPointManager* sync_point_manager,
+                     const GpuPreferences& gpu_preferences)
     : task_runner_(std::move(task_runner)),
-      sync_point_manager_(sync_point_manager) {
+      sync_point_manager_(sync_point_manager),
+      blocked_time_collection_enabled_(
+          gpu_preferences.enable_gpu_blocked_time_metric) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Store weak ptr separately because calling GetWeakPtr() is not thread safe.
   weak_ptr_ = weak_factory_.GetWeakPtr();
+
+  if (blocked_time_collection_enabled_ && !base::ThreadTicks::IsSupported()) {
+    DLOG(ERROR) << "GPU Blocked time collection is enabled but not supported.";
+  }
 }
 
 Scheduler::~Scheduler() {
@@ -430,6 +438,10 @@ bool Scheduler::ShouldYield(SequenceId sequence_id) {
   return running_sequence->ShouldYieldTo(next_sequence);
 }
 
+base::WeakPtr<Scheduler> Scheduler::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void Scheduler::SyncTokenFenceReleased(const SyncToken& sync_token,
                                        uint32_t order_num,
                                        SequenceId release_sequence_id,
@@ -521,7 +533,25 @@ void Scheduler::RunNextTask() {
   {
     base::AutoUnlock auto_unlock(lock_);
     order_data->BeginProcessingOrderNumber(order_num);
-    std::move(closure).Run();
+
+    if (blocked_time_collection_enabled_ && base::ThreadTicks::IsSupported()) {
+      // We can't call base::ThreadTicks::Now() if it's not supported
+      base::ThreadTicks thread_time_start = base::ThreadTicks::Now();
+      base::TimeTicks wall_time_start = base::TimeTicks::Now();
+
+      std::move(closure).Run();
+
+      base::TimeDelta thread_time_elapsed =
+          base::ThreadTicks::Now() - thread_time_start;
+      base::TimeDelta wall_time_elapsed =
+          base::TimeTicks::Now() - wall_time_start;
+      base::TimeDelta blocked_time = wall_time_elapsed - thread_time_elapsed;
+
+      total_blocked_time_ += blocked_time;
+    } else {
+      std::move(closure).Run();
+    }
+
     if (order_data->IsProcessingOrderNumber())
       order_data->FinishProcessingOrderNumber(order_num);
   }
@@ -540,6 +570,14 @@ void Scheduler::RunNextTask() {
 
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&Scheduler::RunNextTask, weak_ptr_));
+}
+
+base::TimeDelta Scheduler::TakeTotalBlockingTime() {
+  if (!blocked_time_collection_enabled_ || !base::ThreadTicks::IsSupported())
+    return base::TimeDelta::Min();
+  base::TimeDelta result;
+  std::swap(result, total_blocked_time_);
+  return result;
 }
 
 }  // namespace gpu

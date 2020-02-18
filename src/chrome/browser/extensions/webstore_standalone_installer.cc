@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
+#include "chrome/browser/extensions/scoped_active_install.h"
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/id_util.h"
@@ -139,7 +140,7 @@ WebstoreStandaloneInstaller::GetLocalizedExtensionForDisplay() {
   if (!localized_extension_for_display_.get()) {
     DCHECK(manifest_.get());
     if (!manifest_.get())
-      return NULL;
+      return nullptr;
 
     std::string error;
     localized_extension_for_display_ =
@@ -194,8 +195,8 @@ void WebstoreStandaloneInstaller::OnInstallPromptDone(
   std::unique_ptr<WebstoreInstaller::Approval> approval = CreateApproval();
 
   ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
-  const Extension* installed_extension = extension_registry->GetExtensionById(
-      id_, ExtensionRegistry::COMPATIBILITY);
+  const Extension* installed_extension =
+      extension_registry->GetExtensionById(id_, ExtensionRegistry::EVERYTHING);
   if (installed_extension) {
     std::string install_message;
     webstore_install::Result install_result = webstore_install::SUCCESS;

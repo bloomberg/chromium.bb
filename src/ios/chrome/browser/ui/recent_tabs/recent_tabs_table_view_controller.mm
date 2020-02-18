@@ -15,7 +15,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
-#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sessions/session_util.h"
@@ -142,7 +141,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)dealloc {
-  [_signinPromoViewMediator signinPromoViewRemoved];
+  [_signinPromoViewMediator signinPromoViewIsRemoved];
 }
 
 - (void)viewDidLoad {
@@ -477,13 +476,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // Configure and add a TableViewSigninPromoItem to the model.
   TableViewSigninPromoItem* signinPromoItem = [[TableViewSigninPromoItem alloc]
       initWithType:ItemTypeOtherDevicesSigninPromo];
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    signinPromoItem.text =
-        l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS_WITH_UNITY);
-  } else {
-    signinPromoItem.text =
-        l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS);
-  }
+  signinPromoItem.text =
+      l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS_WITH_UNITY);
   signinPromoItem.delegate = self.signinPromoViewMediator;
   signinPromoItem.configurator =
       [self.signinPromoViewMediator createConfigurator];
@@ -547,7 +541,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   if ((newSessionState == self.sessionState &&
        self.sessionState !=
            SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) ||
-      self.signinPromoViewMediator.isSigninInProgress) {
+      self.signinPromoViewMediator.signinInProgress) {
     // No need to refresh the sections since all states other than
     // USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS only have static content. This means
     // that if the previous State is the same as the new one the static content
@@ -562,6 +556,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     // Update the TableView and TableViewModel sections to match the new
     // sessionState.
     // Turn Off animations since UITableViewRowAnimationNone still animates.
+    BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
     [UIView setAnimationsEnabled:NO];
     if (newSessionState ==
         SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
@@ -575,14 +570,14 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       }
                                completion:nil];
     }
-    [UIView setAnimationsEnabled:YES];
+    [UIView setAnimationsEnabled:animationsWereEnabled];
   }
 
   // Table updates must happen before |sessionState| gets updated, since some
   // table updates rely on knowing the previous state.
   self.sessionState = newSessionState;
   if (self.sessionState != SessionsSyncUserState::USER_SIGNED_OUT) {
-    [self.signinPromoViewMediator signinPromoViewRemoved];
+    [self.signinPromoViewMediator signinPromoViewIsRemoved];
     self.signinPromoViewMediator.consumer = nil;
     self.signinPromoViewMediator = nil;
   }
@@ -671,7 +666,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       [self.tableViewModel itemTypeForIndexPath:indexPath];
   // If SigninPromo will be shown, |self.signinPromoViewMediator| must know.
   if (itemTypeSelected == ItemTypeOtherDevicesSigninPromo) {
-    [self.signinPromoViewMediator signinPromoViewVisible];
+    [self.signinPromoViewMediator signinPromoViewIsVisible];
   }
   // Retrieve favicons for closed tabs and remote sessions.
   if (itemTypeSelected == ItemTypeRecentlyClosed ||
@@ -1144,31 +1139,26 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 #pragma mark - SyncPresenter
 
 - (void)showReauthenticateSignin {
-  [self.dispatcher
-              showSignin:
-                  [[ShowSigninCommand alloc]
-                      initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
-                            accessPoint:signin_metrics::AccessPoint::
-                                            ACCESS_POINT_UNKNOWN]
-      baseViewController:self];
-}
-
-- (void)showSyncSettings {
-  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+  [self.handler showSignin:[[ShowSigninCommand alloc]
+                               initWithOperation:
+                                   AUTHENTICATION_OPERATION_REAUTHENTICATE
+                                     accessPoint:signin_metrics::AccessPoint::
+                                                     ACCESS_POINT_UNKNOWN]
+        baseViewController:self];
 }
 
 - (void)showSyncPassphraseSettings {
-  [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
+  [self.handler showSyncPassphraseSettingsFromViewController:self];
 }
 
 - (void)showGoogleServicesSettings {
-  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+  [self.handler showGoogleServicesSettingsFromViewController:self];
 }
 
 #pragma mark - SigninPresenter
 
 - (void)showSignin:(ShowSigninCommand*)command {
-  [self.dispatcher showSignin:command baseViewController:self];
+  [self.handler showSignin:command baseViewController:self];
 }
 
 #pragma mark - UIAdaptivePresentationControllerDelegate
@@ -1193,7 +1183,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   if (ShouldShowSyncSignin(syncState)) {
     [self showReauthenticateSignin];
   } else if (ShouldShowSyncSettings(syncState)) {
-    [self showSyncSettings];
+    [self showGoogleServicesSettings];
   } else if (ShouldShowSyncPassphraseSettings(syncState)) {
     [self showSyncPassphraseSettings];
   }

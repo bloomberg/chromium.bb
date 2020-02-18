@@ -5,30 +5,36 @@
 // https://gpuweb.github.io/gpuweb/
 
 [
-    RuntimeEnabled=WebGPU
+    Exposed(Window WebGPU, Worker WebGPU)
 ] interface GPUCommandEncoder {
-    GPURenderPassEncoder beginRenderPass(GPURenderPassDescriptor descriptor);
-    GPUComputePassEncoder beginComputePass();
+    [RaisesException] GPURenderPassEncoder beginRenderPass(GPURenderPassDescriptor descriptor);
+    GPUComputePassEncoder beginComputePass(optional GPUComputePassDescriptor descriptor = {});
 
     void copyBufferToBuffer(
-        GPUBuffer src, unsigned long long srcOffset,
-        GPUBuffer dst, unsigned long long dstOffset,
-        unsigned long long size);
+        GPUBuffer src,
+        GPUBufferSize srcOffset,
+        GPUBuffer dst,
+        GPUBufferSize dstOffset,
+        GPUBufferSize size);
 
-    void copyBufferToTexture(
+    [RaisesException] void copyBufferToTexture(
         GPUBufferCopyView source,
         GPUTextureCopyView destination,
         GPUExtent3D copySize);
 
-    void copyTextureToBuffer(
+    [RaisesException] void copyTextureToBuffer(
         GPUTextureCopyView source,
         GPUBufferCopyView destination,
         GPUExtent3D copySize);
 
-    void copyTextureToTexture(
+    [RaisesException] void copyTextureToTexture(
         GPUTextureCopyView source,
         GPUTextureCopyView destination,
         GPUExtent3D copySize);
 
-    GPUCommandBuffer finish();
+    void pushDebugGroup(DOMString groupLabel);
+    void popDebugGroup();
+    void insertDebugMarker(DOMString markerLabel);
+
+    GPUCommandBuffer finish(optional GPUCommandBufferDescriptor descriptor = {});
 };

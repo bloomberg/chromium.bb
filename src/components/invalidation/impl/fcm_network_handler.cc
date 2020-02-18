@@ -11,8 +11,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/time_formatting.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -72,18 +74,20 @@ std::string UnpackPrivateTopic(base::StringPiece private_topic) {
   }
 }
 
-InvalidationParsingStatus ParseIncommingMessage(
+InvalidationParsingStatus ParseIncomingMessage(
     const gcm::IncomingMessage& message,
     std::string* payload,
     std::string* private_topic,
     std::string* public_topic,
-    std::string* version) {
+    int64_t* version) {
   *payload = GetValueFromMessage(message, kPayloadKey);
-  *version = GetValueFromMessage(message, kVersionKey);
+  std::string version_str = GetValueFromMessage(message, kVersionKey);
 
-  // Version must always be there.
-  if (version->empty())
+  // Version must always be there, and be an integer.
+  if (version_str.empty())
     return InvalidationParsingStatus::kVersionEmpty;
+  if (!base::StringToInt64(version_str, version))
+    return InvalidationParsingStatus::kVersionInvalid;
 
   *public_topic = GetValueFromMessage(message, kPublicTopic);
 
@@ -238,10 +242,12 @@ void FCMNetworkHandler::OnMessage(const std::string& app_id,
   std::string payload;
   std::string private_topic;
   std::string public_topic;
-  std::string version;
+  int64_t version = 0;
 
-  InvalidationParsingStatus status = ParseIncommingMessage(
+  InvalidationParsingStatus status = ParseIncomingMessage(
       message, &payload, &private_topic, &public_topic, &version);
+  // This histogram is recorded quite frequently, so use the macro rather than
+  // the function.
   UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.FCMMessageStatus", status);
 
   if (status == InvalidationParsingStatus::kSuccess)
@@ -249,9 +255,11 @@ void FCMNetworkHandler::OnMessage(const std::string& app_id,
 }
 
 void FCMNetworkHandler::OnMessagesDeleted(const std::string& app_id) {
-  // TODO(melandory): consider notifyint the client that messages were
-  // deleted. So the client can act on it, e.g. in case of sync request
-  // GetUpdates from the server.
+  DCHECK_EQ(app_id, app_id_);
+  base::UmaHistogramBoolean("FCMInvalidations.FCMMessagesDeleted", true);
+  // Note: If this actually happens in practice, consider notifying the client
+  // that messages were deleted so it can act on it, e.g. in case of sync by
+  // triggering a GetUpdates.
 }
 
 void FCMNetworkHandler::OnSendError(
@@ -275,13 +283,15 @@ void FCMNetworkHandler::SetTokenValidationTimerForTesting(
 }
 
 void FCMNetworkHandler::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> callback) {
+    const base::RepeatingCallback<void(const base::DictionaryValue&)>&
+        callback) {
   callback.Run(diagnostic_info_.CollectDebugData());
 }
 
-FCMNetworkHandlerDiagnostic::FCMNetworkHandlerDiagnostic() {}
+FCMNetworkHandler::FCMNetworkHandlerDiagnostic::FCMNetworkHandlerDiagnostic() {}
 
-base::DictionaryValue FCMNetworkHandlerDiagnostic::CollectDebugData() const {
+base::DictionaryValue
+FCMNetworkHandler::FCMNetworkHandlerDiagnostic::CollectDebugData() const {
   base::DictionaryValue status;
   status.SetString("NetworkHandler.Registration-result-code",
                    RegistrationResultToString(registration_result));
@@ -307,7 +317,8 @@ base::DictionaryValue FCMNetworkHandlerDiagnostic::CollectDebugData() const {
   return status;
 }
 
-std::string FCMNetworkHandlerDiagnostic::RegistrationResultToString(
+std::string
+FCMNetworkHandler::FCMNetworkHandlerDiagnostic::RegistrationResultToString(
     const instance_id::InstanceID::Result result) const {
   switch (registration_result) {
     case instance_id::InstanceID::SUCCESS:

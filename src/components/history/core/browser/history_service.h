@@ -18,6 +18,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -25,6 +26,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -50,7 +52,7 @@ class TestingProfile;
 namespace base {
 class FilePath;
 class Thread;
-}
+}  // namespace base
 
 namespace favicon {
 class FaviconServiceImpl;
@@ -86,6 +88,8 @@ class WebHistoryService;
 // as information about downloads.
 class HistoryService : public KeyedService {
  public:
+  static const base::Feature kHistoryServiceUsesTaskScheduler;
+
   // Must call Init after construction. The empty constructor provided only for
   // unit tests. When using the full constructor, |history_client| may only be
   // null during testing, while |visit_delegate| may be null if the embedder use
@@ -315,14 +319,25 @@ class HistoryService : public KeyedService {
   void CountUniqueHostsVisitedLastMonth(GetHistoryCountCallback callback,
                                         base::CancelableTaskTracker* tracker);
 
-  // Database management operations --------------------------------------------
+  using GetLastVisitToHostCallback =
+      base::OnceCallback<void(HistoryLastVisitToHostResult)>;
 
-  // Delete all the information related to a single url.
-  void DeleteURL(const GURL& url);
+  // Gets the last time any webpage on the given host was visited within the
+  // time range [|begin_time|, |end_time|). If the given host has not been
+  // visited in the given time age, the callback will be called with a null
+  // base::Time.
+  base::CancelableTaskTracker::TaskId GetLastVisitToHost(
+      const GURL& host,
+      base::Time begin_time,
+      base::Time end_time,
+      GetLastVisitToHostCallback callback,
+      base::CancelableTaskTracker* tracker);
+
+  // Database management operations --------------------------------------------
 
   // Delete all the information related to a list of urls.  (Deleting
   // URLs one by one is slow as it has to flush to disk each time.)
-  void DeleteURLsForTest(const std::vector<GURL>& urls);
+  void DeleteURLs(const std::vector<GURL>& urls);
 
   // Removes all visits in the selected time range (including the
   // start time), updating the URLs accordingly. This deletes any

@@ -37,7 +37,7 @@ void PasswordManagerClient::ShowTouchToFill(PasswordManagerDriver* driver) {}
 void PasswordManagerClient::GeneratePassword() {}
 
 void PasswordManagerClient::PasswordWasAutofilled(
-    const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
+    const std::vector<const autofill::PasswordForm*>& best_matches,
     const GURL& origin,
     const std::vector<const autofill::PasswordForm*>* federated_matches) {}
 
@@ -61,6 +61,8 @@ net::CertStatus PasswordManagerClient::GetMainFrameCertStatus() const {
   return 0;
 }
 
+void PasswordManagerClient::PromptUserToEnableAutosignin() {}
+
 bool PasswordManagerClient::IsIncognito() const {
   return false;
 }
@@ -72,6 +74,12 @@ const PasswordManager* PasswordManagerClient::GetPasswordManager() const {
 PasswordManager* PasswordManagerClient::GetPasswordManager() {
   return const_cast<PasswordManager*>(
       static_cast<const PasswordManagerClient*>(this)->GetPasswordManager());
+}
+
+PasswordFeatureManager* PasswordManagerClient::GetPasswordFeatureManager() {
+  return const_cast<PasswordFeatureManager*>(
+      static_cast<const PasswordManagerClient*>(this)
+          ->GetPasswordFeatureManager());
 }
 
 HttpAuthManager* PasswordManagerClient::GetHttpAuthManager() {

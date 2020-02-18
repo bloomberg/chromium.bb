@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGLineBreaker_h
-#define NGLineBreaker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BREAKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BREAKER_H_
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -47,7 +47,7 @@ class CORE_EXPORT NGLineBreaker {
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.
   inline void NextLine(NGLineInfo* line_info) {
-    NextLine(kIndefiniteSize, nullptr, line_info);
+    NextLine(kIndefiniteSize, line_info);
   }
 
   // During the min/max size calculation we need a special percentage
@@ -56,7 +56,6 @@ class CORE_EXPORT NGLineBreaker {
   // better yet, subclass or templetize the line-breaker for Min/Max computation
   // if we can do that without incurring a performance penalty
   void NextLine(LayoutUnit percentage_resolution_block_size_for_min_max,
-                Vector<LayoutObject*>* out_floats_for_min_max,
                 NGLineInfo*);
 
   bool IsFinished() const { return item_index_ >= Items().size(); }
@@ -72,11 +71,9 @@ class CORE_EXPORT NGLineBreaker {
 
   // Compute NGInlineItemResult for an open tag item.
   // Returns true if this item has edge and may have non-zero inline size.
-  static bool ComputeOpenTagResult(
-      const NGInlineItem&,
-      const NGConstraintSpace&,
-      NGInlineItemResult*,
-      base::Optional<NGLineBoxStrut> margins = base::nullopt);
+  static bool ComputeOpenTagResult(const NGInlineItem&,
+                                   const NGConstraintSpace&,
+                                   NGInlineItemResult*);
 
   // This enum is private, except for |WhitespaceStateForTesting()|. See
   // |whitespace_| member.
@@ -106,7 +103,6 @@ class CORE_EXPORT NGLineBreaker {
                                 NGLineInfo*);
 
   void BreakLine(LayoutUnit percentage_resolution_block_size_for_min_max,
-                 Vector<LayoutObject*>* out_floats_for_min_max,
                  NGLineInfo*);
   void PrepareNextLine(NGLineInfo*);
 
@@ -115,6 +111,10 @@ class CORE_EXPORT NGLineBreaker {
   enum class LineBreakState {
     // The line breaking is complete.
     kDone,
+
+    // Overflow is detected without any earlier break opportunities. This line
+    // should break at the earliest break opportunity.
+    kOverflow,
 
     // Should complete the line at the earliest possible point.
     // Trailing spaces, <br>, or close tags should be included to the line even
@@ -136,7 +136,7 @@ class CORE_EXPORT NGLineBreaker {
                         const ShapeResult&,
                         LayoutUnit available_width,
                         NGLineInfo*);
-  bool ShouldHangTraillingSpaces(const NGInlineItem&);
+  bool BreakTextAtPreviousBreakOpportunity(NGInlineItemResult* item_result);
   bool HandleTextForFastMinContent(NGInlineItemResult*,
                                    const NGInlineItem&,
                                    const ShapeResult&,
@@ -152,6 +152,7 @@ class CORE_EXPORT NGLineBreaker {
                                        unsigned start,
                                        unsigned end);
 
+  void HandleTrailingSpaces(const NGInlineItem&, NGLineInfo*);
   void HandleTrailingSpaces(const NGInlineItem&,
                             const ShapeResult&,
                             NGLineInfo*);
@@ -170,14 +171,21 @@ class CORE_EXPORT NGLineBreaker {
   bool IsAtomicInlineBeforeNoBreakSpace(
       const NGInlineItemResult& item_result) const;
   void HandleFloat(const NGInlineItem&,
-                   Vector<LayoutObject*>* out_floats_for_min_max,
                    NGLineInfo*);
+  void HandleOutOfFlowPositioned(const NGInlineItem&, NGLineInfo*);
 
-  bool HandleOpenTag(const NGInlineItem&, NGLineInfo*);
+  void HandleOpenTag(const NGInlineItem&, NGLineInfo*);
   void HandleCloseTag(const NGInlineItem&, NGLineInfo*);
 
+  bool HandleOverflowIfNeeded(NGLineInfo*);
   void HandleOverflow(NGLineInfo*);
+  void RewindOverflow(unsigned new_end, NGLineInfo*);
   void Rewind(unsigned new_end, NGLineInfo*);
+  void ResetRewindLoopDetector() {
+#if DCHECK_IS_ON()
+    last_rewind_from_item_index_ = last_rewind_to_item_index_ = 0;
+#endif
+  }
 
   const ComputedStyle& ComputeCurrentStyle(unsigned item_result_index,
                                            NGLineInfo*) const;
@@ -195,6 +203,10 @@ class CORE_EXPORT NGLineBreaker {
   LayoutUnit AvailableWidthToFit() const {
     return AvailableWidth().AddEpsilon();
   }
+  LayoutUnit RemainingAvailableWidth() const {
+    return AvailableWidthToFit() - position_;
+  }
+  bool CanFitOnLine() const { return position_ <= AvailableWidthToFit(); }
   LayoutUnit ComputeAvailableWidth() const;
 
   // Represents the current offset of the input.
@@ -274,9 +286,6 @@ class CORE_EXPORT NGLineBreaker {
   };
   base::Optional<TrailingCollapsibleSpace> trailing_collapsible_space_;
 
-  // Keep track of item index where overflow occurrred.
-  unsigned overflow_item_index_;
-
   // Keep track of handled float items. See HandleFloat().
   const NGPositionedFloatVector& leading_floats_;
   unsigned leading_floats_index_ = 0u;
@@ -293,8 +302,14 @@ class CORE_EXPORT NGLineBreaker {
   // This is copied from NGInlineNode, then updated after each forced line break
   // if 'unicode-bidi: plaintext'.
   TextDirection base_direction_;
+
+#if DCHECK_IS_ON()
+  // These fields are to detect rewind-loop.
+  unsigned last_rewind_from_item_index_ = 0;
+  unsigned last_rewind_to_item_index_ = 0;
+#endif
 };
 
 }  // namespace blink
 
-#endif  // NGLineBreaker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BREAKER_H_

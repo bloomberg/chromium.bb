@@ -17,10 +17,11 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
+#include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/renderer/custom_dictionary_engine.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 class SpellcheckLanguage;
 struct SpellCheckResult;
@@ -52,6 +53,9 @@ class DictionaryUpdateObserver {
 class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
                    public spellcheck::mojom::SpellChecker {
  public:
+  using RendererTextCheckCallback =
+      base::OnceCallback<void(std::vector<SpellCheckResult>)>;
+
   // TODO(groby): I wonder if this can be private, non-mac only.
   class SpellcheckRequest;
   enum ResultFilter {
@@ -59,8 +63,8 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
     USE_NATIVE_CHECKER,  // Use native checker to double-check.
   };
 
-  SpellCheck(service_manager::BinderRegistry* registry,
-             service_manager::LocalInterfaceProvider* embedder_provider);
+  explicit SpellCheck(
+      service_manager::LocalInterfaceProvider* embedder_provider);
   ~SpellCheck() override;
 
   void AddSpellcheckLanguage(base::File file, const std::string& language);
@@ -93,6 +97,38 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
                       size_t* misspelling_len,
                       std::vector<base::string16>* optional_suggestions);
 
+  // Overload of SpellCheckWord where the replacement suggestions are kept
+  // separately per language, instead of combined into a single list. This is
+  // useful if the suggestions must be merged with another list of suggestions,
+  // for example in the case of the Windows hybrid spellchecker.
+  bool SpellCheckWord(
+      const base::char16* text_begin,
+      size_t position_in_text,
+      size_t text_length,
+      int tag,
+      size_t* misspelling_start,
+      size_t* misspelling_len,
+      spellcheck::PerLanguageSuggestions* optional_per_language_suggestions);
+
+  // Overload of SpellCheckWord for skipping optional suggestions with a
+  // nullptr, used to disambiguate between the other two overloads.
+  bool SpellCheckWord(const base::char16* text_begin,
+                      size_t position_in_text,
+                      size_t text_length,
+                      int tag,
+                      size_t* misspelling_start,
+                      size_t* misspelling_len,
+                      std::nullptr_t null_suggestions_ptr);
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  // Like SpellCheckParagraph, but only checks languages that the native checker
+  // can't handle.
+  // This method uses non-blink classes for the spellcheck results.
+  void HybridSpellCheckParagraph(const base::string16& text,
+                                 RendererTextCheckCallback callback);
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   // SpellCheck a paragraph.
   // Returns true if |text| is correctly spelled, false otherwise.
   // If the spellchecker failed to initialize, always returns true.
@@ -100,7 +136,6 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
       const base::string16& text,
       blink::WebVector<blink::WebTextCheckingResult>* results);
 
-#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   // Requests to spellcheck the specified text in the background. This function
   // posts a background task and calls SpellCheckParagraph() in the task.
   void RequestTextChecking(
@@ -126,22 +161,21 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
   // Remove observer on dictionary update event.
   void RemoveDictionaryUpdateObserver(DictionaryUpdateObserver* observer);
 
+  // Binds receivers for the SpellChecker interface.
+  void BindReceiver(
+      mojo::PendingReceiver<spellcheck::mojom::SpellChecker> receiver);
+
+  // Returns the current number of spell check languages.
+  size_t LanguageCount();
+
+  // Returns the current number of spell check languages with enabled engines.
+  size_t EnabledLanguageCount();
+
  private:
    friend class SpellCheckTest;
    FRIEND_TEST_ALL_PREFIXES(SpellCheckTest, GetAutoCorrectionWord_EN_US);
    FRIEND_TEST_ALL_PREFIXES(SpellCheckTest,
        RequestSpellCheckMultipleTimesWithoutInitialization);
-
-   // Evenly fill |optional_suggestions| with a maximum of |kMaxSuggestions|
-   // suggestions from |suggestions_list|. suggestions_list[i][j] is the j-th
-   // suggestion from the i-th language's suggestions. |optional_suggestions|
-   // cannot be null.
-   static void FillSuggestions(
-       const std::vector<std::vector<base::string16>>& suggestions_list,
-       std::vector<base::string16>* optional_suggestions);
-
-   // Binds requests for the SpellChecker interface.
-   void SpellCheckerRequest(spellcheck::mojom::SpellCheckerRequest request);
 
    // spellcheck::mojom::SpellChecker:
    void Initialize(
@@ -172,8 +206,8 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
    std::unique_ptr<SpellcheckRequest> pending_request_param_;
 #endif
 
-  // Bindings for SpellChecker clients.
-  mojo::BindingSet<spellcheck::mojom::SpellChecker> bindings_;
+  // Receivers for SpellChecker clients.
+  mojo::ReceiverSet<spellcheck::mojom::SpellChecker> receivers_;
 
   // A vector of objects used to actually check spelling, one for each enabled
   // language.

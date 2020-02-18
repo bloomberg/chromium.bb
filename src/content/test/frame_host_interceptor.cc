@@ -8,9 +8,11 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/frame.mojom-test-utils.h"
+#include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 
 namespace content {
 
@@ -22,18 +24,18 @@ class FrameHostInterceptor::FrameAgent
   FrameAgent(FrameHostInterceptor* interceptor, RenderFrameHost* rfh)
       : interceptor_(interceptor),
         rfhi_(static_cast<RenderFrameHostImpl*>(rfh)),
-        impl_(binding().SwapImplForTesting(this)) {}
+        impl_(receiver().SwapImplForTesting(this)) {}
 
   ~FrameAgent() override {
-    auto* old_impl = binding().SwapImplForTesting(impl_);
+    auto* old_impl = receiver().SwapImplForTesting(impl_);
     // TODO(https://crbug.com/729021): Investigate the scenario where
     // |old_impl| can be nullptr if the renderer process is killed.
     DCHECK_EQ(this, old_impl);
   }
 
  protected:
-  mojo::AssociatedBinding<mojom::FrameHost>& binding() {
-    return rfhi_->frame_host_binding_for_testing();
+  mojo::AssociatedReceiver<mojom::FrameHost>& receiver() {
+    return rfhi_->frame_host_receiver_for_testing();
   }
 
   // mojom::FrameHostInterceptorForTesting:
@@ -43,7 +45,7 @@ class FrameHostInterceptor::FrameAgent
       mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
-      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator) override {
     if (interceptor_->WillDispatchBeginNavigation(
@@ -80,7 +82,7 @@ bool FrameHostInterceptor::WillDispatchBeginNavigation(
     mojom::CommonNavigationParamsPtr* common_params,
     mojom::BeginNavigationParamsPtr* begin_params,
     mojo::PendingRemote<blink::mojom::BlobURLToken>* blob_url_token,
-    mojom::NavigationClientAssociatedPtrInfo* navigation_client,
+    mojo::PendingAssociatedRemote<mojom::NavigationClient>* navigation_client,
     mojo::PendingRemote<blink::mojom::NavigationInitiator>*
         navigation_initiator) {
   return true;

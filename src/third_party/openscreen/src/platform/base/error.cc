@@ -30,6 +30,10 @@ bool Error::operator==(const Error& other) const {
   return code_ == other.code_ && message_ == other.message_;
 }
 
+bool Error::operator!=(const Error& other) const {
+  return !(*this == other);
+}
+
 std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
   switch (code) {
     case Error::Code::kNone:
@@ -76,10 +80,18 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: ConnectionFailed";
     case Error::Code::kSocketOptionSettingFailure:
       return os << "Failure: SocketOptionSettingFailure";
+    case Error::Code::kSocketAcceptFailure:
+      return os << "Failure: SocketAcceptFailure";
     case Error::Code::kSocketBindFailure:
       return os << "Failure: SocketBindFailure";
     case Error::Code::kSocketClosedFailure:
       return os << "Failure: SocketClosedFailure";
+    case Error::Code::kSocketConnectFailure:
+      return os << "Failure: SocketConnectFailure";
+    case Error::Code::kSocketInvalidState:
+      return os << "Failure: SocketInvalidState";
+    case Error::Code::kSocketListenFailure:
+      return os << "Failure: SocketListenFailure";
     case Error::Code::kSocketReadFailure:
       return os << "Failure: SocketReadFailure";
     case Error::Code::kSocketSendFailure:
@@ -104,6 +116,18 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: JsonParseError";
     case Error::Code::kJsonWriteError:
       return os << "Failure: JsonWriteError";
+    case Error::Code::kFatalSSLError:
+      return os << "Failure: FatalSSLError";
+    case Error::Code::kRSAKeyGenerationFailure:
+      return os << "Failure: RSAKeyGenerationFailure";
+    case Error::Code::kEVPInitializationError:
+      return os << "Failure: EVPInitializationError";
+    case Error::Code::kCertificateCreationError:
+      return os << "Failure: CertificateCreationError";
+    case Error::Code::kCertificateValidationError:
+      return os << "Failure: CertificateValidationError";
+    case Error::Code::kSha256HashFailure:
+      return os << "Failure: Sha256HashFailure";
     case Error::Code::kFileLoadFailure:
       return os << "Failure: FileLoadFailure";
     case Error::Code::kErrCertsMissing:
@@ -144,6 +168,58 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: OperationInvalid";
     case Error::Code::kOperationCancelled:
       return os << "Failure: OperationCancelled";
+    case Error::Code::kCastV2PeerCertEmpty:
+      return os << "Failure: kCastV2PeerCertEmpty";
+    case Error::Code::kCastV2WrongPayloadType:
+      return os << "Failure: kCastV2WrongPayloadType";
+    case Error::Code::kCastV2NoPayload:
+      return os << "Failure: kCastV2NoPayload";
+    case Error::Code::kCastV2PayloadParsingFailed:
+      return os << "Failure: kCastV2PayloadParsingFailed";
+    case Error::Code::kCastV2MessageError:
+      return os << "Failure: CastV2kMessageError";
+    case Error::Code::kCastV2NoResponse:
+      return os << "Failure: kCastV2NoResponse";
+    case Error::Code::kCastV2FingerprintNotFound:
+      return os << "Failure: kCastV2FingerprintNotFound";
+    case Error::Code::kCastV2CertNotSignedByTrustedCa:
+      return os << "Failure: kCastV2CertNotSignedByTrustedCa";
+    case Error::Code::kCastV2CannotExtractPublicKey:
+      return os << "Failure: kCastV2CannotExtractPublicKey";
+    case Error::Code::kCastV2SignedBlobsMismatch:
+      return os << "Failure: kCastV2SignedBlobsMismatch";
+    case Error::Code::kCastV2TlsCertValidityPeriodTooLong:
+      return os << "Failure: kCastV2TlsCertValidityPeriodTooLong";
+    case Error::Code::kCastV2TlsCertValidStartDateInFuture:
+      return os << "Failure: kCastV2TlsCertValidStartDateInFuture";
+    case Error::Code::kCastV2TlsCertExpired:
+      return os << "Failure: kCastV2TlsCertExpired";
+    case Error::Code::kCastV2SenderNonceMismatch:
+      return os << "Failure: kCastV2SenderNonceMismatch";
+    case Error::Code::kCastV2DigestUnsupported:
+      return os << "Failure: kCastV2DigestUnsupported";
+    case Error::Code::kCastV2SignatureEmpty:
+      return os << "Failure: kCastV2SignatureEmpty";
+    case Error::Code::kCastV2ChannelNotOpen:
+      return os << "Failure: kCastV2ChannelNotOpen";
+    case Error::Code::kCastV2AuthenticationError:
+      return os << "Failure: kCastV2AuthenticationError";
+    case Error::Code::kCastV2ConnectError:
+      return os << "Failure: kCastV2ConnectError";
+    case Error::Code::kCastV2CastSocketError:
+      return os << "Failure: kCastV2CastSocketError";
+    case Error::Code::kCastV2TransportError:
+      return os << "Failure: kCastV2TransportError";
+    case Error::Code::kCastV2InvalidMessage:
+      return os << "Failure: kCastV2InvalidMessage";
+    case Error::Code::kCastV2InvalidChannelId:
+      return os << "Failure: kCastV2InvalidChannelId";
+    case Error::Code::kCastV2ConnectTimeout:
+      return os << "Failure: kCastV2ConnectTimeout";
+    case Error::Code::kCastV2PingTimeout:
+      return os << "Failure: kCastV2PingTimeout";
+    case Error::Code::kCastV2ChannelPolicyMismatch:
+      return os << "Failure: kCastV2ChannelPolicyMismatch";
   }
 
   // Unused 'return' to get around failure on GCC.

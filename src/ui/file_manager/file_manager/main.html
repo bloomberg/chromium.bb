@@ -393,10 +393,10 @@
           <div class="icon"></div>
         </button>
         <div id="search-box">
-          <cr-input type="search" tabindex="14" hidden
+          <cr-input type="search" tabindex="14" disabled
               aria-label="$i18n{SEARCH_TEXT_LABEL}" placeholder="$i18n{SEARCH_TEXT_LABEL}">
-            <span class="clear" slot="suffix" tabindex="14"
-              aria-label="$i18n{SEARCH_CLEAR_LABEL}" has-tooltip></span>
+            <cr-button class="clear" slot="suffix" tabindex="14"
+              aria-label="$i18n{SEARCH_CLEAR_LABEL}" has-tooltip></cr-button>
           </cr-input>
         </div>
         <button id="refresh-button" class="icon-button menu-button" tabindex="15" hidden
@@ -437,6 +437,7 @@
         </button>
         <button id="sort-button" class="icon-button menu-button" tabindex="18"
                 menu="#sort-menu"
+                aria-haspopup="true"
                 aria-label="$i18n{SORT_BUTTON_TOOLTIP}"
                 aria-activedescendant="sort-menu"
                 has-tooltip>
@@ -446,6 +447,7 @@
         <button id="gear-button" class="icon-button menu-button" tabindex="19"
                 menu="#gear-menu"
                 aria-label="$i18n{GEAR_BUTTON_TOOLTIP}"
+                aria-haspopup="true"
                 aria-activedescendant="gear-menu"
                 has-tooltip>
           <files-toggle-ripple></files-toggle-ripple>
@@ -487,7 +489,7 @@
         <div class="dialog-navigation-list-contents" role="navigation">
           <tree id="directory-tree" role="tree" tabindex="21"></tree>
         </div>
-        <div class="dialog-navigation-list-footer">
+        <div class="dialog-navigation-list-footer" hidden>
           <div id="progress-center" hidden>
             <li id="progress-center-close-view">
               <div class="progress-frame">
@@ -530,7 +532,7 @@
                   <div class="image"></div>
                   <span id="empty-folder-label" class="label">$i18n{EMPTY_FOLDER}</span>
                 </div>
-                <div class="detail-table" id="detail-table" tabindex="1" autofocus>
+                <div class="detail-table" id="detail-table" tabindex="1">
                 </div>
                 <grid class="thumbnail-grid" tabindex="2" hidden></grid>
                 <paper-progress class="loading-indicator" indeterminate hidden></paper-progress>
@@ -545,10 +547,8 @@
           </div>
         </div>
         <div class="files-feedback-panels" visibleif="full-page">
-          <xf-display-panel id="completed-panel">
-          </xf-display-panel>
-          <div class="files-vertical-padder-8"></div>
-          <xf-display-panel id="progress-panel">
+          <xf-display-panel id="progress-panel" role="complementary"
+                            aria-label="$i18n{FILES_FEEDBACK_WINDOW}">
           </xf-display-panel>
         </div>
       </div>

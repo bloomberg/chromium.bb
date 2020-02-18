@@ -30,6 +30,7 @@ extern const char kPriorityKey[];
 extern const char kRuleConditionKey[];
 extern const char kRuleActionKey[];
 extern const char kUrlFilterKey[];
+extern const char kRegexFilterKey[];
 extern const char kIsUrlFilterCaseSensitiveKey[];
 extern const char kDomainsKey[];
 extern const char kExcludedDomainsKey[];
@@ -63,6 +64,8 @@ extern const char kQueryTransformRemoveParamsKey[];
 extern const char kQueryTransformAddReplaceParamsKey[];
 extern const char kQueryKeyKey[];
 extern const char kQueryValueKey[];
+extern const char kRegexSubstitutionKey[];
+extern const char kRegexSubstitutionPath[];
 
 }  // namespace declarative_net_request
 }  // namespace extensions

@@ -37,7 +37,7 @@ class GetDirectoryCommitsTest(cros_test_lib.MockTestCase):
                                           end_date=end_date)
 
     self.assertEqual(log.call_args_list, [
-        mock.call('foo/bar', pretty='format:"%h|%cd|%s"',
+        mock.call('foo/bar', format='format:"%h|%cd|%s"',
                   after='1996-01-01', until='1997-01-01', reverse=True,
                   date='unix', paths=['foo/bar'])
     ])

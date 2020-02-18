@@ -42,12 +42,16 @@
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 #include "third_party/blink/renderer/core/editing/selection_controller.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
@@ -93,6 +97,8 @@
 #include "third_party/blink/renderer/core/style/cursor_data.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -118,8 +124,29 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
   if (!target_node || !target_node->parentNode())
     return true;
   if (auto* shadow_root = DynamicTo<ShadowRoot>(target_node))
-    return IsHTMLInputElement(shadow_root->host());
+    return IsA<HTMLInputElement>(shadow_root->host());
   return false;
+}
+
+IntPoint GetMiddleSelectionCaretOfPosition(
+    const PositionWithAffinity& position) {
+  const LocalCaretRect& local_caret_rect = LocalCaretRectOfPosition(position);
+  if (local_caret_rect.IsEmpty())
+    return IntPoint();
+  const IntRect rect = AbsoluteCaretBoundsOf(position);
+  // In a multiline edit, rect.MaxY() would end up on the next line, so
+  // take the midpoint in order to use this corner point directly.
+  if (local_caret_rect.layout_object->IsHorizontalWritingMode())
+    return {rect.X(), (rect.Y() + rect.MaxY()) / 2};
+
+  // When text is vertical, rect.MaxX() would end up on the next line, so
+  // take the midpoint in order to use this corner point directly.
+  return {(rect.X() + rect.MaxX()) / 2, rect.Y()};
+}
+
+bool ContainsEvenAtEdge(const IntRect& rect, const IntPoint& point) {
+  return point.X() >= rect.X() && point.X() <= rect.MaxX() &&
+         point.Y() >= rect.Y() && point.Y() <= rect.MaxY();
 }
 
 }  // namespace
@@ -216,7 +243,6 @@ void EventHandler::Clear() {
   frame_set_being_resized_ = nullptr;
   drag_target_ = nullptr;
   should_only_fire_drag_over_event_ = false;
-  last_mouse_down_user_gesture_token_ = nullptr;
   capturing_mouse_events_element_ = nullptr;
   capturing_subframe_element_ = nullptr;
   pointer_event_manager_->Clear();
@@ -374,8 +400,9 @@ IntPoint EventHandler::DragDataTransferLocationForTesting() {
 }
 
 static bool IsSubmitImage(Node* node) {
-  return IsHTMLInputElement(node) &&
-         ToHTMLInputElement(node)->type() == input_type_names::kImage;
+  auto* html_input_element = DynamicTo<HTMLInputElement>(node);
+  return html_input_element &&
+         html_input_element->type() == input_type_names::kImage;
 }
 
 bool EventHandler::UseHandCursor(Node* node, bool is_over_link) {
@@ -483,8 +510,25 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
   if (!node)
     return SelectAutoCursor(result, node, IBeamCursor());
 
-  if (ShouldShowResizeForNode(node, location))
-    return PointerCursor();
+  if (ShouldShowResizeForNode(node, location)) {
+    const LayoutBox* box =
+        node->GetLayoutObject()->EnclosingLayer()->GetLayoutBox();
+    EResize resize = box->StyleRef().Resize(box->ContainingBlock()->StyleRef());
+    switch (resize) {
+      case EResize::kVertical:
+        return NorthSouthResizeCursor();
+      case EResize::kHorizontal:
+        return EastWestResizeCursor();
+      case EResize::kBoth:
+        if (box->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+          return SouthWestResizeCursor();
+        } else {
+          return SouthEastResizeCursor();
+        }
+      default:
+        return PointerCursor();
+    }
+  }
 
   LayoutObject* layout_object = node->GetLayoutObject();
   const ComputedStyle* style = layout_object ? layout_object->Style() : nullptr;
@@ -713,16 +757,12 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   }
 
   if (event_handling_util::ShouldDiscardEventTargetingFrame(mev.Event(),
-                                                            *frame_))
+                                                            *frame_)) {
     return WebInputEventResult::kHandledSuppressed;
+  }
 
-  std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(
-          frame_, UserGestureToken::kPossiblyExistingGesture, true);
-  frame_->LocalFrameRoot()
-      .GetEventHandler()
-      .last_mouse_down_user_gesture_token_ =
-      UserGestureIndicator::CurrentToken();
+  LocalFrame::NotifyUserActivation(frame_, true);
+
   if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
     // We store whether middle click autoscroll is in progress before calling
     // stopAutoscroll() because it will set m_autoscrollType to NoAutoscroll on
@@ -1103,25 +1143,10 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
 
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
 
-  std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (event_handling_util::ShouldDiscardEventTargetingFrame(mev.Event(),
                                                             *frame_)) {
     event_result = WebInputEventResult::kHandledSuppressed;
   } else {
-    // Mouse events will be associated with the Document where mousedown
-    // occurred. If, e.g., there is a mousedown, then a drag to a different
-    // Document and mouseup there, the mouseup's gesture will be associated with
-    // the mousedown's Document. It's not absolutely certain that this is the
-    // correct behavior.
-    if (frame_->LocalFrameRoot()
-            .GetEventHandler()
-            .last_mouse_down_user_gesture_token_) {
-      gesture_indicator = std::make_unique<UserGestureIndicator>(
-          std::move(frame_->LocalFrameRoot()
-                        .GetEventHandler()
-                        .last_mouse_down_user_gesture_token_));
-    }
-
     event_result = DispatchMousePointerEvent(
         WebInputEvent::kPointerUp, mev.InnerElement(), mev.CanvasRegionId(),
         mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>(),
@@ -1425,6 +1450,10 @@ void EventHandler::ElementRemoved(Element* target) {
 
 void EventHandler::ResetMousePositionForPointerUnlock() {
   pointer_event_manager_->RemoveLastMousePosition();
+}
+
+bool EventHandler::LongTapShouldInvokeContextMenu() {
+  return gesture_manager_->LongTapShouldInvokeContextMenu();
 }
 
 WebInputEventResult EventHandler::DispatchMousePointerEvent(
@@ -2025,15 +2054,42 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
   if (!override_target_element && ShouldShowContextMenuAtSelection(selection)) {
     DCHECK(!doc->NeedsLayoutTreeUpdate());
 
-    IntRect first_rect =
-        FirstRectForRange(selection.ComputeVisibleSelectionInDOMTree()
-                              .ToNormalizedEphemeralRange());
+    // Enclose the selection rect fully between the handles. If the handles are
+    // on the same line, the selection rect is empty.
+    const SelectionInDOMTree& visible_selection =
+        selection.ComputeVisibleSelectionInDOMTree().AsSelection();
+    const PositionWithAffinity start_position(
+        visible_selection.ComputeStartPosition(), visible_selection.Affinity());
+    const IntPoint start_point =
+        GetMiddleSelectionCaretOfPosition(start_position);
+    const PositionWithAffinity end_position(
+        visible_selection.ComputeEndPosition(), visible_selection.Affinity());
+    const IntPoint end_point = GetMiddleSelectionCaretOfPosition(end_position);
 
-    int x = first_rect.X();
-    // In a multiline edit, firstRect.maxY() would end up on the next line, so
-    // take the midpoint.
-    int y = (first_rect.MaxY() + first_rect.Y()) / 2;
-    location_in_root_frame = view->ConvertToRootFrame(IntPoint(x, y));
+    int left = std::min(start_point.X(), end_point.X());
+    int top = std::min(start_point.Y(), end_point.Y());
+    int right = std::max(start_point.X(), end_point.X());
+    int bottom = std::max(start_point.Y(), end_point.Y());
+
+    // Intersect the selection rect and the visible bounds of focused_element.
+    if (focused_element) {
+      IntRect clipped_rect = view->ViewportToFrame(
+          focused_element->VisibleBoundsInVisualViewport());
+      left = std::max(clipped_rect.X(), left);
+      top = std::max(clipped_rect.Y(), top);
+      right = std::min(clipped_rect.MaxX(), right);
+      bottom = std::min(clipped_rect.MaxY(), bottom);
+    }
+    IntRect selection_rect = IntRect(left, top, right - left, bottom - top);
+
+    if (ContainsEvenAtEdge(selection_rect, start_point)) {
+      location_in_root_frame = view->ConvertToRootFrame(start_point);
+    } else if (ContainsEvenAtEdge(selection_rect, end_point)) {
+      location_in_root_frame = view->ConvertToRootFrame(end_point);
+    } else {
+      location_in_root_frame =
+          view->ConvertToRootFrame(selection_rect.Center());
+    }
   } else if (focused_element) {
     IntRect clipped_rect = focused_element->BoundsInViewport();
     location_in_root_frame =
@@ -2124,7 +2180,7 @@ void EventHandler::MayUpdateHoverWhenContentUnderMouseChanged(
 }
 
 void EventHandler::MayUpdateHoverAfterScroll(
-    const FloatQuad& scroller_rect_in_frame) {
+    const FloatRect& scroller_rect_in_frame) {
   mouse_event_manager_->MayUpdateHoverAfterScroll(scroller_rect_in_frame);
 }
 
@@ -2335,11 +2391,7 @@ WebInputEventResult EventHandler::PassMouseMoveEventToSubframe(
 WebInputEventResult EventHandler::PassMouseReleaseEventToSubframe(
     MouseEventWithHitTestResults& mev,
     LocalFrame* subframe) {
-  WebInputEventResult result =
-      subframe->GetEventHandler().HandleMouseReleaseEvent(mev.Event());
-  if (result != WebInputEventResult::kNotHandled)
-    return result;
-  return WebInputEventResult::kHandledSystem;
+  return subframe->GetEventHandler().HandleMouseReleaseEvent(mev.Event());
 }
 
 void EventHandler::CaptureMouseEventsToWidget(bool capture) {

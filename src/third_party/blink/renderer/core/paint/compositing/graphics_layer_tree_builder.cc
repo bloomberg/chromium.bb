@@ -41,11 +41,11 @@ GraphicsLayerTreeBuilder::GraphicsLayerTreeBuilder() = default;
 GraphicsLayerTreeBuilder::~GraphicsLayerTreeBuilder() = default;
 
 static bool ShouldAppendLayer(const PaintLayer& layer) {
-  Node* node = layer.GetLayoutObject().GetNode();
-  if (node && IsHTMLVideoElement(*node)) {
-    HTMLVideoElement* element = ToHTMLVideoElement(node);
-    if (element->IsFullscreen() && element->UsesOverlayFullscreenVideo())
-      return false;
+  auto* video_element =
+      DynamicTo<HTMLVideoElement>(layer.GetLayoutObject().GetNode());
+  if (video_element && video_element->IsFullscreen() &&
+      video_element->UsesOverlayFullscreenVideo()) {
+    return false;
   }
   return true;
 }
@@ -89,11 +89,17 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
   PaintLayerListMutationDetector mutation_checker(layer);
 #endif
 
+  bool recursion_blocked_by_display_lock =
+      layer.GetLayoutObject().PrePaintBlockedByDisplayLock(
+          DisplayLockLifecycleTarget::kChildren);
+
   if (layer.IsStackingContextWithNegativeZOrderChildren()) {
-    PaintLayerPaintOrderIterator iterator(layer, kNegativeZOrderChildren);
-    while (PaintLayer* child_layer = iterator.Next()) {
-      RebuildRecursive(*child_layer, *layer_vector_for_children,
-                       *pending_reparents_for_children);
+    if (!recursion_blocked_by_display_lock) {
+      PaintLayerPaintOrderIterator iterator(layer, kNegativeZOrderChildren);
+      while (PaintLayer* child_layer = iterator.Next()) {
+        RebuildRecursive(*child_layer, *layer_vector_for_children,
+                         *pending_reparents_for_children);
+      }
     }
 
     // If a negative z-order child is compositing, we get a foreground layer
@@ -105,7 +111,7 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
     }
   }
 
-  {
+  if (!recursion_blocked_by_display_lock) {
     PaintLayerPaintOrderIterator iterator(layer,
                                           kNormalFlowAndPositiveZOrderChildren);
     while (PaintLayer* child_layer = iterator.Next()) {

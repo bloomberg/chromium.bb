@@ -60,11 +60,11 @@
       }
 
       iron-icon[icon='settings:check-circle'] {
-        fill: var(--cr-checked-color);
+        fill: var(--cros-default-button-color);
       }
 
       iron-icon[icon='cr:error'] {
-        fill: var(--settings-error-color);
+        fill: var(--cros-error-color);
       }
 
       .settings-box .start {
@@ -87,7 +87,8 @@
             <img id="product-logo" on-click="onProductLogoClick_"
                 srcset="chrome://theme/current-channel-logo@1x 1x,
                         chrome://theme/current-channel-logo@2x 2x"
-                alt="$i18n{aboutProductLogoAlt}">
+                alt="$i18n{aboutProductLogoAlt}"
+                role="presentation">
             <h1 class="product-title">$i18n{aboutOsProductTitle}</h1>
           </div>
           <div class="settings-box two-line">
@@ -175,14 +176,19 @@
 </if>
           <cr-link-row class="hr" id="detailed-build-info-trigger"
               on-click="onDetailedBuildInfoClick_"
-              label="$i18n{aboutDetailedBuildInfo}"></cr-link-row>
+              label="$i18n{aboutDetailedBuildInfo}"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
           <cr-link-row class="hr" on-click="onManagementPageClick_"
               start-icon="cr:domain" label="$i18n{managementPage}"
               hidden$="[[!isManaged_]]" external></cr-link-row>
         </div>
         <template is="dom-if" route-path="/help/details">
           <settings-subpage page-title="$i18n{aboutDetailedBuildInfo}">
-            <settings-detailed-build-info></settings-detailed-build-info>
+            <settings-detailed-build-info
+                eol-message-with-month-and-year=
+                    "[[eolMessageWithMonthAndYear_]]">
+            </settings-detailed-build-info>
           </settings-subpage>
         </template>
       </settings-animated-pages>

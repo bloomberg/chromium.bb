@@ -1,8 +1,8 @@
 {
   "comments": [
-    "Runs tests on FYI on the latest simulators."
+    "Runs tests on FYI on iOS12 simulators."
   ],
-  "xcode build version": "11a420a",
+  "xcode build version": "11a1027",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -21,8 +21,8 @@
       ],
       "device type": "iPhone 6s",
       "os": "12.2",
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome"
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
     },
     {
       "app": "ios_chrome_integration_egtests",
@@ -32,8 +32,8 @@
       "device type": "iPhone 6s",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome"
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
     },
     {
       "app": "ios_chrome_integration_egtests",
@@ -43,8 +43,8 @@
       "device type": "iPad Air 2",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome"
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
     },
     {
       "app": "ios_chrome_integration_egtests",
@@ -54,8 +54,8 @@
       "device type": "iPhone 6s",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome"
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
     },
     {
       "app": "ios_chrome_smoke_egtests",
@@ -65,8 +65,8 @@
       "device type": "iPhone 6s",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome"
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
     },
     {
       "app": "ios_chrome_web_egtests",
@@ -76,8 +76,8 @@
       "device type": "iPhone 6s",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome"
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
     },
     {
       "app": "ios_web_shell_egtests",
@@ -87,8 +87,8 @@
       "device type": "iPhone 6s",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome"
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
     },
     {
       "app": "ios_chrome_ui_egtests",
@@ -98,8 +98,8 @@
       "device type": "iPhone 6s",
       "os": "12.2",
       "xctest": true,
-      "host os": "Mac-10.14.4",
-      "pool":"Chrome"
+      "host os": "Mac-10.14.6",
+      "pool":"chromium.tests"
     }
   ]
 }

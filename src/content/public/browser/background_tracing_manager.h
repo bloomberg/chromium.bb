@@ -43,8 +43,7 @@ class BackgroundTracingManager {
   //
   using FinishedProcessingCallback = base::OnceCallback<void(bool success)>;
   using ReceiveCallback =
-      base::RepeatingCallback<void(const scoped_refptr<base::RefCountedString>&,
-                                   std::unique_ptr<const base::DictionaryValue>,
+      base::RepeatingCallback<void(std::unique_ptr<std::string>,
                                    FinishedProcessingCallback)>;
 
   // Set the triggering rules for when to start recording.
@@ -73,11 +72,11 @@ class BackgroundTracingManager {
 
   // Notifies the caller when the manager is idle (not recording or uploading),
   // so that a call to SetActiveScenario() is likely to succeed.
-  typedef base::Callback<void()> IdleCallback;
+  using IdleCallback = base::RepeatingCallback<void()>;
   virtual void WhenIdle(IdleCallback idle_callback) = 0;
 
-  typedef base::Callback<void(bool)> StartedFinalizingCallback;
-  typedef int TriggerHandle;
+  using StartedFinalizingCallback = base::OnceCallback<void(bool)>;
+  using TriggerHandle = int;
 
   // Notifies that a manual trigger event has occurred, and we may need to
   // either begin recording or finalize the trace, depending on the config.

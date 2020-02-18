@@ -72,13 +72,14 @@ std::unique_ptr<View> CreateAllColorsView() {
                         GridLayout::USE_PREF, 0, 0);
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_WindowBackground));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_DialogBackground));
+  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_DialogForeground));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_BubbleBackground));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_FocusedBorderColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_UnfocusedBorderColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonEnabledColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonDisabledColor));
-  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonHoverColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonPressedShade));
+  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonUncheckedColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ProminentButtonColor));
   InsertColorRow(layout,
                  COLOR_LABEL_ARGS(kColorId_ProminentButtonFocusedColor));
@@ -86,10 +87,6 @@ std::unique_ptr<View> CreateAllColorsView() {
                  COLOR_LABEL_ARGS(kColorId_ProminentButtonDisabledColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TextOnProminentButtonColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonBorderColor));
-  InsertColorRow(layout,
-                 COLOR_LABEL_ARGS(kColorId_TouchableMenuItemLabelColor));
-  InsertColorRow(layout, COLOR_LABEL_ARGS(
-                             kColorId_ActionableSubmenuVerticalSeparatorColor));
   InsertColorRow(layout,
                  COLOR_LABEL_ARGS(kColorId_EnabledMenuItemForegroundColor));
   InsertColorRow(layout,
@@ -107,11 +104,10 @@ std::unique_ptr<View> CreateAllColorsView() {
   InsertColorRow(layout,
                  COLOR_LABEL_ARGS(kColorId_HighlightedMenuItemForegroundColor));
   InsertColorRow(layout,
-                 COLOR_LABEL_ARGS(kColorId_MenuItemAlertBackgroundColorMax));
-  InsertColorRow(layout,
-                 COLOR_LABEL_ARGS(kColorId_MenuItemAlertBackgroundColorMin));
+                 COLOR_LABEL_ARGS(kColorId_MenuItemAlertBackgroundColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_LabelEnabledColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_LabelDisabledColor));
+  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_LabelSecondaryColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_LabelTextSelectionColor));
   InsertColorRow(
       layout, COLOR_LABEL_ARGS(kColorId_LabelTextSelectionBackgroundFocused));

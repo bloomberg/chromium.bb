@@ -114,15 +114,17 @@ ComputedEffectTiming* Timing::getComputedTiming(
   computed_timing->setEndTime(EndTimeInternal() * 1000);
   computed_timing->setActiveDuration(ActiveDuration() * 1000);
 
-  if (IsNull(calculated_timing.local_time)) {
+  if (calculated_timing.local_time)
+    computed_timing->setLocalTime(calculated_timing.local_time.value() * 1000);
+  else
     computed_timing->setLocalTimeToNull();
-  } else {
-    computed_timing->setLocalTime(calculated_timing.local_time * 1000);
-  }
 
   if (calculated_timing.is_in_effect) {
+    DCHECK(calculated_timing.current_iteration);
+    DCHECK(calculated_timing.progress);
     computed_timing->setProgress(calculated_timing.progress.value());
-    computed_timing->setCurrentIteration(calculated_timing.current_iteration);
+    computed_timing->setCurrentIteration(
+        calculated_timing.current_iteration.value());
   } else {
     computed_timing->setProgressToNull();
     computed_timing->setCurrentIterationToNull();
@@ -150,14 +152,15 @@ ComputedEffectTiming* Timing::getComputedTiming(
 }
 
 Timing::CalculatedTiming Timing::CalculateTimings(
-    double local_time,
+    base::Optional<double> local_time,
     AnimationDirection animation_direction,
-    bool is_keyframe_effect) const {
+    bool is_keyframe_effect,
+    base::Optional<double> playback_rate) const {
   const double active_duration = ActiveDuration();
 
   const Timing::Phase current_phase =
       CalculatePhase(active_duration, local_time, animation_direction, *this);
-  const double active_time =
+  const base::Optional<AnimationTimeDelta> active_time =
       CalculateActiveTime(active_duration, ResolvedFillMode(is_keyframe_effect),
                           local_time, current_phase, *this);
 
@@ -171,7 +174,7 @@ Timing::CalculatedTiming Timing::CalculateTimings(
       CalculateSimpleIterationProgress(current_phase, overall_progress,
                                        iteration_start, active_time,
                                        active_duration, iteration_count);
-  const double current_iteration =
+  const base::Optional<double> current_iteration =
       CalculateCurrentIteration(current_phase, active_time, iteration_count,
                                 overall_progress, simple_iteration_progress);
   const bool current_direction_is_forwards =
@@ -179,9 +182,9 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   const base::Optional<double> directed_progress = CalculateDirectedProgress(
       simple_iteration_progress, current_iteration, direction);
 
-  progress = CalculateTransformedProgress(
-      current_phase, directed_progress, iteration_duration,
-      current_direction_is_forwards, timing_function);
+  progress = CalculateTransformedProgress(current_phase, directed_progress,
+                                          current_direction_is_forwards,
+                                          timing_function);
 
   double time_to_next_iteration = std::numeric_limits<double>::infinity();
   // Conditionally compute the time to next iteration, which is only
@@ -190,14 +193,18 @@ Timing::CalculatedTiming Timing::CalculateTimings(
     const double start_offset =
         MultiplyZeroAlwaysGivesZero(iteration_start, iteration_duration);
     DCHECK_GE(start_offset, 0);
-    const base::Optional<double> offset_active_time =
+    const base::Optional<AnimationTimeDelta> offset_active_time =
         CalculateOffsetActiveTime(active_duration, active_time, start_offset);
-    const base::Optional<double> iteration_time = CalculateIterationTime(
-        iteration_duration, active_duration, offset_active_time, start_offset,
-        current_phase, *this);
+    const base::Optional<AnimationTimeDelta> iteration_time =
+        CalculateIterationTime(iteration_duration, active_duration,
+                               offset_active_time, start_offset, current_phase,
+                               *this);
     if (iteration_time) {
-      time_to_next_iteration = iteration_duration - iteration_time.value();
-      if (active_duration - active_time < time_to_next_iteration)
+      // active_time cannot be null if iteration_time is not null.
+      DCHECK(active_time);
+      time_to_next_iteration =
+          iteration_duration - iteration_time->InSecondsF();
+      if (active_duration - active_time->InSecondsF() < time_to_next_iteration)
         time_to_next_iteration = std::numeric_limits<double>::infinity();
     }
   }
@@ -206,10 +213,18 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   calculated.phase = current_phase;
   calculated.current_iteration = current_iteration;
   calculated.progress = progress;
-  calculated.is_in_effect = !IsNull(active_time);
+  calculated.is_in_effect = active_time.has_value();
+  // If active_time is not null then current_iteration and (transformed)
+  // progress are also non-null).
+  DCHECK(!calculated.is_in_effect ||
+         (current_iteration.has_value() && progress.has_value()));
   calculated.is_in_play = calculated.phase == Timing::kPhaseActive;
-  calculated.is_current =
-      calculated.phase == Timing::kPhaseBefore || calculated.is_in_play;
+  // https://drafts.csswg.org/web-animations-1/#current
+  calculated.is_current = calculated.is_in_play ||
+                          (playback_rate.has_value() && playback_rate > 0 &&
+                           calculated.phase == Timing::kPhaseBefore) ||
+                          (playback_rate.has_value() && playback_rate < 0 &&
+                           calculated.phase == Timing::kPhaseAfter);
   calculated.local_time = local_time;
   calculated.time_to_next_iteration = time_to_next_iteration;
 

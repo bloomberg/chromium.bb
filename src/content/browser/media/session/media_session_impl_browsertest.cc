@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "build/build_config.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_service_impl.h"
@@ -266,9 +267,11 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   bool IsDucking() const { return media_session_->is_ducking_; }
 
   base::string16 GetExpectedSourceTitle() {
-    return base::StrCat(
-        {kExpectedSourceTitlePrefix,
-         base::NumberToString16(embedded_test_server()->port())});
+    base::string16 expected_title =
+        base::StrCat({kExpectedSourceTitlePrefix,
+                      base::NumberToString16(embedded_test_server()->port())});
+
+    return expected_title.substr(strlen("http://"));
   }
 
  protected:
@@ -306,7 +309,9 @@ class MediaSessionImplSyncBrowserTest : public MediaSessionImplBrowserTest {
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(, MediaSessionImplParamBrowserTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         MediaSessionImplParamBrowserTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
                        PlayersFromSameObserverDoNotStopEachOtherInSameSession) {
@@ -2702,7 +2707,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   }
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 // TODO(https://crbug.com/1000400): Re-enable this test.
 #define MAYBE_PositionStateRouteWithOnePlayer \
   DISABLED_PositionStateRouteWithOnePlayer
@@ -2711,8 +2716,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
                        MAYBE_PositionStateRouteWithOnePlayer) {
-  NavigateToURL(shell(), embedded_test_server()->GetURL(
-                             "example.com", "/media/session/position.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("example.com",
+                                              "/media/session/position.html")));
 
   auto* main_frame = shell()->web_contents()->GetMainFrame();
   const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(6060);

@@ -79,9 +79,7 @@ class BookmarkEditorView : public BookmarkEditor,
   ~BookmarkEditorView() override;
 
   // views::DialogDelegateView:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  std::unique_ptr<views::View> CreateExtraView() override;
   ui::ModalType GetModalType() const override;
   bool CanResize() const override;
   bool ShouldShowCloseButton() const override;
@@ -261,7 +259,7 @@ class BookmarkEditorView : public BookmarkEditor,
   bool running_menu_for_root_ = false;
 
   // Is the tree shown?
-  bool show_tree_;
+  const bool show_tree_;
 
   // List of deleted bookmark folders.
   std::vector<int64_t> deletes_;

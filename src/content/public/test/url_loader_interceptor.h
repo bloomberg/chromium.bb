@@ -12,7 +12,9 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -66,18 +68,19 @@ class URLLoaderInterceptor {
     // browser process).
     int process_id;
     // The following are the parameters to CreateLoaderAndStart.
-    network::mojom::URLLoaderRequest request;
+    mojo::PendingReceiver<network::mojom::URLLoader> receiver;
     int32_t routing_id;
     int32_t request_id;
     uint32_t options;
     network::ResourceRequest url_request;
-    network::mojom::URLLoaderClientPtr client;
+    mojo::Remote<network::mojom::URLLoaderClient> client;
     net::MutableNetworkTrafficAnnotationTag traffic_annotation;
   };
   // Function signature for intercept method.
   // Return true if the request was intercepted. Otherwise this class will
   // forward the request to the original URLLoaderFactory.
-  using InterceptCallback = base::Callback<bool(RequestParams* params)>;
+  using InterceptCallback =
+      base::RepeatingCallback<bool(RequestParams* params)>;
 
   // Function signature for a loading completion method.
   // This class will listen on loading completion responses from the network,
@@ -92,9 +95,9 @@ class URLLoaderInterceptor {
   // and instead |ready_callback| is called after the interceptor is installed.
   // If provided, |completion_status_callback| is called when the load
   // completes.
-  explicit URLLoaderInterceptor(const InterceptCallback& callback);
+  explicit URLLoaderInterceptor(InterceptCallback callback);
   URLLoaderInterceptor(
-      const InterceptCallback& callback,
+      InterceptCallback callback,
       const URLLoaderCompletionStatusCallback& completion_status_callback,
       base::OnceClosure ready_callback);
 
@@ -148,33 +151,34 @@ class URLLoaderInterceptor {
 
   // Used to create a factory for subresources in the network service case.
   void CreateURLLoaderFactoryForSubresources(
-      network::mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int process_id,
-      network::mojom::URLLoaderFactoryPtrInfo original_factory);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory);
 
   // Callback on UI thread whenever a
   // StoragePartition::GetURLLoaderFactoryForBrowserProcess is called on an
   // object that doesn't have a test factory set up.
-  network::mojom::URLLoaderFactoryPtr GetURLLoaderFactoryForBrowserProcess(
-      network::mojom::URLLoaderFactoryPtr original_factory);
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+  GetURLLoaderFactoryForBrowserProcess(
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory);
 
   // Callback on IO thread whenever a NavigationURLLoaderImpl is loading a frame
   // request through ResourceDispatcherHost (i.e. when the network service is
   // disabled).
   bool BeginNavigationCallback(
-      network::mojom::URLLoaderRequest* request,
+      mojo::PendingReceiver<network::mojom::URLLoader>* receiver,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
-      network::mojom::URLLoaderClientPtr* client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient>* client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
 
   // Callback on UI thread whenever NavigationURLLoaderImpl needs a
   // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient or
   // for a non-network-service scheme.
   void InterceptNavigationRequestCallback(
-      network::mojom::URLLoaderFactoryRequest* request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* receiver);
 
   // Attempts to intercept the given request, returning true if it was
   // intercepted.

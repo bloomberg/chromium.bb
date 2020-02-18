@@ -93,15 +93,6 @@ WebURL WebDocumentLoaderImpl::UnreachableURL() const {
   return DocumentLoader::UnreachableURL();
 }
 
-int WebDocumentLoaderImpl::ErrorCode() const {
-  return DocumentLoader::ErrorCode();
-}
-
-network::mojom::IPAddressSpace WebDocumentLoaderImpl::GetIPAddressSpace()
-    const {
-  return DocumentLoader::GetIPAddressSpace();
-}
-
 void WebDocumentLoaderImpl::RedirectChain(WebVector<WebURL>& result) const {
   result.Assign(redirect_chain_);
 }
@@ -152,11 +143,6 @@ void WebDocumentLoaderImpl::SetSubresourceFilter(
 
 void WebDocumentLoaderImpl::SetLoadingHintsProvider(
     std::unique_ptr<blink::WebLoadingHintsProvider> loading_hints_provider) {
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
-    return;
-  }
-
   DocumentLoader::SetPreviewsResourceLoadingHints(
       PreviewsResourceLoadingHints::CreateFromLoadingHintsProvider(
           *GetFrame()->GetDocument(), std::move(loading_hints_provider)));
@@ -182,6 +168,10 @@ void WebDocumentLoaderImpl::ResumeParser() {
 
 bool WebDocumentLoaderImpl::HasBeenLoadedAsWebArchive() const {
   return archive_ || (archive_load_result_ != mojom::MHTMLLoadResult::kSuccess);
+}
+
+WebURLRequest::PreviewsState WebDocumentLoaderImpl::GetPreviewsState() const {
+  return DocumentLoader::GetPreviewsState();
 }
 
 WebArchiveInfo WebDocumentLoaderImpl::GetArchiveInfo() const {

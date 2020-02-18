@@ -18,6 +18,7 @@
 #include "libGLESv2/entry_points_gles_2_0_autogen.h"
 #include "libGLESv2/entry_points_gles_3_0_autogen.h"
 #include "libGLESv2/entry_points_gles_3_1_autogen.h"
+#include "libGLESv2/entry_points_gles_3_2_autogen.h"
 #include "libGLESv2/entry_points_gles_ext_autogen.h"
 #include "platform/Platform.h"
 
@@ -114,6 +115,7 @@ ProcEntry g_procTable[] = {
     {"eglSurfaceAttrib", P(EGL_SurfaceAttrib)},
     {"eglSwapBuffers", P(EGL_SwapBuffers)},
     {"eglSwapBuffersWithDamageKHR", P(EGL_SwapBuffersWithDamageKHR)},
+    {"eglSwapBuffersWithFrameTokenANGLE", P(EGL_SwapBuffersWithFrameTokenANGLE)},
     {"eglSwapInterval", P(EGL_SwapInterval)},
     {"eglTerminate", P(EGL_Terminate)},
     {"eglWaitClient", P(EGL_WaitClient)},
@@ -372,6 +374,8 @@ ProcEntry g_procTable[] = {
     {"glDisableClientState", P(gl::DisableClientState)},
     {"glDisableClientStateContextANGLE", P(gl::DisableClientStateContextANGLE)},
     {"glDisableContextANGLE", P(gl::DisableContextANGLE)},
+    {"glDisableExtensionANGLE", P(gl::DisableExtensionANGLE)},
+    {"glDisableExtensionANGLEContextANGLE", P(gl::DisableExtensionANGLEContextANGLE)},
     {"glDisableVertexAttribArray", P(gl::DisableVertexAttribArray)},
     {"glDisableVertexAttribArrayContextANGLE", P(gl::DisableVertexAttribArrayContextANGLE)},
     {"glDiscardFramebufferEXT", P(gl::DiscardFramebufferEXT)},
@@ -398,6 +402,10 @@ ProcEntry g_procTable[] = {
     {"glDrawBuffersEXT", P(gl::DrawBuffersEXT)},
     {"glDrawBuffersEXTContextANGLE", P(gl::DrawBuffersEXTContextANGLE)},
     {"glDrawElements", P(gl::DrawElements)},
+    {"glDrawElementsBaseVertexEXT", P(gl::DrawElementsBaseVertexEXT)},
+    {"glDrawElementsBaseVertexEXTContextANGLE", P(gl::DrawElementsBaseVertexEXTContextANGLE)},
+    {"glDrawElementsBaseVertexOES", P(gl::DrawElementsBaseVertexOES)},
+    {"glDrawElementsBaseVertexOESContextANGLE", P(gl::DrawElementsBaseVertexOESContextANGLE)},
     {"glDrawElementsContextANGLE", P(gl::DrawElementsContextANGLE)},
     {"glDrawElementsIndirect", P(gl::DrawElementsIndirect)},
     {"glDrawElementsIndirectContextANGLE", P(gl::DrawElementsIndirectContextANGLE)},
@@ -408,10 +416,22 @@ ProcEntry g_procTable[] = {
      P(gl::DrawElementsInstancedBaseVertexBaseInstanceANGLE)},
     {"glDrawElementsInstancedBaseVertexBaseInstanceANGLEContextANGLE",
      P(gl::DrawElementsInstancedBaseVertexBaseInstanceANGLEContextANGLE)},
+    {"glDrawElementsInstancedBaseVertexEXT", P(gl::DrawElementsInstancedBaseVertexEXT)},
+    {"glDrawElementsInstancedBaseVertexEXTContextANGLE",
+     P(gl::DrawElementsInstancedBaseVertexEXTContextANGLE)},
+    {"glDrawElementsInstancedBaseVertexOES", P(gl::DrawElementsInstancedBaseVertexOES)},
+    {"glDrawElementsInstancedBaseVertexOESContextANGLE",
+     P(gl::DrawElementsInstancedBaseVertexOESContextANGLE)},
     {"glDrawElementsInstancedContextANGLE", P(gl::DrawElementsInstancedContextANGLE)},
     {"glDrawElementsInstancedEXT", P(gl::DrawElementsInstancedEXT)},
     {"glDrawElementsInstancedEXTContextANGLE", P(gl::DrawElementsInstancedEXTContextANGLE)},
     {"glDrawRangeElements", P(gl::DrawRangeElements)},
+    {"glDrawRangeElementsBaseVertexEXT", P(gl::DrawRangeElementsBaseVertexEXT)},
+    {"glDrawRangeElementsBaseVertexEXTContextANGLE",
+     P(gl::DrawRangeElementsBaseVertexEXTContextANGLE)},
+    {"glDrawRangeElementsBaseVertexOES", P(gl::DrawRangeElementsBaseVertexOES)},
+    {"glDrawRangeElementsBaseVertexOESContextANGLE",
+     P(gl::DrawRangeElementsBaseVertexOESContextANGLE)},
     {"glDrawRangeElementsContextANGLE", P(gl::DrawRangeElementsContextANGLE)},
     {"glDrawTexfOES", P(gl::DrawTexfOES)},
     {"glDrawTexfOESContextANGLE", P(gl::DrawTexfOESContextANGLE)},
@@ -717,6 +737,8 @@ ProcEntry g_procTable[] = {
     {"glGetQueryivEXTContextANGLE", P(gl::GetQueryivEXTContextANGLE)},
     {"glGetQueryivRobustANGLE", P(gl::GetQueryivRobustANGLE)},
     {"glGetQueryivRobustANGLEContextANGLE", P(gl::GetQueryivRobustANGLEContextANGLE)},
+    {"glGetRenderbufferImageANGLE", P(gl::GetRenderbufferImageANGLE)},
+    {"glGetRenderbufferImageANGLEContextANGLE", P(gl::GetRenderbufferImageANGLEContextANGLE)},
     {"glGetRenderbufferParameteriv", P(gl::GetRenderbufferParameteriv)},
     {"glGetRenderbufferParameterivContextANGLE", P(gl::GetRenderbufferParameterivContextANGLE)},
     {"glGetRenderbufferParameterivOES", P(gl::GetRenderbufferParameterivOES)},
@@ -776,6 +798,8 @@ ProcEntry g_procTable[] = {
     {"glGetTexGenivOESContextANGLE", P(gl::GetTexGenivOESContextANGLE)},
     {"glGetTexGenxvOES", P(gl::GetTexGenxvOES)},
     {"glGetTexGenxvOESContextANGLE", P(gl::GetTexGenxvOESContextANGLE)},
+    {"glGetTexImageANGLE", P(gl::GetTexImageANGLE)},
+    {"glGetTexImageANGLEContextANGLE", P(gl::GetTexImageANGLEContextANGLE)},
     {"glGetTexLevelParameterfv", P(gl::GetTexLevelParameterfv)},
     {"glGetTexLevelParameterfvANGLE", P(gl::GetTexLevelParameterfvANGLE)},
     {"glGetTexLevelParameterfvANGLEContextANGLE", P(gl::GetTexLevelParameterfvANGLEContextANGLE)},
@@ -1006,6 +1030,9 @@ ProcEntry g_procTable[] = {
      P(gl::MultiDrawArraysInstancedBaseInstanceANGLEContextANGLE)},
     {"glMultiDrawElementsANGLE", P(gl::MultiDrawElementsANGLE)},
     {"glMultiDrawElementsANGLEContextANGLE", P(gl::MultiDrawElementsANGLEContextANGLE)},
+    {"glMultiDrawElementsBaseVertexEXT", P(gl::MultiDrawElementsBaseVertexEXT)},
+    {"glMultiDrawElementsBaseVertexEXTContextANGLE",
+     P(gl::MultiDrawElementsBaseVertexEXTContextANGLE)},
     {"glMultiDrawElementsInstancedANGLE", P(gl::MultiDrawElementsInstancedANGLE)},
     {"glMultiDrawElementsInstancedANGLEContextANGLE",
      P(gl::MultiDrawElementsInstancedANGLEContextANGLE)},
@@ -1512,5 +1539,5 @@ ProcEntry g_procTable[] = {
     {"glWeightPointerOES", P(gl::WeightPointerOES)},
     {"glWeightPointerOESContextANGLE", P(gl::WeightPointerOESContextANGLE)}};
 
-size_t g_numProcs = 1414;
+size_t g_numProcs = 1435;
 }  // namespace egl

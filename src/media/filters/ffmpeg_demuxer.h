@@ -39,8 +39,10 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decoder_buffer_queue.h"
 #include "media/base/demuxer.h"
+#include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/text_track_config.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
 #include "media/filters/blocking_url_protocol.h"
@@ -112,7 +114,7 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   // DemuxerStream implementation.
   Type type() const override;
   Liveness liveness() const override;
-  void Read(const ReadCB& read_cb) override;
+  void Read(ReadCB read_cb) override;
   bool IsReadPending() const override;
   void EnableBitstreamConverter() override;
   bool SupportsConfigChanges() override;
@@ -219,12 +221,12 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   // Demuxer implementation.
   std::string GetDisplayName() const override;
-  void Initialize(DemuxerHost* host, const PipelineStatusCB& init_cb) override;
+  void Initialize(DemuxerHost* host, PipelineStatusCallback init_cb) override;
   void AbortPendingReads() override;
   void Stop() override;
   void StartWaitingForSeek(base::TimeDelta seek_time) override;
   void CancelPendingSeek(base::TimeDelta seek_time) override;
-  void Seek(base::TimeDelta time, const PipelineStatusCB& cb) override;
+  void Seek(base::TimeDelta time, PipelineStatusCallback cb) override;
   base::Time GetTimelineOffset() const override;
   std::vector<DemuxerStream*> GetAllStreams() override;
   base::TimeDelta GetStartTime() const override;
@@ -337,7 +339,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // Executes |pending_seek_cb_| with |status| and closes out the async trace.
   void RunPendingSeekCB(PipelineStatus status);
 
-  DemuxerHost* host_;
+  DemuxerHost* host_ = nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -345,20 +347,20 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // from base::ThreadPoolInstance.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  PipelineStatusCB init_cb_;
+  PipelineStatusCallback init_cb_;
 
   // Indicates if Stop() has been called.
-  bool stopped_;
+  bool stopped_ = false;
 
   // Tracks if there's an outstanding av_read_frame() operation.
   //
   // TODO(scherkus): Allow more than one read in flight for higher read
   // throughput using demuxer_bench to verify improvements.
-  bool pending_read_;
+  bool pending_read_ = false;
 
   // Tracks if there's an outstanding av_seek_frame() operation. Used to discard
   // results of pre-seek av_read_frame() operations.
-  PipelineStatusCB pending_seek_cb_;
+  PipelineStatusCallback pending_seek_cb_;
 
   // |streams_| mirrors the AVStream array in AVFormatContext. It contains
   // FFmpegDemuxerStreams encapsluating AVStream objects at the same index.
@@ -379,12 +381,12 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   MediaLog* media_log_;
 
   // Derived bitrate after initialization has completed.
-  int bitrate_;
+  int bitrate_ = 0;
 
   // The first timestamp of the audio or video stream, whichever is lower.  This
   // is used to adjust timestamps so that external consumers always see a zero
   // based timeline.
-  base::TimeDelta start_time_;
+  base::TimeDelta start_time_ = kNoTimestamp;
 
   // The Time associated with timestamp 0. Set to a null
   // time if the file doesn't have an association to Time.
@@ -392,7 +394,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   // Set if we know duration of the audio stream. Used when processing end of
   // stream -- at this moment we definitely know duration.
-  bool duration_known_;
+  bool duration_known_ = false;
   base::TimeDelta duration_;
 
   // FFmpegURLProtocol implementation and corresponding glue bits.

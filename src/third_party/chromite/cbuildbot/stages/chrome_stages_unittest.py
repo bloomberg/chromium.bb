@@ -32,7 +32,7 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
                                  generic_stages_unittest.AbstractStageTestCase,
                                  cros_test_lib.LoggingTestCase):
   """Verify stage that creates the chrome-sdk and builds chrome with it."""
-  BOT_ID = 'grunt-paladin'
+  BOT_ID = 'grunt-full'
   RELEASE_TAG = ''
 
   # pylint: disable=protected-access
@@ -49,7 +49,8 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
 
     self._Prepare()
 
-  def _Prepare(self, bot_id=None, **kwargs):
+  # Our API here is not great when it comes to kwargs passing.
+  def _Prepare(self, bot_id=None, **kwargs):  # pylint: disable=arguments-differ
     super(SimpleChromeArtifactsStage, self)._Prepare(bot_id, **kwargs)
 
     self._run.options.chrome_root = '/tmp/non-existent'
@@ -87,7 +88,7 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
     env_file = os.path.join(chrome_env_dir, 'environment')
     osutils.Touch(env_file, makedirs=True)
 
-    cros_build_lib.RunCommand(['bzip2', env_file])
+    cros_build_lib.run(['bzip2', env_file])
 
     # Run the code.
     stage._ArchiveChromeEbuildEnv()

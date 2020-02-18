@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/media/media_remoting_interstitial.h"
 
-#include "third_party/blink/public/platform/web_localized_string.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -39,7 +39,8 @@ MediaRemotingInterstitial::MediaRemotingInterstitial(
   background_image_->SetShadowPseudoId(
       AtomicString("-internal-media-interstitial-background-image"));
   background_image_->setAttribute(
-      html_names::kSrcAttr, videoElement.getAttribute(html_names::kPosterAttr));
+      html_names::kSrcAttr,
+      videoElement.FastGetAttribute(html_names::kPosterAttr));
   AppendChild(background_image_);
 
   cast_icon_ = MakeGarbageCollected<HTMLDivElement>(GetDocument());
@@ -65,13 +66,12 @@ void MediaRemotingInterstitial::Show(
   if (remote_device_friendly_name.IsEmpty()) {
     cast_text_message_->setInnerText(
         GetVideoElement().GetLocale().QueryString(
-            WebLocalizedString::kMediaRemotingCastToUnknownDeviceText),
+            IDS_MEDIA_REMOTING_CAST_TO_UNKNOWN_DEVICE_TEXT),
         ASSERT_NO_EXCEPTION);
   } else {
     cast_text_message_->setInnerText(
-        GetVideoElement().GetLocale().QueryString(
-            WebLocalizedString::kMediaRemotingCastText,
-            remote_device_friendly_name),
+        GetVideoElement().GetLocale().QueryString(IDS_MEDIA_REMOTING_CAST_TEXT,
+                                                  remote_device_friendly_name),
         ASSERT_NO_EXCEPTION);
   }
   if (toggle_interstitial_timer_.IsActive())
@@ -84,18 +84,18 @@ void MediaRemotingInterstitial::Show(
                                           FROM_HERE);
 }
 
-void MediaRemotingInterstitial::Hide(WebLocalizedString::Name error_msg) {
+void MediaRemotingInterstitial::Hide(int error_code) {
   if (!IsVisible())
     return;
   if (toggle_interstitial_timer_.IsActive())
     toggle_interstitial_timer_.Stop();
-  if (error_msg == WebLocalizedString::kMediaRemotingStopNoText) {
+  if (error_code == WebMediaPlayerClient::kMediaRemotingStopNoText) {
     state_ = HIDDEN;
   } else {
-    String stop_text = GetVideoElement().GetLocale().QueryString(
-        WebLocalizedString::kMediaRemotingStopText);
-    if (error_msg != WebLocalizedString::kMediaRemotingStopText) {
-      stop_text = GetVideoElement().GetLocale().QueryString(error_msg) + ", " +
+    String stop_text =
+        GetVideoElement().GetLocale().QueryString(IDS_MEDIA_REMOTING_STOP_TEXT);
+    if (error_code != IDS_MEDIA_REMOTING_STOP_TEXT) {
+      stop_text = GetVideoElement().GetLocale().QueryString(error_code) + ", " +
                   stop_text;
     }
     toast_message_->setInnerText(stop_text, ASSERT_NO_EXCEPTION);
@@ -151,7 +151,7 @@ void MediaRemotingInterstitial::DidMoveToNewDocument(Document& old_document) {
 void MediaRemotingInterstitial::OnPosterImageChanged() {
   background_image_->setAttribute(
       html_names::kSrcAttr,
-      GetVideoElement().getAttribute(html_names::kPosterAttr));
+      GetVideoElement().FastGetAttribute(html_names::kPosterAttr));
 }
 
 void MediaRemotingInterstitial::Trace(Visitor* visitor) {

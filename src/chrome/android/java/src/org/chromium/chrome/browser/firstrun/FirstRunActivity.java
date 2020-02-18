@@ -6,16 +6,17 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.annotation.CallSuper;
-import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.View;
 
+import androidx.annotation.CallSuper;
+import androidx.annotation.StringRes;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -235,7 +236,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
             }
         };
         mFirstRunFlowSequencer.start();
-
+        FirstRunStatus.setFirstRunTriggered(true);
         recordFreProgressHistogram(FRE_PROGRESS_STARTED);
         onInitialLayoutInflationComplete();
     }

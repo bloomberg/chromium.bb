@@ -16,7 +16,9 @@
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "url/gurl.h"
 
 namespace media {
 
@@ -33,16 +35,29 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   using GetLearningSessionCallback =
       base::RepeatingCallback<learning::LearningSession*()>;
 
+  using RecordAggregateWatchTimeCallback =
+      base::RepeatingCallback<void(base::TimeDelta total_watch_time,
+                                   base::TimeDelta time_stamp,
+                                   bool has_video,
+                                   bool has_audio)>;
+
+  using GetRecordAggregateWatchTimeCallback =
+      base::RepeatingCallback<RecordAggregateWatchTimeCallback(void)>;
+
   MediaMetricsProvider(BrowsingMode is_incognito,
                        FrameStatus is_top_frame,
                        ukm::SourceId source_id,
                        learning::FeatureValue origin,
                        VideoDecodePerfHistory::SaveCallback save_cb,
-                       GetLearningSessionCallback learning_session_cb);
+                       GetLearningSessionCallback learning_session_cb,
+                       RecordAggregateWatchTimeCallback record_playback_cb);
   ~MediaMetricsProvider() override;
 
   // Callback for retrieving a ukm::SourceId.
   using GetSourceIdCallback = base::RepeatingCallback<ukm::SourceId(void)>;
+
+  using GetLastCommittedURLCallback =
+      base::RepeatingCallback<const GURL&(void)>;
 
   // TODO(liberato): This should be from a FeatureProvider, but the way in which
   // we attach LearningHelper more or less precludes it.  Per-frame task
@@ -57,13 +72,15 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   // returns.  The intention is that they'll be run to produce the constructor
   // arguments for MediaMetricsProvider synchronously.  They should not be
   // copied or moved for later.
-  static void Create(BrowsingMode is_incognito,
-                     FrameStatus is_top_frame,
-                     GetSourceIdCallback get_source_id_cb,
-                     GetOriginCallback get_origin_cb,
-                     VideoDecodePerfHistory::SaveCallback save_cb,
-                     GetLearningSessionCallback learning_session_cb,
-                     mojom::MediaMetricsProviderRequest request);
+  static void Create(
+      BrowsingMode is_incognito,
+      FrameStatus is_top_frame,
+      GetSourceIdCallback get_source_id_cb,
+      GetOriginCallback get_origin_cb,
+      VideoDecodePerfHistory::SaveCallback save_cb,
+      GetLearningSessionCallback learning_session_cb,
+      GetRecordAggregateWatchTimeCallback get_record_playback_cb,
+      mojo::PendingReceiver<mojom::MediaMetricsProvider> receiver);
 
  private:
   struct PipelineInfo {
@@ -93,7 +110,6 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
   void SetHasPlayed() override;
   void SetHasVideo(VideoCodec video_codec) override;
   void SetHaveEnough() override;
-  void SetIsAdMedia() override;
   void SetIsEME() override;
   void SetTimeToMetadata(base::TimeDelta elapsed) override;
   void SetTimeToFirstFrame(base::TimeDelta elapsed) override;
@@ -102,13 +118,13 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
 
   void AcquireWatchTimeRecorder(
       mojom::PlaybackPropertiesPtr properties,
-      mojom::WatchTimeRecorderRequest request) override;
+      mojo::PendingReceiver<mojom::WatchTimeRecorder> receiver) override;
   void AcquireVideoDecodeStatsRecorder(
-      mojom::VideoDecodeStatsRecorderRequest request) override;
+      mojo::PendingReceiver<mojom::VideoDecodeStatsRecorder> receiver) override;
   void AcquireLearningTaskController(
       const std::string& taskName,
-      media::learning::mojom::LearningTaskControllerRequest request) override;
-  void AddBytesReceived(uint64_t bytes_received) override;
+      mojo::PendingReceiver<media::learning::mojom::LearningTaskController>
+          receiver) override;
 
   void ReportPipelineUMA();
   std::string GetUMANameForAVStream(const PipelineInfo& player_info);
@@ -125,20 +141,15 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
 
   const VideoDecodePerfHistory::SaveCallback save_cb_;
   const GetLearningSessionCallback learning_session_cb_;
+  const RecordAggregateWatchTimeCallback record_playback_cb_;
 
   // UMA pipeline packaged data
   PipelineInfo uma_info_;
-
-  // These values are not always sent but have known defaults.
-  bool is_ad_media_ = false;
 
   // The values below are only set if |initialized_| is true.
   bool initialized_ = false;
   bool is_mse_;
   mojom::MediaURLScheme url_scheme_;
-
-  // Total number of bytes received by the media player so far.
-  uint64_t total_bytes_received_ = 0;
 
   base::TimeDelta time_to_metadata_ = kNoTimestamp;
   base::TimeDelta time_to_first_frame_ = kNoTimestamp;

@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider.SYNTHETIC_TRIAL_POSTFIX;
 
 import android.content.Context;
+import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.ObservableSupplier;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -17,10 +19,13 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceCoordinator;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestions;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsOrchestrator;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceCoordinator;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
@@ -32,9 +37,9 @@ import org.chromium.ui.modelutil.PropertyModel;
 @UsedByReflection("TabManagementModule")
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
-    public TasksSurface createTasksSurface(
-            ChromeActivity activity, boolean isTabCarousel, PropertyModel propertyModel) {
-        return new TasksSurfaceCoordinator(activity, isTabCarousel, propertyModel);
+    public TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
+            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel) {
+        return new TasksSurfaceCoordinator(activity, propertyModel, fakeboxDelegate, isTabCarousel);
     }
 
     @Override
@@ -82,5 +87,17 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
     public TabGroupModelFilter createTabGroupModelFilter(TabModel tabModel) {
         return new TabGroupModelFilter(tabModel);
+    }
+
+    @Override
+    public TabSuggestions createTabSuggestions(ChromeActivity activity) {
+        return new TabSuggestionsOrchestrator(
+                activity.getTabModelSelector(), activity.getLifecycleDispatcher());
+    }
+
+    @Override
+    public TabGroupPopupUi createTabGroupPopUi(
+            ThemeColorProvider themeColorProvider, ObservableSupplier<View> parentViewSupplier) {
+        return new TabGroupPopupUiCoordinator(themeColorProvider, parentViewSupplier);
     }
 }

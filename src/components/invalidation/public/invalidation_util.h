@@ -55,11 +55,6 @@ enum class HandlerOwnerType {
 class Invalidation;
 class InvalidationHandler;
 
-using ParseJSONCallback = base::RepeatingCallback<void(
-    const std::string& unsafe_json,
-    base::OnceCallback<void(base::Value)> success_callback,
-    base::OnceCallback<void(const std::string&)> error_callback)>;
-
 struct INVALIDATION_EXPORT ObjectIdLessThan {
   bool operator()(const invalidation::ObjectId& lhs,
                   const invalidation::ObjectId& rhs) const;
@@ -103,26 +98,6 @@ struct INVALIDATION_EXPORT InvalidationObjectIdLessThan {
   bool operator()(const invalidation::InvalidationObjectId& lhs,
                   const invalidation::InvalidationObjectId& rhs) const;
 };
-
-typedef std::set<invalidation::InvalidationObjectId,
-                 InvalidationObjectIdLessThan>
-    InvalidationObjectIdSet;
-
-typedef std::
-    map<invalidation::InvalidationObjectId, int, InvalidationObjectIdLessThan>
-        InvalidationObjectIdCountMap;
-
-std::unique_ptr<base::DictionaryValue> InvalidationObjectIdToValue(
-    const invalidation::InvalidationObjectId& object_id);
-
-// TODO(melandory): figure out the security implications for such serialization.
-std::string SerializeInvalidationObjectId(
-    const invalidation::InvalidationObjectId& object_id);
-bool DeserializeInvalidationObjectId(const std::string& serialized,
-                                     invalidation::InvalidationObjectId* id);
-
-INVALIDATION_EXPORT std::string InvalidationObjectIdToString(
-    const invalidation::InvalidationObjectId& object_id);
 
 ObjectIdSet ConvertTopicsToIds(TopicSet topics);
 ObjectIdSet ConvertTopicsToIds(Topics topics);

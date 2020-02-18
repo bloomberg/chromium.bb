@@ -11,6 +11,7 @@
 #include "src/core/SkPathPriv.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/GrOpsRenderPass.h"
+#include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/ccpr/GrCCCoverageProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
@@ -69,7 +70,7 @@ inline void CubicStrokeInstance::set(const Sk4f& X, const Sk4f& Y, float dx, flo
 // for seamless integration with the connecting geometry.
 class LinearStrokeProcessor : public GrGeometryProcessor {
 public:
-    LinearStrokeProcessor() : GrGeometryProcessor(kLinearStrokeProcessor_ClassID) {
+    LinearStrokeProcessor() : INHERITED(kLinearStrokeProcessor_ClassID) {
         this->setInstanceAttributes(kInstanceAttribs, 2);
 #ifdef SK_DEBUG
         using Instance = LinearStrokeInstance;
@@ -88,13 +89,15 @@ private:
 
     class Impl : public GrGLSLGeometryProcessor {
         void setData(const GrGLSLProgramDataManager&, const GrPrimitiveProcessor&,
-                     FPCoordTransformIter&&) override {}
+                     const CoordTransformRange&) override {}
         void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override;
     };
 
     GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override {
         return new Impl();
     }
+
+    typedef GrGeometryProcessor INHERITED;
 };
 
 void LinearStrokeProcessor::Impl::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
@@ -179,7 +182,7 @@ private:
 
     class Impl : public GrGLSLGeometryProcessor {
         void setData(const GrGLSLProgramDataManager&, const GrPrimitiveProcessor&,
-                     FPCoordTransformIter&&) override {}
+                     const CoordTransformRange&) override {}
         void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override;
     };
 
@@ -296,9 +299,9 @@ void GrCCStroker::parseDeviceSpaceStroke(const SkPath& path, const SkPoint* devi
     InstanceTallies* currStrokeEndIndices;
     if (GrScissorTest::kEnabled == scissorTest) {
         SkASSERT(fBatches.back().fEndScissorSubBatch == fScissorSubBatches.count());
-        fScissorSubBatches.emplace_back(
-                &fTalliesAllocator, *fInstanceCounts[(int)GrScissorTest::kEnabled],
-                clippedDevIBounds.makeOffset(devToAtlasOffset.x(), devToAtlasOffset.y()));
+        fScissorSubBatches.emplace_back(&fTalliesAllocator,
+                                        *fInstanceCounts[(int)GrScissorTest::kEnabled],
+                                        clippedDevIBounds.makeOffset(devToAtlasOffset));
         fBatches.back().fEndScissorSubBatch = fScissorSubBatches.count();
         fInstanceCounts[(int)GrScissorTest::kEnabled] =
                 currStrokeEndIndices = fScissorSubBatches.back().fEndInstances;
@@ -701,7 +704,7 @@ void GrCCStroker::drawStrokes(GrOpFlushState* flushState, GrCCCoverageProcessor*
             ? &fZeroTallies : fScissorSubBatches[startScissorSubBatch - 1].fEndInstances;
 
     GrPipeline pipeline(GrScissorTest::kEnabled, SkBlendMode::kPlus,
-                        flushState->drawOpArgs().fOutputSwizzle);
+                        flushState->drawOpArgs().outputSwizzle());
 
     // Draw linear strokes.
     this->appendStrokeMeshesToBuffers(0, batch, startIndices, startScissorSubBatch, drawBounds);
@@ -775,7 +778,17 @@ void GrCCStroker::flushBufferedMeshesAsStrokes(const GrPrimitiveProcessor& proce
     SkASSERT(fMeshesBuffer.count() == fScissorsBuffer.count());
     GrPipeline::DynamicStateArrays dynamicStateArrays;
     dynamicStateArrays.fScissorRects = fScissorsBuffer.begin();
-    flushState->opsRenderPass()->draw(processor, pipeline, nullptr, &dynamicStateArrays,
+
+    GrProgramInfo programInfo(flushState->proxy()->numSamples(),
+                              flushState->proxy()->numStencilSamples(),
+                              flushState->proxy()->backendFormat(),
+                              flushState->view()->origin(),
+                              &pipeline,
+                              &processor,
+                              nullptr,
+                              &dynamicStateArrays, 0, GrPrimitiveType::kTriangleStrip);
+
+    flushState->opsRenderPass()->draw(programInfo,
                                       fMeshesBuffer.begin(), fMeshesBuffer.count(),
                                       SkRect::Make(drawBounds));
     // Don't call reset(), as that also resets the reserve count.

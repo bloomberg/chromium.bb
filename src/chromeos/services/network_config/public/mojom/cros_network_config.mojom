@@ -165,6 +165,11 @@ enum StartConnectResult {
   kUnknown,
 };
 
+enum CertificateType {
+  kServerCA,
+  kUserCert,
+};
+
 struct CaptivePortalProvider {
   // Id used to identify the captive portal provider (i.e. an extension id).
   string id;
@@ -191,9 +196,14 @@ struct CellularStateProperties {
   bool roaming = false;
   // The signal strength of the cellular connection.
   int32 signal_strength;
+  // True when a SIM is present and locked.
+  bool sim_locked = false;
 };
 
 struct EthernetStateProperties {
+  // This represents the actual authentication type for a connected Ethernet
+  // network. Note: An EAP configuration may exist but not be applied (e.g. if
+  // no certificate is installed), in which case the value will be kNone.
   AuthenticationType authentication;
 };
 
@@ -229,16 +239,22 @@ struct WiFiStateProperties {
   string ssid;
 };
 
+union NetworkTypeStateProperties {
+  CellularStateProperties cellular;
+  EthernetStateProperties ethernet;
+  TetherStateProperties tether;
+  VPNStateProperties vpn;
+  WiFiStateProperties wifi;
+};
+
 struct NetworkStateProperties {
   CaptivePortalProvider? captive_portal_provider;
-  CellularStateProperties? cellular;
   // True if the network is configured and may be connectable.
   bool connectable = false;
   // True if an explicit connect was requested. The network state may not be
   // Connecting yet.
   bool connect_requested = false;
   ConnectionStateType connection_state;
-  EthernetStateProperties? ethernet;
   // A string describing the network error state. TODO(stevenjb): Use an enum.
   string? error_state;
   // The unique identifier for the network.
@@ -253,10 +269,10 @@ struct NetworkStateProperties {
   // True for visible networks that are blocked / disallowed by policy.
   bool prohibited_by_policy = false;
   OncSource source;
-  TetherStateProperties? tether;
+  // |type| is explicitly provided here to simplify UI code and will always
+  // match the type of |type_state|, which will always be provided.
   NetworkType type;
-  VPNStateProperties? vpn;
-  WiFiStateProperties? wifi;
+  NetworkTypeStateProperties type_state;
 };
 
 struct DeviceStateProperties {
@@ -420,6 +436,8 @@ struct ManagedEAPProperties {
   ManagedString? identity;
   ManagedString? inner;
   ManagedString? outer;
+  // Note: |password| contains a placeholder if set to avoid leaking secrets.
+  ManagedString? password;
   ManagedBoolean? save_credentials;
   ManagedStringList? server_ca_pems;
   ManagedStringList? server_ca_refs;
@@ -448,6 +466,7 @@ struct ManagedIPSecProperties {
   ManagedEAPProperties? eap;
   ManagedString? group;
   ManagedInt32? ike_version;
+  // Note: |psk| contains a placeholder if set to avoid leaking secrets.
   ManagedString? psk;
   ManagedBoolean? save_credentials;
   ManagedStringList? server_ca_pems;
@@ -456,6 +475,8 @@ struct ManagedIPSecProperties {
 
 struct ManagedL2TPProperties {
   ManagedBoolean? lcp_echo_disabled;
+  // Note: |password| contains a placeholder if set to avoid leaking secrets.
+  ManagedString? password;
   ManagedBoolean? save_credentials;
   ManagedString? username;
 };
@@ -499,6 +520,8 @@ struct ManagedOpenVPNProperties {
   ManagedBoolean? ignore_default_route;
   ManagedString? key_direction;
   ManagedString? ns_cert_type;
+  // Note: |password| contains a placeholder if set to avoid leaking secrets.
+  ManagedString? password;
   ManagedInt32? port;
   ManagedString? proto;
   ManagedBoolean? push_peer_info;
@@ -554,6 +577,10 @@ struct ManagedCellularProperties {
 };
 
 struct ManagedEthernetProperties {
+  // This represents the configured authentication type for an Ethernet network.
+  // Note: This might not match the State value (which uses an enum instead of
+  // a managed string) if the EAP configuration can not be applied (e.g. when
+  // no certificate is installed).
   ManagedString? authentication;
   ManagedEAPProperties? eap;
 };
@@ -579,11 +606,23 @@ struct ManagedWiFiProperties {
   ManagedBoolean? ft_enabled;
   ManagedString? hex_ssid;
   ManagedBoolean? hidden_ssid;
+  // Note: |passphrase| contains a placeholder if set to avoid leaking secrets.
+  ManagedString? passphrase;
   ManagedInt32? roam_threshold;
   ManagedString ssid;
   SecurityType security;
   int32 signal_strength = 0;
   string? tethering_state;
+};
+
+union NetworkTypeManagedProperties {
+  ManagedCellularProperties cellular;
+  ManagedEthernetProperties ethernet;
+  // Tether has no managed properties. Provide TetherStateProperties for display
+  // purposes.
+  TetherStateProperties tether;
+  ManagedVPNProperties vpn;
+  ManagedWiFiProperties wifi;
 };
 
 // Managed properties provided by getManagedProperties. See onc_spec.md for
@@ -592,12 +631,9 @@ struct ManagedProperties {
   // Typed properties for compatibility with NetworkStateProperties.
   ConnectionStateType connection_state = kNotConnected;
   OncSource source;
-  NetworkType type;
   // Other properties and property dictionaries use ONC strings for values.
-  ManagedCellularProperties? cellular;
   bool connectable = false;
   string? error_state;
-  ManagedEthernetProperties? ethernet;
   string guid;
   ManagedString? ip_address_config_type;
   array<IPConfigProperties>? ip_configs;
@@ -608,21 +644,25 @@ struct ManagedProperties {
   bool restricted_connectivity = false;
   ManagedIPConfigProperties? static_ip_config;
   IPConfigProperties? saved_ip_config;
-  // Tether has no managed properties. Provide TetherStateProperties for display
-  // purposes.
-  TetherStateProperties? tether;
-  ManagedVPNProperties? vpn;
-  ManagedWiFiProperties? wifi;
+  // |type| is explicitly provided here to simplify UI code and will always
+  // match the type of |type_properties|, which will always be provided.
+  NetworkType type;
+  NetworkTypeManagedProperties type_properties;
 };
 
-// Properties for SetProperties.
+// Properties for SetProperties and ConfigureNetwork. All of the top level
+// properties and many nested properties are optional so that sparse
+// configurations can be provided, e.g. just the |auto_connect| property can
+// be changed. The ONC validation code (chromeos/network/onc/onc_validator.cc)
+// ensures that configurations are valid before translating and passing them to
+// Shill.
 
-// Wrappers for optional configuration properties. If not provided the existing
-// property will not be changed.
+// Wrapper to allow optional configuration auto_connect configuration.
 struct AutoConnectConfig {
   bool value;
 };
 
+// Wrapper to allow optional configuration priority configuration.
 struct PriorityConfig {
   int32 value;
 };
@@ -646,32 +686,104 @@ struct ProxySettings {
   string? pac;
 };
 
+struct EAPConfigProperties {
+  string? anonymous_identity;
+  string? client_cert_pkcs11_id;
+  string? client_cert_type;
+  string? identity;
+  string? inner;
+  string? outer;
+  string? password;
+  bool save_credentials = false;
+  array<string>? server_ca_pems;
+  string? subject_match;
+  bool use_system_cas = false;
+};
+
+// Subset of currently implemented config properties in the UI. Additional
+// optional propreties from onc_spec.md may be added as needed.
+struct IPSecConfigProperties {
+  string authentication_type;
+  string? client_cert_pkcs11_id;
+  string? client_cert_type;
+  string? group;
+  int32 ike_version = 1;
+  string? psk;
+  bool save_credentials = false;
+  array<string>? server_ca_pems;
+  array<string>? server_ca_refs;
+};
+
+// Subset of currently implemented config properties in the UI. Additional
+// optional propreties from onc_spec.md may be added as needed.
+struct L2TPConfigProperties {
+  bool lcp_echo_disabled = false;
+  string? password;
+  bool save_credentials = false;
+  string? username;
+};
+
+// Subset of currently implemented config properties in the UI. Additional
+// optional propreties from onc_spec.md may be added as needed.
+struct OpenVPNConfigProperties {
+  string? client_cert_pkcs11_id;
+  string? client_cert_type;
+  array<string>? extra_hosts;
+  string? otp;
+  string? password;
+  bool save_credentials = false;
+  array<string>? server_ca_pems;
+  array<string>? server_ca_refs;
+  string? username;
+  string? user_authentication_type;
+};
+
+// Only one of {Cellular|Ethernet|VPN|Wifi}ConfigProperties is allowed.
+// TODO(stevenjb): Make these a union.
 struct CellularConfigProperties {
   ApnProperties? apn;
 };
 
-struct OpenVPNConfigProperties {
-  array<string>? extra_hosts;
-  string? username;
+struct EthernetConfigProperties {
+  string authentication;
+  EAPConfigProperties? eap;
 };
 
 struct VPNConfigProperties {
   string? host;
+  IPSecConfigProperties? ip_sec;
+  L2TPConfigProperties? l2tp;
   OpenVPNConfigProperties? open_vpn;
   // For existing configurations, this must match the VPN type. Only
   // configuration of internal VPN types (kOpenVPN and kL2TPIPsec) is supported.
   VpnType type;
 };
 
+struct WiFiConfigProperties {
+  EAPConfigProperties? eap;
+  string? passphrase;
+  string ssid;
+  SecurityType security = kNone;
+};
+
+union NetworkTypeConfigProperties {
+  CellularConfigProperties cellular;
+  EthernetConfigProperties ethernet;
+  VPNConfigProperties vpn;
+  WiFiConfigProperties wifi;
+};
+
 struct ConfigProperties {
   AutoConnectConfig? auto_connect;
-  CellularConfigProperties? cellular;
   string? ip_address_config_type;
+  // Name is only required for new configurations.
+  string? name;
   string? name_servers_config_type;
   PriorityConfig? priority;
   ProxySettings? proxy_settings;
   IPConfigProperties? static_ip_config;
-  VPNConfigProperties? vpn;
+  // NetworkType is inferred from |type_config|.
+  NetworkTypeConfigProperties type_config;
 };
 
 // Properties provided to SetCellularSimState.
@@ -723,10 +835,36 @@ struct VpnProvider {
   mojo_base.mojom.Time last_launch_time;
 };
 
+// Information about a network certificate for the purpose of selecting an
+// available certificate in a UI and providing information in a ConfigProperties
+// struct to SetProperties or ConfigureNetwork. No private information should
+// be included here.
+struct NetworkCertificate {
+  CertificateType type;
+  // Unique hash for the certificate, used to uniquely identify certificates.
+  string hash;
+  // Certificate issuer common name for display in a UI.
+  string issued_by;
+  // Certificate name or nickname for display in a UI.
+  string issued_to;
+  // For server certificate authorities (type == kServerCA), this contains the
+  // public certificate in PEM format.
+  // For user certificates, this contains the  PKCS#11 id to be passed to the
+  // configuration manager (Shill) for retrieving the encrypted certificate.
+  // This will be used in the appropriate ConfigProperties dictionary.
+  // TODO(1006901): Use a union here instead once the issue is fixed.
+  string pem_or_id;
+  // Whether the certificate is hardware backed.
+  bool hardware_backed;
+  // Whether the certificate is device wide (i.e. stored in a shared profile,
+  // not a user specific profile).
+  bool device_wide;
+};
+
 // Interface for fetching and setting network configuration properties, e.g.
 // from Settings WebUI or the SystemTray.
 interface CrosNetworkConfig {
-  AddObserver(CrosNetworkConfigObserver observer);
+  AddObserver(pending_remote<CrosNetworkConfigObserver> observer);
 
   // Returns the state properties of the network matching |guid|. If the network
   // is not available returns null.
@@ -747,8 +885,25 @@ interface CrosNetworkConfig {
   // available returns null.
   GetManagedProperties(string guid) => (ManagedProperties? result);
 
-  // Sets properties for the network matching |guid|. Returns true on success.
-  SetProperties(string guid, ConfigProperties properties) => (bool success);
+  // Sets properties for the network matching |guid|. If |success| is false,
+  // |error_message| provides a string identifying the error. The string may
+  // be a Shill error, or an error token provided by the NetworkHandler layer.
+  // JS localization for a common subset of these is provided by
+  // network_element::AddErrorLocalizedStrings. TODO(1004434): Consider
+  // enumerating these.
+  SetProperties(string guid, ConfigProperties properties) =>
+    (bool success, string error_message);
+
+  // Configures a new network with |properties|. Returns the guid of the new
+  // network configuration on success. A null guid indicates that the properties
+  // were invalid or incomplete. See SetProperties for notes on errorMessage.
+  ConfigureNetwork(ConfigProperties properties, bool shared) =>
+    (string? guid, string error_message);
+
+  // Forgets an existing network configuration matching |guid| by clearing all
+  // configured properties. Returns true if the network exists and is
+  // successfully removed.
+  ForgetNetwork(string guid) => (bool success);
 
   // Sets a single network type (e.g. WiFi) to enabled or disabled. Types
   // describing multiple technologies (e.g. kWireless) are not supported.
@@ -804,6 +959,11 @@ interface CrosNetworkConfig {
 
   // Returns the list of external VPN providers.
   GetVpnProviders() => (array<VpnProvider> providers);
+
+  // Returns the lists of server certificate authorities and user certificates
+  // available for network configuration. See NetworkCerificate for more info.
+  GetNetworkCertificates() => (array<NetworkCertificate> server_cas,
+                               array<NetworkCertificate> user_certs);
 };
 
 interface CrosNetworkConfigObserver {
@@ -830,4 +990,8 @@ interface CrosNetworkConfigObserver {
   // Fired when the list of VPN providers changes. Use GetVpnProviders if the
   // updated provider list is required.
   OnVpnProvidersChanged();
+
+  // Fired when the server CA or user certificate lists change. Use
+  // GetNetworkCertificates if the updated certificate lists are required.
+  OnNetworkCertificatesChanged();
 };

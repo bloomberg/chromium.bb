@@ -35,15 +35,15 @@ public class PaymentRequestShowPromiseRejectTest implements MainActivityStartCal
             new PaymentRequestTestRule("show_promise/reject.html", this);
 
     @Override
-    public void onMainActivityStarted() throws InterruptedException, TimeoutException {}
+    public void onMainActivityStarted() {}
 
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testReject() throws InterruptedException, TimeoutException {
+    public void testReject() throws TimeoutException {
         mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
                 PaymentRequestTestRule.IMMEDIATE_RESPONSE);
-        mRule.openPageAndClickNodeAndWait("buy", mRule.getDismissed());
+        mRule.openPageAndClickNodeAndWait("buy", mRule.getRendererClosedMojoConnection());
         mRule.expectResultContains(new String[] {"AbortError"});
     }
 }

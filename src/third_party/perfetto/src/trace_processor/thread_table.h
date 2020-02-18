@@ -43,7 +43,9 @@ class ThreadTable : public SqliteTable {
     Cursor(ThreadTable* table);
 
     // Implementation of Table::Cursor.
-    int Filter(const QueryConstraints&, sqlite3_value**) override;
+    int Filter(const QueryConstraints&,
+               sqlite3_value**,
+               FilterHistory) override;
     int Next() override;
     int Eof() override;
     int Column(sqlite3_context*, int N) override;
@@ -55,10 +57,10 @@ class ThreadTable : public SqliteTable {
     Cursor(Cursor&&) noexcept = default;
     Cursor& operator=(Cursor&&) = default;
 
-    UniqueTid min;
-    UniqueTid max;
-    UniqueTid current;
-    bool desc;
+    UniqueTid min_ = 0;
+    UniqueTid max_ = 0;
+    uint32_t index_ = 0;
+    bool desc_ = false;
 
     const TraceStorage* storage_ = nullptr;
     ThreadTable* table_ = nullptr;

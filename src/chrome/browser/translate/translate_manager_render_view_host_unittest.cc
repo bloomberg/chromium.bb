@@ -62,14 +62,11 @@
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/web/web_context_menu_data.h"
+#include "third_party/blink/public/common/context_menu_data/edit_flags.h"
+#include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -251,7 +248,7 @@ class TranslateManagerRenderViewHostTest
     details.adopted_language = lang;
     ChromeTranslateClient::FromWebContents(web_contents())
         ->translate_driver()
-        ->RegisterPage(fake_page_.BindToNewPagePtr(), details,
+        ->RegisterPage(fake_page_.BindToNewPageRemote(), details,
                        page_translatable);
   }
 
@@ -377,7 +374,7 @@ class TranslateManagerRenderViewHostTest
 
   TestRenderViewContextMenu* CreateContextMenu() {
     content::ContextMenuParams params;
-    params.media_type = blink::WebContextMenuData::kMediaTypeNone;
+    params.media_type = blink::ContextMenuDataMediaType::kNone;
     params.x = 0;
     params.y = 0;
     params.has_image_contents = true;
@@ -391,7 +388,7 @@ class TranslateManagerRenderViewHostTest
     params.writing_direction_left_to_right = 0;
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
-    params.edit_flags = blink::WebContextMenuData::kCanTranslate;
+    params.edit_flags = blink::ContextMenuDataEditFlags::kCanTranslate;
     return new TestRenderViewContextMenu(web_contents()->GetMainFrame(),
                                          params);
   }

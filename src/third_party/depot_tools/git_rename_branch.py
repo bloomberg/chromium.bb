@@ -36,13 +36,13 @@ def main(args):
     run('branch', '-m', opts.old_name, opts.new_name)
 
     # update the downstreams
-    for branch, merge in branch_config_map('merge').iteritems():
+    for branch, merge in branch_config_map('merge').items():
       if merge == 'refs/heads/' + opts.old_name:
         # Only care about local branches
         if branch_config(branch, 'remote') == '.':
           set_branch_config(branch, 'merge', 'refs/heads/' + opts.new_name)
   except subprocess2.CalledProcessError as cpe:
-    sys.stderr.write(cpe.stderr)
+    sys.stderr.write(cpe.stderr.decode('utf-8', 'replace'))
     return 1
   return 0
 

@@ -1,17 +1,6 @@
 {
   "layers": [
     {
-      "name": "LayoutView #document",
-      "bounds": [800, 600],
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "Scrolling Layer",
-      "bounds": [800, 600],
-      "drawsContent": false
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [804, 604],
       "contentsOpaque": true,
@@ -21,11 +10,6 @@
           "object": "LayoutNGBlockFlow (positioned) DIV id='overlay'",
           "rect": [2, 2, 800, 600],
           "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [2, 2, 800, 600],
-          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutNGBlockFlow HTML",

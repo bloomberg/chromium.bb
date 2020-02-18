@@ -95,8 +95,9 @@ class VIEWS_EXPORT MenuItemView : public View {
     HIGHLIGHTED,         // Performs an action when selected, and has a
                          // different colored background that merges with the
                          // menu's rounded corners when placed at the bottom.
-    EMPTY,  // EMPTY is a special type for empty menus that is only used
-            // internally.
+    TITLE,               // Title text, does not perform any action.
+    EMPTY,               // EMPTY is a special type for empty menus that is only
+                         // used internally.
   };
 
   // Where the menu should be drawn, above or below the bounds (when
@@ -166,37 +167,23 @@ class VIEWS_EXPORT MenuItemView : public View {
   // when ChildrenChanged() is invoked.
   void RemoveAllMenuItems();
 
-  // Appends an item to this menu.
+  // Appends a normal item to this menu.
   // item_id    The id of the item, used to identify it in delegate callbacks
   //            or (if delegate is NULL) to identify the command associated
   //            with this item with the controller specified in the ctor. Note
   //            that this value should not be 0 as this has a special meaning
   //            ("NULL command, no item selected")
   // label      The text label shown.
-  // type       The type of item.
+  // icon       The icon.
   MenuItemView* AppendMenuItem(int item_id,
-                               const base::string16& label,
-                               Type type);
+                               const base::string16& label = base::string16(),
+                               const gfx::ImageSkia& icon = gfx::ImageSkia());
 
   // Append a submenu to this menu.
   // The returned pointer is owned by this menu.
   MenuItemView* AppendSubMenu(int item_id,
-                              const base::string16& label);
-
-  // Append a submenu with an icon to this menu.
-  // The returned pointer is owned by this menu.
-  MenuItemView* AppendSubMenuWithIcon(int item_id,
-                                      const base::string16& label,
-                                      const gfx::ImageSkia& icon);
-
-  // This is a convenience for standard text label menu items where the label
-  // is provided with this call.
-  MenuItemView* AppendMenuItemWithLabel(int item_id,
-                                        const base::string16& label);
-
-  // This is a convenience for text label menu items where the label is
-  // provided by the delegate.
-  MenuItemView* AppendDelegateMenuItem(int item_id);
+                              const base::string16& label,
+                              const gfx::ImageSkia& icon = gfx::ImageSkia());
 
   // Adds a separator to this menu
   void AppendSeparator();
@@ -204,21 +191,11 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Adds a separator to this menu at the specified position.
   void AddSeparatorAt(int index);
 
-  // Appends a menu item with an icon. This is for the menu item which
-  // needs an icon. Calling this function forces the Menu class to draw
-  // the menu, instead of relying on Windows.
-  MenuItemView* AppendMenuItemWithIcon(int item_id,
-                                       const base::string16& label,
-                                       const gfx::ImageSkia& icon);
-
   // All the AppendXXX methods funnel into this.
   MenuItemView* AppendMenuItemImpl(int item_id,
                                    const base::string16& label,
-                                   const base::string16& minor_text,
-                                   const gfx::VectorIcon* minor_icon,
                                    const gfx::ImageSkia& icon,
-                                   Type type,
-                                   ui::MenuSeparatorType separator_style);
+                                   Type type);
 
   // Returns the view that contains child menu items. If the submenu has
   // not been creates, this creates it.
@@ -395,7 +372,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   friend class test::TestMenuItemViewNotShown;  // for access to |submenu_|;
   friend class TestMenuItemView;             // For access to AddEmptyMenus();
 
-  enum PaintButtonMode { PB_NORMAL, PB_FOR_DRAG };
+  enum class PaintButtonMode { kNormal, kForDrag };
 
   // Calculates all sizes that we can from the OS.
   //
@@ -432,8 +409,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // necessary.
   void AdjustBoundsForRTLUI(gfx::Rect* rect) const;
 
-  // Actual paint implementation. If mode is PB_FOR_DRAG, portions of the menu
-  // are not rendered.
+  // Actual paint implementation. If mode is kForDrag, portions of the menu are
+  // not rendered.
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
   // Helper function for PaintButton(), draws the background for the button if

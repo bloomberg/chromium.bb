@@ -10,15 +10,16 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/containers/flat_set.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/printing/printers_map.h"
-#include "chrome/browser/chromeos/printing/printing_stubs.h"
+#include "chrome/browser/chromeos/printing/test_cups_printers_manager.h"
+#include "chrome/browser/chromeos/printing/test_printer_configurer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/printing/ppd_provider.h"
 #include "components/printing/browser/printer_capabilities.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
@@ -59,6 +60,11 @@ void RecordGetCapability(std::unique_ptr<base::Value>* capabilities_out,
   capabilities_out->reset(capability.DeepCopy());
 }
 
+void RecordGetEulaUrl(std::string* fetched_eula_url,
+                      const std::string& eula_url) {
+  *fetched_eula_url = eula_url;
+}
+
 Printer CreateTestPrinter(const std::string& id,
                           const std::string& name,
                           const std::string& description) {
@@ -69,6 +75,17 @@ Printer CreateTestPrinter(const std::string& id,
   return printer;
 }
 
+Printer CreateTestPrinterWithPpdReference(const std::string& id,
+                                          const std::string& name,
+                                          const std::string& description,
+                                          Printer::PpdReference ref) {
+  Printer printer = CreateTestPrinter(id, name, description);
+  Printer::PpdReference* mutable_ppd_reference =
+      printer.mutable_ppd_reference();
+  *mutable_ppd_reference = ref;
+  return printer;
+}
+
 Printer CreateEnterprisePrinter(const std::string& id,
                                 const std::string& name,
                                 const std::string& description) {
@@ -76,41 +93,6 @@ Printer CreateEnterprisePrinter(const std::string& id,
   printer.set_source(Printer::SRC_POLICY);
   return printer;
 }
-
-class TestCupsPrintersManager : public chromeos::StubCupsPrintersManager {
- public:
-  std::vector<Printer> GetPrinters(PrinterClass printer_class) const override {
-    return printers_.Get(printer_class);
-  }
-
-  bool IsPrinterInstalled(const Printer& printer) const override {
-    return installed_.contains(printer.id());
-  }
-
-  base::Optional<Printer> GetPrinter(const std::string& id) const override {
-    return printers_.Get(id);
-  }
-
-  // Add |printer| to the corresponding list in |printers_| bases on the given
-  // |printer_class|.
-  void AddPrinter(const Printer& printer, PrinterClass printer_class) {
-    printers_.Insert(printer_class, printer);
-  }
-
-  void InstallPrinter(const std::string& id) { installed_.insert(id); }
-
- private:
-  chromeos::PrintersMap printers_;
-  base::flat_set<std::string> installed_;
-};
-
-class TestPrinterConfigurer : public chromeos::StubPrinterConfigurer {
- public:
-  void SetUpPrinter(const Printer& printer,
-                    PrinterSetupCallback callback) override {
-    std::move(callback).Run(PrinterSetupResult::kSuccess);
-  }
-};
 
 // Converts JSON string to base::ListValue object.
 // On failure, returns NULL and fills |*error| string.
@@ -123,6 +105,39 @@ std::unique_ptr<base::ListValue> GetJSONAsListValue(const std::string& json,
   return ret;
 }
 
+// Fake PpdProvider backend. This fake PpdProvider is used to fake fetching the
+// PPD EULA license of a destination. If |effective_make_and_model| is empty, it
+// will return with NOT_FOUND and an empty string. Otherwise, it will return
+// SUCCESS with |effective_make_and_model| as the PPD license.
+class FakePpdProvider : public chromeos::PpdProvider {
+ public:
+  FakePpdProvider() = default;
+
+  void ResolvePpdLicense(base::StringPiece effective_make_and_model,
+                         ResolvePpdLicenseCallback cb) override {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(cb),
+                       effective_make_and_model.empty() ? PpdProvider::NOT_FOUND
+                                                        : PpdProvider::SUCCESS,
+                       effective_make_and_model.as_string()));
+  }
+
+  // These methods are not used by CupsPrintersManager.
+  void ResolvePpd(const Printer::PpdReference& reference,
+                  ResolvePpdCallback cb) override {}
+  void ResolvePpdReference(const chromeos::PrinterSearchData& search_data,
+                           ResolvePpdReferenceCallback cb) override {}
+  void ResolveManufacturers(ResolveManufacturersCallback cb) override {}
+  void ResolvePrinters(const std::string& manufacturer,
+                       ResolvePrintersCallback cb) override {}
+  void ReverseLookup(const std::string& effective_make_and_model,
+                     ReverseLookupCallback cb) override {}
+
+ private:
+  ~FakePpdProvider() override = default;
+};
+
 }  // namespace
 
 class LocalPrinterHandlerChromeosTest : public testing::Test {
@@ -133,9 +148,10 @@ class LocalPrinterHandlerChromeosTest : public testing::Test {
   void SetUp() override {
     test_backend_ = base::MakeRefCounted<TestPrintBackend>();
     PrintBackend::SetPrintBackendForTesting(test_backend_.get());
+    ppd_provider_ = base::MakeRefCounted<FakePpdProvider>();
     local_printer_handler_ = LocalPrinterHandlerChromeos::CreateForTesting(
         &profile_, nullptr, &printers_manager_,
-        std::make_unique<TestPrinterConfigurer>());
+        std::make_unique<chromeos::TestPrinterConfigurer>(), ppd_provider_);
   }
 
  protected:
@@ -144,7 +160,8 @@ class LocalPrinterHandlerChromeosTest : public testing::Test {
   // Must outlive |printers_manager_|.
   TestingProfile profile_;
   scoped_refptr<TestPrintBackend> test_backend_;
-  TestCupsPrintersManager printers_manager_;
+  chromeos::TestCupsPrintersManager printers_manager_;
+  scoped_refptr<FakePpdProvider> ppd_provider_;
   std::unique_ptr<LocalPrinterHandlerChromeos> local_printer_handler_;
 
  private:
@@ -183,7 +200,8 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
         "printerDescription": "description1",
         "printerName": "saved",
         "printerOptions": {
-          "cupsEnterprisePrinter": "false"
+          "cupsEnterprisePrinter": "false",
+          "printerEulaUrl": ""
         }
       },
       {
@@ -192,7 +210,8 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
         "printerDescription": "description2",
         "printerName": "enterprise",
         "printerOptions": {
-          "cupsEnterprisePrinter": "true"
+          "cupsEnterprisePrinter": "true",
+          "printerEulaUrl": ""
         }
       },
       {
@@ -201,7 +220,8 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetPrinters) {
         "printerDescription": "description3",
         "printerName": "automatic",
         "printerOptions": {
-          "cupsEnterprisePrinter": "false"
+          "cupsEnterprisePrinter": "false",
+          "printerEulaUrl": ""
         }
       }
     ]
@@ -306,6 +326,59 @@ TEST_F(LocalPrinterHandlerChromeosTest, GetNativePrinterPolicies) {
 
   EXPECT_EQ(expected_policies,
             local_printer_handler_->GetNativePrinterPolicies());
+}
+
+// Test that fetching a PPD license will return a license if the printer has one
+// available.
+TEST_F(LocalPrinterHandlerChromeosTest, StartFetchValidEulaUrl) {
+  Printer::PpdReference ref;
+  ref.effective_make_and_model = "expected_make_model";
+
+  // Printers with a PpdReference will return a license
+  Printer saved_printer = CreateTestPrinterWithPpdReference(
+      "printer1", "saved", "description1", ref);
+  printers_manager_.AddPrinter(saved_printer, PrinterClass::kSaved);
+  printers_manager_.InstallPrinter("printer1");
+
+  std::string fetched_eula_url;
+  local_printer_handler_->StartGetEulaUrl(
+      "printer1", base::BindOnce(&RecordGetEulaUrl, &fetched_eula_url));
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(fetched_eula_url, "chrome://os-credits/expected_make_model");
+}
+
+// Test that a printer with no PPD license will return an empty string.
+TEST_F(LocalPrinterHandlerChromeosTest, StartFetchNotFoundEulaUrl) {
+  // A printer without a PpdReference will simulate an PPD without a license.
+  Printer saved_printer =
+      CreateTestPrinter("printer1", "saved", "description1");
+  printers_manager_.AddPrinter(saved_printer, PrinterClass::kSaved);
+  printers_manager_.InstallPrinter("printer1");
+
+  std::string fetched_eula_url;
+  local_printer_handler_->StartGetEulaUrl(
+      "printer1", base::BindOnce(&RecordGetEulaUrl, &fetched_eula_url));
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(fetched_eula_url.empty());
+}
+
+// Test that fetching a PPD license will exit early if the printer is not found
+// in CupsPrintersManager.
+TEST_F(LocalPrinterHandlerChromeosTest, StartFetchEulaUrlOnNonExistantPrinter) {
+  Printer saved_printer =
+      CreateTestPrinter("printer1", "saved", "description1");
+
+  std::string fetched_eula_url;
+  local_printer_handler_->StartGetEulaUrl(
+      "printer1", base::BindOnce(&RecordGetEulaUrl, &fetched_eula_url));
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(fetched_eula_url.empty());
 }
 
 }  // namespace printing

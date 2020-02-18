@@ -18,7 +18,6 @@ namespace gaia {
 struct ListedAccount {
   // The account's ID, as per Chrome, will be determined in the
   // CookieManagerService.
-  // TODO(triploblastic): Rename the id field to account_id.
   CoreAccountId id;
   std::string email;
   std::string gaia_id;
@@ -51,6 +50,10 @@ bool AreEmailsSame(const std::string& email1, const std::string& email2);
 
 // Extract the domain part from the canonical form of the given email.
 std::string ExtractDomainName(const std::string& email);
+
+// Returns whether the user's email is Google internal. This check is meant
+// to be used sparingly since it ship Googler-only code to all users.
+bool IsGoogleInternalAccountEmail(const std::string& email);
 
 bool IsGaiaSignonRealm(const GURL& url);
 

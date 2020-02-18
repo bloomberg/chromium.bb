@@ -17,9 +17,12 @@
 @interface InfobarBannerViewController
     : UIViewController <InfobarBannerInteractable>
 
-// Designated Initializer. |delegate| handles InfobarBannerVC actions, and
-// |infobarType| is used to know which Coordinator presented this VC.
+// Designated Initializer. |delegate| handles InfobarBannerVC actions.
+// |presentsModal| should be YES if the banner is able to present an
+// InfobarModal. |infobarType| is used to know which Coordinator presented this
+// VC.
 - (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate
+                   presentsModal:(BOOL)presentsModal
                             type:(InfobarType)infobarType
     NS_DESIGNATED_INITIALIZER;
 
@@ -43,6 +46,11 @@
 // Optional A11y label. If set it will be used as the Banner A11y label instead
 // of the default combination of Title and Subtitle texts.
 @property(nonatomic, copy) NSString* optionalAccessibilityLabel;
+
+// YES if the banner should be able to present a Modal. Changing this property
+// will immediately update the Banner UI that is related to triggering modal
+// presentation.
+@property(nonatomic, assign) BOOL presentsModal;
 
 // - If no interaction is occuring, the InfobarBanner will be dismissed.
 // - If there's some interaction occuring the InfobarBanner will be dismissed

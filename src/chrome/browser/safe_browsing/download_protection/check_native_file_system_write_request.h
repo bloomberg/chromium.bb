@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request_base.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_file_system_write_item.h"
@@ -48,7 +49,11 @@ class CheckNativeFileSystemWriteRequest
                                   bool upload_requested,
                                   const std::string& request_data,
                                   const std::string& response_body) override;
-  void MaybeUploadBinary(DownloadCheckResultReason reason) override;
+  bool MaybeReturnAsynchronousVerdict(
+      DownloadCheckResultReason reason) override;
+  bool ShouldUploadBinary(DownloadCheckResultReason reason) override;
+  void UploadBinary(DownloadCheckResult result,
+                    DownloadCheckResultReason reason) override;
   void NotifyRequestFinished(DownloadCheckResult result,
                              DownloadCheckResultReason reason) override;
 

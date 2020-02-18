@@ -12,19 +12,20 @@
 namespace content {
 
 ServiceLaunchedVideoCaptureDevice::ServiceLaunchedVideoCaptureDevice(
-    video_capture::mojom::VideoSourcePtr source,
-    video_capture::mojom::PushVideoStreamSubscriptionPtr subscription,
+    mojo::Remote<video_capture::mojom::VideoSource> source,
+    mojo::Remote<video_capture::mojom::PushVideoStreamSubscription>
+        subscription,
     base::OnceClosure connection_lost_cb)
     : source_(std::move(source)),
       subscription_(std::move(subscription)),
       connection_lost_cb_(std::move(connection_lost_cb)) {
   // Unretained |this| is safe, because |this| owns |source_|.
-  source_.set_connection_error_handler(
+  source_.set_disconnect_handler(
       base::BindOnce(&ServiceLaunchedVideoCaptureDevice::
                          OnLostConnectionToSourceOrSubscription,
                      base::Unretained(this)));
   // Unretained |this| is safe, because |this| owns |subscription_|.
-  subscription_.set_connection_error_handler(
+  subscription_.set_disconnect_handler(
       base::BindOnce(&ServiceLaunchedVideoCaptureDevice::
                          OnLostConnectionToSourceOrSubscription,
                      base::Unretained(this)));

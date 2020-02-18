@@ -1,4 +1,4 @@
-version: 0.5.2-build-{build}
+version: 0.5.3-build-{build}
 pull_requests:
   do_not_increment_build_number: true
 image:
@@ -27,7 +27,7 @@ build_script:
     if /i "%tests%"=="1" nmake -nologo -s
 test_script:
 - cmd: >-
-    if /i "%tests%"=="1" nmake -s -nologo check
+    if /i "%tests%"=="1" nmake -s -nologo TESTARGS=-silent check
 
     if /i "%tests%"=="0" echo Tests skipped.
 artifacts:

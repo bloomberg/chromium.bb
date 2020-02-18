@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -34,10 +33,12 @@ GURL GetHostNameWithHTTPScheme(const GURL& url) {
   return GURL(result);
 }
 
-// Convert a LoginReputationClientResponse proto into a DictionaryValue.
+// Convert a Proto object into a DictionaryValue.
+template <class T>
 std::unique_ptr<base::DictionaryValue> CreateDictionaryFromVerdict(
-    const LoginReputationClientResponse& verdict,
-    const base::Time& receive_time) {
+    const T& verdict,
+    const base::Time& receive_time,
+    const char* proto_name) {
   std::unique_ptr<base::DictionaryValue> result =
       std::make_unique<base::DictionaryValue>();
   result->SetInteger(kCacheCreationTime,
@@ -45,7 +46,7 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryFromVerdict(
   std::string serialized_proto(verdict.SerializeAsString());
   // Performs a base64 encoding on the serialized proto.
   base::Base64Encode(serialized_proto, &serialized_proto);
-  result->SetString(kVerdictProto, serialized_proto);
+  result->SetString(proto_name, serialized_proto);
   return result;
 }
 
@@ -59,10 +60,12 @@ void GeneratePathVariantsWithoutQuery(const GURL& url,
                                                      std::string(), paths);
 }
 
+template <class T>
 bool ParseVerdictEntry(base::Value* verdict_entry,
                        int* out_verdict_received_time,
-                       LoginReputationClientResponse* out_verdict) {
-  std::string serialized_verdict_proto;
+                       T* out_verdict,
+                       const char* proto_name) {
+  std::string serialized_proto;
   if (!verdict_entry || !verdict_entry->is_dict() || !out_verdict)
     return false;
   base::Value* cache_creation_time_value =
@@ -72,14 +75,13 @@ bool ParseVerdictEntry(base::Value* verdict_entry,
     return false;
   *out_verdict_received_time = cache_creation_time_value->GetInt();
 
-  base::Value* verdict_proto_value = verdict_entry->FindKey(kVerdictProto);
+  base::Value* verdict_proto_value = verdict_entry->FindKey(proto_name);
   if (!verdict_proto_value || !verdict_proto_value->is_string())
     return false;
-  serialized_verdict_proto = verdict_proto_value->GetString();
+  serialized_proto = verdict_proto_value->GetString();
 
-  return base::Base64Decode(serialized_verdict_proto,
-                            &serialized_verdict_proto) &&
-         out_verdict->ParseFromString(serialized_verdict_proto);
+  return base::Base64Decode(serialized_proto, &serialized_proto) &&
+         out_verdict->ParseFromString(serialized_proto);
 }
 
 // Return the path of the cache expression. e.g.:
@@ -115,12 +117,15 @@ bool IsCacheExpired(int cache_creation_time, int cache_duration) {
          static_cast<double>(cache_creation_time + cache_duration);
 }
 
-size_t RemoveExpiredEntries(base::Value* verdict_dictionary) {
+template <class T>
+size_t RemoveExpiredEntries(base::Value* verdict_dictionary,
+                            const char* proto_name) {
   std::vector<std::string> expired_keys;
   for (const auto& item : verdict_dictionary->DictItems()) {
     int verdict_received_time;
-    LoginReputationClientResponse verdict;
-    if (!ParseVerdictEntry(&item.second, &verdict_received_time, &verdict) ||
+    T verdict;
+    if (!ParseVerdictEntry<T>(&item.second, &verdict_received_time, &verdict,
+                              proto_name) ||
         IsCacheExpired(verdict_received_time, verdict.cache_duration_sec())) {
       expired_keys.push_back(item.first);
     }
@@ -141,6 +146,17 @@ bool OriginMatchPrimaryPattern(
   return ContentSettingsPattern::FromURLNoWildcard(origin) == primary_pattern;
 }
 
+std::string GetKeyOfTypeFromTriggerType(
+    LoginReputationClientRequest::TriggerType trigger_type,
+    ReusedPasswordAccountType password_type) {
+  return trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE
+             ? kPasswordOnFocusCacheKey
+             : base::NumberToString(
+                   static_cast<std::underlying_type_t<
+                       ReusedPasswordAccountType::AccountType>>(
+                       password_type.account_type()));
+}
+
 }  // namespace
 
 VerdictCacheManager::VerdictCacheManager(
@@ -148,7 +164,6 @@ VerdictCacheManager::VerdictCacheManager(
     scoped_refptr<HostContentSettingsMap> content_settings)
     : stored_verdict_count_password_on_focus_(base::nullopt),
       stored_verdict_count_password_entry_(base::nullopt),
-      history_service_observer_(this),
       content_settings_(content_settings) {
   if (history_service)
     history_service_observer_.Add(history_service);
@@ -171,48 +186,38 @@ void VerdictCacheManager::CachePhishGuardVerdict(
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
 
   GURL hostname = GetHostNameWithHTTPScheme(url);
-  base::Optional<size_t>* stored_verdict_count =
-      trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE
-          ? &stored_verdict_count_password_on_focus_
-          : &stored_verdict_count_password_entry_;
+
   std::unique_ptr<base::DictionaryValue> cache_dictionary =
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
-          hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+          hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
           std::string(), nullptr));
 
   if (!cache_dictionary || !cache_dictionary)
     cache_dictionary = std::make_unique<base::DictionaryValue>();
 
   std::unique_ptr<base::DictionaryValue> verdict_entry(
-      CreateDictionaryFromVerdict(verdict, receive_time));
+      CreateDictionaryFromVerdict<LoginReputationClientResponse>(
+          verdict, receive_time, kVerdictProto));
 
   base::Value* verdict_dictionary = nullptr;
-  if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
-    // All UNFAMILIAR_LOGIN_PAGE verdicts (a.k.a password on focus ping)
-    // are cached under |kPasswordOnFocusCacheKey|.
-    verdict_dictionary = cache_dictionary->FindKeyOfType(
-        kPasswordOnFocusCacheKey, base::Value::Type::DICTIONARY);
-    if (!verdict_dictionary) {
-      verdict_dictionary = cache_dictionary->SetKey(
-          kPasswordOnFocusCacheKey, base::Value(base::Value::Type::DICTIONARY));
-    }
-  } else {
-    std::string password_type_key = base::NumberToString(
-        static_cast<
-            std::underlying_type_t<ReusedPasswordAccountType::AccountType>>(
-            password_type.account_type()));
-    verdict_dictionary = cache_dictionary->FindKeyOfType(
-        password_type_key, base::Value::Type::DICTIONARY);
-    if (!verdict_dictionary) {
-      verdict_dictionary = cache_dictionary->SetKey(
-          password_type_key, base::Value(base::Value::Type::DICTIONARY));
-    }
+  std::string type_key =
+      GetKeyOfTypeFromTriggerType(trigger_type, password_type);
+  verdict_dictionary =
+      cache_dictionary->FindKeyOfType(type_key, base::Value::Type::DICTIONARY);
+  if (!verdict_dictionary) {
+    verdict_dictionary = cache_dictionary->SetKey(
+        type_key, base::Value(base::Value::Type::DICTIONARY));
   }
 
   // Increases stored verdict count if we haven't seen this cache expression
   // before.
-  if (!verdict_dictionary->FindKey(verdict.cache_expression()))
+  if (!verdict_dictionary->FindKey(verdict.cache_expression())) {
+    base::Optional<size_t>* stored_verdict_count =
+        trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE
+            ? &stored_verdict_count_password_on_focus_
+            : &stored_verdict_count_password_entry_;
     *stored_verdict_count = GetStoredPhishGuardVerdictCount(trigger_type) + 1;
+  }
 
   // If same cache_expression is already in this verdict_dictionary, we simply
   // override it.
@@ -220,8 +225,8 @@ void VerdictCacheManager::CachePhishGuardVerdict(
       verdict.cache_expression(),
       base::Value::FromUniquePtrValue(std::move(verdict_entry)));
   content_settings_->SetWebsiteSettingDefaultScope(
-      hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
-      std::string(), std::move(cache_dictionary));
+      hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION, std::string(),
+      std::move(cache_dictionary));
 }
 
 LoginReputationClientResponse::VerdictType
@@ -236,26 +241,19 @@ VerdictCacheManager::GetCachedPhishGuardVerdict(
   GURL hostname = GetHostNameWithHTTPScheme(url);
   std::unique_ptr<base::DictionaryValue> cache_dictionary =
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
-          hostname, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+          hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
           std::string(), nullptr));
 
   if (!cache_dictionary || cache_dictionary->empty())
     return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
 
   base::Value* verdict_dictionary = nullptr;
-  if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
-    // All UNFAMILIAR_LOGIN_PAGE verdicts (a.k.a password on focus ping)
-    // are cached under |kPasswordOnFocusCacheKey|.
-    verdict_dictionary = cache_dictionary->FindKey(kPasswordOnFocusCacheKey);
-    if (!verdict_dictionary)
-      return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
-  } else {
-    verdict_dictionary = cache_dictionary->FindKey(base::NumberToString(
-        static_cast<
-            std::underlying_type_t<ReusedPasswordAccountType::AccountType>>(
-            password_type.account_type())));
-    if (!verdict_dictionary)
-      return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
+  std::string type_key =
+      GetKeyOfTypeFromTriggerType(trigger_type, password_type);
+  verdict_dictionary =
+      cache_dictionary->FindKeyOfType(type_key, base::Value::Type::DICTIONARY);
+  if (!verdict_dictionary) {
+    return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
   }
 
   std::vector<std::string> paths;
@@ -271,7 +269,8 @@ VerdictCacheManager::GetCachedPhishGuardVerdict(
     LoginReputationClientResponse verdict;
     // Ignore any entry that we cannot parse. These invalid entries will be
     // cleaned up during shutdown.
-    if (!ParseVerdictEntry(&item.second, &verdict_received_time, &verdict))
+    if (!ParseVerdictEntry<LoginReputationClientResponse>(
+            &item.second, &verdict_received_time, &verdict, kVerdictProto))
       continue;
     // Since password protection content settings are keyed by origin, we only
     // need to compare the path part of the cache_expression and the given url.
@@ -310,7 +309,7 @@ size_t VerdictCacheManager::GetStoredPhishGuardVerdictCount(
 
   ContentSettingsForOneType password_protection_settings;
   content_settings_->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+      ContentSettingsType::PASSWORD_PROTECTION, std::string(),
       &password_protection_settings);
   stored_verdict_count_password_on_focus_ = 0;
   stored_verdict_count_password_entry_ = 0;
@@ -322,7 +321,7 @@ size_t VerdictCacheManager::GetStoredPhishGuardVerdictCount(
     std::unique_ptr<base::DictionaryValue> cache_dictionary =
         base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
             GURL(source.primary_pattern.ToString()), GURL(),
-            CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(), nullptr));
+            ContentSettingsType::PASSWORD_PROTECTION, std::string(), nullptr));
     if (cache_dictionary.get() && !cache_dictionary->empty()) {
       for (const auto& item : cache_dictionary->DictItems()) {
         if (item.first == base::StringPiece(kPasswordOnFocusCacheKey)) {
@@ -342,6 +341,10 @@ size_t VerdictCacheManager::GetStoredPhishGuardVerdictCount(
 void VerdictCacheManager::CleanUpExpiredVerdicts() {
   DCHECK(content_settings_);
 
+  CleanUpExpiredPhishGuardVerdicts();
+}
+
+void VerdictCacheManager::CleanUpExpiredPhishGuardVerdicts() {
   if (GetStoredPhishGuardVerdictCount(
           LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) <= 0 &&
       GetStoredPhishGuardVerdictCount(
@@ -350,7 +353,7 @@ void VerdictCacheManager::CleanUpExpiredVerdicts() {
 
   ContentSettingsForOneType password_protection_settings;
   content_settings_->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+      ContentSettingsType::PASSWORD_PROTECTION, std::string(),
       &password_protection_settings);
 
   for (const ContentSettingPatternSource& source :
@@ -360,17 +363,17 @@ void VerdictCacheManager::CleanUpExpiredVerdicts() {
     std::unique_ptr<base::DictionaryValue> cache_dictionary =
         base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
             primary_pattern_url, GURL(),
-            CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(), nullptr));
-    bool has_expired_password_on_focus_entry = RemoveExpiredVerdicts(
+            ContentSettingsType::PASSWORD_PROTECTION, std::string(), nullptr));
+    bool has_expired_password_on_focus_entry = RemoveExpiredPhishGuardVerdicts(
         LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
         cache_dictionary.get());
-    bool has_expired_password_reuse_entry = RemoveExpiredVerdicts(
+    bool has_expired_password_reuse_entry = RemoveExpiredPhishGuardVerdicts(
         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
         cache_dictionary.get());
 
     if (cache_dictionary->size() == 0u) {
       content_settings_->ClearSettingsForOneTypeWithPredicate(
-          CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
+          ContentSettingsType::PASSWORD_PROTECTION, base::Time(),
           base::Time::Max(),
           base::BindRepeating(&OriginMatchPrimaryPattern, primary_pattern_url));
     } else if (has_expired_password_on_focus_entry ||
@@ -378,9 +381,8 @@ void VerdictCacheManager::CleanUpExpiredVerdicts() {
       // Set the website setting of this origin with the updated
       // |cache_dictionary|.
       content_settings_->SetWebsiteSettingDefaultScope(
-          primary_pattern_url, GURL(),
-          CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
-          std::move(cache_dictionary));
+          primary_pattern_url, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
+          std::string(), std::move(cache_dictionary));
     }
   }
 }
@@ -402,7 +404,7 @@ void VerdictCacheManager::HistoryServiceBeingDeleted(
   history_service_observer_.Remove(history_service);
 }
 
-bool VerdictCacheManager::RemoveExpiredVerdicts(
+bool VerdictCacheManager::RemoveExpiredPhishGuardVerdicts(
     LoginReputationClientRequest::TriggerType trigger_type,
     base::DictionaryValue* cache_dictionary) {
   DCHECK(trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
@@ -415,12 +417,14 @@ bool VerdictCacheManager::RemoveExpiredVerdicts(
   for (auto item : cache_dictionary->DictItems()) {
     if (trigger_type == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE &&
         item.first == std::string(kPasswordOnFocusCacheKey)) {
-      size_t removed_cnt = RemoveExpiredEntries(&item.second);
+      size_t removed_cnt = RemoveExpiredEntries<LoginReputationClientResponse>(
+          &item.second, kVerdictProto);
       verdicts_removed += removed_cnt;
       if (stored_verdict_count_password_on_focus_.has_value())
         stored_verdict_count_password_on_focus_.value() -= removed_cnt;
     } else {
-      size_t removed_cnt = RemoveExpiredEntries(&item.second);
+      size_t removed_cnt = RemoveExpiredEntries<LoginReputationClientResponse>(
+          &item.second, kVerdictProto);
       verdicts_removed += removed_cnt;
       if (stored_verdict_count_password_entry_.has_value())
         stored_verdict_count_password_entry_.value() -= removed_cnt;
@@ -443,7 +447,7 @@ void VerdictCacheManager::RemoveContentSettingsOnURLsDeleted(
 
   if (all_history) {
     content_settings_->ClearSettingsForOneType(
-        CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION);
+        ContentSettingsType::PASSWORD_PROTECTION);
     stored_verdict_count_password_on_focus_ = 0;
     stored_verdict_count_password_entry_ = 0;
     return;
@@ -469,7 +473,7 @@ void VerdictCacheManager::RemoveContentSettingsOnURLsDeleted(
         GetVerdictCountForURL(
             url_key, LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
     content_settings_->ClearSettingsForOneTypeWithPredicate(
-        CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, base::Time(),
+        ContentSettingsType::PASSWORD_PROTECTION, base::Time(),
         base::Time::Max(),
         base::BindRepeating(&OriginMatchPrimaryPattern, url_key));
   }
@@ -482,7 +486,7 @@ size_t VerdictCacheManager::GetVerdictCountForURL(
          trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
   std::unique_ptr<base::DictionaryValue> cache_dictionary =
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
-          url, GURL(), CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, std::string(),
+          url, GURL(), ContentSettingsType::PASSWORD_PROTECTION, std::string(),
           nullptr));
   if (!cache_dictionary || cache_dictionary->empty())
     return 0;

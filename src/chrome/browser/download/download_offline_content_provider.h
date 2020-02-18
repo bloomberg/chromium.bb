@@ -31,6 +31,7 @@ using OfflineContentAggregator =
 using UpdateDelta = offline_items_collection::UpdateDelta;
 using LaunchLocation = offline_items_collection::LaunchLocation;
 
+class Profile;
 class SkBitmap;
 
 // This class handles the task of observing the downloads associated with a
@@ -90,7 +91,8 @@ class DownloadOfflineContentProvider
   // DownloadItem::Observer overrides
   void OnDownloadUpdated(DownloadItem* item) override;
   void OnDownloadRemoved(DownloadItem* item) override;
-  void OnDownloadDestroyed(DownloadItem* download) override;
+
+  void OnProfileCreated(Profile* profile);
 
  private:
   enum class State {
@@ -106,7 +108,7 @@ class DownloadOfflineContentProvider
 
   // SimpleDownloadManagerCoordinator::Observer overrides
   void OnDownloadsInitialized(bool active_downloads_only) override;
-  void OnManagerGoingDown() override;
+  void OnManagerGoingDown(SimpleDownloadManagerCoordinator* manager) override;
 
   void GetAllDownloads(std::vector<DownloadItem*>* all_items);
   DownloadItem* GetDownload(const std::string& download_guid);
@@ -114,9 +116,8 @@ class DownloadOfflineContentProvider
                             VisualsCallback callback,
                             const SkBitmap& bitmap);
   void AddCompletedDownload(DownloadItem* item);
-  void AddCompletedDownloadDone(DownloadItem* item,
-                                int64_t system_download_id,
-                                bool can_resolve);
+  void AddCompletedDownloadDone(const std::string& download_guid,
+                                int64_t system_download_id);
   void OnRenameDownloadCallbackDone(RenameCallback callback,
                                     DownloadItem* item,
                                     DownloadItem::DownloadRenameResult result);
@@ -124,19 +125,22 @@ class DownloadOfflineContentProvider
                        const base::Optional<UpdateDelta>& update_delta);
   void CheckForExternallyRemovedDownloads();
 
+  // Ensure that download core service is started.
+  void EnsureDownloadCoreServiceStarted();
+
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
   OfflineContentAggregator* aggregator_;
   std::string name_space_;
   SimpleDownloadManagerCoordinator* manager_;
 
-  // Tracks the completed downloads in the current session.
-  std::set<std::string> completed_downloads_;
   std::unique_ptr<download::AllDownloadEventNotifier::Observer>
       all_download_observer_;
   bool checked_for_externally_removed_downloads_;
   State state_;
   base::circular_deque<base::OnceClosure> pending_actions_for_reduced_mode_;
   base::circular_deque<base::OnceClosure> pending_actions_for_full_browser_;
+
+  Profile* profile_;
 
   base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_{this};
 

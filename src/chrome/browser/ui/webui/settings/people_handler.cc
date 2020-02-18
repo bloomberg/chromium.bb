@@ -44,10 +44,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -175,6 +173,8 @@ std::string GetSyncErrorAction(sync_ui_util::ActionType action_type) {
       return "upgradeClient";
     case sync_ui_util::ENTER_PASSPHRASE:
       return "enterPassphrase";
+    case sync_ui_util::RETRIEVE_TRUSTED_VAULT_KEYS:
+      return "retrieveTrustedVaultKeys";
     case sync_ui_util::CONFIRM_SYNC_SETTINGS:
       return "confirmSyncSettings";
     default:
@@ -204,24 +204,23 @@ base::string16 GetEnterPassphraseBody(syncer::PassphraseType passphrase_type,
                                       base::Time passphrase_time) {
   DCHECK(syncer::IsExplicitPassphrase(passphrase_type));
   switch (passphrase_type) {
-    case syncer::PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
+    case syncer::PassphraseType::kFrozenImplicitPassphrase:
       if (passphrase_time.is_null()) {
         return GetStringUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY);
       }
       return GetStringFUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE,
                              base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
                              base::TimeFormatShortDate(passphrase_time));
-    case syncer::PassphraseType::CUSTOM_PASSPHRASE:
+    case syncer::PassphraseType::kCustomPassphrase:
       if (passphrase_time.is_null()) {
         return GetStringUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY);
       }
       return GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
                              base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
                              base::TimeFormatShortDate(passphrase_time));
-    case syncer::PassphraseType::IMPLICIT_PASSPHRASE:
-    case syncer::PassphraseType::KEYSTORE_PASSPHRASE:
-    case syncer::PassphraseType::TRUSTED_VAULT_PASSPHRASE:
-    case syncer::PassphraseType::PASSPHRASE_TYPE_SIZE:
+    case syncer::PassphraseType::kImplicitPassphrase:
+    case syncer::PassphraseType::kKeystorePassphrase:
+    case syncer::PassphraseType::kTrustedVaultPassphrase:
       break;
   }
   NOTREACHED();
@@ -235,16 +234,15 @@ base::string16 GetFullEncryptionBody(syncer::PassphraseType passphrase_type,
     return GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM);
   }
   switch (passphrase_type) {
-    case syncer::PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
+    case syncer::PassphraseType::kFrozenImplicitPassphrase:
       return GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_GOOGLE_WITH_DATE,
                              base::TimeFormatShortDate(passphrase_time));
-    case syncer::PassphraseType::CUSTOM_PASSPHRASE:
+    case syncer::PassphraseType::kCustomPassphrase:
       return GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM_WITH_DATE,
                              base::TimeFormatShortDate(passphrase_time));
-    case syncer::PassphraseType::IMPLICIT_PASSPHRASE:
-    case syncer::PassphraseType::KEYSTORE_PASSPHRASE:
-    case syncer::PassphraseType::TRUSTED_VAULT_PASSPHRASE:
-    case syncer::PassphraseType::PASSPHRASE_TYPE_SIZE:
+    case syncer::PassphraseType::kImplicitPassphrase:
+    case syncer::PassphraseType::kKeystorePassphrase:
+    case syncer::PassphraseType::kTrustedVaultPassphrase:
       break;
   }
   NOTREACHED();
@@ -263,11 +261,7 @@ const char PeopleHandler::kDonePageStatus[] = "done";
 const char PeopleHandler::kPassphraseFailedPageStatus[] = "passphraseFailed";
 
 PeopleHandler::PeopleHandler(Profile* profile)
-    : profile_(profile),
-      configuring_sync_(false),
-      identity_manager_observer_(this),
-      sync_service_observer_(this) {
-}
+    : profile_(profile), configuring_sync_(false) {}
 
 PeopleHandler::~PeopleHandler() {
   // Early exit if running unit tests (no actual WebUI is attached).
@@ -339,6 +333,10 @@ void PeopleHandler::RegisterMessages() {
       base::BindRepeating(&PeopleHandler::HandleStartSyncingWithEmail,
                           base::Unretained(this)));
 #endif
+  web_ui()->RegisterMessageCallback(
+      "SyncStartKeyRetrieval",
+      base::BindRepeating(&PeopleHandler::HandleStartKeyRetrieval,
+                          base::Unretained(this)));
 }
 
 void PeopleHandler::OnJavascriptAllowed() {
@@ -369,7 +367,6 @@ void PeopleHandler::OnJavascriptDisallowed() {
 
 #if !defined(OS_CHROMEOS)
 void PeopleHandler::DisplayGaiaLogin(signin_metrics::AccessPoint access_point) {
-  DCHECK(!sync_startup_tracker_);
   // Advanced options are no longer being configured if the login screen is
   // visible. If the user exits the signin wizard after this without
   // configuring sync, CloseSyncSetup() will ensure they are logged out.
@@ -424,29 +421,6 @@ void PeopleHandler::OnPinLoginAvailable(bool is_available) {
 }
 #endif
 
-void PeopleHandler::DisplaySpinner() {
-  configuring_sync_ = true;
-
-  const int kTimeoutSec = 30;
-  DCHECK(!engine_start_timer_);
-  engine_start_timer_ = std::make_unique<base::OneShotTimer>();
-  engine_start_timer_->Start(FROM_HERE,
-                             base::TimeDelta::FromSeconds(kTimeoutSec), this,
-                             &PeopleHandler::DisplayTimeout);
-
-  FireWebUIListener("page-status-changed", base::Value(kSpinnerPageStatus));
-}
-
-void PeopleHandler::DisplayTimeout() {
-  // Stop a timer to handle timeout in waiting for checking network connection.
-  engine_start_timer_.reset();
-
-  // Do not listen to sync startup events.
-  sync_startup_tracker_.reset();
-
-  FireWebUIListener("page-status-changed", base::Value(kTimeoutPageStatus));
-}
-
 void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
   // Don't mark setup as complete if "didAbort" is true, or if authentication
   // is still needed.
@@ -457,27 +431,6 @@ void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
   CloseSyncSetup();
 }
 
-void PeopleHandler::SyncStartupFailed() {
-  // Stop a timer to handle timeout in waiting for checking network connection.
-  engine_start_timer_.reset();
-
-  // Just close the sync overlay (the idea is that the base settings page will
-  // display the current error.)
-  CloseUI();
-}
-
-void PeopleHandler::SyncStartupCompleted() {
-  syncer::SyncService* service = GetSyncService();
-  DCHECK(service->IsEngineInitialized());
-
-  // Stop a timer to handle timeout in waiting for checking network connection.
-  engine_start_timer_.reset();
-
-  sync_startup_tracker_.reset();
-
-  PushSyncPrefs();
-}
-
 syncer::SyncService* PeopleHandler::GetSyncService() const {
   return profile_->IsSyncAllowed()
              ? ProfileSyncServiceFactory::GetForProfile(profile_)
@@ -485,8 +438,6 @@ syncer::SyncService* PeopleHandler::GetSyncService() const {
 }
 
 void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
-  DCHECK(!sync_startup_tracker_);
-
   SyncConfigInfo configuration;
   const base::Value* callback_id = nullptr;
   ParseConfigurationArguments(args, &configuration, &callback_id);
@@ -539,18 +490,11 @@ base::Value PeopleHandler::GetStoredAccountsList() {
   const bool dice_enabled =
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_);
 
-  // Dice and unified consent both disabled: do not show the list of accounts.
-  if (!dice_enabled && !unified_consent::IsUnifiedConsentFeatureEnabled())
-    return accounts;
-
-  base::Value::ListStorage& accounts_list = accounts.GetList();
   if (dice_enabled) {
     // If dice is enabled, show all the accounts.
-    std::vector<AccountInfo> accounts =
-        signin_ui_util::GetAccountsForDicePromos(profile_);
-    accounts_list.reserve(accounts.size());
-    for (auto const& account : accounts) {
-      accounts_list.push_back(GetAccountValue(account));
+    for (auto const& account :
+         signin_ui_util::GetAccountsForDicePromos(profile_)) {
+      accounts.Append(GetAccountValue(account));
     }
   } else {
     // If dice is disabled (and unified consent enabled), show only the primary
@@ -560,7 +504,7 @@ base::Value PeopleHandler::GetStoredAccountsList() {
         identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
             identity_manager->GetPrimaryAccountInfo());
     if (primary_account_info.has_value())
-      accounts_list.push_back(GetAccountValue(primary_account_info.value()));
+      accounts.Append(GetAccountValue(primary_account_info.value()));
   }
 
   return accounts;
@@ -590,8 +534,6 @@ void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {
 #endif
 
 void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
-  DCHECK(!sync_startup_tracker_);
-
   SyncConfigInfo configuration;
   const base::Value* callback_id = nullptr;
   ParseConfigurationArguments(args, &configuration, &callback_id);
@@ -626,8 +568,8 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
   bool passphrase_failed = false;
   if (!configuration.passphrase.empty()) {
     // We call IsPassphraseRequired() here (instead of
-    // IsPassphraseRequiredForDecryption()) because the user may try to enter
-    // a passphrase even though no encrypted data types are enabled.
+    // IsPassphraseRequiredForPreferredDataTypes()) because the user may try to
+    // enter a passphrase even though no encrypted data types are enabled.
     if (service->GetUserSettings()->IsPassphraseRequired()) {
       // If we have pending keys, try to decrypt them with the provided
       // passphrase. We track if this succeeds or fails because a failed
@@ -649,7 +591,7 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
   }
 
   if (passphrase_failed ||
-      service->GetUserSettings()->IsPassphraseRequiredForDecryption()) {
+      service->GetUserSettings()->IsPassphraseRequiredForPreferredDataTypes()) {
     // If the user doesn't enter any passphrase, we won't call
     // SetDecryptionPassphrase() (passphrase_failed == false), but we still
     // want to display an error message to let the user know that their blank
@@ -674,98 +616,26 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
 
   syncer::SyncService* service = GetSyncService();
 
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    if (service && !sync_blocker_)
-      sync_blocker_ = service->GetSetupInProgressHandle();
-
-    // Mark Sync as requested by the user. It might already be requested, but
-    // it's not if this is either the first time the user is setting up Sync, or
-    // Sync was set up but then was reset via the dashboard. This also pokes the
-    // SyncService to start up immediately, i.e. bypass deferred startup.
-    if (service)
-      service->GetUserSettings()->SetSyncRequested(true);
-
-    GetLoginUIService()->SetLoginUI(this);
-
-    // Observe the web contents for a before unload event.
-    Observe(web_ui()->GetWebContents());
-
-    PushSyncPrefs();
-
-    // Focus the web contents in case the location bar was focused before. This
-    // makes sure that page elements for resolving sync errors can be focused.
-    web_ui()->GetWebContents()->Focus();
-
-    // Always let the page open when unified consent is enabled.
-    return;
-  }
-
-  if (!service) {
-    CloseUI();
-    return;
-  }
-
-  // This if-statement is not using IsProfileAuthNeededOrHasErrors(), because
-  // in some error cases (e.g. "confirmSyncSettings") the UI still needs to
-  // show.
-  if (!IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount()) {
-    // For web-based signin, the signin page is not displayed in an overlay
-    // on the settings page. So if we get here, it must be due to the user
-    // cancelling signin (by reloading the sync settings page during initial
-    // signin) or by directly navigating to settings/syncSetup
-    // (http://crbug.com/229836). So just exit and go back to the settings page.
-    DLOG(WARNING) << "Cannot display sync setup UI when not signed in";
-    CloseUI();
-    return;
-  }
-
-  // Notify services that login UI is now active.
-  GetLoginUIService()->SetLoginUI(this);
-
-  if (!sync_blocker_)
+  if (service && !sync_blocker_)
     sync_blocker_ = service->GetSetupInProgressHandle();
 
-  // Early exit if there is already a preferences push pending sync startup.
-  if (sync_startup_tracker_)
-    return;
-
-  if (!service->IsEngineInitialized() ||
-      !service->GetUserSettings()->IsSyncRequested()) {
-    // SetSyncRequested(true) does two things:
-    // 1) As the name says, it marks Sync as requested by the user (it might not
-    //    be requested yet because either this is the first time they're setting
-    //    it up, or Sync was reset via the dashboard).
-    // 2) Pokes the sync service to start *immediately*, i.e. bypass deferred
-    //    startup.
-    // It's possible that both of these are already the case, i.e. the engine is
-    // already in the process of initializing, in which case
-    // SetSyncRequested(true) will effectively do nothing. It's also possible
-    // that the sync service is already running in standalone transport mode and
-    // so the engine is already initialized. In that case, this will trigger the
-    // service to switch to full Sync-the-feature mode.
+  // Mark Sync as requested by the user. It might already be requested, but
+  // it's not if this is either the first time the user is setting up Sync, or
+  // Sync was set up but then was reset via the dashboard. This also pokes the
+  // SyncService to start up immediately, i.e. bypass deferred startup.
+  if (service)
     service->GetUserSettings()->SetSyncRequested(true);
 
-    // See if it's even possible to bring up the sync engine - if not
-    // (unrecoverable error?), don't bother displaying a spinner that will be
-    // immediately closed because this leads to some ugly infinite UI loop (see
-    // http://crbug.com/244769).
-    if (SyncStartupTracker::GetSyncServiceState(service) !=
-        SyncStartupTracker::SYNC_STARTUP_ERROR) {
-      DisplaySpinner();
-    }
+  GetLoginUIService()->SetLoginUI(this);
 
-    // Finally, wait for the Sync engine to get initialized. Note that if it is
-    // already initialized (probably because Sync-the-transport was already
-    // running), then this will call us back immediately.
-    sync_startup_tracker_ = std::make_unique<SyncStartupTracker>(service, this);
+  // Observe the web contents for a before unload event.
+  Observe(web_ui()->GetWebContents());
 
-    return;
-  }
-
-  // User is already logged in. They must have brought up the config wizard
-  // via the "Advanced..." button or through One-Click signin (cases 4-6), or
-  // they are re-enabling sync after having disabled it (case 7).
   PushSyncPrefs();
+
+  // Focus the web contents in case the location bar was focused before. This
+  // makes sure that page elements for resolving sync errors can be focused.
+  web_ui()->GetWebContents()->Focus();
 }
 
 #if defined(OS_CHROMEOS)
@@ -843,6 +713,15 @@ void PeopleHandler::HandlePauseSync(const base::ListValue* args) {
 }
 #endif
 
+void PeopleHandler::HandleStartKeyRetrieval(const base::ListValue* args) {
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  if (!browser)
+    return;
+
+  sync_ui_util::OpenTabForSyncKeyRetrieval(browser);
+}
+
 void PeopleHandler::HandleGetSyncStatus(const base::ListValue* args) {
   AllowJavascript();
 
@@ -861,9 +740,6 @@ void PeopleHandler::HandleSyncPrefsDispatch(const base::ListValue* args) {
 void PeopleHandler::CloseSyncSetup() {
   // Stop a timer to handle timeout in waiting for checking network connection.
   engine_start_timer_.reset();
-
-  // Clear the sync startup tracker, since the setup wizard is being closed.
-  sync_startup_tracker_.reset();
 
   // LoginUIService can be nullptr if page is brought up in incognito mode
   // (i.e. if the user is running in guest mode in cros and brings up settings).
@@ -939,11 +815,6 @@ void PeopleHandler::InitializeSyncBlocker() {
 void PeopleHandler::FocusUI() {
   WebContents* web_contents = web_ui()->GetWebContents();
   web_contents->GetDelegate()->ActivateContents(web_contents);
-}
-
-void PeopleHandler::CloseUI() {
-  CloseSyncSetup();
-  FireWebUIListener("page-status-changed", base::Value(kDonePageStatus));
 }
 
 void PeopleHandler::OnPrimaryAccountSet(
@@ -1028,17 +899,23 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
           !service->GetUserSettings()->IsFirstSetupComplete() &&
           identity_manager->HasPrimaryAccount());
 
-  base::string16 status_label;
-  base::string16 link_label;
-  sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
-
-  bool status_has_error =
-      sync_ui_util::GetStatusLabels(profile_, &status_label, &link_label,
-                                    &action_type) == sync_ui_util::SYNC_ERROR;
-  sync_status->SetString("statusText", status_label);
-  sync_status->SetString("statusActionText", link_label);
-  sync_status->SetBoolean("hasError", status_has_error);
-  sync_status->SetString("statusAction", GetSyncErrorAction(action_type));
+  const sync_ui_util::StatusLabels status_labels =
+      sync_ui_util::GetStatusLabels(profile_);
+  // TODO(crbug.com/1027467): Consider unifying some of the fields below to
+  // avoid redundancy.
+  sync_status->SetString("statusText",
+                         GetStringUTF16(status_labels.status_label_string_id));
+  sync_status->SetString("statusActionText",
+                         GetStringUTF16(status_labels.link_label_string_id));
+  sync_status->SetBoolean(
+      "hasError", status_labels.message_type == sync_ui_util::SYNC_ERROR ||
+                      status_labels.message_type ==
+                          sync_ui_util::PASSWORDS_ONLY_SYNC_ERROR);
+  sync_status->SetBoolean(
+      "hasPasswordsOnlyError",
+      status_labels.message_type == sync_ui_util::PASSWORDS_ONLY_SYNC_ERROR);
+  sync_status->SetString("statusAction",
+                         GetSyncErrorAction(status_labels.action_type));
 
   sync_status->SetBoolean("managed", disallowed_by_policy);
   sync_status->SetBoolean(
@@ -1076,6 +953,8 @@ void PeopleHandler::PushSyncPrefs() {
   //   encryptAllData: true if user wants to encrypt all data (not just
   //       passwords)
   //   passphraseRequired: true if a passphrase is needed to start sync
+  //   trustedVaultKeysRequired: true if trusted vault keys are needed to start
+  //                             sync.
   //
   base::DictionaryValue args;
 
@@ -1104,10 +983,14 @@ void PeopleHandler::PushSyncPrefs() {
                   sync_user_settings->IsEncryptEverythingAllowed());
 
   // We call IsPassphraseRequired() here, instead of calling
-  // IsPassphraseRequiredForDecryption(), because we want to show the passphrase
-  // UI even if no encrypted data types are enabled.
+  // IsPassphraseRequiredForPreferredDataTypes(), because we want to show the
+  // passphrase UI even if no encrypted data types are enabled.
   args.SetBoolean("passphraseRequired",
                   sync_user_settings->IsPassphraseRequired());
+
+  args.SetBoolean(
+      "trustedVaultKeysRequired",
+      sync_user_settings->IsTrustedVaultKeyRequiredForPreferredDataTypes());
 
   syncer::PassphraseType passphrase_type =
       sync_user_settings->GetPassphraseType();
@@ -1156,7 +1039,8 @@ void PeopleHandler::MarkFirstSetupComplete() {
 
   // We're done configuring, so notify SyncService that it is OK to start
   // syncing.
-  service->GetUserSettings()->SetFirstSetupComplete();
+  service->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::ADVANCED_FLOW_CONFIRM);
   FireWebUIListener("sync-settings-saved");
 }
 

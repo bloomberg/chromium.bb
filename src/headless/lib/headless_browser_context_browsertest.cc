@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -67,8 +68,9 @@ class HeadlessBrowserContextIsolationTest
   void RunDevTooledTest() override {
     load_observer_.reset(new LoadObserver(
         devtools_client_.get(),
-        base::Bind(&HeadlessBrowserContextIsolationTest::OnFirstLoadComplete,
-                   base::Unretained(this))));
+        base::BindOnce(
+            &HeadlessBrowserContextIsolationTest::OnFirstLoadComplete,
+            base::Unretained(this))));
     devtools_client_->GetPage()->Navigate(
         embedded_test_server()->GetURL("/hello.html").spec());
   }
@@ -77,8 +79,9 @@ class HeadlessBrowserContextIsolationTest
     EXPECT_TRUE(load_observer_->navigation_succeeded());
     load_observer_.reset(new LoadObserver(
         devtools_client2_.get(),
-        base::Bind(&HeadlessBrowserContextIsolationTest::OnSecondLoadComplete,
-                   base::Unretained(this))));
+        base::BindOnce(
+            &HeadlessBrowserContextIsolationTest::OnSecondLoadComplete,
+            base::Unretained(this))));
     devtools_client2_->GetPage()->Navigate(
         embedded_test_server()->GetURL("/hello.html").spec());
   }
@@ -150,25 +153,44 @@ class HeadlessBrowserContextIsolationTest
 // TODO(https://crbug.com/930356): Re-enable test.
 DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessBrowserContextIsolationTest);
 
-IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, UserDataDir) {
-  // We do not want to bother with posting tasks to create a temp dir.
-  // Just allow IO from main thread for now.
+class HeadlessBrowserUserDataDirTest : public HeadlessBrowserTest {
+ protected:
+  HeadlessBrowserUserDataDirTest() = default;
+  ~HeadlessBrowserUserDataDirTest() override = default;
+  HeadlessBrowserUserDataDirTest(const HeadlessBrowserUserDataDirTest&) =
+      delete;
+  HeadlessBrowserUserDataDirTest& operator=(
+      const HeadlessBrowserUserDataDirTest&) = delete;
+
+  const base::FilePath& user_data_dir() const {
+    return user_data_dir_.GetPath();
+  }
+
+  // HeadlessBrowserTest:
+  void SetUp() override {
+    ASSERT_TRUE(user_data_dir_.CreateUniqueTempDir());
+
+    // The newly created temp directory should be empty.
+    EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir()));
+
+    HeadlessBrowserTest::SetUp();
+  }
+
+ private:
+  base::ScopedTempDir user_data_dir_;
+};
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserUserDataDirTest, Do) {
+  // Allow IO from the main thread.
   base::ThreadRestrictions::SetIOAllowed(true);
 
   EXPECT_TRUE(embedded_test_server()->Start());
 
-  base::ScopedTempDir user_data_dir;
-  ASSERT_TRUE(user_data_dir.CreateUniqueTempDir());
-
-  // Newly created temp directory should be empty.
-  EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.GetPath()));
-
-  HeadlessBrowserContext* browser_context =
-      browser()
-          ->CreateBrowserContextBuilder()
-          .SetUserDataDir(user_data_dir.GetPath())
-          .SetIncognitoMode(false)
-          .Build();
+  HeadlessBrowserContext* browser_context = browser()
+                                                ->CreateBrowserContextBuilder()
+                                                .SetUserDataDir(user_data_dir())
+                                                .SetIncognitoMode(false)
+                                                .Build();
 
   HeadlessWebContents* web_contents =
       browser_context->CreateWebContentsBuilder()
@@ -180,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, UserDataDir) {
   // Something should be written to this directory.
   // If it is not the case, more complex page may be needed.
   // ServiceWorkers may be a good option.
-  EXPECT_FALSE(base::IsDirectoryEmpty(user_data_dir.GetPath()));
+  EXPECT_FALSE(base::IsDirectoryEmpty(user_data_dir()));
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, IncognitoMode) {
@@ -224,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextWebPreferences) {
       browser()
           ->CreateBrowserContextBuilder()
           .SetOverrideWebPreferencesCallback(
-              base::Bind([](WebPreferences* preferences) {
+              base::BindRepeating([](WebPreferences* preferences) {
                 preferences->hide_scrollbars = true;
               }))
           .Build();

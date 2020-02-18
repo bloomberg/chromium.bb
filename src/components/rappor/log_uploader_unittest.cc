@@ -65,11 +65,12 @@ class TestLogUploader : public LogUploader {
 class LogUploaderTest : public testing::Test {
  public:
   LogUploaderTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
 
  protected:
   // Required for base::ThreadTaskRunnerHandle::Get().
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
@@ -89,12 +90,13 @@ TEST_F(LogUploaderTest, Success) {
 TEST_F(LogUploaderTest, Rejection) {
   TestLogUploader uploader(test_url_loader_factory_.GetSafeWeakWrapper());
 
-  network::ResourceResponseHead response_head;
+  auto response_head = network::mojom::URLResponseHead::New();
   std::string headers("HTTP/1.1 400 Bad Request\nContent-type: text/html\n\n");
-  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  response_head.mime_type = "text/html";
-  test_url_loader_factory_.AddResponse(GURL(kTestServerURL), response_head, "",
+  response_head->mime_type = "text/html";
+  test_url_loader_factory_.AddResponse(GURL(kTestServerURL),
+                                       std::move(response_head), "",
                                        network::URLLoaderCompletionStatus());
 
   uploader.QueueLog("log1");
@@ -106,13 +108,14 @@ TEST_F(LogUploaderTest, Rejection) {
 TEST_F(LogUploaderTest, Failure) {
   TestLogUploader uploader(test_url_loader_factory_.GetSafeWeakWrapper());
 
-  network::ResourceResponseHead response_head;
+  auto response_head = network::mojom::URLResponseHead::New();
   std::string headers(
       "HTTP/1.1 500 Internal Server Error\nContent-type: text/html\n\n");
-  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  response_head.mime_type = "text/html";
-  test_url_loader_factory_.AddResponse(GURL(kTestServerURL), response_head, "",
+  response_head->mime_type = "text/html";
+  test_url_loader_factory_.AddResponse(GURL(kTestServerURL),
+                                       std::move(response_head), "",
                                        network::URLLoaderCompletionStatus());
 
   uploader.QueueLog("log1");

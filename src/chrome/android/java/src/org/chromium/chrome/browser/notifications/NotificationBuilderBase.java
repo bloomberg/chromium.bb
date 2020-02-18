@@ -19,12 +19,13 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Icon;
 import android.os.Build;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -57,6 +58,7 @@ public abstract class NotificationBuilderBase {
         public CharSequence title;
         public PendingIntent intent;
         public @Type int type;
+        public @NotificationUmaTracker.ActionType int umaActionType;
 
         /**
          * If the action.type is TEXT, this corresponds to the placeholder text for the input.
@@ -65,11 +67,18 @@ public abstract class NotificationBuilderBase {
 
         Action(int iconId, CharSequence title, PendingIntent intent, @Type int type,
                 String placeholder) {
+            this(iconId, title, intent, type, placeholder,
+                    NotificationUmaTracker.ActionType.UNKNOWN);
+        }
+
+        Action(int iconId, CharSequence title, PendingIntent intent, @Type int type,
+                String placeholder, @NotificationUmaTracker.ActionType int umaActionType) {
             this.iconId = iconId;
             this.title = title;
             this.intent = intent;
             this.type = type;
             this.placeholder = placeholder;
+            this.umaActionType = umaActionType;
         }
 
         Action(Bitmap iconBitmap, CharSequence title, PendingIntent intent, @Type int type,
@@ -79,6 +88,7 @@ public abstract class NotificationBuilderBase {
             this.intent = intent;
             this.type = type;
             this.placeholder = placeholder;
+            this.umaActionType = NotificationUmaTracker.ActionType.UNKNOWN;
         }
     }
 
@@ -362,7 +372,8 @@ public abstract class NotificationBuilderBase {
      */
     public NotificationBuilderBase addSettingsAction(
             int iconId, @Nullable CharSequence title, @Nullable PendingIntent intent) {
-        mSettingsAction = new Action(iconId, limitLength(title), intent, Action.Type.BUTTON, null);
+        mSettingsAction = new Action(iconId, limitLength(title), intent, Action.Type.BUTTON, null,
+                NotificationUmaTracker.ActionType.SETTINGS);
         return this;
     }
 
@@ -567,7 +578,13 @@ public abstract class NotificationBuilderBase {
                                 .setLabel(action.placeholder)
                                 .build());
             }
-            builder.addAction(actionBuilder.build());
+
+            if (action.umaActionType == NotificationUmaTracker.ActionType.UNKNOWN) {
+                builder.addAction(actionBuilder.build());
+            } else {
+                builder.addAction(actionBuilder.build(), PendingIntent.FLAG_UPDATE_CURRENT,
+                        action.umaActionType);
+            }
         } else {
             builder.addAction(action.iconId, action.title, action.intent);
         }

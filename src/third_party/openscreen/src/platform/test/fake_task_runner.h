@@ -54,6 +54,7 @@ class FakeTaskRunner : public TaskRunner {
   // TaskRunner implementation.
   void PostPackagedTask(Task task) override;
   void PostPackagedTaskWithDelay(Task task, Clock::duration delay) override;
+  bool IsRunningOnTaskRunner() override;
 
   FakeClock* const clock_;
 

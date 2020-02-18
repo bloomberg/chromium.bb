@@ -16,6 +16,7 @@ source_set("public") {
   ]
 
   deps = [
+    "//ios/third_party/webkit",
     "//ios/web/common",
     "//ios/web/common:user_agent",
     "//ios/web/public/deprecated",
@@ -26,13 +27,11 @@ source_set("public") {
     "browser_state.h",
     "web_client.h",
     "web_state.h",
-    "web_state/web_state_delegate.h",
-    "web_state/web_state_delegate_bridge.h",
-    "web_state/web_state_observer_bridge.h",
-    "web_state/web_state_user_data.h",
+    "web_state_delegate.h",
+    "web_state_delegate_bridge.h",
+    "web_state_observer_bridge.h",
+    "web_state_user_data.h",
   ]
-
-  libs = [ "WebKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -46,7 +45,7 @@ source_set("web_state_observer") {
     "//url",
   ]
   sources = [
-    "web_state/web_state_observer.h",
+    "web_state_observer.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

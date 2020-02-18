@@ -17,6 +17,7 @@
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -163,6 +164,10 @@ void BrowserList::CloseAllBrowsersWithProfile(
     const CloseCallback& on_close_success,
     const CloseCallback& on_close_aborted,
     bool skip_beforeunload) {
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+  SessionServiceFactory::ShutdownForProfile(profile);
+#endif
+
   TryToCloseBrowserList(GetBrowsersToClose(profile), on_close_success,
                         on_close_aborted, profile->GetPath(),
                         skip_beforeunload);
@@ -330,6 +335,15 @@ int BrowserList::GetIncognitoSessionsActiveForProfile(Profile* profile) {
   return std::count_if(list->begin(), list->end(), [profile](Browser* browser) {
     return browser->profile()->IsSameProfile(profile) &&
            browser->profile()->IsOffTheRecord() && !browser->is_type_devtools();
+  });
+}
+
+// static
+size_t BrowserList::GetIncognitoBrowserCount() {
+  BrowserList* list = BrowserList::GetInstance();
+  return std::count_if(list->begin(), list->end(), [](Browser* browser) {
+    return browser->profile()->IsIncognitoProfile() &&
+           !browser->is_type_devtools();
   });
 }
 

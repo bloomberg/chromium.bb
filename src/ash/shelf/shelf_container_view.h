@@ -22,15 +22,18 @@ class ASH_EXPORT ShelfContainerView : public views::View {
   // TODO(https://crbug.com/973481): now we implement ShelfView scrolling
   // through view translation, which is not as efficient as ScrollView. Redesign
   // this class with ScrollView.
-  void TranslateShelfView(const gfx::Vector2dF& offset);
+  virtual void TranslateShelfView(const gfx::Vector2dF& offset);
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  void Layout() override;
   const char* GetClassName() const override;
 
  protected:
+  // Calculates the ideal size of |shelf_view_| to accommodate all of app icons
+  // without scrolling.
+  gfx::Size CalculateIdealSize() const;
+
   // Owned by views hierarchy.
   ShelfView* shelf_view_ = nullptr;
 

@@ -132,7 +132,9 @@ class SpdyHttpStreamTest : public TestWithTaskEnvironment {
              ProxyServer::Direct(),
              PRIVACY_MODE_DISABLED,
              SpdySessionKey::IsProxySession::kFalse,
-             SocketTag()),
+             SocketTag(),
+             NetworkIsolationKey(),
+             false /* disable_secure_dns */),
         ssl_(SYNCHRONOUS, OK) {
     session_deps_.net_log = &net_log_;
   }
@@ -163,7 +165,7 @@ class SpdyHttpStreamTest : public TestWithTaskEnvironment {
   }
 
   SpdyTestUtil spdy_util_;
-  TestNetLog net_log_;
+  RecordingTestNetLog net_log_;
   SpdySessionDependencies session_deps_;
   const GURL url_;
   const HostPortPair host_port_pair_;

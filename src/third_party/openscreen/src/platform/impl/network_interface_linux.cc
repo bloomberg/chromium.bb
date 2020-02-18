@@ -22,10 +22,11 @@
 #include <cstring>
 
 #include "absl/strings/string_view.h"
-#include "platform/api/logging.h"
+#include "absl/types/optional.h"
 #include "platform/api/network_interface.h"
 #include "platform/base/ip_address.h"
 #include "platform/impl/scoped_pipe.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace platform {
@@ -59,7 +60,8 @@ InterfaceInfo::Type GetInterfaceType(const std::string& ifname) {
   static_assert(sizeof(wr.ifr_name) == IFNAMSIZ,
                 "expected size of interface name fields");
   OSP_CHECK_LT(ifname.size(), IFNAMSIZ);
-  strncpy(wr.ifr_name, ifname.c_str(), IFNAMSIZ);
+  wr.ifr_name[IFNAMSIZ - 1] = 0;
+  strncpy(wr.ifr_name, ifname.c_str(), IFNAMSIZ - 1);
   if (ioctl(s.get(), SIOCGIWNAME, &wr) != -1)
     return InterfaceInfo::Type::kWifi;
 
@@ -69,7 +71,8 @@ InterfaceInfo::Type GetInterfaceType(const std::string& ifname) {
   static_assert(sizeof(ifr.ifr_name) == IFNAMSIZ,
                 "expected size of interface name fields");
   OSP_CHECK_LT(ifname.size(), IFNAMSIZ);
-  strncpy(ifr.ifr_name, ifname.c_str(), IFNAMSIZ);
+  wr.ifr_name[IFNAMSIZ - 1] = 0;
+  strncpy(ifr.ifr_name, ifname.c_str(), IFNAMSIZ - 1);
   ifr.ifr_data = &ecmd;
   if (ioctl(s.get(), SIOCETHTOOL, &ifr) != -1)
     return InterfaceInfo::Type::kEthernet;
@@ -98,87 +101,41 @@ void GetInterfaceAttributes(struct rtattr* rta,
   info->type = GetInterfaceType(info->name);
 }
 
-InterfaceAddresses* FindOrAddAddressesForIndex(
-    std::vector<InterfaceAddresses>* address_list,
-    const std::vector<InterfaceInfo>& info_list,
-    NetworkInterfaceIndex index) {
-  const auto info_it = std::find_if(
-      info_list.begin(), info_list.end(),
-      [index](const InterfaceInfo& info) { return info.index == index; });
-  if (info_it == info_list.end())
-    return nullptr;
+// Reads the IPv4 or IPv6 address that comes from an RTM_NEWADDR message and
+// places the result in |address|. |rta| is the first attribute structure
+// returned by the message and |attrlen| is the total length of the buffer
+// pointed to by |rta|. |ifname| is the name of the interface to which we
+// believe the address belongs based on interface index matching. It is only
+// used for sanity checking.
+absl::optional<IPAddress> GetIPAddressOrNull(struct rtattr* rta,
+                                             unsigned int attrlen,
+                                             IPAddress::Version version,
+                                             const std::string& ifname) {
+  const size_t expected_address_size = version == IPAddress::Version::kV4
+                                           ? IPAddress::kV4Size
+                                           : IPAddress::kV6Size;
 
-  auto addr_it = std::find_if(address_list->begin(), address_list->end(),
-                              [index](const InterfaceAddresses& addresses) {
-                                return addresses.info.index == index;
-                              });
-  if (addr_it != address_list->end())
-    return &(*addr_it);
-
-  address_list->emplace_back();
-  InterfaceAddresses& addr = address_list->back();
-  addr.info = *info_it;
-  return &addr;
-}
-
-// Reads the IPv4 address that comes from an RTM_NEWADDR message and places the
-// result in |address|.  |rta| is the first attribute structure returned by the
-// message and |attrlen| is the total length of the buffer pointed to by |rta|.
-// |ifname| is the name of the interface to which we believe the address belongs
-// based on interface index matching.  It is only used for sanity checking in
-// debug builds.
-void GetIPv4Address(struct rtattr* rta,
-                    unsigned int attrlen,
-                    const std::string& ifname,
-                    IPAddress* address) {
   bool have_local = false;
+  IPAddress address;
   IPAddress local;
   for (; RTA_OK(rta, attrlen); rta = RTA_NEXT(rta, attrlen)) {
     if (rta->rta_type == IFA_LABEL) {
-      OSP_DCHECK_EQ(ifname, reinterpret_cast<const char*>(RTA_DATA(rta)));
+      const char* const label = reinterpret_cast<const char*>(RTA_DATA(rta));
+      if (ifname != label) {
+        OSP_LOG_ERROR << "Interface label mismatch! Expected: " << ifname
+                      << ", Have: " << label;
+        return absl::nullopt;
+      }
     } else if (rta->rta_type == IFA_ADDRESS) {
-      OSP_DCHECK_EQ(IPAddress::kV4Size, RTA_PAYLOAD(rta));
-      *address = IPAddress(IPAddress::Version::kV4,
-                           static_cast<uint8_t*>(RTA_DATA(rta)));
+      OSP_DCHECK_EQ(expected_address_size, RTA_PAYLOAD(rta));
+      address = IPAddress(version, static_cast<uint8_t*>(RTA_DATA(rta)));
     } else if (rta->rta_type == IFA_LOCAL) {
-      OSP_DCHECK_EQ(IPAddress::kV4Size, RTA_PAYLOAD(rta));
+      OSP_DCHECK_EQ(expected_address_size, RTA_PAYLOAD(rta));
       have_local = true;
-      local = IPAddress(IPAddress::Version::kV4,
-                        static_cast<uint8_t*>(RTA_DATA(rta)));
+      local = IPAddress(version, static_cast<uint8_t*>(RTA_DATA(rta)));
     }
   }
-  if (have_local)
-    *address = local;
-}
-
-// Reads the IPv6 address that comes from an RTM_NEWADDR message and places the
-// result in |address|.  |rta| is the first attribute structure returned by the
-// message and |attrlen| is the total length of the buffer pointed to by |rta|.
-// |ifname| is the name of the interface to which we believe the address belongs
-// based on interface index matching.  It is only used for sanity checking in
-// debug builds.
-void GetIPv6Address(struct rtattr* rta,
-                    unsigned int attrlen,
-                    const std::string& ifname,
-                    IPAddress* address) {
-  bool have_local = false;
-  IPAddress local;
-  for (; RTA_OK(rta, attrlen); rta = RTA_NEXT(rta, attrlen)) {
-    if (rta->rta_type == IFA_LABEL) {
-      OSP_DCHECK_EQ(ifname, reinterpret_cast<const char*>(RTA_DATA(rta)));
-    } else if (rta->rta_type == IFA_ADDRESS) {
-      OSP_DCHECK_EQ(IPAddress::kV6Size, RTA_PAYLOAD(rta));
-      *address = IPAddress(IPAddress::Version::kV6,
-                           static_cast<uint8_t*>(RTA_DATA(rta)));
-    } else if (rta->rta_type == IFA_LOCAL) {
-      OSP_DCHECK_EQ(IPAddress::kV6Size, RTA_PAYLOAD(rta));
-      have_local = true;
-      local = IPAddress(IPAddress::Version::kV6,
-                        static_cast<uint8_t*>(RTA_DATA(rta)));
-    }
-  }
-  if (have_local)
-    *address = local;
+  return have_local ? local : address;
 }
 
 std::vector<InterfaceInfo> GetLinkInfo() {
@@ -280,13 +237,13 @@ std::vector<InterfaceInfo> GetLinkInfo() {
   return info_list;
 }
 
-std::vector<InterfaceAddresses> GetAddressInfo(
-    const std::vector<InterfaceInfo>& info_list) {
+void PopulateSubnetsOrClearList(std::vector<InterfaceInfo>* info_list) {
   ScopedFd fd(socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE));
   if (!fd) {
     OSP_LOG_ERROR << "netlink socket() failed: " << errno << " - "
                   << strerror(errno);
-    return {};
+    info_list->clear();
+    return;
   }
 
   {
@@ -314,11 +271,11 @@ std::vector<InterfaceAddresses> GetAddressInfo(
                          /* msg_flags */ 0};
     if (sendmsg(fd.get(), &msg, 0) < 0) {
       OSP_LOG_ERROR << "sendmsg failed: " << errno << " - " << strerror(errno);
-      return {};
+      info_list->clear();
+      return;
     }
   }
 
-  std::vector<InterfaceAddresses> address_list;
   {
     char buf[kNetlinkRecvmsgBufSize];
     struct iovec iov = {buf, sizeof(buf)};
@@ -359,30 +316,30 @@ std::vector<InterfaceAddresses> GetAddressInfo(
 
         struct ifaddrmsg* interface_address =
             static_cast<struct ifaddrmsg*>(NLMSG_DATA(netlink_header));
-        InterfaceAddresses* addresses = FindOrAddAddressesForIndex(
-            &address_list, info_list, interface_address->ifa_index);
-        if (!addresses) {
+
+        const auto it = std::find_if(
+            info_list->begin(), info_list->end(),
+            [index = interface_address->ifa_index](const InterfaceInfo& info) {
+              return info.index == index;
+            });
+        if (it == info_list->end()) {
           OSP_DVLOG << "skipping address for interface "
                     << interface_address->ifa_index;
           continue;
         }
 
-        if (interface_address->ifa_family == AF_INET) {
-          addresses->addresses.emplace_back();
-          IPSubnet& address = addresses->addresses.back();
-          address.prefix_length = interface_address->ifa_prefixlen;
-
-          GetIPv4Address(IFA_RTA(interface_address),
-                         IFA_PAYLOAD(netlink_header), addresses->info.name,
-                         &address.address);
-        } else if (interface_address->ifa_family == AF_INET6) {
-          addresses->addresses.emplace_back();
-          IPSubnet& address = addresses->addresses.back();
-          address.prefix_length = interface_address->ifa_prefixlen;
-
-          GetIPv6Address(IFA_RTA(interface_address),
-                         IFA_PAYLOAD(netlink_header), addresses->info.name,
-                         &address.address);
+        if (interface_address->ifa_family == AF_INET ||
+            interface_address->ifa_family == AF_INET6) {
+          const auto address_or_null = GetIPAddressOrNull(
+              IFA_RTA(interface_address), IFA_PAYLOAD(netlink_header),
+              interface_address->ifa_family == AF_INET
+                  ? IPAddress::Version::kV4
+                  : IPAddress::Version::kV6,
+              it->name);
+          if (address_or_null) {
+            it->addresses.emplace_back(*address_or_null,
+                                       interface_address->ifa_prefixlen);
+          }
         } else {
           OSP_LOG_ERROR << "Unknown address family: "
                         << interface_address->ifa_family;
@@ -390,14 +347,14 @@ std::vector<InterfaceAddresses> GetAddressInfo(
       }
     }
   }
-
-  return address_list;
 }
 
 }  // namespace
 
-std::vector<InterfaceAddresses> GetInterfaceAddresses() {
-  return GetAddressInfo(GetLinkInfo());
+std::vector<InterfaceInfo> GetNetworkInterfaces() {
+  std::vector<InterfaceInfo> interfaces = GetLinkInfo();
+  PopulateSubnetsOrClearList(&interfaces);
+  return interfaces;
 }
 
 }  // namespace platform

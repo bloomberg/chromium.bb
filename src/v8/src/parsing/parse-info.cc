@@ -7,7 +7,6 @@
 #include "src/ast/ast-source-ranges.h"
 #include "src/ast/ast-value-factory.h"
 #include "src/ast/ast.h"
-#include "src/base/template-utils.h"
 #include "src/compiler-dispatcher/compiler-dispatcher.h"
 #include "src/heap/heap-inl.h"
 #include "src/logging/counters.h"
@@ -21,7 +20,7 @@ namespace v8 {
 namespace internal {
 
 ParseInfo::ParseInfo(AccountingAllocator* zone_allocator)
-    : zone_(base::make_unique<Zone>(zone_allocator, ZONE_NAME)),
+    : zone_(std::make_unique<Zone>(zone_allocator, ZONE_NAME)),
       flags_(0),
       extension_(nullptr),
       script_scope_(nullptr),
@@ -66,6 +65,7 @@ ParseInfo::ParseInfo(Isolate* isolate, AccountingAllocator* zone_allocator)
   set_allow_harmony_optional_chaining(FLAG_harmony_optional_chaining);
   set_allow_harmony_nullish(FLAG_harmony_nullish);
   set_allow_harmony_private_methods(FLAG_harmony_private_methods);
+  set_allow_harmony_top_level_await(FLAG_harmony_top_level_await);
 }
 
 ParseInfo::ParseInfo(Isolate* isolate)
@@ -107,6 +107,8 @@ ParseInfo::ParseInfo(Isolate* isolate, Handle<SharedFunctionInfo> shared)
     set_outer_scope_info(handle(shared->GetOuterScopeInfo(), isolate));
   }
 
+  set_repl_mode(shared->is_repl_mode());
+
   // CollectTypeProfile uses its own feedback slots. If we have existing
   // FeedbackMetadata, we can only collect type profile if the feedback vector
   // has the appropriate slots.
@@ -129,7 +131,7 @@ std::unique_ptr<ParseInfo> ParseInfo::FromParent(
     const ParseInfo* outer_parse_info, AccountingAllocator* zone_allocator,
     const FunctionLiteral* literal, const AstRawString* function_name) {
   std::unique_ptr<ParseInfo> result =
-      base::make_unique<ParseInfo>(zone_allocator);
+      std::make_unique<ParseInfo>(zone_allocator);
 
   // Replicate shared state of the outer_parse_info.
   result->flags_ = outer_parse_info->flags_;
@@ -165,6 +167,7 @@ DeclarationScope* ParseInfo::scope() const { return literal()->scope(); }
 
 Handle<Script> ParseInfo::CreateScript(Isolate* isolate, Handle<String> source,
                                        ScriptOriginOptions origin_options,
+                                       REPLMode repl_mode,
                                        NativesFlag natives) {
   // Create a script object describing the script to be compiled.
   Handle<Script> script;
@@ -187,6 +190,7 @@ Handle<Script> ParseInfo::CreateScript(Isolate* isolate, Handle<String> source,
       break;
   }
   script->set_origin_options(origin_options);
+  script->set_is_repl_mode(repl_mode == REPLMode::kYes);
 
   SetScriptForToplevelCompile(isolate, script);
   return script;
@@ -220,6 +224,7 @@ void ParseInfo::SetScriptForToplevelCompile(Isolate* isolate,
   set_toplevel();
   set_collect_type_profile(isolate->is_collecting_type_profile() &&
                            script->IsUserJavaScript());
+  set_repl_mode(script->is_repl_mode());
   if (script->is_wrapped()) {
     set_function_syntax_kind(FunctionSyntaxKind::kWrapped);
   }

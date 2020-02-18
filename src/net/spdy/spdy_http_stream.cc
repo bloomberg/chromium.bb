@@ -10,9 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#ifdef TEMP_INSTRUMENTATION_901501
-#include "base/debug/alias.h"
-#endif
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -130,14 +127,6 @@ SpdyHttpStream::~SpdyHttpStream() {
     stream_->DetachDelegate();
     DCHECK(!stream_);
   }
-#ifdef TEMP_INSTRUMENTATION_901501
-  liveness_ = DEAD;
-  stack_trace_ = base::debug::StackTrace();
-  // Probably not necessary, but just in case compiler tries to optimize out the
-  // writes to liveness_ and stack_trace_.
-  base::debug::Alias(&liveness_);
-  base::debug::Alias(&stack_trace_);
-#endif
 }
 
 int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
@@ -270,17 +259,29 @@ bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
     if (!closed_stream_has_load_timing_info_)
       return false;
     *load_timing_info = closed_stream_load_timing_info_;
-    return true;
+  } else {
+    // If |stream_| has yet to be created, or does not yet have an ID, fail.
+    // The reused flag can only be correctly set once a stream has an ID.
+    // Streams get their IDs once the request has been successfully sent, so
+    // this does not behave that differently from other stream types.
+    if (!stream_ || stream_->stream_id() == 0)
+      return false;
+
+    if (!stream_->GetLoadTimingInfo(load_timing_info))
+      return false;
   }
 
-  // If |stream_| has yet to be created, or does not yet have an ID, fail.
-  // The reused flag can only be correctly set once a stream has an ID.  Streams
-  // get their IDs once the request has been successfully sent, so this does not
-  // behave that differently from other stream types.
-  if (!stream_ || stream_->stream_id() == 0)
-    return false;
+  // If the request waited for handshake confirmation, shift |ssl_end| to
+  // include that time.
+  if (!load_timing_info->connect_timing.ssl_end.is_null() &&
+      !stream_request_.confirm_handshake_end().is_null()) {
+    load_timing_info->connect_timing.ssl_end =
+        stream_request_.confirm_handshake_end();
+    load_timing_info->connect_timing.connect_end =
+        stream_request_.confirm_handshake_end();
+  }
 
-  return stream_->GetLoadTimingInfo(load_timing_info);
+  return true;
 }
 
 int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
@@ -351,9 +352,11 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
         return SpdyHeaderBlockNetLogParams(&headers, capture_mode);
       });
   DispatchRequestHeadersCallback(headers);
+
+  bool will_send_data = HasUploadData() | spdy_session_->GreasedFramesEnabled();
   result = stream_->SendRequestHeaders(
       std::move(headers),
-      HasUploadData() ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
+      will_send_data ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
 
   if (result == ERR_IO_PENDING) {
     CHECK(request_callback_.is_null());
@@ -374,6 +377,8 @@ void SpdyHttpStream::Cancel() {
 void SpdyHttpStream::OnHeadersSent() {
   if (HasUploadData()) {
     ReadAndSendRequestBodyData();
+  } else if (spdy_session_->GreasedFramesEnabled()) {
+    SendEmptyBody();
   } else {
     MaybePostRequestCallback(OK);
   }
@@ -447,16 +452,19 @@ void SpdyHttpStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
 }
 
 void SpdyHttpStream::OnDataSent() {
-  request_body_buf_size_ = 0;
-  ReadAndSendRequestBodyData();
+  if (HasUploadData()) {
+    request_body_buf_size_ = 0;
+    ReadAndSendRequestBodyData();
+  } else {
+    CHECK(spdy_session_->GreasedFramesEnabled());
+  }
 }
 
 // TODO(xunjieli): Maybe do something with the trailers. crbug.com/422958.
 void SpdyHttpStream::OnTrailers(const spdy::SpdyHeaderBlock& trailers) {}
 
 void SpdyHttpStream::OnClose(int status) {
-  CHECK(stream_);
-  CrashIfInvalid();
+  DCHECK(stream_);
 
   // Cancel any pending reads from the upload data stream.
   if (request_info_ && request_info_->upload_data_stream)
@@ -480,8 +488,6 @@ void SpdyHttpStream::OnClose(int status) {
       return;
   }
 
-  CrashIfInvalid();
-
   if (status == OK) {
     // We need to complete any pending buffered read now.
     DoBufferedReadCallback();
@@ -489,11 +495,13 @@ void SpdyHttpStream::OnClose(int status) {
       return;
   }
 
-  CrashIfInvalid();
-
   if (!response_callback_.is_null()) {
     DoResponseCallback(status);
   }
+}
+
+bool SpdyHttpStream::CanGreaseFrameType() const {
+  return true;
 }
 
 NetLogSource SpdyHttpStream::source_dependency() const {
@@ -541,6 +549,14 @@ void SpdyHttpStream::ReadAndSendRequestBodyData() {
 
   if (rv != ERR_IO_PENDING)
     OnRequestBodyReadCompleted(rv);
+}
+
+void SpdyHttpStream::SendEmptyBody() {
+  CHECK(!HasUploadData());
+  CHECK(spdy_session_->GreasedFramesEnabled());
+
+  auto buffer = base::MakeRefCounted<IOBuffer>(/* buffer_size = */ 0);
+  stream_->SendData(buffer.get(), /* length = */ 0, NO_MORE_DATA_TO_SEND);
 }
 
 void SpdyHttpStream::InitializeStreamHelper() {
@@ -607,8 +623,6 @@ bool SpdyHttpStream::ShouldWaitForMoreBufferedData() const {
 }
 
 void SpdyHttpStream::DoBufferedReadCallback() {
-  CrashIfInvalid();
-
   buffered_read_callback_pending_ = false;
 
   // If the transaction is cancelled or errored out, we don't need to complete
@@ -629,8 +643,6 @@ void SpdyHttpStream::DoBufferedReadCallback() {
 
   if (!user_buffer_.get())
     return;
-
-  CrashIfInvalid();
 
   if (!response_body_queue_.IsEmpty()) {
     int rv =
@@ -692,24 +704,6 @@ void SpdyHttpStream::SetPriority(RequestPriority priority) {
   if (stream_) {
     stream_->SetPriority(priority);
   }
-}
-
-void SpdyHttpStream::CrashIfInvalid() const {
-#ifdef TEMP_INSTRUMENTATION_901501
-  Liveness liveness = liveness_;
-
-  if (liveness == ALIVE)
-    return;
-
-  // Copy relevant variables onto the stack to guarantee they will be available
-  // in minidumps, and then crash.
-  base::debug::StackTrace stack_trace = stack_trace_;
-
-  base::debug::Alias(&liveness);
-  base::debug::Alias(&stack_trace);
-
-  CHECK_EQ(ALIVE, liveness);
-#endif
 }
 
 }  // namespace net

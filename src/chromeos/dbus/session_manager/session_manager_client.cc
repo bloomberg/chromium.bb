@@ -343,11 +343,12 @@ class SessionManagerClientImpl : public SessionManagerClient {
                                        base::DoNothing());
   }
 
-  void StopSession() override {
-    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 login_manager::kSessionManagerStopSession);
+  void StopSession(login_manager::SessionStopReason reason) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerStopSessionWithReason);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString("");  // Unique ID is deprecated
+    writer.AppendUint32(static_cast<uint32_t>(reason));
     session_manager_proxy_->CallMethod(&method_call,
                                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                        base::DoNothing());
@@ -623,6 +624,28 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void EnableAdbSideload(EnableAdbSideloadCallback callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerEnableAdbSideload);
+
+    session_manager_proxy_->CallMethodWithErrorResponse(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnEnableAdbSideload,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void QueryAdbSideload(QueryAdbSideloadCallback callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerQueryAdbSideload);
+
+    session_manager_proxy_->CallMethodWithErrorResponse(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnQueryAdbSideload,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void Init(dbus::Bus* bus) {
     session_manager_proxy_ = bus->GetObjectProxy(
         login_manager::kSessionManagerServiceName,
@@ -634,36 +657,38 @@ class SessionManagerClientImpl : public SessionManagerClient {
     session_manager_proxy_->ConnectToSignal(
         login_manager::kSessionManagerInterface,
         login_manager::kOwnerKeySetSignal,
-        base::Bind(&SessionManagerClientImpl::OwnerKeySetReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&SessionManagerClientImpl::OwnerKeySetReceived,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&SessionManagerClientImpl::SignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     session_manager_proxy_->ConnectToSignal(
         login_manager::kSessionManagerInterface,
         login_manager::kPropertyChangeCompleteSignal,
-        base::Bind(&SessionManagerClientImpl::PropertyChangeCompleteReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(
+            &SessionManagerClientImpl::PropertyChangeCompleteReceived,
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&SessionManagerClientImpl::SignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     session_manager_proxy_->ConnectToSignal(
         login_manager::kSessionManagerInterface,
         login_manager::kScreenIsLockedSignal,
-        base::Bind(&SessionManagerClientImpl::ScreenIsLockedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&SessionManagerClientImpl::ScreenIsLockedReceived,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&SessionManagerClientImpl::SignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     session_manager_proxy_->ConnectToSignal(
         login_manager::kSessionManagerInterface,
         login_manager::kScreenIsUnlockedSignal,
-        base::Bind(&SessionManagerClientImpl::ScreenIsUnlockedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&SessionManagerClientImpl::ScreenIsUnlockedReceived,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&SessionManagerClientImpl::SignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     session_manager_proxy_->ConnectToSignal(
         login_manager::kSessionManagerInterface,
         login_manager::kArcInstanceStopped,
-        base::Bind(&SessionManagerClientImpl::ArcInstanceStoppedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(
+            &SessionManagerClientImpl::ArcInstanceStoppedReceived,
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&SessionManagerClientImpl::SignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -976,6 +1001,54 @@ class SessionManagerClientImpl : public SessionManagerClient {
     }
 
     std::move(callback).Run(base::TimeTicks::FromInternalValue(ticks));
+  }
+
+  void OnEnableAdbSideload(EnableAdbSideloadCallback callback,
+                           dbus::Response* response,
+                           dbus::ErrorResponse* error) {
+    if (!response) {
+      LOG(ERROR) << "Failed to call EnableAdbSideload: "
+                 << (error ? error->ToString() : "(null)");
+      if (error && error->GetErrorName() == DBUS_ERROR_NOT_SUPPORTED) {
+        std::move(callback).Run(AdbSideloadResponseCode::NEED_POWERWASH);
+      } else {
+        std::move(callback).Run(AdbSideloadResponseCode::FAILED);
+      }
+      return;
+    }
+
+    bool succeeded;
+    dbus::MessageReader reader(response);
+    if (!reader.PopBool(&succeeded)) {
+      LOG(ERROR) << "Failed to enable sideloading";
+      std::move(callback).Run(AdbSideloadResponseCode::FAILED);
+      return;
+    }
+    std::move(callback).Run(AdbSideloadResponseCode::SUCCESS);
+  }
+
+  void OnQueryAdbSideload(QueryAdbSideloadCallback callback,
+                          dbus::Response* response,
+                          dbus::ErrorResponse* error) {
+    if (!response) {
+      LOG(ERROR) << "Failed to call QueryAdbSideload: "
+                 << (error ? error->ToString() : "(null)");
+      if (error && error->GetErrorName() == DBUS_ERROR_NOT_SUPPORTED) {
+        std::move(callback).Run(AdbSideloadResponseCode::NEED_POWERWASH, false);
+      } else {
+        std::move(callback).Run(AdbSideloadResponseCode::FAILED, false);
+      }
+      return;
+    }
+
+    bool is_allowed;
+    dbus::MessageReader reader(response);
+    if (!reader.PopBool(&is_allowed)) {
+      LOG(ERROR) << "Failed to interpret the response";
+      std::move(callback).Run(AdbSideloadResponseCode::FAILED, false);
+      return;
+    }
+    std::move(callback).Run(AdbSideloadResponseCode::SUCCESS, is_allowed);
   }
 
   dbus::ObjectProxy* session_manager_proxy_ = nullptr;

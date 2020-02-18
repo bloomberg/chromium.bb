@@ -12,12 +12,14 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 class GURL;
-enum class WebappInstallSource;
 struct InstallableData;
 struct WebApplicationInfo;
 
@@ -31,8 +33,6 @@ class WebContents;
 
 namespace web_app {
 
-class WebAppIconDownloader;
-
 // Class used by WebAppInstallTask to retrieve the necessary information to
 // install an app. Should only be called from the UI thread.
 class WebAppDataRetriever : content::WebContentsObserver {
@@ -40,9 +40,11 @@ class WebAppDataRetriever : content::WebContentsObserver {
   // Returns nullptr for WebApplicationInfo if error.
   using GetWebApplicationInfoCallback =
       base::OnceCallback<void(std::unique_ptr<WebApplicationInfo>)>;
-  // |is_installable| is false if installability check failed.
+  // |is_installable| represents installability check result.
+  // If |is_installable| then |valid_manifest_for_web_app| is true.
+  // If |valid_manifest_for_web_app| then manifest is present and non-empty.
   using CheckInstallabilityCallback =
-      base::OnceCallback<void(const blink::Manifest&,
+      base::OnceCallback<void(base::Optional<blink::Manifest> manifest,
                               bool valid_manifest_for_web_app,
                               bool is_installable)>;
   // Returns empty map if error.
@@ -67,7 +69,7 @@ class WebAppDataRetriever : content::WebContentsObserver {
   virtual void GetIcons(content::WebContents* web_contents,
                         const std::vector<GURL>& icon_urls,
                         bool skip_page_favicons,
-                        WebappInstallSource install_source,
+                        WebAppIconDownloader::Histogram histogram,
                         GetIconsCallback callback);
 
   // WebContentsObserver:
@@ -76,11 +78,12 @@ class WebAppDataRetriever : content::WebContentsObserver {
 
  private:
   void OnGetWebApplicationInfo(
-      chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
+      mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+          chrome_render_frame,
       int last_committed_nav_entry_unique_id,
       const WebApplicationInfo& web_app_info);
   void OnDidPerformInstallableCheck(const InstallableData& data);
-  void OnIconsDownloaded(bool success, const IconsMap& icons_map);
+  void OnIconsDownloaded(bool success, IconsMap icons_map);
 
   void CallCallbackOnError();
   bool ShouldStopRetrieval() const;

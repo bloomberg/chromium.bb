@@ -70,7 +70,7 @@ def main():
   path = os.path.join(chromite_dir, 'bin', target)
   try:
     os.execv(path, [path] + sys.argv[1:])
-  except EnvironmentError, e:
+  except EnvironmentError as e:
     if e.errno not in (errno.ENOENT, errno.EPERM):
       raise
 

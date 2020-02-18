@@ -7,6 +7,7 @@
 
 #include <bitset>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -17,7 +18,6 @@
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
 
@@ -27,7 +27,7 @@ namespace ui {
 
 class DeviceEventDispatcherEvdev;
 
-class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
+class COMPONENT_EXPORT(EVDEV) EventConverterEvdevImpl
     : public EventConverterEvdev {
  public:
   EventConverterEvdevImpl(base::ScopedFD fd,
@@ -66,7 +66,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   void FlushEvents(const input_event& input);
 
   // Input device file descriptor.
-  base::ScopedFD input_device_fd_;
+  const base::ScopedFD input_device_fd_;
 
   // Input modalities for this device.
   bool has_keyboard_;
@@ -95,10 +95,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   std::bitset<kMouseButtonCount> mouse_button_state_;
 
   // Shared cursor state.
-  CursorDelegateEvdev* cursor_;
+  CursorDelegateEvdev* const cursor_;
 
   // Callbacks for dispatching events.
-  DeviceEventDispatcherEvdev* dispatcher_;
+  DeviceEventDispatcherEvdev* const dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(EventConverterEvdevImpl);
 };

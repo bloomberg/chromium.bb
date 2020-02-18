@@ -50,21 +50,12 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
   if (started_)
     return;
 
-  service_manager::InterfaceProvider* interface_provider =
-      GetInterfaceProvider();
-  if (!interface_provider) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The interface provider is unavailable.");
-    return;
-  }
 
   std::string interface_name = interface_name_.Utf8();
 
   if (process_scope_) {
-    ThreadSafeBrowserInterfaceBrokerProxy* proxy =
-        Platform::Current()->GetBrowserInterfaceBrokerProxy();
     started_ = true;
-    if (!proxy->SetBinderForTesting(
+    if (!Platform::Current()->GetBrowserInterfaceBroker()->SetBinderForTesting(
             interface_name,
             WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
                                WrapWeakPersistent(this)))) {
@@ -97,6 +88,14 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
   }
 
   // TODO(crbug.com/994843): remove when no longer used.
+  service_manager::InterfaceProvider* interface_provider =
+      GetInterfaceProvider();
+  if (!interface_provider) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The interface provider is unavailable.");
+    return;
+  }
+
   service_manager::InterfaceProvider::TestApi test_api(interface_provider);
   if (test_api.HasBinderForName(interface_name)) {
     exception_state.ThrowDOMException(
@@ -121,7 +120,7 @@ void MojoInterfaceInterceptor::stop() {
   std::string interface_name = interface_name_.Utf8();
 
   if (process_scope_) {
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->SetBinderForTesting(
+    Platform::Current()->GetBrowserInterfaceBroker()->SetBinderForTesting(
         interface_name, {});
     return;
   }

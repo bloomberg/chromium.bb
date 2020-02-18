@@ -12,8 +12,8 @@ import mock
 from chromite.api import metrics
 from chromite.api.gen.chromite.api import build_api_test_pb2
 from chromite.lib import cros_test_lib
-from chromite.utils.metrics import (MetricEvent, OP_NAMED_EVENT, OP_START_TIMER,
-                                    OP_STOP_TIMER)
+from chromite.utils.metrics import (MetricEvent, OP_GAUGE, OP_NAMED_EVENT,
+                                    OP_START_TIMER, OP_STOP_TIMER)
 
 
 class MetricsTest(cros_test_lib.TestCase):
@@ -23,8 +23,8 @@ class MetricsTest(cros_test_lib.TestCase):
     """Test timer math and deserialization into proto objects."""
     response = build_api_test_pb2.TestResultMessage()
     mock_events = [
-        MetricEvent(600, 'a.b', OP_START_TIMER, key='100'),
-        MetricEvent(1000, 'a.b', OP_STOP_TIMER, key='100'),
+        MetricEvent(600, 'a.b', OP_START_TIMER, arg='100'),
+        MetricEvent(1000, 'a.b', OP_STOP_TIMER, arg='100'),
     ]
     with mock.patch('chromite.api.metrics.metrics.read_metrics_events',
                     return_value=mock_events):
@@ -41,7 +41,7 @@ class MetricsTest(cros_test_lib.TestCase):
     """
     response = build_api_test_pb2.TestResultMessage()
     mock_events = [
-        MetricEvent(1000, 'a.named_event', OP_NAMED_EVENT, key=None),
+        MetricEvent(1000, 'a.named_event', OP_NAMED_EVENT, arg=None),
     ]
     with mock.patch('chromite.api.metrics.metrics.read_metrics_events',
                     return_value=mock_events):
@@ -50,3 +50,17 @@ class MetricsTest(cros_test_lib.TestCase):
       self.assertEqual(response.events[0].name, 'prefix.a.named_event')
       self.assertEqual(response.events[0].timestamp_milliseconds, 1000)
       self.assertFalse(response.events[0].duration_milliseconds)
+
+  def testDeserializeGauge(self):
+    """Test deserialization of a gauge."""
+    response = build_api_test_pb2.TestResultMessage()
+    mock_events = [
+        MetricEvent(1000, 'a.gauge', OP_GAUGE, arg=17),
+    ]
+    with mock.patch('chromite.api.metrics.metrics.read_metrics_events',
+                    return_value=mock_events):
+      metrics.deserialize_metrics_log(response.events)
+      self.assertEqual(len(response.events), 1)
+      self.assertEqual(response.events[0].name, 'a.gauge')
+      self.assertEqual(response.events[0].timestamp_milliseconds, 1000)
+      self.assertEqual(response.events[0].gauge, 17)

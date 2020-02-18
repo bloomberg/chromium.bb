@@ -2,11 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *   downloadButtonClick: function(),
+ *   reloadButtonClick: function(),
+ *   detailsButtonClick: function(),
+ *   diagnoseErrorsButtonClick: function(),
+ *   trackClick: function(number),
+ *   trackEasterEgg: function(),
+ *   updateEasterEggHighScore: function(number),
+ *   resetEasterEggHighScore: function(),
+ *   trackCachedCopyButtonClick: function(),
+ *   launchOfflineItem: function(string, string),
+ *   savePageForLater: function(),
+ *   cancelSavePage: function(),
+ *   listVisibilityChange: function(boolean),
+ * }}
+ */
+// eslint-disable-next-line no-var
+var errorPageController;
+
 // Decodes a UTF16 string that is encoded as base64.
 function decodeUTF16Base64ToString(encoded_text) {
-  var data = atob(encoded_text);
-  var result = '';
-  for (var i = 0; i < data.length; i += 2) {
+  const data = atob(encoded_text);
+  let result = '';
+  for (let i = 0; i < data.length; i += 2) {
     result +=
         String.fromCharCode(data.charCodeAt(i) * 256 + data.charCodeAt(i + 1));
   }
@@ -14,18 +34,21 @@ function decodeUTF16Base64ToString(encoded_text) {
 }
 
 function toggleHelpBox() {
-  var helpBoxOuter = document.getElementById('details');
+  const helpBoxOuter = document.getElementById('details');
   helpBoxOuter.classList.toggle(HIDDEN_CLASS);
-  var detailsButton = document.getElementById('details-button');
-  if (helpBoxOuter.classList.contains(HIDDEN_CLASS))
+  const detailsButton = document.getElementById('details-button');
+  if (helpBoxOuter.classList.contains(HIDDEN_CLASS)) {
+    /** @suppress {missingProperties} */
     detailsButton.innerText = detailsButton.detailsText;
-  else
+  } else {
+    /** @suppress {missingProperties} */
     detailsButton.innerText = detailsButton.hideDetailsText;
+  }
 
   // Details appears over the main content on small screens.
   if (mobileNav) {
     document.getElementById('main-content').classList.toggle(HIDDEN_CLASS);
-    var runnerContainer = document.querySelector('.runner-container');
+    const runnerContainer = document.querySelector('.runner-container');
     if (runnerContainer) {
       runnerContainer.classList.toggle(HIDDEN_CLASS);
     }
@@ -34,12 +57,13 @@ function toggleHelpBox() {
 
 function diagnoseErrors() {
 // <if expr="not chromeos">
-    if (window.errorPageController)
-      errorPageController.diagnoseErrorsButtonClick();
+if (window.errorPageController) {
+  errorPageController.diagnoseErrorsButtonClick();
+}
 // </if>
 // <if expr="chromeos">
-  var extensionId = 'idddmepepmjcgiedknnmlbadcokidhoa';
-  var diagnoseFrame = document.getElementById('diagnose-frame');
+  const extensionId = 'idddmepepmjcgiedknnmlbadcokidhoa';
+  const diagnoseFrame = document.getElementById('diagnose-frame');
   diagnoseFrame.innerHTML =
       '<iframe src="chrome-extension://' + extensionId +
       '/index.html"></iframe>';
@@ -49,13 +73,14 @@ function diagnoseErrors() {
 // Subframes use a different layout but the same html file.  This is to make it
 // easier to support platforms that load the error page via different
 // mechanisms (Currently just iOS).
-if (window.top.location != window.location)
+if (window.top.location != window.location) {
   document.documentElement.setAttribute('subframe', '');
+}
 
 // Re-renders the error page using |strings| as the dictionary of values.
 // Used by NetErrorTabHelper to update DNS error pages with probe results.
 function updateForDnsProbe(strings) {
-  var context = new JsEvalContext(strings);
+  const context = new JsEvalContext(strings);
   jstProcess(context, document.getElementById('t'));
   onDocumentLoadOrUpdate();
 }
@@ -63,17 +88,19 @@ function updateForDnsProbe(strings) {
 // Given the classList property of an element, adds an icon class to the list
 // and removes the previously-
 function updateIconClass(classList, newClass) {
-  var oldClass;
+  let oldClass;
 
   if (classList.hasOwnProperty('last_icon_class')) {
     oldClass = classList['last_icon_class'];
-    if (oldClass == newClass)
+    if (oldClass == newClass) {
       return;
+    }
   }
 
   classList.add(newClass);
-  if (oldClass !== undefined)
+  if (oldClass !== undefined) {
     classList.remove(oldClass);
+  }
 
   classList['last_icon_class'] = newClass;
 
@@ -87,7 +114,7 @@ function updateIconClass(classList, newClass) {
 
 // Does a search using |baseSearchUrl| and the text in the search box.
 function search(baseSearchUrl) {
-  var searchTextNode = document.getElementById('search-box');
+  const searchTextNode = document.getElementById('search-box');
   document.location = baseSearchUrl + searchTextNode.value;
   return false;
 }
@@ -98,13 +125,15 @@ function search(baseSearchUrl) {
 function trackClick(trackingId) {
   // This can't be done with XHRs because XHRs are cancelled on navigation
   // start, and because these are cross-site requests.
-  if (trackingId >= 0 && errorPageController)
+  if (trackingId >= 0 && errorPageController) {
     errorPageController.trackClick(trackingId);
+  }
 }
 
 // Called when an <a> tag generated by the navigation correction service is
 // clicked.  Separate function from trackClick so the resources don't have to
 // be updated if new data is added to jstdata.
+// @param {{trackingId: number}} jstdata
 function linkClicked(jstdata) {
   trackClick(jstdata.trackingId);
 }
@@ -116,15 +145,16 @@ function reloadButtonClick(url) {
   if (window.errorPageController) {
     errorPageController.reloadButtonClick();
   } else {
-    location = url;
+    window.location = url;
   }
 }
 
 function downloadButtonClick() {
   if (window.errorPageController) {
     errorPageController.downloadButtonClick();
-    var downloadButton = document.getElementById('download-button');
+    const downloadButton = document.getElementById('download-button');
     downloadButton.disabled = true;
+    /** @suppress {missingProperties} */
     downloadButton.textContent = downloadButton.disabledText;
 
     document.getElementById('download-link-wrapper')
@@ -135,31 +165,42 @@ function downloadButtonClick() {
 }
 
 function detailsButtonClick() {
-  if (window.errorPageController)
+  if (window.errorPageController) {
     errorPageController.detailsButtonClick();
+  }
 }
 
 /**
+ * @typedef {{
+ *   msg: string,
+ *   cacheUrl: string,
+ *   trackingId: number
+ * }}
+ */
+let CacheButtonParams;
+
+/**
  * Replace the reload button with the Google cached copy suggestion.
+ * @param {CacheButtonParams} buttonStrings
  */
 function setUpCachedButton(buttonStrings) {
-  var reloadButton = document.getElementById('reload-button');
+  const reloadButton = document.getElementById('reload-button');
 
   reloadButton.textContent = buttonStrings.msg;
-  var url = buttonStrings.cacheUrl;
-  var trackingId = buttonStrings.trackingId;
+  const url = buttonStrings.cacheUrl;
+  const trackingId = buttonStrings.trackingId;
   reloadButton.onclick = function(e) {
     e.preventDefault();
     trackClick(trackingId);
     if (window.errorPageController) {
       errorPageController.trackCachedCopyButtonClick();
     }
-    location = url;
+    window.location = url;
   };
   reloadButton.style.display = '';
 }
 
-var primaryControlOnLeft = true;
+let primaryControlOnLeft = true;
 // <if expr="is_macosx or is_ios or is_linux or is_android">
 primaryControlOnLeft = false;
 // </if>
@@ -217,29 +258,30 @@ function getSuggestedContentDiv(item, index) {
   // for the data contained in an |item|.
   // TODO(carlosk): Present |snippet_base64| when that content becomes
   // available.
-  var thumbnail = '';
-  var extraContainerClasses = [];
+  let thumbnail = '';
+  const extraContainerClasses = [];
   // html_inline.py will try to replace src attributes with data URIs using a
   // simple regex. The following is obfuscated slightly to avoid that.
-  var src = 'src';
+  const src = 'src';
   if (item.thumbnail_data_uri) {
     extraContainerClasses.push('suggestion-with-image');
     thumbnail = `<img ${src}="${item.thumbnail_data_uri}">`;
   } else {
     extraContainerClasses.push('suggestion-with-icon');
-    iconClass = getIconForSuggestedItem(item);
+    const iconClass = getIconForSuggestedItem(item);
     thumbnail = `<div><img class="${iconClass}"></div>`;
   }
 
-  var favicon = '';
+  let favicon = '';
   if (item.favicon_data_uri) {
     favicon = `<img ${src}="${item.favicon_data_uri}">`;
   } else {
     extraContainerClasses.push('no-favicon');
   }
 
-  if (!item.attribution_base64)
+  if (!item.attribution_base64) {
     extraContainerClasses.push('no-attribution');
+  }
 
   return `
   <div class="offline-content-suggestion ${extraContainerClasses.join(' ')}"
@@ -269,25 +311,44 @@ function getSuggestedContentDiv(item, index) {
   </div>`;
 }
 
+/**
+ * @typedef {{
+ *   ID: string,
+ *   name_space: string,
+ *   title_base64: string,
+ *   snippet_base64: string,
+ *   date_modified: string,
+ *   attribution_base64: string,
+ *   thumbnail_data_uri: string,
+ *   favicon_data_uri: string,
+ *   content_type: number,
+ * }}
+ */
+let AvailableOfflineContent;
+
 // Populates a list of suggested offline content.
 // Note: For security reasons all content downloaded from the web is considered
 // unsafe and must be securely handled to be presented on the dino page. Images
 // have already been safely re-encoded but textual content -- like title and
 // attribution -- must be properly handled here.
+// @param {boolean} isShown
+// @param {Array<AvailableOfflineContent>} suggestions
 function offlineContentAvailable(isShown, suggestions) {
-  if (!suggestions || !loadTimeData.valueExists('offlineContentList'))
+  if (!suggestions || !loadTimeData.valueExists('offlineContentList')) {
     return;
+  }
 
-  var suggestionsHTML = [];
-  for (var index = 0; index < suggestions.length; index++)
+  const suggestionsHTML = [];
+  for (let index = 0; index < suggestions.length; index++) {
     suggestionsHTML.push(getSuggestedContentDiv(suggestions[index], index));
+  }
 
   document.getElementById('offline-content-suggestions').innerHTML =
       suggestionsHTML.join('\n');
 
   // Sets textual web content using |textContent| to make sure it's handled as
   // plain text.
-  for (var index = 0; index < suggestions.length; index++) {
+  for (let index = 0; index < suggestions.length; index++) {
     document.getElementById(`offline-content-suggestion-title-${index}`)
         .textContent =
         decodeUTF16Base64ToString(suggestions[index].title_base64);
@@ -296,21 +357,24 @@ function offlineContentAvailable(isShown, suggestions) {
         decodeUTF16Base64ToString(suggestions[index].attribution_base64);
   }
 
-  var contentListElement = document.getElementById('offline-content-list');
-  if (document.dir == 'rtl')
+  const contentListElement = document.getElementById('offline-content-list');
+  if (document.dir == 'rtl') {
     contentListElement.classList.add('is-rtl');
+  }
   contentListElement.hidden = false;
   // The list is configured as hidden by default. Show it if needed.
-  if (isShown)
+  if (isShown) {
     toggleOfflineContentListVisibility(false);
+  }
 }
 
 function toggleOfflineContentListVisibility(updatePref) {
-  if (!loadTimeData.valueExists('offlineContentList'))
+  if (!loadTimeData.valueExists('offlineContentList')) {
     return;
+  }
 
-  var contentListElement = document.getElementById('offline-content-list');
-  var isVisible = !contentListElement.classList.toggle('list-hidden');
+  const contentListElement = document.getElementById('offline-content-list');
+  const isVisible = !contentListElement.classList.toggle('list-hidden');
 
   if (updatePref && window.errorPageController) {
     errorPageController.listVisibilityChanged(isVisible);
@@ -319,21 +383,13 @@ function toggleOfflineContentListVisibility(updatePref) {
 
 // Called on document load, and from updateForDnsProbe().
 function onDocumentLoadOrUpdate() {
-  var downloadButtonVisible = loadTimeData.valueExists('downloadButton') &&
+  const downloadButtonVisible = loadTimeData.valueExists('downloadButton') &&
       loadTimeData.getValue('downloadButton').msg;
-  var detailsButton = document.getElementById('details-button');
-
-// <if expr="HIDE_ERROR_MESSAGE_FOR_DINO_PAGE">
-  if ('chrome://dino/' == document.title) {
-    // If the user explicitly loads the dino page, don't show offline
-    // information as it's not accurate.
-    document.getElementById('main-message').classList.add(HIDDEN_CLASS);
-  }
-// </if>
+  const detailsButton = document.getElementById('details-button');
 
   // If offline content suggestions will be visible, the usual buttons will not
   // be presented.
-  var offlineContentVisible =
+  const offlineContentVisible =
       loadTimeData.valueExists('suggestedOfflineContentPresentation');
   if (offlineContentVisible) {
     document.querySelector('.nav-wrapper').classList.add(HIDDEN_CLASS);
@@ -343,43 +399,45 @@ function onDocumentLoadOrUpdate() {
     document.getElementById('download-links-wrapper')
         .classList.remove(HIDDEN_CLASS);
     document.getElementById('error-information-popup-container')
-        .classList.add('use-popup-container', HIDDEN_CLASS)
+        .classList.add('use-popup-container', HIDDEN_CLASS);
     document.getElementById('error-information-button')
         .classList.remove(HIDDEN_CLASS);
   }
 
-  var attemptAutoFetch = loadTimeData.valueExists('attemptAutoFetch') &&
+  const attemptAutoFetch = loadTimeData.valueExists('attemptAutoFetch') &&
       loadTimeData.getValue('attemptAutoFetch');
 
-  var reloadButtonVisible = loadTimeData.valueExists('reloadButton') &&
+  const reloadButtonVisible = loadTimeData.valueExists('reloadButton') &&
       loadTimeData.getValue('reloadButton').msg;
 
   // Check for Google cached copy suggestion.
-  var cacheButtonVisible = false;
+  let cacheButtonVisible = false;
   if (loadTimeData.valueExists('cacheButton')) {
-    setUpCachedButton(loadTimeData.getValue('cacheButton'));
+    setUpCachedButton(/** @type {CacheButtonParams} */
+                      (loadTimeData.getValue('cacheButton')));
     cacheButtonVisible = true;
   }
 
-  var reloadButton = document.getElementById('reload-button');
-  var downloadButton = document.getElementById('download-button');
+  const reloadButton = document.getElementById('reload-button');
+  const downloadButton = document.getElementById('download-button');
   if (reloadButton.style.display == 'none' &&
       downloadButton.style.display == 'none') {
     detailsButton.classList.add('singular');
   }
 
   // Show or hide control buttons.
-  var controlButtonDiv = document.getElementById('control-buttons');
+  const controlButtonDiv = document.getElementById('control-buttons');
   controlButtonDiv.hidden = offlineContentVisible ||
       !(reloadButtonVisible || downloadButtonVisible || cacheButtonVisible);
 }
 
 function onDocumentLoad() {
   // Sets up the proper button layout for the current platform.
+  const buttonsDiv = document.getElementById('buttons');
   if (primaryControlOnLeft) {
-    buttons.classList.add('suggested-left');
+    buttonsDiv.classList.add('suggested-left');
   } else {
-    buttons.classList.add('suggested-right');
+    buttonsDiv.classList.add('suggested-right');
   }
 
   onDocumentLoadOrUpdate();

@@ -282,7 +282,7 @@ void HeapCompact::MovableObjectFixups::RelocateInteriorFixups(Address from,
 
 void HeapCompact::MovableObjectFixups::UpdateCallbacks() {
   BackingStoreCallbackWorklist::View backing_store_callbacks(
-      heap_->GetBackingStoreCallbackWorklist(), WorklistTaskId::MainThread);
+      heap_->GetBackingStoreCallbackWorklist(), WorklistTaskId::MutatorThread);
   BackingStoreCallbackItem item;
   while (backing_store_callbacks.Pop(&item)) {
     fixup_callbacks_.insert(item.backing, item.callback);
@@ -316,18 +316,12 @@ void HeapCompact::MovableObjectFixups::VerifyUpdatedSlot(
 HeapCompact::HeapCompact(ThreadHeap* heap) : heap_(heap) {
   // The heap compaction implementation assumes the contiguous range,
   //
-  //   [Vector1ArenaIndex, HashTableArenaIndex]
+  //   [VectorArenaIndex, HashTableArenaIndex]
   //
   // in a few places. Use static asserts here to not have that assumption
   // be silently invalidated by ArenaIndices changes.
-  static_assert(BlinkGC::kVector1ArenaIndex + 3 == BlinkGC::kVector4ArenaIndex,
+  static_assert(BlinkGC::kVectorArenaIndex + 1 == BlinkGC::kHashTableArenaIndex,
                 "unexpected ArenaIndices ordering");
-  static_assert(
-      BlinkGC::kVector4ArenaIndex + 1 == BlinkGC::kInlineVectorArenaIndex,
-      "unexpected ArenaIndices ordering");
-  static_assert(
-      BlinkGC::kInlineVectorArenaIndex + 1 == BlinkGC::kHashTableArenaIndex,
-      "unexpected ArenaIndices ordering");
 }
 
 HeapCompact::~HeapCompact() = default;
@@ -341,7 +335,6 @@ HeapCompact::MovableObjectFixups& HeapCompact::Fixups() {
 bool HeapCompact::ShouldCompact(BlinkGC::StackState stack_state,
                                 BlinkGC::MarkingType marking_type,
                                 BlinkGC::GCReason reason) {
-  DCHECK_NE(BlinkGC::MarkingType::kTakeSnapshot, marking_type);
   if (marking_type == BlinkGC::MarkingType::kAtomicMarking &&
       stack_state == BlinkGC::StackState::kHeapPointersOnStack) {
     // The following check ensures that tests that want to test compaction are
@@ -394,7 +387,7 @@ void HeapCompact::UpdateHeapResidency() {
 #if DEBUG_HEAP_FREELIST
   std::stringstream stream;
 #endif
-  for (int i = BlinkGC::kVector1ArenaIndex; i <= BlinkGC::kHashTableArenaIndex;
+  for (int i = BlinkGC::kVectorArenaIndex; i <= BlinkGC::kHashTableArenaIndex;
        ++i) {
     NormalPageArena* arena = static_cast<NormalPageArena*>(heap_->Arena(i));
     size_t arena_size = arena->ArenaSize();
@@ -448,7 +441,7 @@ void HeapCompact::FilterNonLiveSlots() {
 
   last_fixup_count_for_testing_ = 0;
   MovableReferenceWorklist::View traced_slots(
-      heap_->GetMovableReferenceWorklist(), WorklistTaskId::MainThread);
+      heap_->GetMovableReferenceWorklist(), WorklistTaskId::MutatorThread);
   MovableReference* slot;
   while (traced_slots.Pop(&slot)) {
     if (*slot) {

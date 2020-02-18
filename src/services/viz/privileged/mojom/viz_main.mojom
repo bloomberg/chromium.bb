@@ -24,15 +24,15 @@ struct FrameSinkManagerParams {
   uint32 activation_deadline_in_frames = 4;
 
   // Host to viz interface.
-  FrameSinkManager& frame_sink_manager;
+  pending_receiver<FrameSinkManager> frame_sink_manager;
 
   // Viz to host interface.
-  FrameSinkManagerClient frame_sink_manager_client;
+  pending_remote<FrameSinkManagerClient> frame_sink_manager_client;
 };
 
 struct VizDevToolsParams {
   // Socket for viz devtools server.
-  network.mojom.TCPServerSocket server_socket;
+  pending_remote<network.mojom.TCPServerSocket> server_socket;
 
   // Port the devtools server socket is bound to.
   uint16 server_port;
@@ -42,11 +42,13 @@ struct VizDevToolsParams {
 interface VizMain {
   CreateFrameSinkManager(FrameSinkManagerParams params);
 
-  CreateGpuService(pending_receiver<GpuService> gpu_service,
-                   pending_remote<GpuHost> gpu_host,
-                   discardable_memory.mojom.DiscardableSharedMemoryManager discardable_memory_manager,
-                   handle<shared_buffer>? activity_flags,
-                   gfx.mojom.SubpixelRendering subpixel_rendering);
+  CreateGpuService(
+      pending_receiver<GpuService> gpu_service,
+      pending_remote<GpuHost> gpu_host,
+      pending_remote<discardable_memory.mojom.DiscardableSharedMemoryManager>
+          discardable_memory_manager,
+      handle<shared_buffer>? activity_flags,
+      gfx.mojom.SubpixelRendering subpixel_rendering);
 
   // The viz devtools server is for use by developers to observe the
   // FrameSinkManager in the viz compositor. This is only called if the flag

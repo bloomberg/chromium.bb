@@ -22,6 +22,7 @@
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/remoting/metrics.h"
 #include "media/remoting/rpc_broker.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 namespace media {
@@ -55,8 +56,8 @@ class CourierRenderer : public Renderer {
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       base::WeakPtr<CourierRenderer> self,
       base::WeakPtr<RpcBroker> rpc_broker,
-      mojom::RemotingDataStreamSenderPtrInfo audio,
-      mojom::RemotingDataStreamSenderPtrInfo video,
+      mojo::PendingRemote<mojom::RemotingDataStreamSender> audio,
+      mojo::PendingRemote<mojom::RemotingDataStreamSender> video,
       mojo::ScopedDataPipeProducerHandle audio_handle,
       mojo::ScopedDataPipeProducerHandle video_handle);
 
@@ -72,10 +73,10 @@ class CourierRenderer : public Renderer {
   // media::Renderer implementation.
   void Initialize(MediaResource* media_resource,
                   RendererClient* client,
-                  const PipelineStatusCB& init_cb) final;
-  void SetCdm(CdmContext* cdm_context,
-              const CdmAttachedCB& cdm_attached_cb) final;
-  void Flush(const base::Closure& flush_cb) final;
+                  PipelineStatusCallback init_cb) final;
+  void SetCdm(CdmContext* cdm_context, CdmAttachedCB cdm_attached_cb) final;
+  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) final;
+  void Flush(base::OnceClosure flush_cb) final;
   void StartPlayingFrom(base::TimeDelta time) final;
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
@@ -95,12 +96,13 @@ class CourierRenderer : public Renderer {
   };
 
   // Callback when attempting to establish data pipe. Runs on media thread only.
-  void OnDataPipeCreated(mojom::RemotingDataStreamSenderPtrInfo audio,
-                         mojom::RemotingDataStreamSenderPtrInfo video,
-                         mojo::ScopedDataPipeProducerHandle audio_handle,
-                         mojo::ScopedDataPipeProducerHandle video_handle,
-                         int audio_rpc_handle,
-                         int video_rpc_handle);
+  void OnDataPipeCreated(
+      mojo::PendingRemote<mojom::RemotingDataStreamSender> audio,
+      mojo::PendingRemote<mojom::RemotingDataStreamSender> video,
+      mojo::ScopedDataPipeProducerHandle audio_handle,
+      mojo::ScopedDataPipeProducerHandle video_handle,
+      int audio_rpc_handle,
+      int video_rpc_handle);
 
   // Callback function when RPC message is received. Runs on media thread only.
   void OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message);
@@ -172,9 +174,9 @@ class CourierRenderer : public Renderer {
   int remote_renderer_handle_;
 
   // Callbacks.
-  PipelineStatusCB init_workflow_done_callback_;
+  PipelineStatusCallback init_workflow_done_callback_;
   CdmAttachedCB cdm_attached_cb_;
-  base::Closure flush_cb_;
+  base::OnceClosure flush_cb_;
 
   VideoRendererSink* const video_renderer_sink_;  // Outlives this class.
 

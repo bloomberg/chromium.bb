@@ -91,6 +91,9 @@
 
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
+#include "components/metal_util/test_shader.h"
+#include "content/public/common/content_features.h"
+#include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/seatbelt.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #endif
@@ -98,14 +101,6 @@
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #endif
-
-#if defined(OS_MACOSX)
-extern "C" {
-void _LSSetApplicationLaunchServicesServerConnectionStatus(
-    uint64_t flags,
-    bool (^connection_allowed)(CFDictionaryRef));
-}
-#endif  // defined(OS_MACOSX)
 
 namespace content {
 
@@ -164,6 +159,13 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
 #endif
 
+#if defined(OS_MACOSX)
+    if (base::FeatureList::IsEnabled(features::kMacV2GPUSandbox)) {
+      TRACE_EVENT0("gpu", "Initialize VideoToolbox");
+      media::InitializeVideoToolbox();
+    }
+#endif
+
     // On Linux, reading system memory doesn't work through the GPU sandbox.
     // This value is cached, so access it here to populate the cache.
     base::SysInfo::AmountOfPhysicalMemory();
@@ -189,6 +191,26 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 
   DISALLOW_COPY_AND_ASSIGN(ContentSandboxHelper);
 };
+
+#if defined(OS_MACOSX)
+void TestShaderCallback(metal::TestShaderResult result,
+                        const base::TimeDelta& method_time,
+                        const base::TimeDelta& compile_time) {
+  switch (result) {
+    case metal::TestShaderResult::kNotAttempted:
+    case metal::TestShaderResult::kFailed:
+      // Don't include data if no Metal device was created (e.g, due to hardware
+      // or macOS version reasons).
+      return;
+    case metal::TestShaderResult::kTimedOut:
+      break;
+    case metal::TestShaderResult::kSucceeded:
+      break;
+  }
+  UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderMethodTime", method_time);
+  UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderCompileTime", compile_time);
+}
+#endif
 
 }  // namespace
 
@@ -285,9 +307,6 @@ int GpuMain(const MainFunctionParams& parameters) {
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(
             base::MessagePumpType::NS_RUNLOOP);
-
-    // Tell LaunchServices to continue without a connection to the daemon.
-    _LSSetApplicationLaunchServicesServerConnectionStatus(0, nullptr);
 #else
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(
@@ -364,6 +383,13 @@ int GpuMain(const MainFunctionParams& parameters) {
   // Setup tracing sampler profiler as early as possible.
   std::unique_ptr<tracing::TracingSamplerProfiler> tracing_sampler_profiler =
       tracing::TracingSamplerProfiler::CreateOnMainThread();
+
+#if defined(OS_MACOSX)
+  // Launch a test metal shader compile to see how long it takes to complete (if
+  // it ever completes).
+  // https://crbug.com/974219
+  metal::TestShader(base::BindOnce(TestShaderCallback));
+#endif
 
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

@@ -37,18 +37,14 @@
 namespace blink {
 
 class WebLocalFrame;
-class WebUserGestureToken;
 
+// TODO(mustaq): This class is obsolete.  Define a UAv2 interface on
+// WebLocalFrame and remove this.  crbug.com/959850
 class WebUserGestureIndicator {
  public:
   // Returns true if a user gesture is currently being processed. Must be called
   // on the main thread.
   BLINK_EXPORT static bool IsProcessingUserGesture(WebLocalFrame*);
-
-  // Can be called from any thread. Note that this is slower than the non
-  // thread-safe version due to thread id lookups. Prefer the non thread-safe
-  // version for code that will only execute on the main thread.
-  BLINK_EXPORT static bool IsProcessingUserGestureThreadSafe(WebLocalFrame*);
 
   // Returns true if a consumable gesture exists and has been successfully
   // consumed.
@@ -60,11 +56,6 @@ class WebUserGestureIndicator {
   // Returns true if a user gesture was processed on the provided frame since
   // the time the frame was loaded.
   BLINK_EXPORT static bool ProcessedUserGestureSinceLoad(WebLocalFrame*);
-
-  // Returns a token for the currently active user gesture. It can be used to
-  // continue processing the user gesture later on using a
-  // WebScopedUserGesture.
-  BLINK_EXPORT static WebUserGestureToken CurrentUserGestureToken();
 };
 
 }  // namespace blink

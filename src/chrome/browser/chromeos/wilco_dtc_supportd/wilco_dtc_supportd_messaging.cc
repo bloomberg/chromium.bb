@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -43,7 +43,7 @@ namespace chromeos {
 // Note: the list size must be kept in sync with
 // |kWilcoDtcSupportdHostOriginsSize|.
 const char* const kWilcoDtcSupportdHostOrigins[] = {
-    "chrome-extension://echlnkcmdobkdgcjgjbiceoceeoenjkj/"};
+    "chrome-extension://emelalhagcpibaiiiijjlkmhhbekaidg/"};
 
 // Size of |kWilcoDtcSupportdHostOrigins| array.
 const size_t kWilcoDtcSupportdHostOriginsSize =
@@ -167,7 +167,7 @@ class WilcoDtcSupportdExtensionOwnedMessageHost final
       return;
     }
 
-    std::unique_ptr<base::SharedMemory> response_json_shared_memory;
+    base::ReadOnlySharedMemoryMapping response_json_shared_memory;
     base::StringPiece response_json_string = GetStringPieceFromMojoHandle(
         std::move(response_json_message), &response_json_shared_memory);
     if (response_json_string.empty()) {
@@ -357,7 +357,8 @@ void DeliverMessageToExtension(
 }  // namespace
 
 std::unique_ptr<extensions::NativeMessageHost>
-CreateExtensionOwnedWilcoDtcSupportdMessageHost() {
+CreateExtensionOwnedWilcoDtcSupportdMessageHost(
+    content::BrowserContext* browser_context) {
   return std::make_unique<WilcoDtcSupportdExtensionOwnedMessageHost>();
 }
 

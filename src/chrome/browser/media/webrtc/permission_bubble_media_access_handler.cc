@@ -35,6 +35,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_stats_mac.h"
 #endif
@@ -101,8 +102,8 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ContentSettingsType content_settings_type =
       type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE
-          ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
-          : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
+          ? ContentSettingsType::MEDIASTREAM_MIC
+          : ContentSettingsType::MEDIASTREAM_CAMERA;
 
   DCHECK(!security_origin.is_empty());
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
@@ -254,9 +255,13 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
         return;
       } else if (system_audio_permission == SystemPermission::kRestricted ||
                  system_audio_permission == SystemPermission::kDenied) {
+        content_settings::UpdateLocationBarUiForWebContents(web_contents);
         final_result =
             blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED;
         system_media_permissions::SystemAudioCapturePermissionBlocked();
+      } else {
+        DCHECK_EQ(system_audio_permission, SystemPermission::kAllowed);
+        content_settings::UpdateLocationBarUiForWebContents(web_contents);
       }
     }
     if (request.video_type ==
@@ -278,9 +283,13 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
         return;
       } else if (system_video_permission == SystemPermission::kRestricted ||
                  system_video_permission == SystemPermission::kDenied) {
+        content_settings::UpdateLocationBarUiForWebContents(web_contents);
         final_result =
             blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED;
         system_media_permissions::SystemVideoCapturePermissionBlocked();
+      } else {
+        DCHECK_EQ(system_video_permission, SystemPermission::kAllowed);
+        content_settings::UpdateLocationBarUiForWebContents(web_contents);
       }
     }
   }

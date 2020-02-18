@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -31,8 +30,9 @@ class WebContents;
 namespace password_manager {
 enum class CredentialType;
 struct InteractionsStats;
+class PasswordFeatureManager;
 class PasswordFormManagerForUI;
-}
+}  // namespace password_manager
 
 class AccountChooserPrompt;
 struct AccountInfo;
@@ -84,8 +84,7 @@ class ManagePasswordsUIController
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager)
       override;
   void OnPasswordAutofilled(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          password_form_map,
+      const std::vector<const autofill::PasswordForm*>& password_forms,
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>* federated_matches)
       override;
@@ -112,6 +111,8 @@ class ManagePasswordsUIController
   const GURL& GetOrigin() const override;
   password_manager::PasswordFormMetricsRecorder*
   GetPasswordFormMetricsRecorder() override;
+  password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
+      override;
   password_manager::ui::State GetState() const override;
   const autofill::PasswordForm& GetPendingPassword() const override;
   password_manager::metrics_util::CredentialSourceType GetCredentialSource()
@@ -150,13 +151,7 @@ class ManagePasswordsUIController
 #endif  // defined(UNIT_TEST)
 
  protected:
-  explicit ManagePasswordsUIController(
-      content::WebContents* web_contents);
-
-  // The pieces of saving and blacklisting passwords that interact with
-  // FormManager, split off into internal functions for testing/mocking.
-  virtual void SavePasswordInternal();
-  virtual void NeverSavePasswordInternal();
+  explicit ManagePasswordsUIController(content::WebContents* web_contents);
 
   // Hides the bubble if opened. Mocked in the tests.
   virtual void HidePasswordBubble();

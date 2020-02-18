@@ -62,7 +62,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
 
   // Debug state can be exported in order to troubleshoot potential congestion
   // control issues.
-  struct DebugState {
+  struct QUIC_EXPORT_PRIVATE DebugState {
     explicit DebugState(const BbrSender& sender);
     DebugState(const DebugState& state);
 
@@ -105,9 +105,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   void SetFromConfig(const QuicConfig& config,
                      Perspective perspective) override;
 
-  void AdjustNetworkParameters(QuicBandwidth bandwidth,
-                               QuicTime::Delta rtt,
-                               bool allow_cwnd_to_decrease) override;
+  void AdjustNetworkParameters(const NetworkParams& params) override;
   void SetInitialCongestionWindowInPackets(
       QuicPacketCount congestion_window) override;
   void OnCongestionEvent(bool rtt_updated,
@@ -130,6 +128,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   CongestionControlType GetCongestionControlType() const override;
   std::string GetDebugState() const override;
   void OnApplicationLimited(QuicByteCount bytes_in_flight) override;
+  void PopulateConnectionStats(QuicConnectionStats* stats) const override;
   // End implementation of SendAlgorithmInterface.
 
   // Gets the number of RTTs BBR remains in STARTUP phase.
@@ -272,13 +271,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // The filter that tracks the maximum bandwidth over the multiple recent
   // round-trips.
   MaxBandwidthFilter max_bandwidth_;
-
-  // Tracks the maximum number of bytes acked faster than the sending rate.
-  MaxAckHeightFilter max_ack_height_;
-
-  // The time this aggregation started and the number of bytes acked during it.
-  QuicTime aggregation_epoch_start_time_;
-  QuicByteCount aggregation_epoch_bytes_;
 
   // Minimum RTT estimate.  Automatically expires within 10 seconds (and
   // triggers PROBE_RTT mode) if no new value is sampled during that period.

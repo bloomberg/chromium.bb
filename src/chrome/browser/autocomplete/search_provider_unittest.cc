@@ -47,7 +47,6 @@
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/escape.h"
@@ -133,6 +132,44 @@ class TestAutocompleteProviderClient : public ChromeAutocompleteProviderClient {
 
 }  // namespace
 
+// SearchProviderFeatureTestComponent -----------------------------------------
+// Handles field trial, feature flag, and command line state for SearchProvider
+// tests. This is done as a base class, so that it runs before
+// BrowserTaskEnvironment is initialized.
+
+class SearchProviderFeatureTestComponent {
+ public:
+  SearchProviderFeatureTestComponent(
+      const base::Optional<bool> warm_up_on_focus,
+      const bool command_line_overrides);
+
+  ~SearchProviderFeatureTestComponent() {
+    variations::testing::ClearAllVariationParams();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+SearchProviderFeatureTestComponent::SearchProviderFeatureTestComponent(
+    const base::Optional<bool> warm_up_on_focus,
+    const bool command_line_overrides) {
+  if (warm_up_on_focus.has_value()) {
+    if (warm_up_on_focus.value())
+      feature_list_.InitAndEnableFeature(omnibox::kSearchProviderWarmUpOnFocus);
+    else
+      feature_list_.InitAndDisableFeature(
+          omnibox::kSearchProviderWarmUpOnFocus);
+  }
+
+  if (command_line_overrides) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kGoogleBaseURL, "http://www.bar.com/");
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kExtraSearchQueryParams, "a=b");
+  }
+}
+
 // BaseSearchProviderTest -----------------------------------------------------
 
 // Base class that configures following environment:
@@ -181,23 +218,21 @@ class BaseSearchProviderTest : public testing::Test,
     bool allowed_to_be_default_match;
   };
 
-  BaseSearchProviderTest()
+  BaseSearchProviderTest(
+      const base::Optional<bool> warm_up_on_focus = base::nullopt,
+      const bool command_line_overrides = false)
       : default_t_url_(nullptr),
         term1_(ASCIIToUTF16("term1")),
         keyword_t_url_(nullptr),
         keyword_term_(ASCIIToUTF16("keyword")),
-        run_loop_(nullptr) {
-    ResetFieldTrialList();
-  }
+        feature_test_component_(warm_up_on_focus, command_line_overrides),
+        run_loop_(nullptr) {}
 
   void TearDown() override;
 
   void RunTest(TestData* cases, int num_cases, bool prefer_keyword);
 
  protected:
-  // Needed for AutocompleteFieldTrial::ActivateStaticTrials();
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
-
   // Default values used for testing.
   static const char kNotApplicable[];
   static const ExpectedMatch kEmptyExpectedMatch;
@@ -263,8 +298,6 @@ class BaseSearchProviderTest : public testing::Test,
                     const ExpectedMatch expected_matches[],
                     const ACMatches& matches);
 
-  void ResetFieldTrialList();
-
   // Enable or disable the specified Omnibox field trial rule.
   base::FieldTrial* CreateFieldTrial(const char* field_trial_rule,
                                      bool enabled);
@@ -279,6 +312,9 @@ class BaseSearchProviderTest : public testing::Test,
   const base::string16 keyword_term_;
   GURL keyword_url_;
 
+  // SearchProviderFeatureTestComponent must come before BrowserTaskEnvironment,
+  // to avoid a possible race.
+  SearchProviderFeatureTestComponent feature_test_component_;
   content::BrowserTaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -297,6 +333,11 @@ class BaseSearchProviderTest : public testing::Test,
 // Test environment with valid suggest and search URL.
 class SearchProviderTest : public BaseSearchProviderTest {
  public:
+  SearchProviderTest(
+      const base::Optional<bool> warm_up_on_focus = base::nullopt,
+      const bool command_line_overrides = false)
+      : BaseSearchProviderTest(warm_up_on_focus, command_line_overrides) {}
+
   void SetUp() override {
     CustomizableSetUp(
         /* search_url */ "http://defaultturl/{searchTerms}",
@@ -577,15 +618,6 @@ void BaseSearchProviderTest::CheckMatches(
     SCOPED_TRACE(" Case # " + base::NumberToString(i));
     EXPECT_EQ(kNotApplicable, expected_matches[i].contents);
   }
-}
-
-void BaseSearchProviderTest::ResetFieldTrialList() {
-  // Destroy the existing FieldTrialList before creating a new one to avoid
-  // a DCHECK.
-  field_trial_list_.reset();
-  field_trial_list_.reset(new base::FieldTrialList(
-      std::make_unique<variations::SHA1EntropyProvider>("foo")));
-  variations::testing::ClearAllVariationParams();
 }
 
 base::FieldTrial* BaseSearchProviderTest::CreateFieldTrial(
@@ -1206,39 +1238,6 @@ TEST_F(SearchProviderTest, KeywordVerbatim) {
   RunTest(cases, base::size(cases), true);
 }
 
-// Ensures command-line flags are reflected in the URLs the search provider
-// generates.
-TEST_F(SearchProviderTest, CommandLineOverrides) {
-  TemplateURLService* turl_model =
-      TemplateURLServiceFactory::GetForProfile(&profile_);
-
-  TemplateURLData data;
-  data.SetShortName(ASCIIToUTF16("default"));
-  data.SetKeyword(data.short_name());
-  data.SetURL("{google:baseURL}{searchTerms}");
-  default_t_url_ = turl_model->Add(std::make_unique<TemplateURL>(data));
-  turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
-
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kGoogleBaseURL, "http://www.bar.com/");
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kExtraSearchQueryParams, "a=b");
-
-  TestData cases[] = {
-    { ASCIIToUTF16("k a"), 2,
-      { ResultInfo(GURL("http://keyword/a"),
-                   AutocompleteMatchType::SEARCH_OTHER_ENGINE,
-                   true,
-                   ASCIIToUTF16("k a")),
-        ResultInfo(GURL("http://www.bar.com/k%20a?a=b"),
-                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-                   false,
-                   ASCIIToUTF16("k a")) } },
-  };
-
-  RunTest(cases, base::size(cases), false);
-}
-
 // Verifies Navsuggest results don't set a TemplateURL, which Instant relies on.
 // Also verifies that just the *first* navigational result is listed as a match
 // if suggested relevance scores were not sent.
@@ -1339,6 +1338,14 @@ TEST_F(SearchProviderTest, DefaultProviderNoSuggestRelevanceInKeywordMode) {
 // case to this test, please consider adding it to the tests in
 // KeywordFetcherSuggestRelevance below.
 TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
+  // This test was written assuming a different default.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {
+          {omnibox::kUIExperimentMaxAutocompleteMatches,
+           {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}}},
+      },
+      {/* nothing disabled */});
   struct {
     const std::string json;
     const ExpectedMatch matches[6];
@@ -1577,6 +1584,14 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
 // test is added to this TEST_F, please consider if it would be
 // appropriate to add to DefaultFetcherSuggestRelevance as well.
 TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
+  // This test was written assuming a different default.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {
+          {omnibox::kUIExperimentMaxAutocompleteMatches,
+           {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}}},
+      },
+      {/* nothing disabled */});
   struct KeywordFetcherMatch {
     std::string contents;
     bool from_keyword;
@@ -2315,6 +2330,14 @@ TEST_F(SearchProviderTest, DontCacheCalculatorSuggestions) {
 }
 
 TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
+  // This test was written assuming a different default.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {
+          {omnibox::kUIExperimentMaxAutocompleteMatches,
+           {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}}},
+      },
+      {/* nothing disabled */});
   // We hardcode the string "term1" below, so ensure that the search term that
   // got added to history already is that string.
   ASSERT_EQ(ASCIIToUTF16("term1"), term1_);
@@ -3531,12 +3554,12 @@ TEST_F(SearchProviderTest, TestDeleteMatch) {
   EXPECT_FALSE(provider_->deletion_handlers_.empty());
   ASSERT_TRUE(test_url_loader_factory_.IsPending(kDeleteUrl));
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string headers("HTTP/1.1 500 Owiee\nContent-type: application/json\n\n");
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head.mime_type = "application/json";
-  test_url_loader_factory_.AddResponse(GURL(kDeleteUrl), head, "",
+  head->mime_type = "application/json";
+  test_url_loader_factory_.AddResponse(GURL(kDeleteUrl), std::move(head), "",
                                        network::URLLoaderCompletionStatus());
 
   profile_.BlockUntilHistoryProcessesPendingRequests();
@@ -3738,37 +3761,44 @@ TEST_F(SearchProviderTest, DoesNotProvideOnFocus) {
   EXPECT_TRUE(provider_->matches().empty());
 }
 
-#if defined(THREAD_SANITIZER)
-// SearchProviderTest.SendsWarmUpRequestOnFocus is flaky on Linux TSan Tests
-// crbug.com/891959.
-#define MAYBE_SendsWarmUpRequestOnFocus DISABLED_SendsWarmUpRequestOnFocus
-#else
-#define MAYBE_SendsWarmUpRequestOnFocus SendsWarmUpRequestOnFocus
-#endif  // defined(THREAD_SANITIZER)
-TEST_F(SearchProviderTest, MAYBE_SendsWarmUpRequestOnFocus) {
+TEST_F(InvalidSearchProviderTest, DoesNotSendSuggestRequests) {
+  base::string16 query = ASCIIToUTF16("query");
+  QueryForInput(query, false, false);
+
+  // Make sure the default provider's suggest service was not queried.
+  EXPECT_FALSE(test_url_loader_factory_.IsPending(prefix + "query"));
+}
+
+// SearchProviderWarmUpTest --------------------------------------------------
+//
+// Like SearchProviderTest.  The only addition is that it's a
+// TestWithParam<bool>, where the boolean parameter represents whether the
+// omnibox::kSearchProviderWarmUpOnFocus feature flag should be enabled.
+class SearchProviderWarmUpTest : public SearchProviderTest,
+                                 public testing::WithParamInterface<bool> {
+ public:
+  SearchProviderWarmUpTest() : SearchProviderTest(GetParam(), false) {}
+
+  SearchProviderWarmUpTest(SearchProviderWarmUpTest const&) = delete;
+  SearchProviderWarmUpTest& operator=(SearchProviderWarmUpTest const&) = delete;
+};
+
+TEST_P(SearchProviderWarmUpTest, SendsWarmUpRequestOnFocus) {
   AutocompleteInput input(base::ASCIIToUTF16("f"),
                           metrics::OmniboxEventProto::OTHER,
                           ChromeAutocompleteSchemeClassifier(&profile_));
   input.set_prefer_keyword(true);
   input.set_from_omnibox_focus(true);
 
-  {
-    // First, verify that without the warm-up feature enabled, the provider
-    // immediately terminates with no matches.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(omnibox::kSearchProviderWarmUpOnFocus);
+  if (!GetParam()) {  // The warm-up feature ought to be disabled.
+    // The provider immediately terminates with no matches.
     provider_->Start(input, false);
     // RunUntilIdle so that SearchProvider has a chance to create the
     // URLFetchers (if it wants to, which it shouldn't in this case).
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(provider_->done());
     EXPECT_TRUE(provider_->matches().empty());
-  }
-
-  {
-    // Then, check the behavior with the warm-up feature enabled.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(omnibox::kSearchProviderWarmUpOnFocus);
+  } else {  // The warm-up feature ought to be enabled.
     provider_->Start(input, false);
     // RunUntilIdle so that SearchProvider create the URLFetcher.
     base::RunLoop().RunUntilIdle();
@@ -3787,10 +3817,46 @@ TEST_F(SearchProviderTest, MAYBE_SendsWarmUpRequestOnFocus) {
   }
 }
 
-TEST_F(InvalidSearchProviderTest, DoesNotSendSuggestRequests) {
-  base::string16 query = ASCIIToUTF16("query");
-  QueryForInput(query, false, false);
+INSTANTIATE_TEST_CASE_P(SearchProviderTest,
+                        SearchProviderWarmUpTest,
+                        testing::Values(false, true));
 
-  // Make sure the default provider's suggest service was not queried.
-  EXPECT_FALSE(test_url_loader_factory_.IsPending(prefix + "query"));
+// SearchProviderCommandLineOverrideTest -------------------------------------
+//
+// Like SearchProviderTest.  The only addition is that it sets additional
+// command line flags in SearchProviderFeatureTestComponent.
+class SearchProviderCommandLineOverrideTest : public SearchProviderTest {
+ public:
+  SearchProviderCommandLineOverrideTest()
+      : SearchProviderTest(base::nullopt, true) {}
+
+  SearchProviderCommandLineOverrideTest(
+      SearchProviderCommandLineOverrideTest const&) = delete;
+  SearchProviderCommandLineOverrideTest& operator=(
+      SearchProviderCommandLineOverrideTest const&) = delete;
+};
+
+TEST_F(SearchProviderCommandLineOverrideTest, CommandLineOverrides) {
+  TemplateURLService* turl_model =
+      TemplateURLServiceFactory::GetForProfile(&profile_);
+
+  TemplateURLData data;
+  data.SetShortName(ASCIIToUTF16("default"));
+  data.SetKeyword(data.short_name());
+  data.SetURL("{google:baseURL}{searchTerms}");
+  default_t_url_ = turl_model->Add(std::make_unique<TemplateURL>(data));
+  turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
+
+  TestData cases[] = {
+      {ASCIIToUTF16("k a"),
+       2,
+       {ResultInfo(GURL("http://keyword/a"),
+                   AutocompleteMatchType::SEARCH_OTHER_ENGINE, true,
+                   ASCIIToUTF16("k a")),
+        ResultInfo(GURL("http://www.bar.com/k%20a?a=b"),
+                   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, false,
+                   ASCIIToUTF16("k a"))}},
+  };
+
+  RunTest(cases, base::size(cases), false);
 }

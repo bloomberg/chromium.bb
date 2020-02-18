@@ -50,8 +50,6 @@ const base::FilePath kClangToolPath =
 const std::set<int> kDummyDeprecatedIDs = {100, 101, 102};
 }  // namespace
 
-using namespace testing;
-
 class TrafficAnnotationAuditorTest : public ::testing::Test {
  public:
   void SetUp() override {
@@ -74,6 +72,7 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
 
     base::FilePath clang_tool_path =
         source_path_.Append(kClangToolPath).Append(platform_name);
+    std::vector<std::string> path_filters;
 
     // As build path is not available and not used in tests, the default (empty)
     // build path is passed to auditor.
@@ -81,7 +80,7 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
         source_path_,
         source_path_.Append(FILE_PATH_LITERAL("out"))
             .Append(FILE_PATH_LITERAL("Default")),
-        clang_tool_path);
+        clang_tool_path, path_filters);
 
     id_checker_ = std::make_unique<TrafficAnnotationIDChecker>(
         TrafficAnnotationAuditor::GetReservedIDsSet(), kDummyDeprecatedIDs);
@@ -286,7 +285,7 @@ TEST_F(TrafficAnnotationAuditorTest, IsSafeListed) {
                              AuditorException::ExceptionType::TEST_ANNOTATION));
 }
 
-// Tests if annotation instances are corrrectly deserialized.
+// Tests if annotation instances are correctly deserialized.
 TEST_F(TrafficAnnotationAuditorTest, AnnotationDeserialization) {
   struct AnnotationSample {
     std::string file_name;
@@ -334,14 +333,13 @@ TEST_F(TrafficAnnotationAuditorTest, AnnotationDeserialization) {
     EXPECT_EQ(annotation.proto.source().file(),
               "chrome/browser/supervised_user/legacy/"
               "supervised_user_refresh_token_fetcher.cc");
-    EXPECT_EQ(annotation.proto.source().function(), "OnGetTokenSuccess");
     EXPECT_EQ(annotation.proto.source().line(), 166);
     EXPECT_EQ(annotation.proto.semantics().sender(), "Supervised Users");
     EXPECT_EQ(annotation.proto.policy().cookies_allowed(), 1);
   }
 }
 
-// Tests if call instances are corrrectly deserialized.
+// Tests if call instances are correctly deserialized.
 TEST_F(TrafficAnnotationAuditorTest, CallDeserialization) {
   struct CallSample {
     std::string file_name;
@@ -365,14 +363,12 @@ TEST_F(TrafficAnnotationAuditorTest, CallDeserialization) {
 
     EXPECT_EQ(call.file_path, "headless/public/util/http_url_fetcher.cc");
     EXPECT_EQ(call.line_number, 100u);
-    EXPECT_EQ(call.function_context,
-              "headless::HttpURLFetcher::Delegate::Delegate");
     EXPECT_EQ(call.function_name, "net::URLRequestContext::CreateRequest");
     EXPECT_EQ(call.is_annotated, true);
   }
 }
 
-// Tests if call instances are corrrectly deserialized.
+// Tests if call instances are correctly deserialized.
 TEST_F(TrafficAnnotationAuditorTest, AssignmentDeserialization) {
   struct Assignmentample {
     std::string file_name;
@@ -381,8 +377,7 @@ TEST_F(TrafficAnnotationAuditorTest, AssignmentDeserialization) {
 
   Assignmentample test_cases[] = {
       {"good_assignment.txt", AuditorResult::Type::RESULT_OK},
-      {"bad_assignment1.txt", AuditorResult::Type::ERROR_FATAL},
-      {"bad_assignment2.txt", AuditorResult::Type::ERROR_FATAL},
+      {"bad_assignment.txt", AuditorResult::Type::ERROR_FATAL},
   };
 
   for (const auto& test_case : test_cases) {

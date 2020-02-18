@@ -81,7 +81,7 @@ class InterfaceTest(cros_test_lib.TempDirTestCase):
   def testDefaultTargetName(self):
     """We are getting the right default target name."""
     options = self._Parse([])
-    self.assertEquals(
+    self.assertEqual(
         options.out_file, 'sysroot_chromeos-base_chromeos-chrome.tar.xz')
 
   def testMultiplePkgsTargetName(self):
@@ -91,7 +91,7 @@ class InterfaceTest(cros_test_lib.TempDirTestCase):
         ['--board', BOARD, '--out-dir', self.tempdir,
          '--package', pkgs])
 
-    self.assertEquals(
+    self.assertEqual(
         options.out_file, 'sysroot_chromeos-base_chromeos-chrome.tar.xz')
 
   def testExistingTarget(self):

@@ -6,18 +6,18 @@ package org.chromium.chrome.browser.feed;
 
 import android.content.res.Resources;
 import android.graphics.Rect;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ScrollView;
 
-import com.google.android.libraries.feed.api.client.stream.Stream;
-import com.google.android.libraries.feed.api.client.stream.Stream.ContentChangedListener;
-import com.google.android.libraries.feed.api.client.stream.Stream.ScrollListener;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.MemoryPressureListener;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.memory.MemoryPressureCallback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
+import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
@@ -26,17 +26,20 @@ import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
+import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 
 /**
  * A mediator for the {@link FeedSurfaceCoordinator} responsible for interacting with the
  * native library and handling business logic.
  */
-class FeedSurfaceMediator
-        implements NewTabPageLayout.ScrollDelegate, ContextMenuManager.TouchEnabledDelegate {
+class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
+                                     ContextMenuManager.TouchEnabledDelegate,
+                                     TemplateUrlServiceObserver {
     private final FeedSurfaceCoordinator mCoordinator;
     private final @Nullable SnapScrollHelper mSnapScrollHelper;
     private final PrefChangeRegistrar mPrefChangeRegistrar;
@@ -49,6 +52,7 @@ class FeedSurfaceMediator
     private @Nullable SignInPromo mSignInPromo;
 
     private boolean mFeedEnabled;
+    private boolean mHasHeader;
     private boolean mTouchEnabled = true;
     private boolean mStreamContentChanged;
     private int mThumbnailWidth;
@@ -66,6 +70,7 @@ class FeedSurfaceMediator
         mSigninManager = IdentityServicesProvider.getSigninManager();
 
         mPrefChangeRegistrar = new PrefChangeRegistrar();
+        mHasHeader = mCoordinator.getSectionHeaderView() != null;
         mPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_SECTION_ENABLED, this::updateContent);
         initialize();
         // Create the content.
@@ -76,6 +81,7 @@ class FeedSurfaceMediator
     void destroy() {
         destroyPropertiesForStream();
         mPrefChangeRegistrar.destroy();
+        TemplateUrlServiceFactory.get().removeObserver(this);
     }
 
     private void initialize() {
@@ -94,19 +100,22 @@ class FeedSurfaceMediator
     private void updateContent() {
         mFeedEnabled = FeedProcessScopeFactory.isFeedProcessEnabled();
         if ((mFeedEnabled && mCoordinator.getStream() != null)
-                || (!mFeedEnabled && mCoordinator.getScrollViewForPolicy() != null))
+                || (!mFeedEnabled && mCoordinator.getScrollViewForPolicy() != null)) {
             return;
+        }
 
         if (mFeedEnabled) {
             mCoordinator.createStream();
-            if (mSnapScrollHelper != null)
+            if (mSnapScrollHelper != null) {
                 mSnapScrollHelper.setView(mCoordinator.getStream().getView());
+            }
             initializePropertiesForStream();
         } else {
             destroyPropertiesForStream();
             mCoordinator.createScrollViewForPolicy();
-            if (mSnapScrollHelper != null)
+            if (mSnapScrollHelper != null) {
                 mSnapScrollHelper.setView(mCoordinator.getScrollViewForPolicy());
+            }
             initializePropertiesForPolicy();
         }
     }
@@ -139,13 +148,18 @@ class FeedSurfaceMediator
 
         boolean suggestionsVisible =
                 PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
-        Resources res = mCoordinator.getSectionHeaderView().getResources();
-        mSectionHeader =
-                new SectionHeader(res.getString(R.string.ntp_article_suggestions_section_header),
-                        suggestionsVisible, this::onSectionHeaderToggled);
-        mPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_LIST_VISIBLE, this::updateSectionHeader);
-        mCoordinator.getSectionHeaderView().setHeader(mSectionHeader);
-        stream.setStreamContentVisibility(mSectionHeader.isExpanded());
+
+        if (mHasHeader) {
+            mSectionHeader = new SectionHeader(
+                    getSectionHeaderText(), suggestionsVisible, this::onSectionHeaderToggled);
+            mPrefChangeRegistrar.addObserver(
+                    Pref.NTP_ARTICLES_LIST_VISIBLE, this::updateSectionHeader);
+            TemplateUrlServiceFactory.get().addObserver(this);
+            mCoordinator.getSectionHeaderView().setHeader(mSectionHeader);
+        }
+        // Show feed if there is no header that would allow user to hide feed.
+        // This is currently only relevant for the two panes start surface.
+        stream.setStreamContentVisibility(mHasHeader ? mSectionHeader.isExpanded() : true);
 
         if (SignInPromo.shouldCreatePromo()) {
             mSignInPromo = new FeedSignInPromo(mSigninManager);
@@ -180,6 +194,7 @@ class FeedSurfaceMediator
         }
 
         mPrefChangeRegistrar.removeObserver(Pref.NTP_ARTICLES_LIST_VISIBLE);
+        TemplateUrlServiceFactory.get().removeObserver(this);
     }
 
     /**
@@ -192,8 +207,9 @@ class FeedSurfaceMediator
         }
     }
 
-    /** Update whether the section header should be expanded. */
+    /** Update whether the section header should be expanded and its text contents. */
     private void updateSectionHeader() {
+        mSectionHeader.setHeaderText(getSectionHeaderText());
         boolean suggestionsVisible =
                 PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
         if (mSectionHeader.isExpanded() != suggestionsVisible) mSectionHeader.toggleHeader();
@@ -202,6 +218,7 @@ class FeedSurfaceMediator
         }
         if (suggestionsVisible) mCoordinator.getStreamLifecycleManager().activate();
         mStreamContentChanged = true;
+        mCoordinator.getSectionHeaderView().updateVisuals();
     }
 
     /**
@@ -214,6 +231,16 @@ class FeedSurfaceMediator
         mCoordinator.getStream().setStreamContentVisibility(mSectionHeader.isExpanded());
         // TODO(huayinz): Update the section header view through a ModelChangeProcessor.
         mCoordinator.getSectionHeaderView().updateVisuals();
+    }
+
+    /** Returns the section header text based on the selected default search engine */
+    private String getSectionHeaderText() {
+        Resources res = mCoordinator.getSectionHeaderView().getResources();
+        final int sectionHeaderStringId =
+                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()
+                ? R.string.ntp_article_suggestions_section_header
+                : R.string.ntp_article_suggestions_section_header_branded;
+        return res.getString(sectionHeaderStringId);
     }
 
     /**
@@ -315,6 +342,11 @@ class FeedSurfaceMediator
         } else {
             mCoordinator.getScrollViewForPolicy().smoothScrollBy(0, scrollTo - initialScroll);
         }
+    }
+
+    @Override
+    public void onTemplateURLServiceChanged() {
+        updateSectionHeader();
     }
 
     /**

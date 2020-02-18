@@ -24,9 +24,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
-// The Finch feature that controls whether a message is shown when users
-// encounter the same error multiiple times.
-extern const base::Feature kRecurrentInterstitialFeature;
 
 // Tracks state related to certificate and SSL errors. This state includes:
 // - certificate error exceptions (which are remembered for a particular length
@@ -47,7 +44,7 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
                  const net::X509Certificate& cert,
                  int error) override;
   void Clear(
-      const base::Callback<bool(const std::string&)>& host_filter) override;
+      base::RepeatingCallback<bool(const std::string&)> host_filter) override;
   CertJudgment QueryPolicy(const std::string& host,
                            const net::X509Certificate& cert,
                            int error) override;
@@ -72,8 +69,7 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
   void DidDisplayErrorPage(int error);
 
   // Returns true if DidDisplayErrorPage() has been called over a threshold
-  // number of times for a particular error in a particular time period. Always
-  // returns false if |kRecurrentInterstitialFeature| is not enabled. The number
+  // number of times for a particular error in a particular time period. The number
   // of times and time period are controlled by the feature parameters. Only
   // certain error codes of interest are tracked, so this may return false for
   // an error code that has recurred.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var FilesQuickView = Polymer({
+const FilesQuickView = Polymer({
   is: 'files-quick-view',
 
   properties: {
@@ -10,29 +10,40 @@ var FilesQuickView = Polymer({
     type: String,
     subtype: String,
     filePath: String,
-    // If there is a task to open the file.
+
+    // True if there is a file task that can open the file type.
     hasTask: Boolean,
-    // URLs should be accessible from webview since contets are rendered inside
-    // it. Hint: use URL.createObjectURL.
+
+    // URLs should be accessible from the <webview> since their content is
+    // rendered inside the <wevbiew>. Hint: use URL.createObjectURL.
     contentUrl: String,
     videoPoster: String,
     audioArtwork: String,
+
+    // Autoplay property for audio, video.
     autoplay: Boolean,
-    // True if this file is not image, audio, video nor HTML but supported on
-    // Chrome, i.e. preview-able by directly src-ing the file path to webview.
-    // Example: pdf, text.
+
+    // True if this file is not image, audio, video nor HTML but is supported
+    // by Chrome - content that is directly preview-able in Chrome by setting
+    // the <webview> src attribute. Examples: pdf, text.
     browsable: Boolean,
 
-    // metadata-box-active-changed event is fired on attribute change.
+    // The metadata-box-active-changed event is fired on attribute change.
     metadataBoxActive: {
       value: true,
       type: Boolean,
       notify: true,
     },
-    // Text shown when no playback is available.
+
+    // Text shown when there is no playback/preview available.
     noPlaybackText: String,
-    // Text shown when no preview is available.
     noPreviewText: String,
+
+    /**
+     * True if the Files app window is a dialog, e.g. save-as or open-with.
+     * @type {boolean}
+     */
+    isModal: Boolean,
   },
 
   listeners: {
@@ -45,22 +56,30 @@ var FilesQuickView = Polymer({
    * @param {!Event} e
    */
   applyTextCss: function(e) {
+    // Don't override the Chrome PDF viewer's CSS: crbug.com/1001034.
+    if (this.subtype === 'PDF') {
+      return;
+    }
+
     const webview = /** @type {WebView} */ (e.target);
-    webview.insertCSS(
-        {'file': 'foreground/elements/files_safe_text_webview_content.css'});
+    webview.insertCSS({
+      'file': 'foreground/elements/files_safe_text_webview_content.css',
+    });
   },
 
   // Clears fields.
   clear: function() {
-    this.type = '';
-    this.subtype = '';
-    this.filePath = '';
-    this.hasTask = false;
-    this.contentUrl = '';
-    this.videoPoster = '';
-    this.audioArtwork = '';
-    this.autoplay = false;
-    this.browsable = false;
+    this.setProperties({
+        type: '',
+        subtype: '',
+        filePath: '',
+        hasTask: false,
+        contentUrl: '',
+        videoPoster: '',
+        audioArtwork: '',
+        autoplay: false,
+        browsable: false,
+    });
     const video = this.$.contentPanel.querySelector('#videoSafeMedia');
     if (video) {
       video.src = '';
@@ -107,6 +126,17 @@ var FilesQuickView = Polymer({
    * @param {!Event} event
    */
   onOpenInNewButtonTap: function(event) {},
+
+  /**
+   * @param {boolean} hasTask
+   * @param {boolean} isModal
+   * @return {boolean}
+   *
+   * @private
+   */
+  shouldShowOpenButton_: function(hasTask, isModal) {
+    return hasTask && !isModal;
+  },
 
   /**
    * @param {!Event} event tap event.

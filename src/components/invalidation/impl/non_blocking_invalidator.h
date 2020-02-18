@@ -30,7 +30,7 @@ class SingleThreadTaskRunner;
 
 namespace network {
 class NetworkConnectionTracker;
-class SharedURLLoaderFactoryInfo;
+class PendingSharedURLLoaderFactory;
 }  // namespace network
 
 namespace syncer {
@@ -42,6 +42,8 @@ class GCMNetworkChannelDelegate;
 using NetworkChannelCreator =
     base::Callback<std::unique_ptr<SyncNetworkChannel>(void)>;
 
+// TODO(crbug.com/1029481): Part of the legacy implementation of invalidations,
+// scheduled for deletion.
 class INVALIDATION_EXPORT NonBlockingInvalidator
     : public Invalidator,
       public InvalidationStateTracker {
@@ -64,7 +66,7 @@ class INVALIDATION_EXPORT NonBlockingInvalidator
                            const ObjectIdSet& ids) override;
   void UnregisterHandler(InvalidationHandler* handler) override;
   InvalidatorState GetInvalidatorState() const override;
-  void UpdateCredentials(const std::string& email,
+  void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& token) override;
   void RequestDetailedStatus(base::Callback<void(const base::DictionaryValue&)>
                                  callback) const override;
@@ -76,8 +78,8 @@ class INVALIDATION_EXPORT NonBlockingInvalidator
   static NetworkChannelCreator MakePushClientChannelCreator(
       const notifier::NotifierOptions& notifier_options);
   static NetworkChannelCreator MakeGCMNetworkChannelCreator(
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info,
+      std::unique_ptr<network::PendingSharedURLLoaderFactory>
+          pending_url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 

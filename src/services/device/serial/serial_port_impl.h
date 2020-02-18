@@ -11,7 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/device/public/mojom/serial.mojom.h"
@@ -32,22 +35,23 @@ class SerialPortImpl : public mojom::SerialPort {
  public:
   static void Create(
       const base::FilePath& path,
-      mojom::SerialPortRequest request,
-      mojom::SerialPortConnectionWatcherPtrInfo watcher,
+      mojo::PendingReceiver<mojom::SerialPort> receiver,
+      mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
  private:
-  SerialPortImpl(const base::FilePath& path,
-                 mojom::SerialPortRequest request,
-                 mojom::SerialPortConnectionWatcherPtrInfo watcher,
-                 scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  SerialPortImpl(
+      const base::FilePath& path,
+      mojo::PendingReceiver<mojom::SerialPort> receiver,
+      mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialPortImpl() override;
 
   // mojom::SerialPort methods:
   void Open(mojom::SerialConnectionOptionsPtr options,
             mojo::ScopedDataPipeConsumerHandle in_stream,
             mojo::ScopedDataPipeProducerHandle out_stream,
-            mojom::SerialPortClientPtr client,
+            mojo::PendingRemote<mojom::SerialPortClient> client,
             OpenCallback callback) override;
   void ClearSendError(mojo::ScopedDataPipeConsumerHandle consumer) override;
   void ClearReadError(mojo::ScopedDataPipeProducerHandle producer) override;
@@ -69,14 +73,14 @@ class SerialPortImpl : public mojom::SerialPort {
                                const mojo::HandleSignalsState& state);
   void WriteToOutStream(uint32_t bytes_read, mojom::SerialReceiveError error);
 
-  mojo::Binding<mojom::SerialPort> binding_;
+  mojo::Receiver<mojom::SerialPort> receiver_;
 
   // Underlying connection to the serial port.
   scoped_refptr<SerialIoHandler> io_handler_;
 
   // Client interfaces.
-  mojom::SerialPortClientPtr client_;
-  mojom::SerialPortConnectionWatcherPtr watcher_;
+  mojo::Remote<mojom::SerialPortClient> client_;
+  mojo::Remote<mojom::SerialPortConnectionWatcher> watcher_;
 
   // Data pipes for input and output.
   mojo::ScopedDataPipeConsumerHandle in_stream_;

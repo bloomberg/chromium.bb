@@ -24,7 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_model_observer.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -229,6 +229,9 @@ TEST_F(AppListModelTest, AppOrder) {
 using AppListModelFolderTest = AppListModelTest;
 
 TEST_F(AppListModelFolderTest, FolderItem) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({},
+                                       {app_list_features::kScalableAppList});
   AppListFolderItem* folder = new AppListFolderItem("folder1");
   const size_t num_folder_apps = 8;
   const size_t num_observed_apps = 4;
@@ -615,4 +618,4 @@ TEST_F(AppListModelFolderTest, DisableFolders) {
   EXPECT_EQ(std::string("folder1,") + ash::kOemFolderId, GetModelContents());
 }
 
-}  // namespace app_list
+}  // namespace ash

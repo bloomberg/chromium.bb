@@ -4,9 +4,10 @@
 
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_index_conversions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 
 namespace quic {
 
@@ -16,7 +17,8 @@ QpackDecoder::QpackDecoder(
     EncoderStreamErrorDelegate* encoder_stream_error_delegate)
     : encoder_stream_error_delegate_(encoder_stream_error_delegate),
       encoder_stream_receiver_(this),
-      maximum_blocked_streams_(maximum_blocked_streams) {
+      maximum_blocked_streams_(maximum_blocked_streams),
+      known_received_count_(0) {
   DCHECK(encoder_stream_error_delegate_);
 
   header_table_.SetMaximumDynamicTableCapacity(maximum_dynamic_table_capacity);
@@ -25,9 +27,10 @@ QpackDecoder::QpackDecoder(
 QpackDecoder::~QpackDecoder() {}
 
 void QpackDecoder::OnStreamReset(QuicStreamId stream_id) {
-  // TODO(bnc): SendStreamCancellation should not be called if maximum dynamic
-  // table capacity is zero.
-  decoder_stream_sender_.SendStreamCancellation(stream_id);
+  if (header_table_.maximum_dynamic_table_capacity() > 0) {
+    decoder_stream_sender_.SendStreamCancellation(stream_id);
+    decoder_stream_sender_.Flush();
+  }
 }
 
 bool QpackDecoder::OnStreamBlocked(QuicStreamId stream_id) {
@@ -39,6 +42,29 @@ bool QpackDecoder::OnStreamBlocked(QuicStreamId stream_id) {
 void QpackDecoder::OnStreamUnblocked(QuicStreamId stream_id) {
   size_t result = blocked_streams_.erase(stream_id);
   DCHECK_EQ(1u, result);
+}
+
+void QpackDecoder::OnDecodingCompleted(QuicStreamId stream_id,
+                                       uint64_t required_insert_count) {
+  if (required_insert_count > 0) {
+    decoder_stream_sender_.SendHeaderAcknowledgement(stream_id);
+
+    if (known_received_count_ < required_insert_count) {
+      known_received_count_ = required_insert_count;
+    }
+  }
+
+  // Send an Insert Count Increment instruction if not all dynamic table entries
+  // have been acknowledged yet.  This is necessary for efficient compression in
+  // case the encoder chooses not to reference unacknowledged dynamic table
+  // entries, otherwise inserted entries would never be acknowledged.
+  if (known_received_count_ < header_table_.inserted_entry_count()) {
+    decoder_stream_sender_.SendInsertCountIncrement(
+        header_table_.inserted_entry_count() - known_received_count_);
+    known_received_count_ = header_table_.inserted_entry_count();
+  }
+
+  decoder_stream_sender_.Flush();
 }
 
 void QpackDecoder::OnInsertWithNameReference(bool is_static,
@@ -128,8 +154,8 @@ void QpackDecoder::OnErrorDetected(QuicStringPiece error_message) {
 std::unique_ptr<QpackProgressiveDecoder> QpackDecoder::CreateProgressiveDecoder(
     QuicStreamId stream_id,
     QpackProgressiveDecoder::HeadersHandlerInterface* handler) {
-  return QuicMakeUnique<QpackProgressiveDecoder>(
-      stream_id, this, &header_table_, &decoder_stream_sender_, handler);
+  return std::make_unique<QpackProgressiveDecoder>(stream_id, this, this,
+                                                   &header_table_, handler);
 }
 
 }  // namespace quic

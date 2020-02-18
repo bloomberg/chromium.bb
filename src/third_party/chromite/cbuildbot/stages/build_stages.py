@@ -51,8 +51,8 @@ class CleanUpStage(generic_stages.BuilderStage):
     chroot_tmpdir = os.path.join(chroot_dir, 'tmp')
     if os.path.exists(chroot_tmpdir):
       osutils.RmDir(chroot_tmpdir, ignore_missing=True, sudo=True)
-      cros_build_lib.SudoRunCommand(['mkdir', '--mode', '1777', chroot_tmpdir],
-                                    print_cmd=False)
+      cros_build_lib.sudo_run(['mkdir', '--mode', '1777', chroot_tmpdir],
+                              print_cmd=False)
 
     # Clear out the incremental build cache between runs.
     cache_dir = 'var/cache/portage'
@@ -659,7 +659,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       logging.info('Logging events to %s', event_file)
       event_file_in_chroot = path_util.ToChrootPath(event_file)
     except cbuildbot_run.VersionNotSetError:
-      #TODO(chingcodes): Add better detection of archive options
+      # TODO(chingcodes): Add better detection of archive options.
       logging.info('Unable to archive, disabling build events file')
       event_filename = None
       event_file = None
@@ -671,6 +671,14 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     if self._run.options.cache_dir:
       chroot_args = chroot_args or []
       chroot_args += ['--cache-dir', self._run.options.cache_dir]
+
+    # Disable revdep logic on full and release builders. These builders never
+    # reuse sysroots, so the revdep logic only causes unnecessary
+    # rebuilds in the SDK. The SDK rebuilds sometimes hit build critical
+    # packages causing races & build failures.
+    clean_build = (
+        self._run.config.build_type == constants.CANARY_TYPE or
+        self._run.config.build_type == constants.FULL_TYPE)
 
     # Set property to specify bisection builder job to run for Findit.
     logging.PrintKitchenSetBuildProperty(
@@ -689,7 +697,9 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
           extra_env=self._portage_extra_env,
           event_file=event_file_in_chroot,
           run_goma=run_goma,
-          build_all_with_goma=self._run.config.build_all_with_goma)
+          build_all_with_goma=self._run.config.build_all_with_goma,
+          disable_revdep_logic=clean_build,
+      )
     except failures_lib.PackageBuildFailure as ex:
       failure_json = ex.BuildCompileFailureOutputJson()
       failures_filename = os.path.join(self.archive_path,
@@ -705,7 +715,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
     if event_file and os.path.isfile(event_file):
       logging.info('Archive build-events.json file')
-      #TODO: @chingcodes Remove upload after events DB is final
+      # TODO(chingcodes): Remove upload after events DB is final.
       self.UploadArtifact(event_filename, archive=False, strict=True)
 
       creds_file = topology.topology.get(topology.DATASTORE_WRITER_CREDS_KEY)

@@ -64,14 +64,14 @@ class PermissionRequestCreatorApiaryTest : public testing::Test {
   }
 
   void SetupResponse(net::Error error, const std::string& response) {
-    network::ResourceResponseHead head;
+    auto head = network::mojom::URLResponseHead::New();
     std::string headers("HTTP/1.1 200 OK\n\n");
-    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+    head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(headers));
     network::URLLoaderCompletionStatus status(error);
     status.decoded_body_length = response.size();
-    test_url_loader_factory_.AddResponse(permission_creator_->GetApiUrl(), head,
-                                         response, status);
+    test_url_loader_factory_.AddResponse(permission_creator_->GetApiUrl(),
+                                         std::move(head), response, status);
   }
 
   void CreateRequest(const GURL& url) {
@@ -86,7 +86,7 @@ class PermissionRequestCreatorApiaryTest : public testing::Test {
   MOCK_METHOD1(OnRequestCreated, void(bool success));
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-  std::string account_id_;
+  CoreAccountId account_id_;
   signin::IdentityTestEnvironment identity_test_env_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;

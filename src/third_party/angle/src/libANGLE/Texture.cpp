@@ -99,6 +99,7 @@ TextureState::TextureState(TextureType type)
       mBaseLevel(0),
       mMaxLevel(1000),
       mDepthStencilTextureMode(GL_DEPTH_COMPONENT),
+      mBoundAsImageTexture(false),
       mImmutableFormat(false),
       mImmutableLevels(0),
       mUsage(GL_NONE),
@@ -496,6 +497,28 @@ TextureTarget TextureState::getBaseImageTarget() const
                                          : NonCubeTextureTypeToTarget(mType);
 }
 
+GLuint TextureState::getEnabledLevelCount() const
+{
+    GLuint levelCount      = 0;
+    const GLuint baseLevel = getEffectiveBaseLevel();
+    const GLuint maxLevel  = std::min(getEffectiveMaxLevel(), getMipmapMaxLevel());
+
+    // The mip chain will have either one or more sequential levels, or max levels,
+    // but not a sparse one.
+    for (size_t descIndex = baseLevel; descIndex < mImageDescs.size();)
+    {
+        if (!mImageDescs[descIndex].size.empty())
+        {
+            levelCount++;
+        }
+        descIndex = (mType == TextureType::CubeMap) ? descIndex + 6 : descIndex + 1;
+    }
+    // The original image already takes account into the levelCount.
+    levelCount = std::min(maxLevel - baseLevel + 1, levelCount);
+
+    return levelCount;
+}
+
 ImageDesc::ImageDesc()
     : ImageDesc(Extents(0, 0, 0), Format::Invalid(), 0, GL_TRUE, InitState::Initialized)
 {}
@@ -616,7 +639,7 @@ void TextureState::clearImageDescs()
 }
 
 Texture::Texture(rx::GLImplFactory *factory, TextureID id, TextureType type)
-    : RefCountObject(id.value),
+    : RefCountObject(id),
       mState(type),
       mTexture(factory->createTexture(mState)),
       mImplObserver(this, rx::kTextureImageImplObserverMessageIndex),
@@ -1266,10 +1289,11 @@ angle::Result Texture::setStorage(Context *context,
     ANGLE_TRY(releaseTexImageInternal(context));
     ANGLE_TRY(orphanImages(context));
 
-    ANGLE_TRY(mTexture->setStorage(context, type, levels, internalFormat, size));
-
     mState.mImmutableFormat = true;
     mState.mImmutableLevels = static_cast<GLuint>(levels);
+
+    ANGLE_TRY(mTexture->setStorage(context, type, levels, internalFormat, size));
+
     mState.clearImageDescs();
     mState.setImageDescChain(0, static_cast<GLuint>(levels - 1), size, Format(internalFormat),
                              InitState::MayNeedInit);
@@ -1326,6 +1350,10 @@ angle::Result Texture::setStorageMultisample(Context *context,
     // Release from previous calls to eglBindTexImage, to avoid calling the Impl after
     ANGLE_TRY(releaseTexImageInternal(context));
     ANGLE_TRY(orphanImages(context));
+
+    // Potentially adjust "samples" to a supported value
+    const TextureCaps &formatCaps = context->getTextureCaps().get(internalFormat);
+    samples                       = formatCaps.getNearestSamples(samples);
 
     ANGLE_TRY(mTexture->setStorageMultisample(context, type, samples, internalFormat, size,
                                               fixedSampleLocations));
@@ -1673,7 +1701,7 @@ void Texture::onDetach(const Context *context)
 
 GLuint Texture::getId() const
 {
-    return id();
+    return id().value;
 }
 
 GLuint Texture::getNativeID() const
@@ -1839,14 +1867,60 @@ angle::Result Texture::handleMipmapGenerationHint(Context *context, int level)
 
 void Texture::onSubjectStateChange(angle::SubjectIndex index, angle::SubjectMessage message)
 {
-    ASSERT(message == angle::SubjectMessage::SubjectChanged);
-    mDirtyBits.set(DIRTY_BIT_IMPLEMENTATION);
-    signalDirtyState(DIRTY_BIT_IMPLEMENTATION);
-
-    // Notify siblings that we are dirty.
-    if (index == rx::kTextureImageImplObserverMessageIndex)
+    switch (message)
     {
-        notifySiblings(message);
+        case angle::SubjectMessage::ContentsChanged:
+            // ContentsChange is originates from TextureStorage11::resolveAndReleaseTexture
+            // which resolves the underlying multisampled texture if it exists and so
+            // Texture will signal dirty storage to invalidate its own cache and the
+            // attached framebuffer's cache.
+            signalDirtyStorage(InitState::Initialized);
+            return;
+        case angle::SubjectMessage::SubjectChanged:
+            mDirtyBits.set(DIRTY_BIT_IMPLEMENTATION);
+            signalDirtyState(DIRTY_BIT_IMPLEMENTATION);
+
+            // Notify siblings that we are dirty.
+            if (index == rx::kTextureImageImplObserverMessageIndex)
+            {
+                notifySiblings(message);
+            }
+            return;
+        default:
+            return;
     }
 }
+
+GLenum Texture::getImplementationColorReadFormat(const Context *context) const
+{
+    return mTexture->getColorReadFormat(context);
+}
+
+GLenum Texture::getImplementationColorReadType(const Context *context) const
+{
+    return mTexture->getColorReadType(context);
+}
+
+angle::Result Texture::getTexImage(const Context *context,
+                                   const PixelPackState &packState,
+                                   Buffer *packBuffer,
+                                   TextureTarget target,
+                                   GLint level,
+                                   GLenum format,
+                                   GLenum type,
+                                   void *pixels) const
+{
+    return mTexture->getTexImage(context, packState, packBuffer, target, level, format, type,
+                                 pixels);
+}
+
+void Texture::onBindImageTexture()
+{
+    if (!mState.mBoundAsImageTexture)
+    {
+        mDirtyBits.set(DIRTY_BIT_BOUND_AS_IMAGE);
+        mState.mBoundAsImageTexture = true;
+    }
+}
+
 }  // namespace gl

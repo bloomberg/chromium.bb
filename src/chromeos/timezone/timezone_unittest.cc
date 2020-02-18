@@ -113,12 +113,12 @@ class TestTimeZoneAPILoaderFactory : public network::TestURLLoaderFactory {
 
  private:
   void AddResponseWithCode(int error_code) {
-    network::ResourceResponseHead response_head;
-    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    response_head.headers->AddHeader("Content-Type: application/json");
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    response_head->headers->AddHeader("Content-Type: application/json");
     // If AddResponse() is called multiple times for the same URL, the last
     // one is the one used so there is no need for ClearResponses().
-    AddResponse(url_, response_head, response_,
+    AddResponse(url_, std::move(response_head), response_,
                 network::URLLoaderCompletionStatus(error_code));
   }
 
@@ -159,7 +159,7 @@ class TimeZoneReceiver {
 
 class TimeZoneTest : public testing::Test {
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(TimeZoneTest, ResponseOK) {
@@ -178,8 +178,8 @@ TEST_F(TimeZoneTest, ResponseOK) {
 
   provider.RequestTimezone(simple_request.position,
                            base::TimeDelta::FromSeconds(1),
-                           base::Bind(&TimeZoneReceiver::OnRequestDone,
-                                      base::Unretained(&receiver)));
+                           base::BindOnce(&TimeZoneReceiver::OnRequestDone,
+                                          base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
 
   EXPECT_EQ(simple_request.timezone.ToStringForDebug(),
@@ -203,8 +203,8 @@ TEST_F(TimeZoneTest, ResponseOKWithRetries) {
 
   provider.RequestTimezone(simple_request.position,
                            base::TimeDelta::FromSeconds(1),
-                           base::Bind(&TimeZoneReceiver::OnRequestDone,
-                                      base::Unretained(&receiver)));
+                           base::BindOnce(&TimeZoneReceiver::OnRequestDone,
+                                          base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
   EXPECT_EQ(simple_request.timezone.ToStringForDebug(),
             receiver.timezone()->ToStringForDebug());
@@ -232,8 +232,8 @@ TEST_F(TimeZoneTest, InvalidResponse) {
 
   provider.RequestTimezone(simple_request.position,
                            base::TimeDelta::FromSeconds(timeout_seconds),
-                           base::Bind(&TimeZoneReceiver::OnRequestDone,
-                                      base::Unretained(&receiver)));
+                           base::BindOnce(&TimeZoneReceiver::OnRequestDone,
+                                          base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
   EXPECT_EQ(
       "dstOffset=0.000000, rawOffset=0.000000, timeZoneId='', timeZoneName='', "

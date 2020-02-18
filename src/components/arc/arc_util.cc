@@ -12,9 +12,11 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_features.h"
 #include "components/exo/shell_surface_util.h"
@@ -61,10 +63,15 @@ void OnSetArcVmCpuRestriction(
     LOG(ERROR) << "SetVmCpuRestriction for ARCVM failed";
 }
 
-void SetArcVmCpuRestriction(bool do_restrict) {
+void DoSetArcVmCpuRestriction(bool do_restrict, bool concierge_started) {
+  if (!concierge_started) {
+    LOG(ERROR) << "Concierge D-Bus service is not available";
+    return;
+  }
+
   auto* client = chromeos::DBusThreadManager::Get()->GetConciergeClient();
   if (!client) {
-    LOG(WARNING) << "ConciergeClient is not available";
+    LOG(ERROR) << "ConciergeClient is not available";
     return;
   }
 
@@ -76,6 +83,17 @@ void SetArcVmCpuRestriction(bool do_restrict) {
 
   client->SetVmCpuRestriction(request,
                               base::BindOnce(&OnSetArcVmCpuRestriction));
+}
+
+void SetArcVmCpuRestriction(bool do_restrict) {
+  auto* client = chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
+  if (!client) {
+    LOG(WARNING) << "DebugDaemonClient is not available";
+    return;
+  }
+  // TODO(wvk): Call StartConcierge() only when the service is not running.
+  client->StartConcierge(
+      base::BindOnce(&DoSetArcVmCpuRestriction, do_restrict));
 }
 
 void SetArcContainerCpuRestriction(bool do_restrict) {
@@ -271,6 +289,15 @@ bool IsArcPlayAutoInstallDisabled() {
 
 // static
 int32_t GetLcdDensityForDeviceScaleFactor(float device_scale_factor) {
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kArcScale)) {
+    const std::string dpi_str =
+        command_line->GetSwitchValueASCII(chromeos::switches::kArcScale);
+    int dpi;
+    if (base::StringToInt(dpi_str, &dpi))
+      return dpi;
+    VLOG(1) << "Invalid Arc scale set. Using default.";
+  }
   // TODO(b/131884992): Remove the logic to update default lcd density once
   // per-display-density is supported.
   constexpr float kEpsilon = 0.001;
@@ -278,7 +305,9 @@ int32_t GetLcdDensityForDeviceScaleFactor(float device_scale_factor) {
     return 280;
   if (std::abs(device_scale_factor - 1.6f) < kEpsilon)
     return 213;  // TVDPI
-  if (std::abs(device_scale_factor - 2.5f) < kEpsilon)
+  if (std::abs(device_scale_factor - 1.777f) < kEpsilon)
+    return 240;  // HDPI
+  if (std::abs(device_scale_factor - 2.666f) < kEpsilon)
     return 320;  // XHDPI
 
   constexpr float kChromeScaleToAndroidScaleRatio = 0.75f;

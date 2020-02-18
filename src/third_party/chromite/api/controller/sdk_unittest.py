@@ -49,6 +49,16 @@ class SdkCreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
                           self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(sdk_service, 'Create')
+
+    rc = sdk_controller.Create(self._GetRequest(), self.response,
+                               self.mock_call_config)
+    patch.assert_not_called()
+    self.assertFalse(rc)
+    self.assertTrue(self.response.version.version)
+
   def testSuccess(self):
     """Test the successful call output handling."""
     self.PatchObject(sdk_service, 'Create', return_value=1)
@@ -60,7 +70,7 @@ class SdkCreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     self.assertEqual(1, self.response.version.version)
 
   def testFalseArguments(self):
-    """Test the argument handling."""
+    """Test False argument handling."""
     # Create the patches.
     self.PatchObject(sdk_service, 'Create', return_value=1)
     args_patch = self.PatchObject(sdk_service, 'CreateArguments')
@@ -74,6 +84,7 @@ class SdkCreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
                                   use_image=True, paths=mock.ANY)
 
   def testTrueArguments(self):
+    """Test True arguments handling."""
     # Create the patches.
     self.PatchObject(sdk_service, 'Create', return_value=1)
     args_patch = self.PatchObject(sdk_service, 'CreateArguments')
@@ -86,6 +97,7 @@ class SdkCreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
                                   use_image=False, paths=mock.ANY)
 
   def testPathArguments(self):
+    """Test the path arguments handling."""
     # Create the patches.
     self.PatchObject(sdk_service, 'Create', return_value=1)
     paths_patch = self.PatchObject(sdk_service, 'ChrootPaths')
@@ -126,6 +138,16 @@ class SdkUpdateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     sdk_controller.Update(self._GetRequest(), self.response,
                           self.validate_only_config)
     patch.assert_not_called()
+
+  def testMockCall(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(sdk_service, 'Update')
+
+    rc = sdk_controller.Create(self._GetRequest(), self.response,
+                               self.mock_call_config)
+    patch.assert_not_called()
+    self.assertFalse(rc)
+    self.assertTrue(self.response.version.version)
 
   def testSuccess(self):
     """Successful call output handling test."""

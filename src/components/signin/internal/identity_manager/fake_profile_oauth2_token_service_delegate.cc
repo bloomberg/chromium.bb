@@ -168,3 +168,10 @@ void FakeProfileOAuth2TokenServiceDelegate::UpdateAuthError(
   it->second->error = error;
   FireAuthErrorChanged(account_id, error);
 }
+
+#if defined(OS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject>
+FakeProfileOAuth2TokenServiceDelegate::GetJavaObject() {
+  return base::android::ScopedJavaLocalRef<jobject>();
+}
+#endif

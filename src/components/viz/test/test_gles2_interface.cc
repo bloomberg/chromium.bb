@@ -524,10 +524,6 @@ void TestGLES2Interface::set_avoid_stencil_buffers(bool avoid_stencil_buffers) {
   test_capabilities_.avoid_stencil_buffers = avoid_stencil_buffers;
 }
 
-void TestGLES2Interface::set_enable_dc_layers(bool support) {
-  test_capabilities_.dc_layers = support;
-}
-
 void TestGLES2Interface::set_support_multisample_compatibility(bool support) {
   test_capabilities_.multisample_compatibility = support;
 }
@@ -546,6 +542,20 @@ void TestGLES2Interface::set_max_texture_size(int size) {
 
 void TestGLES2Interface::set_supports_oop_raster(bool support) {
   test_capabilities_.supports_oop_raster = support;
+}
+
+void TestGLES2Interface::set_supports_shared_image_swap_chain(bool support) {
+  test_capabilities_.shared_image_swap_chain = support;
+}
+
+void TestGLES2Interface::set_supports_gpu_memory_buffer_format(
+    gfx::BufferFormat format,
+    bool support) {
+  if (support) {
+    test_capabilities_.gpu_memory_buffer_formats.Add(format);
+  } else {
+    test_capabilities_.gpu_memory_buffer_formats.Remove(format);
+  }
 }
 
 size_t TestGLES2Interface::NumTextures() const {

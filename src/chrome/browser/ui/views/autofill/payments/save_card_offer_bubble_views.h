@@ -33,10 +33,8 @@ class SaveCardOfferBubbleViews : public SaveCardBubbleViews,
                            SaveCardBubbleController* controller);
 
   // BubbleDialogDelegateView:
-  std::unique_ptr<views::View> CreateExtraView() override;
-  std::unique_ptr<views::View> CreateFootnoteView() override;
+  void Init() override;
   bool Accept() override;
-  int GetDialogButtons() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
   // views::StyledLabelListener:
@@ -55,6 +53,7 @@ class SaveCardOfferBubbleViews : public SaveCardBubbleViews,
   std::unique_ptr<views::View> CreateMainContentView() override;
 
   std::unique_ptr<views::View> CreateRequestExpirationDateView();
+  std::unique_ptr<views::View> CreateUploadExplanationView();
 
   ~SaveCardOfferBubbleViews() override;
 

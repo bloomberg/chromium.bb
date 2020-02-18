@@ -25,11 +25,15 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/pepper_plugin_info.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/common/pepper_plugin_info.h"
+#endif
 
 namespace content {
 
@@ -53,14 +57,28 @@ std::string GetOSVersion() {
   return std::to_string(final_os_version);
 }
 
-// Retrieves the users shared cache and adds it to the profile.
-void AddDarwinUserCache(sandbox::SeatbeltExecClient* client) {
+// Retrieves the users shared darwin dirs and adds it to the profile.
+void AddDarwinDirs(sandbox::SeatbeltExecClient* client) {
   char dir_path[PATH_MAX + 1];
 
   size_t rv = confstr(_CS_DARWIN_USER_CACHE_DIR, dir_path, sizeof(dir_path));
   PCHECK(rv != 0);
   CHECK(client->SetParameter(
       "DARWIN_USER_CACHE_DIR",
+      service_manager::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
+          .value()));
+
+  rv = confstr(_CS_DARWIN_USER_DIR, dir_path, sizeof(dir_path));
+  PCHECK(rv != 0);
+  CHECK(client->SetParameter(
+      "DARWIN_USER_DIR",
+      service_manager::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
+          .value()));
+
+  rv = confstr(_CS_DARWIN_USER_TEMP_DIR, dir_path, sizeof(dir_path));
+  PCHECK(rv != 0);
+  CHECK(client->SetParameter(
+      "DARWIN_USER_TEMP_DIR",
       service_manager::SandboxMac::GetCanonicalPath(base::FilePath(dir_path))
           .value()));
 }
@@ -120,6 +138,8 @@ void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
   CHECK(client->SetBooleanParameter(
       "FILTER_SYSCALLS",
       base::FeatureList::IsEnabled(features::kMacSyscallSandbox)));
+
+  CHECK(client->SetBooleanParameter("FILTER_SYSCALLS_DEBUG", false));
 }
 
 void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {
@@ -128,7 +148,7 @@ void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {
   std::vector<base::FilePath> storage_paths =
       GetContentClient()->browser()->GetNetworkContextsParentDirectory();
 
-  AddDarwinUserCache(client);
+  AddDarwinDirs(client);
 
   CHECK(client->SetParameter("NETWORK_SERVICE_STORAGE_PATHS_COUNT",
                              base::NumberToString(storage_paths.size())));
@@ -148,6 +168,7 @@ void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {
   }
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
 void SetupPPAPISandboxParameters(sandbox::SeatbeltExecClient* client) {
   SetupCommonSandboxParameters(client);
 
@@ -172,6 +193,7 @@ void SetupPPAPISandboxParameters(sandbox::SeatbeltExecClient* client) {
   // to n+1 more than the plugins added.
   CHECK(index <= 5);
 }
+#endif
 
 void SetupCDMSandboxParameters(sandbox::SeatbeltExecClient* client) {
   SetupCommonSandboxParameters(client);
@@ -204,7 +226,7 @@ void SetupSandboxParameters(service_manager::SandboxType sandbox_type,
       break;
     case service_manager::SANDBOX_TYPE_GPU:
       SetupCommonSandboxParameters(client);
-      AddDarwinUserCache(client);
+      AddDarwinDirs(client);
       break;
     case service_manager::SANDBOX_TYPE_CDM:
       SetupCDMSandboxParameters(client);
@@ -212,9 +234,11 @@ void SetupSandboxParameters(service_manager::SandboxType sandbox_type,
     case service_manager::SANDBOX_TYPE_NETWORK:
       SetupNetworkSandboxParameters(client);
       break;
+#if BUILDFLAG(ENABLE_PLUGINS)
     case service_manager::SANDBOX_TYPE_PPAPI:
       SetupPPAPISandboxParameters(client);
       break;
+#endif
     case service_manager::SANDBOX_TYPE_PROFILING:
     case service_manager::SANDBOX_TYPE_UTILITY:
       SetupUtilitySandboxParameters(client, command_line);

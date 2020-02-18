@@ -4,7 +4,7 @@
 
 package org.chromium.android_webview;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -18,7 +18,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  * since developer could hold a reference to it. So just cut the connection between native and Java.
  */
 @JNINamespace("android_webview")
-public class JsReplyProxy {
+public class JsReplyProxy extends AwSupportLibIsomorphic {
     private long mNativeJsReplyProxy;
 
     private JsReplyProxy(long nativeJsReplyProxy) {

@@ -6,7 +6,12 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service_crypto.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
 
 namespace syncer {
 
@@ -19,6 +24,16 @@ ModelTypeSet ResolvePreferredTypes(UserSelectableTypeSet selected_types) {
   }
   return preferred_types;
 }
+
+#if defined(OS_CHROMEOS)
+ModelTypeSet ResolvePreferredOsTypes(UserSelectableOsTypeSet selected_types) {
+  ModelTypeSet preferred_types;
+  for (UserSelectableOsType type : selected_types) {
+    preferred_types.PutAll(UserSelectableOsTypeToAllModelTypes(type));
+  }
+  return preferred_types;
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -65,7 +80,11 @@ bool SyncUserSettingsImpl::IsFirstSetupComplete() const {
   return prefs_->IsFirstSetupComplete();
 }
 
-void SyncUserSettingsImpl::SetFirstSetupComplete() {
+void SyncUserSettingsImpl::SetFirstSetupComplete(
+    SyncFirstSetupCompleteSource source) {
+  if (IsFirstSetupComplete())
+    return;
+  UMA_HISTOGRAM_ENUMERATION("Signin.SyncFirstSetupCompleteSource", source);
   prefs_->SetFirstSetupComplete();
 }
 
@@ -83,7 +102,8 @@ UserSelectableTypeSet SyncUserSettingsImpl::GetSelectedTypes() const {
 void SyncUserSettingsImpl::SetSelectedTypes(bool sync_everything,
                                             UserSelectableTypeSet types) {
   UserSelectableTypeSet registered_types = GetRegisteredSelectableTypes();
-  DCHECK(registered_types.HasAll(types));
+  DCHECK(registered_types.HasAll(types))
+      << UserSelectableTypeSetToString(types);
   prefs_->SetSelectedTypes(sync_everything, registered_types, types);
 }
 
@@ -98,6 +118,51 @@ UserSelectableTypeSet SyncUserSettingsImpl::GetRegisteredSelectableTypes()
   }
   return registered_types;
 }
+
+#if defined(OS_CHROMEOS)
+bool SyncUserSettingsImpl::IsSyncAllOsTypesEnabled() const {
+  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  return prefs_->IsSyncAllOsTypesEnabled();
+}
+
+UserSelectableOsTypeSet SyncUserSettingsImpl::GetSelectedOsTypes() const {
+  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  UserSelectableOsTypeSet types = prefs_->GetSelectedOsTypes();
+  types.RetainAll(GetRegisteredSelectableOsTypes());
+  return types;
+}
+
+void SyncUserSettingsImpl::SetSelectedOsTypes(bool sync_all_os_types,
+                                              UserSelectableOsTypeSet types) {
+  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  UserSelectableOsTypeSet registered_types = GetRegisteredSelectableOsTypes();
+  DCHECK(registered_types.HasAll(types));
+  prefs_->SetSelectedOsTypes(sync_all_os_types, registered_types, types);
+}
+
+UserSelectableOsTypeSet SyncUserSettingsImpl::GetRegisteredSelectableOsTypes()
+    const {
+  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  UserSelectableOsTypeSet registered_types;
+  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
+    if (registered_model_types_.Has(
+            UserSelectableOsTypeToCanonicalModelType(type))) {
+      registered_types.Put(type);
+    }
+  }
+  return registered_types;
+}
+
+bool SyncUserSettingsImpl::GetOsSyncFeatureEnabled() const {
+  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  return prefs_->GetOsSyncFeatureEnabled();
+}
+
+void SyncUserSettingsImpl::SetOsSyncFeatureEnabled(bool enabled) {
+  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+  prefs_->SetOsSyncFeatureEnabled(enabled);
+}
+#endif  // defined(OS_CHROMEOS)
 
 UserSelectableTypeSet SyncUserSettingsImpl::GetForcedTypes() const {
   if (preference_provider_) {
@@ -121,15 +186,19 @@ void SyncUserSettingsImpl::EnableEncryptEverything() {
 }
 
 bool SyncUserSettingsImpl::IsPassphraseRequired() const {
-  return crypto_->passphrase_required_reason() !=
-         REASON_PASSPHRASE_NOT_REQUIRED;
+  return crypto_->IsPassphraseRequired();
 }
 
-bool SyncUserSettingsImpl::IsPassphraseRequiredForDecryption() const {
+bool SyncUserSettingsImpl::IsPassphraseRequiredForPreferredDataTypes() const {
   // If there is an encrypted datatype enabled and we don't have the proper
   // passphrase, we must prompt the user for a passphrase. The only way for the
   // user to avoid entering their passphrase is to disable the encrypted types.
   return IsEncryptedDatatypeEnabled() && IsPassphraseRequired();
+}
+
+bool SyncUserSettingsImpl::IsTrustedVaultKeyRequiredForPreferredDataTypes()
+    const {
+  return IsEncryptedDatatypeEnabled() && crypto_->IsTrustedVaultKeyRequired();
 }
 
 bool SyncUserSettingsImpl::IsUsingSecondaryPassphrase() const {
@@ -162,27 +231,27 @@ bool SyncUserSettingsImpl::SetDecryptionPassphrase(
   return result;
 }
 
+void SyncUserSettingsImpl::AddTrustedVaultDecryptionKeys(
+    const std::string& gaia_id,
+    const std::vector<std::string>& keys) {
+  DVLOG(1) << "Adding trusted vault decryption keys.";
+  crypto_->AddTrustedVaultDecryptionKeys(gaia_id, keys);
+}
+
 void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {
   prefs_->SetSyncRequestedIfNotSetExplicitly();
 }
 
 ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
-  ModelTypeSet types;
-  if (IsSyncEverythingEnabled()) {
-    // TODO(crbug.com/950874): it's possible to remove this case if we accept
-    // behavioral change. When one of UserSelectableTypes() isn't registered,
-    // but one of its corresponding UserTypes() is registered, current
-    // implementation treats that corresponding type as preferred while
-    // implementation without processing of this case won't treat that type
-    // as preferred.
-    types = registered_model_types_;
-  } else {
-    types = ResolvePreferredTypes(GetSelectedTypes());
-    types.PutAll(AlwaysPreferredUserTypes());
-    types.RetainAll(registered_model_types_);
-  }
+  ModelTypeSet types = ResolvePreferredTypes(GetSelectedTypes());
+  types.PutAll(AlwaysPreferredUserTypes());
+#if defined(OS_CHROMEOS)
+  if (chromeos::features::IsSplitSettingsSyncEnabled())
+    types.PutAll(ResolvePreferredOsTypes(GetSelectedOsTypes()));
+#endif
+  types.RetainAll(registered_model_types_);
 
-  static_assert(46 == ModelType::NUM_ENTRIES,
+  static_assert(40 == ModelType::NUM_ENTRIES,
                 "If adding a new sync data type, update the list below below if"
                 " you want to disable the new data type for local sync.");
   types.PutAll(ControlTypes());

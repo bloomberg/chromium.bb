@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -199,7 +198,7 @@ void Frame::NotifyUserActivationInLocalTree() {
   // See the "Same-origin Visibility" section in |UserActivationState| class
   // doc.
   auto* local_frame = DynamicTo<LocalFrame>(this);
-  if (local_frame && RuntimeEnabledFeatures::UserActivationV2Enabled() &&
+  if (local_frame &&
       RuntimeEnabledFeatures::UserActivationSameOriginVisibilityEnabled()) {
     const SecurityOrigin* security_origin =
         local_frame->GetSecurityContext()->GetSecurityOrigin();
@@ -261,6 +260,27 @@ void Frame::UpdateInheritedEffectiveTouchActionIfPossible() {
   }
 }
 
+void Frame::UpdateVisibleToHitTesting() {
+  bool parent_visible_to_hit_testing = true;
+  if (auto* parent = Tree().Parent())
+    parent_visible_to_hit_testing = parent->GetVisibleToHitTesting();
+
+  bool self_visible_to_hit_testing = true;
+  if (auto* local_owner = DynamicTo<HTMLFrameOwnerElement>(owner_.Get())) {
+    self_visible_to_hit_testing =
+        local_owner->GetLayoutObject()
+            ? local_owner->GetLayoutObject()->Style()->VisibleToHitTesting()
+            : true;
+  }
+
+  bool visible_to_hit_testing =
+      parent_visible_to_hit_testing && self_visible_to_hit_testing;
+  bool changed = visible_to_hit_testing_ != visible_to_hit_testing;
+  visible_to_hit_testing_ = visible_to_hit_testing;
+  if (changed)
+    DidChangeVisibleToHitTesting();
+}
+
 const std::string& Frame::ToTraceValue() {
   // token's ToString() is latin1.
   if (!trace_value_)
@@ -295,6 +315,17 @@ void Frame::Initialize() {
     owner_->SetContentFrame(*this);
   else
     page_->SetMainFrame(this);
+}
+
+void Frame::FocusImpl() {
+  // This uses FocusDocumentView rather than SetFocusedFrame so that blur
+  // events are properly dispatched on any currently focused elements.
+  // It is currently only used when replicating focus changes for
+  // cross-process frames so |notify_embedder| is false to avoid sending
+  // DidFocus updates from FocusController to the browser process,
+  // which already knows the latest focused frame.
+  GetPage()->GetFocusController().FocusDocumentView(
+      this, false /* notify_embedder */);
 }
 
 STATIC_ASSERT_ENUM(FrameDetachType::kRemove,

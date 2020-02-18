@@ -10,6 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -22,7 +24,7 @@ class TabStrip;
 namespace test {
 class TabbedPaneAccessibilityMacTest;
 class TabbedPaneTest;
-}
+}  // namespace test
 
 // TabbedPane is a view that shows tabs. When the user clicks on a tab, the
 // associated view is displayed.
@@ -79,13 +81,10 @@ class VIEWS_EXPORT TabbedPane : public View {
   }
 
   // Selects the tab at |index|, which must be valid.
-  void SelectTabAt(size_t index);
+  void SelectTabAt(size_t index, bool animate = true);
 
   // Selects |tab| (the tabstrip view, not its content) if it is valid.
-  void SelectTab(Tab* tab);
-
-  // Overridden from View:
-  gfx::Size CalculatePreferredSize() const override;
+  void SelectTab(Tab* tab, bool animate = true);
 
   // Gets the orientation of the tab alignment.
   Orientation GetOrientation() const;
@@ -123,7 +122,6 @@ class VIEWS_EXPORT TabbedPane : public View {
   bool MoveSelectionBy(int delta);
 
   // Overridden from View:
-  void Layout() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
@@ -168,14 +166,6 @@ class VIEWS_EXPORT Tab : public View {
   void OnBlur() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
- protected:
-  Label* title() { return title_; }
-
-  TabbedPane* tabbed_pane() { return tabbed_pane_; }
-
-  // Called whenever |state_| changes.
-  virtual void OnStateChanged();
-
  private:
   enum class State {
     kInactive,
@@ -185,13 +175,18 @@ class VIEWS_EXPORT Tab : public View {
 
   void SetState(State state);
 
+  // Called whenever |state_| changes.
+  void OnStateChanged();
+
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
+  void UpdatePreferredTitleWidth();
+
   TabbedPane* tabbed_pane_;
   Label* title_ = nullptr;
-  gfx::Size preferred_title_size_;
-  State state_;
+  int preferred_title_width_;
+  State state_ = State::kActive;
   // The content view associated with this tab.
   View* contents_;
 
@@ -199,7 +194,7 @@ class VIEWS_EXPORT Tab : public View {
 };
 
 // The tab strip shown above/left of the tab contents.
-class TabStrip : public View {
+class TabStrip : public View, public gfx::AnimationDelegate {
  public:
   METADATA_HEADER(TabStrip);
 
@@ -210,13 +205,14 @@ class TabStrip : public View {
            TabbedPane::TabStripStyle style);
   ~TabStrip() override;
 
+  // AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+
   // Called by TabStrip when the selected tab changes. This function is only
   // called if |from_tab| is not null, i.e., there was a previously selected
   // tab.
-  virtual void OnSelectedTabChanged(Tab* from_tab, Tab* to_tab);
-
-  // Overridden from View:
-  void OnPaintBorder(gfx::Canvas* canvas) override;
+  void OnSelectedTabChanged(Tab* from_tab, Tab* to_tab, bool animate = true);
 
   Tab* GetSelectedTab() const;
   Tab* GetTabAtDeltaFromSelected(int delta) const;
@@ -227,12 +223,31 @@ class TabStrip : public View {
 
   TabbedPane::TabStripStyle GetStyle() const;
 
+ protected:
+  // View:
+  gfx::Size CalculatePreferredSize() const override;
+  void OnPaintBorder(gfx::Canvas* canvas) override;
+
  private:
   // The orientation of the tab alignment.
   const TabbedPane::Orientation orientation_;
 
   // The style of the tab strip.
   const TabbedPane::TabStripStyle style_;
+
+  // Animations for expanding and contracting the selection bar. When changing
+  // selections, the selection bar first grows to encompass both the old and new
+  // selections, then shrinks to encompass only the new selection. The rates of
+  // expansion and contraction each follow the cubic bezier curves used in
+  // gfx::Tween; see TabStrip::OnPaintBorder for details.
+  std::unique_ptr<gfx::LinearAnimation> expand_animation_ =
+      std::make_unique<gfx::LinearAnimation>(this);
+  std::unique_ptr<gfx::LinearAnimation> contract_animation_ =
+      std::make_unique<gfx::LinearAnimation>(this);
+
+  // The x-coordinate ranges of the old selection and the new selection.
+  gfx::Range animating_from_;
+  gfx::Range animating_to_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

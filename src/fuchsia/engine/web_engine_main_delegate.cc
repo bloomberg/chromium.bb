@@ -11,34 +11,16 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "content/public/common/content_switches.h"
+#include "fuchsia/base/init_logging.h"
 #include "fuchsia/engine/browser/web_engine_browser_main.h"
 #include "fuchsia/engine/browser/web_engine_content_browser_client.h"
-#include "fuchsia/engine/common.h"
+#include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/renderer/web_engine_content_renderer_client.h"
-#include "fuchsia/engine/web_engine_content_client.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
 WebEngineMainDelegate* g_current_web_engine_main_delegate = nullptr;
-
-void InitLoggingFromCommandLine(const base::CommandLine& command_line) {
-  logging::LoggingSettings settings;
-  if (command_line.GetSwitchValueASCII(switches::kEnableLogging) == "stderr") {
-    settings.logging_dest = logging::LOG_TO_STDERR;
-  } else {
-    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  }
-  if (command_line.HasSwitch(switches::kLogFile)) {
-    settings.logging_dest |= logging::LOG_TO_FILE;
-    settings.log_file_path =
-        command_line.GetSwitchValueASCII(switches::kLogFile).c_str();
-    settings.delete_old = logging::DELETE_OLD_LOG_FILE;
-  }
-  logging::InitLogging(settings);
-  logging::SetLogItems(true /* Process ID */, true /* Thread ID */,
-                       true /* Timestamp */, false /* Tick count */);
-}
 
 void InitializeResourceBundle() {
   base::FilePath pak_file;
@@ -65,7 +47,12 @@ WebEngineMainDelegate::~WebEngineMainDelegate() = default;
 
 bool WebEngineMainDelegate::BasicStartupComplete(int* exit_code) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  InitLoggingFromCommandLine(*command_line);
+
+  if (!cr_fuchsia::InitLoggingFromCommandLine(*command_line)) {
+    *exit_code = 1;
+    return true;
+  }
+
   content_client_ = std::make_unique<WebEngineContentClient>();
   SetContentClient(content_client_.get());
   return false;

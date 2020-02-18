@@ -26,6 +26,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
+#include "content/public/common/content_client.h"
 #include "net/url_request/url_request.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -47,14 +48,6 @@ enum class MixedContentType {
   kScriptingWithCertErrors = 4,
   kMaxValue = kScriptingWithCertErrors,
 };
-
-void OnAllowCertificateWithRecordDecision(
-    bool record_decision,
-    const base::Callback<void(bool, content::CertificateRequestResultType)>&
-        callback,
-    CertificateRequestResultType decision) {
-  callback.Run(record_decision, decision);
-}
 
 void OnAllowCertificate(SSLErrorHandler* handler,
                         SSLHostStateDelegate* state_delegate,
@@ -102,19 +95,35 @@ class SSLManagerSet : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(SSLManagerSet);
 };
 
-void HandleSSLErrorOnUI(
-    const base::Callback<WebContents*(void)>& web_contents_getter,
+void LogMixedContentMetrics(MixedContentType type,
+                            ukm::SourceId source_id,
+                            ukm::UkmRecorder* recorder) {
+  UMA_HISTOGRAM_ENUMERATION("SSL.MixedContentShown", type);
+  ukm::builders::SSL_MixedContentShown(source_id)
+      .SetType(static_cast<int64_t>(type))
+      .Record(recorder);
+}
+
+}  // namespace
+
+// static
+void SSLManager::OnSSLCertificateError(
     const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
-    BrowserThread::ID delegate_thread,
     bool is_main_frame_request,
     const GURL& url,
+    WebContents* web_contents,
     int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
-  content::WebContents* web_contents = web_contents_getter.Run();
-  std::unique_ptr<SSLErrorHandler> handler(new SSLErrorHandler(
-      web_contents, delegate, delegate_thread, is_main_frame_request, url,
-      net_error, ssl_info, fatal));
+  DCHECK(delegate.get());
+  DVLOG(1) << "OnSSLCertificateError() cert_error: " << net_error
+           << " url: " << url.spec() << " cert_status: " << std::hex
+           << ssl_info.cert_status;
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::unique_ptr<SSLErrorHandler> handler(
+      new SSLErrorHandler(web_contents, delegate, is_main_frame_request, url,
+                          net_error, ssl_info, fatal));
 
   if (!web_contents) {
     // Requests can fail to dispatch because they don't have a WebContents. See
@@ -132,46 +141,6 @@ void HandleSSLErrorOnUI(
   manager->OnCertError(std::move(handler));
 }
 
-void LogMixedContentMetrics(MixedContentType type,
-                            ukm::SourceId source_id,
-                            ukm::UkmRecorder* recorder) {
-  UMA_HISTOGRAM_ENUMERATION("SSL.MixedContentShown", type);
-  ukm::builders::SSL_MixedContentShown(source_id)
-      .SetType(static_cast<int64_t>(type))
-      .Record(recorder);
-}
-
-}  // namespace
-
-// static
-void SSLManager::OnSSLCertificateError(
-    const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
-    bool is_main_frame_request,
-    const GURL& url,
-    const base::Callback<WebContents*(void)>& web_contents_getter,
-    int net_error,
-    const net::SSLInfo& ssl_info,
-    bool fatal) {
-  DCHECK(delegate.get());
-  DVLOG(1) << "OnSSLCertificateError() cert_error: " << net_error
-           << " url: " << url.spec() << " cert_status: " << std::hex
-           << ssl_info.cert_status;
-
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    HandleSSLErrorOnUI(web_contents_getter, delegate, BrowserThread::UI,
-                       is_main_frame_request, url, net_error, ssl_info, fatal);
-    return;
-  }
-
-  // TODO(jam): remove the logic to call this from IO thread once the
-  // network service code path is the only one.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&HandleSSLErrorOnUI, web_contents_getter, delegate,
-                     BrowserThread::IO, is_main_frame_request, url, net_error,
-                     ssl_info, fatal));
-}
-
 // static
 void SSLManager::OnSSLCertificateSubresourceError(
     const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
@@ -182,8 +151,8 @@ void SSLManager::OnSSLCertificateSubresourceError(
     const net::SSLInfo& ssl_info,
     bool fatal) {
   OnSSLCertificateError(delegate, false, url,
-                        base::Bind(&WebContentsImpl::FromRenderFrameHostID,
-                                   render_process_id, render_frame_id),
+                        WebContentsImpl::FromRenderFrameHostID(
+                            render_process_id, render_frame_id),
                         net_error, ssl_info, fatal);
 }
 
@@ -383,22 +352,20 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler) {
   bool is_main_frame_request = handler->is_main_frame_request();
   bool fatal = handler->fatal();
 
-  base::Callback<void(bool, content::CertificateRequestResultType)> callback =
-      base::Bind(&OnAllowCertificate, base::Owned(handler.release()),
-                 ssl_host_state_delegate_);
+  base::RepeatingCallback<void(bool, content::CertificateRequestResultType)>
+      callback = base::BindRepeating(&OnAllowCertificate,
+                                     base::Owned(handler.release()),
+                                     ssl_host_state_delegate_);
 
   if (devtools_instrumentation::HandleCertificateError(
           web_contents, cert_error, request_url,
-          base::BindRepeating(&OnAllowCertificateWithRecordDecision, false,
-                              callback))) {
+          base::BindRepeating(callback, false))) {
     return;
   }
 
   GetContentClient()->browser()->AllowCertificateError(
       web_contents, cert_error, ssl_info, request_url, is_main_frame_request,
-      fatal,
-      base::Bind(&OnAllowCertificateWithRecordDecision, true,
-                 std::move(callback)));
+      fatal, base::BindOnce(std::move(callback), true));
 }
 
 bool SSLManager::UpdateEntry(NavigationEntryImpl* entry,

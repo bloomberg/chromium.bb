@@ -158,7 +158,7 @@ class WebAXObject {
   BLINK_EXPORT void ColorValue(int& r, int& g, int& b) const;
   BLINK_EXPORT unsigned ColorValue() const;
   BLINK_EXPORT WebAXObject AriaActiveDescendant() const;
-  BLINK_EXPORT WebString AriaAutoComplete() const;
+  BLINK_EXPORT WebString AutoComplete() const;
   BLINK_EXPORT ax::mojom::AriaCurrentState AriaCurrentState() const;
   BLINK_EXPORT ax::mojom::HasPopup HasPopup() const;
   BLINK_EXPORT bool IsEditableRoot() const;
@@ -303,7 +303,9 @@ class WebAXObject {
       ax::mojom::ScrollAlignment horizontal_scroll_alignment =
           ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
       ax::mojom::ScrollAlignment vertical_scroll_alignment =
-          ax::mojom::ScrollAlignment::kScrollAlignmentCenter) const;
+          ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
+      ax::mojom::ScrollBehavior scroll_behavior =
+          ax::mojom::ScrollBehavior::kDoNotScrollIfVisible) const;
   // Scroll this object to a given point in global coordinates of the top-level
   // window.
   BLINK_EXPORT bool ScrollToGlobalPoint(const WebPoint&) const;
@@ -383,7 +385,7 @@ class WebAXObject {
   BLINK_EXPORT WebString ToString() const;
 
   BLINK_EXPORT void HandleAutofillStateChanged(
-      bool suggestions_available) const;
+      const WebAXAutofillState state) const;
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebAXObject(AXObject*);

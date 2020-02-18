@@ -6,12 +6,14 @@
 
 #include <algorithm>
 
+#include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/background.h"
@@ -32,21 +34,26 @@ constexpr int kEmbeddedUiSpacingDip = 3;
 constexpr int kEmbeddedUiPreferredHeightDip = 9;
 
 float GetDotLargeSizeDip() {
-  return app_list_features::IsEmbeddedAssistantUIEnabled()
+  return app_list_features::IsAssistantLauncherUIEnabled()
              ? kEmbeddedUiDotLargeSizeDip
              : kDotLargeSizeDip;
 }
 
 float GetDotSmallSizeDip() {
-  return app_list_features::IsEmbeddedAssistantUIEnabled()
+  return app_list_features::IsAssistantLauncherUIEnabled()
              ? kEmbeddedUiDotSmallSizeDip
              : kDotSmallSizeDip;
 }
 
 int GetDotSpacingDip() {
-  return app_list_features::IsEmbeddedAssistantUIEnabled()
+  return app_list_features::IsAssistantLauncherUIEnabled()
              ? kEmbeddedUiSpacingDip
              : kSpacingDip;
+}
+
+bool AreAnimationsEnabled() {
+  return ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
+         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION;
 }
 
 // DotBackground ---------------------------------------------------------------
@@ -77,6 +84,7 @@ class DotBackground : public views::Background {
 // AssistantProgressIndicator --------------------------------------------------
 
 AssistantProgressIndicator::AssistantProgressIndicator() {
+  SetID(AssistantViewID::kProgressIndicator);
   InitLayout();
 }
 
@@ -92,7 +100,7 @@ gfx::Size AssistantProgressIndicator::CalculatePreferredSize() const {
 }
 
 int AssistantProgressIndicator::GetHeightForWidth(int width) const {
-  return app_list_features::IsEmbeddedAssistantUIEnabled()
+  return app_list_features::IsAssistantLauncherUIEnabled()
              ? kEmbeddedUiPreferredHeightDip
              : views::View::GetHeightForWidth(width);
 }
@@ -141,6 +149,12 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
   const float scale_factor = GetDotLargeSizeDip() / GetDotSmallSizeDip();
   transform.Translate(translation_dip, translation_dip);
   transform.Scale(scale_factor, scale_factor);
+
+  // Don't animate if animations are disabled (during unittests).
+  // Otherwise we get in an infinite loop due to the cyclic animation used here
+  // repeating over and over without pause.
+  if (!AreAnimationsEnabled())
+    return;
 
   base::TimeDelta start_offset;
   for (auto* child : children()) {

@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "components/arc/mojom/auth.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -174,7 +174,7 @@ class ArcAuthService : public KeyedService,
   // fetcher is being created for the initial ARC provisioning flow or for a
   // subsequent sign-in.
   std::unique_ptr<ArcBackgroundAuthCodeFetcher>
-  CreateArcBackgroundAuthCodeFetcher(const std::string& account_id,
+  CreateArcBackgroundAuthCodeFetcher(const CoreAccountId& account_id,
                                      bool initial_signin);
 
   // Deletes a completed enrollment token / auth code fetch request from

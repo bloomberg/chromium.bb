@@ -34,21 +34,72 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
                                    public ToolbarActionView::Delegate,
                                    public views::WidgetObserver {
  public:
+  using ToolbarIconMap = std::map<ToolbarActionsModel::ActionId,
+                                  std::unique_ptr<ToolbarActionView>>;
+
   explicit ExtensionsToolbarContainer(Browser* browser);
   ~ExtensionsToolbarContainer() override;
 
   ExtensionsToolbarButton* extensions_button() const {
     return extensions_button_;
   }
-
   ToolbarActionsBarBubbleViews* action_bubble_public_for_testing() {
     return active_bubble_;
+  }
+  const ToolbarIconMap& icons_for_testing() const { return icons_; }
+  ToolbarActionViewController* popup_owner_for_testing() {
+    return popup_owner_;
   }
 
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
+  bool GetDropFormats(int* formats,
+                      std::set<ui::ClipboardFormatType>* format_types) override;
+  bool AreDropTypesRequired() override;
+  bool CanDrop(const ui::OSExchangeData& data) override;
+  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  void OnDragExited() override;
+  int OnPerformDrop(const ui::DropTargetEvent& event) override;
+
+  // ExtensionsContainer:
+  ToolbarActionViewController* GetActionForId(
+      const std::string& action_id) override;
+  ToolbarActionViewController* GetPoppedOutAction() const override;
+  bool IsActionVisibleOnToolbar(
+      const ToolbarActionViewController* action) const override;
+  void UndoPopOut() override;
+  void SetPopupOwner(ToolbarActionViewController* popup_owner) override;
+  void HideActivePopup() override;
+  bool CloseOverflowMenuIfOpen() override;
+  void PopOutAction(ToolbarActionViewController* action,
+                    bool is_sticky,
+                    const base::Closure& closure) override;
+  bool ShowToolbarActionPopup(const std::string& action_id,
+                              bool grant_active_tab) override;
+  void ShowToolbarActionBubble(
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+  void ShowToolbarActionBubbleAsync(
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+
+  // ToolbarActionView::Delegate:
+  content::WebContents* GetCurrentWebContents() override;
+  bool ShownInsideMenu() const override;
+  void OnToolbarActionViewDragDone() override;
+  views::LabelButton* GetOverflowReferenceView() const override;
+  gfx::Size GetToolbarActionSize() override;
+  void WriteDragDataForView(View* sender,
+                            const gfx::Point& press_pt,
+                            ui::OSExchangeData* data) override;
+  int GetDragOperationsForView(View* sender, const gfx::Point& p) override;
+  bool CanStartDragForView(View* sender,
+                           const gfx::Point& press_pt,
+                           const gfx::Point& p) override;
 
   ToolbarActionView* GetViewForId(const std::string& id);
+
+  void ShowActiveBubble(
+      views::View* anchor_view,
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller);
 
  private:
   // A struct representing the position and action being dragged.
@@ -72,23 +123,11 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // Utility function for going from width to icon counts.
   size_t WidthToIconCount(int x_offset);
 
-  // ExtensionsContainer:
-  ToolbarActionViewController* GetActionForId(
-      const std::string& action_id) override;
-  ToolbarActionViewController* GetPoppedOutAction() const override;
-  bool IsActionVisibleOnToolbar(
-      const ToolbarActionViewController* action) const override;
-  void UndoPopOut() override;
-  void SetPopupOwner(ToolbarActionViewController* popup_owner) override;
-  void HideActivePopup() override;
-  bool CloseOverflowMenuIfOpen() override;
-  void PopOutAction(ToolbarActionViewController* action,
-                    bool is_sticky,
-                    const base::Closure& closure) override;
-  void ShowToolbarActionBubble(
-      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
-  void ShowToolbarActionBubbleAsync(
-      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+  gfx::ImageSkia GetExtensionIcon(ToolbarActionView* extension_view);
+
+  // Sets a pinned extension button's image to be shown/hidden.
+  void SetExtensionIconVisibility(ToolbarActionsModel::ActionId id,
+                                  bool visible);
 
   // ToolbarActionsModel::Observer:
   void OnToolbarActionAdded(const ToolbarActionsModel::ActionId& action_id,
@@ -104,29 +143,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
   void OnToolbarPinnedActionsChanged() override;
-
-  // ToolbarActionView::Delegate:
-  content::WebContents* GetCurrentWebContents() override;
-  bool ShownInsideMenu() const override;
-  void OnToolbarActionViewDragDone() override;
-  views::LabelButton* GetOverflowReferenceView() const override;
-  gfx::Size GetToolbarActionSize() override;
-  void WriteDragDataForView(View* sender,
-                            const gfx::Point& press_pt,
-                            ui::OSExchangeData* data) override;
-  int GetDragOperationsForView(View* sender, const gfx::Point& p) override;
-  bool CanStartDragForView(View* sender,
-                           const gfx::Point& press_pt,
-                           const gfx::Point& p) override;
-
-  // views::View:
-  bool GetDropFormats(int* formats,
-                      std::set<ui::ClipboardFormatType>* format_types) override;
-  bool AreDropTypesRequired() override;
-  bool CanDrop(const ui::OSExchangeData& data) override;
-  int OnDragUpdated(const ui::DropTargetEvent& event) override;
-  void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
@@ -144,8 +160,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // Actions for all extensions.
   std::vector<std::unique_ptr<ToolbarActionViewController>> actions_;
   // View for every action, does not imply pinned or currently shown.
-  std::map<ToolbarActionsModel::ActionId, std::unique_ptr<ToolbarActionView>>
-      icons_;
+  ToolbarIconMap icons_;
   // Popped-out extension, if any.
   ToolbarActionViewController* popped_out_action_ = nullptr;
   // The action that triggered the current popup, if any.

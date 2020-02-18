@@ -4,7 +4,9 @@ include_rules = [
   "+chrome/android/chrome_jni_headers",
   "+chrome/android/features/autofill_assistant/jni_headers",
   "+chrome/android/features/dev_ui",
+  "+chrome/android/modules",
   "+chrome/android/public/profiles/jni_headers",
+  "+chrome/android/test_support_jni_headers",
   "+chrome/app",
   "+chrome/chrome_watcher",
   "+chrome/credential_provider/common",
@@ -51,8 +53,10 @@ include_rules = [
   "+components/certificate_transparency",
   "+components/chrome_cleaner/public",
   "+components/chrome_cleaner/test",
+  "+components/chromeos_camera",
   "+components/cloud_devices/common",
   "+components/component_updater",
+  "+components/component_updater/installer_policies",
   "+components/consent_auditor",
   "+components/constrained_window",
   "+components/content_capture/browser",
@@ -77,6 +81,7 @@ include_rules = [
   "+components/device_event_log",
   "+components/domain_reliability",
   "+components/dom_distiller/content/browser",
+  "+components/dom_distiller/content/common",
   "+components/dom_distiller/core",
   "+components/dom_distiller/webui",
   "+components/download/content/factory",
@@ -98,6 +103,7 @@ include_rules = [
   "+components/feed",
   "+components/feedback",
   "+components/flags_ui",
+  "+components/games/core",
   "+components/gcm_driver",
   "+components/google/core/browser",
   "+components/google/core/common",
@@ -126,6 +132,7 @@ include_rules = [
   "+components/location/android",
   "+components/login",
   "+components/media_message_center",
+  "+components/metal_util",
   "+components/metrics",
   "+components/metrics_services_manager",
   "+components/metrics/ui",
@@ -157,12 +164,17 @@ include_rules = [
   "+components/optimization_guide",
   "+components/os_crypt",
   "+components/ownership",
+  "+components/page_load_metrics/browser",
   "+components/page_load_metrics/common",
   "+components/password_manager/content/browser",
   "+components/password_manager/core/browser",
   "+components/password_manager/core/common",
   "+components/payments/content",
   "+components/payments/core",
+  "+components/performance_manager/public",
+  "+components/performance_manager/test_support",
+  "+components/performance_manager/performance_manager_tab_helper.h",
+  "+components/performance_manager/performance_manager_impl.h",
   "+components/pdf/browser",
   "+components/policy",
   "+components/pref_registry",
@@ -369,8 +381,6 @@ include_rules = [
   "+chrome/browser/performance_manager/chrome_browser_main_extra_parts_performance_manager.h",
   "+chrome/browser/performance_manager/chrome_content_browser_client_performance_manager_part.h",
   "+chrome/browser/performance_manager/graph/policies/policy_features.h",
-  "+chrome/browser/performance_manager/performance_manager.h",
-  "+chrome/browser/performance_manager/performance_manager_tab_helper.h",
 
   # Explicitly disallow using SyncMessageFilter to prevent browser from
   # sending synchronous IPC messages on non-UI threads.
@@ -381,12 +391,11 @@ include_rules = [
   "+content/public/network",
 
   # Other libraries.
-  "+libxml",
   "+third_party/google_toolbox_for_mac/src",
   "+third_party/icu/source/common/unicode",
   "+third_party/icu/source/i18n/unicode",
   "+third_party/leveldatabase",
-  "+third_party/libxml",
+  "+third_party/libxml/chromium/xml_writer.h",
   "+third_party/mozilla",     # Mozilla interface headers.
   "+third_party/ocmock/gtest_support.h",
   "+third_party/protobuf/src/google/protobuf",
@@ -396,35 +405,29 @@ include_rules = [
   "+third_party/zlib",
 
   # No inclusion of WebKit from the browser, other than the ones in
-  # WebKit/public/{mojom,common}, or the ones that are strictly enum/POD,
-  # header-only types, and some selected common code.
+  # WebKit/public/{mojom,common}.
+  # TODO(crbug.com/1008303) clarify dependency and remove or move these individual headers
+  # into public/common.
   "-third_party/blink",
   "+third_party/blink/public/common",
   "+third_party/blink/public/mojom",
-  "+third_party/blink/public/platform/web_cache.h",
-  "+third_party/blink/public/platform/web_loading_behavior_flag.h",
+  "+third_party/blink/public/platform/web_float_point.h",
   "+third_party/blink/public/platform/web_gesture_event.h",
   "+third_party/blink/public/platform/web_input_event.h",
   "+third_party/blink/public/platform/web_mouse_event.h",
   "+third_party/blink/public/platform/web_mouse_wheel_event.h",
   "+third_party/blink/public/platform/web_touch_event.h",
-  "+third_party/blink/public/platform/web_security_style.h",
-  "+third_party/blink/public/platform/web_speech_synthesis_constants.h",
-  "+third_party/blink/public/platform/web_sudden_termination_disabler_type.h",
-  "+third_party/blink/public/platform/modules/notifications/web_notification_constants.h",
   "+third_party/blink/public/public_buildflags.h",
-  "+third_party/blink/public/web/web_context_menu_data.h",
-  "+third_party/blink/public/web/web_fullscreen_options.h",
-  "+third_party/blink/public/web/web_media_player_action.h",
-  "+third_party/blink/public/web/web_plugin_action.h",
-  "+third_party/blink/public/web/web_presentation_receiver_flags.h",
-  "+third_party/blink/public/web/web_text_direction.h",
-  "+third_party/blink/public/web/web_triggering_event_info.h",
 ]
 
 specific_include_rules = {
   "ash_service_registry\.cc": [
     "+ash/ash_service.h",
+  ],
+  "platform_util_linux.cc": [
+    # The following is used to call the org.freedesktop.FileManager1
+    # DBus interface to highlight a file within its parent folder
+    "+dbus"
   ],
   "platform_util_mac.mm": [
     # The following is used to forward methods to an NSWindow in another
@@ -444,10 +447,6 @@ specific_include_rules = {
   # should be the responsibility of code in chrome/browser/notifications/
   "browser_process_impl.cc": [
     "+ui/message_center/message_center.h",
-  ],
-  # To share values of UMA enums between product code and tests.
-  "translate_manager_browsertest.cc": [
-    "+services/network/initiator_lock_compatibility.h",
   ],
   "input_method_manager_impl.cc": [
     "+ash/keyboard/ui/keyboard_ui_controller.h",

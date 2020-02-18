@@ -33,12 +33,11 @@
 
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
-#include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-shared.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/web/web_settings.h"
 
 namespace blink {
 
@@ -54,15 +53,16 @@ struct WebEmbeddedWorkerStartData {
   // Unique worker token used by DevTools to attribute different instrumentation
   // to the same worker.
   base::UnguessableToken devtools_worker_token;
-  WebSettings::V8CacheOptions v8_cache_options;
 
   network::mojom::IPAddressSpace address_space;
 
-  PrivacyPreferences privacy_preferences;
+  WebFetchClientSettingsObject outside_fetch_client_settings_object;
 
-  WebEmbeddedWorkerStartData()
+  explicit WebEmbeddedWorkerStartData(
+      WebFetchClientSettingsObject outside_fetch_client_settings_object)
       : wait_for_debugger_mode(kDontWaitForDebugger),
-        v8_cache_options(WebSettings::V8CacheOptions::kDefault) {}
+        outside_fetch_client_settings_object(
+            std::move(outside_fetch_client_settings_object)) {}
 };
 
 }  // namespace blink

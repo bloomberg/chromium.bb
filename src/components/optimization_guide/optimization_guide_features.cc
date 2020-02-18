@@ -41,17 +41,23 @@ const base::Feature kOptimizationHints {
 const base::Feature kOptimizationHintsExperiments{
     "OptimizationHintsExperiments", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Provides slow page triggering parameters.
-const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables fetching from a remote Optimization Guide Service.
+const base::Feature kRemoteOptimizationGuideFetching {
+  "OptimizationHintsFetching",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else   // !defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_ANDROID)
+};
 
-// Enables fetching optimization hints from a remote Optimization Guide Service.
-const base::Feature kOptimizationHintsFetching{
-    "OptimizationHintsFetching", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
+    "OptimizationHintsFetchingAnonymousDataConsent",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the initialization of the Optimization Guide Keyed Service.
-const base::Feature kOptimizationGuideKeyedService{
-    "OptimizationGuideKeyedService", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the prediction of optimization targets.
+const base::Feature kOptimizationTargetPrediction{
+    "OptimizationTargetPrediction", base::FEATURE_DISABLED_BY_DEFAULT};
 
 size_t MaxHintsFetcherTopHostBlacklistSize() {
   // The blacklist will be limited to the most engaged hosts and will hold twice
@@ -59,21 +65,21 @@ size_t MaxHintsFetcherTopHostBlacklistSize() {
   // hosts on the blacklist are meant to cover the case that the engagement
   // scores on some of the top N host engagement scores decay and they fall out
   // of the top N.
-  return GetFieldTrialParamByFeatureAsInt(features::kOptimizationHintsFetching,
+  return GetFieldTrialParamByFeatureAsInt(kRemoteOptimizationGuideFetching,
                                           "top_host_blacklist_size_multiplier",
-                                          2) *
+                                          3) *
          MaxHostsForOptimizationGuideServiceHintsFetch();
 }
 
 size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
   return GetFieldTrialParamByFeatureAsInt(
-      features::kOptimizationHintsFetching,
+      kRemoteOptimizationGuideFetching,
       "max_hosts_for_optimization_guide_service_hints_fetch", 30);
 }
 
 size_t MaxHostsForRecordingSuccessfullyCovered() {
   return GetFieldTrialParamByFeatureAsInt(
-      features::kOptimizationHintsFetching,
+      kRemoteOptimizationGuideFetching,
       "max_hosts_for_recording_successfully_covered", 200);
 }
 
@@ -82,19 +88,19 @@ double MinTopHostEngagementScoreThreshold() {
   // points for a navigation from the omnibox and 1.5 points for the first
   // navigation of the day.
   return GetFieldTrialParamByFeatureAsDouble(
-      features::kOptimizationHintsFetching,
-      "min_top_host_engagement_score_threshold", 3.0);
+      kRemoteOptimizationGuideFetching,
+      "min_top_host_engagement_score_threshold", 2.0);
 }
 
 base::TimeDelta StoredFetchedHintsFreshnessDuration() {
   return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
-      features::kOptimizationHintsFetching,
+      kRemoteOptimizationGuideFetching,
       "max_store_duration_for_featured_hints_in_days", 7));
 }
 
 base::TimeDelta DurationApplyLowEngagementScoreThreshold() {
   return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
-      features::kOptimizationHintsFetching,
+      kRemoteOptimizationGuideFetching,
       "duration_apply_low_engagement_score_threshold_in_days", 30));
 }
 
@@ -109,44 +115,116 @@ std::string GetOptimizationGuideServiceAPIKey() {
   return google_apis::GetAPIKey();
 }
 
-GURL GetOptimizationGuideServiceURL() {
+GURL GetOptimizationGuideServiceGetHintsURL() {
   // Command line override takes priority.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kOptimizationGuideServiceURL)) {
+  if (command_line->HasSwitch(switches::kOptimizationGuideServiceGetHintsURL)) {
     // Assume the command line switch is correct and return it.
     return GURL(command_line->GetSwitchValueASCII(
-        switches::kOptimizationGuideServiceURL));
+        switches::kOptimizationGuideServiceGetHintsURL));
   }
 
   std::string url = base::GetFieldTrialParamValueByFeature(
-      features::kOptimizationHintsFetching, "optimization_guide_service_url");
+      kRemoteOptimizationGuideFetching, "optimization_guide_service_url");
   if (url.empty() || !GURL(url).SchemeIs(url::kHttpsScheme)) {
     if (!url.empty())
       LOG(WARNING)
           << "Empty or invalid optimization_guide_service_url provided: "
           << url;
-    return GURL(kOptimizationGuideServiceDefaultURL);
+    return GURL(kOptimizationGuideServiceGetHintsDefaultURL);
   }
 
   return GURL(url);
 }
 
+GURL GetOptimizationGuideServiceGetModelsURL() {
+  // Command line override takes priority.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          switches::kOptimizationGuideServiceGetModelsURL)) {
+    // Assume the command line switch is correct and return it.
+    return GURL(command_line->GetSwitchValueASCII(
+        switches::kOptimizationGuideServiceGetModelsURL));
+  }
+
+  GURL get_models_url(kOptimizationGuideServiceGetModelsDefaultURL);
+  CHECK(get_models_url.SchemeIs(url::kHttpsScheme));
+  return get_models_url;
+}
+
 bool IsOptimizationHintsEnabled() {
-  return base::FeatureList::IsEnabled(features::kOptimizationHints);
+  return base::FeatureList::IsEnabled(kOptimizationHints);
 }
 
-bool IsHintsFetchingEnabled() {
-  return base::FeatureList::IsEnabled(features::kOptimizationHintsFetching);
+bool IsRemoteFetchingEnabled() {
+  return base::FeatureList::IsEnabled(kRemoteOptimizationGuideFetching);
 }
 
-bool IsOptimizationGuideKeyedServiceEnabled() {
-  return base::FeatureList::IsEnabled(features::kOptimizationGuideKeyedService);
+bool IsRemoteFetchingForAnonymousDataConsentEnabled() {
+  return base::FeatureList::IsEnabled(
+      kRemoteOptimizationGuideFetchingAnonymousDataConsent);
 }
 
 int MaxServerBloomFilterByteSize() {
-  return base::GetFieldTrialParamByFeatureAsInt(features::kOptimizationHints,
-                                                "max_bloom_filter_byte_size",
-                                                250 * 1024 /* 250KB */);
+  return base::GetFieldTrialParamByFeatureAsInt(
+      kOptimizationHints, "max_bloom_filter_byte_size", 250 * 1024 /* 250KB */);
+}
+
+base::Optional<net::EffectiveConnectionType>
+GetMaxEffectiveConnectionTypeForNavigationHintsFetch() {
+  std::string param_value = base::GetFieldTrialParamValueByFeature(
+      kRemoteOptimizationGuideFetching,
+      "max_effective_connection_type_for_navigation_hints_fetch");
+
+  // Use a default value.
+  if (param_value.empty())
+    return net::EFFECTIVE_CONNECTION_TYPE_3G;
+
+  return net::GetEffectiveConnectionTypeForName(param_value);
+}
+
+base::TimeDelta GetHintsFetchRefreshDuration() {
+  return base::TimeDelta::FromHours(72);
+}
+
+base::TimeDelta StoredHostModelFeaturesFreshnessDuration() {
+  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction,
+      "max_store_duration_for_host_model_features_in_days", 7));
+}
+
+size_t MaxHostsForOptimizationGuideServiceModelsFetch() {
+  return GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction,
+      "max_hosts_for_optimization_guide_service_models_fetch", 30);
+}
+
+size_t MaxHostModelFeaturesCacheSize() {
+  return GetFieldTrialParamByFeatureAsInt(
+      kOptimizationTargetPrediction, "max_host_model_features_cache_size", 100);
+}
+
+bool IsOptimizationTargetPredictionEnabled() {
+  return base::FeatureList::IsEnabled(kOptimizationTargetPrediction);
+}
+
+bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
+    proto::OptimizationTarget optimization_target) {
+  if (optimization_target != proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD)
+    return false;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kOptimizationTargetPrediction, "painful_page_load_metrics_only", false);
+}
+
+int PredictionModelFetchRandomMinDelaySecs() {
+  return GetFieldTrialParamByFeatureAsInt(kOptimizationTargetPrediction,
+                                          "fetch_random_min_delay_secs", 30);
+}
+
+int PredictionModelFetchRandomMaxDelaySecs() {
+  return GetFieldTrialParamByFeatureAsInt(kOptimizationTargetPrediction,
+                                          "fetch_random_max_delay_secs", 180);
 }
 
 }  // namespace features

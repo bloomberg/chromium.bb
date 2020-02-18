@@ -28,6 +28,7 @@ if (optimize_webui) {
       "crisper.js",
       "lazy_load.crisper.js",
     ]
+    excludes = [ "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom.html" ]
 
     deps = [
       ":unpak",
@@ -127,6 +128,7 @@ js_type_check("settings_resources") {
     ":open_window_proxy",
     ":page_visibility",
     ":route",
+    ":route_origin_behavior",
     ":search_settings",
   ]
 }
@@ -159,6 +161,13 @@ js_library("open_window_proxy") {
   ]
 }
 
+js_library("route_origin_behavior") {
+  deps = [
+    ":route",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
 js_library("route") {
   deps = [
     ":page_visibility",
@@ -180,5 +189,5 @@ js_library("search_settings") {
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:search_highlight_utils",
   ]
-  externs_list = [ "$externs_path/pending.js" ]
+  externs_list = [ "$externs_path/pending_polymer.js" ]
 }

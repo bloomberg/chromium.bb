@@ -93,10 +93,10 @@ class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
     """Test successful repo cleanup."""
     self._Initialize()
     run_cmd_mock = self.PatchObject(
-        cros_build_lib, 'RunCommand', wraps=cros_build_lib.RunCommand)
+        cros_build_lib, 'run', wraps=cros_build_lib.run)
     self.repo.BuildRootGitCleanup(prune_all=True)
 
-    # RunCommand should be called twice.
+    # run should be called twice.
     self.assertEqual(run_cmd_mock.call_count, 2)
 
   @cros_test_lib.NetworkTest()
@@ -116,7 +116,7 @@ class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
                                     '_CleanUpRepoManifest')
     error_result = cros_build_lib.CommandResult(cmd=['cmd'], returncode=1)
     ex = cros_build_lib.RunCommandError('error_msg', error_result)
-    mock_init = self.PatchObject(cros_build_lib, 'RunCommand', side_effect=ex)
+    mock_init = self.PatchObject(cros_build_lib, 'run', side_effect=ex)
 
     self.assertRaises(Exception, self._Initialize)
     self.assertEqual(mock_cleanup.call_count,
@@ -129,7 +129,7 @@ class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
     self.PatchObject(repository.RepoRepository, '_RepoSelfupdate')
     mock_cleanup = self.PatchObject(repository.RepoRepository,
                                     '_CleanUpRepoManifest')
-    mock_init = self.PatchObject(cros_build_lib, 'RunCommand')
+    mock_init = self.PatchObject(cros_build_lib, 'run')
 
     self._Initialize()
     self.assertEqual(mock_cleanup.call_count, 0)
@@ -168,25 +168,24 @@ class RepoSyncTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
         cmd=['cmd'], returncode=0, error='error')
     ex = cros_build_lib.RunCommandError('msg', result)
 
-    run_cmd_mock = self.PatchObject(cros_build_lib, 'RunCommand',
-                                    side_effect=ex)
+    run_cmd_mock = self.PatchObject(cros_build_lib, 'run', side_effect=ex)
 
     # repo.Sync raises SrcCheckOutException.
     self.assertRaises(
         repository.SrcCheckOutException,
         self.repo.Sync, local_manifest='local_manifest', network_only=True)
 
-    # RunCommand should be called SYNC_RETRIES + 1 times.
+    # run should be called SYNC_RETRIES + 1 times.
     self.assertEqual(run_cmd_mock.call_count,
                      constants.SYNC_RETRIES + 1)
 
   def testSyncWithoutException(self):
     """Test successful repo sync without exception and retry"""
     # Return value here isn't super important.
-    run_cmd_mock = self.PatchObject(cros_build_lib, 'RunCommand')
+    run_cmd_mock = self.PatchObject(cros_build_lib, 'run')
     self.repo.Sync(local_manifest='local_manifest', network_only=True)
 
-    # RunCommand should be called once.
+    # run should be called once.
     self.assertEqual(run_cmd_mock.call_count, 1)
 
   def test_RepoSelfupdateRaisesWarning(self):
@@ -204,7 +203,7 @@ warning: Skipped upgrade to unverified version
 """
     mock_rm = self.PatchObject(osutils, 'RmDir')
     cmd_result = cros_build_lib.CommandResult(error=warnning_stderr)
-    self.PatchObject(cros_build_lib, 'RunCommand', return_value=cmd_result)
+    self.PatchObject(cros_build_lib, 'run', return_value=cmd_result)
     self.repo._RepoSelfupdate()
 
     mock_rm.assert_called_once_with(mock.ANY, ignore_missing=True)
@@ -212,9 +211,8 @@ warning: Skipped upgrade to unverified version
   def test_RepoSelfupdateRaisesException(self):
     """Test _RepoSelfupdate when exception is raised."""
     mock_rm = self.PatchObject(osutils, 'RmDir')
-    ex = cros_build_lib.RunCommandError(
-        'msg', cros_build_lib.CommandResult())
-    self.PatchObject(cros_build_lib, 'RunCommand', side_effect=ex)
+    ex = cros_build_lib.RunCommandError('msg')
+    self.PatchObject(cros_build_lib, 'run', side_effect=ex)
     self.repo._RepoSelfupdate()
 
     mock_rm.assert_called_once_with(mock.ANY, ignore_missing=True)
@@ -222,7 +220,7 @@ warning: Skipped upgrade to unverified version
   def test_RepoSelfupdateSucceeds(self):
     mock_rm = self.PatchObject(osutils, 'RmDir')
     cmd_result = cros_build_lib.CommandResult()
-    self.PatchObject(cros_build_lib, 'RunCommand', return_value=cmd_result)
+    self.PatchObject(cros_build_lib, 'run', return_value=cmd_result)
     self.repo._RepoSelfupdate()
 
     self.assertFalse(mock_rm.called)

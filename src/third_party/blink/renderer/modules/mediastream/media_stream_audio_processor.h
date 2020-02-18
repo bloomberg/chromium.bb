@@ -14,10 +14,10 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/webrtc/audio_delay_stats_reporter.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
-#include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/renderer/platform/webrtc/webrtc_source.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/rtc_base/task_queue.h"
@@ -169,6 +169,10 @@ class MODULES_EXPORT MediaStreamAudioProcessor
   // Receives processing output.
   std::unique_ptr<MediaStreamAudioBus> output_bus_;
 
+  // Indicates whether the audio processor playout signal has ever had
+  // asymmetric left and right channel content.
+  bool assume_upmixed_mono_playout_ = true;
+
   // These are mutated on the main render thread in OnCaptureFormatChanged().
   // The caller guarantees this does not run concurrently with accesses on the
   // capture audio thread.
@@ -208,6 +212,9 @@ class MODULES_EXPORT MediaStreamAudioProcessor
   size_t unsupported_buffer_size_log_count_ = 0;
   size_t apm_playout_error_code_log_count_ = 0;
   size_t large_delay_log_count_ = 0;
+
+  // Flag indicating whether capture multi channel processing should be active.
+  const bool use_capture_multi_channel_processing_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioProcessor);
 };

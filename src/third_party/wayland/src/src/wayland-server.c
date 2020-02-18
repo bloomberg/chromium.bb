@@ -74,8 +74,6 @@ struct wl_client {
 	struct wl_event_source *source;
 	struct wl_display *display;
 	struct wl_resource *display_resource;
-	uint32_t id_count;
-	uint32_t mask;
 	struct wl_list link;
 	struct wl_map objects;
 	struct wl_priv_signal destroy_signal;
@@ -222,10 +220,10 @@ handle_array(struct wl_resource *resource, uint32_t opcode,
 		return;
 	}
 
+	log_closure(resource, closure, true);
+
 	if (send_func(closure, resource->client->connection))
 		resource->client->error = 1;
-
-	log_closure(resource, closure, true);
 
 	wl_closure_destroy(closure);
 }
@@ -275,17 +273,14 @@ wl_resource_queue_event(struct wl_resource *resource, uint32_t opcode, ...)
 	wl_resource_queue_event_array(resource, opcode, args);
 }
 
-WL_EXPORT void
-wl_resource_post_error(struct wl_resource *resource,
-		       uint32_t code, const char *msg, ...)
+static void
+wl_resource_post_error_vargs(struct wl_resource *resource,
+			     uint32_t code, const char *msg, va_list argp)
 {
 	struct wl_client *client = resource->client;
 	char buffer[128];
-	va_list ap;
 
-	va_start(ap, msg);
-	vsnprintf(buffer, sizeof buffer, msg, ap);
-	va_end(ap);
+	vsnprintf(buffer, sizeof buffer, msg, argp);
 
 	/*
 	 * When a client aborts, its resources are destroyed in id order,
@@ -300,6 +295,25 @@ wl_resource_post_error(struct wl_resource *resource,
 	wl_resource_post_event(client->display_resource,
 			       WL_DISPLAY_ERROR, resource, code, buffer);
 	client->error = 1;
+
+}
+
+WL_EXPORT void
+wl_resource_post_error(struct wl_resource *resource,
+		       uint32_t code, const char *msg, ...)
+{
+	va_list ap;
+
+	va_start(ap, msg);
+	wl_resource_post_error_vargs(resource, code, msg, ap);
+	va_end(ap);
+}
+
+static void
+destroy_client_with_error(struct wl_client *client, const char *reason)
+{
+	wl_log("%s (pid %u)\n", reason, client->ucred.pid);
+	wl_client_destroy(client);
 }
 
 static int
@@ -316,15 +330,21 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	int opcode, size, since;
 	int len;
 
-	if (mask & (WL_EVENT_ERROR | WL_EVENT_HANGUP)) {
+	if (mask & WL_EVENT_HANGUP) {
 		wl_client_destroy(client);
+		return 1;
+	}
+
+	if (mask & WL_EVENT_ERROR) {
+		destroy_client_with_error(client, "socket error");
 		return 1;
 	}
 
 	if (mask & WL_EVENT_WRITABLE) {
 		len = wl_connection_flush(connection);
 		if (len < 0 && errno != EAGAIN) {
-			wl_client_destroy(client);
+			destroy_client_with_error(
+			    client, "failed to flush client connection");
 			return 1;
 		} else if (len >= 0) {
 			wl_event_source_fd_update(client->source,
@@ -336,12 +356,13 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	if (mask & WL_EVENT_READABLE) {
 		len = wl_connection_read(connection);
 		if (len == 0 || (len < 0 && errno != EAGAIN)) {
-			wl_client_destroy(client);
+			destroy_client_with_error(
+			    client, "failed to read client connection");
 			return 1;
 		}
 	}
 
-	while ((size_t) len >= sizeof p) {
+	while (len >= 0 && (size_t) len >= sizeof p) {
 		wl_connection_copy(connection, p, sizeof p);
 		opcode = p[1] & 0xffff;
 		size = p[1] >> 16;
@@ -420,8 +441,10 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		len = wl_connection_pending_input(connection);
 	}
 
-	if (client->error)
-		wl_client_destroy(client);
+	if (client->error) {
+		destroy_client_with_error(client,
+					  "error in client communication");
+	}
 
 	return 1;
 }
@@ -627,6 +650,30 @@ wl_client_post_no_memory(struct wl_client *client)
 			       WL_DISPLAY_ERROR_NO_MEMORY, "no memory");
 }
 
+/** Report an internal server error
+ *
+ * \param client The client object
+ * \param msg A printf-style format string
+ * \param ... Format string arguments
+ *
+ * Report an unspecified internal implementation error and disconnect
+ * the client.
+ *
+ * \memberof wl_client
+ */
+WL_EXPORT void
+wl_client_post_implementation_error(struct wl_client *client,
+				    char const *msg, ...)
+{
+	va_list ap;
+
+	va_start(ap, msg);
+	wl_resource_post_error_vargs(client->display_resource,
+				     WL_DISPLAY_ERROR_IMPLEMENTATION,
+				     msg, ap);
+	va_end(ap);
+}
+
 WL_EXPORT void
 wl_resource_post_no_memory(struct wl_resource *resource)
 {
@@ -660,19 +707,16 @@ resource_is_deprecated(struct wl_resource *resource)
 }
 
 static enum wl_iterator_result
-destroy_resource(void *element, void *data)
+destroy_resource(void *element, void *data, uint32_t flags)
 {
 	struct wl_resource *resource = element;
-	struct wl_client *client = resource->client;
-	uint32_t flags;
 
 	wl_signal_emit(&resource->deprecated_destroy_signal, resource);
 	/* Don't emit the new signal for deprecated resources, as that would
 	 * access memory outside the bounds of the deprecated struct */
 	if (!resource_is_deprecated(resource))
-		wl_priv_signal_emit(&resource->destroy_signal, resource);
+		wl_priv_signal_final_emit(&resource->destroy_signal, resource);
 
-	flags = wl_map_lookup_flags(&client->objects, resource->object.id);
 	if (resource->destroy)
 		resource->destroy(resource);
 
@@ -687,9 +731,11 @@ wl_resource_destroy(struct wl_resource *resource)
 {
 	struct wl_client *client = resource->client;
 	uint32_t id;
+	uint32_t flags;
 
 	id = resource->object.id;
-	destroy_resource(resource, NULL);
+	flags = wl_map_lookup_flags(&client->objects, id);
+	destroy_resource(resource, NULL, flags);
 
 	if (id < WL_SERVER_ID_START) {
 		if (client->display_resource) {
@@ -828,7 +874,7 @@ wl_client_destroy(struct wl_client *client)
 {
 	uint32_t serial = 0;
 
-	wl_priv_signal_emit(&client->destroy_signal, client);
+	wl_priv_signal_final_emit(&client->destroy_signal, client);
 
 	wl_client_flush(client);
 	wl_map_for_each(&client->objects, destroy_resource, &serial);
@@ -1076,7 +1122,7 @@ wl_display_destroy(struct wl_display *display)
 	struct wl_socket *s, *next;
 	struct wl_global *global, *gnext;
 
-	wl_priv_signal_emit(&display->destroy_signal, display);
+	wl_priv_signal_final_emit(&display->destroy_signal, display);
 
 	wl_list_for_each_safe(s, next, &display->socket_list, link) {
 		wl_socket_destroy(s);
@@ -1263,6 +1309,44 @@ wl_display_flush_clients(struct wl_display *display)
 		} else if (ret < 0) {
 			wl_client_destroy(client);
 		}
+	}
+}
+
+/** Destroy all clients connected to the display
+ *
+ * \param display The display object
+ *
+ * This function should be called right before wl_display_destroy() to ensure
+ * all client resources are closed properly. Destroying a client from within
+ * wl_display_destroy_clients() is safe, but creating one will leak resources
+ * and raise a warning.
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT void
+wl_display_destroy_clients(struct wl_display *display)
+{
+	struct wl_list tmp_client_list, *pos;
+	struct wl_client *client;
+
+	/* Move the whole client list to a temporary head because some new clients
+	 * might be added to the original head. */
+	wl_list_init(&tmp_client_list);
+	wl_list_insert_list(&tmp_client_list, &display->client_list);
+	wl_list_init(&display->client_list);
+
+	/* wl_list_for_each_safe isn't enough here: it fails if the next client is
+	 * destroyed by the destroy handler of the current one. */
+	while (!wl_list_empty(&tmp_client_list)) {
+		pos = tmp_client_list.next;
+		client = wl_container_of(pos, client, link);
+
+		wl_client_destroy(client);
+	}
+
+	if (!wl_list_empty(&display->client_list)) {
+		wl_log("wl_display_destroy_clients: cannot destroy all clients because "
+			   "new ones were created by destroy callbacks\n");
 	}
 }
 
@@ -1841,7 +1925,7 @@ struct wl_resource_iterator_context {
 };
 
 static enum wl_iterator_result
-resource_iterator_helper(void *res, void *user_data)
+resource_iterator_helper(void *res, void *user_data, uint32_t flags)
 {
 	struct wl_resource_iterator_context *context = user_data;
 	struct wl_resource *resource = res;
@@ -1969,6 +2053,46 @@ wl_priv_signal_emit(struct wl_priv_signal *signal, void *data)
 
 		wl_list_remove(pos);
 		wl_list_insert(&signal->listener_list, pos);
+
+		l->notify(l, data);
+	}
+}
+
+/** Emit the signal for the last time, calling all the installed listeners
+ *
+ * Iterate over all the listeners added to this \a signal and call
+ * their \a notify function pointer, passing on the given \a data.
+ * Removing or adding a listener from within wl_priv_signal_emit()
+ * is safe, as is freeing the structure containing the listener.
+ *
+ * A large body of external code assumes it's ok to free a destruction
+ * listener without removing that listener from the list.  Mixing code
+ * that acts like this and code that doesn't will result in list
+ * corruption.
+ *
+ * We resolve this by removing each item from the list and isolating it
+ * in another list.  We discard it completely after firing the notifier.
+ * This should allow interoperability between code that unlinks its
+ * destruction listeners and code that just frees structures they're in.
+ *
+ */
+void
+wl_priv_signal_final_emit(struct wl_priv_signal *signal, void *data)
+{
+	struct wl_listener *l;
+	struct wl_list *pos;
+
+	/* During a destructor notifier isolate every list item before
+	 * notifying.  This renders harmless the long standing misuse
+	 * of freeing listeners without removing them, but allows
+	 * callers that do choose to remove them to interoperate with
+	 * ones that don't. */
+	while (!wl_list_empty(&signal->listener_list)) {
+		pos = signal->listener_list.next;
+		l = wl_container_of(pos, l, link);
+
+		wl_list_remove(pos);
+		wl_list_init(pos);
 
 		l->notify(l, data);
 	}

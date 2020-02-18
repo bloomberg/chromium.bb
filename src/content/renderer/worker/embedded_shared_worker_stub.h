@@ -11,13 +11,11 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
-#include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -31,7 +29,6 @@
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "url/gurl.h"
 
@@ -41,7 +38,7 @@ class WebSharedWorker;
 
 namespace blink {
 class MessagePortChannel;
-class URLLoaderFactoryBundleInfo;
+class PendingURLLoaderFactoryBundle;
 }  // namespace blink
 
 namespace content {
@@ -72,12 +69,11 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
           service_worker_provider_info,
       const base::UnguessableToken& appcache_host_id,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factory_bundle_info,
+      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
+          pending_subresource_loader_factory_bundle,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
       mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
-      service_manager::mojom::InterfaceProviderPtr interface_provider,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker);
   ~EmbeddedSharedWorkerStub() override;
@@ -131,9 +127,8 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   // Out-of-process NetworkService:
   // Detects disconnection from the default factory of the loader factory bundle
   // used by this worker (typically the network service).
-  // TODO(crbug.com/955171): Replace this with Remote.
-  network::mojom::URLLoaderFactoryPtr
-      default_factory_connection_error_handler_holder_;
+  mojo::Remote<network::mojom::URLLoaderFactory>
+      default_factory_disconnect_handler_holder_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSharedWorkerStub);
 };

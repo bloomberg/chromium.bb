@@ -25,7 +25,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 
-namespace app_list {
+namespace ash {
 
 namespace {
 
@@ -70,16 +70,8 @@ constexpr float kPulseMinOpacity = 0.f;
 constexpr float kPulseMaxOpacity = 0.3f;
 constexpr int kAnimationInitialWaitTimeInSec = 3;
 constexpr int kAnimationIntervalInSec = 10;
-constexpr int kCycleDurationInMs = 1000;
-constexpr int kCycleIntervalInMs = 500;
-constexpr int kPulseOpacityShowBeginTimeInMs = 100;
-constexpr int kPulseOpacityShowEndTimeInMs = 200;
-constexpr int kPulseOpacityHideBeginTimeInMs = 800;
-constexpr int kPulseOpacityHideEndTimeInMs = 1000;
-constexpr int kArrowMoveOutBeginTimeInMs = 100;
-constexpr int kArrowMoveOutEndTimeInMs = 500;
-constexpr int kArrowMoveInBeginTimeInMs = 500;
-constexpr int kArrowMoveInEndTimeInMs = 900;
+constexpr auto kCycleDuration = base::TimeDelta::FromMilliseconds(1000);
+constexpr auto kCycleInterval = base::TimeDelta::FromMilliseconds(500);
 
 constexpr SkColor kExpandArrowColor = SK_ColorWHITE;
 constexpr SkColor kPulseColor = SK_ColorWHITE;
@@ -88,6 +80,10 @@ constexpr SkColor kInkDropRippleColor = SkColorSetARGB(0x14, 0xFF, 0xFF, 0xFF);
 
 constexpr SkColor kFocusRingColor = gfx::kGoogleBlue300;
 constexpr int kFocusRingWidth = 2;
+
+// THe bounds for the tap target of the expand arrow button.
+constexpr int kTapTargetWidth = 156;
+constexpr int kTapTargetHeight = 72;
 
 }  // namespace
 
@@ -100,13 +96,18 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
+  // ExpandArrowView draws its own focus, removing FocusRing prevents double
+  // focus.
+  // TODO(pbos): Replace ::OnPaint focus painting with FocusRing +
+  // HighlightPathGenerator usage.
+  SetInstallFocusRingOnFocus(false);
   SetInkDropMode(InkDropMode::ON);
 
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_LIST_EXPAND_BUTTON));
 
   animation_ = std::make_unique<gfx::SlideAnimation>(this);
   animation_->SetTweenType(gfx::Tween::LINEAR);
-  animation_->SetSlideDuration(kCycleDurationInMs * 2 + kCycleIntervalInMs);
+  animation_->SetSlideDuration(kCycleDuration * 2 + kCycleInterval);
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
@@ -119,7 +120,8 @@ void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
   for (size_t i = 0; i < kPointCount; ++i)
     arrow_points[i] = kPeekingPoints[i];
   SkColor circle_color = kBackgroundColor;
-  const float progress = app_list_view_->GetAppListTransitionProgress();
+  const float progress = app_list_view_->GetAppListTransitionProgress(
+      AppListView::kProgressFlagNone);
   if (progress <= 1) {
     // Currently transition progress is between closed and peeking state.
     // Change the y positions of arrow and circle.
@@ -267,36 +269,43 @@ std::unique_ptr<views::InkDropRipple> ExpandArrowView::CreateInkDropRipple()
 
 void ExpandArrowView::AnimationProgressed(const gfx::Animation* animation) {
   // There are two cycles in one animation.
-  const int animation_duration = kCycleDurationInMs * 2 + kCycleIntervalInMs;
-  const int first_cycle_end_time = kCycleDurationInMs;
-  const int interval_end_time = kCycleDurationInMs + kCycleIntervalInMs;
-  const int second_cycle_end_time = kCycleDurationInMs * 2 + kCycleIntervalInMs;
-  int time_in_ms = animation->GetCurrentValue() * animation_duration;
+  constexpr auto kAnimationDuration = kCycleDuration * 2 + kCycleInterval;
+  constexpr auto kFirstCycleEndTime = kCycleDuration;
+  constexpr auto kIntervalEndTime = kCycleDuration + kCycleInterval;
+  constexpr auto kSecondCycleEndTime = kCycleDuration * 2 + kCycleInterval;
+  base::TimeDelta time = animation->GetCurrentValue() * kAnimationDuration;
 
-  if (time_in_ms > first_cycle_end_time && time_in_ms <= interval_end_time) {
+  if (time > kFirstCycleEndTime && time <= kIntervalEndTime) {
     // There's no animation in the interval between cycles.
     return;
-  } else if (time_in_ms > interval_end_time &&
-             time_in_ms <= second_cycle_end_time) {
+  }
+  if (time > kIntervalEndTime && time <= kSecondCycleEndTime) {
     // Convert to time in one single cycle.
-    time_in_ms -= interval_end_time;
+    time -= kIntervalEndTime;
   }
 
   // Update pulse opacity.
-  if (time_in_ms > kPulseOpacityShowBeginTimeInMs &&
-      time_in_ms <= kPulseOpacityShowEndTimeInMs) {
+  constexpr auto kPulseOpacityShowBeginTime =
+      base::TimeDelta::FromMilliseconds(100);
+  constexpr auto kPulseOpacityShowEndTime =
+      base::TimeDelta::FromMilliseconds(200);
+  constexpr auto kPulseOpacityHideBeginTime =
+      base::TimeDelta::FromMilliseconds(800);
+  constexpr auto kPulseOpacityHideEndTime =
+      base::TimeDelta::FromMilliseconds(1000);
+  if (time > kPulseOpacityShowBeginTime && time <= kPulseOpacityShowEndTime) {
     pulse_opacity_ =
         kPulseMinOpacity +
         (kPulseMaxOpacity - kPulseMinOpacity) *
-            (time_in_ms - kPulseOpacityShowBeginTimeInMs) /
-            (kPulseOpacityShowEndTimeInMs - kPulseOpacityShowBeginTimeInMs);
-  } else if (time_in_ms > kPulseOpacityHideBeginTimeInMs &&
-             time_in_ms <= kPulseOpacityHideEndTimeInMs) {
+            (time - kPulseOpacityShowBeginTime) /
+            (kPulseOpacityShowEndTime - kPulseOpacityShowBeginTime);
+  } else if (time > kPulseOpacityHideBeginTime &&
+             time <= kPulseOpacityHideEndTime) {
     pulse_opacity_ =
         kPulseMaxOpacity -
         (kPulseMaxOpacity - kPulseMinOpacity) *
-            (time_in_ms - kPulseOpacityHideBeginTimeInMs) /
-            (kPulseOpacityHideEndTimeInMs - kPulseOpacityHideBeginTimeInMs);
+            (time - kPulseOpacityHideBeginTime) /
+            (kPulseOpacityHideEndTime - kPulseOpacityHideBeginTime);
   }
 
   // Update pulse radius.
@@ -304,22 +313,25 @@ void ExpandArrowView::AnimationProgressed(const gfx::Animation* animation) {
       (kPulseMaxRadius - kPulseMinRadius) *
       gfx::Tween::CalculateValue(
           gfx::Tween::EASE_IN_OUT,
-          static_cast<double>(time_in_ms) / kCycleDurationInMs));
+          time.InMillisecondsF() / kCycleDuration.InMillisecondsF()));
 
   // Update y position offset of the arrow.
-  if (time_in_ms > kArrowMoveOutBeginTimeInMs &&
-      time_in_ms <= kArrowMoveOutEndTimeInMs) {
+  constexpr auto kArrowMoveOutBeginTime =
+      base::TimeDelta::FromMilliseconds(100);
+  constexpr auto kArrowMoveOutEndTime = base::TimeDelta::FromMilliseconds(500);
+  constexpr auto kArrowMoveInBeginTime = base::TimeDelta::FromMilliseconds(500);
+  constexpr auto kArrowMoveInEndTime = base::TimeDelta::FromMilliseconds(900);
+  if (time > kArrowMoveOutBeginTime && time <= kArrowMoveOutEndTime) {
     const double progress =
-        static_cast<double>(time_in_ms - kArrowMoveOutBeginTimeInMs) /
-        (kArrowMoveOutEndTimeInMs - kArrowMoveOutBeginTimeInMs);
+        (time - kArrowMoveOutBeginTime).InMillisecondsF() /
+        (kArrowMoveOutEndTime - kArrowMoveOutBeginTime).InMillisecondsF();
     arrow_y_offset_ = static_cast<int>(
         -kTotalArrowYOffset *
         gfx::Tween::CalculateValue(gfx::Tween::EASE_IN, progress));
-  } else if (time_in_ms > kArrowMoveInBeginTimeInMs &&
-             time_in_ms <= kArrowMoveInEndTimeInMs) {
+  } else if (time > kArrowMoveInBeginTime && time <= kArrowMoveInEndTime) {
     const double progress =
-        static_cast<double>(time_in_ms - kArrowMoveInBeginTimeInMs) /
-        (kArrowMoveInEndTimeInMs - kArrowMoveInBeginTimeInMs);
+        (time - kArrowMoveInBeginTime).InMillisecondsF() /
+        (kArrowMoveInEndTime - kArrowMoveInBeginTime).InMillisecondsF();
     arrow_y_offset_ = static_cast<int>(
         kTotalArrowYOffset *
         (1 - gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT, progress)));
@@ -389,11 +401,11 @@ bool ExpandArrowView::DoesIntersectRect(const views::View* target,
   gfx::Rect button_bounds = GetLocalBounds();
   // Increase clickable area for the button from
   // (kTileWidth x height) to
-  // (3 * height - width).
-  int horizontal_padding =
-      button_bounds.width() - (button_bounds.height() * 1.5);
-  button_bounds.Inset(gfx::Insets(0, horizontal_padding));
+  // (kTapTargetWidth x kTapTargetHeight).
+  const int horizontal_padding = (kTapTargetWidth - button_bounds.width()) / 2;
+  const int vertical_padding = (kTapTargetHeight - button_bounds.height()) / 2;
+  button_bounds.Inset(-horizontal_padding, -vertical_padding);
   return button_bounds.Intersects(rect);
 }
 
-}  // namespace app_list
+}  // namespace ash

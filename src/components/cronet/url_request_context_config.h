@@ -21,7 +21,7 @@
 
 namespace net {
 class CertVerifier;
-class NetLog;
+struct QuicParams;
 class URLRequestContextBuilder;
 }  // namespace net
 
@@ -133,8 +133,7 @@ struct URLRequestContextConfig {
 
   // Configures |context_builder| based on |this|.
   void ConfigureURLRequestContextBuilder(
-      net::URLRequestContextBuilder* context_builder,
-      net::NetLog* net_log);
+      net::URLRequestContextBuilder* context_builder);
 
   // Enable QUIC.
   const bool enable_quic;
@@ -206,7 +205,7 @@ struct URLRequestContextConfig {
   void ParseAndSetExperimentalOptions(
       net::URLRequestContextBuilder* context_builder,
       net::HttpNetworkSession::Params* session_params,
-      net::NetLog* net_log);
+      net::QuicParams* quic_params);
 
   // Experimental options encoded as a string in a JSON format containing
   // experiments and their corresponding configuration options. The format

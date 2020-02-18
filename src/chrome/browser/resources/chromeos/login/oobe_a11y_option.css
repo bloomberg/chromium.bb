@@ -3,7 +3,6 @@
  * found in the LICENSE file. */
 
 :host {
-  background-color: white;
   display: flex;
   min-height: 0;
   width: 100%;
@@ -15,6 +14,7 @@
 
 cr-toggle {
   align-self: center;
+  margin-inline-end: 12px;
 }
 
 /* Line heights of 20 pixels title (#titleContainer) and 20 pixels value

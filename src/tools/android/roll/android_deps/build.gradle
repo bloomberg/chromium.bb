@@ -32,6 +32,7 @@ dependencies {
     compile "androidx.appcompat:appcompat:${androidXSupportLibVersion}"
     compile "androidx.asynclayoutinflater:asynclayoutinflater:${androidXSupportLibVersion}"
     compile "androidx.cardview:cardview:${androidXSupportLibVersion}"
+    compile "androidx.concurrent:concurrent-futures:${androidXSupportLibVersion}"
     compile "androidx.collection:collection:${androidXSupportLibVersion}"
     compile "androidx.coordinatorlayout:coordinatorlayout:${androidXSupportLibVersion}"
     compile "androidx.customview:customview:${androidXSupportLibVersion}"
@@ -85,6 +86,7 @@ dependencies {
     compile "com.android.support:support-compat:${supportLibVersion}"
     compile "com.android.support:support-core-ui:${supportLibVersion}"
     compile "com.android.support:support-core-utils:${supportLibVersion}"
+    compile "com.android.support:support-fragment:${supportLibVersion}"
 
     // Support v7 libraries
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
@@ -113,26 +115,35 @@ dependencies {
 
     compile "com.android.support:multidex:1.0.0"
 
-    buildCompile "javax.inject:javax.inject:1"
-
-    // Dagger
-    def daggerVersion = '2.17'
-    buildCompile "com.google.dagger:dagger:${daggerVersion}"
-    annotationProcessor "com.google.dagger:dagger-compiler:${daggerVersion}"
-
-    // JavaPoet
-    // Matches version depended on by Dagger. Uses annotationProcessor so that
-    // it doesn't get supports_android, which is given by compile.
-    annotationProcessor "com.squareup:javapoet:1.11.0"
-
+    compile "com.google.guava:listenablefuture:1.0"
     compile "com.google.protobuf:protobuf-lite:3.0.1"
+    compile "javax.annotation:jsr250-api:1.0"
+    compile "javax.inject:javax.inject:1"
 
-    // Androidx test libraries
+
+    // buildCompile targets have supports_android = false.
+    buildCompile "com.google.guava:guava:27.0.1-jre"
+
+    def daggerVersion = '2.17'
+    compile "com.google.dagger:dagger:${daggerVersion}"
+    buildCompile "com.google.dagger:dagger-compiler:${daggerVersion}"
+
+    // Matches version depended on by Dagger.
+    buildCompile "com.squareup:javapoet:1.11.0"
+
+    buildCompile "com.google.auto.service:auto-service-annotations:1.0-rc6"
+    buildCompile "com.google.auto.service:auto-service:1.0-rc6"
+
+    buildCompile "com.google.errorprone:error_prone_core:2.3.3"
+
+    // testCompile targets have test_only = true.
     testCompile "androidx.test:core:1.0.0"
     testCompile "androidx.test:monitor:1.1.0"
     testCompile "androidx.test:rules:1.1.0"
     testCompile "androidx.test:runner:1.1.0"
     testCompile "androidx.test.ext:junit:1.0.0"
+    testCompile "androidx.test.uiautomator:uiautomator:2.2.0"
+    testCompile "com.googlecode.java-diff-utils:diffutils:1.3.0"
 }
 
 task setUpRepository(type: BuildConfigGenerator) {

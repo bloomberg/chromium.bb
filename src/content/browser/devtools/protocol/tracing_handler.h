@@ -37,7 +37,7 @@ class DevToolsAgentHostImpl;
 class DevToolsVideoConsumer;
 class DevToolsIOContext;
 class FrameTreeNode;
-class NavigationHandleImpl;
+class NavigationRequest;
 class RenderFrameHost;
 class RenderProcessHost;
 
@@ -73,11 +73,12 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   Response End() override;
   void GetCategories(std::unique_ptr<GetCategoriesCallback> callback) override;
   void RequestMemoryDump(
+      Maybe<bool> deterministic,
       std::unique_ptr<RequestMemoryDumpCallback> callback) override;
   Response RecordClockSyncMarker(const std::string& sync_id) override;
 
   bool did_initiate_recording() { return did_initiate_recording_; }
-  void ReadyToCommitNavigation(NavigationHandleImpl* navigation_handle);
+  void ReadyToCommitNavigation(NavigationRequest* navigation_request);
   void FrameDeleted(RenderFrameHostImpl* frame_host);
 
  private:

@@ -29,6 +29,7 @@
 #include "perfetto/ext/base/watchdog.h"
 #include "perfetto/ext/tracing/ipc/default_socket.h"
 #include "src/profiling/memory/heapprofd_producer.h"
+#include "src/profiling/memory/java_hprof_producer.h"
 #include "src/profiling/memory/wire_protocol.h"
 
 #include "perfetto/ext/base/unix_task_runner.h"
@@ -158,9 +159,9 @@ int StartCentralHeapprofd() {
   HeapprofdProducer producer(HeapprofdMode::kCentral, &task_runner);
 
   int listening_raw_socket = GetListeningSocket();
-  auto listening_socket =
-      base::UnixSocket::Listen(base::ScopedFile(listening_raw_socket),
-                               &producer.socket_delegate(), &task_runner);
+  auto listening_socket = base::UnixSocket::Listen(
+      base::ScopedFile(listening_raw_socket), &producer.socket_delegate(),
+      &task_runner, base::SockFamily::kUnix, base::SockType::kStream);
 
   struct sigaction action = {};
   action.sa_handler = [](int) { g_dump_evt->Notify(); };
@@ -172,6 +173,10 @@ int StartCentralHeapprofd() {
     producer.DumpAll();
   });
   producer.ConnectWithRetries(GetProducerSocket());
+  // TODO(fmayer): Create one producer that manages both heapprofd and Java
+  // producers, so we do not have two connections to traced.
+  JavaHprofProducer java_producer(&task_runner);
+  java_producer.ConnectWithRetries(GetProducerSocket());
   task_runner.Run();
   return 0;
 }

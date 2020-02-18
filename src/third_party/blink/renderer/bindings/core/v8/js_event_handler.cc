@@ -88,7 +88,7 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   //   If an exception gets thrown by the callback, end these steps and allow
   //   the exception to propagate. (It will propagate to the DOM event dispatch
   //   logic, which will then report the exception.)
-  Vector<ScriptValue> arguments;
+  HeapVector<ScriptValue> arguments;
   ScriptState* script_state_of_listener =
       event_handler_->CallbackRelevantScriptState();
 
@@ -99,9 +99,10 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
     // https://html.spec.whatwg.org/C/#runtime-script-errors-2
     ScriptValue error_attribute = error_event->error(script_state_of_listener);
     if (error_attribute.IsEmpty() ||
-        error_event->target()->InterfaceName() == event_target_names::kWorker)
-      error_attribute = ScriptValue::CreateNull(script_state_of_listener);
-
+        error_event->target()->InterfaceName() == event_target_names::kWorker) {
+      error_attribute =
+          ScriptValue::CreateNull(script_state_of_listener->GetIsolate());
+    }
     arguments = {
         ScriptValue::From(script_state_of_listener, error_event->message()),
         ScriptValue::From(script_state_of_listener, error_event->filename()),

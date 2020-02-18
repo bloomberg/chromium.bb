@@ -91,6 +91,8 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
                                    int64_t encoded_body_length,
                                    int64_t decoded_body_length) override;
   bool IsWindowInteractionAllowed() override;
+  void PauseEvaluation() override;
+  void ResumeEvaluation() override;
 
   // WorkerReportingProxy overrides:
   void CountFeature(WebFeature) override;
@@ -105,7 +107,6 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
   void WillInitializeWorkerContext() override;
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
   void DidLoadClassicScript() override;
-  void DidFailToLoadClassicScript() override;
   void DidFetchScript() override;
   void DidFailToFetchClassicScript() override;
   void DidFailToFetchModuleScript() override;

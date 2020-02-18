@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 source_set("identity_manager") {
   sources = [
     "access_token_fetcher.cc",
@@ -20,6 +24,8 @@ source_set("identity_manager") {
     "identity_manager.h",
     "identity_manager_builder.cc",
     "identity_manager_builder.h",
+    "identity_mutator.cc",
+    "identity_mutator.h",
     "identity_utils.cc",
     "identity_utils.h",
     "load_credentials_state.h",
@@ -69,6 +75,14 @@ source_set("identity_manager") {
     # together and include headers from each other.
     "//components/signin/internal/identity_manager",
   ]
+}
+
+if (is_android) {
+  java_cpp_enum("identity_manager_enum_javagen") {
+    sources = [
+      "primary_account_mutator.h",
+    ]
+  }
 }
 
 source_set("unit_tests") {

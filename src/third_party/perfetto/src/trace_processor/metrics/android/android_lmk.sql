@@ -14,38 +14,30 @@
 -- limitations under the License.
 --
 
+SELECT RUN_METRIC('android/process_oom_score.sql');
+
 -- Create all the views used to for LMK related stuff.
-CREATE TABLE lmk_events AS
+CREATE TABLE IF NOT EXISTS lmk_events AS
 SELECT ref AS upid, MIN(ts) AS ts
 FROM instants
 WHERE name = 'mem.lmk' AND ref_type = 'upid'
 GROUP BY 1;
 
-CREATE VIEW oom_scores AS
-SELECT
-  ts,
-  LEAD(ts, 1, (SELECT end_ts + 1 FROM trace_bounds))
-    OVER(PARTITION BY counter_id ORDER BY ts) AS ts_end,
-  ref AS upid,
-  value AS score
-FROM counter_definitions JOIN counter_values USING(counter_id)
-WHERE name = 'oom_score_adj' AND ref IS NOT NULL AND ref_type = 'upid';
-
-CREATE VIEW lmk_by_score AS
-SELECT lmk_events.upid, CAST(oom_scores.score AS INT) AS score
+CREATE VIEW IF NOT EXISTS lmk_by_score AS
+SELECT lmk_events.upid, oom_scores.oom_score_val AS score
 FROM lmk_events
-LEFT JOIN oom_scores
+LEFT JOIN oom_score_span oom_scores
   ON (lmk_events.upid = oom_scores.upid AND
       lmk_events.ts >= oom_scores.ts AND
-      lmk_events.ts < oom_scores.ts_end)
+      lmk_events.ts < oom_scores.ts + oom_scores.dur)
 ORDER BY lmk_events.upid;
 
-CREATE VIEW lmk_counts AS
+CREATE VIEW IF NOT EXISTS lmk_counts AS
 SELECT score, COUNT(1) AS count
 FROM lmk_by_score
 GROUP BY score;
 
-CREATE VIEW android_lmk_output AS
+CREATE VIEW IF NOT EXISTS android_lmk_output AS
 SELECT AndroidLmkMetric(
   'total_count', (SELECT COUNT(1) FROM lmk_events),
   'by_oom_score', (
@@ -55,5 +47,6 @@ SELECT AndroidLmkMetric(
         'count', count
       ))
     FROM lmk_counts
+    WHERE score IS NOT NULL
   )
 );

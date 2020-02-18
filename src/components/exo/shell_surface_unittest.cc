@@ -19,6 +19,7 @@
 #include "components/exo/buffer.h"
 #include "components/exo/client_controlled_shell_surface.h"
 #include "components/exo/display.h"
+#include "components/exo/permission.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
@@ -313,6 +314,41 @@ TEST_F(ShellSurfaceTest, SetApplicationId) {
   EXPECT_EQ(nullptr, GetShellApplicationId(window));
 }
 
+TEST_F(ShellSurfaceTest, ActivationPermission) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  surface->Attach(buffer.get());
+  surface->Commit();
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  ASSERT_TRUE(window);
+
+  // No permission granted so can't activate.
+  EXPECT_FALSE(HasPermissionToActivate(window));
+
+  // Can grant permission.
+  std::unique_ptr<exo::Permission> permission =
+      GrantPermissionToActivate(window, base::TimeDelta::FromDays(1));
+  EXPECT_TRUE(permission->Check(Permission::Capability::kActivate));
+  EXPECT_TRUE(HasPermissionToActivate(window));
+
+  // Overriding the permission revokes the previous one.
+  std::unique_ptr<exo::Permission> permission2 =
+      GrantPermissionToActivate(window, base::TimeDelta::FromDays(2));
+  EXPECT_FALSE(permission->Check(Permission::Capability::kActivate));
+  EXPECT_TRUE(permission2->Check(Permission::Capability::kActivate));
+
+  // The old permission no longer affects the window
+  permission.reset();
+  EXPECT_TRUE(HasPermissionToActivate(window));
+
+  // Deleting the permission revokes.
+  permission2.reset();
+  EXPECT_FALSE(HasPermissionToActivate(window));
+}
+
 TEST_F(ShellSurfaceTest, EmulateOverrideRedirect) {
   gfx::Size buffer_size(64, 64);
   std::unique_ptr<Buffer> buffer(
@@ -466,8 +502,14 @@ TEST_F(ShellSurfaceTest, SetMaximumSize) {
   EXPECT_EQ(size, shell_surface->GetMaximumSize());
 }
 
-void Close(int* close_call_count) {
-  (*close_call_count)++;
+void PreClose(int* pre_close_count, int* close_count) {
+  EXPECT_EQ(*pre_close_count, *close_count);
+  (*pre_close_count)++;
+}
+
+void Close(int* pre_close_count, int* close_count) {
+  (*close_count)++;
+  EXPECT_EQ(*pre_close_count, *close_count);
 }
 
 TEST_F(ShellSurfaceTest, CloseCallback) {
@@ -477,15 +519,22 @@ TEST_F(ShellSurfaceTest, CloseCallback) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
+  int pre_close_call_count = 0;
   int close_call_count = 0;
+  shell_surface->set_pre_close_callback(
+      base::Bind(&PreClose, base::Unretained(&pre_close_call_count),
+                 base::Unretained(&close_call_count)));
   shell_surface->set_close_callback(
-      base::Bind(&Close, base::Unretained(&close_call_count)));
+      base::Bind(&Close, base::Unretained(&pre_close_call_count),
+                 base::Unretained(&close_call_count)));
 
   surface->Attach(buffer.get());
   surface->Commit();
 
+  EXPECT_EQ(0, pre_close_call_count);
   EXPECT_EQ(0, close_call_count);
   shell_surface->GetWidget()->Close();
+  EXPECT_EQ(1, pre_close_call_count);
   EXPECT_EQ(1, close_call_count);
 }
 
@@ -505,6 +554,36 @@ TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
   EXPECT_TRUE(shell_surface.get());
   surface.reset();
   EXPECT_FALSE(shell_surface.get());
+}
+
+void DestroyedCallbackCounter(int* count) {
+  *count += 1;
+}
+
+TEST_F(ShellSurfaceTest, ForceClose) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  surface->Attach(buffer.get());
+  surface->Commit();
+  ASSERT_TRUE(shell_surface->GetWidget());
+
+  int surface_destroyed_ctr = 0;
+  shell_surface->set_surface_destroyed_callback(base::BindOnce(
+      &DestroyedCallbackCounter, base::Unretained(&surface_destroyed_ctr)));
+
+  // Since we did not set the close callback, closing this widget will have no
+  // effect.
+  shell_surface->GetWidget()->Close();
+  EXPECT_TRUE(shell_surface->GetWidget());
+  EXPECT_EQ(surface_destroyed_ctr, 0);
+
+  // CloseNow() will always destroy the widget.
+  shell_surface->GetWidget()->CloseNow();
+  EXPECT_FALSE(shell_surface->GetWidget());
+  EXPECT_EQ(surface_destroyed_ctr, 1);
 }
 
 uint32_t Configure(gfx::Size* suggested_size,

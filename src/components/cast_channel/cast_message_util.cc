@@ -13,15 +13,17 @@
 #include "build/build_config.h"
 #include "components/cast_channel/cast_auth_util.h"
 #include "components/cast_channel/enum_table.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 using base::Value;
 using cast_util::EnumToString;
 using cast_util::StringToEnum;
-
 namespace cast_util {
 
-using namespace cast_channel;
+using ::cast::channel::AuthChallenge;
+using ::cast::channel::CastMessage;
+using cast_channel::CastMessageType;
+using cast_channel::GetAppAvailabilityResult;
 
 template <>
 const EnumTable<CastMessageType> EnumTable<CastMessageType>::instance(
@@ -45,30 +47,31 @@ const EnumTable<CastMessageType> EnumTable<CastMessageType>::instance(
     CastMessageType::kMaxValue);
 
 template <>
-const EnumTable<V2MessageType> EnumTable<V2MessageType>::instance(
-    {
-        {V2MessageType::kEditTracksInfo, "EDIT_TRACKS_INFO"},
-        {V2MessageType::kGetStatus, "GET_STATUS"},
-        {V2MessageType::kLoad, "LOAD"},
-        {V2MessageType::kMediaGetStatus, "MEDIA_GET_STATUS"},
-        {V2MessageType::kMediaSetVolume, "MEDIA_SET_VOLUME"},
-        {V2MessageType::kPause, "PAUSE"},
-        {V2MessageType::kPlay, "PLAY"},
-        {V2MessageType::kPrecache, "PRECACHE"},
-        {V2MessageType::kQueueInsert, "QUEUE_INSERT"},
-        {V2MessageType::kQueueLoad, "QUEUE_LOAD"},
-        {V2MessageType::kQueueRemove, "QUEUE_REMOVE"},
-        {V2MessageType::kQueueReorder, "QUEUE_REORDER"},
-        {V2MessageType::kQueueUpdate, "QUEUE_UPDATE"},
-        {V2MessageType::kQueueNext, "QUEUE_NEXT"},
-        {V2MessageType::kQueuePrev, "QUEUE_PREV"},
-        {V2MessageType::kSeek, "SEEK"},
-        {V2MessageType::kSetVolume, "SET_VOLUME"},
-        {V2MessageType::kStop, "STOP"},
-        {V2MessageType::kStopMedia, "STOP_MEDIA"},
-        {V2MessageType::kOther},
-    },
-    V2MessageType::kMaxValue);
+const EnumTable<cast_channel::V2MessageType>
+    EnumTable<cast_channel::V2MessageType>::instance(
+        {
+            {cast_channel::V2MessageType::kEditTracksInfo, "EDIT_TRACKS_INFO"},
+            {cast_channel::V2MessageType::kGetStatus, "GET_STATUS"},
+            {cast_channel::V2MessageType::kLoad, "LOAD"},
+            {cast_channel::V2MessageType::kMediaGetStatus, "MEDIA_GET_STATUS"},
+            {cast_channel::V2MessageType::kMediaSetVolume, "MEDIA_SET_VOLUME"},
+            {cast_channel::V2MessageType::kPause, "PAUSE"},
+            {cast_channel::V2MessageType::kPlay, "PLAY"},
+            {cast_channel::V2MessageType::kPrecache, "PRECACHE"},
+            {cast_channel::V2MessageType::kQueueInsert, "QUEUE_INSERT"},
+            {cast_channel::V2MessageType::kQueueLoad, "QUEUE_LOAD"},
+            {cast_channel::V2MessageType::kQueueRemove, "QUEUE_REMOVE"},
+            {cast_channel::V2MessageType::kQueueReorder, "QUEUE_REORDER"},
+            {cast_channel::V2MessageType::kQueueUpdate, "QUEUE_UPDATE"},
+            {cast_channel::V2MessageType::kQueueNext, "QUEUE_NEXT"},
+            {cast_channel::V2MessageType::kQueuePrev, "QUEUE_PREV"},
+            {cast_channel::V2MessageType::kSeek, "SEEK"},
+            {cast_channel::V2MessageType::kSetVolume, "SET_VOLUME"},
+            {cast_channel::V2MessageType::kStop, "STOP"},
+            {cast_channel::V2MessageType::kStopMedia, "STOP_MEDIA"},
+            {cast_channel::V2MessageType::kOther},
+        },
+        cast_channel::V2MessageType::kMaxValue);
 
 template <>
 const EnumTable<GetAppAvailabilityResult>
@@ -184,9 +187,11 @@ bool IsCastMessageValid(const CastMessage& message_proto) {
       message_proto.destination_id().empty()) {
     return false;
   }
-  return (message_proto.payload_type() == CastMessage_PayloadType_STRING &&
+  return (message_proto.payload_type() ==
+              cast::channel::CastMessage_PayloadType_STRING &&
           message_proto.has_payload_utf8()) ||
-         (message_proto.payload_type() == CastMessage_PayloadType_BINARY &&
+         (message_proto.payload_type() ==
+              cast::channel::CastMessage_PayloadType_BINARY &&
           message_proto.has_payload_binary());
 }
 
@@ -253,17 +258,18 @@ void CreateAuthChallengeMessage(CastMessage* message_proto,
   CHECK(message_proto);
   DeviceAuthMessage auth_message;
 
-  AuthChallenge* challenge = auth_message.mutable_challenge();
+  cast::channel::AuthChallenge* challenge = auth_message.mutable_challenge();
   DCHECK(challenge);
   challenge->set_sender_nonce(auth_context.nonce());
-  challenge->set_hash_algorithm(SHA256);
+  challenge->set_hash_algorithm(cast::channel::SHA256);
 
   std::string auth_message_string;
   auth_message.SerializeToString(&auth_message_string);
 
   FillCommonCastMessageFields(message_proto, kPlatformSenderId,
                               kPlatformReceiverId, kAuthNamespace);
-  message_proto->set_payload_type(CastMessage_PayloadType_BINARY);
+  message_proto->set_payload_type(
+      cast::channel::CastMessage_PayloadType_BINARY);
   message_proto->set_payload_binary(auth_message_string);
 }
 
@@ -341,7 +347,7 @@ CastMessage CreateGetAppAvailabilityRequest(const std::string& source_id,
               Value(EnumToString<CastMessageType,
                                  CastMessageType::kGetAppAvailability>()));
   Value app_id_value(Value::Type::LIST);
-  app_id_value.GetList().push_back(Value(app_id));
+  app_id_value.Append(Value(app_id));
   dict.SetKey("appId", std::move(app_id_value));
   dict.SetKey("requestId", Value(request_id));
 

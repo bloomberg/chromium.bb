@@ -278,7 +278,7 @@ OutputHLSL::OutputHLSL(sh::GLenum shaderType,
                        ShShaderOutput outputType,
                        int numRenderTargets,
                        int maxDualSourceDrawBuffers,
-                       const std::vector<Uniform> &uniforms,
+                       const std::vector<ShaderVariable> &uniforms,
                        ShCompileOptions compileOptions,
                        sh::WorkGroupSize workGroupSize,
                        TSymbolTable *symbolTable,
@@ -301,14 +301,15 @@ OutputHLSL::OutputHLSL(sh::GLenum shaderType,
       mPerfDiagnostics(perfDiagnostics),
       mNeedStructMapping(false)
 {
-    mUsesFragColor   = false;
-    mUsesFragData    = false;
-    mUsesDepthRange  = false;
-    mUsesFragCoord   = false;
-    mUsesPointCoord  = false;
-    mUsesFrontFacing = false;
-    mUsesPointSize   = false;
-    mUsesInstanceID  = false;
+    mUsesFragColor        = false;
+    mUsesFragData         = false;
+    mUsesDepthRange       = false;
+    mUsesFragCoord        = false;
+    mUsesPointCoord       = false;
+    mUsesFrontFacing      = false;
+    mUsesHelperInvocation = false;
+    mUsesPointSize        = false;
+    mUsesInstanceID       = false;
     mHasMultiviewExtensionEnabled =
         IsExtensionEnabled(mExtensionBehavior, TExtension::OVR_multiview) ||
         IsExtensionEnabled(mExtensionBehavior, TExtension::OVR_multiview2);
@@ -760,6 +761,11 @@ void OutputHLSL::header(TInfoSinkBase &out,
             out << "static bool gl_FrontFacing = false;\n";
         }
 
+        if (mUsesHelperInvocation)
+        {
+            out << "static bool gl_HelperInvocation = false;\n";
+        }
+
         out << "\n";
 
         if (mUsesDepthRange)
@@ -1052,6 +1058,11 @@ void OutputHLSL::header(TInfoSinkBase &out,
         out << "#define GL_USES_FRONT_FACING\n";
     }
 
+    if (mUsesHelperInvocation)
+    {
+        out << "#define GL_USES_HELPER_INVOCATION\n";
+    }
+
     if (mUsesPointSize)
     {
         out << "#define GL_USES_POINT_SIZE\n";
@@ -1222,6 +1233,11 @@ void OutputHLSL::visitSymbol(TIntermSymbol *node)
         else if (qualifier == EvqFrontFacing)
         {
             mUsesFrontFacing = true;
+            out << name;
+        }
+        else if (qualifier == EvqHelperInvocation)
+        {
+            mUsesHelperInvocation = true;
             out << name;
         }
         else if (qualifier == EvqPointSize)
@@ -2071,7 +2087,7 @@ bool OutputHLSL::visitBlock(Visit visit, TIntermBlock *node)
             statement->getAsFunctionDefinition() == nullptr &&
             (statement->getAsDeclarationNode() == nullptr ||
              IsDeclarationWrittenOut(statement->getAsDeclarationNode())) &&
-            statement->getAsInvariantDeclarationNode() == nullptr)
+            statement->getAsGlobalQualifierDeclarationNode() == nullptr)
         {
             out << ";\n";
         }
@@ -2250,7 +2266,8 @@ bool OutputHLSL::visitDeclaration(Visit visit, TIntermDeclaration *node)
     return false;
 }
 
-bool OutputHLSL::visitInvariantDeclaration(Visit visit, TIntermInvariantDeclaration *node)
+bool OutputHLSL::visitGlobalQualifierDeclaration(Visit visit,
+                                                 TIntermGlobalQualifierDeclaration *node)
 {
     // Do not do any translation
     return false;

@@ -96,6 +96,7 @@ DirectContextProvider::DirectContextProvider(
   command_buffer_ = std::move(command_buffer);
   decoder_ = std::move(decoder);
   gl_context_ = std::move(gl_context);
+  gl_surface_ = std::move(gl_surface);
 
   gles2_implementation_ = std::make_unique<gpu::gles2::GLES2Implementation>(
       gles2_cmd_helper_.get(), nullptr, transfer_buffer_.get(),
@@ -123,7 +124,11 @@ DirectContextProvider::~DirectContextProvider() {
 
 void DirectContextProvider::Destroy() {
   DCHECK(decoder_);
-  bool have_context = !decoder_->WasContextLost();
+
+  bool have_context = !decoder_->WasContextLost() &&
+                      (gl_context_->IsCurrent(nullptr) ||
+                       gl_context_->MakeCurrent(gl_surface_.get()));
+
   if (have_context && framebuffer_id_ != 0) {
     gles2_implementation_->DeleteFramebuffers(1, &framebuffer_id_);
     framebuffer_id_ = 0;
@@ -149,11 +154,24 @@ void DirectContextProvider::SetGLRendererCopierRequiredState(
   // SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider).
   gles2_implementation_->BindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  decoder_->RestoreActiveTexture();
-  decoder_->RestoreProgramBindings();
-  decoder_->RestoreAllAttributes();
-  decoder_->RestoreGlobalState();
-  decoder_->RestoreBufferBindings();
+  auto* group = decoder()->GetContextGroup();
+  if (group->use_passthrough_cmd_decoder()) {
+    // Matches state setting in
+    // SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider when passthrough
+    // is enabled so that client side and service side state match.
+    //
+    // TODO(backer): Use ANGLE API to force state reset once API is available.
+    gles2_implementation_->UseProgram(0);
+    gles2_implementation_->ActiveTexture(GL_TEXTURE0);
+    gles2_implementation_->BindBuffer(GL_ARRAY_BUFFER, 0);
+    gles2_implementation_->BindTexture(GL_TEXTURE_2D, 0);
+  } else {
+    decoder_->RestoreActiveTexture();
+    decoder_->RestoreProgramBindings();
+    decoder_->RestoreAllAttributes();
+    decoder_->RestoreGlobalState();
+    decoder_->RestoreBufferBindings();
+  }
 
   // At this point |decoder_| cached state (if any, passthrough doesn't cache)
   // is synced with GLContext state. But GLES2Implementation caches some state
@@ -358,6 +376,11 @@ void DirectContextProvider::MarkContextLost() {
     command_buffer_->service()->SetParseError(gpu::error::kLostContext);
     OnContextLost();
   }
+}
+
+void DirectContextProvider::FinishQueries() {
+  if (decoder_->HasPendingQueries())
+    gles2_implementation_->Finish();
 }
 
 }  // namespace viz

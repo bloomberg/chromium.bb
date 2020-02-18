@@ -49,6 +49,10 @@ bool ModulatorImplBase::IsScriptingDisabled() const {
   return !GetExecutionContext()->CanExecuteScripts(kAboutToExecuteScript);
 }
 
+bool ModulatorImplBase::ImportMapsEnabled() const {
+  return RuntimeEnabledFeatures::ImportMapsEnabled(GetExecutionContext());
+}
+
 bool ModulatorImplBase::BuiltInModuleInfraEnabled() const {
   return RuntimeEnabledFeatures::BuiltInModuleInfraEnabled(
       GetExecutionContext());
@@ -170,7 +174,7 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
                                                const KURL& base_url,
                                                String* failure_reason) {
   ParsedSpecifier parsed_specifier =
-      ParsedSpecifier::Create(specifier, base_url);
+      ParsedSpecifier::Create(specifier, base_url, BuiltInModuleInfraEnabled());
 
   if (!parsed_specifier.IsValid()) {
     if (failure_reason) {
@@ -188,8 +192,8 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
   base::Optional<KURL> mapped_url;
   if (import_map_) {
     String import_map_debug_message;
-    mapped_url = import_map_->ResolveImportsMatch(parsed_specifier,
-                                                  &import_map_debug_message);
+    mapped_url = import_map_->Resolve(parsed_specifier, base_url,
+                                      &import_map_debug_message);
 
     // Output the resolution log. This is too verbose to be always shown, but
     // will be helpful for Web developers (and also Chromium developers) for
@@ -217,13 +221,6 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
       return KURL();
 
     case ParsedSpecifier::Type::kBare:
-      // Allow |@std/x| specifiers if Layered API is enabled.
-      if (BuiltInModuleInfraEnabled()) {
-        if (parsed_specifier.GetImportMapKeyString().StartsWith("@std/")) {
-          return KURL("import:" + parsed_specifier.GetImportMapKeyString());
-        }
-      }
-
       // Reject bare specifiers as specced by the pre-ImportMap spec.
       if (failure_reason) {
         *failure_reason =
@@ -239,15 +236,17 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
 
 ScriptValue ModulatorImplBase::CreateTypeError(const String& message) const {
   ScriptState::Scope scope(script_state_);
-  ScriptValue error(script_state_, V8ThrowException::CreateTypeError(
-                                       script_state_->GetIsolate(), message));
+  ScriptValue error(
+      script_state_->GetIsolate(),
+      V8ThrowException::CreateTypeError(script_state_->GetIsolate(), message));
   return error;
 }
 
 ScriptValue ModulatorImplBase::CreateSyntaxError(const String& message) const {
   ScriptState::Scope scope(script_state_);
-  ScriptValue error(script_state_, V8ThrowException::CreateSyntaxError(
-                                       script_state_->GetIsolate(), message));
+  ScriptValue error(script_state_->GetIsolate(),
+                    V8ThrowException::CreateSyntaxError(
+                        script_state_->GetIsolate(), message));
   return error;
 }
 
@@ -255,7 +254,7 @@ ScriptValue ModulatorImplBase::CreateSyntaxError(const String& message) const {
 void ModulatorImplBase::RegisterImportMap(const ImportMap* import_map,
                                           ScriptValue error_to_rethrow) {
   DCHECK(import_map);
-  DCHECK(BuiltInModuleInfraEnabled());
+  DCHECK(ImportMapsEnabled());
 
   // <spec step="7">If import map parse result’s error to rethrow is not null,
   // then:</spec>

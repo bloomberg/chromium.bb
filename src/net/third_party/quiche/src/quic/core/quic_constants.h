@@ -47,6 +47,9 @@ const QuicByteCount kMaxIncomingPacketSize = kMaxV4PacketSize;
 const QuicByteCount kMaxOutgoingPacketSize = kMaxV6PacketSize;
 // ETH_MAX_MTU - MAX(sizeof(iphdr), sizeof(ip6_hdr)) - sizeof(udphdr).
 const QuicByteCount kMaxGsoPacketSize = 65535 - 40 - 8;
+// The maximal IETF DATAGRAM frame size we'll accept. Choosing 2^16 ensures
+// that it is greater than the biggest frame we could ever fit in a QUIC packet.
+const QuicByteCount kMaxAcceptedDatagramFrameSize = 65536;
 // Default maximum packet size used in the Linux TCP implementation.
 // Used in QUIC for congestion window computations in bytes.
 const QuicByteCount kDefaultTCPMSS = 1460;
@@ -240,6 +243,19 @@ const size_t kMaxNewTokenTokenLength = 0xffff;
 
 // Default initial rtt used before any samples are received.
 const int kInitialRttMs = 100;
+
+// Default fraction (1/4) of an RTT the algorithm waits before determining a
+// packet is lost due to early retransmission by time based loss detection.
+static const int kDefaultLossDelayShift = 2;
+
+// Maximum number of retransmittable packets received before sending an ack.
+const QuicPacketCount kDefaultRetransmittablePacketsBeforeAck = 2;
+// Wait for up to 10 retransmittable packets before sending an ack.
+const QuicPacketCount kMaxRetransmittablePacketsBeforeAck = 10;
+// Minimum number of packets received before ack decimation is enabled.
+// This intends to avoid the beginning of slow start, when CWNDs may be
+// rapidly increasing.
+const QuicPacketCount kMinReceivedBeforeAckDecimation = 100;
 
 // Packet number of first sending packet of a connection. Please note, this
 // cannot be used as first received packet because peer can choose its starting

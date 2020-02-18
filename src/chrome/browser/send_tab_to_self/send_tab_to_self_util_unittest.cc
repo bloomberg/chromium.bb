@@ -15,10 +15,10 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/test_send_tab_to_self_model.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "content/public/test/navigation_simulator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -73,38 +73,6 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
   base::string16 title_;
 };
 
-TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled_True) {
-  scoped_feature_list_.InitWithFeatures(
-      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
-
-  EXPECT_TRUE(IsSendingEnabled());
-  EXPECT_TRUE(IsReceivingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, AreFlagsEnabled_False) {
-  scoped_feature_list_.InitWithFeatures(
-      {}, {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI});
-
-  EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_FALSE(IsReceivingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, IsReceivingEnabled_True) {
-  scoped_feature_list_.InitWithFeatures({switches::kSyncSendTabToSelf},
-                                        {kSendTabToSelfShowSendingUI});
-
-  EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_TRUE(IsReceivingEnabled());
-}
-
-TEST_F(SendTabToSelfUtilTest, IsOnlySendingEnabled_False) {
-  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI},
-                                        {switches::kSyncSendTabToSelf});
-
-  EXPECT_FALSE(IsSendingEnabled());
-  EXPECT_FALSE(IsReceivingEnabled());
-}
-
 TEST_F(SendTabToSelfUtilTest, HasValidTargetDevice) {
   EXPECT_FALSE(HasValidTargetDevice(profile()));
 
@@ -115,30 +83,26 @@ TEST_F(SendTabToSelfUtilTest, HasValidTargetDevice) {
 }
 
 TEST_F(SendTabToSelfUtilTest, ContentRequirementsMet) {
-  EXPECT_TRUE(IsContentRequirementsMet(url_, profile()));
+  EXPECT_TRUE(AreContentRequirementsMet(url_, profile()));
 }
 
 TEST_F(SendTabToSelfUtilTest, NotHTTPOrHTTPS) {
   url_ = GURL("192.168.0.0");
-  EXPECT_FALSE(IsContentRequirementsMet(url_, profile()));
+  EXPECT_FALSE(AreContentRequirementsMet(url_, profile()));
 }
 
 TEST_F(SendTabToSelfUtilTest, NativePage) {
   url_ = GURL("chrome://flags");
-  EXPECT_FALSE(IsContentRequirementsMet(url_, profile()));
+  EXPECT_FALSE(AreContentRequirementsMet(url_, profile()));
 }
 
 TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
-  EXPECT_FALSE(IsContentRequirementsMet(url_, incognito_profile_));
+  EXPECT_FALSE(AreContentRequirementsMet(url_, incognito_profile_));
 }
 
-TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForTelephoneLink) {
+TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureForTelephoneLink) {
   url_ = GURL("tel:07387252578");
 
-  // Set the IsSendingEnable, IsUserSyncTypeActive and
-  // HasValidTargetDevice to true
-  scoped_feature_list_.InitWithFeatures(
-      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
   AddTab(browser(), url_);
   SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
       profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
@@ -151,10 +115,6 @@ TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForTelephoneLink) {
 }
 
 TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForGoogleLink) {
-  // Set the IsSendingEnable, IsUserSyncTypeActive and
-  // HasValidTargetDevice to true
-  scoped_feature_list_.InitWithFeatures(
-      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
   AddTab(browser(), url_);
   SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
       profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
@@ -165,6 +125,31 @@ TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForGoogleLink) {
 
   EXPECT_TRUE(ShouldOfferFeatureForLink(web_contents, url_));
 }
+
+TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureInOmniboxWhileNavigating) {
+  AddTab(browser(), url_);
+  SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
+      profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_FALSE(web_contents->IsWaitingForResponse());
+  EXPECT_TRUE(ShouldOfferOmniboxIcon(web_contents));
+
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateRendererInitiated(
+          GURL("http://test.com/"), web_contents->GetMainFrame());
+  simulator->SetTransition(ui::PAGE_TRANSITION_LINK);
+  simulator->Start();
+  EXPECT_TRUE(web_contents->IsWaitingForResponse());
+  EXPECT_FALSE(ShouldOfferOmniboxIcon(web_contents));
+
+  simulator->Commit();
+  EXPECT_FALSE(web_contents->IsWaitingForResponse());
+  EXPECT_TRUE(ShouldOfferOmniboxIcon(web_contents));
+}
+
 }  // namespace
 
 }  // namespace send_tab_to_self

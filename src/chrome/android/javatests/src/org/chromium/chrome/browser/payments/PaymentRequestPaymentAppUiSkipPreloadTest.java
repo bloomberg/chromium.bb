@@ -58,7 +58,7 @@ public class PaymentRequestPaymentAppUiSkipPreloadTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayViaFastBobPay() throws InterruptedException, TimeoutException {
+    public void testPayViaFastBobPay() throws TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
@@ -72,7 +72,7 @@ public class PaymentRequestPaymentAppUiSkipPreloadTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayViaSlowBobPay() throws InterruptedException, TimeoutException {
+    public void testPayViaSlowBobPay() throws TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
@@ -86,7 +86,7 @@ public class PaymentRequestPaymentAppUiSkipPreloadTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayViaDelayedFastBobPay() throws InterruptedException, TimeoutException {
+    public void testPayViaDelayedFastBobPay() throws TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(
                 "https://bobpay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE, DELAYED_CREATION);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
@@ -102,7 +102,7 @@ public class PaymentRequestPaymentAppUiSkipPreloadTest {
     // @MediumTest
     // @Feature({"Payments"})
     @DisabledTest
-    public void testPayViaDelayedSlowBobPay() throws InterruptedException, TimeoutException {
+    public void testPayViaDelayedSlowBobPay() throws TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(
                 "https://bobpay.com", HAVE_INSTRUMENTS, DELAYED_RESPONSE, DELAYED_CREATION);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
@@ -120,8 +120,7 @@ public class PaymentRequestPaymentAppUiSkipPreloadTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testTwoPaymentsAppsWithTheSamePaymentMethodName()
-            throws InterruptedException, TimeoutException {
+    public void testTwoPaymentsAppsWithTheSamePaymentMethodName() throws TimeoutException {
         mPaymentRequestTestRule.installPaymentApp(
                 "https://bobpay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE, IMMEDIATE_CREATION);
         mPaymentRequestTestRule.installPaymentApp(
@@ -135,7 +134,8 @@ public class PaymentRequestPaymentAppUiSkipPreloadTest {
                 RecordHistogram.getHistogramValueCountForTesting("PaymentRequest.Events",
                         Event.REQUEST_METHOD_OTHER | Event.HAD_INITIAL_FORM_OF_PAYMENT
                                 | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.SHOWN
-                                | Event.SELECTED_OTHER | Event.PAY_CLICKED
-                                | Event.RECEIVED_INSTRUMENT_DETAILS | Event.COMPLETED));
+                                | Event.AVAILABLE_METHOD_OTHER | Event.SELECTED_OTHER
+                                | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
+                                | Event.COMPLETED));
     }
 }

@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -37,7 +38,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/runtime_data.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -91,11 +91,12 @@ bool ParseCookieLifetime(const net::ParsedCookie& cookie,
   return false;
 }
 
-std::set<std::string> GetExtraHeaderRequestHeaders() {
+std::set<std::string> GetExtraHeaderRequestHeaders(
+    bool is_out_of_blink_cors_enabled) {
   std::set<std::string> headers(
       {"accept-encoding", "accept-language", "cookie", "referer"});
 
-  if (network::features::ShouldEnableOutOfBlinkCors())
+  if (is_out_of_blink_cors_enabled)
     headers.insert("origin");
 
   return headers;
@@ -325,6 +326,40 @@ static_assert(static_cast<size_t>(ResponseHeaderType::kMaxValue) - 1 ==
 static_assert(ValidateHeaderEntries(kResponseHeaderEntries),
               "Invalid response header entries");
 
+bool HasMatchingRemovedDNRRequestHeader(
+    const extensions::WebRequestInfo& request,
+    const std::string& header) {
+  for (const auto& action : *request.dnr_actions) {
+    if (std::find_if(action.request_headers_to_remove.begin(),
+                     action.request_headers_to_remove.end(),
+                     [&header](const char* header_to_remove) {
+                       return base::EqualsCaseInsensitiveASCII(header_to_remove,
+                                                               header);
+                     }) != action.request_headers_to_remove.end()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool HasMatchingRemovedDNRResponseHeader(
+    const extensions::WebRequestInfo& request,
+    const std::string& header) {
+  for (const auto& action : *request.dnr_actions) {
+    if (std::find_if(action.response_headers_to_remove.begin(),
+                     action.response_headers_to_remove.end(),
+                     [&header](const char* header_to_remove) {
+                       return base::EqualsCaseInsensitiveASCII(
+                           header, header_to_remove);
+                     }) != action.response_headers_to_remove.end()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 IgnoredAction::IgnoredAction(extensions::ExtensionId extension_id,
@@ -333,12 +368,14 @@ IgnoredAction::IgnoredAction(extensions::ExtensionId extension_id,
 
 IgnoredAction::IgnoredAction(IgnoredAction&& rhs) = default;
 
-bool ExtraInfoSpec::InitFromValue(const base::ListValue& value,
+bool ExtraInfoSpec::InitFromValue(content::BrowserContext* browser_context,
+                                  const base::ListValue& value,
                                   int* extra_info_spec) {
-  *extra_info_spec = base::FeatureList::IsEnabled(
-                         extensions_features::kForceWebRequestExtraHeaders)
-                         ? EXTRA_HEADERS
-                         : 0;
+  *extra_info_spec =
+      extensions::ExtensionsBrowserClient::Get()
+              ->ShouldForceWebRequestExtraHeaders(browser_context)
+          ? EXTRA_HEADERS
+          : 0;
   for (size_t i = 0; i < value.GetSize(); ++i) {
     std::string str;
     if (!value.GetString(i, &str))
@@ -539,6 +576,7 @@ EventResponseDelta CalculateOnBeforeRequestDelta(
 }
 
 EventResponseDelta CalculateOnBeforeSendHeadersDelta(
+    content::BrowserContext* browser_context,
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
@@ -555,8 +593,10 @@ EventResponseDelta CalculateOnBeforeSendHeadersDelta(
     {
       net::HttpRequestHeaders::Iterator i(*old_headers);
       while (i.GetNext()) {
-        if (ShouldHideRequestHeader(extra_info_spec, i.name()))
+        if (ShouldHideRequestHeader(browser_context, extra_info_spec,
+                                    i.name())) {
           continue;
+        }
         if (!new_headers->HasHeader(i.name())) {
           result.deleted_request_headers.push_back(i.name());
         }
@@ -567,8 +607,10 @@ EventResponseDelta CalculateOnBeforeSendHeadersDelta(
     {
       net::HttpRequestHeaders::Iterator i(*new_headers);
       while (i.GetNext()) {
-        if (ShouldHideRequestHeader(extra_info_spec, i.name()))
+        if (ShouldHideRequestHeader(browser_context, extra_info_spec,
+                                    i.name())) {
           continue;
+        }
         std::string value;
         if (!old_headers->GetHeader(i.name(), &value) || i.value() != value) {
           result.modified_request_headers.SetHeader(i.name(), i.value());
@@ -934,14 +976,8 @@ void MergeOnBeforeSendHeadersResponses(
 
         // Prevent extensions from adding any header removed by the Declarative
         // Net Request API.
-        DCHECK(request.dnr_action.has_value());
-        if (std::find_if(request.dnr_action->request_headers_to_remove.begin(),
-                         request.dnr_action->request_headers_to_remove.end(),
-                         [&key](const char* header_to_remove) {
-                           return base::EqualsCaseInsensitiveASCII(
-                               header_to_remove, key);
-                         }) !=
-            request.dnr_action->request_headers_to_remove.end()) {
+        DCHECK(request.dnr_actions);
+        if (HasMatchingRemovedDNRRequestHeader(request, key)) {
           extension_conflicts = true;
           break;
         }
@@ -1270,7 +1306,7 @@ void MergeOnHeadersReceivedResponses(
     const EventResponseDeltas& deltas,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-    GURL* allowed_unsafe_redirect_url,
+    GURL* preserve_fragment_on_redirect_url,
     IgnoredActions* ignored_actions,
     bool* response_headers_modified) {
   DCHECK(response_headers_modified);
@@ -1312,17 +1348,10 @@ void MergeOnHeadersReceivedResponses(
 
     // Prevent extensions from adding any response header which was removed by
     // the Declarative Net Request API.
-    DCHECK(request.dnr_action.has_value());
-    if (!extension_conflicts &&
-        !request.dnr_action->response_headers_to_remove.empty()) {
+    DCHECK(request.dnr_actions);
+    if (!extension_conflicts) {
       for (const ResponseHeader& header : delta.added_response_headers) {
-        if (std::find_if(request.dnr_action->response_headers_to_remove.begin(),
-                         request.dnr_action->response_headers_to_remove.end(),
-                         [&header](const char* header_to_remove) {
-                           return base::EqualsCaseInsensitiveASCII(
-                               header.first, header_to_remove);
-                         }) !=
-            request.dnr_action->response_headers_to_remove.end()) {
+        if (HasMatchingRemovedDNRResponseHeader(request, header.first)) {
           extension_conflicts = true;
           break;
         }
@@ -1376,9 +1405,8 @@ void MergeOnHeadersReceivedResponses(
     (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");
     (*override_response_headers)->RemoveHeader("location");
     (*override_response_headers)->AddHeader("Location: " + new_url.spec());
-    // Explicitly mark the URL as safe for redirection, to prevent the request
-    // from being blocked because of net::ERR_UNSAFE_REDIRECT.
-    *allowed_unsafe_redirect_url = new_url;
+    // Prevent the original URL's fragment from being added to the new URL.
+    *preserve_fragment_on_redirect_url = new_url;
   }
 
   // Record metrics.
@@ -1480,12 +1508,21 @@ std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
   return header;
 }
 
-bool ShouldHideRequestHeader(int extra_info_spec, const std::string& name) {
-  static const std::set<std::string> kRequestHeaders =
-      GetExtraHeaderRequestHeaders();
+bool ShouldHideRequestHeader(content::BrowserContext* browser_context,
+                             int extra_info_spec,
+                             const std::string& name) {
+  static const std::set<std::string> kRequestHeadersForOutOfBlinkCors =
+      GetExtraHeaderRequestHeaders(/*is_out_of_blink_cors_enabled=*/true);
+  static const std::set<std::string> kRequestHeadersForBlinkCors =
+      GetExtraHeaderRequestHeaders(/*is_out_of_blink_cors_enabled=*/false);
+  bool is_out_of_blink_cors_enabled =
+      browser_context && browser_context->ShouldEnableOutOfBlinkCors();
+  const std::set<std::string>& request_headers =
+      is_out_of_blink_cors_enabled ? kRequestHeadersForOutOfBlinkCors
+                                   : kRequestHeadersForBlinkCors;
   return !(extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) &&
-         kRequestHeaders.find(base::ToLowerASCII(name)) !=
-             kRequestHeaders.end();
+         request_headers.find(base::ToLowerASCII(name)) !=
+             request_headers.end();
 }
 
 bool ShouldHideResponseHeader(int extra_info_spec, const std::string& name) {

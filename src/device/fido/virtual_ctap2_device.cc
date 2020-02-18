@@ -603,6 +603,15 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
     device_info_->extensions.emplace(
         {std::string(device::kExtensionCredProtect)});
   }
+
+  if (config.max_credential_count_in_list > 0) {
+    device_info_->max_credential_count_in_list =
+        config.max_credential_count_in_list;
+  }
+
+  if (config.max_credential_id_length > 0) {
+    device_info_->max_credential_id_length = config.max_credential_id_length;
+  }
 }
 
 VirtualCtap2Device::~VirtualCtap2Device() = default;
@@ -722,28 +731,32 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
 
   // 6. Check for already registered credentials.
   const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request.rp.id);
-  if (request.exclude_list) {
-    if (config_.reject_large_allow_and_exclude_lists &&
-        request.exclude_list->size() > 1) {
+  if ((config_.reject_large_allow_and_exclude_lists &&
+       request.exclude_list.size() > 1) ||
+      (config_.max_credential_count_in_list &&
+       request.exclude_list.size() > config_.max_credential_count_in_list)) {
+    return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
+  }
+
+  for (const auto& excluded_credential : request.exclude_list) {
+    if (0 < config_.max_credential_id_length &&
+        config_.max_credential_id_length < excluded_credential.id().size()) {
       return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
     }
-
-    for (const auto& excluded_credential : *request.exclude_list) {
-      const RegistrationData* found =
-          FindRegistrationData(excluded_credential.id(), rp_id_hash);
-      if (found) {
-        if (found->protection == device::CredProtect::kUVRequired &&
-            !user_verified) {
-          // Cannot disclose the existence of this credential without UV. If
-          // a credentials ends up being created it'll overwrite this one.
-          continue;
-        }
-        if (mutable_state()->simulate_press_callback &&
-            !mutable_state()->simulate_press_callback.Run(this)) {
-          return base::nullopt;
-        }
-        return CtapDeviceResponseCode::kCtap2ErrCredentialExcluded;
+    const RegistrationData* found =
+        FindRegistrationData(excluded_credential.id(), rp_id_hash);
+    if (found) {
+      if (found->protection == device::CredProtect::kUVRequired &&
+          !user_verified) {
+        // Cannot disclose the existence of this credential without UV. If
+        // a credentials ends up being created it'll overwrite this one.
+        continue;
       }
+      if (mutable_state()->simulate_press_callback &&
+          !mutable_state()->simulate_press_callback.Run(this)) {
+        return base::nullopt;
+      }
+      return CtapDeviceResponseCode::kCtap2ErrCredentialExcluded;
     }
   }
 
@@ -791,6 +804,11 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
         cbor::Value(
             request.cred_protect->first == CredProtect::kUVRequired ? 3 : 2));
   }
+
+  if (config_.add_extra_extension) {
+    extensions_map.emplace(cbor::Value("unsolicited"), cbor::Value(42));
+  }
+
   if (!extensions_map.empty()) {
     extensions = cbor::Value(std::move(extensions_map));
   }
@@ -898,7 +916,6 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
     return uv_error;
   }
 
-  // Resident keys are not supported.
   if (!config_.resident_key_support && request.allow_list.empty()) {
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
   }
@@ -913,8 +930,10 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
     return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
   }
 
-  if (config_.reject_large_allow_and_exclude_lists &&
-      request.allow_list.size() > 1) {
+  if ((config_.reject_large_allow_and_exclude_lists &&
+       request.allow_list.size() > 1) ||
+      (config_.max_credential_count_in_list &&
+       request.allow_list.size() > config_.max_credential_count_in_list)) {
     return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
   }
 
@@ -923,6 +942,10 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
   // mirrors that to better reflect reality. CTAP 2.0 leaves it as undefined
   // behaviour.
   for (const auto& allowed_credential : request.allow_list) {
+    if (0 < config_.max_credential_id_length &&
+        config_.max_credential_id_length < allowed_credential.id().size()) {
+      return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
+    }
     RegistrationData* found =
         FindRegistrationData(allowed_credential.id(), rp_id_hash);
     if (found) {
@@ -983,6 +1006,15 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
   }
 
+  base::Optional<cbor::Value> extensions;
+  cbor::Value::MapValue extensions_map;
+  if (config_.add_extra_extension) {
+    extensions_map.emplace(cbor::Value("unsolicited"), cbor::Value(42));
+  }
+  if (!extensions_map.empty()) {
+    extensions = cbor::Value(std::move(extensions_map));
+  }
+
   // This implementation does not sort credentials by creation time as the spec
   // requires.
 
@@ -1005,7 +1037,8 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
 
     auto authenticator_data = ConstructAuthenticatorData(
         rp_id_hash, user_verified, registration.second->counter,
-        std::move(opt_attested_cred_data), base::nullopt);
+        std::move(opt_attested_cred_data),
+        extensions ? base::make_optional(extensions->Clone()) : base::nullopt);
     auto signature_buffer =
         ConstructSignatureBuffer(authenticator_data, client_data_hash);
 

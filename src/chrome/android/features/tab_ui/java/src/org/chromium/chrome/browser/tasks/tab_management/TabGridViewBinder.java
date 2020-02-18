@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -19,9 +18,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -99,6 +102,7 @@ class TabGridViewBinder {
         } else if (TabProperties.IS_SELECTED == propertyKey) {
             int selectedTabBackground =
                     model.get(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID);
+            view.setSelected(model.get(TabProperties.IS_SELECTED));
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
                 if (model.get(TabProperties.IS_SELECTED)) {
                     view.fastFindViewById(R.id.selected_view_below_lollipop)
@@ -228,20 +232,34 @@ class TabGridViewBinder {
         TabListMediator.ThumbnailFetcher fetcher = model.get(TabProperties.THUMBNAIL_FETCHER);
         ImageView thumbnail = (ImageView) view.fastFindViewById(R.id.tab_thumbnail);
         if (fetcher == null) {
-            // Release the thumbnail to save memory.
-            thumbnail.setImageDrawable(null);
-            thumbnail.setMinimumHeight(thumbnail.getWidth());
+            releaseThumbnail(thumbnail);
             return;
         }
         Callback<Bitmap> callback = result -> {
             if (result == null) {
-                thumbnail.setImageDrawable(null);
-                thumbnail.setMinimumHeight(thumbnail.getWidth());
+                releaseThumbnail(thumbnail);
             } else {
                 thumbnail.setImageBitmap(result);
             }
         };
         fetcher.fetch(callback);
+    }
+
+    private static void releaseThumbnail(ImageView thumbnail) {
+        if (FeatureUtilities.isTabThumbnailAspectRatioNotOne()) {
+            float expectedThumbnailAspectRatio =
+                    (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
+                            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio",
+                            1.0);
+            expectedThumbnailAspectRatio =
+                    MathUtils.clamp(expectedThumbnailAspectRatio, 0.5f, 2.0f);
+            int height = (int) (thumbnail.getWidth() * 1.0 / expectedThumbnailAspectRatio);
+            thumbnail.setMinimumHeight(Math.min(thumbnail.getHeight(), height));
+            thumbnail.setImageDrawable(null);
+        } else {
+            thumbnail.setImageDrawable(null);
+            thumbnail.setMinimumHeight(thumbnail.getWidth());
+        }
     }
 
     private static void updateColor(ViewLookupCachingFrameLayout rootView, boolean isIncognito,

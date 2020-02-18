@@ -34,14 +34,6 @@ namespace {
 const base::TimeDelta kRefreshFromTokenServiceDelay =
     base::TimeDelta::FromHours(24);
 
-bool AccountSupportsUserInfo(const CoreAccountId& account_id) {
-  // Supervised users use a specially scoped token which when used for general
-  // purposes causes the token service to raise spurious auth errors.
-  // TODO(treib): this string is also used in supervised_user_constants.cc.
-  // Should put in a common place.
-  return account_id.id != "managed_user@localhost";
-}
-
 }  // namespace
 
 const char kImageFetcherUmaClient[] = "AccountFetcherService";
@@ -49,8 +41,6 @@ const char kImageFetcherUmaClient[] = "AccountFetcherService";
 // This pref used to be in the AccountTrackerService, hence its string value.
 const char AccountFetcherService::kLastUpdatePref[] =
     "account_tracker_service_last_update";
-
-const int AccountFetcherService::kAccountImageDownloadSize = 64;
 
 // AccountFetcherService implementation
 AccountFetcherService::AccountFetcherService() = default;
@@ -157,8 +147,6 @@ void AccountFetcherService::UpdateChildInfo() {
       return;
     if (!child_request_account_id_.empty())
       ResetChildInfo();
-    if (!AccountSupportsUserInfo(candidate))
-      return;
     child_request_account_id_ = candidate;
     StartFetchingChildInfo(candidate);
   } else {
@@ -251,8 +239,6 @@ void AccountFetcherService::RefreshAccountInfo(const CoreAccountId& account_id,
   account_tracker_service_->StartTrackingAccount(account_id);
   const AccountInfo& info =
       account_tracker_service_->GetAccountInfo(account_id);
-  if (!AccountSupportsUserInfo(account_id))
-    return;
 
 // |only_fetch_if_invalid| is false when the service is due for a timed update.
 #if defined(OS_ANDROID)
@@ -317,7 +303,7 @@ void AccountFetcherService::FetchAccountImage(const CoreAccountId& account_id) {
             "profile image."
         })");
   GURL image_url_with_size(signin::GetAvatarImageURLWithOptions(
-      picture_url, kAccountImageDownloadSize, true /* no_silhouette */));
+      picture_url, signin::kAccountInfoImageSize, true /* no_silhouette */));
   auto callback = base::BindRepeating(&AccountFetcherService::OnImageFetched,
                                       base::Unretained(this), account_id);
   image_fetcher::ImageFetcherParams params(traffic_annotation,
@@ -336,7 +322,7 @@ void AccountFetcherService::OnRefreshTokenAvailable(
     const CoreAccountId& account_id) {
   TRACE_EVENT1("AccountFetcherService",
                "AccountFetcherService::OnRefreshTokenAvailable", "account_id",
-               account_id.id);
+               account_id.ToString());
   DVLOG(1) << "AVAILABLE " << account_id;
 
   // The SigninClient needs a "final init" in order to perform some actions
@@ -356,7 +342,7 @@ void AccountFetcherService::OnRefreshTokenRevoked(
     const CoreAccountId& account_id) {
   TRACE_EVENT1("AccountFetcherService",
                "AccountFetcherService::OnRefreshTokenRevoked", "account_id",
-               account_id.id);
+               account_id.ToString());
   DVLOG(1) << "REVOKED " << account_id;
 
   // Short-circuit out if network fetches are not enabled.

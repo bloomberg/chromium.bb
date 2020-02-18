@@ -27,9 +27,7 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -208,11 +206,12 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   if (prevSessionInfo.isFirstSessionAfterUpgrade &&
       [prevSessionInfo.previousSessionVersion hasPrefix:@"77."]) {
     // In M77, showing the signed-in account view was disabled due to the fact
-    // that the preferences used to compute authService->HaveAccountsChanged()
-    // were not correctly updated (see crbug.com/1006717).
-    // To avoid user confusion, it is important to avoid showing the signed-in
-    // accounts dialog on the first session after an update from M77 in order
-    // to allow the authentication service to update its internal preferences.
+    // that the preferences used to compute
+    // authService->HaveAccountsChangedWhileInBackground() were not correctly
+    // updated (see crbug.com/1006717). To avoid user confusion, it is important
+    // to avoid showing the signed-in accounts dialog on the first session after
+    // an update from M77 in order to allow the authentication service to update
+    // its internal preferences.
     //
     // TODO(crbug.com/1007990) Remove this code after M81 (revert
     // https://chromium-review.googlesource.com/c/chromium/src/+/1824259 ).
@@ -222,7 +221,8 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
   return !gSignedInAccountsViewControllerIsShown &&
-         authService->IsAuthenticated() && authService->HaveAccountsChanged();
+         authService->IsAuthenticated() &&
+         authService->HaveAccountsChangedWhileInBackground();
 }
 
 #pragma mark Initialization

@@ -4,6 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/test_tools/simple_session_notifier.h"
 
+#include <utility>
+
 #include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
@@ -40,7 +42,7 @@ class SimpleSessionNotifierTest : public QuicTest {
       : connection_(&helper_, &alarm_factory_, Perspective::IS_CLIENT),
         notifier_(&connection_) {
     connection_.set_visitor(&visitor_);
-    QuicConnectionPeer::SetSessionDecidesWhatToWrite(&connection_);
+    connection_.SetSessionNotifier(&notifier_);
     EXPECT_FALSE(notifier_.WillingToWrite());
     EXPECT_EQ(0u, notifier_.StreamBytesSent());
     EXPECT_FALSE(notifier_.HasBufferedStreamData());
@@ -133,6 +135,8 @@ TEST_F(SimpleSessionNotifierTest, WriteOrBufferPing) {
 
 TEST_F(SimpleSessionNotifierTest, NeuterUnencryptedData) {
   if (QuicVersionUsesCryptoFrames(connection_.transport_version())) {
+    // This test writes crypto data through crypto streams. It won't work when
+    // crypto frames are used instead.
     return;
   }
   InSequence s;
@@ -173,6 +177,8 @@ TEST_F(SimpleSessionNotifierTest, NeuterUnencryptedData) {
 
 TEST_F(SimpleSessionNotifierTest, OnCanWrite) {
   if (QuicVersionUsesCryptoFrames(connection_.transport_version())) {
+    // This test writes crypto data through crypto streams. It won't work when
+    // crypto frames are used instead.
     return;
   }
   InSequence s;
@@ -258,7 +264,7 @@ TEST_F(SimpleSessionNotifierTest, OnCanWriteCryptoFrames) {
   notifier_.WriteCryptoData(ENCRYPTION_INITIAL, 1024, 0);
   // Send crypto data [1024, 2048) in ENCRYPTION_ZERO_RTT.
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
-  connection_.SetEncrypter(ENCRYPTION_ZERO_RTT, QuicMakeUnique<NullEncrypter>(
+  connection_.SetEncrypter(ENCRYPTION_ZERO_RTT, std::make_unique<NullEncrypter>(
                                                     Perspective::IS_CLIENT));
   EXPECT_CALL(connection_, SendCryptoData(ENCRYPTION_ZERO_RTT, 1024, 0))
       .WillOnce(Invoke(&connection_,

@@ -54,24 +54,14 @@ NetExportFileWriter::DefaultLogPathResults SetUpDefaultLogPath(
   return results;
 }
 
-// If running on a POSIX OS, this will attempt to set all the permission flags
-// of the file at |path| to 1. Will return |path| on success and the empty path
-// on failure.
-base::FilePath GetPathWithAllPermissions(const base::FilePath& path) {
+base::FilePath GetPathIfExists(const base::FilePath& path) {
   if (!base::PathExists(path))
     return base::FilePath();
-#if defined(OS_POSIX)
-  return base::SetPosixFilePermissions(path, base::FILE_PERMISSION_MASK)
-             ? path
-             : base::FilePath();
-#else
   return path;
-#endif
 }
 
 scoped_refptr<base::SequencedTaskRunner> CreateFileTaskRunner() {
-  // The tasks posted to this sequenced task runner do synchronous File I/O for
-  // checking paths and setting permissions on files.
+  // The tasks posted to this sequenced task runner do synchronous File I/O.
   //
   // These operations can be skipped on shutdown since FileNetLogObserver's API
   // doesn't require things to have completed until notified of completion.
@@ -147,11 +137,12 @@ void NetExportFileWriter::StartNetLog(
 
   NotifyStateObserversAsync();
 
-  network_context->CreateNetLogExporter(mojo::MakeRequest(&net_log_exporter_));
+  network_context->CreateNetLogExporter(
+      net_log_exporter_.BindNewPipeAndPassReceiver());
   base::Value custom_constants = base::Value::FromUniquePtrValue(
       GetPlatformConstantsForNetLog(command_line_string, channel_string));
 
-  net_log_exporter_.set_connection_error_handler(base::BindOnce(
+  net_log_exporter_.set_disconnect_handler(base::BindOnce(
       &NetExportFileWriter::OnConnectionError, base::Unretained(this)));
 
   base::PostTaskAndReplyWithResult(
@@ -286,9 +277,9 @@ void NetExportFileWriter::GetFilePathToCompletedLog(
   DCHECK(file_task_runner_);
   DCHECK(!log_path_.empty());
 
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(), FROM_HERE,
-      base::Bind(&GetPathWithAllPermissions, log_path_), path_callback);
+  base::PostTaskAndReplyWithResult(file_task_runner_.get(), FROM_HERE,
+                                   base::Bind(&GetPathIfExists, log_path_),
+                                   path_callback);
 }
 
 std::string NetExportFileWriter::CaptureModeToString(

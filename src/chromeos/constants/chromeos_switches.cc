@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
 namespace chromeos {
@@ -71,12 +72,19 @@ const char kArcAvailability[] = "arc-availability";
 // Signals the availability of the ARC instance on this device.
 const char kArcAvailable[] = "arc-available";
 
+// A JSON dictionary whose content is the same as cros config's
+// /arc/build-properties.
+const char kArcBuildProperties[] = "arc-build-properties";
+
 // Flag that forces ARC data be cleaned on each start.
 const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
 
 // Flag that disables ARC app sync flow that installs some apps silently. Used
 // in autotests to resolve racy conditions.
 const char kArcDisableAppSync[] = "arc-disable-app-sync";
+
+// Used in autotest to disable GMS-core caches which is on by default.
+const char kArcDisableGmsCoreCache[] = "arc-disable-gms-core-cache";
 
 // Flag that disables ARC locale sync with Android container. Used in autotest
 // to prevent conditions when certain apps, including Play Store may get
@@ -105,6 +113,13 @@ const char kArcPackagesCacheMode[] = "arc-packages-cache-mode";
 // on - auto-update is forced on.
 // off - auto-update is forced off.
 const char kArcPlayStoreAutoUpdate[] = "arc-play-store-auto-update";
+
+// Set the scale for ARC apps. This is in DPI. e.g. 280 DPI is ~ 1.75 device
+// scale factor.
+// See
+// https://source.android.com/compatibility/android-cdd#3_7_runtime_compatibility
+// for list of supported DPI values.
+const char kArcScale[] = "arc-scale";
 
 // Defines how to start ARC. This can take one of the following values:
 // - always-start automatically start with Play Store UI support.
@@ -263,6 +278,9 @@ const char kEnableMarketingOptInScreen[] = "enable-market-opt-in";
 
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
+
+// Enables tablet form factor.
+const char kEnableTabletFormFactor[] = "enable-tablet-form-factor";
 
 // Enables the touch calibration option in MD settings UI for valid touch
 // displays.
@@ -433,10 +451,6 @@ const char kOobeTimerInterval[] = "oobe-timer-interval";
 // TODO(984021): Remove when URL is sent by DMServer.
 const char kPublicAccountsSamlAclUrl[] = "public-accounts-saml-acl-url";
 
-// Url address of SAML provider for a SAML public session.
-// TODO(984021): Remove when URL is sent by DMServer.
-const char kPublicAccountsSamlUrl[] = "public-accounts-saml-url";
-
 // If set to "true", the profile requires policy during restart (policy load
 // must succeed, otherwise session restart should fail).
 const char kProfileRequiresPolicy[] = "profile-requires-policy";
@@ -451,17 +465,12 @@ const char kRlzPingDelay[] = "rlz-ping-delay";
 // TODO(941489): Remove when the bug is fixed.
 const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
 
-// Smaller, denser shelf in clamshell mode.
-const char kShelfDenseClamshell[] = "shelf-dense-clamshell";
-
-// New modular design for the shelf with apps separated into a hotseat UI.
+// New modular design for the shelf with apps separated into a hotseat UI and
+// smaller shelf in clamshell mode.
 const char kShelfHotseat[] = "shelf-hotseat";
 
 // App window previews when hovering over the shelf.
 const char kShelfHoverPreviews[] = "shelf-hover-previews";
-
-// Scrollable list of apps on the shelf.
-const char kShelfScrollable[] = "shelf-scrollable";
 
 // If true, files in Android internal storage will be shown in Files app.
 const char kShowAndroidFilesInFilesApp[] = "show-android-files-in-files-app";
@@ -551,13 +560,8 @@ bool IsSigninFrameClientCertUserSelectionEnabled() {
       kDisableSigninFrameClientCertUserSelection);
 }
 
-bool ShouldShowShelfDenseClamshell() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kShelfDenseClamshell);
-}
-
 bool ShouldShowShelfHotseat() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHotseat);
+  return base::FeatureList::IsEnabled(features::kShelfHotseat);
 }
 
 bool ShouldShowShelfHoverPreviews() {
@@ -565,7 +569,11 @@ bool ShouldShowShelfHoverPreviews() {
 }
 
 bool ShouldShowScrollableShelf() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfScrollable);
+  // If we're showing the new shelf design, also enable scrollable shelf.
+  if (ShouldShowShelfHotseat())
+    return true;
+
+  return base::FeatureList::IsEnabled(features::kShelfScrollable);
 }
 
 bool ShouldTetherHostScansIgnoreWiredConnections() {
@@ -575,6 +583,11 @@ bool ShouldTetherHostScansIgnoreWiredConnections() {
 
 bool ShouldSkipOobePostLogin() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kOobeSkipPostLogin);
+}
+
+bool IsTabletFormFactor() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableTabletFormFactor);
 }
 
 bool IsGaiaServicesDisabled() {

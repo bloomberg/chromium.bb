@@ -483,7 +483,8 @@
       "id": "xkb:es::spa",
       "description": "",
       "language": [
-        "es"
+        "es",
+        "es-ES"
       ],
       "layouts": [
         "es"
@@ -494,7 +495,7 @@
       "name": "__MSG_keyboard_catalan__",
       "type": "ime",
       "id": "xkb:es:cat:cat",
-      "indicator": "CAS",
+      "indicator": "CAT",
       "description": "",
       "language": [
         "ca"

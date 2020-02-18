@@ -97,19 +97,21 @@ java_annotation_processor("jni_processor") {
     # Avoids a circular dependency with base:base_java. This is okay because
     # no target should ever expect to package an annotation processor.
     "//base/android/java/src/org/chromium/base/annotations/MainDex.java",
+    "//base/android/java/src/org/chromium/base/annotations/CheckDiscard.java",
   ]
 
   main_class = "org.chromium.jni_generator.JniProcessor"
 
-  annotation_processor_deps = [ "//third_party/auto:auto_service_processor" ]
+  annotation_processor_deps =
+      [ "//third_party/android_deps:auto_service_processor" ]
 
   deps = [
     "//base:jni_java",
+    "//third_party/android_deps:com_google_auto_service_auto_service_annotations_java",
+    "//third_party/android_deps:com_google_guava_guava_java",
     "//third_party/android_deps:com_squareup_javapoet_java",
-    "//third_party/auto:auto_service_java",
-    "//third_party/guava:guava_java",
+    "//third_party/android_deps:javax_annotation_jsr250_api_java",
   ]
 
   srcjar_deps = [ ":processor_args_java" ]
-  jacoco_never_instrument = true
 }

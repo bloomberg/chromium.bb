@@ -2,7 +2,7 @@
 <!-- Copyright 2018 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
-<LinearLayout
+<org.chromium.chrome.browser.autofill_assistant.AssistantRootViewContainer
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/autofill_assistant"
     android:clickable="true"
@@ -10,7 +10,7 @@
     android:layout_width="match_parent"
     android:paddingTop="12dp"
     android:orientation="vertical">
-    <org.chromium.chrome.browser.widget.FadingEdgeScrollView
+    <org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView
         android:id="@+id/scrollable_content"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -22,5 +22,5 @@
             android:orientation="vertical"
             android:clipChildren="false"
             android:clipToPadding="false" />
-    </org.chromium.chrome.browser.widget.FadingEdgeScrollView>
-</LinearLayout>
+    </org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView>
+</org.chromium.chrome.browser.autofill_assistant.AssistantRootViewContainer>

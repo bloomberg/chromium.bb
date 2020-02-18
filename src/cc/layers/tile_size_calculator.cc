@@ -10,10 +10,6 @@
 
 namespace cc {
 namespace {
-// Even for really wide viewports, at some point GPU raster should use
-// less than 4 tiles to fill the viewport. This is set to 256 as a
-// sane minimum for now, but we might want to tune this for low-end.
-const int kMinHeightForGpuRasteredTile = 256;
 
 // When making odd-sized tiles, round them up to increase the chances
 // of using the same tile size.
@@ -44,7 +40,8 @@ gfx::Size ApplyDsfAdjustment(const gfx::Size& device_pixels_size, float dsf) {
 // viewport vertically.
 gfx::Size CalculateGpuTileSize(const gfx::Size& base_tile_size,
                                const gfx::Size& content_bounds,
-                               const gfx::Size& max_tile_size) {
+                               const gfx::Size& max_tile_size,
+                               int min_height_for_gpu_raster_tile) {
   int tile_width = base_tile_size.width();
 
   // Increase the height proportionally as the width decreases, and pad by our
@@ -66,7 +63,7 @@ gfx::Size CalculateGpuTileSize(const gfx::Size& base_tile_size,
   tile_width = MathUtil::UncheckedRoundUp(tile_width, kGpuDefaultTileRoundUp);
   tile_height = MathUtil::UncheckedRoundUp(tile_height, kGpuDefaultTileRoundUp);
 
-  tile_height = std::max(tile_height, kMinHeightForGpuRasteredTile);
+  tile_height = std::max(tile_height, min_height_for_gpu_raster_tile);
 
   if (!max_tile_size.IsEmpty()) {
     tile_width = std::min(tile_width, max_tile_size.width());
@@ -111,6 +108,8 @@ TileSizeCalculator::AffectingParams TileSizeCalculator::GetAffectingParams() {
   params.max_texture_size = layer_tree_impl->max_texture_size();
   params.use_gpu_rasterization = layer_tree_impl->use_gpu_rasterization();
   params.max_tile_size = layer_tree_impl->settings().max_gpu_raster_tile_size;
+  params.min_height_for_gpu_raster_tile =
+      layer_tree_impl->settings().min_height_for_gpu_raster_tile;
   params.gpu_raster_max_texture_size =
       layer_impl()->gpu_raster_max_texture_size();
   params.device_scale_factor = layer_tree_impl->device_scale_factor();
@@ -124,9 +123,9 @@ TileSizeCalculator::AffectingParams TileSizeCalculator::GetAffectingParams() {
 gfx::Size TileSizeCalculator::CalculateTileSize() {
   gfx::Size content_bounds = layer_impl()->content_bounds();
 
-  if (layer_impl()->mask_type() == Layer::LayerMaskType::SINGLE_TEXTURE_MASK) {
-    // Masks are not tiled, so if we can't cover the whole mask with one tile,
-    // we shouldn't have such a tiling at all.
+  if (layer_impl()->is_backdrop_filter_mask()) {
+    // Backdrop filter masks are not tiled, so if we can't cover the whole mask
+    // with one tile, we shouldn't have such a tiling at all.
     DCHECK_LE(content_bounds.width(),
               layer_impl()->layer_tree_impl()->max_texture_size());
     DCHECK_LE(content_bounds.height(),
@@ -153,15 +152,17 @@ gfx::Size TileSizeCalculator::CalculateTileSize() {
     // Set our initial size assuming a |base_tile_size| equal to our
     // |viewport_size|.
     gfx::Size default_tile_size =
-        CalculateGpuTileSize(base_tile_size, content_bounds, max_tile_size);
+        CalculateGpuTileSize(base_tile_size, content_bounds, max_tile_size,
+                             affecting_params_.min_height_for_gpu_raster_tile);
 
     // Use half-width GPU tiles when the content_width is greater than our
     // calculated tile size.
     if (content_bounds.width() > default_tile_size.width()) {
       // Divide width by 2 and round up.
       base_tile_size.set_width((base_tile_size.width() + 1) / 2);
-      default_tile_size =
-          CalculateGpuTileSize(base_tile_size, content_bounds, max_tile_size);
+      default_tile_size = CalculateGpuTileSize(
+          base_tile_size, content_bounds, max_tile_size,
+          affecting_params_.min_height_for_gpu_raster_tile);
     }
 
     default_tile_width = default_tile_size.width();

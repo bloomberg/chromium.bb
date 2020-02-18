@@ -6,9 +6,14 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"
+#include "third_party/blink/renderer/modules/payments/payment_method_data.h"
+#include "third_party/blink/renderer/modules/payments/payment_options.h"
+#include "third_party/blink/renderer/modules/payments/payment_shipping_option.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
@@ -42,6 +47,27 @@ CreateCanMakePaymentEventDataForTest() {
   return event_data;
 }
 
+static payments::mojom::blink::PaymentOptionsPtr CreatePaymentOptionsForTest() {
+  auto payment_options = payments::mojom::blink::PaymentOptions::New();
+  payment_options->request_payer_name = true;
+  payment_options->request_payer_email = true;
+  payment_options->request_payer_phone = true;
+  payment_options->request_shipping = true;
+  payment_options->shipping_type =
+      payments::mojom::PaymentShippingType::DELIVERY;
+  return payment_options;
+}
+
+static payments::mojom::blink::PaymentShippingOptionPtr
+CreateShippingOptionForTest() {
+  auto shipping_option = payments::mojom::blink::PaymentShippingOption::New();
+  shipping_option->amount = CreatePaymentCurrencyAmountForTest();
+  shipping_option->label = String::FromUTF8("shipping-option-label");
+  shipping_option->id = String::FromUTF8("shipping-option-id");
+  shipping_option->selected = true;
+  return shipping_option;
+}
+
 static payments::mojom::blink::PaymentRequestEventDataPtr
 CreatePaymentRequestEventDataForTest() {
   auto event_data = payments::mojom::blink::PaymentRequestEventData::New();
@@ -53,6 +79,10 @@ CreatePaymentRequestEventDataForTest() {
   event_data->method_data = std::move(method_data);
   event_data->total = CreatePaymentCurrencyAmountForTest();
   event_data->instrument_key = String::FromUTF8("payment-instrument-key");
+  event_data->payment_options = CreatePaymentOptionsForTest();
+  Vector<payments::mojom::blink::PaymentShippingOptionPtr> shipping_options;
+  shipping_options.push_back(CreateShippingOptionForTest());
+  event_data->shipping_options = std::move(shipping_options);
   return event_data;
 }
 
@@ -124,6 +154,34 @@ TEST(PaymentEventDataConversionTest, ToPaymentRequestEventData) {
 
   ASSERT_TRUE(data->hasInstrumentKey());
   EXPECT_EQ("payment-instrument-key", data->instrumentKey());
+
+  // paymentOptions
+  ASSERT_TRUE(data->hasPaymentOptions());
+  ASSERT_TRUE(data->paymentOptions()->hasRequestPayerName());
+  ASSERT_TRUE(data->paymentOptions()->requestPayerName());
+  ASSERT_TRUE(data->paymentOptions()->hasRequestPayerEmail());
+  ASSERT_TRUE(data->paymentOptions()->requestPayerEmail());
+  ASSERT_TRUE(data->paymentOptions()->hasRequestPayerPhone());
+  ASSERT_TRUE(data->paymentOptions()->requestPayerPhone());
+  ASSERT_TRUE(data->paymentOptions()->hasRequestShipping());
+  ASSERT_TRUE(data->paymentOptions()->requestShipping());
+  ASSERT_TRUE(data->paymentOptions()->hasShippingType());
+  EXPECT_EQ("delivery", data->paymentOptions()->shippingType());
+
+  // shippingOptions
+  ASSERT_TRUE(data->hasShippingOptions());
+  EXPECT_EQ(1UL, data->shippingOptions().size());
+  ASSERT_TRUE(data->shippingOptions().front()->hasAmount());
+  ASSERT_TRUE(data->shippingOptions().front()->amount()->hasCurrency());
+  EXPECT_EQ("USD", data->shippingOptions().front()->amount()->currency());
+  ASSERT_TRUE(data->shippingOptions().front()->amount()->hasValue());
+  EXPECT_EQ("9.99", data->shippingOptions().front()->amount()->value());
+  ASSERT_TRUE(data->shippingOptions().front()->hasLabel());
+  EXPECT_EQ("shipping-option-label", data->shippingOptions().front()->label());
+  ASSERT_TRUE(data->shippingOptions().front()->hasId());
+  EXPECT_EQ("shipping-option-id", data->shippingOptions().front()->id());
+  ASSERT_TRUE(data->shippingOptions().front()->hasSelected());
+  ASSERT_TRUE(data->shippingOptions().front()->selected());
 }
 
 }  // namespace

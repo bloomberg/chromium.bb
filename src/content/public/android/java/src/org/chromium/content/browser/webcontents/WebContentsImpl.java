@@ -14,14 +14,15 @@ import android.os.Message;
 import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
 import android.view.Surface;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.UserData;
 import org.chromium.base.UserDataHost;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -63,7 +64,7 @@ import java.util.UUID;
  */
 @JNINamespace("content")
 public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, WindowEventObserver {
-    private static final String TAG = "cr_WebContentsImpl";
+    private static final String TAG = "WebContentsImpl";
 
     private static final String PARCEL_VERSION_KEY = "version";
     private static final String PARCEL_WEBCONTENTS_KEY = "webcontents";
@@ -339,8 +340,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             throw new IllegalStateException("Attempting to destroy WebContents on non-UI thread");
         }
 
-        if (mNativeWebContentsAndroid != 0)
+        if (mNativeWebContentsAndroid != 0) {
             WebContentsImplJni.get().destroyWebContents(mNativeWebContentsAndroid);
+        }
     }
 
     @Override
@@ -352,9 +354,10 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public void clearNativeReference() {
-        if (mNativeWebContentsAndroid != 0)
+        if (mNativeWebContentsAndroid != 0) {
             WebContentsImplJni.get().clearNativeReference(
                     mNativeWebContentsAndroid, WebContentsImpl.this);
+        }
     }
 
     @Override
@@ -666,7 +669,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public int getLoadProgress() {
+    public float getLoadProgress() {
         checkNotDestroyed();
         return WebContentsImplJni.get().getLoadProgress(
                 mNativeWebContentsAndroid, WebContentsImpl.this);
@@ -786,12 +789,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public void reloadLoFiImages() {
-        checkNotDestroyed();
-        WebContentsImplJni.get().reloadLoFiImages(mNativeWebContentsAndroid, WebContentsImpl.this);
-    }
-
-    @Override
     public int downloadImage(String url, boolean isFavicon, int maxBitmapSize,
             boolean bypassCache, ImageDownloadCallback callback) {
         checkNotDestroyed();
@@ -907,7 +904,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
         // Map can be null after WebView gets gc'ed on its way to destruction.
         if (userDataHost == null) {
-            Log.e(TAG, "UserDataHost can't be found");
+            Log.d(TAG, "UserDataHost can't be found");
             return null;
         }
 
@@ -1052,7 +1049,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
                 String message, String sourceOrigin, String targetOrigin, MessagePort[] ports);
         boolean hasAccessedInitialDocument(long nativeWebContentsAndroid, WebContentsImpl caller);
         int getThemeColor(long nativeWebContentsAndroid, WebContentsImpl caller);
-        int getLoadProgress(long nativeWebContentsAndroid, WebContentsImpl caller);
+        float getLoadProgress(long nativeWebContentsAndroid, WebContentsImpl caller);
         void requestSmartClipExtract(long nativeWebContentsAndroid, WebContentsImpl caller,
                 SmartClipCallback callback, int x, int y, int width, int height);
         void requestAccessibilitySnapshot(long nativeWebContentsAndroid, WebContentsImpl caller,
@@ -1061,7 +1058,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
                 OverscrollRefreshHandler nativeOverscrollRefreshHandler);
         void setSpatialNavigationDisabled(
                 long nativeWebContentsAndroid, WebContentsImpl caller, boolean disabled);
-        void reloadLoFiImages(long nativeWebContentsAndroid, WebContentsImpl caller);
         int downloadImage(long nativeWebContentsAndroid, WebContentsImpl caller, String url,
                 boolean isFavicon, int maxBitmapSize, boolean bypassCache,
                 ImageDownloadCallback callback);

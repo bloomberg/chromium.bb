@@ -294,7 +294,7 @@ sk_sp<SkSpecialImage> SkDisplacementMapEffectImpl::onFilterImage(const Context& 
     // With a more complex DAG attached to this input, it's not clear that working in ANY specific
     // color space makes sense, so we ignore color spaces (and gamma) entirely. This may not be
     // ideal, but it's at least consistent and predictable.
-    Context displContext(ctx.ctm(), ctx.clipBounds(), ctx.cache(),
+    Context displContext(ctx.mapping(), ctx.desiredOutput(), ctx.cache(),
                          kN32_SkColorType, nullptr, ctx.source());
     sk_sp<SkSpecialImage> displ(this->filterInput(0, displContext, &displOffset));
     if (!displ) {
@@ -321,7 +321,7 @@ sk_sp<SkSpecialImage> SkDisplacementMapEffectImpl::onFilterImage(const Context& 
         return nullptr;
     }
 
-    const SkIRect colorBounds = bounds.makeOffset(-colorOffset.x(), -colorOffset.y());
+    const SkIRect colorBounds = bounds.makeOffset(-colorOffset);
     // If the offset overflowed (saturated) then we have to abort, as we need their
     // dimensions to be equal. See https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=7209
     if (colorBounds.size() != bounds.size()) {
@@ -389,7 +389,8 @@ sk_sp<SkSpecialImage> SkDisplacementMapEffectImpl::onFilterImage(const Context& 
                 SkIRect::MakeWH(bounds.width(), bounds.height()),
                 kNeedNewImageUniqueID_SpecialImage,
                 renderTargetContext->asTextureProxyRef(),
-                renderTargetContext->colorSpaceInfo().refColorSpace());
+                renderTargetContext->colorInfo().colorType(),
+                renderTargetContext->colorInfo().refColorSpace());
     }
 #endif
 
@@ -560,7 +561,7 @@ std::unique_ptr<GrFragmentProcessor> GrDisplacementMapEffect::TestCreate(GrProce
     SkISize colorDimensions;
     colorDimensions.fWidth = d->fRandom->nextRangeU(0, colorProxy->width());
     colorDimensions.fHeight = d->fRandom->nextRangeU(0, colorProxy->height());
-    SkIRect dispRect = SkIRect::MakeWH(dispProxy->width(), dispProxy->height());
+    SkIRect dispRect = SkIRect::MakeSize(dispProxy->dimensions());
     return GrDisplacementMapEffect::Make(xChannelSelector, yChannelSelector, scale,
                                          std::move(dispProxy),
                                          dispRect,
@@ -647,11 +648,11 @@ void GrGLDisplacementMapEffect::emitCode(EmitArgs& args) {
 void GrGLDisplacementMapEffect::onSetData(const GrGLSLProgramDataManager& pdman,
                                           const GrFragmentProcessor& proc) {
     const GrDisplacementMapEffect& displacementMap = proc.cast<GrDisplacementMapEffect>();
-    GrTextureProxy* proxy = displacementMap.textureSampler(1).proxy();
-    GrTexture* colorTex = proxy->peekTexture();
+    GrSurfaceProxy* proxy = displacementMap.textureSampler(1).proxy();
+    SkISize texDimensions = proxy->backingStoreDimensions();
 
-    SkScalar scaleX = displacementMap.scale().fX / colorTex->width();
-    SkScalar scaleY = displacementMap.scale().fY / colorTex->height();
+    SkScalar scaleX = displacementMap.scale().fX / texDimensions.width();
+    SkScalar scaleY = displacementMap.scale().fY / texDimensions.height();
     pdman.set2f(fScaleUni, SkScalarToFloat(scaleX),
                 proxy->origin() == kTopLeft_GrSurfaceOrigin ?
                 SkScalarToFloat(scaleY) : SkScalarToFloat(-scaleY));

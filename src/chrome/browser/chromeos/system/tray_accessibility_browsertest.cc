@@ -191,7 +191,14 @@ class TrayAccessibilityTest
   std::unique_ptr<ash::SystemTrayTestApi> tray_test_api_;
 };
 
-IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
+  
+// Fails on linux-chromeos-dbg see crbug/1027919.
+#if defined(OS_LINUX)
+#define MAYBE_ShowMenu DISABLED_ShowMenu
+#else
+#define MAYBE_ShowMenu ShowMenu
+#endif
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, MAYBE_ShowMenu) {
   SetShowAccessibilityOptionsInSystemTrayMenu(false);
 
   // Confirms that the menu is hidden.
@@ -320,7 +327,13 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
   EXPECT_FALSE(IsMenuButtonVisible());
 }
 
-IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
+// Fails on linux-chromeos-dbg see crbug/1027919.
+#if defined(OS_LINUX)
+#define MAYBE_ShowMenuWithShowMenuOption DISABLED_ShowMenuWithShowMenuOption
+#else
+#define MAYBE_ShowMenuWithShowMenuOption ShowMenuWithShowMenuOption
+#endif
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, MAYBE_ShowMenuWithShowMenuOption) {
   SetShowAccessibilityOptionsInSystemTrayMenu(true);
 
   // Confirms that the menu is visible.
@@ -473,7 +486,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
   EXPECT_TRUE(IsMenuButtonVisible());
 }
 
-// Verify that the accessiblity system detailed menu remains open when an item
+// Verify that the accessibility system detailed menu remains open when an item
 // is selected or deselected.
 // Do not use a feature which requires an enable/disable confirmation dialog
 // here, as the dialogs change focus and close the detail menu.

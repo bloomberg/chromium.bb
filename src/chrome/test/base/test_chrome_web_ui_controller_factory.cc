@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/test_data_source.h"
 #include "content/public/browser/url_data_source.h"
@@ -62,7 +63,10 @@ TestChromeWebUIControllerFactory::CreateWebUIControllerForURL(
       provider ? provider->NewWebUI(web_ui, webui_url)
                : ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
                      web_ui, webui_url);
-  content::URLDataSource::Add(profile, std::make_unique<TestDataSource>());
+  // Add an empty callback since managed-footnote always sends this message.
+  web_ui->RegisterMessageCallback("observeManagedUI", base::DoNothing());
+  content::URLDataSource::Add(profile,
+                              std::make_unique<TestDataSource>("webui"));
   return controller;
 }
 

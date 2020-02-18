@@ -26,10 +26,12 @@ GL_EXPORT extern const char kGLImplementationDisabledName[];
 GL_EXPORT extern const char kANGLEImplementationDefaultName[];
 GL_EXPORT extern const char kANGLEImplementationD3D9Name[];
 GL_EXPORT extern const char kANGLEImplementationD3D11Name[];
+GL_EXPORT extern const char kANGLEImplementationD3D11on12Name[];
 GL_EXPORT extern const char kANGLEImplementationOpenGLName[];
 GL_EXPORT extern const char kANGLEImplementationOpenGLESName[];
 GL_EXPORT extern const char kANGLEImplementationNullName[];
 GL_EXPORT extern const char kANGLEImplementationVulkanName[];
+GL_EXPORT extern const char kANGLEImplementationSwiftShaderName[];
 
 GL_EXPORT extern const char kANGLEImplementationD3D11NULLName[];
 GL_EXPORT extern const char kANGLEImplementationOpenGLNULLName[];
@@ -46,6 +48,7 @@ namespace switches {
 GL_EXPORT extern const char kDisableD3D11[];
 GL_EXPORT extern const char kDisableES3GLContext[];
 GL_EXPORT extern const char kDisableES3GLContextForTesting[];
+GL_EXPORT extern const char kDisableGpuDriverBugWorkarounds[];
 GL_EXPORT extern const char kDisableGpuVsync[];
 GL_EXPORT extern const char kEnableGPUServiceLogging[];
 GL_EXPORT extern const char kEnableGPUServiceTracing[];

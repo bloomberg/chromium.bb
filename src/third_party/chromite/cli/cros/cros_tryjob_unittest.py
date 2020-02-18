@@ -14,6 +14,7 @@ from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.cli.cros import cros_tryjob
 from chromite.lib import cros_test_lib
+from chromite.utils import outcap
 
 
 class MockTryjobCommand(command_unittest.MockCommand):
@@ -90,7 +91,7 @@ class TryjobTestPrintKnownConfigs(TryjobTest):
 
   def testListTryjobs(self):
     """Test we can generate results for --list."""
-    with cros_build_lib.OutputCapturer() as output:
+    with outcap.OutputCapturer() as output:
       cros_tryjob.PrintKnownConfigs(
           self.site_config, production=False, build_config_fragments=[])
 
@@ -100,7 +101,7 @@ class TryjobTestPrintKnownConfigs(TryjobTest):
 
   def testListProduction(self):
     """Test we can generate results for --production --list."""
-    with cros_build_lib.OutputCapturer() as output:
+    with outcap.OutputCapturer() as output:
       cros_tryjob.PrintKnownConfigs(
           self.site_config, production=True, build_config_fragments=[])
 
@@ -110,7 +111,7 @@ class TryjobTestPrintKnownConfigs(TryjobTest):
 
   def testListTryjobsEmpty(self):
     """Test we can generate ~empty results for failed --list search."""
-    with cros_build_lib.OutputCapturer() as output:
+    with outcap.OutputCapturer() as output:
       cros_tryjob.PrintKnownConfigs(
           self.site_config, production=False,
           build_config_fragments=['this-is-not-a-builder-name'])
@@ -135,12 +136,12 @@ class TryjobTestParsing(TryjobTest):
         'local_patches': [],
         'passthrough': None,
         'passthrough_raw': None,
-        'build_configs': ['eve-pre-cq'],
+        'build_configs': ['eve-full-tryjob'],
     }
 
   def testMinimalParsing(self):
     """Tests flow for an interactive session."""
-    self.SetupCommandMock(['eve-pre-cq'])
+    self.SetupCommandMock(['eve-full-tryjob'])
     options = self.cmd_mock.inst.options
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -160,7 +161,7 @@ class TryjobTestParsing(TryjobTest):
         '--debug-cidb',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
         '--list',
-        'eve-pre-cq', 'eve-release',
+        'eve-full-tryjob', 'eve-release',
     ])
     options = self.cmd_mock.inst.options
 
@@ -180,7 +181,7 @@ class TryjobTestParsing(TryjobTest):
             '--debug-cidb',
         ],
         'passthrough_raw': ['--cbuild-arg', 'bar'],
-        'build_configs': ['eve-pre-cq', 'eve-release'],
+        'build_configs': ['eve-full-tryjob', 'eve-release'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -201,7 +202,7 @@ class TryjobTestParsing(TryjobTest):
         '--debug-cidb',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
         '--list',
-        'eve-paladin', 'eve-release',
+        'eve-full', 'eve-release',
     ])
     options = self.cmd_mock.inst.options
 
@@ -222,7 +223,7 @@ class TryjobTestParsing(TryjobTest):
             '--debug-cidb',
         ],
         'passthrough_raw': ['--cbuild-arg', 'bar'],
-        'build_configs': ['eve-paladin', 'eve-release'],
+        'build_configs': ['eve-full', 'eve-release'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -242,7 +243,7 @@ class TryjobTestParsing(TryjobTest):
         '--chrome_version', 'chrome_git_hash',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
         '--list',
-        'eve-pre-cq', 'eve-release',
+        'eve-full-tryjob', 'eve-release',
     ])
     options = self.cmd_mock.inst.options
 
@@ -262,7 +263,7 @@ class TryjobTestParsing(TryjobTest):
             '--chrome_version', 'chrome_git_hash',
         ],
         'passthrough_raw': ['--cbuild-arg', 'bar'],
-        'build_configs': ['eve-pre-cq', 'eve-release'],
+        'build_configs': ['eve-full-tryjob', 'eve-release'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -367,7 +368,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     """Test option verification with simplest normal options."""
     self.SetupCommandMock([
         '-g', '123',
-        'amd64-generic-pre-cq',
+        'amd64-generic-full-tryjob',
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -378,7 +379,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     self.SetupCommandMock([
         '-g', '123',
         '--local',
-        'amd64-generic-pre-cq',
+        'amd64-generic-full-tryjob',
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -386,7 +387,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     """Test option verification with simplest normal options."""
     self.SetupCommandMock([
         '--cbuildbot',
-        'amd64-generic-paladin',
+        'amd64-generic-full',
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -403,7 +404,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'eve-pre-cq', 'eve-release-tryjob',
+        'eve-full-tryjob', 'eve-release-tryjob',
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -419,7 +420,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'eve-paladin', 'eve-release',
+        'eve-full', 'eve-release',
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -436,7 +437,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'eve-pre-cq', 'eve-release-tryjob',
+        'eve-full-tryjob', 'eve-release-tryjob',
     ])
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
 
@@ -447,7 +448,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
-      with cros_build_lib.OutputCapturer(quiet_fail=True):  # Hide list output.
+      with outcap.OutputCapturer(quiet_fail=True):  # Hide list output.
         cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
     self.assertEqual(cm.exception.code, 0)
 
@@ -458,7 +459,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
-      with cros_build_lib.OutputCapturer(quiet_fail=True):  # Hide list output.
+      with outcap.OutputCapturer(quiet_fail=True):  # Hide list output.
         cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
     self.assertEqual(cm.exception.code, 0)
 
@@ -466,7 +467,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     """Test option verification with production/no patches."""
     self.SetupCommandMock([
         '--production',
-        'eve-pre-cq', 'eve-release'
+        'eve-full-tryjob', 'eve-release'
     ])
 
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
@@ -527,7 +528,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     self.SetupCommandMock([
         '--production',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
-        'eve-pre-cq', 'eve-release'
+        'eve-full-tryjob', 'eve-release'
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
@@ -537,7 +538,7 @@ class TryjobTestVerifyOptions(TryjobTest):
   def testRemoteTryjobProductionConfig(self):
     """Test option verification remote tryjob w/production config."""
     self.SetupCommandMock([
-        'eve-pre-cq', 'eve-release'
+        'eve-full-tryjob', 'eve-release'
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
@@ -547,7 +548,7 @@ class TryjobTestVerifyOptions(TryjobTest):
   def testLocalTryjobProductionConfig(self):
     """Test option verification local tryjob w/production config."""
     self.SetupCommandMock([
-        '--local', 'eve-pre-cq', 'eve-release'
+        '--local', 'eve-release'
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
@@ -557,7 +558,7 @@ class TryjobTestVerifyOptions(TryjobTest):
   def testRemoteTryjobBranchProductionConfig(self):
     """Test a tryjob on a branch for a production config w/confirm."""
     self.SetupCommandMock([
-        '--yes', '--branch', 'foo', 'eve-pre-cq', 'eve-release'
+        '--yes', '--branch', 'foo', 'eve-release'
     ])
 
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
@@ -565,7 +566,7 @@ class TryjobTestVerifyOptions(TryjobTest):
   def testRemoteProductionBranchProductionConfig(self):
     """Test a production job on a branch for a production config wo/confirm."""
     self.SetupCommandMock([
-        '--production', '--branch', 'foo', 'eve-pre-cq', 'eve-release'
+        '--production', '--branch', 'foo', 'eve-release'
     ])
 
     cros_tryjob.VerifyOptions(self.cmd_mock.inst.options, self.site_config)
@@ -657,7 +658,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--branch', 'source_branch',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'eve-pre-cq', 'eve-release',
+        'eve-release',
     ]
 
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
@@ -686,7 +687,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--branch', 'source_branch',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'eve-pre-cq', 'eve-release',
+        'eve-release',
     ]
 
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
@@ -717,7 +718,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--branch', 'source_branch',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'eve-paladin', 'eve-release',
+        'eve-full', 'eve-release',
     ]
 
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
@@ -773,30 +774,17 @@ class TryjobTestDisplayLabel(TryjobTest):
     return cros_tryjob.DisplayLabel(site_config, options, config_name)
 
   def testMasterTryjob(self):
-    label = self.FindLabel(['eve-paladin-tryjob'])
+    label = self.FindLabel(['eve-full-tryjob'])
     self.assertEqual(label, 'tryjob')
-
-  def testMasterPreCQ(self):
-    label = self.FindLabel(['eve-pre-cq'])
-    self.assertEqual(label, 'pre_cq')
 
   def testMasterUnknown(self):
     label = self.FindLabel(['bogus-config'])
     self.assertEqual(label, 'tryjob')
 
   def testMasterKnownProduction(self):
-    label = self.FindLabel(['--production', 'eve-paladin'])
+    label = self.FindLabel(['--production', 'eve-full'])
     self.assertEqual(label, 'production_tryjob')
 
   def testMasterUnknownProduction(self):
     label = self.FindLabel(['--production', 'bogus-config'])
-    self.assertEqual(label, 'production_tryjob')
-
-  def testBranchTryjob(self):
-    label = self.FindLabel(['--branch=test-branch', 'eve-pre-cq'])
-    self.assertEqual(label, 'tryjob')
-
-  def testBranchProduction(self):
-    label = self.FindLabel(['--production', '--branch=test-branch',
-                            'eve-pre-cq'])
     self.assertEqual(label, 'production_tryjob')

@@ -12,7 +12,6 @@
 
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLParser.h"
-#include "src/sksl/ir/SkSLAppendStage.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
 #include "src/sksl/ir/SkSLBoolLiteral.h"
 #include "src/sksl/ir/SkSLBreakStatement.h"
@@ -37,6 +36,7 @@
 #include "src/sksl/ir/SkSLIntLiteral.h"
 #include "src/sksl/ir/SkSLInterfaceBlock.h"
 #include "src/sksl/ir/SkSLLayout.h"
+#include "src/sksl/ir/SkSLNop.h"
 #include "src/sksl/ir/SkSLNullLiteral.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLPrefixExpression.h"
@@ -127,7 +127,6 @@ static void fill_caps(const SKSL_CAPS_CLASS& caps,
     CAP(fbFetchNeedsCustomOutput);
     CAP(flatInterpolationSupport);
     CAP(noperspectiveInterpolationSupport);
-    CAP(sampleVariablesSupport);
     CAP(externalTextureSupport);
     CAP(mustEnableAdvBlendEqs);
     CAP(mustEnableSpecificAdvBlendEqs);
@@ -169,6 +168,10 @@ void IRGenerator::start(const Program::Settings* settings,
                 }
             }
         }
+    }
+    SkASSERT(fIntrinsics);
+    for (auto& pair : *fIntrinsics) {
+        pair.second.second = false;
     }
 }
 
@@ -303,11 +306,12 @@ std::unique_ptr<VarDeclarations> IRGenerator::convertVarDeclarations(const ASTNo
                     count = ((IntLiteral&) *size).fValue;
                     if (count <= 0) {
                         fErrors.error(size->fOffset, "array size must be positive");
+                        return nullptr;
                     }
                     name += "[" + to_string(count) + "]";
                 } else {
-                    count = -1;
-                    name += "[]";
+                    fErrors.error(size->fOffset, "array size must be specified");
+                    return nullptr;
                 }
                 type = (Type*) fSymbolTable->takeOwnership(
                                                  std::unique_ptr<Symbol>(new Type(name,
@@ -833,7 +837,7 @@ void IRGenerator::convertFunction(const ASTNode& f) {
                             return;
                         }
                     }
-                    if (other->fDefined) {
+                    if (other->fDefined && !other->fBuiltin) {
                         fErrors.error(f.fOffset, "duplicate definition of " +
                                                  other->description());
                     }
@@ -893,8 +897,10 @@ void IRGenerator::convertFunction(const ASTNode& f) {
         if (Program::kVertex_Kind == fKind && fd.fName == "main" && fRTAdjust) {
             body->fStatements.insert(body->fStatements.end(), this->getNormalizeSkPositionCode());
         }
-        fProgramElements->push_back(std::unique_ptr<FunctionDefinition>(
-                                        new FunctionDefinition(f.fOffset, *decl, std::move(body))));
+        std::unique_ptr<FunctionDefinition> result(new FunctionDefinition(f.fOffset, *decl,
+                                                                          std::move(body)));
+        result->fSource = &f;
+        fProgramElements->push_back(std::move(result));
     }
 }
 
@@ -965,11 +971,12 @@ std::unique_ptr<InterfaceBlock> IRGenerator::convertInterfaceBlock(const ASTNode
                 count = ((IntLiteral&) *converted).fValue;
                 if (count <= 0) {
                     fErrors.error(converted->fOffset, "array size must be positive");
+                    return nullptr;
                 }
                 name += "[" + to_string(count) + "]";
             } else {
-                count = -1;
-                name += "[]";
+                fErrors.error(intf.fOffset, "array size must be specified");
+                return nullptr;
             }
             type = (Type*) symbols->takeOwnership(std::unique_ptr<Symbol>(
                                                                          new Type(name,
@@ -978,12 +985,8 @@ std::unique_ptr<InterfaceBlock> IRGenerator::convertInterfaceBlock(const ASTNode
                                                                                   (int) count)));
             sizes.push_back(std::move(converted));
         } else {
-            type = (Type*) symbols->takeOwnership(std::unique_ptr<Symbol>(
-                                                                       new Type(type->name() + "[]",
-                                                                                Type::kArray_Kind,
-                                                                                *type,
-                                                                                -1)));
-            sizes.push_back(nullptr);
+            fErrors.error(intf.fOffset, "array size must be specified");
+            return nullptr;
         }
     }
     Variable* var = (Variable*) old->takeOwnership(std::unique_ptr<Symbol>(
@@ -1171,13 +1174,11 @@ std::unique_ptr<Expression> IRGenerator::convertIdentifier(const ASTNode& identi
                     break;
 #ifndef SKSL_STANDALONE
                 case SK_FRAGCOORD_BUILTIN:
-                    if (var->fModifiers.fLayout.fBuiltin == SK_FRAGCOORD_BUILTIN) {
-                        fInputs.fFlipY = true;
-                        if (fSettings->fFlipY &&
-                            (!fSettings->fCaps ||
-                             !fSettings->fCaps->fragCoordConventionsExtensionString())) {
-                            fInputs.fRTHeight = true;
-                        }
+                    fInputs.fFlipY = true;
+                    if (fSettings->fFlipY &&
+                        (!fSettings->fCaps ||
+                            !fSettings->fCaps->fragCoordConventionsExtensionString())) {
+                        fInputs.fRTHeight = true;
                     }
 #endif
             }
@@ -1753,6 +1754,16 @@ std::unique_ptr<Expression> IRGenerator::convertTernaryExpression(const ASTNode&
 std::unique_ptr<Expression> IRGenerator::call(int offset,
                                               const FunctionDeclaration& function,
                                               std::vector<std::unique_ptr<Expression>> arguments) {
+    if (function.fBuiltin) {
+        auto found = fIntrinsics->find(function.fName);
+        if (found != fIntrinsics->end() && !found->second.second) {
+            found->second.second = true;
+            const FunctionDeclaration* old = fCurrentFunction;
+            fCurrentFunction = nullptr;
+            this->convertFunction(*((FunctionDefinition&) *found->second.first).fSource);
+            fCurrentFunction = old;
+        }
+    }
     if (function.fParameters.size() != arguments.size()) {
         String msg = "call to '" + function.fName + "' expected " +
                                  to_string((uint64_t) function.fParameters.size()) +
@@ -2084,7 +2095,7 @@ std::unique_ptr<Expression> IRGenerator::convertPrefixExpression(const ASTNode& 
             }
             break;
         case Token::BITWISENOT:
-            if (base->fType != *fContext.fInt_Type) {
+            if (base->fType != *fContext.fInt_Type && base->fType != *fContext.fUInt_Type) {
                 fErrors.error(expression.fOffset,
                               String("'") + Compiler::OperatorName(expression.getToken().fKind) +
                               "' cannot operate on '" + base->fType.description() + "'");
@@ -2168,43 +2179,39 @@ std::unique_ptr<Expression> IRGenerator::convertSwizzle(std::unique_ptr<Expressi
     for (size_t i = 0; i < fields.fLength; i++) {
         switch (fields[i]) {
             case '0':
-                if (i != fields.fLength - 1) {
-                    fErrors.error(base->fOffset,
-                                  "only the last swizzle component can be a constant");
-                }
                 swizzleComponents.push_back(SKSL_SWIZZLE_0);
                 break;
             case '1':
-                if (i != fields.fLength - 1) {
-                    fErrors.error(base->fOffset,
-                                  "only the last swizzle component can be a constant");
-                }
                 swizzleComponents.push_back(SKSL_SWIZZLE_1);
                 break;
-            case 'x': // fall through
-            case 'r': // fall through
+            case 'x':
+            case 'r':
             case 's':
+            case 'L':
                 swizzleComponents.push_back(0);
                 break;
-            case 'y': // fall through
-            case 'g': // fall through
+            case 'y':
+            case 'g':
             case 't':
+            case 'T':
                 if (base->fType.columns() >= 2) {
                     swizzleComponents.push_back(1);
                     break;
                 }
                 // fall through
-            case 'z': // fall through
-            case 'b': // fall through
+            case 'z':
+            case 'b':
             case 'p':
+            case 'R':
                 if (base->fType.columns() >= 3) {
                     swizzleComponents.push_back(2);
                     break;
                 }
                 // fall through
-            case 'w': // fall through
-            case 'a': // fall through
+            case 'w':
+            case 'a':
             case 'q':
+            case 'B':
                 if (base->fType.columns() >= 4) {
                     swizzleComponents.push_back(3);
                     break;
@@ -2255,99 +2262,27 @@ std::unique_ptr<Expression> IRGenerator::convertTypeField(int offset, const Type
             fSymbolTable = ((Enum&) *e).fSymbols;
             result = convertIdentifier(ASTNode(&fFile->fNodes, offset, ASTNode::Kind::kIdentifier,
                                                field));
+            SkASSERT(result->fKind == Expression::kVariableReference_Kind);
+            const Variable& v = ((VariableReference&) *result).fVariable;
+            SkASSERT(v.fInitialValue);
+            SkASSERT(v.fInitialValue->fKind == Expression::kIntLiteral_Kind);
+            result.reset(new IntLiteral(offset, ((IntLiteral&) *v.fInitialValue).fValue, &type));
             fSymbolTable = old;
+            break;
         }
     }
     if (!result) {
+        auto found = fIntrinsics->find(type.fName);
+        if (found != fIntrinsics->end()) {
+            SkASSERT(!found->second.second);
+            found->second.second = true;
+            fProgramElements->push_back(found->second.first->clone());
+            return this->convertTypeField(offset, type, field);
+        }
         fErrors.error(offset, "type '" + type.fName + "' does not have a field named '" + field +
                               "'");
     }
     return result;
-}
-
-std::unique_ptr<Expression> IRGenerator::convertAppend(int offset,
-                                                       const std::vector<ASTNode>& args) {
-#ifndef SKSL_STANDALONE
-    if (args.size() < 2) {
-        fErrors.error(offset, "'append' requires at least two arguments");
-        return nullptr;
-    }
-    std::unique_ptr<Expression> pipeline = this->convertExpression(args[0]);
-    if (!pipeline) {
-        return nullptr;
-    }
-    if (pipeline->fType != *fContext.fSkRasterPipeline_Type) {
-        fErrors.error(offset, "first argument of 'append' must have type 'SkRasterPipeline'");
-        return nullptr;
-    }
-    if (ASTNode::Kind::kIdentifier != args[1].fKind) {
-        fErrors.error(offset, "'" + args[1].description() + "' is not a valid stage");
-        return nullptr;
-    }
-    StringFragment name = args[1].getString();
-    SkRasterPipeline::StockStage stage = SkRasterPipeline::premul;
-    std::vector<std::unique_ptr<Expression>> stageArgs;
-    stageArgs.push_back(std::move(pipeline));
-    for (size_t i = 2; i < args.size(); ++i) {
-        std::unique_ptr<Expression> arg = this->convertExpression(args[i]);
-        if (!arg) {
-            return nullptr;
-        }
-        stageArgs.push_back(std::move(arg));
-    }
-    size_t expectedArgs = 0;
-    // FIXME use a map
-    if ("premul" == name) {
-        stage = SkRasterPipeline::premul;
-    }
-    else if ("unpremul" == name) {
-        stage = SkRasterPipeline::unpremul;
-    }
-    else if ("clamp_0" == name) {
-        stage = SkRasterPipeline::clamp_0;
-    }
-    else if ("clamp_1" == name) {
-        stage = SkRasterPipeline::clamp_1;
-    }
-    else if ("matrix_4x5" == name) {
-        expectedArgs = 1;
-        stage = SkRasterPipeline::matrix_4x5;
-        if (1 == stageArgs.size() && stageArgs[0]->fType.fName != "float[20]") {
-            fErrors.error(offset, "pipeline stage '" + name + "' expected a float[20] argument");
-            return nullptr;
-        }
-    }
-    else {
-        bool found = false;
-        for (const auto& e : *fProgramElements) {
-            if (ProgramElement::kFunction_Kind == e->fKind) {
-                const FunctionDefinition& f = (const FunctionDefinition&) *e;
-                if (f.fDeclaration.fName == name) {
-                    stage = SkRasterPipeline::callback;
-                    std::vector<const FunctionDeclaration*> functions = { &f.fDeclaration };
-                    stageArgs.emplace_back(new FunctionReference(fContext, offset, functions));
-                    found = true;
-                    break;
-                }
-            }
-        }
-        if (!found) {
-            fErrors.error(offset, "'" + name + "' is not a valid pipeline stage");
-            return nullptr;
-        }
-    }
-    if (args.size() != expectedArgs + 2) {
-        fErrors.error(offset, "pipeline stage '" + name + "' expected an additional argument " +
-                              "count of " + to_string((int) expectedArgs) + ", but found " +
-                              to_string((int) args.size() - 1));
-        return nullptr;
-    }
-    return std::unique_ptr<Expression>(new AppendStage(fContext, offset, stage,
-                                                       std::move(stageArgs)));
-#else
-    SkASSERT(false);
-    return nullptr;
-#endif
 }
 
 std::unique_ptr<Expression> IRGenerator::convertIndexExpression(const ASTNode& index) {

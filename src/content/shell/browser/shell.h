@@ -147,16 +147,15 @@ class Shell : public WebContentsDelegate,
   void LoadingStateChanged(WebContents* source,
                            bool to_different_document) override;
 #if defined(OS_ANDROID)
-  void LoadProgressChanged(WebContents* source, double progress) override;
   void SetOverlayMode(bool use_overlay_mode) override;
 #endif
   void EnterFullscreenModeForTab(
       WebContents* web_contents,
       const GURL& origin,
-      const blink::WebFullscreenOptions& options) override;
+      const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(const WebContents* web_contents) override;
-  blink::WebDisplayMode GetDisplayMode(
+  blink::mojom::DisplayMode GetDisplayMode(
       const WebContents* web_contents) override;
   void RequestToLockMouse(WebContents* web_contents,
                           bool user_gesture,
@@ -269,6 +268,9 @@ class Shell : public WebContentsDelegate,
   void ToggleFullscreenModeForTab(WebContents* web_contents,
                                   bool enter_fullscreen);
   // WebContentsObserver
+#if defined(OS_ANDROID)
+  void LoadProgressChanged(double progress) override;
+#endif
   void TitleWasSet(NavigationEntry* entry) override;
 
   void OnDevToolsWebContentsDestroyed();

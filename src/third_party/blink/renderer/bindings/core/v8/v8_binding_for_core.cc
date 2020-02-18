@@ -80,13 +80,25 @@ void V8SetReturnValue(const v8::PropertyCallbackInfo<v8::Value>& info,
                       const v8::PropertyDescriptor& descriptor) {
   DCHECK(descriptor.has_configurable());
   DCHECK(descriptor.has_enumerable());
-  DCHECK(descriptor.has_value());
-  DCHECK(descriptor.has_writable());
+  if (descriptor.has_value()) {
+    // Data property
+    DCHECK(descriptor.has_writable());
+    info.GetReturnValue().Set(
+        V8ObjectBuilder(ScriptState::ForCurrentRealm(info))
+            .Add("configurable", descriptor.configurable())
+            .Add("enumerable", descriptor.enumerable())
+            .Add("value", descriptor.value())
+            .Add("writable", descriptor.writable())
+            .V8Value());
+    return;
+  }
+  // Accessor property
+  DCHECK(descriptor.has_get() || descriptor.has_set());
   info.GetReturnValue().Set(V8ObjectBuilder(ScriptState::ForCurrentRealm(info))
                                 .Add("configurable", descriptor.configurable())
                                 .Add("enumerable", descriptor.enumerable())
-                                .Add("value", descriptor.value())
-                                .Add("writable", descriptor.writable())
+                                .Add("get", descriptor.get())
+                                .Add("set", descriptor.set())
                                 .V8Value());
 }
 
@@ -706,7 +718,10 @@ void ToFlexibleArrayBufferView(v8::Isolate* isolate,
                                v8::Local<v8::Value> value,
                                FlexibleArrayBufferView& result,
                                void* storage) {
-  DCHECK(value->IsArrayBufferView());
+  if (!value->IsArrayBufferView()) {
+    result.Clear();
+    return;
+  }
   v8::Local<v8::ArrayBufferView> buffer = value.As<v8::ArrayBufferView>();
   if (!storage) {
     result.SetFull(V8ArrayBufferView::ToImpl(buffer));
@@ -758,6 +773,13 @@ v8::Local<v8::Context> ToV8ContextEvenIfDetached(LocalFrame* frame,
   // TODO(yukishiino): this method probably should not force context creation,
   // but it does through WindowProxy() call.
   DCHECK(frame);
+
+  // TODO(crbug.com/1046282): The following bailout is a temporary fix
+  // introduced due to crbug.com/1037985 .  Remove this temporary fix once
+  // the root cause is fixed.
+  if (frame->IsProvisional())
+    return v8::Local<v8::Context>();
+
   return frame->WindowProxy(world)->ContextIfInitialized();
 }
 
@@ -783,7 +805,7 @@ ScriptState* ToScriptStateForMainWorld(LocalFrame* frame) {
 }
 
 bool IsValidEnum(const String& value,
-                 const char** valid_values,
+                 const char* const* valid_values,
                  size_t length,
                  const String& enum_name,
                  ExceptionState& exception_state) {
@@ -799,7 +821,7 @@ bool IsValidEnum(const String& value,
 }
 
 bool IsValidEnum(const Vector<String>& values,
-                 const char** valid_values,
+                 const char* const* valid_values,
                  size_t length,
                  const String& enum_name,
                  ExceptionState& exception_state) {
@@ -855,38 +877,14 @@ v8::Local<v8::Object> GetEsIteratorWithMethod(
   return iterator.As<v8::Object>();
 }
 
-v8::Local<v8::Object> GetEsIterator(v8::Isolate* isolate,
-                                    v8::Local<v8::Object> object,
-                                    ExceptionState& exception_state) {
-  v8::Local<v8::Function> iterator_getter =
-      GetEsIteratorMethod(isolate, object, exception_state);
-  if (exception_state.HadException())
-    return v8::Local<v8::Object>();
-
-  if (iterator_getter.IsEmpty()) {
-    exception_state.ThrowTypeError("Iterator getter is not callable.");
-    return v8::Local<v8::Object>();
-  }
-
-  return GetEsIteratorWithMethod(isolate, iterator_getter, object,
-                                 exception_state);
-}
-
 bool HasCallableIteratorSymbol(v8::Isolate* isolate,
                                v8::Local<v8::Value> value,
                                ExceptionState& exception_state) {
   if (!value->IsObject())
     return false;
-  v8::TryCatch block(isolate);
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  v8::Local<v8::Value> iterator_getter;
-  if (!value.As<v8::Object>()
-           ->Get(context, v8::Symbol::GetIterator(isolate))
-           .ToLocal(&iterator_getter)) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return false;
-  }
-  return iterator_getter->IsFunction();
+  v8::Local<v8::Function> iterator_method =
+      GetEsIteratorMethod(isolate, value.As<v8::Object>(), exception_state);
+  return !iterator_method.IsEmpty();
 }
 
 v8::Isolate* ToIsolate(const LocalFrame* frame) {

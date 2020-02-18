@@ -23,19 +23,10 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
 // Whether a download can be handled by parallel jobs.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kParallelDownloading;
 
-// Whether metadata for new in-progress downloads will be be stored in download
-// DB, rather than history DB.
-COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
-    kDownloadDBForNewDownloads;
-
 #if defined(OS_ANDROID)
 // Whether download expiration date will be refreshed on resumption.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kRefreshExpirationDate;
 #endif
-
-// Whether concurrent downloads to the same target path should be allowed.
-COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
-    kPreventDownloadsWithSamePath;
 
 // Whether in-progress download manager will be used to initialize download
 // service.
@@ -58,6 +49,10 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
 // Whether parallel download is used for QUIC connections.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
     kUseParallelRequestsForQUIC;
+
+// Whether to delete expired download.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kDeleteExpiredDownloads;
+
 }  // namespace features
 
 }  // namespace download

@@ -7,6 +7,16 @@
 
 #include "src/gpu/mock/GrMockCaps.h"
 
+#include "src/gpu/GrProgramDesc.h"
+
+GrProgramDesc GrMockCaps::makeDesc(const GrRenderTarget* rt,
+                                   const GrProgramInfo& programInfo) const {
+    GrProgramDesc desc;
+    SkDEBUGCODE(bool result =) GrProgramDesc::Build(&desc, rt, programInfo, *this);
+    SkASSERT(result == desc.isValid());
+    return desc;
+}
+
 #if GR_TEST_UTILS
 std::vector<GrCaps::TestFormatColorTypeCombination> GrMockCaps::getTestingCombinations() const {
     // TODO: need to add compressed formats to this list
@@ -24,8 +34,7 @@ std::vector<GrCaps::TestFormatColorTypeCombination> GrMockCaps::getTestingCombin
         { GrColorType::kAlpha_F16,       GrBackendFormat::MakeMock(GrColorType::kAlpha_F16)      },
         { GrColorType::kRGBA_F16,        GrBackendFormat::MakeMock(GrColorType::kRGBA_F16)       },
         { GrColorType::kRGBA_F16_Clamped,GrBackendFormat::MakeMock(GrColorType::kRGBA_F16_Clamped)},
-        { GrColorType::kRGBA_F32,        GrBackendFormat::MakeMock(GrColorType::kRGBA_F32)       },
-        { GrColorType::kR_16,            GrBackendFormat::MakeMock(GrColorType::kR_16)           },
+        { GrColorType::kAlpha_16,        GrBackendFormat::MakeMock(GrColorType::kAlpha_16)       },
         { GrColorType::kRG_1616,         GrBackendFormat::MakeMock(GrColorType::kRG_1616)        },
         { GrColorType::kRGBA_16161616,   GrBackendFormat::MakeMock(GrColorType::kRGBA_16161616)  },
         { GrColorType::kRG_F16,          GrBackendFormat::MakeMock(GrColorType::kRG_F16)         },

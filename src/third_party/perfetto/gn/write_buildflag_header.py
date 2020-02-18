@@ -28,6 +28,25 @@ import os
 import shlex
 import sys
 
+COPYRIGHT_HEADER = '''/*
+ * Copyright (C) 2019 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+'''
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--rsp', help='Input response file containing the flags.')
@@ -54,15 +73,18 @@ def main():
   lines.append('#ifndef %s' % guard)
   lines.append('#define %s' % guard)
   lines.append('')
+  lines.append('// clang-format off')
   for kv in flags:
     lines.append('#define PERFETTO_BUILDFLAG_DEFINE_%s() (%s)' % kv)
   lines.append('')
+  lines.append('// clang-format on')
   lines.append('#endif  // %s' % guard)
   lines.append('')
 
   with open(args.out, 'w') as out:
+    out.write(COPYRIGHT_HEADER)
     out.write('\n'.join(lines))
+
 
 if __name__ == '__main__':
   sys.exit(main())
-

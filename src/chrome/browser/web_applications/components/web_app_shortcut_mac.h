@@ -46,14 +46,20 @@ using ShimTerminatedCallback = base::OnceClosure;
 void LaunchShim(LaunchShimUpdateBehavior update_behavior,
                 ShimLaunchedCallback launched_callback,
                 ShimTerminatedCallback terminated_callback,
-                std::unique_ptr<web_app::ShortcutInfo> shortcut_info);
+                std::unique_ptr<ShortcutInfo> shortcut_info);
 
-std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
+std::unique_ptr<ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
     const base::FilePath& bundle_path);
 
 // Return true if launching and updating app shims will fail because of the
 // testing environment.
 bool AppShimLaunchDisabled();
+
+// Returns a path to the Chrome Apps folder in ~/Applications.
+base::FilePath GetChromeAppsFolder();
+
+// Testing method to override calls to GetChromeAppsFolder.
+void SetChromeAppsFolderForTesting(const base::FilePath& path);
 
 // Creates a shortcut for a web application. The shortcut is a stub app
 // that simply loads the browser framework and runs the given app.
@@ -79,10 +85,6 @@ class WebAppShortcutCreator {
   // unable to be used for the bundle path (e.g: "...").
   base::FilePath GetFallbackBasename() const;
 
-  // Returns a path to the Chrome Apps folder in the relevant applications
-  // folder. E.g. ~/Applications or /Applications.
-  virtual base::FilePath GetApplicationsDirname() const;
-
   // The full path to the app bundle under the relevant Applications folder.
   // If |avoid_conflicts| is true then return a path that does not yet exist (by
   // appending " 2", " 3", etc, to the end of the file name).
@@ -94,7 +96,6 @@ class WebAppShortcutCreator {
 
   bool CreateShortcuts(ShortcutCreationReason creation_reason,
                        ShortcutLocations creation_locations);
-  void DeleteShortcuts();
 
   // Recreate the shortcuts where they are found on disk and in the profile
   // path. If |create_if_needed| is true, then create the shortcuts if no
@@ -117,11 +118,8 @@ class WebAppShortcutCreator {
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest,
                            UpdateBookmarkAppShortcut);
 
-  // Returns the bundle identifier to use for this app bundle.
-  std::string GetBundleIdentifier() const;
-
-  // Returns the bundle identifier for the internal copy of the bundle.
-  std::string GetInternalBundleIdentifier() const;
+  // Return true if the bundle for this app should be profile-agnostic.
+  bool IsMultiProfile() const;
 
   // Copies the app loader template into a temporary directory and fills in all
   // relevant information. This works around a Finder bug where the app's icon
@@ -148,10 +146,10 @@ class WebAppShortcutCreator {
 
   // Path to the data directory for this app. For example:
   // ~/Library/Application Support/Chromium/Default/Web Applications/_crx_abc/
-  base::FilePath app_data_dir_;
+  const base::FilePath app_data_dir_;
 
   // Information about the app. Owned by the caller of the constructor.
-  const ShortcutInfo* info_;
+  const ShortcutInfo* const info_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreator);
 };

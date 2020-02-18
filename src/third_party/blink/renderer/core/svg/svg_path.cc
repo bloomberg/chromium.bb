@@ -26,7 +26,7 @@
 #include <memory>
 #include <utility>
 
-#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_path_blender.h"
 #include "third_party/blink/renderer/core/svg/svg_path_byte_stream.h"
 #include "third_party/blink/renderer/core/svg/svg_path_byte_stream_builder.h"
@@ -125,15 +125,14 @@ void SVGPath::Add(SVGPropertyBase* other, SVGElement*) {
 }
 
 void SVGPath::CalculateAnimatedValue(
-    SVGAnimationElement* animation_element,
+    const SVGAnimateElement& animation_element,
     float percentage,
     unsigned repeat_count,
     SVGPropertyBase* from_value,
     SVGPropertyBase* to_value,
     SVGPropertyBase* to_at_end_of_duration_value,
     SVGElement*) {
-  DCHECK(animation_element);
-  bool is_to_animation = animation_element->GetAnimationMode() == kToAnimation;
+  bool is_to_animation = animation_element.GetAnimationMode() == kToAnimation;
 
   const SVGPath& to = ToSVGPath(*to_value);
   const SVGPathByteStream& to_stream = to.ByteStream();
@@ -168,17 +167,20 @@ void SVGPath::CalculateAnimatedValue(
   std::unique_ptr<SVGPathByteStream> new_stream =
       BlendPathByteStreams(*from_stream, to_stream, percentage);
 
-  // Handle additive='sum'.
-  if (animation_element->IsAdditive() && !is_to_animation)
-    new_stream =
-        ConditionallyAddPathByteStreams(std::move(new_stream), ByteStream());
+  if (!is_to_animation) {
+    // Handle additive='sum'.
+    if (animation_element.IsAdditive()) {
+      new_stream =
+          ConditionallyAddPathByteStreams(std::move(new_stream), ByteStream());
+    }
 
-  // Handle accumulate='sum'.
-  if (animation_element->IsAccumulated() && repeat_count)
-    new_stream = ConditionallyAddPathByteStreams(
-        std::move(new_stream),
-        ToSVGPath(to_at_end_of_duration_value)->ByteStream(), repeat_count);
-
+    // Handle accumulate='sum'.
+    if (repeat_count && animation_element.IsAccumulated()) {
+      new_stream = ConditionallyAddPathByteStreams(
+          std::move(new_stream),
+          ToSVGPath(to_at_end_of_duration_value)->ByteStream(), repeat_count);
+    }
+  }
   path_value_ = MakeGarbageCollected<CSSPathValue>(std::move(new_stream));
 }
 

@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 from chromite.api import controller
+from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.metrics import deserialize_metrics_log
@@ -22,6 +23,7 @@ from chromite.utils import metrics
 _ACCEPTED_LICENSES = '@CHROMEOS'
 
 
+@faux.all_empty
 @validate.require('build_target.name')
 @validate.validation_complete
 def Create(input_proto, output_proto, _config):
@@ -41,12 +43,46 @@ def Create(input_proto, output_proto, _config):
     created = sysroot.Create(build_target, run_configs,
                              accept_licenses=_ACCEPTED_LICENSES)
   except sysroot.Error as e:
-    cros_build_lib.Die(e.message)
+    cros_build_lib.Die(e)
 
   output_proto.sysroot.path = created.path
   output_proto.sysroot.build_target.name = build_target_name
 
+  return controller.RETURN_CODE_SUCCESS
 
+
+@faux.all_empty
+@validate.require('build_target.name')
+@validate.validation_complete
+def CreateSimpleChromeSysroot(input_proto, output_proto, _config):
+  """Create a sysroot for SimpleChrome to use."""
+  build_target_name = input_proto.build_target.name
+  use_flags = input_proto.use_flags
+
+  sysroot_tar_path = sysroot.CreateSimpleChromeSysroot(build_target_name,
+                                                       use_flags)
+  # By assigning this Path variable to the tar path, the tar file will be
+  # copied out to the input_proto's ResultPath location.
+  output_proto.sysroot_archive.path = sysroot_tar_path
+
+  return controller.RETURN_CODE_SUCCESS
+
+
+def _MockFailedPackagesResponse(_input_proto, output_proto, _config):
+  """Mock error response that populates failed packages."""
+  pkg = output_proto.failed_packages.add()
+  pkg.package_name = 'package'
+  pkg.category = 'category'
+  pkg.version = '1.0.0_rc-r1'
+
+  pkg2 = output_proto.failed_packages.add()
+  pkg2.package_name = 'bar'
+  pkg2.category = 'foo'
+  pkg2.version = '3.7-r99'
+
+
+@faux.empty_success
+@faux.error(_MockFailedPackagesResponse)
 @validate.require('sysroot.path', 'sysroot.build_target.name')
 @validate.exists('sysroot.path')
 @validate.validation_complete
@@ -73,22 +109,26 @@ def InstallToolchain(input_proto, output_proto, _config):
 
     return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
 
+  return controller.RETURN_CODE_SUCCESS
 
-@validate.require('sysroot.path', 'sysroot.build_target.name')
+
+@faux.empty_success
+@faux.error(_MockFailedPackagesResponse)
+@validate.require('sysroot.build_target.name')
+@validate.exists('sysroot.path')
 @validate.validation_complete
 @metrics.collect_metrics
 def InstallPackages(input_proto, output_proto, _config):
   """Install packages into a sysroot, building as necessary and permitted."""
   compile_source = input_proto.flags.compile_source
   event_file = input_proto.flags.event_file
+  use_goma = input_proto.flags.use_goma
 
-  sysroot_path = input_proto.sysroot.path
-  build_target_name = input_proto.sysroot.build_target.name
+  target_sysroot = sysroot_lib.Sysroot(input_proto.sysroot.path)
+  build_target = controller_util.ParseBuildTarget(
+      input_proto.sysroot.build_target)
   packages = [controller_util.PackageInfoToString(x)
               for x in input_proto.packages]
-
-  build_target = build_target_util.BuildTarget(build_target_name)
-  target_sysroot = sysroot_lib.Sysroot(sysroot_path)
 
   if not target_sysroot.IsToolchainInstalled():
     cros_build_lib.Die('Toolchain must first be installed.')
@@ -97,8 +137,12 @@ def InstallPackages(input_proto, output_proto, _config):
 
   use_flags = [u.flag for u in input_proto.use_flags]
   build_packages_config = sysroot.BuildPackagesRunConfig(
-      event_file=event_file, usepkg=not compile_source,
-      install_debug_symbols=True, packages=packages, use_flags=use_flags)
+      event_file=event_file,
+      usepkg=not compile_source,
+      install_debug_symbols=True,
+      packages=packages,
+      use_flags=use_flags,
+      use_goma=use_goma)
 
   try:
     sysroot.BuildPackages(build_target, target_sysroot, build_packages_config)
@@ -115,7 +159,7 @@ def InstallPackages(input_proto, output_proto, _config):
     return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
 
   # Read metric events log and pipe them into output_proto.events.
-  deserialize_metrics_log(output_proto.events, prefix=build_target_name)
+  deserialize_metrics_log(output_proto.events, prefix=build_target.name)
 
 
 def _LogBinhost(board):

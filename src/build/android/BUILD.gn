@@ -50,15 +50,14 @@ if (enable_java_templates) {
     "android_sdk_version=$android_sdk_version",
     "android_ndk_root=" + rebase_path(android_ndk_root, root_build_dir),
     "android_tool_prefix=" + rebase_path(android_tool_prefix, root_build_dir),
+    "android_configuration_failure_dir=" +
+        rebase_path(android_configuration_failure_dir, root_build_dir),
   ]
   if (defined(android_secondary_abi_cpu)) {
     _secondary_label_info =
         get_label_info(":foo($android_secondary_abi_toolchain)", "root_out_dir")
     _lines += [ "android_secondary_abi_toolchain=" +
                 rebase_path(_secondary_label_info, root_build_dir) ]
-  }
-  if (defined(build_apk_secondary_abi)) {
-    _lines += [ "build_apk_secondary_abi=$build_apk_secondary_abi" ]
   }
   write_file(android_build_vars, _lines)
 }
@@ -90,11 +89,15 @@ python_library("test_runner_py") {
     ":devil_chromium_py",
   ]
   if (build_with_chromium) {
+    data += [
+      "//third_party/android_build_tools/bundletool/bundletool-all-0.11.0.jar",
+      "//tools/android/avd/proto/",
+    ]
     data_deps +=
         [ "//third_party/android_platform/development/scripts:stack_py" ]
-  }
-  if (is_asan) {
-    data_deps += [ "//tools/android/asan/third_party:asan_device_setup" ]
+    if (is_asan) {
+      data_deps += [ "//tools/android/asan/third_party:asan_device_setup" ]
+    }
   }
 
   # Proguard is needed only when using apks (rather than native executables).
@@ -124,26 +127,6 @@ python_library("resource_sizes_py") {
 python_library("bundle_wrapper_script_py") {
   pydeps_file = "gyp/create_bundle_wrapper_script.pydeps"
   data = [
-    "//third_party/android_build_tools/bundletool/bundletool-all-0.10.3.jar",
+    "//third_party/android_build_tools/bundletool/bundletool-all-0.11.0.jar",
   ]
-}
-
-# Create wrapper scripts in out/bin that takes care of setting the
-# --output-directory.
-_scripts_to_wrap = [
-  "asan_symbolize.py",
-  "tombstones.py",
-]
-
-_wrapper_targets = []
-foreach(script, _scripts_to_wrap) {
-  _target_name = get_path_info(script, "name") + "_wrapper"
-  _wrapper_targets += [ ":$_target_name" ]
-  wrapper_script(_target_name) {
-    target = script
-  }
-}
-
-group("wrapper_scripts") {
-  deps = _wrapper_targets
 }

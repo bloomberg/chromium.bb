@@ -6,7 +6,7 @@
       "sub_dir" : "glslang",
       "build_dir" : "glslang/build",
       "install_dir" : "glslang/build/install",
-      "commit" : "5432f0dd8f331f15182681664d7486681e8514e6",
+      "commit" : "b131630e7c749a5dc19faa458024260c71fb170f",
       "prebuild" : [
         "python update_glslang_sources.py"
       ]
@@ -17,7 +17,7 @@
       "sub_dir" : "Vulkan-Headers",
       "build_dir" : "Vulkan-Headers/build",
       "install_dir" : "Vulkan-Headers/build/install",
-      "commit" : "v1.1.102"
+      "commit" : "v1.1.128"
     },
     {
       "name" : "MoltenVK",
@@ -25,10 +25,10 @@
       "sub_dir" : "MoltenVK",
       "build_dir" : "MoltenVK",
       "install_dir" : "MoltenVK",
-      "commit" : "f969bcc937674989ee5ea8e3cf8e35184134f29d",
+      "commit" : "v1.0.38",
       "custom_build" : [
-        "./fetchDependencies --v-headers-root {0[Vulkan-Headers][repo_dir]} --glslang-root {0[glslang][repo_dir]}",
-        "xcodebuild -project MoltenVKPackaging.xcodeproj GCC_PREPROCESSOR_DEFINITIONS='$GCC_PREPROCESSOR_DEFINITIONS MVK_LOGGING_ENABLED=0' -scheme \"MoltenVK Package\" build"
+        "./fetchDependencies --glslang-root {0[glslang][repo_dir]}",
+        "xcodebuild -project MoltenVKPackaging.xcodeproj GCC_PREPROCESSOR_DEFINITIONS='$GCC_PREPROCESSOR_DEFINITIONS MVK_CONFIG_LOG_LEVEL=1' -scheme \"MoltenVK Package\" build"
       ],
       "build_step" : "custom",
       "build_platforms" : [
@@ -41,7 +41,7 @@
       "sub_dir" : "Vulkan-Loader",
       "build_dir" : "Vulkan-Loader/build",
       "install_dir" : "Vulkan-Loader/build/install",
-      "commit" : "v1.1.102",
+      "commit" : "v1.1.128",
       "deps" : [
         {
           "var_name" : "VULKAN_HEADERS_INSTALL_DIR",
@@ -50,6 +50,10 @@
       ],
       "cmake_options" : [
         "-DBUILD_TESTS=NO"
+      ],
+      "build_platforms" : [
+        "linux",
+        "darwin"
       ]
     }
   ],

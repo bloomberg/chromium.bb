@@ -76,14 +76,10 @@ class GclientTest(trial_dir.TestCase):
     self._old_createscm = gclient.gclient_scm.GitWrapper
     gclient.gclient_scm.GitWrapper = SCMMock
     SCMMock.unit_test = self
-    self._old_sys_stdout = sys.stdout
-    sys.stdout = gclient.gclient_utils.MakeFileAutoFlush(sys.stdout)
-    sys.stdout = gclient.gclient_utils.MakeFileAnnotated(sys.stdout)
 
   def tearDown(self):
     self.assertEqual([], self._get_processed())
     gclient.gclient_scm.GitWrapper = self._old_createscm
-    sys.stdout = self._old_sys_stdout
     os.chdir(self.previous_dir)
     super(GclientTest, self).tearDown()
 
@@ -565,8 +561,8 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', [])
     self.assertEqual(['unix'], sorted(obj.enforced_os))
-    self.assertEqual([('unix',), ('unix', 'baz')],
-                     sorted(dep.target_os for dep in obj.dependencies))
+    self.assertEqual([['baz', 'unix'], ['unix']],
+                     [sorted(dep.target_os) for dep in obj.dependencies])
     self.assertEqual([('foo', 'svn://example.com/foo'),
                       ('bar', 'svn://example.com/bar')],
                      self._get_processed())
@@ -802,8 +798,8 @@ class GclientTest(trial_dir.TestCase):
     self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
-          ('foo/bar', 'svn://example.com/bar'),
-          ('foo/baz', 'svn://example.com/baz'),
+          (os.path.join('foo', 'bar'), 'svn://example.com/bar'),
+          (os.path.join('foo', 'baz'), 'svn://example.com/baz'),
         ],
         self._get_processed())
 
@@ -839,8 +835,8 @@ class GclientTest(trial_dir.TestCase):
     self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
-          ('foo/bar', 'svn://example.com/bar'),
-          ('foo/bar/baz', 'svn://example.com/baz'),
+          (os.path.join('foo', 'bar'), 'svn://example.com/bar'),
+          (os.path.join('foo', 'bar', 'baz'), 'svn://example.com/baz'),
         ],
         self._get_processed())
 
@@ -878,8 +874,8 @@ class GclientTest(trial_dir.TestCase):
     self.assertEqual(
         [
           ('foo', 'svn://example.com/foo'),
-          ('foo/third_party/bar', 'svn://example.com/bar'),
-          ('foo/third_party/baz', 'svn://example.com/baz'),
+          (os.path.join('foo', 'third_party', 'bar'), 'svn://example.com/bar'),
+          (os.path.join('foo', 'third_party', 'baz'), 'svn://example.com/baz'),
         ],
         self._get_processed())
 
@@ -1366,9 +1362,9 @@ class GclientTest(trial_dir.TestCase):
 
 if __name__ == '__main__':
   sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)
-  sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout, include_zero=True)
+  sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout)
   sys.stderr = gclient_utils.MakeFileAutoFlush(sys.stderr)
-  sys.stderr = gclient_utils.MakeFileAnnotated(sys.stderr, include_zero=True)
+  sys.stderr = gclient_utils.MakeFileAnnotated(sys.stderr)
   logging.basicConfig(
       level=[logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG][
         min(sys.argv.count('-v'), 3)],

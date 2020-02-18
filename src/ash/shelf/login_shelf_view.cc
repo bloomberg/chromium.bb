@@ -15,11 +15,11 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/login_constants.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -50,9 +50,10 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/focus/focus_search.h"
@@ -91,22 +92,12 @@ LoginMetricsRecorder::ShelfButtonClickTarget GetUserClickTarget(int button_id) {
 
 // The margins of the button contents.
 constexpr int kButtonMarginTopDp = 18;
-constexpr int kButtonMarginTopDpDense = 16;
 constexpr int kButtonMarginLeftDp = 18;
 constexpr int kButtonMarginBottomDp = 18;
-constexpr int kButtonMarginBottomDpDense = 16;
 constexpr int kButtonMarginRightDp = 16;
-
-// The margins of the button background.
-constexpr gfx::Insets kButtonBackgroundMargin(8, 8, 8, 0);
-constexpr gfx::Insets kButtonBackgroundMarginDense(6, 8, 6, 0);
 
 // Spacing between the button image and label.
 constexpr int kImageLabelSpacingDp = 10;
-
-// The border radius of the button background.
-constexpr int kButtonRoundedBorderRadiusDp = 20;
-constexpr int kButtonRoundedBorderRadiusDpDense = 18;
 
 // The color of the button background.
 constexpr SkColor kButtonBackgroundColor =
@@ -118,25 +109,32 @@ constexpr SkColor kButtonTextColor = gfx::kGoogleGrey100;
 // The color of the button icon.
 constexpr SkColor kButtonIconColor = SkColorSetRGB(0xEB, 0xEA, 0xED);
 
-std::unique_ptr<SkPath> GetButtonHighlightPath(views::View* view) {
-  auto path = std::make_unique<SkPath>();
-
+SkPath GetButtonHighlightPath(const views::View* view) {
   gfx::Rect rect(view->GetLocalBounds());
-  rect.Inset(chromeos::switches::ShouldShowShelfDenseClamshell()
-                 ? kButtonBackgroundMarginDense
-                 : kButtonBackgroundMargin);
+  const int height_inset =
+      (ShelfConfig::Get()->shelf_size() - ShelfConfig::Get()->control_size()) /
+      2;
+  rect.Inset(gfx::Insets(height_inset, ShelfConfig::Get()->button_spacing(),
+                         height_inset, 0));
 
-  int border_radius = chromeos::switches::ShouldShowShelfDenseClamshell()
-                          ? kButtonRoundedBorderRadiusDpDense
-                          : kButtonRoundedBorderRadiusDp;
-  path->addRoundRect(gfx::RectToSkRect(rect), border_radius, border_radius);
-  return path;
+  const int border_radius = ShelfConfig::Get()->control_border_radius();
+  return SkPath().addRoundRect(gfx::RectToSkRect(rect), border_radius,
+                               border_radius);
 }
 
-void SetButtonHighlightPath(views::View* view) {
-  view->SetProperty(views::kHighlightPathKey,
-                    GetButtonHighlightPath(view).release());
-}
+class LoginShelfButtonHighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  LoginShelfButtonHighlightPathGenerator() = default;
+
+  // views::HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    return GetButtonHighlightPath(view);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginShelfButtonHighlightPathGenerator);
+};
 
 class LoginShelfButton : public views::LabelButton {
  public:
@@ -155,12 +153,15 @@ class LoginShelfButton : public views::LabelButton {
                                    login_constants::kButtonDisabledAlpha)));
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
-    focus_ring()->SetColor(kShelfFocusBorderColor);
+    views::HighlightPathGenerator::Install(
+        this, std::make_unique<LoginShelfButtonHighlightPathGenerator>());
+    focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
-    set_ink_drop_base_color(kShelfInkDropBaseColor);
-    set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
+    set_ink_drop_base_color(ShelfConfig::Get()->shelf_ink_drop_base_color());
+    set_ink_drop_visible_opacity(
+        ShelfConfig::Get()->shelf_ink_drop_visible_opacity());
 
     // Layer rendering is required when the shelf background is visible, which
     // happens when the wallpaper is not blurred.
@@ -184,23 +185,11 @@ class LoginShelfButton : public views::LabelButton {
 
   // views::LabelButton:
   gfx::Insets GetInsets() const override {
-    int top_margin = chromeos::switches::ShouldShowShelfDenseClamshell()
-                         ? kButtonMarginTopDpDense
-                         : kButtonMarginTopDp;
-    int bottom_margin = chromeos::switches::ShouldShowShelfDenseClamshell()
-                            ? kButtonMarginBottomDpDense
-                            : kButtonMarginBottomDp;
-    return gfx::Insets(top_margin, kButtonMarginLeftDp, bottom_margin,
-                       kButtonMarginRightDp);
+    return gfx::Insets(0, kButtonMarginLeftDp, 0, kButtonMarginRightDp);
   }
 
   const char* GetClassName() const override {
     return kLoginShelfButtonClassName;
-  }
-
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    SetButtonHighlightPath(this);
-    LabelButton::OnBoundsChanged(previous_bounds);
   }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
@@ -208,7 +197,7 @@ class LoginShelfButton : public views::LabelButton {
     flags.setAntiAlias(true);
     flags.setColor(kButtonBackgroundColor);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawPath(*GetButtonHighlightPath(this), flags);
+    canvas->DrawPath(GetButtonHighlightPath(this), flags);
   }
 
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
@@ -261,7 +250,7 @@ bool DialogStateGuestAllowed(OobeDialogState state) {
 }  // namespace
 
 class KioskAppsButton : public views::MenuButton,
-                        public views::MenuButtonListener,
+                        public views::ButtonListener,
                         public ui::SimpleMenuModel,
                         public ui::SimpleMenuModel::Delegate {
  public:
@@ -270,12 +259,15 @@ class KioskAppsButton : public views::MenuButton,
         ui::SimpleMenuModel(this) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
-    focus_ring()->SetColor(kShelfFocusBorderColor);
+    views::HighlightPathGenerator::Install(
+        this, std::make_unique<LoginShelfButtonHighlightPathGenerator>());
+    focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
-    set_ink_drop_base_color(kShelfInkDropBaseColor);
-    set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
+    set_ink_drop_base_color(ShelfConfig::Get()->shelf_ink_drop_base_color());
+    set_ink_drop_visible_opacity(
+        ShelfConfig::Get()->shelf_ink_drop_visible_opacity());
 
     // Layer rendering is required when the shelf background is visible, which
     // happens when the wallpaper is not blurred.
@@ -326,17 +318,12 @@ class KioskAppsButton : public views::MenuButton,
                        kButtonMarginBottomDp, kButtonMarginRightDp);
   }
 
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    SetButtonHighlightPath(this);
-    LabelButton::OnBoundsChanged(previous_bounds);
-  }
-
   void PaintButtonContents(gfx::Canvas* canvas) override {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(kButtonBackgroundColor);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawPath(*GetButtonHighlightPath(this), flags);
+    canvas->DrawPath(GetButtonHighlightPath(this), flags);
   }
 
   void SetVisible(bool visible) override {
@@ -364,18 +351,16 @@ class KioskAppsButton : public views::MenuButton,
              CreateVectorIcon(kShelfAppsButtonIcon, kButtonIconColor));
   }
 
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override {
+  // views::ButtonListener:
+  void ButtonPressed(Button* source, const ui::Event& event) override {
     if (!is_launch_enabled_)
       return;
     menu_runner_.reset(
         new views::MenuRunner(this, views::MenuRunner::HAS_MNEMONICS));
 
-    gfx::Point origin(point);
-    origin.set_x(point.x() - source->width());
-    origin.set_y(point.y() - source->height());
+    const gfx::Point point = source->GetMenuPosition();
+    const gfx::Point origin(point.x() - source->width(),
+                            point.y() - source->height());
     menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
                             button_controller(), gfx::Rect(origin, gfx::Size()),
                             views::MenuAnchorPosition::kTopLeft,

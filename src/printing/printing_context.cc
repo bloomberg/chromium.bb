@@ -69,25 +69,22 @@ PrintingContext::Result PrintingContext::OnError() {
 
 PrintingContext::Result PrintingContext::UsePdfSettings() {
   base::Value pdf_settings(base::Value::Type::DICTIONARY);
-  pdf_settings.SetKey(kSettingHeaderFooterEnabled, base::Value(false));
-  pdf_settings.SetKey(kSettingShouldPrintBackgrounds, base::Value(false));
-  pdf_settings.SetKey(kSettingShouldPrintSelectionOnly, base::Value(false));
-  pdf_settings.SetKey(kSettingMarginsType, base::Value(printing::NO_MARGINS));
-  pdf_settings.SetKey(kSettingCollate, base::Value(true));
-  pdf_settings.SetKey(kSettingCopies, base::Value(1));
-  pdf_settings.SetKey(kSettingColor, base::Value(printing::COLOR));
-  pdf_settings.SetKey(kSettingDpiHorizontal, base::Value(kPointsPerInch));
-  pdf_settings.SetKey(kSettingDpiVertical, base::Value(kPointsPerInch));
-  pdf_settings.SetKey(kSettingDuplexMode, base::Value(printing::SIMPLEX));
-  pdf_settings.SetKey(kSettingLandscape, base::Value(false));
-  pdf_settings.SetKey(kSettingDeviceName, base::Value(""));
-  pdf_settings.SetKey(kSettingPrintToPDF, base::Value(true));
-  pdf_settings.SetKey(kSettingCloudPrintDialog, base::Value(false));
-  pdf_settings.SetKey(kSettingPrintWithPrivet, base::Value(false));
-  pdf_settings.SetKey(kSettingPrintWithExtension, base::Value(false));
-  pdf_settings.SetKey(kSettingScaleFactor, base::Value(100));
-  pdf_settings.SetKey(kSettingRasterizePdf, base::Value(false));
-  pdf_settings.SetKey(kSettingPagesPerSheet, base::Value(1));
+  pdf_settings.SetBoolKey(kSettingHeaderFooterEnabled, false);
+  pdf_settings.SetBoolKey(kSettingShouldPrintBackgrounds, false);
+  pdf_settings.SetBoolKey(kSettingShouldPrintSelectionOnly, false);
+  pdf_settings.SetIntKey(kSettingMarginsType, printing::NO_MARGINS);
+  pdf_settings.SetBoolKey(kSettingCollate, true);
+  pdf_settings.SetIntKey(kSettingCopies, 1);
+  pdf_settings.SetIntKey(kSettingColor, printing::COLOR);
+  pdf_settings.SetIntKey(kSettingDpiHorizontal, kPointsPerInch);
+  pdf_settings.SetIntKey(kSettingDpiVertical, kPointsPerInch);
+  pdf_settings.SetIntKey(kSettingDuplexMode, printing::SIMPLEX);
+  pdf_settings.SetBoolKey(kSettingLandscape, false);
+  pdf_settings.SetStringKey(kSettingDeviceName, "");
+  pdf_settings.SetIntKey(kSettingPrinterType, kPdfPrinter);
+  pdf_settings.SetIntKey(kSettingScaleFactor, 100);
+  pdf_settings.SetBoolKey(kSettingRasterizePdf, false);
+  pdf_settings.SetIntKey(kSettingPagesPerSheet, 1);
   return UpdatePrintSettings(std::move(pdf_settings));
 }
 
@@ -100,33 +97,16 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
     return OnError();
   }
 
-  base::Optional<bool> print_to_pdf_opt =
-      job_settings.FindBoolKey(kSettingPrintToPDF);
-  base::Optional<bool> is_cloud_dialog_opt =
-      job_settings.FindBoolKey(kSettingCloudPrintDialog);
-  base::Optional<bool> print_with_privet_opt =
-      job_settings.FindBoolKey(kSettingPrintWithPrivet);
-  base::Optional<bool> print_with_extension_opt =
-      job_settings.FindBoolKey(kSettingPrintWithExtension);
-
-  if (!print_to_pdf_opt || !is_cloud_dialog_opt || !print_with_privet_opt ||
-      !print_with_extension_opt) {
-    NOTREACHED();
-    return OnError();
-  }
-
-  bool print_to_pdf = print_to_pdf_opt.value();
-  bool is_cloud_dialog = is_cloud_dialog_opt.value();
-  bool print_with_privet = print_with_privet_opt.value();
-  bool print_with_extension = print_with_extension_opt.value();
-
-  bool print_to_cloud = job_settings.FindKey(kSettingCloudPrintId) != nullptr;
+  PrinterType printer_type = static_cast<PrinterType>(
+      job_settings.FindIntKey(kSettingPrinterType).value());
+  bool print_with_privet = printer_type == kPrivetPrinter;
+  bool print_to_cloud = !!job_settings.FindKey(kSettingCloudPrintId);
   bool open_in_external_preview =
-      job_settings.FindKey(kSettingOpenPDFInPreview) != nullptr;
+      !!job_settings.FindKey(kSettingOpenPDFInPreview);
 
   if (!open_in_external_preview &&
-      (print_to_pdf || print_to_cloud || is_cloud_dialog || print_with_privet ||
-       print_with_extension)) {
+      (print_to_cloud || print_with_privet || printer_type == kPdfPrinter ||
+       printer_type == kCloudPrinter || printer_type == kExtensionPrinter)) {
     settings_->set_dpi(kDefaultPdfDpi);
     gfx::Size paper_size(GetPdfPaperSizeDeviceUnits());
     if (!settings_->requested_media().size_microns.IsEmpty()) {

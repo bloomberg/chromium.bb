@@ -4,10 +4,10 @@
 
 #include "components/invalidation/impl/per_user_topic_registration_request.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -16,19 +16,29 @@
 #include "net/url_request/url_fetcher.h"
 
 using net::HttpRequestHeaders;
-using net::URLRequestStatus;
 
 namespace {
 
 const char kPublicTopicNameKey[] = "publicTopicName";
 const char kPrivateTopicNameKey[] = "privateTopicName";
 
-const std::string* GetTopicName(base::Value& value) {
+const std::string* GetTopicName(const base::Value& value) {
   if (!value.is_dict())
     return nullptr;
   if (value.FindBoolKey("isPublic").value_or(false))
     return value.FindStringKey(kPublicTopicNameKey);
   return value.FindStringKey(kPrivateTopicNameKey);
+}
+
+bool IsNetworkError(int net_error) {
+  // Note: ERR_HTTP_RESPONSE_CODE_FAILURE isn't a real network error - it
+  // indicates that the network request itself succeeded, but we received an
+  // HTTP error. The alternative to special-casing this error would be to call
+  // SetAllowHttpErrorResults(true) on the SimpleUrlLoader, but that also means
+  // we'd download the response body in case of HTTP errors, which we don't
+  // need.
+  return net_error != net::OK &&
+         net_error != net::ERR_HTTP_RESPONSE_CODE_FAILURE;
 }
 
 // Subscription status values for UMA_HISTOGRAM.
@@ -63,7 +73,7 @@ void RecordRequestStatus(
     return;
   }
 
-  if (net_error != net::OK && (response_code == -1 || response_code == 200)) {
+  if (IsNetworkError(net_error)) {
     // Tracks the cases, when request fails due to network error.
     base::UmaHistogramSparse("FCMInvalidations.FailedSubscriptionsErrorCode",
                              -net_error);
@@ -89,11 +99,9 @@ PerUserTopicRegistrationRequest::~PerUserTopicRegistrationRequest() = default;
 
 void PerUserTopicRegistrationRequest::Start(
     CompletedCallback callback,
-    const ParseJSONCallback& parse_json,
     network::mojom::URLLoaderFactory* loader_factory) {
   DCHECK(request_completed_callback_.is_null()) << "Request already running!";
   request_completed_callback_ = std::move(callback);
-  parse_json_ = parse_json;
 
   simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory,
@@ -116,6 +124,14 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
     int net_error,
     int response_code,
     std::unique_ptr<std::string> response_body) {
+  if (IsNetworkError(net_error)) {
+    std::move(request_completed_callback_)
+        .Run(Status(StatusCode::FAILED, base::StringPrintf("Network Error")),
+             std::string());
+    RecordRequestStatus(SubscriptionStatus::kNetworkFailure, type_, topic_,
+                        net_error, response_code);
+    return;
+  }
 
   if (response_code != net::HTTP_OK) {
     StatusCode status = StatusCode::FAILED;
@@ -133,15 +149,6 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
     return;
   }
 
-  if (net_error != net::OK) {
-    std::move(request_completed_callback_)
-        .Run(Status(StatusCode::FAILED, base::StringPrintf("Network Error")),
-             std::string());
-    RecordRequestStatus(SubscriptionStatus::kNetworkFailure, type_, topic_,
-                        net_error, response_code);
-    return;
-  }
-
   if (type_ == UNSUBSCRIBE) {
     // No response body expected for DELETE requests.
     RecordRequestStatus(SubscriptionStatus::kSuccess, type_, topic_, net_error,
@@ -155,39 +162,37 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
     RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_,
                         net_error, response_code);
     std::move(request_completed_callback_)
+        .Run(Status(StatusCode::FAILED, base::StringPrintf("Body missing")),
+             std::string());
+    return;
+  }
+
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *response_body,
+      base::BindOnce(&PerUserTopicRegistrationRequest::OnJsonParse,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PerUserTopicRegistrationRequest::OnJsonParse(
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value) {
+    RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_);
+    std::move(request_completed_callback_)
         .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
              std::string());
     return;
   }
-  auto success_callback =
-      base::BindOnce(&PerUserTopicRegistrationRequest::OnJsonParseSuccess,
-                     weak_ptr_factory_.GetWeakPtr());
-  auto error_callback =
-      base::BindOnce(&PerUserTopicRegistrationRequest::OnJsonParseFailure,
-                     weak_ptr_factory_.GetWeakPtr());
-  parse_json_.Run(*response_body,
-                  base::AdaptCallbackForRepeating(std::move(success_callback)),
-                  base::AdaptCallbackForRepeating(std::move(error_callback)));
-}
 
-void PerUserTopicRegistrationRequest::OnJsonParseFailure(
-    const std::string& error) {
-  RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_);
-  std::move(request_completed_callback_)
-      .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
-           std::string());
-}
-
-void PerUserTopicRegistrationRequest::OnJsonParseSuccess(base::Value value) {
-  const std::string* private_topic_name = GetTopicName(value);
-  RecordRequestStatus(SubscriptionStatus::kSuccess, type_, topic_);
-  if (private_topic_name) {
+  const std::string* topic_name = GetTopicName(*result.value);
+  if (topic_name) {
+    RecordRequestStatus(SubscriptionStatus::kSuccess, type_, topic_);
     std::move(request_completed_callback_)
-        .Run(Status(StatusCode::SUCCESS, std::string()), *private_topic_name);
+        .Run(Status(StatusCode::SUCCESS, std::string()), *topic_name);
   } else {
     RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_);
     std::move(request_completed_callback_)
-        .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
+        .Run(Status(StatusCode::FAILED,
+                    base::StringPrintf("Missing topic name")),
              std::string());
   }
 }
@@ -200,14 +205,14 @@ PerUserTopicRegistrationRequest::Builder::~Builder() = default;
 std::unique_ptr<PerUserTopicRegistrationRequest>
 PerUserTopicRegistrationRequest::Builder::Build() const {
   DCHECK(!scope_.empty());
-  auto request = base::WrapUnique(new PerUserTopicRegistrationRequest);
+  auto request = base::WrapUnique(new PerUserTopicRegistrationRequest());
 
   std::string url;
   switch (type_) {
     case SUBSCRIBE:
       url = base::StringPrintf(
           "%s/v1/perusertopics/%s/rel/topics/?subscriber_token=%s",
-          scope_.c_str(), project_id_.c_str(), token_.c_str());
+          scope_.c_str(), project_id_.c_str(), instance_id_token_.c_str());
       break;
     case UNSUBSCRIBE:
       std::string public_param;
@@ -217,7 +222,7 @@ PerUserTopicRegistrationRequest::Builder::Build() const {
       url = base::StringPrintf(
           "%s/v1/perusertopics/%s/rel/topics/%s?%ssubscriber_token=%s",
           scope_.c_str(), project_id_.c_str(), topic_.c_str(),
-          public_param.c_str(), token_.c_str());
+          public_param.c_str(), instance_id_token_.c_str());
       break;
   }
   GURL full_url(url);
@@ -242,8 +247,9 @@ PerUserTopicRegistrationRequest::Builder::Build() const {
 }
 
 PerUserTopicRegistrationRequest::Builder&
-PerUserTopicRegistrationRequest::Builder::SetToken(const std::string& token) {
-  token_ = token;
+PerUserTopicRegistrationRequest::Builder::SetInstanceIdToken(
+    const std::string& token) {
+  instance_id_token_ = token;
   return *this;
 }
 
@@ -262,7 +268,7 @@ PerUserTopicRegistrationRequest::Builder::SetAuthenticationHeader(
 
 PerUserTopicRegistrationRequest::Builder&
 PerUserTopicRegistrationRequest::Builder::SetPublicTopicName(
-    const std::string& topic) {
+    const Topic& topic) {
   topic_ = topic;
   return *this;
 }
@@ -354,6 +360,8 @@ PerUserTopicRegistrationRequest::Builder::BuildURLFetcher(
   }
   request->url = url;
   request->headers = headers;
+  // TODO(crbug.com/1020117): Should we set request->credentials_mode to kOmit,
+  // to match "cookies_allowed: NO" above?
 
   std::unique_ptr<network::SimpleURLLoader> url_loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);

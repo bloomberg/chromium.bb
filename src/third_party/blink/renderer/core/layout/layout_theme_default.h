@@ -47,15 +47,23 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   bool ThemeDrawsFocusRing(const ComputedStyle&) const override;
 
   // List Box selection color
-  virtual Color ActiveListBoxSelectionBackgroundColor() const;
-  virtual Color ActiveListBoxSelectionForegroundColor() const;
-  virtual Color InactiveListBoxSelectionBackgroundColor() const;
-  virtual Color InactiveListBoxSelectionForegroundColor() const;
+  virtual Color ActiveListBoxSelectionBackgroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color ActiveListBoxSelectionForegroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color InactiveListBoxSelectionBackgroundColor(
+      WebColorScheme color_scheme) const;
+  virtual Color InactiveListBoxSelectionForegroundColor(
+      WebColorScheme color_scheme) const;
 
-  Color PlatformActiveSelectionBackgroundColor() const override;
-  Color PlatformInactiveSelectionBackgroundColor() const override;
-  Color PlatformActiveSelectionForegroundColor() const override;
-  Color PlatformInactiveSelectionForegroundColor() const override;
+  Color PlatformActiveSelectionBackgroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformInactiveSelectionBackgroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformActiveSelectionForegroundColor(
+      WebColorScheme color_scheme) const override;
+  Color PlatformInactiveSelectionForegroundColor(
+      WebColorScheme color_scheme) const override;
 
   IntSize SliderTickSize() const override;
   int SliderTickOffsetFromTrackCenter() const override;
@@ -115,8 +123,7 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
 
   // These methods define the padding for the MenuList's inner block.
   int PopupInternalPaddingStart(const ComputedStyle&) const override;
-  int PopupInternalPaddingEnd(const ChromeClient*,
-                              const ComputedStyle&) const override;
+  int PopupInternalPaddingEnd(LocalFrame*, const ComputedStyle&) const override;
   int PopupInternalPaddingTop(const ComputedStyle&) const override;
   int PopupInternalPaddingBottom(const ComputedStyle&) const override;
   // This returns a value based on scrollbar thickness.  It's not 0 even in
@@ -124,13 +131,12 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   // thickness, which is 3px or 4px, and we use the value from the default Aura
   // theme.
   int MenuListArrowWidthInDIP() const;
-  float ClampedMenuListArrowPaddingSize(const ChromeClient*,
+  float ClampedMenuListArrowPaddingSize(LocalFrame*,
                                         const ComputedStyle&) const;
 
  protected:
   LayoutThemeDefault();
   ~LayoutThemeDefault() override;
-  bool ShouldUseFallbackTheme(const ComputedStyle&) const override;
 
   IntRect DeterminateProgressValueRectFor(LayoutProgress*,
                                           const IntRect&) const;

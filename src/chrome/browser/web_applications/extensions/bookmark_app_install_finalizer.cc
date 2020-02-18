@@ -5,25 +5,28 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_finalizer_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
+#include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -37,6 +40,11 @@
 #endif
 
 namespace extensions {
+
+static constexpr char kInstallResultExtensionErrorHistogramName[] =
+    "Webapp.InstallResultExtensionError.System.Profiles";
+static constexpr char kInstallResultExtensionDisabledReasonHistogramName[] =
+    "Webapp.InstallResultExtensionDisabledReason.System.Profiles";
 
 BookmarkAppInstallFinalizer::BookmarkAppInstallFinalizer(Profile* profile)
     : externally_installed_app_prefs_(profile->GetPrefs()), profile_(profile) {
@@ -63,7 +71,9 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   crx_installer->set_installer_callback(base::BindOnce(
       &BookmarkAppInstallFinalizer::OnExtensionInstalled,
       weak_ptr_factory_.GetWeakPtr(), web_app_info.app_url, launch_type,
-      options.locally_installed, std::move(callback), crx_installer));
+      options.locally_installed,
+      options.install_source == WebappInstallSource::SYSTEM_DEFAULT,
+      std::move(callback), crx_installer));
 
   switch (options.install_source) {
       // TODO(nigeltao/ortuno): should these two cases lead to different
@@ -103,9 +113,56 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   crx_installer->InstallWebApp(web_app_info);
 }
 
+void BookmarkAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
+    const web_app::AppId& app_id,
+    InstallFinalizedCallback callback) {
+  // TODO(crbug.com/1018630): Install synced bookmark apps using a freshly
+  // fetched manifest instead of sync data.
+  NOTREACHED();
+}
+
+void BookmarkAppInstallFinalizer::FinalizeUninstallAfterSync(
+    const web_app::AppId& app_id,
+    UninstallWebAppCallback callback) {
+  // Used only by the new USS-based sync system.
+  NOTREACHED();
+}
+
+void BookmarkAppInstallFinalizer::FinalizeUpdate(
+    const WebApplicationInfo& web_app_info,
+    InstallFinalizedCallback callback) {
+  web_app::AppId expected_app_id =
+      web_app::GenerateAppIdFromURL(web_app_info.app_url);
+
+  const Extension* existing_extension = GetEnabledExtension(expected_app_id);
+  if (!existing_extension) {
+    DCHECK(ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+        expected_app_id));
+    std::move(callback).Run(web_app::AppId(),
+                            web_app::InstallResultCode::kWebAppDisabled);
+    return;
+  }
+  DCHECK(existing_extension->from_bookmark());
+
+  scoped_refptr<CrxInstaller> crx_installer =
+      crx_installer_factory_.Run(profile_);
+  crx_installer->set_installer_callback(
+      base::BindOnce(&BookmarkAppInstallFinalizer::OnExtensionUpdated,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(expected_app_id),
+                     std::move(callback), crx_installer));
+  crx_installer->InitializeCreationFlagsForUpdate(existing_extension,
+                                                  Extension::NO_FLAGS);
+  crx_installer->set_install_source(existing_extension->location());
+
+  crx_installer->InstallWebApp(web_app_info);
+}
+
 void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
+    web_app::ExternalInstallSource external_install_source,
     UninstallWebAppCallback callback) {
+  // Bookmark apps don't support app installation from different sources.
+  // |external_install_source| is ignored here.
   base::Optional<web_app::AppId> app_id =
       externally_installed_app_prefs_.LookupAppId(app_url);
   if (!app_id.has_value()) {
@@ -116,13 +173,51 @@ void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
     return;
   }
 
-  UninstallWebApp(*app_id, std::move(callback));
+  UninstallExtension(*app_id, std::move(callback));
 }
 
-void BookmarkAppInstallFinalizer::UninstallWebApp(
+bool BookmarkAppInstallFinalizer::CanUserUninstallFromSync(
+    const web_app::AppId& app_id) const {
+  // Bookmark apps don't support app installation from different sources.
+  // The old system uninstalls extension completely, the implementation is
+  // the same:
+  return CanUserUninstallExternalApp(app_id);
+}
+
+void BookmarkAppInstallFinalizer::UninstallWebAppFromSyncByUser(
     const web_app::AppId& app_id,
     UninstallWebAppCallback callback) {
-  if (!ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(app_id)) {
+  // Bookmark apps don't support app installation from different sources.
+  // Uninstall extension completely:
+  UninstallExtension(app_id, std::move(callback));
+}
+
+bool BookmarkAppInstallFinalizer::CanUserUninstallExternalApp(
+    const web_app::AppId& app_id) const {
+  const Extension* app = GetEnabledExtension(app_id);
+  DCHECK(app);
+  return extensions::ExtensionSystem::Get(profile_)
+      ->management_policy()
+      ->UserMayModifySettings(app, nullptr);
+}
+
+void BookmarkAppInstallFinalizer::UninstallExternalAppByUser(
+    const web_app::AppId& app_id,
+    UninstallWebAppCallback callback) {
+  // Bookmark apps don't support app installation from different sources.
+  // Uninstall extension completely:
+  UninstallExtension(app_id, std::move(callback));
+}
+
+bool BookmarkAppInstallFinalizer::WasExternalAppUninstalledByUser(
+    const web_app::AppId& app_id) const {
+  return ExtensionPrefs::Get(profile_)->IsExternalExtensionUninstalled(app_id);
+}
+
+void BookmarkAppInstallFinalizer::UninstallExtension(
+    const web_app::AppId& app_id,
+    UninstallWebAppCallback callback) {
+  if (!GetEnabledExtension(app_id)) {
     LOG(WARNING) << "Couldn't uninstall app " << app_id
                  << "; Extension not installed.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -142,19 +237,6 @@ void BookmarkAppInstallFinalizer::UninstallWebApp(
       FROM_HERE, base::BindOnce(std::move(callback), uninstalled));
 }
 
-bool BookmarkAppInstallFinalizer::CanCreateOsShortcuts() const {
-  return CanBookmarkAppCreateOsShortcuts();
-}
-
-void BookmarkAppInstallFinalizer::CreateOsShortcuts(
-    const web_app::AppId& app_id,
-    bool add_to_desktop,
-    CreateOsShortcutsCallback callback) {
-  const Extension* app = GetExtensionById(app_id);
-  BookmarkAppCreateOsShortcuts(profile_, app, add_to_desktop,
-                               std::move(callback));
-}
-
 bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {
 #if defined(OS_MACOSX)
   return true;
@@ -166,7 +248,8 @@ bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {
 void BookmarkAppInstallFinalizer::RevealAppShim(const web_app::AppId& app_id) {
   DCHECK(CanRevealAppShim());
 #if defined(OS_MACOSX)
-  const Extension* app = GetExtensionById(app_id);
+  const Extension* app = GetEnabledExtension(app_id);
+  DCHECK(app);
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kDisableHostedAppShimCreation)) {
     web_app::RevealAppShimInFinderForApp(profile_, app);
@@ -174,58 +257,15 @@ void BookmarkAppInstallFinalizer::RevealAppShim(const web_app::AppId& app_id) {
 #endif  // defined(OS_MACOSX)
 }
 
-bool BookmarkAppInstallFinalizer::CanSkipAppUpdateForSync(
-    const web_app::AppId& app_id,
-    const WebApplicationInfo& web_app_info) const {
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(extension_service);
-
-  const Extension* extension = extension_service->GetInstalledExtension(app_id);
-  if (!extension)
-    return false;
-
-  // We can skip if there are no bookmark app details that need updating.
-  // TODO(loyso): We need to check more data fields. crbug.com/949427.
-  const std::string extension_sync_data_name =
-      base::UTF16ToUTF8(web_app_info.title);
-  const std::string bookmark_app_description =
-      base::UTF16ToUTF8(web_app_info.description);
-  if (extension->non_localized_name() == extension_sync_data_name &&
-      extension->description() == bookmark_app_description) {
-    return true;
-  }
-
-  return false;
-}
-
-bool BookmarkAppInstallFinalizer::CanUserUninstallFromSync(
-    const web_app::AppId& app_id) const {
-  const Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
-          app_id, extensions::ExtensionRegistry::EVERYTHING);
-  return extensions::ExtensionSystem::Get(profile_)
-      ->management_policy()
-      ->UserMayModifySettings(extension, nullptr);
-}
-
-void BookmarkAppInstallFinalizer::SetSubsystems(
-    web_app::AppRegistrar* registrar,
-    web_app::WebAppUiManager* ui_manager) {
-  registrar_ = registrar ? registrar->AsBookmarkAppRegistrar() : nullptr;
-  InstallFinalizer::SetSubsystems(registrar, ui_manager);
-}
-
 void BookmarkAppInstallFinalizer::SetCrxInstallerFactoryForTesting(
     CrxInstallerFactory crx_installer_factory) {
   crx_installer_factory_ = crx_installer_factory;
 }
 
-const Extension* BookmarkAppInstallFinalizer::GetExtensionById(
+const Extension* BookmarkAppInstallFinalizer::GetEnabledExtension(
     const web_app::AppId& app_id) const {
   const Extension* app =
       ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(app_id);
-  DCHECK(app);
   return app;
 }
 
@@ -233,18 +273,39 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
     const GURL& app_url,
     LaunchType launch_type,
     bool is_locally_installed,
-    web_app::InstallFinalizer::InstallFinalizedCallback callback,
+    bool is_system_app,
+    InstallFinalizedCallback callback,
     scoped_refptr<CrxInstaller> crx_installer,
     const base::Optional<CrxInstallError>& error) {
   if (error) {
-    std::move(callback).Run(web_app::AppId(),
-                            web_app::InstallResultCode::kFailedUnknownReason);
+    if (is_system_app) {
+      std::string extension_install_error_histogram_name =
+          std::string(kInstallResultExtensionErrorHistogramName) + "." +
+          web_app::GetProfileCategoryForLogging(profile_);
+      base::UmaHistogramEnumeration(extension_install_error_histogram_name,
+                                    error.value().detail());
+    }
+    std::move(callback).Run(
+        web_app::AppId(),
+        web_app::InstallResultCode::kBookmarkExtensionInstallError);
     return;
   }
 
   const Extension* extension = crx_installer->extension();
   DCHECK(extension);
-  if (extension != GetExtensionById(extension->id())) {
+
+  if (extension != GetEnabledExtension(extension->id())) {
+    int extension_disabled_reasons =
+        ExtensionPrefs::Get(profile_)->GetDisableReasons(extension->id());
+    LOG(ERROR) << "Installed extension was disabled: "
+               << extension_disabled_reasons;
+    if (is_system_app) {
+      std::string extension_disabled_reason_histogram_name =
+          std::string(kInstallResultExtensionDisabledReasonHistogramName) +
+          "." + web_app::GetProfileCategoryForLogging(profile_);
+      base::UmaHistogramSparse(extension_disabled_reason_histogram_name,
+                               extension_disabled_reasons);
+    }
     std::move(callback).Run(web_app::AppId(),
                             web_app::InstallResultCode::kWebAppDisabled);
     return;
@@ -256,11 +317,36 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
 
   SetBookmarkAppIsLocallyInstalled(profile_, extension, is_locally_installed);
 
-  DCHECK(registrar_);
-  registrar_->NotifyWebAppInstalled(extension->id());
+  registrar().NotifyWebAppInstalled(extension->id());
 
   std::move(callback).Run(extension->id(),
                           web_app::InstallResultCode::kSuccessNewInstall);
+}
+
+void BookmarkAppInstallFinalizer::OnExtensionUpdated(
+    const web_app::AppId& expected_app_id,
+    InstallFinalizedCallback callback,
+    scoped_refptr<CrxInstaller> crx_installer,
+    const base::Optional<CrxInstallError>& error) {
+  if (error) {
+    std::move(callback).Run(
+        web_app::AppId(),
+        web_app::InstallResultCode::kBookmarkExtensionInstallError);
+    return;
+  }
+
+  const Extension* extension = crx_installer->extension();
+  DCHECK(extension);
+  DCHECK_EQ(extension->id(), expected_app_id);
+
+  if (extension != GetEnabledExtension(extension->id())) {
+    std::move(callback).Run(web_app::AppId(),
+                            web_app::InstallResultCode::kWebAppDisabled);
+    return;
+  }
+
+  std::move(callback).Run(extension->id(),
+                          web_app::InstallResultCode::kSuccessAlreadyInstalled);
 }
 
 }  // namespace extensions

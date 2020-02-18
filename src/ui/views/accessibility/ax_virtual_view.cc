@@ -240,9 +240,15 @@ gfx::NativeViewAccessible AXVirtualView::ChildAtIndex(int index) {
   return nullptr;
 }
 
+#if !defined(OS_MACOSX)
 gfx::NativeViewAccessible AXVirtualView::GetNSWindow() {
   NOTREACHED();
   return nullptr;
+}
+#endif
+
+gfx::NativeViewAccessible AXVirtualView::GetNativeViewAccessible() {
+  return GetNativeObject();
 }
 
 gfx::NativeViewAccessible AXVirtualView::GetParent() {

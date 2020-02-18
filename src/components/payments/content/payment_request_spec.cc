@@ -13,7 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/core/features.h"
-#include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/method_strings.h"
+#include "components/payments/core/payment_app.h"
 #include "components/payments/core/payment_method_data.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_experimental_features.h"
@@ -77,10 +78,6 @@ std::string ToString(bool value) {
 
 }  // namespace
 
-const char kBasicCardMethodName[] = "basic-card";
-const char kGooglePayMethodName[] = "https://google.com/pay";
-const char kAndroidPayMethodName[] = "https://android.com/pay";
-
 PaymentRequestSpec::PaymentRequestSpec(
     mojom::PaymentOptionsPtr options,
     mojom::PaymentDetailsPtr details,
@@ -109,7 +106,7 @@ PaymentRequestSpec::PaymentRequestSpec(
       &stringified_method_data_);
 
   query_for_quota_ = stringified_method_data_;
-  if (base::Contains(payment_method_identifiers_set_, "basic-card") &&
+  if (base::Contains(payment_method_identifiers_set_, methods::kBasicCard) &&
       PaymentsExperimentalFeatures::IsEnabled(
           features::kStrictHasEnrolledAutofillInstrument)) {
     query_for_quota_["basic-card-payment-options"] = {
@@ -336,17 +333,17 @@ bool PaymentRequestSpec::IsMixedCurrency() const {
 }
 
 const mojom::PaymentItemPtr& PaymentRequestSpec::GetTotal(
-    PaymentInstrument* selected_instrument) const {
+    PaymentApp* selected_app) const {
   const mojom::PaymentDetailsModifierPtr* modifier =
-      GetApplicableModifier(selected_instrument);
+      GetApplicableModifier(selected_app);
   return modifier && (*modifier)->total ? (*modifier)->total : details_->total;
 }
 
 std::vector<const mojom::PaymentItemPtr*> PaymentRequestSpec::GetDisplayItems(
-    PaymentInstrument* selected_instrument) const {
+    PaymentApp* selected_app) const {
   std::vector<const mojom::PaymentItemPtr*> display_items;
   const mojom::PaymentDetailsModifierPtr* modifier =
-      GetApplicableModifier(selected_instrument);
+      GetApplicableModifier(selected_app);
   DCHECK(details_->display_items);
   for (const auto& item : *details_->display_items) {
     display_items.push_back(&item);
@@ -367,9 +364,8 @@ PaymentRequestSpec::GetShippingOptions() const {
 }
 
 const mojom::PaymentDetailsModifierPtr*
-PaymentRequestSpec::GetApplicableModifier(
-    PaymentInstrument* selected_instrument) const {
-  if (!selected_instrument ||
+PaymentRequestSpec::GetApplicableModifier(PaymentApp* selected_app) const {
+  if (!selected_app ||
       !base::FeatureList::IsEnabled(features::kWebPaymentsModifiers))
     return nullptr;
 
@@ -389,7 +385,7 @@ PaymentRequestSpec::GetApplicableModifier(
         &supported_types, &url_payment_method_identifiers,
         &payment_method_identifiers_set, &stringified_method_data);
 
-    if (selected_instrument->IsValidForModifier(
+    if (selected_app->IsValidForModifier(
             modifier->method_data->supported_method,
             !modifier->method_data->supported_networks.empty(),
             supported_card_networks_set,

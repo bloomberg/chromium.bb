@@ -5,14 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_BLUETOOTH_MOJOM_TRAITS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_BLUETOOTH_MOJOM_TRAITS_H_
 
-#include "device/bluetooth/public/mojom/uuid.mojom-blink.h"
+#include "device/bluetooth/public/mojom/uuid.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<::blink::mojom::WebBluetoothDeviceIdDataView, WTF::String> {
+struct PLATFORM_EXPORT
+    StructTraits<::blink::mojom::WebBluetoothDeviceIdDataView, WTF::String> {
   static const WTF::String& device_id(const WTF::String& input) {
     return input;
   }
@@ -22,7 +24,8 @@ struct StructTraits<::blink::mojom::WebBluetoothDeviceIdDataView, WTF::String> {
 };
 
 template <>
-struct StructTraits<bluetooth::mojom::UUIDDataView, WTF::String> {
+struct PLATFORM_EXPORT
+    StructTraits<bluetooth::mojom::UUIDDataView, WTF::String> {
   static const WTF::String& uuid(const WTF::String& input) { return input; }
 
   static bool Read(bluetooth::mojom::UUIDDataView, WTF::String* output);

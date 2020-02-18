@@ -10,9 +10,11 @@
 #include "base/macros.h"
 #include "components/pdf/common/pdf.mojom.h"
 #include "content/public/browser/touch_selection_controller_client_manager.h"
-#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/touch_selection/selection_event_type.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 #include "ui/touch_selection/touch_selection_menu_runner.h"
@@ -75,7 +77,7 @@ class PDFWebContentsHelper
   gfx::PointF ConvertHelper(const gfx::PointF& point_f, float scale) const;
 
   // mojom::PdfService:
-  void SetListener(mojom::PdfListenerPtr listener) override;
+  void SetListener(mojo::PendingRemote<mojom::PdfListener> listener) override;
   void HasUnsupportedFeature() override;
   void SaveUrlAs(const GURL& url, blink::mojom::ReferrerPtr referrer) override;
   void UpdateContentRestrictions(int32_t content_restrictions) override;
@@ -85,7 +87,8 @@ class PDFWebContentsHelper
                         int32_t right_height) override;
   void SetPluginCanSave(bool can_save) override;
 
-  content::WebContentsFrameBindingSet<mojom::PdfService> pdf_service_bindings_;
+  content::WebContentsFrameReceiverSet<mojom::PdfService>
+      pdf_service_receivers_;
   std::unique_ptr<PDFWebContentsHelperClient> const client_;
   content::TouchSelectionControllerClientManager*
       touch_selection_controller_client_manager_ = nullptr;
@@ -97,7 +100,7 @@ class PDFWebContentsHelper
   int32_t selection_right_height_ = 0;
   bool has_selection_ = false;
 
-  mojom::PdfListenerPtr remote_pdf_client_;
+  mojo::Remote<mojom::PdfListener> remote_pdf_client_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

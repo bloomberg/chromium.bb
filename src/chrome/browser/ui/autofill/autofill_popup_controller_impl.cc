@@ -22,6 +22,8 @@
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_active_popup.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
@@ -96,7 +98,7 @@ void AutofillPopupControllerImpl::Show(
 
   bool just_created = false;
   if (!view_) {
-    view_ = AutofillPopupView::Create(this);
+    view_ = AutofillPopupView::Create(GetWeakPtr());
 
     // It is possible to fail to create the popup, in this case
     // treat the popup as hiding right away.
@@ -159,6 +161,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   DCHECK_EQ(suggestions_.size(), elided_values_.size());
   DCHECK_EQ(suggestions_.size(), elided_labels_.size());
 
+  selected_line_.reset();
   // Remove all the old data list values, which should always be at the top of
   // the list if they are present.
   while (!suggestions_.empty() &&
@@ -357,20 +360,14 @@ const std::vector<Suggestion> AutofillPopupControllerImpl::GetSuggestions() {
 }
 
 #if !defined(OS_ANDROID)
-void AutofillPopupControllerImpl::SetTypesetter(gfx::Typesetter typesetter) {
-  typesetter_ = typesetter;
-}
-
 int AutofillPopupControllerImpl::GetElidedValueWidthForRow(int row) {
   return gfx::GetStringWidth(GetElidedValueAt(row),
-                             layout_model_.GetValueFontListForRow(row),
-                             typesetter_);
+                             layout_model_.GetValueFontListForRow(row));
 }
 
 int AutofillPopupControllerImpl::GetElidedLabelWidthForRow(int row) {
   return gfx::GetStringWidth(GetElidedLabelAt(row),
-                             layout_model_.GetLabelFontListForRow(row),
-                             typesetter_);
+                             layout_model_.GetLabelFontListForRow(row));
 }
 #endif
 
@@ -531,11 +528,9 @@ void AutofillPopupControllerImpl::ElideValueAndLabelForRow(
     int row,
     int available_width) {
   int value_width = gfx::GetStringWidth(
-      suggestions_[row].value, layout_model_.GetValueFontListForRow(row),
-      typesetter_);
+      suggestions_[row].value, layout_model_.GetValueFontListForRow(row));
   int label_width = gfx::GetStringWidth(
-      suggestions_[row].label, layout_model_.GetLabelFontListForRow(row),
-      typesetter_);
+      suggestions_[row].label, layout_model_.GetLabelFontListForRow(row));
   int total_text_length = value_width + label_width;
 
   // The line can have no strings if it represents a UI element, such as
@@ -547,12 +542,12 @@ void AutofillPopupControllerImpl::ElideValueAndLabelForRow(
   int value_size = available_width * value_width / total_text_length;
   elided_values_[row] = gfx::ElideText(
       suggestions_[row].value, layout_model_.GetValueFontListForRow(row),
-      value_size, gfx::ELIDE_TAIL, typesetter_);
+      value_size, gfx::ELIDE_TAIL);
 
   int label_size = available_width * label_width / total_text_length;
   elided_labels_[row] = gfx::ElideText(
       suggestions_[row].label, layout_model_.GetLabelFontListForRow(row),
-      label_size, gfx::ELIDE_TAIL, typesetter_);
+      label_size, gfx::ELIDE_TAIL);
 }
 #endif
 
@@ -592,24 +587,26 @@ void AutofillPopupControllerImpl::FireControlsChangedEvent(bool is_show) {
 
   // Retrieve the ax tree id associated with the current web contents.
   ui::AXTreeID tree_id = delegate_->GetAutofillDriver()->GetAxTreeId();
-  ui::AXTreeManager* ax_tree_manager =
-      ui::AXTreeManagerMap::GetInstance().GetManager(tree_id);
 
   // Retrieve the ax node id associated with the current web contents' element
   // that has a controller relation to the current autofill popup.
   int32_t node_id = delegate_->GetWebContentsPopupControllerAxId();
 
-  // We can only raise controls changed accessibility event when we have a valid
-  // ax tree and an ax node associated with the ax tree for the popup
-  // controller, and a valid ax unique id for the popup controllee.
-  if (!ax_tree_manager)
+  // In order to get the AXPlatformNode for the ax node id, we first need
+  // the AXPlatformNode for the web contents.
+  ui::AXPlatformNode* root_platform_node =
+      GetRootAXPlatformNodeForWebContents();
+  if (!root_platform_node)
     return;
-  ui::AXPlatformNodeDelegate* ax_platform_node_delegate =
-      ax_tree_manager->GetDelegate(tree_id, node_id);
-  if (!ax_platform_node_delegate)
+
+  ui::AXPlatformNodeDelegate* root_platform_node_delegate =
+      root_platform_node->GetDelegate();
+  if (!root_platform_node_delegate)
     return;
+
+  // Now get the target node from its tree ID and node ID.
   ui::AXPlatformNode* target_node =
-      ax_platform_node_delegate->GetFromNodeID(node_id);
+      root_platform_node_delegate->GetFromTreeIDAndNodeID(tree_id, node_id);
   base::Optional<int32_t> popup_ax_id = view_->GetAxUniqueId();
   if (!target_node || !popup_ax_id)
     return;
@@ -622,6 +619,25 @@ void AutofillPopupControllerImpl::FireControlsChangedEvent(bool is_show) {
     ui::ClearActivePopupAxUniqueId();
 
   target_node->NotifyAccessibilityEvent(ax::mojom::Event::kControlsChanged);
+}
+
+ui::AXPlatformNode*
+AutofillPopupControllerImpl::GetRootAXPlatformNodeForWebContents() {
+  if (!web_contents_)
+    return nullptr;
+
+  auto* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (!rwhv)
+    return nullptr;
+
+  // RWHV gives us a NativeViewAccessible.
+  gfx::NativeViewAccessible native_view_accessible =
+      rwhv->GetNativeViewAccessible();
+  if (!native_view_accessible)
+    return nullptr;
+
+  // NativeViewAccessible corresponds to an AXPlatformNode.
+  return ui::AXPlatformNode::FromNativeViewAccessible(native_view_accessible);
 }
 
 }  // namespace autofill

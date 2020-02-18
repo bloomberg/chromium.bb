@@ -20,6 +20,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/border.h"
 
@@ -28,8 +29,8 @@ namespace ash {
 namespace {
 
 // The height of the preview view in dips.
-// TODO(afakhry): Change the height to be dynamic according to the new specs.
 constexpr int kDeskPreviewHeight = 64;
+constexpr int kDeskPreviewHeightInCompactLayout = 48;
 
 // The corner radius of the border in dips.
 constexpr int kBorderCornerRadius = 6;
@@ -44,7 +45,7 @@ constexpr int kShadowElevation = 4;
 // when we attempt to mirror those layers.
 struct LayerData {
   // If true, the layer won't be mirrored in the desk's mirrored contents. For
-  // example windows created by overview mode to hold the CaptionContainerView,
+  // example windows created by overview mode to hold the OverviewItemView,
   // or minimized windows' layers, should all be skipped.
   bool should_skip_layer = false;
 
@@ -241,8 +242,8 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
 DeskPreviewView::~DeskPreviewView() = default;
 
 // static
-int DeskPreviewView::GetHeight() {
-  return kDeskPreviewHeight;
+int DeskPreviewView::GetHeight(bool compact) {
+  return compact ? kDeskPreviewHeightInCompactLayout : kDeskPreviewHeight;
 }
 
 void DeskPreviewView::SetBorderColor(SkColor color) {
@@ -292,9 +293,12 @@ void DeskPreviewView::Layout() {
   // The desk's contents mirrored layer needs to be scaled down so that it fits
   // exactly in the center of the view.
   const auto root_size = mini_view_->root_window()->layer()->size();
+  const gfx::Vector2dF scale{
+      static_cast<float>(bounds.width()) / root_size.width(),
+      static_cast<float>(bounds.height()) / root_size.height()};
+  wallpaper_preview_->set_centered_layout_image_scale(scale);
   gfx::Transform transform;
-  transform.Scale(static_cast<float>(bounds.width()) / root_size.width(),
-                  static_cast<float>(bounds.height()) / root_size.height());
+  transform.Scale(scale.x(), scale.y());
   ui::Layer* desk_mirrored_contents_layer =
       desk_mirrored_contents_layer_tree_owner_->root();
   DCHECK(desk_mirrored_contents_layer);

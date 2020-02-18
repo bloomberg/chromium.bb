@@ -19,8 +19,8 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_observer.h"
-#include "storage/browser/fileapi/async_file_util.h"
-#include "storage/browser/fileapi/watcher_manager.h"
+#include "storage/browser/file_system/async_file_util.h"
+#include "storage/browser/file_system/watcher_manager.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -104,7 +104,7 @@ class ThrottledFileSystem : public ProvidedFileSystemInterface {
                            bool recursive,
                            bool persistent,
                            storage::AsyncFileUtil::StatusCallback callback,
-                           const storage::WatcherManager::NotificationCallback&
+                           storage::WatcherManager::NotificationCallback
                                notification_callback) override;
   void RemoveWatcher(const GURL& origin,
                      const base::FilePath& entry_path,

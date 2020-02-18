@@ -450,14 +450,6 @@
       initial: false,
     },
 
-    // If true, scrollers will use overlay scrollbars.  These do not take up any
-    // layout width, are drawn using solid color quads by the compositor, and fade away
-    // after a timeout.
-    {
-      name: "useSolidColorScrollbars",
-      initial: false,
-    },
-
     // The rubber-band overscroll effect is implemented in Blink and is being moved
     // to the compositor thread. This will be set to true and eventually removed.
     // crbug.com/133097
@@ -489,9 +481,9 @@
     },
     {
       name: "displayModeOverride",
-      initial: "kWebDisplayModeUndefined",
+      initial: "blink::mojom::DisplayMode::kUndefined",
       invalidate: "MediaQuery",
-      type: "WebDisplayMode",
+      type: "blink::mojom::DisplayMode",
     },
 
     // loadsImagesAutomatically only suppresses the network load of
@@ -884,9 +876,14 @@
     // Dark mode
     //
     {
-      name: "darkMode",
-      initial: "DarkMode::kOff",
-      type: "DarkMode",
+      name: "darkModeEnabled",
+      initial: false,
+      invalidate: "Paint",
+    },
+    {
+      name: "darkModeInversionAlgorithm",
+      initial: "DarkModeInversionAlgorithm::kInvertLightnessLAB",
+      type: "DarkModeInversionAlgorithm",
       invalidate: "Paint",
     },
     {
@@ -1021,14 +1018,33 @@
       initial: 3000,
       type: "int",
     },
-
-    // Preferred color scheme from the OS/application passed to the renderer for
-    // evaluating the prefers-color-scheme media query.
+    //
+    // Count of the images to fully load for different effective connection types.
+    //
     {
-      name: "preferredColorScheme",
-      initial: "PreferredColorScheme::kNoPreference",
-      invalidate: "ColorScheme",
-      type: "PreferredColorScheme",
+      name: "lazyImageFirstKFullyLoadUnknown",
+      initial: 0,
+      type: "int",
+    },
+    {
+      name: "lazyImageFirstKFullyLoadSlow2G",
+      initial: 12,
+      type: "int",
+    },
+    {
+      name: "lazyImageFirstKFullyLoad2G",
+      initial: 10,
+      type: "int",
+    },
+    {
+      name: "lazyImageFirstKFullyLoad3G",
+      initial: 8,
+      type: "int",
+    },
+    {
+      name: "lazyImageFirstKFullyLoad4G",
+      initial: 6,
+      type: "int",
     },
 
     // Preferred motion-reduction setting from the OS/application passed to the
@@ -1042,13 +1058,13 @@
       name: "DontSendKeyEventsToJavascript",
       initial: false,
     },
-    // Forced colors from the OS/application passed to the renderer for
-    // evaluating the forced-colors media query.
+    // Navigation controls from the application passed to the renderer for
+    // evaluating the navigation-controls media query.
     {
-      name: "forcedColors",
-      initial: "ForcedColors::kNone",
-      invalidate: "ColorScheme",
-      type: "ForcedColors",
+      name: "navigationControls",
+      initial: "NavigationControls::kNone",
+      invalidate: "MediaQuery",
+      type: "NavigationControls",
     },
   ],
 }

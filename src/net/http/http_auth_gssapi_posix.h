@@ -15,7 +15,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
-#include "net/http/http_negotiate_auth_system.h"
+#include "net/http/http_auth_mechanism.h"
 
 #if defined(OS_MACOSX)
 #include <GSS/gssapi.h>
@@ -217,14 +217,13 @@ class ScopedSecurityContext {
 
 
 // TODO(ahendrickson): Share code with HttpAuthSSPI.
-class NET_EXPORT_PRIVATE HttpAuthGSSAPI : public HttpNegotiateAuthSystem {
+class NET_EXPORT_PRIVATE HttpAuthGSSAPI : public HttpAuthMechanism {
  public:
   HttpAuthGSSAPI(GSSAPILibrary* library,
-                 const std::string& scheme,
                  const gss_OID gss_oid);
   ~HttpAuthGSSAPI() override;
 
-  // HttpNegotiateAuthSystem implementation:
+  // HttpAuthMechanism implementation:
   bool Init(const NetLogWithSource& net_log) override;
   bool NeedsIdentity() const override;
   bool AllowsExplicitCredentials() const override;
@@ -245,7 +244,6 @@ class NET_EXPORT_PRIVATE HttpAuthGSSAPI : public HttpNegotiateAuthSystem {
                            gss_buffer_t out_token,
                            const NetLogWithSource& net_log);
 
-  std::string scheme_;
   gss_OID gss_oid_;
   GSSAPILibrary* library_;
   std::string decoded_server_auth_token_;

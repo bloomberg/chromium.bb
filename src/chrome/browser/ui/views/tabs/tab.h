@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
-#include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -79,7 +79,6 @@ class Tab : public gfx::AnimationDelegate,
   // TabSlotView:
   void Layout() override;
   const char* GetClassName() const override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -98,6 +97,7 @@ class Tab : public gfx::AnimationDelegate,
   void OnFocus() override;
   void OnBlur() override;
   void OnThemeChanged() override;
+  TabSlotView::ViewType GetTabSlotViewType() const override;
   TabSizeInfo GetTabSizeInfo() const override;
 
   TabController* controller() const { return controller_; }
@@ -106,24 +106,8 @@ class Tab : public gfx::AnimationDelegate,
   void SetClosing(bool closing);
   bool closing() const { return closing_; }
 
-  // See description above field.
-  void set_dragging(bool dragging) { dragging_ = dragging; }
-  bool dragging() const { return dragging_; }
-
-  // Used to mark the tab as having been detached.  Once this has happened, the
-  // tab should be invisibly closed.  This is irreversible.
-  void set_detached() { detached_ = true; }
-  bool detached() const { return detached_; }
-
-  void SetGroup(base::Optional<TabGroupId> group);
-  base::Optional<TabGroupId> group() { return group_; }
-
   // Returns the color for the tab's group, if any.
   base::Optional<SkColor> GetGroupColor() const;
-
-  // Should be called when the result of
-  // |TabController::GetVisualDataForGroup()| changes.
-  void GroupColorChanged();
 
   // Returns the color used for the alert indicator icon.
   SkColor GetAlertIndicatorColor(TabAlertState state) const;
@@ -157,8 +141,6 @@ class Tab : public gfx::AnimationDelegate,
   // throbbers in sync.
   void StepLoadingAnimation(const base::TimeDelta& elapsed_time);
 
-  bool ShowingLoadingAnimation() const;
-
   // Sets the visibility of the indicator shown when the tab needs to indicate
   // to the user that it needs their attention.
   void SetTabNeedsAttention(bool attention);
@@ -180,8 +162,9 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the text to show in a tab's tooltip: The contents |title|, followed
   // by a break, followed by a localized string describing the |alert_state|.
   // Exposed publicly for tests.
-  static base::string16 GetTooltipText(const base::string16& title,
-                                       TabAlertState alert_state);
+  static base::string16 GetTooltipText(
+      const base::string16& title,
+      base::Optional<TabAlertState> alert_state);
 
  private:
   class TabCloseButtonObserver;
@@ -218,7 +201,8 @@ class Tab : public gfx::AnimationDelegate,
   void UpdateForegroundColors();
 
   // Considers switching to hovered mode or [re-]showing the hover card based on
-  // the mouse moving over the tab.
+  // the mouse moving over the tab. If the tab is already hovered or mouse
+  // events are disabled because of touch input, this is a no-op.
   void MaybeUpdateHoverStatus(const ui::MouseEvent& event);
 
   // The controller, never nullptr.
@@ -230,15 +214,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // True if the tab is being animated closed.
   bool closing_ = false;
-
-  // True if the tab is being dragged.
-  bool dragging_ = false;
-
-  // True if the tab has been detached.
-  bool detached_ = false;
-
-  // Defined when the tab is part of a group.
-  base::Optional<TabGroupId> group_;
 
   TabIcon* icon_ = nullptr;
   AlertIndicator* alert_indicator_ = nullptr;

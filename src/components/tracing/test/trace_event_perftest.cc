@@ -20,7 +20,7 @@ namespace tracing {
 namespace {
 
 using base::BindOnce;
-using base::Closure;
+using base::OnceClosure;
 using base::RunLoop;
 using base::Thread;
 using base::Unretained;
@@ -31,6 +31,9 @@ using base::trace_event::TraceLog;
 using base::trace_event::TraceRecordMode;
 
 const int kNumRuns = 10;
+const char kMetricFlushTimeMs[] = "flush_time";
+const char kMetricEventSubmitTimeMs[] = "event_submit_time";
+const char kMetricEventCreateTimeMs[] = "event_create_time";
 
 class TraceEventPerfTest : public ::testing::Test {
  public:
@@ -41,7 +44,7 @@ class TraceEventPerfTest : public ::testing::Test {
   }
 
   void EndTraceAndFlush() {
-    ScopedStopwatch stopwatch("flush");
+    ScopedStopwatch stopwatch(kMetricFlushTimeMs);
     base::RunLoop run_loop;
     TraceLog::GetInstance()->SetDisabled();
     TraceLog::GetInstance()->Flush(
@@ -50,12 +53,11 @@ class TraceEventPerfTest : public ::testing::Test {
   }
 
   static void OnTraceDataCollected(
-      Closure quit_closure,
+      OnceClosure quit_closure,
       const scoped_refptr<base::RefCountedString>& events_str,
       bool has_more_events) {
-
     if (!has_more_events)
-      quit_closure.Run();
+      std::move(quit_closure).Run();
   }
 
   std::unique_ptr<TracedValue> MakeTracedValue(int counter) {
@@ -90,12 +92,12 @@ class TraceEventPerfTest : public ::testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 };
 
 TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0) {
   BeginTrace();
-  IterableStopwatch stopwatch("events");
+  IterableStopwatch stopwatch(kMetricEventSubmitTimeMs);
   for (int lap = 0; lap < kNumRuns; lap++) {
     SubmitTraceEvents(10000);
     stopwatch.NextLap();
@@ -105,7 +107,7 @@ TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0) {
 
 TEST_F(TraceEventPerfTest, Long_TRACE_EVENT0) {
   BeginTrace();
-  IterableStopwatch stopwatch("long_event");
+  IterableStopwatch stopwatch(kMetricEventSubmitTimeMs);
   for (int lap = 0; lap < kNumRuns; lap++) {
     TRACE_EVENT0("test_category", "Outer event");
     SubmitTraceEvents(10000);
@@ -117,7 +119,7 @@ TEST_F(TraceEventPerfTest, Long_TRACE_EVENT0) {
 TEST_F(TraceEventPerfTest, Create_10000_TracedValue) {
   std::unique_ptr<TracedValue> value;
   {
-    ScopedStopwatch value_sw("create_traced_values");
+    ScopedStopwatch value_sw(kMetricEventCreateTimeMs);
     for (int i = 0; i < 10000; i++) {
       value = MakeTracedValue(i);
     }
@@ -127,7 +129,7 @@ TEST_F(TraceEventPerfTest, Create_10000_TracedValue) {
 TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT_with_TracedValue) {
   BeginTrace();
   // Time reported by this timer includes TracedValue creation as well.
-  IterableStopwatch trace_sw("events_with_value");
+  IterableStopwatch trace_sw(kMetricEventSubmitTimeMs);
   for (int lap = 0; lap < kNumRuns; lap++) {
     for (int i = 0; i < 10000; i++) {
       TRACE_EVENT_INSTANT1("test_category", "event_with_value",
@@ -156,7 +158,7 @@ TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0_multithreaded) {
   }
 
   {
-    ScopedStopwatch stopwatch("events_over_multiple_threads");
+    ScopedStopwatch stopwatch(kMetricEventSubmitTimeMs);
     for (int i = 0; i < kNumThreads; i++) {
       threads[i]->task_runner()->PostTask(
           FROM_HERE, base::BindOnce(&SubmitTraceEventsAndSignal,
@@ -175,7 +177,7 @@ TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0_multithreaded) {
 
 TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0_in_traceable_tasks) {
   BeginTrace();
-  IterableStopwatch task_sw("events_in_task");
+  IterableStopwatch task_sw(kMetricEventSubmitTimeMs);
   for (int i = 0; i < 100; i++) {
     base::PendingTask pending_task(FROM_HERE,
                                    BindOnce(&SubmitTraceEvents, 10000));
@@ -187,7 +189,7 @@ TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0_in_traceable_tasks) {
 }
 
 TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0_with_tracing_disabled) {
-  ScopedStopwatch stopwatch("events");
+  ScopedStopwatch stopwatch(kMetricEventSubmitTimeMs);
   SubmitTraceEvents(10000);
 }
 

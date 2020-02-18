@@ -14,8 +14,7 @@
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "ipc/ipc_platform_file.h"
-#include "mojo/public/cpp/system/invitation.h"
-#include "services/service_manager/public/cpp/identity.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace base {
 class CommandLine;
@@ -25,7 +24,6 @@ class SingleThreadTaskRunner;
 
 namespace content {
 class ChildProcessHost;
-class ServiceManagerConnection;
 }
 
 namespace printing {
@@ -34,10 +32,6 @@ struct PdfRenderSettings;
 struct PrinterCapsAndDefaults;
 struct PrinterSemanticCapsAndDefaults;
 }  // namespace printing
-
-namespace service_manager {
-class ServiceManager;
-}
 
 // Acts as the service-side host to a utility child process. A
 // utility process is a short-lived sandboxed process that is created to run
@@ -96,6 +90,8 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
                             base::SingleThreadTaskRunner* client_task_runner);
   ~ServiceUtilityProcessHost() override;
 
+  content::ChildProcessHost* GetHost() { return child_process_host_.get(); }
+
   // Starts a process to render the specified pages in the given PDF file into
   // a metafile. Currently only implemented for Windows. If the PDF has fewer
   // pages than the specified page ranges, it will render as many as available.
@@ -125,8 +121,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   void OnChildDisconnected() override;
   bool OnMessageReceived(const IPC::Message& message) override;
   const base::Process& GetProcess() override;
-  void BindInterface(const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
 
  private:
   // Starts a process.  Returns true iff it succeeded.
@@ -142,7 +137,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
 
   // PdfToEmfState callbacks:
   void OnRenderPDFPagesToMetafilesPageCount(
-      printing::mojom::PdfToEmfConverterPtr converter,
+      mojo::PendingRemote<printing::mojom::PdfToEmfConverter> converter,
       uint32_t page_count);
   void OnRenderPDFPagesToMetafilesPageDone(
       base::ReadOnlySharedMemoryRegion emf_region,
@@ -165,15 +160,9 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   scoped_refptr<Client> client_;
   scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
   bool waiting_for_reply_;
-  mojo::OutgoingInvitation mojo_invitation_;
 
   class PdfToEmfState;
   std::unique_ptr<PdfToEmfState> pdf_to_emf_state_;
-
-  std::unique_ptr<service_manager::ServiceManager> service_manager_;
-  std::unique_ptr<content::ServiceManagerConnection>
-      service_manager_connection_;
-  service_manager::Identity utility_service_instance_identity_;
 
   base::WeakPtrFactory<ServiceUtilityProcessHost> weak_ptr_factory_{this};
 

@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include <fontconfig/fontconfig.h>
-#include <sys/stat.h>
 #include <time.h>
 #include <utime.h>
 
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -32,17 +32,17 @@ int main() {
   base::PathService::Get(base::DIR_MODULE, &dir_module);
   base::FilePath uuid_file_path =
       dir_module.Append("test_fonts").Append(".uuid");
-  const char uuid[] = "df1acc8c-39d5-4a8b-8507-b1a7396ac3ac";
+  const char uuid[] = "fb5c91b2895aa445d23aebf7f9e2189c";
   WriteFile(uuid_file_path, uuid, strlen(uuid));
 
   // fontconfig writes the mtime of the test_fonts directory into the cache. It
   // presumably checks this later to ensure that the cache is still up to date.
   // We set the mtime to an arbitrary, fixed time in the past.
   base::FilePath test_fonts_file_path = dir_module.Append("test_fonts");
-  struct stat old_times;
+  base::stat_wrapper_t old_times;
   struct utimbuf new_times;
 
-  stat(test_fonts_file_path.value().c_str(), &old_times);
+  base::File::Stat(test_fonts_file_path.value().c_str(), &old_times);
   new_times.actime = old_times.st_atime;
   // Use an arbitrary, fixed time.
   new_times.modtime = 123456789;
@@ -52,7 +52,7 @@ int main() {
 
   // Delete directory before generating fontconfig caches. This will notify
   // future fontconfig_caches changes.
-  CHECK(base::DeleteFile(fontconfig_caches, /*recursive=*/true));
+  CHECK(base::DeleteFileRecursively(fontconfig_caches));
 
   base::SetUpFontconfig();
   FcInit();

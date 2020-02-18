@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace chromeos {
@@ -27,18 +28,25 @@ namespace multidevice {
 // The WebUI controller for chrome://proximity-auth.
 class ProximityAuthUI : public ui::MojoWebUIController {
  public:
+  using MultiDeviceSetupBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>)>;
+
   // Note: |web_ui| is not owned by this instance and must outlive this
   // instance.
   ProximityAuthUI(content::WebUI* web_ui,
                   device_sync::DeviceSyncClient* device_sync_client,
-                  secure_channel::SecureChannelClient* secure_channel_client);
+                  secure_channel::SecureChannelClient* secure_channel_client,
+                  MultiDeviceSetupBinder multidevice_setup_binder);
   ~ProximityAuthUI() override;
 
  protected:
   void BindMultiDeviceSetup(
-      multidevice_setup::mojom::MultiDeviceSetupRequest request);
+      mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
+          receiver);
 
  private:
+  const MultiDeviceSetupBinder multidevice_setup_binder_;
+
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthUI);
 };
 

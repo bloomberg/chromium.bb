@@ -10,6 +10,7 @@
 
 from __future__ import print_function
 
+import gclient_utils
 import os
 import sys
 
@@ -71,8 +72,9 @@ def GetPrimarySolutionPath():
       if os.path.exists(repo_root_path):
         top_dir[0] = repo_root_path
     try:
-      CheckCallAndFilter(["git", "rev-parse", "--show-toplevel"],
-                         print_stdout=False, filter_fn=filter_fn)
+      gclient_utils.CheckCallAndFilter(["git", "rev-parse", "--show-toplevel"],
+                                       print_stdout=False,
+                                       filter_fn=filter_fn)
     except Exception:
       pass
     top_dir = top_dir[0]

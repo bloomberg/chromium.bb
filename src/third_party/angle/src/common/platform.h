@@ -20,6 +20,9 @@
 #elif defined(ANDROID)
 #    define ANGLE_PLATFORM_ANDROID 1
 #    define ANGLE_PLATFORM_POSIX 1
+#elif defined(__ggp__)
+#    define ANGLE_PLATFORM_GGP 1
+#    define ANGLE_PLATFORM_POSIX 1
 #elif defined(__linux__) || defined(EMSCRIPTEN)
 #    define ANGLE_PLATFORM_LINUX 1
 #    define ANGLE_PLATFORM_POSIX 1
@@ -46,7 +49,7 @@
 #    include <windows.h>
 
 #    if defined(WINAPI_FAMILY) && (WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP)
-#        define ANGLE_ENABLE_WINDOWS_STORE 1
+#        define ANGLE_ENABLE_WINDOWS_UWP 1
 #    endif
 
 #    if defined(ANGLE_ENABLE_D3D9)
@@ -59,16 +62,19 @@
 #        include <d3d10_1.h>
 #        include <d3d11.h>
 #        include <d3d11_3.h>
+#        include <d3d11on12.h>
+#        include <d3d12.h>
 #        include <d3dcompiler.h>
 #        include <dxgi.h>
 #        include <dxgi1_2.h>
+#        include <dxgi1_4.h>
 #    endif
 
 #    if defined(ANGLE_ENABLE_D3D9) || defined(ANGLE_ENABLE_D3D11)
 #        include <wrl.h>
 #    endif
 
-#    if defined(ANGLE_ENABLE_WINDOWS_STORE)
+#    if defined(ANGLE_ENABLE_WINDOWS_UWP)
 #        include <dxgi1_3.h>
 #        if defined(_DEBUG)
 #            include <DXProgrammableCapture.h>
@@ -107,5 +113,14 @@
 #        define ANGLE_UNLIKELY(x) (x)
 #    endif  // defined(__GNUC__) || defined(__clang__)
 #endif      // !defined(ANGLE_LIKELY) || !defined(ANGLE_UNLIKELY)
+
+#ifdef ANGLE_PLATFORM_APPLE
+#    include <TargetConditionals.h>
+#    if TARGET_OS_OSX
+#        define ANGLE_PLATFORM_MACOS 1
+#    elif TARGET_OS_IOS
+#        define ANGLE_PLATFORM_IOS 1
+#    endif
+#endif
 
 #endif  // COMMON_PLATFORM_H_

@@ -31,7 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_INPUT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_INPUT_H_
 
-#include "media/midi/midi_service.mojom-blink.h"
+#include "media/midi/midi_service.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_port.h"
 
@@ -43,13 +43,6 @@ class MIDIInput final : public MIDIPort {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MIDIInput* Create(MIDIAccess*,
-                           const String& id,
-                           const String& manufacturer,
-                           const String& name,
-                           const String& version,
-                           midi::mojom::PortState);
-
   MIDIInput(MIDIAccess*,
             const String& id,
             const String& manufacturer,

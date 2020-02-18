@@ -10,17 +10,14 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "content/common/content_export.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
+#include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 
 namespace cc {
 class ImageDecodeCache;
 }  // namespace cc
-
-namespace gpu {
-namespace gles2 {
-class GLES2Interface;
-}  // namespace gles2
-}  // namespace gpu
 
 namespace viz {
 class ContextProviderCommandBuffer;
@@ -39,7 +36,9 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
 
   // WebGraphicsContext3DProvider implementation.
   bool BindToCurrentThread() override;
+  gpu::InterfaceBase* InterfaceBase() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
+  gpu::raster::RasterInterface* RasterInterface() override;
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override;
   GrContext* GetGrContext() override;
   const gpu::Capabilities& GetCapabilities() const override;

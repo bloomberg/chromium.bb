@@ -4,9 +4,11 @@
 
 #include "components/printing/browser/print_manager.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/render_frame_host.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace printing {
 
@@ -89,6 +91,11 @@ bool PrintManager::OnMessageReceived(
   return handled;
 }
 
+void PrintManager::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  print_render_frames_.erase(render_frame_host);
+}
+
 void PrintManager::OnDidGetPrintedPagesCount(int cookie,
                                              int number_pages) {
   DCHECK_GT(cookie, 0);
@@ -108,6 +115,23 @@ void PrintManager::OnPrintingFailed(int cookie) {
 #if defined(OS_ANDROID)
   PdfWritingDone(0);
 #endif
+}
+
+const mojo::AssociatedRemote<printing::mojom::PrintRenderFrame>&
+PrintManager::GetPrintRenderFrame(content::RenderFrameHost* rfh) {
+  auto it = print_render_frames_.find(rfh);
+  if (it == print_render_frames_.end()) {
+    mojo::AssociatedRemote<printing::mojom::PrintRenderFrame> remote;
+    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&remote);
+    it = print_render_frames_.insert({rfh, std::move(remote)}).first;
+  } else if (it->second.is_bound() && !it->second.is_connected()) {
+    // When print preview is closed, the remote is disconnected from the
+    // receiver. Reset and bind the remote before using it again.
+    it->second.reset();
+    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&it->second);
+  }
+
+  return it->second;
 }
 
 void PrintManager::PrintingRenderFrameDeleted() {

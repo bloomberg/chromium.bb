@@ -31,14 +31,12 @@
 
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
-#include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css/css_light_dark_color_pair.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
-
-using namespace cssvalue;
 
 TextLinkColors::TextLinkColors() : text_color_(Color::kBlack) {
   ResetLinkColor();
@@ -62,13 +60,14 @@ Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
                                         Color current_color,
                                         WebColorScheme color_scheme,
                                         bool for_visited_link) const {
-  if (auto* color_value = DynamicTo<CSSColorValue>(value))
+  if (auto* color_value = DynamicTo<cssvalue::CSSColorValue>(value))
     return color_value->Value();
 
-  if (auto* pair = DynamicTo<CSSValuePair>(value)) {
-    const CSSColorValue& color_value = To<CSSColorValue>(
-        WebColorScheme::kLight ? pair->First() : pair->Second());
-    return color_value.Value();
+  if (auto* pair = DynamicTo<CSSLightDarkColorPair>(value)) {
+    const CSSValue& color_value =
+        color_scheme == WebColorScheme::kLight ? pair->First() : pair->Second();
+    return ColorFromCSSValue(color_value, current_color, color_scheme,
+                             for_visited_link);
   }
 
   CSSValueID value_id = To<CSSIdentifierValue>(value).GetValueID();

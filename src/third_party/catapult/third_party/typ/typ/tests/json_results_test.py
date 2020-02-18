@@ -19,7 +19,7 @@ from typ import json_results
 
 class FakeArtifacts(object):
     def __init__(self):
-        self.files = {}
+        self.artifacts = {}
 
 
 class TestMakeUploadRequest(unittest.TestCase):
@@ -83,7 +83,7 @@ class TestMakeFullResults(unittest.TestCase):
                                            0, 0.2, 0))
         result_set.add(json_results.Result('foo_test.FooTest.test_skip',
                                            json_results.ResultType.Skip,
-                                           0, 0.3, 0, 
+                                           0, 0.3, 0,
                                            expected=[json_results.ResultType.Skip],
                                            unexpected=False))
 
@@ -126,14 +126,14 @@ class TestMakeFullResults(unittest.TestCase):
 
     def test_artifacts_and_types_added(self):
         ar = FakeArtifacts()
-        ar.files = {'artifact_name': 'a/b/c.txt'}
+        ar.artifacts = {'artifact_name': ['a/b/c.txt']}
 
         test_names = [ 'foo_test.FooTest.foobar' ]
 
         result_set = json_results.ResultSet()
         result_set.add(json_results.Result(
                 'foo_test.FooTest.foobar', json_results.ResultType.Pass,
-                0, 0.2, 0, artifacts=ar))
+                0, 0.2, 0, artifacts=ar.artifacts))
 
         full_results = json_results.make_full_results(
                 {'foo': 'bar'}, 0, test_names, result_set)
@@ -148,16 +148,16 @@ class TestMakeFullResults(unittest.TestCase):
         result_set = json_results.ResultSet()
 
         ar = FakeArtifacts()
-        ar.files = {'artifact_name': 'a/b/c.txt'}
+        ar.artifacts = {'artifact_name': ['a/b/c.txt']}
         result_set.add(json_results.Result(
                 'foo_test.FooTest.foobar', json_results.ResultType.Failure,
-                0, 0.2, 0, artifacts=ar))
+                0, 0.2, 0, artifacts=ar.artifacts))
 
         ar2 = FakeArtifacts()
-        ar2.files = {'artifact_name': 'd/e/f.txt'}
+        ar2.artifacts = {'artifact_name': ['d/e/f.txt']}
         result_set.add(json_results.Result(
                 'foo_test.FooTest.foobar', json_results.ResultType.Failure,
-                0, 0.2, 0, artifacts=ar2))
+                0, 0.2, 0, artifacts=ar2.artifacts))
 
         full_results = json_results.make_full_results(
                 {'foo': 'bar'}, 0, test_names, result_set)

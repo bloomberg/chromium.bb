@@ -18,8 +18,6 @@ import mock
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages
-from chromite.lib import auth
-from chromite.lib import buildbucket_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cidb
@@ -55,7 +53,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
   # Subclass should override this to default to a different build config
   # for its tests.
-  BOT_ID = 'amd64-generic-paladin'
+  BOT_ID = 'amd64-generic-full'
 
   # Subclasses can override this.  If non-None, value is inserted into
   # self._run.attrs.release_tag.
@@ -67,7 +65,8 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     osutils.SafeMakedirs(os.path.join(self.build_root, '.repo'))
 
     self._manager = parallel.Manager()
-    self._manager.__enter__()
+    # Pylint-1.9 has a false positive on this for some reason.
+    self._manager.__enter__()  # pylint: disable=no-value-for-parameter
 
     # These are here to make pylint happy.  Values filled in by _Prepare.
     self._bot_id = None
@@ -164,7 +163,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     self._model = self._current_board
 
     # Some preliminary sanity checks.
-    self.assertEquals(options.buildroot, self.build_root)
+    self.assertEqual(options.buildroot, self.build_root)
 
     # Construct a real BuilderRun using options and build_config.
     self._run = cbuildbot_run.BuilderRun(
@@ -251,7 +250,7 @@ class AbstractStageTestCase(StageTestCase):
     # it's state afterwards.
     self.stage = None
 
-  def ConstructStage(self, **kwargs):
+  def ConstructStage(self):
     """Returns an instance of the stage to be tested.
 
     Note: Must be implemented in subclasses.
@@ -520,54 +519,6 @@ class BuilderStageTest(AbstractStageTestCase):
         DEFAULT_BUILD_STAGE_ID,
         constants.BUILDER_STATUS_FAILED)
 
-  def testGetJobKeyvalsRegularBuild(self):
-    """Test GetJobKeyvals for a build with master."""
-    stage = self.ConstructStage()
-    build_identifier = BuildIdentifier(cidb_id=constants.MOCK_BUILD_ID,
-                                       buildbucket_id=1234)
-    self.PatchObject(stage._run, 'GetCIDBHandle',
-                     return_value=[build_identifier, None])
-    self.PatchObject(self.buildstore, 'GetBuildStatuses',
-                     return_value=[{'build_config':'master-paladin'}])
-    stage._run.options.master_buildbucket_id = 2341
-    stage._run.config.name = 'something-paladin'
-    stage._run.options.branch = 'master'
-    expected = {
-        constants.JOB_KEYVAL_DATASTORE_PARENT_KEY: (
-            'Build', constants.MOCK_BUILD_ID),
-        constants.JOB_KEYVAL_CIDB_BUILD_ID:
-            constants.MOCK_BUILD_ID,
-        constants.JOB_KEYVAL_BUILD_CONFIG:
-            'something-paladin',
-        constants.JOB_KEYVAL_BRANCH:
-            'master',
-        constants.JOB_KEYVAL_MASTER_BUILD_CONFIG:
-            'master-paladin'
-    }
-    self.assertEqual(stage.GetJobKeyvals(), expected)
-
-  def testGetJobKeyvalsSpecialBuild(self):
-    """Test GetJobKeyvals for a build without master."""
-    stage = self.ConstructStage()
-    build_identifier = BuildIdentifier(cidb_id=constants.MOCK_BUILD_ID,
-                                       buildbucket_id=1234)
-    self.PatchObject(stage._run, 'GetCIDBHandle',
-                     return_value=[build_identifier, None])
-    stage._run.config.name = 'something-paladin'
-    stage._run.options.branch = 'master'
-    expected = {
-        constants.JOB_KEYVAL_DATASTORE_PARENT_KEY: (
-            'Build', constants.MOCK_BUILD_ID),
-        constants.JOB_KEYVAL_CIDB_BUILD_ID:
-            constants.MOCK_BUILD_ID,
-        constants.JOB_KEYVAL_BUILD_CONFIG:
-            'something-paladin',
-        constants.JOB_KEYVAL_BRANCH:
-            'master',
-        constants.JOB_KEYVAL_MASTER_BUILD_CONFIG:
-            None
-    }
-    self.assertEqual(stage.GetJobKeyvals(), expected)
 
 class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
   """Test GetBuildFailureMessage in BuilderStage."""
@@ -647,116 +598,6 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
     self.assertTrue('the builder failed' in msg.message_summary)
 
 
-class MasterConfigBuilderStageTest(AbstractStageTestCase):
-  """Tests for BuilderStage on master build."""
-
-  BOT_ID = 'master-paladin'
-
-  def setUp(self):
-    self._Prepare()
-    self.mock_cidb = mock.MagicMock()
-    self.buildstore = FakeBuildStore()
-    cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
-    results_lib.Results.Clear()
-
-  def tearDown(self):
-    cidb.CIDBConnectionFactory.ClearMock()
-
-  def ConstructStage(self):
-    return generic_stages.BuilderStage(self._run, self.buildstore)
-
-  def testGetBuildbucketClient(self):
-    """GetBuildbucketClient returns not None."""
-    self.PatchObject(buildbucket_lib, 'GetServiceAccount',
-                     return_value=True)
-    self.PatchObject(auth.AuthorizedHttp, '__init__',
-                     return_value=None)
-    self.PatchObject(buildbucket_lib.BuildbucketClient,
-                     '_GetHost',
-                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
-    stage = self.ConstructStage()
-    self.assertIsNotNone(stage.GetBuildbucketClient())
-
-  def testGetBuildbucketClientWithoutServiceAccount(self):
-    """GetBuildbucketClient returns None with no ServiceAccount."""
-    self.PatchObject(buildbucket_lib, 'GetServiceAccount',
-                     return_value=False)
-    stage = self.ConstructStage()
-    self.assertIsNone(stage.GetBuildbucketClient())
-
-  def testGetBuildbucketClientRaisesException(self):
-    """GetBuildbucketClient raises exceptions correctly."""
-    self.PatchObject(buildbucket_lib, 'GetServiceAccount',
-                     return_value=False)
-    self.PatchObject(cbuildbot_run._BuilderRunBase, 'InProduction',
-                     return_value=True)
-    stage = self.ConstructStage()
-    self.assertRaises(buildbucket_lib.NoBuildbucketClientException,
-                      stage.GetBuildbucketClient)
-
-  def testGetScheduledSlaveBuildbucketIdsReturnsEmpty(self):
-    """test GetScheduledSlaveBuildbucketIds with no builds."""
-    stage = self.ConstructStage()
-    self.assertEqual(stage.GetScheduledSlaveBuildbucketIds(), [])
-
-  def testGetScheduledSlaveBuildbucketIdsWithoutRetriedBuilds(self):
-    """test GetScheduledSlaveBuildbucketIds without retried builds."""
-    stage = self.ConstructStage()
-    scheduled_slave_builds = [('slave1', 'bb_id1', 0),
-                              ('slave2', 'bb_id2', 0)]
-    self._run.attrs.metadata.ExtendKeyListWithList(
-        constants.METADATA_SCHEDULED_IMPORTANT_SLAVES, scheduled_slave_builds)
-    self.assertEqual(set(stage.GetScheduledSlaveBuildbucketIds()),
-                     {'bb_id1', 'bb_id2'})
-
-  def testGetScheduledSlaveBuildbucketIdsWithRetriedBuilds(self):
-    """test GetScheduledSlaveBuildbucketIds With Retried Builds."""
-    stage = self.ConstructStage()
-    scheduled_slave_builds = [('slave1', 'bb_id1', 0),
-                              ('slave2', 'bb_id2', 0),
-                              ('slave1', 'bb_id3', 3)]
-    self._run.attrs.metadata.ExtendKeyListWithList(
-        constants.METADATA_SCHEDULED_IMPORTANT_SLAVES, scheduled_slave_builds)
-    self.assertEqual(set(stage.GetScheduledSlaveBuildbucketIds()),
-                     {'bb_id3', 'bb_id2'})
-
-  def testGetScheduledSlaveBuildbucketIdsReturnsNone(self):
-    """Returns None for non master build."""
-    stage = self.ConstructStage()
-    stage._run.config.slave_configs = False
-    self.assertIsNone(stage.GetScheduledSlaveBuildbucketIds())
-
-  def testGetSlaveConfigs(self):
-    """Verify that _GetSlaveConfigs filters out experimental builders."""
-    stage = self.ConstructStage()
-
-    slave_configs = stage._GetSlaveConfigs()
-    slave_config_names = [config['name'] for config in slave_configs]
-    self.assertIn('arm-generic-paladin', slave_config_names)
-
-    self._run.attrs.metadata.UpdateWithDict(
-        {constants.METADATA_EXPERIMENTAL_BUILDERS: ['arm-generic-paladin']}
-    )
-    slave_configs = stage._GetSlaveConfigs()
-    slave_config_names = [config['name'] for config in slave_configs]
-    self.assertNotIn('arm-generic-paladin', slave_config_names)
-
-  def testGetSlaveConfigMap(self):
-    """Verify that _GetSlaveConfigMap filters out experimental builders."""
-    stage = self.ConstructStage()
-
-    slave_config_map = stage._GetSlaveConfigMap()
-    self.assertIn('arm-generic-paladin', slave_config_map)
-
-    self._run.attrs.metadata.UpdateWithDict({
-        constants.METADATA_EXPERIMENTAL_BUILDERS: ['arm-generic-paladin']
-    })
-    slave_config_map = stage._GetSlaveConfigMap(important_only=True)
-    self.assertNotIn('arm-generic-paladin', slave_config_map)
-    slave_config_map = stage._GetSlaveConfigMap(important_only=False)
-    self.assertIn('arm-generic-paladin', slave_config_map)
-
-
 class BoardSpecificBuilderStageTest(AbstractStageTestCase):
   """Tests option/config settings on board-specific stages."""
 
@@ -802,47 +643,39 @@ class BoardSpecificBuilderStageTest(AbstractStageTestCase):
     expected = ['virtual/target-os', 'virtual/target-os-dev',
                 'virtual/target-os-test', 'virtual/target-os-factory',
                 'virtual/target-os-factory-shim', 'chromeos-base/autotest-all']
-    self.assertEquals(expected, packages)
+    self.assertEqual(expected, packages)
 
     # Test if an explicit list of packages is configured, only that list is set.
     self._run.config.packages = ['pkgA', 'pkgB']
     packages = stage.GetListOfPackagesToBuild()
-    self.assertEquals(['pkgA', 'pkgB'], packages)
+    self.assertEqual(['pkgA', 'pkgB'], packages)
 
     # Test if a list of packages is set for ChromeOS Findit builds, they are
     # added to an explicit list.
     self._run.options.cbb_build_packages = ['pkgC', 'pkgD']
     packages = stage.GetListOfPackagesToBuild()
-    self.assertEquals(['pkgC', 'pkgD', 'pkgA', 'pkgB'], packages)
+    self.assertEqual(['pkgC', 'pkgD', 'pkgA', 'pkgB'], packages)
 
     # Only check packages setup for ChromeOS Findit.
     self._run.config.packages = []
     packages = stage.GetListOfPackagesToBuild()
-    self.assertEquals(['pkgC', 'pkgD'], packages)
+    self.assertEqual(['pkgC', 'pkgD'], packages)
 
 
 class RunCommandAbstractStageTestCase(
     AbstractStageTestCase, cros_test_lib.RunCommandTestCase):
-  """Base test class for testing a stage and mocking RunCommand."""
+  """Base test class for testing a stage and mocking run."""
 
   # pylint: disable=abstract-method
 
   FULL_BOT_ID = 'amd64-generic-full'
-  BIN_BOT_ID = 'amd64-generic-paladin'
-
-  def _Prepare(self, bot_id, **kwargs):
-    super(RunCommandAbstractStageTestCase, self)._Prepare(bot_id, **kwargs)
+  BIN_BOT_ID = 'amd64-generic-incremental'
 
   def _PrepareFull(self, **kwargs):
     self._Prepare(self.FULL_BOT_ID, **kwargs)
 
   def _PrepareBin(self, **kwargs):
     self._Prepare(self.BIN_BOT_ID, **kwargs)
-
-  def _Run(self, dir_exists):
-    """Helper for running the build."""
-    with patch(os.path, 'isdir', return_value=dir_exists):
-      self.RunStage()
 
 
 class ArchivingStageMixinMock(partial_mock.PartialMock):

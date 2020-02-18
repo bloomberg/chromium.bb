@@ -153,20 +153,51 @@ void TabStripLayoutHelper::RemoveTabNoAnimation(int model_index, Tab* tab) {
 
 void TabStripLayoutHelper::RemoveTab(int model_index, Tab* tab) {
   int slot_index = GetSlotIndexForTabModelIndex(model_index, tab->group());
+  if (WidthsConstrainedForClosingMode()) {
+    if (slot_index == int{slots_.size()} - 1) {
+      // Removing the last tab. Constrain available width to place the next
+      // tab to the left under the cursor.
+      if (!tabstrip_width_override_.has_value()) {
+        // We are currently constrained by tab_width_override_. Express the
+        // equivalent constraint with tabstrip_width_override_.
+        tabstrip_width_override_ = LayoutTabs(base::nullopt);
+      }
+      tab_width_override_.reset();
+    } else {
+      // Removing a tab other than the last tab. Constrain the width of each
+      // tab to place the next tab to the right under the cursor.
+      if (!tab_width_override_.has_value()) {
+        // We are currently constrained by tabstrip_width_override_. Express
+        // the equivalent constraint with tab_width_override_.
+        tab_width_override_ = CalculateTabWidthOverride(
+            GetTabLayoutConstants(), GetCurrentTabWidthConstraints(),
+            tabstrip_width_override_.value());
+      }
+      tabstrip_width_override_.reset();
+    }
+  }
   AnimateSlot(slot_index, slots_[slot_index].animation->target_state().WithOpen(
                               TabOpen::kClosed));
 }
 
 void TabStripLayoutHelper::EnterTabClosingMode(int available_width) {
-  if (!cached_sizer_.has_value()) {
-    cached_sizer_ = base::make_optional(CalculateSpaceFractionAvailable(
+  if (!WidthsConstrainedForClosingMode()) {
+    tab_width_override_ = CalculateTabWidthOverride(
         GetTabLayoutConstants(), GetCurrentTabWidthConstraints(),
-        available_width));
+        available_width);
+    tabstrip_width_override_ = available_width;
   }
 }
 
-void TabStripLayoutHelper::ExitTabClosingMode() {
-  cached_sizer_ = base::nullopt;
+base::Optional<int> TabStripLayoutHelper::ExitTabClosingMode() {
+  if (!WidthsConstrainedForClosingMode())
+    return base::nullopt;
+
+  int available_width = LayoutTabs(base::nullopt);
+  tab_width_override_.reset();
+  tabstrip_width_override_.reset();
+
+  return available_width;
 }
 
 void TabStripLayoutHelper::OnTabDestroyed(Tab* tab) {
@@ -211,7 +242,6 @@ void TabStripLayoutHelper::InsertGroupHeader(
     TabGroupId group,
     TabGroupHeader* header,
     base::OnceClosure header_removed_callback) {
-  // TODO(958173): Animate open.
   std::vector<int> tabs_in_group = controller_->ListTabsInGroup(group);
   const int header_slot_index =
       GetSlotIndexForTabModelIndex(tabs_in_group[0], group);
@@ -219,6 +249,11 @@ void TabStripLayoutHelper::InsertGroupHeader(
       slots_.begin() + header_slot_index,
       TabSlot::CreateForGroupHeader(group, header, TabPinned::kUnpinned,
                                     std::move(header_removed_callback)));
+
+  // Set the starting location of the header to something reasonable for the
+  // animation.
+  slots_[header_slot_index].view->SetBoundsRect(
+      GetTabs()[tabs_in_group[0]]->bounds());
 }
 
 void TabStripLayoutHelper::RemoveGroupHeader(TabGroupId group) {
@@ -271,6 +306,9 @@ void TabStripLayoutHelper::CompleteAnimationsWithoutDestroyingTabs() {
 }
 
 void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
+  int tabstrip_width = tabstrip_width_override_.value_or(available_width);
+  DCHECK_LE(tabstrip_width, available_width);
+
   views::ViewModelT<Tab>* tabs = get_tabs_callback_.Run();
   std::map<TabGroupId, TabGroupHeader*> group_headers =
       get_group_headers_callback_.Run();
@@ -307,7 +345,7 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
   }
 
   const std::vector<gfx::Rect> bounds = CalculateTabBounds(
-      layout_constants, tab_widths, available_width, cached_sizer_);
+      layout_constants, tab_widths, tabstrip_width, tab_width_override_);
   DCHECK_EQ(slots_.size(), bounds.size());
 
   int current_tab_model_index = 0;
@@ -323,7 +361,11 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
         }
         break;
       case ViewType::kGroupHeader:
-        slot.view->SetBoundsRect(bounds[i]);
+        if (slot.view->dragging()) {
+          slot.view->SetBoundsRect(bounds[i]);
+        } else {
+          group_header_ideal_bounds_[slot.view->group().value()] = bounds[i];
+        }
         break;
     }
   }
@@ -356,10 +398,18 @@ void TabStripLayoutHelper::UpdateIdealBoundsForPinnedTabs() {
   }
 }
 
-int TabStripLayoutHelper::LayoutTabs(int available_width) {
+int TabStripLayoutHelper::LayoutTabs(base::Optional<int> available_width) {
+  base::Optional<int> tabstrip_width = tabstrip_width_override_.has_value()
+                                           ? tabstrip_width_override_
+                                           : available_width;
+  if (DCHECK_IS_ON() && tabstrip_width_override_.has_value() &&
+      available_width.has_value()) {
+    DCHECK_LE(tabstrip_width_override_.value(), available_width.value());
+  }
+
   std::vector<gfx::Rect> bounds = CalculateTabBounds(
-      GetTabLayoutConstants(), GetCurrentTabWidthConstraints(), available_width,
-      cached_sizer_);
+      GetTabLayoutConstants(), GetCurrentTabWidthConstraints(), tabstrip_width,
+      tab_width_override_);
 
   if (DCHECK_IS_ON()) {
     views::ViewModelT<Tab>* tabs = get_tabs_callback_.Run();
@@ -506,4 +556,9 @@ void TabStripLayoutHelper::UpdateCachedTabWidth(int tab_index,
     active_tab_width_ = tab_width;
   else
     inactive_tab_width_ = tab_width;
+}
+
+bool TabStripLayoutHelper::WidthsConstrainedForClosingMode() {
+  return tab_width_override_.has_value() ||
+         tabstrip_width_override_.has_value();
 }

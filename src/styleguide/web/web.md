@@ -207,8 +207,7 @@ compatibility issues are less relevant for Chrome-only code).
 
 * Alphabetize properties.
     * `-webkit` properties should be listed at the top, sorted alphabetically.
-    * `--variables` and `--mixins: {}` should be alphabetically declared when
-      possible.
+    * `--variables` should be alphabetically declared when possible.
 
 * Insert a space after the colon separating property and value.
 
@@ -241,6 +240,16 @@ compatibility issues are less relevant for Chrome-only code).
 * Use scalable `font-size` units like `%` or `em` to respect users' default font
   size
 
+* Don't use CSS Mixins (`--mixin: {}` or `@apply --mixin;`) in new code. [We're
+  removing them.](https://crbug.com/973674)
+    * Mixins were [dropped from CSS](https://www.xanthir.com/b4o00) in favor of
+      [CSS Shadow Parts](https://drafts.csswg.org/css-shadow-parts/).
+    * Instead, replace CSS mixin usage with one of these natively supported
+      alternatives:
+        * CSS Shadow Parts or CSS variables for styling of DOM nodes residing in
+          the Shadow DOM of a child node.
+        * Plain CSS classes, for grouping a set of styles together for easy
+          reuse.
 
 ### Color
 
@@ -451,15 +460,10 @@ function isWindows() {
 ```
 
 `<include src="[path]">` reads the file at `path` and replaces the `<include>`
-tag with the file contents of `[path]`.
-
-Don't use `</include>` to close these tags; they're not needed nor supported.
-
-<div class="note">
-Using <code>&lt;include&gt;</code> simply pastes the entire contents of a file,
-which can lead to duplication.  If you simply want to ensure some code is loaded
-(and usually you do), you should use HTML Imports instead.
-</div>
+tag with the file contents of `[path]`. Don't use `<include>` in new JS code;
+[it is being removed.](https://docs.google.com/document/d/1Z18WTNv28z5FW3smNEm_GtsfVD2IL-CmmAikwjw3ryo/edit?usp=sharing#heading=h.66ycuu6hfi9n)
+Instead, use JS imports in new pages and pages that use JS modules. Use HTML
+imports in existing pages that are still using HTML imports/Polymer 2.
 
 Grit can read and inline resources when enabled via `flattenhtml="true"`.
 

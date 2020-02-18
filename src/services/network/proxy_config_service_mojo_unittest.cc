@@ -69,9 +69,9 @@ class ProxyConfigServiceMojoTest : public testing::Test {
  public:
   ProxyConfigServiceMojoTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
-        proxy_config_service_(mojo::MakeRequest(&config_client_),
+        proxy_config_service_(config_client_.BindNewPipeAndPassReceiver(),
                               base::Optional<net::ProxyConfigWithAnnotation>(),
-                              nullptr),
+                              mojo::NullRemote()),
         observer_(&proxy_config_service_) {
     proxy_config_service_.AddObserver(&observer_);
   }
@@ -86,7 +86,7 @@ class ProxyConfigServiceMojoTest : public testing::Test {
   void WaitForConfig() { task_environment_.RunUntilIdle(); }
 
   base::test::TaskEnvironment task_environment_;
-  mojom::ProxyConfigClientPtr config_client_;
+  mojo::Remote<mojom::ProxyConfigClient> config_client_;
   ProxyConfigServiceMojo proxy_config_service_;
   TestProxyConfigServiceObserver observer_;
 

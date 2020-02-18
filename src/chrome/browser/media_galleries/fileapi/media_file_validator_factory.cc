@@ -8,25 +8,23 @@
 #include "base/macros.h"
 #include "chrome/browser/media_galleries/fileapi/supported_audio_video_checker.h"
 #include "chrome/browser/media_galleries/fileapi/supported_image_type_validator.h"
-#include "storage/browser/fileapi/copy_or_move_file_validator.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/copy_or_move_file_validator.h"
+#include "storage/browser/file_system/file_system_url.h"
 
 namespace {
 
 class InvalidFileValidator : public storage::CopyOrMoveFileValidator {
  public:
   ~InvalidFileValidator() override {}
-  void StartPreWriteValidation(
-      const storage::CopyOrMoveFileValidator::ResultCallback& result_callback)
-      override {
-    result_callback.Run(base::File::FILE_ERROR_SECURITY);
+  void StartPreWriteValidation(storage::CopyOrMoveFileValidator::ResultCallback
+                                   result_callback) override {
+    std::move(result_callback).Run(base::File::FILE_ERROR_SECURITY);
   }
 
-  void StartPostWriteValidation(
-      const base::FilePath& dest_platform_path,
-      const storage::CopyOrMoveFileValidator::ResultCallback& result_callback)
-      override {
-    result_callback.Run(base::File::FILE_ERROR_SECURITY);
+  void StartPostWriteValidation(const base::FilePath& dest_platform_path,
+                                storage::CopyOrMoveFileValidator::ResultCallback
+                                    result_callback) override {
+    std::move(result_callback).Run(base::File::FILE_ERROR_SECURITY);
   }
 
  private:

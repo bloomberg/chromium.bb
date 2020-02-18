@@ -146,8 +146,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   void AgentHostClosed(DevToolsAgentHost* agent_host) override;
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override;
-  bool MayAttachToRenderer(content::RenderFrameHost* render_frame_host,
-                           bool is_webui) override;
+  bool MayAttachToURL(const GURL& url, bool is_webui) override;
   bool MayAttachToBrowser() override;
   bool MayReadLocalFiles() override;
   bool MayWriteLocalFiles() override;
@@ -180,7 +179,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
 
   // Listen to extension unloaded notification.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsClientHost);
 };
@@ -195,8 +194,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
       extension_(std::move(extension)),
       last_request_id_(0),
       infobar_(nullptr),
-      detach_reason_(api::debugger::DETACH_REASON_TARGET_CLOSED),
-      extension_registry_observer_(this) {
+      detach_reason_(api::debugger::DETACH_REASON_TARGET_CLOSED) {
   CopyDebuggee(&debuggee_, debuggee);
 
   g_attached_client_hosts.Get().insert(this);
@@ -358,29 +356,15 @@ void ExtensionDevToolsClientHost::DispatchProtocolMessage(
   }
 }
 
-bool ExtensionDevToolsClientHost::MayAttachToRenderer(
-    content::RenderFrameHost* render_frame_host,
-    bool is_webui) {
+bool ExtensionDevToolsClientHost::MayAttachToURL(const GURL& url,
+                                                 bool is_webui) {
   if (is_webui)
     return false;
-
-  if (!render_frame_host)
+  // Allow the extension to attach to about:blank.
+  if (url.is_empty() || url == "about:")
     return true;
-
   std::string error;
-  // We check the site instance URL here (instead of
-  // RenderFrameHost::GetLastCommittedURL()) because it's too early in the
-  // navigation for anything else.
-  const GURL& site_instance_url =
-      render_frame_host->GetSiteInstance()->GetSiteURL();
-
-  if (site_instance_url.is_empty() || site_instance_url == "about:") {
-    // Allow the extension to attach to about:blank.
-    return true;
-  }
-
-  return ExtensionCanAttachToURL(*extension_, site_instance_url, profile_,
-                                 &error);
+  return ExtensionCanAttachToURL(*extension_, url, profile_, &error);
 }
 
 bool ExtensionDevToolsClientHost::MayAttachToBrowser() {

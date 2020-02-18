@@ -60,7 +60,6 @@ struct ElementId;
 class LayerTreeMutator;
 class ScopedDeferMainFrameUpdate;
 class PaintImage;
-struct ViewportLayers;
 }
 
 namespace gfx {
@@ -134,6 +133,10 @@ class WebWidgetClient {
 
   // Called to show the widget according to the given policy.
   virtual void Show(WebNavigationPolicy) {}
+
+  // Returns information about the screen where this view's widgets are being
+  // displayed.
+  virtual WebScreenInfo GetScreenInfo() { return {}; }
 
   // Called to get/set the position of the widget's window in screen
   // coordinates. Note, the window includes any decorations such as borders,
@@ -257,11 +260,6 @@ class WebWidgetClient {
   // Find in page zooms a rect in the main-frame renderer.
   virtual void ZoomToFindInPageRectInMainFrame(const blink::WebRect& rect) {}
 
-  // Identify key viewport layers to the compositor. Pass a default-constructed
-  // ViewportLayers to clear them.
-  virtual void RegisterViewportLayers(
-      const cc::ViewportLayers& viewport_layers) {}
-
   // Used to update the active selection bounds. Pass a default-constructed
   // LayerSelection to clear it.
   virtual void RegisterSelection(const cc::LayerSelection&) {}
@@ -272,10 +270,6 @@ class WebWidgetClient {
                                             bool up,
                                             bool down) {}
   virtual void FallbackCursorModeSetCursorVisibility(bool visible) {}
-
-  // Informs the compositor if gpu raster will be allowed, or it is blocked
-  // based on heuristics from the content of the page.
-  virtual void SetAllowGpuRasterization(bool) {}
 
   // Sets the current page scale factor and minimum / maximum limits. Both
   // limits are initially 1 (no page scale allowed).
@@ -360,18 +354,22 @@ class WebWidgetClient {
   // purposes.
   virtual int GetLayerTreeId() const { return 0; }
 
-  // Sets the amount that the browser controls are showing, from 0 (hidden) to 1
-  // (fully shown).
-  virtual void SetBrowserControlsShownRatio(float) {}
+  // Sets the amount that the top and bottom browser controls are showing, from
+  // 0 (hidden) to 1 (fully shown).
+  virtual void SetBrowserControlsShownRatio(float top_ratio,
+                                            float bottom_ratio) {}
 
-  // Set browser controls height. If |shrink_viewport| is set to true, then
-  // Blink shrunk the viewport clip layers by the top and bottom browser
-  // controls height. Top controls will translate the web page down and do not
-  // immediately scroll when hiding. The bottom controls scroll immediately and
-  // never translate the content (only clip it).
-  virtual void SetBrowserControlsHeight(float top_height,
-                                        float bottom_height,
-                                        bool shrink_viewport) {}
+  // Set browser controls params. These params consist of top and bottom
+  // heights, min-heights, browser_controls_shrink_blink_size, and
+  // animate_browser_controls_height_changes. If
+  // animate_browser_controls_height_changes is set to true, changes to the
+  // browser controls height will be animated. If
+  // browser_controls_shrink_blink_size is set to true, then Blink shrunk the
+  // viewport clip layers by the top and bottom browser controls height. Top
+  // controls will translate the web page down and do not immediately scroll
+  // when hiding. The bottom controls scroll immediately and never translate the
+  // content (only clip it).
+  virtual void SetBrowserControlsParams(cc::BrowserControlsParams params) {}
 
   virtual viz::FrameSinkId GetFrameSinkId() {
     NOTREACHED();

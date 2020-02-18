@@ -14,12 +14,42 @@
 #include "base/macros.h"
 #include "gpu/command_buffer/common/common_cmd_format.h"
 #include "gpu/command_buffer/common/gl2_types.h"
+#include "gpu/command_buffer/common/webgpu_cmd_enums.h"
 #include "gpu/command_buffer/common/webgpu_cmd_ids.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace gpu {
 namespace webgpu {
 namespace cmds {
+
+#define GPU_DAWN_RETURN_DATA_ALIGNMENT (8)
+struct alignas(GPU_DAWN_RETURN_DATA_ALIGNMENT) DawnReturnDataHeader {
+  DawnReturnDataType return_data_type;
+};
+
+static_assert(
+    sizeof(DawnReturnDataHeader) % GPU_DAWN_RETURN_DATA_ALIGNMENT == 0,
+    "DawnReturnDataHeader must align to GPU_DAWN_RETURN_DATA_ALIGNMENT");
+
+struct alignas(GPU_DAWN_RETURN_DATA_ALIGNMENT) DawnReturnAdapterIDs {
+  uint32_t request_adapter_serial;
+  uint32_t adapter_service_id;
+};
+
+static_assert(
+    sizeof(DawnReturnAdapterIDs) % GPU_DAWN_RETURN_DATA_ALIGNMENT == 0,
+    "DawnReturnAdapterIDs must align to GPU_DAWN_RETURN_DATA_ALIGNMENT");
+
+struct alignas(GPU_DAWN_RETURN_DATA_ALIGNMENT) DawnReturnAdapterInfo {
+  DawnReturnAdapterIDs adapter_ids;
+  char deserialized_buffer[];
+};
+
+static_assert(offsetof(DawnReturnAdapterInfo, deserialized_buffer) %
+                      GPU_DAWN_RETURN_DATA_ALIGNMENT ==
+                  0,
+              "The offset of deserialized_buffer must align to "
+              "GPU_DAWN_RETURN_DATA_ALIGNMENT");
 
 // Command buffer is GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT byte aligned.
 #pragma pack(push, 4)

@@ -23,13 +23,14 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
 
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -38,11 +39,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.CompositorView;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -54,7 +56,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.keyboard.VrInputMethodManagerWrapper;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -227,7 +228,7 @@ public class VrShell extends GvrLayout
         mNonVrUiWidgetFactory = UiWidgetFactory.getInstance();
         UiWidgetFactory.setInstance(new VrUiWidgetFactory(this, mActivity.getModalDialogManager()));
 
-        mTabRedirectHandler = new TabRedirectHandler(mActivity) {
+        mTabRedirectHandler = new TabRedirectHandler() {
             @Override
             public boolean shouldStayInChrome(boolean hasExternalProtocol) {
                 return !hasExternalProtocol;
@@ -264,10 +265,9 @@ public class VrShell extends GvrLayout
             }
 
             @Override
-            public void onLoadProgressChanged(Tab tab, int progress) {
+            public void onLoadProgressChanged(Tab tab, float progress) {
                 if (mNativeVrShell == 0) return;
-                VrShellJni.get().onLoadProgressChanged(
-                        mNativeVrShell, VrShell.this, progress / 100.0);
+                VrShellJni.get().onLoadProgressChanged(mNativeVrShell, VrShell.this, progress);
             }
 
             @Override
@@ -420,7 +420,7 @@ public class VrShell extends GvrLayout
 
         boolean hasOrCanRequestRecordAudioPermission =
                 hasRecordAudioPermission() || canRequestRecordAudioPermission();
-        boolean supportsRecognition = FeatureUtilities.isRecognitionIntentPresent(mActivity, false);
+        boolean supportsRecognition = FeatureUtilities.isRecognitionIntentPresent(false);
         mNativeVrShell = VrShellJni.get().init(VrShell.this, mDelegate, forWebVr,
                 !mVrBrowsingEnabled, hasOrCanRequestRecordAudioPermission && supportsRecognition,
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
@@ -477,7 +477,7 @@ public class VrShell extends GvrLayout
         if (mTab != null) {
             initializeTabForVR();
             mTab.addObserver(mTabObserver);
-            TabBrowserControlsState.update(mTab, BrowserControlsState.HIDDEN, false);
+            TabBrowserControlsConstraintsHelper.update(mTab, BrowserControlsState.HIDDEN, false);
         }
         mTabObserver.onContentChanged(mTab);
     }
@@ -532,7 +532,7 @@ public class VrShell extends GvrLayout
         // Reparent all existing tabs.
         for (TabModel model : mActivity.getTabModelSelector().getModels()) {
             for (int i = 0; i < model.getCount(); ++i) {
-                model.getTabAt(i).updateWindowAndroid(window);
+                model.getTabAt(i).updateAttachment(window, null);
             }
         }
     }
@@ -713,8 +713,9 @@ public class VrShell extends GvrLayout
 
     @CalledByNative
     public void dialogSurfaceCreated(Surface surface) {
-        if (mVrBrowsingEnabled && mVrUiViewContainer != null)
+        if (mVrBrowsingEnabled && mVrUiViewContainer != null) {
             mVrUiViewContainer.setSurface(surface);
+        }
     }
 
     @Override
@@ -797,7 +798,7 @@ public class VrShell extends GvrLayout
                 View parent = mTab.getContentView();
                 mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
             }
-            TabBrowserControlsState.update(mTab, BrowserControlsState.SHOWN, false);
+            TabBrowserControlsConstraintsHelper.update(mTab, BrowserControlsState.SHOWN, false);
         }
 
         mContentVirtualDisplay.destroy();
@@ -909,8 +910,9 @@ public class VrShell extends GvrLayout
     }
 
     public void setWebVrModeEnabled(boolean enabled) {
-        if (mNativeVrShell != 0)
+        if (mNativeVrShell != 0) {
             VrShellJni.get().setWebVrMode(mNativeVrShell, VrShell.this, enabled);
+        }
         if (!enabled) {
             mContentVrWindowAndroid.setVSyncPaused(false);
             mPendingVSyncPause = false;
@@ -957,8 +959,9 @@ public class VrShell extends GvrLayout
         if (topContentOffset != 0) return;
         // Wait until a new frame is definitely available.
         mActivity.getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(() -> {
-            if (mNativeVrShell != 0)
+            if (mNativeVrShell != 0) {
                 VrShellJni.get().resumeContentRendering(mNativeVrShell, VrShell.this);
+            }
         });
     }
 
@@ -1029,8 +1032,9 @@ public class VrShell extends GvrLayout
     @CalledByNative
     private void onExitVrRequestResult(@UiUnsupportedMode int reason, boolean shouldExit) {
         if (shouldExit) {
-            if (mNativeVrShell != 0)
+            if (mNativeVrShell != 0) {
                 VrShellJni.get().logUnsupportedModeUserMetric(mNativeVrShell, VrShell.this, reason);
+            }
         }
         mDelegate.onExitVrRequestResult(shouldExit);
     }
@@ -1163,21 +1167,24 @@ public class VrShell extends GvrLayout
 
     @Override
     public void onVrViewEmpty() {
-        if (mNativeVrShell != 0)
+        if (mNativeVrShell != 0) {
             VrShellJni.get().onOverlayTextureEmptyChanged(mNativeVrShell, VrShell.this, true);
+        }
     }
 
     @Override
     public void onVrViewNonEmpty() {
-        if (mNativeVrShell != 0)
+        if (mNativeVrShell != 0) {
             VrShellJni.get().onOverlayTextureEmptyChanged(mNativeVrShell, VrShell.this, false);
+        }
     }
 
     @Override
     protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
-        if (width > height)
+        if (width > height) {
             VrModuleProvider.getDelegate().removeBlackOverlayView(mActivity, true /* animate */);
+        }
     }
 
     /**

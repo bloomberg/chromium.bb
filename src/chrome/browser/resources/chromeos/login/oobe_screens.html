@@ -2,11 +2,15 @@
 <oobe-welcome-md id="connect" class="step hidden" full-screen-dialog hidden>
 </oobe-welcome-md>
 <include src="oobe_screen_network.html">
+<oobe-adb-sideloading-screen id="adb-sideloading" class="step hidden">
+</oobe-adb-sideloading-screen>
 <include src="oobe_screen_enable_debugging.html">
 <include src="oobe_screen_reset.html">
 <include src="oobe_screen_autolaunch.html">
-<include src="oobe_screen_enable_kiosk.html">
-<include src="oobe_screen_terms_of_service.html">
+<kiosk-enable id="kiosk-enable" class="step hidden">
+</kiosk-enable>
+<terms-of-service id="terms-of-service" class="step right hidden">
+</terms-of-service>
 <include src="oobe_screen_update.html">
 <include src="oobe_screen_auto_enrollment_check.html">
 <include src="oobe_screen_hid_detection.html">
@@ -37,3 +41,5 @@
 <include src="screen_discover.html">
 <include src="screen_marketing_opt_in.html">
 <include src="screen_multidevice_setup.html">
+<packaged-license-screen id="packaged-license" class="step hidden">
+</packaged-license-screen>

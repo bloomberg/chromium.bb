@@ -10,7 +10,12 @@ from __future__ import print_function
 import hashlib
 import optparse
 import os
-import Queue
+
+try:
+  import Queue as queue
+except ImportError:  # For Py3 compatibility
+  import queue
+
 import re
 import stat
 import sys
@@ -58,13 +63,13 @@ def get_md5_cached(filename):
   # See if we can find an existing MD5 sum stored in a file.
   if os.path.exists('%s.md5' % filename):
     with open('%s.md5' % filename, 'rb') as f:
-      md5_match = re.search('([a-z0-9]{32})', f.read())
+      md5_match = re.search('([a-z0-9]{32})', f.read().decode())
       if md5_match:
         return md5_match.group(1)
   else:
     md5_hash = get_md5(filename)
     with open('%s.md5' % filename, 'wb') as f:
-      f.write(md5_hash)
+      f.write(md5_hash.encode())
     return md5_hash
 
 
@@ -142,11 +147,11 @@ def upload_to_google_storage(
 
   # Start up all the worker threads plus the printer thread.
   all_threads = []
-  ret_codes = Queue.Queue()
+  ret_codes = queue.Queue()
   ret_codes.put((0, None))
-  upload_queue = Queue.Queue()
+  upload_queue = queue.Queue()
   upload_timer = time.time()
-  stdout_queue = Queue.Queue()
+  stdout_queue = queue.Queue()
   printer_thread = PrinterThread(stdout_queue)
   printer_thread.daemon = True
   printer_thread.start()
@@ -171,15 +176,15 @@ def upload_to_google_storage(
           'Main> Found hash for %s, sha1 calculation skipped.' % filename)
       with open(filename + '.sha1', 'rb') as f:
         sha1_file = f.read(1024)
-      if not re.match('^([a-z0-9]{40})$', sha1_file):
+      if not re.match('^([a-z0-9]{40})$', sha1_file.decode()):
         print('Invalid sha1 hash file %s.sha1' % filename, file=sys.stderr)
         return 1
-      upload_queue.put((filename, sha1_file))
+      upload_queue.put((filename, sha1_file.decode()))
       continue
     stdout_queue.put('Main> Calculating hash for %s...' % filename)
     sha1_sum = get_sha1(filename)
     with open(filename + '.sha1', 'wb') as f:
-      f.write(sha1_sum)
+      f.write(sha1_sum.encode())
     stdout_queue.put('Main> Done calculating hash for %s.' % filename)
     upload_queue.put((filename, sha1_sum))
   hashing_duration = time.time() - hashing_start

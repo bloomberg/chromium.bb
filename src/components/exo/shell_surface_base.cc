@@ -30,6 +30,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -82,8 +83,7 @@ class ShellSurfaceWidget : public views::Widget {
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
 };
 
-class CustomFrameView : public ash::NonClientFrameViewAsh,
-                        public aura::WindowObserver {
+class CustomFrameView : public ash::NonClientFrameViewAsh {
  public:
   using ShapeRects = std::vector<gfx::Rect>;
 
@@ -98,16 +98,9 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
     SetVisible(enabled);
     if (!enabled)
       NonClientFrameViewAsh::SetShouldPaintHeader(false);
-
-    frame()->GetNativeWindow()->AddObserver(this);
   }
 
-  ~CustomFrameView() override {
-    if (frame() && frame()->GetNativeWindow() &&
-        frame()->GetNativeWindow()->HasObserver(this)) {
-      frame()->GetNativeWindow()->RemoveObserver(this);
-    }
-  }
+  ~CustomFrameView() override = default;
 
   // Overridden from ash::NonClientFrameViewAsh:
   void SetShouldPaintHeader(bool paint) override {
@@ -115,11 +108,6 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
       NonClientFrameViewAsh::SetShouldPaintHeader(paint);
       return;
     }
-  }
-
-  void OnWindowDestroying(aura::Window* window) override {
-    DCHECK_EQ(frame()->GetNativeWindow(), window);
-    window->RemoveObserver(this);
   }
 
   // Overridden from views::NonClientFrameView:
@@ -315,6 +303,7 @@ ShellSurfaceBase::~ShellSurfaceBase() {
   WMHelper::GetInstance()->RemoveActivationObserver(this);
   if (widget_) {
     widget_->GetNativeWindow()->RemoveObserver(this);
+    widget_->RemoveObserver(this);
     // Remove transient children so they are not automatically destroyed.
     for (auto* child : wm::GetTransientChildren(widget_->GetNativeWindow()))
       wm::RemoveTransientChild(widget_->GetNativeWindow(), child);
@@ -422,11 +411,6 @@ void ShellSurfaceBase::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
   child_ax_tree_id_ = child_ax_tree_id;
 
   this->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
-}
-
-void ShellSurfaceBase::Close() {
-  if (!close_callback_.is_null())
-    close_callback_.Run();
 }
 
 void ShellSurfaceBase::SetGeometry(const gfx::Rect& geometry) {
@@ -596,7 +580,6 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
   frame_view->SetEnabled(frame_enabled());
   frame_view->SetVisible(frame_enabled());
   frame_view->SetShouldPaintHeader(frame_enabled());
-  frame_view->SetHeaderHeight(base::nullopt);
   widget_->GetRootView()->Layout();
   // TODO(oshima): We probably should wait applying these if the
   // window is animating.
@@ -623,6 +606,11 @@ void ShellSurfaceBase::OnSetStartupId(const char* startup_id) {
 
 void ShellSurfaceBase::OnSetApplicationId(const char* application_id) {
   SetApplicationId(application_id);
+}
+
+void ShellSurfaceBase::OnActivationRequested() {
+  if (widget_ && HasPermissionToActivate(widget_->GetNativeWindow()))
+    this->Activate();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -691,11 +679,14 @@ gfx::ImageSkia ShellSurfaceBase::GetWindowIcon() {
 
 bool ShellSurfaceBase::OnCloseRequested(
     views::Widget::ClosedReason close_reason) {
+  if (!pre_close_callback_.is_null())
+    pre_close_callback_.Run();
   // Closing the shell surface is a potentially asynchronous operation, so we
   // will defer actually closing the Widget right now, and come back and call
   // CloseNow() when the callback completes and the shell surface is destroyed
   // (see ~ShellSurfaceBase()).
-  Close();
+  if (!close_callback_.is_null())
+    close_callback_.Run();
   return false;
 }
 
@@ -758,6 +749,26 @@ void ShellSurfaceBase::OnCaptureChanged(aura::Window* lost_capture,
     }
     widget_->Close();
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// views::WidgetObserver overrides:
+
+void ShellSurfaceBase::OnWidgetClosing(views::Widget* widget) {
+  DCHECK(widget_ == widget);
+  // To force the widget to close we first disconnect this shell surface from
+  // its underlying surface, by asserting to it that the surface destroyed
+  // itself. After that, it is safe to call CloseNow() on the widget.
+  //
+  // TODO(crbug.com/1010326): This only closes the aura/exo pieces, but we
+  // should go one level deeper and destroy the wayland stuff. Some options:
+  //  - Invoke xkill under-the-hood, which will only work for x11 and won't
+  //    work if the container itself is stuck.
+  //  - Close the wl connection to the client (i.e. wlkill) this is
+  //    problematic with X11 as all of xwayland shares the same client.
+  //  - Transitively kill all the wl_resources rooted at this window's
+  //    wl_surface, which is not really supported in wayland.
+  OnSurfaceDestroying(root_surface());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -830,8 +841,7 @@ void ShellSurfaceBase::OnWindowActivated(ActivationReason reason,
 bool ShellSurfaceBase::AcceleratorPressed(const ui::Accelerator& accelerator) {
   for (const auto& entry : kCloseWindowAccelerators) {
     if (ui::Accelerator(entry.keycode, entry.modifiers) == accelerator) {
-      if (!close_callback_.is_null())
-        close_callback_.Run();
+      OnCloseRequested(views::Widget::ClosedReason::kUnspecified);
       return true;
     }
   }
@@ -869,8 +879,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
                                  : views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
   params.delegate = this;
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.show_state = show_state;
   // Make shell surface a transient child if |parent_| has been set and
   // container_ isn't specified.
@@ -897,6 +907,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // Note: NativeWidget owns this widget.
   widget_ = new ShellSurfaceWidget;
   widget_->Init(std::move(params));
+  widget_->AddObserver(this);
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");

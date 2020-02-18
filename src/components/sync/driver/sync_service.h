@@ -18,9 +18,14 @@
 #include "components/sync/base/user_demographics.h"
 #include "components/sync/driver/sync_service_observer.h"
 
+struct CoreAccountId;
 struct CoreAccountInfo;
 class GoogleServiceAuthError;
 class GURL;
+
+namespace crypto {
+class ECPrivateKey;
+}  // namespace crypto
 
 namespace syncer {
 
@@ -214,6 +219,7 @@ class SyncService : public KeyedService {
   virtual bool IsLocalSyncEnabled() const = 0;
 
   // Information about the currently signed in user.
+  CoreAccountId GetAuthenticatedAccountId() const;
   virtual CoreAccountInfo GetAuthenticatedAccountInfo() const = 0;
   // Whether the currently signed in user is the "primary" browser account (see
   // IdentityManager). If this is false, then IsSyncFeatureEnabled will also be
@@ -239,6 +245,15 @@ class SyncService : public KeyedService {
   // Returns true if the Chrome client is too old and needs to be updated for
   // Sync to work.
   virtual bool RequiresClientUpgrade() const = 0;
+
+  // Returns a high-entropy elliptic curve (EC) private key that is unique to a
+  // user and sync-ed across devices via Nigori. Populated when the transport
+  // state becomes CONFIGURING. Returns nullptr if not available. Consumers of
+  // this key should observe for changes via
+  // SyncServiceObserver::OnSyncCycleCompleted().
+  // TODO(crbug.com/1012226): Remove when VAPID migration is over.
+  virtual std::unique_ptr<crypto::ECPrivateKey>
+  GetExperimentalAuthenticationKey() const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // DERIVED STATE ACCESS

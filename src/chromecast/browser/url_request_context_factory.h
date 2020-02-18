@@ -25,6 +25,8 @@ class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class NetLog;
 class ProxyConfigService;
+class QuicContext;
+class URLRequestContextGetter;
 class URLRequestJobFactory;
 }  // namespace net
 
@@ -129,6 +131,7 @@ class URLRequestContextFactory {
   std::unique_ptr<net::CookieStore> system_cookie_store_;
   std::unique_ptr<net::URLRequestJobFactory> system_job_factory_;
   std::unique_ptr<net::HostResolver> system_host_resolver_;
+  std::unique_ptr<net::QuicContext> quic_context_;
 
   bool main_dependencies_initialized_;
   std::unique_ptr<net::HttpNetworkSession> main_network_session_;

@@ -13,8 +13,6 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
 
 using testing::_;
 
@@ -55,9 +53,9 @@ TEST_F(SchedulingAffectingFeaturesTest, WebSocketStopsThrottling) {
               testing::UnorderedElementsAre());
 
   main_resource.Complete(
-      "(<script>"
+      "<script>"
       "  var socket = new WebSocket(\"ws://www.example.com/websocket\");"
-      "</script>)");
+      "</script>");
 
   EXPECT_TRUE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
   EXPECT_THAT(
@@ -65,34 +63,6 @@ TEST_F(SchedulingAffectingFeaturesTest, WebSocketStopsThrottling) {
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
 
   MainFrame().ExecuteScript(WebString("socket.close();"));
-
-  EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
-  EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
-              testing::UnorderedElementsAre());
-}
-
-TEST_F(SchedulingAffectingFeaturesTest, WebRTCStopsThrottling) {
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithWebRTC> platform;
-
-  SimRequest main_resource("https://example.com/", "text/html");
-
-  LoadURL("https://example.com/");
-
-  EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
-  EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
-              testing::UnorderedElementsAre());
-
-  main_resource.Complete(
-      "(<script>"
-      "  var data_channel = new RTCPeerConnection();"
-      "</script>)");
-
-  EXPECT_TRUE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
-  EXPECT_THAT(
-      GetNonTrivialMainFrameFeatures(),
-      testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebRTC));
-
-  MainFrame().ExecuteScript(WebString("data_channel.close();"));
 
   EXPECT_FALSE(PageScheduler()->OptedOutFromAggressiveThrottlingForTest());
   EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
@@ -173,9 +143,9 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_PageShow) {
   SimRequest main_resource("https://foo.com/", "text/html");
   LoadURL("https://foo.com/");
   main_resource.Complete(
-      "(<script>"
+      "<script>"
       " window.addEventListener(\"pageshow\", () => {}); "
-      "</script>)");
+      "</script>");
 
   EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
               testing::UnorderedElementsAre(
@@ -186,9 +156,9 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_PageHide) {
   SimRequest main_resource("https://foo.com/", "text/html");
   LoadURL("https://foo.com/");
   main_resource.Complete(
-      "(<script>"
+      "<script>"
       " window.addEventListener(\"pagehide\", () => {}); "
-      "</script>)");
+      "</script>");
 
   EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
               testing::UnorderedElementsAre(
@@ -199,9 +169,9 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_BeforeUnload) {
   SimRequest main_resource("https://foo.com/", "text/html");
   LoadURL("https://foo.com/");
   main_resource.Complete(
-      "(<script>"
+      "<script>"
       " window.addEventListener(\"beforeunload\", () => {}); "
-      "</script>)");
+      "</script>");
 
   EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
               testing::UnorderedElementsAre(
@@ -212,9 +182,9 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_Unload) {
   SimRequest main_resource("https://foo.com/", "text/html");
   LoadURL("https://foo.com/");
   main_resource.Complete(
-      "(<script>"
+      "<script>"
       " window.addEventListener(\"unload\", () => {}); "
-      "</script>)");
+      "</script>");
 
   EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
               testing::UnorderedElementsAre(
@@ -225,9 +195,9 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_Freeze) {
   SimRequest main_resource("https://foo.com/", "text/html");
   LoadURL("https://foo.com/");
   main_resource.Complete(
-      "(<script>"
+      "<script>"
       " window.addEventListener(\"freeze\", () => {}); "
-      "</script>)");
+      "</script>");
 
   EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
               testing::UnorderedElementsAre(
@@ -238,9 +208,9 @@ TEST_F(SchedulingAffectingFeaturesTest, EventListener_Resume) {
   SimRequest main_resource("https://foo.com/", "text/html");
   LoadURL("https://foo.com/");
   main_resource.Complete(
-      "(<script>"
+      "<script>"
       " window.addEventListener(\"resume\", () => {}); "
-      "</script>)");
+      "</script>");
 
   EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
               testing::UnorderedElementsAre(
@@ -268,6 +238,19 @@ TEST_F(SchedulingAffectingFeaturesTest, Plugins) {
   EXPECT_THAT(GetNonTrivialMainFrameFeatures(),
               testing::UnorderedElementsAre(
                   SchedulingPolicy::Feature::kContainsPlugins));
+}
+
+TEST_F(SchedulingAffectingFeaturesTest, WebLocks) {
+  SimRequest main_resource("https://foo.com/", "text/html");
+  LoadURL("https://foo.com/");
+  main_resource.Complete(
+      "<script>"
+      " navigator.locks.request('my_resource', async lock => {}); "
+      "</script>");
+
+  EXPECT_THAT(
+      GetNonTrivialMainFrameFeatures(),
+      testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebLocks));
 }
 
 }  // namespace blink

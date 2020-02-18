@@ -157,7 +157,8 @@ base::Value ServerInfoMapToValue(
           [](std::unique_ptr<HttpServerProperties::ServerInfoMap>
                  server_info_map,
              const IPAddress& last_quic_address,
-             std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+             std::unique_ptr<HttpServerProperties::QuicServerInfoMap>
+                 quic_server_info_map,
              std::unique_ptr<BrokenAlternativeServiceList>
                  broken_alternative_service_list,
              std::unique_ptr<RecentlyBrokenAlternativeServices>
@@ -168,7 +169,8 @@ base::Value ServerInfoMapToValue(
       base::DefaultTickClock::GetInstance());
   manager.WriteToPrefs(
       server_info_map, HttpServerPropertiesManager::GetCannonicalSuffix(),
-      IPAddress() /* last_quic_address */, QuicServerInfoMap(10),
+      IPAddress() /* last_quic_address */,
+      HttpServerProperties::QuicServerInfoMap(10),
       BrokenAlternativeServiceList(), RecentlyBrokenAlternativeServices(10),
       base::OnceClosure());
 
@@ -194,7 +196,8 @@ std::unique_ptr<HttpServerProperties::ServerInfoMap> ValueToServerInfoMap(
           [&](std::unique_ptr<HttpServerProperties::ServerInfoMap>
                   server_info_map,
               const IPAddress& last_quic_address,
-              std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+              std::unique_ptr<HttpServerProperties::QuicServerInfoMap>
+                  quic_server_info_map,
               std::unique_ptr<BrokenAlternativeServiceList>
                   broken_alternative_service_list,
               std::unique_ptr<RecentlyBrokenAlternativeServices>
@@ -225,8 +228,7 @@ class HttpServerPropertiesManagerTest : public testing::Test,
 
   void SetUp() override {
     one_day_from_now_ = base::Time::Now() + base::TimeDelta::FromDays(1);
-    advertised_versions_ =
-        HttpNetworkSession::Params().quic_params.supported_versions;
+    advertised_versions_ = DefaultSupportedQuicVersions();
     pref_delegate_ = new MockPrefDelegate;
 
     http_server_props_ = std::make_unique<HttpServerProperties>(
@@ -563,28 +565,30 @@ TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   http_server_props_->SetHttp2AlternativeService(
       spdy_server_mail, NetworkIsolationKey(), alternative_service,
       one_day_from_now_);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
-  http_server_props_->MarkAlternativeServiceBroken(alternative_service);
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  http_server_props_->MarkAlternativeServiceBroken(alternative_service,
+                                                   NetworkIsolationKey());
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   // In addition to the pref update task, there's now a task to mark the
   // alternative service as no longer broken.
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
-  http_server_props_->ConfirmAlternativeService(alternative_service);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  http_server_props_->ConfirmAlternativeService(alternative_service,
+                                                NetworkIsolationKey());
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
@@ -593,10 +597,10 @@ TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 }
 
 // Check the case that prefs are loaded only after setting alternative service
@@ -712,29 +716,30 @@ TEST_F(HttpServerPropertiesManagerTest,
   http_server_props_->SetHttp2AlternativeService(
       spdy_server_mail, NetworkIsolationKey(), alternative_service,
       one_day_from_now_);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
   http_server_props_->MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      alternative_service);
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+      alternative_service, NetworkIsolationKey());
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   // In addition to the pref update task, there's now a task to mark the
   // alternative service as no longer broken.
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
-  http_server_props_->ConfirmAlternativeService(alternative_service);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  http_server_props_->ConfirmAlternativeService(alternative_service,
+                                                NetworkIsolationKey());
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
@@ -743,10 +748,10 @@ TEST_F(HttpServerPropertiesManagerTest,
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest,
@@ -763,29 +768,29 @@ TEST_F(HttpServerPropertiesManagerTest,
   http_server_props_->SetHttp2AlternativeService(
       spdy_server_mail, NetworkIsolationKey(), alternative_service,
       one_day_from_now_);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
   http_server_props_->MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      alternative_service);
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+      alternative_service, NetworkIsolationKey());
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   // In addition to the pref update task, there's now a task to mark the
   // alternative service as no longer broken.
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
   http_server_props_->OnDefaultNetworkChanged();
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
@@ -794,10 +799,10 @@ TEST_F(HttpServerPropertiesManagerTest,
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
@@ -813,28 +818,29 @@ TEST_F(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
   http_server_props_->SetHttp2AlternativeService(
       spdy_server_mail, NetworkIsolationKey(), alternative_service,
       one_day_from_now_);
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
-  http_server_props_->MarkAlternativeServiceBroken(alternative_service);
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  http_server_props_->MarkAlternativeServiceBroken(alternative_service,
+                                                   NetworkIsolationKey());
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   // In addition to the pref update task, there's now a task to mark the
   // alternative service as no longer broken.
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
   http_server_props_->OnDefaultNetworkChanged();
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
 
@@ -843,22 +849,22 @@ TEST_F(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      alternative_service));
+      alternative_service, NetworkIsolationKey()));
 }
 
-TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
+TEST_F(HttpServerPropertiesManagerTest, LastLocalAddressWhenQuicWorked) {
   InitializePrefs();
 
-  IPAddress address;
-  EXPECT_FALSE(http_server_props_->GetSupportsQuic(&address));
-
   IPAddress actual_address(127, 0, 0, 1);
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  EXPECT_FALSE(http_server_props_->HasLastLocalAddressWhenQuicWorked());
+  EXPECT_FALSE(
+      http_server_props_->WasLastLocalAddressWhenQuicWorked(actual_address));
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
   // Another task should not be scheduled.
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -866,11 +872,11 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_TRUE(http_server_props_->GetSupportsQuic(&address));
-  EXPECT_EQ(actual_address, address);
+  EXPECT_TRUE(
+      http_server_props_->WasLastLocalAddressWhenQuicWorked(actual_address));
 
   // Another task should not be scheduled.
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 }
@@ -923,12 +929,14 @@ TEST_F(HttpServerPropertiesManagerTest, QuicServerInfo) {
   InitializePrefs();
 
   quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
-  EXPECT_EQ(nullptr,
-            http_server_props_->GetQuicServerInfo(mail_quic_server_id));
+  EXPECT_EQ(nullptr, http_server_props_->GetQuicServerInfo(
+                         mail_quic_server_id, NetworkIsolationKey()));
   std::string quic_server_info1("quic_server_info1");
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
   // Another task should not be scheduled.
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
 
   // Run the task.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -936,11 +944,12 @@ TEST_F(HttpServerPropertiesManagerTest, QuicServerInfo) {
   FastForwardUntilNoTasksRemain();
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
-  EXPECT_EQ(quic_server_info1,
-            *http_server_props_->GetQuicServerInfo(mail_quic_server_id));
+  EXPECT_EQ(quic_server_info1, *http_server_props_->GetQuicServerInfo(
+                                   mail_quic_server_id, NetworkIsolationKey()));
 
   // Another task should not be scheduled.
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 }
@@ -967,15 +976,17 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   http_server_props_->SetAlternativeServices(spdy_server, NetworkIsolationKey(),
                                              alt_svc_info_vector);
 
-  http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service);
+  http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service,
+                                                   NetworkIsolationKey());
   http_server_props_->SetSupportsSpdy(spdy_server, NetworkIsolationKey(), true);
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
   http_server_props_->SetServerNetworkStats(spdy_server, NetworkIsolationKey(),
                                             stats);
 
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
 
   // Advance time by just enough so that the prefs update task is executed but
   // not the task to expire the brokenness of |broken_alternative_service|.
@@ -984,18 +995,17 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
   EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
-      broken_alternative_service));
+      broken_alternative_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->SupportsRequestPriority(
       spdy_server, NetworkIsolationKey()));
   EXPECT_TRUE(HasAlternativeService(spdy_server, NetworkIsolationKey()));
-  IPAddress address;
-  EXPECT_TRUE(http_server_props_->GetSupportsQuic(&address));
-  EXPECT_EQ(actual_address, address);
+  EXPECT_TRUE(
+      http_server_props_->WasLastLocalAddressWhenQuicWorked(actual_address));
   const ServerNetworkStats* stats1 = http_server_props_->GetServerNetworkStats(
       spdy_server, NetworkIsolationKey());
   EXPECT_EQ(10, stats1->srtt.ToInternalValue());
-  EXPECT_EQ(quic_server_info1,
-            *http_server_props_->GetQuicServerInfo(mail_quic_server_id));
+  EXPECT_EQ(quic_server_info1, *http_server_props_->GetQuicServerInfo(
+                                   mail_quic_server_id, NetworkIsolationKey()));
 
   // Clear http server data, which should instantly update prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -1012,21 +1022,21 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_TRUE(callback_invoked_);
 
   EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
-      broken_alternative_service));
+      broken_alternative_service, NetworkIsolationKey()));
   EXPECT_FALSE(http_server_props_->SupportsRequestPriority(
       spdy_server, NetworkIsolationKey()));
   EXPECT_FALSE(HasAlternativeService(spdy_server, NetworkIsolationKey()));
-  EXPECT_FALSE(http_server_props_->GetSupportsQuic(&address));
+  EXPECT_FALSE(http_server_props_->HasLastLocalAddressWhenQuicWorked());
   const ServerNetworkStats* stats2 = http_server_props_->GetServerNetworkStats(
       spdy_server, NetworkIsolationKey());
   EXPECT_EQ(nullptr, stats2);
-  EXPECT_EQ(nullptr,
-            http_server_props_->GetQuicServerInfo(mail_quic_server_id));
+  EXPECT_EQ(nullptr, http_server_props_->GetQuicServerInfo(
+                         mail_quic_server_id, NetworkIsolationKey()));
 }
 
 // https://crbug.com/444956: Add 200 alternative_service servers followed by
 // supports_quic and verify we have read supports_quic from prefs.
-TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
+TEST_F(HttpServerPropertiesManagerTest, BadLastLocalAddressWhenQuicWorked) {
   std::unique_ptr<base::ListValue> servers_list =
       std::make_unique<base::ListValue>();
 
@@ -1037,21 +1047,20 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
     alternative_service_dict.SetStringKey("protocol_str", "quic");
     alternative_service_dict.SetIntKey("port", i);
     base::Value alternative_service_list(base::Value::Type::LIST);
-    alternative_service_list.GetList().emplace_back(
-        std::move(alternative_service_dict));
+    alternative_service_list.Append(std::move(alternative_service_dict));
     server_dict.SetKey("alternative_service",
                        std::move(alternative_service_list));
     server_dict.SetStringKey("server",
                              StringPrintf("https://www.google.com:%d", i));
     server_dict.SetKey("isolation", base::Value(base::Value::Type::LIST));
-    servers_list->GetList().emplace_back(std::move(server_dict));
+    servers_list->Append(std::move(server_dict));
   }
 
   // Set the server preference for http://mail.google.com server.
   base::Value server_dict2(base::Value::Type::DICTIONARY);
   server_dict2.SetStringKey("server", "https://mail.google.com");
   server_dict2.SetKey("isolation", base::Value(base::Value::Type::LIST));
-  servers_list->GetList().emplace_back(std::move(server_dict2));
+  servers_list->Append(std::move(server_dict2));
 
   base::DictionaryValue http_server_properties_dict = DictWithVersion();
   http_server_properties_dict.SetWithoutPathExpansion("servers",
@@ -1082,10 +1091,9 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
     EXPECT_EQ(i, alternative_service_info_vector[0].alternative_service().port);
   }
 
-  // Verify SupportsQuic.
-  IPAddress address;
-  ASSERT_TRUE(http_server_props_->GetSupportsQuic(&address));
-  EXPECT_EQ("127.0.0.1", address.ToString());
+  // Verify WasLastLocalAddressWhenQuicWorked.
+  ASSERT_TRUE(http_server_props_->WasLastLocalAddressWhenQuicWorked(
+      IPAddress::IPv4Localhost()));
 }
 
 TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
@@ -1120,9 +1128,10 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
       server_mail, NetworkIsolationKey(), mail_alternative_service,
       expiration3);
 
-  http_server_props_->MarkAlternativeServiceBroken(www_alternative_service2);
+  http_server_props_->MarkAlternativeServiceBroken(www_alternative_service2,
+                                                   NetworkIsolationKey());
   http_server_props_->MarkAlternativeServiceRecentlyBroken(
-      mail_alternative_service);
+      mail_alternative_service, NetworkIsolationKey());
 
   // #3: Set SPDY server map
   http_server_props_->SetSupportsSpdy(server_www, NetworkIsolationKey(), false);
@@ -1140,11 +1149,12 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   // #5: Set quic_server_info string.
   quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
   std::string quic_server_info1("quic_server_info1");
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
 
   // #6: Set SupportsQuic.
   IPAddress actual_address(127, 0, 0, 1);
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
 
   base::Time time_before_prefs_update = base::Time::Now();
 
@@ -1209,13 +1219,14 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   const char expected_json[] =
       "{"
       "\"broken_alternative_services\":"
-      "[{\"broken_count\":1,\"host\":\"www.google.com\",\"port\":1234,"
-      "\"protocol_str\":\"h2\"},"
-      "{\"broken_count\":1,\"host\":\"foo.google.com\",\"port\":444,"
-      "\"protocol_str\":\"h2\"}],"
+      "[{\"broken_count\":1,\"host\":\"www.google.com\",\"isolation\":[],"
+      "\"port\":1234,\"protocol_str\":\"h2\"},"
+      "{\"broken_count\":1,\"host\":\"foo.google.com\",\"isolation\":[],"
+      "\"port\":444,\"protocol_str\":\"h2\"}],"
       "\"quic_servers\":"
-      "{\"https://mail.google.com:80\":"
-      "{\"server_info\":\"quic_server_info1\"}},"
+      "[{\"isolation\":[],"
+      "\"server_id\":\"https://mail.google.com:80\","
+      "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
       "{\"alternative_service\":[{\"advertised_versions\":[],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
@@ -1328,7 +1339,8 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           broken_alternative_service, time_one_day_later));
   // #1: MarkAlternativeServiceBroken().
-  http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service);
+  http_server_props_->MarkAlternativeServiceBroken(broken_alternative_service,
+                                                   NetworkIsolationKey());
 
   const AlternativeService expired_alternative_service(
       kProtoHTTP2, "expired.example.com", 443);
@@ -1471,7 +1483,7 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                               quic::QUIC_VERSION_46),
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                              quic::QUIC_VERSION_39)};
+                              quic::QUIC_VERSION_43)};
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           quic_alternative_service1, expiration1, advertised_versions));
@@ -1502,11 +1514,12 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
   // #4: Set quic_server_info string.
   quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
   std::string quic_server_info1("quic_server_info1");
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
 
   // #5: Set SupportsQuic.
   IPAddress actual_address(127, 0, 0, 1);
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
 
   // Update Prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -1516,10 +1529,13 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
 
   // Verify preferences with correct advertised version field.
   const char expected_json[] =
-      "{\"quic_servers\":{\"https://mail.google.com:80\":{"
-      "\"server_info\":\"quic_server_info1\"}},\"servers\":["
+      "{\"quic_servers\":["
+      "{\"isolation\":[],"
+      "\"server_id\":\"https://mail.google.com:80\","
+      "\"server_info\":\"quic_server_info1\"}],"
+      "\"servers\":["
       "{\"alternative_service\":[{"
-      "\"advertised_versions\":[39,46],\"expiration\":\"13756212000000000\","
+      "\"advertised_versions\":[43,46],\"expiration\":\"13756212000000000\","
       "\"port\":443,\"protocol_str\":\"quic\"},{\"advertised_versions\":[],"
       "\"expiration\":\"13758804000000000\",\"host\":\"www.google.com\","
       "\"port\":1234,\"protocol_str\":\"h2\"}],"
@@ -1550,7 +1566,7 @@ TEST_F(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
       "{\"port\":443,\"protocol_str\":\"quic\"},"
       "{\"port\":123,\"protocol_str\":\"quic\","
       "\"expiration\":\"9223372036854775807\","
-      "\"advertised_versions\":[46,39]}]}");
+      "\"advertised_versions\":[46,43]}]}");
   ASSERT_TRUE(server_value);
   base::DictionaryValue* server_dict;
   ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
@@ -1588,7 +1604,7 @@ TEST_F(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
       alternative_service_info_vector[1].advertised_versions();
   EXPECT_EQ(2u, loaded_advertised_versions.size());
   EXPECT_EQ(quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                                    quic::QUIC_VERSION_39),
+                                    quic::QUIC_VERSION_43),
             loaded_advertised_versions[0]);
   EXPECT_EQ(quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                                     quic::QUIC_VERSION_46),
@@ -1621,11 +1637,12 @@ TEST_F(HttpServerPropertiesManagerTest,
   // Set quic_server_info string.
   quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
   std::string quic_server_info1("quic_server_info1");
-  http_server_props_->SetQuicServerInfo(mail_quic_server_id, quic_server_info1);
+  http_server_props_->SetQuicServerInfo(
+      mail_quic_server_id, NetworkIsolationKey(), quic_server_info1);
 
   // Set SupportsQuic.
   IPAddress actual_address(127, 0, 0, 1);
-  http_server_props_->SetSupportsQuic(true, actual_address);
+  http_server_props_->SetLastLocalAddressWhenQuicWorked(actual_address);
 
   // Update Prefs.
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
@@ -1635,8 +1652,11 @@ TEST_F(HttpServerPropertiesManagerTest,
 
   // Verify preferences with correct advertised version field.
   const char expected_json[] =
-      "{\"quic_servers\":{\"https://mail.google.com:80\":"
-      "{\"server_info\":\"quic_server_info1\"}},\"servers\":["
+      "{\"quic_servers\":"
+      "[{\"isolation\":[],"
+      "\"server_id\":\"https://mail.google.com:80\","
+      "\"server_info\":\"quic_server_info1\"}],"
+      "\"servers\":["
       "{\"alternative_service\":[{\"advertised_versions\":[46],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"quic\"}],"
@@ -1660,7 +1680,7 @@ TEST_F(HttpServerPropertiesManagerTest,
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                               quic::QUIC_VERSION_46),
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                              quic::QUIC_VERSION_39)};
+                              quic::QUIC_VERSION_43)};
   alternative_service_info_vector_2.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           quic_alternative_service1, expiration1, advertised_versions));
@@ -1675,9 +1695,12 @@ TEST_F(HttpServerPropertiesManagerTest,
 
   // Verify preferences updated with new advertised versions.
   const char expected_json_updated[] =
-      "{\"quic_servers\":{\"https://mail.google.com:80\":"
-      "{\"server_info\":\"quic_server_info1\"}},\"servers\":["
-      "{\"alternative_service\":[{\"advertised_versions\":[39,46],"
+      "{\"quic_servers\":"
+      "[{\"isolation\":[],"
+      "\"server_id\":\"https://mail.google.com:80\","
+      "\"server_info\":\"quic_server_info1\"}],"
+      "\"servers\":["
+      "{\"alternative_service\":[{\"advertised_versions\":[43,46],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"quic\"}],"
       "\"isolation\":[],"
@@ -1693,7 +1716,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   // A same set of QUIC versions but listed in a different order.
   quic::ParsedQuicVersionVector advertised_versions_2 = {
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                              quic::QUIC_VERSION_39),
+                              quic::QUIC_VERSION_43),
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                               quic::QUIC_VERSION_46)};
   alternative_service_info_vector_3.push_back(
@@ -1713,10 +1736,12 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   AlternativeService cached_recently_broken_service(kProtoQUIC,
                                                     "cached_rbroken", 443);
 
-  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service);
-  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service2);
+  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service,
+                                                   NetworkIsolationKey());
+  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service2,
+                                                   NetworkIsolationKey());
   http_server_props_->MarkAlternativeServiceRecentlyBroken(
-      cached_recently_broken_service);
+      cached_recently_broken_service, NetworkIsolationKey());
 
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   // There should be a task to remove remove alt services from the cache of
@@ -1737,17 +1762,21 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       "{\"broken_until\":\"" +
       expiration_str +
       "\","
-      "\"host\":\"www.google.com\",\"port\":1234,\"protocol_str\":\"h2\"},"
+      "\"host\":\"www.google.com\",\"isolation\":[],"
+      "\"port\":1234,\"protocol_str\":\"h2\"},"
       "{\"broken_count\":2,\"broken_until\":\"" +
       expiration_str +
       "\","
-      "\"host\":\"cached_broken\",\"port\":443,\"protocol_str\":\"quic\"},"
+      "\"host\":\"cached_broken\",\"isolation\":[],"
+      "\"port\":443,\"protocol_str\":\"quic\"},"
       "{\"broken_count\":3,"
-      "\"host\":\"cached_rbroken\",\"port\":443,\"protocol_str\":\"quic\"}],"
-      "\"quic_servers\":{"
-      "\"https://mail.google.com:80\":{"
+      "\"host\":\"cached_rbroken\",\"isolation\":[],"
+      "\"port\":443,\"protocol_str\":\"quic\"}],"
+      "\"quic_servers\":["
+      "{\"isolation\":[],"
+      "\"server_id\":\"https://mail.google.com:80\","
       "\"server_info\":\"quic_server_info1\"}"
-      "},"
+      "],"
       "\"servers\":["
       "{\"server\":\"https://www.google.com:80\","
       "\"isolation\":[],"
@@ -1840,12 +1869,12 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // Verify broken alternative services.
   //
   AlternativeService prefs_broken_service(kProtoHTTP2, "www.google.com", 1234);
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service2));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(prefs_broken_service));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service, NetworkIsolationKey()));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service2, NetworkIsolationKey()));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      prefs_broken_service, NetworkIsolationKey()));
 
   // Verify brokenness expiration times.
   // |cached_broken_service|'s expiration time should've been overwritten by the
@@ -1855,19 +1884,19 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // now which comes from the prefs.
   FastForwardBy(base::TimeDelta::FromMinutes(5) -
                 HttpServerProperties::GetUpdatePrefsDelayForTesting());
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service2));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(prefs_broken_service));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service, NetworkIsolationKey()));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service2, NetworkIsolationKey()));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      prefs_broken_service, NetworkIsolationKey()));
   FastForwardBy(base::TimeDelta::FromDays(1));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service2));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(prefs_broken_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service, NetworkIsolationKey()));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service2, NetworkIsolationKey()));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      prefs_broken_service, NetworkIsolationKey()));
 
   // Now that |prefs_broken_service|'s brokenness has expired, it should've
   // been removed from the alternative services info vectors of all servers.
@@ -1890,61 +1919,64 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // broken.
 
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      prefs_broken_service));
+      prefs_broken_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      cached_recently_broken_service));
+      cached_recently_broken_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      cached_broken_service));
+      cached_broken_service, NetworkIsolationKey()));
   EXPECT_TRUE(http_server_props_->WasAlternativeServiceRecentlyBroken(
-      cached_broken_service2));
+      cached_broken_service2, NetworkIsolationKey()));
   // Make sure |prefs_broken_service| has the right expiration delay when marked
   // broken. Since |prefs_broken_service| had no broken_count specified in the
   // prefs, a broken_count value of 1 should have been assumed by
   // |http_server_props_|.
-  http_server_props_->MarkAlternativeServiceBroken(prefs_broken_service);
+  http_server_props_->MarkAlternativeServiceBroken(prefs_broken_service,
+                                                   NetworkIsolationKey());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
   EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardBy(base::TimeDelta::FromMinutes(10) -
                 base::TimeDelta::FromInternalValue(1));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(prefs_broken_service));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      prefs_broken_service, NetworkIsolationKey()));
   FastForwardBy(base::TimeDelta::FromInternalValue(1));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(prefs_broken_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      prefs_broken_service, NetworkIsolationKey()));
   // Make sure |cached_recently_broken_service| has the right expiration delay
   // when marked broken.
   http_server_props_->MarkAlternativeServiceBroken(
-      cached_recently_broken_service);
+      cached_recently_broken_service, NetworkIsolationKey());
   EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardBy(base::TimeDelta::FromMinutes(40) -
                 base::TimeDelta::FromInternalValue(1));
   EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
-      cached_recently_broken_service));
+      cached_recently_broken_service, NetworkIsolationKey()));
   FastForwardBy(base::TimeDelta::FromInternalValue(1));
   EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
-      cached_recently_broken_service));
+      cached_recently_broken_service, NetworkIsolationKey()));
   // Make sure |cached_broken_service| has the right expiration delay when
   // marked broken.
-  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service);
+  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service,
+                                                   NetworkIsolationKey());
   EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardBy(base::TimeDelta::FromMinutes(20) -
                 base::TimeDelta::FromInternalValue(1));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service, NetworkIsolationKey()));
   FastForwardBy(base::TimeDelta::FromInternalValue(1));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service, NetworkIsolationKey()));
   // Make sure |cached_broken_service2| has the right expiration delay when
   // marked broken.
-  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service2);
+  http_server_props_->MarkAlternativeServiceBroken(cached_broken_service2,
+                                                   NetworkIsolationKey());
   EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   FastForwardBy(base::TimeDelta::FromMinutes(10) -
                 base::TimeDelta::FromInternalValue(1));
-  EXPECT_TRUE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service2));
+  EXPECT_TRUE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service2, NetworkIsolationKey()));
   FastForwardBy(base::TimeDelta::FromInternalValue(1));
-  EXPECT_FALSE(
-      http_server_props_->IsAlternativeServiceBroken(cached_broken_service2));
+  EXPECT_FALSE(http_server_props_->IsAlternativeServiceBroken(
+      cached_broken_service2, NetworkIsolationKey()));
 
   //
   // Verify ServerNetworkStats.
@@ -1960,14 +1992,15 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // Verify QUIC server info.
   //
   const std::string* quic_server_info = http_server_props_->GetQuicServerInfo(
-      quic::QuicServerId("mail.google.com", 80, false));
+      quic::QuicServerId("mail.google.com", 80, false), NetworkIsolationKey());
   EXPECT_EQ("quic_server_info1", *quic_server_info);
 
   //
   // Verify supports QUIC.
   //
   IPAddress actual_address(127, 0, 0, 1);
-  EXPECT_TRUE(http_server_props_->GetSupportsQuic(&actual_address));
+  EXPECT_TRUE(
+      http_server_props_->WasLastLocalAddressWhenQuicWorked(actual_address));
   EXPECT_EQ(4, pref_delegate_->GetAndClearNumPrefUpdates());
 }
 
@@ -2244,8 +2277,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   AlternativeServiceInfo alt_service1 =
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           AlternativeService(kProtoQUIC, "foopy.c.youtube.com", 1234),
-          expiration,
-          HttpNetworkSession::Params().quic_params.supported_versions);
+          expiration, DefaultSupportedQuicVersions());
   AlternativeServiceInfo alt_service2 =
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
           AlternativeService(kProtoHTTP2, "foopy.c.youtube.com", 443),
@@ -2387,6 +2419,585 @@ TEST_F(HttpServerPropertiesManagerTest,
       3u,
       properties->GetAlternativeServiceInfos(kServer3, kNetworkIsolationKey2)
           .size());
+}
+
+// Tests a full round trip with a NetworkIsolationKey, using the
+// HttpServerProperties interface and setting alternative services as broken.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyBrokenAltServiceRoundTrip) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo1.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://foo2.test/"));
+
+  const AlternativeService kAlternativeService1(kProtoHTTP2,
+                                                "alt.service1.test", 443);
+  const AlternativeService kAlternativeService2(kProtoHTTP2,
+                                                "alt.service2.test", 443);
+
+  for (auto save_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+    SCOPED_TRACE(static_cast<int>(save_network_isolation_key_mode));
+
+    // Save prefs using |save_network_isolation_key_mode|.
+    std::unique_ptr<base::DictionaryValue> saved_value;
+    {
+      // Configure the the feature.
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(save_network_isolation_key_mode);
+
+      // The NetworkIsolationKey constructor checks the field trial state, so
+      // need to create the keys only after setting up the field trials.
+      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+      // Create and initialize an HttpServerProperties, must be done after
+      // setting the feature.
+      std::unique_ptr<MockPrefDelegate> pref_delegate =
+          std::make_unique<MockPrefDelegate>();
+      MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+      std::unique_ptr<HttpServerProperties> properties =
+          std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                                 /*net_log=*/nullptr,
+                                                 GetMockTickClock());
+      unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+      // Set kAlternativeService1 as broken in the context of
+      // kNetworkIsolationKey1, and kAlternativeService2 as broken in the
+      // context of the empty NetworkIsolationKey2, and recently broken in the
+      // context of the empty NetworkIsolationKey.
+      properties->MarkAlternativeServiceBroken(kAlternativeService1,
+                                               kNetworkIsolationKey1);
+      properties->MarkAlternativeServiceRecentlyBroken(kAlternativeService2,
+                                                       NetworkIsolationKey());
+      properties->MarkAlternativeServiceBroken(kAlternativeService2,
+                                               kNetworkIsolationKey2);
+
+      // Verify values were set.
+      EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+          kAlternativeService1, kNetworkIsolationKey1));
+      EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+          kAlternativeService1, kNetworkIsolationKey1));
+      // When NetworkIsolationKeys are disabled, kAlternativeService2 is marked
+      // as broken regardless of the values passed to NetworkIsolationKey's
+      // constructor.
+      EXPECT_EQ(
+          save_network_isolation_key_mode == NetworkIsolationKeyMode::kDisabled,
+          properties->IsAlternativeServiceBroken(kAlternativeService2,
+                                                 NetworkIsolationKey()));
+      EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+          kAlternativeService2, NetworkIsolationKey()));
+      EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+          kAlternativeService2, kNetworkIsolationKey2));
+      EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+          kAlternativeService2, kNetworkIsolationKey2));
+
+      // If NetworkIsolationKeys are enabled, there should be no
+      // cross-contamination of the NetworkIsolationKeys.
+      if (save_network_isolation_key_mode !=
+          NetworkIsolationKeyMode::kDisabled) {
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, kNetworkIsolationKey2));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, kNetworkIsolationKey2));
+      }
+
+      // Wait until the data's been written to prefs, and then create a copy of
+      // the prefs data.
+      FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+      saved_value =
+          unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+    }
+
+    // Now try and load the data in each of the feature modes.
+    for (auto load_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+      SCOPED_TRACE(static_cast<int>(load_network_isolation_key_mode));
+
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(load_network_isolation_key_mode);
+
+      // The NetworkIsolationKey constructor checks the field trial state, so
+      // need to create the keys only after setting up the field trials.
+      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+      // Create a new HttpServerProperties, loading the data from before.
+      std::unique_ptr<MockPrefDelegate> pref_delegate =
+          std::make_unique<MockPrefDelegate>();
+      MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+      std::unique_ptr<HttpServerProperties> properties =
+          std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                                 /*net_log=*/nullptr,
+                                                 GetMockTickClock());
+      unowned_pref_delegate->InitializePrefs(*saved_value);
+
+      if (save_network_isolation_key_mode ==
+          NetworkIsolationKeyMode::kDisabled) {
+        // If NetworkIsolationKey was disabled when saving, it was saved with an
+        // empty NetworkIsolationKey, which should always be loaded
+        // successfully. This is needed to continue to support consumers that
+        // don't use NetworkIsolationKeys.
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+      } else if (save_network_isolation_key_mode ==
+                 load_network_isolation_key_mode) {
+        // If the save and load modes are the same, the load should succeed, and
+        // the network isolation keys should match.
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        // When NetworkIsolationKeys are disabled, kAlternativeService2 is
+        // marked as broken regardless of the values passed to
+        // NetworkIsolationKey's constructor.
+        EXPECT_EQ(save_network_isolation_key_mode ==
+                      NetworkIsolationKeyMode::kDisabled,
+                  properties->IsAlternativeServiceBroken(
+                      kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, kNetworkIsolationKey2));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, kNetworkIsolationKey2));
+
+        // If NetworkIsolationKeys are enabled, there should be no
+        // cross-contamination of the NetworkIsolationKeys.
+        if (save_network_isolation_key_mode !=
+            NetworkIsolationKeyMode::kDisabled) {
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+        }
+      } else {
+        // Otherwise, only the values set with an empty NetworkIsolationKey
+        // should have been loaded successfully.
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService1, kNetworkIsolationKey1));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+            kAlternativeService2, NetworkIsolationKey()));
+        EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+            kAlternativeService2, kNetworkIsolationKey2));
+        // If the load mode is NetworkIsolationKeyMode::kDisabled,
+        // kNetworkIsolationKey2 is NetworkIsolationKey().
+        EXPECT_EQ(load_network_isolation_key_mode ==
+                      NetworkIsolationKeyMode::kDisabled,
+                  properties->WasAlternativeServiceRecentlyBroken(
+                      kAlternativeService2, kNetworkIsolationKey2));
+
+        // There should be no cross-contamination of NetworkIsolationKeys, if
+        // NetworkIsolationKeys are enabled.
+        if (load_network_isolation_key_mode !=
+            NetworkIsolationKeyMode::kDisabled) {
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService2, kNetworkIsolationKey1));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, NetworkIsolationKey()));
+          EXPECT_FALSE(properties->IsAlternativeServiceBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+          EXPECT_FALSE(properties->WasAlternativeServiceRecentlyBroken(
+              kAlternativeService1, kNetworkIsolationKey2));
+        }
+      }
+    }
+  }
+}
+
+// Make sure broken alt services with opaque origins aren't saved.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyBrokenAltServiceOpaqueOrigin) {
+  const url::Origin kOpaqueOrigin =
+      url::Origin::Create(GURL("data:text/plain,Hello World"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOpaqueOrigin, kOpaqueOrigin);
+  const AlternativeService kAlternativeService(kProtoHTTP2, "alt.service1.test",
+                                               443);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  // Create and initialize an HttpServerProperties, must be done after
+  // setting the feature.
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  std::unique_ptr<HttpServerProperties> properties =
+      std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                             /*net_log=*/nullptr,
+                                             GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+  properties->MarkAlternativeServiceBroken(kAlternativeService,
+                                           kNetworkIsolationKey);
+
+  // Verify values were set.
+  EXPECT_TRUE(properties->IsAlternativeServiceBroken(kAlternativeService,
+                                                     kNetworkIsolationKey));
+  EXPECT_TRUE(properties->WasAlternativeServiceRecentlyBroken(
+      kAlternativeService, kNetworkIsolationKey));
+
+  // Wait until the data's been written to prefs, and then create a copy of
+  // the prefs data.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+
+  // No information should have been saved to prefs.
+  std::string preferences_json;
+  base::JSONWriter::Write(*unowned_pref_delegate->GetServerProperties(),
+                          &preferences_json);
+  EXPECT_EQ("{\"servers\":[],\"version\":5}", preferences_json);
+}
+
+// Tests a full round trip with a NetworkIsolationKey, using the
+// HttpServerProperties interface and setting QuicServerInfo.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyQuicServerInfoRoundTrip) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo1.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://foo2.test/"));
+
+  const quic::QuicServerId kServer1("foo", 443,
+                                    false /* privacy_mode_enabled */);
+  const quic::QuicServerId kServer2("foo", 443,
+                                    true /* privacy_mode_enabled */);
+
+  const char kQuicServerInfo1[] = "info1";
+  const char kQuicServerInfo2[] = "info2";
+  const char kQuicServerInfo3[] = "info3";
+
+  for (auto save_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+    SCOPED_TRACE(static_cast<int>(save_network_isolation_key_mode));
+
+    // Save prefs using |save_network_isolation_key_mode|.
+    std::unique_ptr<base::DictionaryValue> saved_value;
+    {
+      // Configure the the feature.
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(save_network_isolation_key_mode);
+
+      // The NetworkIsolationKey constructor checks the field trial state, so
+      // need to create the keys only after setting up the field trials.
+      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+      // Create and initialize an HttpServerProperties, must be done after
+      // setting the feature.
+      std::unique_ptr<MockPrefDelegate> pref_delegate =
+          std::make_unique<MockPrefDelegate>();
+      MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+      std::unique_ptr<HttpServerProperties> properties =
+          std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                                 /*net_log=*/nullptr,
+                                                 GetMockTickClock());
+      unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+      // Set kServer1 to kQuicServerInfo1 in the context of
+      // kNetworkIsolationKey1, Set kServer2 to kQuicServerInfo2 in the context
+      // of kNetworkIsolationKey2, and kServer1 to kQuicServerInfo3 in the
+      // context of NetworkIsolationKey().
+      properties->SetQuicServerInfo(kServer1, kNetworkIsolationKey1,
+                                    kQuicServerInfo1);
+      properties->SetQuicServerInfo(kServer2, kNetworkIsolationKey2,
+                                    kQuicServerInfo2);
+      properties->SetQuicServerInfo(kServer1, NetworkIsolationKey(),
+                                    kQuicServerInfo3);
+
+      // Verify values were set.
+      if (save_network_isolation_key_mode !=
+          NetworkIsolationKeyMode::kDisabled) {
+        EXPECT_EQ(kQuicServerInfo1, *properties->GetQuicServerInfo(
+                                        kServer1, kNetworkIsolationKey1));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer1, kNetworkIsolationKey2));
+        EXPECT_EQ(kQuicServerInfo3, *properties->GetQuicServerInfo(
+                                        kServer1, NetworkIsolationKey()));
+
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, kNetworkIsolationKey1));
+        EXPECT_EQ(kQuicServerInfo2, *properties->GetQuicServerInfo(
+                                        kServer2, kNetworkIsolationKey2));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, NetworkIsolationKey()));
+      } else {
+        EXPECT_EQ(kQuicServerInfo3, *properties->GetQuicServerInfo(
+                                        kServer1, NetworkIsolationKey()));
+        EXPECT_EQ(kQuicServerInfo2, *properties->GetQuicServerInfo(
+                                        kServer2, NetworkIsolationKey()));
+      }
+
+      // Wait until the data's been written to prefs, and then create a copy of
+      // the prefs data.
+      FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+      saved_value =
+          unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+    }
+
+    // Now try and load the data in each of the feature modes.
+    for (auto load_network_isolation_key_mode : kNetworkIsolationKeyModes) {
+      SCOPED_TRACE(static_cast<int>(load_network_isolation_key_mode));
+
+      std::unique_ptr<base::test::ScopedFeatureList> feature_list =
+          SetNetworkIsolationKeyMode(load_network_isolation_key_mode);
+
+      // The NetworkIsolationKey constructor checks the field trial state, so
+      // need to create the keys only after setting up the field trials.
+      const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+      const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+      // Create a new HttpServerProperties, loading the data from before.
+      std::unique_ptr<MockPrefDelegate> pref_delegate =
+          std::make_unique<MockPrefDelegate>();
+      MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+      std::unique_ptr<HttpServerProperties> properties =
+          std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                                 /*net_log=*/nullptr,
+                                                 GetMockTickClock());
+      unowned_pref_delegate->InitializePrefs(*saved_value);
+
+      if (save_network_isolation_key_mode ==
+          NetworkIsolationKeyMode::kDisabled) {
+        // If NetworkIsolationKey was disabled when saving, entries were saved
+        // with an empty NetworkIsolationKey, which should always be loaded
+        // successfully. This is needed to continue to support consumers that
+        // don't use NetworkIsolationKeys.
+        EXPECT_EQ(kQuicServerInfo3, *properties->GetQuicServerInfo(
+                                        kServer1, NetworkIsolationKey()));
+        EXPECT_EQ(kQuicServerInfo2, *properties->GetQuicServerInfo(
+                                        kServer2, NetworkIsolationKey()));
+        if (load_network_isolation_key_mode !=
+            NetworkIsolationKeyMode::kDisabled) {
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer1, kNetworkIsolationKey1));
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer1, kNetworkIsolationKey2));
+
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer2, kNetworkIsolationKey1));
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer2, kNetworkIsolationKey2));
+        }
+      } else if (save_network_isolation_key_mode ==
+                 load_network_isolation_key_mode) {
+        // If the save and load modes are the same, the load should succeed, and
+        // the network isolation keys should match.
+        EXPECT_EQ(kQuicServerInfo1, *properties->GetQuicServerInfo(
+                                        kServer1, kNetworkIsolationKey1));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer1, kNetworkIsolationKey2));
+        EXPECT_EQ(kQuicServerInfo3, *properties->GetQuicServerInfo(
+                                        kServer1, NetworkIsolationKey()));
+
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, kNetworkIsolationKey1));
+        EXPECT_EQ(kQuicServerInfo2, *properties->GetQuicServerInfo(
+                                        kServer2, kNetworkIsolationKey2));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, NetworkIsolationKey()));
+      } else {
+        // Otherwise, only the value set with an empty NetworkIsolationKey
+        // should have been loaded successfully.
+        EXPECT_EQ(kQuicServerInfo3, *properties->GetQuicServerInfo(
+                                        kServer1, NetworkIsolationKey()));
+
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, kNetworkIsolationKey1));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, kNetworkIsolationKey2));
+        EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                               kServer2, NetworkIsolationKey()));
+
+        // There should be no cross-contamination of NetworkIsolationKeys, if
+        // NetworkIsolationKeys are enabled.
+        if (load_network_isolation_key_mode !=
+            NetworkIsolationKeyMode::kDisabled) {
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer1, kNetworkIsolationKey1));
+          EXPECT_EQ(nullptr, properties->GetQuicServerInfo(
+                                 kServer1, kNetworkIsolationKey2));
+        }
+      }
+    }
+  }
+}
+
+// Tests a full round trip to prefs and back in the canonical suffix for
+// QuicServerInfo case. Enable NetworkIsolationKeys, as they have some
+// interactions with the canonical suffix logic.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyQuicServerInfoCanonicalSuffixRoundTrip) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  // Three servers with the same canonical suffix (".c.youtube.com").
+  const quic::QuicServerId kServer1("foo.c.youtube.com", 443,
+                                    false /* privacy_mode_enabled */);
+  const quic::QuicServerId kServer2("bar.c.youtube.com", 443,
+                                    false /* privacy_mode_enabled */);
+  const quic::QuicServerId kServer3("baz.c.youtube.com", 443,
+                                    false /* privacy_mode_enabled */);
+
+  const char kQuicServerInfo1[] = "info1";
+  const char kQuicServerInfo2[] = "info2";
+  const char kQuicServerInfo3[] = "info3";
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  // Create and initialize an HttpServerProperties with no state.
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  std::unique_ptr<HttpServerProperties> properties =
+      std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                             /*net_log=*/nullptr,
+                                             GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+  // Set kQuicServerInfo1 for kServer1 using kNetworkIsolationKey1. That
+  // information should be retrieved when fetching information for any server
+  // with the same canonical suffix, when using kNetworkIsolationKey1.
+  properties->SetQuicServerInfo(kServer1, kNetworkIsolationKey1,
+                                kQuicServerInfo1);
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey1));
+  EXPECT_FALSE(properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey2));
+
+  // Set kQuicServerInfo2 for kServer2 using kNetworkIsolationKey1. It should
+  // not affect information retrieved for kServer1, but should for kServer2 and
+  // kServer3.
+  properties->SetQuicServerInfo(kServer2, kNetworkIsolationKey1,
+                                kQuicServerInfo2);
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey1));
+  EXPECT_FALSE(properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey2));
+
+  // Set kQuicServerInfo3 for kServer1 using kNetworkIsolationKey2. It should
+  // not affect information stored for kNetworkIsolationKey1.
+  properties->SetQuicServerInfo(kServer1, kNetworkIsolationKey2,
+                                kQuicServerInfo3);
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey2));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey2));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey2));
+
+  // Wait until the data's been written to prefs, and then tear down the
+  // HttpServerProperties.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+  std::unique_ptr<base::DictionaryValue> saved_value =
+      unowned_pref_delegate->GetServerProperties()->CreateDeepCopy();
+  properties.reset();
+
+  // Create a new HttpServerProperties using the value saved to prefs above.
+  pref_delegate = std::make_unique<MockPrefDelegate>();
+  unowned_pref_delegate = pref_delegate.get();
+  properties = std::make_unique<HttpServerProperties>(
+      std::move(pref_delegate), /*net_log=*/nullptr, GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(*saved_value);
+
+  // All values should have been saved and be retrievable by suffix-matching
+  // servers.
+  //
+  // TODO(mmenke): The rest of this test corresponds exactly to behavior in
+  // CanonicalSuffixRoundTripWithNetworkIsolationKey. It seems like these lines
+  // should correspond as well.
+  EXPECT_EQ(kQuicServerInfo1,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo2,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey1));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer1, kNetworkIsolationKey2));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer2, kNetworkIsolationKey2));
+  EXPECT_EQ(kQuicServerInfo3,
+            *properties->GetQuicServerInfo(kServer3, kNetworkIsolationKey2));
+}
+
+// Make sure QuicServerInfo associated with NetworkIsolationKeys with opaque
+// origins aren't saved.
+TEST_F(HttpServerPropertiesManagerTest,
+       NetworkIsolationKeyQuicServerInfoOpaqueOrigin) {
+  const url::Origin kOpaqueOrigin =
+      url::Origin::Create(GURL("data:text/plain,Hello World"));
+  const NetworkIsolationKey kNetworkIsolationKey(kOpaqueOrigin, kOpaqueOrigin);
+  const quic::QuicServerId kServer("foo", 443,
+                                   false /* privacy_mode_enabled */);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  // Create and initialize an HttpServerProperties, must be done after
+  // setting the feature.
+  std::unique_ptr<MockPrefDelegate> pref_delegate =
+      std::make_unique<MockPrefDelegate>();
+  MockPrefDelegate* unowned_pref_delegate = pref_delegate.get();
+  std::unique_ptr<HttpServerProperties> properties =
+      std::make_unique<HttpServerProperties>(std::move(pref_delegate),
+                                             /*net_log=*/nullptr,
+                                             GetMockTickClock());
+  unowned_pref_delegate->InitializePrefs(base::DictionaryValue());
+
+  properties->SetQuicServerInfo(kServer, kNetworkIsolationKey,
+                                "QuicServerInfo");
+  EXPECT_TRUE(properties->GetQuicServerInfo(kServer, kNetworkIsolationKey));
+
+  // Wait until the data's been written to prefs, and then create a copy of
+  // the prefs data.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+
+  // No information should have been saved to prefs.
+  std::string preferences_json;
+  base::JSONWriter::Write(*unowned_pref_delegate->GetServerProperties(),
+                          &preferences_json);
+  EXPECT_EQ("{\"quic_servers\":[],\"servers\":[],\"version\":5}",
+            preferences_json);
 }
 
 }  // namespace net

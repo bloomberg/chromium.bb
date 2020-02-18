@@ -5,7 +5,7 @@
 #include "ash/system/toast/toast_overlay.h"
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -157,9 +157,9 @@ class ToastOverlayView : public views::View, public views::ButtonListener {
                    const base::Optional<base::string16>& dismiss_text)
       : overlay_(overlay) {
     background_color_ = AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-        app_list_features::IsBackgroundBlurEnabled()
-            ? AshColorProvider::BaseLayerType::kTransparentWithBlur
-            : AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+        features::IsBackgroundBlurEnabled()
+            ? AshColorProvider::BaseLayerType::kTransparent74
+            : AshColorProvider::BaseLayerType::kTransparent90,
         kToastBackgroundColor);
     auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal));
@@ -242,7 +242,7 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.name = "ToastOverlay";
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.accept_events = true;
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;

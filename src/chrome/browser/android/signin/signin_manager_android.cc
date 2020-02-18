@@ -13,9 +13,7 @@
 #include "chrome/android/chrome_jni_headers/SigninManager_jni.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/public/base/signin_pref_names.h"
-#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 #include "base/android/callback_android.h"
@@ -41,12 +39,6 @@
 using base::android::JavaParamRef;
 
 namespace {
-
-// Clears the information about the last signed-in user from |profile|.
-void ClearLastSignedInUserForProfile(Profile* profile) {
-  profile->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
-  profile->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
-}
 
 // A BrowsingDataRemover::Observer that clears Profile data and then invokes
 // a callback and deletes itself. It can be configured to delete all data
@@ -97,7 +89,8 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
       // All the Profile data has been wiped. Clear the last signed in username
       // as well, so that the next signin doesn't trigger the account
       // change dialog.
-      ClearLastSignedInUserForProfile(profile_);
+      profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
+      profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
     }
 
     origin_runner_->PostTask(FROM_HERE, std::move(callback_));
@@ -134,7 +127,6 @@ SigninManagerAndroid::SigninManagerAndroid(
   DCHECK(identity_manager_);
   DCHECK(user_cloud_policy_manager_);
   DCHECK(user_policy_signin_service_);
-  identity_manager_->AddObserver(this);
 
   signin_allowed_.Init(
       prefs::kSigninAllowed, profile_->GetPrefs(),
@@ -146,7 +138,9 @@ SigninManagerAndroid::SigninManagerAndroid(
 
   java_signin_manager_ = Java_SigninManager_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
-      identity_manager_->LegacyGetAccountTrackerServiceJavaObject());
+      identity_manager_->LegacyGetAccountTrackerServiceJavaObject(),
+      identity_manager_->GetJavaObject(),
+      identity_manager_->GetIdentityMutatorJavaObject());
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -157,49 +151,8 @@ SigninManagerAndroid::GetJavaObject() {
 SigninManagerAndroid::~SigninManagerAndroid() {}
 
 void SigninManagerAndroid::Shutdown() {
-  identity_manager_->RemoveObserver(this);
   Java_SigninManager_destroy(base::android::AttachCurrentThread(),
                              java_signin_manager_);
-}
-
-jboolean SigninManagerAndroid::SetPrimaryAccount(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& username) {
-  DVLOG(1) << "SigninManagerAndroid::SetPrimaryAccount";
-
-  auto account =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              base::android::ConvertJavaStringToUTF8(env, username));
-  DCHECK(account.has_value());
-  auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
-  return account_mutator->SetPrimaryAccount(account->account_id);
-}
-
-void SigninManagerAndroid::SignOut(JNIEnv* env,
-                                   jint signoutReason) {
-  auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
-
-  // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
-  DCHECK(account_mutator);
-  account_mutator->ClearPrimaryAccount(
-      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
-      static_cast<signin_metrics::ProfileSignout>(signoutReason),
-      // Always use IGNORE_METRIC for the profile deletion argument. Chrome
-      // Android has just a single-profile which is never deleted upon
-      // sign-out.
-      signin_metrics::SignoutDelete::IGNORE_METRIC);
-}
-
-void SigninManagerAndroid::ClearLastSignedInUser(JNIEnv* env) {
-  ClearLastSignedInUserForProfile(profile_);
-}
-
-void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env) {
-  // With the account consistency enabled let the account Reconcilor handles
-  // everything.
-  // TODO(https://crbug.com/930094): Determine the right long-term flow here.
-  identity_manager_->LegacyReloadAccountsFromSystem();
 }
 
 bool SigninManagerAndroid::IsSigninAllowed() const {
@@ -212,17 +165,6 @@ jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(JNIEnv* env) const {
 
 jboolean SigninManagerAndroid::IsForceSigninEnabled(JNIEnv* env) {
   return force_browser_signin_.GetValue();
-}
-
-jboolean SigninManagerAndroid::IsSignedInOnNative(JNIEnv* env) {
-  return identity_manager_->HasPrimaryAccount();
-}
-
-void SigninManagerAndroid::OnPrimaryAccountCleared(
-    const CoreAccountInfo& previous_primary_account_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  Java_SigninManager_onNativeSignOut(base::android::AttachCurrentThread(),
-                                     java_signin_manager_);
 }
 
 void SigninManagerAndroid::OnSigninAllowedPrefChanged() const {
@@ -245,7 +187,7 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
 
   user_policy_signin_service_->RegisterForPolicyWithAccountId(
       account.email, account.account_id,
-      base::AdaptCallbackForRepeating(base::BindOnce(
+      base::BindOnce(
           [](RegisterPolicyWithAccountCallback callback,
              const std::string& dm_token, const std::string& client_id) {
             base::Optional<ManagementCredentials> credentials;
@@ -254,26 +196,14 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
             }
             std::move(callback).Run(credentials);
           },
-          std::move(callback))));
+          std::move(callback)));
 }
 
 void SigninManagerAndroid::FetchAndApplyCloudPolicy(
     JNIEnv* env,
-    const JavaParamRef<jstring>& j_username,
+    const base::android::JavaParamRef<jobject>& j_account_info,
     const base::android::JavaParamRef<jobject>& j_callback) {
-  std::string username =
-      base::android::ConvertJavaStringToUTF8(env, j_username);
-  DCHECK(!username.empty());
-  // TODO(bsazonov): Remove after migrating the sign-in flow to CoreAccountId.
-  // ExtractDomainName Dchecks that username is a valid email, in practice
-  // this checks that @ is present and is not the last character.
-  gaia::ExtractDomainName(username);
-  CoreAccountInfo account =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              username)
-          .value();
-
+  CoreAccountInfo account = ConvertFromJavaCoreAccountInfo(env, j_account_info);
   auto callback =
       base::BindOnce(base::android::RunRunnableAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_callback));
@@ -315,19 +245,13 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
 
 void SigninManagerAndroid::IsAccountManaged(
     JNIEnv* env,
-    const JavaParamRef<jstring>& j_username,
+    const JavaParamRef<jobject>& j_account_info,
     const JavaParamRef<jobject>& j_callback) {
+  CoreAccountInfo account = ConvertFromJavaCoreAccountInfo(env, j_account_info);
   base::android::ScopedJavaGlobalRef<jobject> callback(env, j_callback);
-  std::string username =
-      base::android::ConvertJavaStringToUTF8(env, j_username);
-
-  base::Optional<CoreAccountInfo> account =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              username);
 
   RegisterPolicyWithAccount(
-      account.value_or(CoreAccountInfo{}),
+      account,
       base::BindOnce(
           [](base::android::ScopedJavaGlobalRef<jobject> callback,
              const base::Optional<ManagementCredentials>& credentials) {

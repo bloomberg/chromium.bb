@@ -12,8 +12,8 @@ import tempfile
 import unittest
 
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import image_lib
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
 from chromite.scripts import test_image
@@ -31,14 +31,14 @@ class TestImageTest(cros_test_lib.MockTempDirTestCase):
                                    constants.BASE_IMAGE_NAME + '.bin')
     osutils.WriteFile(self.image_file, '')
     fake_partitions = (
-        cros_build_lib.PartitionInfo(1, 0, 0, 0, 'fs', 'STATE', 'flag'),
-        cros_build_lib.PartitionInfo(2, 0, 0, 0, 'fs', 'KERN-A', 'flag'),
-        cros_build_lib.PartitionInfo(3, 0, 0, 0, 'fs', 'ROOT-A', 'flag'),
+        image_lib.PartitionInfo(1, 0, 0, 0, 'fs', 'STATE', 'flag'),
+        image_lib.PartitionInfo(2, 0, 0, 0, 'fs', 'KERN-A', 'flag'),
+        image_lib.PartitionInfo(3, 0, 0, 0, 'fs', 'ROOT-A', 'flag'),
     )
-    self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
+    self.PatchObject(image_lib, 'GetImageDiskPartitionInfo',
                      autospec=True, return_value=fake_partitions)
-    self.PatchObject(osutils.MountImageContext, '_Mount', autospec=True)
-    self.PatchObject(osutils.MountImageContext, '_Unmount', autospec=True)
+    self.PatchObject(image_lib.LoopbackPartitions, '_Mount', autospec=True)
+    self.PatchObject(image_lib.LoopbackPartitions, '_Unmount', autospec=True)
 
 
 class FindImageTest(TestImageTest):

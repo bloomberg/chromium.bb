@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_presentation_state.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
@@ -50,6 +51,9 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     InfobarModalTransitionDriver* modalTransitionDriver;
 // Readwrite redefinition.
 @property(nonatomic, assign, readwrite) BOOL bannerWasPresented;
+// Completion block used to dismiss the banner after a set period of time. This
+// needs to be created by dispatch_block_create() since it may get cancelled.
+@property(nonatomic, copy) dispatch_block_t dismissBannerBlock;
 
 @end
 
@@ -69,12 +73,13 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 - (instancetype)initWithInfoBarDelegate:
                     (infobars::InfoBarDelegate*)infoBarDelegate
+                           badgeSupport:(BOOL)badgeSupport
                                    type:(InfobarType)infobarType {
   self = [super initWithBaseViewController:nil browserState:nil];
   if (self) {
     _infobarDelegate = infoBarDelegate;
     _presented = YES;
-    _hasBadge = YES;
+    _hasBadge = badgeSupport;
     _infobarType = infobarType;
   }
   return self;
@@ -92,6 +97,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   DCHECK(self.browserState);
   DCHECK(self.baseViewController);
   DCHECK(self.bannerViewController);
+  DCHECK(self.started);
 
   // If |self.baseViewController| is not part of the ViewHierarchy the banner
   // shouldn't be presented.
@@ -132,13 +138,38 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                    weakSelf.bannerWasPresented = YES;
                    weakSelf.infobarBannerState =
                        InfobarBannerPresentationState::Presented;
+                   [weakSelf.badgeDelegate
+                       infobarBannerWasPresented:self.infobarType
+                                     forWebState:self.webState];
                    [weakSelf infobarBannerWasPresented];
                    if (completion)
                      completion();
                  }];
+
+  // Dismisses the presented banner after a certain number of seconds.
+  if (!UIAccessibilityIsVoiceOverRunning()) {
+    NSTimeInterval timeInterval =
+        self.highPriorityPresentation
+            ? kInfobarBannerLongPresentationDurationInSeconds
+            : kInfobarBannerDefaultPresentationDurationInSeconds;
+    dispatch_time_t popTime =
+        dispatch_time(DISPATCH_TIME_NOW, timeInterval * NSEC_PER_SEC);
+    if (self.dismissBannerBlock) {
+      // TODO:(crbug.com/1021805): Write unittest to cover this situation.
+      dispatch_block_cancel(self.dismissBannerBlock);
+    }
+    __weak InfobarCoordinator* weakSelf = self;
+    self.dismissBannerBlock =
+        dispatch_block_create(DISPATCH_BLOCK_ASSIGN_CURRENT, ^{
+          [weakSelf dismissInfobarBannerIfReady];
+          weakSelf.dismissBannerBlock = nil;
+        });
+    dispatch_after(popTime, dispatch_get_main_queue(), self.dismissBannerBlock);
+  }
 }
 
 - (void)presentInfobarModal {
+  DCHECK(self.started);
   ProceduralBlock modalPresentation = ^{
     DCHECK(self.infobarBannerState !=
            InfobarBannerPresentationState::Presented);
@@ -164,12 +195,6 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   }
 }
 
-- (void)dismissInfobarBannerAfterInteraction {
-  if (!self.modalTransitionDriver) {
-    [self dismissBannerWhenInteractionIsFinished];
-  }
-}
-
 - (void)dismissInfobarBannerAnimated:(BOOL)animated
                           completion:(void (^)())completion {
   [self dismissInfobarBanner:self animated:animated completion:completion];
@@ -180,12 +205,18 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 #pragma mark InfobarUIDelegate
 
 - (void)removeView {
-  [self dismissInfobarBanner:self animated:YES completion:nil];
+  // Do not animate the dismissal since the Coordinator might have been stopped
+  // and the animation can cause undefined behavior.
+  [self dismissInfobarBanner:self animated:NO completion:nil];
 }
 
 - (void)detachView {
-  [self dismissInfobarBanner:self animated:NO completion:nil];
-  [self dismissInfobarModal:self animated:NO completion:nil];
+  // Do not animate the dismissals since the Coordinator might have been stopped
+  // and the animation can cause undefined behavior.
+  if (self.bannerViewController)
+    [self dismissInfobarBanner:self animated:NO completion:nil];
+  if (self.modalViewController)
+    [self dismissInfobarModal:self animated:NO completion:nil];
   [self stop];
 }
 
@@ -193,8 +224,17 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 - (void)bannerInfobarButtonWasPressed:(id)sender {
   [self performInfobarAction];
-  [self.badgeDelegate infobarWasAccepted:self.infobarType];
-  [self dismissInfobarBanner:sender animated:YES completion:nil];
+  // The Infobar action might be async, and the badge should not change until
+  // the Infobar has been accepted.
+  if ([self isInfobarAccepted]) {
+    [self.badgeDelegate infobarWasAccepted:self.infobarType
+                               forWebState:self.webState];
+  }
+  // If the Banner Button will present the Modal then the banner shouldn't be
+  // dismissed.
+  if (![self infobarBannerActionWillPresentModal]) {
+    [self dismissInfobarBanner:sender animated:YES completion:nil];
+  }
 }
 
 - (void)presentInfobarModalFromBanner {
@@ -238,10 +278,18 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.infobarBannerState = InfobarBannerPresentationState::NotPresented;
   [self configureAccessibilityForBannerInViewController:self.baseViewController
                                              presenting:NO];
+  [self.badgeDelegate infobarBannerWasDismissed:self.infobarType
+                                    forWebState:self.webState];
   self.bannerTransitionDriver = nil;
   animatedFullscreenDisabler_ = nullptr;
   [self infobarWasDismissed];
-  [self.infobarContainer childCoordinatorBannerWasDismissed:self.infobarType];
+  if (!self.infobarActionInProgress) {
+    // Only inform InfobarContainer that the Infobar banner presentation is
+    // finished if it is not still executing the Infobar action. That way, the
+    // container won't start presenting a queued Infobar's banner when the
+    // current Infobar hasn't finished.
+    [self.infobarContainer childCoordinatorBannerFinishedPresented:self];
+  }
 }
 
 #pragma mark InfobarBannerPositioner
@@ -277,7 +325,10 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 - (void)modalInfobarButtonWasAccepted:(id)sender {
   [self performInfobarAction];
-  [self.badgeDelegate infobarWasAccepted:self.infobarType];
+  if ([self isInfobarAccepted]) {
+    [self.badgeDelegate infobarWasAccepted:self.infobarType
+                               forWebState:self.webState];
+  }
   [self dismissInfobarModal:sender animated:YES completion:nil];
 }
 
@@ -338,6 +389,16 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   return NO;
 }
 
+- (BOOL)isInfobarAccepted {
+  NOTREACHED() << "Subclass must implement.";
+  return NO;
+}
+
+- (BOOL)infobarBannerActionWillPresentModal {
+  NOTREACHED() << "Subclass must implement.";
+  return NO;
+}
+
 - (void)infobarBannerWasPresented {
   NOTREACHED() << "Subclass must implement.";
 }
@@ -346,8 +407,13 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   NOTREACHED() << "Subclass must implement.";
 }
 
-- (void)dismissBannerWhenInteractionIsFinished {
+- (void)dismissBannerIfReady {
   NOTREACHED() << "Subclass must implement.";
+}
+
+- (BOOL)infobarActionInProgress {
+  NOTREACHED() << "Subclass must implement.";
+  return NO;
 }
 
 - (void)performInfobarAction {
@@ -368,6 +434,15 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 }
 
 #pragma mark - Private
+
+// Dismisses the Infobar banner if it is ready. i.e. the user is no longer
+// interacting with it or the Infobar action is still in progress. The dismissal
+// will be animated.
+- (void)dismissInfobarBannerIfReady {
+  if (!self.modalTransitionDriver) {
+    [self dismissBannerIfReady];
+  }
+}
 
 // |presentingViewController| presents the InfobarModal using |driver|. If
 // Modal is presented successfully |completion| will be executed.

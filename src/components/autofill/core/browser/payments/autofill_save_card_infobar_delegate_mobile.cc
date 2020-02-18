@@ -10,9 +10,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -32,7 +32,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     bool upload,
     AutofillClient::SaveCreditCardOptions options,
     const CreditCard& card,
-    std::unique_ptr<base::DictionaryValue> legal_message,
+    const LegalMessageLines& legal_message_lines,
     AutofillClient::UploadSaveCardPromptCallback
         upload_save_card_prompt_callback,
     AutofillClient::LocalSaveCardPromptCallback local_save_card_prompt_callback,
@@ -51,21 +51,13 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       card_label_(card.NetworkAndLastFourDigits()),
       card_sub_label_(card.AbbreviatedExpirationDateForDisplay(false)),
       card_last_four_digits_(card.LastFourDigits()),
+      cardholder_name_(card.GetRawInfo(CREDIT_CARD_NAME_FULL)),
+      expiration_date_month_(card.Expiration2DigitMonthAsString()),
+      expiration_date_year_(card.Expiration4DigitYearAsString()),
+      legal_message_lines_(legal_message_lines),
       is_off_the_record_(is_off_the_record) {
   DCHECK_EQ(upload, !upload_save_card_prompt_callback_.is_null());
   DCHECK_EQ(upload, local_save_card_prompt_callback_.is_null());
-
-  if (legal_message) {
-    if (!LegalMessageLine::Parse(*legal_message, &legal_messages_,
-                                 /*escape_apostrophes=*/true)) {
-      AutofillMetrics::LogCreditCardInfoBarMetric(
-          AutofillMetrics::INFOBAR_NOT_SHOWN_INVALID_LEGAL_MESSAGE, upload_,
-          options_,
-          pref_service_->GetInteger(
-              prefs::kAutofillAcceptSaveCreditCardPromptState));
-      return;
-    }
-  }
 
   AutofillMetrics::LogCreditCardInfoBarMetric(
       AutofillMetrics::INFOBAR_SHOWN, upload_, options_,
@@ -84,12 +76,6 @@ AutofillSaveCardInfoBarDelegateMobile::
 void AutofillSaveCardInfoBarDelegateMobile::OnLegalMessageLinkClicked(
     GURL url) {
   infobar()->owner()->OpenURL(url, WindowOpenDisposition::NEW_FOREGROUND_TAB);
-}
-
-bool AutofillSaveCardInfoBarDelegateMobile::LegalMessagesParsedSuccessfully() {
-  // If we are uploading to the server, verify that legal lines have been parsed
-  // into |legal_messages_|.
-  return !upload_ || !legal_messages_.empty();
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::IsGooglePayBrandingEnabled() const {
@@ -136,10 +122,22 @@ AutofillSaveCardInfoBarDelegateMobile::GetIdentifier() const {
 
 bool AutofillSaveCardInfoBarDelegateMobile::ShouldExpire(
     const NavigationDetails& details) const {
+#if defined(OS_IOS)
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCardDismissOnNavigation)) {
+    // Expire the Infobar unless the navigation was triggered by the form that
+    // presented the Infobar, or the navigation is a redirect.
+    return !details.is_form_submission && !details.is_redirect;
+  } else {
+    // Use the default behavior used by Android.
+    return false;
+  }
+#else   // defined(OS_IOS)
   // The user has submitted a form, causing the page to navigate elsewhere. We
   // don't want the infobar to be expired at this point, because the user won't
   // get a chance to answer the question.
   return false;
+#endif  // defined(OS_IOS)
 }
 
 void AutofillSaveCardInfoBarDelegateMobile::InfoBarDismissed() {
@@ -154,11 +152,7 @@ bool AutofillSaveCardInfoBarDelegateMobile::Cancel() {
 }
 
 int AutofillSaveCardInfoBarDelegateMobile::GetButtons() const {
-  if (base::FeatureList::IsEnabled(features::kAutofillSaveCardShowNoThanks)) {
-    return BUTTON_OK | BUTTON_CANCEL;
-  } else {
-    return BUTTON_OK;
-  }
+  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(

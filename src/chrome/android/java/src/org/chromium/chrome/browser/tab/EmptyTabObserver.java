@@ -9,13 +9,11 @@ import android.view.ContextMenu;
 
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
-import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.net.NetError;
 
 /**
@@ -92,16 +90,10 @@ public class EmptyTabObserver implements TabObserver {
     public void onLoadStopped(Tab tab, boolean toDifferentDocument) { }
 
     @Override
-    public void onLoadProgressChanged(Tab tab, int progress) { }
+    public void onLoadProgressChanged(Tab tab, float progress) {}
 
     @Override
     public void onUpdateUrl(Tab tab, String url) { }
-
-    @Override
-    public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {}
-
-    @Override
-    public void onExitFullscreenMode(Tab tab) {}
 
     @Override
     public void onDidFailLoad(
@@ -147,13 +139,6 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void onNavigationEntriesDeleted(Tab tab) {}
-
-    @Override
-    public void onBrowserControlsConstraintsUpdated(
-            Tab tab, @BrowserControlsState int constraints) {}
-
-    @Override
-    public void didReloadLoFiImages(Tab tab) {}
 
     @Override
     public void onFindResultAvailable(FindNotificationDetails result) {}

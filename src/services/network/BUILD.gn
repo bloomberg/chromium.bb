@@ -14,12 +14,10 @@ jumbo_component("network_service") {
     "chunked_data_pipe_upload_data_stream.h",
     "conditional_cache_deletion_helper.cc",
     "conditional_cache_deletion_helper.h",
-    "content_security_policy.cc",
-    "content_security_policy.h",
+    "cookie_access_delegate_impl.cc",
+    "cookie_access_delegate_impl.h",
     "cookie_manager.cc",
     "cookie_manager.h",
-    "cookie_managers_shared.cc",
-    "cookie_managers_shared.h",
     "cookie_settings.cc",
     "cookie_settings.h",
     "cors/cors_url_loader.cc",
@@ -28,12 +26,12 @@ jumbo_component("network_service") {
     "cors/cors_url_loader_factory.h",
     "cors/preflight_controller.cc",
     "cors/preflight_controller.h",
+    "crash_keys.cc",
+    "crash_keys.h",
     "crl_set_distributor.cc",
     "crl_set_distributor.h",
     "cross_origin_read_blocking.cc",
     "cross_origin_read_blocking.h",
-    "cross_origin_resource_policy.cc",
-    "cross_origin_resource_policy.h",
     "data_pipe_element_reader.cc",
     "data_pipe_element_reader.h",
     "dns_config_change_manager.cc",
@@ -54,8 +52,6 @@ jumbo_component("network_service") {
     "http_server_properties_pref_delegate.h",
     "ignore_errors_cert_verifier.cc",
     "ignore_errors_cert_verifier.h",
-    "initiator_lock_compatibility.cc",
-    "initiator_lock_compatibility.h",
     "keepalive_statistics_recorder.cc",
     "keepalive_statistics_recorder.h",
     "loader_util.cc",
@@ -106,6 +102,8 @@ jumbo_component("network_service") {
     "p2p/socket_udp.h",
     "pending_callback_chain.cc",
     "pending_callback_chain.h",
+    "proxy_auto_config_library.cc",
+    "proxy_auto_config_library.h",
     "proxy_config_service_mojo.cc",
     "proxy_config_service_mojo.h",
     "proxy_lookup_request.cc",
@@ -235,15 +233,12 @@ jumbo_component("network_service") {
     "//net",
     "//net:extras",
     "//services/network/public/cpp",
+    "//services/network/public/cpp/cert_verifier",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/service_manager/sandbox:sandbox",
-    "//third_party/webrtc/media:rtc_media_base",
-    "//third_party/webrtc/rtc_base",
-    "//third_party/webrtc/rtc_base:timeutils",
-    "//third_party/webrtc_overrides",
-    "//third_party/webrtc_overrides:init_webrtc",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//url",
   ]
 
@@ -296,21 +291,18 @@ source_set("tests") {
 
   sources = [
     "chunked_data_pipe_upload_data_stream_unittest.cc",
-    "content_security_policy_unittest.cc",
     "cookie_manager_unittest.cc",
     "cookie_settings_unittest.cc",
     "cors/cors_url_loader_factory_unittest.cc",
     "cors/cors_url_loader_unittest.cc",
     "cors/preflight_controller_unittest.cc",
     "cross_origin_read_blocking_unittest.cc",
-    "cross_origin_resource_policy_unittest.cc",
     "data_pipe_element_reader_unittest.cc",
     "dns_config_change_manager_unittest.cc",
     "host_resolver_unittest.cc",
     "http_cache_data_counter_unittest.cc",
     "http_cache_data_remover_unittest.cc",
     "ignore_errors_cert_verifier_unittest.cc",
-    "initiator_lock_compatibility_unittest.cc",
     "keepalive_statistics_recorder_unittest.cc",
     "mojo_host_resolver_impl_unittest.cc",
     "network_change_manager_unittest.cc",
@@ -329,6 +321,7 @@ source_set("tests") {
     "p2p/socket_test_utils.h",
     "p2p/socket_udp_unittest.cc",
     "pending_callback_chain_unittest.cc",
+    "proxy_auto_config_library_unittest.cc",
     "proxy_config_service_mojo_unittest.cc",
     "proxy_resolving_client_socket_unittest.cc",
     "proxy_resolving_socket_mojo_unittest.cc",
@@ -359,6 +352,10 @@ source_set("tests") {
   if (!is_ios) {
     sources += [
       "proxy_resolver_factory_mojo_unittest.cc",
+      "proxy_service_mojo_unittest.cc",
+      "test_mojo_proxy_resolver_factory.cc",
+      "test_mojo_proxy_resolver_factory.h",
+      "url_request_context_builder_mojo_unittest.cc",
       "websocket_throttler_unittest.cc",
     ]
 
@@ -410,6 +407,10 @@ source_set("tests") {
 
   if (trial_comparison_cert_verifier_supported) {
     sources += [ "trial_comparison_cert_verifier_mojo_unittest.cc" ]
+  }
+
+  if (!is_ios) {
+    deps += [ "//services/proxy_resolver:lib" ]
   }
 }
 
@@ -475,6 +476,7 @@ fuzzer_test("network_content_security_policy_fuzzer") {
     "//base",
     "//net",
     "//services/network:network_service",
+    "//services/network/public/cpp",
     "//services/network/public/mojom",
   ]
   dict = "//testing/libfuzzer/fuzzers/dicts/content_security_policy.dict"

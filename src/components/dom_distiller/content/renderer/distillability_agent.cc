@@ -14,15 +14,14 @@
 #include "components/dom_distiller/core/page_features.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "content/public/renderer/render_frame.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_distillability.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace dom_distiller {
-
-using namespace blink;
 
 namespace {
 
@@ -77,7 +76,7 @@ bool IsBlacklisted(const GURL& url) {
 }
 
 void DumpDistillability(content::RenderFrame* render_frame,
-                        const WebDistillabilityFeatures& features,
+                        const blink::WebDistillabilityFeatures& features,
                         const std::vector<double>& derived,
                         double score,
                         bool distillable,
@@ -124,7 +123,7 @@ void DumpDistillability(content::RenderFrame* render_frame,
                                     msg);
 }
 
-bool IsDistillablePageAdaboost(WebDocument& doc,
+bool IsDistillablePageAdaboost(blink::WebDocument& doc,
                                const DistillablePageDetector* detector,
                                const DistillablePageDetector* long_page,
                                bool is_last,
@@ -135,7 +134,7 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
   if (!parsed_url.is_valid()) {
     return false;
   }
-  WebDistillabilityFeatures features = doc.DistillabilityFeatures();
+  blink::WebDistillabilityFeatures features = doc.DistillabilityFeatures();
   is_mobile_friendly = features.is_mobile_friendly;
   std::vector<double> derived = CalculateDerivedFeatures(
       features.open_graph, parsed_url, features.element_count,
@@ -208,7 +207,7 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
   return distillable && long_article;
 }
 
-bool IsDistillablePage(WebDocument& doc,
+bool IsDistillablePage(blink::WebDocument& doc,
                        bool is_last,
                        bool& is_mobile_friendly,
                        content::RenderFrame* render_frame,
@@ -236,9 +235,10 @@ DistillabilityAgent::DistillabilityAgent(content::RenderFrame* render_frame,
                                          bool dump_info)
     : RenderFrameObserver(render_frame), dump_info_(dump_info) {}
 
-void DistillabilityAgent::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
-  if (layout_type != WebMeaningfulLayout::kFinishedParsing &&
-      layout_type != WebMeaningfulLayout::kFinishedLoading) {
+void DistillabilityAgent::DidMeaningfulLayout(
+    blink::WebMeaningfulLayout layout_type) {
+  if (layout_type != blink::WebMeaningfulLayout::kFinishedParsing &&
+      layout_type != blink::WebMeaningfulLayout::kFinishedLoading) {
     return;
   }
 
@@ -246,21 +246,21 @@ void DistillabilityAgent::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
   if (!render_frame()->IsMainFrame())
     return;
   DCHECK(render_frame()->GetWebFrame());
-  WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
+  blink::WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
   if (doc.IsNull() || doc.Body().IsNull())
     return;
   if (!url_utils::IsUrlDistillable(doc.Url()))
     return;
 
-  bool is_loaded = layout_type == WebMeaningfulLayout::kFinishedLoading;
+  bool is_loaded = layout_type == blink::WebMeaningfulLayout::kFinishedLoading;
   if (!NeedToUpdate(is_loaded))
     return;
 
   bool is_last = IsLast(is_loaded);
   // Connect to Mojo service on browser to notify page distillability.
-  mojom::DistillabilityServicePtr distillability_service;
-  render_frame()->GetRemoteInterfaces()->GetInterface(&distillability_service);
-  DCHECK(distillability_service);
+  mojo::Remote<mojom::DistillabilityService> distillability_service;
+  render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+      distillability_service.BindNewPipeAndPassReceiver());
   if (!distillability_service.is_bound())
     return;
   bool is_mobile_friendly = false;

@@ -188,8 +188,11 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     CallDone();
   }
 
-  void SetSuggestionAvailability(bool value) override {
-    suggestions_available_ = value;
+  void SetSuggestionAvailability(const mojom::AutofillState state) override {
+    if (state == mojom::AutofillState::kAutofillAvailable)
+      suggestions_available_ = true;
+    else if (state == mojom::AutofillState::kNoSuggestions)
+      suggestions_available_ = false;
     CallDone();
   }
 
@@ -203,9 +206,6 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   void PreviewPasswordSuggestion(const base::string16& username,
                                  const base::string16& password) override {}
-
-  void ShowInitialPasswordAccountSuggestions(
-      const PasswordFormFillData& form_data) override {}
 
   void SetUserGestureRequired(bool required) override {}
 

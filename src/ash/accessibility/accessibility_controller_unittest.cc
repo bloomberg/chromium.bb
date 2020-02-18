@@ -999,6 +999,8 @@ TEST_F(AccessibilityControllerTest, SelectToSpeakStateChanges) {
   EXPECT_EQ(controller->GetSelectToSpeakState(),
             ash::SelectToSpeakState::kSelectToSpeakStateSpeaking);
   EXPECT_EQ(observer.status_changed_count_, 2);
+
+  controller->RemoveObserver(&observer);
 }
 
 namespace {
@@ -1039,7 +1041,7 @@ class AccessibilityControllerSigninTest
 
 }  // namespace
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AccessibilityControllerSigninTest,
                          ::testing::Values(TestUserLoginType::kNewUser,
                                            TestUserLoginType::kGuest,

@@ -116,7 +116,7 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
 };
 
 // Test that lifecycleunits are sorted with high activation score first order.
-TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithTabRanker) {
+TEST_F(TabActivityWatcherTest, LogAndMaybeSortLifecycleUnitWithTabRanker) {
   SetParams({{"scorer_type", "0"}});
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
@@ -131,7 +131,7 @@ TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithTabRanker) {
   std::vector<LifecycleUnit*> lifecycleunits = {tab0, tab2, tab3, tab1};
 
   // Sort and check the new order.
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   EXPECT_EQ(lifecycleunits[0], tab3);
   EXPECT_EQ(lifecycleunits[1], tab2);
@@ -163,7 +163,7 @@ TEST_F(TabActivityWatcherTest, SortLifecycleUnitWithFrecencyScorer) {
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 2);
   std::vector<LifecycleUnit*> lifecycleunits = {tab0, tab1, tab2, tab3};
   // Sort and check the new order.
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   // tab2 is the first one because it is foregrounded.
   EXPECT_EQ(lifecycleunits[0], tab2);
@@ -215,8 +215,9 @@ TEST_F(TabActivityWatcherTest, GetFrecencyScore) {
 }
 
 // Test that lifecycleunits are correctly logged inside
-// SortLifecycleUnitWithTabRanker.
-TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
+// LogAndMaybeSortLifecycleUnitWithTabRanker.
+TEST_F(TabActivityWatcherTest,
+       LogInsideLogAndMaybeSortLifecycleUnitWithTabRanker) {
   SetParams({{"disable_background_log_with_TabRanker", "true"}});
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
@@ -229,9 +230,9 @@ TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
   LifecycleUnit* tab2 = AddNewTab(tab_strip_model, 2);
   std::vector<LifecycleUnit*> lifecycleunits = {tab0};
 
-  // Call SortLifecycleUnitWithTabRanker on tab0 should log the TabMetrics for
-  // tab0.
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  // Call LogAndMaybeSortLifecycleUnitWithTabRanker on tab0 should log the
+  // TabMetrics for tab0.
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   {
     SCOPED_TRACE("");
@@ -243,9 +244,9 @@ TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
         });
   }
 
-  // Call SortLifecycleUnitWithTabRanker on tab0 should log the TabMetrics for
-  // tab0.
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  // Call LogAndMaybeSortLifecycleUnitWithTabRanker on tab0 should log the
+  // TabMetrics for tab0.
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   {
     SCOPED_TRACE("");
@@ -257,10 +258,10 @@ TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
         });
   }
 
-  // Call SortLifecycleUnitWithTabRanker on tab2 should not log the TabMetrics
-  // for tab2 because it is foregrounded.
+  // Call LogAndMaybeSortLifecycleUnitWithTabRanker on tab2 should not log the
+  // TabMetrics for tab2 because it is foregrounded.
   lifecycleunits = {tab2};
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   {
     SCOPED_TRACE("");
@@ -268,10 +269,10 @@ TEST_F(TabActivityWatcherTest, LogInsideSortLifecycleUnitWithTabRanker) {
               0);
   }
 
-  // Call SortLifecycleUnitWithTabRanker on all three tabs should log two
-  // TabMetrics events for tab0 and tab1.
+  // Call LogAndMaybeSortLifecycleUnitWithTabRanker on all three tabs should log
+  // two TabMetrics events for tab0 and tab1.
   lifecycleunits = {tab0, tab1, tab2};
-  TabActivityWatcher::GetInstance()->SortLifecycleUnitWithTabRanker(
+  TabActivityWatcher::GetInstance()->LogAndMaybeSortLifecycleUnitWithTabRanker(
       &lifecycleunits);
   {
     SCOPED_TRACE("");
@@ -849,7 +850,6 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
         kEntryName, kTestUrls[2],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 1},
-            {ForegroundedOrClosed::kMRUIndexName, 1},
         });
   }
   AdvanceClock();
@@ -864,7 +864,6 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
         kEntryName, kTestUrls[1],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 1},
-            {ForegroundedOrClosed::kMRUIndexName, 2},
         });
   }
   AdvanceClock();
@@ -880,7 +879,6 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
         kEntryName, kTestUrls[2],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 0},
-            {ForegroundedOrClosed::kMRUIndexName, 1},
         });
 
     // The leftmost tab was in the background and was closed.
@@ -888,232 +886,10 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
         kEntryName, kTestUrls[0],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 0},
-            {ForegroundedOrClosed::kMRUIndexName, 2},
         });
 
     // No event is logged for the middle tab, which was in the foreground.
     EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
-  }
-}
-
-// Tests the MRUIndex value for ForegroundedOrClosed events.
-TEST_F(ForegroundedOrClosedTest, MRUIndex) {
-  Browser::CreateParams params(profile(), true);
-  std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
-
-  TabStripModel* tab_strip_model = browser->tab_strip_model();
-  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[0]));
-  tab_strip_model->ActivateTabAt(0);
-  AdvanceClock();
-
-  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[1]));
-  AdvanceClock();
-  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[2]));
-  AdvanceClock();
-  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[3]));
-  AdvanceClock();
-
-  // Tabs in MRU order: [0, 3, 2, 1]
-  // The 0th tab is foregrounded. The other tabs are ordered by most recently
-  // created since they haven't ever been foregrounded.
-
-  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 2);
-  {
-    SCOPED_TRACE("");
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[2],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 1},
-            {ForegroundedOrClosed::kMRUIndexName, 2},
-        });
-  }
-  AdvanceClock();
-  // New MRU order: [2, 0, 3, 1]
-
-  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 0);
-  {
-    SCOPED_TRACE("");
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[0],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 1},
-            {ForegroundedOrClosed::kMRUIndexName, 1},
-        });
-  }
-  AdvanceClock();
-  // New MRU order: [0, 2, 3, 1]
-
-  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
-  {
-    SCOPED_TRACE("");
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[1],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 1},
-            {ForegroundedOrClosed::kMRUIndexName, 3},
-        });
-  }
-  AdvanceClock();
-  // New MRU order: [1, 0, 2, 3]
-
-  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 0);
-  {
-    SCOPED_TRACE("");
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[0],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 1},
-            {ForegroundedOrClosed::kMRUIndexName, 1},
-        });
-  }
-  AdvanceClock();
-  // New MRU order: [0, 1, 2, 3]
-
-  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 3);
-  {
-    SCOPED_TRACE("");
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[3],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 1},
-            {ForegroundedOrClosed::kMRUIndexName, 3},
-        });
-  }
-  AdvanceClock();
-  // New MRU order: [3, 0, 1, 2]
-
-  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
-  {
-    SCOPED_TRACE("");
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[1],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 1},
-            {ForegroundedOrClosed::kMRUIndexName, 2},
-        });
-  }
-  AdvanceClock();
-  // New MRU order: [1, 3, 0, 2]
-
-  // Close a background tab.
-  tab_strip_model->CloseWebContentsAt(3, TabStripModel::CLOSE_NONE);
-  {
-    SCOPED_TRACE("");
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[3],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 0},
-            {ForegroundedOrClosed::kMRUIndexName, 1},
-        });
-  }
-  AdvanceClock();
-  // New MRU order: [1, 0, 2]
-
-  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 2);
-  {
-    SCOPED_TRACE("");
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[2],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 1},
-            {ForegroundedOrClosed::kMRUIndexName, 2},
-        });
-  }
-  AdvanceClock();
-  // New MRU order: [2, 1, 0]
-
-  // Close a foreground tab.
-  tab_strip_model->CloseWebContentsAt(2, TabStripModel::CLOSE_NONE);
-  // This activates the next tab in the tabstrip. Since this is a
-  // TestWebContents, we must manually call WasShown().
-  tab_strip_model->GetWebContentsAt(1)->WasShown();
-  {
-    SCOPED_TRACE("");
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[1],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 1},
-            {ForegroundedOrClosed::kMRUIndexName, 0},
-        });
-  }
-  AdvanceClock();
-  // New MRU order: [1, 0]
-
-  tab_strip_model->CloseAllTabs();
-  {
-    SCOPED_TRACE("");
-    // The rightmost tab was in the foreground, so only the leftmost tab is
-    // logged.
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[0],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 0},
-            {ForegroundedOrClosed::kMRUIndexName, 1},
-        });
-  }
-}
-
-// Tests the MRUIndex for ForegroundedOrClosed events on multiple browsers.
-TEST_F(ForegroundedOrClosedTest, MRUIndexMultipleBrowser) {
-  Browser::CreateParams params(profile(), true);
-  // Create the first browser.
-  std::unique_ptr<Browser> browser =
-      CreateBrowserWithTestWindowForParams(&params);
-
-  TabStripModel* tab_strip_model = browser->tab_strip_model();
-  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[0]));
-  tab_strip_model->ActivateTabAt(0);
-  AdvanceClock();
-
-  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[1]));
-  AdvanceClock();
-
-  // Create the second browser.
-  std::unique_ptr<Browser> browser2 =
-      CreateBrowserWithTestWindowForParams(&params);
-  TabStripModel* tab_strip_model2 = browser2->tab_strip_model();
-  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model2,
-                                                    GURL(kTestUrls[2]));
-  tab_strip_model2->ActivateTabAt(0);
-  AdvanceClock();
-
-  tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model2,
-                                                    GURL(kTestUrls[3]));
-  AdvanceClock();
-
-  // Tabs in MRU order: [kTestUrls[2], kTestUrls[0], kTestUrls[3], kTestUrls[1]]
-
-  tab_strip_model->CloseAllTabs();
-  {
-    SCOPED_TRACE("");
-    // The kTestUrls[0] was in the foreground, so only kTestUrls[1] is
-    // logged.
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[1],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 0},
-            {ForegroundedOrClosed::kMRUIndexName, 3},
-        });
-  }
-
-  tab_strip_model2->CloseAllTabs();
-  {
-    SCOPED_TRACE("");
-    // The kTestUrls[2] was in the foreground, so only kTestUrls[3] is
-    // logged.
-    ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[3],
-        {
-            {ForegroundedOrClosed::kIsForegroundedName, 0},
-            {ForegroundedOrClosed::kMRUIndexName, 1},
-        });
   }
 }
 

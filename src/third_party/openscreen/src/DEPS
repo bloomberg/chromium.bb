@@ -37,36 +37,14 @@ deps = {
 
     'buildtools': {
         'url': Var('chromium_git')+ '/chromium/src/buildtools' +
-            '@' + 'd5c58b84d50d256968271db459cd29b22bff1ba2',
+            '@' + '140e4d7c45ffb55ce5dc4d11a0c3938363cd8257',
         'condition': 'not build_with_chromium',
-    },
-
-    'buildtools/linux64': {
-        'packages': [
-            {
-                'package': 'gn/gn/linux-amd64',
-                'version': Var('gn_version'),
-            },
-        ],
-        'dep_type': 'cipd',
-        'condition': 'checkout_linux',
-    },
-
-    'buildtools/mac': {
-        'packages': [
-            {
-                'package': 'gn/gn/mac-amd64',
-                'version': Var('gn_version'),
-            },
-        ],
-        'dep_type': 'cipd',
-        'condition': 'checkout_mac',
     },
 
     'third_party/protobuf/src': {
         'url': Var('chromium_git') +
             '/external/github.com/protocolbuffers/protobuf.git' +
-            '@' + '09745575a923640154bcf307fba8aedff47f240a', # version 3.8.0
+            '@' + 'd09d649aea36f02c03f8396ba39a8d4db8a607e4', # version 3.10.1
         'condition': 'not build_with_chromium',
     },
 
@@ -80,14 +58,14 @@ deps = {
     'third_party/jsoncpp/src': {
         'url': Var('chromium_git') +
             '/external/github.com/open-source-parsers/jsoncpp.git' +
-            '@' + '3c32dca89214c03b107cc9d1c468000cff3f8127', # version 1.9.0
+            '@' + '2eb20a938c454411c1d416caeeb2a6511daab5cb', # version 1.9.0
         'condition': 'not build_with_chromium',
     },
 
     'third_party/googletest/src': {
         'url': Var('chromium_git') +
             '/external/github.com/google/googletest.git' +
-            '@' + 'dfa853b63d17c787914b663b50c2095a0c5b706e',
+            '@' + '8697709e0308af4cd5b09dc108480804e5447cf0',
         'condition': 'not build_with_chromium',
     },
 
@@ -105,29 +83,33 @@ deps = {
 
     'third_party/chromium_quic/src': {
         'url': Var('chromium_git') + '/openscreen/quic.git' +
-            '@' + 'd60d1b9e6f24553900f79043ff127a9a649281c4',
+            '@' + 'b73bd98ac9eaedf01a732b1933f97112cf247d93',
         'condition': 'not build_with_chromium',
     },
 
     'third_party/tinycbor/src':
         Var('chromium_git') + '/external/github.com/intel/tinycbor.git' +
-        '@' + 'bfc40dcf909f1998d7760c2bc0e1409979d3c8cb',
+        '@' + '755f9ef932f9830a63a712fd2ac971d838b131f1',
 
     'third_party/abseil/src': {
         'url': Var('chromium_git') +
             '/external/github.com/abseil/abseil-cpp.git' +
-            '@' + '5eea0f713c14ac17788b83e496f11903f8e2bbb0',
+            '@' + '20de2db748ca0471cfb61cb53e813dd12938c12b',
         'condition': 'not build_with_chromium',
     },
 }
 
 recursedeps = [
     'third_party/chromium_quic/src',
+    'buildtools',
 ]
 
 include_rules = [
+    '+build/config/features.h',
     '+util',
-    '+platform',
+    '+platform/api',
+    '+platform/base',
+    '+platform/test',
     '+third_party',
 
     # Don't include abseil from the root so the path can change via include_dirs
@@ -143,6 +125,7 @@ include_rules = [
     '+absl/strings/numbers.h',
     '+absl/strings/str_cat.h',
     '+absl/strings/str_join.h',
+    '+absl/strings/str_split.h',
     '+absl/strings/string_view.h',
     '+absl/strings/substitute.h',
     '+absl/types/optional.h',

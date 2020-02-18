@@ -19,6 +19,7 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/core_extensions_browser_api_provider.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extensions_browser_interface_binders.h"
 #include "extensions/browser/mojo/interface_registration.h"
 #include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/updater/null_extension_cache.h"
@@ -129,11 +130,11 @@ base::FilePath ShellExtensionsBrowserClient::GetBundleResourcePath(
 
 void ShellExtensionsBrowserClient::LoadResourceFromResourceBundle(
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderRequest loader,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader,
     const base::FilePath& resource_relative_path,
     int resource_id,
     const std::string& content_security_policy,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     bool send_cors_header) {
   NOTREACHED() << "Load resources from bundles not supported.";
 }
@@ -219,6 +220,13 @@ void ShellExtensionsBrowserClient::RegisterExtensionInterfaces(
     content::RenderFrameHost* render_frame_host,
     const Extension* extension) const {
   RegisterInterfacesForExtension(registry, render_frame_host, extension);
+}
+
+void ShellExtensionsBrowserClient::RegisterBrowserInterfaceBindersForFrame(
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
+    content::RenderFrameHost* render_frame_host,
+    const Extension* extension) const {
+  PopulateExtensionFrameBinders(map, render_frame_host, extension);
 }
 
 std::unique_ptr<RuntimeAPIDelegate>

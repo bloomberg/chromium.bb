@@ -18,16 +18,10 @@ if (current_toolchain == host_toolchain) {
       "sema.h",
     ]
 
-    if (build_with_chromium) {
-      sources += [ "stubs.cc" ]
-    }
-
     deps = [
-      # CDDL always uses the default logger, even when embedded.
-      "../../platform",
-      "../../platform:default_logger",
       "../../third_party/abseil",
     ]
-    configs += [ "../../build:allow_build_from_embedder" ]
+
+    configs += [ "../../build:openscreen_include_dirs" ]
   }
 }

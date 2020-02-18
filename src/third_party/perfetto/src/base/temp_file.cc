@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#include "perfetto/base/build_config.h"
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+
 #include "perfetto/ext/base/temp_file.h"
 
 #include <stdlib.h>
@@ -41,7 +44,9 @@ TempFile TempFile::Create() {
   }
   temp_file.path_.append("/perfetto-XXXXXXXX");
   temp_file.fd_.reset(mkstemp(&temp_file.path_[0]));
-  PERFETTO_CHECK(temp_file.fd_);
+  if (PERFETTO_UNLIKELY(!temp_file.fd_)) {
+    PERFETTO_FATAL("Could not create temp file %s", temp_file.path_.c_str());
+  }
   return temp_file;
 }
 
@@ -90,3 +95,6 @@ TempDir::~TempDir() {
 
 }  // namespace base
 }  // namespace perfetto
+
+
+#endif  // !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)

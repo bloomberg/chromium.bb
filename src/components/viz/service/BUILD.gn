@@ -6,6 +6,7 @@ import("//build/config/ui.gni")
 import("//components/viz/viz.gni")
 import("//gpu/vulkan/features.gni")
 import("//media/gpu/args.gni")
+import("//skia/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 config("viz_service_implementation") {
@@ -17,14 +18,10 @@ viz_component("service") {
     "display/bsp_tree.h",
     "display/bsp_walk_action.cc",
     "display/bsp_walk_action.h",
-    "display/ca_layer_overlay.cc",
-    "display/ca_layer_overlay.h",
     "display/color_lut_cache.cc",
     "display/color_lut_cache.h",
     "display/damage_frame_annotator.cc",
     "display/damage_frame_annotator.h",
-    "display/dc_layer_overlay.cc",
-    "display/dc_layer_overlay.h",
     "display/direct_renderer.cc",
     "display/direct_renderer.h",
     "display/display.cc",
@@ -59,8 +56,12 @@ viz_component("service") {
     "display/output_surface_frame.h",
     "display/overlay_candidate.cc",
     "display/overlay_candidate.h",
+    "display/overlay_candidate_list.cc",
+    "display/overlay_candidate_list.h",
     "display/overlay_candidate_validator.cc",
     "display/overlay_candidate_validator.h",
+    "display/overlay_candidate_validator_strategy.cc",
+    "display/overlay_candidate_validator_strategy.h",
     "display/overlay_processor.cc",
     "display/overlay_processor.h",
     "display/overlay_strategy_fullscreen.cc",
@@ -109,6 +110,8 @@ viz_component("service") {
     "display_embedder/gl_output_surface.h",
     "display_embedder/gl_output_surface_buffer_queue.cc",
     "display_embedder/gl_output_surface_buffer_queue.h",
+    "display_embedder/gl_output_surface_chromeos.cc",
+    "display_embedder/gl_output_surface_chromeos.h",
     "display_embedder/gl_output_surface_offscreen.cc",
     "display_embedder/gl_output_surface_offscreen.h",
     "display_embedder/in_process_gpu_memory_buffer_manager.cc",
@@ -124,6 +127,8 @@ viz_component("service") {
     "display_embedder/viz_process_context_provider.h",
     "display_embedder/vsync_parameter_listener.cc",
     "display_embedder/vsync_parameter_listener.h",
+    "frame_sinks/begin_frame_tracker.cc",
+    "frame_sinks/begin_frame_tracker.h",
     "frame_sinks/compositor_frame_sink_impl.cc",
     "frame_sinks/compositor_frame_sink_impl.h",
     "frame_sinks/compositor_frame_sink_support.cc",
@@ -205,6 +210,7 @@ viz_component("service") {
     "//media/capture:capture_lib",
     "//media/mojo/services",
     "//services/viz/privileged/mojom",
+    "//skia:skcms",
     "//ui/display/types",
   ]
 
@@ -234,8 +240,15 @@ viz_component("service") {
     deps += [ "//components/arc/video_accelerator" ]
   }
 
+  if (is_chromecast) {
+    defines += [ "IS_CHROMECAST" ]
+    deps += [ "//chromecast/media/service/mojom" ]
+  }
+
   if (is_mac) {
     sources += [
+      "display/ca_layer_overlay.cc",
+      "display/ca_layer_overlay.h",
       "display_embedder/overlay_candidate_validator_mac.cc",
       "display_embedder/overlay_candidate_validator_mac.h",
       "display_embedder/software_output_device_mac.cc",
@@ -280,6 +293,8 @@ viz_component("service") {
 
   if (is_win) {
     sources += [
+      "display/dc_layer_overlay.cc",
+      "display/dc_layer_overlay.h",
       "display_embedder/output_device_backing.cc",
       "display_embedder/output_device_backing.h",
       "display_embedder/overlay_candidate_validator_win.cc",
@@ -382,6 +397,21 @@ viz_source_set("gpu_service_dependencies") {
     configs = [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
   }
+
+  if (skia_use_dawn) {
+    sources += [
+      "display_embedder/skia_output_device_dawn.cc",
+      "display_embedder/skia_output_device_dawn.h",
+    ]
+
+    public_deps += [ "//third_party/dawn/src/dawn:dawn_headers" ]
+
+    deps += [
+      "//third_party/dawn:libdawn_native",
+      "//third_party/dawn:libdawn_native_sources",
+      "//third_party/dawn/src/dawn:libdawn",
+    ]
+  }
 }
 
 viz_source_set("unit_tests") {
@@ -400,7 +430,6 @@ viz_source_set("unit_tests") {
     "display/gl_renderer_copier_unittest.cc",
     "display/gl_renderer_unittest.cc",
     "display/layer_quad_unittest.cc",
-    "display/overlay_unittest.cc",
     "display/renderer_pixeltest.cc",
     "display/shader_unittest.cc",
     "display/software_renderer_unittest.cc",
@@ -413,6 +442,7 @@ viz_source_set("unit_tests") {
     "display_embedder/skia_output_surface_impl_unittest.cc",
     "display_embedder/software_output_surface_unittest.cc",
     "display_embedder/vsync_parameter_listener_unittest.cc",
+    "frame_sinks/begin_frame_tracker_unittest.cc",
     "frame_sinks/compositor_frame_sink_support_unittest.cc",
     "frame_sinks/direct_layer_tree_frame_sink_unittest.cc",
     "frame_sinks/frame_sink_manager_unittest.cc",
@@ -464,7 +494,10 @@ viz_source_set("unit_tests") {
   ]
 
   if (use_ozone) {
-    sources += [ "display_embedder/software_output_device_ozone_unittest.cc" ]
+    sources += [
+      "display/overlay_unittest.cc",
+      "display_embedder/software_output_device_ozone_unittest.cc",
+    ]
     deps += [
       "//ui/compositor:test_support",
       "//ui/ozone",
@@ -472,16 +505,23 @@ viz_source_set("unit_tests") {
   }
 
   if (is_mac) {
-    sources += [ "display_embedder/software_output_device_mac_unittest.mm" ]
+    sources += [
+      "display/overlay_ca_unittest.cc",
+      "display_embedder/software_output_device_mac_unittest.mm",
+    ]
     libs = [ "IOSurface.framework" ]
   }
 
   if (is_win) {
-    sources += [ "display_embedder/output_device_backing_unittest.cc" ]
+    sources += [
+      "display/overlay_dc_unittest.cc",
+      "display_embedder/output_device_backing_unittest.cc",
+    ]
   }
 
   if (is_android) {
     sources += [
+      "display/overlay_unittest.cc",
       "display_embedder/overlay_candidate_validator_surface_control_unittest.cc",
       "frame_sinks/external_begin_frame_source_android_unittest.cc",
     ]
@@ -546,8 +586,10 @@ if (is_android) {
   android_library("service_java") {
     deps = [
       "//base:base_java",
+      "//base:jni_java",
       "//ui/android:ui_full_java",
     ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
     java_files = [
       "java/src/org/chromium/components/viz/service/gl/ThrowUncaughtException.java",
       "java/src/org/chromium/components/viz/service/frame_sinks/ExternalBeginFrameSourceAndroid.java",

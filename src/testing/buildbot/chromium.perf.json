@@ -125,8 +125,8 @@
           "-v",
           "--browser=android-chromium",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=android_nexus5_perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -172,8 +172,8 @@
           "-v",
           "--browser=android-webview",
           "--upload-results",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
           "--test-shard-map-filename=android_nexus5x_webview_perf_map.json",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_webview_test_suite",
@@ -219,8 +219,8 @@
           "-v",
           "--browser=android-webview",
           "--upload-results",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
           "--test-shard-map-filename=android_nexus6_webview_perf_map.json",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_webview_test_suite",
@@ -278,9 +278,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -315,9 +316,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -352,9 +354,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -391,9 +394,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -430,9 +434,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -455,8 +460,8 @@
           "-v",
           "--browser=release_x64",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=win_7_nvidia_gpu_perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -471,9 +476,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -512,9 +518,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0532",
+              "gpu": "102b:0532-6.1.7600.16385",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R210 II (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -549,9 +556,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0532",
+              "gpu": "102b:0532-6.1.7600.16385",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R210 II (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -586,9 +594,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0532",
+              "gpu": "102b:0532-6.1.7600.16385",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R210 II (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -611,8 +620,8 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--run-ref-build",
-          "--test-shard-map-filename=win_7_perf_map.json"
+          "--test-shard-map-filename=win_7_perf_map.json",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -626,9 +635,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0532",
+              "gpu": "102b:0532-6.1.7600.16385",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R210 II (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -856,8 +866,8 @@
           "-v",
           "--browser=android-chrome",
           "--upload-results",
-          "--run-ref-build",
-          "--test-shard-map-filename=android-go-perf_map.json"
+          "--test-shard-map-filename=android-go-perf_map.json",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -871,7 +881,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "O",
+              "device_os": "OMB1.180119.001",
               "device_os_flavor": "google",
               "device_type": "gobo",
               "os": "Android",
@@ -902,8 +912,8 @@
           "-v",
           "--browser=android-webview-google",
           "--upload-results",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
-          "--test-shard-map-filename=android-go_webview-perf_map.json"
+          "--test-shard-map-filename=android-go_webview-perf_map.json",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
@@ -917,7 +927,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "O",
+              "device_os": "OMB1.180119.001",
               "device_os_flavor": "google",
               "device_type": "gobo",
               "os": "Android",
@@ -1183,8 +1193,8 @@
           "-v",
           "--browser=android-chromium",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=android-nexus5x-perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -1210,7 +1220,7 @@
           "hard_timeout": 43200,
           "ignore_task_failure": false,
           "io_timeout": 21600,
-          "shards": 16
+          "shards": 10
         },
         "trigger_script": {
           "args": [
@@ -1230,8 +1240,8 @@
           "-v",
           "--browser=android-chrome",
           "--upload-results",
-          "--run-ref-build",
-          "--test-shard-map-filename=android-pixel2-perf_map.json"
+          "--test-shard-map-filename=android-pixel2-perf_map.json",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -1245,7 +1255,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "O",
+              "device_os": "OPM1.171019.021",
               "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",
@@ -1269,6 +1279,53 @@
       }
     ]
   },
+  "android-pixel2_weblayer-perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=android-weblayer",
+          "--upload-results",
+          "--test-shard-map-filename=android-pixel2_weblayer-perf_map.json",
+          "--webview-embedder-apk=../../out/Release/apks/WebLayerShell.apk",
+          "--webview-embedder-apk=../../out/Release/apks/WebLayerSupport.apk"
+        ],
+        "isolate_name": "performance_weblayer_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_weblayer_test_suite",
+        "override_compile_targets": [
+          "performance_weblayer_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "OPM1.171019.021",
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android",
+              "pool": "chrome.tests.perf-weblayer"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 43200,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "shards": 4
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
   "android-pixel2_webview-perf": {
     "isolated_scripts": [
       {
@@ -1276,8 +1333,8 @@
           "-v",
           "--browser=android-webview-google",
           "--upload-results",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
-          "--test-shard-map-filename=android-pixel2_webview-perf_map.json"
+          "--test-shard-map-filename=android-pixel2_webview-perf_map.json",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
@@ -1291,7 +1348,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "O",
+              "device_os": "OPM1.171019.021",
               "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",
@@ -1302,7 +1359,7 @@
           "hard_timeout": 43200,
           "ignore_task_failure": false,
           "io_timeout": 21600,
-          "shards": 28
+          "shards": 21
         },
         "trigger_script": {
           "args": [
@@ -1516,9 +1573,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu-14.04",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R230 (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -1553,9 +1611,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu-14.04",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R230 (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -1590,9 +1649,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu-14.04",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R230 (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -1627,9 +1687,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu-14.04",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R230 (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -1664,9 +1725,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu-14.04",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R230 (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -1701,9 +1763,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu-14.04",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R230 (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -1726,8 +1789,8 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=linux-perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -1742,9 +1805,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu-14.04",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R230 (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -1784,8 +1848,9 @@
           "dimension_sets": [
             {
               "gpu": "8086:1626",
-              "os": "Mac-10.12",
-              "pool": "chrome.tests.perf"
+              "os": "Mac-10.12.6",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G"
             }
           ],
           "expiration": 7200,
@@ -1821,8 +1886,9 @@
           "dimension_sets": [
             {
               "gpu": "8086:1626",
-              "os": "Mac-10.12",
-              "pool": "chrome.tests.perf"
+              "os": "Mac-10.12.6",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G"
             }
           ],
           "expiration": 7200,
@@ -1845,8 +1911,8 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=mac-10_12_laptop_low_end-perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -1862,8 +1928,9 @@
           "dimension_sets": [
             {
               "gpu": "8086:1626",
-              "os": "Mac-10.12",
-              "pool": "chrome.tests.perf"
+              "os": "Mac-10.12.6",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G"
             }
           ],
           "expiration": 7200,
@@ -1902,9 +1969,48 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 43200,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "shards": 1
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name",
+          "dawn_perf_tests"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "override_compile_targets": [
+          "dawn_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -1939,9 +2045,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -1976,9 +2083,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -2013,9 +2121,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -2050,9 +2159,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -2075,8 +2185,8 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=mac-10_13_laptop_high_end-perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",
@@ -2091,9 +2201,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
           "expiration": 7200,
@@ -2238,6 +2349,45 @@
       {
         "args": [
           "--gtest-benchmark-name",
+          "dawn_perf_tests",
+          "--shard-timeout=300"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "override_compile_targets": [
+          "dawn_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-23.20.16.4877",
+              "os": "Windows-10-16299.309",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "OptiPlex 7050 (Dell Inc.)"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 43200,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "shards": 1
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name",
           "media_perftests"
         ],
         "isolate_name": "media_perftests",
@@ -2316,8 +2466,8 @@
           "-v",
           "--browser=release_x64",
           "--upload-results",
-          "--run-ref-build",
           "--test-shard-map-filename=win-10-perf_map.json",
+          "--run-ref-build",
           "--assert-gpu-compositing"
         ],
         "isolate_name": "performance_test_suite",

@@ -5,6 +5,10 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UPDATE_CHECKER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UPDATE_CHECKER_H_
 
+#include <map>
+#include <memory>
+#include <vector>
+
 #include "base/callback.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_single_script_update_checker.h"
@@ -84,7 +88,8 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
       bool force_bypass_cache,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       base::TimeDelta time_since_last_check,
-      ServiceWorkerContextCore* context);
+      ServiceWorkerContextCore* context,
+      blink::mojom::FetchClientSettingsObjectPtr fetch_client_settings_object);
   ~ServiceWorkerUpdateChecker();
 
   // |callback| is always triggered when the update check finishes.
@@ -148,6 +153,8 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
   // |context_| outlives |this| because it owns |this| through
   // ServiceWorkerJobCoordinator and ServiceWorkerRegisterJob.
   ServiceWorkerContextCore* const context_;
+
+  blink::mojom::FetchClientSettingsObjectPtr fetch_client_settings_object_;
 
   base::WeakPtrFactory<ServiceWorkerUpdateChecker> weak_factory_{this};
 

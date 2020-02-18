@@ -16,6 +16,11 @@ namespace blink {
 
 namespace {
 
+Document& TrackingDocument(const IntersectionObservation* observation) {
+  if (observation->Observer()->RootIsImplicit())
+    return observation->Target()->GetDocument();
+  return (observation->Observer()->root()->GetDocument());
+}
 
 }  // namespace
 
@@ -65,12 +70,17 @@ void IntersectionObservation::Disconnect() {
     ElementIntersectionObserverData* observer_data =
         target_->IntersectionObserverData();
     observer_data->RemoveObservation(*Observer());
-    if (target_->isConnected() &&
+    // We track connected elements that are either the root of an explicit root
+    // observer, or the target of an implicit root observer. If the target was
+    // previously being tracked, but no longer needs to be tracked, then remove
+    // it.
+    if (target_->isConnected() && Observer()->RootIsImplicit() &&
         !observer_data->IsTargetOfImplicitRootObserver() &&
         !observer_data->IsRoot()) {
-      target_->GetDocument()
-          .EnsureIntersectionObserverController()
-          .RemoveTrackedElement(*target_);
+      IntersectionObserverController* controller =
+          target_->GetDocument().GetIntersectionObserverController();
+      if (controller)
+        controller->RemoveTrackedElement(*target_);
     }
   }
   entries_.clear();
@@ -97,8 +107,10 @@ bool IntersectionObservation::ShouldCompute(unsigned flags) {
   DOMHighResTimeStamp timestamp = observer_->GetTimeStamp();
   if (timestamp == -1)
     return false;
-  if (!(flags & kIgnoreDelay) &&
-      timestamp - last_run_time_ < observer_->GetEffectiveDelay()) {
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
+      observer_->GetEffectiveDelay() - (timestamp - last_run_time_));
+  if (!(flags & kIgnoreDelay) && delay > base::TimeDelta()) {
+    TrackingDocument(this).View()->ScheduleAnimation(delay);
     return false;
   }
   if (target_->isConnected() && Observer()->trackVisibility()) {

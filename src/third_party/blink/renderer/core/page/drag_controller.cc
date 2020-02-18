@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
@@ -46,7 +45,6 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/commands/drag_and_drop_command.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -239,10 +237,8 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
   DCHECK(drag_data);
   document_under_mouse_ = local_root.DocumentAtPoint(
       PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
-  std::unique_ptr<UserGestureIndicator> gesture =
-      LocalFrame::NotifyUserActivation(
-          document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr,
-          UserGestureToken::kNewGesture);
+  LocalFrame::NotifyUserActivation(
+      document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr);
   if ((drag_destination_action_ & kDragDestinationActionDHTML) &&
       document_is_handling_drag_) {
     bool prevented_default = false;
@@ -284,8 +280,6 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
     return;
   }
 
-  document_under_mouse_ = nullptr;
-
   if (OperationForLoad(drag_data, local_root) != kDragOperationNone) {
     if (page_->GetSettings().GetNavigateOnDragDrop()) {
       ResourceRequest resource_request(drag_data->AsURL());
@@ -315,6 +309,8 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
     // be sending these events. crbug.com/748243.
     local_root.GetEventHandler().ClearDragState();
   }
+
+  document_under_mouse_ = nullptr;
 }
 
 void DragController::MouseMovedIntoDocument(Document* new_document) {
@@ -353,9 +349,10 @@ DragOperation DragController::DragEnteredOrUpdated(DragData* drag_data,
 static HTMLInputElement* AsFileInput(Node* node) {
   DCHECK(node);
   for (; node; node = node->OwnerShadowHost()) {
-    if (IsHTMLInputElement(*node) &&
-        ToHTMLInputElement(node)->type() == input_type_names::kFile)
-      return ToHTMLInputElement(node);
+    auto* html_input_element = DynamicTo<HTMLInputElement>(node);
+    if (html_input_element &&
+        html_input_element->type() == input_type_names::kFile)
+      return html_input_element;
   }
   return nullptr;
 }
@@ -1147,7 +1144,7 @@ static IntPoint DragLocationForLink(const DragImage* link_image,
 
 // static
 std::unique_ptr<DragImage> DragController::DragImageForSelection(
-    const LocalFrame& frame,
+    LocalFrame& frame,
     float opacity) {
   if (!frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange())
     return nullptr;
@@ -1244,7 +1241,7 @@ bool DragController::StartDrag(LocalFrame* src,
                                  src->GetPage()->GetVisualViewport().Scale());
 
       float screen_device_scale_factor =
-          src->GetPage()->GetChromeClient().GetScreenInfo().device_scale_factor;
+          src->GetChromeClient().GetScreenInfo(*src).device_scale_factor;
       // Pass the selected image size in DIP becasue dragImageForImage clips the
       // image in DIP.  The coordinates of the locations are in Viewport
       // coordinates, and they're converted in the Blink client.
@@ -1281,7 +1278,7 @@ bool DragController::StartDrag(LocalFrame* src,
     if (!drag_image) {
       DCHECK(src->GetPage());
       float screen_device_scale_factor =
-          src->GetPage()->GetChromeClient().GetScreenInfo().device_scale_factor;
+          src->GetChromeClient().GetScreenInfo(*src).device_scale_factor;
       drag_image = DragImageForLink(link_url, hit_test_result.TextContent(),
                                     screen_device_scale_factor);
       drag_location = DragLocationForLink(drag_image.get(), mouse_dragged_point,
@@ -1328,7 +1325,7 @@ void DragController::DoSystemDrag(DragImage* image,
   if (image) {
     float resolution_scale = image->ResolutionScale();
     float device_scale_factor =
-        page_->GetChromeClient().GetScreenInfo().device_scale_factor;
+        frame->GetChromeClient().GetScreenInfo(*frame).device_scale_factor;
     if (device_scale_factor != resolution_scale) {
       DCHECK_GT(resolution_scale, 0);
       float scale = device_scale_factor / resolution_scale;

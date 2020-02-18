@@ -106,10 +106,6 @@ class HttpStreamFactory::Job
                                   const ProxyInfo& used_proxy_info,
                                   HttpAuthController* auth_controller) = 0;
 
-    // Returns true if the connection initialization to the proxy server
-    // contained in |proxy_info| can be skipped.
-    virtual bool OnInitConnection(const ProxyInfo& proxy_info) = 0;
-
     // Invoked when the |job| finishes pre-connecting sockets.
     virtual void OnPreconnectsComplete(Job* job) = 0;
 
@@ -286,6 +282,7 @@ class HttpStreamFactory::Job
   int DoLoop(int result);
   int StartInternal();
   int DoInitConnectionImpl();
+  int DoInitConnectionImplQuic();
 
   // If this is a QUIC alt job, then this function is called when host
   // resolution completes. It's called with the next result after host
@@ -316,9 +313,6 @@ class HttpStreamFactory::Job
   int SetSpdyHttpStreamOrBidirectionalStreamImpl(
       base::WeakPtr<SpdySession> session);
 
-  // Returns to STATE_INIT_CONNECTION and resets some state.
-  void ReturnToStateInitConnection(bool close_connection);
-
   // SpdySessionPool::SpdySessionRequest::Delegate implementation:
   void OnSpdySessionAvailable(base::WeakPtr<SpdySession> spdy_session) override;
 
@@ -340,7 +334,8 @@ class HttpStreamFactory::Job
       const GURL& origin_url,
       PrivacyMode privacy_mode,
       const SocketTag& socket_tag,
-      const NetworkIsolationKey& network_isolation_key);
+      const NetworkIsolationKey& network_isolation_key,
+      bool disable_secure_dns);
 
   // Returns true if the current request can use an existing spdy session.
   bool CanUseExistingSpdySession() const;

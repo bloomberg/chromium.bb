@@ -30,7 +30,7 @@ class PendingAppManagerTest : public testing::Test {
     std::vector<ExternalInstallOptions> install_options_list;
     for (const auto& url : urls) {
       install_options_list.emplace_back(
-          url, LaunchContainer::kWindow,
+          url, DisplayMode::kStandalone,
           ExternalInstallSource::kInternalDefault);
     }
 
@@ -74,16 +74,16 @@ class PendingAppManagerTest : public testing::Test {
 // installs an app doesn't crash.
 // Regression test for https://crbug.com/962808
 TEST_F(PendingAppManagerTest, DestroyDuringInstallInSynchronize) {
-  web_app::TestAppRegistrar registrar;
+  TestAppRegistrar registrar;
   auto pending_app_manager =
       std::make_unique<TestPendingAppManager>(&registrar);
 
   std::vector<ExternalInstallOptions> install_options_list;
   install_options_list.emplace_back(GURL("https://foo.example"),
-                                    LaunchContainer::kWindow,
+                                    DisplayMode::kStandalone,
                                     ExternalInstallSource::kInternalDefault);
   install_options_list.emplace_back(GURL("https://bar.example"),
-                                    LaunchContainer::kWindow,
+                                    DisplayMode::kStandalone,
                                     ExternalInstallSource::kInternalDefault);
 
   pending_app_manager->SynchronizeInstalledApps(
@@ -99,7 +99,7 @@ TEST_F(PendingAppManagerTest, DestroyDuringInstallInSynchronize) {
 // uninstalls an app doesn't crash.
 // Regression test for https://crbug.com/962808
 TEST_F(PendingAppManagerTest, DestroyDuringUninstallInSynchronize) {
-  web_app::TestAppRegistrar registrar;
+  TestAppRegistrar registrar;
   auto pending_app_manager =
       std::make_unique<TestPendingAppManager>(&registrar);
 
@@ -107,7 +107,7 @@ TEST_F(PendingAppManagerTest, DestroyDuringUninstallInSynchronize) {
   {
     std::vector<ExternalInstallOptions> install_options_list;
     install_options_list.emplace_back(GURL("https://foo.example"),
-                                      LaunchContainer::kWindow,
+                                      DisplayMode::kStandalone,
                                       ExternalInstallSource::kInternalDefault);
     base::RunLoop run_loop;
     pending_app_manager->SynchronizeInstalledApps(

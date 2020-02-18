@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
 
 #include <map>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -30,7 +31,6 @@
 #include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 using content::DesktopMediaID;
@@ -86,9 +86,10 @@ class DesktopMediaPickerViewsTest : public testing::Test {
     DesktopMediaPickerManager::Get()->AddObserver(&observer_);
     EXPECT_CALL(observer_, OnDialogOpened());
     EXPECT_CALL(observer_, OnDialogClosed());
-    picker_views_->Show(picker_params, std::move(source_lists),
-                        base::Bind(&DesktopMediaPickerViewsTest::OnPickerDone,
-                                   base::Unretained(this)));
+    picker_views_->Show(
+        picker_params, std::move(source_lists),
+        base::BindOnce(&DesktopMediaPickerViewsTest::OnPickerDone,
+                       base::Unretained(this)));
   }
 
   void TearDown() override {
@@ -138,7 +139,7 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnOkButtonPressed) {
   EXPECT_TRUE(
       GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 
-  GetPickerDialogView()->GetDialogClientView()->AcceptWindow();
+  GetPickerDialogView()->AcceptDialog();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -256,11 +257,6 @@ TEST_F(DesktopMediaPickerViewsTest, OkButtonDisabledWhenNoSelection) {
   }
 }
 
-// Verifies that the MediaListView gets the initial focus.
-TEST_F(DesktopMediaPickerViewsTest, ListViewHasInitialFocus) {
-  EXPECT_TRUE(test_api_.GetSelectedListView()->HasFocus());
-}
-
 // Verifies the visible status of audio checkbox.
 TEST_F(DesktopMediaPickerViewsTest, AudioCheckboxState) {
   bool expect_value = false;
@@ -295,7 +291,7 @@ TEST_F(DesktopMediaPickerViewsTest, DoneWithAudioShare) {
   test_api_.GetAudioShareCheckbox()->SetChecked(true);
   test_api_.FocusSourceAtIndex(0);
 
-  GetPickerDialogView()->GetDialogClientView()->AcceptWindow();
+  GetPickerDialogView()->AcceptDialog();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -322,10 +318,7 @@ TEST_F(DesktopMediaPickerViewsSingleTabPaneTest, TabListHasFixedHeight) {
   };
 
   auto GetDialogHeight = [&]() {
-    return GetPickerDialogView()
-        ->GetDialogClientView()
-        ->GetPreferredSize()
-        .height();
+    return GetPickerDialogView()->GetPreferredSize().height();
   };
 
   int initial_size = GetDialogHeight();

@@ -135,15 +135,6 @@ Polymer({
       type: Boolean,
       value: false,
     },
-
-    /**
-     * Turns on "incognito mode". (FIXME after https://crbug.com/900351 is
-     * fixed).
-     */
-    isIncognitoUi: {
-      type: Boolean,
-      value: false,
-    },
   },
 
   focus: function() {
@@ -169,6 +160,7 @@ Polymer({
     this.pinKeyboardValue_ = '';
     this.enableSubmit = false;
     this.isConfirmStep = false;
+    this.pinHasPassedMinimumLength_ = false;
     this.hideProblem_();
     this.onPinChange_(
         new CustomEvent('pin-change', {detail: {pin: this.pinKeyboardValue_}}));

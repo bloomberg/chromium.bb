@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 
 import java.util.ArrayList;
@@ -34,12 +35,14 @@ class AssistantFormCounterInput extends AssistantFormInput {
 
     interface Delegate {
         void onCounterChanged(int counterIndex, int value);
+        void onLinkClicked(int link);
     }
 
     private static class CounterViewHolder {
         private final View mView;
         private final TextView mLabelView;
-        private final TextView mSubtextView;
+        private final TextView mDescriptionLine1View;
+        private final TextView mDescriptionLine2View;
         private final TextView mValueView;
         private final View mDecreaseButtonView;
         private final View mIncreaseButtonView;
@@ -48,7 +51,8 @@ class AssistantFormCounterInput extends AssistantFormInput {
             mView = LayoutInflater.from(context).inflate(
                     R.layout.autofill_assistant_form_counter, /*root= */ null);
             mLabelView = mView.findViewById(R.id.label);
-            mSubtextView = mView.findViewById(R.id.subtext);
+            mDescriptionLine1View = mView.findViewById(R.id.description_line_1);
+            mDescriptionLine2View = mView.findViewById(R.id.description_line_2);
             mValueView = mView.findViewById(R.id.value);
             mDecreaseButtonView = mView.findViewById(R.id.decrease_button);
             mIncreaseButtonView = mView.findViewById(R.id.increase_button);
@@ -97,7 +101,7 @@ class AssistantFormCounterInput extends AssistantFormInput {
         if (mLabel.isEmpty()) {
             label.setVisibility(View.GONE);
         } else {
-            label.setText(mLabel);
+            AssistantTextUtils.applyVisualAppearanceTags(label, mLabel, mDelegate::onLinkClicked);
         }
 
         // Create the views.
@@ -191,10 +195,13 @@ class AssistantFormCounterInput extends AssistantFormInput {
             AssistantFormCounter counter = counters.get(i);
             CounterViewHolder view = views.get(i);
 
-            if (!counter.getSubtext().isEmpty()) {
-                view.mSubtextView.setVisibility(View.VISIBLE);
-                view.mSubtextView.setText(counter.getSubtext());
-            }
+            AssistantTextUtils.applyVisualAppearanceTags(view.mDescriptionLine1View,
+                    counter.getDescriptionLine1(), mDelegate::onLinkClicked);
+            AssistantTextUtils.applyVisualAppearanceTags(view.mDescriptionLine2View,
+                    counter.getDescriptionLine2(), mDelegate::onLinkClicked);
+            hideIfEmpty(view.mDescriptionLine1View);
+            hideIfEmpty(view.mDescriptionLine2View);
+            setMinimumHeight(view.mView, view.mDescriptionLine1View, view.mDescriptionLine2View);
 
             updateLabelAndValue(counter, view);
 
@@ -214,10 +221,14 @@ class AssistantFormCounterInput extends AssistantFormInput {
         // Update the label.
         String label = counter.getLabel();
         label = label.replaceAll(QUOTED_VALUE, Integer.toString(counter.getValue()));
-        view.mLabelView.setText(label);
+        AssistantTextUtils.applyVisualAppearanceTags(
+                view.mLabelView, label, mDelegate::onLinkClicked);
 
         // Update the value view.
         view.mValueView.setText(Integer.toString(counter.getValue()));
+
+        // Mark non-zero values as "enabled" to give them an active style.
+        view.mValueView.setEnabled(counter.getValue() != 0);
     }
 
     private void updateButtonsState(

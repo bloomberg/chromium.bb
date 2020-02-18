@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
@@ -23,6 +24,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
@@ -67,7 +69,11 @@ class TabModelTest
   TabModelTest()
       : scoped_browser_state_manager_(
             std::make_unique<TestChromeBrowserStateManager>(base::FilePath())),
-        web_client_(std::make_unique<ChromeWebClient>()) {
+        web_client_(std::make_unique<ChromeWebClient>()),
+        web_state_list_delegate_(
+            std::make_unique<BrowserWebStateListDelegate>()),
+        web_state_list_(
+            std::make_unique<WebStateList>(web_state_list_delegate_.get())) {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
     if (GetParam() == NavigationManagerChoice::LEGACY) {
@@ -105,7 +111,7 @@ class TabModelTest
     if (tab_model_) {
       web_usage_enabler_->SetWebStateList(nullptr);
       @autoreleasepool {
-        [tab_model_ browserStateDestroyed];
+        [tab_model_ disconnect];
         tab_model_ = nil;
       }
     }
@@ -118,7 +124,8 @@ class TabModelTest
                            SessionWindowIOS* session_window) {
     TabModel* tab_model([[TabModel alloc]
         initWithSessionService:session_service
-                  browserState:chrome_browser_state_.get()]);
+                  browserState:chrome_browser_state_.get()
+                  webStateList:web_state_list_.get()]);
     [tab_model restoreSessionWindow:session_window forInitialRestore:YES];
     [tab_model setPrimary:YES];
     return tab_model;
@@ -141,6 +148,8 @@ class TabModelTest
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   web::ScopedTestingWebClient web_client_;
+  std::unique_ptr<WebStateListDelegate> web_state_list_delegate_;
+  std::unique_ptr<WebStateList> web_state_list_;
   SessionWindowIOS* session_window_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   WebStateListWebUsageEnabler* web_usage_enabler_;
@@ -173,6 +182,18 @@ TEST_P(TabModelTest, InsertUrlSingle) {
                            inBackground:NO];
   ASSERT_EQ(1U, [tab_model_ count]);
   EXPECT_EQ(web_state, tab_model_.webStateList->GetWebStateAt(0));
+}
+
+TEST_P(TabModelTest, BrowserStateDestroyedMultiple) {
+  [tab_model_ insertWebStateWithURL:GURL(kURL1)
+                           referrer:web::Referrer()
+                         transition:ui::PAGE_TRANSITION_TYPED
+                             opener:nil
+                        openedByDOM:NO
+                            atIndex:0
+                       inBackground:NO];
+  [tab_model_ disconnect];
+  [tab_model_ disconnect];
 }
 
 TEST_P(TabModelTest, InsertUrlMultiple) {
@@ -610,10 +631,44 @@ TEST_P(TabModelTest, AddWithOrderController) {
             tab_model_.webStateList->GetIndexOfWebState(web_state3) + 1);
 }
 
-TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {
-  NSString* stashPath =
-      base::SysUTF8ToNSString(chrome_browser_state_->GetStatePath().value());
+// Test that saving a non-empty session, then saving an empty session, then
+// restoring, restores zero tabs, and not the non-empty session.
+TEST_P(TabModelTest, RestorePersistedSessionAfterEmpty) {
+  // Reset the TabModel with a custom SessionServiceIOS (to control whether
+  // data is saved to disk).
+  TestSessionService* test_session_service = [[TestSessionService alloc] init];
+  SetTabModel(CreateTabModel(test_session_service, nil));
 
+  [tab_model_ insertWebStateWithURL:GURL(kURL1)
+                           referrer:web::Referrer()
+                         transition:ui::PAGE_TRANSITION_TYPED
+                             opener:nil
+                        openedByDOM:NO
+                            atIndex:0
+                       inBackground:NO];
+  [test_session_service setPerformIO:YES];
+  [tab_model_ saveSessionImmediately:YES];
+  [test_session_service setPerformIO:NO];
+
+  // Session should be saved, now remove the tab.
+  [tab_model_ closeTabAtIndex:0];
+  [test_session_service setPerformIO:YES];
+  [tab_model_ saveSessionImmediately:YES];
+  [test_session_service setPerformIO:NO];
+
+  // Restore, expect that there are no sessions.
+  NSString* state_path = base::SysUTF8ToNSString(
+      chrome_browser_state_->GetStatePath().AsUTF8Unsafe());
+  SessionIOS* session =
+      [test_session_service loadSessionFromDirectory:state_path];
+  ASSERT_EQ(1u, session.sessionWindows.count);
+  SessionWindowIOS* session_window = session.sessionWindows[0];
+  [tab_model_ restoreSessionWindow:session_window forInitialRestore:NO];
+
+  EXPECT_EQ(0U, [tab_model_ count]);
+}
+
+TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {
   // Reset the TabModel with a custom SessionServiceIOS (to control whether
   // data is saved to disk).
   TestSessionService* test_session_service = [[TestSessionService alloc] init];
@@ -663,10 +718,6 @@ TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {
 
   EXPECT_EQ(tab_model_.webStateList->GetWebStateAt(1),
             tab_model_.webStateList->GetActiveWebState());
-
-  // Clean up.
-  EXPECT_TRUE([[NSFileManager defaultManager] removeItemAtPath:stashPath
-                                                         error:nullptr]);
 }
 
 INSTANTIATE_TEST_SUITE_P(ProgrammaticTabModelTest,

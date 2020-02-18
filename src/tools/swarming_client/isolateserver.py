@@ -13,7 +13,6 @@ import functools
 import logging
 import optparse
 import os
-import Queue
 import re
 import signal
 import stat
@@ -30,6 +29,7 @@ tools.force_local_third_party()
 import colorama
 from depot_tools import fix_encoding
 from depot_tools import subcommand
+from six.moves import queue as Queue
 
 # pylint: disable=ungrouped-imports
 import auth
@@ -138,7 +138,7 @@ def fileobj_path(fileobj):
   # fs.exists requires an absolute path, otherwise it will fail with an
   # assertion error.
   if not os.path.isabs(name):
-      return None
+    return None
 
   if fs.exists(name):
     return name
@@ -226,12 +226,16 @@ def putfile(srcfileobj, dstpath, file_mode=None, size=-1, use_symlink=False):
       link_mode = file_path.COPY
 
     file_path.link_file(dstpath, srcpath, link_mode)
+    assert fs.exists(dstpath)
   else:
     # Need to write out the file
     with fs.open(dstpath, 'wb') as dstfileobj:
       fileobj_copy(dstfileobj, srcfileobj, size)
 
-  assert fs.exists(dstpath)
+    if sys.platform == 'win32' and file_mode and file_mode & stat.S_IWRITE:
+      # On windows, mode other than removing stat.S_IWRITE is ignored. Returns
+      # early to skip slow/unnecessary chmod call.
+      return
 
   # file_mode of 0 is actually valid, so need explicit check.
   if file_mode is not None:
@@ -538,7 +542,8 @@ class Storage(object):
     """ThreadPool for CPU-bound tasks like zipping."""
     if self._cpu_thread_pool is None:
       threads = max(threading_utils.num_processors(), 2)
-      if sys.maxsize <= 2L**32:
+      max_size = long(2)**32 if sys.version_info.major == 2 else 2**32
+      if sys.maxsize <= max_size:
         # On 32 bits userland, do not try to use more than 16 threads.
         threads = min(threads, 16)
       self._cpu_thread_pool = threading_utils.ThreadPool(2, threads, 0, 'zip')
@@ -1231,47 +1236,47 @@ def _map_file(dst, digest, props, cache, read_only, use_symlinks):
   """Put downloaded file to destination path. This function is used for multi
   threaded file putting.
   """
-  with cache.getfileobj(digest) as srcfileobj:
-    filetype = props.get('t', 'basic')
+  with tools.Profiler("_map_file for %s" % dst):
+    with cache.getfileobj(digest) as srcfileobj:
+      filetype = props.get('t', 'basic')
 
-    if filetype == 'basic':
-      # Ignore all bits apart from the user.
-      file_mode = (props.get('m') or 0500) & 0700
-      if read_only:
-        # Enforce read-only if the root bundle does.
-        file_mode &= 0500
-      putfile(srcfileobj, dst, file_mode,
-              use_symlink=use_symlinks)
+      if filetype == 'basic':
+        # Ignore all bits apart from the user.
+        file_mode = (props.get('m') or 0o500) & 0o700
+        if read_only:
+          # Enforce read-only if the root bundle does.
+          file_mode &= 0o500
+        putfile(srcfileobj, dst, file_mode, use_symlink=use_symlinks)
 
-    elif filetype == 'tar':
-      basedir = os.path.dirname(dst)
-      with tarfile.TarFile(fileobj=srcfileobj, encoding='utf-8') as t:
-        for ti in t:
-          if not ti.isfile():
-            logging.warning(
-                'Path(%r) is nonfile (%s), skipped',
-                ti.name, ti.type)
-            continue
-          # Handle files created on Windows fetched on POSIX and the
-          # reverse.
-          other_sep = '/' if os.path.sep == '\\' else '\\'
-          name = ti.name.replace(other_sep, os.path.sep)
-          fp = os.path.normpath(os.path.join(basedir, name))
-          if not fp.startswith(basedir):
-            logging.error(
-                'Path(%r) is outside root directory',
-                fp)
-          ifd = t.extractfile(ti)
-          file_path.ensure_tree(os.path.dirname(fp))
-          file_mode = ti.mode & 0700
-          if read_only:
-            # Enforce read-only if the root bundle does.
-            file_mode &= 0500
-          putfile(ifd, fp, file_mode, ti.size)
+      elif filetype == 'tar':
+        basedir = os.path.dirname(dst)
+        with tarfile.TarFile(fileobj=srcfileobj, encoding='utf-8') as t:
+          ensured_dirs = set()
+          for ti in t:
+            if not ti.isfile():
+              logging.warning('Path(%r) is nonfile (%s), skipped', ti.name,
+                              ti.type)
+              continue
+            # Handle files created on Windows fetched on POSIX and the
+            # reverse.
+            other_sep = '/' if os.path.sep == '\\' else '\\'
+            name = ti.name.replace(other_sep, os.path.sep)
+            fp = os.path.normpath(os.path.join(basedir, name))
+            if not fp.startswith(basedir):
+              logging.error('Path(%r) is outside root directory', fp)
+            ifd = t.extractfile(ti)
+            fp_dir = os.path.dirname(fp)
+            if fp_dir not in ensured_dirs:
+              file_path.ensure_tree(fp_dir)
+              ensured_dirs.add(fp_dir)
+            file_mode = ti.mode & 0o700
+            if read_only:
+              # Enforce read-only if the root bundle does.
+              file_mode &= 0o500
+            putfile(ifd, fp, file_mode, ti.size)
 
-    else:
-      raise isolated_format.IsolatedError(
-            'Unknown file type %r' % filetype)
+      else:
+        raise isolated_format.IsolatedError('Unknown file type %r' % filetype)
 
 
 def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,

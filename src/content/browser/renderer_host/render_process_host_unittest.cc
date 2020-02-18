@@ -18,6 +18,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -132,9 +133,7 @@ TEST_F(RenderProcessHostUnitTest, ReuseCommittedSite) {
   std::string unique_name("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
       process()->GetNextRoutingID(),
-      TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
-      TestRenderFrameHost::CreateStubDocumentInterfaceBrokerReceiver(),
-      TestRenderFrameHost::CreateStubDocumentInterfaceBrokerReceiver(),
+      TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
       blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
@@ -368,6 +367,11 @@ TEST_F(RenderProcessHostUnitTest, DoNotReuseOtherSiteServiceWorkerProcess) {
 // Tests that RenderProcessHost will not consider reusing a process that has
 // committed an error page.
 TEST_F(RenderProcessHostUnitTest, DoNotReuseError) {
+  // This test depends on a network error occurring on back navigation.
+  // This cannot happen if the page is restored from the back-forward
+  // cache, because no network requests would be made.
+  contents()->GetController().GetBackForwardCache().DisableForTesting(
+      BackForwardCache::TEST_ASSUMES_NO_CACHING);
   const GURL kUrl1("http://foo.com");
   const GURL kUrl2("http://bar.com");
 
@@ -404,18 +408,6 @@ TEST_F(RenderProcessHostUnitTest, DoNotReuseError) {
   NavigationSimulator::GoBackAndFail(contents(), net::ERR_TIMED_OUT);
   site_instance = SiteInstanceImpl::CreateReusableInstanceForTesting(
       browser_context(), kUrl1);
-  EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
-}
-
-// Tests that RenderProcessHost will not consider reusing a process that is
-// marked as never suitable for reuse, according to MayReuseHost().
-TEST_F(RenderProcessHostUnitTest, DoNotReuseHostThatIsNeverSuitableForReuse) {
-  const GURL kUrl("http://foo.com");
-  NavigateAndCommit(kUrl);
-  main_test_rfh()->GetProcess()->SetIsNeverSuitableForReuse();
-  scoped_refptr<SiteInstanceImpl> site_instance =
-      SiteInstanceImpl::CreateReusableInstanceForTesting(browser_context(),
-                                                         kUrl);
   EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
 }
 

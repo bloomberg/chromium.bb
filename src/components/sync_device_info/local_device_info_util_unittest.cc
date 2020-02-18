@@ -18,31 +18,31 @@
 namespace syncer {
 namespace {
 
-// Call GetSessionNameBlocking and make sure its return
+// Call GetPersonalizableDeviceNameBlocking and make sure its return
 // value looks sane.
-TEST(GetSessionNameTest, GetSessionNameBlocking) {
-  const std::string& session_name = GetSessionNameBlocking();
-  EXPECT_FALSE(session_name.empty());
+TEST(GetClientNameTest, GetPersonalizableDeviceNameBlocking) {
+  const std::string& client_name = GetPersonalizableDeviceNameBlocking();
+  EXPECT_FALSE(client_name.empty());
 }
 
 #if defined(OS_CHROMEOS)
 
-// Call GetSessionNameBlocking on ChromeOS where the board type
-// is CHROMEBOOK and make sure the return value is "Chromebook".
-TEST(GetSessionNameTest, GetSessionNameBlockingChromebook) {
+// Call GetPersonalizableDeviceNameBlocking on ChromeOS where the
+// board type is CHROMEBOOK and make sure the return value is "Chromebook".
+TEST(GetClientNameTest, GetPersonalizableDeviceNameBlockingChromebook) {
   const char* kLsbRelease = "DEVICETYPE=CHROMEBOOK\n";
   base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
-  const std::string& session_name = GetSessionNameBlocking();
-  EXPECT_EQ("Chromebook", session_name);
+  const std::string& client_name = GetPersonalizableDeviceNameBlocking();
+  EXPECT_EQ("Chromebook", client_name);
 }
 
-// Call GetSessionNameBlocking on ChromeOS where the board type
-// is a CHROMEBOX and make sure the return value is "Chromebox".
-TEST(GetSessionNameTest, GetSessionNameBlockingChromebox) {
+// Call GetPersonalizableDeviceNameBlocking on ChromeOS where the
+// board type is a CHROMEBOX and make sure the return value is "Chromebox".
+TEST(GetClientNameTest, GetPersonalizableDeviceNameBlockingChromebox) {
   const char* kLsbRelease = "DEVICETYPE=CHROMEBOX\n";
   base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
-  const std::string& session_name = GetSessionNameBlocking();
-  EXPECT_EQ("Chromebox", session_name);
+  const std::string& client_name = GetPersonalizableDeviceNameBlocking();
+  EXPECT_EQ("Chromebox", client_name);
 }
 
 #endif  // OS_CHROMEOS

@@ -8,6 +8,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
+#include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/triggers/mock_trigger_manager.h"
@@ -138,7 +139,14 @@ TEST_F(AdPopupTriggerTest, PopupWithAds) {
                                       1);
 }
 
-TEST_F(AdPopupTriggerTest, ReportRejectedByTriggerManager) {
+// TODO(https://crbug.com/1009917): Fix flakes on Windows bots.
+#if defined(OS_WIN)
+#define MAYBE_ReportRejectedByTriggerManager \
+  DISABLED_ReportRejectedByTriggerManager
+#else
+#define MAYBE_ReportRejectedByTriggerManager ReportRejectedByTriggerManager
+#endif
+TEST_F(AdPopupTriggerTest, MAYBE_ReportRejectedByTriggerManager) {
   // If the trigger manager rejects the report, we don't try to finish/send the
   // report.
   CreateTrigger();
@@ -164,7 +172,7 @@ TEST_F(AdPopupTriggerTest, ReportRejectedByTriggerManager) {
       AdPopupTriggerAction::POPUP_COULD_NOT_START_REPORT, 2);
 }
 
-TEST_F(AdPopupTriggerTest, PopupWithNoAds) {
+TEST_F(AdPopupTriggerTest, DISABLED_PopupWithNoAds) {
   // Make sure the trigger doesn't fire when there are no ads on the page.
   CreateTrigger();
   EXPECT_CALL(*get_trigger_manager(),

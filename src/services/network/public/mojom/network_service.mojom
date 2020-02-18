@@ -21,6 +21,7 @@ import "services/network/public/mojom/network_context.mojom";
 import "services/network/public/mojom/network_interface.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_quality_estimator_manager.mojom";
+import "services/network/public/mojom/network_service_test.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "url/mojom/origin.mojom";
@@ -168,7 +169,8 @@ interface NetworkService {
   // Sets client used by all |NetworkContext|s creating by |NetworkService|.
   // Pending requests may hang if the |client| pipe is closed before they
   // complete.
-  SetClient(NetworkServiceClient client, NetworkServiceParams params);
+  SetClient(pending_remote<NetworkServiceClient> client,
+            NetworkServiceParams params);
 
   // Reinitializes the Network Service's logging with the given settings. This
   // is needed on Chrome OS, which switches to a log file in the user's home
@@ -255,14 +257,15 @@ interface NetworkService {
 
   // Gets the NetworkChangeManager.
   GetNetworkChangeManager(
-      NetworkChangeManager& network_change_manager);
+      pending_receiver<NetworkChangeManager> network_change_manager);
 
   // Gets the NetworkQualityEstimatorManager.
   GetNetworkQualityEstimatorManager(
-      NetworkQualityEstimatorManager& network_quality_estimator_manager);
+      pending_receiver<NetworkQualityEstimatorManager> receiver);
 
   // Gets the DnsConfigChangeManager.
-  GetDnsConfigChangeManager(DnsConfigChangeManager& dns_config_change_manager);
+  GetDnsConfigChangeManager(
+      pending_receiver<DnsConfigChangeManager> receiver);
 
   // Gets the accumulated network usage since the start/restart of the service.
   GetTotalNetworkUsages() => (array<NetworkUsage> total_network_usages);
@@ -291,6 +294,10 @@ interface NetworkService {
   [EnableIf=is_mac]
   SetEncryptionKey(string encryption_key);
 
+  // Send the encryption key to the network service to use for AES encryption.
+  [EnableIf=is_win]
+  SetEncryptionKey(string encryption_key);
+
   // Notifies CORB (Cross-Origin Read Blocking) that |process_id| is proxying
   // requests on behalf of a universal-access plugin and therefore CORB should
   // stop blocking requests marked as ResourceType::kPluginResource.
@@ -309,15 +316,6 @@ interface NetworkService {
   // TODO(lukasza): https://crbug.com/944162: Remove the method below once
   // kMimeHandlerViewInCrossProcessFrame feature ships.
   AddExtraMimeTypesForCorb(array<string> mime_types);
-
-  // Registers a scheme that should not be subject to
-  // |request_initiator_site_lock| checks (e.g. a scheme that is typically
-  // used in isolated worlds, with a separate origin, such as
-  // "chrome-extension").
-  //
-  // TODO(lukasza): https://crbug.com/940068: Remove this method once isolated
-  // worlds use the same |request_initiator| as the main world.
-  ExcludeSchemeFromRequestInitiatorSiteLockChecks(string scheme) => ();
 
   // Called when the system is low on memory.
   OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
@@ -340,4 +338,8 @@ interface NetworkService {
   // hangs.
   [EnableIf=is_android]
   DumpWithoutCrashing(mojo_base.mojom.Time dump_request_time);
+
+  // Binds the test service's testing interface. Available only in some test
+  // environments.
+  BindTestInterface(pending_receiver<NetworkServiceTest> receiver);
 };

@@ -23,6 +23,7 @@
 #include "components/unified_consent/unified_consent_service.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
@@ -53,7 +54,6 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -140,7 +140,7 @@ enum AuthenticationState {
 @end
 
 @implementation ChromeSigninViewController {
-  ios::ChromeBrowserState* _browserState;  // weak
+  Browser* _browser;
   __weak id<ChromeSigninViewControllerDelegate> _delegate;
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
   ChromeIdentity* _selectedIdentity;
@@ -180,14 +180,14 @@ enum AuthenticationState {
   BOOL _hasConfirmationScreenReachedBottom;
 }
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                         accessPoint:(signin_metrics::AccessPoint)accessPoint
-                         promoAction:(signin_metrics::PromoAction)promoAction
-                      signInIdentity:(ChromeIdentity*)identity
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
+- (instancetype)initWithBrowser:(Browser*)browser
+                    accessPoint:(signin_metrics::AccessPoint)accessPoint
+                    promoAction:(signin_metrics::PromoAction)promoAction
+                 signInIdentity:(ChromeIdentity*)identity
+                     dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super init];
   if (self) {
-    _browserState = browserState;
+    _browser = browser;
     _accessPoint = accessPoint;
     _promoAction = promoAction;
     _dispatcher = dispatcher;
@@ -232,7 +232,7 @@ enum AuthenticationState {
     [_authenticationFlow cancelAndDismiss];
   }
   if (!_didAcceptSignIn && _didSignIn) {
-    AuthenticationServiceFactory::GetForBrowserState(_browserState)
+    AuthenticationServiceFactory::GetForBrowserState(self.browserState)
         ->SignOut(signin_metrics::ABORT_SIGNIN, nil);
     _didSignIn = NO;
   }
@@ -259,8 +259,8 @@ enum AuthenticationState {
   int consent_confirmation_id = showAccountsSettings
                                     ? openSettingsStringId
                                     : [self acceptSigninButtonStringId];
-  std::string account_id =
-      IdentityManagerFactory::GetForBrowserState(_browserState)
+  CoreAccountId account_id =
+      IdentityManagerFactory::GetForBrowserState(self.browserState)
           ->PickAccountIdForAccount(
               base::SysNSStringToUTF8([_selectedIdentity gaiaID]),
               base::SysNSStringToUTF8([_selectedIdentity userEmail]));
@@ -272,7 +272,7 @@ enum AuthenticationState {
   for (int id : consent_text_ids) {
     sync_consent.add_description_grd_ids(id);
   }
-  ConsentAuditorFactory::GetForBrowserState(_browserState)
+  ConsentAuditorFactory::GetForBrowserState(self.browserState)
       ->RecordSyncConsent(account_id, sync_consent);
   _didAcceptSignIn = YES;
   if (!_didFinishSignIn) {
@@ -290,7 +290,7 @@ enum AuthenticationState {
   // The consent has to be given as soon as the user is signed in. Even when
   // they open the settings through the link.
   unified_consent::UnifiedConsentService* unifiedConsentService =
-      UnifiedConsentServiceFactory::GetForBrowserState(_browserState);
+      UnifiedConsentServiceFactory::GetForBrowserState(self.browserState);
   // |unifiedConsentService| may be null in unit tests.
   if (unifiedConsentService)
     unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
@@ -298,8 +298,9 @@ enum AuthenticationState {
     // FirstSetupComplete flag should be only turned on when the user agrees
     // to start Sync.
     SyncSetupService* syncSetupService =
-        SyncSetupServiceFactory::GetForBrowserState(_browserState);
-    syncSetupService->SetFirstSetupComplete();
+        SyncSetupServiceFactory::GetForBrowserState(self.browserState);
+    syncSetupService->SetFirstSetupComplete(
+        syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
     syncSetupService->CommitSyncChanges();
   }
   [self acceptSignInAndShowAccountsSettings:_unifiedConsentCoordinator
@@ -360,7 +361,8 @@ enum AuthenticationState {
       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON);
   [_primaryButton setTitle:primaryButtonTitle forState:UIControlStateNormal];
   UIImage* primaryButtomImage =
-      [UIImage imageNamed:@"signin_confirmation_more"];
+      [[UIImage imageNamed:@"signin_confirmation_more"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [_primaryButton setImage:primaryButtomImage forState:UIControlStateNormal];
   [self setSecondaryButtonStyling:_primaryButton];
 }
@@ -450,6 +452,11 @@ enum AuthenticationState {
 }
 
 - (void)updateGradientColors {
+  [CATransaction begin];
+  // If this isn't set, the changes here are automatically animated. The other
+  // color changes for dark mode don't animate, however, so there ends up being
+  // visual desyncing.
+  [CATransaction setDisableActions:YES];
   UIColor* backgroundColor = self.backgroundColor;
 
   if (@available(iOS 13, *)) {
@@ -461,6 +468,7 @@ enum AuthenticationState {
     (id)[backgroundColor colorWithAlphaComponent:0].CGColor,
     (id)backgroundColor.CGColor
   ];
+  [CATransaction commit];
 }
 
 #pragma mark - UIAdaptivePresentationController
@@ -480,8 +488,12 @@ enum AuthenticationState {
 
 #pragma mark - Properties
 
+- (Browser*)browser {
+  return _browser;
+}
+
 - (ios::ChromeBrowserState*)browserState {
-  return _browserState;
+  return self.browser->GetBrowserState();
 }
 
 - (id<ChromeSigninViewControllerDelegate>)delegate {
@@ -541,11 +553,11 @@ enum AuthenticationState {
   [_delegate willStartSignIn:self];
   DCHECK(!_authenticationFlow);
   _authenticationFlow =
-      [[AuthenticationFlow alloc] initWithBrowserState:_browserState
-                                              identity:identity
-                                       shouldClearData:_shouldClearData
-                                      postSignInAction:POST_SIGNIN_ACTION_NONE
-                              presentingViewController:self];
+      [[AuthenticationFlow alloc] initWithBrowser:self.browser
+                                         identity:identity
+                                  shouldClearData:_shouldClearData
+                                 postSignInAction:POST_SIGNIN_ACTION_NONE
+                         presentingViewController:self];
   _authenticationFlow.dispatcher = self.dispatcher;
   __weak ChromeSigninViewController* weakSelf = self;
   [_authenticationFlow startSignInWithCompletion:^(BOOL success) {
@@ -558,7 +570,7 @@ enum AuthenticationState {
   _interactionManager =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
-          ->CreateChromeIdentityInteractionManager(_browserState, self);
+          ->CreateChromeIdentityInteractionManager(self.browserState, self);
   __weak ChromeSigninViewController* weakSelf = self;
   SigninCompletionCallback completion =
       ^(ChromeIdentity* identity, NSError* error) {
@@ -598,7 +610,7 @@ enum AuthenticationState {
 
 - (void)undoSignIn {
   if (_didSignIn) {
-    AuthenticationServiceFactory::GetForBrowserState(_browserState)
+    AuthenticationServiceFactory::GetForBrowserState(self.browserState)
         ->SignOut(signin_metrics::ABORT_SIGNIN, nil);
     [_delegate didUndoSignIn:self identity:self.selectedIdentity];
     _didSignIn = NO;

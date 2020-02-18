@@ -52,7 +52,8 @@ bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath) {
 }
 
 std::string GetCrxComponentID(const CrxComponent& component) {
-  return GetCrxIdFromPublicKeyHash(component.pk_hash);
+  return component.app_id.empty() ? GetCrxIdFromPublicKeyHash(component.pk_hash)
+                                  : component.app_id;
 }
 
 std::string GetCrxIdFromPublicKeyHash(const std::vector<uint8_t>& pk_hash) {
@@ -121,9 +122,9 @@ bool IsValidInstallerAttributeName(const std::string& name) {
   return IsValidInstallerAttributePart(name, "-_", 1, 256);
 }
 
-// Returns true if the |value| parameter matches ^[-.,;+_=a-zA-Z0-9]{0,256}$ .
+// Returns true if the |value| parameter matches ^[-.,;+_=$a-zA-Z0-9]{0,256}$ .
 bool IsValidInstallerAttributeValue(const std::string& value) {
-  return IsValidInstallerAttributePart(value, "-.,;+_=", 0, 256);
+  return IsValidInstallerAttributePart(value, "-.,;+_=$", 0, 256);
 }
 
 bool IsValidInstallerAttribute(const InstallerAttribute& attr) {

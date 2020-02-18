@@ -23,8 +23,6 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 
-using namespace testing;
-
 namespace {
 
 class MockCanvas : public SkCanvas {
@@ -210,7 +208,9 @@ TEST_F(BorderTest, SolidBorder) {
 }
 
 TEST_F(BorderTest, RoundedRectBorder) {
-  std::unique_ptr<Border> border(CreateRoundedRectBorder(3, 4, SK_ColorBLUE));
+  std::unique_ptr<Border> border(CreateRoundedRectBorder(
+      3, LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW),
+      SK_ColorBLUE));
   EXPECT_EQ(gfx::Size(6, 6), border->GetMinimumSize());
   EXPECT_EQ(gfx::Insets(3, 3, 3, 3), border->GetInsets());
   border->Paint(*view_, canvas_.get());

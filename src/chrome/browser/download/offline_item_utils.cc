@@ -14,7 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/download/download_utils.h"
+#include "chrome/browser/download/android/download_utils.h"
 #endif
 
 using DownloadItem = download::DownloadItem;
@@ -103,6 +103,7 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
   item.total_size_bytes = download_item->GetTotalBytes();
   item.externally_removed = download_item->GetFileExternallyRemoved();
   item.creation_time = download_item->GetStartTime();
+  item.completion_time = download_item->GetEndTime();
   item.last_accessed_time = download_item->GetLastAccessTime();
   item.is_openable = download_item->CanOpenDownload();
   item.file_path = download_item->GetTargetFilePath();

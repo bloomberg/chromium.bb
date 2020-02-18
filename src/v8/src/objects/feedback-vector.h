@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "src/base/bit-field.h"
 #include "src/base/logging.h"
 #include "src/base/macros.h"
 #include "src/common/globals.h"
@@ -233,9 +234,9 @@ class FeedbackVector : public HeapObject {
   // Conversion from an integer index to the underlying array to a slot.
   static inline FeedbackSlot ToSlot(int index);
   inline MaybeObject Get(FeedbackSlot slot) const;
-  inline MaybeObject Get(Isolate* isolate, FeedbackSlot slot) const;
+  inline MaybeObject Get(const Isolate* isolate, FeedbackSlot slot) const;
   inline MaybeObject get(int index) const;
-  inline MaybeObject get(Isolate* isolate, int index) const;
+  inline MaybeObject get(const Isolate* isolate, int index) const;
   inline void Set(FeedbackSlot slot, MaybeObject value,
                   WriteBarrierMode mode = UPDATE_WRITE_BARRIER);
   inline void set(int index, MaybeObject value,
@@ -305,9 +306,6 @@ class FeedbackVector : public HeapObject {
   // The object that indicates a megamorphic state.
   static inline Handle<Symbol> MegamorphicSentinel(Isolate* isolate);
 
-  // The object that indicates a premonomorphic state.
-  static inline Handle<Symbol> PremonomorphicSentinel(Isolate* isolate);
-
   // A raw version of the uninitialized sentinel that's safe to read during
   // garbage collection (e.g., for patching the cache).
   static inline Symbol RawUninitializedSentinel(Isolate* isolate);
@@ -315,8 +313,6 @@ class FeedbackVector : public HeapObject {
   // Layout description.
   DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize,
                                 TORQUE_GENERATED_FEEDBACK_VECTOR_FIELDS)
-
-  static const int kHeaderSize = kSize;
 
   static_assert(kSize % kObjectAlignment == 0,
                 "Header must be padded for alignment");
@@ -557,8 +553,8 @@ class FeedbackMetadata : public HeapObject {
   void SetKind(FeedbackSlot slot, FeedbackSlotKind kind);
 
   using VectorICComputer =
-      BitSetComputer<FeedbackSlotKind, kFeedbackSlotKindBits,
-                     kInt32Size * kBitsPerByte, uint32_t>;
+      base::BitSetComputer<FeedbackSlotKind, kFeedbackSlotKindBits,
+                           kInt32Size * kBitsPerByte, uint32_t>;
 
   OBJECT_CONSTRUCTORS(FeedbackMetadata, HeapObject);
 };
@@ -567,7 +563,7 @@ class FeedbackMetadata : public HeapObject {
 // possibly be confused with a pointer.
 // NOLINTNEXTLINE(runtime/references) (false positive)
 STATIC_ASSERT((Name::kEmptyHashField & kHeapObjectTag) == kHeapObjectTag);
-STATIC_ASSERT(Name::kEmptyHashField == 0x3);
+STATIC_ASSERT(Name::kEmptyHashField == 0x7);
 // Verify that a set hash field will not look like a tagged object.
 STATIC_ASSERT(Name::kHashNotComputedMask == kHeapObjectTag);
 
@@ -657,13 +653,12 @@ class V8_EXPORT_PRIVATE FeedbackNexus final {
 
   bool IsCleared() const {
     InlineCacheState state = ic_state();
-    return !FLAG_use_ic || state == UNINITIALIZED || state == PREMONOMORPHIC;
+    return !FLAG_use_ic || state == UNINITIALIZED;
   }
 
   // Clear() returns true if the state of the underlying vector was changed.
   bool Clear();
   void ConfigureUninitialized();
-  void ConfigurePremonomorphic(Handle<Map> receiver_map);
   // ConfigureMegamorphic() returns true if the state of the underlying vector
   // was changed. Extra feedback is cleared if the 0 parameter version is used.
   bool ConfigureMegamorphic();
@@ -703,8 +698,8 @@ class V8_EXPORT_PRIVATE FeedbackNexus final {
   // count (taken from the type feedback vector).
   float ComputeCallFrequency();
 
-  using SpeculationModeField = BitField<SpeculationMode, 0, 1>;
-  using CallCountField = BitField<uint32_t, 1, 31>;
+  using SpeculationModeField = base::BitField<SpeculationMode, 0, 1>;
+  using CallCountField = base::BitField<uint32_t, 1, 31>;
 
   // For InstanceOf ICs.
   MaybeHandle<JSObject> GetConstructorFeedback() const;

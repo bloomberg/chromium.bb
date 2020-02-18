@@ -60,6 +60,10 @@ void ErrorRetryStateMachine::SetRetryPlaceholderNavigation() {
   state_ = ErrorRetryState::kRetryPlaceholderNavigation;
 }
 
+void ErrorRetryStateMachine::SetIgnorePlaceholderNavigation() {
+  state_ = ErrorRetryState::kIgnorePlaceholderNavigation;
+}
+
 ErrorRetryCommand ErrorRetryStateMachine::DidFailProvisionalNavigation(
     const GURL& web_view_url,
     const GURL& error_url) {
@@ -99,6 +103,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailProvisionalNavigation(
     case ErrorRetryState::kRetryPlaceholderNavigation:
     case ErrorRetryState::kReadyToDisplayError:
     case ErrorRetryState::kNavigatingToFailedNavigationItem:
+    case ErrorRetryState::kIgnorePlaceholderNavigation:
       NOTREACHED() << "Unexpected error retry state: "
                    << static_cast<unsigned>(state_);
   }
@@ -124,6 +129,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailNavigation(
     case ErrorRetryState::kRetryPlaceholderNavigation:
     case ErrorRetryState::kReadyToDisplayError:
     case ErrorRetryState::kNavigatingToFailedNavigationItem:
+    case ErrorRetryState::kIgnorePlaceholderNavigation:
       NOTREACHED() << "Unexpected error retry state: "
                    << static_cast<unsigned>(state_);
   }
@@ -135,7 +141,11 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
   switch (state_) {
     case ErrorRetryState::kLoadingPlaceholder:
       // (1) Placeholder load for initial failure succeeded.
-      DCHECK_EQ(web_view_url, CreatePlaceholderUrlForUrl(url_));
+      if (@available(iOS 13, *)) {
+        // This DCHECK is hit on iOS 12 when navigating to restricted URL. See
+        // crbug.com/1000366 for more details.
+        DCHECK_EQ(web_view_url, CreatePlaceholderUrlForUrl(url_));
+      }
       state_ = ErrorRetryState::kReadyToDisplayError;
       return ErrorRetryCommand::kLoadError;
 
@@ -156,6 +166,10 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
       if (IsRestoreSessionUrl(web_view_url)) {
         // (8) Initial load of restore_session.html. Don't change state or
         // issue command. Wait for the client-side redirect.
+      } else if (IsPlaceholderUrl(web_view_url) &&
+                 web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+        state_ = ErrorRetryState::kNavigatingToFailedNavigationItem;
+        return ErrorRetryCommand::kRewriteToWebViewURL;
       } else {
         // (2) Initial load succeeded.
         state_ = ErrorRetryState::kNoNavigationError;
@@ -208,6 +222,10 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
     // (7) Retry loading succeeded.
     case ErrorRetryState::kRetryFailedNavigationItem:
       DCHECK_EQ(web_view_url, url_);
+      state_ = ErrorRetryState::kNoNavigationError;
+      break;
+
+    case ErrorRetryState::kIgnorePlaceholderNavigation:
       state_ = ErrorRetryState::kNoNavigationError;
       break;
 

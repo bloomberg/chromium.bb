@@ -35,8 +35,11 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAppAutoLaunched[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAppOemManifestFile[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcAvailability[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcAvailable[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcBuildProperties[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcDataCleanupOnStart[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcDisableAppSync[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kArcDisableGmsCoreCache[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcDisableLocaleSync[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcDisablePlayAutoInstall[];
@@ -45,6 +48,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcForceShowOptInUi[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcPackagesCacheMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcPlayStoreAutoUpdate[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcScale[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcStartMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcTransitionMigrationRequired[];
@@ -101,6 +105,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableCastReceiver[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableChromevoxDeveloperOption[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableConsumerKiosk[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kEnableTabletFormFactor[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableEncryptionMigration[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -172,7 +178,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeSkipToLogin[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kOobeTimerInterval[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kPublicAccountsSamlAclUrl[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kPublicAccountsSamlUrl[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableArcCpuRestriction[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kProfileRequiresPolicy[];
@@ -181,10 +186,8 @@ extern const char kRedirectLibassistantLogging[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRegulatoryLabelDir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRlzPingDelay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kSamlPasswordChangeUrl[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfDenseClamshell[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHoverPreviews[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHotseat[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfScrollable[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kShowAndroidFilesInFilesApp[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShowLoginDevOverlay[];
@@ -224,10 +227,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSigninFrameClientCertsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsSigninFrameClientCertUserSelectionEnabled();
 
-// Returns true if we should show a smaller, denser shelf in clamshell mode.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfDenseClamshell();
-
-// Returns true if we should show the modular shelf with the hotseat UI.
+// Returns true if we should show the modular shelf with the hotseat UI and
+// a smaller shelf in clamshell mode.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowShelfHotseat();
 
 // Returns true if we should show window previews when hovering over an app
@@ -245,6 +246,9 @@ bool ShouldTetherHostScansIgnoreWiredConnections();
 
 // Returns true if we should skip all other OOBE pages after user login.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldSkipOobePostLogin();
+
+// Returns true if the device is of tablet form factor.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsTabletFormFactor();
 
 // Returns true if GAIA services has been disabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsGaiaServicesDisabled();

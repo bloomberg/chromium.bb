@@ -10,9 +10,9 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -28,6 +28,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
@@ -47,6 +49,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/vector_icons/vector_icons.h"
 #include "net/base/url_util.h"
@@ -61,7 +64,9 @@ namespace {
 
 // Helpers --------------------------------------------------------------------
 
+constexpr float kShortcutIconToImageRatio = 9.0 / 16.0;
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 // Number of times the Dice sign-in promo illustration should be shown.
 constexpr int kDiceSigninPromoIllustrationShowCountMax = 10;
 
@@ -73,6 +78,7 @@ ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
   return entry;
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 BadgedProfilePhoto::BadgeType GetProfileBadgeType(Profile* profile) {
   if (profile->IsSupervised()) {
     return profile->IsChild() ? BadgedProfilePhoto::BADGE_TYPE_CHILD
@@ -110,26 +116,52 @@ bool AreSigninCookiesClearedOnExit(Profile* profile) {
   return client->AreSigninCookiesDeletedOnExit();
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Returns the Google G icon in grey and with a padding of 2. The padding is
 // needed to make the icon look smaller, otherwise it looks too big compared to
 // the other icons. See crbug.com/951751 for more information.
 gfx::ImageSkia GetGoogleIconForUserMenu(int icon_size) {
-  constexpr int kIconPadding = 2;
+  constexpr gfx::Insets kIconPadding = gfx::Insets(2);
   SkColor icon_color =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_DefaultIconColor);
   // |CreateVectorIcon()| doesn't override colors specified in the .icon file,
   // therefore the image has to be colored manually with |CreateColorMask()|.
-  gfx::ImageSkia google_icon = gfx::CreateVectorIcon(
-      kGoogleGLogoIcon, icon_size - 2 * kIconPadding, gfx::kPlaceholderColor);
+  gfx::ImageSkia google_icon =
+      gfx::CreateVectorIcon(kGoogleGLogoIcon, icon_size - kIconPadding.width(),
+                            gfx::kPlaceholderColor);
   gfx::ImageSkia grey_google_icon =
       gfx::ImageSkiaOperations::CreateColorMask(google_icon, icon_color);
 
-  return gfx::CanvasImageSource::CreatePadded(grey_google_icon,
-                                              gfx::Insets(kIconPadding));
+  return gfx::CanvasImageSource::CreatePadded(grey_google_icon, kIconPadding);
 }
 #endif
+
+// Returns the number of browsers associated with |profile|.
+// Note: For regular profiles this includes incognito sessions.
+int CountBrowsersFor(Profile* profile) {
+  int browser_count = chrome::GetBrowserCount(profile);
+  if (!profile->IsOffTheRecord() && profile->HasOffTheRecordProfile())
+    browser_count += chrome::GetBrowserCount(profile->GetOffTheRecordProfile());
+  return browser_count;
+}
+
+SkColor GetSyncErrorBackgroundColor(bool sync_paused) {
+  constexpr int kAlpha = 16;
+  ui::NativeTheme::ColorId base_color_id =
+      sync_paused ? ui::NativeTheme::kColorId_ProminentButtonColor
+                  : ui::NativeTheme::kColorId_AlertSeverityHigh;
+  SkColor base_color =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(base_color_id);
+  return SkColorSetA(base_color, kAlpha);
+}
+
+bool IsSyncPaused(Profile* profile) {
+  int unused;
+  return sync_ui_util::GetMessagesForAvatarSyncError(
+             profile, &unused, &unused) == sync_ui_util::AUTH_ERROR;
+}
 
 }  // namespace
 
@@ -153,11 +185,13 @@ ProfileMenuView::ProfileMenuView(views::Button* anchor_button,
 ProfileMenuView::~ProfileMenuView() = default;
 
 void ProfileMenuView::BuildMenu() {
+  // TODO(crbug.com/993752): Remove after ProfileMenuRevamp.
   avatar_menu_ = std::make_unique<AvatarMenu>(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
       this, browser());
   avatar_menu_->RebuildMenu();
 
+  // TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
   if (!base::FeatureList::IsEnabled(features::kProfileMenuRevamp)) {
     if (dice_enabled_) {
       // Fetch DICE accounts. Note: This always includes the primary account if
@@ -168,19 +202,30 @@ void ProfileMenuView::BuildMenu() {
     AddProfileMenuView(avatar_menu_.get());
     return;
   }
-  BuildIdentity();
+
+  Profile* profile = browser()->profile();
+  if (profile->IsRegularProfile()) {
+    BuildIdentity();
+    BuildSyncInfo();
+    BuildAutofillButtons();
+  } else if (profile->IsGuestSession()) {
+    BuildGuestIdentity();
+  } else {
+    NOTREACHED();
+  }
+
+  BuildFeatureButtons();
+  BuildProfileManagementHeading();
+  BuildSelectableProfiles();
+  BuildProfileManagementFeatureButtons();
 }
 
+// TODO(crbug.com/993752): Remove after ProfileMenuRevamp.
 void ProfileMenuView::OnAvatarMenuChanged(
     AvatarMenu* avatar_menu) {
-  // TODO(crbug.com/993752): Remove AvatarMenu observer.
 }
 
-void ProfileMenuView::FocusButtonOnKeyboardOpen() {
-  if (first_profile_button_)
-    first_profile_button_->RequestFocus();
-}
-
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::OnWidgetClosing(views::Widget* /*widget*/) {
   // Unsubscribe from everything early so that the updates do not reach the
   // bubble and change its state.
@@ -197,8 +242,14 @@ void ProfileMenuView::OnManageGoogleAccountButtonClicked() {
   // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(
       base::UserMetricsAction("ProfileChooser_ManageGoogleAccountClicked"));
-  DCHECK(!dice_accounts_.empty());
-  NavigateToGoogleAccountPage(browser()->profile(), dice_accounts_[0].email);
+
+  Profile* profile = browser()->profile();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
+
+  NavigateToGoogleAccountPage(
+      profile, identity_manager->GetUnconsentedPrimaryAccountInfo().email);
 }
 
 void ProfileMenuView::OnPasswordsButtonClicked() {
@@ -244,6 +295,7 @@ void ProfileMenuView::OnManageProfilesButtonClicked() {
   PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::OnLockButtonClicked() {
   RecordClick(ActionableItem::kLockButton);
   profiles::LockProfile(browser()->profile());
@@ -256,6 +308,11 @@ void ProfileMenuView::OnExitProfileButtonClicked() {
   // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(base::UserMetricsAction("ProfileChooser_CloseAllClicked"));
   profiles::CloseProfileWindows(browser()->profile());
+}
+
+void ProfileMenuView::OnSyncSettingsButtonClicked() {
+  RecordClick(ActionableItem::kSyncSettingsButton);
+  chrome::ShowSettingsSubPage(browser(), chrome::kSyncSetupSubPage);
 }
 
 void ProfileMenuView::OnSyncErrorButtonClicked(
@@ -294,6 +351,9 @@ void ProfileMenuView::OnSyncErrorButtonClicked(
     case sync_ui_util::UPGRADE_CLIENT_ERROR:
       chrome::OpenUpdateChromeDialog(browser());
       break;
+    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_ERROR:
+      sync_ui_util::OpenTabForSyncKeyRetrieval(browser());
+      break;
     case sync_ui_util::PASSPHRASE_ERROR:
     case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
       chrome::ShowSettingsSubPage(browser(), chrome::kSyncSetupSubPage);
@@ -304,6 +364,7 @@ void ProfileMenuView::OnSyncErrorButtonClicked(
   }
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::OnCurrentProfileCardClicked() {
   RecordClick(ActionableItem::kCurrentProfileCard);
   if (dice_enabled_ &&
@@ -345,13 +406,15 @@ void ProfileMenuView::OnSignoutButtonClicked() {
                               kUserMenu_SignOutAllAccounts);
 }
 
-void ProfileMenuView::OnOtherProfileButtonClicked(int profile_index) {
+void ProfileMenuView::OnOtherProfileSelected(
+    const base::FilePath& profile_path) {
   RecordClick(ActionableItem::kOtherProfileButton);
   // TODO(crbug.com/995757): Remove user action.
   base::RecordAction(base::UserMetricsAction("ProfileChooser_ProfileClicked"));
-  avatar_menu_->SwitchToProfile(profile_index, /*always_create=*/false,
-                                ProfileMetrics::SWITCH_PROFILE_ICON);
   Hide();
+  profiles::SwitchToProfile(profile_path, /*always_create=*/false,
+                            ProfileManager::CreateCallback(),
+                            ProfileMetrics::SWITCH_PROFILE_ICON);
 }
 
 void ProfileMenuView::OnCookiesClearedOnExitLinkClicked() {
@@ -364,8 +427,15 @@ void ProfileMenuView::OnCookiesClearedOnExitLinkClicked() {
                                              chrome::kCookieSettingsSubPage);
 }
 
-void ProfileMenuView::RecordClick(ActionableItem item) {
-  base::UmaHistogramEnumeration("Profile.Menu.ClickedActionableItem", item);
+void ProfileMenuView::OnAddNewProfileButtonClicked() {
+  RecordClick(ActionableItem::kAddNewProfileButton);
+  UserManager::Show(/*profile_path_to_focus=*/base::FilePath(),
+                    profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE);
+}
+
+void ProfileMenuView::OnEditProfileButtonClicked() {
+  RecordClick(ActionableItem::kEditProfileButton);
+  chrome::ShowSettingsSubPage(browser(), chrome::kManageProfileSubPage);
 }
 
 void ProfileMenuView::BuildIdentity() {
@@ -377,20 +447,264 @@ void ProfileMenuView::BuildIdentity() {
   base::Optional<AccountInfo> account_info =
       identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           account);
+  ProfileAttributesEntry* profile_attributes =
+      GetProfileAttributesEntry(profile);
+  size_t num_of_profiles =
+      g_browser_process->profile_manager()->GetNumberOfProfiles();
+
+  if (num_of_profiles > 1 || !profile_attributes->IsUsingDefaultName()) {
+    SetHeading(profile_attributes->GetLocalProfileName(),
+               l10n_util::GetStringUTF16(IDS_SETTINGS_EDIT_PERSON),
+               base::BindRepeating(&ProfileMenuView::OnEditProfileButtonClicked,
+                                   base::Unretained(this)));
+  }
 
   if (account_info.has_value()) {
-    SetIdentityInfo(account_info.value().account_image,
-                    base::UTF8ToUTF16(account_info.value().full_name),
-                    base::UTF8ToUTF16(account_info.value().email));
-  } else {
-    ProfileAttributesEntry* profile_attributes =
-        GetProfileAttributesEntry(profile);
     SetIdentityInfo(
-        profile_attributes->GetAvatarIcon(), profile_attributes->GetName(),
+        account_info.value().account_image.AsImageSkia(), GetSyncIcon(),
+        base::UTF8ToUTF16(account_info.value().full_name),
+        IsSyncPaused(profile)
+            ? l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE)
+            : base::UTF8ToUTF16(account_info.value().email));
+  } else {
+    SetIdentityInfo(
+        profile_attributes->GetAvatarIcon().AsImageSkia(), GetSyncIcon(),
+        /*title=*/base::string16(),
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));
   }
 }
 
+void ProfileMenuView::BuildGuestIdentity() {
+  SetIdentityInfo(profiles::GetGuestAvatar(), GetSyncIcon(),
+                  l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));
+}
+
+gfx::ImageSkia ProfileMenuView::GetSyncIcon() {
+  Profile* profile = browser()->profile();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+
+  if (!profile->IsRegularProfile())
+    return gfx::ImageSkia();
+
+  if (!identity_manager->HasPrimaryAccount())
+    return ColoredImageForMenu(kSyncPausedCircleIcon, gfx::kGoogleGrey500);
+
+  const gfx::VectorIcon* icon = nullptr;
+  ui::NativeTheme::ColorId color_id;
+  int unused;
+  switch (
+      sync_ui_util::GetMessagesForAvatarSyncError(profile, &unused, &unused)) {
+    case sync_ui_util::NO_SYNC_ERROR:
+      icon = &kSyncCircleIcon;
+      color_id = ui::NativeTheme::kColorId_AlertSeverityLow;
+      break;
+    case sync_ui_util::AUTH_ERROR:
+      icon = &kSyncPausedCircleIcon;
+      color_id = ui::NativeTheme::kColorId_ProminentButtonColor;
+      break;
+    case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
+    case sync_ui_util::UNRECOVERABLE_ERROR:
+    case sync_ui_util::UPGRADE_CLIENT_ERROR:
+    case sync_ui_util::PASSPHRASE_ERROR:
+    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_ERROR:
+    case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
+      icon = &kSyncPausedCircleIcon;
+      color_id = ui::NativeTheme::kColorId_AlertSeverityHigh;
+      break;
+  }
+  return ColoredImageForMenu(*icon, native_theme->GetSystemColor(color_id));
+}
+
+void ProfileMenuView::BuildAutofillButtons() {
+  AddShortcutFeatureButton(
+      ImageForMenu(kKeyIcon, kShortcutIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_PROFILES_PASSWORDS_LINK),
+      base::BindRepeating(&ProfileMenuView::OnPasswordsButtonClicked,
+                          base::Unretained(this)));
+
+  AddShortcutFeatureButton(
+      ImageForMenu(kCreditCardIcon, kShortcutIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_PROFILES_CREDIT_CARDS_LINK),
+      base::BindRepeating(&ProfileMenuView::OnCreditCardsButtonClicked,
+                          base::Unretained(this)));
+
+  AddShortcutFeatureButton(
+      ImageForMenu(vector_icons::kLocationOnIcon, kShortcutIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_PROFILES_ADDRESSES_LINK),
+      base::BindRepeating(&ProfileMenuView::OnAddressesButtonClicked,
+                          base::Unretained(this)));
+}
+
+void ProfileMenuView::BuildSyncInfo() {
+  Profile* profile = browser()->profile();
+  // Only show the sync info if signin and sync are allowed.
+  if (!profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed) ||
+      !profile->IsSyncAllowed()) {
+    return;
+  }
+
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+
+  if (identity_manager->HasPrimaryAccount()) {
+    // Show sync state.
+    int description_string_id, button_string_id;
+    sync_ui_util::AvatarSyncErrorType error =
+        sync_ui_util::GetMessagesForAvatarSyncError(
+            browser()->profile(), &description_string_id, &button_string_id);
+
+    if (error == sync_ui_util::NO_SYNC_ERROR) {
+      SetSyncInfo(
+          GetSyncIcon(),
+          /*description=*/base::string16(),
+          l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_SYNC_SETTINGS_BUTTON),
+          base::BindRepeating(&ProfileMenuView::OnSyncSettingsButtonClicked,
+                              base::Unretained(this)));
+    } else {
+      bool sync_paused = (error == sync_ui_util::AUTH_ERROR);
+      // Overwrite error description with short version for the menu.
+      description_string_id = sync_paused ? IDS_PROFILES_DICE_SYNC_PAUSED_TITLE
+                                          : IDS_SYNC_ERROR_USER_MENU_TITLE;
+
+      SetSyncInfo(
+          GetSyncIcon(), l10n_util::GetStringUTF16(description_string_id),
+          l10n_util::GetStringUTF16(button_string_id),
+          base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,
+                              base::Unretained(this), error));
+      SetSyncInfoBackgroundColor(GetSyncErrorBackgroundColor(sync_paused));
+    }
+    return;
+  }
+
+  // Show sync promos.
+  CoreAccountInfo unconsented_account =
+      identity_manager->GetUnconsentedPrimaryAccountInfo();
+  base::Optional<AccountInfo> account_info =
+      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
+          unconsented_account);
+
+  if (account_info.has_value()) {
+    SetSyncInfo(
+        GetSyncIcon(),
+        l10n_util::GetStringUTF16(IDS_PROFILES_DICE_NOT_SYNCING_TITLE),
+        l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
+        base::BindRepeating(&ProfileMenuView::OnSigninAccountButtonClicked,
+                            base::Unretained(this), account_info.value()));
+  } else {
+    SetSyncInfo(/*icon=*/gfx::ImageSkia(),
+                l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO),
+                l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
+                base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
+                                    base::Unretained(this)));
+  }
+
+  SetSyncInfoBackgroundColor(
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor));
+}
+
+void ProfileMenuView::BuildFeatureButtons() {
+  Profile* profile = browser()->profile();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  const bool is_guest = profile->IsGuestSession();
+  const bool has_unconsented_account =
+      !is_guest && identity_manager->HasUnconsentedPrimaryAccount();
+  const bool has_primary_account =
+      !is_guest && identity_manager->HasPrimaryAccount();
+
+  if (has_unconsented_account && !IsSyncPaused(profile)) {
+    AddFeatureButton(
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+        // The Google G icon needs to be shrunk, so it won't look too big
+        // compared to the other icons.
+        ImageForMenu(kGoogleGLogoIcon, /*icon_to_image_ratio=*/0.75),
+#else
+        gfx::ImageSkia(),
+#endif
+        l10n_util::GetStringUTF16(IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT),
+        base::BindRepeating(
+            &ProfileMenuView::OnManageGoogleAccountButtonClicked,
+            base::Unretained(this)));
+  }
+
+  int window_count = CountBrowsersFor(profile);
+  if (window_count > 1) {
+    AddFeatureButton(
+        ImageForMenu(vector_icons::kCloseIcon),
+        l10n_util::GetPluralStringFUTF16(IDS_PROFILES_CLOSE_X_WINDOWS_BUTTON,
+                                         window_count),
+        base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
+                            base::Unretained(this)));
+  }
+
+  // The sign-out button is always at the bottom.
+  if (has_unconsented_account && !has_primary_account) {
+    AddFeatureButton(
+        ImageForMenu(kSignOutIcon),
+        l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT),
+        base::BindRepeating(&ProfileMenuView::OnSignoutButtonClicked,
+                            base::Unretained(this)));
+  }
+}
+
+void ProfileMenuView::BuildProfileManagementHeading() {
+  SetProfileManagementHeading(
+      l10n_util::GetStringUTF16(IDS_PROFILES_OTHER_PROFILES_TITLE));
+}
+
+void ProfileMenuView::BuildSelectableProfiles() {
+  auto profile_entries = g_browser_process->profile_manager()
+                             ->GetProfileAttributesStorage()
+                             .GetAllProfilesAttributesSortedByName();
+  for (ProfileAttributesEntry* profile_entry : profile_entries) {
+    // The current profile is excluded.
+    if (profile_entry->GetPath() == browser()->profile()->GetPath())
+      continue;
+
+    AddSelectableProfile(
+        profile_entry->GetAvatarIcon().AsImageSkia(), profile_entry->GetName(),
+        /*is_guest=*/false,
+        base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,
+                            base::Unretained(this), profile_entry->GetPath()));
+  }
+  UMA_HISTOGRAM_BOOLEAN("ProfileChooser.HasProfilesShown",
+                        profile_entries.size() > 1);
+
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  if (!browser()->profile()->IsGuestSession() &&
+      service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
+    AddSelectableProfile(
+        profiles::GetGuestAvatar(),
+        l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
+        /*is_guest=*/true,
+        base::BindRepeating(&ProfileMenuView::OnGuestProfileButtonClicked,
+                            base::Unretained(this)));
+  }
+}
+
+void ProfileMenuView::BuildProfileManagementFeatureButtons() {
+  AddProfileManagementShortcutFeatureButton(
+      ImageForMenu(vector_icons::kSettingsIcon, kShortcutIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON),
+      base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
+                          base::Unretained(this)));
+
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  if (service->GetBoolean(prefs::kBrowserAddPersonEnabled)) {
+    AddProfileManagementFeatureButton(
+        ImageForMenu(kAddIcon, /*icon_to_image_ratio=*/0.75),
+        l10n_util::GetStringUTF16(IDS_ADD),
+        base::BindRepeating(&ProfileMenuView::OnAddNewProfileButtonClicked,
+                            base::Unretained(this)));
+  }
+}
+
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {
   // Separate items into active and alternatives.
   const AvatarMenu::Item* active_item = nullptr;
@@ -412,13 +726,11 @@ void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {
       AddGuestProfileView();
   }
 
-#if defined(GOOGLE_CHROME_BUILD)
   if (dice_enabled_ && !dice_accounts_.empty() &&
       !SigninErrorControllerFactory::GetForProfile(browser()->profile())
            ->HasError()) {
     AddManageGoogleAccountButton();
   }
-#endif
 
   if (browser()->profile()->IsSupervised())
     AddSupervisedUserDisclaimerView();
@@ -431,6 +743,7 @@ void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {
   AddOptionsView(display_lock, avatar_menu);
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 bool ProfileMenuView::AddSyncErrorViewIfNeeded(
     const AvatarMenu::Item& avatar_item) {
   int content_string_id, button_string_id;
@@ -450,6 +763,7 @@ bool ProfileMenuView::AddSyncErrorViewIfNeeded(
   return true;
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::AddPreDiceSyncErrorView(
     const AvatarMenu::Item& avatar_item,
     sync_ui_util::AvatarSyncErrorType error,
@@ -476,6 +790,7 @@ void ProfileMenuView::AddPreDiceSyncErrorView(
   }
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::AddDiceSyncErrorView(
     const AvatarMenu::Item& avatar_item,
     sync_ui_util::AvatarSyncErrorType error,
@@ -528,6 +843,7 @@ void ProfileMenuView::AddDiceSyncErrorView(
   }
 }
 
+// TODO(crbug.com/1021587): Incorporate into ProfileMenuRevamp.
 void ProfileMenuView::AddSyncPausedReasonCookiesClearedOnExit() {
   base::string16 link_text = l10n_util::GetStringUTF16(
       IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT_LINK_TEXT);
@@ -541,6 +857,7 @@ void ProfileMenuView::AddSyncPausedReasonCookiesClearedOnExit() {
                           base::Unretained(this)));
 }
 
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::AddCurrentProfileView(
     const AvatarMenu::Item& avatar_item,
     bool is_guest) {
@@ -720,16 +1037,14 @@ void ProfileMenuView::AddOptionsView(bool display_lock,
           profiles::SHAPE_CIRCLE);
       views::Button* button = CreateAndAddButton(
           *image.ToImageSkia(), profiles::GetProfileSwitcherTextForItem(item),
-          base::BindRepeating(&ProfileMenuView::OnOtherProfileButtonClicked,
-                              base::Unretained(this), profile_index));
-
-      if (!first_profile_button_)
-        first_profile_button_ = button;
+          base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,
+                              base::Unretained(this), item.profile_path));
+      SetFirstProfileButtonIfUnset(button);
     }
   }
 
   UMA_HISTOGRAM_BOOLEAN("ProfileChooser.HasProfilesShown",
-                        first_profile_button_);
+                        HasFirstProfileButton());
 
   // Add the "Guest" button for browsing as guest
   if (!is_guest && !browser()->profile()->IsSupervised()) {
@@ -814,16 +1129,16 @@ void ProfileMenuView::AddAutofillHomeView() {
                           base::Unretained(this)));
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
 void ProfileMenuView::AddManageGoogleAccountButton() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   AddMenuGroup(false);
   CreateAndAddButton(
       GetGoogleIconForUserMenu(GetDefaultIconSize()),
       l10n_util::GetStringUTF16(IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT),
       base::BindRepeating(&ProfileMenuView::OnManageGoogleAccountButtonClicked,
                           base::Unretained(this)));
-}
 #endif
+}
 
 void ProfileMenuView::PostActionPerformed(
     ProfileMetrics::ProfileDesktopMenu action_performed) {

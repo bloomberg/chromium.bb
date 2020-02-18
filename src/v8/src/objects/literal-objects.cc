@@ -31,11 +31,11 @@ void AddToDescriptorArrayTemplate(
     Isolate* isolate, Handle<DescriptorArray> descriptor_array_template,
     Handle<Name> name, ClassBoilerplate::ValueKind value_kind,
     Handle<Object> value) {
-  int entry = descriptor_array_template->Search(
+  InternalIndex entry = descriptor_array_template->Search(
       *name, descriptor_array_template->number_of_descriptors());
   // TODO(ishell): deduplicate properties at AST level, this will allow us to
   // avoid creation of closures that will be overwritten anyway.
-  if (entry == DescriptorArray::kNotFound) {
+  if (entry.is_not_found()) {
     // Entry not found, add new one.
     Descriptor d;
     if (value_kind == ClassBoilerplate::kData) {
@@ -81,14 +81,16 @@ void AddToDescriptorArrayTemplate(
 
 Handle<NameDictionary> DictionaryAddNoUpdateNextEnumerationIndex(
     Isolate* isolate, Handle<NameDictionary> dictionary, Handle<Name> name,
-    Handle<Object> value, PropertyDetails details, int* entry_out = nullptr) {
+    Handle<Object> value, PropertyDetails details,
+    InternalIndex* entry_out = nullptr) {
   return NameDictionary::AddNoUpdateNextEnumerationIndex(
       isolate, dictionary, name, value, details, entry_out);
 }
 
 Handle<NumberDictionary> DictionaryAddNoUpdateNextEnumerationIndex(
     Isolate* isolate, Handle<NumberDictionary> dictionary, uint32_t element,
-    Handle<Object> value, PropertyDetails details, int* entry_out = nullptr) {
+    Handle<Object> value, PropertyDetails details,
+    InternalIndex* entry_out = nullptr) {
   // NumberDictionary does not maintain the enumeration order, so it's
   // a normal Add().
   return NumberDictionary::Add(isolate, dictionary, element, value, details,
@@ -122,10 +124,10 @@ template <typename Dictionary, typename Key>
 void AddToDictionaryTemplate(Isolate* isolate, Handle<Dictionary> dictionary,
                              Key key, int key_index,
                              ClassBoilerplate::ValueKind value_kind,
-                             Object value) {
-  int entry = dictionary->FindEntry(isolate, key);
+                             Smi value) {
+  InternalIndex entry = dictionary->FindEntry(isolate, key);
 
-  if (entry == kNotFound) {
+  if (entry.is_not_found()) {
     // Entry not found, add new one.
     const bool is_elements_dictionary =
         std::is_same<Dictionary, NumberDictionary>::value;
@@ -302,7 +304,7 @@ class ObjectDescriptor {
                                      ClassBoilerplate::kFullComputedEntrySize)
             : factory->empty_fixed_array();
 
-    temp_handle_ = handle(Smi::kZero, isolate);
+    temp_handle_ = handle(Smi::zero(), isolate);
   }
 
   void AddConstant(Isolate* isolate, Handle<Name> name, Handle<Object> value,
@@ -390,14 +392,14 @@ class ObjectDescriptor {
 
 void ClassBoilerplate::AddToPropertiesTemplate(
     Isolate* isolate, Handle<NameDictionary> dictionary, Handle<Name> name,
-    int key_index, ClassBoilerplate::ValueKind value_kind, Object value) {
+    int key_index, ClassBoilerplate::ValueKind value_kind, Smi value) {
   AddToDictionaryTemplate(isolate, dictionary, name, key_index, value_kind,
                           value);
 }
 
 void ClassBoilerplate::AddToElementsTemplate(
     Isolate* isolate, Handle<NumberDictionary> dictionary, uint32_t key,
-    int key_index, ClassBoilerplate::ValueKind value_kind, Object value) {
+    int key_index, ClassBoilerplate::ValueKind value_kind, Smi value) {
   AddToDictionaryTemplate(isolate, dictionary, key, key_index, value_kind,
                           value);
 }
@@ -412,8 +414,8 @@ Handle<ClassBoilerplate> ClassBoilerplate::BuildClassBoilerplate(
   ObjectDescriptor static_desc(kMinimumClassPropertiesCount);
   ObjectDescriptor instance_desc(kMinimumPrototypePropertiesCount);
 
-  for (int i = 0; i < expr->properties()->length(); i++) {
-    ClassLiteral::Property* property = expr->properties()->at(i);
+  for (int i = 0; i < expr->public_members()->length(); i++) {
+    ClassLiteral::Property* property = expr->public_members()->at(i);
     ObjectDescriptor& desc =
         property->is_static() ? static_desc : instance_desc;
     if (property->is_computed_name()) {
@@ -477,14 +479,8 @@ Handle<ClassBoilerplate> ClassBoilerplate::BuildClassBoilerplate(
   //
   int dynamic_argument_index = ClassBoilerplate::kFirstDynamicArgumentIndex;
 
-  for (int i = 0; i < expr->properties()->length(); i++) {
-    ClassLiteral::Property* property = expr->properties()->at(i);
-
-    // Private members are not processed using the class boilerplate.
-    if (property->is_private()) {
-      continue;
-    }
-
+  for (int i = 0; i < expr->public_members()->length(); i++) {
+    ClassLiteral::Property* property = expr->public_members()->at(i);
     ClassBoilerplate::ValueKind value_kind;
     switch (property->kind()) {
       case ClassLiteral::Property::METHOD:
@@ -528,7 +524,8 @@ Handle<ClassBoilerplate> ClassBoilerplate::BuildClassBoilerplate(
 
   // Add name accessor to the class object if necessary.
   bool install_class_name_accessor = false;
-  if (!expr->has_name_static_property()) {
+  if (!expr->has_name_static_property() &&
+      expr->constructor()->has_shared_name()) {
     if (static_desc.HasDictionaryProperties()) {
       // Install class name accessor if necessary during class literal
       // instantiation.

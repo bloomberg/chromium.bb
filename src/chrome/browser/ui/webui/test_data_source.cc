@@ -25,19 +25,33 @@ namespace {
 const char kModuleQuery[] = "module=";
 }  // namespace
 
+TestDataSource::TestDataSource(std::string root) {
+  base::FilePath test_data;
+  CHECK(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+  src_root_ = test_data.AppendASCII(root).NormalizePathSeparators();
+  DCHECK(test_data.IsParent(src_root_));
+
+  base::FilePath exe_dir;
+  base::PathService::Get(base::DIR_EXE, &exe_dir);
+  gen_root_ = exe_dir.AppendASCII("gen/chrome/test/data/" + root)
+                  .NormalizePathSeparators();
+  DCHECK(exe_dir.IsParent(gen_root_));
+}
+
 std::string TestDataSource::GetSource() {
   return "test";
 }
 
 void TestDataSource::StartDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::WebContents::Getter& wc_getter,
-    const content::URLDataSource::GotDataCallback& callback) {
+    content::URLDataSource::GotDataCallback callback) {
+  const std::string path = content::URLDataSource::URLToRequestPath(url);
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&TestDataSource::ReadFile, base::Unretained(this), path,
-                     callback));
+                     std::move(callback)));
 }
 
 std::string TestDataSource::GetMimeType(const std::string& path) {
@@ -48,7 +62,9 @@ std::string TestDataSource::GetMimeType(const std::string& path) {
     return "text/html";
   }
   // The test data source currently only serves HTML and JS.
-  CHECK(base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII));
+  CHECK(base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII))
+      << "Tried to read file with unexpected type from test data source: "
+      << path;
   return "application/javascript";
 }
 
@@ -71,23 +87,7 @@ GURL TestDataSource::GetURLForPath(const std::string& path) {
 
 void TestDataSource::ReadFile(
     const std::string& path,
-    const content::URLDataSource::GotDataCallback& callback) {
-  if (src_root_.empty()) {
-    base::FilePath test_data;
-    CHECK(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
-    src_root_ = test_data.Append(FILE_PATH_LITERAL("webui"));
-  }
-
-  if (gen_root_.empty()) {
-    std::string gen_path = "gen/chrome/test/data/webui/";
-#if defined(OS_WIN)
-    base::ReplaceChars(gen_path, "//", "\\", &gen_path);
-#endif
-    base::FilePath exe_dir;
-    base::PathService::Get(base::DIR_EXE, &exe_dir);
-    gen_root_ = exe_dir.AppendASCII(gen_path);
-  }
-
+    content::URLDataSource::GotDataCallback callback) {
   std::string content;
 
   GURL url = GetURLForPath(path);
@@ -125,5 +125,5 @@ void TestDataSource::ReadFile(
 
   scoped_refptr<base::RefCountedString> response =
       base::RefCountedString::TakeString(&content);
-  callback.Run(response.get());
+  std::move(callback).Run(response.get());
 }

@@ -28,18 +28,17 @@ class MockBrowserControlsOffsetManagerClient
   MockBrowserControlsOffsetManagerClient(float top_controls_height,
                                          float browser_controls_show_threshold,
                                          float browser_controls_hide_threshold)
-      : host_impl_(&task_runner_provider_,
-                   &task_graph_runner_),
+      : host_impl_(&task_runner_provider_, &task_graph_runner_),
         redraw_needed_(false),
         update_draw_properties_needed_(false),
-        bottom_controls_height_(0.f),
+        browser_controls_params_({top_controls_height, 0, 0, 0, false, false}),
+        bottom_controls_shown_ratio_(1.f),
         top_controls_shown_ratio_(1.f),
-        top_controls_height_(top_controls_height),
         browser_controls_show_threshold_(browser_controls_show_threshold),
         browser_controls_hide_threshold_(browser_controls_hide_threshold) {
     active_tree_ = std::make_unique<LayerTreeImpl>(
         &host_impl_, new SyncedProperty<ScaleGroup>, new SyncedBrowserControls,
-        new SyncedElasticOverscroll);
+        new SyncedBrowserControls, new SyncedElasticOverscroll);
     root_scroll_layer_ = LayerImpl::Create(active_tree_.get(), 1);
   }
 
@@ -53,21 +52,43 @@ class MockBrowserControlsOffsetManagerClient
   bool HaveRootScrollNode() const override { return true; }
 
   float BottomControlsHeight() const override {
-    return bottom_controls_height_;
+    return browser_controls_params_.bottom_controls_height;
   }
 
-  float TopControlsHeight() const override { return top_controls_height_; }
-
-  void SetCurrentBrowserControlsShownRatio(float ratio) override {
-    ASSERT_FALSE(std::isnan(ratio));
-    ASSERT_FALSE(ratio == std::numeric_limits<float>::infinity());
-    ASSERT_FALSE(ratio == -std::numeric_limits<float>::infinity());
-    ratio = std::max(ratio, 0.f);
-    ratio = std::min(ratio, 1.f);
-    top_controls_shown_ratio_ = ratio;
+  float BottomControlsMinHeight() const override {
+    return browser_controls_params_.bottom_controls_min_height;
   }
 
-  float CurrentBrowserControlsShownRatio() const override {
+  float TopControlsHeight() const override {
+    return browser_controls_params_.top_controls_height;
+  }
+
+  float TopControlsMinHeight() const override {
+    return browser_controls_params_.top_controls_min_height;
+  }
+
+  void SetCurrentBrowserControlsShownRatio(float top_ratio,
+                                           float bottom_ratio) override {
+    AssertAndClamp(&top_ratio);
+    top_controls_shown_ratio_ = top_ratio;
+
+    AssertAndClamp(&bottom_ratio);
+    bottom_controls_shown_ratio_ = bottom_ratio;
+  }
+
+  void AssertAndClamp(float* ratio) {
+    ASSERT_FALSE(std::isnan(*ratio));
+    ASSERT_FALSE(*ratio == std::numeric_limits<float>::infinity());
+    ASSERT_FALSE(*ratio == -std::numeric_limits<float>::infinity());
+    *ratio = std::max(*ratio, 0.f);
+    *ratio = std::min(*ratio, 1.f);
+  }
+
+  float CurrentBottomControlsShownRatio() const override {
+    return bottom_controls_shown_ratio_;
+  }
+
+  float CurrentTopControlsShownRatio() const override {
     return top_controls_shown_ratio_;
   }
 
@@ -84,10 +105,8 @@ class MockBrowserControlsOffsetManagerClient
     return manager_.get();
   }
 
-  void SetBrowserControlsHeight(float height) { top_controls_height_ = height; }
-
-  void SetBottomControlsHeight(float height) {
-    bottom_controls_height_ = height;
+  void SetBrowserControlsParams(BrowserControlsParams params) {
+    browser_controls_params_ = params;
   }
 
  private:
@@ -100,9 +119,9 @@ class MockBrowserControlsOffsetManagerClient
   bool redraw_needed_;
   bool update_draw_properties_needed_;
 
-  float bottom_controls_height_;
+  BrowserControlsParams browser_controls_params_;
+  float bottom_controls_shown_ratio_;
   float top_controls_shown_ratio_;
-  float top_controls_height_;
   float browser_controls_show_threshold_;
   float browser_controls_hide_threshold_;
 };
@@ -166,7 +185,7 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownHideAnimation) {
   EXPECT_FLOAT_EQ(15.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -175,13 +194,13 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownHideAnimation) {
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -189,7 +208,7 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownHideAnimation) {
 TEST(BrowserControlsOffsetManagerTest,
      BottomControlsPartialShownHideAnimation) {
   MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
-  client.SetBottomControlsHeight(100.f);
+  client.SetBrowserControlsParams({0, 0, 100, 0, false, false});
   BrowserControlsOffsetManager* manager = client.manager();
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
@@ -203,7 +222,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -212,13 +231,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->BottomControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_LT(manager->BottomControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->BottomControlsShownRatio());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -238,7 +257,7 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownShowAnimation) {
   EXPECT_FLOAT_EQ(70.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -247,13 +266,13 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownShowAnimation) {
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(100.f, manager->ContentTopOffset());
 }
@@ -261,7 +280,7 @@ TEST(BrowserControlsOffsetManagerTest, PartialShownShowAnimation) {
 TEST(BrowserControlsOffsetManagerTest,
      BottomControlsPartialShownShowAnimation) {
   MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
-  client.SetBottomControlsHeight(100.f);
+  client.SetBrowserControlsParams({0, 0, 100, 0, false, false});
   BrowserControlsOffsetManager* manager = client.manager();
 
   manager->ScrollBegin();
@@ -270,7 +289,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -279,13 +298,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->BottomControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_GT(manager->BottomControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(1.f, manager->BottomControlsShownRatio());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -302,7 +321,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(80.f, manager->ContentTopOffset());
 
   manager->ScrollEnd();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -311,13 +330,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(100.f, manager->ContentTopOffset());
 }
@@ -334,7 +353,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(70.f, manager->ContentTopOffset());
 
   manager->ScrollEnd();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -343,13 +362,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -370,7 +389,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(20.f, manager->ContentTopOffset());
 
   manager->ScrollEnd();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -379,13 +398,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -406,7 +425,7 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(30.f, manager->ContentTopOffset());
 
   manager->ScrollEnd();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -415,13 +434,13 @@ TEST(BrowserControlsOffsetManagerTest,
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(100.f, manager->ContentTopOffset());
 }
@@ -452,7 +471,7 @@ TEST(BrowserControlsOffsetManagerTest, PinchIgnoresScroll) {
   EXPECT_FLOAT_EQ(15.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 }
 
 TEST(BrowserControlsOffsetManagerTest, PinchBeginStartsAnimationIfNecessary) {
@@ -464,17 +483,17 @@ TEST(BrowserControlsOffsetManagerTest, PinchBeginStartsAnimationIfNecessary) {
   EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
 
   manager->PinchBegin();
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
 
   manager->PinchEnd();
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
 
   manager->ScrollBy(gfx::Vector2dF(0.f, -15.f));
   EXPECT_FLOAT_EQ(-85.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(15.f, manager->ContentTopOffset());
 
   manager->PinchBegin();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   base::TimeTicks time = base::TimeTicks::Now();
 
@@ -483,24 +502,24 @@ TEST(BrowserControlsOffsetManagerTest, PinchBeginStartsAnimationIfNecessary) {
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_LT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
 
   manager->PinchEnd();
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
 
   manager->ScrollBy(gfx::Vector2dF(0.f, -55.f));
   EXPECT_FLOAT_EQ(-45.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(55.f, manager->ContentTopOffset());
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
 
   manager->ScrollEnd();
-  EXPECT_TRUE(manager->has_animation());
+  EXPECT_TRUE(manager->HasAnimation());
 
   time = base::TimeTicks::Now();
 
@@ -509,13 +528,13 @@ TEST(BrowserControlsOffsetManagerTest, PinchBeginStartsAnimationIfNecessary) {
   manager->Animate(time);
   EXPECT_EQ(manager->TopControlsShownRatio(), previous);
 
-  while (manager->has_animation()) {
+  while (manager->HasAnimation()) {
     previous = manager->TopControlsShownRatio();
     time = base::TimeDelta::FromMicroseconds(100) + time;
     manager->Animate(time);
     EXPECT_GT(manager->TopControlsShownRatio(), previous);
   }
-  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
 }
 
@@ -526,13 +545,13 @@ TEST(BrowserControlsOffsetManagerTest,
 
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
 
-  client.SetBrowserControlsHeight(100.f);
-  EXPECT_FALSE(manager->has_animation());
+  client.SetBrowserControlsParams({100, 0, 0, 0, false, false});
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(100.f, manager->TopControlsHeight());
   EXPECT_FLOAT_EQ(0, manager->ControlsTopOffset());
 
-  client.SetBrowserControlsHeight(50.f);
-  EXPECT_FALSE(manager->has_animation());
+  client.SetBrowserControlsParams({50, 0, 0, 0, false, false});
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(50.f, manager->TopControlsHeight());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
 }
@@ -548,13 +567,13 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
   manager->ScrollEnd();
 
-  client.SetBrowserControlsHeight(50.f);
-  EXPECT_FALSE(manager->has_animation());
+  client.SetBrowserControlsParams({50, 0, 0, 0, false, false});
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(-50.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 
-  client.SetBrowserControlsHeight(0.f);
-  EXPECT_FALSE(manager->has_animation());
+  client.SetBrowserControlsParams({0, 0, 0, 0, false, false});
+  EXPECT_FALSE(manager->HasAnimation());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
 }
@@ -570,13 +589,13 @@ TEST(BrowserControlsOffsetManagerTest, ScrollByWithZeroHeightControlsIsNoop) {
   EXPECT_FLOAT_EQ(20.f, pending.y());
   EXPECT_FLOAT_EQ(0.f, manager->ControlsTopOffset());
   EXPECT_FLOAT_EQ(0.f, manager->ContentTopOffset());
-  EXPECT_FLOAT_EQ(1.f, client.CurrentBrowserControlsShownRatio());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
   manager->ScrollEnd();
 }
 
 TEST(BrowserControlsOffsetManagerTest, ScrollThenRestoreBottomControls) {
   MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
-  client.SetBottomControlsHeight(100.f);
+  client.SetBrowserControlsParams({0, 0, 100, 0, false, false});
   BrowserControlsOffsetManager* manager = client.manager();
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 20.f));
@@ -594,7 +613,7 @@ TEST(BrowserControlsOffsetManagerTest, ScrollThenRestoreBottomControls) {
 TEST(BrowserControlsOffsetManagerTest,
      ScrollThenRestoreBottomControlsNoTopControls) {
   MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
-  client.SetBottomControlsHeight(100.f);
+  client.SetBrowserControlsParams({0, 0, 100, 0, false, false});
   BrowserControlsOffsetManager* manager = client.manager();
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 20.f));
@@ -611,7 +630,7 @@ TEST(BrowserControlsOffsetManagerTest,
 
 TEST(BrowserControlsOffsetManagerTest, HideAndPeekBottomControls) {
   MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
-  client.SetBottomControlsHeight(100.f);
+  client.SetBrowserControlsParams({0, 0, 100, 0, false, false});
   BrowserControlsOffsetManager* manager = client.manager();
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
@@ -629,19 +648,60 @@ TEST(BrowserControlsOffsetManagerTest, HideAndPeekBottomControls) {
 TEST(BrowserControlsOffsetManagerTest,
      HideAndImmediateShowKeepsControlsVisible) {
   MockBrowserControlsOffsetManagerClient client(100.f, 0.5f, 0.5f);
-  client.SetBottomControlsHeight(100.f);
+  client.SetBrowserControlsParams({0, 0, 100, 0, false, false});
   BrowserControlsOffsetManager* manager = client.manager();
-  EXPECT_FLOAT_EQ(1.f, client.CurrentBrowserControlsShownRatio());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
 
   manager->UpdateBrowserControlsState(BrowserControlsState::kBoth,
                                       BrowserControlsState::kHidden, true);
-  EXPECT_TRUE(manager->has_animation());
-  EXPECT_FLOAT_EQ(1.f, client.CurrentBrowserControlsShownRatio());
+  EXPECT_TRUE(manager->HasAnimation());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
 
   manager->UpdateBrowserControlsState(BrowserControlsState::kBoth,
                                       BrowserControlsState::kShown, true);
-  EXPECT_FALSE(manager->has_animation());
-  EXPECT_FLOAT_EQ(1.f, client.CurrentBrowserControlsShownRatio());
+  EXPECT_FALSE(manager->HasAnimation());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
+}
+
+TEST(BrowserControlsOffsetManagerTest,
+     ScrollWithMinHeightSetForTopControlsOnly) {
+  MockBrowserControlsOffsetManagerClient client(100, 0.5f, 0.5f);
+  client.SetBrowserControlsParams({100, 30, 100, 0, false, false});
+  BrowserControlsOffsetManager* manager = client.manager();
+  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
+
+  manager->ScrollBegin();
+  manager->ScrollBy(gfx::Vector2dF(0, 150));
+  EXPECT_FLOAT_EQ(30.f / 100, client.CurrentTopControlsShownRatio());
+  EXPECT_FLOAT_EQ(0.f, client.CurrentBottomControlsShownRatio());
+  manager->ScrollEnd();
+
+  manager->ScrollBegin();
+  manager->ScrollBy(gfx::Vector2dF(0, -70));
+  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
+  manager->ScrollEnd();
+}
+
+TEST(BrowserControlsOffsetManagerTest, ScrollWithMinHeightSetForBothControls) {
+  MockBrowserControlsOffsetManagerClient client(100, 0.5f, 0.5f);
+  client.SetBrowserControlsParams({100, 30, 100, 20, false, false});
+  BrowserControlsOffsetManager* manager = client.manager();
+  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
+
+  manager->ScrollBegin();
+  manager->ScrollBy(gfx::Vector2dF(0, 150));
+  EXPECT_FLOAT_EQ(30.f / 100, client.CurrentTopControlsShownRatio());
+  EXPECT_FLOAT_EQ(20.f / 100, client.CurrentBottomControlsShownRatio());
+  manager->ScrollEnd();
+
+  manager->ScrollBegin();
+  manager->ScrollBy(gfx::Vector2dF(0, -70));
+  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
+  manager->ScrollEnd();
 }
 
 }  // namespace

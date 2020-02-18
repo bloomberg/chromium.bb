@@ -96,9 +96,9 @@ class SourceBufferStreamTest : public testing::Test {
 
   void SetAudioStream() {
     video_config_ = TestVideoConfig::Invalid();
-    audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
-                             CHANNEL_LAYOUT_STEREO, 1000, EmptyExtraData(),
-                             Unencrypted(), base::TimeDelta(), 0);
+    audio_config_.Initialize(
+        kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 1000,
+        EmptyExtraData(), EncryptionScheme::kUnencrypted, base::TimeDelta(), 0);
     ResetStream<>(audio_config_);
 
     // Equivalent to 2ms per frame.
@@ -106,15 +106,15 @@ class SourceBufferStreamTest : public testing::Test {
   }
 
   void NewCodedFrameGroupAppend(int starting_position, int number_of_buffers) {
-    AppendBuffers(starting_position, number_of_buffers, true,
-                  base::TimeDelta(), true, &kDataA, kDataSize);
+    AppendBuffers(starting_position, number_of_buffers, true, base::TimeDelta(),
+                  &kDataA, kDataSize);
   }
 
   void NewCodedFrameGroupAppend(int starting_position,
                                 int number_of_buffers,
                                 const uint8_t* data) {
-    AppendBuffers(starting_position, number_of_buffers, true,
-                  base::TimeDelta(), true, data, kDataSize);
+    AppendBuffers(starting_position, number_of_buffers, true, base::TimeDelta(),
+                  data, kDataSize);
   }
 
   void NewCodedFrameGroupAppend_OffsetFirstBuffer(
@@ -122,55 +122,40 @@ class SourceBufferStreamTest : public testing::Test {
       int number_of_buffers,
       base::TimeDelta first_buffer_offset) {
     AppendBuffers(starting_position, number_of_buffers, true,
-                  first_buffer_offset, true, &kDataA, kDataSize);
-  }
-
-  void NewCodedFrameGroupAppend_ExpectFailure(int starting_position,
-                                              int number_of_buffers) {
-    AppendBuffers(starting_position, number_of_buffers, true,
-                  base::TimeDelta(), false, &kDataA, kDataSize);
+                  first_buffer_offset, &kDataA, kDataSize);
   }
 
   void AppendBuffers(int starting_position, int number_of_buffers) {
     AppendBuffers(starting_position, number_of_buffers, false,
-                  base::TimeDelta(), true, &kDataA, kDataSize);
+                  base::TimeDelta(), &kDataA, kDataSize);
   }
 
   void AppendBuffers(int starting_position,
                      int number_of_buffers,
                      const uint8_t* data) {
     AppendBuffers(starting_position, number_of_buffers, false,
-                  base::TimeDelta(), true, data, kDataSize);
+                  base::TimeDelta(), data, kDataSize);
   }
 
   void NewCodedFrameGroupAppend(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, kNoTimestamp, false, true);
+    AppendBuffers(buffers_to_append, true, kNoTimestamp, false);
   }
 
   void NewCodedFrameGroupAppend(base::TimeDelta start_timestamp,
                                 const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, start_timestamp, false, true);
+    AppendBuffers(buffers_to_append, true, start_timestamp, false);
   }
 
   void AppendBuffers(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, kNoTimestamp, false, true);
+    AppendBuffers(buffers_to_append, false, kNoTimestamp, false);
   }
 
   void NewCodedFrameGroupAppendOneByOne(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, kNoTimestamp, true, true);
+    AppendBuffers(buffers_to_append, true, kNoTimestamp, true);
   }
 
   void AppendBuffersOneByOne(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, kNoTimestamp, true, true);
-  }
-
-  void NewCodedFrameGroupAppend_ExpectFailure(
-      const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, kNoTimestamp, false, false);
-  }
-
-  void AppendBuffers_ExpectFailure(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, kNoTimestamp, false, false);
+    AppendBuffers(buffers_to_append, false, kNoTimestamp, true);
   }
 
   void Seek(int position) { stream_->Seek(position * frame_duration_); }
@@ -472,7 +457,6 @@ class SourceBufferStreamTest : public testing::Test {
                      int number_of_buffers,
                      bool begin_coded_frame_group,
                      base::TimeDelta first_buffer_offset,
-                     bool expect_success,
                      const uint8_t* data,
                      int size) {
     if (begin_coded_frame_group) {
@@ -514,7 +498,7 @@ class SourceBufferStreamTest : public testing::Test {
       queue.push_back(buffer);
     }
     if (!queue.empty())
-      EXPECT_EQ(expect_success, stream_->Append(queue));
+      stream_->Append(queue);
   }
 
   void UpdateLastBufferDuration(DecodeTimestamp current_dts,
@@ -681,8 +665,7 @@ class SourceBufferStreamTest : public testing::Test {
   void AppendBuffers(const std::string& buffers_to_append,
                      bool start_new_coded_frame_group,
                      base::TimeDelta coded_frame_group_start_timestamp,
-                     bool one_by_one,
-                     bool expect_success) {
+                     bool one_by_one) {
     BufferQueue buffers = StringToBufferQueue(buffers_to_append);
 
     if (start_new_coded_frame_group) {
@@ -699,7 +682,7 @@ class SourceBufferStreamTest : public testing::Test {
     }
 
     if (!one_by_one) {
-      EXPECT_EQ(expect_success, stream_->Append(buffers));
+      stream_->Append(buffers);
       return;
     }
 
@@ -707,7 +690,7 @@ class SourceBufferStreamTest : public testing::Test {
     for (size_t i = 0; i < buffers.size(); i++) {
       BufferQueue wrapper;
       wrapper.push_back(buffers[i]);
-      EXPECT_TRUE(stream_->Append(wrapper));
+      stream_->Append(wrapper);
     }
   }
 
@@ -3909,7 +3892,8 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_3) {
 // Test all the valid same timestamp cases for audio.
 TEST_F(SourceBufferStreamTest, SameTimestamp_Audio) {
   AudioDecoderConfig config(kCodecMP3, kSampleFormatF32, CHANNEL_LAYOUT_STEREO,
-                            44100, EmptyExtraData(), Unencrypted());
+                            44100, EmptyExtraData(),
+                            EncryptionScheme::kUnencrypted);
   ResetStream<>(config);
   Seek(0);
   NewCodedFrameGroupAppend("0K 0K 30K 30K");
@@ -4535,9 +4519,9 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
   EXPECT_MEDIA_LOG(SkippingSpliceTooLittleOverlap(1250, 250));
 
   video_config_ = TestVideoConfig::Invalid();
-  audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
-                           CHANNEL_LAYOUT_STEREO, 4000, EmptyExtraData(),
-                           Unencrypted(), base::TimeDelta(), 0);
+  audio_config_.Initialize(
+      kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 4000,
+      EmptyExtraData(), EncryptionScheme::kUnencrypted, base::TimeDelta(), 0);
   ResetStream<>(audio_config_);
   // Equivalent to 0.5ms per frame.
   SetStreamInfo(2000, 2000);
@@ -4570,7 +4554,7 @@ TEST_F(SourceBufferStreamTest, Audio_PrerollFrame) {
 TEST_F(SourceBufferStreamTest, Audio_ConfigChangeWithPreroll) {
   AudioDecoderConfig new_config(kCodecVorbis, kSampleFormatPlanarF32,
                                 CHANNEL_LAYOUT_MONO, 2000, EmptyExtraData(),
-                                Unencrypted());
+                                EncryptionScheme::kUnencrypted);
   SetAudioStream();
   Seek(0);
 
@@ -4615,8 +4599,8 @@ TEST_F(SourceBufferStreamTest, Audio_Opus_SeekToJustBeforeRangeStart) {
   video_config_ = TestVideoConfig::Invalid();
   audio_config_.Initialize(kCodecOpus, kSampleFormatPlanarF32,
                            CHANNEL_LAYOUT_STEREO, 1000, EmptyExtraData(),
-                           Unencrypted(), base::TimeDelta::FromMilliseconds(10),
-                           0);
+                           EncryptionScheme::kUnencrypted,
+                           base::TimeDelta::FromMilliseconds(10), 0);
   ResetStream<>(audio_config_);
 
   // Equivalent to 1s per frame.

@@ -8,8 +8,12 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -36,6 +40,18 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // (encoded in UTF-8) and |font_size| in pixels.
   static PlatformFont* CreateFromNameAndSize(const std::string& font_name,
                                              int font_size);
+
+  // Creates a PlatformFont instance from the provided SkTypeface, ideally by
+  // just wrapping it without triggering a new font match. Implemented for
+  // PlatformFontWin and PlatformFontSkia, where only the latter provides true
+  // wrapping of the provided SkTypeface, while PlatformFontWin creates a
+  // PlatformFont object by extracting the family name and falls back to
+  // CreateFromNameAndSize(). The FontRenderParams can be provided or they
+  // will be determined by using gfx::GetFontRenderParams(...) otherwise.
+  static PlatformFont* CreateFromSkTypeface(
+      sk_sp<SkTypeface> typeface,
+      int font_size,
+      const base::Optional<FontRenderParams>& params);
 
   // Returns a new Font derived from the existing font.
   // |size_delta| is the size in pixels to add to the current font.
@@ -86,6 +102,13 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // Returns the native font handle.
   virtual NativeFont GetNativeFont() const = 0;
 #endif
+
+  // Returns the underlying Skia typeface if this PlatformFont instance is
+  // backed by PlatformFontSkia, returns nullptr otherwise. Used in
+  // RenderTextHarfBuzz for having access to the exact Skia typeface returned by
+  // font fallback, as we would otherwise lose the handle to the correct
+  // platform font instance.
+  virtual sk_sp<SkTypeface> GetNativeSkTypefaceIfAvailable() const = 0;
 
  protected:
   virtual ~PlatformFont() {}

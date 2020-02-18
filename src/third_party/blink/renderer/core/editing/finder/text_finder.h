@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_TEXT_FINDER_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -51,8 +51,7 @@ struct WebFloatPoint;
 struct WebFloatRect;
 struct WebRect;
 
-class CORE_EXPORT TextFinder final
-    : public GarbageCollectedFinalized<TextFinder> {
+class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
  public:
   bool Find(int identifier,
             const WebString& search_text,

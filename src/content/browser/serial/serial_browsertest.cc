@@ -11,6 +11,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/serial_chooser.h"
 #include "content/public/browser/serial_delegate.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -64,7 +65,7 @@ class SerialTest : public ContentBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(SerialTest, GetPorts) {
-  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html")));
 
   // Three ports are added but only two will have permission granted.
   for (size_t i = 0; i < 3; i++) {
@@ -84,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(SerialTest, GetPorts) {
 }
 
 IN_PROC_BROWSER_TEST_F(SerialTest, RequestPort) {
-  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html")));
 
   EXPECT_CALL(delegate(), CanRequestPortPermission).WillOnce(Return(true));
 
@@ -101,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(SerialTest, RequestPort) {
 }
 
 IN_PROC_BROWSER_TEST_F(SerialTest, DisallowRequestPort) {
-  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html")));
 
   EXPECT_CALL(delegate(), CanRequestPortPermission(_)).WillOnce(Return(false));
   EXPECT_CALL(delegate(), RunChooserInternal).Times(Exactly(0));

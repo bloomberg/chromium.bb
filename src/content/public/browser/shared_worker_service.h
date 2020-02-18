@@ -12,9 +12,13 @@
 
 class GURL;
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace url {
 class Origin;
-}  // namespace url
+}
 
 namespace content {
 
@@ -52,7 +56,7 @@ class CONTENT_EXPORT SharedWorkerService {
 
   // Adds/removes an observer.
   virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(const Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Terminates the given shared worker identified by its name, the URL of
   // its main script resource, and the constructor origin. Returns true on

@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
@@ -39,7 +40,8 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   static const ModelType kType = PREFERENCES;
 
   SyncGenericChangeProcessorTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         syncable_service_ptr_factory_(&fake_syncable_service_) {}
 
   void SetUp() override {
@@ -100,7 +102,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   std::unique_ptr<SyncMergeResult> sync_merge_result_;
   std::unique_ptr<base::WeakPtrFactory<SyncMergeResult>>
@@ -294,7 +296,7 @@ TEST_F(SyncGenericChangeProcessorTest, AddExistingEntry) {
   ASSERT_EQ(sync_data.size(), 1U);
   ASSERT_EQ("session tag 2",
             sync_data[0].GetSpecifics().session().session_tag());
-  EXPECT_FALSE(SyncDataRemote(sync_data[0]).GetClientTagHash().empty());
+  EXPECT_FALSE(SyncDataRemote(sync_data[0]).GetClientTagHash().value().empty());
 }
 
 }  // namespace

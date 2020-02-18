@@ -50,7 +50,6 @@
 #include "chrome/chrome_cleaner/test/test_settings_util.h"
 #include "chrome/chrome_cleaner/ui/silent_main_dialog.h"
 #include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"
-#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom-test-utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "sandbox/win/src/sandbox_factory.h"
@@ -73,7 +72,7 @@ class ExtensionTestSandboxHooks : public MojoSandboxSetupHooks {
     mojo::ScopedMessagePipeHandle pipe_handle =
         SetupSandboxMessagePipe(policy, command_line);
 
-    engine_client_->PostBindEngineCommandsPtr(std::move(pipe_handle));
+    engine_client_->PostBindEngineCommandsRemote(std::move(pipe_handle));
 
     return RESULT_CODE_SUCCESS;
   }
@@ -137,15 +136,12 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   ExtensionCleanupTest() : mojo_task_runner_(MojoTaskRunner::Create()) {}
   void SetUp() override {
     EXPECT_CALL(mock_chrome_prompt_ipc_, MockPostPromptUserTask(_, _, _, _))
-        .WillRepeatedly(
-            [](const std::vector<base::FilePath>& files_to_delete,
-               const std::vector<base::string16>& registry_keys,
-               const std::vector<base::string16>& extension_ids,
-               mojom::ChromePromptInterceptorForTesting::PromptUserCallback*
-                   callback) {
-              std::move(*callback).Run(
-                  mojom::PromptAcceptance::ACCEPTED_WITHOUT_LOGS);
-            });
+        .WillRepeatedly([](const std::vector<base::FilePath>& files_to_delete,
+                           const std::vector<base::string16>& registry_keys,
+                           const std::vector<base::string16>& extension_ids,
+                           ChromePromptIPC::PromptUserCallback* callback) {
+          std::move(*callback).Run(PromptUserResponse::ACCEPTED_WITHOUT_LOGS);
+        });
     EXPECT_CALL(mock_chrome_prompt_ipc_, Initialize(_));
     EXPECT_CALL(mock_chrome_prompt_ipc_, TryDeleteExtensions(_, _))
         .WillRepeatedly([](base::OnceClosure delete_allowed_callback,
@@ -254,10 +250,10 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
     CHECK_EQ(RESULT_CODE_SUCCESS,
              StartSandboxTarget(MakeCmdLine("EngineSandboxMain"),
                                 &engine_setup_hooks, SandboxType::kTest));
-    json_parser_ptr_ = std::make_unique<chrome_cleaner::UniqueParserPtr>(
-        parser_setup_hooks.TakeParserPtr());
+    json_parser_ = std::make_unique<chrome_cleaner::RemoteParserPtr>(
+        parser_setup_hooks.TakeParserRemote());
     return std::make_unique<chrome_cleaner::SandboxedJsonParser>(
-        mojo_task_runner_.get(), json_parser_ptr_.get()->get());
+        mojo_task_runner_.get(), json_parser_.get()->get());
   }
 
  protected:
@@ -272,7 +268,7 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   testing::NiceMock<MockLoggingService> mock_logging_service_;
   base::FilePath fake_apps_dir_;
   base::FilePath chrome_dir_;
-  std::unique_ptr<chrome_cleaner::UniqueParserPtr> json_parser_ptr_;
+  std::unique_ptr<chrome_cleaner::RemoteParserPtr> json_parser_;
   scoped_refptr<chrome_cleaner::EngineClient> engine_client_;
   chrome_cleaner::TestPUPData test_pup_data_;
   std::unique_ptr<ScopedFile> uws_A_;

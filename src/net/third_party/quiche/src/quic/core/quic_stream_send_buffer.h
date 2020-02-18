@@ -26,7 +26,7 @@ class QuicDataWriter;
 // contiguous memory space. Please note, BufferedSlice is constructed when
 // stream data is saved in send buffer and is removed when stream data is fully
 // acked. It is move-only.
-struct BufferedSlice {
+struct QUIC_EXPORT_PRIVATE BufferedSlice {
   BufferedSlice(QuicMemSlice mem_slice, QuicStreamOffset offset);
   BufferedSlice(BufferedSlice&& other);
   BufferedSlice& operator=(BufferedSlice&& other);
@@ -41,8 +41,9 @@ struct BufferedSlice {
   QuicStreamOffset offset;
 };
 
-struct StreamPendingRetransmission {
-  StreamPendingRetransmission(QuicStreamOffset offset, QuicByteCount length)
+struct QUIC_EXPORT_PRIVATE StreamPendingRetransmission {
+  constexpr StreamPendingRetransmission(QuicStreamOffset offset,
+                                        QuicByteCount length)
       : offset(offset), length(length) {}
 
   // Starting offset of this pending retransmission.
@@ -50,8 +51,7 @@ struct StreamPendingRetransmission {
   // Length of this pending retransmission.
   QuicByteCount length;
 
-  QUIC_EXPORT_PRIVATE bool operator==(
-      const StreamPendingRetransmission& other) const;
+  bool operator==(const StreamPendingRetransmission& other) const;
 };
 
 // QuicStreamSendBuffer contains a list of QuicStreamDataSlices. New data slices
@@ -62,7 +62,7 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
  public:
   explicit QuicStreamSendBuffer(QuicBufferAllocator* allocator);
   QuicStreamSendBuffer(const QuicStreamSendBuffer& other) = delete;
-  QuicStreamSendBuffer(QuicStreamSendBuffer&& other) = default;
+  QuicStreamSendBuffer(QuicStreamSendBuffer&& other) = delete;
   ~QuicStreamSendBuffer();
 
   // Save |data_length| of data starts at |iov_offset| in |iov| to send buffer.

@@ -31,15 +31,16 @@ namespace blink {
 class Document;
 class Length;
 
-class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
+class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
  public:
+  template <typename T>
   static void* AllocateObject(size_t size) {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<CSSValue>::kAffinity>::GetState();
     const char* type_name = "blink::CSSValue";
     return state->Heap().AllocateOnArenaIndex(
         state, size, BlinkGC::kCSSValueArenaIndex,
-        GCInfoTrait<CSSValue>::Index(), type_name);
+        GCInfoTrait<GCInfoFoldedType<CSSValue>>::Index(), type_name);
   }
 
   // TODO(sashab): Remove this method and move logic to the caller.
@@ -171,6 +172,9 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool IsShorthandWrapperValue() const {
     return class_type_ == kKeyframeShorthandClass;
   }
+  bool IsLightDarkColorPair() const {
+    return class_type_ == kLightDarkColorPairClass;
+  }
 
   bool HasFailedOrCanceledSubresources() const;
   bool MayContainUrl() const;
@@ -201,6 +205,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     kStringClass,
     kURIClass,
     kValuePairClass,
+    kLightDarkColorPairClass,
 
     // Basic shape classes.
     // TODO(sashab): Represent these as a single subclass, BasicShapeClass.

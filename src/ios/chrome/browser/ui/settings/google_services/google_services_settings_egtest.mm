@@ -6,12 +6,12 @@
 #import <XCTest/XCTest.h>
 
 #include "components/prefs/pref_service.h"
-#include "components/unified_consent/feature.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -65,13 +65,6 @@ TabModel* GetNormalTabModel() {
 
 @implementation GoogleServicesSettingsTestCase
 
-- (void)setUp {
-  [super setUp];
-
-  CHECK(unified_consent::IsUnifiedConsentFeatureEnabled())
-      << "This test suite must be run with Unified Consent feature enabled.";
-}
-
 // Opens the Google services settings view, and closes it.
 - (void)testOpenGoogleServicesSettings {
   [self openGoogleServicesSettings];
@@ -103,8 +96,8 @@ TabModel* GetNormalTabModel() {
   std::unique_ptr<Decider> _webStatePolicyDecider(
       new Decider(GetNormalTabModel().webStateList->GetActiveWebState()));
   // Adds default identity.
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      [SigninEarlGreyUtils fakeIdentity1]);
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
   // Open "Google Services" settings.
   [self openGoogleServicesSettings];
   // Open sign-in.
@@ -145,7 +138,7 @@ TabModel* GetNormalTabModel() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
   self.scrollViewMatcher =
-      grey_accessibilityID(@"google_services_settings_view_controller");
+      grey_accessibilityID(kGoogleServicesSettingsViewIdentifier);
   [[EarlGrey selectElementWithMatcher:self.scrollViewMatcher]
       assertWithMatcher:grey_notNil()];
 }

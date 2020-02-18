@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scrollbar_display_item.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -171,7 +172,8 @@ class ConversionContext {
   // Ends the effect on the top of the state stack if the stack is not empty,
   // and update the bounds of the SaveLayer[Alpha]Op of the effect.
   void EndEffect();
-  void UpdateEffectBounds(const FloatRect&, const TransformPaintPropertyNode&);
+  void UpdateEffectBounds(const base::Optional<FloatRect>&,
+                          const TransformPaintPropertyNode&);
 
   // Starts a clip state by adjusting the transform state, applying
   // |combined_clip_rect| which is combined from one or more consecutive clips,
@@ -229,9 +231,9 @@ class ConversionContext {
   const TransformPaintPropertyNode* previous_transform_ = nullptr;
 
   // This structure accumulates bounds of all chunks under an effect. When an
-  // effect starts, we emit a SaveLayer[Alpha]Op with null bounds starts, and
-  // push a new |EffectBoundsInfo| onto |effect_bounds_stack_|. When the effect
-  // ends, we update the bounds of the op.
+  // effect starts, we emit a SaveLayer[Alpha]Op with null bounds, and push a
+  // new |EffectBoundsInfo| onto |effect_bounds_stack_|. When the effect ends,
+  // we update the bounds of the op.
   struct EffectBoundsInfo {
     // The id of the SaveLayer[Alpha]Op for this effect. It's recorded when we
     // push the op for this effect, and used when this effect ends in
@@ -242,7 +244,7 @@ class ConversionContext {
     // Records the bounds of the effect which initiated the entry. Note that
     // the effect is not |this->effect| (which is the previous effect), but the
     // |current_effect_| when this entry is the top of the stack.
-    FloatRect bounds;
+    base::Optional<FloatRect> bounds;
   };
   Vector<EffectBoundsInfo> effect_bounds_stack_;
 
@@ -588,22 +590,25 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
   const ClipPaintPropertyNode* input_clip = current_clip_;
   PushState(StateEntry::kEffect, saved_count);
   effect_bounds_stack_.emplace_back(
-      EffectBoundsInfo{save_layer_id, current_transform_});
+      EffectBoundsInfo{save_layer_id, current_transform_, base::nullopt});
   current_clip_ = input_clip;
   current_effect_ = &effect;
 }
 
 void ConversionContext::UpdateEffectBounds(
-    const FloatRect& bounds,
+    const base::Optional<FloatRect>& bounds,
     const TransformPaintPropertyNode& transform) {
-  if (effect_bounds_stack_.IsEmpty() || bounds.IsEmpty())
+  if (effect_bounds_stack_.IsEmpty() || !bounds)
     return;
 
   auto& effect_bounds_info = effect_bounds_stack_.back();
-  FloatRect mapped_bounds = bounds;
+  FloatRect mapped_bounds = *bounds;
   GeometryMapper::SourceToDestinationRect(
       transform, *effect_bounds_info.transform, mapped_bounds);
-  effect_bounds_info.bounds.Unite(mapped_bounds);
+  if (effect_bounds_info.bounds)
+    effect_bounds_info.bounds->Unite(mapped_bounds);
+  else
+    effect_bounds_info.bounds = mapped_bounds;
 }
 
 void ConversionContext::EndEffect() {
@@ -617,20 +622,20 @@ void ConversionContext::EndEffect() {
 
   DCHECK(effect_bounds_stack_.size());
   const auto& bounds_info = effect_bounds_stack_.back();
-  FloatRect bounds = bounds_info.bounds;
-  if (!bounds.IsEmpty()) {
+  base::Optional<FloatRect> bounds = bounds_info.bounds;
+  if (bounds) {
     if (current_effect_->Filter().IsEmpty()) {
-      cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id, bounds);
+      cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id, *bounds);
     } else {
       // The bounds for the SaveLayer[Alpha]Op should be the source bounds
       // before the filter is applied, in the space of the TranslateOp which was
       // emitted before the SaveLayer[Alpha]Op.
-      auto save_layer_bounds = bounds;
+      auto save_layer_bounds = *bounds;
       save_layer_bounds.MoveBy(-current_effect_->FiltersOrigin());
       cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id,
                                      save_layer_bounds);
       // We need to propagate the filtered bounds to the parent.
-      bounds = current_effect_->MapRect(bounds);
+      bounds = current_effect_->MapRect(*bounds);
     }
   }
 
@@ -719,11 +724,14 @@ void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
     bool switched_to_chunk_state = false;
 
     for (const auto& item : display_items.ItemsInPaintChunk(chunk)) {
-      if (!item.IsDrawing())
+      sk_sp<const PaintRecord> record;
+      if (item.IsScrollbar())
+        record = static_cast<const ScrollbarDisplayItem&>(item).Paint();
+      else if (item.IsDrawing())
+        record = static_cast<const DrawingDisplayItem&>(item).GetPaintRecord();
+      else
         continue;
 
-      auto record =
-          static_cast<const DrawingDisplayItem&>(item).GetPaintRecord();
       // If we have an empty paint record, then we would prefer not to draw it.
       // However, if we also have a non-root effect, it means that the filter
       // applied might draw something even if the record is empty. We need to
@@ -746,7 +754,17 @@ void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
       cc_list_.EndPaintOfUnpaired(
           chunk_to_layer_mapper_.MapVisualRect(item.VisualRect()));
     }
-    UpdateEffectBounds(FloatRect(chunk.bounds), chunk_state.Transform());
+
+    // Chunk bounds are only important when we are actually drawing. There may
+    // also be cases when we only generate a paint record and do not draw,
+    // for example, to implement an SVG clip. In such cases, we can safely
+    // ignore effect bounds.
+    base::Optional<FloatRect> chunk_bounds;
+    if (cc_list_.GetUsageHint() ==
+        cc::DisplayItemList::kTopLevelDisplayItemList) {
+      chunk_bounds = FloatRect(chunk.bounds);
+    }
+    UpdateEffectBounds(chunk_bounds, chunk_state.Transform());
   }
 }
 

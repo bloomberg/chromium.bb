@@ -15,10 +15,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/supervised_user_error_page/supervised_user_error_page.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
@@ -117,12 +117,11 @@ std::string FilteringBehaviorReasonToString(
 
 }  // namespace
 
-SupervisedUserInternalsMessageHandler::SupervisedUserInternalsMessageHandler()
-    : scoped_observer_(this) {}
+SupervisedUserInternalsMessageHandler::SupervisedUserInternalsMessageHandler() =
+    default;
 
 SupervisedUserInternalsMessageHandler::
-    ~SupervisedUserInternalsMessageHandler() {
-}
+    ~SupervisedUserInternalsMessageHandler() = default;
 
 void SupervisedUserInternalsMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -193,8 +192,6 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
   std::unique_ptr<base::ListValue> section_list(new base::ListValue);
 
   base::ListValue* section_general = AddSection(section_list.get(), "General");
-  AddSectionEntry(section_general, "Chrome version",
-                  chrome::GetVersionString());
   AddSectionEntry(section_general, "Child detection enabled",
                   ChildAccountService::IsChildAccountDetectionEnabled());
 
@@ -225,7 +222,8 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
              ->GetExtendedAccountInfoForAccountsWithRefreshToken()) {
       base::ListValue* section_user = AddSection(section_list.get(),
           "User Information for " + account.full_name);
-      AddSectionEntry(section_user, "Account id", account.account_id);
+      AddSectionEntry(section_user, "Account id",
+                      account.account_id.ToString());
       AddSectionEntry(section_user, "Gaia", account.gaia);
       AddSectionEntry(section_user, "Email", account.email);
       AddSectionEntry(section_user, "Given name", account.given_name);

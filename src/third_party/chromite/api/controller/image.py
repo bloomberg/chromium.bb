@@ -13,12 +13,15 @@ from __future__ import print_function
 import os
 
 from chromite.api import controller
+from chromite.api import faux
 from chromite.api import validate
 from chromite.api.gen.chromiumos import common_pb2
+from chromite.api.metrics import deserialize_metrics_log
 from chromite.lib import cros_build_lib
 from chromite.lib import constants
 from chromite.lib import image_lib
 from chromite.service import image
+from chromite.utils import metrics
 
 # The image.proto ImageType enum ids.
 _BASE_ID = common_pb2.BASE
@@ -29,6 +32,8 @@ _TEST_VM_ID = common_pb2.TEST_VM
 _RECOVERY_ID = common_pb2.RECOVERY
 _FACTORY_ID = common_pb2.FACTORY
 _FIRMWARE_ID = common_pb2.FIRMWARE
+_BASE_GUEST_VM_ID = common_pb2.BASE_GUEST_VM
+_TEST_GUEST_VM_ID = common_pb2.TEST_GUEST_VM
 
 # Dict to allow easily translating names to enum ids and vice versa.
 _IMAGE_MAPPING = {
@@ -49,11 +54,21 @@ _IMAGE_MAPPING = {
 _VM_IMAGE_MAPPING = {
     _BASE_VM_ID: _IMAGE_MAPPING[_BASE_ID],
     _TEST_VM_ID: _IMAGE_MAPPING[_TEST_ID],
+    _BASE_GUEST_VM_ID: _IMAGE_MAPPING[_BASE_ID],
+    _TEST_GUEST_VM_ID: _IMAGE_MAPPING[_TEST_ID],
 }
 
 
+def _CreateResponse(_input_proto, output_proto, _config):
+  """Set output_proto success field on a successful Create response."""
+  output_proto.success = True
+
+
+@faux.success(_CreateResponse)
+@faux.empty_error
 @validate.require('build_target.name')
 @validate.validation_complete
+@metrics.collect_metrics
 def Create(input_proto, output_proto, _config):
   """Build an image.
 
@@ -75,9 +90,31 @@ def Create(input_proto, output_proto, _config):
                        config=build_config)
 
   output_proto.success = result.success
+
   if result.success:
     # Success -- we need to list out the images we built in the output.
     _PopulateBuiltImages(board, image_types, output_proto)
+
+    if vm_types:
+      for vm_type in vm_types:
+        is_test = vm_type in [_TEST_VM_ID, _TEST_GUEST_VM_ID]
+        try:
+          if vm_type in [_BASE_GUEST_VM_ID, _TEST_GUEST_VM_ID]:
+            vm_path = image.CreateGuestVm(board, is_test=is_test)
+          else:
+            vm_path = image.CreateVm(board, is_test=is_test)
+        except image.ImageToVmError as e:
+          cros_build_lib.Die(e)
+
+        new_image = output_proto.images.add()
+        new_image.path = vm_path
+        new_image.type = vm_type
+        new_image.build_target.name = board
+
+    # Read metric events log and pipe them into output_proto.events.
+    deserialize_metrics_log(output_proto.events, prefix=board)
+    return controller.RETURN_CODE_SUCCESS
+
   else:
     # Failure, include all of the failed packages in the output when available.
     if not result.failed_packages:
@@ -91,23 +128,6 @@ def Create(input_proto, output_proto, _config):
         current.version = package.version
 
     return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
-
-  if not vm_types:
-    # No VMs to build, we can exit now.
-    return controller.RETURN_CODE_SUCCESS
-
-  # There can be only one.
-  vm_type = vm_types.pop()
-  is_test = vm_type == _TEST_VM_ID
-  try:
-    vm_path = image.CreateVm(board, is_test=is_test)
-  except image.ImageToVmError as e:
-    cros_build_lib.Die(e.message)
-
-  new_image = output_proto.images.add()
-  new_image.path = vm_path
-  new_image.type = vm_type
-  new_image.build_target.name = board
 
 
 def _ParseImagesToCreate(to_build):
@@ -136,7 +156,9 @@ def _ParseImagesToCreate(to_build):
           "The service's known image types do not match those in image.proto. "
           'Unknown Enum ID: %s' % current)
 
-  if len(vm_types) > 1:
+  # We can only build one type of these images at a time since image_to_vm.sh
+  # uses the default path if a name is not provided.
+  if vm_types.issuperset({_BASE_VM_ID, _TEST_VM_ID}):
     cros_build_lib.Die('Cannot create more than one VM.')
 
   return image_types, vm_types
@@ -172,6 +194,14 @@ def _PopulateBuiltImages(board, image_types, output_proto):
     new_image.build_target.name = board
 
 
+def _SignerTestResponse(_input_proto, output_proto, _config):
+  """Set output_proto success field on a successful SignerTest response."""
+  output_proto.success = True
+  return controller.RETURN_CODE_SUCCESS
+
+
+@faux.success(_SignerTestResponse)
+@faux.empty_error
 @validate.exists('image.path')
 @validate.validation_complete
 def SignerTest(input_proto, output_proto, _config):
@@ -191,6 +221,15 @@ def SignerTest(input_proto, output_proto, _config):
   else:
     return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
+
+def _TestResponse(_input_proto, output_proto, _config):
+  """Set output_proto success field on a successful Test response."""
+  output_proto.success = True
+  return controller.RETURN_CODE_SUCCESS
+
+
+@faux.success(_TestResponse)
+@faux.empty_error
 @validate.require('build_target.name', 'result.directory')
 @validate.exists('image.path')
 def Test(input_proto, output_proto, config):

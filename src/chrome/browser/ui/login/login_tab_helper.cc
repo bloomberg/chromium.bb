@@ -17,6 +17,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 LoginTabHelper::~LoginTabHelper() {}
 
@@ -36,39 +37,6 @@ void LoginTabHelper::DidStartNavigation(
   if (!delegate_)
     return;
 
-  // TODO(https://crbug.com/943610): this is a very hacky special-case for a
-  // particular issue that arises when the server sends an empty body for the
-  // 401 or 407 response. In this case, the renderer commits an error page for
-  // the HTTP status code (see
-  // ChromeContentRendererClient::PrepareErrorPageForHttpStatusError). Error
-  // pages are a second commit from the browser's perspective, which runs
-  // DidStartNavigation again and therefore would dismiss the prompt if this
-  // special case weren't here. To make matters worse, at the error page's
-  // second commit, the browser process does not have a NavigationRequest
-  // available (see |is_commit_allowed_to_proceed| in
-  // RenderFrameHostImpl::DidCommitNavigationInternal), and therefore no
-  // AuthChallengeInfo to use to re-show the prompt after it has been
-  // dismissed. This whole mess should be fixed in https://crbug.com/943610,
-  // which is about enforcing that the browser always has a NavigationRequest
-  // available at commit time; once error pages no longer have second commits
-  // for which NavigationRequests are manufactured, this special case will no
-  // longer be needed.
-  //
-  // For now, we can hack around it by preserving the login prompt when starting
-  // a navigation to the same URL for which we are currently showing a login
-  // prompt. There is a possibility that the starting navigation is actually due
-  // to the user refreshing rather than the error page committing, and when the
-  // user refreshes the server might no longer serve an auth challenge. But we
-  // can't distinguish the two scenarios (error page committing vs user
-  // refreshing) at this point, so we clear the prompt in DidFinishNavigation if
-  // it's not an error page. This behavior could lead to a slight oddness where
-  // the prompt lingers around for a bit too long, but this should only happen
-  // in the perfect storm where a server's auth response has an empty body,
-  // the user refreshes when the prompt is showing, and the server no longer
-  // requires auth on the refresh.
-  if (navigation_handle->GetURL() == url_for_delegate_)
-    return;
-
   delegate_.reset();
   url_for_delegate_ = GURL();
 }
@@ -78,10 +46,9 @@ void LoginTabHelper::DidFinishNavigation(
   DCHECK(
       base::FeatureList::IsEnabled(features::kHTTPAuthCommittedInterstitials));
 
-  // See TODO(https://crbug.com/943610) in DidStartNavigation().
-  if (delegate_ && !navigation_handle->IsErrorPage()) {
-    delegate_.reset();
-    url_for_delegate_ = GURL();
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
   }
 
   // LoginTabHelper stores the navigation entry ID and navigation handle ID
@@ -120,6 +87,7 @@ void LoginTabHelper::DidFinishNavigation(
   }
 
   challenge_ = navigation_handle->GetAuthChallengeInfo().value();
+  network_isolation_key_ = navigation_handle->GetNetworkIsolationKey();
 
   url_for_delegate_ = navigation_handle->GetURL();
   delegate_ = CreateLoginPrompt(
@@ -159,9 +127,15 @@ LoginTabHelper::WillProcessMainFrameUnauthorizedResponse(
     content::NavigationHandle* navigation_handle) {
   // If the user has just cancelled the auth prompt for this navigation, then
   // the page is being refreshed to retrieve the 401 body from the server, so
-  // allow the refresh to proceed.
-  if (web_contents()->GetController().GetVisibleEntry()->GetUniqueID() ==
-      navigation_entry_id_with_cancelled_prompt_) {
+  // allow the refresh to proceed. The entry to compare against is the pending
+  // entry, because while refreshing after cancelling the prompt, the page that
+  // showed the prompt will be the pending entry until the refresh
+  // commits. Comparing against GetVisibleEntry() would also work, but it's less
+  // specific and not guaranteed to exist in all cases (e.g., in the case of
+  // navigating a window just opened via window.open()).
+  if (web_contents()->GetController().GetPendingEntry() &&
+      web_contents()->GetController().GetPendingEntry()->GetUniqueID() ==
+          navigation_entry_id_with_cancelled_prompt_) {
     // Note the navigation handle ID so that when this refresh navigation
     // finishes, DidFinishNavigation declines to show another login prompt. We
     // need the navigation handle ID (rather than the navigation entry ID) here
@@ -192,7 +166,8 @@ void LoginTabHelper::HandleCredentials(
     content::BrowserContext::GetDefaultStoragePartition(
         web_contents()->GetBrowserContext())
         ->GetNetworkContext()
-        ->AddAuthCacheEntry(challenge_, credentials.value(),
+        ->AddAuthCacheEntry(challenge_, network_isolation_key_,
+                            credentials.value(),
                             base::BindOnce(&LoginTabHelper::Reload,
                                            weak_ptr_factory_.GetWeakPtr()));
   }

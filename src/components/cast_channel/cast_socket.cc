@@ -31,14 +31,16 @@
 #include "components/cast_channel/keep_alive_delegate.h"
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/mojo_data_pump.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
 // Helper for logging data with remote host IP and authentication state.
 // Assumes |ip_endpoint_| of type net::IPEndPoint and |channel_auth_| of enum
@@ -75,14 +77,14 @@ void OnConnected(
 void ConnectOnUIThread(
     CastSocketImpl::NetworkContextGetter network_context_getter,
     const net::AddressList& remote_address_list,
-    network::mojom::TCPConnectedSocketRequest request,
+    mojo::PendingReceiver<network::mojom::TCPConnectedSocket> receiver,
     network::mojom::NetworkContext::CreateTCPConnectedSocketCallback callback) {
   network_context_getter.Run()->CreateTCPConnectedSocket(
       base::nullopt /* local_addr */, remote_address_list,
       nullptr /* tcp_connected_socket_options */,
       net::MutableNetworkTrafficAnnotationTag(
           CastSocketImpl::GetNetworkTrafficAnnotationTag()),
-      std::move(request), nullptr /* observer */,
+      std::move(receiver), mojo::NullRemote() /* observer */,
       base::BindOnce(OnConnected, std::move(callback)));
 }
 
@@ -381,7 +383,7 @@ int CastSocketImpl::DoTcpConnect() {
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(ConnectOnUIThread, network_context_getter_,
                                 net::AddressList(open_params_.ip_endpoint),
-                                mojo::MakeRequest(&tcp_socket_),
+                                tcp_socket_.BindNewPipeAndPassReceiver(),
                                 base::BindOnce(&CastSocketImpl::OnConnect,
                                                weak_factory_.GetWeakPtr())));
 
@@ -419,7 +421,7 @@ int CastSocketImpl::DoSslConnect() {
   tcp_socket_->UpgradeToTLS(
       host_port_pair, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(GetNetworkTrafficAnnotationTag()),
-      mojo::MakeRequest(&socket_), nullptr /* observer */,
+      socket_.BindNewPipeAndPassReceiver(), mojo::NullRemote() /* observer */,
       base::BindOnce(&CastSocketImpl::OnUpgradeToTLS,
                      weak_factory_.GetWeakPtr()));
 

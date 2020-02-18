@@ -10,6 +10,8 @@ See //tools/binary_size/README.md for example usage.
 Note: this tool will perform gclient sync/git checkout on your local repo.
 """
 
+from __future__ import print_function
+
 import atexit
 import argparse
 import collections
@@ -37,8 +39,8 @@ _RESOURCE_SIZES_PATH = os.path.join(
     _SRC_ROOT, 'build', 'android', 'resource_sizes.py')
 _LLVM_TOOLS_DIR = os.path.join(
     _SRC_ROOT, 'third_party', 'llvm-build', 'Release+Asserts', 'bin')
-_DOWNLOAD_OBJDUMP_PATH = os.path.join(
-    _SRC_ROOT, 'tools', 'clang', 'scripts', 'download_objdump.py')
+_CLANG_UPDATE_PATH = os.path.join(_SRC_ROOT, 'tools', 'clang', 'scripts',
+                                  'update.py')
 _GN_PATH = os.path.join(_SRC_ROOT, 'third_party', 'depot_tools', 'gn')
 _NINJA_PATH = os.path.join(_SRC_ROOT, 'third_party', 'depot_tools', 'ninja')
 
@@ -722,7 +724,7 @@ def _ValidateRevs(rev, reference_rev, subrepo, extra_rev):
 
 
 def _VerifyUserAccepts(message):
-  print message + ' Do you want to proceed? [y/n]'
+  print(message + ' Do you want to proceed? [y/n]')
   if raw_input('> ').lower() != 'y':
     sys.exit()
 
@@ -765,9 +767,9 @@ def _TmpCopyBinarySizeDir():
     shutil.copytree(_BINARY_SIZE_DIR, bs_dir)
     # We also copy the tools supersize needs, but only if they exist.
     tool_prefix = None
-    if os.path.exists(_DOWNLOAD_OBJDUMP_PATH):
+    if os.path.exists(_CLANG_UPDATE_PATH):
       if not os.path.exists(os.path.join(_LLVM_TOOLS_DIR, 'llvm-readelf')):
-        _RunCmd([_DOWNLOAD_OBJDUMP_PATH])
+        _RunCmd([_CLANG_UPDATE_PATH, '--package=objdump'])
       tools_dir = os.path.join(bs_dir, 'bintools')
       tool_prefix = os.path.join(tools_dir, 'llvm-')
       shutil.copytree(_LLVM_TOOLS_DIR, tools_dir)

@@ -28,8 +28,10 @@ const char* GetRequestDestinationFromContext(
     case mojom::RequestContextType::FONT:
       return "font";
     case mojom::RequestContextType::FRAME:
-    case mojom::RequestContextType::HYPERLINK:
+      return "frame";
     case mojom::RequestContextType::IFRAME:
+      return "iframe";
+    case mojom::RequestContextType::HYPERLINK:
     case mojom::RequestContextType::LOCATION:
     case mojom::RequestContextType::FORM:
       return "document";
@@ -59,8 +61,14 @@ const char* GetRequestDestinationFromContext(
       return "xslt";
     case mojom::RequestContextType::IMPORT:
     case mojom::RequestContextType::INTERNAL:
-    case mojom::RequestContextType::PLUGIN:
       return "unknown";
+
+    // TODO(mkwst): We don't currently distinguish between plugin content loaded
+    // via `<embed>` or `<object>` as https://github.com/whatwg/fetch/pull/948
+    // asks us to do. See `content::PepperURLLoaderHost::InternalOnHostMsgOpen`
+    // for details.
+    case mojom::RequestContextType::PLUGIN:
+      return "embed";
   }
   NOTREACHED();
   return "";

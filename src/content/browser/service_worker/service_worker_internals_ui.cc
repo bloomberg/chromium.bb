@@ -153,6 +153,19 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
   info->SetInteger("process_host_id", version.process_id);
   info->SetInteger("thread_id", version.thread_id);
   info->SetInteger("devtools_agent_route_id", version.devtools_agent_route_id);
+
+  auto clients = ListValue();
+  for (auto& it : version.clients) {
+    auto client = DictionaryValue();
+    client.SetStringPath("client_id", it.first);
+    if (it.second.web_contents_getter) {
+      WebContents* web_contents = it.second.web_contents_getter.Run();
+      if (web_contents)
+        client.SetStringPath("url", web_contents->GetURL().spec());
+    }
+    clients.Append(std::move(client));
+  }
+  info->SetPath("clients", std::move(clients));
 }
 
 std::unique_ptr<ListValue> GetRegistrationListValue(
@@ -250,12 +263,28 @@ class ServiceWorkerInternalsUI::PartitionObserver
       : partition_id_(partition_id), web_ui_(web_ui) {}
   ~PartitionObserver() override {}
   // ServiceWorkerContextCoreObserver overrides:
-  void OnRunningStateChanged(int64_t version_id,
-                             EmbeddedWorkerStatus) override {
+  void OnStarting(int64_t version_id) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunctionUnsafe(
-        "serviceworker.onRunningStateChanged", Value(partition_id_),
-        Value(base::NumberToString(version_id)));
+        "serviceworker.onRunningStateChanged");
+  }
+  void OnStarted(int64_t version_id,
+                 const GURL& scope,
+                 int process_id,
+                 const GURL& script_url) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    web_ui_->CallJavascriptFunctionUnsafe(
+        "serviceworker.onRunningStateChanged");
+  }
+  void OnStopping(int64_t version_id) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    web_ui_->CallJavascriptFunctionUnsafe(
+        "serviceworker.onRunningStateChanged");
+  }
+  void OnStopped(int64_t version_id) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    web_ui_->CallJavascriptFunctionUnsafe(
+        "serviceworker.onRunningStateChanged");
   }
   void OnVersionStateChanged(int64_t version_id,
                              const GURL& scope,
